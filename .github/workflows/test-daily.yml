@@ -1,0 +1,54 @@
+name: Daily Test
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, chrome-beta, firefox]
+    uses: ./.github/workflows/_test.yml
+    with:
+      browser: ${{ matrix.browser }}
+      bust-browser-cache: true
+      retention-days: 30
+      artifact-prefix: daily-test-results
+
+  notify-chrome-beta:
+    name: Notify Chrome Beta regression
+    needs: test
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create issue on Chrome Beta regression
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = 'Chrome Beta Browser Regression Detected';
+            const body = `Automated daily tests detected a regression.
+
+            **Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            **Date:** ${new Date().toISOString().split('T')[0]}
+
+            Please investigate before the next Chrome stable release.`;
+
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'chrome-beta-regression'
+            });
+
+            if (issues.data.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['chrome-beta-regression', 'test-failure']
+              });
+            }

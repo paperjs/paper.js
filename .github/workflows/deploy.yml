@@ -1,0 +1,64 @@
+name: Build Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+jobs:
+  test:
+    uses: ./.github/workflows/_test.yml
+    with:
+      browser: chromium
+
+  build:
+    name: Build Distribution
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          load: true
+          target: base
+          tags: paperjs:latest
+          cache-from: type=gha,scope=base
+          cache-to: type=gha,mode=max,scope=base
+
+      - name: Build distribution files
+        run: |
+          docker run --rm -v "$(pwd)/dist:/app/dist" paperjs:latest yarn dist
+
+      - name: Verify distribution
+        run: |
+          test -f dist/paper-full.js || { echo "paper-full.js not found"; exit 1; }
+          test -f dist/paper-core.js || { echo "paper-core.js not found"; exit 1; }
+          ls -lh dist/
+
+      - name: Create release archives
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          [ -z "$VERSION" ] || [ "$VERSION" = "$GITHUB_REF" ] && VERSION="dev"
+          tar -czf paper-${VERSION}.tar.gz dist/
+          zip -r paper-${VERSION}.zip dist/
+
+      - name: Upload distribution artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-js-distribution
+          path: |
+            dist/
+            paper-*.tar.gz
+            paper-*.zip
+          retention-days: 90

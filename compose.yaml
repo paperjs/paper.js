@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: base
     volumes:
       - ./dist:/app/dist
     command: yarn build
@@ -11,6 +12,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: base
     volumes:
       - ./dist:/app/dist
     command: yarn dist
@@ -19,7 +21,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: sh -c "yarn build && yarn test"
+      target: test
     ports:
       - "8001:8001"
 
@@ -27,6 +29,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: test
     ports:
       - "8000:8000"
     command: sh -c "yarn build && yarn test:browser"
@@ -35,6 +38,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: base
     volumes:
       - ./dist:/app/dist
     command: yarn build
