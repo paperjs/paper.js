@@ -1,15 +1,15 @@
 {
-  "name": "paper",
+  "name": "@imagem-urbana/paper",
   "private": true,
-  "version": "0.12.18",
+  "version": "0.13.0",
   "description": "The Swiss Army Knife of Vector Graphics Scripting",
   "license": "MIT",
   "homepage": "http://paperjs.org",
   "repository": {
     "type": "git",
-    "url": "https://github.com/paperjs/paper.js"
+    "url": "https://github.com/imagem-urbana/paper.js"
   },
-  "bugs": "https://github.com/paperjs/paper.js/issues",
+  "bugs": "https://github.com/imagem-urbana/paper.js/issues",
   "contributors": [
     "Jürg Lehni <juerg@scratchdisk.com> (http://scratchdisk.com)",
     "Jonathan Puckey <jonathan@puckey.studio> (http://studiomoniker.com)"
@@ -39,13 +39,7 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=8.0.0"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "yarn jshint --ensure-branch develop",
-      "pre-push": "yarn test --ensure-branch develop"
-    }
+    "node": ">=18.0.0"
   },
   "browser": {
     "./dist/node/extend.js": false,
@@ -67,7 +61,6 @@
     "gulp-jshint": "^2.1.0",
     "gulp-json-modifier": "^1.0.0",
     "gulp-prepro": "^2.4.0",
-    "playwright": "^1.52.0",
     "gulp-rename": "^2.0.0",
     "gulp-shell": "^0.8.0",
     "gulp-symlink": "^2.1.4",
@@ -83,6 +76,7 @@
     "merge-stream": "^2.0.0",
     "minimist": "^1.2.8",
     "mustache": "^4.2.0",
+    "playwright": "^1.52.0",
     "prepro": "^2.4.0",
     "qunitjs": "^1.23.1",
     "require-dir": "^1.2.0",
