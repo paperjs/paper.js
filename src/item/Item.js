@@ -4444,7 +4444,7 @@ new function() { // Injection scope for hit-test functions shared with project
                     || (nativeBlend || normalBlend && opacity < 1)
                         && this._canComposite(),
             pixelRatio = param.pixelRatio || 1,
-            mainCtx, itemOffset, prevOffset;
+            mainCtx;
         if (!direct) {
             // Apply the parent's global matrix to the calculation of correct
             // bounds.
@@ -4455,19 +4455,10 @@ new function() { // Injection scope for hit-test functions shared with project
                 matrices.pop();
                 return;
             }
-            // Store previous offset and save the main context, so we can
-            // draw onto it later.
-            prevOffset = param.offset;
-            // Floor the offset and ceil the size, so we don't cut off any
-            // antialiased pixels when drawing onto the temporary canvas.
-            itemOffset = param.offset = bounds.getTopLeft().floor();
-            // Set ctx to the context of the temporary canvas, so we draw onto
-            // it, instead of the mainCtx.
+
             mainCtx = ctx;
-            ctx = CanvasProvider.getContext(bounds.getSize().ceil().add(1)
-                    .multiply(pixelRatio));
-            if (pixelRatio !== 1)
-                ctx.scale(pixelRatio, pixelRatio);
+            ctx = CanvasProvider.getContext(ctx.canvas.width, ctx.canvas.height);
+            ctx.setTransform(mainCtx.getTransform());
         }
         ctx.save();
         // Get the transformation matrix for non-scaling strokes.
@@ -4490,14 +4481,9 @@ new function() { // Injection scope for hit-test functions shared with project
             ctx.globalAlpha = opacity;
             if (nativeBlend)
                 ctx.globalCompositeOperation = blendMode;
-        } else if (transform) {
-            // Translate the context so the topLeft of the item is at (0, 0)
-            // on the temporary canvas.
-            ctx.translate(-itemOffset.x, -itemOffset.y);
         }
         if (transform) {
-            // Apply viewMatrix when drawing into temporary canvas.
-            (direct ? matrix : viewMatrix).applyToContext(ctx);
+            matrix.applyToContext(ctx);
         }
         if (clip) {
             param.clipItem.draw(ctx, param.extend({ clip: true }));
@@ -4523,14 +4509,9 @@ new function() { // Injection scope for hit-test functions shared with project
         if (!direct) {
             // Use BlendMode.process even for processing normal blendMode with
             // opacity.
-            BlendMode.process(blendMode, ctx, mainCtx, opacity,
-                    // Calculate the pixel offset of the temporary canvas to the
-                    // main canvas. We also need to factor in the pixel-ratio.
-                    itemOffset.subtract(prevOffset).multiply(pixelRatio));
+            BlendMode.process(blendMode, ctx, mainCtx, opacity, new Point(0, 0));
             // Return the temporary context, so it can be reused
             CanvasProvider.release(ctx);
-            // Restore previous offset.
-            param.offset = prevOffset;
         }
     },
 
