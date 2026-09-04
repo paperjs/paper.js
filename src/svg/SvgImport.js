@@ -604,39 +604,50 @@ new function() {
         // into the scene graph automatically, as we do so by hand.
         var settings = paper.settings,
             applyMatrix = settings.applyMatrix,
-            insertItems = settings.insertItems;
+            insertItems = settings.insertItems,
+            item = null;
         settings.applyMatrix = false;
         settings.insertItems = false;
-        var importer = importers[type],
+        try {
+            var importer = importers[type];
             item = importer && importer(node, type, options, isRoot) || null;
-        settings.insertItems = insertItems;
-        settings.applyMatrix = applyMatrix;
-        if (item) {
-            // Do not apply attributes if this is a #document node.
-            // See importGroup() for an explanation of filtering for Group:
-            if (isElement && !(item instanceof Group))
-                item = applyAttributes(item, node, isRoot);
-            // Support onImportItem callback, to provide mechanism to handle
-            // special attributes (e.g. inkscape:transform-center)
-            var onImport = options.onImport,
-                data = isElement && node.getAttribute('data-paper-data');
-            if (onImport)
-                item = onImport(node, item, options) || item;
-            if (options.expandShapes && item instanceof Shape) {
-                item.remove();
-                item = item.toPath();
+            if (item) {
+                // Do not apply attributes if this is a #document node.
+                // See importGroup() for an explanation of filtering for Group:
+                if (isElement && !(item instanceof Group))
+                    item = applyAttributes(item, node, isRoot);
+                // Support onImportItem callback, to provide mechanism to
+                // handle special attributes (e.g. inkscape:transform-center)
+                var onImport = options.onImport,
+                    data = isElement && node.getAttribute('data-paper-data');
+                if (onImport)
+                    item = onImport(node, item, options) || item;
+                if (options.expandShapes && item instanceof Shape) {
+                    item.remove();
+                    item = item.toPath();
+                }
+                if (data)
+                    item._data = JSON.parse(data);
             }
-            if (data)
-                item._data = JSON.parse(data);
-        }
-        if (container) {
-            //  After import, move things back to how they were:
-            body.removeChild(container);
-            if (parent) {
-                if (next) {
-                    parent.insertBefore(node, next);
-                } else {
-                    parent.appendChild(node);
+        } finally {
+            // No matter what happens above (including an untrusted or
+            // malformed SVG throwing an exception, e.g. through invalid
+            // `data-paper-data` JSON), the temporary container holding the
+            // node must always be detached from the live document again.
+            // Leaving it attached on an error path would keep untrusted,
+            // now-live markup rendered in the page instead of the inert
+            // parsed document it came from.
+            settings.insertItems = insertItems;
+            settings.applyMatrix = applyMatrix;
+            if (container) {
+                //  After import, move things back to how they were:
+                body.removeChild(container);
+                if (parent) {
+                    if (next) {
+                        parent.insertBefore(node, next);
+                    } else {
+                        parent.appendChild(node);
+                    }
                 }
             }
         }
