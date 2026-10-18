@@ -193,6 +193,30 @@ test('setting Group#fillColor and #strokeColor 2', function() {
     equals(secondPath.strokeColor, new Color('red'), 'secondPath.strokeColor');
 });
 
+test('Replacing colors set as descriptions (#2049)', function() {
+    var path = new Path();
+    path.strokeColor = 'red';
+    path.strokeColor = 'blue';
+    equals(path.strokeColor, new Color(0, 0, 1), 'path.strokeColor');
+    // Replacing a color description must not modify it:
+    var red = { red: 1, green: 0, blue: 0 };
+    path.fillColor = red;
+    path.fillColor = 'blue';
+    equals(Object.keys(red), ['red', 'green', 'blue'], 'Object.keys(red)');
+    equals(path.fillColor, new Color(0, 0, 1), 'path.fillColor');
+});
+
+test('Reusing a replaced Color on another item', function() {
+    var color = new Color(1, 0, 0),
+        path1 = new Path({ fillColor: color }),
+        path2 = new Path();
+    path1.fillColor = 'blue';
+    path2.fillColor = color;
+    color.blue = 1;
+    equals(path1.fillColor, new Color(0, 0, 1), 'path1.fillColor');
+    equals(path2.fillColor, new Color(1, 0, 1), 'path2.fillColor');
+});
+
 test('Color change propagation (#1672)', function(assert) {
     // We use this trick to take a snapshot of the current canvas content
     // without any kind of side effect that `item.rasterize()` or other
