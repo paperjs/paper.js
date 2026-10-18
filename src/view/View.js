@@ -527,6 +527,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
 
     /**
      * The view's zoom factor by which the project coordinates are magnified.
+     * Setting it to a value that isn't a positive number has no effect.
      *
      * @bean
      * @type Number
@@ -539,8 +540,12 @@ var View = Base.extend(Emitter, /** @lends View# */{
     },
 
     setZoom: function(zoom) {
-        this.transform(new Matrix().scale(zoom / this.getZoom(),
-            this.getCenter()));
+        // Zooming to 0 can't be undone and leaves the view's matrix without an
+        // inverse (#1433):
+        if (zoom > 0 && isFinite(zoom)) {
+            this.transform(new Matrix().scale(zoom / this.getZoom(),
+                this.getCenter()));
+        }
     },
 
     /**
