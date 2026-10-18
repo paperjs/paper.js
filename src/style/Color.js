@@ -901,8 +901,11 @@ var Color = Base.extend(new function() {
                         + components.join(',') + ')';
         },
 
-        toCanvasStyle: function(ctx, matrix) {
-            if (this._canvasStyle)
+        toCanvasStyle: function(ctx, matrix, strokeMatrix) {
+            // Gradients drawn with a strokeMatrix depend on it, and it can
+            // change without notifying the color, so we can't cache these:
+            var isCacheable = !(this._type === 'gradient' && strokeMatrix);
+            if (this._canvasStyle && isCacheable)
                 return this._canvasStyle;
             // Normal colors are simply represented by their CSS string.
             if (this._type !== 'gradient')
@@ -924,6 +927,12 @@ var Color = Base.extend(new function() {
                 destination = inverse._transformPoint(destination);
                 if (highlight)
                     highlight = inverse._transformPoint(highlight);
+            }
+            if (strokeMatrix) {
+                origin = strokeMatrix._transformPoint(origin);
+                destination = strokeMatrix._transformPoint(destination);
+                if (highlight)
+                    highlight = strokeMatrix._transformPoint(highlight);
             }
             if (gradient._radial) {
                 var radius = destination.getDistance(origin);
@@ -950,7 +959,9 @@ var Color = Base.extend(new function() {
                         offset == null ? i / (l - 1) : offset,
                         stop._color.toCanvasStyle());
             }
-            return this._canvasStyle = canvasGradient;
+            if (isCacheable)
+                this._canvasStyle = canvasGradient;
+            return canvasGradient;
         },
 
         /**

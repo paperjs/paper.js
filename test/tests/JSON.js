@@ -257,6 +257,29 @@ test('Path#importJSON()', function() {
     equals(function() { return path.parent === layer; }, true);
 });
 
+test('Shape#importJSON() with type after radius (#1820)', function() {
+    var circle = new Shape.Circle({
+        center: [50, 50],
+        radius: 25,
+        fillColor: 'red'
+    });
+    var imported = new Shape().importJSON(
+            '["Shape",{"applyMatrix":false,"matrix":[1,0,0,1,50,50],' +
+            '"radius":25,"size":[50,50],"type":"circle","fillColor":[1,0,0]}]');
+    equals(imported, circle);
+    equals(imported.radius, 25, 'imported.radius');
+    equals(imported.bounds, new Rectangle(25, 25, 50, 50), 'imported.bounds');
+
+    var ellipse = new Shape.Ellipse({
+        center: [50, 50],
+        radius: [40, 20]
+    });
+    imported = new Shape().importJSON(
+            '["Shape",{"applyMatrix":false,"matrix":[1,0,0,1,50,50],' +
+            '"radius":[40,20],"size":[80,40],"type":"ellipse"}]');
+    equals(imported, ellipse);
+});
+
 test('Item#importJSON() does not override Item#insert()', function() {
     var path = new Path();
     equals(typeof path.insert, 'function');
