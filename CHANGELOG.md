@@ -70,6 +70,8 @@
   the end points (#1460).
 - Fix `Path#splitAt()` with locations that aren't on the path, which split
   the path at its start instead of returning `null`.
+- Fix clipping with groups that are clipped themselves, as imported SVG with a
+  `viewBox` is, which clipped with their own clip mask too (#1618).
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
