@@ -41,6 +41,9 @@
 - Fix key events with Control, Alt and Meta in Firefox and other browsers that
   fire no `keypress` for them (#1997, #1871).
 - Fix the space key staying down after Option + Space on macOS.
+- Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
+- Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
+  `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
 
 ## `0.12.20`
 
