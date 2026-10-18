@@ -407,7 +407,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @function
      *
      * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
-     *     {Number} the tolerance of the hit-test
+     *     {Number} the tolerance of the hit-test, in project coordinates
      * @option options.class {Function} only hit-test against a specific item
      *     class, or any of its sub-classes, by providing the constructor
      *     function against which an `instanceof` check is performed:
