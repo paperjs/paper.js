@@ -7,6 +7,12 @@
 - Time double-clicks from mousedown to mousedown and only within 3 pixels, as
   native `dblclick` events do, and don't take a third click for another
   double-click (#1451).
+- Make `Rectangle#left`, `#right`, `#top` and `#bottom` move only their own
+  side, as documented, and the corner points only their two sides, keeping the
+  opposite ones where they are. They used to move the whole rectangle, unless
+  another side was set before. This also applies to `Item#bounds`: setting a
+  side or corner of an item's bounds now stretches the item. To move items,
+  set `bounds.point`, `bounds.center`, `bounds.x` or `bounds.y` (#2024, #1147).
 
 ### Fixed
 
