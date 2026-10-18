@@ -163,8 +163,8 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
     },
 
     setCount: function(count) {
-        this.tool[/^mouse(down|up)$/.test(this.type) ? 'downCount' : 'count']
-            = count;
+        this.tool[/^mouse(down|up)$/.test(this.type)
+                ? '_downCount' : '_moveCount'] = count;
     },
 
     /**

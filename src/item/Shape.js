@@ -126,7 +126,12 @@ var Shape = Item.extend(/** @lends Shape# */{
                 return;
             var size = radius * 2;
             this._radius = radius;
-            this._size._set(size, size);
+            if (this._size) {
+                this._size._set(size, size);
+            } else {
+                // First time, e.g. when no size was set before:
+                this._size = new Size(size, size);
+            }
         } else {
             radius = Size.read(arguments);
             if (!this._radius) {

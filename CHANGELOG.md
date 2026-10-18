@@ -25,6 +25,10 @@
   `Path#insert()`, and `{ insert: true }` was ignored.
 - Fix tweening of points, colors and relative values in `paper-core`, which
   relied on PaperScript.
+- Fix setting `ToolEvent#count`, which had no effect.
+- Fix `new Shape({ type: 'circle', radius })` without a size, which threw.
+- Fix `View#getPixelSize()` returning `NaN` for views without an element, as in
+  web workers, which broke `leading` for font sizes in units other than pixels.
 
 ## `0.12.18`
 

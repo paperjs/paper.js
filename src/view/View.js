@@ -469,7 +469,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
             pixels = parseFloat(DomElement.getStyles(temp).fontSize);
             parent.removeChild(temp);
         } else {
-            pixels = parseFloat(pixels);
+            pixels = parseFloat(size);
         }
         return pixels;
     },
