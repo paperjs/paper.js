@@ -14,7 +14,9 @@
  * @name SymbolItem
  *
  * @class A symbol item represents an instance of a symbol which has been
- * placed in a Paper.js project.
+ * placed in a Paper.js project. All instances share the symbol's definition,
+ * which they draw as it is: styles set on a symbol item don't reach the items
+ * of the definition, unlike `<use>` elements in SVG.
  *
  * @extends Item
  */
