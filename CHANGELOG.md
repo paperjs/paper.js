@@ -23,6 +23,8 @@
 - Fix `new Raster(source, position)` ignoring the position.
 - Fix `new Path.Arc()` handling of `insert`: `{ insert: false }` shadowed
   `Path#insert()`, and `{ insert: true }` was ignored.
+- Fix tweening of points, colors and relative values in `paper-core`, which
+  relied on PaperScript.
 
 ## `0.12.18`
 
