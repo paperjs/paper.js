@@ -128,6 +128,36 @@ test('Project#getItems() with compare function', function() {
     }, true);
 });
 
+test('Project#getItems() with a match function', function() {
+    var path = new Path(),
+        group = new Group([new Path.Circle([50, 50], 10)]),
+        circle = group.firstChild;
+
+    function isPath(item) {
+        return item instanceof Path;
+    }
+
+    // Functions match recursively, as the match option does:
+    var items = paper.project.getItems(isPath);
+    equals(function() {
+        return items.length == 2 && items[0] == path && items[1] == circle;
+    }, true);
+    equals(function() {
+        return paper.project.getItems({ match: isPath }).length;
+    }, 2);
+    items = paper.project.activeLayer.getItems(isPath);
+    equals(function() {
+        return items.length == 2 && items[0] == path && items[1] == circle;
+    }, true);
+    equals(function() {
+        return paper.project.getItem(isPath) == path;
+    }, true);
+    // Without options, all items match: the layer, path, group and circle.
+    equals(function() {
+        return paper.project.getItems().length;
+    }, 4);
+});
+
 test('Project#getItems() with specific property value', function() {
     var path = new Path();
     var decoyPath = new Path({

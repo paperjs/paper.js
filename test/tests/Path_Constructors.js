@@ -186,3 +186,47 @@ test('new Path.Arc({ insert: false })', function() {
         return path.isInserted();
     }, true);
 });
+
+test('new Path.*({ project: project, parent: parent, insert: insert }) (#2012)', function() {
+    var project = paper.project,
+        project2 = new Project(),
+        group = new Group();
+    project.activate();
+    var props = {
+        Line: { from: [0, 0], to: [10, 10] },
+        Circle: { center: [10, 10], radius: 10 },
+        Ellipse: { point: [0, 0], size: [20, 10] },
+        Rectangle: { point: [0, 0], size: [20, 10] },
+        Arc: { from: [0, 0], through: [5, 5], to: [10, 0] },
+        RegularPolygon: { center: [10, 10], sides: 6, radius: 10 },
+        Star: { center: [10, 10], points: 5, radius1: 5, radius2: 10 }
+    };
+    // Each constructor should handle these just like new Path() does:
+    [
+        { project: project2 },
+        { project: project2, insert: true },
+        { project: project2, insert: false },
+        { parent: group },
+        { parent: group, insert: true },
+        { parent: group, insert: false }
+    ].forEach(function(options, index) {
+        var expected = new Path(options);
+        Base.each(props, function(values, name) {
+            var path = new Path[name](Base.set({}, values, options)),
+                message = 'new Path.' + name + '() with options #' + index;
+            equals(path.project === expected.project, true,
+                    message + ': project');
+            equals(path.parent === expected.parent, true,
+                    message + ': parent');
+            equals(path.isInserted(), expected.isInserted(),
+                    message + ': isInserted()');
+        });
+    });
+    // The geometry is still defined before the other named arguments are set:
+    equals(new Path.Rectangle({
+        point: [0, 0],
+        size: [20, 10],
+        position: [100, 100],
+        project: project2
+    }).bounds, new Rectangle(90, 95, 20, 10));
+});

@@ -47,6 +47,19 @@
   and run there as in workers (#1805).
 - Keep the original error as `cause` when jsdom or canvas fail to load on
   Node.js (#1759).
+- Fix `#getItems()` and `#getItem()` with a match function or without options
+  to search recursively, as documented, instead of matching only the top-level
+  items.
+- Fix `#importSVG()` of transforms and styles on `<use>` elements that
+  reference groups (#978).
+- Fix the `project` and `parent` options of the `Path.*` constructors. With
+  `insert: false`, they no longer insert into the parent, as `new Path()`
+  doesn't either (#2012).
+- Fix the bounds of transformed circle and ellipse shapes (#1826).
+- Fix `PointText#strokeBounds` to include the stroke, which got cut off when
+  drawn with opacity (#1322).
+- Fix the `Item#bounds` setter on items with zero width or height, which made
+  their matrix non-invertible (#1794).
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
