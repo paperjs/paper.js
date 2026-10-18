@@ -1094,3 +1094,42 @@ test('Item#draw() with CompoundPath as clip item', function() {
 
     comparePixels(createdClippedGroup(true), createdClippedGroup(false));
 });
+
+test('settings.insertItems for items created from other items (#1721)', function() {
+    var settings = paper.settings,
+        path = new Path.Rectangle([0, 0], [100, 100]),
+        circle = new Path.Circle([100, 100], 50),
+        shape = new Shape.Rectangle([0, 0], [100, 100]);
+
+    function create(insert) {
+        // Explicit insert arguments override the setting, so only pass them
+        // when defined:
+        var options = insert !== undefined ? { insert: insert } : undefined;
+        return {
+            'clone()': path.clone(options),
+            'clone({ deep: false })': path.clone(Base.set({ deep: false },
+                    options)),
+            'unite()': path.unite(circle, options),
+            'subtract({ trace: false })': path.subtract(circle,
+                    Base.set({ trace: false }, options)),
+            'rasterize()': path.rasterize(Base.set({ resolution: 72 },
+                    options)),
+            'toShape()': path.toShape(insert),
+            'toPath()': shape.toPath(insert)
+        };
+    }
+
+    function check(items, inserted, message) {
+        Base.each(items, function(item, name) {
+            equals(item.isInserted(), inserted, name + ' ' + message);
+            item.remove();
+        });
+    }
+
+    check(create(), true, 'with insertItems');
+    settings.insertItems = false;
+    check(create(), false, 'without insertItems');
+    check(create(true), true, 'with insert: true, without insertItems');
+    settings.insertItems = true;
+    check(create(false), false, 'with insert: false');
+});

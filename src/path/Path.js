@@ -1569,7 +1569,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             shape._matrix.prepend(this._matrix);
             // Determine and apply the shape's angle of rotation.
             shape.rotate(topCenter.subtract(center).getAngle() + 90);
-            if (insert === undefined || insert)
+            if (Base.pick(insert, paper.settings.insertItems))
                 shape.insertAbove(this);
             return shape;
         }
