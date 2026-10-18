@@ -512,16 +512,17 @@ new function() {
     });
 
     function getAttribute(node, name, styles) {
-        // First see if the given attribute is defined.
-        var attr = node.attributes[name],
+        // Inline styles override presentation attributes, as in CSS. After
+        // them, see if the given attribute is defined, and finally, if there is
+        // a style applied through CSS rules, filtering out inheritance from
+        // their parents.
+        var style = Base.camelize(name),
+            value = node.style && node.style[style];
+        if (!value) {
+            var attr = node.attributes[name];
             value = attr && attr.value;
-        if (!value && node.style) {
-            // Fallback to using styles. See if there is a style, either set
-            // directly on the object or applied to it through CSS rules.
-            // We also need to filter out inheritance from their parents.
-            var style = Base.camelize(name);
-            value = node.style[style];
-            if (!value && styles.node[style] !== styles.parent[style])
+            if (!value && node.style
+                    && styles.node[style] !== styles.parent[style])
                 value = styles.node[style];
         }
         // Return undefined if attribute is not defined, but null if it's

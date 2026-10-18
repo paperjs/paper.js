@@ -72,6 +72,25 @@ test('Import SVG round rect with only rx or ry (#1863)', function() {
     equals(getRadius('rx="10%" ry="10%"'), new Size(20, 10));
 });
 
+test('Import SVG with inline styles and attributes (#1962)', function() {
+    function importRect(attrs) {
+        return paper.project.importSVG(
+                '<svg xmlns="http://www.w3.org/2000/svg">'
+                + '<rect width="10" height="10" ' + attrs + '/></svg>')
+                .firstChild;
+    }
+
+    // Inline styles override presentation attributes, as in CSS:
+    var rect = importRect('fill="blue" stroke-width="2" '
+            + 'style="fill: red; stroke-width: 4"');
+    equals(rect.fillColor, new Color('red'), 'fill from style');
+    equals(rect.strokeWidth, 4, 'stroke-width from style');
+    rect = importRect('fill="blue" style="stroke-width: 4"');
+    equals(rect.fillColor, new Color('blue'), 'fill from attribute');
+    rect = importRect('style="fill: red"');
+    equals(rect.fillColor, new Color('red'), 'fill from style only');
+});
+
 test('Import SVG ellipse', function() {
     var attrs = {
         cx: 300,

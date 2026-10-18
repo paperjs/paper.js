@@ -17,6 +17,9 @@
   `hitTestAll()` always returns the groups above the hit items, and
   `hitTest(point, { class: Group })` finds the group under a point. Groups were
   only hit when all their children shared a fill (#2069).
+- Let inline `style` declarations override presentation attributes in
+  `#importSVG()`, as in CSS and browsers: `<rect fill="blue" style="fill: red">`
+  now imports red (#1962).
 
 ### Fixed
 
