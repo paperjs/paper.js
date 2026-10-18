@@ -22,3 +22,13 @@ test('view.zoom of mirrored view (#1411)', function() {
     // (x, y) -> (2 * x - 50, 100 - (2 * y - 50))
     equals(view.matrix, new Matrix(2, 0, 0, -2, -50, 150), 'view.matrix');
 });
+
+test('view.zoom with values that aren\'t positive numbers (#1433)', function() {
+    view.zoom = 2;
+    [0, -1, NaN, Infinity].forEach(function(zoom) {
+        view.zoom = zoom;
+        equals(view.zoom, 2, 'view.zoom = ' + zoom);
+    });
+    // The view is 100x100, so at zoom 2 it shows 50x50 around its center:
+    equals(view.bounds, new Rectangle(25, 25, 50, 50), 'view.bounds');
+});
