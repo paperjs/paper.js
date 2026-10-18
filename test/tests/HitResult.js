@@ -921,3 +921,53 @@ test('hit-testing items scaled to 0', function() {
 });
 
 // TODO: project.hitTest(point, {type: AnItemType});
+
+test('Hit-testing groups (#2069)', function() {
+    function getItems(hits) {
+        return hits.map(function(hit) {
+            return hit.item;
+        });
+    }
+
+    var red = new Path.Rectangle({
+            point: [0, 0], size: [50, 50], fillColor: 'red'
+        }),
+        blue = new Path.Rectangle({
+            point: [100, 0], size: [50, 50], strokeColor: 'blue'
+        }),
+        inner = new Group([red, blue]),
+        outer = new Group([inner]);
+    // Groups are hit wherever one of their children is hit, whatever their
+    // styles, and layers aren't:
+    equals(getItems(project.hitTestAll([25, 25])), [red, inner, outer],
+            'hitTestAll() on the filled child');
+    equals(getItems(project.hitTestAll([100, 25])), [blue, inner, outer],
+            'hitTestAll() on the stroked child');
+    equals(getItems(project.hitTestAll([75, 25])), [],
+            'hitTestAll() between the children');
+    // The group's hit takes the type of the child's hit:
+    var options = { fill: true, stroke: true, class: Group },
+        hit = project.hitTest([100, 25], options);
+    equals(function() {
+        return hit.item === inner && hit.type;
+    }, 'stroke');
+    equals(function() {
+        return project.hitTest([75, 25], options);
+    }, null);
+    equals(function() {
+        return project.hitTest([25, 25], {
+            fill: true,
+            match: function(hit) {
+                return hit.item === outer;
+            }
+        }).item === outer;
+    }, true);
+    // Without filters, the children are still hit first:
+    equals(function() {
+        return project.hitTest([25, 25]).item === red;
+    }, true);
+    // Groups with children that share a fill were hit before too:
+    blue.fillColor = 'red';
+    equals(getItems(project.hitTestAll([125, 25])), [blue, inner, outer],
+            'hitTestAll() with shared fills');
+});

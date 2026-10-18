@@ -13,6 +13,10 @@
   another side was set before. This also applies to `Item#bounds`: setting a
   side or corner of an item's bounds now stretches the item. To move items,
   set `bounds.point`, `bounds.center`, `bounds.x` or `bounds.y` (#2024, #1147).
+- Hit-test groups wherever one of their children is hit, as in Illustrator, so
+  `hitTestAll()` always returns the groups above the hit items, and
+  `hitTest(point, { class: Group })` finds the group under a point. Groups were
+  only hit when all their children shared a fill (#2069).
 
 ### Fixed
 
