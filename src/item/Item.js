@@ -2491,6 +2491,10 @@ new function() { // Injection scope for hit-test functions shared with project
      * the this item's children list. Note that the item is not cleared first.
      * You can call {@link Item#removeChildren()} to do so.
      *
+     * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
+     * the `<use>` elements that place them as {@link SymbolItem} items. The
+     * styles that `<use>` elements inherit don't reach the symbols' content.
+     *
      * @name Item#importSVG
      * @function
      *
