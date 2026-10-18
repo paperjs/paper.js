@@ -75,9 +75,9 @@ gulp.task('publish:commit', ['publish:version'], function() {
 
 gulp.task('publish:release', function() {
     return gulp.src('.')
-        .pipe(git.checkout('master'))
+        .pipe(git.checkout('main'))
         .pipe(git.merge('develop', { args: '-X theirs' }))
-        .pipe(git.push('origin', ['master', 'develop'], { args: '--tags' }))
+        .pipe(git.push('origin', ['main', 'develop'], { args: '--tags' }))
         .pipe(shell('yarn npm publish'));
 });
 
