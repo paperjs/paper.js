@@ -32,7 +32,10 @@
   "files": [
     "AUTHORS.md",
     "CHANGELOG.md",
-    "dist/",
+    "dist/paper-*.js",
+    "dist/*.d.ts",
+    "dist/node/",
+    "dist/docs/",
     "examples/",
     "LICENSE.txt",
     "README.md"
