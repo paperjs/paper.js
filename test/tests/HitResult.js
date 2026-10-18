@@ -971,3 +971,34 @@ test('Hit-testing groups (#2069)', function() {
     equals(getItems(project.hitTestAll([125, 25])), [blue, inner, outer],
             'hitTestAll() with shared fills');
 });
+
+test('Item#hitTest() on items in transformed groups (#1803)', function() {
+    var path = new Path.Rectangle({
+            point: [0, 0], size: [50, 50], fillColor: 'red'
+        }),
+        inner = new Group({ children: [path], applyMatrix: false }),
+        outer = new Group({ children: [inner], applyMatrix: false });
+    inner.matrix = new Matrix(1, 0, 0, 1, 10, 0);
+    outer.matrix = new Matrix(2, 0, 0, 2, 100, 100);
+    // The path's local point 25, 25 is at 35, 25 in inner and at
+    // 2 * 35 + 100, 2 * 25 + 100 = 170, 150 in global coordinates:
+    equals(function() {
+        return path.hitTest([170, 150]).item === path;
+    }, true);
+    equals(function() {
+        return inner.hitTest([170, 150]).item === path;
+    }, true);
+    equals(function() {
+        return project.hitTest([170, 150]).item === path;
+    }, true);
+    equals(function() {
+        return path.hitTest([25, 25]);
+    }, null);
+    // The hit point is in global coordinates too: the segment at 0, 0 is at
+    // 2 * 10 + 100, 100 = 120, 100.
+    var hit = path.hitTest([121, 101], { segments: true, tolerance: 5 });
+    equals(function() {
+        return hit.type;
+    }, 'segment');
+    equals(hit.point, new Point(120, 100));
+});
