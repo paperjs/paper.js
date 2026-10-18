@@ -102,6 +102,19 @@
   documented global ones (#1803).
 - Ignore `View#zoom` values that aren't positive numbers, which left the
   view's matrix without an inverse, so that `View#bounds` threw (#1433).
+- Fix the hit-test tolerance of items inside transformed groups and of symbol
+  items, which their transformations scaled. It is now in project
+  coordinates, as documented (#1278).
+- Limit the temporary canvases of items with opacity or blend modes to the
+  visible area, so large groups no longer disappear or make zooming slow
+  (#1644, #1920, #1925, #2001, #2029).
+- Support SVG 2's plain `href` attribute in `#importSVG()`, besides
+  `xlink:href`, for `<use>`, `<image>` and gradient links.
+- Fix `#exportSVG()` of groups used as clip masks, which were exported as
+  groups inside `<clipPath>`, where only shapes are allowed, so browsers
+  clipped everything away (#1445, #1590).
+- Keep the lines of multi-line text in `#exportSVG()` and `#importSVG()`, as
+  `<tspan>` elements at their own baselines (#988).
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.

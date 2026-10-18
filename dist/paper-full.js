@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 18 21:58:00 2026 +0200
+ * Date: Sun Oct 18 22:24:15 2026 +0200
  *
  ***
  *
@@ -4083,8 +4083,9 @@ new function() {
 					: pointMatrix.prepended(this.getView()._matrix),
 			tolerance = Math.max(options.tolerance, 1e-12),
 			tolerancePadding = options._tolerancePadding = new Size(
-					Path._getStrokePadding(tolerance,
-						matrix._shiftless().invert()));
+					Path._getStrokePadding(tolerance, viewMatrix
+						.prepended(this.getView()._matrix.inverted())
+						._shiftless().invert()));
 		point = pointMatrix._inverseTransform(point);
 		if (!point || !this._children &&
 			!this.getBounds({ internal: true, stroke: true, handle: true })
@@ -4783,8 +4784,12 @@ new function() {
 			pixelRatio = param.pixelRatio || 1,
 			mainCtx, itemOffset, prevOffset;
 		if (!direct) {
-			var bounds = this.getStrokeBounds(viewMatrix);
-			if (!bounds.width || !bounds.height) {
+			var canvas = ctx.canvas,
+				bounds = this.getStrokeBounds(viewMatrix).intersect(
+					new Rectangle(new Point(param.offset),
+						new Size(canvas.width, canvas.height)
+							.divide(pixelRatio)));
+			if (bounds.width <= 0 || bounds.height <= 0) {
 				matrices.pop();
 				return;
 			}
@@ -14766,7 +14771,8 @@ var SvgElement = new function() {
 	function get(node, name) {
 		var namespace = attributeNamespace[name],
 			value = namespace
-				? node.getAttributeNS(namespace, name)
+				? node.getAttribute(name)
+					|| node.getAttributeNS(namespace, name)
 				: node.getAttribute(name);
 		return value === 'null' ? null : value;
 	}
@@ -14893,21 +14899,44 @@ new function() {
 		var node = SvgElement.create('g', attrs, formatter);
 		for (var i = 0, l = children.length; i < l; i++) {
 			var child = children[i];
-			var childNode = exportSVG(child, options);
-			if (childNode) {
-				if (child.isClipMask()) {
-					var clip = SvgElement.create('clipPath');
-					clip.appendChild(childNode);
-					setDefinition(child, clip, 'clip');
-					SvgElement.set(node, {
-						'clip-path': 'url(#' + clip.id + ')'
-					});
-				} else {
+			if (child.isClipMask()) {
+				var clip = exportClip(child, options);
+				setDefinition(child, clip, 'clip');
+				SvgElement.set(node, {
+					'clip-path': 'url(#' + clip.id + ')'
+				});
+			} else {
+				var childNode = exportSVG(child, options);
+				if (childNode)
 					node.appendChild(childNode);
-				}
 			}
 		}
 		return node;
+	}
+
+	function exportClip(item, options) {
+		var clip = SvgElement.create('clipPath');
+
+		function addItem(item) {
+			if (item instanceof Group) {
+				var children = item._children;
+				for (var i = 0, l = children.length; i < l; i++) {
+					if (!children[i]._clipMask)
+						addItem(children[i]);
+				}
+			} else {
+				var node = exportSVG(item, options);
+				if (node)
+					clip.appendChild(node);
+			}
+		}
+
+		if (item instanceof Group) {
+			item = item.clone({ insert: false });
+			item.matrix.apply(true, true);
+		}
+		addItem(item);
+		return clip;
 	}
 
 	function exportRaster(item, options) {
@@ -15069,9 +15098,22 @@ new function() {
 	}
 
 	function exportText(item) {
-		var node = SvgElement.create('text', getTransform(item._matrix, true),
-				formatter);
-		node.textContent = item._content;
+		var attrs = getTransform(item._matrix, true),
+			node = SvgElement.create('text', attrs, formatter),
+			lines = item._lines;
+		if (lines.length > 1) {
+			var leading = item._style.getLeading();
+			for (var i = 0, l = lines.length; i < l; i++) {
+				var span = SvgElement.create('tspan', {
+					x: attrs.x,
+					y: attrs.y + i * leading
+				}, formatter);
+				span.textContent = lines[i];
+				node.appendChild(span);
+			}
+		} else {
+			node.textContent = item._content;
+		}
 		return node;
 	}
 
@@ -15464,8 +15506,14 @@ new function() {
 
 		text: function(node) {
 			var text = new PointText(getPoint(node).add(
-					getPoint(node, 'dx', 'dy')));
-			text.setContent(node.textContent.trim() || '');
+					getPoint(node, 'dx', 'dy'))),
+				lines = Base.each(node.childNodes, function(child) {
+					if (/^tspan$/i.test(child.nodeName)
+							&& child.hasAttribute('y'))
+						this.push(child.textContent.trim());
+				}, []);
+			text.setContent(lines.length > 1 ? lines.join('\n')
+					: node.textContent.trim());
 			return text;
 		},
 

@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 18 21:58:00 2026 +0200
+ * Date: Sun Oct 18 22:24:15 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -1879,7 +1879,7 @@ declare namespace paper {
          * are performed. It may contain a combination of the following values:
          * 
          * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
-         *     {Number} the tolerance of the hit-test
+         *     {Number} the tolerance of the hit-test, in project coordinates
          * @option options.class {Function} only hit-test against a specific item
          *     class, or any of its sub-classes, by providing the constructor
          *     function against which an `instanceof` check is performed:
@@ -5155,7 +5155,7 @@ declare namespace paper {
          * are performed. It may contain a combination of the following values:
          * 
          * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
-         *     {Number} the tolerance of the hit-test
+         *     {Number} the tolerance of the hit-test, in project coordinates
          * @option options.class {Function} only hit-test against a specific item
          *     class, or any of its sub-classes, by providing the constructor
          *     function against which an `instanceof` check is performed:

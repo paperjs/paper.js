@@ -3416,7 +3416,7 @@ function onMouseDown(event) {
 <p>The options object allows you to control the specifics of the hit-test. Without options, <code>fill</code>, <code>stroke</code> and <code>segments</code> are hit-tested. As soon as an options object is passed, only the hit-tests that it sets to <code>true</code> are performed. It may contain a combination of the following values:</p>
     <ul class="member-list">
 <h4>Options:</h4>
-<li><tt>options.tolerance: <tt>Number</tt></tt> &mdash; the tolerance of the hit-test &mdash;&nbsp;default: <tt><a href="../classes/PaperScope.html#settings"><tt>paperScope.settings</tt></a>.hitTolerance</tt></li>
+<li><tt>options.tolerance: <tt>Number</tt></tt> &mdash; the tolerance of the hit-test, in project coordinates &mdash;&nbsp;default: <tt><a href="../classes/PaperScope.html#settings"><tt>paperScope.settings</tt></a>.hitTolerance</tt></li>
 <li><tt>options.class: <tt>Function</tt></tt> &mdash; only hit-test against a specific item  class, or any of its sub-classes, by providing the constructor  function against which an <code>instanceof</code> check is performed:  <tt>Group</tt>, <tt>Layer</tt>, <tt>Path</tt>, <tt>CompoundPath</tt>, <tt>Shape</tt>, <tt>Raster</tt>, <tt>SymbolItem</tt>, <tt>PointText</tt>, &hellip;</li>
 <li><tt>options.match: <tt>Function</tt></tt> &mdash; a match function to be called for each  found hit result: Return <code>true</code> to return the result, <code>false</code> to keep  searching</li>
 <li><tt>options.fill: <tt>Boolean</tt></tt> &mdash; hit-test the fill of items</li>
