@@ -14,15 +14,7 @@ var gulp = require('gulp'),
     qunits = require('gulp-qunits'),
     webserver = require('gulp-webserver');
 
-gulp.task('test', ['test:phantom', 'test:node']);
-
-gulp.task('test:phantom', ['minify:acorn'], function() {
-    return gulp.src('index.html', { cwd: 'test' })
-        .pipe(qunits({
-            checkGlobals: true,
-            timeout: 40
-        }));
-});
+gulp.task('test', ['test:node']);
 
 gulp.task('test:node', ['minify:acorn'], function(callback) {
     return gulp.src('load.js', { cwd: 'test' })

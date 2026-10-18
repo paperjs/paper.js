@@ -1,0 +1,131 @@
+name: Release
+
+# `gulp publish` commits, tags and pushes a release. Build it from the tag and
+# publish it to npm, the website and the sketch editor:
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # The JsDoc Toolkit that generates the docs runs on Java:
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 8
+      - name: Check version
+        run: test "$(node -p 'require("./package.json").version')" = "${GITHUB_REF_NAME#v}"
+      - name: Install dependencies
+        run: node .yarn/releases/yarn-3.2.4.cjs install --immutable
+      - name: Build library, docs and zip
+        run: node .yarn/releases/yarn-3.2.4.cjs zip
+      - name: Build website docs
+        run: node .yarn/releases/yarn-3.2.4.cjs gulp docs:server
+      # The committed build was made before the release commit, so only its
+      # date may differ:
+      - name: Compare with committed build
+        run: git diff --exit-code -I '^ \* Date:' dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+  npm:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Trusted publishing authenticates through OIDC, without an npm token:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      # Staged publishing needs npm 11.15.0 or newer:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      # Stage the packages, so they only go live once a maintainer approves them
+      # with 2FA on npmjs.com. Approve paper first, as the others depend on it.
+      # Skip the scripts, as `publish` would run `gulp publish` again:
+      - name: Stage paper
+        run: npm stage publish --ignore-scripts
+      - name: Stage paper-jsdom
+        working-directory: packages/paper-jsdom
+        run: npm stage publish
+      - name: Stage paper-jsdom-canvas
+        working-directory: packages/paper-jsdom-canvas
+        run: npm stage publish
+
+  # Wait until the staged paper version is approved and live, before the
+  # website and the sketch editor point to it:
+  approval:
+    needs: npm
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Wait for approval on npm
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          until npm view "paper@$VERSION" version > /dev/null 2>&1; do
+            sleep 60
+          done
+
+  website:
+    needs: approval
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: paperjs/paperjs.org
+          ssh-key: ${{ secrets.PAPERJS_ORG_DEPLOY_KEY }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: ${{ runner.temp }}/dist
+      # Pushing to paperjs.org deploys the site to paperjs.github.io:
+      - name: Update and push website
+        env:
+          DIST: ${{ runner.temp }}/dist
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          npm pkg set version="$VERSION"
+          rm -rf content/08-Reference/*
+          cp -R "$DIST/serverdocs/." content/08-Reference/
+          cp "$DIST/paperjs.zip" "content/11-Download/paperjs-v$VERSION.zip"
+          cp "$DIST/paper-full.js" assets/js/paper.js
+          git config user.name "Paper.js Bot"
+          git config user.email "bot@paperjs.org"
+          git add --all
+          git commit -m "Release version $VERSION"
+          git tag "v$VERSION" -m "Release version $VERSION"
+          git push --atomic origin main "v$VERSION"
+
+  sketch:
+    needs: approval
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: paperjs/sketch.paperjs.org
+          ssh-key: ${{ secrets.SKETCH_DEPLOY_KEY }}
+      # The sketch loads the versions from npm, list the new one after prebuilt:
+      - name: Add version and push sketch
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          sed -i "s/^\t'prebuilt',$/&\n\t'$VERSION',/" assets/js/main.js
+          git config user.name "Paper.js Bot"
+          git config user.email "bot@paperjs.org"
+          git commit -am "Add v$VERSION"
+          git push origin main

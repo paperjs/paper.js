@@ -1,5 +1,22 @@
 # Change Log
 
+## `0.12.20`
+
+### Fixed
+
+- Keep the native `Symbol` in `PaperScope#install()`, which replaced it with
+  the deprecated `paper.Symbol` alias of `SymbolDefinition`. `paper.Symbol`
+  itself still works.
+- Support jsdom 20 and newer in Node.js: find jsdom's internals where jsdom 28
+  moved them, and run in worker mode without the canvas module again, which
+  failed to load before.
+
+### Changed
+
+- Update `paper-jsdom` to jsdom 28, and `paper-jsdom-canvas` to jsdom 28 and
+  canvas 3, which install on current Node.js versions. Both now require
+  Node.js 20.19, 22.12 or 24 and newer.
+
 ## `0.12.19`
 
 ### Security

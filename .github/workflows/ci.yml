@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # Liberation Sans has the metrics of Arial, which the text bounds tests
+      # expect:
+      - name: Install fonts
+        run: sudo apt-get update && sudo apt-get install -y fonts-liberation
+      - name: Install dependencies
+        run: node .yarn/releases/yarn-3.2.4.cjs install --immutable
+      - name: Lint
+        run: node .yarn/releases/yarn-3.2.4.cjs jshint
+      # Test the built library, as that's what gets published:
+      - name: Build
+        run: node .yarn/releases/yarn-3.2.4.cjs minify
+      - name: Test
+        run: node .yarn/releases/yarn-3.2.4.cjs test:node
+
+  # Publish the latest develop build to the prebuilt/dist and prebuilt/module
+  # branches, as Travis CI used to:
+  prebuilt:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # The JsDoc Toolkit that generates the docs runs on Java:
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 8
+      - name: Install dependencies
+        run: node .yarn/releases/yarn-3.2.4.cjs install --immutable
+      - name: Build library, docs and zip
+        run: node .yarn/releases/yarn-3.2.4.cjs zip
+      - name: Deploy
+        run: .github/deploy-prebuilt.sh
