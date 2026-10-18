@@ -35,8 +35,13 @@ if (ensureBranch && ensureBranch !== options.branch) {
 var version = options.version,
     branch = options.branch;
 
+// The commit of a release is tagged with its version. It's built without a
+// branch on GitHub Actions, so check the tag before the branch:
+var isRelease = git('tag --points-at HEAD').split('\n')
+        .indexOf('v' + version) !== -1;
+
 // If we're not on the main branch, use the branch name as a suffix:
-if (branch !== 'main')
+if (!isRelease && branch !== 'main')
     options.version += '-' + branch;
 
 // Allow the removal of the suffix again, as needed by the publish task.

@@ -15,8 +15,9 @@
 // files directly through load.js / Prepro.js during development.
 
 // The paper.js version.
-// NOTE: Adjust value here before calling `gulp publish`, which then updates and
-// publishes the various JSON package files automatically.
+// NOTE: Adjust value here before calling `gulp publish`, which then updates the
+// various JSON package files and commits, tags and pushes the release, for the
+// release workflow on GitHub Actions to publish it.
 var version = '0.12.19';
 
 // If this file is loaded in the browser, we're in load.js mode.
