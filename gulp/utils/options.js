@@ -35,8 +35,8 @@ if (ensureBranch && ensureBranch !== options.branch) {
 var version = options.version,
     branch = options.branch;
 
-// If we're not on the master branch, use the branch name as a suffix:
-if (branch !== 'master')
+// If we're not on the main branch, use the branch name as a suffix:
+if (branch !== 'main')
     options.version += '-' + branch;
 
 // Allow the removal of the suffix again, as needed by the publish task.

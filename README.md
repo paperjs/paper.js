@@ -228,7 +228,7 @@ Create a final zipped distribution file inside the `dist` folder:
 Since the release of version `0.9.22`, Paper.js has adopted aspects of the Git-
 Flow workflow. All development is taking place in the
 [`develop`](https://github.com/paperjs/paper.js/tree/develop) branch, which is
-only merged into [`master`](https://github.com/paperjs/paper.js/tree/master)
+only merged into [`main`](https://github.com/paperjs/paper.js/tree/main)
 when a new release occurs.
 
 As of version `0.9.26`, the `dist` folder is excluded on all branches, and the
@@ -334,7 +334,7 @@ As mentioned above, we prefer that you send a
 5. Send a pull request to the upstream repository's owner by visiting your
    repository's site at GitHub (i.e. https://github.com/yourusername/paper.js)
    and press the "Pull Request" button. Make sure you are creating the pull
-   request to the `develop` branch, not the `master` branch. Here's a good guide
+   request to the `develop` branch, not the `main` branch. Here's a good guide
    on pull requests: <https://help.github.com/articles/about-pull-requests/>
 
 ##### Use one topic branch per feature:
@@ -362,10 +362,10 @@ Before we can accept any contributions to Paper.js, you need to sign this
 > some future time.
 
 For a list of authors and contributors, please see 
-[AUTHORS](https://github.com/paperjs/paper.js/blob/master/AUTHORS.md).
+[AUTHORS](https://github.com/paperjs/paper.js/blob/main/AUTHORS.md).
 
 ## License
 
 Distributed under the MIT license. See 
-[LICENSE](https://github.com/paperjs/paper.js/blob/master/LICENSE.txt)
+[LICENSE](https://github.com/paperjs/paper.js/blob/main/LICENSE.txt)
 for details.
