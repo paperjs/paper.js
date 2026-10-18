@@ -155,6 +155,32 @@ test('Export SVG group with mixed children styles (#1732)', function() {
     equals(node.childNodes[0].getAttribute('fill'), null);
 });
 
+test('Export SVG as valid XML (#1922)', function() {
+    var path = new Path.Rectangle({
+        point: [0, 0],
+        size: [10, 10],
+        name: 'a<b>c&d"e',
+        data: { tag: '<tag>' },
+        fillColor: {
+            gradient: { stops: ['red', 'blue'] },
+            origin: [0, 0],
+            destination: [10, 0]
+        }
+    });
+    var svg = project.exportSVG({ asString: true });
+    // Attribute values are escaped and tag names keep their case:
+    equals(svg.indexOf('id="a&lt;b&gt;c&amp;d&quot;e"') !== -1, true,
+            'escaped id');
+    equals(svg.indexOf('&lt;tag&gt;') !== -1, true, 'escaped data');
+    equals(svg.indexOf('<linearGradient') !== -1, true, 'linearGradient');
+    // The export can be parsed as XML again:
+    var imported = project.importSVG(svg),
+        copy = imported.getItem({ name: path.name });
+    equals(function() {
+        return copy && copy.data.tag;
+    }, '<tag>');
+});
+
 if (!isNodeContext) {
     // JSDom does not have SVG rendering, so we can't test there.
     test('Export transformed shapes', function(assert) {
