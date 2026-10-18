@@ -89,6 +89,9 @@
   the path at its start instead of returning `null`.
 - Fix clipping with groups that are clipped themselves, as imported SVG with a
   `viewBox` is, which clipped with their own clip mask too (#1618).
+- Fix `Item#hitTest()` and `#hitTestAll()` on items inside transformed
+  groups, which took the point in their parent's coordinates instead of the
+  documented global ones (#1803).
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
