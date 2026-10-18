@@ -154,3 +154,35 @@ test('new Path.Line({ insert: false })', function() {
         return path.isInserted();
     }, false);
 });
+
+test('new Path.Rectangle(rectangle, radius)', function() {
+    var path = new Path.Rectangle([0, 0, 10, 20], 2);
+    equals(path.bounds, new Rectangle(0, 0, 10, 20));
+    equals(path.segments.length, 8);
+});
+
+test('new Path.Arc({ insert: false })', function() {
+    var path = new Path.Arc({
+        from: [0, 0],
+        through: [5, 5],
+        to: [10, 0],
+        insert: false
+    });
+    equals(function() {
+        return typeof path.insert;
+    }, 'function');
+    equals(function() {
+        return path.isInserted();
+    }, false);
+    paper.settings.insertItems = false;
+    var path = new Path.Arc({
+        from: [0, 0],
+        through: [5, 5],
+        to: [10, 0],
+        insert: true
+    });
+    paper.settings.insertItems = true;
+    equals(function() {
+        return path.isInserted();
+    }, true);
+});
