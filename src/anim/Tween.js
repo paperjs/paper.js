@@ -239,8 +239,8 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
                     to = getValue(this._to[key]),
                     // Some paper objects have math functions (e.g.: Point,
                     // Color) which can directly be used to do the tweening.
-                    value = (from && to && from.__add && to.__add)
-                        ? to.__subtract(from).__multiply(factor).__add(from)
+                    value = (from && to && from.multiply && to.multiply)
+                        ? to.subtract(from).multiply(factor).add(from)
                         : ((to - from) * factor) + from;
                 this._setProperty(this._parsedKeys[key], value);
             }
@@ -369,7 +369,18 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
     },
 
     _calculate: function(left, operator, right) {
-        return paper.PaperScript.calculateBinary(left, operator, right);
+        // Use the math functions of objects that have them (e.g.: Point,
+        // Color), and the operator itself for numbers.
+        var name = { '+': 'add', '-': 'subtract', '*': 'multiply',
+                '/': 'divide' }[operator];
+        if (left && left[name])
+            return left[name](right);
+        switch (operator) {
+        case '+': return left + right;
+        case '-': return left - right;
+        case '*': return left * right;
+        case '/': return left / right;
+        }
     },
 
     _parseKeys: function(keys) {

@@ -1,5 +1,37 @@
 # Change Log
 
+## `0.12.19`
+
+### Security
+
+- Fix XSS in `#importSVG()`: imported SVG is now attached to a sandboxed iframe
+  instead of the page while its styles are computed, so it can't run scripts or
+  load resources (#2100).
+
+### Changed
+
+- `#importSVG()` is no longer affected by the page's style sheets. Style sheets
+  inside the imported SVG still apply.
+
+### Fixed
+
+- Restore `settings.applyMatrix` and `settings.insertItems` when `#importSVG()`
+  fails.
+- Fix `new Path.Rectangle(rectangle, radius)`, `new Shape.Rectangle(rectangle,
+  radius)` and `Item#fitBounds(rectangle, fill)` when the rectangle is given as
+  an array or object literal.
+- Fix `new Raster(source, position)` ignoring the position.
+- Fix `new Path.Arc()` handling of `insert`: `{ insert: false }` shadowed
+  `Path#insert()`, and `{ insert: true }` was ignored.
+- Fix tweening of points, colors and relative values in `paper-core`, which
+  relied on PaperScript.
+- Fix setting `ToolEvent#count`, which had no effect.
+- Fix `new Shape({ type: 'circle', radius })` without a size, which threw.
+- Fix `View#getPixelSize()` returning `NaN` for views without an element, as in
+  web workers, which broke `leading` for font sizes in units other than pixels.
+- Only publish the intended files to npm, removing an accidental copy of the
+  whole distribution from the package (12.3 MB → 6.2 MB unpacked).
+
 ## `0.12.18`
 
 ### Fixed

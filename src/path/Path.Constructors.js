@@ -342,13 +342,12 @@ Path.inject({ statics: new function() {
                 from = Point.readNamed(args, 'from'),
                 through = Point.readNamed(args, 'through'),
                 to = Point.readNamed(args, 'to'),
-                props = Base.getNamed(args),
-                // See createPath() for an explanation of the following sequence
-                path = new Path(props && props.insert == false
-                        && Item.NO_INSERT);
-            path.moveTo(from);
-            path.arcTo(through, to);
-            return path.set(props);
+                // Draw the arc on a temporary path, and create the result
+                // from its segments like all the other constructors:
+                arc = new Path(Item.NO_INSERT);
+            arc.moveTo(from);
+            arc.arcTo(through, to);
+            return createPath(arc._segments, false, args);
         },
 
         /**

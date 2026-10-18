@@ -1,6 +1,6 @@
 {
   "name": "paper",
-  "version": "0.12.18",
+  "version": "0.12.19",
   "description": "The Swiss Army Knife of Vector Graphics Scripting",
   "license": "MIT",
   "homepage": "http://paperjs.org",
@@ -32,7 +32,10 @@
   "files": [
     "AUTHORS.md",
     "CHANGELOG.md",
-    "dist/",
+    "dist/paper-*.js",
+    "dist/*.d.ts",
+    "dist/node/",
+    "dist/docs/",
     "examples/",
     "LICENSE.txt",
     "README.md"

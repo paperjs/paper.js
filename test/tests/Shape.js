@@ -84,3 +84,15 @@ test('Shape.Rectangle radius works with negative size', function() {
 
     equals(shape.radius.height, 12.5);
 });
+
+test('new Shape.Rectangle(rectangle, radius)', function() {
+    var shape = new Shape.Rectangle([0, 0, 10, 20], 2);
+    equals(shape.size, new Size(10, 20));
+    equals(shape.radius, new Size(2, 2));
+});
+
+test('new Shape({ type: \'circle\', radius })', function() {
+    var shape = new Shape({ type: 'circle', radius: 10 });
+    equals(shape.size, new Size(20, 20));
+    equals(shape.radius, 10);
+});

@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.18 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.19 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jul 17 14:57:24 2024 +0200
+ * Date: Sun Oct 18 13:05:31 2026 +0200
  *
  * This is an auto-generated type definition.
  */
