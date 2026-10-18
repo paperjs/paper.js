@@ -55,7 +55,6 @@ if (jsdom) {
         // jsdom's window can't be removed from itself, so inherit from it:
         self = Object.create(self, { window: { value: null } });
     }
-    require('./xml.js')(self);
 } else {
     self = {
         navigator: {

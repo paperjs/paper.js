@@ -29,6 +29,9 @@
   `insert` option is passed, instead of always inserting their results. An
   options object without `insert` also inserts the clone by default now, as
   documented, e.g. `clone({ deep: false })` (#1721).
+- Use jsdom's own `XMLSerializer` for `#exportSVG()` on Node.js, instead of a
+  shim that returned HTML, so the output is valid XML with escaped attribute
+  values, as in browsers. Empty elements are now self-closing (#1922).
 
 ### Fixed
 
