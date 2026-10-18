@@ -1217,9 +1217,15 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     /**
-     * Reduces the path by removing curves that have a length of 0,
-     * and unnecessary segments between two collinear flat curves.
+     * Reduces the path by removing straight curves that have a length of 0.
+     * With `options.simplify`, it also removes straight curves that are almost
+     * 0 in length, and unnecessary segments between two collinear straight
+     * curves.
      *
+     * @option [options.simplify=false] {Boolean} also remove almost zero-length
+     *     curves and segments between collinear straight curves
+     *
+     * @param {Object} [options] the reduce options
      * @return {Path} the reduced path
      */
     reduce: function(options) {
@@ -1846,7 +1852,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * path, `null` otherwise.
      *
      * @param {Point} point the point on the path
-     * @return {CurveLocation} the curve location of the specified point
+     * @return {?CurveLocation} the curve location of the specified point
      */
     getLocationOf: function(/* point */) {
         var point = Point.read(arguments),
@@ -1864,7 +1870,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * specified point if it lies on the path, `null` otherwise.
      *
      * @param {Point} point the point on the path
-     * @return {Number} the length of the path up to the specified point
+     * @return {?Number} the length of the path up to the specified point
      */
     getOffsetOf: function(/* point */) {
         var loc = this.getLocationOf.apply(this, arguments);
@@ -1872,7 +1878,8 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     /**
-     * Returns the curve location of the specified offset on the path.
+     * Returns the curve location of the specified offset on the path, or
+     * `null` if the offset exceeds the length of the path.
      *
      * @param {Number} offset the offset on the path, where `0` is at
      * the beginning of the path and {@link Path#length} at the end

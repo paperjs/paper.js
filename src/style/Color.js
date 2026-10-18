@@ -1270,7 +1270,7 @@ new function() {
         };
     }, /** @lends Color# */{
         /**
-         * Returns the addition of the supplied value to both coordinates of
+         * Returns the addition of the supplied value to all components of
          * the color as a new color.
          * The object itself is not modified!
          *
@@ -1282,9 +1282,10 @@ new function() {
          * color
          *
          * @example
-         * var color = new Color(0.5, 1, 1);
-         * var result = color + 1;
-         * console.log(result); // { red: 1, blue: 1, green: 1 }
+         * var color = new Color(0.5, 0.25, 0);
+         * var result = color + 0.25; // PaperScript
+         * var result = color.add(0.25); // JavaScript
+         * console.log(result); // { red: 0.75, green: 0.5, blue: 0.25 }
          */
         /**
          * Returns the addition of the supplied color to the color as a new
@@ -1300,11 +1301,12 @@ new function() {
          * @example
          * var color1 = new Color(0, 1, 1);
          * var color2 = new Color(1, 0, 0);
-         * var result = color1 + color2;
-         * console.log(result); // { red: 1, blue: 1, green: 1 }
+         * var result = color1 + color2; // PaperScript
+         * var result = color1.add(color2); // JavaScript
+         * console.log(result); // { red: 1, green: 1, blue: 1 }
          */
         /**
-         * Returns the subtraction of the supplied value to both coordinates of
+         * Returns the subtraction of the supplied value to all components of
          * the color as a new color.
          * The object itself is not modified!
          *
@@ -1317,8 +1319,9 @@ new function() {
          *
          * @example
          * var color = new Color(0.5, 1, 1);
-         * var result = color - 1;
-         * console.log(result); // { red: 0, blue: 0, green: 0 }
+         * var result = color - 0.5; // PaperScript
+         * var result = color.subtract(0.5); // JavaScript
+         * console.log(result); // { red: 0, green: 0.5, blue: 0.5 }
          */
         /**
          * Returns the subtraction of the supplied color to the color as a new
@@ -1332,13 +1335,14 @@ new function() {
          * @return {Color} the subtraction of the two colors as a new color
          *
          * @example
-         * var color1 = new Color(0, 1, 1);
+         * var color1 = new Color(1, 1, 1);
          * var color2 = new Color(1, 0, 0);
-         * var result = color1 - color2;
-         * console.log(result); // { red: 0, blue: 1, green: 1 }
+         * var result = color1 - color2; // PaperScript
+         * var result = color1.subtract(color2); // JavaScript
+         * console.log(result); // { red: 0, green: 1, blue: 1 }
          */
         /**
-         * Returns the multiplication of the supplied value to both coordinates
+         * Returns the multiplication of the supplied value to all components
          * of the color as a new color.
          * The object itself is not modified!
          *
@@ -1351,8 +1355,9 @@ new function() {
          *
          * @example
          * var color = new Color(0.5, 1, 1);
-         * var result = color * 0.5;
-         * console.log(result); // { red: 0.25, blue: 0.5, green: 0.5 }
+         * var result = color * 0.5; // PaperScript
+         * var result = color.multiply(0.5); // JavaScript
+         * console.log(result); // { red: 0.25, green: 0.5, blue: 0.5 }
          */
         /**
          * Returns the multiplication of the supplied color to the color as a
@@ -1368,11 +1373,12 @@ new function() {
          * @example
          * var color1 = new Color(0, 1, 1);
          * var color2 = new Color(0.5, 0, 0.5);
-         * var result = color1 * color2;
-         * console.log(result); // { red: 0, blue: 0, green: 0.5 }
+         * var result = color1 * color2; // PaperScript
+         * var result = color1.multiply(color2); // JavaScript
+         * console.log(result); // { red: 0, green: 0, blue: 0.5 }
          */
         /**
-         * Returns the division of the supplied value to both coordinates of
+         * Returns the division of the supplied value to all components of
          * the color as a new color.
          * The object itself is not modified!
          *
@@ -1385,8 +1391,9 @@ new function() {
          *
          * @example
          * var color = new Color(0.5, 1, 1);
-         * var result = color / 2;
-         * console.log(result); // { red: 0.25, blue: 0.5, green: 0.5 }
+         * var result = color / 2; // PaperScript
+         * var result = color.divide(2); // JavaScript
+         * console.log(result); // { red: 0.25, green: 0.5, blue: 0.5 }
          */
         /**
          * Returns the division of the supplied color to the color as a new
@@ -1401,9 +1408,10 @@ new function() {
          *
          * @example
          * var color1 = new Color(0, 1, 1);
-         * var color2 = new Color(0.5, 0, 0.5);
-         * var result = color1 / color2;
-         * console.log(result); // { red: 0, blue: 0, green: 1 }
+         * var color2 = new Color(0.5, 1, 2);
+         * var result = color1 / color2; // PaperScript
+         * var result = color1.divide(color2); // JavaScript
+         * console.log(result); // { red: 0, green: 1, blue: 0.5 }
          */
     });
 });

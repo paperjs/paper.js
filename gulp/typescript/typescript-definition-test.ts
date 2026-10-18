@@ -55,6 +55,9 @@ let callback         = {} as () => {};
 let hitResult        = {} as paper.HitResult;
 let object           = {} as object;
 
+// Only returns `true` for types that include `null`, to test nullable returns:
+declare function isNullable<T>(value: T): null extends T ? true : false;
+
 
 //
 // Classes
@@ -331,6 +334,8 @@ item.blendMode;
 item.opacity;
 item.selected;
 item.clipMask;
+item.guide;
+item.guide = true;
 item.data;
 item.position;
 item.pivot;
@@ -417,6 +422,7 @@ item.sendToBack();
 item.bringToFront();
 item.addTo(group);
 item.copyTo(group);
+item.reduce();
 item.reduce({});
 item.remove();
 item.replaceWith(item);
@@ -529,6 +535,7 @@ raster.image;
 raster.canvas;
 raster.context;
 raster.source;
+let rasterSource: string = raster.source;
 raster.crossOrigin;
 raster.smoothing;
 raster.onLoad;
@@ -538,6 +545,7 @@ raster.onError;
 raster.getSubCanvas(rectangleLike);
 raster.getSubRaster(rectangleLike);
 raster.toDataURL();
+raster.toDataURL('image/jpeg', 0.8);
 raster.drawImage({} as HTMLImageElement, pointLike);
 raster.getAverageColor(path);
 raster.getAverageColor(rectangleLike);
@@ -547,6 +555,7 @@ raster.getPixel(pointLike);
 raster.setPixel(0, 0, color);
 raster.setPixel(pointLike, color);
 raster.createImageData(sizeLike);
+raster.getImageData();
 raster.getImageData(rectangleLike);
 raster.putImageData({} as ImageData, pointLike);
 raster.setImageData({} as ImageData);
@@ -676,12 +685,16 @@ path.divideAt(curveLocation);
 path.splitAt(curveLocation);
 path.join(path);
 path.join(path, 0);
+path.reduce();
 path.reduce(object);
+path.reduce({ simplify: true });
 path.toShape();
 path.toShape(true);
 path.getLocationOf(pointLike);
 path.getOffsetOf(pointLike);
 path.getLocationAt(0);
+let isNullablePathLocationOf: true = isNullable(path.getLocationOf(pointLike));
+let isNullablePathOffsetOf: true = isNullable(path.getOffsetOf(pointLike));
 path.getPointAt(0);
 path.getTangentAt(0);
 path.getNormalAt(0);
@@ -803,6 +816,9 @@ curve.getOffsetAtTime(0);
 curve.getLocationOf(pointLike);
 curve.getOffsetOf(pointLike);
 curve.getTimeOf(pointLike);
+let isNullableCurveLocationOf: true = isNullable(curve.getLocationOf(pointLike));
+let isNullableCurveOffsetOf: true = isNullable(curve.getOffsetOf(pointLike));
+let isNullableCurveTimeOf: true = isNullable(curve.getTimeOf(pointLike));
 curve.getNearestLocation(pointLike);
 curve.getNearestPoint(pointLike);
 curve.getPointAt(curveLocation);
@@ -1105,6 +1121,7 @@ tool.responds('');
 //
 
 toolEvent.type;
+toolEvent.tool;
 toolEvent.point;
 toolEvent.lastPoint;
 toolEvent.downPoint;

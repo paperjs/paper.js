@@ -20,6 +20,9 @@
  * All properties of Style are also reflected directly in {@link Item},
  * i.e.: {@link Item#fillColor}.
  *
+ * Styles set on a {@link Group} or {@link Layer} are applied to the children
+ * that it contains at that moment. Items added to it later do not receive them.
+ *
  * To set multiple style properties in one go, you can pass an object to
  * {@link Item#style}. This is a convenient way to define a style once and
  * apply it to a series of items:
@@ -58,7 +61,7 @@
  * var group = new Group(path1, path2);
  *
  * // All styles set on a group are automatically
- * // set on the children of the group:
+ * // set on the current children of the group:
  * group.style = {
  *     strokeColor: 'black',
  *     dashArray: [4, 10],
