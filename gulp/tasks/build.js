@@ -34,7 +34,7 @@ gulp.task('build',
 );
 
 gulp.task('build:copy', function() {
-    gulp.src(['src/node/*.js']).pipe(gulp.dest('dist/node'));
+    return gulp.src(['src/node/*.js']).pipe(gulp.dest('dist/node'));
 });
 
 buildNames.forEach(function(name) {
