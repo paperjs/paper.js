@@ -95,7 +95,7 @@ jobs:
           git add --all
           git commit -m "Release version $VERSION"
           git tag "v$VERSION" -m "Release version $VERSION"
-          git push --atomic origin master "v$VERSION"
+          git push --atomic origin main "v$VERSION"
 
   sketch:
     needs: npm
