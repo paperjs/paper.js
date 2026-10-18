@@ -19,6 +19,15 @@
 - Fix `#importSVG()` of rounded rectangles with only `rx` or `ry` (#1863).
 - Fix `#exportSVG()` writing `fill-rule="none"`, `font-family="none"` etc. on
   groups with differently styled children (#1732).
+- Fix `Curve#handleBounds`, which threw, to only include the curve's own
+  points (#1992).
+- Fix `Curve#getTimesWithTangent()` for curves without a cubic component,
+  such as quadratic curves (#1870).
+- Fix `Shape` JSON import with `type` after `radius` (#1820).
+- Fix boolean operations with `trace: false` or `stroke: true` ignoring
+  `options.insert` (#2028).
+- Fix gradients drawn with `strokeScaling: false` (#1821, #1822).
+- Fix the selection of items in symbol definitions being drawn (#1577).
 
 ## `0.12.20`
 

@@ -311,7 +311,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
             children[i].draw(ctx, param, strokeMatrix);
 
         if (!param.clip) {
-            this._setStyles(ctx, param, viewMatrix);
+            this._setStyles(ctx, param, viewMatrix, strokeMatrix);
             var style = this._style;
             if (style.hasFill()) {
                 ctx.fill(style.getFillRule());

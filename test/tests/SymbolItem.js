@@ -104,6 +104,44 @@ test('SymbolDefinition item selection', function() {
     }, true);
 });
 
+test('SymbolDefinition item selection is not drawn', function() {
+    // Count the pixels that the view draws. The items have no fill and stroke,
+    // so only their selection draws pixels:
+    function countPixels() {
+        view.update();
+        var size = view.viewSize.multiply(view.pixelRatio),
+            data = view.element.getContext('2d').getImageData(0, 0,
+                    size.width, size.height).data,
+            count = 0;
+        for (var i = 3, l = data.length; i < l; i += 4) {
+            if (data[i])
+                count++;
+        }
+        return count;
+    }
+
+    var group = new Group(new Path.Rectangle([0, 0], [20, 20])),
+        definition = new SymbolDefinition(group),
+        placed = definition.place([50, 50]),
+        path = group.firstChild;
+    equals(countPixels(), 0, 'nothing selected');
+    path.selected = true;
+    equals(countPixels(), 0, 'path.selected = true');
+    path.selected = false;
+    path.firstSegment.selected = true;
+    equals(countPixels(), 0, 'path.firstSegment.selected = true');
+    path.firstSegment.selected = false;
+    group.selected = true;
+    equals(countPixels(), 0, 'group.selected = true');
+    group.selected = false;
+    // The placed instance still draws its own selection:
+    placed.selected = true;
+    var count = countPixels();
+    equals(count > 0, true, 'placed.selected = true');
+    group.selected = true;
+    equals(countPixels(), count, 'placed.selected = group.selected = true');
+});
+
 test('SymbolDefinition#place()', function() {
     var path = new Path.Circle([50, 50], 50);
     var symbol = new SymbolDefinition(path);

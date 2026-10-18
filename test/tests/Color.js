@@ -306,6 +306,81 @@ test('Gradients with applyMatrix', function() {
     comparePixels(path, shape);
 });
 
+test('Gradients with strokeScaling: false', function() {
+    var topLeft = [100, 100];
+    var bottomRight = [400, 400];
+    var gradientColor = {
+        gradient: {
+            stops: ['yellow', 'red', 'blue']
+        },
+        origin: topLeft,
+        destination: bottomRight
+    };
+
+    // strokeScaling does not affect fills, so a non-scaling shape has to look
+    // the same as a scaling one:
+    var expected = new Shape.Rectangle({
+        topLeft: topLeft,
+        bottomRight: bottomRight,
+        fillColor: gradientColor,
+        strokeScaling: true
+    });
+
+    var shape = new Shape.Rectangle({
+        topLeft: topLeft,
+        bottomRight: bottomRight,
+        fillColor: gradientColor,
+        strokeScaling: false
+    });
+
+    comparePixels(shape, expected);
+
+    expected.scale(2);
+    expected.rotate(45);
+    shape.scale(2);
+    shape.rotate(45);
+
+    comparePixels(shape, expected);
+
+    // Gradients drawn without stroke scaling depend on the view, so they must
+    // not be reused when drawing at another resolution, or with scaling.
+    // NOTE: comparePixels() moves the items, clearing their cached styles, so
+    // we rasterize them directly here:
+    shape.rasterize(72, false);
+    comparePixels(shape.rasterize(144, false), expected.rasterize(144, false));
+    shape.strokeScaling = true;
+    comparePixels(shape.rasterize(144, false), expected.rasterize(144, false));
+
+    // A non-scaling stroke on a transformed path has to look the same as the
+    // stroke of the same width on a path with the transformation applied to
+    // its geometry and gradient:
+    expected = new Path.Rectangle({
+        topLeft: topLeft,
+        bottomRight: bottomRight,
+        fillColor: gradientColor,
+        strokeColor: gradientColor,
+        strokeWidth: 20
+    });
+
+    var path = new Path.Rectangle({
+        topLeft: topLeft,
+        bottomRight: bottomRight,
+        fillColor: gradientColor,
+        strokeColor: gradientColor,
+        strokeWidth: 20,
+        strokeScaling: false,
+        applyMatrix: false
+    });
+
+    expected.scale(2);
+    expected.rotate(45);
+    path.scale(2);
+    path.rotate(45);
+
+    equals(path.matrix.isIdentity(), false, 'path.matrix.isIdentity()');
+    comparePixels(path, expected);
+});
+
 test('Modifying group.strokeColor for multiple children', function() {
     var item = new Group(new Path(), new Path());
     item.strokeColor = 'red';
