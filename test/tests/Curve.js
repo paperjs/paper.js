@@ -369,3 +369,49 @@ test('Curve#getTimesWithTangent()', function() {
         'should return 2 values for specific parabollic path case'
     );
 });
+
+test('Curve#getTimesWithTangent() with quadratic curve', function() {
+    // The quadratic curve (0, 0), (50, 100), (100, 0) elevated to a cubic. Its
+    // derivative 2 * (50, 100 - 200 * t) is parallel to (1, -1) at t = 0.75,
+    // to (1, 1) at t = 0.25, to (1, 0) at t = 0.5, and never to (0, 1):
+    var curve = new Curve([0, 0], [100 / 3, 200 / 3], [-100 / 3, 200 / 3],
+            [100, 0]);
+    equals(curve.getTimesWithTangent([1, -1]), [0.75]);
+    equals(curve.getTimesWithTangent([1, 1]), [0.25]);
+    equals(curve.getTimesWithTangent([1, 0]), [0.5]);
+    equals(curve.getTimesWithTangent([0, 1]), []);
+
+    // #1870: A cubic converted from an imported quadratic curve:
+    var path = new Path();
+    path.moveTo(726.0867795506349, 286.15825464018235);
+    path.cubicCurveTo(
+            [742.7491045262132, 272.26375773363725],
+            [751.0802670140022, 254.7434060566591],
+            [751.0802670140022, 233.59719960924784]);
+    var angle = 122 / 180 * Math.PI,
+        tangent = new Point(Math.cos(angle), Math.sin(angle)),
+        times = path.firstCurve.getTimesWithTangent(tangent);
+    equals(times.length, 1, 'times.length');
+    equals(path.firstCurve.getTangentAtTime(times[0]).cross(tangent), 0,
+            'tangent at times[0] is parallel to the given tangent');
+});
+
+test('Curve#handleBounds', function() {
+    // The handle bounds are the bounds of the curve's four points:
+    // (0, 0), (-20, 80), (130, 10), (100, 50)
+    var expected = new Rectangle(-20, 0, 150, 80);
+    var curve = new Curve([0, 0], [-20, 80], [30, -40], [100, 50]);
+    equals(curve.handleBounds, expected, 'curve.handleBounds');
+    // The outer handles of the segments are not part of the curve, and
+    // neither is the stroke:
+    var path = new Path({
+        segments: [
+            [[0, 0], [-50, -50], [-20, 80]],
+            [[100, 50], [30, -40], [40, 40]]
+        ],
+        strokeColor: 'black',
+        strokeWidth: 10
+    });
+    equals(path.firstCurve.handleBounds, expected,
+            'path.firstCurve.handleBounds');
+});

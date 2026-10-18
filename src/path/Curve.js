@@ -903,7 +903,7 @@ statics: /** @lends Curve */{
         }
     }
 }}, Base.each(
-    ['getBounds', 'getStrokeBounds', 'getHandleBounds'],
+    ['getBounds', 'getStrokeBounds'],
     // NOTE: Although Curve.getBounds() exists, we are using Path.getBounds() to
     // determine the bounds of Curve objects with defined segment1 and segment2
     // values Curve.getBounds() can be used directly on curve arrays, without
@@ -943,9 +943,19 @@ statics: /** @lends Curve */{
     /**
      * The bounding rectangle of the curve including handles.
      *
-     * @name Curve#handleBounds
+     * @bean
      * @type Rectangle
      */
+    getHandleBounds: function() {
+        // Unlike Path.getHandleBounds(), only include the curve's own handles,
+        // not the outer handles of its two segments.
+        var v = this.getValues(),
+            x1 = Math.min(v[0], v[2], v[4], v[6]),
+            y1 = Math.min(v[1], v[3], v[5], v[7]),
+            x2 = Math.max(v[0], v[2], v[4], v[6]),
+            y2 = Math.max(v[1], v[3], v[5], v[7]);
+        return new Rectangle(x1, y1, x2 - x1, y2 - y1);
+    },
 
     /**
      * The rough bounding rectangle of the curve that is sure to include all of
@@ -2278,8 +2288,8 @@ new function() { // Scope for bezier intersection using fat-line clipping
             den = 2 * ax * ty - 2 * ay * tx,
             times = [];
         if (Math.abs(den) < Numerical.CURVETIME_EPSILON) {
-            var num = ax * cy - ay * cx,
-                den = ax * by - ay * bx;
+            var num = cx * ty - cy * tx,
+                den = bx * ty - by * tx;
             if (den != 0) {
                 var t = -num / den;
                 if (t >= 0 && t <= 1) times.push(t);

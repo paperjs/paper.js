@@ -916,6 +916,38 @@ test('#1221', function() {
     compareBoolean(function() { return division.children[1]; }, 'M400,400v200');
 });
 
+test('Boolean operations with options.insert', function() {
+    var layer = project.activeLayer,
+        rect1 = new Path.Rectangle([0, 0], [200, 200]),
+        rect2 = new Path.Rectangle([100, 100], [200, 200]),
+        line = new Path.Line([50, 150], [250, 150]);
+    var cases = [
+        { path: rect1, options: {} },
+        { path: line, options: { trace: false } },
+        { path: line, options: { stroke: true } }
+    ];
+    for (var i = 0; i < cases.length; i++) {
+        var path = cases[i].path,
+            options = cases[i].options;
+        ['subtract', 'intersect', 'divide'].forEach(function(operation) {
+            var name = 'path.' + operation + '(rect2, '
+                    + JSON.stringify(Base.set({ insert: false }, options))
+                    + ')',
+                children = layer.children.slice(),
+                result = path[operation](rect2,
+                        Base.set({ insert: false }, options));
+            equals(result.parent, null, name + '.parent');
+            equals(layer.children, children, 'layer.children');
+            // By default, the result is inserted above both paths:
+            result = path[operation](rect2, options);
+            equals(result.parent, layer, operation + ' result.parent');
+            equals(result.index, Math.max(path.index, rect2.index) + 1,
+                    operation + ' result.index');
+            result.remove();
+        });
+    }
+});
+
 test('#1239 / #1073', function() {
     var p1 = new Path([[890.91, 7.52, 0, 0, 85.40999999999997, 94.02], [1024, 351.78, 0, -127.03999999999996, 0, 127.14999999999998], [890.69, 696.28, 85.54999999999995, -94.03999999999996, 0, 0], [843.44, 653.28, 0, 0, 75.20000000000005, -82.66999999999996], [960, 351.78, 0, 111.75, 0, -111.63], [843.65, 50.51999999999998, 75.07000000000005, 82.63999999999999, 0, 0], true]);
     var p2 = new Path([[960, 352, -0.05999999999994543, 111.67999999999995, 0, 0], [1024, 352, 0, 0, -0.05999999999994543, 127.07], [890.69, 696.28, 85.5, -93.98000000000002, 0, 0], [843.44, 653.28, 0, 0, 75.14999999999998, -82.61000000000001], true]);
