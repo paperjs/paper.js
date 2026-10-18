@@ -338,6 +338,57 @@ test('Import SVG with numeric ids (#1754)', function() {
     equals(imported.children[2].bounds, new Rectangle(20, 0, 10, 10));
 });
 
+test('Import SVG with SVG 2 href attributes (#1329)', function(assert) {
+    var done = assert.async(),
+        url = CanvasProvider.getCanvas(4, 2).toDataURL(),
+        svg = '<svg xmlns="http://www.w3.org/2000/svg"'
+            + ' xmlns:xlink="http://www.w3.org/1999/xlink"><defs>'
+            + '<linearGradient id="base">'
+            + '<stop offset="0" stop-color="red"/>'
+            + '<stop offset="1" stop-color="blue"/></linearGradient>'
+            + '<linearGradient id="derived" %href="#base">'
+            + '<stop offset="0" stop-color="green"/>'
+            + '<stop offset="1" stop-color="gold"/></linearGradient>'
+            + '<symbol id="symbol"><rect width="10" height="10"/></symbol>'
+            + '</defs>'
+            + '<rect fill="url(#derived)" width="100" height="100"/>'
+            + '<use %href="#symbol" x="10" y="20"/>'
+            + '<image %href="' + url + '" x="10" y="20"/></svg>';
+    function importWith(href) {
+        return paper.project.importSVG(svg.replace(/%href/g, href));
+    }
+
+    var plain = importWith('href'),
+        xlink = importWith('xlink:href'),
+        // Plain href takes precedence over xlink:href:
+        both = importWith('xlink:href="#inexistent" href'),
+        loaded = 0;
+
+    // The linked gradient's stops replace the gradient's own ones:
+    equals(plain.children[0].fillColor.gradient.stops[0].color,
+            new Color('red'));
+    equals(function() {
+        return plain.children[1].definition.item.children.length;
+    }, 1);
+    equals(plain.children[1].bounds, new Rectangle(10, 20, 10, 10));
+    equals(function() {
+        return plain.children[2].source;
+    }, url);
+
+    function onLoad() {
+        if (++loaded === 3) {
+            equals(plain.children[2].bounds, new Rectangle(10, 20, 4, 2));
+            equals(plain, xlink);
+            equals(both, xlink);
+            done();
+        }
+    }
+
+    plain.children[2].on('load', onLoad);
+    xlink.children[2].on('load', onLoad);
+    both.children[2].on('load', onLoad);
+});
+
 test('Import SVG <use> of a group with a transform (#978)', function() {
     function importWith(content) {
         return paper.project.importSVG('<svg xmlns="http://www.w3.org/2000/svg"'

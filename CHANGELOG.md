@@ -108,6 +108,8 @@
 - Limit the temporary canvases of items with opacity or blend modes to the
   visible area, so large groups no longer disappear or make zooming slow
   (#1644, #1920, #1925, #2001, #2029).
+- Support SVG 2's plain `href` attribute in `#importSVG()`, besides
+  `xlink:href`, for `<use>`, `<image>` and gradient links.
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
