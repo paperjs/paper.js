@@ -167,7 +167,10 @@ test('Import SVG Image', function(assert) {
     var imported = paper.project.importSVG(svg);
     var raster = imported.children[0];
     raster.on('load', function() {
-        equals(raster.matrix, new Matrix(0.2149, 0, 0, 0.2149, 337.0056, 205.01675));
+        // The 1 x 1 pixel image is scaled to its size of 300 x 67, and then by
+        // the transform matrix:
+        equals(raster.size, new Size(1, 1));
+        equals(raster.matrix, new Matrix(64.47, 0, 0, 14.3983, 337.0056, 205.01675));
         done();
     });
 });
@@ -203,6 +206,41 @@ test('Import SVG switch', function(assert) {
             done();
         }
     });
+});
+
+test('Import SVG Image keeps its pixels (#1963)', function(assert) {
+    var done = assert.async(),
+        // A 4 x 2 pixel image with a red pixel at 3, 1:
+        canvas = CanvasProvider.getCanvas(4, 2),
+        ctx = canvas.getContext('2d');
+    ctx.fillStyle = 'red';
+    ctx.fillRect(3, 1, 1, 1);
+    var url = canvas.toDataURL(),
+        imported = paper.project.importSVG(
+            '<svg xmlns="http://www.w3.org/2000/svg"'
+            + ' xmlns:xlink="http://www.w3.org/1999/xlink">'
+            + '<image xlink:href="' + url + '" x="10" y="20" width="2"'
+            + ' height="1"/>'
+            + '<image xlink:href="' + url + '" x="10" y="20"/></svg>'),
+        scaled = imported.children[0],
+        natural = imported.children[1],
+        loaded = 0;
+
+    function onLoad() {
+        if (++loaded === 2) {
+            // The image keeps its 4 x 2 pixels, scaled to the given size:
+            equals(scaled.size, new Size(4, 2), 'scaled.size');
+            equals(scaled.bounds, new Rectangle(10, 20, 2, 1), 'scaled.bounds');
+            equals(scaled.getPixel(3, 1), new Color(1, 0, 0, 1), 'scaled pixel');
+            // Without a size, the image is shown at its own size:
+            equals(natural.bounds, new Rectangle(10, 20, 4, 2),
+                    'natural.bounds');
+            done();
+        }
+    }
+
+    scaled.on('load', onLoad);
+    natural.on('load', onLoad);
 });
 
 test('Import SVG string with leading line-breaks', function() {
