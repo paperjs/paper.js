@@ -4477,9 +4477,15 @@ new function() { // Injection scope for hit-test functions shared with project
             mainCtx, itemOffset, prevOffset;
         if (!direct) {
             // Apply the parent's global matrix to the calculation of correct
-            // bounds.
-            var bounds = this.getStrokeBounds(viewMatrix);
-            if (!bounds.width || !bounds.height) {
+            // bounds, and only cover their part that is visible on the canvas
+            // that we're drawing into (#1644). NOTE: Item#rasterize() doesn't
+            // set param.offset, so new Point() turns it into 0, 0.
+            var canvas = ctx.canvas,
+                bounds = this.getStrokeBounds(viewMatrix).intersect(
+                    new Rectangle(new Point(param.offset),
+                        new Size(canvas.width, canvas.height)
+                            .divide(pixelRatio)));
+            if (bounds.width <= 0 || bounds.height <= 0) {
                 // Item won't be drawn so its global matrix need to be removed
                 // from the stack (#1561).
                 matrices.pop();
