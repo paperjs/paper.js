@@ -59,12 +59,12 @@ new function() {
     }
 
     // Converts a string attribute value to the specified type
-    function convertValue(value, type, lookup) {
+    function convertValue(value, type, lookup, options) {
         return value === 'none' ? null
                 : type === 'number' ? parseFloat(value)
                 : type === 'array' ?
                     value ? value.split(/[\s,]+/g).map(parseFloat) : []
-                : type === 'color' ? getDefinition(value) || value
+                : type === 'color' ? getDefinition(value, options) || value
                 : type === 'lookup' ? lookup[value]
                 : value;
     }
@@ -80,7 +80,7 @@ new function() {
             currentStyle = project._currentStyle,
             children = [];
         if (!isClip && !isDefs) {
-            item = applyAttributes(item, node, isRoot);
+            item = applyAttributes(item, node, options, isRoot);
             // Style on items needs to be handled differently than all other
             // items: We first apply the style to the item, then use it as the
             // project's currentStyle, so it is used as a default for the
@@ -110,7 +110,7 @@ new function() {
         // Clip paths are reduced (unboxed) and their attributes applied at the
         // end.
         if (isClip)
-            item = applyAttributes(item.reduce(), node, isRoot);
+            item = applyAttributes(item.reduce(), node, options, isRoot);
         // Restore currentStyle
         project._currentStyle = currentStyle;
         if (isClip || isDefs) {
@@ -140,15 +140,15 @@ new function() {
         return PathItem.create(node.getAttribute('d'));
     }
 
-    function importGradient(node, type) {
+    function importGradient(node, type, options) {
         var id = (getValue(node, 'href', true) || '').substring(1),
+            definition = getDefinitionById(id, options),
             radial = type === 'radialgradient',
             gradient;
-        if (id) {
+        if (definition) {
             // Gradients are always wrapped in a Color object, so get the
             // gradient object from there.
-            // TODO: Handle exception if there is no definition for this id.
-            gradient = definitions[id].getGradient();
+            gradient = definition.getGradient();
             // Create a clone if radial setting is different:
             if (gradient._radial ^ radial) {
                 gradient = gradient.clone();
@@ -160,7 +160,8 @@ new function() {
             for (var i = 0, l = nodes.length; i < l; i++) {
                 var child = nodes[i];
                 if (child.nodeType === 1)
-                    stops.push(applyAttributes(new GradientStop(), child));
+                    stops.push(applyAttributes(new GradientStop(), child,
+                            options));
             }
             gradient = new Gradient(stops, radial);
         }
@@ -181,7 +182,8 @@ new function() {
                 '100%', '0%');
         }
         var color = applyAttributes(
-                new Color(gradient, origin, destination, highlight), node);
+                new Color(gradient, origin, destination, highlight), node,
+                options);
         // TODO: Consider adding support for _scaleToBounds to Color instead?
         color._scaleToBounds = scaleToBounds;
         // We don't return the gradient, since we only need a reference to it in
@@ -243,14 +245,14 @@ new function() {
         defs: importGroup,
 
         // https://www.w3.org/TR/SVG/struct.html#UseElement
-        use: function(node) {
+        use: function(node, type, options) {
             // Note the namespaced xlink:href attribute is just called href
             // as a property on node.
             // TODO: Support overflow and width, height, in combination with
             // overflow: hidden. Paper.js currently does not support
             // SymbolItem clipping, but perhaps it should?
             var id = (getValue(node, 'href', true) || '').substring(1),
-                definition = definitions[id],
+                definition = getDefinitionById(id, options),
                 point = getPoint(node);
             return definition
                     ? definition instanceof SymbolDefinition
@@ -281,11 +283,17 @@ new function() {
 
         // https://www.w3.org/TR/SVG/shapes.html#RectElement
         rect: function(node) {
+            // A missing rx or ry takes the value of the other one:
+            var rx = getValue(node, 'rx', false, true),
+                ry = getValue(node, 'ry', false, true);
             return new Shape.Rectangle(new Rectangle(
                         getPoint(node),
                         getSize(node)
-                    ), getSize(node, 'rx', 'ry'));
-            },
+                    ), new Size(
+                        rx == null ? ry || 0 : rx,
+                        ry == null ? rx || 0 : ry
+                    ));
+        },
 
         // https://www.w3.org/TR/SVG/shapes.html#LineElement
         line: function(node) {
@@ -381,9 +389,11 @@ new function() {
     // SvgStyles (e.g. 'stroke') before the additional attributes below (e.g.
     // 'stroke-opacity'). See issue #694.
     var attributes = Base.set(Base.each(SvgStyles, function(entry) {
-        this[entry.attribute] = function(item, value) {
+        this[entry.attribute] = function(item, value, name, node, styles,
+                options) {
             if (item[entry.set]) {
-                item[entry.set](convertValue(value, entry.type, entry.fromSVG));
+                item[entry.set](convertValue(value, entry.type, entry.fromSVG,
+                        options));
                 if (entry.type === 'color') {
                     // Do not use result of convertValue() above, since calling
                     // the setter will convert a color and clone it if necessary
@@ -403,13 +413,14 @@ new function() {
     }, {}), {
         id: function(item, value) {
             definitions[value] = item;
-            if (item.setName)
+            // Item names can't consist only of numbers, see #1754:
+            if (item.setName && value !== (+value) + '')
                 item.setName(value);
         },
 
-        'clip-path': function(item, value) {
+        'clip-path': function(item, value, name, node, styles, options) {
             // https://www.w3.org/TR/SVG/masking.html#ClipPathProperty
-            var clip = getDefinition(value);
+            var clip = getDefinition(value, options);
             if (clip) {
                 clip = clip.clone();
                 clip.setClipMask(true);
@@ -527,7 +538,7 @@ new function() {
      * @param {SVGElement} node an SVG node to read style and attributes from
      * @param {Item} item the item to apply the style and attributes to
      */
-    function applyAttributes(item, node, isRoot) {
+    function applyAttributes(item, node, options, isRoot) {
         // SVG attributes can be set both as styles and direct node
         // attributes, so we need to handle both.
         var parent = node.parentNode,
@@ -543,22 +554,33 @@ new function() {
             var value = getAttribute(node, name, styles);
             // 'clip-path' attribute returns a new item, support it here:
             item = value !== undefined
-                    && apply(item, value, name, node, styles) || item;
+                    && apply(item, value, name, node, styles, options) || item;
         });
         return item;
     }
 
-    function getDefinition(value) {
+    function getDefinitionById(id, options) {
+        // Definitions can be referenced before they appear in the document,
+        // so import them on demand, see #1146:
+        if (id && !definitions[id]) {
+            var node = getSandbox().ownerDocument.getElementById(id);
+            if (node)
+                importNode(node, options, false);
+        }
+        return definitions[id];
+    }
+
+    function getDefinition(value, options) {
         // When url() comes from a style property, '#'' seems to be missing on
         // WebKit. We also get variations of quotes or no quotes, single or
         // double, so handle it all with one regular expression:
         var match = value && value.match(/\((?:["'#]*)([^"')]+)/),
             name = match && match[1],
-            res = name && definitions[window
+            res = name && getDefinitionById(window
                     // This is required by Firefox, which can produce absolute
                     // urls for local gradients, see #1001:
                     ? name.replace(window.location.href.split('#')[0] + '#', '')
-                    : name];
+                    : name, options);
         // Patch in support for SVG's gradientUnits="objectBoundingBox" through
         // Color#_scaleToBounds
         if (res && res._scaleToBounds) {
@@ -648,7 +670,7 @@ new function() {
                 // Do not apply attributes if this is a #document node.
                 // See importGroup() for an explanation of filtering for Group:
                 if (isElement && !(item instanceof Group))
-                    item = applyAttributes(item, node, isRoot);
+                    item = applyAttributes(item, node, options, isRoot);
                 // Support onImportItem callback, to provide mechanism to handle
                 // special attributes (e.g. inkscape:transform-center)
                 var onImport = options.onImport,

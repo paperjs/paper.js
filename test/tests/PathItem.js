@@ -119,6 +119,32 @@ test('PathItem#create() with SVG path-data (#1101)', function() {
     });
 });
 
+test('PathItem#create() with SVG arc flags without separators (#1808, #1885)', function() {
+    // A circle of radius 10 through (0, 0) and (10, 10) has its center at
+    // either (10, 0) or (0, 10). The flags pick the 270° arc around the first
+    // one when sweeping clockwise, and around the second one otherwise:
+    var path = PathItem.create('M0 0a10 10 0 1110 10');
+    equals(path.lastSegment.point, new Point(10, 10));
+    equals(path.bounds, new Rectangle(0, -10, 20, 20));
+    equals(path, PathItem.create('M0 0a10 10 0 1 1 10 10'));
+    path = PathItem.create('M0 0a10 10 0 1010 10');
+    equals(path.lastSegment.point, new Point(10, 10));
+    equals(path.bounds, new Rectangle(-10, 0, 20, 20));
+    equals(path, PathItem.create('M0 0a10 10 0 1 0 10 10'));
+    // Repeated arc parameters, with and without separators:
+    equals(PathItem.create('M0 0a10 10 0 1110 10 10 10 0 1110 10'),
+            PathItem.create('M0 0a10 10 0 1 1 10 10a10 10 0 1 1 10 10'));
+    equals(PathItem.create('M0,0a10,10,0,1,1,10,10,10,10,0,1,1,10,10'),
+            PathItem.create('M0 0a10 10 0 1 1 10 10a10 10 0 1 1 10 10'));
+    // The path data from the issues:
+    path = PathItem.create('M0 0a150.441 150.441 0 011.593 9.983');
+    equals(path.lastSegment.point, new Point(1.593, 9.983));
+    equals(path, PathItem.create('M0 0a150.441 150.441 0 0 1 1.593 9.983'));
+    path = PathItem.create('M86.41 449.42a22.39 22.39 0 0128.69-6.59');
+    equals(path.lastSegment.point, new Point(115.1, 442.83));
+    equals(path, PathItem.create('M86.41 449.42a22.39 22.39 0 0 1 28.69 -6.59'));
+});
+
 test('PathItem#compare()', function() {
     var empty = new Path();
     var circle = new Path.Circle({

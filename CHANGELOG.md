@@ -11,6 +11,14 @@
   PaperScript (#1991).
 - Fix replacing style colors that were set as strings, which threw in strict
   mode (#2049).
+- Fix SVG path data with arc flags that aren't separated from the numbers
+  after them, as SVGO writes them (#1808, #1885).
+- Fix `#importSVG()` of gradients, fills, clip paths and `<use>` elements that
+  reference definitions appearing later in the document (#1146, #1884, #1978).
+- Fix `#importSVG()` of elements with numeric ids (#1754).
+- Fix `#importSVG()` of rounded rectangles with only `rx` or `ry` (#1863).
+- Fix `#exportSVG()` writing `fill-rule="none"`, `font-family="none"` etc. on
+  groups with differently styled children (#1732).
 
 ## `0.12.20`
 

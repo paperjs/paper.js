@@ -119,6 +119,42 @@ test('Export SVG viewbox attribute with top left at origin', function() {
     equals(project.exportSVG({ bounds: rectangle }).getAttribute('viewBox'), '0,0,100,100');
 });
 
+test('Export SVG group with mixed children styles (#1732)', function() {
+    var group = new Group([
+        new Path.Rectangle({
+            point: [0, 0],
+            size: [10, 10],
+            fillColor: 'red',
+            fillRule: 'evenodd'
+        }),
+        new Path.Rectangle({
+            point: [20, 0],
+            size: [10, 10],
+            strokeColor: 'blue'
+        })
+    ]);
+    var node = group.exportSVG(),
+        first = node.childNodes[0],
+        second = node.childNodes[1];
+    // Mixed styles are left to the children:
+    ['fill', 'fill-rule', 'stroke'].forEach(function(name) {
+        equals(function() {
+            return node.getAttribute(name);
+        }, null, 'group ' + name);
+    });
+    equals(first.getAttribute('fill'), '#ff0000');
+    equals(first.getAttribute('fill-rule'), 'evenodd');
+    equals(first.getAttribute('stroke'), 'none');
+    equals(second.getAttribute('fill'), 'none');
+    equals(second.getAttribute('fill-rule'), 'nonzero');
+    equals(second.getAttribute('stroke'), '#0000ff');
+    // Styles shared by all children are set on the group:
+    group.fillColor = null;
+    node = group.exportSVG();
+    equals(node.getAttribute('fill'), 'none');
+    equals(node.childNodes[0].getAttribute('fill'), null);
+});
+
 if (!isNodeContext) {
     // JSDom does not have SVG rendering, so we can't test there.
     test('Export transformed shapes', function(assert) {
