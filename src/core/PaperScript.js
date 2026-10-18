@@ -383,11 +383,14 @@ Base.exports.PaperScript = function() {
             } else if (window && url && !window.location.href.indexOf(url)) {
                 // If the code stems from the actual html page, determine the
                 // offset of inlined code.
-                var html = document.getElementsByTagName('html')[0].innerHTML;
+                var html = document.getElementsByTagName('html')[0].innerHTML,
+                    index = html.indexOf(code);
                 // Count the amount of line breaks in the html before this code
-                // to determine the offset.
-                offset = html.substr(0, html.indexOf(code) + 1).match(
-                        lineBreaks).length + 1;
+                // to determine the offset, unless the script isn't in the html.
+                if (index >= 0) {
+                    offset = html.substr(0, index + 1).match(
+                            lineBreaks).length + 1;
+                }
             }
             // A hack required by older versions of browsers to align inlined
             // code: Instead of starting the mappings at the given offset, we
@@ -632,12 +635,18 @@ Base.exports.PaperScript = function() {
                     async: async,
                     mimeType: 'text/plain',
                     onLoad: function(code) {
-                        execute(code, scope, src);
+                        execute(code, scope, {
+                            url: src,
+                            sourceMaps: 'inline'
+                        });
                     }
                 });
             } else {
                 // We can simply get the code form the script tag.
-                execute(script.innerHTML, scope, script.baseURI);
+                execute(script.innerHTML, scope, {
+                    url: script.baseURI,
+                    sourceMaps: 'inline'
+                });
             }
             // Mark script as loaded now.
             script.setAttribute('data-paper-ignore', 'true');
