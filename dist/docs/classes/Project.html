@@ -551,22 +551,22 @@ var path2 = new Path.Circle(new Point(175, 50), 20);
 <div class="member-description hidden">
 <div class="member-text">
 	<p>Performs a hit-test on the items contained within the project at the location of the specified point.</p>
-<p>The options object allows you to control the specifics of the hit-test and may contain a combination of the following values:</p>
+<p>The options object allows you to control the specifics of the hit-test. Without options, <code>fill</code>, <code>stroke</code> and <code>segments</code> are hit-tested. As soon as an options object is passed, only the hit-tests that it sets to <code>true</code> are performed. It may contain a combination of the following values:</p>
     <ul class="member-list">
 <h4>Options:</h4>
 <li><tt>options.tolerance: <tt>Number</tt></tt> &mdash; the tolerance of the hit-test &mdash;&nbsp;default: <tt><a href="../classes/PaperScope.html#settings"><tt>paperScope.settings</tt></a>.hitTolerance</tt></li>
 <li><tt>options.class: <tt>Function</tt></tt> &mdash; only hit-test against a specific item  class, or any of its sub-classes, by providing the constructor  function against which an <code>instanceof</code> check is performed:  <tt>Group</tt>, <tt>Layer</tt>, <tt>Path</tt>, <tt>CompoundPath</tt>, <tt>Shape</tt>, <tt>Raster</tt>, <tt>SymbolItem</tt>, <tt>PointText</tt>, &hellip;</li>
 <li><tt>options.match: <tt>Function</tt></tt> &mdash; a match function to be called for each  found hit result: Return <code>true</code> to return the result, <code>false</code> to keep  searching</li>
-<li><tt>options.fill: <tt>Boolean</tt></tt> &mdash; hit-test the fill of items &mdash;&nbsp;default: <tt>true</tt></li>
-<li><tt>options.stroke: <tt>Boolean</tt></tt> &mdash; hit-test the stroke of path  items, taking into account the setting of stroke color and width &mdash;&nbsp;default: <tt>true</tt></li>
-<li><tt>options.segments: <tt>Boolean</tt></tt> &mdash; hit-test for <a href="../classes/Segment.html#point"><tt>segment.point</tt></a> of <a href="../classes/Path.html"><tt>Path</tt></a> items &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.fill: <tt>Boolean</tt></tt> &mdash; hit-test the fill of items</li>
+<li><tt>options.stroke: <tt>Boolean</tt></tt> &mdash; hit-test the stroke of path items,  taking into account the setting of stroke color and width</li>
+<li><tt>options.segments: <tt>Boolean</tt></tt> &mdash; hit-test for <a href="../classes/Segment.html#point"><tt>segment.point</tt></a> of  <a href="../classes/Path.html"><tt>Path</tt></a> items</li>
 <li><tt>options.curves: <tt>Boolean</tt></tt> &mdash; hit-test the curves of path items,  without taking the stroke color or width into account</li>
 <li><tt>options.handles: <tt>Boolean</tt></tt> &mdash; hit-test for the handles (<a href="../classes/Segment.html#handlein"><tt>segment.handleIn</tt></a> / <a href="../classes/Segment.html#handleout"><tt>segment.handleOut</tt></a>) of path segments.</li>
 <li><tt>options.ends: <tt>Boolean</tt></tt> &mdash; only hit-test for the first or last  segment points of open path items</li>
 <li><tt>options.position: <tt>Boolean</tt></tt> &mdash; hit-test the <a href="../classes/Item.html#position"><tt>item.position</tt></a> of  of items, which depends on the setting of <a href="../classes/Item.html#pivot"><tt>item.pivot</tt></a></li>
 <li><tt>options.center: <tt>Boolean</tt></tt> &mdash; hit-test the <a href="../classes/Rectangle.html#center"><tt>rectangle.center</tt></a> of  the bounding rectangle of items (<a href="../classes/Item.html#bounds"><tt>item.bounds</tt></a>)</li>
 <li><tt>options.bounds: <tt>Boolean</tt></tt> &mdash; hit-test the corners and side-centers of  the bounding rectangle of items (<a href="../classes/Item.html#bounds"><tt>item.bounds</tt></a>)</li>
-<li><tt>options.guides: <tt>Boolean</tt></tt> &mdash; hit-test items that have <tt>Item#guide</tt> set to <code>true</code></li>
+<li><tt>options.guides: <tt>Boolean</tt></tt> &mdash; only hit-test items that have <a href="../classes/Item.html#guide"><tt>item.guide</tt></a> set to <code>true</code></li>
 <li><tt>options.selected: <tt>Boolean</tt></tt> &mdash; only hit selected items</li>
 </ul>
 	
@@ -700,7 +700,7 @@ var path2 = new Path.Circle(new Point(175, 50), 20);
 		<h4>Returns:</h4>
 		
 			<li>
-<tt>Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects</tt>&nbsp;&mdash;&nbsp;the list of matching items contained in the project
+<tt>Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects</tt>&nbsp;&mdash;&nbsp;the list of matching items contained in the project, in  their stacking order from bottom to top, with each item listed  before its own descendants
 </li>
 
 		

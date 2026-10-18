@@ -16,6 +16,8 @@
 <h1>View</h1>
 
 <p>The View object wraps an HTML element and handles drawing and user interaction through mouse and keyboard for it. It offer means to scroll the view, find the currently visible bounds in project coordinates, or the center, both useful for constructing artwork that should appear centered on screen.</p>
+<p>If the canvas element has a <code>resize</code> or <code>data-paper-resize</code> attribute, the view adjusts its size to the size of the element whenever the window is resized. The element itself needs to be sized through CSS, e.g. with <code>html, body { height: 100%; }</code> and <code>canvas[resize] { width: 100%; height:
+100%; }</code> for a canvas that fills the window. Without such CSS, the view does not follow the window, and on HiDPI screens it grows with each resize.</p>
 
 </div>
 

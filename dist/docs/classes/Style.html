@@ -17,6 +17,7 @@
 
 <p>Style is used for changing the visual styles of items contained within a Paper.js project and is returned by <a href="../classes/Item.html#style"><tt>item.style</tt></a> and <a href="../classes/Project.html#currentstyle"><tt>project.currentStyle</tt></a>.</p>
 <p>All properties of Style are also reflected directly in <a href="../classes/Item.html"><tt>Item</tt></a>, i.e.: <a href="../classes/Item.html#fillcolor"><tt>item.fillColor</tt></a>.</p>
+<p>Styles set on a <a href="../classes/Group.html"><tt>Group</tt></a> or <a href="../classes/Layer.html"><tt>Layer</tt></a> are applied to the children that it contains at that moment. Items added to it later do not receive them.</p>
 <p>To set multiple style properties in one go, you can pass an object to <a href="../classes/Item.html#style"><tt>item.style</tt></a>. This is a convenient way to define a style once and apply it to a series of items:</p>
 <h4>Example:<span class="description">Styling paths</span></h4>
 
@@ -83,7 +84,7 @@ var path2 = new Path.Rectangle({
 var group = new Group(path1, path2);
 
 // All styles set on a group are automatically
-// set on the children of the group:
+// set on the current children of the group:
 group.style = {
     strokeColor: 'black',
     dashArray: [4, 10],

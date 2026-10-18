@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 18 18:29:51 2026 +0200
+ * Date: Fri Mar 4 17:06:53 2016 -0500
  *
  ***
  *
@@ -35,6 +35,9 @@ var paper = function(self, undefined) {
 self = self || require('./node/self.js');
 var window = self.window,
 	document = self.document;
+
+if (window && !document.createElement('canvas').getContext('2d'))
+	window = null;
 
 var Base = new function() {
 	var hidden = /^(statics|enumerable|beans|preserve)$/,
@@ -3495,8 +3498,8 @@ new function() {
 				bounds = this.getBounds();
 			}
 			matrix.scale(
-					bounds.width !== 0 ? rect.width / bounds.width : 0,
-					bounds.height !== 0 ? rect.height / bounds.height : 0);
+					bounds.width !== 0 ? rect.width / bounds.width : 1,
+					bounds.height !== 0 ? rect.height / bounds.height : 1);
 		}
 		center = bounds.getCenter();
 		matrix.translate(-center.x, -center.y);
@@ -4184,7 +4187,7 @@ new function() {
 					rect = bounds && Rectangle.read([bounds]);
 				param = {
 					items: [],
-					recursive: obj && obj.recursive !== false,
+					recursive: !obj || obj.recursive !== false,
 					inside: !!inside,
 					overlapping: !!overlapping,
 					rect: rect,
@@ -5232,12 +5235,25 @@ var Shape = Item.extend({
 	},
 
 	_getBounds: function(matrix, options) {
-		var rect = new Rectangle(this._size).setCenter(0, 0),
+		var size = this._size,
+			rect = new Rectangle(size).setCenter(0, 0),
 			style = this._style,
 			strokeWidth = options.stroke && style.hasStroke()
 					&& style.getStrokeWidth();
-		if (matrix)
-			rect = matrix._transformBounds(rect);
+		if (matrix) {
+			if (this._type === 'rectangle') {
+				rect = matrix._transformBounds(rect);
+			} else {
+				var rx = size.width / 2,
+					ry = size.height / 2,
+					dx = Math.sqrt(Math.pow(matrix._a * rx, 2)
+							+ Math.pow(matrix._c * ry, 2)),
+					dy = Math.sqrt(Math.pow(matrix._b * rx, 2)
+							+ Math.pow(matrix._d * ry, 2));
+				rect = new Rectangle(matrix._tx - dx, matrix._ty - dy,
+						2 * dx, 2 * dy);
+			}
+		}
 		return strokeWidth
 				? rect.expand(Path._getStrokePadding(strokeWidth,
 					this._getStrokeMatrix(matrix, options)))
@@ -10015,14 +10031,14 @@ Path.inject({ statics: new function() {
 
 	function createPath(segments, closed, args) {
 		var props = Base.getNamed(args),
-			path = new Path(props && (
-				props.insert == true ? Item.INSERT
-				: props.insert == false ? Item.NO_INSERT
-				: null
-			));
+			path = new Path(props && {
+				insert: props.insert,
+				project: props.project,
+				parent: props.parent
+			});
 		path._add(segments);
 		path._closed = closed;
-		return path.set(props, Item.INSERT);
+		return path.set(props, { insert: true, project: true, parent: true });
 	}
 
 	function createEllipse(center, radius, args) {
@@ -11581,7 +11597,7 @@ var TextItem = Item.extend({
 	_serializeFields: {
 		content: null
 	},
-	_boundsOptions: { stroke: false, handle: false },
+	_boundsOptions: { handle: false },
 
 	initialize: function TextItem(arg) {
 		this._content = '';
@@ -11675,6 +11691,8 @@ var PointText = TextItem.extend({
 		var rect = new Rectangle(x,
 					numLines ? - 0.75 * leading : 0,
 					width, numLines * leading);
+		if (options.stroke && style.hasStroke())
+			rect = rect.expand(style.getStrokeWidth());
 		return matrix ? matrix._transformBounds(rect, rect) : rect;
 	}
 });
@@ -13305,16 +13323,8 @@ new function() {
 			mouseout: function(event) {
 				var view = View._focused,
 					target = DomEvent.getRelatedTarget(event);
-				if (view && (!target || target.nodeName === 'HTML')) {
-					var offset = DomEvent.getOffset(event, view._element),
-						x = offset.x,
-						abs = Math.abs,
-						ax = abs(x),
-						max = 1 << 25,
-						diff = ax - max;
-					offset.x = abs(diff) < ax ? diff * (x < 0 ? -1 : 1) : x;
-					handleMouseMove(view, event, view.viewToProject(offset));
-				}
+				if (view && (!target || target.nodeName === 'HTML'))
+					handleMouseMove(view, event);
 			},
 
 			scroll: updateFocus
@@ -13795,6 +13805,7 @@ var Key = new function() {
 	}
 
 	function handleKey(down, key, character, event) {
+		View.updateFocus();
 		var type = down ? 'keydown' : 'keyup',
 			view = View._focused,
 			name;
@@ -15638,12 +15649,12 @@ new function() {
 		var settings = paper.settings,
 			applyMatrix = settings.applyMatrix,
 			insertItems = settings.insertItems,
+			importer = importers[type],
 			item;
 		try {
 			settings.applyMatrix = false;
 			settings.insertItems = false;
 			try {
-				var importer = importers[type];
 				item = importer && importer(node, type, options, isRoot)
 						|| null;
 			} finally {
@@ -15651,7 +15662,7 @@ new function() {
 				settings.applyMatrix = applyMatrix;
 			}
 			if (item) {
-				if (isElement && !(item instanceof Group))
+				if (isElement && importer !== importGroup)
 					item = applyAttributes(item, node, options, isRoot);
 				var onImport = options.onImport,
 					data = isElement && node.getAttribute('data-paper-data');

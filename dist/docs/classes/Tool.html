@@ -243,6 +243,7 @@ tool.onMouseDrag = function(event) {
 
 <div class="member-text">
 	<p>The function to be called the mouse moves within the project view. The function receives a <a href="../classes/ToolEvent.html"><tt>ToolEvent</tt></a> object which contains information about the tool event.</p>
+<p>While the mouse button is held down, the tool calls <a href="../classes/Tool.html#onmousedrag"><tt>onMouseDrag</tt></a> instead, if it defines one, and <code>onMouseMove</code> only otherwise.</p>
 	
 	
 	

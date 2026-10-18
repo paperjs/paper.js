@@ -1364,7 +1364,7 @@
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Calculates the curve location at the specified offset on the curve.</p>
+	<p>Calculates the curve location at the specified offset on the curve, or <code>null</code> if the offset exceeds the length of the curve.</p>
     
 	
 <ul class="member-list">
@@ -1405,7 +1405,7 @@
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Calculates the curve location at the specified curve-time parameter on the curve.</p>
+	<p>Calculates the curve location at the specified curve-time parameter on the curve, or <code>null</code> if the parameter lies outside of <code>0..1</code>.</p>
     
 	
 <ul class="member-list">
@@ -1473,7 +1473,7 @@
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;the curve-time parameter at the specified location
+<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;the curve-time parameter at the specified location, or  <code>null</code> if the offset exceeds the length of the curve
 </li>
 
 		
@@ -1596,7 +1596,7 @@
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a></tt>&nbsp;&mdash;&nbsp;the curve location of the specified point
+<tt><a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a>⟋<tt>null</tt></tt>&nbsp;&mdash;&nbsp;the curve location of the specified point
 </li>
 
 		
@@ -1637,7 +1637,7 @@
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;the length of the path up to the specified point
+<tt><tt>Number</tt>⟋<tt>null</tt></tt>&nbsp;&mdash;&nbsp;the length of the path up to the specified point
 </li>
 
 		
@@ -1678,7 +1678,7 @@
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;the curve-time parameter of the specified point
+<tt><tt>Number</tt>⟋<tt>null</tt></tt>&nbsp;&mdash;&nbsp;the curve-time parameter of the specified point
 </li>
 
 		

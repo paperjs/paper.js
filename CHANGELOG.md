@@ -41,9 +41,43 @@
 - Fix key events with Control, Alt and Meta in Firefox and other browsers that
   fire no `keypress` for them (#1997, #1871).
 - Fix the space key staying down after Option + Space on macOS.
+- Fix key events not reaching a view that became visible after the focused one
+  was hidden (#1953).
+- Load in DOMs whose canvas has no 2D context, as jsdom without canvas in jest,
+  and run there as in workers (#1805).
+- Keep the original error as `cause` when jsdom or canvas fail to load on
+  Node.js (#1759).
+- Fix `#getItems()` and `#getItem()` with a match function or without options
+  to search recursively, as documented, instead of matching only the top-level
+  items.
+- Fix `#importSVG()` of transforms and styles on `<use>` elements that
+  reference groups (#978).
+- Fix the `project` and `parent` options of the `Path.*` constructors. With
+  `insert: false`, they no longer insert into the parent, as `new Path()`
+  doesn't either (#2012).
+- Fix the bounds of transformed circle and ellipse shapes (#1826).
+- Fix `PointText#strokeBounds` to include the stroke, which got cut off when
+  drawn with opacity (#1322).
+- Fix the `Item#bounds` setter on items with zero width or height, which made
+  their matrix non-invertible (#1794).
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
+- Docs: Correct the defaults of the hit-test options, the results of the math
+  operator examples, `Raster#source` and `Item#guide`, and document
+  `Path#reduce()`'s `simplify` option, nullable location getters, optional
+  arguments, `ToolEvent#tool`, which items have children, how group styles,
+  `getItems()` ordering, `Rectangle#selected` and `Tool#onMouseMove` work, and
+  the `resize` canvas attribute (#2078, #2092, #2030, #1928, #1947, #1907,
+  #1900, #2115, #1645, #1697, #1747, #1507, #604, #1330, #662).
+- Docs: Add examples to the boolean path operations (#1007).
+
+### Removed
+
+- Remove the workaround for wrong `mouseout` coordinates in old versions of
+  Chrome on Windows (#1811).
+- Remove the CLA from the contribution guidelines, as it no longer exists
+  (#2071).
 
 ## `0.12.20`
 

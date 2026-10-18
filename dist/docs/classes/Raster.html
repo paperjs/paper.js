@@ -474,14 +474,14 @@ raster.rotate(10);
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The source of the raster, which can be set using a DOM Image, a Canvas, a data url, a string describing the URL to load the image from, or the ID of a DOM element to get the image from (either a DOM Image or a Canvas). Reading this property will return the url of the source image or a data-url. Note that for consistency, a <a href="../classes/Raster.html#onload"><tt>onLoad</tt></a> event will be triggered on the raster even if the image has already finished loading before.</p>
+	<p>The source of the raster, which can be set using a string describing the URL to load the image from, or a data url. Reading this property will return the url of the source image or a data-url. To set the raster to a DOM Image or a Canvas, use <a href="../classes/Raster.html#image"><tt>image</tt></a> or <a href="../classes/Raster.html#canvas"><tt>canvas</tt></a> instead. The ID of a DOM Image or Canvas element is only accepted by the constructor. Note that for consistency, a <a href="../classes/Raster.html#onload"><tt>onLoad</tt></a> event will be triggered on the raster even if the image has already finished loading before.</p>
 	
 	
 	
 	<ul class="member-list">
 		<h4>Type:</h4>
 		<li>
-			<tt>HTMLImageElement</tt>⟋<tt>HTMLCanvasElement</tt>⟋<tt>String</tt>
+			<tt>String</tt>
 		</li>
 	</ul>
     
@@ -788,19 +788,38 @@ raster.on('load', function() {
 	
 <div id="todataurl" class="member">
 <div class="member-link">
-<a name="todataurl" href="#todataurl"><tt><b>toDataURL</b>()</tt></a>
+<a name="todataurl" href="#todataurl"><tt><b>toDataURL</b>([type[, quality]])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Returns a Base 64 encoded <code>data:</code> URL representation of the raster.</p>
+	<p>Returns a Base 64 encoded <code>data:</code> URL representation of the raster. If the raster shows an image that was loaded from a <code>data:</code> URL, that URL is returned unchanged. Otherwise, the arguments are passed on to <code>HTMLCanvasElement#toDataURL()</code> of the raster&rsquo;s <a href="../classes/Raster.html#canvas"><tt>canvas</tt></a>.</p>
     
 	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>type:</tt> 
+<tt>String</tt>
+&mdash;&nbsp;the image format to encode
+&mdash;&nbsp;optional, default: <tt>&lsquo;image/png&rsquo;</tt>
+</li>
+	
+	<li>
+<tt>quality:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the image quality between <code>0</code> and <code>1</code>, for  formats that use lossy compression, such as <code>&#39;image/jpeg&#39;</code>
+&mdash;&nbsp;optional
+</li>
+	
+</ul>
+
 	
 	<ul class="member-list">
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><tt>String</tt></tt>
+<tt><tt>String</tt></tt>&nbsp;&mdash;&nbsp;the <code>data:</code> URL of the raster
 </li>
 
 		
@@ -1130,13 +1149,13 @@ raster.on('load', function() {
 </div>
 
 	
-<div id="getimagedata-rect" class="member">
+<div id="getimagedata" class="member">
 <div class="member-link">
-<a name="getimagedata-rect" href="#getimagedata-rect"><tt><b>getImageData</b>(rect)</tt></a>
+<a name="getimagedata" href="#getimagedata"><tt><b>getImageData</b>([rect])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	
+	<p>Returns the image data of the pixels within the specified rectangle, or of the whole raster if no rectangle or an empty one is passed.</p>
     
 	
 <ul class="member-list">
@@ -1145,8 +1164,8 @@ raster.on('load', function() {
 	<li>
 <tt>rect:</tt> 
 <a href="../classes/Rectangle.html"><tt>Rectangle</tt></a>
-
-
+&mdash;&nbsp;the area of the raster to get the image data  of, in pixel coordinates
+&mdash;&nbsp;optional
 </li>
 	
 </ul>
@@ -1156,7 +1175,7 @@ raster.on('load', function() {
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><tt>ImageData</tt></tt>
+<tt><tt>ImageData</tt></tt>&nbsp;&mdash;&nbsp;the image data of the specified area
 </li>
 
 		
@@ -1369,6 +1388,7 @@ group.children['example'].fillColor = 'red';
 
 <div class="member-text">
 	<p>The path style of the item.</p>
+<p>Styles set on a <a href="../classes/Group.html"><tt>Group</tt></a> or <a href="../classes/Layer.html"><tt>Layer</tt></a> are applied to the children that it contains at that moment. Items added to it later do not receive them.</p>
 	
 	
 	
@@ -1711,6 +1731,37 @@ circle2.opacity = 0.5;
 </div>
 
 
+</div>
+
+</div>
+</div>
+
+	
+<div id="guide" class="member">
+<div class="member-link">
+<a name="guide" href="#guide"><tt><b>guide</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Specifies whether the item functions as a guide. When set to <code>true</code>, the item is drawn as usual, but left out of hit-tests and mouse interactions. Hit-tests only find guides when <code>options.guides</code> is set, and then only them, see <a href="../classes/Item.html#hittest-point"><tt>hitTest(point[, options])</tt></a>.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>false</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Boolean</tt>
+		</li>
+	</ul>
+    
+	
+	
 </div>
 
 </div>
@@ -2414,6 +2465,7 @@ console.log(group.children[0] == path); // true</code></pre>
 
 <div class="member-text">
 	<p>The children items contained within this item. Items that define a <a href="../classes/Item.html#name"><tt>name</tt></a> can also be accessed by name.</p>
+<p>Only <a href="../classes/Group.html"><tt>Group</tt></a>, <a href="../classes/Layer.html"><tt>Layer</tt></a> and <a href="../classes/CompoundPath.html"><tt>CompoundPath</tt></a> items can have children. On all other items, such as <a href="../classes/Path.html"><tt>Path</tt></a>, <a href="../classes/Shape.html"><tt>Shape</tt></a>, <a href="../classes/Raster.html"><tt>Raster</tt></a>, <a href="../classes/SymbolItem.html"><tt>SymbolItem</tt></a> and <a href="../classes/PointText.html"><tt>PointText</tt></a>, <code>children</code> is <code>undefined</code>.</p>
 <p><b>Please note:</b> The children array should not be modified directly using array functions. To remove single items from the children list, use <a href="../classes/Item.html#remove"><tt>item.remove</tt></a>(), to remove all items from the children list, use <a href="../classes/Item.html#removechildren"><tt>item.removeChildren</tt></a>(). To add items to the children list, use <a href="../classes/Item.html#addchild-item"><tt>item.addChild(item)</tt></a> or <a href="../classes/Item.html#insertchild-index-item"><tt>item.insertChild(index, item)</tt></a>.</p>
 	
 	
@@ -4354,22 +4406,22 @@ function onMouseDown(event) {
 <div class="member-description hidden">
 <div class="member-text">
 	<p>Performs a hit-test on the item and its children (if it is a <a href="../classes/Group.html"><tt>Group</tt></a> or <a href="../classes/Layer.html"><tt>Layer</tt></a>) at the location of the specified point, returning the first found hit.</p>
-<p>The options object allows you to control the specifics of the hit- test and may contain a combination of the following values:</p>
+<p>The options object allows you to control the specifics of the hit-test. Without options, <code>fill</code>, <code>stroke</code> and <code>segments</code> are hit-tested. As soon as an options object is passed, only the hit-tests that it sets to <code>true</code> are performed. It may contain a combination of the following values:</p>
     <ul class="member-list">
 <h4>Options:</h4>
 <li><tt>options.tolerance: <tt>Number</tt></tt> &mdash; the tolerance of the hit-test &mdash;&nbsp;default: <tt><a href="../classes/PaperScope.html#settings"><tt>paperScope.settings</tt></a>.hitTolerance</tt></li>
 <li><tt>options.class: <tt>Function</tt></tt> &mdash; only hit-test against a specific item  class, or any of its sub-classes, by providing the constructor  function against which an <code>instanceof</code> check is performed:  <tt>Group</tt>, <tt>Layer</tt>, <tt>Path</tt>, <tt>CompoundPath</tt>, <tt>Shape</tt>, <tt>Raster</tt>, <tt>SymbolItem</tt>, <tt>PointText</tt>, &hellip;</li>
 <li><tt>options.match: <tt>Function</tt></tt> &mdash; a match function to be called for each  found hit result: Return <code>true</code> to return the result, <code>false</code> to keep  searching</li>
-<li><tt>options.fill: <tt>Boolean</tt></tt> &mdash; hit-test the fill of items &mdash;&nbsp;default: <tt>true</tt></li>
-<li><tt>options.stroke: <tt>Boolean</tt></tt> &mdash; hit-test the stroke of path  items, taking into account the setting of stroke color and width &mdash;&nbsp;default: <tt>true</tt></li>
-<li><tt>options.segments: <tt>Boolean</tt></tt> &mdash; hit-test for <a href="../classes/Segment.html#point"><tt>segment.point</tt></a> of <a href="../classes/Path.html"><tt>Path</tt></a> items &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.fill: <tt>Boolean</tt></tt> &mdash; hit-test the fill of items</li>
+<li><tt>options.stroke: <tt>Boolean</tt></tt> &mdash; hit-test the stroke of path items,  taking into account the setting of stroke color and width</li>
+<li><tt>options.segments: <tt>Boolean</tt></tt> &mdash; hit-test for <a href="../classes/Segment.html#point"><tt>segment.point</tt></a> of  <a href="../classes/Path.html"><tt>Path</tt></a> items</li>
 <li><tt>options.curves: <tt>Boolean</tt></tt> &mdash; hit-test the curves of path items,  without taking the stroke color or width into account</li>
 <li><tt>options.handles: <tt>Boolean</tt></tt> &mdash; hit-test for the handles (<a href="../classes/Segment.html#handlein"><tt>segment.handleIn</tt></a> / <a href="../classes/Segment.html#handleout"><tt>segment.handleOut</tt></a>) of path segments.</li>
 <li><tt>options.ends: <tt>Boolean</tt></tt> &mdash; only hit-test for the first or last  segment points of open path items</li>
 <li><tt>options.position: <tt>Boolean</tt></tt> &mdash; hit-test the <a href="../classes/Item.html#position"><tt>item.position</tt></a> of  of items, which depends on the setting of <a href="../classes/Item.html#pivot"><tt>item.pivot</tt></a></li>
 <li><tt>options.center: <tt>Boolean</tt></tt> &mdash; hit-test the <a href="../classes/Rectangle.html#center"><tt>rectangle.center</tt></a> of  the bounding rectangle of items (<a href="../classes/Item.html#bounds"><tt>item.bounds</tt></a>)</li>
 <li><tt>options.bounds: <tt>Boolean</tt></tt> &mdash; hit-test the corners and side-centers of  the bounding rectangle of items (<a href="../classes/Item.html#bounds"><tt>item.bounds</tt></a>)</li>
-<li><tt>options.guides: <tt>Boolean</tt></tt> &mdash; hit-test items that have <tt>Item#guide</tt> set to <code>true</code></li>
+<li><tt>options.guides: <tt>Boolean</tt></tt> &mdash; only hit-test items that have <a href="../classes/Item.html#guide"><tt>item.guide</tt></a> set to <code>true</code></li>
 <li><tt>options.selected: <tt>Boolean</tt></tt> &mdash; only hit selected items</li>
 </ul>
 	
@@ -4608,7 +4660,7 @@ function onMouseDown(event) {
 		<h4>Returns:</h4>
 		
 			<li>
-<tt>Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects</tt>&nbsp;&mdash;&nbsp;the list of matching descendant items
+<tt>Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects</tt>&nbsp;&mdash;&nbsp;the list of matching descendant items, in their  stacking order from bottom to top, with each item listed before its  own descendants
 </li>
 
 		
@@ -5301,9 +5353,9 @@ Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects
 </div>
 
 	
-<div id="reduce-options" class="member">
+<div id="reduce" class="member">
 <div class="member-link">
-<a name="reduce-options" href="#reduce-options"><tt><b>reduce</b>(options)</tt></a>
+<a name="reduce" href="#reduce"><tt><b>reduce</b>([options])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
@@ -5315,9 +5367,9 @@ Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects
 	
 	<li>
 <tt>options:</tt> 
-
-
-
+<tt>Object</tt>
+&mdash;&nbsp;the options passed on to <a href="../classes/Path.html#reduce-options"><tt>path.reduce(options)</tt></a>
+&mdash;&nbsp;optional
 </li>
 	
 </ul>
@@ -5706,7 +5758,7 @@ Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Checks if this item is above the specified item in the stacking order of the project.</p>
+	<p>Checks if this item is above the specified item in the stacking order of the project. If one item is a descendant of the other, neither is above the other and <code>false</code> is returned.</p>
     
 	
 <ul class="member-list">
@@ -5747,7 +5799,7 @@ Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Checks if the item is below the specified item in the stacking order of the project.</p>
+	<p>Checks if the item is below the specified item in the stacking order of the project. If one item is a descendant of the other, neither is below the other and <code>false</code> is returned.</p>
     
 	
 <ul class="member-list">

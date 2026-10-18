@@ -2610,23 +2610,26 @@ path.selected = true;
 </div>
 
 	
-<div id="reduce-options" class="member">
+<div id="reduce" class="member">
 <div class="member-link">
-<a name="reduce-options" href="#reduce-options"><tt><b>reduce</b>(options)</tt></a>
+<a name="reduce" href="#reduce"><tt><b>reduce</b>([options])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Reduces the path by removing curves that have a length of 0, and unnecessary segments between two collinear flat curves.</p>
-    
+	<p>Reduces the path by removing straight curves that have a length of 0. With <code>options.simplify</code>, it also removes straight curves that are almost 0 in length, and unnecessary segments between two collinear straight curves.</p>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.simplify: <tt>Boolean</tt></tt> &mdash; also remove almost zero-length  curves and segments between collinear straight curves &mdash;&nbsp;default: <tt>false</tt></li>
+</ul>
 	
 <ul class="member-list">
 	<h4>Parameters:</h4>
 	
 	<li>
 <tt>options:</tt> 
-
-
-
+<tt>Object</tt>
+&mdash;&nbsp;the reduce options
+&mdash;&nbsp;optional
 </li>
 	
 </ul>
@@ -2727,7 +2730,7 @@ path.selected = true;
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a></tt>&nbsp;&mdash;&nbsp;the curve location of the specified point
+<tt><a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a>⟋<tt>null</tt></tt>&nbsp;&mdash;&nbsp;the curve location of the specified point
 </li>
 
 		
@@ -2768,7 +2771,7 @@ path.selected = true;
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;the length of the path up to the specified point
+<tt><tt>Number</tt>⟋<tt>null</tt></tt>&nbsp;&mdash;&nbsp;the length of the path up to the specified point
 </li>
 
 		
@@ -2789,7 +2792,7 @@ path.selected = true;
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Returns the curve location of the specified offset on the path.</p>
+	<p>Returns the curve location of the specified offset on the path, or <code>null</code> if the offset exceeds the length of the path.</p>
     
 	
 <ul class="member-list">
@@ -3461,6 +3464,7 @@ group.children['example'].fillColor = 'red';
 
 <div class="member-text">
 	<p>The path style of the item.</p>
+<p>Styles set on a <a href="../classes/Group.html"><tt>Group</tt></a> or <a href="../classes/Layer.html"><tt>Layer</tt></a> are applied to the children that it contains at that moment. Items added to it later do not receive them.</p>
 	
 	
 	
@@ -3803,6 +3807,37 @@ circle2.opacity = 0.5;
 </div>
 
 
+</div>
+
+</div>
+</div>
+
+	
+<div id="guide" class="member">
+<div class="member-link">
+<a name="guide" href="#guide"><tt><b>guide</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Specifies whether the item functions as a guide. When set to <code>true</code>, the item is drawn as usual, but left out of hit-tests and mouse interactions. Hit-tests only find guides when <code>options.guides</code> is set, and then only them, see <a href="../classes/Item.html#hittest-point"><tt>hitTest(point[, options])</tt></a>.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>false</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Boolean</tt>
+		</li>
+	</ul>
+    
+	
+	
 </div>
 
 </div>
@@ -4506,6 +4541,7 @@ console.log(group.children[0] == path); // true</code></pre>
 
 <div class="member-text">
 	<p>The children items contained within this item. Items that define a <a href="../classes/Item.html#name"><tt>name</tt></a> can also be accessed by name.</p>
+<p>Only <a href="../classes/Group.html"><tt>Group</tt></a>, <a href="../classes/Layer.html"><tt>Layer</tt></a> and <a href="../classes/CompoundPath.html"><tt>CompoundPath</tt></a> items can have children. On all other items, such as <a href="../classes/Path.html"><tt>Path</tt></a>, <a href="../classes/Shape.html"><tt>Shape</tt></a>, <a href="../classes/Raster.html"><tt>Raster</tt></a>, <a href="../classes/SymbolItem.html"><tt>SymbolItem</tt></a> and <a href="../classes/PointText.html"><tt>PointText</tt></a>, <code>children</code> is <code>undefined</code>.</p>
 <p><b>Please note:</b> The children array should not be modified directly using array functions. To remove single items from the children list, use <a href="../classes/Item.html#remove"><tt>item.remove</tt></a>(), to remove all items from the children list, use <a href="../classes/Item.html#removechildren"><tt>item.removeChildren</tt></a>(). To add items to the children list, use <a href="../classes/Item.html#addchild-item"><tt>item.addChild(item)</tt></a> or <a href="../classes/Item.html#insertchild-index-item"><tt>item.insertChild(index, item)</tt></a>.</p>
 	
 	
@@ -6446,22 +6482,22 @@ function onMouseDown(event) {
 <div class="member-description hidden">
 <div class="member-text">
 	<p>Performs a hit-test on the item and its children (if it is a <a href="../classes/Group.html"><tt>Group</tt></a> or <a href="../classes/Layer.html"><tt>Layer</tt></a>) at the location of the specified point, returning the first found hit.</p>
-<p>The options object allows you to control the specifics of the hit- test and may contain a combination of the following values:</p>
+<p>The options object allows you to control the specifics of the hit-test. Without options, <code>fill</code>, <code>stroke</code> and <code>segments</code> are hit-tested. As soon as an options object is passed, only the hit-tests that it sets to <code>true</code> are performed. It may contain a combination of the following values:</p>
     <ul class="member-list">
 <h4>Options:</h4>
 <li><tt>options.tolerance: <tt>Number</tt></tt> &mdash; the tolerance of the hit-test &mdash;&nbsp;default: <tt><a href="../classes/PaperScope.html#settings"><tt>paperScope.settings</tt></a>.hitTolerance</tt></li>
 <li><tt>options.class: <tt>Function</tt></tt> &mdash; only hit-test against a specific item  class, or any of its sub-classes, by providing the constructor  function against which an <code>instanceof</code> check is performed:  <tt>Group</tt>, <tt>Layer</tt>, <tt>Path</tt>, <tt>CompoundPath</tt>, <tt>Shape</tt>, <tt>Raster</tt>, <tt>SymbolItem</tt>, <tt>PointText</tt>, &hellip;</li>
 <li><tt>options.match: <tt>Function</tt></tt> &mdash; a match function to be called for each  found hit result: Return <code>true</code> to return the result, <code>false</code> to keep  searching</li>
-<li><tt>options.fill: <tt>Boolean</tt></tt> &mdash; hit-test the fill of items &mdash;&nbsp;default: <tt>true</tt></li>
-<li><tt>options.stroke: <tt>Boolean</tt></tt> &mdash; hit-test the stroke of path  items, taking into account the setting of stroke color and width &mdash;&nbsp;default: <tt>true</tt></li>
-<li><tt>options.segments: <tt>Boolean</tt></tt> &mdash; hit-test for <a href="../classes/Segment.html#point"><tt>segment.point</tt></a> of <a href="../classes/Path.html"><tt>Path</tt></a> items &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.fill: <tt>Boolean</tt></tt> &mdash; hit-test the fill of items</li>
+<li><tt>options.stroke: <tt>Boolean</tt></tt> &mdash; hit-test the stroke of path items,  taking into account the setting of stroke color and width</li>
+<li><tt>options.segments: <tt>Boolean</tt></tt> &mdash; hit-test for <a href="../classes/Segment.html#point"><tt>segment.point</tt></a> of  <a href="../classes/Path.html"><tt>Path</tt></a> items</li>
 <li><tt>options.curves: <tt>Boolean</tt></tt> &mdash; hit-test the curves of path items,  without taking the stroke color or width into account</li>
 <li><tt>options.handles: <tt>Boolean</tt></tt> &mdash; hit-test for the handles (<a href="../classes/Segment.html#handlein"><tt>segment.handleIn</tt></a> / <a href="../classes/Segment.html#handleout"><tt>segment.handleOut</tt></a>) of path segments.</li>
 <li><tt>options.ends: <tt>Boolean</tt></tt> &mdash; only hit-test for the first or last  segment points of open path items</li>
 <li><tt>options.position: <tt>Boolean</tt></tt> &mdash; hit-test the <a href="../classes/Item.html#position"><tt>item.position</tt></a> of  of items, which depends on the setting of <a href="../classes/Item.html#pivot"><tt>item.pivot</tt></a></li>
 <li><tt>options.center: <tt>Boolean</tt></tt> &mdash; hit-test the <a href="../classes/Rectangle.html#center"><tt>rectangle.center</tt></a> of  the bounding rectangle of items (<a href="../classes/Item.html#bounds"><tt>item.bounds</tt></a>)</li>
 <li><tt>options.bounds: <tt>Boolean</tt></tt> &mdash; hit-test the corners and side-centers of  the bounding rectangle of items (<a href="../classes/Item.html#bounds"><tt>item.bounds</tt></a>)</li>
-<li><tt>options.guides: <tt>Boolean</tt></tt> &mdash; hit-test items that have <tt>Item#guide</tt> set to <code>true</code></li>
+<li><tt>options.guides: <tt>Boolean</tt></tt> &mdash; only hit-test items that have <a href="../classes/Item.html#guide"><tt>item.guide</tt></a> set to <code>true</code></li>
 <li><tt>options.selected: <tt>Boolean</tt></tt> &mdash; only hit selected items</li>
 </ul>
 	
@@ -6700,7 +6736,7 @@ function onMouseDown(event) {
 		<h4>Returns:</h4>
 		
 			<li>
-<tt>Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects</tt>&nbsp;&mdash;&nbsp;the list of matching descendant items
+<tt>Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects</tt>&nbsp;&mdash;&nbsp;the list of matching descendant items, in their  stacking order from bottom to top, with each item listed before its  own descendants
 </li>
 
 		
@@ -7757,7 +7793,7 @@ Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Checks if this item is above the specified item in the stacking order of the project.</p>
+	<p>Checks if this item is above the specified item in the stacking order of the project. If one item is a descendant of the other, neither is above the other and <code>false</code> is returned.</p>
     
 	
 <ul class="member-list">
@@ -7798,7 +7834,7 @@ Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Checks if the item is below the specified item in the stacking order of the project.</p>
+	<p>Checks if the item is below the specified item in the stacking order of the project. If one item is a descendant of the other, neither is below the other and <code>false</code> is returned.</p>
     
 	
 <ul class="member-list">
@@ -10028,7 +10064,23 @@ path.tweenFrom({ fillColor: 'red' }, { duration: 1000 });
 
 
 	
-	
+	<h4>Example:</h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-108">
+var result = new Path.RegularPolygon([50, 50], 3, 40)
+    .unite(new Path.Circle([50, 50], 25));
+result.fillColor = 'red';
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-108"></canvas></div>
+</div>
+
+
 </div>
 </div>
 </div>
@@ -10080,7 +10132,23 @@ path.tweenFrom({ fillColor: 'red' }, { duration: 1000 });
 
 
 	
-	
+	<h4>Example:</h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-109">
+var result = new Path.RegularPolygon([50, 50], 3, 40)
+    .intersect(new Path.Circle([50, 50], 25));
+result.fillColor = 'red';
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-109"></canvas></div>
+</div>
+
+
 </div>
 </div>
 </div>
@@ -10132,7 +10200,23 @@ path.tweenFrom({ fillColor: 'red' }, { duration: 1000 });
 
 
 	
-	
+	<h4>Example:</h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-110">
+var result = new Path.RegularPolygon([50, 50], 3, 40)
+    .subtract(new Path.Circle([50, 50], 25));
+result.fillColor = 'red';
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-110"></canvas></div>
+</div>
+
+
 </div>
 </div>
 </div>
@@ -10183,7 +10267,23 @@ path.tweenFrom({ fillColor: 'red' }, { duration: 1000 });
 
 
 	
-	
+	<h4>Example:</h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-111">
+var result = new Path.RegularPolygon([50, 50], 3, 40)
+    .exclude(new Path.Circle([50, 50], 25));
+result.fillColor = 'red';
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-111"></canvas></div>
+</div>
+
+
 </div>
 </div>
 </div>
@@ -10348,7 +10448,7 @@ path.tweenFrom({ fillColor: 'red' }, { duration: 1000 });
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-108">
+<script type="text/paperscript" canvas="canvas-112">
 var path = new Path.Rectangle(new Point(30, 25), new Size(50, 50));
 path.strokeColor = 'black';
 
@@ -10371,7 +10471,7 @@ function onFrame(event) {
     }
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-108"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-112"></canvas></div>
 </div>
 
 
@@ -10512,7 +10612,7 @@ function onFrame(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-109">
+<script type="text/paperscript" canvas="canvas-113">
 var star = new Path.Star({
     center: view.center,
     points: 10,
@@ -10536,7 +10636,7 @@ function onMouseMove(event) {
     circle.position = nearestPoint;
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-109"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-113"></canvas></div>
 </div>
 
 
@@ -10599,7 +10699,7 @@ function onMouseMove(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-110">
+<script type="text/paperscript" canvas="canvas-114">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var path = new Path.Circle({
@@ -10617,7 +10717,7 @@ copy.position.x += 150;
 // Flatten the copied path, with a maximum error of 4 points:
 copy.flatten(4);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-110"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-114"></canvas></div>
 </div>
 
 
@@ -10695,7 +10795,7 @@ copy.flatten(4);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-111">
+<script type="text/paperscript" canvas="canvas-115">
 // Create a rectangular path with its top-left point at
 // {x: 30, y: 25} and a size of {width: 50, height: 50}:
 var path = new Path.Rectangle({
@@ -10714,7 +10814,7 @@ copy.position.x += 100;
 // Smooth the segments of the copy:
 copy.smooth({ type: 'continuous' });
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-111"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-115"></canvas></div>
 </div>
 
 
@@ -10726,7 +10826,7 @@ copy.smooth({ type: 'continuous' });
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-112">
+<script type="text/paperscript" canvas="canvas-116">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -10751,7 +10851,7 @@ copy.fullySelected = true;
 // Smooth the path using centripetal Catmull-Rom splines:
 copy.smooth({ type: 'catmull-rom', factor: 0.5 });
 </script>
-<div class="canvas"><canvas width="516" height="220" id="canvas-112"></canvas></div>
+<div class="canvas"><canvas width="516" height="220" id="canvas-116"></canvas></div>
 </div>
 
 
@@ -10763,7 +10863,7 @@ copy.smooth({ type: 'catmull-rom', factor: 0.5 });
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-113">
+<script type="text/paperscript" canvas="canvas-117">
 // Create 5 rectangles, next to each other:
 var paths = [];
 for (var i = 0; i < 5; i++) {
@@ -10793,7 +10893,7 @@ paths[3].smooth({ type: 'continuous', from: 0, to: 2 });
 // Smooth a range, using negative indices:
 paths[4].smooth({ type: 'continuous', from: -1, to: 1 });
 </script>
-<div class="canvas"><canvas width="516" height="110" id="canvas-113"></canvas></div>
+<div class="canvas"><canvas width="516" height="110" id="canvas-117"></canvas></div>
 </div>
 
 
@@ -10846,7 +10946,7 @@ paths[4].smooth({ type: 'continuous', from: -1, to: 1 });
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-114">
+<script type="text/paperscript" canvas="canvas-118">
 var path;
 function onMouseDown(event) {
     // If we already made a path before, deselect it:
@@ -10876,7 +10976,7 @@ function onMouseUp(event) {
     path.selected = true;
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-114"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-118"></canvas></div>
 </div>
 
 
@@ -11075,7 +11175,7 @@ function onMouseUp(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-115">
+<script type="text/paperscript" canvas="canvas-119">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -11095,7 +11195,7 @@ path.arcTo(throughPoint, toPoint);
 var circle = new Path.Circle(throughPoint, 3);
 circle.fillColor = 'red';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-115"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-119"></canvas></div>
 </div>
 
 
@@ -11107,7 +11207,7 @@ circle.fillColor = 'red';
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-116">
+<script type="text/paperscript" canvas="canvas-120">
 var myPath;
 function onMouseDrag(event) {
     // If we created a path before, remove it:
@@ -11135,7 +11235,7 @@ function onMouseUp(event) {
     myPath.fillColor = 'black';
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-116"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-120"></canvas></div>
 </div>
 
 
@@ -11184,7 +11284,7 @@ function onMouseUp(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-117">
+<script type="text/paperscript" canvas="canvas-121">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -11199,7 +11299,7 @@ path2.add(new Point(180, 25));
 // we pass `false` as the second argument to arcTo:
 path2.arcTo(new Point(280, 25), false);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-117"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-121"></canvas></div>
 </div>
 
 
@@ -11211,7 +11311,7 @@ path2.arcTo(new Point(280, 25), false);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-118">
+<script type="text/paperscript" canvas="canvas-122">
 var myPath;
 
 // The mouse has to move at least 20 points before
@@ -11232,7 +11332,7 @@ function onMouseDrag(event) {
     myPath.arcTo(event.point);
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-118"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-122"></canvas></div>
 </div>
 
 
@@ -11288,7 +11388,7 @@ function onMouseDrag(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-119">
+<script type="text/paperscript" canvas="canvas-123">
 var myPath;
 function onMouseMove(event) {
     // If we created a path before, remove it:
@@ -11309,7 +11409,7 @@ function onMouseMove(event) {
     myPath.selected = true;
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-119"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-123"></canvas></div>
 </div>
 
 
@@ -11494,7 +11594,7 @@ function onMouseMove(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-120">
+<script type="text/paperscript" canvas="canvas-124">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -11508,7 +11608,7 @@ path.lineBy(50, 0);
 // 0 in x direction and 50 in y direction, becomes {x: 75, y: 75}
 path.lineBy(0, 50);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-120"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-124"></canvas></div>
 </div>
 
 
@@ -11520,7 +11620,7 @@ path.lineBy(0, 50);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-121">
+<script type="text/paperscript" canvas="canvas-125">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -11546,7 +11646,7 @@ path.smooth();
 // the construction of the path:
 // path.selected = true;
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-121"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-125"></canvas></div>
 </div>
 
 
