@@ -380,6 +380,20 @@ var Size = Base.extend(/** @lends Size# */{
         return new Size(this.width % size.width, this.height % size.height);
     },
 
+    /**
+     * Returns a new size with both dimensions negated.
+     * The object itself is not modified!
+     *
+     * @name Size#negate
+     * @function
+     * @operator
+     * @return {Size} the negation of the size as a new size
+     *
+     * @example
+     * var size = new Size(12, -6);
+     * var result = -size;
+     * console.log(result); // {width: -12, height: 6}
+     */
     negate: function() {
         return new Size(-this.width, -this.height);
     },
