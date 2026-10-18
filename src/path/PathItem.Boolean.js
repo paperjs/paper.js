@@ -85,7 +85,7 @@ PathItem.inject(new function() {
         result.addChildren(paths, true);
         // See if the item can be reduced to just a simple Path.
         result = result.reduce({ simplify: simplify });
-        if (!(options && options.insert == false)) {
+        if (Base.pick(options && options.insert, paper.settings.insertItems)) {
             // Insert the resulting path above whichever of the two paths appear
             // further up in the stack.
             result.insertAbove(path2 && path1.isSibling(path2)

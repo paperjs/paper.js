@@ -178,7 +178,7 @@ var Shape = Item.extend(/** @lends Shape# */{
         // Respect the setting of paper.settings.applyMatrix for new paths:
         if (paper.settings.applyMatrix)
             path.setApplyMatrix(true);
-        if (insert === undefined || insert)
+        if (Base.pick(insert, paper.settings.insertItems))
             path.insertAbove(this);
         return path;
     },

@@ -24,6 +24,11 @@
   the SVG, instead of resampling them to that size, which made them blurry.
   `Raster#size` is now the image's own size, and images without a size are
   shown at it, as in browsers (#1963).
+- Let `Item#clone()`, the boolean operations, `Item#rasterize()`,
+  `Path#toShape()` and `Shape#toPath()` follow `settings.insertItems` when no
+  `insert` option is passed, instead of always inserting their results. An
+  options object without `insert` also inserts the clone by default now, as
+  documented, e.g. `clone({ deep: false })` (#1721).
 
 ### Fixed
 

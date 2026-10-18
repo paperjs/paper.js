@@ -1665,10 +1665,11 @@ new function() { // Injection scope for various item event handlers
     clone: function(options) {
         var copy = new this.constructor(Item.NO_INSERT),
             children = this._children,
-            // Both `insert` and `deep` are true by default:
+            // `insert` follows settings.insertItems and `deep` is true by
+            // default. Also support a boolean parameter for insert:
             insert = Base.pick(options ? options.insert : undefined,
-                    // Also support boolean parameter for insert, default: true.
-                    options === undefined || options === true),
+                    typeof options === 'boolean' ? options
+                        : paper.settings.insertItems),
             deep = Base.pick(options ? options.deep : undefined, true);
         // On items with children, for performance reasons due to the way that
         // styles are currently "flattened" into existing children, we need to
@@ -1844,7 +1845,7 @@ new function() { // Injection scope for various item event handlers
                 // Take resolution into account and scale back to original size.
                 .scale(1 / scale)
         );
-        if (insert === undefined || insert) {
+        if (Base.pick(insert, paper.settings.insertItems)) {
             raster.insertAbove(this);
         }
         return raster;
