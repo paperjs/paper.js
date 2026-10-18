@@ -89,13 +89,17 @@ new function() { // Injection scope for various item event handlers
             'onDoubleClick', 'onMouseMove', 'onMouseEnter', 'onMouseLeave'];
     return Base.each(handlers,
         function(name) {
+            // Only count the events of inserted items, so removing an item
+            // from a removed parent doesn't count them down twice:
             this._events[name] = {
                 install: function(type) {
-                    this.getView()._countItemEvent(type, 1);
+                    if (this.isInserted())
+                        this.getView()._countItemEvent(type, 1);
                 },
 
                 uninstall: function(type) {
-                    this.getView()._countItemEvent(type, -1);
+                    if (this.isInserted())
+                        this.getView()._countItemEvent(type, -1);
                 }
             };
         }, {
@@ -1356,19 +1360,12 @@ new function() { // Injection scope for various item event handlers
 
     _setProject: function(project, installEvents) {
         if (this._project !== project) {
-            // Uninstall events before switching project, then install them
-            // again.
-            // NOTE: _installEvents handles all children too!
-            if (this._project)
-                this._installEvents(false);
             this._project = project;
             var children = this._children;
             for (var i = 0, l = children && children.length; i < l; i++)
                 children[i]._setProject(project);
-            // We need to call _installEvents(true) again, but merge it with
-            // handling of installEvents argument below.
-            installEvents = true;
         }
+        // NOTE: _installEvents handles all children too!
         if (installEvents)
             this._installEvents(true);
     },
@@ -2808,6 +2805,9 @@ new function() { // Injection scope for hit-test functions shared with project
             // Handle named children separately from index:
             if (this._name)
                 this._removeNamed();
+            // Uninstall events while still inserted, as layers aren't anymore
+            // after Base.splice() below.
+            this._installEvents(false);
             // Handle index separately from owner: There are situations where
             // the item is already removed from its list through Base.splice()
             // and index set to undefined, but the owner is still set,
@@ -2819,7 +2819,6 @@ new function() { // Injection scope for hit-test functions shared with project
                             || this.getPreviousSibling();
                 Base.splice(owner._children, null, index, 1);
             }
-            this._installEvents(false);
             // Notify self of the insertion change. We only need this
             // notification if we're tracking changes for now.
             if (notifySelf && project._changes)
