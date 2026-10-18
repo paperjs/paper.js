@@ -53,6 +53,25 @@ test('Import SVG round rect', function() {
     equals(imported, path);
 });
 
+test('Import SVG round rect with only rx or ry (#1863)', function() {
+    function getRadius(attrs) {
+        var imported = paper.project.importSVG(
+                '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">'
+                + '<rect width="100" height="80" ' + attrs + '/></svg>');
+        return imported.firstChild.radius;
+    }
+
+    // A missing rx or ry takes the other's value, and percentages refer to
+    // the width for rx and to the height for ry:
+    equals(getRadius(''), new Size(0, 0));
+    equals(getRadius('rx="10"'), new Size(10, 10));
+    equals(getRadius('ry="10"'), new Size(10, 10));
+    equals(getRadius('rx="10" ry="20"'), new Size(10, 20));
+    equals(getRadius('rx="10%"'), new Size(20, 20));
+    equals(getRadius('ry="10%"'), new Size(10, 10));
+    equals(getRadius('rx="10%" ry="10%"'), new Size(20, 10));
+});
+
 test('Import SVG ellipse', function() {
     var attrs = {
         cx: 300,
@@ -114,6 +133,15 @@ test('Import SVG polyline', function() {
     equals(imported, path);
 });
 
+test('Import SVG path with arc flags without separators (#1808)', function() {
+    var data = 'M-481.302-497.13l-214.207 28.674c-.106-.531-.106-.956-.212-1.38'
+            + 'l212.826-37.277a150.441 150.441 0 011.593 9.983';
+    var imported = paper.project.importSVG(createSVG('path', { d: data }));
+    // The relative arc ends 1.593, 9.983 from the end of the previous line:
+    equals(imported.lastSegment.point, new Point(-481.302, -497.13));
+    equals(imported, new Path(data.replace('0 011.593', '0 0 1 1.593')));
+});
+
 test('Import SVG Image', function(assert) {
     var done = assert.async();
     var svg = '<?xml version="1.0" encoding="utf-8"?><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><image style="overflow:visible;enable-background:new    ;" width="300" height="67" id="e0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" transform="matrix(0.2149 0 0 0.2149 304.7706 197.8176)"></image></svg>';
@@ -167,6 +195,90 @@ test('Import SVG string with leading line-breaks', function() {
         size: [100, 100],
         fillColor: 'red'
     }));
+});
+
+test('Import SVG with references to later definitions (#1146, #1884)', function() {
+    function importWith(content) {
+        return paper.project.importSVG('<svg xmlns="http://www.w3.org/2000/svg"'
+                + ' xmlns:xlink="http://www.w3.org/1999/xlink">' + content
+                + '</svg>');
+    }
+
+    function getStops(color) {
+        return color.gradient.stops.map(function(stop) {
+            return [stop.color.toCSS(true), stop.offset];
+        });
+    }
+
+    // A gradient that links to a gradient defined after it:
+    var derived = '<linearGradient id="derived" xlink:href="#base"/>',
+        base = '<linearGradient id="base"><stop offset="5%" stop-color="green"/>'
+            + '<stop offset="95%" stop-color="gold"/></linearGradient>',
+        rect = '<rect fill="url(#derived)" width="100" height="100"/>',
+        imported = importWith('<defs>' + derived + base + '</defs>' + rect);
+    equals(getStops(imported.firstChild.fillColor),
+            [['#008000', 0.05], ['#ffd700', 0.95]]);
+    equals(imported, importWith('<defs>' + base + derived + '</defs>' + rect));
+
+    // A fill that references a gradient after it, outside of <defs>:
+    imported = importWith(rect + derived + base);
+    equals(getStops(imported.firstChild.fillColor),
+            [['#008000', 0.05], ['#ffd700', 0.95]]);
+    equals(imported, importWith(base + derived + rect));
+
+    // <use> elements that reference a symbol and an element after them:
+    var uses = '<use xlink:href="#symbol" x="10" y="20"/>'
+            + '<use xlink:href="#circle" x="10" y="20"/>',
+        symbol = '<symbol id="symbol"><rect width="10" height="10"/></symbol>',
+        circle = '<circle id="circle" cx="5" cy="5" r="5"/>';
+    imported = importWith(uses + symbol + circle);
+    equals(function() {
+        return imported.children.length;
+    }, 3);
+    equals(function() {
+        return imported.children[0].definition.item.children.length;
+    }, 1);
+    equals(imported.children[0].bounds, new Rectangle(10, 20, 10, 10));
+    equals(imported.children[1].bounds, new Rectangle(10, 20, 10, 10));
+    equals(imported.children[2].bounds, new Rectangle(0, 0, 10, 10));
+    equals(imported, importWith(symbol + uses + circle));
+});
+
+test('Import SVG gradient with a link to an inexistent gradient', function() {
+    // An invalid link is ignored, and the gradient uses its own stops:
+    var gradient = '<linearGradient id="gradient"%s>'
+            + '<stop offset="0" stop-color="red"/>'
+            + '<stop offset="1" stop-color="blue"/></linearGradient>',
+        rect = '<rect fill="url(#gradient)" width="100" height="100"/>';
+    function importWith(href) {
+        return paper.project.importSVG('<svg xmlns="http://www.w3.org/2000/svg"'
+                + ' xmlns:xlink="http://www.w3.org/1999/xlink"><defs>'
+                + gradient.replace('%s', href) + '</defs>' + rect + '</svg>');
+    }
+    var imported = importWith(' xlink:href="#inexistent"');
+    equals(function() {
+        return imported.firstChild.fillColor.gradient.stops.length;
+    }, 2);
+    equals(imported, importWith(''));
+});
+
+test('Import SVG with numeric ids (#1754)', function() {
+    var imported = paper.project.importSVG('<svg xmlns="http://www.w3.org/2000/svg"'
+            + ' xmlns:xlink="http://www.w3.org/1999/xlink">'
+            + '<g id="2"><rect width="10" height="10"/></g>'
+            + '<rect id="3a" width="10" height="10"/>'
+            + '<use xlink:href="#2" x="20"/></svg>');
+    equals(function() {
+        return imported.children.length;
+    }, 3);
+    equals(function() {
+        return imported.children[0].name;
+    }, null);
+    equals(function() {
+        return imported.children[1].name;
+    }, '3a');
+    // References by numeric ids still work:
+    equals(imported.children[2].bounds, new Rectangle(20, 0, 10, 10));
 });
 
 test('Import SVG cleans up after errors', function() {
@@ -263,7 +375,8 @@ if (!isNodeContext) {
         'gradients-1': {},
         'gradients-2': {},
         'gradients-3': {},
-        'gradients-4': {}
+        'gradients-4': {},
+        'rectangles': {}
     };
     Base.each(svgFiles, function(options, name) {
         if (options) {
