@@ -174,16 +174,7 @@ var Shape = Item.extend(/** @lends Shape# */{
      * @see Path#toShape(insert)
      */
     toPath: function(insert) {
-        // TODO: Move to Path.createTYPE creators instead of fake constructors.
-        var path = new Path[Base.capitalize(this._type)]({
-            center: new Point(),
-            size: this._size,
-            radius: this._radius,
-            insert: false
-        });
-        path.copyAttributes(this);
-        // The created path will inherit #applyMatrix from this Shape, hence it
-        // will always be false.
+        var path = this._asPathItem();
         // Respect the setting of paper.settings.applyMatrix for new paths:
         if (paper.settings.applyMatrix)
             path.setApplyMatrix(true);
@@ -195,7 +186,17 @@ var Shape = Item.extend(/** @lends Shape# */{
     toShape: '#clone',
 
     _asPathItem: function() {
-        return this.toPath(false);
+        // TODO: Move to Path.createTYPE creators instead of fake constructors.
+        var path = new Path[Base.capitalize(this._type)]({
+            center: new Point(),
+            size: this._size,
+            radius: this._radius,
+            insert: false
+        });
+        // The created path inherits #applyMatrix from this Shape, hence it
+        // will always be false, as required by Item#_asPathItem().
+        path.copyAttributes(this);
+        return path;
     },
 
     _draw: function(ctx, param, viewMatrix, strokeMatrix) {
