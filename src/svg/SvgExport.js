@@ -285,9 +285,24 @@ new function() {
     }
 
     function exportText(item) {
-        var node = SvgElement.create('text', getTransform(item._matrix, true),
-                formatter);
-        node.textContent = item._content;
+        var attrs = getTransform(item._matrix, true),
+            node = SvgElement.create('text', attrs, formatter),
+            lines = item._lines;
+        if (lines.length > 1) {
+            // SVG text has no line breaks, so place each line in a <tspan> at
+            // its own baseline. Use absolute y, as empty lines drop dy:
+            var leading = item._style.getLeading();
+            for (var i = 0, l = lines.length; i < l; i++) {
+                var span = SvgElement.create('tspan', {
+                    x: attrs.x,
+                    y: attrs.y + i * leading
+                }, formatter);
+                span.textContent = lines[i];
+                node.appendChild(span);
+            }
+        } else {
+            node.textContent = item._content;
+        }
         return node;
     }
 

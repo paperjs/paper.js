@@ -315,8 +315,16 @@ new function() {
             // rotate: character rotation
             // lengthAdjust:
             var text = new PointText(getPoint(node).add(
-                    getPoint(node, 'dx', 'dy')));
-            text.setContent(node.textContent.trim() || '');
+                    getPoint(node, 'dx', 'dy'))),
+                // Lines are placed in <tspan> elements with their own y, as
+                // exported by Paper.js and other editors:
+                lines = Base.each(node.childNodes, function(child) {
+                    if (/^tspan$/i.test(child.nodeName)
+                            && child.hasAttribute('y'))
+                        this.push(child.textContent.trim());
+                }, []);
+            text.setContent(lines.length > 1 ? lines.join('\n')
+                    : node.textContent.trim());
             return text;
         },
 
