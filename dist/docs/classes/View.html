@@ -726,6 +726,97 @@ view.onResize = function(event) {
 </div>
 </div>
 		
+			
+<div id="onkeydown" class="member">
+<div class="member-link">
+<a name="onkeydown" href="#onkeydown"><tt><b>onKeyDown</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The function to be called when the user presses a key on the keyboard. The function receives a <a href="../classes/KeyEvent.html"><tt>KeyEvent</tt></a> object which contains information about the keyboard event.</p>
+<p>If the function returns <code>false</code>, the keyboard event will be prevented from bubbling up. This can be used for example to stop the window from scrolling, when you need the user to interact with arrow keys.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:<span class="description">Scaling a path whenever the user presses the space bar:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-1">
+// Create a circle shaped path:
+var path = new Path.Circle({
+    center: new Point(50, 50),
+    radius: 30,
+    fillColor: 'red'
+});
+
+view.onKeyDown = function(event) {
+    if (event.key == 'space') {
+        // Scale the path by 110%:
+        path.scale(1.1);
+
+        // Prevent the key event from bubbling
+        return false;
+    }
+}
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="onkeyup" class="member">
+<div class="member-link">
+<a name="onkeyup" href="#onkeyup"><tt><b>onKeyUp</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The function to be called when the user releases a key on the keyboard. The function receives a <a href="../classes/KeyEvent.html"><tt>KeyEvent</tt></a> object which contains information about the keyboard event.</p>
+<p>If the function returns <code>false</code>, the keyboard event will be prevented from bubbling up. This can be used for example to stop the window from scrolling, when you need the user to interact with arrow keys.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:</h4>
+
+
+<pre><code>view.onKeyUp = function(event) {
+    if (event.key == 'space') {
+        console.log('The spacebar was released!');
+    }
+}</code></pre>
+
+</div>
+
+</div>
+</div>
+		
 	</div>
 
 
@@ -1462,7 +1553,7 @@ view.onResize = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-1">
+<script type="text/paperscript" canvas="canvas-2">
 var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
 path.fillColor = 'black';
 
@@ -1473,7 +1564,7 @@ var frameHandler = function(event) {
 
 view.on('frame', frameHandler);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
 </div>
 
 
@@ -1525,7 +1616,7 @@ view.on('frame', frameHandler);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-2">
+<script type="text/paperscript" canvas="canvas-3">
 var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
 path.fillColor = 'black';
 
@@ -1538,7 +1629,7 @@ view.on({
     frame: frameHandler
 });
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-3"></canvas></div>
 </div>
 
 
@@ -1597,7 +1688,7 @@ view.on({
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-3">
+<script type="text/paperscript" canvas="canvas-4">
 var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
 path.fillColor = 'black';
 
@@ -1616,7 +1707,7 @@ function onMouseDown(event) {
     view.off('frame');
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-3"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-4"></canvas></div>
 </div>
 
 

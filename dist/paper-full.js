@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 18 17:07:53 2026 +0200
+ * Date: Sun Oct 18 18:29:51 2026 +0200
  *
  ***
  *
@@ -3183,11 +3183,13 @@ new function() {
 		function(name) {
 			this._events[name] = {
 				install: function(type) {
-					this.getView()._countItemEvent(type, 1);
+					if (this.isInserted())
+						this.getView()._countItemEvent(type, 1);
 				},
 
 				uninstall: function(type) {
-					this.getView()._countItemEvent(type, -1);
+					if (this.isInserted())
+						this.getView()._countItemEvent(type, -1);
 				}
 			};
 		}, {
@@ -3747,13 +3749,10 @@ new function() {
 
 	_setProject: function(project, installEvents) {
 		if (this._project !== project) {
-			if (this._project)
-				this._installEvents(false);
 			this._project = project;
 			var children = this._children;
 			for (var i = 0, l = children && children.length; i < l; i++)
 				children[i]._setProject(project);
-			installEvents = true;
 		}
 		if (installEvents)
 			this._installEvents(true);
@@ -4382,13 +4381,13 @@ new function() {
 		if (owner) {
 			if (this._name)
 				this._removeNamed();
+			this._installEvents(false);
 			if (index != null) {
 				if (project._activeLayer === this)
 					project._activeLayer = this.getNextSibling()
 							|| this.getPreviousSibling();
 				Base.splice(owner._children, null, index, 1);
 			}
-			this._installEvents(false);
 			if (notifySelf && project._changes)
 				this._changed(5);
 			if (notifyParent)
@@ -4663,14 +4662,16 @@ new function() {
 	}
 }), {
 
-	_setStyles: function(ctx, param, viewMatrix) {
+	_setStyles: function(ctx, param, viewMatrix, strokeMatrix) {
 		var style = this._style,
 			matrix = this._matrix;
 		if (style.hasFill()) {
-			ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx, matrix);
+			ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx, matrix,
+					strokeMatrix);
 		}
 		if (style.hasStroke()) {
-			ctx.strokeStyle = style.getStrokeColor().toCanvasStyle(ctx, matrix);
+			ctx.strokeStyle = style.getStrokeColor().toCanvasStyle(ctx,
+					matrix, strokeMatrix);
 			ctx.lineWidth = style.getStrokeWidth();
 			var strokeJoin = style.getStrokeJoin(),
 				strokeCap = style.getStrokeCap(),
@@ -4814,7 +4815,7 @@ new function() {
 		if (!this._drawSelected)
 			itemSelected = false;
 		if ((itemSelected || boundsSelected || positionSelected)
-				&& this._isUpdated(updateVersion)) {
+				&& this._isUpdated(updateVersion) && this.isInserted()) {
 			var layer,
 				color = this.getSelectedColor(true) || (layer = this.getLayer())
 					&& layer.getSelectedColor(true),
@@ -5037,6 +5038,7 @@ var Shape = Item.extend({
 		size: null,
 		radius: null
 	},
+	_prioritize: ['type'],
 
 	initialize: function Shape(props, point) {
 		this._initialize(props, point);
@@ -5218,7 +5220,7 @@ var Shape = Item.extend({
 			ctx.closePath();
 		}
 		if (!dontPaint && (hasFill || hasStroke)) {
-			this._setStyles(ctx, param, viewMatrix);
+			this._setStyles(ctx, param, viewMatrix, strokeMatrix);
 			if (hasFill) {
 				ctx.fill(style.getFillRule());
 				ctx.shadowColor = 'rgba(0,0,0,0)';
@@ -6889,7 +6891,7 @@ statics: {
 		}
 	}
 }}, Base.each(
-	['getBounds', 'getStrokeBounds', 'getHandleBounds'],
+	['getBounds', 'getStrokeBounds'],
 	function(name) {
 		this[name] = function() {
 			if (!this._bounds)
@@ -6903,6 +6905,15 @@ statics: {
 		};
 	},
 {
+
+	getHandleBounds: function() {
+		var v = this.getValues(),
+			x1 = Math.min(v[0], v[2], v[4], v[6]),
+			y1 = Math.min(v[1], v[3], v[5], v[7]),
+			x2 = Math.max(v[0], v[2], v[4], v[6]),
+			y2 = Math.max(v[1], v[3], v[5], v[7]);
+		return new Rectangle(x1, y1, x2 - x1, y2 - y1);
+	},
 
 }), Base.each({
 	isStraight: function(p1, h1, h2, p2) {
@@ -7696,8 +7707,8 @@ new function() {
 			den = 2 * ax * ty - 2 * ay * tx,
 			times = [];
 		if (Math.abs(den) < Numerical.CURVETIME_EPSILON) {
-			var num = ax * cy - ay * cx,
-				den = ax * by - ay * bx;
+			var num = cx * ty - cy * tx,
+				den = bx * ty - by * tx;
 			if (den != 0) {
 				var t = -num / den;
 				if (t >= 0 && t <= 1) times.push(t);
@@ -8146,7 +8157,12 @@ var PathItem = Item.extend({
 			previous,
 			control,
 			current = new Point(),
-			start = new Point();
+			start = new Point(),
+			number = '([+-]?(?:\\d*\\.\\d+|\\d+\\.?)(?:[eE][+-]?\\d+)?)',
+			numbers = new RegExp(number, 'g'),
+			flag = '([01])',
+			arcs = new RegExp([number, number, number, flag, flag, number,
+					number].join('[\\s,]*'), 'g');
 
 		function getCoord(index, coord) {
 			var val = +coords[index];
@@ -8168,7 +8184,7 @@ var PathItem = Item.extend({
 			var part = parts[i],
 				command = part[0],
 				lower = command.toLowerCase();
-			coords = part.match(/[+-]?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?/g);
+			coords = part.match(numbers);
 			var length = coords && coords.length;
 			relative = command === lower;
 			if (previous === 'z' && !/[mz]/.test(lower))
@@ -8233,10 +8249,10 @@ var PathItem = Item.extend({
 				}
 				break;
 			case 'a':
-				for (var j = 0; j < length; j += 7) {
-					this.arcTo(current = getPoint(j + 5),
-							new Size(+coords[j], +coords[j + 1]),
-							+coords[j + 2], +coords[j + 4], +coords[j + 3]);
+				while (coords = arcs.exec(part)) {
+					this.arcTo(current = getPoint(6),
+							new Size(+coords[1], +coords[2]),
+							+coords[3], +coords[5], +coords[4]);
 				}
 				break;
 			case 'z':
@@ -9504,7 +9520,7 @@ new function() {
 			}
 
 			if (!dontPaint && (hasFill || hasStroke)) {
-				this._setStyles(ctx, param, viewMatrix);
+				this._setStyles(ctx, param, viewMatrix, strokeMatrix);
 				if (hasFill) {
 					ctx.fill(style.getFillRule());
 					ctx.shadowColor = 'rgba(0,0,0,0)';
@@ -10278,7 +10294,7 @@ var CompoundPath = PathItem.extend({
 			children[i].draw(ctx, param, strokeMatrix);
 
 		if (!param.clip) {
-			this._setStyles(ctx, param, viewMatrix);
+			this._setStyles(ctx, param, viewMatrix, strokeMatrix);
 			var style = this._style;
 			if (style.hasFill()) {
 				ctx.fill(style.getFillRule());
@@ -10406,7 +10422,7 @@ PathItem.inject(new function() {
 	function traceBoolean(path1, path2, operation, options) {
 		if (options && (options.trace == false || options.stroke) &&
 				/^(subtract|intersect)$/.test(operation))
-			return splitBoolean(path1, path2, operation);
+			return splitBoolean(path1, path2, operation, options);
 		var _path1 = preparePath(path1, true),
 			_path2 = path2 && path1 !== path2 && preparePath(path2, true),
 			operator = operators[operation];
@@ -10486,7 +10502,7 @@ PathItem.inject(new function() {
 		return createResult(paths, true, path1, path2, options);
 	}
 
-	function splitBoolean(path1, path2, operation) {
+	function splitBoolean(path1, path2, operation, options) {
 		var _path1 = preparePath(path1),
 			_path2 = preparePath(path2),
 			crossings = _path1.getIntersections(_path2, filterIntersection),
@@ -10513,7 +10529,7 @@ PathItem.inject(new function() {
 			}
 		}
 		addPath(_path1);
-		return createResult(paths, false, path1, path2);
+		return createResult(paths, false, path1, path2, options);
 	}
 
 	function linkIntersections(from, to) {
@@ -11100,7 +11116,7 @@ PathItem.inject(new function() {
 
 		divide: function(path, options) {
 			return options && (options.trace == false || options.stroke)
-					? splitBoolean(this, path, 'divide')
+					? splitBoolean(this, path, 'divide', options)
 					: createResult([
 						this.subtract(path, options),
 						this.intersect(path, options)
@@ -12136,8 +12152,9 @@ var Color = Base.extend(new function() {
 						+ components.join(',') + ')';
 		},
 
-		toCanvasStyle: function(ctx, matrix) {
-			if (this._canvasStyle)
+		toCanvasStyle: function(ctx, matrix, strokeMatrix) {
+			var isCacheable = !(this._type === 'gradient' && strokeMatrix);
+			if (this._canvasStyle && isCacheable)
 				return this._canvasStyle;
 			if (this._type !== 'gradient')
 				return this._canvasStyle = this.toCSS();
@@ -12154,6 +12171,12 @@ var Color = Base.extend(new function() {
 				destination = inverse._transformPoint(destination);
 				if (highlight)
 					highlight = inverse._transformPoint(highlight);
+			}
+			if (strokeMatrix) {
+				origin = strokeMatrix._transformPoint(origin);
+				destination = strokeMatrix._transformPoint(destination);
+				if (highlight)
+					highlight = strokeMatrix._transformPoint(highlight);
 			}
 			if (gradient._radial) {
 				var radius = destination.getDistance(origin);
@@ -12176,7 +12199,9 @@ var Color = Base.extend(new function() {
 						offset == null ? i / (l - 1) : offset,
 						stop._color.toCanvasStyle());
 			}
-			return this._canvasStyle = canvasGradient;
+			if (isCacheable)
+				this._canvasStyle = canvasGradient;
+			return canvasGradient;
 		},
 
 		transform: function(matrix) {
@@ -12500,7 +12525,7 @@ var Style = Base.extend(new function() {
 				var old = this._values[key];
 				if (old !== value) {
 					if (isColor) {
-						if (old) {
+						if (old && old.constructor === Color) {
 							Color._setOwner(old, null);
 							old._canvasStyle = null;
 						}
@@ -13154,7 +13179,7 @@ var View = Base.extend(Emitter, {
 
 	getZoom: function() {
 		var scaling = this._decompose().scaling;
-		return (scaling.x + scaling.y) / 2;
+		return (Math.abs(scaling.x) + Math.abs(scaling.y)) / 2;
 	},
 
 	setZoom: function(zoom) {
@@ -13487,9 +13512,12 @@ new function() {
 			if (mouse.down && inView || mouse.up && downPoint) {
 				emitMouseEvents(this, hitItem, type, event, point, downPoint);
 				if (mouse.down) {
-					dblClick = hitItem === clickItem
-						&& (Date.now() - clickTime < 300);
+					var time = Date.now();
+					dblClick = !dblClick && hitItem === clickItem
+						&& time - clickTime < 300
+						&& point.getDistance(downPoint) < 3;
 					downItem = clickItem = hitItem;
+					clickTime = time;
 					if (!prevented && hitItem) {
 						var item = hitItem;
 						while (item && !item.responds('mousedrag'))
@@ -13500,10 +13528,8 @@ new function() {
 					downPoint = point;
 				} else if (mouse.up) {
 					if (!prevented && hitItem === downItem) {
-						clickTime = Date.now();
 						emitMouseEvents(this, hitItem, dblClick ? 'doubleclick'
 								: 'click', event, point, downPoint);
-						dblClick = false;
 					}
 					downItem = dragItem = null;
 				}
@@ -13717,6 +13743,7 @@ var Key = new function() {
 	var keyLookup = {
 			'\t': 'tab',
 			' ': 'space',
+			'\xA0': 'space',
 			'\b': 'backspace',
 			'\x7f': 'delete',
 			'Spacebar': 'space',
@@ -13805,11 +13832,9 @@ var Key = new function() {
 
 	DomEvent.add(document, {
 		keydown: function(event) {
-			var key = getKey(event),
-				agent = paper && paper.agent;
-			if (key.length > 1 || agent && (agent.chrome && (event.altKey
-						|| agent.mac && event.metaKey
-						|| !agent.mac && event.ctrlKey))) {
+			var key = getKey(event);
+			if (key.length > 1 || event.ctrlKey || event.altKey
+					|| event.metaKey) {
 				handleKey(true, key,
 						charLookup[key] || (key.length > 1 ? '' : key), event);
 			} else {
@@ -15008,10 +15033,10 @@ new function() {
 			var get = entry.get,
 				type = entry.type,
 				value = item[get]();
-			if (entry.exportFilter
+			if (value !== undefined && (entry.exportFilter
 					? entry.exportFilter(item, value)
 					: options.reduceAttributes == false
-						|| !parent || !Base.equals(parent[get](), value)) {
+						|| !parent || !Base.equals(parent[get](), value))) {
 				if (type === 'color' && value != null) {
 					var alpha = value.getAlpha();
 					if (alpha < 1)
@@ -15184,12 +15209,12 @@ new function() {
 				: new Size(w, h);
 	}
 
-	function convertValue(value, type, lookup) {
+	function convertValue(value, type, lookup, options) {
 		return value === 'none' ? null
 				: type === 'number' ? parseFloat(value)
 				: type === 'array' ?
 					value ? value.split(/[\s,]+/g).map(parseFloat) : []
-				: type === 'color' ? getDefinition(value) || value
+				: type === 'color' ? getDefinition(value, options) || value
 				: type === 'lookup' ? lookup[value]
 				: value;
 	}
@@ -15203,7 +15228,7 @@ new function() {
 			currentStyle = project._currentStyle,
 			children = [];
 		if (!isClip && !isDefs) {
-			item = applyAttributes(item, node, isRoot);
+			item = applyAttributes(item, node, options, isRoot);
 			project._currentStyle = item._style.clone();
 		}
 		if (isRoot) {
@@ -15223,7 +15248,7 @@ new function() {
 		}
 		item.addChildren(children);
 		if (isClip)
-			item = applyAttributes(item.reduce(), node, isRoot);
+			item = applyAttributes(item.reduce(), node, options, isRoot);
 		project._currentStyle = currentStyle;
 		if (isClip || isDefs) {
 			item.remove();
@@ -15250,12 +15275,13 @@ new function() {
 		return PathItem.create(node.getAttribute('d'));
 	}
 
-	function importGradient(node, type) {
+	function importGradient(node, type, options) {
 		var id = (getValue(node, 'href', true) || '').substring(1),
+			definition = getDefinitionById(id, options),
 			radial = type === 'radialgradient',
 			gradient;
-		if (id) {
-			gradient = definitions[id].getGradient();
+		if (definition) {
+			gradient = definition.getGradient();
 			if (gradient._radial ^ radial) {
 				gradient = gradient.clone();
 				gradient._radial = radial;
@@ -15266,7 +15292,8 @@ new function() {
 			for (var i = 0, l = nodes.length; i < l; i++) {
 				var child = nodes[i];
 				if (child.nodeType === 1)
-					stops.push(applyAttributes(new GradientStop(), child));
+					stops.push(applyAttributes(new GradientStop(), child,
+							options));
 			}
 			gradient = new Gradient(stops, radial);
 		}
@@ -15286,7 +15313,8 @@ new function() {
 				'100%', '0%');
 		}
 		var color = applyAttributes(
-				new Color(gradient, origin, destination, highlight), node);
+				new Color(gradient, origin, destination, highlight), node,
+				options);
 		color._scaleToBounds = scaleToBounds;
 		return null;
 	}
@@ -15327,9 +15355,9 @@ new function() {
 
 		defs: importGroup,
 
-		use: function(node) {
+		use: function(node, type, options) {
 			var id = (getValue(node, 'href', true) || '').substring(1),
-				definition = definitions[id],
+				definition = getDefinitionById(id, options),
 				point = getPoint(node);
 			return definition
 					? definition instanceof SymbolDefinition
@@ -15352,11 +15380,16 @@ new function() {
 		},
 
 		rect: function(node) {
+			var rx = getValue(node, 'rx', false, true),
+				ry = getValue(node, 'ry', false, true);
 			return new Shape.Rectangle(new Rectangle(
 						getPoint(node),
 						getSize(node)
-					), getSize(node, 'rx', 'ry'));
-			},
+					), new Size(
+						rx == null ? ry || 0 : rx,
+						ry == null ? rx || 0 : ry
+					));
+		},
 
 		line: function(node) {
 			return new Path.Line(
@@ -15421,9 +15454,11 @@ new function() {
 	}
 
 	var attributes = Base.set(Base.each(SvgStyles, function(entry) {
-		this[entry.attribute] = function(item, value) {
+		this[entry.attribute] = function(item, value, name, node, styles,
+				options) {
 			if (item[entry.set]) {
-				item[entry.set](convertValue(value, entry.type, entry.fromSVG));
+				item[entry.set](convertValue(value, entry.type, entry.fromSVG,
+						options));
 				if (entry.type === 'color') {
 					var color = item[entry.get]();
 					if (color) {
@@ -15440,12 +15475,12 @@ new function() {
 	}, {}), {
 		id: function(item, value) {
 			definitions[value] = item;
-			if (item.setName)
+			if (item.setName && value !== (+value) + '')
 				item.setName(value);
 		},
 
-		'clip-path': function(item, value) {
-			var clip = getDefinition(value);
+		'clip-path': function(item, value, name, node, styles, options) {
+			var clip = getDefinition(value, options);
 			if (clip) {
 				clip = clip.clone();
 				clip.setClipMask(true);
@@ -15531,7 +15566,7 @@ new function() {
 				: value;
 	}
 
-	function applyAttributes(item, node, isRoot) {
+	function applyAttributes(item, node, options, isRoot) {
 		var parent = node.parentNode,
 			styles = {
 				node: DomElement.getStyles(node) || {},
@@ -15541,17 +15576,26 @@ new function() {
 		Base.each(attributes, function(apply, name) {
 			var value = getAttribute(node, name, styles);
 			item = value !== undefined
-					&& apply(item, value, name, node, styles) || item;
+					&& apply(item, value, name, node, styles, options) || item;
 		});
 		return item;
 	}
 
-	function getDefinition(value) {
+	function getDefinitionById(id, options) {
+		if (id && !definitions[id]) {
+			var node = getSandbox().ownerDocument.getElementById(id);
+			if (node)
+				importNode(node, options, false);
+		}
+		return definitions[id];
+	}
+
+	function getDefinition(value, options) {
 		var match = value && value.match(/\((?:["'#]*)([^"')]+)/),
 			name = match && match[1],
-			res = name && definitions[window
+			res = name && getDefinitionById(window
 					? name.replace(window.location.href.split('#')[0] + '#', '')
-					: name];
+					: name, options);
 		if (res && res._scaleToBounds) {
 			res = res.clone();
 			res._scaleToBounds = true;
@@ -15611,7 +15655,7 @@ new function() {
 			}
 			if (item) {
 				if (isElement && !(item instanceof Group))
-					item = applyAttributes(item, node, isRoot);
+					item = applyAttributes(item, node, options, isRoot);
 				var onImport = options.onImport,
 					data = isElement && node.getAttribute('data-paper-data');
 				if (onImport)
@@ -15727,8 +15771,7 @@ new function() {
 };
 
 Base.exports.PaperScript = function() {
-	var global = this,
-		acorn = global.acorn;
+	var acorn = self.acorn;
 	if (!acorn && typeof require !== 'undefined') {
 		try { acorn = require('acorn'); } catch(e) {}
 	}
@@ -17050,7 +17093,7 @@ Base.exports.PaperScript = function() {
 	}
 
 	function parse(code, options) {
-		return (global.acorn || acorn).parse(code, options);
+		return (self.acorn || acorn).parse(code, options);
 	}
 
 	var binaryOperators = {
@@ -17343,7 +17386,8 @@ Base.exports.PaperScript = function() {
 				code = new Array(offset + 1).join('\n') + code;
 			}
 			if (/^(inline|both)$/.test(sourceMaps)) {
-				code += "\n//# sourceMappingURL=data:application/json;base64,"
+				code += "\n//# " + "sourceMappingURL="
+						+ "data:application/json;base64,"
 						+ self.btoa(unescape(encodeURIComponent(
 							JSON.stringify(map))));
 			}
@@ -17489,8 +17533,7 @@ Base.exports.PaperScript = function() {
 		calculateBinary: __$__,
 		calculateUnary: $__
 	};
-
-}.call(this);
+}();
 
 var paper = new (PaperScope.inject(Base.exports, {
 	Base: Base,
@@ -17517,4 +17560,4 @@ if (typeof define === 'function' && define.amd) {
 }
 
 return paper;
-}.call(this, typeof self === 'object' ? self : null);
+}(typeof self === 'object' ? self : null);

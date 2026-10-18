@@ -1,5 +1,50 @@
 # Change Log
 
+## Unreleased
+
+### Changed
+
+- Time double-clicks from mousedown to mousedown and only within 3 pixels, as
+  native `dblclick` events do, and don't take a third click for another
+  double-click (#1451).
+
+### Fixed
+
+- Fix `require('paper')` in the Node.js REPL (#2019, #1792).
+- Fix loading PaperScript in bundles that leave the top-level `this` undefined,
+  as in ES modules (#1480).
+- Prevent source-map-loader from warning about the source map string in
+  PaperScript (#1991).
+- Fix replacing style colors that were set as strings, which threw in strict
+  mode (#2049).
+- Fix SVG path data with arc flags that aren't separated from the numbers
+  after them, as SVGO writes them (#1808, #1885).
+- Fix `#importSVG()` of gradients, fills, clip paths and `<use>` elements that
+  reference definitions appearing later in the document (#1146, #1884, #1978).
+- Fix `#importSVG()` of elements with numeric ids (#1754).
+- Fix `#importSVG()` of rounded rectangles with only `rx` or `ry` (#1863).
+- Fix `#exportSVG()` writing `fill-rule="none"`, `font-family="none"` etc. on
+  groups with differently styled children (#1732).
+- Fix `Curve#handleBounds`, which threw, to only include the curve's own
+  points (#1992).
+- Fix `Curve#getTimesWithTangent()` for curves without a cubic component,
+  such as quadratic curves (#1870).
+- Fix `Shape` JSON import with `type` after `radius` (#1820).
+- Fix boolean operations with `trace: false` or `stroke: true` ignoring
+  `options.insert` (#2028).
+- Fix gradients drawn with `strokeScaling: false` (#1821, #1822).
+- Fix the selection of items in symbol definitions being drawn (#1577).
+- Fix `View#zoom` of mirrored views, which was 0 (#1411).
+- Fix item mouse handlers that stopped working after removing items whose
+  parent was already removed, or after moving items to another project
+  (#2079, #1791).
+- Fix key events with Control, Alt and Meta in Firefox and other browsers that
+  fire no `keypress` for them (#1997, #1871).
+- Fix the space key staying down after Option + Space on macOS.
+- Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
+- Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
+  `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
+
 ## `0.12.20`
 
 ### Fixed

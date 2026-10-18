@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 18 17:07:53 2026 +0200
+ * Date: Sun Oct 18 18:29:51 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -551,7 +551,7 @@ declare namespace paper {
         /** 
          * The bounding rectangle of the curve including handles.
          */
-        handleBounds: Rectangle
+        readonly handleBounds: Rectangle
 
 
         /** 
@@ -3369,10 +3369,32 @@ declare namespace paper {
         setup(element: HTMLCanvasElement | string | SizeLike): void
 
         /** 
+         * Creates a canvas of the given size, or reuses one that was released
+         * internally.
+         * 
+         * @param width - the width of the canvas
+         * @param height - the height of the canvas
+         * 
+         * @return the canvas
+         */
+        createCanvas(width: number, height: number): HTMLCanvasElement
+
+        /** 
          * Activates this PaperScope, so all newly created items will be placed
          * in its active project.
          */
         activate(): void
+
+        /** 
+         * Removes all projects, views and tools of this scope, along with their
+         * installed event handlers.
+         */
+        clear(): void
+
+        /** 
+         * Clears this scope and removes it from the list of scopes.
+         */
+        remove(): void
 
         /** 
          * Retrieves a PaperScope object with the given scope id.
@@ -4141,7 +4163,7 @@ declare namespace paper {
          * @return the locations of all intersection between the
          *     paths
          */
-        getIntersections(path: PathItem, include?: Function): CurveLocation[]
+        getIntersections(path?: PathItem, include?: Function): CurveLocation[]
 
         /** 
          * Returns all crossings between two {@link PathItem} items as an array of
@@ -4778,6 +4800,14 @@ declare namespace paper {
          * other as a new point
          */
         modulo(point: PointLike): Point
+
+        /** 
+         * Returns a new point with both coordinates negated.
+         * The object itself is not modified!
+         * 
+         * @return the negation of the point as a new point
+         */
+        negate(): Point
 
         /** 
          * Checks whether the point is inside the boundaries of the rectangle.
@@ -6354,6 +6384,14 @@ declare namespace paper {
         modulo(size: SizeLike): Size
 
         /** 
+         * Returns a new size with both dimensions negated.
+         * The object itself is not modified!
+         * 
+         * @return the negation of the size as a new size
+         */
+        negate(): Size
+
+        /** 
          * Checks if this size has both the width and height set to 0.
          * 
          * @return true if both width and height are 0
@@ -7146,6 +7184,28 @@ declare namespace paper {
          * @see View#onMouseLeave
          */
         onMouseLeave: Function | null
+
+        /** 
+         * The function to be called when the user presses a key on the keyboard.
+         * The function receives a {@link KeyEvent} object which contains
+         * information about the keyboard event.
+         * 
+         * If the function returns `false`, the keyboard event will be prevented
+         * from bubbling up. This can be used for example to stop the window from
+         * scrolling, when you need the user to interact with arrow keys.
+         */
+        onKeyDown: Function | null
+
+        /** 
+         * The function to be called when the user releases a key on the keyboard.
+         * The function receives a {@link KeyEvent} object which contains
+         * information about the keyboard event.
+         * 
+         * If the function returns `false`, the keyboard event will be prevented
+         * from bubbling up. This can be used for example to stop the window from
+         * scrolling, when you need the user to interact with arrow keys.
+         */
+        onKeyUp: Function | null
 
 
         /** 
