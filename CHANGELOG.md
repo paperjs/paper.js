@@ -64,6 +64,12 @@
   texts, as their matrix was applied twice (#1300).
 - Fix the bounds of items whose matrix cancels out the matrix of their parent
   (#1457).
+- Fix the source URL and source map of PaperScript loaded from script tags,
+  which were lost (#1753).
+- Fix stroke hit-tests at the ends of paths with butt caps, which missed even
+  the end points (#1460).
+- Fix `Path#splitAt()` with locations that aren't on the path, which split
+  the path at its start instead of returning `null`.
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
@@ -75,6 +81,7 @@
   the `resize` canvas attribute (#2078, #2092, #2030, #1928, #1947, #1907,
   #1900, #2115, #1645, #1697, #1747, #1507, #604, #1330, #662).
 - Docs: Add examples to the boolean path operations (#1007).
+- Docs: Document that `new Path(pathData)` holds a single sub-path (#2057).
 
 ### Removed
 

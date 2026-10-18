@@ -854,6 +854,58 @@ test('hit-testing scaled items with different settings of view.zoom and item.str
     testItem(Path, 2, true);
 });
 
+test('hit-testing stroke caps with tolerance (#1460)', function() {
+    // A horizontal stroke from 100 to 200, 20 wide, tested with tolerance 5:
+    function testCap(cap, hits, misses) {
+        var path = new Path({
+            segments: [[100, 100], [200, 100]],
+            strokeColor: 'black',
+            strokeWidth: 20,
+            strokeCap: cap
+        });
+        function hitTest(point) {
+            return path.hitTest(point, { stroke: true, tolerance: 5 });
+        }
+        hits.forEach(function(point) {
+            var hitResult = hitTest(point);
+            equals(hitResult && hitResult.type, 'stroke',
+                    cap + ' cap: ' + point + ' should hit the stroke');
+        });
+        misses.forEach(function(point) {
+            equals(hitTest(point), null,
+                    cap + ' cap: ' + point + ' should miss the stroke');
+        });
+        path.remove();
+    }
+
+    // The butt cap ends flat at x = 100 and x = 200, between y = 90 and 110:
+    testCap('butt', [
+        [100, 100], [100, 105], [95, 105], [205, 95],
+        // 5 away from the corner at [100, 110]:
+        [97, 114],
+        // The middle of the stroke, 5 away from its side:
+        [150, 115]
+    ], [
+        [94, 105], [206, 95],
+        // sqrt(34) away from the corner at [100, 110]:
+        [97, 115],
+        [150, 116]
+    ]);
+    // The square cap extends the stroke to x = 90:
+    testCap('square', [[85, 100], [87, 114]], [[84, 100], [87, 115]]);
+    // The round cap reaches 10 around the end point:
+    testCap('round', [[85, 100], [97, 114]], [[84, 100], [97, 115]]);
+
+    // The example from the issue, with the default stroke width and cap:
+    var path = new Path({
+        segments: [[30, 30], [300, 300]],
+        strokeColor: 'black'
+    });
+    var hitResult = path.hitTest([300, 300], { stroke: true, tolerance: 50 });
+    equals(hitResult && hitResult.location.segment === path.lastSegment,
+            true);
+});
+
 test('hit-testing items scaled to 0', function() {
     var item = new Shape.Rectangle({
         point: [0, 0],
