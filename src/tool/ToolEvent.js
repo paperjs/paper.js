@@ -49,6 +49,13 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
      */
 
     /**
+     * The tool that fired the event.
+     *
+     * @name ToolEvent#tool
+     * @type Tool
+     */
+
+    /**
      * The position of the mouse in project coordinates when the event was
      * fired.
      *

@@ -179,6 +179,9 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      * function receives a {@link ToolEvent} object which contains information
      * about the tool event.
      *
+     * While the mouse button is held down, the tool calls {@link #onMouseDrag}
+     * instead, if it defines one, and `onMouseMove` only otherwise.
+     *
      * @name Tool#onMouseMove
      * @property
      * @type ?Function

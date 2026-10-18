@@ -18,6 +18,13 @@
  * view, find the currently visible bounds in project coordinates, or the
  * center, both useful for constructing artwork that should appear centered on
  * screen.
+ *
+ * If the canvas element has a `resize` or `data-paper-resize` attribute, the
+ * view adjusts its size to the size of the element whenever the window is
+ * resized. The element itself needs to be sized through CSS, e.g. with
+ * `html, body { height: 100%; }` and `canvas[resize] { width: 100%; height:
+ * 100%; }` for a canvas that fills the window. Without such CSS, the view does
+ * not follow the window, and on HiDPI screens it grows with each resize.
  */
 var View = Base.extend(Emitter, /** @lends View# */{
     _class: 'View',

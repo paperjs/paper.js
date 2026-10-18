@@ -1111,7 +1111,8 @@ statics: /** @lends Curve */{
     /**
      * {@grouptitle Positions on Curves}
      *
-     * Calculates the curve location at the specified offset on the curve.
+     * Calculates the curve location at the specified offset on the curve, or
+     * `null` if the offset exceeds the length of the curve.
      *
      * @param {Number} offset the offset on the curve
      * @return {CurveLocation} the curve location at the specified the offset
@@ -1124,7 +1125,7 @@ statics: /** @lends Curve */{
 
     /**
      * Calculates the curve location at the specified curve-time parameter on
-     * the curve.
+     * the curve, or `null` if the parameter lies outside of `0..1`.
      *
      * @param {Number} time the curve-time parameter on the curve
      * @return {CurveLocation} the curve location at the specified the location
@@ -1146,7 +1147,8 @@ statics: /** @lends Curve */{
      *     curve length units
      * @param {Number} [start] the curve-time in relation to which the offset is
      *     determined
-     * @return {Number} the curve-time parameter at the specified location
+     * @return {Number} the curve-time parameter at the specified location, or
+     *     `null` if the offset exceeds the length of the curve
      */
     getTimeAt: function(offset, start) {
         return Curve.getTimeAt(this.getValues(), offset, start);
@@ -1189,7 +1191,7 @@ statics: /** @lends Curve */{
      * curve, `null` otherwise.
      *
      * @param {Point} point the point on the curve
-     * @return {CurveLocation} the curve location of the specified point
+     * @return {?CurveLocation} the curve location of the specified point
      */
     getLocationOf: function(/* point */) {
         return this.getLocationAtTime(this.getTimeOf(Point.read(arguments)));
@@ -1200,7 +1202,7 @@ statics: /** @lends Curve */{
      * specified point if it lies on the path, `null` otherwise.
      *
      * @param {Point} point the point on the path
-     * @return {Number} the length of the path up to the specified point
+     * @return {?Number} the length of the path up to the specified point
      */
     getOffsetOf: function(/* point */) {
         var loc = this.getLocationOf.apply(this, arguments);
@@ -1214,7 +1216,7 @@ statics: /** @lends Curve */{
      * self-intersecting curve, the first found result is returned.
      *
      * @param {Point} point the point on the curve
-     * @return {Number} the curve-time parameter of the specified point
+     * @return {?Number} the curve-time parameter of the specified point
      */
     getTimeOf: function(/* point */) {
         return Curve.getTimeOf(this.getValues(), Point.read(arguments));

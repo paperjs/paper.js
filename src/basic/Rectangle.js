@@ -954,6 +954,11 @@ new function() {
              * Paper.js draws the bounds of items with selected bounds on top of
              * your project. This is very useful when debugging.
              *
+             * This property is only available on the rectangle returned by
+             * {@link Item#bounds}, and the selection always shows these bounds.
+             * Rectangles returned by other getters such as {@link
+             * Item#strokeBounds} don't have it.
+             *
              * @bean
              * @type Boolean
              * @default false
