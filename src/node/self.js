@@ -44,7 +44,15 @@ if (jsdom) {
         resources: 'usable'
     });
     self = document.window;
-    require('./canvas.js')(self, requireName);
+    if (!require('./canvas.js')(self, requireName)) {
+        // Hide `self.window`, so we still have the global `self` reference,
+        // but no `window` object:
+        // - On the browser, this corresponds to a worker context.
+        // - On Node.js, it basically means the canvas is missing or not working
+        //   which can be treated the same way.
+        // jsdom's window can't be removed from itself, so inherit from it:
+        self = Object.create(self, { window: { value: null } });
+    }
     require('./xml.js')(self);
 } else {
     self = {

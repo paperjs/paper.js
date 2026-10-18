@@ -17,11 +17,11 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=4.0.0"
+    "node": "^20.19.0 || ^22.12.0 || >=24.0.0"
   },
   "dependencies": {
-    "canvas": "^2.11.2",
-    "jsdom": "^16.7.0",
+    "canvas": "^3.2.3",
+    "jsdom": "^28.1.0",
     "paper": "0.12.19",
     "source-map-support": "^0.5.21"
   },
