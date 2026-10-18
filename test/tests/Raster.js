@@ -74,6 +74,18 @@ test('Create a raster from a canvas', function() {
     equals(raster.size, new Size(30, 20), true);
 });
 
+if (isNodeContext) {
+    test('Create an SVG canvas', function() {
+        var canvas = paper.createCanvas(30, 20, 'svg');
+        equals(function() {
+            return canvas.type;
+        }, 'svg');
+        equals(function() {
+            return /viewBox="0 0 30 20"/.test(canvas.toBuffer().toString());
+        }, true);
+    });
+}
+
 test('Create a raster from a dom id', function(assert) {
     var done = assert.async();
     var img = document.createElement('img');
