@@ -913,3 +913,49 @@ test('item.bounds on lines with applyMatrix disabled (#1794)', function() {
     equals(vertical.localToGlobal(vertical.lastSegment.point),
             new Point(50, 70));
 });
+
+test('group.bounds with child and group matrices that cancel out (#1457)', function() {
+    var path = new Path.Rectangle({
+        point: [100, 0],
+        size: [50, 50],
+        applyMatrix: false
+    });
+    path.translate(-100, 0);
+    var group = new Group({ children: [path], applyMatrix: false });
+    group.translate(100, 0);
+    equals(group.bounds, new Rectangle(100, 0, 50, 50), 'group.bounds');
+    equals(path.bounds, new Rectangle(0, 0, 50, 50), 'path.bounds');
+    equals(group.internalBounds, new Rectangle(0, 0, 50, 50),
+            'group.internalBounds');
+    equals(group.bounds, new Rectangle(100, 0, 50, 50),
+            'group.bounds after getting path.bounds');
+    // Matrices that don't cancel out:
+    group.translate(50, 0);
+    equals(group.bounds, new Rectangle(150, 0, 50, 50),
+            'group.bounds after translating group');
+    equals(path.bounds, new Rectangle(0, 0, 50, 50),
+            'path.bounds after translating group');
+    // Matrices that cancel out again, getting path.bounds first:
+    path.translate(-50, 0);
+    equals(path.bounds, new Rectangle(-50, 0, 50, 50),
+            'path.bounds after translating path');
+    equals(group.bounds, new Rectangle(100, 0, 50, 50),
+            'group.bounds after translating path');
+    // A group with an identity matrix:
+    group.translate(-150, 0);
+    equals(group.bounds, new Rectangle(-50, 0, 50, 50),
+            'group.bounds with identity matrix');
+});
+
+test('symbolItem.bounds with item and symbol matrices that cancel out (#1457)', function() {
+    var path = new Path.Rectangle({
+        point: [100, 0],
+        size: [50, 50],
+        applyMatrix: false
+    });
+    path.translate(-100, 0);
+    var symbol = new SymbolItem(new SymbolDefinition(path, true));
+    symbol.translate(100, 0);
+    equals(symbol.bounds, new Rectangle(100, 0, 50, 50), 'symbol.bounds');
+    equals(path.bounds, new Rectangle(0, 0, 50, 50), 'path.bounds');
+});

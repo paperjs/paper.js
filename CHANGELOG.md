@@ -60,6 +60,10 @@
   drawn with opacity (#1322).
 - Fix the `Item#bounds` setter on items with zero width or height, which made
   their matrix non-invertible (#1794).
+- Fix `#getItems()` with `overlapping`, which never matched shapes, rasters and
+  texts, as their matrix was applied twice (#1300).
+- Fix the bounds of items whose matrix cancels out the matrix of their parent
+  (#1457).
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.

@@ -955,14 +955,15 @@ new function() { // Injection scope for various item event handlers
         // See if we can cache these bounds. We only cache the bounds
         // transformed with the internally stored _matrix, (the default if no
         // matrix is passed).
-        matrix = matrix && matrix._orNullIfIdentity();
         // Do not transform by the internal matrix for internal, untransformed
         // bounds.
         var internal = options.internal && !noInternal,
             cacheItem = options.cacheItem,
-            _matrix = internal ? null : this._matrix._orNullIfIdentity(),
-            // Create a key for caching, reflecting all bounds options.
-            cacheKey = cacheItem && (!matrix || matrix.equals(_matrix))
+            _matrix = internal ? null : this._matrix._orNullIfIdentity();
+        // A passed identity matrix still replaces the internal matrix:
+        matrix = matrix ? matrix._orNullIfIdentity() : _matrix;
+        // Create a key for caching, reflecting all bounds options.
+        var cacheKey = cacheItem && (matrix ? matrix.equals(_matrix) : !_matrix)
                 && this._getBoundsCacheKey(options, internal),
             bounds = this._bounds;
         // NOTE: This needs to happen before returning cached values, since even
@@ -975,7 +976,7 @@ new function() { // Injection scope for various item event handlers
                 nonscaling: cached.nonscaling
             };
         }
-        var res = this._getBounds(matrix || _matrix, options),
+        var res = this._getBounds(matrix, options),
             // Support two versions of _getBounds(): One that directly returns a
             // Rectangle, and one that returns a bounds object with nonscaling.
             rect = res.rect || res,
@@ -1918,8 +1919,10 @@ new function() { // Injection scope for various item event handlers
     // matrices into account properly!
     _asPathItem: function() {
         // Creates a temporary rectangular path item with this item's bounds.
+        // Keep the matrix unapplied, so getIntersections() can override it:
         return new Path.Rectangle({
             rectangle: this.getInternalBounds(),
+            applyMatrix: false,
             matrix: this._matrix,
             insert: false,
         });
