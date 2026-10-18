@@ -180,7 +180,7 @@ var Style = Base.extend(new function() {
                     if (isColor) {
                         // The old value may be a native string or other color
                         // description that wasn't coerced to a color object yet
-                        if (old) {
+                        if (old && old.constructor === Color) {
                             Color._setOwner(old, null);
                             old._canvasStyle = null;
                         }
