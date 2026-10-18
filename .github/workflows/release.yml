@@ -15,7 +15,7 @@ jobs:
           submodules: true
       - uses: actions/setup-node@v4
         with:
-          node-version: 14
+          node-version: 24
       # The JsDoc Toolkit that generates the docs runs on Java:
       - uses: actions/setup-java@v4
         with:
