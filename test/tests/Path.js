@@ -564,6 +564,31 @@ test('Splitting a path with one curve in the middle result in two paths of the s
     }, true);
 });
 
+test('Path#splitAt() with locations on other paths (#2021)', function() {
+    var path = new Path([0, 0], [100, 0], [100, 100]),
+        segments = path.segments.toString();
+
+    function testSplitAt(location, message) {
+        equals(path.splitAt(location), null, message);
+        equals(path.segments.toString(), segments,
+                'The path should keep its segments.');
+    }
+
+    testSplitAt(path.clone().getLocationAt(50),
+            'A location on a clone should not split the path.');
+    testSplitAt(path.firstCurve.clone().getLocationAtTime(0.5),
+            'A location on a cloned curve should not split the path.');
+    testSplitAt(path.length + 1,
+            'An offset beyond the length should not split the path.');
+
+    var path2 = path.splitAt(path.getLocationAt(50));
+    equals(path.segments.toString(),
+            '{ point: { x: 0, y: 0 } },{ point: { x: 50, y: 0 } }');
+    equals(path2.segments.toString(),
+            '{ point: { x: 50, y: 0 } },{ point: { x: 100, y: 0 } },'
+            + '{ point: { x: 100, y: 100 } }');
+});
+
 ////////////////////////////////////////////////////////////////////////////////
 // Path Drawing Commands
 

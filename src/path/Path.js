@@ -73,7 +73,10 @@ var Path = PathItem.extend(/** @lends Path# */{
      */
     /**
      * Creates a new path item from SVG path-data and places it at the top of
-     * the active layer.
+     * the active layer. A path holds a single sub-path: further `M` commands
+     * are ignored, and the commands that follow them continue the same path.
+     * Use {@link CompoundPath} or {@link PathItem.create(pathData)} to create
+     * items with multiple sub-paths.
      *
      * @name Path#initialize
      * @param {String} pathData the SVG path-data that describes the geometry
@@ -991,7 +994,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      *
      * @param {Number|CurveLocation} location the offset or location at which to
      *     split the path
-     * @return {Path} the newly created path after splitting, if any
+     * @return {?Path} the newly created path after splitting, if any
      *
      * @example {@paperscript}
      * var path = new Path.Circle({
@@ -1053,7 +1056,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             time = 0;
         }
         var curves = this.getCurves();
-        if (index >= 0 && index < curves.length) {
+        if (loc && index < curves.length) {
             // Only divide curves if we're not on an existing segment already.
             if (time >= tMin) {
                 // Divide the curve with the index at the given curve-time.
@@ -1751,7 +1754,8 @@ var Path = PathItem.extend(/** @lends Path# */{
                         Path._addBevelJoin(segment, join, strokeRadius,
                                miterLimit, null, strokeMatrix, addToArea, true);
                     }
-                } else if (cap === 'square') {
+                } else {
+                    // _addSquareCap() handles both 'square' and 'butt' caps.
                     Path._addSquareCap(segment, cap, strokeRadius, null,
                             strokeMatrix, addToArea, true);
                 }
