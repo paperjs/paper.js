@@ -104,14 +104,14 @@ test('rect.left / rect.top VS rect.right / rect.bottom', function() {
     });
     rect.left -= 10;
     rect.top -= 10;
-    equals(rect.right, 90);
-    equals(rect.bottom, 90);
+    equals(rect.right, 100);
+    equals(rect.bottom, 100);
 
     var rect = new Rectangle([0, 0], [100, 100]);
     rect.left -= 10;
     rect.top -= 10;
-    equals(rect.right, 90);
-    equals(rect.bottom, 90);
+    equals(rect.right, 100);
+    equals(rect.bottom, 100);
 
     var rect = new Rectangle({
         topLeft: [0,0],
@@ -121,6 +121,47 @@ test('rect.left / rect.top VS rect.right / rect.bottom', function() {
     rect.top -= 10;
     equals(rect.right, 100);
     equals(rect.bottom, 100);
+});
+
+test('Rectangle side, corner and center setters (#2024)', function() {
+    // Sides and corners move only their own edges, centers and #point move the
+    // whole rectangle, all on a 100 x 100 rectangle at 0, 0:
+    var expected = {
+        left: [10, [10, 0, 90, 100]],
+        right: [50, [0, 0, 50, 100]],
+        top: [10, [0, 10, 100, 90]],
+        bottom: [50, [0, 0, 100, 50]],
+        topLeft: [[10, 20], [10, 20, 90, 80]],
+        topRight: [[50, 20], [0, 20, 50, 80]],
+        bottomLeft: [[10, 50], [10, 0, 90, 50]],
+        bottomRight: [[50, 60], [0, 0, 50, 60]],
+        topCenter: [[70, 20], [20, 20, 100, 80]],
+        bottomCenter: [[70, 60], [20, 0, 100, 60]],
+        leftCenter: [[10, 70], [10, 20, 90, 100]],
+        rightCenter: [[50, 70], [0, 20, 50, 100]],
+        centerX: [70, [20, 0, 100, 100]],
+        centerY: [70, [0, 20, 100, 100]],
+        center: [[70, 20], [20, -30, 100, 100]],
+        point: [[10, 20], [10, 20, 100, 100]]
+    };
+    Base.each(expected, function(entry, key) {
+        var rect = new Rectangle(0, 0, 100, 100);
+        rect[key] = entry[0];
+        equals(rect, new Rectangle(entry[1]), 'rect.' + key);
+        // item.bounds is fitted to the changed rectangle:
+        var path = new Path.Rectangle(new Rectangle(0, 0, 100, 100));
+        path.bounds[key] = entry[0];
+        equals(path.bounds, new Rectangle(entry[1]), 'path.bounds.' + key);
+    });
+    // Repeated and mixed setters keep going from the current rectangle:
+    var rect = new Rectangle(0, 0, 100, 100);
+    rect.left = 10;
+    rect.left = 20;
+    equals(rect, new Rectangle(20, 0, 80, 100), 'rect.left twice');
+    rect.right = 50;
+    equals(rect, new Rectangle(20, 0, 30, 100), 'rect.right after rect.left');
+    rect.center = [50, 50];
+    equals(rect, new Rectangle(35, 0, 30, 100), 'rect.center after sides');
 });
 
 test('rect.size', function() {
