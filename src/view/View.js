@@ -527,8 +527,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
      */
     getZoom: function() {
         var scaling = this._decompose().scaling;
-        // Use average since it can be non-uniform.
-        return (scaling.x + scaling.y) / 2;
+        // Use average since it can be non-uniform, and ignore mirroring.
+        return (Math.abs(scaling.x) + Math.abs(scaling.y)) / 2;
     },
 
     setZoom: function(zoom) {
@@ -1388,11 +1388,16 @@ new function() { // Injection scope for event handling on the browser
                 emitMouseEvents(this, hitItem, type, event, point, downPoint);
                 if (mouse.down) {
                     // See if we're clicking again on the same item, within the
-                    // double-click time. Firefox uses 300ms as the max time
+                    // double-click time and distance, measured from mousedown
+                    // to mousedown like native dblclick events, but not for a
+                    // third click. Firefox uses 300ms as the max time
                     // difference:
-                    dblClick = hitItem === clickItem
-                        && (Date.now() - clickTime < 300);
+                    var time = Date.now();
+                    dblClick = !dblClick && hitItem === clickItem
+                        && time - clickTime < 300
+                        && point.getDistance(downPoint) < 3;
                     downItem = clickItem = hitItem;
+                    clickTime = time;
                     // Only start dragging if the mousedown event has not
                     // prevented the default, and if the hitItem or any of its
                     // parents actually respond to mousedrag events.
@@ -1408,10 +1413,8 @@ new function() { // Injection scope for event handling on the browser
                     // Emulate click / doubleclick, but only on the hit-item,
                     // not the view.
                     if (!prevented && hitItem === downItem) {
-                        clickTime = Date.now();
                         emitMouseEvents(this, hitItem, dblClick ? 'doubleclick'
                                 : 'click', event, point, downPoint);
-                        dblClick = false;
                     }
                     downItem = dragItem = null;
                 }

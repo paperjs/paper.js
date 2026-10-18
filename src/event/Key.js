@@ -19,6 +19,7 @@ var Key = new function() {
             // Unify different key identifier naming schemes, e.g. on Gecko, IE:
             '\t': 'tab',
             ' ': 'space',
+            '\xA0': 'space', // Option + Space on macOS = non-breaking space.
             '\b': 'backspace',
             '\x7f': 'delete',
             'Spacebar': 'space',
@@ -136,15 +137,12 @@ var Key = new function() {
 
     DomEvent.add(document, {
         keydown: function(event) {
-            var key = getKey(event),
-                agent = paper && paper.agent;
+            var key = getKey(event);
             // Directly handle any special keys (key.length > 1) in keydown, as
-            // not all of them will receive keypress events.
-            // Chrome doesn't fire keypress events for command and alt keys,
-            // so we need to handle this in a way that works across all OSes.
-            if (key.length > 1 || agent && (agent.chrome && (event.altKey
-                        || agent.mac && event.metaKey
-                        || !agent.mac && event.ctrlKey))) {
+            // not all of them will receive keypress events. Neither do keys
+            // pressed with control, alt or meta in modern browsers.
+            if (key.length > 1 || event.ctrlKey || event.altKey
+                    || event.metaKey) {
                 handleKey(true, key,
                         charLookup[key] || (key.length > 1 ? '' : key), event);
             } else {

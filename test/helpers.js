@@ -661,3 +661,13 @@ var triggerMouseEvent = function(type, point, target) {
     });
     target.dispatchEvent(event);
 };
+
+var triggerKeyEvent = function(type, key, modifiers) {
+    var event = new KeyboardEvent(type, Base.set({
+        bubbles: true,
+        cancelable: true,
+        key: key,
+        charCode: type === 'keypress' ? key.charCodeAt(0) : 0
+    }, modifiers));
+    document.dispatchEvent(event);
+};
