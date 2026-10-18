@@ -17,6 +17,21 @@
   `hitTestAll()` always returns the groups above the hit items, and
   `hitTest(point, { class: Group })` finds the group under a point. Groups were
   only hit when all their children shared a fill (#2069).
+- Let inline `style` declarations override presentation attributes in
+  `#importSVG()`, as in CSS and browsers: `<rect fill="blue" style="fill: red">`
+  now imports red (#1962).
+- Keep the pixels of images in `#importSVG()` and scale them to their size in
+  the SVG, instead of resampling them to that size, which made them blurry.
+  `Raster#size` is now the image's own size, and images without a size are
+  shown at it, as in browsers (#1963).
+- Let `Item#clone()`, the boolean operations, `Item#rasterize()`,
+  `Path#toShape()` and `Shape#toPath()` follow `settings.insertItems` when no
+  `insert` option is passed, instead of always inserting their results. An
+  options object without `insert` also inserts the clone by default now, as
+  documented, e.g. `clone({ deep: false })` (#1721).
+- Use jsdom's own `XMLSerializer` for `#exportSVG()` on Node.js, instead of a
+  shim that returned HTML, so the output is valid XML with escaped attribute
+  values, as in browsers. Empty elements are now self-closing (#1922).
 
 ### Fixed
 
@@ -82,6 +97,9 @@
   the path at its start instead of returning `null`.
 - Fix clipping with groups that are clipped themselves, as imported SVG with a
   `viewBox` is, which clipped with their own clip mask too (#1618).
+- Fix `Item#hitTest()` and `#hitTestAll()` on items inside transformed
+  groups, which took the point in their parent's coordinates instead of the
+  documented global ones (#1803).
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.

@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 18 21:17:11 2026 +0200
+ * Date: Sun Oct 18 21:55:17 2026 +0200
  *
  ***
  *
@@ -3888,7 +3888,8 @@ new function() {
 		var copy = new this.constructor(Item.NO_INSERT),
 			children = this._children,
 			insert = Base.pick(options ? options.insert : undefined,
-					options === undefined || options === true),
+					typeof options === 'boolean' ? options
+						: paper.settings.insertItems),
 			deep = Base.pick(options ? options.deep : undefined, true);
 		if (children)
 			copy.copyAttributes(this);
@@ -3976,7 +3977,7 @@ new function() {
 				.translate(topLeft.add(boundsSize.divide(2)))
 				.scale(1 / scale)
 		);
-		if (insert === undefined || insert) {
+		if (Base.pick(insert, paper.settings.insertItems)) {
 			raster.insertAbove(this);
 		}
 		return raster;
@@ -4073,14 +4074,15 @@ new function() {
 		}
 
 		var matrix = this._matrix,
+			pointMatrix = parentViewMatrix ? matrix : this.getGlobalMatrix(),
 			viewMatrix = parentViewMatrix
 					? parentViewMatrix.appended(matrix)
-					: this.getGlobalMatrix().prepend(this.getView()._matrix),
+					: pointMatrix.prepended(this.getView()._matrix),
 			tolerance = Math.max(options.tolerance, 1e-12),
 			tolerancePadding = options._tolerancePadding = new Size(
 					Path._getStrokePadding(tolerance,
 						matrix._shiftless().invert()));
-		point = matrix._inverseTransform(point);
+		point = pointMatrix._inverseTransform(point);
 		if (!point || !this._children &&
 			!this.getBounds({ internal: true, stroke: true, handle: true })
 				.expand(tolerancePadding.multiply(2))._containsPoint(point)) {
@@ -4145,7 +4147,7 @@ new function() {
 				|| null;
 		}
 		if (res && res.point) {
-			res.point = matrix.transform(res.point);
+			res.point = pointMatrix.transform(res.point);
 		}
 		return res;
 	},
@@ -5188,7 +5190,7 @@ var Shape = Item.extend({
 		var path = this._asPathItem();
 		if (paper.settings.applyMatrix)
 			path.setApplyMatrix(true);
-		if (insert === undefined || insert)
+		if (Base.pick(insert, paper.settings.insertItems))
 			path.insertAbove(this);
 		return path;
 	},
@@ -9189,7 +9191,7 @@ var Path = PathItem.extend({
 			shape.copyAttributes(this, true);
 			shape._matrix.prepend(this._matrix);
 			shape.rotate(topCenter.subtract(center).getAngle() + 90);
-			if (insert === undefined || insert)
+			if (Base.pick(insert, paper.settings.insertItems))
 				shape.insertAbove(this);
 			return shape;
 		}
@@ -10470,7 +10472,7 @@ PathItem.inject(new function() {
 		var result = new CompoundPath(Item.NO_INSERT);
 		result.addChildren(paths, true);
 		result = result.reduce({ simplify: simplify });
-		if (!(options && options.insert == false)) {
+		if (Base.pick(options && options.insert, paper.settings.insertItems)) {
 			result.insertAbove(path2 && path1.isSibling(path2)
 					&& path1.getIndex() < path2.getIndex() ? path2 : path1);
 		}
@@ -15398,10 +15400,10 @@ new function() {
 		image: function (node) {
 			var raster = new Raster(getValue(node, 'href', true));
 			raster.on('load', function() {
-				var size = getSize(node);
-				this.setSize(size);
+				var size = getSize(node, null, null, true) || this.getSize();
 				var center = getPoint(node).add(size.divide(2));
-				this._matrix.append(new Matrix().translate(center));
+				this._matrix.append(new Matrix().translate(center)
+						.scale(size.divide(this.getSize())));
 			});
 			return raster;
 		},
@@ -15611,12 +15613,13 @@ new function() {
 	});
 
 	function getAttribute(node, name, styles) {
-		var attr = node.attributes[name],
+		var style = Base.camelize(name),
+			value = node.style && node.style[style];
+		if (!value) {
+			var attr = node.attributes[name];
 			value = attr && attr.value;
-		if (!value && node.style) {
-			var style = Base.camelize(name);
-			value = node.style[style];
-			if (!value && styles.node[style] !== styles.parent[style])
+			if (!value && node.style
+					&& styles.node[style] !== styles.parent[style])
 				value = styles.node[style];
 		}
 		return !value ? undefined
