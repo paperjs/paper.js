@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 18 19:45:29 2026 +0200
+ * Date: Sun Oct 18 20:27:56 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -3558,7 +3558,10 @@ declare namespace paper {
 
         /** 
          * Creates a new path item from SVG path-data and places it at the top of
-         * the active layer.
+         * the active layer. A path holds a single sub-path: further `M` commands
+         * are ignored, and the commands that follow them continue the same path.
+         * Use {@link CompoundPath} or {@link PathItem.create} to create
+         * items with multiple sub-paths.
          * 
          * @param pathData - the SVG path-data that describes the geometry
          * of this path
@@ -3690,7 +3693,7 @@ declare namespace paper {
          * 
          * @return the newly created path after splitting, if any
          */
-        splitAt(location: number | CurveLocation): Path
+        splitAt(location: number | CurveLocation): Path | null
 
         /** 
          * Joins the path with the other specified path, which will be removed in

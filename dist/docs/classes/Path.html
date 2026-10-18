@@ -167,7 +167,7 @@ var path = new Path({
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-    <p>Creates a new path item from SVG path-data and places it at the top of the active layer.</p>
+    <p>Creates a new path item from SVG path-data and places it at the top of the active layer. A path holds a single sub-path: further <code>M</code> commands are ignored, and the commands that follow them continue the same path. Use <a href="../classes/CompoundPath.html"><tt>CompoundPath</tt></a> or <a href="../classes/PathItem.html#create-pathdata"><tt>PathItem.create(pathData)</tt></a> to create items with multiple sub-paths.</p>
     
     
 <ul class="member-list">
@@ -2385,7 +2385,7 @@ path.selected = true;
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><a href="../classes/Path.html"><tt>Path</tt></a></tt>&nbsp;&mdash;&nbsp;the newly created path after splitting, if any
+<tt><a href="../classes/Path.html"><tt>Path</tt></a>⟋<tt>null</tt></tt>&nbsp;&mdash;&nbsp;the newly created path after splitting, if any
 </li>
 
 		

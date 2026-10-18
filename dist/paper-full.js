@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 18 19:45:29 2026 +0200
+ * Date: Sun Oct 18 20:27:56 2026 +0200
  *
  ***
  *
@@ -8832,7 +8832,7 @@ var Path = PathItem.extend({
 			time = 0;
 		}
 		var curves = this.getCurves();
-		if (index >= 0 && index < curves.length) {
+		if (loc && index < curves.length) {
 			if (time >= tMin) {
 				curves[index++].divideAtTime(time);
 			}
@@ -9285,7 +9285,7 @@ var Path = PathItem.extend({
 						Path._addBevelJoin(segment, join, strokeRadius,
 							   miterLimit, null, strokeMatrix, addToArea, true);
 					}
-				} else if (cap === 'square') {
+				} else {
 					Path._addSquareCap(segment, cap, strokeRadius, null,
 							strokeMatrix, addToArea, true);
 				}
@@ -17362,9 +17362,12 @@ Base.exports.PaperScript = function() {
 			if (agent.node) {
 				offset -= 2;
 			} else if (window && url && !window.location.href.indexOf(url)) {
-				var html = document.getElementsByTagName('html')[0].innerHTML;
-				offset = html.substr(0, html.indexOf(code) + 1).match(
-						lineBreaks).length + 1;
+				var html = document.getElementsByTagName('html')[0].innerHTML,
+					index = html.indexOf(code);
+				if (index >= 0) {
+					offset = html.substr(0, index + 1).match(
+							lineBreaks).length + 1;
+				}
 			}
 			offsetCode = offset > 0 && !(
 					agent.chrome && version >= 36 ||
@@ -17510,11 +17513,17 @@ Base.exports.PaperScript = function() {
 					async: async,
 					mimeType: 'text/plain',
 					onLoad: function(code) {
-						execute(code, scope, src);
+						execute(code, scope, {
+							url: src,
+							sourceMaps: 'inline'
+						});
 					}
 				});
 			} else {
-				execute(script.innerHTML, scope, script.baseURI);
+				execute(script.innerHTML, scope, {
+					url: script.baseURI,
+					sourceMaps: 'inline'
+				});
 			}
 			script.setAttribute('data-paper-ignore', 'true');
 			return scope;
