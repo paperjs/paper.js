@@ -46,3 +46,19 @@ test('PaperScript with suffix increment operators', function() {
         '2 4'
     );
 });
+
+test('PaperScript with inline source maps', function() {
+    var source = 'var a = 1;\nvar b = 2;',
+        code = PaperScript.compile(source, {
+            url: 'test.js',
+            sourceMaps: 'inline'
+        }).code,
+        match = code.match(
+            /\n\/\/# sourceMappingURL=data:application\/json;base64,(\S+)\n/),
+        map = JSON.parse(window.atob(match[1]));
+    equals(map.version, 3);
+    equals(map.sources, ['test.js']);
+    equals(map.sourcesContent, [source]);
+    // One group of mappings per line of generated code:
+    equals(map.mappings.split(';').length, 2);
+});

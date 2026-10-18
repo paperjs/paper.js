@@ -1,5 +1,17 @@
 # Change Log
 
+## Unreleased
+
+### Fixed
+
+- Fix `require('paper')` in the Node.js REPL (#2019, #1792).
+- Fix loading PaperScript in bundles that leave the top-level `this` undefined,
+  as in ES modules (#1480).
+- Prevent source-map-loader from warning about the source map string in
+  PaperScript (#1991).
+- Fix replacing style colors that were set as strings, which threw in strict
+  mode (#2049).
+
 ## `0.12.20`
 
 ### Fixed
