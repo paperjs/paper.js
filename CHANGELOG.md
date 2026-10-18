@@ -102,6 +102,9 @@
   documented global ones (#1803).
 - Ignore `View#zoom` values that aren't positive numbers, which left the
   view's matrix without an inverse, so that `View#bounds` threw (#1433).
+- Fix the hit-test tolerance of items inside transformed groups and of symbol
+  items, which their transformations scaled. It is now in project
+  coordinates, as documented (#1278).
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.

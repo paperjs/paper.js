@@ -2009,7 +2009,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @function
      *
      * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
-     *     {Number} the tolerance of the hit-test
+     *     {Number} the tolerance of the hit-test, in project coordinates
      * @option options.class {Function} only hit-test against a specific item
      *     class, or any of its sub-classes, by providing the constructor
      *     function against which an `instanceof` check is performed:
@@ -2090,12 +2090,14 @@ new function() { // Injection scope for hit-test functions shared with project
             // transformed tolerance circle / ellipse. Make sure it's never 0
             // since we're using it for division (see checkBounds()).
             tolerance = Math.max(options.tolerance, /*#=*/Numerical.EPSILON),
-            // Hit-tests are performed in the item's local coordinate space.
-            // To calculate the correct 2D padding for tolerance, we therefore
-            // need to apply the inverted item matrix.
+            // Hit-tests are performed in the item's local coordinate space,
+            // while the tolerance is in project coordinates. To calculate the
+            // correct 2D padding for tolerance, we therefore need to apply the
+            // inverted accumulated matrices without the view's matrix.
             tolerancePadding = options._tolerancePadding = new Size(
-                    Path._getStrokePadding(tolerance,
-                        matrix._shiftless().invert()));
+                    Path._getStrokePadding(tolerance, viewMatrix
+                        .prepended(this.getView()._matrix.inverted())
+                        ._shiftless().invert()));
         // Transform point to local coordinates.
         point = pointMatrix._inverseTransform(point);
         // If the matrix is non-reversible, point will now be `null`:
