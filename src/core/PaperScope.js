@@ -265,6 +265,14 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
         return this;
     },
 
+    /**
+     * Creates a canvas of the given size, or reuses one that was released
+     * internally.
+     *
+     * @param {Number} width the width of the canvas
+     * @param {Number} height the height of the canvas
+     * @return {HTMLCanvasElement} the canvas
+     */
     createCanvas: function(width, height) {
         return CanvasProvider.getCanvas(width, height);
     },
@@ -277,9 +285,11 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
         paper = this;
     },
 
+    /**
+     * Removes all projects, views and tools of this scope, along with their
+     * installed event handlers.
+     */
     clear: function() {
-        // Remove all projects, views and tools.
-        // This also removes the installed event handlers.
         var projects = this.projects,
             tools = this.tools;
         for (var i = projects.length - 1; i >= 0; i--)
@@ -288,6 +298,9 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
             tools[i].remove();
     },
 
+    /**
+     * Clears this scope and removes it from the list of scopes.
+     */
     remove: function() {
         this.clear();
         delete PaperScope._scopes[this._id];
