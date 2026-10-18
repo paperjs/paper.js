@@ -137,7 +137,14 @@ var PathItem = Item.extend(/** @lends PathItem# */{
             previous,
             control,
             current = new Point(),
-            start = new Point();
+            start = new Point(),
+            number = '([+-]?(?:\\d*\\.\\d+|\\d+\\.?)(?:[eE][+-]?\\d+)?)',
+            numbers = new RegExp(number, 'g'),
+            // The arc flags are single characters that don't need to be
+            // separated from what follows, e.g. 'a1 1 0 011 1', see #1808:
+            flag = '([01])',
+            arcs = new RegExp([number, number, number, flag, flag, number,
+                    number].join('[\\s,]*'), 'g');
 
         function getCoord(index, coord) {
             var val = +coords[index];
@@ -161,7 +168,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 command = part[0],
                 lower = command.toLowerCase();
             // Match all coordinate values
-            coords = part.match(/[+-]?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?/g);
+            coords = part.match(numbers);
             var length = coords && coords.length;
             relative = command === lower;
             // Fix issues with z in the middle of SVG path data, not followed by
@@ -230,10 +237,10 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 }
                 break;
             case 'a':
-                for (var j = 0; j < length; j += 7) {
-                    this.arcTo(current = getPoint(j + 5),
-                            new Size(+coords[j], +coords[j + 1]),
-                            +coords[j + 2], +coords[j + 4], +coords[j + 3]);
+                while (coords = arcs.exec(part)) {
+                    this.arcTo(current = getPoint(6),
+                            new Size(+coords[1], +coords[2]),
+                            +coords[3], +coords[5], +coords[4]);
                 }
                 break;
             case 'z':

@@ -289,10 +289,11 @@ new function() {
             var get = entry.get,
                 type = entry.type,
                 value = item[get]();
-            if (entry.exportFilter
+            // Skip undefined values, as found on groups with mixed children:
+            if (value !== undefined && (entry.exportFilter
                     ? entry.exportFilter(item, value)
                     : options.reduceAttributes == false
-                        || !parent || !Base.equals(parent[get](), value)) {
+                        || !parent || !Base.equals(parent[get](), value))) {
                 if (type === 'color' && value != null) {
                     // Support for css-style rgba() values is not in SVG 1.1, so
                     // separate the alpha value of colors with alpha into the
