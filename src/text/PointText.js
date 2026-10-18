@@ -118,6 +118,11 @@ var PointText = TextItem.extend(/** @lends PointText# */{
         var rect = new Rectangle(x,
                     numLines ? - 0.75 * leading : 0,
                     width, numLines * leading);
+        // The glyph outlines aren't known, so add half the stroke width all
+        // around, before transforming as strokes of text always scale. Sharp
+        // miter joins can stick out further.
+        if (options.stroke && style.hasStroke())
+            rect = rect.expand(style.getStrokeWidth());
         return matrix ? matrix._transformBounds(rect, rect) : rect;
     }
 });

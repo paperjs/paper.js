@@ -824,3 +824,92 @@ test('path.strokeBounds applies stroke padding properly (#1824)', function() {
         'ellipse.strokeBounds'
     );
 })
+
+test('shape.bounds of rotated ellipses and circles (#1826)', function() {
+    // Half the bounds of an ellipse with radii [100, 50] rotated by 30°:
+    // [sqrt((cos(30°) * 100)² + (sin(30°) * 50)²),
+    //  sqrt((sin(30°) * 100)² + (cos(30°) * 50)²)] = [sqrt(8125), sqrt(4375)]
+    var ellipse = new Shape.Ellipse({
+            center: [200, 200],
+            radius: [100, 50],
+            strokeColor: 'black',
+            strokeWidth: 10
+        }),
+        width = Math.sqrt(8125),
+        height = Math.sqrt(4375);
+    ellipse.rotate(30);
+    equals(ellipse.bounds, new Rectangle(200 - width, 200 - height,
+            2 * width, 2 * height), 'ellipse.bounds');
+    // The stroke of an ellipse adds half its width all around:
+    equals(ellipse.strokeBounds, new Rectangle(195 - width, 195 - height,
+            2 * width + 10, 2 * height + 10), 'ellipse.strokeBounds');
+
+    // A rotated circle keeps its bounds:
+    var circle = new Shape.Circle({
+        center: [200, 200],
+        radius: 50,
+        strokeColor: 'black',
+        strokeWidth: 10
+    });
+    circle.rotate(45);
+    equals(circle.bounds, new Rectangle(150, 150, 100, 100), 'circle.bounds');
+    equals(circle.strokeBounds, new Rectangle(145, 145, 110, 110),
+            'circle.strokeBounds');
+
+    // Scaled and rotated, the same as the equivalent path, within the
+    // precision of its Bézier approximation of the ellipse:
+    function createCircle(ctor) {
+        return new ctor.Circle({
+            center: [200, 200],
+            radius: 50,
+            applyMatrix: false,
+            strokeColor: 'black',
+            strokeWidth: 10
+        }).scale(2, 1).rotate(20);
+    }
+    var shape = createCircle(Shape),
+        path = createCircle(Path);
+    equals(shape.bounds, path.bounds, 'shape.bounds', { tolerance: 0.1 });
+    equals(shape.strokeBounds, path.strokeBounds, 'shape.strokeBounds',
+            { tolerance: 0.1 });
+    // And skewed:
+    equals(shape.skew(10, 0).bounds, path.skew(10, 0).bounds, 'shape.bounds',
+            { tolerance: 0.1 });
+});
+
+test('item.bounds on lines with applyMatrix disabled (#1794)', function() {
+    // The fraction makes the width of the moved bounds differ from the
+    // original in the last digit, and thus scale the line:
+    var horizontal = new Path({
+        segments: [[10.3, 20], [41.1, 20]],
+        applyMatrix: false
+    });
+    horizontal.bounds.center = [50, 50];
+    equals(function() {
+        return horizontal.matrix.isInvertible();
+    }, true);
+    equals(horizontal.localToGlobal(horizontal.firstSegment.point),
+            new Point(34.6, 50));
+    equals(horizontal.localToGlobal(horizontal.lastSegment.point),
+            new Point(65.4, 50));
+    // A zero height can't be scaled, the line only moves to the new center:
+    horizontal.bounds.height = 10;
+    equals(function() {
+        return horizontal.matrix.isInvertible();
+    }, true);
+    equals(horizontal.bounds, new Rectangle(34.6, 55, 30.8, 0));
+
+    // Scaling the length of a vertical line keeps its zero width:
+    var vertical = new Path({
+        segments: [[20, 10], [20, 40]],
+        applyMatrix: false
+    });
+    vertical.bounds = new Rectangle(50, 30, 0, 40);
+    equals(function() {
+        return vertical.matrix.isInvertible();
+    }, true);
+    equals(vertical.localToGlobal(vertical.firstSegment.point),
+            new Point(50, 30));
+    equals(vertical.localToGlobal(vertical.lastSegment.point),
+            new Point(50, 70));
+});

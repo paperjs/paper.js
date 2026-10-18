@@ -285,14 +285,30 @@ var Shape = Item.extend(/** @lends Shape# */{
     },
 
     _getBounds: function(matrix, options) {
-        var rect = new Rectangle(this._size).setCenter(0, 0),
+        var size = this._size,
+            rect = new Rectangle(size).setCenter(0, 0),
             style = this._style,
             strokeWidth = options.stroke && style.hasStroke()
                     && style.getStrokeWidth();
         // If we're getting the strokeBounds, include the stroke width before
         // or after transforming the rect, based on strokeScaling.
-        if (matrix)
-            rect = matrix._transformBounds(rect);
+        if (matrix) {
+            if (this._type === 'rectangle') {
+                rect = matrix._transformBounds(rect);
+            } else {
+                // Use the exact bounds of the transformed ellipse:
+                // x = a * rx * cos(t) + c * ry * sin(t) is at most
+                // sqrt((a * rx)² + (c * ry)²), and y the same with b and d.
+                var rx = size.width / 2,
+                    ry = size.height / 2,
+                    dx = Math.sqrt(Math.pow(matrix._a * rx, 2)
+                            + Math.pow(matrix._c * ry, 2)),
+                    dy = Math.sqrt(Math.pow(matrix._b * rx, 2)
+                            + Math.pow(matrix._d * ry, 2));
+                rect = new Rectangle(matrix._tx - dx, matrix._ty - dy,
+                        2 * dx, 2 * dy);
+            }
+        }
         return strokeWidth
                 ? rect.expand(Path._getStrokePadding(strokeWidth,
                     this._getStrokeMatrix(matrix, options)))

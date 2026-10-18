@@ -281,6 +281,33 @@ test('Import SVG with numeric ids (#1754)', function() {
     equals(imported.children[2].bounds, new Rectangle(20, 0, 10, 10));
 });
 
+test('Import SVG <use> of a group with a transform (#978)', function() {
+    function importWith(content) {
+        return paper.project.importSVG('<svg xmlns="http://www.w3.org/2000/svg"'
+                + ' xmlns:xlink="http://www.w3.org/1999/xlink">'
+                + '<defs><g id="group"><rect width="20" height="10"/></g>'
+                + '<rect id="rect" width="20" height="10"/></defs>'
+                + content + '</svg>');
+    }
+
+    // In SVG, x / y on <use> translate before its transform: rotating the
+    // rectangle [10, 0, 20, 10] by 90° around [50, 50] gives [90, 10, 10, 20].
+    var imported = importWith('<use xlink:href="#group" x="10"'
+            + ' transform="rotate(90 50 50)"/>'),
+        use = imported.lastChild;
+    equals(use.bounds, new Rectangle(90, 10, 10, 20));
+    // The same as a group with the equivalent transform:
+    equals(use.firstChild, importWith('<g transform="rotate(90 50 50)'
+            + ' translate(10 0)"><rect width="20" height="10"/></g>')
+            .lastChild.firstChild);
+    // The same as a <use> of a single item:
+    equals(use.bounds, importWith('<use xlink:href="#rect" x="10"'
+            + ' transform="rotate(90 50 50)"/>').lastChild.bounds);
+    // Styles on <use> are inherited by the group's content:
+    equals(importWith('<use xlink:href="#group" fill="red"/>')
+            .lastChild.firstChild.fillColor, new Color('red'));
+});
+
 test('Import SVG cleans up after errors', function() {
     var svg = '<svg xmlns="http://www.w3.org/2000/svg" data-paper-data="invalid JSON"><rect width="100" height="100"/></svg>';
     var settings = paper.settings,

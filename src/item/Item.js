@@ -890,7 +890,8 @@ new function() { // Injection scope for various item event handlers
         // Read this from bottom to top:
         // Translate to new center:
         matrix.translate(center);
-        // Scale to new Size, if size changes and avoid divisions by 0:
+        // Scale to new Size, if size changes. A zero dimension can't be
+        // scaled, so keep its scaling at 1 to keep the matrix invertible:
         if (rect.width != bounds.width || rect.height != bounds.height) {
             // If a previous transformation resulted in a non-invertible matrix,
             // Restore to the last revertible matrix stored in _backup, and get
@@ -901,8 +902,8 @@ new function() { // Injection scope for various item event handlers
                 bounds = this.getBounds();
             }
             matrix.scale(
-                    bounds.width !== 0 ? rect.width / bounds.width : 0,
-                    bounds.height !== 0 ? rect.height / bounds.height : 0);
+                    bounds.width !== 0 ? rect.width / bounds.width : 1,
+                    bounds.height !== 0 ? rect.height / bounds.height : 1);
         }
         // Translate to bounds center:
         center = bounds.getCenter();
@@ -2338,7 +2339,7 @@ new function() { // Injection scope for hit-test functions shared with project
                     rect = bounds && Rectangle.read([bounds]);
                 param = {
                     items: [], // The list to contain the results.
-                    recursive: obj && obj.recursive !== false,
+                    recursive: !obj || obj.recursive !== false,
                     inside: !!inside,
                     overlapping: !!overlapping,
                     rect: rect,
