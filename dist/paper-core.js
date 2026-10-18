@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.15-develop - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.19-develop - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Mar 22 17:03:39 2021 +0100
+ * Date: Sun Oct 18 14:04:42 2026 +0200
  *
  ***
  *
@@ -575,7 +575,7 @@ statics: {
 						if (Base.isPlainObject(arg)) {
 							arg.insert = false;
 							if (useTarget) {
-								args = args.concat([{ insert: true }]);
+								args = args.concat([Item.INSERT]);
 							}
 						}
 					}
@@ -821,7 +821,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: "0.12.15-develop",
+	version: "0.12.19-develop",
 
 	getView: function() {
 		var project = this.project;
@@ -1218,6 +1218,7 @@ var Numerical = new function() {
 		CURVETIME_EPSILON: 1e-8,
 		GEOMETRIC_EPSILON: 1e-7,
 		TRIGONOMETRIC_EPSILON: 1e-8,
+		ANGULAR_EPSILON: 1e-5,
 		KAPPA: 4 * (sqrt(2) - 1) / 3,
 
 		isZero: function(val) {
@@ -1915,7 +1916,9 @@ var Rectangle = Base.extend({
 		} else if (type === 'undefined' || arg0 === null) {
 			this._set(0, 0, 0, 0);
 			read = arg0 === null ? 1 : 0;
-		} else if (args.length === 1) {
+		} else if (args.length === 1
+				|| Array.isArray(arg0) && arg0.length === 4
+				|| arg0.x !== undefined && arg0.width !== undefined) {
 			if (Array.isArray(arg0)) {
 				this._set.apply(this, arg0);
 				read = 1;
@@ -3135,6 +3138,7 @@ var Item = Base.extend(Emitter, {
 			return extend.base.apply(this, arguments);
 		},
 
+		INSERT: { insert: true },
 		NO_INSERT: { insert: false }
 	},
 
@@ -3221,13 +3225,13 @@ new function() {
 		matrix._owner = this;
 		this._style = new Style(project._currentStyle, this, project);
 		if (internal || hasProps && props.insert == false
-			|| !settings.insertItems && !(hasProps && props.insert === true)) {
+			|| !settings.insertItems && !(hasProps && props.insert == true)) {
 			this._setProject(project);
 		} else {
 			(hasProps && props.parent || project)
 					._insertItem(undefined, this, true);
 		}
-		if (hasProps && props !== Item.NO_INSERT) {
+		if (hasProps && props !== Item.NO_INSERT && props !== Item.INSERT) {
 			this.set(props, {
 				internal: true, insert: true, project: true, parent: true
 			});
@@ -3812,6 +3816,15 @@ new function() {
 
 	getIndex: function() {
 		return this._index;
+	},
+
+	setIndex: function(index) {
+		var parent = this._parent,
+			children = parent && parent._children;
+		if (children) {
+			parent.insertChildren(index in children ? index : undefined,
+								  [this]);
+		}
 	},
 
 	equals: function(item) {
@@ -4633,6 +4646,7 @@ new function() {
 
 	fitBounds: function(rectangle, fill) {
 		rectangle = Rectangle.read(arguments);
+		fill = Base.read(arguments);
 		var bounds = this.getBounds(),
 			itemRatio = bounds.height / bounds.width,
 			rectRatio = rectangle.height / rectangle.width,
@@ -5088,7 +5102,11 @@ var Shape = Item.extend({
 				return;
 			var size = radius * 2;
 			this._radius = radius;
-			this._size._set(size, size);
+			if (this._size) {
+				this._size._set(size, size);
+			} else {
+				this._size = new Size(size, size);
+			}
 		} else {
 			radius = Size.read(arguments);
 			if (!this._radius) {
@@ -5365,7 +5383,7 @@ var Raster = Item.extend({
 
 	initialize: function Raster(source, position) {
 		if (!this._initialize(source,
-				position !== undefined && Point.read(arguments))) {
+				position !== undefined && Point.read([position]))) {
 			var image,
 				type = typeof source,
 				object = type === 'string'
@@ -9669,9 +9687,11 @@ new function() {
 				}
 			}
 			if (extent) {
-				var epsilon = 1e-7,
+				var epsilon = 1e-5,
 					ext = abs(extent),
-					count = ext >= 360 ? 4 : Math.ceil((ext - epsilon) / 90),
+					count = ext >= 360
+						? 4
+						: Math.ceil((ext - epsilon) / 90),
 					inc = extent / count,
 					half = inc * Math.PI / 360,
 					z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
@@ -9979,10 +9999,14 @@ Path.inject({ statics: new function() {
 
 	function createPath(segments, closed, args) {
 		var props = Base.getNamed(args),
-			path = new Path(props && props.insert == false && Item.NO_INSERT);
+			path = new Path(props && (
+				props.insert == true ? Item.INSERT
+				: props.insert == false ? Item.NO_INSERT
+				: null
+			));
 		path._add(segments);
 		path._closed = closed;
-		return path.set(props, { insert: true });
+		return path.set(props, Item.INSERT);
 	}
 
 	function createEllipse(center, radius, args) {
@@ -10066,12 +10090,10 @@ Path.inject({ statics: new function() {
 				from = Point.readNamed(args, 'from'),
 				through = Point.readNamed(args, 'through'),
 				to = Point.readNamed(args, 'to'),
-				props = Base.getNamed(args),
-				path = new Path(props && props.insert == false
-						&& Item.NO_INSERT);
-			path.moveTo(from);
-			path.arcTo(through, to);
-			return path.set(props);
+				arc = new Path(Item.NO_INSERT);
+			arc.moveTo(from);
+			arc.arcTo(through, to);
+			return createPath(arc._segments, false, args);
 		},
 
 		RegularPolygon: function() {
@@ -11700,7 +11722,9 @@ var Color = Base.extend(new function() {
 			if (!color) {
 				if (window) {
 					if (!colorCtx) {
-						colorCtx = CanvasProvider.getContext(1, 1);
+						colorCtx = CanvasProvider.getContext(1, 1, {
+							willReadFrequently: true
+						});
 						colorCtx.globalCompositeOperation = 'copy';
 					}
 					colorCtx.fillStyle = 'rgba(0,0,0,0)';
@@ -13089,7 +13113,7 @@ var View = Base.extend(Emitter, {
 			pixels = parseFloat(DomElement.getStyles(temp).fontSize);
 			parent.removeChild(temp);
 		} else {
-			pixels = parseFloat(pixels);
+			pixels = parseFloat(size);
 		}
 		return pixels;
 	},
@@ -13913,8 +13937,8 @@ var ToolEvent = Event.extend({
 	},
 
 	setCount: function(count) {
-		this.tool[/^mouse(down|up)$/.test(this.type) ? 'downCount' : 'count']
-			= count;
+		this.tool[/^mouse(down|up)$/.test(this.type)
+				? '_downCount' : '_moveCount'] = count;
 	},
 
 	getItem: function() {
@@ -14000,8 +14024,6 @@ var Tool = PaperScopeItem.extend({
 			type = 'mousemove';
 		var move = mouse.move || mouse.drag,
 			responds = this.responds(type),
-			minDistance = this.minDistance,
-			maxDistance = this.maxDistance,
 			called = false,
 			tool = this;
 		function update(minDistance, maxDistance) {
@@ -14044,10 +14066,10 @@ var Tool = PaperScopeItem.extend({
 			update();
 			emit();
 		} else if (mouse.up) {
-			update(null, maxDistance);
+			update(null, this._maxDistance);
 			emit();
 		} else if (responds) {
-			while (update(minDistance, maxDistance))
+			while (update(this._minDistance, this._maxDistance))
 				emit();
 		}
 		return called;
@@ -14181,8 +14203,8 @@ var Tween = Base.extend(Emitter, {
 				var key = keys[i],
 					from = getValue(this._from[key]),
 					to = getValue(this._to[key]),
-					value = (from && to && from.__add && to.__add)
-						? to.__subtract(from).__multiply(factor).__add(from)
+					value = (from && to && from.multiply && to.multiply)
+						? to.subtract(from).multiply(factor).add(from)
 						: ((to - from) * factor) + from;
 				this._setProperty(this._parsedKeys[key], value);
 			}
@@ -14263,7 +14285,16 @@ var Tween = Base.extend(Emitter, {
 	},
 
 	_calculate: function(left, operator, right) {
-		return paper.PaperScript.calculateBinary(left, operator, right);
+		var name = { '+': 'add', '-': 'subtract', '*': 'multiply',
+				'/': 'divide' }[operator];
+		if (left && left[name])
+			return left[name](right);
+		switch (operator) {
+		case '+': return left + right;
+		case '-': return left - right;
+		case '*': return left * right;
+		case '/': return left / right;
+		}
 	},
 
 	_parseKeys: function(keys) {
@@ -14328,7 +14359,7 @@ var Http = {
 var CanvasProvider = Base.exports.CanvasProvider = {
 	canvases: [],
 
-	getCanvas: function(width, height) {
+	getCanvas: function(width, height, options) {
 		if (!window)
 			return null;
 		var canvas,
@@ -14343,7 +14374,7 @@ var CanvasProvider = Base.exports.CanvasProvider = {
 			canvas = document.createElement('canvas');
 			clear = false;
 		}
-		var ctx = canvas.getContext('2d');
+		var ctx = canvas.getContext('2d', options || {});
 		if (!ctx) {
 			throw new Error('Canvas ' + canvas +
 					' is unable to provide a 2D context.');
@@ -14359,9 +14390,9 @@ var CanvasProvider = Base.exports.CanvasProvider = {
 		return canvas;
 	},
 
-	getContext: function(width, height) {
-		var canvas = this.getCanvas(width, height);
-		return canvas ? canvas.getContext('2d') : null;
+	getContext: function(width, height, options) {
+		var canvas = this.getCanvas(width, height, options);
+		return canvas ? canvas.getContext('2d', options || {}) : null;
 	},
 
 	release: function(obj) {
@@ -14559,7 +14590,7 @@ var BlendMode = new function() {
 		this[mode] = true;
 	}, {});
 
-	var ctx = CanvasProvider.getContext(1, 1);
+	var ctx = CanvasProvider.getContext(1, 1, { willReadFrequently: true });
 	if (ctx) {
 		Base.each(modes, function(func, mode) {
 			var darken = mode === 'darken',
@@ -14962,7 +14993,7 @@ new function() {
 		PointText: exportText
 	};
 
-	function applyStyle(item, node, isRoot) {
+	function applyStyle(item, node, options, isRoot) {
 		var attrs = {},
 			parent = !isRoot && item.getParent(),
 			style = [];
@@ -14976,7 +15007,8 @@ new function() {
 				value = item[get]();
 			if (entry.exportFilter
 					? entry.exportFilter(item, value)
-					: !parent || !Base.equals(parent[get](), value)) {
+					: options.reduceAttributes == false
+						|| !parent || !Base.equals(parent[get](), value)) {
 				if (type === 'color' && value != null) {
 					var alpha = value.getAlpha();
 					if (alpha < 1)
@@ -15058,7 +15090,7 @@ new function() {
 			if (data && data !== '{}' && data !== 'null')
 				node.setAttribute('data-paper-data', data);
 		}
-		return node && applyStyle(item, node, isRoot);
+		return node && applyStyle(item, node, options, isRoot);
 	}
 
 	function setOptions(options) {
@@ -15348,7 +15380,7 @@ new function() {
 				if (!transform)
 					break;
 				var parts = transform.split(/\(\s*/),
-					command = parts[0],
+					command = parts[0].trim(),
 					v = parts[1].split(/[\s,]+/g);
 				for (var j = 0, m = v.length; j < m; j++)
 					v[j] = parseFloat(v[j]);
@@ -15524,10 +15556,27 @@ new function() {
 		return res;
 	}
 
+	var sandbox;
+
+	function getSandbox() {
+		if (!(sandbox && sandbox.contentDocument)) {
+			sandbox = document.createElement('iframe');
+			sandbox.setAttribute('sandbox', 'allow-same-origin');
+			sandbox.style.cssText = 'position: absolute; visibility: hidden;'
+					+ ' width: 0; height: 0; border: 0';
+			document.body.appendChild(sandbox);
+			var doc = sandbox.contentDocument,
+				meta = doc.createElement('meta');
+			meta.httpEquiv = 'Content-Security-Policy';
+			meta.content = "default-src 'none'; style-src 'unsafe-inline'";
+			doc.head.appendChild(meta);
+		}
+		return sandbox.contentDocument.body;
+	}
+
 	function importNode(node, options, isRoot) {
 		var type = node.nodeName.toLowerCase(),
 			isElement = type !== '#document',
-			body = document.body,
 			container,
 			parent,
 			next;
@@ -15540,46 +15589,53 @@ new function() {
 			parent = node.parentNode;
 			next = node.nextSibling;
 			container.appendChild(node);
-			body.appendChild(container);
+			getSandbox().appendChild(container);
 		}
 		var settings = paper.settings,
 			applyMatrix = settings.applyMatrix,
-			insertItems = settings.insertItems;
-		settings.applyMatrix = false;
-		settings.insertItems = false;
-		var importer = importers[type],
-			item = importer && importer(node, type, options, isRoot) || null;
-		settings.insertItems = insertItems;
-		settings.applyMatrix = applyMatrix;
-		if (item) {
-			if (isElement && !(item instanceof Group))
-				item = applyAttributes(item, node, isRoot);
-			var onImport = options.onImport,
-				data = isElement && node.getAttribute('data-paper-data');
-			if (onImport)
-				item = onImport(node, item, options) || item;
-			if (options.expandShapes && item instanceof Shape) {
-				item.remove();
-				item = item.toPath();
+			insertItems = settings.insertItems,
+			item;
+		try {
+			settings.applyMatrix = false;
+			settings.insertItems = false;
+			try {
+				var importer = importers[type];
+				item = importer && importer(node, type, options, isRoot)
+						|| null;
+			} finally {
+				settings.insertItems = insertItems;
+				settings.applyMatrix = applyMatrix;
 			}
-			if (data)
-				item._data = JSON.parse(data);
-		}
-		if (container) {
-			body.removeChild(container);
-			if (parent) {
-				if (next) {
-					parent.insertBefore(node, next);
-				} else {
-					parent.appendChild(node);
+			if (item) {
+				if (isElement && !(item instanceof Group))
+					item = applyAttributes(item, node, isRoot);
+				var onImport = options.onImport,
+					data = isElement && node.getAttribute('data-paper-data');
+				if (onImport)
+					item = onImport(node, item, options) || item;
+				if (options.expandShapes && item instanceof Shape) {
+					item.remove();
+					item = item.toPath();
+				}
+				if (data)
+					item._data = JSON.parse(data);
+			}
+		} finally {
+			if (container) {
+				container.parentNode.removeChild(container);
+				if (parent) {
+					if (next) {
+						parent.insertBefore(node, next);
+					} else {
+						parent.appendChild(node);
+					}
 				}
 			}
+			if (isRoot)
+				definitions = {};
 		}
-		if (isRoot) {
-			definitions = {};
-			if (item && Base.pick(options.applyMatrix, applyMatrix))
-				item.matrix.apply(true, true);
-		}
+		if (isRoot && item && Base.pick(options.applyMatrix, applyMatrix))
+			item.matrix.apply(true, true);
 		return item;
 	}
 

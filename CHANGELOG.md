@@ -1,5 +1,68 @@
 # Change Log
 
+## `0.12.19`
+
+### Security
+
+- Fix XSS in `#importSVG()`: imported SVG is now attached to a sandboxed iframe
+  instead of the page while its styles are computed, so it can't run scripts or
+  load resources (#2100).
+
+### Changed
+
+- `#importSVG()` is no longer affected by the page's style sheets. Style sheets
+  inside the imported SVG still apply.
+
+### Fixed
+
+- Restore `settings.applyMatrix` and `settings.insertItems` when `#importSVG()`
+  fails.
+- Fix `new Path.Rectangle(rectangle, radius)`, `new Shape.Rectangle(rectangle,
+  radius)` and `Item#fitBounds(rectangle, fill)` when the rectangle is given as
+  an array or object literal.
+- Fix `new Raster(source, position)` ignoring the position.
+- Fix `new Path.Arc()` handling of `insert`: `{ insert: false }` shadowed
+  `Path#insert()`, and `{ insert: true }` was ignored.
+- Fix tweening of points, colors and relative values in `paper-core`, which
+  relied on PaperScript.
+- Fix setting `ToolEvent#count`, which had no effect.
+- Fix `new Shape({ type: 'circle', radius })` without a size, which threw.
+- Fix `View#getPixelSize()` returning `NaN` for views without an element, as in
+  web workers, which broke `leading` for font sizes in units other than pixels.
+- Only publish the intended files to npm, removing an accidental copy of the
+  whole distribution from the package (12.3 MB → 6.2 MB unpacked).
+
+## `0.12.18`
+
+### Fixed
+
+- Fix transformation in SvgImport (#1926).
+
+### Added
+
+- Implement `options.reduceAttributes` option for SVG export (#1895).
+- Add setter for item.index (#1908).
+
+## `0.12.17`
+
+- Properly warning in Chrome Console by providing `{ willReadFrequently: true }`
+  canvas context option where needed (#2008).
+
+## `0.12.16`
+
+### Fixed
+
+- Fix `Item#rasterize()` bounds cache when reusing raster.
+- Fix new warning in Chrome Console by providing `{ willReadFrequently: true }`
+  canvas context option where needed (#1999, #2000, #2003).
+- Fix `Path.*` constructor properties handling when passing `{ insert: true }`
+
+### Changed
+
+- Rename `Raster#setImageData()` to `#putImageData()`.
+- Change `Raster#setImageData()` to also respect image size.
+- Add separate `Numerical.ANGULAR_EPSILON` for `Path#arcTo()`
+
 ## `0.12.15`
 
 ### Fixed

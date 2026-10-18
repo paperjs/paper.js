@@ -1,4 +1,4 @@
-# Paper.js - The Swiss Army Knife of Vector Graphics Scripting [![Build Status](https://travis-ci.org/paperjs/paper.js.svg?branch=develop)](https://travis-ci.org/paperjs/paper.js) [![NPM](https://img.shields.io/npm/v/paper.svg)](https://www.npmjs.com/package/paper)
+# Paper.js - The Swiss Army Knife of Vector Graphics Scripting [![CI](https://github.com/paperjs/paper.js/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/paperjs/paper.js/actions/workflows/ci.yml) [![NPM](https://img.shields.io/npm/v/paper.svg)](https://www.npmjs.com/package/paper)
 
 If you want to work with Paper.js, simply download the latest "stable" version
 from [http://paperjs.org/download/](http://paperjs.org/download/)
@@ -304,7 +304,7 @@ fork](https://help.github.com/articles/fork-a-repo/). Then do this:
 
     git clone --recursive git@github.com:yourusername/paper.js.git
     cd paper.js
-    git remote add upstream git://github.com/paperjs/paper.js.git
+    git remote add upstream git@github.com:paperjs/paper.js.git
 
 To then fetch changes from upstream, run
 
@@ -368,4 +368,4 @@ For a list of authors and contributors, please see
 
 Distributed under the MIT license. See 
 [LICENSE](https://github.com/paperjs/paper.js/blob/master/LICENSE.txt)
-fo details.
+for details.
