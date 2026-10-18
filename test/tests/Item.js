@@ -785,6 +785,212 @@ test('Item#opacity', function() {
         'Center pixel should be red');
 });
 
+test('Item#opacity and Item#blendMode on items larger than the view (#1644)', function() {
+    // Items that are composited through a temporary canvas used to allocate
+    // it for their full bounds, which fails for sizes beyond the browsers'
+    // canvas size limits. Test the colors that the view draws, with the
+    // expected values calculated by hand for the 100x100 view:
+    var huge = 100000;
+
+    function testPixels(pixels, name) {
+        view.update();
+        var pixelRatio = view.pixelRatio,
+            ctx = view.element.getContext('2d');
+        for (var i = 0; i < pixels.length; i++) {
+            var point = pixels[i][0],
+                expected = pixels[i][1],
+                actual = Base.slice(ctx.getImageData(point[0] * pixelRatio,
+                        point[1] * pixelRatio, 1, 1).data);
+            // Allow for rounding of half-transparent channels:
+            equals(function() {
+                return actual.every(function(value, j) {
+                    return Math.abs(value - expected[j]) <= 1;
+                });
+            }, true, name + ' at ' + point + ': ' + actual + ', expected: '
+                    + expected);
+        }
+    }
+
+    var transparent = [0, 0, 0, 0],
+        halfRed = [255, 0, 0, 128],
+        halfBlue = [0, 0, 255, 128];
+
+    // A group with opacity, with a huge child that covers the left of the view
+    // up to x = 50, and a circle that lies within the view on its right:
+    var group = new Group({
+        children: [
+            new Path.Rectangle({
+                from: [-huge, -huge],
+                to: [50, huge],
+                fillColor: 'red'
+            }),
+            new Path.Circle({
+                center: [75, 50],
+                radius: 20,
+                fillColor: 'blue'
+            })
+        ],
+        opacity: 0.5
+    });
+    testPixels([
+        [[0, 0], halfRed],
+        [[25, 50], halfRed],
+        [[48, 99], halfRed],
+        [[52, 10], transparent],
+        [[75, 50], halfBlue],
+        [[60, 50], halfBlue],
+        [[75, 25], transparent],
+        [[99, 99], transparent]
+    ], 'opacity');
+    // NOTE: The temporary canvas is only observable through CanvasProvider,
+    // which keeps it for reuse after the drawing: Its size needs to be
+    // bounded by the view instead of the group.
+    var canvas = CanvasProvider.canvases[CanvasProvider.canvases.length - 1],
+        size = view.viewSize.add(1).multiply(view.pixelRatio);
+    equals(function() {
+        return canvas.width <= size.width && canvas.height <= size.height;
+    }, true);
+
+    // Groups entirely outside the view aren't drawn:
+    group.position = group.position.add(2 * huge, 0);
+    testPixels([[[25, 50], transparent], [[75, 50], transparent]],
+            'outside of the view');
+    group.remove();
+
+    // Nested in an opacity group, a multiplying group with a huge blue
+    // rectangle that covers the top right of the view, from 40, 50 on:
+    // Red * blue = black, and blue over nothing stays blue.
+    group = new Group({
+        children: [
+            new Path.Rectangle({
+                from: [-huge, -huge],
+                to: [60, huge],
+                fillColor: 'red'
+            }),
+            new Group({
+                children: [
+                    new Path.Rectangle({
+                        from: [40, -huge],
+                        to: [huge, 50],
+                        fillColor: 'blue'
+                    })
+                ],
+                blendMode: 'multiply'
+            })
+        ],
+        opacity: 0.5
+    });
+    testPixels([
+        [[20, 25], halfRed],
+        [[20, 75], halfRed],
+        [[50, 25], [0, 0, 0, 128]],
+        [[50, 75], halfRed],
+        [[80, 25], halfBlue],
+        [[80, 75], transparent]
+    ], 'nested opacity and blend mode');
+    group.remove();
+
+    // An emulated blend mode with a huge green rectangle that covers the right
+    // of the view from x = 50 on, over a red background: Red + green = yellow.
+    var background = new Path.Rectangle({
+        from: [0, 0],
+        to: [100, 100],
+        fillColor: 'red'
+    });
+    group = new Group({
+        children: [
+            new Path.Rectangle({
+                from: [50, -huge],
+                to: [huge, huge],
+                fillColor: new Color(0, 1, 0)
+            })
+        ],
+        blendMode: 'add'
+    });
+    testPixels([
+        [[25, 50], [255, 0, 0, 255]],
+        [[75, 0], [255, 255, 0, 255]],
+        [[75, 99], [255, 255, 0, 255]],
+        [[99, 50], [255, 255, 0, 255]]
+    ], 'emulated blend mode');
+    background.remove();
+    group.remove();
+
+    // A clipped group with opacity, with a huge clip mask that covers the
+    // left of the view up to x = 50, over a huge red rectangle:
+    group = new Group({
+        children: [
+            new Path.Rectangle({
+                from: [-huge, -huge],
+                to: [50, huge]
+            }),
+            new Path.Rectangle({
+                from: [-huge, -huge],
+                to: [huge, huge],
+                fillColor: 'red'
+            })
+        ],
+        clipped: true,
+        opacity: 0.5
+    });
+    testPixels([
+        [[25, 50], halfRed],
+        [[48, 0], halfRed],
+        [[52, 50], transparent]
+    ], 'clipped');
+    group.remove();
+
+    // When zooming in, the view only shows a part of the group. The view
+    // shows 25..75 now, so the edge of the red rectangle at 50 is at 50 in
+    // the view, and the circle at 75 at its right edge:
+    group = new Group({
+        children: [
+            new Path.Rectangle({
+                from: [-huge, -huge],
+                to: [50, huge],
+                fillColor: 'red'
+            }),
+            new Path.Circle({
+                center: [75, 50],
+                radius: 20,
+                fillColor: 'blue'
+            })
+        ],
+        opacity: 0.5
+    });
+    view.zoom = 2;
+    testPixels([
+        [[25, 50], halfRed],
+        [[48, 50], halfRed],
+        [[52, 50], transparent],
+        [[99, 50], halfBlue]
+    ], 'zoomed view');
+    view.zoom = 1;
+});
+
+test('Item#rasterize() with opacity (#1644)', function() {
+    // Rasterizing draws into the raster's own canvas, away from the view:
+    var group = new Group({
+        children: [
+            new Path.Rectangle({
+                from: [200, 200],
+                to: [300, 300],
+                fillColor: 'red'
+            }),
+            new Path.Rectangle({
+                from: [250, 200],
+                to: [300, 250],
+                fillColor: 'blue'
+            })
+        ],
+        opacity: 0.5
+    });
+    var raster = group.rasterize(72, false);
+    equals(raster.getPixel(25, 25), new Color(1, 0, 0, 128 / 255));
+    equals(raster.getPixel(75, 25), new Color(0, 0, 1, 128 / 255));
+    equals(raster.getPixel(75, 75), new Color(1, 0, 0, 128 / 255));
+});
+
 test('Item#applyMatrix', function() {
     equals(function() {
         return new Path({ applyMatrix: true }).applyMatrix;
