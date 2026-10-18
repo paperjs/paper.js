@@ -1,5 +1,23 @@
 # Change Log
 
+## Unreleased
+
+### Security
+
+- Fix XSS in `#importSVG()`: imported SVG is now attached to a sandboxed iframe
+  instead of the page while its styles are computed, so it can't run scripts or
+  load resources (#2100).
+
+### Changed
+
+- `#importSVG()` is no longer affected by the page's style sheets. Style sheets
+  inside the imported SVG still apply.
+
+### Fixed
+
+- Restore `settings.applyMatrix` and `settings.insertItems` when `#importSVG()`
+  fails.
+
 ## `0.12.18`
 
 ### Fixed
