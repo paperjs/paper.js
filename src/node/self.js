@@ -32,7 +32,7 @@ try {
     // Check the required module's name to see if it contains jsdom, and only
     // complain about its lack if the module requires it.
     if (/\bjsdom\b/.test(requireName)) {
-        throw new Error('Unable to load jsdom module.');
+        throw new Error('Unable to load jsdom module.', { cause: e });
     }
 }
 

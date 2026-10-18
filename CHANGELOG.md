@@ -41,9 +41,20 @@
 - Fix key events with Control, Alt and Meta in Firefox and other browsers that
   fire no `keypress` for them (#1997, #1871).
 - Fix the space key staying down after Option + Space on macOS.
+- Fix key events not reaching a view that became visible after the focused one
+  was hidden (#1953).
+- Load in DOMs whose canvas has no 2D context, as jsdom without canvas in jest,
+  and run there as in workers (#1805).
+- Keep the original error as `cause` when jsdom or canvas fail to load on
+  Node.js (#1759).
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
+
+### Removed
+
+- Remove the workaround for wrong `mouseout` coordinates in old versions of
+  Chrome on Windows (#1811).
 
 ## `0.12.20`
 

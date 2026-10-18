@@ -24,7 +24,7 @@ module.exports = function(self, requireName) {
         // Check the required module's name to see if it contains canvas, and
         // only complain about its lack if the module requires it.
         if (/\bcanvas\b/.test(requireName)) {
-            throw new Error('Unable to load canvas module.');
+            throw new Error('Unable to load canvas module.', { cause: error });
         }
         return false;
     }
