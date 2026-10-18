@@ -1002,3 +1002,79 @@ test('Item#hitTest() on items in transformed groups (#1803)', function() {
     }, 'segment');
     equals(hit.point, new Point(120, 100));
 });
+
+test('hit-testing with tolerance on items in transformed groups (#1278)', function() {
+    // The tolerance is in project coordinates, regardless of the
+    // transformations of the item, its parents and the view.
+    var options = { segments: true, tolerance: 10 };
+
+    function testTolerance(item, point, name) {
+        // The tolerance circle around point, through the closest misses:
+        var hits = [[9, 0], [-9, 0], [0, 9], [0, -9], [7, 7]],
+            misses = [[11, 0], [-11, 0], [0, 11], [0, -11], [7.2, 7.2]];
+        function test(owner, offset, expected) {
+            var hit = owner.hitTest(point.add(offset), options);
+            equals(function() {
+                return !!hit && hit.item === item && hit.type === 'segment';
+            }, expected, name + ', ' + (owner === project ? 'project' : 'item')
+                    + '.hitTest() at offset ' + offset);
+        }
+        for (var i = 0; i < hits.length; i++) {
+            test(project, hits[i], true);
+            test(item, hits[i], true);
+            test(project, misses[i], false);
+            test(item, misses[i], false);
+        }
+    }
+
+    function createPath(point) {
+        return new Path({ segments: [point, [0, 0]], strokeColor: 'black' });
+    }
+
+    function createGroup(matrix, child) {
+        var group = new Group({ children: [child], applyMatrix: false });
+        group.matrix = matrix;
+        return group;
+    }
+
+    var path = createPath([100, 100]);
+    testTolerance(path, new Point(100, 100), 'untransformed');
+    path.remove();
+
+    // 2 * 50, 2 * 50 = 100, 100:
+    path = createPath([50, 50]);
+    var group = createGroup(new Matrix(2, 0, 0, 2, 0, 0), path);
+    testTolerance(path, new Point(100, 100), 'scaled');
+    // Zooming the view doesn't change the tolerance:
+    view.zoom = 2;
+    testTolerance(path, new Point(100, 100), 'scaled, zoomed view');
+    view.zoom = 1;
+    group.remove();
+
+    // The local 50, 0 is scaled to 100, 0 and rotated by 30°:
+    path = createPath([50, 0]);
+    group = createGroup(new Matrix().rotate(30).scale(2), path);
+    var angle = 30 * Math.PI / 180;
+    testTolerance(path, new Point(100 * Math.cos(angle),
+            100 * Math.sin(angle)), 'rotated and scaled');
+    group.remove();
+
+    // x' = -y + 200, y' = 3 * x, so the local 40, 100 is at 100, 120, and the
+    // tolerance turns into an ellipse in local coordinates:
+    path = createPath([40, 100]);
+    group = createGroup(new Matrix(0, 3, -1, 0, 200, 0), path);
+    testTolerance(path, new Point(100, 120), 'rotated and scaled unevenly');
+    group.remove();
+
+    // 1.5 * 2 * 40, 1.5 * 2 * 30 = 120, 90:
+    path = createPath([40, 30]);
+    group = createGroup(new Matrix(1.5, 0, 0, 1.5, 0, 0),
+            createGroup(new Matrix(2, 0, 0, 2, 0, 0), path));
+    testTolerance(path, new Point(120, 90), 'nested groups');
+    group.remove();
+
+    // Symbol items transform their definition the same way, 2 * 50 = 100:
+    var item = new SymbolItem(new SymbolDefinition(createPath([50, 50]), true));
+    item.matrix = new Matrix(2, 0, 0, 2, 0, 0);
+    testTolerance(item, new Point(100, 100), 'scaled symbol item');
+});
