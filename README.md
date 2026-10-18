@@ -277,7 +277,6 @@ of the repository in which you perform development. See
 We prefer that you send a
 [pull request on GitHub](https://help.github.com/articles/about-pull-requests/) 
 which will then be merged into the official main line repository.
-You need to sign the Paper.js CLA to be able to contribute (see below).
 
 Also, in your first contribution, add yourself to the end of `AUTHORS.md` (which
 of course is optional).
@@ -339,18 +338,6 @@ guides provided by GitHub at <https://help.github.com/> are a really good
 starting point and reference. If you are fixing an issue, a convenient way to
 name the branch is to use the issue number as a prefix, like this: `git checkout
 -tb issue-937-feature-add-text-styling`.
-
-#### Contributor License Agreement
-
-Before we can accept any contributions to Paper.js, you need to sign this
-[CLA](https://en.wikipedia.org/wiki/Contributor_License_Agreement):
-
-[Contributor License Agreement](https://spreadsheets.google.com/a/paperjs.org/spreadsheet/embeddedform?formkey=dENxd0JBVDY2REo3THVuRmh4YjdWRlE6MQ)
-
-> The purpose of this agreement is to clearly define the terms under which
-> intellectual property has been contributed to Paper.js and thereby allow us to
-> defend the project should there be a legal dispute regarding the software at
-> some future time.
 
 For a list of authors and contributors, please see 
 [AUTHORS](https://github.com/paperjs/paper.js/blob/main/AUTHORS.md).

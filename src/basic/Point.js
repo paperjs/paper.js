@@ -513,7 +513,8 @@ var Point = Base.extend(/** @lends Point# */{
      *
      * @example
      * var point = new Point(5, 10);
-     * var result = point + 20;
+     * var result = point + 20; // PaperScript
+     * var result = point.add(20); // JavaScript
      * console.log(result); // {x: 25, y: 30}
      */
     /**
@@ -530,7 +531,8 @@ var Point = Base.extend(/** @lends Point# */{
      * @example
      * var point1 = new Point(5, 10);
      * var point2 = new Point(10, 20);
-     * var result = point1 + point2;
+     * var result = point1 + point2; // PaperScript
+     * var result = point1.add(point2); // JavaScript
      * console.log(result); // {x: 15, y: 30}
      */
     add: function(/* point */) {
@@ -551,7 +553,8 @@ var Point = Base.extend(/** @lends Point# */{
      *
      * @example
      * var point = new Point(10, 20);
-     * var result = point - 5;
+     * var result = point - 5; // PaperScript
+     * var result = point.subtract(5); // JavaScript
      * console.log(result); // {x: 5, y: 15}
      */
     /**
@@ -568,7 +571,8 @@ var Point = Base.extend(/** @lends Point# */{
      * @example
      * var firstPoint = new Point(10, 20);
      * var secondPoint = new Point(5, 5);
-     * var result = firstPoint - secondPoint;
+     * var result = firstPoint - secondPoint; // PaperScript
+     * var result = firstPoint.subtract(secondPoint); // JavaScript
      * console.log(result); // {x: 5, y: 15}
      */
     subtract: function(/* point */) {
@@ -590,7 +594,8 @@ var Point = Base.extend(/** @lends Point# */{
      *
      * @example
      * var point = new Point(10, 20);
-     * var result = point * 2;
+     * var result = point * 2; // PaperScript
+     * var result = point.multiply(2); // JavaScript
      * console.log(result); // {x: 20, y: 40}
      */
     /**
@@ -607,7 +612,8 @@ var Point = Base.extend(/** @lends Point# */{
      * @example
      * var firstPoint = new Point(5, 10);
      * var secondPoint = new Point(4, 2);
-     * var result = firstPoint * secondPoint;
+     * var result = firstPoint * secondPoint; // PaperScript
+     * var result = firstPoint.multiply(secondPoint); // JavaScript
      * console.log(result); // {x: 20, y: 20}
      */
     multiply: function(/* point */) {
@@ -628,7 +634,8 @@ var Point = Base.extend(/** @lends Point# */{
      *
      * @example
      * var point = new Point(10, 20);
-     * var result = point / 2;
+     * var result = point / 2; // PaperScript
+     * var result = point.divide(2); // JavaScript
      * console.log(result); // {x: 5, y: 10}
      */
     /**
@@ -645,7 +652,8 @@ var Point = Base.extend(/** @lends Point# */{
      * @example
      * var firstPoint = new Point(8, 10);
      * var secondPoint = new Point(2, 5);
-     * var result = firstPoint / secondPoint;
+     * var result = firstPoint / secondPoint; // PaperScript
+     * var result = firstPoint.divide(secondPoint); // JavaScript
      * console.log(result); // {x: 4, y: 2}
      */
     divide: function(/* point */) {
@@ -666,7 +674,9 @@ var Point = Base.extend(/** @lends Point# */{
      *
      * @example
      * var point = new Point(12, 6);
-     * console.log(point % 5); // {x: 2, y: 1}
+     * var result = point % 5; // PaperScript
+     * var result = point.modulo(5); // JavaScript
+     * console.log(result); // {x: 2, y: 1}
      */
     /**
      * The modulo operator returns the integer remainders of dividing the point
@@ -681,7 +691,9 @@ var Point = Base.extend(/** @lends Point# */{
      *
      * @example
      * var point = new Point(12, 6);
-     * console.log(point % new Point(5, 2)); // {x: 2, y: 0}
+     * var result = point % new Point(5, 2); // PaperScript
+     * var result = point.modulo(new Point(5, 2)); // JavaScript
+     * console.log(result); // {x: 2, y: 0}
      */
     modulo: function(/* point */) {
         var point = Point.read(arguments);
@@ -690,16 +702,17 @@ var Point = Base.extend(/** @lends Point# */{
 
     /**
      * Returns a new point with both coordinates negated.
+     * PaperScript uses it for the unary minus operator.
      * The object itself is not modified!
      *
      * @name Point#negate
      * @function
-     * @operator
      * @return {Point} the negation of the point as a new point
      *
      * @example
      * var point = new Point(12, -6);
-     * var result = -point;
+     * var result = -point; // PaperScript
+     * var result = point.negate(); // JavaScript
      * console.log(result); // {x: -12, y: 6}
      */
     negate: function() {

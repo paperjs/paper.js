@@ -63,11 +63,20 @@
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
+- Docs: Correct the defaults of the hit-test options, the results of the math
+  operator examples, `Raster#source` and `Item#guide`, and document
+  `Path#reduce()`'s `simplify` option, nullable location getters, optional
+  arguments, `ToolEvent#tool`, which items have children, how group styles,
+  `getItems()` ordering, `Rectangle#selected` and `Tool#onMouseMove` work, and
+  the `resize` canvas attribute (#2078, #2092, #2030, #1928, #1947, #1907,
+  #1900, #2115, #1645, #1697, #1747, #1507, #604, #1330, #662).
 
 ### Removed
 
 - Remove the workaround for wrong `mouseout` coordinates in old versions of
   Chrome on Windows (#1811).
+- Remove the CLA from the contribution guidelines, as it no longer exists
+  (#2071).
 
 ## `0.12.20`
 

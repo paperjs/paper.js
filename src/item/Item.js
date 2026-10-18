@@ -348,6 +348,10 @@ new function() { // Injection scope for various item event handlers
     /**
      * The path style of the item.
      *
+     * Styles set on a {@link Group} or {@link Layer} are applied to the
+     * children that it contains at that moment. Items added to it later do not
+     * receive them.
+     *
      * @bean
      * @name Item#getStyle
      * @type Style
@@ -567,12 +571,13 @@ new function() { // Injection scope for various item event handlers
     // TODO: Implement guides
     /**
      * Specifies whether the item functions as a guide. When set to `true`, the
-     * item will be drawn at the end as a guide.
+     * item is drawn as usual, but left out of hit-tests and mouse
+     * interactions. Hit-tests only find guides when `options.guides` is set,
+     * and then only them, see {@link #hitTest(point[, options])}.
      *
      * @name Item#guide
      * @type Boolean
-     * @default true
-     * @ignore
+     * @default false
      */
 
     getSelection: function() {
@@ -1470,6 +1475,11 @@ new function() { // Injection scope for various item event handlers
      * The children items contained within this item. Items that define a
      * {@link #name} can also be accessed by name.
      *
+     * Only {@link Group}, {@link Layer} and {@link CompoundPath} items can have
+     * children. On all other items, such as {@link Path}, {@link Shape},
+     * {@link Raster}, {@link SymbolItem} and {@link PointText}, `children` is
+     * `undefined`.
+     *
      * <b>Please note:</b> The children array should not be modified directly
      * using array functions. To remove single items from the children list, use
      * {@link Item#remove()}, to remove all items from the children list, use
@@ -1986,8 +1996,10 @@ new function() { // Injection scope for hit-test functions shared with project
      * Group} or {@link Layer}) at the location of the specified point,
      * returning the first found hit.
      *
-     * The options object allows you to control the specifics of the hit-
-     * test and may contain a combination of the following values:
+     * The options object allows you to control the specifics of the hit-test.
+     * Without options, `fill`, `stroke` and `segments` are hit-tested. As soon
+     * as an options object is passed, only the hit-tests that it sets to `true`
+     * are performed. It may contain a combination of the following values:
      *
      * @name Item#hitTest
      * @function
@@ -2002,11 +2014,11 @@ new function() { // Injection scope for hit-test functions shared with project
      * @option options.match {Function} a match function to be called for each
      *     found hit result: Return `true` to return the result, `false` to keep
      *     searching
-     * @option [options.fill=true] {Boolean} hit-test the fill of items
-     * @option [options.stroke=true] {Boolean} hit-test the stroke of path
-     *     items, taking into account the setting of stroke color and width
-     * @option [options.segments=true] {Boolean} hit-test for {@link
-     *     Segment#point} of {@link Path} items
+     * @option options.fill {Boolean} hit-test the fill of items
+     * @option options.stroke {Boolean} hit-test the stroke of path items,
+     *     taking into account the setting of stroke color and width
+     * @option options.segments {Boolean} hit-test for {@link Segment#point} of
+     *     {@link Path} items
      * @option options.curves {Boolean} hit-test the curves of path items,
      *     without taking the stroke color or width into account
      * @option options.handles {Boolean} hit-test for the handles ({@link
@@ -2019,7 +2031,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *     the bounding rectangle of items ({@link Item#bounds})
      * @option options.bounds {Boolean} hit-test the corners and side-centers of
      *     the bounding rectangle of items ({@link Item#bounds})
-     * @option options.guides {Boolean} hit-test items that have {@link
+     * @option options.guides {Boolean} only hit-test items that have {@link
      *     Item#guide} set to `true`
      * @option options.selected {Boolean} only hit selected items
      *
@@ -2296,7 +2308,9 @@ new function() { // Injection scope for hit-test functions shared with project
      *     items need to at least partly overlap
      *
      * @param {Object|Function} options the criteria to match against
-     * @return {Item[]} the list of matching descendant items
+     * @return {Item[]} the list of matching descendant items, in their
+     *     stacking order from bottom to top, with each item listed before its
+     *     own descendants
      * @see #matches(options)
      */
     getItems: function(options) {
@@ -2746,6 +2760,8 @@ new function() { // Injection scope for hit-test functions shared with project
      * the child-item is moved outside and the parent is erased. Otherwise, the
      * item itself is returned unmodified.
      *
+     * @param {Object} [options] the options passed on to {@link
+     *     Path#reduce(options)}
      * @return {Item} the reduced item
      */
     reduce: function(options) {
@@ -3040,7 +3056,8 @@ new function() { // Injection scope for hit-test functions shared with project
 
     /**
      * Checks if this item is above the specified item in the stacking order
-     * of the project.
+     * of the project. If one item is a descendant of the other, neither is
+     * above the other and `false` is returned.
      *
      * @param {Item} item the item to check against
      * @return {Boolean} {@true if it is above the specified item}
@@ -3051,7 +3068,8 @@ new function() { // Injection scope for hit-test functions shared with project
 
     /**
      * Checks if the item is below the specified item in the stacking order of
-     * the project.
+     * the project. If one item is a descendant of the other, neither is below
+     * the other and `false` is returned.
      *
      * @param {Item} item the item to check against
      * @return {Boolean} {@true if it is below the specified item}
