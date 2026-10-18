@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 18 20:33:49 2026 +0200
+ * Date: Sun Oct 18 21:17:11 2026 +0200
  *
  ***
  *
@@ -1930,10 +1930,11 @@ var Rectangle = Base.extend({
 						arg0.width || 0, arg0.height || 0);
 				read = 1;
 			} else if (arg0.from === undefined && arg0.to === undefined) {
-				this._set(0, 0, 0, 0);
-				if (Base.readSupported(args, this)) {
+				var builder = new RectangleBuilder();
+				if (Base.readSupported(args, builder)) {
 					read = 1;
 				}
+				this._set(builder.x, builder.y, builder.width, builder.height);
 			}
 		}
 		if (read === undefined) {
@@ -2028,24 +2029,10 @@ var Rectangle = Base.extend({
 		return new ctor(this.width, this.height, this, 'setSize');
 	},
 
-	_fw: 1,
-	_fh: 1,
-
 	setSize: function() {
-		var size = Size.read(arguments),
-			sx = this._sx,
-			sy = this._sy,
-			w = size.width,
-			h = size.height;
-		if (sx) {
-			this.x += (this.width - w) * sx;
-		}
-		if (sy) {
-			this.y += (this.height - h) * sy;
-		}
-		this.width = w;
-		this.height = h;
-		this._fw = this._fh = 1;
+		var size = Size.read(arguments);
+		this.width = size.width;
+		this.height = size.height;
 	},
 
 	getLeft: function() {
@@ -2053,12 +2040,8 @@ var Rectangle = Base.extend({
 	},
 
 	setLeft: function(left) {
-		if (!this._fw) {
-			var amount = left - this.x;
-			this.width -= this._sx === 0.5 ? amount * 2 : amount;
-		}
+		this.width -= left - this.x;
 		this.x = left;
-		this._sx = this._fw = 0;
 	},
 
 	getTop: function() {
@@ -2066,12 +2049,8 @@ var Rectangle = Base.extend({
 	},
 
 	setTop: function(top) {
-		if (!this._fh) {
-			var amount = top - this.y;
-			this.height -= this._sy === 0.5 ? amount * 2 : amount;
-		}
+		this.height -= top - this.y;
 		this.y = top;
-		this._sy = this._fh = 0;
 	},
 
 	getRight: function() {
@@ -2079,13 +2058,7 @@ var Rectangle = Base.extend({
 	},
 
 	setRight: function(right) {
-		if (!this._fw) {
-			var amount = right - this.x;
-			this.width = this._sx === 0.5 ? amount * 2 : amount;
-		}
-		this.x = right - this.width;
-		this._sx = 1;
-		this._fw = 0;
+		this.width = right - this.x;
 	},
 
 	getBottom: function() {
@@ -2093,13 +2066,7 @@ var Rectangle = Base.extend({
 	},
 
 	setBottom: function(bottom) {
-		if (!this._fh) {
-			var amount = bottom - this.y;
-			this.height = this._sy === 0.5 ? amount * 2 : amount;
-		}
-		this.y = bottom - this.height;
-		this._sy = 1;
-		this._fh = 0;
+		this.height = bottom - this.y;
 	},
 
 	getCenterX: function() {
@@ -2107,16 +2074,7 @@ var Rectangle = Base.extend({
 	},
 
 	setCenterX: function(x) {
-		if (this._fw || this._sx === 0.5) {
-			this.x = x - this.width / 2;
-		} else {
-			if (this._sx) {
-				this.x += (x - this.x) * 2 * this._sx;
-			}
-			this.width = (x - this.x) * 2;
-		}
-		this._sx = 0.5;
-		this._fw = 0;
+		this.x = x - this.width / 2;
 	},
 
 	getCenterY: function() {
@@ -2124,16 +2082,7 @@ var Rectangle = Base.extend({
 	},
 
 	setCenterY: function(y) {
-		if (this._fh || this._sy === 0.5) {
-			this.y = y - this.height / 2;
-		} else {
-			if (this._sy) {
-				this.y += (y - this.y) * 2 * this._sy;
-			}
-			this.height = (y - this.y) * 2;
-		}
-		this._sy = 0.5;
-		this._fh = 0;
+		this.y = y - this.height / 2;
 	},
 
 	getCenter: function(_dontLink) {
@@ -2317,6 +2266,94 @@ new function() {
 			}
 		})
 	);
+});
+
+var RectangleBuilder = Rectangle.extend({
+	beans: true,
+
+	_fw: 1,
+	_fh: 1,
+
+	setSize: function() {
+		var size = Size.read(arguments),
+			sx = this._sx,
+			sy = this._sy,
+			w = size.width,
+			h = size.height;
+		if (sx) {
+			this.x += (this.width - w) * sx;
+		}
+		if (sy) {
+			this.y += (this.height - h) * sy;
+		}
+		this.width = w;
+		this.height = h;
+		this._fw = this._fh = 1;
+	},
+
+	setLeft: function(left) {
+		if (!this._fw) {
+			var amount = left - this.x;
+			this.width -= this._sx === 0.5 ? amount * 2 : amount;
+		}
+		this.x = left;
+		this._sx = this._fw = 0;
+	},
+
+	setTop: function(top) {
+		if (!this._fh) {
+			var amount = top - this.y;
+			this.height -= this._sy === 0.5 ? amount * 2 : amount;
+		}
+		this.y = top;
+		this._sy = this._fh = 0;
+	},
+
+	setRight: function(right) {
+		if (!this._fw) {
+			var amount = right - this.x;
+			this.width = this._sx === 0.5 ? amount * 2 : amount;
+		}
+		this.x = right - this.width;
+		this._sx = 1;
+		this._fw = 0;
+	},
+
+	setBottom: function(bottom) {
+		if (!this._fh) {
+			var amount = bottom - this.y;
+			this.height = this._sy === 0.5 ? amount * 2 : amount;
+		}
+		this.y = bottom - this.height;
+		this._sy = 1;
+		this._fh = 0;
+	},
+
+	setCenterX: function(x) {
+		if (this._fw || this._sx === 0.5) {
+			this.x = x - this.width / 2;
+		} else {
+			if (this._sx) {
+				this.x += (x - this.x) * 2 * this._sx;
+			}
+			this.width = (x - this.x) * 2;
+		}
+		this._sx = 0.5;
+		this._fw = 0;
+	},
+
+	setCenterY: function(y) {
+		if (this._fh || this._sy === 0.5) {
+			this.y = y - this.height / 2;
+		} else {
+			if (this._sy) {
+				this.y += (y - this.y) * 2 * this._sy;
+			}
+			this.height = (y - this.y) * 2;
+		}
+		this._sy = 0.5;
+		this._fh = 0;
+	}
 });
 
 var Matrix = Base.extend({
@@ -4985,6 +5022,17 @@ var Group = Item.extend({
 		return (!clipItem || clipItem.contains(point))
 				&& _hitTestChildren.base.call(this, point, options, viewMatrix,
 					clipItem);
+	},
+
+	_hitTestSelf: function(point, options, viewMatrix) {
+		if (options.match || options.class || options.type || options.all) {
+			var res = this._hitTestChildren(point, options.extend({
+				all: null, match: null, class: null, type: null
+			}), viewMatrix);
+			if (res)
+				res.item = this;
+			return res;
+		}
 	},
 
 	_draw: function(ctx, param) {

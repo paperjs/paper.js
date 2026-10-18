@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 18 20:33:49 2026 +0200
+ * Date: Sun Oct 18 21:17:11 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -5656,7 +5656,8 @@ declare namespace paper {
         height: number
 
         /** 
-         * The top-left point of the rectangle
+         * The top-left point of the rectangle. Setting it moves the whole
+         * rectangle, unlike {@link #topLeft}.
          */
         point: Point
 
@@ -5690,47 +5691,59 @@ declare namespace paper {
         bottom: number
 
         /** 
-         * The center point of the rectangle.
+         * The center point of the rectangle. Setting it moves the whole rectangle.
          */
         center: Point
 
         /** 
-         * The top-left point of the rectangle.
+         * The top-left point of the rectangle. Note that this doesn't move the
+         * whole rectangle; the bottom-right corner stays where it was.
          */
         topLeft: Point
 
         /** 
-         * The top-right point of the rectangle.
+         * The top-right point of the rectangle. Note that this doesn't move the
+         * whole rectangle; the bottom-left corner stays where it was.
          */
         topRight: Point
 
         /** 
-         * The bottom-left point of the rectangle.
+         * The bottom-left point of the rectangle. Note that this doesn't move the
+         * whole rectangle; the top-right corner stays where it was.
          */
         bottomLeft: Point
 
         /** 
-         * The bottom-right point of the rectangle.
+         * The bottom-right point of the rectangle. Note that this doesn't move the
+         * whole rectangle; the top-left corner stays where it was.
          */
         bottomRight: Point
 
         /** 
-         * The left-center point of the rectangle.
+         * The left-center point of the rectangle. Setting it moves the left hand
+         * side while the right hand side stays where it was, and moves the whole
+         * rectangle vertically.
          */
         leftCenter: Point
 
         /** 
-         * The top-center point of the rectangle.
+         * The top-center point of the rectangle. Setting it moves the top while
+         * the bottom stays where it was, and moves the whole rectangle
+         * horizontally.
          */
         topCenter: Point
 
         /** 
-         * The right-center point of the rectangle.
+         * The right-center point of the rectangle. Setting it moves the right
+         * hand side while the left hand side stays where it was, and moves the
+         * whole rectangle vertically.
          */
         rightCenter: Point
 
         /** 
-         * The bottom-center point of the rectangle.
+         * The bottom-center point of the rectangle. Setting it moves the bottom
+         * while the top stays where it was, and moves the whole rectangle
+         * horizontally.
          */
         bottomCenter: Point
 
