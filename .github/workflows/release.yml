@@ -51,24 +51,39 @@ jobs:
         with:
           name: dist
           path: dist
-      # Trusted publishing needs npm 11.5.1 or newer:
+      # Staged publishing needs npm 11.15.0 or newer:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
-      # Skip the scripts, as `publish` would run `gulp publish` again. The
-      # packages depend on paper, so publish it first:
-      - name: Publish paper
-        run: npm publish --ignore-scripts
-      - name: Publish paper-jsdom
+      # Stage the packages, so they only go live once a maintainer approves them
+      # with 2FA on npmjs.com. Approve paper first, as the others depend on it.
+      # Skip the scripts, as `publish` would run `gulp publish` again:
+      - name: Stage paper
+        run: npm stage publish --ignore-scripts
+      - name: Stage paper-jsdom
         working-directory: packages/paper-jsdom
-        run: npm publish
-      - name: Publish paper-jsdom-canvas
+        run: npm stage publish
+      - name: Stage paper-jsdom-canvas
         working-directory: packages/paper-jsdom-canvas
-        run: npm publish
+        run: npm stage publish
+
+  # Wait until the staged paper version is approved and live, before the
+  # website and the sketch editor point to it:
+  approval:
+    needs: npm
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Wait for approval on npm
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          until npm view "paper@$VERSION" version > /dev/null 2>&1; do
+            sleep 60
+          done
 
   website:
-    needs: npm
+    needs: approval
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -98,7 +113,7 @@ jobs:
           git push --atomic origin main "v$VERSION"
 
   sketch:
-    needs: npm
+    needs: approval
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
