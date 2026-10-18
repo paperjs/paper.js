@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 18 15:13:41 2026 +0200
+ * Date: Sun Oct 18 16:32:05 2026 +0200
  *
  ***
  *
@@ -17500,8 +17500,10 @@ var paper = new (PaperScope.inject(Base.exports, {
 	DomElement: DomElement,
 	document: document,
 	window: window,
-	Symbol: SymbolDefinition,
 	PlacedSymbol: SymbolItem
+}).inject({
+	enumerable: false,
+	Symbol: SymbolDefinition
 }))();
 
 if (paper.agent.node) {
