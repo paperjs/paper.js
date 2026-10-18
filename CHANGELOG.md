@@ -17,6 +17,12 @@
 
 - Restore `settings.applyMatrix` and `settings.insertItems` when `#importSVG()`
   fails.
+- Fix `new Path.Rectangle(rectangle, radius)`, `new Shape.Rectangle(rectangle,
+  radius)` and `Item#fitBounds(rectangle, fill)` when the rectangle is given as
+  an array or object literal.
+- Fix `new Raster(source, position)` ignoring the position.
+- Fix `new Path.Arc()` handling of `insert`: `{ insert: false }` shadowed
+  `Path#insert()`, and `{ insert: true }` was ignored.
 
 ## `0.12.18`
 

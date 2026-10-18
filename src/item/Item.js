@@ -3811,6 +3811,7 @@ new function() { // Injection scope for hit-test functions shared with project
         // TODO: Think about passing options with various ways of defining
         // fitting. Compare with InDesign fitting to see possible options.
         rectangle = Rectangle.read(arguments);
+        fill = Base.read(arguments);
         var bounds = this.getBounds(),
             itemRatio = bounds.height / bounds.width,
             rectRatio = rectangle.height / rectangle.width,
