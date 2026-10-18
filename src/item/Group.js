@@ -184,6 +184,20 @@ var Group = Item.extend(/** @lends Group# */{
                     clipItem);
     },
 
+    _hitTestSelf: function(point, options, viewMatrix) {
+        // A group is hit wherever one of its children is hit, as in
+        // Illustrator. Without filters or the collecting of all hits, the
+        // children were already tested without result:
+        if (options.match || options.class || options.type || options.all) {
+            var res = this._hitTestChildren(point, options.extend({
+                all: null, match: null, class: null, type: null
+            }), viewMatrix);
+            if (res)
+                res.item = this;
+            return res;
+        }
+    },
+
     _draw: function(ctx, param) {
         var clip = param.clip,
             clipItem = this._getClipItem();
