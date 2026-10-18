@@ -21,8 +21,7 @@
     "packages",
     "projects",
     "src",
-    "test",
-    "travis"
+    "test"
   ],
   "keywords": [
     "vector",

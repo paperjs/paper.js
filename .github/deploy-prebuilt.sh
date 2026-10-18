@@ -10,28 +10,30 @@
 #
 # All rights reserved.
 
-# Determine target for commit messages.
-if [ -n "${TRAVIS_TAG}" ]; then
-    TARGET=$TRAVIS_TAG
-else
-    TARGET="commit ${TRAVIS_COMMIT}"
-fi
+# Publish the build of the current commit to the prebuilt/dist (the zip) and
+# prebuilt/module (the package) branches. Runs on GitHub Actions, after
+# `yarn zip` built the library, the docs and the zip.
+
+set -e
+
+TARGET="commit ${GITHUB_SHA}"
+
+git config user.name "Paper.js Bot"
+git config user.email "bot@paperjs.org"
 
 # Set up a temporary folder to prepare distribution files.
-TMP=~/tmp
-mkdir $TMP
+TMP=$(mktemp -d)
 # Copy everything to the this folder first, then clean up.
 cp -a dist $TMP/
 # Copy all visible root files (LICENSE.txt, README.md, package.json, etc.).
 cp -p *.* $TMP/
-# No need for .gitignore or build files.
-rm $TMP/dist/.gitignore
+# No need for build files.
 rm $TMP/gulpfile.js
 # Reset the branch so we can switch to prebuilt/module and prebuilt/dist after.
 git clean -fdx --quiet # Remove all ignored and untracked files from the build.
 git checkout -- . # Reset all tracked files to the original state.
 
-# Create a new orphaned buid/dist branch and switch to it.
+# Create a new orphaned prebuilt/dist branch and switch to it.
 git checkout --orphan prebuilt/dist
 # Remove and delete all tracked files left after the switch.
 git rm -rf --quiet .
