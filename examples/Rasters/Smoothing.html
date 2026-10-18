@@ -13,7 +13,7 @@
                 var clone = raster.clone();
                 clone.scale(scale);
                 clone.smoothing = value;
-                clone.bounds.topLeft = position + [400 * index, 0];
+                clone.bounds.point = position + [400 * index, 0];
                 new PointText({
                     point: clone.bounds.topLeft + [0, -10],
                     content: value
