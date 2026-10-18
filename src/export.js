@@ -26,8 +26,12 @@ var paper = new (PaperScope.inject(Base.exports, {
     document: document,
     window: window,
     // TODO: Remove in 1.0.0? (deprecated January 2016):
-    Symbol: SymbolDefinition,
     PlacedSymbol: SymbolItem
+}).inject({
+    // TODO: Remove in 1.0.0? (deprecated January 2016). Keep it out of
+    // install(), so it doesn't replace the native Symbol:
+    enumerable: false,
+    Symbol: SymbolDefinition
 }))();
 
 // If we're on node, require some additional functionality now before finishing:

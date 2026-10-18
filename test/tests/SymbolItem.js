@@ -158,3 +158,16 @@ test('SymbolItem#hitTestAll', function() {
     equals(hitTestAll.length, 1);
     equals(hitTestAll[0].item.id, symbolItem.id);
 });
+
+test('paper.install() keeps the native Symbol', function() {
+    var scope = { Symbol: 'native' };
+    paper.install(scope);
+    equals(scope.Symbol, 'native');
+    equals(function() {
+        return scope.SymbolDefinition === SymbolDefinition;
+    }, true);
+    // The deprecated alias is still available on paper itself:
+    equals(function() {
+        return paper.Symbol === SymbolDefinition;
+    }, true);
+});
