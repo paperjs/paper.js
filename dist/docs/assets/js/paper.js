@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Mar 4 17:06:53 2016 -0500
+ * Date: Sun Oct 18 19:45:29 2026 +0200
  *
  ***
  *
@@ -3526,11 +3526,11 @@ new function() {
 	},
 
 	_getCachedBounds: function(matrix, options, noInternal) {
-		matrix = matrix && matrix._orNullIfIdentity();
 		var internal = options.internal && !noInternal,
 			cacheItem = options.cacheItem,
-			_matrix = internal ? null : this._matrix._orNullIfIdentity(),
-			cacheKey = cacheItem && (!matrix || matrix.equals(_matrix))
+			_matrix = internal ? null : this._matrix._orNullIfIdentity();
+		matrix = matrix ? matrix._orNullIfIdentity() : _matrix;
+		var cacheKey = cacheItem && (matrix ? matrix.equals(_matrix) : !_matrix)
 				&& this._getBoundsCacheKey(options, internal),
 			bounds = this._bounds;
 		Item._updateBoundsCache(this._parent || this._symbol, cacheItem);
@@ -3541,7 +3541,7 @@ new function() {
 				nonscaling: cached.nonscaling
 			};
 		}
-		var res = this._getBounds(matrix || _matrix, options),
+		var res = this._getBounds(matrix, options),
 			rect = res.rect || res,
 			style = this._style,
 			nonscaling = res.nonscaling || style.hasStroke()
@@ -3975,6 +3975,7 @@ new function() {
 	_asPathItem: function() {
 		return new Path.Rectangle({
 			rectangle: this.getInternalBounds(),
+			applyMatrix: false,
 			matrix: this._matrix,
 			insert: false,
 		});
@@ -5139,13 +5140,7 @@ var Shape = Item.extend({
 	},
 
 	toPath: function(insert) {
-		var path = new Path[Base.capitalize(this._type)]({
-			center: new Point(),
-			size: this._size,
-			radius: this._radius,
-			insert: false
-		});
-		path.copyAttributes(this);
+		var path = this._asPathItem();
 		if (paper.settings.applyMatrix)
 			path.setApplyMatrix(true);
 		if (insert === undefined || insert)
@@ -5156,7 +5151,14 @@ var Shape = Item.extend({
 	toShape: '#clone',
 
 	_asPathItem: function() {
-		return this.toPath(false);
+		var path = new Path[Base.capitalize(this._type)]({
+			center: new Point(),
+			size: this._size,
+			radius: this._radius,
+			insert: false
+		});
+		path.copyAttributes(this);
+		return path;
 	},
 
 	_draw: function(ctx, param, viewMatrix, strokeMatrix) {
