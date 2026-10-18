@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 18 22:24:15 2026 +0200
+ * Date: Sun Oct 18 22:42:10 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -2092,6 +2092,10 @@ declare namespace paper {
          * Converts the provided SVG content into Paper.js items and adds them to
          * the this item's children list. Note that the item is not cleared first.
          * You can call {@link Item#removeChildren} to do so.
+         * 
+         * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
+         * the `<use>` elements that place them as {@link SymbolItem} items. The
+         * styles that `<use>` elements inherit don't reach the symbols' content.
          * 
          * @option [options.expandShapes=false] {Boolean} whether imported shape
          *     items should be expanded to path items
@@ -5285,6 +5289,10 @@ declare namespace paper {
          * Note that the project is not cleared first. You can call
          * {@link Project#clear} to do so.
          * 
+         * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
+         * the `<use>` elements that place them as {@link SymbolItem} items. The
+         * styles that `<use>` elements inherit don't reach the symbols' content.
+         * 
          * @param json - the JSON data to import from
          * 
          * @return the imported item
@@ -6726,7 +6734,9 @@ declare namespace paper {
 
     /** 
      * A symbol item represents an instance of a symbol which has been
-     * placed in a Paper.js project.
+     * placed in a Paper.js project. All instances share the symbol's definition,
+     * which they draw as it is: styles set on a symbol item don't reach the items
+     * of the definition, unlike `<use>` elements in SVG.
      */
     class SymbolItem extends Item {
         /** 
