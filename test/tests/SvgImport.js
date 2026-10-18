@@ -161,6 +161,26 @@ test('Import SVG path with arc flags without separators (#1808)', function() {
     equals(imported, new Path(data.replace('0 011.593', '0 0 1 1.593')));
 });
 
+test('Import SVG multi-line text (#988)', function() {
+    function importText(content) {
+        return paper.project.importSVG('<svg xmlns="http://www.w3.org/2000/svg">'
+                + '<text x="10" y="20">' + content + '</text></svg>')
+                .firstChild;
+    }
+
+    // Lines as written by Illustrator, with formatting white-space:
+    var text = importText('\n  <tspan x="10" y="20">One</tspan>'
+            + '\n  <tspan x="10" y="32"></tspan>'
+            + '\n  <tspan x="10" y="44">Three</tspan>\n');
+    equals(text.content, 'One\n\nThree');
+    equals(text.point, new Point(10, 20));
+    // <tspan> elements within a line don't break it:
+    equals(importText('One <tspan font-weight="bold">Two</tspan>').content,
+            'One Two');
+    equals(importText(' <tspan x="10" y="20">One <tspan>Two</tspan></tspan> ')
+            .content, 'One Two');
+});
+
 test('Import SVG Image', function(assert) {
     var done = assert.async();
     var svg = '<?xml version="1.0" encoding="utf-8"?><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><image style="overflow:visible;enable-background:new    ;" width="300" height="67" id="e0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" transform="matrix(0.2149 0 0 0.2149 304.7706 197.8176)"></image></svg>';

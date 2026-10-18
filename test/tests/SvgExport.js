@@ -229,6 +229,62 @@ test('Export SVG with nested groups as clip masks', function() {
     equals(clip.firstChild.firstChild.clipMask, true);
 });
 
+test('Export SVG multi-line text (#988)', function() {
+    function getLines(text) {
+        return Base.each(text.exportSVG().childNodes, function(node) {
+            this.push([node.nodeName.toLowerCase(), node.getAttribute('x'),
+                    node.getAttribute('y'), node.textContent]);
+        }, []);
+    }
+
+    // Each line is placed at the leading's distance below the previous one,
+    // starting at the text's point. The default leading is fontSize * 1.2:
+    var text = new PointText({
+        point: [10, 20],
+        content: 'One\n\nThree',
+        fontSize: 10
+    });
+    equals(getLines(text), [
+        ['tspan', '10', '20', 'One'],
+        ['tspan', '10', '32', ''],
+        ['tspan', '10', '44', 'Three']
+    ]);
+    text.leading = 15;
+    equals(getLines(text), [
+        ['tspan', '10', '20', 'One'],
+        ['tspan', '10', '35', ''],
+        ['tspan', '10', '50', 'Three']
+    ]);
+    // Rotating by 90° around the point moves it to [20, -10] in the rotated
+    // coordinate system, in which the leading stays vertical:
+    text.rotate(90, text.point);
+    equals(getLines(text), [
+        ['tspan', '20', '-10', 'One'],
+        ['tspan', '20', '5', ''],
+        ['tspan', '20', '20', 'Three']
+    ]);
+    // Single lines don't need any <tspan>:
+    var node = new PointText({ point: [10, 20], content: 'One' }).exportSVG();
+    equals(node.getAttribute('x'), '10');
+    equals(node.getAttribute('y'), '20');
+    equals(function() {
+        return node.childNodes.length === 1 && node.firstChild.nodeType;
+    }, 3);
+    equals(node.textContent, 'One');
+});
+
+test('Export and import SVG multi-line text (#988)', function() {
+    var text = new PointText({
+        point: [10, 20],
+        content: 'One\n\nThree\n',
+        fontSize: 10
+    });
+    var imported = project.importSVG(text.exportSVG({ asString: true }));
+    equals(imported.content, text.content);
+    equals(imported.point, text.point);
+    equals(imported.bounds, text.bounds);
+});
+
 if (!isNodeContext) {
     // JSDom does not have SVG rendering, so we can't test there.
     test('Export transformed shapes', function(assert) {
@@ -386,6 +442,22 @@ if (!isNodeContext) {
             size: [100, 100],
             fillColor: 'blue'
         })).clipped = true;
+        var svg = project.exportSVG({ bounds: 'content', asString: true });
+        compareSVG(assert.async(), svg, project.activeLayer, null, {
+            tolerance: 1e-2
+        });
+    });
+
+    test('Export SVG multi-line text (#988)', function(assert) {
+        var text = new PointText({
+            point: [20, 40],
+            content: 'Paper.js\n\nSVG text',
+            fontFamily: 'sans-serif',
+            fontSize: 20,
+            leading: 30,
+            fillColor: 'black'
+        });
+        text.rotate(30);
         var svg = project.exportSVG({ bounds: 'content', asString: true });
         compareSVG(assert.async(), svg, project.activeLayer, null, {
             tolerance: 1e-2
