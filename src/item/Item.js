@@ -2075,13 +2075,16 @@ new function() { // Injection scope for hit-test functions shared with project
         // this item does not have children, since we'd have to travel up the
         // chain already to determine the rough bounds.
         var matrix = this._matrix,
+            // If this is the first one in the recursion, the point is in global
+            // coordinates, so transform it by the item's globalMatrix:
+            pointMatrix = parentViewMatrix ? matrix : this.getGlobalMatrix(),
             // Keep the accumulated matrices up to this item in options, so we
             // can keep calculating the correct _tolerancePadding values.
             viewMatrix = parentViewMatrix
                     ? parentViewMatrix.appended(matrix)
                     // If this is the first one in the recursion, factor in the
                     // zoom of the view and the globalMatrix of the item.
-                    : this.getGlobalMatrix().prepend(this.getView()._matrix),
+                    : pointMatrix.prepended(this.getView()._matrix),
             // Calculate the transformed padding as 2D size that describes the
             // transformed tolerance circle / ellipse. Make sure it's never 0
             // since we're using it for division (see checkBounds()).
@@ -2093,7 +2096,7 @@ new function() { // Injection scope for hit-test functions shared with project
                     Path._getStrokePadding(tolerance,
                         matrix._shiftless().invert()));
         // Transform point to local coordinates.
-        point = matrix._inverseTransform(point);
+        point = pointMatrix._inverseTransform(point);
         // If the matrix is non-reversible, point will now be `null`:
         if (!point || !this._children &&
             !this.getBounds({ internal: true, stroke: true, handle: true })
@@ -2175,7 +2178,7 @@ new function() { // Injection scope for hit-test functions shared with project
         }
         // Transform the point back to the outer coordinate system.
         if (res && res.point) {
-            res.point = matrix.transform(res.point);
+            res.point = pointMatrix.transform(res.point);
         }
         return res;
     },
