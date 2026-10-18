@@ -65,6 +65,8 @@
 
 /*#*/ include('Tween.js');
 
+/*#*/ include('View.js');
+
 /*#*/ include('PaperScript.js');
 
 // There is no need to test interactions in node context.

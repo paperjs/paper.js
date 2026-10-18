@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Changed
+
+- Time double-clicks from mousedown to mousedown and only within 3 pixels, as
+  native `dblclick` events do, and don't take a third click for another
+  double-click (#1451).
+
 ### Fixed
 
 - Fix `require('paper')` in the Node.js REPL (#2019, #1792).
@@ -28,6 +34,13 @@
   `options.insert` (#2028).
 - Fix gradients drawn with `strokeScaling: false` (#1821, #1822).
 - Fix the selection of items in symbol definitions being drawn (#1577).
+- Fix `View#zoom` of mirrored views, which was 0 (#1411).
+- Fix item mouse handlers that stopped working after removing items whose
+  parent was already removed, or after moving items to another project
+  (#2079, #1791).
+- Fix key events with Control, Alt and Meta in Firefox and other browsers that
+  fire no `keypress` for them (#1997, #1871).
+- Fix the space key staying down after Option + Space on macOS.
 
 ## `0.12.20`
 
