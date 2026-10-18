@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 18 20:27:56 2026 +0200
+ * Date: Sun Oct 18 20:33:49 2026 +0200
  *
  ***
  *
@@ -4992,8 +4992,8 @@ var Group = Item.extend({
 
 	_draw: function(ctx, param) {
 		var clip = param.clip,
-			clipItem = !clip && this._getClipItem();
-		param = param.extend({ clipItem: clipItem, clip: false });
+			clipItem = this._getClipItem();
+		param = param.extend({ clipItem: !clip && clipItem, clip: false });
 		if (clip) {
 			ctx.beginPath();
 			param.dontStart = param.dontFinish = true;
