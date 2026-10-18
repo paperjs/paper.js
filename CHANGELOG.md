@@ -127,6 +127,8 @@
   #1900, #2115, #1645, #1697, #1747, #1507, #604, #1330, #662).
 - Docs: Add examples to the boolean path operations (#1007).
 - Docs: Document that `new Path(pathData)` holds a single sub-path (#2057).
+- Docs: Document that styles set on symbol items, or inherited by imported
+  `<use>` elements, don't reach the symbol definition's items (#1329).
 
 ### Removed
 
