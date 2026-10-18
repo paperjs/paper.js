@@ -13,7 +13,6 @@
 // We call our variable `isNodeContext` because resemble.js exposes a global
 // `isNode` function which would override it and break node check.
 var isNodeContext = typeof global === 'object',
-    isPhantomContext = typeof window === 'object' && !!window.callPhantom,
     scope;
 
 if (isNodeContext) {
