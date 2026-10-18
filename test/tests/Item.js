@@ -1029,6 +1029,14 @@ test('Item#rasterize() with empty bounds', function() {
     expect(0);
 });
 
+test('Item#fitBounds(rectangle, fill)', function() {
+    var path = new Path.Rectangle([0, 0, 10, 20]);
+    path.fitBounds([0, 0, 50, 50], true);
+    equals(path.bounds, new Rectangle(0, -25, 50, 100));
+    path.fitBounds(0, 0, 50, 50);
+    equals(path.bounds, new Rectangle(12.5, 0, 25, 50));
+});
+
 test('Item#rasterize() bounds', function() {
     var circle = new Path.Circle({
         center: [50, 50],

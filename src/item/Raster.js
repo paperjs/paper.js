@@ -123,7 +123,7 @@ var Raster = Item.extend(/** @lends Raster# */{
         // If _initialize can set properties through object literal, we're done.
         // Otherwise we need to check the type of object:
         if (!this._initialize(source,
-                position !== undefined && Point.read(arguments))) {
+                position !== undefined && Point.read([position]))) {
             var image,
                 type = typeof source,
                 object = type === 'string'

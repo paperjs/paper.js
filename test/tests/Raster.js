@@ -240,3 +240,10 @@ test('new Raster(size[, position])', function() {
     equals(raster.position, new Point(100, 100));
     equals(raster.bounds, new Rectangle(50, 50, 100, 100));
 });
+
+test('new Raster(source, position)', function() {
+    var raster = new Raster(new Size(30, 20), new Point(5, 6));
+    equals(raster.position, new Point(5, 6));
+    var raster = new Raster('data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', [30, 40]);
+    equals(raster.position, new Point(30, 40));
+});

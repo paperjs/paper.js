@@ -87,7 +87,12 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
             // new Rectangle(), new Rectangle(null)
             this._set(0, 0, 0, 0);
             read = arg0 === null ? 1 : 0;
-        } else if (args.length === 1) {
+        } else if (args.length === 1
+                // When reading from a longer list of arguments, an array of
+                // four values or an object with both x and width can only
+                // describe a rectangle, not the point of (point, size):
+                || Array.isArray(arg0) && arg0.length === 4
+                || arg0.x !== undefined && arg0.width !== undefined) {
             // This can either be an array, or an object literal.
             if (Array.isArray(arg0)) {
                 this._set.apply(this, arg0);
