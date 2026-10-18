@@ -35,9 +35,11 @@ var SvgElement = new function() {
     }
 
     function get(node, name) {
+        // SVG 2 replaces xlink:href with plain href, which takes precedence:
         var namespace = attributeNamespace[name],
             value = namespace
-                ? node.getAttributeNS(namespace, name)
+                ? node.getAttribute(name)
+                    || node.getAttributeNS(namespace, name)
                 : node.getAttribute(name);
         return value === 'null' ? null : value;
     }
