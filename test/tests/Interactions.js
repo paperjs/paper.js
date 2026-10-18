@@ -370,6 +370,23 @@ test('Item#onMouseLeave()', function(assert) {
     triggerMouseEvent('mousemove', point2);
 });
 
+test('Item#onMouseLeave() when the mouse leaves the document', function(assert) {
+    var done = assert.async();
+    var item = new Path.Rectangle(new Point(0, 0), new Size(10));
+    item.fillColor = 'red';
+    var point1 = new Point(5, 5);
+    var point2 = new Point(-5, 5);
+    item.onMouseLeave = function(event) {
+        equals(event.type, 'mouseleave');
+        equals(event.point, point2);
+        equals(event.target, item);
+        done();
+    };
+    triggerMouseEvent('mousemove', point1);
+    // A mouseout without relatedTarget means the mouse left the document:
+    triggerMouseEvent('mouseout', point2);
+});
+
 test('Item#onMouseDrag()', function(assert) {
     var done = assert.async();
     var item = new Path.Rectangle(new Point(0, 0), new Size(10));
@@ -609,6 +626,48 @@ test('Key events with keypress', function() {
         'keyup a "a" +control',
         'keyup control'
     ].join(', '));
+});
+
+var getViewKeyEvents = function(triggerKeyEvents) {
+    // Insert a second view next to the one of the current project, both
+    // visible, and log the key events that each of them receives.
+    var view1 = view,
+        project2 = new Project(new Size(100, 100)),
+        view2 = project2.view,
+        events = [];
+    currentProject.activate();
+    [view1, view2].forEach(function(view, index) {
+        var element = view.element,
+            name = 'view' + (index + 1);
+        element.style.position = 'fixed';
+        element.style.top = element.style.left = 0;
+        document.body.appendChild(element);
+        view.onKeyDown = view.onKeyUp = function(event) {
+            events.push(name + ' ' + event.type + ' ' + event.key);
+        };
+    });
+    triggerKeyEvents(view1, view2);
+    document.body.removeChild(view1.element);
+    document.body.removeChild(view2.element);
+    project2.remove();
+    return events.join(', ');
+};
+
+test('Key events reach the focused view when several are visible', function() {
+    equals(getViewKeyEvents(function() {
+        triggerKeyEvent('keydown', 'a');
+        triggerKeyEvent('keypress', 'a');
+        triggerKeyEvent('keyup', 'a');
+    }), 'view1 keydown a, view1 keyup a');
+});
+
+test('Key events reach a newly visible view when the focused one is hidden (#1953)', function() {
+    equals(getViewKeyEvents(function(view1) {
+        view1.element.style.display = 'none';
+        triggerKeyEvent('keydown', 'a');
+        triggerKeyEvent('keypress', 'a');
+        triggerKeyEvent('keyup', 'a');
+    }), 'view2 keydown a, view2 keyup a');
 });
 
 //

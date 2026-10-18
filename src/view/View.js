@@ -1153,19 +1153,8 @@ new function() { // Injection scope for event handling on the browser
                 // event, to give items the change to receive a mouseleave, etc.
                 var view = View._focused,
                     target = DomEvent.getRelatedTarget(event);
-                if (view && (!target || target.nodeName === 'HTML')) {
-                    // See #800 for this bizarre workaround for an issue of
-                    // Chrome on Windows:
-                    // TODO: Remove again after Dec 2016, once fixed in Chrome.
-                    var offset = DomEvent.getOffset(event, view._element),
-                        x = offset.x,
-                        abs = Math.abs,
-                        ax = abs(x),
-                        max = 1 << 25,
-                        diff = ax - max;
-                    offset.x = abs(diff) < ax ? diff * (x < 0 ? -1 : 1) : x;
-                    handleMouseMove(view, event, view.viewToProject(offset));
-                }
+                if (view && (!target || target.nodeName === 'HTML'))
+                    handleMouseMove(view, event);
             },
 
             scroll: updateFocus

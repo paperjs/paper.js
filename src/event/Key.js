@@ -91,6 +91,9 @@ var Key = new function() {
     }
 
     function handleKey(down, key, character, event) {
+        // The focused view may have been hidden since the last mouse event,
+        // while another one became visible (#1953):
+        View.updateFocus();
         var type = down ? 'keydown' : 'keyup',
             view = View._focused,
             name;
