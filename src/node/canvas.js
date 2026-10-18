@@ -14,28 +14,29 @@
 // - HTMLCanvasElement#type, so we can switch to a PDF canvas
 // - Various Node-Canvas methods, routed through from HTMLCanvasElement:
 //   toBuffer, pngStream, createPNGStream, jpegStream, createJPEGStream
+// Returns false if the canvas module is missing or not working.
 
 module.exports = function(self, requireName) {
     var Canvas;
     try {
         Canvas = require('canvas').Canvas;
     } catch(error) {
-        // Remove `self.window`, so we still have the global `self` reference,
-        // but no `window` object:
-        // - On the browser, this corresponds to a worker context.
-        // - On Node.js, it basically means the canvas is missing or not working
-        //   which can be treated the same way.
-        delete self.window;
         // Check the required module's name to see if it contains canvas, and
         // only complain about its lack if the module requires it.
         if (/\bcanvas\b/.test(requireName)) {
             throw new Error('Unable to load canvas module.');
         }
-        return;
+        return false;
     }
 
     var HTMLCanvasElement = self.HTMLCanvasElement,
+        idlUtils;
+    try {
+        idlUtils = require('jsdom/lib/generated/idl/utils');
+    } catch(error) {
+        // jsdom < 28 keeps its generated utils in a different place:
         idlUtils = require('jsdom/lib/jsdom/living/generated/utils');
+    }
 
     // Add fake HTMLCanvasElement#type property:
     Object.defineProperty(HTMLCanvasElement.prototype, 'type', {
@@ -63,4 +64,5 @@ module.exports = function(self, requireName) {
             return canvas[key].apply(canvas, arguments);
         };
     });
+    return true;
 };

@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 14
+          node-version: 24
       # Liberation Sans has the metrics of Arial, which the text bounds tests
       # expect:
       - name: Install fonts
@@ -41,7 +41,7 @@ jobs:
           submodules: true
       - uses: actions/setup-node@v4
         with:
-          node-version: 14
+          node-version: 24
       # The JsDoc Toolkit that generates the docs runs on Java:
       - uses: actions/setup-java@v4
         with:
