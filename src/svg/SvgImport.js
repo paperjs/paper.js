@@ -569,11 +569,36 @@ new function() {
         return res;
     }
 
+    var sandbox;
+
+    function getSandbox() {
+        // Imported SVG nodes are attached to a document so that their styles
+        // can be computed. Use a sandboxed iframe instead of the page itself,
+        // so nothing in the SVG can run code or load resources (#2100).
+        // Recreate it if it was removed from the page, as its document is
+        // gone then too.
+        if (!(sandbox && sandbox.contentDocument)) {
+            sandbox = document.createElement('iframe');
+            // Without 'allow-scripts', no scripts or event handlers can run.
+            // 'allow-same-origin' gives us access to the iframe's document.
+            sandbox.setAttribute('sandbox', 'allow-same-origin');
+            // Don't use `display: none`, as browsers then stub some SVG APIs:
+            sandbox.style.cssText = 'position: absolute; visibility: hidden;'
+                    + ' width: 0; height: 0; border: 0';
+            document.body.appendChild(sandbox);
+            var doc = sandbox.contentDocument,
+                meta = doc.createElement('meta');
+            meta.httpEquiv = 'Content-Security-Policy';
+            meta.content = "default-src 'none'; style-src 'unsafe-inline'";
+            doc.head.appendChild(meta);
+        }
+        return sandbox.contentDocument.body;
+    }
+
     function importNode(node, options, isRoot) {
         // jsdom in Node.js uses uppercase values for nodeName...
         var type = node.nodeName.toLowerCase(),
             isElement = type !== '#document',
-            body = document.body,
             container,
             parent,
             next;
@@ -582,10 +607,10 @@ new function() {
             rootSize = paper.getView().getSize();
             // Now set rootSize to the root element size, and fall-back to view.
             rootSize = getSize(node, null, null, true) || rootSize;
-            // We need to move the SVG node to the current document, so default
+            // We need to move the SVG node to a live document, so default
             // styles are correctly inherited! For this we create and insert a
-            // temporary SVG container which is removed again at the end. This
-            // container also helps fix a bug on IE.
+            // temporary SVG container into the sandbox, which is removed again
+            // at the end. This container also helps fix a bug on IE.
             container = SvgElement.create('svg', {
                 // If no stroke-width is set, IE/Edge appears to have a
                 // default of 0.01px. We can set a default style on the
@@ -596,7 +621,7 @@ new function() {
             parent = node.parentNode;
             next = node.nextSibling;
             container.appendChild(node);
-            body.appendChild(container);
+            getSandbox().appendChild(container);
         }
         // Have items imported from SVG not bake in all transformations to their
         // content and children, as this is how SVG works too, but preserve the
@@ -604,50 +629,59 @@ new function() {
         // into the scene graph automatically, as we do so by hand.
         var settings = paper.settings,
             applyMatrix = settings.applyMatrix,
-            insertItems = settings.insertItems;
-        settings.applyMatrix = false;
-        settings.insertItems = false;
-        var importer = importers[type],
-            item = importer && importer(node, type, options, isRoot) || null;
-        settings.insertItems = insertItems;
-        settings.applyMatrix = applyMatrix;
-        if (item) {
-            // Do not apply attributes if this is a #document node.
-            // See importGroup() for an explanation of filtering for Group:
-            if (isElement && !(item instanceof Group))
-                item = applyAttributes(item, node, isRoot);
-            // Support onImportItem callback, to provide mechanism to handle
-            // special attributes (e.g. inkscape:transform-center)
-            var onImport = options.onImport,
-                data = isElement && node.getAttribute('data-paper-data');
-            if (onImport)
-                item = onImport(node, item, options) || item;
-            if (options.expandShapes && item instanceof Shape) {
-                item.remove();
-                item = item.toPath();
+            insertItems = settings.insertItems,
+            item;
+        // Restore everything in `finally` blocks, so that a failing import
+        // doesn't leave the node in the sandbox or the settings changed:
+        try {
+            settings.applyMatrix = false;
+            settings.insertItems = false;
+            try {
+                var importer = importers[type];
+                item = importer && importer(node, type, options, isRoot)
+                        || null;
+            } finally {
+                settings.insertItems = insertItems;
+                settings.applyMatrix = applyMatrix;
             }
-            if (data)
-                item._data = JSON.parse(data);
-        }
-        if (container) {
-            //  After import, move things back to how they were:
-            body.removeChild(container);
-            if (parent) {
-                if (next) {
-                    parent.insertBefore(node, next);
-                } else {
-                    parent.appendChild(node);
+            if (item) {
+                // Do not apply attributes if this is a #document node.
+                // See importGroup() for an explanation of filtering for Group:
+                if (isElement && !(item instanceof Group))
+                    item = applyAttributes(item, node, isRoot);
+                // Support onImportItem callback, to provide mechanism to handle
+                // special attributes (e.g. inkscape:transform-center)
+                var onImport = options.onImport,
+                    data = isElement && node.getAttribute('data-paper-data');
+                if (onImport)
+                    item = onImport(node, item, options) || item;
+                if (options.expandShapes && item instanceof Shape) {
+                    item.remove();
+                    item = item.toPath();
+                }
+                if (data)
+                    item._data = JSON.parse(data);
+            }
+        } finally {
+            if (container) {
+                //  After import, move things back to how they were:
+                container.parentNode.removeChild(container);
+                if (parent) {
+                    if (next) {
+                        parent.insertBefore(node, next);
+                    } else {
+                        parent.appendChild(node);
+                    }
                 }
             }
+            // Clear definitions at the end of import:
+            if (isRoot)
+                definitions = {};
         }
-        // Clear definitions at the end of import?
-        if (isRoot) {
-            definitions = {};
-            // Now if settings.applyMatrix was set, apply recursively and set
-            // #applyMatrix = true on the item and all children.
-            if (item && Base.pick(options.applyMatrix, applyMatrix))
-                item.matrix.apply(true, true);
-        }
+        // Now if settings.applyMatrix was set, apply recursively and set
+        // #applyMatrix = true on the item and all children.
+        if (isRoot && item && Base.pick(options.applyMatrix, applyMatrix))
+            item.matrix.apply(true, true);
         return item;
     }
 

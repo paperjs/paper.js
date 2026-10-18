@@ -169,6 +169,64 @@ test('Import SVG string with leading line-breaks', function() {
     }));
 });
 
+test('Import SVG cleans up after errors', function() {
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" data-paper-data="invalid JSON"><rect width="100" height="100"/></svg>';
+    var settings = paper.settings,
+        count = document.getElementsByTagName('svg').length;
+    equals(function() {
+        try {
+            paper.project.importSVG(svg);
+        } catch (e) {
+            return true;
+        }
+        return false;
+    }, true);
+    equals(function() {
+        return document.getElementsByTagName('svg').length;
+    }, count);
+    equals(function() { return settings.applyMatrix; }, true);
+    equals(function() { return settings.insertItems; }, true);
+});
+
+if (!isNodeContext) {
+    // JSDom doesn't apply style sheets to SVG, nor does it run scripts, so
+    // these can only be tested in the browser.
+    test('Import SVG with embedded style sheet', function() {
+        var svg = '<svg xmlns="http://www.w3.org/2000/svg"><style>rect { fill: red; }</style><rect width="100" height="100"/></svg>';
+        var imported = paper.project.importSVG(svg, { expandShapes: true });
+        equals(imported.lastChild.fillColor, new Color('red'));
+    });
+
+    test('Import SVG is not affected by the page\'s style sheets', function() {
+        var style = document.createElement('style');
+        style.textContent = 'rect.page-styled { fill: red; }';
+        document.head.appendChild(style);
+        var svg = '<svg xmlns="http://www.w3.org/2000/svg"><rect class="page-styled" width="100" height="100"/></svg>';
+        var imported = paper.project.importSVG(svg, { expandShapes: true });
+        document.head.removeChild(style);
+        equals(function() {
+            return imported.lastChild.fillColor.toCSS(true);
+        }, '#000000');
+    });
+
+    test('Import SVG does not execute embedded scripts (#2100)',
+            function(assert) {
+        var done = assert.async();
+        var payload = '<foreignObject width="1" height="1"><img xmlns="http://www.w3.org/1999/xhtml" src="data:invalid" onerror="window.svgImportExecuted = true"/></foreignObject>';
+        window.svgImportExecuted = false;
+        try {
+            // Invalid data-paper-data throws during import:
+            paper.project.importSVG('<svg xmlns="http://www.w3.org/2000/svg" data-paper-data="invalid JSON">' + payload + '</svg>');
+        } catch (e) {
+        }
+        paper.project.importSVG('<svg xmlns="http://www.w3.org/2000/svg">' + payload + '</svg>');
+        setTimeout(function() {
+            equals(function() { return window.svgImportExecuted; }, false);
+            done();
+        }, 100);
+    });
+}
+
 function importSVG(assert, url, message, options) {
     var done = assert.async();
     project.importSVG(url, {
