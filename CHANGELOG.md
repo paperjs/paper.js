@@ -29,6 +29,8 @@
 - Fix `new Shape({ type: 'circle', radius })` without a size, which threw.
 - Fix `View#getPixelSize()` returning `NaN` for views without an element, as in
   web workers, which broke `leading` for font sizes in units other than pixels.
+- Only publish the intended files to npm, removing an accidental copy of the
+  whole distribution from the package (12.3 MB → 6.2 MB unpacked).
 
 ## `0.12.18`
 
