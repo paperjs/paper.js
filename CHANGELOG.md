@@ -100,6 +100,8 @@
 - Fix `Item#hitTest()` and `#hitTestAll()` on items inside transformed
   groups, which took the point in their parent's coordinates instead of the
   documented global ones (#1803).
+- Ignore `View#zoom` values that aren't positive numbers, which left the
+  view's matrix without an inverse, so that `View#bounds` threw (#1433).
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.

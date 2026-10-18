@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 18 21:55:17 2026 +0200
+ * Date: Sun Oct 18 21:58:00 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -7144,6 +7144,7 @@ declare namespace paper {
 
         /** 
          * The view's zoom factor by which the project coordinates are magnified.
+         * Setting it to a value that isn't a positive number has no effect.
          * 
          * @see #scaling
          */

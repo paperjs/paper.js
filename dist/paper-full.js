@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 18 21:55:17 2026 +0200
+ * Date: Sun Oct 18 21:58:00 2026 +0200
  *
  ***
  *
@@ -13253,8 +13253,10 @@ var View = Base.extend(Emitter, {
 	},
 
 	setZoom: function(zoom) {
-		this.transform(new Matrix().scale(zoom / this.getZoom(),
-			this.getCenter()));
+		if (zoom > 0 && isFinite(zoom)) {
+			this.transform(new Matrix().scale(zoom / this.getZoom(),
+				this.getCenter()));
+		}
 	},
 
 	getRotation: function() {
