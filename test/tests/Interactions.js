@@ -345,3 +345,23 @@ test('Item#onMouseDrag() is not triggered if mouse down was on another item', fu
     triggerMouseEvent('mousemove', new Point(11, 11));
     expect(0);
 });
+
+//
+// Tool
+//
+test('ToolEvent#count can be set', function() {
+    var tool = new Tool(),
+        counts = [];
+    tool.onMouseDrag = function(event) {
+        counts.push(event.count);
+        if (event.count === 1)
+            event.count = 10;
+    };
+    triggerMouseEvent('mousedown', new Point(0, 0));
+    triggerMouseEvent('mousemove', new Point(5, 5));
+    triggerMouseEvent('mousemove', new Point(6, 6));
+    triggerMouseEvent('mousemove', new Point(7, 7));
+    triggerMouseEvent('mouseup', new Point(7, 7));
+    tool.remove();
+    equals(counts.join(), '0,1,11');
+});

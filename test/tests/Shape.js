@@ -90,3 +90,9 @@ test('new Shape.Rectangle(rectangle, radius)', function() {
     equals(shape.size, new Size(10, 20));
     equals(shape.radius, new Size(2, 2));
 });
+
+test('new Shape({ type: \'circle\', radius })', function() {
+    var shape = new Shape({ type: 'circle', radius: 10 });
+    equals(shape.size, new Size(20, 20));
+    equals(shape.radius, 10);
+});
