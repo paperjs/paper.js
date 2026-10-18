@@ -264,16 +264,7 @@ for you, and will also open the browser at the right address straight away:
 
     yarn test:browser
 
-You can also run the unit tests through PhantomJS in Gulp directly on the
-command line:
-
-    yarn test:phantom
-
 To test the Node.js version of Paper.js, use this command:
-
-    yarn test:node
-
-And to test both the PhantomJS and Node.js environments together, simply run:
 
     yarn test
 
