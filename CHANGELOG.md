@@ -105,6 +105,9 @@
 - Fix the hit-test tolerance of items inside transformed groups and of symbol
   items, which their transformations scaled. It is now in project
   coordinates, as documented (#1278).
+- Limit the temporary canvases of items with opacity or blend modes to the
+  visible area, so large groups no longer disappear or make zooming slow
+  (#1644, #1920, #1925, #2001, #2029).
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
