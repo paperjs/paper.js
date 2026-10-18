@@ -652,6 +652,7 @@ new function() {
         var settings = paper.settings,
             applyMatrix = settings.applyMatrix,
             insertItems = settings.insertItems,
+            importer = importers[type],
             item;
         // Restore everything in `finally` blocks, so that a failing import
         // doesn't leave the node in the sandbox or the settings changed:
@@ -659,7 +660,6 @@ new function() {
             settings.applyMatrix = false;
             settings.insertItems = false;
             try {
-                var importer = importers[type];
                 item = importer && importer(node, type, options, isRoot)
                         || null;
             } finally {
@@ -668,8 +668,8 @@ new function() {
             }
             if (item) {
                 // Do not apply attributes if this is a #document node.
-                // See importGroup() for an explanation of filtering for Group:
-                if (isElement && !(item instanceof Group))
+                // importGroup() applies them itself, see there for why:
+                if (isElement && importer !== importGroup)
                     item = applyAttributes(item, node, options, isRoot);
                 // Support onImportItem callback, to provide mechanism to handle
                 // special attributes (e.g. inkscape:transform-center)

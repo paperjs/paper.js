@@ -28,9 +28,8 @@ var TextItem = Item.extend(/** @lends TextItem# */{
     _serializeFields: {
         content: null
     },
-    // TextItem doesn't make the distinction between the different bounds,
-    // so use the same name for all of them
-    _boundsOptions: { stroke: false, handle: false },
+    // TextItem has no handles, so share the cache of #handleBounds and #bounds:
+    _boundsOptions: { handle: false },
 
     initialize: function TextItem(arg) {
         this._content = '';
