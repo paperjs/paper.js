@@ -20,6 +20,10 @@
 - Let inline `style` declarations override presentation attributes in
   `#importSVG()`, as in CSS and browsers: `<rect fill="blue" style="fill: red">`
   now imports red (#1962).
+- Keep the pixels of images in `#importSVG()` and scale them to their size in
+  the SVG, instead of resampling them to that size, which made them blurry.
+  `Raster#size` is now the image's own size, and images without a size are
+  shown at it, as in browsers (#1963).
 
 ### Fixed
 

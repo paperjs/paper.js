@@ -222,14 +222,17 @@ new function() {
         image: function (node) {
             var raster = new Raster(getValue(node, 'href', true));
             raster.on('load', function() {
-                var size = getSize(node);
-                this.setSize(size);
+                // Keep the image's own pixels, and scale it to the size given
+                // in SVG, instead of resampling it to that size. Without a
+                // size, use the image's own, as browsers do (SVG 2):
+                var size = getSize(node, null, null, true) || this.getSize();
                 // Since x and y start from the top left of an image, add
                 // half of its size. We also need to take the raster's matrix
                 // into account, which will be defined by the time the load
                 // event is called.
                 var center = getPoint(node).add(size.divide(2));
-                this._matrix.append(new Matrix().translate(center));
+                this._matrix.append(new Matrix().translate(center)
+                        .scale(size.divide(this.getSize())));
             });
             return raster;
         },
