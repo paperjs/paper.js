@@ -1,5 +1,13 @@
 # Change Log
 
+## Unreleased
+
+### Fixed
+
+- Keep the native `Symbol` in `PaperScope#install()`, which replaced it with
+  the deprecated `paper.Symbol` alias of `SymbolDefinition`. `paper.Symbol`
+  itself still works.
+
 ## `0.12.19`
 
 ### Security

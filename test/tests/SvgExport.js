@@ -238,7 +238,7 @@ if (!isNodeContext) {
             strokeWidth: 10
         });
 
-        var symbol = new Symbol(item);
+        var symbol = new SymbolDefinition(item);
         symbol.place([50, 50]);
 
         var svg = project.exportSVG({ bounds: 'content', asString: true });
