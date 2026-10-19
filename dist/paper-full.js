@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 21:44:33 2026 +0200
+ * Date: Mon Oct 19 22:31:02 2026 +0200
  *
  ***
  *
@@ -13579,8 +13579,6 @@ var View = Base.extend(Emitter, {
 	}
 },
 new function() {
-	if (!window)
-		return;
 	var prevFocus,
 		tempFocus,
 		dragging = false,
@@ -13608,26 +13606,28 @@ new function() {
 		view._handleMouseEvent('mousemove', event, point);
 	}
 
-	var navigator = window.navigator,
-		mousedown, mousemove, mouseup;
-	if (navigator.pointerEnabled || navigator.msPointerEnabled) {
-		mousedown = 'pointerdown MSPointerDown';
-		mousemove = 'pointermove MSPointerMove';
-		mouseup = 'pointerup pointercancel MSPointerUp MSPointerCancel';
-	} else {
-		mousedown = 'touchstart';
-		mousemove = 'touchmove';
-		mouseup = 'touchend touchcancel';
-		if (!('ontouchstart' in window && navigator.userAgent.match(
-				/mobile|tablet|ip(ad|hone|od)|android|silk/i))) {
-			mousedown += ' mousedown';
-			mousemove += ' mousemove';
-			mouseup += ' mouseup';
-		}
-	}
+	var viewEvents = {};
 
-	var viewEvents = {},
-		docEvents = {
+	if (window) {
+		var navigator = window.navigator,
+			mousedown, mousemove, mouseup;
+		if (navigator.pointerEnabled || navigator.msPointerEnabled) {
+			mousedown = 'pointerdown MSPointerDown';
+			mousemove = 'pointermove MSPointerMove';
+			mouseup = 'pointerup pointercancel MSPointerUp MSPointerCancel';
+		} else {
+			mousedown = 'touchstart';
+			mousemove = 'touchmove';
+			mouseup = 'touchend touchcancel';
+			if (!('ontouchstart' in window && navigator.userAgent.match(
+					/mobile|tablet|ip(ad|hone|od)|android|silk/i))) {
+				mousedown += ' mousedown';
+				mousemove += ' mousemove';
+				mouseup += ' mouseup';
+			}
+		}
+
+		var docEvents = {
 			mouseout: function(event) {
 				var view = View._focused,
 					target = DomEvent.getRelatedTarget(event);
@@ -13638,54 +13638,55 @@ new function() {
 			scroll: updateFocus
 		};
 
-	viewEvents[mousedown] = function(event) {
-		var view = View._focused = getView(event);
-		if (!dragging) {
-			dragging = true;
-			view._handleMouseEvent('mousedown', event);
-		}
-	};
-
-	docEvents[mousemove] = function(event) {
-		var view = View._focused;
-		if (!mouseDown) {
-			var target = getView(event);
-			if (target) {
-				if (view !== target) {
-					if (view)
-						handleMouseMove(view, event);
-					if (!prevFocus)
-						prevFocus = view;
-					view = View._focused = tempFocus = target;
-				}
-			} else if (tempFocus && tempFocus === view) {
-				if (prevFocus && !prevFocus.isInserted())
-					prevFocus = null;
-				view = View._focused = prevFocus;
-				prevFocus = null;
-				updateFocus();
+		viewEvents[mousedown] = function(event) {
+			var view = View._focused = getView(event);
+			if (!dragging) {
+				dragging = true;
+				view._handleMouseEvent('mousedown', event);
 			}
-		}
-		if (view)
-			handleMouseMove(view, event);
-	};
+		};
 
-	docEvents[mousedown] = function() {
-		mouseDown = true;
-	};
+		docEvents[mousemove] = function(event) {
+			var view = View._focused;
+			if (!mouseDown) {
+				var target = getView(event);
+				if (target) {
+					if (view !== target) {
+						if (view)
+							handleMouseMove(view, event);
+						if (!prevFocus)
+							prevFocus = view;
+						view = View._focused = tempFocus = target;
+					}
+				} else if (tempFocus && tempFocus === view) {
+					if (prevFocus && !prevFocus.isInserted())
+						prevFocus = null;
+					view = View._focused = prevFocus;
+					prevFocus = null;
+					updateFocus();
+				}
+			}
+			if (view)
+				handleMouseMove(view, event);
+		};
 
-	docEvents[mouseup] = function(event) {
-		var view = View._focused;
-		if (view && dragging)
-			view._handleMouseEvent('mouseup', event);
-		mouseDown = dragging = false;
-	};
+		docEvents[mousedown] = function() {
+			mouseDown = true;
+		};
 
-	DomEvent.add(document, docEvents);
+		docEvents[mouseup] = function(event) {
+			var view = View._focused;
+			if (view && dragging)
+				view._handleMouseEvent('mouseup', event);
+			mouseDown = dragging = false;
+		};
 
-	DomEvent.add(window, {
-		load: updateFocus
-	});
+		DomEvent.add(document, docEvents);
+
+		DomEvent.add(window, {
+			load: updateFocus
+		});
+	}
 
 	var called = false,
 		prevented = false,
@@ -13751,6 +13752,23 @@ new function() {
 					point, prevPoint));
 	}
 
+	function createEvent(type, options) {
+		if (options.modifiers)
+			Key.modifiers.set(options.modifiers);
+		return {
+			type: type,
+			timeStamp: options.timeStamp != null ? options.timeStamp
+					: Date.now(),
+			button: options.button || 0,
+			cancelable: true,
+			defaultPrevented: false,
+			preventDefault: function() {
+				this.defaultPrevented = true;
+			},
+			stopPropagation: function() {}
+		};
+	}
+
 	var itemEventsMap = {
 		mousedown: {
 			mousedown: 1,
@@ -13775,6 +13793,28 @@ new function() {
 
 	return {
 		_viewEvents: viewEvents,
+
+		dispatchMouseEvent: function(type, point, options) {
+			if (!/^mouse(down|move|up)$/.test(type))
+				throw new Error('Unknown mouse event type: \'' + type + '\'.');
+			var event = createEvent(type, options || {});
+			if (type === 'mousedown') {
+				View._focused = this;
+				mouseDown = dragging = true;
+			}
+			this._handleMouseEvent(type, event, new Point(point));
+			if (type === 'mouseup')
+				mouseDown = dragging = false;
+			return event.defaultPrevented;
+		},
+
+		dispatchKeyEvent: function(type, key, options) {
+			if (!/^key(down|up)$/.test(type))
+				throw new Error('Unknown key event type: \'' + type + '\'.');
+			options = options || {};
+			Key._handleKey(type === 'keydown', key, options.character,
+					createEvent(type, options), this);
+		},
 
 		_handleMouseEvent: function(type, event, point) {
 			var itemEvents = this._itemEvents,
@@ -13896,11 +13936,9 @@ new function() {
 				}
 			}
 
-			if (this.isVisible()) {
-				emit(this);
-				if (tool && tool.responds(type))
-					emit(tool);
-			}
+			emit(this);
+			if (tool && tool.responds(type))
+				emit(tool);
 		},
 
 		_countItemEvent: function(type, sign) {
@@ -14137,11 +14175,16 @@ var Key = new function() {
 				(key.length > 1 ? Base.hyphenate(key) : key.toLowerCase());
 	}
 
-	function handleKey(down, key, character, event) {
-		View.updateFocus();
-		var type = down ? 'keydown' : 'keyup',
-			view = View._focused,
-			name;
+	function handleKey(down, key, character, event, view) {
+		if (!view) {
+			View.updateFocus();
+			view = View._focused;
+			if (view && !view.isVisible())
+				view = null;
+		}
+		if (character == null)
+			character = down ? key.length > 1 ? '' : key : charMap[key] || '';
+		var name;
 		keyMap[key] = down;
 		if (down) {
 			charMap[key] = character;
@@ -14157,7 +14200,7 @@ var Key = new function() {
 				} else {
 					for (var k in metaFixMap) {
 						if (k in charMap)
-							handleKey(false, k, metaFixMap[k], event);
+							handleKey(false, k, metaFixMap[k], event, view);
 					}
 					metaFixMap = null;
 				}
@@ -14212,6 +14255,8 @@ var Key = new function() {
 	});
 
 	return {
+		_handleKey: handleKey,
+
 		modifiers: modifiers,
 
 		isDown: function(key) {

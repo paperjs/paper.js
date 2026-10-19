@@ -1947,6 +1947,120 @@ function onMouseDown(event) {
 </div>
 </div>
 
+	
+<div id="dispatchmouseevent-type-point" class="member">
+<div class="member-link">
+<a name="dispatchmouseevent-type-point" href="#dispatchmouseevent-type-point"><tt><b>dispatchMouseEvent</b>(type, point[, options])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Handles a mouse event that the host provides, for hosts without a DOM, such as workers, or with their own event source. It runs the same handling as the DOM&rsquo;s mouse events: the active tool&rsquo;s handlers, with <a href="../classes/Tool.html#mindistance"><tt>tool.minDistance</tt></a> and the like, then those of the items under the point and of the view, including the events that Paper.js derives itself: <code>&#39;mousedrag&#39;</code>, <code>&#39;click&#39;</code>, <code>&#39;doubleclick&#39;</code>, <code>&#39;mouseenter&#39;</code> and <code>&#39;mouseleave&#39;</code>.</p>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li>[options.modifiers] {Object} the state of the modifier keys,
+    see {@link Key#modifiers}</li>
+<li><tt>options.button: <tt>Number</tt></tt> &mdash; the mouse button &mdash;&nbsp;default: <tt>0</tt></li>
+<li><tt>options.timeStamp: <tt>Number</tt></tt> &mdash; the time stamp &mdash;&nbsp;default: <tt>Date.now()</tt></li>
+</ul>
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>type:</tt> 
+<tt>String</tt>
+&mdash;&nbsp;the type of the event: <tt>&lsquo;mousedown&rsquo;</tt>, <tt>&lsquo;mousemove&rsquo;</tt>, <tt>&lsquo;mouseup&rsquo;</tt>
+
+</li>
+	
+	<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the location of the mouse in project coordinates
+
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the details of the event
+&mdash;&nbsp;optional
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if a handler prevented the event&rsquo;s default, <tt>false</tt> otherwise
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="dispatchkeyevent-type-key" class="member">
+<div class="member-link">
+<a name="dispatchkeyevent-type-key" href="#dispatchkeyevent-type-key"><tt><b>dispatchKeyEvent</b>(type, key[, options])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Handles a key event that the host provides, for hosts without a DOM, such as workers, or with their own event source. It updates <tt>Key#modifiers</tt> and <tt>Key#isDown(key)</tt>, and calls the view&rsquo;s and the active tool&rsquo;s handlers, as the DOM&rsquo;s key events do.</p>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li>[options.character] {String} the character that the key
+    produces. By default, keydown takes the key itself if it is a
+    single character, and keyup the character of its keydown</li>
+<li>[options.modifiers] {Object} the state of the modifier keys,
+    see {@link Key#modifiers}</li>
+<li><tt>options.timeStamp: <tt>Number</tt></tt> &mdash; the time stamp &mdash;&nbsp;default: <tt>Date.now()</tt></li>
+</ul>
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>type:</tt> 
+<tt>String</tt>
+&mdash;&nbsp;the type of the event: <tt>&lsquo;keydown&rsquo;</tt>, <tt>&lsquo;keyup&rsquo;</tt>
+
+</li>
+	
+	<li>
+<tt>key:</tt> 
+<tt>String</tt>
+&mdash;&nbsp;the key, as in <a href="../classes/KeyEvent.html#key"><tt>keyEvent.key</tt></a>
+
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the details of the event
+&mdash;&nbsp;optional
+</li>
+	
+</ul>
+
+	
+
+
+	
+	
+</div>
+</div>
+</div>
+
 
 		
 	</div>
