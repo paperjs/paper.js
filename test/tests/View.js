@@ -161,3 +161,69 @@ test('view.project (#1634)', function() {
     }, true);
     scope.remove();
 });
+
+if (!isNodeContext) {
+    test('view.viewSize of canvases with padding and border (#1160, #2033)', function() {
+        // The padding of 10 and the border of 5 add 30 to the content box,
+        // which is the size of the view:
+        function createCanvas(boxSizing, resize) {
+            var canvas = document.createElement('canvas');
+            canvas.width = 200;
+            canvas.height = 100;
+            canvas.style.padding = '10px';
+            canvas.style.border = '5px solid black';
+            canvas.style.boxSizing = boxSizing;
+            if (resize) {
+                canvas.setAttribute('resize', '');
+                canvas.style.width = '300px';
+                canvas.style.height = '150px';
+            }
+            document.body.appendChild(canvas);
+            return canvas;
+        }
+
+        function getBorderBoxSize(canvas) {
+            var rect = canvas.getBoundingClientRect();
+            return new Size(rect.width, rect.height);
+        }
+
+        function resizeWindow() {
+            var event = document.createEvent('Event');
+            event.initEvent('resize', false, false);
+            window.dispatchEvent(event);
+        }
+
+        // Without the resize attribute, the view keeps the size of the canvas
+        // when setting up projects for it again and again:
+        ['content-box', 'border-box'].forEach(function(boxSizing) {
+            var canvas = createCanvas(boxSizing);
+            for (var i = 0; i < 3; i++) {
+                var project = new Project(canvas);
+                equals(project.view.viewSize, new Size(200, 100),
+                        boxSizing + ': view.viewSize, setup ' + i);
+                equals(getBorderBoxSize(canvas), new Size(230, 130),
+                        boxSizing + ': border box, setup ' + i);
+                project.remove();
+            }
+            document.body.removeChild(canvas);
+        });
+
+        // With the resize attribute, the view takes the size of the content box
+        // set through CSS, also after resizing:
+        [
+            ['content-box', new Size(300, 150)],
+            ['border-box', new Size(270, 120)]
+        ].forEach(function(entry) {
+            var boxSizing = entry[0],
+                canvas = createCanvas(boxSizing, true),
+                project = new Project(canvas);
+            for (var i = 0; i < 3; i++) {
+                equals(project.view.viewSize, entry[1],
+                        boxSizing + ': view.viewSize with resize, ' + i);
+                resizeWindow();
+            }
+            project.remove();
+            document.body.removeChild(canvas);
+        });
+    });
+}

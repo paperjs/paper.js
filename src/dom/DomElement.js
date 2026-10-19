@@ -84,6 +84,20 @@ var DomElement = new function() {
         },
 
         /**
+         * Returns the horizontal and vertical sums of the element's padding
+         * and border widths.
+         */
+        getInsets: function(el) {
+            var style = DomElement.getStyles(el);
+            function get(side) {
+                return parseFloat(style['padding' + side])
+                        + parseFloat(style['border' + side + 'Width']);
+            }
+            return new Size(get('Left') + get('Right'),
+                    get('Top') + get('Bottom'));
+        },
+
+        /**
          * Checks if element is invisible (display: none, ...).
          */
         isInvisible: function(el) {
