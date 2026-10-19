@@ -811,6 +811,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      *
      * @option [options.expandShapes=false] {Boolean} whether imported shape
      *     items should be expanded to path items
+     * @option [options.crossOrigin] {String} the {@link Raster#crossOrigin}
+     *     value of the rasters created for `<image>` elements, to load their
+     *     images with CORS
      * @option options.onLoad {Function} the callback function to call once the
      *     SVG content is loaded from the given URL receiving two arguments: the
      *     converted `item` and the original `svg` data as a string. Only
