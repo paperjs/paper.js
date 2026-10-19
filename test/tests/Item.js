@@ -1453,6 +1453,57 @@ test('Item#draw() with CompoundPath as clip item', function() {
     comparePixels(createdClippedGroup(true), createdClippedGroup(false));
 });
 
+test('Item#draw() with opacity and a matrix in a clipped group (#1594)', function() {
+    // Items with an opacity are drawn through a temporary canvas, which needs
+    // the clip item of their parent too, without the item's own matrix. The
+    // same in a clipped group with a matrix of its own:
+    function createClippedGroup(item, matrix) {
+        return new Group({
+            applyMatrix: false,
+            matrix: matrix,
+            children: [
+                new Path.Rectangle({
+                    point: [0, 0],
+                    size: [100, 100],
+                    clipMask: true
+                }),
+                item
+            ]
+        });
+    }
+
+    function createNested() {
+        return new Group({
+            applyMatrix: false,
+            matrix: new Matrix(0.5, 0, 0, 0.5, 0, 0),
+            children: [
+                new Path.Rectangle({
+                    point: [0, 0],
+                    size: [400, 400],
+                    fillColor: 'red'
+                })
+            ],
+            opacity: 0.5
+        });
+    }
+
+    function createDirect() {
+        return new Path.Rectangle({
+            point: [0, 0],
+            size: [200, 200],
+            fillColor: 'red',
+            opacity: 0.5
+        });
+    }
+
+    var matrix = new Matrix(2, 0, 0, 2, 10, 20);
+    comparePixels(createClippedGroup(createNested()),
+            createClippedGroup(createDirect()), 'item with a matrix');
+    comparePixels(createClippedGroup(createNested(), matrix),
+            createClippedGroup(createDirect(), matrix),
+            'item with a matrix in a group with a matrix');
+});
+
 test('settings.insertItems for items created from other items (#1721)', function() {
     var settings = paper.settings,
         path = new Path.Rectangle([0, 0], [100, 100]),
