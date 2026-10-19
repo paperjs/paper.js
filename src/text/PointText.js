@@ -126,5 +126,18 @@ var PointText = TextItem.extend(/** @lends PointText# */{
         if (options.stroke && style.hasStroke())
             rect = rect.expand(style.getStrokeWidth());
         return matrix ? matrix._transformBounds(rect, rect) : rect;
+    },
+
+    _hitTestSelf: function(point, options) {
+        if (options.fill && this.hasFill()) {
+            // The glyph outlines aren't known, so hit the bounds, also within
+            // the tolerance around them (#632):
+            var bounds = this.getInternalBounds(),
+                closest = point.clamp(bounds.getTopLeft(true),
+                        bounds.getBottomRight(true));
+            if (point.subtract(closest).divide(options._tolerancePadding)
+                    .getLength() <= 1)
+                return new HitResult('fill', this);
+        }
     }
 });
