@@ -14,20 +14,14 @@ QUnit.module('Line');
 
 test('new Line(10, 20, 30, 40)', function() {
     var line = new Line(10, 20, 30, 40);
-    equals(line._px, 10, 'point._px');
-    equals(line._py, 20, 'point._py');
-    // _vx = p2.x - p1.x
-    equals(line._vx, 20, 'point._vx');
-    // _vy = p2.y - p1.y
-    equals(line._vy, 20, 'point._vy');
+    equals(line.point, new Point(10, 20), 'line.point');
+    equals(line.vector, new Point(20, 20), 'line.vector');
 });
 
 test('new Line(10, 20, 30, 40, true)', function() {
     var line = new Line(10, 20, 30, 40, true);
-    equals(line._px, 10, 'point._px');
-    equals(line._py, 20, 'point._py');
-    equals(line._vx, 30, 'point._vx');
-    equals(line._vy, 40, 'point._vy');
+    equals(line.point, new Point(10, 20), 'line.point');
+    equals(line.vector, new Point(30, 40), 'line.vector');
 });
 
 test('getDistance()', function() {
@@ -61,4 +55,12 @@ test('getSignedDistance()', function() {
         // Change the line direction and the point side
         return new Line(10, 20, -20, -10, true).getSignedDistance(new Point(0, 30));
     }, 13.416407864998737);
+    // Directions with mixed signs, on either side of the diagonal: the cross
+    // product of (10, -10) with the direction, divided by its length:
+    equals(function() {
+        return new Line(10, 20, -10, 20, true).getSignedDistance(new Point(20, 10));
+    }, 100 / Math.sqrt(500));
+    equals(function() {
+        return new Line(10, 20, 10, -20, true).getSignedDistance(new Point(20, 10));
+    }, -100 / Math.sqrt(500));
 });
