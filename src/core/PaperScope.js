@@ -246,13 +246,15 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
                 }
             });
         });
-        // Copy over all fields from this scope to the destination.
-        // Do not use Base.each, since we also want to enumerate over
-        // fields on PaperScope.prototype, e.g. all classes
-        for (var key in this)
-            // Exclude all 'hidden' fields
-            if (!/^_/.test(key) && this[key])
+        // Copy over all fields from this scope to the destination, except the
+        // hidden ones and the names that the destination has already, such as
+        // the native Event, MouseEvent and Symbol (#1832). Do not use
+        // Base.each, since we also want to enumerate over fields on
+        // PaperScope.prototype, e.g. all classes:
+        for (var key in this) {
+            if (!/^_/.test(key) && this[key] && !(key in scope))
                 scope[key] = this[key];
+        }
     },
 
     /**
