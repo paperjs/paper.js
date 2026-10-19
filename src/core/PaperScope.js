@@ -52,7 +52,8 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
             applyMatrix: true,
             insertItems: true,
             handleSize: 4,
-            hitTolerance: 0
+            hitTolerance: 0,
+            scaleStrokes: false
         });
         this.project = null;
         this.projects = [];
@@ -132,6 +133,12 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      *     when drawing selections
      * @option [settings.hitTolerance=0] {Number} the default tolerance for hit-
      *     tests, when no value is specified
+     * @option [settings.scaleStrokes=false] {Boolean} controls whether applying
+     *     a matrix to the content of paths and compound paths also scales their
+     *     {@link Style#strokeWidth}, by the geometric mean of the scale factors
+     *     for non-uniform scaling. Items that keep their matrix, with
+     *     {@link Item#applyMatrix} set to `false`, scale their strokes when
+     *     drawing anyway, unless {@link Style#strokeScaling} is `false`
      */
 
     /**

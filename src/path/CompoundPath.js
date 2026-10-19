@@ -109,6 +109,11 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
         }
     },
 
+    _transformContent: function _transformContent(matrix) {
+        this._scaleStroke(matrix);
+        return _transformContent.base.apply(this, arguments);
+    },
+
     insertChildren: function insertChildren(index, items) {
         // If we're passed a segment array describing a simple path instead of a
         // compound-path, wrap it in another array to turn it into the array
