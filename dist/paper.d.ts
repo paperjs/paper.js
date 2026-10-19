@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.20 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.13.0 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 18 17:03:51 2026 +0200
+ * Date: Mon Oct 19 15:20:53 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -262,7 +262,7 @@ declare namespace paper {
         static random(): Color
 
         /** 
-         * Returns the addition of the supplied value to both coordinates of
+         * Returns the addition of the supplied value to all components of
          * the color as a new color.
          * The object itself is not modified!
          * 
@@ -285,7 +285,7 @@ declare namespace paper {
         add(color: Color): Color
 
         /** 
-         * Returns the subtraction of the supplied value to both coordinates of
+         * Returns the subtraction of the supplied value to all components of
          * the color as a new color.
          * The object itself is not modified!
          * 
@@ -308,7 +308,7 @@ declare namespace paper {
         subtract(color: Color): Color
 
         /** 
-         * Returns the multiplication of the supplied value to both coordinates
+         * Returns the multiplication of the supplied value to all components
          * of the color as a new color.
          * The object itself is not modified!
          * 
@@ -331,7 +331,7 @@ declare namespace paper {
         multiply(color: Color): Color
 
         /** 
-         * Returns the division of the supplied value to both coordinates of
+         * Returns the division of the supplied value to all components of
          * the color as a new color.
          * The object itself is not modified!
          * 
@@ -551,7 +551,7 @@ declare namespace paper {
         /** 
          * The bounding rectangle of the curve including handles.
          */
-        handleBounds: Rectangle
+        readonly handleBounds: Rectangle
 
 
         /** 
@@ -761,7 +761,8 @@ declare namespace paper {
         isVertical(): boolean
 
         /** 
-         * Calculates the curve location at the specified offset on the curve.
+         * Calculates the curve location at the specified offset on the curve, or
+         * `null` if the offset exceeds the length of the curve.
          * 
          * @param offset - the offset on the curve
          * 
@@ -771,7 +772,7 @@ declare namespace paper {
 
         /** 
          * Calculates the curve location at the specified curve-time parameter on
-         * the curve.
+         * the curve, or `null` if the parameter lies outside of `0..1`.
          * 
          * @param time - the curve-time parameter on the curve
          * 
@@ -791,7 +792,8 @@ declare namespace paper {
          * @param start - the curve-time in relation to which the offset is
          *     determined
          * 
-         * @return the curve-time parameter at the specified location
+         * @return the curve-time parameter at the specified location, or
+         *     `null` if the offset exceeds the length of the curve
          */
         getTimeAt(offset: number, start?: number): number
 
@@ -824,7 +826,7 @@ declare namespace paper {
          * 
          * @return the curve location of the specified point
          */
-        getLocationOf(point: PointLike): CurveLocation
+        getLocationOf(point: PointLike): CurveLocation | null
 
         /** 
          * Returns the length of the path from its beginning up to up to the
@@ -834,7 +836,7 @@ declare namespace paper {
          * 
          * @return the length of the path up to the specified point
          */
-        getOffsetOf(point: PointLike): number
+        getOffsetOf(point: PointLike): number | null
 
         /** 
          * Returns the curve-time parameter of the specified point if it lies on the
@@ -846,7 +848,7 @@ declare namespace paper {
          * 
          * @return the curve-time parameter of the specified point
          */
-        getTimeOf(point: PointLike): number
+        getTimeOf(point: PointLike): number | null
 
         /** 
          * Returns the nearest location on the curve to the specified point.
@@ -1369,6 +1371,10 @@ declare namespace paper {
 
         /** 
          * The path style of the item.
+         * 
+         * Styles set on a {@link Group} or {@link Layer} are applied to the
+         * children that it contains at that moment. Items added to it later do not
+         * receive them.
          */
         style: Style
 
@@ -1396,6 +1402,14 @@ declare namespace paper {
          * The opacity of the item as a value between `0` and `1`.
          */
         opacity: number
+
+        /** 
+         * Specifies whether the item functions as a guide. When set to `true`, the
+         * item is drawn as usual, but left out of hit-tests and mouse
+         * interactions. Hit-tests only find guides when `options.guides` is set,
+         * and then only them, see {@link #hitTest}.
+         */
+        guide: boolean
 
         /** 
          * Specifies whether the item is selected. This will also return `true` for
@@ -1538,6 +1552,11 @@ declare namespace paper {
         /** 
          * The children items contained within this item. Items that define a
          * {@link #name} can also be accessed by name.
+         * 
+         * Only {@link Group}, {@link Layer} and {@link CompoundPath} items can have
+         * children. On all other items, such as {@link Path}, {@link Shape},
+         * {@link Raster}, {@link SymbolItem} and {@link PointText}, `children` is
+         * `undefined`.
          * 
          * <b>Please note:</b> The children array should not be modified directly
          * using array functions. To remove single items from the children list, use
@@ -1854,11 +1873,13 @@ declare namespace paper {
          * Group} or {@link Layer}) at the location of the specified point,
          * returning the first found hit.
          * 
-         * The options object allows you to control the specifics of the hit-
-         * test and may contain a combination of the following values:
+         * The options object allows you to control the specifics of the hit-test.
+         * Without options, `fill`, `stroke` and `segments` are hit-tested. As soon
+         * as an options object is passed, only the hit-tests that it sets to `true`
+         * are performed. It may contain a combination of the following values:
          * 
          * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
-         *     {Number} the tolerance of the hit-test
+         *     {Number} the tolerance of the hit-test, in project coordinates
          * @option options.class {Function} only hit-test against a specific item
          *     class, or any of its sub-classes, by providing the constructor
          *     function against which an `instanceof` check is performed:
@@ -1867,11 +1888,11 @@ declare namespace paper {
          * @option options.match {Function} a match function to be called for each
          *     found hit result: Return `true` to return the result, `false` to keep
          *     searching
-         * @option [options.fill=true] {Boolean} hit-test the fill of items
-         * @option [options.stroke=true] {Boolean} hit-test the stroke of path
-         *     items, taking into account the setting of stroke color and width
-         * @option [options.segments=true] {Boolean} hit-test for {@link
-         *     Segment#point} of {@link Path} items
+         * @option options.fill {Boolean} hit-test the fill of items
+         * @option options.stroke {Boolean} hit-test the stroke of path items,
+         *     taking into account the setting of stroke color and width
+         * @option options.segments {Boolean} hit-test for {@link Segment#point} of
+         *     {@link Path} items
          * @option options.curves {Boolean} hit-test the curves of path items,
          *     without taking the stroke color or width into account
          * @option options.handles {Boolean} hit-test for the handles ({@link
@@ -1884,7 +1905,7 @@ declare namespace paper {
          *     the bounding rectangle of items ({@link Item#bounds})
          * @option options.bounds {Boolean} hit-test the corners and side-centers of
          *     the bounding rectangle of items ({@link Item#bounds})
-         * @option options.guides {Boolean} hit-test items that have {@link
+         * @option options.guides {Boolean} only hit-test items that have {@link
          *     Item#guide} set to `true`
          * @option options.selected {Boolean} only hit selected items
          * 
@@ -1984,7 +2005,9 @@ declare namespace paper {
          * 
          * @param options - the criteria to match against
          * 
-         * @return the list of matching descendant items
+         * @return the list of matching descendant items, in their
+         *     stacking order from bottom to top, with each item listed before its
+         *     own descendants
          */
         getItems(options: object | Function): Item[]
 
@@ -2054,6 +2077,12 @@ declare namespace paper {
          * @option [options.embedImages=true] {Boolean} whether raster images should
          *     be embedded as base64 data inlined in the xlink:href attribute, or
          *     kept as a link to their external URL.
+         * @option [options.reuseImages=false] {Boolean} whether raster images with
+         *     the same content should only be exported once into the `<defs>`
+         *     element, and placed through `<use>` elements referencing it
+         * @option [options.idPrefix=''] {String} a prefix for the ids generated
+         *     for definitions such as gradients, clip paths and symbols, to keep
+         *     them unique when several exported SVGs are placed in one document
          * @option [options.reduceAttributes=true] {Boolean} wether to only include
          *     style attributes in the SVG output that differ from their parents,
          *     or to always include them (much faster but leading to redundancies).
@@ -2070,8 +2099,15 @@ declare namespace paper {
          * the this item's children list. Note that the item is not cleared first.
          * You can call {@link Item#removeChildren} to do so.
          * 
+         * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
+         * the `<use>` elements that place them as {@link SymbolItem} items. The
+         * styles that `<use>` elements inherit don't reach the symbols' content.
+         * 
          * @option [options.expandShapes=false] {Boolean} whether imported shape
          *     items should be expanded to path items
+         * @option [options.crossOrigin] {String} the {@link Raster#crossOrigin}
+         *     value of the rasters created for `<image>` elements, to load their
+         *     images with CORS
          * @option options.onLoad {Function} the callback function to call once the
          *     SVG content is loaded from the given URL receiving two arguments: the
          *     converted `item` and the original `svg` data as a string. Only
@@ -2212,9 +2248,12 @@ declare namespace paper {
          * the child-item is moved outside and the parent is erased. Otherwise, the
          * item itself is returned unmodified.
          * 
+         * @param options - the options passed on to {@link
+         *     Path#reduce(options)}
+         * 
          * @return the reduced item
          */
-        reduce(options: any): Item
+        reduce(options?: object): Item
 
         /** 
          * Removes the item and all its children from the project. The item is not
@@ -2306,7 +2345,8 @@ declare namespace paper {
 
         /** 
          * Checks if this item is above the specified item in the stacking order
-         * of the project.
+         * of the project. If one item is a descendant of the other, neither is
+         * above the other and `false` is returned.
          * 
          * @param item - the item to check against
          * 
@@ -2316,7 +2356,8 @@ declare namespace paper {
 
         /** 
          * Checks if the item is below the specified item in the stacking order of
-         * the project.
+         * the project. If one item is a descendant of the other, neither is below
+         * the other and `false` is returned.
          * 
          * @param item - the item to check against
          * 
@@ -2502,10 +2543,16 @@ declare namespace paper {
         localToParent(point: PointLike): Point
 
         /** 
-         * Transform the item so that its {@link #bounds} fit within the specified
-         * rectangle, without changing its aspect ratio.
+         * Transform the item so that its {@link #bounds} are centered in the
+         * specified rectangle and fitted to it as described by `fit`.
+         * 
+         * @param fit - how to fit the item, as in CSS's
+         * `object-fit`: `'contain'` fits all of it within the rectangle, `'cover'`
+         * makes it cover the whole rectangle, and `'fill'` stretches it to the
+         * rectangle, changing its aspect ratio. The deprecated `true` and `false`
+         * stand for `'cover'` and `'contain'`.
          */
-        fitBounds(rectangle: RectangleLike, fill?: boolean): void
+        fitBounds(rectangle: RectangleLike, fit?: string | boolean): void
 
         /** 
          * Attaches an event handler to the item.
@@ -2623,7 +2670,9 @@ declare namespace paper {
          * of the easing: {@values 'linear' 'easeInQuad' 'easeOutQuad'
          * 'easeInOutQuad' 'easeInCubic' 'easeOutCubic' 'easeInOutCubic'
          * 'easeInQuart' 'easeOutQuart' 'easeInOutQuart' 'easeInQuint'
-         * 'easeOutQuint' 'easeInOutQuint'}
+         * 'easeOutQuint' 'easeInOutQuint' 'easeInSine' 'easeOutSine'
+         * 'easeInOutSine' 'easeInExpo' 'easeOutExpo' 'easeInOutExpo'
+         * 'easeInCirc' 'easeOutCirc' 'easeInOutCirc'}
          * @option [options.start=true] {Boolean} whether to start tweening automatically
          * 
          * @param from - the state at the start of the tweening
@@ -3369,10 +3418,32 @@ declare namespace paper {
         setup(element: HTMLCanvasElement | string | SizeLike): void
 
         /** 
+         * Creates a canvas of the given size, or reuses one that was released
+         * internally.
+         * 
+         * @param width - the width of the canvas
+         * @param height - the height of the canvas
+         * 
+         * @return the canvas
+         */
+        createCanvas(width: number, height: number): HTMLCanvasElement
+
+        /** 
          * Activates this PaperScope, so all newly created items will be placed
          * in its active project.
          */
         activate(): void
+
+        /** 
+         * Removes all projects, views and tools of this scope, along with their
+         * installed event handlers.
+         */
+        clear(): void
+
+        /** 
+         * Clears this scope and removes it from the list of scopes.
+         */
+        remove(): void
 
         /** 
          * Retrieves a PaperScope object with the given scope id.
@@ -3508,7 +3579,10 @@ declare namespace paper {
 
         /** 
          * Creates a new path item from SVG path-data and places it at the top of
-         * the active layer.
+         * the active layer. A path holds a single sub-path: further `M` commands
+         * are ignored, and the commands that follow them continue the same path.
+         * Use {@link CompoundPath} or {@link PathItem.create} to create
+         * items with multiple sub-paths.
          * 
          * @param pathData - the SVG path-data that describes the geometry
          * of this path
@@ -3591,12 +3665,15 @@ declare namespace paper {
 
         /** 
          * Removes the segments from the specified `from` index to the `to` index
-         * from the path's {@link #segments} array.
+         * from the path's {@link #segments} array. On closed paths, `from` can be
+         * bigger than `to`, to remove the segments from `from` to the end and then
+         * from the beginning up to `to`, wrapping around the closing curve.
          * 
          * @param from - the beginning index, inclusive
          * @param to - the ending index, exclusive
          * 
-         * @return an array containing the removed segments
+         * @return an array containing the removed segments, in the
+         *     order in which they appeared along the path
          */
         removeSegments(from: number, to?: number): Segment[]
 
@@ -3640,7 +3717,7 @@ declare namespace paper {
          * 
          * @return the newly created path after splitting, if any
          */
-        splitAt(location: number | CurveLocation): Path
+        splitAt(location: number | CurveLocation): Path | null
 
         /** 
          * Joins the path with the other specified path, which will be removed in
@@ -3659,12 +3736,19 @@ declare namespace paper {
         join(path: Path, tolerance?: number): void
 
         /** 
-         * Reduces the path by removing curves that have a length of 0,
-         * and unnecessary segments between two collinear flat curves.
+         * Reduces the path by removing straight curves that have a length of 0.
+         * With `options.simplify`, it also removes straight curves that are almost
+         * 0 in length, and unnecessary segments between two collinear straight
+         * curves.
+         * 
+         * @option [options.simplify=false] {Boolean} also remove almost zero-length
+         *     curves and segments between collinear straight curves
+         * 
+         * @param options - the reduce options
          * 
          * @return the reduced path
          */
-        reduce(options: any): Path
+        reduce(options?: object): Path
 
         /** 
          * Attempts to create a new shape item with same geometry as this path item,
@@ -3689,7 +3773,7 @@ declare namespace paper {
          * 
          * @return the curve location of the specified point
          */
-        getLocationOf(point: PointLike): CurveLocation
+        getLocationOf(point: PointLike): CurveLocation | null
 
         /** 
          * Returns the length of the path from its beginning up to up to the
@@ -3699,10 +3783,11 @@ declare namespace paper {
          * 
          * @return the length of the path up to the specified point
          */
-        getOffsetOf(point: PointLike): number
+        getOffsetOf(point: PointLike): number | null
 
         /** 
-         * Returns the curve location of the specified offset on the path.
+         * Returns the curve location of the specified offset on the path, or
+         * `null` if the offset exceeds the length of the path.
          * 
          * @param offset - the offset on the path, where `0` is at
          * the beginning of the path and {@link Path#length} at the end
@@ -4141,7 +4226,7 @@ declare namespace paper {
          * @return the locations of all intersection between the
          *     paths
          */
-        getIntersections(path: PathItem, include?: Function): CurveLocation[]
+        getIntersections(path?: PathItem, include?: Function): CurveLocation[]
 
         /** 
          * Returns all crossings between two {@link PathItem} items as an array of
@@ -4780,6 +4865,15 @@ declare namespace paper {
         modulo(point: PointLike): Point
 
         /** 
+         * Returns a new point with both coordinates negated.
+         * PaperScript uses it for the unary minus operator.
+         * The object itself is not modified!
+         * 
+         * @return the negation of the point as a new point
+         */
+        negate(): Point
+
+        /** 
          * Checks whether the point is inside the boundaries of the rectangle.
          * 
          * @param rect - the rectangle to check against
@@ -4893,6 +4987,18 @@ declare namespace paper {
          * and {@link #y} values. The object itself is not modified!
          */
         abs(): Point
+
+        /** 
+         * Returns a new point with the {@link #x} and {@link #y} values clamped to
+         * the range between the given minimum and maximum points. The object
+         * itself is not modified!
+         * 
+         * @param min - the point with the smallest values
+         * @param max - the point with the largest values
+         * 
+         * @return the clamped point as a new point
+         */
+        clamp(min: PointLike, max: PointLike): Point
 
         /** 
          * Returns a new point object with the smallest {@link #x} and
@@ -5079,11 +5185,13 @@ declare namespace paper {
          * Performs a hit-test on the items contained within the project at the
          * location of the specified point.
          * 
-         * The options object allows you to control the specifics of the hit-test
-         * and may contain a combination of the following values:
+         * The options object allows you to control the specifics of the hit-test.
+         * Without options, `fill`, `stroke` and `segments` are hit-tested. As soon
+         * as an options object is passed, only the hit-tests that it sets to `true`
+         * are performed. It may contain a combination of the following values:
          * 
          * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
-         *     {Number} the tolerance of the hit-test
+         *     {Number} the tolerance of the hit-test, in project coordinates
          * @option options.class {Function} only hit-test against a specific item
          *     class, or any of its sub-classes, by providing the constructor
          *     function against which an `instanceof` check is performed:
@@ -5092,11 +5200,11 @@ declare namespace paper {
          * @option options.match {Function} a match function to be called for each
          *     found hit result: Return `true` to return the result, `false` to keep
          *     searching
-         * @option [options.fill=true] {Boolean} hit-test the fill of items
-         * @option [options.stroke=true] {Boolean} hit-test the stroke of path
-         *     items, taking into account the setting of stroke color and width
-         * @option [options.segments=true] {Boolean} hit-test for {@link
-         *     Segment#point} of {@link Path} items
+         * @option options.fill {Boolean} hit-test the fill of items
+         * @option options.stroke {Boolean} hit-test the stroke of path items,
+         *     taking into account the setting of stroke color and width
+         * @option options.segments {Boolean} hit-test for {@link Segment#point} of
+         *     {@link Path} items
          * @option options.curves {Boolean} hit-test the curves of path items,
          *     without taking the stroke color or width into account
          * @option options.handles {Boolean} hit-test for the handles ({@link
@@ -5109,7 +5217,7 @@ declare namespace paper {
          *     the bounding rectangle of items ({@link Item#bounds})
          * @option options.bounds {Boolean} hit-test the corners and side-centers of
          *     the bounding rectangle of items ({@link Item#bounds})
-         * @option options.guides {Boolean} hit-test items that have {@link
+         * @option options.guides {Boolean} only hit-test items that have {@link
          *     Item#guide} set to `true`
          * @option options.selected {Boolean} only hit selected items
          * 
@@ -5170,7 +5278,9 @@ declare namespace paper {
          * 
          * @param options - the criteria to match against
          * 
-         * @return the list of matching items contained in the project
+         * @return the list of matching items contained in the project, in
+         *     their stacking order from bottom to top, with each item listed
+         *     before its own descendants
          */
         getItems(options: object | Function): Item[]
 
@@ -5239,6 +5349,12 @@ declare namespace paper {
          * @option [options.embedImages=true] {Boolean} whether raster images should
          *     be embedded as base64 data inlined in the xlink:href attribute, or
          *     kept as a link to their external URL.
+         * @option [options.reuseImages=false] {Boolean} whether raster images with
+         *     the same content should only be exported once into the `<defs>`
+         *     element, and placed through `<use>` elements referencing it
+         * @option [options.idPrefix=''] {String} a prefix for the ids generated
+         *     for definitions such as gradients, clip paths and symbols, to keep
+         *     them unique when several exported SVGs are placed in one document
          * @option [options.reduceAttributes=true] {Boolean} wether to only include
          *     style attributes in the SVG output that differ from their parents,
          *     or to always include them (much faster but leading to redundancies).
@@ -5256,8 +5372,15 @@ declare namespace paper {
          * Note that the project is not cleared first. You can call
          * {@link Project#clear} to do so.
          * 
+         * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
+         * the `<use>` elements that place them as {@link SymbolItem} items. The
+         * styles that `<use>` elements inherit don't reach the symbols' content.
+         * 
          * @option [options.expandShapes=false] {Boolean} whether imported shape
          *     items should be expanded to path items
+         * @option [options.crossOrigin] {String} the {@link Raster#crossOrigin}
+         *     value of the rasters created for `<image>` elements, to load their
+         *     images with CORS
          * @option options.onLoad {Function} the callback function to call once the
          *     SVG content is loaded from the given URL receiving two arguments: the
          *     converted `item` and the original `svg` data as a string. Only
@@ -5353,15 +5476,16 @@ declare namespace paper {
         context: CanvasRenderingContext2D
 
         /** 
-         * The source of the raster, which can be set using a DOM Image, a Canvas,
-         * a data url, a string describing the URL to load the image from, or the
-         * ID of a DOM element to get the image from (either a DOM Image or a
-         * Canvas). Reading this property will return the url of the source image or
-         * a data-url.
+         * The source of the raster, which can be set using a string describing the
+         * URL to load the image from, or a data url. Reading this property will
+         * return the url of the source image or a data-url.
+         * To set the raster to a DOM Image or a Canvas, use {@link #image} or
+         * {@link #canvas} instead. The ID of a DOM Image or Canvas element is only
+         * accepted by the constructor.
          * Note that for consistency, a {@link #onLoad} event will be triggered on
          * the raster even if the image has already finished loading before.
          */
-        source: HTMLImageElement | HTMLCanvasElement | string
+        source: string
 
         /** 
          * The crossOrigin value to be used when loading the image resource, in
@@ -5459,8 +5583,21 @@ declare namespace paper {
 
         /** 
          * Returns a Base 64 encoded `data:` URL representation of the raster.
+         * If the raster shows an image that was loaded from a `data:` URL, that
+         * URL is returned unchanged. Otherwise, the arguments are passed on to
+         * `HTMLCanvasElement#toDataURL()` of the raster's {@link #canvas}.
+         * In web-workers, where the canvas is an `OffscreenCanvas`, this is not
+         * supported, and neither are {@link #source} and exporting the raster to
+         * JSON, which rely on it. Use the canvas' asynchronous `convertToBlob()`
+         * there instead.
+         * 
+         * @param type - the image format to encode
+         * @param quality - the image quality between `0` and `1`, for
+         *     formats that use lossy compression, such as `'image/jpeg'`
+         * 
+         * @return the `data:` URL of the raster
          */
-        toDataURL(): string
+        toDataURL(type?: string, quality?: number): string
 
         /** 
          * Draws an image on the raster.
@@ -5526,8 +5663,16 @@ declare namespace paper {
         
         createImageData(size: SizeLike): ImageData
 
-        
-        getImageData(rect: RectangleLike): ImageData
+        /** 
+         * Returns the image data of the pixels within the specified rectangle, or
+         * of the whole raster if no rectangle or an empty one is passed.
+         * 
+         * @param rect - the area of the raster to get the image data
+         *     of, in pixel coordinates
+         * 
+         * @return the image data of the specified area
+         */
+        getImageData(rect?: RectangleLike): ImageData
 
         
         putImageData(data: ImageData, point: PointLike): void
@@ -5564,7 +5709,8 @@ declare namespace paper {
         height: number
 
         /** 
-         * The top-left point of the rectangle
+         * The top-left point of the rectangle. Setting it moves the whole
+         * rectangle, unlike {@link #topLeft}.
          */
         point: Point
 
@@ -5598,47 +5744,59 @@ declare namespace paper {
         bottom: number
 
         /** 
-         * The center point of the rectangle.
+         * The center point of the rectangle. Setting it moves the whole rectangle.
          */
         center: Point
 
         /** 
-         * The top-left point of the rectangle.
+         * The top-left point of the rectangle. Note that this doesn't move the
+         * whole rectangle; the bottom-right corner stays where it was.
          */
         topLeft: Point
 
         /** 
-         * The top-right point of the rectangle.
+         * The top-right point of the rectangle. Note that this doesn't move the
+         * whole rectangle; the bottom-left corner stays where it was.
          */
         topRight: Point
 
         /** 
-         * The bottom-left point of the rectangle.
+         * The bottom-left point of the rectangle. Note that this doesn't move the
+         * whole rectangle; the top-right corner stays where it was.
          */
         bottomLeft: Point
 
         /** 
-         * The bottom-right point of the rectangle.
+         * The bottom-right point of the rectangle. Note that this doesn't move the
+         * whole rectangle; the top-left corner stays where it was.
          */
         bottomRight: Point
 
         /** 
-         * The left-center point of the rectangle.
+         * The left-center point of the rectangle. Setting it moves the left hand
+         * side while the right hand side stays where it was, and moves the whole
+         * rectangle vertically.
          */
         leftCenter: Point
 
         /** 
-         * The top-center point of the rectangle.
+         * The top-center point of the rectangle. Setting it moves the top while
+         * the bottom stays where it was, and moves the whole rectangle
+         * horizontally.
          */
         topCenter: Point
 
         /** 
-         * The right-center point of the rectangle.
+         * The right-center point of the rectangle. Setting it moves the right
+         * hand side while the left hand side stays where it was, and moves the
+         * whole rectangle vertically.
          */
         rightCenter: Point
 
         /** 
-         * The bottom-center point of the rectangle.
+         * The bottom-center point of the rectangle. Setting it moves the bottom
+         * while the top stays where it was, and moves the whole rectangle
+         * horizontally.
          */
         bottomCenter: Point
 
@@ -5652,6 +5810,11 @@ declare namespace paper {
          * 
          * Paper.js draws the bounds of items with selected bounds on top of
          * your project. This is very useful when debugging.
+         * 
+         * This property is only available on the rectangle returned by
+         * {@link Item#bounds}, and the selection always shows these bounds.
+         * Rectangles returned by other getters such as {@link
+         * Item#strokeBounds} don't have it.
          */
         selected: boolean
 
@@ -6354,6 +6517,15 @@ declare namespace paper {
         modulo(size: SizeLike): Size
 
         /** 
+         * Returns a new size with both dimensions negated.
+         * PaperScript uses it for the unary minus operator.
+         * The object itself is not modified!
+         * 
+         * @return the negation of the size as a new size
+         */
+        negate(): Size
+
+        /** 
          * Checks if this size has both the width and height set to 0.
          * 
          * @return true if both width and height are 0
@@ -6427,6 +6599,9 @@ declare namespace paper {
      * 
      * All properties of Style are also reflected directly in {@link Item},
      * i.e.: {@link Item#fillColor}.
+     * 
+     * Styles set on a {@link Group} or {@link Layer} are applied to the children
+     * that it contains at that moment. Items added to it later do not receive them.
      * 
      * To set multiple style properties in one go, you can pass an object to
      * {@link Item#style}. This is a convenient way to define a style once and
@@ -6540,6 +6715,13 @@ declare namespace paper {
         leading: number | string
 
         /** 
+         * The tracking of text content: the space added after each character, in
+         * thousandths of an em, as in Adobe Illustrator and InDesign. A tracking of
+         * 100 adds a tenth of the font size.
+         */
+        tracking: number
+
+        /** 
          * The justification of text paragraphs.
          */
         justification: string
@@ -6604,7 +6786,9 @@ declare namespace paper {
 
     /** 
      * A symbol item represents an instance of a symbol which has been
-     * placed in a Paper.js project.
+     * placed in a Paper.js project. All instances share the symbol's definition,
+     * which they draw as it is: styles set on a symbol item don't reach the items
+     * of the definition, unlike `<use>` elements in SVG.
      */
     class SymbolItem extends Item {
         /** 
@@ -6659,6 +6843,13 @@ declare namespace paper {
         leading: number | string
 
         /** 
+         * The tracking of text content: the space added after each character, in
+         * thousandths of an em, as in Adobe Illustrator and InDesign. A tracking of
+         * 100 adds a tenth of the font size.
+         */
+        tracking: number
+
+        /** 
          * The justification of text paragraphs.
          */
         justification: string
@@ -6711,6 +6902,9 @@ declare namespace paper {
          * The function to be called the mouse moves within the project view. The
          * function receives a {@link ToolEvent} object which contains information
          * about the tool event.
+         * 
+         * While the mouse button is held down, the tool calls {@link #onMouseDrag}
+         * instead, if it defines one, and `onMouseMove` only otherwise.
          */
         onMouseMove: Function | null
 
@@ -6839,6 +7033,11 @@ declare namespace paper {
         type: string
 
         /** 
+         * The tool that fired the event.
+         */
+        tool: Tool
+
+        /** 
          * The position of the mouse in project coordinates when the event was
          * fired.
          */
@@ -6953,6 +7152,13 @@ declare namespace paper {
      * view, find the currently visible bounds in project coordinates, or the
      * center, both useful for constructing artwork that should appear centered on
      * screen.
+     * 
+     * If the canvas element has a `resize` or `data-paper-resize` attribute, the
+     * view adjusts its size to the size of the element whenever the window is
+     * resized. The element itself needs to be sized through CSS, e.g. with
+     * `html, body { height: 100%; }` and `canvas[resize] { width: 100%; height:
+     * 100%; }` for a canvas that fills the window. Without such CSS, the view does
+     * not follow the window, and on HiDPI screens it grows with each resize.
      */
     class View  {
         /** 
@@ -6968,6 +7174,11 @@ declare namespace paper {
          * The underlying native element.
          */
         readonly element: HTMLCanvasElement
+
+        /** 
+         * The project that this view displays.
+         */
+        readonly project: Project
 
         /** 
          * The ratio between physical pixels and device-independent pixels (DIPs)
@@ -7007,6 +7218,7 @@ declare namespace paper {
 
         /** 
          * The view's zoom factor by which the project coordinates are magnified.
+         * Setting it to a value that isn't a positive number has no effect.
          * 
          * @see #scaling
          */
@@ -7147,6 +7359,28 @@ declare namespace paper {
          */
         onMouseLeave: Function | null
 
+        /** 
+         * The function to be called when the user presses a key on the keyboard.
+         * The function receives a {@link KeyEvent} object which contains
+         * information about the keyboard event.
+         * 
+         * If the function returns `false`, the keyboard event will be prevented
+         * from bubbling up. This can be used for example to stop the window from
+         * scrolling, when you need the user to interact with arrow keys.
+         */
+        onKeyDown: Function | null
+
+        /** 
+         * The function to be called when the user releases a key on the keyboard.
+         * The function receives a {@link KeyEvent} object which contains
+         * information about the keyboard event.
+         * 
+         * If the function returns `false`, the keyboard event will be prevented
+         * from bubbling up. This can be used for example to stop the window from
+         * scrolling, when you need the user to interact with arrow keys.
+         */
+        onKeyUp: Function | null
+
 
         /** 
          * Removes this view from the project and frees the associated element.
@@ -7155,12 +7389,16 @@ declare namespace paper {
 
         /** 
          * Updates the view if there are changes. Note that when using built-in
-         * event hanlders for interaction, animation and load events, this method is
+         * event handlers for interaction, animation and load events, this method is
          * invoked for you automatically at the end.
+         * 
+         * @param force - whether to redraw the view even if nothing
+         * has changed, e.g. after a web font used by text items has finished
+         * loading
          * 
          * @return true if the view was updated
          */
-        update(): boolean
+        update(force?: boolean): boolean
 
         /** 
          * Requests an update of the view if there are changes through the browser's
@@ -7280,6 +7518,19 @@ declare namespace paper {
          * @param matrix - the matrix by which the view shall be transformed
          */
         transform(matrix: Matrix): void
+
+        /** 
+         * Transform the view so that the specified rectangle is centered in it
+         * and fitted to it as described by `fit`, keeping the view's rotation and
+         * mirroring.
+         * 
+         * @param rectangle - the rectangle to fit, in project
+         * coordinates
+         * @param fit - how to fit the rectangle, as in CSS's
+         * `object-fit`: `'contain'` shows all of it, and `'cover'` fills the
+         * whole view with it, cropping the parts that don't fit
+         */
+        fitBounds(rectangle: RectangleLike, fit?: string): void
 
         /** 
          * Converts the passed point from project coordinate space to view
