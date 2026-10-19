@@ -72,6 +72,43 @@ test('Import SVG round rect with only rx or ry (#1863)', function() {
     equals(getRadius('rx="10%" ry="10%"'), new Size(20, 10));
 });
 
+test('Import SVG lengths with absolute units (#1919)', function() {
+    var imported = paper.project.importSVG(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="2in" height="1in">'
+            + '<rect x="1cm" y="10mm" width="10pt" height="3pc"'
+            + ' stroke-width="1.5pt" stroke-dasharray="1in 6pt"/>'
+            + '<rect width="50%" height="10px" rx="5"/></svg>'),
+        rect = imported.children[0],
+        relative = imported.children[1];
+    // CSS defines 1in = 2.54cm = 25.4mm = 72pt = 6pc = 96px:
+    equals(rect.position, new Point(96 / 2.54 + 40 / 3 / 2, 96 / 2.54 + 24));
+    equals(rect.size, new Size(40 / 3, 48));
+    equals(rect.strokeWidth, 2);
+    equals(rect.dashArray, [96, 8]);
+    // Percentages refer to the viewport, of which the size has units too:
+    equals(relative.size, new Size(96, 10));
+    equals(relative.radius, new Size(5, 5));
+});
+
+test('Import SVG with percentages in nested <svg> elements (#1404)',
+        function() {
+    var imported = paper.project.importSVG(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">'
+            + '<svg width="50" height="40">'
+            + '<rect width="50%" height="50%"/>'
+            + '<svg width="100%" height="100%" viewBox="0 0 10 10"'
+            + ' preserveAspectRatio="none">'
+            + '<rect width="10" height="10"/></svg></svg>'
+            + '<rect width="50%" height="50%"/></svg>'),
+        nested = imported.children[0];
+    // Percentages refer to the size of the nearest <svg> element:
+    equals(nested.children[0].bounds, new Rectangle(0, 0, 25, 20));
+    // The viewBox of 10 x 10 is stretched to the 50 x 40 of its parent:
+    equals(nested.children[1].bounds, new Rectangle(0, 0, 50, 40));
+    // After the nested <svg>, they refer to the root again:
+    equals(imported.children[1].bounds, new Rectangle(0, 0, 100, 50));
+});
+
 test('Import SVG with inline styles and attributes (#1962)', function() {
     function importRect(attrs) {
         return paper.project.importSVG(
@@ -89,6 +126,36 @@ test('Import SVG with inline styles and attributes (#1962)', function() {
     equals(rect.fillColor, new Color('blue'), 'fill from attribute');
     rect = importRect('style="fill: red"');
     equals(rect.fillColor, new Color('red'), 'fill from style only');
+});
+
+test('Import SVG with the default fill (#1229)', function() {
+    function importSVG(content, attrs) {
+        return paper.project.importSVG(
+                '<svg xmlns="http://www.w3.org/2000/svg"' + (attrs || '') + '>'
+                + content + '</svg>');
+    }
+
+    function getFill(item) {
+        // Browsers produce colors with alpha, so compare the CSS values:
+        var color = item.fillColor;
+        return color && color.toCSS(true);
+    }
+
+    var path = '<path d="M0,0h10v10z"/>',
+        imported = importSVG(path + '<g>' + path + '</g>'
+                + '<g fill="red">' + path + '</g>');
+    // Shapes without a fill are filled black, as SVG's initial fill:
+    equals(getFill(imported.children[0]), '#000000', 'path');
+    equals(getFill(imported.children[1].firstChild), '#000000',
+            'path in <g>');
+    equals(getFill(imported.children[2].firstChild), '#ff0000',
+            'path in <g fill="red">');
+    equals(imported.children[0].strokeColor, null, 'stroke');
+    imported = importSVG(path, ' fill="none"');
+    equals(getFill(imported.firstChild), null, 'path in <svg fill="none">');
+    var node = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    node.setAttribute('d', 'M0,0h10v10z');
+    equals(getFill(paper.project.importSVG(node)), '#000000', 'path as root');
 });
 
 test('Import SVG ellipse', function() {
@@ -187,10 +254,10 @@ test('Import SVG Image', function(assert) {
     var imported = paper.project.importSVG(svg);
     var raster = imported.children[0];
     raster.on('load', function() {
-        // The 1 x 1 pixel image is scaled to its size of 300 x 67, and then by
-        // the transform matrix:
+        // The 1 x 1 pixel image is scaled uniformly to fit its box of
+        // 300 x 67, centered in it, and then by the transform matrix:
         equals(raster.size, new Size(1, 1));
-        equals(raster.matrix, new Matrix(64.47, 0, 0, 14.3983, 337.0056, 205.01675));
+        equals(raster.matrix, new Matrix(14.3983, 0, 0, 14.3983, 337.0056, 205.01675));
         done();
     });
 });
@@ -295,6 +362,51 @@ test('Import SVG Image keeps its pixels (#1963)', function(assert) {
 
     scaled.on('load', onLoad);
     natural.on('load', onLoad);
+});
+
+test('Import SVG Image with preserveAspectRatio (#1129)', function(assert) {
+    var done = assert.async(),
+        url = CanvasProvider.getCanvas(4, 2).toDataURL(),
+        images = {
+            '': '20 x 20',
+            'xMidYMid meet': '20 x 20',
+            'xMinYMin': '20 x 20',
+            'xMaxYMax meet': '20 x 20',
+            'none': '20 x 20',
+            'xMidYMax': '10 x 40',
+            'xMaxYMin': '40 x 10'
+        },
+        svg = Base.each(images, function(size, align) {
+            size = size.split(' x ');
+            this.push('<image xlink:href="' + url + '" x="10" y="20"'
+                    + ' width="' + size[0] + '" height="' + size[1] + '"'
+                    + (align ? ' preserveAspectRatio="' + align + '"' : '')
+                    + '/>');
+        }, []).join(''),
+        imported = paper.project.importSVG(
+            '<svg xmlns="http://www.w3.org/2000/svg"'
+            + ' xmlns:xlink="http://www.w3.org/1999/xlink">' + svg + '</svg>'),
+        rasters = imported.children,
+        loaded = 0;
+
+    function onLoad() {
+        if (++loaded === rasters.length) {
+            // The 4 x 2 image is scaled uniformly to fit its box, and aligned
+            // in it (xMidYMid by default), except with 'none':
+            equals(rasters[0].bounds, new Rectangle(10, 25, 20, 10), 'default');
+            equals(rasters[1].bounds, new Rectangle(10, 25, 20, 10), 'xMidYMid');
+            equals(rasters[2].bounds, new Rectangle(10, 20, 20, 10), 'xMinYMin');
+            equals(rasters[3].bounds, new Rectangle(10, 30, 20, 10), 'xMaxYMax');
+            equals(rasters[4].bounds, new Rectangle(10, 20, 20, 20), 'none');
+            equals(rasters[5].bounds, new Rectangle(10, 55, 10, 5), 'xMidYMax');
+            equals(rasters[6].bounds, new Rectangle(30, 20, 20, 10), 'xMaxYMin');
+            done();
+        }
+    }
+
+    rasters.forEach(function(raster) {
+        raster.on('load', onLoad);
+    });
 });
 
 test('Import SVG string with leading line-breaks', function() {
@@ -574,6 +686,40 @@ if (!isNodeContext) {
                 importSVG(assert, 'assets/' + name, null, options);
             });
         }
+    });
+
+    test('Import SVG Image with preserveAspectRatio renders as in browsers '
+            + '(#1129)', function(assert) {
+        var done = assert.async(),
+            // A 40 x 20 image with two differently colored halves:
+            canvas = CanvasProvider.getCanvas(40, 20),
+            ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'red';
+        ctx.fillRect(0, 0, 20, 20);
+        ctx.fillStyle = 'blue';
+        ctx.fillRect(20, 0, 20, 20);
+        var image = '<image xlink:href="' + canvas.toDataURL() + '"',
+            svg = '<svg xmlns="http://www.w3.org/2000/svg"'
+                + ' xmlns:xlink="http://www.w3.org/1999/xlink"'
+                + ' width="200" height="200">'
+                + '<rect width="200" height="200" fill="white"/>'
+                + image + ' width="80" height="80"/>'
+                + image + ' x="100" width="80" height="80"'
+                + ' preserveAspectRatio="xMinYMax meet"/>'
+                + image + ' y="100" width="80" height="80"'
+                + ' preserveAspectRatio="none"/>'
+                + image + ' x="100" y="100" width="100" height="20"'
+                + ' preserveAspectRatio="xMaxYMid"/>'
+                + '</svg>',
+            imported = paper.project.importSVG(svg),
+            rasters = imported.getItems({ class: Raster }),
+            loaded = 0;
+        rasters.forEach(function(raster) {
+            raster.on('load', function() {
+                if (++loaded === rasters.length)
+                    compareSVG(done, imported, svg, null, { tolerance: 1e-2 });
+            });
+        });
     });
 
     test('Import inexistent file', function(assert) {

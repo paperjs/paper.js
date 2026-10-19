@@ -45,6 +45,12 @@
 - `Item#fitBounds(rectangle[, fit])` takes the values of CSS's `object-fit` as
   `fit`: `'contain'`, `'cover'` and `'fill'`, which stretches the item to the
   rectangle.
+- Read the `pt`, `pc`, `in`, `cm` and `mm` units of SVG lengths in
+  `#importSVG()`, which were read as pixels, so e.g. `font-size="12pt"` now
+  imports as 16 (#1919).
+- Scale and align images in `#importSVG()` as their `preserveAspectRatio`
+  says, keeping their aspect ratio by default instead of stretching them.
+  `slice` is treated like `meet` for now (#1129).
 
 ### Deprecated
 
@@ -147,6 +153,12 @@
 - Fix `Item#fitBounds()` and `View#fitBounds()` with empty rectangles or
   items: empty sides no longer collapse items, produce `NaN` coordinates with
   `'cover'`, or make the view throw; they are left out of the scaling.
+- Fix the export time of `#exportSVG()`, which grew quadratically with the
+  number of children of groups (#1353).
+- Fix percentages inside nested `<svg>` elements in `#importSVG()`, which
+  referred to the root size (#1404).
+- Fix the default black fill of shapes in `#importSVG()` on Node.js, which
+  imported without fill (#1229).
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.

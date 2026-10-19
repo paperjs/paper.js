@@ -20,7 +20,15 @@ new function() {
     // index is option, and if passed, causes a lookup in a list.
 
     var definitions = {},
-        rootSize;
+        rootSize,
+        // The absolute units of CSS in px:
+        units = { 'in': 96, pt: 96 / 72, pc: 96 / 6, cm: 96 / 2.54,
+            mm: 96 / 25.4 };
+
+    function parseLength(value) {
+        var unit = /(in|pt|pc|cm|mm)\s*$/.exec(value);
+        return parseFloat(value) * (unit ? units[unit[1]] : 1);
+    }
 
     function getValue(node, name, isString, allowNull, allowPercent,
             defaultValue) {
@@ -34,7 +42,7 @@ new function() {
                     : isString ? '' : 0
                 : isString
                     ? value
-                    : parseFloat(value);
+                    : parseLength(value);
         // Support for dimensions in percentage of the root size. If root-size
         // is not set (e.g. during <defs>), just scale the percentage value to
         // 0..1, as required by gradients with gradientUnits="objectBoundingBox"
@@ -61,9 +69,9 @@ new function() {
     // Converts a string attribute value to the specified type
     function convertValue(value, type, lookup, options) {
         return value === 'none' ? null
-                : type === 'number' ? parseFloat(value)
+                : type === 'number' ? parseLength(value)
                 : type === 'array' ?
-                    value ? value.split(/[\s,]+/g).map(parseFloat) : []
+                    value ? value.split(/[\s,]+/g).map(parseLength) : []
                 : type === 'color' ? getDefinition(value, options) || value
                 : type === 'lookup' ? lookup[value]
                 : value;
@@ -78,6 +86,7 @@ new function() {
             item = new Group(),
             project = item._project,
             currentStyle = project._currentStyle,
+            parentSize = rootSize,
             children = [];
         if (!isClip && !isDefs) {
             item = applyAttributes(item, node, options, isRoot);
@@ -87,6 +96,12 @@ new function() {
             // creation of all nested items. importSVG then needs to check for
             // items and avoid calling applyAttributes() again.
             project._currentStyle = item._style.clone();
+        }
+        if (type === 'svg' && !isRoot) {
+            // Percentages inside nested <svg> elements refer to their size:
+            rootSize = new Size(
+                    getValue(node, 'width', false, false, false, '100%'),
+                    getValue(node, 'height', false, false, false, '100%'));
         }
         if (isRoot) {
             // Import all defs first, since in SVG they can be in any location.
@@ -111,8 +126,9 @@ new function() {
         // end.
         if (isClip)
             item = applyAttributes(item.reduce(), node, options, isRoot);
-        // Restore currentStyle
+        // Restore currentStyle and rootSize
         project._currentStyle = currentStyle;
+        rootSize = parentSize;
         if (isClip || isDefs) {
             // We don't want the defs in the DOM. But we might want to use
             // Symbols for them to save memory?
@@ -220,19 +236,35 @@ new function() {
 
         // https://www.w3.org/TR/SVG/struct.html#ImageElement
         image: function (node) {
-            var raster = new Raster(getValue(node, 'href', true));
+            var raster = new Raster(getValue(node, 'href', true)),
+                // NOTE: 'slice' is treated as 'meet', as it requires clipping.
+                align = /none|x(Min|Mid|Max)Y(Min|Mid|Max)/.exec(
+                        getValue(node, 'preserveAspectRatio', true))
+                        || [null, 'Mid', 'Mid'];
             raster.on('load', function() {
                 // Keep the image's own pixels, and scale it to the size given
                 // in SVG, instead of resampling it to that size. Without a
                 // size, use the image's own, as browsers do (SVG 2):
-                var size = getSize(node, null, null, true) || this.getSize();
+                var imageSize = this.getSize(),
+                    size = getSize(node, null, null, true) || imageSize,
+                    point = getPoint(node);
+                if (align[0] !== 'none') {
+                    // Scale uniformly, and align the image in its box:
+                    var factors = { Min: 0, Mid: 0.5, Max: 1 },
+                        fitted = imageSize.multiply(Math.min(
+                            size.width / imageSize.width,
+                            size.height / imageSize.height));
+                    point = point.add(size.subtract(fitted).multiply(
+                            [factors[align[1]], factors[align[2]]]));
+                    size = fitted;
+                }
                 // Since x and y start from the top left of an image, add
                 // half of its size. We also need to take the raster's matrix
                 // into account, which will be defined by the time the load
                 // event is called.
-                var center = getPoint(node).add(size.divide(2));
+                var center = point.add(size.divide(2));
                 this._matrix.append(new Matrix().translate(center)
-                        .scale(size.divide(this.getSize())));
+                        .scale(size.divide(imageSize)));
             });
             return raster;
         },
@@ -569,6 +601,10 @@ new function() {
                 parent: !isRoot && !/^defs$/i.test(parent.tagName)
                         && DomElement.getStyles(parent) || {}
             };
+        // jsdom doesn't compute SVG styles, so start the root with SVG's initial
+        // fill, as it differs from the default in Paper.js:
+        if (isRoot && !styles.node.fill && item.setFillColor)
+            item.setFillColor('black');
         Base.each(attributes, function(apply, name) {
             var value = getAttribute(node, name, styles);
             // 'clip-path' attribute returns a new item, support it here:
