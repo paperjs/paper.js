@@ -18,7 +18,7 @@
 // NOTE: Adjust value here before calling `gulp publish`, which then updates the
 // various JSON package files and commits, tags and pushes the release, for the
 // release workflow on GitHub Actions to publish it.
-var version = '0.13.0';
+var version = '0.14.0';
 
 // If this file is loaded in the browser, we're in load.js mode.
 var load = typeof window === 'object';
