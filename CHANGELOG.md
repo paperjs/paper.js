@@ -15,6 +15,8 @@
 
 ### Fixed
 
+- Fix italic and oblique font weights in SVG export and import, which SVG
+  keeps in `font-style` (#937).
 - Fix `onFrame` in web workers, where views have no element (#2200).
 - Fix `PaperScope#execute()` in web workers (#2201).
 

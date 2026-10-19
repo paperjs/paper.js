@@ -370,6 +370,16 @@ new function() {
                 }
                 if (type === 'style') {
                     style.push(entry.attribute + ': ' + value);
+                } else if (type === 'font') {
+                    // Paper.js combines the font style with the weight, while
+                    // SVG keeps it in its own attribute:
+                    var font = ('' + value).match(
+                            /^(.*?)\s*\b(italic|oblique)\b\s*(.*)$/i);
+                    attrs[entry.attribute] = font
+                            ? (font[1] + ' ' + font[3]).trim() || 'normal'
+                            : value;
+                    if (font)
+                        attrs['font-style'] = font[2].toLowerCase();
                 } else {
                     attrs[entry.attribute] = value == null ? 'none'
                             : type === 'color' ? value.gradient

@@ -262,6 +262,33 @@ test('Import SVG text with letter-spacing', function() {
     equals(importText('letter-spacing="normal"').tracking, 0);
 });
 
+test('Import SVG text with font-style', function() {
+    function importText(attributes) {
+        return paper.project.importSVG('<svg xmlns="http://www.w3.org/2000/svg">'
+                + '<text x="10" y="20" ' + attributes + '>One</text></svg>')
+                .firstChild;
+    }
+
+    // Paper.js combines the font style with the weight:
+    equals(importText('font-weight="bold" font-style="italic"').fontWeight,
+            'bold italic');
+    equals(importText('font-style="oblique"').fontWeight, 'oblique');
+    equals(importText('style="font-weight: 600; font-style: italic"')
+            .fontWeight, '600 italic');
+    equals(importText('font-weight="bold" font-style="normal"').fontWeight,
+            'bold');
+});
+
+test('Export and import SVG text with italic font weights', function() {
+    var text = new PointText({
+        point: [10, 20],
+        content: 'One',
+        fontWeight: 'bold italic'
+    });
+    var imported = paper.project.importSVG(text.exportSVG());
+    equals(imported.fontWeight, 'bold italic');
+});
+
 test('Import SVG Image', function(assert) {
     var done = assert.async();
     var svg = '<?xml version="1.0" encoding="utf-8"?><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><image style="overflow:visible;enable-background:new    ;" width="300" height="67" id="e0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" transform="matrix(0.2149 0 0 0.2149 304.7706 197.8176)"></image></svg>';

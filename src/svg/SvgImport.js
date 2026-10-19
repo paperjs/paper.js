@@ -503,6 +503,17 @@ new function() {
                 item.setVisible(value !== null);
         },
 
+        'font-style': function(item, value) {
+            // Paper.js combines the font style with the weight. Applied after
+            // font-weight, which comes first as one of the SvgStyles:
+            if (item.setFontWeight && /^(italic|oblique)$/.test(value)) {
+                var weight = ('' + item.getFontWeight())
+                        .replace(/\s*\b(italic|oblique)\b/gi, '');
+                item.setFontWeight(weight === 'normal' ? value
+                        : weight + ' ' + value);
+            }
+        },
+
         'letter-spacing': function(item, value) {
             // Convert to tracking, in thousandths of an em. 'normal' is 0:
             if (item.setTracking) {

@@ -34,7 +34,7 @@ var SvgStyles = Base.each({
     dashOffset: ['stroke-dashoffset', 'number'],
     // Text
     fontFamily: ['font-family', 'string'],
-    fontWeight: ['font-weight', 'string'],
+    fontWeight: ['font-weight', 'font'],
     fontSize: ['font-size', 'number'],
     tracking: ['letter-spacing', 'tracking'],
     justification: ['text-anchor', 'lookup', {
