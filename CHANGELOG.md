@@ -144,6 +144,9 @@
   which are drawn through a temporary canvas (#1628).
 - Fix `#importSVG()` of `<use>` elements that place images, which weren't
   positioned and sized, as their rasters were cloned before the image loaded.
+- Fix `Item#fitBounds()` and `View#fitBounds()` with empty rectangles or
+  items: empty sides no longer collapse items, produce `NaN` coordinates with
+  `'cover'`, or make the view throw; they are left out of the scaling.
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
