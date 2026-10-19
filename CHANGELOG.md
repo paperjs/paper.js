@@ -4,6 +4,11 @@
 
 ### Added
 
+- Add the `paper-sourced.js` build, in which a project's items can be backed
+  by a host document through `Project#source`: items are created as light
+  shells from the host's records, and load their content and children from
+  the host on first access, so a script costs what it touches. Includes
+  `HostItem`, for the host's own kinds of nodes (#2203).
 - Add `Project#trackChanges` and `Project#takeChanges()`, to let hosts that
   keep their own document update only the items that changed, and export
   `ChangeFlag` (#2202).

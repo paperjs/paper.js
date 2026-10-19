@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 18:23:42 2026 +0200
+ * Date: Mon Oct 19 19:34:56 2026 +0200
  *
  ***
  *
@@ -4138,7 +4138,7 @@ new function() {
 
 	_hitTest: function(point, options, parentViewMatrix) {
 		if (this._locked || !this._visible || this._guide && !options.guides
-				|| this.isEmpty()) {
+				|| !this._shell && this.isEmpty()) {
 			return null;
 		}
 
@@ -4153,7 +4153,7 @@ new function() {
 						.prepended(this.getView()._matrix.inverted())
 						._shiftless().invert()));
 		point = pointMatrix._inverseTransform(point);
-		if (!point || !this._children &&
+		if (!point || (this._shell || !this._children) &&
 			!this.getBounds({ internal: true, stroke: true, handle: true })
 				.expand(tolerancePadding.multiply(2))._containsPoint(point)) {
 			return null;

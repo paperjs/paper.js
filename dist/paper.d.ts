@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 18:23:42 2026 +0200
+ * Date: Mon Oct 19 19:34:56 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -1418,6 +1418,17 @@ declare namespace paper {
     }
 
     /** 
+     * A HostItem represents a node of a host document that has no
+     * counterpart in Paper.js. Its bounds come from the host, it draws nothing,
+     * and only its matrix and attributes can be changed. Hosts can extend it to
+     * expose their own node kinds, storing their properties in `_values`, and
+     * declare `_hasChildren: true` for kinds that contain other items.
+     */
+    class HostItem extends Item {
+
+    }
+
+    /** 
      * The Item type allows you to access and modify the items in
      * Paper.js projects. Its functionality is inherited by different project
      * item types such as {@link Path}, {@link CompoundPath}, {@link Group},
@@ -1859,6 +1870,14 @@ declare namespace paper {
          * @see View#onMouseLeave
          */
         onMouseLeave: Function | null
+
+        /** 
+         * The key of the host's node that the item represents, in a project
+         * backed by a host document, see {@link Project#source}. It can only be
+         * set once, on an item created by a script, to register the key that
+         * the host gave its new node.
+         */
+        key: number
 
 
         /** 
@@ -3418,6 +3437,7 @@ declare namespace paper {
         GradientStop: typeof GradientStop
         Group: typeof Group
         HitResult: typeof HitResult
+        HostItem: typeof HostItem
         Item: typeof Item
         Key: typeof Key
         KeyEvent: typeof KeyEvent
@@ -5150,6 +5170,27 @@ declare namespace paper {
      */
     class Project  {
         /** 
+         * The host document that the project's items come from. Setting it
+         * creates the project's layers from the source's records. All items
+         * are created as shells that load their content and children from the
+         * source on first access.
+         * 
+         * The source provides:
+         * - `getChildren(key)`, which returns the records of the children of
+         *   the node with the given key, or of the top level for `null`, as
+         *   columns: `keys`, `types` (indices into `typeNames`), `typeNames`,
+         *   `flags` (selected: 1, visible: 2, locked: 4, strokeScaling: 8,
+         *   clipMask: 64, guide: 128, empty: 256), `boxes` (bounds,
+         *   strokeBounds and roughBounds in the item's coordinates, 12 numbers
+         *   per item), and the sparse objects `names` and `matrices`.
+         * - `getItem(key)`, which returns the node's own content in the form
+         *   of {@link Item#importJSON}, without children.
+         * - `getAncestorKeys(key)`, which returns the keys from the top level
+         *   down to the node's parent.
+         */
+        source: any
+
+        /** 
          * Specifies whether the project logs the changes of its items, to be
          * retrieved through {@link #takeChanges}. This allows hosts that keep
          * their own document to update only what has changed.
@@ -5208,6 +5249,28 @@ declare namespace paper {
          * a web worker.
          */
         constructor(element: HTMLCanvasElement | string | SizeLike)
+
+        /** 
+         * Returns the item of the host's node with the given key, loading only
+         * the children of its ancestors.
+         * 
+         * @param key - the key of the host's node
+         * 
+         * @return the item, or `null` if the source has no such node
+         */
+        getItemByKey(key: number): Item
+
+        /** 
+         * Updates the items of changed host nodes, given in the column format
+         * of the source's `getChildren()`, with two more flags: 16 when the
+         * node's own content changed, so the item loads it again on next
+         * access, and 32 when its list of children changed, so it loads them
+         * again, keeping the items of nodes that remain. Nodes without items
+         * are skipped.
+         * 
+         * @param columns - the records of the changed nodes
+         */
+        invalidate(columns: object): void
 
         /** 
          * Returns the changes logged since tracking was activated or since the
