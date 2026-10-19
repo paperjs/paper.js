@@ -24,6 +24,10 @@
 
 ### Changed
 
+- `paper.install()` keeps what the target scope has already, such as the
+  native `Event`, `MouseEvent` and `Symbol`, and PaperScript doesn't shadow
+  existing globals with Paper.js's classes of the same name either (#1832,
+  #1652).
 - `Item#importJSON()` into an existing item resets the fields that the JSON
   leaves out, so the item ends up the same as a newly imported one, with its
   place in the scene graph and its event handlers kept (#1425, #1324).
