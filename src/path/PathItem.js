@@ -32,14 +32,13 @@ var PathItem = Item.extend(/** @lends PathItem# */{
     },
 
     // Scale the stroke with the matrix that is applied to the content, when
-    // settings.scaleStrokes asks for it. The square root of the determinant is
-    // the geometric mean of the scale factors, for non-uniform scaling:
+    // settings.scaleStrokes asks for it:
     _scaleStroke: function(matrix) {
         var style = this._style;
         if (this._project._scope.settings.scaleStrokes
                 && style.getStrokeScaling()) {
-            style.setStrokeWidth(style.getStrokeWidth() * Math.sqrt(
-                    Math.abs(matrix._a * matrix._d - matrix._b * matrix._c)));
+            style.setStrokeWidth(style.getStrokeWidth()
+                    * matrix._getMeanScale());
         }
     },
 
