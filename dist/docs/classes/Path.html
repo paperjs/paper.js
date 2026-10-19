@@ -2186,7 +2186,7 @@ path.selected = true;
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Removes the segments from the specified <code>from</code> index to the <code>to</code> index from the path&rsquo;s <a href="../classes/Path.html#segments"><tt>segments</tt></a> array.</p>
+	<p>Removes the segments from the specified <code>from</code> index to the <code>to</code> index from the path&rsquo;s <a href="../classes/Path.html#segments"><tt>segments</tt></a> array. On closed paths, <code>from</code> can be bigger than <code>to</code>, to remove the segments from <code>from</code> to the end and then from the beginning up to <code>to</code>, wrapping around the closing curve.</p>
     
 	
 <ul class="member-list">
@@ -2213,7 +2213,7 @@ path.selected = true;
 		<h4>Returns:</h4>
 		
 			<li>
-<tt>Array of <a href="../classes/Segment.html"><tt>Segment</tt></a> objects</tt>&nbsp;&mdash;&nbsp;an array containing the removed segments
+<tt>Array of <a href="../classes/Segment.html"><tt>Segment</tt></a> objects</tt>&nbsp;&mdash;&nbsp;an array containing the removed segments, in the  order in which they appeared along the path
 </li>
 
 		

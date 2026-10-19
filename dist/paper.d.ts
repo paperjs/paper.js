@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:26:43 2026 +0200
+ * Date: Mon Oct 19 12:24:36 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -3657,12 +3657,15 @@ declare namespace paper {
 
         /** 
          * Removes the segments from the specified `from` index to the `to` index
-         * from the path's {@link #segments} array.
+         * from the path's {@link #segments} array. On closed paths, `from` can be
+         * bigger than `to`, to remove the segments from `from` to the end and then
+         * from the beginning up to `to`, wrapping around the closing curve.
          * 
          * @param from - the beginning index, inclusive
          * @param to - the ending index, exclusive
          * 
-         * @return an array containing the removed segments
+         * @return an array containing the removed segments, in the
+         *     order in which they appeared along the path
          */
         removeSegments(from: number, to?: number): Segment[]
 

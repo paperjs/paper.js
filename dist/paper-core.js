@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:26:43 2026 +0200
+ * Date: Mon Oct 19 12:24:36 2026 +0200
  *
  ***
  *
@@ -8781,6 +8781,9 @@ var Path = PathItem.extend({
 	removeSegments: function(start, end, _includeCurves) {
 		start = start || 0;
 		end = Base.pick(end, this._segments.length);
+		if (start > end && this._closed)
+			return this.removeSegments(start).concat(
+					this.removeSegments(0, end));
 		var segments = this._segments,
 			curves = this._curves,
 			count = segments.length,
