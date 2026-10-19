@@ -31,7 +31,7 @@ gulp.task('test:node', ['minify:acorn'], function(callback) {
                 // Note that loading dist/paper-full.js also works in
                 // combination with `gulp load`, in which case Prepro.js is
                 // present and handles the loading transparently. Test other
-                // builds with --build, e.g. `gulp test:node --build=sourced`.
+                // builds with --build, e.g. `gulp test:node --build=hosted`.
                 {
                     path: '../dist/paper-' + (argv.build || 'full') + '.js',
                     namespace: 'paper'
