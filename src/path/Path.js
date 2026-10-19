@@ -375,6 +375,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             coords = new Array(6);
         for (var i = 0, l = segments.length; i < l; i++)
             segments[i]._transformCoordinates(matrix, coords, true);
+        this._scaleStroke(matrix);
         return true;
     },
 
