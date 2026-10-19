@@ -258,6 +258,15 @@ new function() {
         },
 
         _load: function() {
+            var that = this;
+            whileLoading(this._project, function() {
+                that._loadContent();
+            });
+        },
+
+        // Load the content in place, while loading. Also used for items that
+        // a script created and keyed, which have no shell accessors:
+        _loadContent: function() {
             var project = this._project,
                 json = project._source.getItem(this._key),
                 ctor = this.constructor,
@@ -267,29 +276,29 @@ new function() {
                 that = this;
             if (this instanceof Group || this._hasChildren)
                 Base.push(kept, childrenFields);
-            whileLoading(project, function() {
-                // Start from the class defaults, so loading doesn't recurse
-                // when it reads fields that it hasn't filled in yet:
-                that._contentFields.forEach(function(name) {
+            // Start shells from the class defaults, so loading doesn't recurse
+            // when it reads fields that it hasn't filled in yet:
+            if (this._contentFields) {
+                this._contentFields.forEach(function(name) {
                     defineValue(that, name, ctor.prototype[name]);
                 });
-                kept.forEach(function(name) {
-                    if (that.hasOwnProperty(name))
-                        values[name] = that[name];
-                });
-                // Initialize the content in place, through the constructor,
-                // then put back what it reset:
-                ctor.call(that, { insert: false, project: project });
-                kept.forEach(function(name) {
-                    if (name in values) {
-                        that[name] = values[name];
-                    } else {
-                        delete that[name];
-                    }
-                });
-                Base.importJSON(json, that);
-                that._shell = false;
+            }
+            kept.forEach(function(name) {
+                if (that.hasOwnProperty(name))
+                    values[name] = that[name];
             });
+            // Initialize the content in place, through the constructor, then
+            // put back what it reset:
+            ctor.call(this, { insert: false, project: project });
+            kept.forEach(function(name) {
+                if (name in values) {
+                    that[name] = values[name];
+                } else {
+                    delete that[name];
+                }
+            });
+            Base.importJSON(json, this);
+            this._shell = false;
         },
 
         _loadChildren: function() {
@@ -301,9 +310,13 @@ new function() {
             });
         },
 
-        // Deleting the loaded fields uncovers the shell's accessors again:
+        // Deleting the loaded fields uncovers the shell's accessors again.
+        // Items that a script created and keyed have none, so they reload
+        // right away. Only called by Project#invalidate(), while loading:
         _unload: function() {
-            if (!this._shell) {
+            if (!this._contentFields) {
+                this._loadContent();
+            } else if (!this._shell) {
                 var that = this;
                 this._contentFields.forEach(function(name) {
                     delete that[name];
