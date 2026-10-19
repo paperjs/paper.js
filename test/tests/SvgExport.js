@@ -385,6 +385,26 @@ test('Export SVG text with tracking', function() {
     equals(text.exportSVG().getAttribute('letter-spacing'), '0.1em');
 });
 
+test('Export SVG text with italic font weights', function() {
+    var text = new PointText({
+        point: [10, 20],
+        content: 'One',
+        fontWeight: 'bold italic'
+    });
+    // SVG keeps the font style apart from the weight:
+    var node = text.exportSVG();
+    equals(node.getAttribute('font-weight'), 'bold');
+    equals(node.getAttribute('font-style'), 'italic');
+    text.fontWeight = 'oblique';
+    node = text.exportSVG();
+    equals(node.getAttribute('font-weight'), 'normal');
+    equals(node.getAttribute('font-style'), 'oblique');
+    text.fontWeight = 600;
+    node = text.exportSVG();
+    equals(node.getAttribute('font-weight'), '600');
+    equals(node.getAttribute('font-style'), null);
+});
+
 test('Export SVG rasters with reuseImages (#1993)', function(assert) {
     var done = assert.async();
 
