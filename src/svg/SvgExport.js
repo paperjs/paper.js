@@ -337,6 +337,15 @@ new function() {
         PointText: exportText
     };
 
+    // The blend modes of CSS's mix-blend-mode, which other SVG viewers render.
+    // Paper.js's own ones go into an attribute that only it reads (#1296):
+    var cssBlendModes = Base.each(['normal', 'multiply', 'screen', 'overlay',
+            'darken', 'lighten', 'color-dodge', 'color-burn', 'hard-light',
+            'soft-light', 'difference', 'exclusion', 'hue', 'saturation',
+            'color', 'luminosity'], function(mode) {
+        this[mode] = true;
+    }, {});
+
     function applyStyle(item, node, options, isRoot) {
         var attrs = {},
             parent = !isRoot && item.getParent(),
@@ -369,7 +378,11 @@ new function() {
                         attrs[entry.attribute + '-opacity'] = alpha;
                 }
                 if (type === 'style') {
-                    style.push(entry.attribute + ': ' + value);
+                    if (cssBlendModes[value]) {
+                        style.push(entry.attribute + ': ' + value);
+                    } else {
+                        attrs['data-paper-blend-mode'] = value;
+                    }
                 } else if (type === 'font') {
                     // Paper.js combines the font style with the weight, while
                     // SVG keeps it in its own attribute:
