@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 15:12:16 2026 +0200
+ * Date: Mon Oct 19 15:20:53 2026 +0200
  *
  ***
  *
@@ -3581,8 +3581,12 @@ new function() {
 		matrix = matrix ? matrix._orNullIfIdentity() : _matrix;
 		var cacheKey = cacheItem && (matrix ? matrix.equals(_matrix) : !_matrix)
 				&& this._getBoundsCacheKey(options, internal),
+			isIntermediate = cacheKey && cacheItem !== this
+					&& (this._children || this._definition),
 			bounds = this._bounds;
 		Item._updateBoundsCache(this._parent || this._symbol, cacheItem);
+		if (isIntermediate)
+			Item._updateBoundsCache(this, cacheItem);
 		if (cacheKey && bounds && cacheKey in bounds) {
 			var cached = bounds[cacheKey];
 			return {
@@ -3590,7 +3594,9 @@ new function() {
 				nonscaling: cached.nonscaling
 			};
 		}
-		var res = this._getBounds(matrix, options),
+		var res = this._getBounds(matrix, isIntermediate
+				? Base.set({}, options, { cacheItem: this })
+				: options),
 			rect = res.rect || res,
 			style = this._style,
 			nonscaling = res.nonscaling || style.hasStroke()
