@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 13:45:30 2026 +0200
+ * Date: Mon Oct 19 12:13:23 2026 +0200
  *
  ***
  *
@@ -15407,7 +15407,14 @@ new function() {
 new function() {
 
 	var definitions = {},
-		rootSize;
+		rootSize,
+		units = { 'in': 96, pt: 96 / 72, pc: 96 / 6, cm: 96 / 2.54,
+			mm: 96 / 25.4 };
+
+	function parseLength(value) {
+		var unit = /(in|pt|pc|cm|mm)\s*$/.exec(value);
+		return parseFloat(value) * (unit ? units[unit[1]] : 1);
+	}
 
 	function getValue(node, name, isString, allowNull, allowPercent,
 			defaultValue) {
@@ -15418,7 +15425,7 @@ new function() {
 					: isString ? '' : 0
 				: isString
 					? value
-					: parseFloat(value);
+					: parseLength(value);
 		return /%\s*$/.test(value)
 			? (res / 100) * (allowPercent ? 1
 				: rootSize[/x|^width/.test(name) ? 'width' : 'height'])
@@ -15441,9 +15448,9 @@ new function() {
 
 	function convertValue(value, type, lookup, options) {
 		return value === 'none' ? null
-				: type === 'number' ? parseFloat(value)
+				: type === 'number' ? parseLength(value)
 				: type === 'array' ?
-					value ? value.split(/[\s,]+/g).map(parseFloat) : []
+					value ? value.split(/[\s,]+/g).map(parseLength) : []
 				: type === 'color' ? getDefinition(value, options) || value
 				: type === 'lookup' ? lookup[value]
 				: value;
