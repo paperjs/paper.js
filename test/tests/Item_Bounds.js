@@ -1047,3 +1047,83 @@ test('path.strokeBounds with applyMatrix disabled, rotation and mirroring', func
                 createPath(true, true).strokeBounds, join + ' join, mirrored');
     });
 });
+
+test('group.bounds of nested groups after changing a path', function() {
+    var path = new Path.Rectangle([0, 0], [10, 10]),
+        inner = new Group([path]),
+        middle = new Group([inner]),
+        outer = new Group([middle]);
+    // Get the middle group's bounds first, so the outer group finds them
+    // cached:
+    equals(middle.bounds, new Rectangle(0, 0, 10, 10), 'middle.bounds');
+    equals(outer.bounds, new Rectangle(0, 0, 10, 10), 'outer.bounds');
+    path.scale(2);
+    equals(outer.bounds, new Rectangle(-5, -5, 20, 20),
+            'outer.bounds after scaling path');
+    equals(middle.bounds, new Rectangle(-5, -5, 20, 20),
+            'middle.bounds after scaling path');
+    equals(inner.bounds, new Rectangle(-5, -5, 20, 20),
+            'inner.bounds after scaling path');
+    // The first segment is the bottom-left corner:
+    path.firstSegment.point = [-15, 15];
+    equals(outer.bounds, new Rectangle(-15, -5, 30, 20),
+            'outer.bounds after moving a segment');
+});
+
+test('group.bounds after changing the symbol definition (#940)', function() {
+    // The definition's item is centered: Rectangle(-5, -5, 10, 10)
+    var definition = new SymbolDefinition(new Path.Rectangle({
+            point: [0, 0],
+            size: [10, 10],
+            fillColor: 'red',
+            strokeColor: 'black',
+            strokeWidth: 2
+        })),
+        placed1 = definition.place([50, 50]),
+        placed2 = definition.place([100, 50]),
+        inner = new Group([placed2]),
+        group = new Group([placed1, inner]),
+        layer = group.parent;
+    equals(group.bounds, new Rectangle(45, 45, 60, 10), 'group.bounds');
+    equals(group.strokeBounds, new Rectangle(44, 44, 62, 12),
+            'group.strokeBounds');
+    equals(group.handleBounds, new Rectangle(45, 45, 60, 10),
+            'group.handleBounds');
+    equals(layer.bounds, new Rectangle(45, 45, 60, 10), 'layer.bounds');
+    equals(function() {
+        return group.hitTest([58, 50], { fill: true });
+    }, null);
+
+    // Scaling the definition's item: Rectangle(-10, -10, 20, 20)
+    definition.item.scale(2);
+    equals(group.bounds, new Rectangle(40, 40, 70, 20),
+            'group.bounds after scaling the definition');
+    equals(group.strokeBounds, new Rectangle(39, 39, 72, 22),
+            'group.strokeBounds after scaling the definition');
+    equals(group.handleBounds, new Rectangle(40, 40, 70, 20),
+            'group.handleBounds after scaling the definition');
+    equals(inner.bounds, new Rectangle(90, 40, 20, 20),
+            'inner.bounds after scaling the definition');
+    equals(layer.bounds, new Rectangle(40, 40, 70, 20),
+            'layer.bounds after scaling the definition');
+    equals(function() {
+        var hit = group.hitTest([58, 50], { fill: true });
+        return hit && hit.item === placed1;
+    }, true);
+
+    // Moving the bottom-right corner: Rectangle(-10, -10, 30, 30)
+    definition.item.lastSegment.point = [20, 20];
+    equals(group.bounds, new Rectangle(40, 40, 80, 30),
+            'group.bounds after moving a segment of the definition');
+    equals(layer.bounds, new Rectangle(40, 40, 80, 30),
+            'layer.bounds after moving a segment of the definition');
+
+    // Replacing the definition's item, centered: Rectangle(-20, -20, 40, 40)
+    definition.item = new Path.Circle({ center: [100, 100], radius: 20 });
+    equals(group.bounds, new Rectangle(30, 30, 90, 40),
+            'group.bounds after replacing the definition');
+    equals(inner.bounds, new Rectangle(80, 30, 40, 40),
+            'inner.bounds after replacing the definition');
+    equals(layer.bounds, new Rectangle(30, 30, 90, 40),
+            'layer.bounds after replacing the definition');
+});
