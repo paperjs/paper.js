@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:26:31 2026 +0200
+ * Date: Mon Oct 19 12:13:30 2026 +0200
  *
  ***
  *
@@ -11794,6 +11794,17 @@ var PointText = TextItem.extend({
 		if (options.stroke && style.hasStroke())
 			rect = rect.expand(style.getStrokeWidth());
 		return matrix ? matrix._transformBounds(rect, rect) : rect;
+	},
+
+	_hitTestSelf: function(point, options) {
+		if (options.fill && this.hasFill()) {
+			var bounds = this.getInternalBounds(),
+				closest = point.clamp(bounds.getTopLeft(true),
+						bounds.getBottomRight(true));
+			if (point.subtract(closest).divide(options._tolerancePadding)
+					.getLength() <= 1)
+				return new HitResult('fill', this);
+		}
 	}
 });
 
@@ -15056,7 +15067,7 @@ new function() {
 			var child = children[i];
 			if (child.isClipMask()) {
 				var clip = exportClip(child, options);
-				setDefinition(child, clip, 'clip');
+				setDefinition(child, clip, 'clip', options);
 				SvgElement.set(node, {
 					'clip-path': 'url(#' + clip.id + ')'
 				});
@@ -15110,7 +15121,7 @@ new function() {
 					height: size.height,
 					href: href
 				}, formatter);
-				setDefinition(href, node, 'image');
+				setDefinition(href, node, 'image', options);
 			}
 			attrs.href = '#' + node.id;
 			return SvgElement.create('use', attrs, formatter);
@@ -15205,7 +15216,7 @@ new function() {
 				viewBox: formatter.rectangle(bounds)
 			});
 			node.appendChild(exportSVG(definitionItem, options));
-			setDefinition(definition, node, 'symbol');
+			setDefinition(definition, node, 'symbol', options);
 		}
 		attrs.href = '#' + node.id;
 		attrs.x += bounds.x;
@@ -15216,7 +15227,7 @@ new function() {
 		return SvgElement.create('use', attrs, formatter);
 	}
 
-	function exportGradient(color) {
+	function exportGradient(color, options) {
 		var gradientNode = getDefinition(color, 'color');
 		if (!gradientNode) {
 			var gradient = color.getGradient(),
@@ -15262,7 +15273,7 @@ new function() {
 				gradientNode.appendChild(
 						SvgElement.create('stop', attrs, formatter));
 			}
-			setDefinition(color, gradientNode, 'color');
+			setDefinition(color, gradientNode, 'color', options);
 		}
 		return 'url(#' + gradientNode.id + ')';
 	}
@@ -15328,7 +15339,7 @@ new function() {
 				} else {
 					attrs[entry.attribute] = value == null ? 'none'
 							: type === 'color' ? value.gradient
-								? exportGradient(value, item)
+								? exportGradient(value, options)
 								: value.toCSS(true)
 							: type === 'array' ? value.join(',')
 							: type === 'lookup' ? entry.toSVG[value]
@@ -15357,11 +15368,11 @@ new function() {
 		return item && definitions.svgs[getDefinitionKey(item, type)];
 	}
 
-	function setDefinition(item, node, type) {
+	function setDefinition(item, node, type, options) {
 		if (!definitions)
 			getDefinition();
 		var typeId = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
-		node.id = type + '-' + typeId;
+		node.id = (options.idPrefix || '') + type + '-' + typeId;
 		definitions.svgs[getDefinitionKey(item, type)] = node;
 	}
 
