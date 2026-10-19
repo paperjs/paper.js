@@ -312,16 +312,20 @@ new function() {
             }
         },
 
-        _unloadChildren: function() {
+        // Reload loaded children right away, so the ones that remain stay
+        // inserted for the scripts that hold them. Only called by
+        // Project#invalidate(), while loading:
+        _reloadChildren: function() {
             if (this.hasOwnProperty('_children')) {
-                var children = this._children;
+                var project = this._project,
+                    children = this._children;
                 for (var i = 0, l = children.length; i < l; i++) {
                     var child = children[i];
                     child._parent = child._index = null;
-                    this._project._updateSelection(child, true);
+                    project._updateSelection(child, true);
                 }
-                delete this._children;
-                delete this._namedChildren;
+                setChildren(this, project,
+                        project._source.getChildren(this._key));
             }
         }
     });
@@ -393,8 +397,8 @@ new function() {
          * of the source's `getChildren()`, with two more flags: 16 when the
          * node's own content changed, so the item loads it again on next
          * access, and 32 when its list of children changed, so it loads them
-         * again, keeping the items of nodes that remain. Nodes without items
-         * are skipped.
+         * again right away if it had loaded them, keeping the items of nodes
+         * that remain. Nodes without items are skipped.
          *
          * @param {Object} columns the records of the changed nodes
          */
@@ -411,7 +415,7 @@ new function() {
                         if (flags & 16)
                             item._unload();
                         if (flags & 32)
-                            item._unloadChildren();
+                            item._reloadChildren();
                         if ((names[i] || undefined) !== item._name)
                             item.setName(names[i] || null);
                         if (item._parent)
