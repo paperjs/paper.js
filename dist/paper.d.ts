@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 01:20:38 2026 +0200
+ * Date: Tue Oct 20 01:24:38 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -2219,6 +2219,10 @@ declare namespace paper {
          * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
          * the `<use>` elements that place them as {@link SymbolItem} items. The
          * styles that `<use>` elements inherit don't reach the symbols' content.
+         * 
+         * URLs are fetched as they are, so validate URLs that come from untrusted
+         * sources first, especially on servers, where they could reach internal
+         * addresses.
          * 
          * @option [options.expandShapes=false] {Boolean} whether imported shape
          *     items should be expanded to path items
@@ -5573,6 +5577,10 @@ declare namespace paper {
          * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
          * the `<use>` elements that place them as {@link SymbolItem} items. The
          * styles that `<use>` elements inherit don't reach the symbols' content.
+         * 
+         * URLs are fetched as they are, so validate URLs that come from untrusted
+         * sources first, especially on servers, where they could reach internal
+         * addresses.
          * 
          * @option [options.expandShapes=false] {Boolean} whether imported shape
          *     items should be expanded to path items
