@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:24:36 2026 +0200
+ * Date: Mon Oct 19 12:22:41 2026 +0200
  *
  ***
  *
@@ -11842,13 +11842,13 @@ var Color = Base.extend(new function() {
 		} else {
 			var color = namedColors[string];
 			if (!color) {
-				if (window) {
-					if (!colorCtx) {
-						colorCtx = CanvasProvider.getContext(1, 1, {
-							willReadFrequently: true
-						});
-						colorCtx.globalCompositeOperation = 'copy';
-					}
+				if (!colorCtx) {
+					colorCtx = CanvasProvider.getContext(1, 1, {
+						willReadFrequently: true
+					});
+				}
+				if (colorCtx) {
+					colorCtx.globalCompositeOperation = 'copy';
 					colorCtx.fillStyle = 'rgba(0,0,0,0)';
 					colorCtx.fillStyle = string;
 					colorCtx.fillRect(0, 0, 1, 1);
@@ -14515,7 +14515,7 @@ var CanvasProvider = Base.exports.CanvasProvider = {
 	canvases: [],
 
 	getCanvas: function(width, height, options) {
-		if (!window)
+		if (!window && !self.OffscreenCanvas)
 			return null;
 		var canvas,
 			clear = true;
@@ -14526,7 +14526,9 @@ var CanvasProvider = Base.exports.CanvasProvider = {
 		if (this.canvases.length) {
 			canvas = this.canvases.pop();
 		} else {
-			canvas = document.createElement('canvas');
+			canvas = window
+					? document.createElement('canvas')
+					: new self.OffscreenCanvas(width, height);
 			clear = false;
 		}
 		var ctx = canvas.getContext('2d', options || {});

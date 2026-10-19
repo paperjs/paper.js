@@ -792,7 +792,7 @@ raster.on('load', function() {
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Returns a Base 64 encoded <code>data:</code> URL representation of the raster. If the raster shows an image that was loaded from a <code>data:</code> URL, that URL is returned unchanged. Otherwise, the arguments are passed on to <code>HTMLCanvasElement#toDataURL()</code> of the raster&rsquo;s <a href="../classes/Raster.html#canvas"><tt>canvas</tt></a>.</p>
+	<p>Returns a Base 64 encoded <code>data:</code> URL representation of the raster. If the raster shows an image that was loaded from a <code>data:</code> URL, that URL is returned unchanged. Otherwise, the arguments are passed on to <code>HTMLCanvasElement#toDataURL()</code> of the raster&rsquo;s <a href="../classes/Raster.html#canvas"><tt>canvas</tt></a>. In web-workers, where the canvas is an <code>OffscreenCanvas</code>, this is not supported, and neither are <a href="../classes/Raster.html#source"><tt>source</tt></a> and exporting the raster to JSON, which rely on it. Use the canvas&rsquo; asynchronous <code>convertToBlob()</code> there instead.</p>
     
 	
 <ul class="member-list">

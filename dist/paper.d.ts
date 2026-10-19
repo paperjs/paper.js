@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:24:36 2026 +0200
+ * Date: Mon Oct 19 12:22:41 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -5560,6 +5560,10 @@ declare namespace paper {
          * If the raster shows an image that was loaded from a `data:` URL, that
          * URL is returned unchanged. Otherwise, the arguments are passed on to
          * `HTMLCanvasElement#toDataURL()` of the raster's {@link #canvas}.
+         * In web-workers, where the canvas is an `OffscreenCanvas`, this is not
+         * supported, and neither are {@link #source} and exporting the raster to
+         * JSON, which rely on it. Use the canvas' asynchronous `convertToBlob()`
+         * there instead.
          * 
          * @param type - the image format to encode
          * @param quality - the image quality between `0` and `1`, for
