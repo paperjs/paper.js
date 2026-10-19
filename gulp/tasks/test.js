@@ -12,7 +12,8 @@
 
 var gulp = require('gulp'),
     qunits = require('gulp-qunits'),
-    webserver = require('gulp-webserver');
+    webserver = require('gulp-webserver'),
+    argv = require('minimist')(process.argv.slice(2));
 
 gulp.task('test', ['test:node']);
 
@@ -25,8 +26,12 @@ gulp.task('test:node', ['minify:acorn'], function(callback) {
                 'prepro/lib/node.js',
                 // Note that loading dist/paper-full.js also works in
                 // combination with `gulp load`, in which case Prepro.js is
-                // present and handles the loading transparently.
-                { path: '../dist/paper-full.js', namespace: 'paper' }
+                // present and handles the loading transparently. Test other
+                // builds with --build, e.g. `gulp test:node --build=sourced`.
+                {
+                    path: '../dist/paper-' + (argv.build || 'full') + '.js',
+                    namespace: 'paper'
+                }
             ],
             timeout: 40
         }));
