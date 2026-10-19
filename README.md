@@ -291,6 +291,11 @@ for you, and will also open the browser at the right address straight away:
 
     pnpm test:browser
 
+To run them in headless Chrome instead, as CI does, and report the result in the
+terminal:
+
+    pnpm test:chrome
+
 To test the Node.js version of Paper.js, use this command:
 
     pnpm test
