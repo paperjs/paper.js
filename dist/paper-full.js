@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:13:30 2026 +0200
+ * Date: Mon Oct 19 14:28:07 2026 +0200
  *
  ***
  *
@@ -5899,7 +5899,12 @@ var Raster = Item.extend({
 
 	_draw: function(ctx, param, viewMatrix) {
 		var element = this.getElement();
-		if (element && element.width > 0 && element.height > 0) {
+		if (param.dontFinish || param.clip) {
+			var rect = this.getInternalBounds();
+			if (!param.dontStart)
+				ctx.beginPath();
+			ctx.rect(rect.x, rect.y, rect.width, rect.height);
+		} else if (element && element.width > 0 && element.height > 0) {
 			ctx.globalAlpha = Numerical.clamp(this._opacity, 0, 1);
 
 			this._setStyles(ctx, param, viewMatrix);
@@ -11755,28 +11760,33 @@ var PointText = TextItem.extend({
 	},
 
 	_draw: function(ctx, param, viewMatrix) {
-		if (!this._content)
-			return;
-		this._setStyles(ctx, param, viewMatrix);
-		var lines = this._lines,
-			style = this._style,
-			hasFill = style.hasFill(),
-			hasStroke = style.hasStroke(),
-			leading = style.getLeading(),
-			shadowColor = ctx.shadowColor;
-		ctx.font = style.getFontStyle();
-		ctx.textAlign = style.getJustification();
-		ctx.letterSpacing = style.getTrackingStyle();
-		for (var i = 0, l = lines.length; i < l; i++) {
-			ctx.shadowColor = shadowColor;
-			var line = lines[i];
-			if (hasFill) {
-				ctx.fillText(line, 0, 0);
-				ctx.shadowColor = 'rgba(0,0,0,0)';
+		if (param.dontFinish || param.clip) {
+			var rect = this.getInternalBounds();
+			if (!param.dontStart)
+				ctx.beginPath();
+			ctx.rect(rect.x, rect.y, rect.width, rect.height);
+		} else if (this._content) {
+			this._setStyles(ctx, param, viewMatrix);
+			var lines = this._lines,
+				style = this._style,
+				hasFill = style.hasFill(),
+				hasStroke = style.hasStroke(),
+				leading = style.getLeading(),
+				shadowColor = ctx.shadowColor;
+			ctx.font = style.getFontStyle();
+			ctx.textAlign = style.getJustification();
+			ctx.letterSpacing = style.getTrackingStyle();
+			for (var i = 0, l = lines.length; i < l; i++) {
+				ctx.shadowColor = shadowColor;
+				var line = lines[i];
+				if (hasFill) {
+					ctx.fillText(line, 0, 0);
+					ctx.shadowColor = 'rgba(0,0,0,0)';
+				}
+				if (hasStroke)
+					ctx.strokeText(line, 0, 0);
+				ctx.translate(0, leading);
 			}
-			if (hasStroke)
-				ctx.strokeText(line, 0, 0);
-			ctx.translate(0, leading);
 		}
 	},
 
