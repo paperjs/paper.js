@@ -490,6 +490,68 @@ tool.onKeyDown = function(event) {
 </div>
 </div>
 		
+			
+	<h3>Activation Event Handlers</h3>
+
+<div id="onactivate" class="member">
+<div class="member-link">
+<a name="onactivate" href="#onactivate"><tt><b>onActivate</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The function to be called when the tool is activated through <a href="../classes/Tool.html#activate"><tt>activate</tt></a>(). The function receives the previously active tool, which is the tool itself when it was already active.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:</h4>
+
+
+<pre><code>tool.onActivate = function(previous) {
+    if (previous == tool) {
+        console.log('The tool was activated again!');
+    }
+}</code></pre>
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="ondeactivate" class="member">
+<div class="member-link">
+<a name="ondeactivate" href="#ondeactivate"><tt><b>onDeactivate</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The function to be called when another tool is activated through <a href="../classes/Tool.html#activate"><tt>activate</tt></a>(), while this one is active.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
 	</div>
 
 

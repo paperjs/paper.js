@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 01:02:46 2026 +0200
+ * Date: Tue Oct 20 01:07:45 2026 +0200
  *
  ***
  *
@@ -18464,8 +18464,9 @@ Base.exports.PaperScript = function() {
 	function execute(code, scope, options) {
 		paper = scope;
 		var view = scope.getView(),
-			tool = /\btool\.\w+|\s+on(?:Key|Mouse)(?:Up|Down|Move|Drag)\b/
-					.test(code) && !/\bnew\s+Tool\b/.test(code)
+			tool = new RegExp('\\btool\\.\\w+|\\s+(?:'
+					+ Tool.prototype._events.join('|') + ')\\b').test(code)
+					&& !/\bnew\s+Tool\b/.test(code)
 						? new Tool() : null,
 			toolHandlers = tool ? tool._events : [],
 			handlers = ['onFrame', 'onResize'].concat(toolHandlers,
