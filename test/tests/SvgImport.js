@@ -90,6 +90,25 @@ test('Import SVG lengths with absolute units (#1919)', function() {
     equals(relative.radius, new Size(5, 5));
 });
 
+test('Import SVG with percentages in nested <svg> elements (#1404)',
+        function() {
+    var imported = paper.project.importSVG(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">'
+            + '<svg width="50" height="40">'
+            + '<rect width="50%" height="50%"/>'
+            + '<svg width="100%" height="100%" viewBox="0 0 10 10"'
+            + ' preserveAspectRatio="none">'
+            + '<rect width="10" height="10"/></svg></svg>'
+            + '<rect width="50%" height="50%"/></svg>'),
+        nested = imported.children[0];
+    // Percentages refer to the size of the nearest <svg> element:
+    equals(nested.children[0].bounds, new Rectangle(0, 0, 25, 20));
+    // The viewBox of 10 x 10 is stretched to the 50 x 40 of its parent:
+    equals(nested.children[1].bounds, new Rectangle(0, 0, 50, 40));
+    // After the nested <svg>, they refer to the root again:
+    equals(imported.children[1].bounds, new Rectangle(0, 0, 100, 50));
+});
+
 test('Import SVG with inline styles and attributes (#1962)', function() {
     function importRect(attrs) {
         return paper.project.importSVG(
