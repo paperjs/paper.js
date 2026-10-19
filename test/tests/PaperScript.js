@@ -136,3 +136,13 @@ test('PaperScript.execute(code, scope, { handlers })', function() {
         return exports.onStart;
     }, undefined);
 });
+
+test('PaperScript creates a tool for onActivate()', function() {
+    var exports = PaperScript.execute('function onActivate() {}', paper),
+        tool = paper.tools[paper.tools.length - 1];
+    equals(function() {
+        return tool && tool.onActivate === exports.onActivate;
+    }, true);
+    if (tool)
+        tool.remove();
+});

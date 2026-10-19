@@ -54,6 +54,9 @@
 
 ### Fixed
 
+- Create the tool in PaperScript for all of its global handlers, also for
+  scripts that only define `onActivate()` or `onDeactivate()`, and document
+  `Tool#onActivate` and `Tool#onDeactivate`.
 - Keep `Key.modifiers` in sync with the flags of mouse events, so modifier keys
   pressed or released while the page didn't have the focus don't stay wrong
   (#1140).

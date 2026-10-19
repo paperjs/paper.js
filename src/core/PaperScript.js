@@ -486,8 +486,9 @@ Base.exports.PaperScript = function() {
             // Only create a tool if the tool object is accessed or something
             // resembling a global tool handler is contained in the code, but
             // no tool objects are actually created.
-            tool = /\btool\.\w+|\s+on(?:Key|Mouse)(?:Up|Down|Move|Drag)\b/
-                    .test(code) && !/\bnew\s+Tool\b/.test(code)
+            tool = new RegExp('\\btool\\.\\w+|\\s+(?:'
+                    + Tool.prototype._events.join('|') + ')\\b').test(code)
+                    && !/\bnew\s+Tool\b/.test(code)
                         ? new Tool() : null,
             toolHandlers = tool ? tool._events : [],
             // Compile a list of all handlers that can be defined globally
