@@ -2120,9 +2120,14 @@ new function() { // Injection scope for hit-test functions shared with project
         function filter(hit) {
             if (hit && match && !match(hit))
                 hit = null;
-            // If we're collecting all matches, add it to options.all
-            if (hit && options.all)
+            // If we're collecting all matches, add it to options.all, with its
+            // point in project coordinates, as it won't be returned through the
+            // ancestors that transform it below:
+            if (hit && options.all) {
+                if (hit.point)
+                    hit.point = that.getGlobalMatrix().transform(hit.point);
                 options.all.push(hit);
+            }
             return hit;
         }
 
@@ -2176,8 +2181,9 @@ new function() { // Injection scope for hit-test functions shared with project
                             : viewMatrix._shiftless().invert()))
                 || null;
         }
-        // Transform the point back to the outer coordinate system.
-        if (res && res.point) {
+        // Transform the point back to the outer coordinate system, unless it
+        // was collected in project coordinates already, see filter():
+        if (res && res.point && !options.all) {
             res.point = pointMatrix.transform(res.point);
         }
         return res;

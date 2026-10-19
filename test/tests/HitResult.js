@@ -1114,3 +1114,23 @@ test('hit-testing with tolerance on items in transformed groups (#1278)', functi
     item.matrix = new Matrix(2, 0, 0, 2, 0, 0);
     testTolerance(item, new Point(100, 100), 'scaled symbol item');
 });
+
+test('hitTestAll() points of items in transformed groups', function() {
+    var path = new Path.Rectangle({
+        point: [0, 0],
+        size: [10, 10],
+        fillColor: 'red'
+    });
+    var group = new Group({ children: [path], applyMatrix: false });
+    group.translate(100, 100);
+    var options = { segments: true, tolerance: 2 };
+    var hit = project.hitTest([100, 100], options);
+    var hits = project.hitTestAll([100, 100], options);
+    equals(hit.point, new Point(100, 100), 'hitTest()');
+    // The path's segment, then the group, which is hit through its child:
+    equals(hits.length, 2);
+    equals(hits[0].item === path, true);
+    equals(hits[0].point, new Point(100, 100), 'hitTestAll(): path');
+    equals(hits[1].item === group, true);
+    equals(hits[1].point, new Point(100, 100), 'hitTestAll(): group');
+});
