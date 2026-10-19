@@ -2544,6 +2544,10 @@ new function() { // Injection scope for hit-test functions shared with project
      * the `<use>` elements that place them as {@link SymbolItem} items. The
      * styles that `<use>` elements inherit don't reach the symbols' content.
      *
+     * URLs are fetched as they are, so validate URLs that come from untrusted
+     * sources first, especially on servers, where they could reach internal
+     * addresses.
+     *
      * @name Item#importSVG
      * @function
      *
