@@ -636,7 +636,7 @@ var MouseEventPolyfill = function(type, params) {
 
 MouseEventPolyfill.prototype = nativeClasses.Event.prototype;
 
-var triggerMouseEvent = function(type, point, target) {
+var triggerMouseEvent = function(type, point, target, flags) {
     // Depending on event type, events have to be triggered on different
     // elements due to the event handling implementation (see `viewEvents`
     // and `docEvents` in View.js). And we cannot rely on the fact that event
@@ -651,7 +651,7 @@ var triggerMouseEvent = function(type, point, target) {
     var MouseEvent = typeof nativeClasses.MouseEvent === 'function'
         ? nativeClasses.MouseEvent
         : MouseEventPolyfill;
-    var event = new MouseEvent(type, {
+    var event = new MouseEvent(type, Base.set({
         bubbles: true,
         cancelable: true,
         composed: true,
@@ -659,7 +659,7 @@ var triggerMouseEvent = function(type, point, target) {
         clientY: point.y,
         screenX: point.x,
         screenY: point.y
-    });
+    }, flags));
     target.dispatchEvent(event);
     return event;
 };
