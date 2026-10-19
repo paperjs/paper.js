@@ -913,6 +913,7 @@ style.fontFamily;
 style.fontWeight;
 style.fontSize;
 style.leading;
+style.letterSpacing;
 style.justification;
 
 
@@ -998,6 +999,7 @@ textItem.fontFamily;
 textItem.fontWeight;
 textItem.fontSize;
 textItem.leading;
+textItem.letterSpacing;
 textItem.justification;
 
 

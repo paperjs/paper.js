@@ -144,6 +144,15 @@ var TextItem = Item.extend(/** @lends TextItem# */{
      */
 
     /**
+     * The letter spacing of text content, as a number in pixels, or as a string
+     * with optional units `'px'`, `'pt'` and `'em'`.
+     *
+     * @name TextItem#letterSpacing
+     * @type Number|String
+     * @default 0
+     */
+
+    /**
      * {@grouptitle Paragraph Style}
      *
      * The justification of text paragraphs.

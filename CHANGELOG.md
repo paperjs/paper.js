@@ -11,6 +11,10 @@
   `'fill'` (#1688).
 - Add the `reuseImages` option to `#exportSVG()`, to export images shown by
   several rasters only once, and place them with `<use>` elements (#1993).
+- Add `letterSpacing` to the text styles, as a number in pixels or a string
+  with a unit, drawn and measured through the canvas, and imported from and
+  exported to SVG. SVG exports now write `letter-spacing` on text, as they do
+  `font-size` (#2066).
 
 ### Changed
 

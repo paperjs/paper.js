@@ -103,3 +103,84 @@ test('PointText#clipMask (#1845)', function() {
     comparePixels(createClipped(text),
             createClipped(new Path.Rectangle(text.bounds)));
 });
+
+test('PointText#letterSpacing', function() {
+    var text = new PointText({
+        point: [10, 20],
+        content: 'Hello'
+    });
+    equals(text.letterSpacing, 0, 'text.letterSpacing by default');
+    text.letterSpacing = 10;
+    equals(text.letterSpacing, 10, 'text.letterSpacing');
+    text.letterSpacing = '0.1em';
+    equals(text.letterSpacing, '0.1em', 'text.letterSpacing with unit');
+    text.letterSpacing = 10;
+    var imported = project.importJSON(text.exportJSON());
+    equals(imported.letterSpacing, 10, 'imported.letterSpacing from JSON');
+});
+
+// node-canvas doesn't support letterSpacing:
+if (!isNodeContext) {
+    test('PointText#bounds with letterSpacing', function() {
+        var text = new PointText({
+            fontFamily: 'Arial, Helvetica',
+            fontSize: 14,
+            point: [50, 100],
+            content: 'Hello World!'
+        });
+        var bounds = text.bounds;
+        // Canvas adds the spacing after each of the 12 characters, including
+        // the last one:
+        text.letterSpacing = 10;
+        equals(text.bounds, new Rectangle(bounds.x, bounds.y,
+                bounds.width + 12 * 10, bounds.height), 'text.bounds');
+        text.letterSpacing = '1em';
+        equals(text.bounds, new Rectangle(bounds.x, bounds.y,
+                bounds.width + 12 * 14, bounds.height), 'text.bounds in em');
+        // Browsers import CSS's 'normal' from SVG when no spacing is set,
+        // which canvas would ignore, keeping the context's spacing:
+        view.context.letterSpacing = '5px';
+        text.letterSpacing = 'normal';
+        equals(text.bounds, bounds, 'text.bounds with \'normal\'');
+        view.context.letterSpacing = '0px';
+        text.letterSpacing = '1em';
+        text.justification = 'right';
+        equals(text.bounds, new Rectangle(bounds.x - bounds.width - 12 * 14,
+                bounds.y, bounds.width + 12 * 14, bounds.height),
+                'text.bounds right-justified');
+    });
+
+    test('PointText with letterSpacing', function() {
+        // Draw the same text with the same letter spacing directly on a
+        // canvas, and compare it with what the view draws:
+        var text = new PointText({
+            fontFamily: 'Arial, Helvetica',
+            fontSize: 20,
+            letterSpacing: 5,
+            point: [10, 60],
+            content: 'Hello'
+        });
+        var pixelRatio = view.pixelRatio,
+            size = view.viewSize.multiply(pixelRatio),
+            canvas = CanvasProvider.getCanvas(size),
+            ctx = canvas.getContext('2d');
+        ctx.scale(pixelRatio, pixelRatio);
+        ctx.font = '20px Arial, Helvetica';
+        ctx.letterSpacing = '5px';
+        ctx.fillText('Hello', 10, 60);
+        view.update(true);
+        var actual = view.context.getImageData(0, 0, size.width, size.height),
+            expected = ctx.getImageData(0, 0, size.width, size.height),
+            differences = 0,
+            inked = 0;
+        for (var i = 3, l = expected.data.length; i < l; i += 4) {
+            if (actual.data[i] !== expected.data[i])
+                differences++;
+            if (expected.data[i])
+                inked++;
+        }
+        equals(inked > 0, true, 'drawn pixels');
+        equals(differences, 0, 'differing pixels');
+        text.remove();
+    });
+}

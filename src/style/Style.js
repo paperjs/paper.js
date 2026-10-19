@@ -99,6 +99,7 @@ var Style = Base.extend(new function() {
         fontWeight: 'normal',
         fontSize: 12,
         leading: null,
+        letterSpacing: 0,
         // Paragraphs
         justification: 'left'
     }),
@@ -118,6 +119,7 @@ var Style = Base.extend(new function() {
         fontSize: /*#=*/Change.GEOMETRY,
         font: /*#=*/Change.GEOMETRY, // deprecated, links to fontFamily
         leading: /*#=*/Change.GEOMETRY,
+        letterSpacing: /*#=*/Change.GEOMETRY,
         justification: /*#=*/Change.GEOMETRY
     },
     item = {
@@ -378,6 +380,14 @@ var Style = Base.extend(new function() {
         return this.getFontWeight()
                 + ' ' + fontSize + (/[a-z]/i.test(fontSize + '') ? ' ' : 'px ')
                 + this.getFontFamily();
+    },
+
+    getLetterSpacingStyle: function() {
+        var letterSpacing = this.getLetterSpacing() + '';
+        // Canvas doesn't know CSS's 'normal', as imported from SVG:
+        return letterSpacing === 'normal' ? '0px'
+                : /[a-z]/i.test(letterSpacing) ? letterSpacing
+                : letterSpacing + 'px';
     },
 
     /**
@@ -693,6 +703,15 @@ var Style = Base.extend(new function() {
      * @name Style#leading
      * @type Number|String
      * @default fontSize * 1.2
+     */
+
+    /**
+     * The letter spacing of text content, as a number in pixels, or as a string
+     * with optional units `'px'`, `'pt'` and `'em'`.
+     *
+     * @name Style#letterSpacing
+     * @type Number|String
+     * @default 0
      */
 
     /**

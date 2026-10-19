@@ -248,6 +248,17 @@ test('Import SVG multi-line text (#988)', function() {
             .content, 'One Two');
 });
 
+test('Import SVG text with letter-spacing', function() {
+    function importText(attributes) {
+        return paper.project.importSVG('<svg xmlns="http://www.w3.org/2000/svg">'
+                + '<text x="10" y="20" ' + attributes + '>One</text></svg>')
+                .firstChild;
+    }
+
+    equals(importText('letter-spacing="0.1em"').letterSpacing, '0.1em');
+    equals(importText('style="letter-spacing: 2px"').letterSpacing, '2px');
+});
+
 test('Import SVG Image', function(assert) {
     var done = assert.async();
     var svg = '<?xml version="1.0" encoding="utf-8"?><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><image style="overflow:visible;enable-background:new    ;" width="300" height="67" id="e0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" transform="matrix(0.2149 0 0 0.2149 304.7706 197.8176)"></image></svg>';
