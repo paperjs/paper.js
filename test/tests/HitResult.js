@@ -1164,3 +1164,26 @@ test('hitTestAll() reports all segments of a path in range (#1294)', function() 
     equals(hit.type, 'segment');
     equals(hit.point, point);
 });
+
+test('Transparent fills are hit, unlike no fill (#1157)', function() {
+    var transparent = new Color(0, 0, 0, 0);
+    var path = new Path.Rectangle({
+        point: [0, 0],
+        size: [20, 20],
+        fillColor: transparent
+    });
+    var shape = new Shape.Circle({
+        center: [60, 10],
+        radius: 10,
+        fillColor: transparent
+    });
+    var hit = project.hitTest([10, 10]);
+    equals(hit && hit.item === path && hit.type, 'fill', 'path');
+    hit = project.hitTest([60, 10]);
+    equals(hit && hit.item === shape && hit.type, 'fill', 'shape');
+    // As in SVG, only items without a fill aren't hit:
+    path.fillColor = null;
+    shape.fillColor = null;
+    equals(project.hitTest([10, 10]), null, 'path without a fill');
+    equals(project.hitTest([60, 10]), null, 'shape without a fill');
+});

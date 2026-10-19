@@ -1686,7 +1686,9 @@ var Path = PathItem.extend(/** @lends Path# */{
             // segment and handle in range, not just the first one:
             hits = options.all && [],
             hitStroke = options.stroke && style.hasStroke(),
-            hitFill = options.fill && style.hasFill(),
+            // Transparent fills are hit too, only no fill isn't, as in SVG
+            // (#1157):
+            hitFill = options.fill && !!style.getFillColor(),
             hitCurves = options.curves,
             strokeRadius = hitStroke
                     ? style.getStrokeWidth() / 2
