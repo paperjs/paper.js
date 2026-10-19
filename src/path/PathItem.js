@@ -31,6 +31,18 @@ var PathItem = Item.extend(/** @lends PathItem# */{
         // Do nothing.
     },
 
+    // Scale the stroke with the matrix that is applied to the content, when
+    // settings.scaleStrokes asks for it. The square root of the determinant is
+    // the geometric mean of the scale factors, for non-uniform scaling:
+    _scaleStroke: function(matrix) {
+        var style = this._style;
+        if (this._project._scope.settings.scaleStrokes
+                && style.getStrokeScaling()) {
+            style.setStrokeWidth(style.getStrokeWidth() * Math.sqrt(
+                    Math.abs(matrix._a * matrix._d - matrix._b * matrix._c)));
+        }
+    },
+
     statics: /** @lends PathItem */{
         /**
          * Creates a path item from the given SVG path-data, determining if the

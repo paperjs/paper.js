@@ -1636,3 +1636,54 @@ test('settings.insertItems for items created from other items (#1721)', function
     settings.insertItems = true;
     check(create(false), false, 'with insert: false');
 });
+
+test('settings.scaleStrokes', function() {
+    var settings = paper.settings;
+    function createPath(props) {
+        return new Path.Rectangle(Base.set({
+            point: [0, 0],
+            size: [10, 10],
+            strokeColor: 'black',
+            strokeWidth: 2
+        }, props));
+    }
+
+    // Off by default, so applying a matrix leaves stroke widths as they are:
+    var path = createPath();
+    path.scale(2);
+    equals(path.strokeWidth, 2, 'default');
+
+    settings.scaleStrokes = true;
+    path = createPath();
+    path.scale(2);
+    equals(path.strokeWidth, 4, 'uniform scale');
+    // Non-uniform scaling uses the square root of the determinant:
+    path = createPath();
+    path.scale(2, 8);
+    equals(path.strokeWidth, 8, 'non-uniform scale');
+    path = createPath();
+    path.rotate(45);
+    equals(path.strokeWidth, 2, 'rotation');
+    // Groups pass it on to their children:
+    var group = new Group([createPath(), createPath({ strokeWidth: 1 })]);
+    group.scale(3);
+    equals(group.children[0].strokeWidth, 6, 'group child 1');
+    equals(group.children[1].strokeWidth, 3, 'group child 2');
+    // Compound paths scale their own stroke, which is the one they draw:
+    var compound = new CompoundPath({
+        children: [createPath(), createPath()],
+        strokeColor: 'black',
+        strokeWidth: 2
+    });
+    compound.scale(2);
+    equals(compound.strokeWidth, 4, 'compound path');
+    // Items that keep their matrix already scale the stroke when drawing:
+    path = createPath({ applyMatrix: false });
+    path.scale(2);
+    equals(path.strokeWidth, 2, 'applyMatrix: false');
+    // And non-scaling strokes keep their width:
+    path = createPath({ strokeScaling: false });
+    path.scale(2);
+    equals(path.strokeWidth, 2, 'strokeScaling: false');
+    settings.scaleStrokes = false;
+});

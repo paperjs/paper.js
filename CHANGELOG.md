@@ -4,6 +4,9 @@
 
 ### Added
 
+- Add `settings.scaleStrokes`, to scale the stroke widths of paths and
+  compound paths along with their content when matrices are applied (#2098,
+  #1514).
 - Add the `paper-sourced.js` build, in which a project's items can be backed
   by a host document through `Project#source`: items are created as light
   shells from the host's records, and load their content and children from
