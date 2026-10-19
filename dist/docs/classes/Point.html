@@ -2071,6 +2071,68 @@ console.log(absPoint); // {x: 5, y: 10}</code></pre>
 </div>
 </div>
 
+	
+<div id="clamp-min-max" class="member">
+<div class="member-link">
+<a name="clamp-min-max" href="#clamp-min-max"><tt><b>clamp</b>(min, max)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Returns a new point with the <a href="../classes/Point.html#x"><tt>x</tt></a> and <a href="../classes/Point.html#y"><tt>y</tt></a> values clamped to the range between the given minimum and maximum points. The object itself is not modified!</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>min:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the point with the smallest values
+
+</li>
+	
+	<li>
+<tt>max:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the point with the largest values
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the clamped point as a new point
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<h4>Example:</h4>
+
+
+<pre><code>var point = new Point(-5, 150);
+var clampPoint = point.clamp(new Point(0, 0), new Point(100, 100));
+console.log(clampPoint); // {x: 0, y: 100}</code></pre>
+
+<h4>Example:<span class="description">Keep a point inside a rectangle:</span></h4>
+
+
+<pre><code>var rect = new Rectangle(10, 20, 100, 50);
+var point = new Point(200, 40);
+var clampPoint = point.clamp(rect.topLeft, rect.bottomRight);
+console.log(clampPoint); // {x: 110, y: 40}</code></pre>
+
+</div>
+</div>
+</div>
+
 
 		
 			<h3>Math Operator Functions</h3>

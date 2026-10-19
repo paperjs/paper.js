@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:11:25 2026 +0200
+ * Date: Mon Oct 19 14:18:43 2026 +0200
  *
  ***
  *
@@ -1646,6 +1646,16 @@ var Point = Base.extend({
 		return new Point(
 			point.x * scale,
 			point.y * scale
+		);
+	},
+
+	clamp: function() {
+		var args = arguments,
+			min = Point.read(args),
+			max = Point.read(args);
+		return new Point(
+			Numerical.clamp(this.x, min.x, max.x),
+			Numerical.clamp(this.y, min.y, max.y)
 		);
 	},
 

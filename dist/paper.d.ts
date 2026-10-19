@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:11:25 2026 +0200
+ * Date: Mon Oct 19 14:18:43 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -4984,6 +4984,18 @@ declare namespace paper {
          * and {@link #y} values. The object itself is not modified!
          */
         abs(): Point
+
+        /** 
+         * Returns a new point with the {@link #x} and {@link #y} values clamped to
+         * the range between the given minimum and maximum points. The object
+         * itself is not modified!
+         * 
+         * @param min - the point with the smallest values
+         * @param max - the point with the largest values
+         * 
+         * @return the clamped point as a new point
+         */
+        clamp(min: PointLike, max: PointLike): Point
 
         /** 
          * Returns a new point object with the smallest {@link #x} and
