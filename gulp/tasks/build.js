@@ -23,7 +23,7 @@ var gulp = require('gulp'),
 var buildOptions = {
     full: { paperScript: true },
     core: { paperScript: false },
-    sourced: { paperScript: true, sourced: true }
+    hosted: { paperScript: true, hosted: true }
 };
 
 var buildNames = Object.keys(buildOptions);

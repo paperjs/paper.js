@@ -32,8 +32,8 @@ var __options = {
     nativeContains: false,
     paperScript: true,
     // Items backed by a host document, see Project#source. Only in the
-    // paper-sourced.js build, and when loading the sources directly:
-    sourced: load
+    // paper-hosted.js build, and when loading the sources directly:
+    hosted: load
 };
 
 // Export for use in Gulp.js

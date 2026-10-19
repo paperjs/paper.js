@@ -27,8 +27,8 @@ jobs:
         run: pnpm minify
       - name: Test
         run: pnpm test:node
-      - name: Test the sourced build
-        run: pnpm test:node --build=sourced
+      - name: Test the hosted build
+        run: pnpm test:node --build=hosted
 
   # The browser suite covers what the Node tests can't, such as real layout,
   # canvas rendering and the DOM's computed styles:

@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-// Items backed by a host document, see Project#source. Each item of such a
+// Items backed by a host document, see Project#host. Each item of such a
 // project is created as a shell from the host's record of it, and loads its
 // content on first access to any of the fields that hold it.
 new function() {
@@ -23,13 +23,13 @@ new function() {
             [CompoundPath, ['_children', '_namedChildren']],
             [HostItem, ['_values']]
         ],
-        // The fields that #_loadChildren() fills in on containers of sourced
+        // The fields that #_loadChildren() fills in on containers of hosted
         // items, Group and HostItem with _hasChildren:
         childrenFields = ['_children', '_namedChildren'],
-        // The source boxes per item: bounds, strokeBounds and roughBounds.
+        // The host boxes per item: bounds, strokeBounds and roughBounds.
         boxSize = 12,
         shellPrototypes = {},
-        // The changes that outdate the source's boxes:
+        // The changes that outdate the host's boxes:
         boundsFlags = /*#=*/(ChangeFlag.GEOMETRY | ChangeFlag.STROKE),
         // Set while loading or invalidating, which aren't changes:
         isLoading = false;
@@ -78,12 +78,12 @@ new function() {
                     defineLoader(shell, field, '_loadChildren');
                 });
             }
-            // Fill the bounds cache from the source boxes, until the item or
+            // Fill the bounds cache from the host boxes, until the item or
             // one of its descendants changes and Paper.js measures it itself:
             shell._getCachedBounds = function(matrix, options, noInternal) {
-                if (this._sourceBounds) {
-                    this._bounds = this._getSourceBoundsCache();
-                    this._sourceBounds = false;
+                if (this._hostBounds) {
+                    this._bounds = this._getHostBoundsCache();
+                    this._hostBounds = false;
                 }
                 return proto._getCachedBounds.call(this, matrix, options,
                         noInternal);
@@ -93,7 +93,7 @@ new function() {
                 if (!isLoading) {
                     if (flags & boundsFlags) {
                         for (var item = this; item; item = item._parent)
-                            item._sourceBounds = false;
+                            item._hostBounds = false;
                     }
                     proto._changed.call(this, flags);
                 }
@@ -114,7 +114,7 @@ new function() {
         return shell;
     }
 
-    // Sets the fields that the source's columns describe for item i.
+    // Sets the fields that the host's columns describe for item i.
     function setRecord(item, columns, i) {
         var flags = columns.flags[i],
             matrix = columns.matrices && columns.matrices[i];
@@ -131,10 +131,10 @@ new function() {
         item._boxes = columns.boxes;
         item._boxIndex = i * boxSize;
         item._bounds = undefined;
-        item._sourceBounds = true;
+        item._hostBounds = true;
     }
 
-    // Creates or reuses the items that the source's columns describe, as the
+    // Creates or reuses the items that the host's columns describe, as the
     // children of owner, an item or the project.
     function setChildren(owner, project, columns) {
         var keys = columns.keys,
@@ -195,7 +195,7 @@ new function() {
 
         /**
          * The key of the host's node that the item represents, in a project
-         * backed by a host document, see {@link Project#source}. It can only be
+         * backed by a host document, see {@link Project#host}. It can only be
          * set once, on an item created by a script, to register the key that
          * the host gave its new node.
          *
@@ -212,12 +212,12 @@ new function() {
                 throw new Error('Unable to change the key of an item.');
             if (!itemsByKey)
                 throw new Error('Unable to set a key in a project without a '
-                        + 'source.');
+                        + 'host.');
             this._key = key;
             itemsByKey[key] = this;
         },
 
-        _getSourceBounds: function(options) {
+        _getHostBounds: function(options) {
             var boxes = this._boxes,
                 i = this._boxIndex
                     + (options.handle ? 8 : options.stroke ? 4 : 0);
@@ -227,7 +227,7 @@ new function() {
                     : new Rectangle();
         },
 
-        _getSourceBoundsCache: function() {
+        _getHostBoundsCache: function() {
             // The boxes are in the item's own coordinates, so they only match
             // the bounds in the parent's coordinates without a matrix:
             var bounds = {},
@@ -237,7 +237,7 @@ new function() {
                 var stroke = entry[0],
                     handle = entry[1],
                     key = '' + stroke + handle,
-                    rect = this._getSourceBounds({
+                    rect = this._getHostBounds({
                         stroke: stroke,
                         handle: handle
                     });
@@ -268,7 +268,7 @@ new function() {
         // a script created and keyed, which have no shell accessors:
         _loadContent: function() {
             var project = this._project,
-                json = project._source.getItem(this._key),
+                json = project._host.getItem(this._key),
                 ctor = this.constructor,
                 // Keep what the record set, and the children's own loading:
                 kept = ['_id', '_parent', '_index', '_matrix'],
@@ -303,7 +303,7 @@ new function() {
 
         _loadChildren: function() {
             var project = this._project,
-                columns = project._source.getChildren(this._key),
+                columns = project._host.getChildren(this._key),
                 that = this;
             whileLoading(project, function() {
                 setChildren(that, project, columns);
@@ -338,7 +338,7 @@ new function() {
                     project._updateSelection(child, true);
                 }
                 setChildren(this, project,
-                        project._source.getChildren(this._key));
+                        project._host.getChildren(this._key));
             }
         }
     });
@@ -346,11 +346,11 @@ new function() {
     Project.inject(/** @lends Project# */{
         /**
          * The host document that the project's items come from. Setting it
-         * creates the project's layers from the source's records. All items
+         * creates the project's layers from the host's records. All items
          * are created as shells that load their content and children from the
-         * source on first access.
+         * host on first access.
          *
-         * The source provides:
+         * The host provides:
          * - `getChildren(key)`, which returns the records of the children of
          *   the node with the given key, or of the top level for `null`, as
          *   columns: `keys`, `types` (indices into `typeNames`), `typeNames`,
@@ -366,19 +366,19 @@ new function() {
          * @bean
          * @type Object
          */
-        getSource: function() {
-            return this._source;
+        getHost: function() {
+            return this._host;
         },
 
-        setSource: function(source) {
+        setHost: function(host) {
             if (this._children.length)
-                throw new Error('Unable to set the source of a project with '
+                throw new Error('Unable to set the host of a project with '
                         + 'layers.');
             var that = this;
-            this._source = source;
+            this._host = host;
             this._itemsByKey = {};
             whileLoading(this, function() {
-                setChildren(that, that, source.getChildren(null));
+                setChildren(that, that, host.getChildren(null));
                 that._activeLayer = that._children[0] || null;
             });
         },
@@ -388,13 +388,13 @@ new function() {
          * the children of its ancestors.
          *
          * @param {Number} key the key of the host's node
-         * @return {Item} the item, or `null` if the source has no such node
+         * @return {Item} the item, or `null` if the host has no such node
          */
         getItemByKey: function(key) {
             var itemsByKey = this._itemsByKey,
                 item = itemsByKey[key];
             if (!item || !item.isInserted()) {
-                var keys = this._source.getAncestorKeys(key) || [];
+                var keys = this._host.getAncestorKeys(key) || [];
                 for (var i = 0, l = keys.length; i < l; i++) {
                     var ancestor = itemsByKey[keys[i]];
                     if (ancestor)
@@ -407,7 +407,7 @@ new function() {
 
         /**
          * Updates the items of changed host nodes, given in the column format
-         * of the source's `getChildren()`, with two more flags: 16 when the
+         * of the host's `getChildren()`, with two more flags: 16 when the
          * node's own content changed, so the item loads it again on next
          * access, and 32 when its list of children changed, so it loads them
          * again right away if it had loaded them, keeping the items of nodes
