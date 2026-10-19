@@ -333,6 +333,9 @@ var Raster = Item.extend(/** @lends Raster# */{
      * events. This is used by #setImage(), but also in other places where
      * underlying canvases are replaced, resized, etc.
      */
+    /**
+     * @private
+     */
     set: function set(props, exclude) {
         // A size that comes with a source, as from #importJSON(), only holds
         // the place of the image's size until it has loaded, see #_setImage(),
