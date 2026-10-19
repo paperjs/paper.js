@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:13:18 2026 +0200
+ * Date: Mon Oct 19 12:26:31 2026 +0200
  *
  ***
  *
@@ -13344,7 +13344,8 @@ var View = Base.extend(Emitter, {
 	setRotation: function(rotation) {
 		var current = this.getRotation();
 		if (current != null && rotation != null) {
-			this.rotate(rotation - current);
+			this._matrix.prepend(new Matrix().rotate(rotation - current,
+					this.projectToView(this.getCenter())));
 		}
 	},
 
