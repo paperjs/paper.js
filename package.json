@@ -42,12 +42,6 @@
   "engines": {
     "node": ">=8.0.0"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "yarn jshint --ensure-branch develop",
-      "pre-push": "yarn test --ensure-branch develop"
-    }
-  },
   "browser": {
     "./dist/node/extend.js": false,
     "./dist/node/self.js": false,
@@ -78,7 +72,7 @@
     "gulp-webserver": "^0.9.1",
     "gulp-whitespace": "^0.1.0",
     "gulp-zip": "^5.1.0",
-    "husky": "^4.3.8",
+    "husky": "^9.1.7",
     "jsdom": "^28.1.0",
     "jshint": "^2.13.6",
     "jshint-summary": "^0.4.0",
@@ -94,13 +88,6 @@
     "stats.js": "^0.17.0",
     "straps": "^3.0.1",
     "typescript": "^3.9.10"
-  },
-  "workspaces": [
-    "packages/*"
-  ],
-  "resolutions": {
-    "graceful-fs": "4.2.2",
-    "resemblejs/canvas": "^3.2.3"
   },
   "keywords": [
     "vector",
@@ -118,5 +105,6 @@
     "paper",
     "paper.js",
     "paperjs"
-  ]
+  ],
+  "packageManager": "pnpm@12.9.0"
 }
