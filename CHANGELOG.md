@@ -24,6 +24,8 @@
 
 ### Changed
 
+- Hit-test transparent fills, as in SVG: only items without a fill color are
+  not hit through their fill (#1157).
 - `paper.install()` keeps what the target scope has already, such as the
   native `Event`, `MouseEvent` and `Symbol`, and PaperScript doesn't shadow
   existing globals with Paper.js's classes of the same name either (#1832,
