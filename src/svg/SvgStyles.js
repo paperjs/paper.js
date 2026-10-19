@@ -41,6 +41,7 @@ var SvgStyles = Base.each({
         center: 'middle',
         right: 'end'
     }],
+    letterSpacing: ['letter-spacing', 'string'],
     // Item
     opacity: ['opacity', 'number'],
     blendMode: ['mix-blend-mode', 'style']

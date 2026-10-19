@@ -914,6 +914,7 @@ style.fontWeight;
 style.fontSize;
 style.leading;
 style.justification;
+style.letterSpacing;
 
 
 //
@@ -999,6 +1000,7 @@ textItem.fontWeight;
 textItem.fontSize;
 textItem.leading;
 textItem.justification;
+textItem.letterSpacing;
 
 
 //
