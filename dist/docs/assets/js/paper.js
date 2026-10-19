@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:20:25 2026 +0200
+ * Date: Mon Oct 19 13:33:12 2026 +0200
  *
  ***
  *
@@ -14778,6 +14778,12 @@ var BlendMode = new function() {
 			dr = (br + sr) / 2;
 			dg = (bg + sg) / 2;
 			db = (bb + sb) / 2;
+		},
+
+		'pin-light': function() {
+			dr = sr < 128 ? min(br, 2 * sr) : max(br, 2 * sr - 255);
+			dg = sg < 128 ? min(bg, 2 * sg) : max(bg, 2 * sg - 255);
+			db = sb < 128 ? min(bb, 2 * sb) : max(bb, 2 * sb - 255);
 		},
 
 		negation: function() {
