@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:25:25 2026 +0200
+ * Date: Mon Oct 19 12:28:30 2026 +0200
  *
  ***
  *
@@ -12928,12 +12928,20 @@ var DomEvent = {
 		}
 	},
 
-	getPoint: function(event) {
-		var pos = event.targetTouches
-				? event.targetTouches.length
-					? event.targetTouches[0]
-					: event.changedTouches[0]
-				: event;
+	getPoint: function(event, target) {
+		function find(touches) {
+			for (var i = 0, l = touches.length; i < l; i++) {
+				if (touches[i].target === target)
+					return touches[i];
+			}
+		}
+
+		var touches = event.targetTouches,
+			pos = event;
+		if (touches) {
+			pos = find(event.touches) || find(event.changedTouches)
+					|| (touches.length ? touches[0] : event.changedTouches[0]);
+		}
 		return new Point(
 			pos.pageX || pos.clientX + document.documentElement.scrollLeft,
 			pos.pageY || pos.clientY + document.documentElement.scrollTop
@@ -12949,8 +12957,9 @@ var DomEvent = {
 	},
 
 	getOffset: function(event, target) {
-		return DomEvent.getPoint(event).subtract(DomElement.getOffset(
-				target || DomEvent.getTarget(event)));
+		target = target || DomEvent.getTarget(event);
+		return DomEvent.getPoint(event, target).subtract(
+				DomElement.getOffset(target));
 	}
 };
 
