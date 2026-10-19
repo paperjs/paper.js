@@ -26,6 +26,8 @@ jobs:
         run: node .yarn/releases/yarn-3.2.4.cjs minify
       - name: Test
         run: node .yarn/releases/yarn-3.2.4.cjs test:node
+      - name: Test the sourced build
+        run: node .yarn/releases/yarn-3.2.4.cjs test:node --build=sourced
 
   # Publish the latest develop build to the prebuilt/dist and prebuilt/module
   # branches, as Travis CI used to:

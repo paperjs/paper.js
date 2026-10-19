@@ -336,7 +336,8 @@ test('HostItem', function() {
 
         setSteps: function(steps) {
             this._values.steps = steps;
-            this._changed(/*#=*/Change.CONTENT);
+            this._changed(ChangeFlag.CONTENT | ChangeFlag.GEOMETRY
+                    | ChangeFlag.APPEARANCE);
         }
     });
     var blend = new Blend({ steps: 5, insert: false });
