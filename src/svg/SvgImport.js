@@ -468,6 +468,15 @@ new function() {
                 item.setVisible(value !== null);
         },
 
+        'letter-spacing': function(item, value) {
+            // Convert to tracking, in thousandths of an em. 'normal' is 0:
+            if (item.setTracking) {
+                var amount = parseFloat(value) || 0;
+                item.setTracking(1000 * (/em$/.test(value) ? amount
+                        : amount / parseFloat(item.getFontSize())));
+            }
+        },
+
         'stop-color': function(item, value) {
             // https://www.w3.org/TR/SVG/pservers.html#StopColorProperty
             if (item.setColor)

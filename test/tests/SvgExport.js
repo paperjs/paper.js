@@ -285,6 +285,17 @@ test('Export and import SVG multi-line text (#988)', function() {
     equals(imported.bounds, text.bounds);
 });
 
+test('Export SVG text with tracking', function() {
+    var text = new PointText({
+        point: [10, 20],
+        content: 'One'
+    });
+    // Tracking is in thousandths of an em:
+    equals(text.exportSVG().getAttribute('letter-spacing'), '0');
+    text.tracking = 100;
+    equals(text.exportSVG().getAttribute('letter-spacing'), '0.1em');
+});
+
 test('Export SVG rasters with reuseImages (#1993)', function(assert) {
     var done = assert.async();
 
