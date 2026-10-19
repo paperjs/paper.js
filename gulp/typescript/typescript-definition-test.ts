@@ -318,6 +318,7 @@ project.exportSVG({ reuseImages: true });
 project.importSVG('');
 project.importSVG({} as SVGElement);
 project.importSVG('', {});
+project.importSVG('', { crossOrigin: 'anonymous' });
 project.importSVG('', callback);
 
 
@@ -413,6 +414,7 @@ item.exportSVG({ reuseImages: true });
 item.importSVG('');
 item.importSVG({} as SVGElement);
 item.importSVG('', {});
+item.importSVG('', { crossOrigin: 'anonymous' });
 item.importSVG('', callback);
 item.addChild(item);
 item.insertChild(0, item);
