@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 00:56:58 2026 +0200
+ * Date: Tue Oct 20 01:02:46 2026 +0200
  *
  ***
  *
@@ -18468,7 +18468,8 @@ Base.exports.PaperScript = function() {
 					.test(code) && !/\bnew\s+Tool\b/.test(code)
 						? new Tool() : null,
 			toolHandlers = tool ? tool._events : [],
-			handlers = ['onFrame', 'onResize'].concat(toolHandlers),
+			handlers = ['onFrame', 'onResize'].concat(toolHandlers,
+					options && options.handlers || []),
 			params = [],
 			args = [],
 			func,

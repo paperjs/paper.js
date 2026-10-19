@@ -79,33 +79,6 @@
 		<h2>Properties</h2>
 		
 			
-<div id="source" class="member">
-<div class="member-link">
-<a name="source" href="#source"><tt><b>source</b></tt></a>
-</div>
-<div class="member-description hidden">
-
-<div class="member-text">
-	<p>The host document that the project&rsquo;s items come from. Setting it creates the project&rsquo;s layers from the source&rsquo;s records. All items are created as shells that load their content and children from the source on first access.</p>
-<p>The source provides: - <code>getChildren(key)</code>, which returns the records of the children of  the node with the given key, or of the top level for <code>null</code>, as  columns: <code>keys</code>, <code>types</code> (indices into <code>typeNames</code>), <code>typeNames</code>,  <code>flags</code> (selected: 1, visible: 2, locked: 4, strokeScaling: 8,  clipMask: 64, guide: 128, empty: 256), <code>boxes</code> (bounds,  strokeBounds and roughBounds in the item&rsquo;s coordinates, 12 numbers  per item), and the sparse objects <code>names</code> and <code>matrices</code>. - <code>getItem(key)</code>, which returns the node&rsquo;s own content in the form  of <a href="../classes/Item.html#importjson-json"><tt>item.importJSON(json)</tt></a>, without children. - <code>getAncestorKeys(key)</code>, which returns the keys from the top level  down to the node&rsquo;s parent.</p>
-	
-	
-	
-	<ul class="member-list">
-		<h4>Type:</h4>
-		<li>
-			<tt>Object</tt>
-		</li>
-	</ul>
-    
-	
-	
-</div>
-
-</div>
-</div>
-		
-			
 <div id="trackchanges" class="member">
 <div class="member-link">
 <a name="trackchanges" href="#trackchanges"><tt><b>trackChanges</b></tt></a>
@@ -402,6 +375,33 @@ var path2 = new Path.Circle(new Point(175, 50), 20);
 </div>
 </div>
 		
+			
+<div id="source" class="member">
+<div class="member-link">
+<a name="source" href="#source"><tt><b>source</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The host document that the project&rsquo;s items come from. Setting it creates the project&rsquo;s layers from the source&rsquo;s records. All items are created as shells that load their content and children from the source on first access.</p>
+<p>The source provides: - <code>getChildren(key)</code>, which returns the records of the children of  the node with the given key, or of the top level for <code>null</code>, as  columns: <code>keys</code>, <code>types</code> (indices into <code>typeNames</code>), <code>typeNames</code>,  <code>flags</code> (selected: 1, visible: 2, locked: 4, strokeScaling: 8,  clipMask: 64, guide: 128, empty: 256), <code>boxes</code> (bounds,  strokeBounds and roughBounds in the item&rsquo;s coordinates, 12 numbers  per item), and the sparse objects <code>names</code> and <code>matrices</code>. - <code>getItem(key)</code>, which returns the node&rsquo;s own content in the form  of <a href="../classes/Item.html#importjson-json"><tt>item.importJSON(json)</tt></a>, without children. - <code>getAncestorKeys(key)</code>, which returns the keys from the top level  down to the node&rsquo;s parent.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Object</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
 	</div>
 
 
@@ -412,78 +412,6 @@ var path2 = new Path.Circle(new Point(175, 50), 20);
 	<div class="reference-members">
 		<h2>Methods</h2>
 		
-	
-<div id="getitembykey-key" class="member">
-<div class="member-link">
-<a name="getitembykey-key" href="#getitembykey-key"><tt><b>getItemByKey</b>(key)</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	<p>Returns the item of the host&rsquo;s node with the given key, loading only the children of its ancestors.</p>
-    
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>key:</tt> 
-<tt>Number</tt>
-&mdash;&nbsp;the key of the host&rsquo;s node
-
-</li>
-	
-</ul>
-
-	
-	<ul class="member-list">
-		<h4>Returns:</h4>
-		
-			<li>
-<tt><a href="../classes/Item.html"><tt>Item</tt></a></tt>&nbsp;&mdash;&nbsp;the item, or <code>null</code> if the source has no such node
-</li>
-
-		
-	</ul>
-
-
-
-	
-	
-</div>
-</div>
-</div>
-
-	
-<div id="invalidate-columns" class="member">
-<div class="member-link">
-<a name="invalidate-columns" href="#invalidate-columns"><tt><b>invalidate</b>(columns)</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	<p>Updates the items of changed host nodes, given in the column format of the source&rsquo;s <code>getChildren()</code>, with two more flags: 16 when the node&rsquo;s own content changed, so the item loads it again on next access, and 32 when its list of children changed, so it loads them again right away if it had loaded them, keeping the items of nodes that remain. Nodes without items are skipped.</p>
-    
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>columns:</tt> 
-<tt>Object</tt>
-&mdash;&nbsp;the records of the changed nodes
-
-</li>
-	
-</ul>
-
-	
-
-
-	
-	
-</div>
-</div>
-</div>
-
 	
 <div id="takechanges" class="member">
 <div class="member-link">
@@ -1473,6 +1401,78 @@ for (var i = 0; i < items.length; i++) {
 		
 	</ul>
 
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="getitembykey-key" class="member">
+<div class="member-link">
+<a name="getitembykey-key" href="#getitembykey-key"><tt><b>getItemByKey</b>(key)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Returns the item of the host&rsquo;s node with the given key, loading only the children of its ancestors.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>key:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the key of the host&rsquo;s node
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Item.html"><tt>Item</tt></a></tt>&nbsp;&mdash;&nbsp;the item, or <code>null</code> if the source has no such node
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="invalidate-columns" class="member">
+<div class="member-link">
+<a name="invalidate-columns" href="#invalidate-columns"><tt><b>invalidate</b>(columns)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Updates the items of changed host nodes, given in the column format of the source&rsquo;s <code>getChildren()</code>, with two more flags: 16 when the node&rsquo;s own content changed, so the item loads it again on next access, and 32 when its list of children changed, so it loads them again right away if it had loaded them, keeping the items of nodes that remain. Nodes without items are skipped.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>columns:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the records of the changed nodes
+
+</li>
+	
+</ul>
+
+	
 
 
 	
