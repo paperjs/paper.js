@@ -286,7 +286,7 @@ importers:
         specifier: ^28.1.0
         version: 28.1.0(canvas@3.2.3)(supports-color@7.2.0)
       paper:
-        specifier: 0.14.0
+        specifier: 0.13.0
         version: link:../..
       source-map-support:
         specifier: ^0.5.21
@@ -301,7 +301,7 @@ importers:
         specifier: ^28.1.0
         version: 28.1.0(canvas@3.2.3)(supports-color@7.2.0)
       paper:
-        specifier: 0.14.0
+        specifier: 0.13.0
         version: link:../..
       source-map-support:
         specifier: ^0.5.21
