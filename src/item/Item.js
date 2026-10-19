@@ -2204,8 +2204,9 @@ new function() { // Injection scope for hit-test functions shared with project
     },
 
     _hitTestSelf: function(point, options) {
-        // The default implementation honly handles 'fill' through #_contains()
-        if (options.fill && this.hasFill() && this._contains(point))
+        // The default implementation only handles 'fill' through #_contains(),
+        // transparent fills too, see Path#_hitTestSelf():
+        if (options.fill && this.getFillColor() && this._contains(point))
             return new HitResult('fill', this);
     },
 
@@ -3037,9 +3038,10 @@ new function() { // Injection scope for hit-test functions shared with project
     /**
      * {@grouptitle Style Tests}
      *
-     * Checks whether the item has a fill.
+     * Checks whether the item has a visible fill, a fill color with an alpha
+     * above 0. Hit-tests also hit transparent fills, see {@link #hitTest}.
      *
-     * @return {Boolean} {@true if the item has a fill}
+     * @return {Boolean} {@true if the item has a visible fill}
      */
     hasFill: function() {
         return this.getStyle().hasFill();

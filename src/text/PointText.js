@@ -148,7 +148,8 @@ var PointText = TextItem.extend(/** @lends PointText# */{
     },
 
     _hitTestSelf: function(point, options) {
-        if (options.fill && this.hasFill()) {
+        // Transparent fills are hit too, see Path#_hitTestSelf():
+        if (options.fill && this.getFillColor()) {
             // The glyph outlines aren't known, so hit the bounds, also within
             // the tolerance around them (#632):
             var bounds = this.getInternalBounds(),
