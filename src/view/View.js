@@ -245,8 +245,10 @@ var View = Base.extend(Emitter, /** @lends View# */{
                     // Only keep animating if we're allowed to, based on whether
                     // the document is visible and the setting of keepalive. We
                     // keep requesting frame regardless though, so the animation
-                    // picks up again as soon as the view is visible.
-                    if ((!DomElement.getPrefixed(document, 'hidden')
+                    // picks up again as soon as the view is visible. Views
+                    // without an element, as in web workers, always animate.
+                    if (!element
+                            || (!DomElement.getPrefixed(document, 'hidden')
                             || PaperScope.getAttribute(element, 'keepalive')
                                 === 'true') && DomElement.isInView(element)) {
                         that._handleFrame();
