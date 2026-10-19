@@ -1251,6 +1251,34 @@ circle.position.x += 100;
 </div>
 
 	
+<div id="scope" class="member">
+<div class="member-link">
+<a name="scope" href="#scope"><tt><b>scope</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The scope that this item belongs to, through its project.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/PaperScope.html"><tt>PaperScope</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
 <div id="layer" class="member">
 <div class="member-link">
 <a name="layer" href="#layer"><tt><b>layer</b></tt></a>
@@ -4536,7 +4564,7 @@ Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Checks whether the item has a fill.</p>
+	<p>Checks whether the item has a visible fill, a fill color with an alpha above 0. Hit-tests also hit transparent fills, see <a href="../classes/Item.html#hittest"><tt>hitTest</tt></a>.</p>
     
 	
 	
@@ -4544,7 +4572,7 @@ Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the item has a fill, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the item has a visible fill, <tt>false</tt> otherwise
 </li>
 
 		

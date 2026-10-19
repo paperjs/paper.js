@@ -258,6 +258,37 @@ function onFrame(event) {
 </div>
 </div>
 		
+			
+<div id="isolated" class="member">
+<div class="member-link">
+<a name="isolated" href="#isolated"><tt><b>isolated</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Specifies whether the group is isolated, drawn through a temporary canvas, so that the blend modes of its children only apply within it, like CSS&rsquo;s <code>isolation: isolate</code>. Without it, a compositing mode such as <code>&#39;destination-out&#39;</code> affects everything drawn below the group, also in other layers. Groups with an <a href="../classes/Item.html#opacity"><tt>item.opacity</tt></a> below 1 or a <a href="../classes/Item.html#blendmode"><tt>item.blendMode</tt></a> are isolated anyway.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>false</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Boolean</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
 	</div>
 
 
@@ -1349,6 +1380,34 @@ circle.position.x += 100;
 		<h4>Type:</h4>
 		<li>
 			<a href="../classes/View.html"><tt>View</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="scope" class="member">
+<div class="member-link">
+<a name="scope" href="#scope"><tt><b>scope</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The scope that this item belongs to, through its project.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/PaperScope.html"><tt>PaperScope</tt></a>
 		</li>
 	</ul>
     
@@ -4645,7 +4704,7 @@ Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Checks whether the item has a fill.</p>
+	<p>Checks whether the item has a visible fill, a fill color with an alpha above 0. Hit-tests also hit transparent fills, see <a href="../classes/Item.html#hittest"><tt>hitTest</tt></a>.</p>
     
 	
 	
@@ -4653,7 +4712,7 @@ Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the item has a fill, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the item has a visible fill, <tt>false</tt> otherwise
 </li>
 
 		

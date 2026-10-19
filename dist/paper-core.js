@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 22:34:26 2026 +0200
+ * Date: Tue Oct 20 00:48:25 2026 +0200
  *
  ***
  *
@@ -849,9 +849,10 @@ var PaperScope = Base.extend({
 				}
 			});
 		});
-		for (var key in this)
-			if (!/^_/.test(key) && this[key])
+		for (var key in this) {
+			if (!/^_/.test(key) && this[key] && !(key in scope))
 				scope[key] = this[key];
+		}
 	},
 
 	setup: function(element) {
@@ -926,6 +927,10 @@ var PaperScopeItem = Base.extend(Emitter, {
 
 	isActive: function() {
 		return this._scope[this._reference] === this;
+	},
+
+	getScope: function() {
+		return this._scope;
 	},
 
 	remove: function() {
@@ -3338,6 +3343,10 @@ new function() {
 			matrix = this._matrix = new Matrix(),
 			project = hasProps && props.project || paper.project,
 			settings = paper.settings;
+		if (!project) {
+			throw new Error('Unable to create an item without a project. '
+					+ 'Call paper.setup() or create a Project first.');
+		}
 		this._id = internal ? null : UID.get();
 		this._parent = this._index = null;
 		this._applyMatrix = this._canApplyMatrix && settings.applyMatrix;
@@ -3871,6 +3880,10 @@ new function() {
 		return this._project._view;
 	},
 
+	getScope: function() {
+		return this._project._scope;
+	},
+
 	_installEvents: function _installEvents(install) {
 		_installEvents.base.call(this, install);
 		if (this._selection)
@@ -4239,7 +4252,7 @@ new function() {
 	},
 
 	_hitTestSelf: function(point, options) {
-		if (options.fill && this.hasFill() && this._contains(point))
+		if (options.fill && this.getFillColor() && this._contains(point))
 			return new HitResult('fill', this);
 	},
 
@@ -4362,6 +4375,19 @@ new function() {
 }, {
 
 	importJSON: function(json) {
+		json = typeof json === 'string' ? JSON.parse(json) : json;
+		var props = json && json[0] === this._class && json[1];
+		if (Base.isPlainObject(props)) {
+			var item = new this.constructor(Item.NO_INSERT),
+				fields = Base.set({}, this._serializeFields,
+					this instanceof Group ? null : this._style._defaults),
+				defaults = {};
+			for (var key in fields) {
+				if (!(key in props) && !Base.equals(this[key], item[key]))
+					defaults[key] = item[key];
+			}
+			this.set(defaults);
+		}
 		var res = Base.importJSON(json, this);
 		return res !== this ? this.addChild(res) : res;
 	},
@@ -4874,7 +4900,7 @@ new function() {
 			opacity = Numerical.clamp(this._opacity, 0, 1),
 			normalBlend = blendMode === 'normal',
 			nativeBlend = BlendMode.nativeModes[blendMode],
-			direct = normalBlend && opacity === 1
+			direct = normalBlend && opacity === 1 && !this._isolated
 					|| param.dontStart
 					|| param.clip
 					|| (nativeBlend || normalBlend && opacity < 1)
@@ -5090,8 +5116,10 @@ var Group = Item.extend({
 	_selectBounds: false,
 	_selectChildren: true,
 	_serializeFields: {
+		isolated: false,
 		children: []
 	},
+	_isolated: false,
 
 	initialize: function Group(arg) {
 		this._children = [];
@@ -5131,6 +5159,15 @@ var Group = Item.extend({
 		var child = this.getFirstChild();
 		if (child)
 			child.setClipMask(clipped);
+	},
+
+	isIsolated: function() {
+		return this._isolated;
+	},
+
+	setIsolated: function(isolated) {
+		this._isolated = !!isolated;
+		this._changed(257);
 	},
 
 	_getBounds: function _getBounds(matrix, options) {
@@ -5477,7 +5514,7 @@ new function() {
 			var hit = false,
 				style = this._style,
 				hitStroke = options.stroke && style.hasStroke(),
-				hitFill = options.fill && style.hasFill();
+				hitFill = options.fill && !!style.getFillColor();
 			if (hitStroke || hitFill) {
 				var type = this._type,
 					radius = this._radius,
@@ -5567,6 +5604,7 @@ var Raster = Item.extend({
 	_boundsOptions: { stroke: false, handle: false },
 	_serializeFields: {
 		crossOrigin: null,
+		size: new Size(),
 		source: null
 	},
 	_prioritize: ['crossOrigin'],
@@ -5716,6 +5754,14 @@ var Raster = Item.extend({
 		}
 	},
 
+	set: function set(props, exclude) {
+		if (props && props.source && props.size) {
+			this._size = new Size(props.size);
+			exclude = Base.set({ size: true }, exclude);
+		}
+		return set.base.call(this, props, exclude);
+	},
+
 	_setImage: function(image) {
 		if (this._canvas)
 			CanvasProvider.release(this._canvas);
@@ -5728,9 +5774,11 @@ var Raster = Item.extend({
 			this._canvas = null;
 			this._loaded = !!(image && image.src && image.complete);
 		}
-		this._size = new Size(
-				image ? image.naturalWidth || image.width : 0,
-				image ? image.naturalHeight || image.height : 0);
+		this._size = image && !this._loaded
+				? this._size || new Size()
+				: new Size(
+					image ? image.naturalWidth || image.width : 0,
+					image ? image.naturalHeight || image.height : 0);
 		this._context = null;
 		this._changed(1033);
 	},
@@ -9415,7 +9463,7 @@ var Path = PathItem.extend({
 			area, loc, res,
 			hits = options.all && [],
 			hitStroke = options.stroke && style.hasStroke(),
-			hitFill = options.fill && style.hasFill(),
+			hitFill = options.fill && !!style.getFillColor(),
 			hitCurves = options.curves,
 			strokeRadius = hitStroke
 					? style.getStrokeWidth() / 2
@@ -10333,10 +10381,9 @@ Path.inject({ statics: new function() {
 				center = Point.readNamed(args, 'center'),
 				sides = Base.readNamed(args, 'sides'),
 				radius = Base.readNamed(args, 'radius'),
-				step = 360 / sides,
-				three = sides % 3 === 0,
-				vector = new Point(0, three ? -radius : radius),
-				offset = three ? -1 : 0.5,
+				step = -360 / sides,
+				offset = sides % 2 ? 0 : -0.5,
+				vector = new Point(0, -radius),
 				segments = new Array(sides);
 			for (var i = 0; i < sides; i++)
 				segments[i] = new Segment(center.add(
@@ -11919,7 +11966,7 @@ var PointText = TextItem.extend({
 	},
 
 	_hitTestSelf: function(point, options) {
-		if (options.fill && this.hasFill()) {
+		if (options.fill && this.getFillColor()) {
 			var bounds = this.getInternalBounds(),
 				closest = point.clamp(bounds.getTopLeft(true),
 						bounds.getBottomRight(true));
@@ -13359,6 +13406,10 @@ var View = Base.extend(Emitter, {
 		return this._project;
 	},
 
+	getScope: function() {
+		return this._scope;
+	},
+
 	getPixelRatio: function() {
 		return this._pixelRatio;
 	},
@@ -13841,6 +13892,14 @@ new function() {
 				return false;
 			}
 
+			if (event.shiftKey !== undefined) {
+				Key.modifiers.set({
+					shift: event.shiftKey,
+					control: event.ctrlKey,
+					alt: event.altKey,
+					meta: event.metaKey
+				});
+			}
 			if (nativeMove && dragging && responds('mousedrag'))
 				type = 'mousedrag';
 			if (!point)
@@ -13996,20 +14055,20 @@ var CanvasView = View.extend({
 	},
 
 	_setElementSize: function _setElementSize(width, height) {
-		var pixelRatio = this._pixelRatio;
+		var pixelRatio = this._pixelRatio,
+			element = this._element;
 		_setElementSize.base.call(this, width * pixelRatio, height * pixelRatio);
+		if (!PaperScope.hasAttribute(element, 'resize')) {
+			var style = element.style,
+				insets = DomElement.getStyles(element).boxSizing
+					=== 'border-box'
+						? DomElement.getInsets(element)
+						: new Size();
+			style.width = (width + insets.width) + 'px';
+			style.height = (height + insets.height) + 'px';
+		}
 		if (pixelRatio !== 1) {
-			var element = this._element,
-				ctx = this._context;
-			if (!PaperScope.hasAttribute(element, 'resize')) {
-				var style = element.style,
-					insets = DomElement.getStyles(element).boxSizing
-						=== 'border-box'
-							? DomElement.getInsets(element)
-							: new Size();
-				style.width = (width + insets.width) + 'px';
-				style.height = (height + insets.height) + 'px';
-			}
+			var ctx = this._context;
 			ctx.restore();
 			ctx.save();
 			ctx.scale(pixelRatio, pixelRatio);
@@ -14856,8 +14915,9 @@ var CanvasProvider = Base.exports.CanvasProvider = {
 	release: function(obj) {
 		var canvas = obj && obj.canvas ? obj.canvas : obj;
 		if (canvas && canvas.getContext) {
-			canvas.getContext('2d').restore();
-			this.canvases.push(canvas);
+			canvas.width = canvas.height = 0;
+			if (this.canvases.length < 8)
+				this.canvases.push(canvas);
 		}
 	}
 };
@@ -15511,6 +15571,13 @@ new function() {
 		PointText: exportText
 	};
 
+	var cssBlendModes = Base.each(['normal', 'multiply', 'screen', 'overlay',
+			'darken', 'lighten', 'color-dodge', 'color-burn', 'hard-light',
+			'soft-light', 'difference', 'exclusion', 'hue', 'saturation',
+			'color', 'luminosity'], function(mode) {
+		this[mode] = true;
+	}, {});
+
 	function applyStyle(item, node, options, isRoot) {
 		var attrs = {},
 			parent = !isRoot && item.getParent(),
@@ -15537,7 +15604,11 @@ new function() {
 						attrs[entry.attribute + '-opacity'] = alpha;
 				}
 				if (type === 'style') {
-					style.push(entry.attribute + ': ' + value);
+					if (cssBlendModes[value]) {
+						style.push(entry.attribute + ': ' + value);
+					} else {
+						attrs['data-paper-blend-mode'] = value;
+					}
 				} else if (type === 'font') {
 					var font = ('' + value).match(
 							/^(.*?)\s*\b(italic|oblique)\b\s*(.*)$/i);
@@ -16058,6 +16129,11 @@ new function() {
 				item.setVisible(value !== null);
 		},
 
+		'data-paper-blend-mode': function(item, value) {
+			if (item.setBlendMode)
+				item.setBlendMode(value);
+		},
+
 		'font-style': function(item, value) {
 			if (item.setFontWeight && /^(italic|oblique)$/.test(value)) {
 				var weight = ('' + item.getFontWeight())
@@ -16349,9 +16425,7 @@ var paper = new (PaperScope.inject(Base.exports, {
 	DomElement: DomElement,
 	document: document,
 	window: window,
-	PlacedSymbol: SymbolItem
-}).inject({
-	enumerable: false,
+	PlacedSymbol: SymbolItem,
 	Symbol: SymbolDefinition
 }))();
 

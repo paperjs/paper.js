@@ -67,11 +67,12 @@
 
 <div class="member-text">
 	<p>If the HitResult has a <a href="../classes/HitResult.html#type"><tt>hitResult.type</tt></a> of <code>&#39;bounds&#39;</code>, this property describes which corner of the bounding rectangle was hit.</p>
+<p>The names refer to the item&rsquo;s own bounding rectangle, transformed by its <a href="../classes/Item.html#matrix"><tt>item.matrix</tt></a>, which is the rectangle that the item&rsquo;s selection draws. On mirrored or rotated items, a handle can therefore appear elsewhere on screen than its name says, while its opposite handle and the rectangle&rsquo;s axes stay the ones to transform the item by. To choose a cursor, use the direction from the rectangle&rsquo;s center to <a href="../classes/HitResult.html#point"><tt>hitResult.point</tt></a>, both in project coordinates.</p>
 	
 	
 		<ul class="member-list">
 			<h4>Values:</h4>
-			<li><tt>'top-left'</tt>, <tt>'top-right'</tt>, <tt>'bottom-left'</tt>, <tt>'bottom-right'</tt>, <tt>'left-center'</tt>, <tt>'top-center'</tt>, <tt>'right-center'</tt>, <tt>'bottom- center'</tt></li>
+			<li><tt>'top-left'</tt>, <tt>'top-right'</tt>, <tt>'bottom-left'</tt>, <tt>'bottom-right'</tt>, <tt>'left-center'</tt>, <tt>'top-center'</tt>, <tt>'right-center'</tt>, <tt>'bottom-center'</tt></li>
 		</ul>
 	
 	
