@@ -1281,33 +1281,16 @@ new function() { // Injection scope for various item event handlers
      * @type Matrix
      */
     getGlobalMatrix: function(_dontClone) {
-        var matrix = this._globalMatrix;
-        if (matrix) {
-            // If there's a cached global matrix for this item, check if all its
-            // parents also have one. If it's missing in any of its parents, it
-            // means the child's cached version isn't valid anymore.
-            // For better performance, we also use the occasion of this loop to
-            // clear cached version of items parents.
-            var parent = this._parent;
-            var parents = [];
-            while (parent) {
-                if (!parent._globalMatrix) {
-                    matrix = null;
-                    // Also clear global matrix of item's parents.
-                    for (var i = 0, l = parents.length; i < l; i++) {
-                        parents[i]._globalMatrix = null;
-                    }
-                    break;
-                }
-                parents.push(parent);
-                parent = parent._parent;
-            }
-        }
-        if (!matrix) {
+        var parent = this._parent,
+            parentMatrix = parent && parent.getGlobalMatrix(true),
+            matrix = this._globalMatrix;
+        // The cached matrix is only valid if it was built from the parent's
+        // current global matrix, which is replaced whenever it changes.
+        if (!matrix || this._parentGlobalMatrix !== parentMatrix) {
             matrix = this._globalMatrix = this._matrix.clone();
-            var parent = this._parent;
-            if (parent)
-                matrix.prepend(parent.getGlobalMatrix(true));
+            if (parentMatrix)
+                matrix.prepend(parentMatrix);
+            this._parentGlobalMatrix = parentMatrix;
         }
         return _dontClone ? matrix : matrix.clone();
     },
@@ -4468,7 +4451,8 @@ new function() { // Injection scope for hit-test functions shared with project
         var matrices = param.matrices,
             viewMatrix = param.viewMatrix,
             matrix = this._matrix,
-            globalMatrix = matrices[matrices.length - 1].appended(matrix);
+            parentMatrix = matrices[matrices.length - 1],
+            globalMatrix = parentMatrix.appended(matrix);
         // If this item is not invertible, do not draw it. It appears to be a
         // good idea generally to not draw in such circumstances, e.g. SVG
         // handles it the same way.
@@ -4485,7 +4469,10 @@ new function() { // Injection scope for hit-test functions shared with project
         // Only keep track of transformation if told so. See Project#draw()
         matrices.push(globalMatrix);
         if (param.updateMatrix) {
+            // Remember the parent's global matrix that this one is built from,
+            // see getGlobalMatrix(). Layers start from identity, not a parent.
             this._globalMatrix = globalMatrix;
+            this._parentGlobalMatrix = this._parent && parentMatrix;
         }
 
         // If the item has a blendMode or is defining an opacity, draw it on
@@ -4586,13 +4573,11 @@ new function() { // Injection scope for hit-test functions shared with project
         if (clip) {
             // The clip item is a sibling of this item, so draw it with the
             // parent's matrices before applying this item's matrix (#1594):
-            var parentMatrices = matrices.slice(0, -1),
-                parentMatrix = parentMatrices[parentMatrices.length - 1];
             (param.viewMatrix ? param.viewMatrix.appended(parentMatrix)
                     : parentMatrix).applyToContext(ctx);
             param.clipItem.draw(ctx, param.extend({
                 clip: true,
-                matrices: parentMatrices
+                matrices: matrices.slice(0, -1)
             }));
             matrix.applyToContext(ctx);
         } else if (transform) {

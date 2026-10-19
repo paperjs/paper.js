@@ -1389,6 +1389,65 @@ test('Children global matrices are cleared after parent transformation', functio
     equals(item.localToGlobal(item.getPointAt(0)), new Point(100, 100));
 });
 
+test('Sibling global matrices are cleared after parent transformation (#1750)', function() {
+    function createItem() {
+        return new Path.Rectangle({
+            point: [0, 0],
+            size: [100, 100],
+            applyMatrix: false
+        });
+    }
+
+    // The example from the issue: The first sibling rebuilds the parent's
+    // global matrix, which must not validate the stale one of the second:
+    var item1 = createItem(),
+        item2 = createItem(),
+        group = new Group({ children: [item1, item2], applyMatrix: false });
+    equals(item1.localToGlobal([0, 0]), new Point(0, 0), 'item1 before');
+    equals(item2.localToGlobal([0, 0]), new Point(0, 0), 'item2 before');
+    group.translate(100, 0);
+    equals(item1.localToGlobal([0, 0]), new Point(100, 0), 'item1 after');
+    equals(item2.localToGlobal([0, 0]), new Point(100, 0), 'item2 after');
+
+    // The same with global matrices cached by drawing:
+    view.update();
+    group.translate(0, 50);
+    equals(item2.localToGlobal([0, 0]), new Point(100, 50),
+            'item2 after drawing');
+    equals(item1.localToGlobal([0, 0]), new Point(100, 50),
+            'item1 after drawing');
+
+    // Changing an item's own matrix:
+    item1.translate(10, 0);
+    equals(item1.localToGlobal([0, 0]), new Point(110, 50),
+            'item1 after own translation');
+    equals(item2.localToGlobal([0, 0]), new Point(100, 50),
+            'item2 after item1 translation');
+
+    // Deeper nesting, moving the grandparent and asking the children first:
+    var outer = new Group({ children: [group], applyMatrix: false });
+    equals(item2.globalMatrix, new Matrix(1, 0, 0, 1, 100, 50),
+            'item2.globalMatrix nested');
+    outer.translate(0, 25);
+    equals(item2.globalMatrix, new Matrix(1, 0, 0, 1, 100, 75),
+            'item2.globalMatrix after outer translation');
+    equals(item1.globalMatrix, new Matrix(1, 0, 0, 1, 110, 75),
+            'item1.globalMatrix after outer translation');
+    equals(group.globalMatrix, new Matrix(1, 0, 0, 1, 100, 75),
+            'group.globalMatrix after outer translation');
+
+    // Moving an item to another parent, and removing it:
+    var other = new Group({ applyMatrix: false });
+    other.translate(0, 200);
+    equals(other.globalMatrix, new Matrix(1, 0, 0, 1, 0, 200),
+            'other.globalMatrix');
+    other.addChild(item2);
+    equals(item2.globalMatrix, new Matrix(1, 0, 0, 1, 0, 200),
+            'item2.globalMatrix in other group');
+    item2.remove();
+    equals(item2.globalMatrix, new Matrix(), 'item2.globalMatrix removed');
+});
+
 test('Item#rasterize() with empty bounds', function() {
     new Path.Line([0, 0], [100, 0]).rasterize();
     view.update(); // This should not throw
