@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:12:13 2026 +0200
+ * Date: Mon Oct 19 13:45:30 2026 +0200
  *
  ***
  *
@@ -11845,9 +11845,10 @@ var Color = Base.extend(new function() {
 					colorCtx = CanvasProvider.getContext(1, 1, {
 						willReadFrequently: true
 					});
+					if (colorCtx)
+						colorCtx.globalCompositeOperation = 'copy';
 				}
 				if (colorCtx) {
-					colorCtx.globalCompositeOperation = 'copy';
 					colorCtx.fillStyle = 'rgba(0,0,0,0)';
 					colorCtx.fillStyle = string;
 					colorCtx.fillRect(0, 0, 1, 1);
