@@ -748,10 +748,6 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * Note that the project is not cleared first. You can call
      * {@link Project#clear()} to do so.
      *
-     * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
-     * the `<use>` elements that place them as {@link SymbolItem} items. The
-     * styles that `<use>` elements inherit don't reach the symbols' content.
-     *
      * @param {String} json the JSON data to import from
      * @return {Item} the imported item
      */
@@ -805,6 +801,10 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * the active layer of this project.
      * Note that the project is not cleared first. You can call
      * {@link Project#clear()} to do so.
+     *
+     * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
+     * the `<use>` elements that place them as {@link SymbolItem} items. The
+     * styles that `<use>` elements inherit don't reach the symbols' content.
      *
      * @name Project#importSVG
      * @function
