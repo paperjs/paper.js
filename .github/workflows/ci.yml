@@ -55,6 +55,11 @@ jobs:
     needs: [test, browser]
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
+    # Pushes in quick succession, such as gulp publish's two, would otherwise
+    # push to the prebuilt branches at the same time:
+    concurrency:
+      group: prebuilt
+      cancel-in-progress: false
     permissions:
       contents: write
     steps:
