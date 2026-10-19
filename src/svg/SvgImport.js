@@ -569,6 +569,10 @@ new function() {
                 parent: !isRoot && !/^defs$/i.test(parent.tagName)
                         && DomElement.getStyles(parent) || {}
             };
+        // jsdom doesn't compute SVG styles, so start the root with SVG's initial
+        // fill, as it differs from the default in Paper.js:
+        if (isRoot && !styles.node.fill && item.setFillColor)
+            item.setFillColor('black');
         Base.each(attributes, function(apply, name) {
             var value = getAttribute(node, name, styles);
             // 'clip-path' attribute returns a new item, support it here:

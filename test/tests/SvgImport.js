@@ -91,6 +91,36 @@ test('Import SVG with inline styles and attributes (#1962)', function() {
     equals(rect.fillColor, new Color('red'), 'fill from style only');
 });
 
+test('Import SVG with the default fill (#1229)', function() {
+    function importSVG(content, attrs) {
+        return paper.project.importSVG(
+                '<svg xmlns="http://www.w3.org/2000/svg"' + (attrs || '') + '>'
+                + content + '</svg>');
+    }
+
+    function getFill(item) {
+        // Browsers produce colors with alpha, so compare the CSS values:
+        var color = item.fillColor;
+        return color && color.toCSS(true);
+    }
+
+    var path = '<path d="M0,0h10v10z"/>',
+        imported = importSVG(path + '<g>' + path + '</g>'
+                + '<g fill="red">' + path + '</g>');
+    // Shapes without a fill are filled black, as SVG's initial fill:
+    equals(getFill(imported.children[0]), '#000000', 'path');
+    equals(getFill(imported.children[1].firstChild), '#000000',
+            'path in <g>');
+    equals(getFill(imported.children[2].firstChild), '#ff0000',
+            'path in <g fill="red">');
+    equals(imported.children[0].strokeColor, null, 'stroke');
+    imported = importSVG(path, ' fill="none"');
+    equals(getFill(imported.firstChild), null, 'path in <svg fill="none">');
+    var node = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    node.setAttribute('d', 'M0,0h10v10z');
+    equals(getFill(paper.project.importSVG(node)), '#000000', 'path as root');
+});
+
 test('Import SVG ellipse', function() {
     var attrs = {
         cx: 300,
