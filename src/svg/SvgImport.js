@@ -229,21 +229,37 @@ new function() {
         // https://www.w3.org/TR/SVG/struct.html#ImageElement
         image: function (node, type, options) {
             var raster = new Raster({
-                crossOrigin: options.crossOrigin,
-                source: getValue(node, 'href', true)
-            });
+                    crossOrigin: options.crossOrigin,
+                    source: getValue(node, 'href', true)
+                }),
+                // NOTE: 'slice' is treated as 'meet', as it requires clipping.
+                align = /none|x(Min|Mid|Max)Y(Min|Mid|Max)/.exec(
+                        getValue(node, 'preserveAspectRatio', true))
+                        || [null, 'Mid', 'Mid'];
             raster.on('load', function() {
                 // Keep the image's own pixels, and scale it to the size given
                 // in SVG, instead of resampling it to that size. Without a
                 // size, use the image's own, as browsers do (SVG 2):
-                var size = getSize(node, null, null, true) || this.getSize();
+                var imageSize = this.getSize(),
+                    size = getSize(node, null, null, true) || imageSize,
+                    point = getPoint(node);
+                if (align[0] !== 'none') {
+                    // Scale uniformly, and align the image in its box:
+                    var factors = { Min: 0, Mid: 0.5, Max: 1 },
+                        fitted = imageSize.multiply(Math.min(
+                            size.width / imageSize.width,
+                            size.height / imageSize.height));
+                    point = point.add(size.subtract(fitted).multiply(
+                            [factors[align[1]], factors[align[2]]]));
+                    size = fitted;
+                }
                 // Since x and y start from the top left of an image, add
                 // half of its size. We also need to take the raster's matrix
                 // into account, which will be defined by the time the load
                 // event is called.
-                var center = getPoint(node).add(size.divide(2));
+                var center = point.add(size.divide(2));
                 this._matrix.append(new Matrix().translate(center)
-                        .scale(size.divide(this.getSize())));
+                        .scale(size.divide(imageSize)));
             });
             return raster;
         },
