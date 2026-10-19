@@ -4,6 +4,9 @@
 
 ### Added
 
+- Add `options.handlers` to `PaperScript.execute()`, to export further global
+  handlers next to `onFrame`, `onResize` and the tool's, for hosts that call
+  them themselves, such as Scriptographer's `onStop`.
 - Add `Tool#eventInterval`, as Scriptographer had it, to fire `onMouseDrag` again
   at an interval while the mouse button is held, also when the mouse doesn't
   move.
