@@ -852,6 +852,10 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * the `<use>` elements that place them as {@link SymbolItem} items. The
      * styles that `<use>` elements inherit don't reach the symbols' content.
      *
+     * URLs are fetched as they are, so validate URLs that come from untrusted
+     * sources first, especially on servers, where they could reach internal
+     * addresses.
+     *
      * @name Project#importSVG
      * @function
      *
