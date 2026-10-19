@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 20:15:34 2026 +0200
+ * Date: Mon Oct 19 20:17:19 2026 +0200
  *
  ***
  *
@@ -13095,7 +13095,7 @@ var View = Base.extend(Emitter, {
 		}
 
 		function getCanvasSize() {
-			var size = DomElement.getSize(element);
+			var size = new Size(element.offsetWidth, element.offsetHeight);
 			return size.isNaN() || size.isZero()
 					? new Size(getSize('width'), getSize('height'))
 					: size.subtract(DomElement.getInsets(element));
