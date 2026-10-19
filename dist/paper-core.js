@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 13:25:44 2026 +0200
+ * Date: Mon Oct 19 12:26:43 2026 +0200
  *
  ***
  *
@@ -13169,6 +13169,10 @@ var View = Base.extend(Emitter, {
 
 	getElement: function() {
 		return this._element;
+	},
+
+	getProject: function() {
+		return this._project;
 	},
 
 	getPixelRatio: function() {

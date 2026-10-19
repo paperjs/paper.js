@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 13:25:44 2026 +0200
+ * Date: Mon Oct 19 12:26:43 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -7127,6 +7127,11 @@ declare namespace paper {
          * The underlying native element.
          */
         readonly element: HTMLCanvasElement
+
+        /** 
+         * The project that this view displays.
+         */
+        readonly project: Project
 
         /** 
          * The ratio between physical pixels and device-independent pixels (DIPs)
