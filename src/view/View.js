@@ -815,7 +815,20 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @return {Point} the event point in project coordinates.
      */
     getEventPoint: function(event) {
-        return this.viewToProject(DomEvent.getOffset(event, this._element));
+        var element = this._element,
+            offset = DomEvent.getOffset(event, element),
+            size = DomElement.getSize(element);
+        // Map the offset on screen, with CSS sizes and transforms applied, to
+        // the content box in view coordinates (#549, #1729). Elements that
+        // aren't rendered have no size to map from:
+        if (!size.isZero()) {
+            var cssSize = new Size(element.offsetWidth, element.offsetHeight);
+            offset = offset.multiply(cssSize.divide(size))
+                    .subtract(DomElement.getInsets(element, true))
+                    .multiply(this.getViewSize().divide(
+                        cssSize.subtract(DomElement.getInsets(element))));
+        }
+        return this.viewToProject(offset);
     },
 
     /**

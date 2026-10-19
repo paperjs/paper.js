@@ -256,6 +256,83 @@ if (!isNodeContext) {
             document.body.removeChild(canvas);
         });
     });
+
+    test('event.point of canvases with padding, border and CSS transforms (#1729)', function() {
+        // The view is 200 x 100. Its point (50, 40) lies on the screen at the
+        // position of the container (20, 30), plus the padding of 6 and the
+        // border of 2, plus the point itself, all scaled by the CSS transform:
+        [
+            ['plain', false, 1, new Point(70, 70)],
+            ['padding and border', true, 1, new Point(78, 78)],
+            ['transform', false, 0.5, new Point(45, 50)],
+            ['padding, border and transform', true, 0.5, new Point(49, 54)]
+        ].forEach(function(entry) {
+            var name = entry[0],
+                container = document.createElement('div'),
+                canvas = document.createElement('canvas');
+            container.style.position = 'fixed';
+            container.style.left = '20px';
+            container.style.top = '30px';
+            container.style.transformOrigin = '0 0';
+            canvas.width = 200;
+            canvas.height = 100;
+            canvas.style.display = 'block';
+            if (entry[1]) {
+                canvas.style.padding = '6px';
+                canvas.style.border = '2px solid black';
+            }
+            container.appendChild(canvas);
+            document.body.appendChild(container);
+            var project = new Project(canvas),
+                view = project.view,
+                item = new Path.Rectangle(new Point(45, 35), new Size(10)),
+                point = null,
+                hit = false;
+            item.fillColor = 'red';
+            item.onMouseDown = function() {
+                hit = true;
+            };
+            view.onMouseDown = function(event) {
+                point = event.point;
+            };
+            // Transform the container after the setup, so the view keeps its
+            // size:
+            container.style.transform = 'scale(' + entry[2] + ')';
+            triggerMouseEvent('mousedown', entry[3], canvas);
+            triggerMouseEvent('mouseup', entry[3]);
+            equals(view.viewSize, new Size(200, 100), name + ': view.viewSize');
+            equals(point, new Point(50, 40), name + ': event.point');
+            equals(hit, true, name + ': item hit');
+            project.remove();
+            document.body.removeChild(container);
+        });
+    });
+
+    test('event.point of canvases with a CSS size different from the view size (#549)', function() {
+        // Without the resize attribute, the view keeps its size when the CSS
+        // size of the canvas changes, and the content box is stretched to it:
+        var canvas = document.createElement('canvas');
+        canvas.width = 200;
+        canvas.height = 100;
+        canvas.style.position = 'fixed';
+        canvas.style.left = '20px';
+        canvas.style.top = '30px';
+        document.body.appendChild(canvas);
+        var project = new Project(canvas),
+            view = project.view,
+            point = null;
+        canvas.style.width = '400px';
+        canvas.style.height = '150px';
+        view.onMouseDown = function(event) {
+            point = event.point;
+        };
+        triggerMouseEvent('mousedown', new Point(120, 90), canvas);
+        triggerMouseEvent('mouseup', new Point(120, 90));
+        equals(view.viewSize, new Size(200, 100), 'view.viewSize');
+        equals(point, new Point(50, 40), 'event.point');
+        project.remove();
+        document.body.removeChild(canvas);
+    });
 }
 
 test('Selections are drawn with a line width of 1', function() {
