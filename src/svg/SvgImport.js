@@ -20,7 +20,15 @@ new function() {
     // index is option, and if passed, causes a lookup in a list.
 
     var definitions = {},
-        rootSize;
+        rootSize,
+        // The absolute units of CSS in px:
+        units = { 'in': 96, pt: 96 / 72, pc: 96 / 6, cm: 96 / 2.54,
+            mm: 96 / 25.4 };
+
+    function parseLength(value) {
+        var unit = /(in|pt|pc|cm|mm)\s*$/.exec(value);
+        return parseFloat(value) * (unit ? units[unit[1]] : 1);
+    }
 
     function getValue(node, name, isString, allowNull, allowPercent,
             defaultValue) {
@@ -34,7 +42,7 @@ new function() {
                     : isString ? '' : 0
                 : isString
                     ? value
-                    : parseFloat(value);
+                    : parseLength(value);
         // Support for dimensions in percentage of the root size. If root-size
         // is not set (e.g. during <defs>), just scale the percentage value to
         // 0..1, as required by gradients with gradientUnits="objectBoundingBox"
@@ -61,9 +69,9 @@ new function() {
     // Converts a string attribute value to the specified type
     function convertValue(value, type, lookup, options) {
         return value === 'none' ? null
-                : type === 'number' ? parseFloat(value)
+                : type === 'number' ? parseLength(value)
                 : type === 'array' ?
-                    value ? value.split(/[\s,]+/g).map(parseFloat) : []
+                    value ? value.split(/[\s,]+/g).map(parseLength) : []
                 : type === 'color' ? getDefinition(value, options) || value
                 : type === 'lookup' ? lookup[value]
                 : value;

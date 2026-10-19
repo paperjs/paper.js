@@ -72,6 +72,24 @@ test('Import SVG round rect with only rx or ry (#1863)', function() {
     equals(getRadius('rx="10%" ry="10%"'), new Size(20, 10));
 });
 
+test('Import SVG lengths with absolute units (#1919)', function() {
+    var imported = paper.project.importSVG(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="2in" height="1in">'
+            + '<rect x="1cm" y="10mm" width="10pt" height="3pc"'
+            + ' stroke-width="1.5pt" stroke-dasharray="1in 6pt"/>'
+            + '<rect width="50%" height="10px" rx="5"/></svg>'),
+        rect = imported.children[0],
+        relative = imported.children[1];
+    // CSS defines 1in = 2.54cm = 25.4mm = 72pt = 6pc = 96px:
+    equals(rect.position, new Point(96 / 2.54 + 40 / 3 / 2, 96 / 2.54 + 24));
+    equals(rect.size, new Size(40 / 3, 48));
+    equals(rect.strokeWidth, 2);
+    equals(rect.dashArray, [96, 8]);
+    // Percentages refer to the viewport, of which the size has units too:
+    equals(relative.size, new Size(96, 10));
+    equals(relative.radius, new Size(5, 5));
+});
+
 test('Import SVG with inline styles and attributes (#1962)', function() {
     function importRect(attrs) {
         return paper.project.importSVG(
