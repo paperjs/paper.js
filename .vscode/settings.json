@@ -1,6 +1,5 @@
 {
   "files.exclude": {
-    ".yarn": true,
-    "yarn.lock": true
+    "pnpm-lock.yaml": true
   }
 }
