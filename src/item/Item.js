@@ -1382,6 +1382,15 @@ new function() { // Injection scope for various item event handlers
     },
 
     /**
+     * The scope that this item belongs to, through its project.
+     * @type PaperScope
+     * @bean
+     */
+    getScope: function() {
+        return this._project._scope;
+    },
+
+    /**
      * Overrides Emitter#_installEvents to also call _installEvents on all
      * children.
      */

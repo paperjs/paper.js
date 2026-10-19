@@ -148,3 +148,13 @@ test('trackChanges ignores items that are not inserted', function() {
     equals(changes.length, 2);
     equals(changes[0].item === result || changes[1].item === result, true);
 });
+
+test('project.scope, view.scope, item.scope and tool.scope (#1634)', function() {
+    var path = new Path(),
+        tool = new Tool();
+    equals(function() {
+        return project.scope === paper && view.scope === paper
+                && path.scope === paper && tool.scope === paper;
+    }, true);
+    tool.remove();
+});
