@@ -24,8 +24,10 @@ var Group = Item.extend(/** @lends Group# */{
     _selectBounds: false,
     _selectChildren: true,
     _serializeFields: {
+        isolated: false,
         children: []
     },
+    _isolated: false,
 
     // DOCS: document new Group(item, item...);
     /**
@@ -166,6 +168,27 @@ var Group = Item.extend(/** @lends Group# */{
         var child = this.getFirstChild();
         if (child)
             child.setClipMask(clipped);
+    },
+
+    /**
+     * Specifies whether the group is isolated, drawn through a temporary
+     * canvas, so that the blend modes of its children only apply within it,
+     * like CSS's `isolation: isolate`. Without it, a compositing mode such as
+     * `'destination-out'` affects everything drawn below the group, also in
+     * other layers. Groups with an {@link Item#opacity} below 1 or a
+     * {@link Item#blendMode} are isolated anyway.
+     *
+     * @bean
+     * @type Boolean
+     * @default false
+     */
+    isIsolated: function() {
+        return this._isolated;
+    },
+
+    setIsolated: function(isolated) {
+        this._isolated = !!isolated;
+        this._changed(/*#=*/Change.ATTRIBUTE);
     },
 
     _getBounds: function _getBounds(matrix, options) {

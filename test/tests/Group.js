@@ -252,3 +252,33 @@ test('Clipping with a group that is clipped itself (#1618)', function() {
         createClipped(new Path.Circle({ center: [50, 50], radius: 20 })),
         'clipping with imported SVG');
 });
+
+test('group.isolated keeps compositing inside the group (#474)', function() {
+    function createGroup(isolated) {
+        var rect = new Path.Rectangle({
+            point: [0, 0],
+            size: [40, 40],
+            fillColor: 'red'
+        });
+        var eraser = new Group({
+            children: [new Path.Circle({
+                center: [20, 20],
+                radius: 10,
+                fillColor: 'black',
+                blendMode: 'destination-out'
+            })],
+            isolated: isolated
+        });
+        return new Group([rect, eraser]);
+    }
+    // Without isolation, the circle erases the rectangle below it:
+    var raster = createGroup(false).rasterize({ resolution: 72 });
+    equals(raster.getPixel(20, 20).alpha, 0, 'erased');
+    // With it, it only erases inside its own group:
+    raster = createGroup(true).rasterize({ resolution: 72 });
+    equals(raster.getPixel(20, 20), new Color(1, 0, 0, 1), 'kept');
+    var group = new Group({ isolated: true });
+    equals(group.isolated, true, 'isolated');
+    equals(group.exportJSON(), '["Group",{"applyMatrix":true,"isolated":true}]',
+            'exportJSON()');
+});
