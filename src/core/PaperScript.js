@@ -470,6 +470,9 @@ Base.exports.PaperScript = function() {
      *     generation
      * @option options.source {String} the source to be used for the source-
      *     mapping, in case the code that's passed in has already been mingled.
+     * @option options.handlers {String[]} the names of further global
+     *     handlers to export next to `onFrame`, `onResize` and the tool's
+     *     handlers, for hosts that call them themselves
      *
      * @param {String} code the PaperScript code
      * @param {PaperScope} scope the scope for which the code is executed
@@ -492,7 +495,8 @@ Base.exports.PaperScript = function() {
             // undefined arguments, so that their name exists, rather than
             // injecting a code line that defines them as variables. They are
             // exported again at the end of the function.
-            handlers = ['onFrame', 'onResize'].concat(toolHandlers),
+            handlers = ['onFrame', 'onResize'].concat(toolHandlers,
+                    options && options.handlers || []),
             // compile a list of parameter names for all variables that need to
             // appear as globals inside the script. At the same time, also
             // collect their values, so we can pass them on as arguments in the

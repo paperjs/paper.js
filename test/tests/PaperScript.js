@@ -124,3 +124,15 @@ test('PaperScript keeps the native globals (#1832)', function() {
         return exports.path === Path;
     }, true, 'Path');
 });
+
+test('PaperScript.execute(code, scope, { handlers })', function() {
+    var exports = PaperScript.execute(
+            'function onStop() { return \'stopped\'; }\n'
+            + 'function onStart() {}', paper, { handlers: ['onStop'] });
+    equals(function() {
+        return exports.onStop();
+    }, 'stopped');
+    equals(function() {
+        return exports.onStart;
+    }, undefined);
+});
