@@ -466,6 +466,7 @@ item.parentToLocal(pointLike);
 item.localToParent(pointLike);
 item.fitBounds(rectangleLike);
 item.fitBounds(rectangleLike, true);
+item.fitBounds(rectangleLike, 'cover');
 item.on('', callback);
 item.on({});
 item.off('', callback);
