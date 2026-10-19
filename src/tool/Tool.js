@@ -51,6 +51,14 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
             'onActivate', 'onDeactivate', 'onEditOptions', 'onKeyDown',
             'onKeyUp'],
 
+    /**
+     * The scope that this tool belongs to.
+     *
+     * @name Tool#scope
+     * @type PaperScope
+     * @bean
+     */
+
     // DOCS: rewrite Tool constructor explanation
     initialize: function Tool(props) {
         PaperScopeItem.call(this);
