@@ -144,3 +144,20 @@ test('view.fitBounds(rectangle[, fit]) (#1688)', function() {
             'rotated: view.bounds');
     view.matrix = new Matrix();
 });
+
+test('view.project (#1634)', function() {
+    var current = paper,
+        scope = new PaperScope().setup(new Size(10, 10)),
+        project = scope.project,
+        view = scope.view;
+    current.activate();
+    equals(function() {
+        return view.project === project && project.view === view;
+    }, true);
+    // The view of the default scope displays its own project:
+    equals(function() {
+        return current.view.project === current.project
+                && current.project !== project;
+    }, true);
+    scope.remove();
+});
