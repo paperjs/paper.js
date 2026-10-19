@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 20:53:27 2026 +0200
+ * Date: Mon Oct 19 21:11:03 2026 +0200
  *
  ***
  *
@@ -13766,7 +13766,11 @@ new function() {
 			if (!point)
 				point = this.getEventPoint(event);
 
-			var inView = this.getBounds().contains(point),
+			var target = DomEvent.getTarget(event),
+				isCovered = nativeMove && !dragging && target
+						&& target.nodeType === 1
+						&& !target.contains(this._element),
+				inView = !isCovered && this.getBounds().contains(point),
 				hit = hitItems && inView && view._project.hitTest(point, {
 					tolerance: 0,
 					fill: true,
