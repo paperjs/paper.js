@@ -21,6 +21,9 @@
 
 ### Changed
 
+- `Item#importJSON()` into an existing item resets the fields that the JSON
+  leaves out, so the item ends up the same as a newly imported one, with its
+  place in the scene graph and its event handlers kept (#1425, #1324).
 - Canvases without `resize` get their CSS size from the view on every screen,
   not only at pixel ratios other than 1, where the page's CSS won (#2088).
 - `#hitTestAll()` reports every segment and handle of a path within the

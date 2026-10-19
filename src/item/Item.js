@@ -2459,6 +2459,22 @@ new function() { // Injection scope for hit-test functions shared with project
      * @return {Item}
      */
     importJSON: function(json) {
+        json = typeof json === 'string' ? JSON.parse(json) : json;
+        var props = json && json[0] === this._class && json[1];
+        if (Base.isPlainObject(props)) {
+            // Importing into this item: first reset the fields that the JSON
+            // leaves out to the values of a new item, so it ends up the same
+            // as a newly imported one (#1425):
+            var item = new this.constructor(Item.NO_INSERT),
+                fields = Base.set({}, this._serializeFields,
+                    this instanceof Group ? null : this._style._defaults),
+                defaults = {};
+            for (var key in fields) {
+                if (!(key in props) && !Base.equals(this[key], item[key]))
+                    defaults[key] = item[key];
+            }
+            this.set(defaults);
+        }
         // Try importing into `this`. If another item is returned, try adding
         // it as a child (this won't be successful on some classes, returning
         // null).
