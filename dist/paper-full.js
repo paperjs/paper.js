@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:16:56 2026 +0200
+ * Date: Mon Oct 19 12:22:40 2026 +0200
  *
  ***
  *
@@ -5966,7 +5966,7 @@ var SymbolItem = Item.extend({
 	},
 
 	_draw: function(ctx, param) {
-		this._definition._item.draw(ctx, param);
+		this._definition._item.draw(ctx, param.extend({ updateMatrix: false }));
 	}
 
 });
@@ -15488,10 +15488,16 @@ new function() {
 			item = new Group(),
 			project = item._project,
 			currentStyle = project._currentStyle,
+			parentSize = rootSize,
 			children = [];
 		if (!isClip && !isDefs) {
 			item = applyAttributes(item, node, options, isRoot);
 			project._currentStyle = item._style.clone();
+		}
+		if (type === 'svg' && !isRoot) {
+			rootSize = new Size(
+					getValue(node, 'width', false, false, false, '100%'),
+					getValue(node, 'height', false, false, false, '100%'));
 		}
 		if (isRoot) {
 			var defs = node.querySelectorAll('defs');
@@ -15512,6 +15518,7 @@ new function() {
 		if (isClip)
 			item = applyAttributes(item.reduce(), node, options, isRoot);
 		project._currentStyle = currentStyle;
+		rootSize = parentSize;
 		if (isClip || isDefs) {
 			item.remove();
 			item = null;
