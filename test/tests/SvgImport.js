@@ -297,6 +297,40 @@ test('Import SVG Image keeps its pixels (#1963)', function(assert) {
     natural.on('load', onLoad);
 });
 
+test('Import SVG Image with crossOrigin (#1094)', function(assert) {
+    var done = assert.async(),
+        canvas = CanvasProvider.getCanvas(4, 2),
+        svg = '<svg xmlns="http://www.w3.org/2000/svg"'
+            + ' xmlns:xlink="http://www.w3.org/1999/xlink">'
+            + '<image xlink:href="' + canvas.toDataURL() + '" id="image"'
+            + ' x="10" y="20"/>'
+            + '<use xlink:href="#image" x="5" y="5"/></svg>',
+        rasters = paper.project.importSVG(svg, { crossOrigin: 'anonymous' })
+            .getItems({ class: Raster }),
+        loaded = 0;
+    // Both the <image> and the raster imported again for <use> get it, and
+    // pass it on to their image elements:
+    equals(rasters.length, 2, 'rasters.length');
+    rasters.forEach(function(raster, i) {
+        equals(raster.crossOrigin, 'anonymous', i + ': raster.crossOrigin');
+        equals(raster.image.crossOrigin, 'anonymous', i + ': image.crossOrigin');
+        raster.on('load', function() {
+            if (++loaded === rasters.length) {
+                // The images still load and are positioned as without it:
+                equals(rasters[0].bounds, new Rectangle(10, 20, 4, 2),
+                        '<image> bounds');
+                equals(rasters[1].bounds, new Rectangle(15, 25, 4, 2),
+                        '<use> bounds');
+                done();
+            }
+        });
+    });
+    // By default, no crossOrigin is set:
+    var raster = paper.project.importSVG(svg).getItem({ class: Raster });
+    equals(raster.crossOrigin, '', 'default: raster.crossOrigin');
+    equals(raster.image.crossOrigin, null, 'default: image.crossOrigin');
+});
+
 test('Import SVG string with leading line-breaks', function() {
     var svg = '\n<?xml version="1.0" encoding="utf-8"?>\n<!-- Some Comment  -->\n<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n  <rect fill="red" width="100" height="100"/>\n</svg>\n'
     var imported = paper.project.importSVG(svg);
