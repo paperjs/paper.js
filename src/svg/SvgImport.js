@@ -505,11 +505,12 @@ new function() {
 
         'font-style': function(item, value) {
             // Paper.js combines the font style with the weight. Applied after
-            // font-weight, which comes first as one of the SvgStyles:
+            // font-weight, which comes first as one of the SvgStyles. Browsers
+            // report the computed weight, so normal comes as 400:
             if (item.setFontWeight && /^(italic|oblique)$/.test(value)) {
                 var weight = ('' + item.getFontWeight())
                         .replace(/\s*\b(italic|oblique)\b/gi, '');
-                item.setFontWeight(weight === 'normal' ? value
+                item.setFontWeight(/^(normal|400)$/.test(weight) ? value
                         : weight + ' ' + value);
             }
         },
