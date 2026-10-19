@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 20:52:04 2026 +0200
+ * Date: Mon Oct 19 21:00:39 2026 +0200
  *
  ***
  *
@@ -4176,8 +4176,11 @@ new function() {
 		function filter(hit) {
 			if (hit && match && !match(hit))
 				hit = null;
-			if (hit && options.all)
+			if (hit && options.all) {
+				if (hit.point)
+					hit.point = that.getGlobalMatrix().transform(hit.point);
 				options.all.push(hit);
+			}
 			return hit;
 		}
 
@@ -4221,7 +4224,7 @@ new function() {
 							: viewMatrix._shiftless().invert()))
 				|| null;
 		}
-		if (res && res.point) {
+		if (res && res.point && !options.all) {
 			res.point = pointMatrix.transform(res.point);
 		}
 		return res;

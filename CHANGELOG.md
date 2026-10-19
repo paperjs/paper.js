@@ -18,6 +18,8 @@
 
 ### Fixed
 
+- Fix the points of `#hitTestAll()` results of items inside transformed
+  groups, which were in the items' own coordinates.
 - Support `strokeScaling: false` on text, exactly for uniform scaling (#1703).
 - Fix the view size of canvases inside elements with CSS transforms, which
   only scale the canvas on screen.
