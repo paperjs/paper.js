@@ -58,6 +58,7 @@ if (typeof window === 'object') {
         options = require('../src/options.js');
     // Override Node.js specific options.
     options.load = true;
+    options.sourced = true;
     options.version += '-load';
     prepro.setup(function() {
         // Return objects to be defined in the preprocess-scope.
