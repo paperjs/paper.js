@@ -70,6 +70,8 @@ declare function isNullable<T>(value: T): null extends T ? true : false;
 new paper.Point(0, 0);
 new paper.Point([ 0, 0 ]);
 new paper.Point({ x: 0, y: 0 });
+new paper.Point({ length: 0, angle: 0 });
+new paper.Point({ length: 0, angleInRadians: 0 });
 new paper.Point(sizeLike);
 new paper.Point(pointLike);
 point.x;
@@ -287,6 +289,7 @@ new paper.Project({} as HTMLCanvasElement);
 new paper.Project('');
 new paper.Project(sizeLike);
 project.view;
+project.scope;
 project.currentStyle;
 project.index;
 project.layers;
@@ -315,9 +318,11 @@ project.importJSON('');
 project.exportSVG();
 project.exportSVG({});
 project.exportSVG({ reuseImages: true });
+project.exportSVG({ idPrefix: '' });
 project.importSVG('');
 project.importSVG({} as SVGElement);
 project.importSVG('', {});
+project.importSVG('', { crossOrigin: 'anonymous' });
 project.importSVG('', callback);
 
 
@@ -351,6 +356,7 @@ item.viewMatrix;
 item.applyMatrix;
 item.project;
 item.view;
+item.scope;
 item.layer;
 item.parent;
 item.children;
@@ -410,9 +416,11 @@ item.importJSON('');
 item.exportSVG();
 item.exportSVG({});
 item.exportSVG({ reuseImages: true });
+item.exportSVG({ idPrefix: '' });
 item.importSVG('');
 item.importSVG({} as SVGElement);
 item.importSVG('', {});
+item.importSVG('', { crossOrigin: 'anonymous' });
 item.importSVG('', callback);
 item.addChild(item);
 item.insertChild(0, item);
@@ -480,6 +488,7 @@ item.removeOnMove();
 item.removeOnDown();
 item.removeOnDrag();
 item.removeOnUp();
+item.tween(object, { easing: 'easeInOutSine' });
 
 
 //
@@ -1018,6 +1027,8 @@ pointText.point;
 
 view.autoUpdate;
 view.element;
+view.project;
+view.scope;
 view.pixelRatio;
 view.resolution;
 view.viewSize;

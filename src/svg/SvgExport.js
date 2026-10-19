@@ -79,7 +79,7 @@ new function() {
             var child = children[i];
             if (child.isClipMask()) {
                 var clip = exportClip(child, options);
-                setDefinition(child, clip, 'clip');
+                setDefinition(child, clip, 'clip', options);
                 SvgElement.set(node, {
                     'clip-path': 'url(#' + clip.id + ')'
                 });
@@ -140,7 +140,7 @@ new function() {
                     height: size.height,
                     href: href
                 }, formatter);
-                setDefinition(href, node, 'image');
+                setDefinition(href, node, 'image', options);
             }
             attrs.href = '#' + node.id;
             return SvgElement.create('use', attrs, formatter);
@@ -235,7 +235,7 @@ new function() {
                 viewBox: formatter.rectangle(bounds)
             });
             node.appendChild(exportSVG(definitionItem, options));
-            setDefinition(definition, node, 'symbol');
+            setDefinition(definition, node, 'symbol', options);
         }
         attrs.href = '#' + node.id;
         attrs.x += bounds.x;
@@ -246,7 +246,7 @@ new function() {
         return SvgElement.create('use', attrs, formatter);
     }
 
-    function exportGradient(color) {
+    function exportGradient(color, options) {
         // NOTE: As long as the fillTransform attribute is not implemented,
         // we need to create a separate gradient object for each gradient,
         // even when they share the same gradient definition.
@@ -299,7 +299,7 @@ new function() {
                 gradientNode.appendChild(
                         SvgElement.create('stop', attrs, formatter));
             }
-            setDefinition(color, gradientNode, 'color');
+            setDefinition(color, gradientNode, 'color', options);
         }
         return 'url(#' + gradientNode.id + ')';
     }
@@ -374,7 +374,7 @@ new function() {
                     attrs[entry.attribute] = value == null ? 'none'
                             : type === 'color' ? value.gradient
                                 // true for noAlpha, see above
-                                ? exportGradient(value, item)
+                                ? exportGradient(value, options)
                                 : value.toCSS(true)
                             : type === 'array' ? value.join(',')
                             : type === 'lookup' ? entry.toSVG[value]
@@ -402,7 +402,7 @@ new function() {
         return item && definitions.svgs[getDefinitionKey(item, type)];
     }
 
-    function setDefinition(item, node, type) {
+    function setDefinition(item, node, type, options) {
         // Make sure the definitions lookup is created before we use it.
         // This is required by 'clip', where getDefinition() is not called.
         if (!definitions)
@@ -410,7 +410,7 @@ new function() {
         // Have different id ranges per type
         var typeId = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
         // Give the svg node an id, and link to it from the item's key.
-        node.id = type + '-' + typeId;
+        node.id = (options.idPrefix || '') + type + '-' + typeId;
         definitions.svgs[getDefinitionKey(item, type)] = node;
     }
 

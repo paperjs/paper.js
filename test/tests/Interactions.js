@@ -352,6 +352,28 @@ test('Item#onMouseEnter() is only re-triggered after mouse leave', function(asse
     expect(2);
 });
 
+test('Item#onMouseEnter() and #onMouseLeave() with settings.hitTolerance (#1971)', function() {
+    var item = new Path.Rectangle(new Point(20, 20), new Size(10)),
+        events = [];
+    item.fillColor = 'red';
+    item.onMouseEnter = item.onMouseLeave = function(event) {
+        events.push(event.type + ' ' + event.point);
+    };
+    // By default, only the item itself is hit:
+    triggerMouseEvent('mousemove', new Point(33, 25));
+    equals(events, [], 'hitTolerance: 0');
+    var hitTolerance = paper.settings.hitTolerance;
+    paper.settings.hitTolerance = 5;
+    // 3 away from the right edge, within the tolerance, then 7 away, outside:
+    triggerMouseEvent('mousemove', new Point(33, 26));
+    triggerMouseEvent('mousemove', new Point(37, 26));
+    paper.settings.hitTolerance = hitTolerance;
+    equals(events, [
+        'mouseenter { x: 33, y: 26 }',
+        'mouseleave { x: 37, y: 26 }'
+    ], 'hitTolerance: 5');
+});
+
 test('Item#onMouseLeave()', function(assert) {
     var done = assert.async();
     var item = new Path.Rectangle(new Point(0, 0), new Size(10));

@@ -15,6 +15,17 @@
   with a unit, drawn and measured through the canvas, and imported from and
   exported to SVG. SVG exports now write `letter-spacing` on text, as they do
   `font-size` (#2066).
+- Add the `easeIn`, `easeOut` and `easeInOut` easings of `Sine`, `Expo` and
+  `Circ` to tweens (#1855).
+- Add the `idPrefix` option to `#exportSVG()`, to prefix the ids of exported
+  definitions (#1709).
+- Add the `crossOrigin` option to `#importSVG()`, for the images it
+  imports (#1094).
+- Support `angleInRadians` in point object literals, e.g.
+  `new Point({ length: 10, angleInRadians: Math.PI })` (#562).
+- Add `Item#scope`, `Project#scope`, `View#project` and `View#scope` (#1634).
+- Let `Path#removeSegments(from, to)` wrap around on closed paths when `from`
+  is larger than `to` (#1881).
 
 ### Changed
 
@@ -57,6 +68,10 @@
   `slice` is treated like `meet` for now (#1129).
 - Size the view of canvases with padding or a border to their content box,
   which made them grow on every setup or resize (#1160, #2033).
+- Use `OffscreenCanvas` in web workers, so rasterizing, compositing and named
+  CSS colors work there. `Raster#toDataURL()` still doesn't (#1643).
+- Use `settings.hitTolerance` for item mouse events too, which used no
+  tolerance (#1971).
 
 ### Deprecated
 
@@ -198,6 +213,7 @@
 - Docs: Document that `new Path(pathData)` holds a single sub-path (#2057).
 - Docs: Document that styles set on symbol items, or inherited by imported
   `<use>` elements, don't reach the symbol definition's items (#1329).
+- Docs: Document using Paper.js with a bundler in the README (#1695).
 
 ## `0.12.20`
 

@@ -100,6 +100,57 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
                 return t < 0.5
                     ? 16 * t * t * t * t * t
                     : 1 + 16 * (--t) * t * t * t * t;
+            },
+
+            // accelerating from zero velocity
+            easeInSine: function(t) {
+                return 1 - Math.cos(t * Math.PI / 2);
+            },
+
+            // decelerating to zero velocity
+            easeOutSine: function(t) {
+                return Math.sin(t * Math.PI / 2);
+            },
+
+            // acceleration until halfway, then deceleration
+            easeInOutSine: function(t) {
+                return (1 - Math.cos(t * Math.PI)) / 2;
+            },
+
+            // accelerating from zero velocity
+            easeInExpo: function(t) {
+                return t === 0 ? 0 : Math.pow(2, 10 * t - 10);
+            },
+
+            // decelerating to zero velocity
+            easeOutExpo: function(t) {
+                return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+            },
+
+            // acceleration until halfway, then deceleration
+            easeInOutExpo: function(t) {
+                return t === 0 || t === 1
+                    ? t
+                    : t < 0.5
+                        ? Math.pow(2, 20 * t - 10) / 2
+                        : 1 - Math.pow(2, 10 - 20 * t) / 2;
+            },
+
+            // accelerating from zero velocity
+            easeInCirc: function(t) {
+                return 1 - Math.sqrt(1 - t * t);
+            },
+
+            // decelerating to zero velocity
+            easeOutCirc: function(t) {
+                return Math.sqrt(1 - (--t) * t);
+            },
+
+            // acceleration until halfway, then deceleration
+            easeInOutCirc: function(t) {
+                return t < 0.5
+                    ? (1 - Math.sqrt(1 - 4 * t * t)) / 2
+                    : (1 + Math.sqrt(1 - 4 * (--t) * t)) / 2;
             }
         })
     },

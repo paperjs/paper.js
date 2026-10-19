@@ -235,8 +235,11 @@ new function() {
         radialgradient: importGradient,
 
         // https://www.w3.org/TR/SVG/struct.html#ImageElement
-        image: function (node) {
-            var raster = new Raster(getValue(node, 'href', true)),
+        image: function (node, type, options) {
+            var raster = new Raster({
+                    crossOrigin: options.crossOrigin,
+                    source: getValue(node, 'href', true)
+                }),
                 // NOTE: 'slice' is treated as 'meet', as it requires clipping.
                 align = /none|x(Min|Mid|Max)Y(Min|Mid|Max)/.exec(
                         getValue(node, 'preserveAspectRatio', true))

@@ -25,6 +25,35 @@ test('activate()', function() {
     }, true);
 });
 
+test('Item#scope, Project#scope, View#project, View#scope (#1634)', function() {
+    var current = paper,
+        scope = new PaperScope().setup(new Size(10, 10)),
+        item = new Path(),
+        project = scope.project,
+        view = scope.view;
+    current.activate();
+    equals(function() {
+        return item.project === project && item.view === view;
+    }, true);
+    equals(function() {
+        return item.scope === scope;
+    }, true);
+    equals(function() {
+        return project.scope === scope;
+    }, true);
+    equals(function() {
+        return view.project === project;
+    }, true);
+    equals(function() {
+        return view.scope === scope;
+    }, true);
+    // The default scope is a different one:
+    equals(function() {
+        return new Path().scope === current && current !== scope;
+    }, true);
+    scope.remove();
+});
+
 test('clear()', function() {
     var project = new Project();
     new Layer();

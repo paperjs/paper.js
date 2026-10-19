@@ -110,15 +110,15 @@ var Color = Base.extend(new function() {
             // Named
             var color = namedColors[string];
             if (!color) {
-                if (window) {
-                    // Use a canvas to draw with the given name, then retrieve
-                    // RGB values and build a cache for all the used colors.
-                    if (!colorCtx) {
-                        colorCtx = CanvasProvider.getContext(1, 1, {
-                            willReadFrequently: true
-                        });
-                        colorCtx.globalCompositeOperation = 'copy';
-                    }
+                // Use a canvas to draw with the given name, then retrieve
+                // RGB values and build a cache for all the used colors.
+                if (!colorCtx) {
+                    colorCtx = CanvasProvider.getContext(1, 1, {
+                        willReadFrequently: true
+                    });
+                }
+                if (colorCtx) {
+                    colorCtx.globalCompositeOperation = 'copy';
                     // Set the current fillStyle to transparent, so that it will be
                     // transparent instead of the previously set color in case the
                     // new color can not be interpreted.
@@ -135,8 +135,7 @@ var Color = Base.extend(new function() {
                         data[2] / 255
                     ];
                 } else {
-                    // Web-workers can't resolve CSS color names, for now.
-                    // TODO: Find a way to make this work there too?
+                    // Without a canvas, CSS color names can't be resolved.
                     color = [0, 0, 0];
                 }
             }

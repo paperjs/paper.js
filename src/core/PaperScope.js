@@ -131,7 +131,8 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      * @option [settings.handleSize=4] {Number} the size of the curve handles
      *     when drawing selections
      * @option [settings.hitTolerance=0] {Number} the default tolerance for hit-
-     *     tests, when no value is specified
+     *     tests, when no value is specified, also used to find the items that
+     *     receive mouse events
      */
 
     /**

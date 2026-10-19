@@ -711,11 +711,14 @@ var Path = PathItem.extend(/** @lends Path# */{
      */
     /**
      * Removes the segments from the specified `from` index to the `to` index
-     * from the path's {@link #segments} array.
+     * from the path's {@link #segments} array. On closed paths, `from` can be
+     * bigger than `to`, to remove the segments from `from` to the end and then
+     * from the beginning up to `to`, wrapping around the closing curve.
      *
      * @param {Number} from the beginning index, inclusive
      * @param {Number} [to=segments.length] the ending index, exclusive
-     * @return {Segment[]} an array containing the removed segments
+     * @return {Segment[]} an array containing the removed segments, in the
+     *     order in which they appeared along the path
      *
      * @example {@paperscript}
      * // Removing segments from a path:
@@ -737,6 +740,10 @@ var Path = PathItem.extend(/** @lends Path# */{
     removeSegments: function(start, end, _includeCurves) {
         start = start || 0;
         end = Base.pick(end, this._segments.length);
+        // On closed paths, wrap around from the end to the beginning:
+        if (start > end && this._closed)
+            return this.removeSegments(start).concat(
+                    this.removeSegments(0, end));
         var segments = this._segments,
             curves = this._curves,
             count = segments.length, // segment count before removal

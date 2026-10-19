@@ -355,6 +355,26 @@ var View = Base.extend(Emitter, /** @lends View# */{
     },
 
     /**
+     * The project that this view displays.
+     *
+     * @bean
+     * @type Project
+     */
+    getProject: function() {
+        return this._project;
+    },
+
+    /**
+     * The paper scope that this view belongs to.
+     *
+     * @bean
+     * @type PaperScope
+     */
+    getScope: function() {
+        return this._scope;
+    },
+
+    /**
      * The ratio between physical pixels and device-independent pixels (DIPs)
      * of the underlying canvas / device.
      * It is `1` for normal displays, and `2` or more for
@@ -1469,7 +1489,6 @@ new function() { // Injection scope for event handling on the browser
             // so for this given mouse event, see hitItems, #_countItemEvent():
             var inView = this.getBounds().contains(point),
                 hit = hitItems && inView && view._project.hitTest(point, {
-                    tolerance: 0,
                     fill: true,
                     stroke: true
                 }),
