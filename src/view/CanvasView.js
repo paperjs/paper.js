@@ -76,9 +76,15 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
             // their style when HiDPI is active, as otherwise they would appear
             // too big.
             if (!PaperScope.hasAttribute(element, 'resize')) {
-                var style = element.style;
-                style.width = width + 'px';
-                style.height = height + 'px';
+                // With border-box sizing, the style includes padding and
+                // border:
+                var style = element.style,
+                    insets = DomElement.getStyles(element).boxSizing
+                        === 'border-box'
+                            ? DomElement.getInsets(element)
+                            : new Size();
+                style.width = (width + insets.width) + 'px';
+                style.height = (height + insets.height) + 'px';
             }
             // Scale the context to counter the fact that we've manually scaled
             // our canvas element.
@@ -113,16 +119,19 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
         return pixels;
     },
 
-    getTextWidth: function(font, lines) {
+    getTextWidth: function(font, lines, letterSpacing) {
         var ctx = this._context,
             prevFont = ctx.font,
+            prevLetterSpacing = ctx.letterSpacing,
             width = 0;
         ctx.font = font;
+        ctx.letterSpacing = letterSpacing;
         // Measure the real width of the text. Unfortunately, there is no sane
         // way to measure text height with canvas.
         for (var i = 0, l = lines.length; i < l; i++)
             width = Math.max(width, ctx.measureText(lines[i]).width);
         ctx.font = prevFont;
+        ctx.letterSpacing = prevLetterSpacing;
         return width;
     },
 
@@ -131,10 +140,13 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
      * event handlers for interaction, animation and load events, this method is
      * invoked for you automatically at the end.
      *
+     * @param {Boolean} [force=false] whether to redraw the view even if nothing
+     * has changed, e.g. after a web font used by text items has finished
+     * loading
      * @return {Boolean} {@true if the view was updated}
      */
-    update: function() {
-        if (!this._needsUpdate)
+    update: function(force) {
+        if (!this._needsUpdate && !force)
             return false;
         var project = this._project,
             ctx = this._context,

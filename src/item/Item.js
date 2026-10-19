@@ -89,13 +89,17 @@ new function() { // Injection scope for various item event handlers
             'onDoubleClick', 'onMouseMove', 'onMouseEnter', 'onMouseLeave'];
     return Base.each(handlers,
         function(name) {
+            // Only count the events of inserted items, so removing an item
+            // from a removed parent doesn't count them down twice:
             this._events[name] = {
                 install: function(type) {
-                    this.getView()._countItemEvent(type, 1);
+                    if (this.isInserted())
+                        this.getView()._countItemEvent(type, 1);
                 },
 
                 uninstall: function(type) {
-                    this.getView()._countItemEvent(type, -1);
+                    if (this.isInserted())
+                        this.getView()._countItemEvent(type, -1);
                 }
             };
         }, {
@@ -344,6 +348,10 @@ new function() { // Injection scope for various item event handlers
     /**
      * The path style of the item.
      *
+     * Styles set on a {@link Group} or {@link Layer} are applied to the
+     * children that it contains at that moment. Items added to it later do not
+     * receive them.
+     *
      * @bean
      * @name Item#getStyle
      * @type Style
@@ -563,12 +571,13 @@ new function() { // Injection scope for various item event handlers
     // TODO: Implement guides
     /**
      * Specifies whether the item functions as a guide. When set to `true`, the
-     * item will be drawn at the end as a guide.
+     * item is drawn as usual, but left out of hit-tests and mouse
+     * interactions. Hit-tests only find guides when `options.guides` is set,
+     * and then only them, see {@link #hitTest(point[, options])}.
      *
      * @name Item#guide
      * @type Boolean
-     * @default true
-     * @ignore
+     * @default false
      */
 
     getSelection: function() {
@@ -886,7 +895,8 @@ new function() { // Injection scope for various item event handlers
         // Read this from bottom to top:
         // Translate to new center:
         matrix.translate(center);
-        // Scale to new Size, if size changes and avoid divisions by 0:
+        // Scale to new Size, if size changes. A zero dimension can't be
+        // scaled, so keep its scaling at 1 to keep the matrix invertible:
         if (rect.width != bounds.width || rect.height != bounds.height) {
             // If a previous transformation resulted in a non-invertible matrix,
             // Restore to the last revertible matrix stored in _backup, and get
@@ -897,8 +907,8 @@ new function() { // Injection scope for various item event handlers
                 bounds = this.getBounds();
             }
             matrix.scale(
-                    bounds.width !== 0 ? rect.width / bounds.width : 0,
-                    bounds.height !== 0 ? rect.height / bounds.height : 0);
+                    bounds.width !== 0 ? rect.width / bounds.width : 1,
+                    bounds.height !== 0 ? rect.height / bounds.height : 1);
         }
         // Translate to bounds center:
         center = bounds.getCenter();
@@ -945,19 +955,26 @@ new function() { // Injection scope for various item event handlers
         // See if we can cache these bounds. We only cache the bounds
         // transformed with the internally stored _matrix, (the default if no
         // matrix is passed).
-        matrix = matrix && matrix._orNullIfIdentity();
         // Do not transform by the internal matrix for internal, untransformed
         // bounds.
         var internal = options.internal && !noInternal,
             cacheItem = options.cacheItem,
-            _matrix = internal ? null : this._matrix._orNullIfIdentity(),
-            // Create a key for caching, reflecting all bounds options.
-            cacheKey = cacheItem && (!matrix || matrix.equals(_matrix))
+            _matrix = internal ? null : this._matrix._orNullIfIdentity();
+        // A passed identity matrix still replaces the internal matrix:
+        matrix = matrix ? matrix._orNullIfIdentity() : _matrix;
+        // Create a key for caching, reflecting all bounds options.
+        var cacheKey = cacheItem && (matrix ? matrix.equals(_matrix) : !_matrix)
                 && this._getBoundsCacheKey(options, internal),
+            // Only items whose bounds come from other items need to pass the
+            // cacheItem chain on, so that clearing caches propagates up:
+            isIntermediate = cacheKey && cacheItem !== this
+                    && (this._children || this._definition),
             bounds = this._bounds;
         // NOTE: This needs to happen before returning cached values, since even
         // then, _boundsCache needs to be kept up-to-date.
         Item._updateBoundsCache(this._parent || this._symbol, cacheItem);
+        if (isIntermediate)
+            Item._updateBoundsCache(this, cacheItem);
         if (cacheKey && bounds && cacheKey in bounds) {
             var cached = bounds[cacheKey];
             return {
@@ -965,7 +982,9 @@ new function() { // Injection scope for various item event handlers
                 nonscaling: cached.nonscaling
             };
         }
-        var res = this._getBounds(matrix || _matrix, options),
+        var res = this._getBounds(matrix, isIntermediate
+                ? Base.set({}, options, { cacheItem: this })
+                : options),
             // Support two versions of _getBounds(): One that directly returns a
             // Rectangle, and one that returns a bounds object with nonscaling.
             rect = res.rect || res,
@@ -1270,33 +1289,16 @@ new function() { // Injection scope for various item event handlers
      * @type Matrix
      */
     getGlobalMatrix: function(_dontClone) {
-        var matrix = this._globalMatrix;
-        if (matrix) {
-            // If there's a cached global matrix for this item, check if all its
-            // parents also have one. If it's missing in any of its parents, it
-            // means the child's cached version isn't valid anymore.
-            // For better performance, we also use the occasion of this loop to
-            // clear cached version of items parents.
-            var parent = this._parent;
-            var parents = [];
-            while (parent) {
-                if (!parent._globalMatrix) {
-                    matrix = null;
-                    // Also clear global matrix of item's parents.
-                    for (var i = 0, l = parents.length; i < l; i++) {
-                        parents[i]._globalMatrix = null;
-                    }
-                    break;
-                }
-                parents.push(parent);
-                parent = parent._parent;
-            }
-        }
-        if (!matrix) {
+        var parent = this._parent,
+            parentMatrix = parent && parent.getGlobalMatrix(true),
+            matrix = this._globalMatrix;
+        // The cached matrix is only valid if it was built from the parent's
+        // current global matrix, which is replaced whenever it changes.
+        if (!matrix || this._parentGlobalMatrix !== parentMatrix) {
             matrix = this._globalMatrix = this._matrix.clone();
-            var parent = this._parent;
-            if (parent)
-                matrix.prepend(parent.getGlobalMatrix(true));
+            if (parentMatrix)
+                matrix.prepend(parentMatrix);
+            this._parentGlobalMatrix = parentMatrix;
         }
         return _dontClone ? matrix : matrix.clone();
     },
@@ -1356,19 +1358,12 @@ new function() { // Injection scope for various item event handlers
 
     _setProject: function(project, installEvents) {
         if (this._project !== project) {
-            // Uninstall events before switching project, then install them
-            // again.
-            // NOTE: _installEvents handles all children too!
-            if (this._project)
-                this._installEvents(false);
             this._project = project;
             var children = this._children;
             for (var i = 0, l = children && children.length; i < l; i++)
                 children[i]._setProject(project);
-            // We need to call _installEvents(true) again, but merge it with
-            // handling of installEvents argument below.
-            installEvents = true;
         }
+        // NOTE: _installEvents handles all children too!
         if (installEvents)
             this._installEvents(true);
     },
@@ -1388,6 +1383,9 @@ new function() { // Injection scope for various item event handlers
      */
     _installEvents: function _installEvents(install) {
         _installEvents.base.call(this, install);
+        // Keep the project's selection in sync with insertion and removal:
+        if (this._selection)
+            this._project._updateSelection(this, !install);
         var children = this._children;
         for (var i = 0, l = children && children.length; i < l; i++)
             children[i]._installEvents(install);
@@ -1471,6 +1469,11 @@ new function() { // Injection scope for various item event handlers
     /**
      * The children items contained within this item. Items that define a
      * {@link #name} can also be accessed by name.
+     *
+     * Only {@link Group}, {@link Layer} and {@link CompoundPath} items can have
+     * children. On all other items, such as {@link Path}, {@link Shape},
+     * {@link Raster}, {@link SymbolItem} and {@link PointText}, `children` is
+     * `undefined`.
      *
      * <b>Please note:</b> The children array should not be modified directly
      * using array functions. To remove single items from the children list, use
@@ -1656,10 +1659,11 @@ new function() { // Injection scope for various item event handlers
     clone: function(options) {
         var copy = new this.constructor(Item.NO_INSERT),
             children = this._children,
-            // Both `insert` and `deep` are true by default:
+            // `insert` follows settings.insertItems and `deep` is true by
+            // default. Also support a boolean parameter for insert:
             insert = Base.pick(options ? options.insert : undefined,
-                    // Also support boolean parameter for insert, default: true.
-                    options === undefined || options === true),
+                    typeof options === 'boolean' ? options
+                        : paper.settings.insertItems),
             deep = Base.pick(options ? options.deep : undefined, true);
         // On items with children, for performance reasons due to the way that
         // styles are currently "flattened" into existing children, we need to
@@ -1835,7 +1839,7 @@ new function() { // Injection scope for various item event handlers
                 // Take resolution into account and scale back to original size.
                 .scale(1 / scale)
         );
-        if (insert === undefined || insert) {
+        if (Base.pick(insert, paper.settings.insertItems)) {
             raster.insertAbove(this);
         }
         return raster;
@@ -1910,8 +1914,10 @@ new function() { // Injection scope for various item event handlers
     // matrices into account properly!
     _asPathItem: function() {
         // Creates a temporary rectangular path item with this item's bounds.
+        // Keep the matrix unapplied, so getIntersections() can override it:
         return new Path.Rectangle({
             rectangle: this.getInternalBounds(),
+            applyMatrix: false,
             matrix: this._matrix,
             insert: false,
         });
@@ -1988,14 +1994,16 @@ new function() { // Injection scope for hit-test functions shared with project
      * Group} or {@link Layer}) at the location of the specified point,
      * returning the first found hit.
      *
-     * The options object allows you to control the specifics of the hit-
-     * test and may contain a combination of the following values:
+     * The options object allows you to control the specifics of the hit-test.
+     * Without options, `fill`, `stroke` and `segments` are hit-tested. As soon
+     * as an options object is passed, only the hit-tests that it sets to `true`
+     * are performed. It may contain a combination of the following values:
      *
      * @name Item#hitTest
      * @function
      *
      * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
-     *     {Number} the tolerance of the hit-test
+     *     {Number} the tolerance of the hit-test, in project coordinates
      * @option options.class {Function} only hit-test against a specific item
      *     class, or any of its sub-classes, by providing the constructor
      *     function against which an `instanceof` check is performed:
@@ -2004,11 +2012,11 @@ new function() { // Injection scope for hit-test functions shared with project
      * @option options.match {Function} a match function to be called for each
      *     found hit result: Return `true` to return the result, `false` to keep
      *     searching
-     * @option [options.fill=true] {Boolean} hit-test the fill of items
-     * @option [options.stroke=true] {Boolean} hit-test the stroke of path
-     *     items, taking into account the setting of stroke color and width
-     * @option [options.segments=true] {Boolean} hit-test for {@link
-     *     Segment#point} of {@link Path} items
+     * @option options.fill {Boolean} hit-test the fill of items
+     * @option options.stroke {Boolean} hit-test the stroke of path items,
+     *     taking into account the setting of stroke color and width
+     * @option options.segments {Boolean} hit-test for {@link Segment#point} of
+     *     {@link Path} items
      * @option options.curves {Boolean} hit-test the curves of path items,
      *     without taking the stroke color or width into account
      * @option options.handles {Boolean} hit-test for the handles ({@link
@@ -2021,7 +2029,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *     the bounding rectangle of items ({@link Item#bounds})
      * @option options.bounds {Boolean} hit-test the corners and side-centers of
      *     the bounding rectangle of items ({@link Item#bounds})
-     * @option options.guides {Boolean} hit-test items that have {@link
+     * @option options.guides {Boolean} only hit-test items that have {@link
      *     Item#guide} set to `true`
      * @option options.selected {Boolean} only hit selected items
      *
@@ -2062,25 +2070,30 @@ new function() { // Injection scope for hit-test functions shared with project
         // this item does not have children, since we'd have to travel up the
         // chain already to determine the rough bounds.
         var matrix = this._matrix,
+            // If this is the first one in the recursion, the point is in global
+            // coordinates, so transform it by the item's globalMatrix:
+            pointMatrix = parentViewMatrix ? matrix : this.getGlobalMatrix(),
             // Keep the accumulated matrices up to this item in options, so we
             // can keep calculating the correct _tolerancePadding values.
             viewMatrix = parentViewMatrix
                     ? parentViewMatrix.appended(matrix)
                     // If this is the first one in the recursion, factor in the
                     // zoom of the view and the globalMatrix of the item.
-                    : this.getGlobalMatrix().prepend(this.getView()._matrix),
+                    : pointMatrix.prepended(this.getView()._matrix),
             // Calculate the transformed padding as 2D size that describes the
             // transformed tolerance circle / ellipse. Make sure it's never 0
             // since we're using it for division (see checkBounds()).
             tolerance = Math.max(options.tolerance, /*#=*/Numerical.EPSILON),
-            // Hit-tests are performed in the item's local coordinate space.
-            // To calculate the correct 2D padding for tolerance, we therefore
-            // need to apply the inverted item matrix.
+            // Hit-tests are performed in the item's local coordinate space,
+            // while the tolerance is in project coordinates. To calculate the
+            // correct 2D padding for tolerance, we therefore need to apply the
+            // inverted accumulated matrices without the view's matrix.
             tolerancePadding = options._tolerancePadding = new Size(
-                    Path._getStrokePadding(tolerance,
-                        matrix._shiftless().invert()));
+                    Path._getStrokePadding(tolerance, viewMatrix
+                        .prepended(this.getView()._matrix.inverted())
+                        ._shiftless().invert()));
         // Transform point to local coordinates.
-        point = matrix._inverseTransform(point);
+        point = pointMatrix._inverseTransform(point);
         // If the matrix is non-reversible, point will now be `null`:
         if (!point || !this._children &&
             !this.getBounds({ internal: true, stroke: true, handle: true })
@@ -2162,7 +2175,7 @@ new function() { // Injection scope for hit-test functions shared with project
         }
         // Transform the point back to the outer coordinate system.
         if (res && res.point) {
-            res.point = matrix.transform(res.point);
+            res.point = pointMatrix.transform(res.point);
         }
         return res;
     },
@@ -2298,7 +2311,9 @@ new function() { // Injection scope for hit-test functions shared with project
      *     items need to at least partly overlap
      *
      * @param {Object|Function} options the criteria to match against
-     * @return {Item[]} the list of matching descendant items
+     * @return {Item[]} the list of matching descendant items, in their
+     *     stacking order from bottom to top, with each item listed before its
+     *     own descendants
      * @see #matches(options)
      */
     getItems: function(options) {
@@ -2341,7 +2356,7 @@ new function() { // Injection scope for hit-test functions shared with project
                     rect = bounds && Rectangle.read([bounds]);
                 param = {
                     items: [], // The list to contain the results.
-                    recursive: obj && obj.recursive !== false,
+                    recursive: !obj || obj.recursive !== false,
                     inside: !!inside,
                     overlapping: !!overlapping,
                     rect: rect,
@@ -2456,6 +2471,12 @@ new function() { // Injection scope for hit-test functions shared with project
      * @option [options.embedImages=true] {Boolean} whether raster images should
      *     be embedded as base64 data inlined in the xlink:href attribute, or
      *     kept as a link to their external URL.
+     * @option [options.reuseImages=false] {Boolean} whether raster images with
+     *     the same content should only be exported once into the `<defs>`
+     *     element, and placed through `<use>` elements referencing it
+     * @option [options.idPrefix=''] {String} a prefix for the ids generated
+     *     for definitions such as gradients, clip paths and symbols, to keep
+     *     them unique when several exported SVGs are placed in one document
      * @option [options.reduceAttributes=true] {Boolean} wether to only include
      *     style attributes in the SVG output that differ from their parents,
      *     or to always include them (much faster but leading to redundancies).
@@ -2470,11 +2491,18 @@ new function() { // Injection scope for hit-test functions shared with project
      * the this item's children list. Note that the item is not cleared first.
      * You can call {@link Item#removeChildren()} to do so.
      *
+     * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
+     * the `<use>` elements that place them as {@link SymbolItem} items. The
+     * styles that `<use>` elements inherit don't reach the symbols' content.
+     *
      * @name Item#importSVG
      * @function
      *
      * @option [options.expandShapes=false] {Boolean} whether imported shape
      *     items should be expanded to path items
+     * @option [options.crossOrigin] {String} the {@link Raster#crossOrigin}
+     *     value of the rasters created for `<image>` elements, to load their
+     *     images with CORS
      * @option options.onLoad {Function} the callback function to call once the
      *     SVG content is loaded from the given URL receiving two arguments: the
      *     converted `item` and the original `svg` data as a string. Only
@@ -2748,6 +2776,8 @@ new function() { // Injection scope for hit-test functions shared with project
      * the child-item is moved outside and the parent is erased. Otherwise, the
      * item itself is returned unmodified.
      *
+     * @param {Object} [options] the options passed on to {@link
+     *     Path#reduce(options)}
      * @return {Item} the reduced item
      */
     reduce: function(options) {
@@ -2808,6 +2838,9 @@ new function() { // Injection scope for hit-test functions shared with project
             // Handle named children separately from index:
             if (this._name)
                 this._removeNamed();
+            // Uninstall events while still inserted, as layers aren't anymore
+            // after Base.splice() below.
+            this._installEvents(false);
             // Handle index separately from owner: There are situations where
             // the item is already removed from its list through Base.splice()
             // and index set to undefined, but the owner is still set,
@@ -2819,7 +2852,6 @@ new function() { // Injection scope for hit-test functions shared with project
                             || this.getPreviousSibling();
                 Base.splice(owner._children, null, index, 1);
             }
-            this._installEvents(false);
             // Notify self of the insertion change. We only need this
             // notification if we're tracking changes for now.
             if (notifySelf && project._changes)
@@ -3040,7 +3072,8 @@ new function() { // Injection scope for hit-test functions shared with project
 
     /**
      * Checks if this item is above the specified item in the stacking order
-     * of the project.
+     * of the project. If one item is a descendant of the other, neither is
+     * above the other and `false` is returned.
      *
      * @param {Item} item the item to check against
      * @return {Boolean} {@true if it is above the specified item}
@@ -3051,7 +3084,8 @@ new function() { // Injection scope for hit-test functions shared with project
 
     /**
      * Checks if the item is below the specified item in the stacking order of
-     * the project.
+     * the project. If one item is a descendant of the other, neither is below
+     * the other and `false` is returned.
      *
      * @param {Item} item the item to check against
      * @return {Boolean} {@true if it is below the specified item}
@@ -3742,11 +3776,15 @@ new function() { // Injection scope for hit-test functions shared with project
     },
 
     /**
-     * Transform the item so that its {@link #bounds} fit within the specified
-     * rectangle, without changing its aspect ratio.
+     * Transform the item so that its {@link #bounds} are centered in the
+     * specified rectangle and fitted to it as described by `fit`.
      *
      * @param {Rectangle} rectangle
-     * @param {Boolean} [fill=false]
+     * @param {String|Boolean} [fit='contain'] how to fit the item, as in CSS's
+     * `object-fit`: `'contain'` fits all of it within the rectangle, `'cover'`
+     * makes it cover the whole rectangle, and `'fill'` stretches it to the
+     * rectangle, changing its aspect ratio. The deprecated `true` and `false`
+     * stand for `'cover'` and `'contain'`.
      *
      * @example {@paperscript height=100}
      * // Fitting an item to the bounding rectangle of another item's bounding
@@ -3774,7 +3812,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @example {@paperscript height=100}
      * // Fitting an item to the bounding rectangle of another item's bounding
-     * // rectangle with the fill parameter set to true:
+     * // rectangle, covering all of it:
      *
      * // Create a rectangle shaped path with its top left corner
      * // at {x: 80, y: 25} and a size of {width: 75, height: 50}:
@@ -3794,7 +3832,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * // Fit the circlePath to the bounding rectangle of
      * // the rectangular path:
-     * circlePath.fitBounds(path.bounds, true);
+     * circlePath.fitBounds(path.bounds, 'cover');
      *
      * @example {@paperscript height=200}
      * // Fitting an item to the bounding rectangle of the view
@@ -3807,21 +3845,36 @@ new function() { // Injection scope for hit-test functions shared with project
      * // Fit the path to the bounding rectangle of the view:
      * path.fitBounds(view.bounds);
      */
-    fitBounds: function(rectangle, fill) {
-        // TODO: Think about passing options with various ways of defining
-        // fitting. Compare with InDesign fitting to see possible options.
+    fitBounds: function(rectangle, fit) {
         rectangle = Rectangle.read(arguments);
-        fill = Base.read(arguments);
+        fit = Base.read(arguments);
+        // TODO: Remove the boolean values in 1.0.0? (deprecated October 2026)
+        if (fit === true)
+            fit = 'cover';
         var bounds = this.getBounds(),
-            itemRatio = bounds.height / bounds.width,
-            rectRatio = rectangle.height / rectangle.width,
-            scale = (fill ? itemRatio > rectRatio : itemRatio < rectRatio)
-                    ? rectangle.width / bounds.width
-                    : rectangle.height / bounds.height,
-            newBounds = new Rectangle(new Point(),
-                    new Size(bounds.width * scale, bounds.height * scale));
-        newBounds.setCenter(rectangle.getCenter());
-        this.setBounds(newBounds);
+            hor = rectangle.width / bounds.width,
+            ver = rectangle.height / bounds.height,
+            size;
+
+        // Empty sides of the item or the rectangle give ratios of Infinity or
+        // 0, which can't scale it, so only use the others:
+        function isScaling(ratio) {
+            return ratio > 0 && isFinite(ratio);
+        }
+
+        if (fit === 'fill') {
+            size = new Size(
+                isScaling(hor) ? rectangle.width : bounds.width,
+                isScaling(ver) ? rectangle.height : bounds.height);
+        } else {
+            var ratios = [hor, ver].filter(isScaling),
+                scale = !ratios.length ? 1
+                    : fit === 'cover' ? Math.max.apply(Math, ratios)
+                    : Math.min.apply(Math, ratios);
+            size = bounds.getSize().multiply(scale);
+        }
+        this.setBounds(new Rectangle(new Point(), size)
+                .setCenter(rectangle.getCenter()));
     }
 }), /** @lends Item# */{
     /**
@@ -4339,16 +4392,18 @@ new function() { // Injection scope for hit-test functions shared with project
      * Not defined in Path as it is required by other classes too,
      * e.g. PointText.
      */
-    _setStyles: function(ctx, param, viewMatrix) {
+    _setStyles: function(ctx, param, viewMatrix, strokeMatrix) {
         // We can access internal properties since we're only using this on
         // items without children, where styles would be merged.
         var style = this._style,
             matrix = this._matrix;
         if (style.hasFill()) {
-            ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx, matrix);
+            ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx, matrix,
+                    strokeMatrix);
         }
         if (style.hasStroke()) {
-            ctx.strokeStyle = style.getStrokeColor().toCanvasStyle(ctx, matrix);
+            ctx.strokeStyle = style.getStrokeColor().toCanvasStyle(ctx,
+                    matrix, strokeMatrix);
             ctx.lineWidth = style.getStrokeWidth();
             var strokeJoin = style.getStrokeJoin(),
                 strokeCap = style.getStrokeCap(),
@@ -4404,7 +4459,8 @@ new function() { // Injection scope for hit-test functions shared with project
         var matrices = param.matrices,
             viewMatrix = param.viewMatrix,
             matrix = this._matrix,
-            globalMatrix = matrices[matrices.length - 1].appended(matrix);
+            parentMatrix = matrices[matrices.length - 1],
+            globalMatrix = parentMatrix.appended(matrix);
         // If this item is not invertible, do not draw it. It appears to be a
         // good idea generally to not draw in such circumstances, e.g. SVG
         // handles it the same way.
@@ -4421,7 +4477,10 @@ new function() { // Injection scope for hit-test functions shared with project
         // Only keep track of transformation if told so. See Project#draw()
         matrices.push(globalMatrix);
         if (param.updateMatrix) {
+            // Remember the parent's global matrix that this one is built from,
+            // see getGlobalMatrix(). Layers start from identity, not a parent.
             this._globalMatrix = globalMatrix;
+            this._parentGlobalMatrix = this._parent && parentMatrix;
         }
 
         // If the item has a blendMode or is defining an opacity, draw it on
@@ -4448,9 +4507,32 @@ new function() { // Injection scope for hit-test functions shared with project
             mainCtx, itemOffset, prevOffset;
         if (!direct) {
             // Apply the parent's global matrix to the calculation of correct
-            // bounds.
-            var bounds = this.getStrokeBounds(viewMatrix);
-            if (!bounds.width || !bounds.height) {
+            // bounds, and include the item's shadow (#1628).
+            var bounds = this.getStrokeBounds(viewMatrix),
+                style = this._style;
+            // Pass true for _dontMerge, as groups don't draw the shadows of
+            // their children.
+            if (style.getShadowColor(true)) {
+                // Transform the shadow the same way as in _setStyles(), and
+                // cover its blur up to three times the standard deviation,
+                // which is half of shadowBlur in Canvas.
+                var mx = viewMatrix._shiftless(),
+                    blur = mx.transform(
+                            new Point(style.getShadowBlur(true), 0)),
+                    offset = mx.transform(style.getShadowOffset(true));
+                bounds = bounds.unite(
+                    new Rectangle(bounds.getPoint().add(offset),
+                        bounds.getSize()).expand(blur.getLength() * 3));
+            }
+            // Only cover the part of the bounds that is visible on the canvas
+            // that we're drawing into (#1644). NOTE: Item#rasterize() doesn't
+            // set param.offset, so new Point() turns it into 0, 0.
+            var canvas = ctx.canvas;
+            bounds = bounds.intersect(
+                    new Rectangle(new Point(param.offset),
+                        new Size(canvas.width, canvas.height)
+                            .divide(pixelRatio)));
+            if (bounds.width <= 0 || bounds.height <= 0) {
                 // Item won't be drawn so its global matrix need to be removed
                 // from the stack (#1561).
                 matrices.pop();
@@ -4496,12 +4578,19 @@ new function() { // Injection scope for hit-test functions shared with project
             // on the temporary canvas.
             ctx.translate(-itemOffset.x, -itemOffset.y);
         }
-        if (transform) {
+        if (clip) {
+            // The clip item is a sibling of this item, so draw it with the
+            // parent's matrices before applying this item's matrix (#1594):
+            (param.viewMatrix ? param.viewMatrix.appended(parentMatrix)
+                    : parentMatrix).applyToContext(ctx);
+            param.clipItem.draw(ctx, param.extend({
+                clip: true,
+                matrices: matrices.slice(0, -1)
+            }));
+            matrix.applyToContext(ctx);
+        } else if (transform) {
             // Apply viewMatrix when drawing into temporary canvas.
             (direct ? matrix : viewMatrix).applyToContext(ctx);
-        }
-        if (clip) {
-            param.clipItem.draw(ctx, param.extend({ clip: true }));
         }
         if (strokeMatrix) {
             // Reset the transformation but take HiDPI pixel ratio into account.
@@ -4567,8 +4656,9 @@ new function() { // Injection scope for hit-test functions shared with project
             positionSelected = selection & /*#=*/ItemSelection.POSITION;
         if (!this._drawSelected)
             itemSelected = false;
+        // Items of symbol definitions are drawn too, but aren't inserted:
         if ((itemSelected || boundsSelected || positionSelected)
-                && this._isUpdated(updateVersion)) {
+                && this._isUpdated(updateVersion) && this.isInserted()) {
             // Allow definition of selected color on a per item and per
             // layer level, with a fallback to #009dec
             var layer,
@@ -4785,7 +4875,9 @@ new function() { // Injection scope for hit-test functions shared with project
      * of the easing: {@values 'linear' 'easeInQuad' 'easeOutQuad'
      * 'easeInOutQuad' 'easeInCubic' 'easeOutCubic' 'easeInOutCubic'
      * 'easeInQuart' 'easeOutQuart' 'easeInOutQuart' 'easeInQuint'
-     * 'easeOutQuint' 'easeInOutQuint'}
+     * 'easeOutQuint' 'easeInOutQuint' 'easeInSine' 'easeOutSine'
+     * 'easeInOutSine' 'easeInExpo' 'easeOutExpo' 'easeInOutExpo'
+     * 'easeInCirc' 'easeOutCirc' 'easeInOutCirc'}
      * @option [options.start=true] {Boolean} whether to start tweening automatically
      *
      * @function

@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.20 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.13.0 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 18 17:03:51 2026 +0200
+ * Date: Mon Oct 19 15:20:53 2026 +0200
  *
  ***
  *
@@ -35,6 +35,9 @@ var paper = function(self, undefined) {
 self = self || require('./node/self.js');
 var window = self.window,
 	document = self.document;
+
+if (window && !document.createElement('canvas').getContext('2d'))
+	window = null;
 
 var Base = new function() {
 	var hidden = /^(statics|enumerable|beans|preserve)$/,
@@ -821,7 +824,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: "0.12.20",
+	version: "0.13.0",
 
 	getView: function() {
 		var project = this.project;
@@ -1649,6 +1652,16 @@ var Point = Base.extend({
 		);
 	},
 
+	clamp: function() {
+		var args = arguments,
+			min = Point.read(args),
+			max = Point.read(args);
+		return new Point(
+			Numerical.clamp(this.x, min.x, max.x),
+			Numerical.clamp(this.y, min.y, max.y)
+		);
+	},
+
 	statics: {
 		min: function() {
 			var args = arguments,
@@ -1930,10 +1943,11 @@ var Rectangle = Base.extend({
 						arg0.width || 0, arg0.height || 0);
 				read = 1;
 			} else if (arg0.from === undefined && arg0.to === undefined) {
-				this._set(0, 0, 0, 0);
-				if (Base.readSupported(args, this)) {
+				var builder = new RectangleBuilder();
+				if (Base.readSupported(args, builder)) {
 					read = 1;
 				}
+				this._set(builder.x, builder.y, builder.width, builder.height);
 			}
 		}
 		if (read === undefined) {
@@ -2028,24 +2042,10 @@ var Rectangle = Base.extend({
 		return new ctor(this.width, this.height, this, 'setSize');
 	},
 
-	_fw: 1,
-	_fh: 1,
-
 	setSize: function() {
-		var size = Size.read(arguments),
-			sx = this._sx,
-			sy = this._sy,
-			w = size.width,
-			h = size.height;
-		if (sx) {
-			this.x += (this.width - w) * sx;
-		}
-		if (sy) {
-			this.y += (this.height - h) * sy;
-		}
-		this.width = w;
-		this.height = h;
-		this._fw = this._fh = 1;
+		var size = Size.read(arguments);
+		this.width = size.width;
+		this.height = size.height;
 	},
 
 	getLeft: function() {
@@ -2053,12 +2053,8 @@ var Rectangle = Base.extend({
 	},
 
 	setLeft: function(left) {
-		if (!this._fw) {
-			var amount = left - this.x;
-			this.width -= this._sx === 0.5 ? amount * 2 : amount;
-		}
+		this.width -= left - this.x;
 		this.x = left;
-		this._sx = this._fw = 0;
 	},
 
 	getTop: function() {
@@ -2066,12 +2062,8 @@ var Rectangle = Base.extend({
 	},
 
 	setTop: function(top) {
-		if (!this._fh) {
-			var amount = top - this.y;
-			this.height -= this._sy === 0.5 ? amount * 2 : amount;
-		}
+		this.height -= top - this.y;
 		this.y = top;
-		this._sy = this._fh = 0;
 	},
 
 	getRight: function() {
@@ -2079,13 +2071,7 @@ var Rectangle = Base.extend({
 	},
 
 	setRight: function(right) {
-		if (!this._fw) {
-			var amount = right - this.x;
-			this.width = this._sx === 0.5 ? amount * 2 : amount;
-		}
-		this.x = right - this.width;
-		this._sx = 1;
-		this._fw = 0;
+		this.width = right - this.x;
 	},
 
 	getBottom: function() {
@@ -2093,13 +2079,7 @@ var Rectangle = Base.extend({
 	},
 
 	setBottom: function(bottom) {
-		if (!this._fh) {
-			var amount = bottom - this.y;
-			this.height = this._sy === 0.5 ? amount * 2 : amount;
-		}
-		this.y = bottom - this.height;
-		this._sy = 1;
-		this._fh = 0;
+		this.height = bottom - this.y;
 	},
 
 	getCenterX: function() {
@@ -2107,16 +2087,7 @@ var Rectangle = Base.extend({
 	},
 
 	setCenterX: function(x) {
-		if (this._fw || this._sx === 0.5) {
-			this.x = x - this.width / 2;
-		} else {
-			if (this._sx) {
-				this.x += (x - this.x) * 2 * this._sx;
-			}
-			this.width = (x - this.x) * 2;
-		}
-		this._sx = 0.5;
-		this._fw = 0;
+		this.x = x - this.width / 2;
 	},
 
 	getCenterY: function() {
@@ -2124,16 +2095,7 @@ var Rectangle = Base.extend({
 	},
 
 	setCenterY: function(y) {
-		if (this._fh || this._sy === 0.5) {
-			this.y = y - this.height / 2;
-		} else {
-			if (this._sy) {
-				this.y += (y - this.y) * 2 * this._sy;
-			}
-			this.height = (y - this.y) * 2;
-		}
-		this._sy = 0.5;
-		this._fh = 0;
+		this.y = y - this.height / 2;
 	},
 
 	getCenter: function(_dontLink) {
@@ -2317,6 +2279,94 @@ new function() {
 			}
 		})
 	);
+});
+
+var RectangleBuilder = Rectangle.extend({
+	beans: true,
+
+	_fw: 1,
+	_fh: 1,
+
+	setSize: function() {
+		var size = Size.read(arguments),
+			sx = this._sx,
+			sy = this._sy,
+			w = size.width,
+			h = size.height;
+		if (sx) {
+			this.x += (this.width - w) * sx;
+		}
+		if (sy) {
+			this.y += (this.height - h) * sy;
+		}
+		this.width = w;
+		this.height = h;
+		this._fw = this._fh = 1;
+	},
+
+	setLeft: function(left) {
+		if (!this._fw) {
+			var amount = left - this.x;
+			this.width -= this._sx === 0.5 ? amount * 2 : amount;
+		}
+		this.x = left;
+		this._sx = this._fw = 0;
+	},
+
+	setTop: function(top) {
+		if (!this._fh) {
+			var amount = top - this.y;
+			this.height -= this._sy === 0.5 ? amount * 2 : amount;
+		}
+		this.y = top;
+		this._sy = this._fh = 0;
+	},
+
+	setRight: function(right) {
+		if (!this._fw) {
+			var amount = right - this.x;
+			this.width = this._sx === 0.5 ? amount * 2 : amount;
+		}
+		this.x = right - this.width;
+		this._sx = 1;
+		this._fw = 0;
+	},
+
+	setBottom: function(bottom) {
+		if (!this._fh) {
+			var amount = bottom - this.y;
+			this.height = this._sy === 0.5 ? amount * 2 : amount;
+		}
+		this.y = bottom - this.height;
+		this._sy = 1;
+		this._fh = 0;
+	},
+
+	setCenterX: function(x) {
+		if (this._fw || this._sx === 0.5) {
+			this.x = x - this.width / 2;
+		} else {
+			if (this._sx) {
+				this.x += (x - this.x) * 2 * this._sx;
+			}
+			this.width = (x - this.x) * 2;
+		}
+		this._sx = 0.5;
+		this._fw = 0;
+	},
+
+	setCenterY: function(y) {
+		if (this._fh || this._sy === 0.5) {
+			this.y = y - this.height / 2;
+		} else {
+			if (this._sy) {
+				this.y += (y - this.y) * 2 * this._sy;
+			}
+			this.height = (y - this.y) * 2;
+		}
+		this._sy = 0.5;
+		this._fh = 0;
+	}
 });
 
 var Matrix = Base.extend({
@@ -2870,8 +2920,10 @@ var Line = Base.extend({
 					: vy === 0 ? (vx < 0 ? y - py : py - y)
 					: ((x - px) * vy - (y - py) * vx) / (
 						vy > vx
-							? vy * Math.sqrt(1 + (vx * vx) / (vy * vy))
-							: vx * Math.sqrt(1 + (vy * vy) / (vx * vx))
+							? Math.abs(vy)
+								* Math.sqrt(1 + (vx * vx) / (vy * vy))
+							: Math.abs(vx)
+								* Math.sqrt(1 + (vy * vy) / (vx * vx))
 					);
 		},
 
@@ -3008,10 +3060,10 @@ var Project = PaperScopeItem.extend({
 		return items;
 	},
 
-	_updateSelection: function(item) {
+	_updateSelection: function(item, remove) {
 		var id = item._id,
 			selectionItems = this._selectionItems;
-		if (item._selection) {
+		if (item._selection && !remove && item.isInserted()) {
 			if (selectionItems[id] !== item) {
 				this._selectionCount++;
 				selectionItems[id] = item;
@@ -3120,7 +3172,7 @@ var Project = PaperScopeItem.extend({
 
 		if (this._selectionCount > 0) {
 			ctx.save();
-			ctx.strokeWidth = 1;
+			ctx.lineWidth = 1;
 			var items = this._selectionItems,
 				size = this._scope.settings.handleSize,
 				version = this._updateVersion;
@@ -3183,11 +3235,13 @@ new function() {
 		function(name) {
 			this._events[name] = {
 				install: function(type) {
-					this.getView()._countItemEvent(type, 1);
+					if (this.isInserted())
+						this.getView()._countItemEvent(type, 1);
 				},
 
 				uninstall: function(type) {
-					this.getView()._countItemEvent(type, -1);
+					if (this.isInserted())
+						this.getView()._countItemEvent(type, -1);
 				}
 			};
 		}, {
@@ -3496,8 +3550,8 @@ new function() {
 				bounds = this.getBounds();
 			}
 			matrix.scale(
-					bounds.width !== 0 ? rect.width / bounds.width : 0,
-					bounds.height !== 0 ? rect.height / bounds.height : 0);
+					bounds.width !== 0 ? rect.width / bounds.width : 1,
+					bounds.height !== 0 ? rect.height / bounds.height : 1);
 		}
 		center = bounds.getCenter();
 		matrix.translate(-center.x, -center.y);
@@ -3521,14 +3575,18 @@ new function() {
 	},
 
 	_getCachedBounds: function(matrix, options, noInternal) {
-		matrix = matrix && matrix._orNullIfIdentity();
 		var internal = options.internal && !noInternal,
 			cacheItem = options.cacheItem,
-			_matrix = internal ? null : this._matrix._orNullIfIdentity(),
-			cacheKey = cacheItem && (!matrix || matrix.equals(_matrix))
+			_matrix = internal ? null : this._matrix._orNullIfIdentity();
+		matrix = matrix ? matrix._orNullIfIdentity() : _matrix;
+		var cacheKey = cacheItem && (matrix ? matrix.equals(_matrix) : !_matrix)
 				&& this._getBoundsCacheKey(options, internal),
+			isIntermediate = cacheKey && cacheItem !== this
+					&& (this._children || this._definition),
 			bounds = this._bounds;
 		Item._updateBoundsCache(this._parent || this._symbol, cacheItem);
+		if (isIntermediate)
+			Item._updateBoundsCache(this, cacheItem);
 		if (cacheKey && bounds && cacheKey in bounds) {
 			var cached = bounds[cacheKey];
 			return {
@@ -3536,7 +3594,9 @@ new function() {
 				nonscaling: cached.nonscaling
 			};
 		}
-		var res = this._getBounds(matrix || _matrix, options),
+		var res = this._getBounds(matrix, isIntermediate
+				? Base.set({}, options, { cacheItem: this })
+				: options),
 			rect = res.rect || res,
 			style = this._style,
 			nonscaling = res.nonscaling || style.hasStroke()
@@ -3700,27 +3760,14 @@ new function() {
 	},
 
 	getGlobalMatrix: function(_dontClone) {
-		var matrix = this._globalMatrix;
-		if (matrix) {
-			var parent = this._parent;
-			var parents = [];
-			while (parent) {
-				if (!parent._globalMatrix) {
-					matrix = null;
-					for (var i = 0, l = parents.length; i < l; i++) {
-						parents[i]._globalMatrix = null;
-					}
-					break;
-				}
-				parents.push(parent);
-				parent = parent._parent;
-			}
-		}
-		if (!matrix) {
+		var parent = this._parent,
+			parentMatrix = parent && parent.getGlobalMatrix(true),
+			matrix = this._globalMatrix;
+		if (!matrix || this._parentGlobalMatrix !== parentMatrix) {
 			matrix = this._globalMatrix = this._matrix.clone();
-			var parent = this._parent;
-			if (parent)
-				matrix.prepend(parent.getGlobalMatrix(true));
+			if (parentMatrix)
+				matrix.prepend(parentMatrix);
+			this._parentGlobalMatrix = parentMatrix;
 		}
 		return _dontClone ? matrix : matrix.clone();
 	},
@@ -3747,13 +3794,10 @@ new function() {
 
 	_setProject: function(project, installEvents) {
 		if (this._project !== project) {
-			if (this._project)
-				this._installEvents(false);
 			this._project = project;
 			var children = this._children;
 			for (var i = 0, l = children && children.length; i < l; i++)
 				children[i]._setProject(project);
-			installEvents = true;
 		}
 		if (installEvents)
 			this._installEvents(true);
@@ -3765,6 +3809,8 @@ new function() {
 
 	_installEvents: function _installEvents(install) {
 		_installEvents.base.call(this, install);
+		if (this._selection)
+			this._project._updateSelection(this, !install);
 		var children = this._children;
 		for (var i = 0, l = children && children.length; i < l; i++)
 			children[i]._installEvents(install);
@@ -3852,7 +3898,8 @@ new function() {
 		var copy = new this.constructor(Item.NO_INSERT),
 			children = this._children,
 			insert = Base.pick(options ? options.insert : undefined,
-					options === undefined || options === true),
+					typeof options === 'boolean' ? options
+						: paper.settings.insertItems),
 			deep = Base.pick(options ? options.deep : undefined, true);
 		if (children)
 			copy.copyAttributes(this);
@@ -3940,7 +3987,7 @@ new function() {
 				.translate(topLeft.add(boundsSize.divide(2)))
 				.scale(1 / scale)
 		);
-		if (insert === undefined || insert) {
+		if (Base.pick(insert, paper.settings.insertItems)) {
 			raster.insertAbove(this);
 		}
 		return raster;
@@ -3973,6 +4020,7 @@ new function() {
 	_asPathItem: function() {
 		return new Path.Rectangle({
 			rectangle: this.getInternalBounds(),
+			applyMatrix: false,
 			matrix: this._matrix,
 			insert: false,
 		});
@@ -4036,14 +4084,16 @@ new function() {
 		}
 
 		var matrix = this._matrix,
+			pointMatrix = parentViewMatrix ? matrix : this.getGlobalMatrix(),
 			viewMatrix = parentViewMatrix
 					? parentViewMatrix.appended(matrix)
-					: this.getGlobalMatrix().prepend(this.getView()._matrix),
+					: pointMatrix.prepended(this.getView()._matrix),
 			tolerance = Math.max(options.tolerance, 1e-12),
 			tolerancePadding = options._tolerancePadding = new Size(
-					Path._getStrokePadding(tolerance,
-						matrix._shiftless().invert()));
-		point = matrix._inverseTransform(point);
+					Path._getStrokePadding(tolerance, viewMatrix
+						.prepended(this.getView()._matrix.inverted())
+						._shiftless().invert()));
+		point = pointMatrix._inverseTransform(point);
 		if (!point || !this._children &&
 			!this.getBounds({ internal: true, stroke: true, handle: true })
 				.expand(tolerancePadding.multiply(2))._containsPoint(point)) {
@@ -4108,7 +4158,7 @@ new function() {
 				|| null;
 		}
 		if (res && res.point) {
-			res.point = matrix.transform(res.point);
+			res.point = pointMatrix.transform(res.point);
 		}
 		return res;
 	},
@@ -4188,7 +4238,7 @@ new function() {
 					rect = bounds && Rectangle.read([bounds]);
 				param = {
 					items: [],
-					recursive: obj && obj.recursive !== false,
+					recursive: !obj || obj.recursive !== false,
 					inside: !!inside,
 					overlapping: !!overlapping,
 					rect: rect,
@@ -4382,13 +4432,13 @@ new function() {
 		if (owner) {
 			if (this._name)
 				this._removeNamed();
+			this._installEvents(false);
 			if (index != null) {
 				if (project._activeLayer === this)
 					project._activeLayer = this.getNextSibling()
 							|| this.getPreviousSibling();
 				Base.splice(owner._children, null, index, 1);
 			}
-			this._installEvents(false);
 			if (notifySelf && project._changes)
 				this._changed(5);
 			if (notifyParent)
@@ -4647,30 +4697,46 @@ new function() {
 		return this._matrix._transformPoint(Point.read(arguments));
 	},
 
-	fitBounds: function(rectangle, fill) {
+	fitBounds: function(rectangle, fit) {
 		rectangle = Rectangle.read(arguments);
-		fill = Base.read(arguments);
+		fit = Base.read(arguments);
+		if (fit === true)
+			fit = 'cover';
 		var bounds = this.getBounds(),
-			itemRatio = bounds.height / bounds.width,
-			rectRatio = rectangle.height / rectangle.width,
-			scale = (fill ? itemRatio > rectRatio : itemRatio < rectRatio)
-					? rectangle.width / bounds.width
-					: rectangle.height / bounds.height,
-			newBounds = new Rectangle(new Point(),
-					new Size(bounds.width * scale, bounds.height * scale));
-		newBounds.setCenter(rectangle.getCenter());
-		this.setBounds(newBounds);
+			hor = rectangle.width / bounds.width,
+			ver = rectangle.height / bounds.height,
+			size;
+
+		function isScaling(ratio) {
+			return ratio > 0 && isFinite(ratio);
+		}
+
+		if (fit === 'fill') {
+			size = new Size(
+				isScaling(hor) ? rectangle.width : bounds.width,
+				isScaling(ver) ? rectangle.height : bounds.height);
+		} else {
+			var ratios = [hor, ver].filter(isScaling),
+				scale = !ratios.length ? 1
+					: fit === 'cover' ? Math.max.apply(Math, ratios)
+					: Math.min.apply(Math, ratios);
+			size = bounds.getSize().multiply(scale);
+		}
+		this.setBounds(new Rectangle(new Point(), size)
+				.setCenter(rectangle.getCenter()));
 	}
 }), {
 
-	_setStyles: function(ctx, param, viewMatrix) {
+	_setStyles: function(ctx, param, viewMatrix, strokeMatrix) {
 		var style = this._style,
 			matrix = this._matrix;
 		if (style.hasFill()) {
-			ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx, matrix);
+			ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx, matrix,
+					strokeMatrix);
 		}
 		if (style.hasStroke()) {
-			ctx.strokeStyle = style.getStrokeColor().toCanvasStyle(ctx, matrix);
+			ctx.strokeStyle = style.getStrokeColor().toCanvasStyle(ctx,
+					matrix, strokeMatrix);
 			ctx.lineWidth = style.getStrokeWidth();
 			var strokeJoin = style.getStrokeJoin(),
 				strokeCap = style.getStrokeCap(),
@@ -4715,7 +4781,8 @@ new function() {
 		var matrices = param.matrices,
 			viewMatrix = param.viewMatrix,
 			matrix = this._matrix,
-			globalMatrix = matrices[matrices.length - 1].appended(matrix);
+			parentMatrix = matrices[matrices.length - 1],
+			globalMatrix = parentMatrix.appended(matrix);
 		if (!globalMatrix.isInvertible())
 			return;
 
@@ -4725,6 +4792,7 @@ new function() {
 		matrices.push(globalMatrix);
 		if (param.updateMatrix) {
 			this._globalMatrix = globalMatrix;
+			this._parentGlobalMatrix = this._parent && parentMatrix;
 		}
 
 		var blendMode = this._blendMode,
@@ -4739,8 +4807,23 @@ new function() {
 			pixelRatio = param.pixelRatio || 1,
 			mainCtx, itemOffset, prevOffset;
 		if (!direct) {
-			var bounds = this.getStrokeBounds(viewMatrix);
-			if (!bounds.width || !bounds.height) {
+			var bounds = this.getStrokeBounds(viewMatrix),
+				style = this._style;
+			if (style.getShadowColor(true)) {
+				var mx = viewMatrix._shiftless(),
+					blur = mx.transform(
+							new Point(style.getShadowBlur(true), 0)),
+					offset = mx.transform(style.getShadowOffset(true));
+				bounds = bounds.unite(
+					new Rectangle(bounds.getPoint().add(offset),
+						bounds.getSize()).expand(blur.getLength() * 3));
+			}
+			var canvas = ctx.canvas;
+			bounds = bounds.intersect(
+					new Rectangle(new Point(param.offset),
+						new Size(canvas.width, canvas.height)
+							.divide(pixelRatio)));
+			if (bounds.width <= 0 || bounds.height <= 0) {
 				matrices.pop();
 				return;
 			}
@@ -4766,11 +4849,16 @@ new function() {
 		} else if (transform) {
 			ctx.translate(-itemOffset.x, -itemOffset.y);
 		}
-		if (transform) {
-			(direct ? matrix : viewMatrix).applyToContext(ctx);
-		}
 		if (clip) {
-			param.clipItem.draw(ctx, param.extend({ clip: true }));
+			(param.viewMatrix ? param.viewMatrix.appended(parentMatrix)
+					: parentMatrix).applyToContext(ctx);
+			param.clipItem.draw(ctx, param.extend({
+				clip: true,
+				matrices: matrices.slice(0, -1)
+			}));
+			matrix.applyToContext(ctx);
+		} else if (transform) {
+			(direct ? matrix : viewMatrix).applyToContext(ctx);
 		}
 		if (strokeMatrix) {
 			ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
@@ -4814,7 +4902,7 @@ new function() {
 		if (!this._drawSelected)
 			itemSelected = false;
 		if ((itemSelected || boundsSelected || positionSelected)
-				&& this._isUpdated(updateVersion)) {
+				&& this._isUpdated(updateVersion) && this.isInserted()) {
 			var layer,
 				color = this.getSelectedColor(true) || (layer = this.getLayer())
 					&& layer.getSelectedColor(true),
@@ -4985,10 +5073,21 @@ var Group = Item.extend({
 					clipItem);
 	},
 
+	_hitTestSelf: function(point, options, viewMatrix) {
+		if (options.match || options.class || options.type || options.all) {
+			var res = this._hitTestChildren(point, options.extend({
+				all: null, match: null, class: null, type: null
+			}), viewMatrix);
+			if (res)
+				res.item = this;
+			return res;
+		}
+	},
+
 	_draw: function(ctx, param) {
 		var clip = param.clip,
-			clipItem = !clip && this._getClipItem();
-		param = param.extend({ clipItem: clipItem, clip: false });
+			clipItem = this._getClipItem();
+		param = param.extend({ clipItem: !clip && clipItem, clip: false });
 		if (clip) {
 			ctx.beginPath();
 			param.dontStart = param.dontFinish = true;
@@ -5037,6 +5136,7 @@ var Shape = Item.extend({
 		size: null,
 		radius: null
 	},
+	_prioritize: ['type'],
 
 	initialize: function Shape(props, point) {
 		this._initialize(props, point);
@@ -5134,16 +5234,10 @@ var Shape = Item.extend({
 	},
 
 	toPath: function(insert) {
-		var path = new Path[Base.capitalize(this._type)]({
-			center: new Point(),
-			size: this._size,
-			radius: this._radius,
-			insert: false
-		});
-		path.copyAttributes(this);
+		var path = this._asPathItem();
 		if (paper.settings.applyMatrix)
 			path.setApplyMatrix(true);
-		if (insert === undefined || insert)
+		if (Base.pick(insert, paper.settings.insertItems))
 			path.insertAbove(this);
 		return path;
 	},
@@ -5151,7 +5245,14 @@ var Shape = Item.extend({
 	toShape: '#clone',
 
 	_asPathItem: function() {
-		return this.toPath(false);
+		var path = new Path[Base.capitalize(this._type)]({
+			center: new Point(),
+			size: this._size,
+			radius: this._radius,
+			insert: false
+		});
+		path.copyAttributes(this);
+		return path;
 	},
 
 	_draw: function(ctx, param, viewMatrix, strokeMatrix) {
@@ -5218,7 +5319,7 @@ var Shape = Item.extend({
 			ctx.closePath();
 		}
 		if (!dontPaint && (hasFill || hasStroke)) {
-			this._setStyles(ctx, param, viewMatrix);
+			this._setStyles(ctx, param, viewMatrix, strokeMatrix);
 			if (hasFill) {
 				ctx.fill(style.getFillRule());
 				ctx.shadowColor = 'rgba(0,0,0,0)';
@@ -5233,12 +5334,25 @@ var Shape = Item.extend({
 	},
 
 	_getBounds: function(matrix, options) {
-		var rect = new Rectangle(this._size).setCenter(0, 0),
+		var size = this._size,
+			rect = new Rectangle(size).setCenter(0, 0),
 			style = this._style,
 			strokeWidth = options.stroke && style.hasStroke()
 					&& style.getStrokeWidth();
-		if (matrix)
-			rect = matrix._transformBounds(rect);
+		if (matrix) {
+			if (this._type === 'rectangle') {
+				rect = matrix._transformBounds(rect);
+			} else {
+				var rx = size.width / 2,
+					ry = size.height / 2,
+					dx = Math.sqrt(Math.pow(matrix._a * rx, 2)
+							+ Math.pow(matrix._c * ry, 2)),
+					dy = Math.sqrt(Math.pow(matrix._b * rx, 2)
+							+ Math.pow(matrix._d * ry, 2));
+				rect = new Rectangle(matrix._tx - dx, matrix._ty - dy,
+						2 * dx, 2 * dy);
+			}
+		}
 		return strokeWidth
 				? rect.expand(Path._getStrokePadding(strokeWidth,
 					this._getStrokeMatrix(matrix, options)))
@@ -5780,7 +5894,12 @@ var Raster = Item.extend({
 
 	_draw: function(ctx, param, viewMatrix) {
 		var element = this.getElement();
-		if (element && element.width > 0 && element.height > 0) {
+		if (param.dontFinish || param.clip) {
+			var rect = this.getInternalBounds();
+			if (!param.dontStart)
+				ctx.beginPath();
+			ctx.rect(rect.x, rect.y, rect.width, rect.height);
+		} else if (element && element.width > 0 && element.height > 0) {
 			ctx.globalAlpha = Numerical.clamp(this._opacity, 0, 1);
 
 			this._setStyles(ctx, param, viewMatrix);
@@ -5849,7 +5968,9 @@ var SymbolItem = Item.extend({
 	},
 
 	_hitTestSelf: function(point, options, viewMatrix) {
-		var opts = options.extend({ all: false });
+		var opts = options.extend({
+			all: false, match: null, class: null, type: null
+		});
 		var res = this._definition._item._hitTest(point, opts, viewMatrix);
 		if (res)
 			res.item = this;
@@ -5857,7 +5978,7 @@ var SymbolItem = Item.extend({
 	},
 
 	_draw: function(ctx, param) {
-		this._definition._item.draw(ctx, param);
+		this._definition._item.draw(ctx, param.extend({ updateMatrix: false }));
 	}
 
 });
@@ -6889,7 +7010,7 @@ statics: {
 		}
 	}
 }}, Base.each(
-	['getBounds', 'getStrokeBounds', 'getHandleBounds'],
+	['getBounds', 'getStrokeBounds'],
 	function(name) {
 		this[name] = function() {
 			if (!this._bounds)
@@ -6903,6 +7024,15 @@ statics: {
 		};
 	},
 {
+
+	getHandleBounds: function() {
+		var v = this.getValues(),
+			x1 = Math.min(v[0], v[2], v[4], v[6]),
+			y1 = Math.min(v[1], v[3], v[5], v[7]),
+			x2 = Math.max(v[0], v[2], v[4], v[6]),
+			y2 = Math.max(v[1], v[3], v[5], v[7]);
+		return new Rectangle(x1, y1, x2 - x1, y2 - y1);
+	},
 
 }), Base.each({
 	isStraight: function(p1, h1, h2, p2) {
@@ -7696,8 +7826,8 @@ new function() {
 			den = 2 * ax * ty - 2 * ay * tx,
 			times = [];
 		if (Math.abs(den) < Numerical.CURVETIME_EPSILON) {
-			var num = ax * cy - ay * cx,
-				den = ax * by - ay * bx;
+			var num = cx * ty - cy * tx,
+				den = bx * ty - by * tx;
 			if (den != 0) {
 				var t = -num / den;
 				if (t >= 0 && t <= 1) times.push(t);
@@ -8146,7 +8276,12 @@ var PathItem = Item.extend({
 			previous,
 			control,
 			current = new Point(),
-			start = new Point();
+			start = new Point(),
+			number = '([+-]?(?:\\d*\\.\\d+|\\d+\\.?)(?:[eE][+-]?\\d+)?)',
+			numbers = new RegExp(number, 'g'),
+			flag = '([01])',
+			arcs = new RegExp([number, number, number, flag, flag, number,
+					number].join('[\\s,]*'), 'g');
 
 		function getCoord(index, coord) {
 			var val = +coords[index];
@@ -8168,7 +8303,7 @@ var PathItem = Item.extend({
 			var part = parts[i],
 				command = part[0],
 				lower = command.toLowerCase();
-			coords = part.match(/[+-]?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?/g);
+			coords = part.match(numbers);
 			var length = coords && coords.length;
 			relative = command === lower;
 			if (previous === 'z' && !/[mz]/.test(lower))
@@ -8233,10 +8368,10 @@ var PathItem = Item.extend({
 				}
 				break;
 			case 'a':
-				for (var j = 0; j < length; j += 7) {
-					this.arcTo(current = getPoint(j + 5),
-							new Size(+coords[j], +coords[j + 1]),
-							+coords[j + 2], +coords[j + 4], +coords[j + 3]);
+				while (coords = arcs.exec(part)) {
+					this.arcTo(current = getPoint(6),
+							new Size(+coords[1], +coords[2]),
+							+coords[3], +coords[5], +coords[4]);
 				}
 				break;
 			case 'z':
@@ -8670,6 +8805,9 @@ var Path = PathItem.extend({
 	removeSegments: function(start, end, _includeCurves) {
 		start = start || 0;
 		end = Base.pick(end, this._segments.length);
+		if (start > end && this._closed)
+			return this.removeSegments(start).concat(
+					this.removeSegments(0, end));
 		var segments = this._segments,
 			curves = this._curves,
 			count = segments.length,
@@ -8798,7 +8936,7 @@ var Path = PathItem.extend({
 			time = 0;
 		}
 		var curves = this.getCurves();
-		if (index >= 0 && index < curves.length) {
+		if (loc && index < curves.length) {
 			if (time >= tMin) {
 				curves[index++].divideAtTime(time);
 			}
@@ -9110,7 +9248,7 @@ var Path = PathItem.extend({
 			shape.copyAttributes(this, true);
 			shape._matrix.prepend(this._matrix);
 			shape.rotate(topCenter.subtract(center).getAngle() + 90);
-			if (insert === undefined || insert)
+			if (Base.pick(insert, paper.settings.insertItems))
 				shape.insertAbove(this);
 			return shape;
 		}
@@ -9251,7 +9389,7 @@ var Path = PathItem.extend({
 						Path._addBevelJoin(segment, join, strokeRadius,
 							   miterLimit, null, strokeMatrix, addToArea, true);
 					}
-				} else if (cap === 'square') {
+				} else {
 					Path._addSquareCap(segment, cap, strokeRadius, null,
 							strokeMatrix, addToArea, true);
 				}
@@ -9504,7 +9642,7 @@ new function() {
 			}
 
 			if (!dontPaint && (hasFill || hasStroke)) {
-				this._setStyles(ctx, param, viewMatrix);
+				this._setStyles(ctx, param, viewMatrix, strokeMatrix);
 				if (hasFill) {
 					ctx.fill(style.getFillRule());
 					ctx.shadowColor = 'rgba(0,0,0,0)';
@@ -9884,18 +10022,12 @@ statics: {
 	_getStrokePadding: function(radius, matrix) {
 		if (!matrix)
 			return [radius, radius];
-		var hor = new Point(radius, 0).transform(matrix),
-			ver = new Point(0, radius).transform(matrix),
-			phi = hor.getAngleInRadians(),
-			a = hor.getLength(),
-			b = ver.getLength();
-		var sin = Math.sin(phi),
-			cos = Math.cos(phi),
-			tan = Math.tan(phi),
-			tx = Math.atan2(b * tan, a),
-			ty = Math.atan2(b, tan * a);
-		return [Math.abs(a * Math.cos(tx) * cos + b * Math.sin(tx) * sin),
-				Math.abs(b * Math.sin(ty) * cos + a * Math.cos(ty) * sin)];
+		var a = matrix._a,
+			b = matrix._b,
+			c = matrix._c,
+			d = matrix._d;
+		return [radius * Math.sqrt(a * a + c * c),
+				radius * Math.sqrt(b * b + d * d)];
 	},
 
 	_addBevelJoin: function(segment, join, radius, miterLimit, matrix,
@@ -9903,44 +10035,42 @@ statics: {
 		var curve2 = segment.getCurve(),
 			curve1 = curve2.getPrevious(),
 			point = curve2.getPoint1().transform(matrix),
-			normal1 = curve1.getNormalAtTime(1).multiply(radius)
-				.transform(strokeMatrix),
-			normal2 = curve2.getNormalAtTime(0).multiply(radius)
-				.transform(strokeMatrix),
-				angle = normal1.getDirectedAngle(normal2);
+			normal1 = curve1.getNormalAtTime(1).multiply(radius),
+			normal2 = curve2.getNormalAtTime(0).multiply(radius),
+			angle = normal1.getDirectedAngle(normal2);
 		if (angle < 0 || angle >= 180) {
 			normal1 = normal1.negate();
 			normal2 = normal2.negate();
 		}
 		if (isArea)
 			addPoint(point);
-		addPoint(point.add(normal1));
+		addPoint(point.add(normal1.transform(strokeMatrix)));
 		if (join === 'miter') {
-			var corner = new Line(point.add(normal1),
+			var corner = new Line(normal1,
 					new Point(-normal1.y, normal1.x), true
-				).intersect(new Line(point.add(normal2),
+				).intersect(new Line(normal2,
 					new Point(-normal2.y, normal2.x), true
 				), true);
-			if (corner && point.getDistance(corner) <= miterLimit * radius) {
-				addPoint(corner);
+			if (corner && corner.getLength() <= miterLimit * radius) {
+				addPoint(point.add(corner.transform(strokeMatrix)));
 			}
 		}
-		addPoint(point.add(normal2));
+		addPoint(point.add(normal2.transform(strokeMatrix)));
 	},
 
 	_addSquareCap: function(segment, cap, radius, matrix, strokeMatrix,
 			addPoint, isArea) {
 		var point = segment._point.transform(matrix),
 			loc = segment.getLocation(),
-			normal = loc.getNormal()
-					.multiply(loc.getTime() === 0 ? radius : -radius)
-					.transform(strokeMatrix);
+			vector = loc.getNormal()
+					.multiply(loc.getTime() === 0 ? radius : -radius),
+			normal = vector.transform(strokeMatrix);
 		if (cap === 'square') {
 			if (isArea) {
 				addPoint(point.subtract(normal));
 				addPoint(point.add(normal));
 			}
-			point = point.add(normal.rotate(-90));
+			point = point.add(vector.rotate(-90).transform(strokeMatrix));
 		}
 		addPoint(point.add(normal));
 		addPoint(point.subtract(normal));
@@ -10002,14 +10132,14 @@ Path.inject({ statics: new function() {
 
 	function createPath(segments, closed, args) {
 		var props = Base.getNamed(args),
-			path = new Path(props && (
-				props.insert == true ? Item.INSERT
-				: props.insert == false ? Item.NO_INSERT
-				: null
-			));
+			path = new Path(props && {
+				insert: props.insert,
+				project: props.project,
+				parent: props.parent
+			});
 		path._add(segments);
 		path._closed = closed;
-		return path.set(props, Item.INSERT);
+		return path.set(props, { insert: true, project: true, parent: true });
 	}
 
 	function createEllipse(center, radius, args) {
@@ -10278,7 +10408,7 @@ var CompoundPath = PathItem.extend({
 			children[i].draw(ctx, param, strokeMatrix);
 
 		if (!param.clip) {
-			this._setStyles(ctx, param, viewMatrix);
+			this._setStyles(ctx, param, viewMatrix, strokeMatrix);
 			var style = this._style;
 			if (style.hasFill()) {
 				ctx.fill(style.getFillRule());
@@ -10391,7 +10521,7 @@ PathItem.inject(new function() {
 		var result = new CompoundPath(Item.NO_INSERT);
 		result.addChildren(paths, true);
 		result = result.reduce({ simplify: simplify });
-		if (!(options && options.insert == false)) {
+		if (Base.pick(options && options.insert, paper.settings.insertItems)) {
 			result.insertAbove(path2 && path1.isSibling(path2)
 					&& path1.getIndex() < path2.getIndex() ? path2 : path1);
 		}
@@ -10406,7 +10536,7 @@ PathItem.inject(new function() {
 	function traceBoolean(path1, path2, operation, options) {
 		if (options && (options.trace == false || options.stroke) &&
 				/^(subtract|intersect)$/.test(operation))
-			return splitBoolean(path1, path2, operation);
+			return splitBoolean(path1, path2, operation, options);
 		var _path1 = preparePath(path1, true),
 			_path2 = path2 && path1 !== path2 && preparePath(path2, true),
 			operator = operators[operation];
@@ -10486,7 +10616,7 @@ PathItem.inject(new function() {
 		return createResult(paths, true, path1, path2, options);
 	}
 
-	function splitBoolean(path1, path2, operation) {
+	function splitBoolean(path1, path2, operation, options) {
 		var _path1 = preparePath(path1),
 			_path2 = preparePath(path2),
 			crossings = _path1.getIntersections(_path2, filterIntersection),
@@ -10513,7 +10643,7 @@ PathItem.inject(new function() {
 			}
 		}
 		addPath(_path1);
-		return createResult(paths, false, path1, path2);
+		return createResult(paths, false, path1, path2, options);
 	}
 
 	function linkIntersections(from, to) {
@@ -11100,7 +11230,7 @@ PathItem.inject(new function() {
 
 		divide: function(path, options) {
 			return options && (options.trace == false || options.stroke)
-					? splitBoolean(this, path, 'divide')
+					? splitBoolean(this, path, 'divide', options)
 					: createResult([
 						this.subtract(path, options),
 						this.intersect(path, options)
@@ -11568,7 +11698,7 @@ var TextItem = Item.extend({
 	_serializeFields: {
 		content: null
 	},
-	_boundsOptions: { stroke: false, handle: false },
+	_boundsOptions: { handle: false },
 
 	initialize: function TextItem(arg) {
 		this._content = '';
@@ -11625,27 +11755,33 @@ var PointText = TextItem.extend({
 	},
 
 	_draw: function(ctx, param, viewMatrix) {
-		if (!this._content)
-			return;
-		this._setStyles(ctx, param, viewMatrix);
-		var lines = this._lines,
-			style = this._style,
-			hasFill = style.hasFill(),
-			hasStroke = style.hasStroke(),
-			leading = style.getLeading(),
-			shadowColor = ctx.shadowColor;
-		ctx.font = style.getFontStyle();
-		ctx.textAlign = style.getJustification();
-		for (var i = 0, l = lines.length; i < l; i++) {
-			ctx.shadowColor = shadowColor;
-			var line = lines[i];
-			if (hasFill) {
-				ctx.fillText(line, 0, 0);
-				ctx.shadowColor = 'rgba(0,0,0,0)';
+		if (param.dontFinish || param.clip) {
+			var rect = this.getInternalBounds();
+			if (!param.dontStart)
+				ctx.beginPath();
+			ctx.rect(rect.x, rect.y, rect.width, rect.height);
+		} else if (this._content) {
+			this._setStyles(ctx, param, viewMatrix);
+			var lines = this._lines,
+				style = this._style,
+				hasFill = style.hasFill(),
+				hasStroke = style.hasStroke(),
+				leading = style.getLeading(),
+				shadowColor = ctx.shadowColor;
+			ctx.font = style.getFontStyle();
+			ctx.textAlign = style.getJustification();
+			ctx.letterSpacing = style.getTrackingStyle();
+			for (var i = 0, l = lines.length; i < l; i++) {
+				ctx.shadowColor = shadowColor;
+				var line = lines[i];
+				if (hasFill) {
+					ctx.fillText(line, 0, 0);
+					ctx.shadowColor = 'rgba(0,0,0,0)';
+				}
+				if (hasStroke)
+					ctx.strokeText(line, 0, 0);
+				ctx.translate(0, leading);
 			}
-			if (hasStroke)
-				ctx.strokeText(line, 0, 0);
-			ctx.translate(0, leading);
 		}
 	},
 
@@ -11655,14 +11791,28 @@ var PointText = TextItem.extend({
 			numLines = lines.length,
 			justification = style.getJustification(),
 			leading = style.getLeading(),
-			width = this.getView().getTextWidth(style.getFontStyle(), lines),
+			width = this.getView().getTextWidth(style.getFontStyle(), lines,
+					style.getTrackingStyle()),
 			x = 0;
 		if (justification !== 'left')
 			x -= width / (justification === 'center' ? 2: 1);
 		var rect = new Rectangle(x,
 					numLines ? - 0.75 * leading : 0,
 					width, numLines * leading);
+		if (options.stroke && style.hasStroke())
+			rect = rect.expand(style.getStrokeWidth());
 		return matrix ? matrix._transformBounds(rect, rect) : rect;
+	},
+
+	_hitTestSelf: function(point, options) {
+		if (options.fill && this.hasFill()) {
+			var bounds = this.getInternalBounds(),
+				closest = point.clamp(bounds.getTopLeft(true),
+						bounds.getBottomRight(true));
+			if (point.subtract(closest).divide(options._tolerancePadding)
+					.getLength() <= 1)
+				return new HitResult('fill', this);
+		}
 	}
 });
 
@@ -11723,13 +11873,14 @@ var Color = Base.extend(new function() {
 		} else {
 			var color = namedColors[string];
 			if (!color) {
-				if (window) {
-					if (!colorCtx) {
-						colorCtx = CanvasProvider.getContext(1, 1, {
-							willReadFrequently: true
-						});
+				if (!colorCtx) {
+					colorCtx = CanvasProvider.getContext(1, 1, {
+						willReadFrequently: true
+					});
+					if (colorCtx)
 						colorCtx.globalCompositeOperation = 'copy';
-					}
+				}
+				if (colorCtx) {
 					colorCtx.fillStyle = 'rgba(0,0,0,0)';
 					colorCtx.fillStyle = string;
 					colorCtx.fillRect(0, 0, 1, 1);
@@ -12136,8 +12287,9 @@ var Color = Base.extend(new function() {
 						+ components.join(',') + ')';
 		},
 
-		toCanvasStyle: function(ctx, matrix) {
-			if (this._canvasStyle)
+		toCanvasStyle: function(ctx, matrix, strokeMatrix) {
+			var isCacheable = !(this._type === 'gradient' && strokeMatrix);
+			if (this._canvasStyle && isCacheable)
 				return this._canvasStyle;
 			if (this._type !== 'gradient')
 				return this._canvasStyle = this.toCSS();
@@ -12154,6 +12306,12 @@ var Color = Base.extend(new function() {
 				destination = inverse._transformPoint(destination);
 				if (highlight)
 					highlight = inverse._transformPoint(highlight);
+			}
+			if (strokeMatrix) {
+				origin = strokeMatrix._transformPoint(origin);
+				destination = strokeMatrix._transformPoint(destination);
+				if (highlight)
+					highlight = strokeMatrix._transformPoint(highlight);
 			}
 			if (gradient._radial) {
 				var radius = destination.getDistance(origin);
@@ -12176,7 +12334,9 @@ var Color = Base.extend(new function() {
 						offset == null ? i / (l - 1) : offset,
 						stop._color.toCanvasStyle());
 			}
-			return this._canvasStyle = canvasGradient;
+			if (isCacheable)
+				this._canvasStyle = canvasGradient;
+			return canvasGradient;
 		},
 
 		transform: function(matrix) {
@@ -12440,6 +12600,7 @@ var Style = Base.extend(new function() {
 		fontWeight: 'normal',
 		fontSize: 12,
 		leading: null,
+		tracking: 0,
 		justification: 'left'
 	}),
 	textDefaults = Base.set({}, groupDefaults, {
@@ -12456,6 +12617,7 @@ var Style = Base.extend(new function() {
 		fontSize: 9,
 		font: 9,
 		leading: 9,
+		tracking: 9,
 		justification: 9
 	},
 	item = {
@@ -12500,7 +12662,7 @@ var Style = Base.extend(new function() {
 				var old = this._values[key];
 				if (old !== value) {
 					if (isColor) {
-						if (old) {
+						if (old && old.constructor === Color) {
 							Color._setOwner(old, null);
 							old._canvasStyle = null;
 						}
@@ -12646,6 +12808,10 @@ var Style = Base.extend(new function() {
 				+ this.getFontFamily();
 	},
 
+	getTrackingStyle: function() {
+		return this.getTracking() / 1000 + 'em';
+	},
+
 	getFont: '#getFontFamily',
 	setFont: '#setFontFamily',
 
@@ -12722,6 +12888,18 @@ var DomElement = new function() {
 			return DomElement.getBounds(el, true).getSize();
 		},
 
+		getInsets: function(el, start) {
+			var style = DomElement.getStyles(el);
+			function get(side) {
+				return parseFloat(style['padding' + side])
+						+ parseFloat(style['border' + side + 'Width']);
+			}
+			return start
+					? new Size(get('Left'), get('Top'))
+					: new Size(get('Left') + get('Right'),
+						get('Top') + get('Bottom'));
+		},
+
 		isInvisible: function(el) {
 			return DomElement.getSize(el).equals(new Size(0, 0));
 		},
@@ -12780,12 +12958,20 @@ var DomEvent = {
 		}
 	},
 
-	getPoint: function(event) {
-		var pos = event.targetTouches
-				? event.targetTouches.length
-					? event.targetTouches[0]
-					: event.changedTouches[0]
-				: event;
+	getPoint: function(event, target) {
+		function find(touches) {
+			for (var i = 0, l = touches.length; i < l; i++) {
+				if (touches[i].target === target)
+					return touches[i];
+			}
+		}
+
+		var touches = event.targetTouches,
+			pos = event;
+		if (touches) {
+			pos = find(event.touches) || find(event.changedTouches)
+					|| (touches.length ? touches[0] : event.changedTouches[0]);
+		}
 		return new Point(
 			pos.pageX || pos.clientX + document.documentElement.scrollLeft,
 			pos.pageY || pos.clientY + document.documentElement.scrollTop
@@ -12801,8 +12987,9 @@ var DomEvent = {
 	},
 
 	getOffset: function(event, target) {
-		return DomEvent.getPoint(event).subtract(DomElement.getOffset(
-				target || DomEvent.getTarget(event)));
+		target = target || DomEvent.getTarget(event);
+		return DomEvent.getPoint(event, target).subtract(
+				DomElement.getOffset(target));
 	}
 };
 
@@ -12848,7 +13035,7 @@ var View = Base.extend(Emitter, {
 			var size = DomElement.getSize(element);
 			return size.isNaN() || size.isZero()
 					? new Size(getSize('width'), getSize('height'))
-					: size;
+					: size.subtract(DomElement.getInsets(element));
 		}
 
 		var size;
@@ -12961,7 +13148,7 @@ var View = Base.extend(Emitter, {
 			this.requestUpdate();
 	},
 
-	update: function() {
+	update: function(force) {
 	},
 
 	draw: function() {
@@ -13047,6 +13234,10 @@ var View = Base.extend(Emitter, {
 
 	getElement: function() {
 		return this._element;
+	},
+
+	getProject: function() {
+		return this._project;
 	},
 
 	getPixelRatio: function() {
@@ -13154,12 +13345,14 @@ var View = Base.extend(Emitter, {
 
 	getZoom: function() {
 		var scaling = this._decompose().scaling;
-		return (scaling.x + scaling.y) / 2;
+		return (Math.abs(scaling.x) + Math.abs(scaling.y)) / 2;
 	},
 
 	setZoom: function(zoom) {
-		this.transform(new Matrix().scale(zoom / this.getZoom(),
-			this.getCenter()));
+		if (zoom > 0 && isFinite(zoom)) {
+			this.transform(new Matrix().scale(zoom / this.getZoom(),
+				this.getCenter()));
+		}
 	},
 
 	getRotation: function() {
@@ -13169,7 +13362,8 @@ var View = Base.extend(Emitter, {
 	setRotation: function(rotation) {
 		var current = this.getRotation();
 		if (current != null && rotation != null) {
-			this.rotate(rotation - current);
+			this._matrix.prepend(new Matrix().rotate(rotation - current,
+					this.projectToView(this.getCenter())));
 		}
 	},
 
@@ -13199,6 +13393,31 @@ var View = Base.extend(Emitter, {
 		this._matrix.append(matrix);
 	},
 
+	fitBounds: function(rectangle, fit) {
+		rectangle = Rectangle.read(arguments);
+		fit = Base.read(arguments);
+		var matrix = this._matrix,
+			size = this._viewSize,
+			bounds = matrix._transformBounds(rectangle),
+			scaleX = new Point(matrix._a, matrix._c).getLength(),
+			scaleY = new Point(matrix._b, matrix._d).getLength(),
+			ratios = [
+				size.width / bounds.width * scaleX,
+				size.height / bounds.height * scaleY
+			].filter(function(ratio) {
+				return ratio > 0 && isFinite(ratio);
+			});
+		this.setCenter(rectangle.getCenter());
+		if (ratios.length) {
+			var amount = fit === 'cover'
+					? Math.max.apply(Math, ratios)
+					: Math.min.apply(Math, ratios);
+			matrix.prepend(new Matrix().scale(
+					new Point(amount / scaleX, amount / scaleY),
+					size.divide(2)));
+		}
+	},
+
 	scrollBy: function() {
 		this.translate(Point.read(arguments).negate());
 	}
@@ -13213,7 +13432,17 @@ var View = Base.extend(Emitter, {
 	},
 
 	getEventPoint: function(event) {
-		return this.viewToProject(DomEvent.getOffset(event, this._element));
+		var element = this._element,
+			offset = DomEvent.getOffset(event, element),
+			size = DomElement.getSize(element);
+		if (!size.isZero()) {
+			var cssSize = new Size(element.offsetWidth, element.offsetHeight);
+			offset = offset.multiply(cssSize.divide(size))
+					.subtract(DomElement.getInsets(element, true))
+					.multiply(this.getViewSize().divide(
+						cssSize.subtract(DomElement.getInsets(element))));
+		}
+		return this.viewToProject(offset);
 	},
 
 }, {
@@ -13283,16 +13512,8 @@ new function() {
 			mouseout: function(event) {
 				var view = View._focused,
 					target = DomEvent.getRelatedTarget(event);
-				if (view && (!target || target.nodeName === 'HTML')) {
-					var offset = DomEvent.getOffset(event, view._element),
-						x = offset.x,
-						abs = Math.abs,
-						ax = abs(x),
-						max = 1 << 25,
-						diff = ax - max;
-					offset.x = abs(diff) < ax ? diff * (x < 0 ? -1 : 1) : x;
-					handleMouseMove(view, event, view.viewToProject(offset));
-				}
+				if (view && (!target || target.nodeName === 'HTML'))
+					handleMouseMove(view, event);
 			},
 
 			scroll: updateFocus
@@ -13487,9 +13708,12 @@ new function() {
 			if (mouse.down && inView || mouse.up && downPoint) {
 				emitMouseEvents(this, hitItem, type, event, point, downPoint);
 				if (mouse.down) {
-					dblClick = hitItem === clickItem
-						&& (Date.now() - clickTime < 300);
+					var time = Date.now();
+					dblClick = !dblClick && hitItem === clickItem
+						&& time - clickTime < 300
+						&& point.getDistance(downPoint) < 3;
 					downItem = clickItem = hitItem;
+					clickTime = time;
 					if (!prevented && hitItem) {
 						var item = hitItem;
 						while (item && !item.responds('mousedrag'))
@@ -13500,10 +13724,8 @@ new function() {
 					downPoint = point;
 				} else if (mouse.up) {
 					if (!prevented && hitItem === downItem) {
-						clickTime = Date.now();
 						emitMouseEvents(this, hitItem, dblClick ? 'doubleclick'
 								: 'click', event, point, downPoint);
-						dblClick = false;
 					}
 					downItem = dragItem = null;
 				}
@@ -13605,9 +13827,13 @@ var CanvasView = View.extend({
 			var element = this._element,
 				ctx = this._context;
 			if (!PaperScope.hasAttribute(element, 'resize')) {
-				var style = element.style;
-				style.width = width + 'px';
-				style.height = height + 'px';
+				var style = element.style,
+					insets = DomElement.getStyles(element).boxSizing
+						=== 'border-box'
+							? DomElement.getInsets(element)
+							: new Size();
+				style.width = (width + insets.width) + 'px';
+				style.height = (height + insets.height) + 'px';
 			}
 			ctx.restore();
 			ctx.save();
@@ -13634,19 +13860,22 @@ var CanvasView = View.extend({
 		return pixels;
 	},
 
-	getTextWidth: function(font, lines) {
+	getTextWidth: function(font, lines, letterSpacing) {
 		var ctx = this._context,
 			prevFont = ctx.font,
+			prevLetterSpacing = ctx.letterSpacing,
 			width = 0;
 		ctx.font = font;
+		ctx.letterSpacing = letterSpacing;
 		for (var i = 0, l = lines.length; i < l; i++)
 			width = Math.max(width, ctx.measureText(lines[i]).width);
 		ctx.font = prevFont;
+		ctx.letterSpacing = prevLetterSpacing;
 		return width;
 	},
 
-	update: function() {
-		if (!this._needsUpdate)
+	update: function(force) {
+		if (!this._needsUpdate && !force)
 			return false;
 		var project = this._project,
 			ctx = this._context,
@@ -13717,6 +13946,7 @@ var Key = new function() {
 	var keyLookup = {
 			'\t': 'tab',
 			' ': 'space',
+			'\xA0': 'space',
 			'\b': 'backspace',
 			'\x7f': 'delete',
 			'Spacebar': 'space',
@@ -13771,6 +14001,7 @@ var Key = new function() {
 	}
 
 	function handleKey(down, key, character, event) {
+		View.updateFocus();
 		var type = down ? 'keydown' : 'keyup',
 			view = View._focused,
 			name;
@@ -13805,11 +14036,9 @@ var Key = new function() {
 
 	DomEvent.add(document, {
 		keydown: function(event) {
-			var key = getKey(event),
-				agent = paper && paper.agent;
-			if (key.length > 1 || agent && (agent.chrome && (event.altKey
-						|| agent.mac && event.metaKey
-						|| !agent.mac && event.ctrlKey))) {
+			var key = getKey(event);
+			if (key.length > 1 || event.ctrlKey || event.altKey
+					|| event.metaKey) {
 				handleKey(true, key,
 						charLookup[key] || (key.length > 1 ? '' : key), event);
 			} else {
@@ -14143,6 +14372,48 @@ var Tween = Base.extend(Emitter, {
 				return t < 0.5
 					? 16 * t * t * t * t * t
 					: 1 + 16 * (--t) * t * t * t * t;
+			},
+
+			easeInSine: function(t) {
+				return 1 - Math.cos(t * Math.PI / 2);
+			},
+
+			easeOutSine: function(t) {
+				return Math.sin(t * Math.PI / 2);
+			},
+
+			easeInOutSine: function(t) {
+				return (1 - Math.cos(t * Math.PI)) / 2;
+			},
+
+			easeInExpo: function(t) {
+				return t === 0 ? 0 : Math.pow(2, 10 * t - 10);
+			},
+
+			easeOutExpo: function(t) {
+				return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+			},
+
+			easeInOutExpo: function(t) {
+				return t === 0 || t === 1
+					? t
+					: t < 0.5
+						? Math.pow(2, 20 * t - 10) / 2
+						: 1 - Math.pow(2, 10 - 20 * t) / 2;
+			},
+
+			easeInCirc: function(t) {
+				return 1 - Math.sqrt(1 - t * t);
+			},
+
+			easeOutCirc: function(t) {
+				return Math.sqrt(1 - (--t) * t);
+			},
+
+			easeInOutCirc: function(t) {
+				return t < 0.5
+					? (1 - Math.sqrt(1 - 4 * t * t)) / 2
+					: (1 + Math.sqrt(1 - 4 * (--t) * t)) / 2;
 			}
 		})
 	},
@@ -14363,7 +14634,7 @@ var CanvasProvider = Base.exports.CanvasProvider = {
 	canvases: [],
 
 	getCanvas: function(width, height, options) {
-		if (!window)
+		if (!window && !self.OffscreenCanvas)
 			return null;
 		var canvas,
 			clear = true;
@@ -14374,7 +14645,9 @@ var CanvasProvider = Base.exports.CanvasProvider = {
 		if (this.canvases.length) {
 			canvas = this.canvases.pop();
 		} else {
-			canvas = document.createElement('canvas');
+			canvas = window
+					? document.createElement('canvas')
+					: new self.OffscreenCanvas(width, height);
 			clear = false;
 		}
 		var ctx = canvas.getContext('2d', options || {});
@@ -14578,6 +14851,12 @@ var BlendMode = new function() {
 			db = (bb + sb) / 2;
 		},
 
+		'pin-light': function() {
+			dr = sr < 128 ? min(br, 2 * sr) : max(br, 2 * sr - 255);
+			dg = sg < 128 ? min(bg, 2 * sg) : max(bg, 2 * sg - 255);
+			db = sb < 128 ? min(bb, 2 * sb) : max(bb, 2 * sb - 255);
+		},
+
 		negation: function() {
 			dr = 255 - abs(255 - sr - br);
 			dg = 255 - abs(255 - sg - bg);
@@ -14676,7 +14955,8 @@ var SvgElement = new function() {
 	function get(node, name) {
 		var namespace = attributeNamespace[name],
 			value = namespace
-				? node.getAttributeNS(namespace, name)
+				? node.getAttribute(name)
+					|| node.getAttributeNS(namespace, name)
 				: node.getAttribute(name);
 		return value === 'null' ? null : value;
 	}
@@ -14729,6 +15009,7 @@ var SvgStyles = Base.each({
 	fontFamily: ['font-family', 'string'],
 	fontWeight: ['font-weight', 'string'],
 	fontSize: ['font-size', 'number'],
+	tracking: ['letter-spacing', 'tracking'],
 	justification: ['text-anchor', 'lookup', {
 		left: 'start',
 		center: 'middle',
@@ -14754,7 +15035,8 @@ var SvgStyles = Base.each({
 }, {});
 
 new function() {
-	var formatter;
+	var formatter,
+		parentStyles;
 
 	function getTransform(matrix, coordinates, center) {
 		var attrs = new Base(),
@@ -14803,34 +15085,72 @@ new function() {
 		var node = SvgElement.create('g', attrs, formatter);
 		for (var i = 0, l = children.length; i < l; i++) {
 			var child = children[i];
-			var childNode = exportSVG(child, options);
-			if (childNode) {
-				if (child.isClipMask()) {
-					var clip = SvgElement.create('clipPath');
-					clip.appendChild(childNode);
-					setDefinition(child, clip, 'clip');
-					SvgElement.set(node, {
-						'clip-path': 'url(#' + clip.id + ')'
-					});
-				} else {
+			if (child.isClipMask()) {
+				var clip = exportClip(child, options);
+				setDefinition(child, clip, 'clip', options);
+				SvgElement.set(node, {
+					'clip-path': 'url(#' + clip.id + ')'
+				});
+			} else {
+				var childNode = exportSVG(child, options);
+				if (childNode)
 					node.appendChild(childNode);
-				}
 			}
 		}
 		return node;
 	}
 
+	function exportClip(item, options) {
+		var clip = SvgElement.create('clipPath');
+
+		function addItem(item) {
+			if (item instanceof Group) {
+				var children = item._children;
+				for (var i = 0, l = children.length; i < l; i++) {
+					if (!children[i]._clipMask)
+						addItem(children[i]);
+				}
+			} else {
+				var node = exportSVG(item, options);
+				if (node)
+					clip.appendChild(node);
+			}
+		}
+
+		if (item instanceof Group) {
+			item = item.clone({ insert: false });
+			item.matrix.apply(true, true);
+		}
+		addItem(item);
+		return clip;
+	}
+
 	function exportRaster(item, options) {
 		var attrs = getTransform(item._matrix, true),
 			size = item.getSize(),
-			image = item.getImage();
+			image = item.getImage(),
+			href = options.embedImages == false && image && image.src
+				|| item.toDataURL();
 		attrs.x -= size.width / 2;
 		attrs.y -= size.height / 2;
-		attrs.width = size.width;
-		attrs.height = size.height;
-		attrs.href = options.embedImages == false && image && image.src
-				|| item.toDataURL();
-		return SvgElement.create('image', attrs, formatter);
+		if (options.reuseImages) {
+			var node = getDefinition(href, 'image');
+			if (!node) {
+				node = SvgElement.create('image', {
+					width: size.width,
+					height: size.height,
+					href: href
+				}, formatter);
+				setDefinition(href, node, 'image', options);
+			}
+			attrs.href = '#' + node.id;
+			return SvgElement.create('use', attrs, formatter);
+		} else {
+			attrs.width = size.width;
+			attrs.height = size.height;
+			attrs.href = href;
+			return SvgElement.create('image', attrs, formatter);
+		}
 	}
 
 	function exportPath(item, options) {
@@ -14916,7 +15236,7 @@ new function() {
 				viewBox: formatter.rectangle(bounds)
 			});
 			node.appendChild(exportSVG(definitionItem, options));
-			setDefinition(definition, node, 'symbol');
+			setDefinition(definition, node, 'symbol', options);
 		}
 		attrs.href = '#' + node.id;
 		attrs.x += bounds.x;
@@ -14927,7 +15247,7 @@ new function() {
 		return SvgElement.create('use', attrs, formatter);
 	}
 
-	function exportGradient(color) {
+	function exportGradient(color, options) {
 		var gradientNode = getDefinition(color, 'color');
 		if (!gradientNode) {
 			var gradient = color.getGradient(),
@@ -14973,15 +15293,28 @@ new function() {
 				gradientNode.appendChild(
 						SvgElement.create('stop', attrs, formatter));
 			}
-			setDefinition(color, gradientNode, 'color');
+			setDefinition(color, gradientNode, 'color', options);
 		}
 		return 'url(#' + gradientNode.id + ')';
 	}
 
 	function exportText(item) {
-		var node = SvgElement.create('text', getTransform(item._matrix, true),
-				formatter);
-		node.textContent = item._content;
+		var attrs = getTransform(item._matrix, true),
+			node = SvgElement.create('text', attrs, formatter),
+			lines = item._lines;
+		if (lines.length > 1) {
+			var leading = item._style.getLeading();
+			for (var i = 0, l = lines.length; i < l; i++) {
+				var span = SvgElement.create('tspan', {
+					x: attrs.x,
+					y: attrs.y + i * leading
+				}, formatter);
+				span.textContent = lines[i];
+				node.appendChild(span);
+			}
+		} else {
+			node.textContent = item._content;
+		}
 		return node;
 	}
 
@@ -14999,6 +15332,8 @@ new function() {
 	function applyStyle(item, node, options, isRoot) {
 		var attrs = {},
 			parent = !isRoot && item.getParent(),
+			parentStyle = parent && (parentStyles[parent._id] =
+					parentStyles[parent._id] || {}),
 			style = [];
 
 		if (item._name != null)
@@ -15008,10 +15343,12 @@ new function() {
 			var get = entry.get,
 				type = entry.type,
 				value = item[get]();
-			if (entry.exportFilter
+			if (parent && !(get in parentStyle))
+				parentStyle[get] = parent[get]();
+			if (value !== undefined && (entry.exportFilter
 					? entry.exportFilter(item, value)
 					: options.reduceAttributes == false
-						|| !parent || !Base.equals(parent[get](), value)) {
+						|| !parent || !Base.equals(parentStyle[get], value))) {
 				if (type === 'color' && value != null) {
 					var alpha = value.getAlpha();
 					if (alpha < 1)
@@ -15022,10 +15359,11 @@ new function() {
 				} else {
 					attrs[entry.attribute] = value == null ? 'none'
 							: type === 'color' ? value.gradient
-								? exportGradient(value, item)
+								? exportGradient(value, options)
 								: value.toCSS(true)
 							: type === 'array' ? value.join(',')
 							: type === 'lookup' ? entry.toSVG[value]
+							: type === 'tracking' ? value && value / 1000 + 'em'
 							: value;
 				}
 			}
@@ -15047,16 +15385,20 @@ new function() {
 	function getDefinition(item, type) {
 		if (!definitions)
 			definitions = { ids: {}, svgs: {} };
-		return item && definitions.svgs[type + '-'
-				+ (item._id || item.__id || (item.__id = UID.get('svg')))];
+		return item && definitions.svgs[getDefinitionKey(item, type)];
 	}
 
-	function setDefinition(item, node, type) {
+	function setDefinition(item, node, type, options) {
 		if (!definitions)
 			getDefinition();
 		var typeId = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
-		node.id = type + '-' + typeId;
-		definitions.svgs[type + '-' + (item._id || item.__id)] = node;
+		node.id = (options.idPrefix || '') + type + '-' + typeId;
+		definitions.svgs[getDefinitionKey(item, type)] = node;
+	}
+
+	function getDefinitionKey(item, type) {
+		return type + '-' + (typeof item === 'string' ? item
+				: item._id || item.__id || (item.__id = UID.get('svg')));
 	}
 
 	function exportDefinitions(node, options) {
@@ -15077,6 +15419,7 @@ new function() {
 			}
 			definitions = null;
 		}
+		parentStyles = null;
 		return options.asString
 				? new self.XMLSerializer().serializeToString(svg)
 				: svg;
@@ -15100,6 +15443,7 @@ new function() {
 		if (!options)
 			options = {};
 		formatter = new Formatter(options.precision);
+		parentStyles = {};
 		return options;
 	}
 
@@ -15152,7 +15496,14 @@ new function() {
 new function() {
 
 	var definitions = {},
-		rootSize;
+		rootSize,
+		units = { 'in': 96, pt: 96 / 72, pc: 96 / 6, cm: 96 / 2.54,
+			mm: 96 / 25.4 };
+
+	function parseLength(value) {
+		var unit = /(in|pt|pc|cm|mm)\s*$/.exec(value);
+		return parseFloat(value) * (unit ? units[unit[1]] : 1);
+	}
 
 	function getValue(node, name, isString, allowNull, allowPercent,
 			defaultValue) {
@@ -15163,7 +15514,7 @@ new function() {
 					: isString ? '' : 0
 				: isString
 					? value
-					: parseFloat(value);
+					: parseLength(value);
 		return /%\s*$/.test(value)
 			? (res / 100) * (allowPercent ? 1
 				: rootSize[/x|^width/.test(name) ? 'width' : 'height'])
@@ -15184,12 +15535,12 @@ new function() {
 				: new Size(w, h);
 	}
 
-	function convertValue(value, type, lookup) {
+	function convertValue(value, type, lookup, options) {
 		return value === 'none' ? null
-				: type === 'number' ? parseFloat(value)
+				: type === 'number' ? parseLength(value)
 				: type === 'array' ?
-					value ? value.split(/[\s,]+/g).map(parseFloat) : []
-				: type === 'color' ? getDefinition(value) || value
+					value ? value.split(/[\s,]+/g).map(parseLength) : []
+				: type === 'color' ? getDefinition(value, options) || value
 				: type === 'lookup' ? lookup[value]
 				: value;
 	}
@@ -15201,10 +15552,16 @@ new function() {
 			item = new Group(),
 			project = item._project,
 			currentStyle = project._currentStyle,
+			parentSize = rootSize,
 			children = [];
 		if (!isClip && !isDefs) {
-			item = applyAttributes(item, node, isRoot);
+			item = applyAttributes(item, node, options, isRoot);
 			project._currentStyle = item._style.clone();
+		}
+		if (type === 'svg' && !isRoot) {
+			rootSize = new Size(
+					getValue(node, 'width', false, false, false, '100%'),
+					getValue(node, 'height', false, false, false, '100%'));
 		}
 		if (isRoot) {
 			var defs = node.querySelectorAll('defs');
@@ -15223,8 +15580,9 @@ new function() {
 		}
 		item.addChildren(children);
 		if (isClip)
-			item = applyAttributes(item.reduce(), node, isRoot);
+			item = applyAttributes(item.reduce(), node, options, isRoot);
 		project._currentStyle = currentStyle;
+		rootSize = parentSize;
 		if (isClip || isDefs) {
 			item.remove();
 			item = null;
@@ -15250,12 +15608,13 @@ new function() {
 		return PathItem.create(node.getAttribute('d'));
 	}
 
-	function importGradient(node, type) {
+	function importGradient(node, type, options) {
 		var id = (getValue(node, 'href', true) || '').substring(1),
+			definition = getDefinitionById(id, options),
 			radial = type === 'radialgradient',
 			gradient;
-		if (id) {
-			gradient = definitions[id].getGradient();
+		if (definition) {
+			gradient = definition.getGradient();
 			if (gradient._radial ^ radial) {
 				gradient = gradient.clone();
 				gradient._radial = radial;
@@ -15266,7 +15625,8 @@ new function() {
 			for (var i = 0, l = nodes.length; i < l; i++) {
 				var child = nodes[i];
 				if (child.nodeType === 1)
-					stops.push(applyAttributes(new GradientStop(), child));
+					stops.push(applyAttributes(new GradientStop(), child,
+							options));
 			}
 			gradient = new Gradient(stops, radial);
 		}
@@ -15286,7 +15646,8 @@ new function() {
 				'100%', '0%');
 		}
 		var color = applyAttributes(
-				new Color(gradient, origin, destination, highlight), node);
+				new Color(gradient, origin, destination, highlight), node,
+				options);
 		color._scaleToBounds = scaleToBounds;
 		return null;
 	}
@@ -15309,13 +15670,30 @@ new function() {
 		lineargradient: importGradient,
 		radialgradient: importGradient,
 
-		image: function (node) {
-			var raster = new Raster(getValue(node, 'href', true));
+		image: function (node, type, options) {
+			var raster = new Raster({
+					crossOrigin: options.crossOrigin,
+					source: getValue(node, 'href', true)
+				}),
+				align = /none|x(Min|Mid|Max)Y(Min|Mid|Max)/.exec(
+						getValue(node, 'preserveAspectRatio', true))
+						|| [null, 'Mid', 'Mid'];
 			raster.on('load', function() {
-				var size = getSize(node);
-				this.setSize(size);
-				var center = getPoint(node).add(size.divide(2));
-				this._matrix.append(new Matrix().translate(center));
+				var imageSize = this.getSize(),
+					size = getSize(node, null, null, true) || imageSize,
+					point = getPoint(node);
+				if (align[0] !== 'none') {
+					var factors = { Min: 0, Mid: 0.5, Max: 1 },
+						fitted = imageSize.multiply(Math.min(
+							size.width / imageSize.width,
+							size.height / imageSize.height));
+					point = point.add(size.subtract(fitted).multiply(
+							[factors[align[1]], factors[align[2]]]));
+					size = fitted;
+				}
+				var center = point.add(size.divide(2));
+				this._matrix.append(new Matrix().translate(center)
+						.scale(size.divide(imageSize)));
 			});
 			return raster;
 		},
@@ -15327,13 +15705,17 @@ new function() {
 
 		defs: importGroup,
 
-		use: function(node) {
+		use: function(node, type, options) {
 			var id = (getValue(node, 'href', true) || '').substring(1),
-				definition = definitions[id],
+				definition = getDefinitionById(id, options),
 				point = getPoint(node);
 			return definition
 					? definition instanceof SymbolDefinition
 						? definition.place(point)
+						: definition instanceof Raster
+							? importNode(getSandbox().ownerDocument
+								.getElementById(id), options, false)
+								.translate(point)
 						: definition.clone().translate(point)
 					: null;
 		},
@@ -15352,11 +15734,16 @@ new function() {
 		},
 
 		rect: function(node) {
+			var rx = getValue(node, 'rx', false, true),
+				ry = getValue(node, 'ry', false, true);
 			return new Shape.Rectangle(new Rectangle(
 						getPoint(node),
 						getSize(node)
-					), getSize(node, 'rx', 'ry'));
-			},
+					), new Size(
+						rx == null ? ry || 0 : rx,
+						ry == null ? rx || 0 : ry
+					));
+		},
 
 		line: function(node) {
 			return new Path.Line(
@@ -15366,8 +15753,14 @@ new function() {
 
 		text: function(node) {
 			var text = new PointText(getPoint(node).add(
-					getPoint(node, 'dx', 'dy')));
-			text.setContent(node.textContent.trim() || '');
+					getPoint(node, 'dx', 'dy'))),
+				lines = Base.each(node.childNodes, function(child) {
+					if (/^tspan$/i.test(child.nodeName)
+							&& child.hasAttribute('y'))
+						this.push(child.textContent.trim());
+				}, []);
+			text.setContent(lines.length > 1 ? lines.join('\n')
+					: node.textContent.trim());
 			return text;
 		},
 
@@ -15421,9 +15814,11 @@ new function() {
 	}
 
 	var attributes = Base.set(Base.each(SvgStyles, function(entry) {
-		this[entry.attribute] = function(item, value) {
+		this[entry.attribute] = function(item, value, name, node, styles,
+				options) {
 			if (item[entry.set]) {
-				item[entry.set](convertValue(value, entry.type, entry.fromSVG));
+				item[entry.set](convertValue(value, entry.type, entry.fromSVG,
+						options));
 				if (entry.type === 'color') {
 					var color = item[entry.get]();
 					if (color) {
@@ -15440,12 +15835,12 @@ new function() {
 	}, {}), {
 		id: function(item, value) {
 			definitions[value] = item;
-			if (item.setName)
+			if (item.setName && value !== (+value) + '')
 				item.setName(value);
 		},
 
-		'clip-path': function(item, value) {
-			var clip = getDefinition(value);
+		'clip-path': function(item, value, name, node, styles, options) {
+			var clip = getDefinition(value, options);
 			if (clip) {
 				clip = clip.clone();
 				clip.setClipMask(true);
@@ -15471,6 +15866,14 @@ new function() {
 		display: function(item, value) {
 			if (item.setVisible)
 				item.setVisible(value !== null);
+		},
+
+		'letter-spacing': function(item, value) {
+			if (item.setTracking) {
+				var amount = parseFloat(value) || 0;
+				item.setTracking(1000 * (/em$/.test(value) ? amount
+						: amount / parseFloat(item.getFontSize())));
+			}
 		},
 
 		'stop-color': function(item, value) {
@@ -15518,12 +15921,13 @@ new function() {
 	});
 
 	function getAttribute(node, name, styles) {
-		var attr = node.attributes[name],
+		var style = Base.camelize(name),
+			value = node.style && node.style[style];
+		if (!value) {
+			var attr = node.attributes[name];
 			value = attr && attr.value;
-		if (!value && node.style) {
-			var style = Base.camelize(name);
-			value = node.style[style];
-			if (!value && styles.node[style] !== styles.parent[style])
+			if (!value && node.style
+					&& styles.node[style] !== styles.parent[style])
 				value = styles.node[style];
 		}
 		return !value ? undefined
@@ -15531,27 +15935,38 @@ new function() {
 				: value;
 	}
 
-	function applyAttributes(item, node, isRoot) {
+	function applyAttributes(item, node, options, isRoot) {
 		var parent = node.parentNode,
 			styles = {
 				node: DomElement.getStyles(node) || {},
 				parent: !isRoot && !/^defs$/i.test(parent.tagName)
 						&& DomElement.getStyles(parent) || {}
 			};
+		if (isRoot && !styles.node.fill && item.setFillColor)
+			item.setFillColor('black');
 		Base.each(attributes, function(apply, name) {
 			var value = getAttribute(node, name, styles);
 			item = value !== undefined
-					&& apply(item, value, name, node, styles) || item;
+					&& apply(item, value, name, node, styles, options) || item;
 		});
 		return item;
 	}
 
-	function getDefinition(value) {
+	function getDefinitionById(id, options) {
+		if (id && !definitions[id]) {
+			var node = getSandbox().ownerDocument.getElementById(id);
+			if (node)
+				importNode(node, options, false);
+		}
+		return definitions[id];
+	}
+
+	function getDefinition(value, options) {
 		var match = value && value.match(/\((?:["'#]*)([^"')]+)/),
 			name = match && match[1],
-			res = name && definitions[window
+			res = name && getDefinitionById(window
 					? name.replace(window.location.href.split('#')[0] + '#', '')
-					: name];
+					: name, options);
 		if (res && res._scaleToBounds) {
 			res = res.clone();
 			res._scaleToBounds = true;
@@ -15597,12 +16012,12 @@ new function() {
 		var settings = paper.settings,
 			applyMatrix = settings.applyMatrix,
 			insertItems = settings.insertItems,
+			importer = importers[type],
 			item;
 		try {
 			settings.applyMatrix = false;
 			settings.insertItems = false;
 			try {
-				var importer = importers[type];
 				item = importer && importer(node, type, options, isRoot)
 						|| null;
 			} finally {
@@ -15610,8 +16025,8 @@ new function() {
 				settings.applyMatrix = applyMatrix;
 			}
 			if (item) {
-				if (isElement && !(item instanceof Group))
-					item = applyAttributes(item, node, isRoot);
+				if (isElement && importer !== importGroup)
+					item = applyAttributes(item, node, options, isRoot);
 				var onImport = options.onImport,
 					data = isElement && node.getAttribute('data-paper-data');
 				if (onImport)
@@ -15727,8 +16142,7 @@ new function() {
 };
 
 Base.exports.PaperScript = function() {
-	var global = this,
-		acorn = global.acorn;
+	var acorn = self.acorn;
 	if (!acorn && typeof require !== 'undefined') {
 		try { acorn = require('acorn'); } catch(e) {}
 	}
@@ -17050,7 +17464,7 @@ Base.exports.PaperScript = function() {
 	}
 
 	function parse(code, options) {
-		return (global.acorn || acorn).parse(code, options);
+		return (self.acorn || acorn).parse(code, options);
 	}
 
 	var binaryOperators = {
@@ -17306,9 +17720,12 @@ Base.exports.PaperScript = function() {
 			if (agent.node) {
 				offset -= 2;
 			} else if (window && url && !window.location.href.indexOf(url)) {
-				var html = document.getElementsByTagName('html')[0].innerHTML;
-				offset = html.substr(0, html.indexOf(code) + 1).match(
-						lineBreaks).length + 1;
+				var html = document.getElementsByTagName('html')[0].innerHTML,
+					index = html.indexOf(code);
+				if (index >= 0) {
+					offset = html.substr(0, index + 1).match(
+							lineBreaks).length + 1;
+				}
 			}
 			offsetCode = offset > 0 && !(
 					agent.chrome && version >= 36 ||
@@ -17343,7 +17760,8 @@ Base.exports.PaperScript = function() {
 				code = new Array(offset + 1).join('\n') + code;
 			}
 			if (/^(inline|both)$/.test(sourceMaps)) {
-				code += "\n//# sourceMappingURL=data:application/json;base64,"
+				code += "\n//# " + "sourceMappingURL="
+						+ "data:application/json;base64,"
 						+ self.btoa(unescape(encodeURIComponent(
 							JSON.stringify(map))));
 			}
@@ -17453,11 +17871,17 @@ Base.exports.PaperScript = function() {
 					async: async,
 					mimeType: 'text/plain',
 					onLoad: function(code) {
-						execute(code, scope, src);
+						execute(code, scope, {
+							url: src,
+							sourceMaps: 'inline'
+						});
 					}
 				});
 			} else {
-				execute(script.innerHTML, scope, script.baseURI);
+				execute(script.innerHTML, scope, {
+					url: script.baseURI,
+					sourceMaps: 'inline'
+				});
 			}
 			script.setAttribute('data-paper-ignore', 'true');
 			return scope;
@@ -17489,8 +17913,7 @@ Base.exports.PaperScript = function() {
 		calculateBinary: __$__,
 		calculateUnary: $__
 	};
-
-}.call(this);
+}();
 
 var paper = new (PaperScope.inject(Base.exports, {
 	Base: Base,
@@ -17517,4 +17940,4 @@ if (typeof define === 'function' && define.amd) {
 }
 
 return paper;
-}.call(this, typeof self === 'object' ? self : null);
+}(typeof self === 'object' ? self : null);

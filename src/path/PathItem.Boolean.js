@@ -85,7 +85,7 @@ PathItem.inject(new function() {
         result.addChildren(paths, true);
         // See if the item can be reduced to just a simple Path.
         result = result.reduce({ simplify: simplify });
-        if (!(options && options.insert == false)) {
+        if (Base.pick(options && options.insert, paper.settings.insertItems)) {
             // Insert the resulting path above whichever of the two paths appear
             // further up in the stack.
             result.insertAbove(path2 && path1.isSibling(path2)
@@ -112,7 +112,7 @@ PathItem.inject(new function() {
         // based boolean operations (options.split = true).
         if (options && (options.trace == false || options.stroke) &&
                 /^(subtract|intersect)$/.test(operation))
-            return splitBoolean(path1, path2, operation);
+            return splitBoolean(path1, path2, operation, options);
         // We do not modify the operands themselves, but create copies instead,
         // fas produced by the calls to preparePath().
         // NOTE: The result paths might not belong to the same type i.e.
@@ -215,7 +215,7 @@ PathItem.inject(new function() {
         return createResult(paths, true, path1, path2, options);
     }
 
-    function splitBoolean(path1, path2, operation) {
+    function splitBoolean(path1, path2, operation, options) {
         var _path1 = preparePath(path1),
             _path2 = preparePath(path2),
             crossings = _path1.getIntersections(_path2, filterIntersection),
@@ -251,7 +251,7 @@ PathItem.inject(new function() {
         }
         // At the end, add what's left from our path after all the splitting.
         addPath(_path1);
-        return createResult(paths, false, path1, path2);
+        return createResult(paths, false, path1, path2, options);
     }
 
     /*
@@ -1138,6 +1138,11 @@ PathItem.inject(new function() {
          * @param {PathItem} path the path to unite with
          * @param {Object} [options] the boolean operation options
          * @return {PathItem} the resulting path item
+         *
+         * @example {@paperscript}
+         * var result = new Path.RegularPolygon([50, 50], 3, 40)
+         *     .unite(new Path.Circle([50, 50], 25));
+         * result.fillColor = 'red';
          */
         unite: function(path, options) {
             return traceBoolean(this, path, 'unite', options);
@@ -1159,6 +1164,11 @@ PathItem.inject(new function() {
          * @param {PathItem} path the path to intersect with
          * @param {Object} [options] the boolean operation options
          * @return {PathItem} the resulting path item
+         *
+         * @example {@paperscript}
+         * var result = new Path.RegularPolygon([50, 50], 3, 40)
+         *     .intersect(new Path.Circle([50, 50], 25));
+         * result.fillColor = 'red';
          */
         intersect: function(path, options) {
             return traceBoolean(this, path, 'intersect', options);
@@ -1180,6 +1190,11 @@ PathItem.inject(new function() {
          * @param {PathItem} path the path to subtract
          * @param {Object} [options] the boolean operation options
          * @return {PathItem} the resulting path item
+         *
+         * @example {@paperscript}
+         * var result = new Path.RegularPolygon([50, 50], 3, 40)
+         *     .subtract(new Path.Circle([50, 50], 25));
+         * result.fillColor = 'red';
          */
         subtract: function(path, options) {
             return traceBoolean(this, path, 'subtract', options);
@@ -1196,6 +1211,11 @@ PathItem.inject(new function() {
          * @param {PathItem} path the path to exclude the intersection of
          * @param {Object} [options] the boolean operation options
          * @return {PathItem} the resulting path item
+         *
+         * @example {@paperscript}
+         * var result = new Path.RegularPolygon([50, 50], 3, 40)
+         *     .exclude(new Path.Circle([50, 50], 25));
+         * result.fillColor = 'red';
          */
         exclude: function(path, options) {
             return traceBoolean(this, path, 'exclude', options);
@@ -1221,7 +1241,7 @@ PathItem.inject(new function() {
          */
         divide: function(path, options) {
             return options && (options.trace == false || options.stroke)
-                    ? splitBoolean(this, path, 'divide')
+                    ? splitBoolean(this, path, 'divide', options)
                     : createResult([
                         this.subtract(path, options),
                         this.intersect(path, options)

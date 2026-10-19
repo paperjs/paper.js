@@ -110,15 +110,16 @@ var Color = Base.extend(new function() {
             // Named
             var color = namedColors[string];
             if (!color) {
-                if (window) {
-                    // Use a canvas to draw with the given name, then retrieve
-                    // RGB values and build a cache for all the used colors.
-                    if (!colorCtx) {
-                        colorCtx = CanvasProvider.getContext(1, 1, {
-                            willReadFrequently: true
-                        });
+                // Use a canvas to draw with the given name, then retrieve
+                // RGB values and build a cache for all the used colors.
+                if (!colorCtx) {
+                    colorCtx = CanvasProvider.getContext(1, 1, {
+                        willReadFrequently: true
+                    });
+                    if (colorCtx)
                         colorCtx.globalCompositeOperation = 'copy';
-                    }
+                }
+                if (colorCtx) {
                     // Set the current fillStyle to transparent, so that it will be
                     // transparent instead of the previously set color in case the
                     // new color can not be interpreted.
@@ -135,8 +136,7 @@ var Color = Base.extend(new function() {
                         data[2] / 255
                     ];
                 } else {
-                    // Web-workers can't resolve CSS color names, for now.
-                    // TODO: Find a way to make this work there too?
+                    // Without a canvas, CSS color names can't be resolved.
                     color = [0, 0, 0];
                 }
             }
@@ -901,8 +901,11 @@ var Color = Base.extend(new function() {
                         + components.join(',') + ')';
         },
 
-        toCanvasStyle: function(ctx, matrix) {
-            if (this._canvasStyle)
+        toCanvasStyle: function(ctx, matrix, strokeMatrix) {
+            // Gradients drawn with a strokeMatrix depend on it, and it can
+            // change without notifying the color, so we can't cache these:
+            var isCacheable = !(this._type === 'gradient' && strokeMatrix);
+            if (this._canvasStyle && isCacheable)
                 return this._canvasStyle;
             // Normal colors are simply represented by their CSS string.
             if (this._type !== 'gradient')
@@ -924,6 +927,12 @@ var Color = Base.extend(new function() {
                 destination = inverse._transformPoint(destination);
                 if (highlight)
                     highlight = inverse._transformPoint(highlight);
+            }
+            if (strokeMatrix) {
+                origin = strokeMatrix._transformPoint(origin);
+                destination = strokeMatrix._transformPoint(destination);
+                if (highlight)
+                    highlight = strokeMatrix._transformPoint(highlight);
             }
             if (gradient._radial) {
                 var radius = destination.getDistance(origin);
@@ -950,7 +959,9 @@ var Color = Base.extend(new function() {
                         offset == null ? i / (l - 1) : offset,
                         stop._color.toCanvasStyle());
             }
-            return this._canvasStyle = canvasGradient;
+            if (isCacheable)
+                this._canvasStyle = canvasGradient;
+            return canvasGradient;
         },
 
         /**
@@ -1259,7 +1270,7 @@ new function() {
         };
     }, /** @lends Color# */{
         /**
-         * Returns the addition of the supplied value to both coordinates of
+         * Returns the addition of the supplied value to all components of
          * the color as a new color.
          * The object itself is not modified!
          *
@@ -1271,9 +1282,10 @@ new function() {
          * color
          *
          * @example
-         * var color = new Color(0.5, 1, 1);
-         * var result = color + 1;
-         * console.log(result); // { red: 1, blue: 1, green: 1 }
+         * var color = new Color(0.5, 0.25, 0);
+         * var result = color + 0.25; // PaperScript
+         * var result = color.add(0.25); // JavaScript
+         * console.log(result); // { red: 0.75, green: 0.5, blue: 0.25 }
          */
         /**
          * Returns the addition of the supplied color to the color as a new
@@ -1289,11 +1301,12 @@ new function() {
          * @example
          * var color1 = new Color(0, 1, 1);
          * var color2 = new Color(1, 0, 0);
-         * var result = color1 + color2;
-         * console.log(result); // { red: 1, blue: 1, green: 1 }
+         * var result = color1 + color2; // PaperScript
+         * var result = color1.add(color2); // JavaScript
+         * console.log(result); // { red: 1, green: 1, blue: 1 }
          */
         /**
-         * Returns the subtraction of the supplied value to both coordinates of
+         * Returns the subtraction of the supplied value to all components of
          * the color as a new color.
          * The object itself is not modified!
          *
@@ -1306,8 +1319,9 @@ new function() {
          *
          * @example
          * var color = new Color(0.5, 1, 1);
-         * var result = color - 1;
-         * console.log(result); // { red: 0, blue: 0, green: 0 }
+         * var result = color - 0.5; // PaperScript
+         * var result = color.subtract(0.5); // JavaScript
+         * console.log(result); // { red: 0, green: 0.5, blue: 0.5 }
          */
         /**
          * Returns the subtraction of the supplied color to the color as a new
@@ -1321,13 +1335,14 @@ new function() {
          * @return {Color} the subtraction of the two colors as a new color
          *
          * @example
-         * var color1 = new Color(0, 1, 1);
+         * var color1 = new Color(1, 1, 1);
          * var color2 = new Color(1, 0, 0);
-         * var result = color1 - color2;
-         * console.log(result); // { red: 0, blue: 1, green: 1 }
+         * var result = color1 - color2; // PaperScript
+         * var result = color1.subtract(color2); // JavaScript
+         * console.log(result); // { red: 0, green: 1, blue: 1 }
          */
         /**
-         * Returns the multiplication of the supplied value to both coordinates
+         * Returns the multiplication of the supplied value to all components
          * of the color as a new color.
          * The object itself is not modified!
          *
@@ -1340,8 +1355,9 @@ new function() {
          *
          * @example
          * var color = new Color(0.5, 1, 1);
-         * var result = color * 0.5;
-         * console.log(result); // { red: 0.25, blue: 0.5, green: 0.5 }
+         * var result = color * 0.5; // PaperScript
+         * var result = color.multiply(0.5); // JavaScript
+         * console.log(result); // { red: 0.25, green: 0.5, blue: 0.5 }
          */
         /**
          * Returns the multiplication of the supplied color to the color as a
@@ -1357,11 +1373,12 @@ new function() {
          * @example
          * var color1 = new Color(0, 1, 1);
          * var color2 = new Color(0.5, 0, 0.5);
-         * var result = color1 * color2;
-         * console.log(result); // { red: 0, blue: 0, green: 0.5 }
+         * var result = color1 * color2; // PaperScript
+         * var result = color1.multiply(color2); // JavaScript
+         * console.log(result); // { red: 0, green: 0, blue: 0.5 }
          */
         /**
-         * Returns the division of the supplied value to both coordinates of
+         * Returns the division of the supplied value to all components of
          * the color as a new color.
          * The object itself is not modified!
          *
@@ -1374,8 +1391,9 @@ new function() {
          *
          * @example
          * var color = new Color(0.5, 1, 1);
-         * var result = color / 2;
-         * console.log(result); // { red: 0.25, blue: 0.5, green: 0.5 }
+         * var result = color / 2; // PaperScript
+         * var result = color.divide(2); // JavaScript
+         * console.log(result); // { red: 0.25, green: 0.5, blue: 0.5 }
          */
         /**
          * Returns the division of the supplied color to the color as a new
@@ -1390,9 +1408,10 @@ new function() {
          *
          * @example
          * var color1 = new Color(0, 1, 1);
-         * var color2 = new Color(0.5, 0, 0.5);
-         * var result = color1 / color2;
-         * console.log(result); // { red: 0, blue: 0, green: 1 }
+         * var color2 = new Color(0.5, 1, 2);
+         * var result = color1 / color2; // PaperScript
+         * var result = color1.divide(color2); // JavaScript
+         * console.log(result); // { red: 0, green: 1, blue: 0.5 }
          */
     });
 });

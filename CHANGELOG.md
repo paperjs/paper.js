@@ -1,5 +1,238 @@
 # Change Log
 
+## `0.13.0`
+
+### Added
+
+- Add a `force` parameter to `View#update()`, to redraw the view even when
+  nothing changed, e.g. after a web font has loaded (#1913).
+- Add `View#fitBounds(rectangle[, fit])`, to fit a rectangle into the view.
+  `fit` takes the values of CSS's `object-fit`: `'contain'` and `'cover'`
+  (#1688).
+- Add the `reuseImages` option to `#exportSVG()`, to export images shown by
+  several rasters only once, and place them with `<use>` elements (#1993).
+- Add `tracking` to the text styles: the space added after each character, in
+  thousandths of an em, as in Adobe Illustrator and InDesign. `#exportSVG()` and
+  `#importSVG()` write and read it as `letter-spacing` (#2066).
+- Add `easeInSine`, `easeOutSine`, `easeInOutSine`, `easeInExpo`, `easeOutExpo`,
+  `easeInOutExpo`, `easeInCirc`, `easeOutCirc` and `easeInOutCirc` to `Tween`
+  (#1855).
+- Add the `idPrefix` option to `#exportSVG()`, prepended to the generated ids of
+  definitions, so that separately exported SVGs can be placed in one document
+  (#1709).
+- Add the `crossOrigin` option to `#importSVG()`, passed on to the rasters of
+  `<image>` elements, so that canvases drawing them aren't tainted (#1094).
+- Add `View#project` (#1634).
+- Add `Point#clamp(min, max)`, e.g. to keep a point inside a rectangle with
+  `point.clamp(rect.topLeft, rect.bottomRight)`.
+- Use `OffscreenCanvas` in web-workers, so `Item#rasterize()`,
+  `new Raster(size)`, items with opacity or blend modes, and CSS color names,
+  which resolved to black, work there. `Raster#toDataURL()` remains unsupported
+  in web-workers (#1643).
+
+### Changed
+
+- Time double-clicks from mousedown to mousedown and only within 3 pixels, as
+  native `dblclick` events do, and don't take a third click for another
+  double-click (#1451).
+- Make `Rectangle#left`, `#right`, `#top` and `#bottom` move only their own
+  side, as documented, and the corner points only their two sides, keeping the
+  opposite ones where they are. They used to move the whole rectangle, unless
+  another side was set before. This also applies to `Item#bounds`: setting a
+  side or corner of an item's bounds now stretches the item. To move items,
+  set `bounds.point`, `bounds.center`, `bounds.x` or `bounds.y` (#2024, #1147).
+- Hit-test groups wherever one of their children is hit, as in Illustrator, so
+  `hitTestAll()` always returns the groups above the hit items, and
+  `hitTest(point, { class: Group })` finds the group under a point. Groups were
+  only hit when all their children shared a fill (#2069).
+- Let inline `style` declarations override presentation attributes in
+  `#importSVG()`, as in CSS and browsers: `<rect fill="blue" style="fill: red">`
+  now imports red (#1962).
+- Keep the pixels of images in `#importSVG()` and scale them to their size in
+  the SVG, instead of resampling them to that size, which made them blurry.
+  `Raster#size` is now the image's own size, and images without a size are
+  shown at it, as in browsers (#1963).
+- Let `Item#clone()`, the boolean operations, `Item#rasterize()`,
+  `Path#toShape()` and `Shape#toPath()` follow `settings.insertItems` when no
+  `insert` option is passed, instead of always inserting their results. An
+  options object without `insert` also inserts the clone by default now, as
+  documented, e.g. `clone({ deep: false })` (#1721).
+- Use jsdom's own `XMLSerializer` for `#exportSVG()` on Node.js, instead of a
+  shim that returned HTML, so the output is valid XML with escaped attribute
+  values, as in browsers. Empty elements are now self-closing (#1922).
+- `Item#fitBounds(rectangle[, fit])` takes the values of CSS's `object-fit` as
+  `fit`: `'contain'`, `'cover'` and `'fill'`, which stretches the item to the
+  rectangle.
+- Scale and align images in `#importSVG()` as their `preserveAspectRatio`
+  describes, fitting them into their box uniformly and centered by default, as
+  browsers do, instead of stretching them. `slice` is treated as `meet` (#1129).
+- Let `Path#removeSegments(from, to)` wrap around on closed paths when `from` is
+  larger than `to`, instead of removing nothing (#1881).
+- Read the `href` of `<image>` elements in `#importSVG()` always as a URL, no
+  longer as the id of a DOM element first.
+
+### Deprecated
+
+- The boolean `fill` parameter of `Item#fitBounds()`: use `'cover'` instead of
+  `true`.
+
+### Removed
+
+- Remove the workaround for wrong `mouseout` coordinates in old versions of
+  Chrome on Windows (#1811).
+- Remove the CLA from the contribution guidelines, as it no longer exists
+  (#2071).
+
+### Fixed
+
+- Fix `require('paper')` in the Node.js REPL (#2019, #1792).
+- Fix loading PaperScript in bundles that leave the top-level `this` undefined,
+  as in ES modules (#1480).
+- Prevent source-map-loader from warning about the source map string in
+  PaperScript (#1991).
+- Fix replacing style colors that were set as strings, which threw in strict
+  mode (#2049).
+- Fix SVG path data with arc flags that aren't separated from the numbers
+  after them, as SVGO writes them (#1808, #1885).
+- Fix `#importSVG()` of gradients, fills, clip paths and `<use>` elements that
+  reference definitions appearing later in the document (#1146, #1884, #1978).
+- Fix `#importSVG()` of elements with numeric ids (#1754).
+- Fix `#importSVG()` of rounded rectangles with only `rx` or `ry` (#1863).
+- Fix `#exportSVG()` writing `fill-rule="none"`, `font-family="none"` etc. on
+  groups with differently styled children (#1732).
+- Fix `Curve#handleBounds`, which threw, to only include the curve's own
+  points (#1992).
+- Fix `Curve#getTimesWithTangent()` for curves without a cubic component,
+  such as quadratic curves (#1870).
+- Fix `Shape` JSON import with `type` after `radius` (#1820).
+- Fix boolean operations with `trace: false` or `stroke: true` ignoring
+  `options.insert` (#2028).
+- Fix gradients drawn with `strokeScaling: false` (#1821, #1822).
+- Fix the selection of items in symbol definitions being drawn (#1577).
+- Fix `View#zoom` of mirrored views, which was 0 (#1411).
+- Fix item mouse handlers that stopped working after removing items whose
+  parent was already removed, or after moving items to another project
+  (#2079, #1791).
+- Fix key events with Control, Alt and Meta in Firefox and other browsers that
+  fire no `keypress` for them (#1997, #1871).
+- Fix the space key staying down after Option + Space on macOS.
+- Fix key events not reaching a view that became visible after the focused one
+  was hidden (#1953).
+- Load in DOMs whose canvas has no 2D context, as jsdom without canvas in jest,
+  and run there as in workers (#1805).
+- Keep the original error as `cause` when jsdom or canvas fail to load on
+  Node.js (#1759).
+- Fix `#getItems()` and `#getItem()` with a match function or without options
+  to search recursively, as documented, instead of matching only the top-level
+  items.
+- Fix `#importSVG()` of transforms and styles on `<use>` elements that
+  reference groups (#978).
+- Fix the `project` and `parent` options of the `Path.*` constructors. With
+  `insert: false`, they no longer insert into the parent, as `new Path()`
+  doesn't either (#2012).
+- Fix the bounds of transformed circle and ellipse shapes (#1826).
+- Fix `PointText#strokeBounds` to include the stroke, which got cut off when
+  drawn with opacity (#1322).
+- Fix the `Item#bounds` setter on items with zero width or height, which made
+  their matrix non-invertible (#1794).
+- Fix `#getItems()` with `overlapping`, which never matched shapes, rasters and
+  texts, as their matrix was applied twice (#1300).
+- Fix the bounds of items whose matrix cancels out the matrix of their parent
+  (#1457).
+- Fix the source URL and source map of PaperScript loaded from script tags,
+  which were lost (#1753).
+- Fix stroke hit-tests at the ends of paths with butt caps, which missed even
+  the end points (#1460).
+- Fix `Path#splitAt()` with locations that aren't on the path, which split
+  the path at its start instead of returning `null`.
+- Fix clipping with groups that are clipped themselves, as imported SVG with a
+  `viewBox` is, which clipped with their own clip mask too (#1618).
+- Fix `Item#hitTest()` and `#hitTestAll()` on items inside transformed
+  groups, which took the point in their parent's coordinates instead of the
+  documented global ones (#1803).
+- Ignore `View#zoom` values that aren't positive numbers, which left the
+  view's matrix without an inverse, so that `View#bounds` threw (#1433).
+- Fix the hit-test tolerance of items inside transformed groups and of symbol
+  items, which their transformations scaled. It is now in project
+  coordinates, as documented (#1278).
+- Limit the temporary canvases of items with opacity or blend modes to the
+  visible area, so large groups no longer disappear or make zooming slow
+  (#1644, #1920, #1925, #2001, #2029).
+- Support SVG 2's plain `href` attribute in `#importSVG()`, besides
+  `xlink:href`, for `<use>`, `<image>` and gradient links.
+- Fix `#exportSVG()` of groups used as clip masks, which were exported as
+  groups inside `<clipPath>`, where only shapes are allowed, so browsers
+  clipped everything away (#1445, #1590).
+- Keep the lines of multi-line text in `#exportSVG()` and `#importSVG()`, as
+  `<tspan>` elements at their own baselines (#988).
+- Fix shadows being cut off on items with a fill, a stroke and an opacity,
+  which are drawn through a temporary canvas (#1628).
+- Fix `#importSVG()` of `<use>` elements that place images, which weren't
+  positioned and sized, as their rasters were cloned before the image loaded.
+- Fix `Item#fitBounds()` and `View#fitBounds()` with empty rectangles or
+  items: empty sides no longer collapse items, produce `NaN` coordinates with
+  `'cover'`, or make the view throw; they are left out of the scaling.
+- Fix `#importSVG()` of lengths in `in`, `cm`, `mm`, `pt` and `pc`, which were
+  read as pixels (#1919).
+- Fix `#importSVG()` of percentages inside nested `<svg>` elements, which
+  referred to the size of the root instead of the nearest `<svg>` (#1404).
+- Fix `#importSVG()` on Node.js of shapes without a fill, which were imported
+  without one instead of black, as in browsers (#1229).
+- Fix the quadratic time of `#exportSVG()` for groups with many children
+  (#1353).
+- Implement the documented `'pin-light'` blend mode, which drew nothing (#1527).
+- Fix clip masks of items with a matrix and an opacity or blend mode, which
+  clipped in the wrong place (#1594).
+- Fix rasters and point texts used as clip masks, which clipped with the path
+  drawn before them. They now clip with their rectangle and bounds (#1845).
+- Fix the stroke bounds of sheared, mirrored and non-uniformly scaled paths with
+  `applyMatrix: false`. The miter limit is now checked in the path's own
+  coordinates, as canvas does (#2065).
+- Fix symbol items overwriting the `globalMatrix` of their definition's item,
+  which affected its stroke bounds and selection (#1684).
+- Fix the view size of canvases with padding or border, which grew with each
+  setup of a project for them (#1160, #2033).
+- Fix setting `View#rotation` on mirrored views, which rotated the other way,
+  and on non-uniformly scaled views, which got skewed (#1893).
+- Fix touches outside of the view taking over its drag (#1875).
+- Fix hit-tests of point texts ignoring the tolerance (#632).
+- Fix removed selected items being kept by their project, which leaked memory
+  (#1856).
+- Fix the line width of selections, which used whatever line width the view's
+  context was left with.
+- Fix hit-tests of symbol items with `class`, `type` and `match` filters, which
+  were applied to the definition's items instead (#1774).
+- Leave `workspaces` and `resolutions` out of the published `package.json`,
+  which made Yarn warn when installing paper (#1921).
+- Fix stale `Item#globalMatrix` and `#localToGlobal()` results of items whose
+  sibling was asked first after their parent was transformed, and of items
+  moved to another parent or removed (#1750).
+- Fix the points of mouse and touch events on canvases with padding or border,
+  with a CSS size that differs from the view size, or under CSS transforms that
+  scale them, which were offset or scaled (#549, #1729).
+- Fix the sign of `Line#getSignedDistance()` for lines whose direction has
+  two negative coordinates (#1880).
+- Fix outdated bounds of nested groups after changes to items two or more
+  levels down, and of groups containing placed symbols after changes to the
+  symbol definition (#940).
+- Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
+- Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
+  `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
+- Docs: Correct the defaults of the hit-test options, the results of the math
+  operator examples, `Raster#source` and `Item#guide`, and document
+  `Path#reduce()`'s `simplify` option, nullable location getters, optional
+  arguments, `ToolEvent#tool`, which items have children, how group styles,
+  `getItems()` ordering, `Rectangle#selected` and `Tool#onMouseMove` work, and
+  the `resize` canvas attribute (#2078, #2092, #2030, #1928, #1947, #1907,
+  #1900, #2115, #1645, #1697, #1747, #1507, #604, #1330, #662).
+- Docs: Add examples to the boolean path operations (#1007).
+- Docs: Document that `new Path(pathData)` holds a single sub-path (#2057).
+- Docs: Document that styles set on symbol items, or inherited by imported
+  `<use>` elements, don't reach the symbol definition's items (#1329).
+- Docs: Document using Paper.js with a bundler in the README (#1695).
+- Docs: Move the documentation of `<symbol>` and `<use>` from
+  `Project#importJSON()` to `Project#importSVG()`.
+
 ## `0.12.20`
 
 ### Fixed

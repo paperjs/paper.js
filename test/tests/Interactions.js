@@ -252,6 +252,73 @@ test('Item#onDoubleClick() is not triggered if time between both clicks is too l
     expect(0);
 });
 
+test('Item#onDoubleClick() is not triggered if time between both mouse downs is too long (#1451)', function(assert) {
+    var done = assert.async();
+    var item = new Path.Rectangle(new Point(0, 0), new Size(10));
+    item.fillColor = 'red';
+    var point = new Point(5, 5);
+    item.onDoubleClick = function(event) {
+        throw 'this should not be called';
+    };
+    triggerMouseEvent('mousedown', point);
+    setTimeout(function() {
+        triggerMouseEvent('mouseup', point);
+        triggerMouseEvent('mousedown', point);
+        triggerMouseEvent('mouseup', point);
+        done();
+    }, 301);
+    expect(0);
+});
+
+test('Item#onDoubleClick() is triggered if the second mouse down is held long (#1451)', function(assert) {
+    var done = assert.async();
+    var item = new Path.Rectangle(new Point(0, 0), new Size(10));
+    item.fillColor = 'red';
+    var point = new Point(5, 5);
+    item.onDoubleClick = function(event) {
+        equals(event.type, 'doubleclick');
+        done();
+    };
+    triggerMouseEvent('mousedown', point);
+    triggerMouseEvent('mouseup', point);
+    triggerMouseEvent('mousedown', point);
+    setTimeout(function() {
+        triggerMouseEvent('mouseup', point);
+    }, 301);
+});
+
+test('Item#onDoubleClick() is only triggered if both mouse downs are close (#1451)', function() {
+    var item = new Path.Rectangle(new Point(0, 0), new Size(10));
+    item.fillColor = 'red';
+    var types = [];
+    item.onClick = item.onDoubleClick = function(event) {
+        types.push(event.type);
+    };
+    function click(x, y) {
+        triggerMouseEvent('mousedown', new Point(x, y));
+        triggerMouseEvent('mouseup', new Point(x, y));
+    }
+    click(5, 5);
+    click(8, 5); // 3 pixels away
+    click(1, 1);
+    click(3, 2); // sqrt(5) pixels away
+    equals(types.join(), 'click,click,click,doubleclick');
+});
+
+test('Item#onDoubleClick() is not triggered again by a third click', function() {
+    var item = new Path.Rectangle(new Point(0, 0), new Size(10));
+    item.fillColor = 'red';
+    var types = [];
+    item.onClick = item.onDoubleClick = function(event) {
+        types.push(event.type);
+    };
+    for (var i = 0; i < 4; i++) {
+        triggerMouseEvent('mousedown', new Point(5, 5));
+        triggerMouseEvent('mouseup', new Point(5, 5));
+    }
+    equals(types.join(), 'click,doubleclick,click,doubleclick');
+});
+
 test('Item#onMouseEnter()', function(assert) {
     var done = assert.async();
     var item = new Path.Rectangle(new Point(0, 0), new Size(10));
@@ -303,6 +370,23 @@ test('Item#onMouseLeave()', function(assert) {
     triggerMouseEvent('mousemove', point2);
 });
 
+test('Item#onMouseLeave() when the mouse leaves the document', function(assert) {
+    var done = assert.async();
+    var item = new Path.Rectangle(new Point(0, 0), new Size(10));
+    item.fillColor = 'red';
+    var point1 = new Point(5, 5);
+    var point2 = new Point(-5, 5);
+    item.onMouseLeave = function(event) {
+        equals(event.type, 'mouseleave');
+        equals(event.point, point2);
+        equals(event.target, item);
+        done();
+    };
+    triggerMouseEvent('mousemove', point1);
+    // A mouseout without relatedTarget means the mouse left the document:
+    triggerMouseEvent('mouseout', point2);
+});
+
 test('Item#onMouseDrag()', function(assert) {
     var done = assert.async();
     var item = new Path.Rectangle(new Point(0, 0), new Size(10));
@@ -344,6 +428,301 @@ test('Item#onMouseDrag() is not triggered if mouse down was on another item', fu
     triggerMouseEvent('mousedown', new Point(5, 5));
     triggerMouseEvent('mousemove', new Point(11, 11));
     expect(0);
+});
+
+test('View#onMouseDrag() with a second touch outside of the view (#1875)', function() {
+    var element = view.element,
+        outside = document.createElement('div'),
+        events = [];
+
+    function createTouch(id, target, point) {
+        return new Touch({
+            identifier: id,
+            target: target,
+            clientX: point.x,
+            clientY: point.y,
+            pageX: point.x,
+            pageY: point.y
+        });
+    }
+
+    // Like the browser, list all touches on the screen, the ones on the
+    // element of the event, and the ones that changed:
+    function triggerTouchEvent(type, target, touches, targetTouches,
+            changedTouches) {
+        target.dispatchEvent(new TouchEvent(type, {
+            bubbles: true,
+            cancelable: true,
+            touches: touches,
+            targetTouches: targetTouches,
+            changedTouches: changedTouches
+        }));
+    }
+
+    view.onMouseDrag = view.onMouseUp = function(event) {
+        events.push(event.type + ' ' + event.point + ' ' + event.delta);
+    };
+    var touch1 = createTouch(1, element, new Point(10, 10)),
+        touch2 = createTouch(2, outside, new Point(80, 80));
+    triggerTouchEvent('touchstart', element, [touch1], [touch1], [touch1]);
+    // The view's touch events on the document only see the document, as the
+    // elements aren't inserted:
+    triggerTouchEvent('touchstart', document, [touch1, touch2], [touch2],
+            [touch2]);
+    // Moving the second touch doesn't drag:
+    touch2 = createTouch(2, outside, new Point(90, 90));
+    triggerTouchEvent('touchmove', document, [touch1, touch2], [touch2],
+            [touch2]);
+    // Moving the first touch does:
+    touch1 = createTouch(1, element, new Point(20, 20));
+    triggerTouchEvent('touchmove', document, [touch1, touch2], [touch1],
+            [touch1]);
+    // Ending the first touch ends the drag where it ended:
+    triggerTouchEvent('touchend', document, [touch2], [], [touch1]);
+    equals(events, [
+        'mousedrag { x: 20, y: 20 } { x: 10, y: 10 }',
+        'mouseup { x: 20, y: 20 } { x: 10, y: 10 }'
+    ]);
+});
+
+test('Item#onMouseDown() after moving it from a removed group to a new group (#1791)', function() {
+    var item = new Path.Rectangle(new Point(0, 0), new Size(10));
+    item.fillColor = 'red';
+    var count = 0;
+    item.onMouseDown = function(event) {
+        count++;
+    };
+    var group = new Group(item);
+    group.remove();
+    new Group(item);
+    triggerMouseEvent('mousedown', new Point(5, 5));
+    triggerMouseEvent('mouseup', new Point(5, 5));
+    equals(count, 1);
+});
+
+test('Item#onMouseDown() after removing it from a removed group (#2079)', function() {
+    var item = new Path.Rectangle(new Point(0, 0), new Size(10));
+    item.fillColor = 'red';
+    var count = 0;
+    item.onMouseDown = function(event) {
+        count++;
+    };
+    var group = new Group(item);
+    group.remove();
+    item.remove();
+    project.activeLayer.addChild(item);
+    triggerMouseEvent('mousedown', new Point(5, 5));
+    triggerMouseEvent('mouseup', new Point(5, 5));
+    equals(count, 1);
+});
+
+test('Item#onMouseDown() after removing the handler of an item in a removed group (#2079)', function() {
+    var item = new Path.Rectangle(new Point(0, 0), new Size(10));
+    item.fillColor = 'red';
+    item.onMouseDown = function(event) {
+        throw 'this should not be called';
+    };
+    var group = new Group(item);
+    group.remove();
+    item.onMouseDown = null;
+    var item2 = new Path.Rectangle(new Point(0, 0), new Size(10));
+    item2.fillColor = 'red';
+    var count = 0;
+    item2.onMouseDown = function(event) {
+        count++;
+    };
+    triggerMouseEvent('mousedown', new Point(5, 5));
+    triggerMouseEvent('mouseup', new Point(5, 5));
+    equals(count, 1);
+});
+
+test('Item#onMouseDown() after moving another item to another project', function() {
+    var item1 = new Path.Rectangle(new Point(0, 0), new Size(10)),
+        item2 = new Path.Rectangle(new Point(20, 20), new Size(10));
+    item1.fillColor = item2.fillColor = 'red';
+    var count1 = 0,
+        count2 = 0;
+    item1.onMouseDown = function(event) {
+        count1++;
+    };
+    item2.onMouseDown = function(event) {
+        count2++;
+    };
+    var project1 = project,
+        project2 = new Project(new Size(100, 100));
+    project2.activeLayer.addChild(item2);
+    project1.activate();
+    triggerMouseEvent('mousedown', new Point(5, 5));
+    triggerMouseEvent('mouseup', new Point(5, 5));
+    triggerMouseEvent('mousedown', new Point(25, 25), project2.view.element);
+    triggerMouseEvent('mouseup', new Point(25, 25));
+    project2.remove();
+    equals(count1, 1, 'item1 in project1');
+    equals(count2, 1, 'item2 in project2');
+});
+
+test('Item#onMouseDown() is counted once for inserted items', function() {
+    // There's no public way to observe a surplus of counted handlers, so we
+    // check the view's internal counters.
+    function getCount() {
+        return view._itemEvents.native.mousedown || 0;
+    }
+
+    var item = new Path.Rectangle({
+        point: [0, 0],
+        size: [10, 10],
+        insert: false
+    });
+    item.onMouseDown = function(event) {};
+    equals(getCount, 0);
+    project.activeLayer.addChild(item);
+    equals(getCount, 1);
+    item.remove();
+    equals(getCount, 0);
+    var layer = new Layer(item);
+    equals(getCount, 1);
+    layer.remove();
+    equals(getCount, 0);
+});
+
+//
+// Key
+//
+var getKeyEvents = function(triggerKeyEvents) {
+    // Key events are only emitted on views that are visible in the DOM.
+    var element = view.element,
+        tool = new Tool(),
+        events = [];
+    element.style.position = 'fixed';
+    element.style.top = element.style.left = 0;
+    document.body.appendChild(element);
+    tool.onKeyDown = tool.onKeyUp = function(event) {
+        events.push(event.type + ' ' + event.key
+                + (event.character ? ' ' + JSON.stringify(event.character) : '')
+                + (event.modifiers.control ? ' +control' : '')
+                + (event.modifiers.alt ? ' +alt' : '')
+                + (event.modifiers.meta ? ' +meta' : ''));
+    };
+    triggerKeyEvents();
+    tool.remove();
+    document.body.removeChild(element);
+    return events;
+};
+
+test('Key events with control, alt and meta without keypress (#1997, #1871)', function() {
+    var agent = paper.agent,
+        chrome = agent.chrome;
+    // Firefox fires no keypress events for these combinations, simulate it
+    // in any browser:
+    agent.chrome = false;
+    Base.each(['control', 'alt', 'meta'], function(name) {
+        var modifierKey = Base.capitalize(name),
+            modifiers = {};
+        modifiers[name === 'control' ? 'ctrlKey' : name + 'Key'] = true;
+        equals(getKeyEvents(function() {
+            triggerKeyEvent('keydown', modifierKey, modifiers);
+            triggerKeyEvent('keydown', 'a', modifiers);
+            triggerKeyEvent('keyup', 'a', modifiers);
+            triggerKeyEvent('keyup', modifierKey);
+        }).join(', '), [
+            'keydown ' + name + ' +' + name,
+            'keydown a "a" +' + name,
+            'keyup a "a" +' + name,
+            'keyup ' + name
+        ].join(', '), name);
+    });
+    agent.chrome = chrome;
+});
+
+test('Key events for space released while holding alt on macOS (#1801)', function() {
+    // macOS turns space into a non-breaking space while alt is pressed:
+    equals(getKeyEvents(function() {
+        triggerKeyEvent('keydown', ' ');
+        triggerKeyEvent('keypress', ' ');
+        triggerKeyEvent('keydown', 'Alt', { altKey: true });
+        triggerKeyEvent('keyup', '\xA0', { altKey: true });
+        triggerKeyEvent('keyup', 'Alt');
+    }).join(', '), [
+        'keydown space " "',
+        'keydown alt +alt',
+        'keyup space " " +alt',
+        'keyup alt'
+    ].join(', '));
+    equals(Key.modifiers.space, false, 'Key.modifiers.space');
+    equals(Key.isDown('space'), false, "Key.isDown('space')");
+});
+
+test('Key events with keypress', function() {
+    equals(getKeyEvents(function() {
+        triggerKeyEvent('keydown', 'a');
+        triggerKeyEvent('keypress', 'a');
+        triggerKeyEvent('keyup', 'a');
+        triggerKeyEvent('keydown', 'Shift', { shiftKey: true });
+        triggerKeyEvent('keydown', 'A', { shiftKey: true });
+        triggerKeyEvent('keypress', 'A', { shiftKey: true });
+        triggerKeyEvent('keyup', 'A', { shiftKey: true });
+        triggerKeyEvent('keyup', 'Shift');
+        // Browsers that do fire keypress for control combinations must not
+        // produce a second keydown event:
+        triggerKeyEvent('keydown', 'Control', { ctrlKey: true });
+        triggerKeyEvent('keydown', 'a', { ctrlKey: true });
+        triggerKeyEvent('keypress', 'a', { ctrlKey: true });
+        triggerKeyEvent('keyup', 'a', { ctrlKey: true });
+        triggerKeyEvent('keyup', 'Control');
+    }).join(', '), [
+        'keydown a "a"',
+        'keyup a "a"',
+        'keydown shift',
+        'keydown a "A"',
+        'keyup a "A"',
+        'keyup shift',
+        'keydown control +control',
+        'keydown a "a" +control',
+        'keyup a "a" +control',
+        'keyup control'
+    ].join(', '));
+});
+
+var getViewKeyEvents = function(triggerKeyEvents) {
+    // Insert a second view next to the one of the current project, both
+    // visible, and log the key events that each of them receives.
+    var view1 = view,
+        project2 = new Project(new Size(100, 100)),
+        view2 = project2.view,
+        events = [];
+    currentProject.activate();
+    [view1, view2].forEach(function(view, index) {
+        var element = view.element,
+            name = 'view' + (index + 1);
+        element.style.position = 'fixed';
+        element.style.top = element.style.left = 0;
+        document.body.appendChild(element);
+        view.onKeyDown = view.onKeyUp = function(event) {
+            events.push(name + ' ' + event.type + ' ' + event.key);
+        };
+    });
+    triggerKeyEvents(view1, view2);
+    document.body.removeChild(view1.element);
+    document.body.removeChild(view2.element);
+    project2.remove();
+    return events.join(', ');
+};
+
+test('Key events reach the focused view when several are visible', function() {
+    equals(getViewKeyEvents(function() {
+        triggerKeyEvent('keydown', 'a');
+        triggerKeyEvent('keypress', 'a');
+        triggerKeyEvent('keyup', 'a');
+    }), 'view1 keydown a, view1 keyup a');
+});
+
+test('Key events reach a newly visible view when the focused one is hidden (#1953)', function() {
+    equals(getViewKeyEvents(function(view1) {
+        view1.element.style.display = 'none';
+        triggerKeyEvent('keydown', 'a');
+        triggerKeyEvent('keypress', 'a');
+        triggerKeyEvent('keyup', 'a');
+    }), 'view2 keydown a, view2 keyup a');
 });
 
 //

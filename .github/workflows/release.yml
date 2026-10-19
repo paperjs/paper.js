@@ -1,7 +1,7 @@
 name: Release
 
 # `gulp publish` commits, tags and pushes a release. Build it from the tag and
-# publish it to npm, the website and the sketch editor:
+# publish it to npm, GitHub, the website and the sketch editor:
 on:
   push:
     tags: ['v*']
@@ -58,9 +58,13 @@ jobs:
           registry-url: https://registry.npmjs.org
       # Stage the packages, so they only go live once a maintainer approves them
       # with 2FA on npmjs.com. Approve paper first, as the others depend on it.
-      # Skip the scripts, as `publish` would run `gulp publish` again:
+      # Skip the scripts, as `publish` would run `gulp publish` again, and leave
+      # out the fields that only serve development, which package managers warn
+      # about in dependencies:
       - name: Stage paper
-        run: npm stage publish --ignore-scripts
+        run: |
+          npm pkg delete workspaces resolutions
+          npm stage publish --ignore-scripts
       - name: Stage paper-jsdom
         working-directory: packages/paper-jsdom
         run: npm stage publish
@@ -111,6 +115,33 @@ jobs:
           git commit -m "Release version $VERSION"
           git tag "v$VERSION" -m "Release version $VERSION"
           git push --atomic origin main "v$VERSION"
+
+  github:
+    needs: approval
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: ${{ runner.temp }}/dist
+      # Use the version's section of the changelog as release notes:
+      - name: Create GitHub release
+        env:
+          DIST: ${{ runner.temp }}/dist
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          awk -v heading="## \`$VERSION\`" '
+            $0 == heading { found = 1; next }
+            found && /^## / { exit }
+            found
+          ' CHANGELOG.md > notes.md
+          cp "$DIST/paperjs.zip" "paperjs-$GITHUB_REF_NAME.zip"
+          gh release create "$GITHUB_REF_NAME" "paperjs-$GITHUB_REF_NAME.zip" \
+            --verify-tag --title "$GITHUB_REF_NAME" --notes-file notes.md
 
   sketch:
     needs: approval

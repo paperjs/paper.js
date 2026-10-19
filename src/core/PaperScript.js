@@ -15,10 +15,8 @@
  * @namespace
  */
 Base.exports.PaperScript = function() {
-    // `this` == global scope, as the function is called with `.call(this);`
-    var global = this,
-        // See if there is a global Acorn in the browser already.
-        acorn = global.acorn;
+    // See if there is a global Acorn in the browser already.
+    var acorn = self.acorn;
     // Also try importing an outside version of Acorn.
     if (!acorn && typeof require !== 'undefined') {
         try { acorn = require('acorn'); } catch(e) {}
@@ -36,11 +34,11 @@ Base.exports.PaperScript = function() {
     }
 
     function parse(code, options) {
-        // NOTE: When using load.js, Acorn will end up in global.acorn and will
+        // NOTE: When using load.js, Acorn will end up in self.acorn and will
         // not be immediately available, so we need to check for it here again.
-        // We also give global.acorn the preference over the bundled one, so
+        // We also give self.acorn the preference over the bundled one, so
         // people can load their own preferred version in sketch.paperjs.org
-        return (global.acorn || acorn).parse(code, options);
+        return (self.acorn || acorn).parse(code, options);
     }
 
     // Operators to overload
@@ -385,11 +383,14 @@ Base.exports.PaperScript = function() {
             } else if (window && url && !window.location.href.indexOf(url)) {
                 // If the code stems from the actual html page, determine the
                 // offset of inlined code.
-                var html = document.getElementsByTagName('html')[0].innerHTML;
+                var html = document.getElementsByTagName('html')[0].innerHTML,
+                    index = html.indexOf(code);
                 // Count the amount of line breaks in the html before this code
-                // to determine the offset.
-                offset = html.substr(0, html.indexOf(code) + 1).match(
-                        lineBreaks).length + 1;
+                // to determine the offset, unless the script isn't in the html.
+                if (index >= 0) {
+                    offset = html.substr(0, index + 1).match(
+                            lineBreaks).length + 1;
+                }
             }
             // A hack required by older versions of browsers to align inlined
             // code: Instead of starting the mappings at the given offset, we
@@ -438,7 +439,10 @@ Base.exports.PaperScript = function() {
                 code = new Array(offset + 1).join('\n') + code;
             }
             if (/^(inline|both)$/.test(sourceMaps)) {
-                code += "\n//# sourceMappingURL=data:application/json;base64,"
+                // Split the string so tools don't take it for the source map
+                // comment of this file:
+                code += "\n//# " + "sourceMappingURL="
+                        + "data:application/json;base64,"
                         + self.btoa(unescape(encodeURIComponent(
                             JSON.stringify(map))));
             }
@@ -631,12 +635,18 @@ Base.exports.PaperScript = function() {
                     async: async,
                     mimeType: 'text/plain',
                     onLoad: function(code) {
-                        execute(code, scope, src);
+                        execute(code, scope, {
+                            url: src,
+                            sourceMaps: 'inline'
+                        });
                     }
                 });
             } else {
                 // We can simply get the code form the script tag.
-                execute(script.innerHTML, scope, script.baseURI);
+                execute(script.innerHTML, scope, {
+                    url: script.baseURI,
+                    sourceMaps: 'inline'
+                });
             }
             // Mark script as loaded now.
             script.setAttribute('data-paper-ignore', 'true');
@@ -689,6 +699,4 @@ Base.exports.PaperScript = function() {
         calculateBinary: __$__,
         calculateUnary: $__
     };
-// Pass on `this` as the binding object, so we can reference Acorn both in
-// development and in the built library.
-}.call(this);
+}();

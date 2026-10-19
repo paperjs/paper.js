@@ -199,9 +199,14 @@ var Line = Base.extend(/** @lends Line# */{
               return  vx === 0 ? (vy > 0 ? x - px : px - x)
                     : vy === 0 ? (vx < 0 ? y - py : py - y)
                     : ((x - px) * vy - (y - py) * vx) / (
+                        // NOTE: Comparing vy > vx rather than their absolute
+                        // values keeps the results of fat-line clipping in
+                        // curve intersections unchanged.
                         vy > vx
-                            ? vy * Math.sqrt(1 + (vx * vx) / (vy * vy))
-                            : vx * Math.sqrt(1 + (vy * vy) / (vx * vx))
+                            ? Math.abs(vy)
+                                * Math.sqrt(1 + (vx * vx) / (vy * vy))
+                            : Math.abs(vx)
+                                * Math.sqrt(1 + (vy * vy) / (vx * vx))
                     );
         },
 

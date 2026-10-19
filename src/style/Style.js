@@ -20,6 +20,9 @@
  * All properties of Style are also reflected directly in {@link Item},
  * i.e.: {@link Item#fillColor}.
  *
+ * Styles set on a {@link Group} or {@link Layer} are applied to the children
+ * that it contains at that moment. Items added to it later do not receive them.
+ *
  * To set multiple style properties in one go, you can pass an object to
  * {@link Item#style}. This is a convenient way to define a style once and
  * apply it to a series of items:
@@ -58,7 +61,7 @@
  * var group = new Group(path1, path2);
  *
  * // All styles set on a group are automatically
- * // set on the children of the group:
+ * // set on the current children of the group:
  * group.style = {
  *     strokeColor: 'black',
  *     dashArray: [4, 10],
@@ -96,6 +99,7 @@ var Style = Base.extend(new function() {
         fontWeight: 'normal',
         fontSize: 12,
         leading: null,
+        tracking: 0,
         // Paragraphs
         justification: 'left'
     }),
@@ -115,6 +119,7 @@ var Style = Base.extend(new function() {
         fontSize: /*#=*/Change.GEOMETRY,
         font: /*#=*/Change.GEOMETRY, // deprecated, links to fontFamily
         leading: /*#=*/Change.GEOMETRY,
+        tracking: /*#=*/Change.GEOMETRY,
         justification: /*#=*/Change.GEOMETRY
     },
     item = {
@@ -180,7 +185,7 @@ var Style = Base.extend(new function() {
                     if (isColor) {
                         // The old value may be a native string or other color
                         // description that wasn't coerced to a color object yet
-                        if (old) {
+                        if (old && old.constructor === Color) {
                             Color._setOwner(old, null);
                             old._canvasStyle = null;
                         }
@@ -375,6 +380,12 @@ var Style = Base.extend(new function() {
         return this.getFontWeight()
                 + ' ' + fontSize + (/[a-z]/i.test(fontSize + '') ? ' ' : 'px ')
                 + this.getFontFamily();
+    },
+
+    getTrackingStyle: function() {
+        // Tracking is in thousandths of an em, and canvas resolves em through
+        // the font of the context:
+        return this.getTracking() / 1000 + 'em';
     },
 
     /**
@@ -690,6 +701,16 @@ var Style = Base.extend(new function() {
      * @name Style#leading
      * @type Number|String
      * @default fontSize * 1.2
+     */
+
+    /**
+     * The tracking of text content: the space added after each character, in
+     * thousandths of an em, as in Adobe Illustrator and InDesign. A tracking of
+     * 100 adds a tenth of the font size.
+     *
+     * @name Style#tracking
+     * @type Number
+     * @default 0
      */
 
     /**

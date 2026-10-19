@@ -54,6 +54,7 @@ var paper = function(self, undefined) {
 /*#*/ include('basic/Point.js');
 /*#*/ include('basic/Size.js');
 /*#*/ include('basic/Rectangle.js');
+/*#*/ include('basic/RectangleBuilder.js');
 /*#*/ include('basic/Matrix.js');
 /*#*/ include('basic/Line.js');
 
@@ -126,4 +127,4 @@ var paper = function(self, undefined) {
 
 /*#*/ include('export.js');
 return paper;
-}.call(this, typeof self === 'object' ? self : null);
+}(typeof self === 'object' ? self : null);

@@ -4175,7 +4175,7 @@ __metadata:
   dependencies:
     canvas: ^3.2.3
     jsdom: ^28.1.0
-    paper: 0.12.20
+    paper: 0.13.0
     source-map-support: ^0.5.21
   languageName: unknown
   linkType: soft
@@ -4185,12 +4185,12 @@ __metadata:
   resolution: "paper-jsdom@workspace:packages/paper-jsdom"
   dependencies:
     jsdom: ^28.1.0
-    paper: 0.12.20
+    paper: 0.13.0
     source-map-support: ^0.5.21
   languageName: unknown
   linkType: soft
 
-"paper@0.12.20, paper@workspace:.":
+"paper@0.13.0, paper@workspace:.":
   version: 0.0.0-use.local
   resolution: "paper@workspace:."
   dependencies:

@@ -824,3 +824,306 @@ test('path.strokeBounds applies stroke padding properly (#1824)', function() {
         'ellipse.strokeBounds'
     );
 })
+
+test('shape.bounds of rotated ellipses and circles (#1826)', function() {
+    // Half the bounds of an ellipse with radii [100, 50] rotated by 30°:
+    // [sqrt((cos(30°) * 100)² + (sin(30°) * 50)²),
+    //  sqrt((sin(30°) * 100)² + (cos(30°) * 50)²)] = [sqrt(8125), sqrt(4375)]
+    var ellipse = new Shape.Ellipse({
+            center: [200, 200],
+            radius: [100, 50],
+            strokeColor: 'black',
+            strokeWidth: 10
+        }),
+        width = Math.sqrt(8125),
+        height = Math.sqrt(4375);
+    ellipse.rotate(30);
+    equals(ellipse.bounds, new Rectangle(200 - width, 200 - height,
+            2 * width, 2 * height), 'ellipse.bounds');
+    // The stroke of an ellipse adds half its width all around:
+    equals(ellipse.strokeBounds, new Rectangle(195 - width, 195 - height,
+            2 * width + 10, 2 * height + 10), 'ellipse.strokeBounds');
+
+    // A rotated circle keeps its bounds:
+    var circle = new Shape.Circle({
+        center: [200, 200],
+        radius: 50,
+        strokeColor: 'black',
+        strokeWidth: 10
+    });
+    circle.rotate(45);
+    equals(circle.bounds, new Rectangle(150, 150, 100, 100), 'circle.bounds');
+    equals(circle.strokeBounds, new Rectangle(145, 145, 110, 110),
+            'circle.strokeBounds');
+
+    // Scaled and rotated, the same as the equivalent path, within the
+    // precision of its Bézier approximation of the ellipse:
+    function createCircle(ctor) {
+        return new ctor.Circle({
+            center: [200, 200],
+            radius: 50,
+            applyMatrix: false,
+            strokeColor: 'black',
+            strokeWidth: 10
+        }).scale(2, 1).rotate(20);
+    }
+    var shape = createCircle(Shape),
+        path = createCircle(Path);
+    equals(shape.bounds, path.bounds, 'shape.bounds', { tolerance: 0.1 });
+    equals(shape.strokeBounds, path.strokeBounds, 'shape.strokeBounds',
+            { tolerance: 0.1 });
+    // And skewed:
+    equals(shape.skew(10, 0).bounds, path.skew(10, 0).bounds, 'shape.bounds',
+            { tolerance: 0.1 });
+});
+
+test('item.bounds on lines with applyMatrix disabled (#1794)', function() {
+    // The fraction makes the width of the moved bounds differ from the
+    // original in the last digit, and thus scale the line:
+    var horizontal = new Path({
+        segments: [[10.3, 20], [41.1, 20]],
+        applyMatrix: false
+    });
+    horizontal.bounds.center = [50, 50];
+    equals(function() {
+        return horizontal.matrix.isInvertible();
+    }, true);
+    equals(horizontal.localToGlobal(horizontal.firstSegment.point),
+            new Point(34.6, 50));
+    equals(horizontal.localToGlobal(horizontal.lastSegment.point),
+            new Point(65.4, 50));
+    // A zero height can't be scaled, the line only moves to the new center:
+    horizontal.bounds.height = 10;
+    equals(function() {
+        return horizontal.matrix.isInvertible();
+    }, true);
+    equals(horizontal.bounds, new Rectangle(34.6, 55, 30.8, 0));
+
+    // Scaling the length of a vertical line keeps its zero width:
+    var vertical = new Path({
+        segments: [[20, 10], [20, 40]],
+        applyMatrix: false
+    });
+    vertical.bounds = new Rectangle(50, 30, 0, 40);
+    equals(function() {
+        return vertical.matrix.isInvertible();
+    }, true);
+    equals(vertical.localToGlobal(vertical.firstSegment.point),
+            new Point(50, 30));
+    equals(vertical.localToGlobal(vertical.lastSegment.point),
+            new Point(50, 70));
+});
+
+test('group.bounds with child and group matrices that cancel out (#1457)', function() {
+    var path = new Path.Rectangle({
+        point: [100, 0],
+        size: [50, 50],
+        applyMatrix: false
+    });
+    path.translate(-100, 0);
+    var group = new Group({ children: [path], applyMatrix: false });
+    group.translate(100, 0);
+    equals(group.bounds, new Rectangle(100, 0, 50, 50), 'group.bounds');
+    equals(path.bounds, new Rectangle(0, 0, 50, 50), 'path.bounds');
+    equals(group.internalBounds, new Rectangle(0, 0, 50, 50),
+            'group.internalBounds');
+    equals(group.bounds, new Rectangle(100, 0, 50, 50),
+            'group.bounds after getting path.bounds');
+    // Matrices that don't cancel out:
+    group.translate(50, 0);
+    equals(group.bounds, new Rectangle(150, 0, 50, 50),
+            'group.bounds after translating group');
+    equals(path.bounds, new Rectangle(0, 0, 50, 50),
+            'path.bounds after translating group');
+    // Matrices that cancel out again, getting path.bounds first:
+    path.translate(-50, 0);
+    equals(path.bounds, new Rectangle(-50, 0, 50, 50),
+            'path.bounds after translating path');
+    equals(group.bounds, new Rectangle(100, 0, 50, 50),
+            'group.bounds after translating path');
+    // A group with an identity matrix:
+    group.translate(-150, 0);
+    equals(group.bounds, new Rectangle(-50, 0, 50, 50),
+            'group.bounds with identity matrix');
+});
+
+test('symbolItem.bounds with item and symbol matrices that cancel out (#1457)', function() {
+    var path = new Path.Rectangle({
+        point: [100, 0],
+        size: [50, 50],
+        applyMatrix: false
+    });
+    path.translate(-100, 0);
+    var symbol = new SymbolItem(new SymbolDefinition(path, true));
+    symbol.translate(100, 0);
+    equals(symbol.bounds, new Rectangle(100, 0, 50, 50), 'symbol.bounds');
+    equals(path.bounds, new Rectangle(0, 0, 50, 50), 'path.bounds');
+});
+
+test('path.strokeBounds with applyMatrix disabled and shearing (#2065)', function() {
+    // Under the shearing x' = x + y, the stroke circle with radius 10 reaches
+    // 10 * sqrt(2) horizontally and 10 vertically, and the corners of the
+    // stroke outlines move by their y coordinate horizontally:
+    var matrix = new Matrix(1, 0, 1, 1, 0, 0),
+        offset = 10 * Math.SQRT2;
+
+    function createPath(constructor, options) {
+        var path = new constructor(Base.set({
+            applyMatrix: false,
+            strokeColor: 'red',
+            strokeWidth: 20
+        }, options));
+        path.transform(matrix);
+        return path;
+    }
+
+    function createLine(cap) {
+        return createPath(Path.Line, { from: [0, 0], to: [100, 0],
+                strokeCap: cap });
+    }
+
+    function createRectangle(join) {
+        return createPath(Path.Rectangle, { point: [0, 0], size: [100, 100],
+                strokeJoin: join });
+    }
+
+    equals(createLine('round').strokeBounds,
+            new Rectangle(-offset, -10, 100 + 2 * offset, 20), 'round cap');
+    // Corners at (-10, -10), (110, -10), (110, 10), (-10, 10):
+    equals(createLine('square').strokeBounds,
+            new Rectangle(-20, -10, 140, 20), 'square cap');
+    // Corners at (0, -10), (100, -10), (100, 10), (0, 10):
+    equals(createLine('butt').strokeBounds,
+            new Rectangle(-10, -10, 120, 20), 'butt cap');
+    equals(createRectangle('round').strokeBounds,
+            new Rectangle(-offset, -10, 200 + 2 * offset, 120), 'round join');
+    // Corners at (-10, -10), (110, -10), (110, 110), (-10, 110):
+    equals(createRectangle('miter').strokeBounds,
+            new Rectangle(-20, -10, 240, 120), 'miter join');
+    // Corners at (-10, 0), (0, -10), ..., (110, 100), (100, 110):
+    equals(createRectangle('bevel').strokeBounds,
+            new Rectangle(-10, -10, 220, 120), 'bevel join');
+
+    // The example from the issue: The stroke outline of a rectangle with miter
+    // joins is the rectangle expanded by the stroke radius:
+    var path = new Path.Rectangle({
+        point: [200, 200],
+        size: [100, 75],
+        applyMatrix: false,
+        strokeColor: 'red',
+        strokeWidth: 20,
+        strokeJoin: 'miter'
+    });
+    path.rotate(60);
+    path.scale(4, 1);
+    path.rotate(30);
+    var outline = new Path.Rectangle(new Rectangle(200, 200, 100, 75)
+            .expand(20));
+    outline.transform(path.matrix);
+    equals(path.strokeBounds, outline.bounds, 'miter join, issue example');
+});
+
+test('path.strokeBounds with applyMatrix disabled, rotation and mirroring', function() {
+    // Rotation and mirroring keep the stroke width, so applying the matrix to
+    // the segments gives the same stroke bounds:
+    ['round', 'miter', 'bevel'].forEach(function(join) {
+        function createPath(applyMatrix, mirror) {
+            var path = new Path({
+                segments: [[0, 0], [100, 0], [50, 30]],
+                applyMatrix: applyMatrix,
+                strokeColor: 'red',
+                strokeWidth: 20,
+                strokeJoin: join,
+                strokeCap: 'square'
+            });
+            if (mirror)
+                path.scale(-1, 1);
+            path.rotate(30);
+            return path;
+        }
+        equals(createPath(false).strokeBounds, createPath(true).strokeBounds,
+                join + ' join');
+        equals(createPath(false, true).strokeBounds,
+                createPath(true, true).strokeBounds, join + ' join, mirrored');
+    });
+});
+
+test('group.bounds of nested groups after changing a path', function() {
+    var path = new Path.Rectangle([0, 0], [10, 10]),
+        inner = new Group([path]),
+        middle = new Group([inner]),
+        outer = new Group([middle]);
+    // Get the middle group's bounds first, so the outer group finds them
+    // cached:
+    equals(middle.bounds, new Rectangle(0, 0, 10, 10), 'middle.bounds');
+    equals(outer.bounds, new Rectangle(0, 0, 10, 10), 'outer.bounds');
+    path.scale(2);
+    equals(outer.bounds, new Rectangle(-5, -5, 20, 20),
+            'outer.bounds after scaling path');
+    equals(middle.bounds, new Rectangle(-5, -5, 20, 20),
+            'middle.bounds after scaling path');
+    equals(inner.bounds, new Rectangle(-5, -5, 20, 20),
+            'inner.bounds after scaling path');
+    // The first segment is the bottom-left corner:
+    path.firstSegment.point = [-15, 15];
+    equals(outer.bounds, new Rectangle(-15, -5, 30, 20),
+            'outer.bounds after moving a segment');
+});
+
+test('group.bounds after changing the symbol definition (#940)', function() {
+    // The definition's item is centered: Rectangle(-5, -5, 10, 10)
+    var definition = new SymbolDefinition(new Path.Rectangle({
+            point: [0, 0],
+            size: [10, 10],
+            fillColor: 'red',
+            strokeColor: 'black',
+            strokeWidth: 2
+        })),
+        placed1 = definition.place([50, 50]),
+        placed2 = definition.place([100, 50]),
+        inner = new Group([placed2]),
+        group = new Group([placed1, inner]),
+        layer = group.parent;
+    equals(group.bounds, new Rectangle(45, 45, 60, 10), 'group.bounds');
+    equals(group.strokeBounds, new Rectangle(44, 44, 62, 12),
+            'group.strokeBounds');
+    equals(group.handleBounds, new Rectangle(45, 45, 60, 10),
+            'group.handleBounds');
+    equals(layer.bounds, new Rectangle(45, 45, 60, 10), 'layer.bounds');
+    equals(function() {
+        return group.hitTest([58, 50], { fill: true });
+    }, null);
+
+    // Scaling the definition's item: Rectangle(-10, -10, 20, 20)
+    definition.item.scale(2);
+    equals(group.bounds, new Rectangle(40, 40, 70, 20),
+            'group.bounds after scaling the definition');
+    equals(group.strokeBounds, new Rectangle(39, 39, 72, 22),
+            'group.strokeBounds after scaling the definition');
+    equals(group.handleBounds, new Rectangle(40, 40, 70, 20),
+            'group.handleBounds after scaling the definition');
+    equals(inner.bounds, new Rectangle(90, 40, 20, 20),
+            'inner.bounds after scaling the definition');
+    equals(layer.bounds, new Rectangle(40, 40, 70, 20),
+            'layer.bounds after scaling the definition');
+    equals(function() {
+        var hit = group.hitTest([58, 50], { fill: true });
+        return hit && hit.item === placed1;
+    }, true);
+
+    // Moving the bottom-right corner: Rectangle(-10, -10, 30, 30)
+    definition.item.lastSegment.point = [20, 20];
+    equals(group.bounds, new Rectangle(40, 40, 80, 30),
+            'group.bounds after moving a segment of the definition');
+    equals(layer.bounds, new Rectangle(40, 40, 80, 30),
+            'layer.bounds after moving a segment of the definition');
+
+    // Replacing the definition's item, centered: Rectangle(-20, -20, 40, 40)
+    definition.item = new Path.Circle({ center: [100, 100], radius: 20 });
+    equals(group.bounds, new Rectangle(30, 30, 90, 40),
+            'group.bounds after replacing the definition');
+    equals(inner.bounds, new Rectangle(80, 30, 40, 40),
+            'inner.bounds after replacing the definition');
+    equals(layer.bounds, new Rectangle(30, 30, 90, 40),
+            'layer.bounds after replacing the definition');
+});

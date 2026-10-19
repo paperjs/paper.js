@@ -753,6 +753,41 @@ test('Item#blendMode in a transformed Group', function() {
             'Middle center pixel should be yellow');
 });
 
+test('Item#blendMode = \'pin-light\'', function() {
+    // Pin light replaces the backdrop with 2 * source where that is darker for
+    // sources below 50%, and with 2 * source - 255 where that is lighter for
+    // sources above, computed by hand for each channel below:
+    var layer = new Layer();
+    new Path.Rectangle({
+        size: [100, 100],
+        fillColor: '#645032' // 100, 80, 50
+    });
+    new Group({
+        children: [
+            new Path.Rectangle({
+                size: [50, 100],
+                fillColor: '#1e64e6' // 30, 100, 230
+            }),
+            new Path.Rectangle({
+                point: [50, 0],
+                size: [50, 100],
+                fillColor: '#c8148c' // 200, 20, 140
+            })
+        ],
+        blendMode: 'pin-light'
+    });
+    var raster = layer.rasterize(72, false);
+
+    function getColor(red, green, blue) {
+        return new Color(red / 255, green / 255, blue / 255, 1);
+    }
+
+    // min(100, 60), min(80, 200), max(50, 205):
+    equals(raster.getPixel(25, 50), getColor(60, 80, 205), 'left pixel');
+    // max(100, 145), min(80, 40), max(50, 25):
+    equals(raster.getPixel(75, 50), getColor(145, 40, 50), 'right pixel');
+});
+
 test('Item#opacity', function() {
     var layer = new Layer();
     var background = new Path.Rectangle({
@@ -783,6 +818,337 @@ test('Item#opacity', function() {
     circle.opacity = 2;
     equals(layer.rasterize(72, false).getPixel(50, 50), red,
         'Center pixel should be red');
+});
+
+test('Item#opacity and Item#blendMode on items larger than the view (#1644)', function() {
+    // Items that are composited through a temporary canvas used to allocate
+    // it for their full bounds, which fails for sizes beyond the browsers'
+    // canvas size limits. Test the colors that the view draws, with the
+    // expected values calculated by hand for the 100x100 view:
+    var huge = 100000;
+
+    function testPixels(pixels, name) {
+        view.update();
+        var pixelRatio = view.pixelRatio,
+            ctx = view.element.getContext('2d');
+        for (var i = 0; i < pixels.length; i++) {
+            var point = pixels[i][0],
+                expected = pixels[i][1],
+                actual = Base.slice(ctx.getImageData(point[0] * pixelRatio,
+                        point[1] * pixelRatio, 1, 1).data);
+            // Allow for rounding of half-transparent channels:
+            equals(function() {
+                return actual.every(function(value, j) {
+                    return Math.abs(value - expected[j]) <= 1;
+                });
+            }, true, name + ' at ' + point + ': ' + actual + ', expected: '
+                    + expected);
+        }
+    }
+
+    var transparent = [0, 0, 0, 0],
+        halfRed = [255, 0, 0, 128],
+        halfBlue = [0, 0, 255, 128];
+
+    // A group with opacity, with a huge child that covers the left of the view
+    // up to x = 50, and a circle that lies within the view on its right:
+    var group = new Group({
+        children: [
+            new Path.Rectangle({
+                from: [-huge, -huge],
+                to: [50, huge],
+                fillColor: 'red'
+            }),
+            new Path.Circle({
+                center: [75, 50],
+                radius: 20,
+                fillColor: 'blue'
+            })
+        ],
+        opacity: 0.5
+    });
+    testPixels([
+        [[0, 0], halfRed],
+        [[25, 50], halfRed],
+        [[48, 99], halfRed],
+        [[52, 10], transparent],
+        [[75, 50], halfBlue],
+        [[60, 50], halfBlue],
+        [[75, 25], transparent],
+        [[99, 99], transparent]
+    ], 'opacity');
+    // NOTE: The temporary canvas is only observable through CanvasProvider,
+    // which keeps it for reuse after the drawing: Its size needs to be
+    // bounded by the view instead of the group.
+    var canvas = CanvasProvider.canvases[CanvasProvider.canvases.length - 1],
+        size = view.viewSize.add(1).multiply(view.pixelRatio);
+    equals(function() {
+        return canvas.width <= size.width && canvas.height <= size.height;
+    }, true);
+
+    // Groups entirely outside the view aren't drawn:
+    group.position = group.position.add(2 * huge, 0);
+    testPixels([[[25, 50], transparent], [[75, 50], transparent]],
+            'outside of the view');
+    group.remove();
+
+    // Nested in an opacity group, a multiplying group with a huge blue
+    // rectangle that covers the top right of the view, from 40, 50 on:
+    // Red * blue = black, and blue over nothing stays blue.
+    group = new Group({
+        children: [
+            new Path.Rectangle({
+                from: [-huge, -huge],
+                to: [60, huge],
+                fillColor: 'red'
+            }),
+            new Group({
+                children: [
+                    new Path.Rectangle({
+                        from: [40, -huge],
+                        to: [huge, 50],
+                        fillColor: 'blue'
+                    })
+                ],
+                blendMode: 'multiply'
+            })
+        ],
+        opacity: 0.5
+    });
+    testPixels([
+        [[20, 25], halfRed],
+        [[20, 75], halfRed],
+        [[50, 25], [0, 0, 0, 128]],
+        [[50, 75], halfRed],
+        [[80, 25], halfBlue],
+        [[80, 75], transparent]
+    ], 'nested opacity and blend mode');
+    group.remove();
+
+    // An emulated blend mode with a huge green rectangle that covers the right
+    // of the view from x = 50 on, over a red background: Red + green = yellow.
+    var background = new Path.Rectangle({
+        from: [0, 0],
+        to: [100, 100],
+        fillColor: 'red'
+    });
+    group = new Group({
+        children: [
+            new Path.Rectangle({
+                from: [50, -huge],
+                to: [huge, huge],
+                fillColor: new Color(0, 1, 0)
+            })
+        ],
+        blendMode: 'add'
+    });
+    testPixels([
+        [[25, 50], [255, 0, 0, 255]],
+        [[75, 0], [255, 255, 0, 255]],
+        [[75, 99], [255, 255, 0, 255]],
+        [[99, 50], [255, 255, 0, 255]]
+    ], 'emulated blend mode');
+    background.remove();
+    group.remove();
+
+    // A clipped group with opacity, with a huge clip mask that covers the
+    // left of the view up to x = 50, over a huge red rectangle:
+    group = new Group({
+        children: [
+            new Path.Rectangle({
+                from: [-huge, -huge],
+                to: [50, huge]
+            }),
+            new Path.Rectangle({
+                from: [-huge, -huge],
+                to: [huge, huge],
+                fillColor: 'red'
+            })
+        ],
+        clipped: true,
+        opacity: 0.5
+    });
+    testPixels([
+        [[25, 50], halfRed],
+        [[48, 0], halfRed],
+        [[52, 50], transparent]
+    ], 'clipped');
+    group.remove();
+
+    // When zooming in, the view only shows a part of the group. The view
+    // shows 25..75 now, so the edge of the red rectangle at 50 is at 50 in
+    // the view, and the circle at 75 at its right edge:
+    group = new Group({
+        children: [
+            new Path.Rectangle({
+                from: [-huge, -huge],
+                to: [50, huge],
+                fillColor: 'red'
+            }),
+            new Path.Circle({
+                center: [75, 50],
+                radius: 20,
+                fillColor: 'blue'
+            })
+        ],
+        opacity: 0.5
+    });
+    view.zoom = 2;
+    testPixels([
+        [[25, 50], halfRed],
+        [[48, 50], halfRed],
+        [[52, 50], transparent],
+        [[99, 50], halfBlue]
+    ], 'zoomed view');
+    view.zoom = 1;
+});
+
+test('Item#shadowOffset and Item#shadowBlur with opacity (#1628)', function() {
+    // Items with both a fill and a stroke and an opacity are composited
+    // through a temporary canvas, which needs to include their shadow.
+    function getPixel(point) {
+        var pixelRatio = view.pixelRatio,
+            ctx = view.element.getContext('2d');
+        return Base.slice(ctx.getImageData(point[0] * pixelRatio,
+                point[1] * pixelRatio, 1, 1).data);
+    }
+
+    function testPixels(pixels, name) {
+        view.update();
+        for (var i = 0; i < pixels.length; i++) {
+            var point = pixels[i][0],
+                expected = pixels[i][1],
+                actual = getPixel(point);
+            // Allow for rounding of half-transparent channels:
+            equals(function() {
+                return actual.every(function(value, j) {
+                    return Math.abs(value - expected[j]) <= 1;
+                });
+            }, true, name + ' at ' + point + ': ' + actual + ', expected: '
+                    + expected);
+        }
+    }
+
+    // A square with a hard shadow, offset to the bottom right of it, without
+    // any overlap: The item covers 9..31, the shadow 49..71.
+    var path = new Path.Rectangle({
+        from: [10, 10],
+        to: [30, 30],
+        fillColor: 'red',
+        strokeColor: 'red',
+        strokeWidth: 2,
+        shadowColor: 'black',
+        shadowOffset: [40, 40],
+        opacity: 0.5
+    });
+    testPixels([
+        [[20, 20], [255, 0, 0, 128]],
+        [[52, 52], [0, 0, 0, 128]],
+        [[60, 60], [0, 0, 0, 128]],
+        [[68, 68], [0, 0, 0, 128]],
+        [[75, 75], [0, 0, 0, 0]]
+    ], 'shadowOffset');
+
+    // The shadow is transformed with the item: Zoomed by 2 around the view's
+    // center, the square from 30 to 40 covers 9..31 in the view again, and
+    // its shadow 49..71.
+    path.remove();
+    path = new Path.Rectangle({
+        from: [30, 30],
+        to: [40, 40],
+        fillColor: 'red',
+        strokeColor: 'red',
+        strokeWidth: 1,
+        shadowColor: 'black',
+        shadowOffset: [20, 20],
+        opacity: 0.5
+    });
+    view.zoom = 2;
+    testPixels([
+        [[20, 20], [255, 0, 0, 128]],
+        [[52, 52], [0, 0, 0, 128]],
+        [[60, 60], [0, 0, 0, 128]],
+        [[68, 68], [0, 0, 0, 128]],
+        [[75, 75], [0, 0, 0, 0]]
+    ], 'shadowOffset in a zoomed view');
+    view.zoom = 1;
+    path.remove();
+
+    // A blurred shadow without an offset: Compare it to the shadow that the
+    // canvas draws directly without opacity, composited at half opacity.
+    path = new Path.Rectangle({
+        from: [40, 40],
+        to: [60, 60],
+        fillColor: 'red',
+        strokeColor: 'red',
+        strokeWidth: 2,
+        shadowColor: 'black',
+        shadowBlur: 10
+    });
+    view.update();
+    var points = [[50, 36], [50, 33], [50, 30], [64, 50], [64, 64]],
+        pixels = points.map(function(point) {
+            var pixel = getPixel(point);
+            return [point, [0, 0, 0, Math.round(pixel[3] / 2)]];
+        });
+    equals(function() {
+        return pixels.every(function(pixel) {
+            return pixel[1][3] > 0;
+        });
+    }, true, 'The blurred shadow reaches all tested points');
+    path.opacity = 0.5;
+    testPixels(pixels, 'shadowBlur');
+    path.remove();
+
+    // Groups don't draw shadows themselves, and children with different
+    // shadows don't stop them from drawing:
+    var group = new Group({
+        children: [
+            new Path.Rectangle({
+                from: [10, 10],
+                to: [30, 30],
+                fillColor: 'red',
+                shadowColor: 'black',
+                shadowOffset: [40, 40]
+            }),
+            new Path.Rectangle({
+                from: [10, 40],
+                to: [30, 50],
+                fillColor: 'red',
+                shadowColor: 'black',
+                shadowOffset: [40, 0]
+            })
+        ],
+        opacity: 0.5
+    });
+    testPixels([
+        [[20, 20], [255, 0, 0, 128]],
+        [[20, 45], [255, 0, 0, 128]]
+    ], 'group with different shadows');
+    group.remove();
+});
+
+test('Item#rasterize() with opacity (#1644)', function() {
+    // Rasterizing draws into the raster's own canvas, away from the view:
+    var group = new Group({
+        children: [
+            new Path.Rectangle({
+                from: [200, 200],
+                to: [300, 300],
+                fillColor: 'red'
+            }),
+            new Path.Rectangle({
+                from: [250, 200],
+                to: [300, 250],
+                fillColor: 'blue'
+            })
+        ],
+        opacity: 0.5
+    });
+    var raster = group.rasterize(72, false);
+    equals(raster.getPixel(25, 25), new Color(1, 0, 0, 128 / 255));
+    equals(raster.getPixel(75, 25), new Color(0, 0, 1, 128 / 255));
+    equals(raster.getPixel(75, 75), new Color(1, 0, 0, 128 / 255));
 });
 
 test('Item#applyMatrix', function() {
@@ -1023,18 +1389,104 @@ test('Children global matrices are cleared after parent transformation', functio
     equals(item.localToGlobal(item.getPointAt(0)), new Point(100, 100));
 });
 
+test('Sibling global matrices are cleared after parent transformation (#1750)', function() {
+    function createItem() {
+        return new Path.Rectangle({
+            point: [0, 0],
+            size: [100, 100],
+            applyMatrix: false
+        });
+    }
+
+    // The example from the issue: The first sibling rebuilds the parent's
+    // global matrix, which must not validate the stale one of the second:
+    var item1 = createItem(),
+        item2 = createItem(),
+        group = new Group({ children: [item1, item2], applyMatrix: false });
+    equals(item1.localToGlobal([0, 0]), new Point(0, 0), 'item1 before');
+    equals(item2.localToGlobal([0, 0]), new Point(0, 0), 'item2 before');
+    group.translate(100, 0);
+    equals(item1.localToGlobal([0, 0]), new Point(100, 0), 'item1 after');
+    equals(item2.localToGlobal([0, 0]), new Point(100, 0), 'item2 after');
+
+    // The same with global matrices cached by drawing:
+    view.update();
+    group.translate(0, 50);
+    equals(item2.localToGlobal([0, 0]), new Point(100, 50),
+            'item2 after drawing');
+    equals(item1.localToGlobal([0, 0]), new Point(100, 50),
+            'item1 after drawing');
+
+    // Changing an item's own matrix:
+    item1.translate(10, 0);
+    equals(item1.localToGlobal([0, 0]), new Point(110, 50),
+            'item1 after own translation');
+    equals(item2.localToGlobal([0, 0]), new Point(100, 50),
+            'item2 after item1 translation');
+
+    // Deeper nesting, moving the grandparent and asking the children first:
+    var outer = new Group({ children: [group], applyMatrix: false });
+    equals(item2.globalMatrix, new Matrix(1, 0, 0, 1, 100, 50),
+            'item2.globalMatrix nested');
+    outer.translate(0, 25);
+    equals(item2.globalMatrix, new Matrix(1, 0, 0, 1, 100, 75),
+            'item2.globalMatrix after outer translation');
+    equals(item1.globalMatrix, new Matrix(1, 0, 0, 1, 110, 75),
+            'item1.globalMatrix after outer translation');
+    equals(group.globalMatrix, new Matrix(1, 0, 0, 1, 100, 75),
+            'group.globalMatrix after outer translation');
+
+    // Moving an item to another parent, and removing it:
+    var other = new Group({ applyMatrix: false });
+    other.translate(0, 200);
+    equals(other.globalMatrix, new Matrix(1, 0, 0, 1, 0, 200),
+            'other.globalMatrix');
+    other.addChild(item2);
+    equals(item2.globalMatrix, new Matrix(1, 0, 0, 1, 0, 200),
+            'item2.globalMatrix in other group');
+    item2.remove();
+    equals(item2.globalMatrix, new Matrix(), 'item2.globalMatrix removed');
+});
+
 test('Item#rasterize() with empty bounds', function() {
     new Path.Line([0, 0], [100, 0]).rasterize();
     view.update(); // This should not throw
     expect(0);
 });
 
-test('Item#fitBounds(rectangle, fill)', function() {
+test('Item#fitBounds(rectangle[, fit])', function() {
+    // A 10 x 20 item in a 50 x 50 rectangle: To be contained, its height
+    // becomes 50, to cover the rectangle its width, and to fill it, both.
     var path = new Path.Rectangle([0, 0, 10, 20]);
-    path.fitBounds([0, 0, 50, 50], true);
-    equals(path.bounds, new Rectangle(0, -25, 50, 100));
+    path.fitBounds([0, 0, 50, 50], 'cover');
+    equals(path.bounds, new Rectangle(0, -25, 50, 100), 'cover');
     path.fitBounds(0, 0, 50, 50);
-    equals(path.bounds, new Rectangle(12.5, 0, 25, 50));
+    equals(path.bounds, new Rectangle(12.5, 0, 25, 50), 'contain by default');
+    path.fitBounds([0, 0, 50, 50], 'contain');
+    equals(path.bounds, new Rectangle(12.5, 0, 25, 50), 'contain');
+    path.fitBounds(0, 0, 50, 50, 'fill');
+    equals(path.bounds, new Rectangle(0, 0, 50, 50), 'fill');
+    // The deprecated booleans:
+    path.fitBounds([0, 0, 50, 100], true);
+    equals(path.bounds, new Rectangle(-25, 0, 100, 100), 'true for cover');
+    path.fitBounds([0, 0, 50, 100], false);
+    equals(path.bounds, new Rectangle(0, 25, 50, 50), 'false for contain');
+});
+
+test('Item#fitBounds() with empty rectangles and items', function() {
+    ['contain', 'cover', 'fill'].forEach(function(fit) {
+        // An empty rectangle can't scale the item, so it's only centered in
+        // it, keeping its size:
+        var path = new Path.Rectangle([0, 0, 10, 20]);
+        path.fitBounds(new Rectangle(30, 40, 0, 0), fit);
+        equals(path.bounds, new Rectangle(25, 30, 10, 20),
+                'into an empty rectangle, ' + fit);
+        // A line can only be scaled by its width:
+        var line = new Path.Line([0, 0], [10, 0]);
+        line.fitBounds(new Rectangle(0, 0, 50, 50), fit);
+        equals(line.bounds, new Rectangle(0, 25, 50, 0),
+                'a horizontal line, ' + fit);
+    });
 });
 
 test('Item#rasterize() bounds', function() {
@@ -1093,4 +1545,94 @@ test('Item#draw() with CompoundPath as clip item', function() {
     };
 
     comparePixels(createdClippedGroup(true), createdClippedGroup(false));
+});
+
+test('Item#draw() with opacity and a matrix in a clipped group (#1594)', function() {
+    // Items with an opacity are drawn through a temporary canvas, which needs
+    // the clip item of their parent too, without the item's own matrix. The
+    // same in a clipped group with a matrix of its own:
+    function createClippedGroup(item, matrix) {
+        return new Group({
+            applyMatrix: false,
+            matrix: matrix,
+            children: [
+                new Path.Rectangle({
+                    point: [0, 0],
+                    size: [100, 100],
+                    clipMask: true
+                }),
+                item
+            ]
+        });
+    }
+
+    function createNested() {
+        return new Group({
+            applyMatrix: false,
+            matrix: new Matrix(0.5, 0, 0, 0.5, 0, 0),
+            children: [
+                new Path.Rectangle({
+                    point: [0, 0],
+                    size: [400, 400],
+                    fillColor: 'red'
+                })
+            ],
+            opacity: 0.5
+        });
+    }
+
+    function createDirect() {
+        return new Path.Rectangle({
+            point: [0, 0],
+            size: [200, 200],
+            fillColor: 'red',
+            opacity: 0.5
+        });
+    }
+
+    var matrix = new Matrix(2, 0, 0, 2, 10, 20);
+    comparePixels(createClippedGroup(createNested()),
+            createClippedGroup(createDirect()), 'item with a matrix');
+    comparePixels(createClippedGroup(createNested(), matrix),
+            createClippedGroup(createDirect(), matrix),
+            'item with a matrix in a group with a matrix');
+});
+
+test('settings.insertItems for items created from other items (#1721)', function() {
+    var settings = paper.settings,
+        path = new Path.Rectangle([0, 0], [100, 100]),
+        circle = new Path.Circle([100, 100], 50),
+        shape = new Shape.Rectangle([0, 0], [100, 100]);
+
+    function create(insert) {
+        // Explicit insert arguments override the setting, so only pass them
+        // when defined:
+        var options = insert !== undefined ? { insert: insert } : undefined;
+        return {
+            'clone()': path.clone(options),
+            'clone({ deep: false })': path.clone(Base.set({ deep: false },
+                    options)),
+            'unite()': path.unite(circle, options),
+            'subtract({ trace: false })': path.subtract(circle,
+                    Base.set({ trace: false }, options)),
+            'rasterize()': path.rasterize(Base.set({ resolution: 72 },
+                    options)),
+            'toShape()': path.toShape(insert),
+            'toPath()': shape.toPath(insert)
+        };
+    }
+
+    function check(items, inserted, message) {
+        Base.each(items, function(item, name) {
+            equals(item.isInserted(), inserted, name + ' ' + message);
+            item.remove();
+        });
+    }
+
+    check(create(), true, 'with insertItems');
+    settings.insertItems = false;
+    check(create(), false, 'without insertItems');
+    check(create(true), true, 'with insert: true, without insertItems');
+    settings.insertItems = true;
+    check(create(false), false, 'with insert: false');
 });

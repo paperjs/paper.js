@@ -412,16 +412,17 @@ var Raster = Item.extend(/** @lends Raster# */{
     },
 
     /**
-     * The source of the raster, which can be set using a DOM Image, a Canvas,
-     * a data url, a string describing the URL to load the image from, or the
-     * ID of a DOM element to get the image from (either a DOM Image or a
-     * Canvas). Reading this property will return the url of the source image or
-     * a data-url.
+     * The source of the raster, which can be set using a string describing the
+     * URL to load the image from, or a data url. Reading this property will
+     * return the url of the source image or a data-url.
+     * To set the raster to a DOM Image or a Canvas, use {@link #image} or
+     * {@link #canvas} instead. The ID of a DOM Image or Canvas element is only
+     * accepted by the constructor.
      * Note that for consistency, a {@link #onLoad} event will be triggered on
      * the raster even if the image has already finished loading before.
      *
      * @bean
-     * @type HTMLImageElement|HTMLCanvasElement|String
+     * @type String
      *
      * @example {@paperscript}
      * var raster = new Raster();
@@ -568,8 +569,18 @@ var Raster = Item.extend(/** @lends Raster# */{
 
     /**
      * Returns a Base 64 encoded `data:` URL representation of the raster.
+     * If the raster shows an image that was loaded from a `data:` URL, that
+     * URL is returned unchanged. Otherwise, the arguments are passed on to
+     * `HTMLCanvasElement#toDataURL()` of the raster's {@link #canvas}.
+     * In web-workers, where the canvas is an `OffscreenCanvas`, this is not
+     * supported, and neither are {@link #source} and exporting the raster to
+     * JSON, which rely on it. Use the canvas' asynchronous `convertToBlob()`
+     * there instead.
      *
-     * @return {String}
+     * @param {String} [type='image/png'] the image format to encode
+     * @param {Number} [quality] the image quality between `0` and `1`, for
+     *     formats that use lossy compression, such as `'image/jpeg'`
+     * @return {String} the `data:` URL of the raster
      */
     toDataURL: function() {
         // See if the linked image is base64 encoded already, if so reuse it,
@@ -754,10 +765,13 @@ var Raster = Item.extend(/** @lends Raster# */{
         return this.getContext().createImageData(size.width, size.height);
     },
 
-    // DOCS: document Raster#getImageData
     /**
-     * @param {Rectangle} rect
-     * @return {ImageData}
+     * Returns the image data of the pixels within the specified rectangle, or
+     * of the whole raster if no rectangle or an empty one is passed.
+     *
+     * @param {Rectangle} [rect] the area of the raster to get the image data
+     *     of, in pixel coordinates
+     * @return {ImageData} the image data of the specified area
      */
     getImageData: function(/* rect */) {
         var rect = Rectangle.read(arguments);
@@ -847,8 +861,14 @@ var Raster = Item.extend(/** @lends Raster# */{
 
     _draw: function(ctx, param, viewMatrix) {
         var element = this.getElement();
-        // Only draw if image is not empty (#1320).
-        if (element && element.width > 0 && element.height > 0) {
+        if (param.dontFinish || param.clip) {
+            // Clip with the raster's rectangle (#1845):
+            var rect = this.getInternalBounds();
+            if (!param.dontStart)
+                ctx.beginPath();
+            ctx.rect(rect.x, rect.y, rect.width, rect.height);
+        } else if (element && element.width > 0 && element.height > 0) {
+            // Only draw if image is not empty (#1320).
             // Handle opacity for Rasters separately from the rest, since
             // Rasters never draw a stroke. See Item#draw().
             ctx.globalAlpha = Numerical.clamp(this._opacity, 0, 1);

@@ -11,6 +11,7 @@
  */
 
 /*#*/ include('Point.js');
+/*#*/ include('Line.js');
 /*#*/ include('Size.js');
 /*#*/ include('Rectangle.js');
 /*#*/ include('Matrix.js');
@@ -64,6 +65,8 @@
 /*#*/ include('Numerical.js');
 
 /*#*/ include('Tween.js');
+
+/*#*/ include('View.js');
 
 /*#*/ include('PaperScript.js');
 

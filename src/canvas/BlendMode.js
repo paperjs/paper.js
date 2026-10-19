@@ -208,6 +208,12 @@ var BlendMode = new function() {
             db = (bb + sb) / 2;
         },
 
+        'pin-light': function() {
+            dr = sr < 128 ? min(br, 2 * sr) : max(br, 2 * sr - 255);
+            dg = sg < 128 ? min(bg, 2 * sg) : max(bg, 2 * sg - 255);
+            db = sb < 128 ? min(bb, 2 * sb) : max(bb, 2 * sb - 255);
+        },
+
         negation: function() {
             dr = 255 - abs(255 - sr - br);
             dg = 255 - abs(255 - sg - bg);

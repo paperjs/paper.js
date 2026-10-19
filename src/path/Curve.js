@@ -903,7 +903,7 @@ statics: /** @lends Curve */{
         }
     }
 }}, Base.each(
-    ['getBounds', 'getStrokeBounds', 'getHandleBounds'],
+    ['getBounds', 'getStrokeBounds'],
     // NOTE: Although Curve.getBounds() exists, we are using Path.getBounds() to
     // determine the bounds of Curve objects with defined segment1 and segment2
     // values Curve.getBounds() can be used directly on curve arrays, without
@@ -943,9 +943,19 @@ statics: /** @lends Curve */{
     /**
      * The bounding rectangle of the curve including handles.
      *
-     * @name Curve#handleBounds
+     * @bean
      * @type Rectangle
      */
+    getHandleBounds: function() {
+        // Unlike Path.getHandleBounds(), only include the curve's own handles,
+        // not the outer handles of its two segments.
+        var v = this.getValues(),
+            x1 = Math.min(v[0], v[2], v[4], v[6]),
+            y1 = Math.min(v[1], v[3], v[5], v[7]),
+            x2 = Math.max(v[0], v[2], v[4], v[6]),
+            y2 = Math.max(v[1], v[3], v[5], v[7]);
+        return new Rectangle(x1, y1, x2 - x1, y2 - y1);
+    },
 
     /**
      * The rough bounding rectangle of the curve that is sure to include all of
@@ -1101,7 +1111,8 @@ statics: /** @lends Curve */{
     /**
      * {@grouptitle Positions on Curves}
      *
-     * Calculates the curve location at the specified offset on the curve.
+     * Calculates the curve location at the specified offset on the curve, or
+     * `null` if the offset exceeds the length of the curve.
      *
      * @param {Number} offset the offset on the curve
      * @return {CurveLocation} the curve location at the specified the offset
@@ -1114,7 +1125,7 @@ statics: /** @lends Curve */{
 
     /**
      * Calculates the curve location at the specified curve-time parameter on
-     * the curve.
+     * the curve, or `null` if the parameter lies outside of `0..1`.
      *
      * @param {Number} time the curve-time parameter on the curve
      * @return {CurveLocation} the curve location at the specified the location
@@ -1136,7 +1147,8 @@ statics: /** @lends Curve */{
      *     curve length units
      * @param {Number} [start] the curve-time in relation to which the offset is
      *     determined
-     * @return {Number} the curve-time parameter at the specified location
+     * @return {Number} the curve-time parameter at the specified location, or
+     *     `null` if the offset exceeds the length of the curve
      */
     getTimeAt: function(offset, start) {
         return Curve.getTimeAt(this.getValues(), offset, start);
@@ -1179,7 +1191,7 @@ statics: /** @lends Curve */{
      * curve, `null` otherwise.
      *
      * @param {Point} point the point on the curve
-     * @return {CurveLocation} the curve location of the specified point
+     * @return {?CurveLocation} the curve location of the specified point
      */
     getLocationOf: function(/* point */) {
         return this.getLocationAtTime(this.getTimeOf(Point.read(arguments)));
@@ -1190,7 +1202,7 @@ statics: /** @lends Curve */{
      * specified point if it lies on the path, `null` otherwise.
      *
      * @param {Point} point the point on the path
-     * @return {Number} the length of the path up to the specified point
+     * @return {?Number} the length of the path up to the specified point
      */
     getOffsetOf: function(/* point */) {
         var loc = this.getLocationOf.apply(this, arguments);
@@ -1204,7 +1216,7 @@ statics: /** @lends Curve */{
      * self-intersecting curve, the first found result is returned.
      *
      * @param {Point} point the point on the curve
-     * @return {Number} the curve-time parameter of the specified point
+     * @return {?Number} the curve-time parameter of the specified point
      */
     getTimeOf: function(/* point */) {
         return Curve.getTimeOf(this.getValues(), Point.read(arguments));
@@ -2278,8 +2290,8 @@ new function() { // Scope for bezier intersection using fat-line clipping
             den = 2 * ax * ty - 2 * ay * tx,
             times = [];
         if (Math.abs(den) < Numerical.CURVETIME_EPSILON) {
-            var num = ax * cy - ay * cx,
-                den = ax * by - ay * bx;
+            var num = cx * ty - cy * tx,
+                den = bx * ty - by * tx;
             if (den != 0) {
                 var t = -num / den;
                 if (t >= 0 && t <= 1) times.push(t);

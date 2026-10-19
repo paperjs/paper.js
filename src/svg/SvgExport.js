@@ -16,7 +16,10 @@
  */
 new function() {
     // TODO: Consider moving formatter into options object, and pass it along.
-    var formatter;
+    var formatter,
+        // Getting the style values of groups walks all their children, so
+        // cache the values of parents during each export:
+        parentStyles;
 
     function getTransform(matrix, coordinates, center) {
         // Use new Base() so we can use Base#set() on it.
@@ -74,35 +77,79 @@ new function() {
         var node = SvgElement.create('g', attrs, formatter);
         for (var i = 0, l = children.length; i < l; i++) {
             var child = children[i];
-            var childNode = exportSVG(child, options);
-            if (childNode) {
-                if (child.isClipMask()) {
-                    var clip = SvgElement.create('clipPath');
-                    clip.appendChild(childNode);
-                    setDefinition(child, clip, 'clip');
-                    SvgElement.set(node, {
-                        'clip-path': 'url(#' + clip.id + ')'
-                    });
-                } else {
+            if (child.isClipMask()) {
+                var clip = exportClip(child, options);
+                setDefinition(child, clip, 'clip', options);
+                SvgElement.set(node, {
+                    'clip-path': 'url(#' + clip.id + ')'
+                });
+            } else {
+                var childNode = exportSVG(child, options);
+                if (childNode)
                     node.appendChild(childNode);
-                }
             }
         }
         return node;
     }
 
+    function exportClip(item, options) {
+        var clip = SvgElement.create('clipPath');
+
+        function addItem(item) {
+            if (item instanceof Group) {
+                var children = item._children;
+                for (var i = 0, l = children.length; i < l; i++) {
+                    // As in Group#_draw(), leave out the clip items of nested
+                    // groups, which clips with all of their clipped content:
+                    if (!children[i]._clipMask)
+                        addItem(children[i]);
+                }
+            } else {
+                var node = exportSVG(item, options);
+                if (node)
+                    clip.appendChild(node);
+            }
+        }
+
+        // <clipPath> can only contain shapes, so flatten groups and apply
+        // their transformations to their content, on a copy:
+        if (item instanceof Group) {
+            item = item.clone({ insert: false });
+            item.matrix.apply(true, true);
+        }
+        addItem(item);
+        return clip;
+    }
+
     function exportRaster(item, options) {
         var attrs = getTransform(item._matrix, true),
             size = item.getSize(),
-            image = item.getImage();
+            image = item.getImage(),
+            href = options.embedImages == false && image && image.src
+                || item.toDataURL();
         // Take into account that rasters are centered:
         attrs.x -= size.width / 2;
         attrs.y -= size.height / 2;
-        attrs.width = size.width;
-        attrs.height = size.height;
-        attrs.href = options.embedImages == false && image && image.src
-                || item.toDataURL();
-        return SvgElement.create('image', attrs, formatter);
+        if (options.reuseImages) {
+            // Export each image only once into the definitions, along with
+            // its size, as <use> can't size images:
+            var node = getDefinition(href, 'image');
+            if (!node) {
+                node = SvgElement.create('image', {
+                    width: size.width,
+                    height: size.height,
+                    href: href
+                }, formatter);
+                setDefinition(href, node, 'image', options);
+            }
+            attrs.href = '#' + node.id;
+            return SvgElement.create('use', attrs, formatter);
+        } else {
+            attrs.width = size.width;
+            attrs.height = size.height;
+            attrs.href = href;
+            return SvgElement.create('image', attrs, formatter);
+        }
     }
 
     function exportPath(item, options) {
@@ -188,7 +235,7 @@ new function() {
                 viewBox: formatter.rectangle(bounds)
             });
             node.appendChild(exportSVG(definitionItem, options));
-            setDefinition(definition, node, 'symbol');
+            setDefinition(definition, node, 'symbol', options);
         }
         attrs.href = '#' + node.id;
         attrs.x += bounds.x;
@@ -199,7 +246,7 @@ new function() {
         return SvgElement.create('use', attrs, formatter);
     }
 
-    function exportGradient(color) {
+    function exportGradient(color, options) {
         // NOTE: As long as the fillTransform attribute is not implemented,
         // we need to create a separate gradient object for each gradient,
         // even when they share the same gradient definition.
@@ -252,15 +299,30 @@ new function() {
                 gradientNode.appendChild(
                         SvgElement.create('stop', attrs, formatter));
             }
-            setDefinition(color, gradientNode, 'color');
+            setDefinition(color, gradientNode, 'color', options);
         }
         return 'url(#' + gradientNode.id + ')';
     }
 
     function exportText(item) {
-        var node = SvgElement.create('text', getTransform(item._matrix, true),
-                formatter);
-        node.textContent = item._content;
+        var attrs = getTransform(item._matrix, true),
+            node = SvgElement.create('text', attrs, formatter),
+            lines = item._lines;
+        if (lines.length > 1) {
+            // SVG text has no line breaks, so place each line in a <tspan> at
+            // its own baseline. Use absolute y, as empty lines drop dy:
+            var leading = item._style.getLeading();
+            for (var i = 0, l = lines.length; i < l; i++) {
+                var span = SvgElement.create('tspan', {
+                    x: attrs.x,
+                    y: attrs.y + i * leading
+                }, formatter);
+                span.textContent = lines[i];
+                node.appendChild(span);
+            }
+        } else {
+            node.textContent = item._content;
+        }
         return node;
     }
 
@@ -278,6 +340,8 @@ new function() {
     function applyStyle(item, node, options, isRoot) {
         var attrs = {},
             parent = !isRoot && item.getParent(),
+            parentStyle = parent && (parentStyles[parent._id] =
+                    parentStyles[parent._id] || {}),
             style = [];
 
         if (item._name != null)
@@ -289,10 +353,13 @@ new function() {
             var get = entry.get,
                 type = entry.type,
                 value = item[get]();
-            if (entry.exportFilter
+            if (parent && !(get in parentStyle))
+                parentStyle[get] = parent[get]();
+            // Skip undefined values, as found on groups with mixed children:
+            if (value !== undefined && (entry.exportFilter
                     ? entry.exportFilter(item, value)
                     : options.reduceAttributes == false
-                        || !parent || !Base.equals(parent[get](), value)) {
+                        || !parent || !Base.equals(parentStyle[get], value))) {
                 if (type === 'color' && value != null) {
                     // Support for css-style rgba() values is not in SVG 1.1, so
                     // separate the alpha value of colors with alpha into the
@@ -307,10 +374,12 @@ new function() {
                     attrs[entry.attribute] = value == null ? 'none'
                             : type === 'color' ? value.gradient
                                 // true for noAlpha, see above
-                                ? exportGradient(value, item)
+                                ? exportGradient(value, options)
                                 : value.toCSS(true)
                             : type === 'array' ? value.join(',')
                             : type === 'lookup' ? entry.toSVG[value]
+                            // Tracking is in thousandths of an em:
+                            : type === 'tracking' ? value && value / 1000 + 'em'
                             : value;
                 }
             }
@@ -332,23 +401,27 @@ new function() {
     function getDefinition(item, type) {
         if (!definitions)
             definitions = { ids: {}, svgs: {} };
-        // Use #__id for items that don't have internal #_id properties (Color),
-        // and give them ids from their own private id pool named 'svg'.
-        return item && definitions.svgs[type + '-'
-                + (item._id || item.__id || (item.__id = UID.get('svg')))];
+        return item && definitions.svgs[getDefinitionKey(item, type)];
     }
 
-    function setDefinition(item, node, type) {
+    function setDefinition(item, node, type, options) {
         // Make sure the definitions lookup is created before we use it.
         // This is required by 'clip', where getDefinition() is not called.
         if (!definitions)
             getDefinition();
         // Have different id ranges per type
         var typeId = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
-        // Give the svg node an id, and link to it from the item id.
-        node.id = type + '-' + typeId;
-        // See getDefinition() for an explanation of #__id:
-        definitions.svgs[type + '-' + (item._id || item.__id)] = node;
+        // Give the svg node an id, and link to it from the item's key.
+        node.id = (options.idPrefix || '') + type + '-' + typeId;
+        definitions.svgs[getDefinitionKey(item, type)] = node;
+    }
+
+    function getDefinitionKey(item, type) {
+        // Use #__id for items that don't have internal #_id properties (Color),
+        // and give them ids from their own private id pool named 'svg'.
+        // Strings, e.g. the href of images, are their own keys.
+        return type + '-' + (typeof item === 'string' ? item
+                : item._id || item.__id || (item.__id = UID.get('svg')));
     }
 
     function exportDefinitions(node, options) {
@@ -376,6 +449,7 @@ new function() {
             // Clear definitions at the end of export
             definitions = null;
         }
+        parentStyles = null;
         return options.asString
                 ? new self.XMLSerializer().serializeToString(svg)
                 : svg;
@@ -401,6 +475,7 @@ new function() {
         if (!options)
             options = {};
         formatter = new Formatter(options.precision);
+        parentStyles = {};
         return options;
     }
 

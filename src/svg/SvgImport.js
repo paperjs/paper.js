@@ -20,7 +20,15 @@ new function() {
     // index is option, and if passed, causes a lookup in a list.
 
     var definitions = {},
-        rootSize;
+        rootSize,
+        // The absolute units of CSS in px:
+        units = { 'in': 96, pt: 96 / 72, pc: 96 / 6, cm: 96 / 2.54,
+            mm: 96 / 25.4 };
+
+    function parseLength(value) {
+        var unit = /(in|pt|pc|cm|mm)\s*$/.exec(value);
+        return parseFloat(value) * (unit ? units[unit[1]] : 1);
+    }
 
     function getValue(node, name, isString, allowNull, allowPercent,
             defaultValue) {
@@ -34,7 +42,7 @@ new function() {
                     : isString ? '' : 0
                 : isString
                     ? value
-                    : parseFloat(value);
+                    : parseLength(value);
         // Support for dimensions in percentage of the root size. If root-size
         // is not set (e.g. during <defs>), just scale the percentage value to
         // 0..1, as required by gradients with gradientUnits="objectBoundingBox"
@@ -59,12 +67,12 @@ new function() {
     }
 
     // Converts a string attribute value to the specified type
-    function convertValue(value, type, lookup) {
+    function convertValue(value, type, lookup, options) {
         return value === 'none' ? null
-                : type === 'number' ? parseFloat(value)
+                : type === 'number' ? parseLength(value)
                 : type === 'array' ?
-                    value ? value.split(/[\s,]+/g).map(parseFloat) : []
-                : type === 'color' ? getDefinition(value) || value
+                    value ? value.split(/[\s,]+/g).map(parseLength) : []
+                : type === 'color' ? getDefinition(value, options) || value
                 : type === 'lookup' ? lookup[value]
                 : value;
     }
@@ -78,15 +86,22 @@ new function() {
             item = new Group(),
             project = item._project,
             currentStyle = project._currentStyle,
+            parentSize = rootSize,
             children = [];
         if (!isClip && !isDefs) {
-            item = applyAttributes(item, node, isRoot);
+            item = applyAttributes(item, node, options, isRoot);
             // Style on items needs to be handled differently than all other
             // items: We first apply the style to the item, then use it as the
             // project's currentStyle, so it is used as a default for the
             // creation of all nested items. importSVG then needs to check for
             // items and avoid calling applyAttributes() again.
             project._currentStyle = item._style.clone();
+        }
+        if (type === 'svg' && !isRoot) {
+            // Percentages inside nested <svg> elements refer to their size:
+            rootSize = new Size(
+                    getValue(node, 'width', false, false, false, '100%'),
+                    getValue(node, 'height', false, false, false, '100%'));
         }
         if (isRoot) {
             // Import all defs first, since in SVG they can be in any location.
@@ -110,9 +125,10 @@ new function() {
         // Clip paths are reduced (unboxed) and their attributes applied at the
         // end.
         if (isClip)
-            item = applyAttributes(item.reduce(), node, isRoot);
-        // Restore currentStyle
+            item = applyAttributes(item.reduce(), node, options, isRoot);
+        // Restore currentStyle and rootSize
         project._currentStyle = currentStyle;
+        rootSize = parentSize;
         if (isClip || isDefs) {
             // We don't want the defs in the DOM. But we might want to use
             // Symbols for them to save memory?
@@ -140,15 +156,15 @@ new function() {
         return PathItem.create(node.getAttribute('d'));
     }
 
-    function importGradient(node, type) {
+    function importGradient(node, type, options) {
         var id = (getValue(node, 'href', true) || '').substring(1),
+            definition = getDefinitionById(id, options),
             radial = type === 'radialgradient',
             gradient;
-        if (id) {
+        if (definition) {
             // Gradients are always wrapped in a Color object, so get the
             // gradient object from there.
-            // TODO: Handle exception if there is no definition for this id.
-            gradient = definitions[id].getGradient();
+            gradient = definition.getGradient();
             // Create a clone if radial setting is different:
             if (gradient._radial ^ radial) {
                 gradient = gradient.clone();
@@ -160,7 +176,8 @@ new function() {
             for (var i = 0, l = nodes.length; i < l; i++) {
                 var child = nodes[i];
                 if (child.nodeType === 1)
-                    stops.push(applyAttributes(new GradientStop(), child));
+                    stops.push(applyAttributes(new GradientStop(), child,
+                            options));
             }
             gradient = new Gradient(stops, radial);
         }
@@ -181,7 +198,8 @@ new function() {
                 '100%', '0%');
         }
         var color = applyAttributes(
-                new Color(gradient, origin, destination, highlight), node);
+                new Color(gradient, origin, destination, highlight), node,
+                options);
         // TODO: Consider adding support for _scaleToBounds to Color instead?
         color._scaleToBounds = scaleToBounds;
         // We don't return the gradient, since we only need a reference to it in
@@ -217,17 +235,39 @@ new function() {
         radialgradient: importGradient,
 
         // https://www.w3.org/TR/SVG/struct.html#ImageElement
-        image: function (node) {
-            var raster = new Raster(getValue(node, 'href', true));
+        image: function (node, type, options) {
+            var raster = new Raster({
+                    crossOrigin: options.crossOrigin,
+                    source: getValue(node, 'href', true)
+                }),
+                // NOTE: 'slice' is treated as 'meet', as it requires clipping.
+                align = /none|x(Min|Mid|Max)Y(Min|Mid|Max)/.exec(
+                        getValue(node, 'preserveAspectRatio', true))
+                        || [null, 'Mid', 'Mid'];
             raster.on('load', function() {
-                var size = getSize(node);
-                this.setSize(size);
+                // Keep the image's own pixels, and scale it to the size given
+                // in SVG, instead of resampling it to that size. Without a
+                // size, use the image's own, as browsers do (SVG 2):
+                var imageSize = this.getSize(),
+                    size = getSize(node, null, null, true) || imageSize,
+                    point = getPoint(node);
+                if (align[0] !== 'none') {
+                    // Scale uniformly, and align the image in its box:
+                    var factors = { Min: 0, Mid: 0.5, Max: 1 },
+                        fitted = imageSize.multiply(Math.min(
+                            size.width / imageSize.width,
+                            size.height / imageSize.height));
+                    point = point.add(size.subtract(fitted).multiply(
+                            [factors[align[1]], factors[align[2]]]));
+                    size = fitted;
+                }
                 // Since x and y start from the top left of an image, add
                 // half of its size. We also need to take the raster's matrix
                 // into account, which will be defined by the time the load
                 // event is called.
-                var center = getPoint(node).add(size.divide(2));
-                this._matrix.append(new Matrix().translate(center));
+                var center = point.add(size.divide(2));
+                this._matrix.append(new Matrix().translate(center)
+                        .scale(size.divide(imageSize)));
             });
             return raster;
         },
@@ -243,20 +283,27 @@ new function() {
         defs: importGroup,
 
         // https://www.w3.org/TR/SVG/struct.html#UseElement
-        use: function(node) {
+        use: function(node, type, options) {
             // Note the namespaced xlink:href attribute is just called href
             // as a property on node.
             // TODO: Support overflow and width, height, in combination with
             // overflow: hidden. Paper.js currently does not support
             // SymbolItem clipping, but perhaps it should?
             var id = (getValue(node, 'href', true) || '').substring(1),
-                definition = definitions[id],
+                definition = getDefinitionById(id, options),
                 point = getPoint(node);
             return definition
                     ? definition instanceof SymbolDefinition
                         // When placing symbols, we need to take both point and
                         // matrix into account. place() does the right thing:
                         ? definition.place(point)
+                        // Rasters are only positioned once their image has
+                        // loaded, which their clones would miss, so import
+                        // their <image> again:
+                        : definition instanceof Raster
+                            ? importNode(getSandbox().ownerDocument
+                                .getElementById(id), options, false)
+                                .translate(point)
                         // A normal item: Clone and translate it.
                         : definition.clone().translate(point)
                     : null;
@@ -281,11 +328,17 @@ new function() {
 
         // https://www.w3.org/TR/SVG/shapes.html#RectElement
         rect: function(node) {
+            // A missing rx or ry takes the value of the other one:
+            var rx = getValue(node, 'rx', false, true),
+                ry = getValue(node, 'ry', false, true);
             return new Shape.Rectangle(new Rectangle(
                         getPoint(node),
                         getSize(node)
-                    ), getSize(node, 'rx', 'ry'));
-            },
+                    ), new Size(
+                        rx == null ? ry || 0 : rx,
+                        ry == null ? rx || 0 : ry
+                    ));
+        },
 
         // https://www.w3.org/TR/SVG/shapes.html#LineElement
         line: function(node) {
@@ -304,8 +357,16 @@ new function() {
             // rotate: character rotation
             // lengthAdjust:
             var text = new PointText(getPoint(node).add(
-                    getPoint(node, 'dx', 'dy')));
-            text.setContent(node.textContent.trim() || '');
+                    getPoint(node, 'dx', 'dy'))),
+                // Lines are placed in <tspan> elements with their own y, as
+                // exported by Paper.js and other editors:
+                lines = Base.each(node.childNodes, function(child) {
+                    if (/^tspan$/i.test(child.nodeName)
+                            && child.hasAttribute('y'))
+                        this.push(child.textContent.trim());
+                }, []);
+            text.setContent(lines.length > 1 ? lines.join('\n')
+                    : node.textContent.trim());
             return text;
         },
 
@@ -381,9 +442,11 @@ new function() {
     // SvgStyles (e.g. 'stroke') before the additional attributes below (e.g.
     // 'stroke-opacity'). See issue #694.
     var attributes = Base.set(Base.each(SvgStyles, function(entry) {
-        this[entry.attribute] = function(item, value) {
+        this[entry.attribute] = function(item, value, name, node, styles,
+                options) {
             if (item[entry.set]) {
-                item[entry.set](convertValue(value, entry.type, entry.fromSVG));
+                item[entry.set](convertValue(value, entry.type, entry.fromSVG,
+                        options));
                 if (entry.type === 'color') {
                     // Do not use result of convertValue() above, since calling
                     // the setter will convert a color and clone it if necessary
@@ -403,13 +466,14 @@ new function() {
     }, {}), {
         id: function(item, value) {
             definitions[value] = item;
-            if (item.setName)
+            // Item names can't consist only of numbers, see #1754:
+            if (item.setName && value !== (+value) + '')
                 item.setName(value);
         },
 
-        'clip-path': function(item, value) {
+        'clip-path': function(item, value, name, node, styles, options) {
             // https://www.w3.org/TR/SVG/masking.html#ClipPathProperty
-            var clip = getDefinition(value);
+            var clip = getDefinition(value, options);
             if (clip) {
                 clip = clip.clone();
                 clip.setClipMask(true);
@@ -437,6 +501,15 @@ new function() {
             // NOTE: 'none' gets translated to null in getAttribute()
             if (item.setVisible)
                 item.setVisible(value !== null);
+        },
+
+        'letter-spacing': function(item, value) {
+            // Convert to tracking, in thousandths of an em. 'normal' is 0:
+            if (item.setTracking) {
+                var amount = parseFloat(value) || 0;
+                item.setTracking(1000 * (/em$/.test(value) ? amount
+                        : amount / parseFloat(item.getFontSize())));
+            }
         },
 
         'stop-color': function(item, value) {
@@ -501,16 +574,17 @@ new function() {
     });
 
     function getAttribute(node, name, styles) {
-        // First see if the given attribute is defined.
-        var attr = node.attributes[name],
+        // Inline styles override presentation attributes, as in CSS. After
+        // them, see if the given attribute is defined, and finally, if there is
+        // a style applied through CSS rules, filtering out inheritance from
+        // their parents.
+        var style = Base.camelize(name),
+            value = node.style && node.style[style];
+        if (!value) {
+            var attr = node.attributes[name];
             value = attr && attr.value;
-        if (!value && node.style) {
-            // Fallback to using styles. See if there is a style, either set
-            // directly on the object or applied to it through CSS rules.
-            // We also need to filter out inheritance from their parents.
-            var style = Base.camelize(name);
-            value = node.style[style];
-            if (!value && styles.node[style] !== styles.parent[style])
+            if (!value && node.style
+                    && styles.node[style] !== styles.parent[style])
                 value = styles.node[style];
         }
         // Return undefined if attribute is not defined, but null if it's
@@ -527,7 +601,7 @@ new function() {
      * @param {SVGElement} node an SVG node to read style and attributes from
      * @param {Item} item the item to apply the style and attributes to
      */
-    function applyAttributes(item, node, isRoot) {
+    function applyAttributes(item, node, options, isRoot) {
         // SVG attributes can be set both as styles and direct node
         // attributes, so we need to handle both.
         var parent = node.parentNode,
@@ -539,26 +613,41 @@ new function() {
                 parent: !isRoot && !/^defs$/i.test(parent.tagName)
                         && DomElement.getStyles(parent) || {}
             };
+        // jsdom doesn't compute SVG styles, so start the root with SVG's initial
+        // fill, as it differs from the default in Paper.js:
+        if (isRoot && !styles.node.fill && item.setFillColor)
+            item.setFillColor('black');
         Base.each(attributes, function(apply, name) {
             var value = getAttribute(node, name, styles);
             // 'clip-path' attribute returns a new item, support it here:
             item = value !== undefined
-                    && apply(item, value, name, node, styles) || item;
+                    && apply(item, value, name, node, styles, options) || item;
         });
         return item;
     }
 
-    function getDefinition(value) {
+    function getDefinitionById(id, options) {
+        // Definitions can be referenced before they appear in the document,
+        // so import them on demand, see #1146:
+        if (id && !definitions[id]) {
+            var node = getSandbox().ownerDocument.getElementById(id);
+            if (node)
+                importNode(node, options, false);
+        }
+        return definitions[id];
+    }
+
+    function getDefinition(value, options) {
         // When url() comes from a style property, '#'' seems to be missing on
         // WebKit. We also get variations of quotes or no quotes, single or
         // double, so handle it all with one regular expression:
         var match = value && value.match(/\((?:["'#]*)([^"')]+)/),
             name = match && match[1],
-            res = name && definitions[window
+            res = name && getDefinitionById(window
                     // This is required by Firefox, which can produce absolute
                     // urls for local gradients, see #1001:
                     ? name.replace(window.location.href.split('#')[0] + '#', '')
-                    : name];
+                    : name, options);
         // Patch in support for SVG's gradientUnits="objectBoundingBox" through
         // Color#_scaleToBounds
         if (res && res._scaleToBounds) {
@@ -630,6 +719,7 @@ new function() {
         var settings = paper.settings,
             applyMatrix = settings.applyMatrix,
             insertItems = settings.insertItems,
+            importer = importers[type],
             item;
         // Restore everything in `finally` blocks, so that a failing import
         // doesn't leave the node in the sandbox or the settings changed:
@@ -637,7 +727,6 @@ new function() {
             settings.applyMatrix = false;
             settings.insertItems = false;
             try {
-                var importer = importers[type];
                 item = importer && importer(node, type, options, isRoot)
                         || null;
             } finally {
@@ -646,9 +735,9 @@ new function() {
             }
             if (item) {
                 // Do not apply attributes if this is a #document node.
-                // See importGroup() for an explanation of filtering for Group:
-                if (isElement && !(item instanceof Group))
-                    item = applyAttributes(item, node, isRoot);
+                // importGroup() applies them itself, see there for why:
+                if (isElement && importer !== importGroup)
+                    item = applyAttributes(item, node, options, isRoot);
                 // Support onImportItem callback, to provide mechanism to handle
                 // special attributes (e.g. inkscape:transform-center)
                 var onImport = options.onImport,

@@ -590,6 +590,42 @@ test('hit-testing fills with tolerance', function() {
     }, true);
 });
 
+test('hit-testing point texts with tolerance (#632)', function() {
+    var text = new PointText({
+        point: [50, 50],
+        content: 'Hello',
+        fontSize: 20,
+        fillColor: 'black'
+    });
+
+    // Hit the bounds of the text, and within the tolerance of 10 around them:
+    function testHit(offset, origin, expected, message) {
+        var point = text.bounds[origin].add(offset),
+            hit = text.hitTest(point, { fill: true, tolerance: 10 });
+        equals(function() {
+            return !!hit && hit.type === 'fill' && hit.item === text;
+        }, expected, message);
+    }
+
+    function testHits(name) {
+        testHit([0, 0], 'center', true, name + ': center');
+        testHit([9, 0], 'rightCenter', true, name + ': 9 right of bounds');
+        testHit([11, 0], 'rightCenter', false, name + ': 11 right of bounds');
+        testHit([0, -9], 'topCenter', true, name + ': 9 above bounds');
+        testHit([0, -11], 'topCenter', false, name + ': 11 above bounds');
+        // At the corners, the distance counts, not the expanded rectangle:
+        testHit([6, 6], 'bottomRight', true,
+                name + ': 6 * sqrt(2) diagonally from corner');
+        testHit([8, 8], 'bottomRight', false,
+                name + ': 8 * sqrt(2) diagonally from corner');
+    }
+
+    testHits('text');
+    // The tolerance is in project coordinates, also when the text is scaled:
+    text.scale(2);
+    testHits('scaled text');
+});
+
 test('hit-testing compound-paths', function() {
     var center = new Point(100, 100);
     var path1 = new Path.Circle({
@@ -854,6 +890,58 @@ test('hit-testing scaled items with different settings of view.zoom and item.str
     testItem(Path, 2, true);
 });
 
+test('hit-testing stroke caps with tolerance (#1460)', function() {
+    // A horizontal stroke from 100 to 200, 20 wide, tested with tolerance 5:
+    function testCap(cap, hits, misses) {
+        var path = new Path({
+            segments: [[100, 100], [200, 100]],
+            strokeColor: 'black',
+            strokeWidth: 20,
+            strokeCap: cap
+        });
+        function hitTest(point) {
+            return path.hitTest(point, { stroke: true, tolerance: 5 });
+        }
+        hits.forEach(function(point) {
+            var hitResult = hitTest(point);
+            equals(hitResult && hitResult.type, 'stroke',
+                    cap + ' cap: ' + point + ' should hit the stroke');
+        });
+        misses.forEach(function(point) {
+            equals(hitTest(point), null,
+                    cap + ' cap: ' + point + ' should miss the stroke');
+        });
+        path.remove();
+    }
+
+    // The butt cap ends flat at x = 100 and x = 200, between y = 90 and 110:
+    testCap('butt', [
+        [100, 100], [100, 105], [95, 105], [205, 95],
+        // 5 away from the corner at [100, 110]:
+        [97, 114],
+        // The middle of the stroke, 5 away from its side:
+        [150, 115]
+    ], [
+        [94, 105], [206, 95],
+        // sqrt(34) away from the corner at [100, 110]:
+        [97, 115],
+        [150, 116]
+    ]);
+    // The square cap extends the stroke to x = 90:
+    testCap('square', [[85, 100], [87, 114]], [[84, 100], [87, 115]]);
+    // The round cap reaches 10 around the end point:
+    testCap('round', [[85, 100], [97, 114]], [[84, 100], [97, 115]]);
+
+    // The example from the issue, with the default stroke width and cap:
+    var path = new Path({
+        segments: [[30, 30], [300, 300]],
+        strokeColor: 'black'
+    });
+    var hitResult = path.hitTest([300, 300], { stroke: true, tolerance: 50 });
+    equals(hitResult && hitResult.location.segment === path.lastSegment,
+            true);
+});
+
 test('hit-testing items scaled to 0', function() {
     var item = new Shape.Rectangle({
         point: [0, 0],
@@ -869,3 +957,160 @@ test('hit-testing items scaled to 0', function() {
 });
 
 // TODO: project.hitTest(point, {type: AnItemType});
+
+test('Hit-testing groups (#2069)', function() {
+    function getItems(hits) {
+        return hits.map(function(hit) {
+            return hit.item;
+        });
+    }
+
+    var red = new Path.Rectangle({
+            point: [0, 0], size: [50, 50], fillColor: 'red'
+        }),
+        blue = new Path.Rectangle({
+            point: [100, 0], size: [50, 50], strokeColor: 'blue'
+        }),
+        inner = new Group([red, blue]),
+        outer = new Group([inner]);
+    // Groups are hit wherever one of their children is hit, whatever their
+    // styles, and layers aren't:
+    equals(getItems(project.hitTestAll([25, 25])), [red, inner, outer],
+            'hitTestAll() on the filled child');
+    equals(getItems(project.hitTestAll([100, 25])), [blue, inner, outer],
+            'hitTestAll() on the stroked child');
+    equals(getItems(project.hitTestAll([75, 25])), [],
+            'hitTestAll() between the children');
+    // The group's hit takes the type of the child's hit:
+    var options = { fill: true, stroke: true, class: Group },
+        hit = project.hitTest([100, 25], options);
+    equals(function() {
+        return hit.item === inner && hit.type;
+    }, 'stroke');
+    equals(function() {
+        return project.hitTest([75, 25], options);
+    }, null);
+    equals(function() {
+        return project.hitTest([25, 25], {
+            fill: true,
+            match: function(hit) {
+                return hit.item === outer;
+            }
+        }).item === outer;
+    }, true);
+    // Without filters, the children are still hit first:
+    equals(function() {
+        return project.hitTest([25, 25]).item === red;
+    }, true);
+    // Groups with children that share a fill were hit before too:
+    blue.fillColor = 'red';
+    equals(getItems(project.hitTestAll([125, 25])), [blue, inner, outer],
+            'hitTestAll() with shared fills');
+});
+
+test('Item#hitTest() on items in transformed groups (#1803)', function() {
+    var path = new Path.Rectangle({
+            point: [0, 0], size: [50, 50], fillColor: 'red'
+        }),
+        inner = new Group({ children: [path], applyMatrix: false }),
+        outer = new Group({ children: [inner], applyMatrix: false });
+    inner.matrix = new Matrix(1, 0, 0, 1, 10, 0);
+    outer.matrix = new Matrix(2, 0, 0, 2, 100, 100);
+    // The path's local point 25, 25 is at 35, 25 in inner and at
+    // 2 * 35 + 100, 2 * 25 + 100 = 170, 150 in global coordinates:
+    equals(function() {
+        return path.hitTest([170, 150]).item === path;
+    }, true);
+    equals(function() {
+        return inner.hitTest([170, 150]).item === path;
+    }, true);
+    equals(function() {
+        return project.hitTest([170, 150]).item === path;
+    }, true);
+    equals(function() {
+        return path.hitTest([25, 25]);
+    }, null);
+    // The hit point is in global coordinates too: the segment at 0, 0 is at
+    // 2 * 10 + 100, 100 = 120, 100.
+    var hit = path.hitTest([121, 101], { segments: true, tolerance: 5 });
+    equals(function() {
+        return hit.type;
+    }, 'segment');
+    equals(hit.point, new Point(120, 100));
+});
+
+test('hit-testing with tolerance on items in transformed groups (#1278)', function() {
+    // The tolerance is in project coordinates, regardless of the
+    // transformations of the item, its parents and the view.
+    var options = { segments: true, tolerance: 10 };
+
+    function testTolerance(item, point, name) {
+        // The tolerance circle around point, through the closest misses:
+        var hits = [[9, 0], [-9, 0], [0, 9], [0, -9], [7, 7]],
+            misses = [[11, 0], [-11, 0], [0, 11], [0, -11], [7.2, 7.2]];
+        function test(owner, offset, expected) {
+            var hit = owner.hitTest(point.add(offset), options);
+            equals(function() {
+                return !!hit && hit.item === item && hit.type === 'segment';
+            }, expected, name + ', ' + (owner === project ? 'project' : 'item')
+                    + '.hitTest() at offset ' + offset);
+        }
+        for (var i = 0; i < hits.length; i++) {
+            test(project, hits[i], true);
+            test(item, hits[i], true);
+            test(project, misses[i], false);
+            test(item, misses[i], false);
+        }
+    }
+
+    function createPath(point) {
+        return new Path({ segments: [point, [0, 0]], strokeColor: 'black' });
+    }
+
+    function createGroup(matrix, child) {
+        var group = new Group({ children: [child], applyMatrix: false });
+        group.matrix = matrix;
+        return group;
+    }
+
+    var path = createPath([100, 100]);
+    testTolerance(path, new Point(100, 100), 'untransformed');
+    path.remove();
+
+    // 2 * 50, 2 * 50 = 100, 100:
+    path = createPath([50, 50]);
+    var group = createGroup(new Matrix(2, 0, 0, 2, 0, 0), path);
+    testTolerance(path, new Point(100, 100), 'scaled');
+    // Zooming the view doesn't change the tolerance:
+    view.zoom = 2;
+    testTolerance(path, new Point(100, 100), 'scaled, zoomed view');
+    view.zoom = 1;
+    group.remove();
+
+    // The local 50, 0 is scaled to 100, 0 and rotated by 30°:
+    path = createPath([50, 0]);
+    group = createGroup(new Matrix().rotate(30).scale(2), path);
+    var angle = 30 * Math.PI / 180;
+    testTolerance(path, new Point(100 * Math.cos(angle),
+            100 * Math.sin(angle)), 'rotated and scaled');
+    group.remove();
+
+    // x' = -y + 200, y' = 3 * x, so the local 40, 100 is at 100, 120, and the
+    // tolerance turns into an ellipse in local coordinates:
+    path = createPath([40, 100]);
+    group = createGroup(new Matrix(0, 3, -1, 0, 200, 0), path);
+    testTolerance(path, new Point(100, 120), 'rotated and scaled unevenly');
+    group.remove();
+
+    // 1.5 * 2 * 40, 1.5 * 2 * 30 = 120, 90:
+    path = createPath([40, 30]);
+    group = createGroup(new Matrix(1.5, 0, 0, 1.5, 0, 0),
+            createGroup(new Matrix(2, 0, 0, 2, 0, 0), path));
+    testTolerance(path, new Point(120, 90), 'nested groups');
+    group.remove();
+
+    // Symbol items transform their definition the same way, 2 * 50 = 100:
+    var item = new SymbolItem(new SymbolDefinition(createPath([50, 50]), true));
+    item.matrix = new Matrix(2, 0, 0, 2, 0, 0);
+    testTolerance(item, new Point(100, 100), 'scaled symbol item');
+});

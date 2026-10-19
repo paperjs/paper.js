@@ -18,7 +18,9 @@ var path = require('path');
 // 'paper-jsdom' or 'paper-jsdom-canvas'), and use this to determine if error
 // exceptions should be thrown or if loading should fail silently.
 var parent = module.parent && module.parent.parent,
-    requireName = parent && path.basename(path.dirname(parent.filename));
+    // The REPL's module has no filename:
+    requireName = parent && parent.filename &&
+            path.basename(path.dirname(parent.filename));
 requireName = /^paper/.test(requireName) ? requireName : 'paper';
 
 var jsdom,
@@ -30,7 +32,7 @@ try {
     // Check the required module's name to see if it contains jsdom, and only
     // complain about its lack if the module requires it.
     if (/\bjsdom\b/.test(requireName)) {
-        throw new Error('Unable to load jsdom module.');
+        throw new Error('Unable to load jsdom module.', { cause: e });
     }
 }
 
@@ -53,7 +55,6 @@ if (jsdom) {
         // jsdom's window can't be removed from itself, so inherit from it:
         self = Object.create(self, { window: { value: null } });
     }
-    require('./xml.js')(self);
 } else {
     self = {
         navigator: {

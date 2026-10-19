@@ -298,10 +298,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     },
     // TODO: Implement setSelectedItems?
 
-    _updateSelection: function(item) {
+    _updateSelection: function(item, remove) {
         var id = item._id,
             selectionItems = this._selectionItems;
-        if (item._selection) {
+        // Only keep track of inserted items, so removed ones can be collected:
+        if (item._selection && !remove && item.isInserted()) {
             if (selectionItems[id] !== item) {
                 this._selectionCount++;
                 selectionItems[id] = item;
@@ -398,14 +399,16 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * Performs a hit-test on the items contained within the project at the
      * location of the specified point.
      *
-     * The options object allows you to control the specifics of the hit-test
-     * and may contain a combination of the following values:
+     * The options object allows you to control the specifics of the hit-test.
+     * Without options, `fill`, `stroke` and `segments` are hit-tested. As soon
+     * as an options object is passed, only the hit-tests that it sets to `true`
+     * are performed. It may contain a combination of the following values:
      *
      * @name Project#hitTest
      * @function
      *
      * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
-     *     {Number} the tolerance of the hit-test
+     *     {Number} the tolerance of the hit-test, in project coordinates
      * @option options.class {Function} only hit-test against a specific item
      *     class, or any of its sub-classes, by providing the constructor
      *     function against which an `instanceof` check is performed:
@@ -414,11 +417,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @option options.match {Function} a match function to be called for each
      *     found hit result: Return `true` to return the result, `false` to keep
      *     searching
-     * @option [options.fill=true] {Boolean} hit-test the fill of items
-     * @option [options.stroke=true] {Boolean} hit-test the stroke of path
-     *     items, taking into account the setting of stroke color and width
-     * @option [options.segments=true] {Boolean} hit-test for {@link
-     *     Segment#point} of {@link Path} items
+     * @option options.fill {Boolean} hit-test the fill of items
+     * @option options.stroke {Boolean} hit-test the stroke of path items,
+     *     taking into account the setting of stroke color and width
+     * @option options.segments {Boolean} hit-test for {@link Segment#point} of
+     *     {@link Path} items
      * @option options.curves {Boolean} hit-test the curves of path items,
      *     without taking the stroke color or width into account
      * @option options.handles {Boolean} hit-test for the handles ({@link
@@ -431,7 +434,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      *     the bounding rectangle of items ({@link Item#bounds})
      * @option options.bounds {Boolean} hit-test the corners and side-centers of
      *     the bounding rectangle of items ({@link Item#bounds})
-     * @option options.guides {Boolean} hit-test items that have {@link
+     * @option options.guides {Boolean} only hit-test items that have {@link
      *     Item#guide} set to `true`
      * @option options.selected {Boolean} only hit selected items
      *
@@ -494,7 +497,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @see Item#matches(options)
      * @see Item#getItems(options)
      * @param {Object|Function} options the criteria to match against
-     * @return {Item[]} the list of matching items contained in the project
+     * @return {Item[]} the list of matching items contained in the project, in
+     *     their stacking order from bottom to top, with each item listed
+     *     before its own descendants
      *
      * @example {@paperscript} // Fetch all selected path items:
      * var path1 = new Path.Circle({
@@ -780,6 +785,12 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @option [options.embedImages=true] {Boolean} whether raster images should
      *     be embedded as base64 data inlined in the xlink:href attribute, or
      *     kept as a link to their external URL.
+     * @option [options.reuseImages=false] {Boolean} whether raster images with
+     *     the same content should only be exported once into the `<defs>`
+     *     element, and placed through `<use>` elements referencing it
+     * @option [options.idPrefix=''] {String} a prefix for the ids generated
+     *     for definitions such as gradients, clip paths and symbols, to keep
+     *     them unique when several exported SVGs are placed in one document
      * @option [options.reduceAttributes=true] {Boolean} wether to only include
      *     style attributes in the SVG output that differ from their parents,
      *     or to always include them (much faster but leading to redundancies).
@@ -795,11 +806,18 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * Note that the project is not cleared first. You can call
      * {@link Project#clear()} to do so.
      *
+     * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
+     * the `<use>` elements that place them as {@link SymbolItem} items. The
+     * styles that `<use>` elements inherit don't reach the symbols' content.
+     *
      * @name Project#importSVG
      * @function
      *
      * @option [options.expandShapes=false] {Boolean} whether imported shape
      *     items should be expanded to path items
+     * @option [options.crossOrigin] {String} the {@link Raster#crossOrigin}
+     *     value of the rasters created for `<image>` elements, to load their
+     *     images with CORS
      * @option options.onLoad {Function} the callback function to call once the
      *     SVG content is loaded from the given URL receiving two arguments: the
      *     converted `item` and the original `svg` data as a string. Only
@@ -888,7 +906,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         // Draw the selection of the selected items in the project:
         if (this._selectionCount > 0) {
             ctx.save();
-            ctx.strokeWidth = 1;
+            ctx.lineWidth = 1;
             var items = this._selectionItems,
                 size = this._scope.settings.handleSize,
                 version = this._updateVersion;

@@ -33,6 +33,35 @@ Upon execution, you will find a `paper` folder inside the project's
 For more information on how to install Node.js and NPM, read the chapter
 [Installing Node.js and NPM](#installing-nodejs-and-npm).
 
+### Using Paper.js with a Bundler
+
+With a bundler such as webpack, Rollup, esbuild or Vite, import Paper.js and
+set it up with a canvas element:
+
+```js
+import paper from 'paper'
+// Or, with CommonJS: const paper = require('paper')
+
+paper.setup(document.getElementById('canvas'))
+
+const { Path } = paper
+const circle = new Path.Circle({
+  center: paper.view.center,
+  radius: 30,
+  fillColor: 'red'
+})
+
+paper.view.onFrame = event => {
+  circle.rotate(1)
+}
+```
+
+The module exports the global `paper` scope as its default export, with all
+classes as its properties. Use `paper.view` and `paper.project` after calling
+`paper.setup()`, rather than importing them, as they only exist from then on.
+To use the core version without PaperScript, import `'paper/dist/paper-core'`
+instead. With TypeScript, the default import requires `esModuleInterop`.
+
 ### Which Version to Use
 
 The various distributions come with two different pre-build versions of
@@ -277,7 +306,6 @@ of the repository in which you perform development. See
 We prefer that you send a
 [pull request on GitHub](https://help.github.com/articles/about-pull-requests/) 
 which will then be merged into the official main line repository.
-You need to sign the Paper.js CLA to be able to contribute (see below).
 
 Also, in your first contribution, add yourself to the end of `AUTHORS.md` (which
 of course is optional).
@@ -339,18 +367,6 @@ guides provided by GitHub at <https://help.github.com/> are a really good
 starting point and reference. If you are fixing an issue, a convenient way to
 name the branch is to use the issue number as a prefix, like this: `git checkout
 -tb issue-937-feature-add-text-styling`.
-
-#### Contributor License Agreement
-
-Before we can accept any contributions to Paper.js, you need to sign this
-[CLA](https://en.wikipedia.org/wiki/Contributor_License_Agreement):
-
-[Contributor License Agreement](https://spreadsheets.google.com/a/paperjs.org/spreadsheet/embeddedform?formkey=dENxd0JBVDY2REo3THVuRmh4YjdWRlE6MQ)
-
-> The purpose of this agreement is to clearly define the terms under which
-> intellectual property has been contributed to Paper.js and thereby allow us to
-> defend the project should there be a legal dispute regarding the software at
-> some future time.
 
 For a list of authors and contributors, please see 
 [AUTHORS](https://github.com/paperjs/paper.js/blob/main/AUTHORS.md).

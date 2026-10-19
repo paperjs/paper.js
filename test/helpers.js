@@ -333,7 +333,8 @@ var compareItem = function(actual, expected, message, options, properties) {
                 'strokeColor', 'strokeCap', 'strokeJoin', 'dashArray',
                 'dashOffset', 'miterLimit'];
         if (expected instanceof TextItem)
-            styles.push('fontSize', 'font', 'leading', 'justification');
+            styles.push('fontSize', 'font', 'leading', 'tracking',
+                    'justification');
         compareProperties(actual.style, expected.style, styles,
                 message + ' (#style)', options);
     }
@@ -660,4 +661,14 @@ var triggerMouseEvent = function(type, point, target) {
         screenY: point.y
     });
     target.dispatchEvent(event);
+};
+
+var triggerKeyEvent = function(type, key, modifiers) {
+    var event = new KeyboardEvent(type, Base.set({
+        bubbles: true,
+        cancelable: true,
+        key: key,
+        charCode: type === 'keypress' ? key.charCodeAt(0) : 0
+    }, modifiers));
+    document.dispatchEvent(event);
 };

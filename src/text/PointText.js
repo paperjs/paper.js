@@ -77,28 +77,35 @@ var PointText = TextItem.extend(/** @lends PointText# */{
     },
 
     _draw: function(ctx, param, viewMatrix) {
-        if (!this._content)
-            return;
-        this._setStyles(ctx, param, viewMatrix);
-        var lines = this._lines,
-            style = this._style,
-            hasFill = style.hasFill(),
-            hasStroke = style.hasStroke(),
-            leading = style.getLeading(),
-            shadowColor = ctx.shadowColor;
-        ctx.font = style.getFontStyle();
-        ctx.textAlign = style.getJustification();
-        for (var i = 0, l = lines.length; i < l; i++) {
-            // See Path._draw() for explanation about ctx.shadowColor
-            ctx.shadowColor = shadowColor;
-            var line = lines[i];
-            if (hasFill) {
-                ctx.fillText(line, 0, 0);
-                ctx.shadowColor = 'rgba(0,0,0,0)';
+        if (param.dontFinish || param.clip) {
+            // The glyph outlines aren't known, so clip with the bounds (#1845):
+            var rect = this.getInternalBounds();
+            if (!param.dontStart)
+                ctx.beginPath();
+            ctx.rect(rect.x, rect.y, rect.width, rect.height);
+        } else if (this._content) {
+            this._setStyles(ctx, param, viewMatrix);
+            var lines = this._lines,
+                style = this._style,
+                hasFill = style.hasFill(),
+                hasStroke = style.hasStroke(),
+                leading = style.getLeading(),
+                shadowColor = ctx.shadowColor;
+            ctx.font = style.getFontStyle();
+            ctx.textAlign = style.getJustification();
+            ctx.letterSpacing = style.getTrackingStyle();
+            for (var i = 0, l = lines.length; i < l; i++) {
+                // See Path._draw() for explanation about ctx.shadowColor
+                ctx.shadowColor = shadowColor;
+                var line = lines[i];
+                if (hasFill) {
+                    ctx.fillText(line, 0, 0);
+                    ctx.shadowColor = 'rgba(0,0,0,0)';
+                }
+                if (hasStroke)
+                    ctx.strokeText(line, 0, 0);
+                ctx.translate(0, leading);
             }
-            if (hasStroke)
-                ctx.strokeText(line, 0, 0);
-            ctx.translate(0, leading);
         }
     },
 
@@ -108,7 +115,8 @@ var PointText = TextItem.extend(/** @lends PointText# */{
             numLines = lines.length,
             justification = style.getJustification(),
             leading = style.getLeading(),
-            width = this.getView().getTextWidth(style.getFontStyle(), lines),
+            width = this.getView().getTextWidth(style.getFontStyle(), lines,
+                    style.getTrackingStyle()),
             x = 0;
         // Adjust for different justifications.
         if (justification !== 'left')
@@ -118,6 +126,24 @@ var PointText = TextItem.extend(/** @lends PointText# */{
         var rect = new Rectangle(x,
                     numLines ? - 0.75 * leading : 0,
                     width, numLines * leading);
+        // The glyph outlines aren't known, so add half the stroke width all
+        // around, before transforming as strokes of text always scale. Sharp
+        // miter joins can stick out further.
+        if (options.stroke && style.hasStroke())
+            rect = rect.expand(style.getStrokeWidth());
         return matrix ? matrix._transformBounds(rect, rect) : rect;
+    },
+
+    _hitTestSelf: function(point, options) {
+        if (options.fill && this.hasFill()) {
+            // The glyph outlines aren't known, so hit the bounds, also within
+            // the tolerance around them (#632):
+            var bounds = this.getInternalBounds(),
+                closest = point.clamp(bounds.getTopLeft(true),
+                        bounds.getBottomRight(true));
+            if (point.subtract(closest).divide(options._tolerancePadding)
+                    .getLength() <= 1)
+                return new HitResult('fill', this);
+        }
     }
 });

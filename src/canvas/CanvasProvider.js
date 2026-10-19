@@ -16,7 +16,8 @@ var CanvasProvider = Base.exports.CanvasProvider = {
     canvases: [],
 
     getCanvas: function(width, height, options) {
-        if (!window)
+        // Web-workers have no DOM, but may support OffscreenCanvas:
+        if (!window && !self.OffscreenCanvas)
             return null;
         var canvas,
             clear = true;
@@ -27,8 +28,10 @@ var CanvasProvider = Base.exports.CanvasProvider = {
         if (this.canvases.length) {
             canvas = this.canvases.pop();
         } else {
-            canvas = document.createElement('canvas');
-            clear = false; // It's already cleared through createElement().
+            canvas = window
+                    ? document.createElement('canvas')
+                    : new self.OffscreenCanvas(width, height);
+            clear = false; // It's already cleared when created.
         }
         var ctx = canvas.getContext('2d', options || {});
         if (!ctx) {

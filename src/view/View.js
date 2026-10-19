@@ -18,6 +18,13 @@
  * view, find the currently visible bounds in project coordinates, or the
  * center, both useful for constructing artwork that should appear centered on
  * screen.
+ *
+ * If the canvas element has a `resize` or `data-paper-resize` attribute, the
+ * view adjusts its size to the size of the element whenever the window is
+ * resized. The element itself needs to be sized through CSS, e.g. with
+ * `html, body { height: 100%; }` and `canvas[resize] { width: 100%; height:
+ * 100%; }` for a canvas that fills the window. Without such CSS, the view does
+ * not follow the window, and on HiDPI screens it grows with each resize.
  */
 var View = Base.extend(Emitter, /** @lends View# */{
     _class: 'View',
@@ -30,14 +37,15 @@ var View = Base.extend(Emitter, /** @lends View# */{
 
         function getCanvasSize() {
             // Try visible size first, since that will help handling previously
-            // scaled canvases (e.g. when dealing with pixel-ratio)
+            // scaled canvases (e.g. when dealing with pixel-ratio), without the
+            // padding and border (#1160, #2033).
             var size = DomElement.getSize(element);
             return size.isNaN() || size.isZero()
                     // If the element is invisible, we cannot directly access
                     // element.width / height, because they would appear 0.
                     // Reading the attributes should still work.
                     ? new Size(getSize('width'), getSize('height'))
-                    : size;
+                    : size.subtract(DomElement.getInsets(element));
         }
 
         var size;
@@ -195,12 +203,15 @@ var View = Base.extend(Emitter, /** @lends View# */{
 
     /**
      * Updates the view if there are changes. Note that when using built-in
-     * event hanlders for interaction, animation and load events, this method is
+     * event handlers for interaction, animation and load events, this method is
      * invoked for you automatically at the end.
      *
+     * @param {Boolean} [force=false] whether to redraw the view even if nothing
+     * has changed, e.g. after a web font used by text items has finished
+     * loading
      * @return {Boolean} {@true if the view was updated}
      */
-    update: function() {
+    update: function(force) {
     },
 
     /**
@@ -341,6 +352,16 @@ var View = Base.extend(Emitter, /** @lends View# */{
      */
     getElement: function() {
         return this._element;
+    },
+
+    /**
+     * The project that this view displays.
+     *
+     * @bean
+     * @type Project
+     */
+    getProject: function() {
+        return this._project;
     },
 
     /**
@@ -520,6 +541,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
 
     /**
      * The view's zoom factor by which the project coordinates are magnified.
+     * Setting it to a value that isn't a positive number has no effect.
      *
      * @bean
      * @type Number
@@ -527,13 +549,17 @@ var View = Base.extend(Emitter, /** @lends View# */{
      */
     getZoom: function() {
         var scaling = this._decompose().scaling;
-        // Use average since it can be non-uniform.
-        return (scaling.x + scaling.y) / 2;
+        // Use average since it can be non-uniform, and ignore mirroring.
+        return (Math.abs(scaling.x) + Math.abs(scaling.y)) / 2;
     },
 
     setZoom: function(zoom) {
-        this.transform(new Matrix().scale(zoom / this.getZoom(),
-            this.getCenter()));
+        // Zooming to 0 can't be undone and leaves the view's matrix without an
+        // inverse (#1433):
+        if (zoom > 0 && isFinite(zoom)) {
+            this.transform(new Matrix().scale(zoom / this.getZoom(),
+                this.getCenter()));
+        }
     },
 
     /**
@@ -550,7 +576,10 @@ var View = Base.extend(Emitter, /** @lends View# */{
     setRotation: function(rotation) {
         var current = this.getRotation();
         if (current != null && rotation != null) {
-            this.rotate(rotation - current);
+            // Rotate around the center in view coordinates, so the rotation
+            // adds to the decomposed one, also on mirrored views (#1893):
+            this._matrix.prepend(new Matrix().rotate(rotation - current,
+                    this.projectToView(this.getCenter())));
         }
     },
 
@@ -681,6 +710,63 @@ var View = Base.extend(Emitter, /** @lends View# */{
     },
 
     /**
+     * Transform the view so that the specified rectangle is centered in it
+     * and fitted to it as described by `fit`, keeping the view's rotation and
+     * mirroring.
+     *
+     * @param {Rectangle} rectangle the rectangle to fit, in project
+     * coordinates
+     * @param {String} [fit='contain'] how to fit the rectangle, as in CSS's
+     * `object-fit`: `'contain'` shows all of it, and `'cover'` fills the
+     * whole view with it, cropping the parts that don't fit
+     *
+     * @example {@paperscript height=100}
+     * // Fitting the view to the bounds of an item:
+     *
+     * // Create a circle shaped path around the top left corner of the view:
+     * var path = new Path.Circle({
+     *     center: [0, 0],
+     *     radius: 50,
+     *     fillColor: 'orange'
+     * });
+     *
+     * // Make the view show the whole circle:
+     * view.fitBounds(path.bounds);
+     */
+    fitBounds: function(rectangle, fit) {
+        rectangle = Rectangle.read(arguments);
+        fit = Base.read(arguments);
+        // Compare the rectangle with the view in view coordinates, so that
+        // rotated views show all of it as well, and scale both axes of the view
+        // to the same amount, so that the rectangle keeps its aspect ratio,
+        // also if the view was stretched before:
+        var matrix = this._matrix,
+            size = this._viewSize,
+            bounds = matrix._transformBounds(rectangle),
+            scaleX = new Point(matrix._a, matrix._c).getLength(),
+            scaleY = new Point(matrix._b, matrix._d).getLength(),
+            // Empty sides of the rectangle give ratios of Infinity, which can't
+            // scale the view, so only use the others:
+            ratios = [
+                size.width / bounds.width * scaleX,
+                size.height / bounds.height * scaleY
+            ].filter(function(ratio) {
+                return ratio > 0 && isFinite(ratio);
+            });
+        this.setCenter(rectangle.getCenter());
+        if (ratios.length) {
+            var amount = fit === 'cover'
+                    ? Math.max.apply(Math, ratios)
+                    : Math.min.apply(Math, ratios);
+            // Scale around the view's center in view coordinates, along the
+            // view's own axes:
+            matrix.prepend(new Matrix().scale(
+                    new Point(amount / scaleX, amount / scaleY),
+                    size.divide(2)));
+        }
+    },
+
+    /**
      * Scrolls the view by the given vector.
      *
      * @param {Point} point
@@ -729,7 +815,20 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @return {Point} the event point in project coordinates.
      */
     getEventPoint: function(event) {
-        return this.viewToProject(DomEvent.getOffset(event, this._element));
+        var element = this._element,
+            offset = DomEvent.getOffset(event, element),
+            size = DomElement.getSize(element);
+        // Map the offset on screen, with CSS sizes and transforms applied, to
+        // the content box in view coordinates (#549, #1729). Elements that
+        // aren't rendered have no size to map from:
+        if (!size.isZero()) {
+            var cssSize = new Size(element.offsetWidth, element.offsetHeight);
+            offset = offset.multiply(cssSize.divide(size))
+                    .subtract(DomElement.getInsets(element, true))
+                    .multiply(this.getViewSize().divide(
+                        cssSize.subtract(DomElement.getInsets(element))));
+        }
+        return this.viewToProject(offset);
     },
 
     /**
@@ -892,6 +991,61 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @property
      * @type ?Function
      * @see View#onMouseLeave
+     */
+
+    /**
+     * The function to be called when the user presses a key on the keyboard.
+     * The function receives a {@link KeyEvent} object which contains
+     * information about the keyboard event.
+     *
+     * If the function returns `false`, the keyboard event will be prevented
+     * from bubbling up. This can be used for example to stop the window from
+     * scrolling, when you need the user to interact with arrow keys.
+     *
+     * @name View#onKeyDown
+     * @property
+     * @type ?Function
+     *
+     * @example {@paperscript}
+     * // Scaling a path whenever the user presses the space bar:
+     *
+     * // Create a circle shaped path:
+     * var path = new Path.Circle({
+     *     center: new Point(50, 50),
+     *     radius: 30,
+     *     fillColor: 'red'
+     * });
+     *
+     * view.onKeyDown = function(event) {
+     *     if (event.key == 'space') {
+     *         // Scale the path by 110%:
+     *         path.scale(1.1);
+     *
+     *         // Prevent the key event from bubbling
+     *         return false;
+     *     }
+     * }
+     */
+
+    /**
+     * The function to be called when the user releases a key on the keyboard.
+     * The function receives a {@link KeyEvent} object which contains
+     * information about the keyboard event.
+     *
+     * If the function returns `false`, the keyboard event will be prevented
+     * from bubbling up. This can be used for example to stop the window from
+     * scrolling, when you need the user to interact with arrow keys.
+     *
+     * @name View#onKeyUp
+     * @property
+     * @type ?Function
+     *
+     * @example
+     * view.onKeyUp = function(event) {
+     *     if (event.key == 'space') {
+     *         console.log('The spacebar was released!');
+     *     }
+     * }
      */
 
 
@@ -1098,19 +1252,8 @@ new function() { // Injection scope for event handling on the browser
                 // event, to give items the change to receive a mouseleave, etc.
                 var view = View._focused,
                     target = DomEvent.getRelatedTarget(event);
-                if (view && (!target || target.nodeName === 'HTML')) {
-                    // See #800 for this bizarre workaround for an issue of
-                    // Chrome on Windows:
-                    // TODO: Remove again after Dec 2016, once fixed in Chrome.
-                    var offset = DomEvent.getOffset(event, view._element),
-                        x = offset.x,
-                        abs = Math.abs,
-                        ax = abs(x),
-                        max = 1 << 25,
-                        diff = ax - max;
-                    offset.x = abs(diff) < ax ? diff * (x < 0 ? -1 : 1) : x;
-                    handleMouseMove(view, event, view.viewToProject(offset));
-                }
+                if (view && (!target || target.nodeName === 'HTML'))
+                    handleMouseMove(view, event);
             },
 
             scroll: updateFocus
@@ -1388,11 +1531,16 @@ new function() { // Injection scope for event handling on the browser
                 emitMouseEvents(this, hitItem, type, event, point, downPoint);
                 if (mouse.down) {
                     // See if we're clicking again on the same item, within the
-                    // double-click time. Firefox uses 300ms as the max time
+                    // double-click time and distance, measured from mousedown
+                    // to mousedown like native dblclick events, but not for a
+                    // third click. Firefox uses 300ms as the max time
                     // difference:
-                    dblClick = hitItem === clickItem
-                        && (Date.now() - clickTime < 300);
+                    var time = Date.now();
+                    dblClick = !dblClick && hitItem === clickItem
+                        && time - clickTime < 300
+                        && point.getDistance(downPoint) < 3;
                     downItem = clickItem = hitItem;
+                    clickTime = time;
                     // Only start dragging if the mousedown event has not
                     // prevented the default, and if the hitItem or any of its
                     // parents actually respond to mousedrag events.
@@ -1408,10 +1556,8 @@ new function() { // Injection scope for event handling on the browser
                     // Emulate click / doubleclick, but only on the hit-item,
                     // not the view.
                     if (!prevented && hitItem === downItem) {
-                        clickTime = Date.now();
                         emitMouseEvents(this, hitItem, dblClick ? 'doubleclick'
                                 : 'click', event, point, downPoint);
-                        dblClick = false;
                     }
                     downItem = dragItem = null;
                 }

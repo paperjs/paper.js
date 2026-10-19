@@ -14,7 +14,9 @@
  * @name SymbolItem
  *
  * @class A symbol item represents an instance of a symbol which has been
- * placed in a Paper.js project.
+ * placed in a Paper.js project. All instances share the symbol's definition,
+ * which they draw as it is: styles set on a symbol item don't reach the items
+ * of the definition, unlike `<use>` elements in SVG.
  *
  * @extends Item
  */
@@ -124,7 +126,10 @@ var SymbolItem = Item.extend(/** @lends SymbolItem# */{
         // We need to call definition item hit test with `options.all = false`,
         // as otherwise it would populate the array with its own matches.
         // Instead we want only returning one match per symbol-item, see #1680
-        var opts = options.extend({ all: false });
+        // The filters apply to the symbol-item, not to the definition's items:
+        var opts = options.extend({
+            all: false, match: null, class: null, type: null
+        });
         var res = this._definition._item._hitTest(point, opts, viewMatrix);
         // TODO: When the symbol's definition is a path, should hitResult
         // contain information like HitResult#curve?
@@ -134,7 +139,9 @@ var SymbolItem = Item.extend(/** @lends SymbolItem# */{
     },
 
     _draw: function(ctx, param) {
-        this._definition._item.draw(ctx, param);
+        // The definition's item is shared by all its symbol items, so don't
+        // let them set its global matrix (#1684):
+        this._definition._item.draw(ctx, param.extend({ updateMatrix: false }));
     }
 
     // TODO: SymbolItem#embed()
