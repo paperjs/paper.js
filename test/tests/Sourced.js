@@ -283,6 +283,27 @@ test('invalidate() reloads changed children, keeping their items', function() {
     equals(layer.bounds, document.layers[0].bounds);
 });
 
+test('invalidate() keeps the remaining children inserted', function() {
+    var res = createSourcedProject();
+    var project = res.project;
+    var document = res.source.document;
+    var layer = project.layers[0];
+    var circle = layer.children['circle'];
+    project.trackChanges = true;
+    document.getItem({ name: 'group' }).remove();
+    var columns = res.source.getColumns([document.layers[0]]);
+    columns.flags[0] |= 32;
+    project.invalidate(columns);
+    // A script that holds on to the circle changes it, without accessing the
+    // layer's children first:
+    circle.position.x += 10;
+    equals(circle.isInserted(), true);
+    var changes = project.takeChanges();
+    equals(changes.length, 1);
+    equals(changes[0].item === circle, true);
+    equals(layer.children.length, 1);
+});
+
 test('A failing source leaves the item a shell, to retry', function() {
     var res = createSourcedProject();
     var circle = res.project.layers[0].children['circle'];
