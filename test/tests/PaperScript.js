@@ -103,3 +103,24 @@ if (!isNodeContext) {
         current.activate();
     });
 }
+
+test('PaperScript keeps the native globals (#1832)', function() {
+    var exports = PaperScript.execute(
+            'module.exports.symbol = Symbol;\n'
+            + 'module.exports.event = Event;\n'
+            + 'module.exports.path = Path;', paper);
+    // Paper.js's classes of the same names don't shadow the native ones:
+    equals(function() {
+        return exports.symbol === Symbol && exports.symbol !== paper.Symbol;
+    }, true, 'Symbol');
+    // In the browser, the tests load the sources directly, which declares
+    // Paper.js's classes as globals, so only Node.js has the native Event:
+    if (isNodeContext) {
+        equals(function() {
+            return exports.event !== paper.Event;
+        }, true, 'Event');
+    }
+    equals(function() {
+        return exports.path === Path;
+    }, true, 'Path');
+});

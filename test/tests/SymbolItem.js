@@ -210,6 +210,17 @@ test('paper.install() keeps the native Symbol', function() {
     }, true);
 });
 
+test('paper.install() keeps what the scope already has (#1832, #1652)', function() {
+    var scope = { Event: 'native', MouseEvent: 'native', Path: 'own' };
+    paper.install(scope);
+    equals(scope.Event, 'native', 'Event');
+    equals(scope.MouseEvent, 'native', 'MouseEvent');
+    equals(scope.Path, 'own', 'Path');
+    equals(function() {
+        return scope.Group === Group && scope.project === paper.project;
+    }, true, 'the rest');
+});
+
 test('SymbolItem#hitTest() with filters (#1774)', function() {
     function getItem(hit) {
         return hit && hit.item;
