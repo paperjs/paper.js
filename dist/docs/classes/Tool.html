@@ -139,6 +139,41 @@ tool.onMouseDrag = function(event) {
 </div>
 		
 			
+<div id="eventinterval" class="member">
+<div class="member-link">
+<a name="eventinterval" href="#eventinterval"><tt><b>eventInterval</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The interval in milliseconds at which the onMouseDrag event fires again while the mouse button is held, also when the mouse doesn&rsquo;t move. The repeated events are at the last point, with a zero <a href="../classes/ToolEvent.html#delta"><tt>toolEvent.delta</tt></a>. <code>null</code>, the default, or anything up to 0 turns it off.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>null</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:<span class="description">Fire the onMouseDrag event 10 times a second, while the mouse button is held:</span></h4>
+
+
+<pre><code>tool.eventInterval = 100;</code></pre>
+
+</div>
+
+</div>
+</div>
+		
+			
 <div id="fixeddistance" class="member">
 <div class="member-link">
 <a name="fixeddistance" href="#fixeddistance"><tt><b>fixedDistance</b></tt></a>

@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 00:48:25 2026 +0200
+ * Date: Tue Oct 20 00:56:58 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -4176,6 +4176,11 @@ declare namespace paper {
      */
     class PathItem extends Item {
         /** 
+         * Returns a point that is guaranteed to be inside the path.
+         */
+        readonly interiorPoint: Point
+
+        /** 
          * Specifies whether the path as a whole is oriented clock-wise, by looking
          * at the path's area.
          * Note that self-intersecting paths and sub-paths of different orientation
@@ -4191,11 +4196,115 @@ declare namespace paper {
          */
         pathData: string
 
-        /** 
-         * Returns a point that is guaranteed to be inside the path.
-         */
-        readonly interiorPoint: Point
 
+        /** 
+         * Unites the geometry of the specified path with this path's geometry
+         * and returns the result as a new path item.
+         * 
+         * @option [options.insert=true] {Boolean} whether the resulting item
+         *     should be inserted back into the scene graph, above both paths
+         *     involved in the operation
+         * 
+         * @param path - the path to unite with
+         * @param options - the boolean operation options
+         * 
+         * @return the resulting path item
+         */
+        unite(path: PathItem, options?: object): PathItem
+
+        /** 
+         * Intersects the geometry of the specified path with this path's
+         * geometry and returns the result as a new path item.
+         * 
+         * @option [options.insert=true] {Boolean} whether the resulting item
+         *     should be inserted back into the scene graph, above both paths
+         *     involved in the operation
+         * @option [options.trace=true] {Boolean} whether the tracing method is
+         *     used, treating both paths as areas when determining which parts
+         *     of the paths are to be kept in the result, or whether the first
+         *     path is only to be split at intersections, keeping the parts of
+         *     the curves that intersect with the area of the second path.
+         * 
+         * @param path - the path to intersect with
+         * @param options - the boolean operation options
+         * 
+         * @return the resulting path item
+         */
+        intersect(path: PathItem, options?: object): PathItem
+
+        /** 
+         * Subtracts the geometry of the specified path from this path's
+         * geometry and returns the result as a new path item.
+         * 
+         * @option [options.insert=true] {Boolean} whether the resulting item
+         *     should be inserted back into the scene graph, above both paths
+         *     involved in the operation
+         * @option [options.trace=true] {Boolean} whether the tracing method is
+         *     used, treating both paths as areas when determining which parts
+         *     of the paths are to be kept in the result, or whether the first
+         *     path is only to be split at intersections, removing the parts of
+         *     the curves that intersect with the area of the second path.
+         * 
+         * @param path - the path to subtract
+         * @param options - the boolean operation options
+         * 
+         * @return the resulting path item
+         */
+        subtract(path: PathItem, options?: object): PathItem
+
+        /** 
+         * Excludes the intersection of the geometry of the specified path with
+         * this path's geometry and returns the result as a new path item.
+         * 
+         * @option [options.insert=true] {Boolean} whether the resulting item
+         *     should be inserted back into the scene graph, above both paths
+         *     involved in the operation
+         * 
+         * @param path - the path to exclude the intersection of
+         * @param options - the boolean operation options
+         * 
+         * @return the resulting path item
+         */
+        exclude(path: PathItem, options?: object): PathItem
+
+        /** 
+         * Splits the geometry of this path along the geometry of the specified
+         * path returns the result as a new group item. This is equivalent to
+         * calling {@link #subtract} and {@link #intersect} and
+         * putting the results into a new group.
+         * 
+         * @option [options.insert=true] {Boolean} whether the resulting item
+         *     should be inserted back into the scene graph, above both paths
+         *     involved in the operation
+         * @option [options.trace=true] {Boolean} whether the tracing method is
+         *     used, treating both paths as areas when determining which parts
+         *     of the paths are to be kept in the result, or whether the first
+         *     path is only to be split at intersections.
+         * 
+         * @param path - the path to divide by
+         * @param options - the boolean operation options
+         * 
+         * @return the resulting path item
+         */
+        divide(path: PathItem, options?: object): PathItem
+
+        /** 
+         * Fixes the orientation of the sub-paths of a compound-path, assuming
+         * that non of its sub-paths intersect, by reorienting them so that they
+         * are of different winding direction than their containing paths,
+         * except for disjoint sub-paths, i.e. islands, which are oriented so
+         * that they have the same winding direction as the the biggest path.
+         * 
+         * @param nonZero - controls if the non-zero fill-rule
+         *     is to be applied, by counting the winding of each nested path and
+         *     discarding sub-paths that do not contribute to the final result
+         * @param clockwise - if provided, the orientation of the root
+         *     paths will be set to the orientation specified by `clockwise`,
+         *     otherwise the orientation of the largest root child is used.
+         * 
+         * @return a reference to the item itself, reoriented
+         */
+        reorient(nonZero?: boolean, clockwise?: boolean): PathItem
 
         /** 
          * Creates a path item from the given SVG path-data, determining if the
@@ -4585,115 +4694,6 @@ declare namespace paper {
          * @param to - the destination point of the newly added curve
          */
         quadraticCurveBy(handle: PointLike, to: PointLike): void
-
-        /** 
-         * Unites the geometry of the specified path with this path's geometry
-         * and returns the result as a new path item.
-         * 
-         * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
-         *     involved in the operation
-         * 
-         * @param path - the path to unite with
-         * @param options - the boolean operation options
-         * 
-         * @return the resulting path item
-         */
-        unite(path: PathItem, options?: object): PathItem
-
-        /** 
-         * Intersects the geometry of the specified path with this path's
-         * geometry and returns the result as a new path item.
-         * 
-         * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
-         *     involved in the operation
-         * @option [options.trace=true] {Boolean} whether the tracing method is
-         *     used, treating both paths as areas when determining which parts
-         *     of the paths are to be kept in the result, or whether the first
-         *     path is only to be split at intersections, keeping the parts of
-         *     the curves that intersect with the area of the second path.
-         * 
-         * @param path - the path to intersect with
-         * @param options - the boolean operation options
-         * 
-         * @return the resulting path item
-         */
-        intersect(path: PathItem, options?: object): PathItem
-
-        /** 
-         * Subtracts the geometry of the specified path from this path's
-         * geometry and returns the result as a new path item.
-         * 
-         * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
-         *     involved in the operation
-         * @option [options.trace=true] {Boolean} whether the tracing method is
-         *     used, treating both paths as areas when determining which parts
-         *     of the paths are to be kept in the result, or whether the first
-         *     path is only to be split at intersections, removing the parts of
-         *     the curves that intersect with the area of the second path.
-         * 
-         * @param path - the path to subtract
-         * @param options - the boolean operation options
-         * 
-         * @return the resulting path item
-         */
-        subtract(path: PathItem, options?: object): PathItem
-
-        /** 
-         * Excludes the intersection of the geometry of the specified path with
-         * this path's geometry and returns the result as a new path item.
-         * 
-         * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
-         *     involved in the operation
-         * 
-         * @param path - the path to exclude the intersection of
-         * @param options - the boolean operation options
-         * 
-         * @return the resulting path item
-         */
-        exclude(path: PathItem, options?: object): PathItem
-
-        /** 
-         * Splits the geometry of this path along the geometry of the specified
-         * path returns the result as a new group item. This is equivalent to
-         * calling {@link #subtract} and {@link #intersect} and
-         * putting the results into a new group.
-         * 
-         * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
-         *     involved in the operation
-         * @option [options.trace=true] {Boolean} whether the tracing method is
-         *     used, treating both paths as areas when determining which parts
-         *     of the paths are to be kept in the result, or whether the first
-         *     path is only to be split at intersections.
-         * 
-         * @param path - the path to divide by
-         * @param options - the boolean operation options
-         * 
-         * @return the resulting path item
-         */
-        divide(path: PathItem, options?: object): PathItem
-
-        /** 
-         * Fixes the orientation of the sub-paths of a compound-path, assuming
-         * that non of its sub-paths intersect, by reorienting them so that they
-         * are of different winding direction than their containing paths,
-         * except for disjoint sub-paths, i.e. islands, which are oriented so
-         * that they have the same winding direction as the the biggest path.
-         * 
-         * @param nonZero - controls if the non-zero fill-rule
-         *     is to be applied, by counting the winding of each nested path and
-         *     discarding sub-paths that do not contribute to the final result
-         * @param clockwise - if provided, the orientation of the root
-         *     paths will be set to the orientation specified by `clockwise`,
-         *     otherwise the orientation of the largest root child is used.
-         * 
-         * @return a reference to the item itself, reoriented
-         */
-        reorient(nonZero?: boolean, clockwise?: boolean): PathItem
 
     }
 
@@ -5205,6 +5205,27 @@ declare namespace paper {
      */
     class Project  {
         /** 
+         * The host document that the project's items come from. Setting it
+         * creates the project's layers from the source's records. All items
+         * are created as shells that load their content and children from the
+         * source on first access.
+         * 
+         * The source provides:
+         * - `getChildren(key)`, which returns the records of the children of
+         *   the node with the given key, or of the top level for `null`, as
+         *   columns: `keys`, `types` (indices into `typeNames`), `typeNames`,
+         *   `flags` (selected: 1, visible: 2, locked: 4, strokeScaling: 8,
+         *   clipMask: 64, guide: 128, empty: 256), `boxes` (bounds,
+         *   strokeBounds and roughBounds in the item's coordinates, 12 numbers
+         *   per item), and the sparse objects `names` and `matrices`.
+         * - `getItem(key)`, which returns the node's own content in the form
+         *   of {@link Item#importJSON}, without children.
+         * - `getAncestorKeys(key)`, which returns the keys from the top level
+         *   down to the node's parent.
+         */
+        source: any
+
+        /** 
          * Specifies whether the project logs the changes of its items, to be
          * retrieved through {@link #takeChanges}. This allows hosts that keep
          * their own document to update only what has changed.
@@ -5254,27 +5275,6 @@ declare namespace paper {
          */
         readonly selectedItems: Item[]
 
-        /** 
-         * The host document that the project's items come from. Setting it
-         * creates the project's layers from the source's records. All items
-         * are created as shells that load their content and children from the
-         * source on first access.
-         * 
-         * The source provides:
-         * - `getChildren(key)`, which returns the records of the children of
-         *   the node with the given key, or of the top level for `null`, as
-         *   columns: `keys`, `types` (indices into `typeNames`), `typeNames`,
-         *   `flags` (selected: 1, visible: 2, locked: 4, strokeScaling: 8,
-         *   clipMask: 64, guide: 128, empty: 256), `boxes` (bounds,
-         *   strokeBounds and roughBounds in the item's coordinates, 12 numbers
-         *   per item), and the sparse objects `names` and `matrices`.
-         * - `getItem(key)`, which returns the node's own content in the form
-         *   of {@link Item#importJSON}, without children.
-         * - `getAncestorKeys(key)`, which returns the keys from the top level
-         *   down to the node's parent.
-         */
-        source: any
-
 
         /** 
          * Creates a Paper.js project containing one empty {@link Layer}, referenced
@@ -5289,6 +5289,28 @@ declare namespace paper {
          * a web worker.
          */
         constructor(element: HTMLCanvasElement | string | SizeLike)
+
+        /** 
+         * Returns the item of the host's node with the given key, loading only
+         * the children of its ancestors.
+         * 
+         * @param key - the key of the host's node
+         * 
+         * @return the item, or `null` if the source has no such node
+         */
+        getItemByKey(key: number): Item
+
+        /** 
+         * Updates the items of changed host nodes, given in the column format
+         * of the source's `getChildren()`, with two more flags: 16 when the
+         * node's own content changed, so the item loads it again on next
+         * access, and 32 when its list of children changed, so it loads them
+         * again right away if it had loaded them, keeping the items of nodes
+         * that remain. Nodes without items are skipped.
+         * 
+         * @param columns - the records of the changed nodes
+         */
+        invalidate(columns: object): void
 
         /** 
          * Returns the changes logged since tracking was activated or since the
@@ -5593,28 +5615,6 @@ declare namespace paper {
          *     SVG content
          */
         importSVG(svg: SVGElement | string, onLoad: Function): Item
-
-        /** 
-         * Returns the item of the host's node with the given key, loading only
-         * the children of its ancestors.
-         * 
-         * @param key - the key of the host's node
-         * 
-         * @return the item, or `null` if the source has no such node
-         */
-        getItemByKey(key: number): Item
-
-        /** 
-         * Updates the items of changed host nodes, given in the column format
-         * of the source's `getChildren()`, with two more flags: 16 when the
-         * node's own content changed, so the item loads it again on next
-         * access, and 32 when its list of children changed, so it loads them
-         * again right away if it had loaded them, keeping the items of nodes
-         * that remain. Nodes without items are skipped.
-         * 
-         * @param columns - the records of the changed nodes
-         */
-        invalidate(columns: object): void
 
     }
 
@@ -7082,6 +7082,15 @@ declare namespace paper {
          * event, since the last onMouseDrag event.
          */
         maxDistance: number
+
+        /** 
+         * The interval in milliseconds at which the onMouseDrag event fires again
+         * while the mouse button is held, also when the mouse doesn't move. The
+         * repeated events are at the last point, with a zero
+         * {@link ToolEvent#delta}. `null`, the default, or anything up to 0 turns
+         * it off.
+         */
+        eventInterval: number
 
         
         fixedDistance: number

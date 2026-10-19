@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 00:48:25 2026 +0200
+ * Date: Tue Oct 20 00:56:58 2026 +0200
  *
  ***
  *
@@ -14486,6 +14486,14 @@ var Tool = PaperScopeItem.extend({
 		}
 	},
 
+	getEventInterval: function() {
+		return this._eventInterval;
+	},
+
+	setEventInterval: function(interval) {
+		this._eventInterval = interval;
+	},
+
 	getFixedDistance: function() {
 		return this._minDistance == this._maxDistance
 			? this._minDistance : null;
@@ -14542,7 +14550,24 @@ var Tool = PaperScopeItem.extend({
 		if (mouse.down) {
 			update();
 			emit();
+			if (this._eventInterval > 0) {
+				clearInterval(this._timer);
+				this._timer = setInterval(function() {
+					if (tool.isActive()) {
+						paper = tool._scope;
+						tool._lastPoint = tool._point;
+						tool._moveCount++;
+						if (tool.responds('mousedrag')) {
+							tool.emit('mousedrag',
+									new ToolEvent(tool, 'mousedrag', event));
+						}
+					} else {
+						clearInterval(tool._timer);
+					}
+				}, this._eventInterval);
+			}
 		} else if (mouse.up) {
+			clearInterval(this._timer);
 			update(null, this._maxDistance);
 			emit();
 		} else if (responds) {
