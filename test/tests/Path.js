@@ -195,6 +195,50 @@ test('Path#removeSegments()', function() {
     }, 0);
 });
 
+test('Path#removeSegments(from, to) with from > to (#1881)', function() {
+    var points = [[0, 0], [10, 0], [20, 10], [20, 20], [10, 30], [0, 20]];
+
+    function getPoints(segments) {
+        return Base.each(segments, function(segment) {
+            this.push(segment.point.toString());
+        }, []);
+    }
+
+    function getExpected(indices) {
+        return indices.map(function(index) {
+            return new Point(points[index]).toString();
+        });
+    }
+
+    // On closed paths, it wraps around from the end to the beginning:
+    var path = new Path({ segments: points, closed: true }),
+        removed = path.removeSegments(4, 2);
+    equals(getPoints(removed), getExpected([4, 5, 0, 1]), 'removed');
+    equals(function() {
+        return removed.every(function(segment) {
+            return segment.path === null && segment.index === null;
+        });
+    }, true);
+    equals(path, new Path({
+        segments: [points[2], points[3]],
+        closed: true
+    }), 'path');
+    equals(path.curves.length, 2, 'path.curves.length');
+    equals(path.lastCurve.segment2, path.firstSegment, 'closing curve');
+
+    // With to = 0, only the end is removed:
+    path = new Path({ segments: points, closed: true });
+    removed = path.removeSegments(4, 0);
+    equals(getPoints(removed), getExpected([4, 5]), 'to = 0: removed');
+    equals(getPoints(path.segments), getExpected([0, 1, 2, 3]),
+            'to = 0: path.segments');
+
+    // On open paths, nothing is removed:
+    path = new Path({ segments: points });
+    equals(path.removeSegments(4, 2).length, 0, 'open: removed');
+    equals(path.segments.length, 6, 'open: path.segments.length');
+});
+
 test('Is the path deselected after setting a new list of segments?', function() {
     var path = new Path([0, 0]);
     path.selected = true;
