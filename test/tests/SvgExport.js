@@ -259,6 +259,65 @@ test('Export SVG with nested groups as clip masks', function() {
     equals(clip.firstChild.firstChild.clipMask, true);
 });
 
+test('Export SVG with idPrefix (#1709)', function() {
+    var clip = new Path.Rectangle({
+            point: [0, 0],
+            size: [50, 50],
+            clipMask: true
+        }),
+        group = new Group([clip, new Path.Circle({
+            center: [25, 25],
+            radius: 30,
+            fillColor: {
+                gradient: { stops: ['red', 'blue'] },
+                origin: [0, 0],
+                destination: [50, 0]
+            },
+            name: 'circle'
+        })]),
+        canvas = CanvasProvider.getCanvas(10, 10),
+        raster = new Raster(canvas),
+        symbol = new SymbolDefinition(new Path.Rectangle([0, 0], [10, 10]));
+    symbol.place([100, 100]);
+    raster.position = [80, 80];
+
+    function getIds(options) {
+        var svg = project.exportSVG(options),
+            uses = svg.querySelectorAll('use');
+        return {
+            definitions: Base.each(svg.querySelector('defs').childNodes,
+                function(node) {
+                    this.push(node.getAttribute('id'));
+                }, []),
+            clipPath: svg.querySelector('g[clip-path]')
+                    .getAttribute('clip-path'),
+            fill: svg.querySelector('#circle').getAttribute('fill'),
+            uses: Base.each(uses, function(node) {
+                this.push(node.getAttributeNS('http://www.w3.org/1999/xlink',
+                        'href'));
+            }, [])
+        };
+    }
+
+    // Generated ids are named after their type and numbered per type:
+    equals(getIds({ reuseImages: true }), {
+        definitions: ['clip-1', 'color-1', 'image-1', 'symbol-1'],
+        clipPath: 'url(#clip-1)',
+        fill: 'url(#color-1)',
+        uses: ['#image-1', '#symbol-1']
+    });
+    // idPrefix is prepended to them and to their references, but not to the
+    // ids that come from item names:
+    equals(getIds({ reuseImages: true, idPrefix: 'svg2-' }), {
+        definitions: [
+            'svg2-clip-1', 'svg2-color-1', 'svg2-image-1', 'svg2-symbol-1'
+        ],
+        clipPath: 'url(#svg2-clip-1)',
+        fill: 'url(#svg2-color-1)',
+        uses: ['#svg2-image-1', '#svg2-symbol-1']
+    });
+});
+
 test('Export SVG multi-line text (#988)', function() {
     function getLines(text) {
         return Base.each(text.exportSVG().childNodes, function(node) {
