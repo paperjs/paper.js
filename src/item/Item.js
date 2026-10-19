@@ -2477,6 +2477,9 @@ new function() { // Injection scope for hit-test functions shared with project
      * @option [options.embedImages=true] {Boolean} whether raster images should
      *     be embedded as base64 data inlined in the xlink:href attribute, or
      *     kept as a link to their external URL.
+     * @option [options.reuseImages=false] {Boolean} whether raster images with
+     *     the same content should only be exported once into the `<defs>`
+     *     element, and placed through `<use>` elements referencing it
      * @option [options.reduceAttributes=true] {Boolean} wether to only include
      *     style attributes in the SVG output that differ from their parents,
      *     or to always include them (much faster but leading to redundancies).

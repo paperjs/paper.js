@@ -285,6 +285,101 @@ test('Export and import SVG multi-line text (#988)', function() {
     equals(imported.bounds, text.bounds);
 });
 
+test('Export SVG rasters with reuseImages (#1993)', function(assert) {
+    var done = assert.async();
+
+    function createImage(left, right) {
+        // A 20 x 10 image with two differently colored halves:
+        var canvas = CanvasProvider.getCanvas(20, 10),
+            ctx = canvas.getContext('2d');
+        ctx.fillStyle = left;
+        ctx.fillRect(0, 0, 10, 10);
+        ctx.fillStyle = right;
+        ctx.fillRect(10, 0, 10, 10);
+        return canvas.toDataURL();
+    }
+
+    function getHref(node) {
+        return node.getAttributeNS('http://www.w3.org/1999/xlink', 'href');
+    }
+
+    var url = createImage('red', 'blue'),
+        rasters = [
+            new Raster(url),
+            new Raster(url),
+            new Raster(createImage('green', 'yellow'))
+        ],
+        loaded = 0;
+
+    function onLoad() {
+        if (++loaded === rasters.length) {
+            rasters[0].position = [15, 10];
+            rasters[1].position = [60, 60];
+            rasters[1].rotate(90);
+            rasters[1].scale(2);
+            rasters[2].position = [30, 80];
+
+            // By default, each raster is exported as an image of its own:
+            var svg = project.exportSVG({ bounds: 'content' });
+            equals(svg.querySelectorAll('defs').length, 0, 'default: <defs>');
+            equals(svg.querySelectorAll('image').length, 3, 'default: <image>');
+
+            // The two rasters with the same image share one definition:
+            svg = project.exportSVG({ bounds: 'content', reuseImages: true });
+            var images = svg.querySelectorAll('image'),
+                definitions = svg.querySelectorAll('defs > image'),
+                uses = svg.querySelectorAll('use');
+            equals(images.length, 2, '<image>');
+            equals(definitions.length, 2, '<image> in <defs>');
+            equals(uses.length, 3, '<use>');
+            equals(images[0].getAttribute('width'), '20', '<image> width');
+            equals(images[0].getAttribute('height'), '10', '<image> height');
+            equals(getHref(uses[0]), '#' + images[0].id, '1st <use> href');
+            equals(getHref(uses[1]), '#' + images[0].id, '2nd <use> href');
+            equals(getHref(uses[2]), '#' + images[1].id, '3rd <use> href');
+            equals(function() {
+                return images[0].id !== images[1].id;
+            }, true);
+
+            // It imports again with the rasters in the same places, relative
+            // to the exported content's top left corner:
+            var offset = project.activeLayer.bounds.topLeft,
+                string = project.exportSVG({
+                    bounds: 'content',
+                    reuseImages: true,
+                    asString: true
+                }),
+                copies = project.importSVG(string, { insert: false })
+                    .getItems({ class: Raster }),
+                copied = 0;
+            equals(copies.length, 3, 'imported rasters');
+            copies.forEach(function(copy) {
+                copy.on('load', function() {
+                    if (++copied === copies.length) {
+                        for (var i = 0; i < copies.length; i++) {
+                            var bounds = rasters[i].bounds;
+                            equals(copies[i].bounds, new Rectangle(
+                                    bounds.topLeft.subtract(offset),
+                                    bounds.size),
+                                    'imported raster ' + i + ' bounds');
+                        }
+                        // The browser draws the exported SVG the same as
+                        // Paper.js:
+                        if (isNodeContext) {
+                            done();
+                        } else {
+                            compareSVG(done, string, project.activeLayer);
+                        }
+                    }
+                });
+            });
+        }
+    }
+
+    for (var i = 0; i < rasters.length; i++)
+        rasters[i].on('load', onLoad);
+});
+
 if (!isNodeContext) {
     // JSDom does not have SVG rendering, so we can't test there.
     test('Export transformed shapes', function(assert) {

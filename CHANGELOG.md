@@ -9,6 +9,8 @@
 - Add `View#fitBounds(rectangle[, fit])`, to fit a rectangle into the view.
   `fit` takes the values of CSS's `object-fit`: `'contain'`, `'cover'` and
   `'fill'` (#1688).
+- Add the `reuseImages` option to `#exportSVG()`, to export images shown by
+  several rasters only once, and place them with `<use>` elements (#1993).
 
 ### Changed
 

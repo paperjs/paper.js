@@ -121,15 +121,32 @@ new function() {
     function exportRaster(item, options) {
         var attrs = getTransform(item._matrix, true),
             size = item.getSize(),
-            image = item.getImage();
+            image = item.getImage(),
+            href = options.embedImages == false && image && image.src
+                || item.toDataURL();
         // Take into account that rasters are centered:
         attrs.x -= size.width / 2;
         attrs.y -= size.height / 2;
-        attrs.width = size.width;
-        attrs.height = size.height;
-        attrs.href = options.embedImages == false && image && image.src
-                || item.toDataURL();
-        return SvgElement.create('image', attrs, formatter);
+        if (options.reuseImages) {
+            // Export each image only once into the definitions, along with
+            // its size, as <use> can't size images:
+            var node = getDefinition(href, 'image');
+            if (!node) {
+                node = SvgElement.create('image', {
+                    width: size.width,
+                    height: size.height,
+                    href: href
+                }, formatter);
+                setDefinition(href, node, 'image');
+            }
+            attrs.href = '#' + node.id;
+            return SvgElement.create('use', attrs, formatter);
+        } else {
+            attrs.width = size.width;
+            attrs.height = size.height;
+            attrs.href = href;
+            return SvgElement.create('image', attrs, formatter);
+        }
     }
 
     function exportPath(item, options) {
@@ -375,10 +392,7 @@ new function() {
     function getDefinition(item, type) {
         if (!definitions)
             definitions = { ids: {}, svgs: {} };
-        // Use #__id for items that don't have internal #_id properties (Color),
-        // and give them ids from their own private id pool named 'svg'.
-        return item && definitions.svgs[type + '-'
-                + (item._id || item.__id || (item.__id = UID.get('svg')))];
+        return item && definitions.svgs[getDefinitionKey(item, type)];
     }
 
     function setDefinition(item, node, type) {
@@ -388,10 +402,17 @@ new function() {
             getDefinition();
         // Have different id ranges per type
         var typeId = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
-        // Give the svg node an id, and link to it from the item id.
+        // Give the svg node an id, and link to it from the item's key.
         node.id = type + '-' + typeId;
-        // See getDefinition() for an explanation of #__id:
-        definitions.svgs[type + '-' + (item._id || item.__id)] = node;
+        definitions.svgs[getDefinitionKey(item, type)] = node;
+    }
+
+    function getDefinitionKey(item, type) {
+        // Use #__id for items that don't have internal #_id properties (Color),
+        // and give them ids from their own private id pool named 'svg'.
+        // Strings, e.g. the href of images, are their own keys.
+        return type + '-' + (typeof item === 'string' ? item
+                : item._id || item.__id || (item.__id = UID.get('svg')));
     }
 
     function exportDefinitions(node, options) {
