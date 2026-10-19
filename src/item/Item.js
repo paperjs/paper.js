@@ -3297,7 +3297,9 @@ new function() { // Injection scope for hit-test functions shared with project
     /**
      * Specifies whether the stroke is to be drawn taking the current affine
      * transformation into account (the default behavior), or whether it should
-     * appear as a non-scaling stroke.
+     * appear as a non-scaling stroke. On text, non-scaling strokes are exact for
+     * uniform scaling only, as the glyphs are always stroked through the
+     * transformation.
      *
      * @name Item#strokeScaling
      * @property
