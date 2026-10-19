@@ -942,6 +942,38 @@ var Point = Base.extend(/** @lends Point# */{
      * var absPoint = point.abs();
      * console.log(absPoint); // {x: 5, y: 10}
      */
+
+    /**
+     * Returns a new point with the {@link #x} and {@link #y} values clamped to
+     * the range between the given minimum and maximum points. The object
+     * itself is not modified!
+     *
+     * @param {Point} min the point with the smallest values
+     * @param {Point} max the point with the largest values
+     * @return {Point} the clamped point as a new point
+     *
+     * @example
+     * var point = new Point(-5, 150);
+     * var clampPoint = point.clamp(new Point(0, 0), new Point(100, 100));
+     * console.log(clampPoint); // {x: 0, y: 100}
+     *
+     * @example
+     * // Keep a point inside a rectangle:
+     * var rect = new Rectangle(10, 20, 100, 50);
+     * var point = new Point(200, 40);
+     * var clampPoint = point.clamp(rect.topLeft, rect.bottomRight);
+     * console.log(clampPoint); // {x: 110, y: 40}
+     */
+    clamp: function(/* min, max */) {
+        var args = arguments,
+            min = Point.read(args),
+            max = Point.read(args);
+        return new Point(
+            Numerical.clamp(this.x, min.x, max.x),
+            Numerical.clamp(this.y, min.y, max.y)
+        );
+    },
+
     statics: /** @lends Point */{
         /**
          * Returns a new point object with the smallest {@link #x} and

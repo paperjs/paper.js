@@ -138,6 +138,15 @@ test('equals()', function() {
     }, false);
 });
 
+test('clamp(min, max)', function() {
+    var min = new Point(0, 10),
+        max = new Point(100, 50);
+    equals(new Point(-5, 60).clamp(min, max), new Point(0, 50));
+    equals(new Point(150, 0).clamp(min, max), new Point(100, 10));
+    equals(new Point(20, 30).clamp(min, max), new Point(20, 30));
+    equals(new Point(-5, 60).clamp([0, 10], [100, 50]), new Point(0, 50));
+});
+
 test('isCollinear()', function() {
     equals(function() {
         return new Point(10, 5).isCollinear(new Point(20, 10));
