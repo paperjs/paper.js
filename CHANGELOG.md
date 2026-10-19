@@ -48,6 +48,9 @@
 
 ### Fixed
 
+- Keep `Key.modifiers` in sync with the flags of mouse events, so modifier keys
+  pressed or released while the page didn't have the focus don't stay wrong
+  (#1140).
 - Keep Paper.js's own blend modes, which CSS doesn't have, such as
   `'destination-out'`, through SVG export and import, in a
   `data-paper-blend-mode` attribute (#1296).

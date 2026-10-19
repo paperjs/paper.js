@@ -1589,6 +1589,17 @@ new function() { // Injection scope for mouse and key event handling
                 return false;
             }
 
+            // DOM events know the state of the modifier keys, also of those
+            // pressed or released while the page didn't have the focus, so no
+            // key event told us about them (#1140):
+            if (event.shiftKey !== undefined) {
+                Key.modifiers.set({
+                    shift: event.shiftKey,
+                    control: event.ctrlKey,
+                    alt: event.altKey,
+                    meta: event.metaKey
+                });
+            }
             // If it's a native mousemove event but the mouse is down, and at
             // least one of the events responds to mousedrag, convert to it.
             // NOTE: emitMouseEvent(), as well as Tool#_handleMouseEvent() fall
