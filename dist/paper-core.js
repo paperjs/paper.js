@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 14:18:43 2026 +0200
+ * Date: Mon Oct 19 12:13:18 2026 +0200
  *
  ***
  *
@@ -3167,7 +3167,7 @@ var Project = PaperScopeItem.extend({
 
 		if (this._selectionCount > 0) {
 			ctx.save();
-			ctx.strokeWidth = 1;
+			ctx.lineWidth = 1;
 			var items = this._selectionItems,
 				size = this._scope.settings.handleSize,
 				version = this._updateVersion;
