@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:13:23 2026 +0200
+ * Date: Mon Oct 19 12:11:54 2026 +0200
  *
  ***
  *
@@ -14951,7 +14951,8 @@ var SvgStyles = Base.each({
 }, {});
 
 new function() {
-	var formatter;
+	var formatter,
+		parentStyles;
 
 	function getTransform(matrix, coordinates, center) {
 		var attrs = new Base(),
@@ -15247,6 +15248,8 @@ new function() {
 	function applyStyle(item, node, options, isRoot) {
 		var attrs = {},
 			parent = !isRoot && item.getParent(),
+			parentStyle = parent && (parentStyles[parent._id] =
+					parentStyles[parent._id] || {}),
 			style = [];
 
 		if (item._name != null)
@@ -15256,10 +15259,12 @@ new function() {
 			var get = entry.get,
 				type = entry.type,
 				value = item[get]();
+			if (parent && !(get in parentStyle))
+				parentStyle[get] = parent[get]();
 			if (value !== undefined && (entry.exportFilter
 					? entry.exportFilter(item, value)
 					: options.reduceAttributes == false
-						|| !parent || !Base.equals(parent[get](), value))) {
+						|| !parent || !Base.equals(parentStyle[get], value))) {
 				if (type === 'color' && value != null) {
 					var alpha = value.getAlpha();
 					if (alpha < 1)
@@ -15329,6 +15334,7 @@ new function() {
 			}
 			definitions = null;
 		}
+		parentStyles = null;
 		return options.asString
 				? new self.XMLSerializer().serializeToString(svg)
 				: svg;
@@ -15352,6 +15358,7 @@ new function() {
 		if (!options)
 			options = {};
 		formatter = new Formatter(options.precision);
+		parentStyles = {};
 		return options;
 	}
 
