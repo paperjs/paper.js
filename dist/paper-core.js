@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 15:13:10 2026 +0200
+ * Date: Mon Oct 19 15:15:08 2026 +0200
  *
  ***
  *
@@ -12877,14 +12877,16 @@ var DomElement = new function() {
 			return DomElement.getBounds(el, true).getSize();
 		},
 
-		getInsets: function(el) {
+		getInsets: function(el, start) {
 			var style = DomElement.getStyles(el);
 			function get(side) {
 				return parseFloat(style['padding' + side])
 						+ parseFloat(style['border' + side + 'Width']);
 			}
-			return new Size(get('Left') + get('Right'),
-					get('Top') + get('Bottom'));
+			return start
+					? new Size(get('Left'), get('Top'))
+					: new Size(get('Left') + get('Right'),
+						get('Top') + get('Bottom'));
 		},
 
 		isInvisible: function(el) {
@@ -13419,7 +13421,17 @@ var View = Base.extend(Emitter, {
 	},
 
 	getEventPoint: function(event) {
-		return this.viewToProject(DomEvent.getOffset(event, this._element));
+		var element = this._element,
+			offset = DomEvent.getOffset(event, element),
+			size = DomElement.getSize(element);
+		if (!size.isZero()) {
+			var cssSize = new Size(element.offsetWidth, element.offsetHeight);
+			offset = offset.multiply(cssSize.divide(size))
+					.subtract(DomElement.getInsets(element, true))
+					.multiply(this.getViewSize().divide(
+						cssSize.subtract(DomElement.getInsets(element))));
+		}
+		return this.viewToProject(offset);
 	},
 
 }, {

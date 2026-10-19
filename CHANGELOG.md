@@ -207,6 +207,9 @@
 - Fix stale `Item#globalMatrix` and `#localToGlobal()` results of items whose
   sibling was asked first after their parent was transformed, and of items
   moved to another parent or removed (#1750).
+- Fix the points of mouse and touch events on canvases with padding or border,
+  with a CSS size that differs from the view size, or under CSS transforms that
+  scale them, which were offset or scaled (#549, #1729).
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
