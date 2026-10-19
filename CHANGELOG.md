@@ -24,6 +24,8 @@
 
 ### Fixed
 
+- Fix touch scrolling over empty parts of a canvas whose items have mouse
+  handlers (#1930).
 - Fix mouse events reaching items and views through elements that cover the
   canvas, such as menus. Drags still reach beyond them (#992).
 - Fix the points of `#hitTestAll()` results of items inside transformed

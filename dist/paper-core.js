@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 21:08:02 2026 +0200
+ * Date: Mon Oct 19 21:36:50 2026 +0200
  *
  ***
  *
@@ -13750,6 +13750,7 @@ new function() {
 	var itemEventsMap = {
 		mousedown: {
 			mousedown: 1,
+			mouseup: 1,
 			mousedrag: 1,
 			click: 1,
 			doubleclick: 1
@@ -13781,6 +13782,19 @@ new function() {
 			function responds(type) {
 				return itemEvents.virtual[type] || view.responds(type)
 						|| tool && tool.responds(type);
+			}
+
+			function needsUp(hitItem) {
+				if (view.responds('mouseup')
+						|| tool && tool.responds('mouseup'))
+					return true;
+				for (var item = hitItem; item; item = item._parent) {
+					for (var key in itemEventsMap.mouseup) {
+						if (item.responds(key))
+							return true;
+					}
+				}
+				return false;
 			}
 
 			if (nativeMove && dragging && responds('mousedrag'))
@@ -13859,7 +13873,7 @@ new function() {
 
 			if (
 				event.cancelable !== false
-				&& (called && !mouse.move || mouse.down && responds('mouseup'))
+				&& (called && !mouse.move || mouse.down && needsUp(hitItem))
 			) {
 				event.preventDefault();
 			}
