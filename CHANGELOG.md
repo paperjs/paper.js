@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added
+
+- Add `Project#trackChanges` and `Project#takeChanges()`, to let hosts that
+  keep their own document update only the items that changed, and export
+  `ChangeFlag` (#2202).
+
 ### Fixed
 
 - Fix `onFrame` in web workers, where views have no element (#2200).

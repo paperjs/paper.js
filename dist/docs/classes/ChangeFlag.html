@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>ChangeFlag</title>
+<base target="class-frame">
+<link href="../assets/css/docs.css" rel="stylesheet" type="text/css">
+<script src="../assets/js/paper.js"></script>
+<script src="../assets/js/jquery.js"></script>
+<script src="../assets/js/codemirror.js"></script>
+<script src="../assets/js/docs.js"></script>
+</head>
+<body>
+<article class="reference"> 
+<div class="reference-class">
+<h1>ChangeFlag</h1>
+
+
+
+</div>
+
+
+
+
+
+
+
+    <div class="reference-members">
+    	<h2>Static Properties</h2>
+        
+            
+<div id="appearance" class="member">
+<div class="member-link">
+<a name="appearance" href="#appearance"><tt><b>ChangeFlag.APPEARANCE</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Anything affecting the appearance of an item, including GEOMETRY, STROKE, STYLE and ATTRIBUTE (except for the invisible ones: locked, name)</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+        
+            
+<div id="children" class="member">
+<div class="member-link">
+<a name="children" href="#children"><tt><b>ChangeFlag.CHILDREN</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>A change in the item&rsquo;s children</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+        
+            
+<div id="insertion" class="member">
+<div class="member-link">
+<a name="insertion" href="#insertion"><tt><b>ChangeFlag.INSERTION</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>A change of the item&rsquo;s place in the scene graph (removed, inserted, moved)</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+        
+            
+<div id="geometry" class="member">
+<div class="member-link">
+<a name="geometry" href="#geometry"><tt><b>ChangeFlag.GEOMETRY</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Item geometry (path, bounds)</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+        
+            
+<div id="matrix" class="member">
+<div class="member-link">
+<a name="matrix" href="#matrix"><tt><b>ChangeFlag.MATRIX</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The item&rsquo;s matrix has changed</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+        
+            
+<div id="segments" class="member">
+<div class="member-link">
+<a name="segments" href="#segments"><tt><b>ChangeFlag.SEGMENTS</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Only segment(s) have changed, and affected curves have already been notified. This is to implement an optimization in _changed() calls</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+        
+            
+<div id="stroke" class="member">
+<div class="member-link">
+<a name="stroke" href="#stroke"><tt><b>ChangeFlag.STROKE</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Stroke geometry (excluding color)</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+        
+            
+<div id="style" class="member">
+<div class="member-link">
+<a name="style" href="#style"><tt><b>ChangeFlag.STYLE</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Fill style or stroke color / dash</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+        
+            
+<div id="attribute" class="member">
+<div class="member-link">
+<a name="attribute" href="#attribute"><tt><b>ChangeFlag.ATTRIBUTE</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Item attributes: visible, blendMode, locked, name, opacity, clipMask &hellip;</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+        
+            
+<div id="content" class="member">
+<div class="member-link">
+<a name="content" href="#content"><tt><b>ChangeFlag.CONTENT</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Text content</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+        
+            
+<div id="pixels" class="member">
+<div class="member-link">
+<a name="pixels" href="#pixels"><tt><b>ChangeFlag.PIXELS</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Raster pixels</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+        
+            
+<div id="clipping" class="member">
+<div class="member-link">
+<a name="clipping" href="#clipping"><tt><b>ChangeFlag.CLIPPING</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Clipping in one of the child items</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+        
+            
+<div id="view" class="member">
+<div class="member-link">
+<a name="view" href="#view"><tt><b>ChangeFlag.VIEW</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The view has been transformed</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+        
+    </div>
+
+
+
+
+
+
+<!-- =========================== copyright notice ========================== -->
+<p class="footer">
+Paper.js v0.13.0 (develop)<br>
+Copyright &#169; 2011—2026 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+
+</article>
+</body>

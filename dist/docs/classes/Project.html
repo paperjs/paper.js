@@ -79,6 +79,37 @@
 		<h2>Properties</h2>
 		
 			
+<div id="trackchanges" class="member">
+<div class="member-link">
+<a name="trackchanges" href="#trackchanges"><tt><b>trackChanges</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Specifies whether the project logs the changes of its items, to be retrieved through <a href="../classes/Project.html#takechanges"><tt>takeChanges</tt></a>(). This allows hosts that keep their own document to update only what has changed.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>false</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Boolean</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
 <div id="view" class="member">
 <div class="member-link">
 <a name="view" href="#view"><tt><b>view</b></tt></a>
@@ -326,6 +357,35 @@ var path2 = new Path.Circle(new Point(175, 50), 20);
 	<div class="reference-members">
 		<h2>Methods</h2>
 		
+	
+<div id="takechanges" class="member">
+<div class="member-link">
+<a name="takechanges" href="#takechanges"><tt><b>takeChanges</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Returns the changes logged since tracking was activated or since the last call, and clears the log. Each item is listed once, with the <a href="../classes/ChangeFlag.html"><tt>ChangeFlag</tt></a> values of all its changes combined. Removed items are listed with the <code>ChangeFlag.INSERTION</code> flag.</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt>Array of <tt>Object</tt> objects</tt>&nbsp;&mdash;&nbsp;the changes as <code>{ item, flags }</code> objects, or <code>null</code>  if <a href="../classes/Project.html#trackchanges"><tt>trackChanges</tt></a> is off
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
 	
 <div id="activate" class="member">
 <div class="member-link">

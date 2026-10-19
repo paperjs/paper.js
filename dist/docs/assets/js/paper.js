@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 17:53:10 2026 +0200
+ * Date: Mon Oct 19 18:23:42 2026 +0200
  *
  ***
  *
@@ -2935,6 +2935,48 @@ var Line = Base.extend({
 	}
 });
 
+var ChangeFlag = {
+	APPEARANCE: 0x1,
+
+	CHILDREN: 0x2,
+
+	INSERTION: 0x4,
+
+	GEOMETRY: 0x8,
+
+	MATRIX: 0x10,
+
+	SEGMENTS: 0x20,
+
+	STROKE: 0x40,
+
+	STYLE: 0x80,
+
+	ATTRIBUTE: 0x100,
+
+	CONTENT: 0x200,
+
+	PIXELS: 0x400,
+
+	CLIPPING: 0x800,
+
+	VIEW: 0x1000
+};
+
+var Change = {
+	CHILDREN: ChangeFlag.CHILDREN | ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
+	INSERTION: ChangeFlag.INSERTION | ChangeFlag.APPEARANCE,
+	GEOMETRY: ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
+	MATRIX: ChangeFlag.MATRIX | ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
+	SEGMENTS: ChangeFlag.SEGMENTS | ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
+	STROKE: ChangeFlag.STROKE | ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
+	STYLE: ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
+	ATTRIBUTE: ChangeFlag.ATTRIBUTE | ChangeFlag.APPEARANCE,
+	CONTENT: ChangeFlag.CONTENT | ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
+	PIXELS: ChangeFlag.PIXELS | ChangeFlag.APPEARANCE,
+	VIEW: ChangeFlag.VIEW | ChangeFlag.APPEARANCE
+};
+
 var Project = PaperScopeItem.extend({
 	_class: 'Project',
 	_list: 'projects',
@@ -2968,7 +3010,7 @@ var Project = PaperScopeItem.extend({
 			}
 		}
 		var changes = this._changes;
-		if (changes && item) {
+		if (changes && item && item.isInserted()) {
 			var changesById = this._changesById,
 				id = item._id,
 				entry = changesById[id];
@@ -2978,6 +3020,26 @@ var Project = PaperScopeItem.extend({
 				changes.push(changesById[id] = { item: item, flags: flags });
 			}
 		}
+	},
+
+	getTrackChanges: function() {
+		return !!this._changes;
+	},
+
+	setTrackChanges: function(trackChanges) {
+		if (!this._changes ^ !trackChanges) {
+			this._changes = trackChanges ? [] : null;
+			this._changesById = trackChanges ? {} : null;
+		}
+	},
+
+	takeChanges: function() {
+		var changes = this._changes;
+		if (changes) {
+			this._changes = [];
+			this._changesById = {};
+		}
+		return changes || null;
 	},
 
 	clear: function() {
@@ -4434,14 +4496,14 @@ new function() {
 			if (this._name)
 				this._removeNamed();
 			this._installEvents(false);
+			if (notifySelf && project._changes)
+				this._changed(5);
 			if (index != null) {
 				if (project._activeLayer === this)
 					project._activeLayer = this.getNextSibling()
 							|| this.getPreviousSibling();
 				Base.splice(owner._children, null, index, 1);
 			}
-			if (notifySelf && project._changes)
-				this._changed(5);
 			if (notifyParent)
 				owner._changed(11, this);
 			this._parent = null;
@@ -17920,6 +17982,7 @@ Base.exports.PaperScript = function() {
 var paper = new (PaperScope.inject(Base.exports, {
 	Base: Base,
 	Numerical: Numerical,
+	ChangeFlag: ChangeFlag,
 	Key: Key,
 	DomEvent: DomEvent,
 	DomElement: DomElement,

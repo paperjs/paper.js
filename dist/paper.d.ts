@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 17:53:10 2026 +0200
+ * Date: Mon Oct 19 18:23:42 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -37,6 +37,79 @@ declare namespace paper {
         | { x: number, y: number, width: number, height: number }
         | { from: PointLike, to: PointLike }
     )
+
+    
+    class ChangeFlag  {
+        /** 
+         * Anything affecting the appearance of an item, including GEOMETRY,
+         * STROKE, STYLE and ATTRIBUTE (except for the invisible ones: locked, name)
+         */
+        static APPEARANCE: number
+
+        /** 
+         * A change in the item's children
+         */
+        static CHILDREN: number
+
+        /** 
+         * A change of the item's place in the scene graph (removed, inserted,
+         * moved)
+         */
+        static INSERTION: number
+
+        /** 
+         * Item geometry (path, bounds)
+         */
+        static GEOMETRY: number
+
+        /** 
+         * The item's matrix has changed
+         */
+        static MATRIX: number
+
+        /** 
+         * Only segment(s) have changed, and affected curves have already been
+         * notified. This is to implement an optimization in _changed() calls
+         */
+        static SEGMENTS: number
+
+        /** 
+         * Stroke geometry (excluding color)
+         */
+        static STROKE: number
+
+        /** 
+         * Fill style or stroke color / dash
+         */
+        static STYLE: number
+
+        /** 
+         * Item attributes: visible, blendMode, locked, name, opacity, clipMask ...
+         */
+        static ATTRIBUTE: number
+
+        /** 
+         * Text content
+         */
+        static CONTENT: number
+
+        /** 
+         * Raster pixels
+         */
+        static PIXELS: number
+
+        /** 
+         * Clipping in one of the child items
+         */
+        static CLIPPING: number
+
+        /** 
+         * The view has been transformed
+         */
+        static VIEW: number
+
+
+    }
 
     /** 
      * All properties and functions that expect color values in the form
@@ -3335,6 +3408,7 @@ declare namespace paper {
          */
         tools: Tool[]
 
+        ChangeFlag: typeof ChangeFlag
         Color: typeof Color
         CompoundPath: typeof CompoundPath
         Curve: typeof Curve
@@ -5076,6 +5150,13 @@ declare namespace paper {
      */
     class Project  {
         /** 
+         * Specifies whether the project logs the changes of its items, to be
+         * retrieved through {@link #takeChanges}. This allows hosts that keep
+         * their own document to update only what has changed.
+         */
+        trackChanges: boolean
+
+        /** 
          * The reference to the project's view.
          */
         readonly view: View
@@ -5127,6 +5208,17 @@ declare namespace paper {
          * a web worker.
          */
         constructor(element: HTMLCanvasElement | string | SizeLike)
+
+        /** 
+         * Returns the changes logged since tracking was activated or since the
+         * last call, and clears the log. Each item is listed once, with the
+         * {@link ChangeFlag} values of all its changes combined. Removed items are
+         * listed with the `ChangeFlag.INSERTION` flag.
+         * 
+         * @return the changes as `{ item, flags }` objects, or `null`
+         *     if {link #trackChanges} is off
+         */
+        takeChanges(): object[]
 
         /** 
          * Activates this project, so all newly created items will be placed
