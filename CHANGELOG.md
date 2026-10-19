@@ -4,6 +4,9 @@
 
 ### Added
 
+- Add `Tool#eventInterval`, as Scriptographer had it, to fire `onMouseDrag` again
+  at an interval while the mouse button is held, also when the mouse doesn't
+  move.
 - Add `Project#scope`, `View#scope`, `Item#scope` and `Tool#scope`, to get from
   each of them to its `PaperScope` (#1634).
 - Add `Group#isolated`, to draw a group or layer through a temporary canvas, so

@@ -488,3 +488,35 @@ test('Selections are drawn with a line width of 1', function() {
     ctx.lineWidth = 1;
     path.remove();
 });
+
+test('tool.eventInterval repeats mousedrag while the mouse is held (S5)', function(assert) {
+    var done = assert.async(),
+        tool = new Tool({ eventInterval: 10 }),
+        drags = [];
+    // ToolEvent reads its values from the tool, so record them in the handler:
+    tool.onMouseDrag = function(event) {
+        drags.push({
+            point: event.point,
+            delta: event.delta,
+            count: event.count
+        });
+    };
+    view.dispatchMouseEvent('mousedown', [20, 20]);
+    view.dispatchMouseEvent('mousemove', [30, 20]);
+    setTimeout(function() {
+        view.dispatchMouseEvent('mouseup', [30, 20]);
+        var count = drags.length;
+        // The first drag is the move, then the repeats at the same point:
+        equals(count > 3, true, 'repeated');
+        equals(drags.slice(1).every(function(event, i) {
+            return event.point.equals([30, 20]) && event.delta.isZero()
+                    && event.count === i + 1;
+        }), true, 'at the last point, without a delta, counting up');
+        // Nothing fires after the mouse is released:
+        setTimeout(function() {
+            equals(drags.length, count, 'stopped');
+            tool.remove();
+            done();
+        }, 50);
+    }, 60);
+});
