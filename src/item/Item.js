@@ -1392,6 +1392,9 @@ new function() { // Injection scope for various item event handlers
      */
     _installEvents: function _installEvents(install) {
         _installEvents.base.call(this, install);
+        // Keep the project's selection in sync with insertion and removal:
+        if (this._selection)
+            this._project._updateSelection(this, !install);
         var children = this._children;
         for (var i = 0, l = children && children.length; i < l; i++)
             children[i]._installEvents(install);

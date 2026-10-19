@@ -298,10 +298,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     },
     // TODO: Implement setSelectedItems?
 
-    _updateSelection: function(item) {
+    _updateSelection: function(item, remove) {
         var id = item._id,
             selectionItems = this._selectionItems;
-        if (item._selection) {
+        // Only keep track of inserted items, so removed ones can be collected:
+        if (item._selection && !remove && item.isInserted()) {
             if (selectionItems[id] !== item) {
                 this._selectionCount++;
                 selectionItems[id] = item;
@@ -899,7 +900,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         // Draw the selection of the selected items in the project:
         if (this._selectionCount > 0) {
             ctx.save();
-            ctx.strokeWidth = 1;
+            ctx.lineWidth = 1;
             var items = this._selectionItems,
                 size = this._scope.settings.handleSize,
                 version = this._updateVersion;

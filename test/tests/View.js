@@ -237,3 +237,28 @@ if (!isNodeContext) {
         });
     });
 }
+
+test('Selections are drawn with a line width of 1', function() {
+    var path = new Path.Line({
+        from: [10, 50],
+        to: [90, 50],
+        selected: true
+    });
+    var ctx = view.element.getContext('2d');
+
+    function getAlpha(x, y) {
+        var pixelRatio = view.pixelRatio;
+        return ctx.getImageData(x * pixelRatio, y * pixelRatio, 1, 1).data[3];
+    }
+
+    // Change the line width behind the view's back, as code drawing directly
+    // on its context can:
+    ctx.lineWidth = 10;
+    view.update(true);
+    // A line width of 1 only covers the pixels next to y = 50, 10 would reach
+    // from y = 45 to 55:
+    equals(getAlpha(50, 50) > 0, true, 'alpha on the line');
+    equals(getAlpha(50, 53), 0, 'alpha next to the line');
+    ctx.lineWidth = 1;
+    path.remove();
+});

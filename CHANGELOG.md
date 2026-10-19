@@ -171,6 +171,13 @@
 - Fix `View#rotation` on mirrored views, which turned the other way (#1893).
 - Fix touches outside of the view taking over its drag (#1875).
 - Fix hit-testing of point texts with a tolerance (#632).
+- Fix a memory leak of selected items that were removed, which stayed in the
+  project's selection (#1856).
+- Fix `hitTest()` with `class`, `type` and `match` filters on symbol items
+  (#1774).
+- Fix the line width of selections drawn by `Project#draw()`.
+- Leave `workspaces` and `resolutions` out of the published `package.json`
+  (#1921).
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
