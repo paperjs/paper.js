@@ -370,6 +370,16 @@ var View = Base.extend(Emitter, /** @lends View# */{
     },
 
     /**
+     * The scope that this view belongs to.
+     *
+     * @bean
+     * @type PaperScope
+     */
+    getScope: function() {
+        return this._scope;
+    },
+
+    /**
      * The ratio between physical pixels and device-independent pixels (DIPs)
      * of the underlying canvas / device.
      * It is `1` for normal displays, and `2` or more for

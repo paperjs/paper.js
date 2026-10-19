@@ -4,6 +4,8 @@
 
 ### Added
 
+- Add `Project#scope`, `View#scope`, `Item#scope` and `Tool#scope`, to get from
+  each of them to its `PaperScope` (#1634).
 - Add `Group#isolated`, to draw a group or layer through a temporary canvas, so
   that the blend modes of its children, such as `'destination-out'`, only apply
   within it, like CSS's `isolation: isolate` (#474).
