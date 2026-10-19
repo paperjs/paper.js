@@ -503,6 +503,12 @@ new function() {
                 item.setVisible(value !== null);
         },
 
+        // Paper.js's own blend modes, which CSS doesn't have, see SvgExport:
+        'data-paper-blend-mode': function(item, value) {
+            if (item.setBlendMode)
+                item.setBlendMode(value);
+        },
+
         'font-style': function(item, value) {
             // Paper.js combines the font style with the weight. Applied after
             // font-weight, which comes first as one of the SvgStyles. Browsers
