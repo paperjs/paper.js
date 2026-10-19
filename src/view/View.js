@@ -731,18 +731,30 @@ var View = Base.extend(Emitter, /** @lends View# */{
             hor = size.width / bounds.width,
             ver = size.height / bounds.height,
             scale;
+
+        // Empty sides of the rectangle give ratios of Infinity, which can't
+        // scale the view, so only use the others:
+        function isScaling(ratio) {
+            return ratio > 0 && isFinite(ratio);
+        }
+
         if (fit === 'fill') {
-            scale = new Point(hor, ver);
+            scale = new Point(
+                    isScaling(hor) ? hor : 1,
+                    isScaling(ver) ? ver : 1);
         } else {
             // Scale both axes of the view by the same amount, so that the
             // rectangle keeps its aspect ratio, also if the view was stretched
             // before:
             var scaleX = new Point(matrix._a, matrix._c).getLength(),
                 scaleY = new Point(matrix._b, matrix._d).getLength(),
-                amount = fit === 'cover'
-                    ? Math.max(hor * scaleX, ver * scaleY)
-                    : Math.min(hor * scaleX, ver * scaleY);
-            scale = new Point(amount / scaleX, amount / scaleY);
+                ratios = [hor * scaleX, ver * scaleY].filter(isScaling),
+                amount = !ratios.length ? 0
+                    : fit === 'cover' ? Math.max.apply(Math, ratios)
+                    : Math.min.apply(Math, ratios);
+            scale = amount
+                    ? new Point(amount / scaleX, amount / scaleY)
+                    : new Point(1, 1);
         }
         this.setCenter(rectangle.getCenter());
         // Scale around the view's center in view coordinates, so that 'fill'

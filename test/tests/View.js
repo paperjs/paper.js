@@ -23,6 +23,25 @@ test('view.zoom of mirrored view (#1411)', function() {
     equals(view.matrix, new Matrix(2, 0, 0, -2, -50, 150), 'view.matrix');
 });
 
+test('view.fitBounds() with empty rectangles', function() {
+    ['contain', 'cover', 'fill'].forEach(function(fit) {
+        // The view is 100x100. An empty rectangle can't scale the view, so it
+        // only centers on it, keeping its zoom:
+        view.matrix = new Matrix();
+        view.zoom = 2;
+        view.fitBounds(new Rectangle(30, 40, 0, 0), fit);
+        equals(view.zoom, 2, 'empty: view.zoom, ' + fit);
+        equals(view.center, new Point(30, 40), 'empty: view.center, ' + fit);
+        // A horizontal line can only scale the view by its width of 400:
+        view.matrix = new Matrix();
+        view.fitBounds(new Rectangle(0, 0, 400, 0), fit);
+        equals(view.scaling, new Point(0.25, fit === 'fill' ? 1 : 0.25),
+                'line: view.scaling, ' + fit);
+        equals(view.center, new Point(200, 0), 'line: view.center, ' + fit);
+    });
+    view.matrix = new Matrix();
+});
+
 test('view.zoom with values that aren\'t positive numbers (#1433)', function() {
     view.zoom = 2;
     [0, -1, NaN, Infinity].forEach(function(zoom) {

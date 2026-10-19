@@ -3854,11 +3854,27 @@ new function() { // Injection scope for hit-test functions shared with project
         var bounds = this.getBounds(),
             hor = rectangle.width / bounds.width,
             ver = rectangle.height / bounds.height,
-            scale = fit === 'cover' ? Math.max(hor, ver) : Math.min(hor, ver),
-            newBounds = fit === 'fill' ? rectangle
-                : new Rectangle(new Point(), bounds.getSize().multiply(scale))
-                    .setCenter(rectangle.getCenter());
-        this.setBounds(newBounds);
+            size;
+
+        // Empty sides of the item or the rectangle give ratios of Infinity or
+        // 0, which can't scale it, so only use the others:
+        function isScaling(ratio) {
+            return ratio > 0 && isFinite(ratio);
+        }
+
+        if (fit === 'fill') {
+            size = new Size(
+                isScaling(hor) ? rectangle.width : bounds.width,
+                isScaling(ver) ? rectangle.height : bounds.height);
+        } else {
+            var ratios = [hor, ver].filter(isScaling),
+                scale = !ratios.length ? 1
+                    : fit === 'cover' ? Math.max.apply(Math, ratios)
+                    : Math.min.apply(Math, ratios);
+            size = bounds.getSize().multiply(scale);
+        }
+        this.setBounds(new Rectangle(new Point(), size)
+                .setCenter(rectangle.getCenter()));
     }
 }), /** @lends Item# */{
     /**
