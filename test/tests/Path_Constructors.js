@@ -84,18 +84,43 @@ test('new Path.Arc({ from: from, through: through, to: to })', function() {
 
 test('new Path.RegularPolygon(center, sides, radius)', function() {
     var path = new Path.RegularPolygon(new Point(50, 50), 3, 10);
-    equals(path.segments.toString(), '{ point: { x: 41.33975, y: 55 } },{ point: { x: 50, y: 40 } },{ point: { x: 58.66025, y: 55 } }');
+    equals(path.segments.toString(), '{ point: { x: 50, y: 40 } },{ point: { x: 41.33975, y: 55 } },{ point: { x: 58.66025, y: 55 } }');
 
     var path = new Path.RegularPolygon(new Point(250, 250), 10, 100);
-    equals(path.segments.toString(), '{ point: { x: 219.0983, y: 345.10565 } },{ point: { x: 169.0983, y: 308.77853 } },{ point: { x: 150, y: 250 } },{ point: { x: 169.0983, y: 191.22147 } },{ point: { x: 219.0983, y: 154.89435 } },{ point: { x: 280.9017, y: 154.89435 } },{ point: { x: 330.9017, y: 191.22147 } },{ point: { x: 350, y: 250 } },{ point: { x: 330.9017, y: 308.77853 } },{ point: { x: 280.9017, y: 345.10565 } }');
+    equals(path.segments.toString(), '{ point: { x: 280.9017, y: 154.89435 } },{ point: { x: 219.0983, y: 154.89435 } },{ point: { x: 169.0983, y: 191.22147 } },{ point: { x: 150, y: 250 } },{ point: { x: 169.0983, y: 308.77853 } },{ point: { x: 219.0983, y: 345.10565 } },{ point: { x: 280.9017, y: 345.10565 } },{ point: { x: 330.9017, y: 308.77853 } },{ point: { x: 350, y: 250 } },{ point: { x: 330.9017, y: 191.22147 } }');
+});
+
+test('Path.RegularPolygon() orientation and segment order (#1787)', function() {
+    // As in Illustrator, for any number of sides, the polygon stands on a flat
+    // bottom edge, and its segments run counterclockwise from its top vertex,
+    // or with an even number of sides, from the right end of its top edge:
+    for (var sides = 3; sides <= 12; sides++) {
+        var path = new Path.RegularPolygon([0, 0], sides, 10),
+            points = path.segments.map(function(segment) {
+                return segment.point;
+            }),
+            ys = points.map(function(point) {
+                return point.y;
+            }),
+            top = Math.min.apply(null, ys),
+            bottom = Math.max.apply(null, ys),
+            first = points[0];
+        equals(path.clockwise, false, sides + ' sides: counterclockwise');
+        equals(points.filter(function(point) {
+            return Math.abs(point.y - bottom) < 1e-9;
+        }).length, 2, sides + ' sides: flat bottom edge');
+        equals(Math.abs(first.y - top) < 1e-9
+                && (sides % 2 ? Math.abs(first.x) < 1e-9 : first.x > 0),
+                true, sides + ' sides: first segment');
+    }
 });
 
 test('new Path.RegularPolygon({ center: center, sides: sides, radius: radius })', function() {
     var path = new Path.RegularPolygon({center: new Point(50, 50), sides: 3, radius: 10});
-    equals(path.segments.toString(), '{ point: { x: 41.33975, y: 55 } },{ point: { x: 50, y: 40 } },{ point: { x: 58.66025, y: 55 } }');
+    equals(path.segments.toString(), '{ point: { x: 50, y: 40 } },{ point: { x: 41.33975, y: 55 } },{ point: { x: 58.66025, y: 55 } }');
 
     var path = new Path.RegularPolygon({center: new Point(250, 250), sides: 10, radius: 100});
-    equals(path.segments.toString(), '{ point: { x: 219.0983, y: 345.10565 } },{ point: { x: 169.0983, y: 308.77853 } },{ point: { x: 150, y: 250 } },{ point: { x: 169.0983, y: 191.22147 } },{ point: { x: 219.0983, y: 154.89435 } },{ point: { x: 280.9017, y: 154.89435 } },{ point: { x: 330.9017, y: 191.22147 } },{ point: { x: 350, y: 250 } },{ point: { x: 330.9017, y: 308.77853 } },{ point: { x: 280.9017, y: 345.10565 } }');
+    equals(path.segments.toString(), '{ point: { x: 280.9017, y: 154.89435 } },{ point: { x: 219.0983, y: 154.89435 } },{ point: { x: 169.0983, y: 191.22147 } },{ point: { x: 150, y: 250 } },{ point: { x: 169.0983, y: 308.77853 } },{ point: { x: 219.0983, y: 345.10565 } },{ point: { x: 280.9017, y: 345.10565 } },{ point: { x: 330.9017, y: 308.77853 } },{ point: { x: 350, y: 250 } },{ point: { x: 330.9017, y: 191.22147 } }');
 });
 
 

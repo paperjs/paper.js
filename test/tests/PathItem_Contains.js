@@ -18,7 +18,8 @@ function testPoint(item, point, inside, message) {
 }
 
 test('Path#contains() (regular polygon: #208)', function() {
-    var path = new Path.RegularPolygon([0, 0], 6, 20);
+    // A hexagon with a vertex at the top, as it was created in #208:
+    var path = new Path.RegularPolygon([0, 0], 6, 20).rotate(30);
 
     testPoint(path, new Point(0, -20), true);
     testPoint(path, new Point(0, -10), true);
