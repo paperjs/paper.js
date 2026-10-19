@@ -36,10 +36,11 @@ var View = Base.extend(Emitter, /** @lends View# */{
         }
 
         function getCanvasSize() {
-            // Try visible size first, since that will help handling previously
+            // Try the CSS size first, since that will help handling previously
             // scaled canvases (e.g. when dealing with pixel-ratio), without the
-            // padding and border (#1160, #2033).
-            var size = DomElement.getSize(element);
+            // padding and border (#1160, #2033), and without the transforms of
+            // ancestors, which only scale the canvas on screen:
+            var size = new Size(element.offsetWidth, element.offsetHeight);
             return size.isNaN() || size.isZero()
                     // If the element is invisible, we cannot directly access
                     // element.width / height, because they would appear 0.
