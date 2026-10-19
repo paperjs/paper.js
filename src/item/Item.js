@@ -2841,6 +2841,11 @@ new function() { // Injection scope for hit-test functions shared with project
             // Uninstall events while still inserted, as layers aren't anymore
             // after Base.splice() below.
             this._installEvents(false);
+            // Notify self of the insertion change while still inserted, so it
+            // is logged. We only need this notification if we're tracking
+            // changes.
+            if (notifySelf && project._changes)
+                this._changed(/*#=*/Change.INSERTION);
             // Handle index separately from owner: There are situations where
             // the item is already removed from its list through Base.splice()
             // and index set to undefined, but the owner is still set,
@@ -2852,10 +2857,6 @@ new function() { // Injection scope for hit-test functions shared with project
                             || this.getPreviousSibling();
                 Base.splice(owner._children, null, index, 1);
             }
-            // Notify self of the insertion change. We only need this
-            // notification if we're tracking changes for now.
-            if (notifySelf && project._changes)
-                this._changed(/*#=*/Change.INSERTION);
             // Notify owner of changed children (this can be the project too).
             if (notifyParent)
                 owner._changed(/*#=*/Change.CHILDREN, this);

@@ -19,6 +19,7 @@
 var paper = new (PaperScope.inject(Base.exports, {
     Base: Base,
     Numerical: Numerical,
+    ChangeFlag: ChangeFlag,
     Key: Key,
     DomEvent: DomEvent,
     DomElement: DomElement,
