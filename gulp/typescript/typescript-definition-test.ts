@@ -1016,6 +1016,7 @@ pointText.point;
 
 view.autoUpdate;
 view.element;
+view.project;
 view.pixelRatio;
 view.resolution;
 view.viewSize;
