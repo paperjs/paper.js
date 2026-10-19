@@ -26,6 +26,7 @@
     "jshint": "gulp jshint",
     "test": "gulp test",
     "test:browser": "gulp test:browser",
+    "test:chrome": "gulp test:chrome",
     "test:node": "gulp test:node"
   },
   "files": [
