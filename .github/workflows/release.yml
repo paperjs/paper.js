@@ -58,9 +58,13 @@ jobs:
           registry-url: https://registry.npmjs.org
       # Stage the packages, so they only go live once a maintainer approves them
       # with 2FA on npmjs.com. Approve paper first, as the others depend on it.
-      # Skip the scripts, as `publish` would run `gulp publish` again:
+      # Skip the scripts, as `publish` would run `gulp publish` again, and leave
+      # out the fields that only serve development, which package managers warn
+      # about in dependencies:
       - name: Stage paper
-        run: npm stage publish --ignore-scripts
+        run: |
+          npm pkg delete workspaces resolutions
+          npm stage publish --ignore-scripts
       - name: Stage paper-jsdom
         working-directory: packages/paper-jsdom
         run: npm stage publish
