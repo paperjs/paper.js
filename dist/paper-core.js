@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 20:11:47 2026 +0200
+ * Date: Mon Oct 19 20:15:34 2026 +0200
  *
  ***
  *
@@ -15067,7 +15067,7 @@ var SvgStyles = Base.each({
 	dashArray: ['stroke-dasharray', 'array'],
 	dashOffset: ['stroke-dashoffset', 'number'],
 	fontFamily: ['font-family', 'string'],
-	fontWeight: ['font-weight', 'string'],
+	fontWeight: ['font-weight', 'font'],
 	fontSize: ['font-size', 'number'],
 	tracking: ['letter-spacing', 'tracking'],
 	justification: ['text-anchor', 'lookup', {
@@ -15416,6 +15416,14 @@ new function() {
 				}
 				if (type === 'style') {
 					style.push(entry.attribute + ': ' + value);
+				} else if (type === 'font') {
+					var font = ('' + value).match(
+							/^(.*?)\s*\b(italic|oblique)\b\s*(.*)$/i);
+					attrs[entry.attribute] = font
+							? (font[1] + ' ' + font[3]).trim() || 'normal'
+							: value;
+					if (font)
+						attrs['font-style'] = font[2].toLowerCase();
 				} else {
 					attrs[entry.attribute] = value == null ? 'none'
 							: type === 'color' ? value.gradient
@@ -15926,6 +15934,15 @@ new function() {
 		display: function(item, value) {
 			if (item.setVisible)
 				item.setVisible(value !== null);
+		},
+
+		'font-style': function(item, value) {
+			if (item.setFontWeight && /^(italic|oblique)$/.test(value)) {
+				var weight = ('' + item.getFontWeight())
+						.replace(/\s*\b(italic|oblique)\b/gi, '');
+				item.setFontWeight(weight === 'normal' ? value
+						: weight + ' ' + value);
+			}
 		},
 
 		'letter-spacing': function(item, value) {
