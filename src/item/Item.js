@@ -4864,7 +4864,9 @@ new function() { // Injection scope for hit-test functions shared with project
      * of the easing: {@values 'linear' 'easeInQuad' 'easeOutQuad'
      * 'easeInOutQuad' 'easeInCubic' 'easeOutCubic' 'easeInOutCubic'
      * 'easeInQuart' 'easeOutQuart' 'easeInOutQuart' 'easeInQuint'
-     * 'easeOutQuint' 'easeInOutQuint'}
+     * 'easeOutQuint' 'easeInOutQuint' 'easeInSine' 'easeOutSine'
+     * 'easeInOutSine' 'easeInExpo' 'easeOutExpo' 'easeInOutExpo'
+     * 'easeInCirc' 'easeOutCirc' 'easeInOutCirc'}
      * @option [options.start=true] {Boolean} whether to start tweening automatically
      *
      * @function
