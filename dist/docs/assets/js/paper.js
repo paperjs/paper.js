@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 14:28:07 2026 +0200
+ * Date: Mon Oct 19 15:13:10 2026 +0200
  *
  ***
  *
@@ -3752,27 +3752,14 @@ new function() {
 	},
 
 	getGlobalMatrix: function(_dontClone) {
-		var matrix = this._globalMatrix;
-		if (matrix) {
-			var parent = this._parent;
-			var parents = [];
-			while (parent) {
-				if (!parent._globalMatrix) {
-					matrix = null;
-					for (var i = 0, l = parents.length; i < l; i++) {
-						parents[i]._globalMatrix = null;
-					}
-					break;
-				}
-				parents.push(parent);
-				parent = parent._parent;
-			}
-		}
-		if (!matrix) {
+		var parent = this._parent,
+			parentMatrix = parent && parent.getGlobalMatrix(true),
+			matrix = this._globalMatrix;
+		if (!matrix || this._parentGlobalMatrix !== parentMatrix) {
 			matrix = this._globalMatrix = this._matrix.clone();
-			var parent = this._parent;
-			if (parent)
-				matrix.prepend(parent.getGlobalMatrix(true));
+			if (parentMatrix)
+				matrix.prepend(parentMatrix);
+			this._parentGlobalMatrix = parentMatrix;
 		}
 		return _dontClone ? matrix : matrix.clone();
 	},
@@ -4786,7 +4773,8 @@ new function() {
 		var matrices = param.matrices,
 			viewMatrix = param.viewMatrix,
 			matrix = this._matrix,
-			globalMatrix = matrices[matrices.length - 1].appended(matrix);
+			parentMatrix = matrices[matrices.length - 1],
+			globalMatrix = parentMatrix.appended(matrix);
 		if (!globalMatrix.isInvertible())
 			return;
 
@@ -4796,6 +4784,7 @@ new function() {
 		matrices.push(globalMatrix);
 		if (param.updateMatrix) {
 			this._globalMatrix = globalMatrix;
+			this._parentGlobalMatrix = this._parent && parentMatrix;
 		}
 
 		var blendMode = this._blendMode,
@@ -4853,13 +4842,11 @@ new function() {
 			ctx.translate(-itemOffset.x, -itemOffset.y);
 		}
 		if (clip) {
-			var parentMatrices = matrices.slice(0, -1),
-				parentMatrix = parentMatrices[parentMatrices.length - 1];
 			(param.viewMatrix ? param.viewMatrix.appended(parentMatrix)
 					: parentMatrix).applyToContext(ctx);
 			param.clipItem.draw(ctx, param.extend({
 				clip: true,
-				matrices: parentMatrices
+				matrices: matrices.slice(0, -1)
 			}));
 			matrix.applyToContext(ctx);
 		} else if (transform) {
