@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 21:36:50 2026 +0200
+ * Date: Mon Oct 19 21:44:33 2026 +0200
  *
  ***
  *
@@ -15322,6 +15322,13 @@ new function() {
 		},
 
 		_load: function() {
+			var that = this;
+			whileLoading(this._project, function() {
+				that._loadContent();
+			});
+		},
+
+		_loadContent: function() {
 			var project = this._project,
 				json = project._source.getItem(this._key),
 				ctor = this.constructor,
@@ -15330,25 +15337,25 @@ new function() {
 				that = this;
 			if (this instanceof Group || this._hasChildren)
 				Base.push(kept, childrenFields);
-			whileLoading(project, function() {
-				that._contentFields.forEach(function(name) {
+			if (this._contentFields) {
+				this._contentFields.forEach(function(name) {
 					defineValue(that, name, ctor.prototype[name]);
 				});
-				kept.forEach(function(name) {
-					if (that.hasOwnProperty(name))
-						values[name] = that[name];
-				});
-				ctor.call(that, { insert: false, project: project });
-				kept.forEach(function(name) {
-					if (name in values) {
-						that[name] = values[name];
-					} else {
-						delete that[name];
-					}
-				});
-				Base.importJSON(json, that);
-				that._shell = false;
+			}
+			kept.forEach(function(name) {
+				if (that.hasOwnProperty(name))
+					values[name] = that[name];
 			});
+			ctor.call(this, { insert: false, project: project });
+			kept.forEach(function(name) {
+				if (name in values) {
+					that[name] = values[name];
+				} else {
+					delete that[name];
+				}
+			});
+			Base.importJSON(json, this);
+			this._shell = false;
 		},
 
 		_loadChildren: function() {
@@ -15361,7 +15368,9 @@ new function() {
 		},
 
 		_unload: function() {
-			if (!this._shell) {
+			if (!this._contentFields) {
+				this._loadContent();
+			} else if (!this._shell) {
 				var that = this;
 				this._contentFields.forEach(function(name) {
 					delete that[name];
