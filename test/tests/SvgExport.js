@@ -155,6 +155,36 @@ test('Export SVG group with mixed children styles (#1732)', function() {
     equals(node.childNodes[0].getAttribute('fill'), null);
 });
 
+test('Export SVG of nested groups with shared styles (#1353)', function() {
+    var inner = new Group([
+            new Path.Circle({ center: [10, 10], radius: 5 }),
+            new Path.Circle({ center: [30, 10], radius: 5 })
+        ]),
+        outer = new Group([
+            inner,
+            new Path.Circle({ center: [50, 10], radius: 5 })
+        ]);
+    outer.fillColor = 'red';
+    inner.strokeColor = 'blue';
+    var node = outer.exportSVG(),
+        innerNode = node.childNodes[0];
+    // Each style is only set on the outermost group that shares it:
+    equals(node.getAttribute('fill'), '#ff0000');
+    equals(node.getAttribute('stroke'), null);
+    equals(innerNode.getAttribute('fill'), null);
+    equals(innerNode.getAttribute('stroke'), '#0000ff');
+    equals(innerNode.childNodes[0].getAttribute('fill'), null);
+    equals(innerNode.childNodes[0].getAttribute('stroke'), null);
+    equals(node.childNodes[1].getAttribute('fill'), null);
+    equals(node.childNodes[1].getAttribute('stroke'), 'none');
+    // Without reducing attributes, every item gets them:
+    node = outer.exportSVG({ reduceAttributes: false });
+    innerNode = node.childNodes[0];
+    equals(innerNode.getAttribute('fill'), '#ff0000');
+    equals(innerNode.childNodes[0].getAttribute('fill'), '#ff0000');
+    equals(innerNode.childNodes[0].getAttribute('stroke'), '#0000ff');
+});
+
 test('Export SVG as valid XML (#1922)', function() {
     var path = new Path.Rectangle({
         point: [0, 0],
