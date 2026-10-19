@@ -91,6 +91,19 @@ var PointText = TextItem.extend(/** @lends PointText# */{
                 hasStroke = style.hasStroke(),
                 leading = style.getLeading(),
                 shadowColor = ctx.shadowColor;
+            // Glyphs can only be stroked through the transformation, unlike
+            // paths, so approximate non-scaling strokes by dividing the width
+            // and the dashes by the scale (#1703):
+            if (hasStroke && !style.getStrokeScaling()) {
+                var scale = viewMatrix._getMeanScale();
+                ctx.lineWidth /= scale;
+                if ('setLineDash' in ctx) {
+                    ctx.setLineDash(ctx.getLineDash().map(function(dash) {
+                        return dash / scale;
+                    }));
+                    ctx.lineDashOffset /= scale;
+                }
+            }
             ctx.font = style.getFontStyle();
             ctx.textAlign = style.getJustification();
             ctx.letterSpacing = style.getTrackingStyle();

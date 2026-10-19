@@ -549,6 +549,11 @@ var Matrix = Base.extend(/** @lends Matrix# */{
         return det && !isNaN(det) && isFinite(this._tx) && isFinite(this._ty);
     },
 
+    // The geometric mean of the scale factors, as used for strokes:
+    _getMeanScale: function() {
+        return Math.sqrt(Math.abs(this._a * this._d - this._b * this._c));
+    },
+
     /**
      * Checks whether the matrix is singular or not. Singular matrices cannot be
      * inverted.

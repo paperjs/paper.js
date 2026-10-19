@@ -74,6 +74,31 @@ test('PointText with stroke and opacity (#1322)', function() {
             createText(1, new Color(0, 0, 0, 0.5)));
 });
 
+test('PointText with strokeScaling: false (#1703)', function() {
+    // A scaled text with a non-scaling stroke draws like one whose stroke
+    // scales, with its width and dashes divided by the scale:
+    function createText(strokeWidth, dashArray, strokeScaling) {
+        var text = new PointText({
+            fontFamily: 'Arial, Helvetica',
+            fontSize: 10,
+            point: [5, 15],
+            content: 'W',
+            fillColor: null,
+            strokeColor: 'black',
+            strokeWidth: strokeWidth,
+            dashArray: dashArray,
+            strokeScaling: strokeScaling
+        });
+        text.scale(4, new Point(0, 0));
+        return new Group(new Shape.Rectangle({
+            rectangle: text.bounds.expand(20),
+            fillColor: 'white'
+        }), text);
+    }
+    comparePixels(createText(2, [4, 2], false),
+            createText(0.5, [1, 0.5], true));
+});
+
 test('PointText#tracking', function() {
     var text = new PointText({
         point: [10, 20],
