@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 19:57:51 2026 +0200
+ * Date: Mon Oct 19 20:11:47 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -5265,8 +5265,8 @@ declare namespace paper {
          * of the source's `getChildren()`, with two more flags: 16 when the
          * node's own content changed, so the item loads it again on next
          * access, and 32 when its list of children changed, so it loads them
-         * again, keeping the items of nodes that remain. Nodes without items
-         * are skipped.
+         * again right away if it had loaded them, keeping the items of nodes
+         * that remain. Nodes without items are skipped.
          * 
          * @param columns - the records of the changed nodes
          */

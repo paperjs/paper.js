@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 19:57:51 2026 +0200
+ * Date: Mon Oct 19 20:11:47 2026 +0200
  *
  ***
  *
@@ -15297,16 +15297,17 @@ new function() {
 			}
 		},
 
-		_unloadChildren: function() {
+		_reloadChildren: function() {
 			if (this.hasOwnProperty('_children')) {
-				var children = this._children;
+				var project = this._project,
+					children = this._children;
 				for (var i = 0, l = children.length; i < l; i++) {
 					var child = children[i];
 					child._parent = child._index = null;
-					this._project._updateSelection(child, true);
+					project._updateSelection(child, true);
 				}
-				delete this._children;
-				delete this._namedChildren;
+				setChildren(this, project,
+						project._source.getChildren(this._key));
 			}
 		}
 	});
@@ -15357,7 +15358,7 @@ new function() {
 						if (flags & 16)
 							item._unload();
 						if (flags & 32)
-							item._unloadChildren();
+							item._reloadChildren();
 						if ((names[i] || undefined) !== item._name)
 							item.setName(names[i] || null);
 						if (item._parent)

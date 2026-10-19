@@ -432,7 +432,7 @@ var path2 = new Path.Circle(new Point(175, 50), 20);
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Updates the items of changed host nodes, given in the column format of the source&rsquo;s <code>getChildren()</code>, with two more flags: 16 when the node&rsquo;s own content changed, so the item loads it again on next access, and 32 when its list of children changed, so it loads them again, keeping the items of nodes that remain. Nodes without items are skipped.</p>
+	<p>Updates the items of changed host nodes, given in the column format of the source&rsquo;s <code>getChildren()</code>, with two more flags: 16 when the node&rsquo;s own content changed, so the item loads it again on next access, and 32 when its list of children changed, so it loads them again right away if it had loaded them, keeping the items of nodes that remain. Nodes without items are skipped.</p>
     
 	
 <ul class="member-list">
