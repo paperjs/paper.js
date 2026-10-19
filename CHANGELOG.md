@@ -27,6 +27,8 @@
 
 ### Fixed
 
+- Free the pixels of temporary canvases when they're released, which their pool
+  kept allocated at their largest size for the life of the page.
 - Keep the size of rasters in JSON, so imported rasters have their size and
   bounds before their image has loaded, or if it fails to load (#1598).
 - Fix the frame timer of workers and Node.js running forever after any script,

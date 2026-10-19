@@ -867,6 +867,16 @@ test('Item#opacity and Item#blendMode on items larger than the view (#1644)', fu
         ],
         opacity: 0.5
     });
+    // NOTE: The temporary canvas is only observable through CanvasProvider,
+    // so record the sizes of the canvases that it hands out while drawing:
+    // They need to be bounded by the view instead of the group.
+    var getCanvas = CanvasProvider.getCanvas,
+        sizes = [];
+    CanvasProvider.getCanvas = function() {
+        var canvas = getCanvas.apply(this, arguments);
+        sizes.push(new Size(canvas.width, canvas.height));
+        return canvas;
+    };
     testPixels([
         [[0, 0], halfRed],
         [[25, 50], halfRed],
@@ -877,14 +887,11 @@ test('Item#opacity and Item#blendMode on items larger than the view (#1644)', fu
         [[75, 25], transparent],
         [[99, 99], transparent]
     ], 'opacity');
-    // NOTE: The temporary canvas is only observable through CanvasProvider,
-    // which keeps it for reuse after the drawing: Its size needs to be
-    // bounded by the view instead of the group.
-    var canvas = CanvasProvider.canvases[CanvasProvider.canvases.length - 1],
-        size = view.viewSize.add(1).multiply(view.pixelRatio);
-    equals(function() {
-        return canvas.width <= size.width && canvas.height <= size.height;
-    }, true);
+    CanvasProvider.getCanvas = getCanvas;
+    var bound = view.viewSize.add(1).multiply(view.pixelRatio);
+    equals(sizes.length > 0 && sizes.every(function(size) {
+        return size.width <= bound.width && size.height <= bound.height;
+    }), true, 'temporary canvases bounded by the view');
 
     // Groups entirely outside the view aren't drawn:
     group.position = group.position.add(2 * huge, 0);
@@ -1686,4 +1693,23 @@ test('settings.scaleStrokes', function() {
     path.scale(2);
     equals(path.strokeWidth, 2, 'strokeScaling: false');
     settings.scaleStrokes = false;
+});
+
+test('Released canvases free their pixels (CanvasProvider)', function() {
+    // Keeping released canvases at their size kept their pixels allocated
+    // for the life of the page:
+    var canvases = [];
+    for (var i = 0; i < 12; i++)
+        canvases.push(CanvasProvider.getCanvas(500, 500));
+    canvases.forEach(function(canvas) {
+        CanvasProvider.release(canvas);
+    });
+    equals(canvases.every(function(canvas) {
+        return canvas.width === 0 && canvas.height === 0;
+    }), true, 'zero size');
+    equals(CanvasProvider.canvases.length <= 8, true, 'at most 8 kept');
+    // Reused canvases get the requested size, with their pixels cleared:
+    var canvas = CanvasProvider.getCanvas(20, 10);
+    equals(new Size(canvas.width, canvas.height), new Size(20, 10), 'reused');
+    CanvasProvider.release(canvas);
 });
