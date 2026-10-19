@@ -354,6 +354,16 @@ var View = Base.extend(Emitter, /** @lends View# */{
     },
 
     /**
+     * The project that this view displays.
+     *
+     * @bean
+     * @type Project
+     */
+    getProject: function() {
+        return this._project;
+    },
+
+    /**
      * The ratio between physical pixels and device-independent pixels (DIPs)
      * of the underlying canvas / device.
      * It is `1` for normal displays, and `2` or more for
