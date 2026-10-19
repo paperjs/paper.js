@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 11:36:47 2026 +0200
+ * Date: Mon Oct 19 13:26:39 2026 +0200
  *
  ***
  *
@@ -13329,31 +13329,23 @@ var View = Base.extend(Emitter, {
 		var matrix = this._matrix,
 			size = this._viewSize,
 			bounds = matrix._transformBounds(rectangle),
-			hor = size.width / bounds.width,
-			ver = size.height / bounds.height,
-			scale;
-
-		function isScaling(ratio) {
-			return ratio > 0 && isFinite(ratio);
-		}
-
-		if (fit === 'fill') {
-			scale = new Point(
-					isScaling(hor) ? hor : 1,
-					isScaling(ver) ? ver : 1);
-		} else {
-			var scaleX = new Point(matrix._a, matrix._c).getLength(),
-				scaleY = new Point(matrix._b, matrix._d).getLength(),
-				ratios = [hor * scaleX, ver * scaleY].filter(isScaling),
-				amount = !ratios.length ? 0
-					: fit === 'cover' ? Math.max.apply(Math, ratios)
-					: Math.min.apply(Math, ratios);
-			scale = amount
-					? new Point(amount / scaleX, amount / scaleY)
-					: new Point(1, 1);
-		}
+			scaleX = new Point(matrix._a, matrix._c).getLength(),
+			scaleY = new Point(matrix._b, matrix._d).getLength(),
+			ratios = [
+				size.width / bounds.width * scaleX,
+				size.height / bounds.height * scaleY
+			].filter(function(ratio) {
+				return ratio > 0 && isFinite(ratio);
+			});
 		this.setCenter(rectangle.getCenter());
-		matrix.prepend(new Matrix().scale(scale, size.divide(2)));
+		if (ratios.length) {
+			var amount = fit === 'cover'
+					? Math.max.apply(Math, ratios)
+					: Math.min.apply(Math, ratios);
+			matrix.prepend(new Matrix().scale(
+					new Point(amount / scaleX, amount / scaleY),
+					size.divide(2)));
+		}
 	},
 
 	scrollBy: function() {

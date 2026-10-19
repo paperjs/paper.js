@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 11:36:47 2026 +0200
+ * Date: Mon Oct 19 13:26:39 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -7475,9 +7475,8 @@ declare namespace paper {
          * @param rectangle - the rectangle to fit, in project
          * coordinates
          * @param fit - how to fit the rectangle, as in CSS's
-         * `object-fit`: `'contain'` shows all of it, `'cover'` fills the whole
-         * view with it, cropping the parts that don't fit, and `'fill'` stretches
-         * it to the view, changing the view's aspect ratio
+         * `object-fit`: `'contain'` shows all of it, and `'cover'` fills the
+         * whole view with it, cropping the parts that don't fit
          */
         fitBounds(rectangle: RectangleLike, fit?: string): void
 
