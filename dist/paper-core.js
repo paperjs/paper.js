@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 20:39:18 2026 +0200
+ * Date: Mon Oct 19 20:47:50 2026 +0200
  *
  ***
  *
@@ -2642,6 +2642,10 @@ var Matrix = Base.extend({
 	isInvertible: function() {
 		var det = this._a * this._d - this._c * this._b;
 		return det && !isNaN(det) && isFinite(this._tx) && isFinite(this._ty);
+	},
+
+	_getMeanScale: function() {
+		return Math.sqrt(Math.abs(this._a * this._d - this._b * this._c));
 	},
 
 	isSingular: function() {
@@ -8294,8 +8298,8 @@ var PathItem = Item.extend({
 		var style = this._style;
 		if (this._project._scope.settings.scaleStrokes
 				&& style.getStrokeScaling()) {
-			style.setStrokeWidth(style.getStrokeWidth() * Math.sqrt(
-					Math.abs(matrix._a * matrix._d - matrix._b * matrix._c)));
+			style.setStrokeWidth(style.getStrokeWidth()
+					* matrix._getMeanScale());
 		}
 	},
 
@@ -11843,6 +11847,16 @@ var PointText = TextItem.extend({
 				hasStroke = style.hasStroke(),
 				leading = style.getLeading(),
 				shadowColor = ctx.shadowColor;
+			if (hasStroke && !style.getStrokeScaling()) {
+				var scale = viewMatrix._getMeanScale();
+				ctx.lineWidth /= scale;
+				if ('setLineDash' in ctx) {
+					ctx.setLineDash(ctx.getLineDash().map(function(dash) {
+						return dash / scale;
+					}));
+					ctx.lineDashOffset /= scale;
+				}
+			}
 			ctx.font = style.getFontStyle();
 			ctx.textAlign = style.getJustification();
 			ctx.letterSpacing = style.getTrackingStyle();

@@ -18,6 +18,7 @@
 
 ### Fixed
 
+- Support `strokeScaling: false` on text, exactly for uniform scaling (#1703).
 - Fix the view size of canvases inside elements with CSS transforms, which
   only scale the canvas on screen.
 - Fix italic and oblique font weights in SVG export and import, which SVG
