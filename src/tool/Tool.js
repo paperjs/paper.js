@@ -55,8 +55,9 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      * The scope that this tool belongs to.
      *
      * @name Tool#scope
+     * @property
      * @type PaperScope
-     * @bean
+     * @readonly
      */
 
     // DOCS: rewrite Tool constructor explanation
