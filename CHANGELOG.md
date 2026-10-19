@@ -182,6 +182,8 @@
 - Fix the line width of selections drawn by `Project#draw()`.
 - Leave `workspaces` and `resolutions` out of the published `package.json`
   (#1921).
+- Implement the `pin-light` blend mode, which was documented, but drew
+  nothing (#1527).
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
