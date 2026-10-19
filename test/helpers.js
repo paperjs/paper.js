@@ -661,6 +661,7 @@ var triggerMouseEvent = function(type, point, target) {
         screenY: point.y
     });
     target.dispatchEvent(event);
+    return event;
 };
 
 var triggerKeyEvent = function(type, key, modifiers) {

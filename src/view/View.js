@@ -1429,8 +1429,10 @@ new function() { // Injection scope for event handling on the browser
      * The mapping is native -> virtual.
      */
     var itemEventsMap = {
+        // mouseup too, as the press needs the item for needsUp():
         mousedown: {
             mousedown: 1,
+            mouseup: 1,
             mousedrag: 1,
             click: 1,
             doubleclick: 1
@@ -1469,6 +1471,23 @@ new function() { // Injection scope for event handling on the browser
             function responds(type) {
                 return itemEvents.virtual[type] || view.responds(type)
                         || tool && tool.responds(type);
+            }
+
+            // Whether the press needs its default prevented for the events
+            // that follow it: the view's or the tool's mouseup, or those of the
+            // hit item and its ancestors. Presses elsewhere are left to the
+            // browser, so touches can scroll the page (#1930):
+            function needsUp(hitItem) {
+                if (view.responds('mouseup')
+                        || tool && tool.responds('mouseup'))
+                    return true;
+                for (var item = hitItem; item; item = item._parent) {
+                    for (var key in itemEventsMap.mouseup) {
+                        if (item.responds(key))
+                            return true;
+                    }
+                }
+                return false;
             }
 
             // If it's a native mousemove event but the mouse is down, and at
@@ -1591,15 +1610,15 @@ new function() { // Injection scope for event handling on the browser
             // Now call `preventDefault()`, if any of these conditions are met:
             // - If any of the handlers were called, except for mousemove events
             //   which can call `preventDefault()` explicitly or return `false`.
-            // - If this is a unhandled mousedown event, but the view or tools
-            //   respond to mouseup.
+            // - If this is a unhandled mousedown event, but what follows needs
+            //   it, see needsUp().
             //
             // Some events are not cancelable anyway (like during a scroll
             // inertia on mobile) so trying to prevent default in those case
             // would result in no effect and an error.
             if (
                 event.cancelable !== false
-                && (called && !mouse.move || mouse.down && responds('mouseup'))
+                && (called && !mouse.move || mouse.down && needsUp(hitItem))
             ) {
                 event.preventDefault();
             }
