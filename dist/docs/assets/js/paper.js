@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 20:47:50 2026 +0200
+ * Date: Mon Oct 19 20:48:39 2026 +0200
  *
  ***
  *
@@ -15974,7 +15974,7 @@ new function() {
 			if (item.setFontWeight && /^(italic|oblique)$/.test(value)) {
 				var weight = ('' + item.getFontWeight())
 						.replace(/\s*\b(italic|oblique)\b/gi, '');
-				item.setFontWeight(weight === 'normal' ? value
+				item.setFontWeight(/^(normal|400)$/.test(weight) ? value
 						: weight + ' ' + value);
 			}
 		},
