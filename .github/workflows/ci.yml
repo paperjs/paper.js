@@ -30,10 +30,29 @@ jobs:
       - name: Test the sourced build
         run: pnpm test:node --build=sourced
 
+  # The browser suite covers what the Node tests can't, such as real layout,
+  # canvas rendering and the DOM's computed styles:
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # Liberation Sans has the metrics of Arial, which the text tests expect:
+      - name: Install fonts
+        run: sudo apt-get update && sudo apt-get install -y fonts-liberation
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      # Runs the sources directly, through load.js:
+      - name: Test in Chrome
+        run: pnpm test:chrome
+
   # Publish the latest develop build to the prebuilt/dist and prebuilt/module
   # branches, as Travis CI used to:
   prebuilt:
-    needs: test
+    needs: [test, browser]
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     permissions:
