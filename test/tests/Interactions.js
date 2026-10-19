@@ -357,6 +357,25 @@ test('Item#onMouseEnter() is not triggered through covering elements (#992)', fu
     document.body.removeChild(cover);
 });
 
+test('Mouse events keep Key.modifiers in sync (#1140)', function() {
+    var item = new Path.Rectangle(new Point(0, 0), new Size(10));
+    item.fillColor = 'red';
+    var shift = [];
+    item.onMouseDown = item.onMouseUp = function(event) {
+        shift.push(event.modifiers.shift);
+    };
+    // Shift was pressed while the page didn't have the focus, so no key event
+    // told Paper.js about it, only the mouse events' flags:
+    triggerMouseEvent('mousedown', new Point(5, 5), null, { shiftKey: true });
+    triggerMouseEvent('mouseup', new Point(5, 5), null, { shiftKey: true });
+    equals(Key.modifiers.shift, true, 'pressed');
+    // And released elsewhere:
+    triggerMouseEvent('mousedown', new Point(5, 5));
+    triggerMouseEvent('mouseup', new Point(5, 5));
+    equals(Key.modifiers.shift, false, 'released');
+    equals(shift.join(), 'true,true,false,false');
+});
+
 test('Touches on empty canvas are left to the browser (#1930)', function() {
     var item = new Path.Rectangle(new Point(0, 0), new Size(10));
     item.fillColor = 'red';
