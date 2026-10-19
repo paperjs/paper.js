@@ -116,9 +116,10 @@ var Color = Base.extend(new function() {
                     colorCtx = CanvasProvider.getContext(1, 1, {
                         willReadFrequently: true
                     });
+                    if (colorCtx)
+                        colorCtx.globalCompositeOperation = 'copy';
                 }
                 if (colorCtx) {
-                    colorCtx.globalCompositeOperation = 'copy';
                     // Set the current fillStyle to transparent, so that it will be
                     // transparent instead of the previously set color in case the
                     // new color can not be interpreted.
