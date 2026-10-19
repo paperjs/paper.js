@@ -792,6 +792,20 @@ new function() {
         return item;
     }
 
+    // Only allow http(s) URLs that do not resolve to localhost, private
+    // network ranges or cloud metadata endpoints, to prevent SSRF when
+    // importing SVGs from untrusted, attacker-influenced sources.
+    function isUnsafeUrl(url) {
+        var match = url.match(/^(?:([\w+-]+):)?\/\/([^\/:?#]+)/);
+        if (!match)
+            return false;
+        var protocol = (match[1] || '').toLowerCase(),
+            hostname = match[2].toLowerCase().replace(/^\[|\]$/g, '');
+        return (protocol && protocol !== 'http' && protocol !== 'https') ||
+            /^(localhost|0\.0\.0\.0|::1|127(\.\d{1,3}){3}|10(\.\d{1,3}){3}|172\.(1[6-9]|2\d|3[01])(\.\d{1,3}){2}|192\.168(\.\d{1,3}){2}|169\.254(\.\d{1,3}){2})$/
+                .test(hostname);
+    }
+
     function importSVG(source, options, owner) {
         if (!source)
             return null;
@@ -849,6 +863,8 @@ new function() {
             // case it must be the URL of a SVG to be loaded.
             if (node) {
                 onLoad(node);
+            } else if (isUnsafeUrl(source)) {
+                onError('Unsafe or invalid URL: ' + source);
             } else {
                 Http.request({
                     url: source,
