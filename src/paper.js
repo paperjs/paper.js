@@ -111,6 +111,11 @@ var paper = function(self, undefined) {
 
 /*#*/ include('canvas/CanvasProvider.js');
 /*#*/ include('canvas/BlendMode.js');
+/*#*/ if (__options.sourced) {
+/*#*/     include('item/HostItem.js');
+/*#*/     include('item/Item.Sourced.js');
+/*#*/ }
+
 /*#*/ if (__options.load) {
 /*#*/     include('canvas/ProxyContext.js');
 /*#*/ }

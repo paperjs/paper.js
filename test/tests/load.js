@@ -59,6 +59,8 @@
 
 /*#*/ include('JSON.js');
 
+/*#*/ include('Sourced.js');
+
 /*#*/ include('SvgImport.js');
 /*#*/ include('SvgExport.js');
 
