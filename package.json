@@ -85,7 +85,7 @@
     "merge-stream": "^2.0.0",
     "minimist": "^1.2.8",
     "mustache": "^4.2.0",
-    "prepro": "^2.4.0",
+    "prepro": "^2.5.0",
     "qunitjs": "^1.23.1",
     "require-dir": "^1.2.0",
     "resemblejs": "^3.2.5",

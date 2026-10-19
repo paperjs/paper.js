@@ -4221,7 +4221,7 @@ __metadata:
     merge-stream: ^2.0.0
     minimist: ^1.2.8
     mustache: ^4.2.0
-    prepro: ^2.4.0
+    prepro: ^2.5.0
     qunitjs: ^1.23.1
     require-dir: ^1.2.0
     resemblejs: ^3.2.5
@@ -4524,14 +4524,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prepro@npm:^2.4.0":
-  version: 2.4.0
-  resolution: "prepro@npm:2.4.0"
+"prepro@npm:^2.4.0, prepro@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "prepro@npm:2.5.0"
   dependencies:
     object-assign: ^4.0.0
   bin:
     prepro: bin/prepro
-  checksum: 19690e2a28b1ff00fc8177e014fccddc83f57168401f1e28272c7b54dd63e9cddfc85729dd5b207644909b8941b6d9debf88f8314006ffaea778f573ed26078f
+  checksum: c1f8a8770aa87b0ad9a9793d0610b9f7303ef4ee93e138d958064f0a2ad8d942f4d7330f3513aa834d5cbc7bc815484a44d72e2d3faf4fde798dec22eeee8fb8
   languageName: node
   linkType: hard
 
