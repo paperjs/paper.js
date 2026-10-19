@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:12:02 2026 +0200
+ * Date: Mon Oct 19 12:20:29 2026 +0200
  *
  ***
  *
@@ -5946,7 +5946,9 @@ var SymbolItem = Item.extend({
 	},
 
 	_hitTestSelf: function(point, options, viewMatrix) {
-		var opts = options.extend({ all: false });
+		var opts = options.extend({
+			all: false, match: null, class: null, type: null
+		});
 		var res = this._definition._item._hitTest(point, opts, viewMatrix);
 		if (res)
 			res.item = this;
