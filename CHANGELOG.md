@@ -40,6 +40,14 @@
 - Use jsdom's own `XMLSerializer` for `#exportSVG()` on Node.js, instead of a
   shim that returned HTML, so the output is valid XML with escaped attribute
   values, as in browsers. Empty elements are now self-closing (#1922).
+- `Item#fitBounds(rectangle[, fit])` takes the values of CSS's `object-fit` as
+  `fit`: `'contain'`, `'cover'` and `'fill'`, which stretches the item to the
+  rectangle.
+
+### Deprecated
+
+- The boolean `fill` parameter of `Item#fitBounds()`: use `'cover'` instead of
+  `true`.
 
 ### Removed
 
