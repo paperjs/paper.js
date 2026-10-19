@@ -147,6 +147,10 @@ new function() { // Injection scope for various item event handlers
             // Allow setting another project than the currently active one.
             project = hasProps && props.project || paper.project,
             settings = paper.settings;
+        if (!project) {
+            throw new Error('Unable to create an item without a project. '
+                    + 'Call paper.setup() or create a Project first.');
+        }
         this._id = internal ? null : UID.get();
         this._parent = this._index = null;
         // Inherit the applyMatrix setting from settings.applyMatrix

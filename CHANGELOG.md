@@ -32,6 +32,8 @@
 
 ### Fixed
 
+- Throw a clear error when creating an item without a project, instead of a
+  null access deep inside the constructor (#1889).
 - Free the pixels of temporary canvases when they're released, which their pool
   kept allocated at their largest size for the life of the page.
 - Keep the size of rasters in JSON, so imported rasters have their size and
