@@ -204,6 +204,9 @@
   were applied to the definition's items instead (#1774).
 - Leave `workspaces` and `resolutions` out of the published `package.json`,
   which made Yarn warn when installing paper (#1921).
+- Fix stale `Item#globalMatrix` and `#localToGlobal()` results of items whose
+  sibling was asked first after their parent was transformed, and of items
+  moved to another parent or removed (#1750).
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
