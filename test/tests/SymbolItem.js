@@ -209,3 +209,83 @@ test('paper.install() keeps the native Symbol', function() {
         return paper.Symbol === SymbolDefinition;
     }, true);
 });
+
+test('SymbolItem#hitTest() with filters (#1774)', function() {
+    function getItem(hit) {
+        return hit && hit.item;
+    }
+
+    var definition = new SymbolDefinition(new Group(new Path.Circle({
+            center: [0, 0],
+            radius: 10,
+            fillColor: 'orange'
+        }))),
+        placed = definition.place([50, 50]),
+        group = new Group(placed),
+        options = { fill: true, class: SymbolItem };
+    equals(function() {
+        return getItem(project.hitTest([50, 50], options)) === placed;
+    }, true);
+    equals(function() {
+        return getItem(project.hitTest([50, 50], {
+            fill: true,
+            type: 'symbol-item'
+        })) === placed;
+    }, true);
+    equals(function() {
+        return getItem(project.hitTest([50, 50], {
+            fill: true,
+            match: function(hit) {
+                return hit.item === placed;
+            }
+        })) === placed;
+    }, true);
+    equals(function() {
+        return project.hitTest([70, 50], options);
+    }, null);
+    // The group placing the symbol is hit, but not the group defining it:
+    equals(function() {
+        return getItem(project.hitTest([50, 50], {
+            fill: true,
+            class: Group
+        })) === group;
+    }, true);
+    equals(function() {
+        return project.hitTest([50, 50], { fill: true, class: Path });
+    }, null);
+    equals(function() {
+        var hits = project.hitTestAll([50, 50], options);
+        return hits.length === 1 && hits[0].item === placed;
+    }, true);
+    equals(function() {
+        var hits = project.hitTestAll([50, 50], { fill: true });
+        return hits.length === 2 && hits[0].item === placed
+                && hits[1].item === group;
+    }, true);
+});
+
+test('SymbolItem#hitTest() with filters on compound paths (#1774)', function() {
+    function getItem(hit) {
+        return hit && hit.item;
+    }
+
+    var definition = new SymbolDefinition(new CompoundPath({
+            children: [
+                new Path.Circle({ center: [0, 0], radius: 20 }),
+                new Path.Circle({ center: [0, 0], radius: 10 })
+            ],
+            fillColor: 'orange',
+            fillRule: 'evenodd'
+        })),
+        placed = definition.place([50, 50]),
+        options = { fill: true, class: SymbolItem };
+    equals(function() {
+        return getItem(project.hitTest([65, 50], options)) === placed;
+    }, true);
+    equals(function() {
+        return project.hitTest([50, 50], options);
+    }, null);
+    equals(function() {
+        return project.hitTest([65, 50], { fill: true, class: CompoundPath });
+    }, null);
+});
