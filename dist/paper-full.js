@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:28:30 2026 +0200
+ * Date: Mon Oct 19 12:11:25 2026 +0200
  *
  ***
  *
@@ -3048,10 +3048,10 @@ var Project = PaperScopeItem.extend({
 		return items;
 	},
 
-	_updateSelection: function(item) {
+	_updateSelection: function(item, remove) {
 		var id = item._id,
 			selectionItems = this._selectionItems;
-		if (item._selection) {
+		if (item._selection && !remove && item.isInserted()) {
 			if (selectionItems[id] !== item) {
 				this._selectionCount++;
 				selectionItems[id] = item;
@@ -3804,6 +3804,8 @@ new function() {
 
 	_installEvents: function _installEvents(install) {
 		_installEvents.base.call(this, install);
+		if (this._selection)
+			this._project._updateSelection(this, !install);
 		var children = this._children;
 		for (var i = 0, l = children && children.length; i < l; i++)
 			children[i]._installEvents(install);
