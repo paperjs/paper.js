@@ -33,6 +33,35 @@ Upon execution, you will find a `paper` folder inside the project's
 For more information on how to install Node.js and NPM, read the chapter
 [Installing Node.js and NPM](#installing-nodejs-and-npm).
 
+### Using Paper.js with a Bundler
+
+With a bundler such as webpack, Rollup, esbuild or Vite, import Paper.js and
+set it up with a canvas element:
+
+```js
+import paper from 'paper'
+// Or, with CommonJS: const paper = require('paper')
+
+paper.setup(document.getElementById('canvas'))
+
+const { Path } = paper
+const circle = new Path.Circle({
+  center: paper.view.center,
+  radius: 30,
+  fillColor: 'red'
+})
+
+paper.view.onFrame = event => {
+  circle.rotate(1)
+}
+```
+
+The module exports the global `paper` scope as its default export, with all
+classes as its properties. Use `paper.view` and `paper.project` after calling
+`paper.setup()`, rather than importing them, as they only exist from then on.
+To use the core version without PaperScript, import `'paper/dist/paper-core'`
+instead. With TypeScript, the default import requires `esModuleInterop`.
+
 ### Which Version to Use
 
 The various distributions come with two different pre-build versions of
