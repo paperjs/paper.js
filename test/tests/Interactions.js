@@ -430,6 +430,61 @@ test('Item#onMouseDrag() is not triggered if mouse down was on another item', fu
     expect(0);
 });
 
+test('View#onMouseDrag() with a second touch outside of the view (#1875)', function() {
+    var element = view.element,
+        outside = document.createElement('div'),
+        events = [];
+
+    function createTouch(id, target, point) {
+        return new Touch({
+            identifier: id,
+            target: target,
+            clientX: point.x,
+            clientY: point.y,
+            pageX: point.x,
+            pageY: point.y
+        });
+    }
+
+    // Like the browser, list all touches on the screen, the ones on the
+    // element of the event, and the ones that changed:
+    function triggerTouchEvent(type, target, touches, targetTouches,
+            changedTouches) {
+        target.dispatchEvent(new TouchEvent(type, {
+            bubbles: true,
+            cancelable: true,
+            touches: touches,
+            targetTouches: targetTouches,
+            changedTouches: changedTouches
+        }));
+    }
+
+    view.onMouseDrag = view.onMouseUp = function(event) {
+        events.push(event.type + ' ' + event.point + ' ' + event.delta);
+    };
+    var touch1 = createTouch(1, element, new Point(10, 10)),
+        touch2 = createTouch(2, outside, new Point(80, 80));
+    triggerTouchEvent('touchstart', element, [touch1], [touch1], [touch1]);
+    // The view's touch events on the document only see the document, as the
+    // elements aren't inserted:
+    triggerTouchEvent('touchstart', document, [touch1, touch2], [touch2],
+            [touch2]);
+    // Moving the second touch doesn't drag:
+    touch2 = createTouch(2, outside, new Point(90, 90));
+    triggerTouchEvent('touchmove', document, [touch1, touch2], [touch2],
+            [touch2]);
+    // Moving the first touch does:
+    touch1 = createTouch(1, element, new Point(20, 20));
+    triggerTouchEvent('touchmove', document, [touch1, touch2], [touch1],
+            [touch1]);
+    // Ending the first touch ends the drag where it ended:
+    triggerTouchEvent('touchend', document, [touch2], [], [touch1]);
+    equals(events, [
+        'mousedrag { x: 20, y: 20 } { x: 10, y: 10 }',
+        'mouseup { x: 20, y: 20 } { x: 10, y: 10 }'
+    ]);
+});
+
 test('Item#onMouseDown() after moving it from a removed group to a new group (#1791)', function() {
     var item = new Path.Rectangle(new Point(0, 0), new Size(10));
     item.fillColor = 'red';
