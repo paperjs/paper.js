@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 15:32:03 2026 +0200
+ * Date: Mon Oct 19 17:53:08 2026 +0200
  *
  ***
  *
@@ -13163,7 +13163,8 @@ var View = Base.extend(Emitter, {
 				if (that._animate) {
 					that.requestUpdate();
 					var element = that._element;
-					if ((!DomElement.getPrefixed(document, 'hidden')
+					if (!element
+							|| (!DomElement.getPrefixed(document, 'hidden')
 							|| PaperScope.getAttribute(element, 'keepalive')
 								=== 'true') && DomElement.isInView(element)) {
 						that._handleFrame();
