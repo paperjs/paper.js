@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 20:17:19 2026 +0200
+ * Date: Mon Oct 19 20:39:18 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -3399,6 +3399,12 @@ declare namespace paper {
          *     when drawing selections
          * @option [settings.hitTolerance=0] {Number} the default tolerance for hit-
          *     tests, when no value is specified
+         * @option [settings.scaleStrokes=false] {Boolean} controls whether applying
+         *     a matrix to the content of paths and compound paths also scales their
+         *     {@link Style#strokeWidth}, by the geometric mean of the scale factors
+         *     for non-uniform scaling. Items that keep their matrix, with
+         *     {@link Item#applyMatrix} set to `false`, scale their strokes when
+         *     drawing anyway, unless {@link Style#strokeScaling} is `false`
          */
         settings: any
 

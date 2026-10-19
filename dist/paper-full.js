@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 20:17:19 2026 +0200
+ * Date: Mon Oct 19 20:39:18 2026 +0200
  *
  ***
  *
@@ -780,7 +780,8 @@ var PaperScope = Base.extend({
 			applyMatrix: true,
 			insertItems: true,
 			handleSize: 4,
-			hitTolerance: 0
+			hitTolerance: 0,
+			scaleStrokes: false
 		});
 		this.project = null;
 		this.projects = [];
@@ -8293,6 +8294,15 @@ var PathItem = Item.extend({
 	initialize: function PathItem() {
 	},
 
+	_scaleStroke: function(matrix) {
+		var style = this._style;
+		if (this._project._scope.settings.scaleStrokes
+				&& style.getStrokeScaling()) {
+			style.setStrokeWidth(style.getStrokeWidth() * Math.sqrt(
+					Math.abs(matrix._a * matrix._d - matrix._b * matrix._c)));
+		}
+	},
+
 	statics: {
 		create: function(arg) {
 			var data,
@@ -8761,6 +8771,7 @@ var Path = PathItem.extend({
 			coords = new Array(6);
 		for (var i = 0, l = segments.length; i < l; i++)
 			segments[i]._transformCoordinates(matrix, coords, true);
+		this._scaleStroke(matrix);
 		return true;
 	},
 
@@ -10342,6 +10353,11 @@ var CompoundPath = PathItem.extend({
 				this.addChildren(Array.isArray(arg) ? arg : arguments);
 			}
 		}
+	},
+
+	_transformContent: function _transformContent(matrix) {
+		this._scaleStroke(matrix);
+		return _transformContent.base.apply(this, arguments);
 	},
 
 	insertChildren: function insertChildren(index, items) {
