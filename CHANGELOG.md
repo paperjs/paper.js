@@ -1,5 +1,13 @@
 # Change Log
 
+## Unreleased
+
+### Changed
+
+- Rename the `paper-sourced.js` build to `paper-hosted.js`, and `Project#source`
+  to `Project#host`, to match `HostItem` and the host document that backs the
+  items.
+
 ## `0.14.0`
 
 ### Added

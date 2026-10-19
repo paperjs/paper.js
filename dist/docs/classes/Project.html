@@ -79,15 +79,15 @@
 		<h2>Properties</h2>
 		
 			
-<div id="source" class="member">
+<div id="host" class="member">
 <div class="member-link">
-<a name="source" href="#source"><tt><b>source</b></tt></a>
+<a name="host" href="#host"><tt><b>host</b></tt></a>
 </div>
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The host document that the project&rsquo;s items come from. Setting it creates the project&rsquo;s layers from the source&rsquo;s records. All items are created as shells that load their content and children from the source on first access.</p>
-<p>The source provides: - <code>getChildren(key)</code>, which returns the records of the children of  the node with the given key, or of the top level for <code>null</code>, as  columns: <code>keys</code>, <code>types</code> (indices into <code>typeNames</code>), <code>typeNames</code>,  <code>flags</code> (selected: 1, visible: 2, locked: 4, strokeScaling: 8,  clipMask: 64, guide: 128, empty: 256), <code>boxes</code> (bounds,  strokeBounds and roughBounds in the item&rsquo;s coordinates, 12 numbers  per item), and the sparse objects <code>names</code> and <code>matrices</code>. - <code>getItem(key)</code>, which returns the node&rsquo;s own content in the form  of <a href="../classes/Item.html#importjson-json"><tt>item.importJSON(json)</tt></a>, without children. - <code>getAncestorKeys(key)</code>, which returns the keys from the top level  down to the node&rsquo;s parent.</p>
+	<p>The host document that the project&rsquo;s items come from. Setting it creates the project&rsquo;s layers from the host&rsquo;s records. All items are created as shells that load their content and children from the host on first access.</p>
+<p>The host provides: - <code>getChildren(key)</code>, which returns the records of the children of  the node with the given key, or of the top level for <code>null</code>, as  columns: <code>keys</code>, <code>types</code> (indices into <code>typeNames</code>), <code>typeNames</code>,  <code>flags</code> (selected: 1, visible: 2, locked: 4, strokeScaling: 8,  clipMask: 64, guide: 128, empty: 256), <code>boxes</code> (bounds,  strokeBounds and roughBounds in the item&rsquo;s coordinates, 12 numbers  per item), and the sparse objects <code>names</code> and <code>matrices</code>. - <code>getItem(key)</code>, which returns the node&rsquo;s own content in the form  of <a href="../classes/Item.html#importjson-json"><tt>item.importJSON(json)</tt></a>, without children. - <code>getAncestorKeys(key)</code>, which returns the keys from the top level  down to the node&rsquo;s parent.</p>
 	
 	
 	
@@ -439,7 +439,7 @@ var path2 = new Path.Circle(new Point(175, 50), 20);
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><a href="../classes/Item.html"><tt>Item</tt></a></tt>&nbsp;&mdash;&nbsp;the item, or <code>null</code> if the source has no such node
+<tt><a href="../classes/Item.html"><tt>Item</tt></a></tt>&nbsp;&mdash;&nbsp;the item, or <code>null</code> if the host has no such node
 </li>
 
 		
@@ -460,7 +460,7 @@ var path2 = new Path.Circle(new Point(175, 50), 20);
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Updates the items of changed host nodes, given in the column format of the source&rsquo;s <code>getChildren()</code>, with two more flags: 16 when the node&rsquo;s own content changed, so the item loads it again on next access, and 32 when its list of children changed, so it loads them again right away if it had loaded them, keeping the items of nodes that remain. Nodes without items are skipped.</p>
+	<p>Updates the items of changed host nodes, given in the column format of the host&rsquo;s <code>getChildren()</code>, with two more flags: 16 when the node&rsquo;s own content changed, so the item loads it again on next access, and 32 when its list of children changed, so it loads them again right away if it had loaded them, keeping the items of nodes that remain. Nodes without items are skipped.</p>
     
 	
 <ul class="member-list">

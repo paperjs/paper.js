@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 01:25:37 2026 +0200
+ * Date: Tue Oct 20 01:42:05 2026 +0200
  *
  ***
  *
@@ -15224,12 +15224,12 @@ var HostItem = Item.extend({
 	},
 
 	_getBounds: function(matrix, options) {
-		var rect = this._getSourceBounds(options);
+		var rect = this._getHostBounds(options);
 		return matrix ? matrix._transformBounds(rect) : rect;
 	},
 
 	_hitTestSelf: function(point, options) {
-		var bounds = this._getSourceBounds({ stroke: true, handle: true });
+		var bounds = this._getHostBounds({ stroke: true, handle: true });
 		if (options.fill && bounds._containsPoint(point)) {
 			return new HitResult('fill', this);
 		}
@@ -15298,9 +15298,9 @@ new function() {
 				});
 			}
 			shell._getCachedBounds = function(matrix, options, noInternal) {
-				if (this._sourceBounds) {
-					this._bounds = this._getSourceBoundsCache();
-					this._sourceBounds = false;
+				if (this._hostBounds) {
+					this._bounds = this._getHostBoundsCache();
+					this._hostBounds = false;
 				}
 				return proto._getCachedBounds.call(this, matrix, options,
 						noInternal);
@@ -15309,7 +15309,7 @@ new function() {
 				if (!isLoading) {
 					if (flags & boundsFlags) {
 						for (var item = this; item; item = item._parent)
-							item._sourceBounds = false;
+							item._hostBounds = false;
 					}
 					proto._changed.call(this, flags);
 				}
@@ -15344,7 +15344,7 @@ new function() {
 		item._boxes = columns.boxes;
 		item._boxIndex = i * boxSize;
 		item._bounds = undefined;
-		item._sourceBounds = true;
+		item._hostBounds = true;
 	}
 
 	function setChildren(owner, project, columns) {
@@ -15412,12 +15412,12 @@ new function() {
 				throw new Error('Unable to change the key of an item.');
 			if (!itemsByKey)
 				throw new Error('Unable to set a key in a project without a '
-						+ 'source.');
+						+ 'host.');
 			this._key = key;
 			itemsByKey[key] = this;
 		},
 
-		_getSourceBounds: function(options) {
+		_getHostBounds: function(options) {
 			var boxes = this._boxes,
 				i = this._boxIndex
 					+ (options.handle ? 8 : options.stroke ? 4 : 0);
@@ -15427,7 +15427,7 @@ new function() {
 					: new Rectangle();
 		},
 
-		_getSourceBoundsCache: function() {
+		_getHostBoundsCache: function() {
 			var bounds = {},
 				isIdentity = this._matrix.isIdentity(),
 				nonscaling = !this._strokeScaling;
@@ -15435,7 +15435,7 @@ new function() {
 				var stroke = entry[0],
 					handle = entry[1],
 					key = '' + stroke + handle,
-					rect = this._getSourceBounds({
+					rect = this._getHostBounds({
 						stroke: stroke,
 						handle: handle
 					});
@@ -15464,7 +15464,7 @@ new function() {
 
 		_loadContent: function() {
 			var project = this._project,
-				json = project._source.getItem(this._key),
+				json = project._host.getItem(this._key),
 				ctor = this.constructor,
 				kept = ['_id', '_parent', '_index', '_matrix'],
 				values = {},
@@ -15494,7 +15494,7 @@ new function() {
 
 		_loadChildren: function() {
 			var project = this._project,
-				columns = project._source.getChildren(this._key),
+				columns = project._host.getChildren(this._key),
 				that = this;
 			whileLoading(project, function() {
 				setChildren(that, project, columns);
@@ -15523,25 +15523,25 @@ new function() {
 					project._updateSelection(child, true);
 				}
 				setChildren(this, project,
-						project._source.getChildren(this._key));
+						project._host.getChildren(this._key));
 			}
 		}
 	});
 
 	Project.inject({
-		getSource: function() {
-			return this._source;
+		getHost: function() {
+			return this._host;
 		},
 
-		setSource: function(source) {
+		setHost: function(host) {
 			if (this._children.length)
-				throw new Error('Unable to set the source of a project with '
+				throw new Error('Unable to set the host of a project with '
 						+ 'layers.');
 			var that = this;
-			this._source = source;
+			this._host = host;
 			this._itemsByKey = {};
 			whileLoading(this, function() {
-				setChildren(that, that, source.getChildren(null));
+				setChildren(that, that, host.getChildren(null));
 				that._activeLayer = that._children[0] || null;
 			});
 		},
@@ -15550,7 +15550,7 @@ new function() {
 			var itemsByKey = this._itemsByKey,
 				item = itemsByKey[key];
 			if (!item || !item.isInserted()) {
-				var keys = this._source.getAncestorKeys(key) || [];
+				var keys = this._host.getAncestorKeys(key) || [];
 				for (var i = 0, l = keys.length; i < l; i++) {
 					var ancestor = itemsByKey[keys[i]];
 					if (ancestor)

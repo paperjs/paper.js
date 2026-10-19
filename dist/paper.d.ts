@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 01:25:37 2026 +0200
+ * Date: Tue Oct 20 01:42:05 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -1457,7 +1457,7 @@ declare namespace paper {
     class Item  {
         /** 
          * The key of the host's node that the item represents, in a project
-         * backed by a host document, see {@link Project#source}. It can only be
+         * backed by a host document, see {@link Project#host}. It can only be
          * set once, on an item created by a script, to register the key that
          * the host gave its new node.
          */
@@ -5213,11 +5213,11 @@ declare namespace paper {
     class Project  {
         /** 
          * The host document that the project's items come from. Setting it
-         * creates the project's layers from the source's records. All items
+         * creates the project's layers from the host's records. All items
          * are created as shells that load their content and children from the
-         * source on first access.
+         * host on first access.
          * 
-         * The source provides:
+         * The host provides:
          * - `getChildren(key)`, which returns the records of the children of
          *   the node with the given key, or of the top level for `null`, as
          *   columns: `keys`, `types` (indices into `typeNames`), `typeNames`,
@@ -5230,7 +5230,7 @@ declare namespace paper {
          * - `getAncestorKeys(key)`, which returns the keys from the top level
          *   down to the node's parent.
          */
-        source: any
+        host: any
 
         /** 
          * Specifies whether the project logs the changes of its items, to be
@@ -5303,13 +5303,13 @@ declare namespace paper {
          * 
          * @param key - the key of the host's node
          * 
-         * @return the item, or `null` if the source has no such node
+         * @return the item, or `null` if the host has no such node
          */
         getItemByKey(key: number): Item
 
         /** 
          * Updates the items of changed host nodes, given in the column format
-         * of the source's `getChildren()`, with two more flags: 16 when the
+         * of the host's `getChildren()`, with two more flags: 16 when the
          * node's own content changed, so the item loads it again on next
          * access, and 32 when its list of children changed, so it loads them
          * again right away if it had loaded them, keeping the items of nodes
