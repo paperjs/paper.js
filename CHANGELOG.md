@@ -24,6 +24,8 @@
 
 ### Fixed
 
+- Fix the frame timer of workers and Node.js running forever after any script,
+  which kept hosts from seeing scripts end.
 - Fix touch scrolling over empty parts of a canvas whose items have mouse
   handlers (#1930).
 - Fix mouse events reaching items and views through elements that cover the
