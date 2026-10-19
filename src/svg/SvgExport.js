@@ -378,6 +378,8 @@ new function() {
                                 : value.toCSS(true)
                             : type === 'array' ? value.join(',')
                             : type === 'lookup' ? entry.toSVG[value]
+                            // Tracking is in thousandths of an em:
+                            : type === 'tracking' ? value && value / 1000 + 'em'
                             : value;
                 }
             }

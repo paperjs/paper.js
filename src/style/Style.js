@@ -99,7 +99,7 @@ var Style = Base.extend(new function() {
         fontWeight: 'normal',
         fontSize: 12,
         leading: null,
-        letterSpacing: 0,
+        tracking: 0,
         // Paragraphs
         justification: 'left'
     }),
@@ -119,6 +119,7 @@ var Style = Base.extend(new function() {
         fontSize: /*#=*/Change.GEOMETRY,
         font: /*#=*/Change.GEOMETRY, // deprecated, links to fontFamily
         leading: /*#=*/Change.GEOMETRY,
+        tracking: /*#=*/Change.GEOMETRY,
         justification: /*#=*/Change.GEOMETRY
     },
     item = {
@@ -381,6 +382,12 @@ var Style = Base.extend(new function() {
                 + this.getFontFamily();
     },
 
+    getTrackingStyle: function() {
+        // Tracking is in thousandths of an em, and canvas resolves em through
+        // the font of the context:
+        return this.getTracking() / 1000 + 'em';
+    },
+
     /**
      * @bean
      * @private
@@ -396,7 +403,7 @@ var Style = Base.extend(new function() {
         if (/pt|em|%|px/.test(fontSize))
             fontSize = this.getView().getPixelSize(fontSize);
         return leading != null ? leading : fontSize * 1.2;
-    },
+    }
 
     // DOCS: why isn't the example code showing up?
     /**
@@ -697,6 +704,16 @@ var Style = Base.extend(new function() {
      */
 
     /**
+     * The tracking of text content: the space added after each character, in
+     * thousandths of an em, as in Adobe Illustrator and InDesign. A tracking of
+     * 100 adds a tenth of the font size.
+     *
+     * @name Style#tracking
+     * @type Number
+     * @default 0
+     */
+
+    /**
      * {@grouptitle Paragraph Style}
      *
      * The justification of text paragraphs.
@@ -706,21 +723,4 @@ var Style = Base.extend(new function() {
      * @values 'left', 'right', 'center'
      * @default 'left'
      */
-
-    /**
-     * The letter spacing of text content.
-     *
-     * @name Style#letterSpacing
-     * @type Number|String
-     * @default 0
-     */
-    getLetterSpacing: function getLetterSpacing() {
-        // Override letterSpacing to include px
-        // as the default unit, when not provided
-        var letterSpacing = getLetterSpacing.base.call(this);
-        if (typeof letterSpacing === 'number') {
-            return letterSpacing + 'px';
-        }
-        return letterSpacing;
-    }
 });

@@ -6544,11 +6544,6 @@ declare namespace paper {
          */
         justification: string
 
-        /** 
-         * The letter spacing of text content.
-         */
-        letterSpacing: string
-
 
         /** 
          * Style objects don't need to be created directly. Just pass an object to
@@ -6667,11 +6662,6 @@ declare namespace paper {
          * The justification of text paragraphs.
          */
         justification: string
-
-        /** 
-         * The letter spacing of text content.
-         */
-        letterSpacing: string
 
 
     }

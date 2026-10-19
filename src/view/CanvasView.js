@@ -119,7 +119,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
             prevLetterSpacing = ctx.letterSpacing,
             width = 0;
         ctx.font = font;
-        ctx.letterSpacing = letterSpacing;        
+        ctx.letterSpacing = letterSpacing;
         // Measure the real width of the text. Unfortunately, there is no sane
         // way to measure text height with canvas.
         for (var i = 0, l = lines.length; i < l; i++)
