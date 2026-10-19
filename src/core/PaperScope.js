@@ -206,7 +206,9 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
     execute: function(code, options) {
 /*#*/   if (__options.paperScript) {
             var exports = paper.PaperScript.execute(code, this, options);
-            View.updateFocus();
+            // Focus handling only exists in the browser, not in web workers:
+            if (window)
+                View.updateFocus();
             return exports;
 /*#*/   }
     },
