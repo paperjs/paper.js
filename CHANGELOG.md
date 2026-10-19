@@ -21,6 +21,8 @@
 
 ### Changed
 
+- Canvases without `resize` get their CSS size from the view on every screen,
+  not only at pixel ratios other than 1, where the page's CSS won (#2088).
 - `#hitTestAll()` reports every segment and handle of a path within the
   tolerance, closest first, followed by its stroke or fill hit, instead of only
   the first hit per path (#1294).

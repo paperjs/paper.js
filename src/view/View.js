@@ -25,6 +25,8 @@
  * `html, body { height: 100%; }` and `canvas[resize] { width: 100%; height:
  * 100%; }` for a canvas that fills the window. Without such CSS, the view does
  * not follow the window, and on HiDPI screens it grows with each resize.
+ * Without the attribute, the view sets the element's CSS width and height to
+ * its own size, see {@link #viewSize}.
  */
 var View = Base.extend(Emitter, /** @lends View# */{
     _class: 'View',

@@ -66,28 +66,27 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
     },
 
     _setElementSize: function _setElementSize(width, height) {
-        var pixelRatio = this._pixelRatio;
+        var pixelRatio = this._pixelRatio,
+            element = this._element;
         // Upscale the canvas if the pixel ratio is more than 1.
         _setElementSize.base.call(this, width * pixelRatio, height * pixelRatio);
+        // Set the size of non-resizable canvases through their style, as they
+        // would appear too big on HiDPI screens otherwise. Also at a pixel
+        // ratio of 1, so they behave the same on every screen (#2088):
+        if (!PaperScope.hasAttribute(element, 'resize')) {
+            // With border-box sizing, the style includes padding and border:
+            var style = element.style,
+                insets = DomElement.getStyles(element).boxSizing
+                    === 'border-box'
+                        ? DomElement.getInsets(element)
+                        : new Size();
+            style.width = (width + insets.width) + 'px';
+            style.height = (height + insets.height) + 'px';
+        }
         if (pixelRatio !== 1) {
-            var element = this._element,
-                ctx = this._context;
-            // We need to set the correct size on non-resizable canvases through
-            // their style when HiDPI is active, as otherwise they would appear
-            // too big.
-            if (!PaperScope.hasAttribute(element, 'resize')) {
-                // With border-box sizing, the style includes padding and
-                // border:
-                var style = element.style,
-                    insets = DomElement.getStyles(element).boxSizing
-                        === 'border-box'
-                            ? DomElement.getInsets(element)
-                            : new Size();
-                style.width = (width + insets.width) + 'px';
-                style.height = (height + insets.height) + 'px';
-            }
             // Scale the context to counter the fact that we've manually scaled
             // our canvas element.
+            var ctx = this._context;
             ctx.restore();
             ctx.save();
             ctx.scale(pixelRatio, pixelRatio);
