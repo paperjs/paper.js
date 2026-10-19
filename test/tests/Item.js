@@ -1379,6 +1379,22 @@ test('Item#fitBounds(rectangle[, fit])', function() {
     equals(path.bounds, new Rectangle(0, 25, 50, 50), 'false for contain');
 });
 
+test('Item#fitBounds() with empty rectangles and items', function() {
+    ['contain', 'cover', 'fill'].forEach(function(fit) {
+        // An empty rectangle can't scale the item, so it's only centered in
+        // it, keeping its size:
+        var path = new Path.Rectangle([0, 0, 10, 20]);
+        path.fitBounds(new Rectangle(30, 40, 0, 0), fit);
+        equals(path.bounds, new Rectangle(25, 30, 10, 20),
+                'into an empty rectangle, ' + fit);
+        // A line can only be scaled by its width:
+        var line = new Path.Line([0, 0], [10, 0]);
+        line.fitBounds(new Rectangle(0, 0, 50, 50), fit);
+        equals(line.bounds, new Rectangle(0, 25, 50, 0),
+                'a horizontal line, ' + fit);
+    });
+});
+
 test('Item#rasterize() bounds', function() {
     var circle = new Path.Circle({
         center: [50, 50],
