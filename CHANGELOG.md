@@ -210,6 +210,8 @@
 - Fix the points of mouse and touch events on canvases with padding or border,
   with a CSS size that differs from the view size, or under CSS transforms that
   scale them, which were offset or scaled (#549, #1729).
+- Fix the sign of `Line#getSignedDistance()` for lines whose direction has
+  two negative coordinates (#1880).
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
