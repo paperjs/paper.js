@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 21:11:03 2026 +0200
+ * Date: Mon Oct 19 21:08:02 2026 +0200
  *
  * This is an auto-generated type definition.
  */

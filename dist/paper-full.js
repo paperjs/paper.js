@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 21:11:03 2026 +0200
+ * Date: Mon Oct 19 21:08:02 2026 +0200
  *
  ***
  *
@@ -4178,6 +4178,14 @@ new function() {
 			res;
 
 		function filter(hit) {
+			if (Array.isArray(hit)) {
+				var first = null;
+				for (var i = 0, l = hit.length; i < l; i++) {
+					var res = filter(hit[i]);
+					first = first || res;
+				}
+				return first;
+			}
 			if (hit && match && !match(hit))
 				hit = null;
 			if (hit && options.all) {
@@ -9409,6 +9417,7 @@ var Path = PathItem.extend({
 			strokePadding = tolerancePadding,
 			join, cap, miterLimit,
 			area, loc, res,
+			hits = options.all && [],
 			hitStroke = options.stroke && style.hasStroke(),
 			hitFill = options.fill && style.hasFill(),
 			hitCurves = options.curves,
@@ -9438,10 +9447,13 @@ var Path = PathItem.extend({
 				if (pt !== anchor)
 					pt = pt.add(anchor);
 				if (isCloseEnough(pt, strokePadding)) {
-					return new HitResult(name, that, {
+					var hit = new HitResult(name, that, {
 						segment: seg,
 						point: pt
 					});
+					if (!hits)
+						return hit;
+					hits.push(hit);
 				}
 			}
 		}
@@ -9515,7 +9527,7 @@ var Path = PathItem.extend({
 				}
 			}
 		}
-		return !loc && hitFill && this._contains(point)
+		res = !loc && hitFill && this._contains(point)
 				|| loc && !hitStroke && !hitCurves
 					? new HitResult('fill', this)
 					: loc
@@ -9524,6 +9536,16 @@ var Path = PathItem.extend({
 							point: loc.getPoint()
 						})
 						: null;
+		if (hits) {
+			hits.sort(function(hit1, hit2) {
+				return hit1.point.getDistance(point)
+						- hit2.point.getDistance(point);
+			});
+			if (res)
+				hits.push(res);
+			return hits;
+		}
+		return res;
 	}
 
 }, Base.each(Curve._evaluateMethods,
