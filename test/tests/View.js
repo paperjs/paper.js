@@ -339,6 +339,21 @@ if (!isNodeContext) {
         });
     });
 
+    test('view.viewSize sets the CSS size of non-resizable canvases (#2088)', function() {
+        // On every screen, not just at pixel ratios other than 1, so that
+        // pages behave the same everywhere:
+        var canvas = document.createElement('canvas');
+        canvas.width = 200;
+        canvas.height = 100;
+        document.body.appendChild(canvas);
+        var project = new Project(canvas);
+        project.view.viewSize = new Size(300, 150);
+        equals(canvas.style.width, '300px', 'style.width');
+        equals(canvas.style.height, '150px', 'style.height');
+        project.remove();
+        document.body.removeChild(canvas);
+    });
+
     test('view.viewSize of canvases under CSS transforms', function() {
         // A CSS transform on an ancestor scales the canvas on screen, but not
         // its content box, which is the size of the view:
