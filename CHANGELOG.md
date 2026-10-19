@@ -7,10 +7,28 @@
 - Add a `force` parameter to `View#update()`, to redraw the view even when
   nothing changed, e.g. after a web font has loaded (#1913).
 - Add `View#fitBounds(rectangle[, fit])`, to fit a rectangle into the view.
-  `fit` takes the values of CSS's `object-fit`: `'contain'`, `'cover'` and
-  `'fill'` (#1688).
+  `fit` takes the values of CSS's `object-fit`: `'contain'` and `'cover'`
+  (#1688).
 - Add the `reuseImages` option to `#exportSVG()`, to export images shown by
   several rasters only once, and place them with `<use>` elements (#1993).
+- Add `tracking` to the text styles: the space added after each character, in
+  thousandths of an em, as in Adobe Illustrator and InDesign. `#exportSVG()` and
+  `#importSVG()` write and read it as `letter-spacing` (#2066).
+- Add `easeInSine`, `easeOutSine`, `easeInOutSine`, `easeInExpo`, `easeOutExpo`,
+  `easeInOutExpo`, `easeInCirc`, `easeOutCirc` and `easeInOutCirc` to `Tween`
+  (#1855).
+- Add the `idPrefix` option to `#exportSVG()`, prepended to the generated ids of
+  definitions, so that separately exported SVGs can be placed in one document
+  (#1709).
+- Add the `crossOrigin` option to `#importSVG()`, passed on to the rasters of
+  `<image>` elements, so that canvases drawing them aren't tainted (#1094).
+- Add `View#project` (#1634).
+- Add `Point#clamp(min, max)`, e.g. to keep a point inside a rectangle with
+  `point.clamp(rect.topLeft, rect.bottomRight)`.
+- Use `OffscreenCanvas` in web-workers, so `Item#rasterize()`,
+  `new Raster(size)`, items with opacity or blend modes, and CSS color names,
+  which resolved to black, work there. `Raster#toDataURL()` remains unsupported
+  in web-workers (#1643).
 
 ### Changed
 
@@ -45,6 +63,13 @@
 - `Item#fitBounds(rectangle[, fit])` takes the values of CSS's `object-fit` as
   `fit`: `'contain'`, `'cover'` and `'fill'`, which stretches the item to the
   rectangle.
+- Scale and align images in `#importSVG()` as their `preserveAspectRatio`
+  describes, fitting them into their box uniformly and centered by default, as
+  browsers do, instead of stretching them. `slice` is treated as `meet` (#1129).
+- Let `Path#removeSegments(from, to)` wrap around on closed paths when `from` is
+  larger than `to`, instead of removing nothing (#1881).
+- Read the `href` of `<image>` elements in `#importSVG()` always as a URL, no
+  longer as the id of a DOM element first.
 
 ### Deprecated
 
@@ -147,6 +172,38 @@
 - Fix `Item#fitBounds()` and `View#fitBounds()` with empty rectangles or
   items: empty sides no longer collapse items, produce `NaN` coordinates with
   `'cover'`, or make the view throw; they are left out of the scaling.
+- Fix `#importSVG()` of lengths in `in`, `cm`, `mm`, `pt` and `pc`, which were
+  read as pixels (#1919).
+- Fix `#importSVG()` of percentages inside nested `<svg>` elements, which
+  referred to the size of the root instead of the nearest `<svg>` (#1404).
+- Fix `#importSVG()` on Node.js of shapes without a fill, which were imported
+  without one instead of black, as in browsers (#1229).
+- Fix the quadratic time of `#exportSVG()` for groups with many children
+  (#1353).
+- Implement the documented `'pin-light'` blend mode, which drew nothing (#1527).
+- Fix clip masks of items with a matrix and an opacity or blend mode, which
+  clipped in the wrong place (#1594).
+- Fix rasters and point texts used as clip masks, which clipped with the path
+  drawn before them. They now clip with their rectangle and bounds (#1845).
+- Fix the stroke bounds of sheared, mirrored and non-uniformly scaled paths with
+  `applyMatrix: false`. The miter limit is now checked in the path's own
+  coordinates, as canvas does (#2065).
+- Fix symbol items overwriting the `globalMatrix` of their definition's item,
+  which affected its stroke bounds and selection (#1684).
+- Fix the view size of canvases with padding or border, which grew with each
+  setup of a project for them (#1160, #2033).
+- Fix setting `View#rotation` on mirrored views, which rotated the other way,
+  and on non-uniformly scaled views, which got skewed (#1893).
+- Fix touches outside of the view taking over its drag (#1875).
+- Fix hit-tests of point texts ignoring the tolerance (#632).
+- Fix removed selected items being kept by their project, which leaked memory
+  (#1856).
+- Fix the line width of selections, which used whatever line width the view's
+  context was left with.
+- Fix hit-tests of symbol items with `class`, `type` and `match` filters, which
+  were applied to the definition's items instead (#1774).
+- Leave `workspaces` and `resolutions` out of the published `package.json`,
+  which made Yarn warn when installing paper (#1921).
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
@@ -161,6 +218,9 @@
 - Docs: Document that `new Path(pathData)` holds a single sub-path (#2057).
 - Docs: Document that styles set on symbol items, or inherited by imported
   `<use>` elements, don't reach the symbol definition's items (#1329).
+- Docs: Document using Paper.js with a bundler in the README (#1695).
+- Docs: Move the documentation of `<symbol>` and `<use>` from
+  `Project#importJSON()` to `Project#importSVG()`.
 
 ## `0.12.20`
 
