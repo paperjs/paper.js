@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 22:31:02 2026 +0200
+ * Date: Mon Oct 19 22:34:26 2026 +0200
  *
  ***
  *
@@ -13123,8 +13123,12 @@ DomEvent.requestAnimationFrame = new function() {
 		for (var i = 0, l = functions.length; i < l; i++)
 			functions[i]();
 		requested = nativeRequest && callbacks.length;
-		if (requested)
+		if (requested) {
 			nativeRequest(handleCallbacks);
+		} else if (timer && !callbacks.length) {
+			clearInterval(timer);
+			timer = null;
+		}
 	}
 
 	return function(callback) {
