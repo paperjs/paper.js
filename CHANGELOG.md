@@ -15,6 +15,8 @@
 
 ### Fixed
 
+- Fix the view size of canvases inside elements with CSS transforms, which
+  only scale the canvas on screen.
 - Fix italic and oblique font weights in SVG export and import, which SVG
   keeps in `font-style` (#937).
 - Fix `onFrame` in web workers, where views have no element (#2200).
