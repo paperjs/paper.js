@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 17:53:08 2026 +0200
+ * Date: Mon Oct 19 17:53:10 2026 +0200
  *
  ***
  *
@@ -837,7 +837,8 @@ var PaperScope = Base.extend({
 
 	execute: function(code, options) {
 			var exports = paper.PaperScript.execute(code, this, options);
-			View.updateFocus();
+			if (window)
+				View.updateFocus();
 			return exports;
 	},
 
