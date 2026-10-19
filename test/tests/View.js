@@ -23,6 +23,29 @@ test('view.zoom of mirrored view (#1411)', function() {
     equals(view.matrix, new Matrix(2, 0, 0, -2, -50, 150), 'view.matrix');
 });
 
+test('view.rotation of mirrored view (#1893)', function() {
+    // The view is 100x100, so it rotates around (50, 50), which stays in place:
+    // (x, y) -> (cos * x - sin * y, sin * x + cos * y) when not mirrored, and
+    // (cos * x + sin * y, sin * x - cos * y) when mirrored first.
+    var cos = Math.cos(Math.PI / 6),
+        sin = Math.sin(Math.PI / 6);
+    view.rotation = 30;
+    equals(view.rotation, 30, 'view.rotation');
+    equals(view.matrix, new Matrix(cos, sin, -sin, cos,
+            50 - 50 * (cos - sin), 50 - 50 * (sin + cos)), 'view.matrix');
+    view.matrix = new Matrix();
+    view.scale(1, -1);
+    view.rotation = 30;
+    equals(view.rotation, 30, 'mirrored: view.rotation');
+    equals(view.scaling, new Point(1, -1), 'mirrored: view.scaling');
+    equals(view.matrix, new Matrix(cos, sin, sin, -cos,
+            50 - 50 * (cos + sin), 50 - 50 * (sin - cos)),
+            'mirrored: view.matrix');
+    // Setting the same rotation again doesn't change it:
+    view.rotation = 30;
+    equals(view.rotation, 30, 'mirrored: view.rotation set again');
+});
+
 test('view.fitBounds() with empty rectangles', function() {
     ['contain', 'cover', 'fill'].forEach(function(fit) {
         // The view is 100x100. An empty rectangle can't scale the view, so it
@@ -148,3 +171,69 @@ test('view.fitBounds(rectangle[, fit]) (#1688)', function() {
             'rotated: view.bounds');
     view.matrix = new Matrix();
 });
+
+if (!isNodeContext) {
+    test('view.viewSize of canvases with padding and border (#1160, #2033)', function() {
+        // The padding of 10 and the border of 5 add 30 to the content box,
+        // which is the size of the view:
+        function createCanvas(boxSizing, resize) {
+            var canvas = document.createElement('canvas');
+            canvas.width = 200;
+            canvas.height = 100;
+            canvas.style.padding = '10px';
+            canvas.style.border = '5px solid black';
+            canvas.style.boxSizing = boxSizing;
+            if (resize) {
+                canvas.setAttribute('resize', '');
+                canvas.style.width = '300px';
+                canvas.style.height = '150px';
+            }
+            document.body.appendChild(canvas);
+            return canvas;
+        }
+
+        function getBorderBoxSize(canvas) {
+            var rect = canvas.getBoundingClientRect();
+            return new Size(rect.width, rect.height);
+        }
+
+        function resizeWindow() {
+            var event = document.createEvent('Event');
+            event.initEvent('resize', false, false);
+            window.dispatchEvent(event);
+        }
+
+        // Without the resize attribute, the view keeps the size of the canvas
+        // when setting up projects for it again and again:
+        ['content-box', 'border-box'].forEach(function(boxSizing) {
+            var canvas = createCanvas(boxSizing);
+            for (var i = 0; i < 3; i++) {
+                var project = new Project(canvas);
+                equals(project.view.viewSize, new Size(200, 100),
+                        boxSizing + ': view.viewSize, setup ' + i);
+                equals(getBorderBoxSize(canvas), new Size(230, 130),
+                        boxSizing + ': border box, setup ' + i);
+                project.remove();
+            }
+            document.body.removeChild(canvas);
+        });
+
+        // With the resize attribute, the view takes the size of the content box
+        // set through CSS, also after resizing:
+        [
+            ['content-box', new Size(300, 150)],
+            ['border-box', new Size(270, 120)]
+        ].forEach(function(entry) {
+            var boxSizing = entry[0],
+                canvas = createCanvas(boxSizing, true),
+                project = new Project(canvas);
+            for (var i = 0; i < 3; i++) {
+                equals(project.view.viewSize, entry[1],
+                        boxSizing + ': view.viewSize with resize, ' + i);
+                resizeWindow();
+            }
+            project.remove();
+            document.body.removeChild(canvas);
+        });
+    });
+}

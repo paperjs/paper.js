@@ -136,7 +136,9 @@ var SymbolItem = Item.extend(/** @lends SymbolItem# */{
     },
 
     _draw: function(ctx, param) {
-        this._definition._item.draw(ctx, param);
+        // The definition's item is shared by all its symbol items, so don't
+        // let them set its global matrix (#1684):
+        this._definition._item.draw(ctx, param.extend({ updateMatrix: false }));
     }
 
     // TODO: SymbolItem#embed()

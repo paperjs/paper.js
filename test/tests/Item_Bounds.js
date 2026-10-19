@@ -959,3 +959,87 @@ test('symbolItem.bounds with item and symbol matrices that cancel out (#1457)', 
     equals(symbol.bounds, new Rectangle(100, 0, 50, 50), 'symbol.bounds');
     equals(path.bounds, new Rectangle(0, 0, 50, 50), 'path.bounds');
 });
+
+test('path.strokeBounds with applyMatrix disabled and shearing (#2065)', function() {
+    // Under the shearing x' = x + y, the stroke circle with radius 10 reaches
+    // 10 * sqrt(2) horizontally and 10 vertically, and the corners of the
+    // stroke outlines move by their y coordinate horizontally:
+    var matrix = new Matrix(1, 0, 1, 1, 0, 0),
+        offset = 10 * Math.SQRT2;
+
+    function createPath(constructor, options) {
+        var path = new constructor(Base.set({
+            applyMatrix: false,
+            strokeColor: 'red',
+            strokeWidth: 20
+        }, options));
+        path.transform(matrix);
+        return path;
+    }
+
+    function createLine(cap) {
+        return createPath(Path.Line, { from: [0, 0], to: [100, 0],
+                strokeCap: cap });
+    }
+
+    function createRectangle(join) {
+        return createPath(Path.Rectangle, { point: [0, 0], size: [100, 100],
+                strokeJoin: join });
+    }
+
+    equals(createLine('round').strokeBounds,
+            new Rectangle(-offset, -10, 100 + 2 * offset, 20), 'round cap');
+    // Corners at (-10, -10), (110, -10), (110, 10), (-10, 10):
+    equals(createLine('square').strokeBounds,
+            new Rectangle(-20, -10, 140, 20), 'square cap');
+    // Corners at (0, -10), (100, -10), (100, 10), (0, 10):
+    equals(createLine('butt').strokeBounds,
+            new Rectangle(-10, -10, 120, 20), 'butt cap');
+    equals(createRectangle('round').strokeBounds,
+            new Rectangle(-offset, -10, 200 + 2 * offset, 120), 'round join');
+    // Corners at (-10, -10), (110, -10), (110, 110), (-10, 110):
+    equals(createRectangle('miter').strokeBounds,
+            new Rectangle(-20, -10, 240, 120), 'miter join');
+    // Corners at (-10, 0), (0, -10), ..., (110, 100), (100, 110):
+    equals(createRectangle('bevel').strokeBounds,
+            new Rectangle(-10, -10, 220, 120), 'bevel join');
+
+    // The example from the issue: The stroke outline of a rectangle with miter
+    // joins is the rectangle expanded by the stroke radius:
+    var path = new Path.Rectangle({
+        point: [200, 200],
+        size: [100, 75],
+        applyMatrix: false,
+        strokeColor: 'red',
+        strokeWidth: 20,
+        strokeJoin: 'miter'
+    });
+    path.rotate(60);
+    path.scale(4, 1);
+    path.rotate(30);
+    var outline = new Path.Rectangle(new Rectangle(200, 200, 100, 75)
+            .expand(20));
+    outline.transform(path.matrix);
+    equals(path.strokeBounds, outline.bounds, 'miter join, issue example');
+});
+
+test('path.strokeBounds with applyMatrix disabled and rotation', function() {
+    // Rotation keeps the stroke width, so applying the matrix to the segments
+    // gives the same stroke bounds:
+    ['round', 'miter', 'bevel'].forEach(function(join) {
+        function createPath(applyMatrix) {
+            var path = new Path({
+                segments: [[0, 0], [100, 0], [50, 30]],
+                applyMatrix: applyMatrix,
+                strokeColor: 'red',
+                strokeWidth: 20,
+                strokeJoin: join,
+                strokeCap: 'square'
+            });
+            path.rotate(30);
+            return path;
+        }
+        equals(createPath(false).strokeBounds, createPath(true).strokeBounds,
+                join + ' join');
+    });
+});

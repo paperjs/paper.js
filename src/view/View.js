@@ -37,14 +37,15 @@ var View = Base.extend(Emitter, /** @lends View# */{
 
         function getCanvasSize() {
             // Try visible size first, since that will help handling previously
-            // scaled canvases (e.g. when dealing with pixel-ratio)
+            // scaled canvases (e.g. when dealing with pixel-ratio), without the
+            // padding and border (#1160, #2033).
             var size = DomElement.getSize(element);
             return size.isNaN() || size.isZero()
                     // If the element is invisible, we cannot directly access
                     // element.width / height, because they would appear 0.
                     // Reading the attributes should still work.
                     ? new Size(getSize('width'), getSize('height'))
-                    : size;
+                    : size.subtract(DomElement.getInsets(element));
         }
 
         var size;
@@ -565,7 +566,11 @@ var View = Base.extend(Emitter, /** @lends View# */{
     setRotation: function(rotation) {
         var current = this.getRotation();
         if (current != null && rotation != null) {
-            this.rotate(rotation - current);
+            // The view's rotation is appended to its matrix, so on a mirrored
+            // view, it turns the decomposed rotation the other way (#1893):
+            var scaling = this._decompose().scaling,
+                delta = rotation - current;
+            this.rotate(scaling.x * scaling.y < 0 ? -delta : delta);
         }
     },
 

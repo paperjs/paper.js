@@ -259,3 +259,30 @@ test('new Raster(source, position)', function() {
     var raster = new Raster('data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', [30, 40]);
     equals(raster.position, new Point(30, 40));
 });
+
+test('Raster#clipMask (#1845)', function() {
+    // Rasters clip with their rectangle without drawing their image, also after
+    // other paths were drawn before them:
+    function createClipped(clipItem) {
+        clipItem.clipMask = true;
+        return new Group([
+            new Path.Circle({
+                center: [100, 100],
+                radius: 50,
+                fillColor: 'blue'
+            }),
+            new Group([clipItem, new Path.Rectangle({
+                point: [0, 0],
+                size: [200, 200],
+                fillColor: 'red'
+            })])
+        ]);
+    }
+
+    var raster = new Raster({ size: [50, 50], position: [50, 50] }),
+        ctx = raster.getContext(true);
+    ctx.fillStyle = 'green';
+    ctx.fillRect(0, 0, 50, 50);
+    comparePixels(createClipped(raster),
+            createClipped(new Path.Rectangle([25, 25], [50, 50])));
+});

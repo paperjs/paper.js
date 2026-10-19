@@ -73,3 +73,33 @@ test('PointText with stroke and opacity (#1322)', function() {
     comparePixels(createText(0.5, 'black'),
             createText(1, new Color(0, 0, 0, 0.5)));
 });
+
+test('PointText#clipMask (#1845)', function() {
+    // The glyph outlines aren't known, so text clips with its bounds without
+    // drawing itself, also after other paths were drawn before it:
+    function createClipped(clipItem) {
+        clipItem.clipMask = true;
+        return new Group([
+            new Path.Circle({
+                center: [100, 100],
+                radius: 50,
+                fillColor: 'blue'
+            }),
+            new Group([clipItem, new Path.Rectangle({
+                point: [0, 0],
+                size: [200, 200],
+                fillColor: 'red'
+            })])
+        ]);
+    }
+
+    var text = new PointText({
+        fontFamily: 'Arial, Helvetica',
+        fontSize: 40,
+        point: [20, 60],
+        content: 'Clip',
+        fillColor: 'green'
+    });
+    comparePixels(createClipped(text),
+            createClipped(new Path.Rectangle(text.bounds)));
+});

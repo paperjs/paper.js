@@ -4574,12 +4574,21 @@ new function() { // Injection scope for hit-test functions shared with project
             // on the temporary canvas.
             ctx.translate(-itemOffset.x, -itemOffset.y);
         }
-        if (transform) {
+        if (clip) {
+            // The clip item is a sibling of this item, so draw it with the
+            // parent's matrices before applying this item's matrix (#1594):
+            var parentMatrices = matrices.slice(0, -1),
+                parentMatrix = parentMatrices[parentMatrices.length - 1];
+            (param.viewMatrix ? param.viewMatrix.appended(parentMatrix)
+                    : parentMatrix).applyToContext(ctx);
+            param.clipItem.draw(ctx, param.extend({
+                clip: true,
+                matrices: parentMatrices
+            }));
+            matrix.applyToContext(ctx);
+        } else if (transform) {
             // Apply viewMatrix when drawing into temporary canvas.
             (direct ? matrix : viewMatrix).applyToContext(ctx);
-        }
-        if (clip) {
-            param.clipItem.draw(ctx, param.extend({ clip: true }));
         }
         if (strokeMatrix) {
             // Reset the transformation but take HiDPI pixel ratio into account.

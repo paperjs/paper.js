@@ -209,3 +209,31 @@ test('paper.install() keeps the native Symbol', function() {
         return paper.Symbol === SymbolDefinition;
     }, true);
 });
+
+test('SymbolItem drawing keeps the global matrix of the definition (#1684)', function() {
+    var path = new Path.Rectangle({
+        size: [20, 20],
+        strokeWidth: 10,
+        strokeColor: 'red',
+        strokeScaling: false
+    });
+    var definition = new SymbolDefinition(path);
+    var placed = definition.place([100, 100]);
+    placed.scale(4, 2);
+    view.update();
+    // The definition's item isn't inserted, so its global matrix is its own
+    // identity matrix, and the stroke without scaling surrounds its 20 x 20
+    // rectangle by 5 on each side:
+    equals(path.globalMatrix, new Matrix(), 'path.globalMatrix');
+    equals(path.strokeBounds, new Rectangle(-15, -15, 30, 30),
+            'path.strokeBounds');
+
+    // The example from the issue: The definition's item is inserted into the
+    // project again, where it gets drawn before the symbol item too:
+    var group = new Group({ applyMatrix: false, children: [path] });
+    group.translate(10, 20);
+    group.insertBelow(placed);
+    view.update();
+    equals(path.globalMatrix, new Matrix(1, 0, 0, 1, 10, 20),
+            'path.globalMatrix when inserted');
+});

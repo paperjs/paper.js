@@ -51,6 +51,8 @@
 - Scale and align images in `#importSVG()` as their `preserveAspectRatio`
   says, keeping their aspect ratio by default instead of stretching them.
   `slice` is treated like `meet` for now (#1129).
+- Size the view of canvases with padding or a border to their content box,
+  which made them grow on every setup or resize (#1160, #2033).
 
 ### Deprecated
 
@@ -159,6 +161,16 @@
   referred to the root size (#1404).
 - Fix the default black fill of shapes in `#importSVG()` on Node.js, which
   imported without fill (#1229).
+- Fix clip masks of items with a matrix that are drawn through a temporary
+  canvas, e.g. with opacity (#1594).
+- Fix rasters and point texts used as clip masks, which clipped with whatever
+  path was drawn before. They clip with their bounds (#1845).
+- Fix the stroke bounds of sheared paths with `applyMatrix: false` (#2065).
+- Fix symbol items overwriting the global matrix of their definition when
+  drawn (#1684).
+- Fix `View#rotation` on mirrored views, which turned the other way (#1893).
+- Fix touches outside of the view taking over its drag (#1875).
+- Fix hit-testing of point texts with a tolerance (#632).
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.

@@ -857,8 +857,14 @@ var Raster = Item.extend(/** @lends Raster# */{
 
     _draw: function(ctx, param, viewMatrix) {
         var element = this.getElement();
-        // Only draw if image is not empty (#1320).
-        if (element && element.width > 0 && element.height > 0) {
+        if (param.dontFinish || param.clip) {
+            // Clip with the raster's rectangle (#1845):
+            var rect = this.getInternalBounds();
+            if (!param.dontStart)
+                ctx.beginPath();
+            ctx.rect(rect.x, rect.y, rect.width, rect.height);
+        } else if (element && element.width > 0 && element.height > 0) {
+            // Only draw if image is not empty (#1320).
             // Handle opacity for Rasters separately from the rest, since
             // Rasters never draw a stroke. See Item#draw().
             ctx.globalAlpha = Numerical.clamp(this._opacity, 0, 1);
