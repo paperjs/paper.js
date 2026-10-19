@@ -16,7 +16,10 @@
  */
 new function() {
     // TODO: Consider moving formatter into options object, and pass it along.
-    var formatter;
+    var formatter,
+        // Getting the style values of groups walks all their children, so
+        // cache the values of parents during each export:
+        parentStyles;
 
     function getTransform(matrix, coordinates, center) {
         // Use new Base() so we can use Base#set() on it.
@@ -337,6 +340,8 @@ new function() {
     function applyStyle(item, node, options, isRoot) {
         var attrs = {},
             parent = !isRoot && item.getParent(),
+            parentStyle = parent && (parentStyles[parent._id] =
+                    parentStyles[parent._id] || {}),
             style = [];
 
         if (item._name != null)
@@ -348,11 +353,13 @@ new function() {
             var get = entry.get,
                 type = entry.type,
                 value = item[get]();
+            if (parent && !(get in parentStyle))
+                parentStyle[get] = parent[get]();
             // Skip undefined values, as found on groups with mixed children:
             if (value !== undefined && (entry.exportFilter
                     ? entry.exportFilter(item, value)
                     : options.reduceAttributes == false
-                        || !parent || !Base.equals(parent[get](), value))) {
+                        || !parent || !Base.equals(parentStyle[get], value))) {
                 if (type === 'color' && value != null) {
                     // Support for css-style rgba() values is not in SVG 1.1, so
                     // separate the alpha value of colors with alpha into the
@@ -440,6 +447,7 @@ new function() {
             // Clear definitions at the end of export
             definitions = null;
         }
+        parentStyles = null;
         return options.asString
                 ? new self.XMLSerializer().serializeToString(svg)
                 : svg;
@@ -465,6 +473,7 @@ new function() {
         if (!options)
             options = {};
         formatter = new Formatter(options.precision);
+        parentStyles = {};
         return options;
     }
 
