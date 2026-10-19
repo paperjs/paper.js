@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:16:09 2026 +0200
+ * Date: Mon Oct 19 12:16:56 2026 +0200
  *
  ***
  *
@@ -15601,14 +15601,28 @@ new function() {
 
 		image: function (node, type, options) {
 			var raster = new Raster({
-				crossOrigin: options.crossOrigin,
-				source: getValue(node, 'href', true)
-			});
+					crossOrigin: options.crossOrigin,
+					source: getValue(node, 'href', true)
+				}),
+				align = /none|x(Min|Mid|Max)Y(Min|Mid|Max)/.exec(
+						getValue(node, 'preserveAspectRatio', true))
+						|| [null, 'Mid', 'Mid'];
 			raster.on('load', function() {
-				var size = getSize(node, null, null, true) || this.getSize();
-				var center = getPoint(node).add(size.divide(2));
+				var imageSize = this.getSize(),
+					size = getSize(node, null, null, true) || imageSize,
+					point = getPoint(node);
+				if (align[0] !== 'none') {
+					var factors = { Min: 0, Mid: 0.5, Max: 1 },
+						fitted = imageSize.multiply(Math.min(
+							size.width / imageSize.width,
+							size.height / imageSize.height));
+					point = point.add(size.subtract(fitted).multiply(
+							[factors[align[1]], factors[align[2]]]));
+					size = fitted;
+				}
+				var center = point.add(size.divide(2));
 				this._matrix.append(new Matrix().translate(center)
-						.scale(size.divide(this.getSize())));
+						.scale(size.divide(imageSize)));
 			});
 			return raster;
 		},
