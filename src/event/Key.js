@@ -90,13 +90,21 @@ var Key = new function() {
                 (key.length > 1 ? Base.hyphenate(key) : key.toLowerCase());
     }
 
-    function handleKey(down, key, character, event) {
-        // The focused view may have been hidden since the last mouse event,
-        // while another one became visible (#1953):
-        View.updateFocus();
-        var type = down ? 'keydown' : 'keyup',
-            view = View._focused,
-            name;
+    // View#dispatchKeyEvent() passes its view. For the DOM's key events, the
+    // focused view may have been hidden since the last mouse event, while
+    // another one became visible (#1953), and only visible views get them:
+    function handleKey(down, key, character, event, view) {
+        if (!view) {
+            View.updateFocus();
+            view = View._focused;
+            if (view && !view.isVisible())
+                view = null;
+        }
+        // View#dispatchKeyEvent() can leave out the character, which keyup
+        // takes from keydown, as the DOM's keyup events do below:
+        if (character == null)
+            character = down ? key.length > 1 ? '' : key : charMap[key] || '';
+        var name;
         keyMap[key] = down;
         // Link the key from keydown with the character form keypress, so keyup
         // can retrieve the character again.
@@ -123,7 +131,7 @@ var Key = new function() {
                     for (var k in metaFixMap) {
                         // Make sure it wasn't released already in the meantime:
                         if (k in charMap)
-                            handleKey(false, k, metaFixMap[k], event);
+                            handleKey(false, k, metaFixMap[k], event, view);
                     }
                     metaFixMap = null;
                 }
@@ -191,6 +199,8 @@ var Key = new function() {
     });
 
     return /** @lends Key */{
+        _handleKey: handleKey,
+
         /**
          * The current state of the keyboard modifiers.
          *

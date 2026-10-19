@@ -192,6 +192,88 @@ test('view.project (#1634)', function() {
     scope.remove();
 });
 
+test('view.dispatchMouseEvent()', function() {
+    var path = new Path.Rectangle({
+        point: [10, 10],
+        size: [20, 20],
+        fillColor: 'red'
+    });
+    var tool = new Tool({ minDistance: 5 });
+    var log = [];
+    ['mouseenter', 'mousedown', 'mousedrag', 'mouseup', 'click',
+            'mouseleave'].forEach(function(type) {
+        path.on(type, function(event) {
+            log.push('item ' + type + ' ' + event.point);
+        });
+    });
+    tool.onMouseDown = function(event) {
+        log.push('tool down ' + event.point + ' shift: '
+                + event.modifiers.shift);
+    };
+    tool.onMouseDrag = function(event) {
+        log.push('tool drag ' + event.point);
+    };
+    view.dispatchMouseEvent('mousemove', [15, 15]);
+    view.dispatchMouseEvent('mousedown', [15, 15], {
+        modifiers: { shift: true }
+    });
+    // Below the tool's minDistance:
+    view.dispatchMouseEvent('mousemove', [16, 15]);
+    view.dispatchMouseEvent('mousemove', [25, 15]);
+    view.dispatchMouseEvent('mouseup', [25, 15], {
+        modifiers: { shift: false }
+    });
+    view.dispatchMouseEvent('mousemove', [80, 80]);
+    equals(log, [
+        'item mouseenter { x: 15, y: 15 }',
+        'item mousedown { x: 15, y: 15 }',
+        'tool down { x: 15, y: 15 } shift: true',
+        'item mousedrag { x: 16, y: 15 }',
+        'item mousedrag { x: 25, y: 15 }',
+        'tool drag { x: 25, y: 15 }',
+        'item mouseup { x: 25, y: 15 }',
+        'item click { x: 25, y: 15 }',
+        'item mouseleave { x: 80, y: 80 }'
+    ]);
+    // Handlers can prevent the default, which the host can then skip:
+    path.onMouseDown = function(event) {
+        event.preventDefault();
+    };
+    equals(view.dispatchMouseEvent('mousedown', [15, 15]), true,
+            'prevented');
+    view.dispatchMouseEvent('mouseup', [15, 15]);
+    var message;
+    try {
+        view.dispatchMouseEvent('mousedrag', [15, 15]);
+    } catch (e) {
+        message = e.message;
+    }
+    equals(message, 'Unknown mouse event type: \'mousedrag\'.');
+    tool.remove();
+});
+
+test('view.dispatchKeyEvent()', function() {
+    var tool = new Tool();
+    var log = [];
+    tool.onKeyDown = tool.onKeyUp = function(event) {
+        log.push(event.type + ' ' + event.key + ' "' + event.character + '"');
+    };
+    view.dispatchKeyEvent('keydown', 'shift');
+    equals(Key.isDown('shift'), true, 'Key.isDown()');
+    equals(Key.modifiers.shift, true, 'Key.modifiers');
+    view.dispatchKeyEvent('keydown', 'a', { character: 'A' });
+    view.dispatchKeyEvent('keyup', 'a');
+    view.dispatchKeyEvent('keyup', 'shift');
+    equals(Key.isDown('shift'), false, 'Key.isDown() after keyup');
+    equals(log, [
+        'keydown shift ""',
+        'keydown a "A"',
+        'keyup a "A"',
+        'keyup shift ""'
+    ]);
+    tool.remove();
+});
+
 if (!isNodeContext) {
     test('view.viewSize of canvases with padding and border (#1160, #2033)', function() {
         // The padding of 10 and the border of 5 add 30 to the content box,

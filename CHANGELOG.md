@@ -4,6 +4,9 @@
 
 ### Added
 
+- Add `View#dispatchMouseEvent()` and `View#dispatchKeyEvent()`, to feed mouse
+  and key events from hosts without a DOM, such as workers, through the same
+  handling as the DOM's events, for tools, items and views.
 - Add `settings.scaleStrokes`, to scale the stroke widths of paths and
   compound paths along with their content when matrices are applied (#2098,
   #1514).
