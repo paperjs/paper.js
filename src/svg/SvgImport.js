@@ -262,6 +262,13 @@ new function() {
                         // When placing symbols, we need to take both point and
                         // matrix into account. place() does the right thing:
                         ? definition.place(point)
+                        // Rasters are only positioned once their image has
+                        // loaded, which their clones would miss, so import
+                        // their <image> again:
+                        : definition instanceof Raster
+                            ? importNode(getSandbox().ownerDocument
+                                .getElementById(id), options, false)
+                                .translate(point)
                         // A normal item: Clone and translate it.
                         : definition.clone().translate(point)
                     : null;

@@ -228,6 +228,40 @@ test('Import SVG switch', function(assert) {
     });
 });
 
+test('Import SVG Image through <use>', function(assert) {
+    var done = assert.async(),
+        canvas = CanvasProvider.getCanvas(4, 2),
+        url = canvas.toDataURL(),
+        image = '<image xlink:href="' + url + '" width="20" height="10"',
+        uses = paper.project.importSVG('<svg xmlns="http://www.w3.org/2000/svg"'
+            + ' xmlns:xlink="http://www.w3.org/1999/xlink">'
+            + '<defs>' + image + ' id="image"/></defs>'
+            + '<use xlink:href="#image" x="5" y="5"/>'
+            + '<use xlink:href="#image" x="40" y="5"'
+            + ' transform="rotate(90 50 10)"/></svg>'),
+        // The same images, written out where the <use> elements place them:
+        inline = paper.project.importSVG('<svg xmlns="http://www.w3.org/2000/svg"'
+            + ' xmlns:xlink="http://www.w3.org/1999/xlink">'
+            + image + ' x="5" y="5"/>'
+            + '<g transform="rotate(90 50 10)">' + image + ' x="40" y="5"/>'
+            + '</g></svg>'),
+        rasters = uses.getItems({ class: Raster }).concat(
+            inline.getItems({ class: Raster })),
+        loaded = 0;
+    rasters.forEach(function(raster) {
+        raster.on('load', function() {
+            if (++loaded === rasters.length) {
+                equals(rasters[0].bounds, new Rectangle(5, 5, 20, 10),
+                        'first <use> bounds');
+                equals(rasters[0].bounds, rasters[2].bounds, 'first <use>');
+                equals(rasters[1].bounds, rasters[3].bounds, 'second <use>');
+                equals(rasters[0].size, new Size(4, 2), 'raster.size');
+                done();
+            }
+        });
+    });
+});
+
 test('Import SVG Image keeps its pixels (#1963)', function(assert) {
     var done = assert.async(),
         // A 4 x 2 pixel image with a red pixel at 3, 1:

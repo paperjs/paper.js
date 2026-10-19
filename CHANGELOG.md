@@ -140,6 +140,8 @@
   `<tspan>` elements at their own baselines (#988).
 - Fix shadows being cut off on items with a fill, a stroke and an opacity,
   which are drawn through a temporary canvas (#1628).
+- Fix `#importSVG()` of `<use>` elements that place images, which weren't
+  positioned and sized, as their rasters were cloned before the image loaded.
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
