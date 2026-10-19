@@ -4519,7 +4519,7 @@ new function() { // Injection scope for hit-test functions shared with project
             nativeBlend = BlendMode.nativeModes[blendMode],
             // Determine if we can draw directly, or if we need to draw into a
             // separate canvas and then composite onto the main canvas.
-            direct = normalBlend && opacity === 1
+            direct = normalBlend && opacity === 1 && !this._isolated
                     || param.dontStart // e.g. CompoundPath
                     || param.clip
                     // If native blending is possible, see if the item allows it
