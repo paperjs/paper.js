@@ -1114,3 +1114,76 @@ test('hit-testing with tolerance on items in transformed groups (#1278)', functi
     item.matrix = new Matrix(2, 0, 0, 2, 0, 0);
     testTolerance(item, new Point(100, 100), 'scaled symbol item');
 });
+
+test('hitTestAll() points of items in transformed groups', function() {
+    var path = new Path.Rectangle({
+        point: [0, 0],
+        size: [10, 10],
+        fillColor: 'red'
+    });
+    var group = new Group({ children: [path], applyMatrix: false });
+    group.translate(100, 100);
+    var options = { segments: true, tolerance: 2 };
+    var hit = project.hitTest([100, 100], options);
+    var hits = project.hitTestAll([100, 100], options);
+    equals(hit.point, new Point(100, 100), 'hitTest()');
+    // The path's segment, then the group, which is hit through its child:
+    equals(hits.length, 2);
+    equals(hits[0].item === path, true);
+    equals(hits[0].point, new Point(100, 100), 'hitTestAll(): path');
+    equals(hits[1].item === group, true);
+    equals(hits[1].point, new Point(100, 100), 'hitTestAll(): group');
+});
+
+test('hitTestAll() reports all segments of a path in range (#1294)', function() {
+    var path = new Path.RegularPolygon({
+        center: [100, 100],
+        sides: 16,
+        radius: 40,
+        fillColor: 'grey'
+    });
+    // The neighbouring segments are 2 * 40 * sin(PI / 16), about 15.6 away,
+    // the next ones about 30.6:
+    var point = path.firstSegment.point,
+        options = { segments: true, fill: true, tolerance: 20 };
+    var hits = project.hitTestAll(point, options);
+    var segments = hits.filter(function(hit) {
+        return hit.type === 'segment';
+    });
+    equals(segments.length, 3);
+    equals(segments.every(function(hit, i) {
+        return hit.item === path && (!i || hit.point.getDistance(point)
+                >= segments[i - 1].point.getDistance(point));
+    }), true, 'closest first');
+    equals(segments[0].point, point);
+    // The fill hit follows the segments:
+    equals(hits.length, 4);
+    equals(hits[3].type, 'fill');
+    // hitTest() still returns the first hit only:
+    var hit = project.hitTest(point, options);
+    equals(hit.type, 'segment');
+    equals(hit.point, point);
+});
+
+test('Transparent fills are hit, unlike no fill (#1157)', function() {
+    var transparent = new Color(0, 0, 0, 0);
+    var path = new Path.Rectangle({
+        point: [0, 0],
+        size: [20, 20],
+        fillColor: transparent
+    });
+    var shape = new Shape.Circle({
+        center: [60, 10],
+        radius: 10,
+        fillColor: transparent
+    });
+    var hit = project.hitTest([10, 10]);
+    equals(hit && hit.item === path && hit.type, 'fill', 'path');
+    hit = project.hitTest([60, 10]);
+    equals(hit && hit.item === shape && hit.type, 'fill', 'shape');
+    // As in SVG, only items without a fill aren't hit:
+    path.fillColor = null;
+    shape.fillColor = null;
+    equals(project.hitTest([10, 10]), null, 'path without a fill');
+    equals(project.hitTest([60, 10]), null, 'shape without a fill');
+});

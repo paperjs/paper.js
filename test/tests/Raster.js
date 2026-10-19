@@ -301,3 +301,30 @@ test('Raster#clipMask (#1845)', function() {
     comparePixels(createClipped(new Group([createRaster(), createCircle()])),
             createClipped(new Group([createRectangle(), createCircle()])));
 });
+
+test('Raster#exportJSON() and #importJSON() keep the size (#1598)', function(assert) {
+    var done = assert.async();
+    var raster = new Raster({ size: [20, 10] });
+    var json = raster.exportJSON();
+    raster.remove();
+    // The size comes before the source, so older versions apply it first:
+    equals(/"size":\[20,10\],"source":/.test(json), true, 'exported');
+    var imported = project.activeLayer.importJSON(json);
+    equals(imported.size, new Size(20, 10), 'before the image has loaded');
+    equals(imported.bounds.width, 20, 'bounds before the image has loaded');
+    imported.onLoad = function() {
+        equals(imported.size, new Size(20, 10), 'after the image has loaded');
+        done();
+    };
+});
+
+test('Raster#importJSON() without a size, as in older saves (#1598)', function(assert) {
+    var done = assert.async();
+    var source = new Raster({ size: [20, 10], insert: false }).source;
+    var imported = project.activeLayer.importJSON(
+            JSON.stringify(['Raster', { source: source }]));
+    imported.onLoad = function() {
+        equals(imported.size, new Size(20, 10), 'after the image has loaded');
+        done();
+    };
+});

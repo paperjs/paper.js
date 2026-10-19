@@ -385,6 +385,26 @@ test('Export SVG text with tracking', function() {
     equals(text.exportSVG().getAttribute('letter-spacing'), '0.1em');
 });
 
+test('Export SVG text with italic font weights', function() {
+    var text = new PointText({
+        point: [10, 20],
+        content: 'One',
+        fontWeight: 'bold italic'
+    });
+    // SVG keeps the font style apart from the weight:
+    var node = text.exportSVG();
+    equals(node.getAttribute('font-weight'), 'bold');
+    equals(node.getAttribute('font-style'), 'italic');
+    text.fontWeight = 'oblique';
+    node = text.exportSVG();
+    equals(node.getAttribute('font-weight'), 'normal');
+    equals(node.getAttribute('font-style'), 'oblique');
+    text.fontWeight = 600;
+    node = text.exportSVG();
+    equals(node.getAttribute('font-weight'), '600');
+    equals(node.getAttribute('font-style'), null);
+});
+
 test('Export SVG rasters with reuseImages (#1993)', function(assert) {
     var done = assert.async();
 
@@ -659,3 +679,32 @@ if (!isNodeContext) {
         });
     });
 }
+
+test('Export and import SVG blend modes that CSS doesn\'t have (#1296)', function() {
+    function roundTrip(blendMode) {
+        var path = new Path.Rectangle({
+            point: [10, 10],
+            size: [20, 20],
+            fillColor: 'red',
+            blendMode: blendMode
+        });
+        var node = path.exportSVG();
+        path.remove();
+        var imported = project.importSVG(node);
+        return { node: node, blendMode: imported.blendMode };
+    }
+    // CSS blend modes stay in the style, where other viewers render them:
+    var res = roundTrip('multiply');
+    equals(/mix-blend-mode: multiply/.test(res.node.getAttribute('style')),
+            true, 'multiply: style');
+    equals(res.blendMode, 'multiply', 'multiply: imported');
+    // Paper.js's own modes go into an attribute that only Paper.js reads:
+    ['destination-out', 'add', 'negation'].forEach(function(blendMode) {
+        res = roundTrip(blendMode);
+        equals(res.node.getAttribute('data-paper-blend-mode'), blendMode,
+                blendMode + ': attribute');
+        equals(/mix-blend-mode/.test(res.node.getAttribute('style') || ''),
+                false, blendMode + ': not in the style');
+        equals(res.blendMode, blendMode, blendMode + ': imported');
+    });
+});

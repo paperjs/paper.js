@@ -375,6 +375,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             coords = new Array(6);
         for (var i = 0, l = segments.length; i < l; i++)
             segments[i]._transformCoordinates(matrix, coords, true);
+        this._scaleStroke(matrix);
         return true;
     },
 
@@ -1681,8 +1682,13 @@ var Path = PathItem.extend(/** @lends Path# */{
             strokePadding = tolerancePadding,
             join, cap, miterLimit,
             area, loc, res,
+            // When collecting all hits for hitTestAll(), we report every
+            // segment and handle in range, not just the first one:
+            hits = options.all && [],
             hitStroke = options.stroke && style.hasStroke(),
-            hitFill = options.fill && style.hasFill(),
+            // Transparent fills are hit too, only no fill isn't, as in SVG
+            // (#1157):
+            hitFill = options.fill && !!style.getFillColor(),
             hitCurves = options.curves,
             strokeRadius = hitStroke
                     ? style.getStrokeWidth() / 2
@@ -1718,10 +1724,13 @@ var Path = PathItem.extend(/** @lends Path# */{
                 if (pt !== anchor)
                     pt = pt.add(anchor);
                 if (isCloseEnough(pt, strokePadding)) {
-                    return new HitResult(name, that, {
+                    var hit = new HitResult(name, that, {
                         segment: seg,
                         point: pt
                     });
+                    if (!hits)
+                        return hit;
+                    hits.push(hit);
                 }
             }
         }
@@ -1825,7 +1834,7 @@ var Path = PathItem.extend(/** @lends Path# */{
         // Don't process loc yet, as we also need to query for stroke after fill
         // in some cases. Simply skip fill query if we already have a matching
         // stroke. If we have a loc and no stroke then it's a result for fill.
-        return !loc && hitFill && this._contains(point)
+        res = !loc && hitFill && this._contains(point)
                 || loc && !hitStroke && !hitCurves
                     ? new HitResult('fill', this)
                     : loc
@@ -1836,6 +1845,17 @@ var Path = PathItem.extend(/** @lends Path# */{
                             point: loc.getPoint()
                         })
                         : null;
+        if (hits) {
+            // Report the closest segments and handles first, then the rest:
+            hits.sort(function(hit1, hit2) {
+                return hit1.point.getDistance(point)
+                        - hit2.point.getDistance(point);
+            });
+            if (res)
+                hits.push(res);
+            return hits;
+        }
+        return res;
     }
 
     // TODO: intersects(item)

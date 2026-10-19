@@ -25,6 +25,8 @@
  * `html, body { height: 100%; }` and `canvas[resize] { width: 100%; height:
  * 100%; }` for a canvas that fills the window. Without such CSS, the view does
  * not follow the window, and on HiDPI screens it grows with each resize.
+ * Without the attribute, the view sets the element's CSS width and height to
+ * its own size, see {@link #viewSize}.
  */
 var View = Base.extend(Emitter, /** @lends View# */{
     _class: 'View',
@@ -36,10 +38,11 @@ var View = Base.extend(Emitter, /** @lends View# */{
         }
 
         function getCanvasSize() {
-            // Try visible size first, since that will help handling previously
+            // Try the CSS size first, since that will help handling previously
             // scaled canvases (e.g. when dealing with pixel-ratio), without the
-            // padding and border (#1160, #2033).
-            var size = DomElement.getSize(element);
+            // padding and border (#1160, #2033), and without the transforms of
+            // ancestors, which only scale the canvas on screen:
+            var size = new Size(element.offsetWidth, element.offsetHeight);
             return size.isNaN() || size.isZero()
                     // If the element is invisible, we cannot directly access
                     // element.width / height, because they would appear 0.
@@ -245,8 +248,10 @@ var View = Base.extend(Emitter, /** @lends View# */{
                     // Only keep animating if we're allowed to, based on whether
                     // the document is visible and the setting of keepalive. We
                     // keep requesting frame regardless though, so the animation
-                    // picks up again as soon as the view is visible.
-                    if ((!DomElement.getPrefixed(document, 'hidden')
+                    // picks up again as soon as the view is visible. Views
+                    // without an element, as in web workers, always animate.
+                    if (!element
+                            || (!DomElement.getPrefixed(document, 'hidden')
                             || PaperScope.getAttribute(element, 'keepalive')
                                 === 'true') && DomElement.isInView(element)) {
                         that._handleFrame();
@@ -362,6 +367,16 @@ var View = Base.extend(Emitter, /** @lends View# */{
      */
     getProject: function() {
         return this._project;
+    },
+
+    /**
+     * The scope that this view belongs to.
+     *
+     * @bean
+     * @type PaperScope
+     */
+    getScope: function() {
+        return this._scope;
     },
 
     /**
@@ -1184,12 +1199,12 @@ var View = Base.extend(Emitter, /** @lends View# */{
         }
     }
 },
-new function() { // Injection scope for event handling on the browser
-    if (!window)
-        return;
+new function() { // Injection scope for mouse and key event handling
     /**
      * Native event handling, coordinate conversion, focus handling and
-     * delegation to view and tool objects.
+     * delegation to view and tool objects. The handling is shared by the DOM
+     * events in the browser, and #dispatchMouseEvent() and #dispatchKeyEvent()
+     * for hosts without a DOM, such as workers.
      */
     var prevFocus,
         tempFocus,
@@ -1221,31 +1236,35 @@ new function() { // Injection scope for event handling on the browser
         view._handleMouseEvent('mousemove', event, point);
     }
 
-    // Touch handling inspired by Hammer.js
-    var navigator = window.navigator,
-        mousedown, mousemove, mouseup;
-    if (navigator.pointerEnabled || navigator.msPointerEnabled) {
-        // HTML5 / MS pointer events
-        mousedown = 'pointerdown MSPointerDown';
-        mousemove = 'pointermove MSPointerMove';
-        mouseup = 'pointerup pointercancel MSPointerUp MSPointerCancel';
-    } else {
-        mousedown = 'touchstart';
-        mousemove = 'touchmove';
-        mouseup = 'touchend touchcancel';
-        // Do not add mouse events on mobile and tablet devices
-        if (!('ontouchstart' in window && navigator.userAgent.match(
-                /mobile|tablet|ip(ad|hone|od)|android|silk/i))) {
-            // For non pointer events browsers and mixed browsers, like chrome
-            // on Windows8 touch laptop.
-            mousedown += ' mousedown';
-            mousemove += ' mousemove';
-            mouseup += ' mouseup';
-        }
-    }
+    // The DOM events, which install themselves on the elements of views, see
+    // _viewEvents, and on the document:
+    var viewEvents = {};
 
-    var viewEvents = {},
-        docEvents = {
+    if (window) {
+        // Touch handling inspired by Hammer.js
+        var navigator = window.navigator,
+            mousedown, mousemove, mouseup;
+        if (navigator.pointerEnabled || navigator.msPointerEnabled) {
+            // HTML5 / MS pointer events
+            mousedown = 'pointerdown MSPointerDown';
+            mousemove = 'pointermove MSPointerMove';
+            mouseup = 'pointerup pointercancel MSPointerUp MSPointerCancel';
+        } else {
+            mousedown = 'touchstart';
+            mousemove = 'touchmove';
+            mouseup = 'touchend touchcancel';
+            // Do not add mouse events on mobile and tablet devices
+            if (!('ontouchstart' in window && navigator.userAgent.match(
+                    /mobile|tablet|ip(ad|hone|od)|android|silk/i))) {
+                // For non pointer events browsers and mixed browsers, like
+                // chrome on Windows8 touch laptop.
+                mousedown += ' mousedown';
+                mousemove += ' mousemove';
+                mouseup += ' mouseup';
+            }
+        }
+
+        var docEvents = {
             // NOTE: mouseleave does not seem to work on document in IE:
             mouseout: function(event) {
                 // When the moues leaves the document, fire one last mousemove
@@ -1259,71 +1278,73 @@ new function() { // Injection scope for event handling on the browser
             scroll: updateFocus
         };
 
-    // mousemove and mouseup events need to be installed on document, not the
-    // view element, since we want to catch the end of drag events even outside
-    // our view. Only the mousedown events are installed on the view, as defined
-    // by _viewEvents below.
-    viewEvents[mousedown] = function(event) {
-        // Get the view from the event, and store a reference to the view that
-        // should receive keyboard input.
-        var view = View._focused = getView(event);
-        if (!dragging) {
-            dragging = true;
-            view._handleMouseEvent('mousedown', event);
-        }
-    };
-
-    docEvents[mousemove] = function(event) {
-        var view = View._focused;
-        if (!mouseDown) {
-            // See if we can get the view from the current event target, and
-            // handle the mouse move over it.
-            var target = getView(event);
-            if (target) {
-                if (view !== target) {
-                    // Temporarily focus this view without making it sticky, so
-                    // Key events are handled too during the mouse over.
-                    // As we switch view, fire one last mousemove in the old
-                    // view, to let items receive receive a mouseleave, etc.
-                    if (view)
-                        handleMouseMove(view, event);
-                    if (!prevFocus)
-                        prevFocus = view;
-                    view = View._focused = tempFocus = target;
-                }
-            } else if (tempFocus && tempFocus === view) {
-                // Clear temporary focus again and switch back to previous focus
-                // but only if it is still valid (still in the DOM).
-                if (prevFocus && !prevFocus.isInserted())
-                    prevFocus = null;
-                view = View._focused = prevFocus;
-                prevFocus = null;
-                updateFocus();
+        // mousemove and mouseup events need to be installed on document, not
+        // the view element, since we want to catch the end of drag events even
+        // outside our view. Only the mousedown events are installed on the
+        // view, as defined by _viewEvents below.
+        viewEvents[mousedown] = function(event) {
+            // Get the view from the event, and store a reference to the view
+            // that should receive keyboard input.
+            var view = View._focused = getView(event);
+            if (!dragging) {
+                dragging = true;
+                view._handleMouseEvent('mousedown', event);
             }
-        }
-        if (view)
-            handleMouseMove(view, event);
-    };
+        };
 
-    docEvents[mousedown] = function() {
-        // In order to not switch views during scroll dragging on touch devices,
-        // we need to know if the mouse was clicked anywhere on the document
-        // (see docEvents[mousemove]) The rest happens in viewEvents[mousedown].
-        mouseDown = true;
-    };
+        docEvents[mousemove] = function(event) {
+            var view = View._focused;
+            if (!mouseDown) {
+                // See if we can get the view from the current event target, and
+                // handle the mouse move over it.
+                var target = getView(event);
+                if (target) {
+                    if (view !== target) {
+                        // Temporarily focus this view without making it sticky,
+                        // so Key events are handled too during the mouse over.
+                        // As we switch view, fire one last mousemove in the old
+                        // view, to let items receive receive a mouseleave, etc.
+                        if (view)
+                            handleMouseMove(view, event);
+                        if (!prevFocus)
+                            prevFocus = view;
+                        view = View._focused = tempFocus = target;
+                    }
+                } else if (tempFocus && tempFocus === view) {
+                    // Clear temporary focus again and switch back to previous
+                    // focus but only if it is still valid (still in the DOM).
+                    if (prevFocus && !prevFocus.isInserted())
+                        prevFocus = null;
+                    view = View._focused = prevFocus;
+                    prevFocus = null;
+                    updateFocus();
+                }
+            }
+            if (view)
+                handleMouseMove(view, event);
+        };
 
-    docEvents[mouseup] = function(event) {
-        var view = View._focused;
-        if (view && dragging)
-            view._handleMouseEvent('mouseup', event);
-        mouseDown = dragging = false;
-    };
+        docEvents[mousedown] = function() {
+            // In order to not switch views during scroll dragging on touch
+            // devices, we need to know if the mouse was clicked anywhere on the
+            // document (see docEvents[mousemove]) The rest happens in
+            // viewEvents[mousedown].
+            mouseDown = true;
+        };
 
-    DomEvent.add(document, docEvents);
+        docEvents[mouseup] = function(event) {
+            var view = View._focused;
+            if (view && dragging)
+                view._handleMouseEvent('mouseup', event);
+            mouseDown = dragging = false;
+        };
 
-    DomEvent.add(window, {
-        load: updateFocus
-    });
+        DomEvent.add(document, docEvents);
+
+        DomEvent.add(window, {
+            load: updateFocus
+        });
+    }
 
     /**
      * Higher level event handling, hit-testing, and emitting of normal mouse
@@ -1425,9 +1446,31 @@ new function() { // Injection scope for event handling on the browser
      * Required by code that is counting the amount of required natives events.
      * The mapping is native -> virtual.
      */
+    // Stands in for the DOM event in #dispatchMouseEvent() and
+    // #dispatchKeyEvent(), with what the handling reads from it. Hosts can
+    // pass the state of the modifier keys, see Key.modifiers:
+    function createEvent(type, options) {
+        if (options.modifiers)
+            Key.modifiers.set(options.modifiers);
+        return {
+            type: type,
+            timeStamp: options.timeStamp != null ? options.timeStamp
+                    : Date.now(),
+            button: options.button || 0,
+            cancelable: true,
+            defaultPrevented: false,
+            preventDefault: function() {
+                this.defaultPrevented = true;
+            },
+            stopPropagation: function() {}
+        };
+    }
+
     var itemEventsMap = {
+        // mouseup too, as the press needs the item for needsUp():
         mousedown: {
             mousedown: 1,
+            mouseup: 1,
             mousedrag: 1,
             click: 1,
             doubleclick: 1
@@ -1446,8 +1489,69 @@ new function() { // Injection scope for event handling on the browser
         }
     };
 
-    return {
+    return /** @lends View# */{
         _viewEvents: viewEvents,
+
+        /**
+         * Handles a mouse event that the host provides, for hosts without a
+         * DOM, such as workers, or with their own event source. It runs the
+         * same handling as the DOM's mouse events: the active tool's handlers,
+         * with {@link Tool#minDistance} and the like, then those of the items
+         * under the point and of the view, including the events that Paper.js
+         * derives itself: `'mousedrag'`, `'click'`, `'doubleclick'`,
+         * `'mouseenter'` and `'mouseleave'`.
+         *
+         * @option [options.modifiers] {Object} the state of the modifier keys,
+         *     see {@link Key#modifiers}
+         * @option [options.button=0] {Number} the mouse button
+         * @option [options.timeStamp=Date.now()] {Number} the time stamp
+         *
+         * @param {String} type the type of the event: {@values 'mousedown',
+         *     'mousemove', 'mouseup'}
+         * @param {Point} point the location of the mouse in project coordinates
+         * @param {Object} [options] the details of the event
+         * @return {Boolean} {@true if a handler prevented the event's default}
+         */
+        dispatchMouseEvent: function(type, point, options) {
+            if (!/^mouse(down|move|up)$/.test(type))
+                throw new Error('Unknown mouse event type: \'' + type + '\'.');
+            var event = createEvent(type, options || {});
+            // Track presses and drags as the DOM events do:
+            if (type === 'mousedown') {
+                View._focused = this;
+                mouseDown = dragging = true;
+            }
+            this._handleMouseEvent(type, event, new Point(point));
+            if (type === 'mouseup')
+                mouseDown = dragging = false;
+            return event.defaultPrevented;
+        },
+
+        /**
+         * Handles a key event that the host provides, for hosts without a DOM,
+         * such as workers, or with their own event source. It updates
+         * {@link Key#modifiers} and {@link Key#isDown(key)}, and calls the
+         * view's and the active tool's handlers, as the DOM's key events do.
+         *
+         * @option [options.character] {String} the character that the key
+         *     produces. By default, keydown takes the key itself if it is a
+         *     single character, and keyup the character of its keydown
+         * @option [options.modifiers] {Object} the state of the modifier keys,
+         *     see {@link Key#modifiers}
+         * @option [options.timeStamp=Date.now()] {Number} the time stamp
+         *
+         * @param {String} type the type of the event: {@values 'keydown',
+         *     'keyup'}
+         * @param {String} key the key, as in {@link KeyEvent#key}
+         * @param {Object} [options] the details of the event
+         */
+        dispatchKeyEvent: function(type, key, options) {
+            if (!/^key(down|up)$/.test(type))
+                throw new Error('Unknown key event type: \'' + type + '\'.');
+            options = options || {};
+            Key._handleKey(type === 'keydown', key, options.character,
+                    createEvent(type, options), this);
+        },
 
         /**
          * Private method to handle mouse events, and delegate to items and
@@ -1468,6 +1572,34 @@ new function() { // Injection scope for event handling on the browser
                         || tool && tool.responds(type);
             }
 
+            // Whether the press needs its default prevented for the events
+            // that follow it: the view's or the tool's mouseup, or those of the
+            // hit item and its ancestors. Presses elsewhere are left to the
+            // browser, so touches can scroll the page (#1930):
+            function needsUp(hitItem) {
+                if (view.responds('mouseup')
+                        || tool && tool.responds('mouseup'))
+                    return true;
+                for (var item = hitItem; item; item = item._parent) {
+                    for (var key in itemEventsMap.mouseup) {
+                        if (item.responds(key))
+                            return true;
+                    }
+                }
+                return false;
+            }
+
+            // DOM events know the state of the modifier keys, also of those
+            // pressed or released while the page didn't have the focus, so no
+            // key event told us about them (#1140):
+            if (event.shiftKey !== undefined) {
+                Key.modifiers.set({
+                    shift: event.shiftKey,
+                    control: event.ctrlKey,
+                    alt: event.altKey,
+                    meta: event.metaKey
+                });
+            }
             // If it's a native mousemove event but the mouse is down, and at
             // least one of the events responds to mousedrag, convert to it.
             // NOTE: emitMouseEvent(), as well as Tool#_handleMouseEvent() fall
@@ -1477,9 +1609,17 @@ new function() { // Injection scope for event handling on the browser
             if (!point)
                 point = this.getEventPoint(event);
 
-            // Run the hit-test on items first, but only if we're required to do
-            // so for this given mouse event, see hitItems, #_countItemEvent():
-            var inView = this.getBounds().contains(point),
+            // The moves come from the whole document, so outside of drags, the
+            // pointer is only over the view when no other element covers it,
+            // such as a menu (#992). Its own element and its ancestors don't:
+            var target = DomEvent.getTarget(event),
+                isCovered = nativeMove && !dragging && target
+                        && target.nodeType === 1
+                        && !target.contains(this._element),
+                inView = !isCovered && this.getBounds().contains(point),
+                // Run the hit-test on items first, but only if we're required
+                // to do so for this given mouse event, see hitItems and
+                // #_countItemEvent():
                 hit = hitItems && inView && view._project.hitTest(point, {
                     tolerance: 0,
                     fill: true,
@@ -1580,15 +1720,15 @@ new function() { // Injection scope for event handling on the browser
             // Now call `preventDefault()`, if any of these conditions are met:
             // - If any of the handlers were called, except for mousemove events
             //   which can call `preventDefault()` explicitly or return `false`.
-            // - If this is a unhandled mousedown event, but the view or tools
-            //   respond to mouseup.
+            // - If this is a unhandled mousedown event, but what follows needs
+            //   it, see needsUp().
             //
             // Some events are not cancelable anyway (like during a scroll
             // inertia on mobile) so trying to prevent default in those case
             // would result in no effect and an error.
             if (
                 event.cancelable !== false
-                && (called && !mouse.move || mouse.down && responds('mouseup'))
+                && (called && !mouse.move || mouse.down && needsUp(hitItem))
             ) {
                 event.preventDefault();
             }
@@ -1612,12 +1752,10 @@ new function() { // Injection scope for event handling on the browser
                 }
             }
 
-            if (this.isVisible()) {
-                // Call the onKeyDown or onKeyUp handler if present
-                emit(this);
-                if (tool && tool.responds(type))
-                    emit(tool);
-            }
+            // Call the onKeyDown or onKeyUp handler if present
+            emit(this);
+            if (tool && tool.responds(type))
+                emit(tool);
         },
 
         _countItemEvent: function(type, sign) {

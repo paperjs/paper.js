@@ -1,6 +1,6 @@
 {
   "name": "paper",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "description": "The Swiss Army Knife of Vector Graphics Scripting",
   "license": "MIT",
   "homepage": "http://paperjs.org",
@@ -26,7 +26,9 @@
     "jshint": "gulp jshint",
     "test": "gulp test",
     "test:browser": "gulp test:browser",
-    "test:node": "gulp test:node"
+    "test:chrome": "gulp test:chrome",
+    "test:node": "gulp test:node",
+    "prepare": "husky"
   },
   "files": [
     "AUTHORS.md",
@@ -41,12 +43,6 @@
   ],
   "engines": {
     "node": ">=8.0.0"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "yarn jshint --ensure-branch develop",
-      "pre-push": "yarn test --ensure-branch develop"
-    }
   },
   "browser": {
     "./dist/node/extend.js": false,
@@ -78,14 +74,14 @@
     "gulp-webserver": "^0.9.1",
     "gulp-whitespace": "^0.1.0",
     "gulp-zip": "^5.1.0",
-    "husky": "^4.3.8",
+    "husky": "^9.1.7",
     "jsdom": "^28.1.0",
     "jshint": "^2.13.6",
     "jshint-summary": "^0.4.0",
     "merge-stream": "^2.0.0",
     "minimist": "^1.2.8",
     "mustache": "^4.2.0",
-    "prepro": "^2.4.0",
+    "prepro": "^2.5.0",
     "qunitjs": "^1.23.1",
     "require-dir": "^1.2.0",
     "resemblejs": "^3.2.5",
@@ -94,13 +90,6 @@
     "stats.js": "^0.17.0",
     "straps": "^3.0.1",
     "typescript": "^3.9.10"
-  },
-  "workspaces": [
-    "packages/*"
-  ],
-  "resolutions": {
-    "graceful-fs": "4.2.2",
-    "resemblejs/canvas": "^3.2.3"
   },
   "keywords": [
     "vector",
@@ -118,5 +107,6 @@
     "paper",
     "paper.js",
     "paperjs"
-  ]
+  ],
+  "packageManager": "pnpm@12.9.0"
 }

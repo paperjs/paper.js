@@ -31,6 +31,17 @@ var PathItem = Item.extend(/** @lends PathItem# */{
         // Do nothing.
     },
 
+    // Scale the stroke with the matrix that is applied to the content, when
+    // settings.scaleStrokes asks for it:
+    _scaleStroke: function(matrix) {
+        var style = this._style;
+        if (this._project._scope.settings.scaleStrokes
+                && style.getStrokeScaling()) {
+            style.setStrokeWidth(style.getStrokeWidth()
+                    * matrix._getMeanScale());
+        }
+    },
+
     statics: /** @lends PathItem */{
         /**
          * Creates a path item from the given SVG path-data, determining if the

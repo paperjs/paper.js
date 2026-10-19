@@ -147,6 +147,10 @@ new function() { // Injection scope for various item event handlers
             // Allow setting another project than the currently active one.
             project = hasProps && props.project || paper.project,
             settings = paper.settings;
+        if (!project) {
+            throw new Error('Unable to create an item without a project. '
+                    + 'Call paper.setup() or create a Project first.');
+        }
         this._id = internal ? null : UID.get();
         this._parent = this._index = null;
         // Inherit the applyMatrix setting from settings.applyMatrix
@@ -1378,6 +1382,15 @@ new function() { // Injection scope for various item event handlers
     },
 
     /**
+     * The scope that this item belongs to, through its project.
+     * @type PaperScope
+     * @bean
+     */
+    getScope: function() {
+        return this._project._scope;
+    },
+
+    /**
      * Overrides Emitter#_installEvents to also call _installEvents on all
      * children.
      */
@@ -2061,14 +2074,17 @@ new function() { // Injection scope for hit-test functions shared with project
      */
 
     _hitTest: function(point, options, parentViewMatrix) {
+        // Shells of sourced items are rejected by their bounds below, as
+        // checking for emptiness would load them:
         if (this._locked || !this._visible || this._guide && !options.guides
-                || this.isEmpty()) {
+                || !this._shell && this.isEmpty()) {
             return null;
         }
 
         // Check if the point is withing roughBounds + tolerance, but only if
         // this item does not have children, since we'd have to travel up the
-        // chain already to determine the rough bounds.
+        // chain already to determine the rough bounds. Shells of sourced items
+        // know their rough bounds without loading their children.
         var matrix = this._matrix,
             // If this is the first one in the recursion, the point is in global
             // coordinates, so transform it by the item's globalMatrix:
@@ -2095,7 +2111,7 @@ new function() { // Injection scope for hit-test functions shared with project
         // Transform point to local coordinates.
         point = pointMatrix._inverseTransform(point);
         // If the matrix is non-reversible, point will now be `null`:
-        if (!point || !this._children &&
+        if (!point || (this._shell || !this._children) &&
             !this.getBounds({ internal: true, stroke: true, handle: true })
                 .expand(tolerancePadding.multiply(2))._containsPoint(point)) {
             return null;
@@ -2115,11 +2131,26 @@ new function() { // Injection scope for hit-test functions shared with project
             res;
 
         function filter(hit) {
+            // Path#_hitTestSelf() returns a list of all its hits when we're
+            // collecting them, see hitTestAll():
+            if (Array.isArray(hit)) {
+                var first = null;
+                for (var i = 0, l = hit.length; i < l; i++) {
+                    var res = filter(hit[i]);
+                    first = first || res;
+                }
+                return first;
+            }
             if (hit && match && !match(hit))
                 hit = null;
-            // If we're collecting all matches, add it to options.all
-            if (hit && options.all)
+            // If we're collecting all matches, add it to options.all, with its
+            // point in project coordinates, as it won't be returned through the
+            // ancestors that transform it below:
+            if (hit && options.all) {
+                if (hit.point)
+                    hit.point = that.getGlobalMatrix().transform(hit.point);
                 options.all.push(hit);
+            }
             return hit;
         }
 
@@ -2173,16 +2204,18 @@ new function() { // Injection scope for hit-test functions shared with project
                             : viewMatrix._shiftless().invert()))
                 || null;
         }
-        // Transform the point back to the outer coordinate system.
-        if (res && res.point) {
+        // Transform the point back to the outer coordinate system, unless it
+        // was collected in project coordinates already, see filter():
+        if (res && res.point && !options.all) {
             res.point = pointMatrix.transform(res.point);
         }
         return res;
     },
 
     _hitTestSelf: function(point, options) {
-        // The default implementation honly handles 'fill' through #_contains()
-        if (options.fill && this.hasFill() && this._contains(point))
+        // The default implementation only handles 'fill' through #_contains(),
+        // transparent fills too, see Path#_hitTestSelf():
+        if (options.fill && this.getFillColor() && this._contains(point))
             return new HitResult('fill', this);
     },
 
@@ -2440,6 +2473,22 @@ new function() { // Injection scope for hit-test functions shared with project
      * @return {Item}
      */
     importJSON: function(json) {
+        json = typeof json === 'string' ? JSON.parse(json) : json;
+        var props = json && json[0] === this._class && json[1];
+        if (Base.isPlainObject(props)) {
+            // Importing into this item: first reset the fields that the JSON
+            // leaves out to the values of a new item, so it ends up the same
+            // as a newly imported one (#1425):
+            var item = new this.constructor(Item.NO_INSERT),
+                fields = Base.set({}, this._serializeFields,
+                    this instanceof Group ? null : this._style._defaults),
+                defaults = {};
+            for (var key in fields) {
+                if (!(key in props) && !Base.equals(this[key], item[key]))
+                    defaults[key] = item[key];
+            }
+            this.set(defaults);
+        }
         // Try importing into `this`. If another item is returned, try adding
         // it as a child (this won't be successful on some classes, returning
         // null).
@@ -2841,6 +2890,11 @@ new function() { // Injection scope for hit-test functions shared with project
             // Uninstall events while still inserted, as layers aren't anymore
             // after Base.splice() below.
             this._installEvents(false);
+            // Notify self of the insertion change while still inserted, so it
+            // is logged. We only need this notification if we're tracking
+            // changes.
+            if (notifySelf && project._changes)
+                this._changed(/*#=*/Change.INSERTION);
             // Handle index separately from owner: There are situations where
             // the item is already removed from its list through Base.splice()
             // and index set to undefined, but the owner is still set,
@@ -2852,10 +2906,6 @@ new function() { // Injection scope for hit-test functions shared with project
                             || this.getPreviousSibling();
                 Base.splice(owner._children, null, index, 1);
             }
-            // Notify self of the insertion change. We only need this
-            // notification if we're tracking changes for now.
-            if (notifySelf && project._changes)
-                this._changed(/*#=*/Change.INSERTION);
             // Notify owner of changed children (this can be the project too).
             if (notifyParent)
                 owner._changed(/*#=*/Change.CHILDREN, this);
@@ -2997,9 +3047,10 @@ new function() { // Injection scope for hit-test functions shared with project
     /**
      * {@grouptitle Style Tests}
      *
-     * Checks whether the item has a fill.
+     * Checks whether the item has a visible fill, a fill color with an alpha
+     * above 0. Hit-tests also hit transparent fills, see {@link #hitTest}.
      *
-     * @return {Boolean} {@true if the item has a fill}
+     * @return {Boolean} {@true if the item has a visible fill}
      */
     hasFill: function() {
         return this.getStyle().hasFill();
@@ -3293,7 +3344,9 @@ new function() { // Injection scope for hit-test functions shared with project
     /**
      * Specifies whether the stroke is to be drawn taking the current affine
      * transformation into account (the default behavior), or whether it should
-     * appear as a non-scaling stroke.
+     * appear as a non-scaling stroke. On text, non-scaling strokes are exact for
+     * uniform scaling only, as the glyphs are always stroked through the
+     * transformation.
      *
      * @name Item#strokeScaling
      * @property
@@ -4497,7 +4550,7 @@ new function() { // Injection scope for hit-test functions shared with project
             nativeBlend = BlendMode.nativeModes[blendMode],
             // Determine if we can draw directly, or if we need to draw into a
             // separate canvas and then composite onto the main canvas.
-            direct = normalBlend && opacity === 1
+            direct = normalBlend && opacity === 1 && !this._isolated
                     || param.dontStart // e.g. CompoundPath
                     || param.clip
                     // If native blending is possible, see if the item allows it

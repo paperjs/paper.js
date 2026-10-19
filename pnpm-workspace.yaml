@@ -1,0 +1,27 @@
+packages:
+  - packages/*
+
+# Keep the flat node_modules of npm and Yarn, as gulp 3 and its plugins require
+# packages that they don't declare:
+nodeLinker: hoisted
+
+# Resolve the packages' dependency on paper to the workspace, as Yarn did:
+linkWorkspacePackages: true
+
+# pnpm only installs versions that are at least a day old, as a guard against
+# compromised releases. Exempt Jürg's own packages:
+minimumReleaseAgeExclude:
+  - prepro
+  - gulp-prepro
+  - straps
+
+overrides:
+  graceful-fs: 4.2.2
+  resemblejs>canvas: ^3.2.3
+  # gulp-qunits only needs PhantomJS for its browser runner, which isn't used:
+  phantomjs-prebuilt: '-'
+
+# Only let the dependencies run install scripts that need them: canvas for the
+# Node.js tests:
+allowBuilds:
+  canvas: true

@@ -86,7 +86,13 @@ if (!isNodeContext) {
                 PaperScript.load(script);
                 document.body.removeChild(script);
             }
-            return paper.stack;
+            return getScope().stack;
+        }
+
+        // With the built library, PaperScript doesn't set the global `paper`,
+        // so get the canvas' scope:
+        function getScope() {
+            return PaperScope.get(canvas.getAttribute('data-paper-scope'));
         }
 
         // Stack traces name the sourceURL that devtools list the code under:
@@ -98,8 +104,51 @@ if (!isNodeContext) {
         // Inline code that isn't part of the html:
         stack = load('paper.stack = new Error("detached").stack;', null, true);
         ok(stack.indexOf(document.baseURI) !== -1, stack);
-        paper.remove();
+        getScope().remove();
         document.body.removeChild(canvas);
         current.activate();
     });
 }
+
+test('PaperScript keeps the native globals (#1832)', function() {
+    var exports = PaperScript.execute(
+            'module.exports.symbol = Symbol;\n'
+            + 'module.exports.event = Event;\n'
+            + 'module.exports.path = Path;', paper);
+    // Paper.js's classes of the same names don't shadow the native ones:
+    equals(function() {
+        return exports.symbol === Symbol && exports.symbol !== paper.Symbol;
+    }, true, 'Symbol');
+    // In the browser, the tests load the sources directly, which declares
+    // Paper.js's classes as globals, so only Node.js has the native Event:
+    if (isNodeContext) {
+        equals(function() {
+            return exports.event !== paper.Event;
+        }, true, 'Event');
+    }
+    equals(function() {
+        return exports.path === Path;
+    }, true, 'Path');
+});
+
+test('PaperScript.execute(code, scope, { handlers })', function() {
+    var exports = PaperScript.execute(
+            'function onStop() { return \'stopped\'; }\n'
+            + 'function onStart() {}', paper, { handlers: ['onStop'] });
+    equals(function() {
+        return exports.onStop();
+    }, 'stopped');
+    equals(function() {
+        return exports.onStart;
+    }, undefined);
+});
+
+test('PaperScript creates a tool for onActivate()', function() {
+    var exports = PaperScript.execute('function onActivate() {}', paper),
+        tool = paper.tools[paper.tools.length - 1];
+    equals(function() {
+        return tool && tool.onActivate === exports.onActivate;
+    }, true);
+    if (tool)
+        tool.remove();
+});

@@ -26,6 +26,9 @@ var Raster = Item.extend(/** @lends Raster# */{
     _boundsOptions: { stroke: false, handle: false },
     _serializeFields: {
         crossOrigin: null, // NOTE: Needs to be set before source to work!
+        // The size comes before the source, so versions that don't treat it
+        // as a placeholder, see #set(), apply it before the source too:
+        size: new Size(),
         source: null
     },
     // Prioritize `crossOrigin` over `source`:
@@ -330,6 +333,20 @@ var Raster = Item.extend(/** @lends Raster# */{
      * events. This is used by #setImage(), but also in other places where
      * underlying canvases are replaced, resized, etc.
      */
+    /**
+     * @private
+     */
+    set: function set(props, exclude) {
+        // A size that comes with a source, as from #importJSON(), only holds
+        // the place of the image's size until it has loaded, see #_setImage(),
+        // so don't create a canvas for it:
+        if (props && props.source && props.size) {
+            this._size = new Size(props.size);
+            exclude = Base.set({ size: true }, exclude);
+        }
+        return set.base.call(this, props, exclude);
+    },
+
     _setImage: function(image) {
         if (this._canvas)
             CanvasProvider.release(this._canvas);
@@ -349,9 +366,14 @@ var Raster = Item.extend(/** @lends Raster# */{
         // naturalWidth / Height needs to be checked for a swell, because it
         // apparently can have width / height set to 0 when the image is
         // invisible in the document.
-        this._size = new Size(
-                image ? image.naturalWidth || image.width : 0,
-                image ? image.naturalHeight || image.height : 0);
+        // While an image is still loading, keep the current size as a
+        // placeholder, such as the one from #importJSON() (#1598), until the
+        // loaded image sets its own:
+        this._size = image && !this._loaded
+                ? this._size || new Size()
+                : new Size(
+                    image ? image.naturalWidth || image.width : 0,
+                    image ? image.naturalHeight || image.height : 0);
         this._context = null;
         this._changed(/*#=*/(Change.GEOMETRY | Change.PIXELS));
     },

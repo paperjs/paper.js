@@ -1,5 +1,90 @@
 # Change Log
 
+## `0.14.0`
+
+### Added
+
+- Add `options.handlers` to `PaperScript.execute()`, to export further global
+  handlers next to `onFrame`, `onResize` and the tool's, for hosts that call
+  them themselves, such as Scriptographer's `onStop`.
+- Add `Tool#eventInterval`, as Scriptographer had it, to fire `onMouseDrag` again
+  at an interval while the mouse button is held, also when the mouse doesn't
+  move.
+- Add `Project#scope`, `View#scope`, `Item#scope` and `Tool#scope`, to get from
+  each of them to its `PaperScope` (#1634).
+- Add `Group#isolated`, to draw a group or layer through a temporary canvas, so
+  that the blend modes of its children, such as `'destination-out'`, only apply
+  within it, like CSS's `isolation: isolate` (#474).
+- Add `View#dispatchMouseEvent()` and `View#dispatchKeyEvent()`, to feed mouse
+  and key events from hosts without a DOM, such as workers, through the same
+  handling as the DOM's events, for tools, items and views.
+- Add `settings.scaleStrokes`, to scale the stroke widths of paths and
+  compound paths along with their content when matrices are applied (#2098,
+  #1514).
+- Add the `paper-sourced.js` build, in which a project's items can be backed
+  by a host document through `Project#source`: items are created as light
+  shells from the host's records, and load their content and children from
+  the host on first access, so a script costs what it touches. Includes
+  `HostItem`, for the host's own kinds of nodes (#2203).
+- Add `Project#trackChanges` and `Project#takeChanges()`, to let hosts that
+  keep their own document update only the items that changed, and export
+  `ChangeFlag` (#2202).
+
+### Changed
+
+- `Path.RegularPolygon()` follows Illustrator: it stands on a flat bottom edge
+  for any number of sides, and its segments run counterclockwise from its top
+  vertex, or with an even number of sides, from the right end of its top edge.
+  This changes the segment order of all regular polygons, and turns those with
+  a multiple of 6 sides onto an edge (#1787).
+- Hit-test transparent fills, as in SVG: only items without a fill color are
+  not hit through their fill (#1157).
+- `paper.install()` keeps what the target scope has already, such as the
+  native `Event`, `MouseEvent` and `Symbol`, and PaperScript doesn't shadow
+  existing globals with Paper.js's classes of the same name either (#1832,
+  #1652).
+- `Item#importJSON()` into an existing item resets the fields that the JSON
+  leaves out, so the item ends up the same as a newly imported one, with its
+  place in the scene graph and its event handlers kept (#1425, #1324).
+- Canvases without `resize` get their CSS size from the view on every screen,
+  not only at pixel ratios other than 1, where the page's CSS won (#2088).
+- `#hitTestAll()` reports every segment and handle of a path within the
+  tolerance, closest first, followed by its stroke or fill hit, instead of only
+  the first hit per path (#1294).
+
+### Fixed
+
+- Create the tool in PaperScript for all of its global handlers, also for
+  scripts that only define `onActivate()` or `onDeactivate()`, and document
+  `Tool#onActivate` and `Tool#onDeactivate`.
+- Keep `Key.modifiers` in sync with the flags of mouse events, so modifier keys
+  pressed or released while the page didn't have the focus don't stay wrong
+  (#1140).
+- Keep Paper.js's own blend modes, which CSS doesn't have, such as
+  `'destination-out'`, through SVG export and import, in a
+  `data-paper-blend-mode` attribute (#1296).
+- Throw a clear error when creating an item without a project, instead of a
+  null access deep inside the constructor (#1889).
+- Free the pixels of temporary canvases when they're released, which their pool
+  kept allocated at their largest size for the life of the page.
+- Keep the size of rasters in JSON, so imported rasters have their size and
+  bounds before their image has loaded, or if it fails to load (#1598).
+- Fix the frame timer of workers and Node.js running forever after any script,
+  which kept hosts from seeing scripts end.
+- Fix touch scrolling over empty parts of a canvas whose items have mouse
+  handlers (#1930).
+- Fix mouse events reaching items and views through elements that cover the
+  canvas, such as menus. Drags still reach beyond them (#992).
+- Fix the points of `#hitTestAll()` results of items inside transformed
+  groups, which were in the items' own coordinates.
+- Support `strokeScaling: false` on text, exactly for uniform scaling (#1703).
+- Fix the view size of canvases inside elements with CSS transforms, which
+  only scale the canvas on screen.
+- Fix italic and oblique font weights in SVG export and import, which SVG
+  keeps in `font-style` (#937).
+- Fix `onFrame` in web workers, where views have no element (#2200).
+- Fix `PaperScope#execute()` in web workers (#2201).
+
 ## `0.13.0`
 
 ### Added

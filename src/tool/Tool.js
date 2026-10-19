@@ -51,6 +51,15 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
             'onActivate', 'onDeactivate', 'onEditOptions', 'onKeyDown',
             'onKeyUp'],
 
+    /**
+     * The scope that this tool belongs to.
+     *
+     * @name Tool#scope
+     * @property
+     * @type PaperScope
+     * @readonly
+     */
+
     // DOCS: rewrite Tool constructor explanation
     initialize: function Tool(props) {
         PaperScopeItem.call(this);
@@ -111,6 +120,30 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
                 && maxDistance < this._minDistance) {
             this._minDistance = maxDistance;
         }
+    },
+
+    /**
+     * The interval in milliseconds at which the onMouseDrag event fires again
+     * while the mouse button is held, also when the mouse doesn't move. The
+     * repeated events are at the last point, with a zero
+     * {@link ToolEvent#delta}. `null`, the default, or anything up to 0 turns
+     * it off.
+     *
+     * @bean
+     * @type Number
+     * @default null
+     *
+     * @example
+     * // Fire the onMouseDrag event 10 times a second, while the mouse button
+     * // is held:
+     * tool.eventInterval = 100;
+     */
+    getEventInterval: function() {
+        return this._eventInterval;
+    },
+
+    setEventInterval: function(interval) {
+        this._eventInterval = interval;
     },
 
     // DOCS: document Tool#fixedDistance
@@ -283,6 +316,34 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      */
 
     /**
+     * {@grouptitle Activation Event Handlers}
+     *
+     * The function to be called when the tool is activated through
+     * {@link #activate()}. The function receives the previously active tool,
+     * which is the tool itself when it was already active.
+     *
+     * @name Tool#onActivate
+     * @property
+     * @type ?Function
+     *
+     * @example
+     * tool.onActivate = function(previous) {
+     *     if (previous == tool) {
+     *         console.log('The tool was activated again!');
+     *     }
+     * }
+     */
+
+    /**
+     * The function to be called when another tool is activated through
+     * {@link #activate()}, while this one is active.
+     *
+     * @name Tool#onDeactivate
+     * @property
+     * @type ?Function
+     */
+
+    /**
      * Private method to handle tool-events.
      *
      * @return {@true if at least one event handler was called}.
@@ -350,7 +411,26 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
         if (mouse.down) {
             update();
             emit();
+            if (this._eventInterval > 0) {
+                // Repeat mousedrag at the last point while the mouse is held,
+                // until the mouse is released or another tool takes over:
+                clearInterval(this._timer);
+                this._timer = setInterval(function() {
+                    if (tool.isActive()) {
+                        paper = tool._scope;
+                        tool._lastPoint = tool._point;
+                        tool._moveCount++;
+                        if (tool.responds('mousedrag')) {
+                            tool.emit('mousedrag',
+                                    new ToolEvent(tool, 'mousedrag', event));
+                        }
+                    } else {
+                        clearInterval(tool._timer);
+                    }
+                }, this._eventInterval);
+            }
         } else if (mouse.up) {
+            clearInterval(this._timer);
             update(null, this._maxDistance);
             emit();
         } else if (responds) {

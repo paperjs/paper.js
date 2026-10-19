@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.13.0 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.14.0 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 15:20:53 2026 +0200
+ * Date: Tue Oct 20 01:16:49 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -37,6 +37,79 @@ declare namespace paper {
         | { x: number, y: number, width: number, height: number }
         | { from: PointLike, to: PointLike }
     )
+
+    
+    class ChangeFlag  {
+        /** 
+         * Anything affecting the appearance of an item, including GEOMETRY,
+         * STROKE, STYLE and ATTRIBUTE (except for the invisible ones: locked, name)
+         */
+        static APPEARANCE: number
+
+        /** 
+         * A change in the item's children
+         */
+        static CHILDREN: number
+
+        /** 
+         * A change of the item's place in the scene graph (removed, inserted,
+         * moved)
+         */
+        static INSERTION: number
+
+        /** 
+         * Item geometry (path, bounds)
+         */
+        static GEOMETRY: number
+
+        /** 
+         * The item's matrix has changed
+         */
+        static MATRIX: number
+
+        /** 
+         * Only segment(s) have changed, and affected curves have already been
+         * notified. This is to implement an optimization in _changed() calls
+         */
+        static SEGMENTS: number
+
+        /** 
+         * Stroke geometry (excluding color)
+         */
+        static STROKE: number
+
+        /** 
+         * Fill style or stroke color / dash
+         */
+        static STYLE: number
+
+        /** 
+         * Item attributes: visible, blendMode, locked, name, opacity, clipMask ...
+         */
+        static ATTRIBUTE: number
+
+        /** 
+         * Text content
+         */
+        static CONTENT: number
+
+        /** 
+         * Raster pixels
+         */
+        static PIXELS: number
+
+        /** 
+         * Clipping in one of the child items
+         */
+        static CLIPPING: number
+
+        /** 
+         * The view has been transformed
+         */
+        static VIEW: number
+
+
+    }
 
     /** 
      * All properties and functions that expect color values in the form
@@ -1274,6 +1347,16 @@ declare namespace paper {
          */
         clipped: boolean
 
+        /** 
+         * Specifies whether the group is isolated, drawn through a temporary
+         * canvas, so that the blend modes of its children only apply within it,
+         * like CSS's `isolation: isolate`. Without it, a compositing mode such as
+         * `'destination-out'` affects everything drawn below the group, also in
+         * other layers. Groups with an {@link Item#opacity} below 1 or a
+         * {@link Item#blendMode} are isolated anyway.
+         */
+        isolated: boolean
+
 
         /** 
          * Creates a new Group item and places it at the top of the active layer.
@@ -1308,6 +1391,14 @@ declare namespace paper {
         /** 
          * If the HitResult has a {@link HitResult#type} of `'bounds'`, this
          * property describes which corner of the bounding rectangle was hit.
+         * 
+         * The names refer to the item's own bounding rectangle, transformed by its
+         * {@link Item#matrix}, which is the rectangle that the item's selection
+         * draws. On mirrored or rotated items, a handle can therefore appear
+         * elsewhere on screen than its name says, while its opposite handle and
+         * the rectangle's axes stay the ones to transform the item by. To choose
+         * a cursor, use the direction from the rectangle's center to
+         * {@link HitResult#point}, both in project coordinates.
          */
         name: string
 
@@ -1345,6 +1436,17 @@ declare namespace paper {
     }
 
     /** 
+     * A HostItem represents a node of a host document that has no
+     * counterpart in Paper.js. Its bounds come from the host, it draws nothing,
+     * and only its matrix and attributes can be changed. Hosts can extend it to
+     * expose their own node kinds, storing their properties in `_values`, and
+     * declare `_hasChildren: true` for kinds that contain other items.
+     */
+    class HostItem extends Item {
+
+    }
+
+    /** 
      * The Item type allows you to access and modify the items in
      * Paper.js projects. Its functionality is inherited by different project
      * item types such as {@link Path}, {@link CompoundPath}, {@link Group},
@@ -1353,6 +1455,14 @@ declare namespace paper {
      * that they inherit from Item.
      */
     class Item  {
+        /** 
+         * The key of the host's node that the item represents, in a project
+         * backed by a host document, see {@link Project#source}. It can only be
+         * set once, on an item created by a script, to register the key that
+         * the host gave its new node.
+         */
+        key: number
+
         /** 
          * The unique id of the item.
          */
@@ -1540,6 +1650,11 @@ declare namespace paper {
         readonly view: View
 
         /** 
+         * The scope that this item belongs to, through its project.
+         */
+        readonly scope: PaperScope
+
+        /** 
          * The layer that this item is contained within.
          */
         readonly layer: Layer
@@ -1623,7 +1738,9 @@ declare namespace paper {
         /** 
          * Specifies whether the stroke is to be drawn taking the current affine
          * transformation into account (the default behavior), or whether it should
-         * appear as a non-scaling stroke.
+         * appear as a non-scaling stroke. On text, non-scaling strokes are exact for
+         * uniform scaling only, as the glyphs are always stroked through the
+         * transformation.
          */
         strokeScaling: boolean
 
@@ -2308,9 +2425,10 @@ declare namespace paper {
         isEmpty(recursively?: boolean): boolean
 
         /** 
-         * Checks whether the item has a fill.
+         * Checks whether the item has a visible fill, a fill color with an alpha
+         * above 0. Hit-tests also hit transparent fills, see {@link #hitTest}.
          * 
-         * @return true if the item has a fill
+         * @return true if the item has a visible fill
          */
         hasFill(): boolean
 
@@ -3307,6 +3425,12 @@ declare namespace paper {
          *     when drawing selections
          * @option [settings.hitTolerance=0] {Number} the default tolerance for hit-
          *     tests, when no value is specified
+         * @option [settings.scaleStrokes=false] {Boolean} controls whether applying
+         *     a matrix to the content of paths and compound paths also scales their
+         *     {@link Style#strokeWidth}, by the geometric mean of the scale factors
+         *     for non-uniform scaling. Items that keep their matrix, with
+         *     {@link Item#applyMatrix} set to `false`, scale their strokes when
+         *     drawing anyway, unless {@link Style#strokeScaling} is `false`
          */
         settings: any
 
@@ -3335,6 +3459,7 @@ declare namespace paper {
          */
         tools: Tool[]
 
+        ChangeFlag: typeof ChangeFlag
         Color: typeof Color
         CompoundPath: typeof CompoundPath
         Curve: typeof Curve
@@ -3344,6 +3469,7 @@ declare namespace paper {
         GradientStop: typeof GradientStop
         Group: typeof Group
         HitResult: typeof HitResult
+        HostItem: typeof HostItem
         Item: typeof Item
         Key: typeof Key
         KeyEvent: typeof KeyEvent
@@ -3482,6 +3608,9 @@ declare namespace paper {
          *     generation
          * @option options.source {String} the source to be used for the source-
          *     mapping, in case the code that's passed in has already been mingled.
+         * @option options.handlers {String[]} the names of further global
+         *     handlers to export next to `onFrame`, `onResize` and the tool's
+         *     handlers, for hosts that call them themselves
          * 
          * @param code - the PaperScript code
          * @param scope - the scope for which the code is executed
@@ -3996,7 +4125,10 @@ declare namespace paper {
 
         class RegularPolygon extends Path {
             /** 
-             * Creates a regular polygon shaped path item.
+             * Creates a regular polygon shaped path item. As in Illustrator, it
+             * stands on a flat bottom edge, and its segments run counterclockwise
+             * from its top vertex, or with an even number of sides, from the right
+             * end of its top edge.
              * 
              * @param center - the center point of the polygon
              * @param sides - the number of sides of the polygon
@@ -5076,6 +5208,39 @@ declare namespace paper {
      */
     class Project  {
         /** 
+         * The host document that the project's items come from. Setting it
+         * creates the project's layers from the source's records. All items
+         * are created as shells that load their content and children from the
+         * source on first access.
+         * 
+         * The source provides:
+         * - `getChildren(key)`, which returns the records of the children of
+         *   the node with the given key, or of the top level for `null`, as
+         *   columns: `keys`, `types` (indices into `typeNames`), `typeNames`,
+         *   `flags` (selected: 1, visible: 2, locked: 4, strokeScaling: 8,
+         *   clipMask: 64, guide: 128, empty: 256), `boxes` (bounds,
+         *   strokeBounds and roughBounds in the item's coordinates, 12 numbers
+         *   per item), and the sparse objects `names` and `matrices`.
+         * - `getItem(key)`, which returns the node's own content in the form
+         *   of {@link Item#importJSON}, without children.
+         * - `getAncestorKeys(key)`, which returns the keys from the top level
+         *   down to the node's parent.
+         */
+        source: any
+
+        /** 
+         * Specifies whether the project logs the changes of its items, to be
+         * retrieved through {@link #takeChanges}. This allows hosts that keep
+         * their own document to update only what has changed.
+         */
+        trackChanges: boolean
+
+        /** 
+         * The scope that this project belongs to.
+         */
+        readonly scope: PaperScope
+
+        /** 
          * The reference to the project's view.
          */
         readonly view: View
@@ -5127,6 +5292,39 @@ declare namespace paper {
          * a web worker.
          */
         constructor(element: HTMLCanvasElement | string | SizeLike)
+
+        /** 
+         * Returns the item of the host's node with the given key, loading only
+         * the children of its ancestors.
+         * 
+         * @param key - the key of the host's node
+         * 
+         * @return the item, or `null` if the source has no such node
+         */
+        getItemByKey(key: number): Item
+
+        /** 
+         * Updates the items of changed host nodes, given in the column format
+         * of the source's `getChildren()`, with two more flags: 16 when the
+         * node's own content changed, so the item loads it again on next
+         * access, and 32 when its list of children changed, so it loads them
+         * again right away if it had loaded them, keeping the items of nodes
+         * that remain. Nodes without items are skipped.
+         * 
+         * @param columns - the records of the changed nodes
+         */
+        invalidate(columns: object): void
+
+        /** 
+         * Returns the changes logged since tracking was activated or since the
+         * last call, and clears the log. Each item is listed once, with the
+         * {@link ChangeFlag} values of all its changes combined. Removed items are
+         * listed with the `ChangeFlag.INSERTION` flag.
+         * 
+         * @return the changes as `{ item, flags }` objects, or `null`
+         *     if {link #trackChanges} is off
+         */
+        takeChanges(): object[]
 
         /** 
          * Activates this project, so all newly created items will be placed
@@ -6638,7 +6836,9 @@ declare namespace paper {
         /** 
          * Specifies whether the stroke is to be drawn taking the current affine
          * transformation into account (the default behavior), or whether it should
-         * appear as a non-scaling stroke.
+         * appear as a non-scaling stroke. On text, non-scaling strokes are exact for
+         * uniform scaling only, as the glyphs are always stroked through the
+         * transformation.
          */
         strokeScaling: boolean
 
@@ -6870,6 +7070,11 @@ declare namespace paper {
      */
     class Tool  {
         /** 
+         * The scope that this tool belongs to.
+         */
+        readonly scope: PaperScope
+
+        /** 
          * The minimum distance the mouse has to drag before firing the onMouseDrag
          * event, since the last onMouseDrag event.
          */
@@ -6880,6 +7085,15 @@ declare namespace paper {
          * event, since the last onMouseDrag event.
          */
         maxDistance: number
+
+        /** 
+         * The interval in milliseconds at which the onMouseDrag event fires again
+         * while the mouse button is held, also when the mouse doesn't move. The
+         * repeated events are at the last point, with a zero
+         * {@link ToolEvent#delta}. `null`, the default, or anything up to 0 turns
+         * it off.
+         */
+        eventInterval: number
 
         
         fixedDistance: number
@@ -6936,6 +7150,19 @@ declare namespace paper {
          * scrolling, when you need the user to interact with arrow keys.
          */
         onKeyUp: Function | null
+
+        /** 
+         * The function to be called when the tool is activated through
+         * {@link #activate}. The function receives the previously active tool,
+         * which is the tool itself when it was already active.
+         */
+        onActivate: Function | null
+
+        /** 
+         * The function to be called when another tool is activated through
+         * {@link #activate}, while this one is active.
+         */
+        onDeactivate: Function | null
 
 
         /** 
@@ -7159,6 +7386,8 @@ declare namespace paper {
      * `html, body { height: 100%; }` and `canvas[resize] { width: 100%; height:
      * 100%; }` for a canvas that fills the window. Without such CSS, the view does
      * not follow the window, and on HiDPI screens it grows with each resize.
+     * Without the attribute, the view sets the element's CSS width and height to
+     * its own size, see {@link #viewSize}.
      */
     class View  {
         /** 
@@ -7179,6 +7408,11 @@ declare namespace paper {
          * The project that this view displays.
          */
         readonly project: Project
+
+        /** 
+         * The scope that this view belongs to.
+         */
+        readonly scope: PaperScope
 
         /** 
          * The ratio between physical pixels and device-independent pixels (DIPs)
@@ -7633,6 +7867,49 @@ declare namespace paper {
          * the specified type
          */
         responds(type: string): boolean
+
+        /** 
+         * Handles a mouse event that the host provides, for hosts without a
+         * DOM, such as workers, or with their own event source. It runs the
+         * same handling as the DOM's mouse events: the active tool's handlers,
+         * with {@link Tool#minDistance} and the like, then those of the items
+         * under the point and of the view, including the events that Paper.js
+         * derives itself: `'mousedrag'`, `'click'`, `'doubleclick'`,
+         * `'mouseenter'` and `'mouseleave'`.
+         * 
+         * @option [options.modifiers] {Object} the state of the modifier keys,
+         *     see {@link Key#modifiers}
+         * @option [options.button=0] {Number} the mouse button
+         * @option [options.timeStamp=Date.now()] {Number} the time stamp
+         * 
+         * @param type - the type of the event: {@values 'mousedown',
+         *     'mousemove', 'mouseup'}
+         * @param point - the location of the mouse in project coordinates
+         * @param options - the details of the event
+         * 
+         * @return true if a handler prevented the event's default
+         */
+        dispatchMouseEvent(type: string, point: PointLike, options?: object): boolean
+
+        /** 
+         * Handles a key event that the host provides, for hosts without a DOM,
+         * such as workers, or with their own event source. It updates
+         * {@link Key#modifiers} and {@link Key#isDown}, and calls the
+         * view's and the active tool's handlers, as the DOM's key events do.
+         * 
+         * @option [options.character] {String} the character that the key
+         *     produces. By default, keydown takes the key itself if it is a
+         *     single character, and keyup the character of its keydown
+         * @option [options.modifiers] {Object} the state of the modifier keys,
+         *     see {@link Key#modifiers}
+         * @option [options.timeStamp=Date.now()] {Number} the time stamp
+         * 
+         * @param type - the type of the event: {@values 'keydown',
+         *     'keyup'}
+         * @param key - the key, as in {@link KeyEvent#key}
+         * @param options - the details of the event
+         */
+        dispatchKeyEvent(type: string, key: string, options?: object): void
 
     }
 }

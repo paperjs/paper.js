@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.13.0 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.14.0 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 15:20:53 2026 +0200
+ * Date: Tue Oct 20 01:16:49 2026 +0200
  *
  ***
  *
@@ -780,7 +780,8 @@ var PaperScope = Base.extend({
 			applyMatrix: true,
 			insertItems: true,
 			handleSize: 4,
-			hitTolerance: 0
+			hitTolerance: 0,
+			scaleStrokes: false
 		});
 		this.project = null;
 		this.projects = [];
@@ -824,7 +825,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: "0.13.0",
+	version: "0.14.0",
 
 	getView: function() {
 		var project = this.project;
@@ -837,7 +838,8 @@ var PaperScope = Base.extend({
 
 	execute: function(code, options) {
 			var exports = paper.PaperScript.execute(code, this, options);
-			View.updateFocus();
+			if (window)
+				View.updateFocus();
 			return exports;
 	},
 
@@ -851,9 +853,10 @@ var PaperScope = Base.extend({
 				}
 			});
 		});
-		for (var key in this)
-			if (!/^_/.test(key) && this[key])
+		for (var key in this) {
+			if (!/^_/.test(key) && this[key] && !(key in scope))
 				scope[key] = this[key];
+		}
 	},
 
 	setup: function(element) {
@@ -928,6 +931,10 @@ var PaperScopeItem = Base.extend(Emitter, {
 
 	isActive: function() {
 		return this._scope[this._reference] === this;
+	},
+
+	getScope: function() {
+		return this._scope;
 	},
 
 	remove: function() {
@@ -2646,6 +2653,10 @@ var Matrix = Base.extend({
 		return det && !isNaN(det) && isFinite(this._tx) && isFinite(this._ty);
 	},
 
+	_getMeanScale: function() {
+		return Math.sqrt(Math.abs(this._a * this._d - this._b * this._c));
+	},
+
 	isSingular: function() {
 		return !this.isInvertible();
 	},
@@ -2934,6 +2945,48 @@ var Line = Base.extend({
 	}
 });
 
+var ChangeFlag = {
+	APPEARANCE: 0x1,
+
+	CHILDREN: 0x2,
+
+	INSERTION: 0x4,
+
+	GEOMETRY: 0x8,
+
+	MATRIX: 0x10,
+
+	SEGMENTS: 0x20,
+
+	STROKE: 0x40,
+
+	STYLE: 0x80,
+
+	ATTRIBUTE: 0x100,
+
+	CONTENT: 0x200,
+
+	PIXELS: 0x400,
+
+	CLIPPING: 0x800,
+
+	VIEW: 0x1000
+};
+
+var Change = {
+	CHILDREN: ChangeFlag.CHILDREN | ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
+	INSERTION: ChangeFlag.INSERTION | ChangeFlag.APPEARANCE,
+	GEOMETRY: ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
+	MATRIX: ChangeFlag.MATRIX | ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
+	SEGMENTS: ChangeFlag.SEGMENTS | ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
+	STROKE: ChangeFlag.STROKE | ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
+	STYLE: ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
+	ATTRIBUTE: ChangeFlag.ATTRIBUTE | ChangeFlag.APPEARANCE,
+	CONTENT: ChangeFlag.CONTENT | ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
+	PIXELS: ChangeFlag.PIXELS | ChangeFlag.APPEARANCE,
+	VIEW: ChangeFlag.VIEW | ChangeFlag.APPEARANCE
+};
+
 var Project = PaperScopeItem.extend({
 	_class: 'Project',
 	_list: 'projects',
@@ -2967,7 +3020,7 @@ var Project = PaperScopeItem.extend({
 			}
 		}
 		var changes = this._changes;
-		if (changes && item) {
+		if (changes && item && item.isInserted()) {
 			var changesById = this._changesById,
 				id = item._id,
 				entry = changesById[id];
@@ -2977,6 +3030,26 @@ var Project = PaperScopeItem.extend({
 				changes.push(changesById[id] = { item: item, flags: flags });
 			}
 		}
+	},
+
+	getTrackChanges: function() {
+		return !!this._changes;
+	},
+
+	setTrackChanges: function(trackChanges) {
+		if (!this._changes ^ !trackChanges) {
+			this._changes = trackChanges ? [] : null;
+			this._changesById = trackChanges ? {} : null;
+		}
+	},
+
+	takeChanges: function() {
+		var changes = this._changes;
+		if (changes) {
+			this._changes = [];
+			this._changesById = {};
+		}
+		return changes || null;
 	},
 
 	clear: function() {
@@ -3274,6 +3347,10 @@ new function() {
 			matrix = this._matrix = new Matrix(),
 			project = hasProps && props.project || paper.project,
 			settings = paper.settings;
+		if (!project) {
+			throw new Error('Unable to create an item without a project. '
+					+ 'Call paper.setup() or create a Project first.');
+		}
 		this._id = internal ? null : UID.get();
 		this._parent = this._index = null;
 		this._applyMatrix = this._canApplyMatrix && settings.applyMatrix;
@@ -3807,6 +3884,10 @@ new function() {
 		return this._project._view;
 	},
 
+	getScope: function() {
+		return this._project._scope;
+	},
+
 	_installEvents: function _installEvents(install) {
 		_installEvents.base.call(this, install);
 		if (this._selection)
@@ -4079,7 +4160,7 @@ new function() {
 
 	_hitTest: function(point, options, parentViewMatrix) {
 		if (this._locked || !this._visible || this._guide && !options.guides
-				|| this.isEmpty()) {
+				|| !this._shell && this.isEmpty()) {
 			return null;
 		}
 
@@ -4094,7 +4175,7 @@ new function() {
 						.prepended(this.getView()._matrix.inverted())
 						._shiftless().invert()));
 		point = pointMatrix._inverseTransform(point);
-		if (!point || !this._children &&
+		if (!point || (this._shell || !this._children) &&
 			!this.getBounds({ internal: true, stroke: true, handle: true })
 				.expand(tolerancePadding.multiply(2))._containsPoint(point)) {
 			return null;
@@ -4110,10 +4191,21 @@ new function() {
 			res;
 
 		function filter(hit) {
+			if (Array.isArray(hit)) {
+				var first = null;
+				for (var i = 0, l = hit.length; i < l; i++) {
+					var res = filter(hit[i]);
+					first = first || res;
+				}
+				return first;
+			}
 			if (hit && match && !match(hit))
 				hit = null;
-			if (hit && options.all)
+			if (hit && options.all) {
+				if (hit.point)
+					hit.point = that.getGlobalMatrix().transform(hit.point);
 				options.all.push(hit);
+			}
 			return hit;
 		}
 
@@ -4157,14 +4249,14 @@ new function() {
 							: viewMatrix._shiftless().invert()))
 				|| null;
 		}
-		if (res && res.point) {
+		if (res && res.point && !options.all) {
 			res.point = pointMatrix.transform(res.point);
 		}
 		return res;
 	},
 
 	_hitTestSelf: function(point, options) {
-		if (options.fill && this.hasFill() && this._contains(point))
+		if (options.fill && this.getFillColor() && this._contains(point))
 			return new HitResult('fill', this);
 	},
 
@@ -4287,6 +4379,19 @@ new function() {
 }, {
 
 	importJSON: function(json) {
+		json = typeof json === 'string' ? JSON.parse(json) : json;
+		var props = json && json[0] === this._class && json[1];
+		if (Base.isPlainObject(props)) {
+			var item = new this.constructor(Item.NO_INSERT),
+				fields = Base.set({}, this._serializeFields,
+					this instanceof Group ? null : this._style._defaults),
+				defaults = {};
+			for (var key in fields) {
+				if (!(key in props) && !Base.equals(this[key], item[key]))
+					defaults[key] = item[key];
+			}
+			this.set(defaults);
+		}
 		var res = Base.importJSON(json, this);
 		return res !== this ? this.addChild(res) : res;
 	},
@@ -4433,14 +4538,14 @@ new function() {
 			if (this._name)
 				this._removeNamed();
 			this._installEvents(false);
+			if (notifySelf && project._changes)
+				this._changed(5);
 			if (index != null) {
 				if (project._activeLayer === this)
 					project._activeLayer = this.getNextSibling()
 							|| this.getPreviousSibling();
 				Base.splice(owner._children, null, index, 1);
 			}
-			if (notifySelf && project._changes)
-				this._changed(5);
 			if (notifyParent)
 				owner._changed(11, this);
 			this._parent = null;
@@ -4799,7 +4904,7 @@ new function() {
 			opacity = Numerical.clamp(this._opacity, 0, 1),
 			normalBlend = blendMode === 'normal',
 			nativeBlend = BlendMode.nativeModes[blendMode],
-			direct = normalBlend && opacity === 1
+			direct = normalBlend && opacity === 1 && !this._isolated
 					|| param.dontStart
 					|| param.clip
 					|| (nativeBlend || normalBlend && opacity < 1)
@@ -5015,8 +5120,10 @@ var Group = Item.extend({
 	_selectBounds: false,
 	_selectChildren: true,
 	_serializeFields: {
+		isolated: false,
 		children: []
 	},
+	_isolated: false,
 
 	initialize: function Group(arg) {
 		this._children = [];
@@ -5056,6 +5163,15 @@ var Group = Item.extend({
 		var child = this.getFirstChild();
 		if (child)
 			child.setClipMask(clipped);
+	},
+
+	isIsolated: function() {
+		return this._isolated;
+	},
+
+	setIsolated: function(isolated) {
+		this._isolated = !!isolated;
+		this._changed(257);
 	},
 
 	_getBounds: function _getBounds(matrix, options) {
@@ -5402,7 +5518,7 @@ new function() {
 			var hit = false,
 				style = this._style,
 				hitStroke = options.stroke && style.hasStroke(),
-				hitFill = options.fill && style.hasFill();
+				hitFill = options.fill && !!style.getFillColor();
 			if (hitStroke || hitFill) {
 				var type = this._type,
 					radius = this._radius,
@@ -5492,6 +5608,7 @@ var Raster = Item.extend({
 	_boundsOptions: { stroke: false, handle: false },
 	_serializeFields: {
 		crossOrigin: null,
+		size: new Size(),
 		source: null
 	},
 	_prioritize: ['crossOrigin'],
@@ -5641,6 +5758,14 @@ var Raster = Item.extend({
 		}
 	},
 
+	set: function set(props, exclude) {
+		if (props && props.source && props.size) {
+			this._size = new Size(props.size);
+			exclude = Base.set({ size: true }, exclude);
+		}
+		return set.base.call(this, props, exclude);
+	},
+
 	_setImage: function(image) {
 		if (this._canvas)
 			CanvasProvider.release(this._canvas);
@@ -5653,9 +5778,11 @@ var Raster = Item.extend({
 			this._canvas = null;
 			this._loaded = !!(image && image.src && image.complete);
 		}
-		this._size = new Size(
-				image ? image.naturalWidth || image.width : 0,
-				image ? image.naturalHeight || image.height : 0);
+		this._size = image && !this._loaded
+				? this._size || new Size()
+				: new Size(
+					image ? image.naturalWidth || image.width : 0,
+					image ? image.naturalHeight || image.height : 0);
 		this._context = null;
 		this._changed(1033);
 	},
@@ -8230,6 +8357,15 @@ var PathItem = Item.extend({
 	initialize: function PathItem() {
 	},
 
+	_scaleStroke: function(matrix) {
+		var style = this._style;
+		if (this._project._scope.settings.scaleStrokes
+				&& style.getStrokeScaling()) {
+			style.setStrokeWidth(style.getStrokeWidth()
+					* matrix._getMeanScale());
+		}
+	},
+
 	statics: {
 		create: function(arg) {
 			var data,
@@ -8698,6 +8834,7 @@ var Path = PathItem.extend({
 			coords = new Array(6);
 		for (var i = 0, l = segments.length; i < l; i++)
 			segments[i]._transformCoordinates(matrix, coords, true);
+		this._scaleStroke(matrix);
 		return true;
 	},
 
@@ -9328,8 +9465,9 @@ var Path = PathItem.extend({
 			strokePadding = tolerancePadding,
 			join, cap, miterLimit,
 			area, loc, res,
+			hits = options.all && [],
 			hitStroke = options.stroke && style.hasStroke(),
-			hitFill = options.fill && style.hasFill(),
+			hitFill = options.fill && !!style.getFillColor(),
 			hitCurves = options.curves,
 			strokeRadius = hitStroke
 					? style.getStrokeWidth() / 2
@@ -9357,10 +9495,13 @@ var Path = PathItem.extend({
 				if (pt !== anchor)
 					pt = pt.add(anchor);
 				if (isCloseEnough(pt, strokePadding)) {
-					return new HitResult(name, that, {
+					var hit = new HitResult(name, that, {
 						segment: seg,
 						point: pt
 					});
+					if (!hits)
+						return hit;
+					hits.push(hit);
 				}
 			}
 		}
@@ -9434,7 +9575,7 @@ var Path = PathItem.extend({
 				}
 			}
 		}
-		return !loc && hitFill && this._contains(point)
+		res = !loc && hitFill && this._contains(point)
 				|| loc && !hitStroke && !hitCurves
 					? new HitResult('fill', this)
 					: loc
@@ -9443,6 +9584,16 @@ var Path = PathItem.extend({
 							point: loc.getPoint()
 						})
 						: null;
+		if (hits) {
+			hits.sort(function(hit1, hit2) {
+				return hit1.point.getDistance(point)
+						- hit2.point.getDistance(point);
+			});
+			if (res)
+				hits.push(res);
+			return hits;
+		}
+		return res;
 	}
 
 }, Base.each(Curve._evaluateMethods,
@@ -10234,10 +10385,9 @@ Path.inject({ statics: new function() {
 				center = Point.readNamed(args, 'center'),
 				sides = Base.readNamed(args, 'sides'),
 				radius = Base.readNamed(args, 'radius'),
-				step = 360 / sides,
-				three = sides % 3 === 0,
-				vector = new Point(0, three ? -radius : radius),
-				offset = three ? -1 : 0.5,
+				step = -360 / sides,
+				offset = sides % 2 ? 0 : -0.5,
+				vector = new Point(0, -radius),
 				segments = new Array(sides);
 			for (var i = 0; i < sides; i++)
 				segments[i] = new Segment(center.add(
@@ -10279,6 +10429,11 @@ var CompoundPath = PathItem.extend({
 				this.addChildren(Array.isArray(arg) ? arg : arguments);
 			}
 		}
+	},
+
+	_transformContent: function _transformContent(matrix) {
+		this._scaleStroke(matrix);
+		return _transformContent.base.apply(this, arguments);
 	},
 
 	insertChildren: function insertChildren(index, items) {
@@ -11768,6 +11923,16 @@ var PointText = TextItem.extend({
 				hasStroke = style.hasStroke(),
 				leading = style.getLeading(),
 				shadowColor = ctx.shadowColor;
+			if (hasStroke && !style.getStrokeScaling()) {
+				var scale = viewMatrix._getMeanScale();
+				ctx.lineWidth /= scale;
+				if ('setLineDash' in ctx) {
+					ctx.setLineDash(ctx.getLineDash().map(function(dash) {
+						return dash / scale;
+					}));
+					ctx.lineDashOffset /= scale;
+				}
+			}
 			ctx.font = style.getFontStyle();
 			ctx.textAlign = style.getJustification();
 			ctx.letterSpacing = style.getTrackingStyle();
@@ -11805,7 +11970,7 @@ var PointText = TextItem.extend({
 	},
 
 	_hitTestSelf: function(point, options) {
-		if (options.fill && this.hasFill()) {
+		if (options.fill && this.getFillColor()) {
 			var bounds = this.getInternalBounds(),
 				closest = point.clamp(bounds.getTopLeft(true),
 						bounds.getBottomRight(true));
@@ -13005,8 +13170,12 @@ DomEvent.requestAnimationFrame = new function() {
 		for (var i = 0, l = functions.length; i < l; i++)
 			functions[i]();
 		requested = nativeRequest && callbacks.length;
-		if (requested)
+		if (requested) {
 			nativeRequest(handleCallbacks);
+		} else if (timer && !callbacks.length) {
+			clearInterval(timer);
+			timer = null;
+		}
 	}
 
 	return function(callback) {
@@ -13032,7 +13201,7 @@ var View = Base.extend(Emitter, {
 		}
 
 		function getCanvasSize() {
-			var size = DomElement.getSize(element);
+			var size = new Size(element.offsetWidth, element.offsetHeight);
 			return size.isNaN() || size.isZero()
 					? new Size(getSize('width'), getSize('height'))
 					: size.subtract(DomElement.getInsets(element));
@@ -13163,7 +13332,8 @@ var View = Base.extend(Emitter, {
 				if (that._animate) {
 					that.requestUpdate();
 					var element = that._element;
-					if ((!DomElement.getPrefixed(document, 'hidden')
+					if (!element
+							|| (!DomElement.getPrefixed(document, 'hidden')
 							|| PaperScope.getAttribute(element, 'keepalive')
 								=== 'true') && DomElement.isInView(element)) {
 						that._handleFrame();
@@ -13238,6 +13408,10 @@ var View = Base.extend(Emitter, {
 
 	getProject: function() {
 		return this._project;
+	},
+
+	getScope: function() {
+		return this._scope;
 	},
 
 	getPixelRatio: function() {
@@ -13460,8 +13634,6 @@ var View = Base.extend(Emitter, {
 	}
 },
 new function() {
-	if (!window)
-		return;
 	var prevFocus,
 		tempFocus,
 		dragging = false,
@@ -13489,26 +13661,28 @@ new function() {
 		view._handleMouseEvent('mousemove', event, point);
 	}
 
-	var navigator = window.navigator,
-		mousedown, mousemove, mouseup;
-	if (navigator.pointerEnabled || navigator.msPointerEnabled) {
-		mousedown = 'pointerdown MSPointerDown';
-		mousemove = 'pointermove MSPointerMove';
-		mouseup = 'pointerup pointercancel MSPointerUp MSPointerCancel';
-	} else {
-		mousedown = 'touchstart';
-		mousemove = 'touchmove';
-		mouseup = 'touchend touchcancel';
-		if (!('ontouchstart' in window && navigator.userAgent.match(
-				/mobile|tablet|ip(ad|hone|od)|android|silk/i))) {
-			mousedown += ' mousedown';
-			mousemove += ' mousemove';
-			mouseup += ' mouseup';
-		}
-	}
+	var viewEvents = {};
 
-	var viewEvents = {},
-		docEvents = {
+	if (window) {
+		var navigator = window.navigator,
+			mousedown, mousemove, mouseup;
+		if (navigator.pointerEnabled || navigator.msPointerEnabled) {
+			mousedown = 'pointerdown MSPointerDown';
+			mousemove = 'pointermove MSPointerMove';
+			mouseup = 'pointerup pointercancel MSPointerUp MSPointerCancel';
+		} else {
+			mousedown = 'touchstart';
+			mousemove = 'touchmove';
+			mouseup = 'touchend touchcancel';
+			if (!('ontouchstart' in window && navigator.userAgent.match(
+					/mobile|tablet|ip(ad|hone|od)|android|silk/i))) {
+				mousedown += ' mousedown';
+				mousemove += ' mousemove';
+				mouseup += ' mouseup';
+			}
+		}
+
+		var docEvents = {
 			mouseout: function(event) {
 				var view = View._focused,
 					target = DomEvent.getRelatedTarget(event);
@@ -13519,54 +13693,55 @@ new function() {
 			scroll: updateFocus
 		};
 
-	viewEvents[mousedown] = function(event) {
-		var view = View._focused = getView(event);
-		if (!dragging) {
-			dragging = true;
-			view._handleMouseEvent('mousedown', event);
-		}
-	};
-
-	docEvents[mousemove] = function(event) {
-		var view = View._focused;
-		if (!mouseDown) {
-			var target = getView(event);
-			if (target) {
-				if (view !== target) {
-					if (view)
-						handleMouseMove(view, event);
-					if (!prevFocus)
-						prevFocus = view;
-					view = View._focused = tempFocus = target;
-				}
-			} else if (tempFocus && tempFocus === view) {
-				if (prevFocus && !prevFocus.isInserted())
-					prevFocus = null;
-				view = View._focused = prevFocus;
-				prevFocus = null;
-				updateFocus();
+		viewEvents[mousedown] = function(event) {
+			var view = View._focused = getView(event);
+			if (!dragging) {
+				dragging = true;
+				view._handleMouseEvent('mousedown', event);
 			}
-		}
-		if (view)
-			handleMouseMove(view, event);
-	};
+		};
 
-	docEvents[mousedown] = function() {
-		mouseDown = true;
-	};
+		docEvents[mousemove] = function(event) {
+			var view = View._focused;
+			if (!mouseDown) {
+				var target = getView(event);
+				if (target) {
+					if (view !== target) {
+						if (view)
+							handleMouseMove(view, event);
+						if (!prevFocus)
+							prevFocus = view;
+						view = View._focused = tempFocus = target;
+					}
+				} else if (tempFocus && tempFocus === view) {
+					if (prevFocus && !prevFocus.isInserted())
+						prevFocus = null;
+					view = View._focused = prevFocus;
+					prevFocus = null;
+					updateFocus();
+				}
+			}
+			if (view)
+				handleMouseMove(view, event);
+		};
 
-	docEvents[mouseup] = function(event) {
-		var view = View._focused;
-		if (view && dragging)
-			view._handleMouseEvent('mouseup', event);
-		mouseDown = dragging = false;
-	};
+		docEvents[mousedown] = function() {
+			mouseDown = true;
+		};
 
-	DomEvent.add(document, docEvents);
+		docEvents[mouseup] = function(event) {
+			var view = View._focused;
+			if (view && dragging)
+				view._handleMouseEvent('mouseup', event);
+			mouseDown = dragging = false;
+		};
 
-	DomEvent.add(window, {
-		load: updateFocus
-	});
+		DomEvent.add(document, docEvents);
+
+		DomEvent.add(window, {
+			load: updateFocus
+		});
+	}
 
 	var called = false,
 		prevented = false,
@@ -13632,9 +13807,27 @@ new function() {
 					point, prevPoint));
 	}
 
+	function createEvent(type, options) {
+		if (options.modifiers)
+			Key.modifiers.set(options.modifiers);
+		return {
+			type: type,
+			timeStamp: options.timeStamp != null ? options.timeStamp
+					: Date.now(),
+			button: options.button || 0,
+			cancelable: true,
+			defaultPrevented: false,
+			preventDefault: function() {
+				this.defaultPrevented = true;
+			},
+			stopPropagation: function() {}
+		};
+	}
+
 	var itemEventsMap = {
 		mousedown: {
 			mousedown: 1,
+			mouseup: 1,
 			mousedrag: 1,
 			click: 1,
 			doubleclick: 1
@@ -13656,6 +13849,28 @@ new function() {
 	return {
 		_viewEvents: viewEvents,
 
+		dispatchMouseEvent: function(type, point, options) {
+			if (!/^mouse(down|move|up)$/.test(type))
+				throw new Error('Unknown mouse event type: \'' + type + '\'.');
+			var event = createEvent(type, options || {});
+			if (type === 'mousedown') {
+				View._focused = this;
+				mouseDown = dragging = true;
+			}
+			this._handleMouseEvent(type, event, new Point(point));
+			if (type === 'mouseup')
+				mouseDown = dragging = false;
+			return event.defaultPrevented;
+		},
+
+		dispatchKeyEvent: function(type, key, options) {
+			if (!/^key(down|up)$/.test(type))
+				throw new Error('Unknown key event type: \'' + type + '\'.');
+			options = options || {};
+			Key._handleKey(type === 'keydown', key, options.character,
+					createEvent(type, options), this);
+		},
+
 		_handleMouseEvent: function(type, event, point) {
 			var itemEvents = this._itemEvents,
 				hitItems = itemEvents.native[type],
@@ -13668,12 +13883,37 @@ new function() {
 						|| tool && tool.responds(type);
 			}
 
+			function needsUp(hitItem) {
+				if (view.responds('mouseup')
+						|| tool && tool.responds('mouseup'))
+					return true;
+				for (var item = hitItem; item; item = item._parent) {
+					for (var key in itemEventsMap.mouseup) {
+						if (item.responds(key))
+							return true;
+					}
+				}
+				return false;
+			}
+
+			if (event.shiftKey !== undefined) {
+				Key.modifiers.set({
+					shift: event.shiftKey,
+					control: event.ctrlKey,
+					alt: event.altKey,
+					meta: event.metaKey
+				});
+			}
 			if (nativeMove && dragging && responds('mousedrag'))
 				type = 'mousedrag';
 			if (!point)
 				point = this.getEventPoint(event);
 
-			var inView = this.getBounds().contains(point),
+			var target = DomEvent.getTarget(event),
+				isCovered = nativeMove && !dragging && target
+						&& target.nodeType === 1
+						&& !target.contains(this._element),
+				inView = !isCovered && this.getBounds().contains(point),
 				hit = hitItems && inView && view._project.hitTest(point, {
 					tolerance: 0,
 					fill: true,
@@ -13740,7 +13980,7 @@ new function() {
 
 			if (
 				event.cancelable !== false
-				&& (called && !mouse.move || mouse.down && responds('mouseup'))
+				&& (called && !mouse.move || mouse.down && needsUp(hitItem))
 			) {
 				event.preventDefault();
 			}
@@ -13759,11 +13999,9 @@ new function() {
 				}
 			}
 
-			if (this.isVisible()) {
-				emit(this);
-				if (tool && tool.responds(type))
-					emit(tool);
-			}
+			emit(this);
+			if (tool && tool.responds(type))
+				emit(tool);
 		},
 
 		_countItemEvent: function(type, sign) {
@@ -13821,20 +14059,20 @@ var CanvasView = View.extend({
 	},
 
 	_setElementSize: function _setElementSize(width, height) {
-		var pixelRatio = this._pixelRatio;
+		var pixelRatio = this._pixelRatio,
+			element = this._element;
 		_setElementSize.base.call(this, width * pixelRatio, height * pixelRatio);
+		if (!PaperScope.hasAttribute(element, 'resize')) {
+			var style = element.style,
+				insets = DomElement.getStyles(element).boxSizing
+					=== 'border-box'
+						? DomElement.getInsets(element)
+						: new Size();
+			style.width = (width + insets.width) + 'px';
+			style.height = (height + insets.height) + 'px';
+		}
 		if (pixelRatio !== 1) {
-			var element = this._element,
-				ctx = this._context;
-			if (!PaperScope.hasAttribute(element, 'resize')) {
-				var style = element.style,
-					insets = DomElement.getStyles(element).boxSizing
-						=== 'border-box'
-							? DomElement.getInsets(element)
-							: new Size();
-				style.width = (width + insets.width) + 'px';
-				style.height = (height + insets.height) + 'px';
-			}
+			var ctx = this._context;
 			ctx.restore();
 			ctx.save();
 			ctx.scale(pixelRatio, pixelRatio);
@@ -14000,11 +14238,16 @@ var Key = new function() {
 				(key.length > 1 ? Base.hyphenate(key) : key.toLowerCase());
 	}
 
-	function handleKey(down, key, character, event) {
-		View.updateFocus();
-		var type = down ? 'keydown' : 'keyup',
-			view = View._focused,
-			name;
+	function handleKey(down, key, character, event, view) {
+		if (!view) {
+			View.updateFocus();
+			view = View._focused;
+			if (view && !view.isVisible())
+				view = null;
+		}
+		if (character == null)
+			character = down ? key.length > 1 ? '' : key : charMap[key] || '';
+		var name;
 		keyMap[key] = down;
 		if (down) {
 			charMap[key] = character;
@@ -14020,7 +14263,7 @@ var Key = new function() {
 				} else {
 					for (var k in metaFixMap) {
 						if (k in charMap)
-							handleKey(false, k, metaFixMap[k], event);
+							handleKey(false, k, metaFixMap[k], event, view);
 					}
 					metaFixMap = null;
 				}
@@ -14075,6 +14318,8 @@ var Key = new function() {
 	});
 
 	return {
+		_handleKey: handleKey,
+
 		modifiers: modifiers,
 
 		isDown: function(key) {
@@ -14241,6 +14486,14 @@ var Tool = PaperScopeItem.extend({
 		}
 	},
 
+	getEventInterval: function() {
+		return this._eventInterval;
+	},
+
+	setEventInterval: function(interval) {
+		this._eventInterval = interval;
+	},
+
 	getFixedDistance: function() {
 		return this._minDistance == this._maxDistance
 			? this._minDistance : null;
@@ -14297,7 +14550,24 @@ var Tool = PaperScopeItem.extend({
 		if (mouse.down) {
 			update();
 			emit();
+			if (this._eventInterval > 0) {
+				clearInterval(this._timer);
+				this._timer = setInterval(function() {
+					if (tool.isActive()) {
+						paper = tool._scope;
+						tool._lastPoint = tool._point;
+						tool._moveCount++;
+						if (tool.responds('mousedrag')) {
+							tool.emit('mousedrag',
+									new ToolEvent(tool, 'mousedrag', event));
+						}
+					} else {
+						clearInterval(tool._timer);
+					}
+				}, this._eventInterval);
+			}
 		} else if (mouse.up) {
+			clearInterval(this._timer);
 			update(null, this._maxDistance);
 			emit();
 		} else if (responds) {
@@ -14674,8 +14944,9 @@ var CanvasProvider = Base.exports.CanvasProvider = {
 	release: function(obj) {
 		var canvas = obj && obj.canvas ? obj.canvas : obj;
 		if (canvas && canvas.getContext) {
-			canvas.getContext('2d').restore();
-			this.canvases.push(canvas);
+			canvas.width = canvas.height = 0;
+			if (this.canvases.length < 8)
+				this.canvases.push(canvas);
 		}
 	}
 };
@@ -15007,7 +15278,7 @@ var SvgStyles = Base.each({
 	dashArray: ['stroke-dasharray', 'array'],
 	dashOffset: ['stroke-dashoffset', 'number'],
 	fontFamily: ['font-family', 'string'],
-	fontWeight: ['font-weight', 'string'],
+	fontWeight: ['font-weight', 'font'],
 	fontSize: ['font-size', 'number'],
 	tracking: ['letter-spacing', 'tracking'],
 	justification: ['text-anchor', 'lookup', {
@@ -15329,6 +15600,13 @@ new function() {
 		PointText: exportText
 	};
 
+	var cssBlendModes = Base.each(['normal', 'multiply', 'screen', 'overlay',
+			'darken', 'lighten', 'color-dodge', 'color-burn', 'hard-light',
+			'soft-light', 'difference', 'exclusion', 'hue', 'saturation',
+			'color', 'luminosity'], function(mode) {
+		this[mode] = true;
+	}, {});
+
 	function applyStyle(item, node, options, isRoot) {
 		var attrs = {},
 			parent = !isRoot && item.getParent(),
@@ -15355,7 +15633,19 @@ new function() {
 						attrs[entry.attribute + '-opacity'] = alpha;
 				}
 				if (type === 'style') {
-					style.push(entry.attribute + ': ' + value);
+					if (cssBlendModes[value]) {
+						style.push(entry.attribute + ': ' + value);
+					} else {
+						attrs['data-paper-blend-mode'] = value;
+					}
+				} else if (type === 'font') {
+					var font = ('' + value).match(
+							/^(.*?)\s*\b(italic|oblique)\b\s*(.*)$/i);
+					attrs[entry.attribute] = font
+							? (font[1] + ' ' + font[3]).trim() || 'normal'
+							: value;
+					if (font)
+						attrs['font-style'] = font[2].toLowerCase();
 				} else {
 					attrs[entry.attribute] = value == null ? 'none'
 							: type === 'color' ? value.gradient
@@ -15866,6 +16156,20 @@ new function() {
 		display: function(item, value) {
 			if (item.setVisible)
 				item.setVisible(value !== null);
+		},
+
+		'data-paper-blend-mode': function(item, value) {
+			if (item.setBlendMode)
+				item.setBlendMode(value);
+		},
+
+		'font-style': function(item, value) {
+			if (item.setFontWeight && /^(italic|oblique)$/.test(value)) {
+				var weight = ('' + item.getFontWeight())
+						.replace(/\s*\b(italic|oblique)\b/gi, '');
+				item.setFontWeight(/^(normal|400)$/.test(weight) ? value
+						: weight + ' ' + value);
+			}
 		},
 
 		'letter-spacing': function(item, value) {
@@ -17778,11 +18082,13 @@ Base.exports.PaperScript = function() {
 	function execute(code, scope, options) {
 		paper = scope;
 		var view = scope.getView(),
-			tool = /\btool\.\w+|\s+on(?:Key|Mouse)(?:Up|Down|Move|Drag)\b/
-					.test(code) && !/\bnew\s+Tool\b/.test(code)
+			tool = new RegExp('\\btool\\.\\w+|\\s+(?:'
+					+ Tool.prototype._events.join('|') + ')\\b').test(code)
+					&& !/\bnew\s+Tool\b/.test(code)
 						? new Tool() : null,
 			toolHandlers = tool ? tool._events : [],
-			handlers = ['onFrame', 'onResize'].concat(toolHandlers),
+			handlers = ['onFrame', 'onResize'].concat(toolHandlers,
+					options && options.handlers || []),
 			params = [],
 			args = [],
 			func,
@@ -17790,7 +18096,8 @@ Base.exports.PaperScript = function() {
 		code = compiled.code;
 		function expose(scope, hidden) {
 			for (var key in scope) {
-				if ((hidden || !/^_/.test(key)) && new RegExp('([\\b\\s\\W]|^)'
+				if ((hidden || !/^_/.test(key) && !(key in self))
+						&& new RegExp('([\\b\\s\\W]|^)'
 						+ key.replace(/\$/g, '\\$') + '\\b').test(code)) {
 					params.push(key);
 					args.push(scope[key]);
@@ -17918,14 +18225,13 @@ Base.exports.PaperScript = function() {
 var paper = new (PaperScope.inject(Base.exports, {
 	Base: Base,
 	Numerical: Numerical,
+	ChangeFlag: ChangeFlag,
 	Key: Key,
 	DomEvent: DomEvent,
 	DomElement: DomElement,
 	document: document,
 	window: window,
-	PlacedSymbol: SymbolItem
-}).inject({
-	enumerable: false,
+	PlacedSymbol: SymbolItem,
 	Symbol: SymbolDefinition
 }))();
 

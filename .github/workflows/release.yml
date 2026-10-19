@@ -13,6 +13,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -24,11 +25,11 @@ jobs:
       - name: Check version
         run: test "$(node -p 'require("./package.json").version')" = "${GITHUB_REF_NAME#v}"
       - name: Install dependencies
-        run: node .yarn/releases/yarn-3.2.4.cjs install --immutable
+        run: pnpm install --frozen-lockfile
       - name: Build library, docs and zip
-        run: node .yarn/releases/yarn-3.2.4.cjs zip
+        run: pnpm zip
       - name: Build website docs
-        run: node .yarn/releases/yarn-3.2.4.cjs gulp docs:server
+        run: pnpm exec gulp docs:server
       # The committed build was made before the release commit, so only its
       # date may differ:
       - name: Compare with committed build
@@ -59,11 +60,10 @@ jobs:
       # Stage the packages, so they only go live once a maintainer approves them
       # with 2FA on npmjs.com. Approve paper first, as the others depend on it.
       # Skip the scripts, as `publish` would run `gulp publish` again, and leave
-      # out the fields that only serve development, which package managers warn
-      # about in dependencies:
+      # out the field that pins pnpm for development:
       - name: Stage paper
         run: |
-          npm pkg delete workspaces resolutions
+          npm pkg delete packageManager
           npm stage publish --ignore-scripts
       - name: Stage paper-jsdom
         working-directory: packages/paper-jsdom

@@ -503,6 +503,24 @@ new function() {
                 item.setVisible(value !== null);
         },
 
+        // Paper.js's own blend modes, which CSS doesn't have, see SvgExport:
+        'data-paper-blend-mode': function(item, value) {
+            if (item.setBlendMode)
+                item.setBlendMode(value);
+        },
+
+        'font-style': function(item, value) {
+            // Paper.js combines the font style with the weight. Applied after
+            // font-weight, which comes first as one of the SvgStyles. Browsers
+            // report the computed weight, so normal comes as 400:
+            if (item.setFontWeight && /^(italic|oblique)$/.test(value)) {
+                var weight = ('' + item.getFontWeight())
+                        .replace(/\s*\b(italic|oblique)\b/gi, '');
+                item.setFontWeight(/^(normal|400)$/.test(weight) ? value
+                        : weight + ' ' + value);
+            }
+        },
+
         'letter-spacing': function(item, value) {
             // Convert to tracking, in thousandths of an em. 'normal' is 0:
             if (item.setTracking) {

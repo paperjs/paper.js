@@ -375,7 +375,8 @@ new function() { // Scope for _contains() and _hitTestSelf() code.
             var hit = false,
                 style = this._style,
                 hitStroke = options.stroke && style.hasStroke(),
-                hitFill = options.fill && style.hasFill();
+                // Transparent fills are hit too, see Path#_hitTestSelf():
+                hitFill = options.fill && !!style.getFillColor();
             // Just like in Path, use stroke-hit-tests also for hitting fill
             // with tolerance:
             if (hitStroke || hitFill) {

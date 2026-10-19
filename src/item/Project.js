@@ -67,9 +67,6 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         this._selectionCount = 0;
         // See Item#draw() for an explanation of _updateVersion
         this._updateVersion = 0;
-        // Change tracking, not in use for now. Activate once required:
-        // this._changes = [];
-        // this._changesById = {};
     },
 
     _serialize: function(options, dictionary) {
@@ -97,11 +94,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
                     view.requestUpdate();
             }
         }
-        // Have project keep track of changed items so they can be iterated.
-        // This can be used for example to update the SVG tree. Needs to be
-        // activated in Project
+        // Log changes of inserted items, see #trackChanges:
         var changes = this._changes;
-        if (changes && item) {
+        if (changes && item && item.isInserted()) {
             var changesById = this._changesById,
                 id = item._id,
                 entry = changesById[id];
@@ -111,6 +106,44 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
                 changes.push(changesById[id] = { item: item, flags: flags });
             }
         }
+    },
+
+    /**
+     * Specifies whether the project logs the changes of its items, to be
+     * retrieved through {@link #takeChanges()}. This allows hosts that keep
+     * their own document to update only what has changed.
+     *
+     * @bean
+     * @type Boolean
+     * @default false
+     */
+    getTrackChanges: function() {
+        return !!this._changes;
+    },
+
+    setTrackChanges: function(trackChanges) {
+        if (!this._changes ^ !trackChanges) {
+            this._changes = trackChanges ? [] : null;
+            this._changesById = trackChanges ? {} : null;
+        }
+    },
+
+    /**
+     * Returns the changes logged since tracking was activated or since the
+     * last call, and clears the log. Each item is listed once, with the
+     * {@link ChangeFlag} values of all its changes combined. Removed items are
+     * listed with the `ChangeFlag.INSERTION` flag.
+     *
+     * @return {Object[]} the changes as `{ item, flags }` objects, or `null`
+     *     if {@link #trackChanges} is off
+     */
+    takeChanges: function() {
+        var changes = this._changes;
+        if (changes) {
+            this._changes = [];
+            this._changesById = {};
+        }
+        return changes || null;
     },
 
     /**
@@ -150,6 +183,15 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
             this._view.remove();
         return true;
     },
+
+    /**
+     * The scope that this project belongs to.
+     *
+     * @name Project#scope
+     * @property
+     * @type PaperScope
+     * @readonly
+     */
 
     /**
      * The reference to the project's view.

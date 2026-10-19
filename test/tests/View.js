@@ -192,6 +192,88 @@ test('view.project (#1634)', function() {
     scope.remove();
 });
 
+test('view.dispatchMouseEvent()', function() {
+    var path = new Path.Rectangle({
+        point: [10, 10],
+        size: [20, 20],
+        fillColor: 'red'
+    });
+    var tool = new Tool({ minDistance: 5 });
+    var log = [];
+    ['mouseenter', 'mousedown', 'mousedrag', 'mouseup', 'click',
+            'mouseleave'].forEach(function(type) {
+        path.on(type, function(event) {
+            log.push('item ' + type + ' ' + event.point);
+        });
+    });
+    tool.onMouseDown = function(event) {
+        log.push('tool down ' + event.point + ' shift: '
+                + event.modifiers.shift);
+    };
+    tool.onMouseDrag = function(event) {
+        log.push('tool drag ' + event.point);
+    };
+    view.dispatchMouseEvent('mousemove', [15, 15]);
+    view.dispatchMouseEvent('mousedown', [15, 15], {
+        modifiers: { shift: true }
+    });
+    // Below the tool's minDistance:
+    view.dispatchMouseEvent('mousemove', [16, 15]);
+    view.dispatchMouseEvent('mousemove', [25, 15]);
+    view.dispatchMouseEvent('mouseup', [25, 15], {
+        modifiers: { shift: false }
+    });
+    view.dispatchMouseEvent('mousemove', [80, 80]);
+    equals(log, [
+        'item mouseenter { x: 15, y: 15 }',
+        'item mousedown { x: 15, y: 15 }',
+        'tool down { x: 15, y: 15 } shift: true',
+        'item mousedrag { x: 16, y: 15 }',
+        'item mousedrag { x: 25, y: 15 }',
+        'tool drag { x: 25, y: 15 }',
+        'item mouseup { x: 25, y: 15 }',
+        'item click { x: 25, y: 15 }',
+        'item mouseleave { x: 80, y: 80 }'
+    ]);
+    // Handlers can prevent the default, which the host can then skip:
+    path.onMouseDown = function(event) {
+        event.preventDefault();
+    };
+    equals(view.dispatchMouseEvent('mousedown', [15, 15]), true,
+            'prevented');
+    view.dispatchMouseEvent('mouseup', [15, 15]);
+    var message;
+    try {
+        view.dispatchMouseEvent('mousedrag', [15, 15]);
+    } catch (e) {
+        message = e.message;
+    }
+    equals(message, 'Unknown mouse event type: \'mousedrag\'.');
+    tool.remove();
+});
+
+test('view.dispatchKeyEvent()', function() {
+    var tool = new Tool();
+    var log = [];
+    tool.onKeyDown = tool.onKeyUp = function(event) {
+        log.push(event.type + ' ' + event.key + ' "' + event.character + '"');
+    };
+    view.dispatchKeyEvent('keydown', 'shift');
+    equals(Key.isDown('shift'), true, 'Key.isDown()');
+    equals(Key.modifiers.shift, true, 'Key.modifiers');
+    view.dispatchKeyEvent('keydown', 'a', { character: 'A' });
+    view.dispatchKeyEvent('keyup', 'a');
+    view.dispatchKeyEvent('keyup', 'shift');
+    equals(Key.isDown('shift'), false, 'Key.isDown() after keyup');
+    equals(log, [
+        'keydown shift ""',
+        'keydown a "A"',
+        'keyup a "A"',
+        'keyup shift ""'
+    ]);
+    tool.remove();
+});
+
 if (!isNodeContext) {
     test('view.viewSize of canvases with padding and border (#1160, #2033)', function() {
         // The padding of 10 and the border of 5 add 30 to the content box,
@@ -254,6 +336,53 @@ if (!isNodeContext) {
             }
             project.remove();
             document.body.removeChild(canvas);
+        });
+    });
+
+    test('view.viewSize sets the CSS size of non-resizable canvases (#2088)', function() {
+        // On every screen, not just at pixel ratios other than 1, so that
+        // pages behave the same everywhere:
+        var canvas = document.createElement('canvas');
+        canvas.width = 200;
+        canvas.height = 100;
+        document.body.appendChild(canvas);
+        var project = new Project(canvas);
+        project.view.viewSize = new Size(300, 150);
+        equals(canvas.style.width, '300px', 'style.width');
+        equals(canvas.style.height, '150px', 'style.height');
+        project.remove();
+        document.body.removeChild(canvas);
+    });
+
+    test('view.viewSize of canvases under CSS transforms', function() {
+        // A CSS transform on an ancestor scales the canvas on screen, but not
+        // its content box, which is the size of the view:
+        [false, true].forEach(function(resize) {
+            [false, true].forEach(function(insets) {
+                var name = (resize ? 'resize' : 'fixed')
+                        + (insets ? ', padding and border' : ''),
+                    container = document.createElement('div'),
+                    canvas = document.createElement('canvas');
+                container.style.transform = 'scale(0.5)';
+                canvas.width = 200;
+                canvas.height = 100;
+                canvas.style.display = 'block';
+                if (resize) {
+                    canvas.setAttribute('resize', '');
+                    canvas.style.width = '200px';
+                    canvas.style.height = '100px';
+                }
+                if (insets) {
+                    canvas.style.padding = '6px';
+                    canvas.style.border = '2px solid black';
+                }
+                container.appendChild(canvas);
+                document.body.appendChild(container);
+                var project = new Project(canvas);
+                equals(project.view.viewSize, new Size(200, 100), name);
+                project.remove();
+                document.body.removeChild(container);
+            });
         });
     });
 
@@ -358,4 +487,36 @@ test('Selections are drawn with a line width of 1', function() {
     equals(getAlpha(50, 53), 0, 'alpha next to the line');
     ctx.lineWidth = 1;
     path.remove();
+});
+
+test('tool.eventInterval repeats mousedrag while the mouse is held (S5)', function(assert) {
+    var done = assert.async(),
+        tool = new Tool({ eventInterval: 10 }),
+        drags = [];
+    // ToolEvent reads its values from the tool, so record them in the handler:
+    tool.onMouseDrag = function(event) {
+        drags.push({
+            point: event.point,
+            delta: event.delta,
+            count: event.count
+        });
+    };
+    view.dispatchMouseEvent('mousedown', [20, 20]);
+    view.dispatchMouseEvent('mousemove', [30, 20]);
+    setTimeout(function() {
+        view.dispatchMouseEvent('mouseup', [30, 20]);
+        var count = drags.length;
+        // The first drag is the move, then the repeats at the same point:
+        equals(count > 3, true, 'repeated');
+        equals(drags.slice(1).every(function(event, i) {
+            return event.point.equals([30, 20]) && event.delta.isZero()
+                    && event.count === i + 1;
+        }), true, 'at the last point, without a delta, counting up');
+        // Nothing fires after the mouse is released:
+        setTimeout(function() {
+            equals(drags.length, count, 'stopped');
+            tool.remove();
+            done();
+        }, 50);
+    }, 60);
 });

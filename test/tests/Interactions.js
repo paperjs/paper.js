@@ -335,6 +335,66 @@ test('Item#onMouseEnter()', function(assert) {
     triggerMouseEvent('mousemove', point);
 });
 
+test('Item#onMouseEnter() is not triggered through covering elements (#992)', function() {
+    var item = new Path.Rectangle(new Point(0, 0), new Size(10));
+    item.fillColor = 'red';
+    var types = [];
+    item.onMouseEnter = item.onMouseLeave = item.onMouseMove = function(event) {
+        types.push(event.type);
+    };
+    // An element such as a menu lies over the canvas, and gets the moves:
+    var cover = document.createElement('div');
+    document.body.appendChild(cover);
+    triggerMouseEvent('mousemove', new Point(5, 5), cover);
+    equals(types.join(), '', 'over the covering element');
+    // Moving off it onto the canvas enters the item:
+    triggerMouseEvent('mousemove', new Point(6, 6));
+    equals(types.join(), 'mouseenter,mousemove', 'over the canvas');
+    // Moving back onto the covering element leaves it again:
+    triggerMouseEvent('mousemove', new Point(5, 5), cover);
+    equals(types.join(), 'mouseenter,mousemove,mouseleave',
+            'back over the covering element');
+    document.body.removeChild(cover);
+});
+
+test('Mouse events keep Key.modifiers in sync (#1140)', function() {
+    var item = new Path.Rectangle(new Point(0, 0), new Size(10));
+    item.fillColor = 'red';
+    var shift = [];
+    item.onMouseDown = item.onMouseUp = function(event) {
+        shift.push(event.modifiers.shift);
+    };
+    // Shift was pressed while the page didn't have the focus, so no key event
+    // told Paper.js about it, only the mouse events' flags:
+    triggerMouseEvent('mousedown', new Point(5, 5), null, { shiftKey: true });
+    triggerMouseEvent('mouseup', new Point(5, 5), null, { shiftKey: true });
+    equals(Key.modifiers.shift, true, 'pressed');
+    // And released elsewhere:
+    triggerMouseEvent('mousedown', new Point(5, 5));
+    triggerMouseEvent('mouseup', new Point(5, 5));
+    equals(Key.modifiers.shift, false, 'released');
+    equals(shift.join(), 'true,true,false,false');
+});
+
+test('Touches on empty canvas are left to the browser (#1930)', function() {
+    var item = new Path.Rectangle(new Point(0, 0), new Size(10));
+    item.fillColor = 'red';
+    item.onMouseUp = function() {};
+    // An item that responds to mouseup needs the mousedown on it prevented,
+    // but not one elsewhere, so the browser can scroll the page:
+    var down = triggerMouseEvent('mousedown', new Point(5, 5));
+    triggerMouseEvent('mouseup', new Point(5, 5));
+    equals(down.defaultPrevented, true, 'on the item');
+    down = triggerMouseEvent('mousedown', new Point(50, 50));
+    triggerMouseEvent('mouseup', new Point(50, 50));
+    equals(down.defaultPrevented, false, 'on empty canvas');
+    // A view that responds to mouseup needs it everywhere:
+    view.onMouseUp = function() {};
+    down = triggerMouseEvent('mousedown', new Point(50, 50));
+    triggerMouseEvent('mouseup', new Point(50, 50));
+    equals(down.defaultPrevented, true, 'with a view handler');
+});
+
 test('Item#onMouseEnter() is only re-triggered after mouse leave', function(assert) {
     var item = new Path.Rectangle(new Point(0, 0), new Size(10));
     item.fillColor = 'red';

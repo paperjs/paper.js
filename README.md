@@ -201,16 +201,14 @@ Paper.js uses [Gulp.js](https://gulpjs.com/) for building, and has a couple of
 dependencies as NPM modules. Read the chapter [Installing Node.js and
 NPM](#installing-nodejs-and-npm) if you still need to install these.
 
-Due to a conflict in Gulp 3 that could only be resolved using package
-resolution, we recently switched from NPM to `yarn` for development, which also
-needs to be installed now. See
-[Installing Yarn](https://classic.yarnpkg.com/en/docs/install/) for details.
+Development uses [pnpm](https://pnpm.io/), which needs to be installed too. See
+[Installing pnpm](https://pnpm.io/installation) for details.
 
 In order to be able to build Paper.js, after checking out the repository, paper
 has dependencies that need to be installed. Install them by issuing the
 following commands from the Paper.js directory:
 
-    yarn install
+    pnpm install
 
 ### Building the Library
 
@@ -218,7 +216,7 @@ The Paper.js sources are distributed across many separate files, organised in
 subfolders inside the `src` folder. To compile them all into distributable
 files, you can run the `build` task:
 
-    yarn build
+    pnpm build
 
 You will then find the built library files inside the `dist` folder, named
 `paper-full.js` and `paper-core.js`, along with their minified versions. Read
@@ -236,11 +234,11 @@ library.
 This means you can switch between loading from sources and loading a built
 library simply by running.
 
-    yarn load
+    pnpm load
 
 And to go back to a built library
 
-    yarn build
+    pnpm build
 
 Note that your PaperScripts examples do not need to change, they can keep
 loading `dist/paper-full.js`, which will always do the right thing. Note also
@@ -250,7 +248,7 @@ that `src/load.js` handles both browsers and Node.js, as supported by Prepro.js.
 
 Create a final zipped distribution file inside the `dist` folder:
 
-    yarn dist
+    pnpm dist
 
 ### Branch structure
 
@@ -261,7 +259,7 @@ only merged into [`main`](https://github.com/paperjs/paper.js/tree/main)
 when a new release occurs.
 
 As of version `0.9.26`, the `dist` folder is excluded on all branches, and the
-building is now part of the `yarn publish` process by way of the `prepublish`
+building is now part of the `pnpm publish` process by way of the `prepublish`
 script.
 
 We also offer prebuilt versions of the latest state of the `develop` branch on
@@ -273,7 +271,7 @@ and [`prebuilt/dist`](https://github.com/paperjs/paper.js/tree/prebuilt/dist).
 Similarly to building the library, you can run the `docs` task to build the
 documentation:
 
-    yarn docs
+    pnpm docs
 
 Your docs will then be located at `dist/docs`.
 
@@ -291,11 +289,16 @@ CORS restrictions. In order to run the browser based tests on Chrome, you need
 to run a local web-server through Gulp.js. The following command will handle it
 for you, and will also open the browser at the right address straight away:
 
-    yarn test:browser
+    pnpm test:browser
+
+To run them in headless Chrome instead, as CI does, and report the result in the
+terminal:
+
+    pnpm test:chrome
 
 To test the Node.js version of Paper.js, use this command:
 
-    yarn test
+    pnpm test
 
 ### Contributing [![Open Source Helpers](https://www.codetriage.com/paperjs/paper.js/badges/users.svg)](https://www.codetriage.com/paperjs/paper.js)
 

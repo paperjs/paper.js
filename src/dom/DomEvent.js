@@ -109,8 +109,15 @@ DomEvent.requestAnimationFrame = new function() {
         // Now see if the above calls have collected new callbacks. Keep
         // requesting new frames as long as we have callbacks.
         requested = nativeRequest && callbacks.length;
-        if (requested)
+        if (requested) {
             nativeRequest(handleCallbacks);
+        } else if (timer && !callbacks.length) {
+            // Stop the interval timer of the fallback when there's nothing
+            // left to do, so it doesn't keep hosts running. The next request
+            // starts it again:
+            clearInterval(timer);
+            timer = null;
+        }
     }
 
     return function(callback) {

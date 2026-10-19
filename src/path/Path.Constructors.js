@@ -352,7 +352,10 @@ Path.inject({ statics: new function() {
         },
 
         /**
-         * Creates a regular polygon shaped path item.
+         * Creates a regular polygon shaped path item. As in Illustrator, it
+         * stands on a flat bottom edge, and its segments run counterclockwise
+         * from its top vertex, or with an even number of sides, from the right
+         * end of its top edge.
          *
          * @name Path.RegularPolygon
          * @param {Point} center the center point of the polygon
@@ -389,10 +392,12 @@ Path.inject({ statics: new function() {
                 center = Point.readNamed(args, 'center'),
                 sides = Base.readNamed(args, 'sides'),
                 radius = Base.readNamed(args, 'radius'),
-                step = 360 / sides,
-                three = sides % 3 === 0,
-                vector = new Point(0, three ? -radius : radius),
-                offset = three ? -1 : 0.5,
+                step = -360 / sides,
+                // Start at the top as Illustrator does: at the top vertex, or
+                // the right end of the top edge with an even number of sides,
+                // counterclockwise:
+                offset = sides % 2 ? 0 : -0.5,
+                vector = new Point(0, -radius),
                 segments = new Array(sides);
             for (var i = 0; i < sides; i++)
                 segments[i] = new Segment(center.add(

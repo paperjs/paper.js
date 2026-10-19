@@ -92,3 +92,69 @@ test('Selected items are only added to the selection once inserted', function() 
     }, true);
     equals(project._selectionCount, 1);
 });
+
+test('trackChanges / takeChanges()', function() {
+    var project = new Project();
+    var path = new Path.Circle([50, 50], 20);
+    var removed = new Path.Rectangle([0, 0], [10, 10]);
+    equals(project.takeChanges(), null);
+    project.trackChanges = true;
+    path.fillColor = 'red';
+    path.position.x += 10;
+    removed.remove();
+    var inserted = new Path();
+    var changes = project.takeChanges();
+    function getFlags(item) {
+        for (var i = 0; i < changes.length; i++) {
+            if (changes[i].item === item)
+                return changes[i].flags;
+        }
+        return 0;
+    }
+    equals(changes.length, 4); // Including the layer's children.
+    equals(!!(getFlags(path) & ChangeFlag.STYLE), true);
+    equals(!!(getFlags(path) & ChangeFlag.GEOMETRY), true);
+    equals(!!(getFlags(removed) & ChangeFlag.INSERTION), true);
+    equals(!!(getFlags(inserted) & ChangeFlag.INSERTION), true);
+    equals(!!(getFlags(project.activeLayer) & ChangeFlag.CHILDREN), true);
+    equals(project.takeChanges().length, 0);
+    project.trackChanges = false;
+    path.rotate(10);
+    equals(project.takeChanges(), null);
+});
+
+test('trackChanges logs removed layers', function() {
+    var project = new Project();
+    var layer = new Layer();
+    project.trackChanges = true;
+    layer.remove();
+    var changes = project.takeChanges();
+    equals(changes.length, 1);
+    equals(changes[0].item, layer);
+    equals(!!(changes[0].flags & ChangeFlag.INSERTION), true);
+});
+
+test('trackChanges ignores items that are not inserted', function() {
+    var project = new Project();
+    var path1 = new Path.Rectangle([0, 0], [20, 20]);
+    var path2 = new Path.Rectangle([10, 10], [20, 20]);
+    var detached = new Path({ insert: false });
+    project.trackChanges = true;
+    detached.add([10, 10]);
+    equals(project.takeChanges().length, 0);
+    // Only the result is logged, not the temporary paths:
+    var result = path1.unite(path2);
+    var changes = project.takeChanges();
+    equals(changes.length, 2);
+    equals(changes[0].item === result || changes[1].item === result, true);
+});
+
+test('project.scope, view.scope, item.scope and tool.scope (#1634)', function() {
+    var path = new Path(),
+        tool = new Tool();
+    equals(function() {
+        return project.scope === paper && view.scope === paper
+                && path.scope === paper && tool.scope === paper;
+    }, true);
+    tool.remove();
+});

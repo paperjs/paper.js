@@ -470,6 +470,9 @@ Base.exports.PaperScript = function() {
      *     generation
      * @option options.source {String} the source to be used for the source-
      *     mapping, in case the code that's passed in has already been mingled.
+     * @option options.handlers {String[]} the names of further global
+     *     handlers to export next to `onFrame`, `onResize` and the tool's
+     *     handlers, for hosts that call them themselves
      *
      * @param {String} code the PaperScript code
      * @param {PaperScope} scope the scope for which the code is executed
@@ -483,8 +486,9 @@ Base.exports.PaperScript = function() {
             // Only create a tool if the tool object is accessed or something
             // resembling a global tool handler is contained in the code, but
             // no tool objects are actually created.
-            tool = /\btool\.\w+|\s+on(?:Key|Mouse)(?:Up|Down|Move|Drag)\b/
-                    .test(code) && !/\bnew\s+Tool\b/.test(code)
+            tool = new RegExp('\\btool\\.\\w+|\\s+(?:'
+                    + Tool.prototype._events.join('|') + ')\\b').test(code)
+                    && !/\bnew\s+Tool\b/.test(code)
                         ? new Tool() : null,
             toolHandlers = tool ? tool._events : [],
             // Compile a list of all handlers that can be defined globally
@@ -492,7 +496,8 @@ Base.exports.PaperScript = function() {
             // undefined arguments, so that their name exists, rather than
             // injecting a code line that defines them as variables. They are
             // exported again at the end of the function.
-            handlers = ['onFrame', 'onResize'].concat(toolHandlers),
+            handlers = ['onFrame', 'onResize'].concat(toolHandlers,
+                    options && options.handlers || []),
             // compile a list of parameter names for all variables that need to
             // appear as globals inside the script. At the same time, also
             // collect their values, so we can pass them on as arguments in the
@@ -504,12 +509,15 @@ Base.exports.PaperScript = function() {
         code = compiled.code;
         function expose(scope, hidden) {
             // Look through all enumerable properties on the scope and expose
-            // these too as pseudo-globals, but only if they seem to be in use.
+            // these too as pseudo-globals, but only if they seem to be in use,
+            // and don't shadow existing globals, such as the native Event,
+            // MouseEvent and Symbol, as PaperScope#install() doesn't either:
             for (var key in scope) {
                 // Next to \b well also need to match \s and \W in the beginning
                 // of $__, since $ is not part of \w. And that causes \b to not
                 // match ^ longer, so include that specifically too.
-                if ((hidden || !/^_/.test(key)) && new RegExp('([\\b\\s\\W]|^)'
+                if ((hidden || !/^_/.test(key) && !(key in self))
+                        && new RegExp('([\\b\\s\\W]|^)'
                         + key.replace(/\$/g, '\\$') + '\\b').test(code)) {
                     params.push(key);
                     args.push(scope[key]);

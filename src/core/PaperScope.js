@@ -52,7 +52,8 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
             applyMatrix: true,
             insertItems: true,
             handleSize: 4,
-            hitTolerance: 0
+            hitTolerance: 0,
+            scaleStrokes: false
         });
         this.project = null;
         this.projects = [];
@@ -132,6 +133,12 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      *     when drawing selections
      * @option [settings.hitTolerance=0] {Number} the default tolerance for hit-
      *     tests, when no value is specified
+     * @option [settings.scaleStrokes=false] {Boolean} controls whether applying
+     *     a matrix to the content of paths and compound paths also scales their
+     *     {@link Style#strokeWidth}, by the geometric mean of the scale factors
+     *     for non-uniform scaling. Items that keep their matrix, with
+     *     {@link Item#applyMatrix} set to `false`, scale their strokes when
+     *     drawing anyway, unless {@link Style#strokeScaling} is `false`
      */
 
     /**
@@ -206,7 +213,9 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
     execute: function(code, options) {
 /*#*/   if (__options.paperScript) {
             var exports = paper.PaperScript.execute(code, this, options);
-            View.updateFocus();
+            // Focus handling only exists in the browser, not in web workers:
+            if (window)
+                View.updateFocus();
             return exports;
 /*#*/   }
     },
@@ -237,13 +246,15 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
                 }
             });
         });
-        // Copy over all fields from this scope to the destination.
-        // Do not use Base.each, since we also want to enumerate over
-        // fields on PaperScope.prototype, e.g. all classes
-        for (var key in this)
-            // Exclude all 'hidden' fields
-            if (!/^_/.test(key) && this[key])
+        // Copy over all fields from this scope to the destination, except the
+        // hidden ones and the names that the destination has already, such as
+        // the native Event, MouseEvent and Symbol (#1832). Do not use
+        // Base.each, since we also want to enumerate over fields on
+        // PaperScope.prototype, e.g. all classes:
+        for (var key in this) {
+            if (!/^_/.test(key) && this[key] && !(key in scope))
                 scope[key] = this[key];
+        }
     },
 
     /**
