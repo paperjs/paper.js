@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 13:26:39 2026 +0200
+ * Date: Mon Oct 19 13:25:44 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -5298,10 +5298,6 @@ declare namespace paper {
          * Note that the project is not cleared first. You can call
          * {@link Project#clear} to do so.
          * 
-         * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
-         * the `<use>` elements that place them as {@link SymbolItem} items. The
-         * styles that `<use>` elements inherit don't reach the symbols' content.
-         * 
          * @param json - the JSON data to import from
          * 
          * @return the imported item
@@ -5349,6 +5345,10 @@ declare namespace paper {
          * the active layer of this project.
          * Note that the project is not cleared first. You can call
          * {@link Project#clear} to do so.
+         * 
+         * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
+         * the `<use>` elements that place them as {@link SymbolItem} items. The
+         * styles that `<use>` elements inherit don't reach the symbols' content.
          * 
          * @option [options.expandShapes=false] {Boolean} whether imported shape
          *     items should be expanded to path items
