@@ -2830,81 +2830,57 @@ statics: {
 
     /**
      * Returns the horizontal and vertical padding that a transformed round
-     * stroke adds to the bounding box, by calculating the dimensions of a
-     * rotated ellipse.
+     * stroke adds to the bounding box, by calculating the dimensions of the
+     * transformed circle.
      */
     _getStrokePadding: function(radius, matrix) {
         if (!matrix)
             return [radius, radius];
-        // If a matrix is provided, we need to rotate the stroke circle
-        // and calculate the bounding box of the resulting rotated ellipse:
-        // Get rotated hor and ver vectors, and determine rotation angle
-        // and ellipse values from them:
-        var hor = new Point(radius, 0).transform(matrix),
-            ver = new Point(0, radius).transform(matrix),
-            phi = hor.getAngleInRadians(),
-            a = hor.getLength(),
-            b = ver.getLength();
-        // Formula for rotated ellipses:
-        // x = cx + a*cos(t)*cos(phi) - b*sin(t)*sin(phi)
-        // y = cy + b*sin(t)*cos(phi) + a*cos(t)*sin(phi)
-        // Derivatives (by Wolfram Alpha):
-        // derivative of x = cx + a*cos(t)*cos(phi) - b*sin(t)*sin(phi)
-        // dx/dt = a sin(t) cos(phi) + b cos(t) sin(phi) = 0
-        // derivative of y = cy + b*sin(t)*cos(phi) + a*cos(t)*sin(phi)
-        // dy/dt = b cos(t) cos(phi) - a sin(t) sin(phi) = 0
-        // This can be simplified to:
-        // tan(t) = -b * tan(phi) / a // x
-        // tan(t) =  b * cot(phi) / a // y
-        // Solving for t gives:
-        // t = pi * n - arctan(b * tan(phi) / a) // x
-        // t = pi * n + arctan(b * cot(phi) / a)
-        //   = pi * n + arctan(b / tan(phi) / a) // y
-        var sin = Math.sin(phi),
-            cos = Math.cos(phi),
-            tan = Math.tan(phi),
-            tx = Math.atan2(b * tan, a),
-            ty = Math.atan2(b, tan * a);
-        // Due to symmetry, we don't need to cycle through pi * n solutions:
-        return [Math.abs(a * Math.cos(tx) * cos + b * Math.sin(tx) * sin),
-                Math.abs(b * Math.sin(ty) * cos + a * Math.cos(ty) * sin)];
+        // x = radius * (a * cos(t) + c * sin(t)) is at most
+        // radius * sqrt(a² + c²), and y the same with b and d:
+        var a = matrix._a,
+            b = matrix._b,
+            c = matrix._c,
+            d = matrix._d;
+        return [radius * Math.sqrt(a * a + c * c),
+                radius * Math.sqrt(b * b + d * d)];
     },
 
     _addBevelJoin: function(segment, join, radius, miterLimit, matrix,
             strokeMatrix, addPoint, isArea) {
         // Handles both 'bevel' and 'miter' joins, as they share a lot of code,
         // using different matrices to transform segment points and stroke
-        // vectors to support Style#strokeScaling.
+        // vectors to support Style#strokeScaling. The stroke vectors are only
+        // transformed after constructing the join, as the matrices don't
+        // preserve angles (#2065).
         var curve2 = segment.getCurve(),
             curve1 = curve2.getPrevious(),
             point = curve2.getPoint1().transform(matrix),
-            normal1 = curve1.getNormalAtTime(1).multiply(radius)
-                .transform(strokeMatrix),
-            normal2 = curve2.getNormalAtTime(0).multiply(radius)
-                .transform(strokeMatrix),
-                angle = normal1.getDirectedAngle(normal2);
+            normal1 = curve1.getNormalAtTime(1).multiply(radius),
+            normal2 = curve2.getNormalAtTime(0).multiply(radius),
+            angle = normal1.getDirectedAngle(normal2);
         if (angle < 0 || angle >= 180) {
             normal1 = normal1.negate();
             normal2 = normal2.negate();
         }
         if (isArea)
             addPoint(point);
-        addPoint(point.add(normal1));
+        addPoint(point.add(normal1.transform(strokeMatrix)));
         if (join === 'miter') {
             // Intersect the two lines
-            var corner = new Line(point.add(normal1),
+            var corner = new Line(normal1,
                     new Point(-normal1.y, normal1.x), true
-                ).intersect(new Line(point.add(normal2),
+                ).intersect(new Line(normal2,
                     new Point(-normal2.y, normal2.x), true
                 ), true);
             // See if we actually get a bevel point and if its distance is below
             // the miterLimit. If not, make a normal bevel.
-            if (corner && point.getDistance(corner) <= miterLimit * radius) {
-                addPoint(corner);
+            if (corner && corner.getLength() <= miterLimit * radius) {
+                addPoint(point.add(corner.transform(strokeMatrix)));
             }
         }
         // Produce a normal bevel
-        addPoint(point.add(normal2));
+        addPoint(point.add(normal2.transform(strokeMatrix)));
     },
 
     _addSquareCap: function(segment, cap, radius, matrix, strokeMatrix,
@@ -2918,17 +2894,18 @@ statics: {
             // Checking loc.getTime() for 0 is to see whether this is the first
             // or the last segment of the open path, in order to determine in
             // which direction to flip the normal.
-            normal = loc.getNormal()
-                    .multiply(loc.getTime() === 0 ? radius : -radius)
-                    .transform(strokeMatrix);
+            vector = loc.getNormal()
+                    .multiply(loc.getTime() === 0 ? radius : -radius),
+            normal = vector.transform(strokeMatrix);
         // For square caps, we need to step away from point in the direction of
-        // the tangent, which is the rotated normal.
+        // the tangent, which is the normal rotated before transforming it, as
+        // the matrices don't preserve angles (#2065).
         if (cap === 'square') {
             if (isArea) {
                 addPoint(point.subtract(normal));
                 addPoint(point.add(normal));
             }
-            point = point.add(normal.rotate(-90));
+            point = point.add(vector.rotate(-90).transform(strokeMatrix));
         }
         addPoint(point.add(normal));
         addPoint(point.subtract(normal));
