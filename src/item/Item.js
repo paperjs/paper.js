@@ -2074,7 +2074,7 @@ new function() { // Injection scope for hit-test functions shared with project
      */
 
     _hitTest: function(point, options, parentViewMatrix) {
-        // Shells of sourced items are rejected by their bounds below, as
+        // Shells of hosted items are rejected by their bounds below, as
         // checking for emptiness would load them:
         if (this._locked || !this._visible || this._guide && !options.guides
                 || !this._shell && this.isEmpty()) {
@@ -2083,7 +2083,7 @@ new function() { // Injection scope for hit-test functions shared with project
 
         // Check if the point is withing roughBounds + tolerance, but only if
         // this item does not have children, since we'd have to travel up the
-        // chain already to determine the rough bounds. Shells of sourced items
+        // chain already to determine the rough bounds. Shells of hosted items
         // know their rough bounds without loading their children.
         var matrix = this._matrix,
             // If this is the first one in the recursion, the point is in global
