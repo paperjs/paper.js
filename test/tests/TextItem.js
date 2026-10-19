@@ -151,3 +151,49 @@ if (!isNodeContext) {
         text.remove();
     });
 }
+
+test('PointText#clipMask (#1845)', function() {
+    // The glyph outlines aren't known, so text clips with its bounds without
+    // drawing itself, also after other paths were drawn before it:
+    function createClipped(clipItem) {
+        clipItem.clipMask = true;
+        return new Group([
+            new Path.Circle({
+                center: [100, 100],
+                radius: 50,
+                fillColor: 'blue'
+            }),
+            new Group([clipItem, new Path.Rectangle({
+                point: [0, 0],
+                size: [200, 200],
+                fillColor: 'red'
+            })])
+        ]);
+    }
+
+    function createText() {
+        return new PointText({
+            fontFamily: 'Arial, Helvetica',
+            fontSize: 40,
+            point: [20, 60],
+            content: 'Clip',
+            fillColor: 'green'
+        });
+    }
+
+    function createRectangle() {
+        var text = createText();
+        text.remove();
+        return new Path.Rectangle(text.bounds);
+    }
+
+    function createCircle() {
+        return new Path.Circle({ center: [150, 150], radius: 20 });
+    }
+
+    comparePixels(createClipped(createText()),
+            createClipped(createRectangle()));
+    // Also together with other items in a group used as clip mask:
+    comparePixels(createClipped(new Group([createText(), createCircle()])),
+            createClipped(new Group([createRectangle(), createCircle()])));
+});
