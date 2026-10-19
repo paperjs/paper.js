@@ -18,9 +18,10 @@ minimumReleaseAgeExclude:
 overrides:
   graceful-fs: 4.2.2
   resemblejs>canvas: ^3.2.3
+  # gulp-qunits only needs PhantomJS for its browser runner, which isn't used:
+  phantomjs-prebuilt: '-'
 
 # Only let the dependencies run install scripts that need them: canvas for the
-# Node.js tests. PhantomJS isn't used:
+# Node.js tests:
 allowBuilds:
   canvas: true
-  phantomjs-prebuilt: false
