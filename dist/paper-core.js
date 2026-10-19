@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:22:40 2026 +0200
+ * Date: Mon Oct 19 12:25:25 2026 +0200
  *
  ***
  *
@@ -12857,6 +12857,16 @@ var DomElement = new function() {
 			return DomElement.getBounds(el, true).getSize();
 		},
 
+		getInsets: function(el) {
+			var style = DomElement.getStyles(el);
+			function get(side) {
+				return parseFloat(style['padding' + side])
+						+ parseFloat(style['border' + side + 'Width']);
+			}
+			return new Size(get('Left') + get('Right'),
+					get('Top') + get('Bottom'));
+		},
+
 		isInvisible: function(el) {
 			return DomElement.getSize(el).equals(new Size(0, 0));
 		},
@@ -12983,7 +12993,7 @@ var View = Base.extend(Emitter, {
 			var size = DomElement.getSize(element);
 			return size.isNaN() || size.isZero()
 					? new Size(getSize('width'), getSize('height'))
-					: size;
+					: size.subtract(DomElement.getInsets(element));
 		}
 
 		var size;
@@ -13764,9 +13774,13 @@ var CanvasView = View.extend({
 			var element = this._element,
 				ctx = this._context;
 			if (!PaperScope.hasAttribute(element, 'resize')) {
-				var style = element.style;
-				style.width = width + 'px';
-				style.height = height + 'px';
+				var style = element.style,
+					insets = DomElement.getStyles(element).boxSizing
+						=== 'border-box'
+							? DomElement.getInsets(element)
+							: new Size();
+				style.width = (width + insets.width) + 'px';
+				style.height = (height + insets.height) + 'px';
 			}
 			ctx.restore();
 			ctx.save();
