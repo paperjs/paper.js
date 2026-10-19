@@ -45,11 +45,19 @@ var HitResult = Base.extend(/** @lends HitResult# */{
      * If the HitResult has a {@link HitResult#type} of `'bounds'`, this
      * property describes which corner of the bounding rectangle was hit.
      *
+     * The names refer to the item's own bounding rectangle, transformed by its
+     * {@link Item#matrix}, which is the rectangle that the item's selection
+     * draws. On mirrored or rotated items, a handle can therefore appear
+     * elsewhere on screen than its name says, while its opposite handle and
+     * the rectangle's axes stay the ones to transform the item by. To choose
+     * a cursor, use the direction from the rectangle's center to
+     * {@link HitResult#point}, both in project coordinates.
+     *
      * @name HitResult#name
      * @property
      * @type String
      * @values 'top-left', 'top-right', 'bottom-left', 'bottom-right',
-     *     'left-center', 'top-center', 'right-center', 'bottom- center'
+     *     'left-center', 'top-center', 'right-center', 'bottom-center'
      */
 
     /**
