@@ -590,6 +590,42 @@ test('hit-testing fills with tolerance', function() {
     }, true);
 });
 
+test('hit-testing point texts with tolerance (#632)', function() {
+    var text = new PointText({
+        point: [50, 50],
+        content: 'Hello',
+        fontSize: 20,
+        fillColor: 'black'
+    });
+
+    // Hit the bounds of the text, and within the tolerance of 10 around them:
+    function testHit(offset, origin, expected, message) {
+        var point = text.bounds[origin].add(offset),
+            hit = text.hitTest(point, { fill: true, tolerance: 10 });
+        equals(function() {
+            return !!hit && hit.type === 'fill' && hit.item === text;
+        }, expected, message);
+    }
+
+    function testHits(name) {
+        testHit([0, 0], 'center', true, name + ': center');
+        testHit([9, 0], 'rightCenter', true, name + ': 9 right of bounds');
+        testHit([11, 0], 'rightCenter', false, name + ': 11 right of bounds');
+        testHit([0, -9], 'topCenter', true, name + ': 9 above bounds');
+        testHit([0, -11], 'topCenter', false, name + ': 11 above bounds');
+        // At the corners, the distance counts, not the expanded rectangle:
+        testHit([6, 6], 'bottomRight', true,
+                name + ': 6 * sqrt(2) diagonally from corner');
+        testHit([8, 8], 'bottomRight', false,
+                name + ': 8 * sqrt(2) diagonally from corner');
+    }
+
+    testHits('text');
+    // The tolerance is in project coordinates, also when the text is scaled:
+    text.scale(2);
+    testHits('scaled text');
+});
+
 test('hit-testing compound-paths', function() {
     var center = new Point(100, 100);
     var path1 = new Path.Circle({
