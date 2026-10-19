@@ -2118,6 +2118,16 @@ new function() { // Injection scope for hit-test functions shared with project
             res;
 
         function filter(hit) {
+            // Path#_hitTestSelf() returns a list of all its hits when we're
+            // collecting them, see hitTestAll():
+            if (Array.isArray(hit)) {
+                var first = null;
+                for (var i = 0, l = hit.length; i < l; i++) {
+                    var res = filter(hit[i]);
+                    first = first || res;
+                }
+                return first;
+            }
             if (hit && match && !match(hit))
                 hit = null;
             // If we're collecting all matches, add it to options.all, with its
