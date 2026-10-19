@@ -86,6 +86,7 @@ new function() {
             item = new Group(),
             project = item._project,
             currentStyle = project._currentStyle,
+            parentSize = rootSize,
             children = [];
         if (!isClip && !isDefs) {
             item = applyAttributes(item, node, options, isRoot);
@@ -95,6 +96,12 @@ new function() {
             // creation of all nested items. importSVG then needs to check for
             // items and avoid calling applyAttributes() again.
             project._currentStyle = item._style.clone();
+        }
+        if (type === 'svg' && !isRoot) {
+            // Percentages inside nested <svg> elements refer to their size:
+            rootSize = new Size(
+                    getValue(node, 'width', false, false, false, '100%'),
+                    getValue(node, 'height', false, false, false, '100%'));
         }
         if (isRoot) {
             // Import all defs first, since in SVG they can be in any location.
@@ -119,8 +126,9 @@ new function() {
         // end.
         if (isClip)
             item = applyAttributes(item.reduce(), node, options, isRoot);
-        // Restore currentStyle
+        // Restore currentStyle and rootSize
         project._currentStyle = currentStyle;
+        rootSize = parentSize;
         if (isClip || isDefs) {
             // We don't want the defs in the DOM. But we might want to use
             // Symbols for them to save memory?
