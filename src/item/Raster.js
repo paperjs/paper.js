@@ -572,6 +572,10 @@ var Raster = Item.extend(/** @lends Raster# */{
      * If the raster shows an image that was loaded from a `data:` URL, that
      * URL is returned unchanged. Otherwise, the arguments are passed on to
      * `HTMLCanvasElement#toDataURL()` of the raster's {@link #canvas}.
+     * In web-workers, where the canvas is an `OffscreenCanvas`, this is not
+     * supported, and neither are {@link #source} and exporting the raster to
+     * JSON, which rely on it. Use the canvas' asynchronous `convertToBlob()`
+     * there instead.
      *
      * @param {String} [type='image/png'] the image format to encode
      * @param {Number} [quality] the image quality between `0` and `1`, for
