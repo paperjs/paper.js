@@ -249,10 +249,10 @@ test('Import SVG Image', function(assert) {
     var imported = paper.project.importSVG(svg);
     var raster = imported.children[0];
     raster.on('load', function() {
-        // The 1 x 1 pixel image is scaled to its size of 300 x 67, and then by
-        // the transform matrix:
+        // The 1 x 1 pixel image is scaled uniformly to fit its box of
+        // 300 x 67, centered in it, and then by the transform matrix:
         equals(raster.size, new Size(1, 1));
-        equals(raster.matrix, new Matrix(64.47, 0, 0, 14.3983, 337.0056, 205.01675));
+        equals(raster.matrix, new Matrix(14.3983, 0, 0, 14.3983, 337.0056, 205.01675));
         done();
     });
 });
@@ -391,6 +391,51 @@ test('Import SVG Image with crossOrigin (#1094)', function(assert) {
     var raster = paper.project.importSVG(svg).getItem({ class: Raster });
     equals(raster.crossOrigin, '', 'default: raster.crossOrigin');
     equals(raster.image.crossOrigin, null, 'default: image.crossOrigin');
+});
+
+test('Import SVG Image with preserveAspectRatio (#1129)', function(assert) {
+    var done = assert.async(),
+        url = CanvasProvider.getCanvas(4, 2).toDataURL(),
+        images = {
+            '': '20 x 20',
+            'xMidYMid meet': '20 x 20',
+            'xMinYMin': '20 x 20',
+            'xMaxYMax meet': '20 x 20',
+            'none': '20 x 20',
+            'xMidYMax': '10 x 40',
+            'xMaxYMin': '40 x 10'
+        },
+        svg = Base.each(images, function(size, align) {
+            size = size.split(' x ');
+            this.push('<image xlink:href="' + url + '" x="10" y="20"'
+                    + ' width="' + size[0] + '" height="' + size[1] + '"'
+                    + (align ? ' preserveAspectRatio="' + align + '"' : '')
+                    + '/>');
+        }, []).join(''),
+        imported = paper.project.importSVG(
+            '<svg xmlns="http://www.w3.org/2000/svg"'
+            + ' xmlns:xlink="http://www.w3.org/1999/xlink">' + svg + '</svg>'),
+        rasters = imported.children,
+        loaded = 0;
+
+    function onLoad() {
+        if (++loaded === rasters.length) {
+            // The 4 x 2 image is scaled uniformly to fit its box, and aligned
+            // in it (xMidYMid by default), except with 'none':
+            equals(rasters[0].bounds, new Rectangle(10, 25, 20, 10), 'default');
+            equals(rasters[1].bounds, new Rectangle(10, 25, 20, 10), 'xMidYMid');
+            equals(rasters[2].bounds, new Rectangle(10, 20, 20, 10), 'xMinYMin');
+            equals(rasters[3].bounds, new Rectangle(10, 30, 20, 10), 'xMaxYMax');
+            equals(rasters[4].bounds, new Rectangle(10, 20, 20, 20), 'none');
+            equals(rasters[5].bounds, new Rectangle(10, 55, 10, 5), 'xMidYMax');
+            equals(rasters[6].bounds, new Rectangle(30, 20, 20, 10), 'xMaxYMin');
+            done();
+        }
+    }
+
+    rasters.forEach(function(raster) {
+        raster.on('load', onLoad);
+    });
 });
 
 test('Import SVG string with leading line-breaks', function() {
@@ -670,6 +715,40 @@ if (!isNodeContext) {
                 importSVG(assert, 'assets/' + name, null, options);
             });
         }
+    });
+
+    test('Import SVG Image with preserveAspectRatio renders as in browsers '
+            + '(#1129)', function(assert) {
+        var done = assert.async(),
+            // A 40 x 20 image with two differently colored halves:
+            canvas = CanvasProvider.getCanvas(40, 20),
+            ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'red';
+        ctx.fillRect(0, 0, 20, 20);
+        ctx.fillStyle = 'blue';
+        ctx.fillRect(20, 0, 20, 20);
+        var image = '<image xlink:href="' + canvas.toDataURL() + '"',
+            svg = '<svg xmlns="http://www.w3.org/2000/svg"'
+                + ' xmlns:xlink="http://www.w3.org/1999/xlink"'
+                + ' width="200" height="200">'
+                + '<rect width="200" height="200" fill="white"/>'
+                + image + ' width="80" height="80"/>'
+                + image + ' x="100" width="80" height="80"'
+                + ' preserveAspectRatio="xMinYMax meet"/>'
+                + image + ' y="100" width="80" height="80"'
+                + ' preserveAspectRatio="none"/>'
+                + image + ' x="100" y="100" width="100" height="20"'
+                + ' preserveAspectRatio="xMaxYMid"/>'
+                + '</svg>',
+            imported = paper.project.importSVG(svg),
+            rasters = imported.getItems({ class: Raster }),
+            loaded = 0;
+        rasters.forEach(function(raster) {
+            raster.on('load', function() {
+                if (++loaded === rasters.length)
+                    compareSVG(done, imported, svg, null, { tolerance: 1e-2 });
+            });
+        });
     });
 
     test('Import inexistent file', function(assert) {
