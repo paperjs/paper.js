@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 13:32:35 2026 +0200
+ * Date: Mon Oct 19 12:19:46 2026 +0200
  *
  ***
  *
@@ -15852,6 +15852,8 @@ new function() {
 				parent: !isRoot && !/^defs$/i.test(parent.tagName)
 						&& DomElement.getStyles(parent) || {}
 			};
+		if (isRoot && !styles.node.fill && item.setFillColor)
+			item.setFillColor('black');
 		Base.each(attributes, function(apply, name) {
 			var value = getAttribute(node, name, styles);
 			item = value !== undefined
