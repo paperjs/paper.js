@@ -357,6 +357,25 @@ test('Item#onMouseEnter() is not triggered through covering elements (#992)', fu
     document.body.removeChild(cover);
 });
 
+test('Touches on empty canvas are left to the browser (#1930)', function() {
+    var item = new Path.Rectangle(new Point(0, 0), new Size(10));
+    item.fillColor = 'red';
+    item.onMouseUp = function() {};
+    // An item that responds to mouseup needs the mousedown on it prevented,
+    // but not one elsewhere, so the browser can scroll the page:
+    var down = triggerMouseEvent('mousedown', new Point(5, 5));
+    triggerMouseEvent('mouseup', new Point(5, 5));
+    equals(down.defaultPrevented, true, 'on the item');
+    down = triggerMouseEvent('mousedown', new Point(50, 50));
+    triggerMouseEvent('mouseup', new Point(50, 50));
+    equals(down.defaultPrevented, false, 'on empty canvas');
+    // A view that responds to mouseup needs it everywhere:
+    view.onMouseUp = function() {};
+    down = triggerMouseEvent('mousedown', new Point(50, 50));
+    triggerMouseEvent('mouseup', new Point(50, 50));
+    equals(down.defaultPrevented, true, 'with a view handler');
+});
+
 test('Item#onMouseEnter() is only re-triggered after mouse leave', function(assert) {
     var item = new Path.Rectangle(new Point(0, 0), new Size(10));
     item.fillColor = 'red';
