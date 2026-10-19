@@ -576,7 +576,10 @@ var View = Base.extend(Emitter, /** @lends View# */{
     setRotation: function(rotation) {
         var current = this.getRotation();
         if (current != null && rotation != null) {
-            this.rotate(rotation - current);
+            // Rotate around the center in view coordinates, so the rotation
+            // adds to the decomposed one, also on mirrored views (#1893):
+            this._matrix.prepend(new Matrix().rotate(rotation - current,
+                    this.projectToView(this.getCenter())));
         }
     },
 

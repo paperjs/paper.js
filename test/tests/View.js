@@ -23,6 +23,36 @@ test('view.zoom of mirrored view (#1411)', function() {
     equals(view.matrix, new Matrix(2, 0, 0, -2, -50, 150), 'view.matrix');
 });
 
+test('view.rotation of mirrored view (#1893)', function() {
+    // The view is 100x100, so it rotates around (50, 50), which stays in place:
+    // (x, y) -> (cos * x - sin * y, sin * x + cos * y) when not mirrored, and
+    // (cos * x + sin * y, sin * x - cos * y) when mirrored first.
+    var cos = Math.cos(Math.PI / 6),
+        sin = Math.sin(Math.PI / 6);
+    view.rotation = 30;
+    equals(view.rotation, 30, 'view.rotation');
+    equals(view.matrix, new Matrix(cos, sin, -sin, cos,
+            50 - 50 * (cos - sin), 50 - 50 * (sin + cos)), 'view.matrix');
+    view.matrix = new Matrix();
+    view.scale(1, -1);
+    view.rotation = 30;
+    equals(view.rotation, 30, 'mirrored: view.rotation');
+    equals(view.scaling, new Point(1, -1), 'mirrored: view.scaling');
+    equals(view.matrix, new Matrix(cos, sin, sin, -cos,
+            50 - 50 * (cos + sin), 50 - 50 * (sin - cos)),
+            'mirrored: view.matrix');
+    // Setting the same rotation again doesn't change it:
+    view.rotation = 30;
+    equals(view.rotation, 30, 'mirrored: view.rotation set again');
+    // Non-uniform scaling is kept as well:
+    view.matrix = new Matrix();
+    view.scale(3, -2);
+    view.rotation = 30;
+    equals(view.rotation, 30, 'scaled: view.rotation');
+    equals(view.scaling, new Point(3, -2), 'scaled: view.scaling');
+    equals(view.center, new Point(50, 50), 'scaled: view.center');
+});
+
 test('view.fitBounds() with empty rectangles', function() {
     ['contain', 'cover'].forEach(function(fit) {
         // The view is 100x100. An empty rectangle can't scale the view, so it
