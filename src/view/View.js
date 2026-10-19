@@ -703,9 +703,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @param {Rectangle} rectangle the rectangle to fit, in project
      * coordinates
      * @param {String} [fit='contain'] how to fit the rectangle, as in CSS's
-     * `object-fit`: `'contain'` shows all of it, `'cover'` fills the whole
-     * view with it, cropping the parts that don't fit, and `'fill'` stretches
-     * it to the view, changing the view's aspect ratio
+     * `object-fit`: `'contain'` shows all of it, and `'cover'` fills the
+     * whole view with it, cropping the parts that don't fit
      *
      * @example {@paperscript height=100}
      * // Fitting the view to the bounds of an item:
@@ -724,42 +723,33 @@ var View = Base.extend(Emitter, /** @lends View# */{
         rectangle = Rectangle.read(arguments);
         fit = Base.read(arguments);
         // Compare the rectangle with the view in view coordinates, so that
-        // rotated views show all of it as well:
+        // rotated views show all of it as well, and scale both axes of the view
+        // to the same amount, so that the rectangle keeps its aspect ratio,
+        // also if the view was stretched before:
         var matrix = this._matrix,
             size = this._viewSize,
             bounds = matrix._transformBounds(rectangle),
-            hor = size.width / bounds.width,
-            ver = size.height / bounds.height,
-            scale;
-
-        // Empty sides of the rectangle give ratios of Infinity, which can't
-        // scale the view, so only use the others:
-        function isScaling(ratio) {
-            return ratio > 0 && isFinite(ratio);
-        }
-
-        if (fit === 'fill') {
-            scale = new Point(
-                    isScaling(hor) ? hor : 1,
-                    isScaling(ver) ? ver : 1);
-        } else {
-            // Scale both axes of the view by the same amount, so that the
-            // rectangle keeps its aspect ratio, also if the view was stretched
-            // before:
-            var scaleX = new Point(matrix._a, matrix._c).getLength(),
-                scaleY = new Point(matrix._b, matrix._d).getLength(),
-                ratios = [hor * scaleX, ver * scaleY].filter(isScaling),
-                amount = !ratios.length ? 0
-                    : fit === 'cover' ? Math.max.apply(Math, ratios)
-                    : Math.min.apply(Math, ratios);
-            scale = amount
-                    ? new Point(amount / scaleX, amount / scaleY)
-                    : new Point(1, 1);
-        }
+            scaleX = new Point(matrix._a, matrix._c).getLength(),
+            scaleY = new Point(matrix._b, matrix._d).getLength(),
+            // Empty sides of the rectangle give ratios of Infinity, which can't
+            // scale the view, so only use the others:
+            ratios = [
+                size.width / bounds.width * scaleX,
+                size.height / bounds.height * scaleY
+            ].filter(function(ratio) {
+                return ratio > 0 && isFinite(ratio);
+            });
         this.setCenter(rectangle.getCenter());
-        // Scale around the view's center in view coordinates, so that 'fill'
-        // stretches along the view's own axes:
-        matrix.prepend(new Matrix().scale(scale, size.divide(2)));
+        if (ratios.length) {
+            var amount = fit === 'cover'
+                    ? Math.max.apply(Math, ratios)
+                    : Math.min.apply(Math, ratios);
+            // Scale around the view's center in view coordinates, along the
+            // view's own axes:
+            matrix.prepend(new Matrix().scale(
+                    new Point(amount / scaleX, amount / scaleY),
+                    size.divide(2)));
+        }
     },
 
     /**
