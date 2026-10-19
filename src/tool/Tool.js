@@ -316,6 +316,34 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      */
 
     /**
+     * {@grouptitle Activation Event Handlers}
+     *
+     * The function to be called when the tool is activated through
+     * {@link #activate()}. The function receives the previously active tool,
+     * which is the tool itself when it was already active.
+     *
+     * @name Tool#onActivate
+     * @property
+     * @type ?Function
+     *
+     * @example
+     * tool.onActivate = function(previous) {
+     *     if (previous == tool) {
+     *         console.log('The tool was activated again!');
+     *     }
+     * }
+     */
+
+    /**
+     * The function to be called when another tool is activated through
+     * {@link #activate()}, while this one is active.
+     *
+     * @name Tool#onDeactivate
+     * @property
+     * @type ?Function
+     */
+
+    /**
      * Private method to handle tool-events.
      *
      * @return {@true if at least one event handler was called}.
