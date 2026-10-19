@@ -753,6 +753,41 @@ test('Item#blendMode in a transformed Group', function() {
             'Middle center pixel should be yellow');
 });
 
+test('Item#blendMode = \'pin-light\'', function() {
+    // Pin light replaces the backdrop with 2 * source where that is darker for
+    // sources below 50%, and with 2 * source - 255 where that is lighter for
+    // sources above, computed by hand for each channel below:
+    var layer = new Layer();
+    new Path.Rectangle({
+        size: [100, 100],
+        fillColor: '#645032' // 100, 80, 50
+    });
+    new Group({
+        children: [
+            new Path.Rectangle({
+                size: [50, 100],
+                fillColor: '#1e64e6' // 30, 100, 230
+            }),
+            new Path.Rectangle({
+                point: [50, 0],
+                size: [50, 100],
+                fillColor: '#c8148c' // 200, 20, 140
+            })
+        ],
+        blendMode: 'pin-light'
+    });
+    var raster = layer.rasterize(72, false);
+
+    function getColor(red, green, blue) {
+        return new Color(red / 255, green / 255, blue / 255, 1);
+    }
+
+    // min(100, 60), min(80, 200), max(50, 205):
+    equals(raster.getPixel(25, 50), getColor(60, 80, 205), 'left pixel');
+    // max(100, 145), min(80, 40), max(50, 25):
+    equals(raster.getPixel(75, 50), getColor(145, 40, 50), 'right pixel');
+});
+
 test('Item#opacity', function() {
     var layer = new Layer();
     var background = new Path.Rectangle({
