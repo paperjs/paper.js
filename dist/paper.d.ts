@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:11:54 2026 +0200
+ * Date: Mon Oct 19 13:32:35 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -6697,6 +6697,13 @@ declare namespace paper {
         leading: number | string
 
         /** 
+         * The tracking of text content: the space added after each character, in
+         * thousandths of an em, as in Adobe Illustrator and InDesign. A tracking of
+         * 100 adds a tenth of the font size.
+         */
+        tracking: number
+
+        /** 
          * The justification of text paragraphs.
          */
         justification: string
@@ -6816,6 +6823,13 @@ declare namespace paper {
          * The text leading of text content.
          */
         leading: number | string
+
+        /** 
+         * The tracking of text content: the space added after each character, in
+         * thousandths of an em, as in Adobe Illustrator and InDesign. A tracking of
+         * 100 adds a tenth of the font size.
+         */
+        tracking: number
 
         /** 
          * The justification of text paragraphs.

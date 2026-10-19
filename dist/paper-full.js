@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:11:54 2026 +0200
+ * Date: Mon Oct 19 13:32:35 2026 +0200
  *
  ***
  *
@@ -11755,6 +11755,7 @@ var PointText = TextItem.extend({
 			shadowColor = ctx.shadowColor;
 		ctx.font = style.getFontStyle();
 		ctx.textAlign = style.getJustification();
+		ctx.letterSpacing = style.getTrackingStyle();
 		for (var i = 0, l = lines.length; i < l; i++) {
 			ctx.shadowColor = shadowColor;
 			var line = lines[i];
@@ -11774,7 +11775,8 @@ var PointText = TextItem.extend({
 			numLines = lines.length,
 			justification = style.getJustification(),
 			leading = style.getLeading(),
-			width = this.getView().getTextWidth(style.getFontStyle(), lines),
+			width = this.getView().getTextWidth(style.getFontStyle(), lines,
+					style.getTrackingStyle()),
 			x = 0;
 		if (justification !== 'left')
 			x -= width / (justification === 'center' ? 2: 1);
@@ -12571,6 +12573,7 @@ var Style = Base.extend(new function() {
 		fontWeight: 'normal',
 		fontSize: 12,
 		leading: null,
+		tracking: 0,
 		justification: 'left'
 	}),
 	textDefaults = Base.set({}, groupDefaults, {
@@ -12587,6 +12590,7 @@ var Style = Base.extend(new function() {
 		fontSize: 9,
 		font: 9,
 		leading: 9,
+		tracking: 9,
 		justification: 9
 	},
 	item = {
@@ -12775,6 +12779,10 @@ var Style = Base.extend(new function() {
 		return this.getFontWeight()
 				+ ' ' + fontSize + (/[a-z]/i.test(fontSize + '') ? ' ' : 'px ')
 				+ this.getFontFamily();
+	},
+
+	getTrackingStyle: function() {
+		return this.getTracking() / 1000 + 'em';
 	},
 
 	getFont: '#getFontFamily',
@@ -13789,14 +13797,17 @@ var CanvasView = View.extend({
 		return pixels;
 	},
 
-	getTextWidth: function(font, lines) {
+	getTextWidth: function(font, lines, letterSpacing) {
 		var ctx = this._context,
 			prevFont = ctx.font,
+			prevLetterSpacing = ctx.letterSpacing,
 			width = 0;
 		ctx.font = font;
+		ctx.letterSpacing = letterSpacing;
 		for (var i = 0, l = lines.length; i < l; i++)
 			width = Math.max(width, ctx.measureText(lines[i]).width);
 		ctx.font = prevFont;
+		ctx.letterSpacing = prevLetterSpacing;
 		return width;
 	},
 
@@ -14929,6 +14940,7 @@ var SvgStyles = Base.each({
 	fontFamily: ['font-family', 'string'],
 	fontWeight: ['font-weight', 'string'],
 	fontSize: ['font-size', 'number'],
+	tracking: ['letter-spacing', 'tracking'],
 	justification: ['text-anchor', 'lookup', {
 		left: 'start',
 		center: 'middle',
@@ -15282,6 +15294,7 @@ new function() {
 								: value.toCSS(true)
 							: type === 'array' ? value.join(',')
 							: type === 'lookup' ? entry.toSVG[value]
+							: type === 'tracking' ? value && value / 1000 + 'em'
 							: value;
 				}
 			}
@@ -15763,6 +15776,14 @@ new function() {
 		display: function(item, value) {
 			if (item.setVisible)
 				item.setVisible(value !== null);
+		},
+
+		'letter-spacing': function(item, value) {
+			if (item.setTracking) {
+				var amount = parseFloat(value) || 0;
+				item.setTracking(1000 * (/em$/.test(value) ? amount
+						: amount / parseFloat(item.getFontSize())));
+			}
 		},
 
 		'stop-color': function(item, value) {
