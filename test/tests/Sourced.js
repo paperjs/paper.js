@@ -304,6 +304,32 @@ test('invalidate() keeps the remaining children inserted', function() {
     equals(layer.children.length, 1);
 });
 
+test('invalidate() reloads items that a script created and keyed', function() {
+    var res = createSourcedProject();
+    var project = res.project;
+    var layer = project.layers[0];
+    // A script creates a circle, which the host writes back and keys:
+    var circle = new Path.Circle({
+        center: [20, 20],
+        radius: 5,
+        fillColor: 'blue',
+        parent: layer
+    });
+    var node = circle.clone({ insert: false });
+    res.source.document.layers[0].addChild(node);
+    circle.key = node.id;
+    // The user moves it in the host, which invalidates its content:
+    node.position.x += 10;
+    project.trackChanges = true;
+    var columns = res.source.getColumns([node]);
+    columns.flags[0] |= 16;
+    project.invalidate(columns);
+    equals(project.getItemByKey(node.id) === circle, true);
+    equals(circle.position, node.position);
+    equals(circle.segments, node.segments);
+    equals(project.takeChanges().length, 0);
+});
+
 test('A failing source leaves the item a shell, to retry', function() {
     var res = createSourcedProject();
     var circle = res.project.layers[0].children['circle'];
