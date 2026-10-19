@@ -27,6 +27,8 @@
 
 ### Fixed
 
+- Keep the size of rasters in JSON, so imported rasters have their size and
+  bounds before their image has loaded, or if it fails to load (#1598).
 - Fix the frame timer of workers and Node.js running forever after any script,
   which kept hosts from seeing scripts end.
 - Fix touch scrolling over empty parts of a canvas whose items have mouse
