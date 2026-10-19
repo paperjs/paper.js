@@ -1480,9 +1480,17 @@ new function() { // Injection scope for event handling on the browser
             if (!point)
                 point = this.getEventPoint(event);
 
-            // Run the hit-test on items first, but only if we're required to do
-            // so for this given mouse event, see hitItems, #_countItemEvent():
-            var inView = this.getBounds().contains(point),
+            // The moves come from the whole document, so outside of drags, the
+            // pointer is only over the view when no other element covers it,
+            // such as a menu (#992). Its own element and its ancestors don't:
+            var target = DomEvent.getTarget(event),
+                isCovered = nativeMove && !dragging && target
+                        && target.nodeType === 1
+                        && !target.contains(this._element),
+                inView = !isCovered && this.getBounds().contains(point),
+                // Run the hit-test on items first, but only if we're required
+                // to do so for this given mouse event, see hitItems and
+                // #_countItemEvent():
                 hit = hitItems && inView && view._project.hitTest(point, {
                     tolerance: 0,
                     fill: true,
