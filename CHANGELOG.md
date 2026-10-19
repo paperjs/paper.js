@@ -4,6 +4,9 @@
 
 ### Added
 
+- Add `Group#isolated`, to draw a group or layer through a temporary canvas, so
+  that the blend modes of its children, such as `'destination-out'`, only apply
+  within it, like CSS's `isolation: isolate` (#474).
 - Add `View#dispatchMouseEvent()` and `View#dispatchKeyEvent()`, to feed mouse
   and key events from hosts without a DOM, such as workers, through the same
   handling as the DOM's events, for tools, items and views.
