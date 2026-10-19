@@ -76,9 +76,15 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
             // their style when HiDPI is active, as otherwise they would appear
             // too big.
             if (!PaperScope.hasAttribute(element, 'resize')) {
-                var style = element.style;
-                style.width = width + 'px';
-                style.height = height + 'px';
+                // With border-box sizing, the style includes padding and
+                // border:
+                var style = element.style,
+                    insets = DomElement.getStyles(element).boxSizing
+                        === 'border-box'
+                            ? DomElement.getInsets(element)
+                            : new Size();
+                style.width = (width + insets.width) + 'px';
+                style.height = (height + insets.height) + 'px';
             }
             // Scale the context to counter the fact that we've manually scaled
             // our canvas element.
