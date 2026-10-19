@@ -3882,6 +3882,9 @@ function onMouseDown(event) {
     <ul class="member-list">
 <h4>Options:</h4>
 <li><tt>options.expandShapes: <tt>Boolean</tt></tt> &mdash; whether imported shape  items should be expanded to path items &mdash;&nbsp;default: <tt>false</tt></li>
+<li>[options.crossOrigin] {String} the {@link Raster#crossOrigin}
+    value of the rasters created for `<image>` elements, to load their
+    images with CORS</li>
 <li><tt>options.onLoad: <tt>Function</tt></tt> &mdash; the callback function to call once the  SVG content is loaded from the given URL receiving two arguments: the  converted <code>item</code> and the original <code>svg</code> data as a string. Only  required when loading from external resources.</li>
 <li><tt>options.onError: <tt>Function</tt></tt> &mdash; the callback function to call if an  error occurs during loading. Only required when loading from external  resources.</li>
 <li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the imported items should  be added to the item that <code>importSVG()</code> is called on &mdash;&nbsp;default: <tt>true</tt></li>
@@ -6501,7 +6504,7 @@ function onMouseDown(event) {
     <ul class="member-list">
 <h4>Options:</h4>
 <li><tt>options.duration: <tt>Number</tt></tt> &mdash; the duration of the tweening</li>
-<li><tt>options.easing: <tt>Function</tt>⟋<tt>String</tt></tt> &mdash; an easing function or the type of the easing: <tt>&lsquo;linear&rsquo; &lsquo;easeInQuad&rsquo; &lsquo;easeOutQuad&rsquo; &lsquo;easeInOutQuad&rsquo; &lsquo;easeInCubic&rsquo; &lsquo;easeOutCubic&rsquo; &lsquo;easeInOutCubic&rsquo; &lsquo;easeInQuart&rsquo; &lsquo;easeOutQuart&rsquo; &lsquo;easeInOutQuart&rsquo; &lsquo;easeInQuint&rsquo; &lsquo;easeOutQuint&rsquo; &lsquo;easeInOutQuint&rsquo;</tt> &mdash;&nbsp;default: <tt>&lsquo;linear&rsquo;</tt></li>
+<li><tt>options.easing: <tt>Function</tt>⟋<tt>String</tt></tt> &mdash; an easing function or the type of the easing: <tt>&lsquo;linear&rsquo; &lsquo;easeInQuad&rsquo; &lsquo;easeOutQuad&rsquo; &lsquo;easeInOutQuad&rsquo; &lsquo;easeInCubic&rsquo; &lsquo;easeOutCubic&rsquo; &lsquo;easeInOutCubic&rsquo; &lsquo;easeInQuart&rsquo; &lsquo;easeOutQuart&rsquo; &lsquo;easeInOutQuart&rsquo; &lsquo;easeInQuint&rsquo; &lsquo;easeOutQuint&rsquo; &lsquo;easeInOutQuint&rsquo; &lsquo;easeInSine&rsquo; &lsquo;easeOutSine&rsquo; &lsquo;easeInOutSine&rsquo; &lsquo;easeInExpo&rsquo; &lsquo;easeOutExpo&rsquo; &lsquo;easeInOutExpo&rsquo; &lsquo;easeInCirc&rsquo; &lsquo;easeOutCirc&rsquo; &lsquo;easeInOutCirc&rsquo;</tt> &mdash;&nbsp;default: <tt>&lsquo;linear&rsquo;</tt></li>
 <li><tt>options.start: <tt>Boolean</tt></tt> &mdash; whether to start tweening automatically &mdash;&nbsp;default: <tt>true</tt></li>
 </ul>
 	

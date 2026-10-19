@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:22:41 2026 +0200
+ * Date: Mon Oct 19 12:12:02 2026 +0200
  *
  ***
  *
@@ -14292,6 +14292,48 @@ var Tween = Base.extend(Emitter, {
 				return t < 0.5
 					? 16 * t * t * t * t * t
 					: 1 + 16 * (--t) * t * t * t * t;
+			},
+
+			easeInSine: function(t) {
+				return 1 - Math.cos(t * Math.PI / 2);
+			},
+
+			easeOutSine: function(t) {
+				return Math.sin(t * Math.PI / 2);
+			},
+
+			easeInOutSine: function(t) {
+				return (1 - Math.cos(t * Math.PI)) / 2;
+			},
+
+			easeInExpo: function(t) {
+				return t === 0 ? 0 : Math.pow(2, 10 * t - 10);
+			},
+
+			easeOutExpo: function(t) {
+				return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+			},
+
+			easeInOutExpo: function(t) {
+				return t === 0 || t === 1
+					? t
+					: t < 0.5
+						? Math.pow(2, 20 * t - 10) / 2
+						: 1 - Math.pow(2, 10 - 20 * t) / 2;
+			},
+
+			easeInCirc: function(t) {
+				return 1 - Math.sqrt(1 - t * t);
+			},
+
+			easeOutCirc: function(t) {
+				return Math.sqrt(1 - (--t) * t);
+			},
+
+			easeInOutCirc: function(t) {
+				return t < 0.5
+					? (1 - Math.sqrt(1 - 4 * t * t)) / 2
+					: (1 + Math.sqrt(1 - 4 * (--t) * t)) / 2;
 			}
 		})
 	},
@@ -15519,8 +15561,11 @@ new function() {
 		lineargradient: importGradient,
 		radialgradient: importGradient,
 
-		image: function (node) {
-			var raster = new Raster(getValue(node, 'href', true));
+		image: function (node, type, options) {
+			var raster = new Raster({
+				crossOrigin: options.crossOrigin,
+				source: getValue(node, 'href', true)
+			});
 			raster.on('load', function() {
 				var size = getSize(node, null, null, true) || this.getSize();
 				var center = getPoint(node).add(size.divide(2));

@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:22:41 2026 +0200
+ * Date: Mon Oct 19 12:12:02 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -2102,6 +2102,9 @@ declare namespace paper {
          * 
          * @option [options.expandShapes=false] {Boolean} whether imported shape
          *     items should be expanded to path items
+         * @option [options.crossOrigin] {String} the {@link Raster#crossOrigin}
+         *     value of the rasters created for `<image>` elements, to load their
+         *     images with CORS
          * @option options.onLoad {Function} the callback function to call once the
          *     SVG content is loaded from the given URL receiving two arguments: the
          *     converted `item` and the original `svg` data as a string. Only
@@ -2664,7 +2667,9 @@ declare namespace paper {
          * of the easing: {@values 'linear' 'easeInQuad' 'easeOutQuad'
          * 'easeInOutQuad' 'easeInCubic' 'easeOutCubic' 'easeInOutCubic'
          * 'easeInQuart' 'easeOutQuart' 'easeInOutQuart' 'easeInQuint'
-         * 'easeOutQuint' 'easeInOutQuint'}
+         * 'easeOutQuint' 'easeInOutQuint' 'easeInSine' 'easeOutSine'
+         * 'easeInOutSine' 'easeInExpo' 'easeOutExpo' 'easeInOutExpo'
+         * 'easeInCirc' 'easeOutCirc' 'easeInOutCirc'}
          * @option [options.start=true] {Boolean} whether to start tweening automatically
          * 
          * @param from - the state at the start of the tweening
@@ -5355,6 +5360,9 @@ declare namespace paper {
          * 
          * @option [options.expandShapes=false] {Boolean} whether imported shape
          *     items should be expanded to path items
+         * @option [options.crossOrigin] {String} the {@link Raster#crossOrigin}
+         *     value of the rasters created for `<image>` elements, to load their
+         *     images with CORS
          * @option options.onLoad {Function} the callback function to call once the
          *     SVG content is loaded from the given URL receiving two arguments: the
          *     converted `item` and the original `svg` data as a string. Only
