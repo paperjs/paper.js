@@ -335,6 +335,28 @@ test('Item#onMouseEnter()', function(assert) {
     triggerMouseEvent('mousemove', point);
 });
 
+test('Item#onMouseEnter() is not triggered through covering elements (#992)', function() {
+    var item = new Path.Rectangle(new Point(0, 0), new Size(10));
+    item.fillColor = 'red';
+    var types = [];
+    item.onMouseEnter = item.onMouseLeave = item.onMouseMove = function(event) {
+        types.push(event.type);
+    };
+    // An element such as a menu lies over the canvas, and gets the moves:
+    var cover = document.createElement('div');
+    document.body.appendChild(cover);
+    triggerMouseEvent('mousemove', new Point(5, 5), cover);
+    equals(types.join(), '', 'over the covering element');
+    // Moving off it onto the canvas enters the item:
+    triggerMouseEvent('mousemove', new Point(6, 6));
+    equals(types.join(), 'mouseenter,mousemove', 'over the canvas');
+    // Moving back onto the covering element leaves it again:
+    triggerMouseEvent('mousemove', new Point(5, 5), cover);
+    equals(types.join(), 'mouseenter,mousemove,mouseleave',
+            'back over the covering element');
+    document.body.removeChild(cover);
+});
+
 test('Item#onMouseEnter() is only re-triggered after mouse leave', function(assert) {
     var item = new Path.Rectangle(new Point(0, 0), new Size(10));
     item.fillColor = 'red';
