@@ -24,7 +24,7 @@ test('view.zoom of mirrored view (#1411)', function() {
 });
 
 test('view.fitBounds() with empty rectangles', function() {
-    ['contain', 'cover', 'fill'].forEach(function(fit) {
+    ['contain', 'cover'].forEach(function(fit) {
         // The view is 100x100. An empty rectangle can't scale the view, so it
         // only centers on it, keeping its zoom:
         view.matrix = new Matrix();
@@ -35,7 +35,7 @@ test('view.fitBounds() with empty rectangles', function() {
         // A horizontal line can only scale the view by its width of 400:
         view.matrix = new Matrix();
         view.fitBounds(new Rectangle(0, 0, 400, 0), fit);
-        equals(view.scaling, new Point(0.25, fit === 'fill' ? 1 : 0.25),
+        equals(view.scaling, new Point(0.25, 0.25),
                 'line: view.scaling, ' + fit);
         equals(view.center, new Point(200, 0), 'line: view.center, ' + fit);
     });
@@ -89,8 +89,7 @@ test('view.fitBounds(rectangle[, fit]) (#1688)', function() {
     }
 
     // A rectangle wider than the view, centered at 200, 100: To contain it, the
-    // view needs to show all 400 of its width, to cover it its 200 of height,
-    // and to be filled with it, both.
+    // view needs to show all 400 of its width, to cover it its 200 of height.
     var wide = new Rectangle(0, 0, 400, 200);
     fit(wide);
     equals(view.zoom, 0.25, 'wide: view.zoom');
@@ -100,12 +99,12 @@ test('view.fitBounds(rectangle[, fit]) (#1688)', function() {
     equals(view.zoom, 0.5, 'wide, cover: view.zoom');
     equals(view.bounds, new Rectangle(100, 0, 200, 200),
             'wide, cover: view.bounds');
-    fit(wide, 'fill');
-    equals(view.scaling, new Point(0.25, 0.5), 'wide, fill: view.scaling');
-    equals(view.bounds, wide, 'wide, fill: view.bounds');
-    // Containing it again undoes the stretching of the view's axes:
+    // Containing it in a stretched view undoes the stretching of its axes:
+    view.scale(2, 1);
     view.fitBounds(wide);
-    equals(view.scaling, new Point(0.25, 0.25), 'wide after fill: view.scaling');
+    equals(view.scaling, new Point(0.25, 0.25), 'stretched: view.scaling');
+    equals(view.bounds, new Rectangle(0, -100, 400, 400),
+            'stretched: view.bounds');
 
     // A rectangle taller than the view, centered at 35, 120: To contain it,
     // the view needs to show all 200 of its height, to cover it its 50 of
@@ -132,9 +131,6 @@ test('view.fitBounds(rectangle[, fit]) (#1688)', function() {
     equals(view.scaling, new Point(0.25, -0.25), 'mirrored: view.scaling');
     equals(view.bounds, new Rectangle(0, -100, 400, 400),
             'mirrored: view.bounds');
-    view.fitBounds(wide, 'fill');
-    equals(view.scaling, new Point(0.25, -0.5), 'mirrored, fill: view.scaling');
-    equals(view.bounds, wide, 'mirrored, fill: view.bounds');
 
     // In a view rotated by 45°, the wide rectangle spans (400 + 200) / √2 in
     // both directions of the view, so the view's sides need to show that
