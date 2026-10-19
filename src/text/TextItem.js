@@ -144,6 +144,16 @@ var TextItem = Item.extend(/** @lends TextItem# */{
      */
 
     /**
+     * The tracking of text content: the space added after each character, in
+     * thousandths of an em, as in Adobe Illustrator and InDesign. A tracking of
+     * 100 adds a tenth of the font size.
+     *
+     * @name TextItem#tracking
+     * @type Number
+     * @default 0
+     */
+
+    /**
      * {@grouptitle Paragraph Style}
      *
      * The justification of text paragraphs.
@@ -152,14 +162,6 @@ var TextItem = Item.extend(/** @lends TextItem# */{
      * @type String
      * @values 'left', 'right', 'center'
      * @default 'left'
-     */
-
-    /**
-     * The letter spacing of text content.
-     *
-     * @name Style#letterSpacing
-     * @type Number|String
-     * @default 0
      */
 
     /**
