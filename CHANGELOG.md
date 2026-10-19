@@ -16,6 +16,12 @@
   keep their own document update only the items that changed, and export
   `ChangeFlag` (#2202).
 
+### Changed
+
+- `#hitTestAll()` reports every segment and handle of a path within the
+  tolerance, closest first, followed by its stroke or fill hit, instead of only
+  the first hit per path (#1294).
+
 ### Fixed
 
 - Fix mouse events reaching items and views through elements that cover the
