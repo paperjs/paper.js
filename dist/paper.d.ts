@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 18 22:42:10 2026 +0200
+ * Date: Mon Oct 19 10:29:52 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -2077,6 +2077,9 @@ declare namespace paper {
          * @option [options.embedImages=true] {Boolean} whether raster images should
          *     be embedded as base64 data inlined in the xlink:href attribute, or
          *     kept as a link to their external URL.
+         * @option [options.reuseImages=false] {Boolean} whether raster images with
+         *     the same content should only be exported once into the `<defs>`
+         *     element, and placed through `<use>` elements referencing it
          * @option [options.reduceAttributes=true] {Boolean} wether to only include
          *     style attributes in the SVG output that differ from their parents,
          *     or to always include them (much faster but leading to redundancies).
@@ -2534,10 +2537,16 @@ declare namespace paper {
         localToParent(point: PointLike): Point
 
         /** 
-         * Transform the item so that its {@link #bounds} fit within the specified
-         * rectangle, without changing its aspect ratio.
+         * Transform the item so that its {@link #bounds} are centered in the
+         * specified rectangle and fitted to it as described by `fit`.
+         * 
+         * @param fit - how to fit the item, as in CSS's
+         * `object-fit`: `'contain'` fits all of it within the rectangle, `'cover'`
+         * makes it cover the whole rectangle, and `'fill'` stretches it to the
+         * rectangle, changing its aspect ratio. The deprecated `true` and `false`
+         * stand for `'cover'` and `'contain'`.
          */
-        fitBounds(rectangle: RectangleLike, fill?: boolean): void
+        fitBounds(rectangle: RectangleLike, fit?: string | boolean): void
 
         /** 
          * Attaches an event handler to the item.
@@ -5321,6 +5330,9 @@ declare namespace paper {
          * @option [options.embedImages=true] {Boolean} whether raster images should
          *     be embedded as base64 data inlined in the xlink:href attribute, or
          *     kept as a link to their external URL.
+         * @option [options.reuseImages=false] {Boolean} whether raster images with
+         *     the same content should only be exported once into the `<defs>`
+         *     element, and placed through `<use>` elements referencing it
          * @option [options.reduceAttributes=true] {Boolean} wether to only include
          *     style attributes in the SVG output that differ from their parents,
          *     or to always include them (much faster but leading to redundancies).
@@ -7325,12 +7337,16 @@ declare namespace paper {
 
         /** 
          * Updates the view if there are changes. Note that when using built-in
-         * event hanlders for interaction, animation and load events, this method is
+         * event handlers for interaction, animation and load events, this method is
          * invoked for you automatically at the end.
+         * 
+         * @param force - whether to redraw the view even if nothing
+         * has changed, e.g. after a web font used by text items has finished
+         * loading
          * 
          * @return true if the view was updated
          */
-        update(): boolean
+        update(force?: boolean): boolean
 
         /** 
          * Requests an update of the view if there are changes through the browser's
@@ -7450,6 +7466,20 @@ declare namespace paper {
          * @param matrix - the matrix by which the view shall be transformed
          */
         transform(matrix: Matrix): void
+
+        /** 
+         * Transform the view so that the specified rectangle is centered in it
+         * and fitted to it as described by `fit`, keeping the view's rotation and
+         * mirroring.
+         * 
+         * @param rectangle - the rectangle to fit, in project
+         * coordinates
+         * @param fit - how to fit the rectangle, as in CSS's
+         * `object-fit`: `'contain'` shows all of it, `'cover'` fills the whole
+         * view with it, cropping the parts that don't fit, and `'fill'` stretches
+         * it to the view, changing the view's aspect ratio
+         */
+        fitBounds(rectangle: RectangleLike, fit?: string): void
 
         /** 
          * Converts the passed point from project coordinate space to view

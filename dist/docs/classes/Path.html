@@ -6909,6 +6909,7 @@ function onMouseDown(event) {
 <li><tt>options.precision: <tt>Number</tt></tt> &mdash; the amount of fractional digits in  numbers used in SVG data &mdash;&nbsp;default: <tt>5</tt></li>
 <li><tt>options.matchShapes: <tt>Boolean</tt></tt> &mdash; whether path items should  tried to be converted to SVG shape items (rect, circle, ellipse,  line, polyline, polygon), if their geometries match &mdash;&nbsp;default: <tt>false</tt></li>
 <li><tt>options.embedImages: <tt>Boolean</tt></tt> &mdash; whether raster images should  be embedded as base64 data inlined in the xlink:href attribute, or  kept as a link to their external URL. &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.reuseImages: <tt>Boolean</tt></tt> &mdash; whether raster images with  the same content should only be exported once into the <code>&lt;defs&gt;</code>  element, and placed through <code>&lt;use&gt;</code> elements referencing it &mdash;&nbsp;default: <tt>false</tt></li>
 <li><tt>options.reduceAttributes: <tt>Boolean</tt></tt> &mdash; wether to only include  style attributes in the SVG output that differ from their parents,  or to always include them (much faster but leading to redundancies). &mdash;&nbsp;default: <tt>true</tt></li>
 </ul>
 	
@@ -8793,11 +8794,11 @@ circle.scale(3, 1);
 	
 <div id="fitbounds-rectangle" class="member">
 <div class="member-link">
-<a name="fitbounds-rectangle" href="#fitbounds-rectangle"><tt><b>fitBounds</b>(rectangle[, fill])</tt></a>
+<a name="fitbounds-rectangle" href="#fitbounds-rectangle"><tt><b>fitBounds</b>(rectangle[, fit])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Transform the item so that its <a href="../classes/Item.html#bounds"><tt>bounds</tt></a> fit within the specified rectangle, without changing its aspect ratio.</p>
+	<p>Transform the item so that its <a href="../classes/Item.html#bounds"><tt>bounds</tt></a> are centered in the specified rectangle and fitted to it as described by <code>fit</code>.</p>
     
 	
 <ul class="member-list">
@@ -8811,10 +8812,10 @@ circle.scale(3, 1);
 </li>
 	
 	<li>
-<tt>fill:</tt> 
-<tt>Boolean</tt>
-
-&mdash;&nbsp;optional, default: <tt>false</tt>
+<tt>fit:</tt> 
+<tt>String</tt>⟋<tt>Boolean</tt>
+&mdash;&nbsp;how to fit the item, as in CSS&rsquo;s <code>object-fit</code>: <code>&#39;contain&#39;</code> fits all of it within the rectangle, <code>&#39;cover&#39;</code> makes it cover the whole rectangle, and <code>&#39;fill&#39;</code> stretches it to the rectangle, changing its aspect ratio. The deprecated <code>true</code> and <code>false</code> stand for <code>&#39;cover&#39;</code> and <code>&#39;contain&#39;</code>.
+&mdash;&nbsp;optional, default: <tt>&lsquo;contain&rsquo;</tt>
 </li>
 	
 </ul>
@@ -8856,7 +8857,7 @@ circlePath.fitBounds(path.bounds);
 </div>
 
 
-<h4>Example:<span class="description">Fitting an item to the bounding rectangle of another item's bounding rectangle with the fill parameter set to true:</span></h4>
+<h4>Example:<span class="description">Fitting an item to the bounding rectangle of another item's bounding rectangle, covering all of it:</span></h4>
 
 <div class="paperscript split">
 
@@ -8883,7 +8884,7 @@ var circlePath = new Path.Circle({
 
 // Fit the circlePath to the bounding rectangle of
 // the rectangular path:
-circlePath.fitBounds(path.bounds, true);
+circlePath.fitBounds(path.bounds, 'cover');
 </script>
 <div class="canvas"><canvas width="516" height="100" id="canvas-93"></canvas></div>
 </div>

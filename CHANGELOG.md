@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Added
+
+- Add a `force` parameter to `View#update()`, to redraw the view even when
+  nothing changed, e.g. after a web font has loaded (#1913).
+- Add `View#fitBounds(rectangle[, fit])`, to fit a rectangle into the view.
+  `fit` takes the values of CSS's `object-fit`: `'contain'`, `'cover'` and
+  `'fill'` (#1688).
+- Add the `reuseImages` option to `#exportSVG()`, to export images shown by
+  several rasters only once, and place them with `<use>` elements (#1993).
+
 ### Changed
 
 - Time double-clicks from mousedown to mousedown and only within 3 pixels, as
@@ -32,6 +42,21 @@
 - Use jsdom's own `XMLSerializer` for `#exportSVG()` on Node.js, instead of a
   shim that returned HTML, so the output is valid XML with escaped attribute
   values, as in browsers. Empty elements are now self-closing (#1922).
+- `Item#fitBounds(rectangle[, fit])` takes the values of CSS's `object-fit` as
+  `fit`: `'contain'`, `'cover'` and `'fill'`, which stretches the item to the
+  rectangle.
+
+### Deprecated
+
+- The boolean `fill` parameter of `Item#fitBounds()`: use `'cover'` instead of
+  `true`.
+
+### Removed
+
+- Remove the workaround for wrong `mouseout` coordinates in old versions of
+  Chrome on Windows (#1811).
+- Remove the CLA from the contribution guidelines, as it no longer exists
+  (#2071).
 
 ### Fixed
 
@@ -115,6 +140,10 @@
   clipped everything away (#1445, #1590).
 - Keep the lines of multi-line text in `#exportSVG()` and `#importSVG()`, as
   `<tspan>` elements at their own baselines (#988).
+- Fix shadows being cut off on items with a fill, a stroke and an opacity,
+  which are drawn through a temporary canvas (#1628).
+- Fix `#importSVG()` of `<use>` elements that place images, which weren't
+  positioned and sized, as their rasters were cloned before the image loaded.
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
@@ -129,13 +158,6 @@
 - Docs: Document that `new Path(pathData)` holds a single sub-path (#2057).
 - Docs: Document that styles set on symbol items, or inherited by imported
   `<use>` elements, don't reach the symbol definition's items (#1329).
-
-### Removed
-
-- Remove the workaround for wrong `mouseout` coordinates in old versions of
-  Chrome on Windows (#1811).
-- Remove the CLA from the contribution guidelines, as it no longer exists
-  (#2071).
 
 ## `0.12.20`
 

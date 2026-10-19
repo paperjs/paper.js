@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 18 22:42:10 2026 +0200
+ * Date: Mon Oct 19 10:29:52 2026 +0200
  *
  ***
  *
@@ -4687,18 +4687,18 @@ new function() {
 		return this._matrix._transformPoint(Point.read(arguments));
 	},
 
-	fitBounds: function(rectangle, fill) {
+	fitBounds: function(rectangle, fit) {
 		rectangle = Rectangle.read(arguments);
-		fill = Base.read(arguments);
+		fit = Base.read(arguments);
+		if (fit === true)
+			fit = 'cover';
 		var bounds = this.getBounds(),
-			itemRatio = bounds.height / bounds.width,
-			rectRatio = rectangle.height / rectangle.width,
-			scale = (fill ? itemRatio > rectRatio : itemRatio < rectRatio)
-					? rectangle.width / bounds.width
-					: rectangle.height / bounds.height,
-			newBounds = new Rectangle(new Point(),
-					new Size(bounds.width * scale, bounds.height * scale));
-		newBounds.setCenter(rectangle.getCenter());
+			hor = rectangle.width / bounds.width,
+			ver = rectangle.height / bounds.height,
+			scale = fit === 'cover' ? Math.max(hor, ver) : Math.min(hor, ver),
+			newBounds = fit === 'fill' ? rectangle
+				: new Rectangle(new Point(), bounds.getSize().multiply(scale))
+					.setCenter(rectangle.getCenter());
 		this.setBounds(newBounds);
 	}
 }), {
@@ -4781,8 +4781,19 @@ new function() {
 			pixelRatio = param.pixelRatio || 1,
 			mainCtx, itemOffset, prevOffset;
 		if (!direct) {
-			var canvas = ctx.canvas,
-				bounds = this.getStrokeBounds(viewMatrix).intersect(
+			var bounds = this.getStrokeBounds(viewMatrix),
+				style = this._style;
+			if (style.getShadowColor(true)) {
+				var mx = viewMatrix._shiftless(),
+					blur = mx.transform(
+							new Point(style.getShadowBlur(true), 0)),
+					offset = mx.transform(style.getShadowOffset(true));
+				bounds = bounds.unite(
+					new Rectangle(bounds.getPoint().add(offset),
+						bounds.getSize()).expand(blur.getLength() * 3));
+			}
+			var canvas = ctx.canvas;
+			bounds = bounds.intersect(
 					new Rectangle(new Point(param.offset),
 						new Size(canvas.width, canvas.height)
 							.divide(pixelRatio)));
@@ -13058,7 +13069,7 @@ var View = Base.extend(Emitter, {
 			this.requestUpdate();
 	},
 
-	update: function() {
+	update: function(force) {
 	},
 
 	draw: function() {
@@ -13296,6 +13307,29 @@ var View = Base.extend(Emitter, {
 
 	transform: function(matrix) {
 		this._matrix.append(matrix);
+	},
+
+	fitBounds: function(rectangle, fit) {
+		rectangle = Rectangle.read(arguments);
+		fit = Base.read(arguments);
+		var matrix = this._matrix,
+			size = this._viewSize,
+			bounds = matrix._transformBounds(rectangle),
+			hor = size.width / bounds.width,
+			ver = size.height / bounds.height,
+			scale;
+		if (fit === 'fill') {
+			scale = new Point(hor, ver);
+		} else {
+			var scaleX = new Point(matrix._a, matrix._c).getLength(),
+				scaleY = new Point(matrix._b, matrix._d).getLength(),
+				amount = fit === 'cover'
+					? Math.max(hor * scaleX, ver * scaleY)
+					: Math.min(hor * scaleX, ver * scaleY);
+			scale = new Point(amount / scaleX, amount / scaleY);
+		}
+		this.setCenter(rectangle.getCenter());
+		matrix.prepend(new Matrix().scale(scale, size.divide(2)));
 	},
 
 	scrollBy: function() {
@@ -13737,8 +13771,8 @@ var CanvasView = View.extend({
 		return width;
 	},
 
-	update: function() {
-		if (!this._needsUpdate)
+	update: function(force) {
+		if (!this._needsUpdate && !force)
 			return false;
 		var project = this._project,
 			ctx = this._context,
@@ -14939,14 +14973,29 @@ new function() {
 	function exportRaster(item, options) {
 		var attrs = getTransform(item._matrix, true),
 			size = item.getSize(),
-			image = item.getImage();
+			image = item.getImage(),
+			href = options.embedImages == false && image && image.src
+				|| item.toDataURL();
 		attrs.x -= size.width / 2;
 		attrs.y -= size.height / 2;
-		attrs.width = size.width;
-		attrs.height = size.height;
-		attrs.href = options.embedImages == false && image && image.src
-				|| item.toDataURL();
-		return SvgElement.create('image', attrs, formatter);
+		if (options.reuseImages) {
+			var node = getDefinition(href, 'image');
+			if (!node) {
+				node = SvgElement.create('image', {
+					width: size.width,
+					height: size.height,
+					href: href
+				}, formatter);
+				setDefinition(href, node, 'image');
+			}
+			attrs.href = '#' + node.id;
+			return SvgElement.create('use', attrs, formatter);
+		} else {
+			attrs.width = size.width;
+			attrs.height = size.height;
+			attrs.href = href;
+			return SvgElement.create('image', attrs, formatter);
+		}
 	}
 
 	function exportPath(item, options) {
@@ -15176,8 +15225,7 @@ new function() {
 	function getDefinition(item, type) {
 		if (!definitions)
 			definitions = { ids: {}, svgs: {} };
-		return item && definitions.svgs[type + '-'
-				+ (item._id || item.__id || (item.__id = UID.get('svg')))];
+		return item && definitions.svgs[getDefinitionKey(item, type)];
 	}
 
 	function setDefinition(item, node, type) {
@@ -15185,7 +15233,12 @@ new function() {
 			getDefinition();
 		var typeId = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
 		node.id = type + '-' + typeId;
-		definitions.svgs[type + '-' + (item._id || item.__id)] = node;
+		definitions.svgs[getDefinitionKey(item, type)] = node;
+	}
+
+	function getDefinitionKey(item, type) {
+		return type + '-' + (typeof item === 'string' ? item
+				: item._id || item.__id || (item.__id = UID.get('svg')));
 	}
 
 	function exportDefinitions(node, options) {
@@ -15466,6 +15519,10 @@ new function() {
 			return definition
 					? definition instanceof SymbolDefinition
 						? definition.place(point)
+						: definition instanceof Raster
+							? importNode(getSandbox().ownerDocument
+								.getElementById(id), options, false)
+								.translate(point)
 						: definition.clone().translate(point)
 					: null;
 		},

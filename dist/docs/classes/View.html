@@ -851,13 +851,25 @@ view.onKeyDown = function(event) {
 	
 <div id="update" class="member">
 <div class="member-link">
-<a name="update" href="#update"><tt><b>update</b>()</tt></a>
+<a name="update" href="#update"><tt><b>update</b>([force])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Updates the view if there are changes. Note that when using built-in event hanlders for interaction, animation and load events, this method is invoked for you automatically at the end.</p>
+	<p>Updates the view if there are changes. Note that when using built-in event handlers for interaction, animation and load events, this method is invoked for you automatically at the end.</p>
     
 	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>force:</tt> 
+<tt>Boolean</tt>
+&mdash;&nbsp;whether to redraw the view even if nothing has changed, e.g. after a web font used by text items has finished loading
+&mdash;&nbsp;optional, default: <tt>false</tt>
+</li>
+	
+</ul>
+
 	
 	<ul class="member-list">
 		<h4>Returns:</h4>
@@ -1380,6 +1392,66 @@ view.onKeyDown = function(event) {
 </div>
 
 	
+<div id="fitbounds-rectangle" class="member">
+<div class="member-link">
+<a name="fitbounds-rectangle" href="#fitbounds-rectangle"><tt><b>fitBounds</b>(rectangle[, fit])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Transform the view so that the specified rectangle is centered in it and fitted to it as described by <code>fit</code>, keeping the view&rsquo;s rotation and mirroring.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>rectangle:</tt> 
+<a href="../classes/Rectangle.html"><tt>Rectangle</tt></a>
+&mdash;&nbsp;the rectangle to fit, in project coordinates
+
+</li>
+	
+	<li>
+<tt>fit:</tt> 
+<tt>String</tt>
+&mdash;&nbsp;how to fit the rectangle, as in CSS&rsquo;s <code>object-fit</code>: <code>&#39;contain&#39;</code> shows all of it, <code>&#39;cover&#39;</code> fills the whole view with it, cropping the parts that don&rsquo;t fit, and <code>&#39;fill&#39;</code> stretches it to the view, changing the view&rsquo;s aspect ratio
+&mdash;&nbsp;optional, default: <tt>&lsquo;contain&rsquo;</tt>
+</li>
+	
+</ul>
+
+	
+
+
+	
+	<h4>Example:<span class="description">Fitting the view to the bounds of an item:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-2">
+// Create a circle shaped path around the top left corner of the view:
+var path = new Path.Circle({
+    center: [0, 0],
+    radius: 50,
+    fillColor: 'orange'
+});
+
+// Make the view show the whole circle:
+view.fitBounds(path.bounds);
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+	
 <div id="projecttoview-point" class="member">
 <div class="member-link">
 <a name="projecttoview-point" href="#projecttoview-point"><tt><b>projectToView</b>(point)</tt></a>
@@ -1555,7 +1627,7 @@ view.onKeyDown = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-2">
+<script type="text/paperscript" canvas="canvas-3">
 var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
 path.fillColor = 'black';
 
@@ -1566,7 +1638,7 @@ var frameHandler = function(event) {
 
 view.on('frame', frameHandler);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-3"></canvas></div>
 </div>
 
 
@@ -1618,7 +1690,7 @@ view.on('frame', frameHandler);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-3">
+<script type="text/paperscript" canvas="canvas-4">
 var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
 path.fillColor = 'black';
 
@@ -1631,7 +1703,7 @@ view.on({
     frame: frameHandler
 });
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-3"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-4"></canvas></div>
 </div>
 
 
@@ -1690,7 +1762,7 @@ view.on({
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-4">
+<script type="text/paperscript" canvas="canvas-5">
 var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
 path.fillColor = 'black';
 
@@ -1709,7 +1781,7 @@ function onMouseDown(event) {
     view.off('frame');
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-4"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-5"></canvas></div>
 </div>
 
 
