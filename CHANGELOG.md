@@ -24,6 +24,11 @@
 
 ### Changed
 
+- `Path.RegularPolygon()` follows Illustrator: it stands on a flat bottom edge
+  for any number of sides, and its segments run counterclockwise from its top
+  vertex, or with an even number of sides, from the right end of its top edge.
+  This changes the segment order of all regular polygons, and turns those with
+  a multiple of 6 sides onto an edge (#1787).
 - Hit-test transparent fills, as in SVG: only items without a fill color are
   not hit through their fill (#1157).
 - `paper.install()` keeps what the target scope has already, such as the
