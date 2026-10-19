@@ -2455,15 +2455,26 @@ new function() { // Injection scope for hit-test functions shared with project
      * to this item's {@link Item#children} list. Note that not all type of
      * items can have children.
      *
-     * @param {String} json the JSON data to import from
-     * @return {Item}
+     * @param {String|Object} json the JSON data to import from, or the URL of
+     *     a JSON file to load
+     * @param {Object|Function} [options] the import options, or an `onLoad`
+     *     function
+     * @option options.onLoad {Function} the callback function to call once the
+     *     JSON data is loaded from the given URL, receiving two arguments: the
+     *     imported item and the JSON data as a string
+     * @option options.onError {Function} the callback function to call if an
+     *     error occurs during loading
+     * @return {Item} the imported item, or `null` when loading from a URL
      */
-    importJSON: function(json) {
-        // Try importing into `this`. If another item is returned, try adding
-        // it as a child (this won't be successful on some classes, returning
-        // null).
-        var res = Base.importJSON(json, this);
-        return res !== this ? this.addChild(res) : res;
+    importJSON: function(json, options) {
+        var that = this;
+        return Base._loadJSON(json, options, function(json) {
+            // Try importing into `this`. If another item is returned, try
+            // adding it as a child (this won't be successful on some classes,
+            // returning null).
+            var res = Base.importJSON(json, that);
+            return res !== that ? that.addChild(res) : res;
+        });
     },
 
     /**

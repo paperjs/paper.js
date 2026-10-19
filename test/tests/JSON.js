@@ -286,3 +286,51 @@ test('Item#importJSON() does not override Item#insert()', function() {
     path.importJSON(path.exportJSON());
     equals(typeof path.insert, 'function');
 });
+
+test('Project#importJSON() and Item#importJSON() from a URL (#756)', function(assert) {
+    var done = assert.async(),
+        path = new Path.Circle({
+            center: [50, 50],
+            radius: 20,
+            fillColor: 'red',
+            insert: false
+        }),
+        json = path.exportJSON(),
+        url = 'data:application/json,' + encodeURIComponent(json),
+        group = new Group(),
+        calls = [];
+
+    function check() {
+        if (calls.length === 3) {
+            equals(calls[0][0], path, 'imported into the project');
+            equals(calls[0][1], json, 'the loaded JSON data');
+            equals(function() {
+                return calls[1][0].parent === group;
+            }, true, 'imported into the group');
+            equals(calls[2][0], 'error', 'onError of invalid JSON data');
+            done();
+        }
+    }
+
+    // A string that isn't JSON data is a URL to load it from, so the import
+    // only happens once the data is loaded:
+    equals(project.importJSON(url, {
+        onLoad: function(item, data) {
+            calls.push([item, data]);
+            check();
+        }
+    }), null, 'importJSON() from a URL');
+    // A function is the onLoad callback:
+    group.importJSON(url, function(item) {
+        calls.push([item]);
+        check();
+    });
+    project.importJSON('data:application/json,invalid', {
+        onError: function() {
+            calls.push(['error']);
+            check();
+        }
+    });
+    // JSON data is still imported right away:
+    equals(project.importJSON(json), path, 'importJSON() of JSON data');
+});

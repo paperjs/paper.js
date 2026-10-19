@@ -623,6 +623,50 @@ statics: /** @lends Base */{
     },
 
     /**
+     * Calls `importer` with the JSON data, after loading it from the URL that
+     * `json` holds when it isn't JSON data. Used by Item#importJSON() and
+     * Project#importJSON().
+     *
+     * @private
+     */
+    _loadJSON: function(json, options, importer) {
+        options = typeof options === 'function' ? { onLoad: options }
+                : options || {};
+        // Remember current scope so we can restore it in onLoad.
+        var scope = paper;
+
+        function onError(message, status) {
+            var onError = options.onError;
+            if (onError) {
+                onError(message, status);
+            } else {
+                throw new Error(message);
+            }
+        }
+
+        if (typeof json === 'string' && !/^\s*[\[{]/.test(json)) {
+            Http.request({
+                url: json,
+                async: true,
+                onLoad: function(json) {
+                    try {
+                        paper = scope;
+                        var item = importer(json),
+                            onLoad = options.onLoad;
+                        if (onLoad)
+                            onLoad(item, json);
+                    } catch (e) {
+                        onError(e);
+                    }
+                },
+                onError: onError
+            });
+            return null;
+        }
+        return importer(json);
+    },
+
+    /**
      * Utility function for pushing a large amount of items to an array.
      */
     push: function(list, items) {

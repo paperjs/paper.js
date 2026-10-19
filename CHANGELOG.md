@@ -26,6 +26,8 @@
 - Add `Item#scope`, `Project#scope`, `View#project` and `View#scope` (#1634).
 - Let `Path#removeSegments(from, to)` wrap around on closed paths when `from`
   is larger than `to` (#1881).
+- Let `Item#importJSON()` and `Project#importJSON()` load JSON from a URL,
+  with `onLoad` and `onError` options, as `#importSVG()` does (#756).
 
 ### Changed
 

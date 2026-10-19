@@ -759,19 +759,26 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * Note that the project is not cleared first. You can call
      * {@link Project#clear()} to do so.
      *
-     * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
-     * the `<use>` elements that place them as {@link SymbolItem} items. The
-     * styles that `<use>` elements inherit don't reach the symbols' content.
-     *
-     * @param {String} json the JSON data to import from
-     * @return {Item} the imported item
+     * @param {String|Object} json the JSON data to import from, or the URL of
+     *     a JSON file to load
+     * @param {Object|Function} [options] the import options, or an `onLoad`
+     *     function
+     * @option options.onLoad {Function} the callback function to call once the
+     *     JSON data is loaded from the given URL, receiving two arguments: the
+     *     imported item and the JSON data as a string
+     * @option options.onError {Function} the callback function to call if an
+     *     error occurs during loading
+     * @return {Item} the imported item, or `null` when loading from a URL
      */
-    importJSON: function(json) {
-        this.activate();
-        // Provide the activeLayer as a possible target for layers, but only if
-        // it's empty.
-        var layer = this._activeLayer;
-        return Base.importJSON(json, layer && layer.isEmpty() && layer);
+    importJSON: function(json, options) {
+        var that = this;
+        return Base._loadJSON(json, options, function(json) {
+            that.activate();
+            // Provide the activeLayer as a possible target for layers, but
+            // only if it's empty.
+            var layer = that._activeLayer;
+            return Base.importJSON(json, layer && layer.isEmpty() && layer);
+        });
     },
 
     /**
@@ -819,6 +826,10 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * the active layer of this project.
      * Note that the project is not cleared first. You can call
      * {@link Project#clear()} to do so.
+     *
+     * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
+     * the `<use>` elements that place them as {@link SymbolItem} items. The
+     * styles that `<use>` elements inherit don't reach the symbols' content.
      *
      * @name Project#importSVG
      * @function
