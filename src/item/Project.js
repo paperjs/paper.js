@@ -903,7 +903,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         // Draw the selection of the selected items in the project:
         if (this._selectionCount > 0) {
             ctx.save();
-            ctx.strokeWidth = 1;
+            ctx.lineWidth = 1;
             var items = this._selectionItems,
                 size = this._scope.settings.handleSize,
                 version = this._updateVersion;
