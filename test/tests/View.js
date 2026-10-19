@@ -257,6 +257,38 @@ if (!isNodeContext) {
         });
     });
 
+    test('view.viewSize of canvases under CSS transforms', function() {
+        // A CSS transform on an ancestor scales the canvas on screen, but not
+        // its content box, which is the size of the view:
+        [false, true].forEach(function(resize) {
+            [false, true].forEach(function(insets) {
+                var name = (resize ? 'resize' : 'fixed')
+                        + (insets ? ', padding and border' : ''),
+                    container = document.createElement('div'),
+                    canvas = document.createElement('canvas');
+                container.style.transform = 'scale(0.5)';
+                canvas.width = 200;
+                canvas.height = 100;
+                canvas.style.display = 'block';
+                if (resize) {
+                    canvas.setAttribute('resize', '');
+                    canvas.style.width = '200px';
+                    canvas.style.height = '100px';
+                }
+                if (insets) {
+                    canvas.style.padding = '6px';
+                    canvas.style.border = '2px solid black';
+                }
+                container.appendChild(canvas);
+                document.body.appendChild(container);
+                var project = new Project(canvas);
+                equals(project.view.viewSize, new Size(200, 100), name);
+                project.remove();
+                document.body.removeChild(container);
+            });
+        });
+    });
+
     test('event.point of canvases with padding, border and CSS transforms (#1729)', function() {
         // The view is 200 x 100. Its point (50, 40) lies on the screen at the
         // position of the container (20, 30), plus the padding of 6 and the
