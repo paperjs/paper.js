@@ -1,5 +1,11 @@
 # Change Log
 
+## Unreleased
+
+### Fixed
+
+- Fix `onFrame` in web workers, where views have no element (#2200).
+
 ## `0.13.0`
 
 ### Added
