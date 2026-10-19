@@ -10,8 +10,6 @@
  * All rights reserved.
  */
 
-// TODO: Run through the canvas array to find a canvas with the requested
-// width / height, so we don't need to resize it?
 var CanvasProvider = Base.exports.CanvasProvider = {
     canvases: [],
 
@@ -62,9 +60,12 @@ var CanvasProvider = Base.exports.CanvasProvider = {
     release: function(obj) {
         var canvas = obj && obj.canvas ? obj.canvas : obj;
         if (canvas && canvas.getContext) {
-            // We restore contexts on release(), see getCanvas()
-            canvas.getContext('2d').restore();
-            this.canvases.push(canvas);
+            // Resizing frees the pixels right away, and also resets the
+            // context with the state that getCanvas() saved. Keep only a few
+            // canvases, to reuse their elements and contexts:
+            canvas.width = canvas.height = 0;
+            if (this.canvases.length < 8)
+                this.canvases.push(canvas);
         }
     }
 };
