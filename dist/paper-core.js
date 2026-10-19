@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 12:19:46 2026 +0200
+ * Date: Mon Oct 19 12:20:25 2026 +0200
  *
  ***
  *
@@ -10000,18 +10000,12 @@ statics: {
 	_getStrokePadding: function(radius, matrix) {
 		if (!matrix)
 			return [radius, radius];
-		var hor = new Point(radius, 0).transform(matrix),
-			ver = new Point(0, radius).transform(matrix),
-			phi = hor.getAngleInRadians(),
-			a = hor.getLength(),
-			b = ver.getLength();
-		var sin = Math.sin(phi),
-			cos = Math.cos(phi),
-			tan = Math.tan(phi),
-			tx = Math.atan2(b * tan, a),
-			ty = Math.atan2(b, tan * a);
-		return [Math.abs(a * Math.cos(tx) * cos + b * Math.sin(tx) * sin),
-				Math.abs(b * Math.sin(ty) * cos + a * Math.cos(ty) * sin)];
+		var a = matrix._a,
+			b = matrix._b,
+			c = matrix._c,
+			d = matrix._d;
+		return [radius * Math.sqrt(a * a + c * c),
+				radius * Math.sqrt(b * b + d * d)];
 	},
 
 	_addBevelJoin: function(segment, join, radius, miterLimit, matrix,
@@ -10019,44 +10013,42 @@ statics: {
 		var curve2 = segment.getCurve(),
 			curve1 = curve2.getPrevious(),
 			point = curve2.getPoint1().transform(matrix),
-			normal1 = curve1.getNormalAtTime(1).multiply(radius)
-				.transform(strokeMatrix),
-			normal2 = curve2.getNormalAtTime(0).multiply(radius)
-				.transform(strokeMatrix),
-				angle = normal1.getDirectedAngle(normal2);
+			normal1 = curve1.getNormalAtTime(1).multiply(radius),
+			normal2 = curve2.getNormalAtTime(0).multiply(radius),
+			angle = normal1.getDirectedAngle(normal2);
 		if (angle < 0 || angle >= 180) {
 			normal1 = normal1.negate();
 			normal2 = normal2.negate();
 		}
 		if (isArea)
 			addPoint(point);
-		addPoint(point.add(normal1));
+		addPoint(point.add(normal1.transform(strokeMatrix)));
 		if (join === 'miter') {
-			var corner = new Line(point.add(normal1),
+			var corner = new Line(normal1,
 					new Point(-normal1.y, normal1.x), true
-				).intersect(new Line(point.add(normal2),
+				).intersect(new Line(normal2,
 					new Point(-normal2.y, normal2.x), true
 				), true);
-			if (corner && point.getDistance(corner) <= miterLimit * radius) {
-				addPoint(corner);
+			if (corner && corner.getLength() <= miterLimit * radius) {
+				addPoint(point.add(corner.transform(strokeMatrix)));
 			}
 		}
-		addPoint(point.add(normal2));
+		addPoint(point.add(normal2.transform(strokeMatrix)));
 	},
 
 	_addSquareCap: function(segment, cap, radius, matrix, strokeMatrix,
 			addPoint, isArea) {
 		var point = segment._point.transform(matrix),
 			loc = segment.getLocation(),
-			normal = loc.getNormal()
-					.multiply(loc.getTime() === 0 ? radius : -radius)
-					.transform(strokeMatrix);
+			vector = loc.getNormal()
+					.multiply(loc.getTime() === 0 ? radius : -radius),
+			normal = vector.transform(strokeMatrix);
 		if (cap === 'square') {
 			if (isArea) {
 				addPoint(point.subtract(normal));
 				addPoint(point.add(normal));
 			}
-			point = point.add(normal.rotate(-90));
+			point = point.add(vector.rotate(-90).transform(strokeMatrix));
 		}
 		addPoint(point.add(normal));
 		addPoint(point.subtract(normal));
