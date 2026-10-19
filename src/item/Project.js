@@ -185,6 +185,14 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     },
 
     /**
+     * The scope that this project belongs to.
+     *
+     * @name Project#scope
+     * @type PaperScope
+     * @bean
+     */
+
+    /**
      * The reference to the project's view.
      *
      * @bean
