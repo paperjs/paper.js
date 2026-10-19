@@ -59,7 +59,7 @@ gulp.task('publish:dist', ['build', 'docs:typescript']);
 
 gulp.task('publish:commit', ['publish:version'], function() {
     return gulp.src('.')
-        .pipe(shell('yarn install')) // Update yarn.lock
+        .pipe(shell('pnpm install')) // Update pnpm-lock.yaml
         .pipe(git.add({ args: '--update' }))
         .pipe(git.commit(releaseMessage))
         .pipe(git.tag('v' + options.version, releaseMessage));

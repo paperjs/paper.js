@@ -12,7 +12,7 @@
 
 # Publish the build of the current commit to the prebuilt/dist (the zip) and
 # prebuilt/module (the package) branches. Runs on GitHub Actions, after
-# `yarn zip` built the library, the docs and the zip.
+# `pnpm zip` built the library, the docs and the zip.
 
 set -e
 
@@ -27,8 +27,10 @@ TMP=$(mktemp -d)
 cp -a dist $TMP/
 # Copy all visible root files (LICENSE.txt, README.md, package.json, etc.).
 cp -p *.* $TMP/
-# No need for build files.
+# No need for build files, nor for installing the git hooks when the module is
+# installed from git:
 rm $TMP/gulpfile.js
+(cd $TMP && npm pkg delete scripts.prepare)
 # Reset the branch so we can switch to prebuilt/module and prebuilt/dist after.
 git clean -fdx --quiet # Remove all ignored and untracked files from the build.
 git checkout -- . # Reset all tracked files to the original state.

@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -18,16 +19,16 @@ jobs:
       - name: Install fonts
         run: sudo apt-get update && sudo apt-get install -y fonts-liberation
       - name: Install dependencies
-        run: node .yarn/releases/yarn-3.2.4.cjs install --immutable
+        run: pnpm install --frozen-lockfile
       - name: Lint
-        run: node .yarn/releases/yarn-3.2.4.cjs jshint
+        run: pnpm jshint
       # Test the built library, as that's what gets published:
       - name: Build
-        run: node .yarn/releases/yarn-3.2.4.cjs minify
+        run: pnpm minify
       - name: Test
-        run: node .yarn/releases/yarn-3.2.4.cjs test:node
+        run: pnpm test:node
       - name: Test the sourced build
-        run: node .yarn/releases/yarn-3.2.4.cjs test:node --build=sourced
+        run: pnpm test:node --build=sourced
 
   # Publish the latest develop build to the prebuilt/dist and prebuilt/module
   # branches, as Travis CI used to:
@@ -41,6 +42,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -50,8 +52,8 @@ jobs:
           distribution: temurin
           java-version: 8
       - name: Install dependencies
-        run: node .yarn/releases/yarn-3.2.4.cjs install --immutable
+        run: pnpm install --frozen-lockfile
       - name: Build library, docs and zip
-        run: node .yarn/releases/yarn-3.2.4.cjs zip
+        run: pnpm zip
       - name: Deploy
         run: .github/deploy-prebuilt.sh
