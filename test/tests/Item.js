@@ -1713,3 +1713,17 @@ test('Released canvases free their pixels (CanvasProvider)', function() {
     equals(new Size(canvas.width, canvas.height), new Size(20, 10), 'reused');
     CanvasProvider.release(canvas);
 });
+
+test('Creating an item without a project throws a clear error (#1889)', function() {
+    var scope = paper,
+        message;
+    new PaperScope().activate();
+    try {
+        new Path();
+    } catch (e) {
+        message = e.message;
+    }
+    scope.activate();
+    equals(message, 'Unable to create an item without a project. Call '
+            + 'paper.setup() or create a Project first.');
+});
