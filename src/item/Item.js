@@ -2483,6 +2483,9 @@ new function() { // Injection scope for hit-test functions shared with project
      * @option [options.reuseImages=false] {Boolean} whether raster images with
      *     the same content should only be exported once into the `<defs>`
      *     element, and placed through `<use>` elements referencing it
+     * @option [options.idPrefix=''] {String} a prefix for the ids generated
+     *     for definitions such as gradients, clip paths and symbols, to keep
+     *     them unique when several exported SVGs are placed in one document
      * @option [options.reduceAttributes=true] {Boolean} wether to only include
      *     style attributes in the SVG output that differ from their parents,
      *     or to always include them (much faster but leading to redundancies).
