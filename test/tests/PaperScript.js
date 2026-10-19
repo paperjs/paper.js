@@ -86,7 +86,13 @@ if (!isNodeContext) {
                 PaperScript.load(script);
                 document.body.removeChild(script);
             }
-            return paper.stack;
+            return getScope().stack;
+        }
+
+        // With the built library, PaperScript doesn't set the global `paper`,
+        // so get the canvas' scope:
+        function getScope() {
+            return PaperScope.get(canvas.getAttribute('data-paper-scope'));
         }
 
         // Stack traces name the sourceURL that devtools list the code under:
@@ -98,7 +104,7 @@ if (!isNodeContext) {
         // Inline code that isn't part of the html:
         stack = load('paper.stack = new Error("detached").stack;', null, true);
         ok(stack.indexOf(document.baseURI) !== -1, stack);
-        paper.remove();
+        getScope().remove();
         document.body.removeChild(canvas);
         current.activate();
     });
