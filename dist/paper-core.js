@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 15:15:08 2026 +0200
+ * Date: Mon Oct 19 15:12:16 2026 +0200
  *
  ***
  *
@@ -2917,8 +2917,10 @@ var Line = Base.extend({
 					: vy === 0 ? (vx < 0 ? y - py : py - y)
 					: ((x - px) * vy - (y - py) * vx) / (
 						vy > vx
-							? vy * Math.sqrt(1 + (vx * vx) / (vy * vy))
-							: vx * Math.sqrt(1 + (vy * vy) / (vx * vx))
+							? Math.abs(vy)
+								* Math.sqrt(1 + (vx * vx) / (vy * vy))
+							: Math.abs(vx)
+								* Math.sqrt(1 + (vy * vy) / (vx * vx))
 					);
 		},
 
