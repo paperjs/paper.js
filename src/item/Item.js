@@ -2061,14 +2061,17 @@ new function() { // Injection scope for hit-test functions shared with project
      */
 
     _hitTest: function(point, options, parentViewMatrix) {
+        // Shells of sourced items are rejected by their bounds below, as
+        // checking for emptiness would load them:
         if (this._locked || !this._visible || this._guide && !options.guides
-                || this.isEmpty()) {
+                || !this._shell && this.isEmpty()) {
             return null;
         }
 
         // Check if the point is withing roughBounds + tolerance, but only if
         // this item does not have children, since we'd have to travel up the
-        // chain already to determine the rough bounds.
+        // chain already to determine the rough bounds. Shells of sourced items
+        // know their rough bounds without loading their children.
         var matrix = this._matrix,
             // If this is the first one in the recursion, the point is in global
             // coordinates, so transform it by the item's globalMatrix:
@@ -2095,7 +2098,7 @@ new function() { // Injection scope for hit-test functions shared with project
         // Transform point to local coordinates.
         point = pointMatrix._inverseTransform(point);
         // If the matrix is non-reversible, point will now be `null`:
-        if (!point || !this._children &&
+        if (!point || (this._shell || !this._children) &&
             !this.getBounds({ internal: true, stroke: true, handle: true })
                 .expand(tolerancePadding.multiply(2))._containsPoint(point)) {
             return null;

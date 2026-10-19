@@ -30,7 +30,10 @@ var __options = {
     svg: true,
     booleanOperations: true,
     nativeContains: false,
-    paperScript: true
+    paperScript: true,
+    // Items backed by a host document, see Project#source. Only in the
+    // paper-sourced.js build, and when loading the sources directly:
+    sourced: load
 };
 
 // Export for use in Gulp.js
