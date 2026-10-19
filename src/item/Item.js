@@ -3773,11 +3773,15 @@ new function() { // Injection scope for hit-test functions shared with project
     },
 
     /**
-     * Transform the item so that its {@link #bounds} fit within the specified
-     * rectangle, without changing its aspect ratio.
+     * Transform the item so that its {@link #bounds} are centered in the
+     * specified rectangle and fitted to it as described by `fit`.
      *
      * @param {Rectangle} rectangle
-     * @param {Boolean} [fill=false]
+     * @param {String|Boolean} [fit='contain'] how to fit the item, as in CSS's
+     * `object-fit`: `'contain'` fits all of it within the rectangle, `'cover'`
+     * makes it cover the whole rectangle, and `'fill'` stretches it to the
+     * rectangle, changing its aspect ratio. The deprecated `true` and `false`
+     * stand for `'cover'` and `'contain'`.
      *
      * @example {@paperscript height=100}
      * // Fitting an item to the bounding rectangle of another item's bounding
@@ -3805,7 +3809,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @example {@paperscript height=100}
      * // Fitting an item to the bounding rectangle of another item's bounding
-     * // rectangle with the fill parameter set to true:
+     * // rectangle, covering all of it:
      *
      * // Create a rectangle shaped path with its top left corner
      * // at {x: 80, y: 25} and a size of {width: 75, height: 50}:
@@ -3825,7 +3829,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * // Fit the circlePath to the bounding rectangle of
      * // the rectangular path:
-     * circlePath.fitBounds(path.bounds, true);
+     * circlePath.fitBounds(path.bounds, 'cover');
      *
      * @example {@paperscript height=200}
      * // Fitting an item to the bounding rectangle of the view
@@ -3838,20 +3842,19 @@ new function() { // Injection scope for hit-test functions shared with project
      * // Fit the path to the bounding rectangle of the view:
      * path.fitBounds(view.bounds);
      */
-    fitBounds: function(rectangle, fill) {
-        // TODO: Think about passing options with various ways of defining
-        // fitting. Compare with InDesign fitting to see possible options.
+    fitBounds: function(rectangle, fit) {
         rectangle = Rectangle.read(arguments);
-        fill = Base.read(arguments);
+        fit = Base.read(arguments);
+        // TODO: Remove the boolean values in 1.0.0? (deprecated October 2026)
+        if (fit === true)
+            fit = 'cover';
         var bounds = this.getBounds(),
-            itemRatio = bounds.height / bounds.width,
-            rectRatio = rectangle.height / rectangle.width,
-            scale = (fill ? itemRatio > rectRatio : itemRatio < rectRatio)
-                    ? rectangle.width / bounds.width
-                    : rectangle.height / bounds.height,
-            newBounds = new Rectangle(new Point(),
-                    new Size(bounds.width * scale, bounds.height * scale));
-        newBounds.setCenter(rectangle.getCenter());
+            hor = rectangle.width / bounds.width,
+            ver = rectangle.height / bounds.height,
+            scale = fit === 'cover' ? Math.max(hor, ver) : Math.min(hor, ver),
+            newBounds = fit === 'fill' ? rectangle
+                : new Rectangle(new Point(), bounds.getSize().multiply(scale))
+                    .setCenter(rectangle.getCenter());
         this.setBounds(newBounds);
     }
 }), /** @lends Item# */{

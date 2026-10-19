@@ -1360,12 +1360,23 @@ test('Item#rasterize() with empty bounds', function() {
     expect(0);
 });
 
-test('Item#fitBounds(rectangle, fill)', function() {
+test('Item#fitBounds(rectangle[, fit])', function() {
+    // A 10 x 20 item in a 50 x 50 rectangle: To be contained, its height
+    // becomes 50, to cover the rectangle its width, and to fill it, both.
     var path = new Path.Rectangle([0, 0, 10, 20]);
-    path.fitBounds([0, 0, 50, 50], true);
-    equals(path.bounds, new Rectangle(0, -25, 50, 100));
+    path.fitBounds([0, 0, 50, 50], 'cover');
+    equals(path.bounds, new Rectangle(0, -25, 50, 100), 'cover');
     path.fitBounds(0, 0, 50, 50);
-    equals(path.bounds, new Rectangle(12.5, 0, 25, 50));
+    equals(path.bounds, new Rectangle(12.5, 0, 25, 50), 'contain by default');
+    path.fitBounds([0, 0, 50, 50], 'contain');
+    equals(path.bounds, new Rectangle(12.5, 0, 25, 50), 'contain');
+    path.fitBounds(0, 0, 50, 50, 'fill');
+    equals(path.bounds, new Rectangle(0, 0, 50, 50), 'fill');
+    // The deprecated booleans:
+    path.fitBounds([0, 0, 50, 100], true);
+    equals(path.bounds, new Rectangle(-25, 0, 100, 100), 'true for cover');
+    path.fitBounds([0, 0, 50, 100], false);
+    equals(path.bounds, new Rectangle(0, 25, 50, 50), 'false for contain');
 });
 
 test('Item#rasterize() bounds', function() {
