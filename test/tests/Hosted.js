@@ -10,13 +10,13 @@
  * All rights reserved.
  */
 
-QUnit.module('Sourced');
+QUnit.module('Hosted');
 
-// The host document is played by another project, served through the source
-// interface by item id. The source logs its calls, so tests can check what
+// The host document is played by another project, served through the host
+// interface by item id. The host logs its calls, so tests can check what
 // loading touched.
-function createSource(document) {
-    var source = {
+function createHost(document) {
+    var host = {
         document: document,
         calls: [],
 
@@ -68,15 +68,15 @@ function createSource(document) {
         },
 
         getChildren: function(key) {
-            source.calls.push(['getChildren', key]);
-            return source.getColumns(key == null
+            host.calls.push(['getChildren', key]);
+            return host.getColumns(key == null
                     ? document.layers
-                    : source.getNode(key).children);
+                    : host.getNode(key).children);
         },
 
         getItem: function(key) {
-            source.calls.push(['getItem', key]);
-            var json = source.getNode(key).exportJSON({ asString: false });
+            host.calls.push(['getItem', key]);
+            var json = host.getNode(key).exportJSON({ asString: false });
             // Selection comes through the flags, and the children of
             // containers through getChildren():
             delete json[1].selected;
@@ -86,9 +86,9 @@ function createSource(document) {
         },
 
         getAncestorKeys: function(key) {
-            source.calls.push(['getAncestorKeys', key]);
+            host.calls.push(['getAncestorKeys', key]);
             var keys = [],
-                node = source.getNode(key);
+                node = host.getNode(key);
             while (node = node.parent || null)
                 keys.unshift(node.id);
             return keys;
@@ -96,12 +96,12 @@ function createSource(document) {
 
         // Returns the calls made since the last call, and clears the log.
         takeCalls: function() {
-            var calls = source.calls;
-            source.calls = [];
+            var calls = host.calls;
+            host.calls = [];
             return calls;
         }
     };
-    return source;
+    return host;
 }
 
 function createDocument() {
@@ -133,87 +133,87 @@ function createDocument() {
     return document;
 }
 
-function createSourcedProject() {
-    var source = createSource(createDocument());
+function createHostedProject() {
+    var host = createHost(createDocument());
     var project = new Project();
-    project.source = source;
-    return { project: project, source: source };
+    project.host = host;
+    return { project: project, host: host };
 }
 
-test('Setting the source loads only the layers', function() {
-    var res = createSourcedProject();
+test('Setting the host loads only the layers', function() {
+    var res = createHostedProject();
     equals(res.project.layers.length, 2);
     equals(res.project.layers[0].name, 'art');
     equals(res.project.activeLayer === res.project.layers[0], true);
-    equals(res.project.layers[0].key, res.source.document.layers[0].id);
-    equals(res.source.takeCalls(), [['getChildren', null]]);
+    equals(res.project.layers[0].key, res.host.document.layers[0].id);
+    equals(res.host.takeCalls(), [['getChildren', null]]);
 });
 
 test('Containers load their children on first access', function() {
-    var res = createSourcedProject();
-    res.source.takeCalls();
+    var res = createHostedProject();
+    res.host.takeCalls();
     var layer = res.project.layers[0];
     equals(layer.children.length, 2);
     equals(layer.children['circle'].className, 'Path');
-    equals(res.source.takeCalls(), [['getChildren', layer.key]]);
+    equals(res.host.takeCalls(), [['getChildren', layer.key]]);
     // A second access doesn't load them again:
     equals(layer.children.length, 2);
-    equals(res.source.takeCalls(), []);
+    equals(res.host.takeCalls(), []);
 });
 
 test('Items load their content on first access', function() {
-    var res = createSourcedProject();
-    var original = res.source.document.getItem({ name: 'circle' });
+    var res = createHostedProject();
+    var original = res.host.document.getItem({ name: 'circle' });
     var circle = res.project.layers[0].children['circle'];
-    res.source.takeCalls();
+    res.host.takeCalls();
     equals(circle.segments.length, 4);
-    equals(res.source.takeCalls(), [['getItem', circle.key]]);
+    equals(res.host.takeCalls(), [['getItem', circle.key]]);
     equals(circle.fillColor, original.fillColor);
     equals(circle.segments, original.segments);
-    equals(res.source.takeCalls(), []);
+    equals(res.host.takeCalls(), []);
 });
 
-test('A loaded project matches the source document', function() {
-    var res = createSourcedProject();
-    equals(res.project.exportJSON(), res.source.document.exportJSON());
+test('A loaded project matches the host document', function() {
+    var res = createHostedProject();
+    equals(res.project.exportJSON(), res.host.document.exportJSON());
 });
 
-test('Bounds come from the source without loading', function() {
-    var res = createSourcedProject();
-    var document = res.source.document;
+test('Bounds come from the host without loading', function() {
+    var res = createHostedProject();
+    var document = res.host.document;
     var layer = res.project.layers[0];
     var group = layer.children['group'];
     var path = group.children[0];
-    res.source.takeCalls();
+    res.host.takeCalls();
     equals(path.bounds, document.getItem({ id: path.key }).bounds);
     equals(path.strokeBounds, document.getItem({ id: path.key }).strokeBounds);
     equals(group.bounds, document.getItem({ name: 'group' }).bounds);
     equals(layer.bounds, document.layers[0].bounds);
-    equals(res.source.takeCalls(), []);
+    equals(res.host.takeCalls(), []);
 });
 
 test('Hit tests load only the items that are hit', function() {
-    var res = createSourcedProject();
+    var res = createHostedProject();
     var layer = res.project.layers[0];
     var group = layer.children['group'];
     var circle = layer.children['circle'];
-    res.source.takeCalls();
+    res.host.takeCalls();
     var result = res.project.hitTest([50, 50]);
     equals(result && result.item === circle, true);
     // The group is rejected by its bounds, without loading its children:
-    equals(res.source.takeCalls(), [['getItem', circle.key]]);
+    equals(res.host.takeCalls(), [['getItem', circle.key]]);
     equals(group.hasOwnProperty('_children'), false);
 });
 
 test('getItemByKey() loads only the ancestors\' children', function() {
-    var res = createSourcedProject();
-    var original = res.source.document.getItem({ class: CompoundPath });
-    res.source.takeCalls();
+    var res = createHostedProject();
+    var original = res.host.document.getItem({ class: CompoundPath });
+    res.host.takeCalls();
     var item = res.project.getItemByKey(original.id);
     equals(item.className, 'CompoundPath');
     equals(item.parent.name, 'group');
     var layerKey = res.project.layers[0].key;
-    equals(res.source.takeCalls(), [
+    equals(res.host.takeCalls(), [
         ['getAncestorKeys', original.id],
         ['getChildren', layerKey],
         ['getChildren', item.parent.key]
@@ -221,24 +221,24 @@ test('getItemByKey() loads only the ancestors\' children', function() {
 });
 
 test('Selected shells are registered in the selection', function() {
-    var res = createSourcedProject();
+    var res = createHostedProject();
     var item = res.project.getItemByKey(
-            res.source.document.getItem({ class: CompoundPath }).id);
-    res.source.takeCalls();
+            res.host.document.getItem({ class: CompoundPath }).id);
+    res.host.takeCalls();
     equals(res.project.selectedItems.length, 1);
     equals(res.project.selectedItems[0] === item, true);
-    equals(res.source.takeCalls(), []);
+    equals(res.host.takeCalls(), []);
 });
 
 test('Loading and invalidating are not logged as changes', function() {
-    var res = createSourcedProject();
+    var res = createHostedProject();
     var project = res.project;
     project.trackChanges = true;
     var circle = project.layers[0].children['circle'];
     circle.segments;
-    res.source.document.getItem({ name: 'circle' }).position.x += 10;
-    project.invalidate(res.source.getColumns([
-        res.source.document.getItem({ name: 'circle' })
+    res.host.document.getItem({ name: 'circle' }).position.x += 10;
+    project.invalidate(res.host.getColumns([
+        res.host.document.getItem({ name: 'circle' })
     ]));
     equals(project.takeChanges().length, 0);
     circle.position.x += 10;
@@ -248,12 +248,12 @@ test('Loading and invalidating are not logged as changes', function() {
 });
 
 test('invalidate() reloads changed content into the same item', function() {
-    var res = createSourcedProject();
-    var original = res.source.document.getItem({ name: 'circle' });
+    var res = createHostedProject();
+    var original = res.host.document.getItem({ name: 'circle' });
     var circle = res.project.layers[0].children['circle'];
     equals(circle.position, new Point(50, 50));
     original.position = [100, 100];
-    var columns = res.source.getColumns([original]);
+    var columns = res.host.getColumns([original]);
     columns.flags[0] |= 16;
     res.project.invalidate(columns);
     equals(res.project.layers[0].children['circle'] === circle, true);
@@ -262,8 +262,8 @@ test('invalidate() reloads changed content into the same item', function() {
 });
 
 test('invalidate() reloads changed children, keeping their items', function() {
-    var res = createSourcedProject();
-    var document = res.source.document;
+    var res = createHostedProject();
+    var document = res.host.document;
     var layer = res.project.layers[0];
     var circle = layer.children['circle'];
     document.layers[0].insertChild(0, new Path.Star({
@@ -273,7 +273,7 @@ test('invalidate() reloads changed children, keeping their items', function() {
         radius2: 20,
         name: 'star'
     }));
-    var columns = res.source.getColumns([document.layers[0]]);
+    var columns = res.host.getColumns([document.layers[0]]);
     columns.flags[0] |= 32;
     res.project.invalidate(columns);
     equals(layer.children.length, 3);
@@ -284,14 +284,14 @@ test('invalidate() reloads changed children, keeping their items', function() {
 });
 
 test('invalidate() keeps the remaining children inserted', function() {
-    var res = createSourcedProject();
+    var res = createHostedProject();
     var project = res.project;
-    var document = res.source.document;
+    var document = res.host.document;
     var layer = project.layers[0];
     var circle = layer.children['circle'];
     project.trackChanges = true;
     document.getItem({ name: 'group' }).remove();
-    var columns = res.source.getColumns([document.layers[0]]);
+    var columns = res.host.getColumns([document.layers[0]]);
     columns.flags[0] |= 32;
     project.invalidate(columns);
     // A script that holds on to the circle changes it, without accessing the
@@ -305,7 +305,7 @@ test('invalidate() keeps the remaining children inserted', function() {
 });
 
 test('invalidate() reloads items that a script created and keyed', function() {
-    var res = createSourcedProject();
+    var res = createHostedProject();
     var project = res.project;
     var layer = project.layers[0];
     // A script creates a circle, which the host writes back and keys:
@@ -316,12 +316,12 @@ test('invalidate() reloads items that a script created and keyed', function() {
         parent: layer
     });
     var node = circle.clone({ insert: false });
-    res.source.document.layers[0].addChild(node);
+    res.host.document.layers[0].addChild(node);
     circle.key = node.id;
     // The user moves it in the host, which invalidates its content:
     node.position.x += 10;
     project.trackChanges = true;
-    var columns = res.source.getColumns([node]);
+    var columns = res.host.getColumns([node]);
     columns.flags[0] |= 16;
     project.invalidate(columns);
     equals(project.getItemByKey(node.id) === circle, true);
@@ -330,11 +330,11 @@ test('invalidate() reloads items that a script created and keyed', function() {
     equals(project.takeChanges().length, 0);
 });
 
-test('A failing source leaves the item a shell, to retry', function() {
-    var res = createSourcedProject();
+test('A failing host leaves the item a shell, to retry', function() {
+    var res = createHostedProject();
     var circle = res.project.layers[0].children['circle'];
-    var getItem = res.source.getItem;
-    res.source.getItem = function() {
+    var getItem = res.host.getItem;
+    res.host.getItem = function() {
         throw new Error('Unavailable');
     };
     var message;
@@ -344,12 +344,12 @@ test('A failing source leaves the item a shell, to retry', function() {
         message = e.message;
     }
     equals(message, 'Unavailable');
-    res.source.getItem = getItem;
+    res.host.getItem = getItem;
     equals(circle.segments.length, 4);
 });
 
 test('Item#key registers new items once', function() {
-    var res = createSourcedProject();
+    var res = createHostedProject();
     var path = new Path.Line({
         from: [0, 0],
         to: [10, 10],
@@ -392,7 +392,7 @@ test('HostItem', function() {
     equals(blend.exportJSON(), '["TestBlend",{"applyMatrix":false,"steps":5}]');
     blend.addChild(new Path.Circle({ center: [0, 0], radius: 10 }));
     equals(blend.children.length, 1);
-    // Without a source record, a HostItem has empty bounds, whatever its
+    // Without a host record, a HostItem has empty bounds, whatever its
     // children are:
     equals(blend.bounds, new Rectangle());
 });

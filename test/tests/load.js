@@ -59,10 +59,10 @@
 
 /*#*/ include('JSON.js');
 
-// Sourced items only exist in paper-sourced.js and when loading the sources
+// Hosted items only exist in paper-hosted.js and when loading the sources
 // directly, so skip their tests in the other builds:
 if (typeof HostItem !== 'undefined') {
-    /*#*/ include('Sourced.js');
+    /*#*/ include('Hosted.js');
 }
 
 /*#*/ include('SvgImport.js');

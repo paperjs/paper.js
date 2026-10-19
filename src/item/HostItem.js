@@ -38,12 +38,12 @@ var HostItem = Item.extend(/** @lends HostItem# */{
 
     _getBounds: function(matrix, options) {
         // The host's bounds also cover what it paints beyond the children:
-        var rect = this._getSourceBounds(options);
+        var rect = this._getHostBounds(options);
         return matrix ? matrix._transformBounds(rect) : rect;
     },
 
     _hitTestSelf: function(point, options) {
-        var bounds = this._getSourceBounds({ stroke: true, handle: true });
+        var bounds = this._getHostBounds({ stroke: true, handle: true });
         if (options.fill && bounds._containsPoint(point)) {
             return new HitResult('fill', this);
         }
