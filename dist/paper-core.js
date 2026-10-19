@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 19 13:33:12 2026 +0200
+ * Date: Mon Oct 19 12:16:09 2026 +0200
  *
  ***
  *
@@ -4837,11 +4837,18 @@ new function() {
 		} else if (transform) {
 			ctx.translate(-itemOffset.x, -itemOffset.y);
 		}
-		if (transform) {
-			(direct ? matrix : viewMatrix).applyToContext(ctx);
-		}
 		if (clip) {
-			param.clipItem.draw(ctx, param.extend({ clip: true }));
+			var parentMatrices = matrices.slice(0, -1),
+				parentMatrix = parentMatrices[parentMatrices.length - 1];
+			(param.viewMatrix ? param.viewMatrix.appended(parentMatrix)
+					: parentMatrix).applyToContext(ctx);
+			param.clipItem.draw(ctx, param.extend({
+				clip: true,
+				matrices: parentMatrices
+			}));
+			matrix.applyToContext(ctx);
+		} else if (transform) {
+			(direct ? matrix : viewMatrix).applyToContext(ctx);
 		}
 		if (strokeMatrix) {
 			ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
