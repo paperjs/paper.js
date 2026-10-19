@@ -965,10 +965,16 @@ new function() { // Injection scope for various item event handlers
         // Create a key for caching, reflecting all bounds options.
         var cacheKey = cacheItem && (matrix ? matrix.equals(_matrix) : !_matrix)
                 && this._getBoundsCacheKey(options, internal),
+            // Only items whose bounds come from other items need to pass the
+            // cacheItem chain on, so that clearing caches propagates up:
+            isIntermediate = cacheKey && cacheItem !== this
+                    && (this._children || this._definition),
             bounds = this._bounds;
         // NOTE: This needs to happen before returning cached values, since even
         // then, _boundsCache needs to be kept up-to-date.
         Item._updateBoundsCache(this._parent || this._symbol, cacheItem);
+        if (isIntermediate)
+            Item._updateBoundsCache(this, cacheItem);
         if (cacheKey && bounds && cacheKey in bounds) {
             var cached = bounds[cacheKey];
             return {
@@ -976,7 +982,9 @@ new function() { // Injection scope for various item event handlers
                 nonscaling: cached.nonscaling
             };
         }
-        var res = this._getBounds(matrix, options),
+        var res = this._getBounds(matrix, isIntermediate
+                ? Base.set({}, options, { cacheItem: this })
+                : options),
             // Support two versions of _getBounds(): One that directly returns a
             // Rectangle, and one that returns a bounds object with nonscaling.
             rect = res.rect || res,

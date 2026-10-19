@@ -212,6 +212,9 @@
   scale them, which were offset or scaled (#549, #1729).
 - Fix the sign of `Line#getSignedDistance()` for lines whose direction has
   two negative coordinates (#1880).
+- Fix outdated bounds of nested groups after changes to items two or more
+  levels down, and of groups containing placed symbols after changes to the
+  symbol definition (#940).
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
