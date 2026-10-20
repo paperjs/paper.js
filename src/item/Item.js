@@ -649,6 +649,13 @@ new function() { // Injection scope for various item event handlers
         this._changeSelection(/*#=*/ItemSelection.ITEM, selected);
     },
 
+    /**
+     * Specifies whether the item and all its descendants are selected. Setting
+     * it selects or deselects them all.
+     *
+     * @bean
+     * @type Boolean
+     */
     isFullySelected: function() {
         var children = this._children,
             selected = !!(this._selection & /*#=*/ItemSelection.ITEM);

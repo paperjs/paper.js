@@ -525,6 +525,7 @@ layer.activate();
 new paper.Group([ item ]);
 new paper.Group({});
 group.clipped;
+group.fullySelected = true;
 
 
 //
