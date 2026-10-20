@@ -36,6 +36,8 @@
 
 ### Fixed
 
+- Fix boolean operations that backtracked while tracing their result, which could
+  give a curve of it the handle of a dead end and make it bulge.
 - Measure text in views without a canvas of their own, such as in workers, with a
   canvas from `CanvasProvider`, e.g. an `OffscreenCanvas`, so `PointText` has
   bounds there too.

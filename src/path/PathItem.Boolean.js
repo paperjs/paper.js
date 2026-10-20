@@ -1092,14 +1092,15 @@ PathItem.inject(new function() {
                             // If there are no segments left, try previous
                             // branches until we find one that works.
                             branch = branches.pop();
-                            if (branch) {
+                            if (branch)
                                 visited = branch.visited;
-                                handleIn = branch.handleIn;
-                            }
                         }
                     } while (branch && !isValid(seg));
                     if (!seg)
                         break;
+                    // All candidates start at the branch's root, so they all
+                    // continue its incoming curve:
+                    handleIn = branch.handleIn;
                 }
                 // Add the segment to the path, and mark it as visited.
                 // But first we need to look ahead. If we encounter the end of
