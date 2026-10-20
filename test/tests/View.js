@@ -252,6 +252,31 @@ test('view.dispatchMouseEvent()', function() {
     tool.remove();
 });
 
+test('view.dispatchMouseEvent() outside the view', function() {
+    // Hosts can draw around the view, e.g. around an artboard:
+    var point = view.bounds.leftCenter.subtract([50, 0]),
+        path = new Path.Circle({
+            center: point,
+            radius: 10,
+            fillColor: 'red'
+        }),
+        tool = new Tool(),
+        log = [];
+    path.onMouseDown = function(event) {
+        log.push('item down ' + event.point);
+    };
+    tool.onMouseDown = function(event) {
+        log.push('tool down ' + event.point);
+    };
+    view.dispatchMouseEvent('mousedown', point);
+    view.dispatchMouseEvent('mouseup', point);
+    equals(log, [
+        'item down ' + point,
+        'tool down ' + point
+    ]);
+    tool.remove();
+});
+
 test('view.dispatchKeyEvent()', function() {
     var tool = new Tool();
     var log = [];

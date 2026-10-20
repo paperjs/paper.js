@@ -1499,7 +1499,9 @@ new function() { // Injection scope for mouse and key event handling
          * with {@link Tool#minDistance} and the like, then those of the items
          * under the point and of the view, including the events that Paper.js
          * derives itself: `'mousedrag'`, `'click'`, `'doubleclick'`,
-         * `'mouseenter'` and `'mouseleave'`.
+         * `'mouseenter'` and `'mouseleave'`. Points outside the view's bounds
+         * are handled too, since the host decides which events belong to its
+         * drawing surface.
          *
          * @option [options.modifiers] {Object} the state of the modifier keys,
          *     see {@link Key#modifiers}
@@ -1521,7 +1523,7 @@ new function() { // Injection scope for mouse and key event handling
                 View._focused = this;
                 mouseDown = dragging = true;
             }
-            this._handleMouseEvent(type, event, new Point(point));
+            this._handleMouseEvent(type, event, new Point(point), true);
             if (type === 'mouseup')
                 mouseDown = dragging = false;
             return event.defaultPrevented;
@@ -1557,7 +1559,7 @@ new function() { // Injection scope for mouse and key event handling
          * Private method to handle mouse events, and delegate to items and
          * tools.
          */
-        _handleMouseEvent: function(type, event, point) {
+        _handleMouseEvent: function(type, event, point, dispatched) {
             var itemEvents = this._itemEvents,
                 // Look up hitItems, which tells us whether a given native mouse
                 // event requires an item hit-test or not, before changing type
@@ -1616,7 +1618,8 @@ new function() { // Injection scope for mouse and key event handling
                 isCovered = nativeMove && !dragging && target
                         && target.nodeType === 1
                         && !target.contains(this._element),
-                inView = !isCovered && this.getBounds().contains(point),
+                inView = dispatched
+                        || !isCovered && this.getBounds().contains(point),
                 // Run the hit-test on items first, but only if we're required
                 // to do so for this given mouse event, see hitItems and
                 // #_countItemEvent():
