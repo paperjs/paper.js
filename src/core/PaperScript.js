@@ -343,6 +343,13 @@ Base.exports.PaperScript = function() {
 
         function handleModules(node) {
 			switch (node.type) {
+            case 'ImportExpression':
+                // `import(specifier)` resolves to the module's namespace, as a
+                // Promise, so a failed load rejects instead of throwing:
+                replaceCode(node, 'Promise.resolve().then(function() { '
+                        + 'return __$import__(' + getCode(node.source)
+                        + ', "dynamic"); })');
+                break;
             case 'ImportDeclaration':
                 // `import x from 'm'` assigns the module's default export,
                 // `import * as x from 'm'` its namespace, and
@@ -610,8 +617,10 @@ Base.exports.PaperScript = function() {
      *     with `__esModule`, so `import x` receives the default export, and
      *     for CommonJS-style exports the whole exports. `import * as x`
      *     receives all exports, and for CommonJS-style exports, these as
-     *     `default` too. The loader runs each module once and handles cycles.
-     *     Parsing `import` requires a current Acorn as `self.acorn`
+     *     `default` too. Dynamic `import(specifier)` resolves to that
+     *     namespace as a Promise, and its loader may return a Promise as well.
+     *     The loader runs each module once and handles cycles. Parsing
+     *     `import` requires a current Acorn as `self.acorn`
      *
      * @param {String} code the PaperScript code
      * @param {PaperScope} scope the scope for which the code is executed
@@ -672,11 +681,20 @@ Base.exports.PaperScript = function() {
                 throw new Error('Unable to import \'' + specifier + '\': no '
                         + 'loader was passed to PaperScript.execute().');
             }
-            var exports = load(specifier, url),
-                isModule = exports && exports.__esModule;
-            // ES modules have their default export as `default`, and their
-            // exports as their namespace. CommonJS-style exports are the
-            // default export, and also appear in the namespace, as in Node:
+            var exports = load(specifier, url);
+            // Dynamic imports may receive a Promise from the loader:
+            return as === 'dynamic'
+                    ? Promise.resolve(exports).then(function(exports) {
+                        return getImported(exports, 'namespace');
+                    })
+                    : getImported(exports, as);
+        }
+
+        // ES modules have their default export as `default`, and their exports
+        // as their namespace. CommonJS-style exports are the default export,
+        // and also appear in the namespace, as in Node:
+        function getImported(exports, as) {
+            var isModule = exports && exports.__esModule;
             return as === 'default'
                     ? isModule ? exports.default : exports
                     : as === 'namespace' && !isModule
