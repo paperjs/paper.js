@@ -704,36 +704,6 @@ statics: /** @lends Curve */{
         return res;
     },
 
-    getTimeOf: function(v, point, tolerance) {
-        // Compare the beginning and end of the curve first, with the same
-        // geometric epsilon as the solutions below: On straight curves, which
-        // have no handles, a point near an end solves to a time far from it,
-        // as the distance grows with the square of the time there. At large
-        // coordinates, the epsilon can't be below their resolution:
-        var abs = Math.abs,
-            epsilon = tolerance || Math.max(/*#=*/Numerical.GEOMETRIC_EPSILON,
-                Numerical.getEpsilon(Math.max(
-                    abs(v[0]), abs(v[1]), abs(v[2]), abs(v[3]),
-                    abs(v[4]), abs(v[5]), abs(v[6]), abs(v[7]))));
-        if (point.isClose(new Point(v[0], v[1]), epsilon))
-            return 0;
-        if (point.isClose(new Point(v[6], v[7]), epsilon))
-            return 1;
-        // Solve the cubic for both x- and y-coordinates and consider all
-        // solutions, testing them with the same epsilon.
-        var coords = [point.x, point.y],
-            roots = [];
-        for (var c = 0; c < 2; c++) {
-            var count = Curve.solveCubic(v, c, coords[c], roots, 0, 1);
-            for (var i = 0; i < count; i++) {
-                var u = roots[i];
-                if (point.isClose(Curve.getPoint(v, u), epsilon))
-                    return u;
-            }
-        }
-        return null;
-    },
-
     // TODO: Find better name
     getPart: function(v, from, to) {
         var flip = from > to;
@@ -1437,6 +1407,13 @@ new function() { // Scope for methods that require private functions
         return [ax, bx, cx, ay, by, cy, x1, y1, x2, y2];
     }
 
+    function getCoordinate(v0, v3, a, b, c, t) {
+        // Calculate one coordinate of the curve point at parameter value t,
+        // from the coefficients that getCoefficients() returns. Use special
+        // handling at t === 0 / 1, to avoid imprecisions. See #960
+        return t === 0 ? v0 : t === 1 ? v3 : ((a * t + b) * t + c) * t + v0;
+    }
+
     function evaluate(v, t, type, normalized) {
         // Do not produce results if parameter is out of range or invalid.
         if (t == null || t < 0 || t > 1)
@@ -1451,13 +1428,8 @@ new function() { // Scope for methods that require private functions
             x, y;
         if (type === 0) {
             // type === 0: getPoint()
-            // Calculate the curve point at parameter value t
-            // Use special handling at t === 0 / 1, to avoid imprecisions.
-            // See #960
-            x = t === 0 ? x0 : t === 1 ? x3
-                    : ((ax * t + bx) * t + cx) * t + x0;
-            y = t === 0 ? y0 : t === 1 ? y3
-                    : ((ay * t + by) * t + cy) * t + y0;
+            x = getCoordinate(x0, x3, ax, bx, cx, t);
+            y = getCoordinate(y0, y3, ay, by, cy, t);
         } else {
             // type === 1: getTangent()
             // type === 2: getNormal()
@@ -1669,6 +1641,53 @@ new function() { // Scope for methods that require private functions
                     /*#=*/Numerical.EPSILON);
         },
 
+        getTimeOf: function(v, point, tolerance) {
+            // Compare the beginning and end of the curve first, with the same
+            // geometric epsilon as the solutions below: On straight curves,
+            // which have no handles, a point near an end solves to a time far
+            // from it, as the distance grows with the square of the time
+            // there. At large coordinates, the epsilon can't be below their
+            // resolution:
+            var abs = Math.abs,
+                x0 = v[0], y0 = v[1],
+                x3 = v[6], y3 = v[7],
+                px = point.x,
+                py = point.y,
+                epsilon = tolerance || Math.max(
+                    /*#=*/Numerical.GEOMETRIC_EPSILON,
+                    Numerical.getEpsilon(Math.max(
+                        abs(x0), abs(y0), abs(v[2]), abs(v[3]),
+                        abs(v[4]), abs(v[5]), abs(x3), abs(y3))));
+
+            function isClose(x, y) {
+                var dx = x - px,
+                    dy = y - py;
+                return Math.sqrt(dx * dx + dy * dy) <= epsilon;
+            }
+
+            if (isClose(x0, y0))
+                return 0;
+            if (isClose(x3, y3))
+                return 1;
+            // Solve the cubic for both x- and y-coordinates and consider all
+            // solutions, testing them with the same epsilon. Calculate the
+            // curve points as in evaluate(), but without creating them:
+            var c = getCoefficients(v),
+                ax = c[0], bx = c[1], cx = c[2],
+                ay = c[3], by = c[4], cy = c[5],
+                roots = [];
+            for (var i = 0; i < 2; i++) {
+                var count = Curve.solveCubic(v, i, i ? py : px, roots, 0, 1);
+                for (var j = 0; j < count; j++) {
+                    var t = roots[j];
+                    if (isClose(getCoordinate(x0, x3, ax, bx, cx, t),
+                            getCoordinate(y0, y3, ay, by, cy, t)))
+                        return t;
+                }
+            }
+            return null;
+        },
+
         getNearestTime: function(v, point) {
             var x0 = v[0], y0 = v[1],
                 x3 = v[6], y3 = v[7],
@@ -1701,10 +1720,8 @@ new function() { // Scope for methods that require private functions
 
             function refine(t) {
                 if (t >= 0 && t <= 1) {
-                    var dx = (t === 0 ? x0 : t === 1 ? x3
-                            : ((ax * t + bx) * t + cx) * t + x0) - px,
-                        dy = (t === 0 ? y0 : t === 1 ? y3
-                            : ((ay * t + by) * t + cy) * t + y0) - py,
+                    var dx = getCoordinate(x0, x3, ax, bx, cx, t) - px,
+                        dy = getCoordinate(y0, y3, ay, by, cy, t) - py,
                         dist = dx * dx + dy * dy;
                     if (dist < minDist) {
                         minDist = dist;
