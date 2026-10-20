@@ -1152,3 +1152,40 @@ test('Item.getBounds(items[, options]) (#2252)', function() {
     Item.getBounds([path2]).x = 1000;
     equals(Item.getBounds([path2]), new Rectangle(100, 0, 10, 10), 'copied');
 });
+
+test('path.strokeBounds after scaling, when cached before', function() {
+    var path = new Path.Rectangle({
+        point: [10, 10],
+        size: [20, 20],
+        strokeColor: 'red',
+        strokeWidth: 10
+    });
+    var group = new Group([path]);
+    equals(path.strokeBounds, new Rectangle(5, 5, 30, 30), 'path.strokeBounds');
+    equals(group.strokeBounds, new Rectangle(5, 5, 30, 30),
+            'group.strokeBounds');
+    // The applied scaling doesn't scale the stroke:
+    group.scale([4, 2], [0, 0]);
+    equals(path.strokeBounds, new Rectangle(35, 15, 90, 50),
+            'path.strokeBounds after scaling');
+    equals(group.strokeBounds, new Rectangle(35, 15, 90, 50),
+            'group.strokeBounds after scaling');
+    path.bounds = new Rectangle(0, 0, 100, 50);
+    equals(path.strokeBounds, new Rectangle(-5, -5, 110, 60),
+            'path.strokeBounds after setting path.bounds');
+});
+
+test('shape.strokeBounds after scaling, when cached before', function() {
+    var shape = new Shape.Rectangle({
+        point: [10, 10],
+        size: [20, 20],
+        strokeColor: 'red',
+        strokeWidth: 10
+    });
+    equals(shape.strokeBounds, new Rectangle(5, 5, 30, 30),
+            'shape.strokeBounds');
+    // The shape's matrix scales the stroke along:
+    shape.scale([4, 2], [0, 0]);
+    equals(shape.strokeBounds, new Rectangle(20, 10, 120, 60),
+            'shape.strokeBounds after scaling');
+});
