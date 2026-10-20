@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 08:50:08 2026 +0200
+ * Date: Tue Oct 20 12:42:44 2026 +0200
  *
  ***
  *
@@ -6989,7 +6989,11 @@ statics: {
 	},
 
 	getTimeOf: function(v, point) {
-		var epsilon = 1e-7;
+		var abs = Math.abs,
+			epsilon = Math.max(1e-7,
+				Numerical.getEpsilon(Math.max(
+					abs(v[0]), abs(v[1]), abs(v[2]), abs(v[3]),
+					abs(v[4]), abs(v[5]), abs(v[6]), abs(v[7]))));
 		if (point.isClose(new Point(v[0], v[1]), epsilon))
 			return 0;
 		if (point.isClose(new Point(v[6], v[7]), epsilon))
