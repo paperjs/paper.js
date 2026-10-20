@@ -25,6 +25,9 @@
 
 ### Fixed
 
+- Fix boolean operations with `{ trace: false }` on closed paths, which could
+  keep or drop the wrong parts depending on where the path started, and on
+  compound paths, which threw an error (#1540, #1541, #1746, #1998, #2046).
 - Document `Item#fullySelected`, which all items have, not only paths (#1687).
 - Type options objects from their documented options, such as those of
   `Item#hitTest()`, `#exportSVG()` and `#rasterize()`, so misspelled options are
