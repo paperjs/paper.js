@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 08:33:22 2026 +0200
+ * Date: Tue Oct 20 08:50:08 2026 +0200
  *
  ***
  *
@@ -11465,18 +11465,17 @@ PathItem.inject(new function() {
 				}
 			}
 			if (hasCrossings) {
+				if (hasOverlaps) {
+					Base.each(paths, function(path) {
+						Base.each(path._segments, function(segment) {
+							segment._intersection = null;
+						});
+					});
+				}
 				divideLocations(intersections, hasOverlaps && function(inter) {
 					var curve1 = inter.getCurve(),
-						seg1 = inter.getSegment(),
-						other = inter._intersection,
-						curve2 = other._curve,
-						seg2 = other._segment;
-					if (curve1 && curve2 && curve1._path && curve2._path)
-						return true;
-					if (seg1)
-						seg1._intersection = null;
-					if (seg2)
-						seg2._intersection = null;
+						curve2 = inter._intersection._curve;
+					return curve1 && curve2 && curve1._path && curve2._path;
 				}, clearCurves);
 				if (clearCurves)
 					clearCurveHandles(clearCurves);
