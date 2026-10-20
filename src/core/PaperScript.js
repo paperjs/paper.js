@@ -677,14 +677,17 @@ Base.exports.PaperScript = function() {
         code = compiled.code;
         function expose(scope, hidden) {
             // Look through all enumerable properties on the scope and expose
-            // these too as pseudo-globals, but only if they seem to be in use,
-            // and don't shadow existing globals, such as the native Event,
-            // MouseEvent and Symbol, as PaperScope#install() doesn't either:
+            // these too as pseudo-globals, but only if they seem to be in use.
+            // The inherited classes don't shadow existing globals, such as the
+            // native Event, MouseEvent and Symbol, as PaperScope#install()
+            // doesn't either, but fields set on the scope itself do, e.g. a
+            // console that a host provides:
             for (var key in scope) {
                 // Next to \b well also need to match \s and \W in the beginning
                 // of $__, since $ is not part of \w. And that causes \b to not
                 // match ^ longer, so include that specifically too.
-                if ((hidden || !/^_/.test(key) && !(key in self))
+                if ((hidden || !/^_/.test(key)
+                        && (!(key in self) || scope.hasOwnProperty(key)))
                         && new RegExp('([\\b\\s\\W]|^)'
                         + key.replace(/\$/g, '\\$') + '\\b').test(code)) {
                     params.push(key);

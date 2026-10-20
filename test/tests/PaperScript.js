@@ -131,6 +131,22 @@ test('PaperScript keeps the native globals (#1832)', function() {
     }, true, 'Path');
 });
 
+test('PaperScript passes fields set on the scope over globals', function() {
+    // Hosts such as sketch.paperjs.org provide their own console this way:
+    var logged = [];
+    paper.console = {
+        log: function(value) {
+            logged.push(value);
+        }
+    };
+    try {
+        PaperScript.execute('console.log("logged");', paper);
+    } finally {
+        delete paper.console;
+    }
+    equals(logged, ['logged']);
+});
+
 test('PaperScript.execute(code, scope, { handlers })', function() {
     var exports = PaperScript.execute(
             'function onStop() { return \'stopped\'; }\n'
