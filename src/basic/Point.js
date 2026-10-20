@@ -17,6 +17,9 @@
  * of the Paper.js project. It is also used to represent two dimensional
  * vector objects.
  *
+ * Wherever a point is the only argument of a function, it can also be passed
+ * as two numbers, e.g. `point.add(10, 20)` or `item.translate(10, 20)`.
+ *
  * @classexample
  * // Create a point at x: 10, y: 5
  * var point = new Point(10, 5);
@@ -209,7 +212,7 @@ var Point = Base.extend(/** @lends Point# */{
      * Checks whether the coordinates of the point are equal to that of the
      * supplied point.
      *
-     * @param {Point} point
+     * @param {Point|Number[]} point
      * @return {Boolean} {@true if the points are equal}
      *
      * @example
