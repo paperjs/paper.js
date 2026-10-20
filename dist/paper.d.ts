@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 04:36:55 2026 +0200
+ * Date: Tue Oct 20 04:51:12 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -899,6 +899,17 @@ declare namespace paper {
         getTimesWithTangent(tangent: PointLike): number[]
 
         /** 
+         * Calculates the curve-time parameters where the curve is tangential to
+         * provided tangent. Note that tangents at the start or end are included.
+         * 
+         * @param tangent - the tangent to which the curve must be tangential
+         * 
+         * @return at most two curve-time parameters, where the curve is
+         * tangential to the given tangent
+         */
+        getTimesWithTangent(x: number, y: number): number[]
+
+        /** 
          * Calculates the curve offset at the specified curve-time parameter on
          * the curve.
          * 
@@ -919,6 +930,16 @@ declare namespace paper {
         getLocationOf(point: PointLike): CurveLocation | null
 
         /** 
+         * Returns the curve location of the specified point if it lies on the
+         * curve, `null` otherwise.
+         * 
+         * @param point - the point on the curve
+         * 
+         * @return the curve location of the specified point
+         */
+        getLocationOf(x: number, y: number): CurveLocation | null
+
+        /** 
          * Returns the length of the path from its beginning up to up to the
          * specified point if it lies on the path, `null` otherwise.
          * 
@@ -927,6 +948,16 @@ declare namespace paper {
          * @return the length of the path up to the specified point
          */
         getOffsetOf(point: PointLike): number | null
+
+        /** 
+         * Returns the length of the path from its beginning up to up to the
+         * specified point if it lies on the path, `null` otherwise.
+         * 
+         * @param point - the point on the path
+         * 
+         * @return the length of the path up to the specified point
+         */
+        getOffsetOf(x: number, y: number): number | null
 
         /** 
          * Returns the curve-time parameter of the specified point if it lies on the
@@ -941,9 +972,26 @@ declare namespace paper {
         getTimeOf(point: PointLike): number | null
 
         /** 
+         * Returns the curve-time parameter of the specified point if it lies on the
+         * curve, `null` otherwise.
+         * Note that if there is more than one possible solution in a
+         * self-intersecting curve, the first found result is returned.
+         * 
+         * @param point - the point on the curve
+         * 
+         * @return the curve-time parameter of the specified point
+         */
+        getTimeOf(x: number, y: number): number | null
+
+        /** 
          * @deprecated use use {@link #getTimeOf} instead.
          */
         getParameterOf(point: PointLike): number
+
+        /** 
+         * @deprecated use use {@link #getTimeOf} instead.
+         */
+        getParameterOf(x: number, y: number): number
 
         /** 
          * Returns the nearest location on the curve to the specified point.
@@ -956,6 +1004,16 @@ declare namespace paper {
         getNearestLocation(point: PointLike): CurveLocation
 
         /** 
+         * Returns the nearest location on the curve to the specified point.
+         * 
+         * @param point - the point for which we search the nearest location
+         * 
+         * @return the location on the curve that's the closest to
+         * the specified point
+         */
+        getNearestLocation(x: number, y: number): CurveLocation
+
+        /** 
          * Returns the nearest point on the curve to the specified point.
          * 
          * @param point - the point for which we search the nearest point
@@ -964,6 +1022,16 @@ declare namespace paper {
          * specified point
          */
         getNearestPoint(point: PointLike): Point
+
+        /** 
+         * Returns the nearest point on the curve to the specified point.
+         * 
+         * @param point - the point for which we search the nearest point
+         * 
+         * @return the point on the curve that's the closest to the
+         * specified point
+         */
+        getNearestPoint(x: number, y: number): Point
 
         /** 
          * Calculates the point on the curve at the given location.
@@ -2029,6 +2097,13 @@ declare namespace paper {
         contains(point: PointLike): boolean
 
         /** 
+         * Checks whether the item's geometry contains the given point.
+         * 
+         * @param point - the point to check for
+         */
+        contains(x: number, y: number): boolean
+
+        /** 
          * @param rect - the rectangle to check against
          */
         isInside(rect: RectangleLike): boolean
@@ -2645,6 +2720,13 @@ declare namespace paper {
         translate(delta: PointLike): void
 
         /** 
+         * Translates (moves) the item by the given offset views.
+         * 
+         * @param delta - the offset to translate the item by
+         */
+        translate(x: number, y: number): void
+
+        /** 
          * Rotates the item by a given angle around the given center point.
          * 
          * Angles are oriented clockwise and measured in degrees.
@@ -2732,6 +2814,16 @@ declare namespace paper {
         globalToLocal(point: PointLike): Point
 
         /** 
+         * Converts the specified point from global project coordinate space to the
+         * item's own local coordinate space.
+         * 
+         * @param point - the point to be transformed
+         * 
+         * @return the transformed point as a new instance
+         */
+        globalToLocal(x: number, y: number): Point
+
+        /** 
          * Converts the specified point from the item's own local coordinate space
          * to the global project coordinate space.
          * 
@@ -2740,6 +2832,16 @@ declare namespace paper {
          * @return the transformed point as a new instance
          */
         localToGlobal(point: PointLike): Point
+
+        /** 
+         * Converts the specified point from the item's own local coordinate space
+         * to the global project coordinate space.
+         * 
+         * @param point - the point to be transformed
+         * 
+         * @return the transformed point as a new instance
+         */
+        localToGlobal(x: number, y: number): Point
 
         /** 
          * Converts the specified point from the parent's coordinate space to
@@ -2752,6 +2854,16 @@ declare namespace paper {
         parentToLocal(point: PointLike): Point
 
         /** 
+         * Converts the specified point from the parent's coordinate space to
+         * item's own local coordinate space.
+         * 
+         * @param point - the point to be transformed
+         * 
+         * @return the transformed point as a new instance
+         */
+        parentToLocal(x: number, y: number): Point
+
+        /** 
          * Converts the specified point from the item's own local coordinate space
          * to the parent's coordinate space.
          * 
@@ -2760,6 +2872,16 @@ declare namespace paper {
          * @return the transformed point as a new instance
          */
         localToParent(point: PointLike): Point
+
+        /** 
+         * Converts the specified point from the item's own local coordinate space
+         * to the parent's coordinate space.
+         * 
+         * @param point - the point to be transformed
+         * 
+         * @return the transformed point as a new instance
+         */
+        localToParent(x: number, y: number): Point
 
         /** 
          * Transform the item so that its {@link #bounds} are centered in the
@@ -3420,6 +3542,15 @@ declare namespace paper {
         transform(point: PointLike): Point
 
         /** 
+         * Transforms a point and returns the result.
+         * 
+         * @param point - the point to be transformed
+         * 
+         * @return the transformed point
+         */
+        transform(x: number, y: number): Point
+
+        /** 
          * Transforms an array of coordinates by this matrix and stores the results
          * into the destination array, which is also returned.
          * 
@@ -3439,6 +3570,13 @@ declare namespace paper {
          * @param point - the point to be transformed
          */
         inverseTransform(point: PointLike): Point
+
+        /** 
+         * Inverse transforms a point and returns the result.
+         * 
+         * @param point - the point to be transformed
+         */
+        inverseTransform(x: number, y: number): Point
 
         /** 
          * Decomposes the affine transformation described by this matrix into
@@ -4026,6 +4164,16 @@ declare namespace paper {
         getLocationOf(point: PointLike): CurveLocation | null
 
         /** 
+         * Returns the curve location of the specified point if it lies on the
+         * path, `null` otherwise.
+         * 
+         * @param point - the point on the path
+         * 
+         * @return the curve location of the specified point
+         */
+        getLocationOf(x: number, y: number): CurveLocation | null
+
+        /** 
          * Returns the length of the path from its beginning up to up to the
          * specified point if it lies on the path, `null` otherwise.
          * 
@@ -4034,6 +4182,16 @@ declare namespace paper {
          * @return the length of the path up to the specified point
          */
         getOffsetOf(point: PointLike): number | null
+
+        /** 
+         * Returns the length of the path from its beginning up to up to the
+         * specified point if it lies on the path, `null` otherwise.
+         * 
+         * @param point - the point on the path
+         * 
+         * @return the length of the path up to the specified point
+         */
+        getOffsetOf(x: number, y: number): number | null
 
         /** 
          * Returns the curve location of the specified offset on the path, or
@@ -4121,6 +4279,19 @@ declare namespace paper {
          * provided tangent
          */
         getOffsetsWithTangent(tangent: PointLike): number[]
+
+        /** 
+         * Calculates path offsets where the path is tangential to the provided
+         * tangent. Note that tangents at the start or end are included. Tangents at
+         * segment points are returned even if only one of their handles is
+         * collinear with the provided tangent.
+         * 
+         * @param tangent - the tangent to which the path must be tangential
+         * 
+         * @return path offsets where the path is tangential to the
+         * provided tangent
+         */
+        getOffsetsWithTangent(x: number, y: number): number[]
 
     }
     namespace Path {
@@ -4523,6 +4694,16 @@ declare namespace paper {
         getNearestLocation(point: PointLike): CurveLocation
 
         /** 
+         * Returns the nearest location on the path item to the specified point.
+         * 
+         * @param point - the point for which we search the nearest location
+         * 
+         * @return the location on the path that's the closest to
+         * the specified point
+         */
+        getNearestLocation(x: number, y: number): CurveLocation
+
+        /** 
          * Returns the nearest point on the path item to the specified point.
          * 
          * @param point - the point for which we search the nearest point
@@ -4531,6 +4712,16 @@ declare namespace paper {
          * point
          */
         getNearestPoint(point: PointLike): Point
+
+        /** 
+         * Returns the nearest point on the path item to the specified point.
+         * 
+         * @param point - the point for which we search the nearest point
+         * 
+         * @return the point on the path that's the closest to the specified
+         * point
+         */
+        getNearestPoint(x: number, y: number): Point
 
         /** 
          * Reverses the orientation of the path item. When called on
@@ -4674,6 +4865,15 @@ declare namespace paper {
         moveTo(point: PointLike): void
 
         /** 
+         * On a normal empty {@link Path}, the point is simply added as the path's
+         * first segment. If called on a {@link CompoundPath}, a new {@link Path} is
+         * created as a child and the point is added as its first segment.
+         * 
+         * @param point - the point in which to start the path
+         */
+        moveTo(x: number, y: number): void
+
+        /** 
          * Adds a straight curve to the path, from the the last segment in the path
          * to the specified point.
          * 
@@ -4681,6 +4881,15 @@ declare namespace paper {
          *     curve
          */
         lineTo(point: PointLike): void
+
+        /** 
+         * Adds a straight curve to the path, from the the last segment in the path
+         * to the specified point.
+         * 
+         * @param point - the destination point of the newly added straight
+         *     curve
+         */
+        lineTo(x: number, y: number): void
 
         /** 
          * Adds an arc from the position of the last segment in the path, passing
@@ -4764,6 +4973,13 @@ declare namespace paper {
         moveBy(to: PointLike): void
 
         /** 
+         * If called on a {@link CompoundPath}, a new {@link Path} is created as a
+         * child and a point is added as its first segment relative to the position
+         * of the last segment of the current path.
+         */
+        moveBy(x: number, y: number): void
+
+        /** 
          * Adds a straight curve to the path, from the the last segment in the path
          * to the `to` vector specified relatively to it.
          * 
@@ -4771,6 +4987,15 @@ declare namespace paper {
          *     added straight curve
          */
         lineBy(point: PointLike): void
+
+        /** 
+         * Adds a straight curve to the path, from the the last segment in the path
+         * to the `to` vector specified relatively to it.
+         * 
+         * @param point - the vector describing the destination of the newly
+         *     added straight curve
+         */
+        lineBy(x: number, y: number): void
 
         /** 
          * Adds an arc from the position of the last segment in the path, passing
@@ -4841,6 +5066,9 @@ declare namespace paper {
      * The Point object represents a point in the two dimensional space
      * of the Paper.js project. It is also used to represent two dimensional
      * vector objects.
+     * 
+     * Wherever a point is the only argument of a function, it can also be passed
+     * as two numbers, e.g. `point.add(10, 20)` or `item.translate(10, 20)`.
      */
     class Point  {
         /** 
@@ -4942,7 +5170,7 @@ declare namespace paper {
          * 
          * @return true if the points are equal
          */
-        equals(point: PointLike): boolean
+        equals(point: PointLike | number[]): boolean
 
         /** 
          * Returns a copy of the point.
@@ -4965,12 +5193,28 @@ declare namespace paper {
         getAngle(point: PointLike): number
 
         /** 
+         * Returns the smaller angle between two vectors. The angle is unsigned, no
+         * information about rotational direction is given.
+         * 
+         * @return the angle in degrees
+         */
+        getAngle(x: number, y: number): number
+
+        /** 
          * Returns the smaller angle between two vectors in radians. The angle is
          * unsigned, no information about rotational direction is given.
          * 
          * @return the angle in radians
          */
         getAngleInRadians(point: PointLike): number
+
+        /** 
+         * Returns the smaller angle between two vectors in radians. The angle is
+         * unsigned, no information about rotational direction is given.
+         * 
+         * @return the angle in radians
+         */
+        getAngleInRadians(x: number, y: number): number
 
         /** 
          * Returns the angle between two vectors. The angle is directional and
@@ -4982,6 +5226,17 @@ declare namespace paper {
          * @return the angle between the two vectors
          */
         getDirectedAngle(point: PointLike): number
+
+        /** 
+         * Returns the angle between two vectors. The angle is directional and
+         * signed, giving information about the rotational direction.
+         * 
+         * Read more about angle units and orientation in the description of the
+         * {@link #angle} property.
+         * 
+         * @return the angle between the two vectors
+         */
+        getDirectedAngle(x: number, y: number): number
 
         /** 
          * Returns the distance between the point and another point.
@@ -5049,6 +5304,17 @@ declare namespace paper {
         add(point: PointLike): Point
 
         /** 
+         * Returns the addition of the supplied point to the point as a new
+         * point.
+         * The object itself is not modified!
+         * 
+         * @param point - the point to add
+         * 
+         * @return the addition of the two points as a new point
+         */
+        add(x: number, y: number): Point
+
+        /** 
          * Returns the subtraction of the supplied value to both coordinates of
          * the point as a new point.
          * The object itself is not modified!
@@ -5069,6 +5335,17 @@ declare namespace paper {
          * @return the subtraction of the two points as a new point
          */
         subtract(point: PointLike): Point
+
+        /** 
+         * Returns the subtraction of the supplied point to the point as a new
+         * point.
+         * The object itself is not modified!
+         * 
+         * @param point - the point to subtract
+         * 
+         * @return the subtraction of the two points as a new point
+         */
+        subtract(x: number, y: number): Point
 
         /** 
          * Returns the multiplication of the supplied value to both coordinates of
@@ -5094,6 +5371,17 @@ declare namespace paper {
         multiply(point: PointLike): Point
 
         /** 
+         * Returns the multiplication of the supplied point to the point as a new
+         * point.
+         * The object itself is not modified!
+         * 
+         * @param point - the point to multiply by
+         * 
+         * @return the multiplication of the two points as a new point
+         */
+        multiply(x: number, y: number): Point
+
+        /** 
          * Returns the division of the supplied value to both coordinates of
          * the point as a new point.
          * The object itself is not modified!
@@ -5116,6 +5404,17 @@ declare namespace paper {
         divide(point: PointLike): Point
 
         /** 
+         * Returns the division of the supplied point to the point as a new
+         * point.
+         * The object itself is not modified!
+         * 
+         * @param point - the point to divide by
+         * 
+         * @return the division of the two points as a new point
+         */
+        divide(x: number, y: number): Point
+
+        /** 
          * The modulo operator returns the integer remainders of dividing the point
          * by the supplied value as a new point.
          * 
@@ -5132,6 +5431,15 @@ declare namespace paper {
          * other as a new point
          */
         modulo(point: PointLike): Point
+
+        /** 
+         * The modulo operator returns the integer remainders of dividing the point
+         * by the supplied value as a new point.
+         * 
+         * @return the integer remainders of dividing the points by each
+         * other as a new point
+         */
+        modulo(x: number, y: number): Point
 
         /** 
          * Returns a new point with both coordinates negated.
@@ -5172,6 +5480,16 @@ declare namespace paper {
         isCollinear(point: PointLike): boolean
 
         /** 
+         * Checks if the vector represented by this point is collinear (parallel) to
+         * another vector.
+         * 
+         * @param point - the vector to check against
+         * 
+         * @return true it is collinear
+         */
+        isCollinear(x: number, y: number): boolean
+
+        /** 
          * Checks if the vector represented by this point is orthogonal
          * (perpendicular) to another vector.
          * 
@@ -5180,6 +5498,16 @@ declare namespace paper {
          * @return true it is orthogonal
          */
         isOrthogonal(point: PointLike): boolean
+
+        /** 
+         * Checks if the vector represented by this point is orthogonal
+         * (perpendicular) to another vector.
+         * 
+         * @param point - the vector to check against
+         * 
+         * @return true it is orthogonal
+         */
+        isOrthogonal(x: number, y: number): boolean
 
         /** 
          * Checks if this point has both the x and y coordinate set to 0.
@@ -5217,11 +5545,25 @@ declare namespace paper {
         dot(point: PointLike): number
 
         /** 
+         * Returns the dot product of the point and another point.
+         * 
+         * @return the dot product of the two points
+         */
+        dot(x: number, y: number): number
+
+        /** 
          * Returns the cross product of the point and another point.
          * 
          * @return the cross product of the two points
          */
         cross(point: PointLike): number
+
+        /** 
+         * Returns the cross product of the point and another point.
+         * 
+         * @return the cross product of the two points
+         */
+        cross(x: number, y: number): number
 
         /** 
          * Returns the projection of the point onto another point.
@@ -5230,6 +5572,14 @@ declare namespace paper {
          * @return the projection of the point onto another point
          */
         project(point: PointLike): Point
+
+        /** 
+         * Returns the projection of the point onto another point.
+         * Both points are interpreted as vectors.
+         * 
+         * @return the projection of the point onto another point
+         */
+        project(x: number, y: number): Point
 
         /** 
          * Returns a new point with rounded {@link #x} and {@link #y} values. The
@@ -6019,6 +6369,9 @@ declare namespace paper {
         
         createImageData(size: SizeLike): ImageData
 
+        
+        createImageData(width: number, height: number): ImageData
+
         /** 
          * Returns the image data of the pixels within the specified rectangle, or
          * of the whole raster if no rectangle or an empty one is passed.
@@ -6254,6 +6607,15 @@ declare namespace paper {
         contains(point: PointLike): boolean
 
         /** 
+         * Tests if the specified point is inside the boundary of the rectangle.
+         * 
+         * @param point - the specified point
+         * 
+         * @return true if the point is inside the rectangle's boundary
+         */
+        contains(x: number, y: number): boolean
+
+        /** 
          * Tests if the interior of the rectangle entirely contains the specified
          * rectangle.
          * 
@@ -6318,6 +6680,23 @@ declare namespace paper {
          * original rectangle and the specified point
          */
         include(point: PointLike): Rectangle
+
+        /** 
+         * Adds a point to this rectangle. The resulting rectangle is the smallest
+         * rectangle that contains both the original rectangle and the specified
+         * point.
+         * 
+         * After adding a point, a call to {@link #contains} with the added
+         * point as an argument does not necessarily return `true`. The {@link
+         * Rectangle#contains(point)} method does not return `true` for points on
+         * the right or bottom edges of a rectangle. Therefore, if the added point
+         * falls on the left or bottom edge of the enlarged rectangle, {@link
+         * Rectangle#contains(point)} returns `false` for that point.
+         * 
+         * @return the smallest rectangle that contains both the
+         * original rectangle and the specified point
+         */
+        include(x: number, y: number): Rectangle
 
         /** 
          * Returns a new rectangle expanded by the specified amount in horizontal
@@ -6710,6 +7089,9 @@ declare namespace paper {
     /** 
      * The Size object is used to describe the size or dimensions of
      * something, through its {@link #width} and {@link #height} properties.
+     * 
+     * Wherever a size is the only argument of a function, it can also be passed
+     * as two numbers, e.g. `size.multiply(2, 3)`.
      */
     class Size  {
         /** 
@@ -6766,7 +7148,7 @@ declare namespace paper {
          * 
          * @param size - the size to compare to
          */
-        equals(size: SizeLike): boolean
+        equals(size: SizeLike | number[]): boolean
 
         /** 
          * Returns a copy of the size.
@@ -6799,6 +7181,16 @@ declare namespace paper {
         add(size: SizeLike): Size
 
         /** 
+         * Returns the addition of the width and height of the supplied size to the
+         * size as a new size. The object itself is not modified!
+         * 
+         * @param size - the size to add
+         * 
+         * @return the addition of the two sizes as a new size
+         */
+        add(width: number, height: number): Size
+
+        /** 
          * Returns the subtraction of the supplied value from the width and height
          * of the size as a new size. The object itself is not modified!
          * The object itself is not modified!
@@ -6818,6 +7210,16 @@ declare namespace paper {
          * @return the subtraction of the two sizes as a new size
          */
         subtract(size: SizeLike): Size
+
+        /** 
+         * Returns the subtraction of the width and height of the supplied size from
+         * the size as a new size. The object itself is not modified!
+         * 
+         * @param size - the size to subtract
+         * 
+         * @return the subtraction of the two sizes as a new size
+         */
+        subtract(width: number, height: number): Size
 
         /** 
          * Returns the multiplication of the supplied value with the width and
@@ -6840,6 +7242,16 @@ declare namespace paper {
         multiply(size: SizeLike): Size
 
         /** 
+         * Returns the multiplication of the width and height of the supplied size
+         * with the size as a new size. The object itself is not modified!
+         * 
+         * @param size - the size to multiply by
+         * 
+         * @return the multiplication of the two sizes as a new size
+         */
+        multiply(width: number, height: number): Size
+
+        /** 
          * Returns the division of the supplied value by the width and height of the
          * size as a new size. The object itself is not modified!
          * 
@@ -6860,6 +7272,16 @@ declare namespace paper {
         divide(size: SizeLike): Size
 
         /** 
+         * Returns the division of the width and height of the supplied size by the
+         * size as a new size. The object itself is not modified!
+         * 
+         * @param size - the size to divide by
+         * 
+         * @return the division of the two sizes as a new size
+         */
+        divide(width: number, height: number): Size
+
+        /** 
          * The modulo operator returns the integer remainders of dividing the size
          * by the supplied value as a new size.
          * 
@@ -6876,6 +7298,15 @@ declare namespace paper {
          * other as a new size
          */
         modulo(size: SizeLike): Size
+
+        /** 
+         * The modulo operator returns the integer remainders of dividing the size
+         * by the supplied size as a new size.
+         * 
+         * @return the integer remainders of dividing the sizes by each
+         * other as a new size
+         */
+        modulo(width: number, height: number): Size
 
         /** 
          * Returns a new size with both dimensions negated.
@@ -7903,6 +8334,13 @@ declare namespace paper {
         translate(delta: PointLike): void
 
         /** 
+         * Translates (scrolls) the view by the given offset vector.
+         * 
+         * @param delta - the offset to translate the view by
+         */
+        translate(x: number, y: number): void
+
+        /** 
          * Rotates the view by a given angle around the given center point.
          * 
          * Angles are oriented clockwise and measured in degrees.
@@ -8001,6 +8439,14 @@ declare namespace paper {
         scrollBy(point: PointLike): void
 
         /** 
+         * Scrolls the view by the given vector.
+         * 
+         * @deprecated use {@link #translate} instead (using opposite
+         *     direction).
+         */
+        scrollBy(x: number, y: number): void
+
+        /** 
          * Converts the passed point from project coordinate space to view
          * coordinate space, which is measured in browser pixels in relation to the
          * position of the view element.
@@ -8012,6 +8458,17 @@ declare namespace paper {
         projectToView(point: PointLike): Point
 
         /** 
+         * Converts the passed point from project coordinate space to view
+         * coordinate space, which is measured in browser pixels in relation to the
+         * position of the view element.
+         * 
+         * @param point - the point in project coordinates to be converted
+         * 
+         * @return the point converted into view coordinates
+         */
+        projectToView(x: number, y: number): Point
+
+        /** 
          * Converts the passed point from view coordinate space to project
          * coordinate space.
          * 
@@ -8020,6 +8477,16 @@ declare namespace paper {
          * @return the point converted into project coordinates
          */
         viewToProject(point: PointLike): Point
+
+        /** 
+         * Converts the passed point from view coordinate space to project
+         * coordinate space.
+         * 
+         * @param point - the point in view coordinates to be converted
+         * 
+         * @return the point converted into project coordinates
+         */
+        viewToProject(x: number, y: number): Point
 
         /** 
          * Determines and returns the event location in project coordinate space.
