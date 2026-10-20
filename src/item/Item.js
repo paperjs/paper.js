@@ -189,10 +189,7 @@ new function() { // Injection scope for various item event handlers
                 // value is the default value, only serialize if the current
                 // value is different from it.
                 var value = that[key];
-                // Style#leading is a special case, as its default value is
-                // dependent on the fontSize. Handle this here separately.
-                if (!Base.equals(value, key === 'leading'
-                        ? fields.fontSize * 1.2 : fields[key])) {
+                if (!Base.equals(value, fields[key])) {
                     props[key] = Base.serialize(value, options,
                             // Do not use compact mode for data
                             key !== 'data', dictionary);
@@ -4520,11 +4517,12 @@ new function() { // Injection scope for hit-test functions shared with project
      * Not defined in Path as it is required by other classes too,
      * e.g. PointText.
      */
-    _setStyles: function(ctx, param, viewMatrix, strokeMatrix) {
+    _setStyles: function(ctx, param, viewMatrix, strokeMatrix, style) {
         // We can access internal properties since we're only using this on
-        // items without children, where styles would be merged.
-        var style = this._style,
-            matrix = this._matrix;
+        // items without children, where styles would be merged. Text passes
+        // the style of each of its runs.
+        var matrix = this._matrix;
+        style = style || this._style;
         if (style.hasFill()) {
             ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx, matrix,
                     strokeMatrix);

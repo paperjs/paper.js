@@ -36,8 +36,12 @@ var SvgStyles = Base.each({
     fontFamily: ['font-family', 'string'],
     fontWeight: ['font-weight', 'font'],
     fontSize: ['font-size', 'number'],
-    tracking: ['letter-spacing', 'tracking'],
+    letterTracking: ['letter-spacing', 'tracking'],
+    // The later of the justifications that share an anchor are imported:
     justification: ['text-anchor', 'lookup', {
+        justify: 'start',
+        start: 'start',
+        end: 'end',
         left: 'start',
         center: 'middle',
         right: 'end'

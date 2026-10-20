@@ -85,6 +85,8 @@ var paper = function(self, undefined) {
 
 /*#*/ include('text/TextItem.js');
 /*#*/ include('text/PointText.js');
+/*#*/ include('text/TextStory.js');
+/*#*/ include('text/TextRange.js');
 
 /*#*/ include('style/Color.js');
 /*#*/ include('style/Gradient.js');
