@@ -2218,26 +2218,26 @@ new function() { // Scope for drawing
     // SegmentPoint objects maybe seem a bit tedious but is worth the benefit in
     // performance.
 
-    function drawHandles(ctx, segments, matrix, size) {
-        // Only draw if size is not null or negative.
-        if (size <= 0) return;
-
-        var half = size / 2,
-            miniSize = size - 2,
-            miniHalf = half - 1,
+    function drawHandles(ctx, segments, matrix, handleSize, segmentSize) {
+        // Only draw the handles and segments whose size is positive.
+        var handleHalf = handleSize / 2,
+            width = segmentSize.width,
+            height = segmentSize.height,
+            halfWidth = width / 2,
+            halfHeight = height / 2,
             coords = new Array(6),
             pX, pY;
 
         function drawHandle(index) {
             var hX = coords[index],
                 hY = coords[index + 1];
-            if (pX != hX || pY != hY) {
+            if (handleSize > 0 && (pX != hX || pY != hY)) {
                 ctx.beginPath();
                 ctx.moveTo(pX, pY);
                 ctx.lineTo(hX, hY);
                 ctx.stroke();
                 ctx.beginPath();
-                ctx.arc(hX, hY, half, 0, Math.PI * 2, true);
+                ctx.arc(hX, hY, handleHalf, 0, Math.PI * 2, true);
                 ctx.fill();
             }
         }
@@ -2252,14 +2252,18 @@ new function() { // Scope for drawing
                 drawHandle(2);
             if (selection & /*#=*/SegmentSelection.HANDLE_OUT)
                 drawHandle(4);
+            if (width <= 0 || height <= 0)
+                continue;
             // Draw a rectangle at segment.point:
-            ctx.fillRect(pX - half, pY - half, size, size);
-            // If the point is not selected, draw a white square that is 1px
+            ctx.fillRect(pX - halfWidth, pY - halfHeight, width, height);
+            // If the point is not selected, draw a white rectangle that is 1px
             // smaller on all sides, but only draw it if size is big enough.
-            if (miniSize > 0 && !(selection & /*#=*/SegmentSelection.POINT)) {
+            if (width > 2 && height > 2
+                    && !(selection & /*#=*/SegmentSelection.POINT)) {
                 var fillStyle = ctx.fillStyle;
                 ctx.fillStyle = '#ffffff';
-                ctx.fillRect(pX - miniHalf, pY - miniHalf, miniSize, miniSize);
+                ctx.fillRect(pX - halfWidth + 1, pY - halfHeight + 1,
+                        width - 2, height - 2);
                 ctx.fillStyle = fillStyle;
             }
         }
@@ -2401,7 +2405,10 @@ new function() { // Scope for drawing
             drawSegments(ctx, this, matrix);
             // Now stroke it and draw its handles:
             ctx.stroke();
-            drawHandles(ctx, this._segments, matrix, paper.settings.handleSize);
+            var settings = paper.settings;
+            drawHandles(ctx, this._segments, matrix, settings.handleSize,
+                    new Size(Base.pick(settings.segmentSize,
+                        settings.handleSize)));
         }
     };
 },

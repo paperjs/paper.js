@@ -543,6 +543,43 @@ test('Selections are drawn with a line width of 1', function() {
     path.remove();
 });
 
+test('settings.segmentSize (#1899)', function() {
+    var path = new Path({
+            segments: [[[20, 50], null, [0, -30]], [80, 50]],
+            fullySelected: true
+        }),
+        settings = paper.settings,
+        handleSize = settings.handleSize,
+        segmentSize = settings.segmentSize,
+        ctx = view.element.getContext('2d');
+
+    function getAlpha(x, y) {
+        var pixelRatio = view.pixelRatio;
+        return ctx.getImageData(x * pixelRatio, y * pixelRatio, 1, 1).data[3];
+    }
+
+    // By default, the segments are drawn as large as the handles, 4 points:
+    view.update(true);
+    equals(getAlpha(20, 20) > 0, true, 'the handle');
+    equals(getAlpha(20, 54), 0, 'below the segment');
+    equals(getAlpha(24, 50), 0, 'next to the segment');
+    // A larger segment without handles:
+    settings.handleSize = 0;
+    settings.segmentSize = 10;
+    view.update(true);
+    equals(getAlpha(20, 20), 0, 'no handle');
+    equals(getAlpha(20, 54) > 0, true, 'below the segment, inside');
+    equals(getAlpha(24, 50) > 0, true, 'next to the segment, inside');
+    // A segment that is higher than wide:
+    settings.segmentSize = new Size(4, 10);
+    view.update(true);
+    equals(getAlpha(20, 54) > 0, true, 'below the tall segment, inside');
+    equals(getAlpha(24, 50), 0, 'next to the tall segment');
+    settings.handleSize = handleSize;
+    settings.segmentSize = segmentSize;
+    path.remove();
+});
+
 test('ToolEvent#velocity and #elapsed', function() {
     var tool = new Tool({ maxDistance: 10 }),
         log = [];
