@@ -102,7 +102,10 @@ gulp.task('test:chrome', ['minify:acorn'], function(callback) {
 // their second operand, and compares how many results stay the same and how
 // many points they fill wrongly with test/booleans/baseline.json. Fails if any
 // case got worse. Update the baseline with --update, test other builds with
-// --build, e.g. `gulp test:booleans --build=hosted`. See test/booleans/sweep.js
+// --build, e.g. `gulp test:booleans --build=hosted`, and leave out the points
+// within a multiple of the operation's epsilon of an outline with --exclusion,
+// e.g. `--exclusion=10`, and scale or move all operands with --scale and
+// --translation. See test/booleans/sweep.js
 gulp.task('test:booleans', ['minify:acorn'], function(callback) {
     var dir = path.join('test', 'booleans'),
         build = path.join('dist', 'paper-' + (argv.build || 'full') + '.js'),
@@ -110,11 +113,18 @@ gulp.task('test:booleans', ['minify:acorn'], function(callback) {
         results = [],
         counts = {};
 
-    // Sweeps the cases from the given one on in a child process, which is
-    // restarted after a case that doesn't return within 20 seconds:
+    // Sweeps every n-th case from the given one on in one child process per
+    // core, each restarted after a case that doesn't return within 2 minutes:
+    var step = os.cpus().length,
+        running = 0;
     function run(first) {
+        running++;
         var child = spawn(process.execPath,
-                [path.join(dir, 'sweep.js'), build, first]),
+                [path.join(dir, 'sweep.js'), build, first + ':' + step,
+                    argv.exclusion || '', argv.scale || '',
+                    argv.translation || ''],
+                // Let the children write their errors directly:
+                { stdio: ['ignore', 'pipe', 'inherit'] }),
             buffer = '',
             started,
             timer;
@@ -137,26 +147,30 @@ gulp.task('test:booleans', ['minify:acorn'], function(callback) {
                     results.push(result);
                 }
             });
-            watch(20000);
+            watch(120000);
         });
-        child.stderr.pipe(process.stderr);
         child.on('exit', function(code, signal) {
             clearTimeout(timer);
+            running--;
             if (signal) {
                 results.push({ label: started.label, op: started.op,
-                        timeout: true });
-                run(started.index + 1);
+                        index: started.index, timeout: true });
+                run(started.index + step);
             } else if (code) {
                 callback(new Error('The boolean sweep failed.'));
-            } else {
+            } else if (!running) {
                 finish();
             }
         });
     }
 
     function finish() {
-        // Key the results by label, operation and occurrence:
+        // Key the results by label, operation and occurrence, in the order
+        // of the cases:
         var current = {};
+        results.sort(function(a, b) {
+            return a.index - b.index;
+        });
         results.forEach(function(result) {
             var key = result.label + ' / ' + result.op;
             counts[key] = (counts[key] || 0) + 1;
@@ -165,7 +179,9 @@ gulp.task('test:booleans', ['minify:acorn'], function(callback) {
             current[key] = result.timeout ? { timeout: true }
                     : result.skipped || result.error
                         ? { skipped: result.skipped || result.error }
-                        : { stable: result.stable, wrong: result.wrong };
+                        : { stable: result.stable, wrong: result.wrong,
+                            movedWrong: result.movedWrong,
+                            nonPlanar: result.nonPlanar };
         });
         var baseline = fs.existsSync(baselineFile)
                 ? JSON.parse(fs.readFileSync(baselineFile, 'utf8')) : {},
@@ -173,12 +189,16 @@ gulp.task('test:booleans', ['minify:acorn'], function(callback) {
             better = [],
             stable = 0,
             wrong = 0,
+            movedWrong = 0,
+            nonPlanar = 0,
             timeouts = 0;
         Object.keys(current).forEach(function(key) {
             var entry = current[key],
                 base = baseline[key];
             stable += entry.stable || 0;
             wrong += entry.wrong || 0;
+            movedWrong += entry.movedWrong || 0;
+            nonPlanar += entry.nonPlanar || 0;
             timeouts += entry.timeout ? 1 : 0;
             if (base) {
                 var change = entry.timeout ? base.timeout ? 0 : -1
@@ -193,11 +213,42 @@ gulp.task('test:booleans', ['minify:acorn'], function(callback) {
         });
         console.log('Boolean sweep: ' + results.length + ' cases, '
                 + stable + ' stable results under tiny moves, ' + wrong
-                + ' wrongly filled points, ' + timeouts + ' timeouts. '
+                + ' wrongly filled points, ' + movedWrong
+                + ' in the results of the tiny moves, ' + nonPlanar
+                + ' graphs that are not planar, ' + timeouts + ' timeouts. '
                 + better.length + ' better than the baseline, ' + worse.length
                 + ' worse.');
+        // The points close to the outlines, per multiple of epsilon:
+        ['near', 'movedNear'].forEach(function(name) {
+            var sums = {};
+            results.forEach(function(result) {
+                Object.keys(result[name] || {}).forEach(function(factor) {
+                    var sum = sums[factor] = sums[factor] || [0, 0];
+                    sum[0] += result[name][factor][0];
+                    sum[1] += result[name][factor][1];
+                });
+            });
+            console.log((name === 'near' ? 'Close to the outlines'
+                    : 'Close to the outlines of the tiny moves')
+                    + ': ' + Object.keys(sums).map(function(factor) {
+                        return sums[factor][0] + ' of ' + sums[factor][1]
+                                + ' wrong at ' + factor + ' epsilon';
+                    }).join(', ') + '.');
+        });
         worse.forEach(function(line) {
             console.log('Worse: ' + line);
+        });
+        results.forEach(function(result) {
+            if (result.wrong || result.movedWrong) {
+                console.log('Wrong: ' + result.label + ' / ' + result.op
+                        + ': ' + result.wrong + ', in the results of the tiny'
+                        + ' moves: ' + result.movedWrong);
+            }
+            if (result.nonPlanar) {
+                console.log('Not planar: ' + result.label + ' / ' + result.op
+                        + ': ' + result.nonPlanar + ', '
+                        + JSON.stringify(result.repro));
+            }
         });
         if (argv.update) {
             fs.writeFileSync(baselineFile,
@@ -211,7 +262,8 @@ gulp.task('test:booleans', ['minify:acorn'], function(callback) {
         }
     }
 
-    run(0);
+    for (var i = 0; i < step; i++)
+        run(i);
 });
 
 gulp.task('test:browser', ['minify:acorn'], function() {
