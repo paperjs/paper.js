@@ -543,6 +543,36 @@ test('Selections are drawn with a line width of 1', function() {
     path.remove();
 });
 
+test('ToolEvent#velocity and #elapsed', function() {
+    var tool = new Tool({ maxDistance: 10 }),
+        log = [];
+    // ToolEvent reads its values from the tool, so record them in the handler:
+    tool.onMouseDown = tool.onMouseDrag = tool.onMouseUp = function(event) {
+        log.push(event.type + ' ' + event.velocity + ' ' + event.elapsed);
+    };
+    function dispatch(type, point, time) {
+        view.dispatchMouseEvent(type, point, { time: time });
+    }
+    // Quarter seconds, so the times add up without rounding:
+    dispatch('mousedown', [0, 0], 1);
+    dispatch('mousemove', [10, 0], 1.25);
+    // Both steps that maxDistance adds share the speed of the report:
+    dispatch('mousemove', [30, 0], 1.5);
+    // No time passed:
+    dispatch('mousemove', [40, 0], 1.5);
+    // Since the last event, not since mousedown:
+    dispatch('mouseup', [50, 0], 1.75);
+    equals(log, [
+        'mousedown { x: 0, y: 0 } 0',
+        'mousedrag { x: 40, y: 0 } 0.25',
+        'mousedrag { x: 80, y: 0 } 0.25',
+        'mousedrag { x: 80, y: 0 } 0.25',
+        'mousedrag { x: 0, y: 0 } 0',
+        'mouseup { x: 40, y: 0 } 0.25'
+    ]);
+    tool.remove();
+});
+
 test('tool.eventInterval repeats mousedrag while the mouse is held (S5)', function(assert) {
     var done = assert.async(),
         tool = new Tool({ eventInterval: 10 }),

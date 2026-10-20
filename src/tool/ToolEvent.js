@@ -157,6 +157,44 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
     },
 
     /**
+     * The velocity of the mouse, in points per second: the distance it moved
+     * since the last tool event, divided by the time between them, so it
+     * points in the direction of the move, and its length is the speed. It
+     * stays even when the system misses a mouse report. The events that
+     * {@link Tool#maxDistance} adds along one move share its velocity, and the
+     * repeats of {@link Tool#eventInterval} have none. On mousedown, and when
+     * no time passed, it's zero.
+     *
+     * @bean
+     * @type Point
+     */
+    getVelocity: function() {
+        return this._velocity || this.tool._velocity.clone();
+    },
+
+    setVelocity: function(velocity) {
+        this._velocity = velocity;
+    },
+
+    /**
+     * The time since the last tool event, in seconds, measured between the
+     * reports of the mouse as {@link #velocity} is: the events that
+     * {@link Tool#maxDistance} adds along one move share it, and the repeats
+     * of {@link Tool#eventInterval} have the interval. It's zero on the first
+     * event.
+     *
+     * @bean
+     * @type Number
+     */
+    getElapsed: function() {
+        return this._elapsed != null ? this._elapsed : this.tool._elapsed;
+    },
+
+    setElapsed: function(elapsed) {
+        this._elapsed = elapsed;
+    },
+
+    /**
      * The number of times the mouse event was fired.
      *
      * @bean
