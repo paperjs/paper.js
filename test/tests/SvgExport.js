@@ -733,7 +733,7 @@ test('Export and import SVG shadows (#1003)', function() {
     equals(node.querySelector('path').getAttribute('filter'),
             'url(#' + filter.id + ')', 'filter reference');
     equals(primitives, ['feGaussianBlur', 'feOffset', 'feFlood', 'feComposite',
-            'feMerge'], 'primitives');
+            'feComposite'], 'primitives');
     // Canvas blurs with a standard deviation of half the shadow blur:
     equals(get('feGaussianBlur', 'stdDeviation'), '3', 'stdDeviation');
     equals([get('feOffset', 'dx'), get('feOffset', 'dy')], ['8', '-4'],
@@ -742,10 +742,11 @@ test('Export and import SVG shadows (#1003)', function() {
             ['#00ff00', '0.6'], 'color');
     // The region covers the stroke bounds from 18 to 62, moved by the offset,
     // and three standard deviations around them, from 9 to 79 and 5 to 71,
-    // relative to the bounds of the path from 20 to 60:
+    // in percent of the bounds of the path from 20 to 60, as Illustrator
+    // drops items with fractions:
     equals(['x', 'y', 'width', 'height'].map(function(name) {
         return filter.getAttribute(name);
-    }), ['-0.275', '-0.375', '1.75', '1.65'], 'region');
+    }), ['-27.5%', '-37.5%', '175%', '165%'], 'region');
     path.remove();
 
     var imported = project.importSVG(node).getItem({ class: Path });
@@ -772,7 +773,8 @@ test('Export and import SVG shadows (#1003)', function() {
     equals(imported.shadowOffset, new Point(5, 5), 'imported offset');
     project.activeLayer.removeChildren();
 
-    // Horizontal lines have no height, so their region is in user space:
+    // Horizontal lines have no height, which neither a relative region nor
+    // Illustrator handles, so their shadow is left out:
     new Path.Line({
         from: [20, 20],
         to: [60, 20],
@@ -781,10 +783,23 @@ test('Export and import SVG shadows (#1003)', function() {
         shadowColor: 'black',
         shadowOffset: [0, 5]
     });
-    filter = project.exportSVG().querySelector('filter');
-    equals(['x', 'y', 'width', 'height', 'filterUnits'].map(function(name) {
-        return filter.getAttribute(name);
-    }), ['20', '19', '40', '7', 'userSpaceOnUse'], 'region of a line');
+    node = project.exportSVG();
+    equals([node.querySelector('filter'),
+            node.querySelector('path').getAttribute('filter')], [null, null],
+            'no shadow on a line');
+    project.activeLayer.removeChildren();
+
+    // Strings break the lines around the definitions, as Illustrator ignores
+    // filters otherwise:
+    new Path.Rectangle({
+        point: [20, 20],
+        size: [40, 40],
+        fillColor: 'red',
+        shadowColor: 'black',
+        shadowOffset: [5, 5]
+    });
+    equals(/<defs>\n<filter [^]*<\/filter>\n<\/defs>\n/.test(
+            project.exportSVG({ asString: true })), true, 'line breaks');
     project.activeLayer.removeChildren();
 
     // Groups don't draw shadows, only their children:
