@@ -23,6 +23,7 @@
 
 ### Fixed
 
+- Document `Item#fullySelected`, which all items have, not only paths (#1687).
 - Type options objects from their documented options, such as those of
   `Item#hitTest()`, `#exportSVG()` and `#rasterize()`, so misspelled options are
   errors in TypeScript (#1666).
