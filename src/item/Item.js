@@ -417,6 +417,13 @@ new function() { // Injection scope for various item event handlers
         // Don't access _style directly so Path#getStyle() can be overridden for
         // CompoundPaths.
         this.getStyle().set(style);
+    },
+
+    // The styles that the item's style stands for, merged when read and set on
+    // all when written, see Style.merge() and Style.apply().
+    // @overridable
+    _getStyles: function(/* style, key, setting */) {
+        // None for plain items: their style is their own.
     }
 }, Base.each(['locked', 'visible', 'blendMode', 'opacity', 'guide'],
     // Produce getter/setters for properties. We need setters because we want to

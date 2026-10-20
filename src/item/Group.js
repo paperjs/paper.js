@@ -100,6 +100,15 @@ var Group = Item.extend(/** @lends Group# */{
             this.addChildren(Array.isArray(arg) ? arg : arguments);
     },
 
+    // Styles set on groups apply to their children, and read as theirs:
+    // @override
+    _getStyles: function() {
+        var children = this._children;
+        return children.length > 0 ? children.map(function(child) {
+            return child._style;
+        }) : null;
+    },
+
     _changed: function _changed(flags) {
         _changed.base.call(this, flags);
         if (flags & /*#=*/(ChangeFlag.CHILDREN | ChangeFlag.CLIPPING)) {
