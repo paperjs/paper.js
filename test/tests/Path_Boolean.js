@@ -1551,3 +1551,119 @@ test('#890: subtract at a scale of 1e6', function() {
     p.scale(1e6, new Point(0, 0));
     equals(cp.subtract(p).area / 1e12, area);
 });
+
+function testManyOperations(paths) {
+    // Each operation on many paths at once matches chaining it pairwise, with
+    // each of them as the path that it is called on:
+    ['unite', 'intersect', 'subtract', 'exclude'].forEach(function(operation) {
+        paths.forEach(function(path, i) {
+            var others = paths.slice(0, i).concat(paths.slice(i + 1)),
+                result = path[operation](others, { insert: false }),
+                chained = path;
+            others.forEach(function(other) {
+                chained = chained[operation](other, { insert: false });
+            });
+            var name = 'paths[' + i + '].' + operation + '(others)';
+            equals(result.area, chained.area, name + '.area');
+            compareBoolean(result, chained, name);
+        });
+    });
+}
+
+test('Boolean operations on many paths at once', function() {
+    // Overlaps:
+    testManyOperations([
+        new Path.Circle([100, 100], 50),
+        new Path.Circle([150, 100], 50),
+        new Path.Circle([125, 150], 50),
+        new Path.Rectangle([60, 60], [130, 40])
+    ]);
+    // Coincident edges:
+    testManyOperations([
+        new Path.Rectangle([0, 0], [100, 100]),
+        new Path.Rectangle([100, 0], [100, 100]),
+        new Path.Rectangle([0, 0], [100, 50]),
+        new Path.Rectangle([50, 50], [100, 100])
+    ]);
+    // Nested paths, and a compound path with a hole:
+    testManyOperations([
+        new Path.Rectangle([0, 0], [200, 200]),
+        new Path.Rectangle([25, 25], [150, 150]),
+        new Path.Circle([100, 100], 50),
+        new CompoundPath({
+            children: [
+                new Path.Circle([100, 100], 90),
+                new Path.Circle([100, 100], 30)
+            ]
+        })
+    ]);
+    // An even-odd operand that overlaps itself:
+    testManyOperations([
+        new CompoundPath({
+            children: [
+                new Path.Rectangle([0, 0], [100, 100]),
+                new Path.Rectangle([50, 50], [100, 100])
+            ],
+            fillRule: 'evenodd'
+        }),
+        new Path.Star([75, 75], 5, 30, 80),
+        new Path.Circle([120, 40], 40)
+    ]);
+});
+
+test('Boolean operations on many paths with one or none of them', function() {
+    var path1 = new Path.Rectangle([0, 0], [100, 100]),
+        path2 = new Path.Circle([100, 100], 50);
+    ['unite', 'intersect', 'subtract', 'exclude'].forEach(function(operation) {
+        equals(path1[operation]([path2]).pathData,
+                path1[operation](path2).pathData, operation + '([path2])');
+        equals(path1[operation]([]).pathData, path1[operation]().pathData,
+                operation + '([])');
+    });
+});
+
+test('Boolean operations on many paths with options.insert', function() {
+    // The result is inserted above the topmost of the paths that are siblings
+    // of the one that the operation is called on:
+    var layer = project.activeLayer,
+        path1 = new Path.Rectangle([0, 0], [200, 200]),
+        path2 = new Path.Rectangle([100, 100], [200, 200]),
+        path3 = new Path.Circle([200, 0], 100),
+        group = new Group();
+    for (var i = 0; i < 5; i++)
+        group.addChild(new Path.Circle([0, 200], 100 - i * 10));
+    path3.insertBelow(path2);
+    var result = path1.unite([path2, path3, group.lastChild]);
+    equals(result.parent, layer, 'result.parent');
+    equals(result.index, path2.index + 1, 'result.index');
+});
+
+test('#2094: unite many paths at once', function() {
+    // The sketch of the issue, with a seeded random walk: Five glyphs, moved
+    // 100 times. The area is the one of uniting them one by one:
+    var group = new Group([
+        'M226.18018,155.53123v-30.72623h9.49517v23.16272h14.81796v7.56351z',
+        'M253.19763,144.46498v0c0,-3.39399 1.14755,-6.19275 3.44264,-8.39627c2.28937,-2.1978 5.38289,-3.2967 9.28054,-3.2967v0c4.45855,0 7.82679,1.29063 10.10471,3.8719v0c1.8315,2.08333 2.74725,4.64742 2.74725,7.69229v0c0,3.42261 -1.1361,6.22995 -3.4083,8.42203c-2.2722,2.18635 -5.4115,3.27953 -9.4179,3.27953v0c-3.57714,0 -6.47034,-0.91003 -8.67958,-2.73008v0c-2.71291,-2.24931 -4.06936,-5.19687 -4.06936,-8.8427zM261.74843,144.43922v0c0,1.98603 0.4035,3.45409 1.21051,4.40418c0.80128,0.95009 1.8086,1.42513 3.02197,1.42513v0c1.23054,0 2.24072,-0.46646 3.03056,-1.39938c0.78983,-0.93864 1.18475,-2.44104 1.18475,-4.5072v0c0,-1.9288 -0.39778,-3.36538 -1.19334,-4.30974c-0.79556,-0.94437 -1.77999,-1.41655 -2.95329,-1.41655v0c-1.24771,0 -2.27506,0.47791 -3.08207,1.43372c-0.81273,0.96154 -1.21909,2.41815 -1.21909,4.36984z',
+        'M282.96232,155.53123v-22.26128h7.98418v3.64869c0.76694,-1.57967 1.55963,-2.66712 2.37808,-3.26235c0.81845,-0.58951 1.82864,-0.88427 3.03056,-0.88427v0c1.25915,0 2.63564,0.38919 4.12945,1.16758v0l-2.64422,6.07828c-1.0016,-0.41781 -1.79716,-0.62672 -2.38667,-0.62672v0c-1.11607,0 -1.98317,0.46074 -2.6013,1.38221v0c-0.87568,1.29922 -1.31353,3.73168 -1.31353,7.29737v0v7.46049z',
+        'M327.33035,145.55529v0.96154h-17.10161c0.15453,1.3679 0.52656,2.38953 1.11607,3.0649v0c0.82417,0.96154 1.90018,1.4423 3.22801,1.4423v0c0.83562,0 1.63118,-0.20891 2.38667,-0.62672v0c0.4636,-0.269 0.95867,-0.73832 1.48523,-1.40796v0l8.40486,0.78125c-1.28205,2.23214 -2.8331,3.8347 -4.65315,4.80768c-1.81433,0.97298 -4.41849,1.45947 -7.81248,1.45947v0c-2.94757,0 -5.26842,-0.41781 -6.96255,-1.25343c-1.68841,-0.8299 -3.08779,-2.14915 -4.19814,-3.95775c-1.11035,-1.8086 -1.66552,-3.93772 -1.66552,-6.38735v0c0,-3.47412 1.11321,-6.28719 3.33962,-8.4392c2.22641,-2.15201 5.30276,-3.22801 9.22903,-3.22801v0c3.18795,0 5.7034,0.48077 7.54634,1.4423c1.84867,0.96726 3.25377,2.36378 4.21531,4.18955c0.96154,1.8315 1.4423,4.21531 1.4423,7.15143zM310.2545,142.4303h8.40486c-0.1717,-1.64835 -0.61527,-2.82737 -1.3307,-3.53708c-0.72115,-0.71543 -1.66838,-1.07314 -2.84168,-1.07314v0c-1.35645,0 -2.44104,0.538 -3.25377,1.61401v0c-0.51511,0.66964 -0.84134,1.66838 -0.97871,2.99622z',
+        'M331.31386,155.53123v-22.26128h7.96701v3.25377c1.14469,-1.35645 2.30082,-2.32085 3.4684,-2.89319c1.16758,-0.57234 2.57554,-0.85851 4.22389,-0.85851v0c1.77426,0 3.17937,0.31193 4.21531,0.93578c1.03022,0.62958 1.87442,1.56822 2.53262,2.81593v0c1.34501,-1.45375 2.56696,-2.4439 3.66586,-2.97046c1.10462,-0.52083 2.4668,-0.78125 4.08653,-0.78125v0c2.39239,0 4.25823,0.70684 5.59751,2.12053c1.34501,1.41941 2.01751,3.6401 2.01751,6.66207v0v13.97661h-8.5508v-12.68026c0,-1.00732 -0.19746,-1.75423 -0.59237,-2.24072v0c-0.57234,-0.77266 -1.28491,-1.15899 -2.1377,-1.15899v0c-1.00732,0 -1.81719,0.36344 -2.4296,1.09031c-0.61241,0.72688 -0.91861,1.89446 -0.91861,3.50274v0v11.48692h-8.5508v-12.25959c0,-0.97871 -0.05723,-1.64262 -0.1717,-1.99175v0c-0.18315,-0.5609 -0.49794,-1.01305 -0.94437,-1.35645c-0.44643,-0.33768 -0.97012,-0.50652 -1.57108,-0.50652v0c-0.97871,0 -1.78285,0.36916 -2.41243,1.10748c-0.62958,0.73832 -0.94437,1.95455 -0.94437,3.64869v0v11.35815z'
+        ].map(function(pathData) {
+            return PathItem.create(pathData);
+        })),
+        paths = [],
+        seed = 1;
+
+    function random() {
+        seed = (seed * 16807) % 2147483647;
+        return (seed - 1) / 2147483646;
+    }
+
+    for (var i = 0; i < 100; i++) {
+        group.translate((0.5 - random()) * 100, (0.5 - random()) * 100);
+        group.children.forEach(function(path) {
+            paths.push(path.clone({ insert: false }));
+        });
+    }
+    equals(new CompoundPath().unite(paths).area, 76832.96358, null,
+            { tolerance: 1e-4 });
+});
