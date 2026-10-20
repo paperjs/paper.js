@@ -154,6 +154,34 @@ test('intersecting paths with applyMatrix = true / false', function() {
     test(Shape, false);
 });
 
+test('#intersects() with contained items (#1751)', function() {
+    var outer = new Path.Circle([100, 100], 50),
+        inner = new Path.Circle([100, 100], 20),
+        ring = new CompoundPath({
+            children: [new Path.Circle([300, 100], 50),
+                new Path.Circle([300, 100], 30)],
+            fillRule: 'evenodd'
+        }),
+        inHole = new Path.Circle([300, 100], 10),
+        inBand = new Path.Circle([300, 60], 5),
+        far = new Path.Circle([500, 100], 10),
+        // A compound path of which only the second child lies inside outer:
+        apart = new CompoundPath([new Path.Circle([500, 300], 10),
+            new Path.Circle([100, 100], 5)]),
+        shape = new Shape.Circle({ center: [100, 100], radius: 10 });
+    equals(outer.intersects(inner), true, 'outer contains inner');
+    equals(inner.intersects(outer), true, 'inner is contained by outer');
+    equals(ring.intersects(inHole), false, 'circle in the hole of a ring');
+    equals(inHole.intersects(ring), false, 'ring around a circle');
+    equals(ring.intersects(inBand), true, 'circle in the band of a ring');
+    equals(inBand.intersects(ring), true, 'ring containing a circle');
+    equals(outer.intersects(far), false, 'apart');
+    equals(outer.intersects(apart), true, 'one child contained');
+    equals(apart.intersects(outer), true, 'one child contained, reversed');
+    equals(outer.intersects(shape), true, 'shape contained');
+    equals(shape.intersects(outer), true, 'shape containing');
+});
+
 test('#904', function() {
     var path1 = new Path([
             [347.65684372173973, 270.4315945523045, 0, 0, 22.844385382059784, -25.115215946843847],

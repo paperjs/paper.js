@@ -294,6 +294,25 @@ test('Project#getItems() inside', function() {
     }, true);
 });
 
+test('Project#getItems() overlapping with a hole (#1751)', function() {
+    var ring = new CompoundPath({
+        children: [new Path.Circle([100, 100], 50),
+            new Path.Circle([100, 100], 30)],
+        fillRule: 'evenodd'
+    });
+    function isFound(rect) {
+        return paper.project.getItems({
+            class: CompoundPath,
+            overlapping: rect
+        }).length === 1;
+    }
+    // The ring's bounds contain these rectangles, but only the second one
+    // overlaps the ring itself:
+    equals(isFound(new Rectangle(95, 95, 10, 10)), false, 'in the hole');
+    equals(isFound(new Rectangle(95, 55, 10, 10)), true, 'in the band');
+    ring.remove();
+});
+
 test('Project#getItems() overlapping and inside with Shape, Raster and PointText (#1300)', function() {
     // The reported case:
     var shape = new Shape.Rectangle({

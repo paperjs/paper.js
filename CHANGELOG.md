@@ -30,6 +30,10 @@
 
 ### Changed
 
+- Make `Item#intersects()` check whether the items overlap, also when one
+  contains the other, as `Rectangle#intersects()` does, instead of only whether
+  their outlines cross, and use it in `getItems({ overlapping })` for items
+  whose bounds contain the rectangle (#1751).
 - Use `settings.hitTolerance` for the mouse events of items, such as
   `mouseenter` and `click`, which always hit-tested with a tolerance of 0
   (#1971).
