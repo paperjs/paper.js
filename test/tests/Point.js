@@ -42,6 +42,11 @@ test('new Point({ angle: 45, length: 20})', function() {
     equals(new Point({ angle: 40, length: 20 }), new Point(15.32089, 12.85575));
 });
 
+test('new Point({ angleInRadians: 1, length: 20 })', function() {
+    equals(new Point({ angleInRadians: 1, length: 20 }),
+            new Point(20 * Math.cos(1), 20 * Math.sin(1)));
+});
+
 test('new Point("10, 20")', function() {
     equals(new Point('10, 20'), new Point(10, 20));
     equals(new Point('10,20'), new Point(10, 20));
