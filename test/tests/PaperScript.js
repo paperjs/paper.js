@@ -200,6 +200,12 @@ test('PaperScript exports', function() {
         equals(function() {
             return [exports.a, exports.b, exports.x, exports.z];
         }, [1, new Point(2, 3), new Point(-2, -3), 2], 'export var a, b');
+        // Without semicolons:
+        exports = PaperScript.execute('export const big = new Point(1, 2) * 2\n'
+                + 'export function twice(a) { return a * 2 }', paper);
+        equals(function() {
+            return [exports.big, exports.twice(2)];
+        }, [new Point(2, 4), 4], 'without semicolons');
         var add = PaperScript.execute(
                 'export default function(a) { return a + 1; }', paper);
         equals(function() {
