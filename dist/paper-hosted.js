@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 08:08:07 2026 +0200
+ * Date: Tue Oct 20 08:14:41 2026 +0200
  *
  ***
  *
@@ -11373,14 +11373,13 @@ PathItem.inject(new function() {
 						if (!seg || !seg._path) {
 							seg = null;
 							branch = branches.pop();
-							if (branch) {
+							if (branch)
 								visited = branch.visited;
-								handleIn = branch.handleIn;
-							}
 						}
 					} while (branch && !isValid(seg));
 					if (!seg)
 						break;
+					handleIn = branch.handleIn;
 				}
 				var next = seg.getNext();
 				path.add(new Segment(seg._point, handleIn,
