@@ -45,6 +45,7 @@
 /*#*/ include('Shape.js');
 
 /*#*/ include('Curve.js');
+/*#*/ include('PathFlattener.js');
 /*#*/ include('CurveLocation.js');
 
 /*#*/ include('Style.js');

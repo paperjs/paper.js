@@ -48,6 +48,9 @@
 
 ### Fixed
 
+- Fix the points at offsets of `PathFlattener` on straight curves, such as
+  lines without handles, whose curve-time doesn't follow their length, which
+  placed them off everywhere but at the ends.
 - Fix SVG import of `<use>` elements, which now pass their styles and those of
   their parents on to the referenced element, as in SVG, instead of the styles
   of the place where it is defined, and skip circular references (#2090).
