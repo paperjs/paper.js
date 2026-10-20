@@ -25,6 +25,8 @@
 
 ### Fixed
 
+- Fix intersections of curves and lines at the curves' ends, which were lost
+  when the curve touched the line there, e.g. at a zero-length handle (#1848).
 - Fix the orientation of the results of `PathItem#exclude()` and
   `#subtract()`, whose parts of the second path kept its reversed orientation,
   giving them negative areas (#2064).
