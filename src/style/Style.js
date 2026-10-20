@@ -167,18 +167,14 @@ var Style = Base.extend(new function() {
         //   raw value is stored, and conversion only happens in the getter.
         fields[set] = function(value) {
             var owner = this._owner,
-                children = owner && owner._children,
-                applyToChildren = children && children.length > 0
-                    && !(owner instanceof CompoundPath);
-            // Only unify styles on children of Groups, excluding CompoundPaths.
-            if (applyToChildren) {
-                for (var i = 0, l = children.length; i < l; i++)
-                    children[i]._style[set](value);
-            }
+                // The styles the owner stands for, as a Group its children's:
+                styles = owner && owner._getStyles(this, key, true);
+            if (styles)
+                Style.apply(styles, key, value);
             // Always store selectedColor in item _values to make sure that
             // group selected bounds and position color is coherent whether it
             // has children or not when the value is set.
-            if ((key === 'selectedColor' || !applyToChildren)
+            if ((key === 'selectedColor' || !styles)
                     && key in this._defaults) {
                 var old = this._values[key];
                 if (old !== value) {
@@ -195,7 +191,7 @@ var Style = Base.extend(new function() {
                             value = Color._setOwner(value, owner,
                                     // Only provide a color-setter if the style
                                     // is to be applied to the children:
-                                    applyToChildren && set);
+                                    styles && set);
                         }
                     }
                     // NOTE: We do not convert the values to Colors in the
@@ -211,24 +207,11 @@ var Style = Base.extend(new function() {
 
         fields[get] = function(_dontMerge) {
             var owner = this._owner,
-                children = owner && owner._children,
-                applyToChildren = children && children.length > 0
-                    && !(owner instanceof CompoundPath),
+                styles = owner && owner._getStyles(this, key),
                 value;
-            // If the owner has children, walk through all of them and see if
-            // they all have the same style.
             // If true is passed for _dontMerge, don't merge children styles.
-            if (applyToChildren && !_dontMerge) {
-                for (var i = 0, l = children.length; i < l; i++) {
-                    var childValue = children[i]._style[get]();
-                    if (!i) {
-                        value = childValue;
-                    } else if (!Base.equals(value, childValue)) {
-                        // If there is another child with a different
-                        // style, the style is not defined:
-                        return undefined;
-                    }
-                }
+            if (styles && !_dontMerge) {
+                value = Style.merge(styles, key);
             } else if (key in this._defaults) {
                 var value = this._values[key];
                 if (value === undefined) {
@@ -252,7 +235,7 @@ var Style = Base.extend(new function() {
                 // different owner (e.g. resulting from `childValue` above).
                 // Only provide a color-setter if the style is to be applied to
                 // the children:
-                value = Color._setOwner(value, owner, applyToChildren && set);
+                value = Color._setOwner(value, owner, styles && set);
             }
             return value;
         };
@@ -284,6 +267,29 @@ var Style = Base.extend(new function() {
     Item.inject(item);
     return fields;
 }, /** @lends Style# */{
+    statics: {
+        // The value that all styles share for key, or undefined if they differ:
+        merge: function(styles, key) {
+            var get = 'get' + Base.capitalize(key),
+                value;
+            for (var i = 0, l = styles.length; i < l; i++) {
+                var other = styles[i][get]();
+                if (!i) {
+                    value = other;
+                } else if (!Base.equals(value, other)) {
+                    return undefined;
+                }
+            }
+            return value;
+        },
+
+        apply: function(styles, key, value) {
+            var set = 'set' + Base.capitalize(key);
+            for (var i = 0, l = styles.length; i < l; i++)
+                styles[i][set](value);
+        }
+    },
+
     set: function(style) {
         // If the passed style object is also a Style, clone its cloneable
         // fields rather than simply copying them.
