@@ -38,6 +38,9 @@
 
 ### Fixed
 
+- Fix SVG import of `<use>` elements, which now pass their styles and those of
+  their parents on to the referenced element, as in SVG, instead of the styles
+  of the place where it is defined, and skip circular references (#2090).
 - Divide the operands of boolean operations at all their intersections, also
   where they only touch, which makes the results of near-coincident geometry
   more stable, and ends the endless loop of #1849.

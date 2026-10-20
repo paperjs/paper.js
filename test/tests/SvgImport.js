@@ -495,6 +495,47 @@ test('Import SVG string with leading line-breaks', function() {
     }));
 });
 
+test('Import SVG <use> with the styles of its place (#2090)', function() {
+    function getStyles(content) {
+        var imported = paper.project.importSVG(
+                '<svg xmlns="http://www.w3.org/2000/svg"'
+                + ' xmlns:xlink="http://www.w3.org/1999/xlink">' + content
+                + '</svg>', { insert: false });
+        return imported.getItems({ class: PathItem }).map(function(path) {
+            // Browsers produce colors with alpha, so compare the CSS values:
+            var fill = path.fillColor,
+                stroke = path.strokeColor;
+            return [fill && fill.toCSS(true), stroke && stroke.toCSS(true)];
+        });
+    }
+
+    // As in SVG, the referenced element inherits the styles of the <use>
+    // element, and its own styles win:
+    var defs = '<defs><path id="path" d="M0,0h10v10z"/>'
+            + '<path id="blue" d="M0,0h10v10z" fill="blue"/></defs>';
+    equals(getStyles(defs + '<g fill="red" stroke="red">'
+            + '<use xlink:href="#path"/></g>'),
+            [['#ff0000', '#ff0000']], 'styles of the parent');
+    equals(getStyles(defs + '<use xlink:href="#path" fill="green"/>'),
+            [['#008000', null]], 'styles of the <use> element');
+    equals(getStyles(defs + '<use xlink:href="#path"/>'),
+            [['#000000', null]], 'the default fill');
+    equals(getStyles(defs + '<g fill="red"><use xlink:href="#blue"/></g>'),
+            [['#0000ff', null]], 'own styles');
+    equals(getStyles(defs + '<g fill="red"><use xlink:href="#path"/></g>'
+            + '<g fill="green"><use xlink:href="#path"/></g>'),
+            [['#ff0000', null], ['#008000', null]], 'two places');
+    // Circular references are skipped, directly and through other elements:
+    var path = '<path d="M0,0h10v10z"/>';
+    equals(getStyles('<defs><g id="a">' + path + '<use xlink:href="#a"/></g>'
+            + '</defs><use xlink:href="#a"/>'),
+            [['#000000', null]], 'circular reference');
+    equals(getStyles('<defs><g id="a">' + path + '<use xlink:href="#b"/></g>'
+            + '<g id="b"><use xlink:href="#a"/></g></defs>'
+            + '<use xlink:href="#a"/>'),
+            [['#000000', null]], 'indirect circular reference');
+});
+
 test('Import SVG with references to later definitions (#1146, #1884)', function() {
     function importWith(content) {
         return paper.project.importSVG('<svg xmlns="http://www.w3.org/2000/svg"'
