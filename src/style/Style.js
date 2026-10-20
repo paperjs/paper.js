@@ -390,7 +390,7 @@ var Style = Base.extend(new function() {
 
     /**
      * @bean
-     * @private
+     * @type String
      * @deprecated use {@link #fontFamily} instead.
      */
     getFont: '#getFontFamily',

@@ -23,8 +23,9 @@ classes.forEach(cls => {
     // Store comment using class tag as description.
     cls.comment = formatComment(cls.comment, 'class');
 
-    // Build a filter for deprecated or inherited methods or properties.
-    const filter = it => !it.deprecated && it.memberOf == cls.alias && !it.isNamespace;
+    // Build a filter for inherited methods or properties. Deprecated ones are
+    // kept, with their @deprecated tag, so code using them still compiles.
+    const filter = it => it.memberOf == cls.alias && !it.isNamespace;
 
     // Format properties.
     cls.properties = cls.properties
@@ -264,6 +265,7 @@ function formatComment(comment, descriptionTagName = 'desc', skipReturn = false)
     content += formatCommentTags(tags, 'see');
     content += formatCommentTags(tags, 'option');
     content += formatCommentTags(tags, 'param', it => it.name + ' - ' + it.desc);
+    content += formatCommentTags(tags, 'deprecated');
 
     if (!skipReturn) {
         content += formatCommentTags(tags, 'return', it => it.desc.trim().replace(/^\{|\}$/g, '').replace(/@([a-zA-Z]+)/, '$1'));

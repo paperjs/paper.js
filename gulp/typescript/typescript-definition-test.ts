@@ -1089,6 +1089,7 @@ view.responds('');
 //
 
 event.time;
+event.timeStamp;
 event.modifiers;
 event.modifiers.shift;
 event.preventDefault();
