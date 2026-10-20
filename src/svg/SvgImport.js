@@ -20,6 +20,9 @@ new function() {
     // index is option, and if passed, causes a lookup in a list.
 
     var definitions = {},
+        // The ids of the elements that <use> elements are importing, to skip
+        // circular references, as SVG does:
+        using = {},
         rootSize,
         // The absolute units of CSS in px:
         units = { 'in': 96, pt: 96 / 72, pc: 96 / 6, cm: 96 / 2.54,
@@ -291,22 +294,27 @@ new function() {
             // SymbolItem clipping, but perhaps it should?
             var id = (getValue(node, 'href', true) || '').substring(1),
                 definition = getDefinitionById(id, options),
-                point = getPoint(node);
-            return definition
-                    ? definition instanceof SymbolDefinition
-                        // When placing symbols, we need to take both point and
-                        // matrix into account. place() does the right thing:
-                        ? definition.place(point)
-                        // Rasters are only positioned once their image has
-                        // loaded, which their clones would miss, so import
-                        // their <image> again:
-                        : definition instanceof Raster
-                            ? importNode(getSandbox().ownerDocument
-                                .getElementById(id), options, false)
-                                .translate(point)
-                        // A normal item: Clone and translate it.
-                        : definition.clone().translate(point)
-                    : null;
+                point = getPoint(node),
+                item = null;
+            if (definition instanceof SymbolDefinition) {
+                // When placing symbols, we need to take both point and matrix
+                // into account. place() does the right thing:
+                item = definition.place(point);
+            } else if (definition && !using[id]) {
+                // Import other items again in place, as they inherit the styles
+                // of the <use> element instead of where they are defined, and
+                // as rasters are only positioned once their image has loaded,
+                // which clones would miss:
+                using[id] = true;
+                try {
+                    item = importNode(getSandbox().ownerDocument
+                            .getElementById(id), options, false)
+                            .translate(point);
+                } finally {
+                    delete using[id];
+                }
+            }
+            return item;
         },
 
         // https://www.w3.org/TR/SVG/shapes.html#InterfaceSVGCircleElement
@@ -626,10 +634,8 @@ new function() {
             styles = {
                 node: DomElement.getStyles(node) || {},
                 // Do not check for inheritance if this is root, to make the
-                // default SVG settings stick. Also detect defs parents, of
-                // which children need to explicitly inherit their styles.
-                parent: !isRoot && !/^defs$/i.test(parent.tagName)
-                        && DomElement.getStyles(parent) || {}
+                // default SVG settings stick.
+                parent: !isRoot && DomElement.getStyles(parent) || {}
             };
         // jsdom doesn't compute SVG styles, so start the root with SVG's initial
         // fill, as it differs from the default in Paper.js:
