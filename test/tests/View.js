@@ -72,6 +72,14 @@ test('view.fitBounds() with empty rectangles', function() {
     view.matrix = new Matrix();
 });
 
+test('view.bounds = rect', function() {
+    // The view is 100x100, so a 200x100 rectangle fits by its width:
+    view.matrix = new Matrix();
+    view.bounds = new Rectangle(0, 0, 200, 100);
+    equals(view.bounds, new Rectangle(0, -50, 200, 200));
+    view.matrix = new Matrix();
+});
+
 test('view.zoom with values that aren\'t positive numbers (#1433)', function() {
     view.zoom = 2;
     [0, -1, NaN, Infinity].forEach(function(zoom) {
