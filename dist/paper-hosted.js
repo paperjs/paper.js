@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 20:44:21 2026 +0200
+ * Date: Tue Oct 20 20:51:53 2026 +0200
  *
  ***
  *
@@ -780,6 +780,7 @@ var PaperScope = Base.extend({
 			applyMatrix: true,
 			insertItems: true,
 			handleSize: 4,
+			segmentSize: null,
 			hitTolerance: 0,
 			scaleStrokes: false
 		});
@@ -10044,25 +10045,25 @@ var Path = PathItem.extend({
 }),
 new function() {
 
-	function drawHandles(ctx, segments, matrix, size) {
-		if (size <= 0) return;
-
-		var half = size / 2,
-			miniSize = size - 2,
-			miniHalf = half - 1,
+	function drawHandles(ctx, segments, matrix, handleSize, segmentSize) {
+		var handleHalf = handleSize / 2,
+			width = segmentSize.width,
+			height = segmentSize.height,
+			halfWidth = width / 2,
+			halfHeight = height / 2,
 			coords = new Array(6),
 			pX, pY;
 
 		function drawHandle(index) {
 			var hX = coords[index],
 				hY = coords[index + 1];
-			if (pX != hX || pY != hY) {
+			if (handleSize > 0 && (pX != hX || pY != hY)) {
 				ctx.beginPath();
 				ctx.moveTo(pX, pY);
 				ctx.lineTo(hX, hY);
 				ctx.stroke();
 				ctx.beginPath();
-				ctx.arc(hX, hY, half, 0, Math.PI * 2, true);
+				ctx.arc(hX, hY, handleHalf, 0, Math.PI * 2, true);
 				ctx.fill();
 			}
 		}
@@ -10077,11 +10078,15 @@ new function() {
 				drawHandle(2);
 			if (selection & 4)
 				drawHandle(4);
-			ctx.fillRect(pX - half, pY - half, size, size);
-			if (miniSize > 0 && !(selection & 1)) {
+			if (width <= 0 || height <= 0)
+				continue;
+			ctx.fillRect(pX - halfWidth, pY - halfHeight, width, height);
+			if (width > 2 && height > 2
+					&& !(selection & 1)) {
 				var fillStyle = ctx.fillStyle;
 				ctx.fillStyle = '#ffffff';
-				ctx.fillRect(pX - miniHalf, pY - miniHalf, miniSize, miniSize);
+				ctx.fillRect(pX - halfWidth + 1, pY - halfHeight + 1,
+						width - 2, height - 2);
 				ctx.fillStyle = fillStyle;
 			}
 		}
@@ -10203,7 +10208,10 @@ new function() {
 			ctx.beginPath();
 			drawSegments(ctx, this, matrix);
 			ctx.stroke();
-			drawHandles(ctx, this._segments, matrix, paper.settings.handleSize);
+			var settings = paper.settings;
+			drawHandles(ctx, this._segments, matrix, settings.handleSize,
+					new Size(Base.pick(settings.segmentSize,
+						settings.handleSize)));
 		}
 	};
 },

@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 20:44:21 2026 +0200
+ * Date: Tue Oct 20 20:51:53 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -3751,6 +3751,10 @@ declare namespace paper {
          *     (Note that not all items can set this to `false`)
          * @option [settings.handleSize=4] {Number} the size of the curve handles
          *     when drawing selections
+         * @option [settings.segmentSize=null] {Size} the size of the segments
+         *     when drawing selections, also as a number for squares, or `null` to
+         *     use `settings.handleSize`, e.g. with `handleSize: 0` to only draw the
+         *     segments and not their handles
          * @option [settings.hitTolerance=0] {Number} the default tolerance for hit-
          *     tests, when no value is specified
          * @option [settings.scaleStrokes=false] {Boolean} controls whether applying
