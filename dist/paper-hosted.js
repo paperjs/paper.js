@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 22:51:46 2026 +0200
+ * Date: Tue Oct 20 23:16:55 2026 +0200
  *
  ***
  *
@@ -4981,17 +4981,21 @@ new function() {
 				}
 			}
 		}
-		if (style.hasShadow()) {
-			var pixelRatio = param.pixelRatio || 1,
-				mx = viewMatrix._shiftless().prepend(
-					new Matrix().scale(pixelRatio, pixelRatio)),
-				blur = mx.transform(new Point(style.getShadowBlur(), 0)),
-				offset = mx.transform(this.getShadowOffset());
-			ctx.shadowColor = style.getShadowColor().toCanvasStyle(ctx);
-			ctx.shadowBlur = blur.getLength();
-			ctx.shadowOffsetX = offset.x;
-			ctx.shadowOffsetY = offset.y;
-		}
+		if (style.hasShadow() && !param.dontShadow)
+			this._setShadow(ctx, param, viewMatrix);
+	},
+
+	_setShadow: function(ctx, param, viewMatrix) {
+		var style = this._style,
+			pixelRatio = param.pixelRatio || 1,
+			mx = viewMatrix._shiftless().prepend(
+				new Matrix().scale(pixelRatio, pixelRatio)),
+			blur = mx.transform(new Point(style.getShadowBlur(), 0)),
+			offset = mx.transform(this.getShadowOffset());
+		ctx.shadowColor = style.getShadowColor().toCanvasStyle(ctx);
+		ctx.shadowBlur = blur.getLength();
+		ctx.shadowOffsetX = offset.x;
+		ctx.shadowOffsetY = offset.y;
 	},
 
 	draw: function(ctx, param, parentStrokeMatrix) {
@@ -5019,16 +5023,20 @@ new function() {
 			opacity = Numerical.clamp(this._opacity, 0, 1),
 			normalBlend = blendMode === 'normal',
 			nativeBlend = BlendMode.nativeModes[blendMode],
-			direct = normalBlend && opacity === 1 && !this._isolated
-					|| param.dontStart
-					|| param.clip
+			style = this._style,
+			shadow = (normalBlend || nativeBlend)
+					&& style.getShadowColor(true) && style.hasShadow()
+					&& style.hasFill() && style.hasStroke(),
+			direct = !shadow && (normalBlend && opacity === 1
+						&& !this._isolated
 					|| (nativeBlend || normalBlend && opacity < 1)
-						&& this._canComposite(),
+						&& this._canComposite())
+					|| param.dontStart
+					|| param.clip,
 			pixelRatio = param.pixelRatio || 1,
 			mainCtx, itemOffset, prevOffset;
 		if (!direct) {
-			var bounds = this.getStrokeBounds(viewMatrix),
-				style = this._style;
+			var bounds = this.getStrokeBounds(viewMatrix);
 			if (style.getShadowColor(true)) {
 				var mx = viewMatrix._shiftless(),
 					blur = mx.transform(
@@ -5086,15 +5094,23 @@ new function() {
 			if (offset)
 				ctx.translate(-offset.x, -offset.y);
 		}
-		this._draw(ctx, param, viewMatrix, strokeMatrix);
+		this._draw(ctx, shadow && !direct
+				? param.extend({ dontShadow: true }) : param,
+				viewMatrix, strokeMatrix);
 		ctx.restore();
 		matrices.pop();
 		if (param.clip && !param.dontFinish) {
 			ctx.clip(this.getFillRule());
 		}
 		if (!direct) {
+			if (shadow) {
+				mainCtx.save();
+				this._setShadow(mainCtx, param, viewMatrix);
+			}
 			BlendMode.process(blendMode, ctx, mainCtx, opacity,
 					itemOffset.subtract(prevOffset).multiply(pixelRatio));
+			if (shadow)
+				mainCtx.restore();
 			CanvasProvider.release(ctx);
 			param.offset = prevOffset;
 		}
