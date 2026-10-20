@@ -287,6 +287,7 @@ new paper.Project({} as HTMLCanvasElement);
 new paper.Project('');
 new paper.Project(sizeLike);
 project.view;
+project.bounds;
 project.currentStyle;
 project.index;
 project.layers;
@@ -1087,7 +1088,7 @@ view.responds('');
 // Event
 //
 
-event.timeStamp;
+event.time;
 event.modifiers;
 event.modifiers.shift;
 event.preventDefault();
@@ -1141,6 +1142,8 @@ toolEvent.lastPoint;
 toolEvent.downPoint;
 toolEvent.middlePoint;
 toolEvent.delta;
+toolEvent.velocity;
+toolEvent.elapsed;
 toolEvent.count;
 toolEvent.item;
 toolEvent.toString();
