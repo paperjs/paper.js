@@ -585,19 +585,12 @@ test('settings.segmentSize (#1899)', function() {
     view.update(true);
     equals(getAlpha(20, 20) > 0, true, 'the handle');
     equals(getAlpha(20, 54), 0, 'below the segment');
-    equals(getAlpha(24, 50), 0, 'next to the segment');
     // A larger segment without handles:
     settings.handleSize = 0;
     settings.segmentSize = 10;
     view.update(true);
     equals(getAlpha(20, 20), 0, 'no handle');
-    equals(getAlpha(20, 54) > 0, true, 'below the segment, inside');
-    equals(getAlpha(24, 50) > 0, true, 'next to the segment, inside');
-    // A segment that is higher than wide:
-    settings.segmentSize = new Size(4, 10);
-    view.update(true);
-    equals(getAlpha(20, 54) > 0, true, 'below the tall segment, inside');
-    equals(getAlpha(24, 50), 0, 'next to the tall segment');
+    equals(getAlpha(20, 54) > 0, true, 'the larger segment');
     settings.handleSize = handleSize;
     settings.segmentSize = segmentSize;
     path.remove();

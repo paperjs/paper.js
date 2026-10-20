@@ -2221,10 +2221,9 @@ new function() { // Scope for drawing
     function drawHandles(ctx, segments, matrix, handleSize, segmentSize) {
         // Only draw the handles and segments whose size is positive.
         var handleHalf = handleSize / 2,
-            width = segmentSize.width,
-            height = segmentSize.height,
-            halfWidth = width / 2,
-            halfHeight = height / 2,
+            half = segmentSize / 2,
+            miniSize = segmentSize - 2,
+            miniHalf = half - 1,
             coords = new Array(6),
             pX, pY;
 
@@ -2252,18 +2251,16 @@ new function() { // Scope for drawing
                 drawHandle(2);
             if (selection & /*#=*/SegmentSelection.HANDLE_OUT)
                 drawHandle(4);
-            if (width <= 0 || height <= 0)
+            if (segmentSize <= 0)
                 continue;
             // Draw a rectangle at segment.point:
-            ctx.fillRect(pX - halfWidth, pY - halfHeight, width, height);
-            // If the point is not selected, draw a white rectangle that is 1px
+            ctx.fillRect(pX - half, pY - half, segmentSize, segmentSize);
+            // If the point is not selected, draw a white square that is 1px
             // smaller on all sides, but only draw it if size is big enough.
-            if (width > 2 && height > 2
-                    && !(selection & /*#=*/SegmentSelection.POINT)) {
+            if (miniSize > 0 && !(selection & /*#=*/SegmentSelection.POINT)) {
                 var fillStyle = ctx.fillStyle;
                 ctx.fillStyle = '#ffffff';
-                ctx.fillRect(pX - halfWidth + 1, pY - halfHeight + 1,
-                        width - 2, height - 2);
+                ctx.fillRect(pX - miniHalf, pY - miniHalf, miniSize, miniSize);
                 ctx.fillStyle = fillStyle;
             }
         }
@@ -2407,8 +2404,7 @@ new function() { // Scope for drawing
             ctx.stroke();
             var settings = paper.settings;
             drawHandles(ctx, this._segments, matrix, settings.handleSize,
-                    new Size(Base.pick(settings.segmentSize,
-                        settings.handleSize)));
+                    Base.pick(settings.segmentSize, settings.handleSize));
         }
     };
 },

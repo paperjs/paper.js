@@ -5,8 +5,8 @@
 ### Added
 
 - Add `settings.segmentSize`, the size of the segments when drawing selections,
-  as a `Size` or a number, next to `settings.handleSize` for their handles,
-  which it defaults to (#1899).
+  next to `settings.handleSize` for their handles, which it defaults to
+  (#1899).
 - Add `angleInRadians` to the object literals that create points, next to
   `angle`, e.g. `new Point({ length: 10, angleInRadians: Math.PI / 2 })` (#562).
 - Add `Project#hasChanges()`, which tells whether changes were logged since the
