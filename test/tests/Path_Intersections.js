@@ -444,3 +444,17 @@ test('#1848', function() {
         { point: { x: 350, y: 0 }, index: 1, time: 1 }
     ]);
 });
+
+test('#1387: crossings at mirror-symmetric joints', function() {
+    // The rounded ends of the capsules meet the straight sides at their
+    // joints, where both crossings must be found as such:
+    var capsule = 'l-29.96756,1.39482c0,0 -14.98378,0.69741 -14.28637,15.68119'
+            + 'c0.69741,14.98378 15.68119,14.28637 15.68119,14.28637'
+            + 'l29.96756,-1.39482c0,0 14.98378,-0.69741 14.28637,-15.68119'
+            + 'c-0.69741,-14.98378 -15.68119,-14.28637 -15.68119,-14.28637z';
+    var path1 = new Path('M16.24437,-132.7183' + capsule);
+    var path2 = new Path('M46.21193,-134.11312' + capsule);
+    equals(path2.getIntersections(path1).map(function(location) {
+        return location.isCrossing();
+    }), [true, true]);
+});
