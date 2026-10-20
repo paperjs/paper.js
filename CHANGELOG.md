@@ -28,6 +28,9 @@
 
 ### Fixed
 
+- Fix `Curve#classify()` reporting points of inflection, cusps and loops at the
+  very ends of curves, which made boolean operations miss crossings at those
+  vertices (#1879, #1387).
 - Fix PaperScript's compound assignments of properties, such as
   `array[index()] += 1`, which evaluated their object and key twice.
 - Fix PaperScript with a current Acorn provided as `self.acorn`, which parses
