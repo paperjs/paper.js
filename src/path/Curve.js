@@ -2010,6 +2010,14 @@ new function() { // Scope for bezier intersection using fat-line clipping
         // Solve it for y = 0. We need to include t = 0, 1 and let addLocation()
         // do the filtering, to catch important edge cases.
         Curve.solveCubic(rv, 1, 0, roots, 0, 1);
+        // The ends of the curve are on the line if their rotated y is about 0,
+        // even when the rounding of the rotation keeps solveCubic() from
+        // finding them, e.g. as double roots at a zero-length handle (#1848):
+        var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON;
+        if (Math.abs(rv[1]) < epsilon)
+            roots.push(0);
+        if (Math.abs(rv[7]) < epsilon)
+            roots.push(1);
         return roots;
     }
 
