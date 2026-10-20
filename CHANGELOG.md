@@ -23,6 +23,9 @@
 
 ### Fixed
 
+- Type the setters of point, size, rectangle and color properties with the
+  values they accept, such as `item.position = [10, 20]` and
+  `item.fillColor = 'red'`. The typings now need TypeScript 4.3 (#1665).
 - Handle the mouse events of `View#dispatchMouseEvent()` also outside the
   view's bounds, since the host decides which events belong to its drawing
   surface.
