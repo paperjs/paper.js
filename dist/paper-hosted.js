@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 07:37:39 2026 +0200
+ * Date: Tue Oct 20 07:54:35 2026 +0200
  *
  ***
  *
@@ -13521,23 +13521,46 @@ var View = Base.extend(Emitter, {
 	},
 
 	getPixelSize: function(size) {
-		var element = this._element,
+		var agent = paper.agent,
+			element = this._element,
+			ctx,
 			pixels;
-		if (element) {
+		if (element && agent && agent.firefox) {
 			var parent = element.parentNode,
 				temp = document.createElement('div');
 			temp.style.fontSize = size;
 			parent.appendChild(temp);
 			pixels = parseFloat(DomElement.getStyles(temp).fontSize);
 			parent.removeChild(temp);
+		} else if (ctx = this._context || CanvasProvider.getContext(1, 1)) {
+			var prevFont = ctx.font;
+			ctx.font = size + ' serif';
+			pixels = parseFloat(ctx.font);
+			ctx.font = prevFont;
+			if (ctx !== this._context)
+				CanvasProvider.release(ctx);
 		} else {
 			pixels = parseFloat(size);
 		}
 		return pixels;
 	},
 
-	getTextWidth: function(font, lines) {
-		return 0;
+	getTextWidth: function(font, lines, letterSpacing) {
+		var ctx = this._context || CanvasProvider.getContext(1, 1),
+			width = 0;
+		if (ctx) {
+			var prevFont = ctx.font,
+				prevLetterSpacing = ctx.letterSpacing;
+			ctx.font = font;
+			ctx.letterSpacing = letterSpacing;
+			for (var i = 0, l = lines.length; i < l; i++)
+				width = Math.max(width, ctx.measureText(lines[i]).width);
+			ctx.font = prevFont;
+			ctx.letterSpacing = prevLetterSpacing;
+			if (ctx !== this._context)
+				CanvasProvider.release(ctx);
+		}
+		return width;
 	}
 }, Base.each(['rotate', 'scale', 'shear', 'skew'], function(key) {
 	var rotate = key === 'rotate';
@@ -14133,35 +14156,6 @@ var CanvasView = View.extend({
 
 	getContext: function() {
 		return this._context;
-	},
-
-	getPixelSize: function getPixelSize(size) {
-		var agent = paper.agent,
-			pixels;
-		if (agent && agent.firefox) {
-			pixels = getPixelSize.base.call(this, size);
-		} else {
-			var ctx = this._context,
-				prevFont = ctx.font;
-			ctx.font = size + ' serif';
-			pixels = parseFloat(ctx.font);
-			ctx.font = prevFont;
-		}
-		return pixels;
-	},
-
-	getTextWidth: function(font, lines, letterSpacing) {
-		var ctx = this._context,
-			prevFont = ctx.font,
-			prevLetterSpacing = ctx.letterSpacing,
-			width = 0;
-		ctx.font = font;
-		ctx.letterSpacing = letterSpacing;
-		for (var i = 0, l = lines.length; i < l; i++)
-			width = Math.max(width, ctx.measureText(lines[i]).width);
-		ctx.font = prevFont;
-		ctx.letterSpacing = prevLetterSpacing;
-		return width;
 	},
 
 	update: function(force) {
