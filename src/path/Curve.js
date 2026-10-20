@@ -545,6 +545,9 @@ var Curve = Base.extend(/** @lends Curve# */{
 
     // TODO: Remove in 1.0.0? (deprecated January 2016):
     /**
+     * @param {Number} [offset]
+     * @param {Boolean} [isTime]
+     * @return {Curve}
      * @deprecated use use {@link #divideAt(offset)} or
      * {@link #divideAtTime(time)} instead.
      */
@@ -555,6 +558,9 @@ var Curve = Base.extend(/** @lends Curve# */{
 
     // TODO: Remove in 1.0.0? (deprecated January 2016):
     /**
+     * @param {Number} [offset]
+     * @param {Boolean} [isTime]
+     * @return {Path}
      * @deprecated use use {@link #splitAt(offset)} or
      * {@link #splitAtTime(time)} instead.
      */
@@ -1156,7 +1162,11 @@ statics: /** @lends Curve */{
 
     // TODO: Remove in 1.0.0? (deprecated January 2016):
     /**
-     * @deprecated use use {@link #getTimeOf(point)} instead.
+     * @function
+     * @param {Number} offset
+     * @param {Number} [start]
+     * @return {Number}
+     * @deprecated use use {@link #getTimeAt(offset[, start])} instead.
      */
     getParameterAt: '#getTimeAt',
 
@@ -1224,6 +1234,9 @@ statics: /** @lends Curve */{
 
     // TODO: Remove in 1.0.0? (deprecated January 2016):
     /**
+     * @function
+     * @param {Point} point
+     * @return {Number}
      * @deprecated use use {@link #getTimeOf(point)} instead.
      */
     getParameterOf: '#getTimeOf',

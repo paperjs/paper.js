@@ -1100,6 +1100,9 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     /**
+     * @param {Number} index
+     * @param {Number} [time]
+     * @return {Path}
      * @deprecated use use {@link #splitAt(offset)} instead.
      */
     split: function(index, time) {

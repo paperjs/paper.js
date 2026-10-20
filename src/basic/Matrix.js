@@ -503,14 +503,23 @@ var Matrix = Base.extend(/** @lends Matrix# */{
     },
 
     /**
+     * @function
+     * @param {Matrix} matrix
+     * @return {Matrix}
      * @deprecated use {@link #append(matrix)} instead.
      */
     concatenate: '#append',
     /**
+     * @function
+     * @param {Matrix} matrix
+     * @return {Matrix}
      * @deprecated use {@link #prepend(matrix)} instead.
      */
     preConcatenate: '#prepend',
     /**
+     * @function
+     * @param {Matrix} matrix
+     * @return {Matrix}
      * @deprecated use {@link #appended(matrix)} instead.
      */
     chain: '#appended',
