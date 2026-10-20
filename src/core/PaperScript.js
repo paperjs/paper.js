@@ -305,8 +305,51 @@ Base.exports.PaperScript = function() {
             }
         }
 
-        function handleExports(node) {
+        // The number of modules imported with named specifiers, for the names
+        // of the variables that hold them:
+        var moduleCount = 0;
+
+        // Static imports are turned into calls of __$import__(), which
+        // execute() binds to the loader in options.load:
+        function getImport(source) {
+            return '__$import__(' + JSON.stringify(source.value) + ')';
+        }
+
+        function handleModules(node) {
 			switch (node.type) {
+            case 'ImportDeclaration':
+                // `import x from 'm'` and `import * as x from 'm'` assign the
+                // module's exports, as `export default` replaces them, and
+                // `import { a, b as c } from 'm'` reads names from them:
+                var module = getImport(node.source),
+                    named = [];
+                var vars = node.specifiers.map(function(specifier) {
+                    var local = specifier.local.name;
+                    if (specifier.type === 'ImportSpecifier') {
+                        named.push(local + ' = ' + '__$module' + moduleCount
+                                + '__.' + specifier.imported.name);
+                        return null;
+                    }
+                    return local + ' = ' + module;
+                }).filter(Boolean);
+                if (named.length) {
+                    vars.push('__$module' + moduleCount + '__ = ' + module);
+                    Base.push(vars, named);
+                    moduleCount++;
+                }
+                replaceCode(node, vars.length
+                        ? 'var ' + vars.join(', ') + ';'
+                        : module + ';');
+                break;
+            case 'ExportAllDeclaration':
+                // `export * as x from 'm'` and `export * from 'm'`:
+                replaceCode(node, node.exported
+                        ? 'module.exports.' + node.exported.name + ' = '
+                            + getImport(node.source) + ';'
+                        : '(function(m) { for (var k in m) '
+                            + 'module.exports[k] = m[k]; })('
+                            + getImport(node.source) + ');');
+                break;
             case 'ExportDefaultDeclaration':
                 // Convert `export default` to `module.exports = ` statements:
                 replaceCode({
@@ -336,12 +379,14 @@ Base.exports.PaperScript = function() {
                         }).join(''));
                 } else if (specifiers) {
                     // `export { a, b as c }` exports the local names under
-                    // the exported ones:
+                    // the exported ones, and `export { a } from 'm'` those
+                    // of another module:
+                    var source = node.source && getImport(node.source) + '.';
                     var exports = specifiers.map(function(specifier) {
                         var local = specifier.local.name,
                             exported = specifier.exported.name;
-                        return 'module.exports.' + exported + ' = ' + local
-                                + '; ';
+                        return 'module.exports.' + exported + ' = '
+                                + (source || '') + local + '; ';
                     }).join('');
                     if (exports) {
                         replaceCode(node, exports);
@@ -375,7 +420,7 @@ Base.exports.PaperScript = function() {
                     handleOverloading(node, parent);
                 }
                 if (paperFeatures.moduleExports !== false) {
-                    handleExports(node);
+                    handleModules(node);
                 }
             }
         }
@@ -512,6 +557,13 @@ Base.exports.PaperScript = function() {
      * @option options.handlers {String[]} the names of further global
      *     handlers to export next to `onFrame`, `onResize` and the tool's
      *     handlers, for hosts that call them themselves
+     * @option options.load {Function} the loader for static `import`
+     *     statements, called with the specifier as written and the
+     *     `options.url` of the importing script, and returning the module's
+     *     exports. `import x` and `import * as x` receive all its exports,
+     *     as `export default` replaces them. The loader runs each module once
+     *     and handles cycles. Parsing `import` requires a current Acorn as
+     *     `self.acorn`
      *
      * @param {String} code the PaperScript code
      * @param {PaperScope} scope the scope for which the code is executed
@@ -563,8 +615,19 @@ Base.exports.PaperScript = function() {
                 }
             }
         }
-        expose({ __$__: __$__, $__: $__, paper: scope, tool: tool },
-                true);
+        // Static imports call the loader that the host passes, see
+        // handleModules():
+        var load = options && options.load,
+            url = options && options.url;
+        function __$import__(specifier) {
+            if (!load) {
+                throw new Error('Unable to import \'' + specifier + '\': no '
+                        + 'loader was passed to PaperScript.execute().');
+            }
+            return load(specifier, url);
+        }
+        expose({ __$__: __$__, $__: $__, __$import__: __$import__,
+                paper: scope, tool: tool }, true);
         expose(scope);
         // Add a fake `module.exports` object so PaperScripts can export things.
         code = 'var module = { exports: {} }; ' + code;
