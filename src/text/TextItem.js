@@ -14,10 +14,10 @@
  * @name TextItem
  *
  * @class The TextItem type allows you to create typography. Its functionality
- *     is inherited by different text item types such as {@link PointText}, and
- *     {@link AreaText} (coming soon). They each add a layer of functionality
- *     that is unique to their type, but share the underlying properties and
- *     functions that they inherit from TextItem.
+ *     is inherited by different text item types such as {@link PointText},
+ *     {@link PathText} and {@link AreaText}. They each add a layer of
+ *     functionality that is unique to their type, but share the underlying
+ *     properties and functions that they inherit from TextItem.
  *
  * @extends Item
  */
@@ -157,8 +157,8 @@ var TextItem = Item.extend(/** @lends TextItem# */{
     },
 
     /**
-     * The path that the text runs along ({@link PathText}). It guides the
-     * text and isn't drawn itself.
+     * The path that the text flows in ({@link AreaText}) or along
+     * ({@link PathText}). It guides the text and isn't drawn itself.
      *
      * @bean
      * @type PathItem
@@ -545,7 +545,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
                 result = [];
             for (var i = 0, l = pieces.length; i < l; i++) {
                 // Split pieces at their spaces, so each word can move. Pieces
-                // without any move whole:
+                // without any, as a soft hyphen's, move whole:
                 var piece = pieces[i],
                     parts = piece.content.split(/(\s+)/),
                     from = piece.start,
@@ -935,7 +935,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
     /**
      * Whether words are hyphenated at the ends of lines, and how: `true`, or `{
      * wordsLongerThan, afterFirst, beforeLast, limit, zone, capitalized }`.
-     * Kept for hosts.
+     * Kept for hosts: canvas text breaks only at soft hyphens.
      *
      * @name TextItem#hyphenation
      * @type Boolean|Object
@@ -951,6 +951,19 @@ var TextItem = Item.extend(/** @lends TextItem# */{
      * @type String
      * @values 'line', 'paragraph'
      * @default 'paragraph'
+     */
+
+    /**
+     * How the lines of a paragraph in an area are evened out: `'normal'`
+     * fills each line as far as it goes, `'balance'` makes them all about as
+     * long, and `'pretty'` balances the last four lines when the last one is
+     * shorter than a third of the one before. Both keep the paragraph's number
+     * of lines.
+     *
+     * @name TextItem#lineWrap
+     * @type String
+     * @values 'normal', 'balance', 'pretty'
+     * @default 'normal'
      */
 
     /**
