@@ -16,6 +16,9 @@
  * @class The Size object is used to describe the size or dimensions of
  * something, through its {@link #width} and {@link #height} properties.
  *
+ * Wherever a size is the only argument of a function, it can also be passed
+ * as two numbers, e.g. `size.multiply(2, 3)`.
+ *
  * @classexample
  * // Create a size that is 10pt wide and 5pt high,
  * // and use it to define a rectangle:
@@ -160,7 +163,7 @@ var Size = Base.extend(/** @lends Size# */{
      * Checks whether the width and height of the size are equal to those of the
      * supplied size.
      *
-     * @param {Size} size the size to compare to
+     * @param {Size|Number[]} size the size to compare to
      * @return {Boolean}
      *
      * @example
