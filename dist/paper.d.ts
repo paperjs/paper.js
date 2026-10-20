@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 21:35:21 2026 +0200
+ * Date: Tue Oct 20 22:00:12 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -2189,7 +2189,15 @@ declare namespace paper {
         isInside(rect: RectangleLike): boolean
 
         /** 
+         * Checks whether the item overlaps with the given item: whether their
+         * outlines cross, or one contains the other, as
+         * {@link Rectangle#intersects} does for rectangles. Items other than
+         * paths and shapes are checked through their bounds. To only check whether
+         * outlines cross, use {@link PathItem#getIntersections}.
+         * 
          * @param item - the item to check against
+         * 
+         * @return true if the items overlap
          */
         intersects(item: Item): boolean
 

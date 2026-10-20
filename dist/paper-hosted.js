@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 21:35:21 2026 +0200
+ * Date: Tue Oct 20 22:00:12 2026 +0200
  *
  ***
  *
@@ -4205,8 +4205,26 @@ new function() {
 	intersects: function(item, _matrix) {
 		if (!(item instanceof Item))
 			return false;
-		return this._asPathItem().getIntersections(item._asPathItem(), null,
-				_matrix, true).length > 0;
+		var path1 = this._asPathItem(),
+			path2 = item._asPathItem(),
+			matrix1 = path1._matrix,
+			matrix2 = _matrix || path2._matrix;
+
+		function contains(path, matrix, other, otherMatrix) {
+			var paths = path._children || [path];
+			for (var i = 0, l = paths.length; i < l; i++) {
+				var segment = paths[i]._segments[0],
+					point = segment && otherMatrix._inverseTransform(
+							matrix._transformPoint(segment._point));
+				if (point && other._contains(point))
+					return true;
+			}
+			return false;
+		}
+
+		return path1.getIntersections(path2, null, _matrix, true).length > 0
+				|| contains(path2, matrix2, path1, matrix1)
+				|| contains(path1, matrix1, path2, matrix2);
 	}
 },
 new function() {
@@ -4453,8 +4471,8 @@ new function() {
 					if (!rect.intersects(bounds))
 						continue;
 					if (!(rect.contains(bounds)
-							|| param.overlapping && (bounds.contains(rect)
-								|| param.path.intersects(child, childMatrix))))
+							|| param.overlapping
+								&& param.path.intersects(child, childMatrix)))
 						add = false;
 				}
 				if (add && child.matches(options)) {
