@@ -25,6 +25,9 @@
 
 ### Fixed
 
+- Fix `PathItem#interiorPoint` returning points on the path itself, such as a
+  vertex shared with another path, which made boolean operations of paths that
+  only touch keep or drop the wrong parts (#1837, #1979).
 - Fix intersections and boolean operations of curves and paths that only touch,
   at coordinates beyond 16384, where the tolerance of their bounds checks got
   lost in floating point (#1940, #1882).
