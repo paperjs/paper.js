@@ -2964,17 +2964,21 @@ new function() { // Injection scope for hit-test functions shared with project
     },
 
     /**
-     * Replaces this item with the provided new item which will takes its place
-     * in the project hierarchy instead.
+     * Replaces this item with the provided new items which will take its place
+     * in the project hierarchy instead, in the given order. This also ungroups
+     * a group, e.g. `group.replaceWith(...group.children)`, but note that the
+     * items keep their own matrices, see {@link Group#ungroup()}.
      *
-     * @param {Item} item the item that will replace this item
+     * @param {...Item} item the items that will replace this item
      * @return {Boolean} {@true if the item was replaced}
      */
     replaceWith: function(item) {
-        var ok = item && item.insertBelow(this);
+        var ok = item;
+        for (var i = 0, l = arguments.length; i < l && ok; i++)
+            ok = arguments[i] && arguments[i].insertBelow(this);
         if (ok)
             this.remove();
-        return ok;
+        return ok && item;
     },
 
     /**

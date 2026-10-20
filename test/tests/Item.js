@@ -241,6 +241,53 @@ test('item.replaceWith(other)', function() {
     }, true);
 });
 
+test('item.replaceWith(...items)', function() {
+    var project = paper.project;
+    var path1 = new Path();
+    var path2 = new Path();
+    var group = new Group([new Path(), new Path()]);
+    var path3 = new Path();
+    var children = group.children.slice();
+    equals(function() {
+        return group.replaceWith(children[0], children[1], path1)
+                == children[0];
+    }, true);
+    equals(function() {
+        return group.parent == null;
+    }, true);
+    equals(project.activeLayer.children,
+            [path2, children[0], children[1], path1, path3]);
+});
+
+test('group.ungroup()', function() {
+    var layer = paper.project.activeLayer;
+    var path1 = new Path.Rectangle([0, 0], [10, 10]);
+    var path2 = new Path.Rectangle([20, 0], [10, 10]);
+    // A nested group that keeps its own matrix:
+    var path3 = new Path.Rectangle([0, 20], [10, 10]);
+    var nested = new Group({ children: [path3], applyMatrix: false });
+    var group = new Group({
+        children: [path1, path2, nested],
+        applyMatrix: false,
+        clipped: true
+    });
+    // Scale the group by 2 around (5, 5), the center of its bounds, which are
+    // those of its clipping mask:
+    group.scale(2);
+    equals(group.ungroup(), [path1, path2, nested]);
+    equals(group.parent, null);
+    equals(layer.children, [path1, path2, nested]);
+    // The children keep their place, and the mask is released:
+    equals(path1.bounds, new Rectangle(-5, -5, 20, 20));
+    equals(path2.bounds, new Rectangle(35, -5, 20, 20));
+    equals(nested.bounds, new Rectangle(-5, 35, 20, 20));
+    equals(nested.matrix, new Matrix(2, 0, 0, 2, -5, -5));
+    equals(path3.segments[1].point, new Point(0, 20));
+    equals(path1.clipMask, false);
+    equals(group.applyMatrix, false);
+    equals(layer.ungroup(), null);
+});
+
 test('item.replaceWith(item)', function() {
     var item = new Path();
     equals(function() {
