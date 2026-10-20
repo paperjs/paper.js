@@ -1011,6 +1011,7 @@ new function() { // Injection scope for various item event handlers
             var cached = bounds[cacheKey] = {
                 rect: rect.clone(),
                 nonscaling: nonscaling,
+                stroke: options.stroke,
                 // Mark as internal, so Item#transform() won't transform it
                 internal: internal
             };
@@ -3807,9 +3808,11 @@ new function() { // Injection scope for hit-test functions shared with project
             for (var key in bounds) {
                 var cache = bounds[key];
                 // If any item involved in the determination of these bounds has
-                // non-scaling strokes, delete the cache now as it can't be
-                // preserved through the transformation.
-                if (cache.nonscaling) {
+                // non-scaling strokes, or if a scaling matrix is applied to
+                // the content without scaling its strokes, delete the cache
+                // now as it can't be preserved through the transformation.
+                if (cache.nonscaling || applyMatrix && cache.stroke
+                        && !decomp.scaling.abs().equals([1, 1])) {
                     delete bounds[key];
                 } else if (applyMatrix || !cache.internal) {
                     // If these are internal bounds, only transform them if this
