@@ -102,7 +102,9 @@ gulp.task('test:chrome', ['minify:acorn'], function(callback) {
 // their second operand, and compares how many results stay the same and how
 // many points they fill wrongly with test/booleans/baseline.json. Fails if any
 // case got worse. Update the baseline with --update, test other builds with
-// --build, e.g. `gulp test:booleans --build=hosted`. See test/booleans/sweep.js
+// --build, e.g. `gulp test:booleans --build=hosted`, and leave out the points
+// within a multiple of the operation's epsilon of an outline with --exclusion,
+// e.g. `--exclusion=10`. See test/booleans/sweep.js
 gulp.task('test:booleans', ['minify:acorn'], function(callback) {
     var dir = path.join('test', 'booleans'),
         build = path.join('dist', 'paper-' + (argv.build || 'full') + '.js'),
@@ -114,7 +116,8 @@ gulp.task('test:booleans', ['minify:acorn'], function(callback) {
     // restarted after a case that doesn't return within 20 seconds:
     function run(first) {
         var child = spawn(process.execPath,
-                [path.join(dir, 'sweep.js'), build, first]),
+                [path.join(dir, 'sweep.js'), build, first,
+                    argv.exclusion || '']),
             buffer = '',
             started,
             timer;

@@ -18,7 +18,10 @@
 // contains(). Points near any outline are left out, as the answer there
 // depends on tolerances.
 //
-// Usage: node sweep.js <paper build> <first case>, or <paper build> count
+// Usage: node sweep.js <paper build> <first case> [exclusion], or
+// <paper build> count. The points left out lie within 1e-4 times the diagonal
+// of the operands' bounds of an outline, or within the given multiple of the
+// operation's epsilon.
 // Prints a line of JSON when it starts each case and one with its result,
 // from the first case on, so that the caller can restart after a case that
 // doesn't return.
@@ -27,7 +30,8 @@ var fs = require('fs'),
     path = require('path'),
     vm = require('vm');
 
-var paper = require(path.resolve(process.argv[2]));
+var paper = require(path.resolve(process.argv[2])),
+    exclusion = +process.argv[4];
 paper.setup(new paper.Size(1000, 1000));
 paper.install(global);
 
@@ -177,7 +181,9 @@ function sweep(entry) {
     }
     // Sample points with a fixed seed, away from all outlines:
     var bounds = a.bounds.unite(b.bounds),
-        tolerance = 1e-4 * bounds.topLeft.getDistance(bounds.bottomRight),
+        tolerance = exclusion
+            ? exclusion * PathItem._createGraph(a, b).epsilon
+            : 1e-4 * bounds.topLeft.getDistance(bounds.bottomRight),
         seed = 4711,
         points = [];
     for (var i = 0; i < 300; i++) {
@@ -196,6 +202,7 @@ function sweep(entry) {
             });
         }
     }
+    result.points = points.length;
     result.wrong = points.filter(function(sample) {
         return sample.filled !== sample.expected;
     }).length;
