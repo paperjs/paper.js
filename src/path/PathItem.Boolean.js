@@ -1333,29 +1333,28 @@ PathItem.inject(new function() {
                 }
             }
             if (hasCrossings) {
+                // Remove the links of the overlap handling, and only link the
+                // remaining intersections below, to not confuse tracePaths().
+                if (hasOverlaps) {
+                    Base.each(paths, function(path) {
+                        Base.each(path._segments, function(segment) {
+                            segment._intersection = null;
+                        });
+                    });
+                }
                 // Divide any remaining intersections that are still part of
                 // valid paths after the removal of overlaps.
                 divideLocations(intersections, hasOverlaps && function(inter) {
                     // Check both involved curves to see if they're still valid,
                     // meaning they are still part of their paths.
                     var curve1 = inter.getCurve(),
-                        seg1 = inter.getSegment(),
-                        // Do not call getCurve() and getSegment() on the other
-                        // intersection yet, as it too is in the intersections
-                        // array and will be divided later. But check if its
-                        // current curve is valid, as required by some rare edge
-                        // cases, related to intersections on the same curve.
-                        other = inter._intersection,
-                        curve2 = other._curve,
-                        seg2 = other._segment;
-                    if (curve1 && curve2 && curve1._path && curve2._path)
-                        return true;
-                    // Remove all intersections that were involved in the
-                    // handling of overlaps, to not confuse tracePaths().
-                    if (seg1)
-                        seg1._intersection = null;
-                    if (seg2)
-                        seg2._intersection = null;
+                        // Do not call getCurve() on the other intersection yet,
+                        // as it too is in the intersections array and will be
+                        // divided later. But check if its current curve is
+                        // valid, as required by some rare edge cases, related
+                        // to intersections on the same curve.
+                        curve2 = inter._intersection._curve;
+                    return curve1 && curve2 && curve1._path && curve2._path;
                 }, clearCurves);
                 if (clearCurves)
                     clearCurveHandles(clearCurves);
