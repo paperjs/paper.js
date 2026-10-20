@@ -6,6 +6,9 @@
 
 - Add a setter to `View#bounds`, which fits the view to the given rectangle, as
   `View#fitBounds()` does.
+- Add `Project#bounds`, the bounds of the project's page: those of its view,
+  which setting it fits, or in `paper-hosted.js` the page that the host
+  provides through `getBounds()` and `setBounds()`, such as an artboard.
 
 ### Changed
 
