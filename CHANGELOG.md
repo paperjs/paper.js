@@ -20,6 +20,9 @@
   balances the lines.
 - Add `Item#textWrap`, by which items push aside the text of the area texts
   below them in their layer, or let it flow inside them.
+- Export area text, text on paths and text with mixed styles to SVG: point text
+  keeps a `<tspan>` per line, with one per run where styles are mixed, and area
+  text and text on paths are placed piece by piece, as they are laid out.
 - Add character style properties: `fontStyle`, `lineHeight`, `letterKerning`,
   `letterScaling`, `letterRotation`, `baselineShift`, `baselinePosition`,
   `capitals`, `underline` and `strikethrough`, and `fontVariations` and
