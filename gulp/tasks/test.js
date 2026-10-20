@@ -113,11 +113,14 @@ gulp.task('test:booleans', ['minify:acorn'], function(callback) {
         results = [],
         counts = {};
 
-    // Sweeps the cases from the given one on in a child process, which is
-    // restarted after a case that doesn't return within 20 seconds:
+    // Sweeps every n-th case from the given one on in one child process per
+    // core, each restarted after a case that doesn't return within 2 minutes:
+    var step = os.cpus().length,
+        running = 0;
     function run(first) {
+        running++;
         var child = spawn(process.execPath,
-                [path.join(dir, 'sweep.js'), build, first,
+                [path.join(dir, 'sweep.js'), build, first + ':' + step,
                     argv.exclusion || '', argv.scale || '',
                     argv.translation || '']),
             buffer = '',
@@ -142,26 +145,31 @@ gulp.task('test:booleans', ['minify:acorn'], function(callback) {
                     results.push(result);
                 }
             });
-            watch(20000);
+            watch(120000);
         });
         child.stderr.pipe(process.stderr);
         child.on('exit', function(code, signal) {
             clearTimeout(timer);
+            running--;
             if (signal) {
                 results.push({ label: started.label, op: started.op,
-                        timeout: true });
-                run(started.index + 1);
+                        index: started.index, timeout: true });
+                run(started.index + step);
             } else if (code) {
                 callback(new Error('The boolean sweep failed.'));
-            } else {
+            } else if (!running) {
                 finish();
             }
         });
     }
 
     function finish() {
-        // Key the results by label, operation and occurrence:
+        // Key the results by label, operation and occurrence, in the order
+        // of the cases:
         var current = {};
+        results.sort(function(a, b) {
+            return a.index - b.index;
+        });
         results.forEach(function(result) {
             var key = result.label + ' / ' + result.op;
             counts[key] = (counts[key] || 0) + 1;
@@ -231,7 +239,8 @@ gulp.task('test:booleans', ['minify:acorn'], function(callback) {
         }
     }
 
-    run(0);
+    for (var i = 0; i < step; i++)
+        run(i);
 });
 
 gulp.task('test:browser', ['minify:acorn'], function() {

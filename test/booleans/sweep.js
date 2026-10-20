@@ -18,7 +18,7 @@
 // contains(). Points near any outline are left out, as the answer there
 // depends on tolerances.
 //
-// Usage: node sweep.js <paper build> <first case> [exclusion], or
+// Usage: node sweep.js <paper build> <first case>[:<step>] [exclusion], or
 // <paper build> count. The points left out lie within 1e-4 times the diagonal
 // of the operands' bounds of an outline, or within the given multiple of the
 // operation's epsilon. With a scale and a translation as fifth and sixth
@@ -107,8 +107,11 @@ function isClosed(item) {
 }
 
 function isNear(item, point, tolerance) {
-    var location = !item.isEmpty() && item.getNearestLocation(point);
-    return !!location && location.point.getDistance(point) < tolerance;
+    // Only look for the nearest point on curves whose bounds come close:
+    return item.getCurves().some(function(curve) {
+        return curve.getBounds().expand(2 * tolerance).contains(point)
+                && curve.getNearestPoint(point).getDistance(point) < tolerance;
+    });
 }
 
 // Checks the planarity of the operation's graph: crossing each edge from its
@@ -309,13 +312,17 @@ var cases = collect(path.join(__dirname, '..', 'tests', 'Path_Boolean.js'))
 if (process.argv[3] === 'count') {
     console.log(cases.length);
 } else {
-    for (var i = +process.argv[3] || 0, l = cases.length; i < l; i++) {
+    // The cases from the first one on, or every n-th of them with first:n:
+    var range = (process.argv[3] || '0').split(':');
+    for (var i = +range[0], l = cases.length; i < l; i += +range[1] || 1) {
         // Announce each case, so a caller knows which one didn't return:
         console.log(JSON.stringify({ index: i, label: cases[i].label,
                 op: cases[i].op, start: true }));
         var result;
         try {
+            var time = Date.now();
             result = sweep(cases[i]);
+            result.time = Date.now() - time;
         } catch (e) {
             result = { label: cases[i].label, op: cases[i].op,
                     error: e.message };
