@@ -632,20 +632,27 @@ PathItem.inject(new function() {
                     parents[getRoot(a)] = getRoot(b);
             }
         }
-        var vertexIndices = {},
+        var vertexIndices,
+            vertices;
+
+        function createVertices() {
+            vertexIndices = {};
             vertices = [];
-        for (var i = 0; i < count; i++) {
-            var root = getRoot(i),
-                index = vertexIndices[root];
-            if (index === undefined) {
-                index = vertexIndices[root] = vertices.length;
-                vertices.push({ x: xs[i], y: ys[i], isEnd: isEnds[i],
-                        point: i, outgoing: [] });
-            } else if (isEnds[i] && !vertices[index].isEnd) {
-                vertices[index] = { x: xs[i], y: ys[i], isEnd: true,
-                        point: i, outgoing: [] };
+            for (var i = 0; i < count; i++) {
+                var root = getRoot(i),
+                    index = vertexIndices[root];
+                if (index === undefined) {
+                    index = vertexIndices[root] = vertices.length;
+                    vertices.push({ x: xs[i], y: ys[i], isEnd: isEnds[i],
+                            point: i, outgoing: [] });
+                } else if (isEnds[i] && !vertices[index].isEnd) {
+                    vertices[index] = { x: xs[i], y: ys[i], isEnd: true,
+                            point: i, outgoing: [] };
+                }
             }
         }
+
+        createVertices();
 
         function getVertex(point) {
             return vertexIndices[getRoot(point)];
@@ -733,6 +740,32 @@ PathItem.inject(new function() {
             }
         }
 
+        // 2c. Merge the vertices that pieces shorter than 4 epsilon join: As
+        // the hot pixels reach 2 epsilon, the order of the edges around such
+        // vertices can't be told apart. Merged vertices span up to about 5
+        // epsilon, the precision of the result:
+        var pieces = [];
+        for (var i = 0, l = curves.length; i < l; i++) {
+            var list = sortCuts(cuts[i]);
+            for (var j = 1, k = list.length; j < k; j++) {
+                var cut1 = list[j - 1],
+                    cut2 = list[j];
+                if (getVertex(cut1.point) !== getVertex(cut2.point)
+                        && Curve.getLength(getPiece(i, cut1, cut2))
+                            < 4 * epsilon)
+                    pieces.push([cut1.point, cut2.point]);
+            }
+        }
+        if (pieces.length) {
+            for (var i = 0, l = pieces.length; i < l; i++) {
+                var root1 = getRoot(pieces[i][0]),
+                    root2 = getRoot(pieces[i][1]);
+                if (root1 !== root2)
+                    parents[root1] = root2;
+            }
+            createVertices();
+        }
+
         // 3. Create the edges between the vertices along each curve, with the
         // change in winding of each operand when crossing them from right to
         // left. Coincident pieces become one edge that adds up their changes:
@@ -783,8 +816,9 @@ PathItem.inject(new function() {
                     to = getVertex(cut.point),
                     part = getPiece(i, prev, cut);
                 // Drop pieces that start and end in the same vertex, unless
-                // they form a loop that is larger than the vertex:
-                if (from !== to || Curve.getLength(part) > 2 * epsilon) {
+                // they form a loop that is longer than the pieces that vertices
+                // merge, see above:
+                if (from !== to || Curve.getLength(part) >= 4 * epsilon) {
                     var windings = [0, 0];
                     windings[curveOperands[i]] = 1;
                     addEdge({

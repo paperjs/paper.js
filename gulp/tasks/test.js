@@ -217,10 +217,32 @@ gulp.task('test:booleans', ['minify:acorn'], function(callback) {
                 + ' graphs that are not planar, ' + timeouts + ' timeouts. '
                 + better.length + ' better than the baseline, ' + worse.length
                 + ' worse.');
+        // The points close to the outlines, per multiple of epsilon:
+        ['near', 'movedNear'].forEach(function(name) {
+            var sums = {};
+            results.forEach(function(result) {
+                Object.keys(result[name] || {}).forEach(function(factor) {
+                    var sum = sums[factor] = sums[factor] || [0, 0];
+                    sum[0] += result[name][factor][0];
+                    sum[1] += result[name][factor][1];
+                });
+            });
+            console.log((name === 'near' ? 'Close to the outlines'
+                    : 'Close to the outlines of the tiny moves')
+                    + ': ' + Object.keys(sums).map(function(factor) {
+                        return sums[factor][0] + ' of ' + sums[factor][1]
+                                + ' wrong at ' + factor + ' epsilon';
+                    }).join(', ') + '.');
+        });
         worse.forEach(function(line) {
             console.log('Worse: ' + line);
         });
         results.forEach(function(result) {
+            if (result.wrong || result.movedWrong) {
+                console.log('Wrong: ' + result.label + ' / ' + result.op
+                        + ': ' + result.wrong + ', in the results of the tiny'
+                        + ' moves: ' + result.movedWrong);
+            }
             if (result.nonPlanar) {
                 console.log('Not planar: ' + result.label + ' / ' + result.op
                         + ': ' + result.nonPlanar + ', '
