@@ -55,6 +55,9 @@
 
 ### Fixed
 
+- Fix SVG export of `opacity` and `blendMode`, which aren't inherited, so
+  children with the same values as their group lost them, and the defaults
+  were written where the group differed.
 - Fix the shadows of items that are both filled and stroked, which only cast
   the shadow of their fill, partly covered by the stroke (#892).
 - Fix the points at offsets of `PathFlattener` on straight curves, such as

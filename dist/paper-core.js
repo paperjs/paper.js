@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 00:03:27 2026 +0200
+ * Date: Wed Oct 21 00:20:37 2026 +0200
  *
  ***
  *
@@ -16046,8 +16046,12 @@ var SvgStyles = Base.each({
 		center: 'middle',
 		right: 'end'
 	}],
-	opacity: ['opacity', 'number'],
-	blendMode: ['mix-blend-mode', 'style']
+	opacity: ['opacity', 'number', null, function(item, value) {
+		return value !== 1;
+	}],
+	blendMode: ['mix-blend-mode', 'style', null, function(item, value) {
+		return value !== 'normal';
+	}]
 }, function(entry, key) {
 	var part = Base.capitalize(key),
 		lookup = entry[2];
@@ -16482,9 +16486,6 @@ new function() {
 
 		if (style.length)
 			attrs.style = style.join(';');
-
-		if (attrs.opacity === 1)
-			delete attrs.opacity;
 
 		if (!item._visible)
 			attrs.visibility = 'hidden';
