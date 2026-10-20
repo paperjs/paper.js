@@ -207,3 +207,45 @@ test('PaperScript exports', function() {
         }, 2, 'export default');
     });
 });
+
+test('PaperScript imports', function() {
+    withAcornLatest(function() {
+        var modules = {
+                'default.js': 'export default new Point(1, 2) * 2;',
+                'named.js': 'export const x = 1;\n'
+                    + 'export function f() { return 2; }',
+                'all.js': 'export * from "named.js";\n'
+                    + 'export { x as y } from "named.js";'
+            },
+            calls = [];
+        function load(specifier, url) {
+            calls.push(specifier + ' from ' + url);
+            return PaperScript.execute(modules[specifier], paper,
+                    { url: specifier, load: load });
+        }
+        var exports = PaperScript.execute(
+                'import point from "default.js";\n'
+                + 'import { x, f as g } from "named.js";\n'
+                + 'import * as all from "all.js";\n'
+                + 'export const result = [point, x, g(), all.x, all.y];',
+                paper, { url: 'main.js', load: load });
+        equals(function() {
+            return exports.result;
+        }, [new Point(2, 4), 1, 2, 1, 1]);
+        equals(calls, [
+            'default.js from main.js',
+            'named.js from main.js',
+            'all.js from main.js',
+            'named.js from all.js',
+            'named.js from all.js'
+        ], 'specifiers as written, with the importing url');
+        var message;
+        try {
+            PaperScript.execute('import "named.js";', paper);
+        } catch (e) {
+            message = e.message;
+        }
+        equals(message, 'Unable to import \'named.js\': no loader was passed '
+                + 'to PaperScript.execute().');
+    });
+});
