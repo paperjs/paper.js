@@ -204,6 +204,25 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     },
 
     /**
+     * The bounds of the project's page, in project coordinates. Without a
+     * host, the page is the {@link #view}: these are its bounds, and setting
+     * them fits the view to the given rectangle, as {@link View#bounds} does.
+     * In a project backed by a host document, see {@link #host}, the host can
+     * provide the page instead, such as an artboard. Unlike
+     * {@link Item#bounds}, these aren't the bounds of the project's items.
+     *
+     * @bean
+     * @type Rectangle
+     */
+    getBounds: function() {
+        return this._view.getBounds();
+    },
+
+    setBounds: function(/* rect */) {
+        this._view.setBounds(Rectangle.read(arguments));
+    },
+
+    /**
      * The currently active path style. All selected items and newly
      * created items will be styled with this style.
      *
