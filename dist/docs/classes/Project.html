@@ -88,7 +88,7 @@
 
 <div class="member-text">
 	<p>The host document that the project&rsquo;s items come from. Setting it creates the project&rsquo;s layers from the host&rsquo;s records. All items are created as shells that load their content and children from the host on first access.</p>
-<p>The host provides: - <code>getChildren(key)</code>, which returns the records of the children of  the node with the given key, or of the top level for <code>null</code>, as  columns: <code>keys</code>, <code>types</code> (indices into <code>typeNames</code>), <code>typeNames</code>,  <code>flags</code> (selected: 1, visible: 2, locked: 4, strokeScaling: 8,  clipMask: 64, guide: 128, empty: 256), <code>boxes</code> (bounds,  strokeBounds and roughBounds in the item&rsquo;s coordinates, 12 numbers  per item), and the sparse objects <code>names</code> and <code>matrices</code>. - <code>getItem(key)</code>, which returns the node&rsquo;s own content in the form  of <a href="../classes/Item.html#importjson-json"><tt>item.importJSON(json)</tt></a>, without children. - <code>getAncestorKeys(key)</code>, which returns the keys from the top level  down to the node&rsquo;s parent. - Optionally <code>getBounds()</code>, which returns the bounds of the page, such  as an artboard, for <a href="../classes/Project.html#bounds"><tt>bounds</tt></a>, and <code>setBounds(rect)</code>, which  receives the bounds that a script sets. Without <code>setBounds()</code>, the  page can&rsquo;t be set.</p>
+<p>The host provides: - <code>getChildren(key)</code>, which returns the records of the children of  the node with the given key, or of the top level for <code>null</code>, as  columns: <code>keys</code>, <code>types</code> (indices into <code>typeNames</code>), <code>typeNames</code>,  <code>flags</code> (selected: 1, visible: 2, locked: 4, strokeScaling: 8,  clipMask: 64, guide: 128, empty: 256), <code>boxes</code> (bounds,  strokeBounds and roughBounds in the item&rsquo;s coordinates, 12 numbers  per item), and the sparse objects <code>names</code> and <code>matrices</code>. - <code>getItem(key)</code>, which returns the node&rsquo;s own content in the form  of <a href="../classes/Item.html#importjson-json"><tt>item.importJSON(json)</tt></a>, without children. - <code>getAncestorKeys(key)</code>, which returns the keys from the top level  down to the node&rsquo;s parent.</p>
 	
 	
 	
@@ -183,32 +183,6 @@
 		<h4>Type:</h4>
 		<li>
 			<a href="../classes/View.html"><tt>View</tt></a>
-		</li>
-	</ul>
-    
-	
-	
-</div>
-
-</div>
-</div>
-		
-			
-<div id="bounds" class="member">
-<div class="member-link">
-<a name="bounds" href="#bounds"><tt><b>bounds</b></tt></a>
-</div>
-<div class="member-description hidden">
-
-<div class="member-text">
-	<p>The bounds of the project&rsquo;s page, in project coordinates. Without a host, the page is the <a href="../classes/Project.html#view"><tt>view</tt></a>: these are its bounds, and setting them fits the view to the given rectangle, as <a href="../classes/View.html#bounds"><tt>view.bounds</tt></a> does. In a project backed by a host document, see <a href="../classes/Project.html#host"><tt>host</tt></a>, the host can provide the page instead, such as an artboard. Unlike <a href="../classes/Item.html#bounds"><tt>item.bounds</tt></a>, these aren&rsquo;t the bounds of the project&rsquo;s items.</p>
-	
-	
-	
-	<ul class="member-list">
-		<h4>Type:</h4>
-		<li>
-			<a href="../classes/Rectangle.html"><tt>Rectangle</tt></a>
 		</li>
 	</ul>
     
