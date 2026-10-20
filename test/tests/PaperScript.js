@@ -249,3 +249,14 @@ test('PaperScript imports', function() {
                 + 'to PaperScript.execute().');
     });
 });
+
+test('PaperScript compound assignments evaluate their targets once', function() {
+    executeCode('var calls = 0;\n'
+            + 'function index() { calls++; return 0; }\n'
+            + 'function object() { calls++; return o; }\n'
+            + 'var points = [new Point(1, 1)], o = { p: new Point(1, 1) };\n'
+            + 'points[index()] += [1, 2];\n'
+            + 'object().p *= 2;\n'
+            + 'module.exports = [calls, points[0], o.p, (o.p -= 1)];',
+            [2, new Point(2, 3), new Point(2, 2), new Point(1, 1)]);
+});

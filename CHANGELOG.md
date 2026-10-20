@@ -28,6 +28,8 @@
 
 ### Fixed
 
+- Fix PaperScript's compound assignments of properties, such as
+  `array[index()] += 1`, which evaluated their object and key twice.
 - Fix PaperScript with a current Acorn provided as `self.acorn`, which parses
   all current syntax now, and its exports: of functions and classes, of renamed
   names (`export { a as b }`), of several declarations in a row, and of
