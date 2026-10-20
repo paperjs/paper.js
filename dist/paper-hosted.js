@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 05:16:21 2026 +0200
+ * Date: Tue Oct 20 05:38:54 2026 +0200
  *
  ***
  *
@@ -10783,27 +10783,31 @@ PathItem.inject(new function() {
 			crossings = _path1.getIntersections(_path2, filterIntersection),
 			subtract = operation === 'subtract',
 			divide = operation === 'divide',
-			added = {},
+			pieces = [],
 			paths = [];
 
-		function addPath(path) {
-			if (!added[path._id] && (divide ||
-					_path2.contains(path.getPointAt(path.getLength() / 2))
-						^ subtract)) {
-				paths.unshift(path);
-				return added[path._id] = true;
-			}
-		}
-
 		for (var i = crossings.length - 1; i >= 0; i--) {
-			var path = crossings[i].split();
+			var crossing = crossings[i],
+				split = crossing.getPath(),
+				path = crossing.split();
 			if (path) {
-				if (addPath(path))
-					path.getFirstSegment().setHandleIn(0, 0);
-				_path1.getLastSegment().setHandleOut(0, 0);
+				path.getFirstSegment().setHandleIn(0, 0);
+				split.getLastSegment().setHandleOut(0, 0);
+				if (pieces.indexOf(path) === -1)
+					pieces.push(path);
 			}
 		}
-		addPath(_path1);
+		var children = _path1._children || [_path1];
+		for (var i = 0, l = children.length; i < l; i++) {
+			if (pieces.indexOf(children[i]) === -1)
+				pieces.push(children[i]);
+		}
+		for (var i = 0, l = pieces.length; i < l; i++) {
+			var piece = pieces[i];
+			if (divide || _path2.contains(
+					piece.getPointAt(piece.getLength() / 2)) ^ subtract)
+				paths.unshift(piece);
+		}
 		return createResult(paths, false, path1, path2, options);
 	}
 
