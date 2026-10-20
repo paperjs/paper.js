@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 18:30:16 2026 +0200
+ * Date: Tue Oct 20 18:29:14 2026 +0200
  *
  ***
  *
@@ -8183,7 +8183,7 @@ new function() {
 	}
 
 	function getIntersections(curves1, curves2, include, matrix1, matrix2,
-			_returnFirst, _tolerance) {
+			_returnFirst, _tolerance, _collisions) {
 		var self = !curves2;
 		if (self)
 			curves2 = curves1;
@@ -8201,9 +8201,10 @@ new function() {
 				values2[i] = curves2[i].getValues(matrix2);
 			}
 		}
-		var boundsCollisions = CollisionDetection.findCurveBoundsCollisions(
-				values1, values2,
-				_tolerance || 1e-7);
+		var boundsCollisions = _collisions
+				|| CollisionDetection.findCurveBoundsCollisions(
+					values1, values2,
+					_tolerance || 1e-7);
 		for (var index1 = 0; index1 < length1; index1++) {
 			var curve1 = curves1[index1],
 				v1 = values1[index1];
@@ -11433,8 +11434,10 @@ PathItem.inject(new function() {
 			addCut(i, 0, curve._segment1._point, true);
 			addCut(i, 1, curve._segment2._point, true);
 		}
-		var locations = CurveLocation.expand(Curve.getIntersections(curves,
-				null, null, null, null, false, epsilon));
+		var collisions = CollisionDetection.findCurveBoundsCollisions(
+				values, values, 2 * epsilon),
+			locations = CurveLocation.expand(Curve.getIntersections(curves,
+				null, null, null, null, false, epsilon, collisions));
 		for (var i = 0, l = locations.length; i < l; i++) {
 			var loc = locations[i],
 				curve = loc.getCurve();
@@ -11506,14 +11509,30 @@ PathItem.inject(new function() {
 			});
 		}
 
-		var vertexValues = [];
-		for (var i = 0, l = vertices.length; i < l; i++) {
-			var vertex = vertices[i];
-			vertexValues.push([vertex.x, vertex.y, vertex.x, vertex.y,
-					vertex.x, vertex.y, vertex.x, vertex.y]);
+		function getHotPixels(i) {
+			var v = values[i],
+				left = min(v[0], v[2], v[4], v[6]) - 2 * epsilon,
+				top = min(v[1], v[3], v[5], v[7]) - 2 * epsilon,
+				right = max(v[0], v[2], v[4], v[6]) + 2 * epsilon,
+				bottom = max(v[1], v[3], v[5], v[7]) + 2 * epsilon,
+				indices = collisions[i],
+				hotPixels = [];
+			for (var j = 0, k = indices.length; j < k; j++) {
+				var list = cuts[indices[j]];
+				for (var m = 0, n = list.length; m < n; m++) {
+					var index = getVertex(list[m].point),
+						vertex = vertices[index];
+					if (vertex.x >= left && vertex.x <= right
+							&& vertex.y >= top && vertex.y <= bottom
+							&& hotPixels.indexOf(index) === -1)
+						hotPixels.push(index);
+				}
+			}
+			return hotPixels.sort(function(a, b) {
+				return a - b;
+			});
 		}
-		var hotPixels = CollisionDetection.findCurveBoundsCollisions(
-				values, vertexValues, 2 * epsilon);
+
 		function isNearPiece(piece, index, vertex) {
 			var v = piece.values,
 				x = vertex.x,
@@ -11535,8 +11554,8 @@ PathItem.inject(new function() {
 		}
 
 		for (var i = 0, l = curves.length; i < l; i++) {
-			var candidates = hotPixels[i];
-			if (candidates) {
+			var candidates = getHotPixels(i);
+			if (candidates.length) {
 				var list = sortCuts(cuts[i]),
 					pieces = [];
 				for (var j = 1, k = list.length; j < k; j++)
@@ -11673,6 +11692,63 @@ PathItem.inject(new function() {
 					: 0;
 		}
 
+		function getDirections(v) {
+			var angles = [];
+			for (var i = 0; i < 6; i += 2) {
+				var dx = v[i + 2] - v[i],
+					dy = v[i + 3] - v[i + 1];
+				if (dx || dy)
+					angles.push(Math.atan2(dy, dx));
+			}
+			var first = angles[0],
+				from = 0,
+				to = 0;
+			for (var i = 1, l = angles.length; i < l; i++) {
+				var difference = (angles[i] - first + 3 * Math.PI)
+						% (2 * Math.PI) - Math.PI;
+				from = min(from, difference);
+				to = max(to, difference);
+			}
+			return to - from < Math.PI
+					? { start: (first + from + 2 * Math.PI) % (2 * Math.PI),
+						width: to - from }
+					: null;
+		}
+
+		function sortByDirections(outgoing) {
+			var distance = Infinity;
+			for (var j = 0, k = outgoing.length; j < k; j++) {
+				var halfEdge = halfEdges[outgoing[j]],
+					v = halfEdge.values;
+				halfEdge.directions = getDirections(v);
+				if (!halfEdge.directions)
+					return false;
+				distance = min(distance,
+						Math.sqrt((v[6] - v[0]) * (v[6] - v[0])
+							+ (v[7] - v[1]) * (v[7] - v[1])) / 2);
+			}
+			var sorted = outgoing.slice().sort(function(a, b) {
+					return halfEdges[a].directions.start
+							- halfEdges[b].directions.start;
+				}),
+				gap = Infinity,
+				width = 0;
+			for (var j = 0, k = sorted.length; j < k; j++) {
+				var directions1 = halfEdges[sorted[j]].directions,
+					directions2 = halfEdges[sorted[(j + 1) % k]].directions;
+				gap = min(gap, directions2.start - directions1.start
+						- directions1.width + (j + 1 < k ? 0 : 2 * Math.PI));
+				width = max(width, directions1.width);
+			}
+			if (gap > 0 && distance * Math.cos(width / 2)
+					* Math.sin(min(gap, Math.PI / 2)) > 2 * epsilon) {
+				for (var j = 0, k = sorted.length; j < k; j++)
+					outgoing[j] = sorted[j];
+				return true;
+			}
+			return false;
+		}
+
 		for (var i = 0, l = edges.length; i < l; i++) {
 			var edge = edges[i],
 				v = edge.values;
@@ -11687,7 +11763,7 @@ PathItem.inject(new function() {
 		for (var i = 0, l = vertices.length; i < l; i++) {
 			var vertex = vertices[i],
 				outgoing = vertex.outgoing;
-			if (outgoing.length > 2) {
+			if (outgoing.length > 2 && !sortByDirections(outgoing)) {
 				var distance = Infinity;
 				for (var j = 0, k = outgoing.length; j < k; j++) {
 					var edge = halfEdges[outgoing[j]].edge;
