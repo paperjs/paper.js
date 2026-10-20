@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 07:35:51 2026 +0200
+ * Date: Tue Oct 20 07:37:39 2026 +0200
  *
  ***
  *
@@ -18069,6 +18069,11 @@ Base.exports.PaperScript = function() {
 
 		function handleModules(node) {
 			switch (node.type) {
+			case 'ImportExpression':
+				replaceCode(node, 'Promise.resolve().then(function() { '
+						+ 'return __$import__(' + getCode(node.source)
+						+ ', "dynamic"); })');
+				break;
 			case 'ImportDeclaration':
 				var module = getImport(node.source),
 					named = [];
@@ -18289,8 +18294,16 @@ Base.exports.PaperScript = function() {
 				throw new Error('Unable to import \'' + specifier + '\': no '
 						+ 'loader was passed to PaperScript.execute().');
 			}
-			var exports = load(specifier, url),
-				isModule = exports && exports.__esModule;
+			var exports = load(specifier, url);
+			return as === 'dynamic'
+					? Promise.resolve(exports).then(function(exports) {
+						return getImported(exports, 'namespace');
+					})
+					: getImported(exports, as);
+		}
+
+		function getImported(exports, as) {
+			var isModule = exports && exports.__esModule;
 			return as === 'default'
 					? isModule ? exports.default : exports
 					: as === 'namespace' && !isModule

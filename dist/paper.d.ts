@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 07:35:51 2026 +0200
+ * Date: Tue Oct 20 07:37:39 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -3946,8 +3946,10 @@ declare namespace paper {
          *     with `__esModule`, so `import x` receives the default export, and
          *     for CommonJS-style exports the whole exports. `import * as x`
          *     receives all exports, and for CommonJS-style exports, these as
-         *     `default` too. The loader runs each module once and handles cycles.
-         *     Parsing `import` requires a current Acorn as `self.acorn`
+         *     `default` too. Dynamic `import(specifier)` resolves to that
+         *     namespace as a Promise, and its loader may return a Promise as well.
+         *     The loader runs each module once and handles cycles. Parsing
+         *     `import` requires a current Acorn as `self.acorn`
          * 
          * @param code - the PaperScript code
          * @param scope - the scope for which the code is executed
