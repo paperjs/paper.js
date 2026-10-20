@@ -640,15 +640,97 @@ PathItem.inject(new function() {
             if (index === undefined) {
                 index = vertexIndices[root] = vertices.length;
                 vertices.push({ x: xs[i], y: ys[i], isEnd: isEnds[i],
-                        outgoing: [] });
+                        point: i, outgoing: [] });
             } else if (isEnds[i] && !vertices[index].isEnd) {
                 vertices[index] = { x: xs[i], y: ys[i], isEnd: true,
-                        outgoing: [] };
+                        point: i, outgoing: [] };
             }
         }
 
         function getVertex(point) {
             return vertexIndices[getRoot(point)];
+        }
+
+        // The piece of curve i between two cuts, with its ends moved to their
+        // vertices, along with their handles:
+        function getPiece(i, cut1, cut2) {
+            var p1 = vertices[getVertex(cut1.point)],
+                p2 = vertices[getVertex(cut2.point)],
+                part;
+            if (!curves[i].hasHandles()) {
+                part = [p1.x, p1.y, p1.x, p1.y, p2.x, p2.y, p2.x, p2.y];
+            } else {
+                part = Curve.getPart(values[i], cut1.time, cut2.time).slice();
+                var dx1 = p1.x - part[0],
+                    dy1 = p1.y - part[1],
+                    dx2 = p2.x - part[6],
+                    dy2 = p2.y - part[7];
+                part[0] += dx1;
+                part[1] += dy1;
+                part[2] += dx1;
+                part[3] += dy1;
+                part[4] += dx2;
+                part[5] += dy2;
+                part[6] += dx2;
+                part[7] += dy2;
+            }
+            return part;
+        }
+
+        function sortCuts(list) {
+            return list.sort(function(a, b) {
+                return a.time - b.time;
+            });
+        }
+
+        // 2b. Cut the curves where they pass within epsilon of a vertex, the
+        // hot pixels of snap rounding. Moving the pieces to their vertices
+        // can bring them within epsilon of further ones, so repeat until no
+        // new cut happens. As cuts only use existing vertices, this ends:
+        var vertexValues = [];
+        for (var i = 0, l = vertices.length; i < l; i++) {
+            var vertex = vertices[i];
+            vertexValues.push([vertex.x, vertex.y, vertex.x, vertex.y,
+                    vertex.x, vertex.y, vertex.x, vertex.y]);
+        }
+        // The pieces stay within epsilon of their curves:
+        var hotPixels = CollisionDetection.findCurveBoundsCollisions(
+                values, vertexValues, 2 * epsilon),
+            hasCut = true;
+        while (hasCut) {
+            hasCut = false;
+            for (var i = 0, l = curves.length; i < l; i++) {
+                var candidates = hotPixels[i],
+                    list = sortCuts(cuts[i]);
+                for (var j = 0, k = candidates && candidates.length; j < k;
+                        j++) {
+                    var index = candidates[j],
+                        vertex = vertices[index],
+                        point = new Point(vertex.x, vertex.y),
+                        time = Curve.getNearestTime(values[i], point);
+                    // Find the piece around the nearest time, and see if it
+                    // passes within epsilon of the vertex inside:
+                    for (var m = 1, n = list.length; m < n
+                            && list[m].time < time; m++) {}
+                    var cut1 = list[m - 1],
+                        cut2 = list[m],
+                        piece = getPiece(i, cut1, cut2),
+                        t = Curve.getNearestTime(piece, point);
+                    if (t > 0 && t < 1
+                            && getVertex(cut1.point) !== index
+                            && getVertex(cut2.point) !== index
+                            && point.isClose(Curve.getPoint(piece, t), epsilon)) {
+                        list.push({
+                            time: curves[i].hasHandles()
+                                ? cut1.time + (cut2.time - cut1.time) * t
+                                : time,
+                            point: vertex.point
+                        });
+                        sortCuts(list);
+                        hasCut = true;
+                    }
+                }
+            }
         }
 
         // 3. Create the edges between the vertices along each curve, with the
@@ -692,38 +774,14 @@ PathItem.inject(new function() {
         }
 
         for (var i = 0, l = curves.length; i < l; i++) {
-            var list = cuts[i].sort(function(a, b) {
-                    return a.time - b.time;
-                }),
-                v = values[i],
+            var list = sortCuts(cuts[i]),
                 isStraight = !curves[i].hasHandles(),
                 prev = list[0];
             for (var j = 1, k = list.length; j < k; j++) {
                 var cut = list[j],
                     from = getVertex(prev.point),
                     to = getVertex(cut.point),
-                    p1 = vertices[from],
-                    p2 = vertices[to],
-                    part;
-                if (isStraight) {
-                    part = [p1.x, p1.y, p1.x, p1.y, p2.x, p2.y, p2.x, p2.y];
-                } else {
-                    // Move the ends of the piece to its vertices, along with
-                    // their handles:
-                    part = Curve.getPart(v, prev.time, cut.time).slice();
-                    var dx1 = p1.x - part[0],
-                        dy1 = p1.y - part[1],
-                        dx2 = p2.x - part[6],
-                        dy2 = p2.y - part[7];
-                    part[0] += dx1;
-                    part[1] += dy1;
-                    part[2] += dx1;
-                    part[3] += dy1;
-                    part[4] += dx2;
-                    part[5] += dy2;
-                    part[6] += dx2;
-                    part[7] += dy2;
-                }
+                    part = getPiece(i, prev, cut);
                 // Drop pieces that start and end in the same vertex, unless
                 // they form a loop that is larger than the vertex:
                 if (from !== to || Curve.getLength(part) > 2 * epsilon) {
