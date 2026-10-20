@@ -1462,7 +1462,9 @@ new function() { // Injection scope for mouse and key event handling
             Key.modifiers.set(options.modifiers);
         return {
             type: type,
-            timeStamp: options.timeStamp != null ? options.timeStamp
+            // options.timeStamp in milliseconds is deprecated:
+            timeStamp: options.time != null ? options.time * 1000
+                    : options.timeStamp != null ? options.timeStamp
                     : Date.now(),
             button: options.button || 0,
             cancelable: true,
@@ -1514,7 +1516,8 @@ new function() { // Injection scope for mouse and key event handling
          * @option [options.modifiers] {Object} the state of the modifier keys,
          *     see {@link Key#modifiers}
          * @option [options.button=0] {Number} the mouse button
-         * @option [options.timeStamp=Date.now()] {Number} the time stamp
+         * @option [options.time=Date.now() / 1000] {Number} the time of the
+         *     event in seconds, see {@link Event#time}
          *
          * @param {String} type the type of the event: {@values 'mousedown',
          *     'mousemove', 'mouseup'}
@@ -1548,7 +1551,8 @@ new function() { // Injection scope for mouse and key event handling
          *     single character, and keyup the character of its keydown
          * @option [options.modifiers] {Object} the state of the modifier keys,
          *     see {@link Key#modifiers}
-         * @option [options.timeStamp=Date.now()] {Number} the time stamp
+         * @option [options.time=Date.now() / 1000] {Number} the time of the
+         *     event in seconds, see {@link Event#time}
          *
          * @param {String} type the type of the event: {@values 'keydown',
          *     'keyup'}
