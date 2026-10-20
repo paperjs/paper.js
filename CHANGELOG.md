@@ -9,6 +9,11 @@
   `TextItem#range(start, end)`, `#runs`, `#paragraphs`, `#words`, `#letters`
   and `#lines`, which ranges have too, and `#replace(content, start, end)`, and
   `TextStory`, a text's content, runs and paragraphs, as `TextItem#story`.
+- Add text linking: `TextItem#link()`, `#unlink()`, `#isLinked()`,
+  `#nextTextItem`, `#previousTextItem` and `#visibleRange`, by which a story
+  flows through several text items, which `TextStory#textItems` lists.
+- Add `PathText`, text along a path between `startOffset` and `endOffset`, each
+  letter turned to the path, which it takes as `TextItem#textPath`.
 - Add character style properties: `fontStyle`, `lineHeight`, `letterKerning`,
   `letterScaling`, `letterRotation`, `baselineShift`, `baselinePosition`,
   `capitals`, `underline` and `strikethrough`, and `fontVariations` and
@@ -62,6 +67,9 @@
 - Make `Style#getFontStyle()` return the CSS font style, `'normal'`,
   `'italic'` or `'oblique'`, instead of the font as canvas takes it, and remove
   `Style#getTrackingStyle()`.
+- Only go into the children that items show in `Item#getItems()`, and log the
+  changes of children that their parent doesn't show, such as a text's path, as
+  the parent's.
 - Make `Item#intersects()` check whether the items overlap, also when one
   contains the other, as `Rectangle#intersects()` does, instead of only whether
   their outlines cross, and use it in `getItems({ overlapping })` for items

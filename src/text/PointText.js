@@ -83,7 +83,9 @@ var PointText = TextItem.extend(/** @lends PointText# */{
     _getLayout: function() {
         if (!this._layout) {
             var story = this._story,
-                paragraphs = story.getParagraphs(),
+                length = story._content.length,
+                paragraphs = new TextRange(story, this._getStart(), length)
+                        .getParagraphs(),
                 lines = [],
                 y = 0,
                 spaceAfter = 0;
@@ -101,6 +103,7 @@ var PointText = TextItem.extend(/** @lends PointText# */{
                         this._indent(paragraph, true, 0, 0));
                 lines.push(line);
             }
+            this._visibleEnd = length;
             this._layout = lines;
         }
         return this._layout;

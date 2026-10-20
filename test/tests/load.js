@@ -56,6 +56,7 @@
 
 /*#*/ include('TextItem.js');
 /*#*/ include('TextRange.js');
+/*#*/ include('PathText.js');
 
 /*#*/ include('HitResult.js');
 
