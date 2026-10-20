@@ -13,5 +13,6 @@
 var ItemSelection = {
     ITEM: 1,
     BOUNDS: 2,
-    POSITION: 4
+    POSITION: 4,
+    STROKE_BOUNDS: 8
 };

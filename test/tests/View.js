@@ -566,6 +566,40 @@ test('Selections are drawn with a line width of 1', function() {
     path.remove();
 });
 
+test('Selected bounds and strokeBounds (#1030)', function() {
+    // The stroke reaches from 20 to 40 around the left edge at 30. The
+    // selection's 1pt lines cover the pixels on both sides of these
+    // coordinates, and its 4pt corner handles reach 2 further:
+    var path = new Path.Rectangle({
+            point: [30, 30],
+            size: [40, 40],
+            strokeColor: 'red',
+            strokeWidth: 20,
+            selectedColor: 'blue'
+        }),
+        ctx = view.element.getContext('2d');
+
+    function getBlue(x, y) {
+        var pixelRatio = view.pixelRatio;
+        return ctx.getImageData(x * pixelRatio, y * pixelRatio, 1, 1).data[2];
+    }
+
+    path.strokeBounds.selected = true;
+    view.update(true);
+    equals(getBlue(20, 40) > 0, true, 'the left edge of strokeBounds');
+    equals(getBlue(18, 18) > 0, true, 'the top left handle of strokeBounds');
+    equals(getBlue(30, 40), 0, 'no left edge of bounds');
+    equals(getBlue(28, 28), 0, 'no top left handle of bounds');
+    path.strokeBounds.selected = false;
+    path.bounds.selected = true;
+    view.update(true);
+    equals(getBlue(20, 40), 0, 'no left edge of strokeBounds');
+    equals(getBlue(18, 18), 0, 'no top left handle of strokeBounds');
+    equals(getBlue(30, 40) > 0, true, 'the left edge of bounds');
+    equals(getBlue(28, 28) > 0, true, 'the top left handle of bounds');
+    path.remove();
+});
+
 test('settings.segmentSize (#1899)', function() {
     var path = new Path({
             segments: [[[20, 50], null, [0, -30]], [80, 50]],
