@@ -28,6 +28,8 @@
 
 ### Fixed
 
+- Fix PaperScript's exported variable declarations without semicolons, such as
+  `export const a = 1`, which compiled to invalid code.
 - Fix `Curve#classify()` reporting points of inflection, cusps and loops at the
   very ends of curves, which made boolean operations miss crossings at those
   vertices (#1879, #1387).

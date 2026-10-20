@@ -394,7 +394,12 @@ Base.exports.PaperScript = function() {
                     } else {
                         names.push(declaration.id.name);
                     }
-                    replaceCode(node, getCode(declaration) + names.map(
+                    // Variable declarations may end without a semicolon,
+                    // which the exports added after them need:
+                    var code = getCode(declaration);
+                    if (declaration.declarations && !/;\s*$/.test(code))
+                        code += ';';
+                    replaceCode(node, code + names.map(
                         function(name) {
                             return ' module.exports.' + name + ' = ' + name
                                     + ';';
