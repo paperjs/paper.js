@@ -9,6 +9,11 @@ const mustache = require('mustache');
 // Retrieve JSDoc data.
 const data = JSON.parse(fs.readFileSync(__dirname + '/typescript-definition-data.json', 'utf8'));
 const classes = data.classes;
+// The two numbers that a sole point or size argument can be passed as:
+const pairParams = {
+    Point: 'x: number, y: number',
+    Size: 'width: number, height: number'
+};
 
 // Format classes.
 classes.forEach(cls => {
@@ -41,24 +46,33 @@ classes.forEach(cls => {
     // Format methods.
     const methods = cls.methods
         .filter(filter)
-        .map(it => ({
-            name: formatMethodName(it._name),
-            // Constructors don't need return type.
-            type: !it.isConstructor
-                ? formatType(getMethodReturnType(it), { isMethodReturnType: true })
-                : '',
-            static: formatStatic(it.isStatic),
-            // This flag is only used below to filter methods.
-            isStaticConstructor: it.isStatic && it.isConstructor,
-            comment: formatComment(it.comment, 'desc', it.isConstructor),
-            params: it._params
-                ? it._params
-                    // Filter internal parameters (starting with underscore).
-                    .filter(it => !/^_/.test(it.name))
-                    .map(it => formatParameter(it))
-                    .join(', ')
-                : ''
-        }))
+        .flatMap(it => {
+            // Filter internal parameters (starting with underscore).
+            const params = (it._params || []).filter(it => !/^_/.test(it.name));
+            const method = {
+                name: formatMethodName(it._name),
+                // Constructors don't need return type.
+                type: !it.isConstructor
+                    ? formatType(getMethodReturnType(it), { isMethodReturnType: true })
+                    : '',
+                static: formatStatic(it.isStatic),
+                // This flag is only used below to filter methods.
+                isStaticConstructor: it.isStatic && it.isConstructor,
+                comment: formatComment(it.comment, 'desc', it.isConstructor),
+                params: params.map(it => formatParameter(it)).join(', ')
+            };
+            // Where a point or size is the only argument, it can also be
+            // passed as two numbers, see the Point and Size class docs:
+            const pair = !it.isConstructor && params.length === 1
+                    && !params[0].isOptional && pairParams[params[0].type];
+            return pair
+                ? [method, Object.assign({}, method, { params: pair, isPair: true })]
+                : [method];
+        })
+        // Leave out the pairs that are documented already, e.g. (dx, dy):
+        .filter((method, i, methods) => !method.isPair || !methods.some(other =>
+                !other.isPair && other.name === method.name
+                && getParamTypes(other) === getParamTypes(method)))
         .sort(sortMethods);
 
     // Divide methods in 2 parts: static constructors and other. Because static
@@ -211,6 +225,10 @@ function parseType(type, options) {
     }
 
     return type;
+}
+
+function getParamTypes(method) {
+    return method.params.replace(/[\w.]+\??: /g, '');
 }
 
 function formatMethodName(methodName) {
