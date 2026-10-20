@@ -442,26 +442,23 @@ new function() {
             color.setAlpha(parseFloat(value));
     }
 
+    // The primitives that SvgExport writes for a shadow after its blur:
+    var shadowPrimitives = 'feOffset,feFlood,feComposite,feComposite';
+
     // Reads a shadow from a <filter> with the primitives that SvgExport writes
     // for it, and only these, or returns null for any other filter:
     function getFilterShadow(filter) {
-        var primitives = {},
-            count = 0,
-            nodes = filter ? filter.childNodes : [];
-        for (var i = 0, l = nodes.length; i < l; i++) {
-            var node = nodes[i];
-            if (node.nodeType === 1) {
-                primitives[node.nodeName] = node;
-                count++;
-            }
-        }
-        var blur = primitives.feGaussianBlur,
-            offset = primitives.feOffset,
-            flood = primitives.feFlood;
-        if (!(offset && flood && primitives.feComposite && primitives.feMerge)
-                || count !== (blur ? 5 : 4))
+        var nodes = Base.slice(filter && filter.children || []),
+            names = nodes.map(function(node) {
+                return node.nodeName;
+            }).join(),
+            blur = names === 'feGaussianBlur,' + shadowPrimitives
+                    && nodes.shift();
+        if (!blur && names !== shadowPrimitives)
             return null;
-        var color = new Color(flood.getAttribute('flood-color') || 'black'),
+        var offset = nodes[0],
+            flood = nodes[1],
+            color = new Color(flood.getAttribute('flood-color') || 'black'),
             opacity = flood.getAttribute('flood-opacity');
         if (opacity)
             color.setAlpha(color.getAlpha() * parseFloat(opacity));

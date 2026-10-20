@@ -305,8 +305,13 @@ new function() {
     }
 
     function exportShadow(item, options) {
-        // Shadows as SVG 1.1 filters, which both browsers and editors render,
-        // unlike CSS drop-shadow() or <feDropShadow> (#1003):
+        // Shadows as SVG 1.1 filters, which browsers and editors render, with
+        // their region in percent of the element's bounds, as Illustrator drops
+        // items with fractions. Items without width or height can't have one,
+        // so leave their shadows out (#1003):
+        var box = item.getInternalBounds();
+        if (!box.width || !box.height)
+            return null;
         var style = item._style,
             color = style.getShadowColor(),
             offset = style.getShadowOffset(),
@@ -317,58 +322,48 @@ new function() {
             bounds = item.getStrokeBounds(new Matrix()),
             rect = bounds.unite(new Rectangle(bounds.getPoint().add(offset),
                     bounds.getSize())).expand(6 * deviation),
-            // Give the region relative to the element's bounding box, as
-            // shapes, rasters and text fold their position into their
-            // coordinates. Only items without width or height, which SVG
-            // doesn't filter then, need it in user space, as their own:
-            box = item.getInternalBounds(),
-            relative = box.width && box.height,
-            filter = SvgElement.create('filter', relative ? {
-                x: (rect.x - box.x) / box.width,
-                y: (rect.y - box.y) / box.height,
-                width: rect.width / box.width,
-                height: rect.height / box.height
-            } : {
-                x: rect.x,
-                y: rect.y,
-                width: rect.width,
-                height: rect.height,
-                filterUnits: 'userSpaceOnUse'
-            }, formatter),
-            merge = SvgElement.create('feMerge');
+            region = new Matrix().scale(100 / box.width, 100 / box.height)
+                    .translate(box.getPoint().negate())._transformBounds(rect),
+            filter = SvgElement.create('filter');
 
-        function add(parent, type, attrs) {
-            parent.appendChild(SvgElement.create(type, attrs, formatter));
+        function add(type, attrs) {
+            filter.appendChild(SvgElement.create(type, attrs, formatter));
         }
+
+        Base.each(['x', 'y', 'width', 'height'], function(key) {
+            filter.setAttribute(key, formatter.number(region[key]) + '%');
+        });
 
         // SVG 1.1 renders a blur of 0 as nothing, so leave it out then:
         if (deviation > 0) {
-            add(filter, 'feGaussianBlur', {
+            add('feGaussianBlur', {
                 'in': 'SourceAlpha',
                 stdDeviation: deviation,
                 result: 'blur'
             });
         }
-        add(filter, 'feOffset', {
+        add('feOffset', {
             'in': deviation > 0 ? 'blur' : 'SourceAlpha',
             dx: offset.x,
             dy: offset.y,
             result: 'offset'
         });
-        add(filter, 'feFlood', {
+        add('feFlood', {
             'flood-color': color.toCSS(true),
             'flood-opacity': color.getAlpha(),
             result: 'color'
         });
-        add(filter, 'feComposite', {
+        add('feComposite', {
             'in': 'color',
             in2: 'offset',
             operator: 'in',
             result: 'shadow'
         });
-        add(merge, 'feMergeNode', { 'in': 'shadow' });
-        add(merge, 'feMergeNode', { 'in': 'SourceGraphic' });
-        filter.appendChild(merge);
+        add('feComposite', {
+            'in': 'SourceGraphic',
+            in2: 'shadow',
+            operator: 'over'
+        });
         setDefinition(item, filter, 'filter', options);
         return 'url(#' + filter.id + ')';
     }
@@ -478,8 +473,10 @@ new function() {
         });
 
         // Groups don't draw shadows, so only export those of the item itself:
-        if (item._style.getShadowColor(true) && item.hasShadow())
-            attrs.filter = exportShadow(item, options);
+        var filter = item._style.getShadowColor(true) && item.hasShadow()
+                && exportShadow(item, options);
+        if (filter)
+            attrs.filter = filter;
 
         if (style.length)
             attrs.style = style.join(';');
@@ -546,8 +543,10 @@ new function() {
             definitions = null;
         }
         parentStyles = null;
+        // Illustrator ignores filters without line breaks around them:
         return options.asString
                 ? new self.XMLSerializer().serializeToString(svg)
+                    .replace(/<defs>|<\/filter>|<\/defs>/g, '$&\n')
                 : svg;
     }
 
