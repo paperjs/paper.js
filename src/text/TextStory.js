@@ -13,8 +13,10 @@
 /**
  * @name TextStory
  *
- * @class The text of a {@link TextItem}: its content, kept in runs of
- *     characters that share a style, and the styles of its paragraphs.
+ * @class The text of one or more linked {@link TextItem}s, which it flows
+ *     through in order: its content, kept in runs of characters that share a
+ *     style, and the styles of its paragraphs. A text item that isn't linked
+ *     has a story of its own.
  */
 var TextStory = Base.extend(/** @lends TextStory# */{
     _class: 'TextStory',
@@ -39,6 +41,16 @@ var TextStory = Base.extend(/** @lends TextStory# */{
         this._items = items || [];
     },
 
+    /**
+     * The text items that the story flows through, in order.
+     *
+     * @bean
+     * @type TextItem[]
+     */
+    getTextItems: function() {
+        return this._items.slice();
+    },
+
     // A copy of the story's content and styles, for the text items `items`:
     _clone: function(items) {
         var story = new TextStory(items);
@@ -52,11 +64,46 @@ var TextStory = Base.extend(/** @lends TextStory# */{
         return story;
     },
 
+    // Joins the content and styles of the story `other` onto the end of this
+    // one. The paragraph they meet in keeps this one's style:
+    _append: function(other) {
+        var that = this,
+            runs = other._runs.map(function(run) {
+                return {
+                    length: run.length,
+                    style: new Style(run.style, that)
+                };
+            });
+        this._content += other._content;
+        this._runs = this._runs.concat(runs).filter(function(run) {
+            return run.length > 0;
+        });
+        if (!this._runs.length)
+            this._runs = [runs[0]];
+        this._paragraphs = this._paragraphs.concat(
+                other._paragraphs.slice(1).map(function(style) {
+                    return new Style(style, that);
+                }));
+    },
+
+    // Takes the content from `start` on out of the story, into a new one for
+    // the text items `items`. The paragraph it breaks continues in both:
+    _extract: function(start, items) {
+        var rest = this._clone(items),
+            content = this._content,
+            paragraph = this._paragraphs[
+                    this._countBreaks(content.slice(0, start))];
+        rest.replace('', 0, start);
+        rest._paragraphs[0] = new Style(paragraph, rest);
+        this.replace('', start, content.length);
+        return rest;
+    },
+
     // The styles of the runs and paragraphs are their own:
     _getStyles: function() {
     },
 
-    // Changes to the story change its text items:
+    // Changes to the story change the text items it flows through:
     _changed: function(flags) {
         var items = this._items;
         for (var i = 0, l = items.length; i < l; i++)

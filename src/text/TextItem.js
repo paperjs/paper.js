@@ -26,12 +26,15 @@ var TextItem = Item.extend(/** @lends TextItem# */{
     _applyMatrix: false,
     _canApplyMatrix: false,
     _serializeFields: {
-        content: null
+        content: null,
+        orientation: 'horizontal'
     },
+    _orientation: 'horizontal',
     // TextItem has no handles, so share the cache of #handleBounds and #bounds:
     _boundsOptions: { handle: false },
     initialize: function TextItem(arg) {
-        // The story that the text item shows. The text's own style stands for its runs' and paragraphs' styles,
+        // The story that the text item shows, alone or linked with others.
+        // The text's own style stands for its runs' and paragraphs' styles,
         // see #_getStyles():
         this._story = new TextStory([this]);
         // Support two forms of item initialization: Passing one object literal
@@ -101,14 +104,21 @@ var TextItem = Item.extend(/** @lends TextItem# */{
 
     _changed: function _changed(flags) {
         _changed.base.call(this, flags);
-        // The layout follows the content and the styles of the runs:
-        if (flags & (/*#=*/ChangeFlag.GEOMETRY | /*#=*/ChangeFlag.STYLE))
+        // The layout follows the content and the styles of the runs, and where
+        // the text starts in its story, which the item before it decides:
+        if (flags & (/*#=*/ChangeFlag.GEOMETRY | /*#=*/ChangeFlag.STYLE)) {
             this._layout = this._fontMetrics = null;
+            var next = this.getNextTextItem();
+            if (next)
+                next._changed(/*#=*/Change.GEOMETRY);
+        }
     },
 
     // A copy shows a copy of the story, on its own:
-    copyContent: function(source) {
+    copyContent: function copyContent(source) {
+        copyContent.base.call(this, source);
         this._story = source._story._clone([this]);
+        this._orientation = source._orientation;
         this._changed(/*#=*/Change.CONTENT);
     },
 
@@ -127,14 +137,200 @@ var TextItem = Item.extend(/** @lends TextItem# */{
     },
 
     /**
-     * The story the text item shows: its content, kept in runs of characters
-     * that share a style, and the styles of its paragraphs.
+     * The direction the text's lines run in: `'horizontal'`, or `'vertical'`
+     * from top to bottom, with the lines from right to left.
+     *
+     * @bean
+     * @type String
+     * @values 'horizontal', 'vertical'
+     * @default 'horizontal'
+     */
+    getOrientation: function() {
+        return this._orientation;
+    },
+
+    setOrientation: function(orientation) {
+        if (orientation !== this._orientation) {
+            this._orientation = orientation;
+            this._changed(/*#=*/Change.GEOMETRY);
+        }
+    },
+
+    /**
+     * The path that the text runs along ({@link PathText}). It guides the
+     * text and isn't drawn itself.
+     *
+     * @bean
+     * @type PathItem
+     */
+    getTextPath: function() {
+        return this._children && this._children[0] || null;
+    },
+
+    setTextPath: function(path) {
+        this.removeChildren();
+        if (path)
+            this.addChild(path);
+        this._changed(/*#=*/Change.GEOMETRY);
+    },
+
+    // The text path is the text's child, but it guides the text instead of
+    // being one of its parts, so text items show no children, and they're
+    // never hit:
+    // @override
+    getChildren: function() {
+        return null;
+    },
+
+    // @override
+    getFirstChild: function() {
+        return null;
+    },
+
+    // @override
+    getLastChild: function() {
+        return null;
+    },
+
+    // @override
+    _hitTestChildren: function() {
+        return null;
+    },
+
+    /**
+     * {@grouptitle Linking}
+     *
+     * The story the text item shows: the text of all the text items linked
+     * with it.
      *
      * @bean
      * @type TextStory
      */
     getStory: function() {
         return this._story;
+    },
+
+    /**
+     * Links the text item `next` after this one, so the story flows on into
+     * it. Its own story joins the end of this one.
+     *
+     * @param {TextItem} next the text item to link
+     * @return {Boolean} {@true if the text item was linked}
+     */
+    link: function(next) {
+        var story = this._story,
+            other = next._story;
+        if (other === story)
+            return false;
+        // Join the other story's content, styles and text items:
+        var items = story._items,
+            joined = other._items;
+        story._append(other);
+        items.splice.apply(items,
+                [items.indexOf(this) + 1, 0].concat(joined));
+        for (var i = 0, l = joined.length; i < l; i++)
+            joined[i]._story = story;
+        story._changed(/*#=*/Change.CONTENT);
+        return true;
+    },
+
+    /**
+     * {@true if the text item is linked with others}
+     *
+     * @return {Boolean}
+     */
+    isLinked: function() {
+        return this._story._items.length > 1;
+    },
+
+    /**
+     * Unlinks the text item: `'both'` takes it out of its story, which flows
+     * on through the others, `'before'` and `'after'` break the story into
+     * two there.
+     *
+     * @param {String} [which='both'] `'both'`, `'before'` or `'after'`
+     * @return {Boolean} {@true if the text item was unlinked}
+     */
+    unlink: function(which) {
+        var story = this._story,
+            items = story._items,
+            index = items.indexOf(this);
+        which = which || 'both';
+        if (items.length > 1 && !(which === 'before' && index === 0
+                || which === 'after' && index === items.length - 1)) {
+            if (which === 'both') {
+                // The item keeps the style its text started with, in a story
+                // of its own:
+                var start = this.getVisibleRange()._start,
+                    own = new TextStory([this]);
+                own._runs[0].style = new Style(
+                        story._getRangeStyles('fontSize', start, start)[0],
+                        own);
+                items.splice(index, 1);
+                this._story = own;
+                story._changed(/*#=*/Change.CONTENT);
+                this._changed(/*#=*/Change.CONTENT);
+            } else {
+                // Break the story where the items after the break start:
+                var at = which === 'before' ? index : index + 1,
+                    start = items[at].getVisibleRange()._start,
+                    moved = items.splice(at, items.length - at),
+                    rest = story._extract(start, moved);
+                for (var i = 0, l = moved.length; i < l; i++)
+                    moved[i]._story = rest;
+                story._changed(/*#=*/Change.CONTENT);
+                rest._changed(/*#=*/Change.CONTENT);
+            }
+            return true;
+        }
+        return false;
+    },
+
+    /**
+     * The text item after this one in its story, if any.
+     *
+     * @bean
+     * @type TextItem
+     */
+    getNextTextItem: function() {
+        var items = this._story._items;
+        return items[items.indexOf(this) + 1] || null;
+    },
+
+    /**
+     * The text item before this one in its story, if any.
+     *
+     * @bean
+     * @type TextItem
+     */
+    getPreviousTextItem: function() {
+        var items = this._story._items;
+        return items[items.indexOf(this) - 1] || null;
+    },
+
+    /**
+     * The range of the story that this text item shows, as its layout flows
+     * the story through the linked text items: without the overflow, and
+     * without what the ones before it show.
+     *
+     * @bean
+     * @type TextRange
+     */
+    getVisibleRange: function() {
+        var range = this._getVisibleRange();
+        return new TextRange(this._story, range[0], range[1]);
+    },
+
+    // The part of the story that the item shows, as [start, end], from where
+    // the items before it end to where its layout ends:
+    _getVisibleRange: function() {
+        this._getLayout();
+        return [this._getStart(), this._visibleEnd];
+    },
+
+    _getStart: function() {
+        var previous = this.getPreviousTextItem();
+        return previous ? previous._getVisibleRange()[1] : 0;
     },
 
     isEmpty: function() {
@@ -145,9 +341,9 @@ var TextItem = Item.extend(/** @lends TextItem# */{
     // x = 0: the pieces of its runs, each with its style, place and extent,
     // the width, and the line height, the largest of the runs'. Neighbouring
     // pieces of one font are measured as one string, so each advance holds the
-    // font's kerning with the letter before it. In runs with manual kerning or
-    // rotated letters, each letter is a piece:
-    _measure: function(start, end) {
+    // font's kerning with the letter before it. With `byLetter`, and in runs
+    // with manual kerning or rotated letters, each letter is a piece:
+    _measure: function(start, end, byLetter) {
         var view = this.getView(),
             story = this._story,
             content = story._content,
@@ -204,7 +400,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
                 var style = run.style,
                     piece = this._getPiece(style),
                     kerning = style.getLetterKerning();
-                if (kerning != null || piece.rotation) {
+                if (byLetter || kerning != null || piece.rotation) {
                     // Walk the letters once, through all the runs:
                     letters = letters || story._getLetters();
                     while (index < letters.length
@@ -245,7 +441,8 @@ var TextItem = Item.extend(/** @lends TextItem# */{
     /**
      * The lines of the text, as its layout breaks them: each a range of its
      * story, with its `baseline`, a {@link Line} along it, and its `bounds`,
-     * in the text item's own coordinates.
+     * in the text item's own coordinates. A {@link PathText}'s one line
+     * follows its path: these describe it laid out straight.
      *
      * @bean
      * @type TextRange[]
@@ -430,7 +627,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
                         hasFill = style.hasFill(),
                         hasStroke = style.hasStroke(),
                         size = piece.size,
-                        x = 0;
+                        x = piece.dx || 0;
                     this._setStyles(ctx, param, viewMatrix, null, style);
                     if (hasStroke && scale) {
                         ctx.lineWidth /= scale;
@@ -486,7 +683,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
                     var piece = pieces[j],
                         local = point.subtract(piece.x, line.y + piece.y)
                                 .rotate(-piece.rotation),
-                        rect = this._getBox(piece, 0, 0),
+                        rect = this._getBox(piece, piece.dx || 0, 0),
                         closest = local.clamp(rect.getTopLeft(true),
                                 rect.getBottomRight(true));
                     // Transparent fills are hit too, see Path#_hitTestSelf():
