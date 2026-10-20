@@ -408,3 +408,28 @@ test('#1255', function() {
         { point: { x: 439.38241, y: 216.13904 }, time: 0, crossing: false }
     ]);
 });
+
+test('#1940: intersections at coordinates beyond 16384', function() {
+    // Rectangles with shared edges, beyond where EPSILON is lost:
+    var rect1 = new Path.Rectangle({ point: [16385, 100], size: [300, 300] });
+    var rect2 = new Path.Rectangle({ point: [16385, -150], size: [300, 300] });
+    equals(rect1.getIntersections(rect2).length, 4);
+    equals(rect1.intersect(rect2).area, 300 * 50);
+    // Paths whose bounds only touch:
+    var square1 = new Path.Rectangle({ point: [20000, 0], size: [100, 100] });
+    var square2 = new Path.Rectangle({ point: [20100, 0], size: [100, 100] });
+    equals(square1.getIntersections(square2).length, 2);
+    compareBoolean(function() { return square1.unite(square2); },
+            'M20000,0h200v100h-200z');
+});
+
+test('#1882', function() {
+    // A vertical line through the joint of an arc's curves, at coordinates
+    // beyond 16384:
+    var arc = new Path('M 768404.125 383629.72406100313 A 563 563 0 0 0 '
+            + '767528.125 383629.72406100313');
+    var line = new Path('M 767966.125 383983.4844 L 767966.125 383358.4844');
+    testIntersections(line.getIntersections(arc), [
+        { point: { x: 767966.125, y: 383420.45418 }, index: 0 }
+    ]);
+});
