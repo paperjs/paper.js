@@ -285,6 +285,27 @@ test('view.dispatchMouseEvent() outside the view', function() {
     tool.remove();
 });
 
+test('event.time', function() {
+    var tool = new Tool(),
+        log = [];
+    tool.onMouseDown = tool.onKeyDown = function(event) {
+        log.push(event.type + ' ' + event.time + ' ' + event.timeStamp);
+    };
+    view.dispatchMouseEvent('mousedown', [10, 10], { time: 1.5 });
+    view.dispatchMouseEvent('mouseup', [10, 10], { time: 1.6 });
+    view.dispatchKeyEvent('keydown', 'a', { time: 2.25 });
+    view.dispatchKeyEvent('keyup', 'a', { time: 2.3 });
+    // The deprecated options.timeStamp in milliseconds still works:
+    view.dispatchMouseEvent('mousedown', [10, 10], { timeStamp: 3500 });
+    view.dispatchMouseEvent('mouseup', [10, 10], { timeStamp: 3600 });
+    equals(log, [
+        'mousedown 1.5 1500',
+        'keydown 2.25 2250',
+        'mousedown 3.5 3500'
+    ]);
+    tool.remove();
+});
+
 test('view.dispatchKeyEvent()', function() {
     var tool = new Tool();
     var log = [];
