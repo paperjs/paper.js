@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 00:24:44 2026 +0200
+ * Date: Wed Oct 21 01:17:39 2026 +0200
  *
  ***
  *
@@ -10671,13 +10671,23 @@ statics: {
 				radius * Math.sqrt(b * b + d * d)];
 	},
 
+	_getStrokeNormal: function(curve, time, radius, matrix, strokeMatrix) {
+		var mx = matrix ? matrix._shiftless() : new Matrix(),
+			inverse = strokeMatrix && strokeMatrix.inverted(),
+			tangent = curve.getTangentAtTime(time).transform(
+					inverse ? inverse.append(mx) : mx);
+		return new Point(tangent.y, -tangent.x).normalize(radius);
+	},
+
 	_addBevelJoin: function(segment, join, radius, miterLimit, matrix,
 			strokeMatrix, addPoint, isArea) {
 		var curve2 = segment.getCurve(),
 			curve1 = curve2.getPrevious(),
 			point = curve2.getPoint1().transform(matrix),
-			normal1 = curve1.getNormalAtTime(1).multiply(radius),
-			normal2 = curve2.getNormalAtTime(0).multiply(radius),
+			normal1 = Path._getStrokeNormal(curve1, 1, radius, matrix,
+					strokeMatrix),
+			normal2 = Path._getStrokeNormal(curve2, 0, radius, matrix,
+					strokeMatrix),
 			angle = normal1.getDirectedAngle(normal2);
 		if (angle < 0 || angle >= 180) {
 			normal1 = normal1.negate();
@@ -10703,8 +10713,9 @@ statics: {
 			addPoint, isArea) {
 		var point = segment._point.transform(matrix),
 			loc = segment.getLocation(),
-			vector = loc.getNormal()
-					.multiply(loc.getTime() === 0 ? radius : -radius),
+			time = loc.getTime(),
+			vector = Path._getStrokeNormal(loc.getCurve(), time,
+					time === 0 ? radius : -radius, matrix, strokeMatrix),
 			normal = vector.transform(strokeMatrix);
 		if (cap === 'square') {
 			if (isArea) {
