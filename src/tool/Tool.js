@@ -358,7 +358,15 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
         var move = mouse.move || mouse.drag,
             responds = this.responds(type),
             called = false,
-            tool = this;
+            tool = this,
+            // The time and velocity since the last tool event, in seconds and
+            // points per second, measured between the mouse reports, so the
+            // steps that maxDistance interpolates along the way share them:
+            time = event.timeStamp / 1000,
+            elapsed = this._time != null ? time - this._time : 0,
+            velocity = !mouse.down && this._point && elapsed > 0
+                    ? point.subtract(this._point).divide(elapsed)
+                    : new Point();
         // Updates the internal tool state, taking into account minDistance and
         // maxDistance and interpolating "fake" events along the moved distance
         // to respect their settings, if necessary.
@@ -393,6 +401,9 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
             }
             tool._point = pt;
             tool._lastPoint = toolPoint || pt;
+            tool._velocity = velocity;
+            tool._elapsed = elapsed;
+            tool._time = time;
             if (mouse.down) {
                 tool._moveCount = -1;
                 tool._downPoint = pt;
@@ -419,6 +430,9 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
                     if (tool.isActive()) {
                         paper = tool._scope;
                         tool._lastPoint = tool._point;
+                        // Not moving, but keep the time of the last report:
+                        tool._velocity = new Point();
+                        tool._elapsed = tool._eventInterval / 1000;
                         tool._moveCount++;
                         if (tool.responds('mousedrag')) {
                             tool.emit('mousedrag',
