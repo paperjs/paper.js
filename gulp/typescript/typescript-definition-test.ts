@@ -400,6 +400,7 @@ item.contains(pointLike);
 item.isInside(rectangleLike);
 item.intersects(item);
 item.hitTest(pointLike);
+paper.Item.getBounds([item], { stroke: true });
 item.hitTest(pointLike, {});
 // Options objects are typed from the @option tags (#1666):
 item.hitTest(pointLike, { tolerance: 5, fill: true, class: paper.Path });
