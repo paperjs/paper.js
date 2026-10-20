@@ -206,6 +206,42 @@ function sweep(entry) {
     result.wrong = points.filter(function(sample) {
         return sample.filled !== sample.expected;
     }).length;
+    // Samples close to the outlines: Step off evenly spaced points on each
+    // outline along its normal, by multiples of the operation's epsilon, and
+    // keep those that are further than 2 epsilon from the other outlines:
+    var epsilon = PathItem._createGraph(a, b).epsilon,
+        outlines = [a, b, result0];
+    result.near = {};
+    [2, 10, 100].forEach(function(factor) {
+        var count = 0,
+            wrong = 0;
+        outlines.forEach(function(outline) {
+            (outline.children || [outline]).forEach(function(path) {
+                var length = path.length;
+                for (var i = 0; i < 32 && length; i++) {
+                    var location = path.getLocationAt(length * (i + 0.5) / 32),
+                        normal = location && location.normal;
+                    if (normal && !normal.isZero()) {
+                        [1, -1].forEach(function(sign) {
+                            var point = location.point.add(
+                                    normal.multiply(sign * factor * epsilon));
+                            if (outlines.every(function(other) {
+                                return other === outline
+                                        || !isNear(other, point, 2 * epsilon);
+                            })) {
+                                count++;
+                                if (result0.contains(point) !== operations[
+                                        entry.op](a.contains(point),
+                                            b.contains(point)))
+                                    wrong++;
+                            }
+                        });
+                    }
+                }
+            });
+        });
+        result.near[factor] = [wrong, count];
+    });
     result.stable = 0;
     result.total = deltas.length * 2;
     result.nonPlanar = 0;
