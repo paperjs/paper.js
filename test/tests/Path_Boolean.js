@@ -1397,3 +1397,13 @@ test('Backtracking keeps the incoming handle of the branch', function() {
     // The area of linesweeper's union of the same paths:
     equals(path1.unite(path2).area, 367.73429515353575);
 });
+
+test('PathItem#resolveCrossings() with a hole that zigzags along the outline', function() {
+    // The hole runs back and forth along the outline's edge from (100, 50) to
+    // (100, 51). Removing these overlaps left links behind on the remaining
+    // segments, and tracing then lost the outline:
+    var path = new CompoundPath(
+        'M100,51L100,50L100,51L100,50L80,40L50,51z' +
+        'M0,100L60,10L50,0L100,50L100,51z');
+    equals(path.resolveCrossings().area, 2765);
+});
