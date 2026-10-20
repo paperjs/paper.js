@@ -123,6 +123,23 @@ test('trackChanges / takeChanges()', function() {
     equals(project.takeChanges(), null);
 });
 
+test('hasChanges()', function() {
+    var project = new Project();
+    var path = new Path.Circle([50, 50], 20);
+    equals(project.hasChanges(), false);
+    project.trackChanges = true;
+    equals(project.hasChanges(), false);
+    path.fillColor = 'red';
+    equals(project.hasChanges(), true);
+    // Asking doesn't take the changes:
+    equals(project.hasChanges(), true);
+    equals(project.takeChanges().length, 1);
+    equals(project.hasChanges(), false);
+    path.rotate(10);
+    project.trackChanges = false;
+    equals(project.hasChanges(), false);
+});
+
 test('trackChanges logs removed layers', function() {
     var project = new Project();
     var layer = new Layer();
