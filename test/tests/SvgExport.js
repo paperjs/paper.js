@@ -897,3 +897,20 @@ test('Export and import SVG blend modes that CSS doesn\'t have (#1296)', functio
         equals(res.blendMode, blendMode, blendMode + ': imported');
     });
 });
+
+test('Export SVG text with start, end and justify justifications', function() {
+    var text = new PointText({
+        point: [10, 20],
+        content: 'One'
+    });
+    text.justification = 'justify';
+    equals(text.exportSVG().getAttribute('text-anchor'), 'start', 'justify');
+    text.justification = 'end';
+    equals(text.exportSVG().getAttribute('text-anchor'), 'end', 'end');
+    text.justification = 'start';
+    equals(text.exportSVG().getAttribute('text-anchor'), 'start', 'start');
+    var imported = project.importSVG(
+            '<svg xmlns="http://www.w3.org/2000/svg"><text text-anchor="end">'
+            + 'One</text></svg>');
+    equals(imported.lastChild.justification, 'right', 'imported as before');
+});

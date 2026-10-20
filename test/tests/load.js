@@ -55,6 +55,7 @@
 /*#*/ include('Raster.js');
 
 /*#*/ include('TextItem.js');
+/*#*/ include('TextRange.js');
 
 /*#*/ include('HitResult.js');
 
