@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 05:46:56 2026 +0200
+ * Date: Tue Oct 20 06:00:11 2026 +0200
  *
  ***
  *
@@ -11516,34 +11516,39 @@ PathItem.inject(new function() {
 		getInteriorPoint: function() {
 			var bounds = this.getBounds(),
 				point = bounds.getCenter(true);
-			if (!this.contains(point)) {
+			if (!this.contains(point) || this.getNearestPoint(point)
+					.isClose(point, 1e-7)) {
 				var curves = this.getCurves(),
-					y = point.y,
+					monoCurves = [],
+					ys = [],
 					intercepts = [],
 					roots = [];
-				for (var i = 0, l = curves.length; i < l; i++) {
-					var v = curves[i].getValues(),
-						o0 = v[1],
-						o1 = v[3],
-						o2 = v[5],
-						o3 = v[7];
-					if (y >= min(o0, o1, o2, o3) && y <= max(o0, o1, o2, o3)) {
-						var monoCurves = Curve.getMonoCurves(v);
-						for (var j = 0, m = monoCurves.length; j < m; j++) {
-							var mv = monoCurves[j],
-								mo0 = mv[1],
-								mo3 = mv[7];
-							if ((mo0 !== mo3) &&
-								(y >= mo0 && y <= mo3 || y >= mo3 && y <= mo0)){
-								var x = y === mo0 ? mv[0]
-									: y === mo3 ? mv[6]
-									: Curve.solveCubic(mv, 1, y, roots, 0, 1)
-										=== 1
-										? Curve.getPoint(mv, roots[0]).x
-										: (mv[0] + mv[6]) / 2;
-								intercepts.push(x);
-							}
-						}
+				for (var i = 0, l = curves.length; i < l; i++)
+					Base.push(monoCurves, Curve.getMonoCurves(
+							curves[i].getValues()));
+				for (var i = 0, l = monoCurves.length; i < l; i++)
+					ys.push(monoCurves[i][1], monoCurves[i][7]);
+				ys.sort(function(a, b) { return a - b; });
+				var y = point.y,
+					below = y,
+					above = y;
+				for (var i = 0, l = ys.length; i < l && above === y; i++) {
+					if (ys[i] <= y) {
+						below = ys[i];
+					} else {
+						above = ys[i];
+					}
+				}
+				y = point.y = (below + above) / 2;
+				for (var i = 0, l = monoCurves.length; i < l; i++) {
+					var mv = monoCurves[i],
+						mo0 = mv[1],
+						mo3 = mv[7];
+					if (y > min(mo0, mo3) && y < max(mo0, mo3)) {
+						intercepts.push(
+								Curve.solveCubic(mv, 1, y, roots, 0, 1) === 1
+									? Curve.getPoint(mv, roots[0]).x
+									: (mv[0] + mv[6]) / 2);
 					}
 				}
 				if (intercepts.length > 1) {
