@@ -4,6 +4,14 @@
     <title>Paper.js Tests</title>
     <link rel="stylesheet" href="../node_modules/qunitjs/qunit/qunit.css">
     <script src="../node_modules/qunitjs/qunit/qunit.js"></script>
+    <!-- A current Acorn, for the tests of what hosts can parse with their own,
+        see the PaperScript tests. Loaded first and renamed, as load.js
+        provides the bundled one as window.acorn: -->
+    <script src="../node_modules/acorn-latest/dist/acorn.js"></script>
+    <script>
+        window.acornLatest = window.acorn;
+        delete window.acorn;
+    </script>
     <script src="../dist/paper-full.js"></script>
     <script src="../node_modules/prepro/lib/browser.js"></script>
     <script src="load.js"></script>

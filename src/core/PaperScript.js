@@ -38,7 +38,12 @@ Base.exports.PaperScript = function() {
         // not be immediately available, so we need to check for it here again.
         // We also give self.acorn the preference over the bundled one, so
         // people can load their own preferred version in sketch.paperjs.org
-        return (self.acorn || acorn).parse(code, options);
+        var parser = self.acorn || acorn;
+        // Acorn 8 and newer require ecmaVersion, and parse all current syntax
+        // with 'latest', which the bundled version doesn't know:
+        if (parseInt(parser.version, 10) >= 8)
+            options = Base.set({ ecmaVersion: 'latest' }, options);
+        return parser.parse(code, options);
     }
 
     // Operators to overload
@@ -146,15 +151,15 @@ Base.exports.PaperScript = function() {
         // Converts an original offset to the one in the current state of the
         // modified code.
         function getOffset(offset) {
-            // Add all insertions before this location together to calculate
-            // the current offset
+            // Add the changes of all replacements that end before this
+            // location in the original code, to get its current offset:
+            var current = offset;
             for (var i = 0, l = insertions.length; i < l; i++) {
                 var insertion = insertions[i];
-                if (insertion[0] >= offset)
-                    break;
-                offset += insertion[1];
+                if (insertion[1] <= offset)
+                    current += insertion[2];
             }
-            return offset;
+            return current;
         }
 
         // Returns the node's code as a string, taking insertions into account.
@@ -170,19 +175,19 @@ Base.exports.PaperScript = function() {
         }
 
         // Replaces the node's code with a new version and keeps insertions
-        // information up-to-date.
+        // information up-to-date. Each insertion holds the original range of
+        // the replaced code and the change in length, so the order of the
+        // replacements doesn't matter. A replacement of code that contains
+        // others takes their place:
         function replaceCode(node, str) {
-            var start = getOffset(node.range[0]),
-                end = getOffset(node.range[1]),
-                insert = 0;
-            // Sort insertions by their offset, so getOffset() can do its thing
-            for (var i = insertions.length - 1; i >= 0; i--) {
-                if (start > insertions[i][0]) {
-                    insert = i + 1;
-                    break;
-                }
-            }
-            insertions.splice(insert, 0, [start, str.length - end + start]);
+            var range = node.range,
+                start = getOffset(range[0]),
+                end = getOffset(range[1]);
+            insertions = insertions.filter(function(insertion) {
+                return insertion[0] < range[0] || insertion[1] > range[1];
+            });
+            insertions.push([range[0], range[1],
+                    str.length - range[1] + range[0]]);
             code = code.substring(0, start) + str + code.substring(end);
         }
 
@@ -273,6 +278,33 @@ Base.exports.PaperScript = function() {
             }
         }
 
+        // Collects the names that a declaration's identifier or destructuring
+        // pattern declares:
+        function collectNames(node, names) {
+            switch (node.type) {
+            case 'Identifier':
+                names.push(node.name);
+                break;
+            case 'ObjectPattern':
+                node.properties.forEach(function(property) {
+                    collectNames(property.value || property.argument, names);
+                });
+                break;
+            case 'ArrayPattern':
+                node.elements.forEach(function(element) {
+                    if (element)
+                        collectNames(element, names);
+                });
+                break;
+            case 'AssignmentPattern':
+                collectNames(node.left, names);
+                break;
+            case 'RestElement':
+                collectNames(node.argument, names);
+                break;
+            }
+        }
+
         function handleExports(node) {
 			switch (node.type) {
             case 'ExportDefaultDeclaration':
@@ -287,22 +319,29 @@ Base.exports.PaperScript = function() {
                 var declaration = node.declaration;
                 var specifiers = node.specifiers;
                 if (declaration) {
-                    var declarations = declaration.declarations;
-                    if (declarations) {
-                        declarations.forEach(function(dec) {
-                            replaceCode(dec, 'module.exports.' + getCode(dec));
+                    // Declare variables, functions and classes as they are,
+                    // and export the declared names after:
+                    var names = [];
+                    if (declaration.declarations) {
+                        declaration.declarations.forEach(function(dec) {
+                            collectNames(dec.id, names);
                         });
-                        replaceCode({
-                            range: [
-                                node.start,
-                                declaration.start + declaration.kind.length
-                            ]
-                        }, '');
+                    } else {
+                        names.push(declaration.id.name);
                     }
+                    replaceCode(node, getCode(declaration) + names.map(
+                        function(name) {
+                            return ' module.exports.' + name + ' = ' + name
+                                    + ';';
+                        }).join(''));
                 } else if (specifiers) {
+                    // `export { a, b as c }` exports the local names under
+                    // the exported ones:
                     var exports = specifiers.map(function(specifier) {
-                        var name = getCode(specifier);
-                        return 'module.exports.' + name + ' = ' + name + '; ';
+                        var local = specifier.local.name,
+                            exported = specifier.exported.name;
+                        return 'module.exports.' + exported + ' = ' + local
+                                + '; ';
                     }).join('');
                     if (exports) {
                         replaceCode(node, exports);

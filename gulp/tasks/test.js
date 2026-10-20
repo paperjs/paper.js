@@ -35,6 +35,12 @@ gulp.task('test:node', ['minify:acorn'], function(callback) {
                 {
                     path: '../dist/paper-' + (argv.build || 'full') + '.js',
                     namespace: 'paper'
+                },
+                // A current Acorn, for the tests of what hosts can parse with
+                // their own, see the PaperScript tests:
+                {
+                    path: 'acorn-latest',
+                    namespace: 'acornLatest'
                 }
             ],
             timeout: 40
