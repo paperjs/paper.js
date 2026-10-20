@@ -1304,3 +1304,30 @@ test('#1619', function() {
     var result = 'M380,580h-160v-260l180,0v130zM313.36486,413.71682l-70.01386,69.98614l69.98614,70.01386l70.01386,-69.98614z';
     compareBoolean(path1.intersect(path2), result);
 });
+
+test('#1929: boolean operations on open paths whose ends meet', function() {
+    // The paths end where they start, so closing them must keep the curves
+    // that end there, instead of closing them with straight lines:
+    var path1 = new Path({ segments: [
+        [[20.72317, 25.34694], [0, 0], [27.99628, -30.63521]],
+        [[120.64881, 19.49412], [-31.47556, -28.74815], [31.49028, 28.73341]],
+        [[123.84796, 119.5377], [27.98154, -30.63523], [-27.96679, 30.63518]],
+        [[23.90758, 125.39052], [31.49029, 28.74815], [-31.4608, -28.74816]],
+        [[20.72317, 25.34694], [-28.01103, 30.63521], [0, 0]]
+    ] });
+    var path2 = new Path({ segments: [
+        [[103.91591, 101.30105], [0, 0], [16.82137, -18.41355]],
+        [[100.14179, 41.94717], [18.31036, 16.71817], [-18.31036, -16.71815]],
+        [[40.68472, 43.56887], [16.8361, -18.44304], [-16.82135, 18.44305]],
+        [[44.42935, 102.92275], [-18.28088, -16.71816], [18.28087, 16.71814]],
+        [[103.91591, 101.30105], [-16.88032, 18.44306], [0, 0]]
+    ] });
+    var closed1 = path1.clone(),
+        closed2 = path2.clone();
+    closed1.closePath();
+    closed2.closePath();
+    compareBoolean(function() { return path1.subtract(path2); },
+            closed1.subtract(closed2));
+    compareBoolean(function() { return path1.unite(path2); },
+            closed1.unite(closed2));
+});
