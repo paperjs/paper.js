@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 06:03:59 2026 +0200
+ * Date: Tue Oct 20 06:14:45 2026 +0200
  *
  ***
  *
@@ -7732,6 +7732,11 @@ new function() {
 				x * sin + y * cos);
 		}
 		Curve.solveCubic(rv, 1, 0, roots, 0, 1);
+		var epsilon = 1e-7;
+		if (Math.abs(rv[1]) < epsilon)
+			roots.push(0);
+		if (Math.abs(rv[7]) < epsilon)
+			roots.push(1);
 		return roots;
 	}
 
