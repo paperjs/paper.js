@@ -21,7 +21,9 @@
 // Usage: node sweep.js <paper build> <first case> [exclusion], or
 // <paper build> count. The points left out lie within 1e-4 times the diagonal
 // of the operands' bounds of an outline, or within the given multiple of the
-// operation's epsilon.
+// operation's epsilon. With a scale and a translation as fifth and sixth
+// arguments, the operands are scaled about the origin and moved by both, and
+// the tiny moves scaled with them.
 // Prints a line of JSON when it starts each case and one with its result,
 // from the first case on, so that the caller can restart after a case that
 // doesn't return.
@@ -31,7 +33,9 @@ var fs = require('fs'),
     vm = require('vm');
 
 var paper = require(path.resolve(process.argv[2])),
-    exclusion = +process.argv[4];
+    exclusion = +process.argv[4],
+    scale = +process.argv[5] || 1,
+    translation = +process.argv[6] || 0;
 paper.setup(new paper.Size(1000, 1000));
 paper.install(global);
 
@@ -170,6 +174,10 @@ function sweep(entry) {
         result = { label: entry.label, op: entry.op };
     a.remove();
     b.remove();
+    [a, b].forEach(function(item) {
+        item.scale(scale, new Point(0, 0));
+        item.translate(translation, translation);
+    });
     if (options.trace === false || options.stroke) {
         result.skipped = 'trace: false or stroke';
         return result;
@@ -256,7 +264,7 @@ function sweep(entry) {
     deltas.forEach(function(delta) {
         [[delta, 0], [0, delta]].forEach(function(vector) {
             var moved = b.clone({ insert: false });
-            moved.translate(vector);
+            moved.translate(new Point(vector).multiply(scale));
             check(moved);
             var moved0 = a[entry.op](moved, options);
             if (points.every(function(sample) {
