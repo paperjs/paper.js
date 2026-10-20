@@ -2872,18 +2872,35 @@ statics: {
                 radius * Math.sqrt(b * b + d * d)];
     },
 
+    /**
+     * Returns the normal of the curve at the given time with the length of the
+     * stroke's radius, in the space where the stroke is drawn with a round pen,
+     * from the curve's tangent transformed into it, as the matrices don't
+     * preserve angles (#2065). For strokes that scale with the matrix, this is
+     * the curve's own space.
+     */
+    _getStrokeNormal: function(curve, time, radius, matrix, strokeMatrix) {
+        var mx = matrix ? matrix._shiftless() : new Matrix(),
+            inverse = strokeMatrix && strokeMatrix.inverted(),
+            tangent = curve.getTangentAtTime(time).transform(
+                    inverse ? inverse.append(mx) : mx);
+        return new Point(tangent.y, -tangent.x).normalize(radius);
+    },
+
     _addBevelJoin: function(segment, join, radius, miterLimit, matrix,
             strokeMatrix, addPoint, isArea) {
         // Handles both 'bevel' and 'miter' joins, as they share a lot of code,
         // using different matrices to transform segment points and stroke
-        // vectors to support Style#strokeScaling. The stroke vectors are only
-        // transformed after constructing the join, as the matrices don't
-        // preserve angles (#2065).
+        // vectors to support Style#strokeScaling. The join is constructed
+        // where the stroke is drawn, see _getStrokeNormal(), and its vectors
+        // transformed from there.
         var curve2 = segment.getCurve(),
             curve1 = curve2.getPrevious(),
             point = curve2.getPoint1().transform(matrix),
-            normal1 = curve1.getNormalAtTime(1).multiply(radius),
-            normal2 = curve2.getNormalAtTime(0).multiply(radius),
+            normal1 = Path._getStrokeNormal(curve1, 1, radius, matrix,
+                    strokeMatrix),
+            normal2 = Path._getStrokeNormal(curve2, 0, radius, matrix,
+                    strokeMatrix),
             angle = normal1.getDirectedAngle(normal2);
         if (angle < 0 || angle >= 180) {
             normal1 = normal1.negate();
@@ -2917,11 +2934,12 @@ statics: {
         // Style#strokeScaling.
         var point = segment._point.transform(matrix),
             loc = segment.getLocation(),
-            // Checking loc.getTime() for 0 is to see whether this is the first
-            // or the last segment of the open path, in order to determine in
-            // which direction to flip the normal.
-            vector = loc.getNormal()
-                    .multiply(loc.getTime() === 0 ? radius : -radius),
+            time = loc.getTime(),
+            // Checking the time for 0 is to see whether this is the first or
+            // the last segment of the open path, in order to determine in which
+            // direction to flip the normal.
+            vector = Path._getStrokeNormal(loc.getCurve(), time,
+                    time === 0 ? radius : -radius, matrix, strokeMatrix),
             normal = vector.transform(strokeMatrix);
         // For square caps, we need to step away from point in the direction of
         // the tangent, which is the normal rotated before transforming it, as
