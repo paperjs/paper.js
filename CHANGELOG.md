@@ -26,6 +26,8 @@
 
 ### Fixed
 
+- Don't let hosted items load again in Boa, which can call their loading
+  accessors once they have their own values (boa-dev/boa#5600).
 - Handle the mouse events of `View#dispatchMouseEvent()` also outside the
   view's bounds, since the host decides which events belong to its drawing
   surface.

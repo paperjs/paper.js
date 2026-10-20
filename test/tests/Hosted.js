@@ -173,6 +173,24 @@ test('Items load their content on first access', function() {
     equals(res.host.takeCalls(), []);
 });
 
+test('Loaded items ignore their loading accessors (boa-dev/boa#5600)', function() {
+    var res = createHostedProject();
+    var circle = res.project.layers[0].children['circle'];
+    circle.position = circle.position.add(10);
+    var segments = circle.segments.map(function(segment) {
+        return segment.point;
+    });
+    res.host.takeCalls();
+    // Boa calls the shell's accessor again after the item has its own value,
+    // which V8 never does, so call it directly:
+    var proto = Object.getPrototypeOf(circle);
+    Object.getOwnPropertyDescriptor(proto, '_segments').get.call(circle);
+    equals(res.host.takeCalls(), [], 'not loaded again');
+    equals(circle.segments.map(function(segment) {
+        return segment.point;
+    }), segments, 'the moved segments');
+});
+
 test('A loaded project matches the host document', function() {
     var res = createHostedProject();
     equals(res.project.exportJSON(), res.host.document.exportJSON());

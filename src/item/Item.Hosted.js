@@ -44,9 +44,14 @@ new function() {
     }
 
     // Writes define the field on the item itself, where it hides the accessor.
+    // Boa can still call the accessor once the item has its own value, which
+    // must not load it again (boa-dev/boa#5600):
     function defineLoader(shell, name, load) {
         Object.defineProperty(shell, name, {
             get: function() {
+                var own = Object.getOwnPropertyDescriptor(this, name);
+                if (own)
+                    return own.value;
                 this[load]();
                 return this[name];
             },
