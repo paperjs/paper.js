@@ -914,3 +914,63 @@ test('Export SVG text with start, end and justify justifications', function() {
             + 'One</text></svg>');
     equals(imported.lastChild.justification, 'right', 'imported as before');
 });
+
+test('Export SVG text with mixed styles', function() {
+    function getSpans(node) {
+        return Base.each(node.childNodes, function(child) {
+            this.push([child.textContent, child.getAttribute('font-size'),
+                    child.getAttribute('text-anchor')]);
+        }, []);
+    }
+
+    var text = new PointText({
+        point: [10, 20],
+        content: 'Hello world'
+    });
+    text.range(6, 11).fontSize = 20;
+    // Runs of mixed styles in their own <tspan>, the shared ones on <text>:
+    var node = text.exportSVG();
+    equals(node.getAttribute('font-size'), null, 'not on the text');
+    equals(getSpans(node), [['Hello ', '12', null], ['world', '20', null]],
+            'one line');
+    text.content = 'One\nTwo';
+    text.paragraphs[1].justification = 'right';
+    node = text.exportSVG();
+    equals(getSpans(node), [['One', null, 'start'], ['Two', null, 'end']],
+            'lines with mixed justifications');
+    equals(node.lastChild.getAttribute('x'), '10', 'anchored at the point');
+});
+
+test('Export and import SVG area text', function() {
+    var text = new AreaText(new Rectangle(10, 20, 100, 200));
+    text.content = 'Text in an area breaks into lines that fit it.';
+    text.justification = 'right';
+    var node = text.exportSVG(),
+        lines = text.lines;
+    equals(node.childNodes.length, lines.length, 'a <tspan> per line');
+    equals(Base.each(node.childNodes, function(child, i) {
+        var isClose = function(value, expected) {
+            return Math.abs(+value - expected) < 0.001;
+        };
+        this.push(isClose(child.getAttribute('y'), lines[i].baseline.point.y)
+                && child.getAttribute('text-anchor') === 'start'
+                && isClose(child.firstChild.getAttribute('x'),
+                    lines[i].bounds.left));
+    }, []).every(function(placed) {
+        return placed;
+    }), true, 'each at its baseline, its pieces where they start');
+    var imported = project.importSVG(text.exportSVG({ asString: true }));
+    equals(imported.content, lines.map(function(line) {
+        return line.content.trim();
+    }).join('\n'), 'imported as point text, line by line');
+});
+
+test('Export SVG text on a path', function() {
+    var text = new PathText(new Path.Line([0, 0], [0, 200]));
+    text.content = 'Down';
+    var node = text.exportSVG(),
+        letters = node.firstChild.childNodes;
+    equals(letters.length, 4, 'a <tspan> per letter');
+    equals(letters[0].getAttribute('rotate'), '90', 'turned with the path');
+    equals(letters[0].getAttribute('x'), '0', 'on it');
+});
