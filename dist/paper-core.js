@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 19:00:07 2026 +0200
+ * Date: Tue Oct 20 19:50:23 2026 +0200
  *
  ***
  *
@@ -11074,23 +11074,51 @@ PathItem.inject(new function() {
 		if (options && (options.trace == false || options.stroke) &&
 				/^(subtract|intersect)$/.test(operation))
 			return splitBoolean(path1, path2, operation, options);
-		var paths = tracePaths(getOperands(path1,
-				combinePaths(path2, operation)), operators[operation]);
+		var paths;
+		if (operation === 'exclude' && Array.isArray(path2)
+				&& path2.length > 1) {
+			var items = [path1].concat(path2),
+				compound = new CompoundPath(Item.NO_INSERT);
+			compound.setFillRule('evenodd');
+			for (var i = 0, l = items.length; i < l; i++) {
+				compound.addChildren(tracePaths([preparePath(items[i], true)],
+						operators.unite));
+			}
+			paths = tracePaths([compound], operators.unite);
+		} else {
+			paths = tracePaths(getOperands(path1,
+					combinePaths(path2, operation)), operators[operation]);
+		}
 		return createResult(paths, true, path1, path2, options);
 	}
 
 	function combinePaths(paths, operation) {
-		var list = [].concat(paths),
-			combine = operation === 'subtract' ? 'unite' : operation;
-		while (list.length > 1) {
-			var next = [];
-			for (var i = 0, l = list.length; i < l; i += 2) {
-				next.push(i + 1 < l ? traceBoolean(list[i], list[i + 1],
-						combine, { insert: false }) : list[i]);
+		var isUnite = operation === 'unite' || operation === 'subtract';
+
+		function combine(entries) {
+			if (entries.length > 1) {
+				if (isUnite) {
+					var bounds = entries[0].bounds;
+					for (var i = 1, l = entries.length; i < l; i++)
+						bounds = bounds.unite(entries[i].bounds);
+					var key = bounds.width > bounds.height ? 'x' : 'y';
+					entries.sort(function(entry1, entry2) {
+						return entry1.center[key] - entry2.center[key];
+					});
+				}
+				var middle = entries.length >> 1;
+				return traceBoolean(combine(entries.slice(0, middle)),
+						combine(entries.slice(middle)),
+						isUnite ? 'unite' : operation, { insert: false });
 			}
-			list = next;
+			return entries[0].path;
 		}
-		return list[0];
+
+		var entries = [].concat(paths || []).map(function(path) {
+			var bounds = path.getBounds();
+			return { path: path, bounds: bounds, center: bounds.getCenter() };
+		});
+		return entries.length ? combine(entries) : null;
 	}
 
 	function splitBoolean(path1, path2, operation, options) {
