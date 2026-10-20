@@ -13,12 +13,17 @@
 // We call our variable `isNodeContext` because resemble.js exposes a global
 // `isNode` function which would override it and break node check.
 var isNodeContext = typeof global === 'object',
+    // Text is measured in a font of the tests' own, the same on all systems,
+    // Inter from assets/fonts (OFL), named so that an installed one isn't used:
+    testFontFamily = 'Inter Test',
     scope;
 
 if (isNodeContext) {
     scope = global;
     // Resemble.js needs the Image constructor global.
     global.Image = paper.window.Image;
+    require('canvas').registerFont(require('path').resolve(
+            'assets/fonts/Inter-Regular.ttf'), { family: testFontFamily });
 } else {
     scope = window;
     // This is only required when running in the browser:
@@ -33,6 +38,16 @@ if (isNodeContext) {
             document.getElementById('qunit-tests').className += ' hidepass';
         }
     });
+    // Browsers load fonts as they're used, so load it before the tests, and
+    // run them also if it fails, so that only the text tests fail:
+    QUnit.config.autostart = false;
+    new FontFace(testFontFamily, 'url(assets/fonts/Inter-Regular.ttf)')
+        .load().then(function(font) {
+            document.fonts.add(font);
+            QUnit.start();
+        }, function() {
+            QUnit.start();
+        });
 }
 
 // Some native javascript classes have name collisions with Paper.js classes.
