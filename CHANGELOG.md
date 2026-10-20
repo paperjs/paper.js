@@ -14,6 +14,10 @@
   flows through several text items, which `TextStory#textItems` lists.
 - Add `PathText`, text along a path between `startOffset` and `endOffset`, each
   letter turned to the path, which it takes as `TextItem#textPath`.
+- Add `AreaText`, text inside any path as its `textPath`, holes too, in
+  columns and rows, with lines breaking between words and at soft hyphens,
+  `verticalAlign`, `fitHeight()`, and `lineWrap`, a paragraph property that
+  balances the lines.
 - Add character style properties: `fontStyle`, `lineHeight`, `letterKerning`,
   `letterScaling`, `letterRotation`, `baselineShift`, `baselinePosition`,
   `capitals`, `underline` and `strikethrough`, and `fontVariations` and
