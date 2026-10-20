@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 05:38:54 2026 +0200
+ * Date: Tue Oct 20 05:40:40 2026 +0200
  *
  ***
  *
@@ -10662,9 +10662,12 @@ PathItem.inject(new function() {
 			for (var i = 0, l = paths.length; i < l; i++) {
 				var path = paths[i];
 				if (!path._closed && !path.isEmpty()) {
+					var count = path._segments.length;
 					path.closePath(1e-12);
-					path.getFirstSegment().setHandleIn(0, 0);
-					path.getLastSegment().setHandleOut(0, 0);
+					if (path._segments.length === count) {
+						path.getFirstSegment().setHandleIn(0, 0);
+						path.getLastSegment().setHandleOut(0, 0);
+					}
 				}
 			}
 			res = res
