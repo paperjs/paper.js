@@ -1778,17 +1778,17 @@ new function() { // Injection scope for various item event handlers
      * Rasterizes the item into a newly created Raster object. The item itself
      * is not removed after rasterization.
      *
-     * @option [resolution=view.resolution] {Number} the desired resolution to
-     *     be used when rasterizing, in pixels per inch (DPI). If not specified,
-     *     the value of `view.resolution` is used by default.
-     * @option [raster=null] {Raster} specifies a raster to be reused when
-     *     rasterizing. If the raster has the desired size already, then the
+     * @option [options.resolution=view.resolution] {Number} the desired
+     *     resolution to be used when rasterizing, in pixels per inch (DPI). If
+     *     not specified, the value of `view.resolution` is used by default.
+     * @option [options.raster=null] {Raster} specifies a raster to be reused
+     *     when rasterizing. If the raster has the desired size already, then the
      *     underlying canvas is reused and no new memory needs to be allocated.
      *     If no raster is provided, a new raster item is created and returned
      *     instead.
-     * @option [insert=true] {Boolean} specifies whether the raster should be
-     *     inserted into the scene graph. When set to `true`, it is inserted
-     *     above the rasterized item.
+     * @option [options.insert=true] {Boolean} specifies whether the raster
+     *     should be inserted into the scene graph. When set to `true`, it is
+     *     inserted above the rasterized item.
      *
      * @name Item#rasterize
      * @function
@@ -4788,16 +4788,16 @@ new function() { // Injection scope for hit-test functions shared with project
      * Removes the item when the events specified in the passed options object
      * occur.
      *
-     * @option options.move {Boolean) remove the item when the next {@link
+     * @option options.move {Boolean} remove the item when the next {@link
      *     Tool#onMouseMove} event is fired.
      *
-     * @option options.drag {Boolena) remove the item when the next {@link
+     * @option options.drag {Boolean} remove the item when the next {@link
      *     Tool#onMouseDrag} event is fired.
      *
-     * @option options.down {Boolean) remove the item when the next {@link
+     * @option options.down {Boolean} remove the item when the next {@link
      *     Tool#onMouseDown} event is fired.
      *
-     * @option options.up {Boolean) remove the item when the next {@link
+     * @option options.up {Boolean} remove the item when the next {@link
      *     Tool#onMouseUp} event is fired.
      *
      * @name Item#removeOn
