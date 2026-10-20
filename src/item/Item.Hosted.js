@@ -344,24 +344,6 @@ new function() {
     });
 
     Project.inject(/** @lends Project# */{
-        // A host with getBounds() owns the project's page, see #bounds:
-        getBounds: function getBounds() {
-            var host = this._host;
-            return host && host.getBounds
-                    ? new Rectangle(host.getBounds())
-                    : getBounds.base.call(this);
-        },
-
-        setBounds: function setBounds(/* rect */) {
-            var host = this._host;
-            if (host && host.getBounds) {
-                if (host.setBounds)
-                    host.setBounds(Rectangle.read(arguments));
-            } else {
-                setBounds.base.apply(this, arguments);
-            }
-        },
-
         /**
          * The host document that the project's items come from. Setting it
          * creates the project's layers from the host's records. All items
@@ -380,10 +362,6 @@ new function() {
          *   of {@link Item#importJSON(json)}, without children.
          * - `getAncestorKeys(key)`, which returns the keys from the top level
          *   down to the node's parent.
-         * - Optionally `getBounds()`, which returns the bounds of the page, such
-         *   as an artboard, for {@link #bounds}, and `setBounds(rect)`, which
-         *   receives the bounds that a script sets. Without `setBounds()`, the
-         *   page can't be set.
          *
          * @bean
          * @type Object

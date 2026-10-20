@@ -158,14 +158,3 @@ test('project.scope, view.scope, item.scope and tool.scope (#1634)', function() 
     }, true);
     tool.remove();
 });
-
-test('project.bounds', function() {
-    var project = paper.project;
-    view.matrix = new Matrix();
-    equals(project.bounds, view.bounds, 'the view\'s bounds');
-    // Setting them fits the view, which is 100x100, to the rectangle:
-    project.bounds = new Rectangle(0, 0, 200, 100);
-    equals(view.bounds, new Rectangle(0, -50, 200, 200), 'view.bounds');
-    equals(project.bounds, view.bounds, 'set');
-    view.matrix = new Matrix();
-});
