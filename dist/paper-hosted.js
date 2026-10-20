@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 00:38:12 2026 +0200
+ * Date: Wed Oct 21 00:31:55 2026 +0200
  *
  ***
  *
@@ -17575,6 +17575,20 @@ new function() {
 		return res;
 	}
 
+	function getData(node) {
+		var data = null,
+			attributes = node.attributes,
+			json = node.getAttribute('data-paper-data');
+		for (var i = 0, l = attributes.length; i < l; i++) {
+			var match = attributes[i].name.match(/^data-(?!paper-)(.+)$/);
+			if (match) {
+				data = data || {};
+				data[Base.camelize(match[1])] = attributes[i].value;
+			}
+		}
+		return json ? Base.set(data || {}, JSON.parse(json)) : data;
+	}
+
 	var sandbox;
 
 	function getSandbox() {
@@ -17629,7 +17643,7 @@ new function() {
 				if (isElement && importer !== importGroup)
 					item = applyAttributes(item, node, options, isRoot);
 				var onImport = options.onImport,
-					data = isElement && node.getAttribute('data-paper-data');
+					data = isElement && getData(node);
 				if (onImport)
 					item = onImport(node, item, options) || item;
 				if (options.expandShapes && item instanceof Shape) {
@@ -17637,7 +17651,7 @@ new function() {
 					item = item.toPath();
 				}
 				if (data)
-					item._data = JSON.parse(data);
+					item._data = data;
 			}
 		} finally {
 			if (container) {
