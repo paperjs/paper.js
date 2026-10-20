@@ -535,6 +535,34 @@ PathItem.inject(new function() {
         };
     }
 
+    /*
+     * Returns the part of the curve values v between the curve times, with its
+     * ends moved to the given points, along with their handles. Straight
+     * curves remain straight.
+     */
+    function getPart(v, hasHandles, time1, time2, point1, point2) {
+        var part;
+        if (hasHandles) {
+            part = Curve.getPart(v, time1, time2).slice();
+            var dx1 = point1.x - part[0],
+                dy1 = point1.y - part[1],
+                dx2 = point2.x - part[6],
+                dy2 = point2.y - part[7];
+            part[0] += dx1;
+            part[1] += dy1;
+            part[2] += dx1;
+            part[3] += dy1;
+            part[4] += dx2;
+            part[5] += dy2;
+            part[6] += dx2;
+            part[7] += dy2;
+        } else {
+            part = [point1.x, point1.y, point1.x, point1.y,
+                    point2.x, point2.y, point2.x, point2.y];
+        }
+        return part;
+    }
+
     /**
      * Creates a planar graph of the operands' curves: All intersections become
      * vertices, the pieces of curves between them edges, and the edges bound
@@ -661,27 +689,9 @@ PathItem.inject(new function() {
         // The piece of curve i between two cuts, with its ends moved to their
         // vertices, along with their handles:
         function getPiece(i, cut1, cut2) {
-            var p1 = vertices[getVertex(cut1.point)],
-                p2 = vertices[getVertex(cut2.point)],
-                part;
-            if (!curves[i].hasHandles()) {
-                part = [p1.x, p1.y, p1.x, p1.y, p2.x, p2.y, p2.x, p2.y];
-            } else {
-                part = Curve.getPart(values[i], cut1.time, cut2.time).slice();
-                var dx1 = p1.x - part[0],
-                    dy1 = p1.y - part[1],
-                    dx2 = p2.x - part[6],
-                    dy2 = p2.y - part[7];
-                part[0] += dx1;
-                part[1] += dy1;
-                part[2] += dx1;
-                part[3] += dy1;
-                part[4] += dx2;
-                part[5] += dy2;
-                part[6] += dx2;
-                part[7] += dy2;
-            }
-            return part;
+            return getPart(values[i], curves[i].hasHandles(), cut1.time,
+                    cut2.time, vertices[getVertex(cut1.point)],
+                    vertices[getVertex(cut2.point)]);
         }
 
         function sortCuts(list) {
@@ -826,7 +836,10 @@ PathItem.inject(new function() {
                         from: from,
                         to: to,
                         isStraight: isStraight,
-                        windings: windings
+                        windings: windings,
+                        curve: i,
+                        time1: prev.time,
+                        time2: cut.time
                     });
                 }
                 prev = cut;
@@ -1035,6 +1048,8 @@ PathItem.inject(new function() {
             }
         }
         return {
+            curves: curves,
+            values: values,
             vertices: vertices,
             edges: edges,
             halfEdges: halfEdges,
@@ -1073,30 +1088,66 @@ PathItem.inject(new function() {
                     && !halfEdges[index ^ 1].face.isInside;
         }
 
+        // The curve times along a half-edge, and if the next one continues
+        // it along the same curve:
+        function getTimes(index) {
+            var edge = halfEdges[index].edge;
+            return index & 1 ? [edge.time2, edge.time1]
+                    : [edge.time1, edge.time2];
+        }
+
+        function isContinued(index, next) {
+            return halfEdges[index].edge.curve === halfEdges[next].edge.curve
+                    && getTimes(index)[1] === getTimes(next)[0];
+        }
+
         var paths = [],
             isVisited = [];
         for (var i = 0, l = halfEdges.length; i < l; i++) {
             if (!isVisited[i] && isBoundary(i)) {
-                var path = new Path(Item.NO_INSERT),
-                    segments = [],
-                    index = i,
-                    handleIn = null;
+                var contour = [],
+                    index = i;
                 do {
-                    var halfEdge = halfEdges[index],
-                        v = halfEdge.values,
-                        isStraight = halfEdge.edge.isStraight;
                     isVisited[index] = true;
+                    contour.push(index);
+                    index = halfEdges[index].next;
+                    while (!isBoundary(index))
+                        index = halfEdges[index ^ 1].next;
+                } while (index !== i);
+                // Start where a piece doesn't continue the one before it, as
+                // the pieces of a closed curve don't continue across its end:
+                var length = contour.length,
+                    start = 0;
+                while (start < length && isContinued(
+                        contour[(start || length) - 1], contour[start]))
+                    start++;
+                // Join the pieces of the same curve that follow each other
+                // back into one part of it:
+                var segments = [],
+                    handleIn = null;
+                for (var j = 0; j < length;) {
+                    var first = contour[(start + j) % length],
+                        last = first;
+                    while (++j < length && isContinued(last,
+                            contour[(start + j) % length]))
+                        last = contour[(start + j) % length];
+                    var edge = halfEdges[first].edge,
+                        isStraight = edge.isStraight,
+                        v = first === last
+                            ? halfEdges[first].values
+                            : getPart(graph.values[edge.curve], !isStraight,
+                                getTimes(first)[0], getTimes(last)[1],
+                                graph.vertices[halfEdges[first].from],
+                                graph.vertices[halfEdges[last].to]);
                     segments.push(new Segment(new Point(v[0], v[1]),
                             handleIn,
                             !isStraight && new Point(v[2] - v[0], v[3] - v[1])));
                     handleIn = !isStraight
                             && new Point(v[4] - v[6], v[5] - v[7]);
-                    index = halfEdge.next;
-                    while (!isBoundary(index))
-                        index = halfEdges[index ^ 1].next;
-                } while (index !== i);
+                }
                 if (handleIn)
                     segments[0].setHandleIn(handleIn);
+                var path = new Path(Item.NO_INSERT);
                 path.setSegments(segments);
                 path.setClosed(true);
                 // Only add paths that cover an area to the result.
