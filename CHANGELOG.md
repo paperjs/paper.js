@@ -4,6 +4,8 @@
 
 ### Added
 
+- Add `Item.getBounds(items[, options])`, the bounds of a list of items in
+  project coordinates as if they were grouped, e.g. of the selection (#2252).
 - Add `ToolEvent#velocity` and `#elapsed`, the velocity of the mouse since the
   last tool event in points per second, and the time since then in seconds,
   which stay even when the system misses a mouse report.
