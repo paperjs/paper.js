@@ -599,13 +599,21 @@ PathItem.inject(new function() {
             addCut(i, 0, curve._segment1._point, true);
             addCut(i, 1, curve._segment2._point, true);
         }
-        var locations = CurveLocation.expand(Curve.getIntersections(curves));
+        var locations = CurveLocation.expand(Curve.getIntersections(curves,
+                null, null, null, null, false, epsilon));
         for (var i = 0, l = locations.length; i < l; i++) {
             var loc = locations[i],
                 curve = loc.getCurve();
             addCut(offsets[curve._path._id] + curve.getIndex(), loc.getTime(),
                     loc.getPoint(), false);
         }
+        /*DEBUG*/var farPairs = 0;
+        if (typeof process !== 'undefined' && process.env.GRAPH_CHECK) {
+            for (var i = 0, l = locations.length; i < l; i++) {
+                var d = locations[i].getPoint().getDistance(locations[i]._intersection.getPoint());
+                if (d > epsilon) { farPairs++; if (process.env.GRAPH_FAR) console.log('FAR', d, 'eps', epsilon, locations[i].getPoint().toString(), locations[i]._intersection.getPoint().toString(), 't', locations[i].getTime(), locations[i]._intersection.getTime(), 'overlap', locations[i].hasOverlap(), '\n  c1', locations[i].getCurve().getValues().join(','), '\n  c2', locations[i]._intersection.getCurve().getValues().join(',')); }
+            }
+        }/*END*/
 
         // 2. Merge points closer than epsilon into vertices, through union-find
         // on the points sorted by x. A vertex takes the position of a curve end
@@ -737,7 +745,7 @@ PathItem.inject(new function() {
                         values: part,
                         from: from,
                         to: to,
-                        isStraight: isStraight,
+                        isStraight: isStraight, source: i,
                         windings: windings
                     });
                 }
@@ -916,6 +924,51 @@ PathItem.inject(new function() {
                     && !halfEdges[index ^ 1].face.isInside;
         }
 
+        /*DEBUG*/if (typeof process !== 'undefined' && process.env.GRAPH_CHECK) {
+            var bad = 0;
+            for (var i = 0; i < halfEdges.length; i += 2) {
+                var wl = halfEdges[i].face.windings, wr = halfEdges[i + 1].face.windings, d = halfEdges[i].edge.windings;
+                if (wl[0] - wr[0] !== d[0] || wl[1] - wr[1] !== d[1]) bad++;
+            }
+            if (bad) console.log('INCONSISTENT', bad, 'of', halfEdges.length / 2, 'farPairs', farPairs);
+            if (bad && process.env.GRAPH_CLASSIFY) {
+                var ecs2 = edges.map(function(e) { var v = e.values; return new Curve(new Point(v[0], v[1]), new Point(v[2] - v[0], v[3] - v[1]), new Point(v[4] - v[6], v[5] - v[7]), new Point(v[6], v[7])); });
+                var missed = 0, overlapsMissed = 0, onEdge = 0, minDist = Infinity;
+                for (var a = 0; a < ecs2.length; a++) for (var b = a + 1; b < ecs2.length; b++) {
+                    ecs2[a].getIntersections(ecs2[b]).forEach(function(l) {
+                        var pt = l.point, ok = [edges[a].from, edges[a].to, edges[b].from, edges[b].to].some(function(vi) { return pt.isClose(new Point(vertices[vi].x, vertices[vi].y), epsilon); });
+                        if (!ok) { if (l.hasOverlap()) overlapsMissed++; else missed++; }
+                    });
+                }
+                vertices.forEach(function(v, vi) {
+                    var p = new Point(v.x, v.y);
+                    edges.forEach(function(e) {
+                        if (e.from !== vi && e.to !== vi) {
+                            var t = Curve.getNearestTime(e.values, p), d = Curve.getPoint(e.values, t).getDistance(p);
+                            if (d <= epsilon) { onEdge++; if (process.env.GRAPH_VOE) console.log('VOE vertex', vi, v.x, v.y, 'isEnd', v.isEnd, 'degree', v.outgoing.length, 'edge', e.from, e.to, 't', t, 'd', d, 'eps', epsilon, 'src', curves[e.source]._path._id + ':' + curves[e.source].getIndex(), values[e.source].join(',')); v.outgoing.forEach(function(h) { var he = halfEdges[h], c = curves[he.edge.source]; console.log('   out', h, he.from, '->', he.to, c._path._id + ':' + c.getIndex(), values[he.edge.source].join(','), he.edge.windings.join('/')); }); cuts[e.source].forEach(function(cut) { console.log('   cut', cut.time, cut.point, getVertex(cut.point), xs[cut.point], ys[cut.point]); }); }
+                            else minDist = Math.min(minDist, d / epsilon);
+                        }
+                    });
+                });
+                console.log('CLASS far=' + farPairs + ' crossing=' + missed + ' overlap=' + overlapsMissed + ' vertexOnEdge=' + onEdge + ' nearestOther=' + minDist.toFixed(1));
+            }
+            if (bad && process.env.GRAPH_PLANAR) {
+                var ecs = edges.map(function(e) { var v = e.values; return new Curve(new Point(v[0], v[1]), new Point(v[2] - v[0], v[3] - v[1]), new Point(v[4] - v[6], v[5] - v[7]), new Point(v[6], v[7])); });
+                for (var a = 0; a < ecs.length; a++) for (var b = a + 1; b < ecs.length; b++) {
+                    ecs[a].getIntersections(ecs[b]).forEach(function(l) {
+                        var pt = l.point, ok = [edges[a].from, edges[a].to, edges[b].from, edges[b].to].some(function(vi) { return pt.isClose(new Point(vertices[vi].x, vertices[vi].y), epsilon); });
+                        if (!ok) console.log('MISSED', a, b, pt.toString(), l.hasOverlap(), 'eps', epsilon, '\n  A', edges[a].values.join(','), '\n  B', edges[b].values.join(','));
+                    });
+                }
+                vertices.forEach(function(v, vi) {
+                    var o = v.outgoing;
+                    for (var k = 0; k < o.length; k++) {
+                        var h1 = halfEdges[o[k]], h2 = halfEdges[o[(k + 1) % o.length]];
+                        if (o.length > 1 && Math.abs(h1.angle - h2.angle) < 1e-6) console.log('TIE at', vi, v.x, v.y, h1.angle, h2.angle, '\n  srcA', values[h1.edge.source].join(','), curves[h1.edge.source].getIndex(), curves[h1.edge.source]._path._id, '\n  srcB', values[h2.edge.source].join(','), curves[h2.edge.source].getIndex(), curves[h2.edge.source]._path._id, '\n  A', h1.values.join(','), '\n  B', h2.values.join(','));
+                    }
+                });
+            }
+        }/*END*/
         var paths = [],
             isVisited = [];
         for (var i = 0, l = halfEdges.length; i < l; i++) {
