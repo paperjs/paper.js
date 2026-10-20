@@ -1091,6 +1091,36 @@ new function() { // Injection scope for various item event handlers
         },
 
         /**
+         * Returns the bounds of the given items in project coordinates, as if
+         * they were grouped, without moving them, e.g. the bounds of the
+         * selection: `Item.getBounds(project.selectedItems)`. As in groups,
+         * items that aren't visible or are empty are left out.
+         *
+         * @option [options.stroke=false] {Boolean} include the stroke widths,
+         *     as {@link Item#strokeBounds} does
+         * @option [options.handle=false] {Boolean} include the handles, as
+         *     {@link Item#handleBounds} does
+         *
+         * @param {Item[]} items the items to get the bounds of
+         * @param {Object} [options] the kind of bounds
+         * @return {Rectangle} the bounds of the items, empty if there are none
+         */
+        getBounds: function(items, options) {
+            var rect = null;
+            for (var i = 0, l = items.length; i < l; i++) {
+                var item = items[i];
+                // The same items that #_getBounds() handles:
+                if (item._visible && !item.isEmpty(true)) {
+                    var bounds = item._getCachedBounds(
+                            item.getGlobalMatrix(true), options || {}, true)
+                            .rect;
+                    rect = rect ? rect.unite(bounds) : bounds.clone();
+                }
+            }
+            return rect || new Rectangle();
+        },
+
+        /**
          * Gets the combined bounds of all specified items.
          */
         _getBounds: function(items, matrix, options) {
