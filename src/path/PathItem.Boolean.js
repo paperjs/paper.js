@@ -35,13 +35,13 @@ PathItem.inject(new function() {
         // on its winding contribution, as calculated by propagateWinding().
         // Boolean operators return true if a segment with the given winding
         // contribution contributes to the final result or not. They are applied
-        // to for each segment after the paths are split at crossings.
+        // to for each segment after the paths are split at their intersections.
         operators = {
             unite:     { '1': true, '2': true },
             intersect: { '2': true },
             subtract:  { '1': true },
             // exclude only needs -1 to support reorientPaths() when there are
-            // no crossings. The actual boolean code uses unsigned winding.
+            // no intersections. The actual boolean code uses unsigned winding.
             exclude:   { '1': true, '-1': true }
         };
 
