@@ -27,7 +27,7 @@ var TextStory = Base.extend(/** @lends TextStory# */{
         justification: true, justifyLast: true, justifySpacing: true,
         startIndent: true, endIndent: true, firstLineIndent: true,
         spaceBefore: true, spaceAfter: true, hyphenation: true,
-        composer: true, tabs: true, direction: true
+        composer: true, lineWrap: true, tabs: true, direction: true
     },
     _itemKeys: {
         fillRule: true, strokeScaling: true, shadowColor: true,

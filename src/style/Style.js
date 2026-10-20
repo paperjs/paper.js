@@ -122,6 +122,7 @@ var Style = Base.extend(new function() {
         spaceAfter: 0,
         hyphenation: false,
         composer: 'paragraph',
+        lineWrap: 'normal',
         tabs: null,
         direction: null
     }),
@@ -162,6 +163,7 @@ var Style = Base.extend(new function() {
         spaceAfter: /*#=*/Change.GEOMETRY,
         hyphenation: /*#=*/Change.GEOMETRY,
         composer: /*#=*/Change.GEOMETRY,
+        lineWrap: /*#=*/Change.GEOMETRY,
         tabs: /*#=*/Change.GEOMETRY,
         direction: /*#=*/Change.GEOMETRY
     },
@@ -1010,7 +1012,7 @@ var Style = Base.extend(new function() {
     /**
      * Whether words are hyphenated at the ends of lines, and how: `true`, or `{
      * wordsLongerThan, afterFirst, beforeLast, limit, zone, capitalized }`.
-     * Kept for hosts.
+     * Kept for hosts: canvas text breaks only at soft hyphens.
      *
      * @name Style#hyphenation
      * @type Boolean|Object
@@ -1026,6 +1028,19 @@ var Style = Base.extend(new function() {
      * @type String
      * @values 'line', 'paragraph'
      * @default 'paragraph'
+     */
+
+    /**
+     * How the lines of a paragraph in an area are evened out: `'normal'`
+     * fills each line as far as it goes, `'balance'` makes them all about as
+     * long, and `'pretty'` balances the last four lines when the last one is
+     * shorter than a third of the one before. Both keep the paragraph's number
+     * of lines.
+     *
+     * @name Style#lineWrap
+     * @type String
+     * @values 'normal', 'balance', 'pretty'
+     * @default 'normal'
      */
 
     /**

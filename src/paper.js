@@ -86,6 +86,7 @@ var paper = function(self, undefined) {
 /*#*/ include('text/TextItem.js');
 /*#*/ include('text/PointText.js');
 /*#*/ include('text/PathText.js');
+/*#*/ include('text/AreaText.js');
 /*#*/ include('text/TextStory.js');
 /*#*/ include('text/TextRange.js');
 
