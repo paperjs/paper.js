@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 12:42:44 2026 +0200
+ * Date: Tue Oct 20 14:15:35 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -3951,13 +3951,18 @@ declare namespace paper {
          *     The loader runs each module once and handles cycles. Parsing
          *     `import` requires a current Acorn as `self.acorn`
          * 
+         * Code with top-level `await` runs as an async function. `execute()` then
+         * returns a Promise of the exports, and installs the global handlers once
+         * it resolves. Parsing it requires a current Acorn as `self.acorn`.
+         * 
          * @param code - the PaperScript code
          * @param scope - the scope for which the code is executed
          * @param options - the compilation options
          * 
-         * @return the exports defined in the executed code
+         * @return the exports defined in the executed code, or
+         *     with top-level `await`, a Promise of them
          */
-        static execute(code: string, scope: PaperScope, options?: { url?: string, source?: string, handlers?: string[], load?: Function }): object
+        static execute(code: string, scope: PaperScope, options?: { url?: string, source?: string, handlers?: string[], load?: Function }): object | Promise<any>
 
         /** 
          * Loads, compiles and executes PaperScript code in the HTML document. Note

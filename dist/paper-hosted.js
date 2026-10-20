@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 12:42:44 2026 +0200
+ * Date: Tue Oct 20 14:15:35 2026 +0200
  *
  ***
  *
@@ -7015,47 +7015,6 @@ statics: {
 		return null;
 	},
 
-	getNearestTime: function(v, point) {
-		if (Curve.isStraight(v)) {
-			var x0 = v[0], y0 = v[1],
-				x3 = v[6], y3 = v[7],
-				vx = x3 - x0, vy = y3 - y0,
-				det = vx * vx + vy * vy;
-			if (det === 0)
-				return 0;
-			var u = ((point.x - x0) * vx + (point.y - y0) * vy) / det;
-			return u < 1e-12 ? 0
-				 : u > 0.999999999999 ? 1
-				 : Curve.getTimeOf(v,
-					new Point(x0 + u * vx, y0 + u * vy));
-		}
-
-		var count = 100,
-			minDist = Infinity,
-			minT = 0;
-
-		function refine(t) {
-			if (t >= 0 && t <= 1) {
-				var dist = point.getDistance(Curve.getPoint(v, t), true);
-				if (dist < minDist) {
-					minDist = dist;
-					minT = t;
-					return true;
-				}
-			}
-		}
-
-		for (var i = 0; i <= count; i++)
-			refine(i / count);
-
-		var step = 1 / (count * 2);
-		while (step > 1e-8) {
-			if (!refine(minT - step) && !refine(minT + step))
-				step /= 2;
-		}
-		return minT;
-	},
-
 	getPart: function(v, from, to) {
 		var flip = from > to;
 		if (flip) {
@@ -7348,9 +7307,7 @@ new function() {
 		return Math.max(2, Math.min(16, Math.ceil(Math.abs(b - a) * 32)));
 	}
 
-	function evaluate(v, t, type, normalized) {
-		if (t == null || t < 0 || t > 1)
-			return null;
+	function getCoefficients(v) {
 		var x0 = v[0], y0 = v[1],
 			x1 = v[2], y1 = v[3],
 			x2 = v[4], y2 = v[5],
@@ -7369,7 +7326,20 @@ new function() {
 			ax = x3 - x0 - cx - bx,
 			cy = 3 * (y1 - y0),
 			by = 3 * (y2 - y1) - cy,
-			ay = y3 - y0 - cy - by,
+			ay = y3 - y0 - cy - by;
+		return [ax, bx, cx, ay, by, cy, x1, y1, x2, y2];
+	}
+
+	function evaluate(v, t, type, normalized) {
+		if (t == null || t < 0 || t > 1)
+			return null;
+		var x0 = v[0], y0 = v[1],
+			x3 = v[6], y3 = v[7],
+			c = getCoefficients(v),
+			ax = c[0], bx = c[1], cx = c[2],
+			ay = c[3], by = c[4], cy = c[5],
+			x1 = c[6], y1 = c[7],
+			x2 = c[8], y2 = c[9],
 			x, y;
 		if (type === 0) {
 			x = t === 0 ? x0 : t === 1 ? x3
@@ -7520,6 +7490,56 @@ new function() {
 			}
 			return Numerical.findRoot(f, ds, start + guess, a, b, 32,
 					1e-12);
+		},
+
+		getNearestTime: function(v, point) {
+			var x0 = v[0], y0 = v[1],
+				x3 = v[6], y3 = v[7],
+				px = point.x,
+				py = point.y;
+			if (Curve.isStraight(v)) {
+				var vx = x3 - x0, vy = y3 - y0,
+					det = vx * vx + vy * vy;
+				if (det === 0)
+					return 0;
+				var u = ((px - x0) * vx + (py - y0) * vy) / det;
+				return u < 1e-12 ? 0
+					 : u > 0.999999999999 ? 1
+					 : Curve.getTimeOf(v,
+						new Point(x0 + u * vx, y0 + u * vy));
+			}
+
+			var c = getCoefficients(v),
+				ax = c[0], bx = c[1], cx = c[2],
+				ay = c[3], by = c[4], cy = c[5],
+				count = 100,
+				minDist = Infinity,
+				minT = 0;
+
+			function refine(t) {
+				if (t >= 0 && t <= 1) {
+					var dx = (t === 0 ? x0 : t === 1 ? x3
+							: ((ax * t + bx) * t + cx) * t + x0) - px,
+						dy = (t === 0 ? y0 : t === 1 ? y3
+							: ((ay * t + by) * t + cy) * t + y0) - py,
+						dist = dx * dx + dy * dy;
+					if (dist < minDist) {
+						minDist = dist;
+						minT = t;
+						return true;
+					}
+				}
+			}
+
+			for (var i = 0; i <= count; i++)
+				refine(i / count);
+
+			var step = 1 / (count * 2);
+			while (step > 1e-8) {
+				if (!refine(minT - step) && !refine(minT + step))
+					step /= 2;
+			}
+			return minT;
 		},
 
 		getPoint: function(v, t) {
@@ -18521,8 +18541,14 @@ Base.exports.PaperScript = function() {
 			}
 		}
 
+		var functions = 0,
+			isAsync = false;
+
 		function walkAST(node, parent, paperFeatures) {
 			if (node) {
+				var isFunction = /Function/.test(node.type);
+				if (isFunction)
+					functions++;
 				for (var key in node) {
 					if (key !== 'range' && key !== 'loc') {
 						var value = node[key];
@@ -18534,6 +18560,12 @@ Base.exports.PaperScript = function() {
 							walkAST(value, node, paperFeatures);
 						}
 					}
+				}
+				if (isFunction)
+					functions--;
+				if (!functions && (node.type === 'AwaitExpression'
+						|| node.type === 'ForOfStatement' && node.await)) {
+					isAsync = true;
 				}
 				if (paperFeatures.operatorOverloading !== false) {
 					handleOverloading(node, parent);
@@ -18630,7 +18662,8 @@ Base.exports.PaperScript = function() {
 			url: url,
 			source: source,
 			code: code,
-			map: map
+			map: map,
+			async: isAsync
 		};
 	}
 
@@ -18697,7 +18730,9 @@ Base.exports.PaperScript = function() {
 			code += '\n' + exports;
 		}
 		code += '\nreturn module.exports;';
-		var agent = paper.agent;
+		var signature = (compiled.async ? 'async ' : '') + 'function('
+				+ params + ') {',
+			agent = paper.agent;
 		if (document && (agent.chrome
 				|| agent.firefox && agent.versionNumber < 40)) {
 			var script = document.createElement('script'),
@@ -18705,36 +18740,39 @@ Base.exports.PaperScript = function() {
 			if (agent.firefox)
 				code = '\n' + code;
 			script.appendChild(document.createTextNode(
-				'document.__paperscript__ = function(' + params + ') {' +
-					code +
-				'\n}'
+				'document.__paperscript__ = ' + signature + code + '\n}'
 			));
 			head.appendChild(script);
 			func = document.__paperscript__;
 			delete document.__paperscript__;
 			head.removeChild(script);
 		} else {
-			func = Function(params, code);
+			func = Function('return ' + signature + code + '\n}')();
 		}
-		var exports = func && func.apply(scope, args);
-		var obj = exports || {};
-		Base.each(toolHandlers, function(key) {
-			var value = obj[key];
-			if (value)
-				tool[key] = value;
-		});
-		if (view) {
-			if (obj.onResize)
-				view.setOnResize(obj.onResize);
-			view.emit('resize', {
-				size: view.size,
-				delta: new Point()
+
+		function install(exports) {
+			var obj = exports || {};
+			Base.each(toolHandlers, function(key) {
+				var value = obj[key];
+				if (value)
+					tool[key] = value;
 			});
-			if (obj.onFrame)
-				view.setOnFrame(obj.onFrame);
-			view.requestUpdate();
+			if (view) {
+				if (obj.onResize)
+					view.setOnResize(obj.onResize);
+				view.emit('resize', {
+					size: view.size,
+					delta: new Point()
+				});
+				if (obj.onFrame)
+					view.setOnFrame(obj.onFrame);
+				view.requestUpdate();
+			}
+			return exports;
 		}
-		return exports;
+
+		var exports = func && func.apply(scope, args);
+		return compiled.async ? exports.then(install) : install(exports);
 	}
 
 	function loadScript(script) {
