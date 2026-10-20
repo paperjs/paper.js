@@ -496,30 +496,54 @@ var View = Base.extend(Emitter, /** @lends View# */{
         return DomElement.isInserted(this._element);
     },
 
-    // Empty stubs of #getPixelSize() and #getTextWidth(), around so that
-    // web-workers don't fail. Overridden with proper functionality in
-    // CanvasView.
+    // Text is measured with a canvas context: the view's own, or one from the
+    // CanvasProvider, which also works in workers with an OffscreenCanvas.
+    // Without either, sizes are read as pixels, and text has no width.
     getPixelSize: function(size) {
-        var element = this._element,
+        var agent = paper.agent,
+            element = this._element,
+            ctx,
             pixels;
-        if (element) {
-            // this code is part of the Firefox workaround in CanvasView, but
-            // also provides a way to determine pixel-size that does not involve
-            // a Canvas. It still does not work in a web-worker though.
+        if (element && agent && agent.firefox) {
+            // Firefox doesn't convert context.font sizes to pixels, so use the
+            // DOM there, which still doesn't work in workers:
             var parent = element.parentNode,
                 temp = document.createElement('div');
             temp.style.fontSize = size;
             parent.appendChild(temp);
             pixels = parseFloat(DomElement.getStyles(temp).fontSize);
             parent.removeChild(temp);
+        } else if (ctx = this._context || CanvasProvider.getContext(1, 1)) {
+            var prevFont = ctx.font;
+            ctx.font = size + ' serif';
+            pixels = parseFloat(ctx.font);
+            ctx.font = prevFont;
+            if (ctx !== this._context)
+                CanvasProvider.release(ctx);
         } else {
             pixels = parseFloat(size);
         }
         return pixels;
     },
 
-    getTextWidth: function(font, lines) {
-        return 0;
+    getTextWidth: function(font, lines, letterSpacing) {
+        var ctx = this._context || CanvasProvider.getContext(1, 1),
+            width = 0;
+        if (ctx) {
+            var prevFont = ctx.font,
+                prevLetterSpacing = ctx.letterSpacing;
+            ctx.font = font;
+            ctx.letterSpacing = letterSpacing;
+            // Measure the real width of the text. Unfortunately, there is no
+            // sane way to measure text height with canvas.
+            for (var i = 0, l = lines.length; i < l; i++)
+                width = Math.max(width, ctx.measureText(lines[i]).width);
+            ctx.font = prevFont;
+            ctx.letterSpacing = prevLetterSpacing;
+            if (ctx !== this._context)
+                CanvasProvider.release(ctx);
+        }
+        return width;
     }
 }, Base.each(['rotate', 'scale', 'shear', 'skew'], function(key) {
     var rotate = key === 'rotate';

@@ -604,3 +604,19 @@ test('tool.eventInterval repeats mousedrag while the mouse is held', function(as
         }, 50);
     }, 60);
 });
+
+test('Text measurements in views without a canvas', function() {
+    // As in workers, a view without an element has no canvas of its own, but
+    // measures with one from the CanvasProvider, as canvas views do:
+    var view = new View(paper.project, null),
+        canvasView = paper.view;
+    equals(function() {
+        var width = view.getTextWidth('20px sans-serif', ['Hello'], '0px');
+        return width > 0 && width === canvasView.getTextWidth(
+                '20px sans-serif', ['Hello'], '0px');
+    }, true, 'getTextWidth()');
+    equals(function() {
+        return view.getPixelSize('12pt');
+    }, canvasView.getPixelSize('12pt'), 'getPixelSize()');
+    view.remove();
+});

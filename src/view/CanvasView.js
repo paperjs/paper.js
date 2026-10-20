@@ -101,39 +101,6 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
      * Converts the provide size in any of the units allowed in the browser to
      * pixels.
      */
-    getPixelSize: function getPixelSize(size) {
-        var agent = paper.agent,
-            pixels;
-        // Firefox doesn't appear to convert context.font sizes to pixels,
-        // while other browsers do. Fall-back to View#getPixelSize.
-        if (agent && agent.firefox) {
-            pixels = getPixelSize.base.call(this, size);
-        } else {
-            var ctx = this._context,
-                prevFont = ctx.font;
-            ctx.font = size + ' serif';
-            pixels = parseFloat(ctx.font);
-            ctx.font = prevFont;
-        }
-        return pixels;
-    },
-
-    getTextWidth: function(font, lines, letterSpacing) {
-        var ctx = this._context,
-            prevFont = ctx.font,
-            prevLetterSpacing = ctx.letterSpacing,
-            width = 0;
-        ctx.font = font;
-        ctx.letterSpacing = letterSpacing;
-        // Measure the real width of the text. Unfortunately, there is no sane
-        // way to measure text height with canvas.
-        for (var i = 0, l = lines.length; i < l; i++)
-            width = Math.max(width, ctx.measureText(lines[i]).width);
-        ctx.font = prevFont;
-        ctx.letterSpacing = prevLetterSpacing;
-        return width;
-    },
-
     /**
      * Updates the view if there are changes. Note that when using built-in
      * event handlers for interaction, animation and load events, this method is
