@@ -1935,9 +1935,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
                 q = getLocalPoints(v2, x0, y0, size),
                 isQuadratic = Curve.classify(v2).type === 'quadratic',
                 polynomial = isQuadratic
-                    ? getQuadraticImplicit(p, [
-                        q[0], q[1].multiply(1.5).subtract(q[0].multiply(0.5)),
-                        q[3]])
+                    ? getQuadraticImplicit(p, [q[0], getQuadraticHandle(q), q[3]])
                     : getCubicImplicit(p, q),
                 roots = [],
                 speed = 0;
@@ -1970,29 +1968,52 @@ new function() { // Scope for bezier intersection using fat-line clipping
         return false;
     }
 
+    // The polynomials below carry a bound of the rounding error of each of
+    // their coefficients, accumulated through each operation: the errors of
+    // the operands, plus the rounding of the result, u * |result|.
     function getLocalPoints(v, x0, y0, size) {
-        var points = [];
-        for (var i = 0; i < 8; i += 2)
-            points.push(new Point((v[i] - x0) / size, (v[i + 1] - y0) / size));
+        var u = /*#=*/Numerical.MACHINE_EPSILON,
+            points = [];
+        for (var i = 0; i < 8; i += 2) {
+            var x = (v[i] - x0) / size,
+                y = (v[i + 1] - y0) / size;
+            // A subtraction and a division:
+            points.push({ x: x, y: y, ex: 2 * u * Math.abs(x),
+                    ey: 2 * u * Math.abs(y) });
+        }
         return points;
+    }
+
+    function getProduct(a, ea, b, eb) {
+        var product = a * b;
+        return [product, Math.abs(a) * eb + Math.abs(b) * ea + ea * eb
+                + /*#=*/Numerical.MACHINE_EPSILON * Math.abs(product)];
     }
 
     // The linear factors of the implicit forms, l(i, j)(x, y), as polynomials
     // along the cubic p in Bernstein form, which as they are linear in x and y
-    // have the factors at the control points of p as their coefficients. The
-    // magnitudes of their terms bound the rounding errors.
+    // have the factors at the control points of p as their coefficients:
     function getLinearFactor(p, q, i, j, factor) {
-        var coefficients = [],
-            magnitudes = [];
+        var u = /*#=*/Numerical.MACHINE_EPSILON,
+            coefficients = [],
+            errors = [];
         for (var k = 0; k < 4; k++) {
-            var x = p[k].x,
-                y = p[k].y,
-                a = (q[i].x - x) * (q[j].y - y),
-                b = (q[j].x - x) * (q[i].y - y);
-            coefficients.push(factor * (a - b));
-            magnitudes.push(factor * (Math.abs(a) + Math.abs(b)));
+            var r = p[k],
+                dx1 = q[i].x - r.x,
+                dy1 = q[j].y - r.y,
+                dx2 = q[j].x - r.x,
+                dy2 = q[i].y - r.y,
+                a = getProduct(dx1, q[i].ex + r.ex + u * Math.abs(dx1),
+                    dy1, q[j].ey + r.ey + u * Math.abs(dy1)),
+                b = getProduct(dx2, q[j].ex + r.ex + u * Math.abs(dx2),
+                    dy2, q[i].ey + r.ey + u * Math.abs(dy2)),
+                difference = a[0] - b[0],
+                value = factor * difference;
+            coefficients.push(value);
+            errors.push(factor * (a[1] + b[1] + u * Math.abs(difference))
+                    + u * Math.abs(value));
         }
-        return { coefficients: coefficients, magnitudes: magnitudes };
+        return { coefficients: coefficients, errors: errors };
     }
 
     var binomials = [[1]];
@@ -2007,46 +2028,43 @@ new function() { // Scope for bezier intersection using fat-line clipping
         return binomials[n][k];
     }
 
-    // Multiplies polynomials in Bernstein form, and their magnitudes:
+    // Multiplies polynomials in Bernstein form:
     function multiply(a, b) {
-        var m = a.coefficients.length - 1,
+        var u = /*#=*/Numerical.MACHINE_EPSILON,
+            m = a.coefficients.length - 1,
             n = b.coefficients.length - 1,
             coefficients = [],
-            magnitudes = [];
+            errors = [];
         for (var k = 0; k <= m + n; k++) {
-            var coefficient = 0,
-                magnitude = 0;
+            var sum = 0,
+                error = 0;
             for (var i = Math.max(0, k - n), l = Math.min(m, k); i <= l; i++) {
                 var factor = getBinomial(m, i) * getBinomial(n, k - i)
-                        / getBinomial(m + n, k);
-                coefficient += factor * a.coefficients[i] * b.coefficients[k - i];
-                magnitude += factor * a.magnitudes[i] * b.magnitudes[k - i];
+                        / getBinomial(m + n, k),
+                    product = getProduct(a.coefficients[i], a.errors[i],
+                        b.coefficients[k - i], b.errors[k - i]),
+                    term = factor * product[0];
+                sum += term;
+                // The factor's division, its product, and the sum:
+                error += factor * product[1]
+                        + u * (2 * Math.abs(term) + Math.abs(sum));
             }
-            coefficients.push(coefficient);
-            magnitudes.push(magnitude);
+            coefficients.push(sum);
+            errors.push(error);
         }
-        return { coefficients: coefficients, magnitudes: magnitudes };
+        return { coefficients: coefficients, errors: errors };
     }
 
     function add(a, b, sign) {
         var coefficients = [],
-            magnitudes = [];
+            errors = [];
         for (var i = 0, l = a.coefficients.length; i < l; i++) {
-            coefficients.push(a.coefficients[i] + sign * b.coefficients[i]);
-            magnitudes.push(a.magnitudes[i] + b.magnitudes[i]);
+            var sum = a.coefficients[i] + sign * b.coefficients[i];
+            coefficients.push(sum);
+            errors.push(a.errors[i] + b.errors[i]
+                    + /*#=*/Numerical.MACHINE_EPSILON * Math.abs(sum));
         }
-        return { coefficients: coefficients, magnitudes: magnitudes };
-    }
-
-    // The rounding errors stay below the magnitudes of all terms, times the
-    // machine epsilon for each of the operations that a coefficient passes
-    // through, which are less than 128 for the products and sums here:
-    function getPolynomial(value) {
-        var errors = [];
-        for (var i = 0, l = value.magnitudes.length; i < l; i++)
-            errors.push(value.magnitudes[i] * 128
-                    * /*#=*/Numerical.MACHINE_EPSILON);
-        return { coefficients: value.coefficients, errors: errors };
+        return { coefficients: coefficients, errors: errors };
     }
 
     function getCubicImplicit(p, q) {
@@ -2060,12 +2078,22 @@ new function() { // Scope for bezier intersection using fat-line clipping
             l20 = getLinearFactor(p, q, 2, 0, 3 * 1),
             l10 = getLinearFactor(p, q, 1, 0, 3 * 1),
             m = add(l30, l21, 1);
-        return getPolynomial(add(add(
+        return add(add(
                 multiply(l32, add(multiply(m, l10), multiply(l20, l20), -1)),
                 multiply(l31, add(multiply(l31, l10), multiply(l20, l30), -1)),
                 -1),
                 multiply(l30, add(multiply(l31, l20), multiply(m, l30), -1)),
-                1));
+                1);
+    }
+
+    // The handle of a cubic that is a quadratic, (3 * q1 - q0) / 2:
+    function getQuadraticHandle(q) {
+        var u = /*#=*/Numerical.MACHINE_EPSILON,
+            x = (3 * q[1].x - q[0].x) / 2,
+            y = (3 * q[1].y - q[0].y) / 2;
+        return { x: x, y: y,
+                ex: (3 * q[1].ex + q[0].ex) / 2 + 2 * u * Math.abs(x),
+                ey: (3 * q[1].ey + q[0].ey) / 2 + 2 * u * Math.abs(y) };
     }
 
     function getQuadraticImplicit(p, q) {
@@ -2074,7 +2102,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
         var l21 = getLinearFactor(p, q, 2, 1, 1 * 2),
             l20 = getLinearFactor(p, q, 2, 0, 1 * 1),
             l10 = getLinearFactor(p, q, 1, 0, 2 * 1);
-        return getPolynomial(add(multiply(l21, l10), multiply(l20, l20), -1));
+        return add(multiply(l21, l10), multiply(l20, l20), -1);
     }
 
     /**

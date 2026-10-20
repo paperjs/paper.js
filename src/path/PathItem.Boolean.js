@@ -822,7 +822,7 @@ PathItem.inject(new function() {
             outgoing.sort(function(a, b) {
                 var halfEdge1 = halfEdges[a],
                     halfEdge2 = halfEdges[b];
-                return halfEdge1.point.isClose(halfEdge2.point, resolution)
+                return halfEdge1.point.isClose(halfEdge2.point, epsilon)
                         && getSide(halfEdge1, halfEdge2)
                         || halfEdge1.angle - halfEdge2.angle;
             });

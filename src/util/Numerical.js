@@ -441,19 +441,28 @@ var Numerical = new function() {
         solveBernstein: function(coefficients, errors, roots, width) {
             var count = 0;
 
-            // Splits the coefficients and errors at the middle, through the
-            // algorithm of de Casteljau:
-            function subdivide(values) {
+            // Splits the coefficients at the middle through the algorithm of
+            // de Casteljau, and their errors with them, plus the rounding of
+            // each step:
+            function subdivide(values, bounds) {
                 var left = [],
                     right = [],
-                    v = values.slice();
+                    leftBounds = [],
+                    rightBounds = [],
+                    v = values.slice(),
+                    e = bounds.slice();
                 for (var n = v.length; n > 0; n--) {
                     left.push(v[0]);
                     right.unshift(v[n - 1]);
-                    for (var i = 0; i < n - 1; i++)
+                    leftBounds.push(e[0]);
+                    rightBounds.unshift(e[n - 1]);
+                    for (var i = 0; i < n - 1; i++) {
                         v[i] = (v[i] + v[i + 1]) / 2;
+                        e[i] = (e[i] + e[i + 1]) / 2
+                                + MACHINE_EPSILON * abs(v[i]);
+                    }
                 }
-                return [left, right];
+                return [left, right, leftBounds, rightBounds];
             }
 
             function evaluate(values, t) {
@@ -500,11 +509,10 @@ var Numerical = new function() {
                     }
                     roots[count++] = from + (to - from) * (a + b) / 2;
                 } else if (changes || zeros) {
-                    var parts = subdivide(values),
-                        errorParts = subdivide(bounds),
+                    var parts = subdivide(values, bounds),
                         middle = (from + to) / 2;
-                    solve(parts[0], errorParts[0], from, middle);
-                    solve(parts[1], errorParts[1], middle, to);
+                    solve(parts[0], parts[2], from, middle);
+                    solve(parts[1], parts[3], middle, to);
                 }
             }
 
