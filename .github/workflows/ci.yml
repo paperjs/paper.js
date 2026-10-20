@@ -29,6 +29,11 @@ jobs:
         run: pnpm test:node
       - name: Test the hosted build
         run: pnpm test:node --build=hosted
+      # Moves the second operand of every boolean operation in the tests and
+      # issue cases by tiny amounts, and fails if results got less stable or
+      # less correct than in test/booleans/baseline.json:
+      - name: Sweep the boolean operations
+        run: pnpm exec gulp test:booleans
 
   # The browser suite covers what the Node tests can't, such as real layout,
   # canvas rendering and the DOM's computed styles:

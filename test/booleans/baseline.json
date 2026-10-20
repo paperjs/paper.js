@@ -1,0 +1,1115 @@
+{
+    "Boolean operations without crossings / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations without crossings / unite (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations without crossings / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations without crossings / subtract (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations without crossings / intersect": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations without crossings / intersect (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations without crossings / exclude": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations without crossings / exclude (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations without crossings / unite (3)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations without crossings / unite (4)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations without crossings / subtract (3)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations without crossings / subtract (4)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations without crossings / intersect (3)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations without crossings / intersect (4)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations without crossings / exclude (3)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations without crossings / exclude (4)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "frame.intersect(rect) / intersect": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#541 / exclude": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#541 / exclude (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#541 / exclude (3)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#609 / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#610 / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#610 / subtract (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#719 / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1540, #1541: path.intersect(path, { trace: false }) with closed paths / intersect": {
+        "skipped": "trace: false or stroke"
+    },
+    "#1540, #1541: path.intersect(path, { trace: false }) with closed paths / intersect (2)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#757 (path1.intersect(pat2, { trace: false })) / intersect": {
+        "skipped": "trace: false or stroke"
+    },
+    "#784 / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#784 / unite (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#784#issuecomment-144653463 / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#784#issuecomment-144653463 / unite (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#784#issuecomment-168605018 / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#859 / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#839 / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#865 / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#865 / subtract (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#865 / subtract (3)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#865 / subtract (4)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#865 / subtract (5)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#870 / intersect": {
+        "stable": 19,
+        "wrong": 0
+    },
+    "#870 / intersect (2)": {
+        "stable": 19,
+        "wrong": 0
+    },
+    "#875 / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#877 / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#878 / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#878 / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#885 / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#885 / intersect": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#885 / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#885 / exclude": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#889 / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#890 / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#890 / subtract (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#923 / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#958 / intersect": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#968 / subtract": {
+        "stable": 18,
+        "wrong": 0
+    },
+    "#1036 / intersect": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1054 / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1054 / unite (2)": {
+        "stable": 18,
+        "wrong": 0
+    },
+    "#1059 / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1075 / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1091 / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1091 / unite (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1091 / unite (3)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1091 / unite (4)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1091 / unite (5)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1091 / unite (6)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1091 / unite (7)": {
+        "stable": 19,
+        "wrong": 0
+    },
+    "#1091 / unite (8)": {
+        "stable": 12,
+        "wrong": 0
+    },
+    "#1091 / unite (9)": {
+        "stable": 19,
+        "wrong": 0
+    },
+    "#1091 / unite (10)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1091 / unite (11)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1109 / unite": {
+        "stable": 14,
+        "wrong": 0
+    },
+    "#1109 / unite (2)": {
+        "stable": 14,
+        "wrong": 0
+    },
+    "#1109 / unite (3)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1123 / intersect": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1123 (2) / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1123 (2) / subtract (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1221 / subtract": {
+        "skipped": "trace: false or stroke"
+    },
+    "#1221 / subtract (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1221 / subtract (3)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#1221 / subtract (4)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1221 / subtract (5)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#1221 / subtract (6)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations with options.insert / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations with options.insert / subtract (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations with options.insert / intersect": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations with options.insert / intersect (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations with options.insert / subtract (3)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations with options.insert / intersect (3)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations with options.insert / subtract (4)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations with options.insert / intersect (4)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Boolean operations with options.insert / subtract (5)": {
+        "skipped": "trace: false or stroke"
+    },
+    "Boolean operations with options.insert / subtract (6)": {
+        "skipped": "trace: false or stroke"
+    },
+    "Boolean operations with options.insert / intersect (5)": {
+        "skipped": "trace: false or stroke"
+    },
+    "Boolean operations with options.insert / intersect (6)": {
+        "skipped": "trace: false or stroke"
+    },
+    "Boolean operations with options.insert / subtract (7)": {
+        "skipped": "trace: false or stroke"
+    },
+    "Boolean operations with options.insert / subtract (8)": {
+        "skipped": "trace: false or stroke"
+    },
+    "Boolean operations with options.insert / intersect (7)": {
+        "skipped": "trace: false or stroke"
+    },
+    "Boolean operations with options.insert / intersect (8)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#1239 / #1073 / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1261 / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected edge-cases from @hari's boolean-test suite / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected edge-cases from @hari's boolean-test suite / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected edge-cases from @hari's boolean-test suite / intersect": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected edge-cases from @hari's boolean-test suite / unite (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected edge-cases from @hari's boolean-test suite / subtract (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected edge-cases from @hari's boolean-test suite / intersect (2)": {
+        "stable": 19,
+        "wrong": 0
+    },
+    "Selected edge-cases from @hari's boolean-test suite / unite (3)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected edge-cases from @hari's boolean-test suite / subtract (3)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected edge-cases from @hari's boolean-test suite / intersect (3)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected edge-cases from @hari's boolean-test suite / unite (4)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected edge-cases from @hari's boolean-test suite / subtract (4)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected edge-cases from @hari's boolean-test suite / intersect (4)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected edge-cases from @hari's boolean-test suite / unite (5)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected edge-cases from @hari's boolean-test suite / subtract (5)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected edge-cases from @hari's boolean-test suite / intersect (5)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected edge-cases from @hari's boolean-test suite / unite (6)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected edge-cases from @hari's boolean-test suite / subtract (6)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected edge-cases from @hari's boolean-test suite / intersect (6)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected edge-cases from @hari's boolean-test suite / unite (7)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected edge-cases from @hari's boolean-test suite / subtract (7)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected edge-cases from @hari's boolean-test suite / intersect (7)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected test-cases provided by @iconexperience / unite": {
+        "stable": 19,
+        "wrong": 0
+    },
+    "Selected test-cases provided by @iconexperience / unite (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected test-cases provided by @iconexperience / unite (3)": {
+        "stable": 18,
+        "wrong": 0
+    },
+    "Selected test-cases provided by @iconexperience / unite (4)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Selected test-cases provided by @iconexperience / unite (5)": {
+        "stable": 15,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (3)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (3)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (4)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (4)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (5)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (5)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (6)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (6)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (7)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (7)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (8)": {
+        "stable": 17,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (8)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (9)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (9)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (10)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (10)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (11)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (11)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (12)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (12)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (13)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (13)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (14)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (14)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (15)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (15)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (16)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (16)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (17)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (17)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (18)": {
+        "stable": 18,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (18)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (19)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (19)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (20)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (20)": {
+        "stable": 18,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (21)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (21)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (22)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (22)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (23)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (23)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (24)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (24)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (25)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (25)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (26)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (26)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (27)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (27)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (28)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (28)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (29)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (29)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (30)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (30)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (31)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (31)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / unite (32)": {
+        "stable": 18,
+        "wrong": 0
+    },
+    "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (32)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1506 / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1513 / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1419 / exclude": {
+        "stable": 12,
+        "wrong": 0
+    },
+    "#1351 / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1647 / intersect": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1619 / intersect": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1929: boolean operations on open paths whose ends meet / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1929: boolean operations on open paths whose ends meet / subtract (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1929: boolean operations on open paths whose ends meet / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1929: boolean operations on open paths whose ends meet / unite (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1837, #1979: paths that only touch, with vertices on each other / intersect": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#2064: orientation of the results of exclude and subtract / exclude": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#2064: orientation of the results of exclude and subtract / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1362 / intersect": {
+        "stable": 20,
+        "wrong": 1
+    },
+    "#1387 / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1387 / unite (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1540 / intersect": {
+        "skipped": "trace: false or stroke"
+    },
+    "#1540 / intersect (2)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#1540 / subtract": {
+        "skipped": "trace: false or stroke"
+    },
+    "#1540 / subtract (2)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#1540 / intersect (3)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#1540 / intersect (4)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#1746 / subtract": {
+        "skipped": "trace: false or stroke"
+    },
+    "#1746 / subtract (2)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#1746 / subtract (3)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#1746 / subtract (4)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#1746 / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1746 / subtract (5)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#1746 / unite (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1746 / subtract (6)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#1746 / unite (3)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1746 / subtract (7)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#1837 / intersect": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1837 / intersect (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1849 / intersect": {
+        "timeout": true
+    },
+    "#1867 / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1867 / unite (2)": {
+        "stable": 6,
+        "wrong": 92
+    },
+    "#1867p / unite": {
+        "stable": 6,
+        "wrong": 92
+    },
+    "#1879 / unite": {
+        "stable": 16,
+        "wrong": 0
+    },
+    "#1897 / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1897 / unite (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1917 / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1917 / unite (2)": {
+        "stable": 19,
+        "wrong": 4
+    },
+    "#1917 / unite (3)": {
+        "stable": 19,
+        "wrong": 4
+    },
+    "#1929 / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1929 / subtract (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1929 / subtract (3)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1934 / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1934 / unite (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1934 / unite (3)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1939 / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1939 / subtract (2)": {
+        "stable": 18,
+        "wrong": 0
+    },
+    "#1939 / intersect": {
+        "stable": 18,
+        "wrong": 0
+    },
+    "#1940 / intersect": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1940 / intersect (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1940 / intersect (3)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1940 / intersect (4)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1940 / intersect (5)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1943 / exclude": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1943 / exclude (2)": {
+        "stable": 7,
+        "wrong": 27
+    },
+    "#1961 / unite": {
+        "stable": 20,
+        "wrong": 237
+    },
+    "#1969 / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1969 / subtract (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1969 / subtract (3)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1969b / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1969b / subtract (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1969b / subtract (3)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1969b / subtract (4)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1973 / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#1973 / subtract (2)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#2018 / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#2036 / unite": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#2036 / subtract": {
+        "stable": 20,
+        "wrong": 101
+    },
+    "#2046 / intersect": {
+        "skipped": "trace: false or stroke"
+    },
+    "#2046 / intersect (2)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#2046 / intersect (3)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#2046 / intersect (4)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#2046 / intersect (5)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#2046 / intersect (6)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#2046 / intersect (7)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#2046 / intersect (8)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#2046 / intersect (9)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#2046 / intersect (10)": {
+        "skipped": "trace: false or stroke"
+    },
+    "#2046b / intersect": {
+        "skipped": "trace: false or stroke"
+    },
+    "#2082 / subtract": {
+        "stable": 6,
+        "wrong": 147
+    },
+    "#2082 / subtract (2)": {
+        "stable": 6,
+        "wrong": 43
+    },
+    "#2082 / subtract (3)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#2082 / subtract (4)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#2082 / subtract (5)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#2082 / subtract (6)": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#2082 / subtract (7)": {
+        "stable": 4,
+        "wrong": 147
+    },
+    "#2082 / subtract (8)": {
+        "stable": 10,
+        "wrong": 43
+    },
+    "#2082 / subtract (9)": {
+        "stable": 6,
+        "wrong": 147
+    },
+    "#2082 / subtract (10)": {
+        "stable": 7,
+        "wrong": 43
+    },
+    "#2096 / intersect": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "#2096 / intersect (2)": {
+        "stable": 0,
+        "wrong": 5
+    },
+    "#2096p / intersect": {
+        "stable": 0,
+        "wrong": 5
+    }
+}
