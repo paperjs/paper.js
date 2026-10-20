@@ -54,6 +54,7 @@ let paperScope       = {} as paper.PaperScope;
 let callback         = {} as () => {};
 let hitResult        = {} as paper.HitResult;
 let object           = {} as object;
+let name             = '';
 
 // Only returns `true` for types that include `null`, to test nullable returns:
 declare function isNullable<T>(value: T): null extends T ? true : false;
@@ -455,6 +456,18 @@ item.isSibling(item);
 item.isGroupedWith(item);
 item.translate(pointLike);
 item.translate(0, 0);
+// Setters read their values as parameters do (#1665):
+item.position = [0, 0];
+item.bounds = { x: 0, y: 0, width: 10, height: 10 };
+item.fillColor = 'red';
+item.fillColor = { hue: 90, saturation: 1, brightness: 1 };
+item.fillColor = null;
+item.strokeColor = [1, 0, 0];
+item.fillColor = {
+    gradient: { stops: ['red', ['blue', 0.5]], radial: true },
+    origin: [0, 0],
+    destination: [10, 10]
+};
 item.rotate(0);
 item.rotate(0, pointLike);
 item.scale(0);

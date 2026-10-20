@@ -277,8 +277,8 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       typescript:
-        specifier: ^3.9.10
-        version: 3.9.10
+        specifier: ^5.9.3
+        version: 5.9.3
 
   packages/paper-jsdom:
     dependencies:
@@ -2314,9 +2314,9 @@ packages:
     resolution: {integrity: sha512-of68V0oUmVH4thGc1cLR3sKdICPsaL7kzpYc7FX1pcagY4eIllhyMqQcoOq289f+xj2orm8oPWwsCwxiCgVJbQ==}
     engines: {node: '>= 0.6'}
 
-  typescript@3.9.10:
-    resolution: {integrity: sha512-w6fIxVE/H1PkLKcCPsFqKE7Kv7QUwhU8qQY2MueZXWx5cPZdwFupLgKK3vntcK98BtNHZtAF4LA/yl2a7k8R6Q==}
-    engines: {node: '>=4.2.0'}
+  typescript@5.9.3:
+    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
+    engines: {node: '>=14.17'}
     hasBin: true
 
   uglify-js@3.13.1:
@@ -4622,7 +4622,7 @@ snapshots:
       media-typer: 0.3.0
       mime-types: 2.0.14
 
-  typescript@3.9.10: {}
+  typescript@5.9.3: {}
 
   uglify-js@3.13.1: {}
 
