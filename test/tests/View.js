@@ -260,6 +260,29 @@ test('view.dispatchMouseEvent()', function() {
     tool.remove();
 });
 
+test('view.dispatchMouseEvent() with settings.hitTolerance (#1971)', function() {
+    var path = new Path.Line({
+            from: [10, 10],
+            to: [50, 10],
+            strokeColor: 'black'
+        }),
+        log = [],
+        hitTolerance = paper.settings.hitTolerance;
+    path.onMouseEnter = path.onMouseLeave = function(event) {
+        log.push(event.type + ' ' + event.point);
+    };
+    // 3 points away from the line, within a tolerance of 5:
+    view.dispatchMouseEvent('mousemove', [30, 13]);
+    paper.settings.hitTolerance = 5;
+    view.dispatchMouseEvent('mousemove', [30, 14]);
+    view.dispatchMouseEvent('mousemove', [30, 20]);
+    paper.settings.hitTolerance = hitTolerance;
+    equals(log, [
+        'mouseenter { x: 30, y: 14 }',
+        'mouseleave { x: 30, y: 20 }'
+    ]);
+});
+
 test('view.dispatchMouseEvent() outside the view', function() {
     // Hosts can draw around the view, e.g. around an artboard:
     var point = view.bounds.leftCenter.subtract([50, 0]),
