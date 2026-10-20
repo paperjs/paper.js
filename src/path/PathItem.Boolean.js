@@ -221,36 +221,41 @@ PathItem.inject(new function() {
             crossings = _path1.getIntersections(_path2, filterIntersection),
             subtract = operation === 'subtract',
             divide = operation === 'divide',
-            added = {},
+            pieces = [],
             paths = [];
 
-        function addPath(path) {
-            // Simple see if the point halfway across the open path is inside
-            // path2, and include / exclude the path based on the operator.
-            if (!added[path._id] && (divide ||
-                    _path2.contains(path.getPointAt(path.getLength() / 2))
-                        ^ subtract)) {
-                paths.unshift(path);
-                return added[path._id] = true;
-            }
-        }
-
-        // Now loop backwards through all crossings, split the path and check
-        // the new path that was split off for inclusion.
+        // Split the paths of path1 at all crossings, backwards so the earlier
+        // locations stay valid. A split returns the part after it, or for a
+        // closed path, the path itself, opened at the split, so pieces are
+        // only tested once all splitting is done (#1540):
         for (var i = crossings.length - 1; i >= 0; i--) {
-            var path = crossings[i].split();
+            var crossing = crossings[i],
+                split = crossing.getPath(),
+                path = crossing.split();
             if (path) {
-                // See if we can add the path, and if so, clear the first handle
-                // at the split, because it might have been a curve.
-                if (addPath(path))
-                    path.getFirstSegment().setHandleIn(0, 0);
-                // Clear the other side of the split too, which is always the
-                // end of the remaining _path1.
-                _path1.getLastSegment().setHandleOut(0, 0);
+                // Clear the handles on both sides of the split, as they might
+                // have belonged to curves:
+                path.getFirstSegment().setHandleIn(0, 0);
+                split.getLastSegment().setHandleOut(0, 0);
+                if (pieces.indexOf(path) === -1)
+                    pieces.push(path);
             }
         }
-        // At the end, add what's left from our path after all the splitting.
-        addPath(_path1);
+        // Add what's left of the paths of path1, split or not, which for a
+        // compound path are its children (#1541):
+        var children = _path1._children || [_path1];
+        for (var i = 0, l = children.length; i < l; i++) {
+            if (pieces.indexOf(children[i]) === -1)
+                pieces.push(children[i]);
+        }
+        // Simply see if the point halfway across each piece is inside path2,
+        // and include or exclude it based on the operation.
+        for (var i = 0, l = pieces.length; i < l; i++) {
+            var piece = pieces[i];
+            if (divide || _path2.contains(
+                    piece.getPointAt(piece.getLength() / 2)) ^ subtract)
+                paths.unshift(piece);
+        }
         return createResult(paths, false, path1, path2, options);
     }
 

@@ -176,6 +176,27 @@ test('#719', function() {
     compareBoolean(result, expected);
 });
 
+test('#1540, #1541: path.intersect(path, { trace: false }) with closed paths', function() {
+    // Splitting a closed path at its first crossing opens it, and the parts
+    // it starts with mustn't be decided before all splits are done:
+    var small = new Path.Rectangle({ point: [580, 50], size: [100, 100] });
+    var big = new Path.Rectangle({ point: [600, 50], size: [200, 100] });
+    compareBoolean(function() {
+        return small.intersect(big, { trace: false });
+    }, 'M600,50h80M680,50v100M680,150h-80');
+    // Compound paths as the first operand:
+    var compound = new CompoundPath({
+        children: [
+            new Path.Circle({ center: [50, 50], radius: 30 }),
+            new Path.Circle({ center: [150, 50], radius: 30 })
+        ]
+    });
+    var rect = new Path.Rectangle({ point: [40, 0], size: [100, 100] });
+    compareBoolean(function() {
+        return compound.intersect(rect, { trace: false });
+    }, 'M40,21.70706c3.12779,-1.10551 6.49365,-1.70706 10,-1.70706c16.56854,0 30,13.43146 30,30c0,16.56854 -13.43146,30 -30,30c-3.50635,0 -6.87221,-0.60154 -10,-1.70706M140,78.29294c-11.65192,-4.11836 -20,-15.23075 -20,-28.29294c0,-13.06219 8.34808,-24.17458 20,-28.29294');
+});
+
 test('#757 (path1.intersect(pat2, { trace: false }))', function() {
     var rect = new Path.Rectangle({
         from: [100, 250],
