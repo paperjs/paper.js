@@ -14,6 +14,7 @@ var gulp = require('gulp'),
     qunits = require('gulp-qunits'),
     webserver = require('gulp-webserver'),
     execFileSync = require('child_process').execFileSync,
+    spawn = require('child_process').spawn,
     fs = require('fs'),
     os = require('os'),
     path = require('path'),
@@ -95,6 +96,122 @@ gulp.task('test:chrome', ['minify:acorn'], function(callback) {
     callback(!result || !failed || +failed[1]
             ? new Error('Browser tests failed.')
             : null);
+});
+
+// Sweeps the boolean operations of the tests and issue cases with tiny moves of
+// their second operand, and compares how many results stay the same and how
+// many points they fill wrongly with test/booleans/baseline.json. Fails if any
+// case got worse. Update the baseline with --update, test other builds with
+// --build, e.g. `gulp test:booleans --build=hosted`. See test/booleans/sweep.js
+gulp.task('test:booleans', ['minify:acorn'], function(callback) {
+    var dir = path.join('test', 'booleans'),
+        build = path.join('dist', 'paper-' + (argv.build || 'full') + '.js'),
+        baselineFile = path.join(dir, 'baseline.json'),
+        results = [],
+        counts = {};
+
+    // Sweeps the cases from the given one on in a child process, which is
+    // restarted after a case that doesn't return within 20 seconds:
+    function run(first) {
+        var child = spawn(process.execPath,
+                [path.join(dir, 'sweep.js'), build, first]),
+            buffer = '',
+            started,
+            timer;
+        function watch(delay) {
+            clearTimeout(timer);
+            timer = setTimeout(function() {
+                child.kill();
+            }, delay);
+        }
+        // Loading the library and the tests takes longer than a case:
+        watch(60000);
+        child.stdout.on('data', function(data) {
+            var lines = (buffer + data).split('\n');
+            buffer = lines.pop();
+            lines.forEach(function(line) {
+                var result = JSON.parse(line);
+                if (result.start) {
+                    started = result;
+                } else {
+                    results.push(result);
+                }
+            });
+            watch(20000);
+        });
+        child.stderr.pipe(process.stderr);
+        child.on('exit', function(code, signal) {
+            clearTimeout(timer);
+            if (signal) {
+                results.push({ label: started.label, op: started.op,
+                        timeout: true });
+                run(started.index + 1);
+            } else if (code) {
+                callback(new Error('The boolean sweep failed.'));
+            } else {
+                finish();
+            }
+        });
+    }
+
+    function finish() {
+        // Key the results by label, operation and occurrence:
+        var current = {};
+        results.forEach(function(result) {
+            var key = result.label + ' / ' + result.op;
+            counts[key] = (counts[key] || 0) + 1;
+            if (counts[key] > 1)
+                key += ' (' + counts[key] + ')';
+            current[key] = result.timeout ? { timeout: true }
+                    : result.skipped || result.error
+                        ? { skipped: result.skipped || result.error }
+                        : { stable: result.stable, wrong: result.wrong };
+        });
+        var baseline = fs.existsSync(baselineFile)
+                ? JSON.parse(fs.readFileSync(baselineFile, 'utf8')) : {},
+            worse = [],
+            better = [],
+            stable = 0,
+            wrong = 0,
+            timeouts = 0;
+        Object.keys(current).forEach(function(key) {
+            var entry = current[key],
+                base = baseline[key];
+            stable += entry.stable || 0;
+            wrong += entry.wrong || 0;
+            timeouts += entry.timeout ? 1 : 0;
+            if (base) {
+                var change = entry.timeout ? base.timeout ? 0 : -1
+                        : base.timeout ? 1
+                        : entry.stable - base.stable || base.wrong - entry.wrong;
+                if (change < 0)
+                    worse.push(key + ': ' + JSON.stringify(base) + ' -> '
+                            + JSON.stringify(entry));
+                if (change > 0)
+                    better.push(key);
+            }
+        });
+        console.log('Boolean sweep: ' + results.length + ' cases, '
+                + stable + ' stable results under tiny moves, ' + wrong
+                + ' wrongly filled points, ' + timeouts + ' timeouts. '
+                + better.length + ' better than the baseline, ' + worse.length
+                + ' worse.');
+        worse.forEach(function(line) {
+            console.log('Worse: ' + line);
+        });
+        if (argv.update) {
+            fs.writeFileSync(baselineFile,
+                    JSON.stringify(current, null, 4) + '\n');
+            console.log('Updated ' + baselineFile + '.');
+            callback();
+        } else {
+            callback(worse.length
+                    ? new Error('The boolean sweep got worse than the baseline.')
+                    : null);
+        }
+    }
+
+    run(0);
 });
 
 gulp.task('test:browser', ['minify:acorn'], function() {
