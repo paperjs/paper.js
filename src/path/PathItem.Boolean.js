@@ -124,13 +124,10 @@ PathItem.inject(new function() {
                 /^(subtract|intersect)$/.test(operation))
             return splitBoolean(path1, path2, operation, options);
         // We do not modify the operands themselves, but trace copies of them.
-        // Without path2, the operation resolves path1 on its own.
         // NOTE: The result paths might not belong to the same type i.e.
         // subtract(A:Path, B:Path):CompoundPath etc.
-        var operands = [preparePath(path1, true)];
-        if (path2)
-            operands.push(preparePath(path2, true));
-        var paths = tracePaths(operands, operators[operation]);
+        var paths = tracePaths(getOperands(path1, path2),
+                operators[operation]);
         return createResult(paths, true, path1, path2, options);
     }
 
@@ -539,17 +536,14 @@ PathItem.inject(new function() {
     }
 
     /**
-     * Traces the outlines of the areas that the operator includes, through a
-     * planar graph of the operands' curves: All intersections become vertices,
-     * the pieces of curves between them edges, and the edges bound faces with
-     * a known winding for each operand.
+     * Creates a planar graph of the operands' curves: All intersections become
+     * vertices, the pieces of curves between them edges, and the edges bound
+     * faces with a known winding for each operand.
      *
      * @param {PathItem[]} operands the operands, with closed paths only
-     * @param {Function} operator decides if a face is part of the result, from
-     *     whether it is inside each of the operands
-     * @return {Path[]} the traced paths
+     * @return {Object} the graph's vertices, edges, half-edges and faces
      */
-    function tracePaths(operands, operator) {
+    function createGraph(operands) {
         var curves = [],
             curveOperands = [],
             offsets = {},
@@ -607,13 +601,6 @@ PathItem.inject(new function() {
             addCut(offsets[curve._path._id] + curve.getIndex(), loc.getTime(),
                     loc.getPoint(), false);
         }
-        /*DEBUG*/var farPairs = 0;
-        if (typeof process !== 'undefined' && process.env.GRAPH_CHECK) {
-            for (var i = 0, l = locations.length; i < l; i++) {
-                var d = locations[i].getPoint().getDistance(locations[i]._intersection.getPoint());
-                if (d > epsilon) { farPairs++; if (process.env.GRAPH_FAR) console.log('FAR', d, 'eps', epsilon, locations[i].getPoint().toString(), locations[i]._intersection.getPoint().toString(), 't', locations[i].getTime(), locations[i]._intersection.getTime(), 'overlap', locations[i].hasOverlap(), '\n  c1', locations[i].getCurve().getValues().join(','), '\n  c2', locations[i]._intersection.getCurve().getValues().join(',')); }
-            }
-        }/*END*/
 
         // 2. Merge points closer than epsilon into vertices, through union-find
         // on the points sorted by x. A vertex takes the position of a curve end
@@ -745,7 +732,7 @@ PathItem.inject(new function() {
                         values: part,
                         from: from,
                         to: to,
-                        isStraight: isStraight, source: i,
+                        isStraight: isStraight,
                         windings: windings
                     });
                 }
@@ -793,14 +780,13 @@ PathItem.inject(new function() {
             for (var j = 0, k = outgoing.length; j < k; j++)
                 halfEdges[outgoing[j]].position = j;
         }
-
         // Walking along a face with the face on the left, the next half-edge
         // leaves the reached vertex right before the one we came back on, in
         // counter-clockwise order:
-        function getNext(index) {
-            var outgoing = vertices[halfEdges[index].to].outgoing,
-                position = halfEdges[index ^ 1].position;
-            return outgoing[(position || outgoing.length) - 1];
+        for (var i = 0, l = halfEdges.length; i < l; i++) {
+            var outgoing = vertices[halfEdges[i].to].outgoing,
+                position = halfEdges[i ^ 1].position;
+            halfEdges[i].next = outgoing[(position || outgoing.length) - 1];
         }
 
         // 5. Collect the faces, each on the left of its half-edges, and their
@@ -817,7 +803,7 @@ PathItem.inject(new function() {
                     halfEdge.face = face;
                     face.halfEdges.push(index);
                     face.area += Curve.getArea(halfEdge.values);
-                    index = getNext(index);
+                    index = halfEdge.next;
                 } while (index !== i);
                 faces.push(face);
             }
@@ -907,10 +893,32 @@ PathItem.inject(new function() {
                 }
             }
         }
+        return {
+            vertices: vertices,
+            edges: edges,
+            halfEdges: halfEdges,
+            faces: faces,
+            nonZeros: nonZeros,
+            epsilon: epsilon
+        };
+    }
 
-        // 7. Trace the half-edges that have the result on their left and not
-        // on their right. At each vertex, we turn through the result until the
-        // next of them, which keeps contours apart that only touch:
+    /**
+     * Traces the outlines of the areas that the operator includes, along the
+     * edges of the operands' graph that have the result on their left and not
+     * on their right. At each vertex, we turn through the result until the
+     * next of them, which keeps contours apart that only touch.
+     *
+     * @param {PathItem[]} operands the operands, with closed paths only
+     * @param {Function} operator decides if a face is part of the result, from
+     *     whether it is inside each of the operands
+     * @return {Path[]} the traced paths
+     */
+    function tracePaths(operands, operator) {
+        var graph = createGraph(operands),
+            halfEdges = graph.halfEdges,
+            faces = graph.faces,
+            nonZeros = graph.nonZeros;
         for (var i = 0, l = faces.length; i < l; i++) {
             var face = faces[i],
                 windings = face.windings;
@@ -924,51 +932,6 @@ PathItem.inject(new function() {
                     && !halfEdges[index ^ 1].face.isInside;
         }
 
-        /*DEBUG*/if (typeof process !== 'undefined' && process.env.GRAPH_CHECK) {
-            var bad = 0;
-            for (var i = 0; i < halfEdges.length; i += 2) {
-                var wl = halfEdges[i].face.windings, wr = halfEdges[i + 1].face.windings, d = halfEdges[i].edge.windings;
-                if (wl[0] - wr[0] !== d[0] || wl[1] - wr[1] !== d[1]) bad++;
-            }
-            if (bad) console.log('INCONSISTENT', bad, 'of', halfEdges.length / 2, 'farPairs', farPairs);
-            if (bad && process.env.GRAPH_CLASSIFY) {
-                var ecs2 = edges.map(function(e) { var v = e.values; return new Curve(new Point(v[0], v[1]), new Point(v[2] - v[0], v[3] - v[1]), new Point(v[4] - v[6], v[5] - v[7]), new Point(v[6], v[7])); });
-                var missed = 0, overlapsMissed = 0, onEdge = 0, minDist = Infinity;
-                for (var a = 0; a < ecs2.length; a++) for (var b = a + 1; b < ecs2.length; b++) {
-                    ecs2[a].getIntersections(ecs2[b]).forEach(function(l) {
-                        var pt = l.point, ok = [edges[a].from, edges[a].to, edges[b].from, edges[b].to].some(function(vi) { return pt.isClose(new Point(vertices[vi].x, vertices[vi].y), epsilon); });
-                        if (!ok) { if (l.hasOverlap()) overlapsMissed++; else missed++; }
-                    });
-                }
-                vertices.forEach(function(v, vi) {
-                    var p = new Point(v.x, v.y);
-                    edges.forEach(function(e) {
-                        if (e.from !== vi && e.to !== vi) {
-                            var t = Curve.getNearestTime(e.values, p), d = Curve.getPoint(e.values, t).getDistance(p);
-                            if (d <= epsilon) { onEdge++; if (process.env.GRAPH_VOE) console.log('VOE vertex', vi, v.x, v.y, 'isEnd', v.isEnd, 'degree', v.outgoing.length, 'edge', e.from, e.to, 't', t, 'd', d, 'eps', epsilon, 'src', curves[e.source]._path._id + ':' + curves[e.source].getIndex(), values[e.source].join(',')); v.outgoing.forEach(function(h) { var he = halfEdges[h], c = curves[he.edge.source]; console.log('   out', h, he.from, '->', he.to, c._path._id + ':' + c.getIndex(), values[he.edge.source].join(','), he.edge.windings.join('/')); }); cuts[e.source].forEach(function(cut) { console.log('   cut', cut.time, cut.point, getVertex(cut.point), xs[cut.point], ys[cut.point]); }); }
-                            else minDist = Math.min(minDist, d / epsilon);
-                        }
-                    });
-                });
-                console.log('CLASS far=' + farPairs + ' crossing=' + missed + ' overlap=' + overlapsMissed + ' vertexOnEdge=' + onEdge + ' nearestOther=' + minDist.toFixed(1));
-            }
-            if (bad && process.env.GRAPH_PLANAR) {
-                var ecs = edges.map(function(e) { var v = e.values; return new Curve(new Point(v[0], v[1]), new Point(v[2] - v[0], v[3] - v[1]), new Point(v[4] - v[6], v[5] - v[7]), new Point(v[6], v[7])); });
-                for (var a = 0; a < ecs.length; a++) for (var b = a + 1; b < ecs.length; b++) {
-                    ecs[a].getIntersections(ecs[b]).forEach(function(l) {
-                        var pt = l.point, ok = [edges[a].from, edges[a].to, edges[b].from, edges[b].to].some(function(vi) { return pt.isClose(new Point(vertices[vi].x, vertices[vi].y), epsilon); });
-                        if (!ok) console.log('MISSED', a, b, pt.toString(), l.hasOverlap(), 'eps', epsilon, '\n  A', edges[a].values.join(','), '\n  B', edges[b].values.join(','));
-                    });
-                }
-                vertices.forEach(function(v, vi) {
-                    var o = v.outgoing;
-                    for (var k = 0; k < o.length; k++) {
-                        var h1 = halfEdges[o[k]], h2 = halfEdges[o[(k + 1) % o.length]];
-                        if (o.length > 1 && Math.abs(h1.angle - h2.angle) < 1e-6) console.log('TIE at', vi, v.x, v.y, h1.angle, h2.angle, '\n  srcA', values[h1.edge.source].join(','), curves[h1.edge.source].getIndex(), curves[h1.edge.source]._path._id, '\n  srcB', values[h2.edge.source].join(','), curves[h2.edge.source].getIndex(), curves[h2.edge.source]._path._id, '\n  A', h1.values.join(','), '\n  B', h2.values.join(','));
-                    }
-                });
-            }
-        }/*END*/
         var paths = [],
             isVisited = [];
         for (var i = 0, l = halfEdges.length; i < l; i++) {
@@ -987,9 +950,9 @@ PathItem.inject(new function() {
                             !isStraight && new Point(v[2] - v[0], v[3] - v[1])));
                     handleIn = !isStraight
                             && new Point(v[4] - v[6], v[5] - v[7]);
-                    index = getNext(index);
+                    index = halfEdge.next;
                     while (!isBoundary(index))
-                        index = getNext(index ^ 1);
+                        index = halfEdges[index ^ 1].next;
                 } while (index !== i);
                 if (handleIn)
                     segments[0].setHandleIn(handleIn);
@@ -1003,8 +966,26 @@ PathItem.inject(new function() {
         return paths;
     }
 
+    /*
+     * Prepares the operands of a boolean operation. Without path2, the
+     * operation resolves path1 on its own.
+     */
+    function getOperands(path1, path2) {
+        var operands = [preparePath(path1, true)];
+        if (path2)
+            operands.push(preparePath(path2, true));
+        return operands;
+    }
 
     return /** @lends PathItem# */{
+        statics: {
+            // The graph of a boolean operation, to check its planarity in
+            // the tests:
+            _createGraph: function(path1, path2) {
+                return createGraph(getOperands(path1, path2));
+            }
+        },
+
         /**
          * Returns the winding contribution number of the given point in respect
          * to this PathItem.

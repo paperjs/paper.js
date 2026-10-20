@@ -1420,3 +1420,41 @@ test('#2099', function() {
     // The area with the curve written as a line, v-78:
     equals(children[0].subtract(children[1]).area, 792.03483);
 });
+
+test('Curves with loops', function() {
+    // The loop of a self-intersecting curve starts and ends in one vertex,
+    // once with the curve's ends apart, and once with them meeting, so that
+    // the whole curve is the loop. The areas are linesweeper's:
+    function createApart() {
+        return new Path({
+            segments: [[100, 200, 0, 0, 150, -100], [200, 200, -150, -100, 0, 0]],
+            closed: true
+        });
+    }
+    function createMeeting() {
+        return new Path({
+            segments: [[100, 200, 0, 0, 250, -200],
+                    [100.000000001, 200, -250, -200, 0, 0]],
+            closed: true
+        });
+    }
+    function createRectangle() {
+        return new Path.Rectangle({ point: [130, 120], size: [100, 40] });
+    }
+    var expected = [
+        [createApart, 5914.43223, 1914.43223, 427.26535, 2341.69758],
+        [createMeeting, 17909.83326, 13909.83326, 1090.16674, 15000]
+    ];
+    for (var i = 0; i < expected.length; i++) {
+        var entry = expected[i],
+            create = entry[0];
+        equals(create().unite(createRectangle()).area, entry[1],
+                'unite() // Test ' + (i + 1));
+        equals(create().subtract(createRectangle()).area, entry[2],
+                'subtract() // Test ' + (i + 1));
+        equals(create().intersect(createRectangle()).area, entry[3],
+                'intersect() // Test ' + (i + 1));
+        equals(create().resolveCrossings().area, entry[4],
+                'resolveCrossings() // Test ' + (i + 1));
+    }
+});

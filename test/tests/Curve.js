@@ -45,6 +45,13 @@ test('Curve#classify()', function() {
     var end = new Curve([1133.875, 47.56], [0.001, 1.2], [0, -1.2],
             [1133.876, 51.16]);
     testClassify(end, { type: 'arch', roots: null });
+    // A straight curve with handles along it is a line, also when rounding
+    // keeps its coefficients from being exactly zero, and has no loop:
+    var straight = new Curve([256.099999999999, 157.4], [-0.12, 0],
+            [0.12666666666666, 0], [255.729999999999, 157.4]);
+    testClassify(straight, { type: 'line', roots: null });
+    equals(straight.getIntersections(), [],
+            'straight.getIntersections()');
 });
 
 test('Curve#getPointAtTime()', function() {

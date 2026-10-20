@@ -1569,9 +1569,14 @@ new function() { // Scope for methods that require private functions
                 d3 = 3 * a3,
                 d2 = d3 - a2,
                 d1 = d2 - a2 + a1,
-                // Normalize the vector (d1, d2, d3) to keep error consistent.
+                // Normalize the vector (d1, d2, d3) to keep error consistent,
+                // but treat it as zero if it is within the rounding error of
+                // the products of coordinates above, as for straight curves:
                 l = Math.sqrt(d1 * d1 + d2 * d2 + d3 * d3),
-                s = l !== 0 ? 1 / l : 0,
+                magnitude = Math.max(
+                    Math.abs(x0), Math.abs(y0), Math.abs(x1), Math.abs(y1),
+                    Math.abs(x2), Math.abs(y2), Math.abs(x3), Math.abs(y3)),
+                s = l > magnitude * Numerical.getEpsilon(magnitude) ? 1 / l : 0,
                 isZero = Numerical.isZero,
                 serpentine = 'serpentine'; // short-cut
             d1 *= s;
@@ -1792,12 +1797,13 @@ new function() { // Scope for bezier intersection using fat-line clipping
     }
 
     function addCurveIntersections(v1, v2, c1, c2, locations, include, flip,
-            recursion, calls, tMin, tMax, uMin, uMax) {
+            recursion, calls, tMin, tMax, uMin, uMax, tolerance, overlaps) {
         // Avoid deeper recursion, by counting the total amount of recursions,
         // as well as the total amount of calls, to avoid massive call-trees as
         // suggested by @iconexperience in #904#issuecomment-225283430.
         // See also: #565 #899 #1074
-        if (++calls >= 4096 || ++recursion >= 40)
+        // With a tolerance, the recursion ends with pieces shorter than it.
+        if (++calls >= 4096 && !tolerance || ++recursion >= 40 && !tolerance)
             return calls;
         // Use an epsilon smaller than CURVETIME_EPSILON to compare curve-time
         // parameters in fat-line clipping code.
@@ -1825,6 +1831,33 @@ new function() { // Scope for bezier intersection using fat-line clipping
             bottom = hull[1],
             tMinClip,
             tMaxClip;
+        if (tolerance) {
+            // Where both pieces lie in a band along the fat-line's baseline
+            // that is thinner than the tolerance, they overlap along it:
+            if (Math.max(dMax, dp0, dp1, dp2, dp3)
+                    - Math.min(dMin, dp0, dp1, dp2, dp3) <= tolerance) {
+                var range = getBandOverlap(v1, v2);
+                if (range) {
+                    var t1 = tMin + (tMax - tMin) * range[0],
+                        t2 = tMin + (tMax - tMin) * range[1],
+                        u1 = uMin + (uMax - uMin) * range[2],
+                        u2 = uMin + (uMax - uMin) * range[3];
+                    overlaps.push(flip ? [u1, u2, t1, t2] : [t1, t2, u1, u2]);
+                    return calls;
+                }
+            }
+            // Pieces shorter than the tolerance that are not separated touch
+            // within the tolerance:
+            if (getPolygonLength(v1) <= tolerance
+                    && getPolygonLength(v2) <= tolerance) {
+                var t = (tMin + tMax) / 2,
+                    u = (uMin + uMax) / 2;
+                addLocation(locations, include,
+                        flip ? c2 : c1, flip ? u : t,
+                        flip ? c1 : c2, flip ? t : u);
+                return calls;
+            }
+        }
         // Stop iteration if all points and control points are collinear.
         if (d1 === 0 && d2 === 0
                 && dp0 === 0 && dp1 === 0 && dp2 === 0 && dp3 === 0
@@ -1856,19 +1889,23 @@ new function() { // Scope for bezier intersection using fat-line clipping
                         t = (tMinNew + tMaxNew) / 2;
                     calls = addCurveIntersections(
                             v2, parts[0], c2, c1, locations, include, !flip,
-                            recursion, calls, uMin, uMax, tMinNew, t);
+                            recursion, calls, uMin, uMax, tMinNew, t,
+                            tolerance, overlaps);
                     calls = addCurveIntersections(
                             v2, parts[1], c2, c1, locations, include, !flip,
-                            recursion, calls, uMin, uMax, t, tMaxNew);
+                            recursion, calls, uMin, uMax, t, tMaxNew,
+                            tolerance, overlaps);
                 } else {
                     var parts = Curve.subdivide(v2, 0.5),
                         u = (uMin + uMax) / 2;
                     calls = addCurveIntersections(
                             parts[0], v1, c2, c1, locations, include, !flip,
-                            recursion, calls, uMin, u, tMinNew, tMaxNew);
+                            recursion, calls, uMin, u, tMinNew, tMaxNew,
+                            tolerance, overlaps);
                     calls = addCurveIntersections(
                             parts[1], v1, c2, c1, locations, include, !flip,
-                            recursion, calls, u, uMax, tMinNew, tMaxNew);
+                            recursion, calls, u, uMax, tMinNew, tMaxNew,
+                            tolerance, overlaps);
                 }
             } else { // Iterate
                 // For some unclear reason we need to check against uDiff === 0
@@ -1877,70 +1914,100 @@ new function() { // Scope for bezier intersection using fat-line clipping
                 if (uDiff === 0 || uDiff >= fatLineEpsilon) {
                     calls = addCurveIntersections(
                             v2, v1, c2, c1, locations, include, !flip,
-                            recursion, calls, uMin, uMax, tMinNew, tMaxNew);
+                            recursion, calls, uMin, uMax, tMinNew, tMaxNew,
+                            tolerance, overlaps);
                 } else {
                     // The interval on the other curve is already tight enough,
                     // therefore we keep iterating on the same curve.
                     calls = addCurveIntersections(
                             v1, v2, c1, c2, locations, include, flip,
-                            recursion, calls, tMinNew, tMaxNew, uMin, uMax);
+                            recursion, calls, tMinNew, tMaxNew, uMin, uMax,
+                            tolerance, overlaps);
                 }
             }
         }
         return calls;
     }
 
-    function addCloseCrossings(v1, v2, c1, c2, locations, include,
-            tolerance) {
-        // Find the crossings as sign changes of the distance of v1 from v2,
-        // sampled along v1 and refined through bisection:
-        function getDistance(t) {
-            var point = Curve.getPoint(v1, t),
-                u = Curve.getNearestTime(v2, point);
-            return {
-                time: t,
-                other: u,
-                point: point,
-                // Outside of v2, the distance has no meaningful sign:
-                distance: u > 0 && u < 1
-                    ? point.subtract(Curve.getPoint(v2, u))
-                        .dot(Curve.getNormal(v2, u))
-                    : 0
-            };
-        }
-
-        var count = 64,
-            prev = getDistance(0);
-        for (var i = 1; i <= count; i++) {
-            var next = getDistance(i / count);
-            if (prev.distance * next.distance < 0) {
-                var a = prev,
-                    b = next;
-                for (var j = 0; j < 40; j++) {
-                    var m = getDistance((a.time + b.time) / 2);
-                    if (m.distance * a.distance > 0) {
-                        a = m;
-                    } else {
-                        b = m;
-                    }
-                }
-                if (!isFound(locations, a.point, tolerance)) {
-                    addLocation(locations, include,
-                            c1, a.time,
-                            c2, a.other);
+    /**
+     * Returns the curve times on v1 and v2 of the part along the baseline of
+     * v2 that both pieces cover, as [t1, t2, u1, u2], or null. As they lie in
+     * a band along it that is thinner than the tolerance, the points of both
+     * at the same position along it are within the tolerance of each other,
+     * as long as both run monotonously along it.
+     */
+    function getBandOverlap(v1, v2) {
+        var x0 = v2[0],
+            y0 = v2[1],
+            dx = v2[6] - x0,
+            dy = v2[7] - y0,
+            length = Math.sqrt(dx * dx + dy * dy);
+        if (length) {
+            var a = getPositions(v1, x0, y0, dx / length, dy / length),
+                b = getPositions(v2, x0, y0, dx / length, dy / length);
+            if (isMonotone(a) && isMonotone(b)) {
+                var from = Math.max(Math.min(a[0], a[6]), Math.min(b[0], b[6])),
+                    to = Math.min(Math.max(a[0], a[6]), Math.max(b[0], b[6]));
+                if (to > from) {
+                    return [
+                        getTimeAtPosition(a, from), getTimeAtPosition(a, to),
+                        getTimeAtPosition(b, from), getTimeAtPosition(b, to)
+                    ];
                 }
             }
-            prev = next;
         }
+        return null;
     }
 
-    function isFound(locations, point, tolerance) {
-        for (var i = 0, l = locations.length; i < l; i++) {
-            var loc = locations[i];
-            if (loc._point.isClose(point, tolerance))
-                return true;
+    // The positions of the control points along a line through (x0, y0) in
+    // direction (ux, uy), as curve values with zero y-coordinates:
+    function getPositions(v, x0, y0, ux, uy) {
+        var positions = [];
+        for (var i = 0; i < 8; i += 2) {
+            positions.push((v[i] - x0) * ux + (v[i + 1] - y0) * uy, 0);
         }
-        return false;
+        return positions;
+    }
+
+    function isMonotone(p) {
+        return p[0] <= p[2] && p[2] <= p[4] && p[4] <= p[6]
+                || p[0] >= p[2] && p[2] >= p[4] && p[4] >= p[6];
+    }
+
+    function getTimeAtPosition(p, position) {
+        var roots = [];
+        return position === p[0] ? 0
+                : position === p[6] ? 1
+                : Curve.solveCubic(p, 0, position, roots, 0, 1) > 0 ? roots[0]
+                : Math.abs(position - p[0]) < Math.abs(position - p[6]) ? 0 : 1;
+    }
+
+    // Checks if the control points of both curves lie in a band along the
+    // baseline of v2 that is thinner than the tolerance:
+    function isWithinBand(v1, v2, tolerance) {
+        var getSignedDistance = Line.getSignedDistance,
+            min = 0,
+            max = 0;
+        for (var i = 0; i < 8; i += 2) {
+            for (var j = 0; j < 2; j++) {
+                var v = j ? v2 : v1,
+                    d = getSignedDistance(v2[0], v2[1], v2[6], v2[7],
+                        v[i], v[i + 1]);
+                min = Math.min(min, d);
+                max = Math.max(max, d);
+            }
+        }
+        return max - min <= tolerance;
+    }
+
+    function getPolygonLength(v) {
+        var length = 0;
+        for (var i = 0; i < 6; i += 2) {
+            var dx = v[i + 2] - v[i],
+                dy = v[i + 3] - v[i + 1];
+            length += Math.sqrt(dx * dx + dy * dy);
+        }
+        return length;
     }
 
     /**
@@ -2151,9 +2218,10 @@ new function() { // Scope for bezier intersection using fat-line clipping
                     straight = straight1 && straight2,
                     flip = straight1 && !straight2,
                     before = locations.length,
+                    overlaps = [];
                 // Determine the correct intersection method based on whether
                 // one or curves are straight lines:
-                calls = (straight
+                (straight
                     ? addLineIntersection
                     : straight1 || straight2
                         ? addCurveLineIntersections
@@ -2164,12 +2232,36 @@ new function() { // Scope for bezier intersection using fat-line clipping
                             // Define the defaults for these parameters of
                             // addCurveIntersections():
                             // recursion, calls, tMin, tMax, uMin, uMax
-                            0, 0, 0, 1, 0, 1);
-                // Fat-line clipping can't separate curves that run close to
-                // each other, and gives up before it finds where they cross:
-                if (calls >= 4096)
-                    addCloseCrossings(v1, v2, c1, c2, locations, include,
-                            tolerance || epsilon);
+                            0, 0, 0, 1, 0, 1, tolerance, overlaps);
+                // Join the overlapping parts that follow each other within the
+                // tolerance, and add the ends of each:
+                for (var i = 0, l = overlaps.length; i < l; i++) {
+                    var overlap = overlaps[i];
+                    if (overlap[0] > overlap[1])
+                        overlaps[i] = [overlap[1], overlap[0],
+                                overlap[3], overlap[2]];
+                }
+                overlaps.sort(function(a, b) {
+                    return a[0] - b[0];
+                });
+                for (var i = 0, l = overlaps.length; i < l; i++) {
+                    var overlap = overlaps[i];
+                    while (i + 1 < l && (overlaps[i + 1][0] <= overlap[1]
+                            || isWithinBand(
+                                Curve.getPart(v1, overlap[1], overlaps[i + 1][0]),
+                                Curve.getPart(v2, overlap[3], overlaps[i + 1][2]),
+                                tolerance))) {
+                        var next = overlaps[++i];
+                        if (next[1] > overlap[1])
+                            overlap = [overlap[0], next[1], overlap[2], next[3]];
+                    }
+                    addLocation(locations, include,
+                            c1, overlap[0],
+                            c2, overlap[2], true);
+                    addLocation(locations, include,
+                            c1, overlap[1],
+                            c2, overlap[3], true);
+                }
                 // Handle the special case where the start- / end-points of one
                 // curve lie on the other curve, within the tolerance if one is
                 // passed, but only if haven't found a line-line intersection

@@ -458,3 +458,19 @@ test('#1387: crossings at mirror-symmetric joints', function() {
         return location.isCrossing();
     }), [true, true]);
 });
+
+test('Crossings of curves that run close to each other', function() {
+    // Fat-line clipping can't separate these curves, which run within 3.4e-4
+    // of each other and cross where they are 4e-6 apart:
+    var curve1 = new Curve([299.43514767699014, 248.78534185388617],
+            [23.67264213867056, -84.89976200191851],
+            [-125.89361307431193, 0], [512, 96]);
+    var curve2 = new Curve([299.43514767699014, 248.78534185388617],
+            [23.67167593068926, -84.89992191301804],
+            [-125.89322163652065, 0], [512, 96]);
+    var times = curve1.getIntersections(curve2).map(function(location) {
+        return location.time;
+    });
+    equals(times.length, 3, 'times.length');
+    equals(times[1], 0.80757, 'times[1]', { tolerance: 1e-4 });
+});
