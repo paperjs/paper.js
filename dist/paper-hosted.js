@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 06:00:11 2026 +0200
+ * Date: Tue Oct 20 06:03:59 2026 +0200
  *
  ***
  *
@@ -10785,12 +10785,18 @@ PathItem.inject(new function() {
 					segment._path._overlapsOnly = false;
 			}
 			paths = tracePaths(segments, operator);
+			if (_path2 && (operator.subtract || operator.exclude)) {
+				paths = reorientPaths(paths, function(w) {
+					return !!(w & 1);
+				}, true);
+			}
 		} else {
 			paths = reorientPaths(
 					paths2 ? paths1.concat(paths2) : paths1.slice(),
 					function(w) {
 						return !!operator[w];
-					});
+					},
+					true);
 		}
 		return createResult(paths, true, path1, path2, options);
 	}
