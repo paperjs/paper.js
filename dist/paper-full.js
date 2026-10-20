@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 15:39:24 2026 +0200
+ * Date: Tue Oct 20 14:50:49 2026 +0200
  *
  ***
  *
@@ -7069,29 +7069,6 @@ statics: {
 		return res;
 	},
 
-	getTimeOf: function(v, point, tolerance) {
-		var abs = Math.abs,
-			epsilon = tolerance || Math.max(1e-7,
-				Numerical.getEpsilon(Math.max(
-					abs(v[0]), abs(v[1]), abs(v[2]), abs(v[3]),
-					abs(v[4]), abs(v[5]), abs(v[6]), abs(v[7]))));
-		if (point.isClose(new Point(v[0], v[1]), epsilon))
-			return 0;
-		if (point.isClose(new Point(v[6], v[7]), epsilon))
-			return 1;
-		var coords = [point.x, point.y],
-			roots = [];
-		for (var c = 0; c < 2; c++) {
-			var count = Curve.solveCubic(v, c, coords[c], roots, 0, 1);
-			for (var i = 0; i < count; i++) {
-				var u = roots[i];
-				if (point.isClose(Curve.getPoint(v, u), epsilon))
-					return u;
-			}
-		}
-		return null;
-	},
-
 	getPart: function(v, from, to) {
 		var flip = from > to;
 		if (flip) {
@@ -7210,17 +7187,25 @@ statics: {
 		if (h1.isZero() && h2.isZero()) {
 			return true;
 		} else {
-			var v = p2.subtract(p1);
-			if (v.isZero()) {
+			var isZero = Numerical.isZero,
+				isCollinear = Point.isCollinear,
+				vx = p2.x - p1.x,
+				vy = p2.y - p1.y;
+			if (isZero(vx) && isZero(vy)) {
 				return false;
-			} else if (v.isCollinear(h1) && v.isCollinear(h2)) {
-				var l = new Line(p1, p2),
+			} else if (isCollinear(vx, vy, h1.x, h1.y) &&
+					isCollinear(vx, vy, h2.x, h2.y)) {
+				var getDistance = Line.getDistance,
+					px = p1.x,
+					py = p1.y,
 					epsilon = 1e-7;
-				if (l.getDistance(p1.add(h1)) < epsilon &&
-					l.getDistance(p2.add(h2)) < epsilon) {
-					var div = v.dot(v),
-						s1 = v.dot(h1) / div,
-						s2 = v.dot(h2) / div;
+				if (getDistance(px, py, vx, vy, px + h1.x, py + h1.y, true)
+						< epsilon &&
+					getDistance(px, py, vx, vy, p2.x + h2.x, p2.y + h2.y, true)
+						< epsilon) {
+					var div = vx * vx + vy * vy,
+						s1 = (vx * h1.x + vy * h1.y) / div,
+						s2 = (vx * h2.x + vy * h2.y) / div;
 					return s1 >= 0 && s1 <= 1 && s2 <= 0 && s2 >= -1;
 				}
 			}
@@ -7407,6 +7392,10 @@ new function() {
 		return [ax, bx, cx, ay, by, cy, x1, y1, x2, y2];
 	}
 
+	function getCoordinate(v0, v3, a, b, c, t) {
+		return t === 0 ? v0 : t === 1 ? v3 : ((a * t + b) * t + c) * t + v0;
+	}
+
 	function evaluate(v, t, type, normalized) {
 		if (t == null || t < 0 || t > 1)
 			return null;
@@ -7419,10 +7408,8 @@ new function() {
 			x2 = c[8], y2 = c[9],
 			x, y;
 		if (type === 0) {
-			x = t === 0 ? x0 : t === 1 ? x3
-					: ((ax * t + bx) * t + cx) * t + x0;
-			y = t === 0 ? y0 : t === 1 ? y3
-					: ((ay * t + by) * t + cy) * t + y0;
+			x = getCoordinate(x0, x3, ax, bx, cx, t);
+			y = getCoordinate(y0, y3, ay, by, cy, t);
 		} else {
 			var tMin = 1e-8,
 				tMax = 1 - tMin;
@@ -7572,6 +7559,44 @@ new function() {
 					1e-12);
 		},
 
+		getTimeOf: function(v, point, tolerance) {
+			var abs = Math.abs,
+				x0 = v[0], y0 = v[1],
+				x3 = v[6], y3 = v[7],
+				px = point.x,
+				py = point.y,
+				epsilon = tolerance || Math.max(
+					1e-7,
+					Numerical.getEpsilon(Math.max(
+						abs(x0), abs(y0), abs(v[2]), abs(v[3]),
+						abs(v[4]), abs(v[5]), abs(x3), abs(y3))));
+
+			function isClose(x, y) {
+				var dx = x - px,
+					dy = y - py;
+				return Math.sqrt(dx * dx + dy * dy) <= epsilon;
+			}
+
+			if (isClose(x0, y0))
+				return 0;
+			if (isClose(x3, y3))
+				return 1;
+			var c = getCoefficients(v),
+				ax = c[0], bx = c[1], cx = c[2],
+				ay = c[3], by = c[4], cy = c[5],
+				roots = [];
+			for (var i = 0; i < 2; i++) {
+				var count = Curve.solveCubic(v, i, i ? py : px, roots, 0, 1);
+				for (var j = 0; j < count; j++) {
+					var t = roots[j];
+					if (isClose(getCoordinate(x0, x3, ax, bx, cx, t),
+							getCoordinate(y0, y3, ay, by, cy, t)))
+						return t;
+				}
+			}
+			return null;
+		},
+
 		getNearestTime: function(v, point) {
 			var x0 = v[0], y0 = v[1],
 				x3 = v[6], y3 = v[7],
@@ -7598,10 +7623,8 @@ new function() {
 
 			function refine(t) {
 				if (t >= 0 && t <= 1) {
-					var dx = (t === 0 ? x0 : t === 1 ? x3
-							: ((ax * t + bx) * t + cx) * t + x0) - px,
-						dy = (t === 0 ? y0 : t === 1 ? y3
-							: ((ay * t + by) * t + cy) * t + y0) - py,
+					var dx = getCoordinate(x0, x3, ax, bx, cx, t) - px,
+						dy = getCoordinate(y0, y3, ay, by, cy, t) - py,
 						dist = dx * dx + dy * dy;
 					if (dist < minDist) {
 						minDist = dist;
