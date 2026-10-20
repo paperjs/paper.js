@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 20:51:53 2026 +0200
+ * Date: Tue Oct 20 20:49:19 2026 +0200
  *
  ***
  *
@@ -14624,7 +14624,7 @@ new function() {
 				inView = dispatched
 						|| !isCovered && this.getBounds().contains(point),
 				hit = hitItems && inView && view._project.hitTest(point, {
-					tolerance: 0,
+					tolerance: view._scope.settings.hitTolerance,
 					fill: true,
 					stroke: true
 				}),

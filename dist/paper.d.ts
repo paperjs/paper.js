@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 20:51:53 2026 +0200
+ * Date: Tue Oct 20 20:49:19 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -3756,7 +3756,7 @@ declare namespace paper {
          *     use `settings.handleSize`, e.g. with `handleSize: 0` to only draw the
          *     segments and not their handles
          * @option [settings.hitTolerance=0] {Number} the default tolerance for hit-
-         *     tests, when no value is specified
+         *     tests, when no value is specified, and for the mouse events of items
          * @option [settings.scaleStrokes=false] {Boolean} controls whether applying
          *     a matrix to the content of paths and compound paths also scales their
          *     {@link Style#strokeWidth}, by the geometric mean of the scale factors
