@@ -481,9 +481,6 @@ new function() {
         if (style.length)
             attrs.style = style.join(';');
 
-        if (attrs.opacity === 1)
-            delete attrs.opacity;
-
         if (!item._visible)
             attrs.visibility = 'hidden';
 
