@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 04:51:12 2026 +0200
+ * Date: Tue Oct 20 04:55:12 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -37,6 +37,31 @@ declare namespace paper {
         | { x: number, y: number, width: number, height: number }
         | { from: PointLike, to: PointLike }
     )
+
+    type ColorLike = (
+        Color
+        | string
+        | number[]
+        | { red: number, green: number, blue: number, alpha?: number }
+        | { gray: number, alpha?: number }
+        | { hue: number, saturation: number, brightness: number, alpha?: number }
+        | { hue: number, saturation: number, lightness: number, alpha?: number }
+        | {
+            gradient: Gradient | { stops: GradientStopLike[], radial?: boolean },
+            origin: PointLike,
+            destination: PointLike,
+            highlight?: PointLike
+        }
+        | {
+            stops: GradientStopLike[],
+            radial?: boolean,
+            origin: PointLike,
+            destination: PointLike,
+            highlight?: PointLike
+        }
+    )
+
+    type GradientStopLike = GradientStop | ColorLike | [ ColorLike, number ]
 
     
     class ChangeFlag  {
@@ -185,7 +210,8 @@ declare namespace paper {
         /** 
          * The highlight point of the gradient.
          */
-        highlight: Point
+        get highlight(): Point
+        set highlight(value: PointLike)
 
 
         /** 
@@ -529,22 +555,26 @@ declare namespace paper {
         /** 
          * The first anchor point of the curve.
          */
-        point1: Point
+        get point1(): Point
+        set point1(value: PointLike)
 
         /** 
          * The second anchor point of the curve.
          */
-        point2: Point
+        get point2(): Point
+        set point2(value: PointLike)
 
         /** 
          * The handle point that describes the tangent in the first anchor point.
          */
-        handle1: Point
+        get handle1(): Point
+        set handle1(value: PointLike)
 
         /** 
          * The handle point that describes the tangent in the second anchor point.
          */
-        handle2: Point
+        get handle2(): Point
+        set handle2(value: PointLike)
 
         /** 
          * The first segment of the curve.
@@ -614,12 +644,14 @@ declare namespace paper {
         /** 
          * The bounding rectangle of the curve excluding stroke width.
          */
-        bounds: Rectangle
+        get bounds(): Rectangle
+        set bounds(value: RectangleLike)
 
         /** 
          * The bounding rectangle of the curve including stroke width.
          */
-        strokeBounds: Rectangle
+        get strokeBounds(): Rectangle
+        set strokeBounds(value: RectangleLike)
 
         /** 
          * The bounding rectangle of the curve including handles.
@@ -1425,7 +1457,8 @@ declare namespace paper {
         /** 
          * The color of the gradient stop.
          */
-        color: Color
+        get color(): Color
+        set color(value: ColorLike)
 
 
         /** 
@@ -1528,7 +1561,8 @@ declare namespace paper {
          * If the HitResult has a type of 'pixel', this property refers to the color
          * of the pixel on the {@link Raster} that was hit.
          */
-        color: Color | null
+        get color(): Color | null
+        set color(value: ColorLike | null)
 
         /** 
          * If the HitResult has a type of 'stroke', 'segment', 'handle-in' or
@@ -1541,7 +1575,8 @@ declare namespace paper {
          * Describes the actual coordinates of the segment, handle or bounding box
          * corner that was hit.
          */
-        point: Point
+        get point(): Point
+        set point(value: PointLike)
 
 
     }
@@ -1667,7 +1702,8 @@ declare namespace paper {
          * default, this is the {@link Rectangle#center} of the item's
          * {@link #bounds} rectangle.
          */
-        position: Point
+        get position(): Point
+        set position(value: PointLike)
 
         /** 
          * The item's pivot point specified in the item coordinate system, defining
@@ -1676,22 +1712,26 @@ declare namespace paper {
          * meaning the {@link Rectangle#center} of the item's {@link #bounds}
          * rectangle is used as pivot.
          */
-        pivot: Point
+        get pivot(): Point
+        set pivot(value: PointLike)
 
         /** 
          * The bounding rectangle of the item excluding stroke width.
          */
-        bounds: Rectangle
+        get bounds(): Rectangle
+        set bounds(value: RectangleLike)
 
         /** 
          * The bounding rectangle of the item including stroke width.
          */
-        strokeBounds: Rectangle
+        get strokeBounds(): Rectangle
+        set strokeBounds(value: RectangleLike)
 
         /** 
          * The bounding rectangle of the item including handles.
          */
-        handleBounds: Rectangle
+        get handleBounds(): Rectangle
+        set handleBounds(value: RectangleLike)
 
         /** 
          * The bounding rectangle of the item without any matrix transformations.
@@ -1700,7 +1740,8 @@ declare namespace paper {
          * want to draw something of the same size, position, rotation, and scaling,
          * like a selection frame.
          */
-        internalBounds: Rectangle
+        get internalBounds(): Rectangle
+        set internalBounds(value: RectangleLike)
 
         /** 
          * The current rotation angle of the item, as described by its
@@ -1718,7 +1759,8 @@ declare namespace paper {
          * {@link #applyMatrix} set to `false`, meaning they do not directly bake
          * transformations into their content.
          */
-        scaling: Point
+        get scaling(): Point
+        set scaling(value: PointLike)
 
         /** 
          * The item's transformation matrix, defining position and dimensions in
@@ -1827,7 +1869,8 @@ declare namespace paper {
         /** 
          * The color of the stroke.
          */
-        strokeColor: Color | null
+        get strokeColor(): Color | null
+        set strokeColor(value: ColorLike | null)
 
         /** 
          * The width of the stroke.
@@ -1878,7 +1921,8 @@ declare namespace paper {
         /** 
          * The fill color of the item.
          */
-        fillColor: Color | null
+        get fillColor(): Color | null
+        set fillColor(value: ColorLike | null)
 
         /** 
          * The fill-rule with which the shape gets filled. Please note that only
@@ -1889,7 +1933,8 @@ declare namespace paper {
         /** 
          * The shadow color.
          */
-        shadowColor: Color | null
+        get shadowColor(): Color | null
+        set shadowColor(value: ColorLike | null)
 
         /** 
          * The shadow's blur radius.
@@ -1899,13 +1944,15 @@ declare namespace paper {
         /** 
          * The shadow's offset.
          */
-        shadowOffset: Point
+        get shadowOffset(): Point
+        set shadowOffset(value: PointLike)
 
         /** 
          * The color the item is highlighted with when selected. If the item does
          * not specify its own color, the color defined by its layer is used instead.
          */
-        selectedColor: Color | null
+        get selectedColor(): Color | null
+        set selectedColor(value: ColorLike | null)
 
         /** 
          * Item level handler function to be called on each frame of an animation.
@@ -3612,7 +3659,8 @@ declare namespace paper {
          * The position of the mouse in project coordinates when the event was
          * fired.
          */
-        point: Point
+        get point(): Point
+        set point(value: PointLike)
 
         /** 
          * The item that dispatched the event. It is different from
@@ -3630,7 +3678,8 @@ declare namespace paper {
         currentTarget: Item
 
         
-        delta: Point
+        get delta(): Point
+        set delta(value: PointLike)
 
 
         /** 
@@ -5654,7 +5703,8 @@ declare namespace paper {
         /** 
          * The PointText's anchor point
          */
-        point: Point
+        get point(): Point
+        set point(value: PointLike)
 
 
         /** 
@@ -6131,7 +6181,8 @@ declare namespace paper {
         /** 
          * The size of the raster in pixels.
          */
-        size: Size
+        get size(): Size
+        set size(value: SizeLike)
 
         /** 
          * The width of the raster in pixels.
@@ -6421,12 +6472,14 @@ declare namespace paper {
          * The top-left point of the rectangle. Setting it moves the whole
          * rectangle, unlike {@link #topLeft}.
          */
-        point: Point
+        get point(): Point
+        set point(value: PointLike)
 
         /** 
          * The size of the rectangle
          */
-        size: Size
+        get size(): Size
+        set size(value: SizeLike)
 
         /** 
          * The position of the left hand side of the rectangle. Note that this
@@ -6455,59 +6508,68 @@ declare namespace paper {
         /** 
          * The center point of the rectangle. Setting it moves the whole rectangle.
          */
-        center: Point
+        get center(): Point
+        set center(value: PointLike)
 
         /** 
          * The top-left point of the rectangle. Note that this doesn't move the
          * whole rectangle; the bottom-right corner stays where it was.
          */
-        topLeft: Point
+        get topLeft(): Point
+        set topLeft(value: PointLike)
 
         /** 
          * The top-right point of the rectangle. Note that this doesn't move the
          * whole rectangle; the bottom-left corner stays where it was.
          */
-        topRight: Point
+        get topRight(): Point
+        set topRight(value: PointLike)
 
         /** 
          * The bottom-left point of the rectangle. Note that this doesn't move the
          * whole rectangle; the top-right corner stays where it was.
          */
-        bottomLeft: Point
+        get bottomLeft(): Point
+        set bottomLeft(value: PointLike)
 
         /** 
          * The bottom-right point of the rectangle. Note that this doesn't move the
          * whole rectangle; the top-left corner stays where it was.
          */
-        bottomRight: Point
+        get bottomRight(): Point
+        set bottomRight(value: PointLike)
 
         /** 
          * The left-center point of the rectangle. Setting it moves the left hand
          * side while the right hand side stays where it was, and moves the whole
          * rectangle vertically.
          */
-        leftCenter: Point
+        get leftCenter(): Point
+        set leftCenter(value: PointLike)
 
         /** 
          * The top-center point of the rectangle. Setting it moves the top while
          * the bottom stays where it was, and moves the whole rectangle
          * horizontally.
          */
-        topCenter: Point
+        get topCenter(): Point
+        set topCenter(value: PointLike)
 
         /** 
          * The right-center point of the rectangle. Setting it moves the right
          * hand side while the left hand side stays where it was, and moves the
          * whole rectangle vertically.
          */
-        rightCenter: Point
+        get rightCenter(): Point
+        set rightCenter(value: PointLike)
 
         /** 
          * The bottom-center point of the rectangle. Setting it moves the bottom
          * while the top stays where it was, and moves the whole rectangle
          * horizontally.
          */
-        bottomCenter: Point
+        get bottomCenter(): Point
+        set bottomCenter(value: PointLike)
 
         /** 
          * The area of the rectangle.
@@ -6754,19 +6816,22 @@ declare namespace paper {
         /** 
          * The anchor point of the segment.
          */
-        point: Point
+        get point(): Point
+        set point(value: PointLike)
 
         /** 
          * The handle point relative to the anchor point of the segment that
          * describes the in tangent of the segment.
          */
-        handleIn: Point
+        get handleIn(): Point
+        set handleIn(value: PointLike)
 
         /** 
          * The handle point relative to the anchor point of the segment that
          * describes the out tangent of the segment.
          */
-        handleOut: Point
+        get handleOut(): Point
+        set handleOut(value: PointLike)
 
         /** 
          * Specifies whether the segment is selected.
@@ -6980,13 +7045,15 @@ declare namespace paper {
         /** 
          * The size of the shape.
          */
-        size: Size
+        get size(): Size
+        set size(value: SizeLike)
 
         /** 
          * The radius of the shape, as a number if it is a circle, or a size object
          * for ellipses and rounded rectangles.
          */
-        radius: number | Size
+        get radius(): number | Size
+        set radius(value: number | SizeLike)
 
 
         /** 
@@ -7413,7 +7480,8 @@ declare namespace paper {
         /** 
          * The color of the stroke.
          */
-        strokeColor: Color | null
+        get strokeColor(): Color | null
+        set strokeColor(value: ColorLike | null)
 
         /** 
          * The width of the stroke.
@@ -7463,7 +7531,8 @@ declare namespace paper {
         /** 
          * The fill color.
          */
-        fillColor: Color | null
+        get fillColor(): Color | null
+        set fillColor(value: ColorLike | null)
 
         /** 
          * The fill-rule with which the shape gets filled. Please note that only
@@ -7474,7 +7543,8 @@ declare namespace paper {
         /** 
          * The shadow color.
          */
-        shadowColor: Color | null
+        get shadowColor(): Color | null
+        set shadowColor(value: ColorLike | null)
 
         /** 
          * The shadow's blur radius.
@@ -7484,13 +7554,15 @@ declare namespace paper {
         /** 
          * The shadow's offset.
          */
-        shadowOffset: Point
+        get shadowOffset(): Point
+        set shadowOffset(value: PointLike)
 
         /** 
          * The color the item is highlighted with when selected. If the item does
          * not specify its own color, the color defined by its layer is used instead.
          */
-        selectedColor: Color | null
+        get selectedColor(): Color | null
+        set selectedColor(value: ColorLike | null)
 
         /** 
          * The font-family to be used in text content.
@@ -7894,19 +7966,22 @@ declare namespace paper {
          * The position of the mouse in project coordinates when the event was
          * fired.
          */
-        point: Point
+        get point(): Point
+        set point(value: PointLike)
 
         /** 
          * The position of the mouse in project coordinates when the previous
          * event was fired.
          */
-        lastPoint: Point
+        get lastPoint(): Point
+        set lastPoint(value: PointLike)
 
         /** 
          * The position of the mouse in project coordinates when the mouse button
          * was last clicked.
          */
-        downPoint: Point
+        get downPoint(): Point
+        set downPoint(value: PointLike)
 
         /** 
          * The point in the middle between {@link #lastPoint} and
@@ -7914,14 +7989,16 @@ declare namespace paper {
          * artwork based on the moving direction of the mouse, as returned by
          * {@link #delta}.
          */
-        middlePoint: Point
+        get middlePoint(): Point
+        set middlePoint(value: PointLike)
 
         /** 
          * The difference between the current position and the last position of the
          * mouse when the event was fired. In case of the mouseup event, the
          * difference to the mousedown position is returned.
          */
-        delta: Point
+        get delta(): Point
+        set delta(value: PointLike)
 
         /** 
          * The velocity of the mouse, in points per second: the distance it moved
@@ -7932,7 +8009,8 @@ declare namespace paper {
          * repeats of {@link Tool#eventInterval} have none. On mousedown, and when
          * no time passed, it's zero.
          */
-        velocity: Point
+        get velocity(): Point
+        set velocity(value: PointLike)
 
         /** 
          * The time since the last tool event, in seconds, measured between the
@@ -8079,7 +8157,8 @@ declare namespace paper {
          * The size of the view. Changing the view's size will resize it's
          * underlying element.
          */
-        viewSize: Size
+        get viewSize(): Size
+        set viewSize(value: SizeLike)
 
         /** 
          * The bounds of the currently visible area in project coordinates.
@@ -8088,7 +8167,8 @@ declare namespace paper {
          * ratio, the bounds read back can be larger than the rectangle in one
          * direction.
          */
-        bounds: Rectangle
+        get bounds(): Rectangle
+        set bounds(value: RectangleLike)
 
         /** 
          * The size of the visible area in project coordinates.
@@ -8098,7 +8178,8 @@ declare namespace paper {
         /** 
          * The center of the visible area in project coordinates.
          */
-        center: Point
+        get center(): Point
+        set center(value: PointLike)
 
         /** 
          * The view's zoom factor by which the project coordinates are magnified.
@@ -8120,7 +8201,8 @@ declare namespace paper {
          * 
          * @see #zoom
          */
-        scaling: Point
+        get scaling(): Point
+        set scaling(value: PointLike)
 
         /** 
          * The view's transformation matrix, defining the view onto the project's
