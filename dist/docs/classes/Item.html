@@ -2993,9 +2993,9 @@ for (var i = 0; i < 20; i++) {
 	<p>Rasterizes the item into a newly created Raster object. The item itself is not removed after rasterization.</p>
     <ul class="member-list">
 <h4>Options:</h4>
-<li><tt>resolution: <tt>Number</tt></tt> &mdash; the desired resolution to  be used when rasterizing, in pixels per inch (DPI). If not specified,  the value of <code>view.resolution</code> is used by default. &mdash;&nbsp;default: <tt>view.resolution</tt></li>
-<li><tt>raster: <a href="../classes/Raster.html"><tt>Raster</tt></a></tt> &mdash; specifies a raster to be reused when  rasterizing. If the raster has the desired size already, then the  underlying canvas is reused and no new memory needs to be allocated.  If no raster is provided, a new raster item is created and returned  instead. &mdash;&nbsp;default: <tt>null</tt></li>
-<li><tt>insert: <tt>Boolean</tt></tt> &mdash; specifies whether the raster should be  inserted into the scene graph. When set to <code>true</code>, it is inserted  above the rasterized item. &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.resolution: <tt>Number</tt></tt> &mdash; the desired  resolution to be used when rasterizing, in pixels per inch (DPI). If  not specified, the value of <code>view.resolution</code> is used by default. &mdash;&nbsp;default: <tt>view.resolution</tt></li>
+<li><tt>options.raster: <a href="../classes/Raster.html"><tt>Raster</tt></a></tt> &mdash; specifies a raster to be reused  when rasterizing. If the raster has the desired size already, then the  underlying canvas is reused and no new memory needs to be allocated.  If no raster is provided, a new raster item is created and returned  instead. &mdash;&nbsp;default: <tt>null</tt></li>
+<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; specifies whether the raster  should be inserted into the scene graph. When set to <code>true</code>, it is  inserted above the rasterized item. &mdash;&nbsp;default: <tt>true</tt></li>
 </ul>
 	
 <ul class="member-list">
@@ -6078,10 +6078,10 @@ function onMouseDown(event) {
 	<p>Removes the item when the events specified in the passed options object occur.</p>
     <ul class="member-list">
 <h4>Options:</h4>
-<li><tt>options.move: undefined</tt> &mdash; {Boolean) remove the item when the next <a href="../classes/Tool.html#onmousemove"><tt>tool.onMouseMove</tt></a> event is fired.</li>
-<li><tt>options.drag: undefined</tt> &mdash; {Boolena) remove the item when the next <a href="../classes/Tool.html#onmousedrag"><tt>tool.onMouseDrag</tt></a> event is fired.</li>
-<li><tt>options.down: undefined</tt> &mdash; {Boolean) remove the item when the next <a href="../classes/Tool.html#onmousedown"><tt>tool.onMouseDown</tt></a> event is fired.</li>
-<li><tt>options.up: undefined</tt> &mdash; {Boolean) remove the item when the next <a href="../classes/Tool.html#onmouseup"><tt>tool.onMouseUp</tt></a> event is fired.</li>
+<li><tt>options.move: <tt>Boolean</tt></tt> &mdash; remove the item when the next <a href="../classes/Tool.html#onmousemove"><tt>tool.onMouseMove</tt></a> event is fired.</li>
+<li><tt>options.drag: <tt>Boolean</tt></tt> &mdash; remove the item when the next <a href="../classes/Tool.html#onmousedrag"><tt>tool.onMouseDrag</tt></a> event is fired.</li>
+<li><tt>options.down: <tt>Boolean</tt></tt> &mdash; remove the item when the next <a href="../classes/Tool.html#onmousedown"><tt>tool.onMouseDown</tt></a> event is fired.</li>
+<li><tt>options.up: <tt>Boolean</tt></tt> &mdash; remove the item when the next <a href="../classes/Tool.html#onmouseup"><tt>tool.onMouseUp</tt></a> event is fired.</li>
 </ul>
 	
 <ul class="member-list">

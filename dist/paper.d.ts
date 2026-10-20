@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 04:55:12 2026 +0200
+ * Date: Tue Oct 20 04:58:40 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -2118,23 +2118,23 @@ declare namespace paper {
          * Rasterizes the item into a newly created Raster object. The item itself
          * is not removed after rasterization.
          * 
-         * @option [resolution=view.resolution] {Number} the desired resolution to
-         *     be used when rasterizing, in pixels per inch (DPI). If not specified,
-         *     the value of `view.resolution` is used by default.
-         * @option [raster=null] {Raster} specifies a raster to be reused when
-         *     rasterizing. If the raster has the desired size already, then the
+         * @option [options.resolution=view.resolution] {Number} the desired
+         *     resolution to be used when rasterizing, in pixels per inch (DPI). If
+         *     not specified, the value of `view.resolution` is used by default.
+         * @option [options.raster=null] {Raster} specifies a raster to be reused
+         *     when rasterizing. If the raster has the desired size already, then the
          *     underlying canvas is reused and no new memory needs to be allocated.
          *     If no raster is provided, a new raster item is created and returned
          *     instead.
-         * @option [insert=true] {Boolean} specifies whether the raster should be
-         *     inserted into the scene graph. When set to `true`, it is inserted
-         *     above the rasterized item.
+         * @option [options.insert=true] {Boolean} specifies whether the raster
+         *     should be inserted into the scene graph. When set to `true`, it is
+         *     inserted above the rasterized item.
          * 
          * @param options - the rasterization options
          * 
          * @return the reused raster or the newly created raster item
          */
-        rasterize(options?: object): Raster
+        rasterize(options?: { resolution?: number, raster?: Raster, insert?: boolean }): Raster
 
         /** 
          * Checks whether the item's geometry contains the given point.
@@ -2207,7 +2207,7 @@ declare namespace paper {
          * @return a hit result object describing what exactly was hit
          *     or `null` if nothing was hit
          */
-        hitTest(point: PointLike, options?: object): HitResult
+        hitTest(point: PointLike, options?: { tolerance?: number, class?: Function, match?: Function, fill?: boolean, stroke?: boolean, segments?: boolean, curves?: boolean, handles?: boolean, ends?: boolean, position?: boolean, center?: boolean, bounds?: boolean, guides?: boolean, selected?: boolean }): HitResult
 
         /** 
          * Performs a hit-test on the item and its children (if it is a {@link
@@ -2225,7 +2225,7 @@ declare namespace paper {
          * @return hit result objects for all hits, describing what
          *     exactly was hit or `null` if nothing was hit
          */
-        hitTestAll(point: PointLike, options?: object): HitResult[]
+        hitTestAll(point: PointLike, options?: { tolerance?: number, class?: Function, match?: Function, fill?: boolean, stroke?: boolean, segments?: boolean, curves?: boolean, handles?: boolean, ends?: boolean, position?: boolean, center?: boolean, bounds?: boolean, guides?: boolean, selected?: boolean }): HitResult[]
 
         /** 
          * Checks whether the item matches the criteria described by the given
@@ -2335,7 +2335,7 @@ declare namespace paper {
          * 
          * @return the exported JSON data
          */
-        exportJSON(options?: object): string
+        exportJSON(options?: { asString?: boolean, precision?: number }): string
 
         /** 
          * Imports (deserializes) the stored JSON data into this item. If the data
@@ -2384,7 +2384,7 @@ declare namespace paper {
          * @return the item converted to an SVG node or a
          * `String` depending on `option.asString` value
          */
-        exportSVG(options?: object): SVGElement | string
+        exportSVG(options?: { bounds?: string | RectangleLike, matrix?: Matrix, asString?: boolean, precision?: number, matchShapes?: boolean, embedImages?: boolean, reuseImages?: boolean, idPrefix?: string, reduceAttributes?: boolean }): SVGElement | string
 
         /** 
          * Converts the provided SVG content into Paper.js items and adds them to
@@ -2425,7 +2425,7 @@ declare namespace paper {
          * @return the newly created Paper.js item containing the converted
          *     SVG content
          */
-        importSVG(svg: SVGElement | string, options?: object): Item
+        importSVG(svg: SVGElement | string, options?: { expandShapes?: boolean, crossOrigin?: string, onLoad?: Function, onError?: Function, insert?: boolean, applyMatrix?: boolean }): Item
 
         /** 
          * Imports the provided external SVG file, converts it into Paper.js items
@@ -3019,16 +3019,16 @@ declare namespace paper {
          * Removes the item when the events specified in the passed options object
          * occur.
          * 
-         * @option options.move {Boolean) remove the item when the next {@link
+         * @option options.move {Boolean} remove the item when the next {@link
          *     Tool#onMouseMove} event is fired.
-         * @option options.drag {Boolena) remove the item when the next {@link
+         * @option options.drag {Boolean} remove the item when the next {@link
          *     Tool#onMouseDrag} event is fired.
-         * @option options.down {Boolean) remove the item when the next {@link
+         * @option options.down {Boolean} remove the item when the next {@link
          *     Tool#onMouseDown} event is fired.
-         * @option options.up {Boolean) remove the item when the next {@link
+         * @option options.up {Boolean} remove the item when the next {@link
          *     Tool#onMouseUp} event is fired.
          */
-        removeOn(options: object): void
+        removeOn(options: { move?: boolean, drag?: boolean, down?: boolean, up?: boolean }): void
 
         /** 
          * Removes the item when the next {@link Tool#onMouseMove} event is fired.
@@ -3820,7 +3820,7 @@ declare namespace paper {
          * @param code - the PaperScript code
          * @param options - the compilation options
          */
-        execute(code: string, options?: object): void
+        execute(code: string, options?: { url?: string, source?: string }): void
 
         /** 
          * Injects the paper scope into any other given scope. Can be used for
@@ -3898,7 +3898,7 @@ declare namespace paper {
          * @return an object holding the compiled PaperScript translated
          *     into JavaScript code along with source-maps and other information.
          */
-        static compile(code: string, options?: object): object
+        static compile(code: string, options?: { url?: string, source?: string }): object
 
         /** 
          * Compiles the PaperScript code into a compiled function and executes it.
@@ -3921,7 +3921,7 @@ declare namespace paper {
          * 
          * @return the exports defined in the executed code
          */
-        static execute(code: string, scope: PaperScope, options?: object): object
+        static execute(code: string, scope: PaperScope, options?: { url?: string, source?: string, handlers?: string[] }): object
 
         /** 
          * Loads, compiles and executes PaperScript code in the HTML document. Note
@@ -4185,7 +4185,7 @@ declare namespace paper {
          * 
          * @return the reduced path
          */
-        reduce(options?: object): Path
+        reduce(options?: { simplify?: boolean }): Path
 
         /** 
          * Attempts to create a new shape item with same geometry as this path item,
@@ -4570,7 +4570,7 @@ declare namespace paper {
          * 
          * @return the resulting path item
          */
-        unite(path: PathItem, options?: object): PathItem
+        unite(path: PathItem, options?: { insert?: boolean }): PathItem
 
         /** 
          * Intersects the geometry of the specified path with this path's
@@ -4590,7 +4590,7 @@ declare namespace paper {
          * 
          * @return the resulting path item
          */
-        intersect(path: PathItem, options?: object): PathItem
+        intersect(path: PathItem, options?: { insert?: boolean, trace?: boolean }): PathItem
 
         /** 
          * Subtracts the geometry of the specified path from this path's
@@ -4610,7 +4610,7 @@ declare namespace paper {
          * 
          * @return the resulting path item
          */
-        subtract(path: PathItem, options?: object): PathItem
+        subtract(path: PathItem, options?: { insert?: boolean, trace?: boolean }): PathItem
 
         /** 
          * Excludes the intersection of the geometry of the specified path with
@@ -4625,7 +4625,7 @@ declare namespace paper {
          * 
          * @return the resulting path item
          */
-        exclude(path: PathItem, options?: object): PathItem
+        exclude(path: PathItem, options?: { insert?: boolean }): PathItem
 
         /** 
          * Splits the geometry of this path along the geometry of the specified
@@ -4646,7 +4646,7 @@ declare namespace paper {
          * 
          * @return the resulting path item
          */
-        divide(path: PathItem, options?: object): PathItem
+        divide(path: PathItem, options?: { insert?: boolean, trace?: boolean }): PathItem
 
         /** 
          * Fixes the orientation of the sub-paths of a compound-path, assuming
@@ -4856,7 +4856,7 @@ declare namespace paper {
          * 
          * @param options - the smoothing options
          */
-        smooth(options?: object): void
+        smooth(options?: { type?: string, factor?: number, from?: number | Segment | Curve, to?: number | Segment | Curve }): void
 
         /** 
          * Fits a sequence of as few curves as possible through the path's anchor
@@ -5973,7 +5973,7 @@ declare namespace paper {
          * @return a hit result object that contains more information
          *     about what exactly was hit or `null` if nothing was hit
          */
-        hitTest(point: PointLike, options?: object): HitResult
+        hitTest(point: PointLike, options?: { tolerance?: number, class?: Function, match?: Function, fill?: boolean, stroke?: boolean, segments?: boolean, curves?: boolean, handles?: boolean, ends?: boolean, position?: boolean, center?: boolean, bounds?: boolean, guides?: boolean, selected?: boolean }): HitResult
 
         /** 
          * Performs a hit-test on the item and its children (if it is a {@link
@@ -5990,7 +5990,7 @@ declare namespace paper {
          * @return hit result objects for all hits, describing what
          *     exactly was hit or `null` if nothing was hit
          */
-        hitTestAll(point: PointLike, options?: object): HitResult[]
+        hitTestAll(point: PointLike, options?: { tolerance?: number, class?: Function, match?: Function, fill?: boolean, stroke?: boolean, segments?: boolean, curves?: boolean, handles?: boolean, ends?: boolean, position?: boolean, center?: boolean, bounds?: boolean, guides?: boolean, selected?: boolean }): HitResult[]
 
         /** 
          * Fetch items contained within the project whose properties match the
@@ -6061,7 +6061,7 @@ declare namespace paper {
          * 
          * @return the exported JSON data
          */
-        exportJSON(options?: object): string
+        exportJSON(options?: { asString?: boolean, precision?: number }): string
 
         /** 
          * Imports (deserializes) the stored JSON data into the project.
@@ -6111,7 +6111,7 @@ declare namespace paper {
          * @return the project converted to an SVG node or a
          * `String` depending on `option.asString` value
          */
-        exportSVG(options?: object): SVGElement | string
+        exportSVG(options?: { bounds?: string | RectangleLike, matrix?: Matrix, asString?: boolean, precision?: number, matchShapes?: boolean, embedImages?: boolean, reuseImages?: boolean, idPrefix?: string, reduceAttributes?: boolean }): SVGElement | string
 
         /** 
          * Converts the provided SVG content into Paper.js items and adds them to
@@ -6153,7 +6153,7 @@ declare namespace paper {
          * @return the newly created Paper.js item containing the converted
          *     SVG content
          */
-        importSVG(svg: SVGElement | string, options?: object): Item
+        importSVG(svg: SVGElement | string, options?: { expandShapes?: boolean, crossOrigin?: string, onLoad?: Function, onError?: Function, insert?: boolean, applyMatrix?: boolean }): Item
 
         /** 
          * Imports the provided external SVG file, converts it into Paper.js items
@@ -6960,7 +6960,7 @@ declare namespace paper {
          * 
          * @param options - the smoothing options
          */
-        smooth(options?: object): void
+        smooth(options?: { type?: string, factor?: number }): void
 
         /** 
          * Checks if the this is the first segment in the {@link Path#segments}
@@ -8675,7 +8675,7 @@ declare namespace paper {
          * 
          * @return true if a handler prevented the event's default
          */
-        dispatchMouseEvent(type: string, point: PointLike, options?: object): boolean
+        dispatchMouseEvent(type: string, point: PointLike, options?: { modifiers?: object, button?: number, time?: number }): boolean
 
         /** 
          * Handles a key event that the host provides, for hosts without a DOM,
@@ -8696,7 +8696,7 @@ declare namespace paper {
          * @param key - the key, as in {@link KeyEvent#key}
          * @param options - the details of the event
          */
-        dispatchKeyEvent(type: string, key: string, options?: object): void
+        dispatchKeyEvent(type: string, key: string, options?: { character?: string, modifiers?: object, time?: number }): void
 
     }
 }
