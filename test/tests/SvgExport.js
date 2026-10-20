@@ -841,6 +841,34 @@ test('Import SVG shadows from CSS drop-shadow() (#1003)', function() {
     equals(importShadow('blur(2px)')[0], null, 'other filters');
 });
 
+test('Export SVG opacity and blend modes, which aren\'t inherited', function() {
+    var path = new Path.Rectangle({
+            point: [10, 10],
+            size: [20, 20],
+            fillColor: 'red',
+            opacity: 0.5,
+            blendMode: 'multiply'
+        }),
+        group = new Group({
+            children: [path, new Path.Circle({ center: [50, 50], radius: 10 })],
+            opacity: 0.5,
+            blendMode: 'multiply'
+        }),
+        node = project.exportSVG(),
+        paths = node.querySelectorAll('path'),
+        nodes = [node.querySelector('g g'), paths[0], paths[1]];
+    function getStyles(node) {
+        return [node.getAttribute('opacity'), node.getAttribute('style')];
+    }
+    // The path keeps the same values as its group, as they multiply:
+    equals(getStyles(nodes[0]), ['0.5', 'mix-blend-mode: multiply'], 'group');
+    equals(getStyles(nodes[1]), ['0.5', 'mix-blend-mode: multiply'], 'path');
+    // The defaults aren't written, also not where the group differs:
+    equals(getStyles(nodes[2]), [null, null], 'defaults');
+    equals(getStyles(node.querySelector('g')), [null, null], 'layer');
+    group.remove();
+});
+
 test('Export and import SVG blend modes that CSS doesn\'t have (#1296)', function() {
     function roundTrip(blendMode) {
         var path = new Path.Rectangle({
