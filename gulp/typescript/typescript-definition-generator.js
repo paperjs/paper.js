@@ -51,12 +51,26 @@ classes.forEach(cls => {
             };
         });
 
+    // The documented options per method, for methods that refer to another
+    // one's, e.g. `See {@link #hitTest(point[, options])} for a list of all
+    // options`:
+    const optionsByMethod = {};
+    cls.methods.forEach(it => {
+        const name = formatMethodName(it._name);
+        optionsByMethod[name] = optionsByMethod[name] || parseOptions(it.comment.tags);
+    });
+
     // Format methods.
     const methods = cls.methods
         .filter(filter)
         .flatMap(it => {
             // Filter internal parameters (starting with underscore).
             const params = (it._params || []).filter(it => !/^_/.test(it.name));
+            const reference = (it.desc || '').match(
+                    /\{@link #(\w+)\([^)]*\)\} for a list of all options/);
+            const options = reference
+                    ? optionsByMethod[reference[1]]
+                    : parseOptions(it.comment.tags);
             const method = {
                 name: formatMethodName(it._name),
                 // Constructors don't need return type.
@@ -67,7 +81,7 @@ classes.forEach(cls => {
                 // This flag is only used below to filter methods.
                 isStaticConstructor: it.isStatic && it.isConstructor,
                 comment: formatComment(it.comment, 'desc', it.isConstructor),
-                params: params.map(it => formatParameter(it)).join(', ')
+                params: params.map(it => formatParameter(it, options[it.name])).join(', ')
             };
             // Where a point or size is the only argument, it can also be
             // passed as two numbers, see the Point and Size class docs:
@@ -249,7 +263,7 @@ function formatMethodName(methodName) {
     return methodName;
 }
 
-function formatParameter(param) {
+function formatParameter(param, options) {
     let content = '';
     // Handle rest parameter pattern `...Type`. Parameter name needs to be
     // prefixed with `...` as in ES6. E.g. `...parameter: type[]`.
@@ -261,8 +275,47 @@ function formatParameter(param) {
     if (param.isOptional) {
         content += '?';
     }
-    content += formatType(param.type, { isParam: true });
+    // Objects with documented options are typed as objects of these options,
+    // all of them optional:
+    content += param.type === 'Object' && options
+        ? ': { ' + options.map(it => it.name + '?: ' + it.type).join(', ') + ' }'
+        : formatType(param.type, { isParam: true });
     return content;
+}
+
+// Parses the `@option` tags, such as `[options.name=default] {Type} desc` or
+// `options.name {Type} desc`, into lists of `{ name, type }` per parameter.
+// Nested options, such as `options.a.b`, are left out.
+function parseOptions(tags) {
+    const options = {};
+    tags.filter(it => it.title === 'option').forEach(tag => {
+        const desc = tag.desc.trim();
+        let name, rest;
+        if (desc[0] === '[') {
+            // Find the closing bracket, skipping braces in default values.
+            let depth = 0, end = 1;
+            for (; end < desc.length; end++) {
+                const ch = desc[end];
+                if (ch === '{') depth++;
+                else if (ch === '}') depth--;
+                else if (ch === ']' && !depth) break;
+            }
+            name = desc.slice(1, end).split('=')[0];
+            rest = desc.slice(end + 1).trim();
+        } else {
+            name = desc.split(/\s/)[0];
+            rest = desc.slice(name.length).trim();
+        }
+        const type = rest.match(/^\{([\w.|[\]*?]+)\}/);
+        const parts = name.split('.');
+        if (type && parts.length === 2) {
+            (options[parts[0]] = options[parts[0]] || []).push({
+                name: parts[1],
+                type: parseType(type[1], { isParam: true })
+            });
+        }
+    });
+    return options;
 }
 
 function formatParameterName(parameterName) {

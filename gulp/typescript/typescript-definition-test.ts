@@ -401,6 +401,11 @@ item.isInside(rectangleLike);
 item.intersects(item);
 item.hitTest(pointLike);
 item.hitTest(pointLike, {});
+// Options objects are typed from the @option tags (#1666):
+item.hitTest(pointLike, { tolerance: 5, fill: true, class: paper.Path });
+item.hitTestAll(pointLike, { tolerance: 5, fill: true });
+item.rasterize({ resolution: 144, insert: false });
+item.exportSVG({ asString: true, precision: 2 });
 item.hitTestAll(pointLike);
 item.hitTestAll(pointLike, {});
 item.matches({});
