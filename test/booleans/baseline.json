@@ -153,11 +153,15 @@
         "wrong": 0
     },
     "#870 / intersect": {
-        "stable": 19,
+        "stable": 20,
         "wrong": 0
     },
     "#870 / intersect (2)": {
-        "stable": 19,
+        "stable": 20,
+        "wrong": 0
+    },
+    "#870 / intersect (3)": {
+        "stable": 20,
         "wrong": 0
     },
     "#875 / subtract": {
@@ -225,7 +229,7 @@
         "wrong": 0
     },
     "#1054 / unite (2)": {
-        "stable": 18,
+        "stable": 20,
         "wrong": 0
     },
     "#1059 / unite": {
@@ -249,7 +253,7 @@
         "wrong": 0
     },
     "#1091 / unite (4)": {
-        "stable": 20,
+        "stable": 17,
         "wrong": 0
     },
     "#1091 / unite (5)": {
@@ -265,7 +269,7 @@
         "wrong": 0
     },
     "#1091 / unite (8)": {
-        "stable": 12,
+        "stable": 13,
         "wrong": 0
     },
     "#1091 / unite (9)": {
@@ -281,11 +285,11 @@
         "wrong": 0
     },
     "#1109 / unite": {
-        "stable": 14,
+        "stable": 19,
         "wrong": 0
     },
     "#1109 / unite (2)": {
-        "stable": 14,
+        "stable": 19,
         "wrong": 0
     },
     "#1109 / unite (3)": {
@@ -478,7 +482,7 @@
         "wrong": 0
     },
     "Selected test-cases provided by @iconexperience / unite (2)": {
-        "stable": 20,
+        "stable": 19,
         "wrong": 0
     },
     "Selected test-cases provided by @iconexperience / unite (3)": {
@@ -530,7 +534,7 @@
         "wrong": 0
     },
     "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (5)": {
-        "stable": 20,
+        "stable": 19,
         "wrong": 0
     },
     "Isolated edge-cases from @iconexperience's boolean-test suite / unite (6)": {
@@ -646,11 +650,11 @@
         "wrong": 0
     },
     "Isolated edge-cases from @iconexperience's boolean-test suite / unite (20)": {
-        "stable": 20,
+        "stable": 19,
         "wrong": 0
     },
     "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (20)": {
-        "stable": 18,
+        "stable": 17,
         "wrong": 0
     },
     "Isolated edge-cases from @iconexperience's boolean-test suite / unite (21)": {
@@ -742,7 +746,7 @@
         "wrong": 0
     },
     "Isolated edge-cases from @iconexperience's boolean-test suite / unite (32)": {
-        "stable": 18,
+        "stable": 19,
         "wrong": 0
     },
     "Isolated edge-cases from @iconexperience's boolean-test suite / intersect (32)": {
@@ -798,6 +802,10 @@
         "wrong": 0
     },
     "#2064: orientation of the results of exclude and subtract / subtract": {
+        "stable": 20,
+        "wrong": 0
+    },
+    "Backtracking keeps the incoming handle of the branch / unite": {
         "stable": 20,
         "wrong": 0
     },
@@ -873,7 +881,8 @@
         "wrong": 0
     },
     "#1849 / intersect": {
-        "timeout": true
+        "stable": 19,
+        "wrong": 0
     },
     "#1867 / unite": {
         "stable": 20,
@@ -888,7 +897,7 @@
         "wrong": 92
     },
     "#1879 / unite": {
-        "stable": 16,
+        "stable": 18,
         "wrong": 0
     },
     "#1897 / unite": {
@@ -1061,12 +1070,12 @@
         "skipped": "trace: false or stroke"
     },
     "#2082 / subtract": {
-        "stable": 6,
-        "wrong": 147
+        "stable": 20,
+        "wrong": 0
     },
     "#2082 / subtract (2)": {
-        "stable": 6,
-        "wrong": 43
+        "stable": 20,
+        "wrong": 0
     },
     "#2082 / subtract (3)": {
         "stable": 20,
@@ -1085,20 +1094,20 @@
         "wrong": 0
     },
     "#2082 / subtract (7)": {
-        "stable": 4,
-        "wrong": 147
+        "stable": 19,
+        "wrong": 0
     },
     "#2082 / subtract (8)": {
-        "stable": 10,
-        "wrong": 43
+        "stable": 17,
+        "wrong": 0
     },
     "#2082 / subtract (9)": {
-        "stable": 6,
-        "wrong": 147
+        "stable": 19,
+        "wrong": 0
     },
     "#2082 / subtract (10)": {
-        "stable": 7,
-        "wrong": 43
+        "stable": 17,
+        "wrong": 0
     },
     "#2096 / intersect": {
         "stable": 20,
