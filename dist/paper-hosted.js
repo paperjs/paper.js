@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 05:40:40 2026 +0200
+ * Date: Tue Oct 20 05:46:56 2026 +0200
  *
  ***
  *
@@ -1233,6 +1233,10 @@ var Numerical = new function() {
 		TRIGONOMETRIC_EPSILON: 1e-8,
 		ANGULAR_EPSILON: 1e-5,
 		KAPPA: 4 * (sqrt(2) - 1) / 3,
+
+		getEpsilon: function(magnitude) {
+			return Math.max(EPSILON, magnitude * 4 * MACHINE_EPSILON);
+		},
 
 		isZero: function(val) {
 			return val >= -EPSILON && val <= EPSILON;
@@ -7760,18 +7764,23 @@ new function() {
 	}
 
 	function getCurveIntersections(v1, v2, c1, c2, locations, include) {
-		var epsilon = 1e-12,
-			min = Math.min,
-			max = Math.max;
+		var min = Math.min,
+			max = Math.max,
+			abs = Math.abs,
+			minX1 = min(v1[0], v1[2], v1[4], v1[6]),
+			maxX1 = max(v1[0], v1[2], v1[4], v1[6]),
+			minY1 = min(v1[1], v1[3], v1[5], v1[7]),
+			maxY1 = max(v1[1], v1[3], v1[5], v1[7]),
+			minX2 = min(v2[0], v2[2], v2[4], v2[6]),
+			maxX2 = max(v2[0], v2[2], v2[4], v2[6]),
+			minY2 = min(v2[1], v2[3], v2[5], v2[7]),
+			maxY2 = max(v2[1], v2[3], v2[5], v2[7]),
+			epsilon = Numerical.getEpsilon(max(
+					abs(minX1), abs(maxX1), abs(minY1), abs(maxY1),
+					abs(minX2), abs(maxX2), abs(minY2), abs(maxY2)));
 
-		if (max(v1[0], v1[2], v1[4], v1[6]) + epsilon >
-			min(v2[0], v2[2], v2[4], v2[6]) &&
-			min(v1[0], v1[2], v1[4], v1[6]) - epsilon <
-			max(v2[0], v2[2], v2[4], v2[6]) &&
-			max(v1[1], v1[3], v1[5], v1[7]) + epsilon >
-			min(v2[1], v2[3], v2[5], v2[7]) &&
-			min(v1[1], v1[3], v1[5], v1[7]) - epsilon <
-			max(v2[1], v2[3], v2[5], v2[7])) {
+		if (maxX1 + epsilon > minX2 && minX1 - epsilon < maxX2 &&
+			maxY1 + epsilon > minY2 && minY1 - epsilon < maxY2) {
 			var overlaps = getOverlaps(v1, v2);
 			if (overlaps) {
 				for (var i = 0; i < 2; i++) {
@@ -8544,8 +8553,14 @@ var PathItem = Item.extend({
 			matrix1 = this._matrix._orNullIfIdentity(),
 			matrix2 = self ? matrix1
 				: (_matrix || path._matrix)._orNullIfIdentity();
-		return self || this.getBounds(matrix1).intersects(
-				path.getBounds(matrix2), 1e-12)
+		var bounds1 = !self && this.getBounds(matrix1),
+			bounds2 = !self && path.getBounds(matrix2),
+			abs = Math.abs;
+		return self || bounds1.intersects(bounds2, Numerical.getEpsilon(
+				Math.max(abs(bounds1.left), abs(bounds1.right),
+					abs(bounds1.top), abs(bounds1.bottom),
+					abs(bounds2.left), abs(bounds2.right),
+					abs(bounds2.top), abs(bounds2.bottom))))
 				? Curve.getIntersections(
 						this.getCurves(), !self && path.getCurves(), include,
 						matrix1, matrix2, _returnFirst)
