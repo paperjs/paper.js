@@ -2467,7 +2467,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
     }
 
     function getIntersections(curves1, curves2, include, matrix1, matrix2,
-            _returnFirst, _tolerance) {
+            _returnFirst, _tolerance, _collisions) {
         // Boolean operations pass their own tolerance, the distance under
         // which curves count as overlapping or touching:
         var self = !curves2;
@@ -2487,9 +2487,12 @@ new function() { // Scope for bezier intersection using fat-line clipping
                 values2[i] = curves2[i].getValues(matrix2);
             }
         }
-        var boundsCollisions = CollisionDetection.findCurveBoundsCollisions(
-                values1, values2,
-                _tolerance || /*#=*/Numerical.GEOMETRIC_EPSILON);
+        // Boolean operations may pass the collisions of the curves' bounds,
+        // found within at least their tolerance:
+        var boundsCollisions = _collisions
+                || CollisionDetection.findCurveBoundsCollisions(
+                    values1, values2,
+                    _tolerance || /*#=*/Numerical.GEOMETRIC_EPSILON);
         for (var index1 = 0; index1 < length1; index1++) {
             var curve1 = curves1[index1],
                 v1 = values1[index1];
