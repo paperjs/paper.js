@@ -2076,9 +2076,11 @@ new function() { // Scope for bezier intersection using fat-line clipping
                     abs(minX1), abs(maxX1), abs(minY1), abs(maxY1),
                     abs(minX2), abs(maxX2), abs(minY2), abs(maxY2)));
 
-        // Avoid checking curves if completely out of control bounds.
-        if (maxX1 + epsilon > minX2 && minX1 - epsilon < maxX2 &&
-            maxY1 + epsilon > minY2 && minY1 - epsilon < maxY2) {
+        // Avoid checking curves if completely out of control bounds, but not
+        // curves that getOverlaps() may still find to overlap:
+        var boundsEpsilon = max(epsilon, /*#=*/Numerical.GEOMETRIC_EPSILON);
+        if (maxX1 + boundsEpsilon > minX2 && minX1 - boundsEpsilon < maxX2 &&
+            maxY1 + boundsEpsilon > minY2 && minY1 - boundsEpsilon < maxY2) {
             // Now detect and handle overlaps:
             var overlaps = getOverlaps(v1, v2);
             if (overlaps) {

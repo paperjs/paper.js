@@ -1407,3 +1407,12 @@ test('PathItem#resolveCrossings() with a hole that zigzags along the outline', f
         'M0,100L60,10L50,0L100,50L100,51z');
     equals(path.resolveCrossings().area, 2765);
 });
+
+test('#2099', function() {
+    // A nearly straight curve of the hole meets lines of the outline at their
+    // shared corners:
+    var path = new CompoundPath('m30 106v-6l1-39-1-39c0 0-0.01-6 0-6 24.88 0 45 20.11 45 45 0 24.88-20.12 45-45 45zm0-84c21.57 0 39 17.43 39 39 0 21.57-17.43 39-39 39-0.01 0.06 0-78 0-78z'),
+        children = path.removeChildren();
+    // The area with the curve written as a line, v-78:
+    equals(children[0].subtract(children[1]).area, 792.03483);
+});
