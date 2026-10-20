@@ -1967,19 +1967,43 @@ new function() { // Injection scope for various item event handlers
         });
     },
 
-    // DOCS:
-    // TEST:
     /**
+     * Checks whether the item overlaps with the given item: whether their
+     * outlines cross, or one contains the other, as
+     * {@link Rectangle#intersects(rect)} does for rectangles. Items other than
+     * paths and shapes are checked through their bounds. To only check whether
+     * outlines cross, use {@link PathItem#getIntersections(path)}.
+     *
      * @param {Item} item the item to check against
-     * @return {Boolean}
+     * @return {Boolean} {@true if the items overlap}
      */
     intersects: function(item, _matrix) {
         if (!(item instanceof Item))
             return false;
+        var path1 = this._asPathItem(),
+            path2 = item._asPathItem(),
+            matrix1 = path1._matrix,
+            matrix2 = _matrix || path2._matrix;
+
+        // Checks whether a point of any of the path's sub-paths lies inside
+        // the other path, which then contains it, as the outlines don't cross:
+        function contains(path, matrix, other, otherMatrix) {
+            var paths = path._children || [path];
+            for (var i = 0, l = paths.length; i < l; i++) {
+                var segment = paths[i]._segments[0],
+                    point = segment && otherMatrix._inverseTransform(
+                            matrix._transformPoint(segment._point));
+                if (point && other._contains(point))
+                    return true;
+            }
+            return false;
+        }
+
         // Tell getIntersections() to return as soon as some intersections are
         // found, because all we care for here is there are some or none:
-        return this._asPathItem().getIntersections(item._asPathItem(), null,
-                _matrix, true).length > 0;
+        return path1.getIntersections(path2, null, _matrix, true).length > 0
+                || contains(path2, matrix2, path1, matrix1)
+                || contains(path1, matrix1, path2, matrix2);
     }
 },
 new function() { // Injection scope for hit-test functions shared with project
@@ -2456,8 +2480,8 @@ new function() { // Injection scope for hit-test functions shared with project
                             // contained, we are always overlapping, and don't
                             // need to perform further checks, otherwise perform
                             // a proper #intersects() check:
-                            || param.overlapping && (bounds.contains(rect)
-                                || param.path.intersects(child, childMatrix))))
+                            || param.overlapping
+                                && param.path.intersects(child, childMatrix)))
                         add = false;
                 }
                 if (add && child.matches(options)) {
