@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 03:56:00 2026 +0200
+ * Date: Tue Oct 20 04:08:01 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -755,6 +755,18 @@ declare namespace paper {
         splitAtTime(time: number): Path
 
         /** 
+         * @deprecated use use {@link #divideAt} or
+         * {@link #divideAtTime} instead.
+         */
+        divide(offset?: number, isTime?: boolean): Curve
+
+        /** 
+         * @deprecated use use {@link #splitAt} or
+         * {@link #splitAtTime} instead.
+         */
+        split(offset?: number, isTime?: boolean): Path
+
+        /** 
          * Returns a reversed version of the curve, without modifying the curve
          * itself.
          * 
@@ -871,6 +883,11 @@ declare namespace paper {
         getTimeAt(offset: number, start?: number): number
 
         /** 
+         * @deprecated use use {@link #getTimeAt} instead.
+         */
+        getParameterAt(offset: number, start?: number): number
+
+        /** 
          * Calculates the curve-time parameters where the curve is tangential to
          * provided tangent. Note that tangents at the start or end are included.
          * 
@@ -922,6 +939,11 @@ declare namespace paper {
          * @return the curve-time parameter of the specified point
          */
         getTimeOf(point: PointLike): number | null
+
+        /** 
+         * @deprecated use use {@link #getTimeOf} instead.
+         */
+        getParameterOf(point: PointLike): number
 
         /** 
          * Returns the nearest location on the curve to the specified point.
@@ -1128,6 +1150,11 @@ declare namespace paper {
         readonly time: number
 
         /** 
+         * @deprecated use {@link #time} instead.
+         */
+        readonly parameter: number
+
+        /** 
          * The point which is defined by the {@link #curve} and
          * {@link #time}.
          */
@@ -1249,6 +1276,11 @@ declare namespace paper {
         readonly time: number
 
         /** 
+         * @deprecated use {@link #time} instead, which is in seconds.
+         */
+        readonly timeStamp: number
+
+        /** 
          * The current state of the keyboard modifiers.
          * 
          * @see Key.modifiers
@@ -1316,6 +1348,11 @@ declare namespace paper {
          * The ramp-point of the gradient stop as a value between `0` and `1`.
          */
         offset: number
+
+        /** 
+         * @deprecated use {@link #offset} instead.
+         */
+        rampPoint: number
 
         /** 
          * The color of the gradient stop.
@@ -1646,6 +1683,11 @@ declare namespace paper {
         applyMatrix: boolean
 
         /** 
+         * @deprecated use {@link #applyMatrix} instead.
+         */
+        transformContent: boolean
+
+        /** 
          * The project that this item belongs to.
          */
         readonly project: Project
@@ -1951,6 +1993,11 @@ declare namespace paper {
          * matrix when copying all attributes
          */
         copyAttributes(source: Item, excludeMatrix: boolean): void
+
+        /** 
+         * @deprecated use {@link #rasterize} instead.
+         */
+        rasterize(resolution?: number, insert?: boolean): Raster
 
         /** 
          * Rasterizes the item into a newly created Raster object. The item itself
@@ -2347,6 +2394,50 @@ declare namespace paper {
          * Brings this item to the front of all other items within the same parent.
          */
         bringToFront(): void
+
+        /** 
+         * Inserts the specified item as a child of this item by appending it to
+         * the list of children and moving it above all other children. You can
+         * use this function for groups, compound paths and layers.
+         * 
+         * @param item - the item to be appended as a child
+         * 
+         * @deprecated use {@link #addChild} instead.
+         */
+        appendTop(item: Item): Item
+
+        /** 
+         * Inserts the specified item as a child of this item by appending it to
+         * the list of children and moving it below all other children. You can
+         * use this function for groups, compound paths and layers.
+         * 
+         * @param item - the item to be appended as a child
+         * 
+         * @deprecated use {@link #insertChild} instead.
+         */
+        appendBottom(item: Item): Item
+
+        /** 
+         * Moves this item above the specified item.
+         * 
+         * @param item - the item above which it should be moved
+         * 
+         * @deprecated use {@link #insertAbove} instead.
+         * 
+         * @return true if it was moved
+         */
+        moveAbove(item: Item): boolean
+
+        /** 
+         * Moves the item below the specified item.
+         * 
+         * @param item - the item below which it should be moved
+         * 
+         * @deprecated use {@link #insertBelow} instead.
+         * 
+         * @return true if it was moved
+         */
+        moveBelow(item: Item): boolean
 
         /** 
          * Adds it to the specified owner, which can be either a {@link Item} or a
@@ -3284,6 +3375,21 @@ declare namespace paper {
         inverted(): Matrix
 
         /** 
+         * @deprecated use {@link #append} instead.
+         */
+        concatenate(matrix: Matrix): Matrix
+
+        /** 
+         * @deprecated use {@link #prepend} instead.
+         */
+        preConcatenate(matrix: Matrix): Matrix
+
+        /** 
+         * @deprecated use {@link #appended} instead.
+         */
+        chain(matrix: Matrix): Matrix
+
+        /** 
          * @return whether this matrix is the identity matrix
          */
         isIdentity(): boolean
@@ -3859,6 +3965,11 @@ declare namespace paper {
         splitAt(location: number | CurveLocation): Path | null
 
         /** 
+         * @deprecated use use {@link #splitAt} instead.
+         */
+        split(index: number, time?: number): Path
+
+        /** 
          * Joins the path with the other specified path, which will be removed in
          * the process. They can be joined if the first or last segments of either
          * path lie in the same location. Locations are optionally compare with a
@@ -4093,6 +4204,14 @@ declare namespace paper {
 
         }
 
+        class RoundRectangle extends Path {
+            /** 
+             * @deprecated use {@link #Path.Rectangle} instead.
+             */
+            constructor(rectangle: RectangleLike, radius: SizeLike)
+
+        }
+
         class Ellipse extends Path {
             /** 
              * Creates an elliptical path item.
@@ -4109,6 +4228,14 @@ declare namespace paper {
              *     path's attributes
              */
             constructor(object: object)
+
+        }
+
+        class Oval extends Path {
+            /** 
+             * @deprecated use {@link #Path.Ellipse} instead.
+             */
+            constructor(rectangle: RectangleLike)
 
         }
 
@@ -5281,6 +5408,13 @@ declare namespace paper {
         readonly index: number
 
         /** 
+         * Gives access to the project's configurable options.
+         * 
+         * @deprecated use {@link PaperScope#settings} instead.
+         */
+        readonly options: any
+
+        /** 
          * The layers contained within the project.
          */
         readonly layers: Layer[]
@@ -5296,6 +5430,11 @@ declare namespace paper {
          * project.
          */
         readonly symbolDefinitions: SymbolDefinition[]
+
+        /** 
+         * @deprecated use {@link #symbolDefinitions} instead.
+         */
+        readonly symbols: SymbolDefinition[]
 
         /** 
          * The selected items contained within the project.
@@ -5678,6 +5817,11 @@ declare namespace paper {
          * inch).
          */
         readonly resolution: Size
+
+        /** 
+         * @deprecated use {@link #resolution} instead.
+         */
+        readonly ppi: Size
 
         /** 
          * The HTMLImageElement or Canvas element of the raster, if one is
@@ -6464,6 +6608,11 @@ declare namespace paper {
         type: string
 
         /** 
+         * @deprecated use {@link #type} instead.
+         */
+        shape: string
+
+        /** 
          * The size of the shape.
          */
         size: Size
@@ -6840,6 +6989,11 @@ declare namespace paper {
         readonly view: View
 
         /** 
+         * @deprecated use {@link #fontFamily} instead.
+         */
+        font: string
+
+        /** 
          * The color of the stroke.
          */
         strokeColor: Color | null
@@ -6982,6 +7136,11 @@ declare namespace paper {
          */
         item: Item
 
+        /** 
+         * @deprecated use {@link #item} instead.
+         */
+        definition: Item
+
 
         /** 
          * Creates a Symbol definition.
@@ -7023,6 +7182,11 @@ declare namespace paper {
          * The symbol definition that the placed symbol refers to.
          */
         definition: SymbolDefinition
+
+        /** 
+         * @deprecated use {@link #definition} instead.
+         */
+        symbol: SymbolDefinition
 
 
         /** 
@@ -7066,6 +7230,13 @@ declare namespace paper {
         fontSize: number | string
 
         /** 
+         * The font-family to be used in text content, as one string.
+         * 
+         * @deprecated use {@link #fontFamily} instead.
+         */
+        font: string
+
+        /** 
          * The text leading of text content.
          */
         leading: number | string
@@ -7081,6 +7252,16 @@ declare namespace paper {
          * The justification of text paragraphs.
          */
         justification: string
+
+        /** 
+         * @deprecated use {@link #style} instead.
+         */
+        characterStyle: Style
+
+        /** 
+         * @deprecated use {@link #style} instead.
+         */
+        paragraphStyle: Style
 
 
     }
@@ -7687,6 +7868,13 @@ declare namespace paper {
         update(force?: boolean): boolean
 
         /** 
+         * Updates the view if there are changes.
+         * 
+         * @deprecated use {@link #update} instead.
+         */
+        draw(): void
+
+        /** 
          * Requests an update of the view if there are changes through the browser's
          * requestAnimationFrame() mechanism for smooth animation. Note that when
          * using built-in event handlers for interaction, animation and load events,
@@ -7817,6 +8005,14 @@ declare namespace paper {
          * whole view with it, cropping the parts that don't fit
          */
         fitBounds(rectangle: RectangleLike, fit?: string): void
+
+        /** 
+         * Scrolls the view by the given vector.
+         * 
+         * @deprecated use {@link #translate} instead (using opposite
+         *     direction).
+         */
+        scrollBy(point: PointLike): void
 
         /** 
          * Converts the passed point from project coordinate space to view
