@@ -803,6 +803,10 @@ PathItem.inject(new function() {
             });
         }
 
+        // The last curve that tested each vertex in getHotPixels(), to test
+        // each only once per curve:
+        var marks = new Array(vertices.length);
+
         // 2b. Cut the curves where they pass within epsilon of a vertex, the
         // hot pixels of snap rounding. Moving the pieces to their vertices
         // can bring them within epsilon of further ones, so the pieces of each
@@ -823,12 +827,14 @@ PathItem.inject(new function() {
             for (var j = 0, k = indices.length; j < k; j++) {
                 var list = cuts[indices[j]];
                 for (var m = 0, n = list.length; m < n; m++) {
-                    var index = getVertex(list[m].point),
-                        vertex = vertices[index];
-                    if (vertex.x >= left && vertex.x <= right
-                            && vertex.y >= top && vertex.y <= bottom
-                            && hotPixels.indexOf(index) === -1)
-                        hotPixels.push(index);
+                    var index = getVertex(list[m].point);
+                    if (marks[index] !== i) {
+                        var vertex = vertices[index];
+                        marks[index] = i;
+                        if (vertex.x >= left && vertex.x <= right
+                                && vertex.y >= top && vertex.y <= bottom)
+                            hotPixels.push(index);
+                    }
                 }
             }
             return hotPixels.sort(function(a, b) {
