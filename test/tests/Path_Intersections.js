@@ -433,3 +433,14 @@ test('#1882', function() {
         { point: { x: 767966.125, y: 383420.45418 }, index: 0 }
     ]);
 });
+
+test('#1848', function() {
+    // The smoothed path ends on the line with a zero-length handle, which
+    // makes its end a double root:
+    var path = new Path({ segments: [[0, 350], [100, 100], [350, 0]] });
+    path.smooth({ type: 'catmull-rom', factor: 1 });
+    var line = new Path({ segments: [[350, -100], [350, 400]] });
+    testIntersections(path.getIntersections(line), [
+        { point: { x: 350, y: 0 }, index: 1, time: 1 }
+    ]);
+});
