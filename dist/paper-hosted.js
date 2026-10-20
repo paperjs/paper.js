@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 16:47:45 2026 +0200
+ * Date: Tue Oct 20 17:01:45 2026 +0200
  *
  ***
  *
@@ -11570,7 +11570,7 @@ PathItem.inject(new function() {
 		}
 
 		var edges = [],
-			edgesByVertices = {};
+			edgesByVertex = [];
 
 		function getCoincidence(edge1, edge2) {
 			var v1 = edge1.values,
@@ -11587,13 +11587,13 @@ PathItem.inject(new function() {
 		}
 
 		function addEdge(edge) {
-			var from = edge.from,
-				to = edge.to,
-				key = min(from, to) + ',' + max(from, to),
-				list = edgesByVertices[key] || (edgesByVertices[key] = []);
+			var first = min(edge.from, edge.to),
+				last = max(edge.from, edge.to),
+				list = edgesByVertex[first] || (edgesByVertex[first] = []);
 			for (var i = 0, l = list.length; i < l; i++) {
 				var other = list[i],
-					direction = getCoincidence(other, edge);
+					direction = max(other.from, other.to) === last
+						&& getCoincidence(other, edge);
 				if (direction) {
 					for (var j = 0; j < 2; j++)
 						other.windings[j] += direction * edge.windings[j];
@@ -11605,7 +11605,7 @@ PathItem.inject(new function() {
 		}
 
 		for (var i = 0, l = curves.length; i < l; i++) {
-			var list = sortCuts(cuts[i]),
+			var list = cuts[i],
 				isStraight = !curves[i].hasHandles(),
 				prev = list[0];
 			for (var j = 1, k = list.length; j < k; j++) {
@@ -11636,9 +11636,10 @@ PathItem.inject(new function() {
 		function getSide(halfEdge1, halfEdge2) {
 			var v1 = halfEdge1.values,
 				v2 = halfEdge2.values,
-				length = min(halfEdge1.length, halfEdge2.length) / 2,
-				point = Curve.getPoint(v2, halfEdge2.edge.isStraight
-						? length / halfEdge2.length
+				edge2 = halfEdge2.edge,
+				length = min(halfEdge1.edge.length, edge2.length) / 2,
+				point = Curve.getPoint(v2, edge2.isStraight
+						? length / edge2.length
 						: Curve.getTimeAt(v2, length)),
 				time = Curve.getNearestTime(v1, point);
 			return time > 0 && time < 1
@@ -11649,60 +11650,63 @@ PathItem.inject(new function() {
 
 		for (var i = 0, l = edges.length; i < l; i++) {
 			var edge = edges[i],
-				v = edge.values,
-				length = Curve.getLength(v);
+				v = edge.values;
 			edge.reversed = [v[6], v[7], v[4], v[5], v[2], v[3], v[0], v[1]];
 			halfEdges.push(
-				{ edge: edge, values: v, from: edge.from, to: edge.to,
-					length: length },
+				{ edge: edge, values: v, from: edge.from, to: edge.to },
 				{ edge: edge, values: edge.reversed, from: edge.to,
-					to: edge.from, length: length });
+					to: edge.from });
 			vertices[edge.from].outgoing.push(2 * i);
 			vertices[edge.to].outgoing.push(2 * i + 1);
 		}
 		for (var i = 0, l = vertices.length; i < l; i++) {
 			var vertex = vertices[i],
-				outgoing = vertex.outgoing,
-				distance = Infinity;
-			for (var j = 0, k = outgoing.length; j < k; j++)
-				distance = min(distance, halfEdges[outgoing[j]].length / 2);
-			for (var j = 0, k = outgoing.length; j < k; j++) {
-				var halfEdge = halfEdges[outgoing[j]],
-					v = halfEdge.values,
-					point = Curve.getPoint(v, halfEdge.edge.isStraight
-							? distance / halfEdge.length
-							: Curve.getTimeAt(v, distance));
-				halfEdge.point = point;
-				halfEdge.angle = Math.atan2(point.y - vertex.y,
-						point.x - vertex.x);
-			}
-			outgoing.sort(function(a, b) {
-				return halfEdges[a].angle - halfEdges[b].angle;
-			});
-			var start = -Math.PI,
-				gap = 0;
-			for (var j = 0, k = outgoing.length; j < k; j++) {
-				var angle = halfEdges[outgoing[j]].angle,
-					previous = halfEdges[outgoing[(j || k) - 1]].angle,
-					difference = (angle - previous + 2 * Math.PI)
-						% (2 * Math.PI) || 2 * Math.PI;
-				if (difference > gap) {
-					gap = difference;
-					start = angle;
+				outgoing = vertex.outgoing;
+			if (outgoing.length > 2) {
+				var distance = Infinity;
+				for (var j = 0, k = outgoing.length; j < k; j++) {
+					var edge = halfEdges[outgoing[j]].edge;
+					edge.length = edge.length || Curve.getLength(edge.values);
+					distance = min(distance, edge.length / 2);
 				}
+				for (var j = 0, k = outgoing.length; j < k; j++) {
+					var halfEdge = halfEdges[outgoing[j]],
+						v = halfEdge.values,
+						point = Curve.getPoint(v, halfEdge.edge.isStraight
+								? distance / halfEdge.edge.length
+								: Curve.getTimeAt(v, distance));
+					halfEdge.point = point;
+					halfEdge.angle = Math.atan2(point.y - vertex.y,
+							point.x - vertex.x);
+				}
+				outgoing.sort(function(a, b) {
+					return halfEdges[a].angle - halfEdges[b].angle;
+				});
+				var start = -Math.PI,
+					gap = 0;
+				for (var j = 0, k = outgoing.length; j < k; j++) {
+					var angle = halfEdges[outgoing[j]].angle,
+						previous = halfEdges[outgoing[(j || k) - 1]].angle,
+						difference = (angle - previous + 2 * Math.PI)
+							% (2 * Math.PI) || 2 * Math.PI;
+					if (difference > gap) {
+						gap = difference;
+						start = angle;
+					}
+				}
+				for (var j = 0, k = outgoing.length; j < k; j++) {
+					var halfEdge = halfEdges[outgoing[j]];
+					halfEdge.angle = (halfEdge.angle - start + 2 * Math.PI)
+							% (2 * Math.PI);
+				}
+				outgoing.sort(function(a, b) {
+					var halfEdge1 = halfEdges[a],
+						halfEdge2 = halfEdges[b];
+					return halfEdge1.point.isClose(halfEdge2.point, epsilon)
+							&& getSide(halfEdge1, halfEdge2)
+							|| halfEdge1.angle - halfEdge2.angle;
+				});
 			}
-			for (var j = 0, k = outgoing.length; j < k; j++) {
-				var halfEdge = halfEdges[outgoing[j]];
-				halfEdge.angle = (halfEdge.angle - start + 2 * Math.PI)
-						% (2 * Math.PI);
-			}
-			outgoing.sort(function(a, b) {
-				var halfEdge1 = halfEdges[a],
-					halfEdge2 = halfEdges[b];
-				return halfEdge1.point.isClose(halfEdge2.point, epsilon)
-						&& getSide(halfEdge1, halfEdge2)
-						|| halfEdge1.angle - halfEdge2.angle;
-			});
 			for (var j = 0, k = outgoing.length; j < k; j++)
 				halfEdges[outgoing[j]].position = j;
 		}
