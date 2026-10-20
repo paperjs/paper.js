@@ -52,6 +52,8 @@
 
 ### Fixed
 
+- Fix the shadows of items that are both filled and stroked, which only cast
+  the shadow of their fill, partly covered by the stroke (#892).
 - Fix the points at offsets of `PathFlattener` on straight curves, such as
   lines without handles, whose curve-time doesn't follow their length, which
   placed them off everywhere but at the ends.

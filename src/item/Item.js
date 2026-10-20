@@ -4546,22 +4546,28 @@ new function() { // Injection scope for hit-test functions shared with project
                 }
             }
         }
-        if (style.hasShadow()) {
-            // In Canvas, shadows unfortunately ignore all transformations
-            // completely. As almost no browser supports ctx.currentTransform,
-            // we need to calculate our own here, and then use it to transform
-            // the shadow-blur and offset accordingly.
-            var pixelRatio = param.pixelRatio || 1,
-                mx = viewMatrix._shiftless().prepend(
-                    new Matrix().scale(pixelRatio, pixelRatio)),
-                // Transform the blur value as a vector and use its new length:
-                blur = mx.transform(new Point(style.getShadowBlur(), 0)),
-                offset = mx.transform(this.getShadowOffset());
-            ctx.shadowColor = style.getShadowColor().toCanvasStyle(ctx);
-            ctx.shadowBlur = blur.getLength();
-            ctx.shadowOffsetX = offset.x;
-            ctx.shadowOffsetY = offset.y;
-        }
+        // Items whose shadow is cast when compositing them don't draw it, see
+        // #draw():
+        if (style.hasShadow() && !param.dontShadow)
+            this._setShadow(ctx, param, viewMatrix);
+    },
+
+    _setShadow: function(ctx, param, viewMatrix) {
+        // In Canvas, shadows unfortunately ignore all transformations
+        // completely. As almost no browser supports ctx.currentTransform,
+        // we need to calculate our own here, and then use it to transform
+        // the shadow-blur and offset accordingly.
+        var style = this._style,
+            pixelRatio = param.pixelRatio || 1,
+            mx = viewMatrix._shiftless().prepend(
+                new Matrix().scale(pixelRatio, pixelRatio)),
+            // Transform the blur value as a vector and use its new length:
+            blur = mx.transform(new Point(style.getShadowBlur(), 0)),
+            offset = mx.transform(this.getShadowOffset());
+        ctx.shadowColor = style.getShadowColor().toCanvasStyle(ctx);
+        ctx.shadowBlur = blur.getLength();
+        ctx.shadowOffsetX = offset.x;
+        ctx.shadowOffsetY = offset.y;
     },
 
     draw: function(ctx, param, parentStrokeMatrix) {
@@ -4613,21 +4619,30 @@ new function() { // Injection scope for hit-test functions shared with project
             opacity = Numerical.clamp(this._opacity, 0, 1),
             normalBlend = blendMode === 'normal',
             nativeBlend = BlendMode.nativeModes[blendMode],
+            style = this._style,
+            // Canvas fills and strokes separately, so items with both can only
+            // cast the shadow of one. Draw them on a temporary canvas, and cast
+            // the shadow when compositing it, which native blending can. Pass
+            // true for _dontMerge, as groups don't draw the shadows of their
+            // children (#892):
+            shadow = (normalBlend || nativeBlend)
+                    && style.getShadowColor(true) && style.hasShadow()
+                    && style.hasFill() && style.hasStroke(),
             // Determine if we can draw directly, or if we need to draw into a
             // separate canvas and then composite onto the main canvas.
-            direct = normalBlend && opacity === 1 && !this._isolated
-                    || param.dontStart // e.g. CompoundPath
-                    || param.clip
+            direct = !shadow && (normalBlend && opacity === 1
+                        && !this._isolated
                     // If native blending is possible, see if the item allows it
                     || (nativeBlend || normalBlend && opacity < 1)
-                        && this._canComposite(),
+                        && this._canComposite())
+                    || param.dontStart // e.g. CompoundPath
+                    || param.clip,
             pixelRatio = param.pixelRatio || 1,
             mainCtx, itemOffset, prevOffset;
         if (!direct) {
             // Apply the parent's global matrix to the calculation of correct
             // bounds, and include the item's shadow (#1628).
-            var bounds = this.getStrokeBounds(viewMatrix),
-                style = this._style;
+            var bounds = this.getStrokeBounds(viewMatrix);
             // Pass true for _dontMerge, as groups don't draw the shadows of
             // their children.
             if (style.getShadowColor(true)) {
@@ -4720,7 +4735,9 @@ new function() { // Injection scope for hit-test functions shared with project
             if (offset)
                 ctx.translate(-offset.x, -offset.y);
         }
-        this._draw(ctx, param, viewMatrix, strokeMatrix);
+        this._draw(ctx, shadow && !direct
+                ? param.extend({ dontShadow: true }) : param,
+                viewMatrix, strokeMatrix);
         ctx.restore();
         matrices.pop();
         if (param.clip && !param.dontFinish) {
@@ -4729,12 +4746,18 @@ new function() { // Injection scope for hit-test functions shared with project
         }
         // If a temporary canvas was created, composite it onto the main canvas:
         if (!direct) {
+            if (shadow) {
+                mainCtx.save();
+                this._setShadow(mainCtx, param, viewMatrix);
+            }
             // Use BlendMode.process even for processing normal blendMode with
             // opacity.
             BlendMode.process(blendMode, ctx, mainCtx, opacity,
                     // Calculate the pixel offset of the temporary canvas to the
                     // main canvas. We also need to factor in the pixel-ratio.
                     itemOffset.subtract(prevOffset).multiply(pixelRatio));
+            if (shadow)
+                mainCtx.restore();
             // Return the temporary context, so it can be reused
             CanvasProvider.release(ctx);
             // Restore previous offset.
