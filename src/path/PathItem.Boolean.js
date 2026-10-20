@@ -133,8 +133,24 @@ PathItem.inject(new function() {
         // We do not modify the operands themselves, but trace copies of them.
         // NOTE: The result paths might not belong to the same type i.e.
         // subtract(A:Path, B:Path):CompoundPath etc.
-        var paths = tracePaths(getOperands(path1,
-                combinePaths(path2, operation)), operators[operation]);
+        var paths;
+        if (operation === 'exclude' && Array.isArray(path2)
+                && path2.length > 1) {
+            // Resolved on its own, each path fills where its winding is odd.
+            // So together, they fill where an odd number of them do, as one
+            // compound path with the even-odd rule:
+            var items = [path1].concat(path2),
+                compound = new CompoundPath(Item.NO_INSERT);
+            compound.setFillRule('evenodd');
+            for (var i = 0, l = items.length; i < l; i++) {
+                compound.addChildren(tracePaths([preparePath(items[i], true)],
+                        operators.unite));
+            }
+            paths = tracePaths([compound], operators.unite);
+        } else {
+            paths = tracePaths(getOperands(path1,
+                    combinePaths(path2, operation)), operators[operation]);
+        }
         return createResult(paths, true, path1, path2, options);
     }
 
@@ -144,17 +160,34 @@ PathItem.inject(new function() {
      * of similar size. To subtract them, we subtract their union.
      */
     function combinePaths(paths, operation) {
-        var list = [].concat(paths),
-            combine = operation === 'subtract' ? 'unite' : operation;
-        while (list.length > 1) {
-            var next = [];
-            for (var i = 0, l = list.length; i < l; i += 2) {
-                next.push(i + 1 < l ? traceBoolean(list[i], list[i + 1],
-                        combine, { insert: false }) : list[i]);
+        var isUnite = operation === 'unite' || operation === 'subtract';
+
+        function combine(entries) {
+            if (entries.length > 1) {
+                if (isUnite) {
+                    // Split the paths along the longer side of their bounds,
+                    // so each step unites paths that lie close to each other:
+                    var bounds = entries[0].bounds;
+                    for (var i = 1, l = entries.length; i < l; i++)
+                        bounds = bounds.unite(entries[i].bounds);
+                    var key = bounds.width > bounds.height ? 'x' : 'y';
+                    entries.sort(function(entry1, entry2) {
+                        return entry1.center[key] - entry2.center[key];
+                    });
+                }
+                var middle = entries.length >> 1;
+                return traceBoolean(combine(entries.slice(0, middle)),
+                        combine(entries.slice(middle)),
+                        isUnite ? 'unite' : operation, { insert: false });
             }
-            list = next;
+            return entries[0].path;
         }
-        return list[0];
+
+        var entries = [].concat(paths || []).map(function(path) {
+            var bounds = path.getBounds();
+            return { path: path, bounds: bounds, center: bounds.getCenter() };
+        });
+        return entries.length ? combine(entries) : null;
     }
 
 
