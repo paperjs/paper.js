@@ -4,6 +4,9 @@
 
 ### Added
 
+- Add static `import` to PaperScript, through a loader that hosts pass as
+  `options.load` to `PaperScript.execute()`, together with `export … from`. It
+  needs a current Acorn as `self.acorn`.
 - Add `Item.getBounds(items[, options])`, the bounds of a list of items in
   project coordinates as if they were grouped, e.g. of the selection (#2252).
 - Add `ToolEvent#velocity` and `#elapsed`, the velocity of the mouse since the

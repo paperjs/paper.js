@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 06:38:57 2026 +0200
+ * Date: Tue Oct 20 06:44:03 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -3938,6 +3938,13 @@ declare namespace paper {
          * @option options.handlers {String[]} the names of further global
          *     handlers to export next to `onFrame`, `onResize` and the tool's
          *     handlers, for hosts that call them themselves
+         * @option options.load {Function} the loader for static `import`
+         *     statements, called with the specifier as written and the
+         *     `options.url` of the importing script, and returning the module's
+         *     exports. `import x` and `import * as x` receive all its exports,
+         *     as `export default` replaces them. The loader runs each module once
+         *     and handles cycles. Parsing `import` requires a current Acorn as
+         *     `self.acorn`
          * 
          * @param code - the PaperScript code
          * @param scope - the scope for which the code is executed
@@ -3945,7 +3952,7 @@ declare namespace paper {
          * 
          * @return the exports defined in the executed code
          */
-        static execute(code: string, scope: PaperScope, options?: { url?: string, source?: string, handlers?: string[] }): object
+        static execute(code: string, scope: PaperScope, options?: { url?: string, source?: string, handlers?: string[], load?: Function }): object
 
         /** 
          * Loads, compiles and executes PaperScript code in the HTML document. Note

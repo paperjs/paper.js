@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 06:38:57 2026 +0200
+ * Date: Tue Oct 20 06:44:03 2026 +0200
  *
  ***
  *
@@ -18422,8 +18422,43 @@ Base.exports.PaperScript = function() {
 			}
 		}
 
-		function handleExports(node) {
+		var moduleCount = 0;
+
+		function getImport(source) {
+			return '__$import__(' + JSON.stringify(source.value) + ')';
+		}
+
+		function handleModules(node) {
 			switch (node.type) {
+			case 'ImportDeclaration':
+				var module = getImport(node.source),
+					named = [];
+				var vars = node.specifiers.map(function(specifier) {
+					var local = specifier.local.name;
+					if (specifier.type === 'ImportSpecifier') {
+						named.push(local + ' = ' + '__$module' + moduleCount
+								+ '__.' + specifier.imported.name);
+						return null;
+					}
+					return local + ' = ' + module;
+				}).filter(Boolean);
+				if (named.length) {
+					vars.push('__$module' + moduleCount + '__ = ' + module);
+					Base.push(vars, named);
+					moduleCount++;
+				}
+				replaceCode(node, vars.length
+						? 'var ' + vars.join(', ') + ';'
+						: module + ';');
+				break;
+			case 'ExportAllDeclaration':
+				replaceCode(node, node.exported
+						? 'module.exports.' + node.exported.name + ' = '
+							+ getImport(node.source) + ';'
+						: '(function(m) { for (var k in m) '
+							+ 'module.exports[k] = m[k]; })('
+							+ getImport(node.source) + ');');
+				break;
 			case 'ExportDefaultDeclaration':
 				replaceCode({
 					range: [node.start, node.declaration.start]
@@ -18447,11 +18482,12 @@ Base.exports.PaperScript = function() {
 									+ ';';
 						}).join(''));
 				} else if (specifiers) {
+					var source = node.source && getImport(node.source) + '.';
 					var exports = specifiers.map(function(specifier) {
 						var local = specifier.local.name,
 							exported = specifier.exported.name;
-						return 'module.exports.' + exported + ' = ' + local
-								+ '; ';
+						return 'module.exports.' + exported + ' = '
+								+ (source || '') + local + '; ';
 					}).join('');
 					if (exports) {
 						replaceCode(node, exports);
@@ -18479,7 +18515,7 @@ Base.exports.PaperScript = function() {
 					handleOverloading(node, parent);
 				}
 				if (paperFeatures.moduleExports !== false) {
-					handleExports(node);
+					handleModules(node);
 				}
 			}
 		}
@@ -18595,8 +18631,17 @@ Base.exports.PaperScript = function() {
 				}
 			}
 		}
-		expose({ __$__: __$__, $__: $__, paper: scope, tool: tool },
-				true);
+		var load = options && options.load,
+			url = options && options.url;
+		function __$import__(specifier) {
+			if (!load) {
+				throw new Error('Unable to import \'' + specifier + '\': no '
+						+ 'loader was passed to PaperScript.execute().');
+			}
+			return load(specifier, url);
+		}
+		expose({ __$__: __$__, $__: $__, __$import__: __$import__,
+				paper: scope, tool: tool }, true);
 		expose(scope);
 		code = 'var module = { exports: {} }; ' + code;
 		var exports = Base.each(handlers, function(key) {
