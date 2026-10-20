@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Path Text</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        // Text along a wave, which the mouse reshapes:
+        var path = new Path({
+            segments: [[60, 200], [260, 120], [460, 280], [660, 200]]
+        });
+        path.smooth();
+        var text = new PathText(path);
+        text.content = 'Text runs along a path, each letter turned to where it '
+                + 'sits, and what doesn\'t fit flows on into the next one.';
+        text.fontFamily = 'Georgia';
+        text.fontSize = 22;
+        text.words.forEach(function(word, i) {
+            word.fillColor = i % 2 ? '#c04' : '#048';
+        });
+
+        // A second text item along a circle, linked to the first, so the
+        // story flows on into it:
+        var circle = new PathText(new Path.Circle({
+            center: [360, 420],
+            radius: 90
+        }));
+        circle.fontFamily = 'Georgia';
+        circle.fontSize = 22;
+        text.link(circle);
+
+        // Show the guides, which the text items don't draw:
+        var guides = new Group([path.clone(), circle.textPath.clone()]);
+        guides.strokeColor = '#ddd';
+        guides.sendToBack();
+
+        function onMouseMove(event) {
+            path.segments[1].point.y = event.point.y;
+            path.smooth();
+            guides.firstChild.segments = path.segments;
+        }
+    </script>
+</head>
+<body>
+    <canvas id="canvas" resize></canvas>
+</body>
+</html>

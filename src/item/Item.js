@@ -240,8 +240,14 @@ new function() { // Injection scope for various item event handlers
             // child triggers this notification on the parent.
             Item._clearBoundsCache(this);
         }
+        // A child that its parent doesn't show is part of the parent, as a
+        // text's path is: its changes are the parent's.
+        var parent = this._parent,
+            owner = parent && !parent.getChildren() && parent;
         if (project)
-            project._changed(flags, this);
+            project._changed(flags, owner ? null : this);
+        if (owner)
+            owner._changed(flags);
         // If this item is a symbol's definition, notify it of the change too
         if (symbol)
             symbol._changed(flags);
@@ -2494,7 +2500,8 @@ new function() { // Injection scope for hit-test functions shared with project
                     if (firstOnly)
                         break;
                 }
-                if (param.recursive !== false) {
+                // Only into the children that the item shows:
+                if (param.recursive !== false && child.getChildren()) {
                     _getItems(child, options, childMatrix, param, firstOnly);
                 }
                 if (firstOnly && items.length > 0)
