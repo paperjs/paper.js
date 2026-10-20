@@ -49,10 +49,32 @@ jobs:
       - name: Test in Chrome
         run: pnpm test:chrome
 
+  # Generate paper.d.ts from the docs and compile the TypeScript definition
+  # test against it, so changes to the docs can't break the typings unnoticed:
+  typings:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # The JsDoc Toolkit that generates the typings runs on Java:
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 8
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Test the typings
+        run: pnpm exec gulp docs:typescript
+
   # Publish the latest develop build to the prebuilt/dist and prebuilt/module
   # branches, as Travis CI used to:
   prebuilt:
-    needs: [test, browser]
+    needs: [test, browser, typings]
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     # Pushes in quick succession, such as gulp publish's two, would otherwise
