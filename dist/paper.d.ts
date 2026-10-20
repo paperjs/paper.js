@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 00:53:12 2026 +0200
+ * Date: Wed Oct 21 01:46:42 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -5972,6 +5972,16 @@ declare namespace paper {
          *   of {@link Item#importJSON}, without children.
          * - `getAncestorKeys(key)`, which returns the keys from the top level
          *   down to the node's parent.
+         * - Optionally `layOut(json, start, key)`, which lays out a text item,
+         *   given in the form of {@link Item#exportJSON} as the
+         *   script holds it, from `start` in its story, and returns `{ end,
+         *   lines }`: where its visible text ends, and its lines, each `{
+         *   start, end, x, y, width, lineHeight, ascent, descent, pieces }`,
+         *   with pieces `{ start, end, x, y, dx, width, rotation, size, ascent,
+         *   descent, lineHeight }` and an optional `content`, as for a
+         *   hyphen, all in the item's coordinates. `key` is null for text
+         *   that the host doesn't know yet. Without it, Paper.js lays out text
+         *   itself.
          */
         host: any
 

@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 00:53:12 2026 +0200
+ * Date: Wed Oct 21 01:46:42 2026 +0200
  *
  ***
  *
@@ -12952,6 +12952,13 @@ var TextItem = Item.extend({
 		return [this._getStart(), this._visibleEnd];
 	},
 
+	_getLayout: function() {
+		return this._layout || (this._layout = this._layOut());
+	},
+
+	_layOut: function() {
+	},
+
 	_getStart: function() {
 		var previous = this.getPreviousTextItem();
 		return previous ? previous._getVisibleRange()[1] : 0;
@@ -13304,33 +13311,30 @@ var PointText = TextItem.extend({
 		this.translate(point.subtract(this._matrix.getTranslation()));
 	},
 
-	_getLayout: function() {
-		if (!this._layout) {
-			var story = this._story,
-				length = story._content.length,
-				paragraphs = new TextRange(story, this._getStart(), length)
-						.getParagraphs(),
-				lines = [],
-				y = 0,
-				spaceAfter = 0;
-			for (var i = 0, l = paragraphs.length; i < l; i++) {
-				var range = paragraphs[i],
-					paragraph = story._getParagraph(range._start).style,
-					line = this._measure(range._start, range._end);
-				if (i > 0) {
-					y += line.lineHeight + Math.max(spaceAfter,
-							paragraph.getSpaceBefore());
-				}
-				spaceAfter = paragraph.getSpaceAfter();
-				line.y = y;
-				this._place(line, paragraph, true,
-						this._indent(paragraph, true, 0, 0));
-				lines.push(line);
+	_layOut: function() {
+		var story = this._story,
+			length = story._content.length,
+			paragraphs = new TextRange(story, this._getStart(), length)
+					.getParagraphs(),
+			lines = [],
+			y = 0,
+			spaceAfter = 0;
+		for (var i = 0, l = paragraphs.length; i < l; i++) {
+			var range = paragraphs[i],
+				paragraph = story._getParagraph(range._start).style,
+				line = this._measure(range._start, range._end);
+			if (i > 0) {
+				y += line.lineHeight + Math.max(spaceAfter,
+						paragraph.getSpaceBefore());
 			}
-			this._visibleEnd = length;
-			this._layout = lines;
+			spaceAfter = paragraph.getSpaceAfter();
+			line.y = y;
+			this._place(line, paragraph, true,
+					this._indent(paragraph, true, 0, 0));
+			lines.push(line);
 		}
-		return this._layout;
+		this._visibleEnd = length;
+		return lines;
 	},
 
 	_getBounds: function(matrix, options) {
@@ -13422,78 +13426,75 @@ var PathText = TextItem.extend({
 		this._changed(9);
 	},
 
-	_getLayout: function() {
-		if (!this._layout) {
-			var path = this.getTextPath(),
-				story = this._story,
-				start = this._getStart(),
-				flatteners = (path ? path._children || [path] : []).map(
-					function(child) {
-						return new PathFlattener(child, 0.25, 32, false,
-								child === path ? path._matrix
-									: path._matrix.appended(child._matrix));
-					}),
-				lengths = flatteners.map(function(flattener) {
-					return flattener.length;
+	_layOut: function() {
+		var path = this.getTextPath(),
+			story = this._story,
+			start = this._getStart(),
+			flatteners = (path ? path._children || [path] : []).map(
+				function(child) {
+					return new PathFlattener(child, 0.25, 32, false,
+							child === path ? path._matrix
+								: path._matrix.appended(child._matrix));
 				}),
-				length = lengths.reduce(function(sum, length) {
-					return sum + length;
-				}, 0),
-				from = Math.max(0, Math.min(this._startOffset, length)),
-				to = this._endOffset == null ? length
-						: Math.max(from, Math.min(this._endOffset, length)),
-				spacing = this._spacing,
-				measured = this._measure(start, story._content.length, true),
-				letters = measured.pieces,
-				pieces = [],
-				width = 0;
-			for (var i = 0, l = letters.length; i < l; i++) {
-				var piece = letters[i];
-				if (width + piece.width > to - from)
-					break;
-				piece.x = width;
-				pieces.push(piece);
-				width += piece.width + spacing;
-			}
-			width -= pieces.length ? spacing : 0;
-			var paragraph = story._getParagraph(start).style,
-				side = this._getSide(paragraph.getJustification(),
-					paragraph.getDirection()),
-				offset = side === 'right' ? to - width
-						: side === 'center' ? from + (to - from - width) / 2
-						: from,
-				alignment = this._alignment,
-				below = alignment === 'ascender' ? measured.ascent
-						: alignment === 'descender' ? -measured.descent
-						: alignment === 'center'
-							? (measured.ascent - measured.descent) / 2
-						: 0;
-			for (var i = 0, l = pieces.length; i < l; i++) {
-				var piece = pieces[i],
-					middle = offset + piece.x + piece.width / 2,
-					index = 0;
-				while (index < lengths.length - 1 && middle > lengths[index]) {
-					middle -= lengths[index];
-					index++;
-				}
-				var flattener = flatteners[index],
-					tangent = flattener.getTangentAt(middle).normalize(),
-					point = flattener.getPointAt(middle).add(
-							tangent.rotate(90).multiply(below + piece.y));
-				piece.x = point.x;
-				piece.y = point.y;
-				piece.dx = -piece.width / 2;
-				piece.rotation += tangent.getAngle();
-			}
-			var last = pieces[pieces.length - 1];
-			this._visibleEnd = last ? last.end : start;
-			this._layout = [Base.set(measured, {
-				pieces: pieces,
-				end: this._visibleEnd,
-				width: width
-			})];
+			lengths = flatteners.map(function(flattener) {
+				return flattener.length;
+			}),
+			length = lengths.reduce(function(sum, length) {
+				return sum + length;
+			}, 0),
+			from = Math.max(0, Math.min(this._startOffset, length)),
+			to = this._endOffset == null ? length
+					: Math.max(from, Math.min(this._endOffset, length)),
+			spacing = this._spacing,
+			measured = this._measure(start, story._content.length, true),
+			letters = measured.pieces,
+			pieces = [],
+			width = 0;
+		for (var i = 0, l = letters.length; i < l; i++) {
+			var piece = letters[i];
+			if (width + piece.width > to - from)
+				break;
+			piece.x = width;
+			pieces.push(piece);
+			width += piece.width + spacing;
 		}
-		return this._layout;
+		width -= pieces.length ? spacing : 0;
+		var paragraph = story._getParagraph(start).style,
+			side = this._getSide(paragraph.getJustification(),
+				paragraph.getDirection()),
+			offset = side === 'right' ? to - width
+					: side === 'center' ? from + (to - from - width) / 2
+					: from,
+			alignment = this._alignment,
+			below = alignment === 'ascender' ? measured.ascent
+					: alignment === 'descender' ? -measured.descent
+					: alignment === 'center'
+						? (measured.ascent - measured.descent) / 2
+					: 0;
+		for (var i = 0, l = pieces.length; i < l; i++) {
+			var piece = pieces[i],
+				middle = offset + piece.x + piece.width / 2,
+				index = 0;
+			while (index < lengths.length - 1 && middle > lengths[index]) {
+				middle -= lengths[index];
+				index++;
+			}
+			var flattener = flatteners[index],
+				tangent = flattener.getTangentAt(middle).normalize(),
+				point = flattener.getPointAt(middle).add(
+						tangent.rotate(90).multiply(below + piece.y));
+			piece.x = point.x;
+			piece.y = point.y;
+			piece.dx = -piece.width / 2;
+			piece.rotation += tangent.getAngle();
+		}
+		var last = pieces[pieces.length - 1];
+		this._visibleEnd = last ? last.end : start;
+		return [Base.set(measured, {
+			pieces: pieces,
+			end: this._visibleEnd,
+			width: width
+		})];
 	},
 
 	_getBounds: function(matrix, options) {
@@ -13646,195 +13647,199 @@ var AreaText = TextItem.extend({
 		return this;
 	},
 
-	_getLayout: function() {
+	_getLayout: function _getLayout() {
 		var layer = this.getLayer(),
 			version = layer && layer._textWrapVersion;
-		if (!this._layout || this._textWrapVersion !== version) {
+		if (this._textWrapVersion !== version) {
 			this._textWrapVersion = version;
-			var that = this,
-				story = this._story,
-				content = story._content,
-				regions = this._getRegions(),
-				wraps = this._getTextWraps(),
-				offsets = regions.map(function() {
-					return 0;
-				}),
-				state;
+			this._layout = null;
+		}
+		return _getLayout.base.call(this);
+	},
 
-			var lay = function(getCut) {
-				var pos = state.pos,
-					region = state.region,
-					y = state.y,
-					paragraph = story._getParagraph(pos),
-					style = paragraph.style,
-					space = pos === paragraph.start && y !== null
-						? Math.max(state.spaceAfter, style.getSpaceBefore())
-						: 0,
-					result = [],
-					isComplete = false;
-				while (regions[region]) {
-					var bounds = regions[region],
-						next = that._measure(pos, Math.min(pos + 1,
-								paragraph.end)),
-						baseline = y === null
-							? bounds.top + offsets[region] + next.ascent
-							: y + next.lineHeight + space;
-					if (!next.lineHeight || next.lineHeight < 0)
-						break;
-					if (baseline + next.descent > bounds.bottom) {
-						region++;
-						y = null;
-						continue;
-					}
-					var spans = that._getSpans(bounds, baseline, next, wraps);
-					if (style.getDirection() === 'rtl')
-						spans.reverse();
-					for (var i = 0, l = spans.length; i < l && !isComplete;
-							i++) {
-						var span = spans[i],
-							line = that._breakLine(pos, paragraph,
-								pos === paragraph.start, span,
-								getCut ? getCut(result.length) : 0,
-								span[1] - span[0] >= bounds.width
-									- 1e-7);
-						if (line) {
-							line.y = baseline;
-							line.region = region;
-							result.push(line);
-							pos = line.end;
-							isComplete = pos === paragraph.end;
-						}
-					}
-					y = baseline;
-					space = 0;
-					if (isComplete)
-						break;
+	_layOut: function() {
+		var that = this,
+			story = this._story,
+			content = story._content,
+			regions = this._getRegions(),
+			wraps = this._getTextWraps(),
+			offsets = regions.map(function() {
+				return 0;
+			}),
+			state;
+
+		var lay = function(getCut) {
+			var pos = state.pos,
+				region = state.region,
+				y = state.y,
+				paragraph = story._getParagraph(pos),
+				style = paragraph.style,
+				space = pos === paragraph.start && y !== null
+					? Math.max(state.spaceAfter, style.getSpaceBefore())
+					: 0,
+				result = [],
+				isComplete = false;
+			while (regions[region]) {
+				var bounds = regions[region],
+					next = that._measure(pos, Math.min(pos + 1,
+							paragraph.end)),
+					baseline = y === null
+						? bounds.top + offsets[region] + next.ascent
+						: y + next.lineHeight + space;
+				if (!next.lineHeight || next.lineHeight < 0)
+					break;
+				if (baseline + next.descent > bounds.bottom) {
+					region++;
+					y = null;
+					continue;
 				}
-				return {
-					lines: result,
-					paragraph: style,
-					isComplete: isComplete,
-					state: {
-						pos: pos,
-						region: region,
-						y: y,
-						spaceAfter: style.getSpaceAfter()
-					}
-				};
-			};
-
-			var search = function(high, precision, isAbove) {
-				var low = 0;
-				while (high - low > precision) {
-					var value = (low + high) / 2;
-					if (isAbove(value)) {
-						high = value;
-					} else {
-						low = value;
+				var spans = that._getSpans(bounds, baseline, next, wraps);
+				if (style.getDirection() === 'rtl')
+					spans.reverse();
+				for (var i = 0, l = spans.length; i < l && !isComplete;
+						i++) {
+					var span = spans[i],
+						line = that._breakLine(pos, paragraph,
+							pos === paragraph.start, span,
+							getCut ? getCut(result.length) : 0,
+							span[1] - span[0] >= bounds.width
+								- 1e-7);
+					if (line) {
+						line.y = baseline;
+						line.region = region;
+						result.push(line);
+						pos = line.end;
+						isComplete = pos === paragraph.end;
 					}
 				}
-				return [low, high];
-			};
-
-			var keeps = function(attempt, count) {
-				return attempt.isComplete && attempt.lines.length === count;
-			};
-
-			var balance = function(count, from) {
-				var cutFrom = function(cut) {
-						return function(index) {
-							return index >= from ? cut : 0;
-						};
-					},
-					widest = regions.reduce(function(width, bounds) {
-						return Math.max(width, bounds.width);
-					}, 0),
-					cut = search(widest, 0.5, function(cut) {
-						return !keeps(lay(cutFrom(cut)), count);
-					})[0];
-				return cut > 0 && lay(cutFrom(cut));
-			};
-
-			var layAll = function() {
-				var layout = [],
-					result,
-					match;
-				state = {
-					pos: that._getStart(),
-					region: 0,
-					y: null,
-					spaceAfter: 0
-				};
-				do {
-					result = lay();
-					var lines = result.lines,
-						count = lines.length,
-						wrap = result.paragraph.getLineWrap();
-					if (result.isComplete && count > 1) {
-						if (wrap === 'balance') {
-							result = balance(count, 0) || result;
-						} else if (wrap === 'pretty' && lines[count - 1].width
-								< lines[count - 2].width / 3) {
-							result = balance(count, Math.max(0, count - 4))
-									|| result;
-						}
-					}
-					layout.push.apply(layout, result.lines);
-					state = result.state;
-					match = result.isComplete
-							&& /^(\r\n|\n|\r)/.exec(content.slice(state.pos));
-					if (match)
-						state.pos += match[0].length;
-				} while (match);
-				return layout;
-			};
-
-			var getLast = function(layout, region) {
-				for (var i = layout.length - 1; i >= 0; i--) {
-					var line = layout[i];
-					if (line.region === region) {
-						return {
-							line: line,
-							free: regions[region].bottom - line.y
-									- line.descent
-						};
-					}
+				y = baseline;
+				space = 0;
+				if (isComplete)
+					break;
+			}
+			return {
+				lines: result,
+				paragraph: style,
+				isComplete: isComplete,
+				state: {
+					pos: pos,
+					region: region,
+					y: y,
+					spaceAfter: style.getSpaceAfter()
 				}
-				return null;
 			};
+		};
 
-			var layout = layAll(),
-				align = this._verticalAlign;
-			if (align !== 'top') {
-				for (var r = 0, l = regions.length; r < l; r++) {
-					var last = getLast(layout, r);
-					if (last && last.free > 0) {
-						var end = last.line.end,
-							getExcess = function(offset) {
-								offsets[r] = offset;
-								var moved = getLast(layAll(), r);
-								return moved && moved.line.end === end
-										? moved.free - (align === 'center'
-											? offset : 0)
-										: null;
-							},
-							excess = getExcess(align === 'center'
-									? last.free / 2 : last.free);
-						if (excess === null || Math.abs(excess) > 0.01) {
-							offsets[r] = search(last.free, 0.01,
-								function(offset) {
-									var excess = getExcess(offset);
-									return excess === null || excess < 0;
-								})[0];
-						}
-						layout = layAll();
-					}
+		var search = function(high, precision, isAbove) {
+			var low = 0;
+			while (high - low > precision) {
+				var value = (low + high) / 2;
+				if (isAbove(value)) {
+					high = value;
+				} else {
+					low = value;
 				}
 			}
-			this._visibleEnd = state.pos;
-			this._layout = layout;
+			return [low, high];
+		};
+
+		var keeps = function(attempt, count) {
+			return attempt.isComplete && attempt.lines.length === count;
+		};
+
+		var balance = function(count, from) {
+			var cutFrom = function(cut) {
+					return function(index) {
+						return index >= from ? cut : 0;
+					};
+				},
+				widest = regions.reduce(function(width, bounds) {
+					return Math.max(width, bounds.width);
+				}, 0),
+				cut = search(widest, 0.5, function(cut) {
+					return !keeps(lay(cutFrom(cut)), count);
+				})[0];
+			return cut > 0 && lay(cutFrom(cut));
+		};
+
+		var layAll = function() {
+			var layout = [],
+				result,
+				match;
+			state = {
+				pos: that._getStart(),
+				region: 0,
+				y: null,
+				spaceAfter: 0
+			};
+			do {
+				result = lay();
+				var lines = result.lines,
+					count = lines.length,
+					wrap = result.paragraph.getLineWrap();
+				if (result.isComplete && count > 1) {
+					if (wrap === 'balance') {
+						result = balance(count, 0) || result;
+					} else if (wrap === 'pretty' && lines[count - 1].width
+							< lines[count - 2].width / 3) {
+						result = balance(count, Math.max(0, count - 4))
+								|| result;
+					}
+				}
+				layout.push.apply(layout, result.lines);
+				state = result.state;
+				match = result.isComplete
+						&& /^(\r\n|\n|\r)/.exec(content.slice(state.pos));
+				if (match)
+					state.pos += match[0].length;
+			} while (match);
+			return layout;
+		};
+
+		var getLast = function(layout, region) {
+			for (var i = layout.length - 1; i >= 0; i--) {
+				var line = layout[i];
+				if (line.region === region) {
+					return {
+						line: line,
+						free: regions[region].bottom - line.y
+								- line.descent
+					};
+				}
+			}
+			return null;
+		};
+
+		var layout = layAll(),
+			align = this._verticalAlign;
+		if (align !== 'top') {
+			for (var r = 0, l = regions.length; r < l; r++) {
+				var last = getLast(layout, r);
+				if (last && last.free > 0) {
+					var end = last.line.end,
+						getExcess = function(offset) {
+							offsets[r] = offset;
+							var moved = getLast(layAll(), r);
+							return moved && moved.line.end === end
+									? moved.free - (align === 'center'
+										? offset : 0)
+									: null;
+						},
+						excess = getExcess(align === 'center'
+								? last.free / 2 : last.free);
+					if (excess === null || Math.abs(excess) > 0.01) {
+						offsets[r] = search(last.free, 0.01,
+							function(offset) {
+								var excess = getExcess(offset);
+								return excess === null || excess < 0;
+							})[0];
+					}
+					layout = layAll();
+				}
+			}
 		}
-		return this._layout;
+		this._visibleEnd = state.pos;
+		return layout;
 	},
 
 	_getRegions: function() {
