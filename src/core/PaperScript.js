@@ -329,20 +329,24 @@ Base.exports.PaperScript = function() {
 
         // The number of modules imported with named specifiers, for the names
         // of the variables that hold them:
-        var moduleCount = 0;
+        var moduleCount = 0,
+            // Whether the code exports with ES module syntax, to mark it so:
+            isModule = false;
 
         // Static imports are turned into calls of __$import__(), which
-        // execute() binds to the loader in options.load:
-        function getImport(source) {
-            return '__$import__(' + JSON.stringify(source.value) + ')';
+        // execute() binds to the loader in options.load. `as` asks for the
+        // module's 'default' export or its 'namespace', see __$import__():
+        function getImport(source, as) {
+            return '__$import__(' + JSON.stringify(source.value)
+                    + (as ? ', "' + as + '"' : '') + ')';
         }
 
         function handleModules(node) {
 			switch (node.type) {
             case 'ImportDeclaration':
-                // `import x from 'm'` and `import * as x from 'm'` assign the
-                // module's exports, as `export default` replaces them, and
-                // `import { a, b as c } from 'm'` reads names from them:
+                // `import x from 'm'` assigns the module's default export,
+                // `import * as x from 'm'` its namespace, and
+                // `import { a, b as c } from 'm'` reads names from its exports:
                 var module = getImport(node.source),
                     named = [];
                 var vars = node.specifiers.map(function(specifier) {
@@ -352,7 +356,9 @@ Base.exports.PaperScript = function() {
                                 + '__.' + specifier.imported.name);
                         return null;
                     }
-                    return local + ' = ' + module;
+                    return local + ' = ' + getImport(node.source,
+                            specifier.type === 'ImportDefaultSpecifier'
+                                ? 'default' : 'namespace');
                 }).filter(Boolean);
                 if (named.length) {
                     vars.push('__$module' + moduleCount + '__ = ' + module);
@@ -364,21 +370,26 @@ Base.exports.PaperScript = function() {
                         : module + ';');
                 break;
             case 'ExportAllDeclaration':
-                // `export * as x from 'm'` and `export * from 'm'`:
+                // `export * as x from 'm'`, and `export * from 'm'`, which
+                // leaves out the default export, as in ES modules:
+                isModule = true;
                 replaceCode(node, node.exported
                         ? 'module.exports.' + node.exported.name + ' = '
-                            + getImport(node.source) + ';'
-                        : '(function(m) { for (var k in m) '
-                            + 'module.exports[k] = m[k]; })('
+                            + getImport(node.source, 'namespace') + ';'
+                        : '(function(m) { for (var k in m) if (k !== '
+                            + '"default") module.exports[k] = m[k]; })('
                             + getImport(node.source) + ');');
                 break;
             case 'ExportDefaultDeclaration':
-                // Convert `export default` to `module.exports = ` statements:
+                // Convert `export default` to `module.exports.default = `,
+                // next to the named exports:
+                isModule = true;
                 replaceCode({
                     range: [node.start, node.declaration.start]
-                }, 'module.exports = ');
+                }, 'module.exports.default = ');
                 break;
             case 'ExportNamedDeclaration':
+                isModule = true;
                 // Convert named exports to `module.exports.NAME = NAME;`
                 // statements both for new declarations and existing specifiers:
                 var declaration = node.declaration;
@@ -542,6 +553,13 @@ Base.exports.PaperScript = function() {
                 preserveParens: true,
                 sourceType: 'module'
             }), null, paperFeatures);
+            // Mark ES modules like Babel and TypeScript do, so importers can
+            // tell their default export from CommonJS-style exports. Added on
+            // a new line at the end, so the lines before keep their numbers:
+            if (isModule) {
+                code += '\nObject.defineProperty(module.exports, '
+                        + '"__esModule", { value: true });';
+            }
         }
         if (map) {
             if (offsetCode) {
@@ -587,10 +605,13 @@ Base.exports.PaperScript = function() {
      * @option options.load {Function} the loader for static `import`
      *     statements, called with the specifier as written and the
      *     `options.url` of the importing script, and returning the module's
-     *     exports. `import x` and `import * as x` receive all its exports,
-     *     as `export default` replaces them. The loader runs each module once
-     *     and handles cycles. Parsing `import` requires a current Acorn as
-     *     `self.acorn`
+     *     exports, e.g. the result of executing it. Modules with ES `export`
+     *     statements have their default export as `default` and are marked
+     *     with `__esModule`, so `import x` receives the default export, and
+     *     for CommonJS-style exports the whole exports. `import * as x`
+     *     receives all exports, and for CommonJS-style exports, these as
+     *     `default` too. The loader runs each module once and handles cycles.
+     *     Parsing `import` requires a current Acorn as `self.acorn`
      *
      * @param {String} code the PaperScript code
      * @param {PaperScope} scope the scope for which the code is executed
@@ -646,12 +667,21 @@ Base.exports.PaperScript = function() {
         // handleModules():
         var load = options && options.load,
             url = options && options.url;
-        function __$import__(specifier) {
+        function __$import__(specifier, as) {
             if (!load) {
                 throw new Error('Unable to import \'' + specifier + '\': no '
                         + 'loader was passed to PaperScript.execute().');
             }
-            return load(specifier, url);
+            var exports = load(specifier, url),
+                isModule = exports && exports.__esModule;
+            // ES modules have their default export as `default`, and their
+            // exports as their namespace. CommonJS-style exports are the
+            // default export, and also appear in the namespace, as in Node:
+            return as === 'default'
+                    ? isModule ? exports.default : exports
+                    : as === 'namespace' && !isModule
+                        ? Base.set({ default: exports }, exports)
+                        : exports;
         }
         expose({ __$__: __$__, $__: $__, __$assign__: __$assign__,
                 __$import__: __$import__,
