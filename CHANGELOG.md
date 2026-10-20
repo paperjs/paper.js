@@ -19,6 +19,12 @@
 
 ### Changed
 
+- Keep the named exports of PaperScript modules with a default export:
+  `export default x` now sets `module.exports.default` instead of replacing the
+  exports, and such modules are marked with `__esModule`. `import x` receives
+  the default export, or the whole exports of CommonJS-style modules, and
+  `import * as m` all exports, with CommonJS-style ones also as `m.default`.
+  So `PaperScript.execute()` returns `{ default: x }` for `export default x`.
 - Deprecate `Event#timeStamp` in milliseconds, and the `options.timeStamp` of
   `View#dispatchMouseEvent()` and `#dispatchKeyEvent()`, for the new `time`
   in seconds.
