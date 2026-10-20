@@ -287,7 +287,6 @@ new paper.Project({} as HTMLCanvasElement);
 new paper.Project('');
 new paper.Project(sizeLike);
 project.view;
-project.bounds;
 project.currentStyle;
 project.index;
 project.layers;
