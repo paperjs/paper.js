@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 06:52:44 2026 +0200
+ * Date: Tue Oct 20 07:35:51 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -3941,10 +3941,13 @@ declare namespace paper {
          * @option options.load {Function} the loader for static `import`
          *     statements, called with the specifier as written and the
          *     `options.url` of the importing script, and returning the module's
-         *     exports. `import x` and `import * as x` receive all its exports,
-         *     as `export default` replaces them. The loader runs each module once
-         *     and handles cycles. Parsing `import` requires a current Acorn as
-         *     `self.acorn`
+         *     exports, e.g. the result of executing it. Modules with ES `export`
+         *     statements have their default export as `default` and are marked
+         *     with `__esModule`, so `import x` receives the default export, and
+         *     for CommonJS-style exports the whole exports. `import * as x`
+         *     receives all exports, and for CommonJS-style exports, these as
+         *     `default` too. The loader runs each module once and handles cycles.
+         *     Parsing `import` requires a current Acorn as `self.acorn`
          * 
          * @param code - the PaperScript code
          * @param scope - the scope for which the code is executed
