@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 22:00:12 2026 +0200
+ * Date: Tue Oct 20 22:51:46 2026 +0200
  *
  ***
  *
@@ -12276,6 +12276,7 @@ var PathFlattener = Base.extend({
 						curve: curve,
 						index: index,
 						time: t2,
+						isStraight: Curve.isStraight(curve)
 					});
 				}
 			}
@@ -12310,11 +12311,17 @@ var PathFlattener = Base.extend({
 				this.index = i;
 				var prev = parts[i - 1],
 					prevTime = prev && prev.index === part.index ? prev.time : 0,
-					prevOffset = prev ? prev.offset : 0;
+					prevOffset = prev ? prev.offset : 0,
+					factor = (offset - prevOffset) / (part.offset - prevOffset);
+				if (part.isStraight) {
+					var v = part.curve;
+					factor = Curve.getTimeOf(v, new Point(
+							v[0] + (v[6] - v[0]) * factor,
+							v[1] + (v[7] - v[1]) * factor));
+				}
 				return {
 					index: part.index,
-					time: prevTime + (part.time - prevTime)
-						* (offset - prevOffset) / (part.offset - prevOffset)
+					time: prevTime + (part.time - prevTime) * factor
 				};
 			}
 		}
