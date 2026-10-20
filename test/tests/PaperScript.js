@@ -491,3 +491,39 @@ test('PaperScript dynamic imports', function(assert) {
         });
     });
 });
+
+test('PaperScript with top-level await', function(assert) {
+    var done = assert.async();
+    withAcornLatest(function() {
+        // The handlers are installed once the code has run:
+        var exports = PaperScript.execute(
+                'var size = await Promise.resolve(new Size(2, 3));\n'
+                + 'for await (var factor of [Promise.resolve(2)])\n'
+                + '    size *= factor;\n'
+                + 'function onMouseDown() {}\n'
+                + 'module.exports.size = size;', paper),
+            failed = PaperScript.execute(
+                'await Promise.reject(new Error("failed"));', paper),
+            nested = PaperScript.execute(
+                'async function twice(value) { return await value * 2; }\n'
+                + 'module.exports.twice = twice;', paper);
+        equals(function() {
+            return typeof nested.twice;
+        }, 'function', 'await in functions keeps the exports synchronous');
+        exports.then(function(exports) {
+            equals(exports.size, new Size(4, 6), 'the exports');
+            equals(function() {
+                return paper.tool.onMouseDown === exports.onMouseDown;
+            }, true, 'the installed handlers');
+            paper.tool.remove();
+            return failed;
+        }).then(function() {
+            ok(false, 'a rejected await should reject');
+        }, function(error) {
+            equals(error.message, 'failed', 'a rejected await rejects');
+        }).then(done, function(error) {
+            ok(false, error + '');
+            done();
+        });
+    });
+});
