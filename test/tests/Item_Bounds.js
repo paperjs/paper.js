@@ -1127,3 +1127,28 @@ test('group.bounds after changing the symbol definition (#940)', function() {
     equals(layer.bounds, new Rectangle(30, 30, 90, 40),
             'layer.bounds after replacing the definition');
 });
+
+test('Item.getBounds(items[, options]) (#2252)', function() {
+    // Items in different, transformed groups, in project coordinates:
+    var path1 = new Path.Rectangle({
+            point: [0, 0],
+            size: [10, 10],
+            strokeColor: 'black',
+            strokeWidth: 2
+        }),
+        path2 = path1.clone(),
+        hidden = new Path.Rectangle({ point: [500, 500], size: [10, 10] }),
+        group1 = new Group({ children: [path1], applyMatrix: false }),
+        group2 = new Group({ children: [path2, hidden], applyMatrix: false });
+    group1.scale(2, [0, 0]);
+    group2.translate(100, 0);
+    hidden.visible = false;
+    var items = [path1, path2, hidden];
+    equals(Item.getBounds(items), new Rectangle(0, 0, 110, 20));
+    equals(Item.getBounds(items, { stroke: true }),
+            new Rectangle(-2, -2, 113, 24), 'stroke');
+    equals(Item.getBounds([]), new Rectangle(), 'no items');
+    // The result is a copy, not the item's cached bounds:
+    Item.getBounds([path2]).x = 1000;
+    equals(Item.getBounds([path2]), new Rectangle(100, 0, 10, 10), 'copied');
+});
