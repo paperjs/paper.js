@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 03:02:48 2026 +0200
+ * Date: Tue Oct 20 03:12:53 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -7445,8 +7445,12 @@ declare namespace paper {
 
         /** 
          * The bounds of the currently visible area in project coordinates.
+         * Setting them fits the view to the given rectangle, as
+         * {@link #fitBounds} does. Since the view keeps its aspect
+         * ratio, the bounds read back can be larger than the rectangle in one
+         * direction.
          */
-        readonly bounds: Rectangle
+        bounds: Rectangle
 
         /** 
          * The size of the visible area in project coordinates.

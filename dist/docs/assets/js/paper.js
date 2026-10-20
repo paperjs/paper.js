@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 03:02:48 2026 +0200
+ * Date: Tue Oct 20 03:12:53 2026 +0200
  *
  ***
  *
@@ -13456,6 +13456,10 @@ var View = Base.extend(Emitter, {
 			this._bounds = this._matrix.inverted()._transformBounds(
 					new Rectangle(new Point(), this._viewSize));
 		return this._bounds;
+	},
+
+	setBounds: function() {
+		this.fitBounds(Rectangle.read(arguments));
 	},
 
 	getSize: function() {

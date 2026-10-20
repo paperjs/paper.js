@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+
+- Add a setter to `View#bounds`, which fits the view to the given rectangle, as
+  `View#fitBounds()` does.
+
 ### Changed
 
 - Rename the `paper-sourced.js` build to `paper-hosted.js`, and `Project#source`
