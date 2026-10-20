@@ -206,11 +206,13 @@ test('PaperScript exports', function() {
         equals(function() {
             return [exports.big, exports.twice(2)];
         }, [new Point(2, 4), 4], 'without semicolons');
-        var add = PaperScript.execute(
-                'export default function(a) { return a + 1; }', paper);
+        // The default export sits next to the named ones:
+        exports = PaperScript.execute(
+                'export default function(a) { return a + 1; }\n'
+                + 'export const name = "add";', paper);
         equals(function() {
-            return add(1);
-        }, 2, 'export default');
+            return [exports.default(1), exports.name, exports.__esModule];
+        }, [2, 'add', true], 'export default');
     });
 });
 
@@ -221,29 +223,41 @@ test('PaperScript imports', function() {
                 'named.js': 'export const x = 1;\n'
                     + 'export function f() { return 2; }',
                 'all.js': 'export * from "named.js";\n'
-                    + 'export { x as y } from "named.js";'
+                    + 'export * from "default.js";\n'
+                    + 'export { x as y } from "named.js";',
+                // A CommonJS-style module:
+                'common.js': 'module.exports = { a: 1 };'
             },
-            calls = [];
+            calls = [],
+            cache = {};
+        // Like a host's loader, run each module once:
         function load(specifier, url) {
             calls.push(specifier + ' from ' + url);
-            return PaperScript.execute(modules[specifier], paper,
-                    { url: specifier, load: load });
+            return cache[specifier] || (cache[specifier] = PaperScript.execute(
+                    modules[specifier], paper, { url: specifier, load: load }));
         }
         var exports = PaperScript.execute(
                 'import point from "default.js";\n'
                 + 'import { x, f as g } from "named.js";\n'
                 + 'import * as all from "all.js";\n'
-                + 'export const result = [point, x, g(), all.x, all.y];',
+                + 'import common from "common.js";\n'
+                + 'import * as commonAll from "common.js";\n'
+                + 'export const result = [point, x, g(), all.x, all.y,\n'
+                + '    "default" in all, common.a, commonAll.a,\n'
+                + '    commonAll.default === common];',
                 paper, { url: 'main.js', load: load });
         equals(function() {
             return exports.result;
-        }, [new Point(2, 4), 1, 2, 1, 1]);
+        }, [new Point(2, 4), 1, 2, 1, 1, false, 1, 1, true]);
         equals(calls, [
             'default.js from main.js',
             'named.js from main.js',
             'all.js from main.js',
             'named.js from all.js',
-            'named.js from all.js'
+            'default.js from all.js',
+            'named.js from all.js',
+            'common.js from main.js',
+            'common.js from main.js'
         ], 'specifiers as written, with the importing url');
         var message;
         try {
