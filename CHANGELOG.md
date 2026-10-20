@@ -4,6 +4,9 @@
 
 ### Added
 
+- Add `ToolEvent#velocity` and `#elapsed`, the velocity of the mouse since the
+  last tool event in points per second, and the time since then in seconds,
+  which stay even when the system misses a mouse report.
 - Add `Event#time`, the time of the event in seconds, as frame events have it,
   and `options.time` to `View#dispatchMouseEvent()` and `#dispatchKeyEvent()`.
 - Add a setter to `View#bounds`, which fits the view to the given rectangle, as
