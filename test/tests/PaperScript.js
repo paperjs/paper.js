@@ -152,3 +152,58 @@ test('PaperScript creates a tool for onActivate()', function() {
     if (tool)
         tool.remove();
 });
+
+// Hosts can provide a current Acorn as self.acorn, for the syntax that the
+// bundled one doesn't parse, such as let, arrow functions and exports:
+function withAcornLatest(callback) {
+    var global = isNodeContext ? paper.window : window,
+        previous = global.acorn;
+    global.acorn = acornLatest;
+    try {
+        callback();
+    } finally {
+        global.acorn = previous;
+    }
+}
+
+test('PaperScript with a current Acorn', function() {
+    withAcornLatest(function() {
+        var exports = PaperScript.execute(
+                'const offset = (point) => point + [1, 1];\n'
+                + 'let { x, y } = offset(new Point(1, 2));\n'
+                + 'module.exports.result = `${x},${y}`;', paper);
+        equals(exports.result, '2,3');
+    });
+});
+
+test('PaperScript exports', function() {
+    withAcornLatest(function() {
+        var exports = PaperScript.execute(
+                'export function multiply(a, b) { return a * b; }\n'
+                + 'var a = 1, b = 2;\n'
+                + 'export { a, b as c };\n'
+                + 'export var point = new Point(1, 2) + 1;', paper);
+        equals(function() {
+            return exports.multiply(2, 3);
+        }, 6, 'export function');
+        equals(function() {
+            return [exports.a, exports.c];
+        }, [1, 2], 'export { a, b as c }');
+        equals(function() {
+            return exports.point;
+        }, new Point(2, 3), 'export var');
+        // Exported variables are local variables too, also several in a row
+        // and from destructuring:
+        exports = PaperScript.execute(
+                'export var a = 1, b = new Point(1, 2) + a;\n'
+                + 'export const { x, y: [z] } = { x: -b, y: [a * 2] };', paper);
+        equals(function() {
+            return [exports.a, exports.b, exports.x, exports.z];
+        }, [1, new Point(2, 3), new Point(-2, -3), 2], 'export var a, b');
+        var add = PaperScript.execute(
+                'export default function(a) { return a + 1; }', paper);
+        equals(function() {
+            return add(1);
+        }, 2, 'export default');
+    });
+});

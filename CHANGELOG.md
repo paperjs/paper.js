@@ -25,6 +25,10 @@
 
 ### Fixed
 
+- Fix PaperScript with a current Acorn provided as `self.acorn`, which parses
+  all current syntax now, and its exports: of functions and classes, of renamed
+  names (`export { a as b }`), of several declarations in a row, and of
+  variables, which stay usable in the script itself.
 - Fix intersections of curves and lines at the curves' ends, which were lost
   when the curve touched the line there, e.g. at a zero-length handle (#1848).
 - Fix the orientation of the results of `PathItem#exclude()` and
