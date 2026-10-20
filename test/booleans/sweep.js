@@ -11,14 +11,20 @@
  */
 
 // The perturbation sweep of the boolean operations, see `gulp test:booleans`.
-// For each boolean operation in the tests and in issues.json, it moves the
-// second operand by tiny amounts, and counts how many of these results keep the
-// fill of the unmoved one. It also counts the points of the unmoved result
-// that are filled wrongly, by the operation applied to the operands' own
-// contains(). Points near any outline are left out, as the answer there
-// depends on tolerances.
+// For each boolean operation in the tests, in issues.json and in the cases of
+// generate.js, it moves the second operand by tiny amounts, and counts how many
+// of these results keep the fill of the unmoved one. It also counts the points
+// that the results fill wrongly, by the operation applied to the operands' own
+// contains(), at random points away from the outlines and at points stepped
+// off the outlines by multiples of the operation's epsilon, and checks that
+// the operations' graphs are planar.
 //
-// Usage: node sweep.js <paper build> <first case>, or <paper build> count
+// Usage: node sweep.js <paper build> <first case>[:<step>] [exclusion], or
+// <paper build> count. The points left out lie within 1e-4 times the diagonal
+// of the operands' bounds of an outline, or within the given multiple of the
+// operation's epsilon. With a scale and a translation as fifth and sixth
+// arguments, the operands are scaled about the origin and moved by both, and
+// the tiny moves scaled with them.
 // Prints a line of JSON when it starts each case and one with its result,
 // from the first case on, so that the caller can restart after a case that
 // doesn't return.
@@ -27,7 +33,10 @@ var fs = require('fs'),
     path = require('path'),
     vm = require('vm');
 
-var paper = require(path.resolve(process.argv[2]));
+var paper = require(path.resolve(process.argv[2])),
+    exclusion = +process.argv[4],
+    scale = +process.argv[5] || 1,
+    translation = +process.argv[6] || 0;
 paper.setup(new paper.Size(1000, 1000));
 paper.install(global);
 
@@ -99,29 +108,146 @@ function isClosed(item) {
 }
 
 function isNear(item, point, tolerance) {
-    var location = !item.isEmpty() && item.getNearestLocation(point);
-    return !!location && location.point.getDistance(point) < tolerance;
+    // Only look for the nearest point on curves whose bounds come close:
+    return item.getCurves().some(function(curve) {
+        return curve.getBounds().expand(2 * tolerance).contains(point)
+                && curve.getNearestPoint(point).getDistance(point) < tolerance;
+    });
+}
+
+// Checks the planarity of the operation's graph: crossing each edge from its
+// right to its left must change the windings by the edge's own changes. For a
+// graph that isn't planar, returns the first pair of edges that intersect away
+// from their vertices, or a vertex that lies on an edge, as a repro:
+function checkGraph(a, b) {
+    var graph = PathItem._createGraph(a, b),
+        halfEdges = graph.halfEdges,
+        edges = graph.edges,
+        vertices = graph.vertices,
+        epsilon = graph.epsilon,
+        planar = true;
+    for (var i = 0; i < halfEdges.length && planar; i += 2) {
+        var left = halfEdges[i].face.windings,
+            right = halfEdges[i + 1].face.windings,
+            change = halfEdges[i].edge.windings;
+        planar = left[0] - right[0] === change[0]
+                && left[1] - right[1] === change[1];
+    }
+    if (planar)
+        return null;
+    function getPoint(index) {
+        return new Point(vertices[index].x, vertices[index].y);
+    }
+    var curves = edges.map(function(edge) {
+        var v = edge.values;
+        return new Curve(new Point(v[0], v[1]), new Point(v[2] - v[0], v[3] - v[1]),
+                new Point(v[4] - v[6], v[5] - v[7]), new Point(v[6], v[7]));
+    });
+    for (var i = 0; i < edges.length; i++) {
+        for (var j = i + 1; j < edges.length; j++) {
+            var ends = [edges[i].from, edges[i].to, edges[j].from, edges[j].to],
+                crossing = curves[i].getIntersections(curves[j]).filter(
+                    function(location) {
+                        return !ends.some(function(index) {
+                            return location.point.isClose(getPoint(index),
+                                    epsilon);
+                        });
+                    })[0];
+            if (crossing) {
+                return { crossing: crossing.point.toString(),
+                        edges: [edges[i].values, edges[j].values] };
+            }
+        }
+    }
+    for (var i = 0; i < vertices.length; i++) {
+        var point = getPoint(i);
+        for (var j = 0; j < edges.length; j++) {
+            var edge = edges[j];
+            if (edge.from !== i && edge.to !== i
+                    && curves[j].getNearestPoint(point).isClose(point, epsilon))
+                return { vertex: point.toString(), edge: edge.values };
+        }
+    }
+    return { unknown: true };
+}
+
+// The operation's epsilon, as the boolean operations compute it, so that the
+// sweep also runs on builds without the graph:
+function getEpsilon(a, b) {
+    var bounds = a.bounds.unite(b.bounds),
+        abs = Math.abs;
+    return Math.max(Numerical.getEpsilon(Math.max(abs(bounds.left),
+            abs(bounds.right), abs(bounds.top), abs(bounds.bottom))),
+            bounds.topLeft.getDistance(bounds.bottomRight)
+                * Numerical.GEOMETRIC_EPSILON);
+}
+
+function isWrong(a, b, result, point, op) {
+    return result.contains(point) !== operations[op](a.contains(point),
+            b.contains(point));
+}
+
+// Samples close to the outlines: Step off evenly spaced points on each outline
+// along its normal, by multiples of the operation's epsilon, and keep those
+// that are further than 2 epsilon from the other outlines. Adds the wrong
+// points and the samples per multiple to near:
+function addNearSamples(a, b, result, op, epsilon, count, near) {
+    var outlines = [a, b, result];
+    [2, 10, 100].forEach(function(factor) {
+        var entry = near[factor] = near[factor] || [0, 0];
+        outlines.forEach(function(outline) {
+            (outline.children || [outline]).forEach(function(path) {
+                var length = path.length;
+                for (var i = 0; i < count && length; i++) {
+                    var location = path.getLocationAt(length * (i + 0.5) / count),
+                        normal = location && location.normal;
+                    if (normal && !normal.isZero()) {
+                        [1, -1].forEach(function(sign) {
+                            var point = location.point.add(
+                                    normal.multiply(sign * factor * epsilon));
+                            if (outlines.every(function(other) {
+                                return other === outline
+                                        || !isNear(other, point, 2 * epsilon);
+                            })) {
+                                entry[1]++;
+                                if (isWrong(a, b, result, point, op))
+                                    entry[0]++;
+                            }
+                        });
+                    }
+                }
+            });
+        });
+    });
 }
 
 function sweep(entry) {
     var a = Item.importJSON(entry.a),
         b = Item.importJSON(entry.b),
+        op = entry.op,
         options = Base.set({}, entry.options, { insert: false }),
-        result = { label: entry.label, op: entry.op };
+        result = { label: entry.label, op: op };
     a.remove();
     b.remove();
+    [a, b].forEach(function(item) {
+        item.scale(scale, new Point(0, 0));
+        item.translate(translation, translation);
+    });
     if (options.trace === false || options.stroke) {
         result.skipped = 'trace: false or stroke';
         return result;
     }
-    var result0 = a[entry.op](b, options);
+    var result0 = a[op](b, options);
     if (!isClosed(result0)) {
         result.skipped = 'open result';
         return result;
     }
     // Sample points with a fixed seed, away from all outlines:
     var bounds = a.bounds.unite(b.bounds),
-        tolerance = 1e-4 * bounds.topLeft.getDistance(bounds.bottomRight),
+        epsilon = getEpsilon(a, b),
+        tolerance = exclusion
+            ? exclusion * epsilon
+            : 1e-4 * bounds.topLeft.getDistance(bounds.bottomRight),
         seed = 4711,
         points = [];
     for (var i = 0; i < 300; i++) {
@@ -134,44 +260,70 @@ function sweep(entry) {
                 && !isNear(result0, point, tolerance)) {
             points.push({
                 point: point,
-                expected: operations[entry.op](a.contains(point),
+                expected: operations[op](a.contains(point),
                         b.contains(point)),
                 filled: result0.contains(point)
             });
         }
     }
+    result.points = points.length;
     result.wrong = points.filter(function(sample) {
         return sample.filled !== sample.expected;
     }).length;
+    result.near = {};
+    addNearSamples(a, b, result0, op, epsilon, 32, result.near);
+    // Check the results of the tiny moves too, against the moved operands,
+    // with the same points and fewer near the outlines:
     result.stable = 0;
     result.total = deltas.length * 2;
+    result.movedWrong = 0;
+    result.movedNear = {};
+    result.nonPlanar = 0;
+    function check(b) {
+        var repro = PathItem._createGraph && checkGraph(a, b);
+        if (repro) {
+            result.nonPlanar++;
+            result.repro = result.repro || repro;
+        }
+    }
+    check(b);
     deltas.forEach(function(delta) {
         [[delta, 0], [0, delta]].forEach(function(vector) {
             var moved = b.clone({ insert: false });
-            moved.translate(vector);
-            var moved0 = a[entry.op](moved, options);
+            moved.translate(new Point(vector).multiply(scale));
+            check(moved);
+            var moved0 = a[op](moved, options);
             if (points.every(function(sample) {
                 return moved0.contains(sample.point) === sample.filled;
             })) {
                 result.stable++;
             }
+            points.forEach(function(sample) {
+                if (isWrong(a, moved, moved0, sample.point, op))
+                    result.movedWrong++;
+            });
+            addNearSamples(a, moved, moved0, op, epsilon, 8, result.movedNear);
         });
     });
     return result;
 }
 
 var cases = collect(path.join(__dirname, '..', 'tests', 'Path_Boolean.js'))
-        .concat(require('./issues.json'));
+        .concat(require('./issues.json'), require('./generate.js')(paper, 40, 1));
 if (process.argv[3] === 'count') {
     console.log(cases.length);
 } else {
-    for (var i = +process.argv[3] || 0, l = cases.length; i < l; i++) {
+    // The cases from the first one on, or every n-th of them with first:n:
+    var range = (process.argv[3] || '0').split(':');
+    for (var i = +range[0], l = cases.length; i < l; i += +range[1] || 1) {
         // Announce each case, so a caller knows which one didn't return:
         console.log(JSON.stringify({ index: i, label: cases[i].label,
                 op: cases[i].op, start: true }));
         var result;
         try {
+            var time = Date.now();
             result = sweep(cases[i]);
+            result.time = Date.now() - time;
         } catch (e) {
             result = { label: cases[i].label, op: cases[i].op,
                     error: e.message };
