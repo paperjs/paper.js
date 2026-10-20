@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 23:38:11 2026 +0200
+ * Date: Wed Oct 21 00:03:27 2026 +0200
  *
  ***
  *
@@ -16334,6 +16334,9 @@ new function() {
 	}
 
 	function exportShadow(item, options) {
+		var box = item.getInternalBounds();
+		if (!box.width || !box.height)
+			return null;
 		var style = item._style,
 			color = style.getShadowColor(),
 			offset = style.getShadowOffset(),
@@ -16341,53 +16344,47 @@ new function() {
 			bounds = item.getStrokeBounds(new Matrix()),
 			rect = bounds.unite(new Rectangle(bounds.getPoint().add(offset),
 					bounds.getSize())).expand(6 * deviation),
-			box = item.getInternalBounds(),
-			relative = box.width && box.height,
-			filter = SvgElement.create('filter', relative ? {
-				x: (rect.x - box.x) / box.width,
-				y: (rect.y - box.y) / box.height,
-				width: rect.width / box.width,
-				height: rect.height / box.height
-			} : {
-				x: rect.x,
-				y: rect.y,
-				width: rect.width,
-				height: rect.height,
-				filterUnits: 'userSpaceOnUse'
-			}, formatter),
-			merge = SvgElement.create('feMerge');
+			region = new Matrix().scale(100 / box.width, 100 / box.height)
+					.translate(box.getPoint().negate())._transformBounds(rect),
+			filter = SvgElement.create('filter');
 
-		function add(parent, type, attrs) {
-			parent.appendChild(SvgElement.create(type, attrs, formatter));
+		function add(type, attrs) {
+			filter.appendChild(SvgElement.create(type, attrs, formatter));
 		}
 
+		Base.each(['x', 'y', 'width', 'height'], function(key) {
+			filter.setAttribute(key, formatter.number(region[key]) + '%');
+		});
+
 		if (deviation > 0) {
-			add(filter, 'feGaussianBlur', {
+			add('feGaussianBlur', {
 				'in': 'SourceAlpha',
 				stdDeviation: deviation,
 				result: 'blur'
 			});
 		}
-		add(filter, 'feOffset', {
+		add('feOffset', {
 			'in': deviation > 0 ? 'blur' : 'SourceAlpha',
 			dx: offset.x,
 			dy: offset.y,
 			result: 'offset'
 		});
-		add(filter, 'feFlood', {
+		add('feFlood', {
 			'flood-color': color.toCSS(true),
 			'flood-opacity': color.getAlpha(),
 			result: 'color'
 		});
-		add(filter, 'feComposite', {
+		add('feComposite', {
 			'in': 'color',
 			in2: 'offset',
 			operator: 'in',
 			result: 'shadow'
 		});
-		add(merge, 'feMergeNode', { 'in': 'shadow' });
-		add(merge, 'feMergeNode', { 'in': 'SourceGraphic' });
-		filter.appendChild(merge);
+		add('feComposite', {
+			'in': 'SourceGraphic',
+			in2: 'shadow',
+			operator: 'over'
+		});
 		setDefinition(item, filter, 'filter', options);
 		return 'url(#' + filter.id + ')';
 	}
@@ -16482,8 +16479,10 @@ new function() {
 			}
 		});
 
-		if (item._style.getShadowColor(true) && item.hasShadow())
-			attrs.filter = exportShadow(item, options);
+		var filter = item._style.getShadowColor(true) && item.hasShadow()
+				&& exportShadow(item, options);
+		if (filter)
+			attrs.filter = filter;
 
 		if (style.length)
 			attrs.style = style.join(';');
@@ -16538,6 +16537,7 @@ new function() {
 		parentStyles = null;
 		return options.asString
 				? new self.XMLSerializer().serializeToString(svg)
+					.replace(/<defs>|<\/filter>|<\/defs>/g, '$&\n')
 				: svg;
 	}
 
@@ -16935,24 +16935,20 @@ new function() {
 			color.setAlpha(parseFloat(value));
 	}
 
+	var shadowPrimitives = 'feOffset,feFlood,feComposite,feComposite';
+
 	function getFilterShadow(filter) {
-		var primitives = {},
-			count = 0,
-			nodes = filter ? filter.childNodes : [];
-		for (var i = 0, l = nodes.length; i < l; i++) {
-			var node = nodes[i];
-			if (node.nodeType === 1) {
-				primitives[node.nodeName] = node;
-				count++;
-			}
-		}
-		var blur = primitives.feGaussianBlur,
-			offset = primitives.feOffset,
-			flood = primitives.feFlood;
-		if (!(offset && flood && primitives.feComposite && primitives.feMerge)
-				|| count !== (blur ? 5 : 4))
+		var nodes = Base.slice(filter && filter.children || []),
+			names = nodes.map(function(node) {
+				return node.nodeName;
+			}).join(),
+			blur = names === 'feGaussianBlur,' + shadowPrimitives
+					&& nodes.shift();
+		if (!blur && names !== shadowPrimitives)
 			return null;
-		var color = new Color(flood.getAttribute('flood-color') || 'black'),
+		var offset = nodes[0],
+			flood = nodes[1],
+			color = new Color(flood.getAttribute('flood-color') || 'black'),
 			opacity = flood.getAttribute('flood-opacity');
 		if (opacity)
 			color.setAlpha(color.getAlpha() * parseFloat(opacity));
