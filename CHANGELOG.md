@@ -4,6 +4,8 @@
 
 ### Added
 
+- Add `angleInRadians` to the object literals that create points, next to
+  `angle`, e.g. `new Point({ length: 10, angleInRadians: Math.PI / 2 })` (#562).
 - Add `Project#hasChanges()`, which tells whether changes were logged since the
   last `Project#takeChanges()`, without taking them.
 - Add dynamic `import(specifier)` to PaperScript, which resolves to the module's

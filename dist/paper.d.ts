@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 20:35:42 2026 +0200
+ * Date: Tue Oct 20 20:44:21 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -22,6 +22,7 @@ declare namespace paper {
         | { x: number, y: number }
         | { width: number, height: number }
         | { angle: number, length: number }
+        | { angleInRadians: number, length: number }
     )
 
     type SizeLike = (

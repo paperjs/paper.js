@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 20:35:42 2026 +0200
+ * Date: Tue Oct 20 20:44:21 2026 +0200
  *
  ***
  *
@@ -1501,6 +1501,9 @@ var Point = Base.extend({
 			} else if ('angle' in obj) {
 				this._set(obj.length || 0, 0);
 				this.setAngle(obj.angle || 0);
+			} else if ('angleInRadians' in obj) {
+				this._set(obj.length || 0, 0);
+				this.setAngleInRadians(obj.angleInRadians || 0);
 			} else {
 				this._set(0, 0);
 				read = 0;
