@@ -90,6 +90,12 @@ var AreaText = TextItem.extend(/** @lends AreaText# */{
         this._verticalAlign = source._verticalAlign;
     },
 
+    // Its place among its layer's text wraps changes when it moves:
+    _installEvents: function _installEvents(install) {
+        _installEvents.base.call(this, install);
+        this._layout = null;
+    },
+
     /**
      * The number of columns that the area is divided into, from left to
      * right, which the text fills one after the other.
@@ -235,13 +241,18 @@ var AreaText = TextItem.extend(/** @lends AreaText# */{
     // filling the regions of its rows and columns one after the other, each
     // line moving down by its own line height and the space between
     // paragraphs, aligned by its paragraph's justification and indents, and
-    // evened out by its lineWrap:
+    // evened out by its lineWrap. It lays out again when its layer's text
+    // wraps change:
     _getLayout: function() {
-        if (!this._layout) {
+        var layer = this.getLayer(),
+            version = layer && layer._textWrapVersion;
+        if (!this._layout || this._textWrapVersion !== version) {
+            this._textWrapVersion = version;
             var that = this,
                 story = this._story,
                 content = story._content,
                 regions = this._getRegions(),
+                wraps = this._getTextWraps(),
                 // How far each region's first line moves down, to align its
                 // lines vertically:
                 offsets = regions.map(function() {
@@ -282,7 +293,7 @@ var AreaText = TextItem.extend(/** @lends AreaText# */{
                     }
                     // Fill the spans at this height in reading order, each as
                     // far as it goes, then go on further down:
-                    var spans = that._getSpans(bounds, baseline, next);
+                    var spans = that._getSpans(bounds, baseline, next, wraps);
                     if (style.getDirection() === 'rtl')
                         spans.reverse();
                     for (var i = 0, l = spans.length; i < l && !isComplete;
@@ -481,28 +492,27 @@ var AreaText = TextItem.extend(/** @lends AreaText# */{
 
     // The spans of the line at `baseline` in the region, from left to right:
     // where the area holds all of the line's band, from its ascent to its
-    // descent:
-    _getSpans: function(region, baseline, line) {
-        var path = this.getTextPath(),
-            bounds = path.getBounds(),
+    // descent, without the text wraps, or only within them when inverted:
+    _getSpans: function(region, baseline, line, wraps) {
+        var that = this,
             top = baseline - line.ascent,
             bottom = baseline + line.descent,
-            // The stretches inside the area along the horizontal at `y`,
-            // pairing its crossings:
-            inside = function(y) {
-                var xs = path.getIntersections(new Path.Line({
-                        from: [bounds.left - 1, y],
-                        to: [bounds.right + 1, y],
-                        insert: false
-                    })).map(function(location) {
-                        return location.point.x;
-                    }).sort(function(a, b) {
-                        return a - b;
+            middle = (top + bottom) / 2,
+            unite = function(stretches1, stretches2) {
+                var all = stretches1.concat(stretches2).sort(function(a, b) {
+                        return a[0] - b[0];
                     }),
-                    stretches = [];
-                for (var i = 0; i + 1 < xs.length; i += 2)
-                    stretches.push([xs[i], xs[i + 1]]);
-                return stretches;
+                    result = [];
+                for (var i = 0, l = all.length; i < l; i++) {
+                    var last = result[result.length - 1],
+                        stretch = all[i];
+                    if (last && stretch[0] <= last[1]) {
+                        last[1] = Math.max(last[1], stretch[1]);
+                    } else {
+                        result.push(stretch.slice());
+                    }
+                }
+                return result;
             },
             intersect = function(stretches1, stretches2) {
                 var result = [];
@@ -515,11 +525,113 @@ var AreaText = TextItem.extend(/** @lends AreaText# */{
                     }
                 }
                 return result;
-            };
-        // The area must hold all of the band:
-        return [top, (top + bottom) / 2, bottom].reduce(function(spans, y) {
-            return intersect(spans, inside(y));
-        }, [[region.left, region.right]]);
+            },
+            subtract = function(stretches1, stretches2) {
+                return intersect(stretches1, stretches2.reduce(
+                    // What's outside the stretches, from left to right:
+                    function(outside, stretch) {
+                        var last = outside.pop();
+                        return outside.concat([[last[0], stretch[0]],
+                                [stretch[1], last[1]]]);
+                    }, [[-Infinity, Infinity]]));
+            },
+            // The stretches inside the paths along the horizontal at `y`,
+            // pairing the crossings of each:
+            inside = function(paths, y) {
+                var stretches = [];
+                for (var i = 0, l = paths.length; i < l; i++) {
+                    var path = paths[i],
+                        bounds = path.getBounds(),
+                        xs = path.getIntersections(new Path.Line({
+                            from: [bounds.left - 1, y],
+                            to: [bounds.right + 1, y],
+                            insert: false
+                        })).map(function(location) {
+                            return location.point.x;
+                        }).sort(function(a, b) {
+                            return a - b;
+                        });
+                    for (var j = 0; j + 1 < xs.length; j += 2)
+                        stretches.push([xs[j], xs[j + 1]]);
+                }
+                return unite(stretches, []);
+            },
+            // The area must hold all of the band:
+            spans = [top, middle, bottom].reduce(function(spans, y) {
+                return intersect(spans, inside([that.getTextPath()], y));
+            }, [[region.left, region.right]]);
+        for (var i = 0, l = wraps.length; i < l; i++) {
+            // A text wrap keeps its offset all around, so look at it from as
+            // far above and below the band, and widen or narrow it as much:
+            var wrap = wraps[i],
+                offset = wrap.offset,
+                invert = wrap.invert,
+                ys = [top - offset, top, middle, bottom, bottom + offset],
+                covered = ys.reduce(function(covered, y) {
+                    var stretches = inside(wrap.paths, y);
+                    return covered ? invert
+                            ? intersect(covered, stretches)
+                            : unite(covered, stretches)
+                        : stretches;
+                }, null).map(function(stretch) {
+                    return invert
+                            ? [stretch[0] + offset, stretch[1] - offset]
+                            : [stretch[0] - offset, stretch[1] + offset];
+                });
+            spans = invert ? intersect(spans, covered)
+                    : subtract(spans, unite(covered, []));
+        }
+        return spans;
+    },
+
+    // The items above the text in its layer that push it aside, see
+    // Item#textWrap, each with its options and its outline as paths in the
+    // text's coordinates: a path's own, a group's children's, or a clip
+    // group's clip path, and the bounds of anything else:
+    _getTextWraps: function() {
+        var layer = this.getLayer(),
+            items = layer && layer._textWrapItems,
+            toText = this.getGlobalMatrix(true).inverted(),
+            wraps = [];
+
+        var isShown = function(item) {
+            for (; item !== layer; item = item._parent) {
+                if (!item._visible)
+                    return false;
+            }
+            return true;
+        };
+
+        var getOutline = function(item, paths) {
+            var matrix = toText.appended(item._parent.getGlobalMatrix(true));
+            if (item instanceof PathItem) {
+                var path = item.clone({ insert: false, deep: true });
+                path.transform(matrix);
+                paths.push(path);
+            } else if (item instanceof Group) {
+                var clipItem = item._getClipItem(),
+                    children = clipItem ? [clipItem] : item._children;
+                for (var i = 0, l = children.length; i < l; i++) {
+                    if (children[i]._visible)
+                        getOutline(children[i], paths);
+                }
+            } else {
+                paths.push(new Path.Rectangle({
+                    rectangle: item.getBounds(matrix),
+                    insert: false
+                }));
+            }
+            return paths;
+        };
+
+        for (var id in items) {
+            var item = items[id];
+            if (item !== this && item.isAbove(this) && isShown(item)) {
+                wraps.push(Base.set({ paths: getOutline(item, []) },
+                        item._textWrap));
+            }
+        }
+        return wraps;
     },
 
     // Breaks the line from `start` at the last word, or soft hyphen, that fits

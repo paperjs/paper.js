@@ -58,6 +58,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     _opacity: 1,
     _locked: false,
     _guide: false,
+    _textWrap: null,
     _clipMask: false,
     _selection: 0,
     // Controls whether bounds should appear selected when the item is selected.
@@ -78,6 +79,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         locked: false,
         guide: false,
         clipMask: false,
+        textWrap: null,
         selected: false,
         data: {}
     },
@@ -239,6 +241,16 @@ new function() { // Injection scope for various item event handlers
             // Here we don't call this on the parent, since adding / removing a
             // child triggers this notification on the parent.
             Item._clearBoundsCache(this);
+        }
+        // Changes of a text wrap, or of what's in it, change the text it wraps:
+        for (var item = this; item && !(item instanceof Layer);
+                item = item._parent) {
+            if (item._textWrap) {
+                var layer = item.getLayer();
+                if (layer)
+                    layer._textWrapVersion++;
+                break;
+            }
         }
         // A child that its parent doesn't show is part of the parent, as a
         // text's path is: its changes are the parent's.
@@ -593,6 +605,51 @@ new function() { // Injection scope for various item event handlers
      * @type Boolean
      * @default false
      */
+
+    /**
+     * Specifies whether, and how, the item pushes aside the text of the
+     * {@link AreaText} items below it in its layer: `null`, or an object with
+     * `offset`, the space kept between them, and `invert`, to let the text
+     * flow inside it instead. `true` sets the defaults.
+     *
+     * @bean
+     * @type Object
+     * @default null
+     *
+     * @example
+     * var circle = new Path.Circle({ center: [100, 100], radius: 40 });
+     * circle.textWrap = { offset: 10 };
+     */
+    getTextWrap: function() {
+        var wrap = this._textWrap;
+        return wrap && Base.set({}, wrap);
+    },
+
+    setTextWrap: function(wrap) {
+        if (wrap || this._textWrap) {
+            this._textWrap = wrap
+                    ? Base.set({ offset: 6, invert: false },
+                        Base.isPlainObject(wrap) ? wrap : null)
+                    : null;
+            this._updateTextWrap();
+            this._changed(/*#=*/Change.ATTRIBUTE);
+        }
+    },
+
+    // Keep the layer's text wraps in sync, and have its area texts lay out
+    // again, see AreaText#_getTextWraps():
+    _updateTextWrap: function(remove) {
+        var layer = this.getLayer();
+        if (layer) {
+            var items = layer._textWrapItems || (layer._textWrapItems = {});
+            if (this._textWrap && !remove) {
+                items[this._id] = this;
+            } else {
+                delete items[this._id];
+            }
+            layer._textWrapVersion++;
+        }
+    },
 
     getSelection: function() {
         return this._selection;
@@ -1437,9 +1494,12 @@ new function() { // Injection scope for various item event handlers
      */
     _installEvents: function _installEvents(install) {
         _installEvents.base.call(this, install);
-        // Keep the project's selection in sync with insertion and removal:
+        // Keep the project's selection and the layer's text wraps in sync with
+        // insertion and removal:
         if (this._selection)
             this._project._updateSelection(this, !install);
+        if (this._textWrap)
+            this._updateTextWrap(!install);
         var children = this._children;
         for (var i = 0, l = children && children.length; i < l; i++)
             children[i]._installEvents(install);
@@ -1666,6 +1726,7 @@ new function() { // Injection scope for various item event handlers
                 && this._opacity === item._opacity
                 && this._clipMask === item._clipMask
                 && this._guide === item._guide
+                && Base.equals(this._textWrap, item._textWrap)
                 && this._equals(item)
                 || false;
     },
@@ -1779,7 +1840,7 @@ new function() { // Injection scope for various item event handlers
         // meaning the default value has been overwritten (default is on
         // prototype).
         var keys = ['_locked', '_visible', '_blendMode', '_opacity',
-                '_clipMask', '_guide'];
+                '_clipMask', '_guide', '_textWrap'];
         for (var i = 0, l = keys.length; i < l; i++) {
             var key = keys[i];
             if (source.hasOwnProperty(key))
