@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 00:20:37 2026 +0200
+ * Date: Wed Oct 21 00:34:33 2026 +0200
  *
  ***
  *
@@ -16661,7 +16661,7 @@ new function() {
 
 	function importGroup(node, type, options, isRoot) {
 		var nodes = node.childNodes,
-			isClip = type === 'clippath',
+			isClip = type === 'clippath' || type === 'mask',
 			isDefs = type === 'defs',
 			item = new Group(),
 			project = item._project,
@@ -16693,8 +16693,13 @@ new function() {
 				children.push(child);
 		}
 		item.addChildren(children);
-		if (isClip)
+		if (isClip) {
 			item = applyAttributes(item.reduce(), node, options, isRoot);
+			if (type === 'mask' && !isClipMask(item,
+					SvgElement.get(node, 'mask-type') === 'alpha'))
+				console.warn('Approximating SVG mask \'' + node.id
+						+ '\' as a clipping mask.');
+		}
 		project._currentStyle = currentStyle;
 		rootSize = parentSize;
 		if (isClip || isDefs) {
@@ -16702,6 +16707,22 @@ new function() {
 			item = null;
 		}
 		return item;
+	}
+
+	function isClipMask(item, isAlpha) {
+		if (item.getOpacity() !== 1)
+			return false;
+		if (item instanceof Group) {
+			return item._children.every(function(child) {
+				return isClipMask(child, isAlpha);
+			});
+		}
+		var color = item.getFillColor();
+		return (item instanceof PathItem || item instanceof Shape)
+				&& !item.hasStroke() && !!color && !color.gradient
+				&& color.getAlpha() === 1
+				&& (isAlpha || color.getBrightness() === 1
+					&& color.getSaturation() === 0);
 	}
 
 	function importPoly(node, type) {
@@ -16778,6 +16799,7 @@ new function() {
 		g: importGroup,
 		svg: importGroup,
 		clippath: importGroup,
+		mask: importGroup,
 		polygon: importPoly,
 		polyline: importPoly,
 		path: importPath,
@@ -16925,6 +16947,19 @@ new function() {
 		}
 	}
 
+	function applyClipMask(item, value, name, node, styles, options) {
+		var clip = getDefinition(value, options);
+		if (clip) {
+			clip = clip.clone();
+			clip.setClipMask(true);
+			if (item instanceof Group) {
+				item.insertChild(0, clip);
+			} else {
+				return new Group(clip, item);
+			}
+		}
+	}
+
 	function applyOpacity(item, value, name) {
 		var key = name === 'fill-opacity' ? 'getFillColor' : 'getStrokeColor',
 			color = item[key] && item[key]();
@@ -16996,18 +17031,8 @@ new function() {
 				item.setName(value);
 		},
 
-		'clip-path': function(item, value, name, node, styles, options) {
-			var clip = getDefinition(value, options);
-			if (clip) {
-				clip = clip.clone();
-				clip.setClipMask(true);
-				if (item instanceof Group) {
-					item.insertChild(0, clip);
-				} else {
-					return new Group(clip, item);
-				}
-			}
-		},
+		'clip-path': applyClipMask,
+		mask: applyClipMask,
 
 		gradientTransform: applyTransform,
 		transform: applyTransform,
