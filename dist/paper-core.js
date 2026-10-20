@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 19:50:23 2026 +0200
+ * Date: Tue Oct 20 20:06:11 2026 +0200
  *
  ***
  *
@@ -11554,6 +11554,8 @@ PathItem.inject(new function() {
 			});
 		}
 
+		var marks = new Array(vertices.length);
+
 		function getHotPixels(i) {
 			var v = values[i],
 				left = min(v[0], v[2], v[4], v[6]) - 2 * epsilon,
@@ -11565,12 +11567,14 @@ PathItem.inject(new function() {
 			for (var j = 0, k = indices.length; j < k; j++) {
 				var list = cuts[indices[j]];
 				for (var m = 0, n = list.length; m < n; m++) {
-					var index = getVertex(list[m].point),
-						vertex = vertices[index];
-					if (vertex.x >= left && vertex.x <= right
-							&& vertex.y >= top && vertex.y <= bottom
-							&& hotPixels.indexOf(index) === -1)
-						hotPixels.push(index);
+					var index = getVertex(list[m].point);
+					if (marks[index] !== i) {
+						var vertex = vertices[index];
+						marks[index] = i;
+						if (vertex.x >= left && vertex.x <= right
+								&& vertex.y >= top && vertex.y <= bottom)
+							hotPixels.push(index);
+					}
 				}
 			}
 			return hotPixels.sort(function(a, b) {
