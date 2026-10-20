@@ -6735,6 +6735,63 @@ path.tweenFrom({ fillColor: 'red' }, { duration: 1000 });
 	</div>
 
 
+	<div class="reference-members">
+		<h2>Static Methods</h2>
+		
+			
+<div id="getbounds-items" class="member">
+<div class="member-link">
+<a name="getbounds-items" href="#getbounds-items"><tt><b>Item.getBounds</b>(items[, options])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Returns the bounds of the given items in project coordinates, as if they were grouped, without moving them, e.g. the bounds of the selection: <code>Item.getBounds(project.selectedItems)</code>. As in groups, items that aren&rsquo;t visible or are empty are left out.</p>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.stroke: <tt>Boolean</tt></tt> &mdash; include the stroke widths,  as <a href="../classes/Item.html#strokebounds"><tt>item.strokeBounds</tt></a> does &mdash;&nbsp;default: <tt>false</tt></li>
+<li><tt>options.handle: <tt>Boolean</tt></tt> &mdash; include the handles, as  <a href="../classes/Item.html#handlebounds"><tt>item.handleBounds</tt></a> does &mdash;&nbsp;default: <tt>false</tt></li>
+</ul>
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>items:</tt> 
+Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects
+&mdash;&nbsp;the items to get the bounds of
+
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the kind of bounds
+&mdash;&nbsp;optional
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Rectangle.html"><tt>Rectangle</tt></a></tt>&nbsp;&mdash;&nbsp;the bounds of the items, empty if there are none
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+		
+	</div>
+
 
 
 <!-- =========================== copyright notice ========================== -->

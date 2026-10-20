@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 05:02:45 2026 +0200
+ * Date: Tue Oct 20 05:13:59 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -2082,6 +2082,24 @@ declare namespace paper {
          * @return the item itself
          */
         set(props: object): this
+
+        /** 
+         * Returns the bounds of the given items in project coordinates, as if
+         * they were grouped, without moving them, e.g. the bounds of the
+         * selection: `Item.getBounds(project.selectedItems)`. As in groups,
+         * items that aren't visible or are empty are left out.
+         * 
+         * @option [options.stroke=false] {Boolean} include the stroke widths,
+         *     as {@link Item#strokeBounds} does
+         * @option [options.handle=false] {Boolean} include the handles, as
+         *     {@link Item#handleBounds} does
+         * 
+         * @param items - the items to get the bounds of
+         * @param options - the kind of bounds
+         * 
+         * @return the bounds of the items, empty if there are none
+         */
+        static getBounds(items: Item[], options?: { stroke?: boolean, handle?: boolean }): Rectangle
 
         /** 
          * Clones the item within the same project and places the copy above the
