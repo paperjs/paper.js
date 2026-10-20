@@ -1911,12 +1911,43 @@ new function() { // Scope for bezier intersection using fat-line clipping
             v1 = Curve.getPart(v1, tMinClip, tMaxClip);
             var uDiff = uMax - uMin;
             if (tMaxClip - tMinClip > 0.8) {
-                // With a tolerance, find the intersections of the pieces where
+                // With a tolerance, crossings within it of the shared end of
+                // neighbouring curves merge into it: cut off the parts of both
+                // pieces within it by arc length, and clip the rest again.
+                // Otherwise, find the intersections of the pieces where
                 // clipping stalls through the implicit form of v2, unless they
                 // both lie on the same implicit curve, as parts of one curve:
-                if (!(tolerance && addImplicitIntersections(v1, v2, c1, c2,
-                        locations, include, flip, tMinNew, tMaxNew, uMin, uMax,
-                        tolerance))) {
+                var isNext = tolerance && tMaxNew === 1 && uMin === 0
+                        && c1.getNext() === c2,
+                    isPrevious = tolerance && !isNext && tMinNew === 0
+                        && uMax === 1 && c1.getPrevious() === c2;
+                if (isNext || isPrevious) {
+                    var offset = isNext ? tolerance : -tolerance,
+                        s1 = Curve.getTimeAt(v1, -offset),
+                        s2 = Curve.getTimeAt(v2, offset);
+                    // Pieces shorter than the tolerance have nothing left:
+                    if (s1 !== null && s2 !== null) {
+                        var t = tMinNew + (tMaxNew - tMinNew) * s1,
+                            u = uMin + (uMax - uMin) * s2;
+                        if (isNext) {
+                            v1 = Curve.getPart(v1, 0, s1);
+                            v2 = Curve.getPart(v2, s2, 1);
+                            tMaxNew = t;
+                            uMin = u;
+                        } else {
+                            v1 = Curve.getPart(v1, s1, 1);
+                            v2 = Curve.getPart(v2, 0, s2);
+                            tMinNew = t;
+                            uMax = u;
+                        }
+                        calls = addCurveIntersections(
+                                v1, v2, c1, c2, locations, include, flip,
+                                recursion, calls, tMinNew, tMaxNew, uMin, uMax,
+                                tolerance);
+                    }
+                } else if (!(tolerance && addImplicitIntersections(
+                        v1, v2, c1, c2, locations, include, flip,
+                        tMinNew, tMaxNew, uMin, uMax, tolerance))) {
                     // Subdivide the curve which has converged the least.
                     if (tMaxNew - tMinNew > uDiff) {
                         var parts = Curve.subdivide(v1, 0.5),
