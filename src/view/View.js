@@ -1660,7 +1660,7 @@ new function() { // Injection scope for mouse and key event handling
                 // to do so for this given mouse event, see hitItems and
                 // #_countItemEvent():
                 hit = hitItems && inView && view._project.hitTest(point, {
-                    tolerance: 0,
+                    tolerance: view._scope.settings.hitTolerance,
                     fill: true,
                     stroke: true
                 }),
