@@ -534,8 +534,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
                 prevLetterSpacing = ctx.letterSpacing;
             ctx.font = font;
             ctx.letterSpacing = letterSpacing;
-            // Measure the real width of the text. Unfortunately, there is no
-            // sane way to measure text height with canvas.
+            // Measure the real width of the text:
             for (var i = 0, l = lines.length; i < l; i++)
                 width = Math.max(width, ctx.measureText(lines[i]).width);
             ctx.font = prevFont;
@@ -544,6 +543,30 @@ var View = Base.extend(Emitter, /** @lends View# */{
                 CanvasProvider.release(ctx);
         }
         return width;
+    },
+
+    getFontMetrics: function(font) {
+        var ctx = this._context || CanvasProvider.getContext(1, 1),
+            metrics = null;
+        if (ctx) {
+            var prevFont = ctx.font;
+            ctx.font = font;
+            // Browsers tell the font's own ascent and descent, node-canvas
+            // those of its em box:
+            var measured = ctx.measureText('H'),
+                ascent = measured.fontBoundingBoxAscent,
+                descent = measured.fontBoundingBoxDescent;
+            if (ascent === undefined) {
+                ascent = measured.emHeightAscent;
+                descent = measured.emHeightDescent;
+            }
+            if (ascent !== undefined)
+                metrics = { ascent: ascent, descent: descent };
+            ctx.font = prevFont;
+            if (ctx !== this._context)
+                CanvasProvider.release(ctx);
+        }
+        return metrics;
     }
 }, Base.each(['rotate', 'scale', 'shear', 'skew'], function(key) {
     var rotate = key === 'rotate';

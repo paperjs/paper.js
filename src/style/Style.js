@@ -97,11 +97,33 @@ var Style = Base.extend(new function() {
         // Characters
         fontFamily: 'sans-serif',
         fontWeight: 'normal',
+        fontStyle: 'normal',
         fontSize: 12,
-        leading: null,
-        tracking: 0,
+        fontVariations: null,
+        lineHeight: 'auto',
+        letterTracking: 0,
+        letterKerning: null,
+        baselineShift: 0,
+        baselinePosition: 'normal',
+        letterScaling: 1,
+        letterRotation: 0,
+        capitals: 'normal',
+        underline: false,
+        strikethrough: false,
+        features: null,
         // Paragraphs
-        justification: 'left'
+        justification: 'left',
+        justifyLast: 'left',
+        justifySpacing: null,
+        startIndent: 0,
+        endIndent: 0,
+        firstLineIndent: 0,
+        spaceBefore: 0,
+        spaceAfter: 0,
+        hyphenation: false,
+        composer: 'paragraph',
+        tabs: null,
+        direction: null
     }),
     // Defaults for TextItem (override default fillColor to black):
     textDefaults = Base.set({}, groupDefaults, {
@@ -114,13 +136,34 @@ var Style = Base.extend(new function() {
         // strokeScaling can change the coordinates of cached path items
         strokeScaling: /*#=*/(Change.STROKE | Change.GEOMETRY),
         miterLimit: /*#=*/Change.STROKE,
+        // All text properties but colors and decorations change the layout:
         fontFamily: /*#=*/Change.GEOMETRY,
         fontWeight: /*#=*/Change.GEOMETRY,
+        fontStyle: /*#=*/Change.GEOMETRY,
         fontSize: /*#=*/Change.GEOMETRY,
         font: /*#=*/Change.GEOMETRY, // deprecated, links to fontFamily
-        leading: /*#=*/Change.GEOMETRY,
-        tracking: /*#=*/Change.GEOMETRY,
-        justification: /*#=*/Change.GEOMETRY
+        fontVariations: /*#=*/Change.GEOMETRY,
+        lineHeight: /*#=*/Change.GEOMETRY,
+        letterTracking: /*#=*/Change.GEOMETRY,
+        letterKerning: /*#=*/Change.GEOMETRY,
+        baselineShift: /*#=*/Change.GEOMETRY,
+        baselinePosition: /*#=*/Change.GEOMETRY,
+        letterScaling: /*#=*/Change.GEOMETRY,
+        letterRotation: /*#=*/Change.GEOMETRY,
+        capitals: /*#=*/Change.GEOMETRY,
+        features: /*#=*/Change.GEOMETRY,
+        justification: /*#=*/Change.GEOMETRY,
+        justifyLast: /*#=*/Change.GEOMETRY,
+        justifySpacing: /*#=*/Change.GEOMETRY,
+        startIndent: /*#=*/Change.GEOMETRY,
+        endIndent: /*#=*/Change.GEOMETRY,
+        firstLineIndent: /*#=*/Change.GEOMETRY,
+        spaceBefore: /*#=*/Change.GEOMETRY,
+        spaceAfter: /*#=*/Change.GEOMETRY,
+        hyphenation: /*#=*/Change.GEOMETRY,
+        composer: /*#=*/Change.GEOMETRY,
+        tabs: /*#=*/Change.GEOMETRY,
+        direction: /*#=*/Change.GEOMETRY
     },
     item = {
         // Enforce creation of beans, as bean getters have hidden parameters,
@@ -139,8 +182,10 @@ var Style = Base.extend(new function() {
                     || paper.project;
             // Use different defaults based on the owner
             this._defaults = !_owner || _owner instanceof Group ? groupDefaults
-                    : _owner instanceof TextItem ? textDefaults
-                    : itemDefaults;
+                    : _owner instanceof TextItem || _owner instanceof TextStory
+                        || _owner instanceof TextRange
+                        ? textDefaults
+                        : itemDefaults;
             if (style)
                 this.set(style);
         }
@@ -264,7 +309,20 @@ var Style = Base.extend(new function() {
         fields[set] = item[set] = '#set' + value;
     });
 
+    // The properties as they were named before: tracking is letterTracking,
+    // and leading a fixed lineHeight, see Style#getLeading():
+    fields.getTracking = item.getTracking = '#getLetterTracking';
+    fields.setTracking = item.setTracking = '#setLetterTracking';
+    item.getLeading = function() {
+        return this._style.getLeading();
+    };
+    item.setLeading = function(leading) {
+        this._style.setLeading(leading);
+    };
+
     Item.inject(item);
+    // Text ranges have the same style accessors as items:
+    TextRange.inject(item);
     return fields;
 }, /** @lends Style# */{
     statics: {
@@ -298,7 +356,7 @@ var Style = Base.extend(new function() {
             values = isStyle ? style._values : style;
         if (values) {
             for (var key in values) {
-                if (key in this._defaults) {
+                if (key in this._defaults || key in this._formerNames) {
                     var value = values[key];
                     // Delegate to setter, so Group styles work too.
                     this[key] = value && isStyle && value.clone
@@ -375,23 +433,75 @@ var Style = Base.extend(new function() {
 
     // Overrides
 
-    getFontStyle: function() {
-        var fontSize = this.getFontSize();
+    // The font as canvas takes it:
+    _getCanvasFont: function() {
+        var fontSize = this.getFontSize(),
+            fontStyle = this.getFontStyle();
+        // Superscripts and subscripts are set smaller:
+        if (this.getBaselinePosition() !== 'normal' && !isNaN(fontSize))
+            fontSize *= this._scriptSize;
         // To prevent an obscure iOS 7 crash, we have to convert the size to a
         // string first before passing it to the regular expression.
         // The following nonsensical statement would also prevent the bug,
         // proving that the issue is not the regular expression itself, but
         // something deeper down in the optimizer:
         // `if (size === 0) size = 0;`
-        return this.getFontWeight()
+        return (fontStyle !== 'normal' ? fontStyle + ' ' : '')
+                + (this.getCapitals() === 'small' ? 'small-caps ' : '')
+                + this.getFontWeight()
                 + ' ' + fontSize + (/[a-z]/i.test(fontSize + '') ? ' ' : 'px ')
                 + this.getFontFamily();
     },
 
-    getTrackingStyle: function() {
-        // Tracking is in thousandths of an em, and canvas resolves em through
-        // the font of the context:
-        return this.getTracking() / 1000 + 'em';
+    // The size of superscripts and subscripts, and how far they move, of the
+    // font size:
+    _scriptSize: 0.583,
+    _scriptShift: 0.333,
+
+    // The properties that style objects may still set by their former names:
+    _formerNames: { tracking: true, leading: true },
+
+    // The letter tracking as canvas takes it: in thousandths of an em, which
+    // canvas resolves through the font of the context:
+    _getCanvasLetterSpacing: function() {
+        return this.getLetterTracking() / 1000 + 'em';
+    },
+
+    // The font size in pixels, which it can be given in other units:
+    _getFontSize: function() {
+        var fontSize = this.getFontSize();
+        return /pt|em|%|px/.test(fontSize)
+                ? this.getView().getPixelSize(fontSize)
+                : fontSize;
+    },
+
+    // The line height in pixels: automatic ('auto', 1.2, or another factor)
+    // of the font size, or fixed, with units as the font size takes them:
+    _getLineHeight: function() {
+        var lineHeight = this.getLineHeight();
+        return lineHeight === 'auto' ? 1.2 * this._getFontSize()
+                : typeof lineHeight === 'string'
+                    ? this.getView().getPixelSize(lineHeight)
+                    : lineHeight * this._getFontSize();
+    },
+
+    /**
+     * The line height as a fixed length, in pixels, as Paper.js had it before
+     * #lineHeight: setting a number makes it fixed, as `'18px'`.
+     *
+     * @bean
+     * @type Number
+     * @deprecated use {@link #lineHeight} instead.
+     */
+    getLeading: function() {
+        return this.getLineHeight() === undefined ? undefined
+                : this._getLineHeight();
+    },
+
+    setLeading: function(leading) {
+        this.setLineHeight(leading == null ? 'auto'
+                : typeof leading === 'number' ? leading + 'px'
+                : leading);
     },
 
     /**
@@ -401,15 +511,6 @@ var Style = Base.extend(new function() {
      */
     getFont: '#getFontFamily',
     setFont: '#setFontFamily',
-
-    getLeading: function getLeading() {
-        // Override leading to return fontSize * 1.2 by default.
-        var leading = getLeading.base.call(this),
-            fontSize = this.getFontSize();
-        if (/pt|em|%|px/.test(fontSize))
-            fontSize = this.getView().getPixelSize(fontSize);
-        return leading != null ? leading : fontSize * 1.2;
-    }
 
     // DOCS: why isn't the example code showing up?
     /**
@@ -704,21 +805,132 @@ var Style = Base.extend(new function() {
      */
 
     /**
-     * The text leading of text content.
+     * The line height of text content: the distance from one line's baseline
+     * to the next. Automatic, as `'auto'` (1.2) or another factor of the
+     * letters' font size, each line moving down by its largest letters'; or
+     * fixed, as a length with units as the font size takes them (`'18px'`,
+     * `'12pt'`).
      *
-     * @name Style#leading
+     * @name Style#lineHeight
      * @type Number|String
-     * @default fontSize * 1.2
+     * @default 'auto'
      */
 
     /**
-     * The tracking of text content: the space added after each character, in
-     * thousandths of an em, as in Adobe Illustrator and InDesign. A tracking of
-     * 100 adds a tenth of the font size.
+     * The letter tracking of text content: the space added after each letter,
+     * along the line, in thousandths of an em, as in Adobe Illustrator and
+     * InDesign. A tracking of 100 adds a tenth of the font size. Also
+     * `tracking`, its former name.
      *
-     * @name Style#tracking
+     * @name Style#letterTracking
      * @type Number
      * @default 0
+     */
+
+    /**
+     * @name Style#tracking
+     * @type Number
+     * @deprecated use {@link #letterTracking} instead.
+     */
+
+    /**
+     * The letter kerning of text content: the space added after a letter,
+     * along the line, in thousandths of an em, in place of the font's own
+     * kerning pair; `null` for the font's kerning.
+     *
+     * @name Style#letterKerning
+     * @type Number
+     * @default null
+     */
+
+    /**
+     * The font style of text content, as in CSS: upright or slanted. Together
+     * with the {@link #fontWeight}, it says what a font's style name says, e.g.
+     * `'Bold Italic'`.
+     *
+     * @name Style#fontStyle
+     * @type String
+     * @values 'normal', 'italic', 'oblique'
+     * @default 'normal'
+     */
+
+    /**
+     * The settings of a variable font's axes, by their tags: `{ wght: 600,
+     * wdth: 80 }`. Kept for hosts that lay text out with its fonts; canvas
+     * doesn't draw them.
+     *
+     * @name Style#fontVariations
+     * @type Object
+     * @default null
+     */
+
+    /**
+     * How far the letters move up from the baseline, in pixels.
+     *
+     * @name Style#baselineShift
+     * @type Number
+     * @default 0
+     */
+
+    /**
+     * Whether the letters are set as superscripts or subscripts: smaller, and
+     * above or below the baseline.
+     *
+     * @name Style#baselinePosition
+     * @type String
+     * @values 'normal', 'superscript', 'subscript'
+     * @default 'normal'
+     */
+
+    /**
+     * How much the letters are scaled, as {@link Item#scaling}: one factor for
+     * both directions, or a point with the horizontal and vertical ones.
+     *
+     * @name Style#letterScaling
+     * @type Number|Point
+     * @default 1
+     */
+
+    /**
+     * The rotation of each letter about its origin on the baseline, in degrees.
+     *
+     * @name Style#letterRotation
+     * @type Number
+     * @default 0
+     */
+
+    /**
+     * Whether the letters are set as capitals, or as small capitals.
+     *
+     * @name Style#capitals
+     * @type String
+     * @values 'normal', 'all', 'small'
+     * @default 'normal'
+     */
+
+    /**
+     * Whether the letters are underlined.
+     *
+     * @name Style#underline
+     * @type Boolean
+     * @default false
+     */
+
+    /**
+     * Whether the letters are struck through.
+     *
+     * @name Style#strikethrough
+     * @type Boolean
+     * @default false
+     */
+
+    /**
+     * The OpenType features to turn on (`'dlig'`) or off (`'-liga'`). Kept for
+     * hosts that lay text out with its fonts; canvas doesn't draw them.
+     *
+     * @name Style#features
+     * @type String[]
+     * @default null
      */
 
     /**
@@ -728,7 +940,111 @@ var Style = Base.extend(new function() {
      *
      * @name Style#justification
      * @type String
-     * @values 'left', 'right', 'center'
+     * @values 'left', 'right', 'center', 'start', 'end', 'justify'
      * @default 'left'
+     */
+
+    /**
+     * How the last line of a justified paragraph is aligned; `'all'` justifies
+     * it too.
+     *
+     * @name Style#justifyLast
+     * @type String
+     * @values 'left', 'right', 'center', 'start', 'end', 'all'
+     * @default 'left'
+     */
+
+    /**
+     * How far justification may change the spacing, each as `[minimum, desired,
+     * maximum]` in percent: `{ word: [80, 100, 133], letter: [0, 0, 0], glyph:
+     * [100, 100, 100] }`; `null` for those. Kept for hosts: canvas text
+     * justifies by the word spacing alone.
+     *
+     * @name Style#justifySpacing
+     * @type Object
+     * @default null
+     */
+
+    /**
+     * The indent where the paragraph's lines start: left in left-to-right text,
+     * right in right-to-left text.
+     *
+     * @name Style#startIndent
+     * @type Number
+     * @default 0
+     */
+
+    /**
+     * The indent where the paragraph's lines end.
+     *
+     * @name Style#endIndent
+     * @type Number
+     * @default 0
+     */
+
+    /**
+     * The indent of the paragraph's first line, added to its start indent.
+     *
+     * @name Style#firstLineIndent
+     * @type Number
+     * @default 0
+     */
+
+    /**
+     * The space above the paragraph. Between two paragraphs, the larger of this
+     * one's and the space after the one before it is used.
+     *
+     * @name Style#spaceBefore
+     * @type Number
+     * @default 0
+     */
+
+    /**
+     * The space below the paragraph.
+     *
+     * @name Style#spaceAfter
+     * @type Number
+     * @default 0
+     */
+
+    /**
+     * Whether words are hyphenated at the ends of lines, and how: `true`, or `{
+     * wordsLongerThan, afterFirst, beforeLast, limit, zone, capitalized }`.
+     * Kept for hosts.
+     *
+     * @name Style#hyphenation
+     * @type Boolean|Object
+     * @default false
+     */
+
+    /**
+     * How lines are broken: one line at a time, or all of the paragraph's lines
+     * together, for the most even spacing. Kept for hosts: canvas text breaks
+     * one line at a time.
+     *
+     * @name Style#composer
+     * @type String
+     * @values 'line', 'paragraph'
+     * @default 'paragraph'
+     */
+
+    /**
+     * The paragraph's tab stops: `[{ position, align, leader }]`, with `align`
+     * one of `'left'`, `'center'`, `'right'` and `'decimal'`. Kept for hosts:
+     * canvas text doesn't set tabs yet.
+     *
+     * @name Style#tabs
+     * @type Object[]
+     * @default null
+     */
+
+    /**
+     * The direction the paragraph's lines run in, which `'start'` and `'end'`
+     * follow; `null` for left to right.
+     *
+     * @name Style#direction
+     * @type String
+     * @values 'ltr', 'rtl'
+     * @default null
      */
 });
