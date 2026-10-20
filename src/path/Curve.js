@@ -708,8 +708,13 @@ statics: /** @lends Curve */{
         // Compare the beginning and end of the curve first, with the same
         // geometric epsilon as the solutions below: On straight curves, which
         // have no handles, a point near an end solves to a time far from it,
-        // as the distance grows with the square of the time there.
-        var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON;
+        // as the distance grows with the square of the time there. At large
+        // coordinates, the epsilon can't be below their resolution:
+        var abs = Math.abs,
+            epsilon = Math.max(/*#=*/Numerical.GEOMETRIC_EPSILON,
+                Numerical.getEpsilon(Math.max(
+                    abs(v[0]), abs(v[1]), abs(v[2]), abs(v[3]),
+                    abs(v[4]), abs(v[5]), abs(v[6]), abs(v[7]))));
         if (point.isClose(new Point(v[0], v[1]), epsilon))
             return 0;
         if (point.isClose(new Point(v[6], v[7]), epsilon))

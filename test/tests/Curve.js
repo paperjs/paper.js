@@ -342,6 +342,17 @@ test('Curve#getTimeOf() near the ends of a straight curve', function() {
             { tolerance: 0 });
 });
 
+test('Curve#getTimeOf() at large coordinates', function() {
+    // Beyond about 2e8, GEOMETRIC_EPSILON is below the resolution of the
+    // coordinates, and points on the curve weren't recognized as such:
+    var curve = new Curve(new Point(288270130.78085, 2621133556.75646),
+            new Point(2158145287.70088, 988602383.71608));
+    for (var i = 1; i < 10; i++) {
+        var time = i / 10 + 0.01;
+        equals(curve.getTimeOf(curve.getPointAtTime(time)), time);
+    }
+});
+
 test('Curve#getPartLength() with straight curve', function() {
     var curve = new Curve([0, 0, 0, 0, 64, 0, 64, 0]);
     equals(function() { return curve.getPartLength(0.0, 0.25); }, 10);
