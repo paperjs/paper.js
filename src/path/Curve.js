@@ -2051,19 +2051,26 @@ new function() { // Scope for bezier intersection using fat-line clipping
     }
 
     function getCurveIntersections(v1, v2, c1, c2, locations, include) {
-        // Avoid checking curves if completely out of control bounds.
-        var epsilon = /*#=*/Numerical.EPSILON,
-            min = Math.min,
-            max = Math.max;
+        var min = Math.min,
+            max = Math.max,
+            abs = Math.abs,
+            minX1 = min(v1[0], v1[2], v1[4], v1[6]),
+            maxX1 = max(v1[0], v1[2], v1[4], v1[6]),
+            minY1 = min(v1[1], v1[3], v1[5], v1[7]),
+            maxY1 = max(v1[1], v1[3], v1[5], v1[7]),
+            minX2 = min(v2[0], v2[2], v2[4], v2[6]),
+            maxX2 = max(v2[0], v2[2], v2[4], v2[6]),
+            minY2 = min(v2[1], v2[3], v2[5], v2[7]),
+            maxY2 = max(v2[1], v2[3], v2[5], v2[7]),
+            // Bounds that only touch need a tolerance, also at large
+            // coordinates:
+            epsilon = Numerical.getEpsilon(max(
+                    abs(minX1), abs(maxX1), abs(minY1), abs(maxY1),
+                    abs(minX2), abs(maxX2), abs(minY2), abs(maxY2)));
 
-        if (max(v1[0], v1[2], v1[4], v1[6]) + epsilon >
-            min(v2[0], v2[2], v2[4], v2[6]) &&
-            min(v1[0], v1[2], v1[4], v1[6]) - epsilon <
-            max(v2[0], v2[2], v2[4], v2[6]) &&
-            max(v1[1], v1[3], v1[5], v1[7]) + epsilon >
-            min(v2[1], v2[3], v2[5], v2[7]) &&
-            min(v1[1], v1[3], v1[5], v1[7]) - epsilon <
-            max(v2[1], v2[3], v2[5], v2[7])) {
+        // Avoid checking curves if completely out of control bounds.
+        if (maxX1 + epsilon > minX2 && minX1 - epsilon < maxX2 &&
+            maxY1 + epsilon > minY2 && minY1 - epsilon < maxY2) {
             // Now detect and handle overlaps:
             var overlaps = getOverlaps(v1, v2);
             if (overlaps) {
