@@ -419,6 +419,97 @@ var Numerical = new function() {
                     && (boundless || x > min - EPSILON && x < max + EPSILON))
                 roots[count++] = boundless ? x : clamp(x, min, max);
             return count;
+        },
+
+        /**
+         * Finds the roots in [0, 1] of a polynomial in Bernstein form, by
+         * subdividing it until each part has at most one sign change among its
+         * coefficients: A part without sign changes has no root, and a part
+         * with one has exactly one, as the Bernstein form diminishes
+         * variation. Coefficients within their rounding error count as zero:
+         * A part with only such coefficients counts as one root, as does a
+         * part narrower than the given width that may still have one.
+         *
+         * @param {Number[]} coefficients the Bernstein coefficients
+         * @param {Number[]} errors the bounds of the rounding errors of the
+         *     coefficients
+         * @param {Number[]} roots the array to store the roots in
+         * @param {Number} width the width of the parts in which a possible root
+         *     counts as one
+         * @return {Number} the number of roots found
+         */
+        solveBernstein: function(coefficients, errors, roots, width) {
+            var count = 0;
+
+            // Splits the coefficients and errors at the middle, through the
+            // algorithm of de Casteljau:
+            function subdivide(values) {
+                var left = [],
+                    right = [],
+                    v = values.slice();
+                for (var n = v.length; n > 0; n--) {
+                    left.push(v[0]);
+                    right.unshift(v[n - 1]);
+                    for (var i = 0; i < n - 1; i++)
+                        v[i] = (v[i] + v[i + 1]) / 2;
+                }
+                return [left, right];
+            }
+
+            function evaluate(values, t) {
+                var v = values.slice();
+                for (var n = v.length - 1; n > 0; n--) {
+                    for (var i = 0; i < n; i++)
+                        v[i] = v[i] + (v[i + 1] - v[i]) * t;
+                }
+                return v[0];
+            }
+
+            function solve(values, bounds, from, to) {
+                var changes = 0,
+                    zeros = 0,
+                    sign = 0;
+                for (var i = 0, l = values.length; i < l; i++) {
+                    var value = values[i];
+                    if (abs(value) <= bounds[i]) {
+                        zeros++;
+                    } else {
+                        var s = value > 0 ? 1 : -1;
+                        if (sign && s !== sign)
+                            changes++;
+                        sign = s;
+                    }
+                }
+                if (zeros === values.length
+                        || (changes || zeros) && to - from <= width) {
+                    roots[count++] = (from + to) / 2;
+                } else if (changes === 1 && !zeros) {
+                    // Exactly one root, between the ends of opposite signs,
+                    // which bisection refines to the precision of the numbers:
+                    var a = 0,
+                        b = 1,
+                        isNegative = values[0] < 0;
+                    while (from + (to - from) * a < from + (to - from) * b
+                            && (a + b) / 2 > a && (a + b) / 2 < b) {
+                        var t = (a + b) / 2;
+                        if (evaluate(values, t) < 0 === isNegative) {
+                            a = t;
+                        } else {
+                            b = t;
+                        }
+                    }
+                    roots[count++] = from + (to - from) * (a + b) / 2;
+                } else if (changes || zeros) {
+                    var parts = subdivide(values),
+                        errorParts = subdivide(bounds),
+                        middle = (from + to) / 2;
+                    solve(parts[0], errorParts[0], from, middle);
+                    solve(parts[1], errorParts[1], middle, to);
+                }
+            }
+
+            solve(coefficients, errors, 0, 1);
+            return count;
         }
     };
 };

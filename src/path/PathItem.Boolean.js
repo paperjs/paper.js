@@ -566,9 +566,10 @@ PathItem.inject(new function() {
         }
         // Points closer than epsilon are one vertex. It is relative to the size
         // of the operands, but not below the resolution of their coordinates:
-        var epsilon = max(Numerical.getEpsilon(max(
+        var resolution = Numerical.getEpsilon(max(
                     abs(bounds.left), abs(bounds.right),
                     abs(bounds.top), abs(bounds.bottom))),
+            epsilon = max(resolution,
                 bounds.getTopLeft().getDistance(bounds.getBottomRight())
                     * /*#=*/Numerical.GEOMETRIC_EPSILON),
             values = [],
@@ -746,6 +747,26 @@ PathItem.inject(new function() {
         // along them, where tangent curves already separate, but no other
         // vertex is reached yet:
         var halfEdges = [];
+
+        function getSide(halfEdge1, halfEdge2) {
+            // Half-edges that leave a vertex tangentially and can't be told
+            // apart where their angles are measured: Tell on which side of the
+            // first one the second one runs, half way along the shorter one,
+            // as they don't cross before they end, or return 0 if it doesn't
+            // run alongside the first one there:
+            var v1 = halfEdge1.values,
+                v2 = halfEdge2.values,
+                length = min(halfEdge1.length, halfEdge2.length) / 2,
+                point = Curve.getPoint(v2, halfEdge2.edge.isStraight
+                        ? length / halfEdge2.length
+                        : Curve.getTimeAt(v2, length)),
+                time = Curve.getNearestTime(v1, point);
+            return time > 0 && time < 1
+                    ? Curve.getTangent(v1, time).cross(
+                        point.subtract(Curve.getPoint(v1, time))) > 0 ? -1 : 1
+                    : 0;
+        }
+
         for (var i = 0, l = edges.length; i < l; i++) {
             var edge = edges[i],
                 v = edge.values,
@@ -764,18 +785,46 @@ PathItem.inject(new function() {
                 outgoing = vertex.outgoing,
                 distance = Infinity;
             for (var j = 0, k = outgoing.length; j < k; j++)
-                distance = min(distance, halfEdges[outgoing[j]].length / 8);
+                distance = min(distance, halfEdges[outgoing[j]].length / 2);
             for (var j = 0, k = outgoing.length; j < k; j++) {
                 var halfEdge = halfEdges[outgoing[j]],
                     v = halfEdge.values,
                     point = Curve.getPoint(v, halfEdge.edge.isStraight
                             ? distance / halfEdge.length
                             : Curve.getTimeAt(v, distance));
+                halfEdge.point = point;
                 halfEdge.angle = Math.atan2(point.y - vertex.y,
                         point.x - vertex.x);
             }
+            // Start the order after the largest gap between the angles, so
+            // that half-edges which are hard to tell apart are not separated
+            // by the turn from pi to -pi:
             outgoing.sort(function(a, b) {
                 return halfEdges[a].angle - halfEdges[b].angle;
+            });
+            var start = -Math.PI,
+                gap = 0;
+            for (var j = 0, k = outgoing.length; j < k; j++) {
+                var angle = halfEdges[outgoing[j]].angle,
+                    previous = halfEdges[outgoing[(j || k) - 1]].angle,
+                    difference = (angle - previous + 2 * Math.PI)
+                        % (2 * Math.PI) || 2 * Math.PI;
+                if (difference > gap) {
+                    gap = difference;
+                    start = angle;
+                }
+            }
+            for (var j = 0, k = outgoing.length; j < k; j++) {
+                var halfEdge = halfEdges[outgoing[j]];
+                halfEdge.angle = (halfEdge.angle - start + 2 * Math.PI)
+                        % (2 * Math.PI);
+            }
+            outgoing.sort(function(a, b) {
+                var halfEdge1 = halfEdges[a],
+                    halfEdge2 = halfEdges[b];
+                return halfEdge1.point.isClose(halfEdge2.point, resolution)
+                        && getSide(halfEdge1, halfEdge2)
+                        || halfEdge1.angle - halfEdge2.angle;
             });
             for (var j = 0, k = outgoing.length; j < k; j++)
                 halfEdges[outgoing[j]].position = j;

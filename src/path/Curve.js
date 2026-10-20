@@ -1797,7 +1797,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
     }
 
     function addCurveIntersections(v1, v2, c1, c2, locations, include, flip,
-            recursion, calls, tMin, tMax, uMin, uMax) {
+            recursion, calls, tMin, tMax, uMin, uMax, tolerance) {
         // Avoid deeper recursion, by counting the total amount of recursions,
         // as well as the total amount of calls, to avoid massive call-trees as
         // suggested by @iconexperience in #904#issuecomment-225283430.
@@ -1855,25 +1855,36 @@ new function() { // Scope for bezier intersection using fat-line clipping
             v1 = Curve.getPart(v1, tMinClip, tMaxClip);
             var uDiff = uMax - uMin;
             if (tMaxClip - tMinClip > 0.8) {
-                // Subdivide the curve which has converged the least.
-                if (tMaxNew - tMinNew > uDiff) {
-                    var parts = Curve.subdivide(v1, 0.5),
-                        t = (tMinNew + tMaxNew) / 2;
-                    calls = addCurveIntersections(
-                            v2, parts[0], c2, c1, locations, include, !flip,
-                            recursion, calls, uMin, uMax, tMinNew, t);
-                    calls = addCurveIntersections(
-                            v2, parts[1], c2, c1, locations, include, !flip,
-                            recursion, calls, uMin, uMax, t, tMaxNew);
-                } else {
-                    var parts = Curve.subdivide(v2, 0.5),
-                        u = (uMin + uMax) / 2;
-                    calls = addCurveIntersections(
-                            parts[0], v1, c2, c1, locations, include, !flip,
-                            recursion, calls, uMin, u, tMinNew, tMaxNew);
-                    calls = addCurveIntersections(
-                            parts[1], v1, c2, c1, locations, include, !flip,
-                            recursion, calls, u, uMax, tMinNew, tMaxNew);
+                // With a tolerance, find the intersections of the pieces where
+                // clipping stalls through the implicit form of v2, unless they
+                // both lie on the same implicit curve, as parts of one curve:
+                if (!(tolerance && addImplicitIntersections(v1, v2, c1, c2,
+                        locations, include, flip, tMinNew, tMaxNew, uMin, uMax,
+                        tolerance))) {
+                    // Subdivide the curve which has converged the least.
+                    if (tMaxNew - tMinNew > uDiff) {
+                        var parts = Curve.subdivide(v1, 0.5),
+                            t = (tMinNew + tMaxNew) / 2;
+                        calls = addCurveIntersections(
+                                v2, parts[0], c2, c1, locations, include, !flip,
+                                recursion, calls, uMin, uMax, tMinNew, t,
+                                tolerance);
+                        calls = addCurveIntersections(
+                                v2, parts[1], c2, c1, locations, include, !flip,
+                                recursion, calls, uMin, uMax, t, tMaxNew,
+                                tolerance);
+                    } else {
+                        var parts = Curve.subdivide(v2, 0.5),
+                            u = (uMin + uMax) / 2;
+                        calls = addCurveIntersections(
+                                parts[0], v1, c2, c1, locations, include, !flip,
+                                recursion, calls, uMin, u, tMinNew, tMaxNew,
+                                tolerance);
+                        calls = addCurveIntersections(
+                                parts[1], v1, c2, c1, locations, include, !flip,
+                                recursion, calls, u, uMax, tMinNew, tMaxNew,
+                                tolerance);
+                    }
                 }
             } else { // Iterate
                 // For some unclear reason we need to check against uDiff === 0
@@ -1882,70 +1893,188 @@ new function() { // Scope for bezier intersection using fat-line clipping
                 if (uDiff === 0 || uDiff >= fatLineEpsilon) {
                     calls = addCurveIntersections(
                             v2, v1, c2, c1, locations, include, !flip,
-                            recursion, calls, uMin, uMax, tMinNew, tMaxNew);
+                            recursion, calls, uMin, uMax, tMinNew, tMaxNew,
+                            tolerance);
                 } else {
                     // The interval on the other curve is already tight enough,
                     // therefore we keep iterating on the same curve.
                     calls = addCurveIntersections(
                             v1, v2, c1, c2, locations, include, flip,
-                            recursion, calls, tMinNew, tMaxNew, uMin, uMax);
+                            recursion, calls, tMinNew, tMaxNew, uMin, uMax,
+                            tolerance);
                 }
             }
         }
         return calls;
     }
 
-    function addCloseCrossings(v1, v2, c1, c2, locations, include,
-            tolerance) {
-        // Find the crossings as sign changes of the distance of v1 from v2,
-        // sampled along v1 and refined through bisection:
-        function getDistance(t) {
-            var point = Curve.getPoint(v1, t),
-                u = Curve.getNearestTime(v2, point);
-            return {
-                time: t,
-                other: u,
-                point: point,
-                // Outside of v2, the distance has no meaningful sign:
-                distance: u > 0 && u < 1
-                    ? point.subtract(Curve.getPoint(v2, u))
-                        .dot(Curve.getNormal(v2, u))
-                    : 0
-            };
+    /**
+     * Adds the intersections of the piece v1 with the piece v2 as the roots of
+     * the implicit form of v2, f(x, y) = 0, along v1: f(v1(t)) is a polynomial
+     * in Bernstein form, of degree 9, or 6 if v2 is a quadratic curve. Its
+     * roots are isolated by subdivision, and where the curves are within the
+     * tolerance of each other along a part of v1 shorter than it, the part
+     * counts as one intersection. The implicit curve extends beyond v2, so
+     * only roots on v2 itself are kept. Returns false if f(v1(t)) vanishes,
+     * as both lie on the same implicit curve. See: Sederberg T. - "Computer
+     * Aided Geometric Design", chapter 17 on implicitization.
+     */
+    function addImplicitIntersections(v1, v2, c1, c2, locations, include,
+            flip, tMin, tMax, uMin, uMax, tolerance) {
+        var x0 = v2[0],
+            y0 = v2[1],
+            size = 0;
+        for (var i = 0; i < 8; i += 2) {
+            size = Math.max(size, Math.abs(v1[i] - x0), Math.abs(v1[i + 1] - y0),
+                    Math.abs(v2[i] - x0), Math.abs(v2[i + 1] - y0));
         }
-
-        var count = 64,
-            prev = getDistance(0);
-        for (var i = 1; i <= count; i++) {
-            var next = getDistance(i / count);
-            if (prev.distance * next.distance < 0) {
-                var a = prev,
-                    b = next;
-                for (var j = 0; j < 40; j++) {
-                    var m = getDistance((a.time + b.time) / 2);
-                    if (m.distance * a.distance > 0) {
-                        a = m;
-                    } else {
-                        b = m;
-                    }
-                }
-                if (!isFound(locations, a.point, tolerance)) {
+        if (size) {
+            // Work in coordinates relative to v2's start and size, to keep the
+            // coefficients of the polynomial in the order of 1:
+            var p = getLocalPoints(v1, x0, y0, size),
+                q = getLocalPoints(v2, x0, y0, size),
+                isQuadratic = Curve.classify(v2).type === 'quadratic',
+                polynomial = isQuadratic
+                    ? getQuadraticImplicit(p, [
+                        q[0], q[1].multiply(1.5).subtract(q[0].multiply(0.5)),
+                        q[3]])
+                    : getCubicImplicit(p, q),
+                roots = [],
+                speed = 0;
+            // The width in curve time along which v1 moves less than the
+            // tolerance, from a bound of its speed:
+            for (var i = 0; i < 6; i += 2) {
+                speed = Math.max(speed,
+                        3 * Math.sqrt(Math.pow(v1[i + 2] - v1[i], 2)
+                            + Math.pow(v1[i + 3] - v1[i + 1], 2)));
+            }
+            if (polynomial.coefficients.every(function(coefficient, i) {
+                return Math.abs(coefficient) <= polynomial.errors[i];
+            }))
+                return false;
+            var count = Numerical.solveBernstein(polynomial.coefficients,
+                    polynomial.errors, roots, speed ? tolerance / speed : 1);
+            for (var i = 0; i < count; i++) {
+                var t = roots[i],
+                    u = Curve.getTimeOf(v2, Curve.getPoint(v1, t), tolerance);
+                if (u !== null) {
+                    t = tMin + (tMax - tMin) * t;
+                    u = uMin + (uMax - uMin) * u;
                     addLocation(locations, include,
-                            c1, a.time,
-                            c2, a.other);
+                            flip ? c2 : c1, flip ? u : t,
+                            flip ? c1 : c2, flip ? t : u);
                 }
             }
-            prev = next;
-        }
-    }
-
-    function isFound(locations, point, tolerance) {
-        for (var i = 0, l = locations.length; i < l; i++) {
-            var loc = locations[i];
-            if (loc._point.isClose(point, tolerance))
-                return true;
+            return true;
         }
         return false;
+    }
+
+    function getLocalPoints(v, x0, y0, size) {
+        var points = [];
+        for (var i = 0; i < 8; i += 2)
+            points.push(new Point((v[i] - x0) / size, (v[i + 1] - y0) / size));
+        return points;
+    }
+
+    // The linear factors of the implicit forms, l(i, j)(x, y), as polynomials
+    // along the cubic p in Bernstein form, which as they are linear in x and y
+    // have the factors at the control points of p as their coefficients. The
+    // magnitudes of their terms bound the rounding errors.
+    function getLinearFactor(p, q, i, j, factor) {
+        var coefficients = [],
+            magnitudes = [];
+        for (var k = 0; k < 4; k++) {
+            var x = p[k].x,
+                y = p[k].y,
+                a = (q[i].x - x) * (q[j].y - y),
+                b = (q[j].x - x) * (q[i].y - y);
+            coefficients.push(factor * (a - b));
+            magnitudes.push(factor * (Math.abs(a) + Math.abs(b)));
+        }
+        return { coefficients: coefficients, magnitudes: magnitudes };
+    }
+
+    var binomials = [[1]];
+    function getBinomial(n, k) {
+        for (var i = binomials.length; i <= n; i++) {
+            var row = [1];
+            for (var j = 1; j < i; j++)
+                row.push(binomials[i - 1][j - 1] + binomials[i - 1][j]);
+            row.push(1);
+            binomials.push(row);
+        }
+        return binomials[n][k];
+    }
+
+    // Multiplies polynomials in Bernstein form, and their magnitudes:
+    function multiply(a, b) {
+        var m = a.coefficients.length - 1,
+            n = b.coefficients.length - 1,
+            coefficients = [],
+            magnitudes = [];
+        for (var k = 0; k <= m + n; k++) {
+            var coefficient = 0,
+                magnitude = 0;
+            for (var i = Math.max(0, k - n), l = Math.min(m, k); i <= l; i++) {
+                var factor = getBinomial(m, i) * getBinomial(n, k - i)
+                        / getBinomial(m + n, k);
+                coefficient += factor * a.coefficients[i] * b.coefficients[k - i];
+                magnitude += factor * a.magnitudes[i] * b.magnitudes[k - i];
+            }
+            coefficients.push(coefficient);
+            magnitudes.push(magnitude);
+        }
+        return { coefficients: coefficients, magnitudes: magnitudes };
+    }
+
+    function add(a, b, sign) {
+        var coefficients = [],
+            magnitudes = [];
+        for (var i = 0, l = a.coefficients.length; i < l; i++) {
+            coefficients.push(a.coefficients[i] + sign * b.coefficients[i]);
+            magnitudes.push(a.magnitudes[i] + b.magnitudes[i]);
+        }
+        return { coefficients: coefficients, magnitudes: magnitudes };
+    }
+
+    // The rounding errors stay below the magnitudes of all terms, times the
+    // machine epsilon for each of the operations that a coefficient passes
+    // through, which are less than 128 for the products and sums here:
+    function getPolynomial(value) {
+        var errors = [];
+        for (var i = 0, l = value.magnitudes.length; i < l; i++)
+            errors.push(value.magnitudes[i] * 128
+                    * /*#=*/Numerical.MACHINE_EPSILON);
+        return { coefficients: value.coefficients, errors: errors };
+    }
+
+    function getCubicImplicit(p, q) {
+        // f(x, y) = | l32  l31        l30 |
+        //           | l31  l30 + l21  l20 |
+        //           | l30  l20        l10 |
+        var l32 = getLinearFactor(p, q, 3, 2, 1 * 3),
+            l31 = getLinearFactor(p, q, 3, 1, 1 * 3),
+            l30 = getLinearFactor(p, q, 3, 0, 1 * 1),
+            l21 = getLinearFactor(p, q, 2, 1, 3 * 3),
+            l20 = getLinearFactor(p, q, 2, 0, 3 * 1),
+            l10 = getLinearFactor(p, q, 1, 0, 3 * 1),
+            m = add(l30, l21, 1);
+        return getPolynomial(add(add(
+                multiply(l32, add(multiply(m, l10), multiply(l20, l20), -1)),
+                multiply(l31, add(multiply(l31, l10), multiply(l20, l30), -1)),
+                -1),
+                multiply(l30, add(multiply(l31, l20), multiply(m, l30), -1)),
+                1));
+    }
+
+    function getQuadraticImplicit(p, q) {
+        // f(x, y) = | l21  l20 |
+        //           | l20  l10 |
+        var l21 = getLinearFactor(p, q, 2, 1, 1 * 2),
+            l20 = getLinearFactor(p, q, 2, 0, 1 * 1),
+            l10 = getLinearFactor(p, q, 1, 0, 2 * 1);
+        return getPolynomial(add(multiply(l21, l10), multiply(l20, l20), -1));
     }
 
     /**
@@ -2155,10 +2284,10 @@ new function() { // Scope for bezier intersection using fat-line clipping
                     straight2 = Curve.isStraight(v2),
                     straight = straight1 && straight2,
                     flip = straight1 && !straight2,
-                    before = locations.length,
+                    before = locations.length;
                 // Determine the correct intersection method based on whether
                 // one or curves are straight lines:
-                calls = (straight
+                (straight
                     ? addLineIntersection
                     : straight1 || straight2
                         ? addCurveLineIntersections
@@ -2169,12 +2298,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
                             // Define the defaults for these parameters of
                             // addCurveIntersections():
                             // recursion, calls, tMin, tMax, uMin, uMax
-                            0, 0, 0, 1, 0, 1);
-                // Fat-line clipping can't separate curves that run close to
-                // each other, and gives up before it finds where they cross:
-                if (calls >= 4096)
-                    addCloseCrossings(v1, v2, c1, c2, locations, include,
-                            tolerance || epsilon);
+                            0, 0, 0, 1, 0, 1, tolerance);
                 // Handle the special case where the start- / end-points of one
                 // curve lie on the other curve, within the tolerance if one is
                 // passed, but only if haven't found a line-line intersection
