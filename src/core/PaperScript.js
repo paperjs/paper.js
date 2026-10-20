@@ -441,9 +441,17 @@ Base.exports.PaperScript = function() {
             }
         }
 
+        // The number of functions that walkAST() is inside of, to find
+        // top-level `await`, which makes the whole script an async function:
+        var functions = 0,
+            isAsync = false;
+
         // Recursively walks the AST and replaces the code of certain nodes
         function walkAST(node, parent, paperFeatures) {
             if (node) {
+                var isFunction = /Function/.test(node.type);
+                if (isFunction)
+                    functions++;
                 // The easiest way to walk through the whole AST is to simply
                 // loop over each property of the node and filter out fields we
                 // don't need to consider...
@@ -460,6 +468,12 @@ Base.exports.PaperScript = function() {
                             walkAST(value, node, paperFeatures);
                         }
                     }
+                }
+                if (isFunction)
+                    functions--;
+                if (!functions && (node.type === 'AwaitExpression'
+                        || node.type === 'ForOfStatement' && node.await)) {
+                    isAsync = true;
                 }
                 if (paperFeatures.operatorOverloading !== false) {
                     handleOverloading(node, parent);
@@ -588,7 +602,8 @@ Base.exports.PaperScript = function() {
             url: url,
             source: source,
             code: code,
-            map: map
+            map: map,
+            async: isAsync
         };
     }
 
@@ -622,10 +637,15 @@ Base.exports.PaperScript = function() {
      *     The loader runs each module once and handles cycles. Parsing
      *     `import` requires a current Acorn as `self.acorn`
      *
+     * Code with top-level `await` runs as an async function. `execute()` then
+     * returns a Promise of the exports, and installs the global handlers once
+     * it resolves. Parsing it requires a current Acorn as `self.acorn`.
+     *
      * @param {String} code the PaperScript code
      * @param {PaperScope} scope the scope for which the code is executed
      * @param {Object} [options] the compilation options
-     * @return {Object} the exports defined in the executed code
+     * @return {Object|Promise} the exports defined in the executed code, or
+     *     with top-level `await`, a Promise of them
      */
     function execute(code, scope, options) {
         // Set currently active scope.
@@ -725,7 +745,10 @@ Base.exports.PaperScript = function() {
         }
         // End by returning `module.exports` at the end of the generated code:
         code += '\nreturn module.exports;';
-        var agent = paper.agent;
+        // Top-level `await` requires an async function:
+        var signature = (compiled.async ? 'async ' : '') + 'function('
+                + params + ') {',
+            agent = paper.agent;
         if (document && (agent.chrome
                 || agent.firefox && agent.versionNumber < 40)) {
             // On older Firefox, all error numbers inside dynamically compiled
@@ -741,42 +764,49 @@ Base.exports.PaperScript = function() {
             if (agent.firefox)
                 code = '\n' + code;
             script.appendChild(document.createTextNode(
-                'document.__paperscript__ = function(' + params + ') {' +
-                    code +
-                '\n}'
+                'document.__paperscript__ = ' + signature + code + '\n}'
             ));
             head.appendChild(script);
             func = document.__paperscript__;
             delete document.__paperscript__;
             head.removeChild(script);
         } else {
-            func = Function(params, code);
+            // Return the function from a wrapper, as Function() can't create
+            // async functions. The code stays on the same line as with
+            // Function(params, code), for the line numbers of source maps:
+            func = Function('return ' + signature + code + '\n}')();
         }
-        var exports = func && func.apply(scope, args);
-        var obj = exports || {};
-        // Now install the 'global' tool and view handlers, and we're done!
-        Base.each(toolHandlers, function(key) {
-            var value = obj[key];
-            if (value)
-                tool[key] = value;
-        });
-        if (view) {
-            if (obj.onResize)
-                view.setOnResize(obj.onResize);
-            // Emit resize event directly, so any user
-            // defined resize handlers are called.
-            view.emit('resize', {
-                size: view.size,
-                delta: new Point()
+
+        // Install the 'global' tool and view handlers, and we're done!
+        function install(exports) {
+            var obj = exports || {};
+            Base.each(toolHandlers, function(key) {
+                var value = obj[key];
+                if (value)
+                    tool[key] = value;
             });
-            if (obj.onFrame)
-                view.setOnFrame(obj.onFrame);
-            // Automatically request an update at the end. This is only needed
-            // if the script does not actually produce anything yet, and the
-            // used canvas contains previous content.
-            view.requestUpdate();
+            if (view) {
+                if (obj.onResize)
+                    view.setOnResize(obj.onResize);
+                // Emit resize event directly, so any user
+                // defined resize handlers are called.
+                view.emit('resize', {
+                    size: view.size,
+                    delta: new Point()
+                });
+                if (obj.onFrame)
+                    view.setOnFrame(obj.onFrame);
+                // Automatically request an update at the end. This is only
+                // needed if the script does not actually produce anything yet,
+                // and the used canvas contains previous content.
+                view.requestUpdate();
+            }
+            return exports;
         }
-        return exports;
+
+        var exports = func && func.apply(scope, args);
+        // Async functions return a Promise of the exports:
+        return compiled.async ? exports.then(install) : install(exports);
     }
 
     function loadScript(script) {
