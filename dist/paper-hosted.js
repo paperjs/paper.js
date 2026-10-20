@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 06:14:45 2026 +0200
+ * Date: Tue Oct 20 06:38:57 2026 +0200
  *
  ***
  *
@@ -18230,7 +18230,10 @@ Base.exports.PaperScript = function() {
 	}
 
 	function parse(code, options) {
-		return (self.acorn || acorn).parse(code, options);
+		var parser = self.acorn || acorn;
+		if (parseInt(parser.version, 10) >= 8)
+			options = Base.set({ ecmaVersion: 'latest' }, options);
+		return parser.parse(code, options);
 	}
 
 	var binaryOperators = {
@@ -18298,13 +18301,13 @@ Base.exports.PaperScript = function() {
 		var insertions = [];
 
 		function getOffset(offset) {
+			var current = offset;
 			for (var i = 0, l = insertions.length; i < l; i++) {
 				var insertion = insertions[i];
-				if (insertion[0] >= offset)
-					break;
-				offset += insertion[1];
+				if (insertion[1] <= offset)
+					current += insertion[2];
 			}
-			return offset;
+			return current;
 		}
 
 		function getCode(node) {
@@ -18318,16 +18321,14 @@ Base.exports.PaperScript = function() {
 		}
 
 		function replaceCode(node, str) {
-			var start = getOffset(node.range[0]),
-				end = getOffset(node.range[1]),
-				insert = 0;
-			for (var i = insertions.length - 1; i >= 0; i--) {
-				if (start > insertions[i][0]) {
-					insert = i + 1;
-					break;
-				}
-			}
-			insertions.splice(insert, 0, [start, str.length - end + start]);
+			var range = node.range,
+				start = getOffset(range[0]),
+				end = getOffset(range[1]);
+			insertions = insertions.filter(function(insertion) {
+				return insertion[0] < range[0] || insertion[1] > range[1];
+			});
+			insertions.push([range[0], range[1],
+					str.length - range[1] + range[0]]);
 			code = code.substring(0, start) + str + code.substring(end);
 		}
 
@@ -18396,6 +18397,31 @@ Base.exports.PaperScript = function() {
 			}
 		}
 
+		function collectNames(node, names) {
+			switch (node.type) {
+			case 'Identifier':
+				names.push(node.name);
+				break;
+			case 'ObjectPattern':
+				node.properties.forEach(function(property) {
+					collectNames(property.value || property.argument, names);
+				});
+				break;
+			case 'ArrayPattern':
+				node.elements.forEach(function(element) {
+					if (element)
+						collectNames(element, names);
+				});
+				break;
+			case 'AssignmentPattern':
+				collectNames(node.left, names);
+				break;
+			case 'RestElement':
+				collectNames(node.argument, names);
+				break;
+			}
+		}
+
 		function handleExports(node) {
 			switch (node.type) {
 			case 'ExportDefaultDeclaration':
@@ -18407,22 +18433,25 @@ Base.exports.PaperScript = function() {
 				var declaration = node.declaration;
 				var specifiers = node.specifiers;
 				if (declaration) {
-					var declarations = declaration.declarations;
-					if (declarations) {
-						declarations.forEach(function(dec) {
-							replaceCode(dec, 'module.exports.' + getCode(dec));
+					var names = [];
+					if (declaration.declarations) {
+						declaration.declarations.forEach(function(dec) {
+							collectNames(dec.id, names);
 						});
-						replaceCode({
-							range: [
-								node.start,
-								declaration.start + declaration.kind.length
-							]
-						}, '');
+					} else {
+						names.push(declaration.id.name);
 					}
+					replaceCode(node, getCode(declaration) + names.map(
+						function(name) {
+							return ' module.exports.' + name + ' = ' + name
+									+ ';';
+						}).join(''));
 				} else if (specifiers) {
 					var exports = specifiers.map(function(specifier) {
-						var name = getCode(specifier);
-						return 'module.exports.' + name + ' = ' + name + '; ';
+						var local = specifier.local.name,
+							exported = specifier.exported.name;
+						return 'module.exports.' + exported + ' = ' + local
+								+ '; ';
 					}).join('');
 					if (exports) {
 						replaceCode(node, exports);
