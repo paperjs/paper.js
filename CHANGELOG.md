@@ -7,6 +7,9 @@
 - Export shadows to SVG as SVG 1.1 filters, which both browsers and editors
   such as Illustrator render, except for items without width or height, and
   import them back, along with CSS `drop-shadow()` (#1003).
+- Import SVG masks as clip masks, which is exact for masks of solid white
+  shapes, or of opaque shapes with `mask-type="alpha"`, and warns that other
+  masks are approximated (#1916).
 - Add `Group#ungroup()`, which replaces a group with its children, applying its
   matrix to them, and let `Item#replaceWith()` take several items (#1026).
 - Add `settings.segmentSize`, the size of the segments when drawing selections,

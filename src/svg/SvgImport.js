@@ -84,7 +84,7 @@ new function() {
 
     function importGroup(node, type, options, isRoot) {
         var nodes = node.childNodes,
-            isClip = type === 'clippath',
+            isClip = type === 'clippath' || type === 'mask',
             isDefs = type === 'defs',
             item = new Group(),
             project = item._project,
@@ -127,8 +127,13 @@ new function() {
         item.addChildren(children);
         // Clip paths are reduced (unboxed) and their attributes applied at the
         // end.
-        if (isClip)
+        if (isClip) {
             item = applyAttributes(item.reduce(), node, options, isRoot);
+            if (type === 'mask' && !isClipMask(item,
+                    SvgElement.get(node, 'mask-type') === 'alpha'))
+                console.warn('Approximating SVG mask \'' + node.id
+                        + '\' as a clipping mask.');
+        }
         // Restore currentStyle and rootSize
         project._currentStyle = currentStyle;
         rootSize = parentSize;
@@ -139,6 +144,26 @@ new function() {
             item = null;
         }
         return item;
+    }
+
+    // Masks are imported as clip masks, which is only exact when they consist
+    // of opaque, solid white shapes, or of any opaque shapes when their
+    // mask-type is 'alpha':
+    function isClipMask(item, isAlpha) {
+        if (item.getOpacity() !== 1)
+            return false;
+        if (item instanceof Group) {
+            return item._children.every(function(child) {
+                return isClipMask(child, isAlpha);
+            });
+        }
+        var color = item.getFillColor();
+        return (item instanceof PathItem || item instanceof Shape)
+                && !item.hasStroke() && !!color && !color.gradient
+                && color.getAlpha() === 1
+                // White in any color type:
+                && (isAlpha || color.getBrightness() === 1
+                    && color.getSaturation() === 0);
     }
 
     function importPoly(node, type) {
@@ -226,6 +251,8 @@ new function() {
         // https://www.w3.org/TR/SVG/struct.html#NewDocument
         svg: importGroup,
         clippath: importGroup,
+        // https://www.w3.org/TR/SVG/masking.html#Masking
+        mask: importGroup,
         // https://www.w3.org/TR/SVG/shapes.html#PolygonElement
         polygon: importPoly,
         // https://www.w3.org/TR/SVG/shapes.html#PolylineElement
@@ -433,6 +460,21 @@ new function() {
         }
     }
 
+    function applyClipMask(item, value, name, node, styles, options) {
+        // https://www.w3.org/TR/SVG/masking.html#ClipPathProperty
+        var clip = getDefinition(value, options);
+        if (clip) {
+            clip = clip.clone();
+            clip.setClipMask(true);
+            // If item is already a group, move the clip-path inside
+            if (item instanceof Group) {
+                item.insertChild(0, clip);
+            } else {
+                return new Group(clip, item);
+            }
+        }
+    }
+
     function applyOpacity(item, value, name) {
         // https://www.w3.org/TR/SVG/painting.html#FillOpacityProperty
         // https://www.w3.org/TR/SVG/painting.html#StrokeOpacityProperty
@@ -523,20 +565,9 @@ new function() {
                 item.setName(value);
         },
 
-        'clip-path': function(item, value, name, node, styles, options) {
-            // https://www.w3.org/TR/SVG/masking.html#ClipPathProperty
-            var clip = getDefinition(value, options);
-            if (clip) {
-                clip = clip.clone();
-                clip.setClipMask(true);
-                // If item is already a group, move the clip-path inside
-                if (item instanceof Group) {
-                    item.insertChild(0, clip);
-                } else {
-                    return new Group(clip, item);
-                }
-            }
-        },
+        'clip-path': applyClipMask,
+        // Masks can only be approximated as clip masks, see isClipMask():
+        mask: applyClipMask,
 
         gradientTransform: applyTransform,
         transform: applyTransform,
