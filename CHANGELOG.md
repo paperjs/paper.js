@@ -25,6 +25,9 @@
 
 ### Fixed
 
+- Fix intersections and boolean operations of curves and paths that only touch,
+  at coordinates beyond 16384, where the tolerance of their bounds checks got
+  lost in floating point (#1940, #1882).
 - Fix boolean operations on open paths that end where they start, which lost
   the curve between their ends (#1929, #1973, #1989, #2018).
 - Fix boolean operations with `{ trace: false }` on closed paths, which could

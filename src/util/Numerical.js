@@ -166,6 +166,16 @@ var Numerical = new function() {
         KAPPA: 4 * (sqrt(2) - 1) / 3,
 
         /**
+         * Returns the tolerance for comparing coordinates up to the given
+         * magnitude: Numerical.EPSILON, or two units in the last place where
+         * EPSILON is below the resolution of the coordinates, from 16384 on,
+         * so that touching values still compare as touching (#1940).
+         */
+        getEpsilon: function(magnitude) {
+            return Math.max(EPSILON, magnitude * 4 * MACHINE_EPSILON);
+        },
+
+        /**
          * Checks if the value is 0, within a tolerance defined by
          * Numerical.EPSILON.
          */
