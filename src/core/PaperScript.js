@@ -105,6 +105,12 @@ Base.exports.PaperScript = function() {
         }
     }
 
+    // Compound assignment of a property, which evaluates the object and the
+    // key only once, e.g. for `array[index()] += 1`:
+    function __$assign__(object, key, operator, value) {
+        return object[key] = __$__(object[key], operator, value);
+    }
+
     // Unary Operator Handler
     function $__(operator, value) {
         var handler = unaryOperators[operator];
@@ -263,10 +269,26 @@ Base.exports.PaperScript = function() {
                     } else { // AssignmentExpression
                         if (/^.=$/.test(node.operator)
                                 && node.left.type !== 'Literal') {
-                            var left = getCode(node.left),
+                            var target = node.left,
+                                left = getCode(target),
                                 right = getCode(node.right),
-                                exp = left + ' = __$__(' + left + ', "'
-                                    + node.operator[0] + '", ' + right + ')';
+                                operator = node.operator[0],
+                                // Assign properties through __$assign__(),
+                                // which evaluates their object and key once,
+                                // except for private ones and those of super:
+                                member = target.type === 'MemberExpression'
+                                    && target.object.type !== 'Super'
+                                    && target.property.type
+                                        !== 'PrivateIdentifier',
+                                exp = member
+                                    ? '__$assign__(' + getCode(target.object)
+                                        + ', ' + (target.computed
+                                            ? getCode(target.property)
+                                            : JSON.stringify(
+                                                target.property.name))
+                                        + ', "' + operator + '", ' + right + ')'
+                                    : left + ' = __$__(' + left + ', "'
+                                        + operator + '", ' + right + ')';
                             // If the original expression is wrapped in
                             // parenthesis, do the same with the replacement:
                             replaceCode(node, /^\(.*\)$/.test(getCode(node))
@@ -626,7 +648,8 @@ Base.exports.PaperScript = function() {
             }
             return load(specifier, url);
         }
-        expose({ __$__: __$__, $__: $__, __$import__: __$import__,
+        expose({ __$__: __$__, $__: $__, __$assign__: __$assign__,
+                __$import__: __$import__,
                 paper: scope, tool: tool }, true);
         expose(scope);
         // Add a fake `module.exports` object so PaperScripts can export things.
