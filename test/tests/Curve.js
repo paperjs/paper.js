@@ -40,6 +40,11 @@ test('Curve#classify()', function() {
     testClassify(single, { type: 'serpentine', roots: [ 0.870967741935484 ] });
     testClassify(double, { type: 'serpentine', roots: [ 0.15047207654837885, 0.7384168123405099 ] });
     testClassify(arch, { type: 'arch', roots: null });
+    // A root at the very end is the end itself, not a point of inflection
+    // inside the curve (#1879):
+    var end = new Curve([1133.875, 47.56], [0.001, 1.2], [0, -1.2],
+            [1133.876, 51.16]);
+    testClassify(end, { type: 'arch', roots: null });
 });
 
 test('Curve#getPointAtTime()', function() {

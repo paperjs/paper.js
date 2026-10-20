@@ -1585,9 +1585,15 @@ new function() { // Scope for methods that require private functions
             d3 *= s;
 
             function type(type, t1, t2) {
-                var hasRoots = t1 !== undefined,
-                    t1Ok = hasRoots && t1 > 0 && t1 < 1,
-                    t2Ok = hasRoots && t2 > 0 && t2 < 1;
+                // Roots at the ends, within the curve-time epsilon as in
+                // getPeaks(), are the ends themselves, not points inside the
+                // curve, and would make isCrossing() sample at a zero
+                // distance (#1879, #1387):
+                var tMin = /*#=*/Numerical.CURVETIME_EPSILON,
+                    tMax = 1 - tMin,
+                    hasRoots = t1 !== undefined,
+                    t1Ok = hasRoots && t1 > tMin && t1 < tMax,
+                    t2Ok = hasRoots && t2 > tMin && t2 < tMax;
                 // Degrade to arch for serpentine, cusp or loop if no solutions
                 // within 0..1 are found. loop requires 2 solutions to be valid.
                 if (hasRoots && (!(t1Ok || t2Ok)
