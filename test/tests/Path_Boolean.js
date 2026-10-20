@@ -444,6 +444,12 @@ test('#870', function() {
 
     compareBoolean(function() { return path1.intersect(path2); },
         'M50,250l0,-75l50,0l0,75z');
+
+    // With the vertical edges 1e-12 apart, the intersections where they only
+    // touch also need to divide the paths:
+    path2.translate(-1e-12, 0);
+    compareBoolean(function() { return path1.intersect(path2); },
+        'M50,250l0,-75l50,0l0,75z');
 });
 
 test('#875', function() {

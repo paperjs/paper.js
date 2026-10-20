@@ -332,6 +332,16 @@ test('Curve#getTimeOf()', function() {
     }
 });
 
+test('Curve#getTimeOf() near the ends of a straight curve', function() {
+    // Without handles, a point at a distance d from an end solves to a time of
+    // about sqrt(d / 3l) on a curve of length l, far from the end (#2082):
+    var curve = new Curve(new Point(100, 100), new Point(200, 200));
+    equals(curve.getTimeOf(new Point(100 + 1e-9, 100)), 0, null,
+            { tolerance: 0 });
+    equals(curve.getTimeOf(new Point(200 - 1e-9, 200)), 1, null,
+            { tolerance: 0 });
+});
+
 test('Curve#getPartLength() with straight curve', function() {
     var curve = new Curve([0, 0, 0, 0, 64, 0, 64, 0]);
     equals(function() { return curve.getPartLength(0.0, 0.25); }, 10);

@@ -135,10 +135,13 @@ PathItem.inject(new function() {
         if (_path2 && (operator.subtract || operator.exclude)
                 ^ (_path2.isClockwise() ^ _path1.isClockwise()))
             _path2.reverse();
-        // Split curves at crossings on both paths. Note that for self-
-        // intersection, path2 is null and getIntersections() handles it.
-        var crossings = divideLocations(CurveLocation.expand(
-                _path1.getIntersections(_path2, filterIntersection))),
+        // Split curves at all intersections on both paths, also where they
+        // only touch, instead of classifying them, which is unreliable near
+        // vertices: the windings decide which curves are part of the result,
+        // and tracePaths() may switch at any of them. Note that for
+        // self-intersection, path2 is null and getIntersections() handles it.
+        var intersections = divideLocations(CurveLocation.expand(
+                _path1.getIntersections(_path2))),
             paths1 = getPaths(_path1),
             paths2 = _path2 && getPaths(_path2),
             segments = [],
@@ -164,7 +167,7 @@ PathItem.inject(new function() {
             return list;
         }
 
-        if (crossings.length) {
+        if (intersections.length) {
             // Collect all segments and curves of both involved operands.
             collectPaths(paths1);
             if (paths2)
@@ -188,11 +191,11 @@ PathItem.inject(new function() {
             }
 
             // Propagate the winding contribution. Winding contribution of
-            // curves does not change between two crossings.
+            // curves does not change between two intersections.
             // First, propagate winding contributions for curve chains starting
-            // in all crossings:
-            for (var i = 0, l = crossings.length; i < l; i++) {
-                propagateWinding(crossings[i]._segment, _path1, _path2,
+            // in all intersections:
+            for (var i = 0, l = intersections.length; i < l; i++) {
+                propagateWinding(intersections[i]._segment, _path1, _path2,
                         curveCollisionsMap, operator);
             }
             for (var i = 0, l = segments.length; i < l; i++) {
@@ -216,8 +219,8 @@ PathItem.inject(new function() {
                 }, true);
             }
         } else {
-            // When there are no crossings, the result can be determined through
-            // a much faster call to reorientPaths():
+            // When there are no intersections, the result can be determined
+            // through a much faster call to reorientPaths():
             paths = reorientPaths(
                     // Make sure reorientPaths() never works on original
                     // _children arrays by calling paths1.slice()
