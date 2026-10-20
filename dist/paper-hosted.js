@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 03:09:22 2026 +0200
+ * Date: Tue Oct 20 03:56:00 2026 +0200
  *
  ***
  *
@@ -13824,7 +13824,8 @@ new function() {
 			Key.modifiers.set(options.modifiers);
 		return {
 			type: type,
-			timeStamp: options.timeStamp != null ? options.timeStamp
+			timeStamp: options.time != null ? options.time * 1000
+					: options.timeStamp != null ? options.timeStamp
 					: Date.now(),
 			button: options.button || 0,
 			cancelable: true,
@@ -14165,6 +14166,10 @@ var Event = Base.extend({
 		this.preventDefault();
 	},
 
+	getTime: function() {
+		return this.event.timeStamp / 1000;
+	},
+
 	getTimeStamp: function() {
 		return this.event.timeStamp;
 	},
@@ -14421,6 +14426,22 @@ var ToolEvent = Event.extend({
 		this._delta = delta;
 	},
 
+	getVelocity: function() {
+		return this._velocity || this.tool._velocity.clone();
+	},
+
+	setVelocity: function(velocity) {
+		this._velocity = velocity;
+	},
+
+	getElapsed: function() {
+		return this._elapsed != null ? this._elapsed : this.tool._elapsed;
+	},
+
+	setElapsed: function(elapsed) {
+		this._elapsed = elapsed;
+	},
+
 	getCount: function() {
 		return this.tool[/^mouse(down|up)$/.test(this.type)
 				? '_downCount' : '_moveCount'];
@@ -14523,7 +14544,12 @@ var Tool = PaperScopeItem.extend({
 		var move = mouse.move || mouse.drag,
 			responds = this.responds(type),
 			called = false,
-			tool = this;
+			tool = this,
+			time = event.timeStamp / 1000,
+			elapsed = this._time != null ? time - this._time : 0,
+			velocity = !mouse.down && this._point && elapsed > 0
+					? point.subtract(this._point).divide(elapsed)
+					: new Point();
 		function update(minDistance, maxDistance) {
 			var pt = point,
 				toolPoint = move ? tool._point : (tool._downPoint || pt);
@@ -14545,6 +14571,9 @@ var Tool = PaperScopeItem.extend({
 			}
 			tool._point = pt;
 			tool._lastPoint = toolPoint || pt;
+			tool._velocity = velocity;
+			tool._elapsed = elapsed;
+			tool._time = time;
 			if (mouse.down) {
 				tool._moveCount = -1;
 				tool._downPoint = pt;
@@ -14569,6 +14598,8 @@ var Tool = PaperScopeItem.extend({
 					if (tool.isActive()) {
 						paper = tool._scope;
 						tool._lastPoint = tool._point;
+						tool._velocity = new Point();
+						tool._elapsed = tool._eventInterval / 1000;
 						tool._moveCount++;
 						if (tool.responds('mousedrag')) {
 							tool.emit('mousedrag',

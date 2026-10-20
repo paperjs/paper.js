@@ -4,6 +4,11 @@
 
 ### Added
 
+- Add `ToolEvent#velocity` and `#elapsed`, the velocity of the mouse since the
+  last tool event in points per second, and the time since then in seconds,
+  which stay even when the system misses a mouse report.
+- Add `Event#time`, the time of the event in seconds, as frame events have it,
+  and `options.time` to `View#dispatchMouseEvent()` and `#dispatchKeyEvent()`.
 - Add a setter to `View#bounds`, which fits the view to the given rectangle, as
   `View#fitBounds()` does.
 - Add `Project#bounds`, the bounds of the project's page: those of its view,
@@ -12,6 +17,9 @@
 
 ### Changed
 
+- Deprecate `Event#timeStamp` in milliseconds, and the `options.timeStamp` of
+  `View#dispatchMouseEvent()` and `#dispatchKeyEvent()`, for the new `time`
+  in seconds.
 - Rename the `paper-sourced.js` build to `paper-hosted.js`, and `Project#source`
   to `Project#host`, to match `HostItem` and the host document that backs the
   items.

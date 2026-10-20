@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 03:09:22 2026 +0200
+ * Date: Tue Oct 20 03:56:00 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -1238,9 +1238,15 @@ declare namespace paper {
      */
     class Event  {
         /** 
-         * The time at which the event was created, in milliseconds since the epoch.
+         * The time at which the event was created, in seconds, as the times of
+         * frame events are. Browsers count from the page's time origin, as
+         * `performance.now()` does, while
+         * {@link View#dispatchMouseEvent} and
+         * {@link View#dispatchKeyEvent} use `Date.now()`
+         * unless the host passes a time, so only compare the times of events from
+         * the same source.
          */
-        readonly timeStamp: number
+        readonly time: number
 
         /** 
          * The current state of the keyboard modifiers.
@@ -7320,6 +7326,26 @@ declare namespace paper {
         delta: Point
 
         /** 
+         * The velocity of the mouse, in points per second: the distance it moved
+         * since the last tool event, divided by the time between them, so it
+         * points in the direction of the move, and its length is the speed. It
+         * stays even when the system misses a mouse report. The events that
+         * {@link Tool#maxDistance} adds along one move share its velocity, and the
+         * repeats of {@link Tool#eventInterval} have none. On mousedown, and when
+         * no time passed, it's zero.
+         */
+        velocity: Point
+
+        /** 
+         * The time since the last tool event, in seconds, measured between the
+         * reports of the mouse as {@link #velocity} is: the events that
+         * {@link Tool#maxDistance} adds along one move share it, and the repeats
+         * of {@link Tool#eventInterval} have the interval. It's zero on the first
+         * event.
+         */
+        elapsed: number
+
+        /** 
          * The number of times the mouse event was fired.
          */
         count: number
@@ -7908,7 +7934,8 @@ declare namespace paper {
          * @option [options.modifiers] {Object} the state of the modifier keys,
          *     see {@link Key#modifiers}
          * @option [options.button=0] {Number} the mouse button
-         * @option [options.timeStamp=Date.now()] {Number} the time stamp
+         * @option [options.time=Date.now() / 1000] {Number} the time of the
+         *     event in seconds, see {@link Event#time}
          * 
          * @param type - the type of the event: {@values 'mousedown',
          *     'mousemove', 'mouseup'}
@@ -7930,7 +7957,8 @@ declare namespace paper {
          *     single character, and keyup the character of its keydown
          * @option [options.modifiers] {Object} the state of the modifier keys,
          *     see {@link Key#modifiers}
-         * @option [options.timeStamp=Date.now()] {Number} the time stamp
+         * @option [options.time=Date.now() / 1000] {Number} the time of the
+         *     event in seconds, see {@link Event#time}
          * 
          * @param type - the type of the event: {@values 'keydown',
          *     'keyup'}

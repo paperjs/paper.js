@@ -230,6 +230,58 @@ function onMouseUp(event) {
 </div>
 		
 			
+<div id="velocity" class="member">
+<div class="member-link">
+<a name="velocity" href="#velocity"><tt><b>velocity</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The velocity of the mouse, in points per second: the distance it moved since the last tool event, divided by the time between them, so it points in the direction of the move, and its length is the speed. It stays even when the system misses a mouse report. The events that <a href="../classes/Tool.html#maxdistance"><tt>tool.maxDistance</tt></a> adds along one move share its velocity, and the repeats of <a href="../classes/Tool.html#eventinterval"><tt>tool.eventInterval</tt></a> have none. On mousedown, and when no time passed, it&rsquo;s zero.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Point.html"><tt>Point</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="elapsed" class="member">
+<div class="member-link">
+<a name="elapsed" href="#elapsed"><tt><b>elapsed</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The time since the last tool event, in seconds, measured between the reports of the mouse as <a href="../classes/ToolEvent.html#velocity"><tt>velocity</tt></a> is: the events that <a href="../classes/Tool.html#maxdistance"><tt>tool.maxDistance</tt></a> adds along one move share it, and the repeats of <a href="../classes/Tool.html#eventinterval"><tt>tool.eventInterval</tt></a> have the interval. It&rsquo;s zero on the first event.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
 <div id="count" class="member">
 <div class="member-link">
 <a name="count" href="#count"><tt><b>count</b></tt></a>
@@ -332,14 +384,14 @@ function onMouseUp(event) {
 <div class="reference-members"><h2>Properties inherited from <a href="../classes/Event.html"><tt>Event</tt></a></h2>
 
 	
-<div id="timestamp" class="member">
+<div id="time" class="member">
 <div class="member-link">
-<a name="timestamp" href="#timestamp"><tt><b>timeStamp</b></tt></a>
+<a name="time" href="#time"><tt><b>time</b></tt></a>
 </div>
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The time at which the event was created, in milliseconds since the epoch.</p>
+	<p>The time at which the event was created, in seconds, as the times of frame events are. Browsers count from the page&rsquo;s time origin, as <code>performance.now()</code> does, while <a href="../classes/View.html#dispatchmouseevent-type-point"><tt>view.dispatchMouseEvent(type, point[, options])</tt></a> and <a href="../classes/View.html#dispatchkeyevent-type-key"><tt>view.dispatchKeyEvent(type, key[, options])</tt></a> use <code>Date.now()</code> unless the host passes a time, so only compare the times of events from the same source.</p>
 	
 		<p>Read only.</p>
 	

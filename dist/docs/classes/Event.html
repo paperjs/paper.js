@@ -29,14 +29,14 @@
 		<h2>Properties</h2>
 		
 			
-<div id="timestamp" class="member">
+<div id="time" class="member">
 <div class="member-link">
-<a name="timestamp" href="#timestamp"><tt><b>timeStamp</b></tt></a>
+<a name="time" href="#time"><tt><b>time</b></tt></a>
 </div>
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The time at which the event was created, in milliseconds since the epoch.</p>
+	<p>The time at which the event was created, in seconds, as the times of frame events are. Browsers count from the page&rsquo;s time origin, as <code>performance.now()</code> does, while <a href="../classes/View.html#dispatchmouseevent-type-point"><tt>view.dispatchMouseEvent(type, point[, options])</tt></a> and <a href="../classes/View.html#dispatchkeyevent-type-key"><tt>view.dispatchKeyEvent(type, key[, options])</tt></a> use <code>Date.now()</code> unless the host passes a time, so only compare the times of events from the same source.</p>
 	
 		<p>Read only.</p>
 	
