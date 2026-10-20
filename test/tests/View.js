@@ -573,7 +573,7 @@ test('ToolEvent#velocity and #elapsed', function() {
     tool.remove();
 });
 
-test('tool.eventInterval repeats mousedrag while the mouse is held (S5)', function(assert) {
+test('tool.eventInterval repeats mousedrag while the mouse is held', function(assert) {
     var done = assert.async(),
         tool = new Tool({ eventInterval: 10 }),
         drags = [];

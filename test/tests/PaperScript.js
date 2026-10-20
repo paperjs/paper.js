@@ -260,3 +260,171 @@ test('PaperScript compound assignments evaluate their targets once', function() 
             + 'module.exports = [calls, points[0], o.p, (o.p -= 1)];',
             [2, new Point(2, 3), new Point(2, 2), new Point(1, 1)]);
 });
+
+test('PaperScript binary operators', function() {
+    // Each case: the code of an expression, and its expected result:
+    [
+        ['new Point(1, 2) + new Point(3, 4)', new Point(4, 6)],
+        ['new Point(1, 2) + 1', new Point(2, 3)],
+        ['new Point(1, 2) + [3, 4]', new Point(4, 6)],
+        ['new Point(5, 5) - new Point(1, 2)', new Point(4, 3)],
+        ['new Point(1, 2) * 2', new Point(2, 4)],
+        ['new Point(1, 2) * new Point(3, 4)', new Point(3, 8)],
+        ['new Point(4, 6) / 2', new Point(2, 3)],
+        ['new Point(5, 7) % 3', new Point(2, 1)],
+        ['new Size(10, 20) * 2', new Size(20, 40)],
+        ['new Size(10, 20) + new Size(1, 2)', new Size(11, 22)],
+        ['new Color(0.2, 0.4, 0.6) * 2', new Color(0.4, 0.8, 1.2)],
+        ['new Color(0.2, 0.2, 0.2) + new Color(0.1, 0.2, 0.3)',
+            new Color(0.3, 0.4, 0.5)],
+        // Precedence and parentheses are kept:
+        ['new Point(1, 1) + new Point(1, 2) * 2', new Point(3, 5)],
+        ['(new Point(1, 1) + new Point(1, 2)) * 2', new Point(4, 6)],
+        // Operands that aren't Paper.js objects behave as in JavaScript, also
+        // on the left of one, as only the left operand is overloaded:
+        ['1 + 2 * 3', 7],
+        ['1 + new Point(1, 2)', '1{ x: 1, y: 2 }'],
+        ['"a" + 1', 'a1'],
+        ['"x" + new Point(1, 2)', 'x{ x: 1, y: 2 }'],
+        ['7 % 4', 3]
+    ].forEach(function(entry) {
+        executeCode('module.exports = ' + entry[0], entry[1]);
+    });
+});
+
+test('PaperScript equality operators', function() {
+    [
+        ['new Point(1, 2) == new Point(1, 2)', true],
+        ['new Point(1, 2) == [1, 2]', true],
+        ['new Point(1, 2) != new Point(1, 2)', false],
+        ['new Point(1, 2) != new Point(2, 1)', true],
+        ['new Size(1, 2) == new Size(1, 2)', true],
+        ['new Color(1, 0, 0) == new Color(1, 0, 0)', true],
+        ['1 == "1"', true],
+        ['null == undefined', true],
+        ['"a" != "b"', true]
+    ].forEach(function(entry) {
+        executeCode('module.exports = ' + entry[0], entry[1]);
+    });
+});
+
+test('PaperScript unary operators', function() {
+    [
+        ['-new Point(1, -2)', new Point(-1, 2)],
+        ['+new Point(1, 2)', new Point(1, 2)],
+        ['-new Size(1, 2)', new Size(-1, -2)],
+        ['-5', -5],
+        ['+"5"', 5],
+        ['var p = new Point(1, 2); module.exports = -p * 2', new Point(-2, -4)]
+    ].forEach(function(entry) {
+        executeCode(/module\.exports/.test(entry[0]) ? entry[0]
+                : 'module.exports = ' + entry[0], entry[1]);
+    });
+});
+
+test('PaperScript compound assignments', function() {
+    executeCode('var p = new Point(1, 2); p += [10, 0]; module.exports = p',
+            new Point(11, 2));
+    executeCode('var p = new Point(1, 2); p *= 2; p -= 1; p /= 2; '
+            + 'module.exports = p', new Point(0.5, 1.5));
+    // On properties and elements, the most common use in scripts:
+    executeCode('var path = new Path.Circle({ center: [50, 50], radius: 10 });'
+            + ' path.position += [10, 0]; module.exports = path.position',
+            new Point(60, 50));
+    executeCode('var points = [new Point(1, 2)]; points[0] *= 3; '
+            + 'module.exports = points[0]', new Point(3, 6));
+    executeCode('var o = { s: new Size(1, 2) }; o["s"] += 1; '
+            + 'module.exports = o.s', new Size(2, 3));
+    // Numbers and strings behave as in JavaScript:
+    executeCode('var n = 1; n += 2; n *= 3; module.exports = n', 9);
+    executeCode('var s = "a"; s += 1; module.exports = s', 'a1');
+});
+
+test('PaperScript with operator overloading turned off', function() {
+    var code = 'var p = new Point(1, 2); module.exports = p + 1;';
+    equals(PaperScript.compile(code, {
+        paperFeatures: { operatorOverloading: false }
+    }).code, code);
+    equals(PaperScript.execute(code, paper, {
+        paperFeatures: { operatorOverloading: false }
+    }), '{ x: 1, y: 2 }1');
+});
+
+test('PaperScript.execute() globals', function() {
+    var exports = PaperScript.execute(
+            'module.exports = {\n'
+            + '    project: project === paper.project,\n'
+            + '    view: view === paper.view,\n'
+            + '    point: new Point(1, 2) instanceof paper.Point\n'
+            + '};', paper);
+    equals(exports, { project: true, view: true, point: true });
+});
+
+test('PaperScript.execute() handlers', function() {
+    var view = paper.view,
+        exports = PaperScript.execute(
+            'var calls = [];\n'
+            + 'function onFrame(event) { calls.push("frame"); }\n'
+            + 'function onResize(event) { calls.push("resize"); }\n'
+            + 'function onMouseDown(event) {}\n'
+            + 'module.exports.calls = calls;\n'
+            + 'module.exports.tool = tool;', paper);
+    equals(function() {
+        return view.onFrame === exports.onFrame
+                && view.onResize === exports.onResize;
+    }, true, 'view handlers');
+    // onResize is called once right away, so scripts can lay out:
+    equals(exports.calls, ['resize'], 'onResize called once');
+    equals(function() {
+        return exports.tool && exports.tool.onMouseDown
+                === exports.onMouseDown;
+    }, true, 'tool handlers on the created tool');
+    view.onFrame = view.onResize = null;
+    exports.tool.remove();
+});
+
+if (!isNodeContext) {
+    test('PaperScript.load() with several scripts per canvas', function() {
+        var current = paper,
+            canvas = document.createElement('canvas');
+        canvas.id = 'paperscript-scopes';
+        document.body.appendChild(canvas);
+        function load(code, ignore) {
+            var script = document.createElement('script');
+            script.type = 'text/paperscript';
+            script.setAttribute('canvas', canvas.id);
+            if (ignore)
+                script.setAttribute('data-paper-ignore', 'true');
+            script.text = code;
+            document.body.appendChild(script);
+            PaperScript.load(script);
+            document.body.removeChild(script);
+        }
+        // Scripts for the same canvas share its scope:
+        load('paper.first = view;');
+        load('paper.second = paper.first === view;');
+        load('paper.ignored = true;', true);
+        var scope = PaperScope.get(canvas.getAttribute('data-paper-scope'));
+        equals(function() {
+            return scope.second;
+        }, true, 'shared scope');
+        equals(function() {
+            return scope.ignored;
+        }, undefined, 'data-paper-ignore');
+        scope.remove();
+        document.body.removeChild(canvas);
+        current.activate();
+    });
+}
+
+test('PaperScript syntax errors', function() {
+    var message;
+    try {
+        PaperScript.compile('var a = ;');
+    } catch (e) {
+        message = e.message;
+    }
+    equals(function() {
+        return /Unexpected token/.test(message);
+    }, true, message);
+});
