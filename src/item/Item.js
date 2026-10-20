@@ -1106,24 +1106,14 @@ new function() { // Injection scope for various item event handlers
          * @return {Rectangle} the bounds of the items, empty if there are none
          */
         getBounds: function(items, options) {
-            var rect = null;
-            for (var i = 0, l = items.length; i < l; i++) {
-                var item = items[i];
-                // The same items that #_getBounds() handles:
-                if (item._visible && !item.isEmpty(true)) {
-                    var bounds = item._getCachedBounds(
-                            item.getGlobalMatrix(true), options || {}, true)
-                            .rect;
-                    rect = rect ? rect.unite(bounds) : bounds.clone();
-                }
-            }
-            return rect || new Rectangle();
+            return Item._getBounds(items, null, options, true).rect;
         },
 
         /**
-         * Gets the combined bounds of all specified items.
+         * Gets the combined bounds of all specified items, transformed by the
+         * matrix, or in project coordinates if global is set.
          */
-        _getBounds: function(items, matrix, options) {
+        _getBounds: function(items, matrix, options, global) {
             var x1 = Infinity,
                 x2 = -x1,
                 y1 = x1,
@@ -1140,8 +1130,10 @@ new function() { // Injection scope for various item event handlers
                     // Pass true for noInternal, since even when getting
                     // internal bounds for this item, we need to apply the
                     // matrices to its children.
-                    var bounds = item._getCachedBounds(
-                        matrix && matrix.appended(item._matrix), options, true),
+                    var bounds = item._getCachedBounds(global
+                            ? item.getGlobalMatrix(true)
+                            : matrix && matrix.appended(item._matrix),
+                            options, true),
                         rect = bounds.rect;
                     x1 = Math.min(rect.x, x1);
                     y1 = Math.min(rect.y, y1);
