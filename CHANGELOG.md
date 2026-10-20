@@ -36,6 +36,9 @@
 
 ### Fixed
 
+- Measure text in views without a canvas of their own, such as in workers, with a
+  canvas from `CanvasProvider`, e.g. an `OffscreenCanvas`, so `PointText` has
+  bounds there too.
 - Fix PaperScript's exported variable declarations without semicolons, such as
   `export const a = 1`, which compiled to invalid code.
 - Fix `Curve#classify()` reporting points of inflection, cusps and loops at the
