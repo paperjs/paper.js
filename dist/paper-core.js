@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 01:57:47 2026 +0200
+ * Date: Tue Oct 20 03:02:48 2026 +0200
  *
  ***
  *
@@ -13853,7 +13853,7 @@ new function() {
 				View._focused = this;
 				mouseDown = dragging = true;
 			}
-			this._handleMouseEvent(type, event, new Point(point));
+			this._handleMouseEvent(type, event, new Point(point), true);
 			if (type === 'mouseup')
 				mouseDown = dragging = false;
 			return event.defaultPrevented;
@@ -13867,7 +13867,7 @@ new function() {
 					createEvent(type, options), this);
 		},
 
-		_handleMouseEvent: function(type, event, point) {
+		_handleMouseEvent: function(type, event, point, dispatched) {
 			var itemEvents = this._itemEvents,
 				hitItems = itemEvents.native[type],
 				nativeMove = type === 'mousemove',
@@ -13909,7 +13909,8 @@ new function() {
 				isCovered = nativeMove && !dragging && target
 						&& target.nodeType === 1
 						&& !target.contains(this._element),
-				inView = !isCovered && this.getBounds().contains(point),
+				inView = dispatched
+						|| !isCovered && this.getBounds().contains(point),
 				hit = hitItems && inView && view._project.hitTest(point, {
 					tolerance: 0,
 					fill: true,

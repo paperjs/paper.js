@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 01:57:47 2026 +0200
+ * Date: Tue Oct 20 03:02:48 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -7883,7 +7883,9 @@ declare namespace paper {
          * with {@link Tool#minDistance} and the like, then those of the items
          * under the point and of the view, including the events that Paper.js
          * derives itself: `'mousedrag'`, `'click'`, `'doubleclick'`,
-         * `'mouseenter'` and `'mouseleave'`.
+         * `'mouseenter'` and `'mouseleave'`. Points outside the view's bounds
+         * are handled too, since the host decides which events belong to its
+         * drawing surface.
          * 
          * @option [options.modifiers] {Object} the state of the modifier keys,
          *     see {@link Key#modifiers}

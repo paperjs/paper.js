@@ -8,6 +8,13 @@
   to `Project#host`, to match `HostItem` and the host document that backs the
   items.
 
+### Fixed
+
+- Handle the mouse events of `View#dispatchMouseEvent()` also outside the
+  view's bounds, since the host decides which events belong to its drawing
+  surface.
+
+
 ## `0.14.0`
 
 ### Added
