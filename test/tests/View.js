@@ -596,6 +596,42 @@ test('settings.segmentSize (#1899)', function() {
     path.remove();
 });
 
+test('Shadows of filled and stroked paths (#892)', function() {
+    // The stroke reaches from 15 to 65, so the shadow of the whole shape, 10
+    // further, reaches from 25 to 75, while that of the fill only reaches 70:
+    var props = {
+            fillColor: 'red',
+            strokeColor: 'blue',
+            strokeWidth: 10,
+            shadowColor: 'black',
+            shadowOffset: [10, 10]
+        },
+        rect = new Rectangle(20, 20, 40, 40),
+        ctx = view.element.getContext('2d');
+
+    function getPixel(x, y) {
+        var pixelRatio = view.pixelRatio,
+            data = ctx.getImageData(x * pixelRatio, y * pixelRatio, 1, 1).data;
+        return [data[0], data[1], data[2], data[3]];
+    }
+
+    [
+        new Path.Rectangle(rect),
+        new CompoundPath({ children: [new Path.Rectangle(rect)] }),
+        new Shape.Rectangle(rect)
+    ].forEach(function(item) {
+        item.set(props);
+        view.update(true);
+        var name = item.className;
+        equals(getPixel(72, 72), [0, 0, 0, 255],
+                name + ': the shadow of the stroke');
+        equals(getPixel(77, 77)[3], 0, name + ': beyond the shadow');
+        equals(getPixel(17, 40), [0, 0, 255, 255], name + ': the stroke');
+        equals(getPixel(40, 40), [255, 0, 0, 255], name + ': the fill');
+        item.remove();
+    });
+});
+
 test('ToolEvent#velocity and #elapsed', function() {
     var tool = new Tool({ maxDistance: 10 }),
         log = [];

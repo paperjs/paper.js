@@ -1059,7 +1059,7 @@ test('Item#opacity and Item#blendMode on items larger than the view (#1644)', fu
 
 test('Item#shadowOffset and Item#shadowBlur with opacity (#1628)', function() {
     // Items with both a fill and a stroke and an opacity are composited
-    // through a temporary canvas, which needs to include their shadow.
+    // through a temporary canvas, and cast their shadow when compositing it.
     function getPixel(point) {
         var pixelRatio = view.pixelRatio,
             ctx = view.element.getContext('2d');
@@ -1073,10 +1073,11 @@ test('Item#shadowOffset and Item#shadowBlur with opacity (#1628)', function() {
             var point = pixels[i][0],
                 expected = pixels[i][1],
                 actual = getPixel(point);
-            // Allow for rounding of half-transparent channels:
+            // Allow for rounding of half-transparent channels, which Node.js'
+            // canvas does more coarsely for blurred shadows with an alpha:
             equals(function() {
                 return actual.every(function(value, j) {
-                    return Math.abs(value - expected[j]) <= 1;
+                    return Math.abs(value - expected[j]) <= 2;
                 });
             }, true, name + ' at ' + point + ': ' + actual + ', expected: '
                     + expected);
