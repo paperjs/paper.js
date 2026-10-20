@@ -28,6 +28,9 @@
 
 ### Changed
 
+- Use `settings.hitTolerance` for the mouse events of items, such as
+  `mouseenter` and `click`, which always hit-tested with a tolerance of 0
+  (#1971).
 - Keep the named exports of PaperScript modules with a default export:
   `export default x` now sets `module.exports.default` instead of replacing the
   exports, and such modules are marked with `__esModule`. `import x` receives
