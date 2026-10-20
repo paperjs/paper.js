@@ -42,9 +42,13 @@ var SvgStyles = Base.each({
         center: 'middle',
         right: 'end'
     }],
-    // Item
-    opacity: ['opacity', 'number'],
-    blendMode: ['mix-blend-mode', 'style']
+    // Item, not inherited, so export them where they differ from the default:
+    opacity: ['opacity', 'number', null, function(item, value) {
+        return value !== 1;
+    }],
+    blendMode: ['mix-blend-mode', 'style', null, function(item, value) {
+        return value !== 'normal';
+    }]
 }, function(entry, key) {
     var part = Base.capitalize(key),
         lookup = entry[2];
