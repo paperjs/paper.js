@@ -68,9 +68,15 @@ PathItem.inject(new function() {
                 if (!path._closed && !path.isEmpty()) {
                     // Close with epsilon tolerance, to avoid tiny straight
                     // that would cause issues with intersection detection.
+                    // If the ends meet, this joins them and keeps the curve
+                    // that ends there. Only a new closing curve is straight
+                    // (#1929):
+                    var count = path._segments.length;
                     path.closePath(/*#=*/Numerical.EPSILON);
-                    path.getFirstSegment().setHandleIn(0, 0);
-                    path.getLastSegment().setHandleOut(0, 0);
+                    if (path._segments.length === count) {
+                        path.getFirstSegment().setHandleIn(0, 0);
+                        path.getLastSegment().setHandleOut(0, 0);
+                    }
                 }
             }
             res = res
