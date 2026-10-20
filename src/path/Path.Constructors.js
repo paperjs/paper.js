@@ -254,6 +254,9 @@ Path.inject({ statics: new function() {
         },
 
         /**
+         * @param {Rectangle} rectangle
+         * @param {Size} radius
+         * @return {Path}
          * @deprecated use {@link #Path.Rectangle(rectangle, size)} instead.
          */
         RoundRectangle: '#Rectangle',
@@ -300,6 +303,8 @@ Path.inject({ statics: new function() {
         },
 
         /**
+         * @param {Rectangle} rectangle
+         * @return {Path}
          * @deprecated use {@link #Path.Ellipse(rectangle)} instead.
          */
         Oval: '#Ellipse',

@@ -193,8 +193,8 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     },
 
     /**
-     * @private
      * @bean
+     * @type Number
      * @deprecated use {@link #time} instead.
      */
     getParameter: '#getTime',

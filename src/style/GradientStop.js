@@ -125,8 +125,8 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
     },
 
     /**
-     * @private
      * @bean
+     * @type Number
      * @deprecated use {@link #offset} instead.
      */
     getRampPoint: '#getOffset',
