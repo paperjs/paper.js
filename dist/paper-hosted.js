@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 01:46:42 2026 +0200
+ * Date: Wed Oct 21 01:53:04 2026 +0200
  *
  ***
  *
@@ -18979,7 +18979,7 @@ new function() {
 new function() {
 
 	var definitions = {},
-		using = {},
+		used = {},
 		rootSize,
 		units = { 'in': 96, pt: 96 / 72, pc: 96 / 6, cm: 96 / 2.54,
 			mm: 96 / 25.4 };
@@ -19218,14 +19218,14 @@ new function() {
 				item = null;
 			if (definition instanceof SymbolDefinition) {
 				item = definition.place(point);
-			} else if (definition && !using[id]) {
-				using[id] = true;
+			} else if (definition && !used[id]) {
+				used[id] = true;
 				try {
 					item = importNode(getSandbox().ownerDocument
 							.getElementById(id), options, false)
 							.translate(point);
 				} finally {
-					delete using[id];
+					delete used[id];
 				}
 			}
 			return item;
