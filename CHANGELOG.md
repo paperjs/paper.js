@@ -60,6 +60,8 @@
 
 ### Fixed
 
+- Fix the stroke bounds of non-scaling strokes under non-uniform matrices,
+  whose miters, bevels and square caps followed the untransformed angles.
 - Fix `Item#strokeBounds` after scaling items that apply their matrix, such
   as paths and groups, when they were read before: the cached stroke bounds
   were scaled along, including the width of the stroke, which doesn't scale.

@@ -1189,3 +1189,37 @@ test('shape.strokeBounds after scaling, when cached before', function() {
     equals(shape.strokeBounds, new Rectangle(20, 10, 120, 60),
             'shape.strokeBounds after scaling');
 });
+
+test('path.strokeBounds of non-scaling strokes under non-uniform matrices', function() {
+    // A non-scaling stroke is drawn around the transformed geometry, so its
+    // miters, bevels and square caps follow the transformed angles, as with
+    // the same transformation applied to the geometry itself:
+    function create(attributes, applyMatrix) {
+        return new Path(Base.set({
+            strokeColor: 'black',
+            strokeWidth: 10,
+            strokeScaling: false,
+            applyMatrix: applyMatrix
+        }, attributes));
+    }
+
+    var star = new Path.Star({
+            center: [50, 50],
+            points: 5,
+            radius1: 20,
+            radius2: 40
+        }).segments,
+        line = [[10, 10], [60, 40]];
+    [
+        ['miters', { segments: star, closed: true }],
+        ['bevels', { segments: star, closed: true, strokeJoin: 'bevel' }],
+        ['square caps', { segments: line, strokeCap: 'square' }]
+    ].forEach(function(entry) {
+        var kept = create(entry[1], false),
+            baked = create(entry[1], true);
+        kept.scale(2.5, 0.6);
+        baked.scale(2.5, 0.6);
+        equals(kept.strokeBounds, baked.strokeBounds, entry[0]);
+    });
+});
+
