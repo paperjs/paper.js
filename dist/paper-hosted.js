@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 20:06:26 2026 +0200
+ * Date: Tue Oct 20 20:35:42 2026 +0200
  *
  ***
  *
@@ -16867,6 +16867,7 @@ new function() {
 new function() {
 
 	var definitions = {},
+		using = {},
 		rootSize,
 		units = { 'in': 96, pt: 96 / 72, pc: 96 / 6, cm: 96 / 2.54,
 			mm: 96 / 25.4 };
@@ -17079,16 +17080,21 @@ new function() {
 		use: function(node, type, options) {
 			var id = (getValue(node, 'href', true) || '').substring(1),
 				definition = getDefinitionById(id, options),
-				point = getPoint(node);
-			return definition
-					? definition instanceof SymbolDefinition
-						? definition.place(point)
-						: definition instanceof Raster
-							? importNode(getSandbox().ownerDocument
-								.getElementById(id), options, false)
-								.translate(point)
-						: definition.clone().translate(point)
-					: null;
+				point = getPoint(node),
+				item = null;
+			if (definition instanceof SymbolDefinition) {
+				item = definition.place(point);
+			} else if (definition && !using[id]) {
+				using[id] = true;
+				try {
+					item = importNode(getSandbox().ownerDocument
+							.getElementById(id), options, false)
+							.translate(point);
+				} finally {
+					delete using[id];
+				}
+			}
+			return item;
 		},
 
 		circle: function(node) {
@@ -17324,8 +17330,7 @@ new function() {
 		var parent = node.parentNode,
 			styles = {
 				node: DomElement.getStyles(node) || {},
-				parent: !isRoot && !/^defs$/i.test(parent.tagName)
-						&& DomElement.getStyles(parent) || {}
+				parent: !isRoot && DomElement.getStyles(parent) || {}
 			};
 		if (isRoot && !styles.node.fill && item.setFillColor)
 			item.setFillColor('black');
