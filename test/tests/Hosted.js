@@ -396,3 +396,30 @@ test('HostItem', function() {
     // children are:
     equals(blend.bounds, new Rectangle());
 });
+
+test('project.bounds with a host', function() {
+    var res = createHostedProject(),
+        project = res.project,
+        host = res.host,
+        view = project.view,
+        viewBounds = view.bounds.clone(),
+        page = new Rectangle(10, 20, 300, 400);
+    // The host provides the page, and receives the one that scripts set:
+    host.getBounds = function() {
+        return page;
+    };
+    host.setBounds = function(rect) {
+        page = rect;
+    };
+    equals(project.bounds, new Rectangle(10, 20, 300, 400), 'from the host');
+    page = new Rectangle(0, 0, 50, 50);
+    equals(project.bounds, page, 'following the host');
+    project.bounds = new Rectangle(5, 5, 100, 100);
+    equals(page, new Rectangle(5, 5, 100, 100), 'set on the host');
+    equals(view.bounds, viewBounds, 'view.bounds stays');
+    // Without setBounds(), the page can't be set:
+    delete host.setBounds;
+    project.bounds = new Rectangle(0, 0, 10, 10);
+    equals(project.bounds, new Rectangle(5, 5, 100, 100), 'read-only');
+    equals(view.bounds, viewBounds, 'view.bounds stays read-only');
+});
