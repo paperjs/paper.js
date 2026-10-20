@@ -207,6 +207,14 @@ PathItem.inject(new function() {
                     segment._path._overlapsOnly = false;
             }
             paths = tracePaths(segments, operator);
+            // The parts of path2, which subtract and exclude reverse, keep
+            // that orientation when traced, so give the results the one of
+            // the prepared paths, clockwise, with holes opposite (#2064):
+            if (_path2 && (operator.subtract || operator.exclude)) {
+                paths = reorientPaths(paths, function(w) {
+                    return !!(w & 1);
+                }, true);
+            }
         } else {
             // When there are no crossings, the result can be determined through
             // a much faster call to reorientPaths():
@@ -216,7 +224,10 @@ PathItem.inject(new function() {
                     paths2 ? paths1.concat(paths2) : paths1.slice(),
                     function(w) {
                         return !!operator[w];
-                    });
+                    },
+                    // The orientation of the prepared paths, not that of the
+                    // largest one, which may be the reversed path2 (#2064):
+                    true);
         }
         return createResult(paths, true, path1, path2, options);
     }
