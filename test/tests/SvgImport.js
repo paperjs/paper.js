@@ -746,6 +746,25 @@ test('Import SVG masks as clip masks (#1916)', function() {
             + ' fill-opacity="0.5"/>', 'mask="url(#mask)"'), [warning]);
 });
 
+test('Import SVG data-* attributes as item.data (#1227)', function() {
+    function importData(attributes) {
+        var item = paper.project.importSVG('<svg xmlns="http://www.w3.org/2000/svg">'
+                + '<rect width="10" height="10" ' + attributes + '/></svg>')
+                .lastChild;
+        item.parent.remove();
+        return item.data;
+    }
+    // Named as in the element's dataset, with string values:
+    equals(importData('data-shape-id="7" data-label="Door"'),
+            { shapeId: '7', label: 'Door' }, 'data-* attributes');
+    // Paper.js's own data takes precedence, and its blend modes aren't data:
+    equals(importData('data-shape-id="7" data-label="Door" '
+            + 'data-paper-blend-mode="add" '
+            + 'data-paper-data=\'{"label":"Window","count":2}\''),
+            { shapeId: '7', label: 'Window', count: 2 }, 'with data-paper-data');
+    equals(importData(''), {}, 'without data');
+});
+
 test('Import SVG cleans up after errors', function() {
     var svg = '<svg xmlns="http://www.w3.org/2000/svg" data-paper-data="invalid JSON"><rect width="100" height="100"/></svg>';
     var settings = paper.settings,

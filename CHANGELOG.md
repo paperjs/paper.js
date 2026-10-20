@@ -4,6 +4,8 @@
 
 ### Added
 
+- Import the `data-*` attributes of SVG elements into `item.data`, with their
+  names camelized as in `dataset`, next to `data-paper-data` (#1227).
 - Export shadows to SVG as SVG 1.1 filters, which both browsers and editors
   such as Illustrator render, except for items without width or height, and
   import them back, along with CSS `drop-shadow()` (#1003).
