@@ -662,8 +662,12 @@ PathItem.inject(new function() {
             addCut(i, 0, curve._segment1._point, true);
             addCut(i, 1, curve._segment2._point, true);
         }
-        var locations = CurveLocation.expand(Curve.getIntersections(curves,
-                null, null, null, null, false, epsilon));
+        // The curves whose bounds come within 2 epsilon of each other, for the
+        // intersections and the hot pixels below:
+        var collisions = CollisionDetection.findCurveBoundsCollisions(
+                values, values, 2 * epsilon),
+            locations = CurveLocation.expand(Curve.getIntersections(curves,
+                null, null, null, null, false, epsilon, collisions));
         for (var i = 0, l = locations.length; i < l; i++) {
             var loc = locations[i],
                 curve = loc.getCurve();
@@ -745,15 +749,34 @@ PathItem.inject(new function() {
         // can bring them within epsilon of further ones, so the pieces of each
         // cut are tested again, until none passes a vertex. As cuts only use
         // existing vertices, this ends:
-        var vertexValues = [];
-        for (var i = 0, l = vertices.length; i < l; i++) {
-            var vertex = vertices[i];
-            vertexValues.push([vertex.x, vertex.y, vertex.x, vertex.y,
-                    vertex.x, vertex.y, vertex.x, vertex.y]);
+        // The vertices that may cut curve i, as the ones within 2 epsilon of
+        // its bounds, since its pieces stay within epsilon of it. Each vertex
+        // lies on a curve that it cuts, so we find it among the cuts of the
+        // curves whose bounds come that close:
+        function getHotPixels(i) {
+            var v = values[i],
+                left = min(v[0], v[2], v[4], v[6]) - 2 * epsilon,
+                top = min(v[1], v[3], v[5], v[7]) - 2 * epsilon,
+                right = max(v[0], v[2], v[4], v[6]) + 2 * epsilon,
+                bottom = max(v[1], v[3], v[5], v[7]) + 2 * epsilon,
+                indices = collisions[i],
+                hotPixels = [];
+            for (var j = 0, k = indices.length; j < k; j++) {
+                var list = cuts[indices[j]];
+                for (var m = 0, n = list.length; m < n; m++) {
+                    var index = getVertex(list[m].point),
+                        vertex = vertices[index];
+                    if (vertex.x >= left && vertex.x <= right
+                            && vertex.y >= top && vertex.y <= bottom
+                            && hotPixels.indexOf(index) === -1)
+                        hotPixels.push(index);
+                }
+            }
+            return hotPixels.sort(function(a, b) {
+                return a - b;
+            });
         }
-        // The pieces stay within epsilon of their curves:
-        var hotPixels = CollisionDetection.findCurveBoundsCollisions(
-                values, vertexValues, 2 * epsilon);
+
         // The pieces of a curve that a vertex may cut, as the ones that don't
         // end in it, and whose bounds come within epsilon of it:
         function isNearPiece(piece, index, vertex) {
@@ -777,8 +800,8 @@ PathItem.inject(new function() {
         }
 
         for (var i = 0, l = curves.length; i < l; i++) {
-            var candidates = hotPixels[i];
-            if (candidates) {
+            var candidates = getHotPixels(i);
+            if (candidates.length) {
                 var list = sortCuts(cuts[i]),
                     pieces = [];
                 for (var j = 1, k = list.length; j < k; j++)
@@ -938,6 +961,71 @@ PathItem.inject(new function() {
                     : 0;
         }
 
+        // The range of angles of a half-edge's control polygon, which contains
+        // all directions in which it leaves its vertex, or null if the range
+        // isn't within a half-plane:
+        function getDirections(v) {
+            var angles = [];
+            for (var i = 0; i < 6; i += 2) {
+                var dx = v[i + 2] - v[i],
+                    dy = v[i + 3] - v[i + 1];
+                if (dx || dy)
+                    angles.push(Math.atan2(dy, dx));
+            }
+            var first = angles[0],
+                from = 0,
+                to = 0;
+            for (var i = 1, l = angles.length; i < l; i++) {
+                var difference = (angles[i] - first + 3 * Math.PI)
+                        % (2 * Math.PI) - Math.PI;
+                from = min(from, difference);
+                to = max(to, difference);
+            }
+            return to - from < Math.PI
+                    ? { start: (first + from + 2 * Math.PI) % (2 * Math.PI),
+                        width: to - from }
+                    : null;
+        }
+
+        // Sort the half-edges by their ranges of directions and return true,
+        // if these are apart far enough that the points where their angles
+        // are measured below lie over 2 epsilon apart: These points lie within
+        // the ranges, at least half the shortest chord along the half-edges,
+        // and so at least cos(width / 2) times that away from the vertex:
+        function sortByDirections(outgoing) {
+            var distance = Infinity;
+            for (var j = 0, k = outgoing.length; j < k; j++) {
+                var halfEdge = halfEdges[outgoing[j]],
+                    v = halfEdge.values;
+                halfEdge.directions = getDirections(v);
+                if (!halfEdge.directions)
+                    return false;
+                distance = min(distance,
+                        Math.sqrt((v[6] - v[0]) * (v[6] - v[0])
+                            + (v[7] - v[1]) * (v[7] - v[1])) / 2);
+            }
+            var sorted = outgoing.slice().sort(function(a, b) {
+                    return halfEdges[a].directions.start
+                            - halfEdges[b].directions.start;
+                }),
+                gap = Infinity,
+                width = 0;
+            for (var j = 0, k = sorted.length; j < k; j++) {
+                var directions1 = halfEdges[sorted[j]].directions,
+                    directions2 = halfEdges[sorted[(j + 1) % k]].directions;
+                gap = min(gap, directions2.start - directions1.start
+                        - directions1.width + (j + 1 < k ? 0 : 2 * Math.PI));
+                width = max(width, directions1.width);
+            }
+            if (gap > 0 && distance * Math.cos(width / 2)
+                    * Math.sin(min(gap, Math.PI / 2)) > 2 * epsilon) {
+                for (var j = 0, k = sorted.length; j < k; j++)
+                    outgoing[j] = sorted[j];
+                return true;
+            }
+            return false;
+        }
+
         for (var i = 0, l = edges.length; i < l; i++) {
             var edge = edges[i],
                 v = edge.values;
@@ -952,8 +1040,10 @@ PathItem.inject(new function() {
         for (var i = 0, l = vertices.length; i < l; i++) {
             var vertex = vertices[i],
                 outgoing = vertex.outgoing;
-            // Up to two half-edges are in the same cyclic order either way:
-            if (outgoing.length > 2) {
+            // Up to two half-edges are in the same cyclic order either way,
+            // and where their ranges of directions are apart far enough,
+            // these give the order already:
+            if (outgoing.length > 2 && !sortByDirections(outgoing)) {
                 var distance = Infinity;
                 for (var j = 0, k = outgoing.length; j < k; j++) {
                     var edge = halfEdges[outgoing[j]].edge;
