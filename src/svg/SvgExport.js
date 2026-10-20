@@ -304,6 +304,75 @@ new function() {
         return 'url(#' + gradientNode.id + ')';
     }
 
+    function exportShadow(item, options) {
+        // Shadows as SVG 1.1 filters, which both browsers and editors render,
+        // unlike CSS drop-shadow() or <feDropShadow> (#1003):
+        var style = item._style,
+            color = style.getShadowColor(),
+            offset = style.getShadowOffset(),
+            // Canvas blurs with a standard deviation of half the shadow blur:
+            deviation = style.getShadowBlur() / 2,
+            // Cover the item and its shadow in its own coordinates, with the
+            // blur up to three times its standard deviation:
+            bounds = item.getStrokeBounds(new Matrix()),
+            rect = bounds.unite(new Rectangle(bounds.getPoint().add(offset),
+                    bounds.getSize())).expand(6 * deviation),
+            // Give the region relative to the element's bounding box, as
+            // shapes, rasters and text fold their position into their
+            // coordinates. Only items without width or height, which SVG
+            // doesn't filter then, need it in user space, as their own:
+            box = item.getInternalBounds(),
+            relative = box.width && box.height,
+            filter = SvgElement.create('filter', relative ? {
+                x: (rect.x - box.x) / box.width,
+                y: (rect.y - box.y) / box.height,
+                width: rect.width / box.width,
+                height: rect.height / box.height
+            } : {
+                x: rect.x,
+                y: rect.y,
+                width: rect.width,
+                height: rect.height,
+                filterUnits: 'userSpaceOnUse'
+            }, formatter),
+            merge = SvgElement.create('feMerge');
+
+        function add(parent, type, attrs) {
+            parent.appendChild(SvgElement.create(type, attrs, formatter));
+        }
+
+        // SVG 1.1 renders a blur of 0 as nothing, so leave it out then:
+        if (deviation > 0) {
+            add(filter, 'feGaussianBlur', {
+                'in': 'SourceAlpha',
+                stdDeviation: deviation,
+                result: 'blur'
+            });
+        }
+        add(filter, 'feOffset', {
+            'in': deviation > 0 ? 'blur' : 'SourceAlpha',
+            dx: offset.x,
+            dy: offset.y,
+            result: 'offset'
+        });
+        add(filter, 'feFlood', {
+            'flood-color': color.toCSS(true),
+            'flood-opacity': color.getAlpha(),
+            result: 'color'
+        });
+        add(filter, 'feComposite', {
+            'in': 'color',
+            in2: 'offset',
+            operator: 'in',
+            result: 'shadow'
+        });
+        add(merge, 'feMergeNode', { 'in': 'shadow' });
+        add(merge, 'feMergeNode', { 'in': 'SourceGraphic' });
+        filter.appendChild(merge);
+        setDefinition(item, filter, 'filter', options);
+        return 'url(#' + filter.id + ')';
+    }
+
     function exportText(item) {
         var attrs = getTransform(item._matrix, true),
             node = SvgElement.create('text', attrs, formatter),
@@ -407,6 +476,10 @@ new function() {
                 }
             }
         });
+
+        // Groups don't draw shadows, so only export those of the item itself:
+        if (item._style.getShadowColor(true) && item.hasShadow())
+            attrs.filter = exportShadow(item, options);
 
         if (style.length)
             attrs.style = style.join(';');

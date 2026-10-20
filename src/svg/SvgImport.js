@@ -442,6 +442,53 @@ new function() {
             color.setAlpha(parseFloat(value));
     }
 
+    // Reads a shadow from a <filter> with the primitives that SvgExport writes
+    // for it, and only these, or returns null for any other filter:
+    function getFilterShadow(filter) {
+        var primitives = {},
+            count = 0,
+            nodes = filter ? filter.childNodes : [];
+        for (var i = 0, l = nodes.length; i < l; i++) {
+            var node = nodes[i];
+            if (node.nodeType === 1) {
+                primitives[node.nodeName] = node;
+                count++;
+            }
+        }
+        var blur = primitives.feGaussianBlur,
+            offset = primitives.feOffset,
+            flood = primitives.feFlood;
+        if (!(offset && flood && primitives.feComposite && primitives.feMerge)
+                || count !== (blur ? 5 : 4))
+            return null;
+        var color = new Color(flood.getAttribute('flood-color') || 'black'),
+            opacity = flood.getAttribute('flood-opacity');
+        if (opacity)
+            color.setAlpha(color.getAlpha() * parseFloat(opacity));
+        return {
+            color: color,
+            // Canvas blurs with a standard deviation of half the shadow blur:
+            blur: blur ? 2 * parseFloat(blur.getAttribute('stdDeviation')) : 0,
+            offset: new Point(parseFloat(offset.getAttribute('dx')) || 0,
+                    parseFloat(offset.getAttribute('dy')) || 0)
+        };
+    }
+
+    // Reads a shadow from a single CSS drop-shadow(), with its color before or
+    // after its lengths, of which its blur radius equals the shadow blur:
+    function getCssShadow(value) {
+        var match = value.match(/^\s*drop-shadow\((.*)\)\s*$/),
+            color = match && match[1].match(
+                    /(?:rgba?|hsla?)\([^)]*\)|#[0-9a-f]+|\b[a-z]+\b/i),
+            lengths = match && match[1].replace(color && color[0], '')
+                    .match(/-?[\d.]+/g);
+        return lengths && lengths.length >= 2 ? {
+            color: new Color(color ? color[0] : 'black'),
+            blur: parseFloat(lengths[2]) || 0,
+            offset: new Point(parseFloat(lengths[0]), parseFloat(lengths[1]))
+        } : null;
+    }
+
     // Create apply-functions for attributes, and merge in those for SVGStyles.
     // We need to define style attributes first, and merge in all others after,
     // since transform needs to be applied after fill color, as transformations
@@ -509,6 +556,21 @@ new function() {
             // NOTE: 'none' gets translated to null in getAttribute()
             if (item.setVisible)
                 item.setVisible(value !== null);
+        },
+
+        filter: function(item, value) {
+            // Read shadows, as SvgExport writes them, or as CSS drop-shadow().
+            // Groups don't draw shadows, so leave them out (#1003):
+            var shadow = value && !(item instanceof Group)
+                    && item.setShadowColor && (/^url\(/.test(value)
+                        ? getFilterShadow(getSandbox().ownerDocument
+                            .getElementById(getDefinitionId(value)))
+                        : getCssShadow(value));
+            if (shadow) {
+                item.setShadowColor(shadow.color);
+                item.setShadowBlur(shadow.blur);
+                item.setShadowOffset(shadow.offset);
+            }
         },
 
         // Paper.js's own blend modes, which CSS doesn't have, see SvgExport:
@@ -661,17 +723,22 @@ new function() {
         return definitions[id];
     }
 
-    function getDefinition(value, options) {
+    function getDefinitionId(value) {
         // When url() comes from a style property, '#'' seems to be missing on
         // WebKit. We also get variations of quotes or no quotes, single or
         // double, so handle it all with one regular expression:
         var match = value && value.match(/\((?:["'#]*)([^"')]+)/),
-            name = match && match[1],
-            res = name && getDefinitionById(window
-                    // This is required by Firefox, which can produce absolute
-                    // urls for local gradients, see #1001:
-                    ? name.replace(window.location.href.split('#')[0] + '#', '')
-                    : name, options);
+            name = match && match[1];
+        return name && window
+                // This is required by Firefox, which can produce absolute
+                // urls for local gradients, see #1001:
+                ? name.replace(window.location.href.split('#')[0] + '#', '')
+                : name;
+    }
+
+    function getDefinition(value, options) {
+        var id = getDefinitionId(value),
+            res = id && getDefinitionById(id, options);
         // Patch in support for SVG's gradientUnits="objectBoundingBox" through
         // Color#_scaleToBounds
         if (res && res._scaleToBounds) {
