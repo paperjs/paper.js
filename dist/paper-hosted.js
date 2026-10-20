@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 03:12:53 2026 +0200
+ * Date: Tue Oct 20 03:09:22 2026 +0200
  *
  ***
  *
@@ -3072,6 +3072,14 @@ var Project = PaperScopeItem.extend({
 
 	getView: function() {
 		return this._view;
+	},
+
+	getBounds: function() {
+		return this._view.getBounds();
+	},
+
+	setBounds: function() {
+		this._view.setBounds(Rectangle.read(arguments));
 	},
 
 	getCurrentStyle: function() {
@@ -15534,6 +15542,23 @@ new function() {
 	});
 
 	Project.inject({
+		getBounds: function getBounds() {
+			var host = this._host;
+			return host && host.getBounds
+					? new Rectangle(host.getBounds())
+					: getBounds.base.call(this);
+		},
+
+		setBounds: function setBounds() {
+			var host = this._host;
+			if (host && host.getBounds) {
+				if (host.setBounds)
+					host.setBounds(Rectangle.read(arguments));
+			} else {
+				setBounds.base.apply(this, arguments);
+			}
+		},
+
 		getHost: function() {
 			return this._host;
 		},

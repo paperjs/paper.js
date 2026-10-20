@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 03:12:53 2026 +0200
+ * Date: Tue Oct 20 03:09:22 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -5229,6 +5229,10 @@ declare namespace paper {
          *   of {@link Item#importJSON}, without children.
          * - `getAncestorKeys(key)`, which returns the keys from the top level
          *   down to the node's parent.
+         * - Optionally `getBounds()`, which returns the bounds of the page, such
+         *   as an artboard, for {@link #bounds}, and `setBounds(rect)`, which
+         *   receives the bounds that a script sets. Without `setBounds()`, the
+         *   page can't be set.
          */
         host: any
 
@@ -5248,6 +5252,16 @@ declare namespace paper {
          * The reference to the project's view.
          */
         readonly view: View
+
+        /** 
+         * The bounds of the project's page, in project coordinates. Without a
+         * host, the page is the {@link #view}: these are its bounds, and setting
+         * them fits the view to the given rectangle, as {@link View#bounds} does.
+         * In a project backed by a host document, see {@link #host}, the host can
+         * provide the page instead, such as an artboard. Unlike
+         * {@link Item#bounds}, these aren't the bounds of the project's items.
+         */
+        bounds: Rectangle
 
         /** 
          * The currently active path style. All selected items and newly

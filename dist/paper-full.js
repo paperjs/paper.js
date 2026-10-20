@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 03:12:53 2026 +0200
+ * Date: Tue Oct 20 03:09:22 2026 +0200
  *
  ***
  *
@@ -3072,6 +3072,14 @@ var Project = PaperScopeItem.extend({
 
 	getView: function() {
 		return this._view;
+	},
+
+	getBounds: function() {
+		return this._view.getBounds();
+	},
+
+	setBounds: function() {
+		this._view.setBounds(Rectangle.read(arguments));
 	},
 
 	getCurrentStyle: function() {
