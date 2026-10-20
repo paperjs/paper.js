@@ -720,6 +720,42 @@ circle2.opacity = 0.5;
 </div>
 
 	
+<div id="textwrap" class="member">
+<div class="member-link">
+<a name="textwrap" href="#textwrap"><tt><b>textWrap</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Specifies whether, and how, the item pushes aside the text of the <a href="../classes/AreaText.html"><tt>AreaText</tt></a> items below it in its layer: <code>null</code>, or an object with <code>offset</code>, the space kept between them, and <code>invert</code>, to let the text flow inside it instead. <code>true</code> sets the defaults.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>null</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Object</tt>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:</h4>
+
+
+<pre><code>var circle = new Path.Circle({ center: [100, 100], radius: 40 });
+circle.textWrap = { offset: 10 };</code></pre>
+
+</div>
+
+</div>
+</div>
+
+	
 <div id="selected" class="member">
 <div class="member-link">
 <a name="selected" href="#selected"><tt><b>selected</b></tt></a>
@@ -6900,16 +6936,21 @@ path.tweenFrom({ fillColor: 'red' }, { duration: 1000 });
 <div class="reference-members"><h2>Properties inherited from <a href="../classes/TextItem.html"><tt>TextItem</tt></a></h2>
 
 	
-<div id="content" class="member">
+<div id="orientation" class="member">
 <div class="member-link">
-<a name="content" href="#content"><tt><b>content</b></tt></a>
+<a name="orientation" href="#orientation"><tt><b>orientation</b></tt></a>
 </div>
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The text contents of the text item.</p>
+	<p>The direction the text&rsquo;s lines run in: <code>&#39;horizontal&#39;</code>, or <code>&#39;vertical&#39;</code> from top to bottom, with the lines from right to left.</p>
 	
 	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'horizontal'</tt></li>
+		</ul>
 	
 	<ul class="member-list">
 		<h4>Type:</h4>
@@ -6919,51 +6960,175 @@ path.tweenFrom({ fillColor: 'red' }, { duration: 1000 });
 	</ul>
     
 	
-	<h4>Example:<span class="description">Setting the content of a PointText item:</span></h4>
-
-<div class="paperscript split">
-
-<div class="buttons">
-<div class="button run">Run</div>
+	
 </div>
 
-<script type="text/paperscript" canvas="canvas-61">
-// Create a point-text item at {x: 30, y: 30}:
-var text = new PointText(new Point(30, 30));
-text.fillColor = 'black';
-
-// Set the content of the text item:
-text.content = 'Hello world';
-</script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-61"></canvas></div>
+</div>
 </div>
 
+	
+<div id="textpath" class="member">
+<div class="member-link">
+<a name="textpath" href="#textpath"><tt><b>textPath</b></tt></a>
+</div>
+<div class="member-description hidden">
 
-<h4>Example:<span class="description">Interactive example, move your mouse over the view below:</span></h4>
-
-<div class="paperscript split">
-
-<div class="buttons">
-<div class="button run">Run</div>
+<div class="member-text">
+	<p>The path that the text flows in (<a href="../classes/AreaText.html"><tt>AreaText</tt></a>) or along (<a href="../classes/PathText.html"><tt>PathText</tt></a>). It guides the text and isn&rsquo;t drawn itself.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/PathItem.html"><tt>PathItem</tt></a>
+		</li>
+	</ul>
+    
+	
+	
 </div>
 
-<script type="text/paperscript" canvas="canvas-62">
-// Create a point-text item at {x: 30, y: 30}:
-var text = new PointText(new Point(30, 30));
-text.fillColor = 'black';
-
-text.content = 'Move your mouse over the view, to see its position';
-
-function onMouseMove(event) {
-    // Each time the mouse is moved, set the content of
-    // the point text to describe the position of the mouse:
-    text.content = 'Your position is: ' + event.point.toString();
-}
-</script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-62"></canvas></div>
+</div>
 </div>
 
+	
+	<h3>Linking</h3>
 
+<div id="story" class="member">
+<div class="member-link">
+<a name="story" href="#story"><tt><b>story</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The story the text item shows: the text of all the text items linked with it.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/TextStory.html"><tt>TextStory</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="nexttextitem" class="member">
+<div class="member-link">
+<a name="nexttextitem" href="#nexttextitem"><tt><b>nextTextItem</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The text item after this one in its story, if any.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/TextItem.html"><tt>TextItem</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="previoustextitem" class="member">
+<div class="member-link">
+<a name="previoustextitem" href="#previoustextitem"><tt><b>previousTextItem</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The text item before this one in its story, if any.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/TextItem.html"><tt>TextItem</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="visiblerange" class="member">
+<div class="member-link">
+<a name="visiblerange" href="#visiblerange"><tt><b>visibleRange</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The range of the story that this text item shows, as its layout flows the story through the linked text items: without the overflow, and without what the ones before it show.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/TextRange.html"><tt>TextRange</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="lines" class="member">
+<div class="member-link">
+<a name="lines" href="#lines"><tt><b>lines</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The lines of the text, as its layout breaks them: each a range of its story, with its <code>baseline</code>, a <a href="../classes/undefined.html"><tt>Line</tt></a> along it, and its <code>bounds</code>, in the text item&rsquo;s own coordinates. A <a href="../classes/PathText.html"><tt>PathText</tt></a>&rsquo;s one line follows its path: these describe it laid out straight.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <a href="../classes/TextRange.html"><tt>TextRange</tt></a> objects
+		</li>
+	</ul>
+    
+	
+	
 </div>
 
 </div>
@@ -7065,20 +7230,20 @@ function onMouseMove(event) {
 </div>
 
 	
-<div id="leading" class="member">
+<div id="lineheight" class="member">
 <div class="member-link">
-<a name="leading" href="#leading"><tt><b>leading</b></tt></a>
+<a name="lineheight" href="#lineheight"><tt><b>lineHeight</b></tt></a>
 </div>
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The text leading of text content.</p>
+	<p>The line height of text content: the distance from one line&rsquo;s baseline to the next. Automatic, as <code>&#39;auto&#39;</code> (1.2) or another factor of the letters&rsquo; font size, each line moving down by its largest letters&rsquo;; or fixed, as a length with units as the font size takes them (<code>&#39;18px&#39;</code>, <code>&#39;12pt&#39;</code>). <code>leading</code>, as Paper.js had it before, sets and reads it as a fixed length in pixels.</p>
 	
 	
 	
 		<ul class="member-list">
 			<h4>Default:</h4>
-			<li><tt>fontSize * 1.2</tt></li>
+			<li><tt>'auto'</tt></li>
 		</ul>
 	
 	<ul class="member-list">
@@ -7096,14 +7261,14 @@ function onMouseMove(event) {
 </div>
 
 	
-<div id="tracking" class="member">
+<div id="lettertracking" class="member">
 <div class="member-link">
-<a name="tracking" href="#tracking"><tt><b>tracking</b></tt></a>
+<a name="lettertracking" href="#lettertracking"><tt><b>letterTracking</b></tt></a>
 </div>
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The tracking of text content: the space added after each character, in thousandths of an em, as in Adobe Illustrator and InDesign. A tracking of 100 adds a tenth of the font size.</p>
+	<p>The letter tracking of text content: the space added after each letter, along the line, in thousandths of an em, as in Adobe Illustrator and InDesign. A tracking of 100 adds a tenth of the font size. Also <code>tracking</code>, its former name.</p>
 	
 	
 	
@@ -7116,6 +7281,363 @@ function onMouseMove(event) {
 		<h4>Type:</h4>
 		<li>
 			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="letterkerning" class="member">
+<div class="member-link">
+<a name="letterkerning" href="#letterkerning"><tt><b>letterKerning</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The letter kerning of text content: the space added after a letter, along the line, in thousandths of an em, in place of the font&rsquo;s own kerning pair; <code>null</code> for the font&rsquo;s kerning.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>null</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="fontstyle" class="member">
+<div class="member-link">
+<a name="fontstyle" href="#fontstyle"><tt><b>fontStyle</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The font style of text content, as in CSS: upright or slanted. Together with the <a href="../classes/TextItem.html#fontweight"><tt>fontWeight</tt></a>, it says what a font&rsquo;s style name says, e.g. <code>&#39;Bold Italic&#39;</code>.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'normal'</tt>, <tt>'italic'</tt>, <tt>'oblique'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'normal'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="fontvariations" class="member">
+<div class="member-link">
+<a name="fontvariations" href="#fontvariations"><tt><b>fontVariations</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The settings of a variable font&rsquo;s axes, by their tags: <code>{ wght: 600,
+wdth: 80 }</code>. Kept for hosts that lay text out with its fonts; canvas doesn&rsquo;t draw them.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>null</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Object</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="baselineshift" class="member">
+<div class="member-link">
+<a name="baselineshift" href="#baselineshift"><tt><b>baselineShift</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>How far the letters move up from the baseline, in pixels.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="baselineposition" class="member">
+<div class="member-link">
+<a name="baselineposition" href="#baselineposition"><tt><b>baselinePosition</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Whether the letters are set as superscripts or subscripts: smaller, and above or below the baseline.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'normal'</tt>, <tt>'superscript'</tt>, <tt>'subscript'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'normal'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="letterscaling" class="member">
+<div class="member-link">
+<a name="letterscaling" href="#letterscaling"><tt><b>letterScaling</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>How much the letters are scaled, as <a href="../classes/Item.html#scaling"><tt>item.scaling</tt></a>: one factor for both directions, or a point with the horizontal and vertical ones.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>1</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>⟋<a href="../classes/Point.html"><tt>Point</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="letterrotation" class="member">
+<div class="member-link">
+<a name="letterrotation" href="#letterrotation"><tt><b>letterRotation</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The rotation of each letter about its origin on the baseline, in degrees.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="capitals" class="member">
+<div class="member-link">
+<a name="capitals" href="#capitals"><tt><b>capitals</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Whether the letters are set as capitals, or as small capitals.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'normal'</tt>, <tt>'all'</tt>, <tt>'small'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'normal'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="underline" class="member">
+<div class="member-link">
+<a name="underline" href="#underline"><tt><b>underline</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Whether the letters are underlined.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>false</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Boolean</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="strikethrough" class="member">
+<div class="member-link">
+<a name="strikethrough" href="#strikethrough"><tt><b>strikethrough</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Whether the letters are struck through.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>false</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Boolean</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="features" class="member">
+<div class="member-link">
+<a name="features" href="#features"><tt><b>features</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The OpenType features to turn on (<code>&#39;dlig&#39;</code>) or off (<code>&#39;-liga&#39;</code>). Kept for hosts that lay text out with its fonts; canvas doesn&rsquo;t draw them.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>null</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <tt>Strings</tt>
 		</li>
 	</ul>
     
@@ -7141,7 +7663,7 @@ function onMouseMove(event) {
 	
 		<ul class="member-list">
 			<h4>Values:</h4>
-			<li><tt>'left'</tt>, <tt>'right'</tt>, <tt>'center'</tt></li>
+			<li><tt>'left'</tt>, <tt>'right'</tt>, <tt>'center'</tt>, <tt>'start'</tt>, <tt>'end'</tt>, <tt>'justify'</tt></li>
 		</ul>
 	
 	
@@ -7164,8 +7686,744 @@ function onMouseMove(event) {
 </div>
 </div>
 
+	
+<div id="justifylast" class="member">
+<div class="member-link">
+<a name="justifylast" href="#justifylast"><tt><b>justifyLast</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>How the last line of a justified paragraph is aligned; <code>&#39;all&#39;</code> justifies it too.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'left'</tt>, <tt>'right'</tt>, <tt>'center'</tt>, <tt>'start'</tt>, <tt>'end'</tt>, <tt>'all'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'left'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
 </div>
 
+</div>
+</div>
+
+	
+<div id="justifyspacing" class="member">
+<div class="member-link">
+<a name="justifyspacing" href="#justifyspacing"><tt><b>justifySpacing</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>How far justification may change the spacing, each as <code>[minimum, desired,
+maximum]</code> in percent: <code>{ word: [80, 100, 133], letter: [0, 0, 0], glyph:
+[100, 100, 100] }</code>; <code>null</code> for those. Kept for hosts: canvas text justifies by the word spacing alone.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>null</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Object</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="startindent" class="member">
+<div class="member-link">
+<a name="startindent" href="#startindent"><tt><b>startIndent</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The indent where the paragraph&rsquo;s lines start: left in left-to-right text, right in right-to-left text.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="endindent" class="member">
+<div class="member-link">
+<a name="endindent" href="#endindent"><tt><b>endIndent</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The indent where the paragraph&rsquo;s lines end.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="firstlineindent" class="member">
+<div class="member-link">
+<a name="firstlineindent" href="#firstlineindent"><tt><b>firstLineIndent</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The indent of the paragraph&rsquo;s first line, added to its start indent.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="spacebefore" class="member">
+<div class="member-link">
+<a name="spacebefore" href="#spacebefore"><tt><b>spaceBefore</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The space above the paragraph. Between two paragraphs, the larger of this one&rsquo;s and the space after the one before it is used.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="spaceafter" class="member">
+<div class="member-link">
+<a name="spaceafter" href="#spaceafter"><tt><b>spaceAfter</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The space below the paragraph.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="hyphenation" class="member">
+<div class="member-link">
+<a name="hyphenation" href="#hyphenation"><tt><b>hyphenation</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Whether words are hyphenated at the ends of lines, and how: <code>true</code>, or <code>{
+wordsLongerThan, afterFirst, beforeLast, limit, zone, capitalized }</code>. Kept for hosts: canvas text breaks only at soft hyphens.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>false</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Boolean</tt>⟋<tt>Object</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="composer" class="member">
+<div class="member-link">
+<a name="composer" href="#composer"><tt><b>composer</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>How lines are broken: one line at a time, or all of the paragraph&rsquo;s lines together, for the most even spacing. Kept for hosts: canvas text breaks one line at a time.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'line'</tt>, <tt>'paragraph'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'paragraph'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="linewrap" class="member">
+<div class="member-link">
+<a name="linewrap" href="#linewrap"><tt><b>lineWrap</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>How the lines of a paragraph in an area are evened out: <code>&#39;normal&#39;</code> fills each line as far as it goes, <code>&#39;balance&#39;</code> makes them all about as long, and <code>&#39;pretty&#39;</code> balances the last four lines when the last one is shorter than a third of the one before. Both keep the paragraph&rsquo;s number of lines.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'normal'</tt>, <tt>'balance'</tt>, <tt>'pretty'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'normal'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="tabs" class="member">
+<div class="member-link">
+<a name="tabs" href="#tabs"><tt><b>tabs</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The paragraph&rsquo;s tab stops: <code>[{ position, align, leader }]</code>, with <code>align</code> one of <code>&#39;left&#39;</code>, <code>&#39;center&#39;</code>, <code>&#39;right&#39;</code> and <code>&#39;decimal&#39;</code>. Kept for hosts: canvas text doesn&rsquo;t set tabs yet.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>null</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <tt>Object</tt> objects
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="direction" class="member">
+<div class="member-link">
+<a name="direction" href="#direction"><tt><b>direction</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The direction the paragraph&rsquo;s lines run in, which <code>&#39;start&#39;</code> and <code>&#39;end&#39;</code> follow; <code>null</code> for left to right.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'ltr'</tt>, <tt>'rtl'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>null</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+	<h3>Content</h3>
+
+<div id="content" class="member">
+<div class="member-link">
+<a name="content" href="#content"><tt><b>content</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The text of the item&rsquo;s story, see <a href="../classes/TextStory.html#content"><tt>textStory.content</tt></a>.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="runs" class="member">
+<div class="member-link">
+<a name="runs" href="#runs"><tt><b>runs</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The runs of the item&rsquo;s story, see <a href="../classes/TextStory.html#runs"><tt>textStory.runs</tt></a>.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <a href="../classes/TextRange.html"><tt>TextRange</tt></a> objects
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="paragraphs" class="member">
+<div class="member-link">
+<a name="paragraphs" href="#paragraphs"><tt><b>paragraphs</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The paragraphs of the item&rsquo;s story, see <a href="../classes/TextStory.html#paragraphs"><tt>textStory.paragraphs</tt></a>.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <a href="../classes/TextRange.html"><tt>TextRange</tt></a> objects
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="words" class="member">
+<div class="member-link">
+<a name="words" href="#words"><tt><b>words</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The words of the item&rsquo;s story, see <a href="../classes/TextStory.html#words"><tt>textStory.words</tt></a>.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <a href="../classes/TextRange.html"><tt>TextRange</tt></a> objects
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="letters" class="member">
+<div class="member-link">
+<a name="letters" href="#letters"><tt><b>letters</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The letters of the item&rsquo;s story, see <a href="../classes/TextStory.html#letters"><tt>textStory.letters</tt></a>.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <a href="../classes/TextRange.html"><tt>TextRange</tt></a> objects
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+</div>
+
+
+<!-- =========================== inherited methods ========================= -->
+<div class="reference-members"><h2>Methods inherited from <a href="../classes/TextItem.html"><tt>TextItem</tt></a></h2>
+
+	
+<div id="link-next" class="member">
+<div class="member-link">
+<a name="link-next" href="#link-next"><tt><b>link</b>(next)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Links the text item <code>next</code> after this one, so the story flows on into it. Its own story joins the end of this one.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>next:</tt> 
+<a href="../classes/TextItem.html"><tt>TextItem</tt></a>
+&mdash;&nbsp;the text item to link
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the text item was linked, <tt>false</tt> otherwise
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="islinked" class="member">
+<div class="member-link">
+<a name="islinked" href="#islinked"><tt><b>isLinked</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p><tt>true</tt> if the text item is linked with others, <tt>false</tt> otherwise</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="unlink" class="member">
+<div class="member-link">
+<a name="unlink" href="#unlink"><tt><b>unlink</b>([which])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Unlinks the text item: <code>&#39;both&#39;</code> takes it out of its story, which flows on through the others, <code>&#39;before&#39;</code> and <code>&#39;after&#39;</code> break the story into two there.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>which:</tt> 
+<tt>String</tt>
+&mdash;&nbsp;<code>&#39;both&#39;</code>, <code>&#39;before&#39;</code> or <code>&#39;after&#39;</code>
+&mdash;&nbsp;optional, default: <tt>&lsquo;both&rsquo;</tt>
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the text item was unlinked, <tt>false</tt> otherwise
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="replace-content-start-end" class="member">
+<div class="member-link">
+<a name="replace-content-start-end" href="#replace-content-start-end"><tt><b>replace</b>(content, start, end)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Replaces the content from <code>start</code> to <code>end</code> of the item&rsquo;s story, see <a href="../classes/TextStory.html#replace-content-start-end"><tt>textStory.replace(content, start, end)</tt></a>.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>content:</tt> 
+<tt>String</tt>
+&mdash;&nbsp;the new content
+
+</li>
+	
+	<li>
+<tt>start:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the index of the first character to replace
+
+</li>
+	
+	<li>
+<tt>end:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the index after the last character to replace
+
+</li>
+	
+</ul>
+
+	
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="range-start-end" class="member">
+<div class="member-link">
+<a name="range-start-end" href="#range-start-end"><tt><b>range</b>(start, end)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>The range of the item&rsquo;s story from <code>start</code> to <code>end</code>.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>start:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the index of its first character
+
+</li>
+	
+	<li>
+<tt>end:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the index after its last character
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/TextRange.html"><tt>TextRange</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+</div>
 
 
 

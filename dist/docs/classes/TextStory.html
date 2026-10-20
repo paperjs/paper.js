@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>TextStory</title>
+<base target="class-frame">
+<link href="../assets/css/docs.css" rel="stylesheet" type="text/css">
+<script src="../assets/js/paper.js"></script>
+<script src="../assets/js/jquery.js"></script>
+<script src="../assets/js/codemirror.js"></script>
+<script src="../assets/js/docs.js"></script>
+</head>
+<body>
+<article class="reference"> 
+<div class="reference-class">
+<h1>TextStory</h1>
+
+<p>The text of one or more linked <a href="../classes/TextItem.html"><tt>TextItem</tt></a>s, which it flows  through in order: its content, kept in runs of characters that share a  style, and the styles of its paragraphs. A text item that isn&rsquo;t linked  has a story of its own.</p>
+
+
+</div>
+
+
+
+
+
+<!-- ================================ properties =========================== -->
+	<div class="reference-members">
+		<h2>Properties</h2>
+		
+			
+<div id="textitems" class="member">
+<div class="member-link">
+<a name="textitems" href="#textitems"><tt><b>textItems</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The text items that the story flows through, in order.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <a href="../classes/TextItem.html"><tt>TextItem</tt></a> objects
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="content" class="member">
+<div class="member-link">
+<a name="content" href="#content"><tt><b>content</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The text of the story, from the first of its text items to the last.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:<span class="description">Setting the content of a PointText item:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-0">
+// Create a point-text item at {x: 30, y: 30}:
+var text = new PointText(new Point(30, 30));
+text.fillColor = 'black';
+
+// Set the content of the text item:
+text.content = 'Hello world';
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
+</div>
+
+
+<h4>Example:<span class="description">Interactive example, move your mouse over the view below:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-1">
+// Create a point-text item at {x: 30, y: 30}:
+var text = new PointText(new Point(30, 30));
+text.fillColor = 'black';
+
+text.content = 'Move your mouse over the view, to see its position';
+
+function onMouseMove(event) {
+    // Each time the mouse is moved, set the content of
+    // the point text to describe the position of the mouse:
+    text.content = 'Your position is: ' + event.point.toString();
+}
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="runs" class="member">
+<div class="member-link">
+<a name="runs" href="#runs"><tt><b>runs</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The runs of the text: its ranges that each have one style throughout. Set it to plain objects with a <code>content</code> and style properties, which then make the whole text.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <a href="../classes/TextRange.html"><tt>TextRange</tt></a> objects
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="paragraphs" class="member">
+<div class="member-link">
+<a name="paragraphs" href="#paragraphs"><tt><b>paragraphs</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The paragraphs of the text, without their line breaks. Set it to plain objects with paragraph style properties, one per paragraph.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <a href="../classes/TextRange.html"><tt>TextRange</tt></a> objects
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="words" class="member">
+<div class="member-link">
+<a name="words" href="#words"><tt><b>words</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The words of the text, as the browser finds them (Intl.Segmenter), or else separated by white space.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <a href="../classes/TextRange.html"><tt>TextRange</tt></a> objects
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="letters" class="member">
+<div class="member-link">
+<a name="letters" href="#letters"><tt><b>letters</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The letters of the text, each as readers see one (a grapheme: an emoji, or a letter with its accents), spaces and punctuation included.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <a href="../classes/TextRange.html"><tt>TextRange</tt></a> objects
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members">
+		<h2>Methods</h2>
+		
+	
+<div id="replace-content-start-end" class="member">
+<div class="member-link">
+<a name="replace-content-start-end" href="#replace-content-start-end"><tt><b>replace</b>(content, start, end)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Replaces the content from <code>start</code> to <code>end</code>, or of a range, with new content, which takes the style of the content it replaces, or of the character before it when it&rsquo;s inserted.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>content:</tt> 
+<tt>String</tt>
+&mdash;&nbsp;the new content
+
+</li>
+	
+	<li>
+<tt>start:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the index of the first character to replace
+
+</li>
+	
+	<li>
+<tt>end:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the index after the last character to replace
+
+</li>
+	
+</ul>
+
+	
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="range-start-end" class="member">
+<div class="member-link">
+<a name="range-start-end" href="#range-start-end"><tt><b>range</b>(start, end)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>The range of the text from <code>start</code> to <code>end</code>.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>start:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the index of its first character
+
+</li>
+	
+	<li>
+<tt>end:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the index after its last character
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/TextRange.html"><tt>TextRange</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+
+		
+	</div>
+
+
+
+
+<!-- =========================== copyright notice ========================== -->
+<p class="footer">
+Paper.js v0.14.0 (develop)<br>
+Copyright &#169; 2011—2026 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+
+</article>
+</body>

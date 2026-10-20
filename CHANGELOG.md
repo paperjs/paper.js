@@ -4,6 +4,30 @@
 
 ### Added
 
+- Add text ranges: `TextRange`, a part of a text whose style properties read
+  what its letters and paragraphs share and set them, from
+  `TextItem#range(start, end)`, `#runs`, `#paragraphs`, `#words`, `#letters`
+  and `#lines`, which ranges have too, and `#replace(content, start, end)`, and
+  `TextStory`, a text's content, runs and paragraphs, as `TextItem#story`.
+- Add text linking: `TextItem#link()`, `#unlink()`, `#isLinked()`,
+  `#nextTextItem`, `#previousTextItem` and `#visibleRange`, by which a story
+  flows through several text items, which `TextStory#textItems` lists.
+- Add `PathText`, text along a path between `startOffset` and `endOffset`, each
+  letter turned to the path, which it takes as `TextItem#textPath`.
+- Add `AreaText`, text inside any path as its `textPath`, holes too, in
+  columns and rows, with lines breaking between words and at soft hyphens,
+  `verticalAlign`, `fitHeight()`, and `lineWrap`, a paragraph property that
+  balances the lines.
+- Add `Item#textWrap`, by which items push aside the text of the area texts
+  below them in their layer, or let it flow inside them.
+- Add character style properties: `fontStyle`, `lineHeight`, `letterKerning`,
+  `letterScaling`, `letterRotation`, `baselineShift`, `baselinePosition`,
+  `capitals`, `underline` and `strikethrough`, and `fontVariations` and
+  `features` for hosts.
+- Add paragraph style properties: `justifyLast`, `startIndent`, `endIndent`,
+  `firstLineIndent`, `spaceBefore`, `spaceAfter` and `direction`, the
+  justifications `'start'`, `'end'` and `'justify'`, and `justifySpacing`,
+  `hyphenation`, `composer` and `tabs` for hosts.
 - Import the `data-*` attributes of SVG elements into `item.data`, with their
   names camelized as in `dataset`, next to `data-paper-data` (#1227).
 - Export shadows to SVG as SVG 1.1 filters, which both browsers and editors
@@ -38,6 +62,20 @@
 
 ### Changed
 
+- Lay out text by the ascent and descent of its fonts: the bounds of
+  `PointText` are its lines' line heights, with the leading split around their
+  ascent and descent, instead of 3/4 of the first above its baseline and 1/4 of
+  the last below.
+- Replace `leading` by `lineHeight`, `'auto'` (1.2) or another factor of the
+  font size, or a fixed length; `leading` still sets and reads a fixed line
+  height in pixels. Rename `tracking` to `letterTracking`, which `tracking`
+  still sets and reads.
+- Make `Style#getFontStyle()` return the CSS font style, `'normal'`,
+  `'italic'` or `'oblique'`, instead of the font as canvas takes it, and remove
+  `Style#getTrackingStyle()`.
+- Only go into the children that items show in `Item#getItems()`, and log the
+  changes of children that their parent doesn't show, such as a text's path, as
+  the parent's.
 - Make `Item#intersects()` check whether the items overlap, also when one
   contains the other, as `Rectangle#intersects()` does, instead of only whether
   their outlines cross, and use it in `getItems({ overlapping })` for items

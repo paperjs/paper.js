@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 00:31:55 2026 +0200
+ * Date: Wed Oct 21 00:11:37 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -63,6 +63,78 @@ declare namespace paper {
     )
 
     type GradientStopLike = GradientStop | ColorLike | [ ColorLike, number ]
+
+    /** 
+     * An AreaText item represents text that flows inside an area, its
+     *     {@link #textPath}: any path, with holes too, divided into
+     *     {@link #columns} and {@link #rows}. Its lines break between words to fit
+     *     the area's width where they sit. What doesn't fit flows on into the next
+     *     linked text item.
+     */
+    class AreaText extends TextItem {
+        /** 
+         * The number of columns that the area is divided into, from left to
+         * right, which the text fills one after the other.
+         */
+        columns: number
+
+        /** 
+         * The number of rows that the area is divided into, from top to bottom,
+         * each with its columns.
+         */
+        rows: number
+
+        /** 
+         * The space between the columns and between the rows.
+         */
+        gutter: number
+
+        /** 
+         * The space between the area's edges and the text.
+         */
+        inset: number
+
+        /** 
+         * Where the lines sit in each column, from top to bottom.
+         */
+        verticalAlign: string
+
+
+        /** 
+         * Creates a text item that flows inside an area.
+         * 
+         * @param area - the path that the text flows inside
+         * @param orientation - the orientation of the text
+         */
+        constructor(area: PathItem, orientation?: string)
+
+        /** 
+         * Creates a text item that flows inside a rectangle.
+         * 
+         * @param rectangle - the rectangle that the text flows inside
+         * @param orientation - the orientation of the text
+         */
+        constructor(rectangle: RectangleLike, orientation?: string)
+
+        /** 
+         * Creates a text item that flows inside an area, from the properties
+         * described by an object literal.
+         * 
+         * @param object - an object containing properties describing the
+         *     text's attributes
+         */
+        constructor(object: object)
+
+        /** 
+         * Sets the area's height to the smallest that holds all of its text,
+         * scaling its {@link #textPath} vertically from its top. An area without
+         * a height, which holds nothing, becomes a rectangle as wide as it.
+         * 
+         * @return this area text
+         */
+        fitHeight(): AreaText
+
+    }
 
     
     class ChangeFlag  {
@@ -1675,6 +1747,14 @@ declare namespace paper {
          * and then only them, see {@link #hitTest}.
          */
         guide: boolean
+
+        /** 
+         * Specifies whether, and how, the item pushes aside the text of the
+         * {@link AreaText} items below it in its layer: `null`, or an object with
+         * `offset`, the space kept between them, and `invert`, to let the text
+         * flow inside it instead. `true` sets the defaults.
+         */
+        textWrap: any
 
         /** 
          * Specifies whether the item is selected. This will also return `true` for
@@ -3808,6 +3888,7 @@ declare namespace paper {
          */
         tools: Tool[]
 
+        AreaText: typeof AreaText
         ChangeFlag: typeof ChangeFlag
         Color: typeof Color
         CompoundPath: typeof CompoundPath
@@ -3829,6 +3910,7 @@ declare namespace paper {
         PaperScript: typeof PaperScript
         Path: typeof Path
         PathItem: typeof PathItem
+        PathText: typeof PathText
         Point: typeof Point
         PointText: typeof PointText
         Project: typeof Project
@@ -3841,6 +3923,8 @@ declare namespace paper {
         SymbolDefinition: typeof SymbolDefinition
         SymbolItem: typeof SymbolItem
         TextItem: typeof TextItem
+        TextRange: typeof TextRange
+        TextStory: typeof TextStory
         Tool: typeof Tool
         ToolEvent: typeof ToolEvent
         Tween: typeof Tween
@@ -5181,6 +5265,54 @@ declare namespace paper {
          * @param to - the destination point of the newly added curve
          */
         quadraticCurveBy(handle: PointLike, to: PointLike): void
+
+    }
+
+    /** 
+     * A PathText item represents text that runs along a path, its
+     *     {@link #textPath}, each letter turned to the path's direction where it
+     *     sits. On a compound path, the text runs along one of its paths after the
+     *     other. What doesn't fit between {@link #startOffset} and
+     *     {@link #endOffset} flows on into the next linked text item.
+     */
+    class PathText extends TextItem {
+        /** 
+         * The length along the path where the text starts.
+         */
+        startOffset: number
+
+        /** 
+         * The length along the path where the text ends, or `null` for its end.
+         */
+        endOffset: number
+
+        /** 
+         * Which part of the letters sits on the path.
+         */
+        alignment: string
+
+        /** 
+         * Space added between the letters, where the path bends tightly.
+         */
+        spacing: number
+
+
+        /** 
+         * Creates a text item that runs along a path.
+         * 
+         * @param path - the path that the text runs along
+         * @param orientation - the orientation of the text
+         */
+        constructor(path: PathItem, orientation?: string)
+
+        /** 
+         * Creates a text item that runs along a path, from the properties
+         * described by an object literal.
+         * 
+         * @param object - an object containing properties describing the
+         *     text's attributes
+         */
+        constructor(object: object)
 
     }
 
@@ -7554,6 +7686,14 @@ declare namespace paper {
         readonly view: View
 
         /** 
+         * The line height as a fixed length, in pixels, as Paper.js had it before
+         * #lineHeight: setting a number makes it fixed, as `'18px'`.
+         * 
+         * @deprecated use {@link #lineHeight} instead.
+         */
+        leading: number
+
+        /** 
          * @deprecated use {@link #fontFamily} instead.
          */
         font: string
@@ -7662,21 +7802,173 @@ declare namespace paper {
         fontSize: number | string
 
         /** 
-         * The text leading of text content.
+         * The line height of text content: the distance from one line's baseline
+         * to the next. Automatic, as `'auto'` (1.2) or another factor of the
+         * letters' font size, each line moving down by its largest letters'; or
+         * fixed, as a length with units as the font size takes them (`'18px'`,
+         * `'12pt'`).
          */
-        leading: number | string
+        lineHeight: number | string
 
         /** 
-         * The tracking of text content: the space added after each character, in
-         * thousandths of an em, as in Adobe Illustrator and InDesign. A tracking of
-         * 100 adds a tenth of the font size.
+         * The letter tracking of text content: the space added after each letter,
+         * along the line, in thousandths of an em, as in Adobe Illustrator and
+         * InDesign. A tracking of 100 adds a tenth of the font size. Also
+         * `tracking`, its former name.
+         */
+        letterTracking: number
+
+        /** 
+         * @deprecated use {@link #letterTracking} instead.
          */
         tracking: number
+
+        /** 
+         * The letter kerning of text content: the space added after a letter,
+         * along the line, in thousandths of an em, in place of the font's own
+         * kerning pair; `null` for the font's kerning.
+         */
+        letterKerning: number
+
+        /** 
+         * The font style of text content, as in CSS: upright or slanted. Together
+         * with the {@link #fontWeight}, it says what a font's style name says, e.g.
+         * `'Bold Italic'`.
+         */
+        fontStyle: string
+
+        /** 
+         * The settings of a variable font's axes, by their tags: `{ wght: 600,
+         * wdth: 80 }`. Kept for hosts that lay text out with its fonts; canvas
+         * doesn't draw them.
+         */
+        fontVariations: any
+
+        /** 
+         * How far the letters move up from the baseline, in pixels.
+         */
+        baselineShift: number
+
+        /** 
+         * Whether the letters are set as superscripts or subscripts: smaller, and
+         * above or below the baseline.
+         */
+        baselinePosition: string
+
+        /** 
+         * How much the letters are scaled, as {@link Item#scaling}: one factor for
+         * both directions, or a point with the horizontal and vertical ones.
+         */
+        get letterScaling(): number | Point
+        set letterScaling(value: number | PointLike)
+
+        /** 
+         * The rotation of each letter about its origin on the baseline, in degrees.
+         */
+        letterRotation: number
+
+        /** 
+         * Whether the letters are set as capitals, or as small capitals.
+         */
+        capitals: string
+
+        /** 
+         * Whether the letters are underlined.
+         */
+        underline: boolean
+
+        /** 
+         * Whether the letters are struck through.
+         */
+        strikethrough: boolean
+
+        /** 
+         * The OpenType features to turn on (`'dlig'`) or off (`'-liga'`). Kept for
+         * hosts that lay text out with its fonts; canvas doesn't draw them.
+         */
+        features: string[]
 
         /** 
          * The justification of text paragraphs.
          */
         justification: string
+
+        /** 
+         * How the last line of a justified paragraph is aligned; `'all'` justifies
+         * it too.
+         */
+        justifyLast: string
+
+        /** 
+         * How far justification may change the spacing, each as `[minimum, desired,
+         * maximum]` in percent: `{ word: [80, 100, 133], letter: [0, 0, 0], glyph:
+         * [100, 100, 100] }`; `null` for those. Kept for hosts: canvas text
+         * justifies by the word spacing alone.
+         */
+        justifySpacing: any
+
+        /** 
+         * The indent where the paragraph's lines start: left in left-to-right text,
+         * right in right-to-left text.
+         */
+        startIndent: number
+
+        /** 
+         * The indent where the paragraph's lines end.
+         */
+        endIndent: number
+
+        /** 
+         * The indent of the paragraph's first line, added to its start indent.
+         */
+        firstLineIndent: number
+
+        /** 
+         * The space above the paragraph. Between two paragraphs, the larger of this
+         * one's and the space after the one before it is used.
+         */
+        spaceBefore: number
+
+        /** 
+         * The space below the paragraph.
+         */
+        spaceAfter: number
+
+        /** 
+         * Whether words are hyphenated at the ends of lines, and how: `true`, or `{
+         * wordsLongerThan, afterFirst, beforeLast, limit, zone, capitalized }`.
+         * Kept for hosts: canvas text breaks only at soft hyphens.
+         */
+        hyphenation: boolean | any
+
+        /** 
+         * How lines are broken: one line at a time, or all of the paragraph's lines
+         * together, for the most even spacing. Kept for hosts: canvas text breaks
+         * one line at a time.
+         */
+        composer: string
+
+        /** 
+         * How the lines of a paragraph in an area are evened out: `'normal'`
+         * fills each line as far as it goes, `'balance'` makes them all about as
+         * long, and `'pretty'` balances the last four lines when the last one is
+         * shorter than a third of the one before. Both keep the paragraph's number
+         * of lines.
+         */
+        lineWrap: string
+
+        /** 
+         * The paragraph's tab stops: `[{ position, align, leader }]`, with `align`
+         * one of `'left'`, `'center'`, `'right'` and `'decimal'`. Kept for hosts:
+         * canvas text doesn't set tabs yet.
+         */
+        tabs: object[]
+
+        /** 
+         * The direction the paragraph's lines run in, which `'start'` and `'end'`
+         * follow; `null` for left to right.
+         */
+        direction: string
 
 
         /** 
@@ -7772,16 +8064,54 @@ declare namespace paper {
 
     /** 
      * The TextItem type allows you to create typography. Its functionality
-     *     is inherited by different text item types such as {@link PointText}, and
-     *     {@link AreaText} (coming soon). They each add a layer of functionality
-     *     that is unique to their type, but share the underlying properties and
-     *     functions that they inherit from TextItem.
+     *     is inherited by different text item types such as {@link PointText},
+     *     {@link PathText} and {@link AreaText}. They each add a layer of
+     *     functionality that is unique to their type, but share the underlying
+     *     properties and functions that they inherit from TextItem.
      */
     class TextItem extends Item {
         /** 
-         * The text contents of the text item.
+         * The direction the text's lines run in: `'horizontal'`, or `'vertical'`
+         * from top to bottom, with the lines from right to left.
          */
-        content: string
+        orientation: string
+
+        /** 
+         * The path that the text flows in ({@link AreaText}) or along
+         * ({@link PathText}). It guides the text and isn't drawn itself.
+         */
+        textPath: PathItem
+
+        /** 
+         * The story the text item shows: the text of all the text items linked
+         * with it.
+         */
+        readonly story: TextStory
+
+        /** 
+         * The text item after this one in its story, if any.
+         */
+        readonly nextTextItem: TextItem
+
+        /** 
+         * The text item before this one in its story, if any.
+         */
+        readonly previousTextItem: TextItem
+
+        /** 
+         * The range of the story that this text item shows, as its layout flows
+         * the story through the linked text items: without the overflow, and
+         * without what the ones before it show.
+         */
+        readonly visibleRange: TextRange
+
+        /** 
+         * The lines of the text, as its layout breaks them: each a range of its
+         * story, with its `baseline`, a {@link Line} along it, and its `bounds`,
+         * in the text item's own coordinates. A {@link PathText}'s one line
+         * follows its path: these describe it laid out straight.
+         */
+        readonly lines: TextRange[]
 
         /** 
          * The font-family to be used in text content.
@@ -7807,21 +8137,207 @@ declare namespace paper {
         font: string
 
         /** 
-         * The text leading of text content.
+         * The line height of text content: the distance from one line's baseline
+         * to the next. Automatic, as `'auto'` (1.2) or another factor of the
+         * letters' font size, each line moving down by its largest letters'; or
+         * fixed, as a length with units as the font size takes them (`'18px'`,
+         * `'12pt'`). `leading`, as Paper.js had it before, sets and reads it as a
+         * fixed length in pixels.
          */
-        leading: number | string
+        lineHeight: number | string
 
         /** 
-         * The tracking of text content: the space added after each character, in
-         * thousandths of an em, as in Adobe Illustrator and InDesign. A tracking of
-         * 100 adds a tenth of the font size.
+         * The letter tracking of text content: the space added after each letter,
+         * along the line, in thousandths of an em, as in Adobe Illustrator and
+         * InDesign. A tracking of 100 adds a tenth of the font size. Also
+         * `tracking`, its former name.
          */
-        tracking: number
+        letterTracking: number
+
+        /** 
+         * The letter kerning of text content: the space added after a letter,
+         * along the line, in thousandths of an em, in place of the font's own
+         * kerning pair; `null` for the font's kerning.
+         */
+        letterKerning: number
+
+        /** 
+         * The font style of text content, as in CSS: upright or slanted. Together
+         * with the {@link #fontWeight}, it says what a font's style name says, e.g.
+         * `'Bold Italic'`.
+         */
+        fontStyle: string
+
+        /** 
+         * The settings of a variable font's axes, by their tags: `{ wght: 600,
+         * wdth: 80 }`. Kept for hosts that lay text out with its fonts; canvas
+         * doesn't draw them.
+         */
+        fontVariations: any
+
+        /** 
+         * How far the letters move up from the baseline, in pixels.
+         */
+        baselineShift: number
+
+        /** 
+         * Whether the letters are set as superscripts or subscripts: smaller, and
+         * above or below the baseline.
+         */
+        baselinePosition: string
+
+        /** 
+         * How much the letters are scaled, as {@link Item#scaling}: one factor for
+         * both directions, or a point with the horizontal and vertical ones.
+         */
+        get letterScaling(): number | Point
+        set letterScaling(value: number | PointLike)
+
+        /** 
+         * The rotation of each letter about its origin on the baseline, in degrees.
+         */
+        letterRotation: number
+
+        /** 
+         * Whether the letters are set as capitals, or as small capitals.
+         */
+        capitals: string
+
+        /** 
+         * Whether the letters are underlined.
+         */
+        underline: boolean
+
+        /** 
+         * Whether the letters are struck through.
+         */
+        strikethrough: boolean
+
+        /** 
+         * The OpenType features to turn on (`'dlig'`) or off (`'-liga'`). Kept for
+         * hosts that lay text out with its fonts; canvas doesn't draw them.
+         */
+        features: string[]
 
         /** 
          * The justification of text paragraphs.
          */
         justification: string
+
+        /** 
+         * How the last line of a justified paragraph is aligned; `'all'` justifies
+         * it too.
+         */
+        justifyLast: string
+
+        /** 
+         * How far justification may change the spacing, each as `[minimum, desired,
+         * maximum]` in percent: `{ word: [80, 100, 133], letter: [0, 0, 0], glyph:
+         * [100, 100, 100] }`; `null` for those. Kept for hosts: canvas text
+         * justifies by the word spacing alone.
+         */
+        justifySpacing: any
+
+        /** 
+         * The indent where the paragraph's lines start: left in left-to-right text,
+         * right in right-to-left text.
+         */
+        startIndent: number
+
+        /** 
+         * The indent where the paragraph's lines end.
+         */
+        endIndent: number
+
+        /** 
+         * The indent of the paragraph's first line, added to its start indent.
+         */
+        firstLineIndent: number
+
+        /** 
+         * The space above the paragraph. Between two paragraphs, the larger of this
+         * one's and the space after the one before it is used.
+         */
+        spaceBefore: number
+
+        /** 
+         * The space below the paragraph.
+         */
+        spaceAfter: number
+
+        /** 
+         * Whether words are hyphenated at the ends of lines, and how: `true`, or `{
+         * wordsLongerThan, afterFirst, beforeLast, limit, zone, capitalized }`.
+         * Kept for hosts: canvas text breaks only at soft hyphens.
+         */
+        hyphenation: boolean | any
+
+        /** 
+         * How lines are broken: one line at a time, or all of the paragraph's lines
+         * together, for the most even spacing. Kept for hosts: canvas text breaks
+         * one line at a time.
+         */
+        composer: string
+
+        /** 
+         * How the lines of a paragraph in an area are evened out: `'normal'`
+         * fills each line as far as it goes, `'balance'` makes them all about as
+         * long, and `'pretty'` balances the last four lines when the last one is
+         * shorter than a third of the one before. Both keep the paragraph's number
+         * of lines.
+         */
+        lineWrap: string
+
+        /** 
+         * The paragraph's tab stops: `[{ position, align, leader }]`, with `align`
+         * one of `'left'`, `'center'`, `'right'` and `'decimal'`. Kept for hosts:
+         * canvas text doesn't set tabs yet.
+         */
+        tabs: object[]
+
+        /** 
+         * The direction the paragraph's lines run in, which `'start'` and `'end'`
+         * follow; `null` for left to right.
+         */
+        direction: string
+
+        /** 
+         * The line height as a fixed length, in pixels: setting a number makes it
+         * fixed, as `'18px'`.
+         * 
+         * @deprecated use {@link #lineHeight} instead.
+         */
+        leading: number
+
+        /** 
+         * @deprecated use {@link #letterTracking} instead.
+         */
+        tracking: number
+
+        /** 
+         * The text of the item's story, see {@link TextStory#content}.
+         */
+        content: string
+
+        /** 
+         * The runs of the item's story, see {@link TextStory#runs}.
+         */
+        runs: TextRange[]
+
+        /** 
+         * The paragraphs of the item's story, see {@link TextStory#paragraphs}.
+         */
+        paragraphs: TextRange[]
+
+        /** 
+         * The words of the item's story, see {@link TextStory#words}.
+         */
+        words: TextRange[]
+
+        /** 
+         * The letters of the item's story, see {@link TextStory#letters}.
+         */
+        letters: TextRange[]
 
         /** 
          * @deprecated use {@link #style} instead.
@@ -7833,6 +8349,153 @@ declare namespace paper {
          */
         paragraphStyle: Style
 
+
+        /** 
+         * Links the text item `next` after this one, so the story flows on into
+         * it. Its own story joins the end of this one.
+         * 
+         * @param next - the text item to link
+         * 
+         * @return true if the text item was linked
+         */
+        link(next: TextItem): boolean
+
+        /** 
+         * {@true if the text item is linked with others}
+         */
+        isLinked(): boolean
+
+        /** 
+         * Unlinks the text item: `'both'` takes it out of its story, which flows
+         * on through the others, `'before'` and `'after'` break the story into
+         * two there.
+         * 
+         * @param which - `'both'`, `'before'` or `'after'`
+         * 
+         * @return true if the text item was unlinked
+         */
+        unlink(which?: string): boolean
+
+        /** 
+         * Replaces the content from `start` to `end` of the item's story, see
+         * {@link TextStory#replace}.
+         * 
+         * @param content - the new content
+         * @param start - the index of the first character to replace
+         * @param end - the index after the last character to replace
+         */
+        replace(content: string, start: number, end: number): void
+
+        /** 
+         * The range of the item's story from `start` to `end`.
+         * 
+         * @param start - the index of its first character
+         * @param end - the index after its last character
+         */
+        range(start: number, end: number): TextRange
+
+    }
+
+    /** 
+     * A part of a {@link TextStory}'s content, from its {@link #start}
+     *     to its {@link #end}, whose style is that of its letters and paragraphs:
+     *     read, a property is the one they share, or `undefined`; set, it changes
+     *     them. It has the same style properties as items, e.g.
+     *     `text.words[0].fontSize = 24`. A range is a snapshot of two indices:
+     *     changing styles never moves it, but changing the content leaves ranges
+     *     taken before out of date, as indices into any string.
+     */
+    class TextRange  {
+        /** 
+         * The story the range is part of.
+         */
+        readonly story: TextStory
+
+        /** 
+         * The index of the range's first character.
+         */
+        readonly start: number
+
+        /** 
+         * The index after the range's last character.
+         */
+        readonly end: number
+
+        /** 
+         * The content of the range.
+         */
+        readonly content: string
+
+        /** 
+         * The style of the range: of its characters, and of the paragraphs it
+         * touches.
+         */
+        style: Style
+
+
+    }
+
+    /** 
+     * The text of one or more linked {@link TextItem}s, which it flows
+     *     through in order: its content, kept in runs of characters that share a
+     *     style, and the styles of its paragraphs. A text item that isn't linked
+     *     has a story of its own.
+     */
+    class TextStory  {
+        /** 
+         * The text items that the story flows through, in order.
+         */
+        readonly textItems: TextItem[]
+
+        /** 
+         * The text of the story, from the first of its text items to the last.
+         */
+        content: string
+
+        /** 
+         * The runs of the text: its ranges that each have one style throughout.
+         * Set it to plain objects with a `content` and style properties, which
+         * then make the whole text.
+         */
+        runs: TextRange[]
+
+        /** 
+         * The paragraphs of the text, without their line breaks. Set it to plain
+         * objects with paragraph style properties, one per paragraph.
+         */
+        paragraphs: TextRange[]
+
+        /** 
+         * The words of the text, as the browser finds them (Intl.Segmenter), or
+         * else separated by white space.
+         */
+        readonly words: TextRange[]
+
+        /** 
+         * The letters of the text, each as readers see one (a grapheme: an emoji,
+         * or a letter with its accents), spaces and punctuation included.
+         */
+        readonly letters: TextRange[]
+
+
+        /** 
+         * Replaces the content from `start` to `end`, or of a range, with new
+         * content, which takes the style of the content it replaces, or of the
+         * character before it when it's inserted.
+         * 
+         * @param content - the new content
+         * @param start - the index of the first character to replace
+         * @param end - the index after the last character to replace
+         */
+        replace(content: string, start: number, end: number): void
+
+        /** 
+         * The range of the text from `start` to `end`.
+         * 
+         * @param start - the index of its first character
+         * @param end - the index after its last character
+         */
+        range(start: number, end: number): TextRange
 
     }
 

@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 00:31:55 2026 +0200
+ * Date: Wed Oct 21 00:11:37 2026 +0200
  *
  ***
  *
@@ -3370,6 +3370,7 @@ var Item = Base.extend(Emitter, {
 	_opacity: 1,
 	_locked: false,
 	_guide: false,
+	_textWrap: null,
 	_clipMask: false,
 	_selection: 0,
 	_selectBounds: true,
@@ -3385,6 +3386,7 @@ var Item = Base.extend(Emitter, {
 		locked: false,
 		guide: false,
 		clipMask: false,
+		textWrap: null,
 		selected: false,
 		data: {}
 	},
@@ -3469,8 +3471,7 @@ new function() {
 		function serialize(fields) {
 			for (var key in fields) {
 				var value = that[key];
-				if (!Base.equals(value, key === 'leading'
-						? fields.fontSize * 1.2 : fields[key])) {
+				if (!Base.equals(value, fields[key])) {
 					props[key] = Base.serialize(value, options,
 							key !== 'data', dictionary);
 				}
@@ -3500,8 +3501,21 @@ new function() {
 		if (flags & 2) {
 			Item._clearBoundsCache(this);
 		}
+		for (var item = this; item && !(item instanceof Layer);
+				item = item._parent) {
+			if (item._textWrap) {
+				var layer = item.getLayer();
+				if (layer)
+					layer._textWrapVersion++;
+				break;
+			}
+		}
+		var parent = this._parent,
+			owner = parent && !parent.getChildren() && parent;
 		if (project)
-			project._changed(flags, this);
+			project._changed(flags, owner ? null : this);
+		if (owner)
+			owner._changed(flags);
 		if (symbol)
 			symbol._changed(flags);
 	},
@@ -3539,6 +3553,9 @@ new function() {
 
 	setStyle: function(style) {
 		this.getStyle().set(style);
+	},
+
+	_getStyles: function() {
 	}
 }, Base.each(['locked', 'visible', 'blendMode', 'opacity', 'guide'],
 	function(name) {
@@ -3560,6 +3577,35 @@ new function() {
 	},
 {}), {
 	beans: true,
+
+	getTextWrap: function() {
+		var wrap = this._textWrap;
+		return wrap && Base.set({}, wrap);
+	},
+
+	setTextWrap: function(wrap) {
+		if (wrap || this._textWrap) {
+			this._textWrap = wrap
+					? Base.set({ offset: 6, invert: false },
+						Base.isPlainObject(wrap) ? wrap : null)
+					: null;
+			this._updateTextWrap();
+			this._changed(257);
+		}
+	},
+
+	_updateTextWrap: function(remove) {
+		var layer = this.getLayer();
+		if (layer) {
+			var items = layer._textWrapItems || (layer._textWrapItems = {});
+			if (this._textWrap && !remove) {
+				items[this._id] = this;
+			} else {
+				delete items[this._id];
+			}
+			layer._textWrapVersion++;
+		}
+	},
 
 	getSelection: function() {
 		return this._selection;
@@ -3988,6 +4034,8 @@ new function() {
 		_installEvents.base.call(this, install);
 		if (this._selection)
 			this._project._updateSelection(this, !install);
+		if (this._textWrap)
+			this._updateTextWrap(!install);
 		var children = this._children;
 		for (var i = 0, l = children && children.length; i < l; i++)
 			children[i]._installEvents(install);
@@ -4063,6 +4111,7 @@ new function() {
 				&& this._opacity === item._opacity
 				&& this._clipMask === item._clipMask
 				&& this._guide === item._guide
+				&& Base.equals(this._textWrap, item._textWrap)
 				&& this._equals(item)
 				|| false;
 	},
@@ -4110,7 +4159,7 @@ new function() {
 	copyAttributes: function(source, excludeMatrix) {
 		this.setStyle(source._style);
 		var keys = ['_locked', '_visible', '_blendMode', '_opacity',
-				'_clipMask', '_guide'];
+				'_clipMask', '_guide', '_textWrap'];
 		for (var i = 0, l = keys.length; i < l; i++) {
 			var key = keys[i];
 			if (source.hasOwnProperty(key))
@@ -4481,7 +4530,7 @@ new function() {
 					if (firstOnly)
 						break;
 				}
-				if (param.recursive !== false) {
+				if (param.recursive !== false && child.getChildren()) {
 					_getItems(child, options, childMatrix, param, firstOnly);
 				}
 				if (firstOnly && items.length > 0)
@@ -4949,9 +4998,9 @@ new function() {
 	}
 }), {
 
-	_setStyles: function(ctx, param, viewMatrix, strokeMatrix) {
-		var style = this._style,
-			matrix = this._matrix;
+	_setStyles: function(ctx, param, viewMatrix, strokeMatrix, style) {
+		var matrix = this._matrix;
+		style = style || this._style;
 		if (style.hasFill()) {
 			ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx, matrix,
 					strokeMatrix);
@@ -5265,6 +5314,13 @@ var Group = Item.extend({
 			this.addChildren(Array.isArray(arg) ? arg : arguments);
 	},
 
+	_getStyles: function() {
+		var children = this._children;
+		return children.length > 0 ? children.map(function(child) {
+			return child._style;
+		}) : null;
+	},
+
 	_changed: function _changed(flags) {
 		_changed.base.call(this, flags);
 		if (flags & 2050) {
@@ -5369,6 +5425,7 @@ var Group = Item.extend({
 
 var Layer = Group.extend({
 	_class: 'Layer',
+	_textWrapVersion: 0,
 
 	initialize: function Layer() {
 		Group.apply(this, arguments);
@@ -12587,38 +12644,529 @@ var TextItem = Item.extend({
 	_applyMatrix: false,
 	_canApplyMatrix: false,
 	_serializeFields: {
-		content: null
+		content: null,
+		orientation: 'horizontal'
 	},
+	_orientation: 'horizontal',
 	_boundsOptions: { handle: false },
-
 	initialize: function TextItem(arg) {
-		this._content = '';
-		this._lines = [];
+		this._story = new TextStory([this]);
 		var hasProps = arg && Base.isPlainObject(arg)
 				&& arg.x === undefined && arg.y === undefined;
 		this._initialize(hasProps && arg, !hasProps && Point.read(arguments));
 	},
 
+	_serialize: function _serialize(options, dictionary) {
+		var json = _serialize.base.call(this, options, dictionary),
+			props = json[1],
+			story = this._story,
+			runs = story.getRuns(),
+			paragraphs = story._paragraphs,
+			keys = story._paragraphKeys;
+		if (runs.length > 1) {
+			props.runs = runs.map(function(run) {
+				var json = run.toJSON();
+				delete json.start;
+				delete json.end;
+				for (var key in keys)
+					delete json[key];
+				return json;
+			});
+			delete props.content;
+		}
+		if (paragraphs.some(function(style) {
+			return !style.equals(paragraphs[0]);
+		})) {
+			props.paragraphs = paragraphs.map(function(style) {
+				var json = {};
+				for (var key in keys) {
+					var value = style[key];
+					if (!Base.equals(value, style._defaults[key]))
+						json[key] = Base.serialize(value);
+				}
+				return json;
+			});
+		}
+		return json;
+	},
+
 	_equals: function(item) {
-		return this._content === item._content;
+		var story1 = this._story,
+			story2 = item._story,
+			runs1 = story1._getRuns(),
+			runs2 = story2._getRuns(),
+			paragraphs1 = story1._paragraphs,
+			paragraphs2 = story2._paragraphs;
+		return story1._content === story2._content
+				&& runs1.length === runs2.length
+				&& runs1.every(function(run, i) {
+					var other = runs2[i];
+					return run.end === other.end
+							&& run.style.equals(other.style);
+				})
+				&& paragraphs1.length === paragraphs2.length
+				&& paragraphs1.every(function(style, i) {
+					return style.equals(paragraphs2[i]);
+				});
 	},
 
-	copyContent: function(source) {
-		this.setContent(source._content);
+	_changed: function _changed(flags) {
+		_changed.base.call(this, flags);
+		if (flags & (8 | 128)) {
+			this._layout = this._fontMetrics = null;
+			var next = this.getNextTextItem();
+			if (next)
+				next._changed(9);
+		}
 	},
 
-	getContent: function() {
-		return this._content;
-	},
-
-	setContent: function(content) {
-		this._content = '' + content;
-		this._lines = this._content.split(/\r\n|\n|\r/mg);
+	copyContent: function copyContent(source) {
+		copyContent.base.call(this, source);
+		this._story = source._story._clone([this]);
+		this._orientation = source._orientation;
 		this._changed(521);
 	},
 
+	_getStyles: function(style, key) {
+		var story = this._story;
+		return !(key in story._itemKeys)
+				? key in story._paragraphKeys
+					? story._paragraphs
+					: story._runs.map(function(run) {
+						return run.style;
+					})
+				: null;
+	},
+
+	getOrientation: function() {
+		return this._orientation;
+	},
+
+	setOrientation: function(orientation) {
+		if (orientation !== this._orientation) {
+			this._orientation = orientation;
+			this._changed(9);
+		}
+	},
+
+	getTextPath: function() {
+		return this._children && this._children[0] || null;
+	},
+
+	setTextPath: function(path) {
+		this.removeChildren();
+		if (path)
+			this.addChild(path);
+		this._changed(9);
+	},
+
+	getChildren: function() {
+		return null;
+	},
+
+	getFirstChild: function() {
+		return null;
+	},
+
+	getLastChild: function() {
+		return null;
+	},
+
+	_hitTestChildren: function() {
+		return null;
+	},
+
+	getStory: function() {
+		return this._story;
+	},
+
+	link: function(next) {
+		var story = this._story,
+			other = next._story;
+		if (other === story)
+			return false;
+		var items = story._items,
+			joined = other._items;
+		story._append(other);
+		items.splice.apply(items,
+				[items.indexOf(this) + 1, 0].concat(joined));
+		for (var i = 0, l = joined.length; i < l; i++)
+			joined[i]._story = story;
+		story._changed(521);
+		return true;
+	},
+
+	isLinked: function() {
+		return this._story._items.length > 1;
+	},
+
+	unlink: function(which) {
+		var story = this._story,
+			items = story._items,
+			index = items.indexOf(this);
+		which = which || 'both';
+		if (items.length > 1 && !(which === 'before' && index === 0
+				|| which === 'after' && index === items.length - 1)) {
+			if (which === 'both') {
+				var start = this.getVisibleRange()._start,
+					own = new TextStory([this]);
+				own._runs[0].style = new Style(
+						story._getRangeStyles('fontSize', start, start)[0],
+						own);
+				items.splice(index, 1);
+				this._story = own;
+				story._changed(521);
+				this._changed(521);
+			} else {
+				var at = which === 'before' ? index : index + 1,
+					start = items[at].getVisibleRange()._start,
+					moved = items.splice(at, items.length - at),
+					rest = story._extract(start, moved);
+				for (var i = 0, l = moved.length; i < l; i++)
+					moved[i]._story = rest;
+				story._changed(521);
+				rest._changed(521);
+			}
+			return true;
+		}
+		return false;
+	},
+
+	getNextTextItem: function() {
+		var items = this._story._items;
+		return items[items.indexOf(this) + 1] || null;
+	},
+
+	getPreviousTextItem: function() {
+		var items = this._story._items;
+		return items[items.indexOf(this) - 1] || null;
+	},
+
+	getVisibleRange: function() {
+		var range = this._getVisibleRange();
+		return new TextRange(this._story, range[0], range[1]);
+	},
+
+	_getVisibleRange: function() {
+		this._getLayout();
+		return [this._getStart(), this._visibleEnd];
+	},
+
+	_getStart: function() {
+		var previous = this.getPreviousTextItem();
+		return previous ? previous._getVisibleRange()[1] : 0;
+	},
+
 	isEmpty: function() {
-		return !this._content;
+		return !this._story._content;
+	},
+
+	_measure: function(start, end, byLetter) {
+		var view = this.getView(),
+			story = this._story,
+			content = story._content,
+			runs = story._runs,
+			letters = null,
+			index = 0,
+			pieces = [],
+			total = 0,
+			lineHeight = 0,
+			ascent = 0,
+			descent = 0,
+			group = '',
+			groupWidth = 0,
+			previous = null;
+
+		function advance(piece, text) {
+			if (!(previous && previous.font === piece.font
+					&& previous.tracking === piece.tracking
+					&& previous.scale.equals(piece.scale)
+					&& previous.y === piece.y)) {
+				group = '';
+				groupWidth = 0;
+			}
+			var before = groupWidth;
+			group += text;
+			groupWidth = view.getTextWidth(piece.font, [group], piece.tracking)
+					* piece.scale.x;
+			return groupWidth - before;
+		}
+
+		function add(piece, text, from, to, extra) {
+			var shown = piece.capitals ? text.toUpperCase() : text,
+				width = advance(piece, shown) + extra;
+			pieces.push(previous = Base.set({}, piece, {
+				content: shown,
+				start: from,
+				end: to,
+				x: total,
+				width: width
+			}));
+			total += width;
+		}
+
+		for (var i = 0, l = runs.length, pos = 0; i < l; i++) {
+			var run = runs[i],
+				next = pos + run.length,
+				from = Math.max(pos, start),
+				to = Math.min(next, end);
+			if (from < to || start === end && from === to && !lineHeight) {
+				var style = run.style,
+					piece = this._getPiece(style),
+					kerning = style.getLetterKerning();
+				if (byLetter || kerning != null || piece.rotation) {
+					letters = letters || story._getLetters();
+					while (index < letters.length
+							&& letters[index]._start < to) {
+						var letter = letters[index++];
+						if (letter._start >= from) {
+							if (kerning != null) {
+								previous = null;
+							}
+							add(piece, letter.getContent(), letter._start,
+									letter._end,
+									(kerning || 0) / 1000 * piece.size);
+						}
+					}
+				} else {
+					add(piece, content.slice(from, to), from, to, 0);
+				}
+				lineHeight = Math.max(lineHeight, piece.lineHeight);
+				ascent = Math.max(ascent, piece.ascent - piece.y);
+				descent = Math.max(descent, piece.descent + piece.y);
+			}
+			pos = next;
+		}
+		return {
+			pieces: pieces,
+			start: start,
+			end: end,
+			x: 0,
+			y: 0,
+			width: total,
+			lineHeight: lineHeight,
+			ascent: ascent,
+			descent: descent
+		};
+	},
+
+	getLines: function() {
+		var that = this,
+			story = this._story;
+		return this._getLayout().map(function(line) {
+			var range = new TextRange(story, line.start, line.end);
+			range.baseline = new Line(new Point(line.x, line.y),
+					new Point(line.x + line.width, line.y));
+			range.bounds = that._getBox(line, line.x, line.y);
+			return range;
+		});
+	},
+
+	_getPiece: function(style) {
+		var size = style._getFontSize(),
+			font = style._getCanvasFont(),
+			position = style.getBaselinePosition(),
+			scale = Point.read([style.getLetterScaling()]),
+			cache = this._fontMetrics || (this._fontMetrics = {}),
+			metrics = cache[font] || (cache[font] =
+					this.getView().getFontMetrics(font)
+					|| { ascent: 0.75 * size, descent: 0.25 * size });
+		return {
+			style: style,
+			font: font,
+			tracking: style._getCanvasLetterSpacing(),
+			size: size,
+			ascent: metrics.ascent * scale.y,
+			descent: metrics.descent * scale.y,
+			lineHeight: style._getLineHeight(),
+			y: -style.getBaselineShift() - (
+					position === 'superscript' ? 1
+					: position === 'subscript' ? -1 : 0
+				) * size * style._scriptShift,
+			scale: scale,
+			rotation: style.getLetterRotation(),
+			capitals: style.getCapitals() === 'all'
+		};
+	},
+
+	_getBox: function(entry, x, y) {
+		var leading = (entry.lineHeight - entry.ascent - entry.descent) / 2;
+		return new Rectangle(x, y - entry.ascent - leading, entry.width,
+				entry.lineHeight);
+	},
+
+	_indent: function(paragraph, isFirst, left, right) {
+		var isRightToLeft = paragraph.getDirection() === 'rtl',
+			start = paragraph.getStartIndent()
+					+ (isFirst ? paragraph.getFirstLineIndent() : 0),
+			end = paragraph.getEndIndent();
+		return [left + (isRightToLeft ? end : start),
+				right - (isRightToLeft ? start : end)];
+	},
+
+	_place: function(line, paragraph, isLast, room) {
+		var justification = paragraph.getJustification(),
+			justifyLast = paragraph.getJustifyLast(),
+			side = this._getSide(justification === 'justify' && isLast
+					&& justifyLast !== 'all' ? justifyLast : justification,
+					paragraph.getDirection()),
+			left = room[0],
+			right = room[1];
+		if (side === 'justify' || side === 'all') {
+			this._justify(line, right - left);
+			this._shift(line, left, 0);
+		} else {
+			this._shift(line, side === 'right' ? right - line.width
+					: side === 'center' ? (left + right - line.width) / 2
+					: left, 0);
+		}
+	},
+
+	_justify: function(line, width) {
+		var pieces = line.pieces,
+			content = this._story._content,
+			spaces = (content.slice(pieces.length ? pieces[0].start : 0,
+					pieces.length ? pieces[pieces.length - 1].end : 0)
+					.match(/\s+/g) || []).length;
+		if (spaces && width > line.width) {
+			var extra = (width - line.width) / spaces,
+				moved = 0,
+				result = [];
+			for (var i = 0, l = pieces.length; i < l; i++) {
+				var piece = pieces[i],
+					parts = piece.content.split(/(\s+)/),
+					from = piece.start,
+					x = piece.x;
+				if (parts.length === 1) {
+					result.push(Base.set({}, piece, { x: x + moved }));
+				} else {
+					for (var j = 0, m = parts.length; j < m; j++) {
+						var part = parts[j];
+						if (part) {
+							var advance = this._measure(from,
+									from + part.length).width;
+							if (/^\s+$/.test(part)) {
+								moved += extra;
+							} else {
+								result.push(Base.set({}, piece, {
+									content: part,
+									start: from,
+									end: from + part.length,
+									x: x + moved,
+									width: advance
+								}));
+							}
+							x += advance;
+							from += part.length;
+						}
+					}
+				}
+			}
+			line.pieces = result;
+			line.width = width;
+		}
+	},
+
+	_shift: function(line, x, y) {
+		var pieces = line.pieces;
+		line.x = (line.x || 0) + x;
+		line.y += y;
+		for (var i = 0, l = pieces.length; i < l; i++)
+			pieces[i].x += x;
+	},
+
+	_getSide: function(justification, direction) {
+		var isRightToLeft = direction === 'rtl';
+		return justification === 'start'
+				? isRightToLeft ? 'right' : 'left'
+				: justification === 'end'
+					? isRightToLeft ? 'left' : 'right'
+					: justification;
+	},
+
+	_draw: function(ctx, param, viewMatrix) {
+		if (param.dontFinish || param.clip) {
+			var rect = this.getInternalBounds();
+			if (!param.dontStart)
+				ctx.beginPath();
+			ctx.rect(rect.x, rect.y, rect.width, rect.height);
+		} else if (this._story._content) {
+			var lines = this._getLayout(),
+				shadowColor = ctx.shadowColor,
+				scale = !this._style.getStrokeScaling()
+						&& viewMatrix._getMeanScale();
+			ctx.textAlign = 'left';
+			for (var i = 0, l = lines.length; i < l; i++) {
+				var line = lines[i],
+					pieces = line.pieces;
+				for (var j = 0, m = pieces.length; j < m; j++) {
+					var piece = pieces[j],
+						style = piece.style,
+						hasFill = style.hasFill(),
+						hasStroke = style.hasStroke(),
+						size = piece.size,
+						x = piece.dx || 0;
+					this._setStyles(ctx, param, viewMatrix, null, style);
+					if (hasStroke && scale) {
+						ctx.lineWidth /= scale;
+						if ('setLineDash' in ctx) {
+							ctx.setLineDash(ctx.getLineDash().map(
+								function(dash) {
+									return dash / scale;
+								}));
+							ctx.lineDashOffset /= scale;
+						}
+					}
+					ctx.save();
+					ctx.translate(piece.x, line.y + piece.y);
+					if (piece.rotation)
+						ctx.rotate(piece.rotation * Math.PI / 180);
+					if (hasFill) {
+						var thickness = size / 15;
+						if (style.getUnderline())
+							ctx.fillRect(x, size / 8, piece.width, thickness);
+						if (style.getStrikethrough()) {
+							ctx.fillRect(x, -size * 0.3, piece.width,
+									thickness);
+						}
+					}
+					ctx.scale(piece.scale.x, piece.scale.y);
+					x /= piece.scale.x;
+					ctx.font = piece.font;
+					ctx.letterSpacing = piece.tracking;
+					ctx.shadowColor = shadowColor;
+					if (hasFill) {
+						ctx.fillText(piece.content, x, 0);
+						ctx.shadowColor = 'rgba(0,0,0,0)';
+					}
+					if (hasStroke)
+						ctx.strokeText(piece.content, x, 0);
+					ctx.restore();
+				}
+			}
+		}
+	},
+
+	_hitTestSelf: function(point, options) {
+		if (options.fill) {
+			var lines = this._getLayout();
+			for (var i = 0, l = lines.length; i < l; i++) {
+				var line = lines[i],
+					pieces = line.pieces;
+				for (var j = 0, m = pieces.length; j < m; j++) {
+					var piece = pieces[j],
+						local = point.subtract(piece.x, line.y + piece.y)
+								.rotate(-piece.rotation),
+						rect = this._getBox(piece, piece.dx || 0, 0),
+						closest = local.clamp(rect.getTopLeft(true),
+								rect.getBottomRight(true));
+					if (piece.style.getFillColor() && local.subtract(closest)
+							.divide(options._tolerancePadding)
+							.getLength() <= 1)
+						return new HitResult('fill', this);
+				}
+			}
+		}
 	},
 
 	getCharacterStyle: '#getStyle',
@@ -12627,6 +13175,17 @@ var TextItem = Item.extend({
 	getParagraphStyle: '#getStyle',
 	setParagraphStyle: '#setStyle'
 });
+
+TextItem.inject(Base.each(['getContent', 'setContent', 'replace', 'range',
+		'getRuns', 'setRuns', 'getParagraphs', 'setParagraphs', 'getWords',
+		'getLetters'],
+	function(name) {
+		this[name] = function() {
+			var story = this._story;
+			return story[name].apply(story, arguments);
+		};
+	}, { beans: true }
+));
 
 var PointText = TextItem.extend({
 	_class: 'PointText',
@@ -12645,77 +13204,1149 @@ var PointText = TextItem.extend({
 		this.translate(point.subtract(this._matrix.getTranslation()));
 	},
 
-	_draw: function(ctx, param, viewMatrix) {
-		if (param.dontFinish || param.clip) {
-			var rect = this.getInternalBounds();
-			if (!param.dontStart)
-				ctx.beginPath();
-			ctx.rect(rect.x, rect.y, rect.width, rect.height);
-		} else if (this._content) {
-			this._setStyles(ctx, param, viewMatrix);
-			var lines = this._lines,
-				style = this._style,
-				hasFill = style.hasFill(),
-				hasStroke = style.hasStroke(),
-				leading = style.getLeading(),
-				shadowColor = ctx.shadowColor;
-			if (hasStroke && !style.getStrokeScaling()) {
-				var scale = viewMatrix._getMeanScale();
-				ctx.lineWidth /= scale;
-				if ('setLineDash' in ctx) {
-					ctx.setLineDash(ctx.getLineDash().map(function(dash) {
-						return dash / scale;
-					}));
-					ctx.lineDashOffset /= scale;
+	_getLayout: function() {
+		if (!this._layout) {
+			var story = this._story,
+				length = story._content.length,
+				paragraphs = new TextRange(story, this._getStart(), length)
+						.getParagraphs(),
+				lines = [],
+				y = 0,
+				spaceAfter = 0;
+			for (var i = 0, l = paragraphs.length; i < l; i++) {
+				var range = paragraphs[i],
+					paragraph = story._getParagraph(range._start).style,
+					line = this._measure(range._start, range._end);
+				if (i > 0) {
+					y += line.lineHeight + Math.max(spaceAfter,
+							paragraph.getSpaceBefore());
 				}
+				spaceAfter = paragraph.getSpaceAfter();
+				line.y = y;
+				this._place(line, paragraph, true,
+						this._indent(paragraph, true, 0, 0));
+				lines.push(line);
 			}
-			ctx.font = style.getFontStyle();
-			ctx.textAlign = style.getJustification();
-			ctx.letterSpacing = style.getTrackingStyle();
-			for (var i = 0, l = lines.length; i < l; i++) {
-				ctx.shadowColor = shadowColor;
-				var line = lines[i];
-				if (hasFill) {
-					ctx.fillText(line, 0, 0);
-					ctx.shadowColor = 'rgba(0,0,0,0)';
-				}
-				if (hasStroke)
-					ctx.strokeText(line, 0, 0);
-				ctx.translate(0, leading);
-			}
+			this._visibleEnd = length;
+			this._layout = lines;
 		}
+		return this._layout;
 	},
 
 	_getBounds: function(matrix, options) {
-		var style = this._style,
-			lines = this._lines,
-			numLines = lines.length,
-			justification = style.getJustification(),
-			leading = style.getLeading(),
-			width = this.getView().getTextWidth(style.getFontStyle(), lines,
-					style.getTrackingStyle()),
-			x = 0;
-		if (justification !== 'left')
-			x -= width / (justification === 'center' ? 2: 1);
-		var rect = new Rectangle(x,
-					numLines ? - 0.75 * leading : 0,
-					width, numLines * leading);
-		if (options.stroke && style.hasStroke())
-			rect = rect.expand(style.getStrokeWidth());
-		return matrix ? matrix._transformBounds(rect, rect) : rect;
-	},
-
-	_hitTestSelf: function(point, options) {
-		if (options.fill && this.getFillColor()) {
-			var bounds = this.getInternalBounds(),
-				closest = point.clamp(bounds.getTopLeft(true),
-						bounds.getBottomRight(true));
-			if (point.subtract(closest).divide(options._tolerancePadding)
-					.getLength() <= 1)
-				return new HitResult('fill', this);
+		var lines = this._getLayout(),
+			rect = new Rectangle(),
+			strokeWidth = 0;
+		for (var i = 0, l = lines.length; i < l; i++) {
+			var line = lines[i],
+				box = this._getBox(line, line.x, line.y);
+			rect = i ? rect.unite(box) : box;
+			for (var j = 0, m = line.pieces.length; j < m; j++) {
+				var style = line.pieces[j].style;
+				if (style.hasStroke())
+					strokeWidth = Math.max(strokeWidth, style.getStrokeWidth());
+			}
 		}
+		if (options.stroke && strokeWidth)
+			rect = rect.expand(strokeWidth);
+		return matrix ? matrix._transformBounds(rect, rect) : rect;
 	}
 });
+
+var PathText = TextItem.extend({
+	_class: 'PathText',
+	_serializeFields: {
+		textPath: null,
+		startOffset: 0,
+		endOffset: null,
+		alignment: 'baseline',
+		spacing: 0
+	},
+	_startOffset: 0,
+	_endOffset: null,
+	_alignment: 'baseline',
+	_spacing: 0,
+
+	initialize: function PathText(path, orientation) {
+		var hasProps = Base.isPlainObject(path);
+		this._children = [];
+		TextItem.call(this, hasProps ? path : null);
+		if (!hasProps) {
+			this.setTextPath(path);
+			if (orientation)
+				this.setOrientation(orientation);
+		}
+	},
+
+	copyContent: function copyContent(source) {
+		copyContent.base.call(this, source);
+		this._startOffset = source._startOffset;
+		this._endOffset = source._endOffset;
+		this._alignment = source._alignment;
+		this._spacing = source._spacing;
+	},
+
+	getStartOffset: function() {
+		return this._startOffset;
+	},
+
+	setStartOffset: function(offset) {
+		this._startOffset = offset;
+		this._changed(9);
+	},
+
+	getEndOffset: function() {
+		return this._endOffset;
+	},
+
+	setEndOffset: function(offset) {
+		this._endOffset = offset;
+		this._changed(9);
+	},
+
+	getAlignment: function() {
+		return this._alignment;
+	},
+
+	setAlignment: function(alignment) {
+		this._alignment = alignment;
+		this._changed(9);
+	},
+
+	getSpacing: function() {
+		return this._spacing;
+	},
+
+	setSpacing: function(spacing) {
+		this._spacing = spacing;
+		this._changed(9);
+	},
+
+	_getLayout: function() {
+		if (!this._layout) {
+			var path = this.getTextPath(),
+				story = this._story,
+				start = this._getStart(),
+				flatteners = (path ? path._children || [path] : []).map(
+					function(child) {
+						return new PathFlattener(child, 0.25, 32, false,
+								child === path ? path._matrix
+									: path._matrix.appended(child._matrix));
+					}),
+				lengths = flatteners.map(function(flattener) {
+					return flattener.length;
+				}),
+				length = lengths.reduce(function(sum, length) {
+					return sum + length;
+				}, 0),
+				from = Math.max(0, Math.min(this._startOffset, length)),
+				to = this._endOffset == null ? length
+						: Math.max(from, Math.min(this._endOffset, length)),
+				spacing = this._spacing,
+				measured = this._measure(start, story._content.length, true),
+				letters = measured.pieces,
+				pieces = [],
+				width = 0;
+			for (var i = 0, l = letters.length; i < l; i++) {
+				var piece = letters[i];
+				if (width + piece.width > to - from)
+					break;
+				piece.x = width;
+				pieces.push(piece);
+				width += piece.width + spacing;
+			}
+			width -= pieces.length ? spacing : 0;
+			var paragraph = story._getParagraph(start).style,
+				side = this._getSide(paragraph.getJustification(),
+					paragraph.getDirection()),
+				offset = side === 'right' ? to - width
+						: side === 'center' ? from + (to - from - width) / 2
+						: from,
+				alignment = this._alignment,
+				below = alignment === 'ascender' ? measured.ascent
+						: alignment === 'descender' ? -measured.descent
+						: alignment === 'center'
+							? (measured.ascent - measured.descent) / 2
+						: 0;
+			for (var i = 0, l = pieces.length; i < l; i++) {
+				var piece = pieces[i],
+					middle = offset + piece.x + piece.width / 2,
+					index = 0;
+				while (index < lengths.length - 1 && middle > lengths[index]) {
+					middle -= lengths[index];
+					index++;
+				}
+				var flattener = flatteners[index],
+					tangent = flattener.getTangentAt(middle).normalize(),
+					point = flattener.getPointAt(middle).add(
+							tangent.rotate(90).multiply(below + piece.y));
+				piece.x = point.x;
+				piece.y = point.y;
+				piece.dx = -piece.width / 2;
+				piece.rotation += tangent.getAngle();
+			}
+			var last = pieces[pieces.length - 1];
+			this._visibleEnd = last ? last.end : start;
+			this._layout = [Base.set(measured, {
+				pieces: pieces,
+				end: this._visibleEnd,
+				width: width
+			})];
+		}
+		return this._layout;
+	},
+
+	_getBounds: function(matrix, options) {
+		var pieces = this._getLayout()[0].pieces,
+			bounds = null;
+		for (var i = 0, l = pieces.length; i < l; i++) {
+			var piece = pieces[i],
+				rect = this._getBox(piece, piece.dx, 0),
+				local = new Matrix().translate(piece.x, piece.y)
+						.rotate(piece.rotation);
+			if (matrix)
+				local.prepend(matrix);
+			rect = local._transformBounds(rect, rect);
+			bounds = bounds ? bounds.unite(rect) : rect;
+		}
+		return bounds || new Rectangle();
+	}
+});
+
+var AreaText = TextItem.extend({
+	_class: 'AreaText',
+	_serializeFields: {
+		textPath: null,
+		columns: 1,
+		rows: 1,
+		gutter: 18,
+		inset: 0,
+		verticalAlign: 'top'
+	},
+	_columns: 1,
+	_rows: 1,
+	_gutter: 18,
+	_inset: 0,
+	_verticalAlign: 'top',
+
+	initialize: function AreaText(area, orientation) {
+		var hasProps = Base.isPlainObject(area) && area.width === undefined;
+		this._children = [];
+		TextItem.call(this, hasProps ? area : null);
+		if (!hasProps) {
+			this.setTextPath(area instanceof PathItem ? area
+					: new Path.Rectangle({
+						rectangle: Rectangle.read([area]),
+						insert: false
+					}));
+			if (orientation)
+				this.setOrientation(orientation);
+		}
+	},
+
+	copyContent: function copyContent(source) {
+		copyContent.base.call(this, source);
+		this._columns = source._columns;
+		this._rows = source._rows;
+		this._gutter = source._gutter;
+		this._inset = source._inset;
+		this._verticalAlign = source._verticalAlign;
+	},
+
+	_installEvents: function _installEvents(install) {
+		_installEvents.base.call(this, install);
+		this._layout = null;
+	},
+
+	getColumns: function() {
+		return this._columns;
+	},
+
+	setColumns: function(columns) {
+		this._columns = columns;
+		this._changed(9);
+	},
+
+	getRows: function() {
+		return this._rows;
+	},
+
+	setRows: function(rows) {
+		this._rows = rows;
+		this._changed(9);
+	},
+
+	getGutter: function() {
+		return this._gutter;
+	},
+
+	setGutter: function(gutter) {
+		this._gutter = gutter;
+		this._changed(9);
+	},
+
+	getInset: function() {
+		return this._inset;
+	},
+
+	setInset: function(inset) {
+		this._inset = inset;
+		this._changed(9);
+	},
+
+	getVerticalAlign: function() {
+		return this._verticalAlign;
+	},
+
+	setVerticalAlign: function(align) {
+		this._verticalAlign = align;
+		this._changed(9);
+	},
+
+	fitHeight: function() {
+		var that = this,
+			path = this.getTextPath();
+		if (path) {
+			var bounds = path.getBounds();
+			if (!bounds.height) {
+				path = new Path.Rectangle({
+					rectangle: new Rectangle(bounds.x, bounds.y, bounds.width,
+							1),
+					insert: false
+				});
+				this.setTextPath(path);
+			}
+			var top = bounds.getTopCenter(),
+				fits = function(height) {
+					path.scale(1, height / path.getBounds().height, top);
+					return that._getVisibleRange()[1]
+							=== that._story._content.length;
+				},
+				low = 0,
+				high = path.getBounds().height,
+				count = 0;
+			while (!fits(high) && count++ < 32) {
+				low = high;
+				high *= 2;
+			}
+			if (count <= 32) {
+				while (high - low > 0.01) {
+					var height = (low + high) / 2;
+					if (fits(height)) {
+						high = height;
+					} else {
+						low = height;
+					}
+				}
+				fits(high);
+			} else {
+				fits(bounds.height || 1);
+			}
+		}
+		return this;
+	},
+
+	_getLayout: function() {
+		var layer = this.getLayer(),
+			version = layer && layer._textWrapVersion;
+		if (!this._layout || this._textWrapVersion !== version) {
+			this._textWrapVersion = version;
+			var that = this,
+				story = this._story,
+				content = story._content,
+				regions = this._getRegions(),
+				wraps = this._getTextWraps(),
+				offsets = regions.map(function() {
+					return 0;
+				}),
+				state;
+
+			var lay = function(getCut) {
+				var pos = state.pos,
+					region = state.region,
+					y = state.y,
+					paragraph = story._getParagraph(pos),
+					style = paragraph.style,
+					space = pos === paragraph.start && y !== null
+						? Math.max(state.spaceAfter, style.getSpaceBefore())
+						: 0,
+					result = [],
+					isComplete = false;
+				while (regions[region]) {
+					var bounds = regions[region],
+						next = that._measure(pos, Math.min(pos + 1,
+								paragraph.end)),
+						baseline = y === null
+							? bounds.top + offsets[region] + next.ascent
+							: y + next.lineHeight + space;
+					if (!next.lineHeight || next.lineHeight < 0)
+						break;
+					if (baseline + next.descent > bounds.bottom) {
+						region++;
+						y = null;
+						continue;
+					}
+					var spans = that._getSpans(bounds, baseline, next, wraps);
+					if (style.getDirection() === 'rtl')
+						spans.reverse();
+					for (var i = 0, l = spans.length; i < l && !isComplete;
+							i++) {
+						var span = spans[i],
+							line = that._breakLine(pos, paragraph,
+								pos === paragraph.start, span,
+								getCut ? getCut(result.length) : 0,
+								span[1] - span[0] >= bounds.width
+									- 1e-7);
+						if (line) {
+							line.y = baseline;
+							line.region = region;
+							result.push(line);
+							pos = line.end;
+							isComplete = pos === paragraph.end;
+						}
+					}
+					y = baseline;
+					space = 0;
+					if (isComplete)
+						break;
+				}
+				return {
+					lines: result,
+					paragraph: style,
+					isComplete: isComplete,
+					state: {
+						pos: pos,
+						region: region,
+						y: y,
+						spaceAfter: style.getSpaceAfter()
+					}
+				};
+			};
+
+			var search = function(high, precision, isAbove) {
+				var low = 0;
+				while (high - low > precision) {
+					var value = (low + high) / 2;
+					if (isAbove(value)) {
+						high = value;
+					} else {
+						low = value;
+					}
+				}
+				return [low, high];
+			};
+
+			var keeps = function(attempt, count) {
+				return attempt.isComplete && attempt.lines.length === count;
+			};
+
+			var balance = function(count, from) {
+				var cutFrom = function(cut) {
+						return function(index) {
+							return index >= from ? cut : 0;
+						};
+					},
+					widest = regions.reduce(function(width, bounds) {
+						return Math.max(width, bounds.width);
+					}, 0),
+					cut = search(widest, 0.5, function(cut) {
+						return !keeps(lay(cutFrom(cut)), count);
+					})[0];
+				return cut > 0 && lay(cutFrom(cut));
+			};
+
+			var layAll = function() {
+				var layout = [],
+					result,
+					match;
+				state = {
+					pos: that._getStart(),
+					region: 0,
+					y: null,
+					spaceAfter: 0
+				};
+				do {
+					result = lay();
+					var lines = result.lines,
+						count = lines.length,
+						wrap = result.paragraph.getLineWrap();
+					if (result.isComplete && count > 1) {
+						if (wrap === 'balance') {
+							result = balance(count, 0) || result;
+						} else if (wrap === 'pretty' && lines[count - 1].width
+								< lines[count - 2].width / 3) {
+							result = balance(count, Math.max(0, count - 4))
+									|| result;
+						}
+					}
+					layout.push.apply(layout, result.lines);
+					state = result.state;
+					match = result.isComplete
+							&& /^(\r\n|\n|\r)/.exec(content.slice(state.pos));
+					if (match)
+						state.pos += match[0].length;
+				} while (match);
+				return layout;
+			};
+
+			var getLast = function(layout, region) {
+				for (var i = layout.length - 1; i >= 0; i--) {
+					var line = layout[i];
+					if (line.region === region) {
+						return {
+							line: line,
+							free: regions[region].bottom - line.y
+									- line.descent
+						};
+					}
+				}
+				return null;
+			};
+
+			var layout = layAll(),
+				align = this._verticalAlign;
+			if (align !== 'top') {
+				for (var r = 0, l = regions.length; r < l; r++) {
+					var last = getLast(layout, r);
+					if (last && last.free > 0) {
+						var end = last.line.end,
+							getExcess = function(offset) {
+								offsets[r] = offset;
+								var moved = getLast(layAll(), r);
+								return moved && moved.line.end === end
+										? moved.free - (align === 'center'
+											? offset : 0)
+										: null;
+							},
+							excess = getExcess(align === 'center'
+									? last.free / 2 : last.free);
+						if (excess === null || Math.abs(excess) > 0.01) {
+							offsets[r] = search(last.free, 0.01,
+								function(offset) {
+									var excess = getExcess(offset);
+									return excess === null || excess < 0;
+								})[0];
+						}
+						layout = layAll();
+					}
+				}
+			}
+			this._visibleEnd = state.pos;
+			this._layout = layout;
+		}
+		return this._layout;
+	},
+
+	_getRegions: function() {
+		var path = this.getTextPath(),
+			regions = [];
+		if (path) {
+			var bounds = path.getBounds().expand(-2 * this._inset),
+				gutter = this._gutter,
+				rows = Math.max(1, this._rows),
+				columns = Math.max(1, this._columns),
+				width = (bounds.width - gutter * (columns - 1)) / columns,
+				height = (bounds.height - gutter * (rows - 1)) / rows;
+			for (var row = 0; row < rows; row++) {
+				for (var column = 0; column < columns; column++) {
+					regions.push(new Rectangle(
+							bounds.x + column * (width + gutter),
+							bounds.y + row * (height + gutter),
+							width, height));
+				}
+			}
+		}
+		return regions;
+	},
+
+	_getSpans: function(region, baseline, line, wraps) {
+		var that = this,
+			top = baseline - line.ascent,
+			bottom = baseline + line.descent,
+			middle = (top + bottom) / 2,
+			unite = function(stretches1, stretches2) {
+				var all = stretches1.concat(stretches2).sort(function(a, b) {
+						return a[0] - b[0];
+					}),
+					result = [];
+				for (var i = 0, l = all.length; i < l; i++) {
+					var last = result[result.length - 1],
+						stretch = all[i];
+					if (last && stretch[0] <= last[1]) {
+						last[1] = Math.max(last[1], stretch[1]);
+					} else {
+						result.push(stretch.slice());
+					}
+				}
+				return result;
+			},
+			intersect = function(stretches1, stretches2) {
+				var result = [];
+				for (var i = 0, l = stretches1.length; i < l; i++) {
+					for (var j = 0, m = stretches2.length; j < m; j++) {
+						var left = Math.max(stretches1[i][0], stretches2[j][0]),
+							right = Math.min(stretches1[i][1], stretches2[j][1]);
+						if (right > left)
+							result.push([left, right]);
+					}
+				}
+				return result;
+			},
+			subtract = function(stretches1, stretches2) {
+				return intersect(stretches1, stretches2.reduce(
+					function(outside, stretch) {
+						var last = outside.pop();
+						return outside.concat([[last[0], stretch[0]],
+								[stretch[1], last[1]]]);
+					}, [[-Infinity, Infinity]]));
+			},
+			inside = function(paths, y) {
+				var stretches = [];
+				for (var i = 0, l = paths.length; i < l; i++) {
+					var path = paths[i],
+						bounds = path.getBounds(),
+						xs = path.getIntersections(new Path.Line({
+							from: [bounds.left - 1, y],
+							to: [bounds.right + 1, y],
+							insert: false
+						})).map(function(location) {
+							return location.point.x;
+						}).sort(function(a, b) {
+							return a - b;
+						});
+					for (var j = 0; j + 1 < xs.length; j += 2)
+						stretches.push([xs[j], xs[j + 1]]);
+				}
+				return unite(stretches, []);
+			},
+			spans = [top, middle, bottom].reduce(function(spans, y) {
+				return intersect(spans, inside([that.getTextPath()], y));
+			}, [[region.left, region.right]]);
+		for (var i = 0, l = wraps.length; i < l; i++) {
+			var wrap = wraps[i],
+				offset = wrap.offset,
+				invert = wrap.invert,
+				ys = [top - offset, top, middle, bottom, bottom + offset],
+				covered = ys.reduce(function(covered, y) {
+					var stretches = inside(wrap.paths, y);
+					return covered ? invert
+							? intersect(covered, stretches)
+							: unite(covered, stretches)
+						: stretches;
+				}, null).map(function(stretch) {
+					return invert
+							? [stretch[0] + offset, stretch[1] - offset]
+							: [stretch[0] - offset, stretch[1] + offset];
+				});
+			spans = invert ? intersect(spans, covered)
+					: subtract(spans, unite(covered, []));
+		}
+		return spans;
+	},
+
+	_getTextWraps: function() {
+		var layer = this.getLayer(),
+			items = layer && layer._textWrapItems,
+			toText = this.getGlobalMatrix(true).inverted(),
+			wraps = [];
+
+		var isShown = function(item) {
+			for (; item !== layer; item = item._parent) {
+				if (!item._visible)
+					return false;
+			}
+			return true;
+		};
+
+		var getOutline = function(item, paths) {
+			var matrix = toText.appended(item._parent.getGlobalMatrix(true));
+			if (item instanceof PathItem) {
+				var path = item.clone({ insert: false, deep: true });
+				path.transform(matrix);
+				paths.push(path);
+			} else if (item instanceof Group) {
+				var clipItem = item._getClipItem(),
+					children = clipItem ? [clipItem] : item._children;
+				for (var i = 0, l = children.length; i < l; i++) {
+					if (children[i]._visible)
+						getOutline(children[i], paths);
+				}
+			} else {
+				paths.push(new Path.Rectangle({
+					rectangle: item.getBounds(matrix),
+					insert: false
+				}));
+			}
+			return paths;
+		};
+
+		for (var id in items) {
+			var item = items[id];
+			if (item !== this && item.isAbove(this) && isShown(item)) {
+				wraps.push(Base.set({ paths: getOutline(item, []) },
+						item._textWrap));
+			}
+		}
+		return wraps;
+	},
+
+	_breakLine: function(start, paragraph, isFirst, room, cut, canForce) {
+		var that = this,
+			content = this._story._content,
+			style = paragraph.style,
+			indented = this._indent(style, isFirst, room[0], room[1]),
+			words = /[^\s\u00ad]*\u00ad|\S+\s*|\s+/g,
+			text = content.slice(start, paragraph.end),
+			ends = [],
+			match;
+
+		var measure = function(end) {
+			var line = that._measure(start, start + content.slice(start, end)
+					.replace(/\s+$/, '').length);
+			if (content[end - 1] === '\u00ad') {
+				var last = line.pieces[line.pieces.length - 1],
+					width = that.getView().getTextWidth(last.font, ['-'],
+						last.tracking) * last.scale.x;
+				line.pieces.push(Base.set({}, last, {
+					content: '-',
+					start: end,
+					end: end,
+					x: last.x + last.width,
+					width: width
+				}));
+				line.width += width;
+			}
+			return line;
+		};
+
+		while (match = words.exec(text))
+			ends.push(start + match.index + match[0].length);
+		var width = indented[1] - indented[0] - cut,
+			fits = function(index) {
+				return measure(ends[index]).width <= width;
+			},
+			low = -1,
+			high = 0;
+		while (high < ends.length && fits(high)) {
+			low = high;
+			high = 2 * high + 1;
+		}
+		high = Math.min(high, ends.length);
+		while (high - low > 1) {
+			var middle = (low + high) >> 1;
+			if (fits(middle)) {
+				low = middle;
+			} else {
+				high = middle;
+			}
+		}
+		var end = low >= 0 ? ends[low] : start;
+		if (end === start && ends.length) {
+			if (!canForce)
+				return null;
+			end = ends[0];
+		}
+		var line = measure(end);
+		this._place(line, style, end === paragraph.end, indented);
+		line.end = end;
+		return line;
+	},
+
+	_getBounds: function(matrix, options) {
+		return Item._getBounds(this._children, matrix, options);
+	}
+});
+
+var TextStory = Base.extend({
+	_class: 'TextStory',
+	beans: true,
+	_paragraphKeys: {
+		justification: true, justifyLast: true, justifySpacing: true,
+		startIndent: true, endIndent: true, firstLineIndent: true,
+		spaceBefore: true, spaceAfter: true, hyphenation: true,
+		composer: true, lineWrap: true, tabs: true, direction: true
+	},
+	_itemKeys: {
+		fillRule: true, strokeScaling: true, shadowColor: true,
+		shadowBlur: true, shadowOffset: true, selectedColor: true
+	},
+
+	initialize: function TextStory(items) {
+		this._content = '';
+		this._runs = [{ length: 0, style: new Style(null, this) }];
+		this._paragraphs = [new Style(null, this)];
+		this._items = items || [];
+	},
+
+	getTextItems: function() {
+		return this._items.slice();
+	},
+
+	_clone: function(items) {
+		var story = new TextStory(items);
+		story._content = this._content;
+		story._runs = this._runs.map(function(run) {
+			return { length: run.length, style: new Style(run.style, story) };
+		});
+		story._paragraphs = this._paragraphs.map(function(style) {
+			return new Style(style, story);
+		});
+		return story;
+	},
+
+	_append: function(other) {
+		var that = this,
+			runs = other._runs.map(function(run) {
+				return {
+					length: run.length,
+					style: new Style(run.style, that)
+				};
+			});
+		this._content += other._content;
+		this._runs = this._runs.concat(runs).filter(function(run) {
+			return run.length > 0;
+		});
+		if (!this._runs.length)
+			this._runs = [runs[0]];
+		this._paragraphs = this._paragraphs.concat(
+				other._paragraphs.slice(1).map(function(style) {
+					return new Style(style, that);
+				}));
+	},
+
+	_extract: function(start, items) {
+		var rest = this._clone(items),
+			content = this._content,
+			paragraph = this._paragraphs[
+					this._countBreaks(content.slice(0, start))];
+		rest.replace('', 0, start);
+		rest._paragraphs[0] = new Style(paragraph, rest);
+		this.replace('', start, content.length);
+		return rest;
+	},
+
+	_getStyles: function() {
+	},
+
+	_changed: function(flags) {
+		var items = this._items;
+		for (var i = 0, l = items.length; i < l; i++)
+			items[i]._changed(flags);
+	},
+
+	getContent: function() {
+		return this._content;
+	},
+
+	setContent: function(content) {
+		this.replace(content, 0, this._content.length);
+	},
+
+	replace: function(content, start, end) {
+		if (start && start.start !== undefined) {
+			end = start.end;
+			start = start.start;
+		}
+		var old = this._content,
+			length = old.length,
+			runs = this._runs,
+			paragraphs = this._paragraphs;
+		content = '' + content;
+		start = Math.max(0, Math.min(start, length));
+		end = Math.max(start, Math.min(end, length));
+		var i = this._split(start),
+			j = this._split(end),
+			source = (i < j ? runs[i] : runs[i - 1] || runs[i]).style;
+		runs.splice(i, j - i, {
+			length: content.length,
+			style: new Style(source, this)
+		});
+		this._runs = runs.filter(function(run) {
+			return run.length > 0;
+		});
+		if (!this._runs.length)
+			this._runs = [runs[i]];
+		var first = this._countBreaks(old.slice(0, start)),
+			removed = this._countBreaks(old.slice(start, end)),
+			added = this._countBreaks(content),
+			style = paragraphs[first],
+			inserted = [];
+		for (var k = 0; k < added; k++)
+			inserted.push(new Style(style, this));
+		paragraphs.splice.apply(paragraphs,
+				[first + 1, removed].concat(inserted));
+		this._content = old.slice(0, start) + content + old.slice(end);
+		this._changed(521);
+	},
+
+	_getParagraph: function(pos) {
+		var content = this._content,
+			before = content.slice(0, pos),
+			start = /(\r\n|\n|\r)[^\r\n]*$/.exec(before),
+			end = /\r\n|\n|\r/.exec(content.slice(pos));
+		return {
+			style: this._paragraphs[this._countBreaks(before)],
+			start: start ? start.index + start[1].length : 0,
+			end: end ? pos + end.index : content.length
+		};
+	},
+
+	_countBreaks: function(content) {
+		var matches = content.match(/\r\n|\n|\r/g);
+		return matches ? matches.length : 0;
+	},
+
+	_split: function(index) {
+		var runs = this._runs;
+		for (var i = 0, l = runs.length, start = 0; i < l; i++) {
+			var run = runs[i];
+			if (start === index)
+				return i;
+			if (index < start + run.length) {
+				runs.splice(i + 1, 0, {
+					length: start + run.length - index,
+					style: new Style(run.style, this)
+				});
+				run.length = index - start;
+				return i + 1;
+			}
+			start += run.length;
+		}
+		return runs.length;
+	},
+
+	_getRangeStyles: function(key, start, end, setting) {
+		var runs = this._runs;
+		if (key in this._itemKeys) {
+			return [];
+		} else if (key in this._paragraphKeys) {
+			var content = this._content,
+				first = this._countBreaks(content.slice(0, start)),
+				last = this._countBreaks(
+						content.slice(0, Math.max(start, end - 1)));
+			return this._paragraphs.slice(first, last + 1);
+		} else if (setting) {
+			var i = this._split(start);
+			return runs.slice(i, this._split(end)).map(function(run) {
+				return run.style;
+			});
+		} else {
+			var from = start < end ? start : Math.max(0, start - 1),
+				to = start < end ? end : from + 1,
+				styles = [];
+			for (var i = 0, l = runs.length, pos = 0; i < l; i++) {
+				var run = runs[i],
+					next = pos + run.length;
+				if (from < next && to > pos)
+					styles.push(run.style);
+				pos = next;
+			}
+			return styles.length ? styles : [runs[0].style];
+		}
+	},
+
+	range: function(start, end) {
+		return new TextRange(this, start, end);
+	},
+
+	getRuns: function() {
+		var that = this;
+		return this._getRuns().map(function(run) {
+			return new TextRange(that, run.start, run.end);
+		});
+	},
+
+	_getRuns: function() {
+		var runs = this._runs,
+			joined = [];
+		for (var i = 0, l = runs.length, start = 0, end = 0; i < l; i++) {
+			var run = runs[i],
+				next = runs[i + 1];
+			end += run.length;
+			if (!next || !run.style.equals(next.style)) {
+				joined.push({ start: start, end: end, style: run.style });
+				start = end;
+			}
+		}
+		return joined;
+	},
+
+	setRuns: function(runs) {
+		var that = this;
+		runs = runs.map(function(run) {
+			return run instanceof TextRange ? run.toJSON() : run;
+		});
+		var content = runs.map(function(run) {
+				return run.content || '';
+			}).join('');
+		this.setContent(content);
+		this._runs = runs.map(function(run) {
+			var style = new Style(that._runs[0].style, that);
+			style.set(Base.set({}, run, { content: undefined }));
+			return { length: (run.content || '').length, style: style };
+		}).filter(function(run) {
+			return run.length > 0;
+		});
+		if (!this._runs.length)
+			this._runs = [{ length: 0, style: new Style(null, this) }];
+		this._changed(521);
+	},
+
+	getParagraphs: function() {
+		var ranges = [],
+			breaks = /\r\n|\n|\r/g,
+			content = this._content,
+			start = 0,
+			match;
+		while (match = breaks.exec(content)) {
+			ranges.push(new TextRange(this, start, match.index));
+			start = match.index + match[0].length;
+		}
+		ranges.push(new TextRange(this, start, content.length));
+		return ranges;
+	},
+
+	setParagraphs: function(paragraphs) {
+		var styles = this._paragraphs,
+			keys = this._paragraphKeys;
+		for (var i = 0, l = Math.min(paragraphs.length, styles.length); i < l;
+				i++) {
+			var paragraph = paragraphs[i],
+				style = styles[i];
+			for (var key in keys) {
+				var value = paragraph[key];
+				if (value !== undefined)
+					style[key] = value;
+			}
+		}
+	},
+
+	getWords: function() {
+		return this._segment('word', /\S+/g);
+	},
+
+	getLetters: function() {
+		return this._segment('grapheme', /[\s\S]/g);
+	},
+
+	_getLetters: function() {
+		if (this._lettersOf !== this._content) {
+			this._letters = this.getLetters();
+			this._lettersOf = this._content;
+		}
+		return this._letters;
+	},
+
+	_segment: function(granularity, pattern) {
+		var content = this._content,
+			ranges = [],
+			Segmenter = typeof Intl !== 'undefined' && Intl.Segmenter;
+		if (Segmenter) {
+			var segments = new Segmenter(undefined, {
+					granularity: granularity
+				}).segment(content),
+				iterator = segments[Symbol.iterator](),
+				step;
+			while (!(step = iterator.next()).done) {
+				var segment = step.value;
+				if (granularity !== 'word' || segment.isWordLike) {
+					ranges.push(new TextRange(this, segment.index,
+							segment.index + segment.segment.length));
+				}
+			}
+		} else {
+			var match;
+			while (match = pattern.exec(content)) {
+				ranges.push(new TextRange(this, match.index,
+						match.index + match[0].length));
+			}
+		}
+		return ranges;
+	}
+});
+
+var TextRange = Base.extend({
+	_class: 'TextRange',
+	beans: true,
+
+	initialize: function TextRange(story, start, end) {
+		var length = story._content.length;
+		this._story = story;
+		this._start = Math.max(0, Math.min(start, length));
+		this._end = Math.max(this._start, Math.min(end, length));
+		this._style = new Style(null, this);
+	},
+
+	getStory: function() {
+		return this._story;
+	},
+
+	getStart: function() {
+		return this._start;
+	},
+
+	getEnd: function() {
+		return this._end;
+	},
+
+	getContent: function() {
+		return this._story._content.slice(this._start, this._end);
+	},
+
+	getStyle: function() {
+		return this._style;
+	},
+
+	setStyle: function(style) {
+		this._style.set(style);
+	},
+
+	_getStyles: function(style, key, setting) {
+		return this._story._getRangeStyles(key, this._start, this._end,
+				setting);
+	},
+
+	_changed: function(flags) {
+		this._story._changed(flags);
+	},
+
+	toJSON: function() {
+		var style = this._style,
+			defaults = style._defaults,
+			json = {
+				start: this._start,
+				end: this._end,
+				content: this.getContent()
+			};
+		for (var key in defaults) {
+			var value = style[key];
+			if (value !== undefined && !Base.equals(value, defaults[key]))
+				json[key] = Base.serialize(value);
+		}
+		return json;
+	},
+
+	toString: function() {
+		return this.getContent();
+	}
+}, Base.each(['Runs', 'Paragraphs', 'Words', 'Letters'], function(name) {
+	var get = 'get' + name;
+	this[get] = function() {
+		var story = this._story,
+			start = this._start,
+			end = this._end;
+		return story[get]().filter(function(range) {
+			return range._start < end && range._end > start
+					|| range._start === range._end
+						&& range._start >= start && range._start <= end;
+		}).map(function(range) {
+			return new TextRange(story, Math.max(range._start, start),
+					Math.min(range._end, end));
+		});
+	};
+}, {
+	beans: true
+}));
 
 var Color = Base.extend(new function() {
 	var types = {
@@ -13499,10 +15130,33 @@ var Style = Base.extend(new function() {
 	groupDefaults = Base.set({}, itemDefaults, {
 		fontFamily: 'sans-serif',
 		fontWeight: 'normal',
+		fontStyle: 'normal',
 		fontSize: 12,
-		leading: null,
-		tracking: 0,
-		justification: 'left'
+		fontVariations: null,
+		lineHeight: 'auto',
+		letterTracking: 0,
+		letterKerning: null,
+		baselineShift: 0,
+		baselinePosition: 'normal',
+		letterScaling: 1,
+		letterRotation: 0,
+		capitals: 'normal',
+		underline: false,
+		strikethrough: false,
+		features: null,
+		justification: 'left',
+		justifyLast: 'left',
+		justifySpacing: null,
+		startIndent: 0,
+		endIndent: 0,
+		firstLineIndent: 0,
+		spaceBefore: 0,
+		spaceAfter: 0,
+		hyphenation: false,
+		composer: 'paragraph',
+		lineWrap: 'normal',
+		tabs: null,
+		direction: null
 	}),
 	textDefaults = Base.set({}, groupDefaults, {
 		fillColor: new Color()
@@ -13515,11 +15169,32 @@ var Style = Base.extend(new function() {
 		miterLimit: 193,
 		fontFamily: 9,
 		fontWeight: 9,
+		fontStyle: 9,
 		fontSize: 9,
 		font: 9,
-		leading: 9,
-		tracking: 9,
-		justification: 9
+		fontVariations: 9,
+		lineHeight: 9,
+		letterTracking: 9,
+		letterKerning: 9,
+		baselineShift: 9,
+		baselinePosition: 9,
+		letterScaling: 9,
+		letterRotation: 9,
+		capitals: 9,
+		features: 9,
+		justification: 9,
+		justifyLast: 9,
+		justifySpacing: 9,
+		startIndent: 9,
+		endIndent: 9,
+		firstLineIndent: 9,
+		spaceBefore: 9,
+		spaceAfter: 9,
+		hyphenation: 9,
+		composer: 9,
+		lineWrap: 9,
+		tabs: 9,
+		direction: 9
 	},
 	item = {
 		beans: true
@@ -13534,8 +15209,10 @@ var Style = Base.extend(new function() {
 			this._project = _owner && _owner._project || _project
 					|| paper.project;
 			this._defaults = !_owner || _owner instanceof Group ? groupDefaults
-					: _owner instanceof TextItem ? textDefaults
-					: itemDefaults;
+					: _owner instanceof TextItem || _owner instanceof TextStory
+						|| _owner instanceof TextRange
+						? textDefaults
+						: itemDefaults;
 			if (style)
 				this.set(style);
 		}
@@ -13551,14 +15228,10 @@ var Style = Base.extend(new function() {
 
 		fields[set] = function(value) {
 			var owner = this._owner,
-				children = owner && owner._children,
-				applyToChildren = children && children.length > 0
-					&& !(owner instanceof CompoundPath);
-			if (applyToChildren) {
-				for (var i = 0, l = children.length; i < l; i++)
-					children[i]._style[set](value);
-			}
-			if ((key === 'selectedColor' || !applyToChildren)
+				styles = owner && owner._getStyles(this, key, true);
+			if (styles)
+				Style.apply(styles, key, value);
+			if ((key === 'selectedColor' || !styles)
 					&& key in this._defaults) {
 				var old = this._values[key];
 				if (old !== value) {
@@ -13569,7 +15242,7 @@ var Style = Base.extend(new function() {
 						}
 						if (value && value.constructor === Color) {
 							value = Color._setOwner(value, owner,
-									applyToChildren && set);
+									styles && set);
 						}
 					}
 					this._values[key] = value;
@@ -13581,19 +15254,10 @@ var Style = Base.extend(new function() {
 
 		fields[get] = function(_dontMerge) {
 			var owner = this._owner,
-				children = owner && owner._children,
-				applyToChildren = children && children.length > 0
-					&& !(owner instanceof CompoundPath),
+				styles = owner && owner._getStyles(this, key),
 				value;
-			if (applyToChildren && !_dontMerge) {
-				for (var i = 0, l = children.length; i < l; i++) {
-					var childValue = children[i]._style[get]();
-					if (!i) {
-						value = childValue;
-					} else if (!Base.equals(value, childValue)) {
-						return undefined;
-					}
-				}
+			if (styles && !_dontMerge) {
+				value = Style.merge(styles, key);
 			} else if (key in this._defaults) {
 				var value = this._values[key];
 				if (value === undefined) {
@@ -13610,7 +15274,7 @@ var Style = Base.extend(new function() {
 				}
 			}
 			if (value && isColor) {
-				value = Color._setOwner(value, owner, applyToChildren && set);
+				value = Color._setOwner(value, owner, styles && set);
 			}
 			return value;
 		};
@@ -13634,15 +15298,47 @@ var Style = Base.extend(new function() {
 		fields[set] = item[set] = '#set' + value;
 	});
 
+	fields.getTracking = item.getTracking = '#getLetterTracking';
+	fields.setTracking = item.setTracking = '#setLetterTracking';
+	item.getLeading = function() {
+		return this._style.getLeading();
+	};
+	item.setLeading = function(leading) {
+		this._style.setLeading(leading);
+	};
+
 	Item.inject(item);
+	TextRange.inject(item);
 	return fields;
 }, {
+	statics: {
+		merge: function(styles, key) {
+			var get = 'get' + Base.capitalize(key),
+				value;
+			for (var i = 0, l = styles.length; i < l; i++) {
+				var other = styles[i][get]();
+				if (!i) {
+					value = other;
+				} else if (!Base.equals(value, other)) {
+					return undefined;
+				}
+			}
+			return value;
+		},
+
+		apply: function(styles, key, value) {
+			var set = 'set' + Base.capitalize(key);
+			for (var i = 0, l = styles.length; i < l; i++)
+				styles[i][set](value);
+		}
+	},
+
 	set: function(style) {
 		var isStyle = style instanceof Style,
 			values = isStyle ? style._values : style;
 		if (values) {
 			for (var key in values) {
-				if (key in this._defaults) {
+				if (key in this._defaults || key in this._formerNames) {
 					var value = values[key];
 					this[key] = value && isStyle && value.clone
 							? value.clone() : value;
@@ -13702,27 +15398,55 @@ var Style = Base.extend(new function() {
 		return this._project._view;
 	},
 
-	getFontStyle: function() {
-		var fontSize = this.getFontSize();
-		return this.getFontWeight()
+	_getCanvasFont: function() {
+		var fontSize = this.getFontSize(),
+			fontStyle = this.getFontStyle();
+		if (this.getBaselinePosition() !== 'normal' && !isNaN(fontSize))
+			fontSize *= this._scriptSize;
+		return (fontStyle !== 'normal' ? fontStyle + ' ' : '')
+				+ (this.getCapitals() === 'small' ? 'small-caps ' : '')
+				+ this.getFontWeight()
 				+ ' ' + fontSize + (/[a-z]/i.test(fontSize + '') ? ' ' : 'px ')
 				+ this.getFontFamily();
 	},
 
-	getTrackingStyle: function() {
-		return this.getTracking() / 1000 + 'em';
+	_scriptSize: 0.583,
+	_scriptShift: 0.333,
+
+	_formerNames: { tracking: true, leading: true },
+
+	_getCanvasLetterSpacing: function() {
+		return this.getLetterTracking() / 1000 + 'em';
+	},
+
+	_getFontSize: function() {
+		var fontSize = this.getFontSize();
+		return /pt|em|%|px/.test(fontSize)
+				? this.getView().getPixelSize(fontSize)
+				: fontSize;
+	},
+
+	_getLineHeight: function() {
+		var lineHeight = this.getLineHeight();
+		return lineHeight === 'auto' ? 1.2 * this._getFontSize()
+				: typeof lineHeight === 'string'
+					? this.getView().getPixelSize(lineHeight)
+					: lineHeight * this._getFontSize();
+	},
+
+	getLeading: function() {
+		return this.getLineHeight() === undefined ? undefined
+				: this._getLineHeight();
+	},
+
+	setLeading: function(leading) {
+		this.setLineHeight(leading == null ? 'auto'
+				: typeof leading === 'number' ? leading + 'px'
+				: leading);
 	},
 
 	getFont: '#getFontFamily',
 	setFont: '#setFontFamily',
-
-	getLeading: function getLeading() {
-		var leading = getLeading.base.call(this),
-			fontSize = this.getFontSize();
-		if (/pt|em|%|px/.test(fontSize))
-			fontSize = this.getView().getPixelSize(fontSize);
-		return leading != null ? leading : fontSize * 1.2;
-	}
 
 });
 
@@ -14251,6 +15975,28 @@ var View = Base.extend(Emitter, {
 				CanvasProvider.release(ctx);
 		}
 		return width;
+	},
+
+	getFontMetrics: function(font) {
+		var ctx = this._context || CanvasProvider.getContext(1, 1),
+			metrics = null;
+		if (ctx) {
+			var prevFont = ctx.font;
+			ctx.font = font;
+			var measured = ctx.measureText('H'),
+				ascent = measured.fontBoundingBoxAscent,
+				descent = measured.fontBoundingBoxDescent;
+			if (ascent === undefined) {
+				ascent = measured.emHeightAscent;
+				descent = measured.emHeightDescent;
+			}
+			if (ascent !== undefined)
+				metrics = { ascent: ascent, descent: descent };
+			ctx.font = prevFont;
+			if (ctx !== this._context)
+				CanvasProvider.release(ctx);
+		}
+		return metrics;
 	}
 }, Base.each(['rotate', 'scale', 'shear', 'skew'], function(key) {
 	var rotate = key === 'rotate';
@@ -16046,8 +17792,11 @@ var SvgStyles = Base.each({
 	fontFamily: ['font-family', 'string'],
 	fontWeight: ['font-weight', 'font'],
 	fontSize: ['font-size', 'number'],
-	tracking: ['letter-spacing', 'tracking'],
+	letterTracking: ['letter-spacing', 'tracking'],
 	justification: ['text-anchor', 'lookup', {
+		justify: 'start',
+		start: 'start',
+		end: 'end',
 		left: 'start',
 		center: 'middle',
 		right: 'end'
@@ -16398,19 +18147,19 @@ new function() {
 	function exportText(item) {
 		var attrs = getTransform(item._matrix, true),
 			node = SvgElement.create('text', attrs, formatter),
-			lines = item._lines;
-		if (lines.length > 1) {
-			var leading = item._style.getLeading();
-			for (var i = 0, l = lines.length; i < l; i++) {
+			paragraphs = item.getParagraphs();
+		if (paragraphs.length > 1) {
+			var lines = item._getLayout();
+			for (var i = 0, l = paragraphs.length; i < l; i++) {
 				var span = SvgElement.create('tspan', {
 					x: attrs.x,
-					y: attrs.y + i * leading
+					y: attrs.y + lines[i].y
 				}, formatter);
-				span.textContent = lines[i];
+				span.textContent = paragraphs[i].getContent();
 				node.appendChild(span);
 			}
 		} else {
-			node.textContent = item._content;
+			node.textContent = item.getContent();
 		}
 		return node;
 	}
@@ -17084,9 +18833,9 @@ new function() {
 		},
 
 		'letter-spacing': function(item, value) {
-			if (item.setTracking) {
+			if (item.setLetterTracking) {
 				var amount = parseFloat(value) || 0;
-				item.setTracking(1000 * (/em$/.test(value) ? amount
+				item.setLetterTracking(1000 * (/em$/.test(value) ? amount
 						: amount / parseFloat(item.getFontSize())));
 			}
 		},

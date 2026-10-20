@@ -17,7 +17,7 @@
 
 <p> Extends <b><a href="../classes/Item.html"><tt>Item</tt></a></b></p>
 
-<p>The TextItem type allows you to create typography. Its functionality  is inherited by different text item types such as <a href="../classes/PointText.html"><tt>PointText</tt></a>, and  <tt>AreaText</tt> (coming soon). They each add a layer of functionality  that is unique to their type, but share the underlying properties and  functions that they inherit from TextItem.</p>
+<p>The TextItem type allows you to create typography. Its functionality  is inherited by different text item types such as <a href="../classes/PointText.html"><tt>PointText</tt></a>,  <a href="../classes/PathText.html"><tt>PathText</tt></a> and <a href="../classes/AreaText.html"><tt>AreaText</tt></a>. They each add a layer of  functionality that is unique to their type, but share the underlying  properties and functions that they inherit from TextItem.</p>
 
 
 </div>
@@ -31,16 +31,21 @@
 		<h2>Properties</h2>
 		
 			
-<div id="content" class="member">
+<div id="orientation" class="member">
 <div class="member-link">
-<a name="content" href="#content"><tt><b>content</b></tt></a>
+<a name="orientation" href="#orientation"><tt><b>orientation</b></tt></a>
 </div>
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The text contents of the text item.</p>
+	<p>The direction the text&rsquo;s lines run in: <code>&#39;horizontal&#39;</code>, or <code>&#39;vertical&#39;</code> from top to bottom, with the lines from right to left.</p>
 	
 	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'horizontal'</tt></li>
+		</ul>
 	
 	<ul class="member-list">
 		<h4>Type:</h4>
@@ -50,51 +55,175 @@
 	</ul>
     
 	
-	<h4>Example:<span class="description">Setting the content of a PointText item:</span></h4>
-
-<div class="paperscript split">
-
-<div class="buttons">
-<div class="button run">Run</div>
+	
 </div>
 
-<script type="text/paperscript" canvas="canvas-0">
-// Create a point-text item at {x: 30, y: 30}:
-var text = new PointText(new Point(30, 30));
-text.fillColor = 'black';
+</div>
+</div>
+		
+			
+<div id="textpath" class="member">
+<div class="member-link">
+<a name="textpath" href="#textpath"><tt><b>textPath</b></tt></a>
+</div>
+<div class="member-description hidden">
 
-// Set the content of the text item:
-text.content = 'Hello world';
-</script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
+<div class="member-text">
+	<p>The path that the text flows in (<a href="../classes/AreaText.html"><tt>AreaText</tt></a>) or along (<a href="../classes/PathText.html"><tt>PathText</tt></a>). It guides the text and isn&rsquo;t drawn itself.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/PathItem.html"><tt>PathItem</tt></a>
+		</li>
+	</ul>
+    
+	
+	
 </div>
 
+</div>
+</div>
+		
+			
+	<h3>Linking</h3>
 
-<h4>Example:<span class="description">Interactive example, move your mouse over the view below:</span></h4>
+<div id="story" class="member">
+<div class="member-link">
+<a name="story" href="#story"><tt><b>story</b></tt></a>
+</div>
+<div class="member-description hidden">
 
-<div class="paperscript split">
-
-<div class="buttons">
-<div class="button run">Run</div>
+<div class="member-text">
+	<p>The story the text item shows: the text of all the text items linked with it.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/TextStory.html"><tt>TextStory</tt></a>
+		</li>
+	</ul>
+    
+	
+	
 </div>
 
-<script type="text/paperscript" canvas="canvas-1">
-// Create a point-text item at {x: 30, y: 30}:
-var text = new PointText(new Point(30, 30));
-text.fillColor = 'black';
+</div>
+</div>
+		
+			
+<div id="nexttextitem" class="member">
+<div class="member-link">
+<a name="nexttextitem" href="#nexttextitem"><tt><b>nextTextItem</b></tt></a>
+</div>
+<div class="member-description hidden">
 
-text.content = 'Move your mouse over the view, to see its position';
-
-function onMouseMove(event) {
-    // Each time the mouse is moved, set the content of
-    // the point text to describe the position of the mouse:
-    text.content = 'Your position is: ' + event.point.toString();
-}
-</script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
+<div class="member-text">
+	<p>The text item after this one in its story, if any.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/TextItem.html"><tt>TextItem</tt></a>
+		</li>
+	</ul>
+    
+	
+	
 </div>
 
+</div>
+</div>
+		
+			
+<div id="previoustextitem" class="member">
+<div class="member-link">
+<a name="previoustextitem" href="#previoustextitem"><tt><b>previousTextItem</b></tt></a>
+</div>
+<div class="member-description hidden">
 
+<div class="member-text">
+	<p>The text item before this one in its story, if any.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/TextItem.html"><tt>TextItem</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="visiblerange" class="member">
+<div class="member-link">
+<a name="visiblerange" href="#visiblerange"><tt><b>visibleRange</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The range of the story that this text item shows, as its layout flows the story through the linked text items: without the overflow, and without what the ones before it show.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/TextRange.html"><tt>TextRange</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="lines" class="member">
+<div class="member-link">
+<a name="lines" href="#lines"><tt><b>lines</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The lines of the text, as its layout breaks them: each a range of its story, with its <code>baseline</code>, a <a href="../classes/undefined.html"><tt>Line</tt></a> along it, and its <code>bounds</code>, in the text item&rsquo;s own coordinates. A <a href="../classes/PathText.html"><tt>PathText</tt></a>&rsquo;s one line follows its path: these describe it laid out straight.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <a href="../classes/TextRange.html"><tt>TextRange</tt></a> objects
+		</li>
+	</ul>
+    
+	
+	
 </div>
 
 </div>
@@ -196,20 +325,20 @@ function onMouseMove(event) {
 </div>
 		
 			
-<div id="leading" class="member">
+<div id="lineheight" class="member">
 <div class="member-link">
-<a name="leading" href="#leading"><tt><b>leading</b></tt></a>
+<a name="lineheight" href="#lineheight"><tt><b>lineHeight</b></tt></a>
 </div>
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The text leading of text content.</p>
+	<p>The line height of text content: the distance from one line&rsquo;s baseline to the next. Automatic, as <code>&#39;auto&#39;</code> (1.2) or another factor of the letters&rsquo; font size, each line moving down by its largest letters&rsquo;; or fixed, as a length with units as the font size takes them (<code>&#39;18px&#39;</code>, <code>&#39;12pt&#39;</code>). <code>leading</code>, as Paper.js had it before, sets and reads it as a fixed length in pixels.</p>
 	
 	
 	
 		<ul class="member-list">
 			<h4>Default:</h4>
-			<li><tt>fontSize * 1.2</tt></li>
+			<li><tt>'auto'</tt></li>
 		</ul>
 	
 	<ul class="member-list">
@@ -227,14 +356,14 @@ function onMouseMove(event) {
 </div>
 		
 			
-<div id="tracking" class="member">
+<div id="lettertracking" class="member">
 <div class="member-link">
-<a name="tracking" href="#tracking"><tt><b>tracking</b></tt></a>
+<a name="lettertracking" href="#lettertracking"><tt><b>letterTracking</b></tt></a>
 </div>
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The tracking of text content: the space added after each character, in thousandths of an em, as in Adobe Illustrator and InDesign. A tracking of 100 adds a tenth of the font size.</p>
+	<p>The letter tracking of text content: the space added after each letter, along the line, in thousandths of an em, as in Adobe Illustrator and InDesign. A tracking of 100 adds a tenth of the font size. Also <code>tracking</code>, its former name.</p>
 	
 	
 	
@@ -247,6 +376,363 @@ function onMouseMove(event) {
 		<h4>Type:</h4>
 		<li>
 			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="letterkerning" class="member">
+<div class="member-link">
+<a name="letterkerning" href="#letterkerning"><tt><b>letterKerning</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The letter kerning of text content: the space added after a letter, along the line, in thousandths of an em, in place of the font&rsquo;s own kerning pair; <code>null</code> for the font&rsquo;s kerning.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>null</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="fontstyle" class="member">
+<div class="member-link">
+<a name="fontstyle" href="#fontstyle"><tt><b>fontStyle</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The font style of text content, as in CSS: upright or slanted. Together with the <a href="../classes/TextItem.html#fontweight"><tt>fontWeight</tt></a>, it says what a font&rsquo;s style name says, e.g. <code>&#39;Bold Italic&#39;</code>.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'normal'</tt>, <tt>'italic'</tt>, <tt>'oblique'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'normal'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="fontvariations" class="member">
+<div class="member-link">
+<a name="fontvariations" href="#fontvariations"><tt><b>fontVariations</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The settings of a variable font&rsquo;s axes, by their tags: <code>{ wght: 600,
+wdth: 80 }</code>. Kept for hosts that lay text out with its fonts; canvas doesn&rsquo;t draw them.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>null</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Object</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="baselineshift" class="member">
+<div class="member-link">
+<a name="baselineshift" href="#baselineshift"><tt><b>baselineShift</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>How far the letters move up from the baseline, in pixels.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="baselineposition" class="member">
+<div class="member-link">
+<a name="baselineposition" href="#baselineposition"><tt><b>baselinePosition</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Whether the letters are set as superscripts or subscripts: smaller, and above or below the baseline.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'normal'</tt>, <tt>'superscript'</tt>, <tt>'subscript'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'normal'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="letterscaling" class="member">
+<div class="member-link">
+<a name="letterscaling" href="#letterscaling"><tt><b>letterScaling</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>How much the letters are scaled, as <a href="../classes/Item.html#scaling"><tt>item.scaling</tt></a>: one factor for both directions, or a point with the horizontal and vertical ones.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>1</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>⟋<a href="../classes/Point.html"><tt>Point</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="letterrotation" class="member">
+<div class="member-link">
+<a name="letterrotation" href="#letterrotation"><tt><b>letterRotation</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The rotation of each letter about its origin on the baseline, in degrees.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="capitals" class="member">
+<div class="member-link">
+<a name="capitals" href="#capitals"><tt><b>capitals</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Whether the letters are set as capitals, or as small capitals.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'normal'</tt>, <tt>'all'</tt>, <tt>'small'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'normal'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="underline" class="member">
+<div class="member-link">
+<a name="underline" href="#underline"><tt><b>underline</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Whether the letters are underlined.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>false</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Boolean</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="strikethrough" class="member">
+<div class="member-link">
+<a name="strikethrough" href="#strikethrough"><tt><b>strikethrough</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Whether the letters are struck through.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>false</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Boolean</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="features" class="member">
+<div class="member-link">
+<a name="features" href="#features"><tt><b>features</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The OpenType features to turn on (<code>&#39;dlig&#39;</code>) or off (<code>&#39;-liga&#39;</code>). Kept for hosts that lay text out with its fonts; canvas doesn&rsquo;t draw them.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>null</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <tt>Strings</tt>
 		</li>
 	</ul>
     
@@ -272,7 +758,7 @@ function onMouseMove(event) {
 	
 		<ul class="member-list">
 			<h4>Values:</h4>
-			<li><tt>'left'</tt>, <tt>'right'</tt>, <tt>'center'</tt></li>
+			<li><tt>'left'</tt>, <tt>'right'</tt>, <tt>'center'</tt>, <tt>'start'</tt>, <tt>'end'</tt>, <tt>'justify'</tt></li>
 		</ul>
 	
 	
@@ -295,11 +781,750 @@ function onMouseMove(event) {
 </div>
 </div>
 		
+			
+<div id="justifylast" class="member">
+<div class="member-link">
+<a name="justifylast" href="#justifylast"><tt><b>justifyLast</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>How the last line of a justified paragraph is aligned; <code>&#39;all&#39;</code> justifies it too.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'left'</tt>, <tt>'right'</tt>, <tt>'center'</tt>, <tt>'start'</tt>, <tt>'end'</tt>, <tt>'all'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'left'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="justifyspacing" class="member">
+<div class="member-link">
+<a name="justifyspacing" href="#justifyspacing"><tt><b>justifySpacing</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>How far justification may change the spacing, each as <code>[minimum, desired,
+maximum]</code> in percent: <code>{ word: [80, 100, 133], letter: [0, 0, 0], glyph:
+[100, 100, 100] }</code>; <code>null</code> for those. Kept for hosts: canvas text justifies by the word spacing alone.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>null</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Object</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="startindent" class="member">
+<div class="member-link">
+<a name="startindent" href="#startindent"><tt><b>startIndent</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The indent where the paragraph&rsquo;s lines start: left in left-to-right text, right in right-to-left text.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="endindent" class="member">
+<div class="member-link">
+<a name="endindent" href="#endindent"><tt><b>endIndent</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The indent where the paragraph&rsquo;s lines end.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="firstlineindent" class="member">
+<div class="member-link">
+<a name="firstlineindent" href="#firstlineindent"><tt><b>firstLineIndent</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The indent of the paragraph&rsquo;s first line, added to its start indent.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="spacebefore" class="member">
+<div class="member-link">
+<a name="spacebefore" href="#spacebefore"><tt><b>spaceBefore</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The space above the paragraph. Between two paragraphs, the larger of this one&rsquo;s and the space after the one before it is used.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="spaceafter" class="member">
+<div class="member-link">
+<a name="spaceafter" href="#spaceafter"><tt><b>spaceAfter</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The space below the paragraph.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="hyphenation" class="member">
+<div class="member-link">
+<a name="hyphenation" href="#hyphenation"><tt><b>hyphenation</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Whether words are hyphenated at the ends of lines, and how: <code>true</code>, or <code>{
+wordsLongerThan, afterFirst, beforeLast, limit, zone, capitalized }</code>. Kept for hosts: canvas text breaks only at soft hyphens.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>false</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Boolean</tt>⟋<tt>Object</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="composer" class="member">
+<div class="member-link">
+<a name="composer" href="#composer"><tt><b>composer</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>How lines are broken: one line at a time, or all of the paragraph&rsquo;s lines together, for the most even spacing. Kept for hosts: canvas text breaks one line at a time.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'line'</tt>, <tt>'paragraph'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'paragraph'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="linewrap" class="member">
+<div class="member-link">
+<a name="linewrap" href="#linewrap"><tt><b>lineWrap</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>How the lines of a paragraph in an area are evened out: <code>&#39;normal&#39;</code> fills each line as far as it goes, <code>&#39;balance&#39;</code> makes them all about as long, and <code>&#39;pretty&#39;</code> balances the last four lines when the last one is shorter than a third of the one before. Both keep the paragraph&rsquo;s number of lines.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'normal'</tt>, <tt>'balance'</tt>, <tt>'pretty'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'normal'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="tabs" class="member">
+<div class="member-link">
+<a name="tabs" href="#tabs"><tt><b>tabs</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The paragraph&rsquo;s tab stops: <code>[{ position, align, leader }]</code>, with <code>align</code> one of <code>&#39;left&#39;</code>, <code>&#39;center&#39;</code>, <code>&#39;right&#39;</code> and <code>&#39;decimal&#39;</code>. Kept for hosts: canvas text doesn&rsquo;t set tabs yet.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>null</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <tt>Object</tt> objects
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="direction" class="member">
+<div class="member-link">
+<a name="direction" href="#direction"><tt><b>direction</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The direction the paragraph&rsquo;s lines run in, which <code>&#39;start&#39;</code> and <code>&#39;end&#39;</code> follow; <code>null</code> for left to right.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'ltr'</tt>, <tt>'rtl'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>null</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>Content</h3>
+
+<div id="content" class="member">
+<div class="member-link">
+<a name="content" href="#content"><tt><b>content</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The text of the item&rsquo;s story, see <a href="../classes/TextStory.html#content"><tt>textStory.content</tt></a>.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="runs" class="member">
+<div class="member-link">
+<a name="runs" href="#runs"><tt><b>runs</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The runs of the item&rsquo;s story, see <a href="../classes/TextStory.html#runs"><tt>textStory.runs</tt></a>.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <a href="../classes/TextRange.html"><tt>TextRange</tt></a> objects
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="paragraphs" class="member">
+<div class="member-link">
+<a name="paragraphs" href="#paragraphs"><tt><b>paragraphs</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The paragraphs of the item&rsquo;s story, see <a href="../classes/TextStory.html#paragraphs"><tt>textStory.paragraphs</tt></a>.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <a href="../classes/TextRange.html"><tt>TextRange</tt></a> objects
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="words" class="member">
+<div class="member-link">
+<a name="words" href="#words"><tt><b>words</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The words of the item&rsquo;s story, see <a href="../classes/TextStory.html#words"><tt>textStory.words</tt></a>.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <a href="../classes/TextRange.html"><tt>TextRange</tt></a> objects
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="letters" class="member">
+<div class="member-link">
+<a name="letters" href="#letters"><tt><b>letters</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The letters of the item&rsquo;s story, see <a href="../classes/TextStory.html#letters"><tt>textStory.letters</tt></a>.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <a href="../classes/TextRange.html"><tt>TextRange</tt></a> objects
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
 	</div>
 
 
 
 
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members">
+		<h2>Methods</h2>
+		
+	
+<div id="link-next" class="member">
+<div class="member-link">
+<a name="link-next" href="#link-next"><tt><b>link</b>(next)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Links the text item <code>next</code> after this one, so the story flows on into it. Its own story joins the end of this one.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>next:</tt> 
+<a href="../classes/TextItem.html"><tt>TextItem</tt></a>
+&mdash;&nbsp;the text item to link
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the text item was linked, <tt>false</tt> otherwise
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="islinked" class="member">
+<div class="member-link">
+<a name="islinked" href="#islinked"><tt><b>isLinked</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p><tt>true</tt> if the text item is linked with others, <tt>false</tt> otherwise</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="unlink" class="member">
+<div class="member-link">
+<a name="unlink" href="#unlink"><tt><b>unlink</b>([which])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Unlinks the text item: <code>&#39;both&#39;</code> takes it out of its story, which flows on through the others, <code>&#39;before&#39;</code> and <code>&#39;after&#39;</code> break the story into two there.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>which:</tt> 
+<tt>String</tt>
+&mdash;&nbsp;<code>&#39;both&#39;</code>, <code>&#39;before&#39;</code> or <code>&#39;after&#39;</code>
+&mdash;&nbsp;optional, default: <tt>&lsquo;both&rsquo;</tt>
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the text item was unlinked, <tt>false</tt> otherwise
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="replace-content-start-end" class="member">
+<div class="member-link">
+<a name="replace-content-start-end" href="#replace-content-start-end"><tt><b>replace</b>(content, start, end)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Replaces the content from <code>start</code> to <code>end</code> of the item&rsquo;s story, see <a href="../classes/TextStory.html#replace-content-start-end"><tt>textStory.replace(content, start, end)</tt></a>.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>content:</tt> 
+<tt>String</tt>
+&mdash;&nbsp;the new content
+
+</li>
+	
+	<li>
+<tt>start:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the index of the first character to replace
+
+</li>
+	
+	<li>
+<tt>end:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the index after the last character to replace
+
+</li>
+	
+</ul>
+
+	
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="range-start-end" class="member">
+<div class="member-link">
+<a name="range-start-end" href="#range-start-end"><tt><b>range</b>(start, end)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>The range of the item&rsquo;s story from <code>start</code> to <code>end</code>.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>start:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the index of its first character
+
+</li>
+	
+	<li>
+<tt>end:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the index after its last character
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/TextRange.html"><tt>TextRange</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+
+		
+	</div>
 
 
 
@@ -420,7 +1645,7 @@ function onMouseMove(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-2">
+<script type="text/paperscript" canvas="canvas-0">
 var path = new Path.Circle({
     center: [80, 50],
     radius: 35
@@ -435,7 +1660,7 @@ group.addChild(path);
 // The path can be accessed by name:
 group.children['example'].fillColor = 'red';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
 </div>
 
 
@@ -473,7 +1698,7 @@ group.children['example'].fillColor = 'red';
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-3">
+<script type="text/paperscript" canvas="canvas-1">
 var circle = new Path.Circle({
     center: [80, 50],
     radius: 30
@@ -484,7 +1709,7 @@ circle.style = {
     strokeWidth: 5
 };
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-3"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
 </div>
 
 
@@ -496,7 +1721,7 @@ circle.style = {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-4">
+<script type="text/paperscript" canvas="canvas-2">
 var path = new Path.Circle({
     center: [50, 50],
     radius: 30,
@@ -511,7 +1736,7 @@ var path2 = new Path.Circle({
 // Copy the path style of path:
 path2.style = path.style;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-4"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
 </div>
 
 
@@ -523,7 +1748,7 @@ path2.style = path.style;
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-5">
+<script type="text/paperscript" canvas="canvas-3">
 var myStyle = {
     fillColor: 'red',
     strokeColor: 'blue',
@@ -542,7 +1767,7 @@ var path2 = new Path.Circle({
 });
 path2.style = myStyle;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-5"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-3"></canvas></div>
 </div>
 
 
@@ -584,7 +1809,7 @@ path2.style = myStyle;
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-6">
+<script type="text/paperscript" canvas="canvas-4">
 var unlockedItem = new Path.Circle({
     center: view.center - [35, 0],
     radius: 30,
@@ -611,7 +1836,7 @@ new PointText({
     justification: 'center'
 });
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-6"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-4"></canvas></div>
 </div>
 
 
@@ -653,7 +1878,7 @@ new PointText({
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-7">
+<script type="text/paperscript" canvas="canvas-5">
 var path = new Path.Circle({
     center: [50, 50],
     radius: 20,
@@ -663,7 +1888,7 @@ var path = new Path.Circle({
 // Hide the path:
 path.visible = false;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-7"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-5"></canvas></div>
 </div>
 
 
@@ -711,7 +1936,7 @@ path.visible = false;
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-8">
+<script type="text/paperscript" canvas="canvas-6">
 // Create a white rectangle in the background
 // with the same dimensions as the view:
 var background = new Path.Rectangle(view.bounds);
@@ -732,7 +1957,7 @@ var circle2 = new Path.Circle({
 // Set the blend mode of circle2:
 circle2.blendMode = 'multiply';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-8"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-6"></canvas></div>
 </div>
 
 
@@ -774,7 +1999,7 @@ circle2.blendMode = 'multiply';
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-9">
+<script type="text/paperscript" canvas="canvas-7">
 var circle = new Path.Circle({
     center: [80, 50],
     radius: 35,
@@ -792,7 +2017,7 @@ var circle2 = new Path.Circle({
 // Make circle2 50% transparent:
 circle2.opacity = 0.5;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-9"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-7"></canvas></div>
 </div>
 
 
@@ -827,6 +2052,42 @@ circle2.opacity = 0.5;
     
 	
 	
+</div>
+
+</div>
+</div>
+
+	
+<div id="textwrap" class="member">
+<div class="member-link">
+<a name="textwrap" href="#textwrap"><tt><b>textWrap</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Specifies whether, and how, the item pushes aside the text of the <a href="../classes/AreaText.html"><tt>AreaText</tt></a> items below it in its layer: <code>null</code>, or an object with <code>offset</code>, the space kept between them, and <code>invert</code>, to let the text flow inside it instead. <code>true</code> sets the defaults.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>null</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Object</tt>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:</h4>
+
+
+<pre><code>var circle = new Path.Circle({ center: [100, 100], radius: 40 });
+circle.textWrap = { offset: 10 };</code></pre>
+
 </div>
 
 </div>
@@ -879,14 +2140,14 @@ circle2.opacity = 0.5;
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-10">
+<script type="text/paperscript" canvas="canvas-8">
 var path = new Path.Circle({
     center: [80, 50],
     radius: 35
 });
 path.selected = true; // Select the path
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-10"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-8"></canvas></div>
 </div>
 
 
@@ -1043,7 +2304,7 @@ console.log(path.data.pets.length); // 1</code></pre>
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-11">
+<script type="text/paperscript" canvas="canvas-9">
 // Create a circle at position { x: 10, y: 10 }
 var circle = new Path.Circle({
     center: new Point(10, 10),
@@ -1057,7 +2318,7 @@ circle.position = new Point(20, 20);
 // Move the circle 100 points to the right and 50 points down
 circle.position += new Point(100, 50);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-11"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-9"></canvas></div>
 </div>
 
 
@@ -1069,7 +2330,7 @@ circle.position += new Point(100, 50);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-12">
+<script type="text/paperscript" canvas="canvas-10">
 // Create a circle at position { x: 20, y: 20 }
 var circle = new Path.Circle({
     center: new Point(20, 20),
@@ -1080,7 +2341,7 @@ var circle = new Path.Circle({
 // Move the circle 100 points to the right
 circle.position.x += 100;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-12"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-10"></canvas></div>
 </div>
 
 
@@ -1605,7 +2866,7 @@ console.log(group.children[0] == path); // true</code></pre>
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-13">
+<script type="text/paperscript" canvas="canvas-11">
 var path = new Path.Circle({
     center: [80, 50],
     radius: 35
@@ -1618,7 +2879,7 @@ group.addChild(path);
 // Access the path through the group's children array:
 group.children[0].fillColor = 'red';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-13"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-11"></canvas></div>
 </div>
 
 
@@ -1630,7 +2891,7 @@ group.children[0].fillColor = 'red';
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-14">
+<script type="text/paperscript" canvas="canvas-12">
 var path = new Path.Circle({
     center: [80, 50],
     radius: 35
@@ -1645,7 +2906,7 @@ group.addChild(path);
 // The path can be accessed by name:
 group.children['example'].fillColor = 'orange';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-14"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-12"></canvas></div>
 </div>
 
 
@@ -1657,7 +2918,7 @@ group.children['example'].fillColor = 'orange';
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-15">
+<script type="text/paperscript" canvas="canvas-13">
 var path = new Path.Circle({
     center: [80, 50],
     radius: 35
@@ -1669,7 +2930,7 @@ group.children = [path];
 // The path is the first child of the group:
 group.firstChild.fillColor = 'green';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-15"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-13"></canvas></div>
 </div>
 
 
@@ -1846,7 +3107,7 @@ group.firstChild.fillColor = 'green';
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-16">
+<script type="text/paperscript" canvas="canvas-14">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var circle = new Path.Circle({
@@ -1857,7 +3118,7 @@ var circle = new Path.Circle({
 // Set its stroke color to RGB red:
 circle.strokeColor = new Color(1, 0, 0);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-16"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-14"></canvas></div>
 </div>
 
 
@@ -1894,7 +3155,7 @@ circle.strokeColor = new Color(1, 0, 0);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-17">
+<script type="text/paperscript" canvas="canvas-15">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var circle = new Path.Circle({
@@ -1906,7 +3167,7 @@ var circle = new Path.Circle({
 // Set its stroke width to 10:
 circle.strokeWidth = 10;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-17"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-15"></canvas></div>
 </div>
 
 
@@ -1953,7 +3214,7 @@ circle.strokeWidth = 10;
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-18">
+<script type="text/paperscript" canvas="canvas-16">
 var line = new Path({
     segments: [[80, 50], [420, 50]],
     strokeColor: 'black',
@@ -1974,7 +3235,7 @@ var line2 = line.clone();
 line2.position.y += 100;
 line2.strokeCap = 'butt';
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-18"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-16"></canvas></div>
 </div>
 
 
@@ -2021,7 +3282,7 @@ line2.strokeCap = 'butt';
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-19">
+<script type="text/paperscript" canvas="canvas-17">
 var path = new Path({
     segments: [[80, 100], [120, 40], [160, 100]],
     strokeColor: 'black',
@@ -2038,7 +3299,7 @@ var path3 = path2.clone();
 path3.position.x += path3.bounds.width * 1.5;
 path3.strokeJoin = 'bevel';
 </script>
-<div class="canvas"><canvas width="516" height="120" id="canvas-19"></canvas></div>
+<div class="canvas"><canvas width="516" height="120" id="canvas-17"></canvas></div>
 </div>
 
 
@@ -2142,7 +3403,7 @@ path3.strokeJoin = 'bevel';
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-20">
+<script type="text/paperscript" canvas="canvas-18">
 var path = new Path.Circle({
     center: [80, 50],
     radius: 40,
@@ -2153,7 +3414,7 @@ var path = new Path.Circle({
 // Set the dashed stroke to [10pt dash, 4pt gap]:
 path.dashArray = [10, 4];
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-20"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-18"></canvas></div>
 </div>
 
 
@@ -2223,7 +3484,7 @@ path.dashArray = [10, 4];
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-21">
+<script type="text/paperscript" canvas="canvas-19">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var circle = new Path.Circle({
@@ -2234,7 +3495,7 @@ var circle = new Path.Circle({
 // Set the fill color of the circle to RGB red:
 circle.fillColor = new Color(1, 0, 0);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-21"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-19"></canvas></div>
 </div>
 
 
@@ -2309,7 +3570,7 @@ circle.fillColor = new Color(1, 0, 0);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-22">
+<script type="text/paperscript" canvas="canvas-20">
 var circle = new Path.Circle({
     center: [80, 50],
     radius: 35,
@@ -2322,7 +3583,7 @@ var circle = new Path.Circle({
     shadowOffset: new Point(5, 5)
 });
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-22"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-20"></canvas></div>
 </div>
 
 
@@ -2463,7 +3724,7 @@ var circle = new Path.Circle({
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-23">
+<script type="text/paperscript" canvas="canvas-21">
 // Create a rectangle shaped path with its top left point at:
 // {x: 50, y: 25} and a size of {width: 50, height: 50}
 var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
@@ -2474,7 +3735,7 @@ path.onFrame = function(event) {
     this.rotate(3);
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-23"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-21"></canvas></div>
 </div>
 
 
@@ -2518,7 +3779,7 @@ path.onFrame = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-24">
+<script type="text/paperscript" canvas="canvas-22">
 // Create a circle shaped path at the center of the view:
 var path = new Path.Circle({
     center: view.center,
@@ -2532,7 +3793,7 @@ path.onMouseDown = function(event) {
     this.fillColor = 'red';
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-24"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-22"></canvas></div>
 </div>
 
 
@@ -2544,7 +3805,7 @@ path.onMouseDown = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-25">
+<script type="text/paperscript" canvas="canvas-23">
 // Loop 30 times:
 for (var i = 0; i < 30; i++) {
     // Create a circle shaped path at a random position
@@ -2562,7 +3823,7 @@ for (var i = 0; i < 30; i++) {
     }
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-25"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-23"></canvas></div>
 </div>
 
 
@@ -2606,7 +3867,7 @@ for (var i = 0; i < 30; i++) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-26">
+<script type="text/paperscript" canvas="canvas-24">
 // Create a circle shaped path at the center of the view:
 var path = new Path.Circle({
     center: view.center,
@@ -2619,7 +3880,7 @@ path.onMouseDrag = function(event) {
     path.position += event.delta;
 }
 </script>
-<div class="canvas"><canvas width="516" height="240" id="canvas-26"></canvas></div>
+<div class="canvas"><canvas width="516" height="240" id="canvas-24"></canvas></div>
 </div>
 
 
@@ -2663,7 +3924,7 @@ path.onMouseDrag = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-27">
+<script type="text/paperscript" canvas="canvas-25">
 // Create a circle shaped path at the center of the view:
 var path = new Path.Circle({
     center: view.center,
@@ -2677,7 +3938,7 @@ path.onMouseUp = function(event) {
     this.fillColor = 'red';
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-27"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-25"></canvas></div>
 </div>
 
 
@@ -2721,7 +3982,7 @@ path.onMouseUp = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-28">
+<script type="text/paperscript" canvas="canvas-26">
 // Create a circle shaped path at the center of the view:
 var path = new Path.Circle({
     center: view.center,
@@ -2735,7 +3996,7 @@ path.onClick = function(event) {
     this.fillColor = 'red';
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-28"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-26"></canvas></div>
 </div>
 
 
@@ -2747,7 +4008,7 @@ path.onClick = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-29">
+<script type="text/paperscript" canvas="canvas-27">
 // Loop 30 times:
 for (var i = 0; i < 30; i++) {
     // Create a circle shaped path at a random position
@@ -2765,7 +4026,7 @@ for (var i = 0; i < 30; i++) {
     }
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-29"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-27"></canvas></div>
 </div>
 
 
@@ -2809,7 +4070,7 @@ for (var i = 0; i < 30; i++) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-30">
+<script type="text/paperscript" canvas="canvas-28">
 // Create a circle shaped path at the center of the view:
 var path = new Path.Circle({
     center: view.center,
@@ -2823,7 +4084,7 @@ path.onDoubleClick = function(event) {
     this.fillColor = 'red';
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-30"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-28"></canvas></div>
 </div>
 
 
@@ -2835,7 +4096,7 @@ path.onDoubleClick = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-31">
+<script type="text/paperscript" canvas="canvas-29">
 // Loop 30 times:
 for (var i = 0; i < 30; i++) {
     // Create a circle shaped path at a random position
@@ -2853,7 +4114,7 @@ for (var i = 0; i < 30; i++) {
     }
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-31"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-29"></canvas></div>
 </div>
 
 
@@ -2897,7 +4158,7 @@ for (var i = 0; i < 30; i++) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-32">
+<script type="text/paperscript" canvas="canvas-30">
 // Create a circle shaped path at the center of the view:
     var path = new Path.Circle({
     center: view.center,
@@ -2911,7 +4172,7 @@ path.onMouseMove = function(event) {
     this.opacity = Math.random();
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-32"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-30"></canvas></div>
 </div>
 
 
@@ -2955,7 +4216,7 @@ path.onMouseMove = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-33">
+<script type="text/paperscript" canvas="canvas-31">
 // Create a circle shaped path at the center of the view:
 var path = new Path.Circle({
     center: view.center,
@@ -2973,7 +4234,7 @@ path.onMouseLeave = function(event) {
     this.fillColor = 'black';
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-33"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-31"></canvas></div>
 </div>
 
 
@@ -2985,7 +4246,7 @@ path.onMouseLeave = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-34">
+<script type="text/paperscript" canvas="canvas-32">
 function enter(event) {
     this.fillColor = 'red';
 }
@@ -3007,7 +4268,7 @@ function onMouseDown(event) {
     path.onMouseLeave = leave;
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-34"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-32"></canvas></div>
 </div>
 
 
@@ -3051,7 +4312,7 @@ function onMouseDown(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-35">
+<script type="text/paperscript" canvas="canvas-33">
 // Create a circle shaped path at the center of the view:
 var path = new Path.Circle({
     center: view.center,
@@ -3064,7 +4325,7 @@ path.onMouseLeave = function(event) {
     this.fillColor = 'red';
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-35"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-33"></canvas></div>
 </div>
 
 
@@ -3123,7 +4384,7 @@ path.onMouseLeave = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-36">
+<script type="text/paperscript" canvas="canvas-34">
 var circle = new Path.Circle({
     center: [80, 50],
     radius: 35
@@ -3136,7 +4397,7 @@ circle.set({
     selected: true
 });
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-36"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-34"></canvas></div>
 </div>
 
 
@@ -3192,7 +4453,7 @@ circle.set({
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-37">
+<script type="text/paperscript" canvas="canvas-35">
 var circle = new Path.Circle({
     center: [50, 50],
     radius: 10,
@@ -3207,7 +4468,7 @@ for (var i = 0; i < 20; i++) {
     copy.position.x += i * copy.bounds.width;
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-37"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-35"></canvas></div>
 </div>
 
 
@@ -3333,7 +4594,7 @@ for (var i = 0; i < 20; i++) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-38">
+<script type="text/paperscript" canvas="canvas-36">
 var circle = new Path.Circle({
     center: [50, 50],
     radius: 5,
@@ -3350,7 +4611,7 @@ raster.position.x += 100;
 circle.scale(5);
 raster.scale(5);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-38"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-36"></canvas></div>
 </div>
 
 
@@ -3404,7 +4665,7 @@ raster.scale(5);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-39">
+<script type="text/paperscript" canvas="canvas-37">
 var path = new Path.Star({
     center: [50, 50],
     points: 12,
@@ -3425,7 +4686,7 @@ function onMouseDown(event) {
     }
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-39"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-37"></canvas></div>
 </div>
 
 
@@ -5287,7 +6548,7 @@ Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-40">
+<script type="text/paperscript" canvas="canvas-38">
 // Create a rectangle shaped path with its top left
 // point at {x: 80, y: 25} and a size of {width: 50, height: 50}:
 var path = new Path.Rectangle(new Point(80, 25), new Size(50, 50));
@@ -5296,7 +6557,7 @@ path.fillColor = 'black';
 // Rotate the path by 30 degrees:
 path.rotate(30);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-40"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-38"></canvas></div>
 </div>
 
 
@@ -5308,7 +6569,7 @@ path.rotate(30);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-41">
+<script type="text/paperscript" canvas="canvas-39">
 // Create a rectangle shaped path with its top left
 // point at {x: 175, y: 50} and a size of {width: 100, height: 100}:
 var topLeft = new Point(175, 50);
@@ -5330,7 +6591,7 @@ function onFrame(event) {
     path.rotate(3, view.center);
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-41"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-39"></canvas></div>
 </div>
 
 
@@ -5379,7 +6640,7 @@ function onFrame(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-42">
+<script type="text/paperscript" canvas="canvas-40">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 20:
 var circle = new Path.Circle({
@@ -5391,7 +6652,7 @@ var circle = new Path.Circle({
 // Scale the path by 150% from its center point
 circle.scale(1.5);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-42"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-40"></canvas></div>
 </div>
 
 
@@ -5403,7 +6664,7 @@ circle.scale(1.5);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-43">
+<script type="text/paperscript" canvas="canvas-41">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 20:
 var circle = new Path.Circle({
@@ -5415,7 +6676,7 @@ var circle = new Path.Circle({
 // Scale the path 150% from its bottom left corner
 circle.scale(1.5, circle.bounds.bottomLeft);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-43"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-41"></canvas></div>
 </div>
 
 
@@ -5471,7 +6732,7 @@ circle.scale(1.5, circle.bounds.bottomLeft);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-44">
+<script type="text/paperscript" canvas="canvas-42">
 // Create a circle shaped path at { x: 100, y: 50 }
 // with a radius of 20:
 var circle = new Path.Circle({
@@ -5483,7 +6744,7 @@ var circle = new Path.Circle({
 // Scale the path horizontally by 300%
 circle.scale(3, 1);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-44"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-42"></canvas></div>
 </div>
 
 
@@ -5921,7 +7182,7 @@ circle.scale(3, 1);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-45">
+<script type="text/paperscript" canvas="canvas-43">
 // Create a rectangle shaped path with its top left corner
 // at {x: 80, y: 25} and a size of {width: 75, height: 50}:
 var path = new Path.Rectangle({
@@ -5942,7 +7203,7 @@ var circlePath = new Path.Circle({
 // the rectangular path:
 circlePath.fitBounds(path.bounds);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-45"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-43"></canvas></div>
 </div>
 
 
@@ -5954,7 +7215,7 @@ circlePath.fitBounds(path.bounds);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-46">
+<script type="text/paperscript" canvas="canvas-44">
 // Create a rectangle shaped path with its top left corner
 // at {x: 80, y: 25} and a size of {width: 75, height: 50}:
 var path = new Path.Rectangle({
@@ -5975,7 +7236,7 @@ var circlePath = new Path.Circle({
 // the rectangular path:
 circlePath.fitBounds(path.bounds, 'cover');
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-46"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-44"></canvas></div>
 </div>
 
 
@@ -5987,7 +7248,7 @@ circlePath.fitBounds(path.bounds, 'cover');
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-47">
+<script type="text/paperscript" canvas="canvas-45">
 var path = new Path.Circle({
     center: [80, 50],
     radius: 30,
@@ -5997,7 +7258,7 @@ var path = new Path.Circle({
 // Fit the path to the bounding rectangle of the view:
 path.fitBounds(view.bounds);
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-47"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-45"></canvas></div>
 </div>
 
 
@@ -6058,7 +7319,7 @@ path.fitBounds(view.bounds);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-48">
+<script type="text/paperscript" canvas="canvas-46">
 // Create a circle shaped path at the center of the view:
 var path = new Path.Circle({
     center: view.center,
@@ -6076,7 +7337,7 @@ path.on('mouseleave', function() {
     this.fillColor = 'black';
 });
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-48"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-46"></canvas></div>
 </div>
 
 
@@ -6128,7 +7389,7 @@ path.on('mouseleave', function() {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-49">
+<script type="text/paperscript" canvas="canvas-47">
 // Create a circle shaped path at the center of the view:
 var path = new Path.Circle({
     center: view.center,
@@ -6146,7 +7407,7 @@ path.on({
     }
 });
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-49"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-47"></canvas></div>
 </div>
 
 
@@ -6158,7 +7419,7 @@ path.on({
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-50">
+<script type="text/paperscript" canvas="canvas-48">
 var pathHandlers = {
     mouseenter: function(event) {
         this.fillColor = 'red';
@@ -6181,7 +7442,7 @@ function onMouseDown(event) {
     path.on(pathHandlers);
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-50"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-48"></canvas></div>
 </div>
 
 
@@ -6409,7 +7670,7 @@ function onMouseDown(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-51">
+<script type="text/paperscript" canvas="canvas-49">
 function onMouseDrag(event) {
     // Create a circle shaped path at the mouse position,
     // with a radius of 10:
@@ -6426,7 +7687,7 @@ function onMouseDrag(event) {
     });
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-51"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-49"></canvas></div>
 </div>
 
 
@@ -6456,7 +7717,7 @@ function onMouseDrag(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-52">
+<script type="text/paperscript" canvas="canvas-50">
 function onMouseMove(event) {
     // Create a circle shaped path at the mouse position,
     // with a radius of 10:
@@ -6470,7 +7731,7 @@ function onMouseMove(event) {
     path.removeOnMove();
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-52"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-50"></canvas></div>
 </div>
 
 
@@ -6500,7 +7761,7 @@ function onMouseMove(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-53">
+<script type="text/paperscript" canvas="canvas-51">
 function onMouseDown(event) {
     // Create a circle shaped path at the mouse position,
     // with a radius of 10:
@@ -6514,7 +7775,7 @@ function onMouseDown(event) {
     path.removeOnDown();
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-53"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-51"></canvas></div>
 </div>
 
 
@@ -6544,7 +7805,7 @@ function onMouseDown(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-54">
+<script type="text/paperscript" canvas="canvas-52">
 function onMouseDrag(event) {
     // Create a circle shaped path at the mouse position,
     // with a radius of 10:
@@ -6558,7 +7819,7 @@ function onMouseDrag(event) {
     path.removeOnDrag();
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-54"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-52"></canvas></div>
 </div>
 
 
@@ -6588,7 +7849,7 @@ function onMouseDrag(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-55">
+<script type="text/paperscript" canvas="canvas-53">
 function onMouseDown(event) {
     // Create a circle shaped path at the mouse position,
     // with a radius of 10:
@@ -6602,7 +7863,7 @@ function onMouseDown(event) {
     path.removeOnUp();
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-55"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-53"></canvas></div>
 </div>
 
 
@@ -6675,7 +7936,7 @@ function onMouseDown(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-56">
+<script type="text/paperscript" canvas="canvas-54">
 var path = new Path.Circle({
     radius: view.bounds.height * 0.4,
     center: view.center
@@ -6686,7 +7947,7 @@ path.tween(
     3000
 );
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-56"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-54"></canvas></div>
 </div>
 
 
@@ -6698,7 +7959,7 @@ path.tween(
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-57">
+<script type="text/paperscript" canvas="canvas-55">
 var path = new Shape.Rectangle({
     fillColor: 'red',
     center: [50, view.center.y],
@@ -6713,7 +7974,7 @@ path.tween({
     duration: 2000
 });
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-57"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-55"></canvas></div>
 </div>
 
 
@@ -6779,7 +8040,7 @@ path.tween({
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-58">
+<script type="text/paperscript" canvas="canvas-56">
 var path = new Path.Rectangle({
     size: [100, 100],
     position: view.center,
@@ -6793,7 +8054,7 @@ path.tween({
     'segments[2].point.x': '-= 50'
 }, 3000);
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-58"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-56"></canvas></div>
 </div>
 
 
@@ -6852,7 +8113,7 @@ path.tween({
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-59">
+<script type="text/paperscript" canvas="canvas-57">
 var path = new Path.Circle({
     fillColor: 'blue',
     radius: view.bounds.height * 0.4,
@@ -6868,7 +8129,7 @@ path.tween(2000).onUpdate = function(event) {
     path.interpolate(pathFrom, pathTo, event.factor)
 };
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-59"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-57"></canvas></div>
 </div>
 
 
@@ -6989,7 +8250,7 @@ path.tween(2000).onUpdate = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-60">
+<script type="text/paperscript" canvas="canvas-58">
 var path = new Path.Circle({
     fillColor: 'blue',
     radius: view.bounds.height * 0.4,
@@ -6997,7 +8258,7 @@ var path = new Path.Circle({
 });
 path.tweenFrom({ fillColor: 'red' }, { duration: 1000 });
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-60"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-58"></canvas></div>
 </div>
 
 

@@ -833,20 +833,20 @@ var circle = new Path.Circle({
 </div>
 		
 			
-<div id="leading" class="member">
+<div id="lineheight" class="member">
 <div class="member-link">
-<a name="leading" href="#leading"><tt><b>leading</b></tt></a>
+<a name="lineheight" href="#lineheight"><tt><b>lineHeight</b></tt></a>
 </div>
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The text leading of text content.</p>
+	<p>The line height of text content: the distance from one line&rsquo;s baseline to the next. Automatic, as <code>&#39;auto&#39;</code> (1.2) or another factor of the letters&rsquo; font size, each line moving down by its largest letters&rsquo;; or fixed, as a length with units as the font size takes them (<code>&#39;18px&#39;</code>, <code>&#39;12pt&#39;</code>).</p>
 	
 	
 	
 		<ul class="member-list">
 			<h4>Default:</h4>
-			<li><tt>fontSize * 1.2</tt></li>
+			<li><tt>'auto'</tt></li>
 		</ul>
 	
 	<ul class="member-list">
@@ -864,14 +864,14 @@ var circle = new Path.Circle({
 </div>
 		
 			
-<div id="tracking" class="member">
+<div id="lettertracking" class="member">
 <div class="member-link">
-<a name="tracking" href="#tracking"><tt><b>tracking</b></tt></a>
+<a name="lettertracking" href="#lettertracking"><tt><b>letterTracking</b></tt></a>
 </div>
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The tracking of text content: the space added after each character, in thousandths of an em, as in Adobe Illustrator and InDesign. A tracking of 100 adds a tenth of the font size.</p>
+	<p>The letter tracking of text content: the space added after each letter, along the line, in thousandths of an em, as in Adobe Illustrator and InDesign. A tracking of 100 adds a tenth of the font size. Also <code>tracking</code>, its former name.</p>
 	
 	
 	
@@ -884,6 +884,363 @@ var circle = new Path.Circle({
 		<h4>Type:</h4>
 		<li>
 			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="letterkerning" class="member">
+<div class="member-link">
+<a name="letterkerning" href="#letterkerning"><tt><b>letterKerning</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The letter kerning of text content: the space added after a letter, along the line, in thousandths of an em, in place of the font&rsquo;s own kerning pair; <code>null</code> for the font&rsquo;s kerning.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>null</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="fontstyle" class="member">
+<div class="member-link">
+<a name="fontstyle" href="#fontstyle"><tt><b>fontStyle</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The font style of text content, as in CSS: upright or slanted. Together with the <a href="../classes/Style.html#fontweight"><tt>fontWeight</tt></a>, it says what a font&rsquo;s style name says, e.g. <code>&#39;Bold Italic&#39;</code>.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'normal'</tt>, <tt>'italic'</tt>, <tt>'oblique'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'normal'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="fontvariations" class="member">
+<div class="member-link">
+<a name="fontvariations" href="#fontvariations"><tt><b>fontVariations</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The settings of a variable font&rsquo;s axes, by their tags: <code>{ wght: 600,
+wdth: 80 }</code>. Kept for hosts that lay text out with its fonts; canvas doesn&rsquo;t draw them.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>null</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Object</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="baselineshift" class="member">
+<div class="member-link">
+<a name="baselineshift" href="#baselineshift"><tt><b>baselineShift</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>How far the letters move up from the baseline, in pixels.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="baselineposition" class="member">
+<div class="member-link">
+<a name="baselineposition" href="#baselineposition"><tt><b>baselinePosition</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Whether the letters are set as superscripts or subscripts: smaller, and above or below the baseline.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'normal'</tt>, <tt>'superscript'</tt>, <tt>'subscript'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'normal'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="letterscaling" class="member">
+<div class="member-link">
+<a name="letterscaling" href="#letterscaling"><tt><b>letterScaling</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>How much the letters are scaled, as <a href="../classes/Item.html#scaling"><tt>item.scaling</tt></a>: one factor for both directions, or a point with the horizontal and vertical ones.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>1</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>⟋<a href="../classes/Point.html"><tt>Point</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="letterrotation" class="member">
+<div class="member-link">
+<a name="letterrotation" href="#letterrotation"><tt><b>letterRotation</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The rotation of each letter about its origin on the baseline, in degrees.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="capitals" class="member">
+<div class="member-link">
+<a name="capitals" href="#capitals"><tt><b>capitals</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Whether the letters are set as capitals, or as small capitals.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'normal'</tt>, <tt>'all'</tt>, <tt>'small'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'normal'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="underline" class="member">
+<div class="member-link">
+<a name="underline" href="#underline"><tt><b>underline</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Whether the letters are underlined.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>false</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Boolean</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="strikethrough" class="member">
+<div class="member-link">
+<a name="strikethrough" href="#strikethrough"><tt><b>strikethrough</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Whether the letters are struck through.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>false</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Boolean</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="features" class="member">
+<div class="member-link">
+<a name="features" href="#features"><tt><b>features</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The OpenType features to turn on (<code>&#39;dlig&#39;</code>) or off (<code>&#39;-liga&#39;</code>). Kept for hosts that lay text out with its fonts; canvas doesn&rsquo;t draw them.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>null</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <tt>Strings</tt>
 		</li>
 	</ul>
     
@@ -909,13 +1266,408 @@ var circle = new Path.Circle({
 	
 		<ul class="member-list">
 			<h4>Values:</h4>
-			<li><tt>'left'</tt>, <tt>'right'</tt>, <tt>'center'</tt></li>
+			<li><tt>'left'</tt>, <tt>'right'</tt>, <tt>'center'</tt>, <tt>'start'</tt>, <tt>'end'</tt>, <tt>'justify'</tt></li>
 		</ul>
 	
 	
 		<ul class="member-list">
 			<h4>Default:</h4>
 			<li><tt>'left'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="justifylast" class="member">
+<div class="member-link">
+<a name="justifylast" href="#justifylast"><tt><b>justifyLast</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>How the last line of a justified paragraph is aligned; <code>&#39;all&#39;</code> justifies it too.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'left'</tt>, <tt>'right'</tt>, <tt>'center'</tt>, <tt>'start'</tt>, <tt>'end'</tt>, <tt>'all'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'left'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="justifyspacing" class="member">
+<div class="member-link">
+<a name="justifyspacing" href="#justifyspacing"><tt><b>justifySpacing</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>How far justification may change the spacing, each as <code>[minimum, desired,
+maximum]</code> in percent: <code>{ word: [80, 100, 133], letter: [0, 0, 0], glyph:
+[100, 100, 100] }</code>; <code>null</code> for those. Kept for hosts: canvas text justifies by the word spacing alone.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>null</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Object</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="startindent" class="member">
+<div class="member-link">
+<a name="startindent" href="#startindent"><tt><b>startIndent</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The indent where the paragraph&rsquo;s lines start: left in left-to-right text, right in right-to-left text.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="endindent" class="member">
+<div class="member-link">
+<a name="endindent" href="#endindent"><tt><b>endIndent</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The indent where the paragraph&rsquo;s lines end.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="firstlineindent" class="member">
+<div class="member-link">
+<a name="firstlineindent" href="#firstlineindent"><tt><b>firstLineIndent</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The indent of the paragraph&rsquo;s first line, added to its start indent.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="spacebefore" class="member">
+<div class="member-link">
+<a name="spacebefore" href="#spacebefore"><tt><b>spaceBefore</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The space above the paragraph. Between two paragraphs, the larger of this one&rsquo;s and the space after the one before it is used.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="spaceafter" class="member">
+<div class="member-link">
+<a name="spaceafter" href="#spaceafter"><tt><b>spaceAfter</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The space below the paragraph.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="hyphenation" class="member">
+<div class="member-link">
+<a name="hyphenation" href="#hyphenation"><tt><b>hyphenation</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Whether words are hyphenated at the ends of lines, and how: <code>true</code>, or <code>{
+wordsLongerThan, afterFirst, beforeLast, limit, zone, capitalized }</code>. Kept for hosts: canvas text breaks only at soft hyphens.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>false</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Boolean</tt>⟋<tt>Object</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="composer" class="member">
+<div class="member-link">
+<a name="composer" href="#composer"><tt><b>composer</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>How lines are broken: one line at a time, or all of the paragraph&rsquo;s lines together, for the most even spacing. Kept for hosts: canvas text breaks one line at a time.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'line'</tt>, <tt>'paragraph'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'paragraph'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="linewrap" class="member">
+<div class="member-link">
+<a name="linewrap" href="#linewrap"><tt><b>lineWrap</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>How the lines of a paragraph in an area are evened out: <code>&#39;normal&#39;</code> fills each line as far as it goes, <code>&#39;balance&#39;</code> makes them all about as long, and <code>&#39;pretty&#39;</code> balances the last four lines when the last one is shorter than a third of the one before. Both keep the paragraph&rsquo;s number of lines.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'normal'</tt>, <tt>'balance'</tt>, <tt>'pretty'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'normal'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="tabs" class="member">
+<div class="member-link">
+<a name="tabs" href="#tabs"><tt><b>tabs</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The paragraph&rsquo;s tab stops: <code>[{ position, align, leader }]</code>, with <code>align</code> one of <code>&#39;left&#39;</code>, <code>&#39;center&#39;</code>, <code>&#39;right&#39;</code> and <code>&#39;decimal&#39;</code>. Kept for hosts: canvas text doesn&rsquo;t set tabs yet.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>null</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <tt>Object</tt> objects
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="direction" class="member">
+<div class="member-link">
+<a name="direction" href="#direction"><tt><b>direction</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The direction the paragraph&rsquo;s lines run in, which <code>&#39;start&#39;</code> and <code>&#39;end&#39;</code> follow; <code>null</code> for left to right.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'ltr'</tt>, <tt>'rtl'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>null</tt></li>
 		</ul>
 	
 	<ul class="member-list">
