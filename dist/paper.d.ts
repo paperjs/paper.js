@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 01:17:39 2026 +0200
+ * Date: Wed Oct 21 00:53:12 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -1818,6 +1818,11 @@ declare namespace paper {
 
         /** 
          * The bounding rectangle of the item including stroke width.
+         * 
+         * Setting it fits the item's {@link #bounds} into the given rectangle minus
+         * the extent of the stroke on each side, also where this extent changes
+         * with the item's proportions, as with miters. A rectangle smaller than the
+         * stroke itself shrinks the bounds to its center.
          */
         get strokeBounds(): Rectangle
         set strokeBounds(value: RectangleLike)
@@ -6795,10 +6800,11 @@ declare namespace paper {
          * Paper.js draws the bounds of items with selected bounds on top of
          * your project. This is very useful when debugging.
          * 
-         * This property is only available on the rectangle returned by
-         * {@link Item#bounds}, and the selection always shows these bounds.
-         * Rectangles returned by other getters such as {@link
-         * Item#strokeBounds} don't have it.
+         * This property is only available on the rectangles returned by
+         * {@link Item#bounds} and {@link Item#strokeBounds}, which are
+         * selected independently of each other, each showing its own
+         * bounds. Rectangles returned by other getters such as {@link
+         * Item#handleBounds} don't have it.
          */
         selected: boolean
 

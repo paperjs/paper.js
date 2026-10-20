@@ -31,6 +31,11 @@
   `firstLineIndent`, `spaceBefore`, `spaceAfter` and `direction`, the
   justifications `'start'`, `'end'` and `'justify'`, and `justifySpacing`,
   `hyphenation`, `composer` and `tabs` for hosts.
+- Let `Item#strokeBounds` be selected and set, as `Item#bounds` can:
+  `item.strokeBounds.selected` draws the stroke bounds and their handles,
+  independently of `item.bounds.selected`, and setting them scales the item so
+  its stroke bounds match, also where its stroke's extent changes with its
+  proportions, as with miters (#1030).
 - Import the `data-*` attributes of SVG elements into `item.data`, with their
   names camelized as in `dataset`, next to `data-paper-data` (#1227).
 - Export shadows to SVG as SVG 1.1 filters, which both browsers and editors

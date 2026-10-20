@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 01:17:39 2026 +0200
+ * Date: Wed Oct 21 00:53:12 2026 +0200
  *
  ***
  *
@@ -2360,14 +2360,20 @@ new function() {
 			};
 		}, {
 			isSelected: function() {
-				return !!(this._owner._selection & 2);
+				return !!(this._owner._selection & this._getSelection());
 			},
 
 			setSelected: function(selected) {
 				var owner = this._owner;
 				if (owner._changeSelection) {
-					owner._changeSelection(2, selected);
+					owner._changeSelection(this._getSelection(), selected);
 				}
+			},
+
+			_getSelection: function() {
+				return this._setter === 'setStrokeBounds'
+						? 8
+						: 2;
 			}
 		})
 	);
@@ -3723,7 +3729,6 @@ new function() {
 		this._position = undefined;
 	}
 }, Base.each({
-		getStrokeBounds: { stroke: true },
 		getHandleBounds: { handle: true },
 		getInternalBounds: { internal: true }
 	},
@@ -3748,6 +3753,14 @@ new function() {
 				: rect;
 	},
 
+	getStrokeBounds: function(matrix) {
+		var rect = this.getBounds(matrix, { stroke: true });
+		return !arguments.length
+				? new LinkedRectangle(rect.x, rect.y, rect.width, rect.height,
+					this, 'setStrokeBounds')
+				: rect;
+	},
+
 	setBounds: function() {
 		var rect = Rectangle.read(arguments),
 			bounds = this.getBounds(),
@@ -3768,6 +3781,65 @@ new function() {
 		center = bounds.getCenter();
 		matrix.translate(-center.x, -center.y);
 		this.transform(matrix);
+	},
+
+	setStrokeBounds: function() {
+		var rect = Rectangle.read(arguments),
+			item = this,
+			bounds = this.getBounds(),
+			center = bounds.getCenter(),
+			signX = rect.width < 0 ? -1 : 1,
+			signY = rect.height < 0 ? -1 : 1,
+			width = Math.abs(rect.width),
+			height = Math.abs(rect.height),
+			canScaleX = !!bounds.width,
+			canScaleY = !!bounds.height,
+			min = 1e-12,
+			epsilon = 1e-7,
+			sx = 1,
+			sy = 1;
+
+		function getMatrix(sx, sy) {
+			return new Matrix().scale(signX * sx, signY * sy, center);
+		}
+
+		function getStrokeBounds(sx, sy) {
+			var matrix = getMatrix(sx, sy);
+			return item.getBounds(matrix.appended(item._matrix), {
+				stroke: true,
+				transform: { matrix: matrix, item: item }
+			});
+		}
+
+		for (var i = 0; i < 16; i++) {
+			var size = getStrokeBounds(sx, sy).getSize(),
+				fx = canScaleX ? size.width - width : 0,
+				fy = canScaleY ? size.height - height : 0;
+			if (Math.abs(fx) < epsilon && Math.abs(fy) < epsilon)
+				break;
+			var hx = Math.max(sx, 1) * 1e-6,
+				hy = Math.max(sy, 1) * 1e-6,
+				sizeX = getStrokeBounds(sx + hx, sy).getSize(),
+				sizeY = getStrokeBounds(sx, sy + hy).getSize(),
+				a = canScaleX ? (sizeX.width - size.width) / hx : 1,
+				b = canScaleX && canScaleY
+						? (sizeY.width - size.width) / hy : 0,
+				c = canScaleX && canScaleY
+						? (sizeX.height - size.height) / hx : 0,
+				d = canScaleY ? (sizeY.height - size.height) / hy : 1,
+				det = a * d - b * c;
+			if (!det)
+				break;
+			var nx = Math.max(sx - (fx * d - fy * b) / det, min),
+				ny = Math.max(sy - (fy * a - fx * c) / det, min);
+			if (nx === sx && ny === sy)
+				break;
+			sx = nx;
+			sy = ny;
+		}
+		this.transform(new Matrix().translate(rect.getCenter()
+				.subtract(getStrokeBounds(sx, sy).getCenter()))
+				.append(getMatrix(sx, sy)));
 	},
 
 	_getBounds: function(matrix, options) {
@@ -3834,7 +3906,17 @@ new function() {
 		var parent = this.getStrokeScaling() ? null
 				: options && options.internal ? this
 					: this._parent || this._symbol && this._symbol._item,
-			mx = parent ? parent.getViewMatrix().invert() : matrix;
+			mx = parent ? parent.getViewMatrix().invert() : matrix,
+			transform = !parent && options && options.transform;
+		if (transform) {
+			for (var item = this; item && item._applyMatrix;
+					item = item._parent) {
+				if (item === transform.item) {
+					mx = transform.matrix.inverted().appended(mx);
+					break;
+				}
+			}
+		}
 		return mx && mx._shiftless();
 	},
 
@@ -5185,10 +5267,13 @@ new function() {
 			itemSelected = selection & 1,
 			boundsSelected = selection & 2
 					|| itemSelected && this._selectBounds,
+			strokeBoundsSelected = selection
+					& 8,
 			positionSelected = selection & 4;
 		if (!this._drawSelected)
 			itemSelected = false;
-		if ((itemSelected || boundsSelected || positionSelected)
+		if ((itemSelected || boundsSelected || strokeBoundsSelected
+				|| positionSelected)
 				&& this._isUpdated(updateVersion) && this.isInserted()) {
 			var layer,
 				color = this.getSelectedColor(true) || (layer = this.getLayer())
@@ -5220,8 +5305,8 @@ new function() {
 					ctx.stroke();
 				}
 			}
-			if (boundsSelected) {
-				var coords = mx._transformCorners(this.getInternalBounds());
+			var drawBounds = function(bounds) {
+				var coords = mx._transformCorners(bounds);
 				ctx.beginPath();
 				for (var i = 0; i < 8; i++) {
 					ctx[!i ? 'moveTo' : 'lineTo'](coords[i], coords[++i]);
@@ -5232,7 +5317,11 @@ new function() {
 					ctx.fillRect(coords[i] - half, coords[++i] - half,
 							size, size);
 				}
-			}
+			};
+			if (boundsSelected)
+				drawBounds(this.getInternalBounds());
+			if (strokeBoundsSelected)
+				drawBounds(this.getBounds({ internal: true, stroke: true }));
 		}
 	},
 
