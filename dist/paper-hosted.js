@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 21:21:42 2026 +0200
+ * Date: Tue Oct 20 21:35:21 2026 +0200
  *
  ***
  *
@@ -4654,10 +4654,12 @@ new function() {
 	},
 
 	replaceWith: function(item) {
-		var ok = item && item.insertBelow(this);
+		var ok = item;
+		for (var i = 0, l = arguments.length; i < l && ok; i++)
+			ok = arguments[i] && arguments[i].insertBelow(this);
 		if (ok)
 			this.remove();
-		return ok;
+		return ok && item;
 	},
 
 	removeChildren: function(start, end) {
@@ -5258,6 +5260,21 @@ var Group = Item.extend({
 		var child = this.getFirstChild();
 		if (child)
 			child.setClipMask(clipped);
+	},
+
+	ungroup: function() {
+		if (!this._parent)
+			return null;
+		var children = this._children.slice(),
+			clipItem = this._getClipItem(),
+			matrix = this._matrix;
+		if (clipItem)
+			clipItem.setClipMask(false);
+		if (!matrix.isIdentity()) {
+			for (var i = 0, l = children.length; i < l; i++)
+				children[i].transform(matrix);
+		}
+		return this.replaceWith.apply(this, children) ? children : null;
 	},
 
 	isIsolated: function() {

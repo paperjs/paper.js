@@ -7522,11 +7522,11 @@ Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects
 	
 <div id="replacewith-item" class="member">
 <div class="member-link">
-<a name="replacewith-item" href="#replacewith-item"><tt><b>replaceWith</b>(item)</tt></a>
+<a name="replacewith-item" href="#replacewith-item"><tt><b>replaceWith</b>(...item)</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Replaces this item with the provided new item which will takes its place in the project hierarchy instead.</p>
+	<p>Replaces this item with the provided new items which will take its place in the project hierarchy instead, in the given order. This also ungroups a group, e.g. <code>group.replaceWith(…group.children)</code>, but note that the items keep their own matrices, see <a href="../classes/Group.html#ungroup"><tt>group.ungroup</tt></a>().</p>
     
 	
 <ul class="member-list">
@@ -7535,7 +7535,7 @@ Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects
 	<li>
 <tt>item:</tt> 
 <a href="../classes/Item.html"><tt>Item</tt></a>
-&mdash;&nbsp;the item that will replace this item
+&mdash;&nbsp;the items that will replace this item
 
 </li>
 	

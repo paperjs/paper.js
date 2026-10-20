@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 21:21:42 2026 +0200
+ * Date: Tue Oct 20 21:35:21 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -1519,6 +1519,14 @@ declare namespace paper {
          */
         constructor(object: object)
 
+        /** 
+         * Replaces the group with its children, which keep their appearance: the
+         * group's matrix is applied to them, and its clipping mask is released.
+         * 
+         * @return the children, or `null` if the group has no parent
+         */
+        ungroup(): Item[]
+
     }
 
     /** 
@@ -2629,14 +2637,16 @@ declare namespace paper {
         remove(): boolean
 
         /** 
-         * Replaces this item with the provided new item which will takes its place
-         * in the project hierarchy instead.
+         * Replaces this item with the provided new items which will take its place
+         * in the project hierarchy instead, in the given order. This also ungroups
+         * a group, e.g. `group.replaceWith(...group.children)`, but note that the
+         * items keep their own matrices, see {@link Group#ungroup}.
          * 
-         * @param item - the item that will replace this item
+         * @param item - the items that will replace this item
          * 
          * @return true if the item was replaced
          */
-        replaceWith(item: Item): boolean
+        replaceWith(...item: Item[]): boolean
 
         /** 
          * Removes all of the item's {@link #children} (if any).

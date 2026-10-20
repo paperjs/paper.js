@@ -4,6 +4,8 @@
 
 ### Added
 
+- Add `Group#ungroup()`, which replaces a group with its children, applying its
+  matrix to them, and let `Item#replaceWith()` take several items (#1026).
 - Add `settings.segmentSize`, the size of the segments when drawing selections,
   next to `settings.handleSize` for their handles, which it defaults to
   (#1899).
