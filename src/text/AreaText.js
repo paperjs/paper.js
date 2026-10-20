@@ -236,234 +236,240 @@ var AreaText = TextItem.extend(/** @lends AreaText# */{
         return this;
     },
 
+    // Lay out again when the layer's text wraps change:
+    // @override
+    _getLayout: function _getLayout() {
+        var layer = this.getLayer(),
+            version = layer && layer._textWrapVersion;
+        if (this._textWrapVersion !== version) {
+            this._textWrapVersion = version;
+            this._layout = null;
+        }
+        return _getLayout.base.call(this);
+    },
+
     // The layout of the story's part that fits the area, see #_measure(): its
     // lines, broken between words to fit the area's width where each sits,
     // filling the regions of its rows and columns one after the other, each
     // line moving down by its own line height and the space between
     // paragraphs, aligned by its paragraph's justification and indents, and
-    // evened out by its lineWrap. It lays out again when its layer's text
-    // wraps change:
-    _getLayout: function() {
-        var layer = this.getLayer(),
-            version = layer && layer._textWrapVersion;
-        if (!this._layout || this._textWrapVersion !== version) {
-            this._textWrapVersion = version;
-            var that = this,
-                story = this._story,
-                content = story._content,
-                regions = this._getRegions(),
-                wraps = this._getTextWraps(),
-                // How far each region's first line moves down, to align its
-                // lines vertically:
-                offsets = regions.map(function() {
-                    return 0;
-                }),
-                state;
+    // evened out by its lineWrap:
+    // @override
+    _layOut: function() {
+        var that = this,
+            story = this._story,
+            content = story._content,
+            regions = this._getRegions(),
+            wraps = this._getTextWraps(),
+            // How far each region's first line moves down, to align its
+            // lines vertically:
+            offsets = regions.map(function() {
+                return 0;
+            }),
+            state;
 
-            // Lays out the paragraph from `state`, each line's room narrowed
-            // by `getCut(index)` to break it, see #_breakLine():
-            var lay = function(getCut) {
-                var pos = state.pos,
-                    region = state.region,
-                    y = state.y,
-                    paragraph = story._getParagraph(pos),
-                    style = paragraph.style,
-                    // The space between paragraphs, once, unless at the top:
-                    space = pos === paragraph.start && y !== null
-                        ? Math.max(state.spaceAfter, style.getSpaceBefore())
-                        : 0,
-                    result = [],
-                    isComplete = false;
-                while (regions[region]) {
-                    var bounds = regions[region],
-                        // The extent of what comes next, to find room:
-                        next = that._measure(pos, Math.min(pos + 1,
-                                paragraph.end)),
-                        baseline = y === null
-                            ? bounds.top + offsets[region] + next.ascent
-                            : y + next.lineHeight + space;
-                    // Nothing without a height fits anywhere:
-                    if (!next.lineHeight || next.lineHeight < 0)
-                        break;
-                    if (baseline + next.descent > bounds.bottom) {
-                        // The region is full: on to the next one.
-                        region++;
-                        y = null;
-                        continue;
-                    }
-                    // Fill the spans at this height in reading order, each as
-                    // far as it goes, then go on further down:
-                    var spans = that._getSpans(bounds, baseline, next, wraps);
-                    if (style.getDirection() === 'rtl')
-                        spans.reverse();
-                    for (var i = 0, l = spans.length; i < l && !isComplete;
-                            i++) {
-                        var span = spans[i],
-                            line = that._breakLine(pos, paragraph,
-                                pos === paragraph.start, span,
-                                getCut ? getCut(result.length) : 0,
-                                // A word too wide for any line takes one of
-                                // its own where nothing narrows the region:
-                                span[1] - span[0] >= bounds.width
-                                    - /*#=*/Numerical.GEOMETRIC_EPSILON);
-                        if (line) {
-                            line.y = baseline;
-                            line.region = region;
-                            result.push(line);
-                            pos = line.end;
-                            isComplete = pos === paragraph.end;
-                        }
-                    }
-                    y = baseline;
-                    space = 0;
-                    if (isComplete)
-                        break;
+        // Lays out the paragraph from `state`, each line's room narrowed
+        // by `getCut(index)` to break it, see #_breakLine():
+        var lay = function(getCut) {
+            var pos = state.pos,
+                region = state.region,
+                y = state.y,
+                paragraph = story._getParagraph(pos),
+                style = paragraph.style,
+                // The space between paragraphs, once, unless at the top:
+                space = pos === paragraph.start && y !== null
+                    ? Math.max(state.spaceAfter, style.getSpaceBefore())
+                    : 0,
+                result = [],
+                isComplete = false;
+            while (regions[region]) {
+                var bounds = regions[region],
+                    // The extent of what comes next, to find room:
+                    next = that._measure(pos, Math.min(pos + 1,
+                            paragraph.end)),
+                    baseline = y === null
+                        ? bounds.top + offsets[region] + next.ascent
+                        : y + next.lineHeight + space;
+                // Nothing without a height fits anywhere:
+                if (!next.lineHeight || next.lineHeight < 0)
+                    break;
+                if (baseline + next.descent > bounds.bottom) {
+                    // The region is full: on to the next one.
+                    region++;
+                    y = null;
+                    continue;
                 }
-                return {
-                    lines: result,
-                    paragraph: style,
-                    isComplete: isComplete,
-                    state: {
-                        pos: pos,
-                        region: region,
-                        y: y,
-                        spaceAfter: style.getSpaceAfter()
-                    }
-                };
-            };
-
-            // Finds where `isAbove(value)` turns true for values from 0 to
-            // `high`, as the values on either side of it, to `precision`:
-            var search = function(high, precision, isAbove) {
-                var low = 0;
-                while (high - low > precision) {
-                    var value = (low + high) / 2;
-                    if (isAbove(value)) {
-                        high = value;
-                    } else {
-                        low = value;
+                // Fill the spans at this height in reading order, each as
+                // far as it goes, then go on further down:
+                var spans = that._getSpans(bounds, baseline, next, wraps);
+                if (style.getDirection() === 'rtl')
+                    spans.reverse();
+                for (var i = 0, l = spans.length; i < l && !isComplete;
+                        i++) {
+                    var span = spans[i],
+                        line = that._breakLine(pos, paragraph,
+                            pos === paragraph.start, span,
+                            getCut ? getCut(result.length) : 0,
+                            // A word too wide for any line takes one of
+                            // its own where nothing narrows the region:
+                            span[1] - span[0] >= bounds.width
+                                - /*#=*/Numerical.GEOMETRIC_EPSILON);
+                    if (line) {
+                        line.y = baseline;
+                        line.region = region;
+                        result.push(line);
+                        pos = line.end;
+                        isComplete = pos === paragraph.end;
                     }
                 }
-                return [low, high];
-            };
-
-            // Narrower lines change nothing as long as they keep the paragraph
-            // whole, and its number of lines:
-            var keeps = function(attempt, count) {
-                return attempt.isComplete && attempt.lines.length === count;
-            };
-
-            // Narrows the lines from index `from` on as far as they keep the
-            // paragraph, which evens them out:
-            var balance = function(count, from) {
-                var cutFrom = function(cut) {
-                        return function(index) {
-                            return index >= from ? cut : 0;
-                        };
-                    },
-                    widest = regions.reduce(function(width, bounds) {
-                        return Math.max(width, bounds.width);
-                    }, 0),
-                    cut = search(widest, 0.5, function(cut) {
-                        return !keeps(lay(cutFrom(cut)), count);
-                    })[0];
-                return cut > 0 && lay(cutFrom(cut));
-            };
-
-            // Lays out all the paragraphs, one after the other, from where the
-            // text starts:
-            var layAll = function() {
-                var layout = [],
-                    result,
-                    match;
-                state = {
-                    pos: that._getStart(),
-                    region: 0,
-                    y: null,
-                    spaceAfter: 0
-                };
-                do {
-                    result = lay();
-                    var lines = result.lines,
-                        count = lines.length,
-                        wrap = result.paragraph.getLineWrap();
-                    if (result.isComplete && count > 1) {
-                        if (wrap === 'balance') {
-                            result = balance(count, 0) || result;
-                        } else if (wrap === 'pretty' && lines[count - 1].width
-                                < lines[count - 2].width / 3) {
-                            // Balance the last four lines, if the last one is
-                            // short:
-                            result = balance(count, Math.max(0, count - 4))
-                                    || result;
-                        }
-                    }
-                    layout.push.apply(layout, result.lines);
-                    state = result.state;
-                    // On to the next paragraph, after its line break:
-                    match = result.isComplete
-                            && /^(\r\n|\n|\r)/.exec(content.slice(state.pos));
-                    if (match)
-                        state.pos += match[0].length;
-                } while (match);
-                return layout;
-            };
-
-            // The region's last line, and the room below it:
-            var getLast = function(layout, region) {
-                for (var i = layout.length - 1; i >= 0; i--) {
-                    var line = layout[i];
-                    if (line.region === region) {
-                        return {
-                            line: line,
-                            free: regions[region].bottom - line.y
-                                    - line.descent
-                        };
-                    }
+                y = baseline;
+                space = 0;
+                if (isComplete)
+                    break;
+            }
+            return {
+                lines: result,
+                paragraph: style,
+                isComplete: isComplete,
+                state: {
+                    pos: pos,
+                    region: region,
+                    y: y,
+                    spaceAfter: style.getSpaceAfter()
                 }
-                return null;
             };
+        };
 
-            var layout = layAll(),
-                align = this._verticalAlign;
-            if (align !== 'top') {
-                // Align each region's lines by laying them out again from
-                // lower down, as far as they keep what the region shows, and,
-                // to center them, as much room above them as below:
-                for (var r = 0, l = regions.length; r < l; r++) {
-                    var last = getLast(layout, r);
-                    if (last && last.free > 0) {
-                        var end = last.line.end,
-                            // The room below the lines laid out from `offset`
-                            // down, beyond what's wanted, or null if the region
-                            // then shows less:
-                            getExcess = function(offset) {
-                                offsets[r] = offset;
-                                var moved = getLast(layAll(), r);
-                                return moved && moved.line.end === end
-                                        ? moved.free - (align === 'center'
-                                            ? offset : 0)
-                                        : null;
-                            },
-                            // A rectangle aligns in one step, other shapes by
-                            // searching:
-                            excess = getExcess(align === 'center'
-                                    ? last.free / 2 : last.free);
-                        if (excess === null || Math.abs(excess) > 0.01) {
-                            offsets[r] = search(last.free, 0.01,
-                                function(offset) {
-                                    var excess = getExcess(offset);
-                                    return excess === null || excess < 0;
-                                })[0];
-                        }
-                        layout = layAll();
-                    }
+        // Finds where `isAbove(value)` turns true for values from 0 to
+        // `high`, as the values on either side of it, to `precision`:
+        var search = function(high, precision, isAbove) {
+            var low = 0;
+            while (high - low > precision) {
+                var value = (low + high) / 2;
+                if (isAbove(value)) {
+                    high = value;
+                } else {
+                    low = value;
                 }
             }
-            this._visibleEnd = state.pos;
-            this._layout = layout;
+            return [low, high];
+        };
+
+        // Narrower lines change nothing as long as they keep the paragraph
+        // whole, and its number of lines:
+        var keeps = function(attempt, count) {
+            return attempt.isComplete && attempt.lines.length === count;
+        };
+
+        // Narrows the lines from index `from` on as far as they keep the
+        // paragraph, which evens them out:
+        var balance = function(count, from) {
+            var cutFrom = function(cut) {
+                    return function(index) {
+                        return index >= from ? cut : 0;
+                    };
+                },
+                widest = regions.reduce(function(width, bounds) {
+                    return Math.max(width, bounds.width);
+                }, 0),
+                cut = search(widest, 0.5, function(cut) {
+                    return !keeps(lay(cutFrom(cut)), count);
+                })[0];
+            return cut > 0 && lay(cutFrom(cut));
+        };
+
+        // Lays out all the paragraphs, one after the other, from where the
+        // text starts:
+        var layAll = function() {
+            var layout = [],
+                result,
+                match;
+            state = {
+                pos: that._getStart(),
+                region: 0,
+                y: null,
+                spaceAfter: 0
+            };
+            do {
+                result = lay();
+                var lines = result.lines,
+                    count = lines.length,
+                    wrap = result.paragraph.getLineWrap();
+                if (result.isComplete && count > 1) {
+                    if (wrap === 'balance') {
+                        result = balance(count, 0) || result;
+                    } else if (wrap === 'pretty' && lines[count - 1].width
+                            < lines[count - 2].width / 3) {
+                        // Balance the last four lines, if the last one is
+                        // short:
+                        result = balance(count, Math.max(0, count - 4))
+                                || result;
+                    }
+                }
+                layout.push.apply(layout, result.lines);
+                state = result.state;
+                // On to the next paragraph, after its line break:
+                match = result.isComplete
+                        && /^(\r\n|\n|\r)/.exec(content.slice(state.pos));
+                if (match)
+                    state.pos += match[0].length;
+            } while (match);
+            return layout;
+        };
+
+        // The region's last line, and the room below it:
+        var getLast = function(layout, region) {
+            for (var i = layout.length - 1; i >= 0; i--) {
+                var line = layout[i];
+                if (line.region === region) {
+                    return {
+                        line: line,
+                        free: regions[region].bottom - line.y
+                                - line.descent
+                    };
+                }
+            }
+            return null;
+        };
+
+        var layout = layAll(),
+            align = this._verticalAlign;
+        if (align !== 'top') {
+            // Align each region's lines by laying them out again from
+            // lower down, as far as they keep what the region shows, and,
+            // to center them, as much room above them as below:
+            for (var r = 0, l = regions.length; r < l; r++) {
+                var last = getLast(layout, r);
+                if (last && last.free > 0) {
+                    var end = last.line.end,
+                        // The room below the lines laid out from `offset`
+                        // down, beyond what's wanted, or null if the region
+                        // then shows less:
+                        getExcess = function(offset) {
+                            offsets[r] = offset;
+                            var moved = getLast(layAll(), r);
+                            return moved && moved.line.end === end
+                                    ? moved.free - (align === 'center'
+                                        ? offset : 0)
+                                    : null;
+                        },
+                        // A rectangle aligns in one step, other shapes by
+                        // searching:
+                        excess = getExcess(align === 'center'
+                                ? last.free / 2 : last.free);
+                    if (excess === null || Math.abs(excess) > 0.01) {
+                        offsets[r] = search(last.free, 0.01,
+                            function(offset) {
+                                var excess = getExcess(offset);
+                                return excess === null || excess < 0;
+                            })[0];
+                    }
+                    layout = layAll();
+                }
+            }
         }
-        return this._layout;
+        this._visibleEnd = state.pos;
+        return layout;
     },
 
     // The regions that the area is divided into by its inset, rows and

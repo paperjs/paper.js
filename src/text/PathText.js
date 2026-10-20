@@ -146,83 +146,81 @@ var PathText = TextItem.extend(/** @lends PathText# */{
     // #_measure(): one line of letters, each turned to the path where its
     // middle sits, found by flatteners that walk the paths one after the
     // other:
-    _getLayout: function() {
-        if (!this._layout) {
-            var path = this.getTextPath(),
-                story = this._story,
-                start = this._getStart(),
-                flatteners = (path ? path._children || [path] : []).map(
-                    function(child) {
-                        // In the text's coordinates, through the compound
-                        // path's matrix too:
-                        return new PathFlattener(child, 0.25, 32, false,
-                                child === path ? path._matrix
-                                    : path._matrix.appended(child._matrix));
-                    }),
-                lengths = flatteners.map(function(flattener) {
-                    return flattener.length;
+    // @override
+    _layOut: function() {
+        var path = this.getTextPath(),
+            story = this._story,
+            start = this._getStart(),
+            flatteners = (path ? path._children || [path] : []).map(
+                function(child) {
+                    // In the text's coordinates, through the compound
+                    // path's matrix too:
+                    return new PathFlattener(child, 0.25, 32, false,
+                            child === path ? path._matrix
+                                : path._matrix.appended(child._matrix));
                 }),
-                length = lengths.reduce(function(sum, length) {
-                    return sum + length;
-                }, 0),
-                from = Math.max(0, Math.min(this._startOffset, length)),
-                to = this._endOffset == null ? length
-                        : Math.max(from, Math.min(this._endOffset, length)),
-                spacing = this._spacing,
-                measured = this._measure(start, story._content.length, true),
-                letters = measured.pieces,
-                pieces = [],
-                width = 0;
-            // 1. The letters that fit, each spaced on from the one before:
-            for (var i = 0, l = letters.length; i < l; i++) {
-                var piece = letters[i];
-                if (width + piece.width > to - from)
-                    break;
-                piece.x = width;
-                pieces.push(piece);
-                width += piece.width + spacing;
-            }
-            width -= pieces.length ? spacing : 0;
-            // 2. Placed along the paths by the first paragraph's
-            // justification, with the part of the letters that sits on them:
-            var paragraph = story._getParagraph(start).style,
-                side = this._getSide(paragraph.getJustification(),
-                    paragraph.getDirection()),
-                offset = side === 'right' ? to - width
-                        : side === 'center' ? from + (to - from - width) / 2
-                        : from,
-                alignment = this._alignment,
-                below = alignment === 'ascender' ? measured.ascent
-                        : alignment === 'descender' ? -measured.descent
-                        : alignment === 'center'
-                            ? (measured.ascent - measured.descent) / 2
-                        : 0;
-            for (var i = 0, l = pieces.length; i < l; i++) {
-                var piece = pieces[i],
-                    middle = offset + piece.x + piece.width / 2,
-                    index = 0;
-                while (index < lengths.length - 1 && middle > lengths[index]) {
-                    middle -= lengths[index];
-                    index++;
-                }
-                var flattener = flatteners[index],
-                    tangent = flattener.getTangentAt(middle).normalize(),
-                    point = flattener.getPointAt(middle).add(
-                            tangent.rotate(90).multiply(below + piece.y));
-                piece.x = point.x;
-                piece.y = point.y;
-                piece.dx = -piece.width / 2;
-                piece.rotation += tangent.getAngle();
-            }
-            var last = pieces[pieces.length - 1];
-            this._visibleEnd = last ? last.end : start;
-            this._layout = [Base.set(measured, {
-                pieces: pieces,
-                end: this._visibleEnd,
-                width: width
-            })];
+            lengths = flatteners.map(function(flattener) {
+                return flattener.length;
+            }),
+            length = lengths.reduce(function(sum, length) {
+                return sum + length;
+            }, 0),
+            from = Math.max(0, Math.min(this._startOffset, length)),
+            to = this._endOffset == null ? length
+                    : Math.max(from, Math.min(this._endOffset, length)),
+            spacing = this._spacing,
+            measured = this._measure(start, story._content.length, true),
+            letters = measured.pieces,
+            pieces = [],
+            width = 0;
+        // 1. The letters that fit, each spaced on from the one before:
+        for (var i = 0, l = letters.length; i < l; i++) {
+            var piece = letters[i];
+            if (width + piece.width > to - from)
+                break;
+            piece.x = width;
+            pieces.push(piece);
+            width += piece.width + spacing;
         }
-        return this._layout;
+        width -= pieces.length ? spacing : 0;
+        // 2. Placed along the paths by the first paragraph's
+        // justification, with the part of the letters that sits on them:
+        var paragraph = story._getParagraph(start).style,
+            side = this._getSide(paragraph.getJustification(),
+                paragraph.getDirection()),
+            offset = side === 'right' ? to - width
+                    : side === 'center' ? from + (to - from - width) / 2
+                    : from,
+            alignment = this._alignment,
+            below = alignment === 'ascender' ? measured.ascent
+                    : alignment === 'descender' ? -measured.descent
+                    : alignment === 'center'
+                        ? (measured.ascent - measured.descent) / 2
+                    : 0;
+        for (var i = 0, l = pieces.length; i < l; i++) {
+            var piece = pieces[i],
+                middle = offset + piece.x + piece.width / 2,
+                index = 0;
+            while (index < lengths.length - 1 && middle > lengths[index]) {
+                middle -= lengths[index];
+                index++;
+            }
+            var flattener = flatteners[index],
+                tangent = flattener.getTangentAt(middle).normalize(),
+                point = flattener.getPointAt(middle).add(
+                        tangent.rotate(90).multiply(below + piece.y));
+            piece.x = point.x;
+            piece.y = point.y;
+            piece.dx = -piece.width / 2;
+            piece.rotation += tangent.getAngle();
+        }
+        var last = pieces[pieces.length - 1];
+        this._visibleEnd = last ? last.end : start;
+        return [Base.set(measured, {
+            pieces: pieces,
+            end: this._visibleEnd,
+            width: width
+        })];
     },
 
     // The letters' boxes, turned with them:
