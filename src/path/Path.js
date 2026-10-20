@@ -2218,12 +2218,11 @@ new function() { // Scope for drawing
     // SegmentPoint objects maybe seem a bit tedious but is worth the benefit in
     // performance.
 
-    function drawHandles(ctx, segments, matrix, size) {
-        // Only draw if size is not null or negative.
-        if (size <= 0) return;
-
-        var half = size / 2,
-            miniSize = size - 2,
+    function drawHandles(ctx, segments, matrix, handleSize, segmentSize) {
+        // Only draw the handles and segments whose size is positive.
+        var handleHalf = handleSize / 2,
+            half = segmentSize / 2,
+            miniSize = segmentSize - 2,
             miniHalf = half - 1,
             coords = new Array(6),
             pX, pY;
@@ -2231,13 +2230,13 @@ new function() { // Scope for drawing
         function drawHandle(index) {
             var hX = coords[index],
                 hY = coords[index + 1];
-            if (pX != hX || pY != hY) {
+            if (handleSize > 0 && (pX != hX || pY != hY)) {
                 ctx.beginPath();
                 ctx.moveTo(pX, pY);
                 ctx.lineTo(hX, hY);
                 ctx.stroke();
                 ctx.beginPath();
-                ctx.arc(hX, hY, half, 0, Math.PI * 2, true);
+                ctx.arc(hX, hY, handleHalf, 0, Math.PI * 2, true);
                 ctx.fill();
             }
         }
@@ -2252,8 +2251,10 @@ new function() { // Scope for drawing
                 drawHandle(2);
             if (selection & /*#=*/SegmentSelection.HANDLE_OUT)
                 drawHandle(4);
+            if (segmentSize <= 0)
+                continue;
             // Draw a rectangle at segment.point:
-            ctx.fillRect(pX - half, pY - half, size, size);
+            ctx.fillRect(pX - half, pY - half, segmentSize, segmentSize);
             // If the point is not selected, draw a white square that is 1px
             // smaller on all sides, but only draw it if size is big enough.
             if (miniSize > 0 && !(selection & /*#=*/SegmentSelection.POINT)) {
@@ -2401,7 +2402,9 @@ new function() { // Scope for drawing
             drawSegments(ctx, this, matrix);
             // Now stroke it and draw its handles:
             ctx.stroke();
-            drawHandles(ctx, this._segments, matrix, paper.settings.handleSize);
+            var settings = paper.settings;
+            drawHandles(ctx, this._segments, matrix, settings.handleSize,
+                    Base.pick(settings.segmentSize, settings.handleSize));
         }
     };
 },

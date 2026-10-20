@@ -52,6 +52,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
             applyMatrix: true,
             insertItems: true,
             handleSize: 4,
+            segmentSize: null,
             hitTolerance: 0,
             scaleStrokes: false
         });
@@ -131,6 +132,9 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      *     (Note that not all items can set this to `false`)
      * @option [settings.handleSize=4] {Number} the size of the curve handles
      *     when drawing selections
+     * @option [settings.segmentSize=null] {Number} the size of the segments
+     *     when drawing selections, or `null` to use `settings.handleSize`, e.g.
+     *     with `handleSize: 0` to only draw the segments and not their handles
      * @option [settings.hitTolerance=0] {Number} the default tolerance for hit-
      *     tests, when no value is specified
      * @option [settings.scaleStrokes=false] {Boolean} controls whether applying
