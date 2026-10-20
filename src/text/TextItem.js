@@ -328,6 +328,18 @@ var TextItem = Item.extend(/** @lends TextItem# */{
         return [this._getStart(), this._visibleEnd];
     },
 
+    // The layout of the text, see #_layOut(), kept until the text changes:
+    _getLayout: function() {
+        return this._layout || (this._layout = this._layOut());
+    },
+
+    // The lines of the text, as #_measure() makes them, and where the visible
+    // part of the story ends, as _visibleEnd:
+    // @overridable
+    _layOut: function() {
+        // To be overridden in sub-classes.
+    },
+
     _getStart: function() {
         var previous = this.getPreviousTextItem();
         return previous ? previous._getVisibleRange()[1] : 0;

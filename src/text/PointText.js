@@ -80,33 +80,31 @@ var PointText = TextItem.extend(/** @lends PointText# */{
     // paragraph, each moving down by its own line height from the first
     // baseline at 0, and by the space between its paragraph and the one
     // before, aligned by its paragraph's justification and indents:
-    _getLayout: function() {
-        if (!this._layout) {
-            var story = this._story,
-                length = story._content.length,
-                paragraphs = new TextRange(story, this._getStart(), length)
-                        .getParagraphs(),
-                lines = [],
-                y = 0,
-                spaceAfter = 0;
-            for (var i = 0, l = paragraphs.length; i < l; i++) {
-                var range = paragraphs[i],
-                    paragraph = story._getParagraph(range._start).style,
-                    line = this._measure(range._start, range._end);
-                if (i > 0) {
-                    y += line.lineHeight + Math.max(spaceAfter,
-                            paragraph.getSpaceBefore());
-                }
-                spaceAfter = paragraph.getSpaceAfter();
-                line.y = y;
-                this._place(line, paragraph, true,
-                        this._indent(paragraph, true, 0, 0));
-                lines.push(line);
+    // @override
+    _layOut: function() {
+        var story = this._story,
+            length = story._content.length,
+            paragraphs = new TextRange(story, this._getStart(), length)
+                    .getParagraphs(),
+            lines = [],
+            y = 0,
+            spaceAfter = 0;
+        for (var i = 0, l = paragraphs.length; i < l; i++) {
+            var range = paragraphs[i],
+                paragraph = story._getParagraph(range._start).style,
+                line = this._measure(range._start, range._end);
+            if (i > 0) {
+                y += line.lineHeight + Math.max(spaceAfter,
+                        paragraph.getSpaceBefore());
             }
-            this._visibleEnd = length;
-            this._layout = lines;
+            spaceAfter = paragraph.getSpaceAfter();
+            line.y = y;
+            this._place(line, paragraph, true,
+                    this._indent(paragraph, true, 0, 0));
+            lines.push(line);
         }
-        return this._layout;
+        this._visibleEnd = length;
+        return lines;
     },
 
     _getBounds: function(matrix, options) {

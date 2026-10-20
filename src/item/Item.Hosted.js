@@ -17,11 +17,17 @@ new function() {
     // The fields that #_load() fills in, by the class that defines them:
     var contentFields = [
             [Item, ['_style', '_applyMatrix', '_opacity', '_blendMode',
-                    '_pivot', '_data']],
+                    '_pivot', '_data', '_textWrap']],
             [Path, ['_segments', '_closed', '_version', '_curves',
                     '_segmentSelection']],
             [CompoundPath, ['_children', '_namedChildren']],
-            [HostItem, ['_values']]
+            [HostItem, ['_values']],
+            [TextItem, ['_story', '_orientation', '_layout', '_fontMetrics']],
+            // The text path is a text's content, not one of its children:
+            [PathText, ['_children', '_startOffset', '_endOffset',
+                    '_alignment', '_spacing']],
+            [AreaText, ['_children', '_columns', '_rows', '_gutter', '_inset',
+                    '_verticalAlign']]
         ],
         // The fields that #_loadChildren() fills in on containers of hosted
         // items, Group and HostItem with _hasChildren:
@@ -343,6 +349,50 @@ new function() {
         }
     });
 
+    TextItem.inject({
+        // The host's layout of the text as the script holds it, also before
+        // the host has its changes: the lines with their pieces, which take
+        // what drawing needs from the styles of the story's runs, see
+        // #_getPiece(), and their content from the story, see Project#host:
+        _getHostLayout: function(host) {
+            var that = this,
+                story = this._story,
+                content = story._content,
+                layout = host.layOut(this.exportJSON({ asString: false }),
+                        this._getStart(), this._key);
+            this._visibleEnd = layout.end;
+            return layout.lines.map(function(line) {
+                line.pieces = line.pieces.map(function(placed) {
+                    // The style of the run that the piece starts in, which any
+                    // character property finds:
+                    var style = story._getRangeStyles('fontSize', placed.start,
+                            placed.end)[0],
+                        piece = Base.set(that._getPiece(style), placed);
+                    if (piece.content == null) {
+                        piece.content = content.slice(piece.start, piece.end);
+                        if (piece.capitals)
+                            piece.content = piece.content.toUpperCase();
+                    }
+                    return piece;
+                });
+                return line;
+            });
+        }
+    });
+
+    // Hosted text is laid out by its host, as its document shows it, and by
+    // Paper.js where the host doesn't lay text out:
+    [PointText, PathText, AreaText].forEach(function(ctor) {
+        ctor.inject({
+            _layOut: function _layOut() {
+                var host = this._project._host;
+                return host && host.layOut
+                        ? this._getHostLayout(host)
+                        : _layOut.base.call(this);
+            }
+        });
+    });
+
     Project.inject(/** @lends Project# */{
         /**
          * The host document that the project's items come from. Setting it
@@ -362,6 +412,16 @@ new function() {
          *   of {@link Item#importJSON(json)}, without children.
          * - `getAncestorKeys(key)`, which returns the keys from the top level
          *   down to the node's parent.
+         * - Optionally `layOut(json, start, key)`, which lays out a text item,
+         *   given in the form of {@link Item#exportJSON(options)} as the
+         *   script holds it, from `start` in its story, and returns `{ end,
+         *   lines }`: where its visible text ends, and its lines, each `{
+         *   start, end, x, y, width, lineHeight, ascent, descent, pieces }`,
+         *   with pieces `{ start, end, x, y, dx, width, rotation, size, ascent,
+         *   descent, lineHeight }` and an optional `content`, as for a
+         *   hyphen, all in the item's coordinates. `key` is null for text
+         *   that the host doesn't know yet. Without it, Paper.js lays out text
+         *   itself.
          *
          * @bean
          * @type Object

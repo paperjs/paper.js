@@ -396,3 +396,146 @@ test('HostItem', function() {
     // children are:
     equals(blend.bounds, new Rectangle());
 });
+
+// A host document with text, whose host lays it out as Paper.js does in the
+// document itself, as plain lines and pieces:
+function createHostedText() {
+    var document = new Project(),
+        point = new PointText({
+            point: [20, 40],
+            content: 'Hello world',
+            fontFamily: testFontFamily,
+            name: 'point'
+        }),
+        path = new PathText({
+            textPath: new Path.Line([0, 100], [200, 100]),
+            content: 'Along a path',
+            fontFamily: testFontFamily,
+            startOffset: 10,
+            name: 'path'
+        }),
+        area = new AreaText({
+            textPath: new Path.Rectangle([0, 200], [100, 100]),
+            content: 'Text in an area breaks into lines that fit it.',
+            fontFamily: testFontFamily,
+            columns: 2,
+            gutter: 4,
+            name: 'area'
+        });
+    point.range(6, 11).fontSize = 20;
+    var host = createHost(document);
+    host.layOut = function(json, start, key) {
+        host.calls.push(['layOut', key]);
+        var current = paper.project;
+        document.activate();
+        var text = new Base.exports[json[0]]({ insert: false })
+                .importJSON(json),
+            lines = text._layOut();
+        current.activate();
+        return {
+            end: text._visibleEnd,
+            lines: lines.map(function(line) {
+                return Base.set({}, line, {
+                    pieces: line.pieces.map(function(piece) {
+                        var plain = Base.set({}, piece);
+                        delete plain.style;
+                        delete plain.font;
+                        delete plain.scale;
+                        delete plain.content;
+                        return plain;
+                    })
+                });
+            })
+        };
+    };
+    var project = new Project();
+    project.host = host;
+    return { project: project, host: host, document: document };
+}
+
+function getLines(text) {
+    return text.lines.map(function(line) {
+        return [line.content, line.baseline.point.y, line.bounds.left];
+    });
+}
+
+test('Text loads its story, path and settings on first access', function() {
+    var res = createHostedText(),
+        children = res.project.layers[0].children,
+        original = res.document.layers[0].children;
+    res.host.takeCalls();
+    var point = children['point'];
+    equals(point.hasOwnProperty('_story'), false, 'a shell');
+    equals(point.content, 'Hello world', 'its content');
+    equals(res.host.takeCalls(), [['getItem', point.key]], 'loaded once');
+    equals(point.runs.map(function(run) {
+        return run.fontSize;
+    }), [12, 20], 'its runs');
+    equals(children['path'].textPath.segments,
+            original['path'].textPath.segments, 'a path text\'s path');
+    equals(children['path'].startOffset, 10, 'and its settings');
+    equals(children['area'].columns, 2, 'an area text\'s settings');
+});
+
+test('The host lays out hosted text', function() {
+    var res = createHostedText(),
+        children = res.project.layers[0].children,
+        original = res.document.layers[0].children;
+    ['point', 'path', 'area'].forEach(function(name) {
+        var text = children[name];
+        text.content;
+        res.host.takeCalls();
+        equals(getLines(text), getLines(original[name]), name + ': its lines');
+        equals(res.host.takeCalls(), [['layOut', text.key]],
+                name + ': from the host');
+        equals(text.visibleRange.end, original[name].visibleRange.end,
+                name + ': its visible range');
+        equals(text.bounds, original[name].bounds, name + ': its bounds');
+    });
+    // Lines are in the text's coordinates, hit tests in the project's:
+    var point = children['point'],
+        center = point.localToGlobal(point.lines[0].bounds.center),
+        hit = point.hitTest(center, { fill: true });
+    equals(hit && hit.item === point, true, 'hit on its letters');
+    equals(point.exportSVG().textContent, 'Hello world', 'exported to SVG');
+});
+
+test('Hosted text is laid out as the script holds it', function() {
+    var res = createHostedText(),
+        area = res.project.layers[0].children['area'],
+        original = res.document.layers[0].children['area'];
+    area.content = 'Changed by the script';
+    equals(area.lines.map(function(line) {
+        return line.content.trim();
+    }).join(' '), 'Changed by the script', 'before the host has it');
+    equals(original.content.indexOf('Changed'), -1,
+            'the host document as it was');
+});
+
+test('Without layOut(), Paper.js lays out hosted text', function() {
+    var res = createHostedText(),
+        area = res.project.layers[0].children['area'],
+        original = res.document.layers[0].children['area'];
+    res.host.layOut = null;
+    equals(getLines(area), getLines(original));
+});
+
+test('invalidate() reloads the story of hosted text', function() {
+    var res = createHostedText(),
+        point = res.project.layers[0].children['point'],
+        original = res.document.layers[0].children['point'];
+    equals(point.content, 'Hello world');
+    original.content = 'Changed in the host';
+    var columns = res.host.getColumns([original]);
+    columns.flags[0] |= 16;
+    res.project.invalidate(columns);
+    equals(point.content, 'Changed in the host', 'its content');
+    equals(getLines(point), getLines(original), 'its lines');
+});
+
+test('Hosted text draws its host\'s layout', function() {
+    var res = createHostedText(),
+        point = res.project.layers[0].children['point'],
+        raster = point.rasterize({ insert: false });
+    equals(raster.width > 0, true, 'without errors');
+});
