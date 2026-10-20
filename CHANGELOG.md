@@ -18,6 +18,8 @@
   columns and rows, with lines breaking between words and at soft hyphens,
   `verticalAlign`, `fitHeight()`, and `lineWrap`, a paragraph property that
   balances the lines.
+- Add `Item#textWrap`, by which items push aside the text of the area texts
+  below them in their layer, or let it flow inside them.
 - Add character style properties: `fontStyle`, `lineHeight`, `letterKerning`,
   `letterScaling`, `letterRotation`, `baselineShift`, `baselinePosition`,
   `capitals`, `underline` and `strikethrough`, and `fontVariations` and

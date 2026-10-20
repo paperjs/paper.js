@@ -45,8 +45,17 @@
         guides.strokeColor = '#ddd';
         guides.sendToBack();
 
+        // A circle above the columns, which pushes their text aside, and
+        // follows the mouse:
+        var wrap = new Path.Circle({
+            center: [250, 170],
+            radius: 50,
+            fillColor: '#048',
+            textWrap: { offset: 8 }
+        });
+
         function onMouseMove(event) {
-            circle.textPath.position = guides.lastChild.position = event.point;
+            wrap.position = event.point;
         }
     </script>
 </head>
