@@ -448,6 +448,10 @@ var View = Base.extend(Emitter, /** @lends View# */{
 
     /**
      * The bounds of the currently visible area in project coordinates.
+     * Setting them fits the view to the given rectangle, as
+     * {@link #fitBounds(rectangle)} does. Since the view keeps its aspect
+     * ratio, the bounds read back can be larger than the rectangle in one
+     * direction.
      *
      * @bean
      * @type Rectangle
@@ -457,6 +461,10 @@ var View = Base.extend(Emitter, /** @lends View# */{
             this._bounds = this._matrix.inverted()._transformBounds(
                     new Rectangle(new Point(), this._viewSize));
         return this._bounds;
+    },
+
+    setBounds: function(/* rect */) {
+        this.fitBounds(Rectangle.read(arguments));
     },
 
     /**
