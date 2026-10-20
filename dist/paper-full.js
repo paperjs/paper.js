@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 00:11:37 2026 +0200
+ * Date: Wed Oct 21 00:24:44 2026 +0200
  *
  ***
  *
@@ -18144,22 +18144,103 @@ new function() {
 		return 'url(#' + filter.id + ')';
 	}
 
-	function exportText(item) {
+	function exportText(item, options) {
 		var attrs = getTransform(item._matrix, true),
 			node = SvgElement.create('text', attrs, formatter),
-			paragraphs = item.getParagraphs();
-		if (paragraphs.length > 1) {
-			var lines = item._getLayout();
-			for (var i = 0, l = paragraphs.length; i < l; i++) {
-				var span = SvgElement.create('tspan', {
-					x: attrs.x,
-					y: attrs.y + lines[i].y
-				}, formatter);
-				span.textContent = paragraphs[i].getContent();
-				node.appendChild(span);
+			story = item._story,
+			lines = item._getLayout(),
+			isPointText = item instanceof PointText;
+
+		function createSpan(content, style, spanAttrs, isParagraph) {
+			spanAttrs = Base.set({}, spanAttrs);
+			Base.each(SvgStyles, function(entry) {
+				if ((entry.property in story._paragraphKeys) === isParagraph
+						&& item[entry.get]() === undefined) {
+					var value = style[entry.get]();
+					if (value !== undefined)
+						setAttributes(spanAttrs, [], entry, value, options);
+				}
+			});
+			var span = SvgElement.create('tspan', spanAttrs, formatter);
+			if (content != null)
+				span.textContent = content;
+			return span;
+		}
+
+		function addRuns(parent, line) {
+			var pieces = line.pieces,
+				runs = [];
+			for (var i = 0, l = pieces.length; i < l; i++) {
+				var piece = pieces[i],
+					last = runs[runs.length - 1];
+				if (last && last.style.equals(piece.style)) {
+					last.content += piece.content;
+				} else {
+					runs.push({ content: piece.content, style: piece.style });
+				}
+			}
+			var isMixed = runs.some(function(run) {
+				return createSpan(null, run.style, null, false)
+						.attributes.length > 0;
+			});
+			if (isMixed) {
+				for (var i = 0, l = runs.length; i < l; i++) {
+					parent.appendChild(createSpan(runs[i].content,
+							runs[i].style, null, false));
+				}
+			} else {
+				parent.textContent = runs.map(function(run) {
+					return run.content;
+				}).join('');
+			}
+		}
+
+		if (isPointText) {
+			if (lines.length > 1) {
+				for (var i = 0, l = lines.length; i < l; i++) {
+					var line = lines[i],
+						paragraph = story._getParagraph(line.start).style,
+						side = item._getSide(paragraph.getJustification(),
+							paragraph.getDirection()),
+						span = createSpan(null, paragraph, {
+							x: attrs.x + line.x + (side === 'right'
+									? line.width
+									: side === 'center' ? line.width / 2 : 0),
+							y: attrs.y + line.y
+						}, true);
+					addRuns(span, line);
+					node.appendChild(span);
+				}
+			} else if (lines.length) {
+				addRuns(node, lines[0]);
 			}
 		} else {
-			node.textContent = item.getContent();
+			var justification = item.getJustification(),
+				anchor = justification && justification !== 'left'
+						&& { 'text-anchor': 'start' };
+			for (var i = 0, l = lines.length; i < l; i++) {
+				var line = lines[i],
+					pieces = line.pieces,
+					span = SvgElement.create('tspan', Base.set({
+						x: attrs.x + line.x,
+						y: attrs.y + line.y
+					}, anchor), formatter);
+				for (var j = 0, m = pieces.length; j < m; j++) {
+					var piece = pieces[j],
+						angle = piece.rotation,
+						origin = new Point(piece.dx || 0, 0).rotate(angle)
+								.add(piece.x, line.y + piece.y),
+						pieceAttrs = {
+							x: attrs.x + origin.x,
+							y: attrs.y + origin.y
+						};
+					if (angle)
+						pieceAttrs.rotate = angle;
+					span.appendChild(createSpan(piece.content, piece.style,
+							pieceAttrs, false));
+				}
+				node.appendChild(span);
+			}
 		}
 		return node;
 	}
@@ -18172,7 +18253,9 @@ new function() {
 		Shape: exportShape,
 		CompoundPath: exportCompoundPath,
 		SymbolItem: exportSymbolItem,
-		PointText: exportText
+		PointText: exportText,
+		PathText: exportText,
+		AreaText: exportText
 	};
 
 	var cssBlendModes = Base.each(['normal', 'multiply', 'screen', 'overlay',
@@ -18181,6 +18264,39 @@ new function() {
 			'color', 'luminosity'], function(mode) {
 		this[mode] = true;
 	}, {});
+
+	function setAttributes(attrs, style, entry, value, options) {
+		var type = entry.type;
+		if (type === 'color' && value != null) {
+			var alpha = value.getAlpha();
+			if (alpha < 1)
+				attrs[entry.attribute + '-opacity'] = alpha;
+		}
+		if (type === 'style') {
+			if (cssBlendModes[value]) {
+				style.push(entry.attribute + ': ' + value);
+			} else {
+				attrs['data-paper-blend-mode'] = value;
+			}
+		} else if (type === 'font') {
+			var font = ('' + value).match(
+					/^(.*?)\s*\b(italic|oblique)\b\s*(.*)$/i);
+			attrs[entry.attribute] = font
+					? (font[1] + ' ' + font[3]).trim() || 'normal'
+					: value;
+			if (font)
+				attrs['font-style'] = font[2].toLowerCase();
+		} else {
+			attrs[entry.attribute] = value == null ? 'none'
+					: type === 'color' ? value.gradient
+						? exportGradient(value, options)
+						: value.toCSS(true)
+					: type === 'array' ? value.join(',')
+					: type === 'lookup' ? entry.toSVG[value]
+					: type === 'tracking' ? value && value / 1000 + 'em'
+					: value;
+		}
+	}
 
 	function applyStyle(item, node, options, isRoot) {
 		var attrs = {},
@@ -18194,7 +18310,6 @@ new function() {
 
 		Base.each(SvgStyles, function(entry) {
 			var get = entry.get,
-				type = entry.type,
 				value = item[get]();
 			if (parent && !(get in parentStyle))
 				parentStyle[get] = parent[get]();
@@ -18202,35 +18317,7 @@ new function() {
 					? entry.exportFilter(item, value)
 					: options.reduceAttributes == false
 						|| !parent || !Base.equals(parentStyle[get], value))) {
-				if (type === 'color' && value != null) {
-					var alpha = value.getAlpha();
-					if (alpha < 1)
-						attrs[entry.attribute + '-opacity'] = alpha;
-				}
-				if (type === 'style') {
-					if (cssBlendModes[value]) {
-						style.push(entry.attribute + ': ' + value);
-					} else {
-						attrs['data-paper-blend-mode'] = value;
-					}
-				} else if (type === 'font') {
-					var font = ('' + value).match(
-							/^(.*?)\s*\b(italic|oblique)\b\s*(.*)$/i);
-					attrs[entry.attribute] = font
-							? (font[1] + ' ' + font[3]).trim() || 'normal'
-							: value;
-					if (font)
-						attrs['font-style'] = font[2].toLowerCase();
-				} else {
-					attrs[entry.attribute] = value == null ? 'none'
-							: type === 'color' ? value.gradient
-								? exportGradient(value, options)
-								: value.toCSS(true)
-							: type === 'array' ? value.join(',')
-							: type === 'lookup' ? entry.toSVG[value]
-							: type === 'tracking' ? value && value / 1000 + 'em'
-							: value;
-				}
+				setAttributes(attrs, style, entry, value, options);
 			}
 		});
 
