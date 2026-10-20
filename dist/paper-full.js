@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 07:01:25 2026 +0200
+ * Date: Tue Oct 20 07:09:49 2026 +0200
  *
  ***
  *
@@ -18113,7 +18113,10 @@ Base.exports.PaperScript = function() {
 					} else {
 						names.push(declaration.id.name);
 					}
-					replaceCode(node, getCode(declaration) + names.map(
+					var code = getCode(declaration);
+					if (declaration.declarations && !/;\s*$/.test(code))
+						code += ';';
+					replaceCode(node, code + names.map(
 						function(name) {
 							return ' module.exports.' + name + ' = ' + name
 									+ ';';
