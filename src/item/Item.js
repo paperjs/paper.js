@@ -1344,6 +1344,7 @@ new function() { // Injection scope for various item event handlers
 
     /**
      * @bean
+     * @type Boolean
      * @deprecated use {@link #applyMatrix} instead.
      */
     getTransformContent: '#getApplyMatrix',
@@ -1770,6 +1771,7 @@ new function() { // Injection scope for various item event handlers
      * @function
      * @param {Number} [resolution=view.resolution]
      * @param {Boolean} [insert=true]
+     * @return {Raster}
      * @deprecated use {@link #rasterize(options)} instead.
      */
     /**
@@ -2762,6 +2764,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @function
      * @param {Item} item the item to be appended as a child
+     * @return {Item}
      * @deprecated use {@link #addChild(item)} instead.
      */
     appendTop: '#addChild',
@@ -2772,6 +2775,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * use this function for groups, compound paths and layers.
      *
      * @param {Item} item the item to be appended as a child
+     * @return {Item}
      * @deprecated use {@link #insertChild(index, item)} instead.
      */
     appendBottom: function(item) {

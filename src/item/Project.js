@@ -330,6 +330,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 
     /**
      * @bean
+     * @type SymbolDefinition[]
      * @deprecated use {@link #symbolDefinitions} instead.
      */
     getSymbols: 'getSymbolDefinitions',

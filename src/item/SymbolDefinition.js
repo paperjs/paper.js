@@ -122,6 +122,7 @@ var SymbolDefinition = Base.extend(/** @lends SymbolDefinition# */{
 
     /**
      * @bean
+     * @type Item
      * @deprecated use {@link #item} instead.
      */
     getDefinition: '#getItem',

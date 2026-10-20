@@ -75,8 +75,8 @@ var Event = Base.extend(/** @lends Event# */{
     },
 
     /**
-     * @private
      * @bean
+     * @type Number
      * @deprecated use {@link #time} instead, which is in seconds.
      */
     getTimeStamp: function() {
