@@ -448,3 +448,46 @@ test('PaperScript syntax errors', function() {
         return /Unexpected token/.test(message);
     }, true, message);
 });
+
+test('PaperScript dynamic imports', function(assert) {
+    var done = assert.async();
+    withAcornLatest(function() {
+        // Run the modules now, while the current Acorn is lent, as the
+        // imports only call the loader later:
+        var modules = {
+                'shapes.js': PaperScript.execute('export default "shapes";\n'
+                    + 'export const size = new Size(2, 3) * 2;', paper),
+                'common.js': PaperScript.execute(
+                    'module.exports = { a: 1 };', paper)
+            };
+        // The loader may also return a Promise for dynamic imports:
+        function load(specifier) {
+            return Promise.resolve(modules[specifier]);
+        }
+        var exports = PaperScript.execute(
+                'var name = "shapes";\n'
+                + 'module.exports.shapes = import(name + ".js");\n'
+                + 'module.exports.common = import("common.js");', paper,
+                { load: load }),
+            failed = PaperScript.execute(
+                'module.exports.result = import("shapes.js");', paper);
+        Promise.all([exports.shapes, exports.common]).then(function(results) {
+            equals(function() {
+                return [results[0].default, results[0].size];
+            }, ['shapes', new Size(4, 6)], 'the namespace of an ES module');
+            equals(function() {
+                return [results[1].a, results[1].default.a];
+            }, [1, 1], 'the namespace of CommonJS-style exports');
+            return failed.result;
+        }).then(function() {
+            ok(false, 'import() without a loader should reject');
+        }, function(error) {
+            equals(error.message, 'Unable to import \'shapes.js\': no loader '
+                    + 'was passed to PaperScript.execute().',
+                    'import() without a loader rejects');
+        }).then(done, function(error) {
+            ok(false, error + '');
+            done();
+        });
+    });
+});
