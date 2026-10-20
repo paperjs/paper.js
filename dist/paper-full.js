@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 14:28:08 2026 +0200
+ * Date: Tue Oct 20 16:47:45 2026 +0200
  *
  ***
  *
@@ -7187,17 +7187,25 @@ statics: {
 		if (h1.isZero() && h2.isZero()) {
 			return true;
 		} else {
-			var v = p2.subtract(p1);
-			if (v.isZero()) {
+			var isZero = Numerical.isZero,
+				isCollinear = Point.isCollinear,
+				vx = p2.x - p1.x,
+				vy = p2.y - p1.y;
+			if (isZero(vx) && isZero(vy)) {
 				return false;
-			} else if (v.isCollinear(h1) && v.isCollinear(h2)) {
-				var l = new Line(p1, p2),
+			} else if (isCollinear(vx, vy, h1.x, h1.y) &&
+					isCollinear(vx, vy, h2.x, h2.y)) {
+				var getDistance = Line.getDistance,
+					px = p1.x,
+					py = p1.y,
 					epsilon = 1e-7;
-				if (l.getDistance(p1.add(h1)) < epsilon &&
-					l.getDistance(p2.add(h2)) < epsilon) {
-					var div = v.dot(v),
-						s1 = v.dot(h1) / div,
-						s2 = v.dot(h2) / div;
+				if (getDistance(px, py, vx, vy, px + h1.x, py + h1.y, true)
+						< epsilon &&
+					getDistance(px, py, vx, vy, p2.x + h2.x, p2.y + h2.y, true)
+						< epsilon) {
+					var div = vx * vx + vy * vy,
+						s1 = (vx * h1.x + vy * h1.y) / div,
+						s2 = (vx * h2.x + vy * h2.y) / div;
 					return s1 >= 0 && s1 <= 1 && s2 <= 0 && s2 >= -1;
 				}
 			}
@@ -18739,7 +18747,8 @@ Base.exports.PaperScript = function() {
 		code = compiled.code;
 		function expose(scope, hidden) {
 			for (var key in scope) {
-				if ((hidden || !/^_/.test(key) && !(key in self))
+				if ((hidden || !/^_/.test(key)
+						&& (!(key in self) || scope.hasOwnProperty(key)))
 						&& new RegExp('([\\b\\s\\W]|^)'
 						+ key.replace(/\$/g, '\\$') + '\\b').test(code)) {
 					params.push(key);
