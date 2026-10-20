@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 23:16:55 2026 +0200
+ * Date: Tue Oct 20 23:38:11 2026 +0200
  *
  ***
  *
@@ -16333,6 +16333,65 @@ new function() {
 		return 'url(#' + gradientNode.id + ')';
 	}
 
+	function exportShadow(item, options) {
+		var style = item._style,
+			color = style.getShadowColor(),
+			offset = style.getShadowOffset(),
+			deviation = style.getShadowBlur() / 2,
+			bounds = item.getStrokeBounds(new Matrix()),
+			rect = bounds.unite(new Rectangle(bounds.getPoint().add(offset),
+					bounds.getSize())).expand(6 * deviation),
+			box = item.getInternalBounds(),
+			relative = box.width && box.height,
+			filter = SvgElement.create('filter', relative ? {
+				x: (rect.x - box.x) / box.width,
+				y: (rect.y - box.y) / box.height,
+				width: rect.width / box.width,
+				height: rect.height / box.height
+			} : {
+				x: rect.x,
+				y: rect.y,
+				width: rect.width,
+				height: rect.height,
+				filterUnits: 'userSpaceOnUse'
+			}, formatter),
+			merge = SvgElement.create('feMerge');
+
+		function add(parent, type, attrs) {
+			parent.appendChild(SvgElement.create(type, attrs, formatter));
+		}
+
+		if (deviation > 0) {
+			add(filter, 'feGaussianBlur', {
+				'in': 'SourceAlpha',
+				stdDeviation: deviation,
+				result: 'blur'
+			});
+		}
+		add(filter, 'feOffset', {
+			'in': deviation > 0 ? 'blur' : 'SourceAlpha',
+			dx: offset.x,
+			dy: offset.y,
+			result: 'offset'
+		});
+		add(filter, 'feFlood', {
+			'flood-color': color.toCSS(true),
+			'flood-opacity': color.getAlpha(),
+			result: 'color'
+		});
+		add(filter, 'feComposite', {
+			'in': 'color',
+			in2: 'offset',
+			operator: 'in',
+			result: 'shadow'
+		});
+		add(merge, 'feMergeNode', { 'in': 'shadow' });
+		add(merge, 'feMergeNode', { 'in': 'SourceGraphic' });
+		filter.appendChild(merge);
+		setDefinition(item, filter, 'filter', options);
+		return 'url(#' + filter.id + ')';
+	}
+
 	function exportText(item) {
 		var attrs = getTransform(item._matrix, true),
 			node = SvgElement.create('text', attrs, formatter),
@@ -16422,6 +16481,9 @@ new function() {
 				}
 			}
 		});
+
+		if (item._style.getShadowColor(true) && item.hasShadow())
+			attrs.filter = exportShadow(item, options);
 
 		if (style.length)
 			attrs.style = style.join(';');
@@ -16873,6 +16935,48 @@ new function() {
 			color.setAlpha(parseFloat(value));
 	}
 
+	function getFilterShadow(filter) {
+		var primitives = {},
+			count = 0,
+			nodes = filter ? filter.childNodes : [];
+		for (var i = 0, l = nodes.length; i < l; i++) {
+			var node = nodes[i];
+			if (node.nodeType === 1) {
+				primitives[node.nodeName] = node;
+				count++;
+			}
+		}
+		var blur = primitives.feGaussianBlur,
+			offset = primitives.feOffset,
+			flood = primitives.feFlood;
+		if (!(offset && flood && primitives.feComposite && primitives.feMerge)
+				|| count !== (blur ? 5 : 4))
+			return null;
+		var color = new Color(flood.getAttribute('flood-color') || 'black'),
+			opacity = flood.getAttribute('flood-opacity');
+		if (opacity)
+			color.setAlpha(color.getAlpha() * parseFloat(opacity));
+		return {
+			color: color,
+			blur: blur ? 2 * parseFloat(blur.getAttribute('stdDeviation')) : 0,
+			offset: new Point(parseFloat(offset.getAttribute('dx')) || 0,
+					parseFloat(offset.getAttribute('dy')) || 0)
+		};
+	}
+
+	function getCssShadow(value) {
+		var match = value.match(/^\s*drop-shadow\((.*)\)\s*$/),
+			color = match && match[1].match(
+					/(?:rgba?|hsla?)\([^)]*\)|#[0-9a-f]+|\b[a-z]+\b/i),
+			lengths = match && match[1].replace(color && color[0], '')
+					.match(/-?[\d.]+/g);
+		return lengths && lengths.length >= 2 ? {
+			color: new Color(color ? color[0] : 'black'),
+			blur: parseFloat(lengths[2]) || 0,
+			offset: new Point(parseFloat(lengths[0]), parseFloat(lengths[1]))
+		} : null;
+	}
+
 	var attributes = Base.set(Base.each(SvgStyles, function(entry) {
 		this[entry.attribute] = function(item, value, name, node, styles,
 				options) {
@@ -16926,6 +17030,19 @@ new function() {
 		display: function(item, value) {
 			if (item.setVisible)
 				item.setVisible(value !== null);
+		},
+
+		filter: function(item, value) {
+			var shadow = value && !(item instanceof Group)
+					&& item.setShadowColor && (/^url\(/.test(value)
+						? getFilterShadow(getSandbox().ownerDocument
+							.getElementById(getDefinitionId(value)))
+						: getCssShadow(value));
+			if (shadow) {
+				item.setShadowColor(shadow.color);
+				item.setShadowBlur(shadow.blur);
+				item.setShadowOffset(shadow.offset);
+			}
 		},
 
 		'data-paper-blend-mode': function(item, value) {
@@ -17034,12 +17151,17 @@ new function() {
 		return definitions[id];
 	}
 
-	function getDefinition(value, options) {
+	function getDefinitionId(value) {
 		var match = value && value.match(/\((?:["'#]*)([^"')]+)/),
-			name = match && match[1],
-			res = name && getDefinitionById(window
-					? name.replace(window.location.href.split('#')[0] + '#', '')
-					: name, options);
+			name = match && match[1];
+		return name && window
+				? name.replace(window.location.href.split('#')[0] + '#', '')
+				: name;
+	}
+
+	function getDefinition(value, options) {
+		var id = getDefinitionId(value),
+			res = id && getDefinitionById(id, options);
 		if (res && res._scaleToBounds) {
 			res = res.clone();
 			res._scaleToBounds = true;
