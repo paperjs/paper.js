@@ -96,10 +96,17 @@ PathItem.inject(new function() {
         // See if the item can be reduced to just a simple Path.
         result = result.reduce({ simplify: simplify });
         if (Base.pick(options && options.insert, paper.settings.insertItems)) {
-            // Insert the resulting path above whichever of the two paths appear
-            // further up in the stack.
-            result.insertAbove(path2 && path1.isSibling(path2)
-                    && path1.getIndex() < path2.getIndex() ? path2 : path1);
+            // Insert the resulting path above whichever of the paths that are
+            // siblings of path1 appears furthest up in the stack:
+            var above = path1,
+                others = [].concat(path2 || []);
+            for (var i = 0, l = others.length; i < l; i++) {
+                var other = others[i];
+                if (path1.isSibling(other)
+                        && other.getIndex() > above.getIndex())
+                    above = other;
+            }
+            result.insertAbove(above);
         }
         // Copy over the input path attributes, excluding matrix and we're done.
         result.copyAttributes(path1, true);
@@ -126,15 +133,34 @@ PathItem.inject(new function() {
         // We do not modify the operands themselves, but trace copies of them.
         // NOTE: The result paths might not belong to the same type i.e.
         // subtract(A:Path, B:Path):CompoundPath etc.
-        var paths = tracePaths(getOperands(path1, path2),
-                operators[operation]);
+        var paths = tracePaths(getOperands(path1,
+                combinePaths(path2, operation)), operators[operation]);
         return createResult(paths, true, path1, path2, options);
+    }
+
+    /*
+     * Combines a list of paths into the one path that path1 is operated on
+     * with, pairwise in a balanced tree so that each step only meets results
+     * of similar size. To subtract them, we subtract their union.
+     */
+    function combinePaths(paths, operation) {
+        var list = [].concat(paths),
+            combine = operation === 'subtract' ? 'unite' : operation;
+        while (list.length > 1) {
+            var next = [];
+            for (var i = 0, l = list.length; i < l; i += 2) {
+                next.push(i + 1 < l ? traceBoolean(list[i], list[i + 1],
+                        combine, { insert: false }) : list[i]);
+            }
+            list = next;
+        }
+        return list[0];
     }
 
 
     function splitBoolean(path1, path2, operation, options) {
         var _path1 = preparePath(path1),
-            _path2 = preparePath(path2),
+            _path2 = preparePath(combinePaths(path2, operation)),
             crossings = _path1.getIntersections(_path2, filterIntersection),
             subtract = operation === 'subtract',
             divide = operation === 'divide',
@@ -1362,19 +1388,30 @@ PathItem.inject(new function() {
          * {@grouptitle Boolean Path Operations}
          *
          * Unites the geometry of the specified path with this path's geometry
-         * and returns the result as a new path item.
+         * and returns the result as a new path item. With an array of paths,
+         * the result covers the areas inside any of them or this path. Each
+         * path keeps its own fill rule.
          *
          * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
+         *     should be inserted back into the scene graph, above all paths
          *     involved in the operation
          *
-         * @param {PathItem} path the path to unite with
+         * @param {PathItem|PathItem[]} path the path or paths to unite with
          * @param {Object} [options] the boolean operation options
          * @return {PathItem} the resulting path item
          *
          * @example {@paperscript}
          * var result = new Path.RegularPolygon([50, 50], 3, 40)
          *     .unite(new Path.Circle([50, 50], 25));
+         * result.fillColor = 'red';
+         *
+         * @example {@paperscript}
+         * // Uniting many paths at once:
+         * var circles = [];
+         * for (var i = 0; i < 6; i++) {
+         *     circles.push(new Path.Circle([30 + i * 20, 50], 20));
+         * }
+         * var result = circles[0].unite(circles.slice(1));
          * result.fillColor = 'red';
          */
         unite: function(path, options) {
@@ -1383,18 +1420,21 @@ PathItem.inject(new function() {
 
         /**
          * Intersects the geometry of the specified path with this path's
-         * geometry and returns the result as a new path item.
+         * geometry and returns the result as a new path item. With an array of
+         * paths, the result covers the areas inside all of them and this path.
+         * Each path keeps its own fill rule.
          *
          * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
+         *     should be inserted back into the scene graph, above all paths
          *     involved in the operation
          * @option [options.trace=true] {Boolean} whether the tracing method is
-         *     used, treating both paths as areas when determining which parts
+         *     used, treating all paths as areas when determining which parts
          *     of the paths are to be kept in the result, or whether the first
          *     path is only to be split at intersections, keeping the parts of
-         *     the curves that intersect with the area of the second path.
+         *     the curves that intersect with the areas of all other paths.
          *
-         * @param {PathItem} path the path to intersect with
+         * @param {PathItem|PathItem[]} path the path or paths to intersect
+         *     with
          * @param {Object} [options] the boolean operation options
          * @return {PathItem} the resulting path item
          *
@@ -1409,18 +1449,20 @@ PathItem.inject(new function() {
 
         /**
          * Subtracts the geometry of the specified path from this path's
-         * geometry and returns the result as a new path item.
+         * geometry and returns the result as a new path item. With an array of
+         * paths, the result covers the areas inside this path and outside all
+         * of them. Each path keeps its own fill rule.
          *
          * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
+         *     should be inserted back into the scene graph, above all paths
          *     involved in the operation
          * @option [options.trace=true] {Boolean} whether the tracing method is
-         *     used, treating both paths as areas when determining which parts
+         *     used, treating all paths as areas when determining which parts
          *     of the paths are to be kept in the result, or whether the first
          *     path is only to be split at intersections, removing the parts of
-         *     the curves that intersect with the area of the second path.
+         *     the curves that intersect with the area of any other path.
          *
-         * @param {PathItem} path the path to subtract
+         * @param {PathItem|PathItem[]} path the path or paths to subtract
          * @param {Object} [options] the boolean operation options
          * @return {PathItem} the resulting path item
          *
@@ -1435,13 +1477,16 @@ PathItem.inject(new function() {
 
         /**
          * Excludes the intersection of the geometry of the specified path with
-         * this path's geometry and returns the result as a new path item.
+         * this path's geometry and returns the result as a new path item. With
+         * an array of paths, the result covers the areas inside an odd number
+         * of the paths, this one included. Each path keeps its own fill rule.
          *
          * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
+         *     should be inserted back into the scene graph, above all paths
          *     involved in the operation
          *
-         * @param {PathItem} path the path to exclude the intersection of
+         * @param {PathItem|PathItem[]} path the path or paths to exclude the
+         *     intersection of
          * @param {Object} [options] the boolean operation options
          * @return {PathItem} the resulting path item
          *
