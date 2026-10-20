@@ -171,6 +171,29 @@ var Group = Item.extend(/** @lends Group# */{
     },
 
     /**
+     * Replaces the group with its children, which keep their appearance: the
+     * group's matrix is applied to them, and its clipping mask is released.
+     *
+     * @return {Item[]} the children, or `null` if the group has no parent
+     */
+    ungroup: function() {
+        if (!this._parent)
+            return null;
+        var children = this._children.slice(),
+            clipItem = this._getClipItem(),
+            matrix = this._matrix;
+        if (clipItem)
+            clipItem.setClipMask(false);
+        // Transform the children by the group's matrix, which they apply to
+        // their content or their own matrix, depending on their applyMatrix:
+        if (!matrix.isIdentity()) {
+            for (var i = 0, l = children.length; i < l; i++)
+                children[i].transform(matrix);
+        }
+        return this.replaceWith.apply(this, children) ? children : null;
+    },
+
+    /**
      * Specifies whether the group is isolated, drawn through a temporary
      * canvas, so that the blend modes of its children only apply within it,
      * like CSS's `isolation: isolate`. Without it, a compositing mode such as
