@@ -35,13 +35,21 @@ classes.forEach(cls => {
     // Format properties.
     cls.properties = cls.properties
         .filter(filter)
-        .map(it => ({
-            name: it._name,
-            type: formatType(it.type, { isProperty: true, isSettableProperty: !it.readOnly }),
-            static: formatStatic(it.isStatic),
-            readOnly: formatReadOnly(it.readOnly),
-            comment: formatComment(it.comment)
-        }));
+        .map(it => {
+            const type = formatType(it.type, { isProperty: true, isSettableProperty: !it.readOnly });
+            // Setters read their values like parameters do, e.g. a point from
+            // an array, so they get the wider type, through accessors:
+            const setterType = !it.readOnly
+                    && formatType(it.type, { isProperty: true, isParam: true, isSetter: true });
+            return {
+                name: it._name,
+                type: type,
+                setterType: setterType !== type ? setterType : null,
+                static: formatStatic(it.isStatic),
+                readOnly: formatReadOnly(it.readOnly),
+                comment: formatComment(it.comment)
+            };
+        });
 
     // Format methods.
     const methods = cls.methods
@@ -210,7 +218,8 @@ function parseType(type, options) {
         // a `Point` instance will also accept an array of two numbers and
         // other point like objects).
         // The generic types are hardcoded in the type definition template.
-        if (options.isParam && ['Point', 'Size', 'Rectangle'].includes(splittedType)) {
+        if (options.isParam && ['Point', 'Size', 'Rectangle'].includes(splittedType)
+                || options.isSetter && splittedType === 'Color') {
             splittedType += 'Like';
         }
         return splittedType;
