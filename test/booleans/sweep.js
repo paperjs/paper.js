@@ -167,11 +167,62 @@ function checkGraph(a, b) {
     return { unknown: true };
 }
 
+// The operation's epsilon, as the boolean operations compute it, so that the
+// sweep also runs on builds without the graph:
+function getEpsilon(a, b) {
+    var bounds = a.bounds.unite(b.bounds),
+        abs = Math.abs;
+    return Math.max(Numerical.getEpsilon(Math.max(abs(bounds.left),
+            abs(bounds.right), abs(bounds.top), abs(bounds.bottom))),
+            bounds.topLeft.getDistance(bounds.bottomRight)
+                * Numerical.GEOMETRIC_EPSILON);
+}
+
+function isWrong(a, b, result, point, op) {
+    return result.contains(point) !== operations[op](a.contains(point),
+            b.contains(point));
+}
+
+// Samples close to the outlines: Step off evenly spaced points on each outline
+// along its normal, by multiples of the operation's epsilon, and keep those
+// that are further than 2 epsilon from the other outlines. Adds the wrong
+// points and the samples per multiple to near:
+function addNearSamples(a, b, result, op, epsilon, count, near) {
+    var outlines = [a, b, result];
+    [2, 10, 100].forEach(function(factor) {
+        var entry = near[factor] = near[factor] || [0, 0];
+        outlines.forEach(function(outline) {
+            (outline.children || [outline]).forEach(function(path) {
+                var length = path.length;
+                for (var i = 0; i < count && length; i++) {
+                    var location = path.getLocationAt(length * (i + 0.5) / count),
+                        normal = location && location.normal;
+                    if (normal && !normal.isZero()) {
+                        [1, -1].forEach(function(sign) {
+                            var point = location.point.add(
+                                    normal.multiply(sign * factor * epsilon));
+                            if (outlines.every(function(other) {
+                                return other === outline
+                                        || !isNear(other, point, 2 * epsilon);
+                            })) {
+                                entry[1]++;
+                                if (isWrong(a, b, result, point, op))
+                                    entry[0]++;
+                            }
+                        });
+                    }
+                }
+            });
+        });
+    });
+}
+
 function sweep(entry) {
     var a = Item.importJSON(entry.a),
         b = Item.importJSON(entry.b),
+        op = entry.op,
         options = Base.set({}, entry.options, { insert: false }),
-        result = { label: entry.label, op: entry.op };
+        result = { label: entry.label, op: op };
     a.remove();
     b.remove();
     [a, b].forEach(function(item) {
@@ -182,15 +233,16 @@ function sweep(entry) {
         result.skipped = 'trace: false or stroke';
         return result;
     }
-    var result0 = a[entry.op](b, options);
+    var result0 = a[op](b, options);
     if (!isClosed(result0)) {
         result.skipped = 'open result';
         return result;
     }
     // Sample points with a fixed seed, away from all outlines:
     var bounds = a.bounds.unite(b.bounds),
+        epsilon = getEpsilon(a, b),
         tolerance = exclusion
-            ? exclusion * PathItem._createGraph(a, b).epsilon
+            ? exclusion * epsilon
             : 1e-4 * bounds.topLeft.getDistance(bounds.bottomRight),
         seed = 4711,
         points = [];
@@ -204,7 +256,7 @@ function sweep(entry) {
                 && !isNear(result0, point, tolerance)) {
             points.push({
                 point: point,
-                expected: operations[entry.op](a.contains(point),
+                expected: operations[op](a.contains(point),
                         b.contains(point)),
                 filled: result0.contains(point)
             });
@@ -214,47 +266,17 @@ function sweep(entry) {
     result.wrong = points.filter(function(sample) {
         return sample.filled !== sample.expected;
     }).length;
-    // Samples close to the outlines: Step off evenly spaced points on each
-    // outline along its normal, by multiples of the operation's epsilon, and
-    // keep those that are further than 2 epsilon from the other outlines:
-    var epsilon = PathItem._createGraph(a, b).epsilon,
-        outlines = [a, b, result0];
     result.near = {};
-    [2, 10, 100].forEach(function(factor) {
-        var count = 0,
-            wrong = 0;
-        outlines.forEach(function(outline) {
-            (outline.children || [outline]).forEach(function(path) {
-                var length = path.length;
-                for (var i = 0; i < 32 && length; i++) {
-                    var location = path.getLocationAt(length * (i + 0.5) / 32),
-                        normal = location && location.normal;
-                    if (normal && !normal.isZero()) {
-                        [1, -1].forEach(function(sign) {
-                            var point = location.point.add(
-                                    normal.multiply(sign * factor * epsilon));
-                            if (outlines.every(function(other) {
-                                return other === outline
-                                        || !isNear(other, point, 2 * epsilon);
-                            })) {
-                                count++;
-                                if (result0.contains(point) !== operations[
-                                        entry.op](a.contains(point),
-                                            b.contains(point)))
-                                    wrong++;
-                            }
-                        });
-                    }
-                }
-            });
-        });
-        result.near[factor] = [wrong, count];
-    });
+    addNearSamples(a, b, result0, op, epsilon, 32, result.near);
+    // Check the results of the tiny moves too, against the moved operands,
+    // with the same points and fewer near the outlines:
     result.stable = 0;
     result.total = deltas.length * 2;
+    result.movedWrong = 0;
+    result.movedNear = {};
     result.nonPlanar = 0;
     function check(b) {
-        var repro = checkGraph(a, b);
+        var repro = PathItem._createGraph && checkGraph(a, b);
         if (repro) {
             result.nonPlanar++;
             result.repro = result.repro || repro;
@@ -266,12 +288,17 @@ function sweep(entry) {
             var moved = b.clone({ insert: false });
             moved.translate(new Point(vector).multiply(scale));
             check(moved);
-            var moved0 = a[entry.op](moved, options);
+            var moved0 = a[op](moved, options);
             if (points.every(function(sample) {
                 return moved0.contains(sample.point) === sample.filled;
             })) {
                 result.stable++;
             }
+            points.forEach(function(sample) {
+                if (isWrong(a, moved, moved0, sample.point, op))
+                    result.movedWrong++;
+            });
+            addNearSamples(a, moved, moved0, op, epsilon, 8, result.movedNear);
         });
     });
     return result;

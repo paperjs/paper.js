@@ -171,6 +171,7 @@ gulp.task('test:booleans', ['minify:acorn'], function(callback) {
                     : result.skipped || result.error
                         ? { skipped: result.skipped || result.error }
                         : { stable: result.stable, wrong: result.wrong,
+                            movedWrong: result.movedWrong,
                             nonPlanar: result.nonPlanar };
         });
         var baseline = fs.existsSync(baselineFile)
@@ -179,6 +180,7 @@ gulp.task('test:booleans', ['minify:acorn'], function(callback) {
             better = [],
             stable = 0,
             wrong = 0,
+            movedWrong = 0,
             nonPlanar = 0,
             timeouts = 0;
         Object.keys(current).forEach(function(key) {
@@ -186,6 +188,7 @@ gulp.task('test:booleans', ['minify:acorn'], function(callback) {
                 base = baseline[key];
             stable += entry.stable || 0;
             wrong += entry.wrong || 0;
+            movedWrong += entry.movedWrong || 0;
             nonPlanar += entry.nonPlanar || 0;
             timeouts += entry.timeout ? 1 : 0;
             if (base) {
@@ -201,7 +204,8 @@ gulp.task('test:booleans', ['minify:acorn'], function(callback) {
         });
         console.log('Boolean sweep: ' + results.length + ' cases, '
                 + stable + ' stable results under tiny moves, ' + wrong
-                + ' wrongly filled points, ' + nonPlanar
+                + ' wrongly filled points, ' + movedWrong
+                + ' in the results of the tiny moves, ' + nonPlanar
                 + ' graphs that are not planar, ' + timeouts + ' timeouts. '
                 + better.length + ' better than the baseline, ' + worse.length
                 + ' worse.');
