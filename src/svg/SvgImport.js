@@ -777,6 +777,22 @@ new function() {
         return res;
     }
 
+    // Returns the element's data: its data-* attributes with camelized names,
+    // as in `dataset`, merged with Paper.js's own JSON in data-paper-data:
+    function getData(node) {
+        var data = null,
+            attributes = node.attributes,
+            json = node.getAttribute('data-paper-data');
+        for (var i = 0, l = attributes.length; i < l; i++) {
+            var match = attributes[i].name.match(/^data-(?!paper-)(.+)$/);
+            if (match) {
+                data = data || {};
+                data[Base.camelize(match[1])] = attributes[i].value;
+            }
+        }
+        return json ? Base.set(data || {}, JSON.parse(json)) : data;
+    }
+
     var sandbox;
 
     function getSandbox() {
@@ -860,7 +876,7 @@ new function() {
                 // Support onImportItem callback, to provide mechanism to handle
                 // special attributes (e.g. inkscape:transform-center)
                 var onImport = options.onImport,
-                    data = isElement && node.getAttribute('data-paper-data');
+                    data = isElement && getData(node);
                 if (onImport)
                     item = onImport(node, item, options) || item;
                 if (options.expandShapes && item instanceof Shape) {
@@ -868,7 +884,7 @@ new function() {
                     item = item.toPath();
                 }
                 if (data)
-                    item._data = JSON.parse(data);
+                    item._data = data;
             }
         } finally {
             if (container) {
