@@ -165,7 +165,8 @@ gulp.task('test:booleans', ['minify:acorn'], function(callback) {
             current[key] = result.timeout ? { timeout: true }
                     : result.skipped || result.error
                         ? { skipped: result.skipped || result.error }
-                        : { stable: result.stable, wrong: result.wrong };
+                        : { stable: result.stable, wrong: result.wrong,
+                            nonPlanar: result.nonPlanar };
         });
         var baseline = fs.existsSync(baselineFile)
                 ? JSON.parse(fs.readFileSync(baselineFile, 'utf8')) : {},
@@ -173,12 +174,14 @@ gulp.task('test:booleans', ['minify:acorn'], function(callback) {
             better = [],
             stable = 0,
             wrong = 0,
+            nonPlanar = 0,
             timeouts = 0;
         Object.keys(current).forEach(function(key) {
             var entry = current[key],
                 base = baseline[key];
             stable += entry.stable || 0;
             wrong += entry.wrong || 0;
+            nonPlanar += entry.nonPlanar || 0;
             timeouts += entry.timeout ? 1 : 0;
             if (base) {
                 var change = entry.timeout ? base.timeout ? 0 : -1
@@ -193,11 +196,19 @@ gulp.task('test:booleans', ['minify:acorn'], function(callback) {
         });
         console.log('Boolean sweep: ' + results.length + ' cases, '
                 + stable + ' stable results under tiny moves, ' + wrong
-                + ' wrongly filled points, ' + timeouts + ' timeouts. '
+                + ' wrongly filled points, ' + nonPlanar
+                + ' graphs that are not planar, ' + timeouts + ' timeouts. '
                 + better.length + ' better than the baseline, ' + worse.length
                 + ' worse.');
         worse.forEach(function(line) {
             console.log('Worse: ' + line);
+        });
+        results.forEach(function(result) {
+            if (result.nonPlanar) {
+                console.log('Not planar: ' + result.label + ' / ' + result.op
+                        + ': ' + result.nonPlanar + ', '
+                        + JSON.stringify(result.repro));
+            }
         });
         if (argv.update) {
             fs.writeFileSync(baselineFile,

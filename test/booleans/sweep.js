@@ -103,6 +103,62 @@ function isNear(item, point, tolerance) {
     return !!location && location.point.getDistance(point) < tolerance;
 }
 
+// Checks the planarity of the operation's graph: crossing each edge from its
+// right to its left must change the windings by the edge's own changes. For a
+// graph that isn't planar, returns the first pair of edges that intersect away
+// from their vertices, or a vertex that lies on an edge, as a repro:
+function checkGraph(a, b) {
+    var graph = PathItem._createGraph(a, b),
+        halfEdges = graph.halfEdges,
+        edges = graph.edges,
+        vertices = graph.vertices,
+        epsilon = graph.epsilon,
+        planar = true;
+    for (var i = 0; i < halfEdges.length && planar; i += 2) {
+        var left = halfEdges[i].face.windings,
+            right = halfEdges[i + 1].face.windings,
+            change = halfEdges[i].edge.windings;
+        planar = left[0] - right[0] === change[0]
+                && left[1] - right[1] === change[1];
+    }
+    if (planar)
+        return null;
+    function getPoint(index) {
+        return new Point(vertices[index].x, vertices[index].y);
+    }
+    var curves = edges.map(function(edge) {
+        var v = edge.values;
+        return new Curve(new Point(v[0], v[1]), new Point(v[2] - v[0], v[3] - v[1]),
+                new Point(v[4] - v[6], v[5] - v[7]), new Point(v[6], v[7]));
+    });
+    for (var i = 0; i < edges.length; i++) {
+        for (var j = i + 1; j < edges.length; j++) {
+            var ends = [edges[i].from, edges[i].to, edges[j].from, edges[j].to],
+                crossing = curves[i].getIntersections(curves[j]).filter(
+                    function(location) {
+                        return !ends.some(function(index) {
+                            return location.point.isClose(getPoint(index),
+                                    epsilon);
+                        });
+                    })[0];
+            if (crossing) {
+                return { crossing: crossing.point.toString(),
+                        edges: [edges[i].values, edges[j].values] };
+            }
+        }
+    }
+    for (var i = 0; i < vertices.length; i++) {
+        var point = getPoint(i);
+        for (var j = 0; j < edges.length; j++) {
+            var edge = edges[j];
+            if (edge.from !== i && edge.to !== i
+                    && curves[j].getNearestPoint(point).isClose(point, epsilon))
+                return { vertex: point.toString(), edge: edge.values };
+        }
+    }
+    return { unknown: true };
+}
+
 function sweep(entry) {
     var a = Item.importJSON(entry.a),
         b = Item.importJSON(entry.b),
@@ -145,10 +201,20 @@ function sweep(entry) {
     }).length;
     result.stable = 0;
     result.total = deltas.length * 2;
+    result.nonPlanar = 0;
+    function check(b) {
+        var repro = checkGraph(a, b);
+        if (repro) {
+            result.nonPlanar++;
+            result.repro = result.repro || repro;
+        }
+    }
+    check(b);
     deltas.forEach(function(delta) {
         [[delta, 0], [0, delta]].forEach(function(vector) {
             var moved = b.clone({ insert: false });
             moved.translate(vector);
+            check(moved);
             var moved0 = a[entry.op](moved, options);
             if (points.every(function(sample) {
                 return moved0.contains(sample.point) === sample.filled;
