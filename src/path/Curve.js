@@ -902,22 +902,32 @@ statics: /** @lends Curve */{
             // No handles.
             return true;
         } else {
-            var v = p2.subtract(p1);
-            if (v.isZero()) {
+            // Use the coordinates of the vector v = p2 - p1 directly, without
+            // creating points, as this is called a lot:
+            var isZero = Numerical.isZero,
+                isCollinear = Point.isCollinear,
+                vx = p2.x - p1.x,
+                vy = p2.y - p1.y;
+            if (isZero(vx) && isZero(vy)) {
                 // Zero-length line, with some handles defined.
                 return false;
-            } else if (v.isCollinear(h1) && v.isCollinear(h2)) {
+            } else if (isCollinear(vx, vy, h1.x, h1.y) &&
+                    isCollinear(vx, vy, h2.x, h2.y)) {
                 // Collinear handles: In addition to v.isCollinear(h) checks, we
                 // need to measure the distance to the line, in order to be able
                 // to use the same epsilon as in Curve#getTimeOf(), see #1066.
-                var l = new Line(p1, p2),
+                var getDistance = Line.getDistance,
+                    px = p1.x,
+                    py = p1.y,
                     epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON;
-                if (l.getDistance(p1.add(h1)) < epsilon &&
-                    l.getDistance(p2.add(h2)) < epsilon) {
+                if (getDistance(px, py, vx, vy, px + h1.x, py + h1.y, true)
+                        < epsilon &&
+                    getDistance(px, py, vx, vy, p2.x + h2.x, p2.y + h2.y, true)
+                        < epsilon) {
                     // Project handles onto line to see if they are in range:
-                    var div = v.dot(v),
-                        s1 = v.dot(h1) / div,
-                        s2 = v.dot(h2) / div;
+                    var div = vx * vx + vy * vy,
+                        s1 = (vx * h1.x + vy * h1.y) / div,
+                        s2 = (vx * h2.x + vy * h2.y) / div;
                     return s1 >= 0 && s1 <= 1 && s2 <= 0 && s2 >= -1;
                 }
             }
