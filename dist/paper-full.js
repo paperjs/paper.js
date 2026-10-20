@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 20:49:19 2026 +0200
+ * Date: Tue Oct 20 20:56:44 2026 +0200
  *
  ***
  *
@@ -10047,10 +10047,9 @@ new function() {
 
 	function drawHandles(ctx, segments, matrix, handleSize, segmentSize) {
 		var handleHalf = handleSize / 2,
-			width = segmentSize.width,
-			height = segmentSize.height,
-			halfWidth = width / 2,
-			halfHeight = height / 2,
+			half = segmentSize / 2,
+			miniSize = segmentSize - 2,
+			miniHalf = half - 1,
 			coords = new Array(6),
 			pX, pY;
 
@@ -10078,15 +10077,13 @@ new function() {
 				drawHandle(2);
 			if (selection & 4)
 				drawHandle(4);
-			if (width <= 0 || height <= 0)
+			if (segmentSize <= 0)
 				continue;
-			ctx.fillRect(pX - halfWidth, pY - halfHeight, width, height);
-			if (width > 2 && height > 2
-					&& !(selection & 1)) {
+			ctx.fillRect(pX - half, pY - half, segmentSize, segmentSize);
+			if (miniSize > 0 && !(selection & 1)) {
 				var fillStyle = ctx.fillStyle;
 				ctx.fillStyle = '#ffffff';
-				ctx.fillRect(pX - halfWidth + 1, pY - halfHeight + 1,
-						width - 2, height - 2);
+				ctx.fillRect(pX - miniHalf, pY - miniHalf, miniSize, miniSize);
 				ctx.fillStyle = fillStyle;
 			}
 		}
@@ -10210,8 +10207,7 @@ new function() {
 			ctx.stroke();
 			var settings = paper.settings;
 			drawHandles(ctx, this._segments, matrix, settings.handleSize,
-					new Size(Base.pick(settings.segmentSize,
-						settings.handleSize)));
+					Base.pick(settings.segmentSize, settings.handleSize));
 		}
 	};
 },
