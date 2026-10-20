@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 06:53:58 2026 +0200
+ * Date: Tue Oct 20 07:01:25 2026 +0200
  *
  ***
  *
@@ -7432,9 +7432,11 @@ new function() {
 			d3 *= s;
 
 			function type(type, t1, t2) {
-				var hasRoots = t1 !== undefined,
-					t1Ok = hasRoots && t1 > 0 && t1 < 1,
-					t2Ok = hasRoots && t2 > 0 && t2 < 1;
+				var tMin = 1e-8,
+					tMax = 1 - tMin,
+					hasRoots = t1 !== undefined,
+					t1Ok = hasRoots && t1 > tMin && t1 < tMax,
+					t2Ok = hasRoots && t2 > tMin && t2 < tMax;
 				if (hasRoots && (!(t1Ok || t2Ok)
 						|| type === 'loop' && !(t1Ok && t2Ok))) {
 					type = 'arch';
