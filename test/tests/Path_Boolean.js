@@ -1331,3 +1331,24 @@ test('#1929: boolean operations on open paths whose ends meet', function() {
     compareBoolean(function() { return path1.unite(path2); },
             closed1.unite(closed2));
 });
+
+test('#1837, #1979: paths that only touch, with vertices on each other', function() {
+    // Without crossings, nesting is decided through interior points, which
+    // mustn't lie on the path itself, e.g. on a shared vertex or on the edge
+    // that a ray through the center runs along:
+    var path1 = new Path({
+        segments: [[50, 100.449219], [54.425781, 95.652344], [50, 45]],
+        closed: true
+    });
+    var path2 = new Path({
+        segments: [[38.671875, 105.246094], [61.328125, 105.246094],
+            [61.28125, 95.652344], [56.527344, 100.449219],
+            [43.472656, 100.449219]],
+        closed: true
+    });
+    compareBoolean(function() { return path1.intersect(path2); }, '');
+    var path = PathItem.create('M3,1v-1h5v5h-2v-1h1v-3h-2v2h-1v1h-1v-2h1v-1z'
+            + 'M2,2v-1h1v1zM1,2h1v2h1v1h3v1h-6v-1h1z');
+    compareBoolean(function() { return path.unite(); },
+            'M3,1v-1h5v5h-2v-1h1v-3h-2v2h-1v1h-1v-2h1v-1zM2,2v-1h1v1zM1,2h1v2h1v1h3v1h-6v-1h1z');
+});

@@ -1414,41 +1414,50 @@ PathItem.inject(new function() {
         getInteriorPoint: function() {
             var bounds = this.getBounds(),
                 point = bounds.getCenter(true);
-            if (!this.contains(point)) {
+            // contains() includes the boundary, but a point on the path isn't
+            // interior, e.g. a vertex shared with another path (#1837):
+            if (!this.contains(point) || this.getNearestPoint(point)
+                    .isClose(point, /*#=*/Numerical.GEOMETRIC_EPSILON)) {
                 // Since there is no guarantee that a poly-bezier path contains
                 // the center of its bounding rectangle, we shoot a ray in x
                 // direction and select a point between the first consecutive
-                // intersections of the ray on the left.
+                // intersections of the ray on the left. The ray runs through
+                // the middle of the band around the center where no
+                // y-monotone curve starts or ends, so that it crosses the path
+                // instead of touching it or running along it (#1837):
                 var curves = this.getCurves(),
-                    y = point.y,
+                    monoCurves = [],
+                    ys = [],
                     intercepts = [],
                     roots = [];
-                // Process all y-monotone curves that intersect the ray at y:
-                for (var i = 0, l = curves.length; i < l; i++) {
-                    var v = curves[i].getValues(),
-                        o0 = v[1],
-                        o1 = v[3],
-                        o2 = v[5],
-                        o3 = v[7];
-                    if (y >= min(o0, o1, o2, o3) && y <= max(o0, o1, o2, o3)) {
-                        var monoCurves = Curve.getMonoCurves(v);
-                        for (var j = 0, m = monoCurves.length; j < m; j++) {
-                            var mv = monoCurves[j],
-                                mo0 = mv[1],
-                                mo3 = mv[7];
-                            // Only handle curves that are not horizontal and
-                            // that can cross the point's ordinate.
-                            if ((mo0 !== mo3) &&
-                                (y >= mo0 && y <= mo3 || y >= mo3 && y <= mo0)){
-                                var x = y === mo0 ? mv[0]
-                                    : y === mo3 ? mv[6]
-                                    : Curve.solveCubic(mv, 1, y, roots, 0, 1)
-                                        === 1
-                                        ? Curve.getPoint(mv, roots[0]).x
-                                        : (mv[0] + mv[6]) / 2;
-                                intercepts.push(x);
-                            }
-                        }
+                for (var i = 0, l = curves.length; i < l; i++)
+                    Base.push(monoCurves, Curve.getMonoCurves(
+                            curves[i].getValues()));
+                for (var i = 0, l = monoCurves.length; i < l; i++)
+                    ys.push(monoCurves[i][1], monoCurves[i][7]);
+                ys.sort(function(a, b) { return a - b; });
+                // The center lies between the top and the bottom of the
+                // bounds, which are among the ys, unless the path is flat:
+                var y = point.y,
+                    below = y,
+                    above = y;
+                for (var i = 0, l = ys.length; i < l && above === y; i++) {
+                    if (ys[i] <= y) {
+                        below = ys[i];
+                    } else {
+                        above = ys[i];
+                    }
+                }
+                y = point.y = (below + above) / 2;
+                for (var i = 0, l = monoCurves.length; i < l; i++) {
+                    var mv = monoCurves[i],
+                        mo0 = mv[1],
+                        mo3 = mv[7];
+                    if (y > min(mo0, mo3) && y < max(mo0, mo3)) {
+                        intercepts.push(
+                                Curve.solveCubic(mv, 1, y, roots, 0, 1) === 1
+                                    ? Curve.getPoint(mv, roots[0]).x
+                                    : (mv[0] + mv[6]) / 2);
                     }
                 }
                 if (intercepts.length > 1) {
