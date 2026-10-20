@@ -25,6 +25,9 @@
 
 ### Fixed
 
+- Fix the orientation of the results of `PathItem#exclude()` and
+  `#subtract()`, whose parts of the second path kept its reversed orientation,
+  giving them negative areas (#2064).
 - Fix `PathItem#interiorPoint` returning points on the path itself, such as a
   vertex shared with another path, which made boolean operations of paths that
   only touch keep or drop the wrong parts (#1837, #1979).
