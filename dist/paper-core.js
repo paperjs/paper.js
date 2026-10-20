@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 18:29:14 2026 +0200
+ * Date: Tue Oct 20 19:00:07 2026 +0200
  *
  ***
  *
@@ -11052,8 +11052,15 @@ PathItem.inject(new function() {
 		result.addChildren(paths, true);
 		result = result.reduce({ simplify: simplify });
 		if (Base.pick(options && options.insert, paper.settings.insertItems)) {
-			result.insertAbove(path2 && path1.isSibling(path2)
-					&& path1.getIndex() < path2.getIndex() ? path2 : path1);
+			var above = path1,
+				others = [].concat(path2 || []);
+			for (var i = 0, l = others.length; i < l; i++) {
+				var other = others[i];
+				if (path1.isSibling(other)
+						&& other.getIndex() > above.getIndex())
+					above = other;
+			}
+			result.insertAbove(above);
 		}
 		result.copyAttributes(path1, true);
 		return result;
@@ -11067,14 +11074,28 @@ PathItem.inject(new function() {
 		if (options && (options.trace == false || options.stroke) &&
 				/^(subtract|intersect)$/.test(operation))
 			return splitBoolean(path1, path2, operation, options);
-		var paths = tracePaths(getOperands(path1, path2),
-				operators[operation]);
+		var paths = tracePaths(getOperands(path1,
+				combinePaths(path2, operation)), operators[operation]);
 		return createResult(paths, true, path1, path2, options);
+	}
+
+	function combinePaths(paths, operation) {
+		var list = [].concat(paths),
+			combine = operation === 'subtract' ? 'unite' : operation;
+		while (list.length > 1) {
+			var next = [];
+			for (var i = 0, l = list.length; i < l; i += 2) {
+				next.push(i + 1 < l ? traceBoolean(list[i], list[i + 1],
+						combine, { insert: false }) : list[i]);
+			}
+			list = next;
+		}
+		return list[0];
 	}
 
 	function splitBoolean(path1, path2, operation, options) {
 		var _path1 = preparePath(path1),
-			_path2 = preparePath(path2),
+			_path2 = preparePath(combinePaths(path2, operation)),
 			crossings = _path1.getIntersections(_path2, filterIntersection),
 			subtract = operation === 'subtract',
 			divide = operation === 'divide',

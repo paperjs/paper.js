@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 18:29:14 2026 +0200
+ * Date: Tue Oct 20 19:00:07 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -4600,73 +4600,83 @@ declare namespace paper {
 
         /** 
          * Unites the geometry of the specified path with this path's geometry
-         * and returns the result as a new path item.
+         * and returns the result as a new path item. With an array of paths,
+         * the result covers the areas inside any of them or this path. Each
+         * path keeps its own fill rule.
          * 
          * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
+         *     should be inserted back into the scene graph, above all paths
          *     involved in the operation
          * 
-         * @param path - the path to unite with
+         * @param path - the path or paths to unite with
          * @param options - the boolean operation options
          * 
          * @return the resulting path item
          */
-        unite(path: PathItem, options?: { insert?: boolean }): PathItem
+        unite(path: PathItem | PathItem[], options?: { insert?: boolean }): PathItem
 
         /** 
          * Intersects the geometry of the specified path with this path's
-         * geometry and returns the result as a new path item.
+         * geometry and returns the result as a new path item. With an array of
+         * paths, the result covers the areas inside all of them and this path.
+         * Each path keeps its own fill rule.
          * 
          * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
+         *     should be inserted back into the scene graph, above all paths
          *     involved in the operation
          * @option [options.trace=true] {Boolean} whether the tracing method is
-         *     used, treating both paths as areas when determining which parts
+         *     used, treating all paths as areas when determining which parts
          *     of the paths are to be kept in the result, or whether the first
          *     path is only to be split at intersections, keeping the parts of
-         *     the curves that intersect with the area of the second path.
+         *     the curves that intersect with the areas of all other paths.
          * 
-         * @param path - the path to intersect with
+         * @param path - the path or paths to intersect
+         *     with
          * @param options - the boolean operation options
          * 
          * @return the resulting path item
          */
-        intersect(path: PathItem, options?: { insert?: boolean, trace?: boolean }): PathItem
+        intersect(path: PathItem | PathItem[], options?: { insert?: boolean, trace?: boolean }): PathItem
 
         /** 
          * Subtracts the geometry of the specified path from this path's
-         * geometry and returns the result as a new path item.
+         * geometry and returns the result as a new path item. With an array of
+         * paths, the result covers the areas inside this path and outside all
+         * of them. Each path keeps its own fill rule.
          * 
          * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
+         *     should be inserted back into the scene graph, above all paths
          *     involved in the operation
          * @option [options.trace=true] {Boolean} whether the tracing method is
-         *     used, treating both paths as areas when determining which parts
+         *     used, treating all paths as areas when determining which parts
          *     of the paths are to be kept in the result, or whether the first
          *     path is only to be split at intersections, removing the parts of
-         *     the curves that intersect with the area of the second path.
+         *     the curves that intersect with the area of any other path.
          * 
-         * @param path - the path to subtract
+         * @param path - the path or paths to subtract
          * @param options - the boolean operation options
          * 
          * @return the resulting path item
          */
-        subtract(path: PathItem, options?: { insert?: boolean, trace?: boolean }): PathItem
+        subtract(path: PathItem | PathItem[], options?: { insert?: boolean, trace?: boolean }): PathItem
 
         /** 
          * Excludes the intersection of the geometry of the specified path with
-         * this path's geometry and returns the result as a new path item.
+         * this path's geometry and returns the result as a new path item. With
+         * an array of paths, the result covers the areas inside an odd number
+         * of the paths, this one included. Each path keeps its own fill rule.
          * 
          * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
+         *     should be inserted back into the scene graph, above all paths
          *     involved in the operation
          * 
-         * @param path - the path to exclude the intersection of
+         * @param path - the path or paths to exclude the
+         *     intersection of
          * @param options - the boolean operation options
          * 
          * @return the resulting path item
          */
-        exclude(path: PathItem, options?: { insert?: boolean }): PathItem
+        exclude(path: PathItem | PathItem[], options?: { insert?: boolean }): PathItem
 
         /** 
          * Splits the geometry of this path along the geometry of the specified

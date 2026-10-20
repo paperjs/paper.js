@@ -7212,10 +7212,10 @@ path.tweenFrom({ fillColor: 'red' }, { duration: 1000 });
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Unites the geometry of the specified path with this path&rsquo;s geometry and returns the result as a new path item.</p>
+	<p>Unites the geometry of the specified path with this path&rsquo;s geometry and returns the result as a new path item. With an array of paths, the result covers the areas inside any of them or this path. Each path keeps its own fill rule.</p>
     <ul class="member-list">
 <h4>Options:</h4>
-<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above both paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above all paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
 </ul>
 	
 <ul class="member-list">
@@ -7223,8 +7223,8 @@ path.tweenFrom({ fillColor: 'red' }, { duration: 1000 });
 	
 	<li>
 <tt>path:</tt> 
-<a href="../classes/PathItem.html"><tt>PathItem</tt></a>
-&mdash;&nbsp;the path to unite with
+<a href="../classes/PathItem.html"><tt>PathItem</tt></a>⟋Array of <a href="../classes/PathItem.html"><tt>PathItem</tt></a> objects
+&mdash;&nbsp;the path or paths to unite with
 
 </li>
 	
@@ -7268,58 +7268,7 @@ result.fillColor = 'red';
 </div>
 
 
-</div>
-</div>
-</div>
-
-	
-<div id="intersect-path" class="member">
-<div class="member-link">
-<a name="intersect-path" href="#intersect-path"><tt><b>intersect</b>(path[, options])</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	<p>Intersects the geometry of the specified path with this path&rsquo;s geometry and returns the result as a new path item.</p>
-    <ul class="member-list">
-<h4>Options:</h4>
-<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above both paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
-<li><tt>options.trace: <tt>Boolean</tt></tt> &mdash; whether the tracing method is  used, treating both paths as areas when determining which parts  of the paths are to be kept in the result, or whether the first  path is only to be split at intersections, keeping the parts of  the curves that intersect with the area of the second path. &mdash;&nbsp;default: <tt>true</tt></li>
-</ul>
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>path:</tt> 
-<a href="../classes/PathItem.html"><tt>PathItem</tt></a>
-&mdash;&nbsp;the path to intersect with
-
-</li>
-	
-	<li>
-<tt>options:</tt> 
-<tt>Object</tt>
-&mdash;&nbsp;the boolean operation options
-&mdash;&nbsp;optional
-</li>
-	
-</ul>
-
-	
-	<ul class="member-list">
-		<h4>Returns:</h4>
-		
-			<li>
-<tt><a href="../classes/PathItem.html"><tt>PathItem</tt></a></tt>&nbsp;&mdash;&nbsp;the resulting path item
-</li>
-
-		
-	</ul>
-
-
-
-	
-	<h4>Example:</h4>
+<h4>Example:<span class="description">Uniting many paths at once:</span></h4>
 
 <div class="paperscript split">
 
@@ -7328,8 +7277,11 @@ result.fillColor = 'red';
 </div>
 
 <script type="text/paperscript" canvas="canvas-62">
-var result = new Path.RegularPolygon([50, 50], 3, 40)
-    .intersect(new Path.Circle([50, 50], 25));
+var circles = [];
+for (var i = 0; i < 6; i++) {
+    circles.push(new Path.Circle([30 + i * 20, 50], 20));
+}
+var result = circles[0].unite(circles.slice(1));
 result.fillColor = 'red';
 </script>
 <div class="canvas"><canvas width="516" height="100" id="canvas-62"></canvas></div>
@@ -7341,17 +7293,17 @@ result.fillColor = 'red';
 </div>
 
 	
-<div id="subtract-path" class="member">
+<div id="intersect-path" class="member">
 <div class="member-link">
-<a name="subtract-path" href="#subtract-path"><tt><b>subtract</b>(path[, options])</tt></a>
+<a name="intersect-path" href="#intersect-path"><tt><b>intersect</b>(path[, options])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Subtracts the geometry of the specified path from this path&rsquo;s geometry and returns the result as a new path item.</p>
+	<p>Intersects the geometry of the specified path with this path&rsquo;s geometry and returns the result as a new path item. With an array of paths, the result covers the areas inside all of them and this path. Each path keeps its own fill rule.</p>
     <ul class="member-list">
 <h4>Options:</h4>
-<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above both paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
-<li><tt>options.trace: <tt>Boolean</tt></tt> &mdash; whether the tracing method is  used, treating both paths as areas when determining which parts  of the paths are to be kept in the result, or whether the first  path is only to be split at intersections, removing the parts of  the curves that intersect with the area of the second path. &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above all paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.trace: <tt>Boolean</tt></tt> &mdash; whether the tracing method is  used, treating all paths as areas when determining which parts  of the paths are to be kept in the result, or whether the first  path is only to be split at intersections, keeping the parts of  the curves that intersect with the areas of all other paths. &mdash;&nbsp;default: <tt>true</tt></li>
 </ul>
 	
 <ul class="member-list">
@@ -7359,8 +7311,8 @@ result.fillColor = 'red';
 	
 	<li>
 <tt>path:</tt> 
-<a href="../classes/PathItem.html"><tt>PathItem</tt></a>
-&mdash;&nbsp;the path to subtract
+<a href="../classes/PathItem.html"><tt>PathItem</tt></a>⟋Array of <a href="../classes/PathItem.html"><tt>PathItem</tt></a> objects
+&mdash;&nbsp;the path or paths to intersect  with
 
 </li>
 	
@@ -7397,7 +7349,7 @@ result.fillColor = 'red';
 
 <script type="text/paperscript" canvas="canvas-63">
 var result = new Path.RegularPolygon([50, 50], 3, 40)
-    .subtract(new Path.Circle([50, 50], 25));
+    .intersect(new Path.Circle([50, 50], 25));
 result.fillColor = 'red';
 </script>
 <div class="canvas"><canvas width="516" height="100" id="canvas-63"></canvas></div>
@@ -7409,16 +7361,17 @@ result.fillColor = 'red';
 </div>
 
 	
-<div id="exclude-path" class="member">
+<div id="subtract-path" class="member">
 <div class="member-link">
-<a name="exclude-path" href="#exclude-path"><tt><b>exclude</b>(path[, options])</tt></a>
+<a name="subtract-path" href="#subtract-path"><tt><b>subtract</b>(path[, options])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Excludes the intersection of the geometry of the specified path with this path&rsquo;s geometry and returns the result as a new path item.</p>
+	<p>Subtracts the geometry of the specified path from this path&rsquo;s geometry and returns the result as a new path item. With an array of paths, the result covers the areas inside this path and outside all of them. Each path keeps its own fill rule.</p>
     <ul class="member-list">
 <h4>Options:</h4>
-<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above both paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above all paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.trace: <tt>Boolean</tt></tt> &mdash; whether the tracing method is  used, treating all paths as areas when determining which parts  of the paths are to be kept in the result, or whether the first  path is only to be split at intersections, removing the parts of  the curves that intersect with the area of any other path. &mdash;&nbsp;default: <tt>true</tt></li>
 </ul>
 	
 <ul class="member-list">
@@ -7426,8 +7379,8 @@ result.fillColor = 'red';
 	
 	<li>
 <tt>path:</tt> 
-<a href="../classes/PathItem.html"><tt>PathItem</tt></a>
-&mdash;&nbsp;the path to exclude the intersection of
+<a href="../classes/PathItem.html"><tt>PathItem</tt></a>⟋Array of <a href="../classes/PathItem.html"><tt>PathItem</tt></a> objects
+&mdash;&nbsp;the path or paths to subtract
 
 </li>
 	
@@ -7464,10 +7417,77 @@ result.fillColor = 'red';
 
 <script type="text/paperscript" canvas="canvas-64">
 var result = new Path.RegularPolygon([50, 50], 3, 40)
-    .exclude(new Path.Circle([50, 50], 25));
+    .subtract(new Path.Circle([50, 50], 25));
 result.fillColor = 'red';
 </script>
 <div class="canvas"><canvas width="516" height="100" id="canvas-64"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+	
+<div id="exclude-path" class="member">
+<div class="member-link">
+<a name="exclude-path" href="#exclude-path"><tt><b>exclude</b>(path[, options])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Excludes the intersection of the geometry of the specified path with this path&rsquo;s geometry and returns the result as a new path item. With an array of paths, the result covers the areas inside an odd number of the paths, this one included. Each path keeps its own fill rule.</p>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above all paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
+</ul>
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>path:</tt> 
+<a href="../classes/PathItem.html"><tt>PathItem</tt></a>⟋Array of <a href="../classes/PathItem.html"><tt>PathItem</tt></a> objects
+&mdash;&nbsp;the path or paths to exclude the  intersection of
+
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the boolean operation options
+&mdash;&nbsp;optional
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/PathItem.html"><tt>PathItem</tt></a></tt>&nbsp;&mdash;&nbsp;the resulting path item
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<h4>Example:</h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-65">
+var result = new Path.RegularPolygon([50, 50], 3, 40)
+    .exclude(new Path.Circle([50, 50], 25));
+result.fillColor = 'red';
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-65"></canvas></div>
 </div>
 
 
@@ -7635,7 +7655,7 @@ result.fillColor = 'red';
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-65">
+<script type="text/paperscript" canvas="canvas-66">
 var path = new Path.Rectangle(new Point(30, 25), new Size(50, 50));
 path.strokeColor = 'black';
 
@@ -7658,7 +7678,7 @@ function onFrame(event) {
     }
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-65"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-66"></canvas></div>
 </div>
 
 
@@ -7799,7 +7819,7 @@ function onFrame(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-66">
+<script type="text/paperscript" canvas="canvas-67">
 var star = new Path.Star({
     center: view.center,
     points: 10,
@@ -7823,7 +7843,7 @@ function onMouseMove(event) {
     circle.position = nearestPoint;
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-66"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-67"></canvas></div>
 </div>
 
 
@@ -7886,7 +7906,7 @@ function onMouseMove(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-67">
+<script type="text/paperscript" canvas="canvas-68">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var path = new Path.Circle({
@@ -7904,7 +7924,7 @@ copy.position.x += 150;
 // Flatten the copied path, with a maximum error of 4 points:
 copy.flatten(4);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-67"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-68"></canvas></div>
 </div>
 
 
@@ -7982,7 +8002,7 @@ copy.flatten(4);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-68">
+<script type="text/paperscript" canvas="canvas-69">
 // Create a rectangular path with its top-left point at
 // {x: 30, y: 25} and a size of {width: 50, height: 50}:
 var path = new Path.Rectangle({
@@ -8001,7 +8021,7 @@ copy.position.x += 100;
 // Smooth the segments of the copy:
 copy.smooth({ type: 'continuous' });
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-68"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-69"></canvas></div>
 </div>
 
 
@@ -8013,7 +8033,7 @@ copy.smooth({ type: 'continuous' });
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-69">
+<script type="text/paperscript" canvas="canvas-70">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -8038,7 +8058,7 @@ copy.fullySelected = true;
 // Smooth the path using centripetal Catmull-Rom splines:
 copy.smooth({ type: 'catmull-rom', factor: 0.5 });
 </script>
-<div class="canvas"><canvas width="516" height="220" id="canvas-69"></canvas></div>
+<div class="canvas"><canvas width="516" height="220" id="canvas-70"></canvas></div>
 </div>
 
 
@@ -8050,7 +8070,7 @@ copy.smooth({ type: 'catmull-rom', factor: 0.5 });
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-70">
+<script type="text/paperscript" canvas="canvas-71">
 // Create 5 rectangles, next to each other:
 var paths = [];
 for (var i = 0; i < 5; i++) {
@@ -8080,7 +8100,7 @@ paths[3].smooth({ type: 'continuous', from: 0, to: 2 });
 // Smooth a range, using negative indices:
 paths[4].smooth({ type: 'continuous', from: -1, to: 1 });
 </script>
-<div class="canvas"><canvas width="516" height="110" id="canvas-70"></canvas></div>
+<div class="canvas"><canvas width="516" height="110" id="canvas-71"></canvas></div>
 </div>
 
 
@@ -8133,7 +8153,7 @@ paths[4].smooth({ type: 'continuous', from: -1, to: 1 });
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-71">
+<script type="text/paperscript" canvas="canvas-72">
 var path;
 function onMouseDown(event) {
     // If we already made a path before, deselect it:
@@ -8163,7 +8183,7 @@ function onMouseUp(event) {
     path.selected = true;
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-71"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-72"></canvas></div>
 </div>
 
 
@@ -8362,7 +8382,7 @@ function onMouseUp(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-72">
+<script type="text/paperscript" canvas="canvas-73">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -8382,7 +8402,7 @@ path.arcTo(throughPoint, toPoint);
 var circle = new Path.Circle(throughPoint, 3);
 circle.fillColor = 'red';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-72"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-73"></canvas></div>
 </div>
 
 
@@ -8394,7 +8414,7 @@ circle.fillColor = 'red';
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-73">
+<script type="text/paperscript" canvas="canvas-74">
 var myPath;
 function onMouseDrag(event) {
     // If we created a path before, remove it:
@@ -8422,7 +8442,7 @@ function onMouseUp(event) {
     myPath.fillColor = 'black';
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-73"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-74"></canvas></div>
 </div>
 
 
@@ -8471,7 +8491,7 @@ function onMouseUp(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-74">
+<script type="text/paperscript" canvas="canvas-75">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -8486,7 +8506,7 @@ path2.add(new Point(180, 25));
 // we pass `false` as the second argument to arcTo:
 path2.arcTo(new Point(280, 25), false);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-74"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-75"></canvas></div>
 </div>
 
 
@@ -8498,7 +8518,7 @@ path2.arcTo(new Point(280, 25), false);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-75">
+<script type="text/paperscript" canvas="canvas-76">
 var myPath;
 
 // The mouse has to move at least 20 points before
@@ -8519,7 +8539,7 @@ function onMouseDrag(event) {
     myPath.arcTo(event.point);
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-75"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-76"></canvas></div>
 </div>
 
 
@@ -8575,7 +8595,7 @@ function onMouseDrag(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-76">
+<script type="text/paperscript" canvas="canvas-77">
 var myPath;
 function onMouseMove(event) {
     // If we created a path before, remove it:
@@ -8596,7 +8616,7 @@ function onMouseMove(event) {
     myPath.selected = true;
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-76"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-77"></canvas></div>
 </div>
 
 
@@ -8781,7 +8801,7 @@ function onMouseMove(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-77">
+<script type="text/paperscript" canvas="canvas-78">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -8795,7 +8815,7 @@ path.lineBy(50, 0);
 // 0 in x direction and 50 in y direction, becomes {x: 75, y: 75}
 path.lineBy(0, 50);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-77"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-78"></canvas></div>
 </div>
 
 
@@ -8807,7 +8827,7 @@ path.lineBy(0, 50);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-78">
+<script type="text/paperscript" canvas="canvas-79">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -8833,7 +8853,7 @@ path.smooth();
 // the construction of the path:
 // path.selected = true;
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-78"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-79"></canvas></div>
 </div>
 
 
