@@ -1756,7 +1756,61 @@ new function() { // Scope for methods that require private functions
 },
 new function() { // Scope for bezier intersection using fat-line clipping
 
+    // The neighbourhood of a curve's end in which an intersection may be the
+    // end itself: relative to the curves' size, as the errors of computing it
+    // grow with it, but never below the resolution of their coordinates.
+    function getEndEpsilon(v1, v2) {
+        var min = Math.min,
+            max = Math.max,
+            abs = Math.abs,
+            // The error of the found intersections, relative to the size:
+            sizeEpsilon = 1e-6,
+            x1 = Infinity, y1 = x1, x2 = -x1, y2 = x2;
+        for (var i = 0; i < 8; i += 2) {
+            x1 = min(x1, v1[i], v2[i]);
+            x2 = max(x2, v1[i], v2[i]);
+            y1 = min(y1, v1[i + 1], v2[i + 1]);
+            y2 = max(y2, v1[i + 1], v2[i + 1]);
+        }
+        return max(Numerical.getEpsilon(max(abs(x1), abs(x2), abs(y1),
+                abs(y2))), (x2 - x1 + y2 - y1) * sizeEpsilon);
+    }
+
+    // Snaps an intersection near an end of the first curve to that end, if
+    // the end lies on the second curve, as getTimeOf() determines it, and
+    // returns the times on both curves, or null to leave them as they are.
+    // Fat-line clipping can stop short of a vertex where curves meet there
+    // tangentially, leaving a second location next to the exact one (#2096).
+    function snapToEnd(v1, t1, v2, epsilon) {
+        if (t1 > 0 && t1 < 1) {
+            var point = Curve.getPoint(v1, t1);
+            for (var end = 0; end <= 1; end++) {
+                var vertex = new Point(v1[end * 6], v1[end * 6 + 1]);
+                if (point.isClose(vertex, epsilon)) {
+                    var t2 = Curve.getTimeOf(v2, vertex);
+                    if (t2 !== null)
+                        return [end, t2];
+                }
+            }
+        }
+        return null;
+    }
+
     function addLocation(locations, include, c1, t1, c2, t2, overlap) {
+        if (t1 !== null && t2 !== null) {
+            var v1 = c1.getValues(),
+                v2 = c2.getValues(),
+                epsilon = getEndEpsilon(v1, v2),
+                snap = snapToEnd(v1, t1, v2, epsilon),
+                snap2 = !snap && snapToEnd(v2, t2, v1, epsilon);
+            if (snap) {
+                t1 = snap[0];
+                t2 = snap[1];
+            } else if (snap2) {
+                t1 = snap2[1];
+                t2 = snap2[0];
+            }
+        }
         // Determine if locations at the beginning / end of the curves should be
         // excluded, in case the two curves are neighbors, but do not exclude
         // connecting points between two curves if they were part of overlap

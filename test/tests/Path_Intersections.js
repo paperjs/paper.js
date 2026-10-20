@@ -252,7 +252,8 @@ test('#1174', function() {
         [150, 98]
     ]);
     testIntersections(path1.getIntersections(path2), [
-        { point: { x: 20, y: 100 }, index: 1, time: 0.00004, crossing: true }
+        // path2's vertex lies 1e-8 from path1's, so it is snapped onto it:
+        { point: { x: 20, y: 100 }, index: 1, time: 0, crossing: true }
     ]);
 });
 

@@ -1407,3 +1407,18 @@ test('PathItem#resolveCrossings() with a hole that zigzags along the outline', f
         'M0,100L60,10L50,0L100,50L100,51z');
     equals(path.resolveCrossings().area, 2765);
 });
+
+test('#2096', function() {
+    // Fat-line clipping stops short of a vertex where the curves meet
+    // tangentially, leaving a second intersection 1.4e-6 from it:
+    var path1 = new Path('M120,70A50,50,0,0,1,170,20L270,20A50,50,0,0,1,320,70'
+            + 'L320,170A50,50,0,0,1,270,220A50,50,0,0,0,220,270'
+            + 'A50,50,0,0,1,170,320A50,50,0,0,1,120,270L120,170Z');
+    var path2 = new Path('M70,120A50,50,0,0,1,20,70A50,50,0,0,1,70,20L170,20'
+            + 'A50,50,0,0,1,220,70A50,50,0,0,0,270,120A50,50,0,0,1,320,170'
+            + 'A50,50,0,0,1,270,220A50,50,0,0,0,220,270A50,50,0,0,1,170,320'
+            + 'A50,50,0,0,1,120,270L120,170A50,50,0,0,0,70,120Z');
+    // The area of linesweeper's intersection of the same paths:
+    equals(path1.intersect(path2).area, 37856.18083164127);
+    equals(path2.intersect(path1).area, 37856.18083164127);
+});
