@@ -25,6 +25,8 @@
 
 ### Fixed
 
+- Fix boolean operations on open paths that end where they start, which lost
+  the curve between their ends (#1929, #1973, #1989, #2018).
 - Fix boolean operations with `{ trace: false }` on closed paths, which could
   keep or drop the wrong parts depending on where the path started, and on
   compound paths, which threw an error (#1540, #1541, #1746, #1998, #2046).
