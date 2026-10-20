@@ -58,6 +58,9 @@
 
 ### Fixed
 
+- Fix `Item#strokeBounds` after scaling items that apply their matrix, such
+  as paths and groups, when they were read before: the cached stroke bounds
+  were scaled along, including the width of the stroke, which doesn't scale.
 - Fix SVG export of `opacity` and `blendMode`, which aren't inherited, so
   children with the same values as their group lost them, and the defaults
   were written where the group differed.

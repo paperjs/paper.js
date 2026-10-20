@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 00:34:33 2026 +0200
+ * Date: Wed Oct 21 00:38:12 2026 +0200
  *
  ***
  *
@@ -3770,6 +3770,7 @@ new function() {
 			var cached = bounds[cacheKey] = {
 				rect: rect.clone(),
 				nonscaling: nonscaling,
+				stroke: options.stroke,
 				internal: internal
 			};
 		}
@@ -4866,7 +4867,8 @@ new function() {
 		if (decomp && decomp.skewing.isZero() && decomp.rotation % 90 === 0) {
 			for (var key in bounds) {
 				var cache = bounds[key];
-				if (cache.nonscaling) {
+				if (cache.nonscaling || applyMatrix && cache.stroke
+						&& !decomp.scaling.abs().equals([1, 1])) {
 					delete bounds[key];
 				} else if (applyMatrix || !cache.internal) {
 					var rect = cache.rect;
