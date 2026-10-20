@@ -1223,3 +1223,180 @@ test('path.strokeBounds of non-scaling strokes under non-uniform matrices', func
     });
 });
 
+test('item.strokeBounds = rect (#1030)', function() {
+    // The stroke reaches 5 beyond the bounds on each side, also at the
+    // mitered corners:
+    var path = new Path.Rectangle({
+        point: [10, 10],
+        size: [20, 20],
+        strokeColor: 'black',
+        strokeWidth: 10
+    });
+    path.strokeBounds = new Rectangle(0, 0, 100, 50);
+    equals(path.bounds, new Rectangle(5, 5, 90, 40), 'path.bounds');
+    equals(path.strokeBounds, new Rectangle(0, 0, 100, 50),
+            'path.strokeBounds');
+    // The rectangle returned by strokeBounds is linked to the item:
+    path.strokeBounds.width = 50;
+    equals(path.bounds, new Rectangle(5, 5, 40, 40),
+            'path.bounds after setting strokeBounds.width');
+    // Without a stroke, the same as setting bounds:
+    var unstroked = new Path.Rectangle({ point: [10, 10], size: [20, 20] });
+    unstroked.strokeBounds = new Rectangle(0, 0, 100, 50);
+    equals(unstroked.bounds, new Rectangle(0, 0, 100, 50), 'unstroked.bounds');
+    // The shape's matrix scales its stroke along, by 4 and 2 here:
+    var shape = new Shape.Rectangle({
+        point: [10, 10],
+        size: [20, 20],
+        strokeColor: 'black',
+        strokeWidth: 10
+    });
+    shape.strokeBounds = new Rectangle(0, 0, 120, 60);
+    equals(shape.bounds, new Rectangle(20, 10, 80, 40), 'shape.bounds');
+    equals(shape.strokeBounds, new Rectangle(0, 0, 120, 60),
+            'shape.strokeBounds');
+});
+
+test('item.strokeBounds = rect with strokes that change with scaling (#1030)',
+        function() {
+    // Under non-uniform scaling, miters, bevels and square caps change with
+    // the angles, and items that keep their matrix scale their strokes along:
+    function star(attributes) {
+        return new Path.Star(Base.set({
+            center: [50, 50],
+            points: 5,
+            radius1: 20,
+            radius2: 40
+        }, attributes));
+    }
+
+    function rectangle() {
+        return new Path.Rectangle([10, 10], [50, 50]);
+    }
+
+    var items = {
+        'star with miters': star(),
+        'star with bevels': star({ strokeJoin: 'bevel' }),
+        'star with round joins': star({ strokeJoin: 'round' }),
+        'star with a miter limit of 1': star({ miterLimit: 1 }),
+        'line with square caps': new Path({
+            segments: [[10, 10], [60, 40]],
+            strokeCap: 'square'
+        }),
+        'curve with round caps': new Path({
+            segments: [[10, 10], [[60, 40], [-20, 0], [20, 0]], [90, 10]],
+            strokeCap: 'round'
+        }),
+        'rotated rectangle': rectangle().rotate(30),
+        'sheared rectangle': rectangle().shear(0.5, 0),
+        'path with strokeScaling false': new Path.Rectangle({
+            point: [10, 10],
+            size: [50, 50],
+            strokeScaling: false
+        }),
+        'rotated shape': new Shape.Rectangle({
+            point: [10, 10],
+            size: [50, 50]
+        }).rotate(30),
+        'sheared circle shape': new Shape.Circle({
+            center: [50, 50],
+            radius: 30
+        }).shear(0.5, 0.2),
+        'shape with strokeScaling false': new Shape.Rectangle({
+            point: [10, 10],
+            size: [50, 50],
+            strokeScaling: false
+        }),
+        'compound path': new CompoundPath([new Path.Circle([30, 30], 20),
+            new Path.Rectangle([40, 40], [30, 30])]),
+        'group of paths': new Group([new Path.Rectangle([10, 10], [30, 30]),
+            star()]),
+        'rotated group that keeps its matrix': new Group({
+            children: [new Path.Rectangle([10, 10], [30, 30]), star()],
+            applyMatrix: false
+        }).rotate(20),
+        'group with a shape': new Group([
+            new Path.Rectangle([10, 10], [30, 30]),
+            new Shape.Circle({ center: [80, 40], radius: 20 })
+        ])
+    };
+    Base.each(items, function(item, name) {
+        item.strokeColor = 'black';
+        item.strokeWidth = 10;
+        [new Rectangle(0, 0, 200, 100), new Rectangle(-20, 30, 50, 300),
+                new Rectangle(0, 0, 1000, 20)].forEach(function(rect) {
+            item.strokeBounds = rect;
+            equals(item.strokeBounds, rect, name + ', ' + rect);
+        });
+    });
+});
+
+test('item.strokeBounds = rect at its limits (#1030)', function() {
+    function rectangle() {
+        return new Path.Rectangle({
+            point: [10, 10],
+            size: [20, 20],
+            strokeColor: 'black',
+            strokeWidth: 10
+        });
+    }
+
+    // A rectangle smaller than the stroke itself can't be reached, so the
+    // bounds shrink to its center, without collapsing, and the stroke around
+    // them is all that remains:
+    var path = rectangle();
+    path.strokeBounds = new Rectangle(0, 0, 6, 6);
+    equals(path.bounds, new Rectangle(3, 3, 0, 0), 'smaller than the stroke');
+    equals(path.strokeBounds, new Rectangle(-2, -2, 10, 10),
+            'smaller than the stroke: strokeBounds');
+    equals(function() { return path.matrix.isInvertible(); }, true,
+            'smaller than the stroke: invertible');
+    path = rectangle();
+    path.strokeBounds = new Rectangle(0, 0, 0, 50);
+    equals(path.bounds, new Rectangle(0, 5, 0, 40), 'without width');
+    // Dimensions without size can't be scaled, so a horizontal line only fits
+    // in width, and is centered in height:
+    var line = new Path.Line({
+        from: [10, 10],
+        to: [50, 10],
+        strokeColor: 'black',
+        strokeWidth: 10
+    });
+    line.strokeBounds = new Rectangle(0, 0, 100, 50);
+    equals(line.bounds, new Rectangle(0, 25, 100, 0), 'line.bounds');
+    equals(line.strokeBounds, new Rectangle(0, 20, 100, 10),
+            'line.strokeBounds');
+    // Empty items have nothing to fit, and are only moved:
+    var empty = new Path({ strokeColor: 'black', strokeWidth: 10 });
+    empty.strokeBounds = new Rectangle(0, 0, 100, 50);
+    equals(empty.bounds, new Rectangle(50, 25, 0, 0), 'empty path');
+    var group = new Group();
+    group.strokeBounds = new Rectangle(0, 0, 100, 50);
+    equals(group.bounds, new Rectangle(50, 25, 0, 0), 'empty group');
+    // Strokes many times larger than their item change abruptly with its
+    // proportions, but are reached too:
+    var star = new Path.Star({
+        center: [50, 50],
+        points: 5,
+        radius1: 2,
+        radius2: 4,
+        strokeColor: 'black',
+        strokeWidth: 40
+    });
+    star.strokeBounds = new Rectangle(0, 0, 200, 100);
+    equals(star.strokeBounds, new Rectangle(0, 0, 200, 100), 'huge stroke');
+    // Negative sizes mirror the item, as with bounds, which moves the first
+    // point of this triangle from the top left to the top right, at 5 inside:
+    var triangle = new Path({
+        segments: [[10, 10], [30, 10], [10, 30]],
+        closed: true,
+        strokeColor: 'black',
+        strokeWidth: 10,
+        strokeJoin: 'round'
+    });
+    triangle.strokeBounds = new Rectangle(100, 0, -100, 50);
+    equals(triangle.strokeBounds, new Rectangle(0, 0, 100, 50),
+            'mirrored: strokeBounds');
+    equals(triangle.firstSegment.point, new Point(95, 5),
+            'mirrored: first point');
+});
