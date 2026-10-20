@@ -1366,3 +1366,28 @@ test('#2064: orientation of the results of exclude and subtract', function() {
     var large = new Path.Rectangle({ point: [100, 0], size: [100, 100] });
     equals(small.subtract(large).area, 100);
 });
+
+test('Backtracking keeps the incoming handle of the branch', function() {
+    // @iconexperience's isolated test 24, with path2 moved by -1e-9. Tracing
+    // backtracks after adding a segment, and continued with that segment's
+    // handle instead of the one of the curve leading into the branch:
+    var path1 = new Path({
+        segments: [[250, 130],
+            [[274.2339539863471, 194.10449080567912], [0, 0],
+                [0.10568701547992987, -0.053016796189552906]],
+            [[272.11154618911314, 196.81853259861245],
+                [1.370678992642354, -2.513969427633242], [0, 0]]],
+        closed: true
+    });
+    var path2 = new Path({
+        segments: [[250, 130],
+            [[282.64261453718956, 194.05831848298737], [0, 0],
+                [-6.1766919512210166, -1.0441192545144133]],
+            [[274.23395398634705, 194.10449080567915],
+                [0.11866362575074163, -0.05952637826862883], [0, 0]]],
+        closed: true
+    });
+    path2.translate(-1e-9, 0);
+    // The area of linesweeper's union of the same paths:
+    equals(path1.unite(path2).area, 367.73429515353575);
+});
