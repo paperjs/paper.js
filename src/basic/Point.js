@@ -88,6 +88,15 @@ var Point = Base.extend(/** @lends Point# */{
      * console.log(point.angle); // 90
      *
      * @example
+     * // The angle can also be specified in radians:
+     *
+     * var point = new Point({
+     *     length: 10,
+     *     angleInRadians: Math.PI / 2
+     * });
+     * console.log(point.angle); // 90
+     *
+     * @example
      * // Creating a point at x: 10, y: 20 using an object literal:
      *
      * var point = new Point({
@@ -157,6 +166,9 @@ var Point = Base.extend(/** @lends Point# */{
             } else if ('angle' in obj) {
                 this._set(obj.length || 0, 0);
                 this.setAngle(obj.angle || 0);
+            } else if ('angleInRadians' in obj) {
+                this._set(obj.length || 0, 0);
+                this.setAngleInRadians(obj.angleInRadians || 0);
             } else {
                 this._set(0, 0);
                 read = 0;
