@@ -535,6 +535,23 @@ test('group.selected', function() {
     }, false);
 });
 
+test('item.bounds.selected and item.strokeBounds.selected (#1030)', function() {
+    var path = new Path.Rectangle({
+        point: [10, 10],
+        size: [20, 20],
+        strokeColor: 'black',
+        strokeWidth: 10
+    });
+    path.strokeBounds.selected = true;
+    equals(path.strokeBounds.selected, true, 'strokeBounds.selected');
+    equals(path.bounds.selected, false, 'bounds.selected');
+    equals(path.selected, false, 'selected');
+    path.bounds.selected = true;
+    path.strokeBounds.selected = false;
+    equals(path.strokeBounds.selected, false, 'strokeBounds.selected');
+    equals(path.bounds.selected, true, 'bounds.selected');
+});
+
 test('Check parent children object for named item', function() {
     var path1 = new Path({ name: 'test' });
     var layer = paper.project.activeLayer;

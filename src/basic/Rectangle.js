@@ -904,10 +904,11 @@ new function() {
              * Paper.js draws the bounds of items with selected bounds on top of
              * your project. This is very useful when debugging.
              *
-             * This property is only available on the rectangle returned by
-             * {@link Item#bounds}, and the selection always shows these bounds.
-             * Rectangles returned by other getters such as {@link
-             * Item#strokeBounds} don't have it.
+             * This property is only available on the rectangles returned by
+             * {@link Item#bounds} and {@link Item#strokeBounds}, which are
+             * selected independently of each other, each showing its own
+             * bounds. Rectangles returned by other getters such as {@link
+             * Item#handleBounds} don't have it.
              *
              * @bean
              * @type Boolean
@@ -923,14 +924,20 @@ new function() {
              * path.bounds.selected = true;
              */
             isSelected: function() {
-                return !!(this._owner._selection & /*#=*/ItemSelection.BOUNDS);
+                return !!(this._owner._selection & this._getSelection());
             },
 
             setSelected: function(selected) {
                 var owner = this._owner;
                 if (owner._changeSelection) {
-                    owner._changeSelection(/*#=*/ItemSelection.BOUNDS, selected);
+                    owner._changeSelection(this._getSelection(), selected);
                 }
+            },
+
+            _getSelection: function() {
+                return this._setter === 'setStrokeBounds'
+                        ? /*#=*/ItemSelection.STROKE_BOUNDS
+                        : /*#=*/ItemSelection.BOUNDS;
             }
         })
     );

@@ -922,7 +922,6 @@ new function() { // Injection scope for various item event handlers
         this._position = undefined;
     }
 }, Base.each({ // Produce getters for bounds properties:
-        getStrokeBounds: { stroke: true },
         getHandleBounds: { handle: true },
         getInternalBounds: { internal: true }
     },
@@ -964,6 +963,16 @@ new function() { // Injection scope for various item event handlers
                 : rect;
     },
 
+    getStrokeBounds: function(matrix) {
+        var rect = this.getBounds(matrix, { stroke: true });
+        // Link '#strokeBounds' to setStrokeBounds() as '#bounds' is linked to
+        // setBounds() above:
+        return !arguments.length
+                ? new LinkedRectangle(rect.x, rect.y, rect.width, rect.height,
+                    this, 'setStrokeBounds')
+                : rect;
+    },
+
     setBounds: function(/* rect */) {
         var rect = Rectangle.read(arguments),
             bounds = this.getBounds(),
@@ -993,6 +1002,80 @@ new function() { // Injection scope for various item event handlers
         matrix.translate(-center.x, -center.y);
         // Now execute the transformation
         this.transform(matrix);
+    },
+
+    setStrokeBounds: function(/* rect */) {
+        var rect = Rectangle.read(arguments),
+            item = this,
+            bounds = this.getBounds(),
+            center = bounds.getCenter(),
+            // Negative sizes mirror the item, as in setBounds():
+            signX = rect.width < 0 ? -1 : 1,
+            signY = rect.height < 0 ? -1 : 1,
+            width = Math.abs(rect.width),
+            height = Math.abs(rect.height),
+            // Dimensions without size can't be scaled:
+            canScaleX = !!bounds.width,
+            canScaleY = !!bounds.height,
+            // The smallest scale that keeps the matrix invertible, for
+            // rectangles smaller than the stroke itself:
+            min = /*#=*/Numerical.EPSILON,
+            epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
+            sx = 1,
+            sy = 1;
+
+        function getMatrix(sx, sy) {
+            return new Matrix().scale(signX * sx, signY * sy, center);
+        }
+
+        // Returns the stroke bounds that the item would have when scaled by sx
+        // and sy, without transforming it. The strokes of items that apply the
+        // scaling to their content keep their width, see #_getStrokeMatrix():
+        function getStrokeBounds(sx, sy) {
+            var matrix = getMatrix(sx, sy);
+            return item.getBounds(matrix.appended(item._matrix), {
+                stroke: true,
+                transform: { matrix: matrix, item: item }
+            });
+        }
+
+        // Under non-uniform scaling, the extent of the stroke changes with the
+        // angles of miters, bevels and square caps, so solve for the scales
+        // with Newton's method, estimating the derivatives from small changes:
+        for (var i = 0; i < 16; i++) {
+            var size = getStrokeBounds(sx, sy).getSize(),
+                fx = canScaleX ? size.width - width : 0,
+                fy = canScaleY ? size.height - height : 0;
+            if (Math.abs(fx) < epsilon && Math.abs(fy) < epsilon)
+                break;
+            // Small changes, but large enough to be measured at tiny scales:
+            var hx = Math.max(sx, 1) * 1e-6,
+                hy = Math.max(sy, 1) * 1e-6,
+                sizeX = getStrokeBounds(sx + hx, sy).getSize(),
+                sizeY = getStrokeBounds(sx, sy + hy).getSize(),
+                a = canScaleX ? (sizeX.width - size.width) / hx : 1,
+                b = canScaleX && canScaleY
+                        ? (sizeY.width - size.width) / hy : 0,
+                c = canScaleX && canScaleY
+                        ? (sizeX.height - size.height) / hx : 0,
+                d = canScaleY ? (sizeY.height - size.height) / hy : 1,
+                det = a * d - b * c;
+            if (!det)
+                break;
+            var nx = Math.max(sx - (fx * d - fy * b) / det, min),
+                ny = Math.max(sy - (fy * a - fx * c) / det, min);
+            // Stop where rectangles smaller than the stroke keep the scales at
+            // their minimum:
+            if (nx === sx && ny === sy)
+                break;
+            sx = nx;
+            sy = ny;
+        }
+        // Scale the item, and move the center of its stroke bounds to the
+        // rectangle's center, which centers what can't be reached:
+        this.transform(new Matrix().translate(rect.getCenter()
+                .subtract(getStrokeBounds(sx, sy).getCenter()))
+                .append(getMatrix(sx, sy)));
     },
 
     /**
@@ -1099,7 +1182,20 @@ new function() { // Injection scope for various item event handlers
         var parent = this.getStrokeScaling() ? null
                 : options && options.internal ? this
                     : this._parent || this._symbol && this._symbol._item,
-            mx = parent ? parent.getViewMatrix().invert() : matrix;
+            mx = parent ? parent.getViewMatrix().invert() : matrix,
+            transform = !parent && options && options.transform;
+        // When predicting the bounds after a transformation, see
+        // #setStrokeBounds(), it doesn't scale the strokes of items that apply
+        // it to their content, all the way up to the transformed item:
+        if (transform) {
+            for (var item = this; item && item._applyMatrix;
+                    item = item._parent) {
+                if (item === transform.item) {
+                    mx = transform.matrix.inverted().appended(mx);
+                    break;
+                }
+            }
+        }
         return mx && mx._shiftless();
     },
 
@@ -1229,6 +1325,11 @@ new function() { // Injection scope for various item event handlers
 
     /**
      * The bounding rectangle of the item including stroke width.
+     *
+     * Setting it fits the item's {@link #bounds} into the given rectangle minus
+     * the extent of the stroke on each side, also where this extent changes
+     * with the item's proportions, as with miters. A rectangle smaller than the
+     * stroke itself shrinks the bounds to its center.
      *
      * @name Item#strokeBounds
      * @type Rectangle
@@ -4870,11 +4971,14 @@ new function() { // Injection scope for hit-test functions shared with project
             itemSelected = selection & /*#=*/ItemSelection.ITEM,
             boundsSelected = selection & /*#=*/ItemSelection.BOUNDS
                     || itemSelected && this._selectBounds,
+            strokeBoundsSelected = selection
+                    & /*#=*/ItemSelection.STROKE_BOUNDS,
             positionSelected = selection & /*#=*/ItemSelection.POSITION;
         if (!this._drawSelected)
             itemSelected = false;
         // Items of symbol definitions are drawn too, but aren't inserted:
-        if ((itemSelected || boundsSelected || positionSelected)
+        if ((itemSelected || boundsSelected || strokeBoundsSelected
+                || positionSelected)
                 && this._isUpdated(updateVersion) && this.isInserted()) {
             // Allow definition of selected color on a per item and per
             // layer level, with a fallback to #009dec
@@ -4910,8 +5014,8 @@ new function() { // Injection scope for hit-test functions shared with project
                     ctx.stroke();
                 }
             }
-            if (boundsSelected) {
-                var coords = mx._transformCorners(this.getInternalBounds());
+            var drawBounds = function(bounds) {
+                var coords = mx._transformCorners(bounds);
                 // Now draw a rectangle that connects the transformed
                 // bounds corners, and draw the corners.
                 ctx.beginPath();
@@ -4924,7 +5028,11 @@ new function() { // Injection scope for hit-test functions shared with project
                     ctx.fillRect(coords[i] - half, coords[++i] - half,
                             size, size);
                 }
-            }
+            };
+            if (boundsSelected)
+                drawBounds(this.getInternalBounds());
+            if (strokeBoundsSelected)
+                drawBounds(this.getBounds({ internal: true, stroke: true }));
         }
     },
 
