@@ -4,6 +4,8 @@
 
 ### Added
 
+- Add dynamic `import(specifier)` to PaperScript, which resolves to the module's
+  namespace through the loader in `options.load`, which may return a Promise.
 - Add static `import` to PaperScript, through a loader that hosts pass as
   `options.load` to `PaperScript.execute()`, together with `export … from`. It
   needs a current Acorn as `self.acorn`.
