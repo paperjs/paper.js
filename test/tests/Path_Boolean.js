@@ -1352,3 +1352,17 @@ test('#1837, #1979: paths that only touch, with vertices on each other', functio
     compareBoolean(function() { return path.unite(); },
             'M3,1v-1h5v5h-2v-1h1v-3h-2v2h-1v1h-1v-2h1v-1zM2,2v-1h1v1zM1,2h1v2h1v1h3v1h-6v-1h1z');
 });
+
+test('#2064: orientation of the results of exclude and subtract', function() {
+    var path1 = new Path.Rectangle({ point: [100, 100], size: [100, 100] });
+    var path2 = new Path.Rectangle({ point: [190, 190], size: [100, 100] });
+    var result = path1.exclude(path2);
+    equals(result.area, 19800);
+    equals(result.children.map(function(child) {
+        return child.area;
+    }), [9900, 9900]);
+    // Without crossings, path2 is the largest path, but reversed:
+    var small = new Path.Rectangle({ point: [0, 0], size: [10, 10] });
+    var large = new Path.Rectangle({ point: [100, 0], size: [100, 100] });
+    equals(small.subtract(large).area, 100);
+});
