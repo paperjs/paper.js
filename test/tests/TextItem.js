@@ -222,3 +222,13 @@ test('PointText#clipMask (#1845)', function() {
     comparePixels(createClipped(new Group([createText(), createCircle()])),
             createClipped(new Group([createRectangle(), createCircle()])));
 });
+
+test('The tests\' own font is loaded', function() {
+    var view = paper.view,
+        width = function(family) {
+            return view.getTextWidth('normal 20px ' + family, ['Wide iii'],
+                    '0em');
+        };
+    equals(width(testFontFamily) !== width('No Such Font'), true,
+            'measured in it, not a fallback');
+});
