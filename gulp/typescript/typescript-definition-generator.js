@@ -139,7 +139,8 @@ const context = {
 };
 // Retrieve template content.
 const template = fs.readFileSync(__dirname + '/typescript-definition-template.mustache', 'utf8');
-// Render template.
+// Render template, without escaping, as it produces TypeScript and not HTML:
+mustache.escape = text => text;
 const output = mustache.render(template, context);
 // Write output in a file.
 fs.writeFileSync(__dirname + '/../../dist/paper.d.ts', output, 'utf8');
@@ -219,6 +220,10 @@ function parseType(type, options) {
         // typescript best practices.
         if (['Number', 'String', 'Boolean', 'Object'].includes(singleType)) {
             splittedType = splittedType.toLowerCase();
+        }
+        // Promises need a type argument, which the docs can't express:
+        if (singleType === 'Promise') {
+            splittedType = splittedType.replace('Promise', 'Promise<any>');
         }
         // Properties `object` type need to be turned into `any` to avoid
         // errors when reading object properties. Eg. if `property` is of type
@@ -381,9 +386,8 @@ function formatCommentTags(tags, tagName, formatter) {
  * @return {string} the formatted JSDoc comment
  */
 function formatJSDoc(offset, render) {
-    // First render current block comment. Use `{{&}}` syntax to make sure
-    // special characters are not escaped.
-    let content = render('{{&comment}}');
+    // First render current block comment.
+    let content = render('{{comment}}');
     if (!content) {
         return '';
     }
