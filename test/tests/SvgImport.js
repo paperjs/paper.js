@@ -698,6 +698,54 @@ test('Import SVG <use> of a group with a transform (#978)', function() {
             .lastChild.firstChild.fillColor, new Color('red'));
 });
 
+test('Import SVG masks as clip masks (#1916)', function() {
+    function importMasked(mask, reference) {
+        return paper.project.importSVG(
+                '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">'
+                + '<mask id="mask"' + mask + '</mask>'
+                + '<circle cx="100" cy="100" r="80" fill="red" ' + reference
+                + '/></svg>').firstChild;
+    }
+
+    function getWarnings(mask, reference) {
+        // Collect the warnings about approximated masks, which only reach the
+        // console:
+        var warn = console.warn,
+            warnings = [];
+        console.warn = function(message) {
+            warnings.push(message);
+        };
+        try {
+            var item = importMasked(mask, reference);
+        } finally {
+            console.warn = warn;
+        }
+        equals(function() { return item.clipped; }, true);
+        equals(function() { return item.firstChild.clipMask; }, true);
+        equals(function() { return item.lastChild.bounds; },
+                new Rectangle(20, 20, 160, 160));
+        return warnings;
+    }
+
+    var white = '><rect x="50" y="40" width="100" height="120" fill="white"/>';
+    // Masks of solid white shapes, referenced as attribute and as style:
+    equals(getWarnings(white, 'mask="url(#mask)"'), []);
+    equals(getWarnings(white, 'style="mask: url(#mask)"'), []);
+    equals(importMasked(white, 'mask="url(#mask)"').firstChild.bounds,
+            new Rectangle(50, 40, 100, 120));
+    // Opaque shapes in a mask of the 'alpha' type, inherited colors:
+    equals(getWarnings(' mask-type="alpha" fill="red"><circle r="50"/>'
+            + '<rect width="50" height="50"/>', 'mask="url(#mask)"'), []);
+    // Any other mask is approximated, with a warning:
+    var warning = 'Approximating SVG mask \'mask\' as a clipping mask.';
+    equals(getWarnings('><rect width="100" height="100" fill="gray"/>',
+            'mask="url(#mask)"'), [warning]);
+    equals(getWarnings('><rect width="100" height="100" fill="white"/>'
+            + '<circle r="20" fill="black"/>', 'mask="url(#mask)"'), [warning]);
+    equals(getWarnings('><rect width="100" height="100" fill="white"'
+            + ' fill-opacity="0.5"/>', 'mask="url(#mask)"'), [warning]);
+});
+
 test('Import SVG cleans up after errors', function() {
     var svg = '<svg xmlns="http://www.w3.org/2000/svg" data-paper-data="invalid JSON"><rect width="100" height="100"/></svg>';
     var settings = paper.settings,
@@ -836,6 +884,24 @@ if (!isNodeContext) {
                     compareSVG(done, imported, svg, null, { tolerance: 1e-2 });
             });
         });
+    });
+
+    test('Import SVG masks of white shapes render as in browsers (#1916)',
+            function(assert) {
+        var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="200"'
+                + ' height="200">'
+                + '<rect width="200" height="200" fill="white"/>'
+                + '<mask id="mask"><rect x="20" y="30" width="80" height="60"'
+                + ' fill="white"/><circle cx="120" cy="120" r="50"'
+                + ' fill="#fff"/></mask>'
+                + '<g mask="url(#mask)"><circle cx="100" cy="100" r="90"'
+                + ' fill="red"/><rect x="40" y="40" width="120" height="40"'
+                + ' fill="blue"/></g>'
+                + '<rect x="50" y="10" width="120" height="120" fill="green"'
+                + ' transform="rotate(10 100 100)" style="mask: url(#mask)"/>'
+                + '</svg>';
+        compareSVG(assert.async(), paper.project.importSVG(svg), svg, null,
+                { tolerance: 1e-2 });
     });
 
     test('Import inexistent file', function(assert) {
