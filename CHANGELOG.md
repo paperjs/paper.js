@@ -4,6 +4,8 @@
 
 ### Added
 
+- Add `Project#hasChanges()`, which tells whether changes were logged since the
+  last `Project#takeChanges()`, without taking them.
 - Add dynamic `import(specifier)` to PaperScript, which resolves to the module's
   namespace through the loader in `options.load`, which may return a Promise.
 - Add static `import` to PaperScript, through a loader that hosts pass as

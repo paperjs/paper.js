@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 20:06:11 2026 +0200
+ * Date: Tue Oct 20 20:06:26 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -5925,6 +5925,14 @@ declare namespace paper {
          *     if {link #trackChanges} is off
          */
         takeChanges(): object[]
+
+        /** 
+         * Checks whether changes were logged since tracking was activated or since
+         * the last call of {@link #takeChanges}, without taking them.
+         * 
+         * @return true if changes were logged
+         */
+        hasChanges(): boolean
 
         /** 
          * Activates this project, so all newly created items will be placed
