@@ -147,6 +147,16 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     },
 
     /**
+     * Checks whether changes were logged since tracking was activated or since
+     * the last call of {@link #takeChanges()}, without taking them.
+     *
+     * @return {Boolean} {@true if changes were logged}
+     */
+    hasChanges: function() {
+        return !!(this._changes && this._changes.length);
+    },
+
+    /**
      * Activates this project, so all newly created items will be placed
      * in it.
      *
