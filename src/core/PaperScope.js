@@ -132,7 +132,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      * @option [settings.handleSize=4] {Number} the size of the curve handles
      *     when drawing selections
      * @option [settings.hitTolerance=0] {Number} the default tolerance for hit-
-     *     tests, when no value is specified
+     *     tests, when no value is specified, and for the mouse events of items
      * @option [settings.scaleStrokes=false] {Boolean} controls whether applying
      *     a matrix to the content of paths and compound paths also scales their
      *     {@link Style#strokeWidth}, by the geometric mean of the scale factors
