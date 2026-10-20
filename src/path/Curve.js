@@ -897,37 +897,33 @@ statics: /** @lends Curve */{
      */
 }), Base.each({ // Injection scope for tests both as instance and static methods
     // NOTE: Curve#isStraight is documented further down.
-    isStraight: function(p1, h1, h2, p2) {
-        if (h1.isZero() && h2.isZero()) {
+    isStraight: function(x1, y1, h1x, h1y, h2x, h2y, x2, y2) {
+        var isZero = Numerical.isZero;
+        if (isZero(h1x) && isZero(h1y) && isZero(h2x) && isZero(h2y)) {
             // No handles.
             return true;
         } else {
-            // Use the coordinates of the vector v = p2 - p1 directly, without
-            // creating points, as this is called a lot:
-            var isZero = Numerical.isZero,
-                isCollinear = Point.isCollinear,
-                vx = p2.x - p1.x,
-                vy = p2.y - p1.y;
+            var isCollinear = Point.isCollinear,
+                vx = x2 - x1,
+                vy = y2 - y1;
             if (isZero(vx) && isZero(vy)) {
                 // Zero-length line, with some handles defined.
                 return false;
-            } else if (isCollinear(vx, vy, h1.x, h1.y) &&
-                    isCollinear(vx, vy, h2.x, h2.y)) {
+            } else if (isCollinear(vx, vy, h1x, h1y) &&
+                    isCollinear(vx, vy, h2x, h2y)) {
                 // Collinear handles: In addition to v.isCollinear(h) checks, we
                 // need to measure the distance to the line, in order to be able
                 // to use the same epsilon as in Curve#getTimeOf(), see #1066.
                 var getDistance = Line.getDistance,
-                    px = p1.x,
-                    py = p1.y,
                     epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON;
-                if (getDistance(px, py, vx, vy, px + h1.x, py + h1.y, true)
+                if (getDistance(x1, y1, vx, vy, x1 + h1x, y1 + h1y, true)
                         < epsilon &&
-                    getDistance(px, py, vx, vy, p2.x + h2.x, p2.y + h2.y, true)
+                    getDistance(x1, y1, vx, vy, x2 + h2x, y2 + h2y, true)
                         < epsilon) {
                     // Project handles onto line to see if they are in range:
                     var div = vx * vx + vy * vy,
-                        s1 = (vx * h1.x + vy * h1.y) / div,
-                        s2 = (vx * h2.x + vy * h2.y) / div;
+                        s1 = (vx * h1x + vy * h1y) / div,
+                        s2 = (vx * h2x + vy * h2y) / div;
                     return s1 >= 0 && s1 <= 1 && s2 <= 0 && s2 >= -1;
                 }
             }
@@ -936,28 +932,29 @@ statics: /** @lends Curve */{
     },
 
     // NOTE: Curve#isLinear is documented further down.
-    isLinear: function(p1, h1, h2, p2) {
-        var third = p2.subtract(p1).divide(3);
-        return h1.equals(third) && h2.negate().equals(third);
+    isLinear: function(x1, y1, h1x, h1y, h2x, h2y, x2, y2) {
+        var x = (x2 - x1) / 3,
+            y = (y2 - y1) / 3;
+        return h1x === x && h1y === y && -h2x === x && -h2y === y;
     }
 }, function(test, name) {
-    // Produce the instance version that is called on curve object.
+    // Produce the instance version that is called on curve objects, and the
+    // static version that handles a curve values array, both passing the
+    // coordinates without creating points, as these are called a lot:
     this[name] = function(epsilon) {
-        var seg1 = this._segment1,
-            seg2 = this._segment2;
-        return test(seg1._point, seg1._handleOut, seg2._handleIn, seg2._point,
+        var p1 = this._segment1._point,
+            h1 = this._segment1._handleOut,
+            h2 = this._segment2._handleIn,
+            p2 = this._segment2._point;
+        return test(p1._x, p1._y, h1._x, h1._y, h2._x, h2._y, p2._x, p2._y,
                 epsilon);
     };
 
-    // Produce the static version that handles a curve values array.
     this.statics[name] = function(v, epsilon) {
-        var x0 = v[0], y0 = v[1],
-            x3 = v[6], y3 = v[7];
-        return test(
-                new Point(x0, y0),
-                new Point(v[2] - x0, v[3] - y0),
-                new Point(v[4] - x3, v[5] - y3),
-                new Point(x3, y3), epsilon);
+        var x1 = v[0], y1 = v[1],
+            x2 = v[6], y2 = v[7];
+        return test(x1, y1, v[2] - x1, v[3] - y1, v[4] - x2, v[5] - y2, x2, y2,
+                epsilon);
     };
 }, /** @lends Curve# */{
     statics: {}, // Filled in the Base.each loop above.
