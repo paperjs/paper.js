@@ -705,34 +705,28 @@ statics: /** @lends Curve */{
     },
 
     getTimeOf: function(v, point) {
-        // Before solving cubics, compare the beginning and end of the curve
-        // with zero epsilon:
-        var p0 = new Point(v[0], v[1]),
-            p3 = new Point(v[6], v[7]),
-            epsilon = /*#=*/Numerical.EPSILON,
-            geomEpsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
-            t = point.isClose(p0, epsilon) ? 0
-              : point.isClose(p3, epsilon) ? 1
-              : null;
-        if (t === null) {
-            // Solve the cubic for both x- and y-coordinates and consider all
-            // solutions, testing with the larger / looser geometric epsilon.
-            var coords = [point.x, point.y],
-                roots = [];
-            for (var c = 0; c < 2; c++) {
-                var count = Curve.solveCubic(v, c, coords[c], roots, 0, 1);
-                for (var i = 0; i < count; i++) {
-                    var u = roots[i];
-                    if (point.isClose(Curve.getPoint(v, u), geomEpsilon))
-                        return u;
-                }
+        // Compare the beginning and end of the curve first, with the same
+        // geometric epsilon as the solutions below: On straight curves, which
+        // have no handles, a point near an end solves to a time far from it,
+        // as the distance grows with the square of the time there.
+        var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON;
+        if (point.isClose(new Point(v[0], v[1]), epsilon))
+            return 0;
+        if (point.isClose(new Point(v[6], v[7]), epsilon))
+            return 1;
+        // Solve the cubic for both x- and y-coordinates and consider all
+        // solutions, testing them with the same epsilon.
+        var coords = [point.x, point.y],
+            roots = [];
+        for (var c = 0; c < 2; c++) {
+            var count = Curve.solveCubic(v, c, coords[c], roots, 0, 1);
+            for (var i = 0; i < count; i++) {
+                var u = roots[i];
+                if (point.isClose(Curve.getPoint(v, u), epsilon))
+                    return u;
             }
         }
-        // Since we're comparing with geometric epsilon for any other t along
-        // the curve, do so as well now for the beginning and end of the curve.
-        return point.isClose(p0, geomEpsilon) ? 0
-             : point.isClose(p3, geomEpsilon) ? 1
-             : null;
+        return null;
     },
 
     getNearestTime: function(v, point) {

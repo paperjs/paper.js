@@ -36,6 +36,8 @@
 
 ### Fixed
 
+- Fix `Curve#getTimeOf()` for points near the ends of straight curves, which it
+  solved to times far from the ends, as it only tested the ends exactly.
 - Fix boolean operations that backtracked while tracing their result, which could
   give a curve of it the handle of a dead end and make it bulge.
 - Measure text in views without a canvas of their own, such as in workers, with a
