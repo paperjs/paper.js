@@ -319,6 +319,99 @@ test('fitHeight() fits the area to its text', function() {
             'columns of the same length, but for one line');
 });
 
+// Lines that cross the rectangle, widened by the offset, with a tolerance:
+function crosses(text, rect, offset) {
+    return text.lines.some(function(line) {
+        return line.content.trim() && line.bounds.intersects(
+                rect.expand(2 * offset - 0.02));
+    });
+}
+
+test('textWrap: items above the text push it aside', function() {
+    var content = [words, words, words, words, words, words, words].join(' '),
+        text = createAreaText(new Rectangle(0, 0, 200, 300), content),
+        rect = new Rectangle(60, 40, 80, 60),
+        wrap = new Path.Rectangle(rect);
+    equals(text.lines[text.lines.length - 1].bounds.bottom > 260, true,
+            'the text fills the area');
+    equals(crosses(text, rect, 6), true, 'without a wrap, lines cross it');
+    wrap.textWrap = true;
+    equals(wrap.textWrap, { offset: 6, invert: false }, 'true: the defaults');
+    equals(crosses(text, rect, 6), false, 'with it, none does');
+    equals(content.indexOf(lineContents(text).join(' ')), 0,
+            'its start, in order, with the rest overflowing');
+    var sides = text.lines.filter(function(line) {
+        return line.bounds.right <= rect.left;
+    });
+    equals(sides.length > 0 && text.lines.some(function(line) {
+        return line.bounds.left >= rect.right
+                && line.baseline.point.y === sides[0].baseline.point.y;
+    }), true, 'lines on both sides of it');
+    wrap.textWrap = { offset: 20 };
+    equals(crosses(text, rect, 20), false, 'the offset');
+    var moved = new Rectangle(60, 190, 80, 60);
+    wrap.translate(0, 150);
+    equals(crosses(text, rect, 6), true, 'moving it moves the gap');
+    equals(crosses(text, moved, 20), false, 'to where it is now');
+    wrap.visible = false;
+    equals(crosses(text, moved, 6), true, 'hidden, it\'s not');
+    wrap.visible = true;
+    equals(crosses(text, moved, 20), false, 'shown again, it is');
+    wrap.remove();
+    equals(crosses(text, moved, 6), true, 'removed, it\'s gone');
+});
+
+test('textWrap: only above the text, in its layer', function() {
+    var text = createAreaText(new Rectangle(0, 0, 200, 300),
+            words + ' ' + words),
+        rect = new Rectangle(60, 40, 80, 60),
+        wrap = new Path.Rectangle({ rectangle: rect, textWrap: true });
+    wrap.sendToBack();
+    equals(crosses(text, rect, 6), true, 'not below it');
+    wrap.bringToFront();
+    equals(crosses(text, rect, 6), false, 'above it');
+    new Layer().addChild(wrap);
+    equals(crosses(text, rect, 6), true, 'not from another layer');
+});
+
+test('textWrap: groups, and inverted', function() {
+    var text = createAreaText(new Rectangle(0, 0, 200, 300),
+            words + ' ' + words),
+        rect = new Rectangle(60, 40, 80, 60),
+        group = new Group({
+            children: [new Path.Rectangle(rect)],
+            textWrap: { offset: 0 }
+        });
+    equals(crosses(text, rect, 0), false, 'by the group\'s paths');
+    group.firstChild.translate(0, 150);
+    equals(crosses(text, rect, 0), true, 'which it follows');
+    group.textWrap = null;
+    var circle = new Path.Circle({ center: [100, 100], radius: 80,
+            textWrap: { offset: 5, invert: true } });
+    equals(text.lines.every(function(line) {
+        var bounds = line.bounds;
+        return !line.content.trim() || circle.contains(bounds.leftCenter)
+                && circle.contains(bounds.rightCenter);
+    }), true, 'inverted, the lines flow inside it');
+});
+
+test('textWrap: right to left, the right side first', function() {
+    var text = createAreaText(new Rectangle(0, 0, 200, 300), words);
+    new Path.Rectangle({ rectangle: [60, 0, 80, 300], textWrap: true });
+    text.direction = 'rtl';
+    var lines = text.lines;
+    equals(lines[0].bounds.left > 100, true, 'the first line on the right');
+    equals(lines[1].bounds.right < 100, true, 'then the left');
+});
+
+test('textWrap: clone() and JSON', function() {
+    var path = new Path.Circle({ center: [50, 50], radius: 20,
+            textWrap: { offset: 3, invert: true } });
+    equals(path.clone().textWrap, { offset: 3, invert: true }, 'clone()');
+    equals(new Path().importJSON(path.exportJSON()).textWrap,
+            { offset: 3, invert: true }, 'JSON');
+});
+
 test('Soft hyphens break lines, with a hyphen where they do', function() {
     // An area as wide as the first line with its hyphen, in any font:
     var font = 'normal 12px ' + testFontFamily,
