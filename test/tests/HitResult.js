@@ -1187,3 +1187,42 @@ test('Transparent fills are hit, unlike no fill (#1157)', function() {
     equals(project.hitTest([10, 10]), null, 'path without a fill');
     equals(project.hitTest([60, 10]), null, 'shape without a fill');
 });
+
+test('hit-testing strokes next to smooth segments with any join (#2342)', function() {
+    function hitTest(item, point) {
+        return item.hitTest(point, { stroke: true, fill: false });
+    }
+    // Smooth segments are joined round, whatever the join. The stroke of the
+    // circle reaches from radius 45 to 55 around [100, 100]:
+    ['miter', 'bevel', 'round'].forEach(function(join) {
+        var circle = new Path.Circle({
+            center: [100, 100],
+            radius: 50,
+            strokeColor: 'black',
+            strokeWidth: 10,
+            strokeJoin: join
+        });
+        [[153, 100], [146, 100], [100, 154]].forEach(function(point) {
+            var hitResult = hitTest(circle, point);
+            equals(hitResult && hitResult.type, 'stroke',
+                    join + ' join: ' + point + ' should hit the stroke');
+        });
+        [[156, 100], [144, 100], [100, 156]].forEach(function(point) {
+            equals(hitTest(circle, point), null,
+                    join + ' join: ' + point + ' should miss the stroke');
+        });
+        circle.remove();
+    });
+    // The miter of the corner at [400, 100] reaches to [410, 90]:
+    var rect = new Path.Rectangle({
+        rectangle: [100, 100, 300, 200],
+        strokeColor: 'black',
+        strokeWidth: 20,
+        strokeJoin: 'miter'
+    });
+    var hitResult = hitTest(rect, [409, 91]);
+    equals(hitResult && hitResult.type, 'stroke',
+            'the miter tip should hit the stroke');
+    equals(hitTest(rect, [411, 89]), null,
+            'beyond the miter tip should miss the stroke');
+});
