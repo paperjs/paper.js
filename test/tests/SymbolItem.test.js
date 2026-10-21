@@ -369,4 +369,95 @@ describe('Symbol & Placed Symbol', () => {
       'path.globalMatrix when inserted'
     )
   })
+  test('SymbolItem#embed()', () => {
+    const layer = paper.project.activeLayer
+    const path = new Path.Rectangle({
+      point: [0, 0],
+      size: [20, 10],
+      fillColor: 'red'
+    })
+    const definition = new SymbolDefinition(path)
+    const before = new Path()
+    const placed = definition.place([100, 100])
+    const after = new Path()
+    placed.rotate(90)
+    placed.scale(2)
+    const bounds = placed.bounds
+    const embedded = placed.embed()
+    equals(() => embedded !== path, true)
+    equals(() => embedded.className, 'Path')
+    equals(layer.children, [before, embedded, after])
+    equals(placed.parent, null)
+    equals(embedded.bounds, bounds)
+    equals(embedded.matrix, new Matrix())
+    equals(embedded.fillColor, path.fillColor)
+    // The definition remains unchanged:
+    equals(path.bounds, new Rectangle(-10, -5, 20, 10))
+    equals(() => definition.item === path, true)
+  })
+
+  test('SymbolItem#embed() with #applyMatrix = false', () => {
+    const group = new Group({
+      children: [new Path.Rectangle([0, 0], [20, 10])],
+      applyMatrix: false
+    })
+    group.scale(2)
+    const definition = new SymbolDefinition(group)
+    const placed = definition.place([100, 100])
+    placed.rotate(90)
+    const bounds = placed.bounds
+    const embedded = placed.embed()
+    equals(embedded.bounds, bounds)
+    // The matrix combines the symbol item's with the definition's:
+    equals(embedded.matrix, group.matrix.prepended(placed.matrix))
+    equals(embedded.firstChild.segments[0].point, new Point(0, 10))
+  })
+
+  test('SymbolItem#embed() keeps the attributes', () => {
+    const path = new Path.Circle({
+      center: [0, 0],
+      radius: 10,
+      opacity: 0.5
+    })
+    const definition = new SymbolDefinition(path)
+    const placed = definition.place([50, 50])
+    placed.opacity = 0.5
+    placed.blendMode = 'multiply'
+    placed.visible = false
+    placed.locked = true
+    placed.guide = true
+    placed.name = 'circle'
+    placed.data = { value: 1 }
+    placed.selected = true
+    const embedded = placed.embed()
+    equals(embedded.opacity, 0.25)
+    equals(embedded.blendMode, 'multiply')
+    equals(embedded.visible, false)
+    equals(embedded.locked, true)
+    equals(embedded.guide, true)
+    equals(embedded.name, 'circle')
+    equals(() => paper.project.activeLayer.children.circle === embedded, true)
+    equals(embedded.data, { value: 1 })
+    equals(() => embedded.data !== placed.data, true)
+    equals(embedded.selected, true)
+    equals(paper.project.selectedItems, [embedded])
+  })
+
+  test('SymbolItem#embed() as a clipping mask', () => {
+    const definition = new SymbolDefinition(new Path.Circle([0, 0], 10))
+    const placed = definition.place([50, 50])
+    const group = new Group({
+      children: [placed, new Path.Rectangle([0, 0], [100, 100])],
+      clipped: true
+    })
+    const embedded = placed.embed()
+    equals(embedded.clipMask, true)
+    equals(group.bounds, new Rectangle(40, 40, 20, 20))
+  })
+
+  test('SymbolItem#embed() without a parent', () => {
+    const definition = new SymbolDefinition(new Path.Circle([0, 0], 10))
+    const placed = new SymbolItem({ definition, insert: false })
+    equals(placed.embed(), null)
+  })
 })
