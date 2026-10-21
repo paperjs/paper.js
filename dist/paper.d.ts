@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 00:50:55 2026 +0200
+ * Date: Thu Oct 22 01:02:23 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -2023,6 +2023,14 @@ declare namespace paper {
         miterLimit: number
 
         /** 
+         * The order in which the fill and the stroke are painted, as in SVG's
+         * `paint-order`, named after what is painted first: `'fill'` paints the
+         * fill first, `'stroke'` paints the stroke first, so the fill covers its
+         * inner half.
+         */
+        paintOrder: string
+
+        /** 
          * The fill color of the item.
          */
         get fillColor(): Color | null
@@ -2530,6 +2538,11 @@ declare namespace paper {
          * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
          * the `<use>` elements that place them as {@link SymbolItem} items. The
          * styles that `<use>` elements inherit don't reach the symbols' content.
+         * 
+         * The layers in SVG content that Paper.js exported come back as
+         * {@link Layer} items inside the imported group. To make the layers of a
+         * project's SVG the layers of a project again, add them to it with
+         * `item.children.slice().forEach(project.addLayer, project)`.
          * 
          * URLs are fetched as they are, so validate URLs that come from untrusted
          * sources first, especially on servers, where they could reach internal
@@ -6411,6 +6424,11 @@ declare namespace paper {
          * the `<use>` elements that place them as {@link SymbolItem} items. The
          * styles that `<use>` elements inherit don't reach the symbols' content.
          * 
+         * The layers in SVG content that Paper.js exported come back as
+         * {@link Layer} items inside the imported group. To make the layers of a
+         * project's SVG the layers of a project again, add them to it with
+         * `item.children.slice().forEach(project.addLayer, project)`.
+         * 
          * URLs are fetched as they are, so validate URLs that come from untrusted
          * sources first, especially on servers, where they could reach internal
          * addresses.
@@ -7867,6 +7885,14 @@ declare namespace paper {
          * to the {@link #strokeWidth}.
          */
         miterLimit: number
+
+        /** 
+         * The order in which the fill and the stroke are painted, as in SVG's
+         * `paint-order`, named after what is painted first: `'fill'` paints the
+         * fill first, `'stroke'` paints the stroke first, so the fill covers its
+         * inner half.
+         */
+        paintOrder: string
 
         /** 
          * The fill color.

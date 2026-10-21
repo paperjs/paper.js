@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 00:50:55 2026 +0200
+ * Date: Thu Oct 22 01:02:23 2026 +0200
  *
  ***
  *
@@ -5125,12 +5125,17 @@ new function() {
 			hasFill = style.hasFill(),
 			hasStroke = style.hasStroke();
 		if (hasFill || hasStroke) {
+			var isStrokeFirst = hasStroke && style.getPaintOrder() === 'stroke';
 			this._setStyles(ctx, param, viewMatrix, strokeMatrix);
+			if (isStrokeFirst) {
+				ctx.stroke();
+				ctx.shadowColor = 'rgba(0,0,0,0)';
+			}
 			if (hasFill) {
 				ctx.fill(style.getFillRule());
 				ctx.shadowColor = 'rgba(0,0,0,0)';
 			}
-			if (hasStroke)
+			if (hasStroke && !isStrokeFirst)
 				ctx.stroke();
 		}
 	},
@@ -13217,6 +13222,8 @@ var TextItem = Item.extend({
 						style = piece.style,
 						hasFill = style.hasFill(),
 						hasStroke = style.hasStroke(),
+						isStrokeFirst = hasStroke
+								&& style.getPaintOrder() === 'stroke',
 						size = piece.size,
 						x = piece.dx || 0;
 					this._setStyles(ctx, param, viewMatrix, null, style);
@@ -13244,11 +13251,15 @@ var TextItem = Item.extend({
 					x /= piece.scale.x;
 					ctx.font = piece.font;
 					ctx.letterSpacing = piece.tracking;
+					if (isStrokeFirst) {
+						ctx.strokeText(piece.content, x, 0);
+						ctx.shadowColor = 'rgba(0,0,0,0)';
+					}
 					if (hasFill) {
 						ctx.fillText(piece.content, x, 0);
 						ctx.shadowColor = 'rgba(0,0,0,0)';
 					}
-					if (hasStroke)
+					if (hasStroke && !isStrokeFirst)
 						ctx.strokeText(piece.content, x, 0);
 					ctx.restore();
 				}
@@ -15164,6 +15175,7 @@ var Style = Base.extend(new function() {
 		miterLimit: 10,
 		dashOffset: 0,
 		dashArray: [],
+		paintOrder: 'fill',
 		shadowColor: null,
 		shadowBlur: 0,
 		shadowOffset: new Point(),
@@ -15656,6 +15668,33 @@ var Style = Base.extend(new function() {
 	 * @property
 	 * @default 10
 	 * @type Number
+	 */
+
+	/**
+	 * The order in which the fill and the stroke are painted, as in SVG's
+	 * `paint-order`, named after what is painted first: `'fill'` paints the
+	 * fill first, `'stroke'` paints the stroke first, so the fill covers its
+	 * inner half.
+	 *
+	 * @name Style#paintOrder
+	 * @property
+	 * @type String
+	 * @values 'fill', 'stroke'
+	 * @default 'fill'
+	 *
+	 * @example {@paperscript}
+	 * var text = new PointText({
+	 *     point: [20, 70],
+	 *     content: 'Paper',
+	 *     fontSize: 50,
+	 *     fillColor: 'white',
+	 *     strokeColor: 'black',
+	 *     strokeWidth: 8,
+	 *     strokeJoin: 'round'
+	 * });
+	 *
+	 * // Paint the stroke behind the fill:
+	 * text.paintOrder = 'stroke';
 	 */
 
 	/**
@@ -20839,6 +20878,7 @@ var SvgStyles = Base.each({
 	miterLimit: ['stroke-miterlimit', 'number'],
 	dashArray: ['stroke-dasharray', 'array'],
 	dashOffset: ['stroke-dashoffset', 'number'],
+	paintOrder: ['paint-order', 'order'],
 	fontFamily: ['font-family', 'string'],
 	fontWeight: ['font-weight', 'font'],
 	fontSize: ['font-size', 'number'],
@@ -21444,6 +21484,8 @@ new function() {
 			var data = JSON.stringify(item._data);
 			if (data && data !== '{}' && data !== 'null')
 				node.setAttribute('data-paper-data', data);
+			if (item instanceof Layer)
+				node.setAttribute('data-paper-layer', '');
 		}
 		return node && applyStyle(item, node, options, isRoot);
 	}
@@ -21552,6 +21594,8 @@ new function() {
 					value ? value.split(/[\s,]+/g).map(parseLength) : []
 				: type === 'color' ? getDefinition(value, options) || value
 				: type === 'lookup' ? lookup[value]
+				: type === 'order' ? /^(markers\s+)?stroke\b/.test(value)
+					? 'stroke' : 'fill'
 				: value;
 	}
 
@@ -21559,7 +21603,8 @@ new function() {
 		var nodes = node.childNodes,
 			isClip = type === 'clippath' || type === 'mask',
 			isDefs = type === 'defs',
-			item = new Group(),
+			ctor = node.hasAttribute('data-paper-layer') ? Layer : Group,
+			item = new ctor(),
 			project = item._project,
 			currentStyle = project._currentStyle,
 			parentSize = rootSize,

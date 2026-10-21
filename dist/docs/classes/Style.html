@@ -513,6 +513,67 @@ path.dashArray = [10, 4];
 </div>
 		
 			
+<div id="paintorder" class="member">
+<div class="member-link">
+<a name="paintorder" href="#paintorder"><tt><b>paintOrder</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The order in which the fill and the stroke are painted, as in SVG&rsquo;s <code>paint-order</code>, named after what is painted first: <code>&#39;fill&#39;</code> paints the fill first, <code>&#39;stroke&#39;</code> paints the stroke first, so the fill covers its inner half.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'fill'</tt>, <tt>'stroke'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'fill'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:</h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-8">
+var text = new PointText({
+    point: [20, 70],
+    content: 'Paper',
+    fontSize: 50,
+    fillColor: 'white',
+    strokeColor: 'black',
+    strokeWidth: 8,
+    strokeJoin: 'round'
+});
+
+// Paint the stroke behind the fill:
+text.paintOrder = 'stroke';
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-8"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
 	<h3>Fill Style</h3>
 
 <div id="fillcolor" class="member">
@@ -542,7 +603,7 @@ path.dashArray = [10, 4];
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-8">
+<script type="text/paperscript" canvas="canvas-9">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var circle = new Path.Circle(new Point(80, 50), 35);
@@ -550,7 +611,7 @@ var circle = new Path.Circle(new Point(80, 50), 35);
 // Set the fill color of the circle to RGB red:
 circle.fillColor = new Color(1, 0, 0);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-8"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-9"></canvas></div>
 </div>
 
 
@@ -625,7 +686,7 @@ circle.fillColor = new Color(1, 0, 0);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-9">
+<script type="text/paperscript" canvas="canvas-10">
 var circle = new Path.Circle({
     center: [80, 50],
     radius: 35,
@@ -638,7 +699,7 @@ var circle = new Path.Circle({
     shadowOffset: new Point(5, 5)
 });
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-9"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-10"></canvas></div>
 </div>
 
 

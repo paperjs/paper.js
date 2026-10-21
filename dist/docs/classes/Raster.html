@@ -3193,6 +3193,42 @@ path.dashArray = [10, 4];
 </div>
 
 	
+<div id="paintorder" class="member">
+<div class="member-link">
+<a name="paintorder" href="#paintorder"><tt><b>paintOrder</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The order in which the fill and the stroke are painted, as in SVG&rsquo;s <code>paint-order</code>, named after what is painted first: <code>&#39;fill&#39;</code> paints the fill first, <code>&#39;stroke&#39;</code> paints the stroke first, so the fill covers its inner half.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'fill'</tt>, <tt>'stroke'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'fill'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
 	<h3>Fill Style</h3>
 
 <div id="fillcolor" class="member">
@@ -5002,6 +5038,7 @@ function onMouseDown(event) {
 <div class="member-text">
 	<p>Converts the provided SVG content into Paper.js items and adds them to the this item&rsquo;s children list. Note that the item is not cleared first. You can call <a href="../classes/Item.html#removechildren"><tt>item.removeChildren</tt></a>() to do so.</p>
 <p><code>&lt;symbol&gt;</code> elements are imported as <a href="../classes/SymbolDefinition.html"><tt>SymbolDefinition</tt></a> items, and the <code>&lt;use&gt;</code> elements that place them as <a href="../classes/SymbolItem.html"><tt>SymbolItem</tt></a> items. The styles that <code>&lt;use&gt;</code> elements inherit don&rsquo;t reach the symbols&rsquo; content.</p>
+<p>The layers in SVG content that Paper.js exported come back as <a href="../classes/Layer.html"><tt>Layer</tt></a> items inside the imported group. To make the layers of a project&rsquo;s SVG the layers of a project again, add them to it with <code>item.children.slice().forEach(project.addLayer, project)</code>.</p>
 <p>URLs are fetched as they are, so validate URLs that come from untrusted sources first, especially on servers, where they could reach internal addresses.</p>
     <ul class="member-list">
 <h4>Options:</h4>
