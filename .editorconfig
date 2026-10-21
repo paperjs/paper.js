@@ -11,5 +11,11 @@ trim_trailing_whitespace = true
 [*.json]
 indent_size = 2
 
+# The tests and their configuration follow dito.js's style, see
+# prettier.config.mjs, and so will the sources:
+[{test/**.js,*.mjs,test/**.mjs}]
+indent_size = 2
+max_line_length = 80
+
 [*.md]
 trim_trailing_whitespace = false

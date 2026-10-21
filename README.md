@@ -277,28 +277,25 @@ Your docs will then be located at `dist/docs`.
 
 ### Testing
 
-Paper.js was developed and tested from day 1 using proper unit testing through
-jQuery's [Qunit](https://qunitjs.com/). To run the tests after any
-change to the library's source, simply open `index.html` inside the `test`
-folder in your web browser. There should be a green bar at the top, meaning all
-tests have passed. If the bar is red, some tests have not passed. These will be
-highlighted and become visible when scrolling down.
-
-If you are testing on Chrome, some of the tests will fail due to the browser's
-CORS restrictions. In order to run the browser based tests on Chrome, you need
-to run a local web-server through Gulp.js. The following command will handle it
-for you, and will also open the browser at the right address straight away:
-
-    pnpm test:browser
-
-To run them in headless Chrome instead, as CI does, and report the result in the
-terminal:
-
-    pnpm test:chrome
-
-To test the Node.js version of Paper.js, use this command:
+The tests run with [Vitest](https://vitest.dev/), on Node.js and in Chromium
+through [Playwright](https://playwright.dev/), against the library built from
+the sources:
 
     pnpm test
+
+To run them only on Node.js, or only in the browser:
+
+    pnpm test:node
+    pnpm test:browser
+
+The browser tests need Chromium for Playwright, which this installs once:
+
+    pnpm exec playwright install chromium
+
+Once the library is built in `dist`, the tests run against that instead. Select
+another build than `paper-full.js` with `PAPER_BUILD`, e.g.
+`PAPER_BUILD=hosted pnpm test:node`. Vitest also runs single files, and watches
+for changes with `pnpm exec vitest`.
 
 ### Contributing [![Open Source Helpers](https://www.codetriage.com/paperjs/paper.js/badges/users.svg)](https://www.codetriage.com/paperjs/paper.js)
 
