@@ -326,8 +326,9 @@ var TextStory = Base.extend(/** @lends TextStory# */{
             }).join('');
         this.setContent(content);
         this._runs = runs.map(function(run) {
+            // Style#set() takes only the style properties, not the content:
             var style = new Style(that._runs[0].style, that);
-            style.set(Base.set({}, run, { content: undefined }));
+            style.set(run);
             return { length: (run.content || '').length, style: style };
         }).filter(function(run) {
             return run.length > 0;
