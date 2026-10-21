@@ -204,6 +204,17 @@ var Size = Base.extend(/** @lends Size# */{
     },
 
     /**
+     * The size's dimensions as an array, `[width, height]`, as
+     * {@link Matrix#values} gives those of a matrix.
+     *
+     * @bean
+     * @type Number[]
+     */
+    getValues: function() {
+        return [this.width, this.height];
+    },
+
+    /**
      * Returns the addition of the supplied value to the width and height of the
      * size as a new size. The object itself is not modified!
      *
