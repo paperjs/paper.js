@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 03:17:51 2026 +0200
+ * Date: Wed Oct 21 03:18:16 2026 +0200
  *
  ***
  *
@@ -17754,7 +17754,6 @@ new function() { // Injection scope for mouse and key event handling
 		},
 		// Various variables required by #_handleMouseEvent()
 		wasInView = false,
-		overView,
 		downPoint,
 		lastPoint,
 		downItem,
@@ -17832,11 +17831,6 @@ new function() { // Injection scope for mouse and key event handling
 					point, prevPoint));
 	}
 
-	/**
-	 * Lookup defining which native events are required by which item events.
-	 * Required by code that is counting the amount of required natives events.
-	 * The mapping is native -> virtual.
-	 */
 	// Stands in for the DOM event in #dispatchMouseEvent() and
 	// #dispatchKeyEvent(), with what the handling reads from it. Hosts can
 	// pass the state of the modifier keys, see Key.modifiers:
@@ -17859,6 +17853,11 @@ new function() { // Injection scope for mouse and key event handling
 		};
 	}
 
+	/**
+	 * Lookup defining which native events are required by which item events.
+	 * Required by code that is counting the amount of required natives events.
+	 * The mapping is native -> virtual.
+	 */
 	var itemEventsMap = {
 		// mouseup too, as the press needs the item for needsUp():
 		mousedown: {
@@ -18048,7 +18047,6 @@ new function() { // Injection scope for mouse and key event handling
 			if (wasInView ^ inView) {
 				emitMouseEvent(this, null, inView ? 'mouseenter' : 'mouseleave',
 						event, point);
-				overView = inView ? this : null;
 				handle = true; // To include the leaving move.
 			}
 			// Now handle the mousemove / mousedrag event.
@@ -18188,7 +18186,7 @@ new function() { // Injection scope for mouse and key event handling
 			 */
 			_resetState: function() {
 				dragging = mouseDown = called = wasInView = false;
-				prevFocus = tempFocus = overView = downPoint = lastPoint =
+				prevFocus = tempFocus = downPoint = lastPoint =
 					downItem = overItem = dragItem = clickItem = clickTime =
 					dblClick = null;
 			}
@@ -19042,15 +19040,17 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
 	 * @type Number
 	 */
 	getCount: function() {
-		// Return downCount for both mouse down and up, since
-		// the count is the same.
-		return this.tool[/^mouse(down|up)$/.test(this.type)
-				? '_downCount' : '_moveCount'];
+		return this.tool[this._getCountName()];
 	},
 
 	setCount: function(count) {
-		this.tool[/^mouse(down|up)$/.test(this.type)
-				? '_downCount' : '_moveCount'] = count;
+		this.tool[this._getCountName()] = count;
+	},
+
+	_getCountName: function() {
+		// Use downCount for both mouse down and up, since the count is the
+		// same.
+		return /^mouse(down|up)$/.test(this.type) ? '_downCount' : '_moveCount';
 	},
 
 	/**
