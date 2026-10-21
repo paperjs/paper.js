@@ -539,3 +539,16 @@ test('Hosted text draws its host\'s layout', function() {
         raster = point.rasterize({ insert: false });
     equals(raster.width > 0, true, 'without errors');
 });
+
+test('Writes before loading stay', function() {
+    var res = createHostedProject(),
+        circle = res.project.layers[0].children['circle'];
+    circle.pivot = [0, 0];
+    equals(circle.fillColor, new Color('red'), 'loaded');
+    equals(circle.pivot, new Point(0, 0), 'with what was written');
+    var res2 = createHostedText(),
+        area = res2.project.layers[0].children['area'];
+    area.columns = 3;
+    equals(area.content.length > 0, true, 'loaded');
+    equals(area.columns, 3, 'an area text\'s setting');
+});
