@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 21:45:25 2026 +0200
+ * Date: Wed Oct 21 20:52:59 2026 +0200
  *
  ***
  *
@@ -3433,6 +3433,10 @@ new function() {
 	initialize: function Item() {
 	},
 
+	_getCurrentStyle: function(project) {
+		return project._currentStyle;
+	},
+
 	_initialize: function(props, point) {
 		var hasProps = props && Base.isPlainObject(props),
 			internal = hasProps && props.internal === true,
@@ -3449,7 +3453,7 @@ new function() {
 		if (point)
 			matrix.translate(point);
 		matrix._owner = this;
-		this._style = new Style(project._currentStyle, this, project);
+		this._style = new Style(this._getCurrentStyle(project), this, project);
 		if (internal || hasProps && props.insert == false
 			|| !settings.insertItems && !(hasProps && props.insert == true)) {
 			this._setProject(project);

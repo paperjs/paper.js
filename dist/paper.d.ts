@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 21:45:25 2026 +0200
+ * Date: Wed Oct 21 20:52:59 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -5962,6 +5962,14 @@ declare namespace paper {
      * {@link PaperScope#projects} variable.
      */
     class Project  {
+        /** 
+         * The style new text items take in a hosted project, in place of
+         * {@link #currentStyle}, when the host sets one: for hosts whose new
+         * text has defaults of its own, such as a black fill without a stroke
+         * whatever new paths take. Paths keep taking the current style.
+         */
+        currentTextStyle: Style
+
         /** 
          * The host document that the project's items come from. Setting it
          * creates the project's layers from the host's records. All items
