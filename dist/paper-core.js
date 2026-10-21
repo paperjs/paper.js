@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 00:54:01 2026 +0200
+ * Date: Thu Oct 22 00:51:33 2026 +0200
  *
  ***
  *
@@ -6371,8 +6371,27 @@ var SymbolItem = Item.extend({
 
 	_draw: function(ctx, param) {
 		this._definition._item.draw(ctx, param.extend({ updateMatrix: false }));
-	}
+	},
 
+	embed: function() {
+		if (!this._parent)
+			return null;
+		var item = this._definition._item.clone(false);
+		item.transform(this._matrix);
+		item.setOpacity(item._opacity * this._opacity);
+		item.setVisible(item._visible && this._visible);
+		item.setLocked(item._locked || this._locked);
+		item.setGuide(item._guide || this._guide);
+		if (this._blendMode !== 'normal')
+			item.setBlendMode(this._blendMode);
+		item.setClipMask(this._clipMask);
+		item.setSelected(this.isSelected());
+		if (this._data)
+			item._data = Base.clone(this._data);
+		if (this._name)
+			item.setName(this._name);
+		return this.replaceWith(item) ? item : null;
+	}
 });
 
 var SymbolDefinition = Base.extend({

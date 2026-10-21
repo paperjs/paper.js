@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 00:54:01 2026 +0200
+ * Date: Thu Oct 22 00:51:33 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -8162,6 +8162,17 @@ declare namespace paper {
          * @param point - the center point of the placed symbol
          */
         constructor(definition: SymbolDefinition | Item, point?: PointLike)
+
+        /** 
+         * Replaces the symbol item with a copy of its definition's item, which
+         * keeps the symbol item's appearance: its matrix is applied to the copy,
+         * its opacity, visibility, blend mode and other attributes are combined
+         * with the copy's, and its name, data and selection are passed on.
+         * 
+         * @return the copy of the definition's item, or `null` if the
+         *     symbol item has no parent
+         */
+        embed(): Item
 
     }
 
