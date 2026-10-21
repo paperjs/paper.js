@@ -438,7 +438,15 @@ var Style = Base.extend(new function() {
     // The font as canvas takes it:
     _getCanvasFont: function() {
         var fontSize = this.getFontSize(),
-            fontStyle = this.getFontStyle();
+            fontStyle = this.getFontStyle(),
+            // CSS reads unquoted families only as identifiers, which can't
+            // start with digits, so quote all but single words and the ones
+            // that are quoted already:
+            families = this.getFontFamily().split(',').map(function(family) {
+                family = family.trim();
+                return /^(["'].*|[a-z-]+)$/i.test(family) ? family
+                        : '"' + family.replace(/["\\]/g, '\\$&') + '"';
+            });
         // Superscripts and subscripts are set smaller:
         if (this.getBaselinePosition() !== 'normal' && !isNaN(fontSize))
             fontSize *= this._scriptSize;
@@ -452,7 +460,7 @@ var Style = Base.extend(new function() {
                 + (this.getCapitals() === 'small' ? 'small-caps ' : '')
                 + this.getFontWeight()
                 + ' ' + fontSize + (/[a-z]/i.test(fontSize + '') ? ' ' : 'px ')
-                + this.getFontFamily();
+                + families.join(', ');
     },
 
     // The size of superscripts and subscripts, and how far they move, of the
