@@ -183,6 +183,83 @@ var path = new Path({
 		<h2>Properties</h2>
 		
 			
+<div id="name" class="member">
+<div class="member-link">
+<a name="name" href="#name"><tt><b>name</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The name of the segment. If the segment has a name, it can be accessed by name through its path&rsquo;s segments list. If several segments share a name, the first one is found.</p>
+<p>The name is stored in JSON, but not in SVG.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:</h4>
+
+
+<pre><code>var path = new Path([10, 10], [50, 10], [50, 50]);
+path.segments[1].name = 'corner';
+console.log(path.segments['corner'].point); // { x: 50, y: 10 }</code></pre>
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="data" class="member">
+<div class="member-link">
+<a name="data" href="#data"><tt><b>data</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>A plain javascript object which can be used to store arbitrary data on the segment.</p>
+<p>The data is stored in JSON, but not in SVG.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Object</tt>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:</h4>
+
+
+<pre><code>var segment = new Segment(100, 100);
+segment.data.isCorner = true;</code></pre>
+
+<h4>Example:</h4>
+
+
+<pre><code>var segment = new Segment({
+    point: [100, 50],
+    handleOut: [80, 100],
+    data: {
+        isCorner: true
+    }
+});
+console.log(segment.data.isCorner); // true</code></pre>
+
+</div>
+
+</div>
+</div>
+		
+			
 <div id="point" class="member">
 <div class="member-link">
 <a name="point" href="#point"><tt><b>point</b></tt></a>

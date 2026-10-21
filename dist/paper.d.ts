@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 22:40:24 2026 +0200
+ * Date: Wed Oct 21 21:11:49 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -4102,7 +4102,8 @@ declare namespace paper {
      */
     class Path extends PathItem {
         /** 
-         * The segments contained within the path.
+         * The segments contained within the path. Segments that define a
+         * {@link Segment#name} can also be accessed by name.
          */
         segments: Segment[]
 
@@ -7079,6 +7080,23 @@ declare namespace paper {
      * objects that are connected by this segment.
      */
     class Segment  {
+        /** 
+         * The name of the segment. If the segment has a name, it can be accessed
+         * by name through its path's segments list. If several segments share a
+         * name, the first one is found.
+         * 
+         * The name is stored in JSON, but not in SVG.
+         */
+        name: string | null
+
+        /** 
+         * A plain javascript object which can be used to store arbitrary data on
+         * the segment.
+         * 
+         * The data is stored in JSON, but not in SVG.
+         */
+        data: any
+
         /** 
          * The anchor point of the segment.
          */

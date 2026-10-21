@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 22:40:24 2026 +0200
+ * Date: Wed Oct 21 21:11:49 2026 +0200
  *
  ***
  *
@@ -624,6 +624,27 @@ statics: {
 			for (var i = index + amount, l = list.length; i < l; i++)
 				list[i]._index = i;
 			return removed;
+		}
+	},
+
+	addNamed: function(list, named, name, item) {
+		(named[name] = named[name] || []).push(item);
+		if (!(name in list))
+			list[name] = item;
+	},
+
+	removeNamed: function(list, named, name, item) {
+		var namedArray = named[name],
+			index = namedArray ? namedArray.indexOf(item) : -1;
+		if (index !== -1) {
+			if (list[name] == item)
+				delete list[name];
+			namedArray.splice(index, 1);
+			if (namedArray.length) {
+				list[name] = namedArray[0];
+			} else {
+				delete named[name];
+			}
 		}
 	},
 
@@ -3543,13 +3564,8 @@ new function() {
 			throw new Error(
 					'Names consisting only of numbers are not supported.');
 		var owner = this._getOwner();
-		if (name && owner) {
-			var children = owner._children,
-				namedChildren = owner._namedChildren;
-			(namedChildren[name] = namedChildren[name] || []).push(this);
-			if (!(name in children))
-				children[name] = this;
-		}
+		if (name && owner)
+			Base.addNamed(owner._children, owner._namedChildren, name, this);
 		this._name = name || undefined;
 		this._changed(256);
 	},
@@ -4755,23 +4771,9 @@ new function() {
 
 	_removeNamed: function() {
 		var owner = this._getOwner();
-		if (owner) {
-			var children = owner._children,
-				namedChildren = owner._namedChildren,
-				name = this._name,
-				namedArray = namedChildren[name],
-				index = namedArray ? namedArray.indexOf(this) : -1;
-			if (index !== -1) {
-				if (children[name] == this)
-					delete children[name];
-				namedArray.splice(index, 1);
-				if (namedArray.length) {
-					children[name] = namedArray[0];
-				} else {
-					delete namedChildren[name];
-				}
-			}
-		}
+		if (owner)
+			Base.removeNamed(owner._children, owner._namedChildren, this._name,
+					this);
 	},
 
 	_remove: function(notifySelf, notifyParent) {
@@ -6463,12 +6465,13 @@ var HitResult = Base.extend({
 
 var Segment = Base.extend({
 	_class: 'Segment',
+	_name: null,
 	beans: true,
 	_selection: 0,
 
 	initialize: function Segment(arg0, arg1, arg2, arg3, arg4, arg5) {
 		var count = arguments.length,
-			point, handleIn, handleOut, selection;
+			point, handleIn, handleOut, selection, name, data;
 		if (count > 0) {
 			if (arg0 == null || typeof arg0 === 'object') {
 				if (count === 1 && arg0 && 'point' in arg0) {
@@ -6476,6 +6479,10 @@ var Segment = Base.extend({
 					handleIn = arg0.handleIn;
 					handleOut = arg0.handleOut;
 					selection = arg0.selection;
+					name = arg0.name;
+					data = arg0 instanceof Segment
+							? arg0._data && Base.clone(arg0._data)
+							: arg0.data;
 				} else {
 					point = arg0;
 					handleIn = arg1;
@@ -6493,17 +6500,38 @@ var Segment = Base.extend({
 		new SegmentPoint(handleOut, this, '_handleOut');
 		if (selection)
 			this.setSelection(selection);
+		if (name)
+			this.setName(name);
+		if (data)
+			this._data = data;
 	},
 
 	_serialize: function(options, dictionary) {
 		var point = this._point,
 			selection = this._selection,
-			obj = selection || this.hasHandles()
+			name = this._name,
+			data = this._data,
+			hasData = data && !Base.equals(data, {});
+		if (name || hasData) {
+			var props = Base.serialize({
+				point: point,
+				handleIn: this._handleIn,
+				handleOut: this._handleOut,
+				selection: selection
+			}, options, true, dictionary);
+			if (name)
+				props.name = name;
+			if (hasData)
+				props.data = Base.serialize(data, options, false, dictionary);
+			return [props];
+		} else {
+			var obj = selection || this.hasHandles()
 					? [point, this._handleIn, this._handleOut]
 					: point;
-		if (selection)
-			obj.push(selection);
-		return Base.serialize(obj, options, true, dictionary);
+			if (selection)
+				obj.push(selection);
+			return Base.serialize(obj, options, true, dictionary);
+		}
 	},
 
 	_changed: function(point) {
@@ -6523,6 +6551,34 @@ var Segment = Base.extend({
 				curve._changed();
 		}
 		path._changed(41);
+	},
+
+	getName: function() {
+		return this._name;
+	},
+
+	setName: function(name) {
+		var path = this._path,
+			named = path && path._namedSegments;
+		if (this._name && named)
+			Base.removeNamed(path._segments, named, this._name, this);
+		if (name === (+name) + '')
+			throw new Error(
+					'Names consisting only of numbers are not supported.');
+		if (name && path)
+			Base.addNamed(path._segments, named || (path._namedSegments = {}),
+					name, this);
+		this._name = name || undefined;
+	},
+
+	getData: function() {
+		if (!this._data)
+			this._data = {};
+		return this._data;
+	},
+
+	setData: function(data) {
+		this._data = data;
 	},
 
 	getPoint: function() {
@@ -6707,7 +6763,14 @@ var Segment = Base.extend({
 	},
 
 	clone: function() {
-		return new Segment(this._point, this._handleIn, this._handleOut);
+		var segment = new Segment(this._point, this._handleIn, this._handleOut),
+			name = this._name,
+			data = this._data;
+		if (name)
+			segment._name = name;
+		if (data)
+			segment._data = Base.clone(data);
+		return segment;
 	},
 
 	equals: function(segment) {
@@ -9208,7 +9271,13 @@ var Path = PathItem.extend({
 
 	setSegments: function(segments) {
 		var fullySelected = this.isFullySelected(),
-			length = segments && segments.length;
+			length = segments && segments.length,
+			named = this._namedSegments;
+		if (named) {
+			for (var name in named)
+				delete this._segments[name];
+			this._namedSegments = null;
+		}
 		this._segments.length = 0;
 		this._segmentSelection = 0;
 		this._curves = undefined;
@@ -9354,6 +9423,8 @@ var Path = PathItem.extend({
 				segment = segs[i] = segment.clone();
 			segment._path = this;
 			segment._index = index + i;
+			if (segment._name)
+				segment.setName(segment._name);
 			if (segment._selection)
 				this._updateSelection(segment, 0, segment._selection);
 		}
@@ -9460,6 +9531,9 @@ var Path = PathItem.extend({
 			var segment = removed[i];
 			if (segment._selection)
 				this._updateSelection(segment, segment._selection, 0);
+			if (segment._name)
+				Base.removeNamed(segments, this._namedSegments, segment._name,
+						segment);
 			segment._index = segment._path = null;
 		}
 		for (var i = start, l = segments.length; i < l; i++)
