@@ -50,7 +50,8 @@ var operations = {
         -1e-5];
 
 // Collects the operands of the boolean operations that a test file performs,
-// by running it with stubs for the test functions:
+// by running it with stubs for the test functions, and without its imports,
+// as paper.install() makes the classes global:
 function collect(file) {
     var cases = [],
         counts = {},
@@ -80,7 +81,10 @@ function collect(file) {
             }
         };
     });
-    global.QUnit = { module: function() {} };
+    global.paper = paper;
+    global.describe = function(name, callback) {
+        callback();
+    };
     global.equals = global.ok = function() {};
     global.compareBoolean = function(actual) {
         if (typeof actual === 'function')
@@ -96,7 +100,9 @@ function collect(file) {
             // The test's own assertions don't matter here.
         }
     };
-    vm.runInThisContext(fs.readFileSync(file, 'utf8'), { filename: file });
+    var source = fs.readFileSync(file, 'utf8')
+            .replace(/^import\b[^;]*?\bfrom\s+'[^']+'$/gm, '');
+    vm.runInThisContext(source, { filename: file });
     Base.set(prototype, originals);
     return cases;
 }
@@ -308,7 +314,8 @@ function sweep(entry) {
     return result;
 }
 
-var cases = collect(path.join(__dirname, '..', 'tests', 'Path_Boolean.js'))
+var cases = collect(
+        path.join(__dirname, '..', 'tests', 'Path_Boolean.test.js'))
         .concat(require('./issues.json'), require('./generate.js')(paper, 40, 1));
 if (process.argv[3] === 'count') {
     console.log(cases.length);

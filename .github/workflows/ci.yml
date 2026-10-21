@@ -22,13 +22,16 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Lint
         run: pnpm jshint
+      # The tests follow the style of dito.js, which the sources follow later:
+      - name: Lint the tests
+        run: pnpm eslint
       # Test the built library, as that's what gets published:
       - name: Build
         run: pnpm minify
       - name: Test
         run: pnpm test:node
       - name: Test the hosted build
-        run: pnpm test:node --build=hosted
+        run: PAPER_BUILD=hosted pnpm test:node
       # Moves the second operand of every boolean operation in the tests and
       # issue cases by tiny amounts, and fails if results got less stable or
       # less correct than in test/booleans/baseline.json:
@@ -50,9 +53,11 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y fonts-liberation
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      # Runs the sources directly, through load.js:
-      - name: Test in Chrome
-        run: pnpm test:chrome
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      # Runs the library built from the sources, see test/vite-plugin-paper.mjs:
+      - name: Test in Chromium
+        run: pnpm test:browser
 
   # Generate paper.d.ts from the docs and compile the TypeScript definition
   # test against it, so changes to the docs can't break the typings unnoticed:
