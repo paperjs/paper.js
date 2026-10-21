@@ -471,7 +471,7 @@ var Curve = Base.extend(/** @lends Curve# */{
      *     within the valid range, {code null} otherwise.
      * @see #divideAt(offset)
      */
-    divideAtTime: function(time, _setHandles) {
+    divideAtTime: function(time) {
         // Only divide if not at the beginning or end.
         var tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin,
@@ -480,7 +480,7 @@ var Curve = Base.extend(/** @lends Curve# */{
             var parts = Curve.subdivide(this.getValues(), time),
                 left = parts[0],
                 right = parts[1],
-                setHandles = _setHandles || this.hasHandles(),
+                setHandles = this.hasHandles(),
                 seg1 = this._segment1,
                 seg2 = this._segment2,
                 path = this._path;
