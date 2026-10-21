@@ -65,10 +65,12 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
         var proto = PaperScope.prototype;
         if (!this.support) {
             // Set up paper.support, as an object containing properties that
-            // describe the support of various features.
-            proto.support = {
-                nativeBlendModes: BlendMode.nativeModes
-            };
+            // describe the support of various features. The blend modes are
+            // tested the first time they're read, see BlendMode.
+            proto.support = Base.define({}, 'nativeBlendModes', {
+                enumerable: true,
+                get: BlendMode.getNativeModes
+            });
         }
         if (!this.agent) {
             // Use self.instead of window, to cover handle web-workers too.
