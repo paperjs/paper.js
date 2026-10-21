@@ -277,9 +277,9 @@ Your docs will then be located at `dist/docs`.
 
 ### Testing
 
-The tests run with [Vitest](https://vitest.dev/), on Node.js and in Google
-Chrome through [Playwright](https://playwright.dev/), against the library built
-from the sources:
+The tests run with [Vitest](https://vitest.dev/), on Node.js and in Chromium
+through [Playwright](https://playwright.dev/), against the library built from
+the sources:
 
     pnpm test
 
@@ -287,6 +287,10 @@ To run them only on Node.js, or only in the browser:
 
     pnpm test:node
     pnpm test:browser
+
+The browser tests need Chromium for Playwright, which this installs once:
+
+    pnpm exec playwright install chromium
 
 Once the library is built in `dist`, the tests run against that instead. Select
 another build than `paper-full.js` with `PAPER_BUILD`, e.g.
