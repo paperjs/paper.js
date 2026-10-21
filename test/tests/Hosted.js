@@ -426,8 +426,10 @@ function createHostedText() {
     var host = createHost(document);
     host.layOut = function(json, start, key) {
         host.calls.push(['layOut', key]);
+        equals(typeof json, 'string', 'the text as a JSON string');
         var current = paper.project;
         document.activate();
+        json = JSON.parse(json);
         var text = new Base.exports[json[0]]({ insert: false })
                 .importJSON(json),
             lines = text._layOut();
