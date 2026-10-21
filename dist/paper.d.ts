@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 00:13:03 2026 +0200
+ * Date: Thu Oct 22 00:14:59 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -886,7 +886,9 @@ declare namespace paper {
         clearHandles(): void
 
         /** 
-         * Checks if this curve has any curve handles set.
+         * Checks if this curve has any curve handles set. Handles of which both
+         * coordinates are 0 within a tolerance of 1e-12 count as not set, see
+         * {@link Point#isZero}.
          * 
          * @see Curve#handle1
          * @see Curve#handle2
@@ -4265,7 +4267,9 @@ declare namespace paper {
         removeSegments(from: number, to?: number): Segment[]
 
         /** 
-         * Checks if any of the curves in the path have curve handles set.
+         * Checks if any of the curves in the path have curve handles set. Handles
+         * of which both coordinates are 0 within a tolerance of 1e-12 count as not
+         * set, see {@link Point#isZero}.
          * 
          * @see Segment#hasHandles()
          * @see Curve#hasHandles()
@@ -5742,7 +5746,8 @@ declare namespace paper {
 
         /** 
          * Checks if the vector represented by this point is collinear (parallel) to
-         * another vector.
+         * another vector, within a tolerance of 1e-8 for the sine of the angle
+         * between them.
          * 
          * @param point - the vector to check against
          * 
@@ -5752,7 +5757,8 @@ declare namespace paper {
 
         /** 
          * Checks if the vector represented by this point is collinear (parallel) to
-         * another vector.
+         * another vector, within a tolerance of 1e-8 for the sine of the angle
+         * between them.
          * 
          * @param point - the vector to check against
          * 
@@ -5762,7 +5768,8 @@ declare namespace paper {
 
         /** 
          * Checks if the vector represented by this point is orthogonal
-         * (perpendicular) to another vector.
+         * (perpendicular) to another vector, within a tolerance of 1e-8 for the
+         * cosine of the angle between them.
          * 
          * @param point - the vector to check against
          * 
@@ -5772,7 +5779,8 @@ declare namespace paper {
 
         /** 
          * Checks if the vector represented by this point is orthogonal
-         * (perpendicular) to another vector.
+         * (perpendicular) to another vector, within a tolerance of 1e-8 for the
+         * cosine of the angle between them.
          * 
          * @param point - the vector to check against
          * 
@@ -5781,9 +5789,11 @@ declare namespace paper {
         isOrthogonal(x: number, y: number): boolean
 
         /** 
-         * Checks if this point has both the x and y coordinate set to 0.
+         * Checks if this point has both the x and y coordinate set to 0, within
+         * a tolerance of 1e-12, unlike {@link #equals}, which compares
+         * exactly.
          * 
-         * @return true if both x and y are 0
+         * @return true if both x and y are 0, within the tolerance
          */
         isZero(): boolean
 
@@ -7187,7 +7197,9 @@ declare namespace paper {
         constructor(object: object)
 
         /** 
-         * Checks if the segment has any curve handles set.
+         * Checks if the segment has any curve handles set. Handles of which both
+         * coordinates are 0 within a tolerance of 1e-12 count as not set, see
+         * {@link Point#isZero}.
          * 
          * @see Segment#handleIn
          * @see Segment#handleOut
@@ -7681,9 +7693,12 @@ declare namespace paper {
         negate(): Size
 
         /** 
-         * Checks if this size has both the width and height set to 0.
+         * Checks if this size has both the width and height set to 0, within a
+         * tolerance of 1e-12, unlike {@link #equals}, which compares
+         * exactly.
          * 
-         * @return true if both width and height are 0
+         * @return true if both width and height are 0, within the
+         *     tolerance
          */
         isZero(): boolean
 

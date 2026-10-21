@@ -1036,7 +1036,7 @@ console.log(result); // {width: -12, height: 6}</code></pre>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Checks if this size has both the width and height set to 0.</p>
+	<p>Checks if this size has both the width and height set to 0, within a tolerance of 1e-12, unlike <a href="../classes/Size.html#equals-size"><tt>equals(size)</tt></a>, which compares exactly.</p>
     
 	
 	
@@ -1044,7 +1044,7 @@ console.log(result); // {width: -12, height: 6}</code></pre>
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if both width and height are 0, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if both width and height are 0, within the  tolerance, <tt>false</tt> otherwise
 </li>
 
 		
