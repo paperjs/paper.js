@@ -297,6 +297,17 @@ another build than `paper-full.js` with `PAPER_BUILD`, e.g.
 `PAPER_BUILD=hosted pnpm test:node`. Vitest also runs single files, and watches
 for changes with `pnpm exec vitest`.
 
+The screenshot tests in `test/screenshots` compare what the library draws with
+reference images. Rendering differs between systems, so they run in Playwright's
+Docker image, which needs [Docker](https://www.docker.com/):
+
+    pnpm test:screenshots
+
+To write new reference images, after adding a test or changing what it draws,
+and review them in `test/screenshots/__screenshots__` before committing:
+
+    pnpm test:screenshots --update
+
 ### Contributing [![Open Source Helpers](https://www.codetriage.com/paperjs/paper.js/badges/users.svg)](https://www.codetriage.com/paperjs/paper.js)
 
 The main Paper.js source tree is hosted on GitHub, thus you should create a fork
