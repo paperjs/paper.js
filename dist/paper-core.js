@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 11:40:12 2026 +0200
+ * Date: Wed Oct 21 11:36:43 2026 +0200
  *
  ***
  *
@@ -7294,16 +7294,6 @@ statics: {
 				+ y3 * (x2 + x0 / 3) - x3 * (y2 + y0 / 3)) / 20;
 	},
 
-	getBounds: function(v) {
-		var min = v.slice(0, 2),
-			max = min.slice(),
-			roots = [0, 0];
-		for (var i = 0; i < 2; i++)
-			Curve._addBounds(v[i], v[i + 2], v[i + 4], v[i + 6],
-					i, 0, min, max, roots);
-		return new Rectangle(min[0], min[1], max[0] - min[0], max[1] - min[1]);
-	},
-
 	_addBounds: function(v0, v1, v2, v3, coord, padding, min, max, roots) {
 		function add(value, padding) {
 			var left = value - padding,
@@ -8510,8 +8500,7 @@ new function() {
 
 		statics: {
 			getOverlaps: getOverlaps,
-			getIntersections: getIntersections,
-			getCurveLineIntersections: getCurveLineIntersections
+			getIntersections: getIntersections
 		}
 	};
 });
