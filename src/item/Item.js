@@ -4709,24 +4709,37 @@ new function() { // Injection scope for hit-test functions shared with project
                 ctx.lineCap = strokeCap;
             if (miterLimit)
                 ctx.miterLimit = miterLimit;
-            if (paper.support.nativeDash) {
-                var dashArray = style.getDashArray(),
-                    dashOffset = style.getDashOffset();
-                if (dashArray && dashArray.length) {
-                    if ('setLineDash' in ctx) {
-                        ctx.setLineDash(dashArray);
-                        ctx.lineDashOffset = dashOffset;
-                    } else {
-                        ctx.mozDash = dashArray;
-                        ctx.mozDashOffset = dashOffset;
-                    }
-                }
+            var dashArray = style.getDashArray();
+            if (dashArray && dashArray.length) {
+                ctx.setLineDash(dashArray);
+                ctx.lineDashOffset = style.getDashOffset();
             }
         }
         // Items whose shadow is cast when compositing them don't draw it, see
         // #draw():
         if (style.hasShadow() && !param.dontShadow)
             this._setShadow(ctx, param, viewMatrix);
+    },
+
+    /**
+     * Private method that fills and strokes the path defined on the canvas
+     * context, shared by Path, CompoundPath and Shape.
+     */
+    _paint: function(ctx, param, viewMatrix, strokeMatrix) {
+        var style = this._style,
+            hasFill = style.hasFill(),
+            hasStroke = style.hasStroke();
+        if (hasFill || hasStroke) {
+            this._setStyles(ctx, param, viewMatrix, strokeMatrix);
+            if (hasFill) {
+                ctx.fill(style.getFillRule());
+                // If shadowColor is defined, clear it after fill, so it won't
+                // be applied to both fill and stroke.
+                ctx.shadowColor = 'rgba(0,0,0,0)';
+            }
+            if (hasStroke)
+                ctx.stroke();
+        }
     },
 
     _setShadow: function(ctx, param, viewMatrix) {
