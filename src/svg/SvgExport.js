@@ -153,8 +153,10 @@ new function() {
     }
 
     function exportPath(item, options) {
-        var matchShapes = options.matchShapes;
-        if (matchShapes) {
+        var matchShapes = options.matchShapes,
+            segmentsData = getSegmentsData(item);
+        // Shapes have no segments that could keep their names and data:
+        if (matchShapes && !segmentsData) {
             var shape = item.toShape(false);
             if (shape)
                 return exportShape(shape, options);
@@ -186,6 +188,8 @@ new function() {
             type = 'path';
             attrs.d = item.getPathData(null, options.precision);
         }
+        if (segmentsData)
+            attrs['data-paper-segments'] = segmentsData;
         return SvgElement.create(type, attrs, formatter);
     }
 
@@ -218,10 +222,38 @@ new function() {
 
     function exportCompoundPath(item, options) {
         var attrs = getTransform(item._matrix);
-        var data = item.getPathData(null, options.precision);
+        var data = item.getPathData(null, options.precision),
+            segmentsData = getSegmentsData(item);
         if (data)
             attrs.d = data;
+        if (segmentsData)
+            attrs['data-paper-segments'] = segmentsData;
         return SvgElement.create('path', attrs, formatter);
+    }
+
+    // Path data has no place for the names and data of segments, so store them
+    // as JSON, keyed by the index of the segment across all paths of the item:
+    function getSegmentsData(item) {
+        var paths = item._children || [item],
+            entries = null,
+            index = 0;
+        for (var i = 0, l = paths.length; i < l; i++) {
+            var segments = paths[i]._segments;
+            for (var j = 0, m = segments.length; j < m; j++, index++) {
+                var segment = segments[j],
+                    name = segment._name,
+                    data = segment._data,
+                    hasData = data && !Base.equals(data, {});
+                if (name || hasData) {
+                    var entry = (entries = entries || {})[index] = {};
+                    if (name)
+                        entry.name = name;
+                    if (hasData)
+                        entry.data = data;
+                }
+            }
+        }
+        return entries && JSON.stringify(entries);
     }
 
     function exportSymbolItem(item, options) {

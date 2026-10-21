@@ -798,6 +798,29 @@ new function() {
         return json ? Base.set(data || {}, JSON.parse(json)) : data;
     }
 
+    // Restore the names and data of segments as SvgExport stores them, unless
+    // another editor changed the path so that their indices don't fit anymore:
+    function setSegmentsData(item, node) {
+        var json = node.getAttribute('data-paper-segments');
+        if (json) {
+            var entries = JSON.parse(json),
+                paths = item._children || [item],
+                segments = [];
+            for (var i = 0, l = paths.length; i < l; i++)
+                segments.push.apply(segments, paths[i]._segments);
+            if (Math.max.apply(Math, Object.keys(entries)) < segments.length) {
+                for (var index in entries) {
+                    var entry = entries[index],
+                        segment = segments[index];
+                    if (entry.name)
+                        segment.setName(entry.name);
+                    if (entry.data)
+                        segment._data = entry.data;
+                }
+            }
+        }
+    }
+
     var sandbox;
 
     function getSandbox() {
@@ -878,6 +901,10 @@ new function() {
                 settings.applyMatrix = applyMatrix;
             }
             if (item) {
+                // Restore segment names and data before attributes can wrap
+                // the path in a clip group:
+                if (isElement && item instanceof PathItem)
+                    setSegmentsData(item, node);
                 // Do not apply attributes if this is a #document node.
                 // importGroup() applies them itself, see there for why:
                 if (isElement && importer !== importGroup)
