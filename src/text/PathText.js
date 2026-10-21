@@ -17,7 +17,10 @@
  *     {@link #textPath}, each letter turned to the path's direction where it
  *     sits. On a compound path, the text runs along one of its paths after the
  *     other. What doesn't fit between {@link #startOffset} and
- *     {@link #endOffset} flows on into the next linked text item.
+ *     {@link #endOffset} flows on into the next linked text item. When its
+ *     first paragraph runs right to left, its letters follow each other
+ *     backwards along the path. Each letter is drawn on its own, so scripts
+ *     that join their letters, as Arabic, lose their joined forms.
  *
  * @extends TextItem
  */
@@ -151,11 +154,14 @@ var PathText = TextItem.extend(new function() {
             to = this._endOffset == null ? length
                     : Math.max(from, Math.min(this._endOffset, length)),
             spacing = this._spacing,
-            measured = this._measure(start, story._content.length, true),
+            paragraph = story._getParagraph(start).style,
+            measured = this._measure(start, story._content.length,
+                    paragraph.getDirection(), true),
             letters = measured.pieces,
             pieces = [],
             width = 0;
-        // 1. The letters that fit, each spaced on from the one before:
+        // 1. The letters that fit, each spaced on from the one before, from
+        // the right in a right-to-left first paragraph:
         for (var i = 0, l = letters.length; i < l; i++) {
             var piece = letters[i];
             if (width + piece.width > to - from)
@@ -165,10 +171,11 @@ var PathText = TextItem.extend(new function() {
             width += piece.width + spacing;
         }
         width -= pieces.length ? spacing : 0;
+        if (paragraph.getDirection() === 'rtl')
+            this._mirror(pieces, width);
         // 2. Placed along the paths by the first paragraph's
         // justification, with the part of the letters that sits on them:
-        var paragraph = story._getParagraph(start).style,
-            side = this._getSide(paragraph.getJustification(),
+        var side = this._getSide(paragraph.getJustification(),
                 paragraph.getDirection()),
             offset = side === 'right' ? to - width
                     : side === 'center' ? from + (to - from - width) / 2

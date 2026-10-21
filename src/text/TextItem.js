@@ -369,9 +369,10 @@ var TextItem = Item.extend(/** @lends TextItem# */{
     // x = 0: the pieces of its runs, each with its style, place and extent,
     // the width, and the line height, the largest of the runs'. Neighbouring
     // pieces of one font are measured as one string, so each advance holds the
-    // font's kerning with the letter before it. With `byLetter`, and in runs
+    // font's kerning with the letter before it, in the paragraph's
+    // `direction`, as shaping can differ by it. With `byLetter`, and in runs
     // with manual kerning or rotated letters, each letter is a piece:
-    _measure: function(start, end, byLetter) {
+    _measure: function(start, end, direction, byLetter) {
         var view = this.getView(),
             story = this._story,
             content = story._content,
@@ -398,8 +399,8 @@ var TextItem = Item.extend(/** @lends TextItem# */{
             }
             var before = groupWidth;
             group += text;
-            groupWidth = view.getTextWidth(piece.font, [group], piece.tracking)
-                    * piece.scale.x;
+            groupWidth = view.getTextWidth(piece.font, [group], piece.tracking,
+                    direction) * piece.scale.x;
             return groupWidth - before;
         }
 
@@ -544,24 +545,24 @@ var TextItem = Item.extend(/** @lends TextItem# */{
     _place: function(line, paragraph, isLast, room) {
         var justification = paragraph.getJustification(),
             justifyLast = paragraph.getJustifyLast(),
+            direction = paragraph.getDirection(),
             side = this._getSide(justification === 'justify' && isLast
                     && justifyLast !== 'all' ? justifyLast : justification,
-                    paragraph.getDirection()),
+                    direction),
             left = room[0],
             right = room[1];
-        if (side === 'justify' || side === 'all') {
-            this._justify(line, right - left);
-            this._shift(line, left, 0);
-        } else {
-            this._shift(line, side === 'right' ? right - line.width
-                    : side === 'center' ? (left + right - line.width) / 2
-                    : left, 0);
-        }
+        if (side === 'justify' || side === 'all')
+            this._justify(line, right - left, direction);
+        if (direction === 'rtl')
+            this._mirror(line.pieces, line.width);
+        this._shift(line, side === 'right' ? right - line.width
+                : side === 'center' ? (left + right - line.width) / 2
+                : left, 0);
     },
 
     // Spreads the line's extra width between its words, by moving each piece
     // by the spaces before it:
-    _justify: function(line, width) {
+    _justify: function(line, width, direction) {
         var pieces = line.pieces,
             content = this._story._content,
             spaces = (content.slice(pieces.length ? pieces[0].start : 0,
@@ -585,7 +586,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
                         var part = parts[j];
                         if (part) {
                             var advance = this._measure(from,
-                                    from + part.length).width;
+                                    from + part.length, direction).width;
                             if (/^\s+$/.test(part)) {
                                 moved += extra;
                             } else {
@@ -605,6 +606,15 @@ var TextItem = Item.extend(/** @lends TextItem# */{
             }
             line.pieces = result;
             line.width = width;
+        }
+    },
+
+    // Places the pieces of a line as wide as `width`, laid out from the left
+    // in reading order, from the right, as right-to-left paragraphs read:
+    _mirror: function(pieces, width) {
+        for (var i = 0, l = pieces.length; i < l; i++) {
+            var piece = pieces[i];
+            piece.x = width - piece.x - piece.width;
         }
     },
 
@@ -638,7 +648,9 @@ var TextItem = Item.extend(/** @lends TextItem# */{
                 ctx.beginPath();
             ctx.rect(rect.x, rect.y, rect.width, rect.height);
         } else if (this._story._content) {
-            var lines = this._getLayout(),
+            var story = this._story,
+                lines = this._getLayout(),
+                paragraph = null,
                 // Glyphs can only be stroked through the transformation,
                 // unlike paths, so approximate non-scaling strokes by dividing
                 // the width and the dashes by the scale (#1703):
@@ -648,6 +660,14 @@ var TextItem = Item.extend(/** @lends TextItem# */{
             for (var i = 0, l = lines.length; i < l; i++) {
                 var line = lines[i],
                     pieces = line.pieces;
+                // Canvas orders the letters within the pieces by their
+                // paragraph's direction, looked up once for all its lines:
+                if (!paragraph || line.start > paragraph.end) {
+                    paragraph = story._getParagraph(line.start);
+                    var direction = paragraph.style.getDirection() || 'ltr';
+                    if (ctx.direction !== direction)
+                        ctx.direction = direction;
+                }
                 for (var j = 0, m = pieces.length; j < m; j++) {
                     var piece = pieces[j],
                         style = piece.style,
@@ -1001,7 +1021,10 @@ var TextItem = Item.extend(/** @lends TextItem# */{
 
     /**
      * The direction the paragraph's lines run in, which `'start'` and `'end'`
-     * follow; `null` for left to right.
+     * follow, and from which side their pieces are placed; `null` for left to
+     * right. Lines that mix directions across styles aren't reordered by the
+     * Unicode bidirectional algorithm: their pieces follow the paragraph's
+     * direction, and canvas orders only the letters within each piece.
      *
      * @name TextItem#direction
      * @type String

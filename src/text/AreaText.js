@@ -258,7 +258,7 @@ var AreaText = TextItem.extend(new function() {
                 var bounds = regions[region],
                     // The extent of what comes next, to find room:
                     next = that._measure(pos, Math.min(pos + 1,
-                            paragraph.end)),
+                            paragraph.end), style.getDirection()),
                     baseline = y === null
                         ? bounds.top + offsets[region] + next.ascent
                         : y + next.lineHeight + space;
@@ -620,6 +620,7 @@ var AreaText = TextItem.extend(new function() {
         var that = this,
             content = this._story._content,
             style = paragraph.style,
+            direction = style.getDirection(),
             indented = this._indent(style, isFirst, room[0], room[1]),
             words = /[^\s\u00ad]*\u00ad|\S+\s*|\s+/g,
             text = content.slice(start, paragraph.end),
@@ -630,11 +631,11 @@ var AreaText = TextItem.extend(new function() {
         // where it ends at a soft hyphen, in the font of the letter before:
         var measure = function(end) {
             var line = that._measure(start, start + content.slice(start, end)
-                    .replace(/\s+$/, '').length);
+                    .replace(/\s+$/, '').length, direction);
             if (content[end - 1] === '\u00ad') {
                 var last = line.pieces[line.pieces.length - 1],
                     width = that.getView().getTextWidth(last.font, ['-'],
-                        last.tracking) * last.scale.x;
+                        last.tracking, direction) * last.scale.x;
                 line.pieces.push(Base.set({}, last, {
                     content: '-',
                     start: end,
