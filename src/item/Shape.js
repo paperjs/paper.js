@@ -268,15 +268,8 @@ var Shape = Item.extend(/** @lends Shape# */{
             }
             ctx.closePath();
         }
-        if (!dontPaint && (hasFill || hasStroke)) {
-            this._setStyles(ctx, param, viewMatrix, strokeMatrix);
-            if (hasFill) {
-                ctx.fill(style.getFillRule());
-                ctx.shadowColor = 'rgba(0,0,0,0)';
-            }
-            if (hasStroke)
-                ctx.stroke();
-        }
+        if (!dontPaint)
+            this._paint(ctx, param, viewMatrix, strokeMatrix);
     },
 
     _canComposite: function() {

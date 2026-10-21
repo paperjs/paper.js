@@ -657,13 +657,10 @@ var TextItem = Item.extend(/** @lends TextItem# */{
                     this._setStyles(ctx, param, viewMatrix, null, style);
                     if (hasStroke && scale) {
                         ctx.lineWidth /= scale;
-                        if ('setLineDash' in ctx) {
-                            ctx.setLineDash(ctx.getLineDash().map(
-                                function(dash) {
-                                    return dash / scale;
-                                }));
-                            ctx.lineDashOffset /= scale;
-                        }
+                        ctx.setLineDash(ctx.getLineDash().map(function(dash) {
+                            return dash / scale;
+                        }));
+                        ctx.lineDashOffset /= scale;
                     }
                     ctx.save();
                     ctx.translate(piece.x, line.y + piece.y);

@@ -66,12 +66,9 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
         if (!this.support) {
             // Set up paper.support, as an object containing properties that
             // describe the support of various features.
-            var ctx = CanvasProvider.getContext(1, 1) || {};
             proto.support = {
-                nativeDash: 'setLineDash' in ctx || 'mozDash' in ctx,
                 nativeBlendModes: BlendMode.nativeModes
             };
-            CanvasProvider.release(ctx);
         }
         if (!this.agent) {
             // Use self.instead of window, to cover handle web-workers too.

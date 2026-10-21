@@ -153,19 +153,6 @@ var PathFlattener = Base.extend({
             index: parts[length - 1].index,
             time: 1
         };
-    },
-
-    drawPart: function(ctx, from, to) {
-        var start = this._get(from),
-            end = this._get(to);
-        for (var i = start.index, l = end.index; i <= l; i++) {
-            var curve = Curve.getPart(this.curves[i],
-                    i === start.index ? start.time : 0,
-                    i === end.index ? end.time : 1);
-            if (i === start.index)
-                ctx.moveTo(curve[0], curve[1]);
-            ctx.bezierCurveTo.apply(ctx, curve.slice(2));
-        }
     }
 }, Base.each(Curve._evaluateMethods,
     function(name) {
