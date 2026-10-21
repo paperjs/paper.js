@@ -1226,3 +1226,58 @@ test('hit-testing strokes next to smooth segments with any join (#2342)', functi
     equals(hitTest(rect, [411, 89]), null,
             'beyond the miter tip should miss the stroke');
 });
+
+test('hit-testing non-scaling strokes under non-uniform matrices (#2334)', function() {
+    // A non-scaling stroke is drawn around the transformed geometry, so a path
+    // that keeps its matrix is hit where the same path with the matrix applied
+    // to its geometry is:
+    function compare(name, attributes, transform) {
+        function create(applyMatrix) {
+            var path = new Path(Base.set({
+                strokeColor: 'black',
+                strokeWidth: 10,
+                strokeScaling: false,
+                applyMatrix: applyMatrix
+            }, attributes));
+            transform(path);
+            return path;
+        }
+        var kept = create(false),
+            applied = create(true),
+            bounds = applied.strokeBounds.expand(10),
+            options = { stroke: true, fill: false },
+            count = 0;
+        for (var x = bounds.left; x <= bounds.right; x += 2) {
+            for (var y = bounds.top; y <= bounds.bottom; y += 2) {
+                var point = new Point(x, y);
+                if (!kept.hitTest(point, options)
+                        !== !applied.hitTest(point, options))
+                    count++;
+            }
+        }
+        equals(count, 0, name + ': points hit differently');
+        kept.remove();
+        applied.remove();
+    }
+    var star = new Path.Star({
+            center: [50, 50],
+            points: 5,
+            radius1: 20,
+            radius2: 40,
+            insert: false
+        }).segments,
+        line = [[20, 80], [50, 20], [80, 70], [110, 30]];
+    function scale(path) {
+        path.scale(2.5, 0.6);
+    }
+    function shear(path) {
+        path.shear(0.8, 0);
+        path.scale(1, 1.7);
+    }
+    compare('round joins', { segments: star, closed: true }, scale);
+    compare('miter joins, sheared',
+            { segments: star, closed: true, strokeJoin: 'miter' }, shear);
+    compare('square caps and bevel joins',
+            { segments: line, strokeCap: 'square', strokeJoin: 'bevel' },
+            scale);
+});
