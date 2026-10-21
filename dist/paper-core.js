@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 12:07:40 2026 +0200
+ * Date: Wed Oct 21 11:40:12 2026 +0200
  *
  ***
  *
@@ -13930,10 +13930,6 @@ var AreaText = TextItem.extend({
 		this._place(line, style, end === paragraph.end, indented);
 		line.end = end;
 		return line;
-	},
-
-	_getBounds: function(matrix, options) {
-		return Item._getBounds(this._children, matrix, options);
 	}
 });
 
