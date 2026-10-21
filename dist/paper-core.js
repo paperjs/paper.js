@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 03:19:21 2026 +0200
+ * Date: Wed Oct 21 03:53:43 2026 +0200
  *
  ***
  *
@@ -791,12 +791,9 @@ var PaperScope = Base.extend({
 		PaperScope._scopes[this._id] = this;
 		var proto = PaperScope.prototype;
 		if (!this.support) {
-			var ctx = CanvasProvider.getContext(1, 1) || {};
 			proto.support = {
-				nativeDash: 'setLineDash' in ctx || 'mozDash' in ctx,
 				nativeBlendModes: BlendMode.nativeModes
 			};
-			CanvasProvider.release(ctx);
 		}
 		if (!this.agent) {
 			var user = self.navigator.userAgent.toLowerCase(),
@@ -5076,22 +5073,29 @@ new function() {
 				ctx.lineCap = strokeCap;
 			if (miterLimit)
 				ctx.miterLimit = miterLimit;
-			if (paper.support.nativeDash) {
-				var dashArray = style.getDashArray(),
-					dashOffset = style.getDashOffset();
-				if (dashArray && dashArray.length) {
-					if ('setLineDash' in ctx) {
-						ctx.setLineDash(dashArray);
-						ctx.lineDashOffset = dashOffset;
-					} else {
-						ctx.mozDash = dashArray;
-						ctx.mozDashOffset = dashOffset;
-					}
-				}
+			var dashArray = style.getDashArray();
+			if (dashArray && dashArray.length) {
+				ctx.setLineDash(dashArray);
+				ctx.lineDashOffset = style.getDashOffset();
 			}
 		}
 		if (style.hasShadow() && !param.dontShadow)
 			this._setShadow(ctx, param, viewMatrix);
+	},
+
+	_paint: function(ctx, param, viewMatrix, strokeMatrix) {
+		var style = this._style,
+			hasFill = style.hasFill(),
+			hasStroke = style.hasStroke();
+		if (hasFill || hasStroke) {
+			this._setStyles(ctx, param, viewMatrix, strokeMatrix);
+			if (hasFill) {
+				ctx.fill(style.getFillRule());
+				ctx.shadowColor = 'rgba(0,0,0,0)';
+			}
+			if (hasStroke)
+				ctx.stroke();
+		}
 	},
 
 	_setShadow: function(ctx, param, viewMatrix) {
@@ -5704,15 +5708,8 @@ var Shape = Item.extend({
 			}
 			ctx.closePath();
 		}
-		if (!dontPaint && (hasFill || hasStroke)) {
-			this._setStyles(ctx, param, viewMatrix, strokeMatrix);
-			if (hasFill) {
-				ctx.fill(style.getFillRule());
-				ctx.shadowColor = 'rgba(0,0,0,0)';
-			}
-			if (hasStroke)
-				ctx.stroke();
-		}
+		if (!dontPaint)
+			this._paint(ctx, param, viewMatrix, strokeMatrix);
 	},
 
 	_canComposite: function() {
@@ -10323,57 +10320,16 @@ new function() {
 
 	return {
 		_draw: function(ctx, param, viewMatrix, strokeMatrix) {
-			var dontStart = param.dontStart,
-				dontPaint = param.dontFinish || param.clip,
-				style = this.getStyle(),
-				hasFill = style.hasFill(),
-				hasStroke = style.hasStroke(),
-				dashArray = style.getDashArray(),
-				dashLength = !paper.support.nativeDash && hasStroke
-						&& dashArray && dashArray.length;
-
-			if (!dontStart)
+			var dontPaint = param.dontFinish || param.clip;
+			if (!param.dontStart)
 				ctx.beginPath();
-
-			if (hasFill || hasStroke && !dashLength || dontPaint) {
+			if (this.hasFill() || this.hasStroke() || dontPaint) {
 				drawSegments(ctx, this, strokeMatrix);
 				if (this._closed)
 					ctx.closePath();
 			}
-
-			function getOffset(i) {
-				return dashArray[((i % dashLength) + dashLength) % dashLength];
-			}
-
-			if (!dontPaint && (hasFill || hasStroke)) {
-				this._setStyles(ctx, param, viewMatrix, strokeMatrix);
-				if (hasFill) {
-					ctx.fill(style.getFillRule());
-					ctx.shadowColor = 'rgba(0,0,0,0)';
-				}
-				if (hasStroke) {
-					if (dashLength) {
-						if (!dontStart)
-							ctx.beginPath();
-						var flattener = new PathFlattener(this, 0.25, 32, false,
-								strokeMatrix),
-							length = flattener.length,
-							from = -style.getDashOffset(), to,
-							i = 0;
-						while (from > 0) {
-							from -= getOffset(i--) + getOffset(i--);
-						}
-						while (from < length) {
-							to = from + getOffset(i++);
-							if (from > 0 || to > 0)
-								flattener.drawPart(ctx,
-										Math.max(from, 0), Math.max(to, 0));
-							from = to + getOffset(i++);
-						}
-					}
-					ctx.stroke();
-				}
-			}
+			if (!dontPaint)
+				this._paint(ctx, param, viewMatrix, strokeMatrix);
 		},
 
 		_drawSelected: function(ctx, matrix) {
@@ -11128,16 +11084,8 @@ var CompoundPath = PathItem.extend({
 		for (var i = 0, l = children.length; i < l; i++)
 			children[i].draw(ctx, param, strokeMatrix);
 
-		if (!param.clip) {
-			this._setStyles(ctx, param, viewMatrix, strokeMatrix);
-			var style = this._style;
-			if (style.hasFill()) {
-				ctx.fill(style.getFillRule());
-				ctx.shadowColor = 'rgba(0,0,0,0)';
-			}
-			if (style.hasStroke())
-				ctx.stroke();
-		}
+		if (!param.clip)
+			this._paint(ctx, param, viewMatrix, strokeMatrix);
 	},
 
 	_drawSelected: function(ctx, matrix, selectionItems) {
@@ -12471,19 +12419,6 @@ var PathFlattener = Base.extend({
 			index: parts[length - 1].index,
 			time: 1
 		};
-	},
-
-	drawPart: function(ctx, from, to) {
-		var start = this._get(from),
-			end = this._get(to);
-		for (var i = start.index, l = end.index; i <= l; i++) {
-			var curve = Curve.getPart(this.curves[i],
-					i === start.index ? start.time : 0,
-					i === end.index ? end.time : 1);
-			if (i === start.index)
-				ctx.moveTo(curve[0], curve[1]);
-			ctx.bezierCurveTo.apply(ctx, curve.slice(2));
-		}
 	}
 }, Base.each(Curve._evaluateMethods,
 	function(name) {
@@ -13193,13 +13128,10 @@ var TextItem = Item.extend({
 					this._setStyles(ctx, param, viewMatrix, null, style);
 					if (hasStroke && scale) {
 						ctx.lineWidth /= scale;
-						if ('setLineDash' in ctx) {
-							ctx.setLineDash(ctx.getLineDash().map(
-								function(dash) {
-									return dash / scale;
-								}));
-							ctx.lineDashOffset /= scale;
-						}
+						ctx.setLineDash(ctx.getLineDash().map(function(dash) {
+							return dash / scale;
+						}));
+						ctx.lineDashOffset /= scale;
 					}
 					ctx.save();
 					ctx.translate(piece.x, line.y + piece.y);

@@ -108,6 +108,9 @@
 - Rename the `paper-sourced.js` build to `paper-hosted.js`, and `Project#source`
   to `Project#host`, to match `HostItem` and the host document that backs the
   items.
+- Draw dashes with `setLineDash()`, which every canvas supports, and remove
+  the dash emulation for canvases without it, along with the undocumented
+  `paper.support.nativeDash` (#2350).
 
 ### Fixed
 
