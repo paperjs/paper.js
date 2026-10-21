@@ -425,11 +425,15 @@ function createHostedText() {
     point.range(6, 11).fontSize = 20;
     var host = createHost(document);
     host.layOut = function(json, start, key) {
-        host.calls.push(['layOut', key]);
-        equals(typeof json, 'string', 'the text as a JSON string');
+        host.calls.push(['layOut', key, json === null ? 'unchanged' : 'json']);
+        if (json !== null)
+            equals(typeof json, 'string', 'the text as a JSON string');
+        // Text the script didn't change is the host's own:
+        json = json === null
+                ? host.getNode(key).exportJSON({ asString: false })
+                : JSON.parse(json);
         var current = paper.project;
         document.activate();
-        json = JSON.parse(json);
         var text = new Base.exports[json[0]]({ insert: false })
                 .importJSON(json),
             lines = text._layOut();
@@ -488,8 +492,8 @@ test('The host lays out hosted text', function() {
         text.content;
         res.host.takeCalls();
         equals(getLines(text), getLines(original[name]), name + ': its lines');
-        equals(res.host.takeCalls(), [['layOut', text.key]],
-                name + ': from the host');
+        equals(res.host.takeCalls(), [['layOut', text.key, 'unchanged']],
+                name + ': from the host, without its JSON, as it has it');
         equals(text.visibleRange.end, original[name].visibleRange.end,
                 name + ': its visible range');
         equals(text.bounds, original[name].bounds, name + ': its bounds');
@@ -553,4 +557,36 @@ test('Writes before loading stay', function() {
     area.columns = 3;
     equals(area.content.length > 0, true, 'loaded');
     equals(area.columns, 3, 'an area text\'s setting');
+});
+
+test('Text that the script changed is laid out from its JSON', function() {
+    var res = createHostedText(),
+        area = res.project.layers[0].children['area'],
+        original = res.document.layers[0].children['area'];
+    area.lines;
+    res.host.takeCalls();
+    area.textPath.bounds.width = 60;
+    area.lines;
+    equals(res.host.takeCalls(), [['layOut', area.key, 'json']],
+            'after a change of its path');
+    original.textPath.bounds.width = 60;
+    var columns = res.host.getColumns([original]);
+    columns.flags[0] |= 16;
+    res.project.invalidate(columns);
+    area.lines;
+    equals(res.host.takeCalls().filter(function(call) {
+        return call[0] === 'layOut';
+    }), [['layOut', area.key, 'unchanged']], 'and without, once the host has it');
+    res.project.trackChanges = true;
+    area.textPath.bounds.width = 50;
+    res.project.takeChanges();
+    area.lines;
+    equals(res.host.takeCalls().filter(function(call) {
+        return call[0] === 'layOut';
+    }), [['layOut', area.key, 'unchanged']], 'or once the host took them');
+    res.project.trackChanges = false;
+    var created = new PointText({ content: 'New', fontFamily: testFontFamily });
+    created.lines;
+    equals(res.host.takeCalls(), [['layOut', null, 'json']],
+            'new text, which the host doesn\'t have');
 });

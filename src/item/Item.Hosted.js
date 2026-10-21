@@ -324,6 +324,7 @@ new function() {
         // Items that a script created and keyed have none, so they reload
         // right away. Only called by Project#invalidate(), while loading:
         _unload: function() {
+            this._edited = false;
             if (!this._contentFields) {
                 this._loadContent();
             } else if (!this._shell) {
@@ -362,8 +363,11 @@ new function() {
             var that = this,
                 story = this._story,
                 content = story._content,
-                layout = host.layOut(this.exportJSON(), this._getStart(),
-                        this._key);
+                // Text the script didn't edit since it loaded is the host's
+                // own, which it can lay out without the JSON:
+                json = this._key != null && !this._edited ? null
+                        : this.exportJSON(),
+                layout = host.layOut(json, this._getStart(), this._key);
             this._visibleEnd = layout.end;
             return layout.lines.map(function(line) {
                 line.pieces = line.pieces.map(function(placed) {
@@ -398,6 +402,21 @@ new function() {
     });
 
     Project.inject(/** @lends Project# */{
+        // Items that the script changes are no longer as the host has them,
+        // see TextItem#_getHostLayout(), until the host takes the changes:
+        _changed: function _changed(flags, item) {
+            _changed.base.call(this, flags, item);
+            if (item && !isLoading)
+                item._edited = true;
+        },
+
+        takeChanges: function takeChanges() {
+            var changes = takeChanges.base.call(this);
+            for (var i = 0, l = changes ? changes.length : 0; i < l; i++)
+                changes[i].item._edited = false;
+            return changes;
+        },
+
         /**
          * The host document that the project's items come from. Setting it
          * creates the project's layers from the host's records. All items
@@ -419,7 +438,11 @@ new function() {
          * - Optionally `layOut(json, start, key)`, which lays out a text item
          *   from `start` in its story, given as the JSON string that
          *   {@link Item#exportJSON(options)} writes of it as the script holds
-         *   it, and returns `{ end, lines }`: where its visible text ends, and
+         *   it, or as `null` where the script didn't change it since it
+         *   loaded or the host took its changes with
+         *   {@link Project#takeChanges()}, for the host to lay out its own
+         *   node, and returns
+         *   `{ end, lines }`: where its visible text ends, and
          *   its lines, each `{ start, end, x, y, width, lineHeight, ascent,
          *   descent, pieces }`, with pieces `{ start, end, x, y, dx, width,
          *   rotation, size, ascent, descent, lineHeight }` and an optional
