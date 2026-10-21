@@ -1357,15 +1357,6 @@ new function() { // Injection scope for various item event handlers
      * @name Item#internalBounds
      * @type Rectangle
      */
-
-    /**
-     * The rough bounding rectangle of the item that is sure to include all of
-     * the drawing, including stroke width.
-     *
-     * @name Item#roughBounds
-     * @type Rectangle
-     * @ignore
-     */
 }), /** @lends Item# */{
     // Enforce creation of beans, as bean getters have hidden parameters.
     // See #getGlobalMatrix() below.
@@ -2314,10 +2305,10 @@ new function() { // Injection scope for hit-test functions shared with project
             return null;
         }
 
-        // Check if the point is withing roughBounds + tolerance, but only if
-        // this item does not have children, since we'd have to travel up the
-        // chain already to determine the rough bounds. Shells of hosted items
-        // know their rough bounds without loading their children.
+        // Check if the point is within the bounds including stroke and handles
+        // + tolerance, but only if this item does not have children, since
+        // we'd have to travel up the chain already to determine these bounds.
+        // Shells of hosted items know them without loading their children.
         var matrix = this._matrix,
             // If this is the first one in the recursion, the point is in global
             // coordinates, so transform it by the item's globalMatrix:
