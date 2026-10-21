@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.15.0 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.16.0 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 15:34:00 2026 +0200
+ * Date: Thu Oct 22 01:32:47 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -886,7 +886,9 @@ declare namespace paper {
         clearHandles(): void
 
         /** 
-         * Checks if this curve has any curve handles set.
+         * Checks if this curve has any curve handles set. Handles of which both
+         * coordinates are 0 within a tolerance of 1e-12 count as not set, see
+         * {@link Point#isZero}.
          * 
          * @see Curve#handle1
          * @see Curve#handle2
@@ -2021,6 +2023,14 @@ declare namespace paper {
         miterLimit: number
 
         /** 
+         * The order in which the fill and the stroke are painted, as in SVG's
+         * `paint-order`, named after what is painted first: `'fill'` paints the
+         * fill first, `'stroke'` paints the stroke first, so the fill covers its
+         * inner half.
+         */
+        paintOrder: string
+
+        /** 
          * The fill color of the item.
          */
         get fillColor(): Color | null
@@ -2506,13 +2516,19 @@ declare namespace paper {
          * @option [options.reduceAttributes=true] {Boolean} wether to only include
          *     style attributes in the SVG output that differ from their parents,
          *     or to always include them (much faster but leading to redundancies).
+         * @option [options.processNode] {Function} the function to process the
+         *     SVG node made for each exported item, receiving an object with the
+         *     `item` and its `node`: It can change the node, e.g. to add attributes
+         *     that Paper.js doesn't export, or return a node to replace it with. It
+         *     is called before the item's name, style, visibility and data are set
+         *     on the node, which replace attributes of the same names.
          * 
          * @param options - the export options
          * 
          * @return the item converted to an SVG node or a
          * `String` depending on `option.asString` value
          */
-        exportSVG(options?: { bounds?: string | RectangleLike, matrix?: Matrix, asString?: boolean, precision?: number, matchShapes?: boolean, embedImages?: boolean, reuseImages?: boolean, idPrefix?: string, reduceAttributes?: boolean }): SVGElement | string
+        exportSVG(options?: { bounds?: string | RectangleLike, matrix?: Matrix, asString?: boolean, precision?: number, matchShapes?: boolean, embedImages?: boolean, reuseImages?: boolean, idPrefix?: string, reduceAttributes?: boolean, processNode?: Function }): SVGElement | string
 
         /** 
          * Converts the provided SVG content into Paper.js items and adds them to
@@ -2522,6 +2538,11 @@ declare namespace paper {
          * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
          * the `<use>` elements that place them as {@link SymbolItem} items. The
          * styles that `<use>` elements inherit don't reach the symbols' content.
+         * 
+         * The layers in SVG content that Paper.js exported come back as
+         * {@link Layer} items inside the imported group. To make the layers of a
+         * project's SVG the layers of a project again, add them to it with
+         * `item.children.slice().forEach(project.addLayer, project)`.
          * 
          * URLs are fetched as they are, so validate URLs that come from untrusted
          * sources first, especially on servers, where they could reach internal
@@ -2544,6 +2565,13 @@ declare namespace paper {
          * @option [options.applyMatrix={@link PaperScope#settings}.applyMatrix]
          *     {Boolean} whether the imported items should have their transformation
          *     matrices applied to their contents or not
+         * @option [options.processItem] {Function} the function to process the
+         *     item made for each imported SVG element, receiving an object with
+         *     the `item` and its `node`: It can read attributes that Paper.js
+         *     doesn't import, or return an item to replace it with. It is called
+         *     after the element's attributes and data are applied to the item, so
+         *     it can extend `item.data`. A replacement item doesn't receive them:
+         *     copy them over from `item` as needed.
          * 
          * @param svg - the SVG content to import, either as a SVG
          *     DOM node, a string containing SVG content, or a string describing the
@@ -2553,7 +2581,7 @@ declare namespace paper {
          * @return the newly created Paper.js item containing the converted
          *     SVG content
          */
-        importSVG(svg: SVGElement | string, options?: { expandShapes?: boolean, crossOrigin?: string, onLoad?: Function, onError?: Function, insert?: boolean, applyMatrix?: boolean }): Item
+        importSVG(svg: SVGElement | string, options?: { expandShapes?: boolean, crossOrigin?: string, onLoad?: Function, onError?: Function, insert?: boolean, applyMatrix?: boolean, processItem?: Function }): Item
 
         /** 
          * Imports the provided external SVG file, converts it into Paper.js items
@@ -4102,7 +4130,8 @@ declare namespace paper {
      */
     class Path extends PathItem {
         /** 
-         * The segments contained within the path.
+         * The segments contained within the path. Segments that define a
+         * {@link Segment#name} can also be accessed by name.
          */
         segments: Segment[]
 
@@ -4264,7 +4293,9 @@ declare namespace paper {
         removeSegments(from: number, to?: number): Segment[]
 
         /** 
-         * Checks if any of the curves in the path have curve handles set.
+         * Checks if any of the curves in the path have curve handles set. Handles
+         * of which both coordinates are 0 within a tolerance of 1e-12 count as not
+         * set, see {@link Point#isZero}.
          * 
          * @see Segment#hasHandles()
          * @see Curve#hasHandles()
@@ -5280,7 +5311,10 @@ declare namespace paper {
      *     {@link #textPath}, each letter turned to the path's direction where it
      *     sits. On a compound path, the text runs along one of its paths after the
      *     other. What doesn't fit between {@link #startOffset} and
-     *     {@link #endOffset} flows on into the next linked text item.
+     *     {@link #endOffset} flows on into the next linked text item. When its
+     *     first paragraph runs right to left, its letters follow each other
+     *     backwards along the path. Each letter is drawn on its own, so scripts
+     *     that join their letters, as Arabic, lose their joined forms.
      */
     class PathText extends TextItem {
         /** 
@@ -5341,6 +5375,12 @@ declare namespace paper {
          * The y coordinate of the point
          */
         y: number
+
+        /** 
+         * The point's coordinates as an array, `[x, y]`, as
+         * {@link Matrix#values} gives those of a matrix.
+         */
+        readonly values: number[]
 
         /** 
          * The length of the vector that is represented by this point's coordinates.
@@ -5732,7 +5772,8 @@ declare namespace paper {
 
         /** 
          * Checks if the vector represented by this point is collinear (parallel) to
-         * another vector.
+         * another vector, within a tolerance of 1e-8 for the sine of the angle
+         * between them.
          * 
          * @param point - the vector to check against
          * 
@@ -5742,7 +5783,8 @@ declare namespace paper {
 
         /** 
          * Checks if the vector represented by this point is collinear (parallel) to
-         * another vector.
+         * another vector, within a tolerance of 1e-8 for the sine of the angle
+         * between them.
          * 
          * @param point - the vector to check against
          * 
@@ -5752,7 +5794,8 @@ declare namespace paper {
 
         /** 
          * Checks if the vector represented by this point is orthogonal
-         * (perpendicular) to another vector.
+         * (perpendicular) to another vector, within a tolerance of 1e-8 for the
+         * cosine of the angle between them.
          * 
          * @param point - the vector to check against
          * 
@@ -5762,7 +5805,8 @@ declare namespace paper {
 
         /** 
          * Checks if the vector represented by this point is orthogonal
-         * (perpendicular) to another vector.
+         * (perpendicular) to another vector, within a tolerance of 1e-8 for the
+         * cosine of the angle between them.
          * 
          * @param point - the vector to check against
          * 
@@ -5771,9 +5815,11 @@ declare namespace paper {
         isOrthogonal(x: number, y: number): boolean
 
         /** 
-         * Checks if this point has both the x and y coordinate set to 0.
+         * Checks if this point has both the x and y coordinate set to 0, within
+         * a tolerance of 1e-12, unlike {@link #equals}, which compares
+         * exactly.
          * 
-         * @return true if both x and y are 0
+         * @return true if both x and y are 0, within the tolerance
          */
         isZero(): boolean
 
@@ -5956,6 +6002,14 @@ declare namespace paper {
      * {@link PaperScope#projects} variable.
      */
     class Project  {
+        /** 
+         * The style new text items take in a hosted project, in place of
+         * {@link #currentStyle}, when the host sets one: for hosts whose new
+         * text has defaults of its own, such as a black fill without a stroke
+         * whatever new paths take. Paths keep taking the current style.
+         */
+        currentTextStyle: Style
+
         /** 
          * The host document that the project's items come from. Setting it
          * creates the project's layers from the host's records. All items
@@ -6346,13 +6400,19 @@ declare namespace paper {
          * @option [options.reduceAttributes=true] {Boolean} wether to only include
          *     style attributes in the SVG output that differ from their parents,
          *     or to always include them (much faster but leading to redundancies).
+         * @option [options.processNode] {Function} the function to process the
+         *     SVG node made for each exported item, receiving an object with the
+         *     `item` and its `node`: It can change the node, e.g. to add attributes
+         *     that Paper.js doesn't export, or return a node to replace it with. It
+         *     is called before the item's name, style, visibility and data are set
+         *     on the node, which replace attributes of the same names.
          * 
          * @param options - the export options
          * 
          * @return the project converted to an SVG node or a
          * `String` depending on `option.asString` value
          */
-        exportSVG(options?: { bounds?: string | RectangleLike, matrix?: Matrix, asString?: boolean, precision?: number, matchShapes?: boolean, embedImages?: boolean, reuseImages?: boolean, idPrefix?: string, reduceAttributes?: boolean }): SVGElement | string
+        exportSVG(options?: { bounds?: string | RectangleLike, matrix?: Matrix, asString?: boolean, precision?: number, matchShapes?: boolean, embedImages?: boolean, reuseImages?: boolean, idPrefix?: string, reduceAttributes?: boolean, processNode?: Function }): SVGElement | string
 
         /** 
          * Converts the provided SVG content into Paper.js items and adds them to
@@ -6363,6 +6423,11 @@ declare namespace paper {
          * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
          * the `<use>` elements that place them as {@link SymbolItem} items. The
          * styles that `<use>` elements inherit don't reach the symbols' content.
+         * 
+         * The layers in SVG content that Paper.js exported come back as
+         * {@link Layer} items inside the imported group. To make the layers of a
+         * project's SVG the layers of a project again, add them to it with
+         * `item.children.slice().forEach(project.addLayer, project)`.
          * 
          * URLs are fetched as they are, so validate URLs that come from untrusted
          * sources first, especially on servers, where they could reach internal
@@ -6385,6 +6450,13 @@ declare namespace paper {
          * @option [options.applyMatrix={@link PaperScope#settings}.applyMatrix]
          *     {Boolean} whether the imported items should have their transformation
          *     matrices applied to their contents or not
+         * @option [options.processItem] {Function} the function to process the
+         *     item made for each imported SVG element, receiving an object with
+         *     the `item` and its `node`: It can read attributes that Paper.js
+         *     doesn't import, or return an item to replace it with. It is called
+         *     after the element's attributes and data are applied to the item, so
+         *     it can extend `item.data`. A replacement item doesn't receive them:
+         *     copy them over from `item` as needed.
          * 
          * @param svg - the SVG content to import, either as a SVG
          *     DOM node, a string containing SVG content, or a string describing the
@@ -6394,7 +6466,7 @@ declare namespace paper {
          * @return the newly created Paper.js item containing the converted
          *     SVG content
          */
-        importSVG(svg: SVGElement | string, options?: { expandShapes?: boolean, crossOrigin?: string, onLoad?: Function, onError?: Function, insert?: boolean, applyMatrix?: boolean }): Item
+        importSVG(svg: SVGElement | string, options?: { expandShapes?: boolean, crossOrigin?: string, onLoad?: Function, onError?: Function, insert?: boolean, applyMatrix?: boolean, processItem?: Function }): Item
 
         /** 
          * Imports the provided external SVG file, converts it into Paper.js items
@@ -6708,6 +6780,13 @@ declare namespace paper {
          * The height of the rectangle.
          */
         height: number
+
+        /** 
+         * The rectangle's position and size as an array,
+         * `[x, y, width, height]`, as {@link Matrix#values} gives those of a
+         * matrix.
+         */
+        readonly values: number[]
 
         /** 
          * The top-left point of the rectangle. Setting it moves the whole
@@ -7027,20 +7106,26 @@ declare namespace paper {
         expand(hor: number, ver: number): Rectangle
 
         /** 
-         * Returns a new rectangle scaled by the specified amount from its center.
+         * Returns a new rectangle scaled by the specified factor from its center,
+         * or from the given center point.
+         * 
+         * @param scale - the scale factor
          * 
          * @return the scaled rectangle
          */
-        scale(amount: number): Rectangle
+        scale(scale: number, center?: PointLike): Rectangle
 
         /** 
          * Returns a new rectangle scaled in horizontal direction by the specified
-         * `hor` amount and in vertical direction by the specified `ver` amount
-         * from its center.
+         * `hor` factor and in vertical direction by the specified `ver` factor
+         * from its center, or from the given center point.
+         * 
+         * @param hor - the horizontal scale factor
+         * @param ver - the vertical scale factor
          * 
          * @return the scaled rectangle
          */
-        scale(hor: number, ver: number): Rectangle
+        scale(hor: number, ver: number, center?: PointLike): Rectangle
 
     }
 
@@ -7055,6 +7140,23 @@ declare namespace paper {
      * objects that are connected by this segment.
      */
     class Segment  {
+        /** 
+         * The name of the segment. If the segment has a name, it can be accessed
+         * by name through its path's segments list. If several segments share a
+         * name, the first one is found.
+         * 
+         * The name is stored in JSON, but not in SVG.
+         */
+        name: string | null
+
+        /** 
+         * A plain javascript object which can be used to store arbitrary data on
+         * the segment.
+         * 
+         * The data is stored in JSON, but not in SVG.
+         */
+        data: any
+
         /** 
          * The anchor point of the segment.
          */
@@ -7139,7 +7241,9 @@ declare namespace paper {
         constructor(object: object)
 
         /** 
-         * Checks if the segment has any curve handles set.
+         * Checks if the segment has any curve handles set. Handles of which both
+         * coordinates are 0 within a tolerance of 1e-12 count as not set, see
+         * {@link Point#isZero}.
          * 
          * @see Segment#handleIn
          * @see Segment#handleOut
@@ -7413,6 +7517,12 @@ declare namespace paper {
          */
         height: number
 
+        /** 
+         * The size's dimensions as an array, `[width, height]`, as
+         * {@link Matrix#values} gives those of a matrix.
+         */
+        readonly values: number[]
+
 
         /** 
          * Creates a Size object with the given width and height values.
@@ -7627,9 +7737,12 @@ declare namespace paper {
         negate(): Size
 
         /** 
-         * Checks if this size has both the width and height set to 0.
+         * Checks if this size has both the width and height set to 0, within a
+         * tolerance of 1e-12, unlike {@link #equals}, which compares
+         * exactly.
          * 
-         * @return true if both width and height are 0
+         * @return true if both width and height are 0, within the
+         *     tolerance
          */
         isZero(): boolean
 
@@ -7772,6 +7885,14 @@ declare namespace paper {
          * to the {@link #strokeWidth}.
          */
         miterLimit: number
+
+        /** 
+         * The order in which the fill and the stroke are painted, as in SVG's
+         * `paint-order`, named after what is painted first: `'fill'` paints the
+         * fill first, `'stroke'` paints the stroke first, so the fill covers its
+         * inner half.
+         */
+        paintOrder: string
 
         /** 
          * The fill color.
@@ -7997,7 +8118,10 @@ declare namespace paper {
 
         /** 
          * The direction the paragraph's lines run in, which `'start'` and `'end'`
-         * follow; `null` for left to right.
+         * follow, and from which side their pieces are placed; `null` for left to
+         * right. Lines that mix directions across styles aren't reordered by the
+         * Unicode bidirectional algorithm: their pieces follow the paragraph's
+         * direction, and canvas orders only the letters within each piece.
          */
         direction: string
 
@@ -8090,6 +8214,17 @@ declare namespace paper {
          * @param point - the center point of the placed symbol
          */
         constructor(definition: SymbolDefinition | Item, point?: PointLike)
+
+        /** 
+         * Replaces the symbol item with a copy of its definition's item, which
+         * keeps the symbol item's appearance: its matrix is applied to the copy,
+         * its opacity, visibility, blend mode and other attributes are combined
+         * with the copy's, and its name, data and selection are passed on.
+         * 
+         * @return the copy of the definition's item, or `null` if the
+         *     symbol item has no parent
+         */
+        embed(): Item
 
     }
 
@@ -8328,7 +8463,10 @@ declare namespace paper {
 
         /** 
          * The direction the paragraph's lines run in, which `'start'` and `'end'`
-         * follow; `null` for left to right.
+         * follow, and from which side their pieces are placed; `null` for left to
+         * right. Lines that mix directions across styles aren't reordered by the
+         * Unicode bidirectional algorithm: their pieces follow the paragraph's
+         * direction, and canvas orders only the letters within each piece.
          */
         direction: string
 
