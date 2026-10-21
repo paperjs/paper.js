@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 14:26:36 2026 +0200
+ * Date: Wed Oct 21 13:23:09 2026 +0200
  *
  ***
  *
@@ -791,9 +791,10 @@ var PaperScope = Base.extend({
 		PaperScope._scopes[this._id] = this;
 		var proto = PaperScope.prototype;
 		if (!this.support) {
-			proto.support = {
-				nativeBlendModes: BlendMode.nativeModes
-			};
+			proto.support = Base.define({}, 'nativeBlendModes', {
+				enumerable: true,
+				get: BlendMode.getNativeModes
+			});
 		}
 		if (!this.agent) {
 			var user = self.navigator.userAgent.toLowerCase(),
@@ -5147,7 +5148,8 @@ new function() {
 		var blendMode = this._blendMode,
 			opacity = Numerical.clamp(this._opacity, 0, 1),
 			normalBlend = blendMode === 'normal',
-			nativeBlend = BlendMode.nativeModes[blendMode],
+			nativeBlend = !normalBlend
+					&& BlendMode.getNativeModes()[blendMode],
 			style = this._style,
 			shadow = (normalBlend || nativeBlend)
 					&& style.getShadowColor(true) && style.hasShadow()
@@ -20094,24 +20096,54 @@ var BlendMode = new function() {
 		}
 	};
 
-	this.nativeModes = Base.each([
-		'source-over', 'source-in', 'source-out', 'source-atop',
-		'destination-over', 'destination-in', 'destination-out',
-		'destination-atop', 'lighter', 'darker', 'copy', 'xor',
-		'multiply', 'screen', 'overlay', 'soft-light', 'hard-light',
-		'color-dodge', 'color-burn', 'darken', 'lighten', 'difference',
-		'exclusion', 'hue', 'saturation', 'luminosity', 'color'
-	], function(mode) {
-		this[mode] = true;
-	}, Base.each(modes, function(process, mode) {
-		this[mode] = false;
-	}, {}));
+	var nativeModes = Base.each([
+			'source-over', 'source-in', 'source-out', 'source-atop',
+			'destination-over', 'destination-in', 'destination-out',
+			'destination-atop', 'lighter', 'darker', 'copy', 'xor'
+		], function(mode) {
+			this[mode] = true;
+		}, {}),
+		tested = false;
+
+	function getNativeModes() {
+		var ctx = !tested && CanvasProvider.getContext(1, 1,
+				{ willReadFrequently: true });
+		if (ctx) {
+			tested = true;
+			Base.each([
+				'multiply', 'screen', 'overlay', 'soft-light', 'hard-light',
+				'color-dodge', 'color-burn', 'darken', 'lighten', 'difference',
+				'exclusion', 'hue', 'saturation', 'luminosity', 'color'
+			].concat(Object.keys(modes)), function(mode) {
+				var darken = mode === 'darken',
+					ok = false;
+				ctx.save();
+				try {
+					ctx.fillStyle = darken ? '#330' : '#a00';
+					ctx.fillRect(0, 0, 1, 1);
+					ctx.globalCompositeOperation = mode;
+					if (ctx.globalCompositeOperation === mode) {
+						ctx.fillStyle = darken ? '#a00' : '#330';
+						ctx.fillRect(0, 0, 1, 1);
+						ok = ctx.getImageData(0, 0, 1, 1).data[0] !==
+								(darken ? 170 : 51);
+					}
+				} catch (e) {}
+				ctx.restore();
+				nativeModes[mode] = ok;
+			});
+			CanvasProvider.release(ctx);
+		}
+		return nativeModes;
+	}
+
+	this.getNativeModes = getNativeModes;
 
 	this.process = function(mode, srcContext, dstContext, alpha, offset) {
 		var srcCanvas = srcContext.canvas,
 			normal = mode === 'normal',
 			process = modes[mode];
-		if (!process) {
+		if (getNativeModes()[mode] || !process) {
 			dstContext.save();
 			dstContext.setTransform(1, 0, 0, 1, 0, 0);
 			dstContext.globalAlpha = alpha;
