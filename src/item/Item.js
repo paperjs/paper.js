@@ -2754,6 +2754,12 @@ new function() { // Injection scope for hit-test functions shared with project
      * @option [options.reduceAttributes=true] {Boolean} wether to only include
      *     style attributes in the SVG output that differ from their parents,
      *     or to always include them (much faster but leading to redundancies).
+     * @option [options.processNode] {Function} the function to process the
+     *     SVG node made for each exported item, receiving an object with the
+     *     `item` and its `node`: It can change the node, e.g. to add attributes
+     *     that Paper.js doesn't export, or return a node to replace it with. It
+     *     is called before the item's name, style, visibility and data are set
+     *     on the node, which replace attributes of the same names.
      *
      * @param {Object} [options] the export options
      * @return {SVGElement|String} the item converted to an SVG node or a
@@ -2793,6 +2799,13 @@ new function() { // Injection scope for hit-test functions shared with project
      * @option [options.applyMatrix={@link PaperScope#settings}.applyMatrix]
      *     {Boolean} whether the imported items should have their transformation
      *     matrices applied to their contents or not
+     * @option [options.processItem] {Function} the function to process the
+     *     item made for each imported SVG element, receiving an object with
+     *     the `item` and its `node`: It can read attributes that Paper.js
+     *     doesn't import, or return an item to replace it with. It is called
+     *     after the element's attributes and data are applied to the item, so
+     *     it can extend `item.data`. A replacement item doesn't receive them:
+     *     copy them over from `item` as needed.
      *
      * @param {SVGElement|String} svg the SVG content to import, either as a SVG
      *     DOM node, a string containing SVG content, or a string describing the
