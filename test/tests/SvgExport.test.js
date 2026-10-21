@@ -17,6 +17,7 @@ import paper, {
   CanvasProvider,
   Color,
   Group,
+  Layer,
   Matrix,
   Path,
   PathItem,
@@ -27,7 +28,8 @@ import paper, {
   Rectangle,
   Shape,
   Size,
-  SymbolDefinition
+  SymbolDefinition,
+  window
 } from 'paper'
 import {
   compareSVG,
@@ -610,6 +612,46 @@ describe('SvgExport', () => {
     }
 
     for (let i = 0; i < rasters.length; i++) rasters[i].on('load', onLoad)
+  })
+
+  test('Export SVG layers as Inkscape layers through a callback', () => {
+    const ns = 'http://www.inkscape.org/namespaces/inkscape'
+    paper.project.activeLayer.name = 'Shapes'
+    new Path.Circle({ center: [50, 50], radius: 10, fillColor: 'red' })
+    new Layer()
+    const svg = paper.project.exportSVG({
+      asString: true,
+      processNode({ item, node }) {
+        if (item instanceof Layer) {
+          node.setAttributeNS(ns, 'inkscape:groupmode', 'layer')
+          if (item.name) node.setAttributeNS(ns, 'inkscape:label', item.name)
+        }
+      }
+    })
+    const root = new window.DOMParser().parseFromString(
+      svg,
+      'image/svg+xml'
+    ).documentElement
+    equals(root.nodeName, 'svg', 'valid SVG')
+    const [shapes, other] = root.childNodes
+    equals(shapes.getAttributeNS(ns, 'groupmode'), 'layer', 'layer')
+    equals(shapes.getAttributeNS(ns, 'label'), 'Shapes', 'with its label')
+    equals(other.getAttributeNS(ns, 'groupmode'), 'layer', 'second layer')
+    equals(other.hasAttributeNS(ns, 'label'), false, 'without a label')
+  })
+
+  test('Export SVG with the deprecated onExport callback', () => {
+    const path = new Path.Circle({ center: [50, 50], radius: 10 })
+    path.data.className = 'dot'
+    const options = {
+      onExport(item, node, opts) {
+        node.setAttribute('class', item.data.className)
+        node.setAttribute('data-options', opts === options)
+      }
+    }
+    const node = path.exportSVG(options)
+    equals(node.getAttribute('class'), 'dot')
+    equals(node.getAttribute('data-options'), 'true', 'with the options')
   })
 
   if (!isNodeContext) {

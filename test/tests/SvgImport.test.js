@@ -1079,6 +1079,53 @@ describe('SvgImport', () => {
     equals(importData(''), {}, 'without data')
   })
 
+  test('Import and export the SVG class attribute through callbacks', () => {
+    const item = paper.project.importSVG(
+      '<svg xmlns="http://www.w3.org/2000/svg">' +
+      '<g class="shapes"><rect class="door wide" data-label="Door"' +
+      ' width="10" height="10"/>' +
+      '<rect width="10" height="10"/></g></svg>',
+      {
+        processItem({ item, node }) {
+          const className = node.getAttribute('class')
+          if (className) item.data.className = className
+        }
+      }
+    )
+    const group = item.firstChild
+    equals(group.data.className, 'shapes', 'group')
+    equals(
+      group.firstChild.data,
+      { label: 'Door', className: 'door wide' },
+      'rect with data-* attributes'
+    )
+    equals(group.lastChild.data.className, undefined, 'rect without class')
+    const node = item.exportSVG({
+      processNode({ item, node }) {
+        const className = item.data.className
+        if (className) node.setAttribute('class', className)
+      }
+    }).firstChild
+    equals(node.getAttribute('class'), 'shapes', 'exported group')
+    equals(node.firstChild.getAttribute('class'), 'door wide', 'exported rect')
+    equals(node.lastChild.hasAttribute('class'), false, 'without class')
+  })
+
+  test('Import SVG with the deprecated onImport callback', () => {
+    const options = {
+      onImport(node, item, opts) {
+        item.data.className = node.getAttribute('class')
+        item.data.hasOptions = opts === options
+      }
+    }
+    const item = paper.project.importSVG(
+      '<svg xmlns="http://www.w3.org/2000/svg">' +
+      '<rect class="door" width="10" height="10"/></svg>',
+      options
+    )
+    equals(item.firstChild.data, { className: 'door', hasOptions: true })
+  })
+
   test('Import SVG cleans up after errors', () => {
     const svg =
       '<svg xmlns="http://www.w3.org/2000/svg" data-paper-data="invalid JSON"><rect width="100" height="100"/></svg>'
