@@ -1306,3 +1306,44 @@ test('hit-testing strokes where a line runs into a curve with a miter join', fun
         );
     });
 });
+
+test('hit-testing the strokes of shapes as those of their paths', function() {
+    // Shapes are hit where their paths are, see Shape#toPath(): ellipses and
+    // rounded corners, also with non-scaling strokes under non-uniform
+    // matrices (#2334):
+    function compare(name, shape, transform) {
+        shape.set({ strokeColor: 'black', strokeWidth: 10 });
+        transform(shape);
+        var path = shape.toPath(false),
+            bounds = path.strokeBounds.expand(10),
+            options = { stroke: true, fill: false },
+            count = 0;
+        for (var x = bounds.left; x <= bounds.right; x += 2) {
+            for (var y = bounds.top; y <= bounds.bottom; y += 2) {
+                var point = new Point(x, y);
+                if (!shape.hitTest(point, options)
+                        !== !path.hitTest(point, options))
+                    count++;
+            }
+        }
+        equals(count, 0, name + ': points hit differently');
+        shape.remove();
+    }
+    function none() {}
+    function scale(shape) {
+        shape.strokeScaling = false;
+        shape.scale(2.5, 0.6);
+        shape.rotate(30);
+    }
+    compare('ellipse', new Shape.Ellipse({
+        center: [100, 60],
+        radius: [90, 30]
+    }), none);
+    compare('rounded rectangle', new Shape.Rectangle({
+        point: [20, 20],
+        size: [160, 60],
+        radius: [40, 20]
+    }), none);
+    compare('circle with a non-scaling stroke',
+            new Shape.Circle([50, 50], 30), scale);
+});
