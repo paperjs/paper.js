@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 01:53:04 2026 +0200
+ * Date: Wed Oct 21 02:00:46 2026 +0200
  *
  ***
  *
@@ -15505,25 +15505,43 @@ var Style = Base.extend(new function() {
 
 	_getCanvasFont: function() {
 		var fontSize = this.getFontSize(),
-			fontStyle = this.getFontStyle();
+			fontStyle = this.getFontStyle(),
+			families = this.getFontFamily().split(',').map(function(family) {
+				family = family.trim();
+				return /^(["'].*|[a-z-]+)$/i.test(family) ? family
+						: '"' + family.replace(/["\\]/g, '\\$&') + '"';
+			});
+		// Superscripts and subscripts are set smaller:
 		if (this.getBaselinePosition() !== 'normal' && !isNaN(fontSize))
 			fontSize *= this._scriptSize;
+		// To prevent an obscure iOS 7 crash, we have to convert the size to a
+		// string first before passing it to the regular expression.
+		// The following nonsensical statement would also prevent the bug,
+		// proving that the issue is not the regular expression itself, but
+		// something deeper down in the optimizer:
+		// `if (size === 0) size = 0;`
 		return (fontStyle !== 'normal' ? fontStyle + ' ' : '')
 				+ (this.getCapitals() === 'small' ? 'small-caps ' : '')
 				+ this.getFontWeight()
 				+ ' ' + fontSize + (/[a-z]/i.test(fontSize + '') ? ' ' : 'px ')
-				+ this.getFontFamily();
+				+ families.join(', ');
 	},
 
+	// The size of superscripts and subscripts, and how far they move, of the
+	// font size:
 	_scriptSize: 0.583,
 	_scriptShift: 0.333,
 
+	// The properties that style objects may still set by their former names:
 	_formerNames: { tracking: true, leading: true },
 
+	// The letter tracking as canvas takes it: in thousandths of an em, which
+	// canvas resolves through the font of the context:
 	_getCanvasLetterSpacing: function() {
 		return this.getLetterTracking() / 1000 + 'em';
 	},
 
+	// The font size in pixels, which it can be given in other units:
 	_getFontSize: function() {
 		var fontSize = this.getFontSize();
 		return /pt|em|%|px/.test(fontSize)
@@ -15531,6 +15549,8 @@ var Style = Base.extend(new function() {
 				: fontSize;
 	},
 
+	// The line height in pixels: automatic ('auto', 1.2, or another factor)
+	// of the font size, or fixed, with units as the font size takes them:
 	_getLineHeight: function() {
 		var lineHeight = this.getLineHeight();
 		return lineHeight === 'auto' ? 1.2 * this._getFontSize()
@@ -15539,6 +15559,14 @@ var Style = Base.extend(new function() {
 					: lineHeight * this._getFontSize();
 	},
 
+	/**
+	 * The line height as a fixed length, in pixels, as Paper.js had it before
+	 * #lineHeight: setting a number makes it fixed, as `'18px'`.
+	 *
+	 * @bean
+	 * @type Number
+	 * @deprecated use {@link #lineHeight} instead.
+	 */
 	getLeading: function() {
 		return this.getLineHeight() === undefined ? undefined
 				: this._getLineHeight();
@@ -15550,12 +15578,583 @@ var Style = Base.extend(new function() {
 				: leading);
 	},
 
+	/**
+	 * @bean
+	 * @type String
+	 * @deprecated use {@link #fontFamily} instead.
+	 */
 	getFont: '#getFontFamily',
 	setFont: '#setFontFamily',
 
+	// DOCS: why isn't the example code showing up?
+	/**
+	 * Style objects don't need to be created directly. Just pass an object to
+	 * {@link Item#style} or {@link Project#currentStyle}, it will be converted
+	 * to a Style object internally.
+	 *
+	 * @name Style#initialize
+	 * @param {Object} style
+	 */
+
+	/**
+	 * {@grouptitle Stroke Style}
+	 *
+	 * The color of the stroke.
+	 *
+	 * @name Style#strokeColor
+	 * @property
+	 * @type ?Color
+	 *
+	 * @example {@paperscript}
+	 * // Setting the stroke color of a path:
+	 *
+	 * // Create a circle shaped path at { x: 80, y: 50 }
+	 * // with a radius of 35:
+	 * var circle = new Path.Circle(new Point(80, 50), 35);
+	 *
+	 * // Set its stroke color to RGB red:
+	 * circle.strokeColor = new Color(1, 0, 0);
+	 */
+
+	/**
+	 * The width of the stroke.
+	 *
+	 * @name Style#strokeWidth
+	 * @property
+	 * @type Number
+	 * @default 1
+	 *
+	 * @example {@paperscript}
+	 * // Setting an item's stroke width:
+	 *
+	 * // Create a circle shaped path at { x: 80, y: 50 }
+	 * // with a radius of 35:
+	 * var circle = new Path.Circle(new Point(80, 50), 35);
+	 *
+	 * // Set its stroke color to black:
+	 * circle.strokeColor = 'black';
+	 *
+	 * // Set its stroke width to 10:
+	 * circle.strokeWidth = 10;
+	 */
+
+	/**
+	 * The shape to be used at the beginning and end of open {@link Path} items,
+	 * when they have a stroke.
+	 *
+	 * @name Style#strokeCap
+	 * @property
+	 * @type String
+	 * @values 'round', 'square', 'butt'
+	 * @default 'butt'
+	 *
+	 * @example {@paperscript height=200}
+	 * // A look at the different stroke caps:
+	 *
+	 * var line = new Path(new Point(80, 50), new Point(420, 50));
+	 * line.strokeColor = 'black';
+	 * line.strokeWidth = 20;
+	 *
+	 * // Select the path, so we can see where the stroke is formed:
+	 * line.selected = true;
+	 *
+	 * // Set the stroke cap of the line to be round:
+	 * line.strokeCap = 'round';
+	 *
+	 * // Copy the path and set its stroke cap to be square:
+	 * var line2 = line.clone();
+	 * line2.position.y += 50;
+	 * line2.strokeCap = 'square';
+	 *
+	 * // Make another copy and set its stroke cap to be butt:
+	 * var line2 = line.clone();
+	 * line2.position.y += 100;
+	 * line2.strokeCap = 'butt';
+	 */
+
+	/**
+	 * The shape to be used at the segments and corners of {@link Path} items
+	 * when they have a stroke.
+	 *
+	 * @name Style#strokeJoin
+	 * @property
+	 * @type String
+	 * @values 'miter', 'round', 'bevel'
+	 * @default 'miter'
+	 *
+	 * @example {@paperscript height=120}
+	 * // A look at the different stroke joins:
+	 * var path = new Path();
+	 * path.add(new Point(80, 100));
+	 * path.add(new Point(120, 40));
+	 * path.add(new Point(160, 100));
+	 * path.strokeColor = 'black';
+	 * path.strokeWidth = 20;
+	 *
+	 * // Select the path, so we can see where the stroke is formed:
+	 * path.selected = true;
+	 *
+	 * var path2 = path.clone();
+	 * path2.position.x += path2.bounds.width * 1.5;
+	 * path2.strokeJoin = 'round';
+	 *
+	 * var path3 = path2.clone();
+	 * path3.position.x += path3.bounds.width * 1.5;
+	 * path3.strokeJoin = 'bevel';
+	 */
+
+	/**
+	 * Specifies whether the stroke is to be drawn taking the current affine
+	 * transformation into account (the default behavior), or whether it should
+	 * appear as a non-scaling stroke. On text, non-scaling strokes are exact for
+	 * uniform scaling only, as the glyphs are always stroked through the
+	 * transformation.
+	 *
+	 * @name Style#strokeScaling
+	 * @property
+	 * @type Boolean
+	 * @default true
+	 */
+
+	/**
+	 * The dash offset of the stroke.
+	 *
+	 * @name Style#dashOffset
+	 * @property
+	 * @type Number
+	 * @default 0
+	 */
+
+	/**
+	 * Specifies an array containing the dash and gap lengths of the stroke.
+	 *
+	 * @example {@paperscript}
+	 * var path = new Path.Circle(new Point(80, 50), 40);
+	 * path.strokeWidth = 2;
+	 * path.strokeColor = 'black';
+	 *
+	 * // Set the dashed stroke to [10pt dash, 4pt gap]:
+	 * path.dashArray = [10, 4];
+	 *
+	 * @name Style#dashArray
+	 * @property
+	 * @type Number[]
+	 * @default []
+	 */
+
+	/**
+	 * The miter limit of the stroke. When two line segments meet at a sharp
+	 * angle and miter joins have been specified for {@link #strokeJoin}, it is
+	 * possible for the miter to extend far beyond the {@link #strokeWidth} of
+	 * the path. The miterLimit imposes a limit on the ratio of the miter length
+	 * to the {@link #strokeWidth}.
+	 *
+	 * @name Style#miterLimit
+	 * @property
+	 * @default 10
+	 * @type Number
+	 */
+
+	/**
+	 * {@grouptitle Fill Style}
+	 *
+	 * The fill color.
+	 *
+	 * @name Style#fillColor
+	 * @property
+	 * @type ?Color
+	 *
+	 * @example {@paperscript}
+	 * // Setting the fill color of a path to red:
+	 *
+	 * // Create a circle shaped path at { x: 80, y: 50 }
+	 * // with a radius of 35:
+	 * var circle = new Path.Circle(new Point(80, 50), 35);
+	 *
+	 * // Set the fill color of the circle to RGB red:
+	 * circle.fillColor = new Color(1, 0, 0);
+	 */
+
+	/**
+	 * The fill-rule with which the shape gets filled. Please note that only
+	 * modern browsers support fill-rules other than `'nonzero'`.
+	 *
+	 * @name Style#fillRule
+	 * @property
+	 * @type String
+	 * @values 'nonzero', 'evenodd'
+	 * @default 'nonzero'
+	 */
+
+	/**
+	 * {@grouptitle Shadow Style}
+	 *
+	 * The shadow color.
+	 *
+	 * @property
+	 * @name Style#shadowColor
+	 * @type ?Color
+	 *
+	 * @example {@paperscript}
+	 * // Creating a circle with a black shadow:
+	 *
+	 * var circle = new Path.Circle({
+	 *     center: [80, 50],
+	 *     radius: 35,
+	 *     fillColor: 'white',
+	 *     // Set the shadow color of the circle to RGB black:
+	 *     shadowColor: new Color(0, 0, 0),
+	 *     // Set the shadow blur radius to 12:
+	 *     shadowBlur: 12,
+	 *     // Offset the shadow by { x: 5, y: 5 }
+	 *     shadowOffset: new Point(5, 5)
+	 * });
+	 */
+
+	/**
+	 * The shadow's blur radius.
+	 *
+	 * @property
+	 * @name Style#shadowBlur
+	 * @type Number
+	 * @default 0
+	 */
+
+	/**
+	 * The shadow's offset.
+	 *
+	 * @property
+	 * @name Style#shadowOffset
+	 * @type Point
+	 * @default 0
+	 */
+
+	/**
+	 * {@grouptitle Selection Style}
+	 *
+	 * The color the item is highlighted with when selected. If the item does
+	 * not specify its own color, the color defined by its layer is used instead.
+	 *
+	 * @name Style#selectedColor
+	 * @property
+	 * @type ?Color
+	 */
+
+	/**
+	 * {@grouptitle Character Style}
+	 *
+	 * The font-family to be used in text content.
+	 *
+	 * @name Style#fontFamily
+	 * @type String
+	 * @default 'sans-serif'
+	 */
+
+	/**
+	 *
+	 * The font-weight to be used in text content.
+	 *
+	 * @name Style#fontWeight
+	 * @type String|Number
+	 * @default 'normal'
+	 */
+
+	/**
+	 * The font size of text content, as a number in pixels, or as a string with
+	 * optional units `'px'`, `'pt'` and `'em'`.
+	 *
+	 * @name Style#fontSize
+	 * @type Number|String
+	 * @default 10
+	 */
+
+	/**
+	 *
+	 * The font-family to be used in text content, as one string.
+	 *
+	 * @name Style#font
+	 * @type String
+	 * @default 'sans-serif'
+	 * @deprecated use {@link #fontFamily} instead.
+	 */
+
+	/**
+	 * The line height of text content: the distance from one line's baseline
+	 * to the next. Automatic, as `'auto'` (1.2) or another factor of the
+	 * letters' font size, each line moving down by its largest letters'; or
+	 * fixed, as a length with units as the font size takes them (`'18px'`,
+	 * `'12pt'`).
+	 *
+	 * @name Style#lineHeight
+	 * @type Number|String
+	 * @default 'auto'
+	 */
+
+	/**
+	 * The letter tracking of text content: the space added after each letter,
+	 * along the line, in thousandths of an em, as in Adobe Illustrator and
+	 * InDesign. A tracking of 100 adds a tenth of the font size. Also
+	 * `tracking`, its former name.
+	 *
+	 * @name Style#letterTracking
+	 * @type Number
+	 * @default 0
+	 */
+
+	/**
+	 * @name Style#tracking
+	 * @type Number
+	 * @deprecated use {@link #letterTracking} instead.
+	 */
+
+	/**
+	 * The letter kerning of text content: the space added after a letter,
+	 * along the line, in thousandths of an em, in place of the font's own
+	 * kerning pair; `null` for the font's kerning.
+	 *
+	 * @name Style#letterKerning
+	 * @type Number
+	 * @default null
+	 */
+
+	/**
+	 * The font style of text content, as in CSS: upright or slanted. Together
+	 * with the {@link #fontWeight}, it says what a font's style name says, e.g.
+	 * `'Bold Italic'`.
+	 *
+	 * @name Style#fontStyle
+	 * @type String
+	 * @values 'normal', 'italic', 'oblique'
+	 * @default 'normal'
+	 */
+
+	/**
+	 * The settings of a variable font's axes, by their tags: `{ wght: 600,
+	 * wdth: 80 }`. Kept for hosts that lay text out with its fonts; canvas
+	 * doesn't draw them.
+	 *
+	 * @name Style#fontVariations
+	 * @type Object
+	 * @default null
+	 */
+
+	/**
+	 * How far the letters move up from the baseline, in pixels.
+	 *
+	 * @name Style#baselineShift
+	 * @type Number
+	 * @default 0
+	 */
+
+	/**
+	 * Whether the letters are set as superscripts or subscripts: smaller, and
+	 * above or below the baseline.
+	 *
+	 * @name Style#baselinePosition
+	 * @type String
+	 * @values 'normal', 'superscript', 'subscript'
+	 * @default 'normal'
+	 */
+
+	/**
+	 * How much the letters are scaled, as {@link Item#scaling}: one factor for
+	 * both directions, or a point with the horizontal and vertical ones.
+	 *
+	 * @name Style#letterScaling
+	 * @type Number|Point
+	 * @default 1
+	 */
+
+	/**
+	 * The rotation of each letter about its origin on the baseline, in degrees.
+	 *
+	 * @name Style#letterRotation
+	 * @type Number
+	 * @default 0
+	 */
+
+	/**
+	 * Whether the letters are set as capitals, or as small capitals.
+	 *
+	 * @name Style#capitals
+	 * @type String
+	 * @values 'normal', 'all', 'small'
+	 * @default 'normal'
+	 */
+
+	/**
+	 * Whether the letters are underlined.
+	 *
+	 * @name Style#underline
+	 * @type Boolean
+	 * @default false
+	 */
+
+	/**
+	 * Whether the letters are struck through.
+	 *
+	 * @name Style#strikethrough
+	 * @type Boolean
+	 * @default false
+	 */
+
+	/**
+	 * The OpenType features to turn on (`'dlig'`) or off (`'-liga'`). Kept for
+	 * hosts that lay text out with its fonts; canvas doesn't draw them.
+	 *
+	 * @name Style#features
+	 * @type String[]
+	 * @default null
+	 */
+
+	/**
+	 * {@grouptitle Paragraph Style}
+	 *
+	 * The justification of text paragraphs.
+	 *
+	 * @name Style#justification
+	 * @type String
+	 * @values 'left', 'right', 'center', 'start', 'end', 'justify'
+	 * @default 'left'
+	 */
+
+	/**
+	 * How the last line of a justified paragraph is aligned; `'all'` justifies
+	 * it too.
+	 *
+	 * @name Style#justifyLast
+	 * @type String
+	 * @values 'left', 'right', 'center', 'start', 'end', 'all'
+	 * @default 'left'
+	 */
+
+	/**
+	 * How far justification may change the spacing, each as `[minimum, desired,
+	 * maximum]` in percent: `{ word: [80, 100, 133], letter: [0, 0, 0], glyph:
+	 * [100, 100, 100] }`; `null` for those. Kept for hosts: canvas text
+	 * justifies by the word spacing alone.
+	 *
+	 * @name Style#justifySpacing
+	 * @type Object
+	 * @default null
+	 */
+
+	/**
+	 * The indent where the paragraph's lines start: left in left-to-right text,
+	 * right in right-to-left text.
+	 *
+	 * @name Style#startIndent
+	 * @type Number
+	 * @default 0
+	 */
+
+	/**
+	 * The indent where the paragraph's lines end.
+	 *
+	 * @name Style#endIndent
+	 * @type Number
+	 * @default 0
+	 */
+
+	/**
+	 * The indent of the paragraph's first line, added to its start indent.
+	 *
+	 * @name Style#firstLineIndent
+	 * @type Number
+	 * @default 0
+	 */
+
+	/**
+	 * The space above the paragraph. Between two paragraphs, the larger of this
+	 * one's and the space after the one before it is used.
+	 *
+	 * @name Style#spaceBefore
+	 * @type Number
+	 * @default 0
+	 */
+
+	/**
+	 * The space below the paragraph.
+	 *
+	 * @name Style#spaceAfter
+	 * @type Number
+	 * @default 0
+	 */
+
+	/**
+	 * Whether words are hyphenated at the ends of lines, and how: `true`, or `{
+	 * wordsLongerThan, afterFirst, beforeLast, limit, zone, capitalized }`.
+	 * Kept for hosts: canvas text breaks only at soft hyphens.
+	 *
+	 * @name Style#hyphenation
+	 * @type Boolean|Object
+	 * @default false
+	 */
+
+	/**
+	 * How lines are broken: one line at a time, or all of the paragraph's lines
+	 * together, for the most even spacing. Kept for hosts: canvas text breaks
+	 * one line at a time.
+	 *
+	 * @name Style#composer
+	 * @type String
+	 * @values 'line', 'paragraph'
+	 * @default 'paragraph'
+	 */
+
+	/**
+	 * How the lines of a paragraph in an area are evened out: `'normal'`
+	 * fills each line as far as it goes, `'balance'` makes them all about as
+	 * long, and `'pretty'` balances the last four lines when the last one is
+	 * shorter than a third of the one before. Both keep the paragraph's number
+	 * of lines.
+	 *
+	 * @name Style#lineWrap
+	 * @type String
+	 * @values 'normal', 'balance', 'pretty'
+	 * @default 'normal'
+	 */
+
+	/**
+	 * The paragraph's tab stops: `[{ position, align, leader }]`, with `align`
+	 * one of `'left'`, `'center'`, `'right'` and `'decimal'`. Kept for hosts:
+	 * canvas text doesn't set tabs yet.
+	 *
+	 * @name Style#tabs
+	 * @type Object[]
+	 * @default null
+	 */
+
+	/**
+	 * The direction the paragraph's lines run in, which `'start'` and `'end'`
+	 * follow; `null` for left to right.
+	 *
+	 * @name Style#direction
+	 * @type String
+	 * @values 'ltr', 'rtl'
+	 * @default null
+	 */
 });
 
+/*
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
+ * http://paperjs.org/
+ *
+ * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
+ * http://juerglehni.com/ & https://puckey.studio/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ */
+
+/**
+ * @name DomElement
+ * @namespace
+ * @private
+ */
 var DomElement = new function() {
+	// Handles both getting and setting of vendor prefix values
 	function handlePrefix(el, name, set, value) {
 		var prefixes = ['', 'webkit', 'moz', 'Moz', 'ms', 'o'],
 			suffix = name[0].toUpperCase() + name.substring(1);
@@ -15573,8 +16172,9 @@ var DomElement = new function() {
 		}
 	}
 
-	return {
+	return /** @lends DomElement */{
 		getStyles: function(el) {
+			// If el is a document (nodeType == 9), use it directly
 			var doc = el && el.nodeType !== 9 ? el.ownerDocument : el,
 				view = doc && doc.defaultView;
 			return view && view.getComputedStyle(el, '');
@@ -15586,6 +16186,9 @@ var DomElement = new function() {
 				html = doc.documentElement,
 				rect;
 			try {
+				// On IE, for nodes that are not inside the DOM, this throws an
+				// exception. Emulate the behavior of all other browsers, which
+				// return a rectangle of 0 dimensions.
 				rect = el.getBoundingClientRect();
 			} catch (e) {
 				rect = { left: 0, top: 0, width: 0, height: 0 };
@@ -15618,6 +16221,10 @@ var DomElement = new function() {
 			return DomElement.getBounds(el, true).getSize();
 		},
 
+		/**
+		 * Returns the horizontal and vertical sums of the element's padding
+		 * and border widths, or with `start`, only the left and top ones.
+		 */
 		getInsets: function(el, start) {
 			var style = DomElement.getStyles(el);
 			function get(side) {
@@ -15630,20 +16237,35 @@ var DomElement = new function() {
 						get('Top') + get('Bottom'));
 		},
 
+		/**
+		 * Checks if element is invisible (display: none, ...).
+		 */
 		isInvisible: function(el) {
 			return DomElement.getSize(el).equals(new Size(0, 0));
 		},
 
+		/**
+		 * Checks if element is visible in current viewport.
+		 */
 		isInView: function(el) {
+			// See if the viewport bounds intersect with the windows rectangle
+			// which always starts at 0, 0
 			return !DomElement.isInvisible(el)
 					&& DomElement.getViewportBounds(el).intersects(
 						DomElement.getBounds(el, true));
 		},
 
+		/**
+		 * Checks if element is inside the DOM.
+		 */
 		isInserted: function(el) {
 			return document.body.contains(el);
 		},
 
+		/**
+		 * Gets the given property from the element, trying out all browser
+		 * prefix variants.
+		 */
 		getPrefixed: function(el, name) {
 			return el && handlePrefix(el, name);
 		},
@@ -15659,14 +16281,39 @@ var DomElement = new function() {
 	};
 };
 
-var DomEvent = {
+/*
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
+ * http://paperjs.org/
+ *
+ * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
+ * http://juerglehni.com/ & https://puckey.studio/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ */
+
+/**
+ * @name DomEvent
+ * @namespace
+ * @private
+ */
+var DomEvent = /** @lends DomEvent */{
 	add: function(el, events) {
+		// Do not fail if el is not defined, that way we can keep the code that
+		// should not fail in web-workers to a minimum.
 		if (el) {
 			for (var type in events) {
 				var func = events[type],
 					parts = type.split(/[\s,]+/g);
 				for (var i = 0, l = parts.length; i < l; i++) {
 					var name = parts[i];
+					// For touchstart/touchmove events on document, we need to
+					// explicitly declare that the event is not passive (can be
+					// prevented).  Otherwise chrome browser would ignore
+					// `event.preventDefault()` calls and omit warnings.
+					// See #1501 and:
+					// https://www.chromestatus.com/features/5093566007214080
 					var options = (
 						el === document
 						&& (name === 'touchstart' || name === 'touchmove')
@@ -15678,6 +16325,7 @@ var DomEvent = {
 	},
 
 	remove: function(el, events) {
+		// See DomEvent.add() for an explanation of this check:
 		if (el) {
 			for (var type in events) {
 				var func = events[type],
@@ -15699,6 +16347,8 @@ var DomEvent = {
 		var touches = event.targetTouches,
 			pos = event;
 		if (touches) {
+			// Prefer the first touch on the target, also when it just ended, so
+			// that touches elsewhere don't take over its drag (#1875):
 			pos = find(event.touches) || find(event.changedTouches)
 					|| (touches.length ? touches[0] : event.changedTouches[0]);
 		}
@@ -15717,6 +16367,7 @@ var DomEvent = {
 	},
 
 	getOffset: function(event, target) {
+		// Remove target offsets from page coordinates
 		target = target || DomEvent.getTarget(event);
 		return DomEvent.getPoint(event, target).subtract(
 				DomElement.getOffset(target));
@@ -15730,33 +16381,79 @@ DomEvent.requestAnimationFrame = new function() {
 		timer;
 
 	function handleCallbacks() {
+		// Make a local references to the current callbacks array and set
+		// callbacks to a new empty array, so it can collect the functions for
+		// the new requests.
 		var functions = callbacks;
 		callbacks = [];
+		// Call the collected callback functions.
 		for (var i = 0, l = functions.length; i < l; i++)
 			functions[i]();
+		// Now see if the above calls have collected new callbacks. Keep
+		// requesting new frames as long as we have callbacks.
 		requested = nativeRequest && callbacks.length;
 		if (requested) {
 			nativeRequest(handleCallbacks);
 		} else if (timer && !callbacks.length) {
+			// Stop the interval timer of the fallback when there's nothing
+			// left to do, so it doesn't keep hosts running. The next request
+			// starts it again:
 			clearInterval(timer);
 			timer = null;
 		}
 	}
 
 	return function(callback) {
+		// Add to the list of callbacks to be called in the next animation
+		// frame.
 		callbacks.push(callback);
 		if (nativeRequest) {
+			// Handle animation natively. We only need to request the frame
+			// once for all collected callbacks.
 			if (!requested) {
 				nativeRequest(handleCallbacks);
 				requested = true;
 			}
 		} else if (!timer) {
+			// Install interval timer that checks all callbacks. This
+			// results in faster animations than repeatedly installing
+			// timeout timers.
 			timer = setInterval(handleCallbacks, 1000 / 60);
 		}
 	};
 };
 
-var View = Base.extend(Emitter, {
+/*
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
+ * http://paperjs.org/
+ *
+ * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
+ * http://juerglehni.com/ & https://puckey.studio/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ */
+
+/**
+ * @name View
+ *
+ * @class The View object wraps an HTML element and handles drawing and user
+ * interaction through mouse and keyboard for it. It offer means to scroll the
+ * view, find the currently visible bounds in project coordinates, or the
+ * center, both useful for constructing artwork that should appear centered on
+ * screen.
+ *
+ * If the canvas element has a `resize` or `data-paper-resize` attribute, the
+ * view adjusts its size to the size of the element whenever the window is
+ * resized. The element itself needs to be sized through CSS, e.g. with
+ * `html, body { height: 100%; }` and `canvas[resize] { width: 100%; height:
+ * 100%; }` for a canvas that fills the window. Without such CSS, the view does
+ * not follow the window, and on HiDPI screens it grows with each resize.
+ * Without the attribute, the view sets the element's CSS width and height to
+ * its own size, see {@link #viewSize}.
+ */
+var View = Base.extend(Emitter, /** @lends View# */{
 	_class: 'View',
 
 	initialize: function View(project, element) {
@@ -15766,18 +16463,28 @@ var View = Base.extend(Emitter, {
 		}
 
 		function getCanvasSize() {
+			// Try the CSS size first, since that will help handling previously
+			// scaled canvases (e.g. when dealing with pixel-ratio), without the
+			// padding and border (#1160, #2033), and without the transforms of
+			// ancestors, which only scale the canvas on screen:
 			var size = new Size(element.offsetWidth, element.offsetHeight);
 			return size.isNaN() || size.isZero()
+					// If the element is invisible, we cannot directly access
+					// element.width / height, because they would appear 0.
+					// Reading the attributes should still work.
 					? new Size(getSize('width'), getSize('height'))
 					: size.subtract(DomElement.getInsets(element));
 		}
 
 		var size;
 		if (window && element) {
+			// Generate an id for this view / element if it does not have one
 			this._id = element.getAttribute('id');
 			if (this._id == null)
 				element.setAttribute('id', this._id = 'paper-view-' + View._id++);
+			// Install event handlers
 			DomEvent.add(element, this._viewEvents);
+			// Borrowed from Hammer.js:
 			var none = 'none';
 			DomElement.setPrefixed(element.style, {
 				userDrag: none,
@@ -15787,6 +16494,8 @@ var View = Base.extend(Emitter, {
 				tapHighlightColor: 'rgba(0,0,0,0)'
 			});
 
+			// If the element has the resize attribute, listen to resize events
+			// and update its coordinate space accordingly
 			if (PaperScope.hasAttribute(element, 'resize')) {
 				var that = this;
 				DomEvent.add(window, this._windowEvents = {
@@ -15801,6 +16510,7 @@ var View = Base.extend(Emitter, {
 			if (PaperScope.hasAttribute(element, 'stats')
 					&& typeof Stats !== 'undefined') {
 				this._stats = new Stats();
+				// Align top-left to the element
 				var stats = this._stats.domElement,
 					style = stats.style,
 					offset = DomElement.getOffset(element);
@@ -15810,41 +16520,65 @@ var View = Base.extend(Emitter, {
 				document.body.appendChild(stats);
 			}
 		} else {
+			// For web-workers: Allow calling of `paper.setup(new Size(x, y));`
 			size = new Size(element);
 			element = null;
 		}
+		// Store reference to the currently active global paper scope, and the
+		// active project, which will be represented by this view
 		this._project = project;
 		this._scope = project._scope;
 		this._element = element;
+		// Sub-classes may set _pixelRatio first
 		if (!this._pixelRatio)
 			this._pixelRatio = window && window.devicePixelRatio || 1;
+		// Set canvas size even if we just determined the size from it, since
+		// it might have been set to a % size, in which case it would use some
+		// default internal size (300x150 on WebKit) and scale up the pixels.
+		// We also need this call here for HiDPI support.
 		this._setElementSize(size.width, size.height);
 		this._viewSize = size;
+		// Keep track of views internally
 		View._views.push(this);
+		// Link this id to our view
 		View._viewsById[this._id] = this;
 		(this._matrix = new Matrix())._owner = this;
+		// Make sure the first view is focused for keyboard input straight away
 		if (!View._focused)
 			View._focused = this;
+		// Items that need the onFrame handler called on them
 		this._frameItems = {};
 		this._frameItemCount = 0;
+		// Count the installed native and virtual item events,
+		// see #_countItemEvent():
 		this._itemEvents = { native: {}, virtual: {} };
+		// Do not set _autoUpdate on Node.js by default:
 		this._autoUpdate = !paper.agent.node;
 		this._needsUpdate = false;
 	},
 
+	/**
+	 * Removes this view from the project and frees the associated element.
+	 */
 	remove: function() {
 		if (!this._project)
 			return false;
+		// Clear focus if removed view had it
 		if (View._focused === this)
 			View._focused = null;
+		// Remove view from internal structures
 		View._views.splice(View._views.indexOf(this), 1);
 		delete View._viewsById[this._id];
+		// Unlink from project
 		var project = this._project;
 		if (project._view === this)
 			project._view = null;
+		// Uninstall event handlers again for this view.
 		DomEvent.remove(this._element, this._viewEvents);
 		DomEvent.remove(window, this._windowEvents);
 		this._element = this._project = null;
+		// Remove all onFrame handlers.
+		// TODO: Shouldn't we remove all other event handlers, automatically
 		this.off('frame');
 		this._animate = false;
 		this._frameItems = {};
@@ -15868,10 +16602,23 @@ var View = Base.extend(Emitter, {
 		}
 	),
 
+	// These are default values for event related properties on the prototype.
+	// Writing item._count++ does not change the defaults, it creates / updates
+	// the property on the instance. Useful!
 	_animate: false,
 	_time: 0,
 	_count: 0,
 
+	/**
+	 * Controls whether the view is automatically updated in the next animation
+	 * frame on changes, or whether you prefer to manually call
+	 * {@link #update()} or {@link #requestUpdate()} after changes.
+	 * Note that this is `true` by default, except for Node.js, where manual
+	 * updates make more sense.
+	 *
+	 * @bean
+	 * @type Boolean
+	 */
 	getAutoUpdate: function() {
 		return this._autoUpdate;
 	},
@@ -15882,21 +16629,52 @@ var View = Base.extend(Emitter, {
 			this.requestUpdate();
 	},
 
+	/**
+	 * Updates the view if there are changes. Note that when using built-in
+	 * event handlers for interaction, animation and load events, this method is
+	 * invoked for you automatically at the end.
+	 *
+	 * @param {Boolean} [force=false] whether to redraw the view even if nothing
+	 * has changed, e.g. after a web font used by text items has finished
+	 * loading
+	 * @return {Boolean} {@true if the view was updated}
+	 */
 	update: function(force) {
 	},
 
+	/**
+	 * Updates the view if there are changes.
+	 *
+	 * @deprecated use {@link #update()} instead.
+	 */
+	// NOTE: We cannot use draw: '#update'` as that would not work on CanvasView
 	draw: function() {
 		this.update();
 	},
 
+	/**
+	 * Requests an update of the view if there are changes through the browser's
+	 * requestAnimationFrame() mechanism for smooth animation. Note that when
+	 * using built-in event handlers for interaction, animation and load events,
+	 * updates are automatically invoked for you automatically at the end.
+	 */
 	requestUpdate: function() {
 		if (!this._requested) {
 			var that = this;
 			DomEvent.requestAnimationFrame(function() {
 				that._requested = false;
+				// Only handle the frame and request the next one if we don't
+				// need to stop, e.g.  due to a call to pause(), or a request
+				// for a single redraw.
 				if (that._animate) {
+					// Request next update before handling the current frame
 					that.requestUpdate();
 					var element = that._element;
+					// Only keep animating if we're allowed to, based on whether
+					// the document is visible and the setting of keepalive. We
+					// keep requesting frame regardless though, so the animation
+					// picks up again as soon as the view is visible. Views
+					// without an element, as in web workers, always animate.
 					if (!element
 							|| (!DomElement.getPrefixed(document, 'hidden')
 							|| PaperScope.getAttribute(element, 'keepalive')
@@ -15904,6 +16682,10 @@ var View = Base.extend(Emitter, {
 						that._handleFrame();
 					}
 				}
+				// Even if we're not animating, update the view now since this
+				// might have been a request for a single redraw after a change.
+				// NOTE: If nothing has changed (e.g. _handleFrame() wasn't
+				// called above), then this does not actually do anything.
 				if (that._autoUpdate)
 					that.update();
 			});
@@ -15911,22 +16693,36 @@ var View = Base.extend(Emitter, {
 		}
 	},
 
+	/**
+	 * Makes all animation play by adding the view to the request animation
+	 * loop.
+	 */
 	play: function() {
 		this._animate = true;
+		// Request a frame handler straight away to initialize the
+		// sequence of onFrame calls.
 		this.requestUpdate();
 	},
 
+	/**
+	 * Makes all animation pause by removing the view from the request animation
+	 * loop.
+	 */
 	pause: function() {
 		this._animate = false;
 	},
 
 	_handleFrame: function() {
+		// Set the global paper object to the current scope
 		paper = this._scope;
 		var now = Date.now() / 1000,
 			delta = this._last ? now - this._last : 0;
 		this._last = now;
+		// Use new Base() to convert into a Base object, for #toString()
 		this.emit('frame', new Base({
+			// Time elapsed since last frame in seconds:
 			delta: delta,
+			// Total since first frame in seconds:
 			time: this._time += delta,
 			count: this._count++
 		}));
@@ -15939,6 +16735,7 @@ var View = Base.extend(Emitter, {
 		if (animate) {
 			items[item._id] = {
 				item: item,
+				// Additional information for the event callback
 				time: 0,
 				count: 0
 			};
@@ -15947,52 +16744,104 @@ var View = Base.extend(Emitter, {
 		} else {
 			delete items[item._id];
 			if (--this._frameItemCount === 0) {
+				// If this is the last one, just stop animating straight away.
 				this.off('frame', this._handleFrameItems);
 			}
 		}
 	},
 
+	// Handles _frameItems and fires the 'frame' event on them.
 	_handleFrameItems: function(event) {
 		for (var i in this._frameItems) {
 			var entry = this._frameItems[i];
 			entry.item.emit('frame', new Base(event, {
+				// Time since first call of frame() in seconds:
 				time: entry.time += event.delta,
 				count: entry.count++
 			}));
 		}
 	},
 
+	/**
+	 * Private notifier that is called whenever a change occurs in this view.
+	 * Used only by Matrix for now.
+	 */
 	_changed: function() {
+		// The only one calling View._changed() is Matrix, so it can only mean
+		// one thing:
 		this._project._changed(4097);
+		// Force recalculation of these values next time they are requested.
 		this._bounds = this._decomposed = undefined;
 	},
 
+	/**
+	 * The underlying native element.
+	 *
+	 * @bean
+	 * @type HTMLCanvasElement
+	 */
 	getElement: function() {
 		return this._element;
 	},
 
+	/**
+	 * The project that this view displays.
+	 *
+	 * @bean
+	 * @type Project
+	 */
 	getProject: function() {
 		return this._project;
 	},
 
+	/**
+	 * The scope that this view belongs to.
+	 *
+	 * @bean
+	 * @type PaperScope
+	 */
 	getScope: function() {
 		return this._scope;
 	},
 
+	/**
+	 * The ratio between physical pixels and device-independent pixels (DIPs)
+	 * of the underlying canvas / device.
+	 * It is `1` for normal displays, and `2` or more for
+	 * high-resolution displays.
+	 *
+	 * @bean
+	 * @type Number
+	 */
 	getPixelRatio: function() {
 		return this._pixelRatio;
 	},
 
+	/**
+	 * The resolution of the underlying canvas / device in pixel per inch (DPI).
+	 * It is `72` for normal displays, and `144` for high-resolution
+	 * displays with a pixel-ratio of `2`.
+	 *
+	 * @bean
+	 * @type Number
+	 */
 	getResolution: function() {
 		return this._pixelRatio * 72;
 	},
 
+	/**
+	 * The size of the view. Changing the view's size will resize it's
+	 * underlying element.
+	 *
+	 * @bean
+	 * @type Size
+	 */
 	getViewSize: function() {
 		var size = this._viewSize;
 		return new LinkedSize(size.width, size.height, this, 'setViewSize');
 	},
 
-	setViewSize: function() {
+	setViewSize: function(/* size */) {
 		var size = Size.read(arguments),
 			delta = size.subtract(this._viewSize);
 		if (delta.isZero())
@@ -16000,12 +16849,18 @@ var View = Base.extend(Emitter, {
 		this._setElementSize(size.width, size.height);
 		this._viewSize.set(size);
 		this._changed();
+		// Emit resize event on any size changes.
 		this.emit('resize', { size: size, delta: delta });
 		if (this._autoUpdate) {
+			// Update right away, don't wait for the next animation frame as
+			// otherwise the view would flicker during resizes, see #1126
 			this.update();
 		}
 	},
 
+	/**
+	 * Private method, overridden in CanvasView for HiDPI support.
+	 */
 	_setElementSize: function(width, height) {
 		var element = this._element;
 		if (element) {
@@ -16016,6 +16871,16 @@ var View = Base.extend(Emitter, {
 		}
 	},
 
+	/**
+	 * The bounds of the currently visible area in project coordinates.
+	 * Setting them fits the view to the given rectangle, as
+	 * {@link #fitBounds(rectangle)} does. Since the view keeps its aspect
+	 * ratio, the bounds read back can be larger than the rectangle in one
+	 * direction.
+	 *
+	 * @bean
+	 * @type Rectangle
+	 */
 	getBounds: function() {
 		if (!this._bounds)
 			this._bounds = this._matrix.inverted()._transformBounds(
@@ -16023,28 +16888,50 @@ var View = Base.extend(Emitter, {
 		return this._bounds;
 	},
 
-	setBounds: function() {
+	setBounds: function(/* rect */) {
 		this.fitBounds(Rectangle.read(arguments));
 	},
 
+	/**
+	 * The size of the visible area in project coordinates.
+	 *
+	 * @bean
+	 * @type Size
+	 */
 	getSize: function() {
 		return this.getBounds().getSize();
 	},
 
+	/**
+	 * Checks whether the view is currently visible within the current browser
+	 * viewport.
+	 *
+	 * @return {Boolean} {@true if the view is visible}
+	 */
 	isVisible: function() {
 		return DomElement.isInView(this._element);
 	},
 
+	/**
+	 * Checks whether the view is inserted into the browser DOM.
+	 *
+	 * @return {Boolean}  {@true if the view is inserted}
+	 */
 	isInserted: function() {
 		return DomElement.isInserted(this._element);
 	},
 
+	// Text is measured with a canvas context: the view's own, or one from the
+	// CanvasProvider, which also works in workers with an OffscreenCanvas.
+	// Without either, sizes are read as pixels, and text has no width.
 	getPixelSize: function(size) {
 		var agent = paper.agent,
 			element = this._element,
 			ctx,
 			pixels;
 		if (element && agent && agent.firefox) {
+			// Firefox doesn't convert context.font sizes to pixels, so use the
+			// DOM there, which still doesn't work in workers:
 			var parent = element.parentNode,
 				temp = document.createElement('div');
 			temp.style.fontSize = size;
@@ -16072,6 +16959,7 @@ var View = Base.extend(Emitter, {
 				prevLetterSpacing = ctx.letterSpacing;
 			ctx.font = font;
 			ctx.letterSpacing = letterSpacing;
+			// Measure the real width of the text:
 			for (var i = 0, l = lines.length; i < l; i++)
 				width = Math.max(width, ctx.measureText(lines[i]).width);
 			ctx.font = prevFont;
@@ -16088,6 +16976,8 @@ var View = Base.extend(Emitter, {
 		if (ctx) {
 			var prevFont = ctx.font;
 			ctx.font = font;
+			// Browsers tell the font's own ascent and descent, node-canvas
+			// those of its em box:
 			var measured = ctx.measureText('H'),
 				ascent = measured.fontBoundingBoxAscent,
 				descent = measured.fontBoundingBoxDescent;
@@ -16105,44 +16995,75 @@ var View = Base.extend(Emitter, {
 	}
 }, Base.each(['rotate', 'scale', 'shear', 'skew'], function(key) {
 	var rotate = key === 'rotate';
-	this[key] = function() {
+	this[key] = function(/* value, center */) {
 		var args = arguments,
 			value = (rotate ? Base : Point).read(args),
 			center = Point.read(args, 0, { readNull: true });
 		return this.transform(new Matrix()[key](value,
 				center || this.getCenter(true)));
 	};
-}, {
+}, /** @lends View# */{
 	_decompose: function() {
 		return this._decomposed || (this._decomposed = this._matrix.decompose());
 	},
 
-	translate: function() {
+	/**
+	 * {@grouptitle Transform Functions}
+	 *
+	 * Translates (scrolls) the view by the given offset vector.
+	 *
+	 * @param {Point} delta the offset to translate the view by
+	 */
+	translate: function(/* delta */) {
 		var mx = new Matrix();
 		return this.transform(mx.translate.apply(mx, arguments));
 	},
 
+	/**
+	 * The center of the visible area in project coordinates.
+	 *
+	 * @bean
+	 * @type Point
+	 */
 	getCenter: function() {
 		return this.getBounds().getCenter();
 	},
 
-	setCenter: function() {
+	setCenter: function(/* center */) {
 		var center = Point.read(arguments);
 		this.translate(this.getCenter().subtract(center));
 	},
 
+	/**
+	 * The view's zoom factor by which the project coordinates are magnified.
+	 * Setting it to a value that isn't a positive number has no effect.
+	 *
+	 * @bean
+	 * @type Number
+	 * @see #scaling
+	 */
 	getZoom: function() {
 		var scaling = this._decompose().scaling;
+		// Use average since it can be non-uniform, and ignore mirroring.
 		return (Math.abs(scaling.x) + Math.abs(scaling.y)) / 2;
 	},
 
 	setZoom: function(zoom) {
+		// Zooming to 0 can't be undone and leaves the view's matrix without an
+		// inverse (#1433):
 		if (zoom > 0 && isFinite(zoom)) {
 			this.transform(new Matrix().scale(zoom / this.getZoom(),
 				this.getCenter()));
 		}
 	},
 
+	/**
+	 * The current rotation angle of the view, as described by its
+	 * {@link #matrix}.
+	 *
+	 * @bean
+	 * @type Number
+	 */
 	getRotation: function() {
 		return this._decompose().rotation;
 	},
@@ -16150,45 +17071,177 @@ var View = Base.extend(Emitter, {
 	setRotation: function(rotation) {
 		var current = this.getRotation();
 		if (current != null && rotation != null) {
+			// Rotate around the center in view coordinates, so the rotation
+			// adds to the decomposed one, also on mirrored views (#1893):
 			this._matrix.prepend(new Matrix().rotate(rotation - current,
 					this.projectToView(this.getCenter())));
 		}
 	},
 
+	/**
+	 * The current scale factor of the view, as described by its
+	 * {@link #matrix}.
+	 *
+	 * @bean
+	 * @type Point
+	 * @see #zoom
+	 */
 	getScaling: function() {
 		var scaling = this._decompose().scaling;
 		return new LinkedPoint(scaling.x, scaling.y, this, 'setScaling');
 	},
 
-	setScaling: function() {
+	setScaling: function(/* scaling */) {
 		var current = this.getScaling(),
+			// Clone existing points since we're caching internally.
 			scaling = Point.read(arguments, 0, { clone: true, readNull: true });
 		if (current && scaling) {
 			this.scale(scaling.x / current.x, scaling.y / current.y);
 		}
 	},
 
+	/**
+	 * The view's transformation matrix, defining the view onto the project's
+	 * contents (position, zoom level, rotation, etc).
+	 *
+	 * @bean
+	 * @type Matrix
+	 */
 	getMatrix: function() {
 		return this._matrix;
 	},
 
 	setMatrix: function() {
+		// Use Matrix#initialize to easily copy over values.
+		// NOTE: calling initialize() also calls #_changed() for us, through its
+		// call to #set() / #reset(), and this also handles _applyMatrix for us.
 		var matrix = this._matrix;
 		matrix.set.apply(matrix, arguments);
 	},
 
+	/**
+	 * Rotates the view by a given angle around the given center point.
+	 *
+	 * Angles are oriented clockwise and measured in degrees.
+	 *
+	 * @name View#rotate
+	 * @function
+	 * @param {Number} angle the rotation angle
+	 * @param {Point} [center={@link View#center}]
+	 * @see Matrix#rotate(angle[, center])
+	 */
+
+	/**
+	 * Scales the view by the given value from its center point, or optionally
+	 * from a supplied point.
+	 *
+	 * @name View#scale
+	 * @function
+	 * @param {Number} scale the scale factor
+	 * @param {Point} [center={@link View#center}]
+	 */
+	/**
+	 * Scales the view by the given values from its center point, or optionally
+	 * from a supplied point.
+	 *
+	 * @name View#scale
+	 * @function
+	 * @param {Number} hor the horizontal scale factor
+	 * @param {Number} ver the vertical scale factor
+	 * @param {Point} [center={@link View#center}]
+	 */
+
+	/**
+	 * Shears the view by the given value from its center point, or optionally
+	 * by a supplied point.
+	 *
+	 * @name View#shear
+	 * @function
+	 * @param {Point} shear the horizontal and vertical shear factors as a point
+	 * @param {Point} [center={@link View#center}]
+	 * @see Matrix#shear(shear[, center])
+	 */
+	/**
+	 * Shears the view by the given values from its center point, or optionally
+	 * by a supplied point.
+	 *
+	 * @name View#shear
+	 * @function
+	 * @param {Number} hor the horizontal shear factor
+	 * @param {Number} ver the vertical shear factor
+	 * @param {Point} [center={@link View#center}]
+	 * @see Matrix#shear(hor, ver[, center])
+	 */
+
+	/**
+	 * Skews the view by the given angles from its center point, or optionally
+	 * by a supplied point.
+	 *
+	 * @name View#skew
+	 * @function
+	 * @param {Point} skew the horizontal and vertical skew angles in degrees
+	 * @param {Point} [center={@link View#center}]
+	 * @see Matrix#shear(skew[, center])
+	 */
+	/**
+	 * Skews the view by the given angles from its center point, or optionally
+	 * by a supplied point.
+	 *
+	 * @name View#skew
+	 * @function
+	 * @param {Number} hor the horizontal skew angle in degrees
+	 * @param {Number} ver the vertical sskew angle in degrees
+	 * @param {Point} [center={@link View#center}]
+	 * @see Matrix#shear(hor, ver[, center])
+	 */
+
+	/**
+	 * Transform the view.
+	 *
+	 * @param {Matrix} matrix the matrix by which the view shall be transformed
+	 */
 	transform: function(matrix) {
 		this._matrix.append(matrix);
 	},
 
+	/**
+	 * Transform the view so that the specified rectangle is centered in it
+	 * and fitted to it as described by `fit`, keeping the view's rotation and
+	 * mirroring.
+	 *
+	 * @param {Rectangle} rectangle the rectangle to fit, in project
+	 * coordinates
+	 * @param {String} [fit='contain'] how to fit the rectangle, as in CSS's
+	 * `object-fit`: `'contain'` shows all of it, and `'cover'` fills the
+	 * whole view with it, cropping the parts that don't fit
+	 *
+	 * @example {@paperscript height=100}
+	 * // Fitting the view to the bounds of an item:
+	 *
+	 * // Create a circle shaped path around the top left corner of the view:
+	 * var path = new Path.Circle({
+	 *     center: [0, 0],
+	 *     radius: 50,
+	 *     fillColor: 'orange'
+	 * });
+	 *
+	 * // Make the view show the whole circle:
+	 * view.fitBounds(path.bounds);
+	 */
 	fitBounds: function(rectangle, fit) {
 		rectangle = Rectangle.read(arguments);
 		fit = Base.read(arguments);
+		// Compare the rectangle with the view in view coordinates, so that
+		// rotated views show all of it as well, and scale both axes of the view
+		// to the same amount, so that the rectangle keeps its aspect ratio,
+		// also if the view was stretched before:
 		var matrix = this._matrix,
 			size = this._viewSize,
 			bounds = matrix._transformBounds(rectangle),
 			scaleX = new Point(matrix._a, matrix._c).getLength(),
 			scaleY = new Point(matrix._b, matrix._d).getLength(),
+			// Empty sides of the rectangle give ratios of Infinity, which can't
+			// scale the view, so only use the others:
 			ratios = [
 				size.width / bounds.width * scaleX,
 				size.height / bounds.height * scaleY
@@ -16200,29 +17253,69 @@ var View = Base.extend(Emitter, {
 			var amount = fit === 'cover'
 					? Math.max.apply(Math, ratios)
 					: Math.min.apply(Math, ratios);
+			// Scale around the view's center in view coordinates, along the
+			// view's own axes:
 			matrix.prepend(new Matrix().scale(
 					new Point(amount / scaleX, amount / scaleY),
 					size.divide(2)));
 		}
 	},
 
-	scrollBy: function() {
+	/**
+	 * Scrolls the view by the given vector.
+	 *
+	 * @param {Point} point
+	 * @deprecated use {@link #translate(delta)} instead (using opposite
+	 *     direction).
+	 */
+	scrollBy: function(/* point */) {
 		this.translate(Point.read(arguments).negate());
 	}
-}), {
+}), /** @lends View# */{
+	// TODO: getInvalidBounds
+	// TODO: invalidate(rect)
+	// TODO: style: artwork / preview / raster / opaque / ink
+	// TODO: getShowGrid
+	// TODO: getMousePoint
+	// TODO: projectToView(rect)
 
-	projectToView: function() {
+	/**
+	 * Converts the passed point from project coordinate space to view
+	 * coordinate space, which is measured in browser pixels in relation to the
+	 * position of the view element.
+	 *
+	 * @param {Point} point the point in project coordinates to be converted
+	 * @return {Point} the point converted into view coordinates
+	 */
+	projectToView: function(/* point */) {
 		return this._matrix._transformPoint(Point.read(arguments));
 	},
 
-	viewToProject: function() {
+	/**
+	 * Converts the passed point from view coordinate space to project
+	 * coordinate space.
+	 *
+	 * @param {Point} point the point in view coordinates to be converted
+	 * @return {Point} the point converted into project coordinates
+	 */
+	viewToProject: function(/* point */) {
 		return this._matrix._inverseTransform(Point.read(arguments));
 	},
 
+	/**
+	 * Determines and returns the event location in project coordinate space.
+	 *
+	 * @param {Event} event the native event object for which to determine the
+	 *     location.
+	 * @return {Point} the event point in project coordinates.
+	 */
 	getEventPoint: function(event) {
 		var element = this._element,
 			offset = DomEvent.getOffset(event, element),
 			size = DomElement.getSize(element);
+		// Map the offset on screen, with CSS sizes and transforms applied, to
+		// the content box in view coordinates (#549, #1729). Elements that
+		// aren't rendered have no size to map from:
 		if (!size.isZero()) {
 			var cssSize = new Size(element.offsetWidth, element.offsetHeight);
 			offset = offset.multiply(cssSize.divide(size))
@@ -16233,6 +17326,342 @@ var View = Base.extend(Emitter, {
 		return this.viewToProject(offset);
 	},
 
+	/**
+	 * {@grouptitle Event Handlers}
+	 * Handler function to be called on each frame of an animation.
+	 * The function receives an event object which contains information about
+	 * the frame event:
+	 *
+	 * @option event.count {Number} the number of times the frame event was
+	 * fired
+	 * @option event.time {Number} the total amount of time passed since the
+	 * first frame event in seconds
+	 * @option event.delta {Number} the time passed in seconds since the last
+	 * frame event
+	 *
+	 * @name View#onFrame
+	 * @property
+	 * @type ?Function
+	 * @see Item#onFrame
+	 *
+	 * @example {@paperscript}
+	 * // Creating an animation:
+	 *
+	 * // Create a rectangle shaped path with its top left point at:
+	 * // {x: 50, y: 25} and a size of {width: 50, height: 50}
+	 * var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
+	 * path.fillColor = 'black';
+	 *
+	 * view.onFrame = function(event) {
+	 *     // Every frame, rotate the path by 3 degrees:
+	 *     path.rotate(3);
+	 * }
+	 */
+
+	/**
+	 * Handler function that is called whenever a view is resized.
+	 *
+	 * @name View#onResize
+	 * @property
+	 * @type ?Function
+	 *
+	 * @example
+	 * // Repositioning items when a view is resized:
+	 *
+	 * // Create a circle shaped path in the center of the view:
+	 * var path = new Path.Circle(view.bounds.center, 30);
+	 * path.fillColor = 'red';
+	 *
+	 * view.onResize = function(event) {
+	 *     // Whenever the view is resized, move the path to its center:
+	 *     path.position = view.center;
+	 * }
+	 */
+
+	/**
+	 * The function to be called when the mouse button is pushed down on the
+	 * view. The function receives a {@link MouseEvent} object which contains
+	 * information about the mouse event.
+	 * Note that such mouse events bubble up the scene graph hierarchy, reaching
+	 * the view at the end, unless they are stopped before with {@link
+	 * Event#stopPropagation()} or by returning `false` from a handler.
+	 *
+	 * @name View#onMouseDown
+	 * @property
+	 * @type ?Function
+	 * @see Item#onMouseDown
+	 */
+
+	/**
+	 * The function to be called when the mouse position changes while the mouse
+	 * is being dragged over the view. The function receives a {@link
+	 * MouseEvent} object which contains information about the mouse event.
+	 * Note that such mouse events bubble up the scene graph hierarchy, reaching
+	 * the view at the end, unless they are stopped before with {@link
+	 * Event#stopPropagation()} or by returning `false` from a handler.
+	 *
+	 * @name View#onMouseDrag
+	 * @property
+	 * @type ?Function
+	 * @see Item#onMouseDrag
+	 */
+
+	/**
+	 * The function to be called when the mouse button is released over the item.
+	 * The function receives a {@link MouseEvent} object which contains
+	 * information about the mouse event.
+	 *
+	 * @name View#onMouseUp
+	 * @property
+	 * @type ?Function
+	 * @see Item#onMouseUp
+	 */
+
+	/**
+	 * The function to be called when the mouse clicks on the view. The function
+	 * receives a {@link MouseEvent} object which contains information about the
+	 * mouse event.
+	 * Note that such mouse events bubble up the scene graph hierarchy, reaching
+	 * the view at the end, unless they are stopped before with {@link
+	 * Event#stopPropagation()} or by returning `false` from a handler.
+	 *
+	 * @name View#onClick
+	 * @property
+	 * @type ?Function
+	 * @see Item#onClick
+	 */
+
+	/**
+	 * The function to be called when the mouse double clicks on the view. The
+	 * function receives a {@link MouseEvent} object which contains information
+	 * about the mouse event.
+	 * Note that such mouse events bubble up the scene graph hierarchy, reaching
+	 * the view at the end, unless they are stopped before with {@link
+	 * Event#stopPropagation()} or by returning `false` from a handler.
+	 *
+	 * @name View#onDoubleClick
+	 * @property
+	 * @type ?Function
+	 * @see Item#onDoubleClick
+	 */
+
+	/**
+	 * The function to be called repeatedly while the mouse moves over the
+	 * view. The function receives a {@link MouseEvent} object which contains
+	 * information about the mouse event.
+	 * Note that such mouse events bubble up the scene graph hierarchy, reaching
+	 * the view at the end, unless they are stopped before with {@link
+	 * Event#stopPropagation()} or by returning `false` from a handler.
+	 *
+	 * @name View#onMouseMove
+	 * @property
+	 * @type ?Function
+	 * @see Item#onMouseMove
+	 */
+
+	/**
+	 * The function to be called when the mouse moves over the view. This
+	 * function will only be called again, once the mouse moved outside of the
+	 * view first. The function receives a {@link MouseEvent} object which
+	 * contains information about the mouse event.
+	 * Note that such mouse events bubble up the scene graph hierarchy, reaching
+	 * the view at the end, unless they are stopped before with {@link
+	 * Event#stopPropagation()} or by returning `false` from a handler.
+	 *
+	 * @name View#onMouseEnter
+	 * @property
+	 * @type ?Function
+	 * @see Item#onMouseEnter
+	 */
+
+	/**
+	 * The function to be called when the mouse moves out of the view.
+	 * The function receives a {@link MouseEvent} object which contains
+	 * information about the mouse event.
+	 * Note that such mouse events bubble up the scene graph hierarchy, reaching
+	 * the view at the end, unless they are stopped before with {@link
+	 * Event#stopPropagation()} or by returning `false` from a handler.
+	 *
+	 * @name View#onMouseLeave
+	 * @property
+	 * @type ?Function
+	 * @see View#onMouseLeave
+	 */
+
+	/**
+	 * The function to be called when the user presses a key on the keyboard.
+	 * The function receives a {@link KeyEvent} object which contains
+	 * information about the keyboard event.
+	 *
+	 * If the function returns `false`, the keyboard event will be prevented
+	 * from bubbling up. This can be used for example to stop the window from
+	 * scrolling, when you need the user to interact with arrow keys.
+	 *
+	 * @name View#onKeyDown
+	 * @property
+	 * @type ?Function
+	 *
+	 * @example {@paperscript}
+	 * // Scaling a path whenever the user presses the space bar:
+	 *
+	 * // Create a circle shaped path:
+	 * var path = new Path.Circle({
+	 *     center: new Point(50, 50),
+	 *     radius: 30,
+	 *     fillColor: 'red'
+	 * });
+	 *
+	 * view.onKeyDown = function(event) {
+	 *     if (event.key == 'space') {
+	 *         // Scale the path by 110%:
+	 *         path.scale(1.1);
+	 *
+	 *         // Prevent the key event from bubbling
+	 *         return false;
+	 *     }
+	 * }
+	 */
+
+	/**
+	 * The function to be called when the user releases a key on the keyboard.
+	 * The function receives a {@link KeyEvent} object which contains
+	 * information about the keyboard event.
+	 *
+	 * If the function returns `false`, the keyboard event will be prevented
+	 * from bubbling up. This can be used for example to stop the window from
+	 * scrolling, when you need the user to interact with arrow keys.
+	 *
+	 * @name View#onKeyUp
+	 * @property
+	 * @type ?Function
+	 *
+	 * @example
+	 * view.onKeyUp = function(event) {
+	 *     if (event.key == 'space') {
+	 *         console.log('The spacebar was released!');
+	 *     }
+	 * }
+	 */
+
+	/**
+	 * {@grouptitle Event Handling}
+	 *
+	 * Attach an event handler to the view.
+	 *
+	 * @name View#on
+	 * @function
+	 * @param {String} type the type of event: {@values 'frame', 'resize',
+	 *     'mousedown', 'mouseup', 'mousedrag', 'click', 'doubleclick',
+	 *     'mousemove', 'mouseenter', 'mouseleave'}
+	 * @param {Function} function the function to be called when the event
+	 *     occurs, receiving a {@link MouseEvent} or {@link Event} object as its
+	 *     sole argument
+	 * @return {View} this view itself, so calls can be chained
+	 *
+	 * @example {@paperscript}
+	 * // Create a rectangle shaped path with its top left point at:
+	 * // {x: 50, y: 25} and a size of {width: 50, height: 50}
+	 * var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
+	 * path.fillColor = 'black';
+	 *
+	 * var frameHandler = function(event) {
+	 *     // Every frame, rotate the path by 3 degrees:
+	 *     path.rotate(3);
+	 * };
+	 *
+	 * view.on('frame', frameHandler);
+	 */
+	/**
+	 * Attach one or more event handlers to the view.
+	 *
+	 * @name View#on
+	 * @function
+	 * @param {Object} param an object literal containing one or more of the
+	 *     following properties: {@values frame, resize}
+	 * @return {View} this view itself, so calls can be chained
+	 *
+	 * @example {@paperscript}
+	 * // Create a rectangle shaped path with its top left point at:
+	 * // {x: 50, y: 25} and a size of {width: 50, height: 50}
+	 * var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
+	 * path.fillColor = 'black';
+	 *
+	 * var frameHandler = function(event) {
+	 *     // Every frame, rotate the path by 3 degrees:
+	 *     path.rotate(3);
+	 * };
+	 *
+	 * view.on({
+	 *     frame: frameHandler
+	 * });
+	 */
+
+	/**
+	 * Detach an event handler from the view.
+	 *
+	 * @name View#off
+	 * @function
+	 * @param {String} type the event type: {@values 'frame', 'resize',
+	 *     'mousedown', 'mouseup', 'mousedrag', 'click', 'doubleclick',
+	 *     'mousemove', 'mouseenter', 'mouseleave'}
+	 * @param {Function} function the function to be detached
+	 * @return {View} this view itself, so calls can be chained
+	 *
+	 * @example {@paperscript}
+	 * // Create a rectangle shaped path with its top left point at:
+	 * // {x: 50, y: 25} and a size of {width: 50, height: 50}
+	 * var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
+	 * path.fillColor = 'black';
+	 *
+	 * var frameHandler = function(event) {
+	 *     // Every frame, rotate the path by 3 degrees:
+	 *     path.rotate(3);
+	 * };
+	 *
+	 * view.on({
+	 *     frame: frameHandler
+	 * });
+	 *
+	 * // When the user presses the mouse,
+	 * // detach the frame handler from the view:
+	 * function onMouseDown(event) {
+	 *     view.off('frame');
+	 * }
+	 */
+	/**
+	 * Detach one or more event handlers from the view.
+	 *
+	 * @name View#off
+	 * @function
+	 * @param {Object} param an object literal containing one or more of the
+	 *     following properties: {@values frame, resize}
+	 * @return {View} this view itself, so calls can be chained
+	 */
+
+	/**
+	 * Emit an event on the view.
+	 *
+	 * @name View#emit
+	 * @function
+	 * @param {String} type the event type: {@values 'frame', 'resize',
+	 *     'mousedown', 'mouseup', 'mousedrag', 'click', 'doubleclick',
+	 *     'mousemove', 'mouseenter', 'mouseleave'}
+	 * @param {Object} event an object literal containing properties describing
+	 * the event
+	 * @return {Boolean} {@true if the event had listeners}
+	 */
+
+	/**
+	 * Check if the view has one or more event handlers of the specified type.
+	 *
+	 * @name View#responds
+	 * @function
+	 * @param {String} type the event type: {@values 'frame', 'resize',
+	 *     'mousedown', 'mouseup', 'mousedrag', 'click', 'doubleclick',
+	 *     'mousemove', 'mouseenter', 'mouseleave'}
+	 * @return {Boolean} {@true if the view has one or more event handlers of
+	 * the specified type}
+	 */
 }, {
 	statics: {
 		_views: [],
@@ -16242,19 +17671,29 @@ var View = Base.extend(Emitter, {
 		create: function(project, element) {
 			if (document && typeof element === 'string')
 				element = document.getElementById(element);
+			// Factory to provide the right View subclass for a given element.
+			// Produces only CanvasView or View items (for workers) for now:
 			var ctor = window ? CanvasView : View;
 			return new ctor(project, element);
 		}
 	}
 },
-new function() {
+new function() { // Injection scope for mouse and key event handling
+	/**
+	 * Native event handling, coordinate conversion, focus handling and
+	 * delegation to view and tool objects. The handling is shared by the DOM
+	 * events in the browser, and #dispatchMouseEvent() and #dispatchKeyEvent()
+	 * for hosts without a DOM, such as workers.
+	 */
 	var prevFocus,
 		tempFocus,
-		dragging = false,
-		mouseDown = false;
+		dragging = false, // mousedown that started on a view.
+		mouseDown = false; // mousedown anywhere.
 
 	function getView(event) {
+		// Get the view from the current event target.
 		var target = DomEvent.getTarget(event);
+		// Some node do not have the getAttribute method, e.g. SVG nodes.
 		return target.getAttribute && View._viewsById[
 				target.getAttribute('id')];
 	}
@@ -16262,6 +17701,7 @@ new function() {
 	function updateFocus() {
 		var view = View._focused;
 		if (!view || !view.isVisible()) {
+			// Find the first visible view
 			for (var i = 0, l = View._views.length; i < l; i++) {
 				if ((view = View._views[i]).isVisible()) {
 					View._focused = tempFocus = view;
@@ -16275,12 +17715,16 @@ new function() {
 		view._handleMouseEvent('mousemove', event, point);
 	}
 
+	// The DOM events, which install themselves on the elements of views, see
+	// _viewEvents, and on the document:
 	var viewEvents = {};
 
 	if (window) {
+		// Touch handling inspired by Hammer.js
 		var navigator = window.navigator,
 			mousedown, mousemove, mouseup;
 		if (navigator.pointerEnabled || navigator.msPointerEnabled) {
+			// HTML5 / MS pointer events
 			mousedown = 'pointerdown MSPointerDown';
 			mousemove = 'pointermove MSPointerMove';
 			mouseup = 'pointerup pointercancel MSPointerUp MSPointerCancel';
@@ -16288,8 +17732,11 @@ new function() {
 			mousedown = 'touchstart';
 			mousemove = 'touchmove';
 			mouseup = 'touchend touchcancel';
+			// Do not add mouse events on mobile and tablet devices
 			if (!('ontouchstart' in window && navigator.userAgent.match(
 					/mobile|tablet|ip(ad|hone|od)|android|silk/i))) {
+				// For non pointer events browsers and mixed browsers, like
+				// chrome on Windows8 touch laptop.
 				mousedown += ' mousedown';
 				mousemove += ' mousemove';
 				mouseup += ' mouseup';
@@ -16297,7 +17744,10 @@ new function() {
 		}
 
 		var docEvents = {
+			// NOTE: mouseleave does not seem to work on document in IE:
 			mouseout: function(event) {
+				// When the moues leaves the document, fire one last mousemove
+				// event, to give items the change to receive a mouseleave, etc.
 				var view = View._focused,
 					target = DomEvent.getRelatedTarget(event);
 				if (view && (!target || target.nodeName === 'HTML'))
@@ -16307,7 +17757,13 @@ new function() {
 			scroll: updateFocus
 		};
 
+		// mousemove and mouseup events need to be installed on document, not
+		// the view element, since we want to catch the end of drag events even
+		// outside our view. Only the mousedown events are installed on the
+		// view, as defined by _viewEvents below.
 		viewEvents[mousedown] = function(event) {
+			// Get the view from the event, and store a reference to the view
+			// that should receive keyboard input.
 			var view = View._focused = getView(event);
 			if (!dragging) {
 				dragging = true;
@@ -16318,9 +17774,15 @@ new function() {
 		docEvents[mousemove] = function(event) {
 			var view = View._focused;
 			if (!mouseDown) {
+				// See if we can get the view from the current event target, and
+				// handle the mouse move over it.
 				var target = getView(event);
 				if (target) {
 					if (view !== target) {
+						// Temporarily focus this view without making it sticky,
+						// so Key events are handled too during the mouse over.
+						// As we switch view, fire one last mousemove in the old
+						// view, to let items receive receive a mouseleave, etc.
 						if (view)
 							handleMouseMove(view, event);
 						if (!prevFocus)
@@ -16328,6 +17790,8 @@ new function() {
 						view = View._focused = tempFocus = target;
 					}
 				} else if (tempFocus && tempFocus === view) {
+					// Clear temporary focus again and switch back to previous
+					// focus but only if it is still valid (still in the DOM).
 					if (prevFocus && !prevFocus.isInserted())
 						prevFocus = null;
 					view = View._focused = prevFocus;
@@ -16340,6 +17804,10 @@ new function() {
 		};
 
 		docEvents[mousedown] = function() {
+			// In order to not switch views during scroll dragging on touch
+			// devices, we need to know if the mouse was clicked anywhere on the
+			// document (see docEvents[mousemove]) The rest happens in
+			// viewEvents[mousedown].
 			mouseDown = true;
 		};
 
@@ -16357,12 +17825,22 @@ new function() {
 		});
 	}
 
+	/**
+	 * Higher level event handling, hit-testing, and emitting of normal mouse
+	 * events along with "virtual" events such as mouseenter, mouseleave,
+	 * mousedrag, click, doubleclick, on both the hit-test item and the view,
+	 * with support for bubbling (event-propagation).
+	 */
+
 	var called = false,
 		prevented = false,
+		// Event fallbacks for "virutal" events, e.g. if an item doesn't respond
+		// to doubleclick, fall back to click:
 		fallbacks = {
 			doubleclick: 'click',
 			mousedrag: 'mousemove'
 		},
+		// Various variables required by #_handleMouseEvent()
 		wasInView = false,
 		overView,
 		downPoint,
@@ -16374,22 +17852,28 @@ new function() {
 		clickTime,
 		dblClick;
 
+	// Returns true if event was prevented, false otherwise.
 	function emitMouseEvent(obj, target, type, event, point, prevPoint,
 			stopItem) {
 		var stopped = false,
 			mouseEvent;
 
+		// Returns true if the event was stopped, false otherwise.
 		function emit(obj, type) {
 			if (obj.responds(type)) {
+				// Only produce the event object if we really need it, and then
+				// reuse it if we're bubbling.
 				if (!mouseEvent) {
 					mouseEvent = new MouseEvent(type, event, point,
 							target || obj,
+							// Calculate delta if prevPoint was passed
 							prevPoint ? point.subtract(prevPoint) : null);
 				}
 				if (obj.emit(type, mouseEvent)) {
 					called = true;
 					if (mouseEvent.prevented)
 						prevented = true;
+					// Bail out if propagation is stopped
 					if (mouseEvent.stopped)
 						return stopped = true;
 				}
@@ -16400,6 +17884,7 @@ new function() {
 			}
 		}
 
+		// Bubble up the parents and emit this event until we're told to stop.
 		while (obj && obj !== stopItem) {
 			if (emit(obj, type))
 				break;
@@ -16408,24 +17893,47 @@ new function() {
 		return stopped;
 	}
 
+	// Returns true if event was stopped, false otherwise.
 	function emitMouseEvents(view, hitItem, type, event, point, prevPoint) {
+		// Before handling events, process removeOn() calls for cleanup.
+		// NOTE: As soon as there is one event handler receiving mousedrag
+		// events, non of the removeOnMove() items will be removed while the
+		// user is dragging.
 		view._project.removeOn(type);
+		// Set called and prevented to false, so they will reflect if the
+		// following calls to emitMouseEvent() have called a handler, and if
+		// and of the handlers called event.preventDefault()
 		prevented = called = false;
+		// First handle the drag-item and its parents, through bubbling.
 		return (dragItem && emitMouseEvent(dragItem, null, type, event,
 					point, prevPoint)
+			// Next handle the hit-item, if it's different from the drag-item
+			// and not a descendant of it (in which case it would already have
+			// received an event in the call above). Translate mousedrag to
+			// mousemove, since drag is handled above.
 			|| hitItem && hitItem !== dragItem
 				&& !hitItem.isDescendant(dragItem)
 				&& emitMouseEvent(hitItem, null, type === 'mousedrag' ?
 					'mousemove' : type, event, point, prevPoint, dragItem)
+			// Lastly handle the mouse events on the view, if we're still here.
 			|| emitMouseEvent(view, dragItem || hitItem || view, type, event,
 					point, prevPoint));
 	}
 
+	/**
+	 * Lookup defining which native events are required by which item events.
+	 * Required by code that is counting the amount of required natives events.
+	 * The mapping is native -> virtual.
+	 */
+	// Stands in for the DOM event in #dispatchMouseEvent() and
+	// #dispatchKeyEvent(), with what the handling reads from it. Hosts can
+	// pass the state of the modifier keys, see Key.modifiers:
 	function createEvent(type, options) {
 		if (options.modifiers)
 			Key.modifiers.set(options.modifiers);
 		return {
 			type: type,
+			// options.timeStamp in milliseconds is deprecated:
 			timeStamp: options.time != null ? options.time * 1000
 					: options.timeStamp != null ? options.timeStamp
 					: Date.now(),
@@ -16440,6 +17948,7 @@ new function() {
 	}
 
 	var itemEventsMap = {
+		// mouseup too, as the press needs the item for needsUp():
 		mousedown: {
 			mousedown: 1,
 			mouseup: 1,
@@ -16461,13 +17970,37 @@ new function() {
 		}
 	};
 
-	return {
+	return /** @lends View# */{
 		_viewEvents: viewEvents,
 
+		/**
+		 * Handles a mouse event that the host provides, for hosts without a
+		 * DOM, such as workers, or with their own event source. It runs the
+		 * same handling as the DOM's mouse events: the active tool's handlers,
+		 * with {@link Tool#minDistance} and the like, then those of the items
+		 * under the point and of the view, including the events that Paper.js
+		 * derives itself: `'mousedrag'`, `'click'`, `'doubleclick'`,
+		 * `'mouseenter'` and `'mouseleave'`. Points outside the view's bounds
+		 * are handled too, since the host decides which events belong to its
+		 * drawing surface.
+		 *
+		 * @option [options.modifiers] {Object} the state of the modifier keys,
+		 *     see {@link Key#modifiers}
+		 * @option [options.button=0] {Number} the mouse button
+		 * @option [options.time=Date.now() / 1000] {Number} the time of the
+		 *     event in seconds, see {@link Event#time}
+		 *
+		 * @param {String} type the type of the event: {@values 'mousedown',
+		 *     'mousemove', 'mouseup'}
+		 * @param {Point} point the location of the mouse in project coordinates
+		 * @param {Object} [options] the details of the event
+		 * @return {Boolean} {@true if a handler prevented the event's default}
+		 */
 		dispatchMouseEvent: function(type, point, options) {
 			if (!/^mouse(down|move|up)$/.test(type))
 				throw new Error('Unknown mouse event type: \'' + type + '\'.');
 			var event = createEvent(type, options || {});
+			// Track presses and drags as the DOM events do:
 			if (type === 'mousedown') {
 				View._focused = this;
 				mouseDown = dragging = true;
@@ -16478,6 +18011,25 @@ new function() {
 			return event.defaultPrevented;
 		},
 
+		/**
+		 * Handles a key event that the host provides, for hosts without a DOM,
+		 * such as workers, or with their own event source. It updates
+		 * {@link Key#modifiers} and {@link Key#isDown(key)}, and calls the
+		 * view's and the active tool's handlers, as the DOM's key events do.
+		 *
+		 * @option [options.character] {String} the character that the key
+		 *     produces. By default, keydown takes the key itself if it is a
+		 *     single character, and keyup the character of its keydown
+		 * @option [options.modifiers] {Object} the state of the modifier keys,
+		 *     see {@link Key#modifiers}
+		 * @option [options.time=Date.now() / 1000] {Number} the time of the
+		 *     event in seconds, see {@link Event#time}
+		 *
+		 * @param {String} type the type of the event: {@values 'keydown',
+		 *     'keyup'}
+		 * @param {String} key the key, as in {@link KeyEvent#key}
+		 * @param {Object} [options] the details of the event
+		 */
 		dispatchKeyEvent: function(type, key, options) {
 			if (!/^key(down|up)$/.test(type))
 				throw new Error('Unknown key event type: \'' + type + '\'.');
@@ -16486,8 +18038,15 @@ new function() {
 					createEvent(type, options), this);
 		},
 
+		/**
+		 * Private method to handle mouse events, and delegate to items and
+		 * tools.
+		 */
 		_handleMouseEvent: function(type, event, point, dispatched) {
 			var itemEvents = this._itemEvents,
+				// Look up hitItems, which tells us whether a given native mouse
+				// event requires an item hit-test or not, before changing type
+				// to the virtual value (e.g. mousemove -> mousedrag):
 				hitItems = itemEvents.native[type],
 				nativeMove = type === 'mousemove',
 				tool = this._scope.tool,
@@ -16498,6 +18057,10 @@ new function() {
 						|| tool && tool.responds(type);
 			}
 
+			// Whether the press needs its default prevented for the events
+			// that follow it: the view's or the tool's mouseup, or those of the
+			// hit item and its ancestors. Presses elsewhere are left to the
+			// browser, so touches can scroll the page (#1930):
 			function needsUp(hitItem) {
 				if (view.responds('mouseup')
 						|| tool && tool.responds('mouseup'))
@@ -16511,6 +18074,9 @@ new function() {
 				return false;
 			}
 
+			// DOM events know the state of the modifier keys, also of those
+			// pressed or released while the page didn't have the focus, so no
+			// key event told us about them (#1140):
 			if (event.shiftKey !== undefined) {
 				Key.modifiers.set({
 					shift: event.shiftKey,
@@ -16519,27 +18085,42 @@ new function() {
 					meta: event.metaKey
 				});
 			}
+			// If it's a native mousemove event but the mouse is down, and at
+			// least one of the events responds to mousedrag, convert to it.
+			// NOTE: emitMouseEvent(), as well as Tool#_handleMouseEvent() fall
+			// back to mousemove if the objects don't respond to mousedrag.
 			if (nativeMove && dragging && responds('mousedrag'))
 				type = 'mousedrag';
 			if (!point)
 				point = this.getEventPoint(event);
 
+			// The moves come from the whole document, so outside of drags, the
+			// pointer is only over the view when no other element covers it,
+			// such as a menu (#992). Its own element and its ancestors don't:
 			var target = DomEvent.getTarget(event),
 				isCovered = nativeMove && !dragging && target
 						&& target.nodeType === 1
 						&& !target.contains(this._element),
 				inView = dispatched
 						|| !isCovered && this.getBounds().contains(point),
+				// Run the hit-test on items first, but only if we're required
+				// to do so for this given mouse event, see hitItems and
+				// #_countItemEvent():
 				hit = hitItems && inView && view._project.hitTest(point, {
 					tolerance: view._scope.settings.hitTolerance,
 					fill: true,
 					stroke: true
 				}),
 				hitItem = hit && hit.item || null,
+				// Keep track if view event should be handled, so we can use it
+				// to decide if tool._handleMouseEvent() shall be called after.
 				handle = false,
 				mouse = {};
+			// Create a simple lookup object to quickly check for different
+			// mouse event types.
 			mouse[type.substr(5)] = true;
 
+			// Handle mouseenter / leave between items and views first.
 			if (hitItems && hitItem !== overItem) {
 				if (overItem) {
 					emitMouseEvent(overItem, null, 'mouseleave', event, point);
@@ -16549,27 +18130,46 @@ new function() {
 				}
 				overItem = hitItem;
 			}
+			// Handle mouseenter / leave on the view.
 			if (wasInView ^ inView) {
 				emitMouseEvent(this, null, inView ? 'mouseenter' : 'mouseleave',
 						event, point);
 				overView = inView ? this : null;
-				handle = true;
+				handle = true; // To include the leaving move.
 			}
+			// Now handle the mousemove / mousedrag event.
+			// Always call the view's mouse handlers first, as required by
+			// CanvasView, and then handle the active tool after, if any.
+			// mousedrag is allowed to leave the view and still triggers events,
+			// but do not trigger two subsequent even with the same location.
 			if ((inView || mouse.drag) && !point.equals(lastPoint)) {
+				// Handle mousemove even if this is not actually a mousemove
+				// event but the mouse has moved since the last event.
 				emitMouseEvents(this, hitItem, nativeMove ? type : 'mousemove',
 						event, point, lastPoint);
 				handle = true;
 			}
 			wasInView = inView;
+			// Now handle mousedown / mouseup
+			// We emit mousedown only when in the view, and mouseup regardless,
+			// as long as the mousedown event was inside.
 			if (mouse.down && inView || mouse.up && downPoint) {
 				emitMouseEvents(this, hitItem, type, event, point, downPoint);
 				if (mouse.down) {
+					// See if we're clicking again on the same item, within the
+					// double-click time and distance, measured from mousedown
+					// to mousedown like native dblclick events, but not for a
+					// third click. Firefox uses 300ms as the max time
+					// difference:
 					var time = Date.now();
 					dblClick = !dblClick && hitItem === clickItem
 						&& time - clickTime < 300
 						&& point.getDistance(downPoint) < 3;
 					downItem = clickItem = hitItem;
 					clickTime = time;
+					// Only start dragging if the mousedown event has not
+					// prevented the default, and if the hitItem or any of its
+					// parents actually respond to mousedrag events.
 					if (!prevented && hitItem) {
 						var item = hitItem;
 						while (item && !item.responds('mousedrag'))
@@ -16579,21 +18179,39 @@ new function() {
 					}
 					downPoint = point;
 				} else if (mouse.up) {
+					// Emulate click / doubleclick, but only on the hit-item,
+					// not the view.
 					if (!prevented && hitItem === downItem) {
 						emitMouseEvents(this, hitItem, dblClick ? 'doubleclick'
 								: 'click', event, point, downPoint);
 					}
 					downItem = dragItem = null;
 				}
+				// Clear wasInView so we're not accidentally handling mousedrag
+				// events that started outside the view as mousemove events on
+				// the view (needed to handle touch scrolling correctly).
 				wasInView = false;
 				handle = true;
 			}
 			lastPoint = point;
+			// Now finally call the tool events, but filter mouse move events
+			// to only be fired if we're inside the view or if we just left it.
+			// Prevent default if at least one handler was called, and none of
+			// them enforces default, to prevent scrolling on touch devices.
 			if (handle && tool) {
 				called = tool._handleMouseEvent(type, event, point, mouse)
 					|| called;
 			}
 
+			// Now call `preventDefault()`, if any of these conditions are met:
+			// - If any of the handlers were called, except for mousemove events
+			//   which can call `preventDefault()` explicitly or return `false`.
+			// - If this is a unhandled mousedown event, but what follows needs
+			//   it, see needsUp().
+			//
+			// Some events are not cancelable anyway (like during a scroll
+			// inertia on mobile) so trying to prevent default in those case
+			// would result in no effect and an error.
 			if (
 				event.cancelable !== false
 				&& (called && !mouse.move || mouse.down && needsUp(hitItem))
@@ -16602,6 +18220,9 @@ new function() {
 			}
 		},
 
+		/**
+		 * Private method to handle key events.
+		 */
 		_handleKeyEvent: function(type, event, key, character) {
 			var scope = this._scope,
 				tool = scope.tool,
@@ -16609,18 +18230,24 @@ new function() {
 
 			function emit(obj) {
 				if (obj.responds(type)) {
+					// Update global reference to this scope.
 					paper = scope;
+					// Only produce the event object if we really need it.
 					obj.emit(type, keyEvent = keyEvent
 							|| new KeyEvent(type, event, key, character));
 				}
 			}
 
+			// Call the onKeyDown or onKeyUp handler if present
 			emit(this);
 			if (tool && tool.responds(type))
 				emit(tool);
 		},
 
 		_countItemEvent: function(type, sign) {
+			// If the view requires counting of installed mouse events,
+			// change the event counters now according to itemEventsMap
+			// (defined in the code further above).
 			var itemEvents = this._itemEvents,
 				native = itemEvents.native,
 				virtual = itemEvents.virtual;
@@ -16628,12 +18255,23 @@ new function() {
 				native[key] = (native[key] || 0)
 						+ (itemEventsMap[key][type] || 0) * sign;
 			}
+			// Also update the count of virtual events installed.
 			virtual[type] = (virtual[type] || 0) + sign;
 		},
 
 		statics: {
+			/**
+			 * Loops through all views and sets the focus on the first
+			 * active one.
+			 */
 			updateFocus: updateFocus,
 
+			/**
+			 * Clear all events handling state information. Made for testing
+			 * purpose, to have a way to start with a fresh state before each
+			 * test.
+			 * @private
+			 */
 			_resetState: function() {
 				dragging = mouseDown = called = wasInView = false;
 				prevFocus = tempFocus = overView = downPoint = lastPoint =
@@ -16644,11 +18282,43 @@ new function() {
 	};
 });
 
-var CanvasView = View.extend({
+/*
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
+ * http://paperjs.org/
+ *
+ * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
+ * http://juerglehni.com/ & https://puckey.studio/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ */
+
+/**
+ * @name CanvasView
+ * @class
+ * @private
+ */
+var CanvasView = View.extend(/** @lends CanvasView# */{
 	_class: 'CanvasView',
 
+	/**
+	 * Creates a view object that wraps a canvas element.
+	 *
+	 * @name CanvasView#initialize
+	 * @param {HTMLCanvasElement} canvas the Canvas object that this view should
+	 *     wrap
+	 */
+	/**
+	 * Creates a view object that wraps a newly created canvas element.
+	 *
+	 * @name CanvasView#initialize
+	 * @param {Size} size the size of the canvas to be created
+	 */
 	initialize: function CanvasView(project, canvas) {
+		// Handle canvas argument
 		if (!(canvas instanceof window.HTMLCanvasElement)) {
+			// See if the arguments describe the view size:
 			var size = Size.read(arguments, 1);
 			if (size.isZero())
 				throw new Error(
@@ -16657,15 +18327,20 @@ var CanvasView = View.extend({
 			canvas = CanvasProvider.getCanvas(size);
 		}
 		var ctx = this._context = canvas.getContext('2d');
+		// Save context right away, and restore in #remove(). Also restore() and
+		// save() again in _setElementSize() to prevent accumulation of scaling.
 		ctx.save();
 		this._pixelRatio = 1;
 		if (!/^off|false$/.test(PaperScope.getAttribute(canvas, 'hidpi'))) {
+			// Hi-DPI Canvas support based on:
+			// https://www.html5rocks.com/en/tutorials/canvas/hidpi/
 			var deviceRatio = window.devicePixelRatio || 1,
 				backingStoreRatio = DomElement.getPrefixed(ctx,
 						'backingStorePixelRatio') || 1;
 			this._pixelRatio = deviceRatio / backingStoreRatio;
 		}
 		View.call(this, project, canvas);
+		// We can't be sure the canvas is clear
 		this._needsUpdate = true;
 	},
 
@@ -16677,8 +18352,13 @@ var CanvasView = View.extend({
 	_setElementSize: function _setElementSize(width, height) {
 		var pixelRatio = this._pixelRatio,
 			element = this._element;
+		// Upscale the canvas if the pixel ratio is more than 1.
 		_setElementSize.base.call(this, width * pixelRatio, height * pixelRatio);
+		// Set the size of non-resizable canvases through their style, as they
+		// would appear too big on HiDPI screens otherwise. Also at a pixel
+		// ratio of 1, so they behave the same on every screen (#2088):
 		if (!PaperScope.hasAttribute(element, 'resize')) {
+			// With border-box sizing, the style includes padding and border:
 			var style = element.style,
 				insets = DomElement.getStyles(element).boxSizing
 					=== 'border-box'
@@ -16688,6 +18368,8 @@ var CanvasView = View.extend({
 			style.height = (height + insets.height) + 'px';
 		}
 		if (pixelRatio !== 1) {
+			// Scale the context to counter the fact that we've manually scaled
+			// our canvas element.
 			var ctx = this._context;
 			ctx.restore();
 			ctx.save();
@@ -16699,6 +18381,20 @@ var CanvasView = View.extend({
 		return this._context;
 	},
 
+	/**
+	 * Converts the provide size in any of the units allowed in the browser to
+	 * pixels.
+	 */
+	/**
+	 * Updates the view if there are changes. Note that when using built-in
+	 * event handlers for interaction, animation and load events, this method is
+	 * invoked for you automatically at the end.
+	 *
+	 * @param {Boolean} [force=false] whether to redraw the view even if nothing
+	 * has changed, e.g. after a web font used by text items has finished
+	 * loading
+	 * @return {Boolean} {@true if the view was updated}
+	 */
 	update: function(force) {
 		if (!this._needsUpdate && !force)
 			return false;
@@ -16713,7 +18409,26 @@ var CanvasView = View.extend({
 	}
 });
 
-var Event = Base.extend({
+/*
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
+ * http://paperjs.org/
+ *
+ * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
+ * http://juerglehni.com/ & https://puckey.studio/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ */
+
+/**
+ * @name Event
+ *
+ * @class The Event object is the base class for any of the other event types,
+ * such as {@link MouseEvent}, {@link ToolEvent} and {@link KeyEvent}.
+ */
+/* global Event: true */
+var Event = Base.extend(/** @lends Event# */{
 	_class: 'Event',
 
 	initialize: function Event(event) {
@@ -16724,35 +18439,96 @@ var Event = Base.extend({
 	prevented: false,
 	stopped: false,
 
+	/**
+	 * Cancels the event if it is cancelable, without stopping further
+	 * propagation of the event.
+	 */
 	preventDefault: function() {
 		this.prevented = true;
 		this.event.preventDefault();
 	},
 
+	/**
+	 * Prevents further propagation of the current event.
+	 */
 	stopPropagation: function() {
 		this.stopped = true;
 		this.event.stopPropagation();
 	},
 
+	/**
+	 * Cancels the event if it is cancelable, and stops stopping further
+	 * propagation of the event. This is has the same effect as calling both
+	 * {@link #stopPropagation()} and {@link #preventDefault()}.
+	 *
+	 * Any handler can also return `false` to indicate that `stop()` should be
+	 * called right after.
+	 */
 	stop: function() {
 		this.stopPropagation();
 		this.preventDefault();
 	},
 
+	/**
+	 * The time at which the event was created, in seconds, as the times of
+	 * frame events are. Browsers count from the page's time origin, as
+	 * `performance.now()` does, while
+	 * {@link View#dispatchMouseEvent(type, point[, options])} and
+	 * {@link View#dispatchKeyEvent(type, key[, options])} use `Date.now()`
+	 * unless the host passes a time, so only compare the times of events from
+	 * the same source.
+	 *
+	 * @bean
+	 * @type Number
+	 */
 	getTime: function() {
 		return this.event.timeStamp / 1000;
 	},
 
+	/**
+	 * @bean
+	 * @type Number
+	 * @deprecated use {@link #time} instead, which is in seconds.
+	 */
 	getTimeStamp: function() {
 		return this.event.timeStamp;
 	},
 
+	/**
+	 * The current state of the keyboard modifiers.
+	 *
+	 * @bean
+	 * @type object
+	 * @see Key.modifiers
+	 */
 	getModifiers: function() {
 		return Key.modifiers;
 	}
 });
 
-var KeyEvent = Event.extend({
+/*
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
+ * http://paperjs.org/
+ *
+ * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
+ * http://juerglehni.com/ & https://puckey.studio/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ */
+
+/**
+ * @name KeyEvent
+ *
+ * @class The KeyEvent object is received by the {@link Tool}'s keyboard
+ * handlers {@link Tool#onKeyDown}, {@link Tool#onKeyUp}. The KeyEvent object is
+ * the only parameter passed to these functions and contains information about
+ * the keyboard event.
+ *
+ * @extends Event
+ */
+var KeyEvent = Event.extend(/** @lends KeyEvent# */{
 	_class: 'KeyEvent',
 
 	initialize: function KeyEvent(type, event, key, character) {
@@ -16762,6 +18538,36 @@ var KeyEvent = Event.extend({
 		this.character = character;
 	},
 
+	/**
+	 * The type of mouse event.
+	 *
+	 * @name KeyEvent#type
+	 * @type String
+	 * @values 'keydown', 'keyup'
+	 */
+
+	/**
+	 * The character representation of the key that caused this key event,
+	 * taking into account the current key-modifiers (e.g. shift, control,
+	 * caps-lock, etc.)
+	 *
+	 * @name KeyEvent#character
+	 * @type String
+	 */
+
+	/**
+	 * The key that caused this key event, either as a lower-case character or
+	 * special key descriptor.
+	 *
+	 * @name KeyEvent#key
+	 * @type String
+	 * @values 'enter', 'space', 'shift', 'control', 'alt', 'meta', 'caps-lock',
+	 *     'left', 'up', 'right', 'down', 'escape', 'delete', ...
+	 */
+
+	/**
+	 * @return {String} a string representation of the key event
+	 */
 	toString: function() {
 		return "{ type: '" + this.type
 				+ "', key: '" + this.key
@@ -16771,11 +18577,28 @@ var KeyEvent = Event.extend({
 	}
 });
 
+/*
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
+ * http://paperjs.org/
+ *
+ * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
+ * http://juerglehni.com/ & https://puckey.studio/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ */
+
+/**
+ * @name Key
+ * @namespace
+ */
 var Key = new function() {
 	var keyLookup = {
+			// Unify different key identifier naming schemes, e.g. on Gecko, IE:
 			'\t': 'tab',
 			' ': 'space',
-			'\xA0': 'space',
+			'\xA0': 'space', // Option + Space on macOS = non-breaking space.
 			'\b': 'backspace',
 			'\x7f': 'delete',
 			'Spacebar': 'space',
@@ -16784,31 +18607,44 @@ var Key = new function() {
 			'Esc': 'escape'
 		},
 
+		// To find corresponding characters for special keys in keydown events:
 		charLookup = {
 			'tab': '\t',
 			'space': ' ',
 			'enter': '\r'
 		},
 
-		keyMap = {},
-		charMap = {},
-		metaFixMap,
-		downKey,
+		// Only keypress reliable gets char-codes that are actually representing
+		// characters with all modifiers taken into account across all browsers.
+		// So we need to perform a little trickery here to use these codes with
+		// onKeyDown/Up:
+		// - keydown is used to handle modifiers and special keys such as
+		//   arrows, space, control, etc, for which events are fired right away.
+		// - keypress fires the actual onKeyDown event for all other keys.
+		// - keyup handles the onKeyUp events for both.
+		keyMap = {}, // Map for currently pressed keys
+		charMap = {}, // key -> char mappings for pressed keys
+		metaFixMap, // Keys that will not receive keyup events due to Mac bug
+		downKey, // The key from the keydown event, if it wasn't handled already
 
+		// Use new Base() to convert into a Base object, for #toString()
 		modifiers = new Base({
 			shift: false,
 			control: false,
-			alt: false,
-			meta: false,
+			alt: false, // WAS: option
+			meta: false, // WAS: command
 			capsLock: false,
 			space: false
 		}).inject({
+			// Short-cut to modifiers.alt for backward compatibility
 			option: {
 				get: function() {
 					return this.alt;
 				}
 			},
 
+			// Platform independent short-cut to modifiers.control / meta,
+			// based on whichever key is used for commands.
 			command: {
 				get: function() {
 					var agent = paper && paper.agent;
@@ -16820,15 +18656,22 @@ var Key = new function() {
 	function getKey(event) {
 		var key = event.key || event.keyIdentifier;
 		key = /^U\+/.test(key)
+				// Expand keyIdentifier Unicode format.
 				? String.fromCharCode(parseInt(key.substr(2), 16))
+				// Use short version for arrow keys: ArrowLeft -> Left
 				: /^Arrow[A-Z]/.test(key) ? key.substr(5)
+				// This is far from ideal, but what else can we do?
 				: key === 'Unidentified'  || key === undefined
 					? String.fromCharCode(event.keyCode)
 					: key;
 		return keyLookup[key] ||
+				// Hyphenate camel-cased special keys, lower-case normal ones:
 				(key.length > 1 ? Base.hyphenate(key) : key.toLowerCase());
 	}
 
+	// View#dispatchKeyEvent() passes its view. For the DOM's key events, the
+	// focused view may have been hidden since the last mouse event, while
+	// another one became visible (#1953), and only visible views get them:
 	function handleKey(down, key, character, event, view) {
 		if (!view) {
 			View.updateFocus();
@@ -16836,23 +18679,36 @@ var Key = new function() {
 			if (view && !view.isVisible())
 				view = null;
 		}
+		// View#dispatchKeyEvent() can leave out the character, which keyup
+		// takes from keydown, as the DOM's keyup events do below:
 		if (character == null)
 			character = down ? key.length > 1 ? '' : key : charMap[key] || '';
 		var name;
 		keyMap[key] = down;
+		// Link the key from keydown with the character form keypress, so keyup
+		// can retrieve the character again.
+		// Use delete instead of setting to null, so charMap only contains keys
+		// that are currently pressed, allowing the use of `key in charMap`
+		// checks and enumeration over pressed keys, e.g. in the blur event.
 		if (down) {
 			charMap[key] = character;
 		} else {
 			delete charMap[key];
 		}
+		// Detect modifiers and mark them as pressed / released
 		if (key.length > 1 && (name = Base.camelize(key)) in modifiers) {
 			modifiers[name] = down;
 			var agent = paper && paper.agent;
 			if (name === 'meta' && agent && agent.mac) {
+				// Fix a strange behavior on Mac where no keyup events are
+				// received for any keys pressed while the meta key is down.
+				// Keep track of the normal keys being pressed and trigger keyup
+				// events for all these keys when meta is released:
 				if (down) {
 					metaFixMap = {};
 				} else {
 					for (var k in metaFixMap) {
+						// Make sure it wasn't released already in the meantime:
 						if (k in charMap)
 							handleKey(false, k, metaFixMap[k], event, view);
 					}
@@ -16860,6 +18716,7 @@ var Key = new function() {
 				}
 			}
 		} else if (down && metaFixMap) {
+			// A normal key, add it to metaFixMap if that's defined.
 			metaFixMap[key] = character;
 		}
 		if (view) {
@@ -16871,11 +18728,17 @@ var Key = new function() {
 	DomEvent.add(document, {
 		keydown: function(event) {
 			var key = getKey(event);
+			// Directly handle any special keys (key.length > 1) in keydown, as
+			// not all of them will receive keypress events. Neither do keys
+			// pressed with control, alt or meta in modern browsers.
 			if (key.length > 1 || event.ctrlKey || event.altKey
 					|| event.metaKey) {
 				handleKey(true, key,
 						charLookup[key] || (key.length > 1 ? '' : key), event);
 			} else {
+				// If it wasn't handled yet, store the downKey so keypress can
+				// compare and handle buggy edge cases, known to happen in
+				// Chrome on Ubuntu.
 				downKey = key;
 			}
 		},
@@ -16884,9 +18747,14 @@ var Key = new function() {
 			if (downKey) {
 				var key = getKey(event),
 					code = event.charCode,
+					// Try event.charCode if its above 32 and fall back onto the
+					// key value if it's a single character, empty otherwise.
 					character = code >= 32 ? String.fromCharCode(code)
 						: key.length > 1 ? '' : key;
 				if (key !== downKey) {
+					// This shouldn't happen, but it does in Chrome on Ubuntu.
+					// In these cases, character is actually the key we want!
+					// See #881
 					key = character.toLowerCase();
 				}
 				handleKey(true, key, character, event);
@@ -16903,23 +18771,93 @@ var Key = new function() {
 
 	DomEvent.add(window, {
 		blur: function(event) {
+			// Emit key-up events for all currently pressed keys.
 			for (var key in charMap)
 				handleKey(false, key, charMap[key], event);
 		}
 	});
 
-	return {
+	return /** @lends Key */{
 		_handleKey: handleKey,
 
+		/**
+		 * The current state of the keyboard modifiers.
+		 *
+		 * @property
+		 * @type Object
+		 *
+		 * @option modifiers.shift {Boolean} {@true if the shift key is
+		 *     pressed}.
+		 * @option modifiers.control {Boolean} {@true if the control key is
+		 *     pressed}.
+		 * @option modifiers.alt {Boolean} {@true if the alt/option key is
+		 *     pressed}.
+		 * @option modifiers.meta {Boolean} {@true if the meta/windows/command
+		 *     key is pressed}.
+		 * @option modifiers.capsLock {Boolean} {@true if the caps-lock key is
+		 *     active}.
+		 * @option modifiers.space {Boolean} {@true if the space key is
+		 *     pressed}.
+		 * @option modifiers.option {Boolean} {@true if the alt/option key is
+		 *     pressed}. This is the same as `modifiers.alt`
+		 * @option modifiers.command {Boolean} {@true if the meta key is pressed
+		 *     on Mac, or the control key is pressed on Windows and Linux}.
+		 */
 		modifiers: modifiers,
 
+		/**
+		 * Checks whether the specified key is pressed.
+		 *
+		 * @param {String} key any character or special key descriptor:
+		 *     {@values 'enter', 'space', 'shift', 'control', 'alt', 'meta',
+		 *     'caps-lock', 'left', 'up', 'right', 'down', 'escape', 'delete',
+		 *     ...}
+		 * @return {Boolean} {@true if the key is pressed}
+		 *
+		 * @example
+		 * // Whenever the user clicks, create a circle shaped path. If the
+		 * // 'a' key is pressed, fill it with red, otherwise fill it with blue:
+		 * function onMouseDown(event) {
+		 *     var path = new Path.Circle(event.point, 10);
+		 *     if (Key.isDown('a')) {
+		 *         path.fillColor = 'red';
+		 *     } else {
+		 *         path.fillColor = 'blue';
+		 *     }
+		 * }
+		 */
 		isDown: function(key) {
 			return !!keyMap[key];
 		}
 	};
 };
 
-var MouseEvent = Event.extend({
+/*
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
+ * http://paperjs.org/
+ *
+ * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
+ * http://juerglehni.com/ & https://puckey.studio/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ */
+
+/**
+ * @name MouseEvent
+ *
+ * @class The MouseEvent object is received by the {@link Item}'s mouse event
+ * handlers {@link Item#onMouseDown}, {@link Item#onMouseDrag},
+ * {@link Item#onMouseMove}, {@link Item#onMouseUp}, {@link Item#onClick},
+ * {@link Item#onDoubleClick}, {@link Item#onMouseEnter} and
+ * {@link Item#onMouseLeave}. The MouseEvent object is the only parameter passed
+ * to these functions and contains information about the mouse event.
+ *
+ * @extends Event
+ */
+/* global MouseEvent: true */
+var MouseEvent = Event.extend(/** @lends MouseEvent# */{
 	_class: 'MouseEvent',
 
 	initialize: function MouseEvent(type, event, point, target, delta) {
@@ -16930,6 +18868,51 @@ var MouseEvent = Event.extend({
 		this.delta = delta;
 	},
 
+	/**
+	 * The type of mouse event.
+	 *
+	 * @name MouseEvent#type
+	 * @type String
+	 * @values 'mousedown', 'mouseup', 'mousedrag', 'click', 'doubleclick',
+	 *     'mousemove', 'mouseenter', 'mouseleave'
+	 */
+
+	/**
+	 * The position of the mouse in project coordinates when the event was
+	 * fired.
+	 *
+	 * @name MouseEvent#point
+	 * @type Point
+	 */
+
+	/**
+	 * The item that dispatched the event. It is different from
+	 * {@link #currentTarget} when the event handler is called during
+	 * the bubbling phase of the event.
+	 *
+	 * @name MouseEvent#target
+	 * @type Item
+	 */
+
+	/**
+	 * The current target for the event, as the event traverses the scene graph.
+	 * It always refers to the element the event handler has been attached to as
+	 * opposed to {@link #target} which identifies the element on
+	 * which the event occurred.
+	 *
+	 * @name MouseEvent#currentTarget
+	 * @type Item
+	 */
+
+	// DOCS: document MouseEvent#delta
+	/**
+	 * @name MouseEvent#delta
+	 * @type Point
+	 */
+
+	/**
+	 * @return {String} a string representation of the mouse event
+	 */
 	toString: function() {
 		return "{ type: '" + this.type
 				+ "', point: " + this.point
@@ -16940,8 +18923,32 @@ var MouseEvent = Event.extend({
 	}
 });
 
-var ToolEvent = Event.extend({
+/*
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
+ * http://paperjs.org/
+ *
+ * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
+ * http://juerglehni.com/ & https://puckey.studio/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ */
+
+/**
+ * @name ToolEvent
+ *
+ * @class ToolEvent The ToolEvent object is received by the {@link Tool}'s mouse
+ * event handlers {@link Tool#onMouseDown}, {@link Tool#onMouseDrag},
+ * {@link Tool#onMouseMove} and {@link Tool#onMouseUp}. The ToolEvent
+ * object is the only parameter passed to these functions and contains
+ * information about the mouse event.
+ *
+ * @extends Event
+ */
+var ToolEvent = Event.extend(/** @lends ToolEvent# */{
 	_class: 'ToolEvent',
+	// Have ToolEvent#item fall back to returning null, not undefined.
 	_item: null,
 
 	initialize: function ToolEvent(tool, type, event) {
@@ -16950,10 +18957,47 @@ var ToolEvent = Event.extend({
 		this.event = event;
 	},
 
+	/**
+	 * Convenience method to allow local overrides of point values.
+	 * See application below.
+	 */
 	_choosePoint: function(point, toolPoint) {
 		return point ? point : toolPoint ? toolPoint.clone() : null;
 	},
 
+	/**
+	 * The type of tool event.
+	 *
+	 * @name ToolEvent#type
+	 * @type String
+	 * @values 'mousedown', 'mouseup', 'mousemove', 'mousedrag'
+	 */
+
+	/**
+	 * The tool that fired the event.
+	 *
+	 * @name ToolEvent#tool
+	 * @type Tool
+	 */
+
+	/**
+	 * The position of the mouse in project coordinates when the event was
+	 * fired.
+	 *
+	 * @example
+	 * function onMouseDrag(event) {
+	 *     // the position of the mouse when it is dragged
+	 *     console.log(event.point);
+	 * }
+	 *
+	 * function onMouseUp(event) {
+	 *     // the position of the mouse when it is released
+	 *     console.log(event.point);
+	 * }
+	 *
+	 * @bean
+	 * @type Point
+	 */
 	getPoint: function() {
 		return this._choosePoint(this._point, this.tool._point);
 	},
@@ -16962,6 +19006,13 @@ var ToolEvent = Event.extend({
 		this._point = point;
 	},
 
+	/**
+	 * The position of the mouse in project coordinates when the previous
+	 * event was fired.
+	 *
+	 * @bean
+	 * @type Point
+	 */
 	getLastPoint: function() {
 		return this._choosePoint(this._lastPoint, this.tool._lastPoint);
 	},
@@ -16970,6 +19021,13 @@ var ToolEvent = Event.extend({
 		this._lastPoint = lastPoint;
 	},
 
+	/**
+	 * The position of the mouse in project coordinates when the mouse button
+	 * was last clicked.
+	 *
+	 * @bean
+	 * @type Point
+	 */
 	getDownPoint: function() {
 		return this._choosePoint(this._downPoint, this.tool._downPoint);
 	},
@@ -16978,8 +19036,19 @@ var ToolEvent = Event.extend({
 		this._downPoint = downPoint;
 	},
 
+	/**
+	 * The point in the middle between {@link #lastPoint} and
+	 * {@link #point}. This is a useful position to use when creating
+	 * artwork based on the moving direction of the mouse, as returned by
+	 * {@link #delta}.
+	 *
+	 * @bean
+	 * @type Point
+	 */
 	getMiddlePoint: function() {
+		// For explanations, see getDelta()
 		if (!this._middlePoint && this.tool._lastPoint) {
+			// (point + lastPoint) / 2
 			return this.tool._point.add(this.tool._lastPoint).divide(2);
 		}
 		return this._middlePoint;
@@ -16989,7 +19058,20 @@ var ToolEvent = Event.extend({
 		this._middlePoint = middlePoint;
 	},
 
+	/**
+	 * The difference between the current position and the last position of the
+	 * mouse when the event was fired. In case of the mouseup event, the
+	 * difference to the mousedown position is returned.
+	 *
+	 * @bean
+	 * @type Point
+	 */
 	getDelta: function() {
+		// Do not put the calculated delta into delta, since this only reserved
+		// for overriding event.delta.
+		// Instead, keep calculating the delta each time, so the result can be
+		// directly modified by the script without changing the internal values.
+		// We could cache this and use clone, but this is almost as fast...
 		return !this._delta && this.tool._lastPoint
 				? this.tool._point.subtract(this.tool._lastPoint)
 				: this._delta;
@@ -16999,6 +19081,18 @@ var ToolEvent = Event.extend({
 		this._delta = delta;
 	},
 
+	/**
+	 * The velocity of the mouse, in points per second: the distance it moved
+	 * since the last tool event, divided by the time between them, so it
+	 * points in the direction of the move, and its length is the speed. It
+	 * stays even when the system misses a mouse report. The events that
+	 * {@link Tool#maxDistance} adds along one move share its velocity, and the
+	 * repeats of {@link Tool#eventInterval} have none. On mousedown, and when
+	 * no time passed, it's zero.
+	 *
+	 * @bean
+	 * @type Point
+	 */
 	getVelocity: function() {
 		return this._velocity || this.tool._velocity.clone();
 	},
@@ -17007,6 +19101,16 @@ var ToolEvent = Event.extend({
 		this._velocity = velocity;
 	},
 
+	/**
+	 * The time since the last tool event, in seconds, measured between the
+	 * reports of the mouse as {@link #velocity} is: the events that
+	 * {@link Tool#maxDistance} adds along one move share it, and the repeats
+	 * of {@link Tool#eventInterval} have the interval. It's zero on the first
+	 * event.
+	 *
+	 * @bean
+	 * @type Number
+	 */
 	getElapsed: function() {
 		return this._elapsed != null ? this._elapsed : this.tool._elapsed;
 	},
@@ -17015,7 +19119,15 @@ var ToolEvent = Event.extend({
 		this._elapsed = elapsed;
 	},
 
+	/**
+	 * The number of times the mouse event was fired.
+	 *
+	 * @bean
+	 * @type Number
+	 */
 	getCount: function() {
+		// Return downCount for both mouse down and up, since
+		// the count is the same.
 		return this.tool[/^mouse(down|up)$/.test(this.type)
 				? '_downCount' : '_moveCount'];
 	},
@@ -17025,11 +19137,22 @@ var ToolEvent = Event.extend({
 				? '_downCount' : '_moveCount'] = count;
 	},
 
+	/**
+	 * The item at the position of the mouse (if any).
+	 *
+	 * If the item is contained within one or more {@link Group} or
+	 * {@link CompoundPath} items, the most top level group or compound path
+	 * that it is contained within is returned.
+	 *
+	 * @bean
+	 * @type Item
+	 */
 	getItem: function() {
 		if (!this._item) {
 			var result = this.tool._scope.project.hitTest(this.getPoint());
 			if (result) {
 				var item = result.item,
+					// Find group parent, but exclude layers
 					parent = item._parent;
 				while (/^(Group|CompoundPath)$/.test(parent._class)) {
 					item = parent;
@@ -17045,6 +19168,9 @@ var ToolEvent = Event.extend({
 		this._item = item;
 	},
 
+	/**
+	 * @return {String} a string representation of the tool event
+	 */
 	toString: function() {
 		return '{ type: ' + this.type
 				+ ', point: ' + this.getPoint()
@@ -17054,21 +19180,99 @@ var ToolEvent = Event.extend({
 	}
 });
 
-var Tool = PaperScopeItem.extend({
+/*
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
+ * http://paperjs.org/
+ *
+ * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
+ * http://juerglehni.com/ & https://puckey.studio/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ */
+
+/**
+ * @name Tool
+ *
+ * @class The Tool object refers to a script that the user can interact with by
+ *     using the mouse and keyboard and can be accessed through the global
+ *     `tool` variable. All its properties are also available in the paper
+ *     scope.
+ *
+ * The global `tool` variable only exists in scripts that contain mouse handler
+ * functions ({@link #onMouseMove}, {@link #onMouseDown}, {@link #onMouseDrag},
+ * {@link #onMouseUp}) or a keyboard handler function ({@link #onKeyDown},
+ * {@link #onKeyUp}).
+ *
+ * @classexample {@paperscript height=300}
+ * var path;
+ *
+ * // Only execute onMouseDrag when the mouse
+ * // has moved at least 10 points:
+ * tool.minDistance = 10;
+ *
+ * tool.onMouseDown = function(event) {
+ *     // Create a new path every time the mouse is clicked
+ *     path = new Path();
+ *     path.add(event.point);
+ *     path.strokeColor = 'black';
+ * }
+ *
+ * tool.onMouseDrag = function(event) {
+ *     // Add a point to the path every time the mouse is dragged
+ *     path.add(event.point);
+ * }
+ */
+var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	_class: 'Tool',
 	_list: 'tools',
+	// TODO: This should be `activeTool` instead?
 	_reference: 'tool',
 	_events: ['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onMouseMove',
 			'onActivate', 'onDeactivate', 'onEditOptions', 'onKeyDown',
 			'onKeyUp'],
 
+	/**
+	 * The scope that this tool belongs to.
+	 *
+	 * @name Tool#scope
+	 * @property
+	 * @type PaperScope
+	 * @readonly
+	 */
+
+	// DOCS: rewrite Tool constructor explanation
 	initialize: function Tool(props) {
 		PaperScopeItem.call(this);
+		// -1 so first event is 0:
 		this._moveCount = -1;
 		this._downCount = -1;
 		this.set(props);
 	},
 
+	/**
+	 * Activates this tool, meaning {@link PaperScope#tool} will
+	 * point to it and it will be the one that receives tool events.
+	 *
+	 * @name Tool#activate
+	 * @function
+	 */
+
+	/**
+	 * Removes this tool from the {@link PaperScope#tools} list.
+	 *
+	 * @name Tool#remove
+	 * @function
+	 */
+
+	/**
+	 * The minimum distance the mouse has to drag before firing the onMouseDrag
+	 * event, since the last onMouseDrag event.
+	 *
+	 * @bean
+	 * @type Number
+	 */
 	getMinDistance: function() {
 		return this._minDistance;
 	},
@@ -17081,6 +19285,13 @@ var Tool = PaperScopeItem.extend({
 		}
 	},
 
+	/**
+	 * The maximum distance the mouse has to drag before firing the onMouseDrag
+	 * event, since the last onMouseDrag event.
+	 *
+	 * @bean
+	 * @type Number
+	 */
 	getMaxDistance: function() {
 		return this._maxDistance;
 	},
@@ -17093,6 +19304,22 @@ var Tool = PaperScopeItem.extend({
 		}
 	},
 
+	/**
+	 * The interval in milliseconds at which the onMouseDrag event fires again
+	 * while the mouse button is held, also when the mouse doesn't move. The
+	 * repeated events are at the last point, with a zero
+	 * {@link ToolEvent#delta}. `null`, the default, or anything up to 0 turns
+	 * it off.
+	 *
+	 * @bean
+	 * @type Number
+	 * @default null
+	 *
+	 * @example
+	 * // Fire the onMouseDrag event 10 times a second, while the mouse button
+	 * // is held:
+	 * tool.eventInterval = 100;
+	 */
 	getEventInterval: function() {
 		return this._eventInterval;
 	},
@@ -17101,6 +19328,11 @@ var Tool = PaperScopeItem.extend({
 		this._eventInterval = interval;
 	},
 
+	// DOCS: document Tool#fixedDistance
+	/**
+	 * @bean
+	 * @type Number
+	 */
 	getFixedDistance: function() {
 		return this._minDistance == this._maxDistance
 			? this._minDistance : null;
@@ -17110,23 +19342,228 @@ var Tool = PaperScopeItem.extend({
 		this._minDistance = this._maxDistance = distance;
 	},
 
+	/**
+	 * {@grouptitle Mouse Event Handlers}
+	 *
+	 * The function to be called when the mouse button is pushed down. The
+	 * function receives a {@link ToolEvent} object which contains information
+	 * about the tool event.
+	 *
+	 * @name Tool#onMouseDown
+	 * @property
+	 * @type ?Function
+	 *
+	 * @example {@paperscript}
+	 * // Creating circle shaped paths where the user presses the mouse button:
+	 * tool.onMouseDown = function(event) {
+	 *     // Create a new circle shaped path with a radius of 10
+	 *     // at the position of the mouse (event.point):
+	 *     var path = new Path.Circle({
+	 *         center: event.point,
+	 *         radius: 10,
+	 *         fillColor: 'black'
+	 *     });
+	 * }
+	 */
+
+	/**
+	 * The function to be called when the mouse position changes while the mouse
+	 * is being dragged. The function receives a {@link ToolEvent} object which
+	 * contains information about the tool event.
+	 *
+	 * @name Tool#onMouseDrag
+	 * @property
+	 * @type ?Function
+	 *
+	 * @example {@paperscript}
+	 * // Draw a line by adding a segment to a path on every mouse drag event:
+	 *
+	 * // Create an empty path:
+	 * var path = new Path({
+	 *     strokeColor: 'black'
+	 * });
+	 *
+	 * tool.onMouseDrag = function(event) {
+	 *     // Add a segment to the path at the position of the mouse:
+	 *     path.add(event.point);
+	 * }
+	 */
+
+	/**
+	 * The function to be called the mouse moves within the project view. The
+	 * function receives a {@link ToolEvent} object which contains information
+	 * about the tool event.
+	 *
+	 * While the mouse button is held down, the tool calls {@link #onMouseDrag}
+	 * instead, if it defines one, and `onMouseMove` only otherwise.
+	 *
+	 * @name Tool#onMouseMove
+	 * @property
+	 * @type ?Function
+	 *
+	 * @example {@paperscript}
+	 * // Moving a path to the position of the mouse:
+	 *
+	 * // Create a circle shaped path with a radius of 10 at {x: 0, y: 0}:
+	 * var path = new Path.Circle({
+	 *     center: [0, 0],
+	 *     radius: 10,
+	 *     fillColor: 'black'
+	 * });
+	 *
+	 * tool.onMouseMove = function(event) {
+	 *     // Whenever the user moves the mouse, move the path
+	 *     // to that position:
+	 *     path.position = event.point;
+	 * }
+	 */
+
+	/**
+	 * The function to be called when the mouse button is released. The function
+	 * receives a {@link ToolEvent} object which contains information about the
+	 * tool event.
+	 *
+	 * @name Tool#onMouseUp
+	 * @property
+	 * @type ?Function
+	 *
+	 * @example {@paperscript}
+	 * // Creating circle shaped paths where the user releases the mouse:
+	 * tool.onMouseUp = function(event) {
+	 *     // Create a new circle shaped path with a radius of 10
+	 *     // at the position of the mouse (event.point):
+	 *     var path = new Path.Circle({
+	 *         center: event.point,
+	 *         radius: 10,
+	 *         fillColor: 'black'
+	 *     });
+	 * }
+	 */
+
+	/**
+	 * {@grouptitle Keyboard Event Handlers}
+	 *
+	 * The function to be called when the user presses a key on the keyboard.
+	 * The function receives a {@link KeyEvent} object which contains
+	 * information about the keyboard event.
+	 *
+	 * If the function returns `false`, the keyboard event will be prevented
+	 * from bubbling up. This can be used for example to stop the window from
+	 * scrolling, when you need the user to interact with arrow keys.
+	 *
+	 * @name Tool#onKeyDown
+	 * @property
+	 * @type ?Function
+	 *
+	 * @example {@paperscript}
+	 * // Scaling a path whenever the user presses the space bar:
+	 *
+	 * // Create a circle shaped path:
+	 *     var path = new Path.Circle({
+	 *         center: new Point(50, 50),
+	 *         radius: 30,
+	 *         fillColor: 'red'
+	 *     });
+	 *
+	 * tool.onKeyDown = function(event) {
+	 *     if (event.key == 'space') {
+	 *         // Scale the path by 110%:
+	 *         path.scale(1.1);
+	 *
+	 *         // Prevent the key event from bubbling
+	 *         return false;
+	 *     }
+	 * }
+	 */
+
+	/**
+	 * The function to be called when the user releases a key on the keyboard.
+	 * The function receives a {@link KeyEvent} object which contains
+	 * information about the keyboard event.
+	 *
+	 * If the function returns `false`, the keyboard event will be prevented
+	 * from bubbling up. This can be used for example to stop the window from
+	 * scrolling, when you need the user to interact with arrow keys.
+	 *
+	 * @name Tool#onKeyUp
+	 * @property
+	 * @type ?Function
+	 *
+	 * @example
+	 * tool.onKeyUp = function(event) {
+	 *     if (event.key == 'space') {
+	 *         console.log('The spacebar was released!');
+	 *     }
+	 * }
+	 */
+
+	/**
+	 * {@grouptitle Activation Event Handlers}
+	 *
+	 * The function to be called when the tool is activated through
+	 * {@link #activate()}. The function receives the previously active tool,
+	 * which is the tool itself when it was already active.
+	 *
+	 * @name Tool#onActivate
+	 * @property
+	 * @type ?Function
+	 *
+	 * @example
+	 * tool.onActivate = function(previous) {
+	 *     if (previous == tool) {
+	 *         console.log('The tool was activated again!');
+	 *     }
+	 * }
+	 */
+
+	/**
+	 * The function to be called when another tool is activated through
+	 * {@link #activate()}, while this one is active.
+	 *
+	 * @name Tool#onDeactivate
+	 * @property
+	 * @type ?Function
+	 */
+
+	/**
+	 * Private method to handle tool-events.
+	 *
+	 * @return {@true if at least one event handler was called}.
+	 */
 	_handleMouseEvent: function(type, event, point, mouse) {
+		// Update global reference to this scope.
 		paper = this._scope;
+		// If there is no mousedrag event installed, fall back to mousemove,
+		// with which we share the actual event handling code anyhow.
 		if (mouse.drag && !this.responds(type))
 			type = 'mousemove';
 		var move = mouse.move || mouse.drag,
 			responds = this.responds(type),
 			called = false,
 			tool = this,
+			// The time and velocity since the last tool event, in seconds and
+			// points per second, measured between the mouse reports, so the
+			// steps that maxDistance interpolates along the way share them:
 			time = event.timeStamp / 1000,
 			elapsed = this._time != null ? time - this._time : 0,
 			velocity = !mouse.down && this._point && elapsed > 0
 					? point.subtract(this._point).divide(elapsed)
 					: new Point();
+		// Updates the internal tool state, taking into account minDistance and
+		// maxDistance and interpolating "fake" events along the moved distance
+		// to respect their settings, if necessary.
+		// Returns true as long as events should be fired, false when the target
+		// is reached.
 		function update(minDistance, maxDistance) {
 			var pt = point,
+				// Set toolPoint to the  previous point for moves or downPoint
+				// for clicks, so mouseup has a delta spanning over the full
+				// drag. Use the current point if this is the first mousedown,
+				// so there's always a delta.
 				toolPoint = move ? tool._point : (tool._downPoint || pt);
 			if (move) {
+				// After first move event was emitted, tool._moveCount = 0, so
+				// we need to include 0 in this check.
 				if (tool._moveCount >= 0 && pt.equals(toolPoint)) {
 					return false;
 				}
@@ -17135,6 +19572,8 @@ var Tool = PaperScopeItem.extend({
 						distance = vector.getLength();
 					if (distance < (minDistance || 0))
 						return false;
+					// Produce a new point on the way to point if point is
+					// further away than maxDistance
 					if (maxDistance) {
 						pt = toolPoint.add(vector.normalize(
 								Math.min(distance, maxDistance)));
@@ -17166,11 +19605,14 @@ var Tool = PaperScopeItem.extend({
 			update();
 			emit();
 			if (this._eventInterval > 0) {
+				// Repeat mousedrag at the last point while the mouse is held,
+				// until the mouse is released or another tool takes over:
 				clearInterval(this._timer);
 				this._timer = setInterval(function() {
 					if (tool.isActive()) {
 						paper = tool._scope;
 						tool._lastPoint = tool._point;
+						// Not moving, but keep the time of the last report:
 						tool._velocity = new Point();
 						tool._elapsed = tool._eventInterval / 1000;
 						tool._moveCount++;
@@ -17193,94 +19635,205 @@ var Tool = PaperScopeItem.extend({
 		}
 		return called;
 	}
+	/**
+	 * {@grouptitle Event Handling}
+	 *
+	 * Attach an event handler to the tool.
+	 *
+	 * @name Tool#on
+	 * @function
+	 * @param {String} type the event type: {@values 'mousedown', 'mouseup',
+	 *     'mousedrag', 'mousemove', 'keydown', 'keyup'}
+	 * @param {Function} function the function to be called when the event
+	 *     occurs, receiving a {@link ToolEvent} object as its sole argument
+	 * @return {Tool} this tool itself, so calls can be chained
+	 */
+	/**
+	 * Attach one or more event handlers to the tool.
+	 *
+	 * @name Tool#on
+	 * @function
+	 * @param {Object} param an object literal containing one or more of the
+	 *     following properties: {@values mousedown, mouseup, mousedrag,
+	 *     mousemove, keydown, keyup}
+	 * @return {Tool} this tool itself, so calls can be chained
+	 */
 
+	/**
+	 * Detach an event handler from the tool.
+	 *
+	 * @name Tool#off
+	 * @function
+	 * @param {String} type the event type: {@values 'mousedown', 'mouseup',
+	 *     'mousedrag', 'mousemove', 'keydown', 'keyup'}
+	 * @param {Function} function the function to be detached
+	 * @return {Tool} this tool itself, so calls can be chained
+	 */
+	/**
+	 * Detach one or more event handlers from the tool.
+	 *
+	 * @name Tool#off
+	 * @function
+	 * @param {Object} param an object literal containing one or more of the
+	 *     following properties: {@values mousedown, mouseup, mousedrag,
+	 *     mousemove, keydown, keyup}
+	 * @return {Tool} this tool itself, so calls can be chained
+	 */
+
+	/**
+	 * Emit an event on the tool.
+	 *
+	 * @name Tool#emit
+	 * @function
+	 * @param {String} type the event type: {@values 'mousedown', 'mouseup',
+	 *     'mousedrag', 'mousemove', 'keydown', 'keyup'}
+	 * @param {Object} event an object literal containing properties describing
+	 * the event
+	 * @return {Boolean} {@true if the event had listeners}
+	 */
+
+	/**
+	 * Check if the tool has one or more event handlers of the specified type.
+	 *
+	 * @name Tool#responds
+	 * @function
+	 * @param {String} type the event type: {@values 'mousedown', 'mouseup',
+	 *     'mousedrag', 'mousemove', 'keydown', 'keyup'}
+	 * @return {Boolean} {@true if the tool has one or more event handlers of
+	 * the specified type}
+	 */
 });
 
-var Tween = Base.extend(Emitter, {
+/*
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
+ * http://paperjs.org/
+ *
+ * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
+ * http://juerglehni.com/ & https://puckey.studio/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ */
+
+/**
+ * @name Tween
+ *
+ * @class Allows tweening `Object` properties between two states for a given
+ * duration. To tween properties on Paper.js {@link Item} instances,
+ * {@link Item#tween(from, to, options)} can be used, which returns created
+ * tween instance.
+ *
+ * @see Item#tween(from, to, options)
+ * @see Item#tween(to, options)
+ * @see Item#tween(options)
+ * @see Item#tweenTo(to, options)
+ * @see Item#tweenFrom(from, options)
+ */
+var Tween = Base.extend(Emitter, /** @lends Tween# */{
 	_class: 'Tween',
 
 	statics: {
 		easings: new Base({
+			// no easing, no acceleration
 			linear: function(t) {
 				return t;
 			},
 
+			// accelerating from zero velocity
 			easeInQuad: function(t) {
 				return t * t;
 			},
 
+			// decelerating to zero velocity
 			easeOutQuad: function(t) {
 				return t * (2 - t);
 			},
 
+			// acceleration until halfway, then deceleration
 			easeInOutQuad: function(t) {
 				return t < 0.5
 					? 2 * t * t
 					: -1 + 2 * (2 - t) * t;
 			},
 
+			// accelerating from zero velocity
 			easeInCubic: function(t) {
 				return t * t * t;
 			},
 
+			// decelerating to zero velocity
 			easeOutCubic: function(t) {
 				return --t * t * t + 1;
 			},
 
+			// acceleration until halfway, then deceleration
 			easeInOutCubic: function(t) {
 				return t < 0.5
 					? 4 * t * t * t
 					: (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
 			},
 
+			// accelerating from zero velocity
 			easeInQuart: function(t) {
 				return t * t * t * t;
 			},
 
+			// decelerating to zero velocity
 			easeOutQuart: function(t) {
 				return 1 - (--t) * t * t * t;
 			},
 
+			// acceleration until halfway, then deceleration
 			easeInOutQuart: function(t) {
 				return t < 0.5
 					? 8 * t * t * t * t
 					: 1 - 8 * (--t) * t * t * t;
 			},
 
+			// accelerating from zero velocity
 			easeInQuint: function(t) {
 				return t * t * t * t * t;
 			},
 
+			// decelerating to zero velocity
 			easeOutQuint: function(t) {
 				return 1 + --t * t * t * t * t;
 			},
 
+			// acceleration until halfway, then deceleration
 			easeInOutQuint: function(t) {
 				return t < 0.5
 					? 16 * t * t * t * t * t
 					: 1 + 16 * (--t) * t * t * t * t;
 			},
 
+			// accelerating from zero velocity
 			easeInSine: function(t) {
 				return 1 - Math.cos(t * Math.PI / 2);
 			},
 
+			// decelerating to zero velocity
 			easeOutSine: function(t) {
 				return Math.sin(t * Math.PI / 2);
 			},
 
+			// acceleration until halfway, then deceleration
 			easeInOutSine: function(t) {
 				return (1 - Math.cos(t * Math.PI)) / 2;
 			},
 
+			// accelerating from zero velocity
 			easeInExpo: function(t) {
 				return t === 0 ? 0 : Math.pow(2, 10 * t - 10);
 			},
 
+			// decelerating to zero velocity
 			easeOutExpo: function(t) {
 				return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
 			},
 
+			// acceleration until halfway, then deceleration
 			easeInOutExpo: function(t) {
 				return t === 0 || t === 1
 					? t
@@ -17289,14 +19842,17 @@ var Tween = Base.extend(Emitter, {
 						: 1 - Math.pow(2, 10 - 20 * t) / 2;
 			},
 
+			// accelerating from zero velocity
 			easeInCirc: function(t) {
 				return 1 - Math.sqrt(1 - t * t);
 			},
 
+			// decelerating to zero velocity
 			easeOutCirc: function(t) {
 				return Math.sqrt(1 - (--t) * t);
 			},
 
+			// acceleration until halfway, then deceleration
 			easeInOutCirc: function(t) {
 				return t < 0.5
 					? (1 - Math.sqrt(1 - 4 * t * t)) / 2
@@ -17305,6 +19861,18 @@ var Tween = Base.extend(Emitter, {
 		})
 	},
 
+	/**
+	 * Creates a new tween.
+	 *
+	 * @param {Object} object the object to tween the properties on
+	 * @param {Object} from the state at the start of the tweening
+	 * @param {Object} to the state at the end of the tweening
+	 * @param {Number} duration the duration of the tweening
+	 * @param {String|Function} [easing='linear'] the type of the easing
+	 *     function or the easing function
+	 * @param {Boolean} [start=true] whether to start tweening automatically
+	 * @return {Tween} the newly created tween
+	 */
 	initialize: function Tween(object, from, to, duration, easing, start) {
 		this.object = object;
 		var type = typeof easing;
@@ -17330,25 +19898,87 @@ var Tween = Base.extend(Emitter, {
 		}
 	},
 
+	/**
+	 * Set a function that will be executed when the tween completes.
+	 * @param {Function} function the function to execute when the tween
+	 *     completes
+	 * @return {Tween}
+	 *
+	 * @example {@paperscript}
+	 * // Tweens chaining:
+	 * var circle = new Path.Circle({
+	 *     center: view.center,
+	 *     radius: 40,
+	 *     fillColor: 'blue'
+	 * });
+	 * // Tween color from blue to red.
+	 * var tween = circle.tweenTo({ fillColor: 'red' }, 2000);
+	 * // When the first tween completes...
+	 * tween.then(function() {
+	 *     // ...tween color back to blue.
+	 *     circle.tweenTo({ fillColor: 'blue' }, 2000);
+	 * });
+	 */
 	then: function(then) {
+		// TODO: This only supports one callback for `then()`. Figure out how
+		// to handle multiple calls to then in an decent way, without relying
+		// on Promises (or should we?).
 		this._then = then;
 		return this;
 	},
 
+	/**
+	 * Start tweening.
+	 * @return {Tween}
+	 *
+	 * @example {@paperscript}
+	 * // Manually start tweening.
+	 * var circle = new Path.Circle({
+	 *     center: view.center,
+	 *     radius: 40,
+	 *     fillColor: 'blue'
+	 * });
+	 * var tween = circle.tweenTo(
+	 *     { fillColor: 'red' },
+	 *     { duration: 2000, start: false }
+	 * );
+	 * tween.start();
+	 */
 	start: function() {
 		this._startTime = null;
 		this.running = true;
 		return this;
 	},
 
+	/**
+	 * Stop tweening.
+	 * @return {Tween}
+	 *
+	 * @example {@paperscript}
+	 * // Stop a tween before it completes.
+	 * var circle = new Path.Circle({
+	 *     center: view.center,
+	 *     radius: 40,
+	 *     fillColor: 'blue'
+	 * });
+	 * // Start tweening from blue to red for 2 seconds.
+	 * var tween = circle.tweenTo({ fillColor: 'red' }, 2000);
+	 * // After 1 second...
+	 * setTimeout(function(){
+	 *     // ...stop tweening.
+	 *     tween.stop();
+	 * }, 1000);
+	 */
 	stop: function() {
 		this.running = false;
 		return this;
 	},
 
+	// DOCS: Document Tween#update(progress)
 	update: function(progress) {
 		if (this.running) {
 			if (progress >= 1) {
+				// Always finish the animation.
 				progress = 1;
 				this.running = false;
 			}
@@ -17364,12 +19994,16 @@ var Tween = Base.extend(Emitter, {
 				var key = keys[i],
 					from = getValue(this._from[key]),
 					to = getValue(this._to[key]),
+					// Some paper objects have math functions (e.g.: Point,
+					// Color) which can directly be used to do the tweening.
 					value = (from && to && from.multiply && to.multiply)
 						? to.subtract(from).multiply(factor).add(from)
 						: ((to - from) * factor) + from;
 				this._setProperty(this._parsedKeys[key], value);
 			}
 
+			// TODO: Set `progress` and `factor` on Tween object also, so they
+			// can be used witout events.
 			if (this.responds('update')) {
 				this.emit('update', new Base({
 					progress: progress,
@@ -17377,12 +20011,51 @@ var Tween = Base.extend(Emitter, {
 				}));
 			}
 			if (!this.running && this._then) {
+				// TODO: Look into what should be returned.
 				this._then(this.object);
 			}
 		}
 		return this;
 	},
 
+	/**
+	 * {@grouptitle Event Handlers}
+	 *
+	 * The function to be called when the tween is updated. It receives an
+	 * object as its sole argument, containing the current progress of the
+	 * tweening and the factor calculated by the easing function.
+	 *
+	 * @name Tween#onUpdate
+	 * @property
+	 * @type ?Function
+	 *
+	 * @example {@paperscript}
+	 * // Display tween progression values:
+	 * var circle = new Path.Circle({
+	 *     center: view.center,
+	 *     radius: 40,
+	 *     fillColor: 'blue'
+	 * });
+	 * var tween = circle.tweenTo(
+	 *     { fillColor: 'red' },
+	 *     {
+	 *         duration: 2000,
+	 *         easing: 'easeInCubic'
+	 *     }
+	 * );
+	 * var progressText = new PointText(view.center + [60, -10]);
+	 * var factorText = new PointText(view.center + [60, 10]);
+	 *
+	 * // Install event using onUpdate() property:
+	 * tween.onUpdate = function(event) {
+	 *     progressText.content = 'progress: ' + event.progress.toFixed(2);
+	 * };
+	 *
+	 * // Install event using on('update') method:
+	 * tween.on('update', function(event) {
+	 *     factorText.content = 'factor: ' + event.factor.toFixed(2);
+	 * });
+	 */
 	_events: {
 		onUpdate: {}
 	},
@@ -17408,11 +20081,16 @@ var Tween = Base.extend(Emitter, {
 				value;
 			if (state) {
 				var resolved = this._resolveValue(current, state[key]);
+				// Temporarily set the resolved value, so we can retrieve the
+				// coerced value from paper's internal magic.
 				this._setProperty(path, resolved);
 				value = this._getProperty(path);
+				// Clone the value if possible to prevent future changes.
 				value = value && value.clone ? value.clone() : value;
 				this._setProperty(path, current);
 			} else {
+				// We want to get the current state at the time of the call, so
+				// we have to clone if possible to prevent future changes.
 				value = current && current.clone ? current.clone() : current;
 			}
 			result[key] = value;
@@ -17427,6 +20105,8 @@ var Tween = Base.extend(Emitter, {
 				return (
 					operator &&
 					operator.match &&
+					// We're (unnecessarily) escaping '*/' here to not confuse
+					// the ol' JSDoc parser...
 					operator.match(/^[+\-\*\/]=/)
 				)
 					? this._calculate(current, operator[0], value[1])
@@ -17446,6 +20126,8 @@ var Tween = Base.extend(Emitter, {
 	},
 
 	_calculate: function(left, operator, right) {
+		// Use the math functions of objects that have them (e.g.: Point,
+		// Color), and the operator itself for numbers.
 		var name = { '+': 'add', '-': 'subtract', '*': 'multiply',
 				'/': 'divide' }[operator];
 		if (left && left[name])
@@ -17463,7 +20145,9 @@ var Tween = Base.extend(Emitter, {
 		for (var i = 0, l = keys.length; i < l; i++) {
 			var key = keys[i],
 				path = key
+					// Convert from JS property access notation to JSON pointer:
 					.replace(/\.([^.]*)/g, '/$1')
+					// Expand array property access notation ([])
 					.replace(/\[['"]?([^'"\]]*)['"]?\]/g, '/$1');
 			parsed[key] = path.split('/');
 		}
@@ -17486,8 +20170,21 @@ var Tween = Base.extend(Emitter, {
 	}
 });
 
+/*
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
+ * http://paperjs.org/
+ *
+ * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
+ * http://juerglehni.com/ & https://puckey.studio/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ */
+
 var Http = {
 	request: function(options) {
+		// Code borrowed from Coffee Script and extended:
 		var xhr = new self.XMLHttpRequest();
 		xhr.open((options.method || 'get').toUpperCase(), options.url,
 				Base.pick(options.async, true));
@@ -17517,10 +20214,23 @@ var Http = {
 	}
 };
 
+/*
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
+ * http://paperjs.org/
+ *
+ * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
+ * http://juerglehni.com/ & https://puckey.studio/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ */
+
 var CanvasProvider = Base.exports.CanvasProvider = {
 	canvases: [],
 
 	getCanvas: function(width, height, options) {
+		// Web-workers have no DOM, but may support OffscreenCanvas:
 		if (!window && !self.OffscreenCanvas)
 			return null;
 		var canvas,
@@ -17535,7 +20245,7 @@ var CanvasProvider = Base.exports.CanvasProvider = {
 			canvas = window
 					? document.createElement('canvas')
 					: new self.OffscreenCanvas(width, height);
-			clear = false;
+			clear = false; // It's already cleared when created.
 		}
 		var ctx = canvas.getContext('2d', options || {});
 		if (!ctx) {
