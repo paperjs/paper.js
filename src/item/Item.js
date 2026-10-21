@@ -2329,7 +2329,7 @@ new function() { // Injection scope for hit-test functions shared with project
             // correct 2D padding for tolerance, we therefore need to apply the
             // inverted accumulated matrices without the view's matrix.
             tolerancePadding = options._tolerancePadding = new Size(
-                    Path._getStrokePadding(tolerance, viewMatrix
+                    Matrix._getCircleExtents(tolerance, viewMatrix
                         .prepended(this.getView()._matrix.inverted())
                         ._shiftless().invert()));
         // Transform point to local coordinates.
