@@ -817,6 +817,25 @@ test('Item#blendMode in a transformed Group', function() {
             'Middle center pixel should be yellow');
 });
 
+test('Item#blendMode = \'multiply\'', function() {
+    // Multiply blends each channel as backdrop * source / 255, which canvas
+    // draws natively, computed by hand below:
+    var layer = new Layer();
+    new Path.Rectangle({
+        size: [100, 100],
+        fillColor: '#ff8033' // 255, 128, 51
+    });
+    new Path.Rectangle({
+        size: [100, 100],
+        fillColor: '#3366ff', // 51, 102, 255
+        blendMode: 'multiply'
+    });
+    var raster = layer.rasterize(72, false);
+    // 255 * 51 / 255, 128 * 102 / 255 (51.2), 51 * 255 / 255:
+    equals(raster.getPixel(50, 50), new Color(51 / 255, 51 / 255, 51 / 255, 1),
+            'pixel');
+});
+
 test('Item#blendMode = \'pin-light\'', function() {
     // Pin light replaces the backdrop with 2 * source where that is darker for
     // sources below 50%, and with 2 * source - 255 where that is lighter for

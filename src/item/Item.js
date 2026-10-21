@@ -532,8 +532,10 @@ new function() { // Injection scope for various item event handlers
     /**
      * The blend mode with which the item is composited onto the canvas. Both
      * the standard canvas compositing modes, as well as the new CSS blend modes
-     * are supported. If blend-modes cannot be rendered natively, they are
-     * emulated. Be aware that emulation can have an impact on performance.
+     * are supported. Where the canvas doesn't support a CSS blend mode
+     * natively, it draws as `'normal'`. Paper.js's own modes `'add'`,
+     * `'subtract'`, `'average'`, `'pin-light'` and `'negation'` are emulated,
+     * which can have an impact on performance.
      *
      * @name Item#blendMode
      * @type String
@@ -4812,7 +4814,8 @@ new function() { // Injection scope for hit-test functions shared with project
         var blendMode = this._blendMode,
             opacity = Numerical.clamp(this._opacity, 0, 1),
             normalBlend = blendMode === 'normal',
-            nativeBlend = BlendMode.nativeModes[blendMode],
+            nativeBlend = !normalBlend
+                    && BlendMode.getNativeModes()[blendMode],
             style = this._style,
             // Canvas fills and strokes separately, so items with both can only
             // cast the shadow of one. Draw them on a temporary canvas, and cast
