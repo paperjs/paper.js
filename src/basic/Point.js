@@ -274,6 +274,17 @@ var Point = Base.extend(/** @lends Point# */{
     },
 
     /**
+     * The point's coordinates as an array, `[x, y]`, as
+     * {@link Matrix#values} gives those of a matrix.
+     *
+     * @bean
+     * @type Number[]
+     */
+    getValues: function() {
+        return [this.x, this.y];
+    },
+
+    /**
      * The length of the vector that is represented by this point's coordinates.
      * Each point can be interpreted as a vector that points from the origin (`x
      * = 0`, `y = 0`) to the point's location. Setting the length changes the

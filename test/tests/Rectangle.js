@@ -353,3 +353,10 @@ test('rect.toString()', function() {
     var string = new Rectangle(10, 20, 30, 40).toString();
     equals(string, '{ x: 10, y: 20, width: 30, height: 40 }');
 });
+
+test('Rectangle#values', function() {
+    equals(new Rectangle(10, 20, 30, 40).values, [10, 20, 30, 40]);
+    // Rectangles linked to their items read through them:
+    var path = new Path.Rectangle([50, 60], [70, 80]);
+    equals(path.bounds.values, [50, 60, 70, 80], 'item bounds');
+});

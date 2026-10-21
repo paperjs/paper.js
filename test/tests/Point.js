@@ -181,3 +181,10 @@ test('isOrthogonal()', function() {
         return new Point(10, 10).isOrthogonal(new Point(10, -20));
     }, false);
 });
+
+test('Point#values', function() {
+    equals(new Point(10, 20).values, [10, 20]);
+    // Points linked to their owners read through them:
+    var path = new Path([[30, 40], [50, 60]]);
+    equals(path.firstSegment.point.values, [30, 40], 'segment point');
+});
