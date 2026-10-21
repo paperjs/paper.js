@@ -237,8 +237,9 @@ var BlendMode = new function() {
     var ctx = CanvasProvider.getContext(1, 1, { willReadFrequently: true });
     if (ctx) {
         Base.each(modes, function(func, mode) {
-            // Blend #330000 (51) and #aa0000 (170):
-            // Multiplying should lead to #220000 (34)
+            // Blend #333300 (51) and #aa0000 (170):
+            // Multiplying should lead to #220000 (34). The green gives the
+            // source a hue of its own, which the non-separable modes need.
             var darken = mode === 'darken',
                 ok = false;
             ctx.save();
@@ -247,14 +248,14 @@ var BlendMode = new function() {
             try {
                 // For darken we need to reverse color parameters in order to
                 // test mode.
-                ctx.fillStyle = darken ? '#300' : '#a00';
+                ctx.fillStyle = darken ? '#330' : '#a00';
                 ctx.fillRect(0, 0, 1, 1);
                 ctx.globalCompositeOperation = mode;
                 if (ctx.globalCompositeOperation === mode) {
-                    ctx.fillStyle = darken ? '#a00' : '#300';
+                    ctx.fillStyle = darken ? '#a00' : '#330';
                     ctx.fillRect(0, 0, 1, 1);
-                    ok = ctx.getImageData(0, 0, 1, 1).data[0] !== darken
-                            ? 170 : 51;
+                    ok = ctx.getImageData(0, 0, 1, 1).data[0] !==
+                            (darken ? 170 : 51);
                 }
             } catch (e) {}
             ctx.restore();

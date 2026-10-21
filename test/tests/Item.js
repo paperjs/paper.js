@@ -852,6 +852,23 @@ test('Item#blendMode = \'pin-light\'', function() {
     equals(raster.getPixel(75, 50), getColor(145, 40, 50), 'right pixel');
 });
 
+test('paper.support.nativeBlendModes (#2349)', function() {
+    // Canvas supports the CSS blend modes, and Paper.js emulates its own:
+    var nativeModes = paper.support.nativeBlendModes;
+    [
+        'multiply', 'screen', 'overlay', 'darken', 'lighten', 'color-dodge',
+        'color-burn', 'hard-light', 'soft-light', 'difference', 'exclusion',
+        'hue', 'saturation', 'color', 'luminosity'
+    ].forEach(function(mode) {
+        equals(nativeModes[mode], true, mode);
+    });
+    ['add', 'subtract', 'average', 'pin-light', 'negation'].forEach(
+        function(mode) {
+            equals(nativeModes[mode], false, mode);
+        }
+    );
+});
+
 test('Item#opacity', function() {
     var layer = new Layer();
     var background = new Path.Rectangle({
