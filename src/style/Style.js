@@ -136,36 +136,7 @@ var Style = Base.extend(new function() {
         strokeJoin: /*#=*/Change.STROKE,
         // strokeScaling can change the coordinates of cached path items
         strokeScaling: /*#=*/(Change.STROKE | Change.GEOMETRY),
-        miterLimit: /*#=*/Change.STROKE,
-        // All text properties but colors and decorations change the layout:
-        fontFamily: /*#=*/Change.GEOMETRY,
-        fontWeight: /*#=*/Change.GEOMETRY,
-        fontStyle: /*#=*/Change.GEOMETRY,
-        fontSize: /*#=*/Change.GEOMETRY,
-        font: /*#=*/Change.GEOMETRY, // deprecated, links to fontFamily
-        fontVariations: /*#=*/Change.GEOMETRY,
-        lineHeight: /*#=*/Change.GEOMETRY,
-        letterTracking: /*#=*/Change.GEOMETRY,
-        letterKerning: /*#=*/Change.GEOMETRY,
-        baselineShift: /*#=*/Change.GEOMETRY,
-        baselinePosition: /*#=*/Change.GEOMETRY,
-        letterScaling: /*#=*/Change.GEOMETRY,
-        letterRotation: /*#=*/Change.GEOMETRY,
-        capitals: /*#=*/Change.GEOMETRY,
-        features: /*#=*/Change.GEOMETRY,
-        justification: /*#=*/Change.GEOMETRY,
-        justifyLast: /*#=*/Change.GEOMETRY,
-        justifySpacing: /*#=*/Change.GEOMETRY,
-        startIndent: /*#=*/Change.GEOMETRY,
-        endIndent: /*#=*/Change.GEOMETRY,
-        firstLineIndent: /*#=*/Change.GEOMETRY,
-        spaceBefore: /*#=*/Change.GEOMETRY,
-        spaceAfter: /*#=*/Change.GEOMETRY,
-        hyphenation: /*#=*/Change.GEOMETRY,
-        composer: /*#=*/Change.GEOMETRY,
-        lineWrap: /*#=*/Change.GEOMETRY,
-        tabs: /*#=*/Change.GEOMETRY,
-        direction: /*#=*/Change.GEOMETRY
+        miterLimit: /*#=*/Change.STROKE
     },
     item = {
         // Enforce creation of beans, as bean getters have hidden parameters,
@@ -199,7 +170,11 @@ var Style = Base.extend(new function() {
         var isColor = /Color$/.test(key),
             isPoint = key === 'shadowOffset',
             part = Base.capitalize(key),
-            flag = flags[key],
+            // All text properties but the decorations change the layout:
+            flag = !(key in itemDefaults) && key !== 'underline'
+                    && key !== 'strikethrough'
+                    ? /*#=*/Change.GEOMETRY
+                    : flags[key],
             set = 'set' + part,
             get = 'get' + part;
 
