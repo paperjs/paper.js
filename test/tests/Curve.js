@@ -429,6 +429,27 @@ test('Curve#getTimesWithTangent() with quadratic curve', function() {
             'tangent at times[0] is parallel to the given tangent');
 });
 
+test('Curve#getTimesWithTangent(), #length and Curve.getPeaks() far from the origin', function() {
+    // The coordinates are multiples of 1 / 4096, which stay exact at 2^40, so
+    // the curve moved there has the same shape and the same results:
+    function getCurve(offset) {
+        var q = 1 / 4096;
+        return new Curve(
+                [offset + 3 * q, offset + 5 * q],
+                [30 + 1229 * q, -40 - 2867 * q],
+                [-10 - 1229 * q, -60 - 2867 * q],
+                [offset + 100 + 409 * q, offset + 20 + 819 * q]);
+    }
+    var curve = getCurve(0),
+        moved = getCurve(Math.pow(2, 40)),
+        options = { tolerance: 1e-12 };
+    equals(moved.getTimesWithTangent([1, 0.3]),
+            curve.getTimesWithTangent([1, 0.3]), 'times with tangent', options);
+    equals(moved.length, curve.length, 'length', options);
+    equals(Curve.getPeaks(moved.getValues()),
+            Curve.getPeaks(curve.getValues()), 'peaks', options);
+});
+
 test('Curve#handleBounds', function() {
     // The handle bounds are the bounds of the curve's four points:
     // (0, 0), (-20, 80), (130, 10), (100, 50)
