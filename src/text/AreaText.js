@@ -709,10 +709,5 @@ var AreaText = TextItem.extend(/** @lends AreaText# */{
         this._place(line, style, end === paragraph.end, indented);
         line.end = end;
         return line;
-    },
-
-    // The area is the text's extent:
-    _getBounds: function(matrix, options) {
-        return Item._getBounds(this._children, matrix, options);
     }
 });
