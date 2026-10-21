@@ -1704,7 +1704,7 @@ var Path = PathItem.extend(/** @lends Path# */{
                 // Add the stroke radius to tolerance padding, taking
                 // #strokeScaling into account through _getStrokeMatrix().
                 strokePadding = strokePadding.add(
-                    Path._getStrokePadding(strokeRadius, strokeMatrix));
+                    Matrix._getCircleExtents(strokeRadius, strokeMatrix));
             } else {
                 join = cap = 'round';
             }
@@ -2729,9 +2729,9 @@ statics: {
     getStrokeBounds: function(segments, closed, path, matrix, options) {
         var style = path.getStyle(),
             stroke = style.hasStroke(),
-            strokeWidth = style.getStrokeWidth(),
+            strokeRadius = style.getStrokeWidth() / 2,
             strokeMatrix = stroke && path._getStrokeMatrix(matrix, options),
-            strokePadding = stroke && Path._getStrokePadding(strokeWidth,
+            strokePadding = stroke && Matrix._getCircleExtents(strokeRadius,
                 strokeMatrix),
             // Start with normal path bounds with added stroke padding. Then we
             // only need to look at each segment and handle join / cap / miter.
@@ -2739,13 +2739,12 @@ statics: {
                 strokePadding);
         if (!stroke)
             return bounds;
-        var strokeRadius = strokeWidth / 2,
-            join = style.getStrokeJoin(),
+        var join = style.getStrokeJoin(),
             cap = style.getStrokeCap(),
             miterLimit = style.getMiterLimit(),
             // Create a rectangle of padding size, used for union with bounds
             // further down
-            joinBounds = new Rectangle(new Size(strokePadding));
+            joinBounds = new Rectangle(new Size(strokePadding).multiply(2));
 
         // helper function that is passed to _addBevelJoin() and _addSquareCap()
         // to handle the point transformations.
@@ -2795,24 +2794,6 @@ statics: {
             }
         }
         return bounds;
-    },
-
-    /**
-     * Returns the horizontal and vertical padding that a transformed round
-     * stroke adds to the bounding box, by calculating the dimensions of the
-     * transformed circle.
-     */
-    _getStrokePadding: function(radius, matrix) {
-        if (!matrix)
-            return [radius, radius];
-        // x = radius * (a * cos(t) + c * sin(t)) is at most
-        // radius * sqrt(a² + c²), and y the same with b and d:
-        var a = matrix._a,
-            b = matrix._b,
-            c = matrix._c,
-            d = matrix._d;
-        return [radius * Math.sqrt(a * a + c * c),
-                radius * Math.sqrt(b * b + d * d)];
     },
 
     /**
@@ -2919,8 +2900,9 @@ statics: {
                 joinRadius = strokeRadius * style.getMiterLimit();
             if (style.getStrokeCap() === 'square')
                 joinRadius = Math.max(joinRadius, strokeRadius * Math.SQRT2);
-            strokePadding = Path._getStrokePadding(strokeRadius, strokeMatrix);
-            joinPadding = Path._getStrokePadding(joinRadius, strokeMatrix);
+            strokePadding = Matrix._getCircleExtents(strokeRadius,
+                    strokeMatrix);
+            joinPadding = Matrix._getCircleExtents(joinRadius, strokeMatrix);
         }
         var coords = new Array(6),
             x1 = Infinity,

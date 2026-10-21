@@ -838,6 +838,25 @@ var Matrix = Base.extend(/** @lends Matrix# */{
             ctx.transform(this._a, this._b, this._c, this._d,
                     this._tx, this._ty);
         }
+    },
+
+    statics: {
+        /**
+         * Returns the horizontal and vertical half-extents of a circle of the
+         * given radius, transformed by the matrix, if any.
+         */
+        _getCircleExtents: function(radius, matrix) {
+            if (!matrix)
+                return [radius, radius];
+            // x = radius * (a * cos(t) + c * sin(t)) is at most
+            // radius * sqrt(a² + c²), and y the same with b and d:
+            var a = matrix._a,
+                b = matrix._b,
+                c = matrix._c,
+                d = matrix._d;
+            return [radius * Math.sqrt(a * a + c * c),
+                    radius * Math.sqrt(b * b + d * d)];
+        }
     }
 }, Base.each(['a', 'b', 'c', 'd', 'tx', 'ty'], function(key) {
     // Create getters and setters for all internal attributes.
