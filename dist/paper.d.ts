@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 11:36:43 2026 +0200
+ * Date: Wed Oct 21 03:55:14 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -5971,7 +5971,14 @@ declare namespace paper {
          *   strokeBounds and roughBounds in the item's coordinates, 12 numbers
          *   per item), and the sparse objects `names` and `matrices`.
          * - `getItem(key)`, which returns the node's own content in the form
-         *   of {@link Item#importJSON}, without children.
+         *   of {@link Item#importJSON}, without children. Linked text
+         *   gives `linked`, the keys of its story's text items in order, and
+         *   leaves out its story.
+         * - `getStory(key)`, for linked text, which returns its story with the
+         *   key of any of its text items: `content` or `runs`, `paragraphs`,
+         *   and the character and paragraph styles, as
+         *   {@link Item#exportJSON} writes them in the JSON of a
+         *   text item.
          * - `getAncestorKeys(key)`, which returns the keys from the top level
          *   down to the node's parent.
          * - Optionally `layOut(json, start, key)`, which lays out a text item

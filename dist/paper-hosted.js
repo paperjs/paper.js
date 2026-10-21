@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 11:36:43 2026 +0200
+ * Date: Wed Oct 21 03:55:14 2026 +0200
  *
  ***
  *
@@ -20418,14 +20418,15 @@ new function() {
 	}
 
 	function whileLoading(project, callback) {
-		var changes = project._changes;
+		var changes = project._changes,
+			loading = isLoading;
 		project._changes = null;
 		isLoading = true;
 		try {
 			callback();
 		} finally {
 			project._changes = changes;
-			isLoading = false;
+			isLoading = loading;
 		}
 	}
 
@@ -20518,8 +20519,14 @@ new function() {
 					delete that[name];
 				}
 			});
+			if (typeof json === 'string')
+				json = JSON.parse(json);
+			var linked = json[1].linked;
+			delete json[1].linked;
 			Base.importJSON(json, this);
 			this._shell = false;
+			if (linked)
+				this._loadLinked(linked);
 		},
 
 		_loadChildren: function() {
@@ -20560,6 +20567,29 @@ new function() {
 	});
 
 	TextItem.inject({
+		_loadLinked: function(keys) {
+			var project = this._project,
+				that = this,
+				items = keys.map(function(key) {
+					return key === that._key ? that : project.getItemByKey(key);
+				}),
+				story = null;
+			for (var i = 0, l = items.length; i < l && !story; i++) {
+				if (items[i] !== this && !items[i]._shell)
+					story = items[i]._story;
+			}
+			if (story) {
+				this._story = story;
+			} else {
+				this.set(Base.importJSON(project._host.getStory(this._key)));
+				for (var i = 0, l = items.length; i < l; i++) {
+					if (items[i] !== this)
+						items[i]._loadContent();
+				}
+				this._story._items = items;
+			}
+		},
+
 		_getHostLayout: function(host) {
 			var that = this,
 				story = this._story,
