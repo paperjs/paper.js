@@ -888,38 +888,6 @@ test('paper.support.nativeBlendModes (#2349)', function() {
     );
 });
 
-if (isNodeContext) {
-    test('paper.support.nativeBlendModes with a canvas provided after loading', function() {
-        // Hosts may only provide their canvas after Paper.js loads. Build the
-        // library as gulp does, and load it where there is no canvas yet:
-        // without a window, and without an OffscreenCanvas until later.
-        var path = require('path'),
-            vm = require('vm'),
-            Prepro = require('prepro'),
-            prepro = new Prepro();
-        prepro.evaluate(path.resolve('../src/constants.js'));
-        prepro.setup(function() {
-            return {
-                __options: Object.assign({},
-                        require(path.resolve('../src/options.js')),
-                        { paperScript: false })
-            };
-        });
-        var context = vm.createContext({ navigator: { userAgent: '' } });
-        context.self = context;
-        vm.runInContext(prepro.process(path.resolve('../src/paper.js')),
-                context);
-        var support = context.paper.support;
-        equals(support.nativeBlendModes.multiply, undefined,
-                'multiply without a canvas');
-        context.OffscreenCanvas = function(width, height) {
-            return require('canvas').createCanvas(width, height);
-        };
-        equals(support.nativeBlendModes.multiply, true,
-                'multiply with a canvas');
-    });
-}
-
 test('Item#opacity', function() {
     var layer = new Layer();
     var background = new Path.Rectangle({

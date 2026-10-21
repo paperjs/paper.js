@@ -4805,8 +4805,7 @@ new function() { // Injection scope for hit-test functions shared with project
         var blendMode = this._blendMode,
             opacity = Numerical.clamp(this._opacity, 0, 1),
             normalBlend = blendMode === 'normal',
-            nativeBlend = !normalBlend
-                    && BlendMode.getNativeModes()[blendMode],
+            nativeBlend = BlendMode.nativeModes[blendMode],
             style = this._style,
             // Canvas fills and strokes separately, so items with both can only
             // cast the shadow of one. Draw them on a temporary canvas, and cast
