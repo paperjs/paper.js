@@ -243,3 +243,19 @@ test('Color change propagation (#1672)', function(assert) {
         'Canvas content should change after a change of item.fillColor.'
     );
 });
+
+test('Style#_getCanvasFont() quotes font families', function() {
+    function getFont(fontFamily) {
+        return new PointText({ fontFamily: fontFamily, fontSize: 20 })
+                .style._getCanvasFont();
+    }
+    // Unquoted families that aren't identifiers, such as ones that start with
+    // digits, are ignored by CSS:
+    equals(getFont('Source Sans 3'), 'normal 20px "Source Sans 3"');
+    equals(getFont('Source Sans 3, sans-serif'),
+            'normal 20px "Source Sans 3", sans-serif');
+    equals(getFont('"Source Sans 3", Serif'),
+            'normal 20px "Source Sans 3", Serif');
+    equals(getFont('Say "Hi", Arial'), 'normal 20px "Say \\"Hi\\"", Arial');
+    equals(getFont('sans-serif'), 'normal 20px sans-serif');
+});
