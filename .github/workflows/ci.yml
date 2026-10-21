@@ -53,9 +53,20 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y fonts-liberation
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      # Runs the library built from the sources, see test/vite-plugin-paper.mjs,
-      # in the runner's Google Chrome:
-      - name: Test in Chrome
+      # Cache Playwright's Chromium by the Playwright version, which pins it:
+      - name: Get the Playwright version
+        id: playwright
+        run: echo "version=$(pnpm exec playwright --version | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - name: Install Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install chromium
+      # Runs the library built from the sources, see test/vite-plugin-paper.mjs:
+      - name: Test in Chromium
         run: pnpm test:browser
 
   # Generate paper.d.ts from the docs and compile the TypeScript definition
