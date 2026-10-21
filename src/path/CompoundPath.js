@@ -315,16 +315,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
         for (var i = 0, l = children.length; i < l; i++)
             children[i].draw(ctx, param, strokeMatrix);
 
-        if (!param.clip) {
-            this._setStyles(ctx, param, viewMatrix, strokeMatrix);
-            var style = this._style;
-            if (style.hasFill()) {
-                ctx.fill(style.getFillRule());
-                ctx.shadowColor = 'rgba(0,0,0,0)';
-            }
-            if (style.hasStroke())
-                ctx.stroke();
-        }
+        if (!param.clip)
+            this._paint(ctx, param, viewMatrix, strokeMatrix);
     },
 
     _drawSelected: function(ctx, matrix, selectionItems) {

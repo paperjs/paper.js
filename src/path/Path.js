@@ -2330,71 +2330,18 @@ new function() { // Scope for drawing
 
     return {
         _draw: function(ctx, param, viewMatrix, strokeMatrix) {
-            var dontStart = param.dontStart,
-                dontPaint = param.dontFinish || param.clip,
-                style = this.getStyle(),
-                hasFill = style.hasFill(),
-                hasStroke = style.hasStroke(),
-                dashArray = style.getDashArray(),
-                // dashLength is only set if we can't draw dashes natively
-                dashLength = !paper.support.nativeDash && hasStroke
-                        && dashArray && dashArray.length;
-
-            if (!dontStart)
+            var dontPaint = param.dontFinish || param.clip;
+            if (!param.dontStart)
                 ctx.beginPath();
-
-            if (hasFill || hasStroke && !dashLength || dontPaint) {
+            if (this.hasFill() || this.hasStroke() || dontPaint) {
                 // Prepare the canvas path if we have any situation that
                 // requires it to be defined.
                 drawSegments(ctx, this, strokeMatrix);
                 if (this._closed)
                     ctx.closePath();
             }
-
-            function getOffset(i) {
-                // Negative modulo is necessary since we're stepping back
-                // in the dash sequence first.
-                return dashArray[((i % dashLength) + dashLength) % dashLength];
-            }
-
-            if (!dontPaint && (hasFill || hasStroke)) {
-                // If the path is part of a compound path or doesn't have a fill
-                // or stroke, there is no need to continue.
-                this._setStyles(ctx, param, viewMatrix, strokeMatrix);
-                if (hasFill) {
-                    ctx.fill(style.getFillRule());
-                    // If shadowColor is defined, clear it after fill, so it
-                    // won't be applied to both fill and stroke. If the path is
-                    // only stroked, we don't have to clear it.
-                    ctx.shadowColor = 'rgba(0,0,0,0)';
-                }
-                if (hasStroke) {
-                    if (dashLength) {
-                        // We cannot use the path created by drawSegments above
-                        // Use PathFlattener to draw dashed paths:
-                        if (!dontStart)
-                            ctx.beginPath();
-                        var flattener = new PathFlattener(this, 0.25, 32, false,
-                                strokeMatrix),
-                            length = flattener.length,
-                            from = -style.getDashOffset(), to,
-                            i = 0;
-                        // Step backwards in the dash sequence (dash -- no-dash)
-                        // first until the from parameter is below 0.
-                        while (from > 0) {
-                            from -= getOffset(i--) + getOffset(i--);
-                        }
-                        while (from < length) {
-                            to = from + getOffset(i++);
-                            if (from > 0 || to > 0)
-                                flattener.drawPart(ctx,
-                                        Math.max(from, 0), Math.max(to, 0));
-                            from = to + getOffset(i++);
-                        }
-                    }
-                    ctx.stroke();
-                }
-            }
+            if (!dontPaint)
+                this._paint(ctx, param, viewMatrix, strokeMatrix);
         },
 
         _drawSelected: function(ctx, matrix) {
