@@ -471,15 +471,15 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @return {Matrix} this matrix, or `null`, if the matrix is singular.
      */
     invert: function() {
-        var a = this._a,
-            b = this._b,
-            c = this._c,
-            d = this._d,
-            tx = this._tx,
-            ty = this._ty,
-            det = a * d - b * c,
-            res = null;
-        if (det && !isNaN(det) && isFinite(tx) && isFinite(ty)) {
+        var res = null;
+        if (this.isInvertible()) {
+            var a = this._a,
+                b = this._b,
+                c = this._c,
+                d = this._d,
+                tx = this._tx,
+                ty = this._ty,
+                det = a * d - b * c;
             this._a = d / det;
             this._b = -b / det;
             this._c = -c / det;
@@ -640,7 +640,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * point and finding the new bounding box to these points. This is not
      * really the transformed rectangle!
      */
-    _transformBounds: function(bounds, dest, _dontNotify) {
+    _transformBounds: function(bounds, dest) {
         var coords = this._transformCorners(bounds),
             min = coords.slice(0, 2),
             max = min.slice();
@@ -655,8 +655,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
         }
         if (!dest)
             dest = new Rectangle();
-        return dest._set(min[0], min[1], max[0] - min[0], max[1] - min[1],
-                _dontNotify);
+        return dest._set(min[0], min[1], max[0] - min[0], max[1] - min[1]);
     },
 
     /**
@@ -669,24 +668,17 @@ var Matrix = Base.extend(/** @lends Matrix# */{
         return this._inverseTransform(Point.read(arguments));
     },
 
-    _inverseTransform: function(point, dest, _dontNotify) {
-        var a = this._a,
-            b = this._b,
-            c = this._c,
-            d = this._d,
-            tx = this._tx,
-            ty = this._ty,
-            det = a * d - b * c,
-            res = null;
-        if (det && !isNaN(det) && isFinite(tx) && isFinite(ty)) {
-            var x = point.x - this._tx,
+    _inverseTransform: function(point) {
+        var res = null;
+        if (this.isInvertible()) {
+            var a = this._a,
+                b = this._b,
+                c = this._c,
+                d = this._d,
+                det = a * d - b * c,
+                x = point.x - this._tx,
                 y = point.y - this._ty;
-            if (!dest)
-                dest = new Point();
-            res = dest._set(
-                    (x * d - y * c) / det,
-                    (y * a - x * b) / det,
-                    _dontNotify);
+            res = new Point((x * d - y * c) / det, (y * a - x * b) / det);
         }
         return res;
     },
