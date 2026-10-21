@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 20:52:59 2026 +0200
+ * Date: Wed Oct 21 20:55:26 2026 +0200
  *
  ***
  *
@@ -12856,7 +12856,7 @@ var TextItem = Item.extend({
 		return !this._story._content;
 	},
 
-	_measure: function(start, end, byLetter) {
+	_measure: function(start, end, direction, byLetter) {
 		var view = this.getView(),
 			story = this._story,
 			content = story._content,
@@ -12882,8 +12882,8 @@ var TextItem = Item.extend({
 			}
 			var before = groupWidth;
 			group += text;
-			groupWidth = view.getTextWidth(piece.font, [group], piece.tracking)
-					* piece.scale.x;
+			groupWidth = view.getTextWidth(piece.font, [group], piece.tracking,
+					direction) * piece.scale.x;
 			return groupWidth - before;
 		}
 
@@ -13002,22 +13002,22 @@ var TextItem = Item.extend({
 	_place: function(line, paragraph, isLast, room) {
 		var justification = paragraph.getJustification(),
 			justifyLast = paragraph.getJustifyLast(),
+			direction = paragraph.getDirection(),
 			side = this._getSide(justification === 'justify' && isLast
 					&& justifyLast !== 'all' ? justifyLast : justification,
-					paragraph.getDirection()),
+					direction),
 			left = room[0],
 			right = room[1];
-		if (side === 'justify' || side === 'all') {
-			this._justify(line, right - left);
-			this._shift(line, left, 0);
-		} else {
-			this._shift(line, side === 'right' ? right - line.width
-					: side === 'center' ? (left + right - line.width) / 2
-					: left, 0);
-		}
+		if (side === 'justify' || side === 'all')
+			this._justify(line, right - left, direction);
+		if (direction === 'rtl')
+			this._mirror(line.pieces, line.width);
+		this._shift(line, side === 'right' ? right - line.width
+				: side === 'center' ? (left + right - line.width) / 2
+				: left, 0);
 	},
 
-	_justify: function(line, width) {
+	_justify: function(line, width, direction) {
 		var pieces = line.pieces,
 			content = this._story._content,
 			spaces = (content.slice(pieces.length ? pieces[0].start : 0,
@@ -13039,7 +13039,7 @@ var TextItem = Item.extend({
 						var part = parts[j];
 						if (part) {
 							var advance = this._measure(from,
-									from + part.length).width;
+									from + part.length, direction).width;
 							if (/^\s+$/.test(part)) {
 								moved += extra;
 							} else {
@@ -13059,6 +13059,13 @@ var TextItem = Item.extend({
 			}
 			line.pieces = result;
 			line.width = width;
+		}
+	},
+
+	_mirror: function(pieces, width) {
+		for (var i = 0, l = pieces.length; i < l; i++) {
+			var piece = pieces[i];
+			piece.x = width - piece.x - piece.width;
 		}
 	},
 
@@ -13086,13 +13093,21 @@ var TextItem = Item.extend({
 				ctx.beginPath();
 			ctx.rect(rect.x, rect.y, rect.width, rect.height);
 		} else if (this._story._content) {
-			var lines = this._getLayout(),
+			var story = this._story,
+				lines = this._getLayout(),
+				paragraph = null,
 				scale = !this._style.getStrokeScaling()
 						&& viewMatrix._getMeanScale();
 			ctx.textAlign = 'left';
 			for (var i = 0, l = lines.length; i < l; i++) {
 				var line = lines[i],
 					pieces = line.pieces;
+				if (!paragraph || line.start > paragraph.end) {
+					paragraph = story._getParagraph(line.start);
+					var direction = paragraph.style.getDirection() || 'ltr';
+					if (ctx.direction !== direction)
+						ctx.direction = direction;
+				}
 				for (var j = 0, m = pieces.length; j < m; j++) {
 					var piece = pieces[j],
 						style = piece.style,
@@ -13205,7 +13220,8 @@ var PointText = TextItem.extend({
 		for (var i = 0, l = paragraphs.length; i < l; i++) {
 			var range = paragraphs[i],
 				paragraph = story._getParagraph(range._start).style,
-				line = this._measure(range._start, range._end);
+				line = this._measure(range._start, range._end,
+						paragraph.getDirection());
 			if (i > 0) {
 				y += line.lineHeight + Math.max(spaceAfter,
 						paragraph.getSpaceBefore());
@@ -13303,7 +13319,9 @@ var PathText = TextItem.extend(new function() {
 			to = this._endOffset == null ? length
 					: Math.max(from, Math.min(this._endOffset, length)),
 			spacing = this._spacing,
-			measured = this._measure(start, story._content.length, true),
+			paragraph = story._getParagraph(start).style,
+			measured = this._measure(start, story._content.length,
+					paragraph.getDirection(), true),
 			letters = measured.pieces,
 			pieces = [],
 			width = 0;
@@ -13316,8 +13334,9 @@ var PathText = TextItem.extend(new function() {
 			width += piece.width + spacing;
 		}
 		width -= pieces.length ? spacing : 0;
-		var paragraph = story._getParagraph(start).style,
-			side = this._getSide(paragraph.getJustification(),
+		if (paragraph.getDirection() === 'rtl')
+			this._mirror(pieces, width);
+		var side = this._getSide(paragraph.getJustification(),
 				paragraph.getDirection()),
 			offset = side === 'right' ? to - width
 					: side === 'center' ? from + (to - from - width) / 2
@@ -13502,7 +13521,7 @@ var AreaText = TextItem.extend(new function() {
 			while (regions[region]) {
 				var bounds = regions[region],
 					next = that._measure(pos, Math.min(pos + 1,
-							paragraph.end)),
+							paragraph.end), style.getDirection()),
 					baseline = y === null
 						? bounds.top + offsets[region] + next.ascent
 						: y + next.lineHeight + space;
@@ -13819,6 +13838,7 @@ var AreaText = TextItem.extend(new function() {
 		var that = this,
 			content = this._story._content,
 			style = paragraph.style,
+			direction = style.getDirection(),
 			indented = this._indent(style, isFirst, room[0], room[1]),
 			words = /[^\s\u00ad]*\u00ad|\S+\s*|\s+/g,
 			text = content.slice(start, paragraph.end),
@@ -13827,11 +13847,11 @@ var AreaText = TextItem.extend(new function() {
 
 		var measure = function(end) {
 			var line = that._measure(start, start + content.slice(start, end)
-					.replace(/\s+$/, '').length);
+					.replace(/\s+$/, '').length, direction);
 			if (content[end - 1] === '\u00ad') {
 				var last = line.pieces[line.pieces.length - 1],
 					width = that.getView().getTextWidth(last.font, ['-'],
-						last.tracking) * last.scale.x;
+						last.tracking, direction) * last.scale.x;
 				line.pieces.push(Base.set({}, last, {
 					content: '-',
 					start: end,
@@ -15906,7 +15926,10 @@ var Style = Base.extend(new function() {
 
 	/**
 	 * The direction the paragraph's lines run in, which `'start'` and `'end'`
-	 * follow; `null` for left to right.
+	 * follow, and from which side their pieces are placed; `null` for left to
+	 * right. Lines that mix directions across styles aren't reordered by the
+	 * Unicode bidirectional algorithm: their pieces follow the paragraph's
+	 * direction, and canvas orders only the letters within each piece.
 	 *
 	 * @name Style#direction
 	 * @type String
@@ -16722,19 +16745,26 @@ var View = Base.extend(Emitter, /** @lends View# */{
 		return pixels;
 	},
 
-	getTextWidth: function(font, lines, letterSpacing) {
+	getTextWidth: function(font, lines, letterSpacing, direction) {
 		var ctx = this._context || CanvasProvider.getContext(1, 1),
 			width = 0;
 		if (ctx) {
 			var prevFont = ctx.font,
-				prevLetterSpacing = ctx.letterSpacing;
+				prevLetterSpacing = ctx.letterSpacing,
+				prevDirection = ctx.direction,
+				// Shaping can differ by direction, as with mirrored brackets:
+				textDirection = direction || 'ltr';
 			ctx.font = font;
 			ctx.letterSpacing = letterSpacing;
+			if (prevDirection !== textDirection)
+				ctx.direction = textDirection;
 			// Measure the real width of the text:
 			for (var i = 0, l = lines.length; i < l; i++)
 				width = Math.max(width, ctx.measureText(lines[i]).width);
 			ctx.font = prevFont;
 			ctx.letterSpacing = prevLetterSpacing;
+			if (prevDirection !== textDirection)
+				ctx.direction = prevDirection;
 			if (ctx !== this._context)
 				CanvasProvider.release(ctx);
 		}

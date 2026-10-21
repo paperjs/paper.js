@@ -8273,7 +8273,7 @@ wordsLongerThan, afterFirst, beforeLast, limit, zone, capitalized }</code>. Kept
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The direction the paragraph&rsquo;s lines run in, which <code>&#39;start&#39;</code> and <code>&#39;end&#39;</code> follow; <code>null</code> for left to right.</p>
+	<p>The direction the paragraph&rsquo;s lines run in, which <code>&#39;start&#39;</code> and <code>&#39;end&#39;</code> follow, and from which side their pieces are placed; <code>null</code> for left to right. Lines that mix directions across styles aren&rsquo;t reordered by the Unicode bidirectional algorithm: their pieces follow the paragraph&rsquo;s direction, and canvas orders only the letters within each piece.</p>
 	
 	
 		<ul class="member-list">

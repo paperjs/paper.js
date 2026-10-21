@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 20:52:59 2026 +0200
+ * Date: Wed Oct 21 20:55:26 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -5280,7 +5280,10 @@ declare namespace paper {
      *     {@link #textPath}, each letter turned to the path's direction where it
      *     sits. On a compound path, the text runs along one of its paths after the
      *     other. What doesn't fit between {@link #startOffset} and
-     *     {@link #endOffset} flows on into the next linked text item.
+     *     {@link #endOffset} flows on into the next linked text item. When its
+     *     first paragraph runs right to left, its letters follow each other
+     *     backwards along the path. Each letter is drawn on its own, so scripts
+     *     that join their letters, as Arabic, lose their joined forms.
      */
     class PathText extends TextItem {
         /** 
@@ -8024,7 +8027,10 @@ declare namespace paper {
 
         /** 
          * The direction the paragraph's lines run in, which `'start'` and `'end'`
-         * follow; `null` for left to right.
+         * follow, and from which side their pieces are placed; `null` for left to
+         * right. Lines that mix directions across styles aren't reordered by the
+         * Unicode bidirectional algorithm: their pieces follow the paragraph's
+         * direction, and canvas orders only the letters within each piece.
          */
         direction: string
 
@@ -8355,7 +8361,10 @@ declare namespace paper {
 
         /** 
          * The direction the paragraph's lines run in, which `'start'` and `'end'`
-         * follow; `null` for left to right.
+         * follow, and from which side their pieces are placed; `null` for left to
+         * right. Lines that mix directions across styles aren't reordered by the
+         * Unicode bidirectional algorithm: their pieces follow the paragraph's
+         * direction, and canvas orders only the letters within each piece.
          */
         direction: string
 

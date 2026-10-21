@@ -17,7 +17,7 @@
 
 <p> Extends <b><a href="../classes/Item.html"><tt>Item</tt></a></b>, <b><a href="../classes/TextItem.html"><tt>TextItem</tt></a></b></p>
 
-<p>A PathText item represents text that runs along a path, its  <a href="../classes/TextItem.html#textpath"><tt>textPath</tt></a>, each letter turned to the path&rsquo;s direction where it  sits. On a compound path, the text runs along one of its paths after the  other. What doesn&rsquo;t fit between <a href="../classes/PathText.html#startoffset"><tt>startOffset</tt></a> and  <a href="../classes/PathText.html#endoffset"><tt>endOffset</tt></a> flows on into the next linked text item.</p>
+<p>A PathText item represents text that runs along a path, its  <a href="../classes/TextItem.html#textpath"><tt>textPath</tt></a>, each letter turned to the path&rsquo;s direction where it  sits. On a compound path, the text runs along one of its paths after the  other. What doesn&rsquo;t fit between <a href="../classes/PathText.html#startoffset"><tt>startOffset</tt></a> and  <a href="../classes/PathText.html#endoffset"><tt>endOffset</tt></a> flows on into the next linked text item. When its  first paragraph runs right to left, its letters follow each other  backwards along the path. Each letter is drawn on its own, so scripts  that join their letters, as Arabic, lose their joined forms.</p>
 
 
 </div>
@@ -8143,7 +8143,7 @@ wordsLongerThan, afterFirst, beforeLast, limit, zone, capitalized }</code>. Kept
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The direction the paragraph&rsquo;s lines run in, which <code>&#39;start&#39;</code> and <code>&#39;end&#39;</code> follow; <code>null</code> for left to right.</p>
+	<p>The direction the paragraph&rsquo;s lines run in, which <code>&#39;start&#39;</code> and <code>&#39;end&#39;</code> follow, and from which side their pieces are placed; <code>null</code> for left to right. Lines that mix directions across styles aren&rsquo;t reordered by the Unicode bidirectional algorithm: their pieces follow the paragraph&rsquo;s direction, and canvas orders only the letters within each piece.</p>
 	
 	
 		<ul class="member-list">
