@@ -392,6 +392,30 @@ new function() {
             }
         },
 
+        // A loaded text's path loads again into the path it has, so the
+        // scripts that hold it keep it, as children do, see
+        // #_reloadChildren(). Project#invalidate() calls what this returns
+        // once it has unloaded all items, so linked text loads its story
+        // anew:
+        _unload: function _unload() {
+            var path = !this._shell && this.getTextPath(),
+                that = this;
+            _unload.base.call(this);
+            return path && function() {
+                if (that._shell)
+                    that._loadContent();
+                var loaded = that.getTextPath();
+                if (loaded && loaded !== path
+                        && loaded.constructor === path.constructor) {
+                    path._parent = path._index = null;
+                    path.removeChildren();
+                    path.copyContent(loaded);
+                    path.copyAttributes(loaded);
+                    that.setTextPath(path);
+                }
+            };
+        },
+
         // The host's layout of the text as the script holds it, also before
         // the host has its changes: the lines with their pieces, which take
         // what drawing needs from the styles of the story's runs, see
@@ -550,14 +574,16 @@ new function() {
             var itemsByKey = this._itemsByKey,
                 keys = columns.keys,
                 names = columns.names || {},
+                reloads = [],
                 that = this;
             whileLoading(this, function() {
                 for (var i = 0, l = keys.length; i < l; i++) {
                     var item = itemsByKey[keys[i]],
                         flags = columns.flags[i];
                     if (item) {
-                        if (flags & 16)
-                            item._unload();
+                        var reload = flags & 16 && item._unload();
+                        if (reload)
+                            reloads.push(reload);
                         if (flags & 32)
                             item._reloadChildren();
                         if ((names[i] || undefined) !== item._name)
@@ -570,6 +596,10 @@ new function() {
                         that._updateSelection(item);
                     }
                 }
+                // What loads again right away, see TextItem#_unload():
+                reloads.forEach(function(reload) {
+                    reload();
+                });
             });
         }
     });
