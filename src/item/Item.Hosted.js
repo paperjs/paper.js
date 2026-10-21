@@ -50,6 +50,8 @@ new function() {
     }
 
     // Writes define the field on the item itself, where it hides the accessor.
+    // A script's writes load first, so loading doesn't replace what they
+    // write. Those of loading itself are what it loads:
     function defineLoader(shell, name, load) {
         Object.defineProperty(shell, name, {
             get: function() {
@@ -57,6 +59,8 @@ new function() {
                 return this[name];
             },
             set: function(value) {
+                if (!isLoading)
+                    this[load]();
                 defineValue(this, name, value);
             },
             configurable: true
