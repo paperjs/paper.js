@@ -846,9 +846,11 @@ statics: /** @lends Curve */{
             var bounds = this._bounds[name];
             if (!bounds) {
                 // Calculate the curve bounds by passing a segment list for the
-                // curve to the static Path.get*Boudns methods.
-                bounds = this._bounds[name] = Path[name](
-                        [this._segment1, this._segment2], false, this._path);
+                // curve to the static Path.get*Bounds methods. Without a path,
+                // there is no stroke, so the stroke bounds are the bounds.
+                var path = this._path;
+                bounds = this._bounds[name] = Path[path ? name : 'getBounds'](
+                        [this._segment1, this._segment2], false, path);
             }
             return bounds.clone();
         };
