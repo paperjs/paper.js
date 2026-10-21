@@ -23,6 +23,7 @@ describe('Style', () => {
     equals(() => path.miterLimit, 10)
     equals(() => path.dashOffset, 0)
     equals(() => path.dashArray + '', [] + '')
+    equals(() => path.paintOrder, 'fill')
   })
 
   test('Project#currentStyle', () => {

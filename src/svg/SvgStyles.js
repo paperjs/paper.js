@@ -32,6 +32,7 @@ var SvgStyles = Base.each({
     miterLimit: ['stroke-miterlimit', 'number'],
     dashArray: ['stroke-dasharray', 'array'],
     dashOffset: ['stroke-dashoffset', 'number'],
+    paintOrder: ['paint-order', 'order'],
     // Text
     fontFamily: ['font-family', 'string'],
     fontWeight: ['font-weight', 'font'],

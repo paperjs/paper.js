@@ -1170,6 +1170,58 @@ describe('Item', () => {
     group.remove()
   })
 
+  test('Item#paintOrder (#1731)', () => {
+    // The fill covers the inner half of the stroke painted before it:
+    const props = {
+      from: [10, 10],
+      to: [30, 30],
+      fillColor: 'red',
+      strokeColor: 'blue',
+      strokeWidth: 10,
+      paintOrder: 'stroke'
+    }
+    ;[new Path.Rectangle(props), new Shape.Rectangle(props)].forEach(item => {
+      const name = item.className,
+        raster = item.rasterize(72, false)
+      equals(raster.getPixel(3, 3), new Color(0, 0, 1, 1), name + ' stroke')
+      equals(raster.getPixel(7, 7), new Color(1, 0, 0, 1), name + ' fill')
+      item.paintOrder = 'fill'
+      equals(
+        item.rasterize(72, false).getPixel(7, 7),
+        new Color(0, 0, 1, 1),
+        name + ' stroke over the fill'
+      )
+    })
+  })
+
+  test('Item#paintOrder with shadow (#1731)', () => {
+    // The item casts the shadow of its fill and stroke together, as in the
+    // default order, but with the fill painted over the stroke:
+    function createPath(props) {
+      return new Path.Rectangle(
+        Base.set(
+          {
+            from: [10, 10],
+            to: [30, 30],
+            fillColor: 'red'
+          },
+          props
+        )
+      )
+    }
+    const shadow = {
+      strokeColor: 'blue',
+      strokeWidth: 10,
+      shadowColor: 'black',
+      shadowBlur: 4,
+      shadowOffset: [8, 8]
+    }
+    comparePixels(
+      createPath(Base.set({ paintOrder: 'stroke' }, shadow)),
+      new Group(createPath(shadow), createPath())
+    )
+  })
+
   test('Item#rasterize() with opacity (#1644)', () => {
     // Rasterizing draws into the raster's own canvas, away from the view:
     const group = new Group({

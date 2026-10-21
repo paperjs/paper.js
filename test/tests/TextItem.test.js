@@ -142,6 +142,37 @@ describe('TextItem', () => {
     )
   })
 
+  test('PointText#paintOrder (#1731)', () => {
+    // Text that paints its stroke first draws like its stroke beneath its
+    // fill:
+    function createText(props) {
+      return new PointText(
+        Base.set(
+          {
+            fontFamily: 'Arial, Helvetica',
+            fontSize: 40,
+            point: [20, 60],
+            content: 'Wo',
+            strokeWidth: 6,
+            strokeJoin: 'round'
+          },
+          props
+        )
+      )
+    }
+    comparePixels(
+      createText({
+        fillColor: 'red',
+        strokeColor: 'blue',
+        paintOrder: 'stroke'
+      }),
+      new Group(
+        createText({ fillColor: null, strokeColor: 'blue' }),
+        createText({ fillColor: 'red' })
+      )
+    )
+  })
+
   test('PointText#tracking', () => {
     const text = new PointText({
       point: [10, 20],
