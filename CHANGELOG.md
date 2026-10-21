@@ -1,6 +1,6 @@
 # Change Log
 
-## Unreleased
+## `0.15.0`
 
 ### Added
 
@@ -72,6 +72,13 @@
   and `options.time` to `View#dispatchMouseEvent()` and `#dispatchKeyEvent()`.
 - Add a setter to `View#bounds`, which fits the view to the given rectangle, as
   `View#fitBounds()` does.
+- Let `PathItem#unite()`, `#intersect()`, `#subtract()` and `#exclude()` take
+  an array of paths, which they combine in one call: unite, intersect and
+  subtract in a balanced tree, exclude in one even-odd pass. Uniting 500 paths
+  takes 0.22 s instead of 2.9 s chained, excluding them 0.45 s instead of
+  minutes (#2094, #2303, #2304).
+- Load hosted text that the host links into one story, which `host.getStory()`
+  gives once for all of its items, whichever of them loads first.
 
 ### Changed
 
@@ -111,6 +118,31 @@
 - Draw dashes with `setLineDash()`, which every canvas supports, and remove
   the dash emulation for canvases without it, along with the undocumented
   `paper.support.nativeDash` (#2350).
+- Trace the results of boolean operations through a planar graph of the
+  operands' curves, which each operation builds within one geometric
+  tolerance: intersections within it merge into one vertex, curves that pass
+  within it of a vertex are cut there, and coincident curves become one edge.
+  Results are correct to within about five times that tolerance, under a
+  thousandth of a unit on a drawing of 1,000 units, and stable under tiny
+  moves of the operands. They can differ from before in where their contours
+  start and how they are divided, but not in their areas. Holes come out
+  oriented opposite to their outlines, and islands like outlines (#2292).
+- `PathItem#resolveCrossings()` returns the filled outline of a path, without
+  the inner loops that its fill rule covers (#2292).
+- Make boolean operations faster than in 0.14.0 on all inputs measured, from
+  about 15% on small operations up to 5.7× on large polygons (#2293, #2296,
+  #2297, #2299, #2300, #2301, #2302, #2305).
+- Draw the CSS blend modes as `'normal'` in old browsers whose canvas doesn't
+  support them, such as Internet Explorer and the old Edge, instead of
+  emulating them pixel by pixel. Paper.js's own modes, such as `'add'`, are
+  still emulated (#2350).
+- Remove the undocumented statics `Curve.getBounds(values)`, a leftover of
+  old intersection code, and `Curve.getCurveLineIntersections()`, which
+  nothing in the library calls.
+- Drop the code for browsers without current DOM APIs, which only old IE, Edge
+  and WebKit needed: MS pointer events, `srcElement`, `toElement`,
+  `keyIdentifier`, `backingStorePixelRatio`, and the exception of
+  `getBoundingClientRect()` for nodes outside the DOM (#2350).
 
 ### Fixed
 
@@ -193,7 +225,32 @@
 - Handle the mouse events of `View#dispatchMouseEvent()` also outside the
   view's bounds, since the host decides which events belong to its drawing
   surface.
-
+- Fix boolean operations on paths that touch or overlap along their edges,
+  run close to each other, or cross near their vertices, which lost or added
+  parts of their results (#1285, #1362, #1867, #1917, #1943, #1961, #2002,
+  #2036, #2096, #2099).
+- Fix `PathItem#resolveCrossings()` on paths with both overlaps and crossings,
+  which lost parts of their outlines (#2290).
+- Fix `Curve.getTimeOf()` at coordinates beyond about 2e8, where it didn't
+  recognize points on the curve (#2291).
+- Hit-test non-scaling strokes under non-uniform matrices where they're drawn,
+  also next to corners, joins and caps, and with skewed or rotated matrices
+  (#2334).
+- Fix `Curve#strokeBounds` of curves without a path, which threw: without a
+  path, there is no stroke, so they are the curve's bounds (#2344).
+- Give `View#dispatchKeyEvent()` the characters of space, enter and tab, as the
+  DOM's key events have them, instead of empty ones (#2346).
+- Fix `paper.support.nativeBlendModes`, which listed the blend modes canvas
+  accepted as `170` instead of `true`, and only knew the CSS blend modes where
+  a canvas was available when Paper.js loaded. It lists the canvas composite
+  modes and the CSS blend modes as native, and Paper.js's own modes as not,
+  without testing canvas (#2349).
+- Hit-test strokes at segments where the curves meet in the same direction,
+  such as where a line runs into a curve, whatever the join, also across
+  curves without length, as in rectangles rounded to half their height.
+- Calculate `Curve#getTimesWithTangent()`, `#length` and `Curve.getPeaks()`
+  precisely also far from the origin, from the curve's polynomial
+  coefficients, which take the differences of the points first.
 
 ## `0.14.0`
 
