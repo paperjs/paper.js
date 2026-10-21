@@ -1181,6 +1181,29 @@ describe('SvgExport', () => {
     })
   })
 
+  test('Export and import SVG of nested layers (#483)', () => {
+    // Layers nest in groups, as the scene graph allows:
+    const layer = new Layer({ name: 'outer' })
+    new Group({ name: 'group' }).addChild(
+      new Layer({
+        name: 'inner',
+        children: [new Path.Rectangle([10, 10], [20, 20])]
+      })
+    )
+    const node = layer.exportSVG()
+    layer.remove()
+    const imported = paper.project.importSVG(node)
+    equals(() => imported instanceof Layer, true)
+    equals(() => imported.name, 'outer')
+    equals(() => imported.parent === null, true)
+    equals(() => paper.project.layers.includes(imported), true)
+    const group = imported.firstChild
+    equals(() => group.className, 'Group')
+    equals(() => group.name, 'group')
+    equals(() => group.firstChild.className, 'Layer')
+    equals(() => group.firstChild.name, 'inner')
+  })
+
   test('Export SVG text with start, end and justify justifications', () => {
     const text = new PointText({
       point: [10, 20],
