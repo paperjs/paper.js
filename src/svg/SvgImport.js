@@ -77,6 +77,9 @@ new function() {
                     value ? value.split(/[\s,]+/g).map(parseLength) : []
                 : type === 'color' ? getDefinition(value, options) || value
                 : type === 'lookup' ? lookup[value]
+                // Only the order of fill and stroke matters, without markers:
+                : type === 'order' ? /^(markers\s+)?stroke\b/.test(value)
+                    ? 'stroke' : 'fill'
                 : value;
     }
 

@@ -3605,6 +3605,19 @@ new function() { // Injection scope for hit-test functions shared with project
      */
 
     /**
+     * The order in which the fill and the stroke are painted, as in SVG's
+     * `paint-order`, named after what is painted first: `'fill'` paints the
+     * fill first, `'stroke'` paints the stroke first, so the fill covers its
+     * inner half.
+     *
+     * @name Item#paintOrder
+     * @property
+     * @type String
+     * @values 'fill', 'stroke'
+     * @default 'fill'
+     */
+
+    /**
      * {@grouptitle Fill Style}
      *
      * The fill color of the item.
@@ -4708,14 +4721,19 @@ new function() { // Injection scope for hit-test functions shared with project
             hasFill = style.hasFill(),
             hasStroke = style.hasStroke();
         if (hasFill || hasStroke) {
+            var isStrokeFirst = hasStroke && style.getPaintOrder() === 'stroke';
             this._setStyles(ctx, param, viewMatrix, strokeMatrix);
-            if (hasFill) {
-                ctx.fill(style.getFillRule());
-                // If shadowColor is defined, clear it after fill, so it won't
-                // be applied to both fill and stroke.
+            // If shadowColor is defined, clear it after the first paint, so it
+            // won't be applied to both fill and stroke.
+            if (isStrokeFirst) {
+                ctx.stroke();
                 ctx.shadowColor = 'rgba(0,0,0,0)';
             }
-            if (hasStroke)
+            if (hasFill) {
+                ctx.fill(style.getFillRule());
+                ctx.shadowColor = 'rgba(0,0,0,0)';
+            }
+            if (hasStroke && !isStrokeFirst)
                 ctx.stroke();
         }
     },
