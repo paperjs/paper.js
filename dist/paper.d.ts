@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.14.0 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.15.0 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 20 01:16:49 2026 +0200
+ * Date: Wed Oct 21 15:34:00 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -22,6 +22,7 @@ declare namespace paper {
         | { x: number, y: number }
         | { width: number, height: number }
         | { angle: number, length: number }
+        | { angleInRadians: number, length: number }
     )
 
     type SizeLike = (
@@ -37,6 +38,103 @@ declare namespace paper {
         | { x: number, y: number, width: number, height: number }
         | { from: PointLike, to: PointLike }
     )
+
+    type ColorLike = (
+        Color
+        | string
+        | number[]
+        | { red: number, green: number, blue: number, alpha?: number }
+        | { gray: number, alpha?: number }
+        | { hue: number, saturation: number, brightness: number, alpha?: number }
+        | { hue: number, saturation: number, lightness: number, alpha?: number }
+        | {
+            gradient: Gradient | { stops: GradientStopLike[], radial?: boolean },
+            origin: PointLike,
+            destination: PointLike,
+            highlight?: PointLike
+        }
+        | {
+            stops: GradientStopLike[],
+            radial?: boolean,
+            origin: PointLike,
+            destination: PointLike,
+            highlight?: PointLike
+        }
+    )
+
+    type GradientStopLike = GradientStop | ColorLike | [ ColorLike, number ]
+
+    /** 
+     * An AreaText item represents text that flows inside an area, its
+     *     {@link #textPath}: any path, with holes too, divided into
+     *     {@link #columns} and {@link #rows}. Its lines break between words to fit
+     *     the area's width where they sit. What doesn't fit flows on into the next
+     *     linked text item.
+     */
+    class AreaText extends TextItem {
+        /** 
+         * The number of columns that the area is divided into, from left to
+         * right, which the text fills one after the other.
+         */
+        columns: number
+
+        /** 
+         * The number of rows that the area is divided into, from top to bottom,
+         * each with its columns.
+         */
+        rows: number
+
+        /** 
+         * The space between the columns and between the rows.
+         */
+        gutter: number
+
+        /** 
+         * The space between the area's edges and the text.
+         */
+        inset: number
+
+        /** 
+         * Where the lines sit in each column, from top to bottom.
+         */
+        verticalAlign: string
+
+
+        /** 
+         * Creates a text item that flows inside an area.
+         * 
+         * @param area - the path that the text flows inside
+         * @param orientation - the orientation of the text
+         */
+        constructor(area: PathItem, orientation?: string)
+
+        /** 
+         * Creates a text item that flows inside a rectangle.
+         * 
+         * @param rectangle - the rectangle that the text flows inside
+         * @param orientation - the orientation of the text
+         */
+        constructor(rectangle: RectangleLike, orientation?: string)
+
+        /** 
+         * Creates a text item that flows inside an area, from the properties
+         * described by an object literal.
+         * 
+         * @param object - an object containing properties describing the
+         *     text's attributes
+         */
+        constructor(object: object)
+
+        /** 
+         * Sets the area's height to the smallest that holds all of its text,
+         * scaling its {@link #textPath} vertically from its top. An area without
+         * a height, which holds nothing, becomes a rectangle as wide as it.
+         * 
+         * @return this area text
+         */
+        fitHeight(): AreaText
+
+    }
 
     
     class ChangeFlag  {
@@ -185,7 +283,8 @@ declare namespace paper {
         /** 
          * The highlight point of the gradient.
          */
-        highlight: Point
+        get highlight(): Point
+        set highlight(value: PointLike)
 
 
         /** 
@@ -529,22 +628,26 @@ declare namespace paper {
         /** 
          * The first anchor point of the curve.
          */
-        point1: Point
+        get point1(): Point
+        set point1(value: PointLike)
 
         /** 
          * The second anchor point of the curve.
          */
-        point2: Point
+        get point2(): Point
+        set point2(value: PointLike)
 
         /** 
          * The handle point that describes the tangent in the first anchor point.
          */
-        handle1: Point
+        get handle1(): Point
+        set handle1(value: PointLike)
 
         /** 
          * The handle point that describes the tangent in the second anchor point.
          */
-        handle2: Point
+        get handle2(): Point
+        set handle2(value: PointLike)
 
         /** 
          * The first segment of the curve.
@@ -614,12 +717,14 @@ declare namespace paper {
         /** 
          * The bounding rectangle of the curve excluding stroke width.
          */
-        bounds: Rectangle
+        get bounds(): Rectangle
+        set bounds(value: RectangleLike)
 
         /** 
          * The bounding rectangle of the curve including stroke width.
          */
-        strokeBounds: Rectangle
+        get strokeBounds(): Rectangle
+        set strokeBounds(value: RectangleLike)
 
         /** 
          * The bounding rectangle of the curve including handles.
@@ -755,6 +860,18 @@ declare namespace paper {
         splitAtTime(time: number): Path
 
         /** 
+         * @deprecated use use {@link #divideAt} or
+         * {@link #divideAtTime} instead.
+         */
+        divide(offset?: number, isTime?: boolean): Curve
+
+        /** 
+         * @deprecated use use {@link #splitAt} or
+         * {@link #splitAtTime} instead.
+         */
+        split(offset?: number, isTime?: boolean): Path
+
+        /** 
          * Returns a reversed version of the curve, without modifying the curve
          * itself.
          * 
@@ -871,6 +988,11 @@ declare namespace paper {
         getTimeAt(offset: number, start?: number): number
 
         /** 
+         * @deprecated use use {@link #getTimeAt} instead.
+         */
+        getParameterAt(offset: number, start?: number): number
+
+        /** 
          * Calculates the curve-time parameters where the curve is tangential to
          * provided tangent. Note that tangents at the start or end are included.
          * 
@@ -880,6 +1002,17 @@ declare namespace paper {
          * tangential to the given tangent
          */
         getTimesWithTangent(tangent: PointLike): number[]
+
+        /** 
+         * Calculates the curve-time parameters where the curve is tangential to
+         * provided tangent. Note that tangents at the start or end are included.
+         * 
+         * @param tangent - the tangent to which the curve must be tangential
+         * 
+         * @return at most two curve-time parameters, where the curve is
+         * tangential to the given tangent
+         */
+        getTimesWithTangent(x: number, y: number): number[]
 
         /** 
          * Calculates the curve offset at the specified curve-time parameter on
@@ -902,6 +1035,16 @@ declare namespace paper {
         getLocationOf(point: PointLike): CurveLocation | null
 
         /** 
+         * Returns the curve location of the specified point if it lies on the
+         * curve, `null` otherwise.
+         * 
+         * @param point - the point on the curve
+         * 
+         * @return the curve location of the specified point
+         */
+        getLocationOf(x: number, y: number): CurveLocation | null
+
+        /** 
          * Returns the length of the path from its beginning up to up to the
          * specified point if it lies on the path, `null` otherwise.
          * 
@@ -910,6 +1053,16 @@ declare namespace paper {
          * @return the length of the path up to the specified point
          */
         getOffsetOf(point: PointLike): number | null
+
+        /** 
+         * Returns the length of the path from its beginning up to up to the
+         * specified point if it lies on the path, `null` otherwise.
+         * 
+         * @param point - the point on the path
+         * 
+         * @return the length of the path up to the specified point
+         */
+        getOffsetOf(x: number, y: number): number | null
 
         /** 
          * Returns the curve-time parameter of the specified point if it lies on the
@@ -924,6 +1077,28 @@ declare namespace paper {
         getTimeOf(point: PointLike): number | null
 
         /** 
+         * Returns the curve-time parameter of the specified point if it lies on the
+         * curve, `null` otherwise.
+         * Note that if there is more than one possible solution in a
+         * self-intersecting curve, the first found result is returned.
+         * 
+         * @param point - the point on the curve
+         * 
+         * @return the curve-time parameter of the specified point
+         */
+        getTimeOf(x: number, y: number): number | null
+
+        /** 
+         * @deprecated use use {@link #getTimeOf} instead.
+         */
+        getParameterOf(point: PointLike): number
+
+        /** 
+         * @deprecated use use {@link #getTimeOf} instead.
+         */
+        getParameterOf(x: number, y: number): number
+
+        /** 
          * Returns the nearest location on the curve to the specified point.
          * 
          * @param point - the point for which we search the nearest location
@@ -934,6 +1109,16 @@ declare namespace paper {
         getNearestLocation(point: PointLike): CurveLocation
 
         /** 
+         * Returns the nearest location on the curve to the specified point.
+         * 
+         * @param point - the point for which we search the nearest location
+         * 
+         * @return the location on the curve that's the closest to
+         * the specified point
+         */
+        getNearestLocation(x: number, y: number): CurveLocation
+
+        /** 
          * Returns the nearest point on the curve to the specified point.
          * 
          * @param point - the point for which we search the nearest point
@@ -942,6 +1127,16 @@ declare namespace paper {
          * specified point
          */
         getNearestPoint(point: PointLike): Point
+
+        /** 
+         * Returns the nearest point on the curve to the specified point.
+         * 
+         * @param point - the point for which we search the nearest point
+         * 
+         * @return the point on the curve that's the closest to the
+         * specified point
+         */
+        getNearestPoint(x: number, y: number): Point
 
         /** 
          * Calculates the point on the curve at the given location.
@@ -1128,6 +1323,11 @@ declare namespace paper {
         readonly time: number
 
         /** 
+         * @deprecated use {@link #time} instead.
+         */
+        readonly parameter: number
+
+        /** 
          * The point which is defined by the {@link #curve} and
          * {@link #time}.
          */
@@ -1238,7 +1438,18 @@ declare namespace paper {
      */
     class Event  {
         /** 
-         * The time at which the event was created, in milliseconds since the epoch.
+         * The time at which the event was created, in seconds, as the times of
+         * frame events are. Browsers count from the page's time origin, as
+         * `performance.now()` does, while
+         * {@link View#dispatchMouseEvent} and
+         * {@link View#dispatchKeyEvent} use `Date.now()`
+         * unless the host passes a time, so only compare the times of events from
+         * the same source.
+         */
+        readonly time: number
+
+        /** 
+         * @deprecated use {@link #time} instead, which is in seconds.
          */
         readonly timeStamp: number
 
@@ -1312,9 +1523,15 @@ declare namespace paper {
         offset: number
 
         /** 
+         * @deprecated use {@link #offset} instead.
+         */
+        rampPoint: number
+
+        /** 
          * The color of the gradient stop.
          */
-        color: Color
+        get color(): Color
+        set color(value: ColorLike)
 
 
         /** 
@@ -1374,6 +1591,14 @@ declare namespace paper {
          */
         constructor(object: object)
 
+        /** 
+         * Replaces the group with its children, which keep their appearance: the
+         * group's matrix is applied to them, and its clipping mask is released.
+         * 
+         * @return the children, or `null` if the group has no parent
+         */
+        ungroup(): Item[]
+
     }
 
     /** 
@@ -1417,7 +1642,8 @@ declare namespace paper {
          * If the HitResult has a type of 'pixel', this property refers to the color
          * of the pixel on the {@link Raster} that was hit.
          */
-        color: Color | null
+        get color(): Color | null
+        set color(value: ColorLike | null)
 
         /** 
          * If the HitResult has a type of 'stroke', 'segment', 'handle-in' or
@@ -1430,7 +1656,8 @@ declare namespace paper {
          * Describes the actual coordinates of the segment, handle or bounding box
          * corner that was hit.
          */
-        point: Point
+        get point(): Point
+        set point(value: PointLike)
 
 
     }
@@ -1457,7 +1684,7 @@ declare namespace paper {
     class Item  {
         /** 
          * The key of the host's node that the item represents, in a project
-         * backed by a host document, see {@link Project#source}. It can only be
+         * backed by a host document, see {@link Project#host}. It can only be
          * set once, on an item created by a script, to register the key that
          * the host gave its new node.
          */
@@ -1503,8 +1730,10 @@ declare namespace paper {
         /** 
          * The blend mode with which the item is composited onto the canvas. Both
          * the standard canvas compositing modes, as well as the new CSS blend modes
-         * are supported. If blend-modes cannot be rendered natively, they are
-         * emulated. Be aware that emulation can have an impact on performance.
+         * are supported. Where the canvas doesn't support a CSS blend mode
+         * natively, it draws as `'normal'`. Paper.js's own modes `'add'`,
+         * `'subtract'`, `'average'`, `'pin-light'` and `'negation'` are emulated,
+         * which can have an impact on performance.
          */
         blendMode: string
 
@@ -1520,6 +1749,14 @@ declare namespace paper {
          * and then only them, see {@link #hitTest}.
          */
         guide: boolean
+
+        /** 
+         * Specifies whether, and how, the item pushes aside the text of the
+         * {@link AreaText} items below it in its layer: `null`, or an object with
+         * `offset`, the space kept between them, and `invert`, to let the text
+         * flow inside it instead. `true` sets the defaults.
+         */
+        textWrap: any
 
         /** 
          * Specifies whether the item is selected. This will also return `true` for
@@ -1539,6 +1776,12 @@ declare namespace paper {
         selected: boolean
 
         /** 
+         * Specifies whether the item and all its descendants are selected. Setting
+         * it selects or deselects them all.
+         */
+        fullySelected: boolean
+
+        /** 
          * Specifies whether the item defines a clip mask. This can only be set on
          * paths and compound paths, and only if the item is already contained
          * within a clipping group.
@@ -1556,7 +1799,8 @@ declare namespace paper {
          * default, this is the {@link Rectangle#center} of the item's
          * {@link #bounds} rectangle.
          */
-        position: Point
+        get position(): Point
+        set position(value: PointLike)
 
         /** 
          * The item's pivot point specified in the item coordinate system, defining
@@ -1565,22 +1809,31 @@ declare namespace paper {
          * meaning the {@link Rectangle#center} of the item's {@link #bounds}
          * rectangle is used as pivot.
          */
-        pivot: Point
+        get pivot(): Point
+        set pivot(value: PointLike)
 
         /** 
          * The bounding rectangle of the item excluding stroke width.
          */
-        bounds: Rectangle
+        get bounds(): Rectangle
+        set bounds(value: RectangleLike)
 
         /** 
          * The bounding rectangle of the item including stroke width.
+         * 
+         * Setting it fits the item's {@link #bounds} into the given rectangle minus
+         * the extent of the stroke on each side, also where this extent changes
+         * with the item's proportions, as with miters. A rectangle smaller than the
+         * stroke itself shrinks the bounds to its center.
          */
-        strokeBounds: Rectangle
+        get strokeBounds(): Rectangle
+        set strokeBounds(value: RectangleLike)
 
         /** 
          * The bounding rectangle of the item including handles.
          */
-        handleBounds: Rectangle
+        get handleBounds(): Rectangle
+        set handleBounds(value: RectangleLike)
 
         /** 
          * The bounding rectangle of the item without any matrix transformations.
@@ -1589,7 +1842,8 @@ declare namespace paper {
          * want to draw something of the same size, position, rotation, and scaling,
          * like a selection frame.
          */
-        internalBounds: Rectangle
+        get internalBounds(): Rectangle
+        set internalBounds(value: RectangleLike)
 
         /** 
          * The current rotation angle of the item, as described by its
@@ -1607,7 +1861,8 @@ declare namespace paper {
          * {@link #applyMatrix} set to `false`, meaning they do not directly bake
          * transformations into their content.
          */
-        scaling: Point
+        get scaling(): Point
+        set scaling(value: PointLike)
 
         /** 
          * The item's transformation matrix, defining position and dimensions in
@@ -1638,6 +1893,11 @@ declare namespace paper {
          * items, etc.).
          */
         applyMatrix: boolean
+
+        /** 
+         * @deprecated use {@link #applyMatrix} instead.
+         */
+        transformContent: boolean
 
         /** 
          * The project that this item belongs to.
@@ -1711,7 +1971,8 @@ declare namespace paper {
         /** 
          * The color of the stroke.
          */
-        strokeColor: Color | null
+        get strokeColor(): Color | null
+        set strokeColor(value: ColorLike | null)
 
         /** 
          * The width of the stroke.
@@ -1762,7 +2023,8 @@ declare namespace paper {
         /** 
          * The fill color of the item.
          */
-        fillColor: Color | null
+        get fillColor(): Color | null
+        set fillColor(value: ColorLike | null)
 
         /** 
          * The fill-rule with which the shape gets filled. Please note that only
@@ -1773,7 +2035,8 @@ declare namespace paper {
         /** 
          * The shadow color.
          */
-        shadowColor: Color | null
+        get shadowColor(): Color | null
+        set shadowColor(value: ColorLike | null)
 
         /** 
          * The shadow's blur radius.
@@ -1783,13 +2046,15 @@ declare namespace paper {
         /** 
          * The shadow's offset.
          */
-        shadowOffset: Point
+        get shadowOffset(): Point
+        set shadowOffset(value: PointLike)
 
         /** 
          * The color the item is highlighted with when selected. If the item does
          * not specify its own color, the color defined by its layer is used instead.
          */
-        selectedColor: Color | null
+        get selectedColor(): Color | null
+        set selectedColor(value: ColorLike | null)
 
         /** 
          * Item level handler function to be called on each frame of an animation.
@@ -1915,6 +2180,24 @@ declare namespace paper {
         set(props: object): this
 
         /** 
+         * Returns the bounds of the given items in project coordinates, as if
+         * they were grouped, without moving them, e.g. the bounds of the
+         * selection: `Item.getBounds(project.selectedItems)`. As in groups,
+         * items that aren't visible or are empty are left out.
+         * 
+         * @option [options.stroke=false] {Boolean} include the stroke widths,
+         *     as {@link Item#strokeBounds} does
+         * @option [options.handle=false] {Boolean} include the handles, as
+         *     {@link Item#handleBounds} does
+         * 
+         * @param items - the items to get the bounds of
+         * @param options - the kind of bounds
+         * 
+         * @return the bounds of the items, empty if there are none
+         */
+        static getBounds(items: Item[], options?: { stroke?: boolean, handle?: boolean }): Rectangle
+
+        /** 
          * Clones the item within the same project and places the copy above the
          * item.
          * 
@@ -1947,26 +2230,31 @@ declare namespace paper {
         copyAttributes(source: Item, excludeMatrix: boolean): void
 
         /** 
+         * @deprecated use {@link #rasterize} instead.
+         */
+        rasterize(resolution?: number, insert?: boolean): Raster
+
+        /** 
          * Rasterizes the item into a newly created Raster object. The item itself
          * is not removed after rasterization.
          * 
-         * @option [resolution=view.resolution] {Number} the desired resolution to
-         *     be used when rasterizing, in pixels per inch (DPI). If not specified,
-         *     the value of `view.resolution` is used by default.
-         * @option [raster=null] {Raster} specifies a raster to be reused when
-         *     rasterizing. If the raster has the desired size already, then the
+         * @option [options.resolution=view.resolution] {Number} the desired
+         *     resolution to be used when rasterizing, in pixels per inch (DPI). If
+         *     not specified, the value of `view.resolution` is used by default.
+         * @option [options.raster=null] {Raster} specifies a raster to be reused
+         *     when rasterizing. If the raster has the desired size already, then the
          *     underlying canvas is reused and no new memory needs to be allocated.
          *     If no raster is provided, a new raster item is created and returned
          *     instead.
-         * @option [insert=true] {Boolean} specifies whether the raster should be
-         *     inserted into the scene graph. When set to `true`, it is inserted
-         *     above the rasterized item.
+         * @option [options.insert=true] {Boolean} specifies whether the raster
+         *     should be inserted into the scene graph. When set to `true`, it is
+         *     inserted above the rasterized item.
          * 
          * @param options - the rasterization options
          * 
          * @return the reused raster or the newly created raster item
          */
-        rasterize(options?: object): Raster
+        rasterize(options?: { resolution?: number, raster?: Raster, insert?: boolean }): Raster
 
         /** 
          * Checks whether the item's geometry contains the given point.
@@ -1976,12 +2264,27 @@ declare namespace paper {
         contains(point: PointLike): boolean
 
         /** 
+         * Checks whether the item's geometry contains the given point.
+         * 
+         * @param point - the point to check for
+         */
+        contains(x: number, y: number): boolean
+
+        /** 
          * @param rect - the rectangle to check against
          */
         isInside(rect: RectangleLike): boolean
 
         /** 
+         * Checks whether the item overlaps with the given item: whether their
+         * outlines cross, or one contains the other, as
+         * {@link Rectangle#intersects} does for rectangles. Items other than
+         * paths and shapes are checked through their bounds. To only check whether
+         * outlines cross, use {@link PathItem#getIntersections}.
+         * 
          * @param item - the item to check against
+         * 
+         * @return true if the items overlap
          */
         intersects(item: Item): boolean
 
@@ -2032,7 +2335,7 @@ declare namespace paper {
          * @return a hit result object describing what exactly was hit
          *     or `null` if nothing was hit
          */
-        hitTest(point: PointLike, options?: object): HitResult
+        hitTest(point: PointLike, options?: { tolerance?: number, class?: Function, match?: Function, fill?: boolean, stroke?: boolean, segments?: boolean, curves?: boolean, handles?: boolean, ends?: boolean, position?: boolean, center?: boolean, bounds?: boolean, guides?: boolean, selected?: boolean }): HitResult
 
         /** 
          * Performs a hit-test on the item and its children (if it is a {@link
@@ -2050,7 +2353,7 @@ declare namespace paper {
          * @return hit result objects for all hits, describing what
          *     exactly was hit or `null` if nothing was hit
          */
-        hitTestAll(point: PointLike, options?: object): HitResult[]
+        hitTestAll(point: PointLike, options?: { tolerance?: number, class?: Function, match?: Function, fill?: boolean, stroke?: boolean, segments?: boolean, curves?: boolean, handles?: boolean, ends?: boolean, position?: boolean, center?: boolean, bounds?: boolean, guides?: boolean, selected?: boolean }): HitResult[]
 
         /** 
          * Checks whether the item matches the criteria described by the given
@@ -2160,7 +2463,7 @@ declare namespace paper {
          * 
          * @return the exported JSON data
          */
-        exportJSON(options?: object): string
+        exportJSON(options?: { asString?: boolean, precision?: number }): string
 
         /** 
          * Imports (deserializes) the stored JSON data into this item. If the data
@@ -2209,7 +2512,7 @@ declare namespace paper {
          * @return the item converted to an SVG node or a
          * `String` depending on `option.asString` value
          */
-        exportSVG(options?: object): SVGElement | string
+        exportSVG(options?: { bounds?: string | RectangleLike, matrix?: Matrix, asString?: boolean, precision?: number, matchShapes?: boolean, embedImages?: boolean, reuseImages?: boolean, idPrefix?: string, reduceAttributes?: boolean }): SVGElement | string
 
         /** 
          * Converts the provided SVG content into Paper.js items and adds them to
@@ -2219,6 +2522,10 @@ declare namespace paper {
          * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
          * the `<use>` elements that place them as {@link SymbolItem} items. The
          * styles that `<use>` elements inherit don't reach the symbols' content.
+         * 
+         * URLs are fetched as they are, so validate URLs that come from untrusted
+         * sources first, especially on servers, where they could reach internal
+         * addresses.
          * 
          * @option [options.expandShapes=false] {Boolean} whether imported shape
          *     items should be expanded to path items
@@ -2246,7 +2553,7 @@ declare namespace paper {
          * @return the newly created Paper.js item containing the converted
          *     SVG content
          */
-        importSVG(svg: SVGElement | string, options?: object): Item
+        importSVG(svg: SVGElement | string, options?: { expandShapes?: boolean, crossOrigin?: string, onLoad?: Function, onError?: Function, insert?: boolean, applyMatrix?: boolean }): Item
 
         /** 
          * Imports the provided external SVG file, converts it into Paper.js items
@@ -2339,6 +2646,50 @@ declare namespace paper {
         bringToFront(): void
 
         /** 
+         * Inserts the specified item as a child of this item by appending it to
+         * the list of children and moving it above all other children. You can
+         * use this function for groups, compound paths and layers.
+         * 
+         * @param item - the item to be appended as a child
+         * 
+         * @deprecated use {@link #addChild} instead.
+         */
+        appendTop(item: Item): Item
+
+        /** 
+         * Inserts the specified item as a child of this item by appending it to
+         * the list of children and moving it below all other children. You can
+         * use this function for groups, compound paths and layers.
+         * 
+         * @param item - the item to be appended as a child
+         * 
+         * @deprecated use {@link #insertChild} instead.
+         */
+        appendBottom(item: Item): Item
+
+        /** 
+         * Moves this item above the specified item.
+         * 
+         * @param item - the item above which it should be moved
+         * 
+         * @deprecated use {@link #insertAbove} instead.
+         * 
+         * @return true if it was moved
+         */
+        moveAbove(item: Item): boolean
+
+        /** 
+         * Moves the item below the specified item.
+         * 
+         * @param item - the item below which it should be moved
+         * 
+         * @deprecated use {@link #insertBelow} instead.
+         * 
+         * @return true if it was moved
+         */
+        moveBelow(item: Item): boolean
+
+        /** 
          * Adds it to the specified owner, which can be either a {@link Item} or a
          * {@link Project}.
          * 
@@ -2381,14 +2732,16 @@ declare namespace paper {
         remove(): boolean
 
         /** 
-         * Replaces this item with the provided new item which will takes its place
-         * in the project hierarchy instead.
+         * Replaces this item with the provided new items which will take its place
+         * in the project hierarchy instead, in the given order. This also ungroups
+         * a group, e.g. `group.replaceWith(...group.children)`, but note that the
+         * items keep their own matrices, see {@link Group#ungroup}.
          * 
-         * @param item - the item that will replace this item
+         * @param item - the items that will replace this item
          * 
          * @return true if the item was replaced
          */
-        replaceWith(item: Item): boolean
+        replaceWith(...item: Item[]): boolean
 
         /** 
          * Removes all of the item's {@link #children} (if any).
@@ -2544,6 +2897,13 @@ declare namespace paper {
         translate(delta: PointLike): void
 
         /** 
+         * Translates (moves) the item by the given offset views.
+         * 
+         * @param delta - the offset to translate the item by
+         */
+        translate(x: number, y: number): void
+
+        /** 
          * Rotates the item by a given angle around the given center point.
          * 
          * Angles are oriented clockwise and measured in degrees.
@@ -2631,6 +2991,16 @@ declare namespace paper {
         globalToLocal(point: PointLike): Point
 
         /** 
+         * Converts the specified point from global project coordinate space to the
+         * item's own local coordinate space.
+         * 
+         * @param point - the point to be transformed
+         * 
+         * @return the transformed point as a new instance
+         */
+        globalToLocal(x: number, y: number): Point
+
+        /** 
          * Converts the specified point from the item's own local coordinate space
          * to the global project coordinate space.
          * 
@@ -2639,6 +3009,16 @@ declare namespace paper {
          * @return the transformed point as a new instance
          */
         localToGlobal(point: PointLike): Point
+
+        /** 
+         * Converts the specified point from the item's own local coordinate space
+         * to the global project coordinate space.
+         * 
+         * @param point - the point to be transformed
+         * 
+         * @return the transformed point as a new instance
+         */
+        localToGlobal(x: number, y: number): Point
 
         /** 
          * Converts the specified point from the parent's coordinate space to
@@ -2651,6 +3031,16 @@ declare namespace paper {
         parentToLocal(point: PointLike): Point
 
         /** 
+         * Converts the specified point from the parent's coordinate space to
+         * item's own local coordinate space.
+         * 
+         * @param point - the point to be transformed
+         * 
+         * @return the transformed point as a new instance
+         */
+        parentToLocal(x: number, y: number): Point
+
+        /** 
          * Converts the specified point from the item's own local coordinate space
          * to the parent's coordinate space.
          * 
@@ -2659,6 +3049,16 @@ declare namespace paper {
          * @return the transformed point as a new instance
          */
         localToParent(point: PointLike): Point
+
+        /** 
+         * Converts the specified point from the item's own local coordinate space
+         * to the parent's coordinate space.
+         * 
+         * @param point - the point to be transformed
+         * 
+         * @return the transformed point as a new instance
+         */
+        localToParent(x: number, y: number): Point
 
         /** 
          * Transform the item so that its {@link #bounds} are centered in the
@@ -2749,16 +3149,16 @@ declare namespace paper {
          * Removes the item when the events specified in the passed options object
          * occur.
          * 
-         * @option options.move {Boolean) remove the item when the next {@link
+         * @option options.move {Boolean} remove the item when the next {@link
          *     Tool#onMouseMove} event is fired.
-         * @option options.drag {Boolena) remove the item when the next {@link
+         * @option options.drag {Boolean} remove the item when the next {@link
          *     Tool#onMouseDrag} event is fired.
-         * @option options.down {Boolean) remove the item when the next {@link
+         * @option options.down {Boolean} remove the item when the next {@link
          *     Tool#onMouseDown} event is fired.
-         * @option options.up {Boolean) remove the item when the next {@link
+         * @option options.up {Boolean} remove the item when the next {@link
          *     Tool#onMouseUp} event is fired.
          */
-        removeOn(options: object): void
+        removeOn(options: { move?: boolean, drag?: boolean, down?: boolean, up?: boolean }): void
 
         /** 
          * Removes the item when the next {@link Tool#onMouseMove} event is fired.
@@ -3274,6 +3674,21 @@ declare namespace paper {
         inverted(): Matrix
 
         /** 
+         * @deprecated use {@link #append} instead.
+         */
+        concatenate(matrix: Matrix): Matrix
+
+        /** 
+         * @deprecated use {@link #prepend} instead.
+         */
+        preConcatenate(matrix: Matrix): Matrix
+
+        /** 
+         * @deprecated use {@link #appended} instead.
+         */
+        chain(matrix: Matrix): Matrix
+
+        /** 
          * @return whether this matrix is the identity matrix
          */
         isIdentity(): boolean
@@ -3304,6 +3719,15 @@ declare namespace paper {
         transform(point: PointLike): Point
 
         /** 
+         * Transforms a point and returns the result.
+         * 
+         * @param point - the point to be transformed
+         * 
+         * @return the transformed point
+         */
+        transform(x: number, y: number): Point
+
+        /** 
          * Transforms an array of coordinates by this matrix and stores the results
          * into the destination array, which is also returned.
          * 
@@ -3323,6 +3747,13 @@ declare namespace paper {
          * @param point - the point to be transformed
          */
         inverseTransform(point: PointLike): Point
+
+        /** 
+         * Inverse transforms a point and returns the result.
+         * 
+         * @param point - the point to be transformed
+         */
+        inverseTransform(x: number, y: number): Point
 
         /** 
          * Decomposes the affine transformation described by this matrix into
@@ -3358,7 +3789,8 @@ declare namespace paper {
          * The position of the mouse in project coordinates when the event was
          * fired.
          */
-        point: Point
+        get point(): Point
+        set point(value: PointLike)
 
         /** 
          * The item that dispatched the event. It is different from
@@ -3376,7 +3808,8 @@ declare namespace paper {
         currentTarget: Item
 
         
-        delta: Point
+        get delta(): Point
+        set delta(value: PointLike)
 
 
         /** 
@@ -3423,8 +3856,11 @@ declare namespace paper {
          *     (Note that not all items can set this to `false`)
          * @option [settings.handleSize=4] {Number} the size of the curve handles
          *     when drawing selections
+         * @option [settings.segmentSize=null] {Number} the size of the segments
+         *     when drawing selections, or `null` to use `settings.handleSize`, e.g.
+         *     with `handleSize: 0` to only draw the segments and not their handles
          * @option [settings.hitTolerance=0] {Number} the default tolerance for hit-
-         *     tests, when no value is specified
+         *     tests, when no value is specified, and for the mouse events of items
          * @option [settings.scaleStrokes=false] {Boolean} controls whether applying
          *     a matrix to the content of paths and compound paths also scales their
          *     {@link Style#strokeWidth}, by the geometric mean of the scale factors
@@ -3459,6 +3895,7 @@ declare namespace paper {
          */
         tools: Tool[]
 
+        AreaText: typeof AreaText
         ChangeFlag: typeof ChangeFlag
         Color: typeof Color
         CompoundPath: typeof CompoundPath
@@ -3480,6 +3917,7 @@ declare namespace paper {
         PaperScript: typeof PaperScript
         Path: typeof Path
         PathItem: typeof PathItem
+        PathText: typeof PathText
         Point: typeof Point
         PointText: typeof PointText
         Project: typeof Project
@@ -3492,6 +3930,8 @@ declare namespace paper {
         SymbolDefinition: typeof SymbolDefinition
         SymbolItem: typeof SymbolItem
         TextItem: typeof TextItem
+        TextRange: typeof TextRange
+        TextStory: typeof TextStory
         Tool: typeof Tool
         ToolEvent: typeof ToolEvent
         Tween: typeof Tween
@@ -3517,7 +3957,7 @@ declare namespace paper {
          * @param code - the PaperScript code
          * @param options - the compilation options
          */
-        execute(code: string, options?: object): void
+        execute(code: string, options?: { url?: string, source?: string }): void
 
         /** 
          * Injects the paper scope into any other given scope. Can be used for
@@ -3595,7 +4035,7 @@ declare namespace paper {
          * @return an object holding the compiled PaperScript translated
          *     into JavaScript code along with source-maps and other information.
          */
-        static compile(code: string, options?: object): object
+        static compile(code: string, options?: { url?: string, source?: string }): object
 
         /** 
          * Compiles the PaperScript code into a compiled function and executes it.
@@ -3611,14 +4051,31 @@ declare namespace paper {
          * @option options.handlers {String[]} the names of further global
          *     handlers to export next to `onFrame`, `onResize` and the tool's
          *     handlers, for hosts that call them themselves
+         * @option options.load {Function} the loader for static `import`
+         *     statements, called with the specifier as written and the
+         *     `options.url` of the importing script, and returning the module's
+         *     exports, e.g. the result of executing it. Modules with ES `export`
+         *     statements have their default export as `default` and are marked
+         *     with `__esModule`, so `import x` receives the default export, and
+         *     for CommonJS-style exports the whole exports. `import * as x`
+         *     receives all exports, and for CommonJS-style exports, these as
+         *     `default` too. Dynamic `import(specifier)` resolves to that
+         *     namespace as a Promise, and its loader may return a Promise as well.
+         *     The loader runs each module once and handles cycles. Parsing
+         *     `import` requires a current Acorn as `self.acorn`
+         * 
+         * Code with top-level `await` runs as an async function. `execute()` then
+         * returns a Promise of the exports, and installs the global handlers once
+         * it resolves. Parsing it requires a current Acorn as `self.acorn`.
          * 
          * @param code - the PaperScript code
          * @param scope - the scope for which the code is executed
          * @param options - the compilation options
          * 
-         * @return the exports defined in the executed code
+         * @return the exports defined in the executed code, or
+         *     with top-level `await`, a Promise of them
          */
-        static execute(code: string, scope: PaperScope, options?: object): object
+        static execute(code: string, scope: PaperScope, options?: { url?: string, source?: string, handlers?: string[], load?: Function }): object | Promise<any>
 
         /** 
          * Loads, compiles and executes PaperScript code in the HTML document. Note
@@ -3849,6 +4306,11 @@ declare namespace paper {
         splitAt(location: number | CurveLocation): Path | null
 
         /** 
+         * @deprecated use use {@link #splitAt} instead.
+         */
+        split(index: number, time?: number): Path
+
+        /** 
          * Joins the path with the other specified path, which will be removed in
          * the process. They can be joined if the first or last segments of either
          * path lie in the same location. Locations are optionally compare with a
@@ -3877,7 +4339,7 @@ declare namespace paper {
          * 
          * @return the reduced path
          */
-        reduce(options?: object): Path
+        reduce(options?: { simplify?: boolean }): Path
 
         /** 
          * Attempts to create a new shape item with same geometry as this path item,
@@ -3905,6 +4367,16 @@ declare namespace paper {
         getLocationOf(point: PointLike): CurveLocation | null
 
         /** 
+         * Returns the curve location of the specified point if it lies on the
+         * path, `null` otherwise.
+         * 
+         * @param point - the point on the path
+         * 
+         * @return the curve location of the specified point
+         */
+        getLocationOf(x: number, y: number): CurveLocation | null
+
+        /** 
          * Returns the length of the path from its beginning up to up to the
          * specified point if it lies on the path, `null` otherwise.
          * 
@@ -3913,6 +4385,16 @@ declare namespace paper {
          * @return the length of the path up to the specified point
          */
         getOffsetOf(point: PointLike): number | null
+
+        /** 
+         * Returns the length of the path from its beginning up to up to the
+         * specified point if it lies on the path, `null` otherwise.
+         * 
+         * @param point - the point on the path
+         * 
+         * @return the length of the path up to the specified point
+         */
+        getOffsetOf(x: number, y: number): number | null
 
         /** 
          * Returns the curve location of the specified offset on the path, or
@@ -4001,6 +4483,19 @@ declare namespace paper {
          */
         getOffsetsWithTangent(tangent: PointLike): number[]
 
+        /** 
+         * Calculates path offsets where the path is tangential to the provided
+         * tangent. Note that tangents at the start or end are included. Tangents at
+         * segment points are returned even if only one of their handles is
+         * collinear with the provided tangent.
+         * 
+         * @param tangent - the tangent to which the path must be tangential
+         * 
+         * @return path offsets where the path is tangential to the
+         * provided tangent
+         */
+        getOffsetsWithTangent(x: number, y: number): number[]
+
     }
     namespace Path {
 
@@ -4083,6 +4578,14 @@ declare namespace paper {
 
         }
 
+        class RoundRectangle extends Path {
+            /** 
+             * @deprecated use {@link #Path.Rectangle} instead.
+             */
+            constructor(rectangle: RectangleLike, radius: SizeLike)
+
+        }
+
         class Ellipse extends Path {
             /** 
              * Creates an elliptical path item.
@@ -4099,6 +4602,14 @@ declare namespace paper {
              *     path's attributes
              */
             constructor(object: object)
+
+        }
+
+        class Oval extends Path {
+            /** 
+             * @deprecated use {@link #Path.Ellipse} instead.
+             */
+            constructor(rectangle: RectangleLike)
 
         }
 
@@ -4202,73 +4713,83 @@ declare namespace paper {
 
         /** 
          * Unites the geometry of the specified path with this path's geometry
-         * and returns the result as a new path item.
+         * and returns the result as a new path item. With an array of paths,
+         * the result covers the areas inside any of them or this path. Each
+         * path keeps its own fill rule.
          * 
          * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
+         *     should be inserted back into the scene graph, above all paths
          *     involved in the operation
          * 
-         * @param path - the path to unite with
+         * @param path - the path or paths to unite with
          * @param options - the boolean operation options
          * 
          * @return the resulting path item
          */
-        unite(path: PathItem, options?: object): PathItem
+        unite(path: PathItem | PathItem[], options?: { insert?: boolean }): PathItem
 
         /** 
          * Intersects the geometry of the specified path with this path's
-         * geometry and returns the result as a new path item.
+         * geometry and returns the result as a new path item. With an array of
+         * paths, the result covers the areas inside all of them and this path.
+         * Each path keeps its own fill rule.
          * 
          * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
+         *     should be inserted back into the scene graph, above all paths
          *     involved in the operation
          * @option [options.trace=true] {Boolean} whether the tracing method is
-         *     used, treating both paths as areas when determining which parts
+         *     used, treating all paths as areas when determining which parts
          *     of the paths are to be kept in the result, or whether the first
          *     path is only to be split at intersections, keeping the parts of
-         *     the curves that intersect with the area of the second path.
+         *     the curves that intersect with the areas of all other paths.
          * 
-         * @param path - the path to intersect with
+         * @param path - the path or paths to intersect
+         *     with
          * @param options - the boolean operation options
          * 
          * @return the resulting path item
          */
-        intersect(path: PathItem, options?: object): PathItem
+        intersect(path: PathItem | PathItem[], options?: { insert?: boolean, trace?: boolean }): PathItem
 
         /** 
          * Subtracts the geometry of the specified path from this path's
-         * geometry and returns the result as a new path item.
+         * geometry and returns the result as a new path item. With an array of
+         * paths, the result covers the areas inside this path and outside all
+         * of them. Each path keeps its own fill rule.
          * 
          * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
+         *     should be inserted back into the scene graph, above all paths
          *     involved in the operation
          * @option [options.trace=true] {Boolean} whether the tracing method is
-         *     used, treating both paths as areas when determining which parts
+         *     used, treating all paths as areas when determining which parts
          *     of the paths are to be kept in the result, or whether the first
          *     path is only to be split at intersections, removing the parts of
-         *     the curves that intersect with the area of the second path.
+         *     the curves that intersect with the area of any other path.
          * 
-         * @param path - the path to subtract
+         * @param path - the path or paths to subtract
          * @param options - the boolean operation options
          * 
          * @return the resulting path item
          */
-        subtract(path: PathItem, options?: object): PathItem
+        subtract(path: PathItem | PathItem[], options?: { insert?: boolean, trace?: boolean }): PathItem
 
         /** 
          * Excludes the intersection of the geometry of the specified path with
-         * this path's geometry and returns the result as a new path item.
+         * this path's geometry and returns the result as a new path item. With
+         * an array of paths, the result covers the areas inside an odd number
+         * of the paths, this one included. Each path keeps its own fill rule.
          * 
          * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
+         *     should be inserted back into the scene graph, above all paths
          *     involved in the operation
          * 
-         * @param path - the path to exclude the intersection of
+         * @param path - the path or paths to exclude the
+         *     intersection of
          * @param options - the boolean operation options
          * 
          * @return the resulting path item
          */
-        exclude(path: PathItem, options?: object): PathItem
+        exclude(path: PathItem | PathItem[], options?: { insert?: boolean }): PathItem
 
         /** 
          * Splits the geometry of this path along the geometry of the specified
@@ -4289,7 +4810,7 @@ declare namespace paper {
          * 
          * @return the resulting path item
          */
-        divide(path: PathItem, options?: object): PathItem
+        divide(path: PathItem, options?: { insert?: boolean, trace?: boolean }): PathItem
 
         /** 
          * Fixes the orientation of the sub-paths of a compound-path, assuming
@@ -4386,6 +4907,16 @@ declare namespace paper {
         getNearestLocation(point: PointLike): CurveLocation
 
         /** 
+         * Returns the nearest location on the path item to the specified point.
+         * 
+         * @param point - the point for which we search the nearest location
+         * 
+         * @return the location on the path that's the closest to
+         * the specified point
+         */
+        getNearestLocation(x: number, y: number): CurveLocation
+
+        /** 
          * Returns the nearest point on the path item to the specified point.
          * 
          * @param point - the point for which we search the nearest point
@@ -4394,6 +4925,16 @@ declare namespace paper {
          * point
          */
         getNearestPoint(point: PointLike): Point
+
+        /** 
+         * Returns the nearest point on the path item to the specified point.
+         * 
+         * @param point - the point for which we search the nearest point
+         * 
+         * @return the point on the path that's the closest to the specified
+         * point
+         */
+        getNearestPoint(x: number, y: number): Point
 
         /** 
          * Reverses the orientation of the path item. When called on
@@ -4479,7 +5020,7 @@ declare namespace paper {
          * 
          * @param options - the smoothing options
          */
-        smooth(options?: object): void
+        smooth(options?: { type?: string, factor?: number, from?: number | Segment | Curve, to?: number | Segment | Curve }): void
 
         /** 
          * Fits a sequence of as few curves as possible through the path's anchor
@@ -4537,6 +5078,15 @@ declare namespace paper {
         moveTo(point: PointLike): void
 
         /** 
+         * On a normal empty {@link Path}, the point is simply added as the path's
+         * first segment. If called on a {@link CompoundPath}, a new {@link Path} is
+         * created as a child and the point is added as its first segment.
+         * 
+         * @param point - the point in which to start the path
+         */
+        moveTo(x: number, y: number): void
+
+        /** 
          * Adds a straight curve to the path, from the the last segment in the path
          * to the specified point.
          * 
@@ -4544,6 +5094,15 @@ declare namespace paper {
          *     curve
          */
         lineTo(point: PointLike): void
+
+        /** 
+         * Adds a straight curve to the path, from the the last segment in the path
+         * to the specified point.
+         * 
+         * @param point - the destination point of the newly added straight
+         *     curve
+         */
+        lineTo(x: number, y: number): void
 
         /** 
          * Adds an arc from the position of the last segment in the path, passing
@@ -4627,6 +5186,13 @@ declare namespace paper {
         moveBy(to: PointLike): void
 
         /** 
+         * If called on a {@link CompoundPath}, a new {@link Path} is created as a
+         * child and a point is added as its first segment relative to the position
+         * of the last segment of the current path.
+         */
+        moveBy(x: number, y: number): void
+
+        /** 
          * Adds a straight curve to the path, from the the last segment in the path
          * to the `to` vector specified relatively to it.
          * 
@@ -4634,6 +5200,15 @@ declare namespace paper {
          *     added straight curve
          */
         lineBy(point: PointLike): void
+
+        /** 
+         * Adds a straight curve to the path, from the the last segment in the path
+         * to the `to` vector specified relatively to it.
+         * 
+         * @param point - the vector describing the destination of the newly
+         *     added straight curve
+         */
+        lineBy(x: number, y: number): void
 
         /** 
          * Adds an arc from the position of the last segment in the path, passing
@@ -4701,9 +5276,60 @@ declare namespace paper {
     }
 
     /** 
+     * A PathText item represents text that runs along a path, its
+     *     {@link #textPath}, each letter turned to the path's direction where it
+     *     sits. On a compound path, the text runs along one of its paths after the
+     *     other. What doesn't fit between {@link #startOffset} and
+     *     {@link #endOffset} flows on into the next linked text item.
+     */
+    class PathText extends TextItem {
+        /** 
+         * The length along the path where the text starts.
+         */
+        startOffset: number
+
+        /** 
+         * The length along the path where the text ends, or `null` for its end.
+         */
+        endOffset: number
+
+        /** 
+         * Which part of the letters sits on the path.
+         */
+        alignment: string
+
+        /** 
+         * Space added between the letters, where the path bends tightly.
+         */
+        spacing: number
+
+
+        /** 
+         * Creates a text item that runs along a path.
+         * 
+         * @param path - the path that the text runs along
+         * @param orientation - the orientation of the text
+         */
+        constructor(path: PathItem, orientation?: string)
+
+        /** 
+         * Creates a text item that runs along a path, from the properties
+         * described by an object literal.
+         * 
+         * @param object - an object containing properties describing the
+         *     text's attributes
+         */
+        constructor(object: object)
+
+    }
+
+    /** 
      * The Point object represents a point in the two dimensional space
      * of the Paper.js project. It is also used to represent two dimensional
      * vector objects.
+     * 
+     * Wherever a point is the only argument of a function, it can also be passed
+     * as two numbers, e.g. `point.add(10, 20)` or `item.translate(10, 20)`.
      */
     class Point  {
         /** 
@@ -4805,7 +5431,7 @@ declare namespace paper {
          * 
          * @return true if the points are equal
          */
-        equals(point: PointLike): boolean
+        equals(point: PointLike | number[]): boolean
 
         /** 
          * Returns a copy of the point.
@@ -4828,12 +5454,28 @@ declare namespace paper {
         getAngle(point: PointLike): number
 
         /** 
+         * Returns the smaller angle between two vectors. The angle is unsigned, no
+         * information about rotational direction is given.
+         * 
+         * @return the angle in degrees
+         */
+        getAngle(x: number, y: number): number
+
+        /** 
          * Returns the smaller angle between two vectors in radians. The angle is
          * unsigned, no information about rotational direction is given.
          * 
          * @return the angle in radians
          */
         getAngleInRadians(point: PointLike): number
+
+        /** 
+         * Returns the smaller angle between two vectors in radians. The angle is
+         * unsigned, no information about rotational direction is given.
+         * 
+         * @return the angle in radians
+         */
+        getAngleInRadians(x: number, y: number): number
 
         /** 
          * Returns the angle between two vectors. The angle is directional and
@@ -4845,6 +5487,17 @@ declare namespace paper {
          * @return the angle between the two vectors
          */
         getDirectedAngle(point: PointLike): number
+
+        /** 
+         * Returns the angle between two vectors. The angle is directional and
+         * signed, giving information about the rotational direction.
+         * 
+         * Read more about angle units and orientation in the description of the
+         * {@link #angle} property.
+         * 
+         * @return the angle between the two vectors
+         */
+        getDirectedAngle(x: number, y: number): number
 
         /** 
          * Returns the distance between the point and another point.
@@ -4912,6 +5565,17 @@ declare namespace paper {
         add(point: PointLike): Point
 
         /** 
+         * Returns the addition of the supplied point to the point as a new
+         * point.
+         * The object itself is not modified!
+         * 
+         * @param point - the point to add
+         * 
+         * @return the addition of the two points as a new point
+         */
+        add(x: number, y: number): Point
+
+        /** 
          * Returns the subtraction of the supplied value to both coordinates of
          * the point as a new point.
          * The object itself is not modified!
@@ -4932,6 +5596,17 @@ declare namespace paper {
          * @return the subtraction of the two points as a new point
          */
         subtract(point: PointLike): Point
+
+        /** 
+         * Returns the subtraction of the supplied point to the point as a new
+         * point.
+         * The object itself is not modified!
+         * 
+         * @param point - the point to subtract
+         * 
+         * @return the subtraction of the two points as a new point
+         */
+        subtract(x: number, y: number): Point
 
         /** 
          * Returns the multiplication of the supplied value to both coordinates of
@@ -4957,6 +5632,17 @@ declare namespace paper {
         multiply(point: PointLike): Point
 
         /** 
+         * Returns the multiplication of the supplied point to the point as a new
+         * point.
+         * The object itself is not modified!
+         * 
+         * @param point - the point to multiply by
+         * 
+         * @return the multiplication of the two points as a new point
+         */
+        multiply(x: number, y: number): Point
+
+        /** 
          * Returns the division of the supplied value to both coordinates of
          * the point as a new point.
          * The object itself is not modified!
@@ -4979,6 +5665,17 @@ declare namespace paper {
         divide(point: PointLike): Point
 
         /** 
+         * Returns the division of the supplied point to the point as a new
+         * point.
+         * The object itself is not modified!
+         * 
+         * @param point - the point to divide by
+         * 
+         * @return the division of the two points as a new point
+         */
+        divide(x: number, y: number): Point
+
+        /** 
          * The modulo operator returns the integer remainders of dividing the point
          * by the supplied value as a new point.
          * 
@@ -4995,6 +5692,15 @@ declare namespace paper {
          * other as a new point
          */
         modulo(point: PointLike): Point
+
+        /** 
+         * The modulo operator returns the integer remainders of dividing the point
+         * by the supplied value as a new point.
+         * 
+         * @return the integer remainders of dividing the points by each
+         * other as a new point
+         */
+        modulo(x: number, y: number): Point
 
         /** 
          * Returns a new point with both coordinates negated.
@@ -5035,6 +5741,16 @@ declare namespace paper {
         isCollinear(point: PointLike): boolean
 
         /** 
+         * Checks if the vector represented by this point is collinear (parallel) to
+         * another vector.
+         * 
+         * @param point - the vector to check against
+         * 
+         * @return true it is collinear
+         */
+        isCollinear(x: number, y: number): boolean
+
+        /** 
          * Checks if the vector represented by this point is orthogonal
          * (perpendicular) to another vector.
          * 
@@ -5043,6 +5759,16 @@ declare namespace paper {
          * @return true it is orthogonal
          */
         isOrthogonal(point: PointLike): boolean
+
+        /** 
+         * Checks if the vector represented by this point is orthogonal
+         * (perpendicular) to another vector.
+         * 
+         * @param point - the vector to check against
+         * 
+         * @return true it is orthogonal
+         */
+        isOrthogonal(x: number, y: number): boolean
 
         /** 
          * Checks if this point has both the x and y coordinate set to 0.
@@ -5080,11 +5806,25 @@ declare namespace paper {
         dot(point: PointLike): number
 
         /** 
+         * Returns the dot product of the point and another point.
+         * 
+         * @return the dot product of the two points
+         */
+        dot(x: number, y: number): number
+
+        /** 
          * Returns the cross product of the point and another point.
          * 
          * @return the cross product of the two points
          */
         cross(point: PointLike): number
+
+        /** 
+         * Returns the cross product of the point and another point.
+         * 
+         * @return the cross product of the two points
+         */
+        cross(x: number, y: number): number
 
         /** 
          * Returns the projection of the point onto another point.
@@ -5093,6 +5833,14 @@ declare namespace paper {
          * @return the projection of the point onto another point
          */
         project(point: PointLike): Point
+
+        /** 
+         * Returns the projection of the point onto another point.
+         * Both points are interpreted as vectors.
+         * 
+         * @return the projection of the point onto another point
+         */
+        project(x: number, y: number): Point
 
         /** 
          * Returns a new point with rounded {@link #x} and {@link #y} values. The
@@ -5167,7 +5915,8 @@ declare namespace paper {
         /** 
          * The PointText's anchor point
          */
-        point: Point
+        get point(): Point
+        set point(value: PointLike)
 
 
         /** 
@@ -5209,11 +5958,11 @@ declare namespace paper {
     class Project  {
         /** 
          * The host document that the project's items come from. Setting it
-         * creates the project's layers from the source's records. All items
+         * creates the project's layers from the host's records. All items
          * are created as shells that load their content and children from the
-         * source on first access.
+         * host on first access.
          * 
-         * The source provides:
+         * The host provides:
          * - `getChildren(key)`, which returns the records of the children of
          *   the node with the given key, or of the top level for `null`, as
          *   columns: `keys`, `types` (indices into `typeNames`), `typeNames`,
@@ -5222,11 +5971,32 @@ declare namespace paper {
          *   strokeBounds and roughBounds in the item's coordinates, 12 numbers
          *   per item), and the sparse objects `names` and `matrices`.
          * - `getItem(key)`, which returns the node's own content in the form
-         *   of {@link Item#importJSON}, without children.
+         *   of {@link Item#importJSON}, without children. Linked text
+         *   gives `linked`, the keys of its story's text items in order, and
+         *   leaves out its story.
+         * - `getStory(key)`, for linked text, which returns its story with the
+         *   key of any of its text items: `content` or `runs`, `paragraphs`,
+         *   and the character and paragraph styles, as
+         *   {@link Item#exportJSON} writes them in the JSON of a
+         *   text item.
          * - `getAncestorKeys(key)`, which returns the keys from the top level
          *   down to the node's parent.
+         * - Optionally `layOut(json, start, key)`, which lays out a text item
+         *   from `start` in its story, given as the JSON string that
+         *   {@link Item#exportJSON} writes of it as the script holds
+         *   it, or as `null` where the script didn't change it since it
+         *   loaded or the host took its changes with
+         *   {@link Project#takeChanges}, for the host to lay out its own
+         *   node, and returns
+         *   `{ end, lines }`: where its visible text ends, and
+         *   its lines, each `{ start, end, x, y, width, lineHeight, ascent,
+         *   descent, pieces }`, with pieces `{ start, end, x, y, dx, width,
+         *   rotation, size, ascent, descent, lineHeight }` and an optional
+         *   `content`, as for a hyphen, all in the item's coordinates. `key`
+         *   is null for text that the host doesn't know yet. Without it,
+         *   Paper.js lays out text itself.
          */
-        source: any
+        host: any
 
         /** 
          * Specifies whether the project logs the changes of its items, to be
@@ -5257,6 +6027,13 @@ declare namespace paper {
         readonly index: number
 
         /** 
+         * Gives access to the project's configurable options.
+         * 
+         * @deprecated use {@link PaperScope#settings} instead.
+         */
+        readonly options: any
+
+        /** 
          * The layers contained within the project.
          */
         readonly layers: Layer[]
@@ -5272,6 +6049,11 @@ declare namespace paper {
          * project.
          */
         readonly symbolDefinitions: SymbolDefinition[]
+
+        /** 
+         * @deprecated use {@link #symbolDefinitions} instead.
+         */
+        readonly symbols: SymbolDefinition[]
 
         /** 
          * The selected items contained within the project.
@@ -5299,13 +6081,13 @@ declare namespace paper {
          * 
          * @param key - the key of the host's node
          * 
-         * @return the item, or `null` if the source has no such node
+         * @return the item, or `null` if the host has no such node
          */
         getItemByKey(key: number): Item
 
         /** 
          * Updates the items of changed host nodes, given in the column format
-         * of the source's `getChildren()`, with two more flags: 16 when the
+         * of the host's `getChildren()`, with two more flags: 16 when the
          * node's own content changed, so the item loads it again on next
          * access, and 32 when its list of children changed, so it loads them
          * again right away if it had loaded them, keeping the items of nodes
@@ -5325,6 +6107,14 @@ declare namespace paper {
          *     if {link #trackChanges} is off
          */
         takeChanges(): object[]
+
+        /** 
+         * Checks whether changes were logged since tracking was activated or since
+         * the last call of {@link #takeChanges}, without taking them.
+         * 
+         * @return true if changes were logged
+         */
+        hasChanges(): boolean
 
         /** 
          * Activates this project, so all newly created items will be placed
@@ -5424,7 +6214,7 @@ declare namespace paper {
          * @return a hit result object that contains more information
          *     about what exactly was hit or `null` if nothing was hit
          */
-        hitTest(point: PointLike, options?: object): HitResult
+        hitTest(point: PointLike, options?: { tolerance?: number, class?: Function, match?: Function, fill?: boolean, stroke?: boolean, segments?: boolean, curves?: boolean, handles?: boolean, ends?: boolean, position?: boolean, center?: boolean, bounds?: boolean, guides?: boolean, selected?: boolean }): HitResult
 
         /** 
          * Performs a hit-test on the item and its children (if it is a {@link
@@ -5441,7 +6231,7 @@ declare namespace paper {
          * @return hit result objects for all hits, describing what
          *     exactly was hit or `null` if nothing was hit
          */
-        hitTestAll(point: PointLike, options?: object): HitResult[]
+        hitTestAll(point: PointLike, options?: { tolerance?: number, class?: Function, match?: Function, fill?: boolean, stroke?: boolean, segments?: boolean, curves?: boolean, handles?: boolean, ends?: boolean, position?: boolean, center?: boolean, bounds?: boolean, guides?: boolean, selected?: boolean }): HitResult[]
 
         /** 
          * Fetch items contained within the project whose properties match the
@@ -5512,7 +6302,7 @@ declare namespace paper {
          * 
          * @return the exported JSON data
          */
-        exportJSON(options?: object): string
+        exportJSON(options?: { asString?: boolean, precision?: number }): string
 
         /** 
          * Imports (deserializes) the stored JSON data into the project.
@@ -5562,7 +6352,7 @@ declare namespace paper {
          * @return the project converted to an SVG node or a
          * `String` depending on `option.asString` value
          */
-        exportSVG(options?: object): SVGElement | string
+        exportSVG(options?: { bounds?: string | RectangleLike, matrix?: Matrix, asString?: boolean, precision?: number, matchShapes?: boolean, embedImages?: boolean, reuseImages?: boolean, idPrefix?: string, reduceAttributes?: boolean }): SVGElement | string
 
         /** 
          * Converts the provided SVG content into Paper.js items and adds them to
@@ -5573,6 +6363,10 @@ declare namespace paper {
          * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
          * the `<use>` elements that place them as {@link SymbolItem} items. The
          * styles that `<use>` elements inherit don't reach the symbols' content.
+         * 
+         * URLs are fetched as they are, so validate URLs that come from untrusted
+         * sources first, especially on servers, where they could reach internal
+         * addresses.
          * 
          * @option [options.expandShapes=false] {Boolean} whether imported shape
          *     items should be expanded to path items
@@ -5600,7 +6394,7 @@ declare namespace paper {
          * @return the newly created Paper.js item containing the converted
          *     SVG content
          */
-        importSVG(svg: SVGElement | string, options?: object): Item
+        importSVG(svg: SVGElement | string, options?: { expandShapes?: boolean, crossOrigin?: string, onLoad?: Function, onError?: Function, insert?: boolean, applyMatrix?: boolean }): Item
 
         /** 
          * Imports the provided external SVG file, converts it into Paper.js items
@@ -5628,7 +6422,8 @@ declare namespace paper {
         /** 
          * The size of the raster in pixels.
          */
-        size: Size
+        get size(): Size
+        set size(value: SizeLike)
 
         /** 
          * The width of the raster in pixels.
@@ -5650,6 +6445,11 @@ declare namespace paper {
          * inch).
          */
         readonly resolution: Size
+
+        /** 
+         * @deprecated use {@link #resolution} instead.
+         */
+        readonly ppi: Size
 
         /** 
          * The HTMLImageElement or Canvas element of the raster, if one is
@@ -5861,6 +6661,9 @@ declare namespace paper {
         
         createImageData(size: SizeLike): ImageData
 
+        
+        createImageData(width: number, height: number): ImageData
+
         /** 
          * Returns the image data of the pixels within the specified rectangle, or
          * of the whole raster if no rectangle or an empty one is passed.
@@ -5910,12 +6713,14 @@ declare namespace paper {
          * The top-left point of the rectangle. Setting it moves the whole
          * rectangle, unlike {@link #topLeft}.
          */
-        point: Point
+        get point(): Point
+        set point(value: PointLike)
 
         /** 
          * The size of the rectangle
          */
-        size: Size
+        get size(): Size
+        set size(value: SizeLike)
 
         /** 
          * The position of the left hand side of the rectangle. Note that this
@@ -5944,59 +6749,68 @@ declare namespace paper {
         /** 
          * The center point of the rectangle. Setting it moves the whole rectangle.
          */
-        center: Point
+        get center(): Point
+        set center(value: PointLike)
 
         /** 
          * The top-left point of the rectangle. Note that this doesn't move the
          * whole rectangle; the bottom-right corner stays where it was.
          */
-        topLeft: Point
+        get topLeft(): Point
+        set topLeft(value: PointLike)
 
         /** 
          * The top-right point of the rectangle. Note that this doesn't move the
          * whole rectangle; the bottom-left corner stays where it was.
          */
-        topRight: Point
+        get topRight(): Point
+        set topRight(value: PointLike)
 
         /** 
          * The bottom-left point of the rectangle. Note that this doesn't move the
          * whole rectangle; the top-right corner stays where it was.
          */
-        bottomLeft: Point
+        get bottomLeft(): Point
+        set bottomLeft(value: PointLike)
 
         /** 
          * The bottom-right point of the rectangle. Note that this doesn't move the
          * whole rectangle; the top-left corner stays where it was.
          */
-        bottomRight: Point
+        get bottomRight(): Point
+        set bottomRight(value: PointLike)
 
         /** 
          * The left-center point of the rectangle. Setting it moves the left hand
          * side while the right hand side stays where it was, and moves the whole
          * rectangle vertically.
          */
-        leftCenter: Point
+        get leftCenter(): Point
+        set leftCenter(value: PointLike)
 
         /** 
          * The top-center point of the rectangle. Setting it moves the top while
          * the bottom stays where it was, and moves the whole rectangle
          * horizontally.
          */
-        topCenter: Point
+        get topCenter(): Point
+        set topCenter(value: PointLike)
 
         /** 
          * The right-center point of the rectangle. Setting it moves the right
          * hand side while the left hand side stays where it was, and moves the
          * whole rectangle vertically.
          */
-        rightCenter: Point
+        get rightCenter(): Point
+        set rightCenter(value: PointLike)
 
         /** 
          * The bottom-center point of the rectangle. Setting it moves the bottom
          * while the top stays where it was, and moves the whole rectangle
          * horizontally.
          */
-        bottomCenter: Point
+        get bottomCenter(): Point
+        set bottomCenter(value: PointLike)
 
         /** 
          * The area of the rectangle.
@@ -6009,10 +6823,11 @@ declare namespace paper {
          * Paper.js draws the bounds of items with selected bounds on top of
          * your project. This is very useful when debugging.
          * 
-         * This property is only available on the rectangle returned by
-         * {@link Item#bounds}, and the selection always shows these bounds.
-         * Rectangles returned by other getters such as {@link
-         * Item#strokeBounds} don't have it.
+         * This property is only available on the rectangles returned by
+         * {@link Item#bounds} and {@link Item#strokeBounds}, which are
+         * selected independently of each other, each showing its own
+         * bounds. Rectangles returned by other getters such as {@link
+         * Item#handleBounds} don't have it.
          */
         selected: boolean
 
@@ -6096,6 +6911,15 @@ declare namespace paper {
         contains(point: PointLike): boolean
 
         /** 
+         * Tests if the specified point is inside the boundary of the rectangle.
+         * 
+         * @param point - the specified point
+         * 
+         * @return true if the point is inside the rectangle's boundary
+         */
+        contains(x: number, y: number): boolean
+
+        /** 
          * Tests if the interior of the rectangle entirely contains the specified
          * rectangle.
          * 
@@ -6162,6 +6986,23 @@ declare namespace paper {
         include(point: PointLike): Rectangle
 
         /** 
+         * Adds a point to this rectangle. The resulting rectangle is the smallest
+         * rectangle that contains both the original rectangle and the specified
+         * point.
+         * 
+         * After adding a point, a call to {@link #contains} with the added
+         * point as an argument does not necessarily return `true`. The {@link
+         * Rectangle#contains(point)} method does not return `true` for points on
+         * the right or bottom edges of a rectangle. Therefore, if the added point
+         * falls on the left or bottom edge of the enlarged rectangle, {@link
+         * Rectangle#contains(point)} returns `false` for that point.
+         * 
+         * @return the smallest rectangle that contains both the
+         * original rectangle and the specified point
+         */
+        include(x: number, y: number): Rectangle
+
+        /** 
          * Returns a new rectangle expanded by the specified amount in horizontal
          * and vertical directions.
          * 
@@ -6217,19 +7058,22 @@ declare namespace paper {
         /** 
          * The anchor point of the segment.
          */
-        point: Point
+        get point(): Point
+        set point(value: PointLike)
 
         /** 
          * The handle point relative to the anchor point of the segment that
          * describes the in tangent of the segment.
          */
-        handleIn: Point
+        get handleIn(): Point
+        set handleIn(value: PointLike)
 
         /** 
          * The handle point relative to the anchor point of the segment that
          * describes the out tangent of the segment.
          */
-        handleOut: Point
+        get handleOut(): Point
+        set handleOut(value: PointLike)
 
         /** 
          * Specifies whether the segment is selected.
@@ -6358,7 +7202,7 @@ declare namespace paper {
          * 
          * @param options - the smoothing options
          */
-        smooth(options?: object): void
+        smooth(options?: { type?: string, factor?: number }): void
 
         /** 
          * Checks if the this is the first segment in the {@link Path#segments}
@@ -6436,15 +7280,22 @@ declare namespace paper {
         type: string
 
         /** 
+         * @deprecated use {@link #type} instead.
+         */
+        shape: string
+
+        /** 
          * The size of the shape.
          */
-        size: Size
+        get size(): Size
+        set size(value: SizeLike)
 
         /** 
          * The radius of the shape, as a number if it is a circle, or a size object
          * for ellipses and rounded rectangles.
          */
-        radius: number | Size
+        get radius(): number | Size
+        set radius(value: number | SizeLike)
 
 
         /** 
@@ -6547,6 +7398,9 @@ declare namespace paper {
     /** 
      * The Size object is used to describe the size or dimensions of
      * something, through its {@link #width} and {@link #height} properties.
+     * 
+     * Wherever a size is the only argument of a function, it can also be passed
+     * as two numbers, e.g. `size.multiply(2, 3)`.
      */
     class Size  {
         /** 
@@ -6603,7 +7457,7 @@ declare namespace paper {
          * 
          * @param size - the size to compare to
          */
-        equals(size: SizeLike): boolean
+        equals(size: SizeLike | number[]): boolean
 
         /** 
          * Returns a copy of the size.
@@ -6636,6 +7490,16 @@ declare namespace paper {
         add(size: SizeLike): Size
 
         /** 
+         * Returns the addition of the width and height of the supplied size to the
+         * size as a new size. The object itself is not modified!
+         * 
+         * @param size - the size to add
+         * 
+         * @return the addition of the two sizes as a new size
+         */
+        add(width: number, height: number): Size
+
+        /** 
          * Returns the subtraction of the supplied value from the width and height
          * of the size as a new size. The object itself is not modified!
          * The object itself is not modified!
@@ -6655,6 +7519,16 @@ declare namespace paper {
          * @return the subtraction of the two sizes as a new size
          */
         subtract(size: SizeLike): Size
+
+        /** 
+         * Returns the subtraction of the width and height of the supplied size from
+         * the size as a new size. The object itself is not modified!
+         * 
+         * @param size - the size to subtract
+         * 
+         * @return the subtraction of the two sizes as a new size
+         */
+        subtract(width: number, height: number): Size
 
         /** 
          * Returns the multiplication of the supplied value with the width and
@@ -6677,6 +7551,16 @@ declare namespace paper {
         multiply(size: SizeLike): Size
 
         /** 
+         * Returns the multiplication of the width and height of the supplied size
+         * with the size as a new size. The object itself is not modified!
+         * 
+         * @param size - the size to multiply by
+         * 
+         * @return the multiplication of the two sizes as a new size
+         */
+        multiply(width: number, height: number): Size
+
+        /** 
          * Returns the division of the supplied value by the width and height of the
          * size as a new size. The object itself is not modified!
          * 
@@ -6697,6 +7581,16 @@ declare namespace paper {
         divide(size: SizeLike): Size
 
         /** 
+         * Returns the division of the width and height of the supplied size by the
+         * size as a new size. The object itself is not modified!
+         * 
+         * @param size - the size to divide by
+         * 
+         * @return the division of the two sizes as a new size
+         */
+        divide(width: number, height: number): Size
+
+        /** 
          * The modulo operator returns the integer remainders of dividing the size
          * by the supplied value as a new size.
          * 
@@ -6713,6 +7607,15 @@ declare namespace paper {
          * other as a new size
          */
         modulo(size: SizeLike): Size
+
+        /** 
+         * The modulo operator returns the integer remainders of dividing the size
+         * by the supplied size as a new size.
+         * 
+         * @return the integer remainders of dividing the sizes by each
+         * other as a new size
+         */
+        modulo(width: number, height: number): Size
 
         /** 
          * Returns a new size with both dimensions negated.
@@ -6812,9 +7715,18 @@ declare namespace paper {
         readonly view: View
 
         /** 
+         * The line height as a fixed length, in pixels, as Paper.js had it before
+         * #lineHeight: setting a number makes it fixed, as `'18px'`.
+         * 
+         * @deprecated use {@link #lineHeight} instead.
+         */
+        leading: number
+
+        /** 
          * The color of the stroke.
          */
-        strokeColor: Color | null
+        get strokeColor(): Color | null
+        set strokeColor(value: ColorLike | null)
 
         /** 
          * The width of the stroke.
@@ -6864,7 +7776,8 @@ declare namespace paper {
         /** 
          * The fill color.
          */
-        fillColor: Color | null
+        get fillColor(): Color | null
+        set fillColor(value: ColorLike | null)
 
         /** 
          * The fill-rule with which the shape gets filled. Please note that only
@@ -6875,7 +7788,8 @@ declare namespace paper {
         /** 
          * The shadow color.
          */
-        shadowColor: Color | null
+        get shadowColor(): Color | null
+        set shadowColor(value: ColorLike | null)
 
         /** 
          * The shadow's blur radius.
@@ -6885,13 +7799,15 @@ declare namespace paper {
         /** 
          * The shadow's offset.
          */
-        shadowOffset: Point
+        get shadowOffset(): Point
+        set shadowOffset(value: PointLike)
 
         /** 
          * The color the item is highlighted with when selected. If the item does
          * not specify its own color, the color defined by its layer is used instead.
          */
-        selectedColor: Color | null
+        get selectedColor(): Color | null
+        set selectedColor(value: ColorLike | null)
 
         /** 
          * The font-family to be used in text content.
@@ -6910,21 +7826,180 @@ declare namespace paper {
         fontSize: number | string
 
         /** 
-         * The text leading of text content.
+         * The font-family to be used in text content, as one string.
+         * 
+         * @deprecated use {@link #fontFamily} instead.
          */
-        leading: number | string
+        font: string
 
         /** 
-         * The tracking of text content: the space added after each character, in
-         * thousandths of an em, as in Adobe Illustrator and InDesign. A tracking of
-         * 100 adds a tenth of the font size.
+         * The line height of text content: the distance from one line's baseline
+         * to the next. Automatic, as `'auto'` (1.2) or another factor of the
+         * letters' font size, each line moving down by its largest letters'; or
+         * fixed, as a length with units as the font size takes them (`'18px'`,
+         * `'12pt'`).
+         */
+        lineHeight: number | string
+
+        /** 
+         * The letter tracking of text content: the space added after each letter,
+         * along the line, in thousandths of an em, as in Adobe Illustrator and
+         * InDesign. A tracking of 100 adds a tenth of the font size. Also
+         * `tracking`, its former name.
+         */
+        letterTracking: number
+
+        /** 
+         * @deprecated use {@link #letterTracking} instead.
          */
         tracking: number
+
+        /** 
+         * The letter kerning of text content: the space added after a letter,
+         * along the line, in thousandths of an em, in place of the font's own
+         * kerning pair; `null` for the font's kerning.
+         */
+        letterKerning: number
+
+        /** 
+         * The font style of text content, as in CSS: upright or slanted. Together
+         * with the {@link #fontWeight}, it says what a font's style name says, e.g.
+         * `'Bold Italic'`.
+         */
+        fontStyle: string
+
+        /** 
+         * The settings of a variable font's axes, by their tags: `{ wght: 600,
+         * wdth: 80 }`. Kept for hosts that lay text out with its fonts; canvas
+         * doesn't draw them.
+         */
+        fontVariations: any
+
+        /** 
+         * How far the letters move up from the baseline, in pixels.
+         */
+        baselineShift: number
+
+        /** 
+         * Whether the letters are set as superscripts or subscripts: smaller, and
+         * above or below the baseline.
+         */
+        baselinePosition: string
+
+        /** 
+         * How much the letters are scaled, as {@link Item#scaling}: one factor for
+         * both directions, or a point with the horizontal and vertical ones.
+         */
+        get letterScaling(): number | Point
+        set letterScaling(value: number | PointLike)
+
+        /** 
+         * The rotation of each letter about its origin on the baseline, in degrees.
+         */
+        letterRotation: number
+
+        /** 
+         * Whether the letters are set as capitals, or as small capitals.
+         */
+        capitals: string
+
+        /** 
+         * Whether the letters are underlined.
+         */
+        underline: boolean
+
+        /** 
+         * Whether the letters are struck through.
+         */
+        strikethrough: boolean
+
+        /** 
+         * The OpenType features to turn on (`'dlig'`) or off (`'-liga'`). Kept for
+         * hosts that lay text out with its fonts; canvas doesn't draw them.
+         */
+        features: string[]
 
         /** 
          * The justification of text paragraphs.
          */
         justification: string
+
+        /** 
+         * How the last line of a justified paragraph is aligned; `'all'` justifies
+         * it too.
+         */
+        justifyLast: string
+
+        /** 
+         * How far justification may change the spacing, each as `[minimum, desired,
+         * maximum]` in percent: `{ word: [80, 100, 133], letter: [0, 0, 0], glyph:
+         * [100, 100, 100] }`; `null` for those. Kept for hosts: canvas text
+         * justifies by the word spacing alone.
+         */
+        justifySpacing: any
+
+        /** 
+         * The indent where the paragraph's lines start: left in left-to-right text,
+         * right in right-to-left text.
+         */
+        startIndent: number
+
+        /** 
+         * The indent where the paragraph's lines end.
+         */
+        endIndent: number
+
+        /** 
+         * The indent of the paragraph's first line, added to its start indent.
+         */
+        firstLineIndent: number
+
+        /** 
+         * The space above the paragraph. Between two paragraphs, the larger of this
+         * one's and the space after the one before it is used.
+         */
+        spaceBefore: number
+
+        /** 
+         * The space below the paragraph.
+         */
+        spaceAfter: number
+
+        /** 
+         * Whether words are hyphenated at the ends of lines, and how: `true`, or `{
+         * wordsLongerThan, afterFirst, beforeLast, limit, zone, capitalized }`.
+         * Kept for hosts: canvas text breaks only at soft hyphens.
+         */
+        hyphenation: boolean | any
+
+        /** 
+         * How lines are broken: one line at a time, or all of the paragraph's lines
+         * together, for the most even spacing. Kept for hosts: canvas text breaks
+         * one line at a time.
+         */
+        composer: string
+
+        /** 
+         * How the lines of a paragraph in an area are evened out: `'normal'`
+         * fills each line as far as it goes, `'balance'` makes them all about as
+         * long, and `'pretty'` balances the last four lines when the last one is
+         * shorter than a third of the one before. Both keep the paragraph's number
+         * of lines.
+         */
+        lineWrap: string
+
+        /** 
+         * The paragraph's tab stops: `[{ position, align, leader }]`, with `align`
+         * one of `'left'`, `'center'`, `'right'` and `'decimal'`. Kept for hosts:
+         * canvas text doesn't set tabs yet.
+         */
+        tabs: object[]
+
+        /** 
+         * The direction the paragraph's lines run in, which `'start'` and `'end'`
+         * follow; `null` for left to right.
+         */
+        direction: string
 
 
         /** 
@@ -6953,6 +8028,11 @@ declare namespace paper {
          * The item used as the symbol's definition.
          */
         item: Item
+
+        /** 
+         * @deprecated use {@link #item} instead.
+         */
+        definition: Item
 
 
         /** 
@@ -6996,6 +8076,11 @@ declare namespace paper {
          */
         definition: SymbolDefinition
 
+        /** 
+         * @deprecated use {@link #definition} instead.
+         */
+        symbol: SymbolDefinition
+
 
         /** 
          * Creates a new symbol item.
@@ -7010,16 +8095,54 @@ declare namespace paper {
 
     /** 
      * The TextItem type allows you to create typography. Its functionality
-     *     is inherited by different text item types such as {@link PointText}, and
-     *     {@link AreaText} (coming soon). They each add a layer of functionality
-     *     that is unique to their type, but share the underlying properties and
-     *     functions that they inherit from TextItem.
+     *     is inherited by different text item types such as {@link PointText},
+     *     {@link PathText} and {@link AreaText}. They each add a layer of
+     *     functionality that is unique to their type, but share the underlying
+     *     properties and functions that they inherit from TextItem.
      */
     class TextItem extends Item {
         /** 
-         * The text contents of the text item.
+         * The direction the text's lines run in: `'horizontal'`, or `'vertical'`
+         * from top to bottom, with the lines from right to left.
          */
-        content: string
+        orientation: string
+
+        /** 
+         * The path that the text flows in ({@link AreaText}) or along
+         * ({@link PathText}). It guides the text and isn't drawn itself.
+         */
+        textPath: PathItem
+
+        /** 
+         * The story the text item shows: the text of all the text items linked
+         * with it.
+         */
+        readonly story: TextStory
+
+        /** 
+         * The text item after this one in its story, if any.
+         */
+        readonly nextTextItem: TextItem
+
+        /** 
+         * The text item before this one in its story, if any.
+         */
+        readonly previousTextItem: TextItem
+
+        /** 
+         * The range of the story that this text item shows, as its layout flows
+         * the story through the linked text items: without the overflow, and
+         * without what the ones before it show.
+         */
+        readonly visibleRange: TextRange
+
+        /** 
+         * The lines of the text, as its layout breaks them: each a range of its
+         * story, with its `baseline`, a {@link Line} along it, and its `bounds`,
+         * in the text item's own coordinates. A {@link PathText}'s one line
+         * follows its path: these describe it laid out straight.
+         */
+        readonly lines: TextRange[]
 
         /** 
          * The font-family to be used in text content.
@@ -7038,22 +8161,372 @@ declare namespace paper {
         fontSize: number | string
 
         /** 
-         * The text leading of text content.
+         * The font-family to be used in text content, as one string.
+         * 
+         * @deprecated use {@link #fontFamily} instead.
          */
-        leading: number | string
+        font: string
 
         /** 
-         * The tracking of text content: the space added after each character, in
-         * thousandths of an em, as in Adobe Illustrator and InDesign. A tracking of
-         * 100 adds a tenth of the font size.
+         * The line height of text content: the distance from one line's baseline
+         * to the next. Automatic, as `'auto'` (1.2) or another factor of the
+         * letters' font size, each line moving down by its largest letters'; or
+         * fixed, as a length with units as the font size takes them (`'18px'`,
+         * `'12pt'`). `leading`, as Paper.js had it before, sets and reads it as a
+         * fixed length in pixels.
          */
-        tracking: number
+        lineHeight: number | string
+
+        /** 
+         * The letter tracking of text content: the space added after each letter,
+         * along the line, in thousandths of an em, as in Adobe Illustrator and
+         * InDesign. A tracking of 100 adds a tenth of the font size. Also
+         * `tracking`, its former name.
+         */
+        letterTracking: number
+
+        /** 
+         * The letter kerning of text content: the space added after a letter,
+         * along the line, in thousandths of an em, in place of the font's own
+         * kerning pair; `null` for the font's kerning.
+         */
+        letterKerning: number
+
+        /** 
+         * The font style of text content, as in CSS: upright or slanted. Together
+         * with the {@link #fontWeight}, it says what a font's style name says, e.g.
+         * `'Bold Italic'`.
+         */
+        fontStyle: string
+
+        /** 
+         * The settings of a variable font's axes, by their tags: `{ wght: 600,
+         * wdth: 80 }`. Kept for hosts that lay text out with its fonts; canvas
+         * doesn't draw them.
+         */
+        fontVariations: any
+
+        /** 
+         * How far the letters move up from the baseline, in pixels.
+         */
+        baselineShift: number
+
+        /** 
+         * Whether the letters are set as superscripts or subscripts: smaller, and
+         * above or below the baseline.
+         */
+        baselinePosition: string
+
+        /** 
+         * How much the letters are scaled, as {@link Item#scaling}: one factor for
+         * both directions, or a point with the horizontal and vertical ones.
+         */
+        get letterScaling(): number | Point
+        set letterScaling(value: number | PointLike)
+
+        /** 
+         * The rotation of each letter about its origin on the baseline, in degrees.
+         */
+        letterRotation: number
+
+        /** 
+         * Whether the letters are set as capitals, or as small capitals.
+         */
+        capitals: string
+
+        /** 
+         * Whether the letters are underlined.
+         */
+        underline: boolean
+
+        /** 
+         * Whether the letters are struck through.
+         */
+        strikethrough: boolean
+
+        /** 
+         * The OpenType features to turn on (`'dlig'`) or off (`'-liga'`). Kept for
+         * hosts that lay text out with its fonts; canvas doesn't draw them.
+         */
+        features: string[]
 
         /** 
          * The justification of text paragraphs.
          */
         justification: string
 
+        /** 
+         * How the last line of a justified paragraph is aligned; `'all'` justifies
+         * it too.
+         */
+        justifyLast: string
+
+        /** 
+         * How far justification may change the spacing, each as `[minimum, desired,
+         * maximum]` in percent: `{ word: [80, 100, 133], letter: [0, 0, 0], glyph:
+         * [100, 100, 100] }`; `null` for those. Kept for hosts: canvas text
+         * justifies by the word spacing alone.
+         */
+        justifySpacing: any
+
+        /** 
+         * The indent where the paragraph's lines start: left in left-to-right text,
+         * right in right-to-left text.
+         */
+        startIndent: number
+
+        /** 
+         * The indent where the paragraph's lines end.
+         */
+        endIndent: number
+
+        /** 
+         * The indent of the paragraph's first line, added to its start indent.
+         */
+        firstLineIndent: number
+
+        /** 
+         * The space above the paragraph. Between two paragraphs, the larger of this
+         * one's and the space after the one before it is used.
+         */
+        spaceBefore: number
+
+        /** 
+         * The space below the paragraph.
+         */
+        spaceAfter: number
+
+        /** 
+         * Whether words are hyphenated at the ends of lines, and how: `true`, or `{
+         * wordsLongerThan, afterFirst, beforeLast, limit, zone, capitalized }`.
+         * Kept for hosts: canvas text breaks only at soft hyphens.
+         */
+        hyphenation: boolean | any
+
+        /** 
+         * How lines are broken: one line at a time, or all of the paragraph's lines
+         * together, for the most even spacing. Kept for hosts: canvas text breaks
+         * one line at a time.
+         */
+        composer: string
+
+        /** 
+         * How the lines of a paragraph in an area are evened out: `'normal'`
+         * fills each line as far as it goes, `'balance'` makes them all about as
+         * long, and `'pretty'` balances the last four lines when the last one is
+         * shorter than a third of the one before. Both keep the paragraph's number
+         * of lines.
+         */
+        lineWrap: string
+
+        /** 
+         * The paragraph's tab stops: `[{ position, align, leader }]`, with `align`
+         * one of `'left'`, `'center'`, `'right'` and `'decimal'`. Kept for hosts:
+         * canvas text doesn't set tabs yet.
+         */
+        tabs: object[]
+
+        /** 
+         * The direction the paragraph's lines run in, which `'start'` and `'end'`
+         * follow; `null` for left to right.
+         */
+        direction: string
+
+        /** 
+         * The line height as a fixed length, in pixels: setting a number makes it
+         * fixed, as `'18px'`.
+         * 
+         * @deprecated use {@link #lineHeight} instead.
+         */
+        leading: number
+
+        /** 
+         * @deprecated use {@link #letterTracking} instead.
+         */
+        tracking: number
+
+        /** 
+         * The text of the item's story, see {@link TextStory#content}.
+         */
+        content: string
+
+        /** 
+         * The runs of the item's story, see {@link TextStory#runs}.
+         */
+        runs: TextRange[]
+
+        /** 
+         * The paragraphs of the item's story, see {@link TextStory#paragraphs}.
+         */
+        paragraphs: TextRange[]
+
+        /** 
+         * The words of the item's story, see {@link TextStory#words}.
+         */
+        words: TextRange[]
+
+        /** 
+         * The letters of the item's story, see {@link TextStory#letters}.
+         */
+        letters: TextRange[]
+
+        /** 
+         * @deprecated use {@link #style} instead.
+         */
+        characterStyle: Style
+
+        /** 
+         * @deprecated use {@link #style} instead.
+         */
+        paragraphStyle: Style
+
+
+        /** 
+         * Links the text item `next` after this one, so the story flows on into
+         * it. Its own story joins the end of this one.
+         * 
+         * @param next - the text item to link
+         * 
+         * @return true if the text item was linked
+         */
+        link(next: TextItem): boolean
+
+        /** 
+         * {@true if the text item is linked with others}
+         */
+        isLinked(): boolean
+
+        /** 
+         * Unlinks the text item: `'both'` takes it out of its story, which flows
+         * on through the others, `'before'` and `'after'` break the story into
+         * two there.
+         * 
+         * @param which - `'both'`, `'before'` or `'after'`
+         * 
+         * @return true if the text item was unlinked
+         */
+        unlink(which?: string): boolean
+
+        /** 
+         * Replaces the content from `start` to `end` of the item's story, see
+         * {@link TextStory#replace}.
+         * 
+         * @param content - the new content
+         * @param start - the index of the first character to replace
+         * @param end - the index after the last character to replace
+         */
+        replace(content: string, start: number, end: number): void
+
+        /** 
+         * The range of the item's story from `start` to `end`.
+         * 
+         * @param start - the index of its first character
+         * @param end - the index after its last character
+         */
+        range(start: number, end: number): TextRange
+
+    }
+
+    /** 
+     * A part of a {@link TextStory}'s content, from its {@link #start}
+     *     to its {@link #end}, whose style is that of its letters and paragraphs:
+     *     read, a property is the one they share, or `undefined`; set, it changes
+     *     them. It has the same style properties as items, e.g.
+     *     `text.words[0].fontSize = 24`. A range is a snapshot of two indices:
+     *     changing styles never moves it, but changing the content leaves ranges
+     *     taken before out of date, as indices into any string.
+     */
+    class TextRange  {
+        /** 
+         * The story the range is part of.
+         */
+        readonly story: TextStory
+
+        /** 
+         * The index of the range's first character.
+         */
+        readonly start: number
+
+        /** 
+         * The index after the range's last character.
+         */
+        readonly end: number
+
+        /** 
+         * The content of the range.
+         */
+        readonly content: string
+
+        /** 
+         * The style of the range: of its characters, and of the paragraphs it
+         * touches.
+         */
+        style: Style
+
+
+    }
+
+    /** 
+     * The text of one or more linked {@link TextItem}s, which it flows
+     *     through in order: its content, kept in runs of characters that share a
+     *     style, and the styles of its paragraphs. A text item that isn't linked
+     *     has a story of its own.
+     */
+    class TextStory  {
+        /** 
+         * The text items that the story flows through, in order.
+         */
+        readonly textItems: TextItem[]
+
+        /** 
+         * The text of the story, from the first of its text items to the last.
+         */
+        content: string
+
+        /** 
+         * The runs of the text: its ranges that each have one style throughout.
+         * Set it to plain objects with a `content` and style properties, which
+         * then make the whole text.
+         */
+        runs: TextRange[]
+
+        /** 
+         * The paragraphs of the text, without their line breaks. Set it to plain
+         * objects with paragraph style properties, one per paragraph.
+         */
+        paragraphs: TextRange[]
+
+        /** 
+         * The words of the text, as the browser finds them (Intl.Segmenter), or
+         * else separated by white space.
+         */
+        readonly words: TextRange[]
+
+        /** 
+         * The letters of the text, each as readers see one (a grapheme: an emoji,
+         * or a letter with its accents), spaces and punctuation included.
+         */
+        readonly letters: TextRange[]
+
+
+        /** 
+         * Replaces the content from `start` to `end`, or of a range, with new
+         * content, which takes the style of the content it replaces, or of the
+         * character before it when it's inserted.
+         * 
+         * @param content - the new content
+         * @param start - the index of the first character to replace
+         * @param end - the index after the last character to replace
+         */
+        replace(content: string, start: number, end: number): void
+
+        /** 
+         * The range of the text from `start` to `end`.
+         * 
+         * @param start - the index of its first character
+         * @param end - the index after its last character
+         */
+        range(start: number, end: number): TextRange
 
     }
 
@@ -7268,19 +8741,22 @@ declare namespace paper {
          * The position of the mouse in project coordinates when the event was
          * fired.
          */
-        point: Point
+        get point(): Point
+        set point(value: PointLike)
 
         /** 
          * The position of the mouse in project coordinates when the previous
          * event was fired.
          */
-        lastPoint: Point
+        get lastPoint(): Point
+        set lastPoint(value: PointLike)
 
         /** 
          * The position of the mouse in project coordinates when the mouse button
          * was last clicked.
          */
-        downPoint: Point
+        get downPoint(): Point
+        set downPoint(value: PointLike)
 
         /** 
          * The point in the middle between {@link #lastPoint} and
@@ -7288,14 +8764,37 @@ declare namespace paper {
          * artwork based on the moving direction of the mouse, as returned by
          * {@link #delta}.
          */
-        middlePoint: Point
+        get middlePoint(): Point
+        set middlePoint(value: PointLike)
 
         /** 
          * The difference between the current position and the last position of the
          * mouse when the event was fired. In case of the mouseup event, the
          * difference to the mousedown position is returned.
          */
-        delta: Point
+        get delta(): Point
+        set delta(value: PointLike)
+
+        /** 
+         * The velocity of the mouse, in points per second: the distance it moved
+         * since the last tool event, divided by the time between them, so it
+         * points in the direction of the move, and its length is the speed. It
+         * stays even when the system misses a mouse report. The events that
+         * {@link Tool#maxDistance} adds along one move share its velocity, and the
+         * repeats of {@link Tool#eventInterval} have none. On mousedown, and when
+         * no time passed, it's zero.
+         */
+        get velocity(): Point
+        set velocity(value: PointLike)
+
+        /** 
+         * The time since the last tool event, in seconds, measured between the
+         * reports of the mouse as {@link #velocity} is: the events that
+         * {@link Tool#maxDistance} adds along one move share it, and the repeats
+         * of {@link Tool#eventInterval} have the interval. It's zero on the first
+         * event.
+         */
+        elapsed: number
 
         /** 
          * The number of times the mouse event was fired.
@@ -7433,12 +8932,18 @@ declare namespace paper {
          * The size of the view. Changing the view's size will resize it's
          * underlying element.
          */
-        viewSize: Size
+        get viewSize(): Size
+        set viewSize(value: SizeLike)
 
         /** 
          * The bounds of the currently visible area in project coordinates.
+         * Setting them fits the view to the given rectangle, as
+         * {@link #fitBounds} does. Since the view keeps its aspect
+         * ratio, the bounds read back can be larger than the rectangle in one
+         * direction.
          */
-        readonly bounds: Rectangle
+        get bounds(): Rectangle
+        set bounds(value: RectangleLike)
 
         /** 
          * The size of the visible area in project coordinates.
@@ -7448,7 +8953,8 @@ declare namespace paper {
         /** 
          * The center of the visible area in project coordinates.
          */
-        center: Point
+        get center(): Point
+        set center(value: PointLike)
 
         /** 
          * The view's zoom factor by which the project coordinates are magnified.
@@ -7470,7 +8976,8 @@ declare namespace paper {
          * 
          * @see #zoom
          */
-        scaling: Point
+        get scaling(): Point
+        set scaling(value: PointLike)
 
         /** 
          * The view's transformation matrix, defining the view onto the project's
@@ -7635,6 +9142,13 @@ declare namespace paper {
         update(force?: boolean): boolean
 
         /** 
+         * Updates the view if there are changes.
+         * 
+         * @deprecated use {@link #update} instead.
+         */
+        draw(): void
+
+        /** 
          * Requests an update of the view if there are changes through the browser's
          * requestAnimationFrame() mechanism for smooth animation. Note that when
          * using built-in event handlers for interaction, animation and load events,
@@ -7675,6 +9189,13 @@ declare namespace paper {
          * @param delta - the offset to translate the view by
          */
         translate(delta: PointLike): void
+
+        /** 
+         * Translates (scrolls) the view by the given offset vector.
+         * 
+         * @param delta - the offset to translate the view by
+         */
+        translate(x: number, y: number): void
 
         /** 
          * Rotates the view by a given angle around the given center point.
@@ -7767,6 +9288,22 @@ declare namespace paper {
         fitBounds(rectangle: RectangleLike, fit?: string): void
 
         /** 
+         * Scrolls the view by the given vector.
+         * 
+         * @deprecated use {@link #translate} instead (using opposite
+         *     direction).
+         */
+        scrollBy(point: PointLike): void
+
+        /** 
+         * Scrolls the view by the given vector.
+         * 
+         * @deprecated use {@link #translate} instead (using opposite
+         *     direction).
+         */
+        scrollBy(x: number, y: number): void
+
+        /** 
          * Converts the passed point from project coordinate space to view
          * coordinate space, which is measured in browser pixels in relation to the
          * position of the view element.
@@ -7778,6 +9315,17 @@ declare namespace paper {
         projectToView(point: PointLike): Point
 
         /** 
+         * Converts the passed point from project coordinate space to view
+         * coordinate space, which is measured in browser pixels in relation to the
+         * position of the view element.
+         * 
+         * @param point - the point in project coordinates to be converted
+         * 
+         * @return the point converted into view coordinates
+         */
+        projectToView(x: number, y: number): Point
+
+        /** 
          * Converts the passed point from view coordinate space to project
          * coordinate space.
          * 
@@ -7786,6 +9334,16 @@ declare namespace paper {
          * @return the point converted into project coordinates
          */
         viewToProject(point: PointLike): Point
+
+        /** 
+         * Converts the passed point from view coordinate space to project
+         * coordinate space.
+         * 
+         * @param point - the point in view coordinates to be converted
+         * 
+         * @return the point converted into project coordinates
+         */
+        viewToProject(x: number, y: number): Point
 
         /** 
          * Determines and returns the event location in project coordinate space.
@@ -7875,12 +9433,15 @@ declare namespace paper {
          * with {@link Tool#minDistance} and the like, then those of the items
          * under the point and of the view, including the events that Paper.js
          * derives itself: `'mousedrag'`, `'click'`, `'doubleclick'`,
-         * `'mouseenter'` and `'mouseleave'`.
+         * `'mouseenter'` and `'mouseleave'`. Points outside the view's bounds
+         * are handled too, since the host decides which events belong to its
+         * drawing surface.
          * 
          * @option [options.modifiers] {Object} the state of the modifier keys,
          *     see {@link Key#modifiers}
          * @option [options.button=0] {Number} the mouse button
-         * @option [options.timeStamp=Date.now()] {Number} the time stamp
+         * @option [options.time=Date.now() / 1000] {Number} the time of the
+         *     event in seconds, see {@link Event#time}
          * 
          * @param type - the type of the event: {@values 'mousedown',
          *     'mousemove', 'mouseup'}
@@ -7889,7 +9450,7 @@ declare namespace paper {
          * 
          * @return true if a handler prevented the event's default
          */
-        dispatchMouseEvent(type: string, point: PointLike, options?: object): boolean
+        dispatchMouseEvent(type: string, point: PointLike, options?: { modifiers?: object, button?: number, time?: number }): boolean
 
         /** 
          * Handles a key event that the host provides, for hosts without a DOM,
@@ -7899,17 +9460,20 @@ declare namespace paper {
          * 
          * @option [options.character] {String} the character that the key
          *     produces. By default, keydown takes the key itself if it is a
-         *     single character, and keyup the character of its keydown
+         *     single character, the space, carriage return and tab characters
+         *     for 'space', 'enter' and 'tab', and keyup the character of its
+         *     keydown
          * @option [options.modifiers] {Object} the state of the modifier keys,
          *     see {@link Key#modifiers}
-         * @option [options.timeStamp=Date.now()] {Number} the time stamp
+         * @option [options.time=Date.now() / 1000] {Number} the time of the
+         *     event in seconds, see {@link Event#time}
          * 
          * @param type - the type of the event: {@values 'keydown',
          *     'keyup'}
          * @param key - the key, as in {@link KeyEvent#key}
          * @param options - the details of the event
          */
-        dispatchKeyEvent(type: string, key: string, options?: object): void
+        dispatchKeyEvent(type: string, key: string, options?: { character?: string, modifiers?: object, time?: number }): void
 
     }
 }
