@@ -1761,14 +1761,34 @@ var Path = PathItem.extend(/** @lends Path# */{
             area.add(point);
         }
 
+        // Returns the tangent where the curve meets the segment, looking past
+        // curves without length, which have no direction:
+        function getJoinTangent(curve, forward) {
+            for (var i = 0; curve && i < numSegments; i++) {
+                if (curve.hasLength())
+                    return curve.getTangentAtTime(forward ? 0 : 1);
+                curve = forward ? curve.getNext() : curve.getPrevious();
+            }
+        }
+
+        function isFlatJoin(segment) {
+            var curve = segment.getCurve(),
+                tangent1 = getJoinTangent(curve.getPrevious(), false),
+                tangent2 = getJoinTangent(curve, true);
+            return tangent1 && tangent2 && tangent1.isCollinear(tangent2)
+                    && tangent1.dot(tangent2) > 0;
+        }
+
         function checkSegmentStroke(segment) {
             // Handle joins / caps that are not round specifically, by
             // hit-testing their polygon areas.
             var isJoin = closed || segment._index > 0
                     && segment._index < numSegments - 1;
             // Smooth segments are always joined round, as in addJoin() in
-            // getStrokeBounds():
-            if (isJoin && segment.isSmooth()
+            // getStrokeBounds(), and so are segments where the curves meet in
+            // the same direction, such as a line running into a curve, as the
+            // join adds nothing there:
+            if (isJoin && (segment.isSmooth() || isFlatJoin(segment))
                     || (isJoin ? join : cap) === 'round') {
                 // Round join / cap is easy to handle.
                 return isCloseEnough(segment._point.transform(strokeSpace),
