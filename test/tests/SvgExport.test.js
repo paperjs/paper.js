@@ -1154,6 +1154,33 @@ describe('SvgExport', () => {
     })
   })
 
+  test('Export and import SVG paint-order (#1731)', () => {
+    const path = new Path.Rectangle({
+      point: [10, 10],
+      size: [20, 20],
+      fillColor: 'red',
+      strokeColor: 'blue',
+      paintOrder: 'stroke'
+    })
+    const node = path.exportSVG()
+    path.remove()
+    equals(node.getAttribute('paint-order'), 'stroke', 'exported')
+    equals(paper.project.importSVG(node).paintOrder, 'stroke', 'imported')
+    // Only the order of the fill and the stroke is imported, without markers:
+    ;[
+      ['stroke fill markers', 'stroke'],
+      ['markers stroke', 'stroke'],
+      ['fill', 'fill'],
+      ['markers', 'fill'],
+      ['normal', 'fill']
+    ].forEach(([value, paintOrder]) => {
+      const imported = paper.project.importSVG(
+        createSVG('rect', { 'width': 10, 'height': 10, 'paint-order': value })
+      )
+      equals(imported.paintOrder, paintOrder, value)
+    })
+  })
+
   test('Export SVG text with start, end and justify justifications', () => {
     const text = new PointText({
       point: [10, 20],

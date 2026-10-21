@@ -84,6 +84,7 @@ var Style = Base.extend(new function() {
         miterLimit: 10,
         dashOffset: 0,
         dashArray: [],
+        paintOrder: 'fill',
         // Shadows
         shadowColor: null,
         shadowBlur: 0,
@@ -655,6 +656,33 @@ var Style = Base.extend(new function() {
      * @property
      * @default 10
      * @type Number
+     */
+
+    /**
+     * The order in which the fill and the stroke are painted, as in SVG's
+     * `paint-order`, named after what is painted first: `'fill'` paints the
+     * fill first, `'stroke'` paints the stroke first, so the fill covers its
+     * inner half.
+     *
+     * @name Style#paintOrder
+     * @property
+     * @type String
+     * @values 'fill', 'stroke'
+     * @default 'fill'
+     *
+     * @example {@paperscript}
+     * var text = new PointText({
+     *     point: [20, 70],
+     *     content: 'Paper',
+     *     fontSize: 50,
+     *     fillColor: 'white',
+     *     strokeColor: 'black',
+     *     strokeWidth: 8,
+     *     strokeJoin: 'round'
+     * });
+     *
+     * // Paint the stroke behind the fill:
+     * text.paintOrder = 'stroke';
      */
 
     /**

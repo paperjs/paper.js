@@ -673,6 +673,8 @@ var TextItem = Item.extend(/** @lends TextItem# */{
                         style = piece.style,
                         hasFill = style.hasFill(),
                         hasStroke = style.hasStroke(),
+                        isStrokeFirst = hasStroke
+                                && style.getPaintOrder() === 'stroke',
                         size = piece.size,
                         x = piece.dx || 0;
                     this._setStyles(ctx, param, viewMatrix, null, style);
@@ -701,12 +703,16 @@ var TextItem = Item.extend(/** @lends TextItem# */{
                     x /= piece.scale.x;
                     ctx.font = piece.font;
                     ctx.letterSpacing = piece.tracking;
-                    if (hasFill) {
-                        ctx.fillText(piece.content, x, 0);
-                        // Cast the shadow of the fill only, see Path#_draw():
+                    // Cast the shadow of the first paint only, see Item#_paint():
+                    if (isStrokeFirst) {
+                        ctx.strokeText(piece.content, x, 0);
                         ctx.shadowColor = 'rgba(0,0,0,0)';
                     }
-                    if (hasStroke)
+                    if (hasFill) {
+                        ctx.fillText(piece.content, x, 0);
+                        ctx.shadowColor = 'rgba(0,0,0,0)';
+                    }
+                    if (hasStroke && !isStrokeFirst)
                         ctx.strokeText(piece.content, x, 0);
                     ctx.restore();
                 }
