@@ -787,27 +787,39 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
     },
 
     /**
-     * Returns a new rectangle scaled by the specified amount from its center.
+     * Returns a new rectangle scaled by the specified factor from its center,
+     * or from the given center point.
      *
      * @name Rectangle#scale
      * @function
-     * @param {Number} amount
+     * @param {Number} scale the scale factor
+     * @param {Point} [center={@link Rectangle#center}]
      * @return {Rectangle} the scaled rectangle
      */
     /**
      * Returns a new rectangle scaled in horizontal direction by the specified
-     * `hor` amount and in vertical direction by the specified `ver` amount
-     * from its center.
+     * `hor` factor and in vertical direction by the specified `ver` factor
+     * from its center, or from the given center point.
      *
      * @name Rectangle#scale
      * @function
-     * @param {Number} hor
-     * @param {Number} ver
+     * @param {Number} hor the horizontal scale factor
+     * @param {Number} ver the vertical scale factor
+     * @param {Point} [center={@link Rectangle#center}]
      * @return {Rectangle} the scaled rectangle
      */
-    scale: function(hor, ver) {
-        return this.expand(this.width * hor - this.width,
-                this.height * (ver === undefined ? hor : ver) - this.height);
+    scale: function(/* scale, center */) {
+        var args = arguments,
+            scale = Point.read(args),
+            center = Point.read(args, 0, { readNull: true })
+                    || this.getCenter(true);
+        // Scale the corners from the center, which also normalizes the
+        // rectangle for negative amounts:
+        return new Rectangle(
+                this.getTopLeft(true).subtract(center).multiply(scale)
+                    .add(center),
+                this.getBottomRight(true).subtract(center).multiply(scale)
+                    .add(center));
     }
 }, Base.each([
         ['Top', 'Left'], ['Top', 'Right'],

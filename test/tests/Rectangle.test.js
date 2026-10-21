@@ -332,6 +332,23 @@ describe('Rectangle', () => {
     equals(() => included.equals(new Rectangle(50, 50, 65, 121)), true)
   })
 
+  test('rect.scale()', () => {
+    const rect = new Rectangle(10, 20, 30, 40)
+    equals(rect.scale(2), new Rectangle(-5, 0, 60, 80))
+    equals(rect.scale(2, 0.5), new Rectangle(-5, 30, 60, 20))
+  })
+
+  test('rect.scale(amount, center) (#1352)', () => {
+    const rect = new Rectangle(10, 20, 30, 40)
+    equals(rect.scale(2, [10, 20]), new Rectangle(10, 20, 60, 80))
+    equals(
+      rect.scale(2, 0.5, new Point(40, 60)),
+      new Rectangle(-20, 40, 60, 20)
+    )
+    // Negative amounts mirror the rectangle about the center:
+    equals(rect.scale(-1, [10, 20]), new Rectangle(-20, -20, 30, 40))
+  })
+
   test('rect.toString()', () => {
     const string = new Rectangle(10, 20, 30, 40).toString()
     equals(string, '{ x: 10, y: 20, width: 30, height: 40 }')
