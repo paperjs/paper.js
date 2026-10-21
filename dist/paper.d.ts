@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 03:19:47 2026 +0200
+ * Date: Wed Oct 21 03:50:31 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -1730,8 +1730,10 @@ declare namespace paper {
         /** 
          * The blend mode with which the item is composited onto the canvas. Both
          * the standard canvas compositing modes, as well as the new CSS blend modes
-         * are supported. If blend-modes cannot be rendered natively, they are
-         * emulated. Be aware that emulation can have an impact on performance.
+         * are supported. Where the canvas doesn't support a CSS blend mode
+         * natively, it draws as `'normal'`. Paper.js's own modes `'add'`,
+         * `'subtract'`, `'average'`, `'pin-light'` and `'negation'` are emulated,
+         * which can have an impact on performance.
          */
         blendMode: string
 

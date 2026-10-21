@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 03:19:47 2026 +0200
+ * Date: Wed Oct 21 03:50:31 2026 +0200
  *
  ***
  *
@@ -791,9 +791,10 @@ var PaperScope = Base.extend({
 		PaperScope._scopes[this._id] = this;
 		var proto = PaperScope.prototype;
 		if (!this.support) {
-			proto.support = {
-				nativeBlendModes: BlendMode.nativeModes
-			};
+			proto.support = Base.define({}, 'nativeBlendModes', {
+				enumerable: true,
+				get: BlendMode.getNativeModes
+			});
 		}
 		if (!this.agent) {
 			var user = self.navigator.userAgent.toLowerCase(),
@@ -5138,7 +5139,8 @@ new function() {
 		var blendMode = this._blendMode,
 			opacity = Numerical.clamp(this._opacity, 0, 1),
 			normalBlend = blendMode === 'normal',
-			nativeBlend = BlendMode.nativeModes[blendMode],
+			nativeBlend = !normalBlend
+					&& BlendMode.getNativeModes()[blendMode],
 			style = this._style,
 			shadow = (normalBlend || nativeBlend)
 					&& style.getShadowColor(true) && style.hasShadow()
@@ -20184,151 +20186,7 @@ var BlendMode = new function() {
 		br, bg, bb, ba,
 		dr, dg, db;
 
-	function getLum(r, g, b) {
-		return 0.2989 * r + 0.587 * g + 0.114 * b;
-	}
-
-	function setLum(r, g, b, l) {
-		var d = l - getLum(r, g, b);
-		dr = r + d;
-		dg = g + d;
-		db = b + d;
-		var l = getLum(dr, dg, db),
-			mn = min(dr, dg, db),
-			mx = max(dr, dg, db);
-		if (mn < 0) {
-			var lmn = l - mn;
-			dr = l + (dr - l) * l / lmn;
-			dg = l + (dg - l) * l / lmn;
-			db = l + (db - l) * l / lmn;
-		}
-		if (mx > 255) {
-			var ln = 255 - l,
-				mxl = mx - l;
-			dr = l + (dr - l) * ln / mxl;
-			dg = l + (dg - l) * ln / mxl;
-			db = l + (db - l) * ln / mxl;
-		}
-	}
-
-	function getSat(r, g, b) {
-		return max(r, g, b) - min(r, g, b);
-	}
-
-	function setSat(r, g, b, s) {
-		var col = [r, g, b],
-			mx = max(r, g, b),
-			mn = min(r, g, b),
-			md;
-		mn = mn === r ? 0 : mn === g ? 1 : 2;
-		mx = mx === r ? 0 : mx === g ? 1 : 2;
-		md = min(mn, mx) === 0 ? max(mn, mx) === 1 ? 2 : 1 : 0;
-		if (col[mx] > col[mn]) {
-			col[md] = (col[md] - col[mn]) * s / (col[mx] - col[mn]);
-			col[mx] = s;
-		} else {
-			col[md] = col[mx] = 0;
-		}
-		col[mn] = 0;
-		dr = col[0];
-		dg = col[1];
-		db = col[2];
-	}
-
 	var modes = {
-		multiply: function() {
-			dr = br * sr / 255;
-			dg = bg * sg / 255;
-			db = bb * sb / 255;
-		},
-
-		screen: function() {
-			dr = br + sr - (br * sr / 255);
-			dg = bg + sg - (bg * sg / 255);
-			db = bb + sb - (bb * sb / 255);
-		},
-
-		overlay: function() {
-			dr = br < 128 ? 2 * br * sr / 255 : 255 - 2 * (255 - br) * (255 - sr) / 255;
-			dg = bg < 128 ? 2 * bg * sg / 255 : 255 - 2 * (255 - bg) * (255 - sg) / 255;
-			db = bb < 128 ? 2 * bb * sb / 255 : 255 - 2 * (255 - bb) * (255 - sb) / 255;
-		},
-
-		'soft-light': function() {
-			var t = sr * br / 255;
-			dr = t + br * (255 - (255 - br) * (255 - sr) / 255 - t) / 255;
-			t = sg * bg / 255;
-			dg = t + bg * (255 - (255 - bg) * (255 - sg) / 255 - t) / 255;
-			t = sb * bb / 255;
-			db = t + bb * (255 - (255 - bb) * (255 - sb) / 255 - t) / 255;
-		},
-
-		'hard-light': function() {
-			dr = sr < 128 ? 2 * sr * br / 255 : 255 - 2 * (255 - sr) * (255 - br) / 255;
-			dg = sg < 128 ? 2 * sg * bg / 255 : 255 - 2 * (255 - sg) * (255 - bg) / 255;
-			db = sb < 128 ? 2 * sb * bb / 255 : 255 - 2 * (255 - sb) * (255 - bb) / 255;
-		},
-
-		'color-dodge': function() {
-			dr = br === 0 ? 0 : sr === 255 ? 255 : min(255, 255 * br / (255 - sr));
-			dg = bg === 0 ? 0 : sg === 255 ? 255 : min(255, 255 * bg / (255 - sg));
-			db = bb === 0 ? 0 : sb === 255 ? 255 : min(255, 255 * bb / (255 - sb));
-		},
-
-		'color-burn': function() {
-			dr = br === 255 ? 255 : sr === 0 ? 0 : max(0, 255 - (255 - br) * 255 / sr);
-			dg = bg === 255 ? 255 : sg === 0 ? 0 : max(0, 255 - (255 - bg) * 255 / sg);
-			db = bb === 255 ? 255 : sb === 0 ? 0 : max(0, 255 - (255 - bb) * 255 / sb);
-		},
-
-		darken: function() {
-			dr = br < sr ? br : sr;
-			dg = bg < sg ? bg : sg;
-			db = bb < sb ? bb : sb;
-		},
-
-		lighten: function() {
-			dr = br > sr ? br : sr;
-			dg = bg > sg ? bg : sg;
-			db = bb > sb ? bb : sb;
-		},
-
-		difference: function() {
-			dr = br - sr;
-			if (dr < 0)
-				dr = -dr;
-			dg = bg - sg;
-			if (dg < 0)
-				dg = -dg;
-			db = bb - sb;
-			if (db < 0)
-				db = -db;
-		},
-
-		exclusion: function() {
-			dr = br + sr * (255 - br - br) / 255;
-			dg = bg + sg * (255 - bg - bg) / 255;
-			db = bb + sb * (255 - bb - bb) / 255;
-		},
-
-		hue: function() {
-			setSat(sr, sg, sb, getSat(br, bg, bb));
-			setLum(dr, dg, db, getLum(br, bg, bb));
-		},
-
-		saturation: function() {
-			setSat(br, bg, bb, getSat(sr, sg, sb));
-			setLum(dr, dg, db, getLum(br, bg, bb));
-		},
-
-		luminosity: function() {
-			setLum(br, bg, bb, getLum(sr, sg, sb));
-		},
-
-		color: function() {
-			setLum(sr, sg, sb, getLum(br, bg, bb));
-		},
-
 		add: function() {
 			dr = min(br + sr, 255);
 			dg = min(bg + sg, 255);
@@ -20360,41 +20218,54 @@ var BlendMode = new function() {
 		}
 	};
 
-	var nativeModes = this.nativeModes = Base.each([
-		'source-over', 'source-in', 'source-out', 'source-atop',
-		'destination-over', 'destination-in', 'destination-out',
-		'destination-atop', 'lighter', 'darker', 'copy', 'xor'
-	], function(mode) {
-		this[mode] = true;
-	}, {});
+	var nativeModes = Base.each([
+			'source-over', 'source-in', 'source-out', 'source-atop',
+			'destination-over', 'destination-in', 'destination-out',
+			'destination-atop', 'lighter', 'darker', 'copy', 'xor'
+		], function(mode) {
+			this[mode] = true;
+		}, {}),
+		tested = false;
 
-	var ctx = CanvasProvider.getContext(1, 1, { willReadFrequently: true });
-	if (ctx) {
-		Base.each(modes, function(func, mode) {
-			var darken = mode === 'darken',
-				ok = false;
-			ctx.save();
-			try {
-				ctx.fillStyle = darken ? '#330' : '#a00';
-				ctx.fillRect(0, 0, 1, 1);
-				ctx.globalCompositeOperation = mode;
-				if (ctx.globalCompositeOperation === mode) {
-					ctx.fillStyle = darken ? '#a00' : '#330';
+	function getNativeModes() {
+		var ctx = !tested && CanvasProvider.getContext(1, 1,
+				{ willReadFrequently: true });
+		if (ctx) {
+			tested = true;
+			Base.each([
+				'multiply', 'screen', 'overlay', 'soft-light', 'hard-light',
+				'color-dodge', 'color-burn', 'darken', 'lighten', 'difference',
+				'exclusion', 'hue', 'saturation', 'luminosity', 'color'
+			].concat(Object.keys(modes)), function(mode) {
+				var darken = mode === 'darken',
+					ok = false;
+				ctx.save();
+				try {
+					ctx.fillStyle = darken ? '#330' : '#a00';
 					ctx.fillRect(0, 0, 1, 1);
-					ok = ctx.getImageData(0, 0, 1, 1).data[0] !==
-							(darken ? 170 : 51);
-				}
-			} catch (e) {}
-			ctx.restore();
-			nativeModes[mode] = ok;
-		});
-		CanvasProvider.release(ctx);
+					ctx.globalCompositeOperation = mode;
+					if (ctx.globalCompositeOperation === mode) {
+						ctx.fillStyle = darken ? '#a00' : '#330';
+						ctx.fillRect(0, 0, 1, 1);
+						ok = ctx.getImageData(0, 0, 1, 1).data[0] !==
+								(darken ? 170 : 51);
+					}
+				} catch (e) {}
+				ctx.restore();
+				nativeModes[mode] = ok;
+			});
+			CanvasProvider.release(ctx);
+		}
+		return nativeModes;
 	}
+
+	this.getNativeModes = getNativeModes;
 
 	this.process = function(mode, srcContext, dstContext, alpha, offset) {
 		var srcCanvas = srcContext.canvas,
-			normal = mode === 'normal';
-		if (normal || nativeModes[mode]) {
+			normal = mode === 'normal',
+			process = modes[mode];
+		if (getNativeModes()[mode] || !process) {
 			dstContext.save();
 			dstContext.setTransform(1, 0, 0, 1, 0, 0);
 			dstContext.globalAlpha = alpha;
@@ -20403,9 +20274,6 @@ var BlendMode = new function() {
 			dstContext.drawImage(srcCanvas, offset.x, offset.y);
 			dstContext.restore();
 		} else {
-			var process = modes[mode];
-			if (!process)
-				return;
 			var dstData = dstContext.getImageData(offset.x, offset.y,
 					srcCanvas.width, srcCanvas.height),
 				dst = dstData.data,
