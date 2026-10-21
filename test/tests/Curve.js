@@ -448,3 +448,20 @@ test('Curve#handleBounds', function() {
     equals(path.firstCurve.handleBounds, expected,
             'path.firstCurve.handleBounds');
 });
+
+test('Curve#strokeBounds', function() {
+    // A curve without a path has no stroke, so its stroke bounds are the
+    // bounds of the line from (0, 0) to (10, 10):
+    var curve = new Curve([0, 0], [10, 10]);
+    equals(curve.strokeBounds, new Rectangle(0, 0, 10, 10),
+            'curve.strokeBounds');
+    // The curve of a stroked path includes the stroke, here the butt caps of
+    // a horizontal line, half the stroke width above and below:
+    var path = new Path({
+        segments: [[0, 0], [100, 0]],
+        strokeColor: 'black',
+        strokeWidth: 10
+    });
+    equals(path.firstCurve.strokeBounds, new Rectangle(0, -5, 100, 10),
+            'path.firstCurve.strokeBounds');
+});
