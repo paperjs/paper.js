@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 23:20:15 2026 +0200
+ * Date: Thu Oct 22 00:13:03 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -7052,20 +7052,26 @@ declare namespace paper {
         expand(hor: number, ver: number): Rectangle
 
         /** 
-         * Returns a new rectangle scaled by the specified amount from its center.
+         * Returns a new rectangle scaled by the specified factor from its center,
+         * or from the given center point.
+         * 
+         * @param scale - the scale factor
          * 
          * @return the scaled rectangle
          */
-        scale(amount: number): Rectangle
+        scale(scale: number, center?: PointLike): Rectangle
 
         /** 
          * Returns a new rectangle scaled in horizontal direction by the specified
-         * `hor` amount and in vertical direction by the specified `ver` amount
-         * from its center.
+         * `hor` factor and in vertical direction by the specified `ver` factor
+         * from its center, or from the given center point.
+         * 
+         * @param hor - the horizontal scale factor
+         * @param ver - the vertical scale factor
          * 
          * @return the scaled rectangle
          */
-        scale(hor: number, ver: number): Rectangle
+        scale(hor: number, ver: number, center?: PointLike): Rectangle
 
     }
 

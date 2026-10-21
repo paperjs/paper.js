@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 23:20:15 2026 +0200
+ * Date: Thu Oct 22 00:13:03 2026 +0200
  *
  ***
  *
@@ -2284,9 +2284,16 @@ var Rectangle = Base.extend({
 				this.width + hor, this.height + ver);
 	},
 
-	scale: function(hor, ver) {
-		return this.expand(this.width * hor - this.width,
-				this.height * (ver === undefined ? hor : ver) - this.height);
+	scale: function() {
+		var args = arguments,
+			scale = Point.read(args),
+			center = Point.read(args, 0, { readNull: true })
+					|| this.getCenter(true);
+		return new Rectangle(
+				this.getTopLeft(true).subtract(center).multiply(scale)
+					.add(center),
+				this.getBottomRight(true).subtract(center).multiply(scale)
+					.add(center));
 	}
 }, Base.each([
 		['Top', 'Left'], ['Top', 'Right'],
