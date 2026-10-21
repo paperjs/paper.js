@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 03:02:27 2026 +0200
+ * Date: Wed Oct 21 03:51:13 2026 +0200
  *
  ***
  *
@@ -967,7 +967,7 @@ var CollisionDetection = {
 		return this.findBoundsCollisions(bounds1, bounds2, tolerance || 0);
 	},
 
-	findCurveBoundsCollisions: function(curves1, curves2, tolerance, bothAxis) {
+	findCurveBoundsCollisions: function(curves1, curves2, tolerance) {
 		function getBounds(curves) {
 			var min = Math.min,
 				max = Math.max,
@@ -988,22 +988,11 @@ var CollisionDetection = {
 			bounds2 = !curves2 || curves2 === curves1
 				? bounds1
 				: getBounds(curves2);
-		if (bothAxis) {
-			var hor = this.findBoundsCollisions(
-					bounds1, bounds2, tolerance || 0, false, true),
-				ver = this.findBoundsCollisions(
-					bounds1, bounds2, tolerance || 0, true, true),
-				list = [];
-			for (var i = 0, l = hor.length; i < l; i++) {
-				list[i] = { hor: hor[i], ver: ver[i] };
-			}
-			return list;
-		}
 		return this.findBoundsCollisions(bounds1, bounds2, tolerance || 0);
 	},
 
 	findBoundsCollisions: function(boundsA, boundsB, tolerance,
-		sweepVertical, onlySweepAxisCollisions) {
+		sweepVertical) {
 		var self = !boundsB || boundsA === boundsB,
 			allBounds = self ? boundsA : boundsA.concat(boundsB),
 			lengthA = boundsA.length,
@@ -1047,38 +1036,29 @@ var CollisionDetection = {
 				var pruneCount = binarySearch(activeIndicesByPri1, pri1,
 						curBounds[pri0] - tolerance) + 1;
 				activeIndicesByPri1.splice(0, pruneCount);
-				if (self && onlySweepAxisCollisions) {
-					curCollisions = curCollisions.concat(activeIndicesByPri1);
-					for (var j = 0; j < activeIndicesByPri1.length; j++) {
-						var activeIndex = activeIndicesByPri1[j];
-						allCollisions[activeIndex].push(origIndex);
-					}
-				} else {
-					var curSec1 = curBounds[sec1],
-						curSec0 = curBounds[sec0];
-					for (var j = 0; j < activeIndicesByPri1.length; j++) {
-						var activeIndex = activeIndicesByPri1[j],
-							activeBounds = allBounds[activeIndex],
-							isActiveA = activeIndex < lengthA,
-							isActiveB = self || activeIndex >= lengthA;
+				var curSec1 = curBounds[sec1],
+					curSec0 = curBounds[sec0];
+				for (var j = 0; j < activeIndicesByPri1.length; j++) {
+					var activeIndex = activeIndicesByPri1[j],
+						activeBounds = allBounds[activeIndex],
+						isActiveA = activeIndex < lengthA,
+						isActiveB = self || activeIndex >= lengthA;
 
-						if (
-							onlySweepAxisCollisions ||
-							(
-								isCurrentA && isActiveB ||
-								isCurrentB && isActiveA
-							) && (
-								curSec1 >= activeBounds[sec0] - tolerance &&
-								curSec0 <= activeBounds[sec1] + tolerance
-							)
-						) {
-							if (isCurrentA && isActiveB) {
-								curCollisions.push(
-									self ? activeIndex : activeIndex - lengthA);
-							}
-							if (isCurrentB && isActiveA) {
-								allCollisions[activeIndex].push(origIndex);
-							}
+					if (
+						(
+							isCurrentA && isActiveB ||
+							isCurrentB && isActiveA
+						) && (
+							curSec1 >= activeBounds[sec0] - tolerance &&
+							curSec0 <= activeBounds[sec1] + tolerance
+						)
+					) {
+						if (isCurrentA && isActiveB) {
+							curCollisions.push(
+								self ? activeIndex : activeIndex - lengthA);
+						}
+						if (isCurrentB && isActiveA) {
+							allCollisions[activeIndex].push(origIndex);
 						}
 					}
 				}
@@ -7119,7 +7099,7 @@ var Curve = Base.extend({
 				? location.time : this.getTimeAt(location));
 	},
 
-	divideAtTime: function(time, _setHandles) {
+	divideAtTime: function(time) {
 		var tMin = 1e-8,
 			tMax = 1 - tMin,
 			res = null;
@@ -7127,7 +7107,7 @@ var Curve = Base.extend({
 			var parts = Curve.subdivide(this.getValues(), time),
 				left = parts[0],
 				right = parts[1],
-				setHandles = _setHandles || this.hasHandles(),
+				setHandles = this.hasHandles(),
 				seg1 = this._segment1,
 				seg2 = this._segment2,
 				path = this._path;
@@ -8574,7 +8554,7 @@ var CurveLocation = Base.extend({
 		this._point = point || curve.getPointAtTime(time);
 		this._overlap = _overlap;
 		this._distance = _distance;
-		this._intersection = this._next = this._previous = null;
+		this._intersection = null;
 	},
 
 	_setPath: function(path) {
@@ -11460,17 +11440,13 @@ PathItem.inject(new function() {
 		return paths;
 	}
 
-	function getWinding(point, curves, dir, closed, dontFlip) {
-		var curvesList = Array.isArray(curves)
-			? curves
-			: curves[dir ? 'hor' : 'ver'];
+	function getWinding(point, curves, dir, dontFlip) {
 		var ia = dir ? 1 : 0,
 			io = ia ^ 1,
 			pv = [point.x, point.y],
 			pa = pv[ia],
 			po = pv[io],
 			windingEpsilon = 1e-9,
-			qualityEpsilon = 1e-6,
 			paL = pa - windingEpsilon,
 			paR = pa + windingEpsilon,
 			windingL = 0,
@@ -11479,7 +11455,6 @@ PathItem.inject(new function() {
 			pathWindingR = 0,
 			onPath = false,
 			onAnyPath = false,
-			quality = 1,
 			roots = [],
 			vPrev,
 			vClose;
@@ -11521,8 +11496,6 @@ PathItem.inject(new function() {
 				} else {
 					onPath = true;
 				}
-				if (a > pa - qualityEpsilon && a < pa + qualityEpsilon)
-					quality /= 2;
 			} else {
 				if (winding !== windingPrev) {
 					if (a0 < paL) {
@@ -11539,12 +11512,11 @@ PathItem.inject(new function() {
 						onPath = true;
 					}
 				}
-				quality /= 4;
 			}
 			vPrev = v;
 			return !dontFlip && a > paL && a < paR
 					&& Curve.getTangent(v, t)[dir ? 'x' : 'y'] === 0
-					&& getWinding(point, curves, !dir, closed, true);
+					&& getWinding(point, curves, !dir, true);
 		}
 
 		function handleCurve(v) {
@@ -11568,18 +11540,18 @@ PathItem.inject(new function() {
 			}
 		}
 
-		for (var i = 0, l = curvesList.length; i < l; i++) {
-			var curve = curvesList[i],
+		for (var i = 0, l = curves.length; i < l; i++) {
+			var curve = curves[i],
 				path = curve._path,
 				v = curve.getValues(),
 				res;
-			if (!i || curvesList[i - 1]._path !== path) {
+			if (!i || curves[i - 1]._path !== path) {
 				vPrev = null;
 				if (!path._closed) {
 					vClose = Curve.getValues(
 							path.getLastCurve().getSegment2(),
 							curve.getSegment1(),
-							null, !closed);
+							null, true);
 					if (vClose[io] !== vClose[io + 6]) {
 						vPrev = vClose;
 					}
@@ -11602,11 +11574,11 @@ PathItem.inject(new function() {
 			if (res = handleCurve(v))
 				return res;
 
-			if (i + 1 === l || curvesList[i + 1]._path !== path) {
+			if (i + 1 === l || curves[i + 1]._path !== path) {
 				if (vClose && (res = handleCurve(vClose)))
 					return res;
 				if (onPath && !pathWindingL && !pathWindingR) {
-					pathWindingL = pathWindingR = path.isClockwise(closed) ^ dir
+					pathWindingL = pathWindingR = path.isClockwise() ^ dir
 							? 1 : -1;
 				}
 				windingL += pathWindingL;
@@ -11625,7 +11597,6 @@ PathItem.inject(new function() {
 			winding: max(windingL, windingR),
 			windingL: windingL,
 			windingR: windingR,
-			quality: quality,
 			onPath: onAnyPath
 		};
 	}
@@ -12292,8 +12263,8 @@ PathItem.inject(new function() {
 			}
 		},
 
-		_getWinding: function(point, dir, closed) {
-			return getWinding(point, this.getCurves(), dir, closed);
+		_getWinding: function(point) {
+			return getWinding(point, this.getCurves());
 		},
 
 		unite: function(path, options) {
