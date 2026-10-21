@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 16:35:03 2026 +0200
+ * Date: Wed Oct 21 17:03:01 2026 +0200
  *
  ***
  *
@@ -20518,6 +20518,25 @@ new function() {
 			}
 		},
 
+		_unload: function _unload() {
+			var path = !this._shell && this.getTextPath(),
+				that = this;
+			_unload.base.call(this);
+			return path && function() {
+				if (that._shell)
+					that._loadContent();
+				var loaded = that.getTextPath();
+				if (loaded && loaded !== path
+						&& loaded.constructor === path.constructor) {
+					path._parent = path._index = null;
+					path.removeChildren();
+					path.copyContent(loaded);
+					path.copyAttributes(loaded);
+					that.setTextPath(path);
+				}
+			};
+		},
+
 		_getHostLayout: function(host) {
 			var that = this,
 				story = this._story,
@@ -20604,14 +20623,16 @@ new function() {
 			var itemsByKey = this._itemsByKey,
 				keys = columns.keys,
 				names = columns.names || {},
+				reloads = [],
 				that = this;
 			whileLoading(this, function() {
 				for (var i = 0, l = keys.length; i < l; i++) {
 					var item = itemsByKey[keys[i]],
 						flags = columns.flags[i];
 					if (item) {
-						if (flags & 16)
-							item._unload();
+						var reload = flags & 16 && item._unload();
+						if (reload)
+							reloads.push(reload);
 						if (flags & 32)
 							item._reloadChildren();
 						if ((names[i] || undefined) !== item._name)
@@ -20624,6 +20645,9 @@ new function() {
 						that._updateSelection(item);
 					}
 				}
+				reloads.forEach(function(reload) {
+					reload();
+				});
 			});
 		}
 	});
