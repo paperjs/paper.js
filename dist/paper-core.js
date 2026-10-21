@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 03:21:16 2026 +0200
+ * Date: Wed Oct 21 03:17:51 2026 +0200
  *
  ***
  *
@@ -7348,8 +7348,9 @@ statics: {
 				this._bounds = {};
 			var bounds = this._bounds[name];
 			if (!bounds) {
-				bounds = this._bounds[name] = Path[name](
-						[this._segment1, this._segment2], false, this._path);
+				var path = this._path;
+				bounds = this._bounds[name] = Path[path ? name : 'getBounds'](
+						[this._segment1, this._segment2], false, path);
 			}
 			return bounds.clone();
 		};
