@@ -223,6 +223,59 @@ test('PointText#clipMask (#1845)', function() {
             createClipped(new Group([createRectangle(), createCircle()])));
 });
 
+test('PointText with shadow (#2347)', function() {
+    // The shadow is offset below the text, so the text's bounds moved by the
+    // offset only contain pixels of the shadow, in its color:
+    var offset = new Point(0, 45);
+
+    function countPixels(rect, color) {
+        var pixelRatio = view.pixelRatio,
+            data = view.context.getImageData(rect.x * pixelRatio,
+                    rect.y * pixelRatio, rect.width * pixelRatio,
+                    rect.height * pixelRatio).data,
+            count = 0;
+        for (var i = 0, l = data.length; i < l; i += 4) {
+            if (color
+                    ? data[i] === color[0] && data[i + 1] === color[1]
+                        && data[i + 2] === color[2] && data[i + 3] === 255
+                    : data[i + 3] > 0)
+                count++;
+        }
+        return count;
+    }
+
+    function drawText(props) {
+        var text = new PointText(Base.set({
+            fontFamily: 'Arial, Helvetica',
+            fontSize: 30,
+            point: [20, 40],
+            content: 'W',
+            fillColor: 'black'
+        }, props));
+        view.update(true);
+        var bounds = text.strokeBounds,
+            rect = new Rectangle(bounds.point.add(offset), bounds.size);
+        text.remove();
+        return {
+            shadow: countPixels(rect, [255, 0, 0]),
+            all: countPixels(rect)
+        };
+    }
+
+    var shadow = { shadowColor: 'red', shadowOffset: offset },
+        filled = drawText(shadow);
+    equals(filled.shadow > 0, true, 'the shadow of the fill');
+    equals(drawText().all, 0, 'no shadow without shadowColor');
+    // Text with a fill and a stroke casts the shadow of both, which reaches
+    // further than that of the fill alone:
+    var stroked = drawText(Base.set({
+        strokeColor: 'blue',
+        strokeWidth: 4
+    }, shadow));
+    equals(stroked.shadow > filled.shadow, true,
+            'the shadow of the fill and the stroke');
+});
+
 test('The tests\' own font is loaded', function() {
     var view = paper.view,
         width = function(family) {

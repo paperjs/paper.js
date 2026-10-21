@@ -4723,9 +4723,10 @@ new function() { // Injection scope for hit-test functions shared with project
                 }
             }
         }
-        // Items whose shadow is cast when compositing them don't draw it, see
-        // #draw():
-        if (style.hasShadow() && !param.dontShadow)
+        // The shadow is the item's, also for text, which passes the styles of
+        // its runs. Items whose shadow is cast when compositing them don't
+        // draw it, see #draw():
+        if (this._style.hasShadow() && !param.dontShadow)
             this._setShadow(ctx, param, viewMatrix);
     },
 

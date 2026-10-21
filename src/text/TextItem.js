@@ -637,7 +637,6 @@ var TextItem = Item.extend(/** @lends TextItem# */{
             ctx.rect(rect.x, rect.y, rect.width, rect.height);
         } else if (this._story._content) {
             var lines = this._getLayout(),
-                shadowColor = ctx.shadowColor,
                 // Glyphs can only be stroked through the transformation,
                 // unlike paths, so approximate non-scaling strokes by dividing
                 // the width and the dashes by the scale (#1703):
@@ -683,10 +682,9 @@ var TextItem = Item.extend(/** @lends TextItem# */{
                     x /= piece.scale.x;
                     ctx.font = piece.font;
                     ctx.letterSpacing = piece.tracking;
-                    // See Path._draw() for explanation about ctx.shadowColor
-                    ctx.shadowColor = shadowColor;
                     if (hasFill) {
                         ctx.fillText(piece.content, x, 0);
+                        // Cast the shadow of the fill only, see Path#_draw():
                         ctx.shadowColor = 'rgba(0,0,0,0)';
                     }
                     if (hasStroke)
