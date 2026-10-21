@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 03:19:23 2026 +0200
+ * Date: Wed Oct 21 03:18:59 2026 +0200
  *
  ***
  *
@@ -10753,6 +10753,8 @@ statics: {
 	},
 
 	getHandleBounds: function(segments, closed, path, matrix, options) {
+		if (!segments.length)
+			return new Rectangle();
 		var style = path.getStyle(),
 			stroke = options.stroke && style.hasStroke(),
 			strokePadding,
