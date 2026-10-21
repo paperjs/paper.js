@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 18:28:52 2026 +0200
+ * Date: Wed Oct 21 13:24:00 2026 +0200
  *
  ***
  *
@@ -5763,7 +5763,7 @@ var Shape = Item.extend({
 	}
 },
 new function() {
-	function getCornerCenter(that, point, expand) {
+	function getCornerCenter(that, point) {
 		var radius = that._radius;
 		if (!radius.isZero()) {
 			var halfSize = that._size.divide(2);
@@ -5771,20 +5771,11 @@ new function() {
 				var dir = new Point(q > 1 && q < 4 ? -1 : 1, q > 2 ? -1 : 1),
 					corner = dir.multiply(halfSize),
 					center = corner.subtract(dir.multiply(radius)),
-					rect = new Rectangle(
-							expand ? corner.add(dir.multiply(expand)) : corner,
-							center);
+					rect = new Rectangle(corner, center);
 				if (rect.contains(point))
 					return { point: center, quadrant: q };
 			}
 		}
-	}
-
-	function isOnEllipseStroke(point, radius, padding, quadrant) {
-		var vector = point.divide(radius);
-		return (!quadrant || vector.isInQuadrant(quadrant)) &&
-				vector.subtract(vector.normalize()).multiply(radius)
-					.divide(padding).length <= 1;
 	}
 
 	return {
@@ -5800,38 +5791,16 @@ new function() {
 			}
 		},
 
-		_hitTestSelf: function _hitTestSelf(point, options, viewMatrix,
-				strokeMatrix) {
-			var hit = false,
-				style = this._style,
-				hitStroke = options.stroke && style.hasStroke(),
-				hitFill = options.fill && !!style.getFillColor();
-			if (hitStroke || hitFill) {
-				var type = this._type,
-					radius = this._radius,
-					strokeRadius = hitStroke ? style.getStrokeWidth() / 2 : 0,
-					strokePadding = options._tolerancePadding.add(
-						Matrix._getCircleExtents(strokeRadius,
-							!style.getStrokeScaling() && strokeMatrix));
-				if (type === 'rectangle') {
-					var padding = strokePadding.multiply(2),
-						center = getCornerCenter(this, point, padding);
-					if (center) {
-						hit = isOnEllipseStroke(point.subtract(center.point),
-								radius, strokePadding, center.quadrant);
-					} else {
-						var rect = new Rectangle(this._size).setCenter(0, 0),
-							outer = rect.expand(padding),
-							inner = rect.expand(padding.negate());
-						hit = outer._containsPoint(point)
-								&& !inner._containsPoint(point);
-					}
-				} else {
-					hit = isOnEllipseStroke(point, radius, strokePadding);
-				}
-			}
-			return hit ? new HitResult(hitStroke ? 'stroke' : 'fill', this)
-					: _hitTestSelf.base.apply(this, arguments);
+		_hitTestSelf: function(point, options, viewMatrix, strokeMatrix) {
+			var hit = this._asPathItem()._hitTestSelf(point, Base.set({},
+					options, {
+						segments: false,
+						handles: false,
+						ends: false,
+						curves: false,
+						all: false
+					}), viewMatrix, strokeMatrix);
+			return hit && new HitResult(hit.type, this);
 		}
 	};
 }, {
