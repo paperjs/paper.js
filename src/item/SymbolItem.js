@@ -143,7 +143,38 @@ var SymbolItem = Item.extend(/** @lends SymbolItem# */{
         // The definition's item is shared by all its symbol items, so don't
         // let them set its global matrix (#1684):
         this._definition._item.draw(ctx, param.extend({ updateMatrix: false }));
-    }
+    },
 
-    // TODO: SymbolItem#embed()
+    /**
+     * Replaces the symbol item with a copy of its definition's item, which
+     * keeps the symbol item's appearance: its matrix is applied to the copy,
+     * its opacity, visibility, blend mode and other attributes are combined
+     * with the copy's, and its name, data and selection are passed on.
+     *
+     * @return {Item} the copy of the definition's item, or `null` if the
+     *     symbol item has no parent
+     */
+    embed: function() {
+        if (!this._parent)
+            return null;
+        var item = this._definition._item.clone(false);
+        // The copy applies the matrix to its content or its own matrix,
+        // depending on its applyMatrix, as in Group#ungroup():
+        item.transform(this._matrix);
+        // Both items' opacities and visibilities apply when drawn, but only
+        // one blend mode can, the symbol item's if it has one:
+        item.setOpacity(item._opacity * this._opacity);
+        item.setVisible(item._visible && this._visible);
+        item.setLocked(item._locked || this._locked);
+        item.setGuide(item._guide || this._guide);
+        if (this._blendMode !== 'normal')
+            item.setBlendMode(this._blendMode);
+        item.setClipMask(this._clipMask);
+        item.setSelected(this.isSelected());
+        if (this._data)
+            item._data = Base.clone(this._data);
+        if (this._name)
+            item.setName(this._name);
+        return this.replaceWith(item) ? item : null;
+    }
 });
