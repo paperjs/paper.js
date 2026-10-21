@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 03:50:31 2026 +0200
+ * Date: Wed Oct 21 03:20:57 2026 +0200
  *
  ***
  *
@@ -21274,8 +21274,7 @@ new function() {
 			} else if (definition && !used[id]) {
 				used[id] = true;
 				try {
-					item = importNode(getSandbox().ownerDocument
-							.getElementById(id), options, false)
+					item = importNode(getElementById(id), options, false)
 							.translate(point);
 				} finally {
 					delete used[id];
@@ -21476,8 +21475,8 @@ new function() {
 		filter: function(item, value) {
 			var shadow = value && !(item instanceof Group)
 					&& item.setShadowColor && (/^url\(/.test(value)
-						? getFilterShadow(getSandbox().ownerDocument
-							.getElementById(getDefinitionId(value)))
+						? getFilterShadow(
+							getElementById(getDefinitionId(value)))
 						: getCssShadow(value));
 			if (shadow) {
 				item.setShadowColor(shadow.color);
@@ -21585,7 +21584,7 @@ new function() {
 
 	function getDefinitionById(id, options) {
 		if (id && !definitions[id]) {
-			var node = getSandbox().ownerDocument.getElementById(id);
+			var node = getElementById(id);
 			if (node)
 				importNode(node, options, false);
 		}
@@ -21640,6 +21639,10 @@ new function() {
 			doc.head.appendChild(meta);
 		}
 		return sandbox.contentDocument.body;
+	}
+
+	function getElementById(id) {
+		return getSandbox().ownerDocument.getElementById(id);
 	}
 
 	function importNode(node, options, isRoot) {
