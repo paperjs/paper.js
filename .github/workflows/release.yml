@@ -118,10 +118,25 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           VERSION=${GITHUB_REF_NAME#v}
+          # GitHub shows the line breaks of the changelog's wrapped list items,
+          # so join their lines, outside code blocks:
           awk -v heading="## \`$VERSION\`" '
+            function flush() { if (started) print line }
             $0 == heading { found = 1; next }
             found && /^## / { exit }
-            found
+            !found { next }
+            /^ *```/ {
+              fence = !fence
+              flush(); line = $0; started = 1; code = 1
+              next
+            }
+            !fence && !code && /^ +[^ -]/ && line != "" {
+              sub(/^ +/, "")
+              line = line " " $0
+              next
+            }
+            { flush(); line = $0; started = 1; code = fence }
+            END { flush() }
           ' CHANGELOG.md > notes.md
           cp "$DIST/paperjs.zip" "paperjs-$GITHUB_REF_NAME.zip"
           gh release create "$GITHUB_REF_NAME" "paperjs-$GITHUB_REF_NAME.zip" \
