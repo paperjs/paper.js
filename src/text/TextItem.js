@@ -54,16 +54,28 @@ var TextItem = Item.extend(/** @lends TextItem# */{
         var json = _serialize.base.call(this, options, dictionary),
             props = json[1],
             story = this._story,
-            runs = story.getRuns(),
+            content = story._content,
+            runs = story._getRuns(),
             paragraphs = story._paragraphs,
-            keys = story._paragraphKeys;
+            keys = story._paragraphKeys,
+            itemKeys = story._itemKeys;
         if (runs.length > 1) {
+            // Each run's character properties as its own style has them,
+            // which is quicker than reading them through a range. Those it
+            // doesn't set are the defaults, which the JSON leaves out:
             props.runs = runs.map(function(run) {
-                var json = run.toJSON();
-                delete json.start;
-                delete json.end;
-                for (var key in keys)
-                    delete json[key];
+                var style = run.style,
+                    values = style._values,
+                    defaults = style._defaults,
+                    json = { content: content.slice(run.start, run.end) };
+                for (var key in defaults) {
+                    if (key in values && !(key in keys || key in itemKeys)) {
+                        var value = style[key];
+                        if (value !== undefined
+                                && !Base.equals(value, defaults[key]))
+                            json[key] = Base.serialize(value);
+                    }
+                }
                 return json;
             });
             delete props.content;
