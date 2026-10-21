@@ -92,7 +92,8 @@ var PointText = TextItem.extend(/** @lends PointText# */{
         for (var i = 0, l = paragraphs.length; i < l; i++) {
             var range = paragraphs[i],
                 paragraph = story._getParagraph(range._start).style,
-                line = this._measure(range._start, range._end);
+                line = this._measure(range._start, range._end,
+                        paragraph.getDirection());
             if (i > 0) {
                 y += line.lineHeight + Math.max(spaceAfter,
                         paragraph.getSpaceBefore());

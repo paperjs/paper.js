@@ -1029,7 +1029,10 @@ var Style = Base.extend(new function() {
 
     /**
      * The direction the paragraph's lines run in, which `'start'` and `'end'`
-     * follow; `null` for left to right.
+     * follow, and from which side their pieces are placed; `null` for left to
+     * right. Lines that mix directions across styles aren't reordered by the
+     * Unicode bidirectional algorithm: their pieces follow the paragraph's
+     * direction, and canvas orders only the letters within each piece.
      *
      * @name Style#direction
      * @type String
