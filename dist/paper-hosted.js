@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 03:55:14 2026 +0200
+ * Date: Wed Oct 21 11:36:05 2026 +0200
  *
  ***
  *
@@ -15132,35 +15132,7 @@ var Style = Base.extend(new function() {
 		strokeCap: 193,
 		strokeJoin: 193,
 		strokeScaling: 201,
-		miterLimit: 193,
-		fontFamily: 9,
-		fontWeight: 9,
-		fontStyle: 9,
-		fontSize: 9,
-		font: 9,
-		fontVariations: 9,
-		lineHeight: 9,
-		letterTracking: 9,
-		letterKerning: 9,
-		baselineShift: 9,
-		baselinePosition: 9,
-		letterScaling: 9,
-		letterRotation: 9,
-		capitals: 9,
-		features: 9,
-		justification: 9,
-		justifyLast: 9,
-		justifySpacing: 9,
-		startIndent: 9,
-		endIndent: 9,
-		firstLineIndent: 9,
-		spaceBefore: 9,
-		spaceAfter: 9,
-		hyphenation: 9,
-		composer: 9,
-		lineWrap: 9,
-		tabs: 9,
-		direction: 9
+		miterLimit: 193
 	},
 	item = {
 		beans: true
@@ -15188,7 +15160,10 @@ var Style = Base.extend(new function() {
 		var isColor = /Color$/.test(key),
 			isPoint = key === 'shadowOffset',
 			part = Base.capitalize(key),
-			flag = flags[key],
+			flag = !(key in itemDefaults) && key !== 'underline'
+					&& key !== 'strikethrough'
+					? 9
+					: flags[key],
 			set = 'set' + part,
 			get = 'get' + part;
 
