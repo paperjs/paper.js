@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 03:53:43 2026 +0200
+ * Date: Wed Oct 21 03:49:31 2026 +0200
  *
  ***
  *
@@ -1208,8 +1208,9 @@ var Numerical = new function() {
 		ANGULAR_EPSILON: 1e-5,
 		KAPPA: 4 * (sqrt(2) - 1) / 3,
 
-		getEpsilon: function(magnitude) {
-			return Math.max(EPSILON, magnitude * 4 * MACHINE_EPSILON);
+		getEpsilon: function(magnitude, epsilon) {
+			return Math.max(EPSILON, magnitude * 4 * MACHINE_EPSILON,
+					epsilon || 0);
 		},
 
 		isZero: function(val) {
@@ -5079,7 +5080,7 @@ new function() {
 				ctx.lineDashOffset = style.getDashOffset();
 			}
 		}
-		if (style.hasShadow() && !param.dontShadow)
+		if (this._style.hasShadow() && !param.dontShadow)
 			this._setShadow(ctx, param, viewMatrix);
 	},
 
@@ -7743,11 +7744,10 @@ new function() {
 				x3 = v[6], y3 = v[7],
 				px = point.x,
 				py = point.y,
-				epsilon = tolerance || Math.max(
-					1e-7,
-					Numerical.getEpsilon(Math.max(
+				epsilon = tolerance || Numerical.getEpsilon(Math.max(
 						abs(x0), abs(y0), abs(v[2]), abs(v[3]),
-						abs(v[4]), abs(v[5]), abs(x3), abs(y3))));
+						abs(v[4]), abs(v[5]), abs(x3), abs(y3)),
+						1e-7);
 
 			function isClose(x, y) {
 				var dx = x - px,
@@ -11593,10 +11593,9 @@ PathItem.inject(new function() {
 				}
 			}
 		}
-		var resolution = Numerical.getEpsilon(max(
+		var epsilon = Numerical.getEpsilon(max(
 					abs(bounds.left), abs(bounds.right),
-					abs(bounds.top), abs(bounds.bottom))),
-			epsilon = max(resolution,
+					abs(bounds.top), abs(bounds.bottom)),
 				bounds.getTopLeft().getDistance(bounds.getBottomRight())
 					* 1e-7),
 			values = [],
@@ -13111,7 +13110,6 @@ var TextItem = Item.extend({
 			ctx.rect(rect.x, rect.y, rect.width, rect.height);
 		} else if (this._story._content) {
 			var lines = this._getLayout(),
-				shadowColor = ctx.shadowColor,
 				scale = !this._style.getStrokeScaling()
 						&& viewMatrix._getMeanScale();
 			ctx.textAlign = 'left';
@@ -13150,7 +13148,6 @@ var TextItem = Item.extend({
 					x /= piece.scale.x;
 					ctx.font = piece.font;
 					ctx.letterSpacing = piece.tracking;
-					ctx.shadowColor = shadowColor;
 					if (hasFill) {
 						ctx.fillText(piece.content, x, 0);
 						ctx.shadowColor = 'rgba(0,0,0,0)';
