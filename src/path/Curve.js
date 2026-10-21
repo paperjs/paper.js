@@ -1660,11 +1660,10 @@ new function() { // Scope for methods that require private functions
                 x3 = v[6], y3 = v[7],
                 px = point.x,
                 py = point.y,
-                epsilon = tolerance || Math.max(
-                    /*#=*/Numerical.GEOMETRIC_EPSILON,
-                    Numerical.getEpsilon(Math.max(
+                epsilon = tolerance || Numerical.getEpsilon(Math.max(
                         abs(x0), abs(y0), abs(v[2]), abs(v[3]),
-                        abs(v[4]), abs(v[5]), abs(x3), abs(y3))));
+                        abs(v[4]), abs(v[5]), abs(x3), abs(y3)),
+                        /*#=*/Numerical.GEOMETRIC_EPSILON);
 
             function isClose(x, y) {
                 var dx = x - px,

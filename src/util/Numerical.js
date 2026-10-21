@@ -167,12 +167,14 @@ var Numerical = new function() {
 
         /**
          * Returns the tolerance for comparing coordinates up to the given
-         * magnitude: Numerical.EPSILON, or two units in the last place where
-         * EPSILON is below the resolution of the coordinates, from 16384 on,
-         * so that touching values still compare as touching (#1940).
+         * magnitude: Numerical.EPSILON or the optional epsilon if larger, or
+         * two units in the last place where that is below the resolution of
+         * the coordinates, so that touching values still compare as touching
+         * (#1940).
          */
-        getEpsilon: function(magnitude) {
-            return Math.max(EPSILON, magnitude * 4 * MACHINE_EPSILON);
+        getEpsilon: function(magnitude, epsilon) {
+            return Math.max(EPSILON, magnitude * 4 * MACHINE_EPSILON,
+                    epsilon || 0);
         },
 
         /**
