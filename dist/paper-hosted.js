@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 03:49:31 2026 +0200
+ * Date: Wed Oct 21 03:49:41 2026 +0200
  *
  ***
  *
@@ -12671,19 +12671,22 @@ var TextItem = Item.extend({
 			paragraphs = story._paragraphs,
 			keys = story._paragraphKeys,
 			itemKeys = story._itemKeys;
+
+		function serialize(json, style, key) {
+			var value = style[key];
+			if (value !== undefined
+					&& !Base.equals(value, style._defaults[key]))
+				json[key] = Base.serialize(value, options, false, dictionary);
+		}
+
 		if (runs.length > 1) {
 			props.runs = runs.map(function(run) {
 				var style = run.style,
 					values = style._values,
-					defaults = style._defaults,
 					json = { content: content.slice(run.start, run.end) };
-				for (var key in defaults) {
-					if (key in values && !(key in keys || key in itemKeys)) {
-						var value = style[key];
-						if (value !== undefined
-								&& !Base.equals(value, defaults[key]))
-							json[key] = Base.serialize(value);
-					}
+				for (var key in style._defaults) {
+					if (key in values && !(key in keys || key in itemKeys))
+						serialize(json, style, key);
 				}
 				return json;
 			});
@@ -12694,11 +12697,8 @@ var TextItem = Item.extend({
 		})) {
 			props.paragraphs = paragraphs.map(function(style) {
 				var json = {};
-				for (var key in keys) {
-					var value = style[key];
-					if (!Base.equals(value, style._defaults[key]))
-						json[key] = Base.serialize(value);
-				}
+				for (var key in keys)
+					serialize(json, style, key);
 				return json;
 			});
 		}
