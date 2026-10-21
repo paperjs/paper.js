@@ -759,21 +759,10 @@ statics: /** @lends Curve */{
                 + y3 * (x2 + x0 / 3) - x3 * (y2 + y0 / 3)) / 20;
     },
 
-    getBounds: function(v) {
-        var min = v.slice(0, 2), // Start with values of point1
-            max = min.slice(), // clone
-            roots = [0, 0];
-        for (var i = 0; i < 2; i++)
-            Curve._addBounds(v[i], v[i + 2], v[i + 4], v[i + 6],
-                    i, 0, min, max, roots);
-        return new Rectangle(min[0], min[1], max[0] - min[0], max[1] - min[1]);
-    },
-
     /**
-     * Private helper for both Curve.getBounds() and Path.getBounds(), which
-     * finds the 0-crossings of the derivative of a bezier curve polynomial, to
-     * determine potential extremas when finding the bounds of a curve.
-     * NOTE: padding is only used for Path.getBounds().
+     * Private helper for Path.getBounds(), which finds the 0-crossings of the
+     * derivative of a bezier curve polynomial, to determine potential extremas
+     * when finding the bounds of a curve.
      */
     _addBounds: function(v0, v1, v2, v3, coord, padding, min, max, roots) {
         // Code ported and further optimised from:
@@ -833,11 +822,6 @@ statics: /** @lends Curve */{
     }
 }}, Base.each(
     ['getBounds', 'getStrokeBounds'],
-    // NOTE: Although Curve.getBounds() exists, we are using Path.getBounds() to
-    // determine the bounds of Curve objects with defined segment1 and segment2
-    // values Curve.getBounds() can be used directly on curve arrays, without
-    // the need to create a Curve object first, as required by the code that
-    // finds path interesections.
     function(name) {
         this[name] = function() {
             if (!this._bounds)
@@ -2668,9 +2652,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
 
         statics: /** @lends Curve */{
             getOverlaps: getOverlaps,
-            // Exposed for use in boolean offsetting
-            getIntersections: getIntersections,
-            getCurveLineIntersections: getCurveLineIntersections
+            getIntersections: getIntersections
         }
     };
 });
