@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 03:18:34 2026 +0200
+ * Date: Wed Oct 21 03:21:16 2026 +0200
  *
  ***
  *
@@ -20386,14 +20386,14 @@ var BlendMode = new function() {
 				ok = false;
 			ctx.save();
 			try {
-				ctx.fillStyle = darken ? '#300' : '#a00';
+				ctx.fillStyle = darken ? '#330' : '#a00';
 				ctx.fillRect(0, 0, 1, 1);
 				ctx.globalCompositeOperation = mode;
 				if (ctx.globalCompositeOperation === mode) {
-					ctx.fillStyle = darken ? '#a00' : '#300';
+					ctx.fillStyle = darken ? '#a00' : '#330';
 					ctx.fillRect(0, 0, 1, 1);
-					ok = ctx.getImageData(0, 0, 1, 1).data[0] !== darken
-							? 170 : 51;
+					ok = ctx.getImageData(0, 0, 1, 1).data[0] !==
+							(darken ? 170 : 51);
 				}
 			} catch (e) {}
 			ctx.restore();
