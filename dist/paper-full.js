@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 03:18:28 2026 +0200
+ * Date: Wed Oct 21 03:19:23 2026 +0200
  *
  ***
  *
@@ -3474,6 +3474,8 @@ new function() {
 			project = this._project;
 		if (flags & 8) {
 			this._bounds = this._position = this._decomposed = undefined;
+		} else if (flags & 64) {
+			this._bounds = undefined;
 		}
 		if (flags & 16) {
 			this._globalMatrix = undefined;
@@ -9241,8 +9243,6 @@ var Path = PathItem.extend({
 			   for (var i = 0, l = this._curves.length; i < l; i++)
 					this._curves[i]._changed();
 			}
-		} else if (flags & 64) {
-			this._bounds = undefined;
 		}
 	},
 
