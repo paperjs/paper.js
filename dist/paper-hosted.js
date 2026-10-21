@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 02:17:22 2026 +0200
+ * Date: Wed Oct 21 02:04:19 2026 +0200
  *
  ***
  *
@@ -12747,6 +12747,7 @@ var TextItem = Item.extend({
 		content: null,
 		orientation: 'horizontal'
 	},
+	_prioritize: ['applyMatrix', 'content', 'runs'],
 	_orientation: 'horizontal',
 	_boundsOptions: { handle: false },
 	initialize: function TextItem(arg) {
@@ -20867,8 +20868,8 @@ new function() {
 			var that = this,
 				story = this._story,
 				content = story._content,
-				layout = host.layOut(this.exportJSON({ asString: false }),
-						this._getStart(), this._key);
+				layout = host.layOut(this.exportJSON(), this._getStart(),
+						this._key);
 			this._visibleEnd = layout.end;
 			return layout.lines.map(function(line) {
 				line.pieces = line.pieces.map(function(placed) {

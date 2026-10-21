@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 02:17:22 2026 +0200
+ * Date: Wed Oct 21 02:04:19 2026 +0200
  *
  ***
  *
@@ -12747,6 +12747,7 @@ var TextItem = Item.extend({
 		content: null,
 		orientation: 'horizontal'
 	},
+	_prioritize: ['applyMatrix', 'content', 'runs'],
 	_orientation: 'horizontal',
 	_boundsOptions: { handle: false },
 	initialize: function TextItem(arg) {
