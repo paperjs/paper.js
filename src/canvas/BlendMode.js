@@ -51,69 +51,28 @@ var BlendMode = new function() {
         }
     };
 
-    // The canvas composite modes are always natively supported:
-    var nativeModes = Base.each([
-            'source-over', 'source-in', 'source-out', 'source-atop',
-            'destination-over', 'destination-in', 'destination-out',
-            'destination-atop', 'lighter', 'darker', 'copy', 'xor'
-        ], function(mode) {
-            this[mode] = true;
-        }, {}),
-        tested = false;
-
-    // Returns the lookup table of the natively supported composite and blend
-    // modes. The CSS blend modes and our own are tested the first time a canvas
-    // is available, as hosts may only provide one after Paper.js loads. Just
-    // seeing if globalCompositeOperation is sticky is not enough, as Chrome 27
-    // pretends for blend-modes to work, but does not actually apply them.
-    function getNativeModes() {
-        var ctx = !tested && CanvasProvider.getContext(1, 1,
-                { willReadFrequently: true });
-        if (ctx) {
-            tested = true;
-            Base.each([
-                'multiply', 'screen', 'overlay', 'soft-light', 'hard-light',
-                'color-dodge', 'color-burn', 'darken', 'lighten', 'difference',
-                'exclusion', 'hue', 'saturation', 'luminosity', 'color'
-            ].concat(Object.keys(modes)), function(mode) {
-                // Blend #333300 (51) and #aa0000 (170):
-                // Multiplying should lead to #220000 (34). The green gives the
-                // source a hue of its own, which the non-separable modes need.
-                var darken = mode === 'darken',
-                    ok = false;
-                ctx.save();
-                // FF 3.6 throws exception when setting
-                // globalCompositeOperation to unsupported values.
-                try {
-                    // For darken we need to reverse color parameters in order
-                    // to test mode.
-                    ctx.fillStyle = darken ? '#330' : '#a00';
-                    ctx.fillRect(0, 0, 1, 1);
-                    ctx.globalCompositeOperation = mode;
-                    if (ctx.globalCompositeOperation === mode) {
-                        ctx.fillStyle = darken ? '#a00' : '#330';
-                        ctx.fillRect(0, 0, 1, 1);
-                        ok = ctx.getImageData(0, 0, 1, 1).data[0] !==
-                                (darken ? 170 : 51);
-                    }
-                } catch (e) {}
-                ctx.restore();
-                nativeModes[mode] = ok;
-            });
-            CanvasProvider.release(ctx);
-        }
-        return nativeModes;
-    }
-
-    this.getNativeModes = getNativeModes;
+    // Canvas supports its composite modes and the CSS blend modes natively,
+    // and draws modes it doesn't support as 'normal', so only our own modes
+    // are emulated:
+    this.nativeModes = Base.each([
+        'source-over', 'source-in', 'source-out', 'source-atop',
+        'destination-over', 'destination-in', 'destination-out',
+        'destination-atop', 'lighter', 'darker', 'copy', 'xor',
+        'multiply', 'screen', 'overlay', 'soft-light', 'hard-light',
+        'color-dodge', 'color-burn', 'darken', 'lighten', 'difference',
+        'exclusion', 'hue', 'saturation', 'luminosity', 'color'
+    ], function(mode) {
+        this[mode] = true;
+    }, Base.each(modes, function(process, mode) {
+        this[mode] = false;
+    }, {}));
 
     this.process = function(mode, srcContext, dstContext, alpha, offset) {
         var srcCanvas = srcContext.canvas,
             normal = mode === 'normal',
             process = modes[mode];
-        // Use native blend-modes if supported, and emulate our own. Canvas
-        // ignores the modes it doesn't support, and draws them as 'normal'.
-        if (getNativeModes()[mode] || !process) {
+        // Leave all modes but our own to canvas:
+        if (!process) {
             dstContext.save();
             // Reset transformations, since we're blitting and pixel scale and
             // with a given offset.
