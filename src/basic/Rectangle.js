@@ -256,6 +256,18 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
     },
 
     /**
+     * The rectangle's position and size as an array,
+     * `[x, y, width, height]`, as {@link Matrix#values} gives those of a
+     * matrix.
+     *
+     * @bean
+     * @type Number[]
+     */
+    getValues: function() {
+        return [this.x, this.y, this.width, this.height];
+    },
+
+    /**
      * The top-left point of the rectangle. Setting it moves the whole
      * rectangle, unlike {@link #topLeft}.
      *
