@@ -1,5 +1,68 @@
 # Change Log
 
+## `0.16.0`
+
+### Added
+
+- Add the `processNode` option to `#exportSVG()` and the `processItem` option
+  to `#importSVG()`: callbacks that receive `{ item, node }` for each exported
+  item with its SVG node and each imported SVG element with its item, and can
+  return a replacement, e.g. to keep the SVG `class` attribute in `Item#data`
+  (#1843).
+- Let `Rectangle#scale()` take a center point to scale from, as
+  `Item#scale()` does, and normalize rectangles scaled by negative amounts
+  (#1352).
+- Add `Segment#name` and `Segment#data`, stored in JSON but not in SVG. Named
+  segments can be accessed by name through `Path#segments`, as named items
+  through `Item#children` (#1459).
+- Add `Style#paintOrder` and `Item#paintOrder`: `'stroke'` paints the stroke
+  before the fill of paths, shapes and text, as in SVG's `paint-order`, which
+  is exported and imported (#1731).
+- Lay out right-to-left text in the order it reads: the pieces of the lines of
+  paragraphs whose `direction` is `'rtl'` are placed, hit and exported from the
+  right, path text runs from the path's end towards its start, and canvas
+  measures and draws text in its paragraph's direction (#2389).
+- Export layers to SVG with a `data-paper-layer` attribute, and import the
+  groups that carry it as `Layer` items again, inside the imported group
+  (#483).
+- Add `SymbolItem#embed()`, which replaces a symbol item with a copy of its
+  definition's item, transformed by the symbol item's matrix and combined with
+  its opacity, visibility, blend mode and other attributes (#953).
+- `Project#currentTextStyle` in hosted projects: the style new text items take
+  in place of `Project#currentStyle` when the host sets one, for hosts whose
+  new text has defaults of its own, such as a black fill without a stroke.
+- Add `Point#values`, `Size#values` and `Rectangle#values`, which give their
+  numbers as an array, as `Matrix#values` does.
+
+### Changed
+
+- Apply the `data-*` attributes of imported SVG elements to `Item#data` before
+  calling the `processItem` callback of `#importSVG()`, so that it can extend
+  the data, instead of after it, which replaced the data that it stored. Items
+  that the callback returns as replacements no longer receive the data.
+
+### Deprecated
+
+- The undocumented `onExport(item, node, options)` and
+  `onImport(node, item, options)` options of `#exportSVG()` and
+  `#importSVG()`, replaced by `processNode` and `processItem`.
+
+### Fixed
+
+- Only call the import callback of `#importSVG()` for SVG elements, not also
+  for the document of SVG strings, which received the item of its root element
+  a second time.
+- Leave out the item itself and its ancestors when inserting children, which
+  created a cycle in the scene graph and overflowed the stack, e.g. in
+  `new Group({ children: [new Layer()] })`, and return `null` from
+  `Item#insertChildren()` when none of the items can be inserted (#2406).
+- Keep the text path of hosted `PathText` and `AreaText` items when the host
+  changes them: `Project#invalidate()` loads its new geometry into the path
+  that scripts hold, which it replaced before.
+- Hit-test the strokes of shapes as those of their paths, which `Shape` only
+  approximated for ellipses and rounded corners, and for non-scaling strokes
+  under non-uniform matrices (#2334).
+
 ## `0.15.0`
 
 ### Added
