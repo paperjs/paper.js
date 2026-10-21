@@ -69,6 +69,27 @@ jobs:
       - name: Test in Chromium
         run: pnpm test:browser
 
+  # Compares what the library draws with the reference screenshots, in
+  # Playwright's Docker image, as `pnpm test:screenshots` does locally:
+  screenshots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Compare the screenshots
+        run: pnpm test:screenshots
+      # The screenshots that differ, with their diffs, for review:
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: screenshots
+          path: .vitest/attachments
+
   # Generate paper.d.ts from the docs and compile the TypeScript definition
   # test against it, so changes to the docs can't break the typings unnoticed:
   typings:
