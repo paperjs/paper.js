@@ -355,14 +355,8 @@ new function() { // Injection scope for various item event handlers
             throw new Error(
                     'Names consisting only of numbers are not supported.');
         var owner = this._getOwner();
-        if (name && owner) {
-            var children = owner._children,
-                namedChildren = owner._namedChildren;
-            (namedChildren[name] = namedChildren[name] || []).push(this);
-            // Only set this item if there isn't one under the same name already
-            if (!(name in children))
-                children[name] = this;
-        }
+        if (name && owner)
+            Base.addNamed(owner._children, owner._namedChildren, name, this);
         this._name = name || undefined;
         this._changed(/*#=*/ChangeFlag.ATTRIBUTE);
     },
@@ -3081,28 +3075,9 @@ new function() { // Injection scope for hit-test functions shared with project
      */
     _removeNamed: function() {
         var owner = this._getOwner();
-        if (owner) {
-            var children = owner._children,
-                namedChildren = owner._namedChildren,
-                name = this._name,
-                namedArray = namedChildren[name],
-                index = namedArray ? namedArray.indexOf(this) : -1;
-            if (index !== -1) {
-                // Remove the named reference
-                if (children[name] == this)
-                    delete children[name];
-                // Remove this entry
-                namedArray.splice(index, 1);
-                // If there are any items left in the named array, set the first
-                // of them to be children[this.name]
-                if (namedArray.length) {
-                    children[name] = namedArray[0];
-                } else {
-                    // Otherwise delete the empty array
-                    delete namedChildren[name];
-                }
-            }
-        }
+        if (owner)
+            Base.removeNamed(owner._children, owner._namedChildren, this._name,
+                    this);
     },
 
     /**

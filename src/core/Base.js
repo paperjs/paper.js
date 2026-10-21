@@ -679,6 +679,42 @@ statics: /** @lends Base */{
     },
 
     /**
+     * Utility function for looking up items of a list by name, as in
+     * `list[name]`. The first item with a name wins, the others wait in the
+     * `named` lookup to take over when it is removed. Used for Item#children
+     * and Path#segments.
+     */
+    addNamed: function(list, named, name, item) {
+        (named[name] = named[name] || []).push(item);
+        // Only set this item if there isn't one under the same name already
+        if (!(name in list))
+            list[name] = item;
+    },
+
+    /**
+     * Removes the named reference to an item added by Base.addNamed().
+     */
+    removeNamed: function(list, named, name, item) {
+        var namedArray = named[name],
+            index = namedArray ? namedArray.indexOf(item) : -1;
+        if (index !== -1) {
+            // Remove the named reference
+            if (list[name] == item)
+                delete list[name];
+            // Remove this entry
+            namedArray.splice(index, 1);
+            // If there are any items left in the named array, set the first
+            // of them to be list[name]
+            if (namedArray.length) {
+                list[name] = namedArray[0];
+            } else {
+                // Otherwise delete the empty array
+                delete named[name];
+            }
+        }
+    },
+
+    /**
      * Capitalizes the passed string: hello world -> Hello World
      */
     capitalize: function(str) {
