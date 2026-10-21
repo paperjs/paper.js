@@ -2904,6 +2904,9 @@ statics: {
      * @private
      */
     getHandleBounds: function(segments, closed, path, matrix, options) {
+        // If there are no segments, return "empty" rectangle, as getBounds().
+        if (!segments.length)
+            return new Rectangle();
         var style = path.getStyle(),
             stroke = options.stroke && style.hasStroke(),
             strokePadding,
