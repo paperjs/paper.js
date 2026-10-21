@@ -84,6 +84,7 @@ var Style = Base.extend(new function() {
         miterLimit: 10,
         dashOffset: 0,
         dashArray: [],
+        paintOrder: 'fill',
         // Shadows
         shadowColor: null,
         shadowBlur: 0,
@@ -658,6 +659,33 @@ var Style = Base.extend(new function() {
      */
 
     /**
+     * The order in which the fill and the stroke are painted, as in SVG's
+     * `paint-order`, named after what is painted first: `'fill'` paints the
+     * fill first, `'stroke'` paints the stroke first, so the fill covers its
+     * inner half.
+     *
+     * @name Style#paintOrder
+     * @property
+     * @type String
+     * @values 'fill', 'stroke'
+     * @default 'fill'
+     *
+     * @example {@paperscript}
+     * var text = new PointText({
+     *     point: [20, 70],
+     *     content: 'Paper',
+     *     fontSize: 50,
+     *     fillColor: 'white',
+     *     strokeColor: 'black',
+     *     strokeWidth: 8,
+     *     strokeJoin: 'round'
+     * });
+     *
+     * // Paint the stroke behind the fill:
+     * text.paintOrder = 'stroke';
+     */
+
+    /**
      * {@grouptitle Fill Style}
      *
      * The fill color.
@@ -1029,7 +1057,10 @@ var Style = Base.extend(new function() {
 
     /**
      * The direction the paragraph's lines run in, which `'start'` and `'end'`
-     * follow; `null` for left to right.
+     * follow, and from which side their pieces are placed; `null` for left to
+     * right. Lines that mix directions across styles aren't reordered by the
+     * Unicode bidirectional algorithm: their pieces follow the paragraph's
+     * direction, and canvas orders only the letters within each piece.
      *
      * @name Style#direction
      * @type String

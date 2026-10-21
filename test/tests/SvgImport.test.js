@@ -1,0 +1,1333 @@
+/*
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
+ * http://paperjs.org/
+ *
+ * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
+ * http://juerglehni.com/ & https://puckey.studio/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ */
+
+import { describe } from 'vitest'
+import paper, {
+  Base,
+  CanvasProvider,
+  Color,
+  Matrix,
+  Path,
+  PathItem,
+  Point,
+  PointText,
+  Raster,
+  Rectangle,
+  Shape,
+  Size,
+  document,
+  window
+} from 'paper'
+import {
+  compareSVG,
+  createSVG,
+  equals,
+  isNodeContext,
+  push,
+  test
+} from '../helpers.js'
+
+describe('SvgImport', () => {
+  test('Import SVG line', () => {
+    const attrs = {
+      x1: 5,
+      x2: 45,
+      y1: 5,
+      y2: 45
+    }
+    const imported = paper.project.importSVG(createSVG('line', attrs))
+    const path = new Path.Line([attrs.x1, attrs.y1], [attrs.x2, attrs.y2])
+    equals(imported, path)
+  })
+
+  test('Import SVG rect', () => {
+    const attrs = {
+      x: 25,
+      y: 25,
+      width: 100,
+      height: 100
+    }
+    const imported = paper.project.importSVG(createSVG('rect', attrs), {
+      expandShapes: true
+    })
+    const path = new Path.Rectangle(attrs)
+    equals(imported, path)
+  })
+
+  test('Import SVG round rect', () => {
+    const attrs = {
+      x: 25,
+      y: 25,
+      rx: 50,
+      ry: 50,
+      width: 100,
+      height: 100
+    }
+    const imported = paper.project.importSVG(createSVG('rect', attrs), {
+      expandShapes: true
+    })
+    const path = new Path.Rectangle(
+      new Rectangle(attrs),
+      new Size(attrs.rx, attrs.ry)
+    )
+    equals(imported, path)
+  })
+
+  test('Import SVG round rect with only rx or ry (#1863)', () => {
+    function getRadius(attrs) {
+      const imported = paper.project.importSVG(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">' +
+        '<rect width="100" height="80" ' +
+        attrs +
+        '/></svg>'
+      )
+      return imported.firstChild.radius
+    }
+
+    // A missing rx or ry takes the other's value, and percentages refer to
+    // the width for rx and to the height for ry:
+    equals(getRadius(''), new Size(0, 0))
+    equals(getRadius('rx="10"'), new Size(10, 10))
+    equals(getRadius('ry="10"'), new Size(10, 10))
+    equals(getRadius('rx="10" ry="20"'), new Size(10, 20))
+    equals(getRadius('rx="10%"'), new Size(20, 20))
+    equals(getRadius('ry="10%"'), new Size(10, 10))
+    equals(getRadius('rx="10%" ry="10%"'), new Size(20, 10))
+  })
+
+  test('Import SVG lengths with absolute units (#1919)', () => {
+    const imported = paper.project.importSVG(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="2in" height="1in">' +
+        '<rect x="1cm" y="10mm" width="10pt" height="3pc"' +
+        ' stroke-width="1.5pt" stroke-dasharray="1in 6pt"/>' +
+        '<rect width="50%" height="10px" rx="5"/></svg>'
+      ),
+      rect = imported.children[0],
+      relative = imported.children[1]
+    // CSS defines 1in = 2.54cm = 25.4mm = 72pt = 6pc = 96px:
+    equals(rect.position, new Point(96 / 2.54 + 40 / 3 / 2, 96 / 2.54 + 24))
+    equals(rect.size, new Size(40 / 3, 48))
+    equals(rect.strokeWidth, 2)
+    equals(rect.dashArray, [96, 8])
+    // Percentages refer to the viewport, of which the size has units too:
+    equals(relative.size, new Size(96, 10))
+    equals(relative.radius, new Size(5, 5))
+  })
+
+  test('Import SVG with percentages in nested <svg> elements (#1404)', () => {
+    const imported = paper.project.importSVG(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100">' +
+        '<svg width="50" height="40">' +
+        '<rect width="50%" height="50%"/>' +
+        '<svg width="100%" height="100%" viewBox="0 0 10 10"' +
+        ' preserveAspectRatio="none">' +
+        '<rect width="10" height="10"/></svg></svg>' +
+        '<rect width="50%" height="50%"/></svg>'
+      ),
+      nested = imported.children[0]
+    // Percentages refer to the size of the nearest <svg> element:
+    equals(nested.children[0].bounds, new Rectangle(0, 0, 25, 20))
+    // The viewBox of 10 x 10 is stretched to the 50 x 40 of its parent:
+    equals(nested.children[1].bounds, new Rectangle(0, 0, 50, 40))
+    // After the nested <svg>, they refer to the root again:
+    equals(imported.children[1].bounds, new Rectangle(0, 0, 100, 50))
+  })
+
+  test('Import SVG with inline styles and attributes (#1962)', () => {
+    function importRect(attrs) {
+      return paper.project.importSVG(
+        '<svg xmlns="http://www.w3.org/2000/svg">' +
+        '<rect width="10" height="10" ' +
+        attrs +
+        '/></svg>'
+      ).firstChild
+    }
+
+    // Inline styles override presentation attributes, as in CSS:
+    let rect = importRect(
+      'fill="blue" stroke-width="2" ' +
+      'style="fill: red; stroke-width: 4"'
+    )
+    equals(rect.fillColor, new Color('red'), 'fill from style')
+    equals(rect.strokeWidth, 4, 'stroke-width from style')
+    rect = importRect('fill="blue" style="stroke-width: 4"')
+    equals(rect.fillColor, new Color('blue'), 'fill from attribute')
+    rect = importRect('style="fill: red"')
+    equals(rect.fillColor, new Color('red'), 'fill from style only')
+  })
+
+  test('Import SVG with the default fill (#1229)', () => {
+    function importSVG(content, attrs) {
+      return paper.project.importSVG(
+        '<svg xmlns="http://www.w3.org/2000/svg"' +
+        (attrs || '') +
+        '>' +
+        content +
+        '</svg>'
+      )
+    }
+
+    function getFill(item) {
+      // Browsers produce colors with alpha, so compare the CSS values:
+      const color = item.fillColor
+      return color && color.toCSS(true)
+    }
+
+    const path = '<path d="M0,0h10v10z"/>'
+
+    let imported = importSVG(
+      path +
+      '<g>' +
+      path +
+      '</g>' +
+      '<g fill="red">' +
+      path +
+      '</g>'
+    )
+
+    // Shapes without a fill are filled black, as SVG's initial fill:
+    equals(getFill(imported.children[0]), '#000000', 'path')
+    equals(
+      getFill(imported.children[1].firstChild),
+      '#000000',
+      'path in <g>'
+    )
+    equals(
+      getFill(imported.children[2].firstChild),
+      '#ff0000',
+      'path in <g fill="red">'
+    )
+    equals(imported.children[0].strokeColor, null, 'stroke')
+    imported = importSVG(path, ' fill="none"')
+    equals(getFill(imported.firstChild), null, 'path in <svg fill="none">')
+    const node = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'path'
+    )
+    node.setAttribute('d', 'M0,0h10v10z')
+    equals(
+      getFill(paper.project.importSVG(node)),
+      '#000000',
+      'path as root'
+    )
+  })
+
+  test('Import SVG ellipse', () => {
+    const attrs = {
+      cx: 300,
+      cy: 80,
+      rx: 100,
+      ry: 50
+    }
+    const imported = paper.project.importSVG(createSVG('ellipse', attrs), {
+      expandShapes: true
+    })
+    const path = new Path.Ellipse({
+      center: new Point(attrs.cx, attrs.cy),
+      radius: new Point(attrs.rx, attrs.ry)
+    })
+    equals(imported, path)
+  })
+
+  test('Import SVG circle', () => {
+    const attrs = {
+      cx: 100,
+      cy: 80,
+      r: 50
+    }
+    const imported = paper.project.importSVG(createSVG('circle', attrs), {
+      expandShapes: true
+    })
+    const path = new Path.Circle({
+      center: new Point(attrs.cx, attrs.cy),
+      radius: attrs.r
+    })
+    equals(imported, path)
+  })
+
+  function createPolyPath(str) {
+    const points = str
+      .split(' ')
+      .map(point => point.split(',').map(parseFloat))
+    const path = new Path()
+    path.moveTo(points[0])
+    for (let i = 1; i < points.length; i++) path.lineTo(points[i])
+    return path
+  }
+
+  test('Import SVG polygon', () => {
+    const points = '100,10 40,180 190,60 10,60 160,180'
+    const imported = paper.project.importSVG(
+      createSVG('polygon', {
+        points
+      })
+    )
+    const path = createPolyPath(points)
+    path.closePath()
+    equals(imported, path)
+  })
+
+  test('Import SVG polyline', () => {
+    const points = '5,5 45,45 5,45 45,5'
+    const imported = paper.project.importSVG(
+      createSVG('polyline', {
+        points
+      })
+    )
+    const path = createPolyPath(points)
+    equals(imported, path)
+  })
+
+  test('Import SVG path with arc flags without separators (#1808)', () => {
+    const data = (
+      'M-481.302-497.13l-214.207 28.674c-.106-.531-.106-.956-.212-1.38' +
+      'l212.826-37.277a150.441 150.441 0 011.593 9.983'
+    )
+    const imported = paper.project.importSVG(createSVG('path', { d: data }))
+    // The relative arc ends 1.593, 9.983 from the end of the previous line:
+    equals(imported.lastSegment.point, new Point(-481.302, -497.13))
+    equals(imported, new Path(data.replace('0 011.593', '0 0 1 1.593')))
+  })
+
+  test('Import SVG multi-line text (#988)', () => {
+    function importText(content) {
+      return paper.project.importSVG(
+        '<svg xmlns="http://www.w3.org/2000/svg">' +
+        '<text x="10" y="20">' +
+        content +
+        '</text></svg>'
+      ).firstChild
+    }
+
+    // Lines as written by Illustrator, with formatting white-space:
+    const text = importText(
+      '\n  <tspan x="10" y="20">One</tspan>' +
+      '\n  <tspan x="10" y="32"></tspan>' +
+      '\n  <tspan x="10" y="44">Three</tspan>\n'
+    )
+    equals(text.content, 'One\n\nThree')
+    equals(text.point, new Point(10, 20))
+    // <tspan> elements within a line don't break it:
+    equals(
+      importText('One <tspan font-weight="bold">Two</tspan>').content,
+      'One Two'
+    )
+    equals(
+      importText(' <tspan x="10" y="20">One <tspan>Two</tspan></tspan> ')
+        .content,
+      'One Two'
+    )
+  })
+
+  test('Import SVG text with letter-spacing', () => {
+    function importText(attributes) {
+      return paper.project.importSVG(
+        '<svg xmlns="http://www.w3.org/2000/svg">' +
+        '<text x="10" y="20" ' +
+        attributes +
+        '>One</text></svg>'
+      ).firstChild
+    }
+
+    // Tracking is in thousandths of an em, so pixels depend on the font size:
+    equals(importText('letter-spacing="0.1em"').tracking, 100)
+    equals(
+      importText('font-size="20" style="letter-spacing: 2px"').tracking,
+      100
+    )
+    equals(importText('letter-spacing="normal"').tracking, 0)
+  })
+
+  test('Import SVG text with font-style', () => {
+    function importText(attributes) {
+      return paper.project.importSVG(
+        '<svg xmlns="http://www.w3.org/2000/svg">' +
+        '<text x="10" y="20" ' +
+        attributes +
+        '>One</text></svg>'
+      ).firstChild
+    }
+
+    // Paper.js combines the font style with the weight:
+    equals(
+      importText('font-weight="bold" font-style="italic"').fontWeight,
+      'bold italic'
+    )
+    equals(importText('font-style="oblique"').fontWeight, 'oblique')
+    equals(
+      importText('style="font-weight: 600; font-style: italic"').fontWeight,
+      '600 italic'
+    )
+    equals(
+      importText('font-weight="bold" font-style="normal"').fontWeight,
+      'bold'
+    )
+  })
+
+  test('Export and import SVG text with italic font weights', () => {
+    const text = new PointText({
+      point: [10, 20],
+      content: 'One',
+      fontWeight: 'bold italic'
+    })
+    const imported = paper.project.importSVG(text.exportSVG())
+    equals(imported.fontWeight, 'bold italic')
+  })
+
+  test('Import SVG Image', assert => {
+    const done = assert.async()
+    const svg =
+      '<?xml version="1.0" encoding="utf-8"?><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><image style="overflow:visible;enable-background:new    ;" width="300" height="67" id="e0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" transform="matrix(0.2149 0 0 0.2149 304.7706 197.8176)"></image></svg>'
+    const imported = paper.project.importSVG(svg)
+    const raster = imported.children[0]
+    raster.on('load', () => {
+      // The 1 x 1 pixel image is scaled uniformly to fit its box of
+      // 300 x 67, centered in it, and then by the transform matrix:
+      equals(raster.size, new Size(1, 1))
+      equals(
+        raster.matrix,
+        new Matrix(14.3983, 0, 0, 14.3983, 337.0056, 205.01675)
+      )
+      done()
+    })
+  })
+
+  test('Import complex CompoundPath and clone', () => {
+    const svg =
+      '<svg xmlns="http://www.w3.org/2000/svg"><path fill="red" d="M4,14h20v-2H4V14z M15,26h7v-2h-7V26z M15,22h9v-2h-9V22z M15,18h9v-2h-9V18z M4,26h9V16H4V26z M28,10V6H0v22c0,0,0,4,4,4 h25c0,0,3-0.062,3-4V10H28z M4,30c-2,0-2-2-2-2V8h24v20c0,0.921,0.284,1.558,0.676,2H4z"/></svg>'
+    const item = paper.project.importSVG(svg)
+    equals(item.clone(), item, null, { cloned: true })
+  })
+
+  test('Import SVG without insertion', () => {
+    const svg = createSVG('path', { d: '' })
+    let imported = paper.project.importSVG(svg, { insert: true })
+    equals(() => imported.parent === paper.project.activeLayer, true)
+    imported = paper.project.importSVG(svg, { insert: false })
+    equals(() => imported.parent === null, true)
+  })
+
+  test('Import SVG switch', assert => {
+    const done = assert.async()
+    const svg =
+      '<svg xmlns="http://www.w3.org/2000/svg"><switch><line x1="0" x2="10" y1="0" y2="10" fill="none"></line></switch></svg>'
+    paper.project.importSVG(svg, {
+      onLoad(item) {
+        equals(item.className, 'Group')
+        equals(item.children.length, 1)
+        equals(item.firstChild.className, 'Group')
+        equals(item.firstChild.children.length, 1)
+        equals(
+          item.firstChild.firstChild,
+          new Path([new Point(0, 0), new Point(10, 10)])
+        )
+        done()
+      }
+    })
+  })
+
+  test('Import SVG Image through <use>', assert => {
+    const done = assert.async()
+    const canvas = CanvasProvider.getCanvas(4, 2)
+    const url = canvas.toDataURL()
+    const image = '<image xlink:href="' + url + '" width="20" height="10"'
+
+    const uses = paper.project.importSVG(
+      '<svg xmlns="http://www.w3.org/2000/svg"' +
+      ' xmlns:xlink="http://www.w3.org/1999/xlink">' +
+      '<defs>' +
+      image +
+      ' id="image"/></defs>' +
+      '<use xlink:href="#image" x="5" y="5"/>' +
+      '<use xlink:href="#image" x="40" y="5"' +
+      ' transform="rotate(90 50 10)"/></svg>'
+    )
+
+    const // The same images, written out where the <use> elements place them:
+      inline = paper.project.importSVG(
+        '<svg xmlns="http://www.w3.org/2000/svg"' +
+        ' xmlns:xlink="http://www.w3.org/1999/xlink">' +
+        image +
+        ' x="5" y="5"/>' +
+        '<g transform="rotate(90 50 10)">' +
+        image +
+        ' x="40" y="5"/>' +
+        '</g></svg>'
+      )
+
+    const rasters = uses.getItems({ class: Raster }).concat(
+      inline.getItems({ class: Raster })
+    )
+
+    let loaded = 0
+    rasters.forEach(raster => {
+      raster.on('load', () => {
+        if (++loaded === rasters.length) {
+          equals(
+            rasters[0].bounds,
+            new Rectangle(5, 5, 20, 10),
+            'first <use> bounds'
+          )
+          equals(rasters[0].bounds, rasters[2].bounds, 'first <use>')
+          equals(rasters[1].bounds, rasters[3].bounds, 'second <use>')
+          equals(rasters[0].size, new Size(4, 2), 'raster.size')
+          done()
+        }
+      })
+    })
+  })
+
+  test('Import SVG Image keeps its pixels (#1963)', assert => {
+    const done = assert.async(),
+      // A 4 x 2 pixel image with a red pixel at 3, 1:
+      canvas = CanvasProvider.getCanvas(4, 2),
+      ctx = canvas.getContext('2d')
+    ctx.fillStyle = 'red'
+    ctx.fillRect(3, 1, 1, 1)
+    const url = canvas.toDataURL()
+
+    const imported = paper.project.importSVG(
+      '<svg xmlns="http://www.w3.org/2000/svg"' +
+      ' xmlns:xlink="http://www.w3.org/1999/xlink">' +
+      '<image xlink:href="' +
+      url +
+      '" x="10" y="20" width="2"' +
+      ' height="1"/>' +
+      '<image xlink:href="' +
+      url +
+      '" x="10" y="20"/></svg>'
+    )
+
+    const scaled = imported.children[0]
+    const natural = imported.children[1]
+    let loaded = 0
+
+    function onLoad() {
+      if (++loaded === 2) {
+        // The image keeps its 4 x 2 pixels, scaled to the given size:
+        equals(scaled.size, new Size(4, 2), 'scaled.size')
+        equals(
+          scaled.bounds,
+          new Rectangle(10, 20, 2, 1),
+          'scaled.bounds'
+        )
+        equals(
+          scaled.getPixel(3, 1),
+          new Color(1, 0, 0, 1),
+          'scaled pixel'
+        )
+        // Without a size, the image is shown at its own size:
+        equals(
+          natural.bounds,
+          new Rectangle(10, 20, 4, 2),
+          'natural.bounds'
+        )
+        done()
+      }
+    }
+
+    scaled.on('load', onLoad)
+    natural.on('load', onLoad)
+  })
+
+  test('Import SVG Image with crossOrigin (#1094)', assert => {
+    const done = assert.async()
+    const canvas = CanvasProvider.getCanvas(4, 2)
+
+    const svg = (
+      '<svg xmlns="http://www.w3.org/2000/svg"' +
+      ' xmlns:xlink="http://www.w3.org/1999/xlink">' +
+      '<image xlink:href="' +
+      canvas.toDataURL() +
+      '" id="image"' +
+      ' x="10" y="20"/>' +
+      '<use xlink:href="#image" x="5" y="5"/></svg>'
+    )
+
+    const rasters = paper.project
+      .importSVG(svg, { crossOrigin: 'anonymous' })
+      .getItems({ class: Raster })
+
+    let loaded = 0
+    // Both the <image> and the raster imported again for <use> get it, and
+    // pass it on to their image elements:
+    equals(rasters.length, 2, 'rasters.length')
+    rasters.forEach((raster, i) => {
+      equals(raster.crossOrigin, 'anonymous', i + ': raster.crossOrigin')
+      equals(
+        raster.image.crossOrigin,
+        'anonymous',
+        i + ': image.crossOrigin'
+      )
+      raster.on('load', () => {
+        if (++loaded === rasters.length) {
+          // The images still load and are positioned as without it:
+          equals(
+            rasters[0].bounds,
+            new Rectangle(10, 20, 4, 2),
+            '<image> bounds'
+          )
+          equals(
+            rasters[1].bounds,
+            new Rectangle(15, 25, 4, 2),
+            '<use> bounds'
+          )
+          done()
+        }
+      })
+    })
+    // By default, no crossOrigin is set:
+    const raster = paper.project.importSVG(svg).getItem({ class: Raster })
+    equals(raster.crossOrigin, '', 'default: raster.crossOrigin')
+    equals(raster.image.crossOrigin, null, 'default: image.crossOrigin')
+  })
+
+  test('Import SVG Image with preserveAspectRatio (#1129)', assert => {
+    const done = assert.async()
+    const url = CanvasProvider.getCanvas(4, 2).toDataURL()
+
+    const images = {
+      '': '20 x 20',
+      'xMidYMid meet': '20 x 20',
+      'xMinYMin': '20 x 20',
+      'xMaxYMax meet': '20 x 20',
+      'none': '20 x 20',
+      'xMidYMax': '10 x 40',
+      'xMaxYMin': '40 x 10'
+    }
+
+    const svg = Base.each(
+      images,
+      function (size, align) {
+        size = size.split(' x ')
+        this.push(
+          '<image xlink:href="' +
+          url +
+          '" x="10" y="20"' +
+          ' width="' +
+          size[0] +
+          '" height="' +
+          size[1] +
+          '"' +
+          (align ? ' preserveAspectRatio="' + align + '"' : '') +
+          '/>'
+        )
+      },
+      []
+    ).join('')
+
+    const imported = paper.project.importSVG(
+      '<svg xmlns="http://www.w3.org/2000/svg"' +
+      ' xmlns:xlink="http://www.w3.org/1999/xlink">' +
+      svg +
+      '</svg>'
+    )
+
+    const rasters = imported.children
+    let loaded = 0
+
+    function onLoad() {
+      if (++loaded === rasters.length) {
+        // The 4 x 2 image is scaled uniformly to fit its box, and aligned
+        // in it (xMidYMid by default), except with 'none':
+        equals(
+          rasters[0].bounds,
+          new Rectangle(10, 25, 20, 10),
+          'default'
+        )
+        equals(
+          rasters[1].bounds,
+          new Rectangle(10, 25, 20, 10),
+          'xMidYMid'
+        )
+        equals(
+          rasters[2].bounds,
+          new Rectangle(10, 20, 20, 10),
+          'xMinYMin'
+        )
+        equals(
+          rasters[3].bounds,
+          new Rectangle(10, 30, 20, 10),
+          'xMaxYMax'
+        )
+        equals(rasters[4].bounds, new Rectangle(10, 20, 20, 20), 'none')
+        equals(
+          rasters[5].bounds,
+          new Rectangle(10, 55, 10, 5),
+          'xMidYMax'
+        )
+        equals(
+          rasters[6].bounds,
+          new Rectangle(30, 20, 20, 10),
+          'xMaxYMin'
+        )
+        done()
+      }
+    }
+
+    rasters.forEach(raster => {
+      raster.on('load', onLoad)
+    })
+  })
+
+  test('Import SVG string with leading line-breaks', () => {
+    const svg =
+      '\n<?xml version="1.0" encoding="utf-8"?>\n<!-- Some Comment  -->\n<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n  <rect fill="red" width="100" height="100"/>\n</svg>\n'
+    const imported = paper.project.importSVG(svg)
+    equals(() => imported !== null, true)
+    equals(imported.children.length, 1)
+    equals(
+      imported.firstChild,
+      new Shape.Rectangle({
+        size: [100, 100],
+        fillColor: 'red'
+      })
+    )
+  })
+
+  test('Import SVG <use> with the styles of its place (#2090)', () => {
+    function getStyles(content) {
+      const imported = paper.project.importSVG(
+        '<svg xmlns="http://www.w3.org/2000/svg"' +
+        ' xmlns:xlink="http://www.w3.org/1999/xlink">' +
+        content +
+        '</svg>',
+        { insert: false }
+      )
+      return imported.getItems({ class: PathItem }).map(path => {
+        // Browsers produce colors with alpha, so compare the CSS values:
+        const fill = path.fillColor,
+          stroke = path.strokeColor
+        return [fill && fill.toCSS(true), stroke && stroke.toCSS(true)]
+      })
+    }
+
+    // As in SVG, the referenced element inherits the styles of the <use>
+    // element, and its own styles win:
+    const defs = (
+      '<defs><path id="path" d="M0,0h10v10z"/>' +
+      '<path id="blue" d="M0,0h10v10z" fill="blue"/></defs>'
+    )
+    equals(
+      getStyles(
+        defs +
+        '<g fill="red" stroke="red">' +
+        '<use xlink:href="#path"/></g>'
+      ),
+      [['#ff0000', '#ff0000']],
+      'styles of the parent'
+    )
+    equals(
+      getStyles(defs + '<use xlink:href="#path" fill="green"/>'),
+      [['#008000', null]],
+      'styles of the <use> element'
+    )
+    equals(
+      getStyles(defs + '<use xlink:href="#path"/>'),
+      [['#000000', null]],
+      'the default fill'
+    )
+    equals(
+      getStyles(defs + '<g fill="red"><use xlink:href="#blue"/></g>'),
+      [['#0000ff', null]],
+      'own styles'
+    )
+    equals(
+      getStyles(
+        defs +
+        '<g fill="red"><use xlink:href="#path"/></g>' +
+        '<g fill="green"><use xlink:href="#path"/></g>'
+      ),
+      [['#ff0000', null], ['#008000', null]],
+      'two places'
+    )
+    // Circular references are skipped, directly and through other elements:
+    const path = '<path d="M0,0h10v10z"/>'
+    equals(
+      getStyles(
+        '<defs><g id="a">' +
+        path +
+        '<use xlink:href="#a"/></g>' +
+        '</defs><use xlink:href="#a"/>'
+      ),
+      [['#000000', null]],
+      'circular reference'
+    )
+    equals(
+      getStyles(
+        '<defs><g id="a">' +
+        path +
+        '<use xlink:href="#b"/></g>' +
+        '<g id="b"><use xlink:href="#a"/></g></defs>' +
+        '<use xlink:href="#a"/>'
+      ),
+      [['#000000', null]],
+      'indirect circular reference'
+    )
+  })
+
+  test('Import SVG with references to later definitions (#1146, #1884)', () => {
+    function importWith(content) {
+      return paper.project.importSVG(
+        '<svg xmlns="http://www.w3.org/2000/svg"' +
+        ' xmlns:xlink="http://www.w3.org/1999/xlink">' +
+        content +
+        '</svg>'
+      )
+    }
+
+    function getStops(color) {
+      return color.gradient.stops.map(stop => [
+        stop.color.toCSS(true),
+        stop.offset
+      ])
+    }
+
+    // A gradient that links to a gradient defined after it:
+    const derived = '<linearGradient id="derived" xlink:href="#base"/>'
+
+    const base = (
+      '<linearGradient id="base"><stop offset="5%" stop-color="green"/>' +
+      '<stop offset="95%" stop-color="gold"/></linearGradient>'
+    )
+
+    const rect = '<rect fill="url(#derived)" width="100" height="100"/>'
+    let imported = importWith('<defs>' + derived + base + '</defs>' + rect)
+    equals(getStops(imported.firstChild.fillColor), [
+      ['#008000', 0.05],
+      ['#ffd700', 0.95]
+    ])
+    equals(
+      imported,
+      importWith('<defs>' + base + derived + '</defs>' + rect)
+    )
+
+    // A fill that references a gradient after it, outside of <defs>:
+    imported = importWith(rect + derived + base)
+    equals(getStops(imported.firstChild.fillColor), [
+      ['#008000', 0.05],
+      ['#ffd700', 0.95]
+    ])
+    equals(imported, importWith(base + derived + rect))
+
+    // <use> elements that reference a symbol and an element after them:
+    const uses = (
+        '<use xlink:href="#symbol" x="10" y="20"/>' +
+        '<use xlink:href="#circle" x="10" y="20"/>'
+      ),
+      symbol = '<symbol id="symbol"><rect width="10" height="10"/></symbol>',
+      circle = '<circle id="circle" cx="5" cy="5" r="5"/>'
+    imported = importWith(uses + symbol + circle)
+    equals(() => imported.children.length, 3)
+    equals(() => imported.children[0].definition.item.children.length, 1)
+    equals(imported.children[0].bounds, new Rectangle(10, 20, 10, 10))
+    equals(imported.children[1].bounds, new Rectangle(10, 20, 10, 10))
+    equals(imported.children[2].bounds, new Rectangle(0, 0, 10, 10))
+    equals(imported, importWith(symbol + uses + circle))
+  })
+
+  test('Import SVG gradient with a link to an inexistent gradient', () => {
+    // An invalid link is ignored, and the gradient uses its own stops:
+    const gradient = (
+        '<linearGradient id="gradient"%s>' +
+        '<stop offset="0" stop-color="red"/>' +
+        '<stop offset="1" stop-color="blue"/></linearGradient>'
+      ),
+      rect = '<rect fill="url(#gradient)" width="100" height="100"/>'
+    function importWith(href) {
+      return paper.project.importSVG(
+        '<svg xmlns="http://www.w3.org/2000/svg"' +
+        ' xmlns:xlink="http://www.w3.org/1999/xlink"><defs>' +
+        gradient.replace('%s', href) +
+        '</defs>' +
+        rect +
+        '</svg>'
+      )
+    }
+    const imported = importWith(' xlink:href="#inexistent"')
+    equals(() => imported.firstChild.fillColor.gradient.stops.length, 2)
+    equals(imported, importWith(''))
+  })
+
+  test('Import SVG with numeric ids (#1754)', () => {
+    const imported = paper.project.importSVG(
+      '<svg xmlns="http://www.w3.org/2000/svg"' +
+      ' xmlns:xlink="http://www.w3.org/1999/xlink">' +
+      '<g id="2"><rect width="10" height="10"/></g>' +
+      '<rect id="3a" width="10" height="10"/>' +
+      '<use xlink:href="#2" x="20"/></svg>'
+    )
+    equals(() => imported.children.length, 3)
+    equals(() => imported.children[0].name, null)
+    equals(() => imported.children[1].name, '3a')
+    // References by numeric ids still work:
+    equals(imported.children[2].bounds, new Rectangle(20, 0, 10, 10))
+  })
+
+  test('Import SVG with SVG 2 href attributes (#1329)', assert => {
+    const done = assert.async(),
+      url = CanvasProvider.getCanvas(4, 2).toDataURL(),
+      svg = (
+        '<svg xmlns="http://www.w3.org/2000/svg"' +
+        ' xmlns:xlink="http://www.w3.org/1999/xlink"><defs>' +
+        '<linearGradient id="base">' +
+        '<stop offset="0" stop-color="red"/>' +
+        '<stop offset="1" stop-color="blue"/></linearGradient>' +
+        '<linearGradient id="derived" %href="#base">' +
+        '<stop offset="0" stop-color="green"/>' +
+        '<stop offset="1" stop-color="gold"/></linearGradient>' +
+        '<symbol id="symbol"><rect width="10" height="10"/></symbol>' +
+        '</defs>' +
+        '<rect fill="url(#derived)" width="100" height="100"/>' +
+        '<use %href="#symbol" x="10" y="20"/>' +
+        '<image %href="' +
+        url +
+        '" x="10" y="20"/></svg>'
+      )
+    function importWith(href) {
+      return paper.project.importSVG(svg.replace(/%href/g, href))
+    }
+
+    const plain = importWith('href')
+    const xlink = importWith('xlink:href')
+
+    const // Plain href takes precedence over xlink:href:
+      both = importWith('xlink:href="#inexistent" href')
+
+    let loaded = 0
+
+    // The linked gradient's stops replace the gradient's own ones:
+    equals(
+      plain.children[0].fillColor.gradient.stops[0].color,
+      new Color('red')
+    )
+    equals(() => plain.children[1].definition.item.children.length, 1)
+    equals(plain.children[1].bounds, new Rectangle(10, 20, 10, 10))
+    equals(() => plain.children[2].source, url)
+
+    function onLoad() {
+      if (++loaded === 3) {
+        equals(plain.children[2].bounds, new Rectangle(10, 20, 4, 2))
+        equals(plain, xlink)
+        equals(both, xlink)
+        done()
+      }
+    }
+
+    plain.children[2].on('load', onLoad)
+    xlink.children[2].on('load', onLoad)
+    both.children[2].on('load', onLoad)
+  })
+
+  test('Import SVG <use> of a group with a transform (#978)', () => {
+    function importWith(content) {
+      return paper.project.importSVG(
+        '<svg xmlns="http://www.w3.org/2000/svg"' +
+        ' xmlns:xlink="http://www.w3.org/1999/xlink">' +
+        '<defs><g id="group"><rect width="20" height="10"/></g>' +
+        '<rect id="rect" width="20" height="10"/></defs>' +
+        content +
+        '</svg>'
+      )
+    }
+
+    // In SVG, x / y on <use> translate before its transform: rotating the
+    // rectangle [10, 0, 20, 10] by 90° around [50, 50] gives [90, 10, 10, 20].
+    const imported = importWith(
+        '<use xlink:href="#group" x="10"' +
+        ' transform="rotate(90 50 50)"/>'
+      ),
+      use = imported.lastChild
+    equals(use.bounds, new Rectangle(90, 10, 10, 20))
+    // The same as a group with the equivalent transform:
+    equals(
+      use.firstChild,
+      importWith(
+        '<g transform="rotate(90 50 50)' +
+        ' translate(10 0)"><rect width="20" height="10"/></g>'
+      ).lastChild.firstChild
+    )
+    // The same as a <use> of a single item:
+    equals(
+      use.bounds,
+      importWith(
+        '<use xlink:href="#rect" x="10"' +
+        ' transform="rotate(90 50 50)"/>'
+      ).lastChild.bounds
+    )
+    // Styles on <use> are inherited by the group's content:
+    equals(
+      importWith('<use xlink:href="#group" fill="red"/>').lastChild.firstChild
+        .fillColor,
+      new Color('red')
+    )
+  })
+
+  test('Import SVG masks as clip masks (#1916)', () => {
+    function importMasked(mask, reference) {
+      return paper.project.importSVG(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">' +
+        '<mask id="mask"' +
+        mask +
+        '</mask>' +
+        '<circle cx="100" cy="100" r="80" fill="red" ' +
+        reference +
+        '/></svg>'
+      ).firstChild
+    }
+
+    function getWarnings(mask, reference) {
+      // Collect the warnings about approximated masks, which only reach the
+      // console:
+      const warn = console.warn,
+        warnings = []
+      console.warn = message => {
+        warnings.push(message)
+      }
+      let item
+      try {
+        item = importMasked(mask, reference)
+      } finally {
+        console.warn = warn
+      }
+      equals(() => item.clipped, true)
+      equals(() => item.firstChild.clipMask, true)
+      equals(() => item.lastChild.bounds, new Rectangle(20, 20, 160, 160))
+      return warnings
+    }
+
+    const white = '><rect x="50" y="40" width="100" height="120" fill="white"/>'
+    // Masks of solid white shapes, referenced as attribute and as style:
+    equals(getWarnings(white, 'mask="url(#mask)"'), [])
+    equals(getWarnings(white, 'style="mask: url(#mask)"'), [])
+    equals(
+      importMasked(white, 'mask="url(#mask)"').firstChild.bounds,
+      new Rectangle(50, 40, 100, 120)
+    )
+    // Opaque shapes in a mask of the 'alpha' type, inherited colors:
+    equals(
+      getWarnings(
+        ' mask-type="alpha" fill="red"><circle r="50"/>' +
+        '<rect width="50" height="50"/>',
+        'mask="url(#mask)"'
+      ),
+      []
+    )
+    // Any other mask is approximated, with a warning:
+    const warning = `Approximating SVG mask 'mask' as a clipping mask.`
+    equals(
+      getWarnings(
+        '><rect width="100" height="100" fill="gray"/>',
+        'mask="url(#mask)"'
+      ),
+      [warning]
+    )
+    equals(
+      getWarnings(
+        '><rect width="100" height="100" fill="white"/>' +
+        '<circle r="20" fill="black"/>',
+        'mask="url(#mask)"'
+      ),
+      [warning]
+    )
+    equals(
+      getWarnings(
+        '><rect width="100" height="100" fill="white"' +
+        ' fill-opacity="0.5"/>',
+        'mask="url(#mask)"'
+      ),
+      [warning]
+    )
+  })
+
+  test('Import SVG data-* attributes as item.data (#1227)', () => {
+    function importData(attributes) {
+      const item = paper.project.importSVG(
+        '<svg xmlns="http://www.w3.org/2000/svg">' +
+        '<rect width="10" height="10" ' +
+        attributes +
+        '/></svg>'
+      ).lastChild
+      item.parent.remove()
+      return item.data
+    }
+    // Named as in the element's dataset, with string values:
+    equals(
+      importData('data-shape-id="7" data-label="Door"'),
+      { shapeId: '7', label: 'Door' },
+      'data-* attributes'
+    )
+    // Paper.js's own data takes precedence, and its blend modes aren't data:
+    equals(
+      importData(
+        'data-shape-id="7" data-label="Door" ' +
+        'data-paper-blend-mode="add" ' +
+        'data-paper-data=\'{"label":"Window","count":2}\''
+      ),
+      { shapeId: '7', label: 'Window', count: 2 },
+      'with data-paper-data'
+    )
+    equals(importData(''), {}, 'without data')
+  })
+
+  test('Import and export the SVG class attribute through callbacks', () => {
+    const item = paper.project.importSVG(
+      '<svg xmlns="http://www.w3.org/2000/svg">' +
+      '<g class="shapes"><rect class="door wide" data-label="Door"' +
+      ' width="10" height="10"/>' +
+      '<rect width="10" height="10"/></g></svg>',
+      {
+        processItem({ item, node }) {
+          const className = node.getAttribute('class')
+          if (className) item.data.className = className
+        }
+      }
+    )
+    const group = item.firstChild
+    equals(group.data.className, 'shapes', 'group')
+    equals(
+      group.firstChild.data,
+      { label: 'Door', className: 'door wide' },
+      'rect with data-* attributes'
+    )
+    equals(group.lastChild.data.className, undefined, 'rect without class')
+    const node = item.exportSVG({
+      processNode({ item, node }) {
+        const className = item.data.className
+        if (className) node.setAttribute('class', className)
+      }
+    }).firstChild
+    equals(node.getAttribute('class'), 'shapes', 'exported group')
+    equals(node.firstChild.getAttribute('class'), 'door wide', 'exported rect')
+    equals(node.lastChild.hasAttribute('class'), false, 'without class')
+  })
+
+  test('Import SVG with the deprecated onImport callback', () => {
+    const options = {
+      onImport(node, item, opts) {
+        item.data.className = node.getAttribute('class')
+        item.data.hasOptions = opts === options
+      }
+    }
+    const item = paper.project.importSVG(
+      '<svg xmlns="http://www.w3.org/2000/svg">' +
+      '<rect class="door" width="10" height="10"/></svg>',
+      options
+    )
+    equals(item.firstChild.data, { className: 'door', hasOptions: true })
+  })
+
+  test('Import SVG cleans up after errors', () => {
+    const svg =
+      '<svg xmlns="http://www.w3.org/2000/svg" data-paper-data="invalid JSON"><rect width="100" height="100"/></svg>'
+    const settings = paper.settings,
+      count = document.getElementsByTagName('svg').length
+    equals(() => {
+      try {
+        paper.project.importSVG(svg)
+      } catch {
+        return true
+      }
+      return false
+    }, true)
+    equals(() => document.getElementsByTagName('svg').length, count)
+    equals(() => settings.applyMatrix, true)
+    equals(() => settings.insertItems, true)
+  })
+
+  if (!isNodeContext) {
+    // JSDom doesn't apply style sheets to SVG, nor does it run scripts, so
+    // these can only be tested in the browser.
+    test('Import SVG with embedded style sheet', () => {
+      const svg =
+        '<svg xmlns="http://www.w3.org/2000/svg"><style>rect { fill: red; }</style><rect width="100" height="100"/></svg>'
+      const imported = paper.project.importSVG(svg, {
+        expandShapes: true
+      })
+      equals(imported.lastChild.fillColor, new Color('red'))
+    })
+
+    test(`Import SVG is not affected by the page's style sheets`, () => {
+      const style = document.createElement('style')
+      style.textContent = 'rect.page-styled { fill: red; }'
+      document.head.appendChild(style)
+      const svg =
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect class="page-styled" width="100" height="100"/></svg>'
+      const imported = paper.project.importSVG(svg, {
+        expandShapes: true
+      })
+      document.head.removeChild(style)
+      equals(() => imported.lastChild.fillColor.toCSS(true), '#000000')
+    })
+
+    test('Import SVG does not execute embedded scripts (#2100)', assert => {
+      const done = assert.async()
+      const payload =
+        '<foreignObject width="1" height="1"><img xmlns="http://www.w3.org/1999/xhtml" src="data:invalid" onerror="window.svgImportExecuted = true"/></foreignObject>'
+      window.svgImportExecuted = false
+      try {
+        // Invalid data-paper-data throws during import:
+        paper.project.importSVG(
+          '<svg xmlns="http://www.w3.org/2000/svg" data-paper-data="invalid JSON">' +
+          payload +
+          '</svg>'
+        )
+      } catch {}
+      paper.project.importSVG(
+        '<svg xmlns="http://www.w3.org/2000/svg">' + payload + '</svg>'
+      )
+      setTimeout(() => {
+        equals(() => window.svgImportExecuted, false)
+        done()
+      }, 100)
+    })
+  }
+
+  function importSVG(assert, url, message, options) {
+    const done = assert.async()
+    paper.project.importSVG(url, {
+      applyMatrix: false,
+
+      onLoad(item, svg) {
+        if (!message) {
+          message = (
+            'The imported SVG "' +
+            url +
+            '" should visually be ' +
+            'the same as the rasterized original SVG data.'
+          )
+        }
+        compareSVG(done, item, svg, message, options)
+      },
+
+      onError(error) {
+        const ok = !!(options && options.expectError)
+        push(
+          ok,
+          false,
+          !ok,
+          ok && message || (
+            'Loading SVG from a valid URL should not give an error: ' +
+            error
+          )
+        )
+        done()
+      }
+    })
+  }
+
+  if (!isNodeContext) {
+    // JSDom does not have SVG rendering, so we can't test there.
+    const svgFiles = {
+      'butterfly': { tolerance: 1e-2 },
+      'viewbox': { tolerance: 1e-2 },
+      'clipping': {},
+      'arcs': {},
+      'symbol': {},
+      'symbols': {},
+      'blendModes': {},
+      'gradients-1': {},
+      'gradients-2': {},
+      'gradients-3': {},
+      'gradients-4': {},
+      'rectangles': {}
+    }
+    Base.each(svgFiles, (options, name) => {
+      if (options) {
+        name += '.svg'
+        test('Import ' + name, assert => {
+          importSVG(assert, 'assets/' + name, null, options)
+        })
+      }
+    })
+
+    test(
+      'Import SVG Image with preserveAspectRatio renders as in browsers ' +
+      '(#1129)',
+      assert => {
+        const done = assert.async(),
+          // A 40 x 20 image with two differently colored halves:
+          canvas = CanvasProvider.getCanvas(40, 20),
+          ctx = canvas.getContext('2d')
+        ctx.fillStyle = 'red'
+        ctx.fillRect(0, 0, 20, 20)
+        ctx.fillStyle = 'blue'
+        ctx.fillRect(20, 0, 20, 20)
+        const image = '<image xlink:href="' + canvas.toDataURL() + '"'
+
+        const svg = (
+          '<svg xmlns="http://www.w3.org/2000/svg"' +
+          ' xmlns:xlink="http://www.w3.org/1999/xlink"' +
+          ' width="200" height="200">' +
+          '<rect width="200" height="200" fill="white"/>' +
+          image +
+          ' width="80" height="80"/>' +
+          image +
+          ' x="100" width="80" height="80"' +
+          ' preserveAspectRatio="xMinYMax meet"/>' +
+          image +
+          ' y="100" width="80" height="80"' +
+          ' preserveAspectRatio="none"/>' +
+          image +
+          ' x="100" y="100" width="100" height="20"' +
+          ' preserveAspectRatio="xMaxYMid"/>' +
+          '</svg>'
+        )
+
+        const imported = paper.project.importSVG(svg)
+        const rasters = imported.getItems({ class: Raster })
+        let loaded = 0
+        rasters.forEach(raster => {
+          raster.on('load', () => {
+            if (++loaded === rasters.length)
+              compareSVG(done, imported, svg, null, {
+                tolerance: 1e-2
+              })
+          })
+        })
+      }
+    )
+
+    test('Import SVG masks of white shapes render as in browsers (#1916)', assert => {
+      const svg = (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="200"' +
+        ' height="200">' +
+        '<rect width="200" height="200" fill="white"/>' +
+        '<mask id="mask"><rect x="20" y="30" width="80" height="60"' +
+        ' fill="white"/><circle cx="120" cy="120" r="50"' +
+        ' fill="#fff"/></mask>' +
+        '<g mask="url(#mask)"><circle cx="100" cy="100" r="90"' +
+        ' fill="red"/><rect x="40" y="40" width="120" height="40"' +
+        ' fill="blue"/></g>' +
+        '<rect x="50" y="10" width="120" height="120" fill="green"' +
+        ' transform="rotate(10 100 100)" style="mask: url(#mask)"/>' +
+        '</svg>'
+      )
+      compareSVG(
+        assert.async(),
+        paper.project.importSVG(svg),
+        svg,
+        null,
+        { tolerance: 1e-2 }
+      )
+    })
+
+    test('Import inexistent file', assert => {
+      importSVG(
+        assert,
+        'assets/inexistent.svg',
+        'Load an inexistent SVG file should trigger an error',
+        { expectError: true }
+      )
+    })
+  }
+})

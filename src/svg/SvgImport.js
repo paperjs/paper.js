@@ -77,6 +77,9 @@ new function() {
                     value ? value.split(/[\s,]+/g).map(parseLength) : []
                 : type === 'color' ? getDefinition(value, options) || value
                 : type === 'lookup' ? lookup[value]
+                // Only the order of fill and stroke matters, without markers:
+                : type === 'order' ? /^(markers\s+)?stroke\b/.test(value)
+                    ? 'stroke' : 'fill'
                 : value;
     }
 
@@ -86,7 +89,9 @@ new function() {
         var nodes = node.childNodes,
             isClip = type === 'clippath' || type === 'mask',
             isDefs = type === 'defs',
-            item = new Group(),
+            // Paper.js marks the groups of its layers, see SvgExport:
+            ctor = node.hasAttribute('data-paper-layer') ? Layer : Group,
+            item = new ctor(),
             project = item._project,
             currentStyle = project._currentStyle,
             parentSize = rootSize,
@@ -877,18 +882,25 @@ new function() {
                 // importGroup() applies them itself, see there for why:
                 if (isElement && importer !== importGroup)
                     item = applyAttributes(item, node, options, isRoot);
-                // Support onImportItem callback, to provide mechanism to handle
-                // special attributes (e.g. inkscape:transform-center)
+                var data = isElement && getData(node);
+                if (data)
+                    item._data = data;
+                // Support processItem callback, to provide mechanism to handle
+                // special attributes (e.g. inkscape:transform-center). Skip
+                // #document nodes, as their item is their root element's:
                 var onImport = options.onImport,
-                    data = isElement && getData(node);
-                if (onImport)
-                    item = onImport(node, item, options) || item;
+                    processItem = isElement && (options.processItem
+                        // TODO: Remove in 1.0.0? (deprecated October 2026),
+                        // alias with positional arguments:
+                        || onImport && function(arg) {
+                            return onImport(arg.node, arg.item, options);
+                        });
+                if (processItem)
+                    item = processItem({ item: item, node: node }) || item;
                 if (options.expandShapes && item instanceof Shape) {
                     item.remove();
                     item = item.toPath();
                 }
-                if (data)
-                    item._data = data;
             }
         } finally {
             if (container) {
@@ -938,6 +950,8 @@ new function() {
                 item = importNode(node, options, true);
                 if (!options || options.insert !== false) {
                     // TODO: Implement support for multiple Layers on Project.
+                    // 1.0 removes the wrapping group for project imports, so
+                    // the layers become the project's layers.
                     owner._insertItem(undefined, item);
                 }
                 var onLoad = options.onLoad;

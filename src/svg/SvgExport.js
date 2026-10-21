@@ -648,14 +648,23 @@ new function() {
         var exporter = exporters[item._class],
             node = exporter && exporter(item, options);
         if (node) {
-            // Support onExportItem callback, to provide mechanism to handle
+            // Support processNode callback, to provide mechanism to handle
             // special attributes (e.g. inkscape:transform-center)
-            var onExport = options.onExport;
-            if (onExport)
-                node = onExport(item, node, options) || node;
+            var onExport = options.onExport,
+                processNode = options.processNode
+                    // TODO: Remove in 1.0.0? (deprecated October 2026),
+                    // alias with positional arguments:
+                    || onExport && function(arg) {
+                        return onExport(arg.item, arg.node, options);
+                    };
+            if (processNode)
+                node = processNode({ item: item, node: node }) || node;
             var data = JSON.stringify(item._data);
             if (data && data !== '{}' && data !== 'null')
                 node.setAttribute('data-paper-data', data);
+            // Mark layers, so SvgImport can tell them from groups (#483):
+            if (item instanceof Layer)
+                node.setAttribute('data-paper-layer', '');
         }
         return node && applyStyle(item, node, options, isRoot);
     }

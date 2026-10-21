@@ -172,11 +172,8 @@ new function() {
             item._parent = parent;
             item._index = i;
             children.push(item);
-            if (name) {
-                (namedChildren[name] = namedChildren[name] || []).push(item);
-                if (!(name in children))
-                    children[name] = item;
-            }
+            if (name)
+                Base.addNamed(children, namedChildren, name, item);
         }
         owner._children = children;
         owner._namedChildren = namedChildren;
@@ -365,6 +362,13 @@ new function() {
     });
 
     TextItem.inject({
+        // New text takes the project's current text style, when the host set
+        // one, see Project#currentTextStyle:
+        _getCurrentStyle: function _getCurrentStyle(project) {
+            return project._currentTextStyle
+                    || _getCurrentStyle.base.call(this, project);
+        },
+
         // Text items that the host links share one story, in the order of the
         // keys: the first of them to load loads the story and the others,
         // which join it, as an item does that loads again after invalidate():
@@ -390,6 +394,30 @@ new function() {
                 }
                 this._story._items = items;
             }
+        },
+
+        // A loaded text's path loads again into the path it has, so the
+        // scripts that hold it keep it, as children do, see
+        // #_reloadChildren(). Project#invalidate() calls what this returns
+        // once it has unloaded all items, so linked text loads its story
+        // anew:
+        _unload: function _unload() {
+            var path = !this._shell && this.getTextPath(),
+                that = this;
+            _unload.base.call(this);
+            return path && function() {
+                if (that._shell)
+                    that._loadContent();
+                var loaded = that.getTextPath();
+                if (loaded && loaded !== path
+                        && loaded.constructor === path.constructor) {
+                    path._parent = path._index = null;
+                    path.removeChildren();
+                    path.copyContent(loaded);
+                    path.copyAttributes(loaded);
+                    that.setTextPath(path);
+                }
+            };
         },
 
         // The host's layout of the text as the script holds it, also before
@@ -439,6 +467,27 @@ new function() {
     });
 
     Project.inject(/** @lends Project# */{
+        _currentTextStyle: null,
+
+        /**
+         * The style new text items take in a hosted project, in place of
+         * {@link #currentStyle}, when the host sets one: for hosts whose new
+         * text has defaults of its own, such as a black fill without a stroke
+         * whatever new paths take. Paths keep taking the current style.
+         *
+         * @bean
+         * @type Style
+         */
+        getCurrentTextStyle: function() {
+            return this._currentTextStyle;
+        },
+
+        setCurrentTextStyle: function(style) {
+            if (!this._currentTextStyle)
+                this._currentTextStyle = new Style(null, null, this);
+            this._currentTextStyle.set(style);
+        },
+
         // Items that the script changes are no longer as the host has them,
         // see TextItem#_getHostLayout(), until the host takes the changes:
         _changed: function _changed(flags, item) {
@@ -550,14 +599,16 @@ new function() {
             var itemsByKey = this._itemsByKey,
                 keys = columns.keys,
                 names = columns.names || {},
+                reloads = [],
                 that = this;
             whileLoading(this, function() {
                 for (var i = 0, l = keys.length; i < l; i++) {
                     var item = itemsByKey[keys[i]],
                         flags = columns.flags[i];
                     if (item) {
-                        if (flags & 16)
-                            item._unload();
+                        var reload = flags & 16 && item._unload();
+                        if (reload)
+                            reloads.push(reload);
                         if (flags & 32)
                             item._reloadChildren();
                         if ((names[i] || undefined) !== item._name)
@@ -570,6 +621,10 @@ new function() {
                         that._updateSelection(item);
                     }
                 }
+                // What loads again right away, see TextItem#_unload():
+                reloads.forEach(function(reload) {
+                    reload();
+                });
             });
         }
     });

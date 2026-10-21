@@ -22,13 +22,16 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Lint
         run: pnpm jshint
+      # The tests follow the style of dito.js, which the sources follow later:
+      - name: Lint the tests
+        run: pnpm eslint
       # Test the built library, as that's what gets published:
       - name: Build
         run: pnpm minify
       - name: Test
         run: pnpm test:node
       - name: Test the hosted build
-        run: pnpm test:node --build=hosted
+        run: PAPER_BUILD=hosted pnpm test:node
       # Moves the second operand of every boolean operation in the tests and
       # issue cases by tiny amounts, and fails if results got less stable or
       # less correct than in test/booleans/baseline.json:
@@ -50,9 +53,42 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y fonts-liberation
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      # Runs the sources directly, through load.js:
-      - name: Test in Chrome
-        run: pnpm test:chrome
+      # Cache Playwright's Chromium by the Playwright version, which pins it:
+      - name: Get the Playwright version
+        id: playwright
+        run: echo "version=$(pnpm exec playwright --version | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - name: Install Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install chromium
+      # Runs the library built from the sources, see test/vite-plugin-paper.mjs:
+      - name: Test in Chromium
+        run: pnpm test:browser
+
+  # Compares what the library draws with the reference screenshots, in
+  # Playwright's Docker image, as `pnpm test:screenshots` does locally:
+  screenshots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Compare the screenshots
+        run: pnpm test:screenshots
+      # The screenshots that differ, with their diffs, for review:
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: screenshots
+          path: .vitest/attachments
 
   # Generate paper.d.ts from the docs and compile the TypeScript definition
   # test against it, so changes to the docs can't break the typings unnoticed:

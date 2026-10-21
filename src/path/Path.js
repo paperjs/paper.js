@@ -161,10 +161,22 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     /**
-     * The segments contained within the path.
+     * The segments contained within the path. Segments that define a
+     * {@link Segment#name} can also be accessed by name.
      *
      * @bean
      * @type Segment[]
+     *
+     * @example {@paperscript}
+     * // Accessing segments by name:
+     * var path = new Path([20, 80], [50, 20], [80, 80]);
+     * path.strokeColor = 'black';
+     *
+     * // Set the name of the top segment:
+     * path.segments[1].name = 'top';
+     *
+     * // The segment can be accessed by name:
+     * path.segments['top'].point.y += 20;
      */
     getSegments: function() {
         return this._segments;
@@ -172,7 +184,13 @@ var Path = PathItem.extend(/** @lends Path# */{
 
     setSegments: function(segments) {
         var fullySelected = this.isFullySelected(),
-            length = segments && segments.length;
+            length = segments && segments.length,
+            named = this._namedSegments;
+        if (named) {
+            for (var name in named)
+                delete this._segments[name];
+            this._namedSegments = null;
+        }
         this._segments.length = 0;
         this._segmentSelection = 0;
         // Calculate new curves next time we call getCurves()
@@ -398,6 +416,9 @@ var Path = PathItem.extend(/** @lends Path# */{
                 segment = segs[i] = segment.clone();
             segment._path = this;
             segment._index = index + i;
+            // Set the name again to add it to the segments' name lookup.
+            if (segment._name)
+                segment.setName(segment._name);
             // If parts of this segment are selected, adjust the internal
             // _segmentSelection now
             if (segment._selection)
@@ -753,6 +774,9 @@ var Path = PathItem.extend(/** @lends Path# */{
             var segment = removed[i];
             if (segment._selection)
                 this._updateSelection(segment, segment._selection, 0);
+            if (segment._name)
+                Base.removeNamed(segments, this._namedSegments, segment._name,
+                        segment);
             // Clear the indices and path references of the removed segments
             segment._index = segment._path = null;
         }
@@ -790,7 +814,9 @@ var Path = PathItem.extend(/** @lends Path# */{
     clear: '#removeSegments',
 
     /**
-     * Checks if any of the curves in the path have curve handles set.
+     * Checks if any of the curves in the path have curve handles set. Handles
+     * of which both coordinates are 0 within a tolerance of 1e-12 count as not
+     * set, see {@link Point#isZero()}.
      *
      * @return {Boolean} {@true if the path has curve handles set}
      * @see Segment#hasHandles()

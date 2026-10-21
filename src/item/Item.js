@@ -140,6 +140,12 @@ new function() { // Injection scope for various item event handlers
      * @return {Boolean} {@true if the properties were successfully be applied,
      * or if none were provided}
      */
+    // The style a new item takes: the project's current style, see
+    // Project#currentStyle.
+    _getCurrentStyle: function(project) {
+        return project._currentStyle;
+    },
+
     _initialize: function(props, point) {
         // Define this Item's unique id. But allow the creation of internally
         // used paths with no ids.
@@ -162,7 +168,7 @@ new function() { // Injection scope for various item event handlers
         if (point)
             matrix.translate(point);
         matrix._owner = this;
-        this._style = new Style(project._currentStyle, this, project);
+        this._style = new Style(this._getCurrentStyle(project), this, project);
         // Do not add to the project if it's an internal path,  or if
         // props.insert  or settings.insertItems is false.
         if (internal || hasProps && props.insert == false
@@ -355,14 +361,8 @@ new function() { // Injection scope for various item event handlers
             throw new Error(
                     'Names consisting only of numbers are not supported.');
         var owner = this._getOwner();
-        if (name && owner) {
-            var children = owner._children,
-                namedChildren = owner._namedChildren;
-            (namedChildren[name] = namedChildren[name] || []).push(this);
-            // Only set this item if there isn't one under the same name already
-            if (!(name in children))
-                children[name] = this;
-        }
+        if (name && owner)
+            Base.addNamed(owner._children, owner._namedChildren, name, this);
         this._name = name || undefined;
         this._changed(/*#=*/ChangeFlag.ATTRIBUTE);
     },
@@ -2754,6 +2754,12 @@ new function() { // Injection scope for hit-test functions shared with project
      * @option [options.reduceAttributes=true] {Boolean} wether to only include
      *     style attributes in the SVG output that differ from their parents,
      *     or to always include them (much faster but leading to redundancies).
+     * @option [options.processNode] {Function} the function to process the
+     *     SVG node made for each exported item, receiving an object with the
+     *     `item` and its `node`: It can change the node, e.g. to add attributes
+     *     that Paper.js doesn't export, or return a node to replace it with. It
+     *     is called before the item's name, style, visibility and data are set
+     *     on the node, which replace attributes of the same names.
      *
      * @param {Object} [options] the export options
      * @return {SVGElement|String} the item converted to an SVG node or a
@@ -2768,6 +2774,11 @@ new function() { // Injection scope for hit-test functions shared with project
      * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
      * the `<use>` elements that place them as {@link SymbolItem} items. The
      * styles that `<use>` elements inherit don't reach the symbols' content.
+     *
+     * The layers in SVG content that Paper.js exported come back as
+     * {@link Layer} items inside the imported group. To make the layers of a
+     * project's SVG the layers of a project again, add them to it with
+     * `item.children.slice().forEach(project.addLayer, project)`.
      *
      * URLs are fetched as they are, so validate URLs that come from untrusted
      * sources first, especially on servers, where they could reach internal
@@ -2793,6 +2804,13 @@ new function() { // Injection scope for hit-test functions shared with project
      * @option [options.applyMatrix={@link PaperScope#settings}.applyMatrix]
      *     {Boolean} whether the imported items should have their transformation
      *     matrices applied to their contents or not
+     * @option [options.processItem] {Function} the function to process the
+     *     item made for each imported SVG element, receiving an object with
+     *     the `item` and its `node`: It can read attributes that Paper.js
+     *     doesn't import, or return an item to replace it with. It is called
+     *     after the element's attributes and data are applied to the item, so
+     *     it can extend `item.data`. A replacement item doesn't receive them:
+     *     copy them over from `item` as needed.
      *
      * @param {SVGElement|String} svg the SVG content to import, either as a SVG
      *     DOM node, a string containing SVG content, or a string describing the
@@ -2883,8 +2901,10 @@ new function() { // Injection scope for hit-test functions shared with project
                 var item = items[i],
                     id = item && item._id;
                 // If an item was inserted already, it must be included multiple
-                // times in the items array. Only insert once.
-                if (!item || inserted[id]) {
+                // times in the items array. Only insert once. Also leave out
+                // this item and its ancestors, which would create a cycle:
+                if (!item || inserted[id] || item === this
+                        || this.isDescendant(item)) {
                     items.splice(i, 1);
                 } else {
                     // Notify parent of change. Don't notify item itself yet,
@@ -2893,6 +2913,8 @@ new function() { // Injection scope for hit-test functions shared with project
                     inserted[id] = true;
                 }
             }
+            if (!items.length)
+                return null;
             Base.splice(children, items, index, 0);
             var project = this._project,
                 // See #_remove() for an explanation of this:
@@ -3081,28 +3103,9 @@ new function() { // Injection scope for hit-test functions shared with project
      */
     _removeNamed: function() {
         var owner = this._getOwner();
-        if (owner) {
-            var children = owner._children,
-                namedChildren = owner._namedChildren,
-                name = this._name,
-                namedArray = namedChildren[name],
-                index = namedArray ? namedArray.indexOf(this) : -1;
-            if (index !== -1) {
-                // Remove the named reference
-                if (children[name] == this)
-                    delete children[name];
-                // Remove this entry
-                namedArray.splice(index, 1);
-                // If there are any items left in the named array, set the first
-                // of them to be children[this.name]
-                if (namedArray.length) {
-                    children[name] = namedArray[0];
-                } else {
-                    // Otherwise delete the empty array
-                    delete namedChildren[name];
-                }
-            }
-        }
+        if (owner)
+            Base.removeNamed(owner._children, owner._namedChildren, this._name,
+                    this);
     },
 
     /**
@@ -3621,6 +3624,19 @@ new function() { // Injection scope for hit-test functions shared with project
      * @property
      * @type Number
      * @default 10
+     */
+
+    /**
+     * The order in which the fill and the stroke are painted, as in SVG's
+     * `paint-order`, named after what is painted first: `'fill'` paints the
+     * fill first, `'stroke'` paints the stroke first, so the fill covers its
+     * inner half.
+     *
+     * @name Item#paintOrder
+     * @property
+     * @type String
+     * @values 'fill', 'stroke'
+     * @default 'fill'
      */
 
     /**
@@ -4727,14 +4743,19 @@ new function() { // Injection scope for hit-test functions shared with project
             hasFill = style.hasFill(),
             hasStroke = style.hasStroke();
         if (hasFill || hasStroke) {
+            var isStrokeFirst = hasStroke && style.getPaintOrder() === 'stroke';
             this._setStyles(ctx, param, viewMatrix, strokeMatrix);
-            if (hasFill) {
-                ctx.fill(style.getFillRule());
-                // If shadowColor is defined, clear it after fill, so it won't
-                // be applied to both fill and stroke.
+            // If shadowColor is defined, clear it after the first paint, so it
+            // won't be applied to both fill and stroke.
+            if (isStrokeFirst) {
+                ctx.stroke();
                 ctx.shadowColor = 'rgba(0,0,0,0)';
             }
-            if (hasStroke)
+            if (hasFill) {
+                ctx.fill(style.getFillRule());
+                ctx.shadowColor = 'rgba(0,0,0,0)';
+            }
+            if (hasStroke && !isStrokeFirst)
                 ctx.stroke();
         }
     },

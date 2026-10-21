@@ -847,10 +847,32 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @option [options.reduceAttributes=true] {Boolean} wether to only include
      *     style attributes in the SVG output that differ from their parents,
      *     or to always include them (much faster but leading to redundancies).
+     * @option [options.processNode] {Function} the function to process the
+     *     SVG node made for each exported item, receiving an object with the
+     *     `item` and its `node`: It can change the node, e.g. to add attributes
+     *     that Paper.js doesn't export, or return a node to replace it with. It
+     *     is called before the item's name, style, visibility and data are set
+     *     on the node, which replace attributes of the same names.
      *
      * @param {Object} [options] the export options
      * @return {SVGElement|String} the project converted to an SVG node or a
      * `String` depending on `option.asString` value
+     *
+     * @example
+     * // Export layers as Inkscape layers. Setting the attributes with their
+     * // namespace has the exported SVG declare it:
+     * var ns = 'http://www.inkscape.org/namespaces/inkscape';
+     * var svg = project.exportSVG({
+     *     asString: true,
+     *     processNode: function(arg) {
+     *         var item = arg.item;
+     *         if (item instanceof Layer) {
+     *             arg.node.setAttributeNS(ns, 'inkscape:groupmode', 'layer');
+     *             if (item.name)
+     *                 arg.node.setAttributeNS(ns, 'inkscape:label', item.name);
+     *         }
+     *     }
+     * });
      */
 
     /**
@@ -862,6 +884,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
      * the `<use>` elements that place them as {@link SymbolItem} items. The
      * styles that `<use>` elements inherit don't reach the symbols' content.
+     *
+     * The layers in SVG content that Paper.js exported come back as
+     * {@link Layer} items inside the imported group. To make the layers of a
+     * project's SVG the layers of a project again, add them to it with
+     * `item.children.slice().forEach(project.addLayer, project)`.
      *
      * URLs are fetched as they are, so validate URLs that come from untrusted
      * sources first, especially on servers, where they could reach internal
@@ -887,6 +914,13 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @option [options.applyMatrix={@link PaperScope#settings}.applyMatrix]
      *     {Boolean} whether the imported items should have their transformation
      *     matrices applied to their contents or not
+     * @option [options.processItem] {Function} the function to process the
+     *     item made for each imported SVG element, receiving an object with
+     *     the `item` and its `node`: It can read attributes that Paper.js
+     *     doesn't import, or return an item to replace it with. It is called
+     *     after the element's attributes and data are applied to the item, so
+     *     it can extend `item.data`. A replacement item doesn't receive them:
+     *     copy them over from `item` as needed.
      *
      * @param {SVGElement|String} svg the SVG content to import, either as a SVG
      *     DOM node, a string containing SVG content, or a string describing the
@@ -894,6 +928,24 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @param {Object} [options] the import options
      * @return {Item} the newly created Paper.js item containing the converted
      *     SVG content
+     *
+     * @example
+     * // Keep the SVG `class` attribute of items in their data, and export it
+     * // again:
+     * var item = project.importSVG(svg, {
+     *     processItem: function(arg) {
+     *         var className = arg.node.getAttribute('class');
+     *         if (className)
+     *             arg.item.data.className = className;
+     *     }
+     * });
+     * var exported = project.exportSVG({
+     *     processNode: function(arg) {
+     *         var className = arg.item.data.className;
+     *         if (className)
+     *             arg.node.setAttribute('class', className);
+     *     }
+     * });
      */
     /**
      * Imports the provided external SVG file, converts it into Paper.js items

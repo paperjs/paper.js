@@ -24,6 +24,7 @@
  */
 var Segment = Base.extend(/** @lends Segment# */{
     _class: 'Segment',
+    _name: null,
     beans: true,
     // The selection state, a combination of SegmentSelection
     _selection: 0,
@@ -115,7 +116,7 @@ var Segment = Base.extend(/** @lends Segment# */{
      */
     initialize: function Segment(arg0, arg1, arg2, arg3, arg4, arg5) {
         var count = arguments.length,
-            point, handleIn, handleOut, selection;
+            point, handleIn, handleOut, selection, name, data;
         // TODO: Should we use Point.read() or Point.readNamed() to read these?
         if (count > 0) {
             if (arg0 == null || typeof arg0 === 'object') {
@@ -126,6 +127,12 @@ var Segment = Base.extend(/** @lends Segment# */{
                     handleIn = arg0.handleIn;
                     handleOut = arg0.handleOut;
                     selection = arg0.selection;
+                    name = arg0.name;
+                    // Copy the data of segments without creating it, as
+                    // #clone() does:
+                    data = arg0 instanceof Segment
+                            ? arg0._data && Base.clone(arg0._data)
+                            : arg0.data;
                 } else {
                     // It doesn't matter if all of these arguments exist.
                     // SegmentPoint() creates points with (0, 0) otherwise.
@@ -146,18 +153,44 @@ var Segment = Base.extend(/** @lends Segment# */{
         new SegmentPoint(handleOut, this, '_handleOut');
         if (selection)
             this.setSelection(selection);
+        // Only store name and data when set, so other segments don't pay:
+        if (name)
+            this.setName(name);
+        if (data)
+            this._data = data;
     },
 
     _serialize: function(options, dictionary) {
-        // If it is has no handles, only serialize point, otherwise handles too.
         var point = this._point,
             selection = this._selection,
-            obj = selection || this.hasHandles()
+            name = this._name,
+            data = this._data,
+            hasData = data && !Base.equals(data, {});
+        if (name || hasData) {
+            // Use the object notation, which can also hold name and data:
+            var props = Base.serialize({
+                point: point,
+                handleIn: this._handleIn,
+                handleOut: this._handleOut,
+                selection: selection
+            }, options, true, dictionary);
+            if (name)
+                props.name = name;
+            // Do not use compact mode for data, as in Item#_serialize():
+            if (hasData)
+                props.data = Base.serialize(data, options, false, dictionary);
+            // Pass the object as the only argument to #initialize():
+            return [props];
+        } else {
+            // If it is has no handles, only serialize point, otherwise handles
+            // too.
+            var obj = selection || this.hasHandles()
                     ? [point, this._handleIn, this._handleOut]
                     : point;
-        if (selection)
-            obj.push(selection);
-        return Base.serialize(obj, options, true, dictionary);
+            if (selection)
+                obj.push(selection);
+            return Base.serialize(obj, options, true, dictionary);
+        }
     },
 
     _changed: function(point) {
@@ -184,6 +217,75 @@ var Segment = Base.extend(/** @lends Segment# */{
                 curve._changed();
         }
         path._changed(/*#=*/Change.SEGMENTS);
+    },
+
+    /**
+     * The name of the segment. If the segment has a name, it can be accessed
+     * by name through its path's segments list. If several segments share a
+     * name, the first one is found.
+     *
+     * The name is stored in JSON, but not in SVG.
+     *
+     * @bean
+     * @type ?String
+     *
+     * @example
+     * var path = new Path([10, 10], [50, 10], [50, 50]);
+     * path.segments[1].name = 'corner';
+     * console.log(path.segments['corner'].point); // { x: 50, y: 10 }
+     */
+    getName: function() {
+        return this._name;
+    },
+
+    setName: function(name) {
+        // Keep the name lookup on the path's segments list in sync, as
+        // Item#setName() does on the children list. Paths only create it once
+        // a segment has a name:
+        var path = this._path,
+            named = path && path._namedSegments;
+        if (this._name && named)
+            Base.removeNamed(path._segments, named, this._name, this);
+        if (name === (+name) + '')
+            throw new Error(
+                    'Names consisting only of numbers are not supported.');
+        if (name && path)
+            Base.addNamed(path._segments, named || (path._namedSegments = {}),
+                    name, this);
+        this._name = name || undefined;
+    },
+
+    /**
+     * A plain javascript object which can be used to store arbitrary data on
+     * the segment.
+     *
+     * The data is stored in JSON, but not in SVG.
+     *
+     * @bean
+     * @type Object
+     *
+     * @example
+     * var segment = new Segment(100, 100);
+     * segment.data.isCorner = true;
+     *
+     * @example
+     * var segment = new Segment({
+     *     point: [100, 50],
+     *     handleOut: [80, 100],
+     *     data: {
+     *         isCorner: true
+     *     }
+     * });
+     * console.log(segment.data.isCorner); // true
+     */
+    getData: function() {
+        if (!this._data)
+            this._data = {};
+        return this._data;
+    },
+
+    setData: function(data) {
+        this._data = data;
     },
 
     /**
@@ -231,7 +333,9 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     /**
-     * Checks if the segment has any curve handles set.
+     * Checks if the segment has any curve handles set. Handles of which both
+     * coordinates are 0 within a tolerance of 1e-12 count as not set, see
+     * {@link Point#isZero()}.
      *
      * @return {Boolean} {@true if the segment has handles set}
      * @see Segment#handleIn
@@ -558,7 +662,14 @@ var Segment = Base.extend(/** @lends Segment# */{
      * @return {Segment}
      */
     clone: function() {
-        return new Segment(this._point, this._handleIn, this._handleOut);
+        var segment = new Segment(this._point, this._handleIn, this._handleOut),
+            name = this._name,
+            data = this._data;
+        if (name)
+            segment._name = name;
+        if (data)
+            segment._data = Base.clone(data);
+        return segment;
     },
 
     equals: function(segment) {
