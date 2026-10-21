@@ -679,6 +679,30 @@ describe.skipIf(!HostItem)('Hosted', () => {
     })
   })
 
+  test('New text takes the current text style, new paths the current style', () => {
+    const project = createHostedText().project
+    project.currentStyle = { fillColor: 'white', strokeColor: 'black' }
+    const before = new PointText({ point: [10, 10], content: 'Before' })
+    equals(
+      before.strokeColor,
+      new Color('black'),
+      'without a text style, text takes the current style'
+    )
+    project.currentTextStyle = { fillColor: 'red', strokeColor: null }
+    const text = new PointText({ point: [10, 10], content: 'Hello' }),
+      stroked = new PointText({
+        point: [10, 30],
+        content: 'Hi',
+        strokeColor: 'blue'
+      }),
+      path = new Path.Circle({ center: [50, 50], radius: 10 })
+    equals(text.fillColor, new Color('red'), `text: the text style's fill`)
+    equals(text.strokeColor, null, 'and no stroke')
+    equals(stroked.strokeColor, new Color('blue'), 'unless it sets one')
+    equals(path.strokeColor, new Color('black'), 'paths take the current style')
+    equals(path.fillColor, new Color('white'))
+  })
+
   test(`Hosted text draws its host's layout`, () => {
     const res = createHostedText(),
       point = res.project.layers[0].children.point,
