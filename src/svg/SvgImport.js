@@ -89,7 +89,9 @@ new function() {
         var nodes = node.childNodes,
             isClip = type === 'clippath' || type === 'mask',
             isDefs = type === 'defs',
-            item = new Group(),
+            // Paper.js marks the groups of its layers, see SvgExport:
+            ctor = node.hasAttribute('data-paper-layer') ? Layer : Group,
+            item = new ctor(),
             project = item._project,
             currentStyle = project._currentStyle,
             parentSize = rootSize,
@@ -948,6 +950,8 @@ new function() {
                 item = importNode(node, options, true);
                 if (!options || options.insert !== false) {
                     // TODO: Implement support for multiple Layers on Project.
+                    // 1.0 removes the wrapping group for project imports, so
+                    // the layers become the project's layers.
                     owner._insertItem(undefined, item);
                 }
                 var onLoad = options.onLoad;

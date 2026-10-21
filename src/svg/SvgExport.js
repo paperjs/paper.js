@@ -662,6 +662,9 @@ new function() {
             var data = JSON.stringify(item._data);
             if (data && data !== '{}' && data !== 'null')
                 node.setAttribute('data-paper-data', data);
+            // Mark layers, so SvgImport can tell them from groups (#483):
+            if (item instanceof Layer)
+                node.setAttribute('data-paper-layer', '');
         }
         return node && applyStyle(item, node, options, isRoot);
     }
