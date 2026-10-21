@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 02:04:19 2026 +0200
+ * Date: Wed Oct 21 02:57:53 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -5975,7 +5975,11 @@ declare namespace paper {
          * - Optionally `layOut(json, start, key)`, which lays out a text item
          *   from `start` in its story, given as the JSON string that
          *   {@link Item#exportJSON} writes of it as the script holds
-         *   it, and returns `{ end, lines }`: where its visible text ends, and
+         *   it, or as `null` where the script didn't change it since it
+         *   loaded or the host took its changes with
+         *   {@link Project#takeChanges}, for the host to lay out its own
+         *   node, and returns
+         *   `{ end, lines }`: where its visible text ends, and
          *   its lines, each `{ start, end, x, y, width, lineHeight, ascent,
          *   descent, pieces }`, with pieces `{ start, end, x, y, dx, width,
          *   rotation, size, ascent, descent, lineHeight }` and an optional
