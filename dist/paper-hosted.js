@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 03:18:16 2026 +0200
+ * Date: Wed Oct 21 03:19:47 2026 +0200
  *
  ***
  *
@@ -14849,18 +14849,15 @@ var Color = Base.extend(new function() {
 				destination = components[2],
 				highlight = components[3],
 				inverse = matrix && matrix.inverted(),
+				transform = strokeMatrix && inverse
+						? strokeMatrix.appended(inverse)
+						: strokeMatrix || inverse,
 				canvasGradient;
-			if (inverse) {
-				origin = inverse._transformPoint(origin);
-				destination = inverse._transformPoint(destination);
+			if (transform) {
+				origin = transform._transformPoint(origin);
+				destination = transform._transformPoint(destination);
 				if (highlight)
-					highlight = inverse._transformPoint(highlight);
-			}
-			if (strokeMatrix) {
-				origin = strokeMatrix._transformPoint(origin);
-				destination = strokeMatrix._transformPoint(destination);
-				if (highlight)
-					highlight = strokeMatrix._transformPoint(highlight);
+					highlight = transform._transformPoint(highlight);
 			}
 			if (gradient._radial) {
 				var radius = destination.getDistance(origin);
@@ -15386,13 +15383,12 @@ var Style = Base.extend(new function() {
 	},
 
 	_dispose: function() {
-		var color;
-		color = this.getFillColor();
-		if (color) color._canvasStyle = null;
-		color = this.getStrokeColor();
-		if (color) color._canvasStyle = null;
-		color = this.getShadowColor();
-		if (color) color._canvasStyle = null;
+		var colors = [this.getFillColor(), this.getStrokeColor(),
+				this.getShadowColor()];
+		for (var i = 0; i < 3; i++) {
+			if (colors[i])
+				colors[i]._canvasStyle = null;
+		}
 	},
 
 	hasFill: function() {
@@ -15489,14 +15485,6 @@ var Style = Base.extend(new function() {
 				: typeof leading === 'number' ? leading + 'px'
 				: leading);
 	},
-
-	/**
-	 * @bean
-	 * @type String
-	 * @deprecated use {@link #fontFamily} instead.
-	 */
-	getFont: '#getFontFamily',
-	setFont: '#setFontFamily',
 
 	// DOCS: why isn't the example code showing up?
 	/**

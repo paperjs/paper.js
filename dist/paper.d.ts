@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 03:18:16 2026 +0200
+ * Date: Wed Oct 21 03:19:47 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -7714,11 +7714,6 @@ declare namespace paper {
         leading: number
 
         /** 
-         * @deprecated use {@link #fontFamily} instead.
-         */
-        font: string
-
-        /** 
          * The color of the stroke.
          */
         get strokeColor(): Color | null
@@ -7820,6 +7815,13 @@ declare namespace paper {
          * optional units `'px'`, `'pt'` and `'em'`.
          */
         fontSize: number | string
+
+        /** 
+         * The font-family to be used in text content, as one string.
+         * 
+         * @deprecated use {@link #fontFamily} instead.
+         */
+        font: string
 
         /** 
          * The line height of text content: the distance from one line's baseline
