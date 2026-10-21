@@ -110,6 +110,8 @@
 
 ### Fixed
 
+- Import the paragraphs of text items after their content, also from JSON that
+  lists them first, as JSON written by other tools may.
 - Keep what scripts write to hosted items before they load, such as their
   `pivot` or an area text's `columns`, which loading replaced.
 - Fix the stroke bounds of non-scaling strokes under non-uniform matrices,
