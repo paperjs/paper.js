@@ -59,6 +59,16 @@ var TextItem = Item.extend(/** @lends TextItem# */{
             paragraphs = story._paragraphs,
             keys = story._paragraphKeys,
             itemKeys = story._itemKeys;
+
+        // Style values that differ from the defaults, serialized with the
+        // item's options and dictionary, where gradients go:
+        function serialize(json, style, key) {
+            var value = style[key];
+            if (value !== undefined
+                    && !Base.equals(value, style._defaults[key]))
+                json[key] = Base.serialize(value, options, false, dictionary);
+        }
+
         if (runs.length > 1) {
             // Each run's character properties as its own style has them,
             // which is quicker than reading them through a range. Those it
@@ -66,15 +76,10 @@ var TextItem = Item.extend(/** @lends TextItem# */{
             props.runs = runs.map(function(run) {
                 var style = run.style,
                     values = style._values,
-                    defaults = style._defaults,
                     json = { content: content.slice(run.start, run.end) };
-                for (var key in defaults) {
-                    if (key in values && !(key in keys || key in itemKeys)) {
-                        var value = style[key];
-                        if (value !== undefined
-                                && !Base.equals(value, defaults[key]))
-                            json[key] = Base.serialize(value);
-                    }
+                for (var key in style._defaults) {
+                    if (key in values && !(key in keys || key in itemKeys))
+                        serialize(json, style, key);
                 }
                 return json;
             });
@@ -85,11 +90,8 @@ var TextItem = Item.extend(/** @lends TextItem# */{
         })) {
             props.paragraphs = paragraphs.map(function(style) {
                 var json = {};
-                for (var key in keys) {
-                    var value = style[key];
-                    if (!Base.equals(value, style._defaults[key]))
-                        json[key] = Base.serialize(value);
-                }
+                for (var key in keys)
+                    serialize(json, style, key);
                 return json;
             });
         }

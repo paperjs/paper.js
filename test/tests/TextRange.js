@@ -166,6 +166,50 @@ test('Clones and JSON keep the runs and paragraphs', function() {
             'one style throughout serializes as before');
 });
 
+test('JSON keeps the gradients and colors of runs (#2348)', function() {
+    var text = createText('Hello');
+    var fill = {
+            gradient: { stops: ['red', 'blue'] },
+            origin: [20, 40],
+            destination: [60, 40]
+        },
+        stroke = {
+            gradient: { stops: ['yellow', 'green'], radial: true },
+            origin: [30, 45],
+            destination: [40, 45]
+        };
+    text.range(0, 2).fillColor = fill;
+    text.range(2, 4).strokeColor = stroke;
+    text.range(4, 5).fillColor = 'orange';
+    var imported = new PointText().importJSON(text.exportJSON());
+
+    function equalsGradient(color, expected, message) {
+        var gradient = color.gradient;
+        equals(color.type, 'gradient', message);
+        equals(gradient.stops[0].color, new Color(expected.gradient.stops[0]),
+                message + ' first stop');
+        equals(gradient.stops[1].color, new Color(expected.gradient.stops[1]),
+                message + ' second stop');
+        equals(gradient.radial, !!expected.gradient.radial, message);
+        equals(color.origin, new Point(expected.origin), message);
+        equals(color.destination, new Point(expected.destination), message);
+    }
+
+    equalsGradient(imported.range(0, 2).fillColor, fill, 'gradient fill');
+    equalsGradient(imported.range(2, 4).strokeColor, stroke, 'gradient stroke');
+    equals(imported.range(4, 5).fillColor, new Color('orange'), 'plain color');
+});
+
+test('JSON rounds the style values of runs and paragraphs to the precision',
+        function() {
+    var text = createText('One\nTwo');
+    text.range(0, 3).fontSize = 10.12345;
+    text.paragraphs[1].startIndent = 4.56789;
+    var json = JSON.parse(text.exportJSON({ precision: 2 }))[1];
+    equals(json.runs[0].fontSize, 10.12, 'run');
+    equals(json.paragraphs[1].startIndent, 4.57, 'paragraph');
+});
+
 test('Groups set the styles of the texts in them', function() {
     var text = createText('Hello world');
     text.range(6, 11).fontSize = 24;

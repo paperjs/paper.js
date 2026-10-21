@@ -113,6 +113,9 @@
 
 - Import the paragraphs of text items after their content, also from JSON that
   lists them first, as JSON written by other tools may.
+- Keep gradients in the runs of text items through `#exportJSON()` and
+  `#importJSON()`, and round their style values and those of their paragraphs
+  to the `precision` of the export (#2348).
 - Keep what scripts write to hosted items before they load, such as their
   `pivot` or an area text's `columns`, which loading replaced.
 - Fix the stroke bounds of non-scaling strokes under non-uniform matrices,
