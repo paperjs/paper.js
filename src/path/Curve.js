@@ -787,7 +787,6 @@ statics: /** @lends Curve */{
                 max[coord] = right;
         }
 
-        padding /= 2; // strokePadding is in width, not radius
         var minPad = min[coord] + padding,
             maxPad = max[coord] - padding;
         // Perform a rough bounds checking first: The curve can only extend the
