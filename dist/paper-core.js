@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 01:02:23 2026 +0200
+ * Date: Thu Oct 22 01:32:47 2026 +0200
  *
  ***
  *
@@ -4682,13 +4682,16 @@ new function() {
 			for (var i = items.length - 1; i >= 0; i--) {
 				var item = items[i],
 					id = item && item._id;
-				if (!item || inserted[id]) {
+				if (!item || inserted[id] || item === this
+						|| this.isDescendant(item)) {
 					items.splice(i, 1);
 				} else {
 					item._remove(false, true);
 					inserted[id] = true;
 				}
 			}
+			if (!items.length)
+				return null;
 			Base.splice(children, items, index, 0);
 			var project = this._project,
 				notifySelf = project._changes;
