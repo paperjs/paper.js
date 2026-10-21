@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 03:49:41 2026 +0200
+ * Date: Wed Oct 21 03:18:28 2026 +0200
  *
  ***
  *
@@ -10074,15 +10074,14 @@ var Path = PathItem.extend({
 		function checkSegmentStroke(segment) {
 			var isJoin = closed || segment._index > 0
 					&& segment._index < numSegments - 1;
-			if ((isJoin ? join : cap) === 'round') {
+			if (isJoin && segment.isSmooth()
+					|| (isJoin ? join : cap) === 'round') {
 				return isCloseEnough(segment._point, strokePadding);
 			} else {
 				area = new Path({ internal: true, closed: true });
 				if (isJoin) {
-					if (!segment.isSmooth()) {
-						Path._addBevelJoin(segment, join, strokeRadius,
-							   miterLimit, null, strokeMatrix, addToArea, true);
-					}
+					Path._addBevelJoin(segment, join, strokeRadius,
+						   miterLimit, null, strokeMatrix, addToArea, true);
 				} else {
 					Path._addSquareCap(segment, cap, strokeRadius, null,
 							strokeMatrix, addToArea, true);

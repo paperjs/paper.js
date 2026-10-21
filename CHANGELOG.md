@@ -114,6 +114,8 @@
 
 ### Fixed
 
+- Hit-test strokes with `'miter'` and `'bevel'` joins next to smooth segments,
+  which are joined round, as the stroke bounds already treat them (#2342).
 - Import the paragraphs of text items after their content, also from JSON that
   lists them first, as JSON written by other tools may.
 - Keep gradients in the runs of text items through `#exportJSON()` and
