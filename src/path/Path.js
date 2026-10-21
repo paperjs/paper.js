@@ -151,10 +151,6 @@ var Path = PathItem.extend(/** @lends Path# */{
                for (var i = 0, l = this._curves.length; i < l; i++)
                     this._curves[i]._changed();
             }
-        } else if (flags & /*#=*/ChangeFlag.STROKE) {
-            // TODO: We could preserve the purely geometric bounds that are not
-            // affected by stroke: _bounds.bounds and _bounds.handleBounds
-            this._bounds = undefined;
         }
     },
 

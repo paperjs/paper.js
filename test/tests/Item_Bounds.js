@@ -1190,6 +1190,87 @@ test('shape.strokeBounds after scaling, when cached before', function() {
             'shape.strokeBounds after scaling');
 });
 
+test('item.strokeBounds after changing the stroke of items without a parent (#2343)', function() {
+    var shape = new Shape.Rectangle({
+        point: [0, 0],
+        size: [10, 10],
+        strokeColor: 'black',
+        strokeWidth: 2,
+        insert: false
+    });
+    equals(shape.strokeBounds, new Rectangle(-1, -1, 12, 12),
+            'shape.strokeBounds');
+    shape.strokeWidth = 10;
+    equals(shape.strokeBounds, new Rectangle(-5, -5, 20, 20),
+            'shape.strokeBounds after changing strokeWidth');
+
+    // Text strokes add half their width all around:
+    var text = new PointText({
+        content: 'Text',
+        strokeColor: 'black',
+        strokeWidth: 2,
+        insert: false
+    });
+    var bounds = text.bounds;
+    equals(text.strokeBounds, bounds.expand(2), 'text.strokeBounds');
+    text.strokeWidth = 10;
+    equals(text.strokeBounds, bounds.expand(10),
+            'text.strokeBounds after changing strokeWidth');
+
+    var definition = new Shape.Rectangle({
+        point: [0, 0],
+        size: [10, 10],
+        strokeColor: 'black',
+        strokeWidth: 2
+    });
+    var symbolItem = new SymbolItem(new SymbolDefinition(definition), {
+        insert: false
+    });
+    equals(symbolItem.strokeBounds, new Rectangle(-6, -6, 12, 12),
+            'symbolItem.strokeBounds');
+    definition.strokeWidth = 10;
+    equals(symbolItem.strokeBounds, new Rectangle(-10, -10, 20, 20),
+            'symbolItem.strokeBounds after changing the definition');
+
+    var group = new Group({
+        children: [new Shape.Rectangle({
+            point: [0, 0],
+            size: [10, 10],
+            strokeColor: 'black',
+            strokeWidth: 2
+        })],
+        insert: false
+    });
+    equals(group.strokeBounds, new Rectangle(-1, -1, 12, 12),
+            'group.strokeBounds');
+    group.firstChild.strokeWidth = 10;
+    equals(group.strokeBounds, new Rectangle(-5, -5, 20, 20),
+            'group.strokeBounds after changing the child');
+    group.strokeWidth = 4;
+    equals(group.strokeBounds, new Rectangle(-2, -2, 14, 14),
+            'group.strokeBounds after changing the group');
+
+    // A 45° corner at the origin: its miter reaches 1 / sin(22.5°) along the
+    // bisector, to x = -1 - √2, its bevel only to the diagonal's offset:
+    var path = new Path({
+        segments: [[10, 10], [0, 0], [10, 0]],
+        strokeColor: 'black',
+        strokeWidth: 2,
+        insert: false
+    });
+    equals(path.strokeBounds.left, -1 - Math.SQRT2, 'path miter');
+    path.miterLimit = 2;
+    equals(path.strokeBounds.left, -Math.SQRT1_2,
+            'path after changing miterLimit');
+    path.miterLimit = 10;
+    path.strokeJoin = 'bevel';
+    equals(path.strokeBounds.left, -Math.SQRT1_2,
+            'path after changing strokeJoin');
+    path.strokeWidth = 4;
+    equals(path.strokeBounds.left, -Math.SQRT2,
+            'path after changing strokeWidth');
+});
+
 test('path.strokeBounds of non-scaling strokes under non-uniform matrices', function() {
     // A non-scaling stroke is drawn around the transformed geometry, so its
     // miters, bevels and square caps follow the transformed angles, as with

@@ -225,6 +225,9 @@ new function() { // Injection scope for various item event handlers
             // Clear cached bounds, position and decomposed matrix whenever
             // geometry changes.
             this._bounds = this._position = this._decomposed = undefined;
+        } else if (flags & /*#=*/ChangeFlag.STROKE) {
+            // Strokes change the stroke bounds, but not the position:
+            this._bounds = undefined;
         }
         if (flags & /*#=*/ChangeFlag.MATRIX) {
             this._globalMatrix = undefined;
