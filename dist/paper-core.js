@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 11:36:05 2026 +0200
+ * Date: Wed Oct 21 11:39:07 2026 +0200
  *
  ***
  *
@@ -13221,20 +13221,38 @@ var PointText = TextItem.extend({
 	}
 });
 
-var PathText = TextItem.extend({
-	_class: 'PathText',
-	_serializeFields: {
-		textPath: null,
+var PathText = TextItem.extend(new function() {
+	var fields = {
 		startOffset: 0,
 		endOffset: null,
 		alignment: 'baseline',
 		spacing: 0
-	},
-	_startOffset: 0,
-	_endOffset: null,
-	_alignment: 'baseline',
-	_spacing: 0,
+	};
 
+	return Base.each(fields, function(value, name) {
+		var part = Base.capitalize(name),
+			key = '_' + name;
+		this[key] = value;
+		this['get' + part] = function() {
+			return this[key];
+		};
+		this['set' + part] = function(value) {
+			this[key] = value;
+			this._changed(9);
+		};
+	}, {
+		_class: 'PathText',
+		_serializeFields: Base.set({ textPath: null }, fields),
+
+		copyContent: function copyContent(source) {
+			copyContent.base.call(this, source);
+			for (var name in fields) {
+				var key = '_' + name;
+				this[key] = source[key];
+			}
+		}
+	});
+}, {
 	initialize: function PathText(path, orientation) {
 		var hasProps = Base.isPlainObject(path);
 		this._children = [];
@@ -13244,50 +13262,6 @@ var PathText = TextItem.extend({
 			if (orientation)
 				this.setOrientation(orientation);
 		}
-	},
-
-	copyContent: function copyContent(source) {
-		copyContent.base.call(this, source);
-		this._startOffset = source._startOffset;
-		this._endOffset = source._endOffset;
-		this._alignment = source._alignment;
-		this._spacing = source._spacing;
-	},
-
-	getStartOffset: function() {
-		return this._startOffset;
-	},
-
-	setStartOffset: function(offset) {
-		this._startOffset = offset;
-		this._changed(9);
-	},
-
-	getEndOffset: function() {
-		return this._endOffset;
-	},
-
-	setEndOffset: function(offset) {
-		this._endOffset = offset;
-		this._changed(9);
-	},
-
-	getAlignment: function() {
-		return this._alignment;
-	},
-
-	setAlignment: function(alignment) {
-		this._alignment = alignment;
-		this._changed(9);
-	},
-
-	getSpacing: function() {
-		return this._spacing;
-	},
-
-	setSpacing: function(spacing) {
-		this._spacing = spacing;
-		this._changed(9);
 	},
 
 	_layOut: function() {
@@ -13378,22 +13352,39 @@ var PathText = TextItem.extend({
 	}
 });
 
-var AreaText = TextItem.extend({
-	_class: 'AreaText',
-	_serializeFields: {
-		textPath: null,
+var AreaText = TextItem.extend(new function() {
+	var fields = {
 		columns: 1,
 		rows: 1,
 		gutter: 18,
 		inset: 0,
 		verticalAlign: 'top'
-	},
-	_columns: 1,
-	_rows: 1,
-	_gutter: 18,
-	_inset: 0,
-	_verticalAlign: 'top',
+	};
 
+	return Base.each(fields, function(value, name) {
+		var part = Base.capitalize(name),
+			key = '_' + name;
+		this[key] = value;
+		this['get' + part] = function() {
+			return this[key];
+		};
+		this['set' + part] = function(value) {
+			this[key] = value;
+			this._changed(9);
+		};
+	}, {
+		_class: 'AreaText',
+		_serializeFields: Base.set({ textPath: null }, fields),
+
+		copyContent: function copyContent(source) {
+			copyContent.base.call(this, source);
+			for (var name in fields) {
+				var key = '_' + name;
+				this[key] = source[key];
+			}
+		}
+	});
+}, {
 	initialize: function AreaText(area, orientation) {
 		var hasProps = Base.isPlainObject(area) && area.width === undefined;
 		this._children = [];
@@ -13409,63 +13400,9 @@ var AreaText = TextItem.extend({
 		}
 	},
 
-	copyContent: function copyContent(source) {
-		copyContent.base.call(this, source);
-		this._columns = source._columns;
-		this._rows = source._rows;
-		this._gutter = source._gutter;
-		this._inset = source._inset;
-		this._verticalAlign = source._verticalAlign;
-	},
-
 	_installEvents: function _installEvents(install) {
 		_installEvents.base.call(this, install);
 		this._layout = null;
-	},
-
-	getColumns: function() {
-		return this._columns;
-	},
-
-	setColumns: function(columns) {
-		this._columns = columns;
-		this._changed(9);
-	},
-
-	getRows: function() {
-		return this._rows;
-	},
-
-	setRows: function(rows) {
-		this._rows = rows;
-		this._changed(9);
-	},
-
-	getGutter: function() {
-		return this._gutter;
-	},
-
-	setGutter: function(gutter) {
-		this._gutter = gutter;
-		this._changed(9);
-	},
-
-	getInset: function() {
-		return this._inset;
-	},
-
-	setInset: function(inset) {
-		this._inset = inset;
-		this._changed(9);
-	},
-
-	getVerticalAlign: function() {
-		return this._verticalAlign;
-	},
-
-	setVerticalAlign: function(align) {
-		this._verticalAlign = align;
-		this._changed(9);
 	},
 
 	fitHeight: function() {
