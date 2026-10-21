@@ -47,6 +47,8 @@ export default defineConfig({
             enabled: true,
             provider: playwright(),
             headless: true,
+            // Wide enough for the widest scene, as the default is a phone's:
+            viewport: { width: 1000, height: 1000 },
             instances: [{ browser: 'chromium' }],
             expect: {
               toMatchScreenshot: {
