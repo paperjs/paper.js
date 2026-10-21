@@ -947,7 +947,9 @@ statics: /** @lends Curve */{
     /**
      * {@grouptitle Curve Tests}
      *
-     * Checks if this curve has any curve handles set.
+     * Checks if this curve has any curve handles set. Handles of which both
+     * coordinates are 0 within a tolerance of 1e-12 count as not set, see
+     * {@link Point#isZero()}.
      *
      * @return {Boolean} {@true if the curve has handles set}
      * @see Curve#handle1

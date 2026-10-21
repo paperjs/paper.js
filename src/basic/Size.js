@@ -427,9 +427,12 @@ var Size = Base.extend(/** @lends Size# */{
 
     /**
      * {@grouptitle Tests}
-     * Checks if this size has both the width and height set to 0.
+     * Checks if this size has both the width and height set to 0, within a
+     * tolerance of 1e-12, unlike {@link #equals(size)}, which compares
+     * exactly.
      *
-     * @return {Boolean} {@true if both width and height are 0}
+     * @return {Boolean} {@true if both width and height are 0, within the
+     *     tolerance}
      */
     isZero: function() {
         var isZero = Numerical.isZero;

@@ -333,7 +333,9 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     /**
-     * Checks if the segment has any curve handles set.
+     * Checks if the segment has any curve handles set. Handles of which both
+     * coordinates are 0 within a tolerance of 1e-12 count as not set, see
+     * {@link Point#isZero()}.
      *
      * @return {Boolean} {@true if the segment has handles set}
      * @see Segment#handleIn
