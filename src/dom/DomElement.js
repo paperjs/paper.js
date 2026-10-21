@@ -46,16 +46,8 @@ var DomElement = new function() {
             var doc = el.ownerDocument,
                 body = doc.body,
                 html = doc.documentElement,
-                rect;
-            try {
-                // On IE, for nodes that are not inside the DOM, this throws an
-                // exception. Emulate the behavior of all other browsers, which
-                // return a rectangle of 0 dimensions.
-                rect = el.getBoundingClientRect();
-            } catch (e) {
-                rect = { left: 0, top: 0, width: 0, height: 0 };
-            }
-            var x = rect.left - (html.clientLeft || body.clientLeft || 0),
+                rect = el.getBoundingClientRect(),
+                x = rect.left - (html.clientLeft || body.clientLeft || 0),
                 y = rect.top - (html.clientTop || body.clientTop || 0);
             if (!viewport) {
                 var view = doc.defaultView;

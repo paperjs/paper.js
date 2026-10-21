@@ -75,12 +75,9 @@ var Key = new function() {
         });
 
     function getKey(event) {
-        var key = event.key || event.keyIdentifier;
-        key = /^U\+/.test(key)
-                // Expand keyIdentifier Unicode format.
-                ? String.fromCharCode(parseInt(key.substr(2), 16))
-                // Use short version for arrow keys: ArrowLeft -> Left
-                : /^Arrow[A-Z]/.test(key) ? key.substr(5)
+        var key = event.key;
+        // Use short version for arrow keys: ArrowLeft -> Left
+        key = /^Arrow[A-Z]/.test(key) ? key.substr(5)
                 // This is far from ideal, but what else can we do?
                 : key === 'Unidentified'  || key === undefined
                     ? String.fromCharCode(event.keyCode)
