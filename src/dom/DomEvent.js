@@ -76,11 +76,11 @@ var DomEvent = /** @lends DomEvent */{
     },
 
     getTarget: function(event) {
-        return event.target || event.srcElement;
+        return event.target;
     },
 
     getRelatedTarget: function(event) {
-        return event.relatedTarget || event.toElement;
+        return event.relatedTarget;
     },
 
     getOffset: function(event, target) {

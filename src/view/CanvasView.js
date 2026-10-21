@@ -50,10 +50,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
         if (!/^off|false$/.test(PaperScope.getAttribute(canvas, 'hidpi'))) {
             // Hi-DPI Canvas support based on:
             // https://www.html5rocks.com/en/tutorials/canvas/hidpi/
-            var deviceRatio = window.devicePixelRatio || 1,
-                backingStoreRatio = DomElement.getPrefixed(ctx,
-                        'backingStorePixelRatio') || 1;
-            this._pixelRatio = deviceRatio / backingStoreRatio;
+            this._pixelRatio = window.devicePixelRatio || 1;
         }
         View.call(this, project, canvas);
         // We can't be sure the canvas is clear
