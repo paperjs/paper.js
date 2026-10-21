@@ -20,6 +20,9 @@ new function() {
     // index is option, and if passed, causes a lookup in a list.
 
     var definitions = {},
+        // The ids of the elements that <use> elements are importing, to skip
+        // circular references, as SVG does:
+        used = {},
         rootSize,
         // The absolute units of CSS in px:
         units = { 'in': 96, pt: 96 / 72, pc: 96 / 6, cm: 96 / 2.54,
@@ -81,7 +84,7 @@ new function() {
 
     function importGroup(node, type, options, isRoot) {
         var nodes = node.childNodes,
-            isClip = type === 'clippath',
+            isClip = type === 'clippath' || type === 'mask',
             isDefs = type === 'defs',
             item = new Group(),
             project = item._project,
@@ -124,8 +127,13 @@ new function() {
         item.addChildren(children);
         // Clip paths are reduced (unboxed) and their attributes applied at the
         // end.
-        if (isClip)
+        if (isClip) {
             item = applyAttributes(item.reduce(), node, options, isRoot);
+            if (type === 'mask' && !isClipMask(item,
+                    SvgElement.get(node, 'mask-type') === 'alpha'))
+                console.warn('Approximating SVG mask \'' + node.id
+                        + '\' as a clipping mask.');
+        }
         // Restore currentStyle and rootSize
         project._currentStyle = currentStyle;
         rootSize = parentSize;
@@ -136,6 +144,26 @@ new function() {
             item = null;
         }
         return item;
+    }
+
+    // Masks are imported as clip masks, which is only exact when they consist
+    // of opaque, solid white shapes, or of any opaque shapes when their
+    // mask-type is 'alpha':
+    function isClipMask(item, isAlpha) {
+        if (item.getOpacity() !== 1)
+            return false;
+        if (item instanceof Group) {
+            return item._children.every(function(child) {
+                return isClipMask(child, isAlpha);
+            });
+        }
+        var color = item.getFillColor();
+        return (item instanceof PathItem || item instanceof Shape)
+                && !item.hasStroke() && !!color && !color.gradient
+                && color.getAlpha() === 1
+                // White in any color type:
+                && (isAlpha || color.getBrightness() === 1
+                    && color.getSaturation() === 0);
     }
 
     function importPoly(node, type) {
@@ -223,6 +251,8 @@ new function() {
         // https://www.w3.org/TR/SVG/struct.html#NewDocument
         svg: importGroup,
         clippath: importGroup,
+        // https://www.w3.org/TR/SVG/masking.html#Masking
+        mask: importGroup,
         // https://www.w3.org/TR/SVG/shapes.html#PolygonElement
         polygon: importPoly,
         // https://www.w3.org/TR/SVG/shapes.html#PolylineElement
@@ -291,22 +321,26 @@ new function() {
             // SymbolItem clipping, but perhaps it should?
             var id = (getValue(node, 'href', true) || '').substring(1),
                 definition = getDefinitionById(id, options),
-                point = getPoint(node);
-            return definition
-                    ? definition instanceof SymbolDefinition
-                        // When placing symbols, we need to take both point and
-                        // matrix into account. place() does the right thing:
-                        ? definition.place(point)
-                        // Rasters are only positioned once their image has
-                        // loaded, which their clones would miss, so import
-                        // their <image> again:
-                        : definition instanceof Raster
-                            ? importNode(getSandbox().ownerDocument
-                                .getElementById(id), options, false)
-                                .translate(point)
-                        // A normal item: Clone and translate it.
-                        : definition.clone().translate(point)
-                    : null;
+                point = getPoint(node),
+                item = null;
+            if (definition instanceof SymbolDefinition) {
+                // When placing symbols, we need to take both point and matrix
+                // into account. place() does the right thing:
+                item = definition.place(point);
+            } else if (definition && !used[id]) {
+                // Import other items again in place, as they inherit the styles
+                // of the <use> element instead of where they are defined, and
+                // as rasters are only positioned once their image has loaded,
+                // which clones would miss:
+                used[id] = true;
+                try {
+                    item = importNode(getElementById(id), options, false)
+                            .translate(point);
+                } finally {
+                    delete used[id];
+                }
+            }
+            return item;
         },
 
         // https://www.w3.org/TR/SVG/shapes.html#InterfaceSVGCircleElement
@@ -425,6 +459,21 @@ new function() {
         }
     }
 
+    function applyClipMask(item, value, name, node, styles, options) {
+        // https://www.w3.org/TR/SVG/masking.html#ClipPathProperty
+        var clip = getDefinition(value, options);
+        if (clip) {
+            clip = clip.clone();
+            clip.setClipMask(true);
+            // If item is already a group, move the clip-path inside
+            if (item instanceof Group) {
+                item.insertChild(0, clip);
+            } else {
+                return new Group(clip, item);
+            }
+        }
+    }
+
     function applyOpacity(item, value, name) {
         // https://www.w3.org/TR/SVG/painting.html#FillOpacityProperty
         // https://www.w3.org/TR/SVG/painting.html#StrokeOpacityProperty
@@ -432,6 +481,50 @@ new function() {
             color = item[key] && item[key]();
         if (color)
             color.setAlpha(parseFloat(value));
+    }
+
+    // The primitives that SvgExport writes for a shadow after its blur:
+    var shadowPrimitives = 'feOffset,feFlood,feComposite,feComposite';
+
+    // Reads a shadow from a <filter> with the primitives that SvgExport writes
+    // for it, and only these, or returns null for any other filter:
+    function getFilterShadow(filter) {
+        var nodes = Base.slice(filter && filter.children || []),
+            names = nodes.map(function(node) {
+                return node.nodeName;
+            }).join(),
+            blur = names === 'feGaussianBlur,' + shadowPrimitives
+                    && nodes.shift();
+        if (!blur && names !== shadowPrimitives)
+            return null;
+        var offset = nodes[0],
+            flood = nodes[1],
+            color = new Color(flood.getAttribute('flood-color') || 'black'),
+            opacity = flood.getAttribute('flood-opacity');
+        if (opacity)
+            color.setAlpha(color.getAlpha() * parseFloat(opacity));
+        return {
+            color: color,
+            // Canvas blurs with a standard deviation of half the shadow blur:
+            blur: blur ? 2 * parseFloat(blur.getAttribute('stdDeviation')) : 0,
+            offset: new Point(parseFloat(offset.getAttribute('dx')) || 0,
+                    parseFloat(offset.getAttribute('dy')) || 0)
+        };
+    }
+
+    // Reads a shadow from a single CSS drop-shadow(), with its color before or
+    // after its lengths, of which its blur radius equals the shadow blur:
+    function getCssShadow(value) {
+        var match = value.match(/^\s*drop-shadow\((.*)\)\s*$/),
+            color = match && match[1].match(
+                    /(?:rgba?|hsla?)\([^)]*\)|#[0-9a-f]+|\b[a-z]+\b/i),
+            lengths = match && match[1].replace(color && color[0], '')
+                    .match(/-?[\d.]+/g);
+        return lengths && lengths.length >= 2 ? {
+            color: new Color(color ? color[0] : 'black'),
+            blur: parseFloat(lengths[2]) || 0,
+            offset: new Point(parseFloat(lengths[0]), parseFloat(lengths[1]))
+        } : null;
     }
 
     // Create apply-functions for attributes, and merge in those for SVGStyles.
@@ -471,20 +564,9 @@ new function() {
                 item.setName(value);
         },
 
-        'clip-path': function(item, value, name, node, styles, options) {
-            // https://www.w3.org/TR/SVG/masking.html#ClipPathProperty
-            var clip = getDefinition(value, options);
-            if (clip) {
-                clip = clip.clone();
-                clip.setClipMask(true);
-                // If item is already a group, move the clip-path inside
-                if (item instanceof Group) {
-                    item.insertChild(0, clip);
-                } else {
-                    return new Group(clip, item);
-                }
-            }
-        },
+        'clip-path': applyClipMask,
+        // Masks can only be approximated as clip masks, see isClipMask():
+        mask: applyClipMask,
 
         gradientTransform: applyTransform,
         transform: applyTransform,
@@ -501,6 +583,21 @@ new function() {
             // NOTE: 'none' gets translated to null in getAttribute()
             if (item.setVisible)
                 item.setVisible(value !== null);
+        },
+
+        filter: function(item, value) {
+            // Read shadows, as SvgExport writes them, or as CSS drop-shadow().
+            // Groups don't draw shadows, so leave them out (#1003):
+            var shadow = value && !(item instanceof Group)
+                    && item.setShadowColor && (/^url\(/.test(value)
+                        ? getFilterShadow(
+                            getElementById(getDefinitionId(value)))
+                        : getCssShadow(value));
+            if (shadow) {
+                item.setShadowColor(shadow.color);
+                item.setShadowBlur(shadow.blur);
+                item.setShadowOffset(shadow.offset);
+            }
         },
 
         // Paper.js's own blend modes, which CSS doesn't have, see SvgExport:
@@ -522,10 +619,11 @@ new function() {
         },
 
         'letter-spacing': function(item, value) {
-            // Convert to tracking, in thousandths of an em. 'normal' is 0:
-            if (item.setTracking) {
+            // Convert to letter tracking, in thousandths of an em. 'normal' is
+            // 0:
+            if (item.setLetterTracking) {
                 var amount = parseFloat(value) || 0;
-                item.setTracking(1000 * (/em$/.test(value) ? amount
+                item.setLetterTracking(1000 * (/em$/.test(value) ? amount
                         : amount / parseFloat(item.getFontSize())));
             }
         },
@@ -626,10 +724,8 @@ new function() {
             styles = {
                 node: DomElement.getStyles(node) || {},
                 // Do not check for inheritance if this is root, to make the
-                // default SVG settings stick. Also detect defs parents, of
-                // which children need to explicitly inherit their styles.
-                parent: !isRoot && !/^defs$/i.test(parent.tagName)
-                        && DomElement.getStyles(parent) || {}
+                // default SVG settings stick.
+                parent: !isRoot && DomElement.getStyles(parent) || {}
             };
         // jsdom doesn't compute SVG styles, so start the root with SVG's initial
         // fill, as it differs from the default in Paper.js:
@@ -648,24 +744,29 @@ new function() {
         // Definitions can be referenced before they appear in the document,
         // so import them on demand, see #1146:
         if (id && !definitions[id]) {
-            var node = getSandbox().ownerDocument.getElementById(id);
+            var node = getElementById(id);
             if (node)
                 importNode(node, options, false);
         }
         return definitions[id];
     }
 
-    function getDefinition(value, options) {
+    function getDefinitionId(value) {
         // When url() comes from a style property, '#'' seems to be missing on
         // WebKit. We also get variations of quotes or no quotes, single or
         // double, so handle it all with one regular expression:
         var match = value && value.match(/\((?:["'#]*)([^"')]+)/),
-            name = match && match[1],
-            res = name && getDefinitionById(window
-                    // This is required by Firefox, which can produce absolute
-                    // urls for local gradients, see #1001:
-                    ? name.replace(window.location.href.split('#')[0] + '#', '')
-                    : name, options);
+            name = match && match[1];
+        return name && window
+                // This is required by Firefox, which can produce absolute
+                // urls for local gradients, see #1001:
+                ? name.replace(window.location.href.split('#')[0] + '#', '')
+                : name;
+    }
+
+    function getDefinition(value, options) {
+        var id = getDefinitionId(value),
+            res = id && getDefinitionById(id, options);
         // Patch in support for SVG's gradientUnits="objectBoundingBox" through
         // Color#_scaleToBounds
         if (res && res._scaleToBounds) {
@@ -674,6 +775,22 @@ new function() {
             res._scaleToBounds = true;
         }
         return res;
+    }
+
+    // Returns the element's data: its data-* attributes with camelized names,
+    // as in `dataset`, merged with Paper.js's own JSON in data-paper-data:
+    function getData(node) {
+        var data = null,
+            attributes = node.attributes,
+            json = node.getAttribute('data-paper-data');
+        for (var i = 0, l = attributes.length; i < l; i++) {
+            var match = attributes[i].name.match(/^data-(?!paper-)(.+)$/);
+            if (match) {
+                data = data || {};
+                data[Base.camelize(match[1])] = attributes[i].value;
+            }
+        }
+        return json ? Base.set(data || {}, JSON.parse(json)) : data;
     }
 
     var sandbox;
@@ -700,6 +817,10 @@ new function() {
             doc.head.appendChild(meta);
         }
         return sandbox.contentDocument.body;
+    }
+
+    function getElementById(id) {
+        return getSandbox().ownerDocument.getElementById(id);
     }
 
     function importNode(node, options, isRoot) {
@@ -759,7 +880,7 @@ new function() {
                 // Support onImportItem callback, to provide mechanism to handle
                 // special attributes (e.g. inkscape:transform-center)
                 var onImport = options.onImport,
-                    data = isElement && node.getAttribute('data-paper-data');
+                    data = isElement && getData(node);
                 if (onImport)
                     item = onImport(node, item, options) || item;
                 if (options.expandShapes && item instanceof Shape) {
@@ -767,7 +888,7 @@ new function() {
                     item = item.toPath();
                 }
                 if (data)
-                    item._data = JSON.parse(data);
+                    item._data = data;
             }
         } finally {
             if (container) {

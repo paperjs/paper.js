@@ -38,7 +38,12 @@ Base.exports.PaperScript = function() {
         // not be immediately available, so we need to check for it here again.
         // We also give self.acorn the preference over the bundled one, so
         // people can load their own preferred version in sketch.paperjs.org
-        return (self.acorn || acorn).parse(code, options);
+        var parser = self.acorn || acorn;
+        // Acorn 8 and newer require ecmaVersion, and parse all current syntax
+        // with 'latest', which the bundled version doesn't know:
+        if (parseInt(parser.version, 10) >= 8)
+            options = Base.set({ ecmaVersion: 'latest' }, options);
+        return parser.parse(code, options);
     }
 
     // Operators to overload
@@ -100,6 +105,12 @@ Base.exports.PaperScript = function() {
         }
     }
 
+    // Compound assignment of a property, which evaluates the object and the
+    // key only once, e.g. for `array[index()] += 1`:
+    function __$assign__(object, key, operator, value) {
+        return object[key] = __$__(object[key], operator, value);
+    }
+
     // Unary Operator Handler
     function $__(operator, value) {
         var handler = unaryOperators[operator];
@@ -146,15 +157,15 @@ Base.exports.PaperScript = function() {
         // Converts an original offset to the one in the current state of the
         // modified code.
         function getOffset(offset) {
-            // Add all insertions before this location together to calculate
-            // the current offset
+            // Add the changes of all replacements that end before this
+            // location in the original code, to get its current offset:
+            var current = offset;
             for (var i = 0, l = insertions.length; i < l; i++) {
                 var insertion = insertions[i];
-                if (insertion[0] >= offset)
-                    break;
-                offset += insertion[1];
+                if (insertion[1] <= offset)
+                    current += insertion[2];
             }
-            return offset;
+            return current;
         }
 
         // Returns the node's code as a string, taking insertions into account.
@@ -170,19 +181,19 @@ Base.exports.PaperScript = function() {
         }
 
         // Replaces the node's code with a new version and keeps insertions
-        // information up-to-date.
+        // information up-to-date. Each insertion holds the original range of
+        // the replaced code and the change in length, so the order of the
+        // replacements doesn't matter. A replacement of code that contains
+        // others takes their place:
         function replaceCode(node, str) {
-            var start = getOffset(node.range[0]),
-                end = getOffset(node.range[1]),
-                insert = 0;
-            // Sort insertions by their offset, so getOffset() can do its thing
-            for (var i = insertions.length - 1; i >= 0; i--) {
-                if (start > insertions[i][0]) {
-                    insert = i + 1;
-                    break;
-                }
-            }
-            insertions.splice(insert, 0, [start, str.length - end + start]);
+            var range = node.range,
+                start = getOffset(range[0]),
+                end = getOffset(range[1]);
+            insertions = insertions.filter(function(insertion) {
+                return insertion[0] < range[0] || insertion[1] > range[1];
+            });
+            insertions.push([range[0], range[1],
+                    str.length - range[1] + range[0]]);
             code = code.substring(0, start) + str + code.substring(end);
         }
 
@@ -258,10 +269,26 @@ Base.exports.PaperScript = function() {
                     } else { // AssignmentExpression
                         if (/^.=$/.test(node.operator)
                                 && node.left.type !== 'Literal') {
-                            var left = getCode(node.left),
+                            var target = node.left,
+                                left = getCode(target),
                                 right = getCode(node.right),
-                                exp = left + ' = __$__(' + left + ', "'
-                                    + node.operator[0] + '", ' + right + ')';
+                                operator = node.operator[0],
+                                // Assign properties through __$assign__(),
+                                // which evaluates their object and key once,
+                                // except for private ones and those of super:
+                                member = target.type === 'MemberExpression'
+                                    && target.object.type !== 'Super'
+                                    && target.property.type
+                                        !== 'PrivateIdentifier',
+                                exp = member
+                                    ? '__$assign__(' + getCode(target.object)
+                                        + ', ' + (target.computed
+                                            ? getCode(target.property)
+                                            : JSON.stringify(
+                                                target.property.name))
+                                        + ', "' + operator + '", ' + right + ')'
+                                    : left + ' = __$__(' + left + ', "'
+                                        + operator + '", ' + right + ')';
                             // If the original expression is wrapped in
                             // parenthesis, do the same with the replacement:
                             replaceCode(node, /^\(.*\)$/.test(getCode(node))
@@ -273,36 +300,138 @@ Base.exports.PaperScript = function() {
             }
         }
 
-        function handleExports(node) {
+        // Collects the names that a declaration's identifier or destructuring
+        // pattern declares:
+        function collectNames(node, names) {
+            switch (node.type) {
+            case 'Identifier':
+                names.push(node.name);
+                break;
+            case 'ObjectPattern':
+                node.properties.forEach(function(property) {
+                    collectNames(property.value || property.argument, names);
+                });
+                break;
+            case 'ArrayPattern':
+                node.elements.forEach(function(element) {
+                    if (element)
+                        collectNames(element, names);
+                });
+                break;
+            case 'AssignmentPattern':
+                collectNames(node.left, names);
+                break;
+            case 'RestElement':
+                collectNames(node.argument, names);
+                break;
+            }
+        }
+
+        // The number of modules imported with named specifiers, for the names
+        // of the variables that hold them:
+        var moduleCount = 0,
+            // Whether the code exports with ES module syntax, to mark it so:
+            isModule = false;
+
+        // Static imports are turned into calls of __$import__(), which
+        // execute() binds to the loader in options.load. `as` asks for the
+        // module's 'default' export or its 'namespace', see __$import__():
+        function getImport(source, as) {
+            return '__$import__(' + JSON.stringify(source.value)
+                    + (as ? ', "' + as + '"' : '') + ')';
+        }
+
+        function handleModules(node) {
 			switch (node.type) {
+            case 'ImportExpression':
+                // `import(specifier)` resolves to the module's namespace, as a
+                // Promise, so a failed load rejects instead of throwing:
+                replaceCode(node, 'Promise.resolve().then(function() { '
+                        + 'return __$import__(' + getCode(node.source)
+                        + ', "dynamic"); })');
+                break;
+            case 'ImportDeclaration':
+                // `import x from 'm'` assigns the module's default export,
+                // `import * as x from 'm'` its namespace, and
+                // `import { a, b as c } from 'm'` reads names from its exports:
+                var module = getImport(node.source),
+                    named = [];
+                var vars = node.specifiers.map(function(specifier) {
+                    var local = specifier.local.name;
+                    if (specifier.type === 'ImportSpecifier') {
+                        named.push(local + ' = ' + '__$module' + moduleCount
+                                + '__.' + specifier.imported.name);
+                        return null;
+                    }
+                    return local + ' = ' + getImport(node.source,
+                            specifier.type === 'ImportDefaultSpecifier'
+                                ? 'default' : 'namespace');
+                }).filter(Boolean);
+                if (named.length) {
+                    vars.push('__$module' + moduleCount + '__ = ' + module);
+                    Base.push(vars, named);
+                    moduleCount++;
+                }
+                replaceCode(node, vars.length
+                        ? 'var ' + vars.join(', ') + ';'
+                        : module + ';');
+                break;
+            case 'ExportAllDeclaration':
+                // `export * as x from 'm'`, and `export * from 'm'`, which
+                // leaves out the default export, as in ES modules:
+                isModule = true;
+                replaceCode(node, node.exported
+                        ? 'module.exports.' + node.exported.name + ' = '
+                            + getImport(node.source, 'namespace') + ';'
+                        : '(function(m) { for (var k in m) if (k !== '
+                            + '"default") module.exports[k] = m[k]; })('
+                            + getImport(node.source) + ');');
+                break;
             case 'ExportDefaultDeclaration':
-                // Convert `export default` to `module.exports = ` statements:
+                // Convert `export default` to `module.exports.default = `,
+                // next to the named exports:
+                isModule = true;
                 replaceCode({
                     range: [node.start, node.declaration.start]
-                }, 'module.exports = ');
+                }, 'module.exports.default = ');
                 break;
             case 'ExportNamedDeclaration':
+                isModule = true;
                 // Convert named exports to `module.exports.NAME = NAME;`
                 // statements both for new declarations and existing specifiers:
                 var declaration = node.declaration;
                 var specifiers = node.specifiers;
                 if (declaration) {
-                    var declarations = declaration.declarations;
-                    if (declarations) {
-                        declarations.forEach(function(dec) {
-                            replaceCode(dec, 'module.exports.' + getCode(dec));
+                    // Declare variables, functions and classes as they are,
+                    // and export the declared names after:
+                    var names = [];
+                    if (declaration.declarations) {
+                        declaration.declarations.forEach(function(dec) {
+                            collectNames(dec.id, names);
                         });
-                        replaceCode({
-                            range: [
-                                node.start,
-                                declaration.start + declaration.kind.length
-                            ]
-                        }, '');
+                    } else {
+                        names.push(declaration.id.name);
                     }
+                    // Variable declarations may end without a semicolon,
+                    // which the exports added after them need:
+                    var code = getCode(declaration);
+                    if (declaration.declarations && !/;\s*$/.test(code))
+                        code += ';';
+                    replaceCode(node, code + names.map(
+                        function(name) {
+                            return ' module.exports.' + name + ' = ' + name
+                                    + ';';
+                        }).join(''));
                 } else if (specifiers) {
+                    // `export { a, b as c }` exports the local names under
+                    // the exported ones, and `export { a } from 'm'` those
+                    // of another module:
+                    var source = node.source && getImport(node.source) + '.';
                     var exports = specifiers.map(function(specifier) {
-                        var name = getCode(specifier);
-                        return 'module.exports.' + name + ' = ' + name + '; ';
+                        var local = specifier.local.name,
+                            exported = specifier.exported.name;
+                        return 'module.exports.' + exported + ' = '
+                                + (source || '') + local + '; ';
                     }).join('');
                     if (exports) {
                         replaceCode(node, exports);
@@ -312,9 +441,17 @@ Base.exports.PaperScript = function() {
             }
         }
 
+        // The number of functions that walkAST() is inside of, to find
+        // top-level `await`, which makes the whole script an async function:
+        var functions = 0,
+            isAsync = false;
+
         // Recursively walks the AST and replaces the code of certain nodes
         function walkAST(node, parent, paperFeatures) {
             if (node) {
+                var isFunction = /Function/.test(node.type);
+                if (isFunction)
+                    functions++;
                 // The easiest way to walk through the whole AST is to simply
                 // loop over each property of the node and filter out fields we
                 // don't need to consider...
@@ -332,11 +469,17 @@ Base.exports.PaperScript = function() {
                         }
                     }
                 }
+                if (isFunction)
+                    functions--;
+                if (!functions && (node.type === 'AwaitExpression'
+                        || node.type === 'ForOfStatement' && node.await)) {
+                    isAsync = true;
+                }
                 if (paperFeatures.operatorOverloading !== false) {
                     handleOverloading(node, parent);
                 }
                 if (paperFeatures.moduleExports !== false) {
-                    handleExports(node);
+                    handleModules(node);
                 }
             }
         }
@@ -431,6 +574,13 @@ Base.exports.PaperScript = function() {
                 preserveParens: true,
                 sourceType: 'module'
             }), null, paperFeatures);
+            // Mark ES modules like Babel and TypeScript do, so importers can
+            // tell their default export from CommonJS-style exports. Added on
+            // a new line at the end, so the lines before keep their numbers:
+            if (isModule) {
+                code += '\nObject.defineProperty(module.exports, '
+                        + '"__esModule", { value: true });';
+            }
         }
         if (map) {
             if (offsetCode) {
@@ -452,7 +602,8 @@ Base.exports.PaperScript = function() {
             url: url,
             source: source,
             code: code,
-            map: map
+            map: map,
+            async: isAsync
         };
     }
 
@@ -473,11 +624,28 @@ Base.exports.PaperScript = function() {
      * @option options.handlers {String[]} the names of further global
      *     handlers to export next to `onFrame`, `onResize` and the tool's
      *     handlers, for hosts that call them themselves
+     * @option options.load {Function} the loader for static `import`
+     *     statements, called with the specifier as written and the
+     *     `options.url` of the importing script, and returning the module's
+     *     exports, e.g. the result of executing it. Modules with ES `export`
+     *     statements have their default export as `default` and are marked
+     *     with `__esModule`, so `import x` receives the default export, and
+     *     for CommonJS-style exports the whole exports. `import * as x`
+     *     receives all exports, and for CommonJS-style exports, these as
+     *     `default` too. Dynamic `import(specifier)` resolves to that
+     *     namespace as a Promise, and its loader may return a Promise as well.
+     *     The loader runs each module once and handles cycles. Parsing
+     *     `import` requires a current Acorn as `self.acorn`
+     *
+     * Code with top-level `await` runs as an async function. `execute()` then
+     * returns a Promise of the exports, and installs the global handlers once
+     * it resolves. Parsing it requires a current Acorn as `self.acorn`.
      *
      * @param {String} code the PaperScript code
      * @param {PaperScope} scope the scope for which the code is executed
      * @param {Object} [options] the compilation options
-     * @return {Object} the exports defined in the executed code
+     * @return {Object|Promise} the exports defined in the executed code, or
+     *     with top-level `await`, a Promise of them
      */
     function execute(code, scope, options) {
         // Set currently active scope.
@@ -509,14 +677,17 @@ Base.exports.PaperScript = function() {
         code = compiled.code;
         function expose(scope, hidden) {
             // Look through all enumerable properties on the scope and expose
-            // these too as pseudo-globals, but only if they seem to be in use,
-            // and don't shadow existing globals, such as the native Event,
-            // MouseEvent and Symbol, as PaperScope#install() doesn't either:
+            // these too as pseudo-globals, but only if they seem to be in use.
+            // The inherited classes don't shadow existing globals, such as the
+            // native Event, MouseEvent and Symbol, as PaperScope#install()
+            // doesn't either, but fields set on the scope itself do, e.g. a
+            // console that a host provides:
             for (var key in scope) {
                 // Next to \b well also need to match \s and \W in the beginning
                 // of $__, since $ is not part of \w. And that causes \b to not
                 // match ^ longer, so include that specifically too.
-                if ((hidden || !/^_/.test(key) && !(key in self))
+                if ((hidden || !/^_/.test(key)
+                        && (!(key in self) || scope.hasOwnProperty(key)))
                         && new RegExp('([\\b\\s\\W]|^)'
                         + key.replace(/\$/g, '\\$') + '\\b').test(code)) {
                     params.push(key);
@@ -524,8 +695,38 @@ Base.exports.PaperScript = function() {
                 }
             }
         }
-        expose({ __$__: __$__, $__: $__, paper: scope, tool: tool },
-                true);
+        // Static imports call the loader that the host passes, see
+        // handleModules():
+        var load = options && options.load,
+            url = options && options.url;
+        function __$import__(specifier, as) {
+            if (!load) {
+                throw new Error('Unable to import \'' + specifier + '\': no '
+                        + 'loader was passed to PaperScript.execute().');
+            }
+            var exports = load(specifier, url);
+            // Dynamic imports may receive a Promise from the loader:
+            return as === 'dynamic'
+                    ? Promise.resolve(exports).then(function(exports) {
+                        return getImported(exports, 'namespace');
+                    })
+                    : getImported(exports, as);
+        }
+
+        // ES modules have their default export as `default`, and their exports
+        // as their namespace. CommonJS-style exports are the default export,
+        // and also appear in the namespace, as in Node:
+        function getImported(exports, as) {
+            var isModule = exports && exports.__esModule;
+            return as === 'default'
+                    ? isModule ? exports.default : exports
+                    : as === 'namespace' && !isModule
+                        ? Base.set({ default: exports }, exports)
+                        : exports;
+        }
+        expose({ __$__: __$__, $__: $__, __$assign__: __$assign__,
+                __$import__: __$import__,
+                paper: scope, tool: tool }, true);
         expose(scope);
         // Add a fake `module.exports` object so PaperScripts can export things.
         code = 'var module = { exports: {} }; ' + code;
@@ -547,7 +748,10 @@ Base.exports.PaperScript = function() {
         }
         // End by returning `module.exports` at the end of the generated code:
         code += '\nreturn module.exports;';
-        var agent = paper.agent;
+        // Top-level `await` requires an async function:
+        var signature = (compiled.async ? 'async ' : '') + 'function('
+                + params + ') {',
+            agent = paper.agent;
         if (document && (agent.chrome
                 || agent.firefox && agent.versionNumber < 40)) {
             // On older Firefox, all error numbers inside dynamically compiled
@@ -563,42 +767,49 @@ Base.exports.PaperScript = function() {
             if (agent.firefox)
                 code = '\n' + code;
             script.appendChild(document.createTextNode(
-                'document.__paperscript__ = function(' + params + ') {' +
-                    code +
-                '\n}'
+                'document.__paperscript__ = ' + signature + code + '\n}'
             ));
             head.appendChild(script);
             func = document.__paperscript__;
             delete document.__paperscript__;
             head.removeChild(script);
         } else {
-            func = Function(params, code);
+            // Return the function from a wrapper, as Function() can't create
+            // async functions. The code stays on the same line as with
+            // Function(params, code), for the line numbers of source maps:
+            func = Function('return ' + signature + code + '\n}')();
         }
-        var exports = func && func.apply(scope, args);
-        var obj = exports || {};
-        // Now install the 'global' tool and view handlers, and we're done!
-        Base.each(toolHandlers, function(key) {
-            var value = obj[key];
-            if (value)
-                tool[key] = value;
-        });
-        if (view) {
-            if (obj.onResize)
-                view.setOnResize(obj.onResize);
-            // Emit resize event directly, so any user
-            // defined resize handlers are called.
-            view.emit('resize', {
-                size: view.size,
-                delta: new Point()
+
+        // Install the 'global' tool and view handlers, and we're done!
+        function install(exports) {
+            var obj = exports || {};
+            Base.each(toolHandlers, function(key) {
+                var value = obj[key];
+                if (value)
+                    tool[key] = value;
             });
-            if (obj.onFrame)
-                view.setOnFrame(obj.onFrame);
-            // Automatically request an update at the end. This is only needed
-            // if the script does not actually produce anything yet, and the
-            // used canvas contains previous content.
-            view.requestUpdate();
+            if (view) {
+                if (obj.onResize)
+                    view.setOnResize(obj.onResize);
+                // Emit resize event directly, so any user
+                // defined resize handlers are called.
+                view.emit('resize', {
+                    size: view.size,
+                    delta: new Point()
+                });
+                if (obj.onFrame)
+                    view.setOnFrame(obj.onFrame);
+                // Automatically request an update at the end. This is only
+                // needed if the script does not actually produce anything yet,
+                // and the used canvas contains previous content.
+                view.requestUpdate();
+            }
+            return exports;
         }
-        return exports;
+
+        var exports = func && func.apply(scope, args);
+        // Async functions return a Promise of the exports:
+        return compiled.async ? exports.then(install) : install(exports);
     }
 
     function loadScript(script) {

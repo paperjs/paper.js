@@ -84,6 +84,9 @@ var PathFlattener = Base.extend({
                         curve: curve,
                         index: index,
                         time: t2,
+                        // On straight parts, curve-time doesn't follow their
+                        // length, see _get():
+                        isStraight: Curve.isStraight(curve)
                     });
                 }
             }
@@ -129,12 +132,19 @@ var PathFlattener = Base.extend({
                     // Make sure we only use the previous parameter value if its
                     // for the same curve, by checking index. Use 0 otherwise.
                     prevTime = prev && prev.index === part.index ? prev.time : 0,
-                    prevOffset = prev ? prev.offset : 0;
+                    prevOffset = prev ? prev.offset : 0,
+                    factor = (offset - prevOffset) / (part.offset - prevOffset);
+                if (part.isStraight) {
+                    // The part's time at the point on its line:
+                    var v = part.curve;
+                    factor = Curve.getTimeOf(v, new Point(
+                            v[0] + (v[6] - v[0]) * factor,
+                            v[1] + (v[7] - v[1]) * factor));
+                }
                 return {
                     index: part.index,
                     // Interpolate
-                    time: prevTime + (part.time - prevTime)
-                        * (offset - prevOffset) / (part.offset - prevOffset)
+                    time: prevTime + (part.time - prevTime) * factor
                 };
             }
         }
@@ -143,19 +153,6 @@ var PathFlattener = Base.extend({
             index: parts[length - 1].index,
             time: 1
         };
-    },
-
-    drawPart: function(ctx, from, to) {
-        var start = this._get(from),
-            end = this._get(to);
-        for (var i = start.index, l = end.index; i <= l; i++) {
-            var curve = Curve.getPart(this.curves[i],
-                    i === start.index ? start.time : 0,
-                    i === end.index ? end.time : 1);
-            if (i === start.index)
-                ctx.moveTo(curve[0], curve[1]);
-            ctx.bezierCurveTo.apply(ctx, curve.slice(2));
-        }
     }
 }, Base.each(Curve._evaluateMethods,
     function(name) {

@@ -24,6 +24,9 @@
  */
 var Layer = Group.extend(/** @lends Layer# */{
     _class: 'Layer',
+    // Counts the changes of the layer's text wraps, by which its area texts
+    // know to lay out again, see Item#textWrap:
+    _textWrapVersion: 0,
     // Turn on again for now, since examples depend on it.
     // TODO: Discus with @puckey and come to a conclusion
     // _selectChildren: false,

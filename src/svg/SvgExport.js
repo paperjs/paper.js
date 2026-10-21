@@ -304,24 +304,178 @@ new function() {
         return 'url(#' + gradientNode.id + ')';
     }
 
-    function exportText(item) {
+    function exportShadow(item, options) {
+        // Shadows as SVG 1.1 filters, which browsers and editors render, with
+        // their region in percent of the element's bounds, as Illustrator drops
+        // items with fractions. Items without width or height can't have one,
+        // so leave their shadows out (#1003):
+        var box = item.getInternalBounds();
+        if (!box.width || !box.height)
+            return null;
+        var style = item._style,
+            color = style.getShadowColor(),
+            offset = style.getShadowOffset(),
+            // Canvas blurs with a standard deviation of half the shadow blur:
+            deviation = style.getShadowBlur() / 2,
+            // Cover the item and its shadow in its own coordinates, with the
+            // blur up to three times its standard deviation:
+            bounds = item.getStrokeBounds(new Matrix()),
+            rect = bounds.unite(new Rectangle(bounds.getPoint().add(offset),
+                    bounds.getSize())).expand(6 * deviation),
+            region = new Matrix().scale(100 / box.width, 100 / box.height)
+                    .translate(box.getPoint().negate())._transformBounds(rect),
+            filter = SvgElement.create('filter');
+
+        function add(type, attrs) {
+            filter.appendChild(SvgElement.create(type, attrs, formatter));
+        }
+
+        Base.each(['x', 'y', 'width', 'height'], function(key) {
+            filter.setAttribute(key, formatter.number(region[key]) + '%');
+        });
+
+        // SVG 1.1 renders a blur of 0 as nothing, so leave it out then:
+        if (deviation > 0) {
+            add('feGaussianBlur', {
+                'in': 'SourceAlpha',
+                stdDeviation: deviation,
+                result: 'blur'
+            });
+        }
+        add('feOffset', {
+            'in': deviation > 0 ? 'blur' : 'SourceAlpha',
+            dx: offset.x,
+            dy: offset.y,
+            result: 'offset'
+        });
+        add('feFlood', {
+            'flood-color': color.toCSS(true),
+            'flood-opacity': color.getAlpha(),
+            result: 'color'
+        });
+        add('feComposite', {
+            'in': 'color',
+            in2: 'offset',
+            operator: 'in',
+            result: 'shadow'
+        });
+        add('feComposite', {
+            'in': 'SourceGraphic',
+            in2: 'shadow',
+            operator: 'over'
+        });
+        setDefinition(item, filter, 'filter', options);
+        return 'url(#' + filter.id + ')';
+    }
+
+    function exportText(item, options) {
         var attrs = getTransform(item._matrix, true),
             node = SvgElement.create('text', attrs, formatter),
-            lines = item._lines;
-        if (lines.length > 1) {
+            story = item._story,
+            lines = item._getLayout(),
+            isPointText = item instanceof PointText;
+
+        // A <tspan> with the attributes of the paragraph's or the run's styles
+        // that are mixed in the text, and so not on the <text> itself:
+        function createSpan(content, style, spanAttrs, isParagraph) {
+            spanAttrs = Base.set({}, spanAttrs);
+            Base.each(SvgStyles, function(entry) {
+                if ((entry.property in story._paragraphKeys) === isParagraph
+                        && item[entry.get]() === undefined) {
+                    var value = style[entry.get]();
+                    if (value !== undefined)
+                        setAttributes(spanAttrs, [], entry, value, options);
+                }
+            });
+            var span = SvgElement.create('tspan', spanAttrs, formatter);
+            if (content != null)
+                span.textContent = content;
+            return span;
+        }
+
+        // The line's content, in <tspan> elements for runs of mixed styles,
+        // or as text, if they share them all:
+        function addRuns(parent, line) {
+            var pieces = line.pieces,
+                runs = [];
+            for (var i = 0, l = pieces.length; i < l; i++) {
+                var piece = pieces[i],
+                    last = runs[runs.length - 1];
+                if (last && last.style.equals(piece.style)) {
+                    last.content += piece.content;
+                } else {
+                    runs.push({ content: piece.content, style: piece.style });
+                }
+            }
+            var isMixed = runs.some(function(run) {
+                return createSpan(null, run.style, null, false)
+                        .attributes.length > 0;
+            });
+            if (isMixed) {
+                for (var i = 0, l = runs.length; i < l; i++) {
+                    parent.appendChild(createSpan(runs[i].content,
+                            runs[i].style, null, false));
+                }
+            } else {
+                parent.textContent = runs.map(function(run) {
+                    return run.content;
+                }).join('');
+            }
+        }
+
+        if (isPointText) {
             // SVG text has no line breaks, so place each line in a <tspan> at
-            // its own baseline. Use absolute y, as empty lines drop dy:
-            var leading = item._style.getLeading();
-            for (var i = 0, l = lines.length; i < l; i++) {
-                var span = SvgElement.create('tspan', {
-                    x: attrs.x,
-                    y: attrs.y + i * leading
-                }, formatter);
-                span.textContent = lines[i];
-                node.appendChild(span);
+            // its own baseline, and where its justification and indents
+            // anchor it. Use absolute y, as empty lines drop dy:
+            if (lines.length > 1) {
+                for (var i = 0, l = lines.length; i < l; i++) {
+                    var line = lines[i],
+                        paragraph = story._getParagraph(line.start).style,
+                        side = item._getSide(paragraph.getJustification(),
+                            paragraph.getDirection()),
+                        span = createSpan(null, paragraph, {
+                            x: attrs.x + line.x + (side === 'right'
+                                    ? line.width
+                                    : side === 'center' ? line.width / 2 : 0),
+                            y: attrs.y + line.y
+                        }, true);
+                    addRuns(span, line);
+                    node.appendChild(span);
+                }
+            } else if (lines.length) {
+                addRuns(node, lines[0]);
             }
         } else {
-            node.textContent = item._content;
+            // SVG 1.1 doesn't lay out area text or text on paths, so place
+            // each line in a <tspan>, and each of its pieces in one at its
+            // place, turned with its letters, from their start whatever the
+            // text's justification anchors:
+            var justification = item.getJustification(),
+                anchor = justification && justification !== 'left'
+                        && { 'text-anchor': 'start' };
+            for (var i = 0, l = lines.length; i < l; i++) {
+                var line = lines[i],
+                    pieces = line.pieces,
+                    span = SvgElement.create('tspan', Base.set({
+                        x: attrs.x + line.x,
+                        y: attrs.y + line.y
+                    }, anchor), formatter);
+                for (var j = 0, m = pieces.length; j < m; j++) {
+                    var piece = pieces[j],
+                        angle = piece.rotation,
+                        origin = new Point(piece.dx || 0, 0).rotate(angle)
+                                .add(piece.x, line.y + piece.y),
+                        pieceAttrs = {
+                            x: attrs.x + origin.x,
+                            y: attrs.y + origin.y
+                        };
+                    if (angle)
+                        pieceAttrs.rotate = angle;
+                    span.appendChild(createSpan(piece.content, piece.style,
+                            pieceAttrs, false));
+                }
+                node.appendChild(span);
+            }
         }
         return node;
     }
@@ -334,7 +488,9 @@ new function() {
         Shape: exportShape,
         CompoundPath: exportCompoundPath,
         SymbolItem: exportSymbolItem,
-        PointText: exportText
+        PointText: exportText,
+        PathText: exportText,
+        AreaText: exportText
     };
 
     // The blend modes of CSS's mix-blend-mode, which other SVG viewers render.
@@ -345,6 +501,47 @@ new function() {
             'color', 'luminosity'], function(mode) {
         this[mode] = true;
     }, {});
+
+    // Set the attributes of the style entry with its value, or its CSS style:
+    function setAttributes(attrs, style, entry, value, options) {
+        var type = entry.type;
+        if (type === 'color' && value != null) {
+            // Support for css-style rgba() values is not in SVG 1.1, so
+            // separate the alpha value of colors with alpha into the
+            // separate fill- / stroke-opacity attribute:
+            var alpha = value.getAlpha();
+            if (alpha < 1)
+                attrs[entry.attribute + '-opacity'] = alpha;
+        }
+        if (type === 'style') {
+            if (cssBlendModes[value]) {
+                style.push(entry.attribute + ': ' + value);
+            } else {
+                attrs['data-paper-blend-mode'] = value;
+            }
+        } else if (type === 'font') {
+            // Paper.js combines the font style with the weight, while
+            // SVG keeps it in its own attribute:
+            var font = ('' + value).match(
+                    /^(.*?)\s*\b(italic|oblique)\b\s*(.*)$/i);
+            attrs[entry.attribute] = font
+                    ? (font[1] + ' ' + font[3]).trim() || 'normal'
+                    : value;
+            if (font)
+                attrs['font-style'] = font[2].toLowerCase();
+        } else {
+            attrs[entry.attribute] = value == null ? 'none'
+                    : type === 'color' ? value.gradient
+                        // true for noAlpha, see above
+                        ? exportGradient(value, options)
+                        : value.toCSS(true)
+                    : type === 'array' ? value.join(',')
+                    : type === 'lookup' ? entry.toSVG[value]
+                    // Tracking is in thousandths of an em:
+                    : type === 'tracking' ? value && value / 1000 + 'em'
+                    : value;
+        }
+    }
 
     function applyStyle(item, node, options, isRoot) {
         var attrs = {},
@@ -360,7 +557,6 @@ new function() {
             // Get a given style only if it differs from the value on the parent
             // (A layer or group which can have style values in SVG).
             var get = entry.get,
-                type = entry.type,
                 value = item[get]();
             if (parent && !(get in parentStyle))
                 parentStyle[get] = parent[get]();
@@ -369,50 +565,18 @@ new function() {
                     ? entry.exportFilter(item, value)
                     : options.reduceAttributes == false
                         || !parent || !Base.equals(parentStyle[get], value))) {
-                if (type === 'color' && value != null) {
-                    // Support for css-style rgba() values is not in SVG 1.1, so
-                    // separate the alpha value of colors with alpha into the
-                    // separate fill- / stroke-opacity attribute:
-                    var alpha = value.getAlpha();
-                    if (alpha < 1)
-                        attrs[entry.attribute + '-opacity'] = alpha;
-                }
-                if (type === 'style') {
-                    if (cssBlendModes[value]) {
-                        style.push(entry.attribute + ': ' + value);
-                    } else {
-                        attrs['data-paper-blend-mode'] = value;
-                    }
-                } else if (type === 'font') {
-                    // Paper.js combines the font style with the weight, while
-                    // SVG keeps it in its own attribute:
-                    var font = ('' + value).match(
-                            /^(.*?)\s*\b(italic|oblique)\b\s*(.*)$/i);
-                    attrs[entry.attribute] = font
-                            ? (font[1] + ' ' + font[3]).trim() || 'normal'
-                            : value;
-                    if (font)
-                        attrs['font-style'] = font[2].toLowerCase();
-                } else {
-                    attrs[entry.attribute] = value == null ? 'none'
-                            : type === 'color' ? value.gradient
-                                // true for noAlpha, see above
-                                ? exportGradient(value, options)
-                                : value.toCSS(true)
-                            : type === 'array' ? value.join(',')
-                            : type === 'lookup' ? entry.toSVG[value]
-                            // Tracking is in thousandths of an em:
-                            : type === 'tracking' ? value && value / 1000 + 'em'
-                            : value;
-                }
+                setAttributes(attrs, style, entry, value, options);
             }
         });
 
+        // Groups don't draw shadows, so only export those of the item itself:
+        var filter = item._style.getShadowColor(true) && item.hasShadow()
+                && exportShadow(item, options);
+        if (filter)
+            attrs.filter = filter;
+
         if (style.length)
             attrs.style = style.join(';');
-
-        if (attrs.opacity === 1)
-            delete attrs.opacity;
 
         if (!item._visible)
             attrs.visibility = 'hidden';
@@ -473,8 +637,10 @@ new function() {
             definitions = null;
         }
         parentStyles = null;
+        // Illustrator ignores filters without line breaks around them:
         return options.asString
                 ? new self.XMLSerializer().serializeToString(svg)
+                    .replace(/<defs>|<\/filter>|<\/defs>/g, '$&\n')
                 : svg;
     }
 

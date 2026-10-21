@@ -732,3 +732,29 @@ test('Path#closed with blend mode', function() {
     view.update();
     expect(0);
 });
+
+test('Path#dashArray and #dashOffset draw dashes', function() {
+    var layer = new Layer(),
+        path = new Path({
+            segments: [[0, 5], [40, 5]],
+            strokeColor: 'red',
+            strokeWidth: 10,
+            dashArray: [10, 5]
+        }),
+        red = new Color(1, 0, 0, 1),
+        none = new Color(0, 0, 0, 0);
+
+    function testPixels(pixels, message) {
+        var raster = layer.rasterize(72, false);
+        for (var x in pixels) {
+            equals(raster.getPixel(+x, 5), pixels[x] ? red : none,
+                    message + ', pixel at x = ' + x);
+        }
+    }
+
+    // Dashes from 0 to 10, 15 to 25 and 30 to 40:
+    testPixels({ 2: 1, 12: 0, 17: 1, 27: 0, 37: 1 }, 'dashArray');
+    path.dashOffset = 5;
+    // Dashes from 0 to 5, 10 to 20 and 25 to 35:
+    testPixels({ 2: 1, 7: 0, 17: 1, 22: 0, 37: 0 }, 'dashOffset');
+});

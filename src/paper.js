@@ -85,6 +85,10 @@ var paper = function(self, undefined) {
 
 /*#*/ include('text/TextItem.js');
 /*#*/ include('text/PointText.js');
+/*#*/ include('text/PathText.js');
+/*#*/ include('text/AreaText.js');
+/*#*/ include('text/TextStory.js');
+/*#*/ include('text/TextRange.js');
 
 /*#*/ include('style/Color.js');
 /*#*/ include('style/Gradient.js');
@@ -111,9 +115,9 @@ var paper = function(self, undefined) {
 
 /*#*/ include('canvas/CanvasProvider.js');
 /*#*/ include('canvas/BlendMode.js');
-/*#*/ if (__options.sourced) {
+/*#*/ if (__options.hosted) {
 /*#*/     include('item/HostItem.js');
-/*#*/     include('item/Item.Sourced.js');
+/*#*/     include('item/Item.Hosted.js');
 /*#*/ }
 
 /*#*/ if (__options.load) {

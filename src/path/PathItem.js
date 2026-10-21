@@ -347,9 +347,16 @@ var PathItem = Item.extend(/** @lends PathItem# */{
             matrix2 = self ? matrix1
                 : (_matrix || path._matrix)._orNullIfIdentity();
         // First check the bounds of the two paths. If they don't intersect,
-        // we don't need to iterate through their curves.
-        return self || this.getBounds(matrix1).intersects(
-                path.getBounds(matrix2), /*#=*/Numerical.EPSILON)
+        // we don't need to iterate through their curves. Bounds that only
+        // touch need a tolerance, also at large coordinates:
+        var bounds1 = !self && this.getBounds(matrix1),
+            bounds2 = !self && path.getBounds(matrix2),
+            abs = Math.abs;
+        return self || bounds1.intersects(bounds2, Numerical.getEpsilon(
+                Math.max(abs(bounds1.left), abs(bounds1.right),
+                    abs(bounds1.top), abs(bounds1.bottom),
+                    abs(bounds2.left), abs(bounds2.right),
+                    abs(bounds2.top), abs(bounds2.bottom))))
                 ? Curve.getIntersections(
                         this.getCurves(), !self && path.getCurves(), include,
                         matrix1, matrix2, _returnFirst)

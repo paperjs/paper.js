@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Area Text</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        var words = 'Text flows inside an area, line by line, broken where '
+                + 'the words no longer fit, or at their soft hy\u00adphens, '
+                + 'and on into the next col\u00adumn. ';
+        // Two justified columns in a rectangle:
+        var text = new AreaText(new Rectangle(40, 40, 420, 260));
+        text.columns = 2;
+        text.gutter = 20;
+        text.content = words + words + words + '\n' + words + words + words
+                + words + words + words + words;
+        text.fontFamily = 'Georgia';
+        text.fontSize = 15;
+        text.justification = 'justify';
+        text.paragraphs[1].fillColor = '#c04';
+
+        // A circle, linked to the rectangle, so the story flows on into it:
+        var circle = new AreaText(new Path.Circle({
+            center: [640, 200],
+            radius: 140
+        }));
+        circle.fontFamily = 'Georgia';
+        circle.fontSize = 15;
+        circle.justification = 'center';
+        text.link(circle);
+
+        // A heading with balanced lines, in an area as high as they need:
+        var heading = new AreaText(new Rectangle(40, 340, 420, 0));
+        heading.content = 'A heading whose lines are balanced, so the last '
+                + 'one is not left alone';
+        heading.fontFamily = 'Georgia';
+        heading.fontSize = 28;
+        heading.lineWrap = 'balance';
+        heading.fitHeight();
+
+        // Show the guides, which the text items don't draw:
+        var guides = new Group([heading.textPath.clone(),
+                text.textPath.clone(), circle.textPath.clone()]);
+        guides.strokeColor = '#ddd';
+        guides.sendToBack();
+
+        // A circle above the columns, which pushes their text aside, and
+        // follows the mouse:
+        var wrap = new Path.Circle({
+            center: [250, 170],
+            radius: 50,
+            fillColor: '#048',
+            textWrap: { offset: 8 }
+        });
+
+        function onMouseMove(event) {
+            wrap.position = event.point;
+        }
+    </script>
+</head>
+<body>
+    <canvas id="canvas" resize></canvas>
+</body>
+</html>

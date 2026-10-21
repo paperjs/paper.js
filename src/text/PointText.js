@@ -76,88 +76,56 @@ var PointText = TextItem.extend(/** @lends PointText# */{
         this.translate(point.subtract(this._matrix.getTranslation()));
     },
 
-    _draw: function(ctx, param, viewMatrix) {
-        if (param.dontFinish || param.clip) {
-            // The glyph outlines aren't known, so clip with the bounds (#1845):
-            var rect = this.getInternalBounds();
-            if (!param.dontStart)
-                ctx.beginPath();
-            ctx.rect(rect.x, rect.y, rect.width, rect.height);
-        } else if (this._content) {
-            this._setStyles(ctx, param, viewMatrix);
-            var lines = this._lines,
-                style = this._style,
-                hasFill = style.hasFill(),
-                hasStroke = style.hasStroke(),
-                leading = style.getLeading(),
-                shadowColor = ctx.shadowColor;
-            // Glyphs can only be stroked through the transformation, unlike
-            // paths, so approximate non-scaling strokes by dividing the width
-            // and the dashes by the scale (#1703):
-            if (hasStroke && !style.getStrokeScaling()) {
-                var scale = viewMatrix._getMeanScale();
-                ctx.lineWidth /= scale;
-                if ('setLineDash' in ctx) {
-                    ctx.setLineDash(ctx.getLineDash().map(function(dash) {
-                        return dash / scale;
-                    }));
-                    ctx.lineDashOffset /= scale;
-                }
+    // The lines of the text as canvas lays them out, see #_measure(): one per
+    // paragraph, each moving down by its own line height from the first
+    // baseline at 0, and by the space between its paragraph and the one
+    // before, aligned by its paragraph's justification and indents:
+    // @override
+    _layOut: function() {
+        var story = this._story,
+            length = story._content.length,
+            paragraphs = new TextRange(story, this._getStart(), length)
+                    .getParagraphs(),
+            lines = [],
+            y = 0,
+            spaceAfter = 0;
+        for (var i = 0, l = paragraphs.length; i < l; i++) {
+            var range = paragraphs[i],
+                paragraph = story._getParagraph(range._start).style,
+                line = this._measure(range._start, range._end);
+            if (i > 0) {
+                y += line.lineHeight + Math.max(spaceAfter,
+                        paragraph.getSpaceBefore());
             }
-            ctx.font = style.getFontStyle();
-            ctx.textAlign = style.getJustification();
-            ctx.letterSpacing = style.getTrackingStyle();
-            for (var i = 0, l = lines.length; i < l; i++) {
-                // See Path._draw() for explanation about ctx.shadowColor
-                ctx.shadowColor = shadowColor;
-                var line = lines[i];
-                if (hasFill) {
-                    ctx.fillText(line, 0, 0);
-                    ctx.shadowColor = 'rgba(0,0,0,0)';
-                }
-                if (hasStroke)
-                    ctx.strokeText(line, 0, 0);
-                ctx.translate(0, leading);
-            }
+            spaceAfter = paragraph.getSpaceAfter();
+            line.y = y;
+            this._place(line, paragraph, true,
+                    this._indent(paragraph, true, 0, 0));
+            lines.push(line);
         }
+        this._visibleEnd = length;
+        return lines;
     },
 
     _getBounds: function(matrix, options) {
-        var style = this._style,
-            lines = this._lines,
-            numLines = lines.length,
-            justification = style.getJustification(),
-            leading = style.getLeading(),
-            width = this.getView().getTextWidth(style.getFontStyle(), lines,
-                    style.getTrackingStyle()),
-            x = 0;
-        // Adjust for different justifications.
-        if (justification !== 'left')
-            x -= width / (justification === 'center' ? 2: 1);
-        // Until we don't have baseline measuring, assume 1 / 4 leading as a
-        // rough guess:
-        var rect = new Rectangle(x,
-                    numLines ? - 0.75 * leading : 0,
-                    width, numLines * leading);
+        var lines = this._getLayout(),
+            rect = new Rectangle(),
+            strokeWidth = 0;
+        for (var i = 0, l = lines.length; i < l; i++) {
+            var line = lines[i],
+                box = this._getBox(line, line.x, line.y);
+            rect = i ? rect.unite(box) : box;
+            for (var j = 0, m = line.pieces.length; j < m; j++) {
+                var style = line.pieces[j].style;
+                if (style.hasStroke())
+                    strokeWidth = Math.max(strokeWidth, style.getStrokeWidth());
+            }
+        }
         // The glyph outlines aren't known, so add half the stroke width all
         // around, before transforming as strokes of text always scale. Sharp
         // miter joins can stick out further.
-        if (options.stroke && style.hasStroke())
-            rect = rect.expand(style.getStrokeWidth());
+        if (options.stroke && strokeWidth)
+            rect = rect.expand(strokeWidth);
         return matrix ? matrix._transformBounds(rect, rect) : rect;
-    },
-
-    _hitTestSelf: function(point, options) {
-        // Transparent fills are hit too, see Path#_hitTestSelf():
-        if (options.fill && this.getFillColor()) {
-            // The glyph outlines aren't known, so hit the bounds, also within
-            // the tolerance around them (#632):
-            var bounds = this.getInternalBounds(),
-                closest = point.clamp(bounds.getTopLeft(true),
-                        bounds.getBottomRight(true));
-            if (point.subtract(closest).divide(options._tolerancePadding)
-                    .getLength() <= 1)
-                return new HitResult('fill', this);
-        }
     }
 });

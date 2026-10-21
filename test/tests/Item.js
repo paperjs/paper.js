@@ -241,6 +241,53 @@ test('item.replaceWith(other)', function() {
     }, true);
 });
 
+test('item.replaceWith(...items)', function() {
+    var project = paper.project;
+    var path1 = new Path();
+    var path2 = new Path();
+    var group = new Group([new Path(), new Path()]);
+    var path3 = new Path();
+    var children = group.children.slice();
+    equals(function() {
+        return group.replaceWith(children[0], children[1], path1)
+                == children[0];
+    }, true);
+    equals(function() {
+        return group.parent == null;
+    }, true);
+    equals(project.activeLayer.children,
+            [path2, children[0], children[1], path1, path3]);
+});
+
+test('group.ungroup()', function() {
+    var layer = paper.project.activeLayer;
+    var path1 = new Path.Rectangle([0, 0], [10, 10]);
+    var path2 = new Path.Rectangle([20, 0], [10, 10]);
+    // A nested group that keeps its own matrix:
+    var path3 = new Path.Rectangle([0, 20], [10, 10]);
+    var nested = new Group({ children: [path3], applyMatrix: false });
+    var group = new Group({
+        children: [path1, path2, nested],
+        applyMatrix: false,
+        clipped: true
+    });
+    // Scale the group by 2 around (5, 5), the center of its bounds, which are
+    // those of its clipping mask:
+    group.scale(2);
+    equals(group.ungroup(), [path1, path2, nested]);
+    equals(group.parent, null);
+    equals(layer.children, [path1, path2, nested]);
+    // The children keep their place, and the mask is released:
+    equals(path1.bounds, new Rectangle(-5, -5, 20, 20));
+    equals(path2.bounds, new Rectangle(35, -5, 20, 20));
+    equals(nested.bounds, new Rectangle(-5, 35, 20, 20));
+    equals(nested.matrix, new Matrix(2, 0, 0, 2, -5, -5));
+    equals(path3.segments[1].point, new Point(0, 20));
+    equals(path1.clipMask, false);
+    equals(group.applyMatrix, false);
+    equals(layer.ungroup(), null);
+});
+
 test('item.replaceWith(item)', function() {
     var item = new Path();
     equals(function() {
@@ -486,6 +533,23 @@ test('group.selected', function() {
     equals(function() {
         return path2.selected;
     }, false);
+});
+
+test('item.bounds.selected and item.strokeBounds.selected (#1030)', function() {
+    var path = new Path.Rectangle({
+        point: [10, 10],
+        size: [20, 20],
+        strokeColor: 'black',
+        strokeWidth: 10
+    });
+    path.strokeBounds.selected = true;
+    equals(path.strokeBounds.selected, true, 'strokeBounds.selected');
+    equals(path.bounds.selected, false, 'bounds.selected');
+    equals(path.selected, false, 'selected');
+    path.bounds.selected = true;
+    path.strokeBounds.selected = false;
+    equals(path.strokeBounds.selected, false, 'strokeBounds.selected');
+    equals(path.bounds.selected, true, 'bounds.selected');
 });
 
 test('Check parent children object for named item', function() {
@@ -753,6 +817,25 @@ test('Item#blendMode in a transformed Group', function() {
             'Middle center pixel should be yellow');
 });
 
+test('Item#blendMode = \'multiply\'', function() {
+    // Multiply blends each channel as backdrop * source / 255, which canvas
+    // draws natively, computed by hand below:
+    var layer = new Layer();
+    new Path.Rectangle({
+        size: [100, 100],
+        fillColor: '#ff8033' // 255, 128, 51
+    });
+    new Path.Rectangle({
+        size: [100, 100],
+        fillColor: '#3366ff', // 51, 102, 255
+        blendMode: 'multiply'
+    });
+    var raster = layer.rasterize(72, false);
+    // 255 * 51 / 255, 128 * 102 / 255 (51.2), 51 * 255 / 255:
+    equals(raster.getPixel(50, 50), new Color(51 / 255, 51 / 255, 51 / 255, 1),
+            'pixel');
+});
+
 test('Item#blendMode = \'pin-light\'', function() {
     // Pin light replaces the backdrop with 2 * source where that is darker for
     // sources below 50%, and with 2 * source - 255 where that is lighter for
@@ -786,6 +869,23 @@ test('Item#blendMode = \'pin-light\'', function() {
     equals(raster.getPixel(25, 50), getColor(60, 80, 205), 'left pixel');
     // max(100, 145), min(80, 40), max(50, 25):
     equals(raster.getPixel(75, 50), getColor(145, 40, 50), 'right pixel');
+});
+
+test('paper.support.nativeBlendModes (#2349)', function() {
+    // Canvas supports the CSS blend modes, and Paper.js emulates its own:
+    var nativeModes = paper.support.nativeBlendModes;
+    [
+        'multiply', 'screen', 'overlay', 'darken', 'lighten', 'color-dodge',
+        'color-burn', 'hard-light', 'soft-light', 'difference', 'exclusion',
+        'hue', 'saturation', 'color', 'luminosity'
+    ].forEach(function(mode) {
+        equals(nativeModes[mode], true, mode);
+    });
+    ['add', 'subtract', 'average', 'pin-light', 'negation'].forEach(
+        function(mode) {
+            equals(nativeModes[mode], false, mode);
+        }
+    );
 });
 
 test('Item#opacity', function() {
@@ -1012,7 +1112,7 @@ test('Item#opacity and Item#blendMode on items larger than the view (#1644)', fu
 
 test('Item#shadowOffset and Item#shadowBlur with opacity (#1628)', function() {
     // Items with both a fill and a stroke and an opacity are composited
-    // through a temporary canvas, which needs to include their shadow.
+    // through a temporary canvas, and cast their shadow when compositing it.
     function getPixel(point) {
         var pixelRatio = view.pixelRatio,
             ctx = view.element.getContext('2d');
@@ -1026,10 +1126,11 @@ test('Item#shadowOffset and Item#shadowBlur with opacity (#1628)', function() {
             var point = pixels[i][0],
                 expected = pixels[i][1],
                 actual = getPixel(point);
-            // Allow for rounding of half-transparent channels:
+            // Allow for rounding of half-transparent channels, which Node.js'
+            // canvas does more coarsely for blurred shadows with an alpha:
             equals(function() {
                 return actual.every(function(value, j) {
-                    return Math.abs(value - expected[j]) <= 1;
+                    return Math.abs(value - expected[j]) <= 2;
                 });
             }, true, name + ' at ' + point + ': ' + actual + ', expected: '
                     + expected);

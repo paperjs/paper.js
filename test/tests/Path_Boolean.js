@@ -176,6 +176,27 @@ test('#719', function() {
     compareBoolean(result, expected);
 });
 
+test('#1540, #1541: path.intersect(path, { trace: false }) with closed paths', function() {
+    // Splitting a closed path at its first crossing opens it, and the parts
+    // it starts with mustn't be decided before all splits are done:
+    var small = new Path.Rectangle({ point: [580, 50], size: [100, 100] });
+    var big = new Path.Rectangle({ point: [600, 50], size: [200, 100] });
+    compareBoolean(function() {
+        return small.intersect(big, { trace: false });
+    }, 'M600,50h80M680,50v100M680,150h-80');
+    // Compound paths as the first operand:
+    var compound = new CompoundPath({
+        children: [
+            new Path.Circle({ center: [50, 50], radius: 30 }),
+            new Path.Circle({ center: [150, 50], radius: 30 })
+        ]
+    });
+    var rect = new Path.Rectangle({ point: [40, 0], size: [100, 100] });
+    compareBoolean(function() {
+        return compound.intersect(rect, { trace: false });
+    }, 'M40,21.70706c3.12779,-1.10551 6.49365,-1.70706 10,-1.70706c16.56854,0 30,13.43146 30,30c0,16.56854 -13.43146,30 -30,30c-3.50635,0 -6.87221,-0.60154 -10,-1.70706M140,78.29294c-11.65192,-4.11836 -20,-15.23075 -20,-28.29294c0,-13.06219 8.34808,-24.17458 20,-28.29294');
+});
+
 test('#757 (path1.intersect(pat2, { trace: false }))', function() {
     var rect = new Path.Rectangle({
         from: [100, 250],
@@ -423,6 +444,12 @@ test('#870', function() {
 
     compareBoolean(function() { return path1.intersect(path2); },
         'M50,250l0,-75l50,0l0,75z');
+
+    // With the vertical edges 1e-12 apart, the intersections where they only
+    // touch also need to divide the paths:
+    path2.translate(-1e-12, 0);
+    compareBoolean(function() { return path1.intersect(path2); },
+        'M50,250l0,-75l50,0l0,75z');
 });
 
 test('#875', function() {
@@ -612,7 +639,9 @@ test('#973', function() {
     var orientation = resolved.children.map(function(child) {
         return child.isClockwise();
     });
-    equals(orientation, [true, false, true],
+    // The three lobes are islands of the filled area, which share the same
+    // orientation, as in reorient():
+    equals(orientation, [true, true, true],
             'children orientation after calling path.resolveCrossings()');
 });
 
@@ -1195,7 +1224,9 @@ test('Isolated edge-cases from @iconexperience\'s boolean-test suite', function(
         ['M290.12533,287.90652l22.75403,-2.60738l27.32709,-33.31167l0,0l30.67517,40.04265l-27.52018,-1.40525l1.72814,21.16356l-45.08133,-10.79944l9.90334,-12.07215z', 'M312.87936,285.29914l29.76865,-3.41118l0.71343,8.73692l-33.44985,-1.70803z'],
         ['M371.53494,257.2226c-5.3407,-1.86741 -9.84549,-0.99074 -11.34052,-0.17407l-0.02947,-0.01324c0.0301,-0.00458 0.04264,0.00337 0.03269,0.01116c0.51449,-0.33235 62.44572,-40.28995 70.21684,-21.8115zM360.16495,257.03529c-0.16487,0.02506 -0.85657,0.42566 -1.2654,3.2836l-58.89955,-30.31889z', 'M360.19442,257.04853c0,0 0.00108,-0.0007 0.00322,-0.00208c-0.00089,0.0007 -0.00197,0.0014 -0.00322,0.00208z'],
         ['M409.24903,253.44031c-4.3563,1.32265 -5.54585,2.71876 -5.62356,2.81333l-0.01222,-0.01004c-0.1837,0.27203 -0.74035,1.48841 -0.57864,4.75787l-45.76718,-42.83894z', 'M403.62547,256.25365l-0.01222,-0.01004c0.06335,-0.09382 0.08235,-0.07531 0.01222,0.01004z'],
-        ['M292.94,321.04496l3.31075,-9.23873l-24.81246,-15.67426l0,0l0,0l0,0l0,0l48.44426,-22.36542l-13.5895,23.84665l25.09113,1.06631l18.61582,47.08061l-52.31238,-33.04622z', 'M296.25075,311.80623l5.16049,-14.40049l0,0l4.88182,0.20746l-8.60544,15.1007zM301.41124,297.40574l-29.97295,-1.27377l0,0l0,0z'],
+        // The intersection has no zero-area sliver along the shared edge, as
+        // results only consist of the outlines of areas:
+        ['M292.94,321.04496l3.31075,-9.23873l-24.81246,-15.67426l0,0l0,0l0,0l0,0l48.44426,-22.36542l-13.5895,23.84665l25.09113,1.06631l18.61582,47.08061l-52.31238,-33.04622z', 'M296.25075,311.80623l5.16049,-14.40049l0,0l4.88182,0.20746l-8.60544,15.1007z'],
         ['M349.2989,302.36012l-42.41417,8.48166l1.38218,-3.27015l0,0l-2.93573,-15.78682l-10.2988,-2.47711l9.58086,-1.38362l-7.18085,-38.61489l32.81153,6.26643l-16.1911,38.30696z', 'M304.61324,287.92408l12.73541,-1.83919l-3.29583,7.79769l-8.72164,-2.09777zM308.40197,308.29791l-1.51724,2.54387l1.38218,-3.27015z'],
         ['M150,290l30,-30l50,10l-24,16l14,14l-50,10l21.17647,-14.11765z', 'M191.17647,295.88235l14.82353,-9.88235l14,14z'],
         ['M324.40827,86.1091l-24.66974,16.09646c-4.37001,-6.69756 10.04945,-11.38915 24.66974,-16.09646zM324.40827,86.1091l0.45123,-0.29442l-16.06828,-25.33943l22.46895,-3.97479l18.72801,12.91832c4.53222,6.94617 -10.24683,11.75354 -25.05014,16.51976l15.98481,25.2078l-22.46194,3.97305l6.36357,-29.14428c-0.13874,0.04467 -0.27748,0.08933 -0.4162,0.134z', 'M324.8595,85.81469l0,0l0,0zM324.93803,85.93854c-0.03785,0.01219 -0.07571,0.02438 -0.11356,0.03656l0.03503,-0.16042z'],
@@ -1282,4 +1313,357 @@ test('#1619', function() {
     });
     var result = 'M380,580h-160v-260l180,0v130zM313.36486,413.71682l-70.01386,69.98614l69.98614,70.01386l70.01386,-69.98614z';
     compareBoolean(path1.intersect(path2), result);
+});
+
+test('#1929: boolean operations on open paths whose ends meet', function() {
+    // The paths end where they start, so closing them must keep the curves
+    // that end there, instead of closing them with straight lines:
+    var path1 = new Path({ segments: [
+        [[20.72317, 25.34694], [0, 0], [27.99628, -30.63521]],
+        [[120.64881, 19.49412], [-31.47556, -28.74815], [31.49028, 28.73341]],
+        [[123.84796, 119.5377], [27.98154, -30.63523], [-27.96679, 30.63518]],
+        [[23.90758, 125.39052], [31.49029, 28.74815], [-31.4608, -28.74816]],
+        [[20.72317, 25.34694], [-28.01103, 30.63521], [0, 0]]
+    ] });
+    var path2 = new Path({ segments: [
+        [[103.91591, 101.30105], [0, 0], [16.82137, -18.41355]],
+        [[100.14179, 41.94717], [18.31036, 16.71817], [-18.31036, -16.71815]],
+        [[40.68472, 43.56887], [16.8361, -18.44304], [-16.82135, 18.44305]],
+        [[44.42935, 102.92275], [-18.28088, -16.71816], [18.28087, 16.71814]],
+        [[103.91591, 101.30105], [-16.88032, 18.44306], [0, 0]]
+    ] });
+    var closed1 = path1.clone(),
+        closed2 = path2.clone();
+    closed1.closePath();
+    closed2.closePath();
+    compareBoolean(function() { return path1.subtract(path2); },
+            closed1.subtract(closed2));
+    compareBoolean(function() { return path1.unite(path2); },
+            closed1.unite(closed2));
+});
+
+test('#1837, #1979: paths that only touch, with vertices on each other', function() {
+    // Without crossings, nesting is decided through interior points, which
+    // mustn't lie on the path itself, e.g. on a shared vertex or on the edge
+    // that a ray through the center runs along:
+    var path1 = new Path({
+        segments: [[50, 100.449219], [54.425781, 95.652344], [50, 45]],
+        closed: true
+    });
+    var path2 = new Path({
+        segments: [[38.671875, 105.246094], [61.328125, 105.246094],
+            [61.28125, 95.652344], [56.527344, 100.449219],
+            [43.472656, 100.449219]],
+        closed: true
+    });
+    compareBoolean(function() { return path1.intersect(path2); }, '');
+    var path = PathItem.create('M3,1v-1h5v5h-2v-1h1v-3h-2v2h-1v1h-1v-2h1v-1z'
+            + 'M2,2v-1h1v1zM1,2h1v2h1v1h3v1h-6v-1h1z');
+    compareBoolean(function() { return path.unite(); },
+            'M3,1v-1h5v5h-2v-1h1v-3h-2v2h-1v1h-1v-2h1v-1zM2,2v-1h1v1zM1,2h1v2h1v1h3v1h-6v-1h1z');
+});
+
+test('#2064: orientation of the results of exclude and subtract', function() {
+    var path1 = new Path.Rectangle({ point: [100, 100], size: [100, 100] });
+    var path2 = new Path.Rectangle({ point: [190, 190], size: [100, 100] });
+    var result = path1.exclude(path2);
+    equals(result.area, 19800);
+    equals(result.children.map(function(child) {
+        return child.area;
+    }), [9900, 9900]);
+    // Without crossings, path2 is the largest path, but reversed:
+    var small = new Path.Rectangle({ point: [0, 0], size: [10, 10] });
+    var large = new Path.Rectangle({ point: [100, 0], size: [100, 100] });
+    equals(small.subtract(large).area, 100);
+});
+
+test('Backtracking keeps the incoming handle of the branch', function() {
+    // @iconexperience's isolated test 24, with path2 moved by -1e-9. Tracing
+    // backtracks after adding a segment, and continued with that segment's
+    // handle instead of the one of the curve leading into the branch:
+    var path1 = new Path({
+        segments: [[250, 130],
+            [[274.2339539863471, 194.10449080567912], [0, 0],
+                [0.10568701547992987, -0.053016796189552906]],
+            [[272.11154618911314, 196.81853259861245],
+                [1.370678992642354, -2.513969427633242], [0, 0]]],
+        closed: true
+    });
+    var path2 = new Path({
+        segments: [[250, 130],
+            [[282.64261453718956, 194.05831848298737], [0, 0],
+                [-6.1766919512210166, -1.0441192545144133]],
+            [[274.23395398634705, 194.10449080567915],
+                [0.11866362575074163, -0.05952637826862883], [0, 0]]],
+        closed: true
+    });
+    path2.translate(-1e-9, 0);
+    // The area of linesweeper's union of the same paths:
+    equals(path1.unite(path2).area, 367.73429515353575);
+});
+
+test('PathItem#resolveCrossings() with a hole that zigzags along the outline', function() {
+    // The hole runs back and forth along the outline's edge from (100, 50) to
+    // (100, 51). Removing these overlaps left links behind on the remaining
+    // segments, and tracing then lost the outline:
+    var path = new CompoundPath(
+        'M100,51L100,50L100,51L100,50L80,40L50,51z' +
+        'M0,100L60,10L50,0L100,50L100,51z');
+    equals(path.resolveCrossings().area, 2765);
+});
+
+test('#2099', function() {
+    // A nearly straight curve of the hole meets lines of the outline at their
+    // shared corners:
+    var path = new CompoundPath('m30 106v-6l1-39-1-39c0 0-0.01-6 0-6 24.88 0 45 20.11 45 45 0 24.88-20.12 45-45 45zm0-84c21.57 0 39 17.43 39 39 0 21.57-17.43 39-39 39-0.01 0.06 0-78 0-78z'),
+        children = path.removeChildren();
+    // The area with the curve written as a line, v-78:
+    equals(children[0].subtract(children[1]).area, 792.03483);
+});
+
+test('Curves with loops', function() {
+    // The loop of a self-intersecting curve starts and ends in one vertex,
+    // once with the curve's ends apart, and once with them meeting, so that
+    // the whole curve is the loop. The areas are linesweeper's:
+    function createApart() {
+        return new Path({
+            segments: [[100, 200, 0, 0, 150, -100], [200, 200, -150, -100, 0, 0]],
+            closed: true
+        });
+    }
+    function createMeeting() {
+        return new Path({
+            segments: [[100, 200, 0, 0, 250, -200],
+                    [100.000000001, 200, -250, -200, 0, 0]],
+            closed: true
+        });
+    }
+    function createRectangle() {
+        return new Path.Rectangle({ point: [130, 120], size: [100, 40] });
+    }
+    var expected = [
+        [createApart, 5914.43223, 1914.43223, 427.26535, 2341.69758],
+        [createMeeting, 17909.83326, 13909.83326, 1090.16674, 15000]
+    ];
+    for (var i = 0; i < expected.length; i++) {
+        var entry = expected[i],
+            create = entry[0];
+        equals(create().unite(createRectangle()).area, entry[1],
+                'unite() // Test ' + (i + 1));
+        equals(create().subtract(createRectangle()).area, entry[2],
+                'subtract() // Test ' + (i + 1));
+        equals(create().intersect(createRectangle()).area, entry[3],
+                'intersect() // Test ' + (i + 1));
+        equals(create().resolveCrossings().area, entry[4],
+                'resolveCrossings() // Test ' + (i + 1));
+    }
+});
+
+test('#1387: capsules meeting at their joints, moved by 1e-7', function() {
+    // Vertices less than 4 epsilon apart along an edge need to be merged, as
+    // the order of the edges around them can't be told apart. Without that,
+    // one capsule gets lost. The area is linesweeper's, for the operands at
+    // full precision:
+    [1e-7, -1e-7].forEach(function(dx) {
+        var path1 = new Path('M546.21193,65.88688l-29.96756,1.39482c0,0 -14.98378,0.69741 -14.28637,15.68119c0.69741,14.98378 15.68119,14.28637 15.68119,14.28637l29.96756,-1.39482c0,0 14.98378,-0.69741 14.28637,-15.68119c-0.69741,-14.98378 -15.68119,-14.28637 -15.68119,-14.28637z'),
+            path2 = new Path('M516.24437,67.2817l-29.96756,1.39482c0,0 -14.98378,0.69741 -14.28637,15.68119c0.69741,14.98378 15.68119,14.28637 15.68119,14.28637l29.96756,-1.39482c0,0 14.98378,-0.69741 14.28637,-15.68119c-0.69741,-14.98378 -15.68119,-14.28637 -15.68119,-14.28637z');
+        path2.translate(dx, 0);
+        equals(path1.unite(path2).area, 2520.00049, 'dx: ' + dx);
+    });
+});
+
+test('#2094: unite with cubic curves that are quadratics', function() {
+    // The implicit form of a cubic that is a quadratic is rounding noise
+    // without roots on it, and Curve.classify() sees an arch at these
+    // coordinates. Without telling the quadratic by its distance to the cubic,
+    // the intersections get lost:
+    var path1 = new Path('M169.96442,296.90533C167.01685,296.90533 164.696,296.48752 163.00187,295.6519V297.5H169.96442Z'),
+        path2 = new Path('M165.8238,296.76552C165.10265,296.05009 164.15542,295.69238 162.98212,295.69238V294.5H165.8238Z');
+    equals(path1.unite(path2).area, 10.90837);
+    var path3 = new Path('M153.6990454547185,247.27362867192394C154.51749545471847,246.68411867192393,155.52768545471855,246.38935867192393,156.72960545471852,246.38935867192393V245.27362867192394H153.6990454547185Z'),
+        path4 = new Path('M160.67390569761926,245.48581210793014C158.85957569761933,246.45879210793015,156.25541569761924,246.94528210793015,152.86142569761932,246.94528210793015V247.94528210793015H160.67390569761926Z');
+    equals(path3.unite(path4).area, 15.13308);
+});
+
+test('#2094: unite with a hole that a ray from it passes at a vertex', function() {
+    // The ray that gives the hole the windings of its outside passes 6e-14 from
+    // the vertex where path2 crosses a horizontal line of path1 at the same
+    // height. Without taking the curve's end where Curve.solveCubic() misses
+    // it, the hole gets filled:
+    var path1 = new CompoundPath('M187.16895,246.43876h-2.78286v-7.14266l-2.87223,0c0.97703,1.71097 1.46554,3.67842 1.46554,5.90233c0,0.47078 -0.0215,0.92993 -0.06449,1.37743c1.14127,0.07752 2.37504,0.46182 3.70127,1.15289l-1.25194,2.87784c0.33326,0.43879 0.63267,0.91033 0.89825,1.41461c0.37545,0.71514 0.6776,1.5145 0.90645,2.39806z M195.80045,246.88729h0.9712c1.07624,-0.21742 2.23836,-0.32613 3.48634,-0.32613c1.42079,0 2.708,0.09549 3.86163,0.28648c0.63653,-0.20521 1.33094,-0.3415 2.08325,-0.40888l-7.1877,0v-6.1291c-0.81068,0.14841 -1.46273,0.59039 -1.95614,1.32594c-0.69657,1.03349 -1.1161,2.78405 -1.25858,5.25168z'),
+        path2 = new Path('M231.53698,246.41752v0.96154h-17.10161c0.15453,1.3679 0.52656,2.38953 1.11607,3.0649v0c0.82417,0.96154 1.90018,1.4423 3.22801,1.4423v0c0.83562,0 1.63118,-0.20891 2.38667,-0.62672v0c0.4636,-0.269 0.95867,-0.73832 1.48523,-1.40796v0l8.40486,0.78125c-1.28205,2.23214 -2.8331,3.8347 -4.65315,4.80768c-1.81433,0.97298 -4.41849,1.45947 -7.81248,1.45947v0c-2.94757,0 -5.26842,-0.41781 -6.96255,-1.25343c-1.68841,-0.8299 -3.08779,-2.14915 -4.19814,-3.95775c-1.11035,-1.8086 -1.66552,-3.93772 -1.66552,-6.38735v0c0,-3.47412 1.11321,-6.28719 3.33962,-8.4392c2.22641,-2.15201 5.30276,-3.22801 9.22903,-3.22801v0c3.18795,0 5.7034,0.48077 7.54634,1.4423c1.84867,0.96726 3.25377,2.36378 4.21531,4.18955c0.96154,1.8315 1.4423,4.21531 1.4423,7.15143z');
+    equals(path1.unite(path2).area, 479.12224, null, { tolerance: 1e-4 });
+});
+
+test('#2002: CompoundPath#unite()', function() {
+    // Overlapping strokes of glyphs, some of which share edges exactly:
+    var path = new CompoundPath('M215,685L215,721L274,709C311,702 307,682 254,673z M215,700L275,694L275,315L215,315z M97,633C144,575 178,504 190,431L127,420C127,492 110,561 87,628z M190,431C192,418 182,399 164,396C145,393 128,407 127,420z M345,622L347,632L404,614C429,606 425,591 365,577z M403,608C380,531 351,453 310,383L300,387C314,466 331,544 345,622z M65,315L65,335L425,335L425,315z M425,335L305,325L365,385z M158,335L213,335L213,225L158,225z M158,225C158,240 170,253 185,253C200,253 213,240 213,225z M213,225C213,90 179,-53 83,-152L77,-148C142,-35 158,97 158,225z M273,335L328,335L328,9L273,-19z M282,-33C306,-72 296,-87 272,-71L220,-35L236,-23z M236,-23C305,23 372,72 441,119L449,111C395,46 335,-15 272,-71z M667,706L667,742L726,730C762,723 758,703 706,694z M667,721L727,715L727,608L667,608z M490,608L490,628L939,628L939,608z M939,628L819,618L879,678z M460,658L520,628L520,298L460,298z M460,298C460,314 474,328 490,328C507,328 520,314 520,298z M520,298C520,213 514,128 495,46C481,-17 459,-81 421,-133L413,-129C434,-70 444,-7 450,55C459,136 460,217 460,298z M522,482L522,502L913,502L913,482z M913,502L833,492L873,537z M618,552L618,587L677,576C714,569 710,548 657,540z M618,567L678,561L678,383L618,353z M648,383L648,403L787,403L787,383z M757,552L757,587L816,576C853,569 849,548 796,540z M757,567L817,561L817,383L757,353z M493,313L493,333L942,333L942,313z M942,333L862,323L902,368z M548,290L608,260L608,11L548,-19z M578,240L578,260L857,260L857,240z M827,260L857,285L912,240L887,220L827,250z M827,250L887,250L887,26L827,-4z M688,260L748,260L748,26L688,26z M578,133L578,153L857,153L857,133z M578,26L578,46L857,46L857,26z M643,0L645,2L696,-31C718,-45 710,-59 649,-57z M687,-41C635,-87 570,-119 504,-137L499,-127C552,-90 603,-51 643,0z M768,-6C825,-17 883,-43 924,-85L878,-129C850,-82 808,-47 763,-16z M924,-85C933,-94 935,-115 922,-128C908,-142 885,-140 878,-129z');
+    equals(new CompoundPath().unite(path).area, 277470.37613);
+    equals(path.unite().area, 277470.37613);
+});
+
+test('#1123: intersect, moved by 1e-12', function() {
+    // An edge 2.2 epsilon long with tangent pieces next to it, which loses the
+    // whole result unless its vertices are merged. The area is linesweeper's,
+    // within the result's precision:
+    var path1 = new Path({
+        segments: [
+            [29.562573408343212, 132.54192488999095, 0, 0, -1.417935581083043, 0.174100597711913],
+            [2.5662795205536213, 124.83546947214427, 13.887634830511104, -1.705187144644185, 0, 0],
+            [18.447017946814753, 122.88555997766193, 0, 0, 13.88763483051116, -1.7051871446442135],
+            [45.443311834604344, 130.5920153955086, -1.417935581083043, 0.17410059771188457, 0, 0]
+        ],
+        closed: true
+    });
+    var path2 = new Path({
+        segments: [
+            [5.684341886080802e-14, 132.07000000000002, 12.910000000000025, 27.075000000000017, 21.125, -21.119999999999976],
+            [44.59500000000003, 130.54000000000005, 0, 2.3300000000000125, 4.816669792192272, -4.501887430254385],
+            [56.887403180177614, 116.74936916538223, -3.66267533741933, 4.517228939026069, 0.002528361414420033, 50]
+        ],
+        closed: true
+    });
+    path2.translate(0, -1e-12);
+    equals(path1.intersect(path2).area, 158.96216, null, { tolerance: 1e-4 });
+});
+
+test('#1867: unite, moved by 1e-9', function() {
+    // A vertex 3.3 epsilon from the end of two identical lines, which needs to
+    // be merged with it, see #1387 above. The area is linesweeper's:
+    [[1e-9, 0], [0, -1e-9]].forEach(function(delta) {
+        var path1 = new Path('M554.685056580187,301.825085179901h-4.234957650423439c-7.094929050709538,3.299967000330014 -13.694863051369566,8.02991970080302 -41.029589704103046,8.524914750852474l-41.01219330881975,-41.01219330881975v-178.325613313114h-37.307023499012075v3.7399626003739286c7.039929600703886,9.45990540094607 12.26487735122646,19.799802001980026 12.26487735122646,30.689693103069033v171.70828291717083c-34.42965570344302,-12.26487735122646 -55.21944780552201,-30.194698053019465 -93.38906610933896,-44.384556154438485l-41.01219330881975,-41.01219330881975l-5.684341886080802e-14,-120.74118915735556h-37.30702349901213v3.7399626003739286c6.599934000660028,9.45990540094607 11.769882301177006,19.799802001980026 11.769882301177006,30.689693103069033v108.45891541084586c-8.469915300846992,-1.3749862501375105 -16.499835001649956,-2.364976350236475 -24.034759652403466,-2.364976350236475c-79.25420745792542,0 -132.0536794632054,54.28445715542847 -132.0536794632054,119.84380156198438c1.4210854715202004e-14,16.78929461598591 2.9429262780933385,31.58920978101537 8.277380116054061,44.10250713511249c9.109272091936475,3.5972042436182505 19.170156863690522,5.469393715126216 29.909634583046113,5.469393715126216c22.186143974394753,0 38.393870753265645,-10.308579179819503 45.87554824416014,-23.75800164466898c-3.641665756386942,-1.5827427191685501 -6.918644044744497,-3.769266923117925 -9.628473431378893,-6.479096309752322l-41.01219330881975,-41.01219330881975c5.995999559799515,5.995999559799543 14.768746582275156,9.429909457059068 24.124924897974495,9.429909457059068c7.0949290507094815,0 14.13485865141348,-1.4299857001429928 17.434825651743466,-3.299967000330014h3.2999670003299855c0.9046948500203769,0.48465795536810674 1.7678677359386086,1.152012552785493 2.5822007844950576,1.9663456013419136l41.01219330881975,41.01219330881975c4.730344713874331,4.730344713874217 7.812695266544438,14.420157812248306 7.812695266544438,22.06841405106161c0,20.78979210207899 -19.35980640193594,41.08458915410847 -50.489495105048945,41.08458915410847c-21.542115988628495,0 -40.35387307019511,-7.5328651989475475 -54.23178861069897,-21.410780739451525l-41.012193308819775,-41.01219330881975c-15.601410677869296,-15.60141067786941 -24.967419397220937,-39.22171272007574 -24.967419397220937,-69.17331341960693c0,-65.55934440655591 52.799472005279966,-119.84380156198438 132.05367946320538,-119.84380156198438c7.53492465075351,0 15.564844351556474,0.9899901000989644 24.034759652403494,2.364976350236475v-108.45891541084586c0,-10.889891101089006 -5.169948300517007,-21.229787702122962 -11.769882301177006,-30.689693103069033v-3.7399626003739286h90.08909910900894l41.01219330881975,41.01219330881975v3.7399626003739286c-6.104938950610517,8.02991970080302 -11.769882301177006,19.359806401936055 -11.769882301177006,30.194698053019522v105.86979496669784c16.91604014241011,9.123263622737227 32.33565325465952,18.182005412586648 52.37687280051921,25.32128969170276v-171.70828291717083c0,-10.889891101089006 -5.224947750522574,-21.229787702122962 -12.26487735122646,-30.689693103069033v-3.7399626003739286h90.52909470905286l41.01219330881975,41.01219330881975v3.7399626003739286c-6.599934000660028,8.02991970080302 -12.209877901221034,19.359806401936055 -12.209877901221034,30.194698053019522l-5.684341886080802e-14,135.87413257450027c0.005798475459755537,-0.00269917516084206 0.011597270023287365,-0.00539739806936268 0.017396395283356014,-0.008094665632199849h4.234957650423439z'),
+            path2 = new Path('M160.76122624051413,329.70219922185413c-4.895305636668553,-4.895305636668581 -7.939754455231991,-11.498386713577815 -7.939754455231991,-19.334802895817404l41.01219330881975,41.01219330881975c0,7.836416182239589 3.044448818563467,14.439497259148823 7.939754455231991,19.334802895817404l-41.01219330881975,-41.01219330881975z');
+        path2.translate(delta);
+        equals(path1.unite(path2).area, 57651.05889, 'delta: ' + delta);
+    });
+});
+
+test('#890: subtract at a scale of 1e6', function() {
+    // At coordinates around 4e8, the line-line intersections need an epsilon
+    // in Curve.getTimeOf() that isn't below their resolution:
+    var cp = new CompoundPath([
+        new Path({ segments: [[576, 396.8], [345.78, 396.8], [249.6, 243.20000000000002]], closed: true }),
+        new Path({ segments: [[624.84, 550.46], [672, 550.4], [729.6, 608]], closed: true })
+    ]);
+    var p = new Path({ segments: [[323.0000000000002, 228.0000000000001, 0, 0, 51.95879291356505, 0], [410.9999999999998, 704.0000000000002], [-21.000000000000227, 703.9999999999998], [-21.692900774253758, 356.5535001949528]], closed: true });
+    var area = cp.subtract(p).area;
+    cp.scale(1e6, new Point(0, 0));
+    p.scale(1e6, new Point(0, 0));
+    equals(cp.subtract(p).area / 1e12, area);
+});
+
+function testManyOperations(paths) {
+    // Each operation on many paths at once matches chaining it pairwise, with
+    // each of them as the path that it is called on:
+    ['unite', 'intersect', 'subtract', 'exclude'].forEach(function(operation) {
+        paths.forEach(function(path, i) {
+            var others = paths.slice(0, i).concat(paths.slice(i + 1)),
+                result = path[operation](others, { insert: false }),
+                chained = path;
+            others.forEach(function(other) {
+                chained = chained[operation](other, { insert: false });
+            });
+            var name = 'paths[' + i + '].' + operation + '(others)';
+            equals(result.area, chained.area, name + '.area');
+            compareBoolean(result, chained, name);
+        });
+    });
+}
+
+test('Boolean operations on many paths at once', function() {
+    // Overlaps:
+    testManyOperations([
+        new Path.Circle([100, 100], 50),
+        new Path.Circle([150, 100], 50),
+        new Path.Circle([125, 150], 50),
+        new Path.Rectangle([60, 60], [130, 40])
+    ]);
+    // Coincident edges:
+    testManyOperations([
+        new Path.Rectangle([0, 0], [100, 100]),
+        new Path.Rectangle([100, 0], [100, 100]),
+        new Path.Rectangle([0, 0], [100, 50]),
+        new Path.Rectangle([50, 50], [100, 100])
+    ]);
+    // Nested paths, and a compound path with a hole:
+    testManyOperations([
+        new Path.Rectangle([0, 0], [200, 200]),
+        new Path.Rectangle([25, 25], [150, 150]),
+        new Path.Circle([100, 100], 50),
+        new CompoundPath({
+            children: [
+                new Path.Circle([100, 100], 90),
+                new Path.Circle([100, 100], 30)
+            ]
+        })
+    ]);
+    // An even-odd operand that overlaps itself:
+    testManyOperations([
+        new CompoundPath({
+            children: [
+                new Path.Rectangle([0, 0], [100, 100]),
+                new Path.Rectangle([50, 50], [100, 100])
+            ],
+            fillRule: 'evenodd'
+        }),
+        new Path.Star([75, 75], 5, 30, 80),
+        new Path.Circle([120, 40], 40)
+    ]);
+});
+
+test('Boolean operations on many paths with one or none of them', function() {
+    var path1 = new Path.Rectangle([0, 0], [100, 100]),
+        path2 = new Path.Circle([100, 100], 50);
+    ['unite', 'intersect', 'subtract', 'exclude'].forEach(function(operation) {
+        equals(path1[operation]([path2]).pathData,
+                path1[operation](path2).pathData, operation + '([path2])');
+        equals(path1[operation]([]).pathData, path1[operation]().pathData,
+                operation + '([])');
+    });
+});
+
+test('Boolean operations on many paths with options.insert', function() {
+    // The result is inserted above the topmost of the paths that are siblings
+    // of the one that the operation is called on:
+    var layer = project.activeLayer,
+        path1 = new Path.Rectangle([0, 0], [200, 200]),
+        path2 = new Path.Rectangle([100, 100], [200, 200]),
+        path3 = new Path.Circle([200, 0], 100),
+        group = new Group();
+    for (var i = 0; i < 5; i++)
+        group.addChild(new Path.Circle([0, 200], 100 - i * 10));
+    path3.insertBelow(path2);
+    var result = path1.unite([path2, path3, group.lastChild]);
+    equals(result.parent, layer, 'result.parent');
+    equals(result.index, path2.index + 1, 'result.index');
+});
+
+test('#2094: unite many paths at once', function() {
+    // The sketch of the issue, with a seeded random walk: Five glyphs, moved
+    // 100 times. The area is the one of uniting them one by one:
+    var group = new Group([
+        'M226.18018,155.53123v-30.72623h9.49517v23.16272h14.81796v7.56351z',
+        'M253.19763,144.46498v0c0,-3.39399 1.14755,-6.19275 3.44264,-8.39627c2.28937,-2.1978 5.38289,-3.2967 9.28054,-3.2967v0c4.45855,0 7.82679,1.29063 10.10471,3.8719v0c1.8315,2.08333 2.74725,4.64742 2.74725,7.69229v0c0,3.42261 -1.1361,6.22995 -3.4083,8.42203c-2.2722,2.18635 -5.4115,3.27953 -9.4179,3.27953v0c-3.57714,0 -6.47034,-0.91003 -8.67958,-2.73008v0c-2.71291,-2.24931 -4.06936,-5.19687 -4.06936,-8.8427zM261.74843,144.43922v0c0,1.98603 0.4035,3.45409 1.21051,4.40418c0.80128,0.95009 1.8086,1.42513 3.02197,1.42513v0c1.23054,0 2.24072,-0.46646 3.03056,-1.39938c0.78983,-0.93864 1.18475,-2.44104 1.18475,-4.5072v0c0,-1.9288 -0.39778,-3.36538 -1.19334,-4.30974c-0.79556,-0.94437 -1.77999,-1.41655 -2.95329,-1.41655v0c-1.24771,0 -2.27506,0.47791 -3.08207,1.43372c-0.81273,0.96154 -1.21909,2.41815 -1.21909,4.36984z',
+        'M282.96232,155.53123v-22.26128h7.98418v3.64869c0.76694,-1.57967 1.55963,-2.66712 2.37808,-3.26235c0.81845,-0.58951 1.82864,-0.88427 3.03056,-0.88427v0c1.25915,0 2.63564,0.38919 4.12945,1.16758v0l-2.64422,6.07828c-1.0016,-0.41781 -1.79716,-0.62672 -2.38667,-0.62672v0c-1.11607,0 -1.98317,0.46074 -2.6013,1.38221v0c-0.87568,1.29922 -1.31353,3.73168 -1.31353,7.29737v0v7.46049z',
+        'M327.33035,145.55529v0.96154h-17.10161c0.15453,1.3679 0.52656,2.38953 1.11607,3.0649v0c0.82417,0.96154 1.90018,1.4423 3.22801,1.4423v0c0.83562,0 1.63118,-0.20891 2.38667,-0.62672v0c0.4636,-0.269 0.95867,-0.73832 1.48523,-1.40796v0l8.40486,0.78125c-1.28205,2.23214 -2.8331,3.8347 -4.65315,4.80768c-1.81433,0.97298 -4.41849,1.45947 -7.81248,1.45947v0c-2.94757,0 -5.26842,-0.41781 -6.96255,-1.25343c-1.68841,-0.8299 -3.08779,-2.14915 -4.19814,-3.95775c-1.11035,-1.8086 -1.66552,-3.93772 -1.66552,-6.38735v0c0,-3.47412 1.11321,-6.28719 3.33962,-8.4392c2.22641,-2.15201 5.30276,-3.22801 9.22903,-3.22801v0c3.18795,0 5.7034,0.48077 7.54634,1.4423c1.84867,0.96726 3.25377,2.36378 4.21531,4.18955c0.96154,1.8315 1.4423,4.21531 1.4423,7.15143zM310.2545,142.4303h8.40486c-0.1717,-1.64835 -0.61527,-2.82737 -1.3307,-3.53708c-0.72115,-0.71543 -1.66838,-1.07314 -2.84168,-1.07314v0c-1.35645,0 -2.44104,0.538 -3.25377,1.61401v0c-0.51511,0.66964 -0.84134,1.66838 -0.97871,2.99622z',
+        'M331.31386,155.53123v-22.26128h7.96701v3.25377c1.14469,-1.35645 2.30082,-2.32085 3.4684,-2.89319c1.16758,-0.57234 2.57554,-0.85851 4.22389,-0.85851v0c1.77426,0 3.17937,0.31193 4.21531,0.93578c1.03022,0.62958 1.87442,1.56822 2.53262,2.81593v0c1.34501,-1.45375 2.56696,-2.4439 3.66586,-2.97046c1.10462,-0.52083 2.4668,-0.78125 4.08653,-0.78125v0c2.39239,0 4.25823,0.70684 5.59751,2.12053c1.34501,1.41941 2.01751,3.6401 2.01751,6.66207v0v13.97661h-8.5508v-12.68026c0,-1.00732 -0.19746,-1.75423 -0.59237,-2.24072v0c-0.57234,-0.77266 -1.28491,-1.15899 -2.1377,-1.15899v0c-1.00732,0 -1.81719,0.36344 -2.4296,1.09031c-0.61241,0.72688 -0.91861,1.89446 -0.91861,3.50274v0v11.48692h-8.5508v-12.25959c0,-0.97871 -0.05723,-1.64262 -0.1717,-1.99175v0c-0.18315,-0.5609 -0.49794,-1.01305 -0.94437,-1.35645c-0.44643,-0.33768 -0.97012,-0.50652 -1.57108,-0.50652v0c-0.97871,0 -1.78285,0.36916 -2.41243,1.10748c-0.62958,0.73832 -0.94437,1.95455 -0.94437,3.64869v0v11.35815z'
+        ].map(function(pathData) {
+            return PathItem.create(pathData);
+        })),
+        paths = [],
+        seed = 1;
+
+    function random() {
+        seed = (seed * 16807) % 2147483647;
+        return (seed - 1) / 2147483646;
+    }
+
+    for (var i = 0; i < 100; i++) {
+        group.translate((0.5 - random()) * 100, (0.5 - random()) * 100);
+        group.children.forEach(function(path) {
+            paths.push(path.clone({ insert: false }));
+        });
+    }
+    equals(new CompoundPath().unite(paths).area, 76832.96358, null,
+            { tolerance: 1e-4 });
 });

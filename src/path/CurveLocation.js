@@ -53,8 +53,8 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         this._point = point || curve.getPointAtTime(time);
         this._overlap = _overlap;
         this._distance = _distance;
-        // Properties related to linked intersection locations
-        this._intersection = this._next = this._previous = null;
+        // The linked intersection location:
+        this._intersection = null;
     },
 
     _setPath: function(path) {
@@ -193,8 +193,8 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     },
 
     /**
-     * @private
      * @bean
+     * @type Number
      * @deprecated use {@link #time} instead.
      */
     getParameter: '#getTime',

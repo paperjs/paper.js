@@ -9,6 +9,11 @@ const mustache = require('mustache');
 // Retrieve JSDoc data.
 const data = JSON.parse(fs.readFileSync(__dirname + '/typescript-definition-data.json', 'utf8'));
 const classes = data.classes;
+// The two numbers that a sole point or size argument can be passed as:
+const pairParams = {
+    Point: 'x: number, y: number',
+    Size: 'width: number, height: number'
+};
 
 // Format classes.
 classes.forEach(cls => {
@@ -23,41 +28,73 @@ classes.forEach(cls => {
     // Store comment using class tag as description.
     cls.comment = formatComment(cls.comment, 'class');
 
-    // Build a filter for deprecated or inherited methods or properties.
-    const filter = it => !it.deprecated && it.memberOf == cls.alias && !it.isNamespace;
+    // Build a filter for inherited methods or properties. Deprecated ones are
+    // kept, with their @deprecated tag, so code using them still compiles.
+    const filter = it => it.memberOf == cls.alias && !it.isNamespace;
 
     // Format properties.
     cls.properties = cls.properties
         .filter(filter)
-        .map(it => ({
-            name: it._name,
-            type: formatType(it.type, { isProperty: true, isSettableProperty: !it.readOnly }),
-            static: formatStatic(it.isStatic),
-            readOnly: formatReadOnly(it.readOnly),
-            comment: formatComment(it.comment)
-        }));
+        .map(it => {
+            const type = formatType(it.type, { isProperty: true, isSettableProperty: !it.readOnly });
+            // Setters read their values like parameters do, e.g. a point from
+            // an array, so they get the wider type, through accessors:
+            const setterType = !it.readOnly
+                    && formatType(it.type, { isProperty: true, isParam: true, isSetter: true });
+            return {
+                name: it._name,
+                type: type,
+                setterType: setterType !== type ? setterType : null,
+                static: formatStatic(it.isStatic),
+                readOnly: formatReadOnly(it.readOnly),
+                comment: formatComment(it.comment)
+            };
+        });
+
+    // The documented options per method, for methods that refer to another
+    // one's, e.g. `See {@link #hitTest(point[, options])} for a list of all
+    // options`:
+    const optionsByMethod = {};
+    cls.methods.forEach(it => {
+        const name = formatMethodName(it._name);
+        optionsByMethod[name] = optionsByMethod[name] || parseOptions(it.comment.tags);
+    });
 
     // Format methods.
     const methods = cls.methods
         .filter(filter)
-        .map(it => ({
-            name: formatMethodName(it._name),
-            // Constructors don't need return type.
-            type: !it.isConstructor
-                ? formatType(getMethodReturnType(it), { isMethodReturnType: true })
-                : '',
-            static: formatStatic(it.isStatic),
-            // This flag is only used below to filter methods.
-            isStaticConstructor: it.isStatic && it.isConstructor,
-            comment: formatComment(it.comment, 'desc', it.isConstructor),
-            params: it._params
-                ? it._params
-                    // Filter internal parameters (starting with underscore).
-                    .filter(it => !/^_/.test(it.name))
-                    .map(it => formatParameter(it))
-                    .join(', ')
-                : ''
-        }))
+        .flatMap(it => {
+            // Filter internal parameters (starting with underscore).
+            const params = (it._params || []).filter(it => !/^_/.test(it.name));
+            const reference = (it.desc || '').match(
+                    /\{@link #(\w+)\([^)]*\)\} for a list of all options/);
+            const options = reference
+                    ? optionsByMethod[reference[1]]
+                    : parseOptions(it.comment.tags);
+            const method = {
+                name: formatMethodName(it._name),
+                // Constructors don't need return type.
+                type: !it.isConstructor
+                    ? formatType(getMethodReturnType(it), { isMethodReturnType: true })
+                    : '',
+                static: formatStatic(it.isStatic),
+                // This flag is only used below to filter methods.
+                isStaticConstructor: it.isStatic && it.isConstructor,
+                comment: formatComment(it.comment, 'desc', it.isConstructor),
+                params: params.map(it => formatParameter(it, options[it.name])).join(', ')
+            };
+            // Where a point or size is the only argument, it can also be
+            // passed as two numbers, see the Point and Size class docs:
+            const pair = !it.isConstructor && params.length === 1
+                    && !params[0].isOptional && pairParams[params[0].type];
+            return pair
+                ? [method, Object.assign({}, method, { params: pair, isPair: true })]
+                : [method];
+        })
+        // Leave out the pairs that are documented already, e.g. (dx, dy):
+        .filter((method, i, methods) => !method.isPair || !methods.some(other =>
+                !other.isPair && other.name === method.name
+                && getParamTypes(other) === getParamTypes(method)))
         .sort(sortMethods);
 
     // Divide methods in 2 parts: static constructors and other. Because static
@@ -102,7 +139,8 @@ const context = {
 };
 // Retrieve template content.
 const template = fs.readFileSync(__dirname + '/typescript-definition-template.mustache', 'utf8');
-// Render template.
+// Render template, without escaping, as it produces TypeScript and not HTML:
+mustache.escape = text => text;
 const output = mustache.render(template, context);
 // Write output in a file.
 fs.writeFileSync(__dirname + '/../../dist/paper.d.ts', output, 'utf8');
@@ -183,6 +221,10 @@ function parseType(type, options) {
         if (['Number', 'String', 'Boolean', 'Object'].includes(singleType)) {
             splittedType = splittedType.toLowerCase();
         }
+        // Promises need a type argument, which the docs can't express:
+        if (singleType === 'Promise') {
+            splittedType = splittedType.replace('Promise', 'Promise<any>');
+        }
         // Properties `object` type need to be turned into `any` to avoid
         // errors when reading object properties. Eg. if `property` is of type
         // `object`, `property.key` access is forbidden.
@@ -195,7 +237,8 @@ function parseType(type, options) {
         // a `Point` instance will also accept an array of two numbers and
         // other point like objects).
         // The generic types are hardcoded in the type definition template.
-        if (options.isParam && ['Point', 'Size', 'Rectangle'].includes(splittedType)) {
+        if (options.isParam && ['Point', 'Size', 'Rectangle'].includes(splittedType)
+                || options.isSetter && splittedType === 'Color') {
             splittedType += 'Like';
         }
         return splittedType;
@@ -212,6 +255,10 @@ function parseType(type, options) {
     return type;
 }
 
+function getParamTypes(method) {
+    return method.params.replace(/[\w.]+\??: /g, '');
+}
+
 function formatMethodName(methodName) {
     // Overloaded methods were parsed as `method^0`, `method^1`... here, we
     // turn them back to `method` as typescript allow overloading.
@@ -221,7 +268,7 @@ function formatMethodName(methodName) {
     return methodName;
 }
 
-function formatParameter(param) {
+function formatParameter(param, options) {
     let content = '';
     // Handle rest parameter pattern `...Type`. Parameter name needs to be
     // prefixed with `...` as in ES6. E.g. `...parameter: type[]`.
@@ -233,8 +280,47 @@ function formatParameter(param) {
     if (param.isOptional) {
         content += '?';
     }
-    content += formatType(param.type, { isParam: true });
+    // Objects with documented options are typed as objects of these options,
+    // all of them optional:
+    content += param.type === 'Object' && options
+        ? ': { ' + options.map(it => it.name + '?: ' + it.type).join(', ') + ' }'
+        : formatType(param.type, { isParam: true });
     return content;
+}
+
+// Parses the `@option` tags, such as `[options.name=default] {Type} desc` or
+// `options.name {Type} desc`, into lists of `{ name, type }` per parameter.
+// Nested options, such as `options.a.b`, are left out.
+function parseOptions(tags) {
+    const options = {};
+    tags.filter(it => it.title === 'option').forEach(tag => {
+        const desc = tag.desc.trim();
+        let name, rest;
+        if (desc[0] === '[') {
+            // Find the closing bracket, skipping braces in default values.
+            let depth = 0, end = 1;
+            for (; end < desc.length; end++) {
+                const ch = desc[end];
+                if (ch === '{') depth++;
+                else if (ch === '}') depth--;
+                else if (ch === ']' && !depth) break;
+            }
+            name = desc.slice(1, end).split('=')[0];
+            rest = desc.slice(end + 1).trim();
+        } else {
+            name = desc.split(/\s/)[0];
+            rest = desc.slice(name.length).trim();
+        }
+        const type = rest.match(/^\{([\w.|[\]*?]+)\}/);
+        const parts = name.split('.');
+        if (type && parts.length === 2) {
+            (options[parts[0]] = options[parts[0]] || []).push({
+                name: parts[1],
+                type: parseType(type[1], { isParam: true })
+            });
+        }
+    });
+    return options;
 }
 
 function formatParameterName(parameterName) {
@@ -264,6 +350,7 @@ function formatComment(comment, descriptionTagName = 'desc', skipReturn = false)
     content += formatCommentTags(tags, 'see');
     content += formatCommentTags(tags, 'option');
     content += formatCommentTags(tags, 'param', it => it.name + ' - ' + it.desc);
+    content += formatCommentTags(tags, 'deprecated');
 
     if (!skipReturn) {
         content += formatCommentTags(tags, 'return', it => it.desc.trim().replace(/^\{|\}$/g, '').replace(/@([a-zA-Z]+)/, '$1'));
@@ -299,9 +386,8 @@ function formatCommentTags(tags, tagName, formatter) {
  * @return {string} the formatted JSDoc comment
  */
 function formatJSDoc(offset, render) {
-    // First render current block comment. Use `{{&}}` syntax to make sure
-    // special characters are not escaped.
-    let content = render('{{&comment}}');
+    // First render current block comment.
+    let content = render('{{comment}}');
     if (!content) {
         return '';
     }

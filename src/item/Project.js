@@ -147,6 +147,16 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     },
 
     /**
+     * Checks whether changes were logged since tracking was activated or since
+     * the last call of {@link #takeChanges()}, without taking them.
+     *
+     * @return {Boolean} {@true if changes were logged}
+     */
+    hasChanges: function() {
+        return !!(this._changes && this._changes.length);
+    },
+
+    /**
      * Activates this project, so all newly created items will be placed
      * in it.
      *
@@ -311,6 +321,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 
     /**
      * @bean
+     * @type SymbolDefinition[]
      * @deprecated use {@link #symbolDefinitions} instead.
      */
     getSymbols: 'getSymbolDefinitions',
@@ -851,6 +862,10 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
      * the `<use>` elements that place them as {@link SymbolItem} items. The
      * styles that `<use>` elements inherit don't reach the symbols' content.
+     *
+     * URLs are fetched as they are, so validate URLs that come from untrusted
+     * sources first, especially on servers, where they could reach internal
+     * addresses.
      *
      * @name Project#importSVG
      * @function

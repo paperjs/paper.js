@@ -350,7 +350,9 @@ As mentioned above, we prefer that you send a
    worry about the perfect name though -- you can change this name at any time
    later on.
 
-4. Hack! Make your changes, additions, etc., commit them then push them to your
+4. Hack! Make your changes, additions, etc., and describe them for the
+   changelog in a file of their own in `changelog/unreleased`, see its
+   [README](changelog/unreleased/README.md). Commit them then push them to your
    GitHub fork: `git push origin name-of-my-patch`
 
 5. Send a pull request to the upstream repository's owner by visiting your

@@ -63,8 +63,8 @@ var Shape = Item.extend(/** @lends Shape# */{
     },
 
     /**
-     * @private
      * @bean
+     * @type String
      * @deprecated use {@link #type} instead.
      */
     getShape: '#getType',
@@ -268,15 +268,8 @@ var Shape = Item.extend(/** @lends Shape# */{
             }
             ctx.closePath();
         }
-        if (!dontPaint && (hasFill || hasStroke)) {
-            this._setStyles(ctx, param, viewMatrix, strokeMatrix);
-            if (hasFill) {
-                ctx.fill(style.getFillRule());
-                ctx.shadowColor = 'rgba(0,0,0,0)';
-            }
-            if (hasStroke)
-                ctx.stroke();
-        }
+        if (!dontPaint)
+            this._paint(ctx, param, viewMatrix, strokeMatrix);
     },
 
     _canComposite: function() {
@@ -289,30 +282,25 @@ var Shape = Item.extend(/** @lends Shape# */{
         var size = this._size,
             rect = new Rectangle(size).setCenter(0, 0),
             style = this._style,
-            strokeWidth = options.stroke && style.hasStroke()
-                    && style.getStrokeWidth();
+            strokeRadius = options.stroke && style.hasStroke()
+                    && style.getStrokeWidth() / 2;
         // If we're getting the strokeBounds, include the stroke width before
         // or after transforming the rect, based on strokeScaling.
         if (matrix) {
             if (this._type === 'rectangle') {
                 rect = matrix._transformBounds(rect);
             } else {
-                // Use the exact bounds of the transformed ellipse:
-                // x = a * rx * cos(t) + c * ry * sin(t) is at most
-                // sqrt((a * rx)² + (c * ry)²), and y the same with b and d.
-                var rx = size.width / 2,
-                    ry = size.height / 2,
-                    dx = Math.sqrt(Math.pow(matrix._a * rx, 2)
-                            + Math.pow(matrix._c * ry, 2)),
-                    dy = Math.sqrt(Math.pow(matrix._b * rx, 2)
-                            + Math.pow(matrix._d * ry, 2));
-                rect = new Rectangle(matrix._tx - dx, matrix._ty - dy,
-                        2 * dx, 2 * dy);
+                // Use the exact bounds of the transformed ellipse, the unit
+                // circle transformed by the matrix scaled to its radii:
+                var extents = Matrix._getCircleExtents(1,
+                        matrix.clone().scale(size.width / 2, size.height / 2));
+                rect = new Rectangle(new Size(extents).multiply(2))
+                        .setCenter(matrix._tx, matrix._ty);
             }
         }
-        return strokeWidth
-                ? rect.expand(Path._getStrokePadding(strokeWidth,
-                    this._getStrokeMatrix(matrix, options)))
+        return strokeRadius
+                ? rect.expand(new Size(Matrix._getCircleExtents(strokeRadius,
+                    this._getStrokeMatrix(matrix, options))).multiply(2))
                 : rect;
     }
 },
@@ -384,7 +372,7 @@ new function() { // Scope for _contains() and _hitTestSelf() code.
                     radius = this._radius,
                     strokeRadius = hitStroke ? style.getStrokeWidth() / 2 : 0,
                     strokePadding = options._tolerancePadding.add(
-                        Path._getStrokePadding(strokeRadius,
+                        Matrix._getCircleExtents(strokeRadius,
                             !style.getStrokeScaling() && strokeMatrix));
                 if (type === 'rectangle') {
                     var padding = strokePadding.multiply(2),

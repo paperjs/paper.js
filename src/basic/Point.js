@@ -17,6 +17,9 @@
  * of the Paper.js project. It is also used to represent two dimensional
  * vector objects.
  *
+ * Wherever a point is the only argument of a function, it can also be passed
+ * as two numbers, e.g. `point.add(10, 20)` or `item.translate(10, 20)`.
+ *
  * @classexample
  * // Create a point at x: 10, y: 5
  * var point = new Point(10, 5);
@@ -82,6 +85,15 @@ var Point = Base.extend(/** @lends Point# */{
      *     angle: 90
      * });
      * console.log(point.length); // 10
+     * console.log(point.angle); // 90
+     *
+     * @example
+     * // The angle can also be specified in radians:
+     *
+     * var point = new Point({
+     *     length: 10,
+     *     angleInRadians: Math.PI / 2
+     * });
      * console.log(point.angle); // 90
      *
      * @example
@@ -154,6 +166,9 @@ var Point = Base.extend(/** @lends Point# */{
             } else if ('angle' in obj) {
                 this._set(obj.length || 0, 0);
                 this.setAngle(obj.angle || 0);
+            } else if ('angleInRadians' in obj) {
+                this._set(obj.length || 0, 0);
+                this.setAngleInRadians(obj.angleInRadians || 0);
             } else {
                 this._set(0, 0);
                 read = 0;
@@ -209,7 +224,7 @@ var Point = Base.extend(/** @lends Point# */{
      * Checks whether the coordinates of the point are equal to that of the
      * supplied point.
      *
-     * @param {Point} point
+     * @param {Point|Number[]} point
      * @return {Boolean} {@true if the points are equal}
      *
      * @example

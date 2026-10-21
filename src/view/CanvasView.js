@@ -50,10 +50,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
         if (!/^off|false$/.test(PaperScope.getAttribute(canvas, 'hidpi'))) {
             // Hi-DPI Canvas support based on:
             // https://www.html5rocks.com/en/tutorials/canvas/hidpi/
-            var deviceRatio = window.devicePixelRatio || 1,
-                backingStoreRatio = DomElement.getPrefixed(ctx,
-                        'backingStorePixelRatio') || 1;
-            this._pixelRatio = deviceRatio / backingStoreRatio;
+            this._pixelRatio = window.devicePixelRatio || 1;
         }
         View.call(this, project, canvas);
         // We can't be sure the canvas is clear
@@ -101,39 +98,6 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
      * Converts the provide size in any of the units allowed in the browser to
      * pixels.
      */
-    getPixelSize: function getPixelSize(size) {
-        var agent = paper.agent,
-            pixels;
-        // Firefox doesn't appear to convert context.font sizes to pixels,
-        // while other browsers do. Fall-back to View#getPixelSize.
-        if (agent && agent.firefox) {
-            pixels = getPixelSize.base.call(this, size);
-        } else {
-            var ctx = this._context,
-                prevFont = ctx.font;
-            ctx.font = size + ' serif';
-            pixels = parseFloat(ctx.font);
-            ctx.font = prevFont;
-        }
-        return pixels;
-    },
-
-    getTextWidth: function(font, lines, letterSpacing) {
-        var ctx = this._context,
-            prevFont = ctx.font,
-            prevLetterSpacing = ctx.letterSpacing,
-            width = 0;
-        ctx.font = font;
-        ctx.letterSpacing = letterSpacing;
-        // Measure the real width of the text. Unfortunately, there is no sane
-        // way to measure text height with canvas.
-        for (var i = 0, l = lines.length; i < l; i++)
-            width = Math.max(width, ctx.measureText(lines[i]).width);
-        ctx.font = prevFont;
-        ctx.letterSpacing = prevLetterSpacing;
-        return width;
-    },
-
     /**
      * Updates the view if there are changes. Note that when using built-in
      * event handlers for interaction, animation and load events, this method is

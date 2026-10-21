@@ -100,6 +100,15 @@ var Group = Item.extend(/** @lends Group# */{
             this.addChildren(Array.isArray(arg) ? arg : arguments);
     },
 
+    // Styles set on groups apply to their children, and read as theirs:
+    // @override
+    _getStyles: function() {
+        var children = this._children;
+        return children.length > 0 ? children.map(function(child) {
+            return child._style;
+        }) : null;
+    },
+
     _changed: function _changed(flags) {
         _changed.base.call(this, flags);
         if (flags & /*#=*/(ChangeFlag.CHILDREN | ChangeFlag.CLIPPING)) {
@@ -168,6 +177,29 @@ var Group = Item.extend(/** @lends Group# */{
         var child = this.getFirstChild();
         if (child)
             child.setClipMask(clipped);
+    },
+
+    /**
+     * Replaces the group with its children, which keep their appearance: the
+     * group's matrix is applied to them, and its clipping mask is released.
+     *
+     * @return {Item[]} the children, or `null` if the group has no parent
+     */
+    ungroup: function() {
+        if (!this._parent)
+            return null;
+        var children = this._children.slice(),
+            clipItem = this._getClipItem(),
+            matrix = this._matrix;
+        if (clipItem)
+            clipItem.setClipMask(false);
+        // Transform the children by the group's matrix, which they apply to
+        // their content or their own matrix, depending on their applyMatrix:
+        if (!matrix.isIdentity()) {
+            for (var i = 0, l = children.length; i < l; i++)
+                children[i].transform(matrix);
+        }
+        return this.replaceWith.apply(this, children) ? children : null;
     },
 
     /**

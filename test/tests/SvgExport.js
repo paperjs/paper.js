@@ -663,6 +663,37 @@ if (!isNodeContext) {
         });
     });
 
+    test('Export SVG shadows (#1003)', function(assert) {
+        // A background, so the exported bounds include the shadows:
+        new Path.Rectangle({
+            point: [0, 0],
+            size: [200, 100],
+            fillColor: 'white'
+        });
+        new Path.Rectangle({
+            point: [20, 20],
+            size: [40, 40],
+            fillColor: 'red',
+            strokeColor: 'blue',
+            strokeWidth: 6,
+            shadowColor: new Color(0, 0, 0, 0.6),
+            shadowBlur: 8,
+            shadowOffset: [10, 10]
+        });
+        var shape = new Shape.Circle({
+            center: [130, 40],
+            radius: 20,
+            fillColor: 'green',
+            shadowColor: 'black',
+            shadowOffset: [0, 12]
+        });
+        shape.scale(1.5, 1);
+        var svg = project.exportSVG({ bounds: 'content', asString: true });
+        compareSVG(assert.async(), svg, project.activeLayer, null, {
+            tolerance: 1e-2
+        });
+    });
+
     test('Export SVG multi-line text (#988)', function(assert) {
         var text = new PointText({
             point: [20, 40],
@@ -679,6 +710,164 @@ if (!isNodeContext) {
         });
     });
 }
+
+test('Export and import SVG shadows (#1003)', function() {
+    var path = new Path.Rectangle({
+        point: [20, 20],
+        size: [40, 40],
+        fillColor: 'red',
+        strokeColor: 'blue',
+        strokeWidth: 4,
+        shadowColor: new Color(0, 1, 0, 0.6),
+        shadowBlur: 6,
+        shadowOffset: [8, -4]
+    });
+    var node = project.exportSVG(),
+        filter = node.querySelector('filter'),
+        primitives = Base.each(filter.childNodes, function(child) {
+            this.push(child.nodeName);
+        }, []);
+    function get(selector, name) {
+        return filter.querySelector(selector).getAttribute(name);
+    }
+    equals(node.querySelector('path').getAttribute('filter'),
+            'url(#' + filter.id + ')', 'filter reference');
+    equals(primitives, ['feGaussianBlur', 'feOffset', 'feFlood', 'feComposite',
+            'feComposite'], 'primitives');
+    // Canvas blurs with a standard deviation of half the shadow blur:
+    equals(get('feGaussianBlur', 'stdDeviation'), '3', 'stdDeviation');
+    equals([get('feOffset', 'dx'), get('feOffset', 'dy')], ['8', '-4'],
+            'offset');
+    equals([get('feFlood', 'flood-color'), get('feFlood', 'flood-opacity')],
+            ['#00ff00', '0.6'], 'color');
+    // The region covers the stroke bounds from 18 to 62, moved by the offset,
+    // and three standard deviations around them, from 9 to 79 and 5 to 71,
+    // in percent of the bounds of the path from 20 to 60, as Illustrator
+    // drops items with fractions:
+    equals(['x', 'y', 'width', 'height'].map(function(name) {
+        return filter.getAttribute(name);
+    }), ['-27.5%', '-37.5%', '175%', '165%'], 'region');
+    path.remove();
+
+    var imported = project.importSVG(node).getItem({ class: Path });
+    equals(imported.shadowColor, new Color(0, 1, 0, 0.6), 'imported color');
+    equals(imported.shadowBlur, 6, 'imported blur');
+    equals(imported.shadowOffset, new Point(8, -4), 'imported offset');
+    project.activeLayer.removeChildren();
+
+    // Without a blur, as SVG 1.1 renders a blur of 0 as nothing:
+    path = new Path.Rectangle({
+        point: [20, 20],
+        size: [40, 40],
+        fillColor: 'red',
+        shadowColor: 'black',
+        shadowOffset: [5, 5]
+    });
+    node = project.exportSVG();
+    equals(node.querySelector('feGaussianBlur'), null, 'no blur');
+    equals(node.querySelector('feOffset').getAttribute('in'), 'SourceAlpha',
+            'offset of the alpha');
+    path.remove();
+    imported = project.importSVG(node).getItem({ class: Path });
+    equals(imported.shadowBlur, 0, 'imported without a blur');
+    equals(imported.shadowOffset, new Point(5, 5), 'imported offset');
+    project.activeLayer.removeChildren();
+
+    // Horizontal lines have no height, which neither a relative region nor
+    // Illustrator handles, so their shadow is left out:
+    new Path.Line({
+        from: [20, 20],
+        to: [60, 20],
+        strokeColor: 'black',
+        strokeWidth: 2,
+        shadowColor: 'black',
+        shadowOffset: [0, 5]
+    });
+    node = project.exportSVG();
+    equals([node.querySelector('filter'),
+            node.querySelector('path').getAttribute('filter')], [null, null],
+            'no shadow on a line');
+    project.activeLayer.removeChildren();
+
+    // Strings break the lines around the definitions, as Illustrator ignores
+    // filters otherwise:
+    new Path.Rectangle({
+        point: [20, 20],
+        size: [40, 40],
+        fillColor: 'red',
+        shadowColor: 'black',
+        shadowOffset: [5, 5]
+    });
+    equals(/<defs>\n<filter [^]*<\/filter>\n<\/defs>\n/.test(
+            project.exportSVG({ asString: true })), true, 'line breaks');
+    project.activeLayer.removeChildren();
+
+    // Groups don't draw shadows, only their children:
+    new Group({
+        children: [new Path.Circle({ center: [50, 50], radius: 10 })],
+        fillColor: 'red',
+        shadowColor: 'black',
+        shadowOffset: [5, 5]
+    });
+    node = project.exportSVG();
+    equals(node.querySelectorAll('filter').length, 1, 'one filter');
+    equals(node.querySelector('g g').getAttribute('filter'), null,
+            'no filter on the group');
+    project.activeLayer.removeChildren();
+
+    // Other filters are left alone:
+    imported = project.importSVG('<svg xmlns="http://www.w3.org/2000/svg">'
+            + '<filter id="other"><feGaussianBlur stdDeviation="2"/></filter>'
+            + '<rect width="10" height="10" filter="url(#other)"/></svg>');
+    equals(imported.lastChild.shadowColor, null, 'other filters');
+    project.activeLayer.removeChildren();
+});
+
+test('Import SVG shadows from CSS drop-shadow() (#1003)', function() {
+    function importShadow(filter) {
+        var item = project.importSVG('<svg xmlns="http://www.w3.org/2000/svg">'
+                + '<rect width="10" height="10" style="filter: ' + filter
+                + '"/></svg>').lastChild;
+        project.activeLayer.removeChildren();
+        return [item.shadowColor, item.shadowBlur, item.shadowOffset];
+    }
+    // Browsers put the color first, CSS allows it last too:
+    equals(importShadow('drop-shadow(rgba(0, 0, 0, 0.5) 3px 4px 2px)'),
+            [new Color(0, 0, 0, 0.5), 2, new Point(3, 4)], 'color first');
+    equals(importShadow('drop-shadow(3px -4px 2px #ff0000)'),
+            [new Color(1, 0, 0), 2, new Point(3, -4)], 'color last');
+    equals(importShadow('drop-shadow(3px 4px)'),
+            [new Color(0, 0, 0), 0, new Point(3, 4)], 'without blur and color');
+    equals(importShadow('blur(2px)')[0], null, 'other filters');
+});
+
+test('Export SVG opacity and blend modes, which aren\'t inherited', function() {
+    var path = new Path.Rectangle({
+            point: [10, 10],
+            size: [20, 20],
+            fillColor: 'red',
+            opacity: 0.5,
+            blendMode: 'multiply'
+        }),
+        group = new Group({
+            children: [path, new Path.Circle({ center: [50, 50], radius: 10 })],
+            opacity: 0.5,
+            blendMode: 'multiply'
+        }),
+        node = project.exportSVG(),
+        paths = node.querySelectorAll('path'),
+        nodes = [node.querySelector('g g'), paths[0], paths[1]];
+    function getStyles(node) {
+        return [node.getAttribute('opacity'), node.getAttribute('style')];
+    }
+    // The path keeps the same values as its group, as they multiply:
+    equals(getStyles(nodes[0]), ['0.5', 'mix-blend-mode: multiply'], 'group');
+    equals(getStyles(nodes[1]), ['0.5', 'mix-blend-mode: multiply'], 'path');
+    // The defaults aren't written, also not where the group differs:
+    equals(getStyles(nodes[2]), [null, null], 'defaults');
+    equals(getStyles(node.querySelector('g')), [null, null], 'layer');
+    group.remove();
+});
 
 test('Export and import SVG blend modes that CSS doesn\'t have (#1296)', function() {
     function roundTrip(blendMode) {
@@ -707,4 +896,81 @@ test('Export and import SVG blend modes that CSS doesn\'t have (#1296)', functio
                 false, blendMode + ': not in the style');
         equals(res.blendMode, blendMode, blendMode + ': imported');
     });
+});
+
+test('Export SVG text with start, end and justify justifications', function() {
+    var text = new PointText({
+        point: [10, 20],
+        content: 'One'
+    });
+    text.justification = 'justify';
+    equals(text.exportSVG().getAttribute('text-anchor'), 'start', 'justify');
+    text.justification = 'end';
+    equals(text.exportSVG().getAttribute('text-anchor'), 'end', 'end');
+    text.justification = 'start';
+    equals(text.exportSVG().getAttribute('text-anchor'), 'start', 'start');
+    var imported = project.importSVG(
+            '<svg xmlns="http://www.w3.org/2000/svg"><text text-anchor="end">'
+            + 'One</text></svg>');
+    equals(imported.lastChild.justification, 'right', 'imported as before');
+});
+
+test('Export SVG text with mixed styles', function() {
+    function getSpans(node) {
+        return Base.each(node.childNodes, function(child) {
+            this.push([child.textContent, child.getAttribute('font-size'),
+                    child.getAttribute('text-anchor')]);
+        }, []);
+    }
+
+    var text = new PointText({
+        point: [10, 20],
+        content: 'Hello world'
+    });
+    text.range(6, 11).fontSize = 20;
+    // Runs of mixed styles in their own <tspan>, the shared ones on <text>:
+    var node = text.exportSVG();
+    equals(node.getAttribute('font-size'), null, 'not on the text');
+    equals(getSpans(node), [['Hello ', '12', null], ['world', '20', null]],
+            'one line');
+    text.content = 'One\nTwo';
+    text.paragraphs[1].justification = 'right';
+    node = text.exportSVG();
+    equals(getSpans(node), [['One', null, 'start'], ['Two', null, 'end']],
+            'lines with mixed justifications');
+    equals(node.lastChild.getAttribute('x'), '10', 'anchored at the point');
+});
+
+test('Export and import SVG area text', function() {
+    var text = new AreaText(new Rectangle(10, 20, 100, 200));
+    text.content = 'Text in an area breaks into lines that fit it.';
+    text.justification = 'right';
+    var node = text.exportSVG(),
+        lines = text.lines;
+    equals(node.childNodes.length, lines.length, 'a <tspan> per line');
+    equals(Base.each(node.childNodes, function(child, i) {
+        var isClose = function(value, expected) {
+            return Math.abs(+value - expected) < 0.001;
+        };
+        this.push(isClose(child.getAttribute('y'), lines[i].baseline.point.y)
+                && child.getAttribute('text-anchor') === 'start'
+                && isClose(child.firstChild.getAttribute('x'),
+                    lines[i].bounds.left));
+    }, []).every(function(placed) {
+        return placed;
+    }), true, 'each at its baseline, its pieces where they start');
+    var imported = project.importSVG(text.exportSVG({ asString: true }));
+    equals(imported.content, lines.map(function(line) {
+        return line.content.trim();
+    }).join('\n'), 'imported as point text, line by line');
+});
+
+test('Export SVG text on a path', function() {
+    var text = new PathText(new Path.Line([0, 0], [0, 200]));
+    text.content = 'Down';
+    var node = text.exportSVG(),
+        letters = node.firstChild.childNodes;
+    equals(letters.length, 4, 'a <tspan> per letter');
+    equals(letters[0].getAttribute('rotate'), '90', 'turned with the path');
+    equals(letters[0].getAttribute('x'), '0', 'on it');
 });

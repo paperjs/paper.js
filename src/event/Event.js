@@ -59,10 +59,25 @@ var Event = Base.extend(/** @lends Event# */{
     },
 
     /**
-     * The time at which the event was created, in milliseconds since the epoch.
+     * The time at which the event was created, in seconds, as the times of
+     * frame events are. Browsers count from the page's time origin, as
+     * `performance.now()` does, while
+     * {@link View#dispatchMouseEvent(type, point[, options])} and
+     * {@link View#dispatchKeyEvent(type, key[, options])} use `Date.now()`
+     * unless the host passes a time, so only compare the times of events from
+     * the same source.
      *
      * @bean
      * @type Number
+     */
+    getTime: function() {
+        return this.event.timeStamp / 1000;
+    },
+
+    /**
+     * @bean
+     * @type Number
+     * @deprecated use {@link #time} instead, which is in seconds.
      */
     getTimeStamp: function() {
         return this.event.timeStamp;

@@ -30,19 +30,21 @@ PathItem.inject(new function() {
     var min = Math.min,
         max = Math.max,
         abs = Math.abs,
-        // Set up lookup tables for each operator, to decide if a given segment
-        // is to be considered a part of the solution, or to be discarded, based
-        // on its winding contribution, as calculated by propagateWinding().
-        // Boolean operators return true if a segment with the given winding
-        // contribution contributes to the final result or not. They are applied
-        // to for each segment after the paths are split at crossings.
+        // The boolean operators decide if an area is part of the result, from
+        // whether it is inside each of the two operands.
         operators = {
-            unite:     { '1': true, '2': true },
-            intersect: { '2': true },
-            subtract:  { '1': true },
-            // exclude only needs -1 to support reorientPaths() when there are
-            // no crossings. The actual boolean code uses unsigned winding.
-            exclude:   { '1': true, '-1': true }
+            unite: function(inside1, inside2) {
+                return inside1 || inside2;
+            },
+            intersect: function(inside1, inside2) {
+                return inside1 && inside2;
+            },
+            subtract: function(inside1, inside2) {
+                return inside1 && !inside2;
+            },
+            exclude: function(inside1, inside2) {
+                return inside1 !== inside2;
+            }
         };
 
     function getPaths(path) {
@@ -52,33 +54,41 @@ PathItem.inject(new function() {
     /*
      * Creates a clone of the path that we can modify freely, with its matrix
      * applied to its geometry. Calls #reduce() to simplify compound paths and
-     * remove empty curves, #resolveCrossings() to resolve self-intersection
-     * make sure all paths have correct winding direction.
+     * remove empty curves, and closes open paths if required.
      */
-    function preparePath(path, resolve) {
+    function preparePath(path, close) {
         var res = path
             .clone(false)
             .reduce({ simplify: true })
             .transform(null, true, true);
-        if (resolve) {
-            // For correct results, close open paths with straight lines:
-            var paths = getPaths(res);
-            for (var i = 0, l = paths.length; i < l; i++) {
-                var path = paths[i];
-                if (!path._closed && !path.isEmpty()) {
-                    // Close with epsilon tolerance, to avoid tiny straight
-                    // that would cause issues with intersection detection.
-                    path.closePath(/*#=*/Numerical.EPSILON);
+        return close ? closePaths(res) : res;
+    }
+
+    /*
+     * Closes the open paths of the path item with straight lines, as filling
+     * them does.
+     */
+    function closePaths(item) {
+        var paths = getPaths(item);
+        for (var i = 0, l = paths.length; i < l; i++) {
+            var path = paths[i];
+            if (!path._closed && !path.isEmpty()) {
+                // Close with epsilon tolerance, to avoid tiny straight
+                // that would cause issues with intersection detection.
+                // If the ends meet, this joins them and keeps the curve
+                // that ends there. Only a new closing curve is straight
+                // (#1929):
+                var count = path._segments.length;
+                path.closePath(/*#=*/Numerical.EPSILON);
+                if (path._segments.length === count) {
                     path.getFirstSegment().setHandleIn(0, 0);
                     path.getLastSegment().setHandleOut(0, 0);
                 }
             }
-            res = res
-                .resolveCrossings()
-                .reorient(res.getFillRule() === 'nonzero', true);
         }
-        return res;
+        return item;
     }
+
 
     function createResult(paths, simplify, path1, path2, options) {
         var result = new CompoundPath(Item.NO_INSERT);
@@ -86,10 +96,17 @@ PathItem.inject(new function() {
         // See if the item can be reduced to just a simple Path.
         result = result.reduce({ simplify: simplify });
         if (Base.pick(options && options.insert, paper.settings.insertItems)) {
-            // Insert the resulting path above whichever of the two paths appear
-            // further up in the stack.
-            result.insertAbove(path2 && path1.isSibling(path2)
-                    && path1.getIndex() < path2.getIndex() ? path2 : path1);
+            // Insert the resulting path above whichever of the paths that are
+            // siblings of path1 appears furthest up in the stack:
+            var above = path1,
+                others = [].concat(path2 || []);
+            for (var i = 0, l = others.length; i < l; i++) {
+                var other = others[i];
+                if (path1.isSibling(other)
+                        && other.getIndex() > above.getIndex())
+                    above = other;
+            }
+            result.insertAbove(above);
         }
         // Copy over the input path attributes, excluding matrix and we're done.
         result.copyAttributes(path1, true);
@@ -113,181 +130,143 @@ PathItem.inject(new function() {
         if (options && (options.trace == false || options.stroke) &&
                 /^(subtract|intersect)$/.test(operation))
             return splitBoolean(path1, path2, operation, options);
-        // We do not modify the operands themselves, but create copies instead,
-        // fas produced by the calls to preparePath().
+        // We do not modify the operands themselves, but trace copies of them.
         // NOTE: The result paths might not belong to the same type i.e.
         // subtract(A:Path, B:Path):CompoundPath etc.
-        var _path1 = preparePath(path1, true),
-            _path2 = path2 && path1 !== path2 && preparePath(path2, true),
-            // Retrieve the operator lookup table for winding numbers.
-            operator = operators[operation];
-        // Add a simple boolean property to check for a given operation,
-        // e.g. `if (operator.unite)`
-        operator[operation] = true;
-        // Give both paths the same orientation except for subtraction
-        // and exclusion, where we need them at opposite orientation.
-        if (_path2 && (operator.subtract || operator.exclude)
-                ^ (_path2.isClockwise() ^ _path1.isClockwise()))
-            _path2.reverse();
-        // Split curves at crossings on both paths. Note that for self-
-        // intersection, path2 is null and getIntersections() handles it.
-        var crossings = divideLocations(CurveLocation.expand(
-                _path1.getIntersections(_path2, filterIntersection))),
-            paths1 = getPaths(_path1),
-            paths2 = _path2 && getPaths(_path2),
-            segments = [],
-            curves = [],
-            paths;
-
-        function collectPaths(paths) {
-            for (var i = 0, l = paths.length; i < l; i++) {
-                var path = paths[i];
-                Base.push(segments, path._segments);
-                Base.push(curves, path.getCurves());
-                // See if all encountered segments in a path are overlaps, to
-                // be able to separately handle fully overlapping paths.
-                path._overlapsOnly = true;
+        var paths;
+        if (operation === 'exclude' && Array.isArray(path2)
+                && path2.length > 1) {
+            // Resolved on its own, each path fills where its winding is odd.
+            // So together, they fill where an odd number of them do, as one
+            // compound path with the even-odd rule:
+            var items = [path1].concat(path2),
+                compound = new CompoundPath(Item.NO_INSERT);
+            compound.setFillRule('evenodd');
+            for (var i = 0, l = items.length; i < l; i++) {
+                compound.addChildren(tracePaths([preparePath(items[i], true)],
+                        operators.unite));
             }
-        }
-
-        function getCurves(indices) {
-            var list = [];
-            for (var i = 0, l = indices && indices.length; i < l; i++) {
-                list.push(curves[indices[i]]);
-            }
-            return list;
-        }
-
-        if (crossings.length) {
-            // Collect all segments and curves of both involved operands.
-            collectPaths(paths1);
-            if (paths2)
-                collectPaths(paths2);
-
-            var curvesValues = new Array(curves.length);
-            for (var i = 0, l = curves.length; i < l; i++) {
-                curvesValues[i] = curves[i].getValues();
-            }
-            var curveCollisions = CollisionDetection.findCurveBoundsCollisions(
-                    curvesValues, curvesValues, 0, true);
-            var curveCollisionsMap = {};
-            for (var i = 0; i < curves.length; i++) {
-                var curve = curves[i],
-                    id = curve._path._id,
-                    map = curveCollisionsMap[id] = curveCollisionsMap[id] || {};
-                map[curve.getIndex()] = {
-                    hor: getCurves(curveCollisions[i].hor),
-                    ver: getCurves(curveCollisions[i].ver)
-                };
-            }
-
-            // Propagate the winding contribution. Winding contribution of
-            // curves does not change between two crossings.
-            // First, propagate winding contributions for curve chains starting
-            // in all crossings:
-            for (var i = 0, l = crossings.length; i < l; i++) {
-                propagateWinding(crossings[i]._segment, _path1, _path2,
-                        curveCollisionsMap, operator);
-            }
-            for (var i = 0, l = segments.length; i < l; i++) {
-                var segment = segments[i],
-                    inter = segment._intersection;
-                if (!segment._winding) {
-                    propagateWinding(segment, _path1, _path2,
-                            curveCollisionsMap, operator);
-                }
-                // See if all encountered segments in a path are overlaps.
-                if (!(inter && inter._overlap))
-                    segment._path._overlapsOnly = false;
-            }
-            paths = tracePaths(segments, operator);
+            paths = tracePaths([compound], operators.unite);
         } else {
-            // When there are no crossings, the result can be determined through
-            // a much faster call to reorientPaths():
-            paths = reorientPaths(
-                    // Make sure reorientPaths() never works on original
-                    // _children arrays by calling paths1.slice()
-                    paths2 ? paths1.concat(paths2) : paths1.slice(),
-                    function(w) {
-                        return !!operator[w];
-                    });
+            paths = tracePaths(getOperands(path1,
+                    combinePaths(path2, operation)), operators[operation]);
         }
         return createResult(paths, true, path1, path2, options);
     }
 
+    /*
+     * Combines a list of paths into the one path that path1 is operated on
+     * with, pairwise in a balanced tree so that each step only meets results
+     * of similar size. To subtract them, we subtract their union.
+     */
+    function combinePaths(paths, operation) {
+        var isUnite = operation === 'unite' || operation === 'subtract';
+
+        function combine(entries) {
+            if (entries.length > 1) {
+                if (isUnite) {
+                    // Split the paths along the longer side of their bounds,
+                    // so each step unites paths that lie close to each other:
+                    var bounds = entries[0].bounds;
+                    for (var i = 1, l = entries.length; i < l; i++)
+                        bounds = bounds.unite(entries[i].bounds);
+                    var key = bounds.width > bounds.height ? 'x' : 'y';
+                    entries.sort(function(entry1, entry2) {
+                        return entry1.center[key] - entry2.center[key];
+                    });
+                }
+                var middle = entries.length >> 1;
+                return traceBoolean(combine(entries.slice(0, middle)),
+                        combine(entries.slice(middle)),
+                        isUnite ? 'unite' : operation, { insert: false });
+            }
+            return entries[0].path;
+        }
+
+        var entries = [].concat(paths || []).map(function(path) {
+            var bounds = path.getBounds();
+            return { path: path, bounds: bounds, center: bounds.getCenter() };
+        });
+        return entries.length ? combine(entries) : null;
+    }
+
+
     function splitBoolean(path1, path2, operation, options) {
         var _path1 = preparePath(path1),
-            _path2 = preparePath(path2),
+            _path2 = preparePath(combinePaths(path2, operation)),
             crossings = _path1.getIntersections(_path2, filterIntersection),
             subtract = operation === 'subtract',
             divide = operation === 'divide',
-            added = {},
+            pieces = [],
             paths = [];
 
-        function addPath(path) {
-            // Simple see if the point halfway across the open path is inside
-            // path2, and include / exclude the path based on the operator.
-            if (!added[path._id] && (divide ||
-                    _path2.contains(path.getPointAt(path.getLength() / 2))
-                        ^ subtract)) {
-                paths.unshift(path);
-                return added[path._id] = true;
-            }
-        }
-
-        // Now loop backwards through all crossings, split the path and check
-        // the new path that was split off for inclusion.
+        // Split the paths of path1 at all crossings, backwards so the earlier
+        // locations stay valid. A split returns the part after it, or for a
+        // closed path, the path itself, opened at the split, so pieces are
+        // only tested once all splitting is done (#1540):
         for (var i = crossings.length - 1; i >= 0; i--) {
-            var path = crossings[i].split();
+            var crossing = crossings[i],
+                split = crossing.getPath(),
+                path = crossing.split();
             if (path) {
-                // See if we can add the path, and if so, clear the first handle
-                // at the split, because it might have been a curve.
-                if (addPath(path))
-                    path.getFirstSegment().setHandleIn(0, 0);
-                // Clear the other side of the split too, which is always the
-                // end of the remaining _path1.
-                _path1.getLastSegment().setHandleOut(0, 0);
+                // Clear the handles on both sides of the split, as they might
+                // have belonged to curves:
+                path.getFirstSegment().setHandleIn(0, 0);
+                split.getLastSegment().setHandleOut(0, 0);
+                if (pieces.indexOf(path) === -1)
+                    pieces.push(path);
             }
         }
-        // At the end, add what's left from our path after all the splitting.
-        addPath(_path1);
+        // Add what's left of the paths of path1, split or not, which for a
+        // compound path are its children (#1541):
+        var children = _path1._children || [_path1];
+        for (var i = 0, l = children.length; i < l; i++) {
+            if (pieces.indexOf(children[i]) === -1)
+                pieces.push(children[i]);
+        }
+        // Simply see if the point halfway across each piece is inside path2,
+        // and include or exclude it based on the operation.
+        for (var i = 0, l = pieces.length; i < l; i++) {
+            var piece = pieces[i];
+            if (divide || _path2.contains(
+                    piece.getPointAt(piece.getLength() / 2)) ^ subtract)
+                paths.unshift(piece);
+        }
         return createResult(paths, false, path1, path2, options);
     }
 
     /*
-     * Creates linked lists between intersections through their _next and _prev
-     * properties.
-     *
-     * @private
+     * Returns the winding of the point against the curve values, as the sum of
+     * the curve's parts that cross a ray from it in x-direction, upwards as +1
+     * and downwards as -1. Both reorientPaths() and the graph's components
+     * tell with it which path lies inside which.
      */
-    function linkIntersections(from, to) {
-        // Only create the link if it's not already in the existing chain, to
-        // avoid endless recursions. First walk to the beginning of the chain,
-        // and abort if we find `to`.
-        var prev = from;
-        while (prev) {
-            if (prev === to)
-                return;
-            prev = prev._previous;
+    function getRayWinding(point, v) {
+        var winding = 0,
+            x = point.x,
+            y = point.y;
+        // Only curves that reach the ray at all:
+        if (y >= min(v[1], v[3], v[5], v[7]) && y <= max(v[1], v[3], v[5], v[7])
+                && x < max(v[0], v[2], v[4], v[6])) {
+            var monoCurves = Curve.getMonoCurves(v),
+                roots = [];
+            for (var i = 0, l = monoCurves.length; i < l; i++) {
+                var mv = monoCurves[i],
+                    y0 = mv[1],
+                    y3 = mv[7],
+                    dir = y0 < y3 ? 1 : y0 > y3 ? -1 : 0;
+                if (dir && y >= min(y0, y3) && y < max(y0, y3)) {
+                    // The monotone curve crosses the ray once. solveCubic()
+                    // can miss it close to the ends, where it is at the end:
+                    var px = Curve.solveCubic(mv, 1, y, roots, 0, 1) > 0
+                            ? Curve.getPoint(mv, roots[0]).x
+                            : abs(y - y0) < abs(y - y3) ? mv[0] : mv[6];
+                    if (px > x)
+                        winding += dir;
+                }
+            }
         }
-        // Now walk to the end of the existing chain to find an empty spot, but
-        // stop if we find `to`, to avoid adding it again.
-        while (from._next && from._next !== to)
-            from = from._next;
-        // If we're reached the end of the list, we can add it.
-        if (!from._next) {
-            // Go back to beginning of the other chain, and link the two up.
-            while (to._previous)
-                to = to._previous;
-            from._next = to;
-            to._previous = from;
-        }
-    }
-
-    function clearCurveHandles(curves) {
-        // Clear segment handles if they were part of a curve with no handles.
-        for (var i = curves.length - 1; i >= 0; i--)
-            curves[i].clearHandles();
+        return winding;
     }
 
     /**
@@ -349,7 +328,13 @@ PathItem.inject(new function() {
                             // orientation of contained paths based on winding,
                             // find one containing path with different
                             // "insideness" and set opposite orientation.
-                            if (path2.contains(point)) {
+                            var curves = path2.getCurves(),
+                                winding = 0;
+                            for (var k = 0, n = curves.length; k < n; k++) {
+                                winding += getRayWinding(point,
+                                        curves[k].getValues());
+                            }
+                            if (winding) {
                                 var entry2 = lookup[path2._id];
                                 containerWinding = entry2.winding;
                                 entry1.winding += containerWinding;
@@ -382,133 +367,6 @@ PathItem.inject(new function() {
 
 
     /**
-     * Divides the path-items at the given locations.
-     *
-     * @param {CurveLocation[]} locations an array of the locations to split the
-     *     path-item at.
-     * @param {Function} [include] a function that determines if dividing should
-     *     happen at a given location.
-     * @return {CurveLocation[]} the locations at which the involved path-items
-     *     were divided
-     * @private
-     */
-    function divideLocations(locations, include, clearLater) {
-        var results = include && [],
-            tMin = /*#=*/Numerical.CURVETIME_EPSILON,
-            tMax = 1 - tMin,
-            clearHandles = false,
-            clearCurves = clearLater || [],
-            clearLookup = clearLater && {},
-            renormalizeLocs,
-            prevCurve,
-            prevTime;
-
-        // When dealing with overlaps and crossings, divideLocations() is called
-        // twice. If curve handles of curves that originally didn't have handles
-        // are cleared after the first call , we loose  curve-time consistency
-        // and CurveLocation#_time values become invalid.
-        // In those situations, clearLater is passed as a container for all
-        // curves of which the handles need to be cleared in the end.
-        // Create a lookup table that allows us to quickly determine if a given
-        // curve was resulting from an original curve without handles.
-        function getId(curve) {
-            return curve._path._id + '.' + curve._segment1._index;
-        }
-
-        for (var i = (clearLater && clearLater.length) - 1; i >= 0; i--) {
-            var curve = clearLater[i];
-            if (curve._path)
-                clearLookup[getId(curve)] = true;
-        }
-
-        // Loop backwards through all sorted locations, from right to left, so
-        // we can assume a predefined sequence for curve-time renormalization.
-        for (var i = locations.length - 1; i >= 0; i--) {
-            var loc = locations[i],
-                // Retrieve curve-time before calling include(), because it may
-                // be changed to the scaled value after splitting previously.
-                // See CurveLocation#getCurve(), #resolveCrossings()
-                time = loc._time,
-                origTime = time,
-                exclude = include && !include(loc),
-                // Retrieve curve after calling include(), because it may cause
-                // a change in the cached location values, see above.
-                curve = loc._curve,
-                segment;
-            if (curve) {
-                if (curve !== prevCurve) {
-                    // This is a new curve, update clearHandles setting.
-                    clearHandles = !curve.hasHandles()
-                            || clearLookup && clearLookup[getId(curve)];
-                    // Keep track of locations for later curve-time
-                    // renormalization within the curve.
-                    renormalizeLocs = [];
-                    prevTime = null;
-                    prevCurve = curve;
-                } else if (prevTime >= tMin) {
-                    // Rescale curve-time when we are splitting the same curve
-                    // multiple times, if splitting was done previously.
-                    time /= prevTime;
-                }
-            }
-            if (exclude) {
-                // Store excluded locations for later renormalization, in case
-                // the same curve is divided to their left.
-                if (renormalizeLocs)
-                    renormalizeLocs.push(loc);
-                continue;
-            } else if (include) {
-                results.unshift(loc);
-            }
-            prevTime = origTime;
-            if (time < tMin) {
-                segment = curve._segment1;
-            } else if (time > tMax) {
-                segment = curve._segment2;
-            } else {
-                // Split the curve at time, passing true for _setHandles to
-                // always set the handles on the sub-curves even if the original
-                // curve had no handles.
-                var newCurve = curve.divideAtTime(time, true);
-                // Keep track of curves without handles, so they can be cleared
-                // again at the end.
-                if (clearHandles)
-                    clearCurves.push(curve, newCurve);
-                segment = newCurve._segment1;
-                // Handle locations that need their curve-time renormalized
-                // within the same curve after dividing at this location.
-                for (var j = renormalizeLocs.length - 1; j >= 0; j--) {
-                    var l = renormalizeLocs[j];
-                    l._time = (l._time - time) / (1 - time);
-                }
-            }
-            loc._setSegment(segment);
-            // Create links from the new segment to the intersection on the
-            // other curve, as well as from there back. If there are multiple
-            // intersections on the same segment, we create linked lists between
-            // the intersections through linkIntersections(), linking both ways.
-            var inter = segment._intersection,
-                dest = loc._intersection;
-            if (inter) {
-                linkIntersections(inter, dest);
-                // Each time we add a new link to the linked list, we need to
-                // add links from all the other entries to the new entry.
-                var other = inter;
-                while (other) {
-                    linkIntersections(other._intersection, inter);
-                    other = other._next;
-                }
-            } else {
-                segment._intersection = dest;
-            }
-        }
-        // Clear curve handles right away if we're not storing them for later.
-        if (!clearLater)
-            clearCurveHandles(clearCurves);
-        return results || locations;
-    }
-
-    /**
      * Returns the winding contribution number of the given point in respect
      * to the shapes described by the passed curves.
      *
@@ -523,24 +381,13 @@ PathItem.inject(new function() {
      *     {@link CompoundPath#curves}.
      * @param {Boolean} [dir=false] the direction in which to determine the
      *     winding contribution, `false`: in x-direction, `true`: in y-direction
-     * @param {Boolean} [closed=false] determines how areas should be closed
-     *     when a curve is part of an open path, `false`: area is closed with a
-     *     straight line, `true`: area is closed taking the handles of the first
-     *     and last segment into account
      * @param {Boolean} [dontFlip=false] controls whether the algorithm is
      *     allowed to flip direction if it is deemed to produce better results
      * @return {Object} an object containing the calculated winding number, as
      *     well as an indication whether the point was situated on the contour
      * @private
      */
-    function getWinding(point, curves, dir, closed, dontFlip) {
-        // `curves` can either be an array of curves, or an object containing of
-        // the form `{ hor: [], ver: [] }` (see `curveCollisionsMap`), with each
-        // key / value pair holding only those curves that can be crossed by a
-        // horizontal / vertical line through the point to be checked.
-        var curvesList = Array.isArray(curves)
-            ? curves
-            : curves[dir ? 'hor' : 'ver'];
+    function getWinding(point, curves, dir, dontFlip) {
         // Determine the index of the abscissa and ordinate values in the curve
         // values arrays, based on the direction:
         var ia = dir ? 1 : 0, // the abscissa index
@@ -548,9 +395,8 @@ PathItem.inject(new function() {
             pv = [point.x, point.y],
             pa = pv[ia], // the point's abscissa
             po = pv[io], // the point's ordinate
-            // Use separate epsilons for winding contribution code.
+            // Use a separate epsilon for winding contribution code.
             windingEpsilon = 1e-9,
-            qualityEpsilon = 1e-6,
             paL = pa - windingEpsilon,
             paR = pa + windingEpsilon,
             windingL = 0,
@@ -559,7 +405,6 @@ PathItem.inject(new function() {
             pathWindingR = 0,
             onPath = false,
             onAnyPath = false,
-            quality = 1,
             roots = [],
             vPrev,
             vClose;
@@ -617,12 +462,6 @@ PathItem.inject(new function() {
                 } else {
                     onPath = true;
                 }
-                // Determine the quality of the winding calculation. Reduce the
-                // quality with every crossing of the ray very close to the
-                // path. This means that if the point is on or near multiple
-                // curves, the quality becomes less than 0.5.
-                if (a > pa - qualityEpsilon && a < pa + qualityEpsilon)
-                    quality /= 2;
             } else {
                 // Curve is crossed at starting point.
                 if (winding !== windingPrev) {
@@ -646,7 +485,6 @@ PathItem.inject(new function() {
                         onPath = true;
                     }
                 }
-                quality /= 4;
             }
             vPrev = v;
             // If we're on the curve, look at the tangent to decide whether to
@@ -655,7 +493,7 @@ PathItem.inject(new function() {
             // again with flipped direction and return that result instead.
             return !dontFlip && a > paL && a < paR
                     && Curve.getTangent(v, t)[dir ? 'x' : 'y'] === 0
-                    && getWinding(point, curves, !dir, closed, true);
+                    && getWinding(point, curves, !dir, true);
         }
 
         function handleCurve(v) {
@@ -686,26 +524,22 @@ PathItem.inject(new function() {
             }
         }
 
-        for (var i = 0, l = curvesList.length; i < l; i++) {
-            var curve = curvesList[i],
+        for (var i = 0, l = curves.length; i < l; i++) {
+            var curve = curves[i],
                 path = curve._path,
                 v = curve.getValues(),
                 res;
-            if (!i || curvesList[i - 1]._path !== path) {
+            if (!i || curves[i - 1]._path !== path) {
                 // We're on a new (sub-)path, so we need to determine values of
                 // the last non-horizontal curve on this path.
                 vPrev = null;
                 // If the path is not closed, connect the first and last segment
-                // based on the value of `closed`:
-                // - `false`: Connect with a straight curve, just like how
-                //   filling open paths works.
-                // - `true`: Connect with a curve that takes the segment handles
-                //   into account, just like how closed paths behave.
+                // with a straight curve, just like how filling open paths works:
                 if (!path._closed) {
                     vClose = Curve.getValues(
                             path.getLastCurve().getSegment2(),
                             curve.getSegment1(),
-                            null, !closed);
+                            null, true);
                     // This closing curve is a potential candidate for the last
                     // non-horizontal curve.
                     if (vClose[io] !== vClose[io + 6]) {
@@ -735,7 +569,7 @@ PathItem.inject(new function() {
             if (res = handleCurve(v))
                 return res;
 
-            if (i + 1 === l || curvesList[i + 1]._path !== path) {
+            if (i + 1 === l || curves[i + 1]._path !== path) {
                 // We're at the last curve of the current (sub-)path. If a
                 // closing curve was calculated at the beginning of it, handle
                 // it now to treat the path as closed:
@@ -748,7 +582,7 @@ PathItem.inject(new function() {
                     // for clockwise and [-1,+1] for counter-clockwise paths.
                     // If the ray is cast in y direction (dir == true), the
                     // windings always have opposite sign.
-                    pathWindingL = pathWindingR = path.isClockwise(closed) ^ dir
+                    pathWindingL = pathWindingR = path.isClockwise() ^ dir
                             ? 1 : -1;
                 }
                 windingL += pathWindingL;
@@ -765,383 +599,828 @@ PathItem.inject(new function() {
         // are part of the boolean result.
         windingL = abs(windingL);
         windingR = abs(windingR);
-        // Return the calculated winding contributions along with a quality
-        // value indicating how reliable the value really is.
         return {
             winding: max(windingL, windingR),
             windingL: windingL,
             windingR: windingR,
-            quality: quality,
             onPath: onAnyPath
         };
     }
 
-    function propagateWinding(segment, path1, path2, curveCollisionsMap,
-            operator) {
-        // Here we try to determine the most likely winding number contribution
-        // for the curve-chain starting with this segment. Once we have enough
-        // confidence in the winding contribution, we can propagate it until the
-        // next intersection or end of a curve chain.
-        var chain = [],
-            start = segment,
-            totalLength = 0,
-            winding;
-        do {
-            var curve = segment.getCurve();
-            // We can encounter paths with only one segment, which would not
-            // have a curve.
-            if (curve) {
-                var length = curve.getLength();
-                chain.push({ segment: segment, curve: curve, length: length });
-                totalLength += length;
-            }
-            segment = segment.getNext();
-        } while (segment && !segment._intersection && segment !== start);
-        // Determine winding at three points in the chain. If a winding with
-        // sufficient quality is found, use it. Otherwise use the winding with
-        // the best quality.
-        var offsets = [0.5, 0.25, 0.75],
-            winding = { winding: 0, quality: -1 },
-            // Don't go too close to segments, to avoid special winding cases:
-            tMin = 1e-3,
-            tMax = 1 - tMin;
-        for (var i = 0; i < offsets.length && winding.quality < 0.5; i++) {
-            var length = totalLength * offsets[i];
-            for (var j = 0, l = chain.length; j < l; j++) {
-                var entry = chain[j],
-                    curveLength = entry.length;
-                if (length <= curveLength) {
-                    var curve = entry.curve,
-                        path = curve._path,
-                        parent = path._parent,
-                        operand = parent instanceof CompoundPath ? parent : path,
-                        t = Numerical.clamp(curve.getTimeAt(length), tMin, tMax),
-                        pt = curve.getPointAtTime(t),
-                        // Determine the direction in which to check the winding
-                        // from the point (horizontal or vertical), based on the
-                        // curve's direction at that point. If tangent is less
-                        // than 45°, cast the ray vertically, else horizontally.
-                        dir = abs(curve.getTangentAtTime(t).y) < Math.SQRT1_2;
-                    // While subtracting, we need to omit this curve if it is
-                    // contributing to the second operand and is outside the
-                    // first operand.
-                    var wind = null;
-                    if (operator.subtract && path2) {
-                        // Calculate path winding at point depending on operand.
-                        var otherPath = operand === path1 ? path2 : path1,
-                            pathWinding = otherPath._getWinding(pt, dir, true);
-                        // Check if curve should be omitted.
-                        if (operand === path1 && pathWinding.winding ||
-                            operand === path2 && !pathWinding.winding) {
-                            // Check if quality is not good enough...
-                            if (pathWinding.quality < 1) {
-                                // ...and if so, skip this point...
-                                continue;
-                            } else {
-                                // ...otherwise, omit this curve.
-                                wind = { winding: 0, quality: 1 };
-                            }
-                        }
-                    }
-                    wind =  wind || getWinding(
-                            pt, curveCollisionsMap[path._id][curve.getIndex()],
-                            dir, true);
-                    if (wind.quality > winding.quality)
-                        winding = wind;
-                    break;
-                }
-                length -= curveLength;
-            }
+    /*
+     * Returns the part of the curve values v between the curve times, with its
+     * ends moved to the given points, along with their handles. Straight
+     * curves remain straight.
+     */
+    function getPart(v, hasHandles, time1, time2, point1, point2) {
+        var part;
+        if (hasHandles) {
+            part = Curve.getPart(v, time1, time2).slice();
+            var dx1 = point1.x - part[0],
+                dy1 = point1.y - part[1],
+                dx2 = point2.x - part[6],
+                dy2 = point2.y - part[7];
+            part[0] += dx1;
+            part[1] += dy1;
+            part[2] += dx1;
+            part[3] += dy1;
+            part[4] += dx2;
+            part[5] += dy2;
+            part[6] += dx2;
+            part[7] += dy2;
+        } else {
+            part = [point1.x, point1.y, point1.x, point1.y,
+                    point2.x, point2.y, point2.x, point2.y];
         }
-        // Now assign the winding to the entire curve chain.
-        for (var j = chain.length - 1; j >= 0; j--) {
-            chain[j].segment._winding = winding;
-        }
+        return part;
     }
 
     /**
-     * Private method to trace closed paths from a list of segments, according
-     * to a the their winding number contribution and a custom operator.
+     * Creates a planar graph of the operands' curves: All intersections become
+     * vertices, the pieces of curves between them edges, and the edges bound
+     * faces with a known winding for each operand.
      *
-     * @param {Segment[]} segments array of segments to trace closed paths
-     * @param {Function} operator the operator lookup table that receives as key
-     *     the winding number contribution of a curve and returns a boolean
-     *     value indicating whether the curve should be included in result
-     * @return {Path[]} the traced closed paths
+     * @param {PathItem[]} operands the operands, with closed paths only
+     * @return {Object} the graph's vertices, edges, half-edges and faces
      */
-    function tracePaths(segments, operator) {
-        var paths = [],
-            starts;
+    function createGraph(operands) {
+        var curves = [],
+            curveOperands = [],
+            offsets = {},
+            nonZeros = [],
+            bounds = null;
+        for (var i = 0, l = operands.length; i < l; i++) {
+            var operand = operands[i],
+                paths = getPaths(operand);
+            nonZeros.push(operand.getFillRule() === 'nonzero');
+            bounds = bounds ? bounds.unite(operand.getBounds())
+                    : operand.getBounds();
+            for (var j = 0, k = paths.length; j < k; j++) {
+                var pathCurves = paths[j].getCurves();
+                offsets[paths[j]._id] = curves.length;
+                for (var m = 0, n = pathCurves.length; m < n; m++) {
+                    curves.push(pathCurves[m]);
+                    curveOperands.push(i);
+                }
+            }
+        }
+        // Points closer than epsilon are one vertex. It is relative to the size
+        // of the operands, but not below the resolution of their coordinates:
+        var epsilon = Numerical.getEpsilon(max(
+                    abs(bounds.left), abs(bounds.right),
+                    abs(bounds.top), abs(bounds.bottom)),
+                bounds.getTopLeft().getDistance(bounds.getBottomRight())
+                    * /*#=*/Numerical.GEOMETRIC_EPSILON),
+            values = [],
+            cuts = [],
+            xs = [],
+            ys = [],
+            isEnds = [];
 
-        function isValid(seg) {
-            var winding;
-            return !!(seg && !seg._visited && (!operator
-                    || operator[(winding = seg._winding || {}).winding]
-                        // Unite operations need special handling of segments
-                        // with a winding contribution of two (part of both
-                        // areas), which are only valid if they are part of the
-                        // result's contour, not contained inside another area.
-                        && !(operator.unite && winding.winding === 2
-                            // No contour if both windings are non-zero.
-                            && winding.windingL && winding.windingR)));
+        function addCut(index, time, point, isEnd) {
+            cuts[index].push({ time: time, point: xs.length });
+            xs.push(point.x);
+            ys.push(point.y);
+            isEnds.push(isEnd);
         }
 
-        function isStart(seg) {
-            if (seg) {
-                for (var i = 0, l = starts.length; i < l; i++) {
-                    if (seg === starts[i])
-                        return true;
+        // 1. Cut the curves at their ends and at all intersections, including
+        // those within the same operand and the ends of overlaps:
+        for (var i = 0, l = curves.length; i < l; i++) {
+            var curve = curves[i];
+            values.push(curve.getValues());
+            cuts.push([]);
+            addCut(i, 0, curve._segment1._point, true);
+            addCut(i, 1, curve._segment2._point, true);
+        }
+        // The curves whose bounds come within 2 epsilon of each other, for the
+        // intersections and the hot pixels below:
+        var collisions = CollisionDetection.findCurveBoundsCollisions(
+                values, values, 2 * epsilon),
+            locations = CurveLocation.expand(Curve.getIntersections(curves,
+                null, null, null, null, false, epsilon, collisions));
+        for (var i = 0, l = locations.length; i < l; i++) {
+            var loc = locations[i],
+                curve = loc.getCurve();
+            addCut(offsets[curve._path._id] + curve.getIndex(), loc.getTime(),
+                    loc.getPoint(), false);
+        }
+
+        // 2. Merge points closer than epsilon into vertices, through union-find
+        // on the points sorted by x. A vertex takes the position of a curve end
+        // if it has one, so the operands' own vertices stay where they are:
+        var count = xs.length,
+            parents = new Array(count),
+            order = new Array(count);
+        for (var i = 0; i < count; i++)
+            parents[i] = order[i] = i;
+
+        function getRoot(i) {
+            while (parents[i] !== i)
+                i = parents[i] = parents[parents[i]];
+            return i;
+        }
+
+        order.sort(function(a, b) {
+            return xs[a] - xs[b];
+        });
+        for (var i = 0; i < count; i++) {
+            var a = order[i];
+            for (var j = i + 1; j < count && xs[order[j]] - xs[a] <= epsilon;
+                    j++) {
+                var b = order[j],
+                    dx = xs[b] - xs[a],
+                    dy = ys[b] - ys[a];
+                if (dx * dx + dy * dy <= epsilon * epsilon)
+                    parents[getRoot(a)] = getRoot(b);
+            }
+        }
+        var vertexIndices,
+            vertices;
+
+        function createVertices() {
+            vertexIndices = {};
+            vertices = [];
+            for (var i = 0; i < count; i++) {
+                var root = getRoot(i),
+                    index = vertexIndices[root];
+                if (index === undefined) {
+                    index = vertexIndices[root] = vertices.length;
+                    vertices.push({ x: xs[i], y: ys[i], isEnd: isEnds[i],
+                            point: i, outgoing: [] });
+                } else if (isEnds[i] && !vertices[index].isEnd) {
+                    vertices[index] = { x: xs[i], y: ys[i], isEnd: true,
+                            point: i, outgoing: [] };
                 }
+            }
+        }
+
+        createVertices();
+
+        function getVertex(point) {
+            return vertexIndices[getRoot(point)];
+        }
+
+        // The piece of curve i between two cuts, with its ends moved to their
+        // vertices, along with their handles:
+        function getPiece(i, cut1, cut2) {
+            return getPart(values[i], curves[i].hasHandles(), cut1.time,
+                    cut2.time, vertices[getVertex(cut1.point)],
+                    vertices[getVertex(cut2.point)]);
+        }
+
+        function sortCuts(list) {
+            return list.sort(function(a, b) {
+                return a.time - b.time;
+            });
+        }
+
+        // The last curve that tested each vertex in getHotPixels(), to test
+        // each only once per curve:
+        var marks = new Array(vertices.length);
+
+        // 2b. Cut the curves where they pass within epsilon of a vertex, the
+        // hot pixels of snap rounding. Moving the pieces to their vertices
+        // can bring them within epsilon of further ones, so the pieces of each
+        // cut are tested again, until none passes a vertex. As cuts only use
+        // existing vertices, this ends:
+        // The vertices that may cut curve i, as the ones within 2 epsilon of
+        // its bounds, since its pieces stay within epsilon of it. Each vertex
+        // lies on a curve that it cuts, so we find it among the cuts of the
+        // curves whose bounds come that close:
+        function getHotPixels(i) {
+            var v = values[i],
+                left = min(v[0], v[2], v[4], v[6]) - 2 * epsilon,
+                top = min(v[1], v[3], v[5], v[7]) - 2 * epsilon,
+                right = max(v[0], v[2], v[4], v[6]) + 2 * epsilon,
+                bottom = max(v[1], v[3], v[5], v[7]) + 2 * epsilon,
+                indices = collisions[i],
+                hotPixels = [];
+            for (var j = 0, k = indices.length; j < k; j++) {
+                var list = cuts[indices[j]];
+                for (var m = 0, n = list.length; m < n; m++) {
+                    var index = getVertex(list[m].point);
+                    if (marks[index] !== i) {
+                        var vertex = vertices[index];
+                        marks[index] = i;
+                        if (vertex.x >= left && vertex.x <= right
+                                && vertex.y >= top && vertex.y <= bottom)
+                            hotPixels.push(index);
+                    }
+                }
+            }
+            return hotPixels.sort(function(a, b) {
+                return a - b;
+            });
+        }
+
+        // The pieces of a curve that a vertex may cut, as the ones that don't
+        // end in it, and whose bounds come within epsilon of it:
+        function isNearPiece(piece, index, vertex) {
+            var v = piece.values,
+                x = vertex.x,
+                y = vertex.y;
+            return getVertex(piece.cut1.point) !== index
+                    && getVertex(piece.cut2.point) !== index
+                    && x >= min(v[0], v[2], v[4], v[6]) - epsilon
+                    && x <= max(v[0], v[2], v[4], v[6]) + epsilon
+                    && y >= min(v[1], v[3], v[5], v[7]) - epsilon
+                    && y <= max(v[1], v[3], v[5], v[7]) + epsilon;
+        }
+
+        function addPiece(pieces, i, cut1, cut2) {
+            pieces.push({
+                values: getPiece(i, cut1, cut2),
+                cut1: cut1,
+                cut2: cut2
+            });
+        }
+
+        for (var i = 0, l = curves.length; i < l; i++) {
+            var candidates = getHotPixels(i);
+            if (candidates.length) {
+                var list = sortCuts(cuts[i]),
+                    pieces = [];
+                for (var j = 1, k = list.length; j < k; j++)
+                    addPiece(pieces, i, list[j - 1], list[j]);
+                while (pieces.length) {
+                    var piece = pieces.pop();
+                    for (var j = 0, k = candidates.length; j < k; j++) {
+                        var index = candidates[j],
+                            vertex = vertices[index];
+                        if (isNearPiece(piece, index, vertex)) {
+                            var point = new Point(vertex.x, vertex.y),
+                                t = Curve.getNearestTime(piece.values, point);
+                            if (t > 0 && t < 1 && point.isClose(
+                                    Curve.getPoint(piece.values, t), epsilon)) {
+                                var cut1 = piece.cut1,
+                                    cut2 = piece.cut2,
+                                    cut = {
+                                        time: curves[i].hasHandles()
+                                            ? cut1.time
+                                                + (cut2.time - cut1.time) * t
+                                            : Curve.getNearestTime(values[i],
+                                                point),
+                                        point: vertex.point
+                                    };
+                                cuts[i].push(cut);
+                                addPiece(pieces, i, cut1, cut);
+                                addPiece(pieces, i, cut, cut2);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 2c. Merge the vertices that pieces shorter than 4 epsilon join: As
+        // the hot pixels reach 2 epsilon, the order of the edges around such
+        // vertices can't be told apart. Merged vertices span up to about 5
+        // epsilon, the precision of the result:
+        var pieces = [];
+        for (var i = 0, l = curves.length; i < l; i++) {
+            var list = sortCuts(cuts[i]);
+            for (var j = 1, k = list.length; j < k; j++) {
+                var cut1 = list[j - 1],
+                    cut2 = list[j];
+                if (getVertex(cut1.point) !== getVertex(cut2.point)
+                        && Curve.getLength(getPiece(i, cut1, cut2))
+                            < 4 * epsilon)
+                    pieces.push([cut1.point, cut2.point]);
+            }
+        }
+        if (pieces.length) {
+            for (var i = 0, l = pieces.length; i < l; i++) {
+                var root1 = getRoot(pieces[i][0]),
+                    root2 = getRoot(pieces[i][1]);
+                if (root1 !== root2)
+                    parents[root1] = root2;
+            }
+            createVertices();
+        }
+
+        // 3. Create the edges between the vertices along each curve, with the
+        // change in winding of each operand when crossing them from right to
+        // left. Coincident pieces become one edge that adds up their changes:
+        var edges = [],
+            edgesByVertex = [];
+
+        function getCoincidence(edge1, edge2) {
+            // Compare points along edge2 to edge1, and return the direction
+            // of edge2 relative to edge1 if they coincide, or 0:
+            var v1 = edge1.values,
+                v2 = edge2.values,
+                times = [];
+            for (var i = 1; i <= 3; i++) {
+                var point = Curve.getPoint(v2, i / 4),
+                    time = Curve.getNearestTime(v1, point);
+                if (!point.isClose(Curve.getPoint(v1, time), epsilon))
+                    return 0;
+                times.push(time);
+            }
+            return times[0] < times[2] ? 1 : -1;
+        }
+
+        function addEdge(edge) {
+            // Look up the edges between the same vertices by the first one:
+            var first = min(edge.from, edge.to),
+                last = max(edge.from, edge.to),
+                list = edgesByVertex[first] || (edgesByVertex[first] = []);
+            for (var i = 0, l = list.length; i < l; i++) {
+                var other = list[i],
+                    direction = max(other.from, other.to) === last
+                        && getCoincidence(other, edge);
+                if (direction) {
+                    for (var j = 0; j < 2; j++)
+                        other.windings[j] += direction * edge.windings[j];
+                    return;
+                }
+            }
+            list.push(edge);
+            edges.push(edge);
+        }
+
+        for (var i = 0, l = curves.length; i < l; i++) {
+            var list = cuts[i], // Sorted in 2c.
+                isStraight = !curves[i].hasHandles(),
+                prev = list[0];
+            for (var j = 1, k = list.length; j < k; j++) {
+                var cut = list[j],
+                    from = getVertex(prev.point),
+                    to = getVertex(cut.point),
+                    part = getPiece(i, prev, cut);
+                // Drop pieces that start and end in the same vertex, unless
+                // they form a loop that is longer than the pieces that vertices
+                // merge, see above:
+                if (from !== to || Curve.getLength(part) >= 4 * epsilon) {
+                    var windings = [0, 0];
+                    windings[curveOperands[i]] = 1;
+                    addEdge({
+                        values: part,
+                        from: from,
+                        to: to,
+                        isStraight: isStraight,
+                        windings: windings,
+                        curve: i,
+                        time1: prev.time,
+                        time2: cut.time
+                    });
+                }
+                prev = cut;
+            }
+        }
+
+        // 4. Sort the half-edges leaving each vertex by angle. Edge i has the
+        // half-edges 2 * i, leaving from its start, and 2 * i + 1, leaving
+        // from its end. Their angles are measured to points a short distance
+        // along them, where tangent curves already separate, but no other
+        // vertex is reached yet:
+        var halfEdges = [];
+
+        function getSide(halfEdge1, halfEdge2) {
+            // Half-edges that leave a vertex tangentially and can't be told
+            // apart where their angles are measured: Tell on which side of the
+            // first one the second one runs, half way along the shorter one,
+            // as they don't cross before they end, or return 0 if it doesn't
+            // run alongside the first one there:
+            var v1 = halfEdge1.values,
+                v2 = halfEdge2.values,
+                edge2 = halfEdge2.edge,
+                length = min(halfEdge1.edge.length, edge2.length) / 2,
+                point = Curve.getPoint(v2, edge2.isStraight
+                        ? length / edge2.length
+                        : Curve.getTimeAt(v2, length)),
+                time = Curve.getNearestTime(v1, point);
+            return time > 0 && time < 1
+                    ? Curve.getTangent(v1, time).cross(
+                        point.subtract(Curve.getPoint(v1, time))) > 0 ? -1 : 1
+                    : 0;
+        }
+
+        // The range of angles of a half-edge's control polygon, which contains
+        // all directions in which it leaves its vertex, or null if the range
+        // isn't within a half-plane:
+        function getDirections(v) {
+            var angles = [];
+            for (var i = 0; i < 6; i += 2) {
+                var dx = v[i + 2] - v[i],
+                    dy = v[i + 3] - v[i + 1];
+                if (dx || dy)
+                    angles.push(Math.atan2(dy, dx));
+            }
+            var first = angles[0],
+                from = 0,
+                to = 0;
+            for (var i = 1, l = angles.length; i < l; i++) {
+                var difference = (angles[i] - first + 3 * Math.PI)
+                        % (2 * Math.PI) - Math.PI;
+                from = min(from, difference);
+                to = max(to, difference);
+            }
+            return to - from < Math.PI
+                    ? { start: (first + from + 2 * Math.PI) % (2 * Math.PI),
+                        width: to - from }
+                    : null;
+        }
+
+        // Sort the half-edges by their ranges of directions and return true,
+        // if these are apart far enough that the points where their angles
+        // are measured below lie over 2 epsilon apart: These points lie within
+        // the ranges, at least half the shortest chord along the half-edges,
+        // and so at least cos(width / 2) times that away from the vertex:
+        function sortByDirections(outgoing) {
+            var distance = Infinity;
+            for (var j = 0, k = outgoing.length; j < k; j++) {
+                var halfEdge = halfEdges[outgoing[j]],
+                    v = halfEdge.values;
+                halfEdge.directions = getDirections(v);
+                if (!halfEdge.directions)
+                    return false;
+                distance = min(distance,
+                        Math.sqrt((v[6] - v[0]) * (v[6] - v[0])
+                            + (v[7] - v[1]) * (v[7] - v[1])) / 2);
+            }
+            var sorted = outgoing.slice().sort(function(a, b) {
+                    return halfEdges[a].directions.start
+                            - halfEdges[b].directions.start;
+                }),
+                gap = Infinity,
+                width = 0;
+            for (var j = 0, k = sorted.length; j < k; j++) {
+                var directions1 = halfEdges[sorted[j]].directions,
+                    directions2 = halfEdges[sorted[(j + 1) % k]].directions;
+                gap = min(gap, directions2.start - directions1.start
+                        - directions1.width + (j + 1 < k ? 0 : 2 * Math.PI));
+                width = max(width, directions1.width);
+            }
+            if (gap > 0 && distance * Math.cos(width / 2)
+                    * Math.sin(min(gap, Math.PI / 2)) > 2 * epsilon) {
+                for (var j = 0, k = sorted.length; j < k; j++)
+                    outgoing[j] = sorted[j];
+                return true;
             }
             return false;
         }
 
-        function visitPath(path) {
-            var segments = path._segments;
-            for (var i = 0, l = segments.length; i < l; i++) {
-                segments[i]._visited = true;
+        for (var i = 0, l = edges.length; i < l; i++) {
+            var edge = edges[i],
+                v = edge.values;
+            edge.reversed = [v[6], v[7], v[4], v[5], v[2], v[3], v[0], v[1]];
+            halfEdges.push(
+                { edge: edge, values: v, from: edge.from, to: edge.to },
+                { edge: edge, values: edge.reversed, from: edge.to,
+                    to: edge.from });
+            vertices[edge.from].outgoing.push(2 * i);
+            vertices[edge.to].outgoing.push(2 * i + 1);
+        }
+        for (var i = 0, l = vertices.length; i < l; i++) {
+            var vertex = vertices[i],
+                outgoing = vertex.outgoing;
+            // Up to two half-edges are in the same cyclic order either way,
+            // and where their ranges of directions are apart far enough,
+            // these give the order already:
+            if (outgoing.length > 2 && !sortByDirections(outgoing)) {
+                var distance = Infinity;
+                for (var j = 0, k = outgoing.length; j < k; j++) {
+                    var edge = halfEdges[outgoing[j]].edge;
+                    edge.length = edge.length || Curve.getLength(edge.values);
+                    distance = min(distance, edge.length / 2);
+                }
+                for (var j = 0, k = outgoing.length; j < k; j++) {
+                    var halfEdge = halfEdges[outgoing[j]],
+                        v = halfEdge.values,
+                        point = Curve.getPoint(v, halfEdge.edge.isStraight
+                                ? distance / halfEdge.edge.length
+                                : Curve.getTimeAt(v, distance));
+                    halfEdge.point = point;
+                    halfEdge.angle = Math.atan2(point.y - vertex.y,
+                            point.x - vertex.x);
+                }
+                // Start the order after the largest gap between the angles,
+                // so that half-edges which are hard to tell apart are not
+                // separated by the turn from pi to -pi:
+                outgoing.sort(function(a, b) {
+                    return halfEdges[a].angle - halfEdges[b].angle;
+                });
+                var start = -Math.PI,
+                    gap = 0;
+                for (var j = 0, k = outgoing.length; j < k; j++) {
+                    var angle = halfEdges[outgoing[j]].angle,
+                        previous = halfEdges[outgoing[(j || k) - 1]].angle,
+                        difference = (angle - previous + 2 * Math.PI)
+                            % (2 * Math.PI) || 2 * Math.PI;
+                    if (difference > gap) {
+                        gap = difference;
+                        start = angle;
+                    }
+                }
+                for (var j = 0, k = outgoing.length; j < k; j++) {
+                    var halfEdge = halfEdges[outgoing[j]];
+                    halfEdge.angle = (halfEdge.angle - start + 2 * Math.PI)
+                            % (2 * Math.PI);
+                }
+                outgoing.sort(function(a, b) {
+                    var halfEdge1 = halfEdges[a],
+                        halfEdge2 = halfEdges[b];
+                    return halfEdge1.point.isClose(halfEdge2.point, epsilon)
+                            && getSide(halfEdge1, halfEdge2)
+                            || halfEdge1.angle - halfEdge2.angle;
+                });
+            }
+            for (var j = 0, k = outgoing.length; j < k; j++)
+                halfEdges[outgoing[j]].position = j;
+        }
+        // Walking along a face with the face on the left, the next half-edge
+        // leaves the reached vertex right before the one we came back on, in
+        // counter-clockwise order:
+        for (var i = 0, l = halfEdges.length; i < l; i++) {
+            var outgoing = vertices[halfEdges[i].to].outgoing,
+                position = halfEdges[i ^ 1].position;
+            halfEdges[i].next = outgoing[(position || outgoing.length) - 1];
+        }
+
+        // 5. Collect the faces, each on the left of its half-edges, and their
+        // signed areas, which are negative for the outside of each connected
+        // component of the graph:
+        var faces = [];
+        for (var i = 0, l = halfEdges.length; i < l; i++) {
+            if (halfEdges[i].face === undefined) {
+                var face = { halfEdges: [], area: 0, windings: null,
+                        component: null },
+                    index = i;
+                do {
+                    var halfEdge = halfEdges[index];
+                    halfEdge.face = face;
+                    face.halfEdges.push(index);
+                    face.area += Curve.getArea(halfEdge.values);
+                    index = halfEdge.next;
+                } while (index !== i);
+                faces.push(face);
             }
         }
 
-        // If there are multiple possible intersections, find the ones that's
-        // either connecting back to start or are not visited yet, and will be
-        // part of the boolean result:
-        function getCrossingSegments(segment, collectStarts) {
-            var inter = segment._intersection,
-                start = inter,
-                crossings = [];
-            if (collectStarts)
-                starts = [segment];
-
-            function collect(inter, end) {
-                while (inter && inter !== end) {
-                    var other = inter._segment,
-                        path = other && other._path;
-                    if (path) {
-                        var next = other.getNext() || path.getFirstSegment(),
-                            nextInter = next._intersection;
-                        // See if this segment and the next are not visited yet,
-                        // or are bringing us back to the start, and are both
-                        // valid, meaning they're part of the boolean result.
-                        if (other !== segment && (isStart(other)
-                            || isStart(next)
-                            || next && (isValid(other) && (isValid(next)
-                                // If next segment isn't valid, its intersection
-                                // to which we may switch may be, so check that.
-                                || nextInter && isValid(nextInter._segment))))
-                        ) {
-                            crossings.push(other);
+        // 6. Propagate the windings from the outside of each connected
+        // component of the graph across its edges. A component that lies
+        // within others gets the windings of its outside from a ray cast
+        // against their edges:
+        var components = [],
+            rays = [],
+            bounds = [];
+        for (var i = 0, l = faces.length; i < l; i++) {
+            var face = faces[i];
+            if (!face.component) {
+                var component = {
+                        edges: [],
+                        bounds: [Infinity, Infinity, -Infinity, -Infinity],
+                        outside: face
+                    },
+                    list = [face];
+                face.component = component;
+                for (var j = 0; j < list.length; j++) {
+                    var indices = list[j].halfEdges;
+                    if (list[j].area < component.outside.area)
+                        component.outside = list[j];
+                    for (var k = 0, n = indices.length; k < n; k++) {
+                        var other = halfEdges[indices[k] ^ 1].face;
+                        if (!other.component) {
+                            other.component = component;
+                            list.push(other);
                         }
-                        if (collectStarts)
-                            starts.push(other);
                     }
-                    inter = inter._next;
+                }
+                var vertex = vertices[
+                        halfEdges[component.outside.halfEdges[0]].from];
+                components.push(component);
+                rays.push([vertex.x, vertex.y, Infinity, vertex.y]);
+                bounds.push(component.bounds);
+            }
+        }
+        // Collect the edges and bounds of each component, to cast each ray
+        // only against the components whose bounds it reaches:
+        for (var i = 0, l = edges.length; i < l; i++) {
+            var edge = edges[i],
+                v = edge.values,
+                component = halfEdges[2 * i].face.component,
+                b = component.bounds;
+            component.edges.push(edge);
+            b[0] = min(b[0], v[0], v[2], v[4], v[6]);
+            b[1] = min(b[1], v[1], v[3], v[5], v[7]);
+            b[2] = max(b[2], v[0], v[2], v[4], v[6]);
+            b[3] = max(b[3], v[1], v[3], v[5], v[7]);
+        }
+        var collisions = CollisionDetection.findBoundsCollisions(rays, bounds,
+                0, true);
+        for (var i = 0, l = components.length; i < l; i++) {
+            var outside = components[i].outside,
+                point = new Point(rays[i][0], rays[i][1]),
+                indices = collisions[i],
+                windings = [0, 0];
+            for (var j = 0, k = indices.length; j < k; j++) {
+                if (indices[j] !== i) {
+                    var list = components[indices[j]].edges;
+                    for (var m = 0, n = list.length; m < n; m++) {
+                        var edge = list[m],
+                            winding = getRayWinding(point, edge.values);
+                        windings[0] += winding * edge.windings[0];
+                        windings[1] += winding * edge.windings[1];
+                    }
                 }
             }
-
-            if (inter) {
-                collect(inter);
-                // Find the beginning of the linked intersections and loop all
-                // the way back to start, to collect all valid intersections.
-                while (inter && inter._previous)
-                    inter = inter._previous;
-                collect(inter, start);
+            outside.windings = windings;
+            var queue = [outside];
+            for (var j = 0; j < queue.length; j++) {
+                var face = queue[j],
+                    indices = face.halfEdges;
+                for (var k = 0, n = indices.length; k < n; k++) {
+                    var index = indices[k],
+                        other = halfEdges[index ^ 1].face;
+                    if (!other.windings) {
+                        // The face on the left of a half-edge has the higher
+                        // winding when the half-edge runs along its edge:
+                        var windings = halfEdges[index].edge.windings,
+                            sign = index & 1 ? -1 : 1;
+                        other.windings = [
+                            face.windings[0] - sign * windings[0],
+                            face.windings[1] - sign * windings[1]
+                        ];
+                        queue.push(other);
+                    }
+                }
             }
-            return crossings;
+        }
+        return {
+            curves: curves,
+            values: values,
+            vertices: vertices,
+            edges: edges,
+            halfEdges: halfEdges,
+            faces: faces,
+            nonZeros: nonZeros,
+            epsilon: epsilon
+        };
+    }
+
+    /**
+     * Traces the outlines of the areas that the operator includes, along the
+     * edges of the operands' graph that have the result on their left and not
+     * on their right. At each vertex, we turn through the result until the
+     * next of them, which keeps contours apart that only touch.
+     *
+     * @param {PathItem[]} operands the operands, with closed paths only
+     * @param {Function} operator decides if a face is part of the result, from
+     *     whether it is inside each of the operands
+     * @return {Path[]} the traced paths
+     */
+    function tracePaths(operands, operator) {
+        var graph = createGraph(operands),
+            halfEdges = graph.halfEdges,
+            faces = graph.faces,
+            nonZeros = graph.nonZeros;
+        for (var i = 0, l = faces.length; i < l; i++) {
+            var face = faces[i],
+                windings = face.windings;
+            face.isInside = !!operator(
+                    nonZeros[0] ? !!windings[0] : !!(windings[0] & 1),
+                    nonZeros[1] ? !!windings[1] : !!(windings[1] & 1));
         }
 
-        // Sort segments to give non-ambiguous segments the preference as
-        // starting points when tracing: prefer segments with no intersections
-        // over intersections, and process intersections with overlaps last:
-        segments.sort(function(seg1, seg2) {
-            var inter1 = seg1._intersection,
-                inter2 = seg2._intersection,
-                over1 = !!(inter1 && inter1._overlap),
-                over2 = !!(inter2 && inter2._overlap),
-                path1 = seg1._path,
-                path2 = seg2._path;
-            // Use bitwise-or to sort cases where only one segment is an overlap
-            // or intersection separately, and fall back on natural order within
-            // the path.
-            return over1 ^ over2
-                    ? over1 ? 1 : -1
-                    // NOTE: inter1 & 2 are objects, convert to boolean first
-                    // as otherwise toString() is called on them.
-                    : !inter1 ^ !inter2
-                        ? inter1 ? 1 : -1
-                        // All other segments, also when comparing two overlaps
-                        // or two intersections, are sorted by their order.
-                        // Sort by path id to group segments on the same path.
-                        : path1 !== path2
-                            ? path1._id - path2._id
-                            : seg1._index - seg2._index;
-        });
+        function isBoundary(index) {
+            return halfEdges[index].face.isInside
+                    && !halfEdges[index ^ 1].face.isInside;
+        }
 
-        for (var i = 0, l = segments.length; i < l; i++) {
-            var seg = segments[i],
-                valid = isValid(seg),
-                path = null,
-                finished = false,
-                closed = true,
-                branches = [],
-                branch,
-                visited,
-                handleIn;
-            // If all encountered segments in a path are overlaps, we may have
-            // two fully overlapping paths that need special handling.
-            if (valid && seg._path._overlapsOnly) {
-                // TODO: Don't we also need to check for multiple overlaps?
-                var path1 = seg._path,
-                    path2 = seg._intersection._segment._path;
-                if (path1.compare(path2)) {
-                    // Only add the path to the result if it has an area.
-                    if (path1.getArea())
-                        paths.push(path1.clone(false));
-                    // Now mark all involved segments as visited.
-                    visitPath(path1);
-                    visitPath(path2);
-                    valid = false;
+        // The curve times along a half-edge, and if the next one continues
+        // it along the same curve:
+        function getTimes(index) {
+            var edge = halfEdges[index].edge;
+            return index & 1 ? [edge.time2, edge.time1]
+                    : [edge.time1, edge.time2];
+        }
+
+        function isContinued(index, next) {
+            return halfEdges[index].edge.curve === halfEdges[next].edge.curve
+                    && getTimes(index)[1] === getTimes(next)[0];
+        }
+
+        var paths = [],
+            isVisited = [];
+        for (var i = 0, l = halfEdges.length; i < l; i++) {
+            if (!isVisited[i] && isBoundary(i)) {
+                var contour = [],
+                    index = i;
+                do {
+                    isVisited[index] = true;
+                    contour.push(index);
+                    index = halfEdges[index].next;
+                    while (!isBoundary(index))
+                        index = halfEdges[index ^ 1].next;
+                } while (index !== i);
+                // Start where a piece doesn't continue the one before it, as
+                // the pieces of a closed curve don't continue across its end:
+                var length = contour.length,
+                    start = 0;
+                while (start < length && isContinued(
+                        contour[(start || length) - 1], contour[start]))
+                    start++;
+                // Join the pieces of the same curve that follow each other
+                // back into one part of it:
+                var segments = [],
+                    handleIn = null;
+                for (var j = 0; j < length;) {
+                    var first = contour[(start + j) % length],
+                        last = first;
+                    while (++j < length && isContinued(last,
+                            contour[(start + j) % length]))
+                        last = contour[(start + j) % length];
+                    var edge = halfEdges[first].edge,
+                        isStraight = edge.isStraight,
+                        v = first === last
+                            ? halfEdges[first].values
+                            : getPart(graph.values[edge.curve], !isStraight,
+                                getTimes(first)[0], getTimes(last)[1],
+                                graph.vertices[halfEdges[first].from],
+                                graph.vertices[halfEdges[last].to]);
+                    segments.push(new Segment(new Point(v[0], v[1]),
+                            handleIn,
+                            !isStraight && new Point(v[2] - v[0], v[3] - v[1])));
+                    handleIn = !isStraight
+                            && new Point(v[4] - v[6], v[5] - v[7]);
                 }
-            }
-            // Do not start with invalid segments (segments that were already
-            // visited, or that are not going to be part of the result).
-            while (valid) {
-                // For each segment we encounter, see if there are multiple
-                // crossings, and if so, pick the best one:
-                var first = !path,
-                    crossings = getCrossingSegments(seg, first),
-                    // Get the other segment of the first found crossing.
-                    other = crossings.shift(),
-                    finished = !first && (isStart(seg) || isStart(other)),
-                    cross = !finished && other;
-                if (first) {
-                    path = new Path(Item.NO_INSERT);
-                    // Clear branch to start a new one with each new path.
-                    branch = null;
-                }
-                if (finished) {
-                    // If we end up on the first or last segment of an operand,
-                    // copy over its closed state, to support mixed open/closed
-                    // scenarios as described in #1036
-                    if (seg.isFirst() || seg.isLast())
-                        closed = seg._path._closed;
-                    seg._visited = true;
-                    break;
-                }
-                if (cross && branch) {
-                    // If we're about to cross, start a new branch and add the
-                    // current one to the list of branches.
-                    branches.push(branch);
-                    branch = null;
-                }
-                if (!branch) {
-                    // Add the branch's root segment as the last segment to try,
-                    // to see if we get to a solution without crossing.
-                    if (cross)
-                        crossings.push(seg);
-                    branch = {
-                        start: path._segments.length,
-                        crossings: crossings,
-                        visited: visited = [],
-                        handleIn: handleIn
-                    };
-                }
-                if (cross)
-                    seg = other;
-                // If an invalid segment is encountered, go back to the last
-                // crossing and try other possible crossings, as well as not
-                // crossing at the branch's root.
-                if (!isValid(seg)) {
-                    // Remove the already added segments, and mark them as not
-                    // visited so they become available again as options.
-                    path.removeSegments(branch.start);
-                    for (var j = 0, k = visited.length; j < k; j++) {
-                        visited[j]._visited = false;
-                    }
-                    visited.length = 0;
-                    // Go back to the branch's root segment where the crossing
-                    // happened, and try other crossings. Note that this also
-                    // tests the root segment without crossing as it is added to
-                    // the list of crossings when the branch is created above.
-                    do {
-                        seg = branch && branch.crossings.shift();
-                        if (!seg || !seg._path) {
-                            seg = null;
-                            // If there are no segments left, try previous
-                            // branches until we find one that works.
-                            branch = branches.pop();
-                            if (branch) {
-                                visited = branch.visited;
-                                handleIn = branch.handleIn;
-                            }
-                        }
-                    } while (branch && !isValid(seg));
-                    if (!seg)
-                        break;
-                }
-                // Add the segment to the path, and mark it as visited.
-                // But first we need to look ahead. If we encounter the end of
-                // an open path, we need to treat it the same way as the fill of
-                // an open path would: Connecting the last and first segment
-                // with a straight line, ignoring the handles.
-                var next = seg.getNext();
-                path.add(new Segment(seg._point, handleIn,
-                        next && seg._handleOut));
-                seg._visited = true;
-                visited.push(seg);
-                // If this is the end of an open path, go back to its first
-                // segment but ignore its handleIn (see above for handleOut).
-                seg = next || seg._path.getFirstSegment();
-                handleIn = next && next._handleIn;
-            }
-            if (finished) {
-                if (closed) {
-                    // Carry over the last handleIn to the first segment.
-                    path.getFirstSegment().setHandleIn(handleIn);
-                    path.setClosed(closed);
-                }
-                // Only add finished paths that cover an area to the result.
-                if (path.getArea() !== 0) {
+                if (handleIn)
+                    segments[0].setHandleIn(handleIn);
+                var path = new Path(Item.NO_INSERT);
+                path.setSegments(segments);
+                path.setClosed(true);
+                // Only add paths that cover an area to the result.
+                if (path.getArea() !== 0)
                     paths.push(path);
-                }
             }
         }
         return paths;
     }
 
+    /*
+     * Prepares the operands of a boolean operation. Without path2, the
+     * operation resolves path1 on its own.
+     */
+    function getOperands(path1, path2) {
+        var operands = [preparePath(path1, true)];
+        if (path2)
+            operands.push(preparePath(path2, true));
+        return operands;
+    }
+
     return /** @lends PathItem# */{
+        statics: {
+            // The graph of a boolean operation, to check its planarity in
+            // the tests:
+            _createGraph: function(path1, path2) {
+                return createGraph(getOperands(path1, path2));
+            }
+        },
+
         /**
          * Returns the winding contribution number of the given point in respect
          * to this PathItem.
          *
          * @param {Point} point the location for which to determine the winding
          *     contribution
-         * @param {Number} [dir=0] the direction in which to determine the
-         *     winding contribution, `0`: in x-direction, `1`: in y-direction
          * @return {Object} an object containing the calculated winding number, as
          *     well as an indication whether the point was situated on the contour
          */
-        _getWinding: function(point, dir, closed) {
-            return getWinding(point, this.getCurves(), dir, closed);
+        _getWinding: function(point) {
+            return getWinding(point, this.getCurves());
         },
 
         /**
          * {@grouptitle Boolean Path Operations}
          *
          * Unites the geometry of the specified path with this path's geometry
-         * and returns the result as a new path item.
+         * and returns the result as a new path item. With an array of paths,
+         * the result covers the areas inside any of them or this path. Each
+         * path keeps its own fill rule.
          *
          * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
+         *     should be inserted back into the scene graph, above all paths
          *     involved in the operation
          *
-         * @param {PathItem} path the path to unite with
+         * @param {PathItem|PathItem[]} path the path or paths to unite with
          * @param {Object} [options] the boolean operation options
          * @return {PathItem} the resulting path item
          *
          * @example {@paperscript}
          * var result = new Path.RegularPolygon([50, 50], 3, 40)
          *     .unite(new Path.Circle([50, 50], 25));
+         * result.fillColor = 'red';
+         *
+         * @example {@paperscript}
+         * // Uniting many paths at once:
+         * var circles = [];
+         * for (var i = 0; i < 6; i++) {
+         *     circles.push(new Path.Circle([30 + i * 20, 50], 20));
+         * }
+         * var result = circles[0].unite(circles.slice(1));
          * result.fillColor = 'red';
          */
         unite: function(path, options) {
@@ -1150,18 +1429,21 @@ PathItem.inject(new function() {
 
         /**
          * Intersects the geometry of the specified path with this path's
-         * geometry and returns the result as a new path item.
+         * geometry and returns the result as a new path item. With an array of
+         * paths, the result covers the areas inside all of them and this path.
+         * Each path keeps its own fill rule.
          *
          * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
+         *     should be inserted back into the scene graph, above all paths
          *     involved in the operation
          * @option [options.trace=true] {Boolean} whether the tracing method is
-         *     used, treating both paths as areas when determining which parts
+         *     used, treating all paths as areas when determining which parts
          *     of the paths are to be kept in the result, or whether the first
          *     path is only to be split at intersections, keeping the parts of
-         *     the curves that intersect with the area of the second path.
+         *     the curves that intersect with the areas of all other paths.
          *
-         * @param {PathItem} path the path to intersect with
+         * @param {PathItem|PathItem[]} path the path or paths to intersect
+         *     with
          * @param {Object} [options] the boolean operation options
          * @return {PathItem} the resulting path item
          *
@@ -1176,18 +1458,20 @@ PathItem.inject(new function() {
 
         /**
          * Subtracts the geometry of the specified path from this path's
-         * geometry and returns the result as a new path item.
+         * geometry and returns the result as a new path item. With an array of
+         * paths, the result covers the areas inside this path and outside all
+         * of them. Each path keeps its own fill rule.
          *
          * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
+         *     should be inserted back into the scene graph, above all paths
          *     involved in the operation
          * @option [options.trace=true] {Boolean} whether the tracing method is
-         *     used, treating both paths as areas when determining which parts
+         *     used, treating all paths as areas when determining which parts
          *     of the paths are to be kept in the result, or whether the first
          *     path is only to be split at intersections, removing the parts of
-         *     the curves that intersect with the area of the second path.
+         *     the curves that intersect with the area of any other path.
          *
-         * @param {PathItem} path the path to subtract
+         * @param {PathItem|PathItem[]} path the path or paths to subtract
          * @param {Object} [options] the boolean operation options
          * @return {PathItem} the resulting path item
          *
@@ -1202,13 +1486,16 @@ PathItem.inject(new function() {
 
         /**
          * Excludes the intersection of the geometry of the specified path with
-         * this path's geometry and returns the result as a new path item.
+         * this path's geometry and returns the result as a new path item. With
+         * an array of paths, the result covers the areas inside an odd number
+         * of the paths, this one included. Each path keeps its own fill rule.
          *
          * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
+         *     should be inserted back into the scene graph, above all paths
          *     involved in the operation
          *
-         * @param {PathItem} path the path to exclude the intersection of
+         * @param {PathItem|PathItem[]} path the path or paths to exclude the
+         *     intersection of
          * @param {Object} [options] the boolean operation options
          * @return {PathItem} the resulting path item
          *
@@ -1259,85 +1546,12 @@ PathItem.inject(new function() {
          */
         resolveCrossings: function() {
             var children = this._children,
-                // Support both path and compound-path items
-                paths = children || [this];
-
-            function hasOverlap(seg, path) {
-                var inter = seg && seg._intersection;
-                return inter && inter._overlap && inter._path === path;
-            }
-
-            // First collect all overlaps and crossings while taking note of the
-            // existence of both.
-            var hasOverlaps = false,
-                hasCrossings = false,
-                intersections = this.getIntersections(null, function(inter) {
-                    return inter.hasOverlap() && (hasOverlaps = true) ||
-                            inter.isCrossing() && (hasCrossings = true);
-                }),
-                // We only need to keep track of curves that need clearing
-                // outside of divideLocations() if two calls are necessary.
-                clearCurves = hasOverlaps && hasCrossings && [];
-            intersections = CurveLocation.expand(intersections);
-            if (hasOverlaps) {
-                // First divide in all overlaps, and then remove the inside of
-                // the resulting overlap ranges.
-                var overlaps = divideLocations(intersections, function(inter) {
-                    return inter.hasOverlap();
-                }, clearCurves);
-                for (var i = overlaps.length - 1; i >= 0; i--) {
-                    var overlap = overlaps[i],
-                        path = overlap._path,
-                        seg = overlap._segment,
-                        prev = seg.getPrevious(),
-                        next = seg.getNext();
-                    if (hasOverlap(prev, path) && hasOverlap(next, path)) {
-                        seg.remove();
-                        prev._handleOut._set(0, 0);
-                        next._handleIn._set(0, 0);
-                        // If the curve that is left has no length, remove it
-                        // altogether. Check for paths with only one segment
-                        // before removal, since `prev.getCurve() == null`.
-                        if (prev !== seg && !prev.getCurve().hasLength()) {
-                            // Transfer handleIn when removing segment:
-                            next._handleIn.set(prev._handleIn);
-                            prev.remove();
-                        }
-                    }
-                }
-            }
-            if (hasCrossings) {
-                // Divide any remaining intersections that are still part of
-                // valid paths after the removal of overlaps.
-                divideLocations(intersections, hasOverlaps && function(inter) {
-                    // Check both involved curves to see if they're still valid,
-                    // meaning they are still part of their paths.
-                    var curve1 = inter.getCurve(),
-                        seg1 = inter.getSegment(),
-                        // Do not call getCurve() and getSegment() on the other
-                        // intersection yet, as it too is in the intersections
-                        // array and will be divided later. But check if its
-                        // current curve is valid, as required by some rare edge
-                        // cases, related to intersections on the same curve.
-                        other = inter._intersection,
-                        curve2 = other._curve,
-                        seg2 = other._segment;
-                    if (curve1 && curve2 && curve1._path && curve2._path)
-                        return true;
-                    // Remove all intersections that were involved in the
-                    // handling of overlaps, to not confuse tracePaths().
-                    if (seg1)
-                        seg1._intersection = null;
-                    if (seg2)
-                        seg2._intersection = null;
-                }, clearCurves);
-                if (clearCurves)
-                    clearCurveHandles(clearCurves);
-                // Finally resolve self-intersections through tracePaths()
-                paths = tracePaths(Base.each(paths, function(path) {
-                    Base.push(this, path._segments);
-                }, []));
-            }
+                // Trace the outline of the area that the path item fills
+                // according to its fill rule, without the curves inside it:
+                paths = tracePaths([closePaths(this.clone(false))],
+                    function(inside) {
+                        return inside;
+                    });
             // Determine how to return the paths: First try to recycle the
             // current path / compound-path, if the amount of paths does not
             // require a conversion.
@@ -1403,41 +1617,50 @@ PathItem.inject(new function() {
         getInteriorPoint: function() {
             var bounds = this.getBounds(),
                 point = bounds.getCenter(true);
-            if (!this.contains(point)) {
+            // contains() includes the boundary, but a point on the path isn't
+            // interior, e.g. a vertex shared with another path (#1837):
+            if (!this.contains(point) || this.getNearestPoint(point)
+                    .isClose(point, /*#=*/Numerical.GEOMETRIC_EPSILON)) {
                 // Since there is no guarantee that a poly-bezier path contains
                 // the center of its bounding rectangle, we shoot a ray in x
                 // direction and select a point between the first consecutive
-                // intersections of the ray on the left.
+                // intersections of the ray on the left. The ray runs through
+                // the middle of the band around the center where no
+                // y-monotone curve starts or ends, so that it crosses the path
+                // instead of touching it or running along it (#1837):
                 var curves = this.getCurves(),
-                    y = point.y,
+                    monoCurves = [],
+                    ys = [],
                     intercepts = [],
                     roots = [];
-                // Process all y-monotone curves that intersect the ray at y:
-                for (var i = 0, l = curves.length; i < l; i++) {
-                    var v = curves[i].getValues(),
-                        o0 = v[1],
-                        o1 = v[3],
-                        o2 = v[5],
-                        o3 = v[7];
-                    if (y >= min(o0, o1, o2, o3) && y <= max(o0, o1, o2, o3)) {
-                        var monoCurves = Curve.getMonoCurves(v);
-                        for (var j = 0, m = monoCurves.length; j < m; j++) {
-                            var mv = monoCurves[j],
-                                mo0 = mv[1],
-                                mo3 = mv[7];
-                            // Only handle curves that are not horizontal and
-                            // that can cross the point's ordinate.
-                            if ((mo0 !== mo3) &&
-                                (y >= mo0 && y <= mo3 || y >= mo3 && y <= mo0)){
-                                var x = y === mo0 ? mv[0]
-                                    : y === mo3 ? mv[6]
-                                    : Curve.solveCubic(mv, 1, y, roots, 0, 1)
-                                        === 1
-                                        ? Curve.getPoint(mv, roots[0]).x
-                                        : (mv[0] + mv[6]) / 2;
-                                intercepts.push(x);
-                            }
-                        }
+                for (var i = 0, l = curves.length; i < l; i++)
+                    Base.push(monoCurves, Curve.getMonoCurves(
+                            curves[i].getValues()));
+                for (var i = 0, l = monoCurves.length; i < l; i++)
+                    ys.push(monoCurves[i][1], monoCurves[i][7]);
+                ys.sort(function(a, b) { return a - b; });
+                // The center lies between the top and the bottom of the
+                // bounds, which are among the ys, unless the path is flat:
+                var y = point.y,
+                    below = y,
+                    above = y;
+                for (var i = 0, l = ys.length; i < l && above === y; i++) {
+                    if (ys[i] <= y) {
+                        below = ys[i];
+                    } else {
+                        above = ys[i];
+                    }
+                }
+                y = point.y = (below + above) / 2;
+                for (var i = 0, l = monoCurves.length; i < l; i++) {
+                    var mv = monoCurves[i],
+                        mo0 = mv[1],
+                        mo3 = mv[7];
+                    if (y > min(mo0, mo3) && y < max(mo0, mo3)) {
+                        intercepts.push(
+                                Curve.solveCubic(mv, 1, y, roots, 0, 1) === 1
+                                    ? Curve.getPoint(mv, roots[0]).x
+                                    : (mv[0] + mv[6]) / 2);
                     }
                 }
                 if (intercepts.length > 1) {

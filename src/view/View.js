@@ -448,6 +448,10 @@ var View = Base.extend(Emitter, /** @lends View# */{
 
     /**
      * The bounds of the currently visible area in project coordinates.
+     * Setting them fits the view to the given rectangle, as
+     * {@link #fitBounds(rectangle)} does. Since the view keeps its aspect
+     * ratio, the bounds read back can be larger than the rectangle in one
+     * direction.
      *
      * @bean
      * @type Rectangle
@@ -457,6 +461,10 @@ var View = Base.extend(Emitter, /** @lends View# */{
             this._bounds = this._matrix.inverted()._transformBounds(
                     new Rectangle(new Point(), this._viewSize));
         return this._bounds;
+    },
+
+    setBounds: function(/* rect */) {
+        this.fitBounds(Rectangle.read(arguments));
     },
 
     /**
@@ -488,30 +496,77 @@ var View = Base.extend(Emitter, /** @lends View# */{
         return DomElement.isInserted(this._element);
     },
 
-    // Empty stubs of #getPixelSize() and #getTextWidth(), around so that
-    // web-workers don't fail. Overridden with proper functionality in
-    // CanvasView.
+    // Text is measured with a canvas context: the view's own, or one from the
+    // CanvasProvider, which also works in workers with an OffscreenCanvas.
+    // Without either, sizes are read as pixels, and text has no width.
     getPixelSize: function(size) {
-        var element = this._element,
+        var agent = paper.agent,
+            element = this._element,
+            ctx,
             pixels;
-        if (element) {
-            // this code is part of the Firefox workaround in CanvasView, but
-            // also provides a way to determine pixel-size that does not involve
-            // a Canvas. It still does not work in a web-worker though.
+        if (element && agent && agent.firefox) {
+            // Firefox doesn't convert context.font sizes to pixels, so use the
+            // DOM there, which still doesn't work in workers:
             var parent = element.parentNode,
                 temp = document.createElement('div');
             temp.style.fontSize = size;
             parent.appendChild(temp);
             pixels = parseFloat(DomElement.getStyles(temp).fontSize);
             parent.removeChild(temp);
+        } else if (ctx = this._context || CanvasProvider.getContext(1, 1)) {
+            var prevFont = ctx.font;
+            ctx.font = size + ' serif';
+            pixels = parseFloat(ctx.font);
+            ctx.font = prevFont;
+            if (ctx !== this._context)
+                CanvasProvider.release(ctx);
         } else {
             pixels = parseFloat(size);
         }
         return pixels;
     },
 
-    getTextWidth: function(font, lines) {
-        return 0;
+    getTextWidth: function(font, lines, letterSpacing) {
+        var ctx = this._context || CanvasProvider.getContext(1, 1),
+            width = 0;
+        if (ctx) {
+            var prevFont = ctx.font,
+                prevLetterSpacing = ctx.letterSpacing;
+            ctx.font = font;
+            ctx.letterSpacing = letterSpacing;
+            // Measure the real width of the text:
+            for (var i = 0, l = lines.length; i < l; i++)
+                width = Math.max(width, ctx.measureText(lines[i]).width);
+            ctx.font = prevFont;
+            ctx.letterSpacing = prevLetterSpacing;
+            if (ctx !== this._context)
+                CanvasProvider.release(ctx);
+        }
+        return width;
+    },
+
+    getFontMetrics: function(font) {
+        var ctx = this._context || CanvasProvider.getContext(1, 1),
+            metrics = null;
+        if (ctx) {
+            var prevFont = ctx.font;
+            ctx.font = font;
+            // Browsers tell the font's own ascent and descent, node-canvas
+            // those of its em box:
+            var measured = ctx.measureText('H'),
+                ascent = measured.fontBoundingBoxAscent,
+                descent = measured.fontBoundingBoxDescent;
+            if (ascent === undefined) {
+                ascent = measured.emHeightAscent;
+                descent = measured.emHeightDescent;
+            }
+            if (ascent !== undefined)
+                metrics = { ascent: ascent, descent: descent };
+            ctx.font = prevFont;
+            if (ctx !== this._context)
+                CanvasProvider.release(ctx);
+        }
+        return metrics;
     }
 }, Base.each(['rotate', 'scale', 'shear', 'skew'], function(key) {
     var rotate = key === 'rotate';
@@ -1242,26 +1297,16 @@ new function() { // Injection scope for mouse and key event handling
 
     if (window) {
         // Touch handling inspired by Hammer.js
-        var navigator = window.navigator,
-            mousedown, mousemove, mouseup;
-        if (navigator.pointerEnabled || navigator.msPointerEnabled) {
-            // HTML5 / MS pointer events
-            mousedown = 'pointerdown MSPointerDown';
-            mousemove = 'pointermove MSPointerMove';
-            mouseup = 'pointerup pointercancel MSPointerUp MSPointerCancel';
-        } else {
-            mousedown = 'touchstart';
-            mousemove = 'touchmove';
+        var mousedown = 'touchstart',
+            mousemove = 'touchmove',
             mouseup = 'touchend touchcancel';
-            // Do not add mouse events on mobile and tablet devices
-            if (!('ontouchstart' in window && navigator.userAgent.match(
-                    /mobile|tablet|ip(ad|hone|od)|android|silk/i))) {
-                // For non pointer events browsers and mixed browsers, like
-                // chrome on Windows8 touch laptop.
-                mousedown += ' mousedown';
-                mousemove += ' mousemove';
-                mouseup += ' mouseup';
-            }
+        // Do not add mouse events on mobile and tablet devices
+        if (!('ontouchstart' in window && window.navigator.userAgent.match(
+                /mobile|tablet|ip(ad|hone|od)|android|silk/i))) {
+            // For mixed browsers, like chrome on Windows8 touch laptop.
+            mousedown += ' mousedown';
+            mousemove += ' mousemove';
+            mouseup += ' mouseup';
         }
 
         var docEvents = {
@@ -1363,7 +1408,6 @@ new function() { // Injection scope for mouse and key event handling
         },
         // Various variables required by #_handleMouseEvent()
         wasInView = false,
-        overView,
         downPoint,
         lastPoint,
         downItem,
@@ -1441,11 +1485,6 @@ new function() { // Injection scope for mouse and key event handling
                     point, prevPoint));
     }
 
-    /**
-     * Lookup defining which native events are required by which item events.
-     * Required by code that is counting the amount of required natives events.
-     * The mapping is native -> virtual.
-     */
     // Stands in for the DOM event in #dispatchMouseEvent() and
     // #dispatchKeyEvent(), with what the handling reads from it. Hosts can
     // pass the state of the modifier keys, see Key.modifiers:
@@ -1454,7 +1493,9 @@ new function() { // Injection scope for mouse and key event handling
             Key.modifiers.set(options.modifiers);
         return {
             type: type,
-            timeStamp: options.timeStamp != null ? options.timeStamp
+            // options.timeStamp in milliseconds is deprecated:
+            timeStamp: options.time != null ? options.time * 1000
+                    : options.timeStamp != null ? options.timeStamp
                     : Date.now(),
             button: options.button || 0,
             cancelable: true,
@@ -1466,6 +1507,11 @@ new function() { // Injection scope for mouse and key event handling
         };
     }
 
+    /**
+     * Lookup defining which native events are required by which item events.
+     * Required by code that is counting the amount of required natives events.
+     * The mapping is native -> virtual.
+     */
     var itemEventsMap = {
         // mouseup too, as the press needs the item for needsUp():
         mousedown: {
@@ -1499,12 +1545,15 @@ new function() { // Injection scope for mouse and key event handling
          * with {@link Tool#minDistance} and the like, then those of the items
          * under the point and of the view, including the events that Paper.js
          * derives itself: `'mousedrag'`, `'click'`, `'doubleclick'`,
-         * `'mouseenter'` and `'mouseleave'`.
+         * `'mouseenter'` and `'mouseleave'`. Points outside the view's bounds
+         * are handled too, since the host decides which events belong to its
+         * drawing surface.
          *
          * @option [options.modifiers] {Object} the state of the modifier keys,
          *     see {@link Key#modifiers}
          * @option [options.button=0] {Number} the mouse button
-         * @option [options.timeStamp=Date.now()] {Number} the time stamp
+         * @option [options.time=Date.now() / 1000] {Number} the time of the
+         *     event in seconds, see {@link Event#time}
          *
          * @param {String} type the type of the event: {@values 'mousedown',
          *     'mousemove', 'mouseup'}
@@ -1521,7 +1570,7 @@ new function() { // Injection scope for mouse and key event handling
                 View._focused = this;
                 mouseDown = dragging = true;
             }
-            this._handleMouseEvent(type, event, new Point(point));
+            this._handleMouseEvent(type, event, new Point(point), true);
             if (type === 'mouseup')
                 mouseDown = dragging = false;
             return event.defaultPrevented;
@@ -1535,10 +1584,13 @@ new function() { // Injection scope for mouse and key event handling
          *
          * @option [options.character] {String} the character that the key
          *     produces. By default, keydown takes the key itself if it is a
-         *     single character, and keyup the character of its keydown
+         *     single character, the space, carriage return and tab characters
+         *     for 'space', 'enter' and 'tab', and keyup the character of its
+         *     keydown
          * @option [options.modifiers] {Object} the state of the modifier keys,
          *     see {@link Key#modifiers}
-         * @option [options.timeStamp=Date.now()] {Number} the time stamp
+         * @option [options.time=Date.now() / 1000] {Number} the time of the
+         *     event in seconds, see {@link Event#time}
          *
          * @param {String} type the type of the event: {@values 'keydown',
          *     'keyup'}
@@ -1557,7 +1609,7 @@ new function() { // Injection scope for mouse and key event handling
          * Private method to handle mouse events, and delegate to items and
          * tools.
          */
-        _handleMouseEvent: function(type, event, point) {
+        _handleMouseEvent: function(type, event, point, dispatched) {
             var itemEvents = this._itemEvents,
                 // Look up hitItems, which tells us whether a given native mouse
                 // event requires an item hit-test or not, before changing type
@@ -1616,12 +1668,13 @@ new function() { // Injection scope for mouse and key event handling
                 isCovered = nativeMove && !dragging && target
                         && target.nodeType === 1
                         && !target.contains(this._element),
-                inView = !isCovered && this.getBounds().contains(point),
+                inView = dispatched
+                        || !isCovered && this.getBounds().contains(point),
                 // Run the hit-test on items first, but only if we're required
                 // to do so for this given mouse event, see hitItems and
                 // #_countItemEvent():
                 hit = hitItems && inView && view._project.hitTest(point, {
-                    tolerance: 0,
+                    tolerance: view._scope.settings.hitTolerance,
                     fill: true,
                     stroke: true
                 }),
@@ -1648,7 +1701,6 @@ new function() { // Injection scope for mouse and key event handling
             if (wasInView ^ inView) {
                 emitMouseEvent(this, null, inView ? 'mouseenter' : 'mouseleave',
                         event, point);
-                overView = inView ? this : null;
                 handle = true; // To include the leaving move.
             }
             // Now handle the mousemove / mousedrag event.
@@ -1788,7 +1840,7 @@ new function() { // Injection scope for mouse and key event handling
              */
             _resetState: function() {
                 dragging = mouseDown = called = wasInView = false;
-                prevFocus = tempFocus = overView = downPoint = lastPoint =
+                prevFocus = tempFocus = downPoint = lastPoint =
                     downItem = overItem = dragItem = clickItem = clickTime =
                     dblClick = null;
             }

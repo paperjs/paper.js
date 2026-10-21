@@ -54,6 +54,7 @@ let paperScope       = {} as paper.PaperScope;
 let callback         = {} as () => {};
 let hitResult        = {} as paper.HitResult;
 let object           = {} as object;
+let name             = '';
 
 // Only returns `true` for types that include `null`, to test nullable returns:
 declare function isNullable<T>(value: T): null extends T ? true : false;
@@ -111,10 +112,12 @@ point.floor();
 point.abs();
 point.add(0);
 point.add(pointLike);
+point.add(0, 0);
 point.subtract(0);
 point.subtract(pointLike);
 point.multiply(0);
 point.multiply(pointLike);
+point.multiply(0, 0);
 point.divide(0);
 point.divide(pointLike);
 point.modulo(0);
@@ -157,6 +160,7 @@ size.subtract(0);
 size.subtract(sizeLike);
 size.multiply(0);
 size.multiply(sizeLike);
+size.multiply(0, 0);
 size.divide(0);
 size.divide(sizeLike);
 size.modulo(0);
@@ -396,7 +400,13 @@ item.contains(pointLike);
 item.isInside(rectangleLike);
 item.intersects(item);
 item.hitTest(pointLike);
+paper.Item.getBounds([item], { stroke: true });
 item.hitTest(pointLike, {});
+// Options objects are typed from the @option tags (#1666):
+item.hitTest(pointLike, { tolerance: 5, fill: true, class: paper.Path });
+item.hitTestAll(pointLike, { tolerance: 5, fill: true });
+item.rasterize({ resolution: 144, insert: false });
+item.exportSVG({ asString: true, precision: 2 });
 item.hitTestAll(pointLike);
 item.hitTestAll(pointLike, {});
 item.matches({});
@@ -451,6 +461,19 @@ item.isAncestor(item);
 item.isSibling(item);
 item.isGroupedWith(item);
 item.translate(pointLike);
+item.translate(0, 0);
+// Setters read their values as parameters do (#1665):
+item.position = [0, 0];
+item.bounds = { x: 0, y: 0, width: 10, height: 10 };
+item.fillColor = 'red';
+item.fillColor = { hue: 90, saturation: 1, brightness: 1 };
+item.fillColor = null;
+item.strokeColor = [1, 0, 0];
+item.fillColor = {
+    gradient: { stops: ['red', ['blue', 0.5]], radial: true },
+    origin: [0, 0],
+    destination: [10, 10]
+};
 item.rotate(0);
 item.rotate(0, pointLike);
 item.scale(0);
@@ -503,6 +526,7 @@ layer.activate();
 new paper.Group([ item ]);
 new paper.Group({});
 group.clipped;
+group.fullySelected = true;
 
 
 //
@@ -1087,6 +1111,7 @@ view.responds('');
 // Event
 //
 
+event.time;
 event.timeStamp;
 event.modifiers;
 event.modifiers.shift;
@@ -1141,6 +1166,8 @@ toolEvent.lastPoint;
 toolEvent.downPoint;
 toolEvent.middlePoint;
 toolEvent.delta;
+toolEvent.velocity;
+toolEvent.elapsed;
 toolEvent.count;
 toolEvent.item;
 toolEvent.toString();

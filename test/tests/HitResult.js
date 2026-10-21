@@ -1187,3 +1187,122 @@ test('Transparent fills are hit, unlike no fill (#1157)', function() {
     equals(project.hitTest([10, 10]), null, 'path without a fill');
     equals(project.hitTest([60, 10]), null, 'shape without a fill');
 });
+
+test('hit-testing strokes next to smooth segments with any join (#2342)', function() {
+    function hitTest(item, point) {
+        return item.hitTest(point, { stroke: true, fill: false });
+    }
+    // Smooth segments are joined round, whatever the join. The stroke of the
+    // circle reaches from radius 45 to 55 around [100, 100]:
+    ['miter', 'bevel', 'round'].forEach(function(join) {
+        var circle = new Path.Circle({
+            center: [100, 100],
+            radius: 50,
+            strokeColor: 'black',
+            strokeWidth: 10,
+            strokeJoin: join
+        });
+        [[153, 100], [146, 100], [100, 154]].forEach(function(point) {
+            var hitResult = hitTest(circle, point);
+            equals(hitResult && hitResult.type, 'stroke',
+                    join + ' join: ' + point + ' should hit the stroke');
+        });
+        [[156, 100], [144, 100], [100, 156]].forEach(function(point) {
+            equals(hitTest(circle, point), null,
+                    join + ' join: ' + point + ' should miss the stroke');
+        });
+        circle.remove();
+    });
+    // The miter of the corner at [400, 100] reaches to [410, 90]:
+    var rect = new Path.Rectangle({
+        rectangle: [100, 100, 300, 200],
+        strokeColor: 'black',
+        strokeWidth: 20,
+        strokeJoin: 'miter'
+    });
+    var hitResult = hitTest(rect, [409, 91]);
+    equals(hitResult && hitResult.type, 'stroke',
+            'the miter tip should hit the stroke');
+    equals(hitTest(rect, [411, 89]), null,
+            'beyond the miter tip should miss the stroke');
+});
+
+test('hit-testing non-scaling strokes under non-uniform matrices (#2334)', function() {
+    // A non-scaling stroke is drawn around the transformed geometry, so a path
+    // that keeps its matrix is hit where the same path with the matrix applied
+    // to its geometry is:
+    function compare(name, attributes, transform) {
+        function create(applyMatrix) {
+            var path = new Path(Base.set({
+                strokeColor: 'black',
+                strokeWidth: 10,
+                strokeScaling: false,
+                applyMatrix: applyMatrix
+            }, attributes));
+            transform(path);
+            return path;
+        }
+        var kept = create(false),
+            applied = create(true),
+            bounds = applied.strokeBounds.expand(10),
+            options = { stroke: true, fill: false },
+            count = 0;
+        for (var x = bounds.left; x <= bounds.right; x += 2) {
+            for (var y = bounds.top; y <= bounds.bottom; y += 2) {
+                var point = new Point(x, y);
+                if (!kept.hitTest(point, options)
+                        !== !applied.hitTest(point, options))
+                    count++;
+            }
+        }
+        equals(count, 0, name + ': points hit differently');
+        kept.remove();
+        applied.remove();
+    }
+    var star = new Path.Star({
+            center: [50, 50],
+            points: 5,
+            radius1: 20,
+            radius2: 40,
+            insert: false
+        }).segments,
+        line = [[20, 80], [50, 20], [80, 70], [110, 30]];
+    function scale(path) {
+        path.scale(2.5, 0.6);
+    }
+    function shear(path) {
+        path.shear(0.8, 0);
+        path.scale(1, 1.7);
+    }
+    compare('round joins', { segments: star, closed: true }, scale);
+    compare('miter joins, sheared',
+            { segments: star, closed: true, strokeJoin: 'miter' }, shear);
+    compare('square caps and bevel joins',
+            { segments: line, strokeCap: 'square', strokeJoin: 'bevel' },
+            scale);
+});
+
+test('hit-testing strokes where a line runs into a curve with a miter join', function() {
+    // The rounded corners meet the straight sides in the same direction, with
+    // a handle of zero length on the side of the line, so the join adds
+    // nothing there. Points inside the stroke at these segments are hit:
+    var rect = new Path.Rectangle({
+        point: [0, 0],
+        size: [300, 180],
+        radius: 90,
+        strokeColor: 'black',
+        strokeWidth: 30,
+        strokeJoin: 'miter'
+    });
+    rect.segments.forEach(function(segment) {
+        var normal = segment.location.normal.multiply(5);
+        [segment.point.add(normal), segment.point.subtract(normal)].forEach(
+            function(point) {
+                var hitResult = rect.hitTest(point,
+                        { stroke: true, fill: false });
+                equals(hitResult && hitResult.type, 'stroke',
+                        'point ' + point + ' should hit the stroke');
+            }
+        );
+    });
+});

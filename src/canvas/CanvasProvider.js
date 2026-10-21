@@ -17,8 +17,7 @@ var CanvasProvider = Base.exports.CanvasProvider = {
         // Web-workers have no DOM, but may support OffscreenCanvas:
         if (!window && !self.OffscreenCanvas)
             return null;
-        var canvas,
-            clear = true;
+        var canvas;
         if (typeof width === 'object') {
             height = width.height;
             width = width.width;
@@ -29,25 +28,17 @@ var CanvasProvider = Base.exports.CanvasProvider = {
             canvas = window
                     ? document.createElement('canvas')
                     : new self.OffscreenCanvas(width, height);
-            clear = false; // It's already cleared when created.
         }
         var ctx = canvas.getContext('2d', options || {});
         if (!ctx) {
             throw new Error('Canvas ' + canvas +
                     ' is unable to provide a 2D context.');
         }
-        // If they are not the same size, we don't need to clear them
-        // using clearRect and visa versa.
-        if (canvas.width === width && canvas.height === height) {
-            // +1 is needed on some browsers to really clear the borders
-            if (clear)
-                ctx.clearRect(0, 0, width + 1, height + 1);
-        } else {
+        // No need to clear: pooled canvases are 0 × 0, new ones are blank.
+        if (canvas.width !== width || canvas.height !== height) {
             canvas.width = width;
             canvas.height = height;
         }
-        // We save on retrieval and restore on release.
-        ctx.save();
         return canvas;
     },
 
@@ -61,8 +52,8 @@ var CanvasProvider = Base.exports.CanvasProvider = {
         var canvas = obj && obj.canvas ? obj.canvas : obj;
         if (canvas && canvas.getContext) {
             // Resizing frees the pixels right away, and also resets the
-            // context with the state that getCanvas() saved. Keep only a few
-            // canvases, to reuse their elements and contexts:
+            // context's state. Keep only a few canvases, to reuse their
+            // elements and contexts:
             canvas.width = canvas.height = 0;
             if (this.canvases.length < 8)
                 this.canvases.push(canvas);

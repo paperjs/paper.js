@@ -72,6 +72,14 @@ test('view.fitBounds() with empty rectangles', function() {
     view.matrix = new Matrix();
 });
 
+test('view.bounds = rect', function() {
+    // The view is 100x100, so a 200x100 rectangle fits by its width:
+    view.matrix = new Matrix();
+    view.bounds = new Rectangle(0, 0, 200, 100);
+    equals(view.bounds, new Rectangle(0, -50, 200, 200));
+    view.matrix = new Matrix();
+});
+
 test('view.zoom with values that aren\'t positive numbers (#1433)', function() {
     view.zoom = 2;
     [0, -1, NaN, Infinity].forEach(function(zoom) {
@@ -252,6 +260,75 @@ test('view.dispatchMouseEvent()', function() {
     tool.remove();
 });
 
+test('view.dispatchMouseEvent() with settings.hitTolerance (#1971)', function() {
+    var path = new Path.Line({
+            from: [10, 10],
+            to: [50, 10],
+            strokeColor: 'black'
+        }),
+        log = [],
+        hitTolerance = paper.settings.hitTolerance;
+    path.onMouseEnter = path.onMouseLeave = function(event) {
+        log.push(event.type + ' ' + event.point);
+    };
+    // 3 points away from the line, within a tolerance of 5:
+    view.dispatchMouseEvent('mousemove', [30, 13]);
+    paper.settings.hitTolerance = 5;
+    view.dispatchMouseEvent('mousemove', [30, 14]);
+    view.dispatchMouseEvent('mousemove', [30, 20]);
+    paper.settings.hitTolerance = hitTolerance;
+    equals(log, [
+        'mouseenter { x: 30, y: 14 }',
+        'mouseleave { x: 30, y: 20 }'
+    ]);
+});
+
+test('view.dispatchMouseEvent() outside the view', function() {
+    // Hosts can draw around the view, e.g. around an artboard:
+    var point = view.bounds.leftCenter.subtract([50, 0]),
+        path = new Path.Circle({
+            center: point,
+            radius: 10,
+            fillColor: 'red'
+        }),
+        tool = new Tool(),
+        log = [];
+    path.onMouseDown = function(event) {
+        log.push('item down ' + event.point);
+    };
+    tool.onMouseDown = function(event) {
+        log.push('tool down ' + event.point);
+    };
+    view.dispatchMouseEvent('mousedown', point);
+    view.dispatchMouseEvent('mouseup', point);
+    equals(log, [
+        'item down ' + point,
+        'tool down ' + point
+    ]);
+    tool.remove();
+});
+
+test('event.time', function() {
+    var tool = new Tool(),
+        log = [];
+    tool.onMouseDown = tool.onKeyDown = function(event) {
+        log.push(event.type + ' ' + event.time + ' ' + event.timeStamp);
+    };
+    view.dispatchMouseEvent('mousedown', [10, 10], { time: 1.5 });
+    view.dispatchMouseEvent('mouseup', [10, 10], { time: 1.6 });
+    view.dispatchKeyEvent('keydown', 'a', { time: 2.25 });
+    view.dispatchKeyEvent('keyup', 'a', { time: 2.3 });
+    // The deprecated options.timeStamp in milliseconds still works:
+    view.dispatchMouseEvent('mousedown', [10, 10], { timeStamp: 3500 });
+    view.dispatchMouseEvent('mouseup', [10, 10], { timeStamp: 3600 });
+    equals(log, [
+        'mousedown 1.5 1500',
+        'keydown 2.25 2250',
+        'mousedown 3.5 3500'
+    ]);
+    tool.remove();
+});
+
 test('view.dispatchKeyEvent()', function() {
     var tool = new Tool();
     var log = [];
@@ -270,6 +347,37 @@ test('view.dispatchKeyEvent()', function() {
         'keydown a "A"',
         'keyup a "A"',
         'keyup shift ""'
+    ]);
+    tool.remove();
+});
+
+test('view.dispatchKeyEvent() with the characters of special keys (#2346)', function() {
+    var tool = new Tool();
+    var log = [];
+    tool.onKeyDown = tool.onKeyUp = function(event) {
+        log.push(event.type + ' ' + event.key + ' '
+                + JSON.stringify(event.character));
+    };
+    ['space', 'enter', 'tab', 'a', 'shift'].forEach(function(key) {
+        view.dispatchKeyEvent('keydown', key);
+        view.dispatchKeyEvent('keyup', key);
+    });
+    // An explicit character still wins:
+    view.dispatchKeyEvent('keydown', 'space', { character: '\xA0' });
+    view.dispatchKeyEvent('keyup', 'space');
+    equals(log, [
+        'keydown space " "',
+        'keyup space " "',
+        'keydown enter "\\r"',
+        'keyup enter "\\r"',
+        'keydown tab "\\t"',
+        'keyup tab "\\t"',
+        'keydown a "a"',
+        'keyup a "a"',
+        'keydown shift ""',
+        'keyup shift ""',
+        'keydown space "\xA0"',
+        'keyup space "\xA0"'
     ]);
     tool.remove();
 });
@@ -489,7 +597,137 @@ test('Selections are drawn with a line width of 1', function() {
     path.remove();
 });
 
-test('tool.eventInterval repeats mousedrag while the mouse is held (S5)', function(assert) {
+test('Selected bounds and strokeBounds (#1030)', function() {
+    // The stroke reaches from 20 to 40 around the left edge at 30. The
+    // selection's 1pt lines cover the pixels on both sides of these
+    // coordinates, and its 4pt corner handles reach 2 further:
+    var path = new Path.Rectangle({
+            point: [30, 30],
+            size: [40, 40],
+            strokeColor: 'red',
+            strokeWidth: 20,
+            selectedColor: 'blue'
+        }),
+        ctx = view.element.getContext('2d');
+
+    function getBlue(x, y) {
+        var pixelRatio = view.pixelRatio;
+        return ctx.getImageData(x * pixelRatio, y * pixelRatio, 1, 1).data[2];
+    }
+
+    path.strokeBounds.selected = true;
+    view.update(true);
+    equals(getBlue(20, 40) > 0, true, 'the left edge of strokeBounds');
+    equals(getBlue(18, 18) > 0, true, 'the top left handle of strokeBounds');
+    equals(getBlue(30, 40), 0, 'no left edge of bounds');
+    equals(getBlue(28, 28), 0, 'no top left handle of bounds');
+    path.strokeBounds.selected = false;
+    path.bounds.selected = true;
+    view.update(true);
+    equals(getBlue(20, 40), 0, 'no left edge of strokeBounds');
+    equals(getBlue(18, 18), 0, 'no top left handle of strokeBounds');
+    equals(getBlue(30, 40) > 0, true, 'the left edge of bounds');
+    equals(getBlue(28, 28) > 0, true, 'the top left handle of bounds');
+    path.remove();
+});
+
+test('settings.segmentSize (#1899)', function() {
+    var path = new Path({
+            segments: [[[20, 50], null, [0, -30]], [80, 50]],
+            fullySelected: true
+        }),
+        settings = paper.settings,
+        handleSize = settings.handleSize,
+        segmentSize = settings.segmentSize,
+        ctx = view.element.getContext('2d');
+
+    function getAlpha(x, y) {
+        var pixelRatio = view.pixelRatio;
+        return ctx.getImageData(x * pixelRatio, y * pixelRatio, 1, 1).data[3];
+    }
+
+    // By default, the segments are drawn as large as the handles, 4 points:
+    view.update(true);
+    equals(getAlpha(20, 20) > 0, true, 'the handle');
+    equals(getAlpha(20, 54), 0, 'below the segment');
+    // A larger segment without handles:
+    settings.handleSize = 0;
+    settings.segmentSize = 10;
+    view.update(true);
+    equals(getAlpha(20, 20), 0, 'no handle');
+    equals(getAlpha(20, 54) > 0, true, 'the larger segment');
+    settings.handleSize = handleSize;
+    settings.segmentSize = segmentSize;
+    path.remove();
+});
+
+test('Shadows of filled and stroked paths (#892)', function() {
+    // The stroke reaches from 15 to 65, so the shadow of the whole shape, 10
+    // further, reaches from 25 to 75, while that of the fill only reaches 70:
+    var props = {
+            fillColor: 'red',
+            strokeColor: 'blue',
+            strokeWidth: 10,
+            shadowColor: 'black',
+            shadowOffset: [10, 10]
+        },
+        rect = new Rectangle(20, 20, 40, 40),
+        ctx = view.element.getContext('2d');
+
+    function getPixel(x, y) {
+        var pixelRatio = view.pixelRatio,
+            data = ctx.getImageData(x * pixelRatio, y * pixelRatio, 1, 1).data;
+        return [data[0], data[1], data[2], data[3]];
+    }
+
+    [
+        new Path.Rectangle(rect),
+        new CompoundPath({ children: [new Path.Rectangle(rect)] }),
+        new Shape.Rectangle(rect)
+    ].forEach(function(item) {
+        item.set(props);
+        view.update(true);
+        var name = item.className;
+        equals(getPixel(72, 72), [0, 0, 0, 255],
+                name + ': the shadow of the stroke');
+        equals(getPixel(77, 77)[3], 0, name + ': beyond the shadow');
+        equals(getPixel(17, 40), [0, 0, 255, 255], name + ': the stroke');
+        equals(getPixel(40, 40), [255, 0, 0, 255], name + ': the fill');
+        item.remove();
+    });
+});
+
+test('ToolEvent#velocity and #elapsed', function() {
+    var tool = new Tool({ maxDistance: 10 }),
+        log = [];
+    // ToolEvent reads its values from the tool, so record them in the handler:
+    tool.onMouseDown = tool.onMouseDrag = tool.onMouseUp = function(event) {
+        log.push(event.type + ' ' + event.velocity + ' ' + event.elapsed);
+    };
+    function dispatch(type, point, time) {
+        view.dispatchMouseEvent(type, point, { time: time });
+    }
+    // Quarter seconds, so the times add up without rounding:
+    dispatch('mousedown', [0, 0], 1);
+    dispatch('mousemove', [10, 0], 1.25);
+    // Both steps that maxDistance adds share the speed of the report:
+    dispatch('mousemove', [30, 0], 1.5);
+    // No time passed:
+    dispatch('mousemove', [40, 0], 1.5);
+    // Since the last event, not since mousedown:
+    dispatch('mouseup', [50, 0], 1.75);
+    equals(log, [
+        'mousedown { x: 0, y: 0 } 0',
+        'mousedrag { x: 40, y: 0 } 0.25',
+        'mousedrag { x: 80, y: 0 } 0.25',
+        'mousedrag { x: 80, y: 0 } 0.25',
+        'mousedrag { x: 0, y: 0 } 0',
+        'mouseup { x: 40, y: 0 } 0.25'
+    ]);
+    tool.remove();
+});
+
+test('tool.eventInterval repeats mousedrag while the mouse is held', function(assert) {
     var done = assert.async(),
         tool = new Tool({ eventInterval: 10 }),
         drags = [];
@@ -519,4 +757,20 @@ test('tool.eventInterval repeats mousedrag while the mouse is held (S5)', functi
             done();
         }, 50);
     }, 60);
+});
+
+test('Text measurements in views without a canvas', function() {
+    // As in workers, a view without an element has no canvas of its own, but
+    // measures with one from the CanvasProvider, as canvas views do:
+    var view = new View(paper.project, null),
+        canvasView = paper.view;
+    equals(function() {
+        var width = view.getTextWidth('20px sans-serif', ['Hello'], '0px');
+        return width > 0 && width === canvasView.getTextWidth(
+                '20px sans-serif', ['Hello'], '0px');
+    }, true, 'getTextWidth()');
+    equals(function() {
+        return view.getPixelSize('12pt');
+    }, canvasView.getPixelSize('12pt'), 'getPixelSize()');
+    view.remove();
 });

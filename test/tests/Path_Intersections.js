@@ -154,6 +154,34 @@ test('intersecting paths with applyMatrix = true / false', function() {
     test(Shape, false);
 });
 
+test('#intersects() with contained items (#1751)', function() {
+    var outer = new Path.Circle([100, 100], 50),
+        inner = new Path.Circle([100, 100], 20),
+        ring = new CompoundPath({
+            children: [new Path.Circle([300, 100], 50),
+                new Path.Circle([300, 100], 30)],
+            fillRule: 'evenodd'
+        }),
+        inHole = new Path.Circle([300, 100], 10),
+        inBand = new Path.Circle([300, 60], 5),
+        far = new Path.Circle([500, 100], 10),
+        // A compound path of which only the second child lies inside outer:
+        apart = new CompoundPath([new Path.Circle([500, 300], 10),
+            new Path.Circle([100, 100], 5)]),
+        shape = new Shape.Circle({ center: [100, 100], radius: 10 });
+    equals(outer.intersects(inner), true, 'outer contains inner');
+    equals(inner.intersects(outer), true, 'inner is contained by outer');
+    equals(ring.intersects(inHole), false, 'circle in the hole of a ring');
+    equals(inHole.intersects(ring), false, 'ring around a circle');
+    equals(ring.intersects(inBand), true, 'circle in the band of a ring');
+    equals(inBand.intersects(ring), true, 'ring containing a circle');
+    equals(outer.intersects(far), false, 'apart');
+    equals(outer.intersects(apart), true, 'one child contained');
+    equals(apart.intersects(outer), true, 'one child contained, reversed');
+    equals(outer.intersects(shape), true, 'shape contained');
+    equals(shape.intersects(outer), true, 'shape containing');
+});
+
 test('#904', function() {
     var path1 = new Path([
             [347.65684372173973, 270.4315945523045, 0, 0, 22.844385382059784, -25.115215946843847],
@@ -407,4 +435,54 @@ test('#1255', function() {
     testIntersections(c1.getIntersections(c2), [
         { point: { x: 439.38241, y: 216.13904 }, time: 0, crossing: false }
     ]);
+});
+
+test('#1940: intersections at coordinates beyond 16384', function() {
+    // Rectangles with shared edges, beyond where EPSILON is lost:
+    var rect1 = new Path.Rectangle({ point: [16385, 100], size: [300, 300] });
+    var rect2 = new Path.Rectangle({ point: [16385, -150], size: [300, 300] });
+    equals(rect1.getIntersections(rect2).length, 4);
+    equals(rect1.intersect(rect2).area, 300 * 50);
+    // Paths whose bounds only touch:
+    var square1 = new Path.Rectangle({ point: [20000, 0], size: [100, 100] });
+    var square2 = new Path.Rectangle({ point: [20100, 0], size: [100, 100] });
+    equals(square1.getIntersections(square2).length, 2);
+    compareBoolean(function() { return square1.unite(square2); },
+            'M20000,0h200v100h-200z');
+});
+
+test('#1882', function() {
+    // A vertical line through the joint of an arc's curves, at coordinates
+    // beyond 16384:
+    var arc = new Path('M 768404.125 383629.72406100313 A 563 563 0 0 0 '
+            + '767528.125 383629.72406100313');
+    var line = new Path('M 767966.125 383983.4844 L 767966.125 383358.4844');
+    testIntersections(line.getIntersections(arc), [
+        { point: { x: 767966.125, y: 383420.45418 }, index: 0 }
+    ]);
+});
+
+test('#1848', function() {
+    // The smoothed path ends on the line with a zero-length handle, which
+    // makes its end a double root:
+    var path = new Path({ segments: [[0, 350], [100, 100], [350, 0]] });
+    path.smooth({ type: 'catmull-rom', factor: 1 });
+    var line = new Path({ segments: [[350, -100], [350, 400]] });
+    testIntersections(path.getIntersections(line), [
+        { point: { x: 350, y: 0 }, index: 1, time: 1 }
+    ]);
+});
+
+test('#1387: crossings at mirror-symmetric joints', function() {
+    // The rounded ends of the capsules meet the straight sides at their
+    // joints, where both crossings must be found as such:
+    var capsule = 'l-29.96756,1.39482c0,0 -14.98378,0.69741 -14.28637,15.68119'
+            + 'c0.69741,14.98378 15.68119,14.28637 15.68119,14.28637'
+            + 'l29.96756,-1.39482c0,0 14.98378,-0.69741 14.28637,-15.68119'
+            + 'c-0.69741,-14.98378 -15.68119,-14.28637 -15.68119,-14.28637z';
+    var path1 = new Path('M16.24437,-132.7183' + capsule);
+    var path2 = new Path('M46.21193,-134.11312' + capsule);
+    equals(path2.getIntersections(path1).map(function(location) {
+        return location.isCrossing();
+    }), [true, true]);
 });

@@ -40,6 +40,18 @@ test('Curve#classify()', function() {
     testClassify(single, { type: 'serpentine', roots: [ 0.870967741935484 ] });
     testClassify(double, { type: 'serpentine', roots: [ 0.15047207654837885, 0.7384168123405099 ] });
     testClassify(arch, { type: 'arch', roots: null });
+    // A root at the very end is the end itself, not a point of inflection
+    // inside the curve (#1879):
+    var end = new Curve([1133.875, 47.56], [0.001, 1.2], [0, -1.2],
+            [1133.876, 51.16]);
+    testClassify(end, { type: 'arch', roots: null });
+    // A straight curve with handles along it is a line, also when rounding
+    // keeps its coefficients from being exactly zero, and has no loop:
+    var straight = new Curve([256.099999999999, 157.4], [-0.12, 0],
+            [0.12666666666666, 0], [255.729999999999, 157.4]);
+    testClassify(straight, { type: 'line', roots: null });
+    equals(straight.getIntersections(), [],
+            'straight.getIntersections()');
 });
 
 test('Curve#getPointAtTime()', function() {
@@ -327,6 +339,27 @@ test('Curve#getTimeOf()', function() {
     }
 });
 
+test('Curve#getTimeOf() near the ends of a straight curve', function() {
+    // Without handles, a point at a distance d from an end solves to a time of
+    // about sqrt(d / 3l) on a curve of length l, far from the end (#2082):
+    var curve = new Curve(new Point(100, 100), new Point(200, 200));
+    equals(curve.getTimeOf(new Point(100 + 1e-9, 100)), 0, null,
+            { tolerance: 0 });
+    equals(curve.getTimeOf(new Point(200 - 1e-9, 200)), 1, null,
+            { tolerance: 0 });
+});
+
+test('Curve#getTimeOf() at large coordinates', function() {
+    // Beyond about 2e8, GEOMETRIC_EPSILON is below the resolution of the
+    // coordinates, and points on the curve weren't recognized as such:
+    var curve = new Curve(new Point(288270130.78085, 2621133556.75646),
+            new Point(2158145287.70088, 988602383.71608));
+    for (var i = 1; i < 10; i++) {
+        var time = i / 10 + 0.01;
+        equals(curve.getTimeOf(curve.getPointAtTime(time)), time);
+    }
+});
+
 test('Curve#getPartLength() with straight curve', function() {
     var curve = new Curve([0, 0, 0, 0, 64, 0, 64, 0]);
     equals(function() { return curve.getPartLength(0.0, 0.25); }, 10);
@@ -396,6 +429,27 @@ test('Curve#getTimesWithTangent() with quadratic curve', function() {
             'tangent at times[0] is parallel to the given tangent');
 });
 
+test('Curve#getTimesWithTangent(), #length and Curve.getPeaks() far from the origin', function() {
+    // The coordinates are multiples of 1 / 4096, which stay exact at 2^40, so
+    // the curve moved there has the same shape and the same results:
+    function getCurve(offset) {
+        var q = 1 / 4096;
+        return new Curve(
+                [offset + 3 * q, offset + 5 * q],
+                [30 + 1229 * q, -40 - 2867 * q],
+                [-10 - 1229 * q, -60 - 2867 * q],
+                [offset + 100 + 409 * q, offset + 20 + 819 * q]);
+    }
+    var curve = getCurve(0),
+        moved = getCurve(Math.pow(2, 40)),
+        options = { tolerance: 1e-12 };
+    equals(moved.getTimesWithTangent([1, 0.3]),
+            curve.getTimesWithTangent([1, 0.3]), 'times with tangent', options);
+    equals(moved.length, curve.length, 'length', options);
+    equals(Curve.getPeaks(moved.getValues()),
+            Curve.getPeaks(curve.getValues()), 'peaks', options);
+});
+
 test('Curve#handleBounds', function() {
     // The handle bounds are the bounds of the curve's four points:
     // (0, 0), (-20, 80), (130, 10), (100, 50)
@@ -414,4 +468,21 @@ test('Curve#handleBounds', function() {
     });
     equals(path.firstCurve.handleBounds, expected,
             'path.firstCurve.handleBounds');
+});
+
+test('Curve#strokeBounds', function() {
+    // A curve without a path has no stroke, so its stroke bounds are the
+    // bounds of the line from (0, 0) to (10, 10):
+    var curve = new Curve([0, 0], [10, 10]);
+    equals(curve.strokeBounds, new Rectangle(0, 0, 10, 10),
+            'curve.strokeBounds');
+    // The curve of a stroked path includes the stroke, here the butt caps of
+    // a horizontal line, half the stroke width above and below:
+    var path = new Path({
+        segments: [[0, 0], [100, 0]],
+        strokeColor: 'black',
+        strokeWidth: 10
+    });
+    equals(path.firstCurve.strokeBounds, new Rectangle(0, -5, 100, 10),
+            'path.firstCurve.strokeBounds');
 });

@@ -22,6 +22,7 @@ declare namespace paper {
         | { x: number, y: number }
         | { width: number, height: number }
         | { angle: number, length: number }
+        | { angleInRadians: number, length: number }
     )
 
     type SizeLike = (
@@ -37,13 +38,44 @@ declare namespace paper {
         | { x: number, y: number, width: number, height: number }
         | { from: PointLike, to: PointLike }
     )
+
+    type ColorLike = (
+        Color
+        | string
+        | number[]
+        | { red: number, green: number, blue: number, alpha?: number }
+        | { gray: number, alpha?: number }
+        | { hue: number, saturation: number, brightness: number, alpha?: number }
+        | { hue: number, saturation: number, lightness: number, alpha?: number }
+        | {
+            gradient: Gradient | { stops: GradientStopLike[], radial?: boolean },
+            origin: PointLike,
+            destination: PointLike,
+            highlight?: PointLike
+        }
+        | {
+            stops: GradientStopLike[],
+            radial?: boolean,
+            origin: PointLike,
+            destination: PointLike,
+            highlight?: PointLike
+        }
+    )
+
+    type GradientStopLike = GradientStop | ColorLike | [ ColorLike, number ]
     {{#classes}}
 
     {{#doc}}4{{/doc}}
     class {{className}} {{#extends}}extends {{extends}}{{/extends}} {
         {{#properties}}
         {{#doc}}8{{/doc}}
+        {{#setterType}}
+        {{static}}get {{name}}(){{type}}
+        {{static}}set {{name}}(value{{setterType}})
+        {{/setterType}}
+        {{^setterType}}
         {{static}}{{readOnly}}{{name}}{{type}}
+        {{/setterType}}
 
         {{/properties}}
         {{#classesPointers}}
