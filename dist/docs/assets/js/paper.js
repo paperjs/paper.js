@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 00:51:33 2026 +0200
+ * Date: Thu Oct 22 00:50:55 2026 +0200
  *
  ***
  *
@@ -20926,9 +20926,13 @@ new function() {
 		var exporter = exporters[item._class],
 			node = exporter && exporter(item, options);
 		if (node) {
-			var onExport = options.onExport;
-			if (onExport)
-				node = onExport(item, node, options) || node;
+			var onExport = options.onExport,
+				processNode = options.processNode
+					|| onExport && function(arg) {
+						return onExport(arg.item, arg.node, options);
+					};
+			if (processNode)
+				node = processNode({ item: item, node: node }) || node;
 			var data = JSON.stringify(item._data);
 			if (data && data !== '{}' && data !== 'null')
 				node.setAttribute('data-paper-data', data);
@@ -21641,16 +21645,20 @@ new function() {
 			if (item) {
 				if (isElement && importer !== importGroup)
 					item = applyAttributes(item, node, options, isRoot);
+				var data = isElement && getData(node);
+				if (data)
+					item._data = data;
 				var onImport = options.onImport,
-					data = isElement && getData(node);
-				if (onImport)
-					item = onImport(node, item, options) || item;
+					processItem = isElement && (options.processItem
+						|| onImport && function(arg) {
+							return onImport(arg.node, arg.item, options);
+						});
+				if (processItem)
+					item = processItem({ item: item, node: node }) || item;
 				if (options.expandShapes && item instanceof Shape) {
 					item.remove();
 					item = item.toPath();
 				}
-				if (data)
-					item._data = data;
 			}
 		} finally {
 			if (container) {

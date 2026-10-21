@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 00:51:33 2026 +0200
+ * Date: Thu Oct 22 00:50:55 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -2508,13 +2508,19 @@ declare namespace paper {
          * @option [options.reduceAttributes=true] {Boolean} wether to only include
          *     style attributes in the SVG output that differ from their parents,
          *     or to always include them (much faster but leading to redundancies).
+         * @option [options.processNode] {Function} the function to process the
+         *     SVG node made for each exported item, receiving an object with the
+         *     `item` and its `node`: It can change the node, e.g. to add attributes
+         *     that Paper.js doesn't export, or return a node to replace it with. It
+         *     is called before the item's name, style, visibility and data are set
+         *     on the node, which replace attributes of the same names.
          * 
          * @param options - the export options
          * 
          * @return the item converted to an SVG node or a
          * `String` depending on `option.asString` value
          */
-        exportSVG(options?: { bounds?: string | RectangleLike, matrix?: Matrix, asString?: boolean, precision?: number, matchShapes?: boolean, embedImages?: boolean, reuseImages?: boolean, idPrefix?: string, reduceAttributes?: boolean }): SVGElement | string
+        exportSVG(options?: { bounds?: string | RectangleLike, matrix?: Matrix, asString?: boolean, precision?: number, matchShapes?: boolean, embedImages?: boolean, reuseImages?: boolean, idPrefix?: string, reduceAttributes?: boolean, processNode?: Function }): SVGElement | string
 
         /** 
          * Converts the provided SVG content into Paper.js items and adds them to
@@ -2546,6 +2552,13 @@ declare namespace paper {
          * @option [options.applyMatrix={@link PaperScope#settings}.applyMatrix]
          *     {Boolean} whether the imported items should have their transformation
          *     matrices applied to their contents or not
+         * @option [options.processItem] {Function} the function to process the
+         *     item made for each imported SVG element, receiving an object with
+         *     the `item` and its `node`: It can read attributes that Paper.js
+         *     doesn't import, or return an item to replace it with. It is called
+         *     after the element's attributes and data are applied to the item, so
+         *     it can extend `item.data`. A replacement item doesn't receive them:
+         *     copy them over from `item` as needed.
          * 
          * @param svg - the SVG content to import, either as a SVG
          *     DOM node, a string containing SVG content, or a string describing the
@@ -2555,7 +2568,7 @@ declare namespace paper {
          * @return the newly created Paper.js item containing the converted
          *     SVG content
          */
-        importSVG(svg: SVGElement | string, options?: { expandShapes?: boolean, crossOrigin?: string, onLoad?: Function, onError?: Function, insert?: boolean, applyMatrix?: boolean }): Item
+        importSVG(svg: SVGElement | string, options?: { expandShapes?: boolean, crossOrigin?: string, onLoad?: Function, onError?: Function, insert?: boolean, applyMatrix?: boolean, processItem?: Function }): Item
 
         /** 
          * Imports the provided external SVG file, converts it into Paper.js items
@@ -6374,13 +6387,19 @@ declare namespace paper {
          * @option [options.reduceAttributes=true] {Boolean} wether to only include
          *     style attributes in the SVG output that differ from their parents,
          *     or to always include them (much faster but leading to redundancies).
+         * @option [options.processNode] {Function} the function to process the
+         *     SVG node made for each exported item, receiving an object with the
+         *     `item` and its `node`: It can change the node, e.g. to add attributes
+         *     that Paper.js doesn't export, or return a node to replace it with. It
+         *     is called before the item's name, style, visibility and data are set
+         *     on the node, which replace attributes of the same names.
          * 
          * @param options - the export options
          * 
          * @return the project converted to an SVG node or a
          * `String` depending on `option.asString` value
          */
-        exportSVG(options?: { bounds?: string | RectangleLike, matrix?: Matrix, asString?: boolean, precision?: number, matchShapes?: boolean, embedImages?: boolean, reuseImages?: boolean, idPrefix?: string, reduceAttributes?: boolean }): SVGElement | string
+        exportSVG(options?: { bounds?: string | RectangleLike, matrix?: Matrix, asString?: boolean, precision?: number, matchShapes?: boolean, embedImages?: boolean, reuseImages?: boolean, idPrefix?: string, reduceAttributes?: boolean, processNode?: Function }): SVGElement | string
 
         /** 
          * Converts the provided SVG content into Paper.js items and adds them to
@@ -6413,6 +6432,13 @@ declare namespace paper {
          * @option [options.applyMatrix={@link PaperScope#settings}.applyMatrix]
          *     {Boolean} whether the imported items should have their transformation
          *     matrices applied to their contents or not
+         * @option [options.processItem] {Function} the function to process the
+         *     item made for each imported SVG element, receiving an object with
+         *     the `item` and its `node`: It can read attributes that Paper.js
+         *     doesn't import, or return an item to replace it with. It is called
+         *     after the element's attributes and data are applied to the item, so
+         *     it can extend `item.data`. A replacement item doesn't receive them:
+         *     copy them over from `item` as needed.
          * 
          * @param svg - the SVG content to import, either as a SVG
          *     DOM node, a string containing SVG content, or a string describing the
@@ -6422,7 +6448,7 @@ declare namespace paper {
          * @return the newly created Paper.js item containing the converted
          *     SVG content
          */
-        importSVG(svg: SVGElement | string, options?: { expandShapes?: boolean, crossOrigin?: string, onLoad?: Function, onError?: Function, insert?: boolean, applyMatrix?: boolean }): Item
+        importSVG(svg: SVGElement | string, options?: { expandShapes?: boolean, crossOrigin?: string, onLoad?: Function, onError?: Function, insert?: boolean, applyMatrix?: boolean, processItem?: Function }): Item
 
         /** 
          * Imports the provided external SVG file, converts it into Paper.js items

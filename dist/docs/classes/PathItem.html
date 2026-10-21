@@ -5815,6 +5815,12 @@ function onMouseDown(event) {
 <li><tt>options.reuseImages: <tt>Boolean</tt></tt> &mdash; whether raster images with  the same content should only be exported once into the <code>&lt;defs&gt;</code>  element, and placed through <code>&lt;use&gt;</code> elements referencing it &mdash;&nbsp;default: <tt>false</tt></li>
 <li><tt>options.idPrefix: <tt>String</tt></tt> &mdash; a prefix for the ids generated  for definitions such as gradients, clip paths and symbols, to keep  them unique when several exported SVGs are placed in one document &mdash;&nbsp;default: <tt>&rsquo;&rsquo;</tt></li>
 <li><tt>options.reduceAttributes: <tt>Boolean</tt></tt> &mdash; wether to only include  style attributes in the SVG output that differ from their parents,  or to always include them (much faster but leading to redundancies). &mdash;&nbsp;default: <tt>true</tt></li>
+<li>[options.processNode] {Function} the function to process the
+    SVG node made for each exported item, receiving an object with the
+    `item` and its `node`: It can change the node, e.g. to add attributes
+    that Paper.js doesn't export, or return a node to replace it with. It
+    is called before the item's name, style, visibility and data are set
+    on the node, which replace attributes of the same names.</li>
 </ul>
 	
 <ul class="member-list">
@@ -5868,6 +5874,13 @@ function onMouseDown(event) {
 <li><tt>options.onError: <tt>Function</tt></tt> &mdash; the callback function to call if an  error occurs during loading. Only required when loading from external  resources.</li>
 <li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the imported items should  be added to the item that <code>importSVG()</code> is called on &mdash;&nbsp;default: <tt>true</tt></li>
 <li><tt>options.applyMatrix: <tt>Boolean</tt></tt> &mdash; whether the imported items should have their transformation  matrices applied to their contents or not &mdash;&nbsp;default: <tt><a href="../classes/PaperScope.html#settings"><tt>paperScope.settings</tt></a>.applyMatrix</tt></li>
+<li>[options.processItem] {Function} the function to process the
+    item made for each imported SVG element, receiving an object with
+    the `item` and its `node`: It can read attributes that Paper.js
+    doesn't import, or return an item to replace it with. It is called
+    after the element's attributes and data are applied to the item, so
+    it can extend `item.data`. A replacement item doesn't receive them:
+    copy them over from `item` as needed.</li>
 </ul>
 	
 <ul class="member-list">
