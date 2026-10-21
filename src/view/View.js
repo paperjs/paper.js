@@ -1595,7 +1595,9 @@ new function() { // Injection scope for mouse and key event handling
          *
          * @option [options.character] {String} the character that the key
          *     produces. By default, keydown takes the key itself if it is a
-         *     single character, and keyup the character of its keydown
+         *     single character, the space, carriage return and tab characters
+         *     for 'space', 'enter' and 'tab', and keyup the character of its
+         *     keydown
          * @option [options.modifiers] {Object} the state of the modifier keys,
          *     see {@link Key#modifiers}
          * @option [options.time=Date.now() / 1000] {Number} the time of the
