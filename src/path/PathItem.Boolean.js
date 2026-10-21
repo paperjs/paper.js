@@ -666,10 +666,9 @@ PathItem.inject(new function() {
         }
         // Points closer than epsilon are one vertex. It is relative to the size
         // of the operands, but not below the resolution of their coordinates:
-        var resolution = Numerical.getEpsilon(max(
+        var epsilon = Numerical.getEpsilon(max(
                     abs(bounds.left), abs(bounds.right),
-                    abs(bounds.top), abs(bounds.bottom))),
-            epsilon = max(resolution,
+                    abs(bounds.top), abs(bounds.bottom)),
                 bounds.getTopLeft().getDistance(bounds.getBottomRight())
                     * /*#=*/Numerical.GEOMETRIC_EPSILON),
             values = [],
