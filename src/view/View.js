@@ -1297,26 +1297,16 @@ new function() { // Injection scope for mouse and key event handling
 
     if (window) {
         // Touch handling inspired by Hammer.js
-        var navigator = window.navigator,
-            mousedown, mousemove, mouseup;
-        if (navigator.pointerEnabled || navigator.msPointerEnabled) {
-            // HTML5 / MS pointer events
-            mousedown = 'pointerdown MSPointerDown';
-            mousemove = 'pointermove MSPointerMove';
-            mouseup = 'pointerup pointercancel MSPointerUp MSPointerCancel';
-        } else {
-            mousedown = 'touchstart';
-            mousemove = 'touchmove';
+        var mousedown = 'touchstart',
+            mousemove = 'touchmove',
             mouseup = 'touchend touchcancel';
-            // Do not add mouse events on mobile and tablet devices
-            if (!('ontouchstart' in window && navigator.userAgent.match(
-                    /mobile|tablet|ip(ad|hone|od)|android|silk/i))) {
-                // For non pointer events browsers and mixed browsers, like
-                // chrome on Windows8 touch laptop.
-                mousedown += ' mousedown';
-                mousemove += ' mousemove';
-                mouseup += ' mouseup';
-            }
+        // Do not add mouse events on mobile and tablet devices
+        if (!('ontouchstart' in window && window.navigator.userAgent.match(
+                /mobile|tablet|ip(ad|hone|od)|android|silk/i))) {
+            // For mixed browsers, like chrome on Windows8 touch laptop.
+            mousedown += ' mousedown';
+            mousemove += ' mousemove';
+            mouseup += ' mouseup';
         }
 
         var docEvents = {
