@@ -119,6 +119,8 @@
 - Update `Item#strokeBounds` after changing the stroke of items without a
   parent, such as shapes, texts, symbol items and groups, which kept the old
   stroke bounds (#2343).
+- Fix `Path#handleBounds` of empty paths, which were infinite: they are an
+  empty rectangle, as their `bounds` (#2345).
 - Import the paragraphs of text items after their content, also from JSON that
   lists them first, as JSON written by other tools may.
 - Keep gradients in the runs of text items through `#exportJSON()` and

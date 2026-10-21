@@ -69,6 +69,21 @@ test('group.bounds when containing empty path first', function() {
     equals(group.bounds, new Rectangle(75, 75, 100, 100), 'group.bounds after adding segments to path');
 });
 
+test('handleBounds of empty paths', function() {
+    var path = new Path();
+    equals(path.handleBounds, new Rectangle(0, 0, 0, 0), 'path.handleBounds');
+    var compoundPath = new CompoundPath({ children: [new Path()] });
+    equals(compoundPath.handleBounds, new Rectangle(0, 0, 0, 0),
+            'compoundPath.handleBounds');
+    // Empty children don't contribute to the handle bounds of their group:
+    var group = new Group([
+        new Path(),
+        new Path.Rectangle(new Point(75, 75), new Point(175, 175))
+    ]);
+    equals(group.handleBounds, new Rectangle(75, 75, 100, 100),
+            'group.handleBounds');
+});
+
 test('path.bounds when contained in a transformed group', function() {
     var path = new Path([10, 10], [60, 60]);
     var group = new Group([path]);
