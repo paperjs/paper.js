@@ -29,6 +29,8 @@ var TextItem = Item.extend(/** @lends TextItem# */{
         content: null,
         orientation: 'horizontal'
     },
+    // The paragraphs follow the content, whatever order objects give them in:
+    _prioritize: ['applyMatrix', 'content', 'runs'],
     _orientation: 'horizontal',
     // TextItem has no handles, so share the cache of #handleBounds and #bounds:
     _boundsOptions: { handle: false },
