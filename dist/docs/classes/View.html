@@ -2047,7 +2047,9 @@ function onMouseDown(event) {
 <h4>Options:</h4>
 <li>[options.character] {String} the character that the key
     produces. By default, keydown takes the key itself if it is a
-    single character, and keyup the character of its keydown</li>
+    single character, the space, carriage return and tab characters
+    for 'space', 'enter' and 'tab', and keyup the character of its
+    keydown</li>
 <li>[options.modifiers] {Object} the state of the modifier keys,
     see {@link Key#modifiers}</li>
 <li><tt>options.time: <tt>Number</tt></tt> &mdash; the time of the  event in seconds, see <a href="../classes/Event.html#time"><tt>event.time</tt></a> &mdash;&nbsp;default: <tt>Date.now() / 1000</tt></li>

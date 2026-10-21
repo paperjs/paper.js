@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 11:50:18 2026 +0200
+ * Date: Wed Oct 21 03:18:34 2026 +0200
  *
  ***
  *
@@ -17930,7 +17930,9 @@ new function() { // Injection scope for mouse and key event handling
 		 *
 		 * @option [options.character] {String} the character that the key
 		 *     produces. By default, keydown takes the key itself if it is a
-		 *     single character, and keyup the character of its keydown
+		 *     single character, the space, carriage return and tab characters
+		 *     for 'space', 'enter' and 'tab', and keyup the character of its
+		 *     keydown
 		 * @option [options.modifiers] {Object} the state of the modifier keys,
 		 *     see {@link Key#modifiers}
 		 * @option [options.time=Date.now() / 1000] {Number} the time of the
@@ -18590,10 +18592,13 @@ var Key = new function() {
 			if (view && !view.isVisible())
 				view = null;
 		}
-		// View#dispatchKeyEvent() can leave out the character, which keyup
-		// takes from keydown, as the DOM's keyup events do below:
-		if (character == null)
-			character = down ? key.length > 1 ? '' : key : charMap[key] || '';
+		// The keydown handler and View#dispatchKeyEvent() can leave out the
+		// character, which keyup takes from keydown, as the DOM's keyup does:
+		if (character == null) {
+			character = down
+					? charLookup[key] || (key.length > 1 ? '' : key)
+					: charMap[key] || '';
+		}
 		var name;
 		keyMap[key] = down;
 		// Link the key from keydown with the character form keypress, so keyup
@@ -18644,8 +18649,7 @@ var Key = new function() {
 			// pressed with control, alt or meta in modern browsers.
 			if (key.length > 1 || event.ctrlKey || event.altKey
 					|| event.metaKey) {
-				handleKey(true, key,
-						charLookup[key] || (key.length > 1 ? '' : key), event);
+				handleKey(true, key, null, event);
 			} else {
 				// If it wasn't handled yet, store the downKey so keypress can
 				// compare and handle buggy edge cases, known to happen in
