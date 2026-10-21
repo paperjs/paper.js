@@ -526,19 +526,26 @@ var View = Base.extend(Emitter, /** @lends View# */{
         return pixels;
     },
 
-    getTextWidth: function(font, lines, letterSpacing) {
+    getTextWidth: function(font, lines, letterSpacing, direction) {
         var ctx = this._context || CanvasProvider.getContext(1, 1),
             width = 0;
         if (ctx) {
             var prevFont = ctx.font,
-                prevLetterSpacing = ctx.letterSpacing;
+                prevLetterSpacing = ctx.letterSpacing,
+                prevDirection = ctx.direction,
+                // Shaping can differ by direction, as with mirrored brackets:
+                textDirection = direction || 'ltr';
             ctx.font = font;
             ctx.letterSpacing = letterSpacing;
+            if (prevDirection !== textDirection)
+                ctx.direction = textDirection;
             // Measure the real width of the text:
             for (var i = 0, l = lines.length; i < l; i++)
                 width = Math.max(width, ctx.measureText(lines[i]).width);
             ctx.font = prevFont;
             ctx.letterSpacing = prevLetterSpacing;
+            if (prevDirection !== textDirection)
+                ctx.direction = prevDirection;
             if (ctx !== this._context)
                 CanvasProvider.release(ctx);
         }
