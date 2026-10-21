@@ -11,6 +11,8 @@
  */
 
 var gulp = require('gulp'),
+    fs = require('fs'),
+    path = require('path'),
     run = require('run-sequence'),
     git = require('gulp-git-streamed'),
     shell = require('gulp-shell'),
@@ -30,6 +32,7 @@ gulp.task('publish', function(callback) {
     // the sketch editor:
     run(
         'publish:json',
+        'publish:changelog',
         'publish:dist',
         'publish:packages',
         'publish:commit',
@@ -52,6 +55,63 @@ gulp.task('publish:json', ['publish:version'], function() {
             version: options.version
         }, jsonModifierOptions))
         .pipe(gulp.dest('.'))
+});
+
+// Collect the entries of the unreleased changes, along with those still in the
+// Unreleased section of CHANGELOG.md, into the section of the new version, and
+// delete their files. Each file in changelog/unreleased holds the entries of
+// one pull request under the headings of their kind, so that pull requests
+// don't conflict in CHANGELOG.md, see its README.
+gulp.task('publish:changelog', ['publish:version'], function() {
+    var kinds = ['News', 'Security', 'Added', 'Changed', 'Deprecated',
+            'Removed', 'Fixed'],
+        folder = 'changelog/unreleased',
+        files = fs.readdirSync(folder).filter(function(file) {
+            return /\.md$/.test(file) && file !== 'README.md';
+        }).sort().map(function(file) {
+            return path.join(folder, file);
+        }),
+        changelog = fs.readFileSync('CHANGELOG.md', 'utf8'),
+        // The Unreleased section, or an empty one above the latest version:
+        match = changelog.match(/^## Unreleased\n([^]*?)(?=^## )/m),
+        start = match ? match.index : changelog.search(/^## /m),
+        end = match ? start + match[0].length : start,
+        entries = {};
+
+    function collect(text, source) {
+        var sections = text.split(/^### /m);
+        if (sections.shift().trim())
+            throw new Error('Text before the first heading in ' + source);
+        sections.forEach(function(section) {
+            var lines = section.split('\n'),
+                kind = lines.shift(),
+                // Each entry is a list item, with its indented lines:
+                items = lines.join('\n').split(/\n(?=- )/).map(function(item) {
+                    return item.trim();
+                }).filter(Boolean);
+            if (kinds.indexOf(kind) === -1)
+                throw new Error('Unknown heading ### ' + kind + ' in ' + source);
+            entries[kind] = (entries[kind] || []).concat(items);
+        });
+    }
+
+    collect(match ? match[1] : '', 'CHANGELOG.md');
+    files.forEach(function(file) {
+        collect(fs.readFileSync(file, 'utf8'), file);
+    });
+    var sections = kinds.filter(function(kind) {
+        return entries[kind];
+    }).map(function(kind) {
+        return '### ' + kind + '\n\n' + entries[kind].join('\n') + '\n';
+    });
+    if (!sections.length)
+        throw new Error('No changelog entries to release.');
+    fs.writeFileSync('CHANGELOG.md', changelog.slice(0, start)
+            + '## `' + options.version + '`\n\n' + sections.join('\n') + '\n'
+            + changelog.slice(end));
+    files.forEach(function(file) {
+        fs.unlinkSync(file);
+    });
 });
 
 // Build the files that the release commits in dist:
