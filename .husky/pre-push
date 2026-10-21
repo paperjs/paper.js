@@ -1,1 +1,4 @@
-pnpm test --ensure-branch develop
+# Run the Node tests before pushing develop:
+if [ "$(git rev-parse --abbrev-ref HEAD)" = develop ]; then
+  pnpm test:node
+fi
