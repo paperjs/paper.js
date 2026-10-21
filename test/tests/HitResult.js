@@ -1281,3 +1281,28 @@ test('hit-testing non-scaling strokes under non-uniform matrices (#2334)', funct
             { segments: line, strokeCap: 'square', strokeJoin: 'bevel' },
             scale);
 });
+
+test('hit-testing strokes where a line runs into a curve with a miter join', function() {
+    // The rounded corners meet the straight sides in the same direction, with
+    // a handle of zero length on the side of the line, so the join adds
+    // nothing there. Points inside the stroke at these segments are hit:
+    var rect = new Path.Rectangle({
+        point: [0, 0],
+        size: [300, 180],
+        radius: 90,
+        strokeColor: 'black',
+        strokeWidth: 30,
+        strokeJoin: 'miter'
+    });
+    rect.segments.forEach(function(segment) {
+        var normal = segment.location.normal.multiply(5);
+        [segment.point.add(normal), segment.point.subtract(normal)].forEach(
+            function(point) {
+                var hitResult = rect.hitTest(point,
+                        { stroke: true, fill: false });
+                equals(hitResult && hitResult.type, 'stroke',
+                        'point ' + point + ' should hit the stroke');
+            }
+        );
+    });
+});
