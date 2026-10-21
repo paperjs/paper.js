@@ -21,20 +21,39 @@
  *
  * @extends TextItem
  */
-var PathText = TextItem.extend(/** @lends PathText# */{
-    _class: 'PathText',
-    _serializeFields: {
-        textPath: null,
+var PathText = TextItem.extend(new function() {
+    // The fields that change the layout, with their defaults:
+    var fields = {
         startOffset: 0,
         endOffset: null,
         alignment: 'baseline',
         spacing: 0
-    },
-    _startOffset: 0,
-    _endOffset: null,
-    _alignment: 'baseline',
-    _spacing: 0,
+    };
 
+    return Base.each(fields, function(value, name) {
+        var part = Base.capitalize(name),
+            key = '_' + name;
+        this[key] = value;
+        this['get' + part] = function() {
+            return this[key];
+        };
+        this['set' + part] = function(value) {
+            this[key] = value;
+            this._changed(/*#=*/Change.GEOMETRY);
+        };
+    }, {
+        _class: 'PathText',
+        _serializeFields: Base.set({ textPath: null }, fields),
+
+        copyContent: function copyContent(source) {
+            copyContent.base.call(this, source);
+            for (var name in fields) {
+                var key = '_' + name;
+                this[key] = source[key];
+            }
+        }
+    });
+}, /** @lends PathText# */{
     /**
      * Creates a text item that runs along a path.
      *
@@ -69,78 +88,41 @@ var PathText = TextItem.extend(/** @lends PathText# */{
         }
     },
 
-    copyContent: function copyContent(source) {
-        copyContent.base.call(this, source);
-        this._startOffset = source._startOffset;
-        this._endOffset = source._endOffset;
-        this._alignment = source._alignment;
-        this._spacing = source._spacing;
-    },
+    // NOTE: These properties have their getter / setters produced in the
+    // injection scope above.
 
     /**
      * The length along the path where the text starts.
      *
-     * @bean
+     * @name PathText#startOffset
      * @type Number
      * @default 0
      */
-    getStartOffset: function() {
-        return this._startOffset;
-    },
-
-    setStartOffset: function(offset) {
-        this._startOffset = offset;
-        this._changed(/*#=*/Change.GEOMETRY);
-    },
 
     /**
      * The length along the path where the text ends, or `null` for its end.
      *
-     * @bean
+     * @name PathText#endOffset
      * @type Number
      * @default null
      */
-    getEndOffset: function() {
-        return this._endOffset;
-    },
-
-    setEndOffset: function(offset) {
-        this._endOffset = offset;
-        this._changed(/*#=*/Change.GEOMETRY);
-    },
 
     /**
      * Which part of the letters sits on the path.
      *
-     * @bean
+     * @name PathText#alignment
      * @type String
      * @values 'baseline', 'ascender', 'descender', 'center'
      * @default 'baseline'
      */
-    getAlignment: function() {
-        return this._alignment;
-    },
-
-    setAlignment: function(alignment) {
-        this._alignment = alignment;
-        this._changed(/*#=*/Change.GEOMETRY);
-    },
 
     /**
      * Space added between the letters, where the path bends tightly.
      *
-     * @bean
+     * @name PathText#spacing
      * @type Number
      * @default 0
      */
-    getSpacing: function() {
-        return this._spacing;
-    },
-
-    setSpacing: function(spacing) {
-        this._spacing = spacing;
-        this._changed(/*#=*/Change.GEOMETRY);
-    },
 
     // The layout of the story's part that fits along the path, see
     // #_measure(): one line of letters, each turned to the path where its
