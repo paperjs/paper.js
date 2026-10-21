@@ -1759,7 +1759,10 @@ var Path = PathItem.extend(/** @lends Path# */{
             // hit-testing their polygon areas.
             var isJoin = closed || segment._index > 0
                     && segment._index < numSegments - 1;
-            if ((isJoin ? join : cap) === 'round') {
+            // Smooth segments are always joined round, as in addJoin() in
+            // getStrokeBounds():
+            if (isJoin && segment.isSmooth()
+                    || (isJoin ? join : cap) === 'round') {
                 // Round join / cap is easy to handle.
                 return isCloseEnough(segment._point, strokePadding);
             } else {
@@ -1767,12 +1770,9 @@ var Path = PathItem.extend(/** @lends Path# */{
                 // graph to run the hit-test on it.
                 area = new Path({ internal: true, closed: true });
                 if (isJoin) {
-                    // Only add bevels to segments that aren't smooth.
-                    if (!segment.isSmooth()) {
-                        // _addBevelJoin() handles both 'bevel' and 'miter'.
-                        Path._addBevelJoin(segment, join, strokeRadius,
-                               miterLimit, null, strokeMatrix, addToArea, true);
-                    }
+                    // _addBevelJoin() handles both 'bevel' and 'miter'.
+                    Path._addBevelJoin(segment, join, strokeRadius,
+                           miterLimit, null, strokeMatrix, addToArea, true);
                 } else {
                     // _addSquareCap() handles both 'square' and 'butt' caps.
                     Path._addSquareCap(segment, cap, strokeRadius, null,
