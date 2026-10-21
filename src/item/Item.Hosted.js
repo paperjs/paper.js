@@ -365,6 +365,13 @@ new function() {
     });
 
     TextItem.inject({
+        // New text takes the project's current text style, when the host set
+        // one, see Project#currentTextStyle:
+        _getCurrentStyle: function _getCurrentStyle(project) {
+            return project._currentTextStyle
+                    || _getCurrentStyle.base.call(this, project);
+        },
+
         // Text items that the host links share one story, in the order of the
         // keys: the first of them to load loads the story and the others,
         // which join it, as an item does that loads again after invalidate():
@@ -463,6 +470,27 @@ new function() {
     });
 
     Project.inject(/** @lends Project# */{
+        _currentTextStyle: null,
+
+        /**
+         * The style new text items take in a hosted project, in place of
+         * {@link #currentStyle}, when the host sets one: for hosts whose new
+         * text has defaults of its own, such as a black fill without a stroke
+         * whatever new paths take. Paths keep taking the current style.
+         *
+         * @bean
+         * @type Style
+         */
+        getCurrentTextStyle: function() {
+            return this._currentTextStyle;
+        },
+
+        setCurrentTextStyle: function(style) {
+            if (!this._currentTextStyle)
+                this._currentTextStyle = new Style(null, null, this);
+            this._currentTextStyle.set(style);
+        },
+
         // Items that the script changes are no longer as the host has them,
         // see TextItem#_getHostLayout(), until the host takes the changes:
         _changed: function _changed(flags, item) {

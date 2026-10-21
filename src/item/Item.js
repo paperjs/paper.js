@@ -140,6 +140,12 @@ new function() { // Injection scope for various item event handlers
      * @return {Boolean} {@true if the properties were successfully be applied,
      * or if none were provided}
      */
+    // The style a new item takes: the project's current style, see
+    // Project#currentStyle.
+    _getCurrentStyle: function(project) {
+        return project._currentStyle;
+    },
+
     _initialize: function(props, point) {
         // Define this Item's unique id. But allow the creation of internally
         // used paths with no ids.
@@ -162,7 +168,7 @@ new function() { // Injection scope for various item event handlers
         if (point)
             matrix.translate(point);
         matrix._owner = this;
-        this._style = new Style(project._currentStyle, this, project);
+        this._style = new Style(this._getCurrentStyle(project), this, project);
         // Do not add to the project if it's an internal path,  or if
         // props.insert  or settings.insertItems is false.
         if (internal || hasProps && props.insert == false
