@@ -571,6 +571,30 @@ test('invalidate() reloads the story of hosted text', function() {
     equals(getLines(point), getLines(original), 'its lines');
 });
 
+test('invalidate() reloads a text\'s path into the path it has', function() {
+    var res = createHostedText(),
+        children = res.project.layers[0].children,
+        original = res.document.layers[0].children;
+    ['path', 'area'].forEach(function(name) {
+        var text = children[name],
+            path = text.textPath;
+        original[name].textPath.translate(10, 20);
+        original[name].fillColor = 'red';
+        var columns = res.host.getColumns([original[name]]);
+        columns.flags[0] |= 16;
+        res.project.invalidate(columns);
+        equals(text.textPath === path && path.parent === text, true,
+                name + ': the same path, which a script may hold');
+        equals(path.segments, original[name].textPath.segments,
+                name + ': with the host\'s geometry');
+        equals(text.fillColor, original[name].fillColor,
+                name + ': and the host\'s content');
+        var left = text.bounds.left;
+        path.translate(5, 0);
+        equals(text.bounds.left, left + 5, name + ': and the text moves with it');
+    });
+});
+
 test('Hosted text draws its host\'s layout', function() {
     var res = createHostedText(),
         point = res.project.layers[0].children['point'],
@@ -734,8 +758,8 @@ test('invalidate() of all items of linked text reloads its story', function() {
     var columns = res.host.getColumns(res.frames);
     for (var i = 0; i < 3; i++)
         columns.flags[i] |= 16;
-    project.invalidate(columns);
     res.host.takeCalls();
+    project.invalidate(columns);
     var story = items[1].story;
     equals(story.content, 'A story that changed in the host.', 'its content');
     equals(res.host.takeCalls().filter(function(call) {
