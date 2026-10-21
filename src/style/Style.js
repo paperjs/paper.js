@@ -393,13 +393,12 @@ var Style = Base.extend(new function() {
     },
 
     _dispose: function() {
-        var color;
-        color = this.getFillColor();
-        if (color) color._canvasStyle = null;
-        color = this.getStrokeColor();
-        if (color) color._canvasStyle = null;
-        color = this.getShadowColor();
-        if (color) color._canvasStyle = null;
+        var colors = [this.getFillColor(), this.getStrokeColor(),
+                this.getShadowColor()];
+        for (var i = 0; i < 3; i++) {
+            if (colors[i])
+                colors[i]._canvasStyle = null;
+        }
     },
 
     // DOCS: Style#hasFill()
@@ -513,14 +512,6 @@ var Style = Base.extend(new function() {
                 : typeof leading === 'number' ? leading + 'px'
                 : leading);
     },
-
-    /**
-     * @bean
-     * @type String
-     * @deprecated use {@link #fontFamily} instead.
-     */
-    getFont: '#getFontFamily',
-    setFont: '#setFontFamily',
 
     // DOCS: why isn't the example code showing up?
     /**
