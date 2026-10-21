@@ -28,12 +28,7 @@ export default defineConfig({
           name: 'browser',
           browser: {
             enabled: true,
-            // Use the installed Google Chrome rather than Playwright's own,
-            // and draw without the GPU, which antialiases the pixel
-            // comparisons of the boolean tests differently:
-            provider: playwright({
-              launchOptions: { channel: 'chrome', args: ['--disable-gpu'] }
-            }),
+            provider: playwright(),
             headless: true,
             instances: [{ browser: 'chromium' }]
           }
