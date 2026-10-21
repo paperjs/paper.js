@@ -161,10 +161,22 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     /**
-     * The segments contained within the path.
+     * The segments contained within the path. Segments that define a
+     * {@link Segment#name} can also be accessed by name.
      *
      * @bean
      * @type Segment[]
+     *
+     * @example {@paperscript}
+     * // Accessing segments by name:
+     * var path = new Path([20, 80], [50, 20], [80, 80]);
+     * path.strokeColor = 'black';
+     *
+     * // Set the name of the top segment:
+     * path.segments[1].name = 'top';
+     *
+     * // The segment can be accessed by name:
+     * path.segments['top'].point.y += 20;
      */
     getSegments: function() {
         return this._segments;
@@ -172,7 +184,13 @@ var Path = PathItem.extend(/** @lends Path# */{
 
     setSegments: function(segments) {
         var fullySelected = this.isFullySelected(),
-            length = segments && segments.length;
+            length = segments && segments.length,
+            named = this._namedSegments;
+        if (named) {
+            for (var name in named)
+                delete this._segments[name];
+            this._namedSegments = null;
+        }
         this._segments.length = 0;
         this._segmentSelection = 0;
         // Calculate new curves next time we call getCurves()
@@ -212,65 +230,6 @@ var Path = PathItem.extend(/** @lends Path# */{
      */
     getLastSegment: function() {
         return this._segments[this._segments.length - 1];
-    },
-
-    /**
-     * Check is there is a Segment with provided name.
-     *
-     * @return {Boolean}
-     */
-    hasSegmentWithName: function(name) {
-        var segments = this._segments.filter(function(s){ return s._name == name; });
-        return segments.length > 0;
-    },
-
-    /**
-     * The Segment by name.
-     *
-     * @bean
-     * @type Segment
-     */
-    getSegmentByName: function(name) {
-        var segments = this._segments.filter(function(s){ return s._name == name; });
-        if(segments.length == 0)
-            throw new Error(
-                'Segment with name \''+name+'\' not found in the path.');
-        return this._segments.filter(function(s){ return s._name == name; })[0];
-    },
-
-    /**
-     * The segments by data
-     *
-     * @bean
-     * @type Segment[]
-     */
-    getSegmentsByData: function(options) {
-        function matchObject(obj1, obj2) {
-            for (var i in obj1) {
-                if (obj1.hasOwnProperty(i)) {
-                    var val1 = obj1[i],
-                        val2 = obj2[i];
-                    if (Base.isPlainObject(val1) && Base.isPlainObject(val2)) {
-                        if (!matchObject(val1, val2))
-                            return false;
-                    } else if (!Base.equals(val1, val2)) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
-
-        if(options !== undefined && typeof options === 'object'){
-            var matchedSegments = [];
-            this._segments.forEach(function(segment){
-                if(matchObject(options, segment.data)){
-                    matchedSegments.push(segment);
-                }
-            });
-            return matchedSegments;
-        }
-        return this._segments;
     },
 
     /**
@@ -441,20 +400,9 @@ var Path = PathItem.extend(/** @lends Path# */{
      * the segments list automatically.
      */
     _add: function(segs, index) {
-        var segments = this._segments;
-        // Make sure all added segments have unique names. 
-        // And prevent adding a segment with a name that already exists in the path.
-        segs = segs.filter(function(obj, pos, arr){
-            if(obj.name === '' || obj.name == null || arr.map(function(s){return s.name;}).indexOf(obj.name) === pos &&
-                segments.map(function(s){return s.name;}).indexOf(obj.name) < 0)
-                return true;
-            else
-                throw new Error(
-                    'There is already a segment with the name \''+obj.name+'\' in the path.');
-        });
-        
         // Local short-cuts:
-        var curves = this._curves,
+        var segments = this._segments,
+            curves = this._curves,
             amount = segs.length,
             append = index == null,
             index = append ? segments.length : index;
@@ -468,6 +416,9 @@ var Path = PathItem.extend(/** @lends Path# */{
                 segment = segs[i] = segment.clone();
             segment._path = this;
             segment._index = index + i;
+            // Set the name again to add it to the segments' name lookup.
+            if (segment._name)
+                segment.setName(segment._name);
             // If parts of this segment are selected, adjust the internal
             // _segmentSelection now
             if (segment._selection)
@@ -823,6 +774,9 @@ var Path = PathItem.extend(/** @lends Path# */{
             var segment = removed[i];
             if (segment._selection)
                 this._updateSelection(segment, segment._selection, 0);
+            if (segment._name)
+                Base.removeNamed(segments, this._namedSegments, segment._name,
+                        segment);
             // Clear the indices and path references of the removed segments
             segment._index = segment._path = null;
         }
