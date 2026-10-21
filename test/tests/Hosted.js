@@ -76,13 +76,44 @@ function createHost(document) {
 
         getItem: function(key) {
             host.calls.push(['getItem', key]);
-            var json = host.getNode(key).exportJSON({ asString: false });
+            var node = host.getNode(key),
+                json = node.exportJSON({ asString: false });
             // Selection comes through the flags, and the children of
             // containers through getChildren():
             delete json[1].selected;
             if (json[0] !== 'CompoundPath')
                 delete json[1].children;
+            // Linked text gives its story through getStory():
+            if (node instanceof TextItem && node.isLinked()) {
+                json[1].linked = node.story.textItems.map(function(item) {
+                    return item.id;
+                });
+                for (var name in json[1]) {
+                    if (host.isStoryKey(node, name))
+                        delete json[1][name];
+                }
+            }
             return json;
+        },
+
+        getStory: function(key) {
+            host.calls.push(['getStory', key]);
+            var node = host.getNode(key),
+                props = node.exportJSON({ asString: false })[1],
+                story = {};
+            for (var name in props) {
+                if (host.isStoryKey(node, name))
+                    story[name] = props[name];
+            }
+            return JSON.stringify(story);
+        },
+
+        // The story of a text holds its content, runs, paragraphs, and all its
+        // styles but those of the text item itself:
+        isStoryKey: function(node, name) {
+            return /^(content|runs|paragraphs)$/.test(name)
+                    || name in node.style._defaults
+                    && !(name in node.story._itemKeys);
         },
 
         getAncestorKeys: function(key) {
@@ -426,16 +457,17 @@ function createHostedText() {
     var host = createHost(document);
     host.layOut = function(json, start, key) {
         host.calls.push(['layOut', key, json === null ? 'unchanged' : 'json']);
-        if (json !== null)
+        if (json !== null) {
             equals(typeof json, 'string', 'the text as a JSON string');
-        // Text the script didn't change is the host's own:
-        json = json === null
-                ? host.getNode(key).exportJSON({ asString: false })
-                : JSON.parse(json);
+            json = JSON.parse(json);
+        }
+        // Text the script didn't change is the host's own, which it lays out
+        // where it is, also in its story:
         var current = paper.project;
         document.activate();
-        var text = new Base.exports[json[0]]({ insert: false })
-                .importJSON(json),
+        var text = json === null
+                ? host.getNode(key)
+                : new Base.exports[json[0]]({ insert: false }).importJSON(json),
             lines = text._layOut();
         current.activate();
         return {
@@ -589,4 +621,128 @@ test('Text that the script changed is laid out from its JSON', function() {
     created.lines;
     equals(res.host.takeCalls(), [['layOut', null, 'json']],
             'new text, which the host doesn\'t have');
+});
+
+// Three area texts that the host links, the last one in a group:
+function createLinkedText() {
+    var res = createHostedText(),
+        layer = res.document.layers[0],
+        current = paper.project;
+    res.document.activate();
+    var frames = [0, 1, 2].map(function(i) {
+        return new AreaText({
+            textPath: new Path.Rectangle([200 + i * 60, 0], [50, 40]),
+            fontFamily: testFontFamily,
+            parent: layer
+        });
+    });
+    new Group({ children: [frames[2]], parent: layer });
+    frames[0].content = 'A story that flows through three linked frames, '
+            + 'each one starting where the one before it ends.';
+    frames[0].range(2, 7).fontSize = 16;
+    frames[0].link(frames[1]);
+    frames[1].link(frames[2]);
+    current.activate();
+    res.frames = frames;
+    return res;
+}
+
+test('Linked text loads into one story, from any of its items', function() {
+    [0, 1, 2].forEach(function(index) {
+        var res = createLinkedText(),
+            project = res.project,
+            items = res.frames.map(function(frame) {
+                return project.getItemByKey(frame.id);
+            });
+        items[index].content;
+        var story = items[index].story;
+        equals(story.textItems.length === 3 && story.textItems.every(
+                function(item, i) {
+                    return item === items[i] && item.story === story;
+                }), true, index + ': one story, with the items in order');
+        var calls = res.host.takeCalls();
+        equals(calls.filter(function(call) {
+            return call[0] === 'getItem';
+        }).length, 3, index + ': each loaded once');
+        equals(calls.filter(function(call) {
+            return call[0] === 'getStory';
+        }), [['getStory', items[index].key]], index + ': the story once');
+        items.forEach(function(item, i) {
+            equals(item.exportJSON(), res.frames[i].exportJSON(),
+                    index + ': ' + i + ' as the host has it');
+            equals(item.linked, undefined,
+                    index + ': ' + i + ' without the keys');
+        });
+    });
+});
+
+test('The host lays out linked text from where each item starts', function() {
+    var res = createLinkedText(),
+        project = res.project,
+        layOut = res.host.layOut,
+        starts = [];
+    res.host.layOut = function(json, start, key) {
+        starts.push(start);
+        return layOut.apply(this, arguments);
+    };
+    res.frames.forEach(function(frame, i) {
+        var item = project.getItemByKey(frame.id);
+        res.host.takeCalls();
+        equals(getLines(item), getLines(frame), i + ': its lines');
+        equals(res.host.takeCalls().filter(function(call) {
+            return call[0] === 'layOut';
+        }), [['layOut', frame.id, 'unchanged']], i + ': from the host');
+        equals(item.visibleRange.start, frame.visibleRange.start,
+                i + ': its visible range');
+    });
+    equals(starts, res.frames.map(function(frame) {
+        return frame.visibleRange.start;
+    }), 'each from its start');
+    equals(starts[2] > starts[1] && starts[1] > 0, true,
+            'which flows through the items');
+});
+
+test('invalidate() reloads an item of linked text into its story', function() {
+    var res = createLinkedText(),
+        project = res.project,
+        items = res.frames.map(function(frame) {
+            return project.getItemByKey(frame.id);
+        }),
+        story = items[0].story,
+        original = res.frames[1];
+    items[1].content;
+    original.textPath.bounds.width = 40;
+    var columns = res.host.getColumns([original]);
+    columns.flags[0] |= 16;
+    project.invalidate(columns);
+    equals(items[1].textPath.segments, original.textPath.segments,
+            'its own content');
+    equals(items[1].story === story && story.textItems.length === 3
+            && story.textItems[1] === items[1], true, 'in its story');
+    equals(story.content, original.content, 'which it shows once');
+    equals(getLines(items[1]), getLines(original), 'its lines');
+});
+
+test('invalidate() of all items of linked text reloads its story', function() {
+    var res = createLinkedText(),
+        project = res.project,
+        items = res.frames.map(function(frame) {
+            return project.getItemByKey(frame.id);
+        });
+    items[0].content;
+    res.frames[0].content = 'A story that changed in the host.';
+    var columns = res.host.getColumns(res.frames);
+    for (var i = 0; i < 3; i++)
+        columns.flags[i] |= 16;
+    project.invalidate(columns);
+    res.host.takeCalls();
+    var story = items[1].story;
+    equals(story.content, 'A story that changed in the host.', 'its content');
+    equals(res.host.takeCalls().filter(function(call) {
+        return call[0] === 'getStory';
+    }).length, 1, 'loaded once');
+    equals(story.textItems.length === 3 && story.textItems.every(
+            function(item, i) {
+                return item === items[i] && item.story === story;
+            }), true, 'into one story, with the items in order');
 });
