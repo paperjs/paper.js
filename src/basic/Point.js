@@ -773,7 +773,8 @@ var Point = Base.extend(/** @lends Point# */{
 
     /**
      * Checks if the vector represented by this point is collinear (parallel) to
-     * another vector.
+     * another vector, within a tolerance of 1e-8 for the sine of the angle
+     * between them.
      *
      * @param {Point} point the vector to check against
      * @return {Boolean} {@true it is collinear}
@@ -788,7 +789,8 @@ var Point = Base.extend(/** @lends Point# */{
 
     /**
      * Checks if the vector represented by this point is orthogonal
-     * (perpendicular) to another vector.
+     * (perpendicular) to another vector, within a tolerance of 1e-8 for the
+     * cosine of the angle between them.
      *
      * @param {Point} point the vector to check against
      * @return {Boolean} {@true it is orthogonal}
@@ -799,9 +801,11 @@ var Point = Base.extend(/** @lends Point# */{
     },
 
     /**
-     * Checks if this point has both the x and y coordinate set to 0.
+     * Checks if this point has both the x and y coordinate set to 0, within
+     * a tolerance of 1e-12, unlike {@link #equals(point)}, which compares
+     * exactly.
      *
-     * @return {Boolean} {@true if both x and y are 0}
+     * @return {Boolean} {@true if both x and y are 0, within the tolerance}
      */
     isZero: function() {
         var isZero = Numerical.isZero;
