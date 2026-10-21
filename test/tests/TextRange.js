@@ -376,3 +376,23 @@ test('JSON imports the paragraphs after the content, in any order',
     });
     equals(text.paragraphs[1].justification, 'right', 'the second one');
 });
+
+test('JSON writes each run as its range has it', function() {
+    var text = createText('Every word its own size');
+    text.words.forEach(function(word, i) {
+        word.fontSize = 10 + i * 4;
+        word.fillColor = i % 2 ? 'red' : 'blue';
+    });
+    text.range(0, 3).underline = true;
+    var keys = text.story._paragraphKeys,
+        runs = text.runs.map(function(run) {
+            var json = run.toJSON();
+            delete json.start;
+            delete json.end;
+            for (var key in keys)
+                delete json[key];
+            return json;
+        });
+    equals(JSON.stringify(JSON.parse(text.exportJSON())[1].runs),
+            JSON.stringify(runs), 'their content and character properties');
+});
