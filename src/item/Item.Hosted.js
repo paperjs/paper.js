@@ -187,16 +187,18 @@ new function() {
     }
 
     // Loading and invalidating items isn't a change of the document, so we
-    // keep it out of the change log:
+    // keep it out of the change log. Loading linked text loads the children
+    // of the containers of its other items while it loads:
     function whileLoading(project, callback) {
-        var changes = project._changes;
+        var changes = project._changes,
+            loading = isLoading;
         project._changes = null;
         isLoading = true;
         try {
             callback();
         } finally {
             project._changes = changes;
-            isLoading = false;
+            isLoading = loading;
         }
     }
 
@@ -307,8 +309,16 @@ new function() {
                     delete that[name];
                 }
             });
+            // Linked text gives the keys of its story's text items, which
+            // aren't a property of the item, see TextItem#_loadLinked():
+            if (typeof json === 'string')
+                json = JSON.parse(json);
+            var linked = json[1].linked;
+            delete json[1].linked;
             Base.importJSON(json, this);
             this._shell = false;
+            if (linked)
+                this._loadLinked(linked);
         },
 
         _loadChildren: function() {
@@ -355,6 +365,33 @@ new function() {
     });
 
     TextItem.inject({
+        // Text items that the host links share one story, in the order of the
+        // keys: the first of them to load loads the story and the others,
+        // which join it, as an item does that loads again after invalidate():
+        _loadLinked: function(keys) {
+            var project = this._project,
+                that = this,
+                items = keys.map(function(key) {
+                    return key === that._key ? that : project.getItemByKey(key);
+                }),
+                story = null;
+            for (var i = 0, l = items.length; i < l && !story; i++) {
+                if (items[i] !== this && !items[i]._shell)
+                    story = items[i]._story;
+            }
+            if (story) {
+                this._story = story;
+            } else {
+                // importJSON() parses and deserializes the story's JSON:
+                this.set(Base.importJSON(project._host.getStory(this._key)));
+                for (var i = 0, l = items.length; i < l; i++) {
+                    if (items[i] !== this)
+                        items[i]._loadContent();
+                }
+                this._story._items = items;
+            }
+        },
+
         // The host's layout of the text as the script holds it, also before
         // the host has its changes: the lines with their pieces, which take
         // what drawing needs from the styles of the story's runs, see
@@ -432,7 +469,14 @@ new function() {
          *   strokeBounds and roughBounds in the item's coordinates, 12 numbers
          *   per item), and the sparse objects `names` and `matrices`.
          * - `getItem(key)`, which returns the node's own content in the form
-         *   of {@link Item#importJSON(json)}, without children.
+         *   of {@link Item#importJSON(json)}, without children. Linked text
+         *   gives `linked`, the keys of its story's text items in order, and
+         *   leaves out its story.
+         * - `getStory(key)`, for linked text, which returns its story with the
+         *   key of any of its text items: `content` or `runs`, `paragraphs`,
+         *   and the character and paragraph styles, as
+         *   {@link Item#exportJSON(options)} writes them in the JSON of a
+         *   text item.
          * - `getAncestorKeys(key)`, which returns the keys from the top level
          *   down to the node's parent.
          * - Optionally `layOut(json, start, key)`, which lays out a text item
