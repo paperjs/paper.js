@@ -16,7 +16,10 @@ export default defineConfig({
           setupFiles: ['test/setup.mjs'],
           // The tests load their assets relative to test/, which setup.mjs
           // changes into, and only child processes can:
-          pool: 'forks'
+          pool: 'forks',
+          // Load the library once per process rather than once per file, as
+          // each test runs in a project of its own:
+          isolate: false
         }
       },
       {
@@ -25,7 +28,12 @@ export default defineConfig({
           name: 'browser',
           browser: {
             enabled: true,
-            provider: playwright(),
+            // Use the installed Google Chrome rather than Playwright's own,
+            // and draw without the GPU, which antialiases the pixel
+            // comparisons of the boolean tests differently:
+            provider: playwright({
+              launchOptions: { channel: 'chrome', args: ['--disable-gpu'] }
+            }),
             headless: true,
             instances: [{ browser: 'chromium' }]
           }
