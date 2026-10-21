@@ -367,3 +367,12 @@ test('New texts take the project\'s current style, as SVG import sets it',
     equals(text.fontSize, 30, 'in their runs');
     project.currentStyle.fontSize = 12;
 });
+
+test('JSON imports the paragraphs after the content, in any order',
+        function() {
+    var text = new PointText({
+        paragraphs: [{ justification: 'left' }, { justification: 'right' }],
+        content: 'One\nTwo'
+    });
+    equals(text.paragraphs[1].justification, 'right', 'the second one');
+});
