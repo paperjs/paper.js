@@ -16,6 +16,7 @@ import paper, {
   Base,
   CanvasProvider,
   Color,
+  CompoundPath,
   Group,
   Layer,
   Matrix,
@@ -254,6 +255,73 @@ describe('SvgExport', () => {
     const imported = paper.project.importSVG(svg),
       copy = imported.getItem({ name: path.name })
     equals(() => copy && copy.data.tag, '<tag>')
+  })
+
+  test('Export SVG with segment names and data (#2398)', () => {
+    const path = new Path({
+      segments: [[20, 80], [[50, 20], [-10, 0], [10, 0]], [80, 80]],
+      closed: true
+    })
+    path.segments[1].name = 'top'
+    path.segments[1].data.locked = true
+    path.segments[2].data = { weight: 2 }
+    equals(
+      path.exportSVG().getAttribute('data-paper-segments'),
+      '{"1":{"name":"top","data":{"locked":true}},"2":{"data":{"weight":2}}}'
+    )
+    const copy = paper.project.importSVG(path.exportSVG({ asString: true }))
+    equals(copy.segments.length, 3, 'segments')
+    equals(copy.segments.top, copy.segments[1], 'found by name')
+    equals(copy.segments[1].data, { locked: true }, 'data')
+    equals(copy.segments[2].data, { weight: 2 }, 'data without name')
+    equals(copy.segments[0].name, null, 'unnamed')
+    equals(copy.data, {}, 'not in item data')
+  })
+
+  test('Export SVG without segment names and data (#2398)', () => {
+    const path = new Path.Rectangle([0, 0], [10, 10])
+    path.firstSegment.data // Accessing creates empty data.
+    equals(
+      path.exportSVG().hasAttribute('data-paper-segments'),
+      false,
+      'no attribute'
+    )
+    equals(path.exportSVG({ matchShapes: true }).nodeName, 'rect', 'shape')
+    // Shapes have no segments, so named ones keep it a polygon:
+    path.firstSegment.name = 'corner'
+    const node = path.exportSVG({ matchShapes: true })
+    equals(node.nodeName, 'polygon', 'polygon with named segments')
+    equals(node.getAttribute('data-paper-segments'), '{"0":{"name":"corner"}}')
+    const copy = paper.project.importSVG(
+      path.exportSVG({ matchShapes: true, asString: true })
+    )
+    equals(copy.segments.corner, copy.firstSegment, 'found by name')
+  })
+
+  test('Export SVG compound path with segment names and data (#2398)', () => {
+    const compound = new CompoundPath({
+      children: [
+        new Path.Rectangle([0, 0], [100, 100]),
+        new Path.Rectangle([25, 25], [50, 50])
+      ]
+    })
+    compound.children[0].segments[3].name = 'outer'
+    compound.children[1].segments[0].name = 'inner'
+    compound.children[1].segments[2].data.hole = true
+    const node = compound.exportSVG()
+    equals(node.nodeName, 'path', 'one element')
+    // Keyed by the index across the segments of all children:
+    equals(
+      node.getAttribute('data-paper-segments'),
+      '{"3":{"name":"outer"},"4":{"name":"inner"},"6":{"data":{"hole":true}}}'
+    )
+    const copy = paper.project.importSVG(
+      compound.exportSVG({ asString: true })
+    )
+    const [outer, inner] = copy.children
+    equals(outer.segments.outer, outer.segments[3], 'outer')
+    equals(inner.segments.inner, inner.segments[0], 'inner')
+    equals(inner.segments[2].data, { hole: true }, 'data')
   })
 
   test('Export SVG with nested groups as clip masks', () => {
