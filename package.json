@@ -25,9 +25,10 @@
     "load": "gulp load",
     "jshint": "gulp jshint",
     "eslint": "eslint test '*.mjs'",
-    "test": "vitest run",
+    "test": "vitest run --project node --project browser",
     "test:browser": "vitest run --project browser",
     "test:node": "vitest run --project node",
+    "test:screenshots": "sh test/screenshots/docker.sh",
     "prepare": "husky"
   },
   "files": [
