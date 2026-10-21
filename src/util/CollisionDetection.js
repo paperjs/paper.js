@@ -66,12 +66,10 @@ var CollisionDetection = /** @lends CollisionDetection */{
      *     bounds within the first arrray will be returned.
      * @param {Number} [tolerance] If provided, the tolerance will be added to
      *     all sides of each bounds when checking for collisions.
-     * @param {Boolean} [bothAxis] If true, the sweep is performed along both
-     *     axis, and the results include collisions for both: `{ hor, ver }`.
      * @returns {Array} Array containing for the bounds at the same index in
      *     curves1 an array of the indexes of colliding bounds in curves2
      */
-    findCurveBoundsCollisions: function(curves1, curves2, tolerance, bothAxis) {
+    findCurveBoundsCollisions: function(curves1, curves2, tolerance) {
         function getBounds(curves) {
             var min = Math.min,
                 max = Math.max,
@@ -92,17 +90,6 @@ var CollisionDetection = /** @lends CollisionDetection */{
             bounds2 = !curves2 || curves2 === curves1
                 ? bounds1
                 : getBounds(curves2);
-        if (bothAxis) {
-            var hor = this.findBoundsCollisions(
-                    bounds1, bounds2, tolerance || 0, false, true),
-                ver = this.findBoundsCollisions(
-                    bounds1, bounds2, tolerance || 0, true, true),
-                list = [];
-            for (var i = 0, l = hor.length; i < l; i++) {
-                list[i] = { hor: hor[i], ver: ver[i] };
-            }
-            return list;
-        }
         return this.findBoundsCollisions(bounds1, bounds2, tolerance || 0);
     },
 
@@ -135,13 +122,11 @@ var CollisionDetection = /** @lends CollisionDetection */{
      *     all sides of each bounds when checking for collisions.
      * @param {Boolean} [sweepVertical] If true, the sweep is performed along
      *     the y-axis.
-     * @param {Boolean} [onlySweepAxisCollisions] If true, no collision checks
-     *     will be done on the secondary axis.
      * @returns {Array} Array containing for the bounds at the same index in
      *     boundsA an array of the indexes of colliding bounds in boundsB
      */
     findBoundsCollisions: function(boundsA, boundsB, tolerance,
-        sweepVertical, onlySweepAxisCollisions) {
+        sweepVertical) {
         var self = !boundsB || boundsA === boundsB,
             allBounds = self ? boundsA : boundsA.concat(boundsB),
             lengthA = boundsA.length,
@@ -198,43 +183,32 @@ var CollisionDetection = /** @lends CollisionDetection */{
                         curBounds[pri0] - tolerance) + 1;
                 activeIndicesByPri1.splice(0, pruneCount);
                 // Add collisions for current index.
-                if (self && onlySweepAxisCollisions) {
-                    // All active indexes can be added, no further checks needed
-                    curCollisions = curCollisions.concat(activeIndicesByPri1);
-                   // Add current index to collisions of all active indexes
-                    for (var j = 0; j < activeIndicesByPri1.length; j++) {
-                        var activeIndex = activeIndicesByPri1[j];
-                        allCollisions[activeIndex].push(origIndex);
-                    }
-                } else {
-                    var curSec1 = curBounds[sec1],
-                        curSec0 = curBounds[sec0];
-                    for (var j = 0; j < activeIndicesByPri1.length; j++) {
-                        var activeIndex = activeIndicesByPri1[j],
-                            activeBounds = allBounds[activeIndex],
-                            isActiveA = activeIndex < lengthA,
-                            isActiveB = self || activeIndex >= lengthA;
+                var curSec1 = curBounds[sec1],
+                    curSec0 = curBounds[sec0];
+                for (var j = 0; j < activeIndicesByPri1.length; j++) {
+                    var activeIndex = activeIndicesByPri1[j],
+                        activeBounds = allBounds[activeIndex],
+                        isActiveA = activeIndex < lengthA,
+                        isActiveB = self || activeIndex >= lengthA;
 
-                        // Check secondary axis bounds if necessary.
-                        if (
-                            onlySweepAxisCollisions ||
-                            (
-                                isCurrentA && isActiveB ||
-                                isCurrentB && isActiveA
-                            ) && (
-                                curSec1 >= activeBounds[sec0] - tolerance &&
-                                curSec0 <= activeBounds[sec1] + tolerance
-                            )
-                        ) {
-                            // Add current index to collisions of active
-                            // indices and vice versa.
-                            if (isCurrentA && isActiveB) {
-                                curCollisions.push(
-                                    self ? activeIndex : activeIndex - lengthA);
-                            }
-                            if (isCurrentB && isActiveA) {
-                                allCollisions[activeIndex].push(origIndex);
-                            }
+                    // Check secondary axis bounds.
+                    if (
+                        (
+                            isCurrentA && isActiveB ||
+                            isCurrentB && isActiveA
+                        ) && (
+                            curSec1 >= activeBounds[sec0] - tolerance &&
+                            curSec0 <= activeBounds[sec1] + tolerance
+                        )
+                    ) {
+                        // Add current index to collisions of active
+                        // indices and vice versa.
+                        if (isCurrentA && isActiveB) {
+                            curCollisions.push(
+                                self ? activeIndex : activeIndex - lengthA);
+                        }
+                        if (isCurrentB && isActiveA) {
+                            allCollisions[activeIndex].push(origIndex);
                         }
                     }
                 }

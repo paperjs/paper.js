@@ -381,24 +381,13 @@ PathItem.inject(new function() {
      *     {@link CompoundPath#curves}.
      * @param {Boolean} [dir=false] the direction in which to determine the
      *     winding contribution, `false`: in x-direction, `true`: in y-direction
-     * @param {Boolean} [closed=false] determines how areas should be closed
-     *     when a curve is part of an open path, `false`: area is closed with a
-     *     straight line, `true`: area is closed taking the handles of the first
-     *     and last segment into account
      * @param {Boolean} [dontFlip=false] controls whether the algorithm is
      *     allowed to flip direction if it is deemed to produce better results
      * @return {Object} an object containing the calculated winding number, as
      *     well as an indication whether the point was situated on the contour
      * @private
      */
-    function getWinding(point, curves, dir, closed, dontFlip) {
-        // `curves` can either be an array of curves, or an object containing of
-        // the form `{ hor: [], ver: [] }` (see `curveCollisionsMap`), with each
-        // key / value pair holding only those curves that can be crossed by a
-        // horizontal / vertical line through the point to be checked.
-        var curvesList = Array.isArray(curves)
-            ? curves
-            : curves[dir ? 'hor' : 'ver'];
+    function getWinding(point, curves, dir, dontFlip) {
         // Determine the index of the abscissa and ordinate values in the curve
         // values arrays, based on the direction:
         var ia = dir ? 1 : 0, // the abscissa index
@@ -406,9 +395,8 @@ PathItem.inject(new function() {
             pv = [point.x, point.y],
             pa = pv[ia], // the point's abscissa
             po = pv[io], // the point's ordinate
-            // Use separate epsilons for winding contribution code.
+            // Use a separate epsilon for winding contribution code.
             windingEpsilon = 1e-9,
-            qualityEpsilon = 1e-6,
             paL = pa - windingEpsilon,
             paR = pa + windingEpsilon,
             windingL = 0,
@@ -417,7 +405,6 @@ PathItem.inject(new function() {
             pathWindingR = 0,
             onPath = false,
             onAnyPath = false,
-            quality = 1,
             roots = [],
             vPrev,
             vClose;
@@ -475,12 +462,6 @@ PathItem.inject(new function() {
                 } else {
                     onPath = true;
                 }
-                // Determine the quality of the winding calculation. Reduce the
-                // quality with every crossing of the ray very close to the
-                // path. This means that if the point is on or near multiple
-                // curves, the quality becomes less than 0.5.
-                if (a > pa - qualityEpsilon && a < pa + qualityEpsilon)
-                    quality /= 2;
             } else {
                 // Curve is crossed at starting point.
                 if (winding !== windingPrev) {
@@ -504,7 +485,6 @@ PathItem.inject(new function() {
                         onPath = true;
                     }
                 }
-                quality /= 4;
             }
             vPrev = v;
             // If we're on the curve, look at the tangent to decide whether to
@@ -513,7 +493,7 @@ PathItem.inject(new function() {
             // again with flipped direction and return that result instead.
             return !dontFlip && a > paL && a < paR
                     && Curve.getTangent(v, t)[dir ? 'x' : 'y'] === 0
-                    && getWinding(point, curves, !dir, closed, true);
+                    && getWinding(point, curves, !dir, true);
         }
 
         function handleCurve(v) {
@@ -544,26 +524,22 @@ PathItem.inject(new function() {
             }
         }
 
-        for (var i = 0, l = curvesList.length; i < l; i++) {
-            var curve = curvesList[i],
+        for (var i = 0, l = curves.length; i < l; i++) {
+            var curve = curves[i],
                 path = curve._path,
                 v = curve.getValues(),
                 res;
-            if (!i || curvesList[i - 1]._path !== path) {
+            if (!i || curves[i - 1]._path !== path) {
                 // We're on a new (sub-)path, so we need to determine values of
                 // the last non-horizontal curve on this path.
                 vPrev = null;
                 // If the path is not closed, connect the first and last segment
-                // based on the value of `closed`:
-                // - `false`: Connect with a straight curve, just like how
-                //   filling open paths works.
-                // - `true`: Connect with a curve that takes the segment handles
-                //   into account, just like how closed paths behave.
+                // with a straight curve, just like how filling open paths works:
                 if (!path._closed) {
                     vClose = Curve.getValues(
                             path.getLastCurve().getSegment2(),
                             curve.getSegment1(),
-                            null, !closed);
+                            null, true);
                     // This closing curve is a potential candidate for the last
                     // non-horizontal curve.
                     if (vClose[io] !== vClose[io + 6]) {
@@ -593,7 +569,7 @@ PathItem.inject(new function() {
             if (res = handleCurve(v))
                 return res;
 
-            if (i + 1 === l || curvesList[i + 1]._path !== path) {
+            if (i + 1 === l || curves[i + 1]._path !== path) {
                 // We're at the last curve of the current (sub-)path. If a
                 // closing curve was calculated at the beginning of it, handle
                 // it now to treat the path as closed:
@@ -606,7 +582,7 @@ PathItem.inject(new function() {
                     // for clockwise and [-1,+1] for counter-clockwise paths.
                     // If the ray is cast in y direction (dir == true), the
                     // windings always have opposite sign.
-                    pathWindingL = pathWindingR = path.isClockwise(closed) ^ dir
+                    pathWindingL = pathWindingR = path.isClockwise() ^ dir
                             ? 1 : -1;
                 }
                 windingL += pathWindingL;
@@ -623,13 +599,10 @@ PathItem.inject(new function() {
         // are part of the boolean result.
         windingL = abs(windingL);
         windingR = abs(windingR);
-        // Return the calculated winding contributions along with a quality
-        // value indicating how reliable the value really is.
         return {
             winding: max(windingL, windingR),
             windingL: windingL,
             windingR: windingR,
-            quality: quality,
             onPath: onAnyPath
         };
     }
@@ -1414,13 +1387,11 @@ PathItem.inject(new function() {
          *
          * @param {Point} point the location for which to determine the winding
          *     contribution
-         * @param {Number} [dir=0] the direction in which to determine the
-         *     winding contribution, `0`: in x-direction, `1`: in y-direction
          * @return {Object} an object containing the calculated winding number, as
          *     well as an indication whether the point was situated on the contour
          */
-        _getWinding: function(point, dir, closed) {
-            return getWinding(point, this.getCurves(), dir, closed);
+        _getWinding: function(point) {
+            return getWinding(point, this.getCurves());
         },
 
         /**
