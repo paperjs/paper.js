@@ -351,6 +351,37 @@ test('view.dispatchKeyEvent()', function() {
     tool.remove();
 });
 
+test('view.dispatchKeyEvent() with the characters of special keys (#2346)', function() {
+    var tool = new Tool();
+    var log = [];
+    tool.onKeyDown = tool.onKeyUp = function(event) {
+        log.push(event.type + ' ' + event.key + ' '
+                + JSON.stringify(event.character));
+    };
+    ['space', 'enter', 'tab', 'a', 'shift'].forEach(function(key) {
+        view.dispatchKeyEvent('keydown', key);
+        view.dispatchKeyEvent('keyup', key);
+    });
+    // An explicit character still wins:
+    view.dispatchKeyEvent('keydown', 'space', { character: '\xA0' });
+    view.dispatchKeyEvent('keyup', 'space');
+    equals(log, [
+        'keydown space " "',
+        'keyup space " "',
+        'keydown enter "\\r"',
+        'keyup enter "\\r"',
+        'keydown tab "\\t"',
+        'keyup tab "\\t"',
+        'keydown a "a"',
+        'keyup a "a"',
+        'keydown shift ""',
+        'keyup shift ""',
+        'keydown space "\xA0"',
+        'keyup space "\xA0"'
+    ]);
+    tool.remove();
+});
+
 if (!isNodeContext) {
     test('view.viewSize of canvases with padding and border (#1160, #2033)', function() {
         // The padding of 10 and the border of 5 add 30 to the content box,
