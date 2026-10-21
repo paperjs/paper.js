@@ -144,6 +144,20 @@ describe('Item', () => {
     equals(() => group.children.length, 0)
   })
 
+  test('Inserting an item into itself or its descendants (#2406)', () => {
+    const layer = new Layer()
+    // New items go into the active layer, which is now the new layer:
+    const group = new Group()
+    equals(() => group.parent === layer, true)
+    equals(() => group.addChild(layer), null)
+    equals(() => group.addChild(group), null)
+    equals(() => layer.parent === null, true)
+    equals(() => new Group({ children: [new Layer()] }).children.length, 0)
+    const path = new Path()
+    equals(() => group.addChildren([layer, path]).length, 1)
+    equals(() => path.parent === group, true)
+  })
+
   test('item.addChildren() / item.removeChildren()', () => {
     const project = paper.project,
       layer = project.activeLayer,

@@ -2901,8 +2901,10 @@ new function() { // Injection scope for hit-test functions shared with project
                 var item = items[i],
                     id = item && item._id;
                 // If an item was inserted already, it must be included multiple
-                // times in the items array. Only insert once.
-                if (!item || inserted[id]) {
+                // times in the items array. Only insert once. Also leave out
+                // this item and its ancestors, which would create a cycle:
+                if (!item || inserted[id] || item === this
+                        || this.isDescendant(item)) {
                     items.splice(i, 1);
                 } else {
                     // Notify parent of change. Don't notify item itself yet,
@@ -2911,6 +2913,8 @@ new function() { // Injection scope for hit-test functions shared with project
                     inserted[id] = true;
                 }
             }
+            if (!items.length)
+                return null;
             Base.splice(children, items, index, 0);
             var project = this._project,
                 // See #_remove() for an explanation of this:
