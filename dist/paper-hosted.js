@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 02:00:46 2026 +0200
+ * Date: Wed Oct 21 02:08:02 2026 +0200
  *
  ***
  *
@@ -20602,6 +20602,8 @@ new function() {
 				return this[name];
 			},
 			set: function(value) {
+				if (!isLoading)
+					this[load]();
 				defineValue(this, name, value);
 			},
 			configurable: true
@@ -20865,8 +20867,8 @@ new function() {
 			var that = this,
 				story = this._story,
 				content = story._content,
-				layout = host.layOut(this.exportJSON({ asString: false }),
-						this._getStart(), this._key);
+				layout = host.layOut(this.exportJSON(), this._getStart(),
+						this._key);
 			this._visibleEnd = layout.end;
 			return layout.lines.map(function(line) {
 				line.pieces = line.pieces.map(function(placed) {

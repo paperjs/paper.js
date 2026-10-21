@@ -6,8 +6,8 @@
 
 - Load text items from the host of a hosted project, see `Project#host`, with
   their stories, and the paths and settings of path and area text, and let
-  hosts lay them out as their documents do, through `host.layOut()`, as the
-  script holds them, also before the host has its changes.
+  hosts lay them out as their documents do, through `host.layOut()`, given
+  their JSON as the script holds them, also before the host has its changes.
 - Add text ranges: `TextRange`, a part of a text whose style properties read
   what its letters and paragraphs share and set them, from
   `TextItem#range(start, end)`, `#runs`, `#paragraphs`, `#words`, `#letters`
@@ -110,6 +110,8 @@
 
 ### Fixed
 
+- Keep what scripts write to hosted items before they load, such as their
+  `pivot` or an area text's `columns`, which loading replaced.
 - Fix the stroke bounds of non-scaling strokes under non-uniform matrices,
   whose miters, bevels and square caps followed the untransformed angles.
 - Fix `Item#strokeBounds` after scaling items that apply their matrix, such
