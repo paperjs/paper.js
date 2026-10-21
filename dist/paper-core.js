@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 11:39:07 2026 +0200
+ * Date: Wed Oct 21 12:35:43 2026 +0200
  *
  ***
  *
@@ -14084,7 +14084,7 @@ var TextStory = Base.extend({
 		this.setContent(content);
 		this._runs = runs.map(function(run) {
 			var style = new Style(that._runs[0].style, that);
-			style.set(Base.set({}, run, { content: undefined }));
+			style.set(run);
 			return { length: (run.content || '').length, style: style };
 		}).filter(function(run) {
 			return run.length > 0;
