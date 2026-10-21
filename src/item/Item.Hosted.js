@@ -362,8 +362,8 @@ new function() {
             var that = this,
                 story = this._story,
                 content = story._content,
-                layout = host.layOut(this.exportJSON({ asString: false }),
-                        this._getStart(), this._key);
+                layout = host.layOut(this.exportJSON(), this._getStart(),
+                        this._key);
             this._visibleEnd = layout.end;
             return layout.lines.map(function(line) {
                 line.pieces = line.pieces.map(function(placed) {
@@ -416,16 +416,16 @@ new function() {
          *   of {@link Item#importJSON(json)}, without children.
          * - `getAncestorKeys(key)`, which returns the keys from the top level
          *   down to the node's parent.
-         * - Optionally `layOut(json, start, key)`, which lays out a text item,
-         *   given in the form of {@link Item#exportJSON(options)} as the
-         *   script holds it, from `start` in its story, and returns `{ end,
-         *   lines }`: where its visible text ends, and its lines, each `{
-         *   start, end, x, y, width, lineHeight, ascent, descent, pieces }`,
-         *   with pieces `{ start, end, x, y, dx, width, rotation, size, ascent,
-         *   descent, lineHeight }` and an optional `content`, as for a
-         *   hyphen, all in the item's coordinates. `key` is null for text
-         *   that the host doesn't know yet. Without it, Paper.js lays out text
-         *   itself.
+         * - Optionally `layOut(json, start, key)`, which lays out a text item
+         *   from `start` in its story, given as the JSON string that
+         *   {@link Item#exportJSON(options)} writes of it as the script holds
+         *   it, and returns `{ end, lines }`: where its visible text ends, and
+         *   its lines, each `{ start, end, x, y, width, lineHeight, ascent,
+         *   descent, pieces }`, with pieces `{ start, end, x, y, dx, width,
+         *   rotation, size, ascent, descent, lineHeight }` and an optional
+         *   `content`, as for a hyphen, all in the item's coordinates. `key`
+         *   is null for text that the host doesn't know yet. Without it,
+         *   Paper.js lays out text itself.
          *
          * @bean
          * @type Object
