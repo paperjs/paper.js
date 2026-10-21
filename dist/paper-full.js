@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 12:53:01 2026 +0200
+ * Date: Wed Oct 21 13:06:54 2026 +0200
  *
  ***
  *
@@ -9982,7 +9982,13 @@ var Path = PathItem.extend({
 			segments = this._segments,
 			numSegments = segments.length,
 			closed = this._closed,
-			tolerancePadding = options._tolerancePadding,
+			strokeSpace = strokeMatrix && strokeMatrix.inverted(),
+			strokePoint = point.transform(strokeSpace),
+			tolerancePadding = strokeSpace
+					? new Size(Matrix._getCircleExtents(
+						Math.max(options.tolerance, 1e-12),
+						this.getView()._matrix._shiftless()))
+					: options._tolerancePadding,
 			strokePadding = tolerancePadding,
 			join, cap, miterLimit,
 			area, loc, res,
@@ -9999,15 +10005,14 @@ var Path = PathItem.extend({
 				join = style.getStrokeJoin();
 				cap = style.getStrokeCap();
 				miterLimit = style.getMiterLimit();
-				strokePadding = strokePadding.add(
-					Matrix._getCircleExtents(strokeRadius, strokeMatrix));
+				strokePadding = strokePadding.add(strokeRadius);
 			} else {
 				join = cap = 'round';
 			}
 		}
 
 		function isCloseEnough(pt, padding) {
-			return point.subtract(pt).divide(padding).length <= 1;
+			return strokePoint.subtract(pt).divide(padding).length <= 1;
 		}
 
 		function checkSegmentPoint(seg, pt, name) {
@@ -10015,7 +10020,7 @@ var Path = PathItem.extend({
 				var anchor = seg._point;
 				if (pt !== anchor)
 					pt = pt.add(anchor);
-				if (isCloseEnough(pt, strokePadding)) {
+				if (isCloseEnough(pt.transform(strokeSpace), strokePadding)) {
 					var hit = new HitResult(name, that, {
 						segment: seg,
 						point: pt
@@ -10044,20 +10049,21 @@ var Path = PathItem.extend({
 					&& segment._index < numSegments - 1;
 			if (isJoin && segment.isSmooth()
 					|| (isJoin ? join : cap) === 'round') {
-				return isCloseEnough(segment._point, strokePadding);
+				return isCloseEnough(segment._point.transform(strokeSpace),
+						strokePadding);
 			} else {
 				area = new Path({ internal: true, closed: true });
 				if (isJoin) {
 					Path._addBevelJoin(segment, join, strokeRadius,
-						   miterLimit, null, strokeMatrix, addToArea, true);
+						   miterLimit, strokeSpace, null, addToArea, true);
 				} else {
-					Path._addSquareCap(segment, cap, strokeRadius, null,
-							strokeMatrix, addToArea, true);
+					Path._addSquareCap(segment, cap, strokeRadius,
+							strokeSpace, null, addToArea, true);
 				}
 				if (!area.isEmpty()) {
 					var loc;
-					return area.contains(point)
-						|| (loc = area.getNearestLocation(point))
+					return area.contains(strokePoint)
+						|| (loc = area.getNearestLocation(strokePoint))
 							&& isCloseEnough(loc.getPoint(), tolerancePadding);
 				}
 			}
@@ -10073,20 +10079,34 @@ var Path = PathItem.extend({
 					return res;
 		}
 		if (strokeRadius !== null) {
-			loc = this.getNearestLocation(point);
+			var curves = this.getCurves(),
+				minDistance = Infinity,
+				nearest;
+			for (var i = 0, l = curves.length; i < l; i++) {
+				var values = curves[i].getValues(strokeSpace),
+					t = Curve.getNearestTime(values, strokePoint),
+					pt = Curve.getPoint(values, t),
+					distance = pt.getDistance(strokePoint);
+				if (distance < minDistance) {
+					minDistance = distance;
+					loc = new CurveLocation(curves[i], t);
+					nearest = pt;
+				}
+			}
 			if (loc) {
 				var time = loc.getTime();
 				if (time === 0 || time === 1 && numSegments > 1) {
 					if (!checkSegmentStroke(loc.getSegment()))
 						loc = null;
-				} else if (!isCloseEnough(loc.getPoint(), strokePadding)) {
+				} else if (!isCloseEnough(nearest, strokePadding)) {
 					loc = null;
 				}
 			}
 			if (!loc && join === 'miter' && numSegments > 1) {
 				for (var i = 0; i < numSegments; i++) {
 					var segment = segments[i];
-					if (point.getDistance(segment._point)
+					if (strokePoint.getDistance(
+								segment._point.transform(strokeSpace))
 							<= miterLimit * strokeRadius
 							&& checkSegmentStroke(segment)) {
 						loc = segment.getLocation();
