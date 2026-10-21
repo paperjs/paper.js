@@ -334,8 +334,7 @@ new function() {
                 // which clones would miss:
                 used[id] = true;
                 try {
-                    item = importNode(getSandbox().ownerDocument
-                            .getElementById(id), options, false)
+                    item = importNode(getElementById(id), options, false)
                             .translate(point);
                 } finally {
                     delete used[id];
@@ -591,8 +590,8 @@ new function() {
             // Groups don't draw shadows, so leave them out (#1003):
             var shadow = value && !(item instanceof Group)
                     && item.setShadowColor && (/^url\(/.test(value)
-                        ? getFilterShadow(getSandbox().ownerDocument
-                            .getElementById(getDefinitionId(value)))
+                        ? getFilterShadow(
+                            getElementById(getDefinitionId(value)))
                         : getCssShadow(value));
             if (shadow) {
                 item.setShadowColor(shadow.color);
@@ -745,7 +744,7 @@ new function() {
         // Definitions can be referenced before they appear in the document,
         // so import them on demand, see #1146:
         if (id && !definitions[id]) {
-            var node = getSandbox().ownerDocument.getElementById(id);
+            var node = getElementById(id);
             if (node)
                 importNode(node, options, false);
         }
@@ -818,6 +817,10 @@ new function() {
             doc.head.appendChild(meta);
         }
         return sandbox.contentDocument.body;
+    }
+
+    function getElementById(id) {
+        return getSandbox().ownerDocument.getElementById(id);
     }
 
     function importNode(node, options, isRoot) {
