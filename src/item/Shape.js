@@ -307,7 +307,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 new function() { // Scope for _contains() and _hitTestSelf() code.
     // Returns the center of the quarter corner ellipse for rounded rectangle,
     // if the point lies within its bounding box.
-    function getCornerCenter(that, point, expand) {
+    function getCornerCenter(that, point) {
         var radius = that._radius;
         if (!radius.isZero()) {
             var halfSize = that._size.divide(2);
@@ -318,29 +318,11 @@ new function() { // Scope for _contains() and _hitTestSelf() code.
                 var dir = new Point(q > 1 && q < 4 ? -1 : 1, q > 2 ? -1 : 1),
                     corner = dir.multiply(halfSize),
                     center = corner.subtract(dir.multiply(radius)),
-                    rect = new Rectangle(
-                            expand ? corner.add(dir.multiply(expand)) : corner,
-                            center);
+                    rect = new Rectangle(corner, center);
                 if (rect.contains(point))
                     return { point: center, quadrant: q };
             }
         }
-    }
-
-    function isOnEllipseStroke(point, radius, padding, quadrant) {
-        // Translate the ellipse / circle to the unit circle with radius 1, and
-        // translate the point along by dividing with radius (a number for
-        // circle, a size for ellipse). Then subtract the radius with the same
-        // direction as point (vector.normalize()), to get a vector that
-        // describe proximity and direction to the stroke. Translate this back
-        // by multiplying with radius, then divide by strokePadding to get a new
-        // vector in stroke space, and finally check its length.
-        var vector = point.divide(radius);
-        // We also have to check the vector's quadrant in case we're matching
-        // quarter ellipses in the corners.
-        return (!quadrant || vector.isInQuadrant(quadrant)) &&
-                vector.subtract(vector.normalize()).multiply(radius)
-                    .divide(padding).length <= 1;
     }
 
     return /** @lends Shape# */{
@@ -358,45 +340,19 @@ new function() { // Scope for _contains() and _hitTestSelf() code.
             }
         },
 
-        _hitTestSelf: function _hitTestSelf(point, options, viewMatrix,
-                strokeMatrix) {
-            var hit = false,
-                style = this._style,
-                hitStroke = options.stroke && style.hasStroke(),
-                // Transparent fills are hit too, see Path#_hitTestSelf():
-                hitFill = options.fill && !!style.getFillColor();
-            // Just like in Path, use stroke-hit-tests also for hitting fill
-            // with tolerance:
-            if (hitStroke || hitFill) {
-                var type = this._type,
-                    radius = this._radius,
-                    strokeRadius = hitStroke ? style.getStrokeWidth() / 2 : 0,
-                    strokePadding = options._tolerancePadding.add(
-                        Matrix._getCircleExtents(strokeRadius,
-                            !style.getStrokeScaling() && strokeMatrix));
-                if (type === 'rectangle') {
-                    var padding = strokePadding.multiply(2),
-                        center = getCornerCenter(this, point, padding);
-                    if (center) {
-                        // Check the stroke of the quarter corner ellipse:
-                        hit = isOnEllipseStroke(point.subtract(center.point),
-                                radius, strokePadding, center.quadrant);
-                    } else {
-                        var rect = new Rectangle(this._size).setCenter(0, 0),
-                            outer = rect.expand(padding),
-                            inner = rect.expand(padding.negate());
-                        hit = outer._containsPoint(point)
-                                && !inner._containsPoint(point);
-                    }
-                } else {
-                    hit = isOnEllipseStroke(point, radius, strokePadding);
-                }
-            }
-            // NOTE: The above test is only for stroke, and the added tolerance
-            // when testing for fill. The actual fill test happens in
-            // Item#_hitTestSelf(), through its call of #_contains().
-            return hit ? new HitResult(hitStroke ? 'stroke' : 'fill', this)
-                    : _hitTestSelf.base.apply(this, arguments);
+        _hitTestSelf: function(point, options, viewMatrix, strokeMatrix) {
+            // Hit-test the shape as its path, see #toPath(), which measures
+            // strokes and tolerance where they're drawn (#2334), but without
+            // its segments, handles and curves, which shapes don't have:
+            var hit = this._asPathItem()._hitTestSelf(point, Base.set({},
+                    options, {
+                        segments: false,
+                        handles: false,
+                        ends: false,
+                        curves: false,
+                        all: false
+                    }), viewMatrix, strokeMatrix);
+            return hit && new HitResult(hit.type, this);
         }
     };
 }, {
