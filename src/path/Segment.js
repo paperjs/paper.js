@@ -23,39 +23,11 @@
  * objects that are connected by this segment.
  */
 var Segment = Base.extend(/** @lends Segment# */{
-    statics: /** @lends Item */{
-        /**
-         * Override Segment.extend() to merge the subclass' _serializeFields with
-         * the parent class' _serializeFields.
-         *
-         * @private
-         */
-        extend: function extend(src) {
-            if (src._serializeFields)
-                src._serializeFields = Base.set({},
-                    this.prototype._serializeFields, src._serializeFields);
-            return extend.base.apply(this, arguments);
-        },
-
-        /**
-         * An object constant that can be passed to Item#initialize() to avoid
-         * insertion into the scene graph.
-         *
-         * @private
-         */
-        NO_INSERT: { insert: false }
-    },
-
     _class: 'Segment',
     _name: null,
     beans: true,
     // The selection state, a combination of SegmentSelection
     _selection: 0,
-
-    _serializeFields: {
-        name: null,
-        data: {}
-    },
 
     /**
      * Creates a new Segment object.
@@ -144,7 +116,7 @@ var Segment = Base.extend(/** @lends Segment# */{
      */
     initialize: function Segment(arg0, arg1, arg2, arg3, arg4, arg5) {
         var count = arguments.length,
-            point, handleIn, handleOut, selection;
+            point, handleIn, handleOut, selection, name, data;
         // TODO: Should we use Point.read() or Point.readNamed() to read these?
         if (count > 0) {
             if (arg0 == null || typeof arg0 === 'object') {
@@ -155,8 +127,12 @@ var Segment = Base.extend(/** @lends Segment# */{
                     handleIn = arg0.handleIn;
                     handleOut = arg0.handleOut;
                     selection = arg0.selection;
-                    this._name = arg0.name != undefined?arg0.name:'';
-                    this._data = arg0.data;
+                    name = arg0.name;
+                    // Copy the data of segments without creating it, as
+                    // #clone() does:
+                    data = arg0 instanceof Segment
+                            ? arg0._data && Base.clone(arg0._data)
+                            : arg0.data;
                 } else {
                     // It doesn't matter if all of these arguments exist.
                     // SegmentPoint() creates points with (0, 0) otherwise.
@@ -177,39 +153,44 @@ var Segment = Base.extend(/** @lends Segment# */{
         new SegmentPoint(handleOut, this, '_handleOut');
         if (selection)
             this.setSelection(selection);
+        // Only store name and data when set, so other segments don't pay:
+        if (name)
+            this.setName(name);
+        if (data)
+            this._data = data;
     },
 
     _serialize: function(options, dictionary) {
-        var props = {},
-            that = this;
-
-        function serialize(fields) {
-            for (var key in fields) {
-                // value is the default value, only serialize if the current
-                // value is different from it.
-                var value = that[key];
-                // Style#leading is a special case, as its default value is
-                // dependent on the fontSize. Handle this here separately.
-                if (!Base.equals(value, key === 'leading'
-                        ? fields.fontSize * 1.2 : fields[key])) {
-                    props[key] = Base.serialize(value, options,
-                            // Do not use compact mode for data
-                            key !== 'data', dictionary);
-                }
-            }
-        }
-
-        // Serialize fields that this Item subclass defines first
-        serialize(this._serializeFields);
-        // If it is has no handles, only serialize point, otherwise handles too.
         var point = this._point,
             selection = this._selection,
-            obj = selection || this.hasHandles()
+            name = this._name,
+            data = this._data,
+            hasData = data && !Base.equals(data, {});
+        if (name || hasData) {
+            // Use the object notation, which can also hold name and data:
+            var props = Base.serialize({
+                point: point,
+                handleIn: this._handleIn,
+                handleOut: this._handleOut,
+                selection: selection
+            }, options, true, dictionary);
+            if (name)
+                props.name = name;
+            // Do not use compact mode for data, as in Item#_serialize():
+            if (hasData)
+                props.data = Base.serialize(data, options, false, dictionary);
+            // Pass the object as the only argument to #initialize():
+            return [props];
+        } else {
+            // If it is has no handles, only serialize point, otherwise handles
+            // too.
+            var obj = selection || this.hasHandles()
                     ? [point, this._handleIn, this._handleOut]
                     : point;
-        if (selection)
-            obj.push(selection);
-        return Base.serialize(obj, options, true, dictionary);
+            if (selection)
+                obj.push(selection);
+            return Base.serialize(obj, options, true, dictionary);
+        }
     },
 
     _changed: function(point) {
@@ -239,69 +220,63 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     /**
-     * The name of the segment. If the segment has a name, it can be accessed by name
-     * through its parent's children list.
+     * The name of the segment. If the segment has a name, it can be accessed
+     * by name through its path's segments list. If several segments share a
+     * name, the first one is found.
+     *
+     * The name is stored in JSON, but not in SVG.
      *
      * @bean
-     * @type String
+     * @type ?String
      *
-     * @example {@paperscript}
-     * var segment = new Segment({
-     *   point: [100, 50],
-     *   handleOut: [80, 100]
-     * });
-
-     * // Set the name of the path:
-     * segment.name = 'topLeftCorner';
-     *
-     * // Create a group and add path to it as a child:
-     * var path = new Path();
-     * path.add(segment);
-     *
-     * // The path can be accessed by name:
-     * path.getSegmentByName('topLeftCorner').handleOut = [80, 80];
+     * @example
+     * var path = new Path([10, 10], [50, 10], [50, 50]);
+     * path.segments[1].name = 'corner';
+     * console.log(path.segments['corner'].point); // { x: 50, y: 10 }
      */
     getName: function() {
         return this._name;
     },
 
     setName: function(name) {
-        if(this._path && this._path.segments.filter(function(s){ return (s.name == name && name != '');}).length > 0)
+        // Keep the name lookup on the path's segments list in sync, as
+        // Item#setName() does on the children list. Paths only create it once
+        // a segment has a name:
+        var path = this._path,
+            named = path && path._namedSegments;
+        if (this._name && named)
+            Base.removeNamed(path._segments, named, this._name, this);
+        if (name === (+name) + '')
             throw new Error(
-                'There is already a segment with this name in the path.');
+                    'Names consisting only of numbers are not supported.');
+        if (name && path)
+            Base.addNamed(path._segments, named || (path._namedSegments = {}),
+                    name, this);
         this._name = name || undefined;
-        this._changed(/*#=*/ChangeFlag.ATTRIBUTE);
     },
 
     /**
-     * A plain javascript object which can be used to store
-     * arbitrary data on the item.
+     * A plain javascript object which can be used to store arbitrary data on
+     * the segment.
+     *
+     * The data is stored in JSON, but not in SVG.
      *
      * @bean
      * @type Object
      *
      * @example
-     * var segment = new Segment(100,100);
-     * segment.data.canConnect = true;
-     *
-     * @example
-     * var segment = new Segment();
-     * segment.data = {
-     *     canConnect: true,
-     *     corePoint: false
-     * };
-     * console.log(path.data.canConnect); // true
+     * var segment = new Segment(100, 100);
+     * segment.data.isCorner = true;
      *
      * @example
      * var segment = new Segment({
      *     point: [100, 50],
      *     handleOut: [80, 100],
      *     data: {
-     *         canConnect: true,
-     *         corePoint: false
+     *         isCorner: true
      *     }
      * });
-     * console.log(path.data.canConnect); // true
+     * console.log(segment.data.isCorner); // true
      */
     getData: function() {
         if (!this._data)
@@ -685,13 +660,14 @@ var Segment = Base.extend(/** @lends Segment# */{
      * @return {Segment}
      */
     clone: function() {
-        return new Segment({
-            point: this._point,
-            handleIn: this._handleIn,
-            handleOut: this._handleOut,
-            name: this._name,
-            data: this._data
-        });
+        var segment = new Segment(this._point, this._handleIn, this._handleOut),
+            name = this._name,
+            data = this._data;
+        if (name)
+            segment._name = name;
+        if (data)
+            segment._data = Base.clone(data);
+        return segment;
     },
 
     equals: function(segment) {

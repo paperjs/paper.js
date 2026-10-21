@@ -172,11 +172,8 @@ new function() {
             item._parent = parent;
             item._index = i;
             children.push(item);
-            if (name) {
-                (namedChildren[name] = namedChildren[name] || []).push(item);
-                if (!(name in children))
-                    children[name] = item;
-            }
+            if (name)
+                Base.addNamed(children, namedChildren, name, item);
         }
         owner._children = children;
         owner._namedChildren = namedChildren;

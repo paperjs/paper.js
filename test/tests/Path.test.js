@@ -831,100 +831,74 @@ describe('Path', () => {
     expect.assertions(0)
   })
 
-  test('Path#add(); add two segments with the same name', () => {
-    const path = new Path()
-    const segment1 = new Segment({
-      point: [50, 50],
-      name: 'topLeftCorner'
-    })
-    const segment2 = new Segment({
-      point: [100, 100],
-      name: 'topLeftCorner'
-    })
-    let error = null
-    try {
-      path.add(segment1, segment2)
-    } catch (e) {
-      error = e
-    }
-    equals(
-      error != null,
-      true,
-      'We expect this add() command to throw an error'
-    )
+  test('Path#segments with named segments', () => {
+    const path = new Path([10, 10], [50, 10], [50, 50])
+    const segment = path.segments[1]
+    const name = 'corner'
+    segment.name = name
+    equals(() => path.segments[name] === segment, true)
+    equals(() => path.segments.corner === segment, true)
+    equals(() => path.segments.length, 3)
   })
 
-  test('Path#clone(); a cloned segment should have the same name', () => {
-    const segment1 = new Segment({
-      point: [50, 50],
-      name: 'topLeftCorner'
-    })
-    const segment2 = segment1.clone()
-
-    equals(
-      () => segment1.name === segment2.name,
-      1,
-      'The segments should have the same name'
-    )
+  test('Path#segments with duplicate names', () => {
+    const path = new Path([10, 10], [50, 10], [50, 50])
+    path.segments[2].name = 'corner'
+    path.segments[1].name = 'corner'
+    const [, segment1, segment2] = path.segments
+    equals(() => path.segments.corner === segment2, true)
+    segment2.remove()
+    equals(() => path.segments.corner === segment1, true)
+    segment1.remove()
+    equals(() => path.segments.corner, undefined)
   })
 
-  test('Path#getSegmentByName();', () => {
-    const path = new Path()
-    const segment = new Segment({
-      point: [50, 50],
-      name: 'topLeftCorner'
-    })
+  test('Path#segments after renaming segments', () => {
+    const path = new Path([10, 10], [50, 10], [50, 50])
+    const segment = path.segments[1]
+    segment.name = 'corner'
+    segment.name = 'top'
+    equals(() => path.segments.corner, undefined)
+    equals(() => path.segments.top === segment, true)
+    segment.name = null
+    equals(() => path.segments.top, undefined)
+  })
+
+  test('Path#segments after removing segments', () => {
+    const path = new Path([10, 10], [50, 10], [50, 50], [10, 50])
+    path.segments[1].name = 'corner'
+    path.segments[2].name = 'other'
+    const segment = path.removeSegment(1)
+    equals(() => path.segments.corner, undefined)
+    equals(() => path.segments.other === path.segments[1], true)
+    path.removeSegments()
+    equals(() => path.segments.other, undefined)
+    // Removed segments keep their names, and take them along:
     path.add(segment)
-
-    let error = null
-    try {
-      path.getSegmentByName('test')
-    } catch (e) {
-      error = e
-    }
-    equals(
-      error != null,
-      true,
-      'We expect this getSegmentByName() command to throw an error'
-    )
-
-    equals(
-      () => path.getSegmentByName('topLeftCorner') === segment,
-      1,
-      'Getting the segment by name should give us the same segemnt'
-    )
+    equals(() => path.segments.corner === segment, true)
+    path.segments = [new Segment({ point: [10, 10], name: 'other' })]
+    equals(() => path.segments.corner, undefined)
+    equals(() => path.segments.other === path.segments[0], true)
   })
 
-  test('Path#hasSegmentWithName();', () => {
-    const path = new Path()
-    const segment = new Segment({
-      point: [50, 50],
-      name: 'topLeftCorner'
-    })
-    path.add(segment)
-
-    equals(
-      () => path.hasSegmentWithName('topLeftCorner'),
-      1,
-      'Getting the segment by name should return true is segment exists'
-    )
+  test('Path#segments after inserting named segments', () => {
+    const path = new Path([10, 10], [50, 50])
+    path.insert(1, new Segment({ point: [50, 10], name: 'corner' }))
+    equals(() => path.segments.corner === path.segments[1], true)
+    const other = new Path()
+    other.add(path.segments.corner)
+    // Segments of other paths are cloned when added, names included:
+    equals(() => other.segments.corner === other.segments[0], true)
+    equals(() => path.segments.corner === path.segments[1], true)
   })
 
-  test('Path#getSegmentsByData();', () => {
-    const path = new Path()
-    const segment = new Segment({
-      point: [50, 50],
-      data: {
-        corner: true
-      }
-    })
-    path.add(segment)
-
-    equals(
-      () => path.getSegmentsByData({ corner: true })[0] === segment,
-      1,
-      'Getting the segment by data should give us the same segemnt'
-    )
+  test('Path#clone() with named segments', () => {
+    const path = new Path([10, 10], [50, 10], [50, 50])
+    path.segments[1].name = 'corner'
+    const clone = path.clone()
+    equals(() => clone.segments.corner === clone.segments[1], true)
+    const copy = new Path().importJSON(path.exportJSON())
+    equals(() => copy.segments.corner === copy.segments[1], true)
   })
 
   test('Path#arcTo(through, to) is on through point side (#1477)', () => {
