@@ -21,22 +21,40 @@
  *
  * @extends TextItem
  */
-var AreaText = TextItem.extend(/** @lends AreaText# */{
-    _class: 'AreaText',
-    _serializeFields: {
-        textPath: null,
+var AreaText = TextItem.extend(new function() {
+    // The fields that change the layout, with their defaults:
+    var fields = {
         columns: 1,
         rows: 1,
         gutter: 18,
         inset: 0,
         verticalAlign: 'top'
-    },
-    _columns: 1,
-    _rows: 1,
-    _gutter: 18,
-    _inset: 0,
-    _verticalAlign: 'top',
+    };
 
+    return Base.each(fields, function(value, name) {
+        var part = Base.capitalize(name),
+            key = '_' + name;
+        this[key] = value;
+        this['get' + part] = function() {
+            return this[key];
+        };
+        this['set' + part] = function(value) {
+            this[key] = value;
+            this._changed(/*#=*/Change.GEOMETRY);
+        };
+    }, {
+        _class: 'AreaText',
+        _serializeFields: Base.set({ textPath: null }, fields),
+
+        copyContent: function copyContent(source) {
+            copyContent.base.call(this, source);
+            for (var name in fields) {
+                var key = '_' + name;
+                this[key] = source[key];
+            }
+        }
+    });
+}, /** @lends AreaText# */{
     /**
      * Creates a text item that flows inside an area.
      *
@@ -81,103 +99,57 @@ var AreaText = TextItem.extend(/** @lends AreaText# */{
         }
     },
 
-    copyContent: function copyContent(source) {
-        copyContent.base.call(this, source);
-        this._columns = source._columns;
-        this._rows = source._rows;
-        this._gutter = source._gutter;
-        this._inset = source._inset;
-        this._verticalAlign = source._verticalAlign;
-    },
-
     // Its place among its layer's text wraps changes when it moves:
     _installEvents: function _installEvents(install) {
         _installEvents.base.call(this, install);
         this._layout = null;
     },
 
+    // NOTE: These properties have their getter / setters produced in the
+    // injection scope above.
+
     /**
      * The number of columns that the area is divided into, from left to
      * right, which the text fills one after the other.
      *
-     * @bean
+     * @name AreaText#columns
      * @type Number
      * @default 1
      */
-    getColumns: function() {
-        return this._columns;
-    },
-
-    setColumns: function(columns) {
-        this._columns = columns;
-        this._changed(/*#=*/Change.GEOMETRY);
-    },
 
     /**
      * The number of rows that the area is divided into, from top to bottom,
      * each with its columns.
      *
-     * @bean
+     * @name AreaText#rows
      * @type Number
      * @default 1
      */
-    getRows: function() {
-        return this._rows;
-    },
-
-    setRows: function(rows) {
-        this._rows = rows;
-        this._changed(/*#=*/Change.GEOMETRY);
-    },
 
     /**
      * The space between the columns and between the rows.
      *
-     * @bean
+     * @name AreaText#gutter
      * @type Number
      * @default 18
      */
-    getGutter: function() {
-        return this._gutter;
-    },
-
-    setGutter: function(gutter) {
-        this._gutter = gutter;
-        this._changed(/*#=*/Change.GEOMETRY);
-    },
 
     /**
      * The space between the area's edges and the text.
      *
-     * @bean
+     * @name AreaText#inset
      * @type Number
      * @default 0
      */
-    getInset: function() {
-        return this._inset;
-    },
-
-    setInset: function(inset) {
-        this._inset = inset;
-        this._changed(/*#=*/Change.GEOMETRY);
-    },
 
     /**
      * Where the lines sit in each column, from top to bottom.
      *
-     * @bean
+     * @name AreaText#verticalAlign
      * @type String
      * @values 'top', 'center', 'bottom'
      * @default 'top'
      */
-    getVerticalAlign: function() {
-        return this._verticalAlign;
-    },
-
-    setVerticalAlign: function(align) {
-        this._verticalAlign = align;
-        this._changed(/*#=*/Change.GEOMETRY);
-    },
 
     /**
      * Sets the area's height to the smallest that holds all of its text,
