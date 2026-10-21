@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 03:21:27 2026 +0200
+ * Date: Wed Oct 21 12:07:40 2026 +0200
  *
  ***
  *
@@ -2855,6 +2855,19 @@ var Matrix = Base.extend({
 			ctx.transform(this._a, this._b, this._c, this._d,
 					this._tx, this._ty);
 		}
+	},
+
+	statics: {
+		_getCircleExtents: function(radius, matrix) {
+			if (!matrix)
+				return [radius, radius];
+			var a = matrix._a,
+				b = matrix._b,
+				c = matrix._c,
+				d = matrix._d;
+			return [radius * Math.sqrt(a * a + c * c),
+					radius * Math.sqrt(b * b + d * d)];
+		}
 	}
 }, Base.each(['a', 'b', 'c', 'd', 'tx', 'ty'], function(key) {
 	var part = Base.capitalize(key),
@@ -4385,7 +4398,7 @@ new function() {
 					: pointMatrix.prepended(this.getView()._matrix),
 			tolerance = Math.max(options.tolerance, 1e-12),
 			tolerancePadding = options._tolerancePadding = new Size(
-					Path._getStrokePadding(tolerance, viewMatrix
+					Matrix._getCircleExtents(tolerance, viewMatrix
 						.prepended(this.getView()._matrix.inverted())
 						._shiftless().invert()));
 		point = pointMatrix._inverseTransform(point);
@@ -5717,25 +5730,21 @@ var Shape = Item.extend({
 		var size = this._size,
 			rect = new Rectangle(size).setCenter(0, 0),
 			style = this._style,
-			strokeWidth = options.stroke && style.hasStroke()
-					&& style.getStrokeWidth();
+			strokeRadius = options.stroke && style.hasStroke()
+					&& style.getStrokeWidth() / 2;
 		if (matrix) {
 			if (this._type === 'rectangle') {
 				rect = matrix._transformBounds(rect);
 			} else {
-				var rx = size.width / 2,
-					ry = size.height / 2,
-					dx = Math.sqrt(Math.pow(matrix._a * rx, 2)
-							+ Math.pow(matrix._c * ry, 2)),
-					dy = Math.sqrt(Math.pow(matrix._b * rx, 2)
-							+ Math.pow(matrix._d * ry, 2));
-				rect = new Rectangle(matrix._tx - dx, matrix._ty - dy,
-						2 * dx, 2 * dy);
+				var extents = Matrix._getCircleExtents(1,
+						matrix.clone().scale(size.width / 2, size.height / 2));
+				rect = new Rectangle(new Size(extents).multiply(2))
+						.setCenter(matrix._tx, matrix._ty);
 			}
 		}
-		return strokeWidth
-				? rect.expand(Path._getStrokePadding(strokeWidth,
-					this._getStrokeMatrix(matrix, options)))
+		return strokeRadius
+				? rect.expand(new Size(Matrix._getCircleExtents(strokeRadius,
+					this._getStrokeMatrix(matrix, options))).multiply(2))
 				: rect;
 	}
 },
@@ -5788,7 +5797,7 @@ new function() {
 					radius = this._radius,
 					strokeRadius = hitStroke ? style.getStrokeWidth() / 2 : 0,
 					strokePadding = options._tolerancePadding.add(
-						Path._getStrokePadding(strokeRadius,
+						Matrix._getCircleExtents(strokeRadius,
 							!style.getStrokeScaling() && strokeMatrix));
 				if (type === 'rectangle') {
 					var padding = strokePadding.multiply(2),
@@ -7305,7 +7314,6 @@ statics: {
 				max[coord] = right;
 		}
 
-		padding /= 2;
 		var minPad = min[coord] + padding,
 			maxPad = max[coord] - padding;
 		if (    v0 < minPad || v1 < minPad || v2 < minPad || v3 < minPad ||
@@ -7521,18 +7529,9 @@ new function() {
 new function() {
 
 	function getLengthIntegrand(v) {
-		var x0 = v[0], y0 = v[1],
-			x1 = v[2], y1 = v[3],
-			x2 = v[4], y2 = v[5],
-			x3 = v[6], y3 = v[7],
-
-			ax = 9 * (x1 - x2) + 3 * (x3 - x0),
-			bx = 6 * (x0 + x2) - 12 * x1,
-			cx = 3 * (x1 - x0),
-
-			ay = 9 * (y1 - y2) + 3 * (y3 - y0),
-			by = 6 * (y0 + y2) - 12 * y1,
-			cy = 3 * (y1 - y0);
+		var c = getCoefficients(v),
+			ax = 3 * c[0], bx = 2 * c[1], cx = c[2],
+			ay = 3 * c[3], by = 2 * c[4], cy = c[5];
 
 		return function(t) {
 			var dx = (ax * t + bx) * t + cx,
@@ -7845,16 +7844,9 @@ new function() {
 		},
 
 		getPeaks: function(v) {
-			var x0 = v[0], y0 = v[1],
-				x1 = v[2], y1 = v[3],
-				x2 = v[4], y2 = v[5],
-				x3 = v[6], y3 = v[7],
-				ax =     -x0 + 3 * x1 - 3 * x2 + x3,
-				bx =  3 * x0 - 6 * x1 + 3 * x2,
-				cx = -3 * x0 + 3 * x1,
-				ay =     -y0 + 3 * y1 - 3 * y2 + y3,
-				by =  3 * y0 - 6 * y1 + 3 * y2,
-				cy = -3 * y0 + 3 * y1,
+			var c = getCoefficients(v),
+				ax = c[0], bx = c[1], cx = c[2],
+				ay = c[3], by = c[4], cy = c[5],
 				tMin = 1e-8,
 				tMax = 1 - tMin,
 				roots = [];
@@ -7865,6 +7857,38 @@ new function() {
 					(cx * bx + by * cy),
 					roots, tMin, tMax);
 			return roots.sort();
+		},
+
+		getTimesWithTangent: function(v, tangent) {
+			var c = getCoefficients(v),
+				ax = 3 * c[0], bx = 2 * c[1], cx = c[2],
+				ay = 3 * c[3], by = 2 * c[4], cy = c[5],
+				normalized = tangent.normalize(),
+				tx = normalized.x,
+				ty = normalized.y,
+				den = 2 * ax * ty - 2 * ay * tx,
+				times = [];
+			if (Math.abs(den) < Numerical.CURVETIME_EPSILON) {
+				var num = cx * ty - cy * tx,
+					den = bx * ty - by * tx;
+				if (den != 0) {
+					var t = -num / den;
+					if (t >= 0 && t <= 1) times.push(t);
+				}
+			} else {
+				var delta = (bx * bx - 4 * ax * cx) * ty * ty +
+					(-2 * bx * by + 4 * ay * cx + 4 * ax * cy) * tx * ty +
+					(by * by - 4 * ay * cy) * tx * tx,
+					k = bx * ty - by * tx;
+				if (delta >= 0 && den != 0) {
+					var d = Math.sqrt(delta),
+						t0 = -(k + d) / den,
+						t1 = (-k + d) / den;
+					if (t0 >= 0 && t0 <= 1) times.push(t0);
+					if (t1 >= 0 && t1 <= 1) times.push(t1);
+				}
+			}
+			return times;
 		}
 	}};
 },
@@ -8476,45 +8500,6 @@ new function() {
 		return pairs;
 	}
 
-	function getTimesWithTangent(v, tangent) {
-		var x0 = v[0], y0 = v[1],
-			x1 = v[2], y1 = v[3],
-			x2 = v[4], y2 = v[5],
-			x3 = v[6], y3 = v[7],
-			normalized = tangent.normalize(),
-			tx = normalized.x,
-			ty = normalized.y,
-			ax = 3 * x3 - 9 * x2 + 9 * x1 - 3 * x0,
-			ay = 3 * y3 - 9 * y2 + 9 * y1 - 3 * y0,
-			bx = 6 * x2 - 12 * x1 + 6 * x0,
-			by = 6 * y2 - 12 * y1 + 6 * y0,
-			cx = 3 * x1 - 3 * x0,
-			cy = 3 * y1 - 3 * y0,
-			den = 2 * ax * ty - 2 * ay * tx,
-			times = [];
-		if (Math.abs(den) < Numerical.CURVETIME_EPSILON) {
-			var num = cx * ty - cy * tx,
-				den = bx * ty - by * tx;
-			if (den != 0) {
-				var t = -num / den;
-				if (t >= 0 && t <= 1) times.push(t);
-			}
-		} else {
-			var delta = (bx * bx - 4 * ax * cx) * ty * ty +
-				(-2 * bx * by + 4 * ay * cx + 4 * ax * cy) * tx * ty +
-				(by * by - 4 * ay * cy) * tx * tx,
-				k = bx * ty - by * tx;
-			if (delta >= 0 && den != 0) {
-				var d = Math.sqrt(delta),
-					t0 = -(k + d) / den,
-					t1 = (-k + d) / den;
-				if (t0 >= 0 && t0 <= 1) times.push(t0);
-				if (t1 >= 0 && t1 <= 1) times.push(t1);
-			}
-		}
-		return times;
-	}
-
 	return {
 		getIntersections: function(curve) {
 			var v1 = this.getValues(),
@@ -8526,8 +8511,7 @@ new function() {
 		statics: {
 			getOverlaps: getOverlaps,
 			getIntersections: getIntersections,
-			getCurveLineIntersections: getCurveLineIntersections,
-			getTimesWithTangent: getTimesWithTangent
+			getCurveLineIntersections: getCurveLineIntersections
 		}
 	};
 });
@@ -10023,7 +10007,7 @@ var Path = PathItem.extend({
 				cap = style.getStrokeCap();
 				miterLimit = style.getMiterLimit();
 				strokePadding = strokePadding.add(
-					Path._getStrokePadding(strokeRadius, strokeMatrix));
+					Matrix._getCircleExtents(strokeRadius, strokeMatrix));
 			} else {
 				join = cap = 'round';
 			}
@@ -10619,19 +10603,18 @@ statics: {
 	getStrokeBounds: function(segments, closed, path, matrix, options) {
 		var style = path.getStyle(),
 			stroke = style.hasStroke(),
-			strokeWidth = style.getStrokeWidth(),
+			strokeRadius = style.getStrokeWidth() / 2,
 			strokeMatrix = stroke && path._getStrokeMatrix(matrix, options),
-			strokePadding = stroke && Path._getStrokePadding(strokeWidth,
+			strokePadding = stroke && Matrix._getCircleExtents(strokeRadius,
 				strokeMatrix),
 			bounds = Path.getBounds(segments, closed, path, matrix, options,
 				strokePadding);
 		if (!stroke)
 			return bounds;
-		var strokeRadius = strokeWidth / 2,
-			join = style.getStrokeJoin(),
+		var join = style.getStrokeJoin(),
 			cap = style.getStrokeCap(),
 			miterLimit = style.getMiterLimit(),
-			joinBounds = new Rectangle(new Size(strokePadding));
+			joinBounds = new Rectangle(new Size(strokePadding).multiply(2));
 
 		function addPoint(point) {
 			bounds = bounds.include(point);
@@ -10673,17 +10656,6 @@ statics: {
 			}
 		}
 		return bounds;
-	},
-
-	_getStrokePadding: function(radius, matrix) {
-		if (!matrix)
-			return [radius, radius];
-		var a = matrix._a,
-			b = matrix._b,
-			c = matrix._c,
-			d = matrix._d;
-		return [radius * Math.sqrt(a * a + c * c),
-				radius * Math.sqrt(b * b + d * d)];
 	},
 
 	_getStrokeNormal: function(curve, time, radius, matrix, strokeMatrix) {
@@ -10758,8 +10730,9 @@ statics: {
 				joinRadius = strokeRadius * style.getMiterLimit();
 			if (style.getStrokeCap() === 'square')
 				joinRadius = Math.max(joinRadius, strokeRadius * Math.SQRT2);
-			strokePadding = Path._getStrokePadding(strokeRadius, strokeMatrix);
-			joinPadding = Path._getStrokePadding(joinRadius, strokeMatrix);
+			strokePadding = Matrix._getCircleExtents(strokeRadius,
+					strokeMatrix);
+			joinPadding = Matrix._getCircleExtents(joinRadius, strokeMatrix);
 		}
 		var coords = new Array(6),
 			x1 = Infinity,
@@ -16074,16 +16047,8 @@ var DomElement = new function() {
 			var doc = el.ownerDocument,
 				body = doc.body,
 				html = doc.documentElement,
-				rect;
-			try {
-				// On IE, for nodes that are not inside the DOM, this throws an
-				// exception. Emulate the behavior of all other browsers, which
-				// return a rectangle of 0 dimensions.
-				rect = el.getBoundingClientRect();
-			} catch (e) {
-				rect = { left: 0, top: 0, width: 0, height: 0 };
-			}
-			var x = rect.left - (html.clientLeft || body.clientLeft || 0),
+				rect = el.getBoundingClientRect(),
+				x = rect.left - (html.clientLeft || body.clientLeft || 0),
 				y = rect.top - (html.clientTop || body.clientTop || 0);
 			if (!viewport) {
 				var view = doc.defaultView;
@@ -16249,11 +16214,11 @@ var DomEvent = /** @lends DomEvent */{
 	},
 
 	getTarget: function(event) {
-		return event.target || event.srcElement;
+		return event.target;
 	},
 
 	getRelatedTarget: function(event) {
-		return event.relatedTarget || event.toElement;
+		return event.relatedTarget;
 	},
 
 	getOffset: function(event, target) {
@@ -17611,26 +17576,16 @@ new function() { // Injection scope for mouse and key event handling
 
 	if (window) {
 		// Touch handling inspired by Hammer.js
-		var navigator = window.navigator,
-			mousedown, mousemove, mouseup;
-		if (navigator.pointerEnabled || navigator.msPointerEnabled) {
-			// HTML5 / MS pointer events
-			mousedown = 'pointerdown MSPointerDown';
-			mousemove = 'pointermove MSPointerMove';
-			mouseup = 'pointerup pointercancel MSPointerUp MSPointerCancel';
-		} else {
-			mousedown = 'touchstart';
-			mousemove = 'touchmove';
+		var mousedown = 'touchstart',
+			mousemove = 'touchmove',
 			mouseup = 'touchend touchcancel';
-			// Do not add mouse events on mobile and tablet devices
-			if (!('ontouchstart' in window && navigator.userAgent.match(
-					/mobile|tablet|ip(ad|hone|od)|android|silk/i))) {
-				// For non pointer events browsers and mixed browsers, like
-				// chrome on Windows8 touch laptop.
-				mousedown += ' mousedown';
-				mousemove += ' mousemove';
-				mouseup += ' mouseup';
-			}
+		// Do not add mouse events on mobile and tablet devices
+		if (!('ontouchstart' in window && window.navigator.userAgent.match(
+				/mobile|tablet|ip(ad|hone|od)|android|silk/i))) {
+			// For mixed browsers, like chrome on Windows8 touch laptop.
+			mousedown += ' mousedown';
+			mousemove += ' mousemove';
+			mouseup += ' mouseup';
 		}
 
 		var docEvents = {
@@ -18224,10 +18179,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		if (!/^off|false$/.test(PaperScope.getAttribute(canvas, 'hidpi'))) {
 			// Hi-DPI Canvas support based on:
 			// https://www.html5rocks.com/en/tutorials/canvas/hidpi/
-			var deviceRatio = window.devicePixelRatio || 1,
-				backingStoreRatio = DomElement.getPrefixed(ctx,
-						'backingStorePixelRatio') || 1;
-			this._pixelRatio = deviceRatio / backingStoreRatio;
+			this._pixelRatio = window.devicePixelRatio || 1;
 		}
 		View.call(this, project, canvas);
 		// We can't be sure the canvas is clear
@@ -18544,12 +18496,9 @@ var Key = new function() {
 		});
 
 	function getKey(event) {
-		var key = event.key || event.keyIdentifier;
-		key = /^U\+/.test(key)
-				// Expand keyIdentifier Unicode format.
-				? String.fromCharCode(parseInt(key.substr(2), 16))
-				// Use short version for arrow keys: ArrowLeft -> Left
-				: /^Arrow[A-Z]/.test(key) ? key.substr(5)
+		var key = event.key;
+		// Use short version for arrow keys: ArrowLeft -> Left
+		key = /^Arrow[A-Z]/.test(key) ? key.substr(5)
 				// This is far from ideal, but what else can we do?
 				: key === 'Unidentified'  || key === undefined
 					? String.fromCharCode(event.keyCode)
