@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 15:44:40 2026 +0200
+ * Date: Wed Oct 21 16:35:03 2026 +0200
  *
  ***
  *
@@ -1527,6 +1527,10 @@ var Point = Base.extend({
 		return [f.number(this.x), f.number(this.y)];
 	},
 
+	getValues: function() {
+		return [this.x, this.y];
+	},
+
 	getLength: function() {
 		return Math.sqrt(this.x * this.x + this.y * this.y);
 	},
@@ -1890,6 +1894,10 @@ var Size = Base.extend({
 				f.number(this.height)];
 	},
 
+	getValues: function() {
+		return [this.width, this.height];
+	},
+
 	add: function() {
 		var size = Size.read(arguments);
 		return new Size(this.width + size.width, this.height + size.height);
@@ -2094,6 +2102,10 @@ var Rectangle = Base.extend({
 				f.number(this.y),
 				f.number(this.width),
 				f.number(this.height)];
+	},
+
+	getValues: function() {
+		return [this.x, this.y, this.width, this.height];
 	},
 
 	getPoint: function(_dontLink) {

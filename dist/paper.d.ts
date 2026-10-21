@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 21 15:44:40 2026 +0200
+ * Date: Wed Oct 21 16:35:03 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -5343,6 +5343,12 @@ declare namespace paper {
         y: number
 
         /** 
+         * The point's coordinates as an array, `[x, y]`, as
+         * {@link Matrix#values} gives those of a matrix.
+         */
+        readonly values: number[]
+
+        /** 
          * The length of the vector that is represented by this point's coordinates.
          * Each point can be interpreted as a vector that points from the origin (`x
          * = 0`, `y = 0`) to the point's location. Setting the length changes the
@@ -6710,6 +6716,13 @@ declare namespace paper {
         height: number
 
         /** 
+         * The rectangle's position and size as an array,
+         * `[x, y, width, height]`, as {@link Matrix#values} gives those of a
+         * matrix.
+         */
+        readonly values: number[]
+
+        /** 
          * The top-left point of the rectangle. Setting it moves the whole
          * rectangle, unlike {@link #topLeft}.
          */
@@ -7412,6 +7425,12 @@ declare namespace paper {
          * The height of the size
          */
         height: number
+
+        /** 
+         * The size's dimensions as an array, `[width, height]`, as
+         * {@link Matrix#values} gives those of a matrix.
+         */
+        readonly values: number[]
 
 
         /** 
