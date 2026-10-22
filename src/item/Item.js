@@ -4752,7 +4752,20 @@ new function() { // Injection scope for hit-test functions shared with project
                 ctx.shadowColor = 'rgba(0,0,0,0)';
             }
             if (hasFill) {
+                // Elliptical radial gradients are drawn as circles, through
+                // the matrix that stretches them, see Color#toCanvasStyle():
+                var fillColor = style.getFillColor(),
+                    ellipse = fillColor._getEllipseMatrix(this._matrix,
+                        strokeMatrix);
+                if (ellipse) {
+                    ctx.save();
+                    ellipse.applyToContext(ctx);
+                    ctx.fillStyle = fillColor.toCanvasStyle(ctx, null, null,
+                            true);
+                }
                 ctx.fill(style.getFillRule());
+                if (ellipse)
+                    ctx.restore();
                 ctx.shadowColor = 'rgba(0,0,0,0)';
             }
             if (hasStroke && !isStrokeFirst)
