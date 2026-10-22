@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 19:15:18 2026 +0200
+ * Date: Thu Oct 22 19:58:10 2026 +0200
  *
  ***
  *
@@ -8242,6 +8242,8 @@ new function() {
 				return false;
 			var count = Numerical.solveBernstein(polynomial.coefficients,
 					polynomial.errors, roots, speed ? tolerance / speed : 1);
+			if (count >= polynomial.coefficients.length)
+				return false;
 			for (var i = 0; i < count; i++) {
 				var t = roots[i],
 					u = Curve.getTimeOf(v2, Curve.getPoint(v1, t), tolerance);
@@ -24039,8 +24041,10 @@ Base.exports.PaperScript = function() {
 		}
 	}
 
-	function __$assign__(object, key, operator, value) {
-		return object[key] = __$__(object[key], operator, value);
+	function __$assign__(object, key, operator, value, postfix) {
+		var old = object[key],
+			res = object[key] = __$__(old, operator, value);
+		return postfix ? old : res;
 	}
 
 	function $__(operator, value) {
@@ -24124,46 +24128,41 @@ Base.exports.PaperScript = function() {
 							&& /^[=!<>]/.test(parent.operator)
 						|| parentType === 'MemberExpression' && parent.computed
 				)) {
-					if (node.type === 'UpdateExpression') {
-						var arg = getCode(node.argument),
-							exp = '__$__(' + arg + ', "' + node.operator[0]
-									+ '", 1)',
-							str = arg + ' = ' + exp;
-						if (node.prefix) {
-							str = '(' + str + ')';
-						} else if (
-							parentType === 'AssignmentExpression' ||
-							parentType === 'VariableDeclarator' ||
-							parentType === 'BinaryExpression'
-						) {
-							if (getCode(parent.left || parent.id) === arg)
-								str = exp;
-							str = arg + '; ' + str;
+					var isUpdate = node.type === 'UpdateExpression',
+						target = isUpdate ? node.argument : node.left;
+					if (isUpdate || /^.=$/.test(node.operator)
+							&& target.type !== 'Literal') {
+						var left = getCode(target),
+							right = isUpdate ? '1' : getCode(node.right),
+							operator = node.operator[0],
+							isUsed = isUpdate && !(
+								parentType === 'ExpressionStatement' ||
+								parentType === 'SequenceExpression' &&
+									node !== parent.expressions[
+										parent.expressions.length - 1]
+							),
+							isPostfix = isUsed && !node.prefix,
+							member = target.type === 'MemberExpression'
+								&& target.object.type !== 'Super'
+								&& target.property.type
+									!== 'PrivateIdentifier',
+							exp = member
+								? '__$assign__(' + getCode(target.object)
+									+ ', ' + (target.computed
+										? getCode(target.property)
+										: JSON.stringify(
+											target.property.name))
+									+ ', "' + operator + '", ' + right
+									+ (isPostfix ? ', true' : '') + ')'
+								: left + ' = __$__(' + left + ', "'
+									+ operator + '", ' + right + ')';
+						if (isUsed && !member) {
+							exp = isPostfix
+								? '[' + left + ', ' + exp + '][0]'
+								: '(' + exp + ')';
 						}
-						replaceCode(node, str);
-					} else {
-						if (/^.=$/.test(node.operator)
-								&& node.left.type !== 'Literal') {
-							var target = node.left,
-								left = getCode(target),
-								right = getCode(node.right),
-								operator = node.operator[0],
-								member = target.type === 'MemberExpression'
-									&& target.object.type !== 'Super'
-									&& target.property.type
-										!== 'PrivateIdentifier',
-								exp = member
-									? '__$assign__(' + getCode(target.object)
-										+ ', ' + (target.computed
-											? getCode(target.property)
-											: JSON.stringify(
-												target.property.name))
-										+ ', "' + operator + '", ' + right + ')'
-									: left + ' = __$__(' + left + ', "'
-										+ operator + '", ' + right + ')';
-							replaceCode(node, /^\(.*\)$/.test(getCode(node))
-									? '(' + exp + ')' : exp);
-						}
+						replaceCode(node, /^\(.*\)$/.test(getCode(node))
+								? '(' + exp + ')' : exp);
 					}
 				}
 				break;

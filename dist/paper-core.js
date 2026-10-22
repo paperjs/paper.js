@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 19:15:18 2026 +0200
+ * Date: Thu Oct 22 19:58:10 2026 +0200
  *
  ***
  *
@@ -8238,6 +8238,8 @@ new function() {
 				return false;
 			var count = Numerical.solveBernstein(polynomial.coefficients,
 					polynomial.errors, roots, speed ? tolerance / speed : 1);
+			if (count >= polynomial.coefficients.length)
+				return false;
 			for (var i = 0; i < count; i++) {
 				var t = roots[i],
 					u = Curve.getTimeOf(v2, Curve.getPoint(v1, t), tolerance);
