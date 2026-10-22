@@ -20,12 +20,17 @@ import paper, {
   Group,
   HostItem,
   Layer,
+  Matrix,
   Path,
   PathText,
+  PatternDefinition,
   Point,
   PointText,
   Project,
   Rectangle,
+  Size,
+  SymbolDefinition,
+  SymbolItem,
   TextItem
 } from 'paper'
 import { equals, test, testFontFamily } from '../helpers.js'
@@ -102,8 +107,20 @@ describe.skipIf(!HostItem)('Hosted', () => {
 
       getItem(key) {
         host.calls.push(['getItem', key])
-        const node = host.getNode(key),
-          json = node.exportJSON({ asString: false })
+        const node = host.getNode(key)
+        let json = node.exportJSON({ asString: false })
+        // Items refer to the definitions that the host shares by key:
+        if (json[0][0] === 'dictionary') {
+          json = json[1]
+          for (const name of ['fillColor', 'strokeColor']) {
+            if (node[name]?.type === 'pattern') {
+              json[1][name][1] = host.getReference(node[name].pattern)
+            }
+          }
+          if (node instanceof SymbolItem) {
+            json[1].definition = host.getReference(node.definition)
+          }
+        }
         // Selection comes through the flags, and the children of
         // containers through getChildren():
         delete json[1].selected
@@ -138,6 +155,29 @@ describe.skipIf(!HostItem)('Hosted', () => {
             !(name in node.story._itemKeys)
           )
         )
+      },
+
+      // The definitions that the host shares between its items, by key:
+      definitions: new Map(),
+
+      getDefinition(key) {
+        host.calls.push(['getDefinition', key])
+        const definition = host.definitions.get(key)
+        return Base.serialize(
+          definition instanceof PatternDefinition
+            ? [
+                'PatternDefinition',
+                definition.item,
+                { tile: definition.tile, spacing: definition.spacing }
+              ]
+            : ['SymbolDefinition', definition.item]
+        )
+      },
+
+      getReference(definition) {
+        for (const [key, value] of host.definitions) {
+          if (value === definition) return [`@${key}`]
+        }
       },
 
       getAncestorKeys(key) {
@@ -928,5 +968,178 @@ describe.skipIf(!HostItem)('Hosted', () => {
       true,
       'into one story, with the items in order'
     )
+  })
+
+  // A document whose items share a pattern of red 5 × 5 squares in 10 × 10
+  // tiles, and a symbol of a red 10 × 10 square:
+  function createHostedDefinitions() {
+    const document = new Project()
+    new Layer({ name: 'art' })
+    const pattern = new PatternDefinition(
+      new Path.Rectangle({ point: [0, 0], size: [5, 5], fillColor: 'red' }),
+      { tile: new Rectangle(0, 0, 10, 10) }
+    )
+    const symbol = new SymbolDefinition(
+      new Path.Rectangle({ point: [0, 0], size: [10, 10], fillColor: 'red' })
+    )
+    new Path.Rectangle({
+      point: [0, 0],
+      size: [40, 40],
+      fillColor: { pattern },
+      name: 'first'
+    })
+    new Path.Rectangle({
+      point: [50, 0],
+      size: [40, 40],
+      fillColor: { pattern },
+      name: 'second'
+    })
+    symbol.place([100, 100]).name = 'star'
+    symbol.place([150, 100]).name = 'other'
+    const host = createHost(document)
+    host.definitions.set('pattern/Dots', pattern)
+    host.definitions.set('symbol/Star', symbol)
+    const project = new Project()
+    project.host = host
+    return { project, host, pattern, symbol }
+  }
+
+  function getPixel(item, x, y) {
+    return item.rasterize({ resolution: 72, insert: false }).getPixel(x, y)
+  }
+
+  const red = new Color(1, 0, 0, 1),
+    blue = new Color(0, 0, 1, 1)
+
+  test('Items share the pattern definitions of the host', () => {
+    const res = createHostedDefinitions(),
+      { first, second } = res.project.layers[0].children
+    res.host.takeCalls()
+    const pattern = first.fillColor.pattern
+    equals(pattern instanceof PatternDefinition, true)
+    equals(second.fillColor.pattern === pattern, true, 'one definition')
+    equals(pattern.tile, new Rectangle(0, 0, 10, 10))
+    equals(
+      res.host.takeCalls().filter(call => call[0] === 'getDefinition'),
+      [['getDefinition', 'pattern/Dots']],
+      'loaded once'
+    )
+    equals(getPixel(first, 2, 2), red, 'drawn')
+    equals(getPixel(second, 7, 7).alpha, 0, 'with gaps')
+  })
+
+  test('Symbol items share the symbol definitions of the host', () => {
+    const res = createHostedDefinitions(),
+      { star, other } = res.project.layers[0].children
+    equals(res.host.getItem(star.key), [
+      'SymbolItem',
+      {
+        applyMatrix: false,
+        matrix: [1, 0, 0, 1, 100, 100],
+        name: 'star',
+        definition: ['@symbol/Star']
+      }
+    ])
+    const definition = star.definition
+    equals(definition instanceof SymbolDefinition, true)
+    equals(other.definition === definition, true, 'one definition')
+    equals(star.matrix, res.host.getNode(star.key).matrix)
+    equals(getPixel(star, 5, 5), red, 'drawn')
+  })
+
+  test('Shared definitions export as references to their keys', () => {
+    const res = createHostedDefinitions(),
+      { first, star } = res.project.layers[0].children
+    equals(first.exportJSON({ asString: false })[1].fillColor, [
+      'pattern',
+      ['@pattern/Dots']
+    ])
+    equals(star.exportJSON({ asString: false }), [
+      'SymbolItem',
+      {
+        applyMatrix: false,
+        matrix: [1, 0, 0, 1, 100, 100],
+        name: 'star',
+        definition: ['@symbol/Star']
+      }
+    ])
+    // The host stores the symbol item as exported, and gives it back:
+    const definition = star.definition,
+      json = star.exportJSON()
+    res.host.getItem = () => json
+    res.host.takeCalls()
+    const columns = res.host.getColumns([res.host.getNode(star.key)])
+    columns.flags[0] |= 16
+    res.project.invalidate(columns)
+    equals(star.definition === definition, true, 'the same symbol')
+    equals(star.matrix, new Matrix(1, 0, 0, 1, 100, 100))
+    equals(
+      res.host.takeCalls().filter(call => call[0] === 'getDefinition'),
+      [],
+      'without loading it again'
+    )
+    // Definitions that scripts create are written out whole:
+    first.fillColor.pattern = first.fillColor.pattern.clone()
+    equals(first.exportJSON({ asString: false })[0][0], 'dictionary')
+  })
+
+  test('invalidate() reloads definitions into the same objects', () => {
+    const res = createHostedDefinitions(),
+      { first, star } = res.project.layers[0].children
+    const pattern = first.fillColor.pattern,
+      definition = star.definition
+    equals(getPixel(first, 2, 2), red)
+    equals(getPixel(star, 5, 5), red)
+    res.pattern.item.fillColor = 'blue'
+    res.pattern.spacing = 10
+    res.symbol.item.fillColor = 'blue'
+    res.host.takeCalls()
+    res.project.invalidate({
+      keys: [],
+      flags: [],
+      definitions: ['pattern/Dots', 'symbol/Star', 'symbol/Unused']
+    })
+    equals(res.host.takeCalls(), [
+      ['getDefinition', 'pattern/Dots'],
+      ['getDefinition', 'symbol/Star']
+    ])
+    equals(first.fillColor.pattern === pattern, true, 'the same pattern')
+    equals(star.definition === definition, true, 'the same symbol')
+    equals(pattern.spacing, new Size(10, 10))
+    equals(getPixel(first, 2, 2), blue, 'drawn anew')
+    equals(getPixel(first, 12, 2).alpha, 0, 'with the new spacing')
+    equals(getPixel(star, 5, 5), blue, 'drawn anew')
+  })
+
+  test('Missing definitions come empty, and draw nothing', () => {
+    const res = createHostedDefinitions(),
+      { first, star } = res.project.layers[0].children
+    // For keys that it has no definitions of, the host gives empty ones:
+    res.host.getDefinition = key => [
+      key.startsWith('pattern/') ? 'PatternDefinition' : 'SymbolDefinition',
+      ['Group', {}]
+    ]
+    equals(first.fillColor.pattern.item.isEmpty(), true, 'an empty pattern')
+    equals(getPixel(first, 2, 2).alpha, 0, 'drawing nothing')
+    equals(star.definition.item.isEmpty(), true, 'an empty symbol')
+    equals(first.exportJSON({ asString: false })[1].fillColor, [
+      'pattern',
+      ['@pattern/Dots']
+    ])
+    equals(star.exportJSON().includes('["@symbol/Star"]'), true)
+  })
+
+  test('invalidate() empties definitions that the host no longer has', () => {
+    const res = createHostedDefinitions(),
+      { first, star } = res.project.layers[0].children
+    const pattern = first.fillColor.pattern
+    equals(getPixel(star, 5, 5), red)
+    res.host.definitions.clear()
+    res.host.getDefinition = () => null
+    res.project.invalidate({ definitions: ['pattern/Dots', 'symbol/Star'] })
+    equals(first.fillColor.pattern === pattern, true, 'the same pattern')
+    equals(pattern.item.isEmpty(), true, 'emptied')
+    equals(star.definition.item.isEmpty(), true, 'emptied')
+    equals(getPixel(first, 2, 2).alpha, 0, 'drawing nothing')
   })
 })

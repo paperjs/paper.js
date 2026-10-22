@@ -21,6 +21,7 @@ new function() {
             [Path, ['_segments', '_closed', '_version', '_curves',
                     '_segmentSelection']],
             [CompoundPath, ['_children', '_namedChildren']],
+            [SymbolItem, ['_definition']],
             [HostItem, ['_values']],
             [TextItem, ['_story', '_orientation', '_layout', '_fontMetrics']],
             // The text path is a text's content, not one of its children:
@@ -199,6 +200,57 @@ new function() {
         }
     }
 
+    // Imports the host's JSON, resolving its references to the definitions
+    // that the host shares between items, see Project#host:
+    function importJSON(project, json, target) {
+        return Base.importJSON(json, target, function(key) {
+            return getDefinition(project, key);
+        });
+    }
+
+    // Each definition loads once, and keeps its key, which it exports as its
+    // reference:
+    function getDefinition(project, key) {
+        var definitionsByKey = project._definitionsByKey,
+            definition = definitionsByKey[key];
+        if (!definition) {
+            definition = definitionsByKey[key] = importJSON(project,
+                    project._host.getDefinition(key));
+            definition._key = key;
+        }
+        return definition;
+    }
+
+    // Reloads a definition into the same object, so the colors and symbol
+    // items that use it change along with it. One that the host no longer
+    // has is emptied, and draws nothing:
+    function reloadDefinition(project, definition) {
+        var json = project._host.getDefinition(definition._key),
+            loaded = json ? importJSON(project, json)
+                : new definition.constructor(new Group({ insert: false }));
+        // The loaded item is where its definition placed it:
+        definition.setItem(loaded._item, true);
+        if (definition instanceof PatternDefinition) {
+            definition.setTile(loaded._tile);
+            definition.setSpacing(loaded._spacing);
+        }
+    }
+
+    // Definitions that the host shares export as references to its keys:
+    ItemDefinition.inject({
+        _key: null
+    });
+
+    [SymbolDefinition, PatternDefinition].forEach(function(ctor) {
+        ctor.inject({
+            _serialize: function _serialize(options, dictionary) {
+                return this._key != null
+                        ? ['@' + this._key]
+                        : _serialize.base.call(this, options, dictionary);
+            }
+        });
+    });
+
     Item.inject(/** @lends Item# */{
         _key: null,
 
@@ -312,7 +364,7 @@ new function() {
                 json = JSON.parse(json);
             var linked = json[1].linked;
             delete json[1].linked;
-            Base.importJSON(json, this);
+            importJSON(project, json, this);
             this._shell = false;
             if (linked)
                 this._loadLinked(linked);
@@ -387,7 +439,8 @@ new function() {
                 this._story = story;
             } else {
                 // importJSON() parses and deserializes the story's JSON:
-                this.set(Base.importJSON(project._host.getStory(this._key)));
+                this.set(importJSON(project,
+                        project._host.getStory(this._key)));
                 for (var i = 0, l = items.length; i < l; i++) {
                     if (items[i] !== this)
                         items[i]._loadContent();
@@ -542,6 +595,20 @@ new function() {
          *   `content`, as for a hyphen, all in the item's coordinates. `key`
          *   is null for text that the host doesn't know yet. Without it,
          *   Paper.js lays out text itself.
+         * - `getDefinition(key)`, for the pattern and symbol definitions that
+         *   the host shares between its items, which the JSON of its items
+         *   refers to as `['@key']`, as in `fillColor: ['pattern',
+         *   ['@pattern/Dots'], matrix]` or `definition: ['@symbol/Star']`.
+         *   It returns the definition in the form of
+         *   {@link Item#exportJSON(options)}, with its whole item:
+         *   `['PatternDefinition', item, { tile, spacing }]` or
+         *   `['SymbolDefinition', item]`, always: for a key that it has no
+         *   definition of, an empty one of the type, as
+         *   `['SymbolDefinition', ['Group', {}]]`. Each definition loads
+         *   once, and the JSON of the items that use it, as
+         *   {@link Item#exportJSON(options)} writes it, refers to it by its
+         *   key again. Definitions that scripts create have no key, and are
+         *   written out whole.
          *
          * @bean
          * @type Object
@@ -557,6 +624,7 @@ new function() {
             var that = this;
             this._host = host;
             this._itemsByKey = {};
+            this._definitionsByKey = {};
             whileLoading(this, function() {
                 setChildren(that, that, host.getChildren(null));
                 that._activeLayer = that._children[0] || null;
@@ -591,17 +659,30 @@ new function() {
          * node's own content changed, so the item loads it again on next
          * access, and 32 when its list of children changed, so it loads them
          * again right away if it had loaded them, keeping the items of nodes
-         * that remain. Nodes without items are skipped.
+         * that remain. Nodes without items are skipped. `definitions` lists
+         * the keys of changed definitions of the host's `getDefinition()`,
+         * which load again right away into the same objects, so the colors
+         * and symbol items that use them change along. A definition that the
+         * host no longer has, for which `getDefinition()` may return `null`
+         * here, is emptied and draws nothing. The columns may hold only
+         * definitions.
          *
          * @param {Object} columns the records of the changed nodes
          */
         invalidate: function(columns) {
             var itemsByKey = this._itemsByKey,
-                keys = columns.keys,
+                definitionsByKey = this._definitionsByKey,
+                keys = columns.keys || [],
+                definitionKeys = columns.definitions || [],
                 names = columns.names || {},
                 reloads = [],
                 that = this;
             whileLoading(this, function() {
+                for (var i = 0, l = definitionKeys.length; i < l; i++) {
+                    var definition = definitionsByKey[definitionKeys[i]];
+                    if (definition)
+                        reloadDefinition(that, definition);
+                }
                 for (var i = 0, l = keys.length; i < l; i++) {
                     var item = itemsByKey[keys[i]],
                         flags = columns.flags[i];
