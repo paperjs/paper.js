@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 13:52:41 2026 +0200
+ * Date: Thu Oct 22 13:41:52 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -1583,9 +1583,32 @@ declare namespace paper {
          * like CSS's `isolation: isolate`. Without it, a compositing mode such as
          * `'destination-out'` affects everything drawn below the group, also in
          * other layers. Groups with an {@link Item#opacity} below 1 or a
-         * {@link Item#blendMode} are isolated anyway.
+         * {@link Item#blendMode} are isolated anyway, and buffered groups always,
+         * see {@link #buffered}.
          */
         isolated: boolean
+
+        /** 
+         * Specifies whether the group is buffered: when a view draws it, it draws
+         * its content into a canvas of its own, which it keeps, and only draws
+         * into it again when something in the group changes, or the part of it
+         * that the view shows does, e.g. after zooming or panning. Otherwise, the
+         * view only composites the buffer, with the group's {@link Item#opacity}
+         * and {@link Item#blendMode}. This pays off for large groups and layers
+         * that rarely change, such as a complex background below animated items.
+         * 
+         * The buffer costs memory: it covers the part of the group that the view
+         * shows, at up to `width × height × 4 × pixelRatio²` bytes for a group
+         * that fills the whole view.
+         * 
+         * Buffered groups are always {@link #isolated}: the blend modes of their
+         * children only apply within them, not to the items below them, also in
+         * other layers.
+         * 
+         * Hit-testing, SVG export, {@link Item#rasterize} and drawing into other
+         * canvases than the view's don't use the buffer.
+         */
+        buffered: boolean
 
 
         /** 
@@ -9288,7 +9311,7 @@ declare namespace paper {
          * 
          * @param force - whether to redraw the view even if nothing
          * has changed, e.g. after a web font used by text items has finished
-         * loading
+         * loading, also in buffered groups, see {@link Group#buffered}
          * 
          * @return true if the view was updated
          */

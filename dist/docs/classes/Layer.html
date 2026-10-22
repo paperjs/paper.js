@@ -7049,7 +7049,7 @@ function onFrame(event) {
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>Specifies whether the group is isolated, drawn through a temporary canvas, so that the blend modes of its children only apply within it, like CSS&rsquo;s <code>isolation: isolate</code>. Without it, a compositing mode such as <code>&#39;destination-out&#39;</code> affects everything drawn below the group, also in other layers. Groups with an <a href="../classes/Item.html#opacity"><tt>item.opacity</tt></a> below 1 or a <a href="../classes/Item.html#blendmode"><tt>item.blendMode</tt></a> are isolated anyway.</p>
+	<p>Specifies whether the group is isolated, drawn through a temporary canvas, so that the blend modes of its children only apply within it, like CSS&rsquo;s <code>isolation: isolate</code>. Without it, a compositing mode such as <code>&#39;destination-out&#39;</code> affects everything drawn below the group, also in other layers. Groups with an <a href="../classes/Item.html#opacity"><tt>item.opacity</tt></a> below 1 or a <a href="../classes/Item.html#blendmode"><tt>item.blendMode</tt></a> are isolated anyway, and buffered groups always, see <a href="../classes/Group.html#buffered"><tt>buffered</tt></a>.</p>
 	
 	
 	
@@ -7067,6 +7067,45 @@ function onFrame(event) {
     
 	
 	
+</div>
+
+</div>
+</div>
+
+	
+<div id="buffered" class="member">
+<div class="member-link">
+<a name="buffered" href="#buffered"><tt><b>buffered</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Specifies whether the group is buffered: when a view draws it, it draws its content into a canvas of its own, which it keeps, and only draws into it again when something in the group changes, or the part of it that the view shows does, e.g. after zooming or panning. Otherwise, the view only composites the buffer, with the group&rsquo;s <a href="../classes/Item.html#opacity"><tt>item.opacity</tt></a> and <a href="../classes/Item.html#blendmode"><tt>item.blendMode</tt></a>. This pays off for large groups and layers that rarely change, such as a complex background below animated items.</p>
+<p>The buffer costs memory: it covers the part of the group that the view shows, at up to <code>width × height × 4 × pixelRatio²</code> bytes for a group that fills the whole view.</p>
+<p>Buffered groups are always <a href="../classes/Group.html#isolated"><tt>isolated</tt></a>: the blend modes of their children only apply within them, not to the items below them, also in other layers.</p>
+<p>Hit-testing, SVG export, <a href="../classes/Item.html#rasterize"><tt>item.rasterize</tt></a>() and drawing into other canvases than the view&rsquo;s don&rsquo;t use the buffer.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>false</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Boolean</tt>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:</h4>
+
+
+<pre><code>var background = project.activeLayer;
+background.buffered = true;</code></pre>
+
 </div>
 
 </div>

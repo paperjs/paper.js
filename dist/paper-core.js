@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 13:52:41 2026 +0200
+ * Date: Thu Oct 22 13:41:52 2026 +0200
  *
  ***
  *
@@ -3114,6 +3114,7 @@ var Project = PaperScopeItem.extend({
 		this._selectionItems = {};
 		this._selectionCount = 0;
 		this._updateVersion = 0;
+		this._bufferVersion = 0;
 	},
 
 	_serialize: function(options, dictionary) {
@@ -3340,7 +3341,7 @@ var Project = PaperScopeItem.extend({
 		}
 	},
 
-	draw: function(ctx, matrix, pixelRatio) {
+	draw: function(ctx, matrix, pixelRatio, _view) {
 		this._updateVersion++;
 		ctx.save();
 		matrix.applyToContext(ctx);
@@ -3348,6 +3349,7 @@ var Project = PaperScopeItem.extend({
 			param = new Base({
 				offset: new Point(0, 0),
 				pixelRatio: pixelRatio,
+				view: _view,
 				viewMatrix: matrix.isIdentity() ? null : matrix,
 				matrices: [new Matrix()],
 				updateMatrix: true
@@ -3532,6 +3534,12 @@ new function() {
 		if (flags & 2) {
 			Item._clearBoundsCache(this);
 		}
+		if (flags & 1) {
+			for (var item = this; item; item = item._parent) {
+				if (item._buffer)
+					item._buffer.matrix = null;
+			}
+		}
 		for (var item = this; item && !(item instanceof Layer);
 				item = item._parent) {
 			if (item._textWrap) {
@@ -3541,14 +3549,19 @@ new function() {
 				break;
 			}
 		}
-		var parent = this._parent,
-			owner = parent && !parent.getChildren() && parent;
+		var isOwner = this._getChangeOwner() === this;
 		if (project)
-			project._changed(flags, owner ? null : this);
-		if (owner)
-			owner._changed(flags);
+			project._changed(flags, isOwner ? this : null);
+		if (!isOwner)
+			this._parent._changed(flags);
 		if (symbol)
 			symbol._changed(flags);
+	},
+
+	_getChangeOwner: function() {
+		var parent = this._parent;
+		return parent && !parent.getChildren() ? parent._getChangeOwner()
+				: this;
 	},
 
 	getId: function() {
@@ -3643,7 +3656,8 @@ new function() {
 			var project = this._project;
 			if (project) {
 				project._updateSelection(this);
-				this._changed(257);
+				project._changed(257,
+						this._getChangeOwner());
 			}
 		}
 	},
@@ -5193,16 +5207,23 @@ new function() {
 					&& style.getShadowColor(true) && style.hasShadow()
 					&& style.hasFill() && style.hasStroke(),
 			direct = !shadow && (normalBlend && opacity === 1
-						&& !this._isolated
+						&& !(this instanceof Group && this.isIsolated())
 					|| (nativeBlend || normalBlend && opacity < 1)
 						&& this._canComposite())
 					|| param.dontStart
 					|| param.clip,
 			pixelRatio = param.pixelRatio || 1,
-			mainCtx, itemOffset, prevOffset, itemSize;
+			mainCtx, itemOffset, prevOffset, itemSize, buffer, isFresh;
 		if (!direct) {
-			var bounds = this.getStrokeBounds(viewMatrix);
-			if (style.getShadowColor(true)) {
+			buffer = this._buffered && param.view && !param.clipItem
+					&& (this._buffer || (this._buffer = {}));
+			var version = this._project._bufferVersion;
+			isFresh = buffer && viewMatrix.equals(buffer.matrix)
+					&& buffer.version === version;
+			var bounds = isFresh
+					? buffer.bounds
+					: this.getStrokeBounds(viewMatrix);
+			if (!isFresh && style.getShadowColor(true)) {
 				var mx = viewMatrix._shiftless(),
 					blur = mx.transform(
 							new Point(style.getShadowBlur(true), 0)),
@@ -5210,6 +5231,11 @@ new function() {
 				bounds = bounds.unite(
 					new Rectangle(bounds.getPoint().add(offset),
 						bounds.getSize()).expand(blur.getLength() * 3));
+			}
+			if (buffer) {
+				buffer.matrix = viewMatrix;
+				buffer.version = version;
+				buffer.bounds = bounds;
 			}
 			var canvas = ctx.canvas;
 			bounds = bounds.intersect(
@@ -5225,7 +5251,28 @@ new function() {
 			itemSize = bounds.getSize().ceil().add(1).multiply(pixelRatio)
 					.floor();
 			mainCtx = ctx;
-			ctx = CanvasProvider.getContext(itemSize, { minimum: true });
+			if (buffer) {
+				var bufferCanvas = buffer.canvas;
+				isFresh = isFresh && itemOffset.equals(buffer.offset)
+						&& itemSize.equals(buffer.size);
+				if (!bufferCanvas || bufferCanvas.width < itemSize.width
+						|| bufferCanvas.height < itemSize.height) {
+					bufferCanvas = buffer.canvas = self.OffscreenCanvas
+							? new self.OffscreenCanvas(itemSize.width,
+								itemSize.height)
+							: CanvasProvider.getCanvas(itemSize);
+					isFresh = false;
+				}
+				buffer.offset = itemOffset;
+				buffer.size = itemSize;
+				ctx = bufferCanvas.getContext('2d');
+				ctx.setTransform(1, 0, 0, 1, 0, 0);
+				if (!isFresh)
+					ctx.clearRect(0, 0, bufferCanvas.width,
+							bufferCanvas.height);
+			} else {
+				ctx = CanvasProvider.getContext(itemSize, { minimum: true });
+			}
 			if (pixelRatio !== 1)
 				ctx.scale(pixelRatio, pixelRatio);
 		}
@@ -5260,9 +5307,11 @@ new function() {
 			if (offset)
 				ctx.translate(-offset.x, -offset.y);
 		}
-		this._draw(ctx, shadow && !direct
-				? param.extend({ dontShadow: true }) : param,
-				viewMatrix, strokeMatrix);
+		if (!isFresh) {
+			this._draw(ctx, shadow && !direct
+					? param.extend({ dontShadow: true }) : param,
+					viewMatrix, strokeMatrix);
+		}
 		ctx.restore();
 		matrices.pop();
 		if (param.clip && !param.dontFinish) {
@@ -5278,7 +5327,8 @@ new function() {
 					itemSize);
 			if (shadow)
 				mainCtx.restore();
-			CanvasProvider.release(ctx);
+			if (!buffer)
+				CanvasProvider.release(ctx);
 			param.offset = prevOffset;
 		}
 	},
@@ -5426,9 +5476,11 @@ var Group = Item.extend({
 	_selectChildren: true,
 	_serializeFields: {
 		isolated: false,
+		buffered: false,
 		children: []
 	},
 	_isolated: false,
+	_buffered: false,
 
 	initialize: function Group(arg) {
 		this._children = [];
@@ -5493,12 +5545,34 @@ var Group = Item.extend({
 	},
 
 	isIsolated: function() {
-		return this._isolated;
+		return this._isolated || this._buffered;
 	},
 
 	setIsolated: function(isolated) {
 		this._isolated = !!isolated;
 		this._changed(257);
+	},
+
+	isBuffered: function() {
+		return this._buffered;
+	},
+
+	setBuffered: function(buffered) {
+		this._buffered = !!buffered;
+		this._buffer = null;
+		this._changed(257);
+	},
+
+	_remove: function _remove(notifySelf, notifyParent) {
+		this._buffer = null;
+		return _remove.base.call(this, notifySelf, notifyParent);
+	},
+
+	_serialize: function _serialize(options, dictionary) {
+		var json = _serialize.base.call(this, options, dictionary);
+		if (!this._isolated)
+			delete json[1].isolated;
+		return json;
 	},
 
 	_getBounds: function _getBounds(matrix, options) {
@@ -6436,8 +6510,11 @@ var SymbolDefinition = Base.extend({
 	_changed: function(flags) {
 		if (flags & 8)
 			Item._clearBoundsCache(this);
-		if (flags & 1)
-			this.project._changed(flags);
+		if (flags & 1) {
+			var project = this.project;
+			project._bufferVersion++;
+			project._changed(flags);
+		}
 	},
 
 	getItem: function() {
@@ -6675,7 +6752,10 @@ var Segment = Base.extend({
 		this._selection = selection = selection || 0;
 		if (path && selection !== oldSelection) {
 			path._updateSelection(this, oldSelection, selection);
-			path._changed(257);
+			var project = path._project;
+			if (project)
+				project._changed(257,
+						path._getChangeOwner());
 		}
 	},
 
@@ -16731,7 +16811,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
 	 *
 	 * @param {Boolean} [force=false] whether to redraw the view even if nothing
 	 * has changed, e.g. after a web font used by text items has finished
-	 * loading
+	 * loading, also in buffered groups, see {@link Group#buffered}
 	 * @return {Boolean} {@true if the view was updated}
 	 */
 	update: function(force) {
@@ -18481,7 +18561,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 	 *
 	 * @param {Boolean} [force=false] whether to redraw the view even if nothing
 	 * has changed, e.g. after a web font used by text items has finished
-	 * loading
+	 * loading, also in buffered groups, see {@link Group#buffered}
 	 * @return {Boolean} {@true if the view was updated}
 	 */
 	update: function(force) {
@@ -18491,8 +18571,12 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 			ctx = this._context,
 			size = this._viewSize;
 		ctx.clearRect(0, 0, size.width + 1, size.height + 1);
-		if (project)
-			project.draw(ctx, this._matrix, this._pixelRatio);
+		if (project) {
+			// Forced updates follow changes that the buffers don't know of:
+			if (force)
+				project._bufferVersion++;
+			project.draw(ctx, this._matrix, this._pixelRatio, this);
+		}
 		this._needsUpdate = false;
 		return true;
 	}
