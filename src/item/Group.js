@@ -30,6 +30,7 @@ var Group = Item.extend(/** @lends Group# */{
     },
     _isolated: false,
     _buffered: false,
+    _attributes: Item.prototype._attributes.concat(['_isolated', '_buffered']),
 
     // DOCS: document new Group(item, item...);
     /**
