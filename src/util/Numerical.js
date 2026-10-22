@@ -253,6 +253,56 @@ var Numerical = new function() {
         },
 
         /**
+         * Finds where the function changes its sign between `a` and `b`, given
+         * its values `fa` and `fb` of opposite signs there, with the ITP
+         * method, which converges as fast as the secant method where it can,
+         * and never more slowly than bisection. After kurbo's solve_itp():
+         * https://github.com/linebender/kurbo/blob/main/kurbo/src/common.rs
+         *
+         * @param {Function} f the function
+         * @param {Number} a the start of the interval
+         * @param {Number} b the end of the interval
+         * @param {Number} fa the value of the function at `a`
+         * @param {Number} fb the value of the function at `b`
+         * @param {Number} tolerance the width of the interval to narrow it to
+         * @return {Number} the position of the sign change
+         */
+        findSignChange: function(f, a, b, fa, fb, tolerance) {
+            // Search for the change from negative to positive values:
+            var sign = fa < 0 ? 1 : -1,
+                steps = Math.max(Math.ceil(log2((b - a) / tolerance)) - 1, 0),
+                // Bound the steps to those of bisection plus one:
+                scaled = tolerance * Math.pow(2, steps + 1),
+                k1 = 0.2 / (b - a);
+            fa *= sign;
+            fb *= sign;
+            while (b - a > 2 * tolerance) {
+                var half = (a + b) / 2,
+                    r = scaled - (b - a) / 2,
+                    // The secant, nudged towards the middle:
+                    xf = (fb * a - fa * b) / (fb - fa),
+                    sigma = half - xf,
+                    delta = k1 * (b - a) * (b - a),
+                    xt = delta <= abs(sigma)
+                        ? xf + (sigma < 0 ? -delta : delta) : half,
+                    x = abs(xt - half) <= r
+                        ? xt : half - (sigma < 0 ? -r : r),
+                    fx = sign * f(x);
+                if (fx > 0) {
+                    b = x;
+                    fb = fx;
+                } else if (fx < 0) {
+                    a = x;
+                    fa = fx;
+                } else {
+                    return x;
+                }
+                scaled /= 2;
+            }
+            return (a + b) / 2;
+        },
+
+        /**
          * Solve a quadratic equation in a numerically robust manner;
          * given a quadratic equation ax² + bx + c = 0, find the values of x.
          *

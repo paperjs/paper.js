@@ -79,6 +79,7 @@ var paper = function(self, undefined) {
 /*#*/ include('path/CompoundPath.js');
 /*#*/ if (__options.booleanOperations) {
 /*#*/     include('path/PathItem.Boolean.js');
+/*#*/     include('path/PathItem.Offset.js');
 /*#*/ }
 /*#*/ include('path/PathFlattener.js');
 /*#*/ include('path/PathFitter.js');
