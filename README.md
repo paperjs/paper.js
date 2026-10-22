@@ -369,6 +369,23 @@ As mentioned above, we prefer that you send a
    request to the `develop` branch, not the `main` branch. Here's a good guide
    on pull requests: <https://help.github.com/articles/about-pull-requests/>
 
+##### Commit messages:
+
+Keep them short, in the style of the existing history:
+
+- **Subject:** imperative, capitalized, no trailing period, about 50 characters
+  and at most 70. Say what changes, not how or why, starting with a verb such as
+  *Fix*, *Add*, *Implement*, *Improve*, *Remove*, *Update*, *Rename* or
+  *Support*, e.g. `Fix passing of willReadFrequently to getContext()`.
+- **Area:** prefix the subject with the area where it helps, e.g.
+  `Boolean: Handle open filled paths`.
+- **Body:** optional, one short line when something needs saying, e.g.
+  `Minor version changes only`.
+- **Issues:** reference them in the body, e.g. `Closes #2008`,
+  `Fixes #1999, #2000` or `Relates to #1895`, not in the subject.
+- **Explanations,** test notes and benchmarks go in the pull request's
+  description, not in the commit.
+
 ##### Use one topic branch per feature:
 
 Don't mix different kinds of patches in the same branch. Instead, merge them all
