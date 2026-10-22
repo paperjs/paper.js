@@ -267,6 +267,40 @@ describe('Gradients', () => {
   })
 })
 
+describe('Elliptical gradients', () => {
+  test('Applied, kept in a matrix, and exported to SVG', async () => {
+    createScene(250, 240)
+    const fillColor = {
+      gradient: { stops: ['white', '#fc3', '#e63', '#39c'], radial: true },
+      origin: [75, 60],
+      destination: [115, 60],
+      highlight: [65, 50]
+    }
+    function createItem(applyMatrix, x) {
+      const item = new Path.Rectangle({
+        rectangle: new Rectangle(35, 20, 80, 80),
+        fillColor,
+        applyMatrix
+      })
+      item.translate(x, 0)
+      item.scale(1.2, 0.8)
+      item.shear(0.4, 0)
+      return item
+    }
+    createItem(true, 0)
+    // Below it, the browser's rendering of it, exported to SVG:
+    const svg = paper.project.exportSVG({
+      asString: true,
+      bounds: new Rectangle(0, 0, 250, 120)
+    })
+    const raster = await loadRaster('data:image/svg+xml;base64,' + btoa(svg))
+    raster.position = paper.view.center.add(0, 60)
+    // Next to it, the same with the transformation kept in its matrix:
+    createItem(false, 110)
+    await expectScene()
+  })
+})
+
 describe('Strokes', () => {
   test('Joins, caps, dashes and miter limits', async () => {
     createScene(300, 200)

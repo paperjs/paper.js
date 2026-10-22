@@ -292,12 +292,26 @@ new function() {
                 destination = color.getDestination(),
                 attrs;
             if (radial) {
-                attrs = {
-                    cx: origin.x,
-                    cy: origin.y,
-                    r: origin.getDistance(destination)
-                };
-                var highlight = color.getHighlight();
+                var aspect = color.getAspect(),
+                    highlight = color.getHighlight(),
+                    center = origin;
+                attrs = { r: origin.getDistance(destination) };
+                if (aspect !== 1) {
+                    // An ellipse is a circle at 0, 0, rotated to the
+                    // gradient's axis and scaled across it:
+                    var angle = destination.subtract(origin).getAngle(),
+                        local = new Matrix().translate(origin).rotate(angle)
+                            .scale(1, aspect);
+                    center = new Point();
+                    if (highlight)
+                        highlight = local._inverseTransform(highlight);
+                    attrs.gradientTransform = 'translate('
+                            + formatter.point(origin) + ') rotate('
+                            + formatter.number(angle) + ') scale(1,'
+                            + formatter.number(aspect) + ')';
+                }
+                attrs.cx = center.x;
+                attrs.cy = center.y;
                 if (highlight) {
                     attrs.fx = highlight.x;
                     attrs.fy = highlight.y;
