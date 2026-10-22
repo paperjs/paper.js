@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 12:39:28 2026 +0200
+ * Date: Thu Oct 22 13:16:06 2026 +0200
  *
  ***
  *
@@ -11687,6 +11687,36 @@ PathItem.inject(new function() {
 		return part;
 	}
 
+	function getTurns(v, epsilon) {
+		var dx = v[6] - v[0],
+			dy = v[7] - v[1];
+		for (var i = 0; i < 4; i += 2) {
+			var hx = v[i + 2] - v[i],
+				hy = v[i + 3] - v[i + 1];
+			if (hx * hx + hy * hy > dx * dx + dy * dy) {
+				dx = hx;
+				dy = hy;
+			}
+		}
+		var length = Math.sqrt(dx * dx + dy * dy),
+			o = [];
+		if (!length)
+			return [];
+		for (var i = 0; i < 8; i += 2) {
+			var x = v[i] - v[0],
+				y = v[i + 1] - v[1];
+			if (abs(x * dy - y * dx) > epsilon * length)
+				return [];
+			o.push((x * dx + y * dy) / length);
+		}
+		var roots = [],
+			count = Numerical.solveQuadratic(3 * (o[1] - o[2]) - o[0] + o[3],
+				2 * (o[0] + o[2]) - 4 * o[1], o[1] - o[0], roots,
+				1e-8,
+				0.99999999);
+		return count > 0 ? roots.slice(0, count) : [];
+	}
+
 	function createGraph(operands) {
 		var curves = [],
 			curveOperands = [],
@@ -11742,6 +11772,13 @@ PathItem.inject(new function() {
 				curve = loc.getCurve();
 			addCut(offsets[curve._path._id] + curve.getIndex(), loc.getTime(),
 					loc.getPoint(), false);
+		}
+		for (var i = 0, l = curves.length; i < l; i++) {
+			var times = getTurns(values[i], epsilon);
+			for (var j = 0, k = times.length; j < k; j++) {
+				addCut(i, times[j], Curve.getPoint(values[i], times[j]),
+						false);
+			}
 		}
 
 		var count = xs.length,
