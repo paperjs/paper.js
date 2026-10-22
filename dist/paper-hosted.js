@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 19:58:10 2026 +0200
+ * Date: Thu Oct 22 19:54:46 2026 +0200
  *
  ***
  *
@@ -24197,9 +24197,20 @@ Base.exports.PaperScript = function() {
 		var moduleCount = 0,
 			isModule = false;
 
-		function getImport(source, as) {
-			return '__$import__(' + JSON.stringify(source.value)
-					+ (as ? ', "' + as + '"' : '') + ')';
+		function getImport(node, as) {
+			var attributes = node.attributes || [],
+				args = [JSON.stringify(node.source.value)];
+			if (as || attributes.length)
+				args.push(as ? '"' + as + '"' : 'undefined');
+			if (attributes.length) {
+				var values = {};
+				attributes.forEach(function(attribute) {
+					var key = attribute.key;
+					values[key.name || key.value] = attribute.value.value;
+				});
+				args.push(JSON.stringify(values));
+			}
+			return '__$import__(' + args.join(', ') + ')';
 		}
 
 		function handleModules(node) {
@@ -24207,10 +24218,13 @@ Base.exports.PaperScript = function() {
 			case 'ImportExpression':
 				replaceCode(node, 'Promise.resolve().then(function() { '
 						+ 'return __$import__(' + getCode(node.source)
-						+ ', "dynamic"); })');
+						+ ', "dynamic"' + (node.options
+							? ', (' + getCode(node.options) + ' || {}).with'
+							: '')
+						+ '); })');
 				break;
 			case 'ImportDeclaration':
-				var module = getImport(node.source),
+				var module = getImport(node),
 					named = [];
 				var vars = node.specifiers.map(function(specifier) {
 					var local = specifier.local.name;
@@ -24219,7 +24233,7 @@ Base.exports.PaperScript = function() {
 								+ '__.' + specifier.imported.name);
 						return null;
 					}
-					return local + ' = ' + getImport(node.source,
+					return local + ' = ' + getImport(node,
 							specifier.type === 'ImportDefaultSpecifier'
 								? 'default' : 'namespace');
 				}).filter(Boolean);
@@ -24236,10 +24250,10 @@ Base.exports.PaperScript = function() {
 				isModule = true;
 				replaceCode(node, node.exported
 						? 'module.exports.' + node.exported.name + ' = '
-							+ getImport(node.source, 'namespace') + ';'
+							+ getImport(node, 'namespace') + ';'
 						: '(function(m) { for (var k in m) if (k !== '
 							+ '"default") module.exports[k] = m[k]; })('
-							+ getImport(node.source) + ');');
+							+ getImport(node) + ');');
 				break;
 			case 'ExportDefaultDeclaration':
 				isModule = true;
@@ -24269,7 +24283,7 @@ Base.exports.PaperScript = function() {
 									+ ';';
 						}).join(''));
 				} else if (specifiers) {
-					var source = node.source && getImport(node.source) + '.';
+					var source = node.source && getImport(node) + '.';
 					var exports = specifiers.map(function(specifier) {
 						var local = specifier.local.name,
 							exported = specifier.exported.name;
@@ -24438,12 +24452,12 @@ Base.exports.PaperScript = function() {
 		}
 		var load = options && options.load,
 			url = options && options.url;
-		function __$import__(specifier, as) {
+		function __$import__(specifier, as, attributes) {
 			if (!load) {
 				throw new Error('Unable to import \'' + specifier + '\': no '
 						+ 'loader was passed to PaperScript.execute().');
 			}
-			var exports = load(specifier, url);
+			var exports = load(specifier, url, attributes);
 			return as === 'dynamic'
 					? Promise.resolve(exports).then(function(exports) {
 						return getImported(exports, 'namespace');

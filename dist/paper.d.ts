@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 19:58:10 2026 +0200
+ * Date: Thu Oct 22 19:54:46 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -4119,17 +4119,20 @@ declare namespace paper {
          *     handlers to export next to `onFrame`, `onResize` and the tool's
          *     handlers, for hosts that call them themselves
          * @option options.load {Function} the loader for static `import`
-         *     statements, called with the specifier as written and the
-         *     `options.url` of the importing script, and returning the module's
-         *     exports, e.g. the result of executing it. Modules with ES `export`
-         *     statements have their default export as `default` and are marked
-         *     with `__esModule`, so `import x` receives the default export, and
-         *     for CommonJS-style exports the whole exports. `import * as x`
+         *     statements, called with the specifier as written, the `options.url`
+         *     of the importing script, and the import attributes as an object,
+         *     e.g. `{ type: 'paperscript' }` for `import x from 'm' with { type:
+         *     'paperscript' }`, or `undefined` without them, and returning the
+         *     module's exports, e.g. the result of executing it. Modules with ES
+         *     `export` statements have their default export as `default` and are
+         *     marked with `__esModule`, so `import x` receives the default export,
+         *     and for CommonJS-style exports the whole exports. `import * as x`
          *     receives all exports, and for CommonJS-style exports, these as
          *     `default` too. Dynamic `import(specifier)` resolves to that
          *     namespace as a Promise, and its loader may return a Promise as well.
-         *     The loader runs each module once and handles cycles. Parsing
-         *     `import` requires a current Acorn as `self.acorn`
+         *     `import(specifier, options)` passes on `options.with` as the
+         *     attributes. The loader runs each module once and handles cycles.
+         *     Parsing `import` requires a current Acorn as `self.acorn`
          * 
          * Code with top-level `await` runs as an async function. `execute()` then
          * returns a Promise of the exports, and installs the global handlers once
