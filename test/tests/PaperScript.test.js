@@ -436,6 +436,82 @@ describe('PaperScript', () => {
     })
   })
 
+  test('PaperScript import attributes', () => {
+    withAcornLatest(() => {
+      const calls = []
+      function load(specifier, url, attributes) {
+        calls.push([specifier, attributes])
+        return { x: 1 }
+      }
+      PaperScript.execute(
+        'import { x } from "a.js" with { type: "paperscript" };\n' +
+        'import b from "b.js" with { "type": "javascript" };\n' +
+        'import "c.js";\n' +
+        'export { x as y } from "d.js" with { type: "paperscript" };\n' +
+        'export * from "e.js" with { type: "paperscript" };\n' +
+        'export * as f from "f.js" with { type: "paperscript" };',
+        paper,
+        { load }
+      )
+      equals(calls, [
+        ['a.js', { type: 'paperscript' }],
+        ['b.js', { type: 'javascript' }],
+        ['c.js', undefined],
+        ['d.js', { type: 'paperscript' }],
+        ['e.js', { type: 'paperscript' }],
+        ['f.js', { type: 'paperscript' }]
+      ])
+    })
+  })
+
+  test('PaperScript dynamic import attributes', assert => {
+    const done = assert.async()
+    withAcornLatest(() => {
+      const calls = [],
+        order = []
+      function load(specifier, url, attributes) {
+        calls.push([specifier, attributes])
+        return { x: 1 }
+      }
+      // Log the order in which specifier and options are evaluated:
+      paper.log = value => {
+        order.push(value)
+        return value
+      }
+      let exports
+      try {
+        exports = PaperScript.execute(
+          'module.exports.results = [\n' +
+          '    import(log("a.js"), log({ with: { type: "paperscript" } })),\n' +
+          '    import("b.js", {}),\n' +
+          '    import("c.js")\n' +
+          '];',
+          paper,
+          { load }
+        )
+      } finally {
+        delete paper.log
+      }
+      Promise.all(exports.results)
+        .then(() => {
+          equals(calls, [
+            ['a.js', { type: 'paperscript' }],
+            ['b.js', undefined],
+            ['c.js', undefined]
+          ])
+          equals(
+            order,
+            ['a.js', { with: { type: 'paperscript' } }],
+            'the options are evaluated once, after the specifier'
+          )
+        })
+        .then(done, error => {
+          ok(false, error + '')
+          done()
+        })
+    })
+  })
+
   test('PaperScript compound assignments evaluate their targets once', () => {
     executeCode(
       'var calls = 0;\n' +
