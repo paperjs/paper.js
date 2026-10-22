@@ -782,6 +782,7 @@ describe('View', () => {
     // By default, the segments are drawn as large as the handles, 4 points:
     paper.view.update(true)
     equals(getAlpha(20, 20) > 0, true, 'the handle')
+    equals(getAlpha(21, 51) > 0, true, 'the segment')
     equals(getAlpha(20, 54), 0, 'below the segment')
     // A larger segment without handles:
     settings.handleSize = 0

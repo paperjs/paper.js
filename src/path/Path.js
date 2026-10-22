@@ -2420,9 +2420,12 @@ new function() { // Scope for drawing
             drawSegments(ctx, this, matrix);
             // Now stroke it and draw its handles:
             ctx.stroke();
-            var settings = paper.settings;
-            drawHandles(ctx, this._segments, matrix, settings.handleSize,
-                    Base.pick(settings.segmentSize, settings.handleSize));
+            var settings = paper.settings,
+                handleSize = settings.handleSize,
+                segmentSize = settings.segmentSize;
+            // segmentSize is null by default, which Base.pick() keeps:
+            drawHandles(ctx, this._segments, matrix, handleSize,
+                    segmentSize != null ? segmentSize : handleSize);
         }
     };
 },
