@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 23 01:27:33 2026 +0200
+ * Date: Fri Oct 23 01:32:20 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -6220,6 +6220,20 @@ declare namespace paper {
          *   `content`, as for a hyphen, all in the item's coordinates. `key`
          *   is null for text that the host doesn't know yet. Without it,
          *   Paper.js lays out text itself.
+         * - `getDefinition(key)`, for the pattern and symbol definitions that
+         *   the host shares between its items, which the JSON of its items
+         *   refers to as `['@key']`, as in `fillColor: ['pattern',
+         *   ['@pattern/Dots'], matrix]` or `definition: ['@symbol/Star']`.
+         *   It returns the definition in the form of
+         *   {@link Item#exportJSON}, with its whole item:
+         *   `['PatternDefinition', item, { tile, spacing }]` or
+         *   `['SymbolDefinition', item]`, always: for a key that it has no
+         *   definition of, an empty one of the type, as
+         *   `['SymbolDefinition', ['Group', {}]]`. Each definition loads
+         *   once, and the JSON of the items that use it, as
+         *   {@link Item#exportJSON} writes it, refers to it by its
+         *   key again. Definitions that scripts create have no key, and are
+         *   written out whole.
          */
         host: any
 
@@ -6316,7 +6330,13 @@ declare namespace paper {
          * node's own content changed, so the item loads it again on next
          * access, and 32 when its list of children changed, so it loads them
          * again right away if it had loaded them, keeping the items of nodes
-         * that remain. Nodes without items are skipped.
+         * that remain. Nodes without items are skipped. `definitions` lists
+         * the keys of changed definitions of the host's `getDefinition()`,
+         * which load again right away into the same objects, so the colors
+         * and symbol items that use them change along. A definition that the
+         * host no longer has, for which `getDefinition()` may return `null`
+         * here, is emptied and draws nothing. The columns may hold only
+         * definitions.
          * 
          * @param columns - the records of the changed nodes
          */

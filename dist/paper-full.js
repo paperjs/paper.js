@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 23 01:27:33 2026 +0200
+ * Date: Fri Oct 23 01:32:20 2026 +0200
  *
  ***
  *
@@ -521,7 +521,8 @@ statics: {
 				: res;
 	},
 
-	deserialize: function(json, create, _data, _setDictionary, _isRoot) {
+	deserialize: function(json, create, resolve, _data, _setDictionary,
+			_isRoot) {
 		var res = json,
 			isFirst = !_data,
 			hasDictionary = isFirst && json && json.length
@@ -533,10 +534,13 @@ statics: {
 			if (json.length == 1 && /^#/.test(type)) {
 				return _data.dictionary[type];
 			}
+			if (json.length == 1 && resolve && /^@/.test(type)) {
+				return resolve(type.slice(1));
+			}
 			type = Base.exports[type];
 			res = [];
 			for (var i = type ? 1 : 0, l = json.length; i < l; i++) {
-				res.push(Base.deserialize(json[i], create, _data,
+				res.push(Base.deserialize(json[i], create, resolve, _data,
 						isDictionary, hasDictionary));
 			}
 			if (type) {
@@ -552,7 +556,8 @@ statics: {
 			if (_setDictionary)
 				_data.dictionary = res;
 			for (var key in json)
-				res[key] = Base.deserialize(json[key], create, _data);
+				res[key] = Base.deserialize(json[key], create, resolve,
+						_data);
 		}
 		return hasDictionary ? res[1] : res;
 	},
@@ -564,7 +569,7 @@ statics: {
 				: JSON.stringify(json);
 	},
 
-	importJSON: function(json, target) {
+	importJSON: function(json, target, resolve) {
 		return Base.deserialize(
 				typeof json === 'string' ? JSON.parse(json) : json,
 				function(ctor, args, isRoot) {
@@ -586,7 +591,7 @@ statics: {
 					if (useTarget)
 						target = null;
 					return obj;
-				});
+				}, resolve);
 	},
 
 	push: function(list, items) {
@@ -6495,7 +6500,7 @@ var SymbolItem = Item.extend({
 	_canApplyMatrix: false,
 	_boundsOptions: { stroke: true },
 	_serializeFields: {
-		symbol: null
+		definition: null
 	},
 
 	initialize: function SymbolItem(arg0, arg1) {

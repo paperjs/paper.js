@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 23 01:27:33 2026 +0200
+ * Date: Fri Oct 23 01:32:20 2026 +0200
  *
  ***
  *
@@ -521,7 +521,8 @@ statics: {
 				: res;
 	},
 
-	deserialize: function(json, create, _data, _setDictionary, _isRoot) {
+	deserialize: function(json, create, resolve, _data, _setDictionary,
+			_isRoot) {
 		var res = json,
 			isFirst = !_data,
 			hasDictionary = isFirst && json && json.length
@@ -533,10 +534,13 @@ statics: {
 			if (json.length == 1 && /^#/.test(type)) {
 				return _data.dictionary[type];
 			}
+			if (json.length == 1 && resolve && /^@/.test(type)) {
+				return resolve(type.slice(1));
+			}
 			type = Base.exports[type];
 			res = [];
 			for (var i = type ? 1 : 0, l = json.length; i < l; i++) {
-				res.push(Base.deserialize(json[i], create, _data,
+				res.push(Base.deserialize(json[i], create, resolve, _data,
 						isDictionary, hasDictionary));
 			}
 			if (type) {
@@ -552,7 +556,8 @@ statics: {
 			if (_setDictionary)
 				_data.dictionary = res;
 			for (var key in json)
-				res[key] = Base.deserialize(json[key], create, _data);
+				res[key] = Base.deserialize(json[key], create, resolve,
+						_data);
 		}
 		return hasDictionary ? res[1] : res;
 	},
@@ -564,7 +569,7 @@ statics: {
 				: JSON.stringify(json);
 	},
 
-	importJSON: function(json, target) {
+	importJSON: function(json, target, resolve) {
 		return Base.deserialize(
 				typeof json === 'string' ? JSON.parse(json) : json,
 				function(ctor, args, isRoot) {
@@ -586,7 +591,7 @@ statics: {
 					if (useTarget)
 						target = null;
 					return obj;
-				});
+				}, resolve);
 	},
 
 	push: function(list, items) {
@@ -6495,7 +6500,7 @@ var SymbolItem = Item.extend({
 	_canApplyMatrix: false,
 	_boundsOptions: { stroke: true },
 	_serializeFields: {
-		symbol: null
+		definition: null
 	},
 
 	initialize: function SymbolItem(arg0, arg1) {
@@ -21666,6 +21671,7 @@ new function() {
 			[Path, ['_segments', '_closed', '_version', '_curves',
 					'_segmentSelection']],
 			[CompoundPath, ['_children', '_namedChildren']],
+			[SymbolItem, ['_definition']],
 			[HostItem, ['_values']],
 			[TextItem, ['_story', '_orientation', '_layout', '_fontMetrics']],
 			[PathText, ['_children', '_startOffset', '_endOffset',
@@ -21824,6 +21830,48 @@ new function() {
 		}
 	}
 
+	function importJSON(project, json, target) {
+		return Base.importJSON(json, target, function(key) {
+			return getDefinition(project, key);
+		});
+	}
+
+	function getDefinition(project, key) {
+		var definitionsByKey = project._definitionsByKey,
+			definition = definitionsByKey[key];
+		if (!definition) {
+			definition = definitionsByKey[key] = importJSON(project,
+					project._host.getDefinition(key));
+			definition._key = key;
+		}
+		return definition;
+	}
+
+	function reloadDefinition(project, definition) {
+		var json = project._host.getDefinition(definition._key),
+			loaded = json ? importJSON(project, json)
+				: new definition.constructor(new Group({ insert: false }));
+		definition.setItem(loaded._item, true);
+		if (definition instanceof PatternDefinition) {
+			definition.setTile(loaded._tile);
+			definition.setSpacing(loaded._spacing);
+		}
+	}
+
+	ItemDefinition.inject({
+		_key: null
+	});
+
+	[SymbolDefinition, PatternDefinition].forEach(function(ctor) {
+		ctor.inject({
+			_serialize: function _serialize(options, dictionary) {
+				return this._key != null
+						? ['@' + this._key]
+						: _serialize.base.call(this, options, dictionary);
+			}
+		});
+	});
+
 	Item.inject({
 		_key: null,
 
@@ -21917,7 +21965,7 @@ new function() {
 				json = JSON.parse(json);
 			var linked = json[1].linked;
 			delete json[1].linked;
-			Base.importJSON(json, this);
+			importJSON(project, json, this);
 			this._shell = false;
 			if (linked)
 				this._loadLinked(linked);
@@ -21980,7 +22028,8 @@ new function() {
 			if (story) {
 				this._story = story;
 			} else {
-				this.set(Base.importJSON(project._host.getStory(this._key)));
+				this.set(importJSON(project,
+						project._host.getStory(this._key)));
 				for (var i = 0, l = items.length; i < l; i++) {
 					if (items[i] !== this)
 						items[i]._loadContent();
@@ -22081,6 +22130,7 @@ new function() {
 			var that = this;
 			this._host = host;
 			this._itemsByKey = {};
+			this._definitionsByKey = {};
 			whileLoading(this, function() {
 				setChildren(that, that, host.getChildren(null));
 				that._activeLayer = that._children[0] || null;
@@ -22104,11 +22154,18 @@ new function() {
 
 		invalidate: function(columns) {
 			var itemsByKey = this._itemsByKey,
-				keys = columns.keys,
+				definitionsByKey = this._definitionsByKey,
+				keys = columns.keys || [],
+				definitionKeys = columns.definitions || [],
 				names = columns.names || {},
 				reloads = [],
 				that = this;
 			whileLoading(this, function() {
+				for (var i = 0, l = definitionKeys.length; i < l; i++) {
+					var definition = definitionsByKey[definitionKeys[i]];
+					if (definition)
+						reloadDefinition(that, definition);
+				}
 				for (var i = 0, l = keys.length; i < l; i++) {
 					var item = itemsByKey[keys[i]],
 						flags = columns.flags[i];
