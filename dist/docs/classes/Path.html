@@ -10579,6 +10579,147 @@ result.fillColor = 'red';
 </div>
 
 	
+<h3>Offsetting and Outlining</h3>
+
+<div id="offset-distance" class="member">
+<div class="member-link">
+<a name="offset-distance" href="#offset-distance"><tt><b>offset</b>(distance[, options])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Offsets the path item by the given distance and returns the result as a new path item. Closed paths and compound paths grow by positive distances and shrink by negative ones, open paths are offset along their normals for positive distances, and against them for negative ones. As with the boolean operations, the path item&rsquo;s matrix is applied first.</p>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.join: <tt>String</tt></tt> &mdash; the shape of the corners  that the offset adds where the path turns away from it:  <tt>&lsquo;miter&rsquo;</tt>, <tt>&lsquo;round&rsquo;</tt>, <tt>&lsquo;bevel&rsquo;</tt> &mdash;&nbsp;default: <tt>&lsquo;miter&rsquo;</tt></li>
+<li><tt>options.miterLimit: <tt>Number</tt></tt> &mdash; the limit of miter corners,  see <a href="../classes/Style.html#miterlimit"><tt>style.miterLimit</tt></a> &mdash;&nbsp;default: <tt>10</tt></li>
+<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above this path &mdash;&nbsp;default: <tt>true</tt></li>
+</ul>
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>distance:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the distance to offset the path item by
+
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the offset options
+&mdash;&nbsp;optional
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/PathItem.html"><tt>PathItem</tt></a></tt>&nbsp;&mdash;&nbsp;the resulting path item
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<h4>Example:</h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-114">
+var path = new Path.Star([50, 50], 5, 20, 40);
+path.strokeColor = 'black';
+var result = path.offset(10, { join: 'round' });
+result.strokeColor = 'red';
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-114"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+	
+<div id="outline" class="member">
+<div class="member-link">
+<a name="outline" href="#outline"><tt><b>outline</b>([options])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Outlines the stroke of the path item, and returns the area that it covers as a new path item, filled with the stroke&rsquo;s color. As with the boolean operations, the path item&rsquo;s matrix is applied first.</p>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.width: <tt>Number</tt></tt> &mdash; the width of the  stroke &mdash;&nbsp;default: <tt>this.strokeWidth</tt></li>
+<li><tt>options.join: <tt>String</tt></tt> &mdash; the shape of the  stroke&rsquo;s corners: <tt>&lsquo;miter&rsquo;</tt>, <tt>&lsquo;round&rsquo;</tt>, <tt>&lsquo;bevel&rsquo;</tt> &mdash;&nbsp;default: <tt>this.strokeJoin</tt></li>
+<li><tt>options.cap: <tt>String</tt></tt> &mdash; the shape of the  stroke&rsquo;s ends: <tt>&lsquo;round&rsquo;</tt>, <tt>&lsquo;square&rsquo;</tt>, <tt>&lsquo;butt&rsquo;</tt> &mdash;&nbsp;default: <tt>this.strokeCap</tt></li>
+<li><tt>options.miterLimit: <tt>Number</tt></tt> &mdash; the limit of  miter corners, see <a href="../classes/Style.html#miterlimit"><tt>style.miterLimit</tt></a> &mdash;&nbsp;default: <tt>this.miterLimit</tt></li>
+<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above this path &mdash;&nbsp;default: <tt>true</tt></li>
+</ul>
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the outline options
+&mdash;&nbsp;optional
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/PathItem.html"><tt>PathItem</tt></a></tt>&nbsp;&mdash;&nbsp;the resulting path item
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<h4>Example:</h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-115">
+var path = new Path.Arc([20, 70], [50, 20], [80, 70]);
+path.strokeColor = 'black';
+path.strokeWidth = 20;
+path.strokeCap = 'round';
+var result = path.outline();
+result.strokeColor = 'red';
+result.strokeWidth = 1;
+path.remove();
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-115"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+	
 <h3>Path Intersections and Locations</h3>
 
 <div id="getintersections" class="member">
@@ -10638,7 +10779,7 @@ result.fillColor = 'red';
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-114">
+<script type="text/paperscript" canvas="canvas-116">
 var path = new Path.Rectangle(new Point(30, 25), new Size(50, 50));
 path.strokeColor = 'black';
 
@@ -10661,7 +10802,7 @@ function onFrame(event) {
     }
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-114"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-116"></canvas></div>
 </div>
 
 
@@ -10802,7 +10943,7 @@ function onFrame(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-115">
+<script type="text/paperscript" canvas="canvas-117">
 var star = new Path.Star({
     center: view.center,
     points: 10,
@@ -10826,7 +10967,7 @@ function onMouseMove(event) {
     circle.position = nearestPoint;
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-115"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-117"></canvas></div>
 </div>
 
 
@@ -10889,7 +11030,7 @@ function onMouseMove(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-116">
+<script type="text/paperscript" canvas="canvas-118">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var path = new Path.Circle({
@@ -10907,7 +11048,7 @@ copy.position.x += 150;
 // Flatten the copied path, with a maximum error of 4 points:
 copy.flatten(4);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-116"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-118"></canvas></div>
 </div>
 
 
@@ -10985,7 +11126,7 @@ copy.flatten(4);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-117">
+<script type="text/paperscript" canvas="canvas-119">
 // Create a rectangular path with its top-left point at
 // {x: 30, y: 25} and a size of {width: 50, height: 50}:
 var path = new Path.Rectangle({
@@ -11004,7 +11145,7 @@ copy.position.x += 100;
 // Smooth the segments of the copy:
 copy.smooth({ type: 'continuous' });
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-117"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-119"></canvas></div>
 </div>
 
 
@@ -11016,7 +11157,7 @@ copy.smooth({ type: 'continuous' });
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-118">
+<script type="text/paperscript" canvas="canvas-120">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -11041,7 +11182,7 @@ copy.fullySelected = true;
 // Smooth the path using centripetal Catmull-Rom splines:
 copy.smooth({ type: 'catmull-rom', factor: 0.5 });
 </script>
-<div class="canvas"><canvas width="516" height="220" id="canvas-118"></canvas></div>
+<div class="canvas"><canvas width="516" height="220" id="canvas-120"></canvas></div>
 </div>
 
 
@@ -11053,7 +11194,7 @@ copy.smooth({ type: 'catmull-rom', factor: 0.5 });
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-119">
+<script type="text/paperscript" canvas="canvas-121">
 // Create 5 rectangles, next to each other:
 var paths = [];
 for (var i = 0; i < 5; i++) {
@@ -11083,7 +11224,7 @@ paths[3].smooth({ type: 'continuous', from: 0, to: 2 });
 // Smooth a range, using negative indices:
 paths[4].smooth({ type: 'continuous', from: -1, to: 1 });
 </script>
-<div class="canvas"><canvas width="516" height="110" id="canvas-119"></canvas></div>
+<div class="canvas"><canvas width="516" height="110" id="canvas-121"></canvas></div>
 </div>
 
 
@@ -11136,7 +11277,7 @@ paths[4].smooth({ type: 'continuous', from: -1, to: 1 });
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-120">
+<script type="text/paperscript" canvas="canvas-122">
 var path;
 function onMouseDown(event) {
     // If we already made a path before, deselect it:
@@ -11166,7 +11307,7 @@ function onMouseUp(event) {
     path.selected = true;
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-120"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-122"></canvas></div>
 </div>
 
 
@@ -11365,7 +11506,7 @@ function onMouseUp(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-121">
+<script type="text/paperscript" canvas="canvas-123">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -11385,7 +11526,7 @@ path.arcTo(throughPoint, toPoint);
 var circle = new Path.Circle(throughPoint, 3);
 circle.fillColor = 'red';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-121"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-123"></canvas></div>
 </div>
 
 
@@ -11397,7 +11538,7 @@ circle.fillColor = 'red';
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-122">
+<script type="text/paperscript" canvas="canvas-124">
 var myPath;
 function onMouseDrag(event) {
     // If we created a path before, remove it:
@@ -11425,7 +11566,7 @@ function onMouseUp(event) {
     myPath.fillColor = 'black';
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-122"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-124"></canvas></div>
 </div>
 
 
@@ -11474,7 +11615,7 @@ function onMouseUp(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-123">
+<script type="text/paperscript" canvas="canvas-125">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -11489,7 +11630,7 @@ path2.add(new Point(180, 25));
 // we pass `false` as the second argument to arcTo:
 path2.arcTo(new Point(280, 25), false);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-123"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-125"></canvas></div>
 </div>
 
 
@@ -11501,7 +11642,7 @@ path2.arcTo(new Point(280, 25), false);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-124">
+<script type="text/paperscript" canvas="canvas-126">
 var myPath;
 
 // The mouse has to move at least 20 points before
@@ -11522,7 +11663,7 @@ function onMouseDrag(event) {
     myPath.arcTo(event.point);
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-124"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-126"></canvas></div>
 </div>
 
 
@@ -11578,7 +11719,7 @@ function onMouseDrag(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-125">
+<script type="text/paperscript" canvas="canvas-127">
 var myPath;
 function onMouseMove(event) {
     // If we created a path before, remove it:
@@ -11599,7 +11740,7 @@ function onMouseMove(event) {
     myPath.selected = true;
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-125"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-127"></canvas></div>
 </div>
 
 
@@ -11784,7 +11925,7 @@ function onMouseMove(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-126">
+<script type="text/paperscript" canvas="canvas-128">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -11798,7 +11939,7 @@ path.lineBy(50, 0);
 // 0 in x direction and 50 in y direction, becomes {x: 75, y: 75}
 path.lineBy(0, 50);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-126"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-128"></canvas></div>
 </div>
 
 
@@ -11810,7 +11951,7 @@ path.lineBy(0, 50);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-127">
+<script type="text/paperscript" canvas="canvas-129">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -11836,7 +11977,7 @@ path.smooth();
 // the construction of the path:
 // path.selected = true;
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-127"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-129"></canvas></div>
 </div>
 
 

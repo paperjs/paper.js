@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 22:05:31 2026 +0200
+ * Date: Thu Oct 22 13:43:00 2026 +0200
  *
  ***
  *
@@ -1277,6 +1277,38 @@ var Numerical = new function() {
 				}
 			}
 			return clamp(x, a, b);
+		},
+
+		findSignChange: function(f, a, b, fa, fb, tolerance) {
+			var sign = fa < 0 ? 1 : -1,
+				steps = Math.max(Math.ceil(log2((b - a) / tolerance)) - 1, 0),
+				scaled = tolerance * Math.pow(2, steps + 1),
+				k1 = 0.2 / (b - a);
+			fa *= sign;
+			fb *= sign;
+			while (b - a > 2 * tolerance) {
+				var half = (a + b) / 2,
+					r = scaled - (b - a) / 2,
+					xf = (fb * a - fa * b) / (fb - fa),
+					sigma = half - xf,
+					delta = k1 * (b - a) * (b - a),
+					xt = delta <= abs(sigma)
+						? xf + (sigma < 0 ? -delta : delta) : half,
+					x = abs(xt - half) <= r
+						? xt : half - (sigma < 0 ? -r : r),
+					fx = sign * f(x);
+				if (fx > 0) {
+					b = x;
+					fb = fx;
+				} else if (fx < 0) {
+					a = x;
+					fa = fx;
+				} else {
+					return x;
+				}
+				scaled /= 2;
+			}
+			return (a + b) / 2;
 		},
 
 		solveQuadratic: function(a, b, c, roots, min, max) {
@@ -8041,6 +8073,39 @@ new function() {
 			return roots.sort();
 		},
 
+		getReversals: function(v, tolerance) {
+			var dx = v[6] - v[0],
+				dy = v[7] - v[1];
+			for (var i = 0; i < 4; i += 2) {
+				var hx = v[i + 2] - v[i],
+					hy = v[i + 3] - v[i + 1];
+				if (hx * hx + hy * hy > dx * dx + dy * dy) {
+					dx = hx;
+					dy = hy;
+				}
+			}
+			var length = Math.sqrt(dx * dx + dy * dy),
+				o = [];
+			if (!length)
+				return [];
+			for (var i = 0; i < 8; i += 2) {
+				var x = v[i] - v[0],
+					y = v[i + 1] - v[1];
+				if (Math.abs(x * dy - y * dx) > tolerance * length)
+					return [];
+				o.push((x * dx + y * dy) / length);
+			}
+			var roots = [],
+				count = Numerical.solveQuadratic(
+					3 * (o[1] - o[2]) - o[0] + o[3],
+					2 * (o[0] + o[2]) - 4 * o[1], o[1] - o[0], roots,
+					1e-8,
+					0.99999999);
+			return count > 0 ? roots.slice(0, count).sort(function(a, b) {
+				return a - b;
+			}) : [];
+		},
+
 		getTimesWithTangent: function(v, tangent) {
 			var c = getCoefficients(v),
 				ax = 3 * c[0], bx = 2 * c[1], cx = c[2],
@@ -11773,36 +11838,6 @@ PathItem.inject(new function() {
 		return part;
 	}
 
-	function getTurns(v, epsilon) {
-		var dx = v[6] - v[0],
-			dy = v[7] - v[1];
-		for (var i = 0; i < 4; i += 2) {
-			var hx = v[i + 2] - v[i],
-				hy = v[i + 3] - v[i + 1];
-			if (hx * hx + hy * hy > dx * dx + dy * dy) {
-				dx = hx;
-				dy = hy;
-			}
-		}
-		var length = Math.sqrt(dx * dx + dy * dy),
-			o = [];
-		if (!length)
-			return [];
-		for (var i = 0; i < 8; i += 2) {
-			var x = v[i] - v[0],
-				y = v[i + 1] - v[1];
-			if (abs(x * dy - y * dx) > epsilon * length)
-				return [];
-			o.push((x * dx + y * dy) / length);
-		}
-		var roots = [],
-			count = Numerical.solveQuadratic(3 * (o[1] - o[2]) - o[0] + o[3],
-				2 * (o[0] + o[2]) - 4 * o[1], o[1] - o[0], roots,
-				1e-8,
-				0.99999999);
-		return count > 0 ? roots.slice(0, count) : [];
-	}
-
 	function createGraph(operands) {
 		var curves = [],
 			curveOperands = [],
@@ -11860,7 +11895,7 @@ PathItem.inject(new function() {
 					loc.getPoint(), false);
 		}
 		for (var i = 0, l = curves.length; i < l; i++) {
-			var times = getTurns(values[i], epsilon);
+			var times = Curve.getReversals(values[i], epsilon);
 			for (var j = 0, k = times.length; j < k; j++) {
 				addCut(i, times[j], Curve.getPoint(values[i], times[j]),
 						false);
@@ -12565,6 +12600,843 @@ PathItem.inject(new function() {
 				}
 			}
 			return point;
+		}
+	};
+});
+
+PathItem.inject(new function() {
+	var abs = Math.abs,
+		clamp = Numerical.clamp,
+		errorThreshold = 0.1,
+		epsilon = 1e-12,
+		geomEpsilon = 1e-7;
+
+	function outlineStroke(paths, radius, join, cap, miterLimit) {
+		var tolerance = Math.min(errorThreshold, radius / 100),
+			areas = [];
+
+		function addSides(side1, side2) {
+			var part = new Path({ segments: side1, insert: false });
+			for (var i = side2.length - 1; i >= 0; i--)
+				part.add(side2[i].reversed());
+			part.setClosed(true);
+			areas.push(part.unite());
+		}
+
+		function addPart(v) {
+			var curvature = Curve.getCurvature(v, 0.5);
+			if (abs(curvature) * radius > 1) {
+				var inner = curvature > 0 ? -radius : radius,
+					evolute = getEvolute(v, inner, tolerance);
+				addSides(getOffsetSegments(v, -inner, tolerance), evolute);
+				addSides(getOffsetSegments(v, inner, tolerance), evolute);
+			} else {
+				addSides(getOffsetSegments(v, radius, tolerance),
+						getOffsetSegments(v, -radius, tolerance));
+			}
+		}
+
+		function addSector(point, normal1, normal2, direction) {
+			var sector = new Path({ insert: false });
+			sector.moveTo(point);
+			sector.lineTo(point.add(normal1));
+			sector.arcTo(point.add(direction.normalize(radius)),
+					point.add(normal2));
+			sector.closePath();
+			areas.push(sector);
+		}
+
+		function addPolygon(points) {
+			areas.push(new Path({ segments: points, closed: true,
+					insert: false }));
+		}
+
+		function addJoin(point, tangent1, tangent2) {
+			var normal1 = new Point(tangent1.y, -tangent1.x).multiply(radius),
+				normal2 = new Point(tangent2.y, -tangent2.x).multiply(radius),
+				angle = normal1.getDirectedAngle(normal2);
+			if (!Numerical.isZero(tangent1.cross(tangent2))
+					|| tangent1.dot(tangent2) < 0) {
+				if (angle < 0) {
+					normal1 = normal1.negate();
+					normal2 = normal2.negate();
+				}
+				var widening = Math.sqrt(tolerance / radius) * 180 / Math.PI
+						* (angle < 0 ? -1 : 1),
+					outer1 = normal1.rotate(-widening),
+					outer2 = normal2.rotate(widening),
+					direction = normal1.add(normal2);
+				if (direction.getLength() < geomEpsilon * radius)
+					direction = tangent1;
+				if (join === 'round') {
+					addSector(point, outer1, outer2, direction);
+				} else {
+					var length = radius / Math.cos(abs(angle) * Math.PI / 360),
+						points = [point, point.add(outer1), point.add(normal1)];
+					if (join === 'miter' && length <= miterLimit * radius)
+						points.push(point.add(direction.normalize(length)));
+					addPolygon(points.concat(point.add(normal2),
+							point.add(outer2)));
+				}
+			}
+		}
+
+		function addCap(point, tangent) {
+			var normal = new Point(-tangent.y, tangent.x).multiply(radius);
+			if (cap === 'round') {
+				addSector(point, normal, normal.negate(), tangent);
+			} else if (cap === 'square') {
+				var ahead = tangent.multiply(radius);
+				addPolygon([point.add(normal), point.add(normal).add(ahead),
+						point.subtract(normal).add(ahead),
+						point.subtract(normal)]);
+			}
+		}
+
+		function isSliver(v, t1, t2) {
+			return getTurn(v, t1, t2) * radius < tolerance
+					&& (abs(Curve.getCurvature(v, (t1 + t2) / 2)) * radius > 1
+						|| Curve.getLength(v, t1, t2) < tolerance);
+		}
+
+		function addPath(path) {
+			var segments = path._segments,
+				closed = path._closed,
+				curves = path.getCurves();
+			for (var i = 0, l = segments.length; i < l; i++) {
+				var segment = segments[i],
+					handleIn = segment._handleIn,
+					handleOut = segment._handleOut;
+				if (!handleIn.isZero() && !handleOut.isZero()) {
+					var angle = abs(handleOut.getDirectedAngle(
+							handleIn.negate())) * Math.PI / 180,
+						lengthIn = handleIn.getLength(),
+						lengthOut = handleOut.getLength();
+					if (angle && angle * Math.max(radius, lengthIn, lengthOut)
+							< tolerance) {
+						var direction = handleOut.normalize().subtract(
+								handleIn.normalize());
+						segment.setHandleIn(direction.normalize(-lengthIn));
+						segment.setHandleOut(direction.normalize(lengthOut));
+					}
+				}
+			}
+			if (!path.getLength()) {
+				if (segments.length && !closed && cap !== 'butt') {
+					var center = segments[0]._point;
+					areas.push(cap === 'round'
+						? new Path.Circle({ center: center, radius: radius,
+							insert: false })
+						: new Path.Rectangle({ point: center.subtract(radius),
+							size: [2 * radius, 2 * radius], insert: false }));
+				}
+			} else {
+				var ends = [];
+				for (var i = 0, l = curves.length; i < l; i++) {
+					var curve = curves[i];
+					if (curve.hasLength(geomEpsilon)) {
+						var v = regularize(curve.getValues(),
+								tolerance / 4),
+							reversals = Curve.getReversals(v, tolerance),
+							start = Curve.getTangent(v, 0),
+							end = Curve.getTangent(v, 1);
+						if (reversals.length) {
+							var points = [new Point(v[0], v[1])];
+							for (var j = 0, m = reversals.length; j < m; j++)
+								points.push(Curve.getPoint(v, reversals[j]));
+							points.push(new Point(v[6], v[7]));
+							start = points[1].subtract(points[0]).normalize();
+							end = points[points.length - 1].subtract(
+									points[points.length - 2]).normalize();
+							for (var j = 1, m = points.length; j < m; j++) {
+								var p1 = points[j - 1],
+									p2 = points[j];
+								addPart([p1.x, p1.y, p1.x, p1.y, p2.x, p2.y,
+										p2.x, p2.y]);
+								if (j < m - 1) {
+									var tangent = p2.subtract(p1).normalize(),
+										normal = new Point(-tangent.y,
+											tangent.x).multiply(radius);
+									addSector(p2, normal, normal.negate(),
+											tangent);
+									addSector(p2, normal.negate(), normal,
+											tangent.negate());
+								}
+							}
+						} else {
+							var times = getCuspTimes(v, radius).concat(1);
+							for (var j = 0, t0 = 0, m = times.length; j < m;
+									j++) {
+								var t = times[j];
+								if (t === 1 || !isSliver(v, t0, t)
+										&& !isSliver(v, t, times[j + 1])) {
+									addPart(Curve.getPart(v, t0, t));
+									t0 = t;
+								}
+							}
+						}
+						ends.push({ curve: curve, start: start, end: end });
+					}
+				}
+				for (var i = 1, l = ends.length; i <= l; i++) {
+					var end1 = ends[i - 1],
+						end2 = ends[i % l];
+					if (i < l || closed)
+						addJoin(end2.curve._segment1._point, end1.end,
+								end2.start);
+				}
+				if (!closed && ends.length) {
+					var first = ends[0],
+						last = ends[ends.length - 1];
+					addCap(first.curve._segment1._point, first.start.negate());
+					addCap(last.curve._segment2._point, last.end);
+				}
+			}
+		}
+
+		for (var i = 0, l = paths.length; i < l; i++)
+			addPath(paths[i]);
+		return areas.length
+				? areas.length > 1 ? areas[0].unite(areas.slice(1)) : areas[0]
+				: new Path({ insert: false });
+	}
+
+	function offsetSide(path, offset, join, miterLimit) {
+		var radius = abs(offset),
+			outline = outlineStroke([path], radius, join, 'butt', miterLimit),
+			first = path.getFirstSegment(),
+			last = path.getLastSegment(),
+			caps = [
+				[first._point, path.getFirstCurve().getNormalAtTime(0)],
+				[last._point, path.getLastCurve().getNormalAtTime(1)]
+			],
+			tolerance = radius / 1e4,
+			paths = [];
+
+		function isCap(curve) {
+			if (!curve.hasHandles()) {
+				for (var i = 0; i < 2; i++) {
+					var point = caps[i][0],
+						normal = caps[i][1],
+						vector1 = curve._segment1._point.subtract(point),
+						vector2 = curve._segment2._point.subtract(point);
+					if (abs(vector1.cross(normal)) < tolerance
+							&& abs(vector2.cross(normal)) < tolerance)
+						return true;
+				}
+			}
+			return false;
+		}
+
+		function isOnSide(curve) {
+			var point = curve.getPointAtTime(0.5),
+				location = path.getNearestLocation(point);
+			return !isCap(curve) && point.subtract(location.getPoint())
+					.dot(location.getNormal()) * offset > 0;
+		}
+
+		function addRun(curves) {
+			var segments = [new Segment(curves[0]._segment1._point, null,
+					curves[0]._segment1._handleOut)];
+			for (var i = 0, l = curves.length; i < l; i++) {
+				var segment = curves[i]._segment2;
+				segments.push(new Segment(segment._point, segment._handleIn,
+						i < l - 1 ? segment._handleOut : null));
+			}
+			var run = new Path({ segments: segments, insert: false });
+			if (path.getNearestLocation(run.getFirstSegment()._point)
+					.getOffset() > path.getNearestLocation(
+						run.getLastSegment()._point).getOffset())
+				run.reverse();
+			paths.push(run);
+		}
+
+		var contours = outline._children || [outline];
+		for (var i = 0, l = contours.length; i < l; i++) {
+			var curves = contours[i].getCurves(),
+				count = curves.length,
+				keeps = [],
+				start = -1;
+			for (var j = 0; j < count; j++) {
+				keeps.push(isOnSide(curves[j]));
+				if (!keeps[j])
+					start = j;
+			}
+			if (count && start === -1) {
+				paths.push(contours[i].clone({ insert: false }));
+			} else {
+				var run = [];
+				for (var j = 1; j <= count; j++) {
+					var index = (start + j) % count;
+					if (keeps[index]) {
+						run.push(curves[index]);
+					} else if (run.length) {
+						addRun(run);
+						run = [];
+					}
+				}
+			}
+		}
+		return paths;
+	}
+
+	function getTurn(v, t1, t2) {
+		var times = [t1].concat(getInflections(v).filter(function(t) {
+				return t > t1 && t < t2;
+			}), t2),
+			turn = 0;
+		for (var i = 1, l = times.length; i < l; i++) {
+			turn += abs(Curve.getTangent(v, times[i - 1]).getDirectedAngle(
+					Curve.getTangent(v, times[i])));
+		}
+		return turn * Math.PI / 180;
+	}
+
+	function getCuspTimes(v, radius) {
+		var times = getCurvatureExtrema(v).concat(getInflections(v), 0, 1)
+				.sort(function(a, b) {
+					return a - b;
+				}),
+			cusps = [];
+
+		function f(t) {
+			var curvature = Curve.getCurvature(v, t) * radius;
+			return 1 - curvature * curvature;
+		}
+
+		for (var i = 1, l = times.length; i < l; i++) {
+			var t0 = times[i - 1],
+				t1 = times[i],
+				f0 = f(t0),
+				f1 = f(t1);
+			if (f0 * f1 < 0)
+				cusps.push(Numerical.findSignChange(f, t0, t1, f0, f1,
+						epsilon));
+		}
+		return cusps;
+	}
+
+	function getEvoluteAt(v, t) {
+		var x0 = v[0], y0 = v[1],
+			cx = 3 * (v[2] - x0),
+			cy = 3 * (v[3] - y0),
+			bx = 3 * (v[4] - v[2]) - cx,
+			by = 3 * (v[5] - v[3]) - cy,
+			ax = v[6] - x0 - cx - bx,
+			ay = v[7] - y0 - cy - by,
+			dx = (3 * ax * t + 2 * bx) * t + cx,
+			dy = (3 * ay * t + 2 * by) * t + cy,
+			ddx = 6 * ax * t + 2 * bx,
+			ddy = 6 * ay * t + 2 * by,
+			cross = dx * ddy - dy * ddx,
+			length2 = dx * dx + dy * dy,
+			speed = 3 * (dx * ddx + dy * ddy) * cross
+				- length2 * (dx * 6 * ay - dy * 6 * ax),
+			perp = new Point(-dy, dx);
+		return {
+			point: Curve.getPoint(v, t).add(perp.multiply(length2 / cross)),
+			derivative: perp.multiply(speed / (cross * cross)),
+			speed: speed,
+			radius: length2 * Math.sqrt(length2) / cross
+		};
+	}
+
+	function getCurvatureExtrema(v) {
+		var count = 32,
+			times = [];
+
+		function f(t) {
+			return getEvoluteAt(v, t).speed;
+		}
+
+		for (var i = 1, f0 = f(0); i <= count; i++) {
+			var t0 = (i - 1) / count,
+				t1 = i / count,
+				f1 = f(t1);
+			if (f0 * f1 < 0) {
+				times.push(Numerical.findSignChange(f, t0, t1, f0, f1,
+						epsilon));
+			}
+			f0 = f1;
+		}
+		return times;
+	}
+
+	function getEvolute(v, inner, tolerance) {
+		var c = regularizeCusp(v, tolerance / 4),
+			times = getCurvatureExtrema(c).concat(1),
+			t0 = 0,
+			e0 = evaluate(0),
+			segments = [new Segment(e0.point)];
+
+		function evaluate(t) {
+			var e = getEvoluteAt(c, t),
+				distance = inner > 0 ? -e.radius : e.radius;
+			if (!(distance >= 0 && distance < abs(inner) - tolerance)) {
+				var derivative = Curve.getWeightedTangent(c, t);
+				e = {
+					point: Curve.getPoint(c, t).add(
+							Curve.getNormal(c, t).multiply(inner)),
+					derivative: derivative.multiply(
+							1 + inner * Curve.getCurvature(c, t))
+				};
+			}
+			return e;
+		}
+
+		function fit(t0, e0, t1, e1, depth) {
+			var tm = (t0 + t1) / 2,
+				em = evaluate(tm),
+				h0 = e0.derivative.multiply((t1 - t0) / 3),
+				h1 = e1.derivative.multiply((t0 - t1) / 3),
+				mid = e0.point.add(e1.point).multiply(0.5)
+					.add(h0.add(h1).multiply(3 / 8));
+			if (depth < 8 && mid.getDistance(em.point) > tolerance / 10) {
+				fit(t0, e0, tm, em, depth + 1);
+				fit(tm, em, t1, e1, depth + 1);
+			} else {
+				segments[segments.length - 1].setHandleOut(h0);
+				segments.push(new Segment(e1.point, h1));
+			}
+		}
+
+		for (var i = 0, l = times.length; i < l; i++) {
+			var e1 = evaluate(times[i]);
+			fit(t0, e0, times[i], e1, 0);
+			t0 = times[i];
+			e0 = e1;
+		}
+		return segments;
+	}
+
+	function getOffsetSegments(v, offset, tolerance) {
+		if (Curve.isStraight(v)) {
+			return [
+				new Segment(new Point(v[0], v[1]).add(
+						Curve.getNormal(v, 0).multiply(offset))),
+				new Segment(new Point(v[6], v[7]).add(
+						Curve.getNormal(v, 1).multiply(offset)))
+			];
+		} else {
+			return offsetCubic(v, -offset, tolerance);
+		}
+	}
+
+	function offsetCubic(v, d, tolerance) {
+		var c = regularizeCusp(v, tolerance / 4),
+			p0 = new Point(c[0], c[1]),
+			p1 = new Point(c[2], c[3]),
+			p2 = new Point(c[4], c[5]),
+			p3 = new Point(c[6], c[7]),
+			q0 = p1.subtract(p0).multiply(3),
+			q1 = p2.subtract(p1).multiply(3),
+			q2 = p3.subtract(p2).multiply(3),
+			q1xq0 = q1.cross(q0),
+			q2xq0 = q2.cross(q0),
+			q2xq1 = q2.cross(q1),
+			c0 = 2 * d * q1xq0,
+			c1 = 2 * d * (q2xq0 - 2 * q1xq0),
+			c2 = 2 * d * (q2xq1 - q2xq0 + q1xq0),
+			utan0 = Curve.getTangent(c, 0),
+			utan1 = Curve.getTangent(c, 1),
+			segments = [new Segment(p0.add(getUnitNormal(utan0, d)))],
+			count = 8,
+			weights = [];
+		for (var i = 0; i < count; i++) {
+			var t = (i + 1) / (count + 1);
+			weights.push(3 * (1 - t) * (1 - t) * t);
+		}
+
+		function getUnitNormal(utan, length) {
+			return new Point(-utan.y, utan.x).multiply(length);
+		}
+
+		function evaluate(t) {
+			return Curve.getPoint(c, t);
+		}
+
+		function derive(t) {
+			var u = 1 - t,
+				w0 = u * u,
+				w1 = 2 * t * u,
+				w2 = t * t;
+			return new Point(w0 * q0.x + w1 * q1.x + w2 * q2.x,
+					w0 * q0.y + w1 * q1.y + w2 * q2.y);
+		}
+
+		function getCusp(t) {
+			var ds2 = derive(t).dot(derive(t));
+			return ((c2 * t + c1) * t + c0) / (ds2 * Math.sqrt(ds2)) + 1;
+		}
+
+		function getEndCusp(tangent, y) {
+			var length = Math.max(tangent.getLength(), epsilon);
+			return y / (length * length * length) + 1;
+		}
+
+		function getOffsetCurve(part, a, b) {
+			var s = (part.t1 - part.t0) / 3,
+				start = evaluate(part.t0).add(getUnitNormal(part.utan0, d)),
+				end = evaluate(part.t1).add(getUnitNormal(part.utan1, d)),
+				l0 = s * derive(part.t0).getLength() + a * d,
+				l1 = s * derive(part.t1).getLength() - b * d;
+			return [
+				start,
+				l0 * part.cusp0 > 0
+					? start.add(part.utan0.multiply(l0)) : start,
+				l1 * part.cusp1 > 0
+					? end.subtract(part.utan1.multiply(l1)) : end,
+				end
+			];
+		}
+
+		function getError(part, points, ts) {
+			var error = 0,
+				normals = [],
+				vectors = [],
+				x0 = points[0].x, y0 = points[0].y,
+				x1 = points[1].x, y1 = points[1].y,
+				x2 = points[2].x, y2 = points[2].y,
+				x3 = points[3].x, y3 = points[3].y,
+				sign = part.cusp0 < 0 ? -1 : 1;
+			for (var i = 0; i < count; i++) {
+				var ta = (i + 1) / (count + 1),
+					u = 1 - ta,
+					w0 = u * u * u,
+					w1 = 3 * u * u * ta,
+					w2 = 3 * u * ta * ta,
+					w3 = ta * ta * ta,
+					px = w0 * x0 + w1 * x1 + w2 * x2 + w3 * x3,
+					py = w0 * y0 + w1 * y1 + w2 * y2 + w3 * y3,
+					tx = (x1 - x0) * u * u + (x2 - x1) * 2 * u * ta
+						+ (x3 - x2) * ta * ta,
+					ty = (y1 - y0) * u * u + (y2 - y1) * 2 * u * ta
+						+ (y3 - y2) * ta * ta,
+					t = ts[i],
+					point = evaluate(t),
+					derivative = derive(t);
+				t += (tx * (px - point.x) + ty * (py - point.y))
+						/ (tx * derivative.x + ty * derivative.y);
+				t = ts[i] = clamp(t, part.t0, part.t1);
+				point = evaluate(t);
+				var length = Math.sqrt(tx * tx + ty * ty),
+					nx = -ty / length * sign,
+					ny = tx / length * sign,
+					vx = px - point.x - nx * d,
+					vy = py - point.y - ny * d,
+					squared = vx * vx + vy * vy;
+				normals.push(new Point(nx, ny));
+				vectors.push(new Point(vx, vy));
+				error = Math.max(error, isFinite(squared) ? squared : 1e12);
+			}
+			return { squared: error, normals: normals, vectors: vectors };
+		}
+
+		function refine(part, a, b, error) {
+			var blend = 1e-3,
+				aa = 0, ab = 0, ac = 0, bb = 0, bc = 0;
+			for (var i = 0; i < count; i++) {
+				var n = error.normals[i],
+					vector = error.vectors[i],
+					cn = vector.dot(n),
+					ct = vector.cross(n),
+					an = weights[i] * part.utan0.dot(n),
+					at = weights[i] * part.utan0.cross(n),
+					bn = weights[count - 1 - i] * part.utan1.dot(n),
+					bt = weights[count - 1 - i] * part.utan1.cross(n);
+				aa += an * an + blend * at * at;
+				ab += an * bn + blend * at * bt;
+				ac += an * cn + blend * at * ct;
+				bb += bn * bn + blend * bt * bt;
+				bc += bn * cn + blend * bt * ct;
+			}
+			var idet = 1 / (d * (aa * bb - ab * ab));
+			return [
+				a - idet * (ac * bb - ab * bc),
+				b - idet * (aa * bc - ac * ab)
+			];
+		}
+
+		function getTimeWithTangent(utan0, t0, t1, tangent, force) {
+			var z0 = tangent.cross(q0),
+				z1 = tangent.cross(q1),
+				z2 = tangent.cross(q2),
+				roots = [],
+				found = Numerical.solveQuadratic(z2 - 2 * z1 + z0,
+						2 * (z1 - z0), z0, roots, t0, t1),
+				t = roots[0];
+			if (found !== 1) {
+				if (!force)
+					return null;
+				t = derive(t0).getLength() > derive(t1).getLength() ? t1 : t0;
+			}
+			var q = derive(t);
+			return {
+				t: t,
+				utan: found === 1 && q.dot(q) >= epsilon ? q.normalize()
+					: tangent.dot(tangent) >= epsilon ? tangent.normalize()
+					: getUnitNormal(utan0, 1)
+			};
+		}
+
+		function getSubdivision(part) {
+			var t = (part.t0 + part.t1) / 2,
+				q = derive(t),
+				x0 = abs(part.utan0.cross(q)),
+				x1 = abs(part.utan1.cross(q));
+			if (x0 > 0.1 * x1 && x1 > 0.1 * x0)
+				return { t: t, utan: q.normalize() };
+			var chord = evaluate(part.t1).subtract(evaluate(part.t0));
+			if (chord.cross(part.utan0) * chord.cross(part.utan1) < 0) {
+				var split = getTimeWithTangent(part.utan0, part.t0, part.t1,
+						part.utan0.add(part.utan1), false);
+				if (split)
+					return split;
+			}
+			var tangents = [part.utan0],
+				ts = [part.t0],
+				inflections = getInflections(c);
+			for (var i = 0; i < inflections.length; i++) {
+				var ti = inflections[i];
+				if (ti > part.t0 && ti < part.t1) {
+					tangents.push(derive(ti));
+					ts.push(ti);
+				}
+			}
+			tangents.push(part.utan1);
+			ts.push(part.t1);
+			var angles = [],
+				sum = 0;
+			for (var i = 0; i < tangents.length - 1; i++) {
+				var angle = Math.atan2(tangents[i].cross(tangents[i + 1]),
+						tangents[i].dot(tangents[i + 1]));
+				sum += abs(angle);
+				angles.push(angle);
+			}
+			var target = sum / 2,
+				j = 0;
+			while (abs(angles[j]) < target) {
+				target -= abs(angles[j]);
+				j++;
+			}
+			var base = tangents[j],
+				turn = angles[j] < 0 ? -target : target,
+				tangent = base.rotate(turn * 180 / Math.PI);
+			return getTimeWithTangent(j ? base.normalize() : part.utan0,
+					ts[j], ts[j + 1], tangent, true);
+		}
+
+		function subdivide(part, t, utan, cuspMinus, cuspPlus) {
+			offsetPart({
+				t0: part.t0, t1: t, utan0: part.utan0, utan1: utan,
+				cusp0: part.cusp0, cusp1: cuspMinus, depth: part.depth + 1
+			});
+			offsetPart({
+				t0: t, t1: part.t1, utan0: utan, utan1: part.utan1,
+				cusp0: cuspPlus, cusp1: part.cusp1, depth: part.depth + 1
+			});
+		}
+
+		function offsetPart(part) {
+			if (part.cusp0 * part.cusp1 < 0) {
+				var t = Numerical.findSignChange(getCusp, part.t0, part.t1,
+						part.cusp0, part.cusp1, epsilon);
+				subdivide(part, t, derive(t).normalize(),
+						part.cusp0 < 0 ? -epsilon : epsilon,
+						part.cusp1 < 0 ? -epsilon : epsilon);
+				return;
+			}
+			var angle = Math.atan2(part.utan1.cross(part.utan0),
+						part.utan1.dot(part.utan0)),
+				a = 2 / 3 / (1 + Math.cos(angle / 2)) * 2 * Math.sin(angle / 2),
+				b = -a,
+				dt = (part.t1 - part.t0) / (count + 1),
+				ts = [];
+			for (var i = 0; i < count; i++)
+				ts.push(part.t0 + (i + 1) * dt);
+			var points = getOffsetCurve(part, a, b),
+				error = getError(part, points, ts),
+				tolerance2 = tolerance * tolerance;
+			for (var i = 0; i < 2 && error.squared > tolerance2; i++) {
+				var refined = refine(part, a, b, error),
+					points2 = getOffsetCurve(part, refined[0], refined[1]),
+					error2 = getError(part, points2, ts);
+				if (error2.squared >= error.squared)
+					break;
+				a = refined[0];
+				b = refined[1];
+				points = points2;
+				error = error2;
+			}
+			var isShort = points[1].getDistance(points[0]) < tolerance
+					&& points[2].getDistance(points[0]) < tolerance
+					&& points[3].getDistance(points[0]) < tolerance;
+			if (part.depth < 8 && error.squared > tolerance2 && !isShort) {
+				var split = getSubdivision(part),
+					cusp = getCusp(split.t);
+				subdivide(part, split.t, split.utan, cusp, cusp);
+			} else {
+				var last = segments[segments.length - 1];
+				last.setHandleOut(points[1].subtract(points[0]));
+				segments.push(new Segment(points[3],
+						points[2].subtract(points[3])));
+			}
+		}
+
+		offsetPart({
+			t0: 0, t1: 1, utan0: utan0, utan1: utan1,
+			cusp0: getEndCusp(q0, c0),
+			cusp1: getEndCusp(q2, c0 + c1 + c2),
+			depth: 0
+		});
+		return segments;
+	}
+
+	function getInflections(v) {
+		var p0 = new Point(v[0], v[1]),
+			p1 = new Point(v[2], v[3]),
+			p2 = new Point(v[4], v[5]),
+			p3 = new Point(v[6], v[7]),
+			a = p1.subtract(p0),
+			b = p2.subtract(p1).subtract(a),
+			c = p3.subtract(p0).subtract(p2.subtract(p1).multiply(3)),
+			roots = [],
+			count = Numerical.solveQuadratic(b.cross(c), a.cross(c),
+					a.cross(b), roots, 0, 1);
+		return count > 0 ? roots.slice(0, count) : [];
+	}
+
+	function regularize(v, dimension) {
+		var p0 = new Point(v[0], v[1]),
+			p1 = new Point(v[2], v[3]),
+			p2 = new Point(v[4], v[5]),
+			p3 = new Point(v[6], v[7]),
+			handle1 = p1.subtract(p0),
+			handle2 = p2.subtract(p3);
+		if (handle1.getLength() < dimension) {
+			if (!handle1.isZero()) {
+				p1 = p0.add(handle1.normalize(dimension));
+			} else if (p0.getDistance(p2) >= dimension) {
+				p1 = p0.add(p2.subtract(p0).normalize(dimension));
+			} else {
+				p1 = p0.add(p3.subtract(p0).divide(3));
+				p2 = p3.add(p0.subtract(p3).divide(3));
+			}
+		}
+		if (handle2.getLength() < dimension) {
+			if (!handle2.isZero()) {
+				p2 = p3.add(handle2.normalize(dimension));
+			} else if (p3.getDistance(p1) >= dimension) {
+				p2 = p3.add(p1.subtract(p3).normalize(dimension));
+			} else {
+				p1 = p0.add(p3.subtract(p0).divide(3));
+				p2 = p3.add(p0.subtract(p3).divide(3));
+			}
+		}
+		return [p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y];
+	}
+
+	function regularizeCusp(v, dimension) {
+		var p0 = new Point(v[0], v[1]),
+			p1 = new Point(v[2], v[3]),
+			p2 = new Point(v[4], v[5]),
+			p3 = new Point(v[6], v[7]),
+			d01 = p1.subtract(p0),
+			d02 = p2.subtract(p0),
+			d03 = p3.subtract(p0),
+			d12 = p2.subtract(p1),
+			d23 = p3.subtract(p2),
+			det012 = d01.cross(d02),
+			det123 = d12.cross(d23),
+			det013 = d01.cross(d03),
+			det023 = d02.cross(d03);
+		if (det012 * det123 > 0 && det012 * det013 < 0
+				&& det012 * det023 < 0) {
+			var q0 = d01.multiply(3),
+				q1 = d12.multiply(3),
+				q2 = d23.multiply(3),
+				t = Curve.getNearestTime([q0.x, q0.y,
+						q0.x + (q1.x - q0.x) * 2 / 3,
+						q0.y + (q1.y - q0.y) * 2 / 3,
+						q2.x + (q1.x - q2.x) * 2 / 3,
+						q2.y + (q1.y - q2.y) * 2 / 3, q2.x, q2.y],
+						new Point(0, 0)),
+				u = 1 - t,
+				q = q0.multiply(u * u).add(q1.multiply(2 * t * u))
+					.add(q2.multiply(t * t)),
+				dq = q1.subtract(q0).multiply(2 * u)
+					.add(q2.subtract(q1).multiply(2 * t)),
+				cross = q.cross(dq),
+				distance2 = q.dot(q);
+			if (distance2 * distance2 * distance2
+					<= cross * dimension * cross * dimension) {
+				var a = 3 * det012 + det023 - 2 * det013,
+					b = -3 * det012 + det013,
+					discriminant = b * b - 4 * a * det012,
+					l01 = d01.getLength(),
+					l23 = d23.getLength();
+				if (discriminant > 0) {
+					if (l01 > 2 * dimension)
+						p1 = p1.subtract(d01.multiply(dimension / l01));
+					if (l23 > 2 * dimension)
+						p2 = p2.add(d23.multiply(dimension / l23));
+				} else {
+					p1 = p1.add(d01.multiply(dimension / l01));
+					p2 = p2.subtract(d23.multiply(dimension / l23));
+				}
+			}
+		}
+		return [p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y];
+	}
+
+	function prepare(item) {
+		return item.clone({ insert: false }).transform(null, true, true)
+				.reduce();
+	}
+
+	function createResult(item, result, options) {
+		if (Base.pick(options && options.insert, paper.settings.insertItems))
+			result.insertAbove(item);
+		result.copyAttributes(item, true);
+		return result;
+	}
+
+	return {
+		offset: function(distance, options) {
+			var join = options && options.join || 'miter',
+				miterLimit = options && options.miterLimit || 10,
+				path = prepare(this),
+				paths = path._children || [path],
+				result;
+			if (!distance) {
+				result = path;
+			} else if (this._children || this._closed) {
+				var outline = outlineStroke(paths, abs(distance), join,
+						'butt', miterLimit);
+				result = path[distance > 0 ? 'unite' : 'subtract'](outline,
+						{ insert: false });
+			} else {
+				result = new CompoundPath({
+					children: path.isEmpty() ? []
+						: offsetSide(path, distance, join, miterLimit),
+					insert: false
+				}).reduce();
+			}
+			return createResult(this, result, options);
+		},
+
+		outline: function(options) {
+			options = options || {};
+			var path = prepare(this),
+				result = outlineStroke(path._children || [path],
+					Base.pick(options.width, this.getStrokeWidth()) / 2,
+					options.join || this.getStrokeJoin(),
+					options.cap || this.getStrokeCap(),
+					options.miterLimit || this.getMiterLimit());
+			result = createResult(this, result.reduce(), options);
+			result.setFillColor(this.getStrokeColor());
+			result.setStrokeColor(null);
+			return result;
 		}
 	};
 });

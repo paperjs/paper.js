@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 22:05:31 2026 +0200
+ * Date: Thu Oct 22 13:43:00 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -4902,6 +4902,51 @@ declare namespace paper {
          * @return a reference to the item itself, reoriented
          */
         reorient(nonZero?: boolean, clockwise?: boolean): PathItem
+
+        /** 
+         * Offsets the path item by the given distance and returns the result
+         * as a new path item. Closed paths and compound paths grow by positive
+         * distances and shrink by negative ones, open paths are offset along
+         * their normals for positive distances, and against them for negative
+         * ones. As with the boolean operations, the path item's matrix is
+         * applied first.
+         * 
+         * @option [options.join='miter'] {String} the shape of the corners
+         *     that the offset adds where the path turns away from it:
+         *     {@values 'miter', 'round', 'bevel'}
+         * @option [options.miterLimit=10] {Number} the limit of miter corners,
+         *     see {@link Style#miterLimit}
+         * @option [options.insert=true] {Boolean} whether the resulting item
+         *     should be inserted back into the scene graph, above this path
+         * 
+         * @param distance - the distance to offset the path item by
+         * @param options - the offset options
+         * 
+         * @return the resulting path item
+         */
+        offset(distance: number, options?: { join?: string, miterLimit?: number, insert?: boolean }): PathItem
+
+        /** 
+         * Outlines the stroke of the path item, and returns the area that it
+         * covers as a new path item, filled with the stroke's color. As with
+         * the boolean operations, the path item's matrix is applied first.
+         * 
+         * @option [options.width=this.strokeWidth] {Number} the width of the
+         *     stroke
+         * @option [options.join=this.strokeJoin] {String} the shape of the
+         *     stroke's corners: {@values 'miter', 'round', 'bevel'}
+         * @option [options.cap=this.strokeCap] {String} the shape of the
+         *     stroke's ends: {@values 'round', 'square', 'butt'}
+         * @option [options.miterLimit=this.miterLimit] {Number} the limit of
+         *     miter corners, see {@link Style#miterLimit}
+         * @option [options.insert=true] {Boolean} whether the resulting item
+         *     should be inserted back into the scene graph, above this path
+         * 
+         * @param options - the outline options
+         * 
+         * @return the resulting path item
+         */
+        outline(options?: { width?: number, join?: string, cap?: string, miterLimit?: number, insert?: boolean }): PathItem
 
         /** 
          * Creates a path item from the given SVG path-data, determining if the
