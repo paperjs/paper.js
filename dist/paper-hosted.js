@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 23 00:27:26 2026 +0200
+ * Date: Thu Oct 22 22:46:03 2026 +0200
  *
  ***
  *
@@ -3576,6 +3576,8 @@ new function() {
 			for (var item = this; item; item = item._parent) {
 				if (item._buffer)
 					item._buffer.matrix = null;
+				if (item._symbol && item !== this)
+					item._symbol._changed(flags);
 			}
 		}
 		for (var item = this; item && !(item instanceof Layer);
@@ -6448,6 +6450,45 @@ var Raster = Item.extend({
 	}
 });
 
+var ItemDefinition = Base.extend({
+	_centerItem: false,
+
+	initialize: function ItemDefinition(item, dontCenter) {
+		this._id = UID.get();
+		this.project = paper.project;
+		if (item)
+			this.setItem(item, dontCenter);
+	},
+
+	_changed: function(flags) {
+		if (flags & 8)
+			Item._clearBoundsCache(this);
+		if (flags & 1) {
+			var project = this.project;
+			project._bufferVersion++;
+			project._changed(flags);
+		}
+	},
+
+	getItem: function() {
+		return this._item;
+	},
+
+	setItem: function(item, _dontCenter) {
+		if (item._symbol)
+			item = item.clone();
+		if (this._item)
+			this._item._symbol = null;
+		this._item = item;
+		item.remove();
+		item.setSelected(false);
+		if (this._centerItem && !_dontCenter)
+			item.setPosition(new Point());
+		item._symbol = this;
+		this._changed(9);
+	}
+});
+
 var SymbolItem = Item.extend({
 	_class: 'SymbolItem',
 	_applyMatrix: false,
@@ -6528,14 +6569,12 @@ var SymbolItem = Item.extend({
 	}
 });
 
-var SymbolDefinition = Base.extend({
+var SymbolDefinition = ItemDefinition.extend({
 	_class: 'SymbolDefinition',
+	_centerItem: true,
 
 	initialize: function SymbolDefinition(item, dontCenter) {
-		this._id = UID.get();
-		this.project = paper.project;
-		if (item)
-			this.setItem(item, dontCenter);
+		ItemDefinition.call(this, item, dontCenter);
 	},
 
 	_serialize: function(options, dictionary) {
@@ -6543,34 +6582,6 @@ var SymbolDefinition = Base.extend({
 			return Base.serialize([this._class, this._item],
 					options, false, dictionary);
 		});
-	},
-
-	_changed: function(flags) {
-		if (flags & 8)
-			Item._clearBoundsCache(this);
-		if (flags & 1) {
-			var project = this.project;
-			project._bufferVersion++;
-			project._changed(flags);
-		}
-	},
-
-	getItem: function() {
-		return this._item;
-	},
-
-	setItem: function(item, _dontCenter) {
-		if (item._symbol)
-			item = item.clone();
-		if (this._item)
-			this._item._symbol = null;
-		this._item = item;
-		item.remove();
-		item.setSelected(false);
-		if (!_dontCenter)
-			item.setPosition(new Point());
-		item._symbol = this;
-		this._changed(9);
 	},
 
 	getDefinition: '#getItem',
@@ -15452,7 +15463,8 @@ var Color = Base.extend(new function() {
 		rgb: ['red', 'green', 'blue'],
 		hsb: ['hue', 'saturation', 'brightness'],
 		hsl: ['hue', 'saturation', 'lightness'],
-		gradient: ['gradient', 'origin', 'destination', 'highlight', 'aspect']
+		gradient: ['gradient', 'origin', 'destination', 'highlight', 'aspect'],
+		pattern: ['pattern', 'matrix']
 	};
 
 	var componentParsers = {},
@@ -15700,6 +15712,14 @@ var Color = Base.extend(new function() {
 
 		'rgb-gradient': function() {
 			return [];
+		},
+
+		'pattern-rgb': function() {
+			return [];
+		},
+
+		'rgb-pattern': function() {
+			return [];
 		}
 
 	};
@@ -15735,6 +15755,15 @@ var Color = Base.extend(new function() {
 										readNull: name === 'highlight',
 										clone: true
 								});
+							}
+					: type === 'pattern'
+						? name === 'pattern'
+							? function() {
+								return PatternDefinition.read(arguments, 0,
+										{ readNull: true });
+							}
+							: function(value) {
+								return value ? new Matrix(value) : new Matrix();
 							}
 					: function(value) {
 						return value == null || isNaN(value) ? 0 : +value;
@@ -15826,9 +15855,14 @@ var Color = Base.extend(new function() {
 								if (point)
 									components[i] = point.clone();
 							}
+						} else if (type === 'pattern') {
+							components[1] = components[1].clone();
 						}
 					} else if (arg.constructor === Gradient) {
 						type = 'gradient';
+						values = args;
+					} else if (arg.constructor === PatternDefinition) {
+						type = 'pattern';
 						values = args;
 					} else {
 						type = 'hue' in arg
@@ -15838,9 +15872,11 @@ var Color = Base.extend(new function() {
 							: 'gradient' in arg || 'stops' in arg
 									|| 'radial' in arg
 								? 'gradient'
-								: 'gray' in arg
-									? 'gray'
-									: 'rgb';
+								: 'pattern' in arg
+									? 'pattern'
+									: 'gray' in arg
+										? 'gray'
+										: 'rgb';
 						var properties = types[type],
 							parsers = componentParsers[type];
 						this._components = components = [];
@@ -15884,10 +15920,13 @@ var Color = Base.extend(new function() {
 		set: '#initialize',
 
 		_serialize: function(options, dictionary) {
-			var components = this.getComponents();
-			if (this._type === 'gradient' && components[4] === 1
-					&& this._alpha == null)
+			var components = this.getComponents(),
+				hasAlpha = this._alpha != null;
+			if (this._type === 'gradient' && components[4] === 1 && !hasAlpha)
 				components.length = components[3] ? 4 : 3;
+			if (this._type === 'pattern' && components[1].isIdentity()
+					&& !hasAlpha)
+				components.length = 1;
 			return Base.serialize(
 					/^(gray|rgb)$/.test(this._type)
 						? components
@@ -15965,13 +16004,13 @@ var Color = Base.extend(new function() {
 		toString: function() {
 			var properties = this._properties,
 				parts = [],
-				isGradient = this._type === 'gradient',
+				isObject = /^(gradient|pattern)$/.test(this._type),
 				f = Formatter.instance;
 			for (var i = 0, l = properties.length; i < l; i++) {
 				var value = this._components[i];
 				if (value != null)
 					parts.push(properties[i] + ': '
-							+ (isGradient ? value : f.number(value)));
+							+ (isObject ? value : f.number(value)));
 			}
 			if (this._alpha != null)
 				parts.push('alpha: ' + f.number(this._alpha));
@@ -16013,6 +16052,13 @@ var Color = Base.extend(new function() {
 		},
 
 		toCanvasStyle: function(ctx, matrix, strokeMatrix, isEllipse) {
+			if (this._type === 'pattern') {
+				var transform = getCanvasTransform(matrix, strokeMatrix),
+					placement = this._components[1];
+				return this._components[0]._toCanvasStyle(ctx, transform
+						? transform.appended(placement)
+						: placement);
+			}
 			var isCacheable = !(this._type === 'gradient'
 					&& (strokeMatrix || this._components[4] !== 1));
 			if (this._canvasStyle && isCacheable)
@@ -16057,9 +16103,12 @@ var Color = Base.extend(new function() {
 		},
 
 		transform: function(matrix) {
+			var components = this._components;
 			if (this._type === 'gradient') {
-				var components = this._components;
 				transformGradient(components, components, matrix);
+				this._changed();
+			} else if (this._type === 'pattern') {
+				components[1].prepend(matrix);
 				this._changed();
 			}
 		},
@@ -16289,6 +16338,114 @@ var GradientStop = Base.extend({
 				&& this._color.equals(stop._color)
 				&& this._offset == stop._offset
 				|| false;
+	}
+});
+
+var PatternDefinition = ItemDefinition.extend({
+	_class: 'PatternDefinition',
+
+	initialize: function PatternDefinition(item, options) {
+		this._tile = null;
+		this._spacing = new Size();
+		ItemDefinition.call(this, item);
+		if (options)
+			this.set(options);
+	},
+
+	_serialize: function(options, dictionary) {
+		return dictionary.add(this, function() {
+			var json = [this._class, this._item];
+			if (this._tile || !this._spacing.isZero())
+				json.push({ tile: this._tile, spacing: this._spacing });
+			return Base.serialize(json, options, false, dictionary);
+		});
+	},
+
+	_changed: function _changed(flags) {
+		_changed.base.call(this, flags);
+		if (flags & 1)
+			this._canvases = {};
+	},
+
+	getTile: function() {
+		return this._tile || this._item.getBounds();
+	},
+
+	setTile: function() {
+		this._tile = Rectangle.read(arguments, 0,
+				{ readNull: true, clone: true });
+		this._changed(129);
+	},
+
+	getSpacing: function() {
+		return this._spacing;
+	},
+
+	setSpacing: function() {
+		this._spacing = Size.read(arguments, 0, { clone: true });
+		this._changed(129);
+	},
+
+	clone: function() {
+		return new PatternDefinition(this._item.clone(false), {
+			tile: this._tile,
+			spacing: this._spacing
+		});
+	},
+
+	equals: function(pattern) {
+		return pattern === this
+				|| pattern && this._class === pattern._class
+					&& this._item.equals(pattern._item)
+					&& Base.equals(this._tile, pattern._tile)
+					&& this._spacing.equals(pattern._spacing)
+				|| false;
+	},
+
+	_toCanvasStyle: function(ctx, matrix) {
+		var transform = ctx.getTransform(),
+			device = new Matrix(transform.a, transform.b, transform.c,
+					transform.d, 0, 0).append(matrix),
+			scale = Math.max(
+					Math.sqrt(device._a * device._a + device._b * device._b),
+					Math.sqrt(device._c * device._c + device._d * device._d)),
+			level = Math.ceil(Math.log(scale) / Math.LN2 * 4
+					- 1e-12),
+			tile = this.getTile(),
+			cell = tile.getSize().add(this._spacing),
+			size = cell.multiply(Math.pow(2, level / 4)).ceil();
+		if (!(size.width > 0 && size.height > 0))
+			return 'rgba(0,0,0,0)';
+		var canvas = this._canvases[level];
+		if (!canvas) {
+			canvas = this._canvases[level] = self.OffscreenCanvas
+					? new self.OffscreenCanvas(size.width, size.height)
+					: CanvasProvider.getCanvas(size);
+			var tileCtx = canvas.getContext('2d'),
+				mx = new Matrix().scale(size.divide(cell))
+					.translate(tile.getPoint().negate());
+			mx.applyToContext(tileCtx);
+			if (!this._spacing.isZero()) {
+				tileCtx.beginPath();
+				tileCtx.rect(tile.x, tile.y, tile.width, tile.height);
+				tileCtx.clip();
+			}
+			this._item.draw(tileCtx, new Base({
+				matrices: [mx],
+				updateMatrix: false
+			}));
+		}
+		var pattern = ctx.createPattern(canvas, 'repeat'),
+			placement = matrix.appended(new Matrix().translate(tile.getPoint())
+					.scale(cell.divide(size)));
+		transform.a = placement._a;
+		transform.b = placement._b;
+		transform.c = placement._c;
+		transform.d = placement._d;
+		transform.e = placement._tx;
+		transform.f = placement._ty;
+		pattern.setTransform(transform);
+		return pattern;
 	}
 });
 
@@ -22384,6 +22541,52 @@ new function() {
 		return 'url(#' + gradientNode.id + ')';
 	}
 
+	function exportPattern(color, options) {
+		var matrix = elementMatrix;
+		if (!matrix.isIdentity()) {
+			color = color.clone();
+			color.transform(matrix.inverted());
+		}
+		var patternNode = getDefinition(color, 'pattern');
+		if (!patternNode) {
+			var pattern = color.getPattern(),
+				item = pattern._item,
+				tile = pattern.getTile(),
+				spacing = pattern._spacing,
+				cell = new Rectangle(tile.getPoint(),
+						tile.getSize().add(spacing)),
+				transform = getTransform(color.getMatrix()).transform,
+				attrs = {
+					x: cell.x,
+					y: cell.y,
+					width: cell.width,
+					height: cell.height,
+					viewBox: formatter.rectangle(cell),
+					patternUnits: 'userSpaceOnUse'
+				},
+				content = exportSVG(item, options);
+			if (transform)
+				attrs.patternTransform = transform;
+			patternNode = SvgElement.create('pattern', attrs, formatter);
+			if (!spacing.isZero() && !tile.contains(item.getStrokeBounds())) {
+				var rect = new Shape.Rectangle({
+						rectangle: tile,
+						insert: false
+					}),
+					clip = exportClip(rect, options),
+					group = SvgElement.create('g');
+				setDefinition(rect, clip, 'clip', options);
+				group.setAttribute('clip-path', 'url(#' + clip.id + ')');
+				group.appendChild(content);
+				content = group;
+			}
+			patternNode.appendChild(content);
+			setDefinition(color, patternNode, 'pattern', options);
+		}
+		elementMatrix = matrix;
+		return 'url(#' + patternNode.id + ')';
+	}
+
 	function exportShadow(item, options) {
 		var box = item.getInternalBounds();
 		if (!box.width || !box.height)
@@ -22586,7 +22789,9 @@ new function() {
 			attrs[entry.attribute] = value == null ? 'none'
 					: type === 'color' ? value.gradient
 						? exportGradient(value, options)
-						: value.toCSS(true)
+						: value.pattern
+							? exportPattern(value, options)
+							: value.toCSS(true)
 					: type === 'array' ? value.join(',')
 					: type === 'lookup' ? entry.toSVG[value]
 					: type === 'tracking' ? value && value / 1000 + 'em'
@@ -22608,10 +22813,11 @@ new function() {
 		Base.each(SvgStyles, function(entry) {
 			var get = entry.get,
 				value = item[get](),
-				isGradient = entry.type === 'color' && value && value.gradient;
+				isPaintServer = entry.type === 'color' && value
+						&& (value.gradient || value.pattern);
 			if (parent && !(get in parentStyle))
 				parentStyle[get] = parent[get]();
-			if (value !== undefined && (isGradient ? !isGroup
+			if (value !== undefined && (isPaintServer ? !isGroup
 					: entry.exportFilter
 						? entry.exportFilter(item, value)
 						: options.reduceAttributes == false
@@ -22812,13 +23018,14 @@ new function() {
 		var nodes = node.childNodes,
 			isClip = type === 'clippath' || type === 'mask',
 			isDefs = type === 'defs',
+			isPattern = type === 'pattern',
 			ctor = node.hasAttribute('data-paper-layer') ? Layer : Group,
 			item = new ctor(),
 			project = item._project,
 			currentStyle = project._currentStyle,
 			parentSize = rootSize,
 			children = [];
-		if (!isClip && !isDefs) {
+		if (!isClip && !isDefs && !isPattern) {
 			item = applyAttributes(item, node, options, isRoot);
 			project._currentStyle = item._style.clone();
 		}
@@ -22870,6 +23077,7 @@ new function() {
 		var color = item.getFillColor();
 		return (item instanceof PathItem || item instanceof Shape)
 				&& !item.hasStroke() && !!color && !color.gradient
+				&& !color.pattern
 				&& color.getAlpha() === 1
 				&& (isAlpha || color.getBrightness() === 1
 					&& color.getSaturation() === 0);
@@ -22937,6 +23145,22 @@ new function() {
 		return null;
 	}
 
+	function importPattern(node, type, options) {
+		var item = importGroup(node, type, options),
+			tile = new Rectangle(getPoint(node), getSize(node)),
+			viewBox = getValue(node, 'viewBox', true),
+			matrix = new Matrix().translate(tile.getPoint());
+		if (viewBox) {
+			var rect = new Rectangle(convertValue(viewBox, 'array'));
+			matrix.scale(tile.getSize().divide(rect.getSize()))
+					.translate(rect.getPoint().negate());
+		}
+		item.transform(matrix);
+		applyAttributes(new Color(new PatternDefinition(item, { tile: tile })),
+				node, options);
+		return null;
+	}
+
 	var importers = {
 		'#document': function (node, type, options, isRoot) {
 			var nodes = node.childNodes;
@@ -22955,6 +23179,7 @@ new function() {
 		path: importPath,
 		lineargradient: importGradient,
 		radialgradient: importGradient,
+		pattern: importPattern,
 
 		image: function (node, type, options) {
 			var raster = new Raster({
@@ -23184,6 +23409,7 @@ new function() {
 		mask: applyClipMask,
 
 		gradientTransform: applyTransform,
+		patternTransform: applyTransform,
 		transform: applyTransform,
 
 		'fill-opacity': applyOpacity,

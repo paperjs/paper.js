@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 23 00:27:26 2026 +0200
+ * Date: Thu Oct 22 22:46:03 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -60,6 +60,7 @@ declare namespace paper {
             destination: PointLike,
             highlight?: PointLike
         }
+        | { pattern: PatternDefinition, matrix?: Matrix }
     )
 
     type GradientStopLike = GradientStop | ColorLike | [ ColorLike, number ]
@@ -294,6 +295,17 @@ declare namespace paper {
          */
         aspect: number
 
+        /** 
+         * The pattern whose tiles the color repeats.
+         */
+        pattern: PatternDefinition
+
+        /** 
+         * The matrix that places the tiles of the pattern in the item's
+         * coordinates.
+         */
+        matrix: Matrix
+
 
         /** 
          * Creates a RGB Color object.
@@ -338,8 +350,15 @@ declare namespace paper {
         constructor(gradient: Gradient, origin: PointLike, destination: PointLike, highlight?: PointLike, aspect?: number)
 
         /** 
-         * Creates a HSB, HSL or gradient Color object from the properties of
-         * the provided object:
+         * Creates a pattern Color object, which repeats the tiles of the
+         * pattern, placed by the matrix in the item's coordinates. As with
+         * gradient colors, the matrix is transformed along with the item.
+         */
+        constructor(pattern: PatternDefinition, matrix?: Matrix)
+
+        /** 
+         * Creates a HSB, HSL, gradient or pattern Color object from the
+         * properties of the provided object:
          * 
          * @option hsb.hue {Number} the hue of the color as a value in degrees
          *     between `0` and `360`
@@ -366,6 +385,10 @@ declare namespace paper {
          *     the gradient, as an alternative to providing a gradient object
          * @option gradient.radial {Boolean} controls whether the gradient is
          *     radial, as an alternative to providing a gradient object
+         * @option pattern.pattern {PatternDefinition} the pattern whose tiles
+         *     the color repeats
+         * @option pattern.matrix {Matrix} the matrix that places the tiles in
+         *     the item's coordinates
          * 
          * @param object - an object describing the components and
          * properties of the color
@@ -427,12 +450,13 @@ declare namespace paper {
         toCSS(hex: boolean): string
 
         /** 
-         * Transform the gradient color by the specified matrix. Radial
-         * gradients become ellipses, see {@link #aspect}, and the stripes of
-         * linear gradients keep running across them, also when the matrix
-         * scales unevenly or shears.
+         * Transform the gradient or pattern color by the specified matrix.
+         * Radial gradients become ellipses, see {@link #aspect}, and the
+         * stripes of linear gradients keep running across them, also when the
+         * matrix scales unevenly or shears. Pattern colors transform their
+         * {@link #matrix}.
          * 
-         * @param matrix - the matrix to transform the gradient color by
+         * @param matrix - the matrix to transform the color by
          */
         transform(matrix: Matrix): void
 
@@ -3985,6 +4009,7 @@ declare namespace paper {
         Path: typeof Path
         PathItem: typeof PathItem
         PathText: typeof PathText
+        PatternDefinition: typeof PatternDefinition
         Point: typeof Point
         PointText: typeof PointText
         Project: typeof Project
@@ -5441,6 +5466,65 @@ declare namespace paper {
          *     text's attributes
          */
         constructor(object: object)
+
+    }
+
+    /** 
+     * A pattern definition repeats an item as the tile of pattern colors,
+     * which fill and stroke items with it, see {@link Color#pattern}: a
+     * {@link Raster} for image patterns, or any other item for vector patterns. As
+     * with symbol definitions, the item is removed from the scene graph, and all
+     * pattern colors that use the pattern share it, so they change along with it.
+     */
+    class PatternDefinition  {
+        /** 
+         * The project that this pattern belongs to.
+         */
+        readonly project: Project
+
+        /** 
+         * The item that the pattern repeats. Unlike the items of symbols, it isn't
+         * moved to 0, 0, so the tiles are at its own coordinates.
+         */
+        item: Item
+
+        /** 
+         * The rectangle that is repeated, in the coordinates of the pattern's
+         * item.
+         */
+        get tile(): Rectangle
+        set tile(value: RectangleLike)
+
+        /** 
+         * The gap between the tiles, horizontally and vertically.
+         */
+        get spacing(): Size
+        set spacing(value: SizeLike)
+
+
+        /** 
+         * Creates a pattern definition.
+         * 
+         * @option [options.tile] {Rectangle} the rectangle that is repeated,
+         *     the bounds of the item by default
+         * @option [options.spacing=0] {Size} the gap between the tiles
+         * 
+         * @param item - the item to repeat, which is removed from the scene
+         *     graph and becomes the pattern's tile content
+         */
+        constructor(item: Item, options?: { tile?: RectangleLike, spacing?: SizeLike })
+
+        /** 
+         * Returns a copy of the pattern, with a copy of its item.
+         */
+        clone(): PatternDefinition
+
+        /** 
+         * Checks whether the pattern is equal to the supplied pattern.
+         * 
+         * @return true if they are equal
+         */
+        equals(pattern: PatternDefinition): boolean
 
     }
 
