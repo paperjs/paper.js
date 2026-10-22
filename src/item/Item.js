@@ -4859,7 +4859,7 @@ new function() { // Injection scope for hit-test functions shared with project
                     || param.dontStart // e.g. CompoundPath
                     || param.clip,
             pixelRatio = param.pixelRatio || 1,
-            mainCtx, itemOffset, prevOffset;
+            mainCtx, itemOffset, prevOffset, itemSize;
         if (!direct) {
             // Apply the parent's global matrix to the calculation of correct
             // bounds, and include the item's shadow (#1628).
@@ -4898,11 +4898,13 @@ new function() { // Injection scope for hit-test functions shared with project
             // Floor the offset and ceil the size, so we don't cut off any
             // antialiased pixels when drawing onto the temporary canvas.
             itemOffset = param.offset = bounds.getTopLeft().floor();
+            itemSize = bounds.getSize().ceil().add(1).multiply(pixelRatio)
+                    .floor();
             // Set ctx to the context of the temporary canvas, so we draw onto
-            // it, instead of the mainCtx.
+            // it, instead of the mainCtx. It may be larger than itemSize,
+            // since only that part of it is composited:
             mainCtx = ctx;
-            ctx = CanvasProvider.getContext(bounds.getSize().ceil().add(1)
-                    .multiply(pixelRatio));
+            ctx = CanvasProvider.getContext(itemSize, { minimum: true });
             if (pixelRatio !== 1)
                 ctx.scale(pixelRatio, pixelRatio);
         }
@@ -4976,7 +4978,8 @@ new function() { // Injection scope for hit-test functions shared with project
             BlendMode.process(blendMode, ctx, mainCtx, opacity,
                     // Calculate the pixel offset of the temporary canvas to the
                     // main canvas. We also need to factor in the pixel-ratio.
-                    itemOffset.subtract(prevOffset).multiply(pixelRatio));
+                    itemOffset.subtract(prevOffset).multiply(pixelRatio),
+                    itemSize);
             if (shadow)
                 mainCtx.restore();
             // Return the temporary context, so it can be reused
