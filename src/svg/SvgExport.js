@@ -19,7 +19,9 @@ new function() {
     var formatter,
         // Getting the style values of groups walks all their children, so
         // cache the values of parents during each export:
-        parentStyles;
+        parentStyles,
+        // The matrix of the transform of the element being exported:
+        elementMatrix;
 
     function getTransform(matrix, coordinates, center) {
         // Use new Base() so we can use Base#set() on it.
@@ -68,6 +70,8 @@ new function() {
                 attrs.transform = 'matrix(' + matrix.getValues().join(',') + ')';
             }
         }
+        // The matrix of the element's transform, see exportGradient():
+        elementMatrix = matrix;
         return attrs;
     }
 
@@ -279,6 +283,12 @@ new function() {
     }
 
     function exportGradient(color, options) {
+        // Gradients are in the coordinates of the item's parent, but SVG reads
+        // them in those of the element, after its transform (#2410):
+        if (!elementMatrix.isIdentity()) {
+            color = color.clone();
+            color.transform(elementMatrix.inverted());
+        }
         // NOTE: As long as the fillTransform attribute is not implemented,
         // we need to create a separate gradient object for each gradient,
         // even when they share the same gradient definition.
@@ -594,6 +604,7 @@ new function() {
             parent = !isRoot && item.getParent(),
             parentStyle = parent && (parentStyles[parent._id] =
                     parentStyles[parent._id] || {}),
+            isGroup = item instanceof Group,
             style = [];
 
         if (item._name != null)
@@ -603,14 +614,18 @@ new function() {
             // Get a given style only if it differs from the value on the parent
             // (A layer or group which can have style values in SVG).
             var get = entry.get,
-                value = item[get]();
+                value = item[get](),
+                // SVG reads gradients in the coordinates of the elements that
+                // draw them, so they don't go on groups (#2410):
+                isGradient = entry.type === 'color' && value && value.gradient;
             if (parent && !(get in parentStyle))
                 parentStyle[get] = parent[get]();
             // Skip undefined values, as found on groups with mixed children:
-            if (value !== undefined && (entry.exportFilter
-                    ? entry.exportFilter(item, value)
-                    : options.reduceAttributes == false
-                        || !parent || !Base.equals(parentStyle[get], value))) {
+            if (value !== undefined && (isGradient ? !isGroup
+                    : entry.exportFilter
+                        ? entry.exportFilter(item, value)
+                        : options.reduceAttributes == false
+                            || !parent || !Base.equals(parentStyle[get], value))) {
                 setAttributes(attrs, style, entry, value, options);
             }
         });
