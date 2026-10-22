@@ -194,16 +194,16 @@ var Raster = Item.extend(/** @lends Raster# */{
         var size = Size.read(arguments);
         if (!size.equals(this._size)) { // NOTE: this._size could be null
             if (size.width > 0 && size.height > 0) {
-                // Get reference to image before changing canvas.
-                var element = !_clear && this.getElement();
-                // NOTE: Setting canvas internally sets _size.
-                // NOTE: No need to release canvas because #_setImage() does so.
-                this._setImage(CanvasProvider.getCanvas(size));
+                var element = !_clear && this.getElement(),
+                    canvas = CanvasProvider.getCanvas(size);
+                // Draw the element onto the new canvas before #_setImage()
+                // releases the old one, which frees its pixels:
                 if (element) {
-                    // Draw element back onto the new, resized canvas.
-                    this.getContext(true).drawImage(element, 0, 0,
+                    canvas.getContext('2d').drawImage(element, 0, 0,
                             size.width, size.height);
                 }
+                // NOTE: Setting canvas internally sets _size.
+                this._setImage(canvas);
             } else {
                 // 0-width / height dimensions do not require the creation of
                 // an internal canvas. Just reflect the size for now.
