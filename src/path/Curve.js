@@ -2034,7 +2034,8 @@ new function() { // Scope for bezier intersection using fat-line clipping
      * tolerance of each other along a part of v1 shorter than it, the part
      * counts as one intersection. The implicit curve extends beyond v2, so
      * only roots on v2 itself are kept. Returns false if f(v1(t)) vanishes,
-     * as both lie on the same implicit curve. See: Sederberg T. - "Computer
+     * as both lie on the same implicit curve, or if its errors leave more
+     * roots than its degree allows. See: Sederberg T. - "Computer
      * Aided Geometric Design", chapter 17 on implicitization.
      */
     function addImplicitIntersections(v1, v2, c1, c2, locations, include,
@@ -2076,6 +2077,10 @@ new function() { // Scope for bezier intersection using fat-line clipping
                 return false;
             var count = Numerical.solveBernstein(polynomial.coefficients,
                     polynomial.errors, roots, speed ? tolerance / speed : 1);
+            // More roots than its degree mean that the errors swamp the
+            // polynomial, e.g. for a piece of v2 much shorter than v1:
+            if (count >= polynomial.coefficients.length)
+                return false;
             for (var i = 0; i < count; i++) {
                 var t = roots[i],
                     u = Curve.getTimeOf(v2, Curve.getPoint(v1, t), tolerance);
