@@ -332,26 +332,42 @@ Base.exports.PaperScript = function() {
 
         // Static imports are turned into calls of __$import__(), which
         // execute() binds to the loader in options.load. `as` asks for the
-        // module's 'default' export or its 'namespace', see __$import__():
-        function getImport(source, as) {
-            return '__$import__(' + JSON.stringify(source.value)
-                    + (as ? ', "' + as + '"' : '') + ')';
+        // module's 'default' export or its 'namespace', see __$import__(), and
+        // the import attributes are passed on as an object:
+        function getImport(node, as) {
+            var attributes = node.attributes || [],
+                args = [JSON.stringify(node.source.value)];
+            if (as || attributes.length)
+                args.push(as ? '"' + as + '"' : 'undefined');
+            if (attributes.length) {
+                var values = {};
+                attributes.forEach(function(attribute) {
+                    var key = attribute.key;
+                    values[key.name || key.value] = attribute.value.value;
+                });
+                args.push(JSON.stringify(values));
+            }
+            return '__$import__(' + args.join(', ') + ')';
         }
 
         function handleModules(node) {
 			switch (node.type) {
             case 'ImportExpression':
                 // `import(specifier)` resolves to the module's namespace, as a
-                // Promise, so a failed load rejects instead of throwing:
+                // Promise, so a failed load rejects instead of throwing, and
+                // `import(specifier, options)` passes on `options.with`:
                 replaceCode(node, 'Promise.resolve().then(function() { '
                         + 'return __$import__(' + getCode(node.source)
-                        + ', "dynamic"); })');
+                        + ', "dynamic"' + (node.options
+                            ? ', (' + getCode(node.options) + ' || {}).with'
+                            : '')
+                        + '); })');
                 break;
             case 'ImportDeclaration':
                 // `import x from 'm'` assigns the module's default export,
                 // `import * as x from 'm'` its namespace, and
                 // `import { a, b as c } from 'm'` reads names from its exports:
-                var module = getImport(node.source),
+                var module = getImport(node),
                     named = [];
                 var vars = node.specifiers.map(function(specifier) {
                     var local = specifier.local.name;
@@ -360,7 +376,7 @@ Base.exports.PaperScript = function() {
                                 + '__.' + specifier.imported.name);
                         return null;
                     }
-                    return local + ' = ' + getImport(node.source,
+                    return local + ' = ' + getImport(node,
                             specifier.type === 'ImportDefaultSpecifier'
                                 ? 'default' : 'namespace');
                 }).filter(Boolean);
@@ -379,10 +395,10 @@ Base.exports.PaperScript = function() {
                 isModule = true;
                 replaceCode(node, node.exported
                         ? 'module.exports.' + node.exported.name + ' = '
-                            + getImport(node.source, 'namespace') + ';'
+                            + getImport(node, 'namespace') + ';'
                         : '(function(m) { for (var k in m) if (k !== '
                             + '"default") module.exports[k] = m[k]; })('
-                            + getImport(node.source) + ');');
+                            + getImport(node) + ');');
                 break;
             case 'ExportDefaultDeclaration':
                 // Convert `export default` to `module.exports.default = `,
@@ -423,7 +439,7 @@ Base.exports.PaperScript = function() {
                     // `export { a, b as c }` exports the local names under
                     // the exported ones, and `export { a } from 'm'` those
                     // of another module:
-                    var source = node.source && getImport(node.source) + '.';
+                    var source = node.source && getImport(node) + '.';
                     var exports = specifiers.map(function(specifier) {
                         var local = specifier.local.name,
                             exported = specifier.exported.name;
@@ -622,17 +638,20 @@ Base.exports.PaperScript = function() {
      *     handlers to export next to `onFrame`, `onResize` and the tool's
      *     handlers, for hosts that call them themselves
      * @option options.load {Function} the loader for static `import`
-     *     statements, called with the specifier as written and the
-     *     `options.url` of the importing script, and returning the module's
-     *     exports, e.g. the result of executing it. Modules with ES `export`
-     *     statements have their default export as `default` and are marked
-     *     with `__esModule`, so `import x` receives the default export, and
-     *     for CommonJS-style exports the whole exports. `import * as x`
+     *     statements, called with the specifier as written, the `options.url`
+     *     of the importing script, and the import attributes as an object,
+     *     e.g. `{ type: 'paperscript' }` for `import x from 'm' with { type:
+     *     'paperscript' }`, or `undefined` without them, and returning the
+     *     module's exports, e.g. the result of executing it. Modules with ES
+     *     `export` statements have their default export as `default` and are
+     *     marked with `__esModule`, so `import x` receives the default export,
+     *     and for CommonJS-style exports the whole exports. `import * as x`
      *     receives all exports, and for CommonJS-style exports, these as
      *     `default` too. Dynamic `import(specifier)` resolves to that
      *     namespace as a Promise, and its loader may return a Promise as well.
-     *     The loader runs each module once and handles cycles. Parsing
-     *     `import` requires a current Acorn as `self.acorn`
+     *     `import(specifier, options)` passes on `options.with` as the
+     *     attributes. The loader runs each module once and handles cycles.
+     *     Parsing `import` requires a current Acorn as `self.acorn`
      *
      * Code with top-level `await` runs as an async function. `execute()` then
      * returns a Promise of the exports, and installs the global handlers once
@@ -696,12 +715,12 @@ Base.exports.PaperScript = function() {
         // handleModules():
         var load = options && options.load,
             url = options && options.url;
-        function __$import__(specifier, as) {
+        function __$import__(specifier, as, attributes) {
             if (!load) {
                 throw new Error('Unable to import \'' + specifier + '\': no '
                         + 'loader was passed to PaperScript.execute().');
             }
-            var exports = load(specifier, url);
+            var exports = load(specifier, url, attributes);
             // Dynamic imports may receive a Promise from the loader:
             return as === 'dynamic'
                     ? Promise.resolve(exports).then(function(exports) {
