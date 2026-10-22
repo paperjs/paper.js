@@ -3179,4 +3179,17 @@ describe('Path Boolean Operations', () => {
       tolerance: 1e-3
     })
   })
+
+  test('Boolean operations with a curve that turns back along a straight edge', () => {
+    // The curve's control points lie along the square's top edge, and it runs
+    // back and forth along it, overlapping it and itself:
+    const square = new Path.Rectangle({ point: [0, 0], size: [100, 100] })
+    const sliver = new Path('M50,0C30,0 80,0 60,0Z')
+    equals(square.unite(sliver).area, 10000)
+    equals(square.subtract(sliver).area, 10000)
+    equals(square.intersect(sliver).isEmpty(), true)
+    square.rotate(30, [0, 0])
+    sliver.rotate(30, [0, 0])
+    equals(square.unite(sliver).area, 10000)
+  })
 })
