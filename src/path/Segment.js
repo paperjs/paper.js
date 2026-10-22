@@ -390,9 +390,12 @@ var Segment = Base.extend(/** @lends Segment# */{
         // project._selectionItems
         if (path && selection !== oldSelection) {
             path._updateSelection(this, oldSelection, selection);
-            // Let path know that we changed something and the view should be
-            // redrawn
-            path._changed(/*#=*/Change.ATTRIBUTE);
+            // Let the project know, so the view draws the selection again, see
+            // Item#setSelection():
+            var project = path._project;
+            if (project)
+                project._changed(/*#=*/Change.ATTRIBUTE,
+                        path._getChangeOwner());
         }
     },
 

@@ -67,6 +67,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         this._selectionCount = 0;
         // See Item#draw() for an explanation of _updateVersion
         this._updateVersion = 0;
+        // Counts the changes that make all buffers stale, as no item reports
+        // them, see Group#buffered:
+        this._bufferVersion = 0;
     },
 
     _serialize: function(options, dictionary) {
@@ -989,7 +992,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         }
     },
 
-    draw: function(ctx, matrix, pixelRatio) {
+    // Views pass themselves as _view, to draw buffered groups through their
+    // buffers, see Group#buffered:
+    draw: function(ctx, matrix, pixelRatio, _view) {
         // Increase the _updateVersion before the draw-loop. After that, items
         // that are visible will have their _updateVersion set to the new value.
         this._updateVersion++;
@@ -1000,6 +1005,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
             param = new Base({
                 offset: new Point(0, 0),
                 pixelRatio: pixelRatio,
+                view: _view,
                 viewMatrix: matrix.isIdentity() ? null : matrix,
                 matrices: [new Matrix()], // Start with the identity matrix.
                 // Tell the drawing routine that we want to keep _globalMatrix
