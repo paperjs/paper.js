@@ -3192,4 +3192,52 @@ describe('Path Boolean Operations', () => {
     sliver.rotate(30, [0, 0])
     equals(square.unite(sliver).area, 10000)
   })
+
+  test('Boolean operations with a curve that crosses another one twice at nearly the same point', () => {
+    // From the outline of a round cap: The sliver runs out along the straight
+    // edge of the sector, past its corner, and back, and so crosses its arc
+    // twice right at the corner, which the arc's piece around these
+    // crossings is much too short to tell apart through its implicit form:
+    const sector = new Path({
+      segments: [
+        [518, 66],
+        [
+          [543.4339399005719, 48.276718669103715],
+          null,
+          [-9.788297996014824, -14.046777135198777]
+        ],
+        [
+          [500.27671866910373, 40.566060099428114],
+          [14.046777135198777, -9.788297996014824],
+          [-14.046777135198777, 9.788297996014824]
+        ],
+        [
+          [492.5660600994281, 83.72328133089628],
+          [-9.788297996014824, -14.046777135198777]
+        ]
+      ],
+      closed: true
+    })
+    const sliver = new Path({
+      segments: [
+        [
+          [517.7844047666216, 66.15021928388006],
+          [0.02642628751709708, -0.018401827839298335],
+          [52.58213163149162, -36.64111480219838]
+        ],
+        [
+          [517.8436208556217, 66.10897433453103],
+          [19.017891667455274, -13.252348860808162],
+          [3.979039320256561e-12, -2.7426949600339867e-12]
+        ]
+      ],
+      closed: true
+    })
+    const area = Math.abs(sector.area)
+    equals(Math.abs(sector.unite(sliver).area), area, null, { tolerance: 1e-3 })
+    equals(Math.abs(sliver.unite(sector).area), area, null, { tolerance: 1e-3 })
+    equals(Math.abs(sector.subtract(sliver).area), area, null, {
+      tolerance: 1e-3
+    })
+  })
 })
