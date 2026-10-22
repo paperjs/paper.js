@@ -302,6 +302,7 @@ function onFrame(event) {
 <p>The buffer costs memory: it covers the part of the group that the view shows, at up to <code>width × height × 4 × pixelRatio²</code> bytes for a group that fills the whole view.</p>
 <p>Buffered groups are always <a href="../classes/Group.html#isolated"><tt>isolated</tt></a>: the blend modes of their children only apply within them, not to the items below them, also in other layers.</p>
 <p>Hit-testing, SVG export, <a href="../classes/Item.html#rasterize"><tt>item.rasterize</tt></a>() and drawing into other canvases than the view&rsquo;s don&rsquo;t use the buffer.</p>
+<p>A buffered group keeps one buffer, so inside a <a href="../classes/SymbolDefinition.html"><tt>SymbolDefinition</tt></a> that is placed several times, it draws into it again for each placement. Changes to any symbol definition make all buffers stale, as do forced updates through <code>view.update(true)</code>.</p>
 	
 	
 	
