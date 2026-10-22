@@ -324,6 +324,32 @@ describe('SvgExport', () => {
     equals(inner.segments[2].data, { hole: true }, 'data')
   })
 
+  test('Export SVG gradients in the coordinates of items that keep their matrix (#2410)', () => {
+    const item = new Path.Rectangle({
+      rectangle: new Rectangle(50, 50, 100, 100),
+      fillColor: {
+        gradient: { stops: ['white', 'blue'] },
+        origin: [50, 100],
+        destination: [150, 100]
+      },
+      applyMatrix: false
+    })
+    item.rotate(90)
+    const svg = item.exportSVG()
+    const gradient = svg.querySelector('linearGradient')
+    equals(
+      ['x1', 'y1', 'x2', 'y2'].map(key => +gradient.getAttribute(key)),
+      [50, 100, 150, 100],
+      'as the path is in them, before its transform'
+    )
+    const color = paper.project.importSVG(svg).fillColor
+    equals(
+      [color.origin, color.destination],
+      [item.fillColor.origin, item.fillColor.destination],
+      'and back in the coordinates of its parent'
+    )
+  })
+
   test('Export SVG with nested groups as clip masks', () => {
     // A transformed clip mask group with a nested group, and a group that is
     // clipped itself:
@@ -768,6 +794,54 @@ describe('SvgExport', () => {
         fillColor: 'red',
         matrix: [1, 1, 1, 1, 1, 1]
       })
+      const svg = paper.project.exportSVG({
+        bounds: 'content',
+        asString: true
+      })
+      compareSVG(assert.async(), svg, paper.project.activeLayer)
+    })
+
+    // Each with one item, as compareSVG() places the export by the bounds
+    // without strokes:
+    test('Export gradients of shapes, which keep their matrix (#2410)', assert => {
+      const rect = new Shape.Rectangle({
+        point: [100, 100],
+        size: [200, 100],
+        fillColor: {
+          gradient: { stops: ['yellow', 'red', 'blue'] },
+          origin: [100, 150],
+          destination: [300, 150]
+        }
+      })
+      rect.rotate(40)
+      rect.scale(1.5)
+      const svg = paper.project.exportSVG({
+        bounds: 'content',
+        asString: true
+      })
+      compareSVG(assert.async(), svg, paper.project.activeLayer)
+    })
+
+    test('Export gradients of paths that keep their matrix (#2410)', assert => {
+      const circle = new Path.Circle({
+        center: [250, 350],
+        radius: 80,
+        fillColor: {
+          gradient: { stops: ['white', 'green', 'black'], radial: true },
+          origin: [250, 350],
+          destination: [330, 350],
+          highlight: [230, 330]
+        },
+        strokeColor: {
+          gradient: { stops: ['yellow', 'red', 'blue'] },
+          origin: [170, 350],
+          destination: [330, 350]
+        },
+        strokeWidth: 20,
+        applyMatrix: false
+      })
+      circle.rotate(-60)
+      circle.scale(0.8)
       const svg = paper.project.exportSVG({
         bounds: 'content',
         asString: true

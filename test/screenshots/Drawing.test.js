@@ -287,16 +287,16 @@ describe('Elliptical gradients', () => {
       item.shear(0.4, 0)
       return item
     }
+    // The transformation applied, and kept in the matrix:
     createItem(true, 0)
-    // Below it, the browser's rendering of it, exported to SVG:
+    createItem(false, 110)
+    // Below them, the browser's rendering of both, exported to SVG:
     const svg = paper.project.exportSVG({
       asString: true,
       bounds: new Rectangle(0, 0, 250, 120)
     })
     const raster = await loadRaster('data:image/svg+xml;base64,' + btoa(svg))
     raster.position = paper.view.center.add(0, 60)
-    // Next to it, the same with the transformation kept in its matrix:
-    createItem(false, 110)
     await expectScene()
   })
 })
