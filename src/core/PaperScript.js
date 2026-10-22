@@ -195,6 +195,12 @@ Base.exports.PaperScript = function() {
             insertions = insertions.filter(function(insertion) {
                 return insertion[0] < range[0] || insertion[1] > range[1];
             });
+            // Keep the replacement apart from the identifiers or keywords
+            // that minified code may put right next to it, as in `return-1`:
+            if (/[\w$]/.test(code.charAt(start - 1)) && /^[\w$]/.test(str))
+                str = ' ' + str;
+            if (/[\w$]/.test(code.charAt(end)) && /[\w$]$/.test(str))
+                str += ' ';
             insertions.push([range[0], range[1],
                     str.length - range[1] + range[0]]);
             code = code.substring(0, start) + str + code.substring(end);
