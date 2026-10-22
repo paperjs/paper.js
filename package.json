@@ -46,8 +46,8 @@
     "node": ">=8.0.0"
   },
   "browser": {
-    "./dist/node/extend.js": false,
-    "./dist/node/self.js": false,
+    "./dist/node/extend.js": "./dist/node/browser.js",
+    "./dist/node/self.js": "./dist/node/browser.js",
     "canvas": false,
     "jsdom": false,
     "jsdom/lib/generated/idl/utils": false,
