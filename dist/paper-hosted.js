@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 13:43:00 2026 +0200
+ * Date: Fri Oct 23 00:27:26 2026 +0200
  *
  ***
  *
@@ -11970,7 +11970,7 @@ PathItem.inject(new function() {
 			});
 		}
 
-		var marks = new Array(vertices.length);
+		var marks;
 
 		function getHotPixels(i) {
 			var v = values[i],
@@ -12018,7 +12018,7 @@ PathItem.inject(new function() {
 			});
 		}
 
-		for (var i = 0, l = curves.length; i < l; i++) {
+		function cutAtHotPixels(i) {
 			var candidates = getHotPixels(i);
 			if (candidates.length) {
 				var list = sortCuts(cuts[i]),
@@ -12056,27 +12056,38 @@ PathItem.inject(new function() {
 			}
 		}
 
-		var pieces = [];
-		for (var i = 0, l = curves.length; i < l; i++) {
-			var list = sortCuts(cuts[i]);
-			for (var j = 1, k = list.length; j < k; j++) {
-				var cut1 = list[j - 1],
-					cut2 = list[j];
-				if (getVertex(cut1.point) !== getVertex(cut2.point)
-						&& Curve.getLength(getPiece(i, cut1, cut2))
-							< 4 * epsilon)
-					pieces.push([cut1.point, cut2.point]);
+		function mergeShortPieces() {
+			var pieces = [],
+				isMerged = false;
+			for (var i = 0, l = curves.length; i < l; i++) {
+				var list = sortCuts(cuts[i]);
+				for (var j = 1, k = list.length; j < k; j++) {
+					var cut1 = list[j - 1],
+						cut2 = list[j];
+					if (getVertex(cut1.point) !== getVertex(cut2.point)
+							&& Curve.getLength(getPiece(i, cut1, cut2))
+								< 4 * epsilon)
+						pieces.push([cut1.point, cut2.point]);
+				}
 			}
-		}
-		if (pieces.length) {
 			for (var i = 0, l = pieces.length; i < l; i++) {
 				var root1 = getRoot(pieces[i][0]),
 					root2 = getRoot(pieces[i][1]);
-				if (root1 !== root2)
+				if (root1 !== root2) {
 					parents[root1] = root2;
+					isMerged = true;
+				}
 			}
-			createVertices();
+			if (isMerged)
+				createVertices();
+			return isMerged;
 		}
+
+		do {
+			marks = new Array(vertices.length);
+			for (var i = 0, l = curves.length; i < l; i++)
+				cutAtHotPixels(i);
+		} while (mergeShortPieces());
 
 		var edges = [],
 			edgesByVertex = [];
