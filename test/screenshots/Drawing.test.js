@@ -14,7 +14,9 @@ import { describe, test } from 'vitest'
 import paper, {
   CompoundPath,
   Group,
+  Matrix,
   Path,
+  PatternDefinition,
   PointText,
   Raster,
   Rectangle
@@ -263,6 +265,64 @@ describe('Gradients', () => {
         destination: [290, 150]
       }
     })
+    await expectScene()
+  })
+})
+
+describe('Patterns', () => {
+  test('Vector and image patterns, strokes, text and transforms', async () => {
+    const style = createScene(300, 200)
+    const dots = new PatternDefinition(
+      new Path.Circle({ center: [5, 5], radius: 3, fillColor: '#e63' }),
+      { tile: new Rectangle(0, 0, 10, 10) }
+    )
+    const stripes = new PatternDefinition(
+      new Path.Rectangle({
+        rectangle: new Rectangle(0, 0, 4, 12),
+        fillColor: '#39c'
+      }),
+      { spacing: [4, 0] }
+    )
+    new Path.Rectangle({
+      rectangle: new Rectangle(10, 10, 80, 80),
+      fillColor: { pattern: dots }
+    })
+    new Path.Circle({
+      center: [150, 50],
+      radius: 32,
+      strokeWidth: 16,
+      strokeColor: { pattern: stripes, matrix: new Matrix().rotate(45) }
+    })
+    // The raster of a star, as an image pattern. Scaled images change how
+    // Chrome draws the same image later, so leave paper-js.gif to Rasters:
+    const raster = new Path.Star({
+      center: [0, 0],
+      points: 5,
+      radius1: 4,
+      radius2: 9,
+      fillColor: '#9c3',
+      insert: false
+    }).rasterize({ resolution: 144, insert: false })
+    new Path.Circle({
+      center: [250, 50],
+      radius: 40,
+      fillColor: { pattern: new PatternDefinition(raster, { spacing: 2 }) }
+    })
+    new PointText({
+      ...style,
+      point: [10, 160],
+      content: 'Pattern',
+      fontSize: 40,
+      fillColor: { pattern: stripes }
+    })
+    // The pattern transforms with the item:
+    const rect = new Path.Rectangle({
+      rectangle: new Rectangle(190, 120, 80, 60),
+      fillColor: { pattern: dots },
+      strokeColor: 'black'
+    })
+    rect.rotate(20)
+    rect.scale(1.2, 0.8)
     await expectScene()
   })
 })

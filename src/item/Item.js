@@ -256,11 +256,14 @@ new function() { // Injection scope for various item event handlers
             Item._clearBoundsCache(this);
         }
         // Changes of appearance make the buffers of the item and the groups
-        // that contain it stale, see Group#buffered:
+        // that contain it stale, see Group#buffered, and change the definition
+        // that the top-most of them is the item of, notified below for itself:
         if (flags & /*#=*/ChangeFlag.APPEARANCE) {
             for (var item = this; item; item = item._parent) {
                 if (item._buffer)
                     item._buffer.matrix = null;
+                if (item._symbol && item !== this)
+                    item._symbol._changed(flags);
             }
         }
         // Changes of a text wrap, or of what's in it, change the text it wraps:

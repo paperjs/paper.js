@@ -518,6 +518,23 @@ describe('Group', () => {
       equals(layer.children.length, 1)
     })
 
+    test('is drawn again after changes inside symbol definitions', () => {
+      const circle = new Path.Circle({
+        center: [0, 0],
+        radius: 10,
+        fillColor: 'red'
+      })
+      const definition = new SymbolDefinition(new Group(circle))
+      new Layer({ buffered: true })
+      definition.place([50, 50])
+      const counter = countDraws(definition.item)
+      paper.view.update()
+      equals(counter.count, 1, 'first update')
+      circle.fillColor = 'blue'
+      paper.view.update()
+      equals(counter.count, 2, 'after a change of a child of the definition')
+    })
+
     test('rasterize() and exportSVG() draw without the buffer', () => {
       const { below, layer, path } = createScene()
       const svg = layer.exportSVG({ asString: true })

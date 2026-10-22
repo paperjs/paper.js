@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Patterns</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        // Two discs share one pattern of fine lines. Where they overlap, the
+        // lines interfere in moiré fringes: move the mouse to move one disc,
+        // and sideways to turn it, as its pattern moves and turns with it.
+
+        // A line, repeated with a gap below it:
+        var line = new Path.Rectangle({
+            point: [0, 0],
+            size: [10, 1.5],
+            fillColor: '#1d2b3a'
+        });
+        var lines = new PatternDefinition(line, { spacing: [0, 2.5] });
+
+        var radius = Math.min(view.size.width, view.size.height) * 0.32;
+        var still = new Path.Circle({
+            center: view.center - [radius * 0.4, 0],
+            radius: radius,
+            fillColor: { pattern: lines }
+        });
+        var moving = new Path.Circle({
+            center: view.center + [radius * 0.4, 0],
+            radius: radius,
+            fillColor: { pattern: lines },
+            applyMatrix: false
+        });
+        moving.rotate(3);
+
+        var target = moving.position;
+
+        function onMouseMove(event) {
+            target = event.point;
+            moving.rotate(event.delta.x / 40);
+        }
+
+        function onFrame(event) {
+            moving.position += (target - moving.position) / 12;
+            // Both discs share the pattern, so as its lines breathe, they do
+            // so in both:
+            lines.spacing = [0, 2.5 + Math.sin(event.time / 2) / 2];
+        }
+
+        function onResize() {
+            still.position = view.center - [radius * 0.4, 0];
+        }
+    </script>
+</head>
+<body style="background: #f3efe6">
+    <canvas id="canvas" resize></canvas>
+</body>
+</html>

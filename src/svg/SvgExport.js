@@ -360,6 +360,58 @@ new function() {
         return 'url(#' + gradientNode.id + ')';
     }
 
+    function exportPattern(color, options) {
+        // Patterns are placed in the coordinates of the item's parent too, see
+        // exportGradient(). Exporting them changes elementMatrix, so restore
+        // it after, for the other color of the element:
+        var matrix = elementMatrix;
+        if (!matrix.isIdentity()) {
+            color = color.clone();
+            color.transform(matrix.inverted());
+        }
+        var patternNode = getDefinition(color, 'pattern');
+        if (!patternNode) {
+            var pattern = color.getPattern(),
+                item = pattern._item,
+                tile = pattern.getTile(),
+                spacing = pattern._spacing,
+                cell = new Rectangle(tile.getPoint(),
+                        tile.getSize().add(spacing)),
+                transform = getTransform(color.getMatrix()).transform,
+                // SVG draws the content of tiles relative to their top left
+                // corner, so map the cell onto itself through viewBox:
+                attrs = {
+                    x: cell.x,
+                    y: cell.y,
+                    width: cell.width,
+                    height: cell.height,
+                    viewBox: formatter.rectangle(cell),
+                    patternUnits: 'userSpaceOnUse'
+                },
+                content = exportSVG(item, options);
+            if (transform)
+                attrs.patternTransform = transform;
+            patternNode = SvgElement.create('pattern', attrs, formatter);
+            // Leave the spacing between the tiles empty, as on the canvas:
+            if (!spacing.isZero() && !tile.contains(item.getStrokeBounds())) {
+                var rect = new Shape.Rectangle({
+                        rectangle: tile,
+                        insert: false
+                    }),
+                    clip = exportClip(rect, options),
+                    group = SvgElement.create('g');
+                setDefinition(rect, clip, 'clip', options);
+                group.setAttribute('clip-path', 'url(#' + clip.id + ')');
+                group.appendChild(content);
+                content = group;
+            }
+            patternNode.appendChild(content);
+            setDefinition(color, patternNode, 'pattern', options);
+        }
+        elementMatrix = matrix;
+        return 'url(#' + patternNode.id + ')';
+    }
+
     function exportShadow(item, options) {
         // Shadows as SVG 1.1 filters, which browsers and editors render, with
         // their region in percent of the element's bounds, as Illustrator drops
@@ -588,9 +640,11 @@ new function() {
         } else {
             attrs[entry.attribute] = value == null ? 'none'
                     : type === 'color' ? value.gradient
-                        // true for noAlpha, see above
                         ? exportGradient(value, options)
-                        : value.toCSS(true)
+                        : value.pattern
+                            ? exportPattern(value, options)
+                            // true for noAlpha, see above
+                            : value.toCSS(true)
                     : type === 'array' ? value.join(',')
                     : type === 'lookup' ? entry.toSVG[value]
                     // Tracking is in thousandths of an em:
@@ -615,13 +669,14 @@ new function() {
             // (A layer or group which can have style values in SVG).
             var get = entry.get,
                 value = item[get](),
-                // SVG reads gradients in the coordinates of the elements that
-                // draw them, so they don't go on groups (#2410):
-                isGradient = entry.type === 'color' && value && value.gradient;
+                // SVG reads gradients and patterns in the coordinates of the
+                // elements that draw them, so they don't go on groups (#2410):
+                isPaintServer = entry.type === 'color' && value
+                        && (value.gradient || value.pattern);
             if (parent && !(get in parentStyle))
                 parentStyle[get] = parent[get]();
             // Skip undefined values, as found on groups with mixed children:
-            if (value !== undefined && (isGradient ? !isGroup
+            if (value !== undefined && (isPaintServer ? !isGroup
                     : entry.exportFilter
                         ? entry.exportFilter(item, value)
                         : options.reduceAttributes == false
