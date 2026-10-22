@@ -3240,4 +3240,47 @@ describe('Path Boolean Operations', () => {
       tolerance: 1e-3
     })
   })
+
+  test('Unite paths where merging vertices moves one by more than epsilon', () => {
+    // A curve of path1 ends within 2 epsilon of the corner of path2, and path1
+    // has a curve shorter than 4 epsilon there, whose ends merge into one
+    // vertex. That moves the corner's vertex towards the next curve of path1,
+    // which then needs to be cut at it, although it wasn't within epsilon of
+    // it before:
+    const path1 = new Path({
+      segments: [
+        [
+          [183.79355827441708, 241.2860406485226],
+          [-0.45639956554700234, 1.1935881781922149],
+          [0.3098694658409613, -0.8103787977256616]
+        ],
+        [
+          [194.6241257036517, 228.70963346316088],
+          [-5.548376724694151, 4.148648228840301],
+          [0, 0]
+        ],
+        [
+          [194.6271405001143, 228.70737937663708],
+          [0, 0],
+          [0.12059749168304279, -0.09016184225993129]
+        ]
+      ],
+      closed: true
+    })
+    const path2 = new Path({
+      segments: [
+        [
+          [271.9994910663176, 332.17787176347343],
+          [0, 0],
+          [-0.1382586889270101, 0.10345675804433085]
+        ],
+        [194.62408085062052, 228.70957298404534],
+        [395.4240808505734, 78.67957298408056]
+      ],
+      closed: true
+    })
+    const area = Math.abs(path1.area) + Math.abs(path2.area)
+    equals(Math.abs(path1.unite(path2).area), area, null, { tolerance: 0.05 })
+    equals(Math.abs(path2.unite(path1).area), area, null, { tolerance: 0.05 })
+  })
 })

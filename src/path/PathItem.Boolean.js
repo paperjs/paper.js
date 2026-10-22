@@ -788,7 +788,7 @@ PathItem.inject(new function() {
 
         // The last curve that tested each vertex in getHotPixels(), to test
         // each only once per curve:
-        var marks = new Array(vertices.length);
+        var marks;
 
         // 2b. Cut the curves where they pass within epsilon of a vertex, the
         // hot pixels of snap rounding. Moving the pieces to their vertices
@@ -847,7 +847,7 @@ PathItem.inject(new function() {
             });
         }
 
-        for (var i = 0, l = curves.length; i < l; i++) {
+        function cutAtHotPixels(i) {
             var candidates = getHotPixels(i);
             if (candidates.length) {
                 var list = sortCuts(cuts[i]),
@@ -888,28 +888,42 @@ PathItem.inject(new function() {
         // 2c. Merge the vertices that pieces shorter than 4 epsilon join: As
         // the hot pixels reach 2 epsilon, the order of the edges around such
         // vertices can't be told apart. Merged vertices span up to about 5
-        // epsilon, the precision of the result:
-        var pieces = [];
-        for (var i = 0, l = curves.length; i < l; i++) {
-            var list = sortCuts(cuts[i]);
-            for (var j = 1, k = list.length; j < k; j++) {
-                var cut1 = list[j - 1],
-                    cut2 = list[j];
-                if (getVertex(cut1.point) !== getVertex(cut2.point)
-                        && Curve.getLength(getPiece(i, cut1, cut2))
-                            < 4 * epsilon)
-                    pieces.push([cut1.point, cut2.point]);
+        // epsilon, the precision of the result. Returns true if it merged
+        // any, as moving vertices can bring pieces within epsilon of others:
+        function mergeShortPieces() {
+            var pieces = [],
+                isMerged = false;
+            for (var i = 0, l = curves.length; i < l; i++) {
+                var list = sortCuts(cuts[i]);
+                for (var j = 1, k = list.length; j < k; j++) {
+                    var cut1 = list[j - 1],
+                        cut2 = list[j];
+                    if (getVertex(cut1.point) !== getVertex(cut2.point)
+                            && Curve.getLength(getPiece(i, cut1, cut2))
+                                < 4 * epsilon)
+                        pieces.push([cut1.point, cut2.point]);
+                }
             }
-        }
-        if (pieces.length) {
             for (var i = 0, l = pieces.length; i < l; i++) {
                 var root1 = getRoot(pieces[i][0]),
                     root2 = getRoot(pieces[i][1]);
-                if (root1 !== root2)
+                if (root1 !== root2) {
                     parents[root1] = root2;
+                    isMerged = true;
+                }
             }
-            createVertices();
+            if (isMerged)
+                createVertices();
+            return isMerged;
         }
+
+        // Cut at the hot pixels and merge, until no vertices move any more,
+        // which ends as each merge leaves fewer of them:
+        do {
+            marks = new Array(vertices.length);
+            for (var i = 0, l = curves.length; i < l; i++)
+                cutAtHotPixels(i);
+        } while (mergeShortPieces());
 
         // 3. Create the edges between the vertices along each curve, with the
         // change in winding of each operand when crossing them from right to
