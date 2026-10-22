@@ -246,6 +246,11 @@ var Group = Item.extend(/** @lends Group# */{
      * Hit-testing, SVG export, {@link Item#rasterize()} and drawing into other
      * canvases than the view's don't use the buffer.
      *
+     * A buffered group keeps one buffer, so inside a {@link SymbolDefinition}
+     * that is placed several times, it draws into it again for each placement.
+     * Changes to any symbol definition make all buffers stale, as do forced
+     * updates through `view.update(true)`.
+     *
      * @bean
      * @type Boolean
      * @default false
