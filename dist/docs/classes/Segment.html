@@ -191,7 +191,7 @@ var path = new Path({
 
 <div class="member-text">
 	<p>The name of the segment. If the segment has a name, it can be accessed by name through its path&rsquo;s segments list. If several segments share a name, the first one is found.</p>
-<p>The name is stored in JSON, but not in SVG.</p>
+<p>The name is stored in JSON, and in SVG in the <code>data-paper-segments</code> attribute of the path, see <a href="../classes/Segment.html#data"><tt>segment.data</tt></a>.</p>
 	
 	
 	
@@ -224,7 +224,7 @@ console.log(path.segments['corner'].point); // { x: 50, y: 10 }</code></pre>
 
 <div class="member-text">
 	<p>A plain javascript object which can be used to store arbitrary data on the segment.</p>
-<p>The data is stored in JSON, but not in SVG.</p>
+<p>The data is stored in JSON, and in SVG in the <code>data-paper-segments</code> attribute of the path, keyed by the index of the segment. Paper.js drops it on import if the indices don&rsquo;t fit the path anymore, as happens when another editor removes segments.</p>
 	
 	
 	

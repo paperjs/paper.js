@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 01:39:09 2026 +0200
+ * Date: Thu Oct 22 01:52:37 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -7145,7 +7145,8 @@ declare namespace paper {
          * by name through its path's segments list. If several segments share a
          * name, the first one is found.
          * 
-         * The name is stored in JSON, but not in SVG.
+         * The name is stored in JSON, and in SVG in the `data-paper-segments`
+         * attribute of the path, see {@link Segment#data}.
          */
         name: string | null
 
@@ -7153,7 +7154,10 @@ declare namespace paper {
          * A plain javascript object which can be used to store arbitrary data on
          * the segment.
          * 
-         * The data is stored in JSON, but not in SVG.
+         * The data is stored in JSON, and in SVG in the `data-paper-segments`
+         * attribute of the path, keyed by the index of the segment. Paper.js drops
+         * it on import if the indices don't fit the path anymore, as happens when
+         * another editor removes segments.
          */
         data: any
 

@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 01:39:09 2026 +0200
+ * Date: Thu Oct 22 01:52:37 2026 +0200
  *
  ***
  *
@@ -20525,8 +20525,9 @@ new function() {
 	}
 
 	function exportPath(item, options) {
-		var matchShapes = options.matchShapes;
-		if (matchShapes) {
+		var matchShapes = options.matchShapes,
+			segmentsData = getSegmentsData(item);
+		if (matchShapes && !segmentsData) {
 			var shape = item.toShape(false);
 			if (shape)
 				return exportShape(shape, options);
@@ -20558,6 +20559,8 @@ new function() {
 			type = 'path';
 			attrs.d = item.getPathData(null, options.precision);
 		}
+		if (segmentsData)
+			attrs['data-paper-segments'] = segmentsData;
 		return SvgElement.create(type, attrs, formatter);
 	}
 
@@ -20590,10 +20593,36 @@ new function() {
 
 	function exportCompoundPath(item, options) {
 		var attrs = getTransform(item._matrix);
-		var data = item.getPathData(null, options.precision);
+		var data = item.getPathData(null, options.precision),
+			segmentsData = getSegmentsData(item);
 		if (data)
 			attrs.d = data;
+		if (segmentsData)
+			attrs['data-paper-segments'] = segmentsData;
 		return SvgElement.create('path', attrs, formatter);
+	}
+
+	function getSegmentsData(item) {
+		var paths = item._children || [item],
+			entries = null,
+			index = 0;
+		for (var i = 0, l = paths.length; i < l; i++) {
+			var segments = paths[i]._segments;
+			for (var j = 0, m = segments.length; j < m; j++, index++) {
+				var segment = segments[j],
+					name = segment._name,
+					data = segment._data,
+					hasData = data && !Base.equals(data, {});
+				if (name || hasData) {
+					var entry = (entries = entries || {})[index] = {};
+					if (name)
+						entry.name = name;
+					if (hasData)
+						entry.data = data;
+				}
+			}
+		}
+		return entries && JSON.stringify(entries);
 	}
 
 	function exportSymbolItem(item, options) {
@@ -21632,6 +21661,27 @@ new function() {
 		return json ? Base.set(data || {}, JSON.parse(json)) : data;
 	}
 
+	function setSegmentsData(item, node) {
+		var json = node.getAttribute('data-paper-segments');
+		if (json) {
+			var entries = JSON.parse(json),
+				paths = item._children || [item],
+				segments = [];
+			for (var i = 0, l = paths.length; i < l; i++)
+				segments.push.apply(segments, paths[i]._segments);
+			if (Math.max.apply(Math, Object.keys(entries)) < segments.length) {
+				for (var index in entries) {
+					var entry = entries[index],
+						segment = segments[index];
+					if (entry.name)
+						segment.setName(entry.name);
+					if (entry.data)
+						segment._data = entry.data;
+				}
+			}
+		}
+	}
+
 	var sandbox;
 
 	function getSandbox() {
@@ -21687,6 +21737,8 @@ new function() {
 				settings.applyMatrix = applyMatrix;
 			}
 			if (item) {
+				if (isElement && item instanceof PathItem)
+					setSegmentsData(item, node);
 				if (isElement && importer !== importGroup)
 					item = applyAttributes(item, node, options, isRoot);
 				var data = isElement && getData(node);
