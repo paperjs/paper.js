@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 13:41:52 2026 +0200
+ * Date: Thu Oct 22 14:27:48 2026 +0200
  *
  ***
  *
@@ -3417,6 +3417,8 @@ var Item = Base.extend(Emitter, {
 		selected: false,
 		data: {}
 	},
+	_attributes: ['_locked', '_visible', '_blendMode', '_opacity',
+			'_clipMask', '_guide', '_textWrap'],
 	_prioritize: ['applyMatrix']
 },
 new function() {
@@ -4274,8 +4276,7 @@ new function() {
 
 	copyAttributes: function(source, excludeMatrix) {
 		this.setStyle(source._style);
-		var keys = ['_locked', '_visible', '_blendMode', '_opacity',
-				'_clipMask', '_guide', '_textWrap'];
+		var keys = this._attributes;
 		for (var i = 0, l = keys.length; i < l; i++) {
 			var key = keys[i];
 			if (source.hasOwnProperty(key))
@@ -5481,6 +5482,7 @@ var Group = Item.extend({
 	},
 	_isolated: false,
 	_buffered: false,
+	_attributes: Item.prototype._attributes.concat(['_isolated', '_buffered']),
 
 	initialize: function Group(arg) {
 		this._children = [];
