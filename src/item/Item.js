@@ -251,6 +251,14 @@ new function() { // Injection scope for various item event handlers
             // child triggers this notification on the parent.
             Item._clearBoundsCache(this);
         }
+        // Changes of appearance make the buffers of the item and the groups
+        // that contain it stale, see Group#buffered:
+        if (flags & /*#=*/ChangeFlag.APPEARANCE) {
+            for (var item = this; item; item = item._parent) {
+                if (item._buffer)
+                    item._buffer.matrix = null;
+            }
+        }
         // Changes of a text wrap, or of what's in it, change the text it wraps:
         for (var item = this; item && !(item instanceof Layer);
                 item = item._parent) {
@@ -263,15 +271,22 @@ new function() { // Injection scope for various item event handlers
         }
         // A child that its parent doesn't show is part of the parent, as a
         // text's path is: its changes are the parent's.
-        var parent = this._parent,
-            owner = parent && !parent.getChildren() && parent;
+        var isOwner = this._getChangeOwner() === this;
         if (project)
-            project._changed(flags, owner ? null : this);
-        if (owner)
-            owner._changed(flags);
+            project._changed(flags, isOwner ? this : null);
+        if (!isOwner)
+            this._parent._changed(flags);
         // If this item is a symbol's definition, notify it of the change too
         if (symbol)
             symbol._changed(flags);
+    },
+
+    // The item that the changes of this item are logged for: itself, or the
+    // parent that doesn't show it as a child, as a text doesn't show its path.
+    _getChangeOwner: function() {
+        var parent = this._parent;
+        return parent && !parent.getChildren() ? parent._getChangeOwner()
+                : this;
     },
 
     /**
@@ -666,7 +681,10 @@ new function() { // Injection scope for various item event handlers
             var project = this._project;
             if (project) {
                 project._updateSelection(this);
-                this._changed(/*#=*/Change.ATTRIBUTE);
+                // The project draws the selection over the items, so it
+                // doesn't change them, nor the buffers they're drawn into:
+                project._changed(/*#=*/Change.ATTRIBUTE,
+                        this._getChangeOwner());
             }
         }
     },
@@ -4852,21 +4870,32 @@ new function() { // Injection scope for hit-test functions shared with project
             // Determine if we can draw directly, or if we need to draw into a
             // separate canvas and then composite onto the main canvas.
             direct = !shadow && (normalBlend && opacity === 1
-                        && !this._isolated
+                        && !(this instanceof Group && this.isIsolated())
                     // If native blending is possible, see if the item allows it
                     || (nativeBlend || normalBlend && opacity < 1)
                         && this._canComposite())
                     || param.dontStart // e.g. CompoundPath
                     || param.clip,
             pixelRatio = param.pixelRatio || 1,
-            mainCtx, itemOffset, prevOffset, itemSize;
+            mainCtx, itemOffset, prevOffset, itemSize, buffer, isFresh;
         if (!direct) {
+            // Buffered groups drawn by a view keep their temporary canvas, and
+            // only draw into it again when it's stale, see Group#buffered.
+            // A clip item isn't part of the group, so its changes wouldn't
+            // make the buffer stale:
+            buffer = this._buffered && param.view && !param.clipItem
+                    && (this._buffer || (this._buffer = {}));
+            var version = this._project._bufferVersion;
+            isFresh = buffer && viewMatrix.equals(buffer.matrix)
+                    && buffer.version === version;
             // Apply the parent's global matrix to the calculation of correct
             // bounds, and include the item's shadow (#1628).
-            var bounds = this.getStrokeBounds(viewMatrix);
+            var bounds = isFresh
+                    ? buffer.bounds
+                    : this.getStrokeBounds(viewMatrix);
             // Pass true for _dontMerge, as groups don't draw the shadows of
             // their children.
-            if (style.getShadowColor(true)) {
+            if (!isFresh && style.getShadowColor(true)) {
                 // Transform the shadow the same way as in _setStyles(), and
                 // cover its blur up to three times the standard deviation,
                 // which is half of shadowBlur in Canvas.
@@ -4877,6 +4906,11 @@ new function() { // Injection scope for hit-test functions shared with project
                 bounds = bounds.unite(
                     new Rectangle(bounds.getPoint().add(offset),
                         bounds.getSize()).expand(blur.getLength() * 3));
+            }
+            if (buffer) {
+                buffer.matrix = viewMatrix;
+                buffer.version = version;
+                buffer.bounds = bounds;
             }
             // Only cover the part of the bounds that is visible on the canvas
             // that we're drawing into (#1644). NOTE: Item#rasterize() doesn't
@@ -4904,7 +4938,30 @@ new function() { // Injection scope for hit-test functions shared with project
             // it, instead of the mainCtx. It may be larger than itemSize,
             // since only that part of it is composited:
             mainCtx = ctx;
-            ctx = CanvasProvider.getContext(itemSize, { minimum: true });
+            if (buffer) {
+                var bufferCanvas = buffer.canvas;
+                isFresh = isFresh && itemOffset.equals(buffer.offset)
+                        && itemSize.equals(buffer.size);
+                if (!bufferCanvas || bufferCanvas.width < itemSize.width
+                        || bufferCanvas.height < itemSize.height) {
+                    // In Chrome, OffscreenCanvas stays fast with many paths
+                    // where a detached canvas element doesn't:
+                    bufferCanvas = buffer.canvas = self.OffscreenCanvas
+                            ? new self.OffscreenCanvas(itemSize.width,
+                                itemSize.height)
+                            : CanvasProvider.getCanvas(itemSize);
+                    isFresh = false;
+                }
+                buffer.offset = itemOffset;
+                buffer.size = itemSize;
+                ctx = bufferCanvas.getContext('2d');
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                if (!isFresh)
+                    ctx.clearRect(0, 0, bufferCanvas.width,
+                            bufferCanvas.height);
+            } else {
+                ctx = CanvasProvider.getContext(itemSize, { minimum: true });
+            }
             if (pixelRatio !== 1)
                 ctx.scale(pixelRatio, pixelRatio);
         }
@@ -4958,9 +5015,11 @@ new function() { // Injection scope for hit-test functions shared with project
             if (offset)
                 ctx.translate(-offset.x, -offset.y);
         }
-        this._draw(ctx, shadow && !direct
-                ? param.extend({ dontShadow: true }) : param,
-                viewMatrix, strokeMatrix);
+        if (!isFresh) {
+            this._draw(ctx, shadow && !direct
+                    ? param.extend({ dontShadow: true }) : param,
+                    viewMatrix, strokeMatrix);
+        }
         ctx.restore();
         matrices.pop();
         if (param.clip && !param.dontFinish) {
@@ -4982,8 +5041,10 @@ new function() { // Injection scope for hit-test functions shared with project
                     itemSize);
             if (shadow)
                 mainCtx.restore();
-            // Return the temporary context, so it can be reused
-            CanvasProvider.release(ctx);
+            // Return the temporary context, so it can be reused, unless the
+            // group keeps it as its buffer:
+            if (!buffer)
+                CanvasProvider.release(ctx);
             // Restore previous offset.
             param.offset = prevOffset;
         }

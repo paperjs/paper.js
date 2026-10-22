@@ -88,8 +88,12 @@ var SymbolDefinition = Base.extend(/** @lends SymbolDefinition# */{
         if (flags & /*#=*/ChangeFlag.GEOMETRY)
             // Clear cached bounds of all items that this symbol is linked to.
             Item._clearBoundsCache(this);
-        if (flags & /*#=*/ChangeFlag.APPEARANCE)
-            this.project._changed(flags);
+        if (flags & /*#=*/ChangeFlag.APPEARANCE) {
+            var project = this.project;
+            // Its items may be placed in any buffered group:
+            project._bufferVersion++;
+            project._changed(flags);
+        }
     },
 
     /**

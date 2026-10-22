@@ -11,7 +11,16 @@
  */
 
 import { describe } from 'vitest'
-import paper, { Color, Group, Path, Point, PointText, Rectangle } from 'paper'
+import paper, {
+  Color,
+  Group,
+  Layer,
+  Path,
+  Point,
+  PointText,
+  Rectangle,
+  SymbolDefinition
+} from 'paper'
 import { comparePixels, equals, test } from '../helpers.js'
 
 describe('Group', () => {
@@ -301,5 +310,243 @@ describe('Group', () => {
       '["Group",{"applyMatrix":true,"isolated":true}]',
       'exportJSON()'
     )
+    // Buffered groups read as isolated, but don't store it, so turning
+    // buffered off after a round trip leaves them unisolated:
+    const buffered = new Group({ buffered: true })
+    const json = buffered.exportJSON()
+    equals(json, '["Group",{"applyMatrix":true,"buffered":true}]', 'buffered')
+    const imported = new Group().importJSON(json)
+    imported.buffered = false
+    equals(imported.isolated, false, 'unisolated after a round trip')
+  })
+
+  describe('group.buffered (#377)', () => {
+    // A layer below the buffered one, so its blending shows, and a layer with
+    // a buffered group of overlapping paths, nested to see their changes:
+    function createScene(options) {
+      const below = paper.project.activeLayer
+      below.addChild(
+        new Path.Rectangle({
+          point: [0, 0],
+          size: [100, 50],
+          fillColor: 'blue'
+        })
+      )
+      const path = new Path.Circle({
+        center: [40, 40],
+        radius: 30,
+        fillColor: 'red',
+        strokeColor: 'black',
+        strokeWidth: 4
+      })
+      const layer = new Layer(
+        Object.assign(
+          {
+            children: [
+              new Group([
+                path,
+                new Path.Rectangle({
+                  point: [40, 40],
+                  size: [50, 50],
+                  fillColor: new Color(0, 1, 0, 0.5)
+                })
+              ])
+            ]
+          },
+          options
+        )
+      )
+      return { below, layer, path }
+    }
+
+    function getPixels() {
+      const { element } = paper.view
+      return Array.from(
+        element
+          .getContext('2d')
+          .getImageData(0, 0, element.width, element.height).data
+      )
+    }
+
+    function equalPixels(actual, expected, message) {
+      // Allow for rounding of half-transparent channels:
+      equals(
+        actual.filter((value, i) => Math.abs(value - expected[i]) > 1).length,
+        0,
+        message
+      )
+    }
+
+    // The buffer only shows in how often the items in it are drawn, so count
+    // the calls of the item's draw():
+    function countDraws(item) {
+      const counter = { count: 0 }
+      const { draw } = item
+      item.draw = function (...args) {
+        counter.count++
+        return draw.apply(this, args)
+      }
+      return counter
+    }
+
+    // Buffered groups are isolated, so compare them with isolated groups,
+    // which also composite their content, with the same rounding:
+    test('draws the same pixels as without the buffer', () => {
+      for (const options of [
+        {},
+        { opacity: 0.5 },
+        { blendMode: 'multiply' },
+        { blendMode: 'negation' },
+        { opacity: 0.5, blendMode: 'multiply', position: [55, 45] }
+      ]) {
+        const name = JSON.stringify(options)
+        const { below, layer, path } = createScene(
+          Object.assign({ isolated: true }, options)
+        )
+        const counter = countDraws(path)
+        paper.view.update()
+        const expected = getPixels()
+        layer.isolated = false
+        layer.buffered = true
+        paper.view.update()
+        equalPixels(getPixels(), expected, `${name}, drawn into the buffer`)
+        // Change the layer below and back, to draw from the buffer:
+        below.opacity = 0.5
+        paper.view.update()
+        below.opacity = 1
+        paper.view.update()
+        equalPixels(getPixels(), expected, `${name}, drawn from the buffer`)
+        equals(counter.count, 2, `${name}, drawn into the buffer once`)
+        paper.project.clear()
+      }
+    })
+
+    test('is isolated', () => {
+      const { layer } = createScene()
+      layer.addChild(
+        new Path.Rectangle({
+          point: [0, 0],
+          size: [100, 100],
+          fillColor: 'black',
+          blendMode: 'destination-out'
+        })
+      )
+      layer.isolated = true
+      paper.view.update()
+      const expected = getPixels()
+      layer.isolated = false
+      layer.buffered = true
+      equals(layer.isolated, true, 'layer.isolated')
+      paper.view.update()
+      equalPixels(getPixels(), expected, 'pixels')
+      equals(
+        layer.rasterize({ insert: false }).getPixel(10, 10),
+        new Color(0, 0, 0, 0),
+        'rasterize() erases inside the layer only'
+      )
+    })
+
+    test('is only drawn again after changes in it', () => {
+      const { below, layer, path } = createScene({ buffered: true })
+      const counter = countDraws(path)
+      paper.view.update()
+      equals(counter.count, 1, 'first update')
+      below.firstChild.fillColor = 'yellow'
+      equals(paper.view.update(), true, 'update after a change below')
+      equals(counter.count, 1, 'after a change below')
+      path.fillColor = 'orange'
+      paper.view.update()
+      equals(counter.count, 2, 'after a change of a descendant')
+      layer.lastChild.addChild(new Path.Circle([10, 10], 5))
+      paper.view.update()
+      equals(counter.count, 3, 'after adding a descendant')
+      paper.view.zoom = 2
+      paper.view.update()
+      equals(counter.count, 4, 'after zooming')
+      paper.view.translate(10, 0)
+      paper.view.update()
+      equals(counter.count, 5, 'after panning')
+      paper.view.update(true)
+      equals(counter.count, 6, 'after a forced update')
+    })
+
+    test('draws the selection without drawing the buffer again', () => {
+      const { layer, path } = createScene({ isolated: true })
+      path.segments[0].selected = true
+      path.selected = true
+      paper.view.update()
+      const expected = getPixels()
+      path.selected = false
+      layer.isolated = false
+      layer.buffered = true
+      const counter = countDraws(path)
+      paper.view.update()
+      path.segments[0].selected = true
+      path.selected = true
+      equals(paper.view.update(), true, 'update after selecting')
+      equals(counter.count, 1, 'after selecting')
+      equalPixels(getPixels(), expected, 'pixels')
+    })
+
+    test('is drawn again after changes of symbol definitions', () => {
+      const definition = new SymbolDefinition(
+        new Path.Circle({ center: [0, 0], radius: 10, fillColor: 'red' })
+      )
+      const layer = new Layer({ buffered: true })
+      definition.place([50, 50])
+      const counter = countDraws(definition.item)
+      paper.view.update()
+      equals(counter.count, 1, 'first update')
+      new Layer()
+      new Path.Circle([10, 10], 5)
+      paper.view.update()
+      equals(counter.count, 1, 'after a change in another layer')
+      definition.item.fillColor = 'blue'
+      paper.view.update()
+      equals(counter.count, 2, 'after a change of the definition')
+      equals(layer.children.length, 1)
+    })
+
+    test('rasterize() and exportSVG() draw without the buffer', () => {
+      const { below, layer, path } = createScene()
+      const svg = layer.exportSVG({ asString: true })
+      const raster = layer.rasterize({ insert: false })
+      layer.buffered = true
+      const counter = countDraws(path)
+      paper.view.update()
+      equals(layer.exportSVG({ asString: true }), svg, 'exportSVG()')
+      // Compare without comparePixels(), which inserts items into the active
+      // layer:
+      equalPixels(
+        Array.from(layer.rasterize({ insert: false }).getImageData().data),
+        Array.from(raster.getImageData().data),
+        'rasterize()'
+      )
+      equals(counter.count, 2, 'drawn by rasterize()')
+      below.firstChild.fillColor = 'yellow'
+      paper.view.update()
+      equals(counter.count, 2, 'buffer kept after rasterize()')
+    })
+
+    test('turning it off or removing the group frees the buffer', () => {
+      const { below, layer, path } = createScene({ buffered: true })
+      const counter = countDraws(path)
+      paper.view.update()
+      layer.buffered = false
+      paper.view.update()
+      below.firstChild.fillColor = 'yellow'
+      paper.view.update()
+      equals(counter.count, 3, 'drawn without the buffer')
+      // Freeing the buffer only shows in the internal field:
+      equals(layer._buffer, null, 'buffer after turning it off')
+      layer.buffered = true
+      paper.view.update()
+      equals(counter.count, 4, 'drawn into a new buffer')
+      layer.remove()
+      equals(layer._buffer, null, 'buffer after removing')
+      paper.project.addLayer(layer)
+      paper.view.update()
+      equals(counter.count, 5, 'drawn into a new buffer after inserting')
+    })
   })
 })
