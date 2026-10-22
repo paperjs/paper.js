@@ -1800,6 +1800,51 @@ new function() { // Scope for methods that require private functions
         },
 
         /**
+         * Returns the times where the curve reverses its direction along the
+         * line that all of its control points lie along within the tolerance,
+         * if any.
+         *
+         * @param {Number[]} v the curve values array
+         * @param {Number} tolerance the distance of the control points to the
+         *     line
+         * @return {Number[]} the sorted times of the reversals
+         */
+        getReversals: function(v, tolerance) {
+            // The line's direction, along the longest of the chord and handles:
+            var dx = v[6] - v[0],
+                dy = v[7] - v[1];
+            for (var i = 0; i < 4; i += 2) {
+                var hx = v[i + 2] - v[i],
+                    hy = v[i + 3] - v[i + 1];
+                if (hx * hx + hy * hy > dx * dx + dy * dy) {
+                    dx = hx;
+                    dy = hy;
+                }
+            }
+            var length = Math.sqrt(dx * dx + dy * dy),
+                o = [];
+            if (!length)
+                return [];
+            for (var i = 0; i < 8; i += 2) {
+                var x = v[i] - v[0],
+                    y = v[i + 1] - v[1];
+                if (Math.abs(x * dy - y * dx) > tolerance * length)
+                    return [];
+                // The control point's position along the line:
+                o.push((x * dx + y * dy) / length);
+            }
+            var roots = [],
+                count = Numerical.solveQuadratic(
+                    3 * (o[1] - o[2]) - o[0] + o[3],
+                    2 * (o[0] + o[2]) - 4 * o[1], o[1] - o[0], roots,
+                    /*#=*/Numerical.CURVETIME_EPSILON,
+                    /*#=*/(1 - Numerical.CURVETIME_EPSILON));
+            return count > 0 ? roots.slice(0, count).sort(function(a, b) {
+                return a - b;
+            }) : [];
+        },
+
+        /**
          * Internal method to calculates the curve-time parameters where the
          * curve is tangential to provided tangent.
          * Tangents at the start or end are included.
