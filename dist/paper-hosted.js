@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 12:39:27 2026 +0200
+ * Date: Thu Oct 22 12:39:28 2026 +0200
  *
  ***
  *
@@ -5203,7 +5203,7 @@ new function() {
 					|| param.dontStart
 					|| param.clip,
 			pixelRatio = param.pixelRatio || 1,
-			mainCtx, itemOffset, prevOffset;
+			mainCtx, itemOffset, prevOffset, itemSize;
 		if (!direct) {
 			var bounds = this.getStrokeBounds(viewMatrix);
 			if (style.getShadowColor(true)) {
@@ -5226,9 +5226,10 @@ new function() {
 			}
 			prevOffset = param.offset;
 			itemOffset = param.offset = bounds.getTopLeft().floor();
+			itemSize = bounds.getSize().ceil().add(1).multiply(pixelRatio)
+					.floor();
 			mainCtx = ctx;
-			ctx = CanvasProvider.getContext(bounds.getSize().ceil().add(1)
-					.multiply(pixelRatio));
+			ctx = CanvasProvider.getContext(itemSize, { minimum: true });
 			if (pixelRatio !== 1)
 				ctx.scale(pixelRatio, pixelRatio);
 		}
@@ -5277,7 +5278,8 @@ new function() {
 				this._setShadow(mainCtx, param, viewMatrix);
 			}
 			BlendMode.process(blendMode, ctx, mainCtx, opacity,
-					itemOffset.subtract(prevOffset).multiply(pixelRatio));
+					itemOffset.subtract(prevOffset).multiply(pixelRatio),
+					itemSize);
 			if (shadow)
 				mainCtx.restore();
 			CanvasProvider.release(ctx);
@@ -20286,25 +20288,51 @@ var CanvasProvider = Base.exports.CanvasProvider = {
 		// Web-workers have no DOM, but may support OffscreenCanvas:
 		if (!window && !self.OffscreenCanvas)
 			return null;
-		var canvas;
 		if (typeof width === 'object') {
+			options = height;
 			height = width.height;
 			width = width.width;
 		}
-		if (this.canvases.length) {
-			canvas = this.canvases.pop();
-		} else {
-			canvas = window
-					? document.createElement('canvas')
-					: new self.OffscreenCanvas(width, height);
+		// With options.minimum, a pooled canvas that is at least as large is
+		// reused without resizing it, since resizing reallocates its pixels:
+		var minimum = options && options.minimum,
+			canvases = this.canvases,
+			fits = function(canvas) {
+				return minimum
+						? canvas.width >= width && canvas.height >= height
+						: canvas.width === width && canvas.height === height;
+			},
+			index = canvases.length - 1;
+		for (var i = index; i >= 0; i--) {
+			if (fits(canvases[i])) {
+				index = i;
+				break;
+			}
 		}
-		var ctx = canvas.getContext('2d', options || {});
+		var canvas = index >= 0
+				? canvases.splice(index, 1)[0]
+				: window
+					? document.createElement('canvas')
+					: new self.OffscreenCanvas(width, height),
+			ctx = canvas.getContext('2d', options || {});
 		if (!ctx) {
 			throw new Error('Canvas ' + canvas +
 					' is unable to provide a 2D context.');
 		}
-		// No need to clear: pooled canvases are 0 × 0, new ones are blank.
-		if (canvas.width !== width || canvas.height !== height) {
+		if (fits(canvas)) {
+			// Clear the reused pixels and reset the context's state:
+			if (ctx.reset) {
+				ctx.reset();
+			} else {
+				ctx.setTransform(1, 0, 0, 1, 0, 0);
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				ctx.globalAlpha = 1;
+				ctx.globalCompositeOperation = 'source-over';
+				ctx.filter = 'none';
+				ctx.shadowColor = 'transparent';
+				ctx.shadowBlur = ctx.shadowOffsetX = ctx.shadowOffsetY = 0;
+			}
+		} else {
 			canvas.width = width;
 			canvas.height = height;
 		}
@@ -20313,16 +20341,14 @@ var CanvasProvider = Base.exports.CanvasProvider = {
 
 	getContext: function(width, height, options) {
 		var canvas = this.getCanvas(width, height, options);
-		return canvas ? canvas.getContext('2d', options || {}) : null;
+		return canvas ? canvas.getContext('2d') : null;
 	},
 
-	 // release can receive either a canvas or a context.
 	release: function(obj) {
 		var canvas = obj && obj.canvas ? obj.canvas : obj;
 		if (canvas && canvas.getContext) {
-			// Resizing frees the pixels right away, and also resets the
-			// context's state. Keep only a few canvases, to reuse their
-			canvas.width = canvas.height = 0;
+			if (canvas.width * canvas.height > 256 * 256)
+				canvas.width = canvas.height = 0;
 			if (this.canvases.length < 8)
 				this.canvases.push(canvas);
 		}
@@ -20382,8 +20408,10 @@ var BlendMode = new function() {
 		this[mode] = false;
 	}, {}));
 
-	this.process = function(mode, srcContext, dstContext, alpha, offset) {
-		var srcCanvas = srcContext.canvas,
+	this.process = function(mode, srcContext, dstContext, alpha, offset,
+			size) {
+		var width = size.width,
+			height = size.height,
 			normal = mode === 'normal',
 			process = modes[mode];
 		if (!process) {
@@ -20392,14 +20420,14 @@ var BlendMode = new function() {
 			dstContext.globalAlpha = alpha;
 			if (!normal)
 				dstContext.globalCompositeOperation = mode;
-			dstContext.drawImage(srcCanvas, offset.x, offset.y);
+			dstContext.drawImage(srcContext.canvas, 0, 0, width, height,
+					offset.x, offset.y, width, height);
 			dstContext.restore();
 		} else {
 			var dstData = dstContext.getImageData(offset.x, offset.y,
-					srcCanvas.width, srcCanvas.height),
+					width, height),
 				dst = dstData.data,
-				src = srcContext.getImageData(0, 0,
-					srcCanvas.width, srcCanvas.height).data;
+				src = srcContext.getImageData(0, 0, width, height).data;
 			for (var i = 0, l = dst.length; i < l; i += 4) {
 				sr = src[i];
 				br = dst[i];
