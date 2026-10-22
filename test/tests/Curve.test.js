@@ -721,4 +721,20 @@ describe('Curve', () => {
       'path.firstCurve.strokeBounds'
     )
   })
+
+  test('Curve#getNearestPoint() between the first samples of a fast curve', () => {
+    // The curve covers a lot of ground at its start, so the nearest point lies
+    // between its first samples, which lie further away than those around
+    // another, local minimum at t = 0.21:
+    const curve = new Curve(
+      [936.78495, -14.40565],
+      [188.72013, -0.05602],
+      [269, -97],
+      [65, 167]
+    )
+    const point = new Point(939.37781, -9.40163)
+    equals(curve.getNearestPoint(point).getDistance(point), 4.99919, null, {
+      tolerance: 1e-5
+    })
+  })
 })
