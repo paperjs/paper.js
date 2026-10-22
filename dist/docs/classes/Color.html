@@ -402,7 +402,7 @@ var circle = new Path.Circle({
 		
 <div id="color-gradient-origin-destination" class="member">
 <div class="member-link">
-<a name="color-gradient-origin-destination" href="#color-gradient-origin-destination"><tt><b>Color</b>(gradient, origin, destination[, highlight])</tt></a>
+<a name="color-gradient-origin-destination" href="#color-gradient-origin-destination"><tt><b>Color</b>(gradient, origin, destination[, highlight[, aspect]])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
@@ -438,6 +438,13 @@ var circle = new Path.Circle({
 <a href="../classes/Point.html"><tt>Point</tt></a>
 
 &mdash;&nbsp;optional
+</li>
+	
+	<li>
+<tt>aspect:</tt> 
+<tt>Number</tt>
+
+&mdash;&nbsp;optional, default: <tt>1</tt>
 </li>
 	
 </ul>
@@ -1440,6 +1447,63 @@ function onMouseMove(event) {
 </div>
 </div>
 		
+			
+<div id="aspect" class="member">
+<div class="member-link">
+<a name="aspect" href="#aspect"><tt><b>aspect</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The aspect of a radial gradient: its radius across the line from the origin to the destination, as a factor of its radius along it, which makes it an ellipse. Transforming a gradient color sets it, so that the gradient stretches, shears and rotates with its item.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>1</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:<span class="description">An elliptical radial gradient, twice as wide as tall:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-17">
+var path = new Path.Ellipse({
+ center: view.center,
+ radius: [80, 40],
+ fillColor: {
+     gradient: {
+         stops: ['yellow', 'red', 'black'],
+         radial: true
+     },
+     origin: view.center,
+     destination: view.center + [80, 0],
+     aspect: 0.5
+ }
+});
+</script>
+<div class="canvas"><canvas width="516" height="200" id="canvas-17"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
 	</div>
 
 
@@ -1710,7 +1774,7 @@ function onMouseMove(event) {
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Transform the gradient color by the specified matrix.</p>
+	<p>Transform the gradient color by the specified matrix. Radial gradients become ellipses, see <a href="../classes/Color.html#aspect"><tt>aspect</tt></a>, and the stripes of linear gradients keep running across them, also when the matrix scales unevenly or shears.</p>
     
 	
 <ul class="member-list">
@@ -2177,12 +2241,12 @@ console.log(result); // { red: 0, green: 1, blue: 0.5 }</code></pre>
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-17">
+<script type="text/paperscript" canvas="canvas-18">
 var circle = new Path.Circle(view.center, 50);
 // Set a random color as circle fill color.
 circle.fillColor = Color.random();
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-17"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-18"></canvas></div>
 </div>
 
 

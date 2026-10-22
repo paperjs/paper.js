@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 01:52:37 2026 +0200
+ * Date: Thu Oct 22 02:07:06 2026 +0200
  *
  ***
  *
@@ -5131,7 +5131,18 @@ new function() {
 				ctx.shadowColor = 'rgba(0,0,0,0)';
 			}
 			if (hasFill) {
+				var fillColor = style.getFillColor(),
+					ellipse = fillColor._getEllipseMatrix(this._matrix,
+						strokeMatrix);
+				if (ellipse) {
+					ctx.save();
+					ellipse.applyToContext(ctx);
+					ctx.fillStyle = fillColor.toCanvasStyle(ctx, null, null,
+							true);
+				}
 				ctx.fill(style.getFillRule());
+				if (ellipse)
+					ctx.restore();
 				ctx.shadowColor = 'rgba(0,0,0,0)';
 			}
 			if (hasStroke && !isStrokeFirst)
@@ -14409,7 +14420,7 @@ var Color = Base.extend(new function() {
 		rgb: ['red', 'green', 'blue'],
 		hsb: ['hue', 'saturation', 'brightness'],
 		hsl: ['hue', 'saturation', 'lightness'],
-		gradient: ['gradient', 'origin', 'destination', 'highlight']
+		gradient: ['gradient', 'origin', 'destination', 'highlight', 'aspect']
 	};
 
 	var componentParsers = {},
@@ -14417,6 +14428,81 @@ var Color = Base.extend(new function() {
 			transparent: [0, 0, 0, 0]
 		},
 		colorCtx;
+
+	function getCanvasTransform(matrix, strokeMatrix) {
+		var inverse = matrix && matrix.inverted();
+		return strokeMatrix && inverse
+				? strokeMatrix.appended(inverse)
+				: strokeMatrix || inverse;
+	}
+
+	function transformGradient(components, dest, matrix) {
+		var origin = components[1],
+			highlight = components[3],
+			aspect = components[4],
+			along = components[2].subtract(origin),
+			across = along.rotate(90),
+			linear = matrix._shiftless(),
+			u = linear._transformPoint(along),
+			start = matrix._transformPoint(origin),
+			vector = u;
+		if (!along.isZero()) {
+			if (components[0]._radial) {
+				var w = linear._transformPoint(across.multiply(aspect)),
+					v = w.rotate(-90),
+					p = u.add(v),
+					q = u.subtract(v),
+					pLength = p.getLength(),
+					qLength = q.getLength(),
+					major = (pLength + qLength) / 2,
+					minor = Math.abs(pLength - qLength) / 2,
+					axis = u.normalize();
+				aspect = 1;
+				if (Math.min(pLength, qLength)
+						> 1e-12 * major) {
+					axis = new Point({
+						angle: (p.getAngle() + q.getAngle()) / 2,
+						length: 1
+					});
+					if (Math.abs(axis.cross(u)) > Math.abs(axis.dot(u))) {
+						axis = axis.rotate(90);
+						aspect = major / minor;
+						major = minor;
+					} else {
+						aspect = minor / major;
+					}
+					if (axis.dot(u) < 0)
+						axis = axis.negate();
+				}
+				vector = axis.multiply(major);
+			} else {
+				var stripe = linear._transformPoint(across),
+					normal = stripe.rotate(90);
+				if (!normal.isZero()) {
+					vector = normal.multiply(
+							u.dot(normal) / normal.dot(normal));
+				}
+			}
+		}
+		dest[1] = (dest[1] || new Point())._set(start.x, start.y, true);
+		dest[2] = (dest[2] || new Point())._set(start.x + vector.x,
+				start.y + vector.y, true);
+		if (highlight)
+			dest[3] = matrix._transformPoint(highlight, dest[3], true);
+		dest[4] = aspect;
+		return dest;
+	}
+
+	function getEllipseMatrix(components) {
+		var aspect = components[4];
+		if (components[0]._radial && aspect !== 1) {
+			var origin = components[1],
+				angle = components[2].subtract(origin).getAngle();
+			return new Matrix().translate(origin).rotate(angle)
+					.scale(1, aspect).rotate(-angle)
+					.translate(origin.negate());
+		}
+	}
 
 	function fromCSS(string) {
 		var match = string.match(
@@ -14608,12 +14694,16 @@ var Color = Base.extend(new function() {
 							}
 							return value;
 						}
-						: function() {
-							return Point.read(arguments, 0, {
-									readNull: name === 'highlight',
-									clone: true
-							});
-						}
+						: name === 'aspect'
+							? function(value) {
+								return value == null ? 1 : +value;
+							}
+							: function() {
+								return Point.read(arguments, 0, {
+										readNull: name === 'highlight',
+										clone: true
+								});
+							}
 					: function(value) {
 						return value == null || isNaN(value) ? 0 : +value;
 					};
@@ -14699,7 +14789,7 @@ var Color = Base.extend(new function() {
 						components = arg._components.slice();
 						alpha = arg._alpha;
 						if (type === 'gradient') {
-							for (var i = 1, l = components.length; i < l; i++) {
+							for (var i = 1; i < 4; i++) {
 								var point = components[i];
 								if (point)
 									components[i] = point.clone();
@@ -14763,6 +14853,9 @@ var Color = Base.extend(new function() {
 
 		_serialize: function(options, dictionary) {
 			var components = this.getComponents();
+			if (this._type === 'gradient' && components[4] === 1
+					&& this._alpha == null)
+				components.length = components[3] ? 4 : 3;
 			return Base.serialize(
 					/^(gray|rgb)$/.test(this._type)
 						? components
@@ -14874,28 +14967,36 @@ var Color = Base.extend(new function() {
 						+ components.join(',') + ')';
 		},
 
-		toCanvasStyle: function(ctx, matrix, strokeMatrix) {
-			var isCacheable = !(this._type === 'gradient' && strokeMatrix);
+		_getCanvasComponents: function(matrix, strokeMatrix) {
+			var components = this._components,
+				transform = getCanvasTransform(matrix, strokeMatrix);
+			return transform
+					? transformGradient(components, [components[0]], transform)
+					: components;
+		},
+
+		_getEllipseMatrix: function(matrix, strokeMatrix) {
+			return this._type === 'gradient' && getEllipseMatrix(
+					this._getCanvasComponents(matrix, strokeMatrix)) || null;
+		},
+
+		toCanvasStyle: function(ctx, matrix, strokeMatrix, isEllipse) {
+			var isCacheable = !(this._type === 'gradient'
+					&& (strokeMatrix || this._components[4] !== 1));
 			if (this._canvasStyle && isCacheable)
 				return this._canvasStyle;
 			if (this._type !== 'gradient')
 				return this._canvasStyle = this.toCSS();
-			var components = this._components,
+			var components = this._getCanvasComponents(matrix, strokeMatrix),
 				gradient = components[0],
 				stops = gradient._stops,
 				origin = components[1],
 				destination = components[2],
 				highlight = components[3],
-				inverse = matrix && matrix.inverted(),
-				transform = strokeMatrix && inverse
-						? strokeMatrix.appended(inverse)
-						: strokeMatrix || inverse,
 				canvasGradient;
-			if (transform) {
-				origin = transform._transformPoint(origin);
-				destination = transform._transformPoint(destination);
-				if (highlight)
-					highlight = transform._transformPoint(highlight);
+			if (isEllipse && highlight) {
+				highlight = getEllipseMatrix(components)._inverseTransform(
+						highlight);
 			}
 			if (gradient._radial) {
 				var radius = destination.getDistance(origin);
@@ -14926,10 +15027,7 @@ var Color = Base.extend(new function() {
 		transform: function(matrix) {
 			if (this._type === 'gradient') {
 				var components = this._components;
-				for (var i = 1, l = components.length; i < l; i++) {
-					var point = components[i];
-					matrix._transformPoint(point, point, true);
-				}
+				transformGradient(components, components, matrix);
 				this._changed();
 			}
 		},
@@ -20656,12 +20754,24 @@ new function() {
 				destination = color.getDestination(),
 				attrs;
 			if (radial) {
-				attrs = {
-					cx: origin.x,
-					cy: origin.y,
-					r: origin.getDistance(destination)
-				};
-				var highlight = color.getHighlight();
+				var aspect = color.getAspect(),
+					highlight = color.getHighlight(),
+					center = origin;
+				attrs = { r: origin.getDistance(destination) };
+				if (aspect !== 1) {
+					var angle = destination.subtract(origin).getAngle(),
+						local = new Matrix().translate(origin).rotate(angle)
+							.scale(1, aspect);
+					center = new Point();
+					if (highlight)
+						highlight = local._inverseTransform(highlight);
+					attrs.gradientTransform = 'translate('
+							+ formatter.point(origin) + ') rotate('
+							+ formatter.number(angle) + ') scale(1,'
+							+ formatter.number(aspect) + ')';
+				}
+				attrs.cx = center.x;
+				attrs.cy = center.y;
 				if (highlight) {
 					attrs.fx = highlight.x;
 					attrs.fy = highlight.y;

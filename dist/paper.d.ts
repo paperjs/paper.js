@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 01:52:37 2026 +0200
+ * Date: Thu Oct 22 02:07:06 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -286,6 +286,14 @@ declare namespace paper {
         get highlight(): Point
         set highlight(value: PointLike)
 
+        /** 
+         * The aspect of a radial gradient: its radius across the line from
+         * the origin to the destination, as a factor of its radius along it,
+         * which makes it an ellipse. Transforming a gradient color sets it, so
+         * that the gradient stretches, shears and rotates with its item.
+         */
+        aspect: number
+
 
         /** 
          * Creates a RGB Color object.
@@ -327,7 +335,7 @@ declare namespace paper {
         /** 
          * Creates a gradient Color object.
          */
-        constructor(gradient: Gradient, origin: PointLike, destination: PointLike, highlight?: PointLike)
+        constructor(gradient: Gradient, origin: PointLike, destination: PointLike, highlight?: PointLike, aspect?: number)
 
         /** 
          * Creates a HSB, HSL or gradient Color object from the properties of
@@ -419,7 +427,10 @@ declare namespace paper {
         toCSS(hex: boolean): string
 
         /** 
-         * Transform the gradient color by the specified matrix.
+         * Transform the gradient color by the specified matrix. Radial
+         * gradients become ellipses, see {@link #aspect}, and the stripes of
+         * linear gradients keep running across them, also when the matrix
+         * scales unevenly or shears.
          * 
          * @param matrix - the matrix to transform the gradient color by
          */
