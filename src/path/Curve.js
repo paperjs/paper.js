@@ -1663,10 +1663,25 @@ new function() { // Scope for methods that require private functions
             for (var i = 0; i < 2; i++) {
                 var count = Curve.solveCubic(v, i, i ? py : px, roots, 0, 1);
                 for (var j = 0; j < count; j++) {
-                    var t = roots[j];
-                    if (isClose(getCoordinate(x0, x3, ax, bx, cx, t),
-                            getCoordinate(y0, y3, ay, by, cy, t)))
+                    var t = roots[j],
+                        x = getCoordinate(x0, x3, ax, bx, cx, t),
+                        y = getCoordinate(y0, y3, ay, by, cy, t);
+                    if (isClose(x, y))
                         return t;
+                    // A point off a slanted curve is further from the
+                    // solution of one coordinate than from the curve: Move
+                    // along the tangent to the foot of its normal, and test
+                    // that one too:
+                    var dx = (3 * ax * t + 2 * bx) * t + cx,
+                        dy = (3 * ay * t + 2 * by) * t + cy,
+                        length2 = dx * dx + dy * dy;
+                    if (length2) {
+                        t = Math.max(0, Math.min(1,
+                                t + ((px - x) * dx + (py - y) * dy) / length2));
+                        if (isClose(getCoordinate(x0, x3, ax, bx, cx, t),
+                                getCoordinate(y0, y3, ay, by, cy, t)))
+                            return t;
+                    }
                 }
             }
             return null;

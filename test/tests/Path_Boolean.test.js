@@ -3283,4 +3283,68 @@ describe('Path Boolean Operations', () => {
     equals(Math.abs(path1.unite(path2).area), area, null, { tolerance: 0.05 })
     equals(Math.abs(path2.unite(path1).area), area, null, { tolerance: 0.05 })
   })
+
+  test('Unite paths that cross at a shallow angle near a short curve', () => {
+    // The crossing of path1 with the short first curve of path2 lies within
+    // epsilon of both, but further from the solutions of each coordinate on
+    // the slanted curve, which made Curve.getTimeOf() miss it:
+    const path1 = new Path({
+      segments: [
+        [
+          [103.21917825643318, 347.37267841016796],
+          [-0.27962038483039464, 0.37715571322286223],
+          [0.016117586867480327, -0.02194140033174108]
+        ],
+        [
+          [120.3798473435689, 330.70772398787096],
+          [-6.014781360537, 5.206279724090848],
+          [0.0010644346346282418, -0.0009274881340957108]
+        ],
+        [
+          [155.08547069670644, 377.51011446340397],
+          [5.380490588730851, -5.801057235299652],
+          [-0.30121930748910586, 0.34531226178205543]
+        ]
+      ],
+      closed: true
+    })
+    const path2 = new Path({
+      segments: [
+        [
+          [120.31502843403102, 330.7734203898585],
+          [-0.3051713944616523, 0.362189469779878],
+          [0.027003696982163206, -0.03247186158017712]
+        ],
+        [
+          [120.40812775795484, 330.6835388886052],
+          [-0.03504075651248684, 0.02745811147212862],
+          [6.046905424522123, -5.162773435744214]
+        ],
+        [
+          [139.56657439072833, 316.4773020220021],
+          [-6.732219454443793, 4.258264075146428],
+          [0.001830813002072773, -0.0011689521418816184]
+        ],
+        [
+          [191.1222320894217, 346.887661787947],
+          [2.113586219360542, -1.3242650054888259],
+          [-6.66478492247694, 4.215206205655761]
+        ]
+      ],
+      closed: true
+    })
+    const area = Math.abs(path1.intersect(path2).area)
+    equals(
+      Math.abs(path1.unite(path2).area),
+      Math.abs(path1.area) + Math.abs(path2.area) - area,
+      null,
+      { tolerance: 0.05 }
+    )
+    equals(
+      Math.abs(path2.unite(path1).area),
+      Math.abs(path1.area) + Math.abs(path2.area) - area,
+      null,
+      { tolerance: 0.05 }
+    )
+  })
 })
