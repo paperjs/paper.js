@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 02:07:06 2026 +0200
+ * Date: Thu Oct 22 02:23:34 2026 +0200
  *
  ***
  *
@@ -20505,7 +20505,8 @@ var SvgStyles = Base.each({
 
 new function() {
 	var formatter,
-		parentStyles;
+		parentStyles,
+		elementMatrix;
 
 	function getTransform(matrix, coordinates, center) {
 		var attrs = new Base(),
@@ -20545,6 +20546,7 @@ new function() {
 				attrs.transform = 'matrix(' + matrix.getValues().join(',') + ')';
 			}
 		}
+		elementMatrix = matrix;
 		return attrs;
 	}
 
@@ -20746,6 +20748,10 @@ new function() {
 	}
 
 	function exportGradient(color, options) {
+		if (!elementMatrix.isIdentity()) {
+			color = color.clone();
+			color.transform(elementMatrix.inverted());
+		}
 		var gradientNode = getDefinition(color, 'color');
 		if (!gradientNode) {
 			var gradient = color.getGradient(),
@@ -21023,6 +21029,7 @@ new function() {
 			parent = !isRoot && item.getParent(),
 			parentStyle = parent && (parentStyles[parent._id] =
 					parentStyles[parent._id] || {}),
+			isGroup = item instanceof Group,
 			style = [];
 
 		if (item._name != null)
@@ -21030,13 +21037,15 @@ new function() {
 
 		Base.each(SvgStyles, function(entry) {
 			var get = entry.get,
-				value = item[get]();
+				value = item[get](),
+				isGradient = entry.type === 'color' && value && value.gradient;
 			if (parent && !(get in parentStyle))
 				parentStyle[get] = parent[get]();
-			if (value !== undefined && (entry.exportFilter
-					? entry.exportFilter(item, value)
-					: options.reduceAttributes == false
-						|| !parent || !Base.equals(parentStyle[get], value))) {
+			if (value !== undefined && (isGradient ? !isGroup
+					: entry.exportFilter
+						? entry.exportFilter(item, value)
+						: options.reduceAttributes == false
+							|| !parent || !Base.equals(parentStyle[get], value))) {
 				setAttributes(attrs, style, entry, value, options);
 			}
 		});
