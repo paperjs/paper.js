@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 02:23:34 2026 +0200
+ * Date: Thu Oct 22 12:41:57 2026 +0200
  *
  ***
  *
@@ -7873,29 +7873,45 @@ new function() {
 				ax = c[0], bx = c[1], cx = c[2],
 				ay = c[3], by = c[4], cy = c[5],
 				count = 100,
+				distances = [],
 				minDist = Infinity,
 				minT = 0;
 
-			function refine(t) {
-				if (t >= 0 && t <= 1) {
-					var dx = getCoordinate(x0, x3, ax, bx, cx, t) - px,
-						dy = getCoordinate(y0, y3, ay, by, cy, t) - py,
-						dist = dx * dx + dy * dy;
-					if (dist < minDist) {
-						minDist = dist;
-						minT = t;
-						return true;
-					}
-				}
+			function getDistance(t) {
+				var dx = getCoordinate(x0, x3, ax, bx, cx, t) - px,
+					dy = getCoordinate(y0, y3, ay, by, cy, t) - py;
+				return dx * dx + dy * dy;
 			}
 
 			for (var i = 0; i <= count; i++)
-				refine(i / count);
+				distances.push(getDistance(i / count));
 
-			var step = 1 / (count * 2);
-			while (step > 1e-8) {
-				if (!refine(minT - step) && !refine(minT + step))
-					step /= 2;
+			for (var i = 0; i <= count; i++) {
+				var dist = distances[i];
+				if ((i === 0 || dist < distances[i - 1])
+						&& (i === count || dist <= distances[i + 1])) {
+					var t = i / count,
+						step = 1 / (count * 2);
+					while (step > 1e-8) {
+						var t1 = t - step,
+							t2 = t + step,
+							dist1 = t1 >= 0 ? getDistance(t1) : Infinity,
+							dist2 = t2 <= 1 ? getDistance(t2) : Infinity;
+						if (dist1 < dist && dist1 <= dist2) {
+							t = t1;
+							dist = dist1;
+						} else if (dist2 < dist) {
+							t = t2;
+							dist = dist2;
+						} else {
+							step /= 2;
+						}
+					}
+					if (dist < minDist) {
+						minDist = dist;
+						minT = t;
+					}
+				}
 			}
 			return minT;
 		},
