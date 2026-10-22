@@ -106,9 +106,12 @@ Base.exports.PaperScript = function() {
     }
 
     // Compound assignment of a property, which evaluates the object and the
-    // key only once, e.g. for `array[index()] += 1`:
-    function __$assign__(object, key, operator, value) {
-        return object[key] = __$__(object[key], operator, value);
+    // key only once, e.g. for `array[index()] += 1`. Postfix updates such as
+    // `array[index()]++` return the old value:
+    function __$assign__(object, key, operator, value, postfix) {
+        var old = object[key],
+            res = object[key] = __$__(old, operator, value);
+        return postfix ? old : res;
     }
 
     // Unary Operator Handler
@@ -241,59 +244,53 @@ Base.exports.PaperScript = function() {
                         // We can't replace that with array[__$__(i, "+", 1)].
                         || parentType === 'MemberExpression' && parent.computed
                 )) {
-                    if (node.type === 'UpdateExpression') {
-                        var arg = getCode(node.argument),
-                            exp = '__$__(' + arg + ', "' + node.operator[0]
-                                    + '", 1)',
-                            str = arg + ' = ' + exp;
-                        if (node.prefix) {
-                            // A prefixed update expression (++a / --a),
-                            // wrap expression in paranthesis. See #1611
-                            str = '(' + str + ')';
-                        } else if (
-                            // A suffixed update expression (a++, a--),
-                            // assign the old value before updating it.
-                            // See #691, #1450
-                            parentType === 'AssignmentExpression' ||
-                            parentType === 'VariableDeclarator' ||
-                            parentType === 'BinaryExpression'
-                        ) {
-                            // Handle special case where the old value is
-                            // assigned to itself, and the expression is just
-                            // executed after, e.g.: `var x = ***; x = x++;`
-                            if (getCode(parent.left || parent.id) === arg)
-                                str = exp;
-                            str = arg + '; ' + str;
+                    var isUpdate = node.type === 'UpdateExpression',
+                        target = isUpdate ? node.argument : node.left;
+                    if (isUpdate || /^.=$/.test(node.operator)
+                            && target.type !== 'Literal') {
+                        var left = getCode(target),
+                            right = isUpdate ? '1' : getCode(node.right),
+                            operator = node.operator[0],
+                            // The value of updates is used, except in
+                            // statements and before the end of sequences:
+                            isUsed = isUpdate && !(
+                                parentType === 'ExpressionStatement' ||
+                                parentType === 'SequenceExpression' &&
+                                    node !== parent.expressions[
+                                        parent.expressions.length - 1]
+                            ),
+                            // Postfix updates (a++, a--) result in the old
+                            // value, see #691, #1450:
+                            isPostfix = isUsed && !node.prefix,
+                            // Assign properties through __$assign__(),
+                            // which evaluates their object and key once,
+                            // except for private ones and those of super:
+                            member = target.type === 'MemberExpression'
+                                && target.object.type !== 'Super'
+                                && target.property.type
+                                    !== 'PrivateIdentifier',
+                            exp = member
+                                ? '__$assign__(' + getCode(target.object)
+                                    + ', ' + (target.computed
+                                        ? getCode(target.property)
+                                        : JSON.stringify(
+                                            target.property.name))
+                                    + ', "' + operator + '", ' + right
+                                    + (isPostfix ? ', true' : '') + ')'
+                                : left + ' = __$__(' + left + ', "'
+                                    + operator + '", ' + right + ')';
+                        if (isUsed && !member) {
+                            // Turn the assignment into an expression of the
+                            // new value, or of the old one before it, see
+                            // #1611:
+                            exp = isPostfix
+                                ? '[' + left + ', ' + exp + '][0]'
+                                : '(' + exp + ')';
                         }
-                        replaceCode(node, str);
-                    } else { // AssignmentExpression
-                        if (/^.=$/.test(node.operator)
-                                && node.left.type !== 'Literal') {
-                            var target = node.left,
-                                left = getCode(target),
-                                right = getCode(node.right),
-                                operator = node.operator[0],
-                                // Assign properties through __$assign__(),
-                                // which evaluates their object and key once,
-                                // except for private ones and those of super:
-                                member = target.type === 'MemberExpression'
-                                    && target.object.type !== 'Super'
-                                    && target.property.type
-                                        !== 'PrivateIdentifier',
-                                exp = member
-                                    ? '__$assign__(' + getCode(target.object)
-                                        + ', ' + (target.computed
-                                            ? getCode(target.property)
-                                            : JSON.stringify(
-                                                target.property.name))
-                                        + ', "' + operator + '", ' + right + ')'
-                                    : left + ' = __$__(' + left + ', "'
-                                        + operator + '", ' + right + ')';
-                            // If the original expression is wrapped in
-                            // parenthesis, do the same with the replacement:
-                            replaceCode(node, /^\(.*\)$/.test(getCode(node))
-                                    ? '(' + exp + ')' : exp);
-                        }
+                        // If the original expression is wrapped in
+                        // parenthesis, do the same with the replacement:
+                        replaceCode(node, /^\(.*\)$/.test(getCode(node))
+                                ? '(' + exp + ')' : exp);
                     }
                 }
                 break;

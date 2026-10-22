@@ -60,6 +60,110 @@ describe('PaperScript', () => {
     )
   })
 
+  // Each case: code that exports its results, and the expected exports. The
+  // compiled code has to parse, with both the bundled and a current Acorn:
+  function executeUpdates(cases) {
+    cases.forEach(([code, expected]) => {
+      const compiled = PaperScript.compile(code)
+      try {
+        acornLatest.parse(compiled.code, { ecmaVersion: 'latest' })
+      } catch (err) {
+        ok(false, err + ': ' + compiled.code)
+      }
+      executeCode(code, expected)
+    })
+  }
+
+  const updateCases = [
+    // Statements and sequences:
+    ['var x = 1; x++; ++x; x--, ++x; module.exports = x', 3],
+    // Operands of logical, conditional and binary operators:
+    ['var x = 1, y = true && x++; module.exports = [x, y]', [2, 1]],
+    ['var x = 1, y = true && ++x; module.exports = [x, y]', [2, 2]],
+    ['var x = 0, y = false || x--; module.exports = [x, y]', [-1, 0]],
+    ['var x = 1, y = x ? x++ : 0; module.exports = [x, y]', [2, 1]],
+    ['var x = 1, y = 10 * x++ + ++x; module.exports = [x, y]', [3, 13]],
+    // Sequences, arguments and literals:
+    ['var x = 1, y = (x++, x++); module.exports = [x, y]', [3, 2]],
+    [
+      'function f(a, b) { return [a, b]; }\n' +
+      'var x = 1; module.exports = f(x++, ++x).concat(x)',
+      [1, 3, 3]
+    ],
+    [
+      'var x = 1, a = [x++, x], o = { v: x-- }; module.exports = [a, o.v, x]',
+      [[1, 2], 2, 1]
+    ],
+    // Assignments of properties, returns and loops:
+    [
+      'var x = 1, o = {}; o.v = x++; o.w = --x; module.exports = [o.v, o.w, x]',
+      [1, 1, 1]
+    ],
+    [
+      'var x = 1; function f() { return x++; } module.exports = [f(), x]',
+      [1, 2]
+    ],
+    [
+      'for (var i = 0, j = 0; i < 3; i++, j++) {} module.exports = [i, j]',
+      [3, 3]
+    ],
+    ['var i = 3, n = 0; while (i--) n++; module.exports = [i, n]', [-1, 3]],
+    // Properties evaluate their object and key once:
+    [
+      'var calls = 0, o = { v: 1 }, a = [1];\n' +
+      'function obj() { calls++; return o; }\n' +
+        'function key() { calls++; return 0; }\n' +
+        'var r = [obj().v++, ++obj().v, a[key()]++, ++a[key()],\n' +
+        '  obj()["v"]--];\n' +
+        'obj().v++;\n' +
+        'module.exports = [r, o.v, a[0], calls]',
+      [[1, 3, 1, 3, 3], 3, 3, 6]
+    ],
+    // Points are updated through operator overloading:
+    [
+      'var p = new Point(1, 2), q = p++, r = ++p; module.exports = [p, q, r]',
+      [new Point(3, 4), new Point(1, 2), new Point(3, 4)]
+    ],
+    [
+      'var o = { p: new Point(1, 2) }, q = o.p--; module.exports = [o.p, q]',
+      [new Point(0, 1), new Point(1, 2)]
+    ]
+  ]
+
+  test('PaperScript update expressions', () => {
+    executeUpdates(updateCases)
+    withAcornLatest(() => {
+      executeUpdates(updateCases)
+      executeUpdates([
+        [
+          'var x = 1, f = () => x++, g = () => ++x;\n' +
+          'module.exports = [f(), g(), x]',
+          [1, 3, 3]
+        ]
+      ])
+    })
+  })
+
+  test('PaperScript update expressions in minified code', () => {
+    // Minimized from socket.io's client:
+    executeUpdates([
+      [
+        'var o = 2, t = "a=="; "=" === t[t.length - 2] && o--;\n' +
+        'module.exports = o',
+        1
+      ],
+      [
+        'var S = { requestsCount: 0 };\n' +
+        'function F() {\n' +
+          '  "undefined" != typeof S &&\n' +
+          '    (this.B = S.requestsCount++, this.C = 1)\n' +
+          '}\n' +
+          'var f = new F(); module.exports = [f.B, f.C, S.requestsCount]',
+        [0, 1, 1]
+      ]
+    ])
+  })
+
   test('PaperScript with inline source maps', () => {
     const source = 'var a = 1;\nvar b = 2;',
       code = PaperScript.compile(source, {
