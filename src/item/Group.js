@@ -25,9 +25,11 @@ var Group = Item.extend(/** @lends Group# */{
     _selectChildren: true,
     _serializeFields: {
         isolated: false,
+        buffered: false,
         children: []
     },
     _isolated: false,
+    _buffered: false,
 
     // DOCS: document new Group(item, item...);
     /**
@@ -208,19 +210,73 @@ var Group = Item.extend(/** @lends Group# */{
      * like CSS's `isolation: isolate`. Without it, a compositing mode such as
      * `'destination-out'` affects everything drawn below the group, also in
      * other layers. Groups with an {@link Item#opacity} below 1 or a
-     * {@link Item#blendMode} are isolated anyway.
+     * {@link Item#blendMode} are isolated anyway, and buffered groups always,
+     * see {@link #buffered}.
      *
      * @bean
      * @type Boolean
      * @default false
      */
     isIsolated: function() {
-        return this._isolated;
+        return this._isolated || this._buffered;
     },
 
     setIsolated: function(isolated) {
         this._isolated = !!isolated;
         this._changed(/*#=*/Change.ATTRIBUTE);
+    },
+
+    /**
+     * Specifies whether the group is buffered: when a view draws it, it draws
+     * its content into a canvas of its own, which it keeps, and only draws
+     * into it again when something in the group changes, or the part of it
+     * that the view shows does, e.g. after zooming or panning. Otherwise, the
+     * view only composites the buffer, with the group's {@link Item#opacity}
+     * and {@link Item#blendMode}. This pays off for large groups and layers
+     * that rarely change, such as a complex background below animated items.
+     *
+     * The buffer costs memory: it covers the part of the group that the view
+     * shows, at up to `width × height × 4 × pixelRatio²` bytes for a group
+     * that fills the whole view.
+     *
+     * Buffered groups are always {@link #isolated}: the blend modes of their
+     * children only apply within them, not to the items below them, also in
+     * other layers.
+     *
+     * Hit-testing, SVG export, {@link Item#rasterize()} and drawing into other
+     * canvases than the view's don't use the buffer.
+     *
+     * @bean
+     * @type Boolean
+     * @default false
+     *
+     * @example
+     * var background = project.activeLayer;
+     * background.buffered = true;
+     */
+    isBuffered: function() {
+        return this._buffered;
+    },
+
+    setBuffered: function(buffered) {
+        this._buffered = !!buffered;
+        // Start without a buffer, and free it when turned off:
+        this._buffer = null;
+        this._changed(/*#=*/Change.ATTRIBUTE);
+    },
+
+    _remove: function _remove(notifySelf, notifyParent) {
+        // Free the buffer of removed groups:
+        this._buffer = null;
+        return _remove.base.call(this, notifySelf, notifyParent);
+    },
+
+    _serialize: function _serialize(options, dictionary) {
+        var json = _serialize.base.call(this, options, dictionary);
+        // #isolated reads true for buffered groups, but store only their own:
+        if (!this._isolated)
+            delete json[1].isolated;
+        return json;
     },
 
     _getBounds: function _getBounds(matrix, options) {

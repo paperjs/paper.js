@@ -211,7 +211,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @param {Boolean} [force=false] whether to redraw the view even if nothing
      * has changed, e.g. after a web font used by text items has finished
-     * loading
+     * loading, also in buffered groups, see {@link Group#buffered}
      * @return {Boolean} {@true if the view was updated}
      */
     update: function(force) {
