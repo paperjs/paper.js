@@ -526,6 +526,23 @@ describe('Curve', () => {
     })
   })
 
+  test('Curve#getTimeOf() off a slanted curve', () => {
+    // The solutions of each coordinate lie further from a point off a slanted
+    // curve than the curve itself, up to sqrt(2) times at 45°:
+    const curve = new Curve(
+      new Point(100, 100),
+      new Point(30, -10),
+      new Point(-40, 10),
+      new Point(200, 200)
+    )
+    for (let i = 1; i < 10; i++) {
+      const time = i / 10,
+        normal = curve.getNormalAtTime(time),
+        point = curve.getPointAtTime(time).add(normal.multiply(0.9e-7))
+      equals(curve.getTimeOf(point), time)
+    }
+  })
+
   test('Curve#getTimeOf() at large coordinates', () => {
     // Beyond about 2e8, GEOMETRIC_EPSILON is below the resolution of the
     // coordinates, and points on the curve weren't recognized as such:
