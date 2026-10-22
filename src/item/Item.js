@@ -83,6 +83,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         selected: false,
         data: {}
     },
+    // The attributes that #copyAttributes() copies where the source defines
+    // them, which subclasses extend:
+    _attributes: ['_locked', '_visible', '_blendMode', '_opacity',
+            '_clipMask', '_guide', '_textWrap'],
     // Prioritize `applyMatrix` over `matrix`:
     _prioritize: ['applyMatrix']
 },
@@ -1954,8 +1958,7 @@ new function() { // Injection scope for various item event handlers
         // Only copy over these fields if they are actually defined in 'source',
         // meaning the default value has been overwritten (default is on
         // prototype).
-        var keys = ['_locked', '_visible', '_blendMode', '_opacity',
-                '_clipMask', '_guide', '_textWrap'];
+        var keys = this._attributes;
         for (var i = 0, l = keys.length; i < l; i++) {
             var key = keys[i];
             if (source.hasOwnProperty(key))

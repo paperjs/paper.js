@@ -320,6 +320,17 @@ describe('Group', () => {
     equals(imported.isolated, false, 'unisolated after a round trip')
   })
 
+  test('group.clone() keeps isolated and buffered', () => {
+    const isolated = new Group({ isolated: true }).clone()
+    equals(() => isolated.isolated, true)
+    equals(() => isolated.buffered, false)
+    const buffered = new Group({ buffered: true }).clone()
+    equals(() => buffered.buffered, true)
+    // Buffered groups read as isolated, but keep their own isolated value:
+    buffered.buffered = false
+    equals(() => buffered.isolated, false)
+  })
+
   describe('group.buffered (#377)', () => {
     // A layer below the buffered one, so its blending shows, and a layer with
     // a buffered group of overlapping paths, nested to see their changes:
