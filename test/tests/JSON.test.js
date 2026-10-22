@@ -146,6 +146,22 @@ describe('JSON', () => {
     testExportImportJSON(paper.project)
   })
 
+  test('Symbol items write their definition as definition', () => {
+    const definition = new SymbolDefinition(
+      new Path.Rectangle({ point: [0, 0], size: [10, 10], fillColor: 'red' })
+    )
+    const json = definition.place([100, 100]).exportJSON({ asString: false }),
+      props = json[1][1]
+    equals('definition' in props && !('symbol' in props), true)
+    // JSON that writes it as symbol, as before, still imports:
+    props.symbol = props.definition
+    delete props.definition
+    const item = new Project().importJSON(json)
+    equals(item.className, 'SymbolItem')
+    equals(item.definition.item.bounds, new Rectangle(-5, -5, 10, 10))
+    equals(item.position, new Point(100, 100))
+  })
+
   test('PointText testing', () => {
     let text = new PointText(new Point(50, 100))
     text.fillColor = 'black'

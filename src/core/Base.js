@@ -515,9 +515,12 @@ statics: /** @lends Base */{
      * deserializable types through Base.exports, and the values following in
      * the array are the arguments to their initialize function. Any other value
      * is passed on unmodified. The passed json data is recoursively traversed
-     * and converted, leaves first.
+     * and converted, leaves first. References of the form `['@key']` are
+     * passed to the optional `resolve(key)`, for definitions that the importer
+     * provides.
      */
-    deserialize: function(json, create, _data, _setDictionary, _isRoot) {
+    deserialize: function(json, create, resolve, _data, _setDictionary,
+            _isRoot) {
         var res = json,
             isFirst = !_data,
             hasDictionary = isFirst && json && json.length
@@ -539,13 +542,16 @@ statics: /** @lends Base */{
             if (json.length == 1 && /^#/.test(type)) {
                 return _data.dictionary[type];
             }
+            if (json.length == 1 && resolve && /^@/.test(type)) {
+                return resolve(type.slice(1));
+            }
             type = Base.exports[type];
             res = [];
             // Skip first type entry for arguments.
             // Pass true for _isRoot in children if we have a dictionary,
             // in which case we need to shift the root level one down.
             for (var i = type ? 1 : 0, l = json.length; i < l; i++) {
-                res.push(Base.deserialize(json[i], create, _data,
+                res.push(Base.deserialize(json[i], create, resolve, _data,
                         isDictionary, hasDictionary));
             }
             if (type) {
@@ -569,7 +575,8 @@ statics: /** @lends Base */{
             if (_setDictionary)
                 _data.dictionary = res;
             for (var key in json)
-                res[key] = Base.deserialize(json[key], create, _data);
+                res[key] = Base.deserialize(json[key], create, resolve,
+                        _data);
         }
         // Filter out deserialized dictionary:
         return hasDictionary ? res[1] : res;
@@ -582,7 +589,7 @@ statics: /** @lends Base */{
                 : JSON.stringify(json);
     },
 
-    importJSON: function(json, target) {
+    importJSON: function(json, target, resolve) {
         return Base.deserialize(
                 typeof json === 'string' ? JSON.parse(json) : json,
                 // Provide our own create function to handle target and
@@ -619,7 +626,7 @@ statics: /** @lends Base */{
                     if (useTarget)
                         target = null;
                     return obj;
-                });
+                }, resolve);
     },
 
     /**
