@@ -67,8 +67,11 @@ var BlendMode = new function() {
         this[mode] = false;
     }, {}));
 
-    this.process = function(mode, srcContext, dstContext, alpha, offset) {
-        var srcCanvas = srcContext.canvas,
+    this.process = function(mode, srcContext, dstContext, alpha, offset,
+            size) {
+        // Only composite the part of the source canvas that size covers:
+        var width = size.width,
+            height = size.height,
             normal = mode === 'normal',
             process = modes[mode];
         // Leave all modes but our own to canvas:
@@ -80,14 +83,14 @@ var BlendMode = new function() {
             dstContext.globalAlpha = alpha;
             if (!normal)
                 dstContext.globalCompositeOperation = mode;
-            dstContext.drawImage(srcCanvas, offset.x, offset.y);
+            dstContext.drawImage(srcContext.canvas, 0, 0, width, height,
+                    offset.x, offset.y, width, height);
             dstContext.restore();
         } else {
             var dstData = dstContext.getImageData(offset.x, offset.y,
-                    srcCanvas.width, srcCanvas.height),
+                    width, height),
                 dst = dstData.data,
-                src = srcContext.getImageData(0, 0,
-                    srcCanvas.width, srcCanvas.height).data;
+                src = srcContext.getImageData(0, 0, width, height).data;
             for (var i = 0, l = dst.length; i < l; i += 4) {
                 sr = src[i];
                 br = dst[i];

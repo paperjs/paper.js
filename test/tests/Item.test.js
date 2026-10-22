@@ -871,14 +871,13 @@ describe('Item', () => {
       opacity: 0.5
     })
     // NOTE: The temporary canvas is only observable through CanvasProvider,
-    // so record the sizes of the canvases that it hands out while drawing:
-    // They need to be bounded by the view instead of the group.
+    // so record the sizes that are requested from it while drawing: They need
+    // to be bounded by the view instead of the group.
     const getCanvas = CanvasProvider.getCanvas,
       sizes = []
-    CanvasProvider.getCanvas = function () {
-      const canvas = getCanvas.apply(this, arguments)
-      sizes.push(new Size(canvas.width, canvas.height))
-      return canvas
+    CanvasProvider.getCanvas = function (size) {
+      sizes.push(new Size(size))
+      return getCanvas.apply(this, arguments)
     }
     testPixels(
       [
@@ -1033,6 +1032,91 @@ describe('Item', () => {
       'zoomed view'
     )
     paper.view.zoom = 1
+  })
+
+  test('Item#opacity and Item#blendMode on reused temporary canvases', () => {
+    // Temporary canvases are reused when they are large enough, so they need
+    // to be cleared:
+    function testPixels(pixels, name) {
+      paper.view.update()
+      const pixelRatio = paper.view.pixelRatio,
+        ctx = paper.view.element.getContext('2d')
+      for (const [point, expected] of pixels) {
+        const actual = Base.slice(
+          ctx.getImageData(
+            point[0] * pixelRatio,
+            point[1] * pixelRatio,
+            1,
+            1
+          ).data
+        )
+        // Allow for rounding of half-transparent channels:
+        equals(
+          () => actual.every((value, i) => Math.abs(value - expected[i]) <= 1),
+          true,
+          `${name} at ${point}: ${actual}, expected: ${expected}`
+        )
+      }
+    }
+
+    // Draw a group with opacity that covers the whole view, to leave a large
+    // temporary canvas with blue pixels behind:
+    const group = new Group({
+      children: [
+        new Path.Rectangle({
+          from: [0, 0],
+          to: [100, 100],
+          fillColor: 'blue'
+        })
+      ],
+      opacity: 0.5
+    })
+    testPixels([[[50, 50], [0, 0, 255, 128]]], 'large group')
+    group.remove()
+
+    // A circle with a fill, a stroke and opacity over a red background, which
+    // is composited through a temporary canvas:
+    new Path.Rectangle({
+      from: [0, 0],
+      to: [100, 100],
+      fillColor: 'red'
+    })
+    const circle = new Path.Circle({
+      center: [50, 50],
+      radius: 20,
+      fillColor: 'lime',
+      strokeColor: 'lime',
+      opacity: 0.5
+    })
+    testPixels(
+      [
+        [[50, 50], [128, 128, 0, 255]],
+        [[32, 32], [255, 0, 0, 255]],
+        [[90, 90], [255, 0, 0, 255]]
+      ],
+      'opacity'
+    )
+    circle.remove()
+
+    // An emulated blend mode over the red background: Red + green = yellow.
+    new Group({
+      children: [
+        new Path.Circle({
+          center: [50, 50],
+          radius: 20,
+          fillColor: 'lime'
+        })
+      ],
+      blendMode: 'add'
+    })
+    testPixels(
+      [
+        [[50, 50], [255, 255, 0, 255]],
+        [[32, 32], [255, 0, 0, 255]],
+        [[90, 90], [255, 0, 0, 255]]
+      ],
+      'blendMode'
+    )
   })
 
   test('Item#shadowOffset and Item#shadowBlur with opacity (#1628)', () => {
@@ -1937,6 +2021,53 @@ describe('Item', () => {
       'reused'
     )
     CanvasProvider.release(canvas)
+  })
+
+  test('Reused canvases keep their size (CanvasProvider)', () => {
+    // Resizing a canvas reallocates its pixels, so small canvases are kept at
+    // their size, and reused for smaller sizes with the minimum option, cleared
+    // and with their context reset:
+    let ctx = CanvasProvider.getContext(20, 10)
+    ctx.fillRect(0, 0, 20, 10)
+    ctx.translate(5, 5)
+    CanvasProvider.release(ctx)
+    const canvases = CanvasProvider.canvases
+    equals(canvases[canvases.length - 1], ctx.canvas, 'kept')
+    ctx = CanvasProvider.getContext(10, 5, { minimum: true })
+    equals(canvases.includes(ctx.canvas), false, 'reused')
+    equals(
+      new Size(ctx.canvas.width, ctx.canvas.height),
+      new Size(20, 10),
+      'size'
+    )
+    equals(
+      () => ctx.getImageData(0, 0, 20, 10).data.every(value => value === 0),
+      true
+    )
+    const { a, b, c, d, e, f } = ctx.getTransform()
+    equals(new Matrix(a, b, c, d, e, f), new Matrix(), 'transform')
+    CanvasProvider.release(ctx)
+  })
+
+  test('Item#rasterize() leaves no large canvases allocated (#2228)', () => {
+    // NOTE: The temporary canvases are only observable through
+    // CanvasProvider, so check that the canvases that it keeps after drawing
+    // a large item with opacity at pixel ratio 2 retain at most 8 × 256 × 256
+    // pixels:
+    new Path.Rectangle({
+      from: [0, 0],
+      to: [1000, 1000],
+      fillColor: 'red',
+      opacity: 0.5
+    })
+    paper.project.activeLayer.rasterize({ resolution: 144, insert: false })
+    const canvases = CanvasProvider.canvases,
+      pixels = canvases.reduce(
+        (sum, canvas) => sum + canvas.width * canvas.height,
+        0
+      )
+    equals(canvases.length <= 8, true, 'at most 8 kept')
+    equals(pixels <= 8 * 256 * 256, true, `retained pixels: ${pixels}`)
   })
 
   test('Creating an item without a project throws a clear error (#1889)', () => {
