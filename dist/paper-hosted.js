@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 12:41:57 2026 +0200
+ * Date: Thu Oct 22 12:45:43 2026 +0200
  *
  ***
  *
@@ -5962,12 +5962,13 @@ var Raster = Item.extend({
 		var size = Size.read(arguments);
 		if (!size.equals(this._size)) {
 			if (size.width > 0 && size.height > 0) {
-				var element = !_clear && this.getElement();
-				this._setImage(CanvasProvider.getCanvas(size));
+				var element = !_clear && this.getElement(),
+					canvas = CanvasProvider.getCanvas(size);
 				if (element) {
-					this.getContext(true).drawImage(element, 0, 0,
+					canvas.getContext('2d').drawImage(element, 0, 0,
 							size.width, size.height);
 				}
+				this._setImage(canvas);
 			} else {
 				if (this._canvas)
 					CanvasProvider.release(this._canvas);
