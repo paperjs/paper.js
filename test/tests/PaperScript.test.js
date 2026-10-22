@@ -164,6 +164,18 @@ describe('PaperScript', () => {
     ])
   })
 
+  test('PaperScript keeps keywords apart from replaced expressions', () => {
+    // Minified code puts operators right after keywords:
+    executeCode(
+      'function f(i) { return-1!=i } module.exports = f(1) + " " + f(-1)',
+      'true false'
+    )
+    executeCode(
+      'var a = [1]; module.exports = typeof-a[0] + " " + (void-a[0])',
+      'number undefined'
+    )
+  })
+
   test('PaperScript with inline source maps', () => {
     const source = 'var a = 1;\nvar b = 2;',
       code = PaperScript.compile(source, {
