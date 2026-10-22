@@ -978,6 +978,18 @@ PathItem.inject(new function() {
         // vertex is reached yet:
         var halfEdges = [];
 
+        // The point at the distance along the half-edge. Straight edges keep
+        // their handles at their ends, so their times don't run evenly:
+        function getPointAt(halfEdge, distance) {
+            var v = halfEdge.values,
+                edge = halfEdge.edge,
+                t = distance / edge.length;
+            return edge.isStraight
+                    ? new Point(v[0] + (v[6] - v[0]) * t,
+                        v[1] + (v[7] - v[1]) * t)
+                    : Curve.getPoint(v, Curve.getTimeAt(v, distance));
+        }
+
         function getSide(halfEdge1, halfEdge2) {
             // Half-edges that leave a vertex tangentially and can't be told
             // apart where their angles are measured: Tell on which side of the
@@ -985,12 +997,8 @@ PathItem.inject(new function() {
             // as they don't cross before they end, or return 0 if it doesn't
             // run alongside the first one there:
             var v1 = halfEdge1.values,
-                v2 = halfEdge2.values,
-                edge2 = halfEdge2.edge,
-                length = min(halfEdge1.edge.length, edge2.length) / 2,
-                point = Curve.getPoint(v2, edge2.isStraight
-                        ? length / edge2.length
-                        : Curve.getTimeAt(v2, length)),
+                point = getPointAt(halfEdge2, min(halfEdge1.edge.length,
+                        halfEdge2.edge.length) / 2),
                 time = Curve.getNearestTime(v1, point);
             return time > 0 && time < 1
                     ? Curve.getTangent(v1, time).cross(
@@ -1089,10 +1097,7 @@ PathItem.inject(new function() {
                 }
                 for (var j = 0, k = outgoing.length; j < k; j++) {
                     var halfEdge = halfEdges[outgoing[j]],
-                        v = halfEdge.values,
-                        point = Curve.getPoint(v, halfEdge.edge.isStraight
-                                ? distance / halfEdge.edge.length
-                                : Curve.getTimeAt(v, distance));
+                        point = getPointAt(halfEdge, distance);
                     halfEdge.point = point;
                     halfEdge.angle = Math.atan2(point.y - vertex.y,
                             point.x - vertex.x);

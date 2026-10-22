@@ -3166,4 +3166,17 @@ describe('Path Boolean Operations', () => {
       tolerance: 1e-4
     })
   })
+
+  test('Unite paths with a straight edge that a curve leaves tangentially', () => {
+    // The straight edge ends a little past the curve's start, so the order of
+    // the edges there is told along the short piece between them. Rotated, so
+    // the edges aren't parallel to the axes:
+    const path1 = new Path('M0,-50L0,50.0003L-40,50.0003L-40,-50Z')
+    const path2 = new Path('M0,50C0,30 10,10 30,-20L40,60Z')
+    path1.rotate(30, [0, 0])
+    path2.rotate(30, [0, 0])
+    equals(path1.unite(path2).area, path1.area + path2.area, null, {
+      tolerance: 1e-3
+    })
+  })
 })
