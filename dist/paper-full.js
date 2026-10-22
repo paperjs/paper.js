@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 13:16:06 2026 +0200
+ * Date: Thu Oct 22 13:52:41 2026 +0200
  *
  ***
  *
@@ -10464,9 +10464,11 @@ new function() {
 			ctx.beginPath();
 			drawSegments(ctx, this, matrix);
 			ctx.stroke();
-			var settings = paper.settings;
-			drawHandles(ctx, this._segments, matrix, settings.handleSize,
-					Base.pick(settings.segmentSize, settings.handleSize));
+			var settings = paper.settings,
+				handleSize = settings.handleSize,
+				segmentSize = settings.segmentSize;
+			drawHandles(ctx, this._segments, matrix, handleSize,
+					segmentSize != null ? segmentSize : handleSize);
 		}
 	};
 },
