@@ -635,6 +635,42 @@ PathItem.inject(new function() {
         return part;
     }
 
+    /*
+     * Returns the times where the curve values v turn back along the line
+     * that all of their control points lie along within epsilon, if any.
+     */
+    function getTurns(v, epsilon) {
+        // The line's direction, along the longest of the chord and handles:
+        var dx = v[6] - v[0],
+            dy = v[7] - v[1];
+        for (var i = 0; i < 4; i += 2) {
+            var hx = v[i + 2] - v[i],
+                hy = v[i + 3] - v[i + 1];
+            if (hx * hx + hy * hy > dx * dx + dy * dy) {
+                dx = hx;
+                dy = hy;
+            }
+        }
+        var length = Math.sqrt(dx * dx + dy * dy),
+            o = [];
+        if (!length)
+            return [];
+        for (var i = 0; i < 8; i += 2) {
+            var x = v[i] - v[0],
+                y = v[i + 1] - v[1];
+            if (abs(x * dy - y * dx) > epsilon * length)
+                return [];
+            // The control point's position along the line:
+            o.push((x * dx + y * dy) / length);
+        }
+        var roots = [],
+            count = Numerical.solveQuadratic(3 * (o[1] - o[2]) - o[0] + o[3],
+                2 * (o[0] + o[2]) - 4 * o[1], o[1] - o[0], roots,
+                /*#=*/Numerical.CURVETIME_EPSILON,
+                /*#=*/(1 - Numerical.CURVETIME_EPSILON));
+        return count > 0 ? roots.slice(0, count) : [];
+    }
+
     /**
      * Creates a planar graph of the operands' curves: All intersections become
      * vertices, the pieces of curves between them edges, and the edges bound
@@ -704,6 +740,17 @@ PathItem.inject(new function() {
                 curve = loc.getCurve();
             addCut(offsets[curve._path._id] + curve.getIndex(), loc.getTime(),
                     loc.getPoint(), false);
+        }
+        // Curves whose control points lie along a line can turn back along
+        // it, and overlap themselves and the other curves along it. Cut them
+        // where they turn, so that their pieces run in one direction, and the
+        // hot pixels below cut the curves they overlap at the same vertices:
+        for (var i = 0, l = curves.length; i < l; i++) {
+            var times = getTurns(values[i], epsilon);
+            for (var j = 0, k = times.length; j < k; j++) {
+                addCut(i, times[j], Curve.getPoint(values[i], times[j]),
+                        false);
+            }
         }
 
         // 2. Merge points closer than epsilon into vertices, through union-find
