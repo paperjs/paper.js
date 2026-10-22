@@ -89,6 +89,9 @@ new function() {
         var nodes = node.childNodes,
             isClip = type === 'clippath' || type === 'mask',
             isDefs = type === 'defs',
+            // The attributes of patterns describe their tiles, see
+            // importPattern():
+            isPattern = type === 'pattern',
             // Paper.js marks the groups of its layers, see SvgExport:
             ctor = node.hasAttribute('data-paper-layer') ? Layer : Group,
             item = new ctor(),
@@ -96,7 +99,7 @@ new function() {
             currentStyle = project._currentStyle,
             parentSize = rootSize,
             children = [];
-        if (!isClip && !isDefs) {
+        if (!isClip && !isDefs && !isPattern) {
             item = applyAttributes(item, node, options, isRoot);
             // Style on items needs to be handled differently than all other
             // items: We first apply the style to the item, then use it as the
@@ -165,6 +168,7 @@ new function() {
         var color = item.getFillColor();
         return (item instanceof PathItem || item instanceof Shape)
                 && !item.hasStroke() && !!color && !color.gradient
+                && !color.pattern
                 && color.getAlpha() === 1
                 // White in any color type:
                 && (isAlpha || color.getBrightness() === 1
@@ -240,6 +244,26 @@ new function() {
         return null;
     }
 
+    function importPattern(node, type, options) {
+        // SVG draws the content of tiles relative to their top left corner, or
+        // maps the viewBox onto them:
+        var item = importGroup(node, type, options),
+            tile = new Rectangle(getPoint(node), getSize(node)),
+            viewBox = getValue(node, 'viewBox', true),
+            matrix = new Matrix().translate(tile.getPoint());
+        if (viewBox) {
+            var rect = new Rectangle(convertValue(viewBox, 'array'));
+            matrix.scale(tile.getSize().divide(rect.getSize()))
+                    .translate(rect.getPoint().negate());
+        }
+        item.transform(matrix);
+        applyAttributes(new Color(new PatternDefinition(item, { tile: tile })),
+                node, options);
+        // As with gradients, the color is only needed in definitions, which
+        // applyAttributes() adds it to:
+        return null;
+    }
+
     // NOTE: All importers are lowercase, since jsdom is using uppercase
     // nodeNames still.
     var importers = {
@@ -268,6 +292,8 @@ new function() {
         lineargradient: importGradient,
         // https://www.w3.org/TR/SVG/pservers.html#RadialGradients
         radialgradient: importGradient,
+        // https://www.w3.org/TR/SVG/pservers.html#Patterns
+        pattern: importPattern,
 
         // https://www.w3.org/TR/SVG/struct.html#ImageElement
         image: function (node, type, options) {
@@ -574,6 +600,7 @@ new function() {
         mask: applyClipMask,
 
         gradientTransform: applyTransform,
+        patternTransform: applyTransform,
         transform: applyTransform,
 
         'fill-opacity': applyOpacity,

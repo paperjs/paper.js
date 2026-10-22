@@ -65,6 +65,7 @@ var paper = function(self, undefined) {
 /*#*/ include('item/Layer.js');
 /*#*/ include('item/Shape.js');
 /*#*/ include('item/Raster.js');
+/*#*/ include('item/ItemDefinition.js');
 /*#*/ include('item/SymbolItem.js');
 /*#*/ include('item/SymbolDefinition.js');
 /*#*/ include('item/HitResult.js');
@@ -93,6 +94,7 @@ var paper = function(self, undefined) {
 /*#*/ include('style/Color.js');
 /*#*/ include('style/Gradient.js');
 /*#*/ include('style/GradientStop.js');
+/*#*/ include('style/PatternDefinition.js');
 /*#*/ include('style/Style.js');
 
 /*#*/ include('dom/DomElement.js');
