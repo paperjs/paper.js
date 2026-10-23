@@ -112,7 +112,19 @@ var Emitter = {
     },
 
     responds: function(type) {
-        return this._getHandlers(type).length > 0;
+        // Drawing asks every item, so check the object's own handlers first,
+        // and only walk up its prototypes while there are handlers above:
+        var callbacks = this._callbacks;
+        if (callbacks) {
+            if (this.hasOwnProperty('_callbacks') && callbacks[type])
+                return true;
+            for (var obj = this.constructor.prototype; obj && obj._callbacks;
+                    obj = Object.getPrototypeOf(obj)) {
+                if (obj.hasOwnProperty('_callbacks') && obj._callbacks[type])
+                    return true;
+            }
+        }
+        return false;
     },
 
     // Collect the object's own handlers and then the ones of its prototypes,
