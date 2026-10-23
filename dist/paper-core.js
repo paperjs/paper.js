@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 23 13:22:21 2026 +0200
+ * Date: Fri Oct 23 17:40:33 2026 +0200
  *
  ***
  *
@@ -9613,7 +9613,12 @@ var Path = PathItem.extend({
 		this._closed = source._closed;
 		if (profile || this._strokeProfile) {
 			this.setStrokeProfile(profile && profile.map(function(stop) {
-				return { index: stop._index, width: stop._width };
+				return {
+					index: stop._index,
+					width: stop._width,
+					aspect: stop._aspect,
+					angle: stop._angle
+				};
 			}));
 		}
 	},
