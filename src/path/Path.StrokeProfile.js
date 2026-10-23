@@ -22,8 +22,8 @@ Path.inject(new function() {
         // The values of the pen, with their defaults where no stop sets them:
         defaults = { width: 1, aspect: 1, angle: 0 };
 
-    // Returns the stops of the path as { offset, width, aspect, angle }
-    // entries in order:
+    // Returns the stops of the path as { offset, width, aspect, angle,
+    // smooth } entries in order:
     function getEntries(path) {
         var profile = path._strokeProfile || [];
         return profile.map(function(stop) {
@@ -31,62 +31,92 @@ Path.inject(new function() {
                 offset: stop.getOffset(),
                 width: stop._width,
                 aspect: stop._aspect,
-                angle: stop._angle
+                angle: stop._angle,
+                smooth: stop._smooth
             };
         });
     }
 
-    // Returns the value of the entries that set it at the offset, interpolated
-    // between the ones around it, around the end of closed paths, and as the
-    // nearest one beyond the ends of open paths, or null if none sets it.
-    // Where a step lies at the offset, `after` picks the value after it:
+    // Returns the value of the entries that set it at the offset, with its
+    // first and second derivatives along the path, as [value, d1, d2], or null
+    // if none sets it. Between two entries, it follows the cubic with their
+    // values and slopes, see StrokeProfileStop#smooth. It wraps around the end
+    // of closed paths, and stays as the nearest entry beyond the ends of open
+    // ones. Where a step lies at the offset, `after` picks the side after it:
     function getValue(entries, key, offset, length, closed, after) {
-        var before = null,
-            at = null,
-            next = null,
-            first = null,
-            last = null;
-        for (var i = 0, l = entries.length; i < l; i++) {
-            var entry = entries[i];
-            if (entry[key] != null) {
-                first = first || entry;
-                last = entry;
-                if (entry.offset < offset) {
-                    before = entry;
-                } else if (entry.offset === offset) {
-                    if (after || !at)
-                        at = entry;
-                } else if (!next) {
-                    next = entry;
-                }
+        var stops = entries.filter(function(entry) {
+                return entry[key] != null;
+            }),
+            count = stops.length,
+            index = -1;
+
+        // The stop at the index, also beyond the ends of closed paths:
+        function getStop(index) {
+            var turns = Math.floor(index / count),
+                stop = stops[index - turns * count];
+            return {
+                offset: stop.offset + turns * length,
+                value: stop[key],
+                smooth: stop.smooth
+            };
+        }
+
+        // The slope at the stop, towards the next stop or the previous one:
+        // flat at smooth stops, so that each stop only shapes the curves on
+        // either side of it, and straight on to the other stop otherwise:
+        function getSlope(index, forward) {
+            var stop = getStop(index),
+                other = getStop(forward ? index + 1 : index - 1);
+            return stop.smooth ? 0
+                    : (other.value - stop.value) / (other.offset - stop.offset);
+        }
+
+        if (count) {
+            for (var i = 0; i < count; i++) {
+                var stopOffset = stops[i].offset;
+                if (stopOffset < offset || stopOffset === offset && after)
+                    index = i;
             }
+            if (closed || index >= 0 && index < count - 1) {
+                // The cubic Hermite curve between the stops around the offset:
+                var stop1 = getStop(index),
+                    stop2 = getStop(index + 1),
+                    h = stop2.offset - stop1.offset,
+                    t = (offset - stop1.offset) / h,
+                    v1 = stop1.value,
+                    v2 = stop2.value,
+                    m1 = getSlope(index, true) * h,
+                    m2 = getSlope(index + 1, false) * h;
+                return [
+                    ((2 * t - 3) * t * t + 1) * v1 + ((t - 2) * t + 1) * t * m1
+                        + (3 - 2 * t) * t * t * v2 + (t - 1) * t * t * m2,
+                    (6 * (t - 1) * t * (v1 - v2) + ((3 * t - 4) * t + 1) * m1
+                        + (3 * t - 2) * t * m2) / h,
+                    ((12 * t - 6) * (v1 - v2) + (6 * t - 4) * m1
+                        + (6 * t - 2) * m2) / (h * h)
+                ];
+            }
+            return [stops[index < 0 ? 0 : count - 1][key], 0, 0];
         }
-        if (at)
-            return at[key];
-        if (closed && first) {
-            before = before || { offset: last.offset - length };
-            before[key] = before[key] != null ? before[key] : last[key];
-            next = next || { offset: first.offset + length };
-            next[key] = next[key] != null ? next[key] : first[key];
-        }
-        return before && next
-                ? before[key] + (next[key] - before[key])
-                    * (offset - before.offset) / (next.offset - before.offset)
-                : before ? before[key] : next ? next[key] : null;
+        return null;
     }
 
     // Returns the values of the entries at the offset, as an entry:
     function getValues(entries, offset, length, closed, after) {
         var values = { offset: offset };
-        for (var key in defaults)
-            values[key] = getValue(entries, key, offset, length, closed, after);
+        for (var key in defaults) {
+            var value = getValue(entries, key, offset, length, closed, after);
+            values[key] = value && value[0];
+        }
         return values;
     }
 
     // Returns the entries from one offset to another, relative to the first,
     // wrapping around closed paths. Where the part ends within the path, its
     // values there are added as entries, so that the part keeps them, with
-    // the fallbacks for the ones that it doesn't set:
+    // the fallbacks for the ones that it doesn't set. These entries are as
+    // smooth as a stop there, and otherwise not, so that values in straight
+    // lines stay as they are:
     function getPart(entries, from, to, length, closed, hasStart, hasEnd,
             fallbacks) {
 
@@ -96,6 +126,12 @@ Path.inject(new function() {
                 if (values[key] == null)
                     values[key] = fallbacks[key];
             }
+            var stop = null;
+            for (var i = 0, l = entries.length; i < l; i++) {
+                if (entries[i].offset === offset && (after || !stop))
+                    stop = entries[i];
+            }
+            values.smooth = !!stop && stop.smooth;
             return values;
         }
 
@@ -149,19 +185,21 @@ Path.inject(new function() {
          * that draws its stroke, an ellipse with a width, as a factor of its
          * {@link Style#strokeWidth}, an aspect and an angle, see
          * {@link StrokeProfileStop}. The stops are sorted by their offsets.
-         * Between the stops that set a value, it changes linearly along the
-         * path, and beyond the ends of open paths, it stays as at the first
-         * and last of them. Two stops at the same offset make a step. The
-         * stops stay between the same segments when they move. Without a
-         * stroke profile, the stroke is drawn with a round pen of the stroke
-         * width all along.
+         * Between the stops that set a value, it changes along the path,
+         * easing into and out of smooth stops and in straight lines from the
+         * others, see {@link StrokeProfileStop#smooth}, and beyond the ends
+         * of open paths, it stays as at the first and last of them. Two stops
+         * at the same offset make a step. The stops stay between the same
+         * segments when they move. Without a stroke profile, the stroke is
+         * drawn with a round pen of the stroke width all along.
          *
          * It is a property of the path, not of its style, as it is tied to
          * its segments. It can be set to stops or plain objects describing
-         * them, `{ offset, width, aspect, angle }`, and JSON stores them with
-         * the indices that tie them to the segments instead of their offsets,
-         * `{ index, width, aspect, angle }`. Changing the returned array
-         * directly isn't tracked, as with {@link #segments}.
+         * them, `{ offset, width, aspect, angle, smooth }`, and JSON stores
+         * them with the indices that tie them to the segments instead of
+         * their offsets, `{ index, width, aspect, angle, smooth }`. Changing
+         * the returned array directly isn't tracked, as with
+         * {@link #segments}.
          *
          * {@link PathItem#outline()} follows the profile, but the path is
          * still drawn, measured and hit-tested with its stroke width.
@@ -224,7 +262,9 @@ Path.inject(new function() {
          * values: its width as a factor of the {@link Style#strokeWidth}, its
          * aspect and its angle, `1`, `1` and `0` where no stop sets them.
          * Where the profile has a step, it returns the values after it. Adding
-         * the stop to the profile doesn't change it.
+         * the stop to the profile keeps the values at the offset, and where
+         * they change in straight lines, also around it if the stop isn't
+         * smooth. As a smooth stop, the values ease into it and out of it.
          *
          * @param {Number} offset the offset on the path, where `0` is at the
          *     beginning of the path and {@link Path#length} at the end
@@ -252,8 +292,8 @@ Path.inject(new function() {
         },
 
         // Returns the pens all along the path, as entries with all values at
-        // its ends and at the offsets of the stops, between which the values
-        // change linearly. Steps have two entries at the same offset. See
+        // its ends and at the offsets of the stops, where the curves of the
+        // values change. Steps have two entries at the same offset. See
         // PathItem#outline():
         _getStrokeProfilePens: function() {
             var entries = getEntries(this),
@@ -286,6 +326,23 @@ Path.inject(new function() {
                 }
             }
             return pens;
+        },
+
+        // Returns a function that returns the values of the pen at an offset
+        // with their first and second derivatives, as { width: [value, d1,
+        // d2], aspect, angle }, see PathItem#outline():
+        _getStrokeProfileValues: function() {
+            var entries = getEntries(this),
+                length = this.getLength(),
+                closed = this._closed;
+            return function(offset, after) {
+                var values = {};
+                for (var key in defaults) {
+                    values[key] = getValue(entries, key, offset, length, closed,
+                            after) || [defaults[key], 0, 0];
+                }
+                return values;
+            };
         },
 
         // Returns the index of the stop at the offset: the index of the

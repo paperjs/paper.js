@@ -36,15 +36,19 @@ PathItem.inject(new function() {
             areas = [];
 
         // Adds the area between two sides of a part, leaving the segments of
-        // the second one as they are, as the evolute is shared:
-        function addSides(side1, side2) {
+        // the second one as they are, as the evolute is shared. Strips of
+        // stroke profiles leave out slivers thinner than the tolerance, which
+        // only add points so close to the others' that the union can't tell
+        // them apart:
+        function addSides(side1, side2, isStrip) {
             var part = new Path({ segments: side1, insert: false });
             for (var i = side2.length - 1; i >= 0; i--)
                 part.add(side2[i].reversed());
             part.setClosed(true);
             part = part.unite();
             // Parts that fold onto themselves can leave nothing:
-            if (!part.isEmpty())
+            if (isStrip ? 2 * abs(part.getArea())
+                    > tolerance * part.getLength() : !part.isEmpty())
                 areas.push(part);
         }
 
@@ -255,7 +259,7 @@ PathItem.inject(new function() {
         }
 
         // Adds the area that the pens of the path's stroke profile sweep: the
-        // ellipses that change linearly between the stops, see
+        // ellipses that change along curves between the stops, see
         // Path#strokeProfile. The sides of the stroke lie where the moving pen
         // touches the edge of the area, which we find exactly at each time on
         // the curves, and fit with cubics. Where the pens change abruptly or
@@ -263,50 +267,47 @@ PathItem.inject(new function() {
         // pens there as they are, as each lies within the area.
         function addProfilePath(path) {
             var pens = path._getStrokeProfilePens(),
+                getValues = path._getStrokeProfileValues(),
                 closed = path._closed,
                 length = path.getLength(),
                 curves = path.getCurves(),
                 spans = [],
                 ends = [];
 
-            // The pen with the values, as the half axes of its ellipse and its
-            // angle in radians, with their changes along the span, if any. As
-            // the product of the width and the aspect, b changes its rate too:
-            function getPen(values, span) {
-                var toRadians = Math.PI / 180;
-
-                function getSlope(key) {
-                    return span ? (span.next[key] - span.entry[key])
-                            / (span.next.offset - span.entry.offset) : 0;
-                }
-
-                var a = radius * values.width,
-                    dWidth = getSlope('width'),
-                    dAspect = getSlope('aspect');
+            // The pen at the offset, as the half axes of its ellipse and its
+            // angle in radians, with their first and second derivatives along
+            // the path. Where a step lies at the offset, `after` picks the side
+            // after it. As the product of the width and the aspect, b changes
+            // with both:
+            function getPen(offset, after) {
+                var values = getValues(offset, after),
+                    width = values.width,
+                    aspect = values.aspect,
+                    angle = values.angle,
+                    toRadians = Math.PI / 180,
+                    a = radius * width[0];
                 return {
                     a: a,
-                    b: a * values.aspect,
-                    angle: values.angle * toRadians,
-                    da: radius * dWidth,
-                    db: radius * (dWidth * values.aspect
-                            + values.width * dAspect),
-                    ddb: 2 * radius * dWidth * dAspect,
-                    dAngle: getSlope('angle') * toRadians
+                    b: a * aspect[0],
+                    angle: angle[0] * toRadians,
+                    da: radius * width[1],
+                    db: radius * (width[1] * aspect[0] + width[0] * aspect[1]),
+                    dda: radius * width[2],
+                    ddb: radius * (width[2] * aspect[0]
+                            + 2 * width[1] * aspect[1] + width[0] * aspect[2]),
+                    dAngle: angle[1] * toRadians,
+                    ddAngle: angle[2] * toRadians
                 };
             }
 
-            // The pen of the span at the offset within it:
+            // The pen of the span at the offset within it, also where rounding
+            // took the offset beyond its ends, and onto the other side of a
+            // step there:
             function getSpanPen(span, offset) {
-                var entry = span.entry,
-                    next = span.next,
-                    factor = (offset - entry.offset)
-                            / (next.offset - entry.offset),
-                    values = {};
-                for (var key in entry) {
-                    values[key] = entry[key]
-                            + (next[key] - entry[key]) * factor;
-                }
-                return getPen(values, span);
+                var end = span.next.offset;
+                return offset < end
+                        ? getPen(Math.max(offset, span.entry.offset), true)
+                        : getPen(end, false);
             }
 
             function getSpan(offset, after) {
@@ -398,8 +399,9 @@ PathItem.inject(new function() {
                             s = Math.sin(phi),
                             dfs = (dt1 * b + t1 * db) * c
                                 + (dt2 * a + t2 * da) * s + da * db
-                                + a * pen.ddb * s * s
-                                + 2 * dAngle * (a * da - b * db) * s * c,
+                                + pen.dda * b * c * c + a * pen.ddb * s * s
+                                + (pen.ddAngle * (a * a - b * b)
+                                    + 2 * dAngle * (a * da - b * db)) * s * c,
                             dfphi = df(phi),
                             dphi = dfphi ? -dfs / dfphi : 0,
                             side = {
@@ -482,8 +484,11 @@ PathItem.inject(new function() {
             function addPiece(v, offset, span, ta, tb) {
                 // As the points that touch the edge move around the pen
                 // as it and the curve turn, sample them at least every 10°:
-                var turn = abs(getSpanPen(span, offset).dAngle)
-                        * Curve.getLength(v, ta, tb) + getTurn(v, ta, tb),
+                var turn = abs(getSpanPen(span, offset
+                            + Curve.getLength(v, 0, tb)).angle
+                        - getSpanPen(span, offset
+                            + Curve.getLength(v, 0, ta)).angle)
+                        + getTurn(v, ta, tb),
                     count = Math.max(16, Math.ceil(turn * 18 / Math.PI)),
                     // The times where the parts end and the next ones start:
                     splits = [[ta, ta], [tb, tb]],
@@ -636,10 +641,10 @@ PathItem.inject(new function() {
                                 return point.add(strip.to.point.subtract(point)
                                         .multiply(factor));
                             }, t0, t1);
-                            addSides(from, still);
-                            addSides(to, still);
+                            addSides(from, still, true);
+                            addSides(to, still, true);
                         } else {
-                            addSides(from, to);
+                            addSides(from, to, true);
                         }
                     });
                 }
@@ -844,8 +849,7 @@ PathItem.inject(new function() {
                 var segments = path._segments;
                 if (segments.length && !closed && cap !== 'butt') {
                     var center = segments[0]._point,
-                        stop = path.getStrokeProfileAt(0),
-                        pen = getPen(stop),
+                        pen = getPen(0, true),
                         axes = getAxes(pen);
                     if (cap === 'round') {
                         addPen(center, pen);
@@ -866,13 +870,12 @@ PathItem.inject(new function() {
                 // The pens where the spans meet, except at steps, which end
                 // the parts straight across, as butt caps do:
                 for (var i = 0, l = pens.length; i < l; i++) {
-                    var entry = pens[i],
-                        offset = entry.offset,
+                    var offset = pens[i].offset,
                         isStep = i > 0 && pens[i - 1].offset === offset
                             || i < l - 1 && pens[i + 1].offset === offset;
                     if (!isStep && (closed ? offset < length
                             : offset > 0 && offset < length))
-                        addPen(path.getPointAt(offset), getPen(entry));
+                        addPen(path.getPointAt(offset), getPen(offset, true));
                 }
                 for (var i = 0, offset = 0, l = curves.length; i < l; i++) {
                     var curve = curves[i],

@@ -34,6 +34,39 @@ describe('PathItem#offset() and #outline()', () => {
     new Project(new Size(500, 500))
   })
 
+  // How far the points of the outline lie outside the pens of the path's
+  // stroke profile, sampled closely along it. It is measured along the pens'
+  // minor axes, which underestimates the distance elsewhere:
+  function getDeviation(path, outline) {
+    const pens = []
+    for (let offset = 0; offset <= path.length; offset += 0.05) {
+      const stop = path.getStrokeProfileAt(offset)
+      const a = path.strokeWidth / 2 * stop.width
+      pens.push({
+        point: path.getPointAt(offset),
+        a,
+        b: a * stop.aspect,
+        angle: stop.angle
+      })
+    }
+    let deviation = 0
+    for (const curve of outline.curves) {
+      for (let t = 0; t < 1; t += 0.25) {
+        const point = curve.getPointAtTime(t)
+        let distance = Infinity
+        for (const pen of pens) {
+          const { x, y } = point.subtract(pen.point).rotate(-pen.angle)
+          distance = Math.min(
+            distance,
+            (Math.sqrt((x / pen.a) ** 2 + (y / pen.b) ** 2) - 1) * pen.b
+          )
+        }
+        deviation = Math.max(deviation, distance)
+      }
+    }
+    return deviation
+  }
+
   test('PathItem#offset() of closed paths', () => {
     const rect = new Path.Rectangle({ point: [0, 0], size: [100, 50] })
     equals(rect.offset(10).bounds, new Rectangle(-10, -10, 120, 70))
@@ -150,11 +183,14 @@ describe('PathItem#offset() and #outline()', () => {
       createLine([{ offset: 0, aspect: 0.2, angle: 90 }]).bounds,
       new Rectangle(0, -10, 100, 20)
     )
-    // A taper touches its sides behind the pens' centers, where the pens
-    // grow along them, with r(s) = 5 + 0.15 s:
+    // A taper in a straight line touches its sides behind the pens'
+    // centers, where the pens grow along them, with r(s) = 5 + 0.15 s:
     const k = 0.15
     equals(
-      createLine([{ offset: 0, width: 0.5 }, { offset: 100, width: 2 }]).area,
+      createLine([
+        { offset: 0, width: 0.5, smooth: false },
+        { offset: 100, width: 2, smooth: false }
+      ]).area,
       25 * Math.sqrt(1 - k * k) * (100 - k * 15),
       null,
       { tolerance: 0.5 }
@@ -225,35 +261,26 @@ describe('PathItem#offset() and #outline()', () => {
     }).rotate(2378.48632, end)
     const outline = spin.outline({ insert: false })
     equals(last.subtract(outline).area, 0, null, { tolerance: 1 })
-    // Its points lie on the edge of the pens, measured along the pens' minor
-    // axes, which underestimates the distance elsewhere:
-    const pens = []
-    for (let offset = 0; offset <= spin.length; offset += 0.05) {
-      const stop = spin.getStrokeProfileAt(offset)
-      const a = 30 * stop.width
-      pens.push({
-        point: spin.getPointAt(offset),
-        a,
-        b: a * stop.aspect,
-        angle: stop.angle
-      })
-    }
-    let deviation = 0
-    for (const curve of outline.curves) {
-      for (let t = 0; t < 1; t += 0.25) {
-        const point = curve.getPointAtTime(t)
-        let distance = Infinity
-        for (const pen of pens) {
-          const { x, y } = point.subtract(pen.point).rotate(-pen.angle)
-          distance = Math.min(
-            distance,
-            (Math.sqrt((x / pen.a) ** 2 + (y / pen.b) ** 2) - 1) * pen.b
-          )
-        }
-        deviation = Math.max(deviation, distance)
-      }
-    }
-    equals(deviation < 0.2, true, 'outside the pens')
+    equals(getDeviation(spin, outline) < 0.2, true, 'outside the pens')
+    // Smooth profiles change their pens along curves, which the outline
+    // follows as exactly:
+    const brush = new Path({
+      segments: [[0, 0], [[150, 80], [-60, 0], [60, 0]], [300, 0]],
+      strokeWidth: 40,
+      strokeCap: 'round',
+      insert: false
+    })
+    brush.strokeProfile = [
+      { offset: 0, width: 0.2, aspect: 0.3, angle: 0 },
+      { offset: 120, width: 1.5, aspect: 1 },
+      { offset: 220, width: 0.6, angle: 120 },
+      { offset: brush.length, width: 1.2, aspect: 0.2, angle: 30 }
+    ]
+    equals(
+      getDeviation(brush, brush.outline({ insert: false })) < 0.15,
+      true,
+      'smooth profiles'
+    )
     // Samples at the ends of pieces stay on their curves, also where
     // rounding would take them beyond:
     const hook = new Path({
