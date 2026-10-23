@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 23 15:25:15 2026 +0200
+ * Date: Fri Oct 23 16:39:36 2026 +0200
  *
  ***
  *
@@ -748,7 +748,17 @@ var Emitter = {
 	},
 
 	responds: function(type) {
-		return this._getHandlers(type).length > 0;
+		var callbacks = this._callbacks;
+		if (callbacks) {
+			if (this.hasOwnProperty('_callbacks') && callbacks[type])
+				return true;
+			for (var obj = this.constructor.prototype; obj && obj._callbacks;
+					obj = Object.getPrototypeOf(obj)) {
+				if (obj.hasOwnProperty('_callbacks') && obj._callbacks[type])
+					return true;
+			}
+		}
+		return false;
 	},
 
 	_getHandlers: function(type) {
