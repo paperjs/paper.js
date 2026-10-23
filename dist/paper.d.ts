@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 23 22:30:40 2026 +0200
+ * Date: Fri Oct 23 23:56:49 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -1485,6 +1485,110 @@ declare namespace paper {
     }
 
     /** 
+     * A live effect of an item, see {@link Item#effects}: it derives what
+     * is drawn from the item without changing the item itself, as the effects in
+     * Illustrator do. The effects of an item run in order, each on what the one
+     * before it returned. Each type of effect is a subclass with its params as
+     * properties, registered by its type, see {@link Effect.types}. Effects of
+     * types that aren't registered keep their params and leave what they get as
+     * it is, so that they still round-trip. {@link Effect.extend} creates
+     * new types.
+     */
+    class Effect  {
+        /** 
+         * The type of the effect, which names its class in {@link Effect.types}.
+         */
+        readonly type: string
+
+        /** 
+         * Whether the effect applies. Effects that aren't visible are skipped.
+         */
+        visible: boolean
+
+        /** 
+         * The params of the effect as a plain object. Each type of effect also
+         * has them as properties. Changing the returned object isn't tracked.
+         */
+        readonly params: any
+
+        /** 
+         * The item that the effect is part of.
+         */
+        readonly item: Item | null
+
+        /** 
+         * The index of the effect in the {@link Item#effects} of its item.
+         */
+        readonly index: number | null
+
+        /** 
+         * The classes of the effects by their types. Hosts can register their
+         * own classes for types here, to replace the ones of Paper.js.
+         */
+        static types: any
+
+
+        /** 
+         * Creates an effect of the type of its class, or of the type that the
+         * object names, see {@link Effect.create}.
+         * 
+         * @param object - the params of the effect, and its `visible`
+         *     flag
+         */
+        constructor(object?: object)
+
+        /** 
+         * @return a copy of the effect, without an item
+         */
+        clone(): Effect
+
+        /** 
+         * Removes the effect from its item.
+         * 
+         * @return true if the effect was removed
+         */
+        remove(): boolean
+
+        /** 
+         * Applies the effect to the art that it gets: the item, or what the
+         * effect before it returned, which it doesn't change. Subclasses override
+         * it, effects of unknown types return the art as it is.
+         * 
+         * @param art - the item to apply the effect to
+         * 
+         * @return the result
+         */
+        apply(art: Item): Item
+
+        /** 
+         * Checks whether the effect is equal to the supplied one.
+         * 
+         * @return true if they are equal
+         */
+        equals(effect: Effect): boolean
+
+        /** 
+         * Returns the effect, or creates one from an object that describes
+         * it, `{ type, ...params, visible }`, of the class registered for its
+         * type, or of `Effect` for unknown types.
+         */
+        static create(object: Effect | object): Effect
+
+        /** 
+         * Creates a type of effect: a subclass of `Effect` with its `type`,
+         * which registers it in {@link Effect.types}, the `defaults` of its
+         * params, which become its properties, and its {@link #apply}.
+         * The params of subclasses add to those of their base classes.
+         * 
+         * @param src - the definition of the type
+         * 
+         * @return the class
+         */
+        static extend(src: object): Function
+
+    }
+
+    /** 
      * The Event object is the base class for any of the other event types,
      * such as {@link MouseEvent}, {@link ToolEvent} and {@link KeyEvent}.
      */
@@ -1762,6 +1866,36 @@ declare namespace paper {
      * that they inherit from Item.
      */
     class Item  {
+        /** 
+         * The live effects of the item, in the order in which they apply, see
+         * {@link Effect}. They derive what is drawn from the item without
+         * changing it: drawing draws their output, and {@link #previewBounds}
+         * measures it, while hit testing, {@link #bounds} and
+         * {@link #strokeBounds} stay with the item itself. It can be set to
+         * effects or plain objects describing them, `{ type, ...params,
+         * visible }`. Changing the returned array directly isn't tracked, as
+         * with {@link Path#segments}.
+         * 
+         * Paper.js has these types of effects, and {@link Effect.extend}
+         * creates more:
+         * 
+         * - `offset`: offsets the paths, see {@link PathItem#offset}, by
+         *   `distance` (`0`), with corners of the `join` (`'miter'`) and
+         *   `miterLimit` (`10`).
+         * - `outline`: outlines the strokes of the paths as filled areas next
+         *   to their fills, see {@link PathItem#outline}, following their
+         *   {@link Path#strokeProfile}.
+         */
+        effects: Effect[]
+
+        /** 
+         * The bounds of what the item looks like with its effects, in the
+         * coordinate space of its parent: of their output with its strokes, or of
+         * its children's with their effects, and its {@link #strokeBounds}
+         * without them, as Illustrator's "Use Preview Bounds".
+         */
+        readonly previewBounds: Rectangle
+
         /** 
          * The key of the host's node that the item represents, in a project
          * backed by a host document, see {@link Project#host}. It can only be
@@ -2328,6 +2462,69 @@ declare namespace paper {
          */
         static onDrawSelection: Function | null
 
+
+        /** 
+         * Adds an effect at the end of the item's effects.
+         * 
+         * @param effect - the effect, or a plain object describing
+         *     it
+         * 
+         * @return the added effect
+         */
+        addEffect(effect: Effect | object): Effect
+
+        /** 
+         * Inserts an effect into the item's effects at the given index.
+         * 
+         * @param index - the index at which to insert the effect
+         * @param effect - the effect, or a plain object describing
+         *     it
+         * 
+         * @return the inserted effect
+         */
+        insertEffect(index: number, effect: Effect | object): Effect
+
+        /** 
+         * Inserts effects into the item's effects at the given index. Effects
+         * that are part of another item are copied.
+         * 
+         * @param index - the index at which to insert the effects
+         * @param effects - the effects, or plain objects
+         *     describing them
+         * 
+         * @return the inserted effects
+         */
+        insertEffects(index: number, effects: Effect[] | object[]): Effect[]
+
+        /** 
+         * Removes the effect at the given index from the item's effects.
+         * 
+         * @param index - the index of the effect to remove
+         * 
+         * @return the removed effect, or `null`
+         */
+        removeEffect(index: number): Effect
+
+        /** 
+         * Removes the effects from the start index to the end index from the
+         * item's effects, or all of them.
+         * 
+         * @param start - the index of the first effect to remove
+         * @param end - the index after the last one
+         * 
+         * @return the removed effects
+         */
+        removeEffects(start?: number, end?: number): Effect[]
+
+        /** 
+         * Returns what the item's visible effects make of it, in the item's own
+         * coordinates, outside of the scene graph, or `null` if it has none. It
+         * is kept until the item, its content or its effects change, so changing
+         * it isn't tracked.
+         * 
+         * @return the output of the effects
+         */
+        getEffectOutput(): Item | null
 
         /** 
          * Sets the properties of the passed object literal on this item to the
@@ -4081,6 +4278,7 @@ declare namespace paper {
         Curve: typeof Curve
         CurveLocation: typeof CurveLocation
         DrawEvent: typeof DrawEvent
+        Effect: typeof Effect
         Event: typeof Event
         Gradient: typeof Gradient
         GradientStop: typeof GradientStop

@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 23 22:30:40 2026 +0200
+ * Date: Fri Oct 23 23:56:49 2026 +0200
  *
  ***
  *
@@ -3529,6 +3529,7 @@ var Item = Base.extend(Emitter, {
 		guide: false,
 		clipMask: false,
 		textWrap: null,
+		effects: [],
 		selected: false,
 		data: {}
 	},
@@ -3658,6 +3659,7 @@ new function() {
 			for (var item = this; item; item = item._parent) {
 				if (item._buffer)
 					item._buffer.matrix = null;
+				item._effectOutput = undefined;
 				if (item._symbol && item !== this)
 					item._symbol._changed(flags);
 			}
@@ -4412,6 +4414,7 @@ new function() {
 		this._data = data ? Base.clone(data) : null;
 		if (name)
 			this.setName(name);
+		this.setEffects(source._effects);
 	},
 
 	rasterize: function(arg0, arg1) {
@@ -5443,9 +5446,15 @@ new function() {
 				ctx.translate(-offset.x, -offset.y);
 		}
 		if (!isFresh && !(event && event.prevented)) {
-			this._draw(ctx, shadow && !direct
+			var drawParam = shadow && !direct
 					? param.extend({ dontShadow: true }) : param,
-					viewMatrix, strokeMatrix);
+				output = this.getEffectOutput();
+			if (output) {
+				output.draw(ctx, drawParam.extend({ updateMatrix: false }),
+						strokeMatrix);
+			} else {
+				this._draw(ctx, drawParam, viewMatrix, strokeMatrix);
+			}
 		}
 		ctx.restore();
 		matrices.pop();
@@ -6762,6 +6771,321 @@ var HitResult = Base.extend({
 			}, options);
 		}
 	}
+});
+
+var Effect = Base.extend({
+	_class: 'Effect',
+	_compactSerialize: true,
+	_type: null,
+	_defaults: {},
+
+	initialize: function Effect(props) {
+		props = props || {};
+		var defaults = this._defaults,
+			params = this.constructor === Effect ? Base.set({}, props) : {};
+		delete params.type;
+		delete params.visible;
+		for (var key in defaults) {
+			var value = props[key];
+			params[key] = value !== undefined ? value : defaults[key];
+		}
+		this._item = null;
+		this._index = null;
+		this._type = this._type || props.type || null;
+		this._visible = props.visible !== false;
+		this._params = params;
+	},
+
+	clone: function() {
+		return new this.constructor(Base.set({
+			type: this._type,
+			visible: this._visible
+		}, Base.clone(this._params)));
+	},
+
+	_serialize: function(options, dictionary) {
+		var props = Base.set({ type: this._type }, this._params);
+		if (!this._visible)
+			props.visible = false;
+		return Base.serialize(props, options, true, dictionary);
+	},
+
+	_changed: function() {
+		var item = this._item;
+		if (item)
+			item._changed(257);
+	},
+
+	getType: function() {
+		return this._type;
+	},
+
+	isVisible: function() {
+		return this._visible;
+	},
+
+	setVisible: function(visible) {
+		this._visible = !!visible;
+		this._changed();
+	},
+
+	getParams: function() {
+		return this._params;
+	},
+
+	getItem: function() {
+		return this._item;
+	},
+
+	getIndex: function() {
+		return this._index;
+	},
+
+	remove: function() {
+		return !!(this._item && this._item.removeEffect(this._index));
+	},
+
+	apply: function(art) {
+		return art;
+	},
+
+	equals: function(effect) {
+		return effect === this || effect instanceof Effect
+				&& this._type === effect._type
+				&& this._visible === effect._visible
+				&& Base.equals(this._params, effect._params)
+				|| false;
+	},
+
+	statics: {
+		types: {},
+
+		create: function(object) {
+			var ctor = Effect.types[object.type] || Effect;
+			return object instanceof Effect ? object : new ctor(object);
+		},
+
+		extend: function extend(src) {
+			var type = src.type,
+				defaults = src._defaults = Base.set({},
+					this.prototype._defaults, src.defaults);
+			delete src.type;
+			delete src.defaults;
+			if (type)
+				src._type = type;
+			Base.each(defaults, function(value, key) {
+				var part = Base.capitalize(key);
+				src['get' + part] = function() {
+					return this._params[key];
+				};
+				src['set' + part] = function(value) {
+					this._params[key] = value;
+					this._changed();
+				};
+			});
+			var ctor = extend.base.apply(this, arguments);
+			if (type)
+				Effect.types[type] = ctor;
+			return ctor;
+		}
+	}
+});
+
+new function() {
+	function applyToPaths(art, func) {
+		if (art instanceof PathItem)
+			return func(art);
+		var children = art._children;
+		if (children) {
+			for (var i = children.length - 1; i >= 0; i--) {
+				var child = children[i],
+					result = applyToPaths(child, func);
+				if (result !== child)
+					child.replaceWith(result);
+			}
+		}
+		return art;
+	}
+
+	Effect.extend({
+		type: 'offset',
+		defaults: { distance: 0, join: 'miter', miterLimit: 10 },
+
+		apply: function(art) {
+			var params = this._params;
+			return applyToPaths(art, function(path) {
+				return path.offset(params.distance, {
+					join: params.join,
+					miterLimit: params.miterLimit,
+					insert: false
+				});
+			});
+		}
+	});
+
+	Effect.extend({
+		type: 'outline',
+
+		apply: function(art) {
+			return applyToPaths(art, function(path) {
+				if (!path.hasStroke())
+					return path;
+				var outline = path.outline({ insert: false });
+				if (!path.hasFill())
+					return outline;
+				path.setStrokeColor(null);
+				return new Group({
+					children: [path, outline],
+					insert: false
+				});
+			});
+		}
+	});
+};
+
+Item.inject(new function() {
+	function hasEffects(item) {
+		var children = item._children;
+		if (item._hasEffects())
+			return true;
+		for (var i = 0, l = children ? children.length : 0; i < l; i++) {
+			if (hasEffects(children[i]))
+				return true;
+		}
+		return false;
+	}
+
+	return {
+		_effects: null,
+
+		getEffects: function() {
+			return this._effects || [];
+		},
+
+		setEffects: function(effects) {
+			this.removeEffects();
+			if (effects && effects.length)
+				this.insertEffects(0, effects);
+		},
+
+		addEffect: function(effect) {
+			return this.insertEffect(this.getEffects().length, effect);
+		},
+
+		insertEffect: function(index, effect) {
+			return this.insertEffects(index, [effect])[0];
+		},
+
+		insertEffects: function(index, effects) {
+			var list = this._effects || (this._effects = []),
+				inserted = [];
+			for (var i = 0, l = effects.length; i < l; i++) {
+				var effect = Effect.create(effects[i]);
+				if (effect._item)
+					effect = effect.clone();
+				effect._item = this;
+				inserted.push(effect);
+			}
+			Base.splice(list, inserted, index, 0);
+			this._changed(257);
+			return inserted;
+		},
+
+		removeEffect: function(index) {
+			return this.removeEffects(index, index + 1)[0] || null;
+		},
+
+		removeEffects: function(start, end) {
+			var list = this._effects,
+				removed = [];
+			if (list) {
+				start = start || 0;
+				end = Base.pick(end, list.length);
+				removed = Base.splice(list, null, start, end - start);
+				for (var i = 0, l = removed.length; i < l; i++) {
+					var effect = removed[i];
+					effect._item = effect._index = null;
+				}
+				if (removed.length)
+					this._changed(257);
+				if (!list.length)
+					this._effects = null;
+			}
+			return removed;
+		},
+
+		_hasEffects: function() {
+			var list = this._effects;
+			for (var i = 0, l = list ? list.length : 0; i < l; i++) {
+				if (list[i]._visible)
+					return true;
+			}
+			return false;
+		},
+
+		getEffectOutput: function() {
+			var output = this._effectOutput;
+			if (output === undefined) {
+				output = null;
+				if (this._hasEffects()) {
+					output = this._getEffectArt();
+					for (var i = 0, l = this._effects.length; i < l; i++) {
+						var effect = this._effects[i];
+						if (effect._visible)
+							output = effect.apply(output) || output;
+					}
+				}
+				this._effectOutput = output;
+			}
+			return output;
+		},
+
+		_getEffectArt: function() {
+			var art = this.clone({ insert: false });
+			art.setEffects(null);
+			art.setMatrix(new Matrix());
+
+			function expand(source, copy) {
+				var children = source._children;
+				for (var i = 0, l = children ? children.length : 0; i < l; i++) {
+					var child = children[i],
+						output = child.getEffectOutput();
+					if (output) {
+						output = output.clone({ insert: false });
+						output.transform(child._matrix);
+						copy._children[i].replaceWith(output);
+					} else {
+						expand(child, copy._children[i]);
+					}
+				}
+			}
+
+			expand(this, art);
+			return art;
+		},
+
+		getPreviewBounds: function() {
+			var output = this.getEffectOutput(),
+				children = this._children;
+			if (output || children && hasEffects(this)) {
+				var bounds = null;
+				if (output) {
+					bounds = output.getStrokeBounds();
+				} else {
+					for (var i = 0, l = children.length; i < l; i++) {
+						var child = children[i];
+						if (child._visible) {
+							var rect = child.getPreviewBounds();
+							bounds = bounds ? bounds.unite(rect) : rect;
+						}
+					}
+				}
+				if (bounds)
+					return this._matrix._transformBounds(bounds);
+			}
+			return this.getStrokeBounds();
+		}
+	};
 });
 
 var Segment = Base.extend({
@@ -23022,7 +23346,7 @@ var HostItem = Item.extend({
 new function() {
 	var contentFields = [
 			[Item, ['_style', '_applyMatrix', '_opacity', '_blendMode',
-					'_pivot', '_data', '_textWrap']],
+					'_pivot', '_data', '_textWrap', '_effects']],
 			[Path, ['_segments', '_closed', '_version', '_curves',
 					'_segmentSelection', '_strokeProfile']],
 			[CompoundPath, ['_children', '_namedChildren']],
@@ -24401,6 +24725,12 @@ new function() {
 	}
 
 	function exportSVG(item, options, isRoot) {
+		var output = item.getEffectOutput();
+		if (output) {
+			output = output.clone({ insert: false });
+			output.transform(item._matrix);
+			return exportSVG(output, options, isRoot);
+		}
 		var exporter = exporters[item._class],
 			node = exporter && exporter(item, options);
 		if (node) {
