@@ -163,8 +163,8 @@ Path.inject(new function() {
          * `{ index, width, aspect, angle }`. Changing the returned array
          * directly isn't tracked, as with {@link #segments}.
          *
-         * The outline of the stroke doesn't follow the profile yet: the path
-         * is still drawn, measured and hit-tested with its stroke width.
+         * {@link PathItem#outline()} follows the profile, but the path is
+         * still drawn, measured and hit-tested with its stroke width.
          *
          * @bean
          * @type ?StrokeProfileStop[]
@@ -249,6 +249,43 @@ Path.inject(new function() {
                     values[key] = defaults[key];
             }
             return new StrokeProfileStop(values);
+        },
+
+        // Returns the pens all along the path, as entries with all values at
+        // its ends and at the offsets of the stops, between which the values
+        // change linearly. Steps have two entries at the same offset. See
+        // PathItem#outline():
+        _getStrokeProfilePens: function() {
+            var entries = getEntries(this),
+                length = this.getLength(),
+                closed = this._closed,
+                pens = [];
+
+            function getPen(offset, after) {
+                var values = getValues(entries, offset, length, closed, after);
+                for (var key in defaults) {
+                    if (values[key] == null)
+                        values[key] = defaults[key];
+                }
+                return values;
+            }
+
+            var offsets = [0].concat(entries.map(function(entry) {
+                return entry.offset;
+            }), length);
+            for (var i = 0, l = offsets.length; i < l; i++) {
+                var offset = offsets[i];
+                if (!i || offset > offsets[i - 1]) {
+                    if (offset > 0)
+                        pens.push(getPen(offset, false));
+                    if (offset < length) {
+                        var pen = getPen(offset, true);
+                        if (!offset || !Base.equals(pen, pens[pens.length - 1]))
+                            pens.push(pen);
+                    }
+                }
+            }
+            return pens;
         },
 
         // Returns the index of the stop at the offset: the index of the
