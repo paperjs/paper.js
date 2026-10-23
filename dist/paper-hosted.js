@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 23 11:14:17 2026 +0200
+ * Date: Fri Oct 23 11:19:35 2026 +0200
  *
  ***
  *
@@ -6620,16 +6620,22 @@ var SymbolDefinition = ItemDefinition.extend({
 
 	initialize: function SymbolDefinition(item, dontCenter) {
 		var options = Base.isPlainObject(dontCenter) && dontCenter;
-		ItemDefinition.call(this, item, !options && dontCenter);
+		ItemDefinition.call(this, item,
+				options ? options.dontCenter : dontCenter);
 		if (options)
-			this.set(options);
+			this.set(options, { dontCenter: true });
 	},
 
 	_serialize: function(options, dictionary) {
 		return dictionary.add(this, function() {
-			var json = [this._class, this._item];
+			var json = [this._class, this._item],
+				props = {};
+			if (!this._item.getPosition().isZero())
+				props.dontCenter = true;
 			if (this._name)
-				json.push({ name: this._name });
+				props.name = this._name;
+			if (Object.keys(props).length)
+				json.push(props);
 			return Base.serialize(json, options, false, dictionary);
 		});
 	},
