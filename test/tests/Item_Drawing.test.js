@@ -14,6 +14,7 @@ import { describe } from 'vitest'
 import paper, {
   Color,
   Group,
+  Item,
   Matrix,
   Path,
   Point,
@@ -329,6 +330,137 @@ describe('Item Drawing', () => {
       path.onDrawSelection = null
       paper.view.update(true)
       equals(getViewPixel(20, 10).red > 0, true, 'default selection drawing')
+    })
+  })
+
+  describe('Class-level handlers', () => {
+    // Classes are shared by all tests, so remove their handlers again:
+    function withHandlers(callback) {
+      try {
+        callback()
+      } finally {
+        Item.off('draw')
+        Path.off('draw')
+        Path.off('drawselection')
+        Path.onDraw = null
+        Path.onDrawSelection = null
+      }
+    }
+
+    test('Path.onDraw is called for all paths', () => {
+      withHandlers(() => {
+        const items = []
+        Path.onDraw = function (event) {
+          items.push(this === event.item && this)
+        }
+        equals(typeof Path.onDraw, 'function', 'Path.onDraw')
+        const first = new Path.Rectangle([0, 0], [10, 10])
+        const group = new Group(new Path.Circle([30, 30], 5))
+        paper.view.update(true)
+        equals(items.length, 2, 'only the paths')
+        equals(items[0] === first, true, 'with this as the item')
+        // Including the paths created later:
+        const later = new Path.Rectangle([20, 0], [10, 10])
+        items.length = 0
+        paper.view.update(true)
+        equals(items.length, 3)
+        equals(items.indexOf(later) >= 0, true)
+        equals(group.responds('draw'), false, 'not the group')
+        Path.onDraw = null
+        items.length = 0
+        paper.view.update(true)
+        equals(items.length, 0, 'removed')
+      })
+    })
+
+    test('The item handlers come first, then the classes up to Item', () => {
+      withHandlers(() => {
+        const calls = []
+        const path = new Path.Rectangle([0, 0], [10, 10])
+        path.onDraw = () => calls.push('path')
+        Path.on('draw', () => calls.push('Path'))
+        // Also called for the layer, which is an item too:
+        Item.on('draw', function () {
+          if (this === path) calls.push('Item')
+        })
+        paper.view.update(true)
+        equals(calls, ['path', 'Path', 'Item'])
+      })
+    })
+
+    test('Returning false skips the default drawing', () => {
+      withHandlers(() => {
+        new Path.Rectangle({ point: [0, 0], size: [20, 20], fillColor: 'red' })
+        Path.onDraw = () => false
+        paper.view.update(true)
+        equals(getViewPixel(10, 10), empty, 'skipped')
+        Path.onDraw = null
+        paper.view.update(true)
+        equals(getViewPixel(10, 10), red, 'drawn again')
+      })
+    })
+
+    test('Path.onDrawSelection is called for all selected paths', () => {
+      withHandlers(() => {
+        const items = []
+        Path.onDrawSelection = function () {
+          items.push(this)
+        }
+        const selected = new Path.Rectangle({
+          point: [0, 0],
+          size: [10, 10],
+          selected: true
+        })
+        new Path.Rectangle([20, 0], [10, 10])
+        paper.view.update(true)
+        equals(items.length, 1)
+        equals(items[0] === selected, true)
+      })
+    })
+
+    test('Subclasses created later share the handlers once', () => {
+      withHandlers(() => {
+        const calls = []
+        Item.on('draw', function () {
+          if (this instanceof Later) calls.push('Item')
+        })
+        // A class created after the handler:
+        const Later = Path.extend({ _class: 'LaterPath' })
+        new Later([
+          [0, 0],
+          [10, 10]
+        ]).strokeColor = 'black'
+        paper.view.update(true)
+        equals(calls, ['Item'])
+      })
+    })
+
+    test('The handlers of items stay their own', () => {
+      withHandlers(() => {
+        const calls = []
+        Path.onDraw = () => calls.push('Path')
+        const first = new Path.Rectangle([0, 0], [10, 10])
+        const second = new Path.Rectangle([20, 0], [10, 10])
+        first.onDraw = () => calls.push('first')
+        equals(second.onDraw, null, 'not the class handler')
+        equals(second.responds('draw'), true)
+        paper.view.update(true)
+        equals(calls, ['first', 'Path', 'Path'])
+        first.onDraw = null
+        calls.length = 0
+        paper.view.update(true)
+        equals(calls, ['Path', 'Path'], 'the class handler stays')
+      })
+    })
+
+    test('Only the drawing events can be handled for classes', () => {
+      let message = null
+      try {
+        Path.on('mousedown', () => {})
+      } catch (err) {
+        message = err.message
+      }
+      equals(message, `Unsupported class-level event: 'mousedown'.`)
     })
   })
 })
