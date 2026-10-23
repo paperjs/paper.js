@@ -35,15 +35,15 @@ Item.inject(new function() {
          * changing it: drawing draws their output, and {@link #previewBounds}
          * measures it, while hit testing, {@link #bounds} and
          * {@link #strokeBounds} stay with the item itself. It can be set to
-         * effects or plain objects describing them, `{ type, ...params,
+         * effects or plain objects describing them, `{ type, parameters,
          * visible }`. Changing the returned array directly isn't tracked, as
          * with {@link Path#segments}.
          *
          * Paper.js has these types of effects, and {@link Effect.extend(src)}
          * creates more:
          *
-         * - `offset`: offsets the paths, see {@link PathItem#offset()}, by
-         *   `distance` (`0`), with corners of the `join` (`'miter'`) and
+         * - `offset`: offsets the paths, see {@link PathItem#offset()}, with
+         *   the parameters `distance` (`0`), `join` (`'miter'`) and
          *   `miterLimit` (`10`).
          * - `outline`: outlines the strokes of the paths as filled areas next
          *   to their fills, see {@link PathItem#outline()}, following their
@@ -62,7 +62,7 @@ Item.inject(new function() {
          *     strokeWidth: 8
          * });
          * path.effects = [
-         *     { type: 'offset', distance: 10, join: 'round' },
+         *     { type: 'offset', parameters: { distance: 10, join: 'round' } },
          *     { type: 'outline' }
          * ];
          */

@@ -352,11 +352,16 @@ describe.skipIf(!HostItem)('Hosted', () => {
   test('Items load their effects', () => {
     const res = createHostedProject()
     res.host.document.getItem({ name: 'circle' }).effects = [
-      { type: 'offset', distance: 5 }
+      { type: 'offset', parameters: { distance: 5 } },
+      {
+        type: 'pixelate.mezzotint',
+        parameters: { type: 'fineDots', visible: 1 }
+      }
     ]
     const circle = res.project.layers[0].children.circle
-    equals(circle.effects.length, 1)
+    equals(circle.effects.length, 2)
     equals(circle.effects[0].distance, 5)
+    equals(circle.effects[1].parameters, { type: 'fineDots', visible: 1 })
     equals(
       circle.previewBounds,
       circle.strokeBounds.expand(10),
