@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>StrokeProfileStop</title>
+<base target="class-frame">
+<link href="../assets/css/docs.css" rel="stylesheet" type="text/css">
+<script src="../assets/js/paper.js"></script>
+<script src="../assets/js/jquery.js"></script>
+<script src="../assets/js/codemirror.js"></script>
+<script src="../assets/js/docs.js"></script>
+</head>
+<body>
+<article class="reference"> 
+<div class="reference-class">
+<h1>StrokeProfileStop</h1>
+
+<p>A stop of the stroke profile of a path, see <a href="../classes/Path.html#strokeprofile"><tt>path.strokeProfile</tt></a>: the pen that draws its stroke at an offset along the path, an ellipse with a width, an aspect and an angle. Between the stops, each of them changes linearly along the path, as the colors of a gradient do between its stops. A stop can set only some of them, and leave the others to the stops around it.</p>
+
+
+</div>
+
+<!-- =============================== constructors ========================== -->
+<div class="reference-members">
+	<h2>Constructors</h2>
+	
+		
+<div id="strokeprofilestop" class="member">
+<div class="member-link">
+<a name="strokeprofilestop" href="#strokeprofilestop"><tt><b>StrokeProfileStop</b>([object])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+    <p>Creates a stroke profile stop.</p>
+    
+    
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>object:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the properties of the stop, its <code>offset</code>,  <code>width</code>, <code>aspect</code> and <code>angle</code>
+&mdash;&nbsp;optional
+</li>
+	
+</ul>
+
+    
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/StrokeProfileStop.html"><tt>StrokeProfileStop</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+    
+    <h4>Example:</h4>
+
+
+<pre><code>var path = new Path.Line([20, 50], [180, 50]);
+path.strokeColor = 'black';
+path.strokeWidth = 10;
+path.strokeProfile = [
+    new StrokeProfileStop({ offset: 0, width: 0.5 }),
+    new StrokeProfileStop({ offset: 160, width: 2 })
+];</code></pre>
+
+</div>
+</div>
+</div>
+	
+</div>
+
+
+
+
+
+<!-- ================================ properties =========================== -->
+	<div class="reference-members">
+		<h2>Properties</h2>
+		
+			
+<div id="path" class="member">
+<div class="member-link">
+<a name="path" href="#path"><tt><b>path</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The path whose stroke profile the stop is part of.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Path.html"><tt>Path</tt></a>⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="offset" class="member">
+<div class="member-link">
+<a name="offset" href="#offset"><tt><b>offset</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The offset of the stop along its path, as in <a href="../classes/Path.html#getpointat-offset"><tt>path.getPointAt(offset)</tt></a>. Unlike the offset of gradient stops, it is a length, not a fraction. The stop stays between the same segments when they move, so its offset changes with the lengths of the curves before it.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="width" class="member">
+<div class="member-link">
+<a name="width" href="#width"><tt><b>width</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The width of the pen at the stop, as a factor of the path&rsquo;s <a href="../classes/Style.html#strokewidth"><tt>style.strokeWidth</tt></a>: <code>1</code> for the stroke width, <code>2</code> for twice as wide. Stops without a width leave it to the stops around them, and without any, it is <code>1</code>.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="aspect" class="member">
+<div class="member-link">
+<a name="aspect" href="#aspect"><tt><b>aspect</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The aspect of the pen at the stop: its height as a factor of its width, <code>1</code> for a round pen, less for a flat nib. Stops without an aspect leave it to the stops around them, and without any, it is <code>1</code>.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="angle" class="member">
+<div class="member-link">
+<a name="angle" href="#angle"><tt><b>angle</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The angle of the pen at the stop, in degrees, in the path&rsquo;s coordinates. Angles aren&rsquo;t wrapped: from <code>0</code> at one stop to <code>720</code> at the next, the pen turns twice. Stops without an angle leave it to the stops around them, and without any, it is <code>0</code>.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members">
+		<h2>Methods</h2>
+		
+	
+<div id="clone" class="member">
+<div class="member-link">
+<a name="clone" href="#clone"><tt><b>clone</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/StrokeProfileStop.html"><tt>StrokeProfileStop</tt></a></tt>&nbsp;&mdash;&nbsp;a copy of the stop, without a path
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="equals-stop" class="member">
+<div class="member-link">
+<a name="equals-stop" href="#equals-stop"><tt><b>equals</b>(stop)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Checks whether the stop is equal to the supplied one.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>stop:</tt> 
+<a href="../classes/StrokeProfileStop.html"><tt>StrokeProfileStop</tt></a>
+
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if they are equal, <tt>false</tt> otherwise
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+
+		
+	</div>
+
+
+
+
+<!-- =========================== copyright notice ========================== -->
+<p class="footer">
+Paper.js v0.16.0 (develop)<br>
+Copyright &#169; 2011—2026 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+
+</article>
+</body>

@@ -1350,6 +1350,46 @@ var path = new Path.Star({
 		<h2>Properties</h2>
 		
 			
+<div id="strokeprofile" class="member">
+<div class="member-link">
+<a name="strokeprofile" href="#strokeprofile"><tt><b>strokeProfile</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The stroke profile of the path: the stops along it that set the pen that draws its stroke, an ellipse with a width, as a factor of its <a href="../classes/Style.html#strokewidth"><tt>style.strokeWidth</tt></a>, an aspect and an angle, see <a href="../classes/StrokeProfileStop.html"><tt>StrokeProfileStop</tt></a>. The stops are sorted by their offsets. Between the stops that set a value, it changes linearly along the path, and beyond the ends of open paths, it stays as at the first and last of them. Two stops at the same offset make a step. The stops stay between the same segments when they move. Without a stroke profile, the stroke is drawn with a round pen of the stroke width all along.</p>
+<p>It is a property of the path, not of its style, as it is tied to its segments. It can be set to stops or plain objects describing them, <code>{ offset, width, aspect, angle }</code>, and JSON stores them with the indices that tie them to the segments instead of their offsets, <code>{ index, width, aspect, angle }</code>. Changing the returned array directly isn&rsquo;t tracked, as with <a href="../classes/Path.html#segments"><tt>segments</tt></a>.</p>
+<p>The outline of the stroke doesn&rsquo;t follow the profile yet: the path is still drawn, measured and hit-tested with its stroke width.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <a href="../classes/StrokeProfileStop.html"><tt>StrokeProfileStop</tt></a> objects⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:</h4>
+
+
+<pre><code>var path = new Path.Line([20, 50], [180, 50]);
+path.strokeColor = 'black';
+path.strokeWidth = 10;
+// Taper the stroke from half its width to twice its width:
+path.strokeProfile = [
+    { offset: 0, width: 0.5 },
+    { offset: path.length, width: 2 }
+];
+console.log(path.getStrokeProfileAt(80).width); // 1.25</code></pre>
+
+</div>
+
+</div>
+</div>
+		
+			
 <div id="segments" class="member">
 <div class="member-link">
 <a name="segments" href="#segments"><tt><b>segments</b></tt></a>
@@ -1714,6 +1754,59 @@ if (path2.fullySelected) {
 	<div class="reference-members">
 		<h2>Methods</h2>
 		
+	
+<div id="getstrokeprofileat-offset" class="member">
+<div class="member-link">
+<a name="getstrokeprofileat-offset" href="#getstrokeprofileat-offset"><tt><b>getStrokeProfileAt</b>(offset)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Returns the pen of the <a href="../classes/Path.html#strokeprofile"><tt>strokeProfile</tt></a> at the given offset along the path, as a stop that isn&rsquo;t on the path, with all its values: its width as a factor of the <a href="../classes/Style.html#strokewidth"><tt>style.strokeWidth</tt></a>, its aspect and its angle, <code>1</code>, <code>1</code> and <code>0</code> where no stop sets them. Where the profile has a step, it returns the values after it. Adding the stop to the profile doesn&rsquo;t change it.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>offset:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the offset on the path, where <code>0</code> is at the  beginning of the path and <a href="../classes/Path.html#length"><tt>path.length</tt></a> at the end
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/StrokeProfileStop.html"><tt>StrokeProfileStop</tt></a></tt>&nbsp;&mdash;&nbsp;the pen at the offset
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<h4>Example:</h4>
+
+
+<pre><code>var path = new Path.Line([20, 50], [180, 50]);
+path.strokeProfile = [
+    { offset: 0, width: 0.5 },
+    { offset: path.length, width: 2, angle: 90 }
+];
+// Add a stop halfway, with the values there:
+var stop = path.getStrokeProfileAt(path.length / 2);
+console.log(stop.width, stop.aspect, stop.angle); // 1.25 1 90
+path.strokeProfile = path.strokeProfile.concat(stop);</code></pre>
+
+</div>
+</div>
+</div>
+
 	
 <div id="add-segment" class="member">
 <div class="member-link">

@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 23 16:39:36 2026 +0200
+ * Date: Fri Oct 23 13:22:21 2026 +0200
  *
  ***
  *
@@ -9574,8 +9574,10 @@ var Path = PathItem.extend({
 	_class: 'Path',
 	_serializeFields: {
 		segments: [],
-		closed: false
+		closed: false,
+		strokeProfile: null
 	},
+	_prioritize: ['applyMatrix', 'segments', 'closed'],
 
 	initialize: function Path(arg) {
 		this._closed = false;
@@ -9605,12 +9607,19 @@ var Path = PathItem.extend({
 
 	_equals: function(item) {
 		return this._closed === item._closed
-				&& Base.equals(this._segments, item._segments);
+				&& Base.equals(this._segments, item._segments)
+				&& Base.equals(this._strokeProfile, item._strokeProfile);
 	},
 
 	copyContent: function(source) {
+		var profile = source._strokeProfile;
 		this.setSegments(source._segments);
 		this._closed = source._closed;
+		if (profile || this._strokeProfile) {
+			this.setStrokeProfile(profile && profile.map(function(stop) {
+				return { index: stop._index, width: stop._width };
+			}));
+		}
 	},
 
 	_changed: function _changed(flags) {
@@ -9638,7 +9647,13 @@ var Path = PathItem.extend({
 	setSegments: function(segments) {
 		var fullySelected = this.isFullySelected(),
 			length = segments && segments.length,
-			named = this._namedSegments;
+			named = this._namedSegments,
+			profile = this._strokeProfile,
+			pathLength = profile && this.getLength(),
+			fractions = profile && profile.map(function(stop) {
+				return pathLength ? stop.getOffset() / pathLength : 0;
+			});
+		this._strokeProfile = null;
 		if (named) {
 			for (var name in named)
 				delete this._segments[name];
@@ -9657,6 +9672,13 @@ var Path = PathItem.extend({
 		}
 		if (fullySelected)
 			this.setFullySelected(true);
+		if (profile) {
+			this._strokeProfile = profile;
+			pathLength = this.getLength();
+			for (var i = 0, l = profile.length; i < l; i++)
+				profile[i]._index = this._getIndexAt(fractions[i] * pathLength);
+			this._sortStrokeProfile();
+		}
 	},
 
 	getFirstSegment: function() {
@@ -9695,6 +9717,12 @@ var Path = PathItem.extend({
 
 	setClosed: function(closed) {
 		if (this._closed != (closed = !!closed)) {
+			if (!closed && this._strokeProfile) {
+				var last = this._segments.length - 1;
+				this._filterStrokeProfile(function(stop) {
+					return stop._index <= last;
+				});
+			}
 			this._closed = closed;
 			if (this._curves) {
 				var length = this._curves.length = this._countCurves();
@@ -9815,6 +9843,8 @@ var Path = PathItem.extend({
 				curves.splice(i, 0, new Curve(this, null, null));
 			this._adjustCurves(start, end);
 		}
+		if (this._strokeProfile)
+			this._insertStrokeProfile(index, amount);
 		this._changed(41);
 		return segs;
 	},
@@ -9887,8 +9917,10 @@ var Path = PathItem.extend({
 			return this.removeSegments(start).concat(
 					this.removeSegments(0, end));
 		var segments = this._segments,
-			curves = this._curves,
-			count = segments.length,
+			count = segments.length;
+		if (this._strokeProfile && start < Math.min(end, count))
+			this._removeStrokeProfile(start, Math.min(end, count));
+		var curves = this._curves,
 			removed = segments.splice(start, end - start),
 			amount = removed.length;
 		if (!amount)
@@ -10018,6 +10050,8 @@ var Path = PathItem.extend({
 		}
 		var curves = this.getCurves();
 		if (loc && index < curves.length) {
+			var cut = loc.getOffset(),
+				profile = this._strokeProfile && this._takeStrokeProfile();
 			if (time >= tMin) {
 				curves[index++].divideAtTime(time);
 			}
@@ -10033,6 +10067,15 @@ var Path = PathItem.extend({
 			}
 			path._add(segs, 0);
 			this.addSegment(segs[0]);
+			if (profile) {
+				if (path === this) {
+					this._setStrokeProfilePart(profile, cut,
+							cut + profile.length);
+				} else {
+					this._setStrokeProfilePart(profile, 0, cut);
+					path._setStrokeProfilePart(profile, cut, profile.length);
+				}
+			}
 			return path;
 		}
 		return null;
@@ -10047,17 +10090,22 @@ var Path = PathItem.extend({
 	},
 
 	join: function(path, tolerance) {
-		var epsilon = tolerance || 0;
+		var epsilon = tolerance || 0,
+			parts = null;
 		if (path && path !== this) {
 			var segments = path._segments,
 				last1 = this.getLastSegment(),
 				last2 = path.getLastSegment();
 			if (!last2)
 				return this;
+			if (this._strokeProfile || path._strokeProfile)
+				parts = [this._takeStrokeProfile()];
 			if (last1 && last1._point.isClose(last2._point, epsilon))
 				path.reverse();
 			var first2 = path.getFirstSegment();
 			if (last1 && last1._point.isClose(first2._point, epsilon)) {
+				if (parts)
+					parts.push(path._takeStrokeProfile());
 				last1.setHandleOut(first2._handleOut);
 				this._add(segments.slice(1));
 			} else {
@@ -10065,7 +10113,11 @@ var Path = PathItem.extend({
 				if (first1 && first1._point.isClose(first2._point, epsilon))
 					path.reverse();
 				last2 = path.getLastSegment();
+				if (parts)
+					parts.push(path._takeStrokeProfile());
 				if (first1 && first1._point.isClose(last2._point, epsilon)) {
+					if (parts)
+						parts.reverse();
 					first1.setHandleIn(last2._handleIn);
 					this._add(segments.slice(0, segments.length - 1), 0);
 				} else {
@@ -10079,10 +10131,14 @@ var Path = PathItem.extend({
 		var first = this.getFirstSegment(),
 			last = this.getLastSegment();
 		if (first !== last && first._point.isClose(last._point, epsilon)) {
+			if (!parts && this._strokeProfile)
+				parts = [this._takeStrokeProfile()];
 			first.setHandleIn(last._handleIn);
 			last.remove();
 			this.setClosed(true);
 		}
+		if (parts)
+			this._setStrokeProfileParts(parts);
 		return this;
 	},
 
@@ -10109,6 +10165,8 @@ var Path = PathItem.extend({
 			segment._index = i;
 		}
 		this._curves = null;
+		if (this._strokeProfile)
+			this._reverseStrokeProfile();
 		this._changed(9);
 	},
 
@@ -11356,6 +11414,436 @@ Path.inject({ statics: new function() {
 		}
 	};
 }});
+
+Path.inject(new function() {
+	var tMin = 1e-8,
+		tMax = 1 - tMin,
+		defaults = { width: 1, aspect: 1, angle: 0 };
+
+	function getEntries(path) {
+		var profile = path._strokeProfile || [];
+		return profile.map(function(stop) {
+			return {
+				offset: stop.getOffset(),
+				width: stop._width,
+				aspect: stop._aspect,
+				angle: stop._angle
+			};
+		});
+	}
+
+	function getValue(entries, key, offset, length, closed, after) {
+		var before = null,
+			at = null,
+			next = null,
+			first = null,
+			last = null;
+		for (var i = 0, l = entries.length; i < l; i++) {
+			var entry = entries[i];
+			if (entry[key] != null) {
+				first = first || entry;
+				last = entry;
+				if (entry.offset < offset) {
+					before = entry;
+				} else if (entry.offset === offset) {
+					if (after || !at)
+						at = entry;
+				} else if (!next) {
+					next = entry;
+				}
+			}
+		}
+		if (at)
+			return at[key];
+		if (closed && first) {
+			before = before || { offset: last.offset - length };
+			before[key] = before[key] != null ? before[key] : last[key];
+			next = next || { offset: first.offset + length };
+			next[key] = next[key] != null ? next[key] : first[key];
+		}
+		return before && next
+				? before[key] + (next[key] - before[key])
+					* (offset - before.offset) / (next.offset - before.offset)
+				: before ? before[key] : next ? next[key] : null;
+	}
+
+	function getValues(entries, offset, length, closed, after) {
+		var values = { offset: offset };
+		for (var key in defaults)
+			values[key] = getValue(entries, key, offset, length, closed, after);
+		return values;
+	}
+
+	function getPart(entries, from, to, length, closed, hasStart, hasEnd,
+			fallbacks) {
+
+		function getEnd(offset, after) {
+			var values = getValues(entries, offset, length, closed, after);
+			for (var key in fallbacks) {
+				if (values[key] == null)
+					values[key] = fallbacks[key];
+			}
+			return values;
+		}
+
+		var part = [];
+		for (var i = 0, l = entries.length; i < l; i++) {
+			var entry = entries[i],
+				offset = entry.offset;
+			if (closed && offset < from)
+				offset += length;
+			if ((offset > from || offset === from && !hasStart)
+					&& (offset < to || offset === to && !hasEnd))
+				part.push(Base.set({}, entry, { offset: offset - from }));
+		}
+		part.sort(function(a, b) {
+			return a.offset - b.offset;
+		});
+		if (hasStart)
+			part.unshift(Base.set(getEnd(from, true), { offset: 0 }));
+		if (hasEnd) {
+			part.push(Base.set(getEnd(closed ? to % length : to),
+					{ offset: to - from }));
+		}
+		return part;
+	}
+
+	function getSpanIndex(path, start, count, fraction) {
+		var curves = path.getCurves(),
+			lengths = [],
+			total = 0;
+		for (var i = 0; i < count; i++) {
+			var length = curves[(start + i) % curves.length].getLength();
+			lengths.push(length);
+			total += length;
+		}
+		var rest = fraction * total,
+			i = 0;
+		while (i < count - 1 && rest >= lengths[i])
+			rest -= lengths[i++];
+		var index = start + i + (lengths[i] ? Math.min(rest / lengths[i], 1)
+				: 0);
+		return path._closed ? index % curves.length : index;
+	}
+
+	return {
+		_strokeProfile: null,
+
+		getStrokeProfile: function() {
+			return this._strokeProfile;
+		},
+
+		setStrokeProfile: function(stops) {
+			var previous = this._strokeProfile,
+				profile = null;
+			if (stops && stops.length) {
+				profile = [];
+				for (var i = 0, l = stops.length; i < l; i++) {
+					var stop = stops[i];
+					if (!(stop instanceof StrokeProfileStop)) {
+						stop = new StrokeProfileStop(stop);
+					} else if (stop._path && stop._path !== this) {
+						stop = stop.clone();
+					}
+					if (stop._path !== this) {
+						if (stop._index == null)
+							stop._index = this._getIndexAt(stop._offset);
+						stop._path = this;
+					}
+					profile.push(stop);
+				}
+			}
+			for (var i = 0, l = previous ? previous.length : 0; i < l; i++) {
+				var stop = previous[i];
+				if (!profile || profile.indexOf(stop) === -1) {
+					stop._offset = stop.getOffset();
+					stop._index = stop._path = null;
+				}
+			}
+			this._strokeProfile = profile;
+			if (profile)
+				this._sortStrokeProfile();
+			this._changed(193);
+		},
+
+		getStrokeProfileAt: function(offset) {
+			var values = getValues(getEntries(this), offset, this.getLength(),
+					this._closed, true);
+			for (var key in defaults) {
+				if (values[key] == null)
+					values[key] = defaults[key];
+			}
+			return new StrokeProfileStop(values);
+		},
+
+		_getIndexAt: function(offset) {
+			var length = this.getLength();
+			offset = this._closed
+					? length ? (offset % length + length) % length : 0
+					: Math.min(Math.max(offset, 0), length);
+			var loc = this.getLocationAt(offset);
+			if (loc) {
+				var time = loc.getTime(),
+					curveLength = loc.getCurve().getLength();
+				return loc.getIndex() + (time < tMin || !curveLength ? 0
+						: time > tMax ? 1
+						: loc.getCurveOffset() / curveLength);
+			}
+			return this.getCurves().length;
+		},
+
+		_getOffsetAtIndex: function(index) {
+			var curves = this.getCurves(),
+				i = Math.floor(index),
+				offset = 0;
+			for (var j = 0, l = Math.min(i, curves.length); j < l; j++)
+				offset += curves[j].getLength();
+			return i < curves.length
+					? offset + (index - i) * curves[i].getLength()
+					: offset;
+		},
+
+		_sortStrokeProfile: function() {
+			this._strokeProfile.sort(function(a, b) {
+				return a._index - b._index;
+			});
+		},
+
+		_filterStrokeProfile: function(callback) {
+			var profile = this._strokeProfile.filter(callback);
+			this.setStrokeProfile(profile);
+		},
+
+		_insertStrokeProfile: function(index, amount) {
+			var profile = this._strokeProfile,
+				count = this._segments.length - amount,
+				closed = this._closed,
+				divided = closed ? (index + count - 1) % count
+					: index > 0 && index < count ? index - 1 : -1,
+				start = divided < index ? divided : divided + amount;
+			if (count) {
+				for (var i = 0, l = profile.length; i < l; i++) {
+					var stop = profile[i],
+						x = stop._index;
+					if (divided >= 0 && x > divided && x < divided + 1) {
+						stop._index = getSpanIndex(this, start, amount + 1,
+								x - divided);
+					} else if (x >= index) {
+						stop._index = x + amount;
+					}
+				}
+				this._sortStrokeProfile();
+			}
+		},
+
+		_removeStrokeProfile: function(start, end) {
+			var count = this._segments.length,
+				closed = this._closed,
+				amount = end - start,
+				curves = this.getCurves(),
+				before = closed ? (start + count - 1) % count : start - 1,
+				index = before < start ? before : before - amount,
+				span = amount + 1;
+
+			function isKept(stop) {
+				var x = stop._index;
+				return closed ? amount < count
+						: start ? end < count || x <= before
+						: x >= end;
+			}
+
+			this._filterStrokeProfile(isKept);
+			var profile = this._strokeProfile || [];
+			for (var i = 0, l = profile.length; i < l; i++) {
+				var stop = profile[i],
+					x = stop._index,
+					d = closed ? (x - before + count) % count : x - before;
+				if (before >= 0 && d > 0 && d < span) {
+					var position = 0,
+						total = 0;
+					for (var j = 0; j < span; j++) {
+						var length = curves[(before + j) % curves.length]
+								.getLength();
+						if (j < Math.floor(d)) {
+							position += length;
+						} else if (j === Math.floor(d)) {
+							position += (d - j) * length;
+						}
+						total += length;
+					}
+					stop._index = index + (total ? position / total
+							: d / span);
+				} else if (x >= end) {
+					stop._index = x - amount;
+				}
+			}
+			if (profile.length)
+				this._sortStrokeProfile();
+		},
+
+		_reverseStrokeProfile: function() {
+			var profile = this._strokeProfile,
+				count = this._segments.length;
+			for (var i = 0, l = profile.length; i < l; i++) {
+				var stop = profile[i];
+				stop._index = this._closed
+						? (2 * count - 1 - stop._index) % count
+						: count - 1 - stop._index;
+			}
+			profile.reverse();
+			this._sortStrokeProfile();
+		},
+
+		_takeStrokeProfile: function() {
+			var part = {
+				entries: getEntries(this),
+				length: this.getLength(),
+				closed: this._closed
+			};
+			if (this._strokeProfile)
+				this.setStrokeProfile(null);
+			return part;
+		},
+
+		_setStrokeProfileParts: function(parts) {
+			var length = this.getLength(),
+				closed = this._closed,
+				entries = [],
+				fallbacks = {};
+			parts.forEach(function(part) {
+				part.entries.forEach(function(entry) {
+					for (var key in defaults) {
+						if (entry[key] != null)
+							fallbacks[key] = defaults[key];
+					}
+				});
+			});
+			for (var i = 0, l = parts.length; i < l; i++) {
+				var part = parts[i],
+					start = i ? length - part.length : 0,
+					hasStart = closed || i > 0,
+					hasEnd = closed || i < l - 1;
+				if (part.entries.length || l > 1 || closed) {
+					var shifted = getPart(part.entries, 0, part.length,
+							part.length, part.closed, hasStart, hasEnd,
+							fallbacks);
+					for (var j = 0, m = shifted.length; j < m; j++) {
+						var entry = shifted[j];
+						entry.offset += start;
+						entries.push(entry);
+					}
+				}
+			}
+			if (closed && entries.length)
+				entries.unshift(entries.pop());
+			this.setStrokeProfile(entries);
+		},
+
+		_setStrokeProfilePart: function(part, from, to) {
+			var length = part.length;
+			this.setStrokeProfile(getPart(part.entries, from, to, length,
+					part.closed, part.closed || from > 0,
+					part.closed || to < length));
+		}
+	};
+});
+
+var StrokeProfileStop = Base.extend({
+	_class: 'StrokeProfileStop',
+	_compactSerialize: true,
+
+	initialize: function StrokeProfileStop(props) {
+		props = props || {};
+		this._path = null;
+		this._index = props.index != null ? props.index : null;
+		this._offset = props.offset || 0;
+		this._width = props.width != null ? props.width : null;
+		this._aspect = props.aspect != null ? props.aspect : null;
+		this._angle = props.angle != null ? props.angle : null;
+	},
+
+	clone: function() {
+		return new StrokeProfileStop({
+			offset: this.getOffset(),
+			width: this._width,
+			aspect: this._aspect,
+			angle: this._angle
+		});
+	},
+
+	_serialize: function(options, dictionary) {
+		var props = { index: this._index };
+		['width', 'aspect', 'angle'].forEach(function(key) {
+			var value = this['_' + key];
+			if (value != null)
+				props[key] = value;
+		}, this);
+		return Base.serialize(props, options, true, dictionary);
+	},
+
+	_changed: function() {
+		if (this._path)
+			this._path._changed(193);
+	},
+
+	getPath: function() {
+		return this._path;
+	},
+
+	getOffset: function() {
+		var path = this._path;
+		return path ? path._getOffsetAtIndex(this._index) : this._offset;
+	},
+
+	setOffset: function(offset) {
+		var path = this._path;
+		if (path) {
+			this._index = path._getIndexAt(offset);
+			path._sortStrokeProfile();
+			this._changed();
+		} else {
+			this._offset = offset;
+		}
+	},
+
+	getWidth: function() {
+		return this._width;
+	},
+
+	setWidth: function(width) {
+		this._width = width;
+		this._changed();
+	},
+
+	getAspect: function() {
+		return this._aspect;
+	},
+
+	setAspect: function(aspect) {
+		this._aspect = aspect;
+		this._changed();
+	},
+
+	getAngle: function() {
+		return this._angle;
+	},
+
+	setAngle: function(angle) {
+		this._angle = angle;
+		this._changed();
+	},
+
+	equals: function(stop) {
+		return stop === this || stop instanceof StrokeProfileStop
+				&& this._width === stop._width
+				&& this._aspect === stop._aspect
+				&& this._angle === stop._angle
+				&& (this._path
+					? this._index === stop._index
+					: this._offset === stop._offset)
+				|| false;
+	}
+});
 
 var CompoundPath = PathItem.extend({
 	_class: 'CompoundPath',
@@ -21842,7 +22330,7 @@ new function() {
 			[Item, ['_style', '_applyMatrix', '_opacity', '_blendMode',
 					'_pivot', '_data', '_textWrap']],
 			[Path, ['_segments', '_closed', '_version', '_curves',
-					'_segmentSelection']],
+					'_segmentSelection', '_strokeProfile']],
 			[CompoundPath, ['_children', '_namedChildren']],
 			[SymbolItem, ['_definition']],
 			[HostItem, ['_values']],

@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 23 16:39:36 2026 +0200
+ * Date: Fri Oct 23 13:22:21 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -4107,6 +4107,7 @@ declare namespace paper {
         Segment: typeof Segment
         Shape: typeof Shape
         Size: typeof Size
+        StrokeProfileStop: typeof StrokeProfileStop
         Style: typeof Style
         SymbolDefinition: typeof SymbolDefinition
         SymbolItem: typeof SymbolItem
@@ -4286,6 +4287,30 @@ declare namespace paper {
      */
     class Path extends PathItem {
         /** 
+         * The stroke profile of the path: the stops along it that set the pen
+         * that draws its stroke, an ellipse with a width, as a factor of its
+         * {@link Style#strokeWidth}, an aspect and an angle, see
+         * {@link StrokeProfileStop}. The stops are sorted by their offsets.
+         * Between the stops that set a value, it changes linearly along the
+         * path, and beyond the ends of open paths, it stays as at the first
+         * and last of them. Two stops at the same offset make a step. The
+         * stops stay between the same segments when they move. Without a
+         * stroke profile, the stroke is drawn with a round pen of the stroke
+         * width all along.
+         * 
+         * It is a property of the path, not of its style, as it is tied to
+         * its segments. It can be set to stops or plain objects describing
+         * them, `{ offset, width, aspect, angle }`, and JSON stores them with
+         * the indices that tie them to the segments instead of their offsets,
+         * `{ index, width, aspect, angle }`. Changing the returned array
+         * directly isn't tracked, as with {@link #segments}.
+         * 
+         * The outline of the stroke doesn't follow the profile yet: the path
+         * is still drawn, measured and hit-tested with its stroke width.
+         */
+        strokeProfile: StrokeProfileStop[] | null
+
+        /** 
          * The segments contained within the path. Segments that define a
          * {@link Segment#name} can also be accessed by name.
          */
@@ -4368,6 +4393,21 @@ declare namespace paper {
          *     path
          */
         constructor(object: object)
+
+        /** 
+         * Returns the pen of the {@link #strokeProfile} at the given offset
+         * along the path, as a stop that isn't on the path, with all its
+         * values: its width as a factor of the {@link Style#strokeWidth}, its
+         * aspect and its angle, `1`, `1` and `0` where no stop sets them.
+         * Where the profile has a step, it returns the values after it. Adding
+         * the stop to the profile doesn't change it.
+         * 
+         * @param offset - the offset on the path, where `0` is at the
+         *     beginning of the path and {@link Path#length} at the end
+         * 
+         * @return the pen at the offset
+         */
+        getStrokeProfileAt(offset: number): StrokeProfileStop
 
         /** 
          * Adds one or more segments to the end of the {@link #segments} array of
@@ -8111,6 +8151,75 @@ declare namespace paper {
          * @return the newly created size object
          */
         static random(): Size
+
+    }
+
+    /** 
+     * A stop of the stroke profile of a path, see
+     * {@link Path#strokeProfile}: the pen that draws its stroke at an offset along
+     * the path, an ellipse with a width, an aspect and an angle. Between the
+     * stops, each of them changes linearly along the path, as the colors of a
+     * gradient do between its stops. A stop can set only some of them, and leave
+     * the others to the stops around it.
+     */
+    class StrokeProfileStop  {
+        /** 
+         * The path whose stroke profile the stop is part of.
+         */
+        readonly path: Path | null
+
+        /** 
+         * The offset of the stop along its path, as in
+         * {@link Path#getPointAt}. Unlike the offset of gradient stops, it
+         * is a length, not a fraction. The stop stays between the same segments
+         * when they move, so its offset changes with the lengths of the curves
+         * before it.
+         */
+        offset: number
+
+        /** 
+         * The width of the pen at the stop, as a factor of the path's
+         * {@link Style#strokeWidth}: `1` for the stroke width, `2` for twice
+         * as wide. Stops without a width leave it to the stops around them, and
+         * without any, it is `1`.
+         */
+        width: number | null
+
+        /** 
+         * The aspect of the pen at the stop: its height as a factor of its width,
+         * `1` for a round pen, less for a flat nib. Stops without an aspect leave
+         * it to the stops around them, and without any, it is `1`.
+         */
+        aspect: number | null
+
+        /** 
+         * The angle of the pen at the stop, in degrees, in the path's coordinates.
+         * Angles aren't wrapped: from `0` at one stop to `720` at the next, the
+         * pen turns twice. Stops without an angle leave it to the stops around
+         * them, and without any, it is `0`.
+         */
+        angle: number | null
+
+
+        /** 
+         * Creates a stroke profile stop.
+         * 
+         * @param object - the properties of the stop, its `offset`,
+         *     `width`, `aspect` and `angle`
+         */
+        constructor(object?: object)
+
+        /** 
+         * @return a copy of the stop, without a path
+         */
+        clone(): StrokeProfileStop
+
+        /** 
+         * Checks whether the stop is equal to the supplied one.
+         * 
+         * @return true if they are equal
+         */
+        equals(stop: StrokeProfileStop): boolean
 
     }
 
