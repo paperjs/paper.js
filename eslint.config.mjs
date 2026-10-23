@@ -6,8 +6,17 @@ import pluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 
 export default [
   {
-    // The boolean sweep is a script in the style of the sources:
-    ignores: ['test/booleans/**']
+    // The sources, builds, Gulp tasks, examples and the boolean sweep keep the
+    // old style until the ES modules port:
+    ignores: [
+      'src/**',
+      'dist/**',
+      'gulp/**',
+      'gulpfile.js',
+      'examples/**',
+      'packages/**',
+      'test/booleans/**'
+    ]
   },
   pluginJs.configs.recommended,
   pluginPrettierRecommended,
