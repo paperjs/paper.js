@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 23 17:40:33 2026 +0200
+ * Date: Fri Oct 23 19:45:29 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -4305,8 +4305,8 @@ declare namespace paper {
          * `{ index, width, aspect, angle }`. Changing the returned array
          * directly isn't tracked, as with {@link #segments}.
          * 
-         * The outline of the stroke doesn't follow the profile yet: the path
-         * is still drawn, measured and hit-tested with its stroke width.
+         * {@link PathItem#outline} follows the profile, but the path is
+         * still drawn, measured and hit-tested with its stroke width.
          */
         strokeProfile: StrokeProfileStop[] | null
 
@@ -5084,6 +5084,12 @@ declare namespace paper {
          * Outlines the stroke of the path item, and returns the area that it
          * covers as a new path item, filled with the stroke's color. As with
          * the boolean operations, the path item's matrix is applied first.
+         * 
+         * Paths with a {@link Path#strokeProfile} are outlined as the area
+         * that its pens sweep. Their round joins and caps are the pens
+         * themselves, and their other joins and caps connect the points where
+         * the pens touch the sides of the stroke. Steps in the profile end
+         * the parts of the stroke straight across, as butt caps do.
          * 
          * @option [options.width=this.strokeWidth] {Number} the width of the
          *     stroke

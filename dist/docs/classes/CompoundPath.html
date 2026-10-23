@@ -7900,6 +7900,7 @@ result.strokeColor = 'red';
 <div class="member-description hidden">
 <div class="member-text">
 	<p>Outlines the stroke of the path item, and returns the area that it covers as a new path item, filled with the stroke&rsquo;s color. As with the boolean operations, the path item&rsquo;s matrix is applied first.</p>
+<p>Paths with a <a href="../classes/Path.html#strokeprofile"><tt>path.strokeProfile</tt></a> are outlined as the area that its pens sweep. Their round joins and caps are the pens themselves, and their other joins and caps connect the points where the pens touch the sides of the stroke. Steps in the profile end the parts of the stroke straight across, as butt caps do.</p>
     <ul class="member-list">
 <h4>Options:</h4>
 <li><tt>options.width: <tt>Number</tt></tt> &mdash; the width of the  stroke &mdash;&nbsp;default: <tt>this.strokeWidth</tt></li>

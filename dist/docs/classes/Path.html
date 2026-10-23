@@ -1359,7 +1359,7 @@ var path = new Path.Star({
 <div class="member-text">
 	<p>The stroke profile of the path: the stops along it that set the pen that draws its stroke, an ellipse with a width, as a factor of its <a href="../classes/Style.html#strokewidth"><tt>style.strokeWidth</tt></a>, an aspect and an angle, see <a href="../classes/StrokeProfileStop.html"><tt>StrokeProfileStop</tt></a>. The stops are sorted by their offsets. Between the stops that set a value, it changes linearly along the path, and beyond the ends of open paths, it stays as at the first and last of them. Two stops at the same offset make a step. The stops stay between the same segments when they move. Without a stroke profile, the stroke is drawn with a round pen of the stroke width all along.</p>
 <p>It is a property of the path, not of its style, as it is tied to its segments. It can be set to stops or plain objects describing them, <code>{ offset, width, aspect, angle }</code>, and JSON stores them with the indices that tie them to the segments instead of their offsets, <code>{ index, width, aspect, angle }</code>. Changing the returned array directly isn&rsquo;t tracked, as with <a href="../classes/Path.html#segments"><tt>segments</tt></a>.</p>
-<p>The outline of the stroke doesn&rsquo;t follow the profile yet: the path is still drawn, measured and hit-tested with its stroke width.</p>
+<p><a href="../classes/PathItem.html#outline"><tt>pathItem.outline</tt></a>() follows the profile, but the path is still drawn, measured and hit-tested with its stroke width.</p>
 	
 	
 	
@@ -10889,6 +10889,7 @@ result.strokeColor = 'red';
 <div class="member-description hidden">
 <div class="member-text">
 	<p>Outlines the stroke of the path item, and returns the area that it covers as a new path item, filled with the stroke&rsquo;s color. As with the boolean operations, the path item&rsquo;s matrix is applied first.</p>
+<p>Paths with a <a href="../classes/Path.html#strokeprofile"><tt>path.strokeProfile</tt></a> are outlined as the area that its pens sweep. Their round joins and caps are the pens themselves, and their other joins and caps connect the points where the pens touch the sides of the stroke. Steps in the profile end the parts of the stroke straight across, as butt caps do.</p>
     <ul class="member-list">
 <h4>Options:</h4>
 <li><tt>options.width: <tt>Number</tt></tt> &mdash; the width of the  stroke &mdash;&nbsp;default: <tt>this.strokeWidth</tt></li>
