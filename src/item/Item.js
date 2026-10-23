@@ -120,8 +120,9 @@ new function() { // Injection scope for various item event handlers
                     }
                 },
 
-                onDraw: {},
-                onDrawSelection: {},
+                // Also for all items of a class, see Item.onDraw:
+                onDraw: { classLevel: true },
+                onDrawSelection: { classLevel: true },
 
                 // Only for external sources, e.g. Raster
                 onLoad: {},
@@ -4676,6 +4677,33 @@ new function() { // Injection scope for hit-test functions shared with project
      *     });
      *     return false;
      * }
+     */
+
+    /**
+     * The function to be called whenever any item of the class or of its
+     * subclasses is drawn, as {@link #onDraw} is for a single item, e.g.
+     * `Path.onDraw` for all paths, including the ones created later. The
+     * item's own handlers are called first, then the ones of its class and of
+     * the classes it inherits from, up to `Item`, with `this` set to the item.
+     * `Path.on('draw', handler)` and `Path.off('draw', handler)` attach and
+     * detach them too. Only the drawing events can be handled for classes.
+     * Classes are shared by all {@link PaperScope} objects, and so are their
+     * handlers.
+     *
+     * @name Item.onDraw
+     * @property
+     * @type ?Function
+     */
+
+    /**
+     * The function to be called when the selection of any selected item of the
+     * class or of its subclasses is drawn, as {@link #onDrawSelection} is for
+     * a single item, e.g. `Path.onDrawSelection` for all paths, see
+     * {@link Item.onDraw}.
+     *
+     * @name Item.onDrawSelection
+     * @property
+     * @type ?Function
      */
 
     /**
