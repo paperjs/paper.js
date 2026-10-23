@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Live Effects</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        body {
+            background: #f6f4f0;
+            font: 13px/1.4 -apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #333;
+        }
+        .panel {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 260px;
+            max-height: calc(100% - 52px);
+            overflow-y: auto;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 12px;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.12);
+        }
+        .panel h1 {
+            margin: 0 0 10px;
+            font-size: 16px;
+        }
+        .panel label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin: 6px 0;
+        }
+        .panel input[type=range] {
+            width: 120px;
+        }
+        .panel select {
+            width: 128px;
+        }
+        .effect {
+            margin: 8px 0;
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+        }
+        .effect.hidden {
+            opacity: 0.5;
+        }
+        .effect header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+        .effect header span {
+            flex: 1;
+        }
+        .effect button {
+            padding: 0 6px;
+        }
+        .panel .info {
+            margin-top: 10px;
+            color: #888;
+            font-size: 11px;
+        }
+    </style>
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        var presets = {
+            'Star': function() {
+                return new Path.Star({
+                    center: view.center,
+                    points: 6,
+                    radius1: 70,
+                    radius2: 150,
+                    fillColor: '#ffcf5c',
+                    strokeColor: '#e0306a',
+                    strokeWidth: 16,
+                    strokeJoin: 'round'
+                });
+            },
+            'Wave': function() {
+                var path = new Path({
+                    segments: [[-240, 60], [-120, -80], [0, 60], [120, -80],
+                            [240, 60]],
+                    strokeColor: '#e0306a',
+                    strokeWidth: 24,
+                    strokeCap: 'round'
+                });
+                path.smooth({ type: 'catmull-rom' });
+                path.position = view.center;
+                return path;
+            },
+            'Pressure': function() {
+                var path = presets['Wave']();
+                path.strokeProfile = [
+                    { offset: 0, width: 0.2 },
+                    { offset: path.length / 2, width: 1.6 },
+                    { offset: path.length, width: 0.2 }
+                ];
+                return path;
+            },
+            'Blob': function() {
+                var path = new Path.Circle({
+                    center: view.center,
+                    radius: 120,
+                    fillColor: '#5ca8ff'
+                });
+                path.segments[1].point += [60, 30];
+                path.segments[3].point -= [40, 50];
+                return path;
+            }
+        };
+
+        var types = {
+            offset: 'Offset',
+            outline: 'Outline stroke'
+        };
+
+        // The params of the effects, and how to edit them:
+        var controls = {
+            distance: { type: 'range', min: -60, max: 60, step: 1 },
+            join: { type: 'select', options: ['miter', 'round', 'bevel'] },
+            miterLimit: { type: 'range', min: 1, max: 20, step: 0.5 }
+        };
+
+        var settings = {
+            preset: 'Star',
+            showBounds: true
+        };
+
+        var path;
+        var drag = null;
+        var info = document.getElementById('info');
+        var list = document.getElementById('effects');
+
+        function createPreset(name) {
+            var effects = path ? path.effects : [];
+            if (path)
+                path.remove();
+            path = presets[name]();
+            path.set({
+                fullySelected: true,
+                selectedColor: '#222',
+                onDrawSelection: drawPreviewBounds
+            });
+            // Keep the effects when switching paths, as copies:
+            path.effects = effects;
+            update();
+        }
+
+        // Draws the preview bounds over the selection of the path, see
+        // Item#onDrawSelection:
+        function drawPreviewBounds(event) {
+            if (settings.showBounds) {
+                var ctx = event.context,
+                    bounds = path.previewBounds,
+                    topLeft = event.matrix.transform(bounds.topLeft),
+                    bottomRight = event.matrix.transform(bounds.bottomRight);
+                ctx.setLineDash([4, 3]);
+                ctx.strokeStyle = '#1060ff';
+                ctx.strokeRect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x,
+                        bottomRight.y - topLeft.y);
+                ctx.setLineDash([]);
+            }
+        }
+
+        // Builds the panel of each effect: its visibility, order and params:
+        function updatePanel() {
+            list.innerHTML = '';
+            path.effects.forEach(function(effect) {
+                var element = document.createElement('div');
+                element.className = 'effect' + (effect.visible ? '' : ' hidden');
+                var header = document.createElement('header');
+                var visible = document.createElement('input');
+                visible.type = 'checkbox';
+                visible.checked = effect.visible;
+                visible.title = 'Visible';
+                visible.addEventListener('input', function() {
+                    effect.visible = visible.checked;
+                    element.classList.toggle('hidden', !effect.visible);
+                    update(false);
+                });
+                var title = document.createElement('span');
+                title.textContent = types[effect.type] || effect.type;
+                header.appendChild(visible);
+                header.appendChild(title);
+                // Moves the effect by the amount in the order:
+                function move(amount) {
+                    var index = effect.index + amount;
+                    if (index >= 0 && index < path.effects.length) {
+                        effect.remove();
+                        path.insertEffect(index, effect);
+                    }
+                }
+
+                [
+                    ['↑', function() { move(-1); }],
+                    ['↓', function() { move(1); }],
+                    ['✕', function() { effect.remove(); }]
+                ].forEach(function(entry) {
+                    var button = document.createElement('button');
+                    button.textContent = entry[0];
+                    button.addEventListener('click', function() {
+                        entry[1]();
+                        update();
+                    });
+                    header.appendChild(button);
+                });
+                element.appendChild(header);
+                Object.keys(effect.params).forEach(function(key) {
+                    var control = controls[key];
+                    if (control) {
+                        var label = document.createElement('label'),
+                            input = document.createElement(control.type === 'select'
+                                    ? 'select' : 'input');
+                        label.textContent = key;
+                        if (control.type === 'select') {
+                            control.options.forEach(function(option) {
+                                var node = document.createElement('option');
+                                node.textContent = option;
+                                input.appendChild(node);
+                            });
+                        } else {
+                            input.type = 'range';
+                            input.min = control.min;
+                            input.max = control.max;
+                            input.step = control.step;
+                        }
+                        input.value = effect[key];
+                        input.addEventListener('input', function() {
+                            // Setting a param through its property redraws:
+                            effect[key] = control.type === 'select'
+                                    ? input.value : +input.value;
+                            update(false);
+                        });
+                        label.appendChild(input);
+                        element.appendChild(label);
+                    }
+                });
+                list.appendChild(element);
+            });
+        }
+
+        function update(rebuild) {
+            var time = Date.now();
+            path.getEffectOutput();
+            info.textContent = path.effects.length + ' effects, applied in '
+                    + (Date.now() - time) + ' ms.';
+            if (rebuild !== false)
+                updatePanel();
+        }
+
+        document.getElementById('add').addEventListener('input', function() {
+            if (this.value) {
+                path.addEffect({
+                    type: this.value,
+                    distance: 20,
+                    join: 'round'
+                });
+                this.value = '';
+                update();
+            }
+        });
+
+        function onMouseDown(event) {
+            var hit = path.hitTest(event.point, {
+                segments: true,
+                handles: true,
+                fill: true,
+                stroke: true,
+                tolerance: 6
+            });
+            drag = hit && {
+                type: hit.type,
+                segment: hit.segment
+            };
+        }
+
+        function onMouseDrag(event) {
+            if (drag) {
+                var name = {
+                    'segment': 'point',
+                    'handle-in': 'handleIn',
+                    'handle-out': 'handleOut'
+                }[drag.type];
+                if (name) {
+                    drag.segment[name] += event.delta;
+                } else {
+                    path.position += event.delta;
+                }
+                update(false);
+            }
+        }
+
+        function onMouseUp() {
+            drag = null;
+        }
+
+        function bind(id, key, convert) {
+            var input = document.getElementById(id);
+            input.addEventListener('input', function() {
+                settings[key] = convert ? convert(input) : input.value;
+                if (key === 'preset') {
+                    createPreset(settings.preset);
+                } else {
+                    view.update(true);
+                }
+            });
+        }
+
+        bind('preset', 'preset');
+        bind('show-bounds', 'showBounds', function(input) {
+            return input.checked;
+        });
+
+        createPreset(settings.preset);
+        path.addEffect({ type: 'offset', distance: 20, join: 'round' });
+        update();
+    </script>
+</head>
+<body>
+    <canvas id="canvas" resize></canvas>
+    <div class="panel">
+        <h1>Live Effects</h1>
+        <label>Path
+            <select id="preset">
+                <option>Star</option>
+                <option>Wave</option>
+                <option>Pressure</option>
+                <option>Blob</option>
+            </select>
+        </label>
+        <label>Preview bounds <input id="show-bounds" type="checkbox" checked></label>
+        <label>Add effect
+            <select id="add">
+                <option value="">…</option>
+                <option value="offset">Offset</option>
+                <option value="outline">Outline stroke</option>
+            </select>
+        </label>
+        <div id="effects"></div>
+        <div class="info">
+            <p id="info"></p>
+            <p>The path keeps its own geometry and style, and its effects
+            derive what is drawn from it, in order, each from the one before.
+            Drag its points and handles, or the path itself, to edit it: the
+            effects follow. The dashed rectangle is its
+            <code>previewBounds</code>, while hit testing, <code>bounds</code>
+            and <code>strokeBounds</code> stay with the path.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -761,6 +761,13 @@ new function() {
     }
 
     function exportSVG(item, options, isRoot) {
+        var output = item.getEffectOutput();
+        if (output) {
+            // Write the output of the item's effects in its place, expanded:
+            output = output.clone({ insert: false });
+            output.transform(item._matrix);
+            return exportSVG(output, options, isRoot);
+        }
         var exporter = exporters[item._class],
             node = exporter && exporter(item, options);
         if (node) {

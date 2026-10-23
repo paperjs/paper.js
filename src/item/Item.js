@@ -80,6 +80,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         guide: false,
         clipMask: false,
         textWrap: null,
+        effects: [],
         selected: false,
         data: {}
     },
@@ -260,12 +261,14 @@ new function() { // Injection scope for various item event handlers
             Item._clearBoundsCache(this);
         }
         // Changes of appearance make the buffers of the item and the groups
-        // that contain it stale, see Group#buffered, and change the definition
+        // that contain it stale, see Group#buffered, as well as the output of
+        // their effects, see #getEffectOutput(), and change the definition
         // that the top-most of them is the item of, notified below for itself:
         if (flags & /*#=*/ChangeFlag.APPEARANCE) {
             for (var item = this; item; item = item._parent) {
                 if (item._buffer)
                     item._buffer.matrix = null;
+                item._effectOutput = undefined;
                 if (item._symbol && item !== this)
                     item._symbol._changed(flags);
             }
@@ -1984,12 +1987,13 @@ new function() { // Injection scope for various item event handlers
         // Copy over the selection state, use setSelection so the item
         // is also added to Project#_selectionItems if it is selected.
         this.setSelection(source._selection);
-        // Copy over data and name as well.
+        // Copy over data, name and effects as well.
         var data = source._data,
             name = source._name;
         this._data = data ? Base.clone(data) : null;
         if (name)
             this.setName(name);
+        this.setEffects(source._effects);
     },
 
     /**
@@ -5172,9 +5176,17 @@ new function() { // Injection scope for hit-test functions shared with project
                 ctx.translate(-offset.x, -offset.y);
         }
         if (!isFresh && !(event && event.prevented)) {
-            this._draw(ctx, shadow && !direct
+            var drawParam = shadow && !direct
                     ? param.extend({ dontShadow: true }) : param,
-                    viewMatrix, strokeMatrix);
+                output = this.getEffectOutput();
+            if (output) {
+                // The output of the effects is drawn in the item's place, in
+                // its coordinates, see #effects:
+                output.draw(ctx, drawParam.extend({ updateMatrix: false }),
+                        strokeMatrix);
+            } else {
+                this._draw(ctx, drawParam, viewMatrix, strokeMatrix);
+            }
         }
         ctx.restore();
         matrices.pop();
