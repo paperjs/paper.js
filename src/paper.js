@@ -105,6 +105,7 @@ var paper = function(self, undefined) {
 /*#*/ include('view/CanvasView.js');
 
 /*#*/ include('event/Event.js');
+/*#*/ include('event/DrawEvent.js');
 /*#*/ include('event/KeyEvent.js');
 /*#*/ include('event/Key.js');
 /*#*/ include('event/MouseEvent.js');
