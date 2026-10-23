@@ -15,7 +15,7 @@
 <div class="reference-class">
 <h1>StrokeProfileStop</h1>
 
-<p>A stop of the stroke profile of a path, see <a href="../classes/Path.html#strokeprofile"><tt>path.strokeProfile</tt></a>: the pen that draws its stroke at an offset along the path, an ellipse with a width, an aspect and an angle. Between the stops, each of them changes linearly along the path, as the colors of a gradient do between its stops. A stop can set only some of them, and leave the others to the stops around it.</p>
+<p>A stop of the stroke profile of a path, see <a href="../classes/Path.html#strokeprofile"><tt>path.strokeProfile</tt></a>: the pen that draws its stroke at an offset along the path, an ellipse with a width, an aspect and an angle. Between the stops, each of them changes along the path, easing into and out of smooth stops and in straight lines from the others, see <a href="../classes/StrokeProfileStop.html#smooth"><tt>smooth</tt></a>. A stop can set only some of them, and leave the others to the stops around it.</p>
 
 
 </div>
@@ -40,7 +40,7 @@
 	<li>
 <tt>object:</tt> 
 <tt>Object</tt>
-&mdash;&nbsp;the properties of the stop, its <code>offset</code>,  <code>width</code>, <code>aspect</code> and <code>angle</code>
+&mdash;&nbsp;the properties of the stop, its <code>offset</code>,  <code>width</code>, <code>aspect</code>, <code>angle</code> and <code>smooth</code>
 &mdash;&nbsp;optional
 </li>
 	
@@ -207,6 +207,37 @@ path.strokeProfile = [
 		<h4>Type:</h4>
 		<li>
 			<tt>Number</tt>⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="smooth" class="member">
+<div class="member-link">
+<a name="smooth" href="#smooth"><tt><b>smooth</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Whether the values ease into and out of the stop: they arrive at it and leave it flat, and between two smooth stops, a value follows a cubic from one to the other, without overshooting them. As the slopes don&rsquo;t depend on other stops, changing a stop only changes the values up to the stops on either side of it. Without smoothing, the values change in straight lines to the stops on either side.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>true</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Boolean</tt>
 		</li>
 	</ul>
     

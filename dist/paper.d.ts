@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 23 19:45:29 2026 +0200
+ * Date: Fri Oct 23 22:30:40 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -4291,19 +4291,21 @@ declare namespace paper {
          * that draws its stroke, an ellipse with a width, as a factor of its
          * {@link Style#strokeWidth}, an aspect and an angle, see
          * {@link StrokeProfileStop}. The stops are sorted by their offsets.
-         * Between the stops that set a value, it changes linearly along the
-         * path, and beyond the ends of open paths, it stays as at the first
-         * and last of them. Two stops at the same offset make a step. The
-         * stops stay between the same segments when they move. Without a
-         * stroke profile, the stroke is drawn with a round pen of the stroke
-         * width all along.
+         * Between the stops that set a value, it changes along the path,
+         * easing into and out of smooth stops and in straight lines from the
+         * others, see {@link StrokeProfileStop#smooth}, and beyond the ends
+         * of open paths, it stays as at the first and last of them. Two stops
+         * at the same offset make a step. The stops stay between the same
+         * segments when they move. Without a stroke profile, the stroke is
+         * drawn with a round pen of the stroke width all along.
          * 
          * It is a property of the path, not of its style, as it is tied to
          * its segments. It can be set to stops or plain objects describing
-         * them, `{ offset, width, aspect, angle }`, and JSON stores them with
-         * the indices that tie them to the segments instead of their offsets,
-         * `{ index, width, aspect, angle }`. Changing the returned array
-         * directly isn't tracked, as with {@link #segments}.
+         * them, `{ offset, width, aspect, angle, smooth }`, and JSON stores
+         * them with the indices that tie them to the segments instead of
+         * their offsets, `{ index, width, aspect, angle, smooth }`. Changing
+         * the returned array directly isn't tracked, as with
+         * {@link #segments}.
          * 
          * {@link PathItem#outline} follows the profile, but the path is
          * still drawn, measured and hit-tested with its stroke width.
@@ -4400,7 +4402,9 @@ declare namespace paper {
          * values: its width as a factor of the {@link Style#strokeWidth}, its
          * aspect and its angle, `1`, `1` and `0` where no stop sets them.
          * Where the profile has a step, it returns the values after it. Adding
-         * the stop to the profile doesn't change it.
+         * the stop to the profile keeps the values at the offset, and where
+         * they change in straight lines, also around it if the stop isn't
+         * smooth. As a smooth stop, the values ease into it and out of it.
          * 
          * @param offset - the offset on the path, where `0` is at the
          *     beginning of the path and {@link Path#length} at the end
@@ -8164,9 +8168,9 @@ declare namespace paper {
      * A stop of the stroke profile of a path, see
      * {@link Path#strokeProfile}: the pen that draws its stroke at an offset along
      * the path, an ellipse with a width, an aspect and an angle. Between the
-     * stops, each of them changes linearly along the path, as the colors of a
-     * gradient do between its stops. A stop can set only some of them, and leave
-     * the others to the stops around it.
+     * stops, each of them changes along the path, easing into and out of smooth
+     * stops and in straight lines from the others, see {@link #smooth}. A stop can set
+     * only some of them, and leave the others to the stops around it.
      */
     class StrokeProfileStop  {
         /** 
@@ -8206,12 +8210,22 @@ declare namespace paper {
          */
         angle: number | null
 
+        /** 
+         * Whether the values ease into and out of the stop: they arrive at it and
+         * leave it flat, and between two smooth stops, a value follows a cubic
+         * from one to the other, without overshooting them. As the slopes don't
+         * depend on other stops, changing a stop only changes the values up to the
+         * stops on either side of it. Without smoothing, the values change in
+         * straight lines to the stops on either side.
+         */
+        smooth: boolean
+
 
         /** 
          * Creates a stroke profile stop.
          * 
          * @param object - the properties of the stop, its `offset`,
-         *     `width`, `aspect` and `angle`
+         *     `width`, `aspect`, `angle` and `smooth`
          */
         constructor(object?: object)
 
