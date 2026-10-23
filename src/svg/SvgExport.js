@@ -793,50 +793,56 @@ new function() {
         return options;
     }
 
+    // Export the items in an svg root element, sized to the bounds and
+    // transformed by the matrix of the options:
+    function exportRoot(items, view, bounds, options) {
+        var mx = options.matrix || bounds === 'view' && view._matrix,
+            matrix = mx && Matrix.read([mx]),
+            rect = bounds === 'view'
+                ? new Rectangle([0, 0], view.getViewSize())
+                : bounds === 'content'
+                    ? Item._getBounds(items, matrix, { stroke: true }).rect
+                    : Rectangle.read([bounds], 0, { readNull: true }),
+            attrs = {
+                version: '1.1',
+                xmlns: SvgElement.svg,
+                'xmlns:xlink': SvgElement.xlink,
+            };
+        if (rect) {
+            attrs.width = rect.width;
+            attrs.height = rect.height;
+            if (rect.x || rect.x === 0 || rect.y || rect.y === 0)
+                attrs.viewBox = formatter.rectangle(rect);
+        }
+        var node = SvgElement.create('svg', attrs, formatter),
+            parent = node;
+        // If the view has a transformation, wrap all items in a group with
+        // that transformation applied to.
+        if (matrix && !matrix.isIdentity()) {
+            parent = node.appendChild(SvgElement.create('g',
+                    getTransform(matrix), formatter));
+        }
+        for (var i = 0, l = items.length; i < l; i++) {
+            parent.appendChild(exportSVG(items[i], options, true));
+        }
+        return exportDefinitions(node, options);
+    }
+
     Item.inject({
         exportSVG: function(options) {
             options = setOptions(options);
-            return exportDefinitions(exportSVG(this, options, true), options);
+            var bounds = options.bounds;
+            return bounds || options.matrix
+                ? exportRoot([this], this.getView(), bounds, options)
+                : exportDefinitions(exportSVG(this, options, true), options);
         }
     });
 
     Project.inject({
         exportSVG: function(options) {
             options = setOptions(options);
-            var children = this._children,
-                view = this.getView(),
-                bounds = Base.pick(options.bounds, 'view'),
-                mx = options.matrix || bounds === 'view' && view._matrix,
-                matrix = mx && Matrix.read([mx]),
-                rect = bounds === 'view'
-                    ? new Rectangle([0, 0], view.getViewSize())
-                    : bounds === 'content'
-                        ? Item._getBounds(children, matrix, { stroke: true })
-                            .rect
-                        : Rectangle.read([bounds], 0, { readNull: true }),
-                attrs = {
-                    version: '1.1',
-                    xmlns: SvgElement.svg,
-                    'xmlns:xlink': SvgElement.xlink,
-                };
-            if (rect) {
-                attrs.width = rect.width;
-                attrs.height = rect.height;
-                if (rect.x || rect.x === 0 || rect.y || rect.y === 0)
-                    attrs.viewBox = formatter.rectangle(rect);
-            }
-            var node = SvgElement.create('svg', attrs, formatter),
-                parent = node;
-            // If the view has a transformation, wrap all layers in a group with
-            // that transformation applied to.
-            if (matrix && !matrix.isIdentity()) {
-                parent = node.appendChild(SvgElement.create('g',
-                        getTransform(matrix), formatter));
-            }
-            for (var i = 0, l = children.length; i < l; i++) {
-                parent.appendChild(exportSVG(children[i], options, true));
-            }
-            return exportDefinitions(node, options);
+            return exportRoot(this._children, this.getView(),
+                    Base.pick(options.bounds, 'view'), options);
         }
     });
 };
