@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 23 02:00:55 2026 +0200
+ * Date: Fri Oct 23 11:14:17 2026 +0200
  *
  ***
  *
@@ -3167,15 +3167,22 @@ var Project = PaperScopeItem.extend({
 					view.requestUpdate();
 			}
 		}
+		if (item && item.isInserted())
+			this._logChange('item', item, flags);
+	},
+
+	_logChange: function(name, object, flags) {
 		var changes = this._changes;
-		if (changes && item && item.isInserted()) {
+		if (changes) {
 			var changesById = this._changesById,
-				id = item._id,
+				id = object._id,
 				entry = changesById[id];
 			if (entry) {
 				entry.flags |= flags;
 			} else {
-				changes.push(changesById[id] = { item: item, flags: flags });
+				entry = changesById[id] = { flags: flags };
+				entry[name] = object;
+				changes.push(entry);
 			}
 		}
 	},
@@ -3269,6 +3276,28 @@ var Project = PaperScopeItem.extend({
 	},
 
 	getSymbols: 'getSymbolDefinitions',
+
+	getPatternDefinitions: function() {
+		var definitions = [],
+			ids = {};
+		this.getItems({
+			match: function(item) {
+				var style = item._style;
+				[style.getFillColor(true), style.getStrokeColor(true)].forEach(
+					function(color) {
+						var definition = color && color._type === 'pattern'
+								&& color._components[0];
+						if (definition && !ids[definition._id]) {
+							ids[definition._id] = true;
+							definitions.push(definition);
+						}
+					}
+				);
+				return false;
+			}
+		});
+		return definitions;
+	},
 
 	getSelectedItems: function() {
 		var selectionItems = this._selectionItems,
@@ -6453,6 +6482,7 @@ var Raster = Item.extend({
 
 var ItemDefinition = Base.extend({
 	_centerItem: false,
+	_name: null,
 
 	initialize: function ItemDefinition(item, dontCenter) {
 		this._id = UID.get();
@@ -6462,13 +6492,23 @@ var ItemDefinition = Base.extend({
 	},
 
 	_changed: function(flags) {
+		var project = this.project;
 		if (flags & 8)
 			Item._clearBoundsCache(this);
 		if (flags & 1) {
-			var project = this.project;
 			project._bufferVersion++;
 			project._changed(flags);
 		}
+		project._logChange('definition', this, flags);
+	},
+
+	getName: function() {
+		return this._name;
+	},
+
+	setName: function(name) {
+		this._name = name || null;
+		this._changed(256);
 	},
 
 	getItem: function() {
@@ -6575,13 +6615,18 @@ var SymbolDefinition = ItemDefinition.extend({
 	_centerItem: true,
 
 	initialize: function SymbolDefinition(item, dontCenter) {
-		ItemDefinition.call(this, item, dontCenter);
+		var options = Base.isPlainObject(dontCenter) && dontCenter;
+		ItemDefinition.call(this, item, !options && dontCenter);
+		if (options)
+			this.set(options);
 	},
 
 	_serialize: function(options, dictionary) {
 		return dictionary.add(this, function() {
-			return Base.serialize([this._class, this._item],
-					options, false, dictionary);
+			var json = [this._class, this._item];
+			if (this._name)
+				json.push({ name: this._name });
+			return Base.serialize(json, options, false, dictionary);
 		});
 	},
 
@@ -16366,9 +16411,16 @@ var PatternDefinition = ItemDefinition.extend({
 
 	_serialize: function(options, dictionary) {
 		return dictionary.add(this, function() {
-			var json = [this._class, this._item];
-			if (this._tile || !this._spacing.isZero())
-				json.push({ tile: this._tile, spacing: this._spacing });
+			var json = [this._class, this._item],
+				props = {};
+			if (this._tile)
+				props.tile = this._tile;
+			if (!this._spacing.isZero())
+				props.spacing = this._spacing;
+			if (this._name)
+				props.name = this._name;
+			if (Object.keys(props).length)
+				json.push(props);
 			return Base.serialize(json, options, false, dictionary);
 		});
 	},

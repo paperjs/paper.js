@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 23 02:00:55 2026 +0200
+ * Date: Fri Oct 23 11:14:17 2026 +0200
  *
  ***
  *
@@ -3171,15 +3171,22 @@ var Project = PaperScopeItem.extend({
 					view.requestUpdate();
 			}
 		}
+		if (item && item.isInserted())
+			this._logChange('item', item, flags);
+	},
+
+	_logChange: function(name, object, flags) {
 		var changes = this._changes;
-		if (changes && item && item.isInserted()) {
+		if (changes) {
 			var changesById = this._changesById,
-				id = item._id,
+				id = object._id,
 				entry = changesById[id];
 			if (entry) {
 				entry.flags |= flags;
 			} else {
-				changes.push(changesById[id] = { item: item, flags: flags });
+				entry = changesById[id] = { flags: flags };
+				entry[name] = object;
+				changes.push(entry);
 			}
 		}
 	},
@@ -3273,6 +3280,28 @@ var Project = PaperScopeItem.extend({
 	},
 
 	getSymbols: 'getSymbolDefinitions',
+
+	getPatternDefinitions: function() {
+		var definitions = [],
+			ids = {};
+		this.getItems({
+			match: function(item) {
+				var style = item._style;
+				[style.getFillColor(true), style.getStrokeColor(true)].forEach(
+					function(color) {
+						var definition = color && color._type === 'pattern'
+								&& color._components[0];
+						if (definition && !ids[definition._id]) {
+							ids[definition._id] = true;
+							definitions.push(definition);
+						}
+					}
+				);
+				return false;
+			}
+		});
+		return definitions;
+	},
 
 	getSelectedItems: function() {
 		var selectionItems = this._selectionItems,
@@ -6457,6 +6486,7 @@ var Raster = Item.extend({
 
 var ItemDefinition = Base.extend({
 	_centerItem: false,
+	_name: null,
 
 	initialize: function ItemDefinition(item, dontCenter) {
 		this._id = UID.get();
@@ -6466,13 +6496,23 @@ var ItemDefinition = Base.extend({
 	},
 
 	_changed: function(flags) {
+		var project = this.project;
 		if (flags & 8)
 			Item._clearBoundsCache(this);
 		if (flags & 1) {
-			var project = this.project;
 			project._bufferVersion++;
 			project._changed(flags);
 		}
+		project._logChange('definition', this, flags);
+	},
+
+	getName: function() {
+		return this._name;
+	},
+
+	setName: function(name) {
+		this._name = name || null;
+		this._changed(256);
 	},
 
 	getItem: function() {
@@ -6579,13 +6619,18 @@ var SymbolDefinition = ItemDefinition.extend({
 	_centerItem: true,
 
 	initialize: function SymbolDefinition(item, dontCenter) {
-		ItemDefinition.call(this, item, dontCenter);
+		var options = Base.isPlainObject(dontCenter) && dontCenter;
+		ItemDefinition.call(this, item, !options && dontCenter);
+		if (options)
+			this.set(options);
 	},
 
 	_serialize: function(options, dictionary) {
 		return dictionary.add(this, function() {
-			return Base.serialize([this._class, this._item],
-					options, false, dictionary);
+			var json = [this._class, this._item];
+			if (this._name)
+				json.push({ name: this._name });
+			return Base.serialize(json, options, false, dictionary);
 		});
 	},
 
@@ -16370,9 +16415,16 @@ var PatternDefinition = ItemDefinition.extend({
 
 	_serialize: function(options, dictionary) {
 		return dictionary.add(this, function() {
-			var json = [this._class, this._item];
-			if (this._tile || !this._spacing.isZero())
-				json.push({ tile: this._tile, spacing: this._spacing });
+			var json = [this._class, this._item],
+				props = {};
+			if (this._tile)
+				props.tile = this._tile;
+			if (!this._spacing.isZero())
+				props.spacing = this._spacing;
+			if (this._name)
+				props.name = this._name;
+			if (Object.keys(props).length)
+				json.push(props);
 			return Base.serialize(json, options, false, dictionary);
 		});
 	},
@@ -21852,14 +21904,82 @@ new function() {
 			loaded = json ? importJSON(project, json)
 				: new definition.constructor(new Group({ insert: false }));
 		definition.setItem(loaded._item, true);
+		definition._name = loaded._name;
 		if (definition instanceof PatternDefinition) {
 			definition.setTile(loaded._tile);
 			definition.setSpacing(loaded._spacing);
 		}
 	}
 
+	function getNewDefinitions(project) {
+		var changes = project._changes || [],
+			definitions = [],
+			ids = {};
+
+		function addDefinition(definition) {
+			if (definition && definition._key == null && !ids[definition._id]) {
+				ids[definition._id] = true;
+				addDefinitions(definition._item);
+				definitions.push(definition);
+			}
+		}
+
+		function addDefinitions(item) {
+			if (!item._shell) {
+				var style = item._style;
+				addDefinition(item._definition);
+				[style.getFillColor(true), style.getStrokeColor(true)].forEach(
+					function(color) {
+						addDefinition(color && color._type === 'pattern'
+								&& color._components[0]);
+					}
+				);
+				if (item._key == null && item._children)
+					item._children.forEach(addDefinitions);
+			}
+		}
+
+		for (var i = 0, l = changes.length; i < l; i++) {
+			var item = changes[i].item,
+				definition = changes[i].definition;
+			if (item ? item.isInserted() : definition._key != null)
+				addDefinitions(item || definition._item);
+		}
+		return definitions;
+	}
+
+	function getDefinitions(project, ctor) {
+		var keys = project._host.getDefinitionKeys(ctor.prototype._class);
+		return keys.map(function(key) {
+			return getDefinition(project, key);
+		}).concat(getNewDefinitions(project).filter(function(definition) {
+			return definition instanceof ctor;
+		}));
+	}
+
 	ItemDefinition.inject({
-		_key: null
+		_key: null,
+
+		getKey: function() {
+			return this._key;
+		},
+
+		setKey: function(key) {
+			var definitionsByKey = this.project._definitionsByKey;
+			if (this._key != null)
+				throw new Error('Unable to change the key of a definition.');
+			if (!definitionsByKey)
+				throw new Error('Unable to set a key in a project without a '
+						+ 'host.');
+			this._key = key;
+			definitionsByKey[key] = this;
+		},
+
+		setName: function setName(name) {
+			if (this._key != null)
+				throw new Error('Unable to rename a definition of the host.');
+			setName.base.call(this, name);
+		}
 	});
 
 	[SymbolDefinition, PatternDefinition].forEach(function(ctor) {
@@ -22113,10 +22233,34 @@ new function() {
 		},
 
 		takeChanges: function takeChanges() {
-			var changes = takeChanges.base.call(this);
-			for (var i = 0, l = changes ? changes.length : 0; i < l; i++)
-				changes[i].item._edited = false;
-			return changes;
+			var definitions = this._host && getNewDefinitions(this),
+				changes = takeChanges.base.call(this);
+			for (var i = 0, l = changes ? changes.length : 0; i < l; i++) {
+				if (changes[i].item)
+					changes[i].item._edited = false;
+			}
+			return definitions && changes
+					? definitions.map(function(definition) {
+						return {
+							definition: definition,
+							flags: 5
+						};
+					}).concat(changes.filter(function(change) {
+						return change.item || change.definition._key != null;
+					}))
+					: changes;
+		},
+
+		getSymbolDefinitions: function getSymbolDefinitions() {
+			return this._host
+					? getDefinitions(this, SymbolDefinition)
+					: getSymbolDefinitions.base.call(this);
+		},
+
+		getPatternDefinitions: function getPatternDefinitions() {
+			return this._host
+					? getDefinitions(this, PatternDefinition)
+					: getPatternDefinitions.base.call(this);
 		},
 
 		getHost: function() {

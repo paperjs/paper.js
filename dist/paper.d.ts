@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 23 02:00:55 2026 +0200
+ * Date: Fri Oct 23 11:14:17 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -5485,6 +5485,11 @@ declare namespace paper {
         readonly project: Project
 
         /** 
+         * The name of the pattern.
+         */
+        name: string
+
+        /** 
          * The item that the pattern repeats. Unlike the items of symbols, it isn't
          * moved to 0, 0, so the tiles are at its own coordinates.
          */
@@ -5510,11 +5515,12 @@ declare namespace paper {
          * @option [options.tile] {Rectangle} the rectangle that is repeated,
          *     the bounds of the item by default
          * @option [options.spacing=0] {Size} the gap between the tiles
+         * @option [options.name] {String} the name of the pattern
          * 
          * @param item - the item to repeat, which is removed from the scene
          *     graph and becomes the pattern's tile content
          */
-        constructor(item: Item, options?: { tile?: RectangleLike, spacing?: SizeLike })
+        constructor(item: Item, options?: { tile?: RectangleLike, spacing?: SizeLike, name?: string })
 
         /** 
          * Returns a copy of the pattern, with a copy of its item.
@@ -6235,7 +6241,16 @@ declare namespace paper {
          *   once, and the JSON of the items that use it, as
          *   {@link Item#exportJSON} writes it, refers to it by its
          *   key again. Definitions that scripts create have no key, and are
-         *   written out whole.
+         *   written out whole, until the host sets their `key`, which it can
+         *   only set once. {@link Project#takeChanges} lists those that the
+         *   changed items use first, nested ones first, as
+         *   `{ definition, flags }` with the `ChangeFlag.INSERTION` flag,
+         *   followed by the changes of the host's definitions. Renaming those
+         *   isn't supported.
+         * - `getDefinitionKeys(type)`, which returns the keys of all the
+         *   host's definitions of the type, `'SymbolDefinition'` or
+         *   `'PatternDefinition'`, for {@link #symbolDefinitions} and
+         *   {@link #patternDefinitions}.
          */
         host: any
 
@@ -6297,6 +6312,12 @@ declare namespace paper {
         readonly symbols: SymbolDefinition[]
 
         /** 
+         * The pattern definitions that the fill and stroke colors of the items in
+         * the project use.
+         */
+        readonly patternDefinitions: PatternDefinition[]
+
+        /** 
          * The selected items contained within the project.
          */
         readonly selectedItems: Item[]
@@ -6348,10 +6369,13 @@ declare namespace paper {
          * Returns the changes logged since tracking was activated or since the
          * last call, and clears the log. Each item is listed once, with the
          * {@link ChangeFlag} values of all its changes combined. Removed items are
-         * listed with the `ChangeFlag.INSERTION` flag.
+         * listed with the `ChangeFlag.INSERTION` flag. Symbol and pattern
+         * definitions whose item, tile, spacing or name changed are listed too,
+         * as `{ definition, flags }`.
          * 
-         * @return the changes as `{ item, flags }` objects, or `null`
-         *     if {link #trackChanges} is off
+         * @return the changes as `{ item, flags }` and
+         *     `{ definition, flags }` objects, or `null` if {link #trackChanges}
+         *     is off
          */
         takeChanges(): object[]
 
@@ -8344,6 +8368,11 @@ declare namespace paper {
          * The project that this symbol belongs to.
          */
         readonly project: Project
+
+        /** 
+         * The name of the symbol.
+         */
+        name: string
 
         /** 
          * The item used as the symbol's definition.
