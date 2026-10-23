@@ -17,7 +17,7 @@ new function() {
     // The fields that #_load() fills in, by the class that defines them:
     var contentFields = [
             [Item, ['_style', '_applyMatrix', '_opacity', '_blendMode',
-                    '_pivot', '_data', '_textWrap']],
+                    '_pivot', '_data', '_textWrap', '_effects']],
             [Path, ['_segments', '_closed', '_version', '_curves',
                     '_segmentSelection', '_strokeProfile']],
             [CompoundPath, ['_children', '_namedChildren']],

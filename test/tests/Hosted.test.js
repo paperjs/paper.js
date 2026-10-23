@@ -349,6 +349,21 @@ describe.skipIf(!HostItem)('Hosted', () => {
     equals(circle.strokeProfile[0].width, 2)
   })
 
+  test('Items load their effects', () => {
+    const res = createHostedProject()
+    res.host.document.getItem({ name: 'circle' }).effects = [
+      { type: 'offset', distance: 5 }
+    ]
+    const circle = res.project.layers[0].children.circle
+    equals(circle.effects.length, 1)
+    equals(circle.effects[0].distance, 5)
+    equals(
+      circle.previewBounds,
+      circle.strokeBounds.expand(10),
+      'measured with them'
+    )
+  })
+
   test('Loading and invalidating are not logged as changes', () => {
     const res = createHostedProject()
     const project = res.project
