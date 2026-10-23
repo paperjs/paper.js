@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Oct 24 00:37:54 2026 +0200
+ * Date: Sat Oct 24 00:58:30 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -1742,6 +1742,11 @@ declare namespace paper {
          * view only composites the buffer, with the group's {@link Item#opacity}
          * and {@link Item#blendMode}. This pays off for large groups and layers
          * that rarely change, such as a complex background below animated items.
+         * 
+         * It doesn't pay off when the buffer is drawn again on every frame: while
+         * the view pans or zooms on every frame, while the group itself is moved
+         * or transformed, or when an item inside it is animated. Put animated
+         * items into another group or layer instead.
          * 
          * The buffer costs memory: it covers the part of the group that the view
          * shows, at up to `width × height × 4 × pixelRatio²` bytes for a group
