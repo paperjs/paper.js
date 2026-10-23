@@ -162,16 +162,23 @@ describe.skipIf(!HostItem)('Hosted', () => {
 
       getDefinition(key) {
         host.calls.push(['getDefinition', key])
-        const definition = host.definitions.get(key)
+        const definition = host.definitions.get(key),
+          name = definition.name || undefined
         return Base.serialize(
           definition instanceof PatternDefinition
             ? [
                 'PatternDefinition',
                 definition.item,
-                { tile: definition.tile, spacing: definition.spacing }
+                { tile: definition.tile, spacing: definition.spacing, name }
               ]
-            : ['SymbolDefinition', definition.item]
+            : ['SymbolDefinition', definition.item, { name }]
         )
+      },
+
+      getDefinitionKeys(type) {
+        return [...host.definitions]
+          .filter(([, definition]) => definition.className === type)
+          .map(([key]) => key)
       },
 
       getReference(definition) {
@@ -982,6 +989,7 @@ describe.skipIf(!HostItem)('Hosted', () => {
     const symbol = new SymbolDefinition(
       new Path.Rectangle({ point: [0, 0], size: [10, 10], fillColor: 'red' })
     )
+    symbol.name = 'Star'
     new Path.Rectangle({
       point: [0, 0],
       size: [40, 40],
@@ -1141,5 +1149,159 @@ describe.skipIf(!HostItem)('Hosted', () => {
     equals(pattern.item.isEmpty(), true, 'emptied')
     equals(star.definition.item.isEmpty(), true, 'emptied')
     equals(getPixel(first, 2, 2).alpha, 0, 'drawing nothing')
+  })
+  test('takeChanges() lists the new definitions that items use first', () => {
+    const res = createHostedDefinitions(),
+      project = res.project
+    project.trackChanges = true
+    const inner = new PatternDefinition(
+      new Path.Rectangle({ point: [0, 0], size: [5, 5], fillColor: 'blue' })
+    )
+    const symbol = new SymbolDefinition(
+      new Path.Rectangle({
+        point: [0, 0],
+        size: [10, 10],
+        fillColor: { pattern: inner }
+      })
+    )
+    // Definitions that no inserted item uses aren't the host's:
+    new SymbolDefinition(new Path.Rectangle([0, 0], [10, 10]))
+    const group = new Group({
+      children: [symbol.place([0, 0])],
+      parent: project.layers[0]
+    })
+    const changes = project.takeChanges()
+    equals(changes[0].definition === inner, true, 'nested ones first')
+    equals(changes[1].definition === symbol, true)
+    equals(!!(changes[0].flags & ChangeFlag.INSERTION), true)
+    equals(!!(changes[1].flags & ChangeFlag.INSERTION), true)
+    equals(
+      changes.slice(2).every(change => change.item),
+      true,
+      'followed by the items'
+    )
+    equals(
+      changes.some(change => change.item === group),
+      true
+    )
+  })
+
+  test(`takeChanges() lists the changes of the host's definitions`, () => {
+    const res = createHostedDefinitions(),
+      project = res.project,
+      { first, star } = project.layers[0].children
+    const pattern = first.fillColor.pattern,
+      symbol = star.definition
+    project.trackChanges = true
+    pattern.spacing = 10
+    const inner = new PatternDefinition(
+      new Path.Rectangle({
+        point: [0, 0],
+        size: [5, 5],
+        fillColor: 'blue',
+        insert: false
+      })
+    )
+    symbol.item.fillColor = { pattern: inner }
+    const changes = project.takeChanges()
+    equals(changes.length, 3)
+    equals(changes[0].definition === inner, true, 'the new one first')
+    equals(changes[1].definition === pattern, true)
+    equals(!!(changes[1].flags & ChangeFlag.STYLE), true)
+    equals(changes[2].definition === symbol, true)
+    equals(!!(changes[2].flags & ChangeFlag.STYLE), true)
+    equals(project.takeChanges().length, 0)
+  })
+
+  test('Keys register new definitions, which export as references', () => {
+    const res = createHostedDefinitions(),
+      project = res.project
+    const symbol = new SymbolDefinition(
+      new Path.Rectangle({ point: [0, 0], size: [10, 10], fillColor: 'blue' })
+    )
+    const item = symbol.place([0, 0])
+    project.layers[0].addChild(item)
+    equals(item.exportJSON({ asString: false })[0][0], 'dictionary')
+    symbol.key = 'symbol/New'
+    equals(item.exportJSON({ asString: false })[1].definition, [
+      '@symbol/New'
+    ])
+    // Items that the host gives with its key share it, without loading it:
+    const { star } = project.layers[0].children
+    res.host.getItem = () => ['SymbolItem', { definition: ['@symbol/New'] }]
+    res.host.takeCalls()
+    const columns = res.host.getColumns([res.host.getNode(star.key)])
+    columns.flags[0] |= 16
+    project.invalidate(columns)
+    equals(star.definition === symbol, true)
+    equals(
+      res.host.takeCalls().filter(call => call[0] === 'getDefinition'),
+      []
+    )
+    let message = null
+    try {
+      symbol.key = 'symbol/Other'
+    } catch (err) {
+      message = err.message
+    }
+    equals(message, 'Unable to change the key of a definition.')
+    new Project()
+    message = null
+    try {
+      new SymbolDefinition(new Path()).key = 'symbol/New'
+    } catch (err) {
+      message = err.message
+    }
+    equals(message, 'Unable to set a key in a project without a host.')
+  })
+
+  test('Definitions have the names of the host', () => {
+    const res = createHostedDefinitions(),
+      { star } = res.project.layers[0].children
+    const definition = star.definition
+    equals(definition.name, 'Star')
+    let message = null
+    try {
+      definition.name = 'Other'
+    } catch (err) {
+      message = err.message
+    }
+    equals(message, 'Unable to rename a definition of the host.')
+    res.symbol.name = 'Renamed'
+    res.project.invalidate({ definitions: ['symbol/Star'] })
+    equals(definition.name, 'Renamed')
+  })
+
+  test(`symbolDefinitions and patternDefinitions list the host's`, () => {
+    const res = createHostedDefinitions(),
+      project = res.project
+    res.host.definitions.set(
+      'symbol/Unused',
+      new SymbolDefinition(new Path.Rectangle([0, 0], [10, 10]))
+    )
+    res.host.takeCalls()
+    project.trackChanges = true
+    const symbols = project.symbolDefinitions
+    equals(symbols.length, 2)
+    equals(
+      symbols.map(definition => definition.key),
+      [
+        'symbol/Star',
+        'symbol/Unused'
+      ]
+    )
+    equals(project.patternDefinitions.length, 1)
+    equals(project.patternDefinitions[0].key, 'pattern/Dots')
+    // Without loading the items:
+    equals(
+      res.host.takeCalls().filter(call => call[0] !== 'getDefinition'),
+      []
+    )
+    // New definitions follow, once items use them:
+    const symbol = new SymbolDefinition(new Path.Rectangle([0, 0], [10, 10]))
+    equals(project.symbolDefinitions.length, 2)
+    project.layers[0].addChild(symbol.place([0, 0]))
+    equals(project.symbolDefinitions.length, 3)
+    equals(project.symbolDefinitions[2] === symbol, true)
   })
 })

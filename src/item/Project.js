@@ -98,15 +98,24 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
             }
         }
         // Log changes of inserted items, see #trackChanges:
+        if (item && item.isInserted())
+            this._logChange('item', item, flags);
+    },
+
+    // Logs the changes of items and definitions, each once with its flags
+    // combined, as `{ item, flags }` or `{ definition, flags }`:
+    _logChange: function(name, object, flags) {
         var changes = this._changes;
-        if (changes && item && item.isInserted()) {
+        if (changes) {
             var changesById = this._changesById,
-                id = item._id,
+                id = object._id,
                 entry = changesById[id];
             if (entry) {
                 entry.flags |= flags;
             } else {
-                changes.push(changesById[id] = { item: item, flags: flags });
+                entry = changesById[id] = { flags: flags };
+                entry[name] = object;
+                changes.push(entry);
             }
         }
     },
@@ -135,10 +144,13 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * Returns the changes logged since tracking was activated or since the
      * last call, and clears the log. Each item is listed once, with the
      * {@link ChangeFlag} values of all its changes combined. Removed items are
-     * listed with the `ChangeFlag.INSERTION` flag.
+     * listed with the `ChangeFlag.INSERTION` flag. Symbol and pattern
+     * definitions whose item, tile, spacing or name changed are listed too,
+     * as `{ definition, flags }`.
      *
-     * @return {Object[]} the changes as `{ item, flags }` objects, or `null`
-     *     if {@link #trackChanges} is off
+     * @return {Object[]} the changes as `{ item, flags }` and
+     *     `{ definition, flags }` objects, or `null` if {@link #trackChanges}
+     *     is off
      */
     takeChanges: function() {
         var changes = this._changes;
@@ -328,6 +340,35 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @deprecated use {@link #symbolDefinitions} instead.
      */
     getSymbols: 'getSymbolDefinitions',
+
+    /**
+     * The pattern definitions that the fill and stroke colors of the items in
+     * the project use.
+     *
+     * @bean
+     * @type PatternDefinition[]
+     */
+    getPatternDefinitions: function() {
+        var definitions = [],
+            ids = {};
+        this.getItems({
+            match: function(item) {
+                var style = item._style;
+                [style.getFillColor(true), style.getStrokeColor(true)].forEach(
+                    function(color) {
+                        var definition = color && color._type === 'pattern'
+                                && color._components[0];
+                        if (definition && !ids[definition._id]) {
+                            ids[definition._id] = true;
+                            definitions.push(definition);
+                        }
+                    }
+                );
+                return false; // No need to collect them.
+            }
+        });
+        return definitions;
+    },
 
     /**
      * The selected items contained within the project.

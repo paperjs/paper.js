@@ -11,7 +11,16 @@
  */
 
 import { describe } from 'vitest'
-import paper, { ChangeFlag, Group, Layer, Path, Project, Tool } from 'paper'
+import paper, {
+  ChangeFlag,
+  Group,
+  Layer,
+  Path,
+  PatternDefinition,
+  Project,
+  SymbolDefinition,
+  Tool
+} from 'paper'
 import { equals, test } from '../helpers.js'
 
 describe('Project', () => {
@@ -168,6 +177,51 @@ describe('Project', () => {
     const changes = project.takeChanges()
     equals(changes.length, 2)
     equals(changes[0].item === result || changes[1].item === result, true)
+  })
+
+  test('trackChanges logs changes of definitions', () => {
+    const project = new Project()
+    const symbol = new SymbolDefinition(new Path.Rectangle([0, 0], [10, 10]))
+    const pattern = new PatternDefinition(new Path.Rectangle([0, 0], [5, 5]))
+    project.trackChanges = true
+    symbol.item.fillColor = 'red'
+    pattern.spacing = 10
+    pattern.name = 'Dots'
+    const changes = project.takeChanges()
+    equals(changes.length, 2)
+    equals(changes[0].definition === symbol, true)
+    equals(!!(changes[0].flags & ChangeFlag.STYLE), true)
+    equals(changes[1].definition === pattern, true)
+    equals(!!(changes[1].flags & ChangeFlag.STYLE), true)
+    equals(!!(changes[1].flags & ChangeFlag.ATTRIBUTE), true)
+  })
+
+  test('project.patternDefinitions', () => {
+    const project = new Project()
+    const pattern = new PatternDefinition(new Path.Rectangle([0, 0], [5, 5]))
+    const other = new PatternDefinition(new Path.Circle([0, 0], 5))
+    new Path.Rectangle({
+      point: [0, 0],
+      size: [40, 40],
+      fillColor: { pattern }
+    })
+    new Path.Rectangle({
+      point: [50, 0],
+      size: [40, 40],
+      fillColor: { pattern },
+      strokeColor: { pattern: other }
+    })
+    new Group(
+      new Path.Rectangle({
+        point: [100, 0],
+        size: [40, 40],
+        fillColor: { pattern: other }
+      })
+    )
+    const definitions = project.patternDefinitions
+    equals(definitions.length, 2)
+    equals(definitions[0] === pattern, true)
+    equals(definitions[1] === other, true)
   })
 
   test('project.scope, view.scope, item.scope and tool.scope (#1634)', () => {
