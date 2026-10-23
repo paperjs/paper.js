@@ -166,6 +166,33 @@ describe('SvgExport', () => {
     )
   })
 
+  test('Item#exportSVG() with bounds', () => {
+    const path = new Path.Rectangle({
+      point: [10, 20],
+      size: [30, 40],
+      strokeColor: 'black',
+      strokeWidth: 2
+    })
+    let node = path.exportSVG({ bounds: 'content' })
+    equals(node.nodeName.toLowerCase(), 'svg')
+    equals(node.getAttribute('viewBox'), '9,19,32,42')
+    equals(node.getAttribute('width'), '32')
+    equals(node.getAttribute('height'), '42')
+    equals(node.firstChild.nodeName.toLowerCase(), 'path')
+    node = path.exportSVG({ bounds: new Rectangle(0, 0, 100, 50) })
+    equals(node.getAttribute('viewBox'), '0,0,100,50')
+    // Without bounds or matrix, the item is exported on its own:
+    equals(path.exportSVG().nodeName.toLowerCase(), 'path')
+  })
+
+  test('Item#exportSVG() with matrix', () => {
+    const path = new Path.Rectangle([10, 20], [30, 40])
+    const node = path.exportSVG({ matrix: new Matrix().scale(2, [0, 0]) })
+    equals(node.nodeName.toLowerCase(), 'svg')
+    equals(node.firstChild.getAttribute('transform'), 'scale(2,2)')
+    equals(node.firstChild.firstChild.nodeName.toLowerCase(), 'path')
+  })
+
   test('Export SVG group with mixed children styles (#1732)', () => {
     const group = new Group([
       new Path.Rectangle({
