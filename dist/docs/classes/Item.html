@@ -3003,6 +3003,63 @@ path.onDrawSelection = function(event) {
 
 
 
+    <div class="reference-members">
+    	<h2>Static Properties</h2>
+        
+            
+<div id="ondraw" class="member">
+<div class="member-link">
+<a name="ondraw" href="#ondraw"><tt><b>Item.onDraw</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The function to be called whenever any item of the class or of its subclasses is drawn, as <a href="../classes/Item.html#ondraw"><tt>onDraw</tt></a> is for a single item, e.g. <code>Path.onDraw</code> for all paths, including the ones created later. The item&rsquo;s own handlers are called first, then the ones of its class and of the classes it inherits from, up to <code>Item</code>, with <code>this</code> set to the item. <code>Path.on(&#39;draw&#39;, handler)</code> and <code>Path.off(&#39;draw&#39;, handler)</code> attach and detach them too. Only the drawing events can be handled for classes. Classes are shared by all <a href="../classes/PaperScope.html"><tt>PaperScope</tt></a> objects, and so are their handlers.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+        
+            
+<div id="ondrawselection" class="member">
+<div class="member-link">
+<a name="ondrawselection" href="#ondrawselection"><tt><b>Item.onDrawSelection</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The function to be called when the selection of any selected item of the class or of its subclasses is drawn, as <a href="../classes/Item.html#ondrawselection"><tt>onDrawSelection</tt></a> is for a single item, e.g. <code>Path.onDrawSelection</code> for all paths, see <a href="../classes/Item.html#ondraw"><tt>Item.onDraw</tt></a>.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+        
+    </div>
+
 
 
 <!-- ============================== methods ================================ -->

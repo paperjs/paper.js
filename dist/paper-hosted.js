@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 23 14:16:42 2026 +0200
+ * Date: Fri Oct 23 15:25:15 2026 +0200
  *
  ***
  *
@@ -678,8 +678,13 @@ var Emitter = {
 			}, this);
 		} else {
 			var types = this._eventTypes,
-				entry = types && types[type],
-				handlers = this._callbacks = this._callbacks || {};
+				entry = types && types[type];
+			if (this === this.constructor.prototype
+					&& !(entry && entry.classLevel))
+				throw new Error('Unsupported class-level event: \''
+						+ type + '\'.');
+			var handlers = this._callbacks = this.hasOwnProperty('_callbacks')
+					&& this._callbacks || {};
 			handlers = handlers[type] = handlers[type] || [];
 			if (handlers.indexOf(func) === -1) {
 				handlers.push(func);
@@ -699,7 +704,8 @@ var Emitter = {
 		}
 		var types = this._eventTypes,
 			entry = types && types[type],
-			handlers = this._callbacks && this._callbacks[type],
+			handlers = this.hasOwnProperty('_callbacks')
+					&& this._callbacks[type],
 			index;
 		if (handlers) {
 			if (!func || (index = handlers.indexOf(func)) !== -1
@@ -722,12 +728,11 @@ var Emitter = {
 	},
 
 	emit: function(type, event) {
-		var handlers = this._callbacks && this._callbacks[type];
-		if (!handlers)
+		var handlers = this._getHandlers(type);
+		if (!handlers.length)
 			return false;
 		var args = Base.slice(arguments, 1),
 			setTarget = event && event.target && !event.currentTarget;
-		handlers = handlers.slice();
 		if (setTarget)
 			event.currentTarget = this;
 		for (var i = 0, l = handlers.length; i < l; i++) {
@@ -743,7 +748,18 @@ var Emitter = {
 	},
 
 	responds: function(type) {
-		return !!(this._callbacks && this._callbacks[type]);
+		return this._getHandlers(type).length > 0;
+	},
+
+	_getHandlers: function(type) {
+		var handlers = [];
+		for (var obj = this; obj; obj = Object.getPrototypeOf(obj)) {
+			var callbacks = obj.hasOwnProperty('_callbacks')
+					&& obj._callbacks[type];
+			if (callbacks)
+				Base.push(handlers, callbacks);
+		}
+		return handlers;
 	},
 
 	attach: '#on',
@@ -767,6 +783,16 @@ var Emitter = {
 	},
 
 	statics: {
+		on: function(type, func) {
+			this.prototype.on(type, func);
+			return this;
+		},
+
+		off: function(type, func) {
+			this.prototype.off(type, func);
+			return this;
+		},
+
 		inject: function inject(src) {
 			var events = src._events;
 			if (events) {
@@ -779,16 +805,25 @@ var Emitter = {
 					types[type] = isString ? {} : entry;
 					name = '_' + name;
 					src['get' + part] = function() {
-						return this[name];
+						return this.hasOwnProperty(name) ? this[name] : null;
 					};
 					src['set' + part] = function(func) {
-						var prev = this[name];
+						var prev = this['get' + part]();
 						if (prev)
 							this.off(type, prev);
 						if (func)
 							this.on(type, func);
 						this[name] = func;
 					};
+					if (!isString && entry.classLevel) {
+						var statics = src.statics = src.statics || {};
+						statics['get' + part] = function() {
+							return this.prototype['get' + part]();
+						};
+						statics['set' + part] = function(func) {
+							this.prototype['set' + part](func);
+						};
+					}
 				});
 				src._eventTypes = types;
 			}
@@ -3519,8 +3554,8 @@ new function() {
 					}
 				},
 
-				onDraw: {},
-				onDrawSelection: {},
+				onDraw: { classLevel: true },
+				onDrawSelection: { classLevel: true },
 
 				onLoad: {},
 				onError: {}

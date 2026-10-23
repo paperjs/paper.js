@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 23 14:16:42 2026 +0200
+ * Date: Fri Oct 23 15:25:15 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -2306,6 +2306,27 @@ declare namespace paper {
          * or its SVG export.
          */
         onDrawSelection: Function | null
+
+        /** 
+         * The function to be called whenever any item of the class or of its
+         * subclasses is drawn, as {@link #onDraw} is for a single item, e.g.
+         * `Path.onDraw` for all paths, including the ones created later. The
+         * item's own handlers are called first, then the ones of its class and of
+         * the classes it inherits from, up to `Item`, with `this` set to the item.
+         * `Path.on('draw', handler)` and `Path.off('draw', handler)` attach and
+         * detach them too. Only the drawing events can be handled for classes.
+         * Classes are shared by all {@link PaperScope} objects, and so are their
+         * handlers.
+         */
+        static onDraw: Function | null
+
+        /** 
+         * The function to be called when the selection of any selected item of the
+         * class or of its subclasses is drawn, as {@link #onDrawSelection} is for
+         * a single item, e.g. `Path.onDrawSelection` for all paths, see
+         * {@link Item.onDraw}.
+         */
+        static onDrawSelection: Function | null
 
 
         /** 
