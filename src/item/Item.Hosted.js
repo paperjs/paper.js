@@ -19,7 +19,7 @@ new function() {
             [Item, ['_style', '_applyMatrix', '_opacity', '_blendMode',
                     '_pivot', '_data', '_textWrap']],
             [Path, ['_segments', '_closed', '_version', '_curves',
-                    '_segmentSelection']],
+                    '_segmentSelection', '_strokeProfile']],
             [CompoundPath, ['_children', '_namedChildren']],
             [SymbolItem, ['_definition']],
             [HostItem, ['_values']],

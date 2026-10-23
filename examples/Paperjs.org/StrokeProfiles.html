@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Stroke Profiles</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        body {
+            background: #f6f4f0;
+            font: 13px/1.4 -apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #333;
+        }
+        .panel {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 240px;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 12px;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.12);
+        }
+        .panel h1 {
+            margin: 0 0 10px;
+            font-size: 16px;
+        }
+        .panel label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin: 6px 0;
+        }
+        .panel input[type=range] {
+            width: 120px;
+        }
+        .panel input[type=number] {
+            width: 64px;
+        }
+        .panel select {
+            width: 128px;
+        }
+        .panel .stop {
+            margin-top: 10px;
+            padding-top: 6px;
+            border-top: 1px solid #eee;
+        }
+        .panel .info {
+            margin-top: 10px;
+            color: #888;
+            font-size: 11px;
+        }
+        .panel a {
+            color: #e0306a;
+        }
+    </style>
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        var presets = {
+            'Wave': function() {
+                var path = new Path([[100, 320], [260, 180], [420, 420],
+                        [580, 180], [740, 320]]);
+                path.smooth({ type: 'catmull-rom' });
+                return path;
+            },
+            'Spiral': function() {
+                var path = new Path();
+                for (var i = 0; i <= 24; i++) {
+                    var angle = i * 30,
+                        radius = 20 + i * 9;
+                    path.add(new Point({ angle: angle, length: radius })
+                            + [420, 300]);
+                }
+                path.smooth({ type: 'catmull-rom' });
+                return path;
+            },
+            'Loop': function() {
+                return new Path('M120,380c180,-10 300,-220 220,-260c-80,-40 -150,120 -20,190c130,70 330,40 440,-120');
+            },
+            'Circle': function() {
+                return new Path.Circle({ center: [420, 300], radius: 180 });
+            },
+            'Star': function() {
+                return new Path.Star({ center: [420, 300], points: 6,
+                        radius1: 90, radius2: 210 });
+            }
+        };
+
+        // The profiles, as stops at fractions of the path's length:
+        var profiles = {
+            'Swell': [
+                { at: 0, width: 0.2 },
+                { at: 0.5, width: 1.6 },
+                { at: 1, width: 0.2 }
+            ],
+            'Taper': [{ at: 0, width: 1.4 }, { at: 1, width: 0.05 }],
+            'Brush': [
+                { at: 0, width: 0 },
+                { at: 0.12, width: 1.2 },
+                { at: 0.7, width: 0.8 },
+                { at: 1, width: 0 }
+            ],
+            'Beads': [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1]
+                .map(function(at, i) {
+                    return { at: at, width: i % 2 ? 1.4 : 0.4 };
+                }),
+            'Steps': [
+                { at: 0, width: 0.5 },
+                { at: 0.33, width: 0.5 },
+                { at: 0.33, width: 1.2 },
+                { at: 0.66, width: 1.2 },
+                { at: 0.66, width: 0.3 },
+                { at: 1, width: 0.3 }
+            ],
+            'Broad nib': [{ at: 0, width: 1.3, aspect: 0.12, angle: -35 }],
+            'Pressure': [
+                { at: 0, width: 0.2, aspect: 0.15, angle: -35 },
+                { at: 0.3, width: 1.4 },
+                { at: 0.7, width: 1.1 },
+                { at: 1, width: 0.2 }
+            ],
+            'Twist': [
+                { at: 0, width: 1.2, aspect: 0.15, angle: 0 },
+                { at: 1, angle: 360 }
+            ],
+            'Uniform': []
+        };
+
+        var settings = {
+            preset: 'Wave',
+            profile: 'Pressure',
+            width: 60,
+            closed: false,
+            showStops: true
+        };
+
+        var envelope = new Group();
+        var markers = new Group();
+        var path;
+        var drawing;
+        // What the mouse drags: 'width' (with the angle), 'aspect', 'stop',
+        // 'segment', 'handle-in', 'handle-out', or nothing:
+        var drag = null;
+        var selected = null;
+        var hover = null;
+        var isPanning = false;
+        var info = document.getElementById('info');
+        var inputs = {
+            width: document.getElementById('stop-width'),
+            aspect: document.getElementById('stop-aspect'),
+            angle: document.getElementById('stop-angle'),
+            offset: document.getElementById('stop-offset')
+        };
+        var colors = {
+            fill: '#ff6f91',
+            marker: '#1060ff',
+            ghost: 'rgba(16, 96, 255, 0.4)'
+        };
+
+        function createPreset(name) {
+            if (path)
+                path.remove();
+            path = presets[name]();
+            setupPath(path);
+            settings.closed = path.closed;
+            document.getElementById('closed').checked = path.closed;
+            applyProfile(settings.profile);
+            fitView();
+        }
+
+        function setupPath(path) {
+            // The stroke width is the base of the profile, and the envelope
+            // draws the stroke, with a hairline of the path on top:
+            path.set({
+                strokeColor: null,
+                strokeWidth: settings.width,
+                selectedColor: '#222'
+            });
+            path.fullySelected = true;
+        }
+
+        function applyProfile(name) {
+            var length = path.length;
+            path.strokeProfile = profiles[name].map(function(entry) {
+                return {
+                    offset: entry.at * length,
+                    width: entry.width,
+                    aspect: entry.aspect,
+                    angle: entry.angle
+                };
+            });
+            select(null);
+            update();
+        }
+
+        function fitView() {
+            var bounds = path.bounds.expand(settings.width * 2 + 40),
+                size = view.viewSize - [280, 40];
+            view.zoom = 1;
+            view.zoom = Math.min(size.width / bounds.width,
+                    size.height / bounds.height, 2);
+            view.center = bounds.center + [140 / view.zoom, 0];
+            update();
+        }
+
+        // The pen at the offset: its center, its half axes as vectors, and
+        // its values:
+        function getPen(offset, stop) {
+            var loc = path.getLocationAt(offset) || path.getLocationAt(
+                    offset > 0 ? path.length : 0),
+                pen = stop || path.getStrokeProfileAt(offset),
+                radius = settings.width * pen.width / 2;
+            return {
+                point: loc.point,
+                major: new Point(radius, 0).rotate(pen.angle),
+                minor: new Point(0, radius * pen.aspect).rotate(pen.angle),
+                stop: pen
+            };
+        }
+
+        // The points around the pen at the point on the curve:
+        function getPenPoints(point, stop) {
+            var radius = settings.width * stop.width / 2,
+                points = [];
+            for (var i = 0; i < 24; i++) {
+                var angle = i * Math.PI / 12;
+                points.push(point + new Point(radius * Math.cos(angle),
+                        radius * stop.aspect * Math.sin(angle))
+                        .rotate(stop.angle));
+            }
+            return points;
+        }
+
+        // The convex hull of the points, as a path turning clockwise:
+        function getHull(points) {
+            points.sort(function(a, b) {
+                return a.x - b.x || a.y - b.y;
+            });
+            function cross(o, a, b) {
+                return (a - o).cross(b - o);
+            }
+            var lower = [],
+                upper = [];
+            points.forEach(function(point) {
+                while (lower.length >= 2 && cross(lower[lower.length - 2],
+                        lower[lower.length - 1], point) <= 0)
+                    lower.pop();
+                lower.push(point);
+            });
+            points.slice().reverse().forEach(function(point) {
+                while (upper.length >= 2 && cross(upper[upper.length - 2],
+                        upper[upper.length - 1], point) <= 0)
+                    upper.pop();
+                upper.push(point);
+            });
+            var hull = new Path({
+                segments: lower.slice(0, -1).concat(upper.slice(0, -1)),
+                closed: true,
+                insert: false
+            });
+            hull.clockwise = true;
+            return hull;
+        }
+
+        // Draws the area that the pen sweeps by sampling it along the curves,
+        // as the outline doesn't follow profiles yet: the hulls of the pens at
+        // neighboring samples fill their union, also where the inner side
+        // folds over itself in tight turns:
+        function drawEnvelope() {
+            envelope.removeChildren();
+            var curves = path.curves,
+                stops = path.strokeProfile || [],
+                step = 3 / view.zoom,
+                hulls = [],
+                start = 0,
+                previous = null;
+            for (var i = 0; i < curves.length; i++) {
+                var curve = curves[i],
+                    length = curve.length,
+                    offsets = [];
+                for (var j = 0, n = Math.max(8, Math.ceil(length / step));
+                        j <= n; j++)
+                    offsets.push(j / n * length);
+                // Sample steps on both sides:
+                stops.forEach(function(stop) {
+                    var o = stop.offset - start;
+                    if (o > 0 && o < length)
+                        offsets.push(o - 1e-6, o);
+                });
+                offsets.sort(function(a, b) { return a - b; });
+                offsets.forEach(function(o) {
+                    var points = getPenPoints(curve.getPointAt(o),
+                            path.getStrokeProfileAt(start + o));
+                    // No hull across steps, as the pen changes there at once:
+                    if (previous && o - previous.offset > 1e-5) {
+                        hulls.push(getHull(previous.points.concat(points)));
+                    } else {
+                        hulls.push(getHull(points.slice()));
+                    }
+                    previous = { offset: o, points: points };
+                });
+                start += length;
+                previous = previous && { offset: -1, points: previous.points };
+            }
+            envelope.addChild(new CompoundPath({
+                children: hulls,
+                fillColor: colors.fill
+            }));
+            var hairline = path.clone({ insert: false });
+            hairline.set({
+                strokeColor: '#222',
+                strokeWidth: 1,
+                strokeScaling: false,
+                strokeProfile: null,
+                selected: false
+            });
+            envelope.addChild(hairline);
+            envelope.insertBelow(path);
+        }
+
+        // Draws the pen of a stop: its ellipse, its center to move it, a
+        // handle at the end of its width to change it and the angle, and one
+        // at the end of its height to change the aspect. The values that the
+        // stop takes from the stops around it are faded:
+        function drawMarker(pen, stop, isSelected) {
+            var size = 9 / view.zoom;
+
+            function getStyle(key) {
+                var color = !stop || stop[key] == null ? colors.ghost
+                        : colors.marker;
+                return {
+                    strokeColor: color,
+                    fillColor: isSelected && stop && stop[key] != null
+                            ? color : 'white',
+                    strokeWidth: 1.5,
+                    strokeScaling: false
+                };
+            }
+
+            var ellipse = new Path.Ellipse({
+                center: pen.point,
+                radius: [pen.major.length, pen.minor.length],
+                dashArray: [4, 3]
+            });
+            ellipse.rotate(pen.stop.angle, pen.point);
+            var axis = new Path.Line(pen.point - pen.major,
+                    pen.point + pen.major);
+            var center = new Path.Rectangle({
+                point: pen.point - size / 2,
+                size: size
+            });
+            center.rotate(45);
+            var width = new Path.Circle({
+                center: pen.point + pen.major,
+                radius: 4.5 / view.zoom
+            });
+            var aspect = new Path.Rectangle({
+                point: pen.point + pen.minor - size / 3,
+                size: size * 2 / 3
+            });
+            aspect.rotate(pen.stop.angle);
+            ellipse.set(getStyle('aspect'));
+            ellipse.fillColor = null;
+            axis.set(getStyle('angle'));
+            center.set({
+                strokeColor: stop ? colors.marker : colors.ghost,
+                fillColor: isSelected ? colors.marker : 'white',
+                strokeWidth: 1.5,
+                strokeScaling: false
+            });
+            width.set(getStyle('width'));
+            aspect.set(getStyle('aspect'));
+            markers.addChildren([ellipse, axis, center, width, aspect]);
+        }
+
+        function drawMarkers() {
+            markers.removeChildren();
+            if (settings.showStops) {
+                (path.strokeProfile || []).forEach(function(stop) {
+                    drawMarker(getPen(stop.offset, getFullStop(stop)), stop,
+                            stop === selected);
+                });
+            }
+            if (hover)
+                drawMarker(getPen(hover.offset));
+            markers.bringToFront();
+        }
+
+        // The stop with the values that it leaves to the stops around it:
+        function getFullStop(stop) {
+            var pen = path.getStrokeProfileAt(stop.offset);
+            ['width', 'aspect', 'angle'].forEach(function(key) {
+                if (stop[key] != null)
+                    pen[key] = stop[key];
+            });
+            return pen;
+        }
+
+        function update() {
+            var time = Date.now();
+            path.strokeWidth = settings.width;
+            path.closed = settings.closed;
+            drawEnvelope();
+            drawMarkers();
+            info.textContent = (path.strokeProfile || []).length + ' stops, '
+                    + path.curves.length + ' curves, drawn in '
+                    + (Date.now() - time) + ' ms.';
+            updatePanel();
+        }
+
+        function select(stop) {
+            selected = stop;
+            updatePanel();
+        }
+
+        function updatePanel() {
+            var stop = selected && selected.path && getFullStop(selected);
+            for (var key in inputs) {
+                var input = inputs[key],
+                    value = !stop ? ''
+                        : key === 'width' || key === 'aspect'
+                            ? Math.round(stop[key] * 100)
+                            : Math.round(key === 'offset' ? selected.offset
+                                : stop[key]),
+                    // Values that the stop takes from the stops around it:
+                    isBorrowed = stop && key !== 'offset'
+                        && selected[key] == null;
+                input.disabled = !stop;
+                input.value = isBorrowed ? '' : value;
+                input.placeholder = isBorrowed ? value : '';
+            }
+        }
+
+        // Finds the stop or the handle of a stop at the point:
+        function hitStop(point) {
+            var tolerance = 8 / view.zoom,
+                stops = path.strokeProfile || [];
+            for (var i = stops.length - 1; i >= 0; i--) {
+                var stop = stops[i],
+                    pen = getPen(stop.offset, getFullStop(stop));
+                if (point.getDistance(pen.point + pen.major) < tolerance)
+                    return { type: 'width', stop: stop };
+                if (point.getDistance(pen.point + pen.minor) < tolerance)
+                    return { type: 'aspect', stop: stop };
+                if (point.getDistance(pen.point) < tolerance)
+                    return { type: 'stop', stop: stop };
+            }
+            return null;
+        }
+
+        // The location on the path within the envelope at the point, where a
+        // new stop would go:
+        function hitEnvelope(point) {
+            var loc = path.getNearestLocation(point);
+            if (loc) {
+                var pen = getPen(loc.offset);
+                if (loc.distance <= Math.max(pen.major.length,
+                        pen.minor.length, 6 / view.zoom))
+                    return loc;
+            }
+            return null;
+        }
+
+        function hitPath(point) {
+            return path.hitTest(point, {
+                segments: true,
+                handles: true,
+                tolerance: 6 / view.zoom
+            });
+        }
+
+        function onMouseMove(event) {
+            var previous = hover;
+            hover = null;
+            if (!isPanning && settings.showStops && !hitStop(event.point)
+                    && !hitPath(event.point)) {
+                var loc = hitEnvelope(event.point);
+                if (loc)
+                    hover = { offset: loc.offset };
+            }
+            if (hover || previous)
+                drawMarkers();
+        }
+
+        function onMouseDown(event) {
+            drag = null;
+            hover = null;
+            if (isPanning)
+                return;
+            var hit = settings.showStops && hitStop(event.point);
+            if (hit) {
+                var stop = hit.stop;
+                if (hit.type === 'stop' && event.modifiers.alt) {
+                    // Copy the stop and drag the copy, as in Illustrator:
+                    stop = stop.clone();
+                    path.strokeProfile = path.strokeProfile.concat(stop);
+                }
+                drag = { type: hit.type, stop: stop };
+                select(stop);
+            } else if ((hit = hitPath(event.point))) {
+                drag = {
+                    type: hit.type,
+                    segment: hit.segment
+                };
+            } else if (settings.showStops
+                    && (hit = hitEnvelope(event.point))) {
+                // Dragging out from the stroke adds a stop there, with the
+                // width that the profile has there, and changes it:
+                var added = new StrokeProfileStop({
+                    offset: hit.offset,
+                    width: path.getStrokeProfileAt(hit.offset).width
+                });
+                path.strokeProfile = (path.strokeProfile || []).concat(added);
+                drag = { type: 'width', stop: added, keepAngle: true };
+                select(added);
+            } else {
+                select(null);
+                // Draw a new path by hand:
+                drawing = new Path({
+                    segments: [event.point],
+                    strokeColor: '#222',
+                    strokeWidth: 1.5,
+                    strokeScaling: false
+                });
+            }
+            update();
+        }
+
+        function onMouseDrag(event) {
+            if (isPanning) {
+                view.center -= event.delta;
+                // The view moved, so the event's next delta would be off:
+                event.point -= event.delta;
+                update();
+            } else if (drag) {
+                var stop = drag.stop;
+                if (drag.type === 'width') {
+                    var pen = getPen(stop.offset, getFullStop(stop)),
+                        vector = event.point - pen.point;
+                    if (drag.keepAngle || event.modifiers.shift) {
+                        // Only along the axis of the pen:
+                        vector = vector.project(pen.major);
+                    } else {
+                        // Turn on from the current angle by the change in the
+                        // direction, so that angles go on past 180° instead
+                        // of wrapping around:
+                        var angle = pen.stop.angle;
+                        stop.angle = angle + ((vector.angle - angle) % 360
+                                + 540) % 360 - 180;
+                    }
+                    stop.width = Math.round(2 * vector.length
+                            / settings.width * 100) / 100;
+                } else if (drag.type === 'aspect') {
+                    var pen = getPen(stop.offset, getFullStop(stop)),
+                        height = (event.point - pen.point).project(pen.minor);
+                    stop.aspect = Math.round(height.length
+                            / pen.major.length * 100) / 100;
+                } else if (drag.type === 'stop') {
+                    stop.offset = path.getNearestLocation(event.point).offset;
+                } else {
+                    var name = {
+                        'segment': 'point',
+                        'handle-in': 'handleIn',
+                        'handle-out': 'handleOut'
+                    }[drag.type];
+                    if (name)
+                        drag.segment[name] += event.delta;
+                }
+                update();
+            } else if (drawing) {
+                drawing.add(event.point);
+            }
+        }
+
+        function onMouseUp() {
+            drag = null;
+            if (drawing) {
+                if (drawing.segments.length > 2) {
+                    drawing.simplify(10);
+                    drawing.closed = settings.closed;
+                    path.remove();
+                    path = drawing;
+                    setupPath(path);
+                    applyProfile(settings.profile);
+                } else {
+                    drawing.remove();
+                }
+                drawing = null;
+            }
+            update();
+        }
+
+        function onKeyDown(event) {
+            if (event.key === 'space') {
+                isPanning = true;
+                return false;
+            }
+            if ((event.key === 'backspace' || event.key === 'delete')
+                    && selected && document.activeElement === document.body) {
+                path.strokeProfile = path.strokeProfile.filter(function(stop) {
+                    return stop !== selected;
+                });
+                select(null);
+                update();
+                return false;
+            }
+        }
+
+        function onKeyUp(event) {
+            if (event.key === 'space')
+                isPanning = false;
+        }
+
+        document.getElementById('canvas').addEventListener('wheel',
+            function(event) {
+                var point = view.viewToProject(
+                        DomEvent.getOffset(event, view.element));
+                view.scale(Math.pow(1.002, -event.deltaY), point);
+                event.preventDefault();
+                update();
+            });
+
+        function bind(id, key, convert) {
+            var input = document.getElementById(id);
+            input.addEventListener('input', function() {
+                settings[key] = convert ? convert(input) : input.value;
+                if (key === 'preset') {
+                    createPreset(settings.preset);
+                } else if (key === 'profile') {
+                    applyProfile(settings.profile);
+                } else {
+                    update();
+                }
+            });
+        }
+
+        bind('preset', 'preset');
+        bind('profile', 'profile');
+        bind('width', 'width', function(input) { return +input.value; });
+        bind('closed', 'closed', function(input) { return input.checked; });
+        bind('show-stops', 'showStops', function(input) {
+            return input.checked;
+        });
+
+
+        Object.keys(inputs).forEach(function(key) {
+            var input = inputs[key];
+            input.addEventListener('input', function() {
+                if (selected && input.value !== '') {
+                    var value = +input.value;
+                    selected[key] = key === 'width' || key === 'aspect'
+                            ? value / 100 : value;
+                    update();
+                }
+            });
+        });
+
+        document.getElementById('export').addEventListener('click', function() {
+            var json = path.exportJSON();
+            this.href = URL.createObjectURL(new Blob([json],
+                    { type: 'application/json' }));
+        });
+
+        createPreset(settings.preset);
+    </script>
+</head>
+<body>
+    <canvas id="canvas" resize></canvas>
+    <div class="panel">
+        <h1>Stroke Profiles</h1>
+        <label>Path
+            <select id="preset">
+                <option>Wave</option>
+                <option>Spiral</option>
+                <option>Loop</option>
+                <option>Circle</option>
+                <option>Star</option>
+            </select>
+        </label>
+        <label>Profile
+            <select id="profile">
+                <option>Pressure</option>
+                <option>Broad nib</option>
+                <option>Twist</option>
+                <option>Swell</option>
+                <option>Taper</option>
+                <option>Brush</option>
+                <option>Beads</option>
+                <option>Steps</option>
+                <option>Uniform</option>
+            </select>
+        </label>
+        <label>Stroke width <input id="width" type="range" min="4" max="160" value="60"></label>
+        <label>Closed <input id="closed" type="checkbox"></label>
+        <label>Stops <input id="show-stops" type="checkbox" checked></label>
+        <div class="stop">
+            <label>Width % <input id="stop-width" type="number" min="0" step="5" disabled></label>
+            <label>Aspect % <input id="stop-aspect" type="number" min="0" step="5" disabled></label>
+            <label>Angle ° <input id="stop-angle" type="number" step="5" disabled></label>
+            <label>Offset <input id="stop-offset" type="number" min="0" step="1" disabled></label>
+        </div>
+        <div class="info">
+            <p id="info"></p>
+            <p>Drag out from the stroke to add a stop. Drag the round handle
+            of a stop to change its width and angle, with Shift only its
+            width, the square one to change its aspect, and the stop itself
+            to move it along the path. Alt-drag copies a stop, Delete removes
+            the selected one. Drag the path's points and handles: the stops
+            stay between the same segments. Draw a new path in the empty
+            space. Zoom with the scroll wheel, pan with the space bar
+            held.</p>
+            <p>Faded parts of a stop are values it takes from the stops
+            around it, and grey values in the fields too; changing them makes
+            them its own.</p>
+            <p>The area that the pen sweeps is drawn here by sampling the
+            profile along the curves: <code>outline()</code> doesn't follow
+            stroke profiles yet.</p>
+            <a id="export" href="#" download="StrokeProfile.json">Export JSON</a>
+        </div>
+    </div>
+</body>
+</html>
