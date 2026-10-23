@@ -344,11 +344,12 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      */
 
     /**
-     * Private method to handle tool-events.
+     * Private method to handle tool-events, with the properties to add to the
+     * tool events, as ToolEffect does.
      *
      * @return {@true if at least one event handler was called}.
      */
-    _handleMouseEvent: function(type, event, point, mouse) {
+    _handleMouseEvent: function(type, event, point, mouse, props) {
         // Update global reference to this scope.
         paper = this._scope;
         // If there is no mousedrag event installed, fall back to mousemove,
@@ -414,8 +415,8 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 
         function emit() {
             if (responds) {
-                called = tool.emit(type, new ToolEvent(tool, type, event))
-                        || called;
+                called = tool.emit(type,
+                        new ToolEvent(tool, type, event).set(props)) || called;
             }
         }
 
