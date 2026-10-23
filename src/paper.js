@@ -77,6 +77,8 @@ var paper = function(self, undefined) {
 /*#*/ include('path/PathItem.js');
 /*#*/ include('path/Path.js');
 /*#*/ include('path/Path.Constructors.js');
+/*#*/ include('path/Path.StrokeProfile.js');
+/*#*/ include('path/StrokeProfileStop.js');
 /*#*/ include('path/CompoundPath.js');
 /*#*/ if (__options.booleanOperations) {
 /*#*/     include('path/PathItem.Boolean.js');

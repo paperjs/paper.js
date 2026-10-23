@@ -339,6 +339,16 @@ describe.skipIf(!HostItem)('Hosted', () => {
     equals(res.host.takeCalls(), [])
   })
 
+  test('Paths load their stroke profiles', () => {
+    const res = createHostedProject()
+    res.host.document.getItem({ name: 'circle' }).strokeProfile = [
+      { offset: 0, width: 2 }
+    ]
+    const circle = res.project.layers[0].children.circle
+    equals(circle.strokeProfile.length, 1)
+    equals(circle.strokeProfile[0].width, 2)
+  })
+
   test('Loading and invalidating are not logged as changes', () => {
     const res = createHostedProject()
     const project = res.project

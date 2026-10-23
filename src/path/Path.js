@@ -22,8 +22,12 @@ var Path = PathItem.extend(/** @lends Path# */{
     _class: 'Path',
     _serializeFields: {
         segments: [],
-        closed: false
+        closed: false,
+        strokeProfile: null
     },
+    // The offsets of the stroke profile lie on the segments, so set those
+    // first:
+    _prioritize: ['applyMatrix', 'segments', 'closed'],
 
     /**
      * Creates a new path item and places it at the top of the active layer.
@@ -131,12 +135,20 @@ var Path = PathItem.extend(/** @lends Path# */{
 
     _equals: function(item) {
         return this._closed === item._closed
-                && Base.equals(this._segments, item._segments);
+                && Base.equals(this._segments, item._segments)
+                && Base.equals(this._strokeProfile, item._strokeProfile);
     },
 
     copyContent: function(source) {
+        var profile = source._strokeProfile;
         this.setSegments(source._segments);
         this._closed = source._closed;
+        // The same segments, so the same indices:
+        if (profile || this._strokeProfile) {
+            this.setStrokeProfile(profile && profile.map(function(stop) {
+                return { index: stop._index, width: stop._width };
+            }));
+        }
     },
 
     _changed: function _changed(flags) {
@@ -185,7 +197,15 @@ var Path = PathItem.extend(/** @lends Path# */{
     setSegments: function(segments) {
         var fullySelected = this.isFullySelected(),
             length = segments && segments.length,
-            named = this._namedSegments;
+            named = this._namedSegments,
+            // The new segments keep the stroke profile by the fractions of
+            // its offsets along the path:
+            profile = this._strokeProfile,
+            pathLength = profile && this.getLength(),
+            fractions = profile && profile.map(function(stop) {
+                return pathLength ? stop.getOffset() / pathLength : 0;
+            });
+        this._strokeProfile = null;
         if (named) {
             for (var name in named)
                 delete this._segments[name];
@@ -210,6 +230,13 @@ var Path = PathItem.extend(/** @lends Path# */{
         // TODO: Do we still need this?
         if (fullySelected)
             this.setFullySelected(true);
+        if (profile) {
+            this._strokeProfile = profile;
+            pathLength = this.getLength();
+            for (var i = 0, l = profile.length; i < l; i++)
+                profile[i]._index = this._getIndexAt(fractions[i] * pathLength);
+            this._sortStrokeProfile();
+        }
     },
 
     /**
@@ -297,6 +324,13 @@ var Path = PathItem.extend(/** @lends Path# */{
     setClosed: function(closed) {
         // On-the-fly conversion to boolean:
         if (this._closed != (closed = !!closed)) {
+            // Opening the path lets go of the stops on its closing curve:
+            if (!closed && this._strokeProfile) {
+                var last = this._segments.length - 1;
+                this._filterStrokeProfile(function(stop) {
+                    return stop._index <= last;
+                });
+            }
             this._closed = closed;
             // Update _curves length
             if (this._curves) {
@@ -456,6 +490,8 @@ var Path = PathItem.extend(/** @lends Path# */{
             // Adjust segments for the curves before and after the removed ones
             this._adjustCurves(start, end);
         }
+        if (this._strokeProfile)
+            this._insertStrokeProfile(index, amount);
         // Use SEGMENTS notification instead of GEOMETRY since curves are kept
         // up-to-date by _adjustCurves() and don't need notification.
         this._changed(/*#=*/Change.SEGMENTS);
@@ -763,8 +799,11 @@ var Path = PathItem.extend(/** @lends Path# */{
             return this.removeSegments(start).concat(
                     this.removeSegments(0, end));
         var segments = this._segments,
-            curves = this._curves,
-            count = segments.length, // segment count before removal
+            count = segments.length; // segment count before removal
+        if (this._strokeProfile && start < Math.min(end, count))
+            this._removeStrokeProfile(start, Math.min(end, count));
+        // Moving the stroke profile may have created the curves:
+        var curves = this._curves,
             removed = segments.splice(start, end - start),
             amount = removed.length;
         if (!amount)
@@ -1087,6 +1126,10 @@ var Path = PathItem.extend(/** @lends Path# */{
         }
         var curves = this.getCurves();
         if (loc && index < curves.length) {
+            // Both parts keep their shapes, so the stroke profile moves along
+            // by offsets:
+            var cut = loc.getOffset(),
+                profile = this._strokeProfile && this._takeStrokeProfile();
             // Only divide curves if we're not on an existing segment already.
             if (time >= tMin) {
                 // Divide the curve with the index at the given curve-time.
@@ -1116,6 +1159,15 @@ var Path = PathItem.extend(/** @lends Path# */{
             // Add dividing segment again. In case of a closed path, that's the
             // beginning segment again at the end, since we opened it.
             this.addSegment(segs[0]);
+            if (profile) {
+                if (path === this) {
+                    this._setStrokeProfilePart(profile, cut,
+                            cut + profile.length);
+                } else {
+                    this._setStrokeProfilePart(profile, 0, cut);
+                    path._setStrokeProfilePart(profile, cut, profile.length);
+                }
+            }
             return path;
         }
         return null;
@@ -1209,17 +1261,24 @@ var Path = PathItem.extend(/** @lends Path# */{
      * path.selected = true;
      */
     join: function(path, tolerance) {
-        var epsilon = tolerance || 0;
+        var epsilon = tolerance || 0,
+            // The joined paths keep their shapes, so their stroke profiles
+            // move along by offsets, as parts in their order along the path:
+            parts = null;
         if (path && path !== this) {
             var segments = path._segments,
                 last1 = this.getLastSegment(),
                 last2 = path.getLastSegment();
             if (!last2) // an empty path?
                 return this;
+            if (this._strokeProfile || path._strokeProfile)
+                parts = [this._takeStrokeProfile()];
             if (last1 && last1._point.isClose(last2._point, epsilon))
                 path.reverse();
             var first2 = path.getFirstSegment();
             if (last1 && last1._point.isClose(first2._point, epsilon)) {
+                if (parts)
+                    parts.push(path._takeStrokeProfile());
                 last1.setHandleOut(first2._handleOut);
                 this._add(segments.slice(1));
             } else {
@@ -1227,7 +1286,11 @@ var Path = PathItem.extend(/** @lends Path# */{
                 if (first1 && first1._point.isClose(first2._point, epsilon))
                     path.reverse();
                 last2 = path.getLastSegment();
+                if (parts)
+                    parts.push(path._takeStrokeProfile());
                 if (first1 && first1._point.isClose(last2._point, epsilon)) {
+                    if (parts)
+                        parts.reverse();
                     first1.setHandleIn(last2._handleIn);
                     // Prepend all segments from path except the last one.
                     this._add(segments.slice(0, segments.length - 1), 0);
@@ -1245,10 +1308,14 @@ var Path = PathItem.extend(/** @lends Path# */{
         var first = this.getFirstSegment(),
             last = this.getLastSegment();
         if (first !== last && first._point.isClose(last._point, epsilon)) {
+            if (!parts && this._strokeProfile)
+                parts = [this._takeStrokeProfile()];
             first.setHandleIn(last._handleIn);
             last.remove();
             this.setClosed(true);
         }
+        if (parts)
+            this._setStrokeProfileParts(parts);
         return this;
     },
 
@@ -1297,6 +1364,8 @@ var Path = PathItem.extend(/** @lends Path# */{
         }
         // Clear curves since it all has changed.
         this._curves = null;
+        if (this._strokeProfile)
+            this._reverseStrokeProfile();
         this._changed(/*#=*/Change.GEOMETRY);
     },
 
