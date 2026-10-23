@@ -236,6 +236,11 @@ var Group = Item.extend(/** @lends Group# */{
      * and {@link Item#blendMode}. This pays off for large groups and layers
      * that rarely change, such as a complex background below animated items.
      *
+     * It doesn't pay off when the buffer is drawn again on every frame: while
+     * the view pans or zooms on every frame, while the group itself is moved
+     * or transformed, or when an item inside it is animated. Put animated
+     * items into another group or layer instead.
+     *
      * The buffer costs memory: it covers the part of the group that the view
      * shows, at up to `width × height × 4 × pixelRatio²` bytes for a group
      * that fills the whole view.
@@ -256,9 +261,31 @@ var Group = Item.extend(/** @lends Group# */{
      * @type Boolean
      * @default false
      *
-     * @example
+     * @example {@paperscript height=200}
+     * // Draw many circles into a buffered layer, which is drawn once, while
+     * // the circle in the layer above moves on every frame:
      * var background = project.activeLayer;
      * background.buffered = true;
+     * for (var i = 0; i < 2000; i++) {
+     *     new Path.Circle({
+     *         center: Point.random() * view.size,
+     *         radius: 5 + Math.random() * 10,
+     *         fillColor: { hue: Math.random() * 360, saturation: 0.5,
+     *                 brightness: 1 },
+     *         opacity: 0.5
+     *     });
+     * }
+     *
+     * var circle = new Path.Circle({
+     *     center: view.center,
+     *     radius: 20,
+     *     fillColor: 'black'
+     * });
+     * new Layer([circle]);
+     *
+     * function onFrame(event) {
+     *     circle.position.x = view.center.x + Math.sin(event.time) * 100;
+     * }
      */
     isBuffered: function() {
         return this._buffered;
