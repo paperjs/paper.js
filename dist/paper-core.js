@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 23 11:19:35 2026 +0200
+ * Date: Fri Oct 23 14:16:42 2026 +0200
  *
  ***
  *
@@ -3515,6 +3515,9 @@ new function() {
 					}
 				},
 
+				onDraw: {},
+				onDrawSelection: {},
+
 				onLoad: {},
 				onError: {}
 			},
@@ -4387,10 +4390,11 @@ new function() {
 
 		if (!rasterSize.isZero()) {
 			var ctx = raster.getContext(true),
-				matrix = new Matrix().scale(scale).translate(topLeft.negate());
+				matrix = new Matrix().translate(topLeft.negate());
 			ctx.save();
+			ctx.scale(scale, scale);
 			matrix.applyToContext(ctx);
-			this.draw(ctx, new Base({ matrices: [matrix] }));
+			this.draw(ctx, new Base({ matrices: [matrix], pixelRatio: scale }));
 			ctx.restore();
 		}
 		raster._matrix.set(
@@ -5351,7 +5355,15 @@ new function() {
 				: this._canScaleStroke && !this.getStrokeScaling(true)
 					&& viewMatrix,
 			clip = !direct && param.clipItem,
-			transform = !strokeMatrix || clip;
+			event = this.responds('draw') && !isFresh && !param.clip
+					&& !param.dontStart && new DrawEvent({
+						item: this,
+						context: ctx,
+						matrix: viewMatrix.clone(),
+						pixelRatio: pixelRatio,
+						view: param.view || null
+					}),
+			transform = !strokeMatrix || clip || event;
 		if (direct) {
 			ctx.globalAlpha = opacity;
 			if (nativeBlend)
@@ -5370,13 +5382,18 @@ new function() {
 		} else if (transform) {
 			(direct ? matrix : viewMatrix).applyToContext(ctx);
 		}
+		if (event) {
+			ctx.save();
+			this.emit('draw', event);
+			ctx.restore();
+		}
 		if (strokeMatrix) {
 			ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
 			var offset = param.offset;
 			if (offset)
 				ctx.translate(-offset.x, -offset.y);
 		}
-		if (!isFresh) {
+		if (!isFresh && !(event && event.prevented)) {
 			this._draw(ctx, shadow && !direct
 					? param.extend({ dontShadow: true }) : param,
 					viewMatrix, strokeMatrix);
@@ -5425,9 +5442,7 @@ new function() {
 			positionSelected = selection & 4;
 		if (!this._drawSelected)
 			itemSelected = false;
-		if ((itemSelected || boundsSelected || strokeBoundsSelected
-				|| positionSelected)
-				&& this._isUpdated(updateVersion) && this.isInserted()) {
+		if (selection && this._isUpdated(updateVersion) && this.isInserted()) {
 			var layer,
 				color = this.getSelectedColor(true) || (layer = this.getLayer())
 					&& layer.getSelectedColor(true),
@@ -5435,6 +5450,21 @@ new function() {
 				half = size / 2;
 			ctx.strokeStyle = ctx.fillStyle = color
 					? color.toCanvasStyle(ctx) : '#009dec';
+			if (this.responds('drawselection')) {
+				var event = new DrawEvent({
+					item: this,
+					context: ctx,
+					matrix: mx.clone(),
+					size: size,
+					color: color || new Color(ctx.strokeStyle),
+					view: this.getView()
+				});
+				ctx.save();
+				this.emit('drawselection', event);
+				ctx.restore();
+				if (event.prevented)
+					return;
+			}
 			if (itemSelected)
 				this._drawSelected(ctx, mx, selectionItems);
 			if (positionSelected) {
@@ -19795,6 +19825,46 @@ var Event = Base.extend(/** @lends Event# */{
 	getModifiers: function() {
 		return Key.modifiers;
 	}
+});
+
+/*
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
+ * http://paperjs.org/
+ *
+ * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
+ * http://juerglehni.com/ & https://puckey.studio/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ */
+
+/**
+ * @name DrawEvent
+ *
+ * @class The DrawEvent object is received by the {@link Item}'s drawing
+ * handlers {@link Item#onDraw} and {@link Item#onDrawSelection}, which
+ * describe its fields.
+ */
+var DrawEvent = Base.extend(/** @lends DrawEvent# */{
+	_class: 'DrawEvent',
+
+	initialize: function DrawEvent(props) {
+		Base.set(this, props);
+	},
+
+	prevented: false,
+
+	/**
+	 * Skips the item's default drawing, as returning `false` from the handler
+	 * does.
+	 */
+	preventDefault: function() {
+		this.prevented = true;
+	},
+
+	// Emitter#emit() calls stop() when a handler returns false:
+	stop: '#preventDefault'
 });
 
 /*

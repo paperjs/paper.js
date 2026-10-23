@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 23 11:19:35 2026 +0200
+ * Date: Fri Oct 23 14:16:42 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -1470,6 +1470,21 @@ declare namespace paper {
     }
 
     /** 
+     * The DrawEvent object is received by the {@link Item}'s drawing
+     * handlers {@link Item#onDraw} and {@link Item#onDrawSelection}, which
+     * describe its fields.
+     */
+    class DrawEvent  {
+
+        /** 
+         * Skips the item's default drawing, as returning `false` from the handler
+         * does.
+         */
+        preventDefault(): void
+
+    }
+
+    /** 
      * The Event object is the base class for any of the other event types,
      * such as {@link MouseEvent}, {@link ToolEvent} and {@link KeyEvent}.
      */
@@ -2241,6 +2256,56 @@ declare namespace paper {
          * @see View#onMouseLeave
          */
         onMouseLeave: Function | null
+
+        /** 
+         * The function to be called whenever the item is drawn: in views, in
+         * {@link #rasterize}, and once for each placement of a symbol whose
+         * definition contains it. It is called right before the item's default
+         * drawing, and draws with the canvas API beneath it, or replaces it by
+         * returning `false` or calling `event.preventDefault()`. The function
+         * receives a {@link DrawEvent} object with these fields:
+         * 
+         * @option event.item {Item} the item that is drawn
+         * @option event.context {CanvasRenderingContext2D} the canvas context,
+         *     transformed into the item's coordinates
+         * @option event.matrix {Matrix} the matrix from the item's coordinates to
+         *     the pixels of the view, without its pixel ratio, for drawing things
+         *     at a size in pixels
+         * @option event.pixelRatio {Number} the device pixels per pixel: the
+         *     view's pixel ratio, or the resolution divided by 72 in
+         *     {@link #rasterize}
+         * @option event.view {View} the view drawn into, or `null` in
+         *     {@link #rasterize}
+         * 
+         * What the handler draws isn't part of the item's hit testing, its bounds
+         * or its SVG export. In buffered groups, it is only called when the group
+         * draws its buffer again, see {@link Group#buffered}.
+         */
+        onDraw: Function | null
+
+        /** 
+         * The function to be called when the selection of the selected item is
+         * drawn, over all the content. It is called right before the item's
+         * default selection drawing, and draws with the canvas API beneath it, or
+         * replaces it by returning `false` or calling `event.preventDefault()`. The
+         * function receives a {@link DrawEvent} object with these fields:
+         * 
+         * @option event.item {Item} the selected item
+         * @option event.context {CanvasRenderingContext2D} the canvas context, in
+         *     the pixels of the view, with the selection color as its `strokeStyle`
+         *     and `fillStyle`, and a `lineWidth` of 1
+         * @option event.matrix {Matrix} the matrix from the item's coordinates to
+         *     the pixels of the view
+         * @option event.size {Number} the size of the handles, see
+         *     {@link PaperScope#settings}
+         * @option event.color {Color} the selection color, see
+         *     {@link #selectedColor}
+         * @option event.view {View} the view drawn into
+         * 
+         * What the handler draws isn't part of the item's hit testing, its bounds
+         * or its SVG export.
+         */
+        onDrawSelection: Function | null
 
 
         /** 
@@ -3170,7 +3235,7 @@ declare namespace paper {
          * 
          * @param type - the type of event: {@values 'frame', mousedown',
          *     'mouseup', 'mousedrag', 'click', 'doubleclick', 'mousemove',
-         *     'mouseenter', 'mouseleave'}
+         *     'mouseenter', 'mouseleave', 'draw', 'drawselection'}
          * @param function - the function to be called when the event
          *     occurs, receiving a {@link MouseEvent} or {@link Event} object as its
          *     sole argument
@@ -3184,7 +3249,7 @@ declare namespace paper {
          * 
          * @param object - an object containing one or more of the following
          *     properties: {@values frame, mousedown, mouseup, mousedrag, click,
-         *     doubleclick, mousemove, mouseenter, mouseleave}
+         *     doubleclick, mousemove, mouseenter, mouseleave, draw, drawselection}
          * 
          * @return this item itself, so calls can be chained
          */
@@ -3195,7 +3260,7 @@ declare namespace paper {
          * 
          * @param type - the type of event: {@values 'frame', mousedown',
          *     'mouseup', 'mousedrag', 'click', 'doubleclick', 'mousemove',
-         *     'mouseenter', 'mouseleave'}
+         *     'mouseenter', 'mouseleave', 'draw', 'drawselection'}
          * @param function - the function to be detached
          * 
          * @return this item itself, so calls can be chained
@@ -3207,7 +3272,7 @@ declare namespace paper {
          * 
          * @param object - an object containing one or more of the following
          *     properties: {@values frame, mousedown, mouseup, mousedrag, click,
-         *     doubleclick, mousemove, mouseenter, mouseleave}
+         *     doubleclick, mousemove, mouseenter, mouseleave, draw, drawselection}
          * 
          * @return this item itself, so calls can be chained
          */
@@ -3218,7 +3283,7 @@ declare namespace paper {
          * 
          * @param type - the type of event: {@values 'frame', mousedown',
          *     'mouseup', 'mousedrag', 'click', 'doubleclick', 'mousemove',
-         *     'mouseenter', 'mouseleave'}
+         *     'mouseenter', 'mouseleave', 'draw', 'drawselection'}
          * @param event - an object literal containing properties describing
          * the event
          * 
@@ -3231,7 +3296,7 @@ declare namespace paper {
          * 
          * @param type - the type of event: {@values 'frame', mousedown',
          *     'mouseup', 'mousedrag', 'click', 'doubleclick', 'mousemove',
-         *     'mouseenter', 'mouseleave'}
+         *     'mouseenter', 'mouseleave', 'draw', 'drawselection'}
          * 
          * @return true if the item has one or more event handlers of
          * the specified type
@@ -3994,6 +4059,7 @@ declare namespace paper {
         CompoundPath: typeof CompoundPath
         Curve: typeof Curve
         CurveLocation: typeof CurveLocation
+        DrawEvent: typeof DrawEvent
         Event: typeof Event
         Gradient: typeof Gradient
         GradientStop: typeof GradientStop
