@@ -17,6 +17,7 @@ import paper, {
   Gradient,
   Group,
   Path,
+  PatternDefinition,
   Point,
   PointText,
   Project,
@@ -160,6 +161,31 @@ describe('JSON', () => {
     equals(item.className, 'SymbolItem')
     equals(item.definition.item.bounds, new Rectangle(-5, -5, 10, 10))
     equals(item.position, new Point(100, 100))
+  })
+
+  test('Symbol and pattern definitions write their names', () => {
+    const symbol = new SymbolDefinition(
+      new Path.Rectangle({ point: [0, 0], size: [10, 10], fillColor: 'red' })
+    )
+    symbol.name = 'Star'
+    const pattern = new PatternDefinition(
+      new Path.Rectangle({ point: [0, 0], size: [5, 5], fillColor: 'red' }),
+      { name: 'Dots' }
+    )
+    const placed = new Project().importJSON(
+      symbol.place([100, 100]).exportJSON()
+    )
+    equals(placed.definition.name, 'Star')
+    equals(placed.definition.item.bounds, new Rectangle(-5, -5, 10, 10))
+    const filled = new Project().importJSON(
+      new Path.Rectangle({
+        point: [0, 0],
+        size: [40, 40],
+        fillColor: { pattern }
+      }).exportJSON()
+    )
+    equals(filled.fillColor.pattern.name, 'Dots')
+    equals(filled.fillColor.pattern.spacing, new Size(0, 0))
   })
 
   test('PointText testing', () => {

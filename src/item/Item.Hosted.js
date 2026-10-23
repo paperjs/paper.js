@@ -230,15 +230,91 @@ new function() {
                 : new definition.constructor(new Group({ insert: false }));
         // The loaded item is where its definition placed it:
         definition.setItem(loaded._item, true);
+        definition._name = loaded._name;
         if (definition instanceof PatternDefinition) {
             definition.setTile(loaded._tile);
             definition.setSpacing(loaded._spacing);
         }
     }
 
+    // The new definitions that the changed items use, which the host doesn't
+    // have yet: those without a key, nested ones first. Items that are still
+    // shells use only the host's:
+    function getNewDefinitions(project) {
+        var changes = project._changes || [],
+            definitions = [],
+            ids = {};
+
+        function addDefinition(definition) {
+            if (definition && definition._key == null && !ids[definition._id]) {
+                ids[definition._id] = true;
+                addDefinitions(definition._item);
+                definitions.push(definition);
+            }
+        }
+
+        function addDefinitions(item) {
+            if (!item._shell) {
+                var style = item._style;
+                addDefinition(item._definition);
+                [style.getFillColor(true), style.getStrokeColor(true)].forEach(
+                    function(color) {
+                        addDefinition(color && color._type === 'pattern'
+                                && color._components[0]);
+                    }
+                );
+                // The children of the host's items are logged themselves:
+                if (item._key == null && item._children)
+                    item._children.forEach(addDefinitions);
+            }
+        }
+
+        for (var i = 0, l = changes.length; i < l; i++) {
+            var item = changes[i].item,
+                definition = changes[i].definition;
+            if (item ? item.isInserted() : definition._key != null)
+                addDefinitions(item || definition._item);
+        }
+        return definitions;
+    }
+
+    // The host's definitions of the given class, followed by the new ones:
+    function getDefinitions(project, ctor) {
+        var keys = project._host.getDefinitionKeys(ctor.prototype._class);
+        return keys.map(function(key) {
+            return getDefinition(project, key);
+        }).concat(getNewDefinitions(project).filter(function(definition) {
+            return definition instanceof ctor;
+        }));
+    }
+
     // Definitions that the host shares export as references to its keys:
     ItemDefinition.inject({
-        _key: null
+        _key: null,
+
+        // The key of the host's definition, see Project#host. It can only be
+        // set once, on a definition created by a script, to register the key
+        // that the host gave its new definition:
+        getKey: function() {
+            return this._key;
+        },
+
+        setKey: function(key) {
+            var definitionsByKey = this.project._definitionsByKey;
+            if (this._key != null)
+                throw new Error('Unable to change the key of a definition.');
+            if (!definitionsByKey)
+                throw new Error('Unable to set a key in a project without a '
+                        + 'host.');
+            this._key = key;
+            definitionsByKey[key] = this;
+        },
+
+        setName: function setName(name) {
+            if (this._key != null)
+                throw new Error('Unable to rename a definition of the host.');
+            setName.base.call(this, name);
+        }
     });
 
     [SymbolDefinition, PatternDefinition].forEach(function(ctor) {
@@ -549,11 +625,38 @@ new function() {
                 item._edited = true;
         },
 
+        // The new definitions that the changed items use come first, nested
+        // ones first, so the host can create them before the items that refer
+        // to them. Other definitions without a key aren't the host's:
         takeChanges: function takeChanges() {
-            var changes = takeChanges.base.call(this);
-            for (var i = 0, l = changes ? changes.length : 0; i < l; i++)
-                changes[i].item._edited = false;
-            return changes;
+            var definitions = this._host && getNewDefinitions(this),
+                changes = takeChanges.base.call(this);
+            for (var i = 0, l = changes ? changes.length : 0; i < l; i++) {
+                if (changes[i].item)
+                    changes[i].item._edited = false;
+            }
+            return definitions && changes
+                    ? definitions.map(function(definition) {
+                        return {
+                            definition: definition,
+                            flags: /*#=*/Change.INSERTION
+                        };
+                    }).concat(changes.filter(function(change) {
+                        return change.item || change.definition._key != null;
+                    }))
+                    : changes;
+        },
+
+        getSymbolDefinitions: function getSymbolDefinitions() {
+            return this._host
+                    ? getDefinitions(this, SymbolDefinition)
+                    : getSymbolDefinitions.base.call(this);
+        },
+
+        getPatternDefinitions: function getPatternDefinitions() {
+            return this._host
+                    ? getDefinitions(this, PatternDefinition)
+                    : getPatternDefinitions.base.call(this);
         },
 
         /**
@@ -608,7 +711,16 @@ new function() {
          *   once, and the JSON of the items that use it, as
          *   {@link Item#exportJSON(options)} writes it, refers to it by its
          *   key again. Definitions that scripts create have no key, and are
-         *   written out whole.
+         *   written out whole, until the host sets their `key`, which it can
+         *   only set once. {@link Project#takeChanges()} lists those that the
+         *   changed items use first, nested ones first, as
+         *   `{ definition, flags }` with the `ChangeFlag.INSERTION` flag,
+         *   followed by the changes of the host's definitions. Renaming those
+         *   isn't supported.
+         * - `getDefinitionKeys(type)`, which returns the keys of all the
+         *   host's definitions of the type, `'SymbolDefinition'` or
+         *   `'PatternDefinition'`, for {@link #symbolDefinitions} and
+         *   {@link #patternDefinitions}.
          *
          * @bean
          * @type Object

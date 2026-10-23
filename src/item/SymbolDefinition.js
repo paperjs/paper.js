@@ -59,13 +59,19 @@ var SymbolDefinition = ItemDefinition.extend(/** @lends SymbolDefinition# */{
      * }
      */
     initialize: function SymbolDefinition(item, dontCenter) {
-        ItemDefinition.call(this, item, dontCenter);
+        // JSON passes the options of the definition instead:
+        var options = Base.isPlainObject(dontCenter) && dontCenter;
+        ItemDefinition.call(this, item, !options && dontCenter);
+        if (options)
+            this.set(options);
     },
 
     _serialize: function(options, dictionary) {
         return dictionary.add(this, function() {
-            return Base.serialize([this._class, this._item],
-                    options, false, dictionary);
+            var json = [this._class, this._item];
+            if (this._name)
+                json.push({ name: this._name });
+            return Base.serialize(json, options, false, dictionary);
         });
     },
 
@@ -75,6 +81,14 @@ var SymbolDefinition = ItemDefinition.extend(/** @lends SymbolDefinition# */{
      * @type Project
      * @readonly
      * @name SymbolDefinition#project
+     */
+
+    /**
+     * The name of the symbol.
+     *
+     * @name SymbolDefinition#name
+     * @property
+     * @type String
      */
 
     /**

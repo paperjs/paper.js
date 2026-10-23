@@ -60,6 +60,7 @@ var PatternDefinition = ItemDefinition.extend(/** @lends PatternDefinition# */{
      * @option [options.tile] {Rectangle} the rectangle that is repeated,
      *     the bounds of the item by default
      * @option [options.spacing=0] {Size} the gap between the tiles
+     * @option [options.name] {String} the name of the pattern
      */
     initialize: function PatternDefinition(item, options) {
         this._tile = null;
@@ -71,10 +72,17 @@ var PatternDefinition = ItemDefinition.extend(/** @lends PatternDefinition# */{
 
     _serialize: function(options, dictionary) {
         return dictionary.add(this, function() {
-            var json = [this._class, this._item];
-            // Leave out the options when they're the defaults:
-            if (this._tile || !this._spacing.isZero())
-                json.push({ tile: this._tile, spacing: this._spacing });
+            var json = [this._class, this._item],
+                props = {};
+            // Leave out the options that are the defaults:
+            if (this._tile)
+                props.tile = this._tile;
+            if (!this._spacing.isZero())
+                props.spacing = this._spacing;
+            if (this._name)
+                props.name = this._name;
+            if (Object.keys(props).length)
+                json.push(props);
             return Base.serialize(json, options, false, dictionary);
         });
     },
@@ -92,6 +100,14 @@ var PatternDefinition = ItemDefinition.extend(/** @lends PatternDefinition# */{
      * @type Project
      * @readonly
      * @name PatternDefinition#project
+     */
+
+    /**
+     * The name of the pattern.
+     *
+     * @name PatternDefinition#name
+     * @property
+     * @type String
      */
 
     /**

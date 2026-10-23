@@ -16,6 +16,7 @@
 var ItemDefinition = Base.extend({
     // Definitions that center their items move them to 0, 0, see #setItem():
     _centerItem: false,
+    _name: null,
 
     initialize: function ItemDefinition(item, dontCenter) {
         this._id = UID.get();
@@ -26,16 +27,26 @@ var ItemDefinition = Base.extend({
 
     // Called whenever the definition's item changes:
     _changed: function(flags) {
+        var project = this.project;
         if (flags & /*#=*/ChangeFlag.GEOMETRY)
             // Clear cached bounds of all items that this definition is linked
             // to.
             Item._clearBoundsCache(this);
         if (flags & /*#=*/ChangeFlag.APPEARANCE) {
-            var project = this.project;
             // Its items may be drawn in any buffered group:
             project._bufferVersion++;
             project._changed(flags);
         }
+        project._logChange('definition', this, flags);
+    },
+
+    getName: function() {
+        return this._name;
+    },
+
+    setName: function(name) {
+        this._name = name || null;
+        this._changed(/*#=*/ChangeFlag.ATTRIBUTE);
     },
 
     getItem: function() {
