@@ -16,17 +16,17 @@
  * @class A live effect of an item, see {@link Item#effects}: it derives what
  * is drawn from the item without changing the item itself, as the effects in
  * Illustrator do. The effects of an item run in order, each on what the one
- * before it returned. Each type of effect is a subclass with its params as
- * properties, registered by its type, see {@link Effect.types}. Effects of
- * types that aren't registered keep their params and leave what they get as
- * it is, so that they still round-trip. {@link Effect.extend(src)} creates
+ * before it returned. Each type of effect is a subclass with its parameters
+ * as properties, registered by its type, see {@link Effect.types}. Effects of
+ * types that aren't registered keep their parameters and leave what they get
+ * as it is, so that they still round-trip. {@link Effect.extend(src)} creates
  * new types.
  */
 var Effect = Base.extend(/** @lends Effect# */{
     _class: 'Effect',
     // JSON writes the effects of items as plain objects:
     _compactSerialize: true,
-    // The type and the params with their defaults, set by subclasses:
+    // The type and the parameters with their defaults, set by subclasses:
     _type: null,
     _defaults: {},
 
@@ -34,8 +34,8 @@ var Effect = Base.extend(/** @lends Effect# */{
      * Creates an effect of the type of its class, or of the type that the
      * object names, see {@link Effect.create(object)}.
      *
-     * @param {Object} [object] the params of the effect, and its `visible`
-     *     flag
+     * @param {Object} [object] the effect's `parameters`, which it takes as
+     *     they are, and its `visible` flag
      *
      * @example
      * var path = new Path.Circle({
@@ -43,38 +43,45 @@ var Effect = Base.extend(/** @lends Effect# */{
      *     radius: 20,
      *     fillColor: 'red'
      * });
-     * path.addEffect(new Effect.types.offset({ distance: 10 }));
+     * path.addEffect(new Effect.types.offset({
+     *     parameters: { distance: 10 }
+     * }));
      */
     initialize: function Effect(props) {
         props = props || {};
-        var defaults = this._defaults,
-            // Effects of unknown types keep all their params:
-            params = this.constructor === Effect ? Base.set({}, props) : {};
-        delete params.type;
-        delete params.visible;
-        for (var key in defaults) {
-            var value = props[key];
-            params[key] = value !== undefined ? value : defaults[key];
-        }
         this._item = null;
         this._index = null;
         this._type = this._type || props.type || null;
         this._visible = props.visible !== false;
-        this._params = params;
+        this._setParameters(props.parameters);
+    },
+
+    // Takes the parameters as they are, with the defaults for the ones that
+    // they don't set:
+    _setParameters: function(parameters) {
+        var defaults = this._defaults;
+        parameters = Base.set({}, parameters);
+        for (var key in defaults) {
+            if (parameters[key] === undefined)
+                parameters[key] = defaults[key];
+        }
+        this._parameters = parameters;
+        this._linkedParameters = null;
     },
 
     /**
      * @return {Effect} a copy of the effect, without an item
      */
     clone: function() {
-        return new this.constructor(Base.set({
+        return new this.constructor({
             type: this._type,
+            parameters: Base.clone(this._parameters),
             visible: this._visible
-        }, Base.clone(this._params)));
+        });
     },
 
     _serialize: function(options, dictionary) {
-        var props = Base.set({ type: this._type }, this._params);
+        var props = { type: this._type, parameters: this._parameters };
         if (!this._visible)
             props.visible = false;
         return Base.serialize(props, options, true, dictionary);
@@ -113,14 +120,49 @@ var Effect = Base.extend(/** @lends Effect# */{
     },
 
     /**
-     * The params of the effect as a plain object. Each type of effect also
-     * has them as properties. Changing the returned object isn't tracked.
+     * The parameters of the effect. Changing them on the returned object
+     * updates the effect, as setting them as properties of effects of known
+     * types does. Parameters that it doesn't have yet are added by setting
+     * them all, as are changes within values such as arrays.
      *
      * @bean
      * @type Object
+     *
+     * @example
+     * var effect = path.addEffect({
+     *     type: 'offset',
+     *     parameters: { distance: 10 }
+     * });
+     * effect.parameters.distance = 20; // Redraws.
+     * effect.parameters = { distance: 5, join: 'round' };
      */
-    getParams: function() {
-        return this._params;
+    getParameters: function() {
+        var linked = this._linkedParameters;
+        if (!linked) {
+            // The parameters as accessors that update the effect:
+            var effect = this;
+            linked = this._linkedParameters = {};
+            Base.each(this._parameters, function(value, key) {
+                Object.defineProperty(linked, key, {
+                    enumerable: true,
+                    get: function() {
+                        return effect._parameters[key];
+                    },
+                    set: function(value) {
+                        effect._parameters[key] = value;
+                        effect._changed();
+                    }
+                });
+            });
+            // New parameters would be lost, so strict code throws on them:
+            Object.preventExtensions(linked);
+        }
+        return linked;
+    },
+
+    setParameters: function(parameters) {
+        this._setParameters(parameters);
+        this._changed();
     },
 
     /**
@@ -175,7 +217,7 @@ var Effect = Base.extend(/** @lends Effect# */{
         return effect === this || effect instanceof Effect
                 && this._type === effect._type
                 && this._visible === effect._visible
-                && Base.equals(this._params, effect._params)
+                && Base.equals(this._parameters, effect._parameters)
                 || false;
     },
 
@@ -190,7 +232,7 @@ var Effect = Base.extend(/** @lends Effect# */{
 
         /**
          * Returns the effect, or creates one from an object that describes
-         * it, `{ type, ...params, visible }`, of the class registered for its
+         * it, `{ type, parameters, visible }`, of the class registered for its
          * type, or of `Effect` for unknown types.
          *
          * @param {Effect|Object} object
@@ -204,8 +246,9 @@ var Effect = Base.extend(/** @lends Effect# */{
         /**
          * Creates a type of effect: a subclass of `Effect` with its `type`,
          * which registers it in {@link Effect.types}, the `defaults` of its
-         * params, which become its properties, and its {@link #apply(art)}.
-         * The params of subclasses add to those of their base classes.
+         * parameters, which become its properties, and its
+         * {@link #apply(art)}. The parameters of subclasses add to those of
+         * their base classes.
          *
          * @param {Object} src the definition of the type
          * @return {Function} the class
@@ -218,7 +261,7 @@ var Effect = Base.extend(/** @lends Effect# */{
          *         return art.scale(this.amount);
          *     }
          * });
-         * path.addEffect({ type: 'shrink', amount: 0.8 });
+         * path.addEffect({ type: 'shrink', parameters: { amount: 0.8 } });
          */
         extend: function extend(src) {
             // Keep the type and the defaults to the side, as the getter of
@@ -233,10 +276,10 @@ var Effect = Base.extend(/** @lends Effect# */{
             Base.each(defaults, function(value, key) {
                 var part = Base.capitalize(key);
                 src['get' + part] = function() {
-                    return this._params[key];
+                    return this._parameters[key];
                 };
                 src['set' + part] = function(value) {
-                    this._params[key] = value;
+                    this._parameters[key] = value;
                     this._changed();
                 };
             });
@@ -273,11 +316,11 @@ new function() {
         defaults: { distance: 0, join: 'miter', miterLimit: 10 },
 
         apply: function(art) {
-            var params = this._params;
+            var parameters = this._parameters;
             return applyToPaths(art, function(path) {
-                return path.offset(params.distance, {
-                    join: params.join,
-                    miterLimit: params.miterLimit,
+                return path.offset(parameters.distance, {
+                    join: parameters.join,
+                    miterLimit: parameters.miterLimit,
                     insert: false
                 });
             });

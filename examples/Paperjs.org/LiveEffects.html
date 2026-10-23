@@ -120,7 +120,7 @@
             outline: 'Outline stroke'
         };
 
-        // The params of the effects, and how to edit them:
+        // The parameters of the effects, and how to edit them:
         var controls = {
             distance: { type: 'range', min: -60, max: 60, step: 1 },
             join: { type: 'select', options: ['miter', 'round', 'bevel'] },
@@ -168,7 +168,8 @@
             }
         }
 
-        // Builds the panel of each effect: its visibility, order and params:
+        // Builds the panel of each effect: its visibility, its order and its
+        // parameters:
         function updatePanel() {
             list.innerHTML = '';
             path.effects.forEach(function(effect) {
@@ -211,7 +212,7 @@
                     header.appendChild(button);
                 });
                 element.appendChild(header);
-                Object.keys(effect.params).forEach(function(key) {
+                Object.keys(effect.parameters).forEach(function(key) {
                     var control = controls[key];
                     if (control) {
                         var label = document.createElement('label'),
@@ -258,8 +259,8 @@
             if (this.value) {
                 path.addEffect({
                     type: this.value,
-                    distance: 20,
-                    join: 'round'
+                    parameters: this.value === 'offset'
+                            ? { distance: 20, join: 'round' } : {}
                 });
                 this.value = '';
                 update();
@@ -318,7 +319,10 @@
         });
 
         createPreset(settings.preset);
-        path.addEffect({ type: 'offset', distance: 20, join: 'round' });
+        path.addEffect({
+            type: 'offset',
+            parameters: { distance: 20, join: 'round' }
+        });
         update();
     </script>
 </head>
