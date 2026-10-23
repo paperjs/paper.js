@@ -146,7 +146,12 @@ var Path = PathItem.extend(/** @lends Path# */{
         // The same segments, so the same indices:
         if (profile || this._strokeProfile) {
             this.setStrokeProfile(profile && profile.map(function(stop) {
-                return { index: stop._index, width: stop._width };
+                return {
+                    index: stop._index,
+                    width: stop._width,
+                    aspect: stop._aspect,
+                    angle: stop._angle
+                };
             }));
         }
     },

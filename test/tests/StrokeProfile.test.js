@@ -368,8 +368,12 @@ describe('StrokeProfile', () => {
 
   test('Path#clone() copies the stops', () => {
     const path = createTaper()
+    path.strokeProfile[1].aspect = 0.5
+    path.strokeProfile[1].angle = 30
     const copy = path.clone()
     equals(copy.strokeProfile.length, 2)
+    equals(copy.strokeProfile[1].aspect, 0.5)
+    equals(copy.strokeProfile[1].angle, 30)
     equals(copy.strokeProfile[0] !== path.strokeProfile[0], true)
     equals(copy.strokeProfile[0].path === copy, true)
     equals(getOffsets(copy), [0, 200])
