@@ -120,6 +120,9 @@ new function() { // Injection scope for various item event handlers
                     }
                 },
 
+                onDraw: {},
+                onDrawSelection: {},
+
                 // Only for external sources, e.g. Raster
                 onLoad: {},
                 onError: {}
@@ -2063,11 +2066,13 @@ new function() { // Injection scope for various item event handlers
 
         if (!rasterSize.isZero()) {
             var ctx = raster.getContext(true),
-                matrix = new Matrix().scale(scale).translate(topLeft.negate());
+                matrix = new Matrix().translate(topLeft.negate());
             ctx.save();
+            // Draw with the resolution as the pixel ratio, as views do:
+            ctx.scale(scale, scale);
             matrix.applyToContext(ctx);
             // See Project#draw() for an explanation of new Base()
-            this.draw(ctx, new Base({ matrices: [matrix] }));
+            this.draw(ctx, new Base({ matrices: [matrix], pixelRatio: scale }));
             ctx.restore();
         }
         raster._matrix.set(
@@ -4575,6 +4580,105 @@ new function() { // Injection scope for hit-test functions shared with project
      */
 
     /**
+     * The function to be called whenever the item is drawn: in views, in
+     * {@link #rasterize()}, and once for each placement of a symbol whose
+     * definition contains it. It is called right before the item's default
+     * drawing, and draws with the canvas API beneath it, or replaces it by
+     * returning `false` or calling `event.preventDefault()`. The function
+     * receives a {@link DrawEvent} object with these fields:
+     *
+     * @option event.item {Item} the item that is drawn
+     * @option event.context {CanvasRenderingContext2D} the canvas context,
+     *     transformed into the item's coordinates
+     * @option event.matrix {Matrix} the matrix from the item's coordinates to
+     *     the pixels of the view, without its pixel ratio, for drawing things
+     *     at a size in pixels
+     * @option event.pixelRatio {Number} the device pixels per pixel: the
+     *     view's pixel ratio, or the resolution divided by 72 in
+     *     {@link #rasterize()}
+     * @option event.view {View} the view drawn into, or `null` in
+     *     {@link #rasterize()}
+     *
+     * What the handler draws isn't part of the item's hit testing, its bounds
+     * or its SVG export. In buffered groups, it is only called when the group
+     * draws its buffer again, see {@link Group#buffered}.
+     *
+     * @name Item#onDraw
+     * @property
+     * @type ?Function
+     *
+     * @example {@paperscript}
+     * // Draw a hairline cross through the center of a circle, beneath it:
+     * var path = new Path.Circle({
+     *     center: view.center,
+     *     radius: 25,
+     *     fillColor: 'rgba(255, 0, 0, 0.5)'
+     * });
+     *
+     * path.onDraw = function(event) {
+     *     var ctx = event.context,
+     *         center = this.position,
+     *         scale = event.matrix.scaling.x;
+     *     ctx.beginPath();
+     *     ctx.moveTo(center.x - 40, center.y);
+     *     ctx.lineTo(center.x + 40, center.y);
+     *     ctx.moveTo(center.x, center.y - 40);
+     *     ctx.lineTo(center.x, center.y + 40);
+     *     ctx.lineWidth = 1 / scale;
+     *     ctx.stroke();
+     * }
+     */
+
+    /**
+     * The function to be called when the selection of the selected item is
+     * drawn, over all the content. It is called right before the item's
+     * default selection drawing, and draws with the canvas API beneath it, or
+     * replaces it by returning `false` or calling `event.preventDefault()`. The
+     * function receives a {@link DrawEvent} object with these fields:
+     *
+     * @option event.item {Item} the selected item
+     * @option event.context {CanvasRenderingContext2D} the canvas context, in
+     *     the pixels of the view, with the selection color as its `strokeStyle`
+     *     and `fillStyle`, and a `lineWidth` of 1
+     * @option event.matrix {Matrix} the matrix from the item's coordinates to
+     *     the pixels of the view
+     * @option event.size {Number} the size of the handles, see
+     *     {@link PaperScope#settings}
+     * @option event.color {Color} the selection color, see
+     *     {@link #selectedColor}
+     * @option event.view {View} the view drawn into
+     *
+     * What the handler draws isn't part of the item's hit testing, its bounds
+     * or its SVG export.
+     *
+     * @name Item#onDrawSelection
+     * @property
+     * @type ?Function
+     *
+     * @example {@paperscript}
+     * // Draw the selection of a path as a dot at each segment:
+     * var path = new Path.Star({
+     *     center: view.center,
+     *     points: 5,
+     *     radius1: 20,
+     *     radius2: 40,
+     *     strokeColor: 'black',
+     *     selected: true
+     * });
+     *
+     * path.onDrawSelection = function(event) {
+     *     var ctx = event.context;
+     *     this.segments.forEach(function(segment) {
+     *         var point = event.matrix.transform(segment.point);
+     *         ctx.beginPath();
+     *         ctx.arc(point.x, point.y, event.size, 0, Math.PI * 2);
+     *         ctx.fill();
+     *     });
+     *     return false;
+     * }
+     */
+
+    /**
      * {@grouptitle Event Handling}
      *
      * Attaches an event handler to the item.
@@ -4583,7 +4687,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @function
      * @param {String} type the type of event: {@values 'frame', mousedown',
      *     'mouseup', 'mousedrag', 'click', 'doubleclick', 'mousemove',
-     *     'mouseenter', 'mouseleave'}
+     *     'mouseenter', 'mouseleave', 'draw', 'drawselection'}
      * @param {Function} function the function to be called when the event
      *     occurs, receiving a {@link MouseEvent} or {@link Event} object as its
      *     sole argument
@@ -4618,7 +4722,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @function
      * @param {Object} object an object containing one or more of the following
      *     properties: {@values frame, mousedown, mouseup, mousedrag, click,
-     *     doubleclick, mousemove, mouseenter, mouseleave}
+     *     doubleclick, mousemove, mouseenter, mouseleave, draw, drawselection}
      * @return {Item} this item itself, so calls can be chained
      * @chainable
      *
@@ -4677,7 +4781,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @function
      * @param {String} type the type of event: {@values 'frame', mousedown',
      *     'mouseup', 'mousedrag', 'click', 'doubleclick', 'mousemove',
-     *     'mouseenter', 'mouseleave'}
+     *     'mouseenter', 'mouseleave', 'draw', 'drawselection'}
      * @param {Function} function the function to be detached
      * @return {Item} this item itself, so calls can be chained
      * @chainable
@@ -4689,7 +4793,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @function
      * @param {Object} object an object containing one or more of the following
      *     properties: {@values frame, mousedown, mouseup, mousedrag, click,
-     *     doubleclick, mousemove, mouseenter, mouseleave}
+     *     doubleclick, mousemove, mouseenter, mouseleave, draw, drawselection}
      * @return {Item} this item itself, so calls can be chained
      * @chainable
      */
@@ -4701,7 +4805,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @function
      * @param {String} type the type of event: {@values 'frame', mousedown',
      *     'mouseup', 'mousedrag', 'click', 'doubleclick', 'mousemove',
-     *     'mouseenter', 'mouseleave'}
+     *     'mouseenter', 'mouseleave', 'draw', 'drawselection'}
      * @param {Object} event an object literal containing properties describing
      * the event
      * @return {Boolean} {@true if the event had listeners}
@@ -4714,7 +4818,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @function
      * @param {String} type the type of event: {@values 'frame', mousedown',
      *     'mouseup', 'mousedrag', 'click', 'doubleclick', 'mousemove',
-     *     'mouseenter', 'mouseleave'}
+     *     'mouseenter', 'mouseleave', 'draw', 'drawselection'}
      * @return {Boolean} {@true if the item has one or more event handlers of
      * the specified type}
      */
@@ -4984,10 +5088,20 @@ new function() { // Injection scope for hit-test functions shared with project
             // for the current rendering loop, we need to draw the clip item
             // again.
             clip = !direct && param.clipItem,
+            // Clip items only clip, and the children of compound paths only add
+            // to the path of their parent, so neither emits:
+            event = this.responds('draw') && !isFresh && !param.clip
+                    && !param.dontStart && new DrawEvent({
+                        item: this,
+                        context: ctx,
+                        matrix: viewMatrix.clone(),
+                        pixelRatio: pixelRatio,
+                        view: param.view || null
+                    }),
             // If we're drawing with a strokeMatrix, the CTM is reset either way
             // so we don't need to set it, except when we also have to draw a
-            // clipItem.
-            transform = !strokeMatrix || clip;
+            // clipItem, or emit the draw event in the item's coordinates.
+            transform = !strokeMatrix || clip || event;
         // If drawing directly, handle opacity and native blending now,
         // otherwise we will do it later when the temporary canvas is composited.
         if (direct) {
@@ -5013,6 +5127,12 @@ new function() { // Injection scope for hit-test functions shared with project
             // Apply viewMatrix when drawing into temporary canvas.
             (direct ? matrix : viewMatrix).applyToContext(ctx);
         }
+        if (event) {
+            // Don't let the handler's state leak into the default drawing:
+            ctx.save();
+            this.emit('draw', event);
+            ctx.restore();
+        }
         if (strokeMatrix) {
             // Reset the transformation but take HiDPI pixel ratio into account.
             ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
@@ -5023,7 +5143,7 @@ new function() { // Injection scope for hit-test functions shared with project
             if (offset)
                 ctx.translate(-offset.x, -offset.y);
         }
-        if (!isFresh) {
+        if (!isFresh && !(event && event.prevented)) {
             this._draw(ctx, shadow && !direct
                     ? param.extend({ dontShadow: true }) : param,
                     viewMatrix, strokeMatrix);
@@ -5093,9 +5213,7 @@ new function() { // Injection scope for hit-test functions shared with project
         if (!this._drawSelected)
             itemSelected = false;
         // Items of symbol definitions are drawn too, but aren't inserted:
-        if ((itemSelected || boundsSelected || strokeBoundsSelected
-                || positionSelected)
-                && this._isUpdated(updateVersion) && this.isInserted()) {
+        if (selection && this._isUpdated(updateVersion) && this.isInserted()) {
             // Allow definition of selected color on a per item and per
             // layer level, with a fallback to #009dec
             var layer,
@@ -5105,6 +5223,22 @@ new function() { // Injection scope for hit-test functions shared with project
                 half = size / 2;
             ctx.strokeStyle = ctx.fillStyle = color
                     ? color.toCanvasStyle(ctx) : '#009dec';
+            if (this.responds('drawselection')) {
+                var event = new DrawEvent({
+                    item: this,
+                    context: ctx,
+                    matrix: mx.clone(),
+                    size: size,
+                    color: color || new Color(ctx.strokeStyle),
+                    view: this.getView()
+                });
+                // Don't let the handler's state leak into the default drawing:
+                ctx.save();
+                this.emit('drawselection', event);
+                ctx.restore();
+                if (event.prevented)
+                    return;
+            }
             if (itemSelected)
                 this._drawSelected(ctx, mx, selectionItems);
             if (positionSelected) {
