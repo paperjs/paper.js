@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Oct 24 00:27:50 2026 +0200
+ * Date: Sat Oct 24 00:37:54 2026 +0200
  *
  ***
  *
@@ -6781,30 +6781,34 @@ var Effect = Base.extend({
 
 	initialize: function Effect(props) {
 		props = props || {};
-		var defaults = this._defaults,
-			params = this.constructor === Effect ? Base.set({}, props) : {};
-		delete params.type;
-		delete params.visible;
-		for (var key in defaults) {
-			var value = props[key];
-			params[key] = value !== undefined ? value : defaults[key];
-		}
 		this._item = null;
 		this._index = null;
 		this._type = this._type || props.type || null;
 		this._visible = props.visible !== false;
-		this._params = params;
+		this._setParameters(props.parameters);
+	},
+
+	_setParameters: function(parameters) {
+		var defaults = this._defaults;
+		parameters = Base.set({}, parameters);
+		for (var key in defaults) {
+			if (parameters[key] === undefined)
+				parameters[key] = defaults[key];
+		}
+		this._parameters = parameters;
+		this._linkedParameters = null;
 	},
 
 	clone: function() {
-		return new this.constructor(Base.set({
+		return new this.constructor({
 			type: this._type,
+			parameters: Base.clone(this._parameters),
 			visible: this._visible
-		}, Base.clone(this._params)));
+		});
 	},
 
 	_serialize: function(options, dictionary) {
-		var props = Base.set({ type: this._type }, this._params);
+		var props = { type: this._type, parameters: this._parameters };
 		if (!this._visible)
 			props.visible = false;
 		return Base.serialize(props, options, true, dictionary);
@@ -6829,8 +6833,31 @@ var Effect = Base.extend({
 		this._changed();
 	},
 
-	getParams: function() {
-		return this._params;
+	getParameters: function() {
+		var linked = this._linkedParameters;
+		if (!linked) {
+			var effect = this;
+			linked = this._linkedParameters = {};
+			Base.each(this._parameters, function(value, key) {
+				Object.defineProperty(linked, key, {
+					enumerable: true,
+					get: function() {
+						return effect._parameters[key];
+					},
+					set: function(value) {
+						effect._parameters[key] = value;
+						effect._changed();
+					}
+				});
+			});
+			Object.preventExtensions(linked);
+		}
+		return linked;
+	},
+
+	setParameters: function(parameters) {
+		this._setParameters(parameters);
+		this._changed();
 	},
 
 	getItem: function() {
@@ -6853,7 +6880,7 @@ var Effect = Base.extend({
 		return effect === this || effect instanceof Effect
 				&& this._type === effect._type
 				&& this._visible === effect._visible
-				&& Base.equals(this._params, effect._params)
+				&& Base.equals(this._parameters, effect._parameters)
 				|| false;
 	},
 
@@ -6876,10 +6903,10 @@ var Effect = Base.extend({
 			Base.each(defaults, function(value, key) {
 				var part = Base.capitalize(key);
 				src['get' + part] = function() {
-					return this._params[key];
+					return this._parameters[key];
 				};
 				src['set' + part] = function(value) {
-					this._params[key] = value;
+					this._parameters[key] = value;
 					this._changed();
 				};
 			});
@@ -6912,11 +6939,11 @@ new function() {
 		defaults: { distance: 0, join: 'miter', miterLimit: 10 },
 
 		apply: function(art) {
-			var params = this._params;
+			var parameters = this._parameters;
 			return applyToPaths(art, function(path) {
-				return path.offset(params.distance, {
-					join: params.join,
-					miterLimit: params.miterLimit,
+				return path.offset(parameters.distance, {
+					join: parameters.join,
+					miterLimit: parameters.miterLimit,
 					insert: false
 				});
 			});

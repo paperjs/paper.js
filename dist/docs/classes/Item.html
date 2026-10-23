@@ -36,11 +36,11 @@
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The live effects of the item, in the order in which they apply, see <a href="../classes/Effect.html"><tt>Effect</tt></a>. They derive what is drawn from the item without changing it: drawing draws their output, and <a href="../classes/Item.html#previewbounds"><tt>previewBounds</tt></a> measures it, while hit testing, <a href="../classes/Item.html#bounds"><tt>bounds</tt></a> and <a href="../classes/Item.html#strokebounds"><tt>strokeBounds</tt></a> stay with the item itself. It can be set to effects or plain objects describing them, <code>{ type, …params,
+	<p>The live effects of the item, in the order in which they apply, see <a href="../classes/Effect.html"><tt>Effect</tt></a>. They derive what is drawn from the item without changing it: drawing draws their output, and <a href="../classes/Item.html#previewbounds"><tt>previewBounds</tt></a> measures it, while hit testing, <a href="../classes/Item.html#bounds"><tt>bounds</tt></a> and <a href="../classes/Item.html#strokebounds"><tt>strokeBounds</tt></a> stay with the item itself. It can be set to effects or plain objects describing them, <code>{ type, parameters,
 visible }</code>. Changing the returned array directly isn&rsquo;t tracked, as with <a href="../classes/Path.html#segments"><tt>path.segments</tt></a>.</p>
 <p>Paper.js has these types of effects, and <a href="../classes/Effect.html#extend-src"><tt>Effect.extend(src)</tt></a> creates more:</p>
 <ul>
-  <li><code>offset</code>: offsets the paths, see <a href="../classes/PathItem.html#offset"><tt>pathItem.offset</tt></a>(), by  <code>distance</code> (<code>0</code>), with corners of the <code>join</code> (<code>&#39;miter&#39;</code>) and  <code>miterLimit</code> (<code>10</code>).</li>
+  <li><code>offset</code>: offsets the paths, see <a href="../classes/PathItem.html#offset"><tt>pathItem.offset</tt></a>(), with  the parameters <code>distance</code> (<code>0</code>), <code>join</code> (<code>&#39;miter&#39;</code>) and  <code>miterLimit</code> (<code>10</code>).</li>
   <li><code>outline</code>: outlines the strokes of the paths as filled areas next  to their fills, see <a href="../classes/PathItem.html#outline"><tt>pathItem.outline</tt></a>(), following their  <a href="../classes/Path.html#strokeprofile"><tt>path.strokeProfile</tt></a>.</li>
 </ul>
 	
@@ -72,7 +72,7 @@ var path = new Path.Star({
     strokeWidth: 8
 });
 path.effects = [
-    { type: 'offset', distance: 10, join: 'round' },
+    { type: 'offset', parameters: { distance: 10, join: 'round' } },
     { type: 'outline' }
 ];
 </script>

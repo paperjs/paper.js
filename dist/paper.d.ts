@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Oct 24 00:27:50 2026 +0200
+ * Date: Sat Oct 24 00:37:54 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -1488,10 +1488,10 @@ declare namespace paper {
      * A live effect of an item, see {@link Item#effects}: it derives what
      * is drawn from the item without changing the item itself, as the effects in
      * Illustrator do. The effects of an item run in order, each on what the one
-     * before it returned. Each type of effect is a subclass with its params as
-     * properties, registered by its type, see {@link Effect.types}. Effects of
-     * types that aren't registered keep their params and leave what they get as
-     * it is, so that they still round-trip. {@link Effect.extend} creates
+     * before it returned. Each type of effect is a subclass with its parameters
+     * as properties, registered by its type, see {@link Effect.types}. Effects of
+     * types that aren't registered keep their parameters and leave what they get
+     * as it is, so that they still round-trip. {@link Effect.extend} creates
      * new types.
      */
     class Effect  {
@@ -1506,10 +1506,12 @@ declare namespace paper {
         visible: boolean
 
         /** 
-         * The params of the effect as a plain object. Each type of effect also
-         * has them as properties. Changing the returned object isn't tracked.
+         * The parameters of the effect. Changing them on the returned object
+         * updates the effect, as setting them as properties of effects of known
+         * types does. Parameters that it doesn't have yet are added by setting
+         * them all, as are changes within values such as arrays.
          */
-        readonly params: any
+        parameters: any
 
         /** 
          * The item that the effect is part of.
@@ -1532,8 +1534,8 @@ declare namespace paper {
          * Creates an effect of the type of its class, or of the type that the
          * object names, see {@link Effect.create}.
          * 
-         * @param object - the params of the effect, and its `visible`
-         *     flag
+         * @param object - the effect's `parameters`, which it takes as
+         *     they are, and its `visible` flag
          */
         constructor(object?: object)
 
@@ -1569,7 +1571,7 @@ declare namespace paper {
 
         /** 
          * Returns the effect, or creates one from an object that describes
-         * it, `{ type, ...params, visible }`, of the class registered for its
+         * it, `{ type, parameters, visible }`, of the class registered for its
          * type, or of `Effect` for unknown types.
          */
         static create(object: Effect | object): Effect
@@ -1577,8 +1579,9 @@ declare namespace paper {
         /** 
          * Creates a type of effect: a subclass of `Effect` with its `type`,
          * which registers it in {@link Effect.types}, the `defaults` of its
-         * params, which become its properties, and its {@link #apply}.
-         * The params of subclasses add to those of their base classes.
+         * parameters, which become its properties, and its
+         * {@link #apply}. The parameters of subclasses add to those of
+         * their base classes.
          * 
          * @param src - the definition of the type
          * 
@@ -1872,15 +1875,15 @@ declare namespace paper {
          * changing it: drawing draws their output, and {@link #previewBounds}
          * measures it, while hit testing, {@link #bounds} and
          * {@link #strokeBounds} stay with the item itself. It can be set to
-         * effects or plain objects describing them, `{ type, ...params,
+         * effects or plain objects describing them, `{ type, parameters,
          * visible }`. Changing the returned array directly isn't tracked, as
          * with {@link Path#segments}.
          * 
          * Paper.js has these types of effects, and {@link Effect.extend}
          * creates more:
          * 
-         * - `offset`: offsets the paths, see {@link PathItem#offset}, by
-         *   `distance` (`0`), with corners of the `join` (`'miter'`) and
+         * - `offset`: offsets the paths, see {@link PathItem#offset}, with
+         *   the parameters `distance` (`0`), `join` (`'miter'`) and
          *   `miterLimit` (`10`).
          * - `outline`: outlines the strokes of the paths as filled areas next
          *   to their fills, see {@link PathItem#outline}, following their
