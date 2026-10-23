@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 23 01:32:20 2026 +0200
+ * Date: Fri Oct 23 02:00:55 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -2550,15 +2550,17 @@ declare namespace paper {
         importJSON(json: string): Item
 
         /** 
-         * Exports the item with its content and child items as an SVG DOM.
+         * Exports the item with its content and child items as an SVG DOM. With
+         * `options.bounds` or `options.matrix`, the item is wrapped in an `<svg>`
+         * element sized to the bounds, as {@link Project#exportSVG} does.
          * 
-         * @option [options.bounds='view'] {String|Rectangle} the bounds of the area
-         *     to export, either as a string ({@values 'view', content'}), or a
+         * @option [options.bounds] {String|Rectangle} the bounds of the area to
+         *     export, either as a string ({@values 'view', content'}), or a
          *     {@link Rectangle} object: `'view'` uses the view bounds,
-         *     `'content'` uses the stroke bounds of all content
-         * @option [options.matrix=paper.view.matrix] {Matrix} the matrix with which
-         *     to transform the exported content: If `options.bounds` is set to
-         *     `'view'`, `paper.view.matrix` is used, for all other settings of
+         *     `'content'` uses the stroke bounds of the item
+         * @option [options.matrix] {Matrix} the matrix with which to transform the
+         *     exported content: If `options.bounds` is set to `'view'`,
+         *     `paper.view.matrix` is used, for all other settings of
          *     `options.bounds` the identity matrix is used.
          * @option [options.asString=false] {Boolean} whether a SVG node or a
          *     `String` is to be returned
