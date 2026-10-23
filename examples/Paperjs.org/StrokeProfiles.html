@@ -152,6 +152,7 @@
             angle: document.getElementById('stop-angle'),
             offset: document.getElementById('stop-offset')
         };
+        var smoothInput = document.getElementById('stop-smooth');
         var colors = {
             fill: '#ff6f91',
             marker: '#1060ff',
@@ -350,6 +351,8 @@
 
         function updatePanel() {
             var stop = selected && selected.path && getFullStop(selected);
+            smoothInput.disabled = !stop;
+            smoothInput.checked = !stop || selected.smooth;
             for (var key in inputs) {
                 var input = inputs[key],
                     value = !stop ? ''
@@ -595,6 +598,13 @@
         });
 
         // Logs what it takes to outline the path again, and copies it:
+        smoothInput.addEventListener('input', function() {
+            if (selected) {
+                selected.smooth = smoothInput.checked;
+                update();
+            }
+        });
+
         document.getElementById('log').addEventListener('click', function() {
             var json = JSON.stringify({
                 // In full precision, as small differences can matter:
@@ -609,6 +619,8 @@
                         if (stop[key] != null)
                             entry[key] = stop[key];
                     });
+                    if (!stop.smooth)
+                        entry.smooth = false;
                     return entry;
                 })
             });
@@ -663,6 +675,7 @@
             <label>Aspect % <input id="stop-aspect" type="number" min="0" step="5" disabled></label>
             <label>Angle ° <input id="stop-angle" type="number" step="5" disabled></label>
             <label>Offset <input id="stop-offset" type="number" min="0" step="1" disabled></label>
+            <label>Smooth <input id="stop-smooth" type="checkbox" checked disabled></label>
         </div>
         <div class="info">
             <p id="info"></p>

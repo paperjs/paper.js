@@ -150,7 +150,8 @@ var Path = PathItem.extend(/** @lends Path# */{
                     index: stop._index,
                     width: stop._width,
                     aspect: stop._aspect,
-                    angle: stop._angle
+                    angle: stop._angle,
+                    smooth: stop._smooth
                 };
             }));
         }

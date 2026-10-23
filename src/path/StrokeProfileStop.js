@@ -16,9 +16,9 @@
  * @class A stop of the stroke profile of a path, see
  * {@link Path#strokeProfile}: the pen that draws its stroke at an offset along
  * the path, an ellipse with a width, an aspect and an angle. Between the
- * stops, each of them changes linearly along the path, as the colors of a
- * gradient do between its stops. A stop can set only some of them, and leave
- * the others to the stops around it.
+ * stops, each of them changes along the path, easing into and out of smooth
+ * stops and in straight lines from the others, see {@link #smooth}. A stop can set
+ * only some of them, and leave the others to the stops around it.
  */
 var StrokeProfileStop = Base.extend(/** @lends StrokeProfileStop# */{
     _class: 'StrokeProfileStop',
@@ -29,7 +29,7 @@ var StrokeProfileStop = Base.extend(/** @lends StrokeProfileStop# */{
      * Creates a stroke profile stop.
      *
      * @param {Object} [object] the properties of the stop, its `offset`,
-     *     `width`, `aspect` and `angle`
+     *     `width`, `aspect`, `angle` and `smooth`
      *
      * @example
      * var path = new Path.Line([20, 50], [180, 50]);
@@ -52,6 +52,7 @@ var StrokeProfileStop = Base.extend(/** @lends StrokeProfileStop# */{
         this._width = props.width != null ? props.width : null;
         this._aspect = props.aspect != null ? props.aspect : null;
         this._angle = props.angle != null ? props.angle : null;
+        this._smooth = props.smooth !== false;
     },
 
     /**
@@ -62,7 +63,8 @@ var StrokeProfileStop = Base.extend(/** @lends StrokeProfileStop# */{
             offset: this.getOffset(),
             width: this._width,
             aspect: this._aspect,
-            angle: this._angle
+            angle: this._angle,
+            smooth: this._smooth
         });
     },
 
@@ -73,6 +75,8 @@ var StrokeProfileStop = Base.extend(/** @lends StrokeProfileStop# */{
             if (value != null)
                 props[key] = value;
         }, this);
+        if (!this._smooth)
+            props.smooth = false;
         return Base.serialize(props, options, true, dictionary);
     },
 
@@ -171,6 +175,27 @@ var StrokeProfileStop = Base.extend(/** @lends StrokeProfileStop# */{
     },
 
     /**
+     * Whether the values ease into and out of the stop: they arrive at it and
+     * leave it flat, and between two smooth stops, a value follows a cubic
+     * from one to the other, without overshooting them. As the slopes don't
+     * depend on other stops, changing a stop only changes the values up to the
+     * stops on either side of it. Without smoothing, the values change in
+     * straight lines to the stops on either side.
+     *
+     * @bean
+     * @type Boolean
+     * @default true
+     */
+    isSmooth: function() {
+        return this._smooth;
+    },
+
+    setSmooth: function(smooth) {
+        this._smooth = !!smooth;
+        this._changed();
+    },
+
+    /**
      * Checks whether the stop is equal to the supplied one.
      *
      * @param {StrokeProfileStop} stop
@@ -181,6 +206,7 @@ var StrokeProfileStop = Base.extend(/** @lends StrokeProfileStop# */{
                 && this._width === stop._width
                 && this._aspect === stop._aspect
                 && this._angle === stop._angle
+                && this._smooth === stop._smooth
                 && (this._path
                     ? this._index === stop._index
                     : this._offset === stop._offset)

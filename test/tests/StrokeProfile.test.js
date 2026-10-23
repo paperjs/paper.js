@@ -16,14 +16,14 @@ import { equals, test } from '../helpers.js'
 
 describe('StrokeProfile', () => {
   // A straight path from 0 to 200 along x, with a stroke of width 10 that
-  // tapers from half of it to twice of it:
+  // tapers from half of it to twice of it, in a straight line:
   function createTaper(segments = [[0, 0], [200, 0]]) {
     return new Path({
       segments,
       strokeWidth: 10,
       strokeProfile: [
-        { offset: 0, width: 0.5 },
-        { offset: 200, width: 2 }
+        { offset: 0, width: 0.5, smooth: false },
+        { offset: 200, width: 2, smooth: false }
       ]
     })
   }
@@ -62,10 +62,10 @@ describe('StrokeProfile', () => {
   test('Each value changes between the stops that set it', () => {
     const path = createTaper()
     path.strokeProfile = [
-      { offset: 0, width: 1, angle: 0 },
-      { offset: 50, aspect: 0.2 },
-      { offset: 100, angle: 90 },
-      { offset: 200, width: 2, aspect: 0.6, angle: 450 }
+      { offset: 0, width: 1, angle: 0, smooth: false },
+      { offset: 50, aspect: 0.2, smooth: false },
+      { offset: 100, angle: 90, smooth: false },
+      { offset: 200, width: 2, aspect: 0.6, angle: 450, smooth: false }
     ]
     const stop = path.getStrokeProfileAt(150)
     equals(stop.width, 1.75)
@@ -92,15 +92,17 @@ describe('StrokeProfile', () => {
 
   test('Adding the pen at an offset leaves the profile as it is', () => {
     const path = createTaper()
+    // In straight lines, which a stop in between that isn't smooth
+    // continues:
     path.strokeProfile = [
-      { offset: 0, width: 1 },
-      { offset: 200, width: 2, angle: 45 }
+      { offset: 0, width: 1, smooth: false },
+      { offset: 200, width: 2, angle: 45, smooth: false }
     ]
     const offsets = [0, 60, 120, 180],
       before = offsets.map(offset => path.getStrokeProfileAt(offset))
-    path.strokeProfile = path.strokeProfile.concat(
-      path.getStrokeProfileAt(100)
-    )
+    const stop = path.getStrokeProfileAt(100)
+    stop.smooth = false
+    path.strokeProfile = path.strokeProfile.concat(stop)
     equals(path.strokeProfile.length, 3)
     offsets.forEach((offset, i) => {
       const stop = path.getStrokeProfileAt(offset)
@@ -109,6 +111,79 @@ describe('StrokeProfile', () => {
         [before[i].width, before[i].aspect, before[i].angle]
       )
     })
+  })
+
+  test('Smooth stops ease in and out', () => {
+    const path = createTaper()
+    path.strokeProfile = [
+      { offset: 0, width: 0.5 },
+      { offset: 200, width: 2 }
+    ]
+    // Two stops ease from one to the other, flat at both:
+    equals(
+      path.getStrokeProfileAt(50).width,
+      0.5 + 1.5 * (3 * 0.25 ** 2 - 2 * 0.25 ** 3)
+    )
+    equals(path.getStrokeProfileAt(100).width, 1.25)
+    // A stop in between makes a steady change pause there, so that it only
+    // shapes the values up to the stops on either side:
+    path.strokeProfile = [
+      { offset: 0, width: 1 },
+      { offset: 100, width: 2 },
+      { offset: 200, width: 3 }
+    ]
+    // The slopes before and after an offset:
+    const getSlopes = offset => {
+      const width = path.getStrokeProfileAt(offset).width
+      return [
+        (width - path.getStrokeProfileAt(offset - 0.001).width) / 0.001,
+        (path.getStrokeProfileAt(offset + 0.001).width - width) / 0.001
+      ]
+    }
+    equals(getSlopes(100), [0, 0], null, { tolerance: 1e-4 })
+    // Without smoothing, it changes in straight lines on both sides:
+    path.strokeProfile = [
+      { offset: 0, width: 1, smooth: false },
+      { offset: 100, width: 2, smooth: false },
+      { offset: 200, width: 4, smooth: false }
+    ]
+    equals(getSlopes(100), [0.01, 0.02], null, { tolerance: 1e-4 })
+    path.strokeProfile[1].smooth = true
+    const [before, after] = getSlopes(100)
+    equals(before, after, null, { tolerance: 1e-4 })
+  })
+
+  test('Smooth stops keep peaks and plateaus where they are', () => {
+    const path = createTaper()
+    path.strokeProfile = [
+      { offset: 0, width: 1 },
+      { offset: 60, width: 1 },
+      { offset: 100, width: 3 },
+      { offset: 200, width: 0.5 }
+    ]
+    const widths = []
+    for (let offset = 0; offset <= 200; offset += 2)
+      widths.push(path.getStrokeProfileAt(offset).width)
+    equals(Math.max(...widths), 3, 'the peak at its stop')
+    equals(Math.min(...widths), 0.5, 'no overshoot')
+    equals(path.getStrokeProfileAt(30).width, 1, 'flat between equal stops')
+  })
+
+  test('Smooth stops survive clones and JSON', () => {
+    const path = createTaper()
+    path.strokeProfile[0].smooth = true
+    equals(path.strokeProfile[1].smooth, false)
+    equals(
+      path.clone().strokeProfile.map(stop => stop.smooth),
+      [true, false]
+    )
+    const json = path.exportJSON()
+    equals(json.includes('"smooth":false'), true)
+    const copy = new Project().importJSON(json)
+    equals(
+      copy.strokeProfile.map(stop => stop.smooth),
+      [true, false]
+    )
   })
 
   test('Two stops at the same offset make a step', () => {
@@ -126,8 +201,8 @@ describe('StrokeProfile', () => {
       size: [100, 100],
       strokeWidth: 10,
       strokeProfile: [
-        { offset: 50, width: 1 },
-        { offset: 150, width: 3 }
+        { offset: 50, width: 1, smooth: false },
+        { offset: 150, width: 3, smooth: false }
       ]
     })
     // From 150 at 3 around to 450 at 1:
@@ -232,8 +307,8 @@ describe('StrokeProfile', () => {
       point: [0, 0],
       size: [100, 100],
       strokeProfile: [
-        { offset: 50, width: 1 },
-        { offset: 150, width: 3 }
+        { offset: 50, width: 1, smooth: false },
+        { offset: 150, width: 3, smooth: false }
       ]
     })
     rectangle.reverse()
@@ -251,8 +326,8 @@ describe('StrokeProfile', () => {
       size: [100, 100],
       strokeWidth: 10,
       strokeProfile: [
-        { offset: 50, width: 1 },
-        { offset: 150, width: 3 }
+        { offset: 50, width: 1, smooth: false },
+        { offset: 150, width: 3, smooth: false }
       ]
     })
     const offsets = [0, 100, 200, 300, 399],
