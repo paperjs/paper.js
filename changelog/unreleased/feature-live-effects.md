@@ -2,7 +2,7 @@
 
 - Add live effects, `Item#effects`: a stack of effects that derive what is
   drawn from an item without changing it. `new Effect({ type, label,
-  category, parameters, onApply })` defines an effect and registers it under
+  parameters, onApply })` defines an effect and registers it under
   its type, replacing any effect registered there, so that hosts can replace
   the first effects `offset` and `outline`, and `Effect.get()`,
   `Effect.getAll()` and `Effect.remove()` look them up and remove them.

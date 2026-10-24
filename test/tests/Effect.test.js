@@ -65,15 +65,10 @@ describe('Effect', () => {
     equals(Effect.get('wobble') === again, true)
   })
 
-  test('Effects have labels and categories for hosts', () => {
-    const wobble = defineEffect({
-      type: 'wobble',
-      label: 'Wobble',
-      category: 'Distort'
-    })
-    equals([wobble.label, wobble.category], ['Wobble', 'Distort'])
-    const plain = defineEffect({ type: 'plain' })
-    equals([plain.label, plain.category], ['plain', null], 'the defaults')
+  test('Effects have labels for hosts', () => {
+    const wobble = defineEffect({ type: 'wobble', label: 'Wobble' })
+    equals(wobble.label, 'Wobble')
+    equals(defineEffect({ type: 'plain' }).label, 'plain', 'the default')
     equals(Effect.get('offset').label, 'Offset Path')
   })
 
