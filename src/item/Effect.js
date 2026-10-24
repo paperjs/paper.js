@@ -23,7 +23,6 @@
  * new Effect({
  *     type: 'shrink',
  *     label: 'Shrink',
- *     category: 'Distort',
  *     parameters: {
  *         amount: { label: 'Amount', type: 'number', value: 0.5 }
  *     },
@@ -43,15 +42,14 @@ var Effect = Base.extend(new function() {
          * Creates an effect and registers it under its type.
          *
          * @param {Object} props the {@link #type} of the effect, its
-         *     {@link #label}, {@link #category} and {@link #parameters}, and
-         *     {@link #onApply} and {@link #onEditParameters}
+         *     {@link #label} and {@link #parameters}, and {@link #onApply}
+         *     and {@link #onEditParameters}
          */
         initialize: function Effect(props) {
             var defaults = {},
                 accessors = {};
             this._type = props.type;
             this._label = props.label || props.type;
-            this._category = props.category || null;
             this._parameters = props.parameters || {};
             this.onApply = props.onApply || null;
             this.onEditParameters = props.onEditParameters || null;
@@ -96,17 +94,6 @@ var Effect = Base.extend(new function() {
          */
         getLabel: function() {
             return this._label;
-        },
-
-        /**
-         * The category of the effect, for hosts to list it in, e.g. in a menu.
-         * Paper.js itself doesn't use it.
-         *
-         * @bean
-         * @type ?String
-         */
-        getCategory: function() {
-            return this._category;
         },
 
         /**
@@ -238,7 +225,6 @@ new function() {
     new Effect({
         type: 'offset',
         label: 'Offset Path',
-        category: 'Path',
         parameters: {
             distance: {
                 label: 'Distance', type: 'number', units: 'point', value: 0
@@ -267,7 +253,6 @@ new function() {
     new Effect({
         type: 'outline',
         label: 'Outline Stroke',
-        category: 'Path',
 
         onApply: function(event) {
             return applyToPaths(event.art, function(path) {
