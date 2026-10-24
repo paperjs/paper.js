@@ -11,8 +11,8 @@
  */
 
 // The live effects of items, see Item#effects. Their output is computed when
-// it's first needed, and kept until the item, its content or its effects
-// change, see Item#_changed().
+// it's first needed, and kept until the item, its content, its effects or the
+// registered effects change, see Item#_changed().
 Item.inject(new function() {
     // Returns whether the item or its content have visible effects:
     function hasEffects(item) {
@@ -30,17 +30,17 @@ Item.inject(new function() {
         _effects: null,
 
         /**
-         * The live effects of the item, in the order in which they apply, see
-         * {@link Effect}. They derive what is drawn from the item without
-         * changing it: drawing draws their output, and {@link #previewBounds}
-         * measures it, while hit testing, {@link #bounds} and
-         * {@link #strokeBounds} stay with the item itself. It can be set to
-         * effects or plain objects describing them, `{ type, parameters,
-         * visible }`. Changing the returned array directly isn't tracked, as
-         * with {@link Path#segments}.
+         * The live effects of the item, in the order in which they apply, as
+         * the instances of the {@link Effect effects} that they use. They
+         * derive what is drawn from the item without changing it: drawing
+         * draws their output, and {@link #previewBounds} measures it, while
+         * hit testing, {@link #bounds} and {@link #strokeBounds} stay with the
+         * item itself. It is set to plain objects describing them, `{ type,
+         * parameters, visible }`, with the `type` of the effect.
+         * Changing the returned array directly isn't tracked, as with
+         * {@link Path#segments}.
          *
-         * Paper.js has these types of effects, and {@link Effect.extend(src)}
-         * creates more:
+         * Paper.js has these effects, and {@link Effect} creates more:
          *
          * - `offset`: offsets the paths, see {@link PathItem#offset()}, with
          *   the parameters `distance` (`0`), `join` (`'miter'`) and
@@ -50,7 +50,7 @@ Item.inject(new function() {
          *   {@link Path#strokeProfile}.
          *
          * @bean
-         * @type Effect[]
+         * @type EffectInstance[]
          *
          * @example {@paperscript}
          * var path = new Path.Star({
@@ -79,9 +79,8 @@ Item.inject(new function() {
         /**
          * Adds an effect at the end of the item's effects.
          *
-         * @param {Effect|Object} effect the effect, or a plain object describing
-         *     it
-         * @return {Effect} the added effect
+         * @param {Object} effect the plain object describing the effect
+         * @return {EffectInstance} the added instance
          */
         addEffect: function(effect) {
             return this.insertEffect(this.getEffects().length, effect);
@@ -91,32 +90,27 @@ Item.inject(new function() {
          * Inserts an effect into the item's effects at the given index.
          *
          * @param {Number} index the index at which to insert the effect
-         * @param {Effect|Object} effect the effect, or a plain object describing
-         *     it
-         * @return {Effect} the inserted effect
+         * @param {Object} effect the plain object describing the effect
+         * @return {EffectInstance} the inserted instance
          */
         insertEffect: function(index, effect) {
             return this.insertEffects(index, [effect])[0];
         },
 
         /**
-         * Inserts effects into the item's effects at the given index. Effects
-         * that are part of another item are copied.
+         * Inserts effects into the item's effects at the given index.
          *
          * @param {Number} index the index at which to insert the effects
-         * @param {Effect[]|Object[]} effects the effects, or plain objects
-         *     describing them
-         * @return {Effect[]} the inserted effects
+         * @param {Object[]} effects the plain objects describing the effects
+         * @return {EffectInstance[]} the inserted instances
          */
         insertEffects: function(index, effects) {
             var list = this._effects || (this._effects = []),
                 inserted = [];
             for (var i = 0, l = effects.length; i < l; i++) {
-                var effect = Effect.create(effects[i]);
-                if (effect._item)
-                    effect = effect.clone();
-                effect._item = this;
-                inserted.push(effect);
+                var instance = new EffectInstance(effects[i]);
+                instance._item = this;
+                inserted.push(instance);
             }
             // Keeps the indices of the effects up to date:
             Base.splice(list, inserted, index, 0);
@@ -128,7 +122,7 @@ Item.inject(new function() {
          * Removes the effect at the given index from the item's effects.
          *
          * @param {Number} index the index of the effect to remove
-         * @return {Effect} the removed effect, or `null`
+         * @return {EffectInstance} the removed instance, or `null`
          */
         removeEffect: function(index) {
             return this.removeEffects(index, index + 1)[0] || null;
@@ -140,7 +134,7 @@ Item.inject(new function() {
          *
          * @param {Number} [start=0] the index of the first effect to remove
          * @param {Number} [end=effects.length] the index after the last one
-         * @return {Effect[]} the removed effects
+         * @return {EffectInstance[]} the removed instances
          */
         removeEffects: function(start, end) {
             var list = this._effects,
@@ -150,8 +144,8 @@ Item.inject(new function() {
                 end = Base.pick(end, list.length);
                 removed = Base.splice(list, null, start, end - start);
                 for (var i = 0, l = removed.length; i < l; i++) {
-                    var effect = removed[i];
-                    effect._item = effect._index = null;
+                    var instance = removed[i];
+                    instance._item = instance._index = null;
                 }
                 if (removed.length)
                     this._changed(/*#=*/Change.ATTRIBUTE);
@@ -174,24 +168,33 @@ Item.inject(new function() {
         /**
          * Returns what the item's visible effects make of it, in the item's own
          * coordinates, outside of the scene graph, or `null` if it has none. It
-         * is kept until the item, its content or its effects change, so changing
-         * it isn't tracked.
+         * is kept until the item, its content, its effects or the registered
+         * effects change, so changing it isn't tracked.
          *
          * @return {?Item} the output of the effects
          */
         getEffectOutput: function() {
             var output = this._effectOutput;
-            if (output === undefined) {
+            if (output === undefined
+                    || this._effectVersion !== Effect._version) {
                 output = null;
                 if (this._hasEffects()) {
                     output = this._getEffectArt();
                     for (var i = 0, l = this._effects.length; i < l; i++) {
-                        var effect = this._effects[i];
-                        if (effect._visible)
-                            output = effect.apply(output) || output;
+                        var instance = this._effects[i],
+                            effect = instance.getEffect(),
+                            onApply = effect && effect.onApply;
+                        // Unknown effects leave the art as it is:
+                        if (instance._visible && onApply) {
+                            output = onApply.call(instance, {
+                                art: output,
+                                item: this
+                            }) || output;
+                        }
                     }
                 }
                 this._effectOutput = output;
+                this._effectVersion = Effect._version;
             }
             return output;
         },

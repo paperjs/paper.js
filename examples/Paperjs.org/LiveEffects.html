@@ -115,16 +115,10 @@
             }
         };
 
-        var types = {
-            offset: 'Offset',
-            outline: 'Outline stroke'
-        };
-
-        // The parameters of the effects, and how to edit them:
-        var controls = {
-            distance: { type: 'range', min: -60, max: 60, step: 1 },
-            join: { type: 'select', options: ['miter', 'round', 'bevel'] },
-            miterLimit: { type: 'range', min: 1, max: 20, step: 0.5 }
+        // The ranges of the number parameters, which the effects leave open:
+        var ranges = {
+            distance: [-60, 60],
+            miterLimit: [1, 20]
         };
 
         var settings = {
@@ -148,7 +142,7 @@
                 onDrawSelection: drawPreviewBounds
             });
             // Keep the effects when switching paths, as copies:
-            path.effects = effects;
+            path.effects = effects.map(describe);
             update();
         }
 
@@ -168,40 +162,52 @@
             }
         }
 
-        // Builds the panel of each effect: its visibility, its order and its
-        // parameters:
+        // Returns the plain object that describes the effect instance, which
+        // items take to add it:
+        function describe(instance) {
+            return {
+                type: instance.type,
+                parameters: instance.parameters,
+                visible: instance.visible
+            };
+        }
+
+        // Builds the panel of each effect instance: its visibility, its order
+        // and its parameters, with the controls that its effect declares:
         function updatePanel() {
             list.innerHTML = '';
-            path.effects.forEach(function(effect) {
-                var element = document.createElement('div');
-                element.className = 'effect' + (effect.visible ? '' : ' hidden');
+            path.effects.forEach(function(instance) {
+                var effect = instance.effect,
+                    element = document.createElement('div');
+                element.className = 'effect'
+                        + (instance.visible ? '' : ' hidden');
                 var header = document.createElement('header');
                 var visible = document.createElement('input');
                 visible.type = 'checkbox';
-                visible.checked = effect.visible;
+                visible.checked = instance.visible;
                 visible.title = 'Visible';
                 visible.addEventListener('input', function() {
-                    effect.visible = visible.checked;
-                    element.classList.toggle('hidden', !effect.visible);
+                    instance.visible = visible.checked;
+                    element.classList.toggle('hidden', !instance.visible);
                     update(false);
                 });
                 var title = document.createElement('span');
-                title.textContent = types[effect.type] || effect.type;
+                title.textContent = effect.title;
                 header.appendChild(visible);
                 header.appendChild(title);
-                // Moves the effect by the amount in the order:
+                // Moves the instance by the amount in the order:
                 function move(amount) {
-                    var index = effect.index + amount;
+                    var index = instance.index + amount;
                     if (index >= 0 && index < path.effects.length) {
-                        effect.remove();
-                        path.insertEffect(index, effect);
+                        instance.remove();
+                        path.insertEffect(index, describe(instance));
                     }
                 }
 
                 [
                     ['↑', function() { move(-1); }],
                     ['↓', function() { move(1); }],
-                    ['✕', function() { effect.remove(); }]
+                    ['✕', function() { instance.remove(); }]
                 ].forEach(function(entry) {
                     var button = document.createElement('button');
                     button.textContent = entry[0];
@@ -213,34 +219,33 @@
                 });
                 element.appendChild(header);
                 Object.keys(effect.parameters).forEach(function(key) {
-                    var control = controls[key];
-                    if (control) {
-                        var label = document.createElement('label'),
-                            input = document.createElement(control.type === 'select'
-                                    ? 'select' : 'input');
-                        label.textContent = key;
-                        if (control.type === 'select') {
-                            control.options.forEach(function(option) {
-                                var node = document.createElement('option');
-                                node.textContent = option;
-                                input.appendChild(node);
-                            });
-                        } else {
-                            input.type = 'range';
-                            input.min = control.min;
-                            input.max = control.max;
-                            input.step = control.step;
-                        }
-                        input.value = effect[key];
-                        input.addEventListener('input', function() {
-                            // Setting a param through its property redraws:
-                            effect[key] = control.type === 'select'
-                                    ? input.value : +input.value;
-                            update(false);
+                    var parameter = effect.parameters[key],
+                        isList = parameter.type === 'list',
+                        range = ranges[key],
+                        label = document.createElement('label'),
+                        input = document.createElement(isList
+                                ? 'select' : 'input');
+                    label.textContent = parameter.label;
+                    if (isList) {
+                        parameter.options.forEach(function(option) {
+                            var node = document.createElement('option');
+                            node.textContent = option;
+                            input.appendChild(node);
                         });
-                        label.appendChild(input);
-                        element.appendChild(label);
+                    } else {
+                        input.type = 'range';
+                        input.min = range[0];
+                        input.max = range[1];
+                        input.step = 0.5;
                     }
+                    input.value = instance[key];
+                    input.addEventListener('input', function() {
+                        // Setting a parameter through its property redraws:
+                        instance[key] = isList ? input.value : +input.value;
+                        update(false);
+                    });
+                    label.appendChild(input);
+                    element.appendChild(label);
                 });
                 list.appendChild(element);
             });
