@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Tool Effects</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        body {
+            background: #f6f4f0;
+            font: 13px/1.4 -apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #333;
+        }
+        .panel {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 260px;
+            max-height: calc(100% - 52px);
+            overflow-y: auto;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 12px;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.12);
+        }
+        .panel h1 {
+            margin: 0 0 10px;
+            font-size: 16px;
+        }
+        .panel label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin: 6px 0;
+        }
+        .panel input[type=range] {
+            width: 120px;
+        }
+        .panel select {
+            width: 128px;
+        }
+        .effect {
+            margin: 8px 0;
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+        }
+        .effect.hidden {
+            opacity: 0.5;
+        }
+        .effect header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+        .effect header span {
+            flex: 1;
+        }
+        .effect button {
+            padding: 0 6px;
+        }
+        .panel .info {
+            margin-top: 10px;
+            color: #888;
+            font-size: 11px;
+        }
+    </style>
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        // The Fancy Brush tool example as a live effect: its tool draws along
+        // each stroke as a hand would, see ToolEffect, with the tool's own
+        // handlers, copied from Tools/FancyBrush.html, as wide as the stroke
+        // and in its color. The strokes stay plain paths, which can still be
+        // edited.
+        new ToolEffect({
+            type: 'fancyBrush',
+            parameters: {
+                size: { label: 'Size', type: 'number', value: 1 },
+                strokeEnds: { label: 'Stroke Ends', type: 'number', value: 6 }
+            },
+            tool: new function() {
+                var distance,
+                    strokeEnds,
+                    path,
+                    lastPoint;
+
+                // Each stroke starts with a mouse down, with its path and the
+                // effect's parameters:
+                function onMouseDown(event) {
+                    distance = event.path.strokeWidth * event.effect.size;
+                    strokeEnds = event.effect.strokeEnds;
+                    this.fixedDistance = distance;
+                    path = new Path();
+                    path.fillColor = event.path.strokeColor;
+                }
+
+                function onMouseDrag(event) {
+                    // If this is the first drag event, add the strokes at the
+                    // start:
+                    if (event.count == 0) {
+                        addStrokes(event.middlePoint, event.delta * -1);
+                    } else {
+                        var step = event.delta / 2;
+                        step.angle += 90;
+                        var top = event.middlePoint + step;
+                        var bottom = event.middlePoint - step;
+                        path.add(top);
+                        path.insert(0, bottom);
+                    }
+                    path.smooth();
+                    lastPoint = event.middlePoint;
+                }
+
+                function onMouseUp(event) {
+                    var delta = event.point - lastPoint;
+                    delta.length = distance;
+                    addStrokes(event.point, delta);
+                    path.closed = true;
+                    path.smooth();
+                }
+
+                function addStrokes(point, delta) {
+                    var step = delta.rotate(90);
+                    var strokePoints = strokeEnds * 2 + 1;
+                    point -= step / 2;
+                    step /= strokePoints - 1;
+                    for (var i = 0; i < strokePoints; i++) {
+                        var strokePoint = point + step * i;
+                        var offset = delta * (Math.random() * 0.3 + 0.1);
+                        if (i % 2) {
+                            offset *= -1;
+                        }
+                        strokePoint += offset;
+                        path.insert(0, strokePoint);
+                    }
+                }
+
+                // The tool's handlers:
+                return {
+                    onMouseDown: onMouseDown,
+                    onMouseDrag: onMouseDrag,
+                    onMouseUp: onMouseUp
+                };
+            }
+        });
+
+        // The curvature of the paths as a comb, as Glyphs and its Speed Punk
+        // plugin show it: a band along the path, as wide as the curvature on
+        // the outside of each turn, and colored by it, from blue in gentle
+        // turns to red in tight ones, with the path as a hairline:
+        new Effect({
+            type: 'curvature',
+            parameters: {
+                scale: { label: 'Scale', type: 'number', value: 1500 },
+                steps: { label: 'Steps', type: 'number', value: 24 }
+            },
+
+            onApply: function(event) {
+                var art = event.art,
+                    scale = this.scale,
+                    steps = this.steps,
+                    output = new Group({ insert: false }),
+                    paths = art instanceof Path ? [art]
+                        : art.getItems({ class: Path });
+                paths.forEach(function(path) {
+                    path.curves.forEach(function(curve) {
+                        var samples = [];
+                        for (var i = 0; i <= steps; i++) {
+                            var time = i / steps,
+                                curvature = curve.getCurvatureAtTime(time);
+                            samples.push({
+                                point: curve.getPointAtTime(time),
+                                // On the outside of the turn:
+                                tip: curve.getPointAtTime(time)
+                                    + curve.getNormalAtTime(time)
+                                        * curvature * scale,
+                                curvature: Math.abs(curvature)
+                            });
+                        }
+                        for (var i = 1; i <= steps; i++) {
+                            var a = samples[i - 1],
+                                b = samples[i];
+                            new Path({
+                                segments: [a.point, a.tip, b.tip, b.point],
+                                closed: true,
+                                fillColor: {
+                                    hue: 240 - Math.min(240,
+                                        (a.curvature + b.curvature) * 3000),
+                                    saturation: 0.8,
+                                    brightness: 0.95
+                                },
+                                parent: output
+                            });
+                        }
+                    });
+                    output.addChild(new Path({
+                        segments: path.segments,
+                        closed: path.closed,
+                        strokeColor: '#222',
+                        strokeWidth: 1
+                    }));
+                });
+                return output;
+            }
+        });
+
+        var types = {
+            curvature: 'Curvature',
+            fancyBrush: 'Fancy brush',
+            offset: 'Offset',
+            outline: 'Outline stroke'
+        };
+
+        // How to edit the parameters of the effects:
+        var controls = {
+            scale: { min: 0, max: 5000, step: 50 },
+            steps: { min: 4, max: 64, step: 1 },
+            size: { min: 0.2, max: 3, step: 0.1 },
+            distance: { min: -40, max: 40, step: 1 },
+            strokeEnds: { min: 0, max: 12, step: 1 },
+            speed: { min: 50, max: 2000, step: 10 },
+            grip: { min: 100, max: 10000, step: 100 },
+            acceleration: { min: 500, max: 20000, step: 100 },
+            seed: { min: 1, max: 100, step: 1 },
+            miterLimit: { min: 1, max: 20, step: 0.5 },
+            join: { options: ['miter', 'round', 'bevel'] }
+        };
+
+        var path,
+            drag = null,
+            info = document.getElementById('info'),
+            list = document.getElementById('effects');
+
+        // Finds the stroke at the point, by its points, handles and path, or
+        // by what its effects draw, from the top down:
+        function hitStroke(point) {
+            var hit = project.hitTest(point, {
+                    segments: true,
+                    handles: true,
+                    stroke: true,
+                    tolerance: 8
+                });
+            if (hit)
+                return hit;
+            var items = project.activeLayer.children;
+            for (var i = items.length - 1; i >= 0; i--) {
+                var output = items[i].getEffectOutput();
+                if (output && output.contains(point))
+                    return { type: 'stroke', item: items[i] };
+            }
+            return null;
+        }
+
+        // Clicking a stroke edits it: its points, its handles, or the whole
+        // stroke. Elsewhere, drawing with the mouse adds a stroke, as in the
+        // Simplify example, which gets the brush as its effect from the
+        // start, so it shows while drawing:
+        function onMouseDown(event) {
+            var hit = hitStroke(event.point);
+            if (hit) {
+                path = hit.item;
+                drag = { type: hit.type, segment: hit.segment };
+            } else {
+                path = new Path({
+                    segments: [event.point],
+                    strokeColor: 'black',
+                    strokeWidth: 40,
+                    effects: [{
+                        type: 'fancyBrush',
+                        parameters: {
+                            seed: Math.floor(Math.random() * 100) + 1
+                        }
+                    }]
+                });
+                drag = null;
+            }
+            select(path);
+        }
+
+        function onMouseDrag(event) {
+            if (drag) {
+                var name = {
+                    'segment': 'point',
+                    'handle-in': 'handleIn',
+                    'handle-out': 'handleOut'
+                }[drag.type];
+                if (name) {
+                    drag.segment[name] += event.delta;
+                } else {
+                    path.position += event.delta;
+                }
+            } else {
+                path.add(event.point);
+            }
+        }
+
+        function onMouseUp(event) {
+            if (!drag) {
+                var time = Date.now();
+                path.simplify(10);
+                select(path);
+                path.getEffectOutput();
+                info.textContent = 'Brush applied in ' + (Date.now() - time)
+                        + ' ms.';
+            }
+            drag = null;
+        }
+
+        // Shows the selected stroke's effects in the panel:
+        function select(item) {
+            project.deselectAll();
+            if (item)
+                item.fullySelected = true;
+            updatePanel(item);
+        }
+
+        function updatePanel(item) {
+            list.innerHTML = '';
+            if (!item)
+                return;
+            item.effects.forEach(function(effect) {
+                var element = document.createElement('div');
+                element.className = 'effect' + (effect.visible ? '' : ' hidden');
+                var header = document.createElement('header');
+                var visible = document.createElement('input');
+                visible.type = 'checkbox';
+                visible.checked = effect.visible;
+                visible.addEventListener('input', function() {
+                    effect.visible = visible.checked;
+                    element.classList.toggle('hidden', !effect.visible);
+                });
+                var title = document.createElement('span');
+                title.textContent = types[effect.type] || effect.type;
+                header.appendChild(visible);
+                header.appendChild(title);
+
+                // Moves the effect by the amount in the order:
+                function move(amount) {
+                    var index = effect.index + amount;
+                    if (index >= 0 && index < item.effects.length) {
+                        effect.remove();
+                        item.insertEffect(index, {
+                            type: effect.type,
+                            parameters: effect.parameters,
+                            visible: effect.visible
+                        });
+                    }
+                }
+
+                [
+                    ['↑', function() { move(-1); }],
+                    ['↓', function() { move(1); }],
+                    ['✕', function() { effect.remove(); }]
+                ].forEach(function(entry) {
+                    var button = document.createElement('button');
+                    button.textContent = entry[0];
+                    button.addEventListener('click', function() {
+                        entry[1]();
+                        updatePanel(item);
+                    });
+                    header.appendChild(button);
+                });
+                element.appendChild(header);
+                Object.keys(effect.parameters).forEach(function(key) {
+                    var control = controls[key];
+                    if (control) {
+                        var label = document.createElement('label'),
+                            input = document.createElement(control.options
+                                    ? 'select' : 'input');
+                        label.textContent = key;
+                        if (control.options) {
+                            control.options.forEach(function(option) {
+                                var node = document.createElement('option');
+                                node.textContent = option;
+                                input.appendChild(node);
+                            });
+                        } else {
+                            input.type = 'range';
+                            input.min = control.min;
+                            input.max = control.max;
+                            input.step = control.step;
+                        }
+                        input.value = effect[key];
+                        input.addEventListener('input', function() {
+                            // Setting a param through its property redraws:
+                            effect[key] = control.options ? input.value
+                                    : +input.value;
+                        });
+                        label.appendChild(input);
+                        element.appendChild(label);
+                    }
+                });
+                list.appendChild(element);
+            });
+        }
+
+        document.getElementById('add').addEventListener('input', function() {
+            var item = project.selectedItems[0];
+            if (item && this.value) {
+                item.addEffect({
+                    type: this.value,
+                    parameters: this.value === 'offset'
+                            ? { distance: 8, join: 'round' } : {}
+                });
+                updatePanel(item);
+            }
+            this.value = '';
+        });
+
+        document.getElementById('clear').addEventListener('click', function() {
+            project.activeLayer.removeChildren();
+            select(null);
+        });
+
+        // A first stroke, a loop across the view:
+        var points = [];
+        for (var t = 0; t <= 1; t += 0.01) {
+            var angle = t * 4 * Math.PI;
+            points.push(view.center + new Point(t * 400 - 200
+                    + Math.cos(angle) * 70, Math.sin(angle) * 100));
+        }
+        var first = new Path({
+            segments: points,
+            strokeColor: 'black',
+            strokeWidth: 40,
+            effects: [{ type: 'fancyBrush', parameters: { seed: 7 } }]
+        });
+        first.simplify(10);
+        select(first);
+    </script>
+</head>
+<body>
+    <canvas id="canvas" resize></canvas>
+    <div class="panel">
+        <h1>Tool Effects</h1>
+        <label>Add effect
+            <select id="add">
+                <option value="">…</option>
+                <option value="fancyBrush">Fancy brush</option>
+                <option value="curvature">Curvature</option>
+                <option value="offset">Offset</option>
+                <option value="outline">Outline stroke</option>
+            </select>
+        </label>
+        <div id="effects"></div>
+        <div class="info">
+            <p id="info"></p>
+            <p>The Fancy Brush tool, as a live effect: its tool draws along
+            each stroke as a hand would, faster on straights and slower in
+            turns, with the tool's own handlers. The strokes stay plain paths:
+            draw new ones with the mouse, drag their points, handles or the
+            strokes themselves to edit them, and change the brush of the
+            selected one here: its size, as a factor of the stroke width, its
+            stroke ends, and the hand's speed, grip in turns and
+            acceleration.</p>
+            <p>Curvature shows the curvature of a stroke as Glyphs does: a
+            comb outside each turn, as wide as the curvature and colored by
+            it, which also shows where it jumps at the segments.</p>
+            <p><button id="clear">Clear</button></p>
+        </div>
+    </div>
+</body>
+</html>
