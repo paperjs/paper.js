@@ -1989,11 +1989,14 @@ new function() { // Injection scope for various item event handlers
         this.setSelection(source._selection);
         // Copy over data, name and effects as well.
         var data = source._data,
-            name = source._name;
+            name = source._name,
+            effects = source._effects;
         this._data = data ? Base.clone(data) : null;
         if (name)
             this.setName(name);
-        this.setEffects(source._effects);
+        this.setEffects(effects && effects.map(function(instance) {
+            return instance._getProps();
+        }));
     },
 
     /**

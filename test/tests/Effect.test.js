@@ -10,10 +10,11 @@
  * All rights reserved.
  */
 
-import { describe } from 'vitest'
+import { describe, onTestFinished } from 'vitest'
 import paper, {
   Color,
   Effect,
+  EffectInstance,
   Group,
   Path,
   Point,
@@ -23,8 +24,6 @@ import paper, {
 import { equals, test } from '../helpers.js'
 
 describe('Effect', () => {
-  const { offset: OffsetEffect, outline: OutlineEffect } = Effect.types
-
   function createSquare() {
     return new Path.Rectangle({
       point: [20, 20],
@@ -42,14 +41,142 @@ describe('Effect', () => {
     return new Color(data[0] / 255, data[1] / 255, data[2] / 255, data[3] / 255)
   }
 
-  test('Effects have their parameters as properties, with defaults', () => {
-    const effect = new OffsetEffect({ parameters: { distance: 10 } })
-    equals(effect.type, 'offset')
-    equals(effect.distance, 10)
-    equals(effect.join, 'miter', 'the default')
-    equals(effect.visible, true)
-    equals(Effect.types.offset === OffsetEffect, true)
-    equals(Effect.create({ type: 'outline' }) instanceof OutlineEffect, true)
+  // Define an effect for the test, and remove it again after it:
+  function defineEffect(props) {
+    const effect = new Effect(props)
+    onTestFinished(() => effect.remove())
+    return effect
+  }
+
+  test('Effects are registered by their types', () => {
+    const offset = Effect.get('offset')
+    equals([offset.type, Effect.get('outline').type], ['offset', 'outline'])
+    equals(Effect.get('wobble'), null)
+    const wobble = defineEffect({ type: 'wobble' })
+    equals(Effect.get('wobble') === wobble, true)
+    equals(Effect.getAll().includes(wobble), true)
+    // Defining an effect again replaces it:
+    const again = defineEffect({ type: 'wobble' })
+    equals(Effect.get('wobble') === again, true)
+    equals(wobble.remove(), false, 'not registered anymore')
+    equals(again.remove(), true)
+    equals(Effect.get('wobble'), null)
+    Effect.add(again)
+    equals(Effect.get('wobble') === again, true)
+  })
+
+  test('Effects have titles and categories for hosts', () => {
+    const wobble = defineEffect({
+      type: 'wobble',
+      title: 'Wobble',
+      category: 'Distort'
+    })
+    equals([wobble.title, wobble.category], ['Wobble', 'Distort'])
+    const plain = defineEffect({ type: 'plain' })
+    equals([plain.title, plain.category], ['plain', null], 'the defaults')
+    equals(Effect.get('offset').title, 'Offset Path')
+  })
+
+  test('Effects keep the objects describing their parameters', () => {
+    const amount = {
+      label: 'Amount',
+      type: 'number',
+      range: [0, 100],
+      value: 10
+    }
+    const onEditParameters = () => {}
+    const wobble = defineEffect({
+      type: 'wobble',
+      parameters: { amount },
+      onEditParameters
+    })
+    equals(wobble.parameters.amount === amount, true)
+    equals(amount, {
+      label: 'Amount',
+      type: 'number',
+      range: [0, 100],
+      value: 10
+    })
+    equals(wobble.onEditParameters === onEditParameters, true)
+  })
+
+  test('Parameters are properties of the instances, with defaults', () => {
+    defineEffect({
+      type: 'wobble',
+      parameters: {
+        amount: { type: 'number', value: 10 },
+        smooth: { type: 'checkbox', value: true }
+      }
+    })
+    const path = createSquare()
+    const instance = path.addEffect({
+      type: 'wobble',
+      parameters: { amount: 20 }
+    })
+    equals(instance instanceof EffectInstance, true)
+    equals(instance.type, 'wobble')
+    equals(instance.effect === Effect.get('wobble'), true)
+    equals([instance.amount, instance.smooth], [20, true])
+    equals(instance.parameters, { amount: 20, smooth: true })
+    instance.amount = 30
+    equals(instance.parameters.amount, 30)
+    equals(path.effects[0].visible, true)
+  })
+
+  test('Effects apply with the instance as this', () => {
+    let event = null
+    let self = null
+    defineEffect({
+      type: 'shrink',
+      parameters: { amount: { value: 0.5 } },
+      onApply(applyEvent) {
+        event = applyEvent
+        self = this
+        return applyEvent.art.scale(this.amount)
+      }
+    })
+    const path = createSquare()
+    const instance = path.addEffect({ type: 'shrink' })
+    equals(path.getEffectOutput().bounds, new Rectangle(30, 30, 20, 20))
+    equals(self === instance, true)
+    equals(event.item === path, true)
+    equals(
+      event.art !== path && event.art.bounds,
+      new Rectangle(30, 30, 20, 20)
+    )
+  })
+
+  test('Redefining an effect applies it again', () => {
+    defineEffect({
+      type: 'shrink',
+      onApply: event => event.art.scale(0.5)
+    })
+    const path = createSquare()
+    const instance = path.addEffect({ type: 'shrink' })
+    equals(path.previewBounds, new Rectangle(30, 30, 20, 20))
+    const shrink = defineEffect({
+      type: 'shrink',
+      parameters: { amount: { value: 0.25 } },
+      onApply(event) {
+        return event.art.scale(this.amount)
+      }
+    })
+    equals(path.previewBounds, new Rectangle(35, 35, 10, 10))
+    equals(instance.effect === shrink, true)
+    equals(instance.amount, 0.25, 'the new parameter')
+    shrink.remove()
+    equals(path.previewBounds, path.bounds, 'as it is')
+    equals(instance.effect, null)
+  })
+
+  test('Effects can only declare parameters that aren’t taken', () => {
+    let message = null
+    try {
+      defineEffect({ type: 'wobble', parameters: { visible: { value: 1 } } })
+    } catch (err) {
+      message = err.message
+    }
+    equals(message, `Invalid parameter name: 'visible'.`)
   })
 
   test('Item#addEffect(), #insertEffect() and #removeEffect()', () => {
@@ -58,11 +185,10 @@ describe('Effect', () => {
       type: 'offset',
       parameters: { distance: 5 }
     })
-    equals(offset instanceof OffsetEffect, true)
     equals([offset.item === path, offset.index], [true, 0])
-    const outline = path.insertEffect(0, new OutlineEffect())
+    const outline = path.insertEffect(0, { type: 'outline' })
     equals(
-      path.effects.map(effect => effect.type),
+      path.effects.map(instance => instance.type),
       ['outline', 'offset']
     )
     equals([outline.index, offset.index], [0, 1], 'renumbered')
@@ -73,28 +199,23 @@ describe('Effect', () => {
     equals(path.effects, [])
     path.effects = [{ type: 'offset' }, { type: 'outline' }]
     equals(path.removeEffects().length, 2)
-    // Effects of other items are copied:
-    const other = createSquare()
-    other.addEffect(offset)
-    const copy = path.addEffect(offset)
-    equals(copy !== offset && copy.item === path, true)
-    equals(offset.item === other, true)
   })
 
   test('The output of effects is drawn in the item’s place', () => {
     const path = createSquare()
-    const effect = path.addEffect(
-      new OffsetEffect({ parameters: { distance: 10 } })
-    )
+    const instance = path.addEffect({
+      type: 'offset',
+      parameters: { distance: 10 }
+    })
     equals(path.getEffectOutput().bounds, new Rectangle(10, 10, 60, 60))
     paper.view.update(true)
     equals(getViewPixel(15, 40), new Color(1, 0, 0, 1), 'drawn offset')
-    // Changes of the effect and of the item update the output:
-    effect.distance = 5
+    // Changes of the instance and of the item update the output:
+    instance.distance = 5
     equals(path.getEffectOutput().bounds, new Rectangle(15, 15, 50, 50))
     path.position = path.position.add(10)
     equals(path.getEffectOutput().bounds, new Rectangle(25, 25, 50, 50))
-    effect.visible = false
+    instance.visible = false
     equals(path.getEffectOutput(), null)
     paper.view.update(true)
     equals(getViewPixel(29, 50), new Color(0, 0, 0, 0), 'drawn as it is')
@@ -142,19 +263,23 @@ describe('Effect', () => {
     equals(path.previewBounds, path.strokeBounds)
   })
 
-  test('Effects of unknown types keep their parameters and round-trip', () => {
+  test('Instances of unknown effects keep their parameters and round-trip', () => {
     const path = createSquare()
     path.effects = [
       { type: 'zigzag', parameters: { size: 3, ridges: 4 }, visible: false }
     ]
-    const [effect] = path.effects
-    equals(effect.constructor === Effect, true)
-    equals([effect.type, effect.visible], ['zigzag', false])
-    equals(effect.parameters, { size: 3, ridges: 4 })
+    const [instance] = path.effects
+    equals(
+      [instance.type, instance.effect, instance.visible],
+      ['zigzag', null, false]
+    )
+    equals(instance.parameters, { size: 3, ridges: 4 })
     equals(path.getEffectOutput(), null, 'not visible')
-    effect.visible = true
+    instance.visible = true
     equals(path.getEffectOutput().bounds, path.bounds, 'as it is')
-    const copy = new Project().importJSON(path.exportJSON())
+    const json = path.exportJSON()
+    equals(json.includes('"type":"zigzag"'), true)
+    const copy = new Project().importJSON(json)
     equals(copy.effects[0].parameters, { size: 3, ridges: 4 })
   })
 
@@ -222,7 +347,7 @@ describe('Effect', () => {
     )
     const copy = new Project().importJSON(json)
     equals(
-      copy.effects.map(effect => [effect.type, effect.visible]),
+      copy.effects.map(instance => [instance.type, instance.visible]),
       [
         ['offset', true],
         ['outline', false]
@@ -238,22 +363,16 @@ describe('Effect', () => {
     equals(svg.includes('d="M10,10h60v60h-60z"'), true)
   })
 
-  test('Hosts can replace the classes of types', () => {
-    const native = OffsetEffect
-    // Creating a type with the same name replaces it:
-    Effect.extend({
+  test('Hosts can replace the effects of Paper.js', () => {
+    const native = Effect.get('offset')
+    onTestFinished(() => Effect.add(native))
+    new Effect({
       type: 'offset',
-      defaults: { distance: 0 },
-      apply(art) {
-        return art.scale(2)
-      }
+      parameters: { distance: { value: 0 } },
+      onApply: event => event.art.scale(2)
     })
-    try {
-      const path = createSquare()
-      path.addEffect({ type: 'offset', parameters: { distance: 1 } })
-      equals(path.previewBounds, new Rectangle(0, 0, 80, 80))
-    } finally {
-      Effect.types.offset = native
-    }
+    const path = createSquare()
+    path.addEffect({ type: 'offset', parameters: { distance: 1 } })
+    equals(path.previewBounds, new Rectangle(0, 0, 80, 80))
   })
 })
