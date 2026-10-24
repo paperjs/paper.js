@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Oct 24 11:15:32 2026 +0200
+ * Date: Sat Oct 24 11:26:51 2026 +0200
  *
  ***
  *
@@ -6901,7 +6901,6 @@ var Effect = Base.extend(new function() {
 				accessors = {};
 			this._type = props.type;
 			this._label = props.label || props.type;
-			this._category = props.category || null;
 			this._parameters = props.parameters || {};
 			this.onApply = props.onApply || null;
 			this.onEditParameters = props.onEditParameters || null;
@@ -6931,10 +6930,6 @@ var Effect = Base.extend(new function() {
 
 		getLabel: function() {
 			return this._label;
-		},
-
-		getCategory: function() {
-			return this._category;
 		},
 
 		getParameters: function() {
@@ -6996,7 +6991,6 @@ new function() {
 	new Effect({
 		type: 'offset',
 		label: 'Offset Path',
-		category: 'Path',
 		parameters: {
 			distance: {
 				label: 'Distance', type: 'number', units: 'point', value: 0
@@ -7023,7 +7017,6 @@ new function() {
 	new Effect({
 		type: 'outline',
 		label: 'Outline Stroke',
-		category: 'Path',
 
 		onApply: function(event) {
 			return applyToPaths(event.art, function(path) {

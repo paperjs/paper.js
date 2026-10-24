@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Oct 24 11:15:32 2026 +0200
+ * Date: Sat Oct 24 11:26:51 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -1504,12 +1504,6 @@ declare namespace paper {
         readonly label: string
 
         /** 
-         * The category of the effect, for hosts to list it in, e.g. in a menu.
-         * Paper.js itself doesn't use it.
-         */
-        readonly category: string | null
-
-        /** 
          * The declared parameters of the effect by their names, as objects
          * that describe them for hosts to build their settings from, with the
          * default as their `value`, e.g.
@@ -1541,8 +1535,8 @@ declare namespace paper {
          * Creates an effect and registers it under its type.
          * 
          * @param props - the {@link #type} of the effect, its
-         *     {@link #label}, {@link #category} and {@link #parameters}, and
-         *     {@link #onApply} and {@link #onEditParameters}
+         *     {@link #label} and {@link #parameters}, and {@link #onApply}
+         *     and {@link #onEditParameters}
          */
         constructor(props: object)
 
