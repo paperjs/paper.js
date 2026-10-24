@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Oct 24 00:58:30 2026 +0200
+ * Date: Sat Oct 24 02:43:36 2026 +0200
  *
  ***
  *
@@ -4410,11 +4410,14 @@ new function() {
 		this.setPivot(source._pivot);
 		this.setSelection(source._selection);
 		var data = source._data,
-			name = source._name;
+			name = source._name,
+			effects = source._effects;
 		this._data = data ? Base.clone(data) : null;
 		if (name)
 			this.setName(name);
-		this.setEffects(source._effects);
+		this.setEffects(effects && effects.map(function(instance) {
+			return instance._getProps();
+		}));
 	},
 
 	rasterize: function(arg0, arg1) {
@@ -6773,45 +6776,48 @@ var HitResult = Base.extend({
 	}
 });
 
-var Effect = Base.extend({
-	_class: 'Effect',
+var EffectInstance = Base.extend({
+	_class: 'EffectInstance',
 	_compactSerialize: true,
-	_type: null,
-	_defaults: {},
 
-	initialize: function Effect(props) {
-		props = props || {};
-		this._item = null;
-		this._index = null;
-		this._type = this._type || props.type || null;
+	initialize: function EffectInstance(props) {
+		this._type = props.type;
 		this._visible = props.visible !== false;
+		this._item = this._index = null;
 		this._setParameters(props.parameters);
 	},
 
 	_setParameters: function(parameters) {
-		var defaults = this._defaults;
-		parameters = Base.set({}, parameters);
-		for (var key in defaults) {
-			if (parameters[key] === undefined)
-				parameters[key] = defaults[key];
+		this._parameters = Base.set({}, parameters);
+		this._setEffect(Effect.get(this._type));
+	},
+
+	_setEffect: function(effect) {
+		if (effect) {
+			var parameters = this._parameters,
+				defaults = effect._defaults;
+			for (var key in defaults) {
+				if (parameters[key] === undefined)
+					parameters[key] = defaults[key];
+			}
+			Object.defineProperties(this, effect._accessors);
 		}
-		this._parameters = parameters;
+		this._effect = effect;
 		this._linkedParameters = null;
 	},
 
-	clone: function() {
-		return new this.constructor({
+	_getProps: function() {
+		var props = {
 			type: this._type,
-			parameters: Base.clone(this._parameters),
-			visible: this._visible
-		});
+			parameters: Base.set({}, this._parameters)
+		};
+		if (!this._visible)
+			props.visible = false;
+		return props;
 	},
 
 	_serialize: function(options, dictionary) {
-		var props = { type: this._type, parameters: this._parameters };
-		if (!this._visible)
-			props.visible = false;
-		return Base.serialize(props, options, true, dictionary);
+		return Base.serialize(this._getProps(), options, true, dictionary);
 	},
 
 	_changed: function() {
@@ -6822,6 +6828,13 @@ var Effect = Base.extend({
 
 	getType: function() {
 		return this._type;
+	},
+
+	getEffect: function() {
+		var effect = Effect.get(this._type);
+		if (effect !== this._effect)
+			this._setEffect(effect);
+		return effect;
 	},
 
 	isVisible: function() {
@@ -6836,17 +6849,17 @@ var Effect = Base.extend({
 	getParameters: function() {
 		var linked = this._linkedParameters;
 		if (!linked) {
-			var effect = this;
+			var instance = this;
 			linked = this._linkedParameters = {};
 			Base.each(this._parameters, function(value, key) {
 				Object.defineProperty(linked, key, {
 					enumerable: true,
 					get: function() {
-						return effect._parameters[key];
+						return instance._parameters[key];
 					},
 					set: function(value) {
-						effect._parameters[key] = value;
-						effect._changed();
+						instance._parameters[key] = value;
+						instance._changed();
 					}
 				});
 			});
@@ -6872,50 +6885,100 @@ var Effect = Base.extend({
 		return !!(this._item && this._item.removeEffect(this._index));
 	},
 
-	apply: function(art) {
-		return art;
-	},
-
-	equals: function(effect) {
-		return effect === this || effect instanceof Effect
-				&& this._type === effect._type
-				&& this._visible === effect._visible
-				&& Base.equals(this._parameters, effect._parameters)
+	equals: function(instance) {
+		return instance === this || instance instanceof EffectInstance
+				&& this._type === instance._type
+				&& this._visible === instance._visible
+				&& Base.equals(this._parameters, instance._parameters)
 				|| false;
-	},
+	}
+});
 
-	statics: {
-		types: {},
+var Effect = Base.extend(new function() {
+	var effects = {};
 
-		create: function(object) {
-			var ctor = Effect.types[object.type] || Effect;
-			return object instanceof Effect ? object : new ctor(object);
-		},
+	return {
+		_class: 'Effect',
 
-		extend: function extend(src) {
-			var type = src.type,
-				defaults = src._defaults = Base.set({},
-					this.prototype._defaults, src.defaults);
-			delete src.type;
-			delete src.defaults;
-			if (type)
-				src._type = type;
-			Base.each(defaults, function(value, key) {
-				var part = Base.capitalize(key);
-				src['get' + part] = function() {
-					return this._parameters[key];
-				};
-				src['set' + part] = function(value) {
-					this._parameters[key] = value;
-					this._changed();
+		initialize: function Effect(props) {
+			var defaults = {},
+				accessors = {};
+			this._type = props.type;
+			this._title = props.title || props.type;
+			this._category = props.category || null;
+			this._parameters = props.parameters || {};
+			this.onApply = props.onApply || null;
+			this.onEditParameters = props.onEditParameters || null;
+			Base.each(this._parameters, function(parameter, key) {
+				if (key in EffectInstance.prototype)
+					throw new Error('Invalid parameter name: \'' + key + '\'.');
+				defaults[key] = parameter.value;
+				accessors[key] = {
+					configurable: true,
+					get: function() {
+						return this._parameters[key];
+					},
+					set: function(value) {
+						this._parameters[key] = value;
+						this._changed();
+					}
 				};
 			});
-			var ctor = extend.base.apply(this, arguments);
-			if (type)
-				Effect.types[type] = ctor;
-			return ctor;
+			this._defaults = defaults;
+			this._accessors = accessors;
+			Effect.add(this);
+		},
+
+		getType: function() {
+			return this._type;
+		},
+
+		getTitle: function() {
+			return this._title;
+		},
+
+		getCategory: function() {
+			return this._category;
+		},
+
+		getParameters: function() {
+			return this._parameters;
+		},
+
+		remove: function() {
+			return Effect.remove(this);
+		},
+
+		statics: {
+			_version: 0,
+
+			add: function(effect) {
+				effects[effect._type] = effect;
+				Effect._version++;
+				return effect;
+			},
+
+			get: function(type) {
+				return effects.hasOwnProperty(type) ? effects[type] : null;
+			},
+
+			getAll: function() {
+				return Object.keys(effects).map(function(type) {
+					return effects[type];
+				});
+			},
+
+			remove: function(effect) {
+				var type = effect._type;
+				if (effects[type] === effect) {
+					delete effects[type];
+					Effect._version++;
+					return true;
+				}
+				return false;
+			}
 		}
-	}
+	};
 });
 
 new function() {
@@ -6934,27 +6997,40 @@ new function() {
 		return art;
 	}
 
-	Effect.extend({
+	new Effect({
 		type: 'offset',
-		defaults: { distance: 0, join: 'miter', miterLimit: 10 },
+		title: 'Offset Path',
+		category: 'Path',
+		parameters: {
+			distance: {
+				label: 'Distance', type: 'number', units: 'point', value: 0
+			},
+			join: {
+				label: 'Join', type: 'list',
+				options: ['miter', 'round', 'bevel'], value: 'miter'
+			},
+			miterLimit: { label: 'Miter Limit', type: 'number', value: 10 }
+		},
 
-		apply: function(art) {
-			var parameters = this._parameters;
-			return applyToPaths(art, function(path) {
-				return path.offset(parameters.distance, {
-					join: parameters.join,
-					miterLimit: parameters.miterLimit,
+		onApply: function(event) {
+			var instance = this;
+			return applyToPaths(event.art, function(path) {
+				return path.offset(instance.distance, {
+					join: instance.join,
+					miterLimit: instance.miterLimit,
 					insert: false
 				});
 			});
 		}
 	});
 
-	Effect.extend({
+	new Effect({
 		type: 'outline',
+		title: 'Outline Stroke',
+		category: 'Path',
 
-		apply: function(art) {
-			return applyToPaths(art, function(path) {
+		onApply: function(event) {
+			return applyToPaths(event.art, function(path) {
 				if (!path.hasStroke())
 					return path;
 				var outline = path.outline({ insert: false });
@@ -7007,11 +7083,9 @@ Item.inject(new function() {
 			var list = this._effects || (this._effects = []),
 				inserted = [];
 			for (var i = 0, l = effects.length; i < l; i++) {
-				var effect = Effect.create(effects[i]);
-				if (effect._item)
-					effect = effect.clone();
-				effect._item = this;
-				inserted.push(effect);
+				var instance = new EffectInstance(effects[i]);
+				instance._item = this;
+				inserted.push(instance);
 			}
 			Base.splice(list, inserted, index, 0);
 			this._changed(257);
@@ -7030,8 +7104,8 @@ Item.inject(new function() {
 				end = Base.pick(end, list.length);
 				removed = Base.splice(list, null, start, end - start);
 				for (var i = 0, l = removed.length; i < l; i++) {
-					var effect = removed[i];
-					effect._item = effect._index = null;
+					var instance = removed[i];
+					instance._item = instance._index = null;
 				}
 				if (removed.length)
 					this._changed(257);
@@ -7052,17 +7126,25 @@ Item.inject(new function() {
 
 		getEffectOutput: function() {
 			var output = this._effectOutput;
-			if (output === undefined) {
+			if (output === undefined
+					|| this._effectVersion !== Effect._version) {
 				output = null;
 				if (this._hasEffects()) {
 					output = this._getEffectArt();
 					for (var i = 0, l = this._effects.length; i < l; i++) {
-						var effect = this._effects[i];
-						if (effect._visible)
-							output = effect.apply(output) || output;
+						var instance = this._effects[i],
+							effect = instance.getEffect(),
+							onApply = effect && effect.onApply;
+						if (instance._visible && onApply) {
+							output = onApply.call(instance, {
+								art: output,
+								item: this
+							}) || output;
+						}
 					}
 				}
 				this._effectOutput = output;
+				this._effectVersion = Effect._version;
 			}
 			return output;
 		},

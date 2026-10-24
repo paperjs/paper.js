@@ -15,7 +15,7 @@
 <div class="reference-class">
 <h1>Effect</h1>
 
-<p>A live effect of an item, see <a href="../classes/Item.html#effects"><tt>item.effects</tt></a>: it derives what is drawn from the item without changing the item itself, as the effects in Illustrator do. The effects of an item run in order, each on what the one before it returned. Each type of effect is a subclass with its parameters as properties, registered by its type, see <a href="../classes/Effect.html#types"><tt>Effect.types</tt></a>. Effects of types that aren&rsquo;t registered keep their parameters and leave what they get as it is, so that they still round-trip. <a href="../classes/Effect.html#extend-src"><tt>Effect.extend(src)</tt></a> creates new types.</p>
+<p>A live effect, which derives what is drawn from an item without changing the item itself, as the effects in Illustrator do. Creating one registers it under its type, replacing any effect registered there before, and items use it by that type, see <a href="../classes/Item.html#effects"><tt>item.effects</tt></a>, each through an <a href="../classes/EffectInstance.html"><tt>EffectInstance</tt></a> with its own parameters.</p>
 
 
 </div>
@@ -25,23 +25,23 @@
 	<h2>Constructors</h2>
 	
 		
-<div id="effect" class="member">
+<div id="effect-props" class="member">
 <div class="member-link">
-<a name="effect" href="#effect"><tt><b>Effect</b>([object])</tt></a>
+<a name="effect-props" href="#effect-props"><tt><b>Effect</b>(props)</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-    <p>Creates an effect of the type of its class, or of the type that the object names, see <a href="../classes/Effect.html#create-object"><tt>Effect.create(object)</tt></a>.</p>
+    <p>Creates an effect and registers it under its type.</p>
     
     
 <ul class="member-list">
 	<h4>Parameters:</h4>
 	
 	<li>
-<tt>object:</tt> 
+<tt>props:</tt> 
 <tt>Object</tt>
-&mdash;&nbsp;the effect&rsquo;s <code>parameters</code>, which it takes as  they are, and its <code>visible</code> flag
-&mdash;&nbsp;optional
+&mdash;&nbsp;the <a href="../classes/Effect.html#type"><tt>type</tt></a> of the effect, its  <a href="../classes/Effect.html#title"><tt>title</tt></a>, <a href="../classes/Effect.html#category"><tt>category</tt></a> and <a href="../classes/Effect.html#parameters"><tt>parameters</tt></a>, and  <a href="../classes/Effect.html#onapply"><tt>onApply</tt></a> and <a href="../classes/Effect.html#oneditparameters"><tt>onEditParameters</tt></a>
+
 </li>
 	
 </ul>
@@ -60,18 +60,7 @@
 
 
     
-    <h4>Example:</h4>
-
-
-<pre><code>var path = new Path.Circle({
-    center: [50, 50],
-    radius: 20,
-    fillColor: 'red'
-});
-path.addEffect(new Effect.types.offset({
-    parameters: { distance: 10 }
-}));</code></pre>
-
+    
 </div>
 </div>
 </div>
@@ -94,7 +83,7 @@ path.addEffect(new Effect.types.offset({
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The type of the effect, which names its class in <a href="../classes/Effect.html#types"><tt>Effect.types</tt></a>.</p>
+	<p>The type that the effect is registered under, and that items use it by.</p>
 	
 		<p>Read only.</p>
 	
@@ -115,26 +104,56 @@ path.addEffect(new Effect.types.offset({
 </div>
 		
 			
-<div id="visible" class="member">
+<div id="title" class="member">
 <div class="member-link">
-<a name="visible" href="#visible"><tt><b>visible</b></tt></a>
+<a name="title" href="#title"><tt><b>title</b></tt></a>
 </div>
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>Whether the effect applies. Effects that aren&rsquo;t visible are skipped.</p>
+	<p>The title of the effect, for hosts to show to users.</p>
+	
+		<p>Read only.</p>
 	
 	
 	
 		<ul class="member-list">
 			<h4>Default:</h4>
-			<li><tt>true</tt></li>
+			<li><tt>the type</tt></li>
 		</ul>
 	
 	<ul class="member-list">
 		<h4>Type:</h4>
 		<li>
-			<tt>Boolean</tt>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="category" class="member">
+<div class="member-link">
+<a name="category" href="#category"><tt><b>category</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The category of the effect, for hosts to list it in, e.g. in a menu. Paper.js itself doesn&rsquo;t use it.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>⟋<tt>null</tt>
 		</li>
 	</ul>
     
@@ -153,7 +172,9 @@ path.addEffect(new Effect.types.offset({
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The parameters of the effect. Changing them on the returned object updates the effect, as setting them as properties of effects of known types does. Parameters that it doesn&rsquo;t have yet are added by setting them all, as are changes within values such as arrays.</p>
+	<p>The declared parameters of the effect by their names, as objects that describe them for hosts to build their settings from, with the default as their <code>value</code>, e.g. <code>{ label: &#39;Amount&#39;, type: &#39;number&#39;, range: [0, 100], value: 10 }</code>. The instances of the effect have them as properties.</p>
+	
+		<p>Read only.</p>
 	
 	
 	
@@ -165,42 +186,35 @@ path.addEffect(new Effect.types.offset({
 	</ul>
     
 	
-	<h4>Example:</h4>
-
-
-<pre><code>var effect = path.addEffect({
-    type: 'offset',
-    parameters: { distance: 10 }
-});
-effect.parameters.distance = 20; // Redraws.
-effect.parameters = { distance: 5, join: 'round' };</code></pre>
-
+	
 </div>
 
 </div>
 </div>
 		
 			
-<div id="item" class="member">
+<div id="onapply" class="member">
 <div class="member-link">
-<a name="item" href="#item"><tt><b>item</b></tt></a>
+<a name="onapply" href="#onapply"><tt><b>onApply</b></tt></a>
 </div>
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The item that the effect is part of.</p>
-	
-		<p>Read only.</p>
+	<p>The function that applies the effect, called with the instance as <code>this</code>, and returning what the effect makes of the art that it gets, which it doesn&rsquo;t change.</p>
 	
 	
 	
 	<ul class="member-list">
 		<h4>Type:</h4>
 		<li>
-			<a href="../classes/Item.html"><tt>Item</tt></a>⟋<tt>null</tt>
+			<tt>Function</tt>⟋<tt>null</tt>
 		</li>
 	</ul>
-    
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>event.art: <a href="../classes/Item.html"><tt>Item</tt></a></tt> &mdash; the item to apply the effect to, or what  the effect before it returned</li>
+<li><tt>event.item: <a href="../classes/Item.html"><tt>Item</tt></a></tt> &mdash; the item that the instance is part of</li>
+</ul>
 	
 	
 </div>
@@ -209,23 +223,21 @@ effect.parameters = { distance: 5, join: 'round' };</code></pre>
 </div>
 		
 			
-<div id="index" class="member">
+<div id="oneditparameters" class="member">
 <div class="member-link">
-<a name="index" href="#index"><tt><b>index</b></tt></a>
+<a name="oneditparameters" href="#oneditparameters"><tt><b>onEditParameters</b></tt></a>
 </div>
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The index of the effect in the <a href="../classes/Item.html#effects"><tt>item.effects</tt></a> of its item.</p>
-	
-		<p>Read only.</p>
+	<p>The function that hosts call when the user edits the parameters of an instance, with the instance as <code>this</code>, to set its properties. Paper.js itself doesn&rsquo;t call it.</p>
 	
 	
 	
 	<ul class="member-list">
 		<h4>Type:</h4>
 		<li>
-			<tt>Number</tt>⟋<tt>null</tt>
+			<tt>Function</tt>⟋<tt>null</tt>
 		</li>
 	</ul>
     
@@ -240,37 +252,6 @@ effect.parameters = { distance: 5, join: 'round' };</code></pre>
 
 
 
-    <div class="reference-members">
-    	<h2>Static Properties</h2>
-        
-            
-<div id="types" class="member">
-<div class="member-link">
-<a name="types" href="#types"><tt><b>Effect.types</b></tt></a>
-</div>
-<div class="member-description hidden">
-
-<div class="member-text">
-	<p>The classes of the effects by their types. Hosts can register their own classes for types here, to replace the ones of Paper.js.</p>
-	
-	
-	
-	<ul class="member-list">
-		<h4>Type:</h4>
-		<li>
-			<tt>Object</tt>
-		</li>
-	</ul>
-    
-	
-	
-</div>
-
-</div>
-</div>
-        
-    </div>
-
 
 
 <!-- ============================== methods ================================ -->
@@ -278,42 +259,13 @@ effect.parameters = { distance: 5, join: 'round' };</code></pre>
 		<h2>Methods</h2>
 		
 	
-<div id="clone" class="member">
-<div class="member-link">
-<a name="clone" href="#clone"><tt><b>clone</b>()</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	
-    
-	
-	
-	<ul class="member-list">
-		<h4>Returns:</h4>
-		
-			<li>
-<tt><a href="../classes/Effect.html"><tt>Effect</tt></a></tt>&nbsp;&mdash;&nbsp;a copy of the effect, without an item
-</li>
-
-		
-	</ul>
-
-
-
-	
-	
-</div>
-</div>
-</div>
-
-	
 <div id="remove" class="member">
 <div class="member-link">
 <a name="remove" href="#remove"><tt><b>remove</b>()</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Removes the effect from its item.</p>
+	<p>Removes the effect from the registered effects.</p>
     
 	
 	
@@ -321,89 +273,7 @@ effect.parameters = { distance: 5, join: 'round' };</code></pre>
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the effect was removed, <tt>false</tt> otherwise
-</li>
-
-		
-	</ul>
-
-
-
-	
-	
-</div>
-</div>
-</div>
-
-	
-<div id="apply-art" class="member">
-<div class="member-link">
-<a name="apply-art" href="#apply-art"><tt><b>apply</b>(art)</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	<p>Applies the effect to the art that it gets: the item, or what the effect before it returned, which it doesn&rsquo;t change. Subclasses override it, effects of unknown types return the art as it is.</p>
-    
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>art:</tt> 
-<a href="../classes/Item.html"><tt>Item</tt></a>
-&mdash;&nbsp;the item to apply the effect to
-
-</li>
-	
-</ul>
-
-	
-	<ul class="member-list">
-		<h4>Returns:</h4>
-		
-			<li>
-<tt><a href="../classes/Item.html"><tt>Item</tt></a></tt>&nbsp;&mdash;&nbsp;the result
-</li>
-
-		
-	</ul>
-
-
-
-	
-	
-</div>
-</div>
-</div>
-
-	
-<div id="equals-effect" class="member">
-<div class="member-link">
-<a name="equals-effect" href="#equals-effect"><tt><b>equals</b>(effect)</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	<p>Checks whether the effect is equal to the supplied one.</p>
-    
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>effect:</tt> 
-<a href="../classes/Effect.html"><tt>Effect</tt></a>
-
-
-</li>
-	
-</ul>
-
-	
-	<ul class="member-list">
-		<h4>Returns:</h4>
-		
-			<li>
-<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if they are equal, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the effect was registered, <tt>false</tt> otherwise
 </li>
 
 		
@@ -426,21 +296,21 @@ effect.parameters = { distance: 5, join: 'round' };</code></pre>
 		<h2>Static Methods</h2>
 		
 			
-<div id="create-object" class="member">
+<div id="add-effect" class="member">
 <div class="member-link">
-<a name="create-object" href="#create-object"><tt><b>Effect.create</b>(object)</tt></a>
+<a name="add-effect" href="#add-effect"><tt><b>Effect.add</b>(effect)</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Returns the effect, or creates one from an object that describes it, <code>{ type, parameters, visible }</code>, of the class registered for its type, or of <code>Effect</code> for unknown types.</p>
+	<p>Registers the effect under its type, replacing any effect registered there before. Effects register themselves when they are created.</p>
     
 	
 <ul class="member-list">
 	<h4>Parameters:</h4>
 	
 	<li>
-<tt>object:</tt> 
-<a href="../classes/Effect.html"><tt>Effect</tt></a>⟋<tt>Object</tt>
+<tt>effect:</tt> 
+<a href="../classes/Effect.html"><tt>Effect</tt></a>
 
 
 </li>
@@ -452,7 +322,7 @@ effect.parameters = { distance: 5, join: 'round' };</code></pre>
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><a href="../classes/Effect.html"><tt>Effect</tt></a></tt>
+<tt><a href="../classes/Effect.html"><tt>Effect</tt></a></tt>&nbsp;&mdash;&nbsp;the effect
 </li>
 
 		
@@ -467,22 +337,22 @@ effect.parameters = { distance: 5, join: 'round' };</code></pre>
 </div>
 		
 			
-<div id="extend-src" class="member">
+<div id="get-type" class="member">
 <div class="member-link">
-<a name="extend-src" href="#extend-src"><tt><b>Effect.extend</b>(src)</tt></a>
+<a name="get-type" href="#get-type"><tt><b>Effect.get</b>(type)</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Creates a type of effect: a subclass of <code>Effect</code> with its <code>type</code>, which registers it in <a href="../classes/Effect.html#types"><tt>Effect.types</tt></a>, the <code>defaults</code> of its parameters, which become its properties, and its <a href="../classes/Effect.html#apply-art"><tt>apply(art)</tt></a>. The parameters of subclasses add to those of their base classes.</p>
+	<p>Returns the effect registered under the type.</p>
     
 	
 <ul class="member-list">
 	<h4>Parameters:</h4>
 	
 	<li>
-<tt>src:</tt> 
-<tt>Object</tt>
-&mdash;&nbsp;the definition of the type
+<tt>type:</tt> 
+<tt>String</tt>
+
 
 </li>
 	
@@ -493,7 +363,7 @@ effect.parameters = { distance: 5, join: 'round' };</code></pre>
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><tt>Function</tt></tt>&nbsp;&mdash;&nbsp;the class
+<tt><a href="../classes/Effect.html"><tt>Effect</tt></a>⟋<tt>null</tt></tt>&nbsp;&mdash;&nbsp;the effect, or <code>null</code>
 </li>
 
 		
@@ -502,18 +372,77 @@ effect.parameters = { distance: 5, join: 'round' };</code></pre>
 
 
 	
-	<h4>Example:</h4>
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="getall" class="member">
+<div class="member-link">
+<a name="getall" href="#getall"><tt><b>Effect.getAll</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Returns all registered effects.</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt>Array of <a href="../classes/Effect.html"><tt>Effect</tt></a> objects</tt>&nbsp;&mdash;&nbsp;the effects
+</li>
+
+		
+	</ul>
 
 
-<pre><code>Effect.extend({
-    type: 'shrink',
-    defaults: { amount: 0.5 },
-    apply: function(art) {
-        return art.scale(this.amount);
-    }
-});
-path.addEffect({ type: 'shrink', parameters: { amount: 0.8 } });</code></pre>
 
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="remove-effect" class="member">
+<div class="member-link">
+<a name="remove-effect" href="#remove-effect"><tt><b>Effect.remove</b>(effect)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Removes the effect from the registered effects.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>effect:</tt> 
+<a href="../classes/Effect.html"><tt>Effect</tt></a>
+
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the effect was registered, <tt>false</tt> otherwise
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
 </div>
 </div>
 </div>

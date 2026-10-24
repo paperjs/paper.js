@@ -44,9 +44,9 @@
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The live effects of the item, in the order in which they apply, see <a href="../classes/Effect.html"><tt>Effect</tt></a>. They derive what is drawn from the item without changing it: drawing draws their output, and <a href="../classes/Item.html#previewbounds"><tt>previewBounds</tt></a> measures it, while hit testing, <a href="../classes/Item.html#bounds"><tt>bounds</tt></a> and <a href="../classes/Item.html#strokebounds"><tt>strokeBounds</tt></a> stay with the item itself. It can be set to effects or plain objects describing them, <code>{ type, parameters,
-visible }</code>. Changing the returned array directly isn&rsquo;t tracked, as with <a href="../classes/Path.html#segments"><tt>path.segments</tt></a>.</p>
-<p>Paper.js has these types of effects, and <a href="../classes/Effect.html#extend-src"><tt>Effect.extend(src)</tt></a> creates more:</p>
+	<p>The live effects of the item, in the order in which they apply, as the instances of the <tt>Effecteffects</tt> that they use. They derive what is drawn from the item without changing it: drawing draws their output, and <a href="../classes/Item.html#previewbounds"><tt>previewBounds</tt></a> measures it, while hit testing, <a href="../classes/Item.html#bounds"><tt>bounds</tt></a> and <a href="../classes/Item.html#strokebounds"><tt>strokeBounds</tt></a> stay with the item itself. It is set to plain objects describing them, <code>{ type,
+parameters, visible }</code>, with the <code>type</code> of the effect. Changing the returned array directly isn&rsquo;t tracked, as with <a href="../classes/Path.html#segments"><tt>path.segments</tt></a>.</p>
+<p>Paper.js has these effects, and <a href="../classes/Effect.html"><tt>Effect</tt></a> creates more:</p>
 <ul>
   <li><code>offset</code>: offsets the paths, see <a href="../classes/PathItem.html#offset"><tt>pathItem.offset</tt></a>(), with  the parameters <code>distance</code> (<code>0</code>), <code>join</code> (<code>&#39;miter&#39;</code>) and  <code>miterLimit</code> (<code>10</code>).</li>
   <li><code>outline</code>: outlines the strokes of the paths as filled areas next  to their fills, see <a href="../classes/PathItem.html#outline"><tt>pathItem.outline</tt></a>(), following their  <a href="../classes/Path.html#strokeprofile"><tt>path.strokeProfile</tt></a>.</li>
@@ -57,7 +57,7 @@ visible }</code>. Changing the returned array directly isn&rsquo;t tracked, as w
 	<ul class="member-list">
 		<h4>Type:</h4>
 		<li>
-			Array of <a href="../classes/Effect.html"><tt>Effect</tt></a> objects
+			Array of <a href="../classes/EffectInstance.html"><tt>EffectInstance</tt></a> objects
 		</li>
 	</ul>
     
@@ -3113,8 +3113,8 @@ path.onDrawSelection = function(event) {
 	
 	<li>
 <tt>effect:</tt> 
-<a href="../classes/Effect.html"><tt>Effect</tt></a>⟋<tt>Object</tt>
-&mdash;&nbsp;the effect, or a plain object describing  it
+<tt>Object</tt>
+&mdash;&nbsp;the plain object describing the effect
 
 </li>
 	
@@ -3125,7 +3125,7 @@ path.onDrawSelection = function(event) {
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><a href="../classes/Effect.html"><tt>Effect</tt></a></tt>&nbsp;&mdash;&nbsp;the added effect
+<tt><a href="../classes/EffectInstance.html"><tt>EffectInstance</tt></a></tt>&nbsp;&mdash;&nbsp;the added instance
 </li>
 
 		
@@ -3161,8 +3161,8 @@ path.onDrawSelection = function(event) {
 	
 	<li>
 <tt>effect:</tt> 
-<a href="../classes/Effect.html"><tt>Effect</tt></a>⟋<tt>Object</tt>
-&mdash;&nbsp;the effect, or a plain object describing  it
+<tt>Object</tt>
+&mdash;&nbsp;the plain object describing the effect
 
 </li>
 	
@@ -3173,7 +3173,7 @@ path.onDrawSelection = function(event) {
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><a href="../classes/Effect.html"><tt>Effect</tt></a></tt>&nbsp;&mdash;&nbsp;the inserted effect
+<tt><a href="../classes/EffectInstance.html"><tt>EffectInstance</tt></a></tt>&nbsp;&mdash;&nbsp;the inserted instance
 </li>
 
 		
@@ -3194,7 +3194,7 @@ path.onDrawSelection = function(event) {
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Inserts effects into the item&rsquo;s effects at the given index. Effects that are part of another item are copied.</p>
+	<p>Inserts effects into the item&rsquo;s effects at the given index.</p>
     
 	
 <ul class="member-list">
@@ -3209,8 +3209,8 @@ path.onDrawSelection = function(event) {
 	
 	<li>
 <tt>effects:</tt> 
-Array of <a href="../classes/Effect.html"><tt>Effect</tt></a> objects⟋Array of <tt>Object</tt> objects
-&mdash;&nbsp;the effects, or plain objects  describing them
+Array of <tt>Object</tt> objects
+&mdash;&nbsp;the plain objects describing the effects
 
 </li>
 	
@@ -3221,7 +3221,7 @@ Array of <a href="../classes/Effect.html"><tt>Effect</tt></a> objects⟋Array of
 		<h4>Returns:</h4>
 		
 			<li>
-<tt>Array of <a href="../classes/Effect.html"><tt>Effect</tt></a> objects</tt>&nbsp;&mdash;&nbsp;the inserted effects
+<tt>Array of <a href="../classes/EffectInstance.html"><tt>EffectInstance</tt></a> objects</tt>&nbsp;&mdash;&nbsp;the inserted instances
 </li>
 
 		
@@ -3262,7 +3262,7 @@ Array of <a href="../classes/Effect.html"><tt>Effect</tt></a> objects⟋Array of
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><a href="../classes/Effect.html"><tt>Effect</tt></a></tt>&nbsp;&mdash;&nbsp;the removed effect, or <code>null</code>
+<tt><a href="../classes/EffectInstance.html"><tt>EffectInstance</tt></a></tt>&nbsp;&mdash;&nbsp;the removed instance, or <code>null</code>
 </li>
 
 		
@@ -3310,7 +3310,7 @@ Array of <a href="../classes/Effect.html"><tt>Effect</tt></a> objects⟋Array of
 		<h4>Returns:</h4>
 		
 			<li>
-<tt>Array of <a href="../classes/Effect.html"><tt>Effect</tt></a> objects</tt>&nbsp;&mdash;&nbsp;the removed effects
+<tt>Array of <a href="../classes/EffectInstance.html"><tt>EffectInstance</tt></a> objects</tt>&nbsp;&mdash;&nbsp;the removed instances
 </li>
 
 		
@@ -3331,7 +3331,7 @@ Array of <a href="../classes/Effect.html"><tt>Effect</tt></a> objects⟋Array of
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Returns what the item&rsquo;s visible effects make of it, in the item&rsquo;s own coordinates, outside of the scene graph, or <code>null</code> if it has none. It is kept until the item, its content or its effects change, so changing it isn&rsquo;t tracked.</p>
+	<p>Returns what the item&rsquo;s visible effects make of it, in the item&rsquo;s own coordinates, outside of the scene graph, or <code>null</code> if it has none. It is kept until the item, its content, its effects or the registered effects change, so changing it isn&rsquo;t tracked.</p>
     
 	
 	
