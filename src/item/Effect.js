@@ -22,7 +22,7 @@
  * @example
  * new Effect({
  *     type: 'shrink',
- *     title: 'Shrink',
+ *     label: 'Shrink',
  *     category: 'Distort',
  *     parameters: {
  *         amount: { label: 'Amount', type: 'number', value: 0.5 }
@@ -43,14 +43,14 @@ var Effect = Base.extend(new function() {
          * Creates an effect and registers it under its type.
          *
          * @param {Object} props the {@link #type} of the effect, its
-         *     {@link #title}, {@link #category} and {@link #parameters}, and
+         *     {@link #label}, {@link #category} and {@link #parameters}, and
          *     {@link #onApply} and {@link #onEditParameters}
          */
         initialize: function Effect(props) {
             var defaults = {},
                 accessors = {};
             this._type = props.type;
-            this._title = props.title || props.type;
+            this._label = props.label || props.type;
             this._category = props.category || null;
             this._parameters = props.parameters || {};
             this.onApply = props.onApply || null;
@@ -88,14 +88,14 @@ var Effect = Base.extend(new function() {
         },
 
         /**
-         * The title of the effect, for hosts to show to users.
+         * The label of the effect, for hosts to show to users.
          *
          * @bean
          * @type String
          * @default the type
          */
-        getTitle: function() {
-            return this._title;
+        getLabel: function() {
+            return this._label;
         },
 
         /**
@@ -237,7 +237,7 @@ new function() {
     // Offsets the paths, see PathItem#offset():
     new Effect({
         type: 'offset',
-        title: 'Offset Path',
+        label: 'Offset Path',
         category: 'Path',
         parameters: {
             distance: {
@@ -266,7 +266,7 @@ new function() {
     // following their stroke profiles, see PathItem#outline():
     new Effect({
         type: 'outline',
-        title: 'Outline Stroke',
+        label: 'Outline Stroke',
         category: 'Path',
 
         onApply: function(event) {
