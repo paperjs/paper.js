@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Oct 24 02:43:36 2026 +0200
+ * Date: Sat Oct 24 11:15:32 2026 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -1499,9 +1499,9 @@ declare namespace paper {
         readonly type: string
 
         /** 
-         * The title of the effect, for hosts to show to users.
+         * The label of the effect, for hosts to show to users.
          */
-        readonly title: string
+        readonly label: string
 
         /** 
          * The category of the effect, for hosts to list it in, e.g. in a menu.
@@ -1541,7 +1541,7 @@ declare namespace paper {
          * Creates an effect and registers it under its type.
          * 
          * @param props - the {@link #type} of the effect, its
-         *     {@link #title}, {@link #category} and {@link #parameters}, and
+         *     {@link #label}, {@link #category} and {@link #parameters}, and
          *     {@link #onApply} and {@link #onEditParameters}
          */
         constructor(props: object)
