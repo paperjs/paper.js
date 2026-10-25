@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 25 17:55:10 2026 +0100
+ * Date: Sun Oct 25 18:29:49 2026 +0100
  *
  ***
  *
@@ -6747,6 +6747,7 @@ var SymbolDefinition = ItemDefinition.extend({
 
 	clone: function() {
 		return new SymbolDefinition(this._item.clone(false), {
+			dontCenter: true,
 			name: this._name
 		});
 	},
@@ -23615,14 +23616,17 @@ new function() {
 
 	function whileLoading(project, callback) {
 		var changes = project._changes,
-			loading = isLoading;
+			loading = isLoading,
+			active = paper.project;
 		project._changes = null;
 		isLoading = true;
+		paper.project = project;
 		try {
 			callback();
 		} finally {
 			project._changes = changes;
 			isLoading = loading;
+			paper.project = active;
 		}
 	}
 
@@ -23636,11 +23640,41 @@ new function() {
 		var definitionsByKey = project._definitionsByKey,
 			definition = definitionsByKey[key];
 		if (!definition) {
-			definition = definitionsByKey[key] = importJSON(project,
-					project._host.getDefinition(key));
+			whileLoading(project, function() {
+				definition = definitionsByKey[key] = importJSON(project,
+						project._host.getDefinition(key));
+			});
 			definition._key = key;
 		}
 		return definition;
+	}
+
+	function checkHostItems(item, from, project) {
+		var host = from && from._host;
+		if (host && host !== project._host && (item instanceof HostItem
+				|| item.getItems({ class: HostItem }).length))
+			throw new Error('Unable to add host items to the project of '
+					+ 'another host.');
+	}
+
+	function getPatternColors(item) {
+		var story = item._story,
+			styles = [item._style],
+			colors = [];
+		if (story && !item.isLinked()) {
+			story._runs.forEach(function(run) {
+				styles.push(run.style);
+			});
+		}
+		styles.forEach(function(style) {
+			[style.getFillColor(true), style.getStrokeColor(true)].forEach(
+				function(color) {
+					if (color && color._type === 'pattern')
+						colors.push(color);
+				}
+			);
+		});
+		return colors;
 	}
 
 	function copyDefinitions(project, item) {
@@ -23650,8 +23684,9 @@ new function() {
 		function getCopy(definition) {
 			var copy = copies[definition._id];
 			if (!copy) {
-				copy = copies[definition._id] = definition.clone();
-				copy.project = project;
+				whileLoading(project, function() {
+					copy = copies[definition._id] = definition.clone();
+				});
 				copyItem(copy._item);
 				copy._item.getItems({}).forEach(copyItem);
 			}
@@ -23659,18 +23694,14 @@ new function() {
 		}
 
 		function copyItem(item) {
-			var definition = item._definition,
-				style = item._style;
+			var definition = item._definition;
 			if (definition && definition._key != null)
 				item.setDefinition(getCopy(definition));
-			[style.getFillColor(true), style.getStrokeColor(true)].forEach(
-				function(color) {
-					var pattern = color && color._type === 'pattern'
-							&& color._components[0];
-					if (pattern && pattern._key != null)
-						color.setPattern(getCopy(pattern));
-				}
-			);
+			getPatternColors(item).forEach(function(color) {
+				var pattern = color._components[0];
+				if (pattern._key != null)
+					color.setPattern(getCopy(pattern));
+			});
 		}
 
 		copyItem(item);
@@ -23703,14 +23734,10 @@ new function() {
 
 		function addDefinitions(item) {
 			if (!item._shell) {
-				var style = item._style;
 				addDefinition(item._definition);
-				[style.getFillColor(true), style.getStrokeColor(true)].forEach(
-					function(color) {
-						addDefinition(color && color._type === 'pattern'
-								&& color._components[0]);
-					}
-				);
+				getPatternColors(item).forEach(function(color) {
+					addDefinition(color._components[0]);
+				});
 				if (item._key == null && item._children)
 					item._children.forEach(addDefinitions);
 			}
@@ -23798,11 +23825,33 @@ new function() {
 						&& (this instanceof Group || this._hasChildren))
 					this._loadChildren();
 				delete from._itemsByKey[this._key];
-				this._key = null;
+				this._key = this._boxes = null;
+				this._hostBounds = false;
 			}
 			_setProject.base.call(this, project, installEvents);
 			if (isNewHost)
 				copyDefinitions(project, this);
+		},
+
+		copyAttributes: function copyAttributes(source, excludeMatrix) {
+			var project = this._project,
+				from = source._project,
+				host = from && from._host,
+				isNewHost = host && project && host !== project._host;
+			if (isNewHost)
+				checkHostItems(this, from, project);
+			copyAttributes.base.call(this, source, excludeMatrix);
+			if (isNewHost)
+				copyDefinitions(project, this);
+		},
+
+		insertChildren: function insertChildren(index, items) {
+			for (var i = 0, l = items ? items.length : 0; i < l; i++) {
+				var item = items[i];
+				if (item instanceof Item)
+					checkHostItems(item, item._project, this._project);
+			}
+			return insertChildren.base.call(this, index, items);
 		},
 
 		_getHostBounds: function(options) {
@@ -24025,6 +24074,12 @@ new function() {
 			_changed.base.call(this, flags, item);
 			if (item && !isLoading)
 				item._edited = true;
+		},
+
+		insertLayer: function insertLayer(index, layer) {
+			if (layer instanceof Layer)
+				checkHostItems(layer, layer._project, this);
+			return insertLayer.base.call(this, index, layer);
 		},
 
 		takeChanges: function takeChanges() {

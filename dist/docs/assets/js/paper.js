@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 25 17:55:10 2026 +0100
+ * Date: Sun Oct 25 18:29:49 2026 +0100
  *
  ***
  *
@@ -6747,6 +6747,7 @@ var SymbolDefinition = ItemDefinition.extend({
 
 	clone: function() {
 		return new SymbolDefinition(this._item.clone(false), {
+			dontCenter: true,
 			name: this._name
 		});
 	},
