@@ -4693,9 +4693,9 @@ new function() { // Injection scope for hit-test functions shared with project
      * item's own handlers are called first, then the ones of its class and of
      * the classes it inherits from, up to `Item`, with `this` set to the item.
      * `Path.on('draw', handler)` and `Path.off('draw', handler)` attach and
-     * detach them too. Only the drawing events can be handled for classes.
-     * Classes are shared by all {@link PaperScope} objects, and so are their
-     * handlers.
+     * detach them too. Only the drawing events can be handled for classes of
+     * items. Classes are shared by all {@link PaperScope} objects, and so are
+     * their handlers.
      *
      * @name Item.onDraw
      * @property

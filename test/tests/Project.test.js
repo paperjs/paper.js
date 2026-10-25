@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { describe } from 'vitest'
+import { describe, onTestFinished } from 'vitest'
 import paper, {
   ChangeFlag,
   Group,
@@ -49,6 +49,72 @@ describe('Project', () => {
     events.length = 0
     second.remove()
     equals(events, [], 'removing an inactive project')
+  })
+
+  test('Project.onActivate and Project.onDeactivate', () => {
+    const events = []
+    const activate = function (previous) {
+      events.push(['activate', this, previous])
+    }
+    const deactivate = function () {
+      events.push(['deactivate', this])
+    }
+    Project.on('activate', activate)
+    Project.onDeactivate = deactivate
+    onTestFinished(() => {
+      Project.off('activate', activate)
+      Project.onDeactivate = null
+    })
+    const previous = paper.project
+    const first = new Project()
+    equals(
+      () => (
+        events.length === 2 &&
+        events[0][0] === 'deactivate' &&
+        events[0][1] === previous &&
+        events[1][0] === 'activate' &&
+        events[1][1] === first &&
+        events[1][2] === previous
+      ),
+      true,
+      'heard from a new project'
+    )
+    const second = new Project()
+    second.onActivate = () => events.push(['own'])
+    events.length = 0
+    previous.activate()
+    second.activate()
+    equals(
+      () => (
+        events[2][0] === 'deactivate' &&
+        events[2][1] === previous &&
+        events[3][0] === 'own' &&
+        events[4][0] === 'activate' &&
+        events[4][1] === second
+      ),
+      true,
+      'after the handlers of the project'
+    )
+    events.length = 0
+    second.remove()
+    equals(
+      () => events.length === 1 && events[0][1] === second,
+      true,
+      'removing the active project'
+    )
+    Project.off('activate', activate)
+    first.activate()
+    events.length = 0
+    previous.activate()
+    equals(
+      () => (
+        events.length === 1 &&
+        events[0][0] === 'deactivate' &&
+        events[0][1] === first
+      ),
+      true,
+      'none after off()'
+    )
   })
 
   test('clear()', () => {

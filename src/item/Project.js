@@ -35,7 +35,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     _list: 'projects',
     _reference: 'project',
     _compactSerialize: true, // Never include the class name for Project
-    _events: ['onActivate', 'onDeactivate'],
+    // Also for all projects, see Project.onActivate:
+    _events: {
+        onActivate: { classLevel: true },
+        onDeactivate: { classLevel: true }
+    },
 
     // TODO: Add arguments to define pages
     /**
@@ -196,6 +200,29 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * removed while active.
      *
      * @name Project#onDeactivate
+     * @property
+     * @type ?Function
+     */
+
+    /**
+     * The function to be called when any project is activated, as
+     * {@link #onActivate} is for a single project, including the projects
+     * that activate themselves when they are created, with `this` set to the
+     * project. `Project.on('activate', handler)` and
+     * `Project.off('activate', handler)` attach and detach them too. Classes
+     * are shared by all {@link PaperScope} objects, and so are their handlers.
+     *
+     * @name Project.onActivate
+     * @property
+     * @type ?Function
+     */
+
+    /**
+     * The function to be called when any project is deactivated, as
+     * {@link #onDeactivate} is for a single project, see
+     * {@link Project.onActivate}.
+     *
+     * @name Project.onDeactivate
      * @property
      * @type ?Function
      */
