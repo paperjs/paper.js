@@ -17,8 +17,10 @@ import paper, {
   Gradient,
   Group,
   Path,
+  PatternDefinition,
   Point,
   PointText,
+  Rectangle,
   Shape,
   SymbolDefinition,
   SymbolItem
@@ -147,9 +149,24 @@ describe('Item Cloning', () => {
     }
     path.selected = true
     const definition = new SymbolDefinition(path)
+    definition.name = 'Circle'
     const copy = definition.clone()
     equals(definition.item, copy.item, 'definition.item')
+    equals(copy.name, 'Circle', 'definition.name')
     equals(() => definition.project === copy.project, true)
+  })
+
+  test('PatternDefinition#clone()', () => {
+    const definition = new PatternDefinition(new Path.Circle([5, 5], 5), {
+      tile: new Rectangle(0, 0, 20, 20),
+      spacing: [5, 5],
+      name: 'Dots'
+    })
+    const copy = definition.clone()
+    equals(definition.item, copy.item, 'definition.item')
+    equals(copy.tile, definition.tile, 'definition.tile')
+    equals(copy.spacing, definition.spacing, 'definition.spacing')
+    equals(copy.name, 'Dots', 'definition.name')
   })
 
   test('Raster#clone()', () => {

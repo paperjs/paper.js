@@ -1411,6 +1411,7 @@ describe.skipIf(!HostItem)('Hosted', () => {
       true,
       'a copy of the symbol'
     )
+    equals(star.definition.name, 'Star', 'with its name')
     equals(getPixel(first, 2, 2), red, 'drawn')
     // The old project keeps its own:
     equals(pattern.key, 'pattern/Dots')
