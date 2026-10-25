@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 25 17:40:00 2026 +0100
+ * Date: Sun Oct 25 17:53:31 2026 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -5910,7 +5910,7 @@ declare namespace paper {
         constructor(item: Item, options?: { tile?: RectangleLike, spacing?: SizeLike, name?: string })
 
         /** 
-         * Returns a copy of the pattern, with a copy of its item.
+         * Returns a copy of the pattern, with a copy of its item and its name.
          */
         clone(): PatternDefinition
 
@@ -8888,7 +8888,7 @@ declare namespace paper {
         place(position?: PointLike): SymbolItem
 
         /** 
-         * Returns a copy of the symbol.
+         * Returns a copy of the symbol, with a copy of its item and its name.
          */
         clone(): SymbolDefinition
 

@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 25 17:40:00 2026 +0100
+ * Date: Sun Oct 25 17:53:31 2026 +0100
  *
  ***
  *
@@ -6746,7 +6746,9 @@ var SymbolDefinition = ItemDefinition.extend({
 	},
 
 	clone: function() {
-		return new SymbolDefinition(this._item.clone(false));
+		return new SymbolDefinition(this._item.clone(false), {
+			name: this._name
+		});
 	},
 
 	equals: function(symbol) {
@@ -18157,7 +18159,8 @@ var PatternDefinition = ItemDefinition.extend({
 	clone: function() {
 		return new PatternDefinition(this._item.clone(false), {
 			tile: this._tile,
-			spacing: this._spacing
+			spacing: this._spacing,
+			name: this._name
 		});
 	},
 
@@ -23612,14 +23615,17 @@ new function() {
 
 	function whileLoading(project, callback) {
 		var changes = project._changes,
-			loading = isLoading;
+			loading = isLoading,
+			active = paper.project;
 		project._changes = null;
 		isLoading = true;
+		paper.project = project;
 		try {
 			callback();
 		} finally {
 			project._changes = changes;
 			isLoading = loading;
+			paper.project = active;
 		}
 	}
 
@@ -23633,8 +23639,10 @@ new function() {
 		var definitionsByKey = project._definitionsByKey,
 			definition = definitionsByKey[key];
 		if (!definition) {
-			definition = definitionsByKey[key] = importJSON(project,
-					project._host.getDefinition(key));
+			whileLoading(project, function() {
+				definition = definitionsByKey[key] = importJSON(project,
+						project._host.getDefinition(key));
+			});
 			definition._key = key;
 		}
 		return definition;
