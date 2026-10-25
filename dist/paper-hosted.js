@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 25 09:17:41 2026 +0100
+ * Date: Sun Oct 25 15:16:03 2026 +0100
  *
  ***
  *
@@ -23749,6 +23749,21 @@ new function() {
 						+ 'host.');
 			this._key = key;
 			itemsByKey[key] = this;
+		},
+
+		_setProject: function _setProject(project, installEvents) {
+			var from = this._project,
+				host = from && from._host;
+			if (host && this._key != null && host !== project._host) {
+				if (this._shell)
+					this._load();
+				if (this._contentFields && !this.hasOwnProperty('_children')
+						&& (this instanceof Group || this._hasChildren))
+					this._loadChildren();
+				delete from._itemsByKey[this._key];
+				this._key = null;
+			}
+			_setProject.base.call(this, project, installEvents);
 		},
 
 		_getHostBounds: function(options) {
