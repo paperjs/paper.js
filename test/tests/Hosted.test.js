@@ -300,6 +300,53 @@ describe.skipIf(!HostItem)('Hosted', () => {
     equals(res.host.takeCalls(), [])
   })
 
+  // A host that gives the boxes of its nodes only when asked:
+  function createHostedProjectWithoutBoxes() {
+    const host = createHost(createDocument()),
+      getColumns = host.getColumns
+    host.getColumns = items => ({ ...getColumns(items), boxes: null })
+    host.getBounds = key => {
+      host.calls.push(['getBounds', key])
+      return getColumns([host.getNode(key)]).boxes
+    }
+    const project = new Project()
+    project.host = host
+    return { project, host }
+  }
+
+  test('Bounds come from the host when asked, once', () => {
+    const res = createHostedProjectWithoutBoxes()
+    const document = res.host.document
+    const layer = res.project.layers[0]
+    const group = layer.children.group
+    const path = group.children[0]
+    res.host.takeCalls()
+    equals(path.bounds, document.getItem({ id: path.key }).bounds)
+    equals(
+      path.strokeBounds,
+      document.getItem({ id: path.key }).strokeBounds
+    )
+    equals(group.bounds, document.getItem({ name: 'group' }).bounds)
+    equals(res.host.takeCalls(), [
+      ['getBounds', path.key],
+      ['getBounds', group.key]
+    ])
+    equals(path.bounds, document.getItem({ id: path.key }).bounds)
+    equals(res.host.takeCalls(), [], 'kept')
+  })
+
+  test('Bounds are asked for again when the host sends a record again', () => {
+    const res = createHostedProjectWithoutBoxes()
+    const original = res.host.document.getItem({ name: 'circle' })
+    const circle = res.project.layers[0].children.circle
+    equals(circle.bounds, original.bounds)
+    original.position.x += 10
+    res.host.takeCalls()
+    res.project.invalidate(res.host.getColumns([original]))
+    equals(circle.bounds, original.bounds)
+    equals(res.host.takeCalls(), [['getBounds', circle.key]])
+  })
+
   test('Hit tests load only the items that are hit', () => {
     const res = createHostedProject()
     const layer = res.project.layers[0]

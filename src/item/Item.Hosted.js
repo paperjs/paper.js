@@ -139,7 +139,8 @@ new function() {
                 | (flags & 1 ? /*#=*/ItemSelection.ITEM : 0);
         item._matrix._set.apply(item._matrix,
                 (matrix || [1, 0, 0, 1, 0, 0]).concat([true]));
-        item._boxes = columns.boxes;
+        // Without boxes, the item asks for them, see #_getHostBounds():
+        item._boxes = columns.boxes || undefined;
         item._boxIndex = i * boxSize;
         item._bounds = undefined;
         item._hostBounds = true;
@@ -478,8 +479,14 @@ new function() {
 
         _getHostBounds: function(options) {
             var boxes = this._boxes,
-                i = this._boxIndex
-                    + (options.handle ? 8 : options.stroke ? 4 : 0);
+                i = this._boxIndex;
+            // Hosts that don't send the boxes with the records give them when
+            // asked, until they send the record again:
+            if (boxes === undefined && this._key != null) {
+                boxes = this._boxes = this._project._host.getBounds(this._key);
+                i = this._boxIndex = 0;
+            }
+            i += options.handle ? 8 : options.stroke ? 4 : 0;
             return boxes
                     ? new Rectangle(boxes[i], boxes[i + 1], boxes[i + 2],
                         boxes[i + 3])
@@ -798,9 +805,13 @@ new function() {
          *   the node with the given key, or of the top level for `null`, as
          *   columns: `keys`, `types` (indices into `typeNames`), `typeNames`,
          *   `flags` (selected: 1, visible: 2, locked: 4, strokeScaling: 8,
-         *   clipMask: 64, guide: 128, empty: 256), `boxes` (bounds,
-         *   strokeBounds and roughBounds in the item's coordinates, 12 numbers
-         *   per item), and the sparse objects `names` and `matrices`.
+         *   clipMask: 64, guide: 128, empty: 256), optionally `boxes`
+         *   (bounds, strokeBounds and roughBounds in the item's coordinates, 12
+         *   numbers per item), and the sparse objects `names` and `matrices`.
+         * - `getBounds(key)`, for hosts that don't send `boxes`, which returns
+         *   the node's 12 numbers, or `null` for an empty node. Items ask for
+         *   them when their bounds are needed, and again after the host sent
+         *   their record again.
          * - `getItem(key)`, which returns the node's own content in the form
          *   of {@link Item#importJSON(json)}, without children. Linked text
          *   gives `linked`, the keys of its story's text items in order, and
