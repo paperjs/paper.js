@@ -36,7 +36,8 @@
 - Add `Project#onActivate` and `Project#onDeactivate`, as tools have them,
   for the events that `Project#activate()` emits.
 - Load hosted items in full from their host when they move into a project with
-  another host, where they drop their keys and are new items.
+  another host, where they drop their keys and are new items, using copies of
+  their host's symbol and pattern definitions.
 
 ### Changed
 
