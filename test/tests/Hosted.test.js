@@ -1386,4 +1386,76 @@ describe.skipIf(!HostItem)('Hosted', () => {
     equals(project.symbolDefinitions.length, 3)
     equals(project.symbolDefinitions[2] === symbol, true)
   })
+
+  test('Items that move to another host use copies of its definitions', () => {
+    const from = createHostedDefinitions(),
+      to = createHostedProject(),
+      { first, second, star, other } = from.project.layers[0].children,
+      pattern = first.fillColor.pattern,
+      symbol = other.definition,
+      layer = to.project.layers[0]
+    from.project.trackChanges = true
+    to.project.trackChanges = true
+    layer.addChildren([first, star])
+    layer.addChild(second)
+    // The old project logs only the parent that the items left:
+    equals(
+      from.project.takeChanges().map(change => change.item.key),
+      [from.project.layers[0].key]
+    )
+    const copy = first.fillColor.pattern
+    equals(copy !== pattern && copy.key === null, true, 'a copy')
+    equals(second.fillColor.pattern === copy, true, 'one copy')
+    equals(
+      star.definition !== symbol && star.definition.key === null,
+      true,
+      'a copy of the symbol'
+    )
+    equals(getPixel(first, 2, 2), red, 'drawn')
+    // The old project keeps its own:
+    equals(pattern.key, 'pattern/Dots')
+    equals(other.definition === symbol && symbol.key === 'symbol/Star', true)
+    // The new project logs the copies as new definitions:
+    const changes = to.project.takeChanges()
+    equals(
+      changes[0].definition === copy &&
+      changes[1].definition === star.definition,
+      true
+    )
+    equals(!!(changes[0].flags & ChangeFlag.INSERTION), true)
+  })
+
+  test('Copied definitions use copies of the definitions they use', () => {
+    const from = createHostedDefinitions(),
+      to = createHostedProject(),
+      getDefinition = from.host.getDefinition
+    // The host's symbol fills its square with the host's pattern, by key:
+    const square = new Path.Rectangle({
+      point: [0, 0],
+      size: [10, 10],
+      fillColor: { pattern: from.pattern },
+      parent: from.host.document.layers[0]
+    })
+    const json = from.host.getItem(square.id)
+    square.remove()
+    from.host.getDefinition = key =>
+      key === 'symbol/Star'
+        ? ['SymbolDefinition', json, { name: 'Star' }]
+        : getDefinition(key)
+    const { first, star } = from.project.layers[0].children,
+      pattern = first.fillColor.pattern
+    equals(star.definition.item.fillColor.pattern === pattern, true)
+    to.project.trackChanges = true
+    to.project.layers[0].addChild(star)
+    const copy = star.definition.item.fillColor.pattern
+    equals(copy !== pattern && copy.key === null, true, 'a copy')
+    equals(first.fillColor.pattern === pattern, true, 'the old one stays')
+    const changes = to.project.takeChanges()
+    equals(
+      changes[0].definition === copy &&
+      changes[1].definition === star.definition,
+      true,
+      'nested ones first'
+    )
+  })
 })

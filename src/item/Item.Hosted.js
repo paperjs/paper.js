@@ -221,6 +221,44 @@ new function() {
         return definition;
     }
 
+    // Items that move into a project with another host use copies of the
+    // definitions of their host there, which the new host takes as new ones.
+    // The project keeps one copy of each, for all the items that move:
+    function copyDefinitions(project, item) {
+        var copies = project._definitionCopies
+                || (project._definitionCopies = {});
+
+        function getCopy(definition) {
+            var copy = copies[definition._id];
+            if (!copy) {
+                copy = copies[definition._id] = definition.clone();
+                copy.project = project;
+                // The items of the copy don't move, so we copy the
+                // definitions that they use here:
+                copyItem(copy._item);
+                copy._item.getItems({}).forEach(copyItem);
+            }
+            return copy;
+        }
+
+        function copyItem(item) {
+            var definition = item._definition,
+                style = item._style;
+            if (definition && definition._key != null)
+                item.setDefinition(getCopy(definition));
+            [style.getFillColor(true), style.getStrokeColor(true)].forEach(
+                function(color) {
+                    var pattern = color && color._type === 'pattern'
+                            && color._components[0];
+                    if (pattern && pattern._key != null)
+                        color.setPattern(getCopy(pattern));
+                }
+            );
+        }
+
+        copyItem(item);
+    }
+
     // Reloads a definition into the same object, so the colors and symbol
     // items that use it change along with it. One that the host no longer
     // has is emptied, and draws nothing:
@@ -359,8 +397,9 @@ new function() {
         // drops its key. The children follow as _setProject() reaches them:
         _setProject: function _setProject(project, installEvents) {
             var from = this._project,
-                host = from && from._host;
-            if (host && this._key != null && host !== project._host) {
+                host = from && from._host,
+                isNewHost = host && host !== project._host;
+            if (isNewHost && this._key != null) {
                 if (this._shell)
                     this._load();
                 if (this._contentFields && !this.hasOwnProperty('_children')
@@ -370,6 +409,10 @@ new function() {
                 this._key = null;
             }
             _setProject.base.call(this, project, installEvents);
+            // Copy the definitions once the item is in the new project, which
+            // logs the change, as part of its insertion:
+            if (isNewHost)
+                copyDefinitions(project, this);
         },
 
         _getHostBounds: function(options) {
@@ -742,8 +785,10 @@ new function() {
          *
          * Items that move into a project with another host load in full from
          * their own host first, and drop their keys, so they are new items
-         * there. They keep the definitions of their host, and linked text
-         * keeps its story with the items that stay.
+         * there. The symbol and pattern definitions of their host that they
+         * use are copied without keys, once per project, so the new host
+         * takes them as new ones too. Patterns in text runs aren't copied,
+         * and linked text keeps its story with the items that stay.
          *
          * @bean
          * @type Object
