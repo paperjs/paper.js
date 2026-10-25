@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 25 18:29:49 2026 +0100
+ * Date: Sun Oct 25 20:01:58 2026 +0100
  *
  ***
  *
@@ -3198,7 +3198,10 @@ var Project = PaperScopeItem.extend({
 	_list: 'projects',
 	_reference: 'project',
 	_compactSerialize: true,
-	_events: ['onActivate', 'onDeactivate'],
+	_events: {
+		onActivate: { classLevel: true },
+		onDeactivate: { classLevel: true }
+	},
 
 	initialize: function Project(element) {
 		PaperScopeItem.call(this, true);

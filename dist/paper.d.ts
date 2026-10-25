@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 25 18:29:49 2026 +0100
+ * Date: Sun Oct 25 20:01:58 2026 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -2503,9 +2503,9 @@ declare namespace paper {
          * item's own handlers are called first, then the ones of its class and of
          * the classes it inherits from, up to `Item`, with `this` set to the item.
          * `Path.on('draw', handler)` and `Path.off('draw', handler)` attach and
-         * detach them too. Only the drawing events can be handled for classes.
-         * Classes are shared by all {@link PaperScope} objects, and so are their
-         * handlers.
+         * detach them too. Only the drawing events can be handled for classes of
+         * items. Classes are shared by all {@link PaperScope} objects, and so are
+         * their handlers.
          */
         static onDraw: Function | null
 
@@ -6669,6 +6669,23 @@ declare namespace paper {
          * removed while active.
          */
         onDeactivate: Function | null
+
+        /** 
+         * The function to be called when any project is activated, as
+         * {@link #onActivate} is for a single project, including the projects
+         * that activate themselves when they are created, with `this` set to the
+         * project. `Project.on('activate', handler)` and
+         * `Project.off('activate', handler)` attach and detach them too. Classes
+         * are shared by all {@link PaperScope} objects, and so are their handlers.
+         */
+        static onActivate: Function | null
+
+        /** 
+         * The function to be called when any project is deactivated, as
+         * {@link #onDeactivate} is for a single project, see
+         * {@link Project.onActivate}.
+         */
+        static onDeactivate: Function | null
 
         /** 
          * The scope that this project belongs to.

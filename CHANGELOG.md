@@ -34,7 +34,8 @@
 - Add `Point#values`, `Size#values` and `Rectangle#values`, which give their
   numbers as an array, as `Matrix#values` does.
 - Add `Project#onActivate` and `Project#onDeactivate`, as tools have them,
-  for the events that `Project#activate()` emits.
+  for the events that `Project#activate()` emits, and `Project.onActivate`
+  and `Project.onDeactivate` for those of all projects, including new ones.
 - Load hosted items in full from their host when they move into a project with
   another host, where they drop their keys and are new items, using copies of
   their host's symbol and pattern definitions, as copies made there do.

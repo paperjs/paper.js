@@ -3099,7 +3099,7 @@ path.onDrawSelection = function(event) {
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The function to be called whenever any item of the class or of its subclasses is drawn, as <a href="../classes/Item.html#ondraw"><tt>onDraw</tt></a> is for a single item, e.g. <code>Path.onDraw</code> for all paths, including the ones created later. The item&rsquo;s own handlers are called first, then the ones of its class and of the classes it inherits from, up to <code>Item</code>, with <code>this</code> set to the item. <code>Path.on(&#39;draw&#39;, handler)</code> and <code>Path.off(&#39;draw&#39;, handler)</code> attach and detach them too. Only the drawing events can be handled for classes. Classes are shared by all <a href="../classes/PaperScope.html"><tt>PaperScope</tt></a> objects, and so are their handlers.</p>
+	<p>The function to be called whenever any item of the class or of its subclasses is drawn, as <a href="../classes/Item.html#ondraw"><tt>onDraw</tt></a> is for a single item, e.g. <code>Path.onDraw</code> for all paths, including the ones created later. The item&rsquo;s own handlers are called first, then the ones of its class and of the classes it inherits from, up to <code>Item</code>, with <code>this</code> set to the item. <code>Path.on(&#39;draw&#39;, handler)</code> and <code>Path.off(&#39;draw&#39;, handler)</code> attach and detach them too. Only the drawing events can be handled for classes of items. Classes are shared by all <a href="../classes/PaperScope.html"><tt>PaperScope</tt></a> objects, and so are their handlers.</p>
 	
 	
 	
