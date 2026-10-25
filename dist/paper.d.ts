@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 25 15:16:03 2026 +0100
+ * Date: Sun Oct 25 17:40:00 2026 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -6641,8 +6641,10 @@ declare namespace paper {
          * 
          * Items that move into a project with another host load in full from
          * their own host first, and drop their keys, so they are new items
-         * there. They keep the definitions of their host, and linked text
-         * keeps its story with the items that stay.
+         * there. The symbol and pattern definitions of their host that they
+         * use are copied without keys, once per project, so the new host
+         * takes them as new ones too. Patterns in text runs aren't copied,
+         * and linked text keeps its story with the items that stay.
          */
         host: any
 

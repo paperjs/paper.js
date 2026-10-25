@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 25 15:16:03 2026 +0100
+ * Date: Sun Oct 25 17:40:00 2026 +0100
  *
  ***
  *
@@ -23640,6 +23640,39 @@ new function() {
 		return definition;
 	}
 
+	function copyDefinitions(project, item) {
+		var copies = project._definitionCopies
+				|| (project._definitionCopies = {});
+
+		function getCopy(definition) {
+			var copy = copies[definition._id];
+			if (!copy) {
+				copy = copies[definition._id] = definition.clone();
+				copy.project = project;
+				copyItem(copy._item);
+				copy._item.getItems({}).forEach(copyItem);
+			}
+			return copy;
+		}
+
+		function copyItem(item) {
+			var definition = item._definition,
+				style = item._style;
+			if (definition && definition._key != null)
+				item.setDefinition(getCopy(definition));
+			[style.getFillColor(true), style.getStrokeColor(true)].forEach(
+				function(color) {
+					var pattern = color && color._type === 'pattern'
+							&& color._components[0];
+					if (pattern && pattern._key != null)
+						color.setPattern(getCopy(pattern));
+				}
+			);
+		}
+
+		copyItem(item);
+	}
+
 	function reloadDefinition(project, definition) {
 		var json = project._host.getDefinition(definition._key),
 			loaded = json ? importJSON(project, json)
@@ -23753,8 +23786,9 @@ new function() {
 
 		_setProject: function _setProject(project, installEvents) {
 			var from = this._project,
-				host = from && from._host;
-			if (host && this._key != null && host !== project._host) {
+				host = from && from._host,
+				isNewHost = host && host !== project._host;
+			if (isNewHost && this._key != null) {
 				if (this._shell)
 					this._load();
 				if (this._contentFields && !this.hasOwnProperty('_children')
@@ -23764,6 +23798,8 @@ new function() {
 				this._key = null;
 			}
 			_setProject.base.call(this, project, installEvents);
+			if (isNewHost)
+				copyDefinitions(project, this);
 		},
 
 		_getHostBounds: function(options) {
