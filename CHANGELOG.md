@@ -40,6 +40,9 @@
   calling the `processItem` callback of `#importSVG()`, so that it can extend
   the data, instead of after it, which replaced the data that it stored. Items
   that the callback returns as replacements no longer receive the data.
+- Make `PaperScope#project` an accessor, so that PaperScript uses the global
+  `project` that `PaperScope#install()` defines, as it does with `view`, and
+  both follow the active project when a script activates another one.
 
 ### Deprecated
 
