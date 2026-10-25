@@ -1387,6 +1387,20 @@ describe.skipIf(!HostItem)('Hosted', () => {
     equals(project.symbolDefinitions[2] === symbol, true)
   })
 
+  test('Items and definitions load into their project, not the active one', () => {
+    const res = createHostedDefinitions(),
+      other = createHostedProject().project,
+      { star } = res.project.layers[0].children
+    other.activate()
+    other.trackChanges = true
+    const definition = star.definition
+    equals(definition.project === res.project, true, 'the definition')
+    equals(definition.item.project === res.project, true, 'its item')
+    equals(res.project.patternDefinitions[0].project === res.project, true)
+    equals(other.takeChanges(), [], 'nothing logged in the active one')
+    equals(paper.project === other, true, 'which stays active')
+  })
+
   test('Items that move to another host use copies of its definitions', () => {
     const from = createHostedDefinitions(),
       to = createHostedProject(),
