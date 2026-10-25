@@ -600,6 +600,78 @@ describe.skipIf(!HostItem)('Hosted', () => {
     )
   })
 
+  test('Changes mark the children reordered other than by inserts', () => {
+    const res = createHostedProject()
+    const project = res.project
+    const layer = project.layers[0]
+    const [first, second] = layer.children
+    project.trackChanges = true
+    const isReordered = () =>
+      project
+        .takeChanges()
+        .some(change => change.item === layer && change.reordered === true)
+    // New items and removed ones tell their own places:
+    layer.addChild(new Path.Circle([0, 0], 10))
+    second.remove()
+    equals(isReordered(), false)
+    // An item of the host that moves, or a reversal, doesn't:
+    layer.insertChild(0, first)
+    equals(isReordered(), true)
+    layer.reverseChildren()
+    equals(isReordered(), true)
+    // Taken once:
+    layer.addChild(new Path())
+    equals(isReordered(), false)
+  })
+
+  test('Items that move to another host reorder the children they leave', () => {
+    const from = createHostedProject()
+    const to = createHostedProject()
+    const layer = from.project.layers[0]
+    const group = layer.children.group
+    from.project.trackChanges = true
+    to.project.layers[0].addChild(group)
+    equals(
+      from.project
+        .takeChanges()
+        .some(change => change.item === layer && change.reordered === true),
+      true
+    )
+  })
+
+  test('Items from another host tell their own places', () => {
+    const from = createHostedProject()
+    const to = createHostedProject()
+    const layer = to.project.layers[0]
+    to.project.trackChanges = true
+    layer.addChild(from.project.layers[0].children.group)
+    equals(
+      to.project
+        .takeChanges()
+        .some(change => change.item === layer && change.reordered === true),
+      false
+    )
+  })
+
+  test('Containers reordered outside the document are not marked', () => {
+    const res = createHostedProject()
+    const project = res.project
+    const layer = project.layers[0]
+    const group = layer.children.group
+    project.trackChanges = true
+    group.remove()
+    project.takeChanges()
+    // Inserted again, the group tells its children whole:
+    group.reverseChildren()
+    layer.addChild(group)
+    equals(
+      project
+        .takeChanges()
+        .some(change => change.item === group && change.reordered === true),
+      false
+    )
+  })
+
   test('Items that move within a host keep their keys', () => {
     const from = createHostedProject()
     const to = new Project()

@@ -246,6 +246,18 @@ new function() {
         return definition;
     }
 
+    // Marks the change of a container whose children changed in order other
+    // than by items inserted and removed, which the changes of their items
+    // don't tell the host, see Project#takeChanges(). The mark goes with the
+    // change, as containers outside the document aren't logged:
+    function setReordered(item) {
+        var project = item && item._project,
+            change = project && project._changes
+                && project._changesById[item._id];
+        if (change)
+            change.reordered = true;
+    }
+
     // Whether the item comes from a project with another host. Only their own
     // host draws host items, so they can't enter the project of another one:
     function isFromOtherHost(item, from, project) {
@@ -503,21 +515,35 @@ new function() {
                 copyDefinitions(project, this);
         },
 
-        // Check all items before moving any, as removing comes first:
+        // Check all items before moving any, as removing comes first. An item
+        // of the host that moves reorders the children it joins, and those it
+        // leaves in another project. One from another host is new here:
         insertChildren: function insertChildren(index, items) {
             var that = this,
-                isEntering = false;
+                isEntering = false,
+                reordered = [];
             for (var i = 0, l = items ? items.length : 0; i < l; i++) {
                 var item = items[i];
-                if (item instanceof Item
-                        && isFromOtherHost(item, item._project, this._project))
-                    isEntering = true;
+                if (item instanceof Item) {
+                    var isOther = isFromOtherHost(item, item._project,
+                            this._project);
+                    if (isOther)
+                        isEntering = true;
+                    if (item._key != null) {
+                        if (!isOther)
+                            reordered.push(this);
+                        if (item._project !== this._project)
+                            reordered.push(item._parent);
+                    }
+                }
             }
-            return isEntering
+            var res = isEntering
                     ? whileEntering(function() {
                         return insertChildren.base.call(that, index, items);
                     })
                     : insertChildren.base.call(this, index, items);
+            reordered.forEach(setReordered);
+            return res;
         },
 
         clone: function clone(options) {
@@ -528,6 +554,11 @@ new function() {
                         return clone.base.call(that, options);
                     })
                     : clone.base.call(this, options);
+        },
+
+        reverseChildren: function reverseChildren() {
+            reverseChildren.base.call(this);
+            setReordered(this);
         },
 
         _getHostBounds: function(options) {
@@ -926,6 +957,12 @@ new function() {
          * Linked text brings a copy of its story along, which flows on through
          * the items that stay. Host items can't enter the project of another
          * host.
+         *
+         * {@link Project#takeChanges()} marks the changes of the items whose
+         * children changed in order other than by new items inserted and
+         * items removed, which the other changes don't tell, with
+         * `reordered: true`: the host reads their children whole, and can
+         * place the others' new items by their indices.
          *
          * @bean
          * @type Object
