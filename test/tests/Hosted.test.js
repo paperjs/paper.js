@@ -526,9 +526,9 @@ describe.skipIf(!HostItem)('Hosted', () => {
     to.project.trackChanges = true
     layer.addChild(group)
     // Everything loads from the host it came from, before the move:
-    equals(from.host.takeCalls(), [
-      ['getItem', key],
+    equals(from.host.takeCalls().sort(), [
       ['getChildren', key],
+      ['getItem', key],
       ['getItem', original.children[0].id],
       ['getItem', original.children[1].id]
     ])
@@ -1471,6 +1471,121 @@ describe.skipIf(!HostItem)('Hosted', () => {
       changes[1].definition === star.definition,
       true,
       'nested ones first'
+    )
+  })
+
+  test('Copies made in another host use copies of its definitions', () => {
+    const from = createHostedDefinitions(),
+      to = createHostedProject(),
+      { first, star } = from.project.layers[0].children,
+      pattern = first.fillColor.pattern,
+      layer = to.project.layers[0]
+    // Copied into the active project, and copied in the old one and added:
+    to.project.activate()
+    const copy = first.copyTo(layer)
+    from.project.activate()
+    const clone = star.clone({ insert: false })
+    layer.addChild(clone)
+    equals(
+      copy.fillColor.pattern !== pattern && copy.fillColor.pattern.key === null,
+      true,
+      'the copy'
+    )
+    equals(
+      clone.definition !== star.definition && clone.definition.key === null,
+      true,
+      'the clone'
+    )
+    equals(first.fillColor.pattern === pattern, true, 'the original')
+  })
+
+  test('Definitions are copied in the project they are copied to', () => {
+    const from = createHostedDefinitions(),
+      to = createHostedProject(),
+      { star } = from.project.layers[0].children
+    star.definition
+    from.project.activate()
+    from.project.trackChanges = true
+    to.project.layers[0].addChild(star)
+    const copy = star.definition
+    equals(
+      copy.project === to.project && copy.item.project === to.project,
+      true
+    )
+    equals(from.project.hasChanges(), true, 'the parent it left')
+    equals(
+      from.project.takeChanges().map(change => change.item.key),
+      [from.project.layers[0].key]
+    )
+  })
+
+  test('Items that move to another host measure their own bounds', () => {
+    const from = createHostedProject(),
+      to = createHostedProject(),
+      getChildren = from.host.getChildren
+    let columns
+    from.host.getChildren = key => (columns = getChildren(key))
+    const circle = from.project.layers[0].children.circle,
+      bounds = from.host.document.getItem({ name: 'circle' }).bounds
+    to.project.layers[0].addChild(circle)
+    // The host may reuse its boxes for other records:
+    columns.boxes.fill(0)
+    equals(circle.bounds, bounds)
+  })
+
+  test('Items that move to another host take the patterns of their text', () => {
+    const from = createHostedDefinitions(),
+      to = createHostedProject(),
+      pattern = from.project.layers[0].children.first.fillColor.pattern,
+      text = new PointText({
+        content: 'Patterned',
+        fillColor: { pattern },
+        parent: from.project.layers[0]
+      })
+    to.project.trackChanges = true
+    to.project.layers[0].addChild(text)
+    const copy = text.fillColor.pattern
+    equals(copy !== pattern && copy.key === null, true, 'a copy')
+    equals(
+      to.project.takeChanges()[0].definition === copy,
+      true,
+      'listed as new'
+    )
+  })
+
+  test('Host items can not enter the project of another host', () => {
+    const from = createHostedProject(),
+      to = createHostedProject()
+    from.project.activate()
+    const layer = from.project.layers[0],
+      item = new HostItem({ parent: layer }),
+      group = new Group({ children: [new HostItem()], parent: layer }),
+      hostLayer = new Layer({ children: [new HostItem()] }),
+      target = to.project.layers[0]
+    for (const [name, add] of [
+      ['moved', () => target.addChild(item)],
+      ['in a group', () => target.addChild(group)],
+      ['copied', () => item.copyTo(target)],
+      ['as a layer', () => to.project.addLayer(hostLayer)]
+    ]) {
+      let message
+      try {
+        add()
+      } catch (e) {
+        message = e.message
+      }
+      equals(
+        message,
+        'Unable to add host items to the project of another host.',
+        name
+      )
+    }
+    equals(
+      item.parent === layer &&
+      group.parent === layer &&
+      hostLayer.project === from.project,
+      true,
+      'kept'
     )
   })
 })

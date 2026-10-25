@@ -131,7 +131,9 @@ var SymbolDefinition = ItemDefinition.extend(/** @lends SymbolDefinition# */{
      * @return {SymbolDefinition}
      */
     clone: function() {
+        // The copied item is already where this definition placed it:
         return new SymbolDefinition(this._item.clone(false), {
+            dontCenter: true,
             name: this._name
         });
     },
