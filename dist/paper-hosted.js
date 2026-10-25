@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Oct 24 11:26:51 2026 +0200
+ * Date: Sun Oct 25 02:54:02 2026 +0200
  *
  ***
  *
@@ -855,7 +855,7 @@ var PaperScope = Base.extend({
 			hitTolerance: 0,
 			scaleStrokes: false
 		});
-		this.project = null;
+		this._project = null;
 		this.projects = [];
 		this.tools = [];
 		this._id = PaperScope._id++;
@@ -896,8 +896,16 @@ var PaperScope = Base.extend({
 
 	version: "0.16.0-develop",
 
+	getProject: function() {
+		return this._project;
+	},
+
+	setProject: function(project) {
+		this._project = project;
+	},
+
 	getView: function() {
-		var project = this.project;
+		var project = this._project;
 		return project && project._view;
 	},
 
