@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 25 02:54:02 2026 +0200
+ * Date: Sun Oct 25 09:17:41 2026 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -6649,6 +6649,20 @@ declare namespace paper {
         trackChanges: boolean
 
         /** 
+         * The function to be called when the project is activated through
+         * {@link #activate}. The function receives the previously active
+         * project, which is the project itself when it was already active.
+         */
+        onActivate: Function | null
+
+        /** 
+         * The function to be called when another project is activated through
+         * {@link #activate} while this one is active, or when this one is
+         * removed while active.
+         */
+        onDeactivate: Function | null
+
+        /** 
          * The scope that this project belongs to.
          */
         readonly scope: PaperScope
@@ -9463,7 +9477,8 @@ declare namespace paper {
 
         /** 
          * The function to be called when another tool is activated through
-         * {@link #activate}, while this one is active.
+         * {@link #activate} while this one is active, or when this one is
+         * removed while active.
          */
         onDeactivate: Function | null
 

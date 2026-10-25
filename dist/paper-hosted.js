@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 25 02:54:02 2026 +0200
+ * Date: Sun Oct 25 09:17:41 2026 +0100
  *
  ***
  *
@@ -1018,8 +1018,10 @@ var PaperScopeItem = Base.extend(Emitter, {
 		if (this._index == null)
 			return false;
 		Base.splice(this._scope[this._list], null, this._index, 1);
-		if (this._scope[this._reference] == this)
+		if (this._scope[this._reference] == this) {
 			this._scope[this._reference] = null;
+			this.emit('deactivate');
+		}
 		this._scope = null;
 		return true;
 	},
@@ -3196,6 +3198,7 @@ var Project = PaperScopeItem.extend({
 	_list: 'projects',
 	_reference: 'project',
 	_compactSerialize: true,
+	_events: ['onActivate', 'onDeactivate'],
 
 	initialize: function Project(element) {
 		PaperScopeItem.call(this, true);
@@ -22545,7 +22548,8 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 
 	/**
 	 * The function to be called when another tool is activated through
-	 * {@link #activate()}, while this one is active.
+	 * {@link #activate()} while this one is active, or when this one is
+	 * removed while active.
 	 *
 	 * @name Tool#onDeactivate
 	 * @property
