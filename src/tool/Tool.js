@@ -336,7 +336,8 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 
     /**
      * The function to be called when another tool is activated through
-     * {@link #activate()}, while this one is active.
+     * {@link #activate()} while this one is active, or when this one is
+     * removed while active.
      *
      * @name Tool#onDeactivate
      * @property

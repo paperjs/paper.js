@@ -33,6 +33,24 @@ describe('Project', () => {
     equals(() => secondDoc.activeLayer.children.length === 0, true)
   })
 
+  test('onActivate and onDeactivate', () => {
+    const first = new Project()
+    const second = new Project()
+    const events = []
+    first.onActivate = previous => events.push(['first', previous === second])
+    first.onDeactivate = () => events.push('first deactivate')
+    second.onActivate = previous => events.push(['second', previous === first])
+    second.onDeactivate = () => events.push('second deactivate')
+    first.activate()
+    equals(events, ['second deactivate', ['first', true]])
+    events.length = 0
+    first.remove()
+    equals(events, ['first deactivate'], 'removing the active project')
+    events.length = 0
+    second.remove()
+    equals(events, [], 'removing an inactive project')
+  })
+
   test('clear()', () => {
     const project = new Project()
     new Layer()

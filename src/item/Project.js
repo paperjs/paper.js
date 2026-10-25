@@ -35,6 +35,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     _list: 'projects',
     _reference: 'project',
     _compactSerialize: true, // Never include the class name for Project
+    _events: ['onActivate', 'onDeactivate'],
 
     // TODO: Add arguments to define pages
     /**
@@ -177,6 +178,26 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      *
      * @name Project#activate
      * @function
+     */
+
+    /**
+     * The function to be called when the project is activated through
+     * {@link #activate()}. The function receives the previously active
+     * project, which is the project itself when it was already active.
+     *
+     * @name Project#onActivate
+     * @property
+     * @type ?Function
+     */
+
+    /**
+     * The function to be called when another project is activated through
+     * {@link #activate()} while this one is active, or when this one is
+     * removed while active.
+     *
+     * @name Project#onDeactivate
+     * @property
+     * @type ?Function
      */
 
     /**
