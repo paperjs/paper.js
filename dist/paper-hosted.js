@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 25 17:53:31 2026 +0100
+ * Date: Sun Oct 25 17:55:10 2026 +0100
  *
  ***
  *
@@ -23615,17 +23615,14 @@ new function() {
 
 	function whileLoading(project, callback) {
 		var changes = project._changes,
-			loading = isLoading,
-			active = paper.project;
+			loading = isLoading;
 		project._changes = null;
 		isLoading = true;
-		paper.project = project;
 		try {
 			callback();
 		} finally {
 			project._changes = changes;
 			isLoading = loading;
-			paper.project = active;
 		}
 	}
 
@@ -23639,10 +23636,8 @@ new function() {
 		var definitionsByKey = project._definitionsByKey,
 			definition = definitionsByKey[key];
 		if (!definition) {
-			whileLoading(project, function() {
-				definition = definitionsByKey[key] = importJSON(project,
-						project._host.getDefinition(key));
-			});
+			definition = definitionsByKey[key] = importJSON(project,
+					project._host.getDefinition(key));
 			definition._key = key;
 		}
 		return definition;
