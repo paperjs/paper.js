@@ -56,7 +56,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
             hitTolerance: 0,
             scaleStrokes: false
         });
-        this.project = null;
+        this._project = null;
         this.projects = [];
         this.tools = [];
         // Assign a unique id to each scope .
@@ -145,9 +145,16 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
     /**
      * The currently active project.
      *
-     * @name PaperScope#project
+     * @bean
      * @type Project
      */
+    getProject: function() {
+        return this._project;
+    },
+
+    setProject: function(project) {
+        this._project = project;
+    },
 
     /**
      * The list of all open projects within the current Paper.js context.
@@ -163,7 +170,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      * @type View
      */
     getView: function() {
-        var project = this.project;
+        var project = this._project;
         return project && project._view;
     },
 

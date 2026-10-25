@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { describe } from 'vitest'
+import { describe, onTestFinished } from 'vitest'
 import paper, {
   Color,
   PaperScope,
@@ -665,6 +665,37 @@ describe('PaperScript', () => {
     )
     equals(exports, { project: true, view: true, point: true })
   })
+
+  // Scripts only see the globals of paper's `self` in browsers, not in Node:
+  if (!isNodeContext) {
+    test('PaperScript.execute() with a scope installed globally', () => {
+      const current = paper,
+        scope = new PaperScope().setup(new Size(10, 10)),
+        keys = new Set(Object.keys(self))
+      scope.install(self)
+      onTestFinished(() => {
+        for (const key of Object.keys(self)) {
+          if (!keys.has(key)) delete self[key]
+        }
+        scope.remove()
+        current.activate()
+      })
+      // The installed project and view follow the active project:
+      const exports = PaperScript.execute(
+        'var first = project,\n' +
+        '    second = new Project(new Size(10, 10)),\n' +
+        '    isSecond = project === second && view === second.view;\n' +
+        'first.activate();\n' +
+        'module.exports = {\n' +
+        '    second: isSecond && second !== first,\n' +
+        '    first: project === first && project === paper.project,\n' +
+        '    view: view === first.view\n' +
+        '};',
+        scope
+      )
+      equals(exports, { second: true, first: true, view: true })
+    })
+  }
 
   test('PaperScript.execute() handlers', () => {
     const view = paper.view,
