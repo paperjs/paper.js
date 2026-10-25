@@ -186,17 +186,22 @@ new function() {
 
     // Loading and invalidating items isn't a change of the document, so we
     // keep it out of the change log. Loading linked text loads the children
-    // of the containers of its other items while it loads:
+    // of the containers of its other items while it loads. What it creates
+    // belongs to the project that it loads for, which we make the active one
+    // meanwhile, without activating it:
     function whileLoading(project, callback) {
         var changes = project._changes,
-            loading = isLoading;
+            loading = isLoading,
+            active = paper.project;
         project._changes = null;
         isLoading = true;
+        paper.project = project;
         try {
             callback();
         } finally {
             project._changes = changes;
             isLoading = loading;
+            paper.project = active;
         }
     }
 
@@ -214,8 +219,11 @@ new function() {
         var definitionsByKey = project._definitionsByKey,
             definition = definitionsByKey[key];
         if (!definition) {
-            definition = definitionsByKey[key] = importJSON(project,
-                    project._host.getDefinition(key));
+            // Project#symbolDefinitions loads them outside of items, too:
+            whileLoading(project, function() {
+                definition = definitionsByKey[key] = importJSON(project,
+                        project._host.getDefinition(key));
+            });
             definition._key = key;
         }
         return definition;
