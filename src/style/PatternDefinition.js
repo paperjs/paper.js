@@ -154,14 +154,15 @@ var PatternDefinition = ItemDefinition.extend(/** @lends PatternDefinition# */{
     },
 
     /**
-     * Returns a copy of the pattern, with a copy of its item.
+     * Returns a copy of the pattern, with a copy of its item and its name.
      *
      * @return {PatternDefinition}
      */
     clone: function() {
         return new PatternDefinition(this._item.clone(false), {
             tile: this._tile,
-            spacing: this._spacing
+            spacing: this._spacing,
+            name: this._name
         });
     },
 

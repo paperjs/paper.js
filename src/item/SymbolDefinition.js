@@ -126,12 +126,14 @@ var SymbolDefinition = ItemDefinition.extend(/** @lends SymbolDefinition# */{
     },
 
     /**
-     * Returns a copy of the symbol.
+     * Returns a copy of the symbol, with a copy of its item and its name.
      *
      * @return {SymbolDefinition}
      */
     clone: function() {
-        return new SymbolDefinition(this._item.clone(false));
+        return new SymbolDefinition(this._item.clone(false), {
+            name: this._name
+        });
     },
 
     /**
