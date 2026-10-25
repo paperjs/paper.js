@@ -156,6 +156,14 @@ describe('Item Cloning', () => {
     equals(() => definition.project === copy.project, true)
   })
 
+  test('Symbol#clone() keeps an item that is not centered in place', () => {
+    const definition = new SymbolDefinition(
+      new Path.Circle([150, 150], 60),
+      true
+    )
+    equals(definition.clone().item.position, new Point(150, 150))
+  })
+
   test('PatternDefinition#clone()', () => {
     const definition = new PatternDefinition(new Path.Circle([5, 5], 5), {
       tile: new Rectangle(0, 0, 20, 20),
