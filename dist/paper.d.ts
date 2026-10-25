@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 25 20:01:58 2026 +0100
+ * Date: Sun Oct 25 23:14:58 2026 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -6587,9 +6587,13 @@ declare namespace paper {
          *   the node with the given key, or of the top level for `null`, as
          *   columns: `keys`, `types` (indices into `typeNames`), `typeNames`,
          *   `flags` (selected: 1, visible: 2, locked: 4, strokeScaling: 8,
-         *   clipMask: 64, guide: 128, empty: 256), `boxes` (bounds,
-         *   strokeBounds and roughBounds in the item's coordinates, 12 numbers
-         *   per item), and the sparse objects `names` and `matrices`.
+         *   clipMask: 64, guide: 128, empty: 256), optionally `boxes`
+         *   (bounds, strokeBounds and roughBounds in the item's coordinates, 12
+         *   numbers per item), and the sparse objects `names` and `matrices`.
+         * - `getBounds(key)`, for hosts that don't send `boxes`, which returns
+         *   the node's 12 numbers, or `null` for an empty node. Items ask for
+         *   them when their bounds are needed, and again after the host sent
+         *   their record again.
          * - `getItem(key)`, which returns the node's own content in the form
          *   of {@link Item#importJSON}, without children. Linked text
          *   gives `linked`, the keys of its story's text items in order, and

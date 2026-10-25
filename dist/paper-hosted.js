@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 25 20:01:58 2026 +0100
+ * Date: Sun Oct 25 23:14:58 2026 +0100
  *
  ***
  *
@@ -23574,7 +23574,7 @@ new function() {
 				| (flags & 1 ? 1 : 0);
 		item._matrix._set.apply(item._matrix,
 				(matrix || [1, 0, 0, 1, 0, 0]).concat([true]));
-		item._boxes = columns.boxes;
+		item._boxes = columns.boxes || undefined;
 		item._boxIndex = i * boxSize;
 		item._bounds = undefined;
 		item._hostBounds = true;
@@ -23859,8 +23859,12 @@ new function() {
 
 		_getHostBounds: function(options) {
 			var boxes = this._boxes,
-				i = this._boxIndex
-					+ (options.handle ? 8 : options.stroke ? 4 : 0);
+				i = this._boxIndex;
+			if (boxes === undefined && this._key != null) {
+				boxes = this._boxes = this._project._host.getBounds(this._key);
+				i = this._boxIndex = 0;
+			}
+			i += options.handle ? 8 : options.stroke ? 4 : 0;
 			return boxes
 					? new Rectangle(boxes[i], boxes[i + 1], boxes[i + 2],
 						boxes[i + 3])
