@@ -33,12 +33,6 @@
   new text has defaults of its own, such as a black fill without a stroke.
 - Add `Point#values`, `Size#values` and `Rectangle#values`, which give their
   numbers as an array, as `Matrix#values` does.
-- Add `Project#onActivate` and `Project#onDeactivate`, as tools have them,
-  for the events that `Project#activate()` emits, and `Project.onActivate`
-  and `Project.onDeactivate` for those of all projects, including new ones.
-- Load hosted items in full from their host when they move into a project with
-  another host, where they drop their keys and are new items, using copies of
-  their host's symbol and pattern definitions, as copies made there do.
 
 ### Changed
 
@@ -46,10 +40,6 @@
   calling the `processItem` callback of `#importSVG()`, so that it can extend
   the data, instead of after it, which replaced the data that it stored. Items
   that the callback returns as replacements no longer receive the data.
-- Make `PaperScope#project` an accessor, so that PaperScript uses the global
-  `project` that `PaperScope#install()` defines, as it does with `view`, and
-  both follow the active project when a script activates another one.
-- Emit `deactivate` when the active project or tool is removed.
 
 ### Deprecated
 
