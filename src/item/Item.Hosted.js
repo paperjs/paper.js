@@ -354,6 +354,24 @@ new function() {
             itemsByKey[key] = this;
         },
 
+        // An item that moves to a project with another host is new there: it
+        // loads from its own host first, while still in its project, and then
+        // drops its key. The children follow as _setProject() reaches them:
+        _setProject: function _setProject(project, installEvents) {
+            var from = this._project,
+                host = from && from._host;
+            if (host && this._key != null && host !== project._host) {
+                if (this._shell)
+                    this._load();
+                if (this._contentFields && !this.hasOwnProperty('_children')
+                        && (this instanceof Group || this._hasChildren))
+                    this._loadChildren();
+                delete from._itemsByKey[this._key];
+                this._key = null;
+            }
+            _setProject.base.call(this, project, installEvents);
+        },
+
         _getHostBounds: function(options) {
             var boxes = this._boxes,
                 i = this._boxIndex
@@ -721,6 +739,11 @@ new function() {
          *   host's definitions of the type, `'SymbolDefinition'` or
          *   `'PatternDefinition'`, for {@link #symbolDefinitions} and
          *   {@link #patternDefinitions}.
+         *
+         * Items that move into a project with another host load in full from
+         * their own host first, and drop their keys, so they are new items
+         * there. They keep the definitions of their host, and linked text
+         * keeps its story with the items that stay.
          *
          * @bean
          * @type Object

@@ -511,6 +511,58 @@ describe.skipIf(!HostItem)('Hosted', () => {
     equals(message, 'Unable to change the key of an item.')
   })
 
+  test('Items that move to another host load and drop their keys', () => {
+    const from = createHostedProject()
+    const to = createHostedProject()
+    const original = from.host.document.getItem({ name: 'group' })
+    const group = from.project.layers[0].children.group
+    const key = group.key
+    // Load the children that the group joins before taking the calls:
+    const layer = to.project.layers[0]
+    layer.children
+    from.host.takeCalls()
+    to.host.takeCalls()
+    from.project.trackChanges = true
+    to.project.trackChanges = true
+    layer.addChild(group)
+    // Everything loads from the host it came from, before the move:
+    equals(from.host.takeCalls(), [
+      ['getItem', key],
+      ['getChildren', key],
+      ['getItem', original.children[0].id],
+      ['getItem', original.children[1].id]
+    ])
+    equals(to.host.takeCalls(), [])
+    equals(
+      [group, ...group.getItems({})].map(item => item.key),
+      [null, null, null, null, null]
+    )
+    group.name = 'group'
+    equals(group.exportJSON(), original.exportJSON())
+    // The new project logs a new item, the old one no longer holds it:
+    const changes = to.project.takeChanges()
+    equals(
+      () => changes.some(change => change.item === group),
+      true
+    )
+    equals(() => from.project.getItemByKey(key) !== group, true)
+    // The old project logs the parent that the group left:
+    equals(
+      from.project.takeChanges().map(change => change.item.key),
+      [from.project.layers[0].key]
+    )
+  })
+
+  test('Items that move within a host keep their keys', () => {
+    const from = createHostedProject()
+    const to = new Project()
+    to.host = from.host
+    const group = from.project.layers[0].children.group
+    const key = group.key
+    to.layers[0].addChild(group)
+    equals(group.key, key)
+  })
+
   test('HostItem', () => {
     const Blend = HostItem.extend({
       _class: 'TestBlend',
