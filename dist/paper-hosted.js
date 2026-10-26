@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 26 21:15:55 2026 +0100
+ * Date: Mon Oct 26 21:23:46 2026 +0100
  *
  ***
  *
@@ -13848,7 +13848,13 @@ PathItem.inject(new function() {
 		clamp = Numerical.clamp,
 		errorThreshold = 0.1,
 		epsilon = 1e-12,
-		geomEpsilon = 1e-7;
+		geomEpsilon = 1e-7,
+		penSamples = [];
+
+	for (var i = 0; i <= 32; i++) {
+		var phi = (i + 0.5) * Math.PI / 16;
+		penSamples.push({ phi: phi, cos: Math.cos(phi), sin: Math.sin(phi) });
+	}
 
 	function outlineStroke(paths, radius, join, cap, miterLimit) {
 		var tolerance = Math.min(errorThreshold, radius / 100),
@@ -14074,9 +14080,8 @@ PathItem.inject(new function() {
 			}
 
 			function getOffset(part, t) {
-				var v = part.v;
-				return part.offset + part.length * Curve.getLength(v, 0, t)
-						/ Curve.getLength(v);
+				return part.offset + part.length
+						* Curve.getLength(part.v, 0, t) / part.curveLength;
 			}
 
 			function getSpan(offset, after) {
@@ -14124,26 +14129,27 @@ PathItem.inject(new function() {
 						t2 = tangent.dot(axes[1]),
 						dt1 = (dAngle - curvature) * t2,
 						dt2 = (curvature - dAngle) * t1,
-						f = function(phi) {
-							var c = Math.cos(phi),
-								s = Math.sin(phi);
+						fcs = function(c, s) {
 							return t1 * b * c + t2 * a * s + da * b * c * c
 									+ a * db * s * s
 									+ dAngle * (a * a - b * b) * s * c;
 						},
-						df = function(phi) {
-							var c = Math.cos(phi),
-								s = Math.sin(phi);
+						dfcs = function(c, s) {
 							return -t1 * b * s + t2 * a * c
 									+ 2 * (a * db - da * b) * s * c
 									+ dAngle * (a * a - b * b)
 										* (c * c - s * s);
 						},
-						count = 32,
-						step = 2 * Math.PI / count,
-						phi0 = step / 2,
-						f0 = f(phi0),
-						d0 = df(phi0),
+						f = function(phi) {
+							return fcs(Math.cos(phi), Math.sin(phi));
+						},
+						df = function(phi) {
+							return dfcs(Math.cos(phi), Math.sin(phi));
+						},
+						sample = penSamples[0],
+						phi0 = sample.phi,
+						f0 = fcs(sample.cos, sample.sin),
+						d0 = dfcs(sample.cos, sample.sin),
 						roots = [];
 
 					var addRoot = function(phi0, phi1, f0, f1) {
@@ -14171,10 +14177,11 @@ PathItem.inject(new function() {
 						roots.push(side);
 					};
 
-					for (var i = 1; i <= count; i++) {
-						var phi1 = phi0 + step,
-							f1 = f(phi1),
-							d1 = df(phi1);
+					for (var i = 1, l = penSamples.length; i < l; i++) {
+						var sample = penSamples[i],
+							phi1 = sample.phi,
+							f1 = fcs(sample.cos, sample.sin),
+							d1 = dfcs(sample.cos, sample.sin);
 						if (f0 * f1 <= 0 && f0 !== f1) {
 							addRoot(phi0, phi1, f0, f1);
 						} else if (d0 * d1 < 0) {
@@ -14375,7 +14382,7 @@ PathItem.inject(new function() {
 				var v = part.v,
 					start = part.offset,
 					end = start + part.length,
-					length = Curve.getLength(v);
+					length = part.curveLength = Curve.getLength(v);
 
 				function getTime(offset) {
 					return offset <= start ? 0 : offset >= end ? 1
