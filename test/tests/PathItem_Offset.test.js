@@ -269,6 +269,18 @@ describe('PathItem#offset() and #outline()', () => {
     // times of the points on them refined:
     equals(pressureOutline.segments.length, 44)
     equals(getDeviation(pressure, pressureOutline) < 0.1, true, 'tolerance')
+    // The round caps meet the sides where they end, instead of crossing them
+    // close to there:
+    pressure.strokeCap = 'round'
+    equals(
+      pressure
+        .outline({ insert: false })
+        .segments.filter(
+          segment => segment.point.getDistance(segment.next.point) < 0.5
+        ).length,
+      0,
+      'points close together'
+    )
     // Pens that turn much faster than they move, with points that touch the
     // edge appearing and vanishing between the samples:
     const spin = new Path({
@@ -287,14 +299,26 @@ describe('PathItem#offset() and #outline()', () => {
       { offset: 720.17024, width: 1.1 },
       { offset: 1028.81462, width: 3.2, aspect: 1.29, angle: 2378.48632 }
     ]
+    // The last pen lies within the outline, sampled on its exact ellipse, as
+    // the cubics of Path.Ellipse bulge out a little. Its edge is the outline's
+    // there:
     const end = spin.lastSegment.point
-    const last = new Path.Ellipse({
-      center: end,
-      radius: [96, 96 * 1.29],
-      insert: false
-    }).rotate(2378.48632, end)
     const outline = spin.outline({ insert: false })
-    equals(last.subtract(outline).area, 0, null, { tolerance: 1 })
+    const outside = []
+    for (let i = 0; i < 360; i++) {
+      const angle = i * Math.PI / 180
+      const point = end.add(
+        new Point(96 * Math.cos(angle), 96 * 1.29 * Math.sin(angle)).rotate(
+          2378.48632
+        )
+      )
+      if (
+        !outline.contains(point) &&
+        outline.getNearestPoint(point).getDistance(point) > 0.01
+      )
+        outside.push(point)
+    }
+    equals(outside.length, 0, 'the last pen')
     equals(getDeviation(spin, outline) < 0.2, true, 'outside the pens')
     // Smooth profiles change their pens along curves, which the outline
     // follows as exactly:
