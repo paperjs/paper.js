@@ -24,7 +24,15 @@ PathItem.inject(new function() {
         clamp = Numerical.clamp,
         errorThreshold = 0.1,
         epsilon = /*#=*/Numerical.EPSILON,
-        geomEpsilon = /*#=*/Numerical.GEOMETRIC_EPSILON;
+        geomEpsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
+        // The angles where the edges of stroke profiles' pens are sampled,
+        // with their cosines and sines, the same for all pens:
+        penSamples = [];
+
+    for (var i = 0; i <= 32; i++) {
+        var phi = (i + 0.5) * Math.PI / 16;
+        penSamples.push({ phi: phi, cos: Math.cos(phi), sin: Math.sin(phi) });
+    }
 
     // The outline of the strokes of the paths, as the union of the areas that
     // their parts sweep, their joins and their caps. The curves are split where
@@ -315,9 +323,8 @@ PathItem.inject(new function() {
             // along the path, so we scale its lengths, and the parts meet at
             // the same offsets, with the same pens:
             function getOffset(part, t) {
-                var v = part.v;
-                return part.offset + part.length * Curve.getLength(v, 0, t)
-                        / Curve.getLength(v);
+                return part.offset + part.length
+                        * Curve.getLength(part.v, 0, t) / part.curveLength;
             }
 
             function getSpan(offset, after) {
@@ -378,26 +385,29 @@ PathItem.inject(new function() {
                         t2 = tangent.dot(axes[1]),
                         dt1 = (dAngle - curvature) * t2,
                         dt2 = (curvature - dAngle) * t1,
-                        f = function(phi) {
-                            var c = Math.cos(phi),
-                                s = Math.sin(phi);
+                        // f(φ) and its derivative by the cosine and sine of φ,
+                        // which the samples have already:
+                        fcs = function(c, s) {
                             return t1 * b * c + t2 * a * s + da * b * c * c
                                     + a * db * s * s
                                     + dAngle * (a * a - b * b) * s * c;
                         },
-                        df = function(phi) {
-                            var c = Math.cos(phi),
-                                s = Math.sin(phi);
+                        dfcs = function(c, s) {
                             return -t1 * b * s + t2 * a * c
                                     + 2 * (a * db - da * b) * s * c
                                     + dAngle * (a * a - b * b)
                                         * (c * c - s * s);
                         },
-                        count = 32,
-                        step = 2 * Math.PI / count,
-                        phi0 = step / 2,
-                        f0 = f(phi0),
-                        d0 = df(phi0),
+                        f = function(phi) {
+                            return fcs(Math.cos(phi), Math.sin(phi));
+                        },
+                        df = function(phi) {
+                            return dfcs(Math.cos(phi), Math.sin(phi));
+                        },
+                        sample = penSamples[0],
+                        phi0 = sample.phi,
+                        f0 = fcs(sample.cos, sample.sin),
+                        d0 = dfcs(sample.cos, sample.sin),
                         roots = [];
 
                     // Adds the side at the root of f(φ) between the angles,
@@ -428,10 +438,11 @@ PathItem.inject(new function() {
                         roots.push(side);
                     };
 
-                    for (var i = 1; i <= count; i++) {
-                        var phi1 = phi0 + step,
-                            f1 = f(phi1),
-                            d1 = df(phi1);
+                    for (var i = 1, l = penSamples.length; i < l; i++) {
+                        var sample = penSamples[i],
+                            phi1 = sample.phi,
+                            f1 = fcs(sample.cos, sample.sin),
+                            d1 = dfcs(sample.cos, sample.sin);
                         if (f0 * f1 <= 0 && f0 !== f1) {
                             addRoot(phi0, phi1, f0, f1);
                         } else if (d0 * d1 < 0) {
@@ -665,7 +676,8 @@ PathItem.inject(new function() {
                 var v = part.v,
                     start = part.offset,
                     end = start + part.length,
-                    length = Curve.getLength(v);
+                    // Measured once, for getOffset() too:
+                    length = part.curveLength = Curve.getLength(v);
 
                 // The inverse of getOffset():
                 function getTime(offset) {
