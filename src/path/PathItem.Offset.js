@@ -310,6 +310,16 @@ PathItem.inject(new function() {
                         : getPen(end, false);
             }
 
+            // The offset along the path at the time on the part. Regularizing
+            // can make its curve a little longer or shorter than the part is
+            // along the path, so we scale its lengths, and the parts meet at
+            // the same offsets, with the same pens:
+            function getOffset(part, t) {
+                var v = part.v;
+                return part.offset + part.length * Curve.getLength(v, 0, t)
+                        / Curve.getLength(v);
+            }
+
             function getSpan(offset, after) {
                 for (var i = 0, l = spans.length; i < l; i++) {
                     var span = spans[i];
@@ -348,8 +358,9 @@ PathItem.inject(new function() {
             // one of them, between the sides of the stroke, and two where the
             // pen turns faster than it moves. They are sorted along the
             // curve's normal, as are the sides:
-            function getContacts(v, t, offset, span) {
-                var pen = getSpanPen(span, offset + Curve.getLength(v, 0, t)),
+            function getContacts(part, t, span) {
+                var v = part.v,
+                    pen = getSpanPen(span, getOffset(part, t)),
                     a = pen.a,
                     b = pen.b,
                     da = pen.da,
@@ -467,8 +478,8 @@ PathItem.inject(new function() {
                 return contacts;
             }
 
-            function getSides(v, t, offset, span) {
-                return getContacts(v, t, offset, span).sides;
+            function getSides(part, t, span) {
+                return getContacts(part, t, span).sides;
             }
 
             // Adds the area that the pen sweeps along the curve from ta to tb,
@@ -481,13 +492,12 @@ PathItem.inject(new function() {
             // beyond their inner edge, so we split them into two areas at the
             // points that stand still across them, as with the evolute in
             // addPart() (Nehab):
-            function addPiece(v, offset, span, ta, tb) {
+            function addPiece(part, span, ta, tb) {
                 // As the points that touch the edge move around the pen
                 // as it and the curve turn, sample them at least every 10°:
-                var turn = abs(getSpanPen(span, offset
-                            + Curve.getLength(v, 0, tb)).angle
-                        - getSpanPen(span, offset
-                            + Curve.getLength(v, 0, ta)).angle)
+                var v = part.v,
+                    turn = abs(getSpanPen(span, getOffset(part, tb)).angle
+                        - getSpanPen(span, getOffset(part, ta)).angle)
                         + getTurn(v, ta, tb),
                     count = Math.max(16, Math.ceil(turn * 18 / Math.PI)),
                     // The times where the parts end and the next ones start:
@@ -497,7 +507,7 @@ PathItem.inject(new function() {
                 // Fitting asks for the same times for each end of a strip:
                 function getStrips(t) {
                     return cache[t] || (cache[t] =
-                            getContacts(v, t, offset, span).strips);
+                            getContacts(part, t, span).strips);
                 }
 
                 // The point at the end of the strip at the time, or the curve's
@@ -588,8 +598,8 @@ PathItem.inject(new function() {
                             }
                         }
                         splits.push([t, u]);
-                        addPen(Curve.getPoint(v, t), getSpanPen(span,
-                                offset + Curve.getLength(v, 0, t)));
+                        addPen(Curve.getPoint(v, t),
+                                getSpanPen(span, getOffset(part, t)));
                         t0 = u;
                         s0 = getStrips(u);
                     }
@@ -655,13 +665,13 @@ PathItem.inject(new function() {
                 var v = part.v,
                     start = part.offset,
                     end = start + part.length,
-                    // Regularized curves can be a little shorter than the
-                    // offsets along the path say:
                     length = Curve.getLength(v);
 
+                // The inverse of getOffset():
                 function getTime(offset) {
-                    return offset <= start ? 0 : offset - start >= length ? 1
-                            : Curve.getTimeAt(v, offset - start);
+                    return offset <= start ? 0 : offset >= end ? 1
+                            : Curve.getTimeAt(v,
+                                (offset - start) * length / part.length);
                 }
 
                 for (var i = 0, l = spans.length; i < l; i++) {
@@ -669,9 +679,9 @@ PathItem.inject(new function() {
                         from = Math.max(span.entry.offset, start),
                         to = Math.min(span.next.offset, end),
                         ta = getTime(from),
-                        tb = to === end ? 1 : getTime(to);
+                        tb = getTime(to);
                     if (to > from && tb > ta)
-                        addPiece(v, start, span, ta, tb);
+                        addPiece(part, span, ta, tb);
                 }
             }
 
@@ -774,47 +784,47 @@ PathItem.inject(new function() {
                     cross = tangent1.cross(tangent2),
                     span = getSpan(offset, true),
                     pen = getSpanPen(span, offset);
-                if (join === 'round' || Numerical.isZero(cross)
-                        && tangent1.dot(tangent2) > 0) {
-                    // Where the curves continue each other, the pen covers the
-                    // ends of their parts, which the union can't tell apart
-                    // where they only meet:
-                    addPen(point, pen);
-                } else {
-                    var span1 = getSpan(offset, false),
-                        // The side against the turn, see getSides():
-                        k = cross > 0 ? 1 : 0,
-                        sides1 = getSides(part1.v, 1, part1.offset, span1),
-                        sides2 = getSides(part2.v, 0, offset, span);
-                    if (sides1 && sides2) {
-                        var side1 = sides1[k].point,
-                            side2 = sides2[k].point,
-                            direction1 = sides1[k].derivative.normalize(),
-                            direction2 = sides2[k].derivative.normalize(),
-                            // Widen the join into the parts on both
-                            // sides, as in addJoin() above:
-                            widening = Math.sqrt(tolerance * pen.a),
-                            // From the inner sides, as the ends of the
-                            // parts only run through the point where the
-                            // pen doesn't change. All lie on the pen:
-                            points = [sides1[1 - k].point,
-                                side1.subtract(direction1.multiply(
-                                    widening)),
-                                side1];
-                        if (join === 'miter') {
-                            var miter = Line.intersect(
-                                    side1.x, side1.y,
-                                    direction1.x, direction1.y,
-                                    side2.x, side2.y,
-                                    direction2.x, direction2.y,
-                                    true, true);
-                            if (miter && miter.getDistance(point)
-                                    <= miterLimit * pen.a)
-                                points.push(miter);
+                // Where the curves continue each other, their parts meet in
+                // the same points, and need no join:
+                if (!Numerical.isZero(cross) || tangent1.dot(tangent2) < 0) {
+                    if (join === 'round') {
+                        addPen(point, pen);
+                    } else {
+                        var span1 = getSpan(offset, false),
+                            // The side against the turn, see getSides():
+                            k = cross > 0 ? 1 : 0,
+                            sides1 = getSides(part1, 1, span1),
+                            sides2 = getSides(part2, 0, span);
+                        if (sides1 && sides2) {
+                            var side1 = sides1[k].point,
+                                side2 = sides2[k].point,
+                                direction1 = sides1[k].derivative.normalize(),
+                                direction2 = sides2[k].derivative.normalize(),
+                                // Widen the join into the parts on both
+                                // sides, as in addJoin() above:
+                                widening = Math.sqrt(tolerance * pen.a),
+                                // From the inner sides, as the ends of the
+                                // parts only run through the point where the
+                                // pen doesn't change. All lie on the pen:
+                                points = [sides1[1 - k].point,
+                                    side1.subtract(direction1.multiply(
+                                        widening)),
+                                    side1];
+                            if (join === 'miter') {
+                                var miter = Line.intersect(
+                                        side1.x, side1.y,
+                                        direction1.x, direction1.y,
+                                        side2.x, side2.y,
+                                        direction2.x, direction2.y,
+                                        true, true);
+                                if (miter && miter.getDistance(point)
+                                        <= miterLimit * pen.a)
+                                    points.push(miter);
+                            }
+                            addPolygon(points.concat(side2, side2.add(
+                                    direction2.multiply(widening)),
+                                    sides2[1 - k].point));
                         }
-                        addPolygon(points.concat(side2, side2.add(
-                                direction2.multiply(widening)),
-                                sides2[1 - k].point));
                     }
                 }
             }
@@ -829,7 +839,7 @@ PathItem.inject(new function() {
                 if (cap === 'round') {
                     addPen(Curve.getPoint(part.v, t), pen);
                 } else if (cap === 'square') {
-                    var sides = getSides(part.v, t, part.offset, span);
+                    var sides = getSides(part, t, span);
                     if (sides) {
                         var axes = getAxes(pen),
                             reach = new Point(pen.a * tangent.dot(axes[0]),
@@ -867,15 +877,22 @@ PathItem.inject(new function() {
                     if (pens[i].offset > pens[i - 1].offset)
                         spans.push({ entry: pens[i - 1], next: pens[i] });
                 }
-                // The pens where the spans meet, except at steps, which end
-                // the parts straight across, as butt caps do:
+                // The pens where the spans meet and the pen changes abruptly,
+                // as the sides jump there, except at steps, which end the parts
+                // straight across, as butt caps do. Where the pen changes
+                // smoothly, the parts meet in the same points:
                 for (var i = 0, l = pens.length; i < l; i++) {
                     var offset = pens[i].offset,
                         isStep = i > 0 && pens[i - 1].offset === offset
                             || i < l - 1 && pens[i + 1].offset === offset;
                     if (!isStep && (closed ? offset < length
-                            : offset > 0 && offset < length))
-                        addPen(path.getPointAt(offset), getPen(offset, true));
+                            : offset > 0 && offset < length)) {
+                        var pen = getPen(offset, true),
+                            before = getPen(offset, false);
+                        if (pen.da !== before.da || pen.db !== before.db
+                                || pen.dAngle !== before.dAngle)
+                            addPen(path.getPointAt(offset), pen);
+                    }
                 }
                 for (var i = 0, offset = 0, l = curves.length; i < l; i++) {
                     var curve = curves[i],
