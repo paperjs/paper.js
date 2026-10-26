@@ -36,10 +36,26 @@ new function() {
         // The host boxes per item: bounds, strokeBounds and roughBounds.
         boxSize = 12,
         shellPrototypes = {},
+        // The flags of the host's records, see Project#host, and the two
+        // more of Project#invalidate():
+        recordFlags = {
+            selected: 1,
+            visible: 2,
+            locked: 4,
+            strokeScaling: 8,
+            content: 16,
+            children: 32,
+            clipMask: 64,
+            guide: 128,
+            empty: 256
+        },
         // The changes that outdate the host's boxes:
         boundsFlags = /*#=*/(ChangeFlag.GEOMETRY | ChangeFlag.STROKE),
         // Set while loading or invalidating, which aren't changes:
-        isLoading = false;
+        isLoading = false,
+        // The copies of definitions that one insertion or copy brings into a
+        // project with another host, see copyDefinitions():
+        definitionCopies = null;
 
     function defineValue(item, name, value) {
         Object.defineProperty(item, name, {
@@ -129,14 +145,14 @@ new function() {
     function setRecord(item, columns, i) {
         var flags = columns.flags[i],
             matrix = columns.matrices && columns.matrices[i];
-        item._visible = !!(flags & 2);
-        item._locked = !!(flags & 4);
-        item._strokeScaling = !!(flags & 8);
-        item._clipMask = !!(flags & 64);
-        item._guide = !!(flags & 128);
-        item._empty = !!(flags & 256);
+        item._visible = !!(flags & recordFlags.visible);
+        item._locked = !!(flags & recordFlags.locked);
+        item._strokeScaling = !!(flags & recordFlags.strokeScaling);
+        item._clipMask = !!(flags & recordFlags.clipMask);
+        item._guide = !!(flags & recordFlags.guide);
+        item._empty = !!(flags & recordFlags.empty);
         item._selection = item._selection & ~/*#=*/ItemSelection.ITEM
-                | (flags & 1 ? /*#=*/ItemSelection.ITEM : 0);
+                | (flags & recordFlags.selected ? /*#=*/ItemSelection.ITEM : 0);
         item._matrix._set.apply(item._matrix,
                 (matrix || [1, 0, 0, 1, 0, 0]).concat([true]));
         // Without boxes, the item asks for them, see #_getHostBounds():
@@ -230,14 +246,28 @@ new function() {
         return definition;
     }
 
-    // Only their own host draws host items, so they can't enter the project
-    // of another one:
-    function checkHostItems(item, from, project) {
-        var host = from && from._host;
-        if (host && host !== project._host && (item instanceof HostItem
+    // Whether the item comes from a project with another host. Only their own
+    // host draws host items, so they can't enter the project of another one:
+    function isFromOtherHost(item, from, project) {
+        var host = from && from._host,
+            isOther = !!host && host !== project._host;
+        if (isOther && (item instanceof HostItem
                 || item.getItems({ class: HostItem }).length))
             throw new Error('Unable to add host items to the project of '
                     + 'another host.');
+        return isOther;
+    }
+
+    // The items that one insertion or copy brings into a project with another
+    // host share the copies of their definitions:
+    function whileEntering(callback) {
+        var copies = definitionCopies;
+        definitionCopies = copies || {};
+        try {
+            return callback();
+        } finally {
+            definitionCopies = copies;
+        }
     }
 
     // The pattern colors of an item, with those of the runs of its text.
@@ -262,12 +292,11 @@ new function() {
         return colors;
     }
 
-    // Items that enter a project with another host use copies of the
-    // definitions of their host there, which the new host takes as new ones.
-    // The project keeps one copy of each, for all the items that enter:
+    // Items that enter a project with another host bring copies of the
+    // definitions of their host along, which the new host takes as new ones.
+    // The items of one insertion or copy share them, see whileEntering():
     function copyDefinitions(project, item) {
-        var copies = project._definitionCopies
-                || (project._definitionCopies = {});
+        var copies = definitionCopies || {};
 
         function getCopy(definition) {
             var copy = copies[definition._id];
@@ -447,34 +476,58 @@ new function() {
                 this._hostBounds = false;
             }
             _setProject.base.call(this, project, installEvents);
-            // Copy the definitions once the item is in the new project, which
-            // logs the change, as part of its insertion:
-            if (isNewHost)
+            // Copy once the item is in the new project, which logs the change,
+            // as part of its insertion:
+            if (isNewHost) {
+                // Linked text brings a copy of its story along, which flows on
+                // through the items that stay:
+                var story = this._story;
+                if (story && this.isLinked()) {
+                    var items = story._items;
+                    items.splice(items.indexOf(this), 1);
+                    this._story = story._clone([this]);
+                    story._changed(/*#=*/Change.CONTENT);
+                }
                 copyDefinitions(project, this);
+            }
         },
 
         // Copies made in a project with another host use copies of the
         // definitions there too, as items that move do:
         copyAttributes: function copyAttributes(source, excludeMatrix) {
             var project = this._project,
-                from = source._project,
-                host = from && from._host,
-                isNewHost = host && project && host !== project._host;
-            if (isNewHost)
-                checkHostItems(this, from, project);
+                isNewHost = project
+                    && isFromOtherHost(this, source._project, project);
             copyAttributes.base.call(this, source, excludeMatrix);
             if (isNewHost)
                 copyDefinitions(project, this);
         },
 
-        // Check before moving anything, as removing comes first:
+        // Check all items before moving any, as removing comes first:
         insertChildren: function insertChildren(index, items) {
+            var that = this,
+                isEntering = false;
             for (var i = 0, l = items ? items.length : 0; i < l; i++) {
                 var item = items[i];
-                if (item instanceof Item)
-                    checkHostItems(item, item._project, this._project);
+                if (item instanceof Item
+                        && isFromOtherHost(item, item._project, this._project))
+                    isEntering = true;
             }
-            return insertChildren.base.call(this, index, items);
+            return isEntering
+                    ? whileEntering(function() {
+                        return insertChildren.base.call(that, index, items);
+                    })
+                    : insertChildren.base.call(this, index, items);
+        },
+
+        clone: function clone(options) {
+            var that = this,
+                project = this._project;
+            return project && project._host
+                    ? whileEntering(function() {
+                        return clone.base.call(that, options);
+                    })
+                    : clone.base.call(this, options);
         },
 
         _getHostBounds: function(options) {
@@ -755,9 +808,13 @@ new function() {
         },
 
         insertLayer: function insertLayer(index, layer) {
-            if (layer instanceof Layer)
-                checkHostItems(layer, layer._project, this);
-            return insertLayer.base.call(this, index, layer);
+            var that = this;
+            return layer instanceof Layer
+                    && isFromOtherHost(layer, layer._project, this)
+                    ? whileEntering(function() {
+                        return insertLayer.base.call(that, index, layer);
+                    })
+                    : insertLayer.base.call(this, index, layer);
         },
 
         // The new definitions that the changed items use come first, nested
@@ -863,11 +920,12 @@ new function() {
          *
          * Items that move into a project with another host load in full from
          * their own host first, and drop their keys, so they are new items
-         * there. The symbol and pattern definitions of their host that they
-         * and copies of them use are copied without keys, once per project,
-         * so the new host takes them as new ones too. Linked text keeps its
-         * story with the items that stay, and host items can't enter the
-         * project of another host.
+         * there. They bring copies without keys of the symbol and pattern
+         * definitions of their host along, shared by the items of one
+         * insertion or copy, so the new host takes them as new ones too.
+         * Linked text brings a copy of its story along, which flows on through
+         * the items that stay. Host items can't enter the project of another
+         * host.
          *
          * @bean
          * @type Object
@@ -946,10 +1004,11 @@ new function() {
                     var item = itemsByKey[keys[i]],
                         flags = columns.flags[i];
                     if (item) {
-                        var reload = flags & 16 && item._unload();
+                        var reload = flags & recordFlags.content
+                                && item._unload();
                         if (reload)
                             reloads.push(reload);
-                        if (flags & 32)
+                        if (flags & recordFlags.children)
                             item._reloadChildren();
                         if ((names[i] || undefined) !== item._name)
                             item.setName(names[i] || null);

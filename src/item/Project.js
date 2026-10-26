@@ -149,7 +149,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * Returns the changes logged since tracking was activated or since the
      * last call, and clears the log. Each item is listed once, with the
      * {@link ChangeFlag} values of all its changes combined. Removed items are
-     * listed with the `ChangeFlag.INSERTION` flag. Symbol and pattern
+     * listed with the `ChangeFlag.INSERTION` flag, and items that moved to
+     * another project are left out, as that one lists them. Symbol and pattern
      * definitions whose item, tile, spacing or name changed are listed too,
      * as `{ definition, flags }`.
      *
@@ -158,10 +159,16 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      *     is off
      */
     takeChanges: function() {
-        var changes = this._changes;
+        var changes = this._changes,
+            that = this;
         if (changes) {
             this._changes = [];
             this._changesById = {};
+            // Items that moved to another project since are logged there:
+            changes = changes.filter(function(change) {
+                var item = change.item;
+                return !item || item._project === that;
+            });
         }
         return changes || null;
     },
