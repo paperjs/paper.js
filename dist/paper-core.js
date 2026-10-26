@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 26 21:23:46 2026 +0100
+ * Date: Mon Oct 26 21:40:25 2026 +0100
  *
  ***
  *
@@ -14045,7 +14045,8 @@ PathItem.inject(new function() {
 				length = path.getLength(),
 				curves = path.getCurves(),
 				spans = [],
-				ends = [];
+				ends = [],
+				allParts = [];
 
 			function getPen(offset, after) {
 				var values = getValues(offset, after),
@@ -14080,6 +14081,13 @@ PathItem.inject(new function() {
 						* Curve.getLength(part.v, 0, t) / part.curveLength;
 			}
 
+			function getTime(part, offset) {
+				var start = part.offset;
+				return offset <= start ? 0 : offset >= start + part.length ? 1
+						: Curve.getTimeAt(part.v, (offset - start)
+							* part.curveLength / part.length);
+			}
+
 			function getSpan(offset, after) {
 				for (var i = 0, l = spans.length; i < l; i++) {
 					var span = spans[i];
@@ -14090,13 +14098,44 @@ PathItem.inject(new function() {
 				return spans[spans.length - 1];
 			}
 
-			function addPen(point, pen) {
+			function addPen(point, pen, strips) {
+				function getPoint(phi) {
+					return new Point(Math.cos(phi), Math.sin(phi));
+				}
+
 				if (pen.a > 0 && pen.b > 0) {
-					areas.push(new Path.Ellipse({
-						center: point,
-						radius: [pen.a, pen.b],
-						insert: false
-					}).rotate(pen.angle * 180 / Math.PI, point));
+					var full = 2 * Math.PI,
+						angles = [],
+						ellipse = new Path({ insert: false });
+					(strips || []).forEach(function(strip) {
+						[strip.from.phi, strip.to.phi].forEach(function(phi) {
+							angles.push((phi % full + full) % full);
+						});
+					});
+					angles.sort(function(a, b) {
+						return a - b;
+					});
+					if (!angles.length)
+						angles.push(0);
+					angles.push(angles[0] + full);
+					ellipse.moveTo(getPoint(angles[0]));
+					for (var i = 1, l = angles.length; i < l; i++) {
+						var phi0 = angles[i - 1],
+							sweep = angles[i] - phi0,
+							count = Math.ceil(sweep / (Math.PI / 2) - 1e-9),
+							step = sweep / count;
+						if (sweep > geomEpsilon) {
+							for (var j = 1; j <= count; j++) {
+								ellipse.arcTo(
+										getPoint(phi0 + (j - 0.5) * step),
+										getPoint(phi0 + j * step));
+							}
+						}
+					}
+					ellipse.closePath(geomEpsilon);
+					areas.push(ellipse.transform(new Matrix().translate(point)
+							.rotate(pen.angle * 180 / Math.PI)
+							.scale(pen.a, pen.b)));
 				}
 			}
 
@@ -14315,7 +14354,8 @@ PathItem.inject(new function() {
 						}
 						splits.push([t, u]);
 						addPen(Curve.getPoint(v, t),
-								getSpanPen(span, getOffset(part, t)));
+								getSpanPen(span, getOffset(part, t)),
+								getStrips(t).concat(getStrips(u)));
 						t0 = u;
 						s0 = getStrips(u);
 					}
@@ -14375,23 +14415,15 @@ PathItem.inject(new function() {
 			}
 
 			function addPart(part) {
-				var v = part.v,
-					start = part.offset,
-					end = start + part.length,
-					length = part.curveLength = Curve.getLength(v);
-
-				function getTime(offset) {
-					return offset <= start ? 0 : offset >= end ? 1
-							: Curve.getTimeAt(v,
-								(offset - start) * length / part.length);
-				}
-
+				var start = part.offset,
+					end = start + part.length;
+				part.curveLength = Curve.getLength(part.v);
 				for (var i = 0, l = spans.length; i < l; i++) {
 					var span = spans[i],
 						from = Math.max(span.entry.offset, start),
 						to = Math.min(span.next.offset, end),
-						ta = getTime(from),
-						tb = getTime(to);
+						ta = getTime(part, from),
+						tb = getTime(part, to);
 					if (to > from && tb > ta)
 						addPiece(part, span, ta, tb);
 				}
@@ -14500,7 +14532,9 @@ PathItem.inject(new function() {
 					pen = getSpanPen(span, offset);
 				if (!Numerical.isZero(cross) || tangent1.dot(tangent2) < 0) {
 					if (join === 'round') {
-						addPen(point, pen);
+						addPen(point, pen, getContacts(part1, 1,
+								getSpan(offset, false)).strips.concat(
+									getContacts(part2, 0, span).strips));
 					} else {
 						var span1 = getSpan(offset, false),
 							k = cross > 0 ? 1 : 0,
@@ -14540,7 +14574,8 @@ PathItem.inject(new function() {
 					span = getSpan(offset, !t),
 					pen = getSpanPen(span, offset);
 				if (cap === 'round') {
-					addPen(Curve.getPoint(part.v, t), pen);
+					addPen(Curve.getPoint(part.v, t), pen,
+							getContacts(part, t, span).strips);
 				} else if (cap === 'square') {
 					var sides = getSides(part, t, span);
 					if (sides) {
@@ -14578,19 +14613,6 @@ PathItem.inject(new function() {
 					if (pens[i].offset > pens[i - 1].offset)
 						spans.push({ entry: pens[i - 1], next: pens[i] });
 				}
-				for (var i = 0, l = pens.length; i < l; i++) {
-					var offset = pens[i].offset,
-						isStep = i > 0 && pens[i - 1].offset === offset
-							|| i < l - 1 && pens[i + 1].offset === offset;
-					if (!isStep && (closed ? offset < length
-							: offset > 0 && offset < length)) {
-						var pen = getPen(offset, true),
-							before = getPen(offset, false);
-						if (pen.da !== before.da || pen.db !== before.db
-								|| pen.dAngle !== before.dAngle)
-							addPen(path.getPointAt(offset), pen);
-					}
-				}
 				for (var i = 0, offset = 0, l = curves.length; i < l; i++) {
 					var curve = curves[i],
 						curveLength = curve.getLength();
@@ -14609,10 +14631,6 @@ PathItem.inject(new function() {
 									p2 = points[j],
 									third = p2.subtract(p1).divide(3),
 									distance = p1.getDistance(p2);
-								if (j > 1) {
-									addPen(p1, getSpanPen(getSpan(start),
-											start));
-								}
 								parts.push({
 									v: [p1.x, p1.y, p1.x + third.x,
 										p1.y + third.y, p2.x - third.x,
@@ -14630,6 +14648,17 @@ PathItem.inject(new function() {
 							});
 						}
 						parts.forEach(addPart);
+						for (var j = 1, m = parts.length; j < m; j++) {
+							var part = parts[j],
+								start = part.offset,
+								span = getSpan(start);
+							addPen(new Point(part.v[0], part.v[1]),
+									getSpanPen(span, start),
+									getContacts(parts[j - 1], 1, span).strips
+										.concat(getContacts(part, 0, span)
+											.strips));
+						}
+						allParts.push.apply(allParts, parts);
 						var first = parts[0],
 							last = parts[parts.length - 1];
 						ends.push({
@@ -14641,6 +14670,30 @@ PathItem.inject(new function() {
 						});
 					}
 					offset += curveLength;
+				}
+				for (var i = 0, l = pens.length; i < l; i++) {
+					var offset = pens[i].offset,
+						isStep = i > 0 && pens[i - 1].offset === offset
+							|| i < l - 1 && pens[i + 1].offset === offset;
+					if (!isStep && (closed ? offset < length
+							: offset > 0 && offset < length)) {
+						var pen = getPen(offset, true),
+							before = getPen(offset, false);
+						if (pen.da !== before.da || pen.db !== before.db
+								|| pen.dAngle !== before.dAngle) {
+							for (var j = 0; allParts[j].offset
+									+ allParts[j].length <= offset; j++) {}
+							var part = allParts[j],
+								t = getTime(part, offset),
+								previous = t ? part : allParts[j - 1]
+									|| allParts[allParts.length - 1];
+							addPen(Curve.getPoint(part.v, t), pen,
+									getContacts(previous, t || 1,
+										getSpan(offset, false)).strips.concat(
+											getContacts(part, t,
+												getSpan(offset, true)).strips));
+						}
+					}
 				}
 				for (var i = 1, l = ends.length; i <= l; i++) {
 					if (i < l || closed)
