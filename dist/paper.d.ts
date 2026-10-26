@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 25 23:14:58 2026 +0100
+ * Date: Mon Oct 26 08:18:03 2026 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -6645,11 +6645,12 @@ declare namespace paper {
          * 
          * Items that move into a project with another host load in full from
          * their own host first, and drop their keys, so they are new items
-         * there. The symbol and pattern definitions of their host that they
-         * and copies of them use are copied without keys, once per project,
-         * so the new host takes them as new ones too. Linked text keeps its
-         * story with the items that stay, and host items can't enter the
-         * project of another host.
+         * there. They bring copies without keys of the symbol and pattern
+         * definitions of their host along, shared by the items of one
+         * insertion or copy, so the new host takes them as new ones too.
+         * Linked text brings a copy of its story along, which flows on through
+         * the items that stay. Host items can't enter the project of another
+         * host.
          */
         host: any
 
@@ -6799,7 +6800,8 @@ declare namespace paper {
          * Returns the changes logged since tracking was activated or since the
          * last call, and clears the log. Each item is listed once, with the
          * {@link ChangeFlag} values of all its changes combined. Removed items are
-         * listed with the `ChangeFlag.INSERTION` flag. Symbol and pattern
+         * listed with the `ChangeFlag.INSERTION` flag, and items that moved to
+         * another project are left out, as that one lists them. Symbol and pattern
          * definitions whose item, tile, spacing or name changed are listed too,
          * as `{ definition, flags }`.
          * 

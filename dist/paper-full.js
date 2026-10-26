@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 25 23:14:58 2026 +0100
+ * Date: Mon Oct 26 08:18:03 2026 +0100
  *
  ***
  *
@@ -3262,10 +3262,15 @@ var Project = PaperScopeItem.extend({
 	},
 
 	takeChanges: function() {
-		var changes = this._changes;
+		var changes = this._changes,
+			that = this;
 		if (changes) {
 			this._changes = [];
 			this._changesById = {};
+			changes = changes.filter(function(change) {
+				var item = change.item;
+				return !item || item._project === that;
+			});
 		}
 		return changes || null;
 	},

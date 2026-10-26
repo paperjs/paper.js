@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 25 23:14:58 2026 +0100
+ * Date: Mon Oct 26 08:18:03 2026 +0100
  *
  ***
  *
@@ -3262,10 +3262,15 @@ var Project = PaperScopeItem.extend({
 	},
 
 	takeChanges: function() {
-		var changes = this._changes;
+		var changes = this._changes,
+			that = this;
 		if (changes) {
 			this._changes = [];
 			this._changesById = {};
+			changes = changes.filter(function(change) {
+				var item = change.item;
+				return !item || item._project === that;
+			});
 		}
 		return changes || null;
 	},
@@ -23482,8 +23487,20 @@ new function() {
 		childrenFields = ['_children', '_namedChildren'],
 		boxSize = 12,
 		shellPrototypes = {},
+		recordFlags = {
+			selected: 1,
+			visible: 2,
+			locked: 4,
+			strokeScaling: 8,
+			content: 16,
+			children: 32,
+			clipMask: 64,
+			guide: 128,
+			empty: 256
+		},
 		boundsFlags = 72,
-		isLoading = false;
+		isLoading = false,
+		definitionCopies = null;
 
 	function defineValue(item, name, value) {
 		Object.defineProperty(item, name, {
@@ -23564,14 +23581,14 @@ new function() {
 	function setRecord(item, columns, i) {
 		var flags = columns.flags[i],
 			matrix = columns.matrices && columns.matrices[i];
-		item._visible = !!(flags & 2);
-		item._locked = !!(flags & 4);
-		item._strokeScaling = !!(flags & 8);
-		item._clipMask = !!(flags & 64);
-		item._guide = !!(flags & 128);
-		item._empty = !!(flags & 256);
+		item._visible = !!(flags & recordFlags.visible);
+		item._locked = !!(flags & recordFlags.locked);
+		item._strokeScaling = !!(flags & recordFlags.strokeScaling);
+		item._clipMask = !!(flags & recordFlags.clipMask);
+		item._guide = !!(flags & recordFlags.guide);
+		item._empty = !!(flags & recordFlags.empty);
 		item._selection = item._selection & ~1
-				| (flags & 1 ? 1 : 0);
+				| (flags & recordFlags.selected ? 1 : 0);
 		item._matrix._set.apply(item._matrix,
 				(matrix || [1, 0, 0, 1, 0, 0]).concat([true]));
 		item._boxes = columns.boxes || undefined;
@@ -23652,12 +23669,24 @@ new function() {
 		return definition;
 	}
 
-	function checkHostItems(item, from, project) {
-		var host = from && from._host;
-		if (host && host !== project._host && (item instanceof HostItem
+	function isFromOtherHost(item, from, project) {
+		var host = from && from._host,
+			isOther = !!host && host !== project._host;
+		if (isOther && (item instanceof HostItem
 				|| item.getItems({ class: HostItem }).length))
 			throw new Error('Unable to add host items to the project of '
 					+ 'another host.');
+		return isOther;
+	}
+
+	function whileEntering(callback) {
+		var copies = definitionCopies;
+		definitionCopies = copies || {};
+		try {
+			return callback();
+		} finally {
+			definitionCopies = copies;
+		}
 	}
 
 	function getPatternColors(item) {
@@ -23681,8 +23710,7 @@ new function() {
 	}
 
 	function copyDefinitions(project, item) {
-		var copies = project._definitionCopies
-				|| (project._definitionCopies = {});
+		var copies = definitionCopies || {};
 
 		function getCopy(definition) {
 			var copy = copies[definition._id];
@@ -23832,29 +23860,51 @@ new function() {
 				this._hostBounds = false;
 			}
 			_setProject.base.call(this, project, installEvents);
-			if (isNewHost)
+			if (isNewHost) {
+				var story = this._story;
+				if (story && this.isLinked()) {
+					var items = story._items;
+					items.splice(items.indexOf(this), 1);
+					this._story = story._clone([this]);
+					story._changed(521);
+				}
 				copyDefinitions(project, this);
+			}
 		},
 
 		copyAttributes: function copyAttributes(source, excludeMatrix) {
 			var project = this._project,
-				from = source._project,
-				host = from && from._host,
-				isNewHost = host && project && host !== project._host;
-			if (isNewHost)
-				checkHostItems(this, from, project);
+				isNewHost = project
+					&& isFromOtherHost(this, source._project, project);
 			copyAttributes.base.call(this, source, excludeMatrix);
 			if (isNewHost)
 				copyDefinitions(project, this);
 		},
 
 		insertChildren: function insertChildren(index, items) {
+			var that = this,
+				isEntering = false;
 			for (var i = 0, l = items ? items.length : 0; i < l; i++) {
 				var item = items[i];
-				if (item instanceof Item)
-					checkHostItems(item, item._project, this._project);
+				if (item instanceof Item
+						&& isFromOtherHost(item, item._project, this._project))
+					isEntering = true;
 			}
-			return insertChildren.base.call(this, index, items);
+			return isEntering
+					? whileEntering(function() {
+						return insertChildren.base.call(that, index, items);
+					})
+					: insertChildren.base.call(this, index, items);
+		},
+
+		clone: function clone(options) {
+			var that = this,
+				project = this._project;
+			return project && project._host
+					? whileEntering(function() {
+						return clone.base.call(that, options);
+					})
+					: clone.base.call(this, options);
 		},
 
 		_getHostBounds: function(options) {
@@ -24084,9 +24134,13 @@ new function() {
 		},
 
 		insertLayer: function insertLayer(index, layer) {
-			if (layer instanceof Layer)
-				checkHostItems(layer, layer._project, this);
-			return insertLayer.base.call(this, index, layer);
+			var that = this;
+			return layer instanceof Layer
+					&& isFromOtherHost(layer, layer._project, this)
+					? whileEntering(function() {
+						return insertLayer.base.call(that, index, layer);
+					})
+					: insertLayer.base.call(this, index, layer);
 		},
 
 		takeChanges: function takeChanges() {
@@ -24171,10 +24225,11 @@ new function() {
 					var item = itemsByKey[keys[i]],
 						flags = columns.flags[i];
 					if (item) {
-						var reload = flags & 16 && item._unload();
+						var reload = flags & recordFlags.content
+								&& item._unload();
 						if (reload)
 							reloads.push(reload);
-						if (flags & 32)
+						if (flags & recordFlags.children)
 							item._reloadChildren();
 						if ((names[i] || undefined) !== item._name)
 							item.setName(names[i] || null);
