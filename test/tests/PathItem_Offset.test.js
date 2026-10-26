@@ -252,20 +252,23 @@ describe('PathItem#offset() and #outline()', () => {
       { offset: length * 0.7, width: 1.1 },
       { offset: length, width: 0.2 }
     ]
-    const seams = pressure
-      .outline({ insert: false })
-      .segments.filter(segment => {
-        const { handleIn, handleOut } = segment
-        const kink =
-          handleIn.isZero() || handleOut.isZero()
-            ? 0
-            : 180 - Math.abs(handleIn.getDirectedAngle(handleOut))
-        return (
-          segment.point.getDistance(segment.next.point) < 0.5 ||
-          kink > 0.1 && kink < 5
-        )
-      })
+    const pressureOutline = pressure.outline({ insert: false })
+    const seams = pressureOutline.segments.filter(segment => {
+      const { handleIn, handleOut } = segment
+      const kink =
+        handleIn.isZero() || handleOut.isZero()
+          ? 0
+          : 180 - Math.abs(handleIn.getDirectedAngle(handleOut))
+      return (
+        segment.point.getDistance(segment.next.point) < 0.5 ||
+        kink > 0.1 && kink < 5
+      )
+    })
     equals(seams.length, 0, 'seams')
+    // The sides take as few cubics as stay within the tolerance, with the
+    // times of the points on them refined:
+    equals(pressureOutline.segments.length, 44)
+    equals(getDeviation(pressure, pressureOutline) < 0.1, true, 'tolerance')
     // Pens that turn much faster than they move, with points that touch the
     // edge appearing and vanishing between the samples:
     const spin = new Path({
