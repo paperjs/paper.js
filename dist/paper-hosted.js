@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 26 00:36:23 2026 +0100
+ * Date: Mon Oct 26 12:03:28 2026 +0100
  *
  ***
  *
@@ -31,6 +31,8 @@
  */
 
 var paper = function(self, undefined) {
+
+'use strict';
 
 self = self || require('./node/self.js');
 var window = self.window,
