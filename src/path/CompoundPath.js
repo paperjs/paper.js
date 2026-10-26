@@ -347,8 +347,8 @@ new function() { // Injection scope for PostScript-like drawing functions
 
     // Redirect all other drawing commands to the current path
     return Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo',
-            'arcTo', 'lineBy', 'cubicCurveBy', 'quadraticCurveBy', 'curveBy',
-            'arcBy'],
+            'arcTo', 'arcAround', 'arcTowards', 'lineBy', 'cubicCurveBy',
+            'quadraticCurveBy', 'curveBy', 'arcBy'],
         function(key) {
             this[key] = function() {
                 var path = getCurrentPath(this, true);
