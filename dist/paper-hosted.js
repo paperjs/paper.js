@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 26 12:03:28 2026 +0100
+ * Date: Mon Oct 26 00:45:37 2026 +0100
  *
  ***
  *
@@ -23671,6 +23671,14 @@ new function() {
 		return definition;
 	}
 
+	function setReordered(item) {
+		var project = item && item._project,
+			change = project && project._changes
+				&& project._changesById[item._id];
+		if (change)
+			change.reordered = true;
+	}
+
 	function isFromOtherHost(item, from, project) {
 		var host = from && from._host,
 			isOther = !!host && host !== project._host;
@@ -23885,18 +23893,30 @@ new function() {
 
 		insertChildren: function insertChildren(index, items) {
 			var that = this,
-				isEntering = false;
+				isEntering = false,
+				reordered = [];
 			for (var i = 0, l = items ? items.length : 0; i < l; i++) {
 				var item = items[i];
-				if (item instanceof Item
-						&& isFromOtherHost(item, item._project, this._project))
-					isEntering = true;
+				if (item instanceof Item) {
+					var isOther = isFromOtherHost(item, item._project,
+							this._project);
+					if (isOther)
+						isEntering = true;
+					if (item._key != null) {
+						if (!isOther)
+							reordered.push(this);
+						if (item._project !== this._project)
+							reordered.push(item._parent);
+					}
+				}
 			}
-			return isEntering
+			var res = isEntering
 					? whileEntering(function() {
 						return insertChildren.base.call(that, index, items);
 					})
 					: insertChildren.base.call(this, index, items);
+			reordered.forEach(setReordered);
+			return res;
 		},
 
 		clone: function clone(options) {
@@ -23907,6 +23927,11 @@ new function() {
 						return clone.base.call(that, options);
 					})
 					: clone.base.call(this, options);
+		},
+
+		reverseChildren: function reverseChildren() {
+			reverseChildren.base.call(this);
+			setReordered(this);
 		},
 
 		_getHostBounds: function(options) {

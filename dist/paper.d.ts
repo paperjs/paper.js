@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 26 12:03:28 2026 +0100
+ * Date: Mon Oct 26 00:45:37 2026 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -6651,6 +6651,12 @@ declare namespace paper {
          * Linked text brings a copy of its story along, which flows on through
          * the items that stay. Host items can't enter the project of another
          * host.
+         * 
+         * {@link Project#takeChanges} marks the changes of the items whose
+         * children changed in order other than by new items inserted and
+         * items removed, which the other changes don't tell, with
+         * `reordered: true`: the host reads their children whole, and can
+         * place the others' new items by their indices.
          */
         host: any
 
