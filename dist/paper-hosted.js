@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 26 20:36:29 2026 +0100
+ * Date: Mon Oct 26 21:15:55 2026 +0100
  *
  ***
  *
@@ -14404,7 +14404,7 @@ PathItem.inject(new function() {
 						tangent0 = evaluate(t0 + delta).subtract(p0),
 						tangent3 = p3.subtract(evaluate(t1 - delta)),
 						points = [],
-						lengths = [],
+						times = [],
 						total = 0;
 					tangent0 = (tangent0.isZero() ? chord : tangent0)
 							.normalize();
@@ -14418,42 +14418,54 @@ PathItem.inject(new function() {
 						total += point.getDistance(prev);
 						if (i < count) {
 							points.push(point);
-							lengths.push(total);
+							times.push(total);
 						}
 						prev = point;
 					}
-					var c11 = 0, c12 = 0, c22 = 0, x1 = 0, x2 = 0;
-					for (var i = 0; i < count; i++) {
-						var u = total ? lengths[i] / total : 0,
-							w = 1 - u,
-							a1 = tangent0.multiply(3 * w * w * u),
-							a2 = tangent3.multiply(-3 * w * u * u),
-							rest = points[i]
-								.subtract(p0.multiply(w * w * (w + 3 * u)))
-								.subtract(p3.multiply(u * u * (u + 3 * w)));
-						c11 += a1.dot(a1);
-						c12 += a1.dot(a2);
-						c22 += a2.dot(a2);
-						x1 += a1.dot(rest);
-						x2 += a2.dot(rest);
-					}
-					var det = c11 * c22 - c12 * c12,
-						length = chord.getLength(),
-						alpha = det ? (x1 * c22 - x2 * c12) / det : 0,
-						beta = det ? (c11 * x2 - c12 * x1) / det : 0;
-					if (!(alpha > epsilon && beta > epsilon
-							&& alpha < 2 * total && beta < 2 * total)) {
-						alpha = beta = length / 3;
-					}
-					var handle1 = tangent0.multiply(alpha),
-						handle2 = tangent3.multiply(-beta),
+					for (var i = 0; i < count; i++)
+						times[i] = total ? times[i] / total : 0;
+					var length = chord.getLength(),
+						handle1, handle2, c, error;
+					for (var iteration = 0; iteration < 4; iteration++) {
+						var c11 = 0, c12 = 0, c22 = 0, x1 = 0, x2 = 0;
+						for (var i = 0; i < count; i++) {
+							var u = times[i],
+								w = 1 - u,
+								a1 = tangent0.multiply(3 * w * w * u),
+								a2 = tangent3.multiply(-3 * w * u * u),
+								rest = points[i]
+									.subtract(p0.multiply(w * w * (w + 3 * u)))
+									.subtract(p3.multiply(u * u * (u + 3 * w)));
+							c11 += a1.dot(a1);
+							c12 += a1.dot(a2);
+							c22 += a2.dot(a2);
+							x1 += a1.dot(rest);
+							x2 += a2.dot(rest);
+						}
+						var det = c11 * c22 - c12 * c12,
+							alpha = det ? (x1 * c22 - x2 * c12) / det : 0,
+							beta = det ? (c11 * x2 - c12 * x1) / det : 0;
+						if (!(alpha > epsilon && beta > epsilon
+								&& alpha < 2 * total && beta < 2 * total)) {
+							alpha = beta = length / 3;
+						}
+						handle1 = tangent0.multiply(alpha);
+						handle2 = tangent3.multiply(-beta);
 						c = [p0.x, p0.y, p0.x + handle1.x, p0.y + handle1.y,
-							p3.x + handle2.x, p3.y + handle2.y, p3.x, p3.y],
+							p3.x + handle2.x, p3.y + handle2.y, p3.x, p3.y];
 						error = 0;
-					for (var i = 0; i <= 2 * count; i++) {
-						var point = i < count ? points[i]
-								: evaluate(t0 + (t1 - t0) * (i - count + 0.5)
-									/ (count + 1));
+						for (var i = 0; i < count; i++) {
+							var time = Curve.getNearestTime(c, points[i]);
+							error = Math.max(error, points[i].getDistance(
+									Curve.getPoint(c, time)));
+							times[i] = time;
+						}
+						if (error <= tolerance)
+							break;
+					}
+					for (var i = 0; i <= count; i++) {
+						var point = evaluate(t0 + (t1 - t0) * (i + 0.5)
+								/ (count + 1));
 						error = Math.max(error, point.getDistance(
 								Curve.getPoint(c,
 									Curve.getNearestTime(c, point))));
