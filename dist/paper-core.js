@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 26 17:52:47 2026 +0100
+ * Date: Mon Oct 26 20:36:29 2026 +0100
  *
  ***
  *
@@ -14069,6 +14069,12 @@ PathItem.inject(new function() {
 						: getPen(end, false);
 			}
 
+			function getOffset(part, t) {
+				var v = part.v;
+				return part.offset + part.length * Curve.getLength(v, 0, t)
+						/ Curve.getLength(v);
+			}
+
 			function getSpan(offset, after) {
 				for (var i = 0, l = spans.length; i < l; i++) {
 					var span = spans[i];
@@ -14095,8 +14101,9 @@ PathItem.inject(new function() {
 				return [new Point(cos, sin), new Point(-sin, cos)];
 			}
 
-			function getContacts(v, t, offset, span) {
-				var pen = getSpanPen(span, offset + Curve.getLength(v, 0, t)),
+			function getContacts(part, t, span) {
+				var v = part.v,
+					pen = getSpanPen(span, getOffset(part, t)),
 					a = pen.a,
 					b = pen.b,
 					da = pen.da,
@@ -14208,15 +14215,14 @@ PathItem.inject(new function() {
 				return contacts;
 			}
 
-			function getSides(v, t, offset, span) {
-				return getContacts(v, t, offset, span).sides;
+			function getSides(part, t, span) {
+				return getContacts(part, t, span).sides;
 			}
 
-			function addPiece(v, offset, span, ta, tb) {
-				var turn = abs(getSpanPen(span, offset
-							+ Curve.getLength(v, 0, tb)).angle
-						- getSpanPen(span, offset
-							+ Curve.getLength(v, 0, ta)).angle)
+			function addPiece(part, span, ta, tb) {
+				var v = part.v,
+					turn = abs(getSpanPen(span, getOffset(part, tb)).angle
+						- getSpanPen(span, getOffset(part, ta)).angle)
 						+ getTurn(v, ta, tb),
 					count = Math.max(16, Math.ceil(turn * 18 / Math.PI)),
 					splits = [[ta, ta], [tb, tb]],
@@ -14224,7 +14230,7 @@ PathItem.inject(new function() {
 
 				function getStrips(t) {
 					return cache[t] || (cache[t] =
-							getContacts(v, t, offset, span).strips);
+							getContacts(part, t, span).strips);
 				}
 
 				function getEnd(t, j, end) {
@@ -14301,8 +14307,8 @@ PathItem.inject(new function() {
 							}
 						}
 						splits.push([t, u]);
-						addPen(Curve.getPoint(v, t), getSpanPen(span,
-								offset + Curve.getLength(v, 0, t)));
+						addPen(Curve.getPoint(v, t),
+								getSpanPen(span, getOffset(part, t)));
 						t0 = u;
 						s0 = getStrips(u);
 					}
@@ -14368,8 +14374,9 @@ PathItem.inject(new function() {
 					length = Curve.getLength(v);
 
 				function getTime(offset) {
-					return offset <= start ? 0 : offset - start >= length ? 1
-							: Curve.getTimeAt(v, offset - start);
+					return offset <= start ? 0 : offset >= end ? 1
+							: Curve.getTimeAt(v,
+								(offset - start) * length / part.length);
 				}
 
 				for (var i = 0, l = spans.length; i < l; i++) {
@@ -14377,9 +14384,9 @@ PathItem.inject(new function() {
 						from = Math.max(span.entry.offset, start),
 						to = Math.min(span.next.offset, end),
 						ta = getTime(from),
-						tb = to === end ? 1 : getTime(to);
+						tb = getTime(to);
 					if (to > from && tb > ta)
-						addPiece(v, start, span, ta, tb);
+						addPiece(part, span, ta, tb);
 				}
 			}
 
@@ -14472,38 +14479,39 @@ PathItem.inject(new function() {
 					cross = tangent1.cross(tangent2),
 					span = getSpan(offset, true),
 					pen = getSpanPen(span, offset);
-				if (join === 'round' || Numerical.isZero(cross)
-						&& tangent1.dot(tangent2) > 0) {
-					addPen(point, pen);
-				} else {
-					var span1 = getSpan(offset, false),
-						k = cross > 0 ? 1 : 0,
-						sides1 = getSides(part1.v, 1, part1.offset, span1),
-						sides2 = getSides(part2.v, 0, offset, span);
-					if (sides1 && sides2) {
-						var side1 = sides1[k].point,
-							side2 = sides2[k].point,
-							direction1 = sides1[k].derivative.normalize(),
-							direction2 = sides2[k].derivative.normalize(),
-							widening = Math.sqrt(tolerance * pen.a),
-							points = [sides1[1 - k].point,
-								side1.subtract(direction1.multiply(
-									widening)),
-								side1];
-						if (join === 'miter') {
-							var miter = Line.intersect(
-									side1.x, side1.y,
-									direction1.x, direction1.y,
-									side2.x, side2.y,
-									direction2.x, direction2.y,
-									true, true);
-							if (miter && miter.getDistance(point)
-									<= miterLimit * pen.a)
-								points.push(miter);
+				if (!Numerical.isZero(cross) || tangent1.dot(tangent2) < 0) {
+					if (join === 'round') {
+						addPen(point, pen);
+					} else {
+						var span1 = getSpan(offset, false),
+							k = cross > 0 ? 1 : 0,
+							sides1 = getSides(part1, 1, span1),
+							sides2 = getSides(part2, 0, span);
+						if (sides1 && sides2) {
+							var side1 = sides1[k].point,
+								side2 = sides2[k].point,
+								direction1 = sides1[k].derivative.normalize(),
+								direction2 = sides2[k].derivative.normalize(),
+								widening = Math.sqrt(tolerance * pen.a),
+								points = [sides1[1 - k].point,
+									side1.subtract(direction1.multiply(
+										widening)),
+									side1];
+							if (join === 'miter') {
+								var miter = Line.intersect(
+										side1.x, side1.y,
+										direction1.x, direction1.y,
+										side2.x, side2.y,
+										direction2.x, direction2.y,
+										true, true);
+								if (miter && miter.getDistance(point)
+										<= miterLimit * pen.a)
+									points.push(miter);
+							}
+							addPolygon(points.concat(side2, side2.add(
+									direction2.multiply(widening)),
+									sides2[1 - k].point));
 						}
-						addPolygon(points.concat(side2, side2.add(
-								direction2.multiply(widening)),
-								sides2[1 - k].point));
 					}
 				}
 			}
@@ -14515,7 +14523,7 @@ PathItem.inject(new function() {
 				if (cap === 'round') {
 					addPen(Curve.getPoint(part.v, t), pen);
 				} else if (cap === 'square') {
-					var sides = getSides(part.v, t, part.offset, span);
+					var sides = getSides(part, t, span);
 					if (sides) {
 						var axes = getAxes(pen),
 							reach = new Point(pen.a * tangent.dot(axes[0]),
@@ -14556,8 +14564,13 @@ PathItem.inject(new function() {
 						isStep = i > 0 && pens[i - 1].offset === offset
 							|| i < l - 1 && pens[i + 1].offset === offset;
 					if (!isStep && (closed ? offset < length
-							: offset > 0 && offset < length))
-						addPen(path.getPointAt(offset), getPen(offset, true));
+							: offset > 0 && offset < length)) {
+						var pen = getPen(offset, true),
+							before = getPen(offset, false);
+						if (pen.da !== before.da || pen.db !== before.db
+								|| pen.dAngle !== before.dAngle)
+							addPen(path.getPointAt(offset), pen);
+					}
 				}
 				for (var i = 0, offset = 0, l = curves.length; i < l; i++) {
 					var curve = curves[i],
