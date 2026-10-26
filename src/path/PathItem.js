@@ -906,6 +906,78 @@ var PathItem = Item.extend(/** @lends PathItem# */{
     // DOCS: PathItem#arcTo(to, radius, rotation, clockwise, large)
 
     /**
+     * Adds an arc that sweeps the specified angle around the specified
+     * `center` point, from the position of the last segment in the path, by
+     * adding one or more segments to the path. Positive angles draw the arc in
+     * clockwise direction, negative ones in anticlockwise direction.
+     *
+     * @name PathItem#arcAround
+     * @function
+     *
+     * @param {Point} center the center of the arc
+     * @param {Number} angle the angle in degrees that the arc sweeps over
+     *
+     * @example {@paperscript}
+     * var path = new Path();
+     * path.strokeColor = 'black';
+     * path.add(new Point(30, 75));
+     * path.lineTo(new Point(80, 75));
+     *
+     * // Draw a half circle around (105, 75) and continue on the other side:
+     * path.arcAround(new Point(105, 75), 180);
+     * path.lineTo(new Point(180, 75));
+     *
+     * // Draw a full circle around (230, 75):
+     * var circle = new Path();
+     * circle.strokeColor = 'red';
+     * circle.add(new Point(250, 75));
+     * circle.arcAround(new Point(230, 75), 360);
+     */
+    /**
+     * Adds an arc from the position of the last segment in the path to the
+     * specified point, by adding one or more segments to the path. The arc
+     * continues in the direction in which the path ends, without a corner.
+     *
+     * @name PathItem#arcTowards
+     * @function
+     *
+     * @param {Point} to the point where the arc should end
+     *
+     * @example {@paperscript}
+     * var path = new Path();
+     * path.strokeColor = 'black';
+     * path.add(new Point(30, 125));
+     * path.lineTo(new Point(80, 125));
+     *
+     * // Each arc continues smoothly from where the path ends:
+     * path.arcTowards(new Point(130, 75));
+     * path.arcTowards(new Point(230, 75));
+     * path.lineTo(new Point(230, 125));
+     *
+     * @example {@paperscript height=300}
+     * // Interactive example. Click and drag in the view below:
+     * var myPath;
+     *
+     * // The mouse has to move at least 20 points before
+     * // the next mouse drag event is fired:
+     * tool.minDistance = 20;
+     *
+     * // When the user clicks, create a new path that starts
+     * // with a horizontal line ending at the mouse position:
+     * function onMouseDown(event) {
+     *     myPath = new Path();
+     *     myPath.strokeColor = 'black';
+     *     myPath.add(event.point - [20, 0], event.point);
+     * }
+     *
+     * // On each mouse drag event, continue the path smoothly
+     * // with an arc to the current position of the mouse:
+     * function onMouseDrag(event) {
+     *     myPath.arcTowards(event.point);
+     * }
+     */
+
+    /**
      * Adds a curve from the last segment in the path through the specified
      * `through` point, to the specified destination point by adding one segment
      * to the path.

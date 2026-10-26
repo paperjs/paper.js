@@ -18,6 +18,7 @@ import paper, {
   Path,
   PathItem,
   Point,
+  Rectangle,
   Segment,
   Size
 } from 'paper'
@@ -917,6 +918,92 @@ describe('Path', () => {
     path.moveTo(point)
     path.arcTo(point, new Size(10), 0, true, true)
     expect.assertions(0)
+  })
+
+  test('Path#arcAround(center, angle)', () => {
+    const path = new Path()
+    path.moveTo([100, 0])
+    path.arcAround([0, 0], 90)
+    equals(() => path.lastSegment.point, new Point(0, 100))
+    equals(() => path.segments.length, 2)
+    path.arcAround([0, 0], -180)
+    equals(() => path.lastSegment.point, new Point(0, -100))
+    equals(() => path.bounds, new Rectangle(0, -100, 100, 200))
+  })
+
+  test('Path#arcAround(center, angle) with full circles and no angle', () => {
+    const path = new Path()
+    path.moveTo([100, 0])
+    path.arcAround([0, 0], 0)
+    equals(() => path.segments.length, 1)
+    path.arcAround([0, 0], 360)
+    equals(() => path.segments.length, 5)
+    equals(() => path.lastSegment.point, new Point(100, 0))
+    equals(() => path.bounds, new Rectangle(-100, -100, 200, 200))
+  })
+
+  test('Path#arcAround(center, angle) with tiny angles', () => {
+    const path = new Path()
+    path.moveTo([100, 0])
+    path.arcAround([0, 0], 1e-6)
+    equals(() => path.segments.length, 2)
+    equals(() => path.lastSegment.point, new Point(100, 0).rotate(1e-6))
+  })
+
+  test('Path#arcAround(center, angle) with tiny angles that end where they start', () => {
+    const path = new Path()
+    path.moveTo([101, 1])
+    path.arcAround([1, 1], 1e-17)
+    equals(() => path.segments.length, 1)
+  })
+
+  test('Path#arcTowards(to)', () => {
+    const path = new Path()
+    path.moveTo([0, 0])
+    path.lineTo([100, 0])
+    path.arcTowards([200, 100])
+    equals(() => path.lastSegment.point, new Point(200, 100))
+    equals(() => path.segments[1].handleOut.normalize(), new Point(1, 0))
+    equals(() => path.bounds, new Rectangle(0, 0, 200, 100))
+  })
+
+  test('Path#arcTowards(to) beyond half circles', () => {
+    const path = new Path()
+    path.moveTo([0, 0])
+    path.lineTo([100, 0])
+    path.arcTowards([50, 50])
+    equals(() => path.lastSegment.point, new Point(50, 50))
+    equals(() => path.segments[1].handleOut.normalize(), new Point(1, 0))
+    equals(() => path.bounds, new Rectangle(0, 0, 150, 100))
+  })
+
+  test('Path#arcTowards(to) after curves', () => {
+    const path = new Path()
+    path.moveTo([0, 100])
+    path.cubicCurveTo([0, 50], [50, 0], [100, 0])
+    path.arcTowards([200, 100])
+    equals(() => path.segments[1].handleOut.normalize(), new Point(1, 0))
+    equals(() => path.lastSegment.point, new Point(200, 100))
+  })
+
+  test('Path#arcTowards(to) on the tangent', () => {
+    const path = new Path()
+    path.moveTo([0, 0])
+    path.lineTo([100, 0])
+    path.arcTowards([200, 0])
+    equals(() => path.segments.length, 3)
+    equals(() => path.lastSegment.point, new Point(200, 0))
+    expect(() => path.arcTowards([100, 0])).toThrow(
+      'Cannot create an arc with the given arguments'
+    )
+  })
+
+  test('Path#arcTowards(to) without a tangent', () => {
+    const path = new Path()
+    path.moveTo([0, 0])
+    expect(() => path.arcTowards([100, 100])).toThrow(
+      'Cannot create an arc with the given arguments'
+    )
   })
 
   test('Path#closed with blend mode', () => {

@@ -2516,6 +2516,60 @@ new function() { // PostScript-style drawing commands
         return segments[segments.length - 1];
     }
 
+    /**
+     * Helper method that adds an arc of `extent` degrees around `center`, from
+     * the current segment at `vector` from `center` to `to`. The optional
+     * `matrix` maps `center` and `vector` from the unit circle to an ellipse.
+     */
+    function addArc(that, center, vector, extent, to, matrix) {
+        var current = getCurrentSegment(that),
+            epsilon = /*#=*/Numerical.ANGULAR_EPSILON,
+            // Calculate amount of segments required to approximate over
+            // `extend` degrees (extend / 90), but prevent ceil() from
+            // rounding up small imprecisions by subtracting epsilon.
+            count = Math.ceil((Math.abs(extent) - epsilon) / 90);
+        if (count) {
+            var inc = extent / count,
+                half = inc * Math.PI / 360,
+                z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
+                segments = [];
+            for (var i = 0; i <= count; i++) {
+                // Explicitly use to point for last segment, since depending
+                // on values the calculation adds imprecision:
+                var pt = to,
+                    out = null;
+                if (i < count) {
+                    out = vector.rotate(90).multiply(z);
+                    if (matrix) {
+                        pt = matrix._transformPoint(vector);
+                        out = matrix._transformPoint(vector.add(out))
+                                .subtract(pt);
+                    } else {
+                        pt = center.add(vector);
+                    }
+                }
+                if (!i) {
+                    // Modify startSegment
+                    current.setHandleOut(out);
+                } else {
+                    // Add new Segment
+                    var _in = vector.rotate(-90).multiply(z);
+                    if (matrix) {
+                        _in = matrix._transformPoint(vector.add(_in))
+                                .subtract(pt);
+                    }
+                    segments.push(new Segment(pt, _in, out));
+                }
+                vector = vector.rotate(inc);
+            }
+            // Add all segments at once at the end for higher performance
+            that._add(segments);
+        } else if (extent && !to.equals(current._point)) {
+            // Arcs too small to approximate are straight:
+            that.lineTo(to);
+        }
+    }
+
     return {
         // NOTE: Documentation for these methods is found in PathItem, as they
         // are considered abstract methods of PathItem and need to be defined in
@@ -2595,8 +2649,7 @@ new function() { // PostScript-style drawing commands
             var args = arguments,
                 abs = Math.abs,
                 sqrt = Math.sqrt,
-                current = getCurrentSegment(this),
-                from = current._point,
+                from = getCurrentSegment(this)._point,
                 to = Point.read(args),
                 through,
                 // Peek at next value to see if it's clockwise, with true as the
@@ -2714,50 +2767,46 @@ new function() { // PostScript-style drawing commands
                     extent += extent < 0 ? 360 : -360;
                 }
             }
-            if (extent) {
-                var epsilon = /*#=*/Numerical.ANGULAR_EPSILON,
-                    ext = abs(extent),
-                    // Calculate amount of segments required to approximate over
-                    // `extend` degrees (extend / 90), but prevent ceil() from
-                    // rounding up small imprecisions by subtracting epsilon.
-                    count = ext >= 360
-                        ? 4
-                        : Math.ceil((ext - epsilon) / 90),
-                    inc = extent / count,
-                    half = inc * Math.PI / 360,
-                    z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
-                    segments = [];
-                for (var i = 0; i <= count; i++) {
-                    // Explicitly use to point for last segment, since depending
-                    // on values the calculation adds imprecision:
-                    var pt = to,
-                        out = null;
-                    if (i < count) {
-                        out = vector.rotate(90).multiply(z);
-                        if (matrix) {
-                            pt = matrix._transformPoint(vector);
-                            out = matrix._transformPoint(vector.add(out))
-                                    .subtract(pt);
-                        } else {
-                            pt = center.add(vector);
-                        }
-                    }
-                    if (!i) {
-                        // Modify startSegment
-                        current.setHandleOut(out);
-                    } else {
-                        // Add new Segment
-                        var _in = vector.rotate(-90).multiply(z);
-                        if (matrix) {
-                            _in = matrix._transformPoint(vector.add(_in))
-                                    .subtract(pt);
-                        }
-                        segments.push(new Segment(pt, _in, out));
-                    }
-                    vector = vector.rotate(inc);
-                }
-                // Add all segments at once at the end for higher performance
-                this._add(segments);
+            addArc(this, center, vector, extent, to, matrix);
+        },
+
+        arcAround: function(/* center, angle */) {
+            var args = arguments,
+                center = Point.read(args),
+                angle = Base.read(args),
+                vector = getCurrentSegment(this)._point.subtract(center);
+            addArc(this, center, vector, angle,
+                    center.add(vector.rotate(angle)));
+        },
+
+        arcTowards: function(/* to */) {
+            var to = Point.read(arguments),
+                current = getCurrentSegment(this),
+                previous = current.getPrevious(),
+                from = current._point,
+                tangent = previous
+                        ? new Curve(previous, current).getTangentAtTime(1)
+                        : new Point(),
+                normal = tangent.rotate(90),
+                vector = to.subtract(from),
+                // The distance of `to` from the tangent, signed by its side:
+                distance = vector.dot(normal);
+            if (!Numerical.isZero(distance)) {
+                // The center lies on the normal, as far from `from` as from
+                // `to`, and the arc continues in the direction of the tangent:
+                var center = from.add(normal.multiply(
+                        vector.dot(vector) / (2 * distance))),
+                    start = from.subtract(center),
+                    extent = start.getDirectedAngle(to.subtract(center));
+                if (extent * distance < 0)
+                    extent += distance > 0 ? 360 : -360;
+                addArc(this, center, start, extent, to);
+            } else if (vector.dot(tangent) > 0) {
+                this.lineTo(to);
+            } else {
+                // `to` lies behind, or there is no tangent to continue:
+                throw new Error(
+                        'Cannot create an arc with the given arguments');
             }
         },
 
