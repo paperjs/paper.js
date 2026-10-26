@@ -33,6 +33,8 @@
 // Allow the minification of the undefined variable by defining it as a local
 // parameter inside the paper scope.
 var paper = function(self, undefined) {
+// Strict mode makes e.g. Path#getNearestPoint() and Item#hitTest() faster:
+'use strict';
 /*#*/ include('init.js');
 // Inline Straps.js core (the Base class) inside the paper scope first:
 /*#*/ include('../node_modules/straps/straps.js');
