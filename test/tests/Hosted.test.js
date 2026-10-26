@@ -1457,8 +1457,7 @@ describe.skipIf(!HostItem)('Hosted', () => {
       layer = to.project.layers[0]
     from.project.trackChanges = true
     to.project.trackChanges = true
-    layer.addChildren([first, star])
-    layer.addChild(second)
+    layer.addChildren([first, second, star])
     // The old project logs only the parent that the items left:
     equals(
       from.project.takeChanges().map(change => change.item.key),
@@ -1466,7 +1465,7 @@ describe.skipIf(!HostItem)('Hosted', () => {
     )
     const copy = first.fillColor.pattern
     equals(copy !== pattern && copy.key === null, true, 'a copy')
-    equals(second.fillColor.pattern === copy, true, 'one copy')
+    equals(second.fillColor.pattern === copy, true, 'one copy for both')
     equals(
       star.definition !== symbol && star.definition.key === null,
       true,
@@ -1633,6 +1632,49 @@ describe.skipIf(!HostItem)('Hosted', () => {
       hostLayer.project === from.project,
       true,
       'kept'
+    )
+  })
+
+  test('Each insertion brings its own copies of definitions', () => {
+    const from = createHostedDefinitions(),
+      to = createHostedProject(),
+      { first, second } = from.project.layers[0].children,
+      layer = to.project.layers[0]
+    layer.addChild(first)
+    layer.addChild(second)
+    const copy = first.fillColor.pattern
+    equals(
+      second.fillColor.pattern !== copy &&
+      second.fillColor.pattern.key === null,
+      true
+    )
+  })
+
+  test('Linked text that moves to another host brings its story along', () => {
+    const res = createLinkedText(),
+      to = createHostedProject(),
+      project = res.project,
+      items = res.frames.map(frame => project.getItemByKey(frame.id)),
+      content = items[0].story.content
+    project.trackChanges = true
+    to.project.layers[0].addChild(items[1])
+    equals(items[1].isLinked(), false, 'unlinked')
+    equals(items[1].content, content, 'with a copy of the story')
+    equals(
+      items[0].story.textItems.length === 2 &&
+      items[0].story.textItems[1] === items[2],
+      true,
+      'the story flows on through the items that stay'
+    )
+    equals(items[0].story.content, content, 'keeping its text')
+    items[1].content = 'Changed'
+    equals(items[0].story.content, content, 'apart from the copy')
+    const changes = project.takeChanges()
+    equals(
+      changes.some(change => change.item === items[0]) &&
+      !changes.some(change => change.item === items[1]),
+      true,
+      'logged in the old project, without the moved item'
     )
   })
 })

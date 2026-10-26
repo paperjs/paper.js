@@ -248,6 +248,18 @@ describe('Project', () => {
     equals(!!(changes[0].flags & ChangeFlag.INSERTION), true)
   })
 
+  test('trackChanges leaves out items that moved to another project', () => {
+    const project = new Project()
+    const path = new Path.Circle([50, 50], 20)
+    const other = new Project()
+    project.trackChanges = true
+    path.fillColor = 'red'
+    other.activeLayer.addChild(path)
+    const changes = project.takeChanges()
+    equals(changes.length, 1)
+    equals(changes[0].item === project.activeLayer, true, 'the parent it left')
+  })
+
   test('trackChanges ignores items that are not inserted', () => {
     const project = new Project()
     const path1 = new Path.Rectangle([0, 0], [20, 20])
