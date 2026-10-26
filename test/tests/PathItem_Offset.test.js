@@ -235,6 +235,37 @@ describe('PathItem#offset() and #outline()', () => {
       1,
       true
     )
+    // Where the pen changes smoothly, across curves and stops, the pieces of
+    // the sides meet in the same points and continue each other, so the
+    // outline has no seams there: no points close together, and no slight
+    // kinks, which the seams had at 1° to 4°:
+    const pressure = new Path({
+      segments: [[100, 320], [260, 180], [420, 420], [580, 180], [740, 320]],
+      strokeWidth: 60,
+      insert: false
+    })
+    pressure.smooth({ type: 'catmull-rom' })
+    const length = pressure.length
+    pressure.strokeProfile = [
+      { offset: 0, width: 0.2, aspect: 0.15, angle: -35 },
+      { offset: length * 0.3, width: 1.4 },
+      { offset: length * 0.7, width: 1.1 },
+      { offset: length, width: 0.2 }
+    ]
+    const seams = pressure
+      .outline({ insert: false })
+      .segments.filter(segment => {
+        const { handleIn, handleOut } = segment
+        const kink =
+          handleIn.isZero() || handleOut.isZero()
+            ? 0
+            : 180 - Math.abs(handleIn.getDirectedAngle(handleOut))
+        return (
+          segment.point.getDistance(segment.next.point) < 0.5 ||
+          kink > 0.1 && kink < 5
+        )
+      })
+    equals(seams.length, 0, 'seams')
     // Pens that turn much faster than they move, with points that touch the
     // edge appearing and vanishing between the samples:
     const spin = new Path({
