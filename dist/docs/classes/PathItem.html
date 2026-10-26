@@ -1616,6 +1616,157 @@ function onMouseDrag(event) {
 </div>
 
 	
+<div id="arcaround-center-angle" class="member">
+<div class="member-link">
+<a name="arcaround-center-angle" href="#arcaround-center-angle"><tt><b>arcAround</b>(center, angle)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Adds an arc that sweeps the specified angle around the specified <code>center</code> point, from the position of the last segment in the path, by adding one or more segments to the path. Positive angles draw the arc in clockwise direction, negative ones in anticlockwise direction.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>center:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the center of the arc
+
+</li>
+	
+	<li>
+<tt>angle:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the angle in degrees that the arc sweeps over
+
+</li>
+	
+</ul>
+
+	
+
+
+	
+	<h4>Example:</h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-18">
+var path = new Path();
+path.strokeColor = 'black';
+path.add(new Point(30, 75));
+path.lineTo(new Point(80, 75));
+
+// Draw a half circle around (105, 75) and continue on the other side:
+path.arcAround(new Point(105, 75), 180);
+path.lineTo(new Point(180, 75));
+
+// Draw a full circle around (230, 75):
+var circle = new Path();
+circle.strokeColor = 'red';
+circle.add(new Point(250, 75));
+circle.arcAround(new Point(230, 75), 360);
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-18"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+	
+<div id="arctowards-to" class="member">
+<div class="member-link">
+<a name="arctowards-to" href="#arctowards-to"><tt><b>arcTowards</b>(to)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Adds an arc from the position of the last segment in the path to the specified point, by adding one or more segments to the path. The arc continues in the direction in which the path ends, without a corner.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>to:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the point where the arc should end
+
+</li>
+	
+</ul>
+
+	
+
+
+	
+	<h4>Example:</h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-19">
+var path = new Path();
+path.strokeColor = 'black';
+path.add(new Point(30, 125));
+path.lineTo(new Point(80, 125));
+
+// Each arc continues smoothly from where the path ends:
+path.arcTowards(new Point(130, 75));
+path.arcTowards(new Point(230, 75));
+path.lineTo(new Point(230, 125));
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-19"></canvas></div>
+</div>
+
+
+<h4>Example:<span class="description">Interactive example. Click and drag in the view below:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-20">
+var myPath;
+
+// The mouse has to move at least 20 points before
+// the next mouse drag event is fired:
+tool.minDistance = 20;
+
+// When the user clicks, create a new path that starts
+// with a horizontal line ending at the mouse position:
+function onMouseDown(event) {
+    myPath = new Path();
+    myPath.strokeColor = 'black';
+    myPath.add(event.point - [20, 0], event.point);
+}
+
+// On each mouse drag event, continue the path smoothly
+// with an arc to the current position of the mouse:
+function onMouseDrag(event) {
+    myPath.arcTowards(event.point);
+}
+</script>
+<div class="canvas"><canvas width="516" height="300" id="canvas-20"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+	
 <div id="curveto-through-to" class="member">
 <div class="member-link">
 <a name="curveto-through-to" href="#curveto-through-to"><tt><b>curveTo</b>(through, to[, time])</tt></a>
@@ -1663,7 +1814,7 @@ function onMouseDrag(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-18">
+<script type="text/paperscript" canvas="canvas-21">
 var myPath;
 function onMouseMove(event) {
     // If we created a path before, remove it:
@@ -1684,7 +1835,7 @@ function onMouseMove(event) {
     myPath.selected = true;
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-18"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-21"></canvas></div>
 </div>
 
 
@@ -1869,7 +2020,7 @@ function onMouseMove(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-19">
+<script type="text/paperscript" canvas="canvas-22">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -1883,7 +2034,7 @@ path.lineBy(50, 0);
 // 0 in x direction and 50 in y direction, becomes {x: 75, y: 75}
 path.lineBy(0, 50);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-19"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-22"></canvas></div>
 </div>
 
 
@@ -1895,7 +2046,7 @@ path.lineBy(0, 50);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-20">
+<script type="text/paperscript" canvas="canvas-23">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -1921,7 +2072,7 @@ path.smooth();
 // the construction of the path:
 // path.selected = true;
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-20"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-23"></canvas></div>
 </div>
 
 
@@ -2306,7 +2457,7 @@ parameters, visible }</code>, with the <code>type</code> of the effect. Changing
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-21">
+<script type="text/paperscript" canvas="canvas-24">
 var path = new Path.Star({
     center: view.center,
     points: 5,
@@ -2320,7 +2471,7 @@ path.effects = [
     { type: 'outline' }
 ];
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-21"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-24"></canvas></div>
 </div>
 
 
@@ -2470,7 +2621,7 @@ path.effects = [
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-22">
+<script type="text/paperscript" canvas="canvas-25">
 var path = new Path.Circle({
     center: [80, 50],
     radius: 35
@@ -2485,7 +2636,7 @@ group.addChild(path);
 // The path can be accessed by name:
 group.children['example'].fillColor = 'red';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-22"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-25"></canvas></div>
 </div>
 
 
@@ -2523,7 +2674,7 @@ group.children['example'].fillColor = 'red';
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-23">
+<script type="text/paperscript" canvas="canvas-26">
 var circle = new Path.Circle({
     center: [80, 50],
     radius: 30
@@ -2534,7 +2685,7 @@ circle.style = {
     strokeWidth: 5
 };
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-23"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-26"></canvas></div>
 </div>
 
 
@@ -2546,7 +2697,7 @@ circle.style = {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-24">
+<script type="text/paperscript" canvas="canvas-27">
 var path = new Path.Circle({
     center: [50, 50],
     radius: 30,
@@ -2561,7 +2712,7 @@ var path2 = new Path.Circle({
 // Copy the path style of path:
 path2.style = path.style;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-24"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-27"></canvas></div>
 </div>
 
 
@@ -2573,7 +2724,7 @@ path2.style = path.style;
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-25">
+<script type="text/paperscript" canvas="canvas-28">
 var myStyle = {
     fillColor: 'red',
     strokeColor: 'blue',
@@ -2592,7 +2743,7 @@ var path2 = new Path.Circle({
 });
 path2.style = myStyle;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-25"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-28"></canvas></div>
 </div>
 
 
@@ -2634,7 +2785,7 @@ path2.style = myStyle;
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-26">
+<script type="text/paperscript" canvas="canvas-29">
 var unlockedItem = new Path.Circle({
     center: view.center - [35, 0],
     radius: 30,
@@ -2661,7 +2812,7 @@ new PointText({
     justification: 'center'
 });
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-26"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-29"></canvas></div>
 </div>
 
 
@@ -2703,7 +2854,7 @@ new PointText({
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-27">
+<script type="text/paperscript" canvas="canvas-30">
 var path = new Path.Circle({
     center: [50, 50],
     radius: 20,
@@ -2713,7 +2864,7 @@ var path = new Path.Circle({
 // Hide the path:
 path.visible = false;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-27"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-30"></canvas></div>
 </div>
 
 
@@ -2761,7 +2912,7 @@ path.visible = false;
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-28">
+<script type="text/paperscript" canvas="canvas-31">
 // Create a white rectangle in the background
 // with the same dimensions as the view:
 var background = new Path.Rectangle(view.bounds);
@@ -2782,7 +2933,7 @@ var circle2 = new Path.Circle({
 // Set the blend mode of circle2:
 circle2.blendMode = 'multiply';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-28"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-31"></canvas></div>
 </div>
 
 
@@ -2824,7 +2975,7 @@ circle2.blendMode = 'multiply';
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-29">
+<script type="text/paperscript" canvas="canvas-32">
 var circle = new Path.Circle({
     center: [80, 50],
     radius: 35,
@@ -2842,7 +2993,7 @@ var circle2 = new Path.Circle({
 // Make circle2 50% transparent:
 circle2.opacity = 0.5;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-29"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-32"></canvas></div>
 </div>
 
 
@@ -2965,14 +3116,14 @@ circle.textWrap = { offset: 10 };</code></pre>
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-30">
+<script type="text/paperscript" canvas="canvas-33">
 var path = new Path.Circle({
     center: [80, 50],
     radius: 35
 });
 path.selected = true; // Select the path
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-30"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-33"></canvas></div>
 </div>
 
 
@@ -3129,7 +3280,7 @@ console.log(path.data.pets.length); // 1</code></pre>
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-31">
+<script type="text/paperscript" canvas="canvas-34">
 // Create a circle at position { x: 10, y: 10 }
 var circle = new Path.Circle({
     center: new Point(10, 10),
@@ -3143,7 +3294,7 @@ circle.position = new Point(20, 20);
 // Move the circle 100 points to the right and 50 points down
 circle.position += new Point(100, 50);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-31"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-34"></canvas></div>
 </div>
 
 
@@ -3155,7 +3306,7 @@ circle.position += new Point(100, 50);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-32">
+<script type="text/paperscript" canvas="canvas-35">
 // Create a circle at position { x: 20, y: 20 }
 var circle = new Path.Circle({
     center: new Point(20, 20),
@@ -3166,7 +3317,7 @@ var circle = new Path.Circle({
 // Move the circle 100 points to the right
 circle.position.x += 100;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-32"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-35"></canvas></div>
 </div>
 
 
@@ -3692,7 +3843,7 @@ console.log(group.children[0] == path); // true</code></pre>
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-33">
+<script type="text/paperscript" canvas="canvas-36">
 var path = new Path.Circle({
     center: [80, 50],
     radius: 35
@@ -3705,7 +3856,7 @@ group.addChild(path);
 // Access the path through the group's children array:
 group.children[0].fillColor = 'red';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-33"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-36"></canvas></div>
 </div>
 
 
@@ -3717,7 +3868,7 @@ group.children[0].fillColor = 'red';
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-34">
+<script type="text/paperscript" canvas="canvas-37">
 var path = new Path.Circle({
     center: [80, 50],
     radius: 35
@@ -3732,7 +3883,7 @@ group.addChild(path);
 // The path can be accessed by name:
 group.children['example'].fillColor = 'orange';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-34"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-37"></canvas></div>
 </div>
 
 
@@ -3744,7 +3895,7 @@ group.children['example'].fillColor = 'orange';
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-35">
+<script type="text/paperscript" canvas="canvas-38">
 var path = new Path.Circle({
     center: [80, 50],
     radius: 35
@@ -3756,7 +3907,7 @@ group.children = [path];
 // The path is the first child of the group:
 group.firstChild.fillColor = 'green';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-35"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-38"></canvas></div>
 </div>
 
 
@@ -3933,7 +4084,7 @@ group.firstChild.fillColor = 'green';
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-36">
+<script type="text/paperscript" canvas="canvas-39">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var circle = new Path.Circle({
@@ -3944,7 +4095,7 @@ var circle = new Path.Circle({
 // Set its stroke color to RGB red:
 circle.strokeColor = new Color(1, 0, 0);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-36"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-39"></canvas></div>
 </div>
 
 
@@ -3981,7 +4132,7 @@ circle.strokeColor = new Color(1, 0, 0);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-37">
+<script type="text/paperscript" canvas="canvas-40">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var circle = new Path.Circle({
@@ -3993,7 +4144,7 @@ var circle = new Path.Circle({
 // Set its stroke width to 10:
 circle.strokeWidth = 10;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-37"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-40"></canvas></div>
 </div>
 
 
@@ -4040,7 +4191,7 @@ circle.strokeWidth = 10;
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-38">
+<script type="text/paperscript" canvas="canvas-41">
 var line = new Path({
     segments: [[80, 50], [420, 50]],
     strokeColor: 'black',
@@ -4061,7 +4212,7 @@ var line2 = line.clone();
 line2.position.y += 100;
 line2.strokeCap = 'butt';
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-38"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-41"></canvas></div>
 </div>
 
 
@@ -4108,7 +4259,7 @@ line2.strokeCap = 'butt';
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-39">
+<script type="text/paperscript" canvas="canvas-42">
 var path = new Path({
     segments: [[80, 100], [120, 40], [160, 100]],
     strokeColor: 'black',
@@ -4125,7 +4276,7 @@ var path3 = path2.clone();
 path3.position.x += path3.bounds.width * 1.5;
 path3.strokeJoin = 'bevel';
 </script>
-<div class="canvas"><canvas width="516" height="120" id="canvas-39"></canvas></div>
+<div class="canvas"><canvas width="516" height="120" id="canvas-42"></canvas></div>
 </div>
 
 
@@ -4229,7 +4380,7 @@ path3.strokeJoin = 'bevel';
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-40">
+<script type="text/paperscript" canvas="canvas-43">
 var path = new Path.Circle({
     center: [80, 50],
     radius: 40,
@@ -4240,7 +4391,7 @@ var path = new Path.Circle({
 // Set the dashed stroke to [10pt dash, 4pt gap]:
 path.dashArray = [10, 4];
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-40"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-43"></canvas></div>
 </div>
 
 
@@ -4346,7 +4497,7 @@ path.dashArray = [10, 4];
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-41">
+<script type="text/paperscript" canvas="canvas-44">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var circle = new Path.Circle({
@@ -4357,7 +4508,7 @@ var circle = new Path.Circle({
 // Set the fill color of the circle to RGB red:
 circle.fillColor = new Color(1, 0, 0);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-41"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-44"></canvas></div>
 </div>
 
 
@@ -4432,7 +4583,7 @@ circle.fillColor = new Color(1, 0, 0);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-42">
+<script type="text/paperscript" canvas="canvas-45">
 var circle = new Path.Circle({
     center: [80, 50],
     radius: 35,
@@ -4445,7 +4596,7 @@ var circle = new Path.Circle({
     shadowOffset: new Point(5, 5)
 });
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-42"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-45"></canvas></div>
 </div>
 
 
@@ -4586,7 +4737,7 @@ var circle = new Path.Circle({
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-43">
+<script type="text/paperscript" canvas="canvas-46">
 // Create a rectangle shaped path with its top left point at:
 // {x: 50, y: 25} and a size of {width: 50, height: 50}
 var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
@@ -4597,7 +4748,7 @@ path.onFrame = function(event) {
     this.rotate(3);
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-43"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-46"></canvas></div>
 </div>
 
 
@@ -4641,7 +4792,7 @@ path.onFrame = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-44">
+<script type="text/paperscript" canvas="canvas-47">
 // Create a circle shaped path at the center of the view:
 var path = new Path.Circle({
     center: view.center,
@@ -4655,7 +4806,7 @@ path.onMouseDown = function(event) {
     this.fillColor = 'red';
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-44"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-47"></canvas></div>
 </div>
 
 
@@ -4667,7 +4818,7 @@ path.onMouseDown = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-45">
+<script type="text/paperscript" canvas="canvas-48">
 // Loop 30 times:
 for (var i = 0; i < 30; i++) {
     // Create a circle shaped path at a random position
@@ -4685,7 +4836,7 @@ for (var i = 0; i < 30; i++) {
     }
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-45"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-48"></canvas></div>
 </div>
 
 
@@ -4729,7 +4880,7 @@ for (var i = 0; i < 30; i++) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-46">
+<script type="text/paperscript" canvas="canvas-49">
 // Create a circle shaped path at the center of the view:
 var path = new Path.Circle({
     center: view.center,
@@ -4742,7 +4893,7 @@ path.onMouseDrag = function(event) {
     path.position += event.delta;
 }
 </script>
-<div class="canvas"><canvas width="516" height="240" id="canvas-46"></canvas></div>
+<div class="canvas"><canvas width="516" height="240" id="canvas-49"></canvas></div>
 </div>
 
 
@@ -4786,7 +4937,7 @@ path.onMouseDrag = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-47">
+<script type="text/paperscript" canvas="canvas-50">
 // Create a circle shaped path at the center of the view:
 var path = new Path.Circle({
     center: view.center,
@@ -4800,7 +4951,7 @@ path.onMouseUp = function(event) {
     this.fillColor = 'red';
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-47"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-50"></canvas></div>
 </div>
 
 
@@ -4844,7 +4995,7 @@ path.onMouseUp = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-48">
+<script type="text/paperscript" canvas="canvas-51">
 // Create a circle shaped path at the center of the view:
 var path = new Path.Circle({
     center: view.center,
@@ -4858,7 +5009,7 @@ path.onClick = function(event) {
     this.fillColor = 'red';
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-48"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-51"></canvas></div>
 </div>
 
 
@@ -4870,7 +5021,7 @@ path.onClick = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-49">
+<script type="text/paperscript" canvas="canvas-52">
 // Loop 30 times:
 for (var i = 0; i < 30; i++) {
     // Create a circle shaped path at a random position
@@ -4888,7 +5039,7 @@ for (var i = 0; i < 30; i++) {
     }
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-49"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-52"></canvas></div>
 </div>
 
 
@@ -4932,7 +5083,7 @@ for (var i = 0; i < 30; i++) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-50">
+<script type="text/paperscript" canvas="canvas-53">
 // Create a circle shaped path at the center of the view:
 var path = new Path.Circle({
     center: view.center,
@@ -4946,7 +5097,7 @@ path.onDoubleClick = function(event) {
     this.fillColor = 'red';
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-50"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-53"></canvas></div>
 </div>
 
 
@@ -4958,7 +5109,7 @@ path.onDoubleClick = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-51">
+<script type="text/paperscript" canvas="canvas-54">
 // Loop 30 times:
 for (var i = 0; i < 30; i++) {
     // Create a circle shaped path at a random position
@@ -4976,7 +5127,7 @@ for (var i = 0; i < 30; i++) {
     }
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-51"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-54"></canvas></div>
 </div>
 
 
@@ -5020,7 +5171,7 @@ for (var i = 0; i < 30; i++) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-52">
+<script type="text/paperscript" canvas="canvas-55">
 // Create a circle shaped path at the center of the view:
     var path = new Path.Circle({
     center: view.center,
@@ -5034,7 +5185,7 @@ path.onMouseMove = function(event) {
     this.opacity = Math.random();
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-52"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-55"></canvas></div>
 </div>
 
 
@@ -5078,7 +5229,7 @@ path.onMouseMove = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-53">
+<script type="text/paperscript" canvas="canvas-56">
 // Create a circle shaped path at the center of the view:
 var path = new Path.Circle({
     center: view.center,
@@ -5096,7 +5247,7 @@ path.onMouseLeave = function(event) {
     this.fillColor = 'black';
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-53"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-56"></canvas></div>
 </div>
 
 
@@ -5108,7 +5259,7 @@ path.onMouseLeave = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-54">
+<script type="text/paperscript" canvas="canvas-57">
 function enter(event) {
     this.fillColor = 'red';
 }
@@ -5130,7 +5281,7 @@ function onMouseDown(event) {
     path.onMouseLeave = leave;
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-54"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-57"></canvas></div>
 </div>
 
 
@@ -5174,7 +5325,7 @@ function onMouseDown(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-55">
+<script type="text/paperscript" canvas="canvas-58">
 // Create a circle shaped path at the center of the view:
 var path = new Path.Circle({
     center: view.center,
@@ -5187,7 +5338,7 @@ path.onMouseLeave = function(event) {
     this.fillColor = 'red';
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-55"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-58"></canvas></div>
 </div>
 
 
@@ -5232,7 +5383,7 @@ What the handler draws isn&rsquo;t part of the item&rsquo;s hit testing, its bou
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-56">
+<script type="text/paperscript" canvas="canvas-59">
 var path = new Path.Circle({
     center: view.center,
     radius: 25,
@@ -5252,7 +5403,7 @@ path.onDraw = function(event) {
     ctx.stroke();
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-56"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-59"></canvas></div>
 </div>
 
 
@@ -5298,7 +5449,7 @@ What the handler draws isn&rsquo;t part of the item&rsquo;s hit testing, its bou
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-57">
+<script type="text/paperscript" canvas="canvas-60">
 var path = new Path.Star({
     center: view.center,
     points: 5,
@@ -5319,7 +5470,7 @@ path.onDrawSelection = function(event) {
     return false;
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-57"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-60"></canvas></div>
 </div>
 
 
@@ -5633,7 +5784,7 @@ Array of <tt>Object</tt> objects
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-58">
+<script type="text/paperscript" canvas="canvas-61">
 var circle = new Path.Circle({
     center: [80, 50],
     radius: 35
@@ -5646,7 +5797,7 @@ circle.set({
     selected: true
 });
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-58"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-61"></canvas></div>
 </div>
 
 
@@ -5702,7 +5853,7 @@ circle.set({
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-59">
+<script type="text/paperscript" canvas="canvas-62">
 var circle = new Path.Circle({
     center: [50, 50],
     radius: 10,
@@ -5717,7 +5868,7 @@ for (var i = 0; i < 20; i++) {
     copy.position.x += i * copy.bounds.width;
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-59"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-62"></canvas></div>
 </div>
 
 
@@ -5843,7 +5994,7 @@ for (var i = 0; i < 20; i++) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-60">
+<script type="text/paperscript" canvas="canvas-63">
 var circle = new Path.Circle({
     center: [50, 50],
     radius: 5,
@@ -5860,7 +6011,7 @@ raster.position.x += 100;
 circle.scale(5);
 raster.scale(5);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-60"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-63"></canvas></div>
 </div>
 
 
@@ -5914,7 +6065,7 @@ raster.scale(5);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-61">
+<script type="text/paperscript" canvas="canvas-64">
 var path = new Path.Star({
     center: [50, 50],
     points: 12,
@@ -5935,7 +6086,7 @@ function onMouseDown(event) {
     }
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-61"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-64"></canvas></div>
 </div>
 
 
@@ -7817,7 +7968,7 @@ Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-62">
+<script type="text/paperscript" canvas="canvas-65">
 // Create a rectangle shaped path with its top left
 // point at {x: 80, y: 25} and a size of {width: 50, height: 50}:
 var path = new Path.Rectangle(new Point(80, 25), new Size(50, 50));
@@ -7826,7 +7977,7 @@ path.fillColor = 'black';
 // Rotate the path by 30 degrees:
 path.rotate(30);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-62"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-65"></canvas></div>
 </div>
 
 
@@ -7838,7 +7989,7 @@ path.rotate(30);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-63">
+<script type="text/paperscript" canvas="canvas-66">
 // Create a rectangle shaped path with its top left
 // point at {x: 175, y: 50} and a size of {width: 100, height: 100}:
 var topLeft = new Point(175, 50);
@@ -7860,7 +8011,7 @@ function onFrame(event) {
     path.rotate(3, view.center);
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-63"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-66"></canvas></div>
 </div>
 
 
@@ -7909,7 +8060,7 @@ function onFrame(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-64">
+<script type="text/paperscript" canvas="canvas-67">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 20:
 var circle = new Path.Circle({
@@ -7921,7 +8072,7 @@ var circle = new Path.Circle({
 // Scale the path by 150% from its center point
 circle.scale(1.5);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-64"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-67"></canvas></div>
 </div>
 
 
@@ -7933,7 +8084,7 @@ circle.scale(1.5);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-65">
+<script type="text/paperscript" canvas="canvas-68">
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 20:
 var circle = new Path.Circle({
@@ -7945,7 +8096,7 @@ var circle = new Path.Circle({
 // Scale the path 150% from its bottom left corner
 circle.scale(1.5, circle.bounds.bottomLeft);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-65"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-68"></canvas></div>
 </div>
 
 
@@ -8001,7 +8152,7 @@ circle.scale(1.5, circle.bounds.bottomLeft);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-66">
+<script type="text/paperscript" canvas="canvas-69">
 // Create a circle shaped path at { x: 100, y: 50 }
 // with a radius of 20:
 var circle = new Path.Circle({
@@ -8013,7 +8164,7 @@ var circle = new Path.Circle({
 // Scale the path horizontally by 300%
 circle.scale(3, 1);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-66"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-69"></canvas></div>
 </div>
 
 
@@ -8451,7 +8602,7 @@ circle.scale(3, 1);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-67">
+<script type="text/paperscript" canvas="canvas-70">
 // Create a rectangle shaped path with its top left corner
 // at {x: 80, y: 25} and a size of {width: 75, height: 50}:
 var path = new Path.Rectangle({
@@ -8472,7 +8623,7 @@ var circlePath = new Path.Circle({
 // the rectangular path:
 circlePath.fitBounds(path.bounds);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-67"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-70"></canvas></div>
 </div>
 
 
@@ -8484,7 +8635,7 @@ circlePath.fitBounds(path.bounds);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-68">
+<script type="text/paperscript" canvas="canvas-71">
 // Create a rectangle shaped path with its top left corner
 // at {x: 80, y: 25} and a size of {width: 75, height: 50}:
 var path = new Path.Rectangle({
@@ -8505,7 +8656,7 @@ var circlePath = new Path.Circle({
 // the rectangular path:
 circlePath.fitBounds(path.bounds, 'cover');
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-68"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-71"></canvas></div>
 </div>
 
 
@@ -8517,7 +8668,7 @@ circlePath.fitBounds(path.bounds, 'cover');
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-69">
+<script type="text/paperscript" canvas="canvas-72">
 var path = new Path.Circle({
     center: [80, 50],
     radius: 30,
@@ -8527,7 +8678,7 @@ var path = new Path.Circle({
 // Fit the path to the bounding rectangle of the view:
 path.fitBounds(view.bounds);
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-69"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-72"></canvas></div>
 </div>
 
 
@@ -8588,7 +8739,7 @@ path.fitBounds(view.bounds);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-70">
+<script type="text/paperscript" canvas="canvas-73">
 // Create a circle shaped path at the center of the view:
 var path = new Path.Circle({
     center: view.center,
@@ -8606,7 +8757,7 @@ path.on('mouseleave', function() {
     this.fillColor = 'black';
 });
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-70"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-73"></canvas></div>
 </div>
 
 
@@ -8658,7 +8809,7 @@ path.on('mouseleave', function() {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-71">
+<script type="text/paperscript" canvas="canvas-74">
 // Create a circle shaped path at the center of the view:
 var path = new Path.Circle({
     center: view.center,
@@ -8676,7 +8827,7 @@ path.on({
     }
 });
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-71"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-74"></canvas></div>
 </div>
 
 
@@ -8688,7 +8839,7 @@ path.on({
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-72">
+<script type="text/paperscript" canvas="canvas-75">
 var pathHandlers = {
     mouseenter: function(event) {
         this.fillColor = 'red';
@@ -8711,7 +8862,7 @@ function onMouseDown(event) {
     path.on(pathHandlers);
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-72"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-75"></canvas></div>
 </div>
 
 
@@ -8939,7 +9090,7 @@ function onMouseDown(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-73">
+<script type="text/paperscript" canvas="canvas-76">
 function onMouseDrag(event) {
     // Create a circle shaped path at the mouse position,
     // with a radius of 10:
@@ -8956,7 +9107,7 @@ function onMouseDrag(event) {
     });
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-73"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-76"></canvas></div>
 </div>
 
 
@@ -8986,7 +9137,7 @@ function onMouseDrag(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-74">
+<script type="text/paperscript" canvas="canvas-77">
 function onMouseMove(event) {
     // Create a circle shaped path at the mouse position,
     // with a radius of 10:
@@ -9000,7 +9151,7 @@ function onMouseMove(event) {
     path.removeOnMove();
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-74"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-77"></canvas></div>
 </div>
 
 
@@ -9030,7 +9181,7 @@ function onMouseMove(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-75">
+<script type="text/paperscript" canvas="canvas-78">
 function onMouseDown(event) {
     // Create a circle shaped path at the mouse position,
     // with a radius of 10:
@@ -9044,7 +9195,7 @@ function onMouseDown(event) {
     path.removeOnDown();
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-75"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-78"></canvas></div>
 </div>
 
 
@@ -9074,7 +9225,7 @@ function onMouseDown(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-76">
+<script type="text/paperscript" canvas="canvas-79">
 function onMouseDrag(event) {
     // Create a circle shaped path at the mouse position,
     // with a radius of 10:
@@ -9088,7 +9239,7 @@ function onMouseDrag(event) {
     path.removeOnDrag();
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-76"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-79"></canvas></div>
 </div>
 
 
@@ -9118,7 +9269,7 @@ function onMouseDrag(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-77">
+<script type="text/paperscript" canvas="canvas-80">
 function onMouseDown(event) {
     // Create a circle shaped path at the mouse position,
     // with a radius of 10:
@@ -9132,7 +9283,7 @@ function onMouseDown(event) {
     path.removeOnUp();
 }
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-77"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-80"></canvas></div>
 </div>
 
 
@@ -9205,7 +9356,7 @@ function onMouseDown(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-78">
+<script type="text/paperscript" canvas="canvas-81">
 var path = new Path.Circle({
     radius: view.bounds.height * 0.4,
     center: view.center
@@ -9216,7 +9367,7 @@ path.tween(
     3000
 );
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-78"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-81"></canvas></div>
 </div>
 
 
@@ -9228,7 +9379,7 @@ path.tween(
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-79">
+<script type="text/paperscript" canvas="canvas-82">
 var path = new Shape.Rectangle({
     fillColor: 'red',
     center: [50, view.center.y],
@@ -9243,7 +9394,7 @@ path.tween({
     duration: 2000
 });
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-79"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-82"></canvas></div>
 </div>
 
 
@@ -9309,7 +9460,7 @@ path.tween({
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-80">
+<script type="text/paperscript" canvas="canvas-83">
 var path = new Path.Rectangle({
     size: [100, 100],
     position: view.center,
@@ -9323,7 +9474,7 @@ path.tween({
     'segments[2].point.x': '-= 50'
 }, 3000);
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-80"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-83"></canvas></div>
 </div>
 
 
@@ -9382,7 +9533,7 @@ path.tween({
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-81">
+<script type="text/paperscript" canvas="canvas-84">
 var path = new Path.Circle({
     fillColor: 'blue',
     radius: view.bounds.height * 0.4,
@@ -9398,7 +9549,7 @@ path.tween(2000).onUpdate = function(event) {
     path.interpolate(pathFrom, pathTo, event.factor)
 };
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-81"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-84"></canvas></div>
 </div>
 
 
@@ -9519,7 +9670,7 @@ path.tween(2000).onUpdate = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-82">
+<script type="text/paperscript" canvas="canvas-85">
 var path = new Path.Circle({
     fillColor: 'blue',
     radius: view.bounds.height * 0.4,
@@ -9527,7 +9678,7 @@ var path = new Path.Circle({
 });
 path.tweenFrom({ fillColor: 'red' }, { duration: 1000 });
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-82"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-85"></canvas></div>
 </div>
 
 

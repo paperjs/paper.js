@@ -9255,6 +9255,157 @@ function onMouseDrag(event) {
 </div>
 
 	
+<div id="arcaround-center-angle" class="member">
+<div class="member-link">
+<a name="arcaround-center-angle" href="#arcaround-center-angle"><tt><b>arcAround</b>(center, angle)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Adds an arc that sweeps the specified angle around the specified <code>center</code> point, from the position of the last segment in the path, by adding one or more segments to the path. Positive angles draw the arc in clockwise direction, negative ones in anticlockwise direction.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>center:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the center of the arc
+
+</li>
+	
+	<li>
+<tt>angle:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the angle in degrees that the arc sweeps over
+
+</li>
+	
+</ul>
+
+	
+
+
+	
+	<h4>Example:</h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-82">
+var path = new Path();
+path.strokeColor = 'black';
+path.add(new Point(30, 75));
+path.lineTo(new Point(80, 75));
+
+// Draw a half circle around (105, 75) and continue on the other side:
+path.arcAround(new Point(105, 75), 180);
+path.lineTo(new Point(180, 75));
+
+// Draw a full circle around (230, 75):
+var circle = new Path();
+circle.strokeColor = 'red';
+circle.add(new Point(250, 75));
+circle.arcAround(new Point(230, 75), 360);
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-82"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+	
+<div id="arctowards-to" class="member">
+<div class="member-link">
+<a name="arctowards-to" href="#arctowards-to"><tt><b>arcTowards</b>(to)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Adds an arc from the position of the last segment in the path to the specified point, by adding one or more segments to the path. The arc continues in the direction in which the path ends, without a corner.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>to:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the point where the arc should end
+
+</li>
+	
+</ul>
+
+	
+
+
+	
+	<h4>Example:</h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-83">
+var path = new Path();
+path.strokeColor = 'black';
+path.add(new Point(30, 125));
+path.lineTo(new Point(80, 125));
+
+// Each arc continues smoothly from where the path ends:
+path.arcTowards(new Point(130, 75));
+path.arcTowards(new Point(230, 75));
+path.lineTo(new Point(230, 125));
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-83"></canvas></div>
+</div>
+
+
+<h4>Example:<span class="description">Interactive example. Click and drag in the view below:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-84">
+var myPath;
+
+// The mouse has to move at least 20 points before
+// the next mouse drag event is fired:
+tool.minDistance = 20;
+
+// When the user clicks, create a new path that starts
+// with a horizontal line ending at the mouse position:
+function onMouseDown(event) {
+    myPath = new Path();
+    myPath.strokeColor = 'black';
+    myPath.add(event.point - [20, 0], event.point);
+}
+
+// On each mouse drag event, continue the path smoothly
+// with an arc to the current position of the mouse:
+function onMouseDrag(event) {
+    myPath.arcTowards(event.point);
+}
+</script>
+<div class="canvas"><canvas width="516" height="300" id="canvas-84"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+	
 <div id="curveto-through-to" class="member">
 <div class="member-link">
 <a name="curveto-through-to" href="#curveto-through-to"><tt><b>curveTo</b>(through, to[, time])</tt></a>
@@ -9302,7 +9453,7 @@ function onMouseDrag(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-82">
+<script type="text/paperscript" canvas="canvas-85">
 var myPath;
 function onMouseMove(event) {
     // If we created a path before, remove it:
@@ -9323,7 +9474,7 @@ function onMouseMove(event) {
     myPath.selected = true;
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-82"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-85"></canvas></div>
 </div>
 
 
@@ -9508,7 +9659,7 @@ function onMouseMove(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-83">
+<script type="text/paperscript" canvas="canvas-86">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -9522,7 +9673,7 @@ path.lineBy(50, 0);
 // 0 in x direction and 50 in y direction, becomes {x: 75, y: 75}
 path.lineBy(0, 50);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-83"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-86"></canvas></div>
 </div>
 
 
@@ -9534,7 +9685,7 @@ path.lineBy(0, 50);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-84">
+<script type="text/paperscript" canvas="canvas-87">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -9560,7 +9711,7 @@ path.smooth();
 // the construction of the path:
 // path.selected = true;
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-84"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-87"></canvas></div>
 </div>
 
 

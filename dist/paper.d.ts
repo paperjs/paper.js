@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 26 00:45:37 2026 +0100
+ * Date: Mon Oct 26 17:52:47 2026 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -5655,6 +5655,35 @@ declare namespace paper {
          *     drawn in clockwise direction
          */
         arcTo(to: PointLike, clockwise?: boolean): void
+
+        /** 
+         * Adds an arc that sweeps the specified angle around the specified
+         * `center` point, from the position of the last segment in the path, by
+         * adding one or more segments to the path. Positive angles draw the arc in
+         * clockwise direction, negative ones in anticlockwise direction.
+         * 
+         * @param center - the center of the arc
+         * @param angle - the angle in degrees that the arc sweeps over
+         */
+        arcAround(center: PointLike, angle: number): void
+
+        /** 
+         * Adds an arc from the position of the last segment in the path to the
+         * specified point, by adding one or more segments to the path. The arc
+         * continues in the direction in which the path ends, without a corner.
+         * 
+         * @param to - the point where the arc should end
+         */
+        arcTowards(to: PointLike): void
+
+        /** 
+         * Adds an arc from the position of the last segment in the path to the
+         * specified point, by adding one or more segments to the path. The arc
+         * continues in the direction in which the path ends, without a corner.
+         * 
+         * @param to - the point where the arc should end
+         */
+        arcTowards(x: number, y: number): void
 
         /** 
          * Adds a curve from the last segment in the path through the specified

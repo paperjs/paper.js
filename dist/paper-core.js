@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 26 00:45:37 2026 +0100
+ * Date: Mon Oct 26 17:52:47 2026 +0100
  *
  ***
  *
@@ -11292,6 +11292,46 @@ new function() {
 		return segments[segments.length - 1];
 	}
 
+	function addArc(that, center, vector, extent, to, matrix) {
+		var current = getCurrentSegment(that),
+			epsilon = 1e-5,
+			count = Math.ceil((Math.abs(extent) - epsilon) / 90);
+		if (count) {
+			var inc = extent / count,
+				half = inc * Math.PI / 360,
+				z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
+				segments = [];
+			for (var i = 0; i <= count; i++) {
+				var pt = to,
+					out = null;
+				if (i < count) {
+					out = vector.rotate(90).multiply(z);
+					if (matrix) {
+						pt = matrix._transformPoint(vector);
+						out = matrix._transformPoint(vector.add(out))
+								.subtract(pt);
+					} else {
+						pt = center.add(vector);
+					}
+				}
+				if (!i) {
+					current.setHandleOut(out);
+				} else {
+					var _in = vector.rotate(-90).multiply(z);
+					if (matrix) {
+						_in = matrix._transformPoint(vector.add(_in))
+								.subtract(pt);
+					}
+					segments.push(new Segment(pt, _in, out));
+				}
+				vector = vector.rotate(inc);
+			}
+			that._add(segments);
+		} else if (extent && !to.equals(current._point)) {
+			that.lineTo(to);
+		}
+	}
+
 	return {
 		moveTo: function() {
 			var segments = this._segments;
@@ -11350,8 +11390,7 @@ new function() {
 			var args = arguments,
 				abs = Math.abs,
 				sqrt = Math.sqrt,
-				current = getCurrentSegment(this),
-				from = current._point,
+				from = getCurrentSegment(this)._point,
 				to = Point.read(args),
 				through,
 				peek = Base.peek(args),
@@ -11431,42 +11470,42 @@ new function() {
 					extent += extent < 0 ? 360 : -360;
 				}
 			}
-			if (extent) {
-				var epsilon = 1e-5,
-					ext = abs(extent),
-					count = ext >= 360
-						? 4
-						: Math.ceil((ext - epsilon) / 90),
-					inc = extent / count,
-					half = inc * Math.PI / 360,
-					z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
-					segments = [];
-				for (var i = 0; i <= count; i++) {
-					var pt = to,
-						out = null;
-					if (i < count) {
-						out = vector.rotate(90).multiply(z);
-						if (matrix) {
-							pt = matrix._transformPoint(vector);
-							out = matrix._transformPoint(vector.add(out))
-									.subtract(pt);
-						} else {
-							pt = center.add(vector);
-						}
-					}
-					if (!i) {
-						current.setHandleOut(out);
-					} else {
-						var _in = vector.rotate(-90).multiply(z);
-						if (matrix) {
-							_in = matrix._transformPoint(vector.add(_in))
-									.subtract(pt);
-						}
-						segments.push(new Segment(pt, _in, out));
-					}
-					vector = vector.rotate(inc);
-				}
-				this._add(segments);
+			addArc(this, center, vector, extent, to, matrix);
+		},
+
+		arcAround: function() {
+			var args = arguments,
+				center = Point.read(args),
+				angle = Base.read(args),
+				vector = getCurrentSegment(this)._point.subtract(center);
+			addArc(this, center, vector, angle,
+					center.add(vector.rotate(angle)));
+		},
+
+		arcTowards: function() {
+			var to = Point.read(arguments),
+				current = getCurrentSegment(this),
+				previous = current.getPrevious(),
+				from = current._point,
+				tangent = previous
+						? new Curve(previous, current).getTangentAtTime(1)
+						: new Point(),
+				normal = tangent.rotate(90),
+				vector = to.subtract(from),
+				distance = vector.dot(normal);
+			if (!Numerical.isZero(distance)) {
+				var center = from.add(normal.multiply(
+						vector.dot(vector) / (2 * distance))),
+					start = from.subtract(center),
+					extent = start.getDirectedAngle(to.subtract(center));
+				if (extent * distance < 0)
+					extent += distance > 0 ? 360 : -360;
+				addArc(this, center, start, extent, to);
+			} else if (vector.dot(tangent) > 0) {
+				this.lineTo(to);
+			} else {
+				throw new Error(
+						'Cannot create an arc with the given arguments');
 			}
 		},
 
@@ -12560,8 +12599,8 @@ new function() {
 	}
 
 	return Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo',
-			'arcTo', 'lineBy', 'cubicCurveBy', 'quadraticCurveBy', 'curveBy',
-			'arcBy'],
+			'arcTo', 'arcAround', 'arcTowards', 'lineBy', 'cubicCurveBy',
+			'quadraticCurveBy', 'curveBy', 'arcBy'],
 		function(key) {
 			this[key] = function() {
 				var path = getCurrentPath(this, true);
