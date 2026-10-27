@@ -130,7 +130,7 @@ var Raster = Item.extend(/** @lends Raster# */{
             var image,
                 type = typeof source,
                 object = type === 'string'
-                    ? document.getElementById(source)
+                    ? document && document.getElementById(source)
                     : type  === 'object'
                         ? source
                         : null;
