@@ -26,7 +26,8 @@ const id = '\0paper'
 // Serve `paper` to the tests as a module, on Node and in the browser: the
 // library built in dist/paper-<build>.js, as in CI, or else built from the
 // sources, as `gulp build` does. PAPER_BUILD selects the build, `full` by
-// default, and from the sources `hosted`, which has everything.
+// default, and from the sources `hosted`, which has everything. On Node,
+// PAPER_BUILD=load loads the sources through src/load.js instead.
 export function paperPlugin() {
   const { PAPER_BUILD } = process.env
   const file = path.join(root, 'dist', `paper-${PAPER_BUILD || 'full'}.js`)
@@ -42,6 +43,19 @@ export function paperPlugin() {
     },
 
     load(source, options) {
+      if (source === id && PAPER_BUILD === 'load' && options?.ssr) {
+        // Load the sources through src/load.js, as in development, which
+        // runs each file under its own name, so that coverage can tell
+        // them apart:
+        return (
+          'import { createRequire } from "node:module"\n' +
+          `const paper = createRequire(import.meta.url)(${
+            JSON.stringify(path.join(root, 'src', 'load.js'))
+          })\n` +
+          'export default paper\n' +
+          `export const { ${names.join(', ')} } = paper\n`
+        )
+      }
       if (source === id) {
         const code = isBuilt
           ? fs.readFileSync(file, 'utf8')
