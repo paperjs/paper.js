@@ -3,3 +3,4 @@ node_modules/
 /dist/*.min.js
 /dist/paperjs.zip
 .vitest/
+coverage/
