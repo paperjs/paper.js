@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 27 17:42:35 2026 +0100
+ * Date: Tue Oct 27 17:41:55 2026 +0100
  *
  ***
  *
@@ -12485,7 +12485,10 @@ var CompoundPath = PathItem.extend({
 			this.remove();
 			return path;
 		}
-		return reduce.base.call(this);
+		var item = reduce.base.call(this);
+		if (item !== this)
+			item.copyAttributes(this, true);
+		return item;
 	},
 
 	isClosed: function() {

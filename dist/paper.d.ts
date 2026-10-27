@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 27 17:42:35 2026 +0100
+ * Date: Tue Oct 27 17:41:55 2026 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -6626,7 +6626,13 @@ declare namespace paper {
          * - `getItem(key)`, which returns the node's own content in the form
          *   of {@link Item#importJSON}, without children. Linked text
          *   gives `linked`, the keys of its story's text items in order, and
-         *   leaves out its story.
+         *   leaves out its story. Rasters give their `size` without a `source`
+         *   and `crossOrigin`.
+         * - `getImage(key)`, for rasters, which returns the node's pixels as a
+         *   canvas with a 2D context, of the size that `getItem()` gives.
+         *   Rasters load them on first access to their pixels, and Paper.js
+         *   never loads them by itself, except to draw them. Rasters whose
+         *   pixels the host fails to give draw nothing.
          * - `getStory(key)`, for linked text, which returns its story with the
          *   key of any of its text items: `content` or `runs`, `paragraphs`,
          *   and the character and paragraph styles, as
