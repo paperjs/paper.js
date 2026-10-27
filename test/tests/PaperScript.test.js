@@ -245,6 +245,70 @@ describe('PaperScript', () => {
     })
   }
 
+  if (!isNodeContext) {
+    test('PaperScript.load() with scripts of a canvas', () => {
+      const current = paper,
+        canvas = document.createElement('canvas'),
+        scripts = []
+      canvas.id = 'paperscript-load-canvas'
+      document.body.appendChild(canvas)
+
+      function createScript(code, type, attributes) {
+        const script = document.createElement('script')
+        script.type = type
+        script.text = code
+        script.setAttribute('canvas', canvas.id)
+        for (const name in attributes) {
+          script.setAttribute(name, attributes[name])
+        }
+        document.body.appendChild(script)
+        scripts.push(script)
+        return script
+      }
+
+      const first = createScript(
+        'paper.loaded = ["first"];',
+        'text/paperscript'
+      )
+      const scope = PaperScript.load(first)
+      equals(scope.view.element === canvas, true)
+      // Further scripts of the canvas share its scope, also as
+      // text/x-paperscript:
+      const second = createScript(
+        'paper.loaded.push("second");',
+        'text/x-paperscript'
+      )
+      equals(PaperScript.load(second) === scope, true)
+      // Loaded scripts and ignored ones don't load (again):
+      const ignored = createScript(
+        'paper.loaded.push("ignored");',
+        'text/paperscript',
+        { ignore: 'true' }
+      )
+      equals(PaperScript.load(first), undefined)
+      equals(PaperScript.load(ignored), undefined)
+      // Without a script, all scripts of the document that aren't loaded
+      // load:
+      createScript('paper.loaded.push("third");', 'text/paperscript')
+      PaperScript.load()
+      equals(scope.loaded, ['first', 'second', 'third'])
+      // Scripts of a missing canvas throw:
+      const missing = createScript('', 'text/paperscript')
+      missing.setAttribute('canvas', 'missing-canvas')
+      let message
+      try {
+        PaperScript.load(missing)
+      } catch (e) {
+        message = e.message
+      }
+      equals(message, 'Unable to find canvas with id "missing-canvas"')
+      scripts.forEach(script => document.body.removeChild(script))
+      scope.remove()
+      document.body.removeChild(canvas)
+      current.activate()
+    })
+  }
+
   test('PaperScript keeps the native globals (#1832)', () => {
     const exports = PaperScript.execute(
       'module.exports.symbol = Symbol;\n' +
@@ -537,6 +601,20 @@ describe('PaperScript', () => {
     )
   })
 
+  test('PaperScript exports from destructuring with defaults and rests', () => {
+    withAcornLatest(() => {
+      const exports = PaperScript.execute(
+        'export const { a = 1, ...rest } = { b: 2 };\n' +
+        'export const [x = new Point(1, 2) * 2, ...ys] = [undefined, 4, 5];',
+        paper
+      )
+      equals(
+        () => [exports.a, exports.rest, exports.x, exports.ys],
+        [1, { b: 2 }, new Point(2, 4), [4, 5]]
+      )
+    })
+  })
+
   test('PaperScript binary operators', () => {
     // Each case: the code of an expression, and its expected result:
     ;[
@@ -568,6 +646,17 @@ describe('PaperScript', () => {
     ].forEach(entry => {
       executeCode('module.exports = ' + entry[0], entry[1])
     })
+  })
+
+  test('PaperScript operators on numbers in variables', () => {
+    // Operations on literals alone are left as they are, so the numbers
+    // come from variables:
+    executeCode(
+      'var a = 6, b = 4, s = "5";\n' +
+      'module.exports = [a + b, a - b, a * b, a / b, a % b, a == "6", ' +
+      'a != b, -a, +s]',
+      [10, 2, 24, 1.5, 2, true, true, -6, 5]
+    )
   })
 
   test('PaperScript equality operators', () => {
