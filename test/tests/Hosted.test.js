@@ -27,6 +27,7 @@ import paper, {
   Point,
   PointText,
   Project,
+  Raster,
   Rectangle,
   Size,
   SymbolDefinition,
@@ -125,6 +126,11 @@ describe.skipIf(!HostItem)('Hosted', () => {
         // containers through getChildren():
         delete json[1].selected
         if (json[0] !== 'CompoundPath') delete json[1].children
+        // Rasters give their pixels through getImage():
+        if (node instanceof Raster) {
+          delete json[1].source
+          delete json[1].crossOrigin
+        }
         // Linked text gives its story through getStory():
         if (node instanceof TextItem && node.isLinked()) {
           json[1].linked = node.story.textItems.map(item => item.id)
@@ -133,6 +139,12 @@ describe.skipIf(!HostItem)('Hosted', () => {
           }
         }
         return json
+      },
+
+      getImage(key) {
+        host.calls.push(['getImage', key])
+        const node = host.getNode(key)
+        return node.getSubCanvas(new Rectangle(node.size))
       },
 
       getStory(key) {
@@ -537,6 +549,111 @@ describe.skipIf(!HostItem)('Hosted', () => {
     equals(message, 'Unavailable')
     res.host.getItem = getItem
     equals(circle.segments.length, 4)
+  })
+
+  // A host document with a raster of red pixels:
+  function createHostedRaster() {
+    const document = new Project()
+    const raster = new Raster({ size: [4, 2], position: [50, 50] })
+    raster.getContext(true).fillStyle = 'red'
+    raster.getContext(true).fillRect(0, 0, 4, 2)
+    const host = createHost(document)
+    const project = new Project()
+    project.host = host
+    return { project, host, raster: project.layers[0].children[0] }
+  }
+
+  test('Rasters load their pixels from the host on first access', () => {
+    const res = createHostedRaster()
+    const raster = res.raster
+    res.host.takeCalls()
+    equals(raster.size, new Size(4, 2))
+    equals(raster.bounds, new Rectangle(48, 49, 4, 2))
+    equals(res.host.takeCalls(), [['getItem', raster.key]])
+    equals(raster.getPixel(0, 0), new Color(1, 0, 0, 1))
+    equals(res.host.takeCalls(), [['getImage', raster.key]])
+    equals(raster.getPixel(3, 1), new Color(1, 0, 0, 1))
+    equals(res.host.takeCalls(), [])
+  })
+
+  test('Loading pixels is not logged as a change, drawing on them is', () => {
+    const res = createHostedRaster()
+    const project = res.project
+    const raster = res.raster
+    project.trackChanges = true
+    raster.getPixel(0, 0)
+    equals(project.takeChanges().length, 0)
+    raster.setPixel(0, 0, 'blue')
+    const changes = project.takeChanges()
+    equals(changes.length, 1)
+    equals(changes[0].item === raster, true)
+    equals((changes[0].flags & ChangeFlag.PIXELS) !== 0, true)
+    equals(raster.getPixel(0, 0), new Color(0, 0, 1, 1))
+  })
+
+  test('Rasters export without their source until their pixels load', () => {
+    const res = createHostedRaster()
+    const raster = res.raster
+    res.host.takeCalls()
+    const json = raster.exportJSON({ asString: false })
+    equals(json[1].source, undefined)
+    equals(json[1].size, [4, 2])
+    equals(res.host.takeCalls(), [['getItem', raster.key]])
+    raster.getPixel(0, 0)
+    equals(
+      /^data:/.test(raster.exportJSON({ asString: false })[1].source),
+      true
+    )
+  })
+
+  test('Pixels that the host fails to give throw, and draw nothing', () => {
+    const res = createHostedRaster()
+    const raster = res.raster
+    const getImage = res.host.getImage
+    res.host.getImage = () => {
+      throw new Error('Unavailable')
+    }
+    let message
+    try {
+      raster.getPixel(0, 0)
+    } catch (e) {
+      message = e.message
+    }
+    equals(message, 'Unavailable')
+    const image = res.project.layers[0].rasterize({ insert: false })
+    equals(image.getPixel(1, 1).alpha, 0)
+    res.host.getImage = getImage
+    equals(raster.getPixel(0, 0), new Color(1, 0, 0, 1))
+  })
+
+  test('invalidate() reloads the pixels of rasters', () => {
+    const res = createHostedRaster()
+    const raster = res.raster
+    const original = res.host.document.getItem({ id: raster.key })
+    equals(raster.getPixel(0, 0), new Color(1, 0, 0, 1))
+    original.setPixel(0, 0, 'blue')
+    const columns = res.host.getColumns([original])
+    columns.flags[0] |= 16
+    res.project.invalidate(columns)
+    res.host.takeCalls()
+    equals(raster.getPixel(0, 0), new Color(0, 0, 1, 1))
+    equals(res.host.takeCalls(), [
+      ['getItem', raster.key],
+      ['getImage', raster.key]
+    ])
+  })
+
+  test('Rasters that move to another host bring their pixels along', () => {
+    const from = createHostedRaster(),
+      to = createHostedProject()
+    const raster = from.raster
+    to.project.layers[0].addChild(raster)
+    equals(raster.key, null)
+    equals(raster.getPixel(0, 0), new Color(1, 0, 0, 1))
+    equals(
+      /^data:/.test(raster.exportJSON({ asString: false })[1].source),
+      true
+    )
   })
 
   test('Item#key registers new items once', () => {

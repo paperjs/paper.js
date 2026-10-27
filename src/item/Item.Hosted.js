@@ -23,6 +23,7 @@ new function() {
             [CompoundPath, ['_children', '_namedChildren']],
             [SymbolItem, ['_definition']],
             [HostItem, ['_values']],
+            [Raster, ['_size', '_loaded']],
             [TextItem, ['_story', '_orientation', '_layout', '_fontMetrics']],
             // The text path is a text's content, not one of its children:
             [PathText, ['_children', '_startOffset', '_endOffset',
@@ -33,6 +34,9 @@ new function() {
         // The fields that #_loadChildren() fills in on containers of hosted
         // items, Group and HostItem with _hasChildren:
         childrenFields = ['_children', '_namedChildren'],
+        // The fields that #_loadPixels() fills in on rasters from the host's
+        // image, after their content:
+        pixelFields = ['_image', '_canvas', '_context'],
         // The host boxes per item: bounds, strokeBounds and roughBounds.
         boxSize = 12,
         shellPrototypes = {},
@@ -103,6 +107,22 @@ new function() {
             if (shell instanceof Group || shell._hasChildren) {
                 childrenFields.forEach(function(field) {
                     defineLoader(shell, field, '_loadChildren');
+                });
+            }
+            if (shell instanceof Raster) {
+                pixelFields.forEach(function(field) {
+                    defineLoader(shell, field, '_loadPixels');
+                });
+                // Pixels that are still with the host export without a source:
+                var serializeFields = Base.set({}, proto._serializeFields);
+                delete serializeFields.crossOrigin;
+                delete serializeFields.source;
+                Object.defineProperty(shell, '_serializeFields', {
+                    get: function() {
+                        return this.hasOwnProperty('_canvas')
+                                ? proto._serializeFields
+                                : serializeFields;
+                    }
                 });
             }
             // Fill the bounds cache from the host boxes, until the item or
@@ -702,6 +722,64 @@ new function() {
         }
     });
 
+    Raster.inject({
+        // Load the pixels after the content, which would reset them otherwise,
+        // in the form of the host's canvas:
+        _loadPixels: function() {
+            if (this._shell)
+                this._load();
+            var project = this._project,
+                canvas = project._host.getImage(this._key),
+                that = this;
+            whileLoading(project, function() {
+                pixelFields.forEach(function(name) {
+                    defineValue(that, name, null);
+                });
+                that._setImage(canvas);
+            });
+        },
+
+        // Drop loaded pixels along with the content, to load them again:
+        _unload: function _unload() {
+            var that = this;
+            _unload.base.call(this);
+            if (this._contentFields) {
+                pixelFields.forEach(function(name) {
+                    delete that[name];
+                });
+            }
+        },
+
+        // The host's size holds the place of the pixels while loading, so
+        // we don't create a canvas for it:
+        set: function set(props, exclude) {
+            if (isLoading && this._shell && props && props.size) {
+                this._size = new Size(props.size);
+                exclude = Base.set({ size: true }, exclude);
+            }
+            return set.base.call(this, props, exclude);
+        },
+
+        // Rasters that move to another host bring their pixels along:
+        _setProject: function _setProject(project, installEvents) {
+            var host = this._project && this._project._host;
+            if (host && host !== project._host && this._key != null)
+                this.getElement();
+            _setProject.base.call(this, project, installEvents);
+        },
+
+        // Pixels that the host fails to give draw nothing. Scripts that ask
+        // for them get the error:
+        _draw: function _draw(ctx, param, viewMatrix) {
+            try {
+                this.getElement();
+            } catch (e) {
+                return;
+            }
+            _draw.base.call(this, ctx, param, viewMatrix);
+        }
+    });
+
     TextItem.inject({
         // New text takes the project's current text style, when the host set
         // one, see Project#currentTextStyle:
@@ -903,7 +981,13 @@ new function() {
          * - `getItem(key)`, which returns the node's own content in the form
          *   of {@link Item#importJSON(json)}, without children. Linked text
          *   gives `linked`, the keys of its story's text items in order, and
-         *   leaves out its story.
+         *   leaves out its story. Rasters give their `size` without a `source`
+         *   and `crossOrigin`.
+         * - `getImage(key)`, for rasters, which returns the node's pixels as a
+         *   canvas with a 2D context, of the size that `getItem()` gives.
+         *   Rasters load them on first access to their pixels, and Paper.js
+         *   never loads them by itself, except to draw them. Rasters whose
+         *   pixels the host fails to give draw nothing.
          * - `getStory(key)`, for linked text, which returns its story with the
          *   key of any of its text items: `content` or `runs`, `paragraphs`,
          *   and the character and paragraph styles, as
