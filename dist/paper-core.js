@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 27 09:55:42 2026 +0100
+ * Date: Tue Oct 27 18:08:42 2026 +0100
  *
  ***
  *
@@ -12628,16 +12628,21 @@ new function() {
 			}
 		}
 	);
-}, Base.each(['reverse', 'flatten', 'simplify', 'smooth'], function(key) {
+}, Base.each(['reverse', 'flatten', 'smooth'], function(key) {
 	this[key] = function(param) {
-		var children = this._children,
-			res;
-		for (var i = 0, l = children.length; i < l; i++) {
-			res = children[i][key](param) || res;
-		}
-		return res;
+		var children = this._children;
+		for (var i = 0, l = children.length; i < l; i++)
+			children[i][key](param);
 	};
-}, {}));
+}, {
+	simplify: function(tolerance) {
+		var children = this._children,
+			res = false;
+		for (var i = 0, l = children.length; i < l; i++)
+			res = children[i].simplify(tolerance) || res;
+		return res;
+	}
+}));
 
 PathItem.inject(new function() {
 	var min = Math.min,
