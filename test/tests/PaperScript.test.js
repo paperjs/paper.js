@@ -638,6 +638,10 @@ describe('PaperScript', () => {
     executeCode('var s = "a"; s += 1; module.exports = s', 'a1')
   })
 
+  test('PaperScript.compile() with empty code', () => {
+    equals(PaperScript.compile('').code, '')
+  })
+
   test('PaperScript with operator overloading turned off', () => {
     const code = 'var p = new Point(1, 2); module.exports = p + 1;'
     equals(
