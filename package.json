@@ -27,6 +27,7 @@
     "eslint": "eslint test '*.mjs'",
     "test": "vitest run --project node --project browser",
     "test:browser": "vitest run --project browser",
+    "test:coverage": "PAPER_BUILD=load vitest run --project node --coverage --testTimeout=60000",
     "test:node": "vitest run --project node",
     "test:screenshots": "sh test/screenshots/docker.sh"
   },
@@ -56,6 +57,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@vitest/browser-playwright": "^5.0.5",
+    "@vitest/coverage-v8": "^5.0.5",
     "acorn": "~0.5.0",
     "acorn-latest": "npm:acorn@8.15.0",
     "ansi-colors": "^4.1.3",
