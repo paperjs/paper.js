@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 27 20:56:54 2026 +0100
+ * Date: Tue Oct 27 22:18:28 2026 +0100
  *
  ***
  *
@@ -26624,8 +26624,6 @@ Base.exports.PaperScript = function() {
 	}
 
 	function compile(code, options) {
-		if (!code)
-			return '';
 		options = options || {};
 
 		var insertions = [];
