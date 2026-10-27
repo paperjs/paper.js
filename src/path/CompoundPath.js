@@ -380,15 +380,20 @@ new function() { // Injection scope for PostScript-like drawing functions
             }
         }
     );
-}, Base.each(['reverse', 'flatten', 'simplify', 'smooth'], function(key) {
+}, Base.each(['reverse', 'flatten', 'smooth'], function(key) {
     // Injection scope for methods forwarded to the child paths.
     // NOTE: Documentation is in PathItem
     this[key] = function(param) {
-        var children = this._children,
-            res;
-        for (var i = 0, l = children.length; i < l; i++) {
-            res = children[i][key](param) || res;
-        }
-        return res;
+        var children = this._children;
+        for (var i = 0, l = children.length; i < l; i++)
+            children[i][key](param);
     };
-}, {}));
+}, {
+    simplify: function(tolerance) {
+        var children = this._children,
+            res = false;
+        for (var i = 0, l = children.length; i < l; i++)
+            res = children[i].simplify(tolerance) || res;
+        return res;
+    }
+}));
