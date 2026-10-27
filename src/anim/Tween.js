@@ -355,14 +355,11 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
     },
 
     _handleFrame: function(time) {
-        var startTime = this._startTime,
-            progress = startTime
-                ? (time - startTime) / this.duration
-                : 0;
-        if (!startTime) {
-            this._startTime = time;
-        }
-        this.update(progress);
+        var startTime = this._startTime;
+        // The first frame starts the tween, also when its time is 0:
+        if (startTime == null)
+            startTime = this._startTime = time;
+        this.update((time - startTime) / this.duration);
     },
 
     _getState: function(state) {

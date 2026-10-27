@@ -11,10 +11,24 @@
  */
 
 import { describe } from 'vitest'
-import { Base, Path, Point, Tween } from 'paper'
+import { Base, Path, Point, Project, Tween } from 'paper'
 import { equals, test } from '../helpers.js'
 
 describe('Tween', () => {
+  test('Item#tween() counts its duration from the first frame', () => {
+    const view = new Project().view
+    const path = new Path.Circle({ center: [0, 0], radius: 10 })
+    path.tween({ position: [0, 0] }, { position: [100, 0] }, 1000)
+    // Play the frames that the view emits while animating, the first of
+    // them at time 0:
+    const positions = []
+    for (let i = 0; i <= 4; i++) {
+      view.emit('frame', new Base({ delta: i ? 0.25 : 0, time: i * 0.25 }))
+      positions.push(path.position.x)
+    }
+    equals(positions, [0, 25, 50, 75, 100])
+  })
+
   test('Tween#update() interpolates points and colors', () => {
     const path = new Path.Circle({
       center: [0, 0],
