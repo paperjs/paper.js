@@ -252,23 +252,59 @@ describe('PathItem#offset() and #outline()', () => {
       { offset: length * 0.7, width: 1.1 },
       { offset: length, width: 0.2 }
     ]
+    const getSeams = outline =>
+      outline.segments.filter(segment => {
+        const { handleIn, handleOut } = segment
+        const kink =
+          handleIn.isZero() || handleOut.isZero()
+            ? 0
+            : 180 - Math.abs(handleIn.getDirectedAngle(handleOut))
+        return (
+          segment.point.getDistance(segment.next.point) < 0.5 ||
+          kink > 0.1 && kink < 5
+        )
+      }).length
     const pressureOutline = pressure.outline({ insert: false })
-    const seams = pressureOutline.segments.filter(segment => {
-      const { handleIn, handleOut } = segment
-      const kink =
-        handleIn.isZero() || handleOut.isZero()
-          ? 0
-          : 180 - Math.abs(handleIn.getDirectedAngle(handleOut))
-      return (
-        segment.point.getDistance(segment.next.point) < 0.5 ||
-        kink > 0.1 && kink < 5
-      )
-    })
-    equals(seams.length, 0, 'seams')
+    equals(getSeams(pressureOutline), 0, 'seams')
     // The sides take as few cubics as stay within the tolerance, with the
     // times of the points on them refined:
     equals(pressureOutline.segments.length, 44)
     equals(getDeviation(pressure, pressureOutline) < 0.1, true, 'tolerance')
+    // Also at a smooth stop between curves:
+    const joint = pressure.clone({ insert: false })
+    joint.strokeProfile = pressure.strokeProfile.concat({
+      offset: joint.segments[2].location.offset,
+      width: 1.2
+    })
+    equals(getSeams(joint.outline({ insert: false })), 0, 'seams at joint')
+    // Stops that keep values in straight lines add no pens, also where their
+    // slopes on both sides differ in the last digits:
+    const taper = new Path({
+      segments: [[100, 320], [260, 140], [420, 420], [580, 180], [740, 320]],
+      strokeWidth: 60,
+      insert: false
+    })
+    taper.smooth({ type: 'catmull-rom' })
+    const taperEnds = [
+      { offset: 0, width: 0.2, aspect: 0.15, angle: -35, smooth: false },
+      {
+        offset: taper.length,
+        width: 1.4,
+        aspect: 0.5,
+        angle: 60,
+        smooth: false
+      }
+    ]
+    taper.strokeProfile = taperEnds
+    const taperOutline = taper.outline({ insert: false })
+    const stop = taper.getStrokeProfileAt(taper.segments[2].location.offset)
+    stop.smooth = false
+    taper.strokeProfile = [taperEnds[0], stop, taperEnds[1]]
+    equals(
+      taper.outline({ insert: false }).segments.length,
+      taperOutline.segments.length,
+      'segments with straight stop'
+    )
     // The round caps meet the sides where they end, instead of crossing them
     // close to there:
     pressure.strokeCap = 'round'
