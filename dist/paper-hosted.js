@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 27 18:08:42 2026 +0100
+ * Date: Tue Oct 27 17:42:35 2026 +0100
  *
  ***
  *
@@ -23612,7 +23612,6 @@ new function() {
 			[CompoundPath, ['_children', '_namedChildren']],
 			[SymbolItem, ['_definition']],
 			[HostItem, ['_values']],
-			[Raster, ['_size', '_loaded']],
 			[TextItem, ['_story', '_orientation', '_layout', '_fontMetrics']],
 			[PathText, ['_children', '_startOffset', '_endOffset',
 					'_alignment', '_spacing']],
@@ -23620,7 +23619,6 @@ new function() {
 					'_verticalAlign']]
 		],
 		childrenFields = ['_children', '_namedChildren'],
-		pixelFields = ['_image', '_canvas', '_context'],
 		boxSize = 12,
 		shellPrototypes = {},
 		recordFlags = {
@@ -23681,21 +23679,6 @@ new function() {
 			if (shell instanceof Group || shell._hasChildren) {
 				childrenFields.forEach(function(field) {
 					defineLoader(shell, field, '_loadChildren');
-				});
-			}
-			if (shell instanceof Raster) {
-				pixelFields.forEach(function(field) {
-					defineLoader(shell, field, '_loadPixels');
-				});
-				var serializeFields = Base.set({}, proto._serializeFields);
-				delete serializeFields.crossOrigin;
-				delete serializeFields.source;
-				Object.defineProperty(shell, '_serializeFields', {
-					get: function() {
-						return this.hasOwnProperty('_canvas')
-								? proto._serializeFields
-								: serializeFields;
-					}
 				});
 			}
 			shell._getCachedBounds = function(matrix, options, noInternal) {
@@ -24202,56 +24185,6 @@ new function() {
 				setChildren(this, project,
 						project._host.getChildren(this._key));
 			}
-		}
-	});
-
-	Raster.inject({
-		_loadPixels: function() {
-			if (this._shell)
-				this._load();
-			var project = this._project,
-				canvas = project._host.getImage(this._key),
-				that = this;
-			whileLoading(project, function() {
-				pixelFields.forEach(function(name) {
-					defineValue(that, name, null);
-				});
-				that._setImage(canvas);
-			});
-		},
-
-		_unload: function _unload() {
-			var that = this;
-			_unload.base.call(this);
-			if (this._contentFields) {
-				pixelFields.forEach(function(name) {
-					delete that[name];
-				});
-			}
-		},
-
-		set: function set(props, exclude) {
-			if (isLoading && this._shell && props && props.size) {
-				this._size = new Size(props.size);
-				exclude = Base.set({ size: true }, exclude);
-			}
-			return set.base.call(this, props, exclude);
-		},
-
-		_setProject: function _setProject(project, installEvents) {
-			var host = this._project && this._project._host;
-			if (host && host !== project._host && this._key != null)
-				this.getElement();
-			_setProject.base.call(this, project, installEvents);
-		},
-
-		_draw: function _draw(ctx, param, viewMatrix) {
-			try {
-				this.getElement();
-			} catch (e) {
-				return;
-			}
-			_draw.base.call(this, ctx, param, viewMatrix);
 		}
 	});
 
