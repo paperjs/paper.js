@@ -11,7 +11,7 @@
  */
 
 import { describe } from 'vitest'
-import { Base, Path, Point, Tween } from 'paper'
+import { Base, Path, Point, Project, Tween } from 'paper'
 import { equals, test } from '../helpers.js'
 
 describe('Tween', () => {
@@ -81,5 +81,114 @@ describe('Tween', () => {
     tween.start().update(0.25)
     // (1 - cos(PI / 4)) / 2 * 100:
     equals(path.position, new Point(14.6446609, 0))
+  })
+
+  test('Tween.easings: quad, cubic, quart and quint easings', () => {
+    // Expected values evaluated by hand from the easing formulas, at t = 0,
+    // 0.25, 0.5, 0.75, 1:
+    const expected = {
+      linear: [0, 0.25, 0.5, 0.75, 1],
+      easeInQuad: [0, 0.0625, 0.25, 0.5625, 1],
+      easeOutQuad: [0, 0.4375, 0.75, 0.9375, 1],
+      easeInOutQuad: [0, 0.125, 0.5, 0.875, 1],
+      easeInCubic: [0, 0.015625, 0.125, 0.421875, 1],
+      easeOutCubic: [0, 0.578125, 0.875, 0.984375, 1],
+      easeInOutCubic: [0, 0.0625, 0.5, 0.9375, 1],
+      easeInQuart: [0, 0.00390625, 0.0625, 0.31640625, 1],
+      easeOutQuart: [0, 0.68359375, 0.9375, 0.99609375, 1],
+      easeInOutQuart: [0, 0.03125, 0.5, 0.96875, 1],
+      easeInQuint: [0, 0.0009765625, 0.03125, 0.2373046875, 1],
+      easeOutQuint: [0, 0.7626953125, 0.96875, 0.9990234375, 1],
+      easeInOutQuint: [0, 0.015625, 0.5, 0.984375, 1]
+    }
+    Base.each(expected, (values, type) => {
+      const easing = Tween.easings[type]
+      for (let i = 0; i < values.length; i++) {
+        const t = i / 4
+        equals(easing(t), values[i], type + '(' + t + ')', {
+          tolerance: 1e-9
+        })
+      }
+    })
+  })
+
+  test('Tween with an easing function', () => {
+    const path = new Path.Circle({ center: [0, 0], radius: 10 })
+    const tween = path.tween(
+      { position: [0, 0] },
+      { position: [100, 0] },
+      { duration: 1000, easing: t => t * t, start: false }
+    )
+    equals(tween.type, 'function')
+    tween.start().update(0.5)
+    equals(path.position, new Point(25, 0))
+  })
+
+  test('Tween#update() with relative numbers', () => {
+    const path = new Path.Circle({ center: [0, 0], radius: 10, opacity: 0.2 })
+    path
+      .tween({ opacity: '+= 0.2' }, { duration: 1000, start: false })
+      .start()
+      .update(1)
+    equals(path.opacity, 0.4)
+    path
+      .tween({ opacity: '*= 2' }, { duration: 1000, start: false })
+      .start()
+      .update(1)
+    equals(path.opacity, 0.8)
+    path
+      .tween({ opacity: '/= 4' }, { duration: 1000, start: false })
+      .start()
+      .update(1)
+    equals(path.opacity, 0.2)
+    path
+      .tween({ opacity: ['+=', 0.5] }, { duration: 1000, start: false })
+      .start()
+      .update(1)
+    equals(path.opacity, 0.7)
+  })
+
+  test('Tween#onUpdate, #then() and #stop()', () => {
+    const path = new Path.Circle({ center: [0, 0], radius: 10 })
+    const tween = path.tween(
+      { position: [0, 0] },
+      { position: [100, 0] },
+      { duration: 1000, start: false }
+    )
+    const updates = []
+    let finished = null
+    tween.onUpdate = event => updates.push([event.progress, event.factor])
+    equals(tween.then(object => (finished = object)) === tween, true)
+    tween.start().update(0.5)
+    equals(finished, null)
+    // Progress beyond the end finishes the tween:
+    tween.update(1.5)
+    equals(tween.running, false)
+    equals(finished === path, true)
+    equals(updates, [
+      [0.5, 0.5],
+      [1, 1]
+    ])
+    // Updates of stopped tweens change nothing:
+    path.position = [0, 0]
+    tween.start().stop().update(0.5)
+    equals(path.position, new Point(0, 0))
+    equals(updates.length, 2)
+  })
+
+  test('Item#tween() runs on the frames of the view', () => {
+    const view = new Project().view
+    const path = new Path.Circle({ center: [0, 0], radius: 10 })
+    const tween = path.tween({ position: [0, 0] }, { position: [100, 0] }, 1000)
+    equals(tween.running, true)
+    // Play the frames that the view emits while animating:
+    let time = 0
+    for (let i = 0; i < 10 && tween.running; i++) {
+      const delta = i ? 0.25 : 0
+      view.emit('frame', new Base({ delta, time: (time += delta), count: i }))
+    }
+    equals(tween.running, false)
+    equals(path.position, new Point(100, 0))
+    equals(path.responds('frame'), false)
   })
 })
