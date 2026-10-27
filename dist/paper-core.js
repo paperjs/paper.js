@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 27 20:18:30 2026 +0100
+ * Date: Tue Oct 27 20:56:54 2026 +0100
  *
  ***
  *
@@ -6159,7 +6159,7 @@ var Raster = Item.extend({
 			var image,
 				type = typeof source,
 				object = type === 'string'
-					? document.getElementById(source)
+					? document && document.getElementById(source)
 					: type  === 'object'
 						? source
 						: null;
