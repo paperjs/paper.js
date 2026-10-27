@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 26 21:40:25 2026 +0100
+ * Date: Tue Oct 27 01:19:09 2026 +0100
  *
  ***
  *
@@ -14682,9 +14682,12 @@ PathItem.inject(new function() {
 					if (!isStep && (closed ? offset < length
 							: offset > 0 && offset < length)) {
 						var pen = getPen(offset, true),
-							before = getPen(offset, false);
-						if (pen.da !== before.da || pen.db !== before.db
-								|| pen.dAngle !== before.dAngle) {
+							before = getPen(offset, false),
+							size = Math.max(pen.a, pen.b),
+							jump = size * (Math.abs(pen.da - before.da)
+								+ Math.abs(pen.db - before.db)
+								+ size * Math.abs(pen.dAngle - before.dAngle));
+						if (jump > geomEpsilon) {
 							for (var j = 0; allParts[j].offset
 									+ allParts[j].length <= offset; j++) {}
 							var part = allParts[j],
