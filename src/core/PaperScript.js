@@ -144,8 +144,6 @@ Base.exports.PaperScript = function() {
      *     into JavaScript code along with source-maps and other information.
      */
     function compile(code, options) {
-        if (!code)
-            return '';
         options = options || {};
         // Use Acorn or Esprima to translate the code into an AST structure
         // which is then walked and parsed for operators to overload. Instead of
