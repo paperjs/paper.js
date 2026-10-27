@@ -49,6 +49,23 @@ describe('Compound Path', () => {
     equals(() => path.children.length, 2)
   })
 
+  test('CompoundPath#reduce() with a single child keeps its attributes', () => {
+    const compound = new CompoundPath({
+      children: [new Path.Rectangle([0, 0], [10, 10])],
+      fillColor: 'red',
+      strokeWidth: 3,
+      opacity: 0.5,
+      name: 'single'
+    })
+    const result = compound.reduce()
+    equals(() => result instanceof Path, true)
+    equals(() => result.fillColor, new Color('red'))
+    equals(() => result.strokeWidth, 3)
+    equals(() => result.opacity, 0.5)
+    equals(() => result.name, 'single')
+    equals(() => compound.parent, null)
+  })
+
   test('CompoundPath#reorient()', () => {
     const path1 = new Path.Rectangle([300, 300], [100, 100])
     const path2 = new Path.Rectangle([50, 50], [200, 200])

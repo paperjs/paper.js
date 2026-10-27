@@ -156,7 +156,11 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
             this.remove();
             return path;
         }
-        return reduce.base.call(this);
+        var item = reduce.base.call(this);
+        // A single child takes on the attributes that it was drawn with:
+        if (item !== this)
+            item.copyAttributes(this, true);
+        return item;
     },
 
     /**
