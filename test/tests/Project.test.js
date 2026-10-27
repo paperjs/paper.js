@@ -19,6 +19,7 @@ import paper, {
   PatternDefinition,
   Project,
   SymbolDefinition,
+  SymbolItem,
   Tool
 } from 'paper'
 import { equals, test } from '../helpers.js'
@@ -333,5 +334,63 @@ describe('Project', () => {
       true
     )
     tool.remove()
+  })
+
+  test('isEmpty()', () => {
+    const project = new Project()
+    equals(project.isEmpty(), true)
+    new Path.Circle([50, 50], 20)
+    equals(project.isEmpty(), false)
+  })
+
+  test('remove()', () => {
+    const project = new Project()
+    const view = project.view
+    equals(project.index, paper.projects.indexOf(project))
+    equals(project.remove(), true)
+    equals(project.view, null)
+    equals(view.project, null)
+    equals(paper.projects.includes(project), false)
+    equals(project.remove(), false)
+  })
+
+  test('project.symbolDefinitions', () => {
+    const project = new Project()
+    const definition = new SymbolDefinition(new Path.Circle([0, 0], 10))
+    const other = new SymbolDefinition(new Path.Rectangle([0, 0], [10, 10]))
+    new SymbolItem(definition)
+    new Group(new SymbolItem(other), new SymbolItem(definition))
+    const definitions = project.symbolDefinitions
+    equals(definitions.length, 2)
+    equals(definitions[0] === definition, true)
+    equals(definitions[1] === other, true)
+  })
+
+  test('selectAll() / deselectAll()', () => {
+    const project = new Project()
+    const path = new Path.Circle([50, 50], 20)
+    const group = new Group(new Path.Rectangle([0, 0], [10, 10]))
+    new Layer(new Path.Circle([100, 100], 10))
+    project.selectAll()
+    equals(path.fullySelected, true)
+    equals(group.firstChild.fullySelected, true)
+    equals(project.layers[1].firstChild.fullySelected, true)
+    project.deselectAll()
+    equals(project.selectedItems.length, 0)
+    equals(path.selected, false)
+    equals(path.segments[0].selected, false)
+  })
+
+  test('trackChanges logs inserted layers', () => {
+    const project = new Project()
+    const layer = new Layer({ insert: false })
+    equals(project.trackChanges, false)
+    project.trackChanges = true
+    equals(project.trackChanges, true)
+    project.addLayer(layer)
+    const changes = project.takeChanges()
+    equals(changes.length, 1)
+    equals(changes[0].item === layer, true)
+    equals(!!(changes[0].flags & ChangeFlag.INSERTION), true)
   })
 })
