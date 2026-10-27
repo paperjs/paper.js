@@ -15,6 +15,10 @@ import { Color, CompoundPath, Path, Point, Rectangle } from 'paper'
 import { equals, test } from '../helpers.js'
 
 describe('Compound Path', () => {
+  test('CompoundPath#simplify() without children', () => {
+    equals(() => new CompoundPath().simplify(), false)
+  })
+
   test('moveTo() / lineTo()', () => {
     const path = new CompoundPath()
 
