@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 27 22:18:28 2026 +0100
+ * Date: Wed Oct 28 08:07:11 2026 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -6609,7 +6609,9 @@ declare namespace paper {
          * The host document that the project's items come from. Setting it
          * creates the project's layers from the host's records. All items
          * are created as shells that load their content and children from the
-         * host on first access.
+         * host on first access. The host draws its items, so setting it also
+         * turns off {@link View#autoUpdate}, which would draw them all and
+         * load them in full.
          * 
          * The host provides:
          * - `getChildren(key)`, which returns the records of the children of
