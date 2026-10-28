@@ -255,6 +255,7 @@ export function checkProfileOutline(paper, path) {
     return {
       offset,
       center: path.getPointAt(offset),
+      tangent: path.getTangentAt(offset),
       a,
       b: a * aspect,
       angle,
@@ -289,12 +290,14 @@ export function checkProfileOutline(paper, path) {
     if (offset > 0) offsets.push(offset - length * 1e-9)
   }
   const pens = []
+  // The points on the edges turn around the pens with them, and with the
+  // path, where they touch the sides:
   const getMove = (pen1, pen2) => (
     pen1.center.getDistance(pen2.center) +
     Math.abs(pen1.a - pen2.a) +
     Math.abs(pen1.b - pen2.b) +
     Math.max(pen1.size, pen2.size) *
-    Math.abs(pen1.angle - pen2.angle) *
+    (Math.abs(pen1.angle - pen2.angle) + pen1.tangent.getAngle(pen2.tangent)) *
     Math.PI / 180
   )
   const addPens = (pen1, pen2) => {
@@ -418,13 +421,19 @@ export function checkProfileOutline(paper, path) {
       // Start with the pen nearest to the previous point, as the outline
       // mostly follows the path:
       let min = getDistance(point, pens[index])
+      // The pens about as close as the nearest one, within the tolerance of
+      // the largest, as the pens between them may be closer:
+      const margin = getPenTolerance(maxSize)
+      const distances = []
       // Only the pens with centers this close in x can be nearer:
-      const end = findIndex(point.x + min + maxSize)
-      for (let k = findIndex(point.x - min - maxSize); k < end; k++) {
+      const reach = min + maxSize + margin
+      const end = findIndex(point.x + reach)
+      for (let k = findIndex(point.x - reach); k < end; k++) {
         const j = indicesByX[k]
         const pen = pens[j]
-        if (point.getDistance(pen.center) - pen.size < min) {
+        if (point.getDistance(pen.center) - pen.size < min + margin) {
           const distance = getDistance(point, pen)
+          distances.push([j, distance])
           if (distance < min) {
             min = distance
             index = j
@@ -434,17 +443,29 @@ export function checkProfileOutline(paper, path) {
       let pen = pens[index]
       // Outside the sampled pens, it may still lie on the pens between them:
       if (min > getPenTolerance(pen.size)) {
-        let o0 = pens[Math.max(index - 1, 0)].offset
-        let o1 = pens[Math.min(index + 1, pens.length - 1)].offset
-        for (let j = 0; j < 40; j++) {
-          const m0 = o0 + (o1 - o0) / 3
-          const m1 = o1 - (o1 - o0) / 3
-          if (getDistance(point, getPen(m0)) < getDistance(point, getPen(m1)))
-            o1 = m1
-          else o0 = m0
+        const limit = min + margin
+        for (const [j, distance] of distances) {
+          if (distance <= limit) {
+            let o0 = pens[Math.max(j - 1, 0)].offset
+            let o1 = pens[Math.min(j + 1, pens.length - 1)].offset
+            for (let k = 0; k < 40; k++) {
+              const m0 = o0 + (o1 - o0) / 3
+              const m1 = o1 - (o1 - o0) / 3
+              if (
+                getDistance(point, getPen(m0)) <
+                getDistance(point, getPen(m1))
+              )
+                o1 = m1
+              else o0 = m0
+            }
+            const between = getPen((o0 + o1) / 2)
+            const betweenDistance = getDistance(point, between)
+            if (betweenDistance < min) {
+              min = betweenDistance
+              pen = between
+            }
+          }
         }
-        pen = getPen((o0 + o1) / 2)
-        min = Math.min(min, getDistance(point, pen))
       }
       const tolerance = getPenTolerance(pen.size)
       if (min > tolerance && !isNearCut(point, true)) {
