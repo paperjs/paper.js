@@ -12,17 +12,28 @@
 
 // Outlines the strokes of random paths, with the features that make offsetting
 // hard: cusps, loops, tight turns, coincident points, zero and reversed
-// handles, and extreme scales. Shrinks each failure to a small path that still
-// fails, and prints it as an entry for cases.json.
-// Usage: node test/offsetting/fuzz.mjs [count=500] [seed=1]
+// handles, and extreme scales. With --profiles, the paths have random stroke
+// profiles, with steps, stops at curve joints, and turning pens. Shrinks each
+// failure to a small path that still fails, and prints it as an entry for
+// cases.json.
+// Usage: node test/offsetting/fuzz.mjs [count=500] [seed=1] [--profiles]
 
 import { createRequire } from 'node:module'
-import { caps, checkOutline, createPath, joins } from './check.mjs'
+import { Worker, isMainThread, parentPort } from 'node:worker_threads'
+import {
+  caps,
+  checkOutline,
+  checkProfileOutline,
+  createPath,
+  joins
+} from './check.mjs'
 
 const require = createRequire(import.meta.url)
 const paper = require('../../dist/paper-full.js')
-const count = +process.argv[2] || 500
-let seed = +process.argv[3] || 1
+const args = process.argv.slice(2).filter(arg => !arg.startsWith('--'))
+const hasProfiles = process.argv.includes('--profiles')
+const count = +args[0] || 500
+let seed = +args[1] || 1
 
 paper.setup(new paper.Size(2000, 2000))
 
@@ -117,12 +128,62 @@ function createEntry() {
   }
 }
 
+// A stroke profile with stops anywhere, at curve joints and at the ends, some
+// of them steps, and with pens that are flat and turn:
+function createProfile(entry) {
+  const path = createPath(paper, entry, entry.style)
+  const { length } = path
+  const offsets = path.segments.map(segment => segment.location.offset)
+  const stops = []
+  const count = 1 + Math.floor(random() * 5)
+  for (let i = 0; i < count; i++) {
+    const previous = stops[i - 1]
+    const kind = random()
+    const offset =
+      previous && kind < 0.15
+        ? previous.offset // A step.
+        : kind < 0.4
+          ? pick(offsets)
+          : round(random() * length)
+    const stop = { offset, width: round(pick([0.05, 0.3, 1, 2.5]) * random()) }
+    if (random() < 0.5) stop.aspect = round(0.05 + random() * 1.5)
+    if (random() < 0.5) stop.angle = round((random() - 0.5) * 720)
+    if (random() < 0.3) stop.smooth = false
+    stops.push(stop)
+  }
+  return stops
+}
+
+function checkEntry(entry) {
+  const path = createPath(paper, entry, entry.style)
+  return path.strokeProfile
+    ? checkProfileOutline(paper, path)
+    : checkOutline(paper, path)
+}
+
+// The checks run in a worker, so that we can stop the ones that hang:
+let worker
 function check(entry) {
-  return checkOutline(paper, createPath(paper, entry, entry.style))
+  if (!worker) {
+    worker = new Worker(new URL(import.meta.url))
+    worker.unref()
+  }
+  return new Promise(resolve => {
+    const timeout = setTimeout(() => {
+      worker.terminate()
+      worker = null
+      resolve(['hangs'])
+    }, 30000)
+    worker.once('message', problems => {
+      clearTimeout(timeout)
+      resolve(problems)
+    })
+    worker.postMessage(entry)
+  })
 }
 
 // Shrinks the failing entry by trying simpler versions that still fail:
-function shrink(entry) {
+async function shrink(entry) {
   let changed = true
   while (changed) {
     changed = false
@@ -137,6 +198,15 @@ function shrink(entry) {
       }
     }
     if (entry.closed) candidates.push({ ...entry, closed: false })
+    const { strokeProfile } = entry
+    if (strokeProfile?.length > 1) {
+      for (let i = 0; i < strokeProfile.length; i++) {
+        candidates.push({
+          ...entry,
+          strokeProfile: strokeProfile.filter((_, j) => j !== i)
+        })
+      }
+    }
     for (let i = 0; i < segments.length; i++) {
       for (const h of [1, 2]) {
         if (segments[i][h][0] || segments[i][h][1]) {
@@ -147,7 +217,7 @@ function shrink(entry) {
       }
     }
     for (const candidate of candidates) {
-      if (check(candidate).length) {
+      if ((await check(candidate)).length) {
         entry = candidate
         changed = true
         break
@@ -157,23 +227,29 @@ function shrink(entry) {
   return entry
 }
 
-const found = []
-for (let i = 0; i < count; i++) {
-  const entry = createEntry()
-  if (check(entry).length) {
-    const small = shrink(entry)
-    found.push({ ...small, problems: check(small) })
+if (isMainThread) {
+  const found = []
+  for (let i = 0; i < count; i++) {
+    const entry = createEntry()
+    if (hasProfiles) entry.strokeProfile = createProfile(entry)
+    if ((await check(entry)).length) {
+      const small = await shrink(entry)
+      found.push({ ...small, problems: await check(small) })
+    }
   }
-}
-console.log(`${found.length} of ${count} random outlines fail.`)
-for (const entry of found) {
-  const { style, problems, ...path } = entry
-  console.log(
-    JSON.stringify({
-      name: `Fuzzed: ${problems.join(', ')}`,
-      segments: path.segments,
-      closed: path.closed,
-      ...style
-    })
-  )
+  console.log(`${found.length} of ${count} random outlines fail.`)
+  for (const entry of found) {
+    const { style, problems, ...path } = entry
+    console.log(
+      JSON.stringify({
+        name: `Fuzzed: ${problems.join(', ')}`,
+        segments: path.segments,
+        closed: path.closed,
+        ...style,
+        ...(path.strokeProfile && { strokeProfile: path.strokeProfile })
+      })
+    )
+  }
+} else {
+  parentPort.on('message', entry => parentPort.postMessage(checkEntry(entry)))
 }

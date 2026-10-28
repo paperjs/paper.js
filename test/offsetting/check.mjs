@@ -36,28 +36,39 @@ export function createPath(paper, entry, style) {
     insert: false
   })
   path.set(style)
+  if (entry.strokeProfile) path.strokeProfile = entry.strokeProfile
   return path
+}
+
+// Outlines the path's stroke, and adds the problems of outlines of all kinds
+// to the problems. Returns null where there's nothing more to check:
+function getOutline(path, problems) {
+  let outline
+  try {
+    outline = path.outline({ insert: false })
+  } catch (err) {
+    problems.push(`throws ${err.message}`)
+    return null
+  }
+  // Dots of closed paths or with butt caps have no outline:
+  if (outline.isEmpty()) {
+    if (path.length || !path.closed && path.strokeCap !== 'butt')
+      problems.push('empty')
+    return null
+  }
+  const crossings = outline
+    .getIntersections()
+    .filter(location => location.isCrossing()).length
+  if (crossings) problems.push(`${crossings} crossings`)
+  return outline
 }
 
 // Returns the problems of the outline of the path's stroke, as strings:
 export function checkOutline(paper, path) {
   const problems = []
   const offset = path.strokeWidth / 2
-  let outline
-  try {
-    outline = path.outline({ insert: false })
-  } catch (err) {
-    return [`throws ${err.message}`]
-  }
-  // Dots of closed paths or with butt caps have no outline:
-  if (outline.isEmpty())
-    return path.length || (!path.closed && path.strokeCap !== 'butt')
-      ? ['empty']
-      : []
-  const crossings = outline
-    .getIntersections()
-    .filter(location => location.isCrossing()).length
-  if (crossings) problems.push(`${crossings} crossings`)
+  const outline = getOutline(path, problems)
+  if (!outline) return problems
   // Points along the normals within the stroke are inside, sampled by length
   // and along each curve, as short curves can turn a lot. The ends of open
   // paths with butt caps lie on their edge:
@@ -185,5 +196,269 @@ export function checkOutline(paper, path) {
   if (error > tolerance) problems.push(`off by ${error.toFixed(2)}`)
   if (far) problems.push(`${far} points of the outline too far`)
   if (near) problems.push(`${near} points of the outline within the stroke`)
+  return problems
+}
+
+// The signed distance of the point to the ellipse with the half axes a and b,
+// in its coordinates, negative inside, by Eberly's bisection:
+function getEllipseDistance(x, y, a, b) {
+  x = Math.abs(x)
+  y = Math.abs(y)
+  if (a < b) [x, y, a, b] = [y, x, b, a]
+  if (!b) {
+    // A flat pen is a line:
+    return Math.hypot(Math.max(x - a, 0), y)
+  }
+  const isInside = (x / a) ** 2 + (y / b) ** 2 < 1
+  let distance
+  if (!y) {
+    const x0 = a * x / (a * a - b * b)
+    distance =
+      x0 < 1
+        ? Math.hypot(a * x0 - x, b * Math.sqrt(1 - x0 * x0))
+        : Math.abs(x - a)
+  } else if (!x) {
+    distance = Math.abs(y - b)
+  } else {
+    const z0 = x / a
+    const z1 = y / b
+    const r0 = (a / b) ** 2
+    const n0 = r0 * z0
+    let s0 = z1 - 1
+    let s1 = isInside ? 0 : Math.hypot(n0, z1) - 1
+    let s = 0
+    for (let i = 0; i < 100; i++) {
+      s = (s0 + s1) / 2
+      if (s === s0 || s === s1) break
+      const g = (n0 / (s + r0)) ** 2 + (z1 / (s + 1)) ** 2 - 1
+      if (g > 0) s0 = s
+      else if (g < 0) s1 = s
+      else break
+    }
+    distance = Math.hypot(x - r0 * x / (s + r0), y - y / (s + 1))
+  }
+  return isInside ? -distance : distance
+}
+
+// Returns the problems of the outline of the path's stroke profile, as
+// strings. The outline is the union of the pens along the path, their
+// ellipses, and of the joins and caps:
+export function checkProfileOutline(paper, path) {
+  const problems = []
+  const outline = getOutline(path, problems)
+  if (!outline) return problems
+  const radius = path.strokeWidth / 2
+  const { curves, length, closed } = path
+  const getPen = offset => {
+    const { width, aspect, angle } = path.getStrokeProfileAt(offset)
+    const a = radius * width
+    return {
+      offset,
+      center: path.getPointAt(offset),
+      a,
+      b: a * aspect,
+      angle,
+      size: Math.max(a, a * aspect)
+    }
+  }
+  // The outline fits the sides within the tolerance of the stroke's width at
+  // their samples, along curves regularized within a quarter of it, and the
+  // ellipses of big pens are off as much as circles:
+  const getPenTolerance = size => (
+    2 * Math.min(0.1, radius / 100) + 5e-4 * Math.max(radius, size)
+  )
+  const getDistance = (point, pen) => {
+    const { x, y } = point.subtract(pen.center).rotate(-pen.angle)
+    return getEllipseDistance(x, y, pen.a, pen.b)
+  }
+  // The pens along each curve, and on both sides of each stop, as close
+  // together as the gaps between them stay within the tolerance, by how far
+  // the points on their edges move from one to the next:
+  const stopOffsets = path.strokeProfile.map(stop => stop.offset)
+  const steps = stopOffsets.filter(
+    (offset, i) => stopOffsets.indexOf(offset) !== i
+  )
+  const offsets = [...stopOffsets, length]
+  let start = 0
+  for (const curve of curves) {
+    // Curves can end where they start:
+    for (let i = 0; i < 8; i++) offsets.push(start + curve.length * i / 8)
+    start += curve.length
+  }
+  for (const offset of stopOffsets) {
+    if (offset > 0) offsets.push(offset - length * 1e-9)
+  }
+  const pens = []
+  const getMove = (pen1, pen2) => (
+    pen1.center.getDistance(pen2.center) +
+    Math.abs(pen1.a - pen2.a) +
+    Math.abs(pen1.b - pen2.b) +
+    Math.max(pen1.size, pen2.size) *
+    Math.abs(pen1.angle - pen2.angle) *
+    Math.PI / 180
+  )
+  const addPens = (pen1, pen2) => {
+    // The gaps grow with the moves' squares over the edges' tightest radius
+    // of curvature, at the ends of the ellipses' major axes:
+    const getRadius = ({ a, b }) => Math.min(a, b) ** 2 / Math.max(a, b) || 0
+    const edgeRadius = Math.min(getRadius(pen1), getRadius(pen2))
+    const tolerance = getPenTolerance(Math.min(pen1.size, pen2.size))
+    if (
+      pen2.offset - pen1.offset > tolerance &&
+      getMove(pen1, pen2) > Math.sqrt(8 * edgeRadius * tolerance)
+    ) {
+      const pen = getPen((pen1.offset + pen2.offset) / 2)
+      addPens(pen1, pen)
+      addPens(pen, pen2)
+    } else {
+      pens.push(pen2)
+    }
+  }
+  const ends = [...new Set(offsets)].sort((a, b) => a - b).map(getPen)
+  pens.push(ends[0])
+  for (let i = 1; i < ends.length; i++) addPens(ends[i - 1], ends[i])
+  // Where the outline cuts the pens off: at butt caps and steps, and at the
+  // joins that aren't round. Miter joins and square caps reach beyond them:
+  const cuts = steps.map(offset => ({ point: path.getPointAt(offset) }))
+  if (!closed) {
+    for (const offset of [0, length]) {
+      cuts.push({
+        point: path.getPointAt(offset),
+        isBeyond: path.strokeCap === 'square'
+      })
+    }
+  }
+  if (path.strokeJoin !== 'round') {
+    for (let i = 0, l = curves.length; i < (closed ? l : l - 1); i++) {
+      const tangent1 = curves[i].getTangentAtTime(1)
+      const tangent2 = curves[(i + 1) % l].getTangentAtTime(0)
+      if (
+        Math.abs(tangent1.cross(tangent2)) > 1e-8 ||
+        tangent1.dot(tangent2) < 0
+      ) {
+        cuts.push({
+          point: curves[i].point2,
+          isBeyond: path.strokeJoin === 'miter'
+        })
+      }
+    }
+  }
+  // How far the pens reach around each cut, and around which the outline is
+  // cut, or reaches beyond the pens:
+  for (const cut of cuts) {
+    cut.size = Math.max(
+      ...pens
+        .filter(pen => pen.center.getDistance(cut.point) < 2 * pen.size)
+        .map(pen => pen.size),
+      0
+    )
+  }
+  const isNearCut = (point, isBeyond) =>
+    cuts.some(
+      cut => (
+        (!isBeyond || cut.isBeyond) && (
+          point.getDistance(cut.point) <
+          (isBeyond ? path.miterLimit + 1 : 2) * cut.size
+        )
+      )
+    )
+  // The points within the pens are inside the outline, checked where the pens
+  // moved by a quarter of their size:
+  let outside = 0
+  let checked = null
+  for (const pen of pens) {
+    const tolerance = getPenTolerance(pen.size)
+    if (
+      pen.size > tolerance &&
+      !isNearCut(pen.center) &&
+      !(checked && getMove(checked, pen) < pen.size / 4)
+    ) {
+      checked = pen
+      for (let i = 0; i < 16; i++) {
+        const phi = Math.PI * i / 8
+        const point = pen.center.add(
+          new paper.Point(
+            0.9 * pen.a * Math.cos(phi),
+            0.9 * pen.b * Math.sin(phi)
+          ).rotate(pen.angle)
+        )
+        if (
+          !outline.contains(point) &&
+          outline.getNearestPoint(point).getDistance(point) > tolerance
+        )
+          outside++
+      }
+    }
+  }
+  if (outside) problems.push(`${outside} points of the pens outside`)
+  // The points of the outline lie on the edge of the union of the pens: in
+  // none of them, and on one of them:
+  let far = 0
+  let near = 0
+  let error = 0
+  let index = 0
+  const maxSize = pens.reduce((max, pen) => Math.max(max, pen.size), 0)
+  const indicesByX = pens
+    .map((_, i) => i)
+    .sort((i, j) => pens[i].center.x - pens[j].center.x)
+  // The first of the pens sorted by x with its center at x or beyond:
+  const findIndex = x => {
+    let lo = 0
+    let hi = indicesByX.length
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1
+      if (pens[indicesByX[mid]].center.x < x) lo = mid + 1
+      else hi = mid
+    }
+    return lo
+  }
+  for (const curve of outline.getCurves()) {
+    for (let i = 0; i <= 16; i++) {
+      const point = curve.getPointAtTime(i / 16)
+      // Start with the pen nearest to the previous point, as the outline
+      // mostly follows the path:
+      let min = getDistance(point, pens[index])
+      // Only the pens with centers this close in x can be nearer:
+      const end = findIndex(point.x + min + maxSize)
+      for (let k = findIndex(point.x - min - maxSize); k < end; k++) {
+        const j = indicesByX[k]
+        const pen = pens[j]
+        if (point.getDistance(pen.center) - pen.size < min) {
+          const distance = getDistance(point, pen)
+          if (distance < min) {
+            min = distance
+            index = j
+          }
+        }
+      }
+      let pen = pens[index]
+      // Outside the sampled pens, it may still lie on the pens between them:
+      if (min > getPenTolerance(pen.size)) {
+        let o0 = pens[Math.max(index - 1, 0)].offset
+        let o1 = pens[Math.min(index + 1, pens.length - 1)].offset
+        for (let j = 0; j < 40; j++) {
+          const m0 = o0 + (o1 - o0) / 3
+          const m1 = o1 - (o1 - o0) / 3
+          if (getDistance(point, getPen(m0)) < getDistance(point, getPen(m1)))
+            o1 = m1
+          else o0 = m0
+        }
+        pen = getPen((o0 + o1) / 2)
+        min = Math.min(min, getDistance(point, pen))
+      }
+      const tolerance = getPenTolerance(pen.size)
+      if (min > tolerance && !isNearCut(point, true)) {
+        far++
+        error = Math.max(error, min)
+      }
+      if (min < -tolerance && !isNearCut(point)) {
+        near++
+        error = Math.max(error, -min)
+      }
+    }
+  }
+  if (far) problems.push(`${far} points of the outline outside the pens`)
+  if (near) problems.push(`${near} points of the outline within the pens`)
+  if (error) problems.push(`off by ${error.toFixed(2)}`)
   return problems
 }
