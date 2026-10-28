@@ -393,6 +393,23 @@ describe('PathItem#offset() and #outline()', () => {
       }
     ]
     equals(hook.outline({ insert: false }).isEmpty(), false)
+    // Strips whose ends stand still, where a curve slows down sharply at its
+    // end, sweep nothing, instead of sides fitted to noise:
+    const stall = new Path({
+      segments: [
+        [[27768.474, 36165.767], [0, 0], [56.114, 2.44]],
+        [[30544.58, 35227.701], [-465.712, -857.933], [463.507, 853.87]],
+        [[25350.015, 40884.779], [927.15, -383.875], [-607.547, 251.547]],
+        [[23400.244, 41184.607], [653.632, -71.798], [-411.34, 45.184]],
+        [[22253.338, 40709.436], [389.452, 139.892], [-4404.194, -1581.993]],
+        [[11128.562, 34371.612], [5141.093, -546.481], [0, 0]]
+      ],
+      closed: true,
+      strokeWidth: 12942.21,
+      insert: false
+    })
+    stall.strokeProfile = [{ offset: 0, width: 1.64 }]
+    equals(stall.outline({ insert: false }).curves.length < 100, true)
     // Round caps are the pens at the ends:
     equals(
       createLine([{ offset: 0, aspect: 0.5, angle: 90 }], 'round').bounds,
