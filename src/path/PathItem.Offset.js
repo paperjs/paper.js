@@ -337,7 +337,11 @@ PathItem.inject(new function() {
                             * part.curveLength / part.length);
             }
 
+            // The span at the offset, or the one before it where they meet.
+            // Before the start of closed paths lies their end:
             function getSpan(offset, after) {
+                if (closed && !after && !offset)
+                    offset = length;
                 for (var i = 0, l = spans.length; i < l; i++) {
                     var span = spans[i];
                     if (after ? offset < span.next.offset
