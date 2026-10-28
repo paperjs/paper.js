@@ -586,6 +586,20 @@ PathItem.inject(new function() {
                     ];
                 }
 
+                // Whether the fitted side moves away from where it starts by
+                // more than the tolerance, with the handles that bound it:
+                function isMoving(side) {
+                    var point = side[0]._point;
+                    return side.some(function(segment) {
+                        var other = segment._point;
+                        return other.getDistance(point) > tolerance
+                            || other.add(segment._handleIn).getDistance(point)
+                                > tolerance
+                            || other.add(segment._handleOut).getDistance(point)
+                                > tolerance;
+                    });
+                }
+
                 // Whether the strips are the same ones as before, in the same
                 // order, by the angles on the pen where they start:
                 function isSame(strips, before) {
@@ -696,7 +710,10 @@ PathItem.inject(new function() {
                             to = fitSide(function(t) {
                                 return getEnd(t, j, 'to');
                             }, t0, t1);
-                        if (motions[0] * motions[1] < 0) {
+                        // Strips whose ends stand still sweep nothing, and the
+                        // points that stand still across them are only noise:
+                        if (motions[0] * motions[1] < 0
+                                && (isMoving(from) || isMoving(to))) {
                             var still = fitSide(function(t) {
                                 var strip = getStrips(t)[j];
                                 if (!strip)
