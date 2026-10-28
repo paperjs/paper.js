@@ -904,19 +904,37 @@ PathItem.inject(new function() {
                             sides1 = getSides(part1, 1, span1),
                             sides2 = getSides(part2, 0, span);
                         if (sides1 && sides2) {
-                            var side1 = sides1[k].point,
+                            // Widen the join into the parts on both sides, as
+                            // in addJoin() above, by turning the sides' points
+                            // around their pens, back along the first side and
+                            // ahead along the second:
+                            var widening = Math.sqrt(tolerance / radius),
+                                widen = function(side, pen, direction) {
+                                    var axes = getAxes(pen),
+                                        c = Math.cos(side.phi),
+                                        s = Math.sin(side.phi),
+                                        along = axes[0].multiply(-pen.a * s)
+                                            .add(axes[1].multiply(pen.b * c))
+                                            .dot(side.derivative),
+                                        phi = side.phi + widening
+                                            * (along > 0 ? direction
+                                                : -direction);
+                                    return side.point
+                                        .add(axes[0].multiply(
+                                            pen.a * (Math.cos(phi) - c)))
+                                        .add(axes[1].multiply(
+                                            pen.b * (Math.sin(phi) - s)));
+                                },
+                                side1 = sides1[k].point,
                                 side2 = sides2[k].point,
                                 direction1 = sides1[k].derivative.normalize(),
                                 direction2 = sides2[k].derivative.normalize(),
-                                // Widen the join into the parts on both
-                                // sides, as in addJoin() above:
-                                widening = Math.sqrt(tolerance * pen.a),
                                 // From the inner sides, as the ends of the
                                 // parts only run through the point where the
                                 // pen doesn't change. All lie on the pen:
                                 points = [sides1[1 - k].point,
-                                    side1.subtract(direction1.multiply(
-                                        widening)),
+                                    widen(sides1[k], getSpanPen(span1,
+                                        part1.offset + part1.length), -1),
                                     side1];
                             if (join === 'miter') {
                                 var miter = Line.intersect(
@@ -929,8 +947,8 @@ PathItem.inject(new function() {
                                         <= miterLimit * pen.a)
                                     points.push(miter);
                             }
-                            addPolygon(points.concat(side2, side2.add(
-                                    direction2.multiply(widening)),
+                            addPolygon(points.concat(side2,
+                                    widen(sides2[k], pen, 1),
                                     sides2[1 - k].point));
                         }
                     }
