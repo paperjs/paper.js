@@ -398,6 +398,33 @@ describe('PathItem#offset() and #outline()', () => {
       createLine([{ offset: 0, aspect: 0.5, angle: 90 }], 'round').bounds,
       new Rectangle(-5, -10, 110, 20)
     )
+    // Closed paths join their last curves to the first ones with the pens
+    // at their ends, wherever they start:
+    for (const strokeJoin of joins) {
+      const createTriangle = (segments, offset) => {
+        const triangle = new Path({
+          segments,
+          closed: true,
+          strokeWidth: 20,
+          strokeJoin,
+          insert: false
+        })
+        const { length } = triangle
+        triangle.strokeProfile = [
+          { offset: offset % length, width: 0.5 },
+          { offset: (offset + length / 2) % length, width: 2 }
+        ]
+        return triangle.outline({ insert: false })
+      }
+      const triangle1 = createTriangle([[0, 0], [200, 0], [100, 150]], 0)
+      const triangle2 = createTriangle(
+        [[200, 0], [100, 150], [0, 0]],
+        2 * Math.hypot(100, 150)
+      )
+      equals(triangle1.exclude(triangle2, { insert: false }).area, 0, null, {
+        tolerance: 0.01
+      })
+    }
   })
 })
 
