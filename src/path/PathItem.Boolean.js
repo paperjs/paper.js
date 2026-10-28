@@ -898,10 +898,16 @@ PathItem.inject(new function() {
                 for (var j = 1, k = list.length; j < k; j++) {
                     var cut1 = list[j - 1],
                         cut2 = list[j];
-                    if (getVertex(cut1.point) !== getVertex(cut2.point)
-                            && Curve.getLength(getPiece(i, cut1, cut2))
-                                < 4 * epsilon)
-                        pieces.push([cut1.point, cut2.point]);
+                    if (getVertex(cut1.point) !== getVertex(cut2.point)) {
+                        // The pieces are at least as long as their ends are
+                        // apart, so we only measure them if close:
+                        var v = getPiece(i, cut1, cut2),
+                            dx = v[6] - v[0],
+                            dy = v[7] - v[1];
+                        if (dx * dx + dy * dy < 16 * epsilon * epsilon
+                                && Curve.getLength(v) < 4 * epsilon)
+                            pieces.push([cut1.point, cut2.point]);
+                    }
                 }
             }
             for (var i = 0, l = pieces.length; i < l; i++) {

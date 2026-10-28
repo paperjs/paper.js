@@ -1343,10 +1343,11 @@ new function() { // Injection scope for various curve evaluation methods
 },
 new function() { // Scope for methods that require private functions
 
-    function getLengthIntegrand(v) {
+    // Returns the speed of the curve with the coefficients that
+    // getCoefficients() returns:
+    function getLengthIntegrand(c) {
         // The coefficients of the derivative of the curve's polynomial:
-        var c = getCoefficients(v),
-            ax = 3 * c[0], bx = 2 * c[1], cx = c[2],
+        var ax = 3 * c[0], bx = 2 * c[1], cx = c[2],
             ay = 3 * c[3], by = 2 * c[4], cy = c[5];
 
         return function(t) {
@@ -1357,12 +1358,73 @@ new function() { // Scope for methods that require private functions
         };
     }
 
-    // Amount of integral evaluations for the interval 0 <= a < b <= 1
-    function getIterations(a, b) {
-        // Guess required precision based and size of range...
-        // TODO: There should be much better educated guesses for
-        // this. Also, what does this depend on? Required precision?
-        return Math.max(2, Math.min(16, Math.ceil(Math.abs(b - a) * 32)));
+    // The length of the curve with the coefficients that getCoefficients()
+    // returns and the speed ds between the times a and b. Near cusps, the
+    // speed bends too sharply where it turns for the integration to follow,
+    // so we integrate it separately on both sides there:
+    function getPartLength(c, ds, a, b) {
+        if (a > b)
+            return -getPartLength(c, ds, b, a);
+        // The coefficients of the derivative, as in getLengthIntegrand():
+        var ax = 3 * c[0], bx = 2 * c[1], cx = c[2],
+            ay = 3 * c[3], by = 2 * c[4], cy = c[5],
+            tolerance = /*#=*/Numerical.GEOMETRIC_EPSILON,
+            // Between a and b, the derivative is a quadratic curve with these
+            // control points, and its speed is at least its projection onto
+            // their sum:
+            x0 = (ax * a + bx) * a + cx,
+            y0 = (ay * a + by) * a + cy,
+            x1 = ax * a * b + bx * (a + b) * 0.5 + cx,
+            y1 = ay * a * b + by * (a + b) * 0.5 + cy,
+            x2 = (ax * b + bx) * b + cx,
+            y2 = (ay * b + by) * b + cy,
+            sx = x0 + x1 + x2,
+            sy = y0 + y1 + y2,
+            p0 = x0 * sx + y0 * sy,
+            p1 = x1 * sx + y1 * sy,
+            p2 = x2 * sx + y2 * sy,
+            l0 = x0 * x0 + y0 * y0,
+            l1 = x1 * x1 + y1 * y1,
+            l2 = x2 * x2 + y2 * y2,
+            max = l0 > l1 ? l0 > l2 ? l0 : l2 : l1 > l2 ? l1 : l2;
+        // Where the middle projection is at least a tenth of the largest
+        // control point and the ones at the ends don't point backwards, the
+        // speed can only get low at the ends, from where it grows steadily:
+        if (p0 >= 0 && p2 >= 0 && p1 > 0
+                && p1 * p1 > 0.01 * (sx * sx + sy * sy) * max) {
+            // Where the control points also lie closer together than a tenth
+            // of the lowest speed, the 7-point Gauss rule's error shrinks
+            // with the seventh power of that ratio to within the tolerance:
+            var min = p0 < p1 ? p0 < p2 ? p0 : p2 : p1 < p2 ? p1 : p2,
+                d01 = (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0),
+                d12 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
+            return (d01 > d12 ? d01 : d12) * (sx * sx + sy * sy)
+                    < 0.01 * min * min
+                    ? Numerical.gauss(ds, a, b)
+                    : Numerical.integrate(ds, a, b, tolerance);
+        }
+        // The speed turns where the derivative is normal to its own
+        // derivative:
+        var times = [],
+            count = Math.max(0, Numerical.solveCubic(
+                    2 * (ax * ax + ay * ay),
+                    3 * (ax * bx + ay * by),
+                    bx * bx + by * by + 2 * (ax * cx + ay * cy),
+                    bx * cx + by * cy, times, a, b)),
+            length = 0;
+        times.length = count;
+        times.sort(function(t1, t2) {
+            return t1 - t2;
+        });
+        times.push(b);
+        for (var i = 0; i <= count; i++) {
+            var t = times[i];
+            if (t > a) {
+                length += Numerical.integrate(ds, a, t, tolerance);
+                a = t;
+            }
+        }
+        return length;
     }
 
     function getCoefficients(v) {
@@ -1555,7 +1617,7 @@ new function() { // Scope for methods that require private functions
                     (d2 - f1) / f2);
         },
 
-        getLength: function(v, a, b, ds) {
+        getLength: function(v, a, b) {
             if (a === undefined)
                 a = 0;
             if (b === undefined)
@@ -1576,8 +1638,8 @@ new function() { // Scope for methods that require private functions
                     dy = c[7] - c[1]; // y3 - y0
                 return Math.sqrt(dx * dx + dy * dy);
             }
-            return Numerical.integrate(ds || getLengthIntegrand(v), a, b,
-                    getIterations(a, b));
+            var c = getCoefficients(v);
+            return getPartLength(c, getLengthIntegrand(c), a, b);
         },
 
         getTimeAt: function(v, offset, start) {
@@ -1592,11 +1654,11 @@ new function() { // Scope for methods that require private functions
                 forward = offset > 0,
                 a = forward ? start : 0,
                 b = forward ? 1 : start,
-                // Use integrand to calculate both range length and part
-                // lengths in f(t) below.
-                ds = getLengthIntegrand(v),
-                // Get length of total range
-                rangeLength = Curve.getLength(v, a, b, ds),
+                // Use the same integrand for both the range length and the part
+                // lengths in f(t) below:
+                c = getCoefficients(v),
+                ds = getLengthIntegrand(c),
+                rangeLength = getPartLength(c, ds, a, b),
                 diff = abs(offset) - rangeLength;
             if (abs(diff) < epsilon) {
                 // Matched the end:
@@ -1609,21 +1671,21 @@ new function() { // Scope for methods that require private functions
             // bring us closer:
             var guess = offset / rangeLength,
                 length = 0;
-            // Iteratively calculate curve range lengths, and add them up,
-            // using integration precision depending on the size of the
-            // range. This is much faster and also more precise than not
-            // modifying start and calculating total length each time.
+            // Iteratively calculate curve range lengths, and add them up.
+            // This is much faster than not modifying start and calculating
+            // total length each time.
             function f(t) {
-                // When start > t, the integration returns a negative value.
-                length += Numerical.integrate(ds, start, t,
-                        getIterations(start, t));
+                // When start > t, the length is negative.
+                length += getPartLength(c, ds, start, t);
                 start = t;
                 return length - offset;
             }
             // Start with out initial guess for x.
             // NOTE: guess is a negative value when looking backwards.
+            // Newton's method converges quadratically, so once its steps are
+            // within the curve-time precision, the last one gets it exact:
             return Numerical.findRoot(f, ds, start + guess, a, b, 32,
-                    /*#=*/Numerical.EPSILON);
+                    /*#=*/Numerical.CURVETIME_EPSILON);
         },
 
         getTimeOf: function(v, point, tolerance) {
