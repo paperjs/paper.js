@@ -2944,6 +2944,20 @@ describe('Path Boolean Operations', () => {
     equals(path.unite().area, 277470.37613)
   })
 
+  test('unite where a circle crosses a line just before its end', () => {
+    // 6.7e-8 from the end, which is further than epsilon of these small paths.
+    // Snapped to the end, the intersection lies too far from the circle, and
+    // the result is empty:
+    const path1 = new Path(
+        'M3.650624159,1.280897223c-0.002372999,-0.0817644 -0.004746,-0.1635288 -0.007119,-0.2452932l0.02716499,-0.000788394l-0.027102691,-0.00197098c0.002160154,-0.029702911 0.040522802,-0.037240572 0.053838774,-0.010797763c0.006914247,0.013730545 0.008958691,0.030255892 0.017052213,0.043336983l-0.01627424,0.01006933c0.001972479,0.067963993 0.003944959,0.135927986 0.005917437,0.203891979z'
+      ),
+      path2 = new Path(
+        'M3.696926518,1.03672547c-0.00101108,0.014218011 -0.012993267,0.025145797 -0.027244044,0.024846637c-0.014250777,-0.000299159 -0.025763807,-0.011720168 -0.026177316,-0.025968085c-0.000025875,-0.000891543 -0.000007144,-0.001783822 0.000056123,-0.002673493c0.00101108,-0.014218011 0.012993267,-0.025145797 0.027244044,-0.024846637c0.014250777,0.000299159 0.025763807,0.011720168 0.026177316,0.025968085c0.000025875,0.000891543 0.000007144,0.001783822 -0.000056123,0.002673493z'
+      )
+    equals(path1.unite(path2).area, 0.0148374, null, { tolerance: 1e-7 })
+    equals(path2.unite(path1).area, 0.0148374, null, { tolerance: 1e-7 })
+  })
+
   test('#1123: intersect, moved by 1e-12', () => {
     // An edge 2.2 epsilon long with tangent pieces next to it, which loses the
     // whole result unless its vertices are merged. The area is linesweeper's,

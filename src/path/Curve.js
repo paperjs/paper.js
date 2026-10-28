@@ -2489,7 +2489,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
     }
 
     function addCurveLineIntersections(v1, v2, c1, c2, locations, include,
-            flip) {
+            flip, tolerance) {
         // addCurveLineIntersections() is called so that v1 is always the curve
         // and v2 the line. flip indicates whether the curves need to be flipped
         // in the call to addLocation().
@@ -2503,7 +2503,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
             // the real curve and with that the location on the line.
             var t1 = roots[i],
                 p1 = Curve.getPoint(v1, t1),
-                t2 = Curve.getTimeOf(v2, p1);
+                t2 = Curve.getTimeOf(v2, p1, tolerance);
             if (t2 !== null) {
                 // Only use the time values if there was no recursion, and let
                 // addLocation() figure out the actual time values otherwise.
@@ -2514,14 +2514,15 @@ new function() { // Scope for bezier intersection using fat-line clipping
         }
     }
 
-    function addLineIntersection(v1, v2, c1, c2, locations, include) {
+    function addLineIntersection(v1, v2, c1, c2, locations, include,
+            tolerance) {
         var pt = Line.intersect(
                 v1[0], v1[1], v1[6], v1[7],
                 v2[0], v2[1], v2[6], v2[7]);
         if (pt) {
             addLocation(locations, include,
-                    c1, Curve.getTimeOf(v1, pt),
-                    c2, Curve.getTimeOf(v2, pt));
+                    c1, Curve.getTimeOf(v1, pt, tolerance),
+                    c2, Curve.getTimeOf(v2, pt, tolerance));
         }
     }
 
@@ -2563,22 +2564,28 @@ new function() { // Scope for bezier intersection using fat-line clipping
                 var straight1 = Curve.isStraight(v1),
                     straight2 = Curve.isStraight(v2),
                     straight = straight1 && straight2,
-                    flip = straight1 && !straight2,
-                    before = locations.length;
+                    before = locations.length,
+                    // Intersections with lines snap to their ends within the
+                    // geometric epsilon, but not further than a smaller
+                    // tolerance, as the points of one may lie no further apart:
+                    lineTolerance = tolerance
+                            < /*#=*/Numerical.GEOMETRIC_EPSILON
+                            ? tolerance : null;
                 // Determine the correct intersection method based on whether
                 // one or curves are straight lines:
-                (straight
-                    ? addLineIntersection
-                    : straight1 || straight2
-                        ? addCurveLineIntersections
-                        : addCurveIntersections)(
-                            flip ? v2 : v1, flip ? v1 : v2,
-                            flip ? c2 : c1, flip ? c1 : c2,
-                            locations, include, flip,
-                            // Define the defaults for these parameters of
-                            // addCurveIntersections():
-                            // recursion, calls, tMin, tMax, uMin, uMax
-                            0, 0, 0, 1, 0, 1, tolerance);
+                if (straight) {
+                    addLineIntersection(v1, v2, c1, c2, locations, include,
+                            lineTolerance);
+                } else if (straight1 || straight2) {
+                    addCurveLineIntersections(straight1 ? v2 : v1,
+                            straight1 ? v1 : v2, straight1 ? c2 : c1,
+                            straight1 ? c1 : c2, locations, include, straight1,
+                            lineTolerance);
+                } else {
+                    // recursion, calls, tMin, tMax, uMin, uMax:
+                    addCurveIntersections(v1, v2, c1, c2, locations, include,
+                            false, 0, 0, 0, 1, 0, 1, tolerance);
+                }
                 // Handle the special case where the start- / end-points of one
                 // curve lie on the other curve, within the tolerance if one is
                 // passed, but only if haven't found a line-line intersection
