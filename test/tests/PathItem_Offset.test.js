@@ -458,6 +458,24 @@ describe('PathItem#offset() and #outline()', () => {
       true,
       'cusp'
     )
+    // Bevel joins reach into the sides along the pens, which turn tightly
+    // where flat ones touch the sides:
+    const bevel = new Path({
+      segments: [
+        [0, 0],
+        [[12.94, 0.65], [0.02, 0.06], [-1.7, -4.47]],
+        [107.36, -102.88]
+      ],
+      strokeWidth: 70,
+      strokeJoin: 'bevel',
+      insert: false
+    })
+    bevel.strokeProfile = [{ offset: 0, width: 0.04, aspect: 0.36 }]
+    equals(
+      getDeviation(bevel, bevel.outline({ insert: false })) < 0.1,
+      true,
+      'bevel join'
+    )
   })
 })
 
