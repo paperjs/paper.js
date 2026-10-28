@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 28 14:34:01 2026 +0100
+ * Date: Wed Oct 28 14:42:39 2026 +0100
  *
  ***
  *
@@ -14157,6 +14157,8 @@ PathItem.inject(new function() {
 			}
 
 			function getSpan(offset, after) {
+				if (closed && !after && !offset)
+					offset = length;
 				for (var i = 0, l = spans.length; i < l; i++) {
 					var span = spans[i];
 					if (after ? offset < span.next.offset
