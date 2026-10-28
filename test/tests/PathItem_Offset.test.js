@@ -442,6 +442,22 @@ describe('PathItem#offset() and #outline()', () => {
         tolerance: 0.01
       })
     }
+    // Where a curve turns back sharply, the sides swing around the pen in a
+    // short stretch, between the points that the fits sample:
+    const cusp = new Path({
+      segments: [
+        [[0, 0], [0, 0], [0.45, -2.02]],
+        [[-0.97, 6.13], [0.08, -2.07], [0, 0]]
+      ],
+      strokeWidth: 60,
+      insert: false
+    })
+    cusp.strokeProfile = [{ offset: 0, width: 0.84, aspect: 0.72, angle: 130 }]
+    equals(
+      getDeviation(cusp, cusp.outline({ insert: false })) < 0.2,
+      true,
+      'cusp'
+    )
   })
 })
 
