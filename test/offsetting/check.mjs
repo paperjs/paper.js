@@ -50,9 +50,14 @@ function getOutline(path, problems) {
     problems.push(`throws ${err.message}`)
     return null
   }
-  // Dots of closed paths or with butt caps have no outline:
+  // Dots of closed paths or with butt caps have no outline, nor do profiles
+  // without width:
   if (outline.isEmpty()) {
-    if (path.length || !path.closed && path.strokeCap !== 'butt')
+    const { strokeProfile } = path
+    if (
+      (!strokeProfile || strokeProfile.some(stop => stop.width)) &&
+      (path.length || !path.closed && path.strokeCap !== 'butt')
+    )
       problems.push('empty')
     return null
   }
@@ -291,24 +296,32 @@ export function checkProfileOutline(paper, path) {
   }
   const pens = []
   // The points on the edges turn around the pens with them, and with the
-  // path, where they touch the sides:
-  const getMove = (pen1, pen2) => (
-    pen1.center.getDistance(pen2.center) +
-    Math.abs(pen1.a - pen2.a) +
-    Math.abs(pen1.b - pen2.b) +
-    Math.max(pen1.size, pen2.size) *
-    (Math.abs(pen1.angle - pen2.angle) + pen1.tangent.getAngle(pen2.tangent)) *
-    Math.PI / 180
-  )
+  // path, where they touch the sides. Offsets on curves without length have
+  // no tangent:
+  const getMove = (pen1, pen2) => {
+    const turn = pen1.tangent.getAngle(pen2.tangent) || 0
+    return (
+      pen1.center.getDistance(pen2.center) +
+      Math.abs(pen1.a - pen2.a) +
+      Math.abs(pen1.b - pen2.b) +
+      Math.max(pen1.size, pen2.size) *
+      (Math.abs(pen1.angle - pen2.angle) + turn) *
+      Math.PI / 180
+    )
+  }
   const addPens = (pen1, pen2) => {
     // The gaps grow with the moves' squares over the edges' tightest radius
-    // of curvature, at the ends of the ellipses' major axes:
+    // of curvature, at the ends of the ellipses' major axes, and are never
+    // larger than the moves. Pens can change much along short stretches, but
+    // not across the steps that the pens on both sides of the stops sample:
     const getRadius = ({ a, b }) => Math.min(a, b) ** 2 / Math.max(a, b) || 0
     const edgeRadius = Math.min(getRadius(pen1), getRadius(pen2))
     const tolerance = getPenTolerance(Math.min(pen1.size, pen2.size))
     if (
-      pen2.offset - pen1.offset > tolerance &&
-      getMove(pen1, pen2) > Math.sqrt(8 * edgeRadius * tolerance)
+      pen2.offset - pen1.offset > length * 1e-9 && (
+        getMove(pen1, pen2) >
+        Math.max(Math.sqrt(8 * edgeRadius * tolerance), tolerance)
+      )
     ) {
       const pen = getPen((pen1.offset + pen2.offset) / 2)
       addPens(pen1, pen)
@@ -332,15 +345,17 @@ export function checkProfileOutline(paper, path) {
     }
   }
   if (path.strokeJoin !== 'round') {
-    for (let i = 0, l = curves.length; i < (closed ? l : l - 1); i++) {
-      const tangent1 = curves[i].getTangentAtTime(1)
-      const tangent2 = curves[(i + 1) % l].getTangentAtTime(0)
+    // The outline joins the curves with length, as only they have directions:
+    const joined = curves.filter(curve => curve.hasLength(1e-7))
+    for (let i = 0, l = joined.length; i < (closed ? l : l - 1); i++) {
+      const tangent1 = joined[i].getTangentAtTime(1)
+      const tangent2 = joined[(i + 1) % l].getTangentAtTime(0)
       if (
         Math.abs(tangent1.cross(tangent2)) > 1e-8 ||
         tangent1.dot(tangent2) < 0
       ) {
         cuts.push({
-          point: curves[i].point2,
+          point: joined[i].point2,
           isBeyond: path.strokeJoin === 'miter'
         })
       }
