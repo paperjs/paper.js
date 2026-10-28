@@ -266,6 +266,15 @@ describe.skipIf(!HostItem)('Hosted', () => {
     equals(res.host.takeCalls(), [['getChildren', null]])
   })
 
+  test('Setting the host turns off automatic view updates', () => {
+    const host = createHost(createDocument())
+    const project = new Project()
+    // On Node.js, views don't update automatically to begin with:
+    project.view.autoUpdate = true
+    project.host = host
+    equals(project.view.autoUpdate, false)
+  })
+
   test('Containers load their children on first access', () => {
     const res = createHostedProject()
     res.host.takeCalls()
