@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 28 14:52:20 2026 +0100
+ * Date: Wed Oct 28 14:34:01 2026 +0100
  *
  ***
  *
@@ -14361,6 +14361,18 @@ PathItem.inject(new function() {
 					];
 				}
 
+				function isMoving(side) {
+					var point = side[0]._point;
+					return side.some(function(segment) {
+						var other = segment._point;
+						return other.getDistance(point) > tolerance
+							|| other.add(segment._handleIn).getDistance(point)
+								> tolerance
+							|| other.add(segment._handleOut).getDistance(point)
+								> tolerance;
+					});
+				}
+
 				function isSame(strips, before) {
 					if (strips.length !== before.length)
 						return false;
@@ -14461,7 +14473,8 @@ PathItem.inject(new function() {
 							to = fitSide(function(t) {
 								return getEnd(t, j, 'to');
 							}, t0, t1);
-						if (motions[0] * motions[1] < 0) {
+						if (motions[0] * motions[1] < 0
+								&& (isMoving(from) || isMoving(to))) {
 							var still = fitSide(function(t) {
 								var strip = getStrips(t)[j];
 								if (!strip)
