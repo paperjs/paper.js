@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 28 14:42:39 2026 +0100
+ * Date: Wed Oct 28 14:58:39 2026 +0100
  *
  ***
  *
@@ -9171,14 +9171,14 @@ new function() {
 	}
 
 	function addCurveLineIntersections(v1, v2, c1, c2, locations, include,
-			flip) {
+			flip, tolerance) {
 		var x1 = v2[0], y1 = v2[1],
 			x2 = v2[6], y2 = v2[7],
 			roots = getCurveLineIntersections(v1, x1, y1, x2 - x1, y2 - y1);
 		for (var i = 0, l = roots.length; i < l; i++) {
 			var t1 = roots[i],
 				p1 = Curve.getPoint(v1, t1),
-				t2 = Curve.getTimeOf(v2, p1);
+				t2 = Curve.getTimeOf(v2, p1, tolerance);
 			if (t2 !== null) {
 				addLocation(locations, include,
 						flip ? c2 : c1, flip ? t2 : t1,
@@ -9187,14 +9187,15 @@ new function() {
 		}
 	}
 
-	function addLineIntersection(v1, v2, c1, c2, locations, include) {
+	function addLineIntersection(v1, v2, c1, c2, locations, include,
+			tolerance) {
 		var pt = Line.intersect(
 				v1[0], v1[1], v1[6], v1[7],
 				v2[0], v2[1], v2[6], v2[7]);
 		if (pt) {
 			addLocation(locations, include,
-					c1, Curve.getTimeOf(v1, pt),
-					c2, Curve.getTimeOf(v2, pt));
+					c1, Curve.getTimeOf(v1, pt, tolerance),
+					c2, Curve.getTimeOf(v2, pt, tolerance));
 		}
 	}
 
@@ -9231,17 +9232,22 @@ new function() {
 				var straight1 = Curve.isStraight(v1),
 					straight2 = Curve.isStraight(v2),
 					straight = straight1 && straight2,
-					flip = straight1 && !straight2,
-					before = locations.length;
-				(straight
-					? addLineIntersection
-					: straight1 || straight2
-						? addCurveLineIntersections
-						: addCurveIntersections)(
-							flip ? v2 : v1, flip ? v1 : v2,
-							flip ? c2 : c1, flip ? c1 : c2,
-							locations, include, flip,
-							0, 0, 0, 1, 0, 1, tolerance);
+					before = locations.length,
+					lineTolerance = tolerance
+							< 1e-7
+							? tolerance : null;
+				if (straight) {
+					addLineIntersection(v1, v2, c1, c2, locations, include,
+							lineTolerance);
+				} else if (straight1 || straight2) {
+					addCurveLineIntersections(straight1 ? v2 : v1,
+							straight1 ? v1 : v2, straight1 ? c2 : c1,
+							straight1 ? c1 : c2, locations, include, straight1,
+							lineTolerance);
+				} else {
+					addCurveIntersections(v1, v2, c1, c2, locations, include,
+							false, 0, 0, 0, 1, 0, 1, tolerance);
+				}
 				if (!straight || locations.length === before) {
 					var endEpsilon = tolerance || epsilon;
 					for (var i = 0; i < 4; i++) {
