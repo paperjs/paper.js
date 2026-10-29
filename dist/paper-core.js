@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 28 14:58:39 2026 +0100
+ * Date: Wed Oct 28 18:46:11 2026 +0100
  *
  ***
  *
@@ -14525,7 +14525,9 @@ PathItem.inject(new function() {
 						tangent3 = p3.subtract(evaluate(t1 - delta)),
 						points = [],
 						times = [],
-						total = 0;
+						total = 0,
+						gap = 0,
+						index;
 					tangent0 = (tangent0.isZero() ? chord : tangent0)
 							.normalize();
 					tangent3 = (tangent3.isZero() ? chord : tangent3)
@@ -14535,7 +14537,12 @@ PathItem.inject(new function() {
 								? evaluate(t0 + (t1 - t0) * (i + 1)
 									/ (count + 1))
 								: p3;
-						total += point.getDistance(prev);
+						var distance = point.getDistance(prev);
+						total += distance;
+						if (distance > gap) {
+							gap = distance;
+							index = i;
+						}
 						if (i < count) {
 							points.push(point);
 							times.push(total);
@@ -14589,6 +14596,15 @@ PathItem.inject(new function() {
 						error = Math.max(error, point.getDistance(
 								Curve.getPoint(c,
 									Curve.getNearestTime(c, point))));
+					}
+					if (gap > Math.max(total / 2, tolerance)) {
+						var from = index ? points[index - 1] : p0,
+							to = index < count ? points[index] : p3,
+							point = Curve.getPoint(c, ((index
+									? times[index - 1] : 0)
+									+ (index < count ? times[index] : 1)) / 2);
+						error = Math.max(error, Line.getDistance(
+								from.x, from.y, to.x, to.y, point.x, point.y));
 					}
 					if (error > tolerance && depth < 12) {
 						var t = (t0 + t1) / 2,
