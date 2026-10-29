@@ -94,6 +94,17 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
 new function() { // Injection scope for various item event handlers
     var handlers = ['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
             'onDoubleClick', 'onMouseMove', 'onMouseEnter', 'onMouseLeave'];
+
+    // Count the classes and the inserted items with draw handlers, for hosts
+    // that draw the items themselves, see Project#hasDrawHandlers():
+    function countDrawHandlers(obj, sign) {
+        if (obj === obj.constructor.prototype) {
+            Item._drawCount += sign;
+        } else if (obj.isInserted()) {
+            obj._project._drawCount += sign;
+        }
+    }
+
     return Base.each(handlers,
         function(name) {
             // Only count the events of inserted items, so removing an item
@@ -122,7 +133,17 @@ new function() { // Injection scope for various item event handlers
                 },
 
                 // Also for all items of a class, see Item.onDraw:
-                onDraw: { classLevel: true },
+                onDraw: {
+                    classLevel: true,
+
+                    install: function() {
+                        countDrawHandlers(this, 1);
+                    },
+
+                    uninstall: function() {
+                        countDrawHandlers(this, -1);
+                    }
+                },
                 onDrawSelection: { classLevel: true },
 
                 // Only for external sources, e.g. Raster
@@ -130,7 +151,8 @@ new function() { // Injection scope for various item event handlers
                 onError: {}
             },
             statics: {
-                _itemHandlers: handlers
+                _itemHandlers: handlers,
+                _drawCount: 0
             }
         }
     );
@@ -5245,7 +5267,10 @@ new function() { // Injection scope for hit-test functions shared with project
         return updated;
     },
 
-    _drawSelection: function(ctx, matrix, size, selectionItems, updateVersion) {
+    // Hosts that draw the selection themselves only want the handlers, see
+    // Project#hasDrawHandlers():
+    _drawSelection: function(ctx, matrix, size, selectionItems, updateVersion,
+            handlersOnly) {
         var selection = this._selection,
             itemSelected = selection & /*#=*/ItemSelection.ITEM,
             boundsSelected = selection & /*#=*/ItemSelection.BOUNDS
@@ -5282,6 +5307,8 @@ new function() { // Injection scope for hit-test functions shared with project
                 if (event.prevented)
                     return;
             }
+            if (handlersOnly)
+                return;
             if (itemSelected)
                 this._drawSelected(ctx, mx, selectionItems);
             if (positionSelected) {

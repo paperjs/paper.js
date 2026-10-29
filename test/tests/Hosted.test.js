@@ -407,6 +407,144 @@ describe.skipIf(!HostItem)('Hosted', () => {
     equals(res.host.takeCalls(), [])
   })
 
+  describe('Drawing', () => {
+    // The host draws into a canvas of its own:
+    function createContext() {
+      return new Raster({ size: [400, 400], insert: false }).getContext(true)
+    }
+
+    function getPixel(ctx, x, y) {
+      const data = ctx.getImageData(x, y, 1, 1).data
+      return new Color(...[...data].map(value => value / 255))
+    }
+
+    const blue = new Color(0, 0, 1, 1)
+    const empty = new Color(0, 0, 0, 0)
+
+    test('draw() only calls the handlers, with the documented fields', () => {
+      const res = createHostedProject()
+      const circle = res.project.layers[0].children.circle
+      const events = []
+      circle.onDraw = function (event) {
+        events.push(event)
+        event.context.fillStyle = 'blue'
+        event.context.fillRect(0, 0, 10, 10)
+      }
+      const ctx = createContext()
+      const matrix = new Matrix().translate(5, 0).scale(2)
+      res.project.draw(ctx, matrix, 2)
+      equals(events.length, 1, 'calls')
+      const event = events[0]
+      equals(event.item === circle, true, 'event.item')
+      equals(event.context === ctx, true, 'event.context')
+      equals(event.matrix, matrix, 'event.matrix')
+      equals(event.pixelRatio, 2, 'event.pixelRatio')
+      equals(event.view === res.project.view, true, 'event.view')
+      equals(getPixel(ctx, 15, 10), blue, 'drawn by the handler')
+      equals(getPixel(ctx, 105, 100), empty, `the host's items aren't`)
+    })
+
+    test(`draw() loads nothing for the handlers of items`, () => {
+      const res = createHostedProject()
+      const layer = res.project.layers[0]
+      const events = []
+      layer.children.circle.onDraw = event => events.push(event)
+      res.host.takeCalls()
+      res.project.draw(createContext(), new Matrix(), 1)
+      equals(events.length, 1)
+      equals(res.host.takeCalls(), [])
+      equals(layer.children.group.hasOwnProperty('_children'), false)
+    })
+
+    test('draw() loads all items once for the handlers of classes', () => {
+      const res = createHostedProject()
+      const items = []
+      Path.onDraw = function () {
+        items.push(this)
+      }
+      try {
+        res.host.takeCalls()
+        res.project.draw(createContext(), new Matrix(), 1)
+        // The children of compound paths only add to their parent's path:
+        equals(items.length, 2, 'the paths')
+        const layer = res.project.layers[0]
+        equals(res.host.takeCalls(), [
+          ['getChildren', layer.key],
+          ['getChildren', layer.children.group.key],
+          ['getChildren', res.project.layers[1].key]
+        ])
+        res.project.draw(createContext(), new Matrix(), 1)
+        equals(res.host.takeCalls(), [], 'once')
+      } finally {
+        Path.onDraw = null
+      }
+    })
+
+    test('draw() calls the selection handlers without the default selection', () => {
+      const res = createHostedProject()
+      const item = res.project.getItemByKey(
+        res.host.document.getItem({ class: CompoundPath }).id
+      )
+      const events = []
+      item.onDrawSelection = event => events.push(event)
+      const ctx = createContext()
+      const matrix = new Matrix().translate(5, 0)
+      res.project.draw(ctx, matrix, 1)
+      equals(events.length, 1, 'calls')
+      equals(events[0].item === item, true, 'event.item')
+      equals(events[0].matrix, matrix, 'event.matrix')
+      // The bounds' corner, where the default selection draws a handle:
+      equals(getPixel(ctx, 305, 300), empty, 'no default selection')
+    })
+
+    test('draw() skips invisible items', () => {
+      const res = createHostedProject()
+      const circle = res.project.layers[0].children.circle
+      const events = []
+      circle.onDraw = event => events.push(event)
+      circle.visible = false
+      res.project.draw(createContext(), new Matrix(), 1)
+      equals(events.length, 0)
+    })
+
+    test('hasDrawHandlers() tells whether drawing calls any', () => {
+      const res = createHostedProject()
+      const project = res.project
+      const circle = project.layers[0].children.circle
+      equals(project.hasDrawHandlers(), false, 'none')
+      const handler = () => {}
+      circle.onDraw = handler
+      equals(project.hasDrawHandlers(), true, 'of an item')
+      circle.remove()
+      equals(project.hasDrawHandlers(), false, 'of a removed item')
+      project.layers[0].addChild(circle)
+      equals(project.hasDrawHandlers(), true, 'of an inserted item')
+      circle.onDraw = null
+      equals(project.hasDrawHandlers(), false, 'removed')
+      const item = project.getItemByKey(
+        res.host.document.getItem({ class: CompoundPath }).id
+      )
+      item.onDrawSelection = handler
+      equals(project.hasDrawHandlers(), true, 'of a selected item')
+      item.selected = false
+      equals(project.hasDrawHandlers(), false, 'of an unselected item')
+    })
+
+    test('hasDrawHandlers() is true for the handlers of classes', () => {
+      const res = createHostedProject()
+      const project = res.project
+      Path.onDraw = () => {}
+      try {
+        equals(project.hasDrawHandlers(), true, 'with them')
+        // Items that are inserted meanwhile don't count them as their own:
+        project.layers[0].addChild(new Path.Circle([0, 0], 10))
+      } finally {
+        Path.onDraw = null
+      }
+      equals(project.hasDrawHandlers(), false, 'without them')
+    })
+  })
+
   test('Paths load their stroke profiles', () => {
     const res = createHostedProject()
     res.host.document.getItem({ name: 'circle' }).strokeProfile = [
