@@ -1044,6 +1044,15 @@ new function() {
          * the items that stay. Host items can't enter the project of another
          * host.
          *
+         * The host draws the items, and the selection. To show what scripts
+         * draw in {@link Item#onDraw} and {@link Item#onDrawSelection}, it
+         * calls `project.draw(ctx, matrix, pixelRatio)`, which in a hosted
+         * project only calls these handlers, with the context, the view's
+         * matrix and pixel ratio that the host gives, for the visible items
+         * that have them, and for the selected ones. Handlers of classes,
+         * such as `Path.onDraw`, load all items once. The host asks
+         * {@link #hasDrawHandlers()} whether it needs to call it.
+         *
          * {@link Project#takeChanges()} marks the changes of the items whose
          * children changed in order other than by new items inserted and
          * items removed, which the other changes don't tell, with
@@ -1092,6 +1101,80 @@ new function() {
                 item = itemsByKey[key];
             }
             return item && item.isInserted() ? item : null;
+        },
+
+        /**
+         * Checks whether any item of the project or class has draw handlers,
+         * {@link Item#onDraw} or, for the selected items,
+         * {@link Item#onDrawSelection}, for hosts that draw the items
+         * themselves, see {@link #host}.
+         *
+         * @return {Boolean} {@true if drawing the project calls any handlers}
+         */
+        hasDrawHandlers: function() {
+            if (this._drawCount || Item._drawCount)
+                return true;
+            var items = this._selectionItems;
+            for (var id in items) {
+                if (items[id].responds('drawselection'))
+                    return true;
+            }
+            return false;
+        },
+
+        // The host draws the items, so drawing only calls the draw handlers,
+        // see #host. Without handlers of classes, only the items that are
+        // loaded can have any, so we don't load the others:
+        draw: function draw(ctx, matrix, pixelRatio, _view) {
+            if (!this._host)
+                return draw.base.call(this, ctx, matrix, pixelRatio, _view);
+            var updateVersion = ++this._updateVersion,
+                view = this._view,
+                loadAll = Item._drawCount > 0;
+
+            function drawItems(items, parentMatrix) {
+                for (var i = 0, l = items.length; i < l; i++) {
+                    var item = items[i];
+                    if (item._visible) {
+                        // Mark the item as drawn, for its selection:
+                        item._updateVersion = updateVersion;
+                        var globalMatrix = parentMatrix.appended(item._matrix);
+                        // Clip items only clip, see Item#draw():
+                        if (!item._clipMask && item.responds('draw')) {
+                            var viewMatrix = matrix.appended(globalMatrix);
+                            ctx.save();
+                            viewMatrix.applyToContext(ctx);
+                            item.emit('draw', new DrawEvent({
+                                item: item,
+                                context: ctx,
+                                matrix: viewMatrix,
+                                pixelRatio: pixelRatio,
+                                view: view
+                            }));
+                            ctx.restore();
+                        }
+                        if ((item instanceof Group || item._hasChildren)
+                                && (loadAll || item.hasOwnProperty('_children')))
+                            drawItems(item._children, globalMatrix);
+                    }
+                }
+            }
+
+            drawItems(this._children, new Matrix());
+            if (this._selectionCount > 0) {
+                var items = this._selectionItems,
+                    size = this._scope.settings.handleSize;
+                ctx.save();
+                ctx.lineWidth = 1;
+                for (var id in items) {
+                    var item = items[id];
+                    // Others would load their content just to draw nothing:
+                    if (item.responds('drawselection'))
+                        item._drawSelection(ctx, matrix, size, items,
+                                updateVersion, true);
+                }
+                ctx.restore();
+            }
         },
 
         /**

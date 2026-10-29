@@ -146,8 +146,9 @@ var Emitter = {
     fire: '#emit',
 
     _installEvents: function(install) {
+        // Only the object's own handlers, not the ones of its prototypes:
         var types = this._eventTypes,
-            handlers = this._callbacks,
+            handlers = this.hasOwnProperty('_callbacks') && this._callbacks,
             key = install ? 'install' : 'uninstall';
         if (types) {
             for (var type in handlers) {

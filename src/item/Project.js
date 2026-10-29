@@ -70,6 +70,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
                 element || CanvasProvider.getCanvas(1, 1));
         this._selectionItems = {};
         this._selectionCount = 0;
+        // See Project#hasDrawHandlers():
+        this._drawCount = 0;
         // See Item#draw() for an explanation of _updateVersion
         this._updateVersion = 0;
         // Counts the changes that make all buffers stale, as no item reports
