@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 28 18:46:54 2026 +0100
+ * Date: Wed Oct 28 18:46:35 2026 +0100
  *
  ***
  *
@@ -14642,14 +14642,30 @@ PathItem.inject(new function() {
 							sides1 = getSides(part1, 1, span1),
 							sides2 = getSides(part2, 0, span);
 						if (sides1 && sides2) {
-							var side1 = sides1[k].point,
+							var widening = Math.sqrt(tolerance / radius),
+								widen = function(side, pen, direction) {
+									var axes = getAxes(pen),
+										c = Math.cos(side.phi),
+										s = Math.sin(side.phi),
+										along = axes[0].multiply(-pen.a * s)
+											.add(axes[1].multiply(pen.b * c))
+											.dot(side.derivative),
+										phi = side.phi + widening
+											* (along > 0 ? direction
+												: -direction);
+									return side.point
+										.add(axes[0].multiply(
+											pen.a * (Math.cos(phi) - c)))
+										.add(axes[1].multiply(
+											pen.b * (Math.sin(phi) - s)));
+								},
+								side1 = sides1[k].point,
 								side2 = sides2[k].point,
 								direction1 = sides1[k].derivative.normalize(),
 								direction2 = sides2[k].derivative.normalize(),
-								widening = Math.sqrt(tolerance * pen.a),
 								points = [sides1[1 - k].point,
-									side1.subtract(direction1.multiply(
-										widening)),
+									widen(sides1[k], getSpanPen(span1,
+										part1.offset + part1.length), -1),
 									side1];
 							if (join === 'miter') {
 								var miter = Line.intersect(
@@ -14662,8 +14678,8 @@ PathItem.inject(new function() {
 										<= miterLimit * pen.a)
 									points.push(miter);
 							}
-							addPolygon(points.concat(side2, side2.add(
-									direction2.multiply(widening)),
+							addPolygon(points.concat(side2,
+									widen(sides2[k], pen, 1),
 									sides2[1 - k].point));
 						}
 					}
