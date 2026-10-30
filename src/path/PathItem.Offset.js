@@ -55,9 +55,29 @@ PathItem.inject(new function() {
             part.setClosed(true);
             part = part.unite();
             // Parts that fold onto themselves can leave nothing:
-            if (isStrip ? 2 * abs(part.getArea())
-                    > tolerance * part.getLength() : !part.isEmpty())
+            if (isStrip ? !isThin(part) : !part.isEmpty())
                 areas.push(part);
+        }
+
+        // Checks that the part is thin on average, and also where it may taper,
+        // looking half the tolerance inside the middle of each curve, on the
+        // side that unite() leaves inside. Points that lie that far from the
+        // outline, within rounding, are thick:
+        function isThin(part) {
+            var half = tolerance / 2;
+            if (abs(part.getArea()) > half * part.getLength())
+                return false;
+            var curves = part.getCurves();
+            for (var i = 0, l = curves.length; i < l; i++) {
+                var curve = curves[i],
+                    inside = curve.getPointAtTime(0.5).subtract(
+                        curve.getNormalAtTime(0.5).multiply(half));
+                if (part.contains(inside)
+                        && part.getNearestPoint(inside).getDistance(inside)
+                            > half * 0.99)
+                    return false;
+            }
+            return true;
         }
 
         // Adds the area of the part of the curve with the values v. Where it

@@ -25,6 +25,7 @@ import known from '../offsetting/known.json'
 import {
   caps,
   checkOutline,
+  checkProfileOutline,
   createPath,
   joins
 } from '../offsetting/check.mjs'
@@ -476,6 +477,25 @@ describe('PathItem#offset() and #outline()', () => {
       true,
       'bevel join'
     )
+    // Strips that are thinner than the tolerance on average can still be
+    // thick where they taper, so they aren't slivers to leave out:
+    const tapering = new Path({
+      segments: [
+        [[351.67, 390.1], [0, 0], [556.07, -225.37]],
+        [[8.56, 202.88], [0, 0], [0, 0]]
+      ],
+      strokeWidth: 113.8,
+      strokeJoin: 'miter',
+      strokeCap: 'butt',
+      insert: false
+    })
+    tapering.strokeProfile = [
+      { offset: 397.31, width: 0.53 },
+      { offset: 309.57, width: 0.03, aspect: 0.21, angle: 218.24 },
+      { offset: 349.3, width: 1.6, angle: 30.44 },
+      { offset: 768.91, width: 0.16, angle: -82.67 }
+    ]
+    equals(checkProfileOutline(paper, tapering), [], 'tapering strips')
   })
 })
 
