@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 30 08:04:25 2026 +0100
+ * Date: Fri Oct 30 21:38:29 2026 +0100
  *
  ***
  *
@@ -27062,9 +27062,8 @@ Base.exports.PaperScript = function() {
 				|| agent.webkit && version >= 537.76
 				|| agent.firefox && version >= 23
 				|| agent.node)) {
-			if (agent.node) {
-				offset -= 2;
-			} else if (window && url && !window.location.href.indexOf(url)) {
+			if (!agent.node && window && url
+					&& !window.location.href.indexOf(url)) {
 				var html = document.getElementsByTagName('html')[0].innerHTML,
 					index = html.indexOf(code);
 				if (index >= 0) {
@@ -27222,7 +27221,9 @@ Base.exports.PaperScript = function() {
 			delete document.__paperscript__;
 			head.removeChild(script);
 		} else {
-			func = Function('return ' + signature + code + '\n}')();
+			func = (0, eval)(
+				'(' + signature + code + '\n})'
+			);
 		}
 
 		function install(exports) {
