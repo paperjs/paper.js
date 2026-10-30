@@ -33,6 +33,8 @@
   new text has defaults of its own, such as a black fill without a stroke.
 - Add `Point#values`, `Size#values` and `Rectangle#values`, which give their
   numbers as an array, as `Matrix#values` does.
+- Add `options.evaluate` to `PaperScript.execute()`, for hosts whose engine
+  doesn't name code from `Function()` in stack traces, such as JavaScriptCore.
 
 ### Changed
 
@@ -62,6 +64,8 @@
 - Hit-test the strokes of shapes as those of their paths, which `Shape` only
   approximated for ellipses and rounded corners, and for non-scaling strokes
   under non-uniform matrices (#2334).
+- Name PaperScript's url in stack traces also without source maps, and in the
+  location of its syntax errors.
 
 ## `0.15.0`
 

@@ -866,6 +866,47 @@ describe('PaperScript', () => {
     equals(() => /Unexpected token/.test(message), true, message)
   })
 
+  test('PaperScript syntax errors name the url', () => {
+    let message
+    try {
+      PaperScript.compile('var a = 1;\nvar b = ;', { url: 'test.js' })
+    } catch (e) {
+      message = e.message
+    }
+    equals(message, 'Unexpected token (at test.js:2:9)')
+  })
+
+  test('PaperScript names the url in stack traces', () => {
+    const stack = PaperScript.execute(
+      'module.exports = new Error().stack',
+      paper,
+      { url: 'file:///scripts/test.js' }
+    )
+    equals(() => stack.indexOf('file:///scripts/test.js:') !== -1, true, stack)
+  })
+
+  test('PaperScript.execute() with an evaluator', () => {
+    let evaluated
+    const stack = PaperScript.execute(
+      'module.exports = new Error().stack',
+      paper,
+      {
+        url: 'file:///scripts/test.js',
+        evaluate(source, url) {
+          evaluated = url
+          return (0, eval)(source)
+        }
+      }
+    )
+    equals(evaluated, 'file:///scripts/test.js')
+    // The code keeps its line numbers:
+    equals(
+      () => stack.indexOf('file:///scripts/test.js:1:') !== -1,
+      true,
+      stack
+    )
+  })
+
   test('PaperScript dynamic imports', assert => {
     const done = assert.async()
     withAcornLatest(() => {
