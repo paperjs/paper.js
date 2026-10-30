@@ -885,6 +885,39 @@ describe('PaperScript', () => {
     equals(() => stack.indexOf('file:///scripts/test.js:') !== -1, true, stack)
   })
 
+  test('PaperScript stack traces have the lines of the code', () => {
+    const stack = PaperScript.execute(
+      '// One\n// Two\nmodule.exports = new Error().stack',
+      paper,
+      { url: 'file:///scripts/lines.js' }
+    )
+    equals(() => /lines\.js:3:\d+/.test(stack), true, stack)
+  })
+
+  test('PaperScript stack traces have the lines of code that awaits', assert => {
+    const done = assert.async()
+    withAcornLatest(() => {
+      PaperScript.execute(
+        'await null;\n// Two\nthrow new Error("failed");',
+        paper,
+        { url: 'file:///scripts/awaits.js' }
+      ).then(
+        () => {
+          ok(false, 'the code should reject')
+          done()
+        },
+        error => {
+          equals(
+            () => /awaits\.js:3:\d+/.test(error.stack),
+            true,
+            error.stack
+          )
+          done()
+        }
+      )
+    })
+  })
+
   test('PaperScript.execute() with an evaluator', () => {
     let evaluated
     const stack = PaperScript.execute(
