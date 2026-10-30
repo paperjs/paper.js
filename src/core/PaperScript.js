@@ -586,11 +586,24 @@ Base.exports.PaperScript = function() {
             paperFeatures.moduleExports !== false
         ) {
             // Now do the parsing magic
-            walkAST(parse(code, {
-                ranges: true,
-                preserveParens: true,
-                sourceType: 'module'
-            }), null, paperFeatures);
+            var ast;
+            try {
+                ast = parse(code, {
+                    ranges: true,
+                    preserveParens: true,
+                    sourceType: 'module'
+                });
+            } catch (e) {
+                // Name the code's file in the location of syntax errors, with
+                // columns from 1, as browsers do:
+                if (url && e.loc) {
+                    e.message = e.message.replace(/ \(\d+:\d+\)$/, '')
+                            + ' (at ' + url + ':' + e.loc.line + ':'
+                            + (e.loc.column + 1) + ')';
+                }
+                throw e;
+            }
+            walkAST(ast, null, paperFeatures);
             // Mark ES modules like Babel and TypeScript do, so importers can
             // tell their default export from CommonJS-style exports. Added on
             // a new line at the end, so the lines before keep their numbers:
@@ -613,6 +626,9 @@ Base.exports.PaperScript = function() {
                         + self.btoa(unescape(encodeURIComponent(
                             JSON.stringify(map))));
             }
+        }
+        // Name the code in stack traces and devtools:
+        if (map || url) {
             code += "\n//# sourceURL=" + (url || 'paperscript');
         }
         return {
@@ -641,6 +657,11 @@ Base.exports.PaperScript = function() {
      * @option options.handlers {String[]} the names of further global
      *     handlers to export next to `onFrame`, `onResize` and the tool's
      *     handlers, for hosts that call them themselves
+     * @option options.evaluate {Function} the evaluator for hosts whose
+     *     engine doesn't name code from `Function()` in stack traces, such as
+     *     JavaScriptCore: called with the source of a function expression and
+     *     `options.url`, and returning the function, e.g. by evaluating the
+     *     source as a script of that url
      * @option options.load {Function} the loader for static `import`
      *     statements, called with the specifier as written, the `options.url`
      *     of the importing script, and the import attributes as an object,
@@ -771,8 +792,13 @@ Base.exports.PaperScript = function() {
         // Top-level `await` requires an async function:
         var signature = (compiled.async ? 'async ' : '') + 'function('
                 + params + ') {',
-            agent = paper.agent;
-        if (document && (agent.chrome
+            agent = paper.agent,
+            evaluate = options && options.evaluate;
+        if (evaluate) {
+            // The code stays on the line of the signature, so that its lines
+            // keep their numbers:
+            func = evaluate('(' + signature + code + '\n})', compiled.url);
+        } else if (document && (agent.chrome
                 || agent.firefox && agent.versionNumber < 40)) {
             // On older Firefox, all error numbers inside dynamically compiled
             // code are relative to the line where the eval / compilation
