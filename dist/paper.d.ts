@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 30 00:40:15 2026 +0100
+ * Date: Fri Oct 30 08:04:25 2026 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -4483,6 +4483,11 @@ declare namespace paper {
          * @option options.handlers {String[]} the names of further global
          *     handlers to export next to `onFrame`, `onResize` and the tool's
          *     handlers, for hosts that call them themselves
+         * @option options.evaluate {Function} the evaluator for hosts whose
+         *     engine doesn't name code from `Function()` in stack traces, such as
+         *     JavaScriptCore: called with the source of a function expression and
+         *     `options.url`, and returning the function, e.g. by evaluating the
+         *     source as a script of that url
          * @option options.load {Function} the loader for static `import`
          *     statements, called with the specifier as written, the `options.url`
          *     of the importing script, and the import attributes as an object,
@@ -4510,7 +4515,7 @@ declare namespace paper {
          * @return the exports defined in the executed code, or
          *     with top-level `await`, a Promise of them
          */
-        static execute(code: string, scope: PaperScope, options?: { url?: string, source?: string, handlers?: string[], load?: Function }): object | Promise<any>
+        static execute(code: string, scope: PaperScope, options?: { url?: string, source?: string, handlers?: string[], evaluate?: Function, load?: Function }): object | Promise<any>
 
         /** 
          * Loads, compiles and executes PaperScript code in the HTML document. Note

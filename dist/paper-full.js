@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 30 00:40:15 2026 +0100
+ * Date: Fri Oct 30 08:04:25 2026 +0100
  *
  ***
  *
@@ -27094,11 +27094,22 @@ Base.exports.PaperScript = function() {
 			paperFeatures.operatorOverloading !== false ||
 			paperFeatures.moduleExports !== false
 		) {
-			walkAST(parse(code, {
-				ranges: true,
-				preserveParens: true,
-				sourceType: 'module'
-			}), null, paperFeatures);
+			var ast;
+			try {
+				ast = parse(code, {
+					ranges: true,
+					preserveParens: true,
+					sourceType: 'module'
+				});
+			} catch (e) {
+				if (url && e.loc) {
+					e.message = e.message.replace(/ \(\d+:\d+\)$/, '')
+							+ ' (at ' + url + ':' + e.loc.line + ':'
+							+ (e.loc.column + 1) + ')';
+				}
+				throw e;
+			}
+			walkAST(ast, null, paperFeatures);
 			if (isModule) {
 				code += '\nObject.defineProperty(module.exports, '
 						+ '"__esModule", { value: true });';
@@ -27114,6 +27125,8 @@ Base.exports.PaperScript = function() {
 						+ self.btoa(unescape(encodeURIComponent(
 							JSON.stringify(map))));
 			}
+		}
+		if (map || url) {
 			code += "\n//# sourceURL=" + (url || 'paperscript');
 		}
 		return {
@@ -27191,8 +27204,11 @@ Base.exports.PaperScript = function() {
 		code += '\nreturn module.exports;';
 		var signature = (compiled.async ? 'async ' : '') + 'function('
 				+ params + ') {',
-			agent = paper.agent;
-		if (document && (agent.chrome
+			agent = paper.agent,
+			evaluate = options && options.evaluate;
+		if (evaluate) {
+			func = evaluate('(' + signature + code + '\n})', compiled.url);
+		} else if (document && (agent.chrome
 				|| agent.firefox && agent.versionNumber < 40)) {
 			var script = document.createElement('script'),
 				head = document.head || document.getElementsByTagName('head')[0];
