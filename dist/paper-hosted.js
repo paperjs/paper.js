@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 28 18:46:35 2026 +0100
+ * Date: Fri Oct 30 00:40:15 2026 +0100
  *
  ***
  *
@@ -780,7 +780,7 @@ var Emitter = {
 
 	_installEvents: function(install) {
 		var types = this._eventTypes,
-			handlers = this._callbacks,
+			handlers = this.hasOwnProperty('_callbacks') && this._callbacks,
 			key = install ? 'install' : 'uninstall';
 		if (types) {
 			for (var type in handlers) {
@@ -3217,6 +3217,7 @@ var Project = PaperScopeItem.extend({
 				element || CanvasProvider.getCanvas(1, 1));
 		this._selectionItems = {};
 		this._selectionCount = 0;
+		this._drawCount = 0;
 		this._updateVersion = 0;
 		this._bufferVersion = 0;
 	},
@@ -3563,6 +3564,15 @@ var Item = Base.extend(Emitter, {
 new function() {
 	var handlers = ['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
 			'onDoubleClick', 'onMouseMove', 'onMouseEnter', 'onMouseLeave'];
+
+	function countDrawHandlers(obj, sign) {
+		if (obj === obj.constructor.prototype) {
+			Item._drawCount += sign;
+		} else if (obj.isInserted()) {
+			obj._project._drawCount += sign;
+		}
+	}
+
 	return Base.each(handlers,
 		function(name) {
 			this._events[name] = {
@@ -3588,14 +3598,25 @@ new function() {
 					}
 				},
 
-				onDraw: { classLevel: true },
+				onDraw: {
+					classLevel: true,
+
+					install: function() {
+						countDrawHandlers(this, 1);
+					},
+
+					uninstall: function() {
+						countDrawHandlers(this, -1);
+					}
+				},
 				onDrawSelection: { classLevel: true },
 
 				onLoad: {},
 				onError: {}
 			},
 			statics: {
-				_itemHandlers: handlers
+				_itemHandlers: handlers,
+				_drawCount: 0
 			}
 		}
 	);
@@ -5516,7 +5537,8 @@ new function() {
 		return updated;
 	},
 
-	_drawSelection: function(ctx, matrix, size, selectionItems, updateVersion) {
+	_drawSelection: function(ctx, matrix, size, selectionItems, updateVersion,
+			handlersOnly) {
 		var selection = this._selection,
 			itemSelected = selection & 1,
 			boundsSelected = selection & 2
@@ -5549,6 +5571,8 @@ new function() {
 				if (event.prevented)
 					return;
 			}
+			if (handlersOnly)
+				return;
 			if (itemSelected)
 				this._drawSelected(ctx, mx, selectionItems);
 			if (positionSelected) {
@@ -24541,6 +24565,66 @@ new function() {
 				item = itemsByKey[key];
 			}
 			return item && item.isInserted() ? item : null;
+		},
+
+		hasDrawHandlers: function() {
+			if (this._drawCount || Item._drawCount)
+				return true;
+			var items = this._selectionItems;
+			for (var id in items) {
+				if (items[id].responds('drawselection'))
+					return true;
+			}
+			return false;
+		},
+
+		draw: function draw(ctx, matrix, pixelRatio, _view) {
+			if (!this._host)
+				return draw.base.call(this, ctx, matrix, pixelRatio, _view);
+			var updateVersion = ++this._updateVersion,
+				view = this._view,
+				loadAll = Item._drawCount > 0;
+
+			function drawItems(items, parentMatrix) {
+				for (var i = 0, l = items.length; i < l; i++) {
+					var item = items[i];
+					if (item._visible) {
+						item._updateVersion = updateVersion;
+						var globalMatrix = parentMatrix.appended(item._matrix);
+						if (!item._clipMask && item.responds('draw')) {
+							var viewMatrix = matrix.appended(globalMatrix);
+							ctx.save();
+							viewMatrix.applyToContext(ctx);
+							item.emit('draw', new DrawEvent({
+								item: item,
+								context: ctx,
+								matrix: viewMatrix,
+								pixelRatio: pixelRatio,
+								view: view
+							}));
+							ctx.restore();
+						}
+						if ((item instanceof Group || item._hasChildren)
+								&& (loadAll || item.hasOwnProperty('_children')))
+							drawItems(item._children, globalMatrix);
+					}
+				}
+			}
+
+			drawItems(this._children, new Matrix());
+			if (this._selectionCount > 0) {
+				var items = this._selectionItems,
+					size = this._scope.settings.handleSize;
+				ctx.save();
+				ctx.lineWidth = 1;
+				for (var id in items) {
+					var item = items[id];
+					if (item.responds('drawselection'))
+						item._drawSelection(ctx, matrix, size, items,
+								updateVersion, true);
+				}
+				ctx.restore();
+			}
 		},
 
 		invalidate: function(columns) {

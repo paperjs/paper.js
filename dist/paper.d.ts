@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 28 18:46:35 2026 +0100
+ * Date: Fri Oct 30 00:40:15 2026 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -6689,6 +6689,15 @@ declare namespace paper {
          * the items that stay. Host items can't enter the project of another
          * host.
          * 
+         * The host draws the items, and the selection. To show what scripts
+         * draw in {@link Item#onDraw} and {@link Item#onDrawSelection}, it
+         * calls `project.draw(ctx, matrix, pixelRatio)`, which in a hosted
+         * project only calls these handlers, with the context, the view's
+         * matrix and pixel ratio that the host gives, for the visible items
+         * that have them, and for the selected ones. Handlers of classes,
+         * such as `Path.onDraw`, load all items once. The host asks
+         * {@link #hasDrawHandlers} whether it needs to call it.
+         * 
          * {@link Project#takeChanges} marks the changes of the items whose
          * children changed in order other than by new items inserted and
          * items removed, which the other changes don't tell, with
@@ -6820,6 +6829,16 @@ declare namespace paper {
          * @return the item, or `null` if the host has no such node
          */
         getItemByKey(key: number): Item
+
+        /** 
+         * Checks whether any item of the project or class has draw handlers,
+         * {@link Item#onDraw} or, for the selected items,
+         * {@link Item#onDrawSelection}, for hosts that draw the items
+         * themselves, see {@link #host}.
+         * 
+         * @return true if drawing the project calls any handlers
+         */
+        hasDrawHandlers(): boolean
 
         /** 
          * Updates the items of changed host nodes, given in the column format

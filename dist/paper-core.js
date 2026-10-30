@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 28 18:46:35 2026 +0100
+ * Date: Fri Oct 30 00:40:15 2026 +0100
  *
  ***
  *
@@ -780,7 +780,7 @@ var Emitter = {
 
 	_installEvents: function(install) {
 		var types = this._eventTypes,
-			handlers = this._callbacks,
+			handlers = this.hasOwnProperty('_callbacks') && this._callbacks,
 			key = install ? 'install' : 'uninstall';
 		if (types) {
 			for (var type in handlers) {
@@ -3213,6 +3213,7 @@ var Project = PaperScopeItem.extend({
 				element || CanvasProvider.getCanvas(1, 1));
 		this._selectionItems = {};
 		this._selectionCount = 0;
+		this._drawCount = 0;
 		this._updateVersion = 0;
 		this._bufferVersion = 0;
 	},
@@ -3559,6 +3560,15 @@ var Item = Base.extend(Emitter, {
 new function() {
 	var handlers = ['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
 			'onDoubleClick', 'onMouseMove', 'onMouseEnter', 'onMouseLeave'];
+
+	function countDrawHandlers(obj, sign) {
+		if (obj === obj.constructor.prototype) {
+			Item._drawCount += sign;
+		} else if (obj.isInserted()) {
+			obj._project._drawCount += sign;
+		}
+	}
+
 	return Base.each(handlers,
 		function(name) {
 			this._events[name] = {
@@ -3584,14 +3594,25 @@ new function() {
 					}
 				},
 
-				onDraw: { classLevel: true },
+				onDraw: {
+					classLevel: true,
+
+					install: function() {
+						countDrawHandlers(this, 1);
+					},
+
+					uninstall: function() {
+						countDrawHandlers(this, -1);
+					}
+				},
 				onDrawSelection: { classLevel: true },
 
 				onLoad: {},
 				onError: {}
 			},
 			statics: {
-				_itemHandlers: handlers
+				_itemHandlers: handlers,
+				_drawCount: 0
 			}
 		}
 	);
@@ -5512,7 +5533,8 @@ new function() {
 		return updated;
 	},
 
-	_drawSelection: function(ctx, matrix, size, selectionItems, updateVersion) {
+	_drawSelection: function(ctx, matrix, size, selectionItems, updateVersion,
+			handlersOnly) {
 		var selection = this._selection,
 			itemSelected = selection & 1,
 			boundsSelected = selection & 2
@@ -5545,6 +5567,8 @@ new function() {
 				if (event.prevented)
 					return;
 			}
+			if (handlersOnly)
+				return;
 			if (itemSelected)
 				this._drawSelected(ctx, mx, selectionItems);
 			if (positionSelected) {

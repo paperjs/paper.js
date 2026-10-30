@@ -119,6 +119,7 @@
   rotation, size, ascent, descent, lineHeight }</code> and an optional  <code>content</code>, as for a hyphen, all in the item&rsquo;s coordinates. <code>key</code>  is null for text that the host doesn&rsquo;t know yet. Without it,  Paper.js lays out text itself. - <code>getDefinition(key)</code>, for the pattern and symbol definitions that  the host shares between its items, which the JSON of its items  refers to as <code>[&#39;@key&#39;]</code>, as in <code>fillColor: [&#39;pattern&#39;,
   [&#39;@pattern/Dots&#39;], matrix]</code> or <code>definition: [&#39;@symbol/Star&#39;]</code>.  It returns the definition in the form of  <a href="../classes/Item.html#exportjson-options"><tt>item.exportJSON(options)</tt></a>, with its whole item:  <code>[&#39;PatternDefinition&#39;, item, { tile, spacing }]</code> or  <code>[&#39;SymbolDefinition&#39;, item]</code>, always: for a key that it has no  definition of, an empty one of the type, as  <code>[&#39;SymbolDefinition&#39;, [&#39;Group&#39;, {}]]</code>. Each definition loads  once, and the JSON of the items that use it, as  <a href="../classes/Item.html#exportjson-options"><tt>item.exportJSON(options)</tt></a> writes it, refers to it by its  key again. Definitions that scripts create have no key, and are  written out whole, until the host sets their <code>key</code>, which it can  only set once. <a href="../classes/Project.html#takechanges"><tt>project.takeChanges</tt></a>() lists those that the  changed items use first, nested ones first, as  <code>{ definition, flags }</code> with the <code>ChangeFlag.INSERTION</code> flag,  followed by the changes of the host&rsquo;s definitions. Renaming those  isn&rsquo;t supported. - <code>getDefinitionKeys(type)</code>, which returns the keys of all the  host&rsquo;s definitions of the type, <code>&#39;SymbolDefinition&#39;</code> or  <code>&#39;PatternDefinition&#39;</code>, for <a href="../classes/Project.html#symboldefinitions"><tt>symbolDefinitions</tt></a> and  <a href="../classes/Project.html#patterndefinitions"><tt>patternDefinitions</tt></a>.</p>
 <p>Items that move into a project with another host load in full from their own host first, and drop their keys, so they are new items there. They bring copies without keys of the symbol and pattern definitions of their host along, shared by the items of one insertion or copy, so the new host takes them as new ones too. Linked text brings a copy of its story along, which flows on through the items that stay. Host items can&rsquo;t enter the project of another host.</p>
+<p>The host draws the items, and the selection. To show what scripts draw in <a href="../classes/Item.html#ondraw"><tt>item.onDraw</tt></a> and <a href="../classes/Item.html#ondrawselection"><tt>item.onDrawSelection</tt></a>, it calls <code>project.draw(ctx, matrix, pixelRatio)</code>, which in a hosted project only calls these handlers, with the context, the view&rsquo;s matrix and pixel ratio that the host gives, for the visible items that have them, and for the selected ones. Handlers of classes, such as <code>Path.onDraw</code>, load all items once. The host asks <a href="../classes/Project.html#hasdrawhandlers"><tt>hasDrawHandlers</tt></a>() whether it needs to call it.</p>
 <p><a href="../classes/Project.html#takechanges"><tt>project.takeChanges</tt></a>() marks the changes of the items whose children changed in order other than by new items inserted and items removed, which the other changes don&rsquo;t tell, with <code>reordered: true</code>: the host reads their children whole, and can place the others&rsquo; new items by their indices.</p>
 	
 	
@@ -609,6 +610,35 @@ var path2 = new Path.Circle(new Point(175, 50), 20);
 		
 			<li>
 <tt><a href="../classes/Item.html"><tt>Item</tt></a></tt>&nbsp;&mdash;&nbsp;the item, or <code>null</code> if the host has no such node
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="hasdrawhandlers" class="member">
+<div class="member-link">
+<a name="hasdrawhandlers" href="#hasdrawhandlers"><tt><b>hasDrawHandlers</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Checks whether any item of the project or class has draw handlers, <a href="../classes/Item.html#ondraw"><tt>item.onDraw</tt></a> or, for the selected items, <a href="../classes/Item.html#ondrawselection"><tt>item.onDrawSelection</tt></a>, for hosts that draw the items themselves, see <a href="../classes/Project.html#host"><tt>host</tt></a>.</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if drawing the project calls any handlers, <tt>false</tt> otherwise
 </li>
 
 		
