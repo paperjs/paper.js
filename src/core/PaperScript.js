@@ -536,11 +536,8 @@ Base.exports.PaperScript = function() {
                 || agent.webkit && version >= 537.76 // >= Safari 7.0.4
                 || agent.firefox && version >= 23
                 || agent.node)) {
-            if (agent.node) {
-                // -2 required to remove function header:
-                // https://code.google.com/p/chromium/issues/detail?id=331655
-                offset -= 2;
-            } else if (window && url && !window.location.href.indexOf(url)) {
+            if (!agent.node && window && url
+                    && !window.location.href.indexOf(url)) {
                 // If the code stems from the actual html page, determine the
                 // offset of inlined code.
                 var html = document.getElementsByTagName('html')[0].innerHTML,
@@ -657,11 +654,10 @@ Base.exports.PaperScript = function() {
      * @option options.handlers {String[]} the names of further global
      *     handlers to export next to `onFrame`, `onResize` and the tool's
      *     handlers, for hosts that call them themselves
-     * @option options.evaluate {Function} the evaluator for hosts whose
-     *     engine doesn't name code from `Function()` in stack traces, such as
-     *     JavaScriptCore: called with the source of a function expression and
-     *     `options.url`, and returning the function, e.g. by evaluating the
-     *     source as a script of that url
+     * @option options.evaluate {Function} the evaluator for hosts that
+     *     evaluate code their own way: called with the source of a function
+     *     expression and `options.url`, and returning the function, e.g. by
+     *     evaluating the source as a script of that url
      * @option options.load {Function} the loader for static `import`
      *     statements, called with the specifier as written, the `options.url`
      *     of the importing script, and the import attributes as an object,
@@ -820,10 +816,12 @@ Base.exports.PaperScript = function() {
             delete document.__paperscript__;
             head.removeChild(script);
         } else {
-            // Return the function from a wrapper, as Function() can't create
-            // async functions. The code stays on the same line as with
-            // Function(params, code), for the line numbers of source maps:
-            func = Function('return ' + signature + code + '\n}')();
+            // Evaluated globally as a script through an indirect eval, which,
+            // unlike Function(), adds no header before the code, so that its
+            // lines keep their numbers in every engine:
+            func = (0, eval)( // jshint ignore:line
+                '(' + signature + code + '\n})'
+            );
         }
 
         // Install the 'global' tool and view handlers, and we're done!
