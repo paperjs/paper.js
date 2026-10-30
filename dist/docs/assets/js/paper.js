@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 30 21:38:29 2026 +0100
+ * Date: Fri Oct 30 18:09:32 2026 +0100
  *
  ***
  *
@@ -13960,9 +13960,25 @@ PathItem.inject(new function() {
 				part.add(side2[i].reversed());
 			part.setClosed(true);
 			part = part.unite();
-			if (isStrip ? 2 * abs(part.getArea())
-					> tolerance * part.getLength() : !part.isEmpty())
+			if (isStrip ? !isThin(part) : !part.isEmpty())
 				areas.push(part);
+		}
+
+		function isThin(part) {
+			var half = tolerance / 2;
+			if (abs(part.getArea()) > half * part.getLength())
+				return false;
+			var curves = part.getCurves();
+			for (var i = 0, l = curves.length; i < l; i++) {
+				var curve = curves[i],
+					inside = curve.getPointAtTime(0.5).subtract(
+						curve.getNormalAtTime(0.5).multiply(half));
+				if (part.contains(inside)
+						&& part.getNearestPoint(inside).getDistance(inside)
+							> half * 0.99)
+					return false;
+			}
+			return true;
 		}
 
 		function addPart(v) {
