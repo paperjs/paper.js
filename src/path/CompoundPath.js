@@ -392,11 +392,11 @@ new function() { // Injection scope for PostScript-like drawing functions
             children[i][key](param);
     };
 }, {
-    simplify: function(tolerance) {
+    simplify: function(options) {
         var children = this._children,
             res = false;
         for (var i = 0, l = children.length; i < l; i++)
-            res = children[i].simplify(tolerance) || res;
+            res = children[i].simplify(options) || res;
         return res;
     }
 }));
