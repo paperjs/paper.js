@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 30 18:09:32 2026 +0100
+ * Date: Sun Nov 1 03:12:16 2026 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -5569,13 +5569,29 @@ declare namespace paper {
          * This method can be used to process and simplify the point data received
          * from a mouse or touch device.
          * 
-         * @param tolerance - the allowed maximum error when fitting
-         *     the curves through the segment points
+         * With `options.from` and `options.to`, only the segments in that range
+         * are replaced. The fitted curves join the curves outside of the range
+         * tangentially where these have handles.
+         * 
+         * @option [options.tolerance=2.5] {Number} the allowed maximum error when
+         *     fitting the curves through the segment points
+         * @option options.from {Number|Segment|Curve} the segment or curve at which
+         *     to start simplifying, if not the full path shall be simplified
+         *     (inclusive). This can either be a segment index, or a segment or
+         *     curve object that is part of the path. If the passed number is
+         *     negative, the index is wrapped around the end of the path.
+         * @option options.to {Number|Segment|Curve} the segment or curve up to
+         *     which to simplify (inclusive). This can either be a segment index,
+         *     or a segment or curve object that is part of the path. If the passed
+         *     number is negative, the index is wrapped around the end of the path.
+         * 
+         * @param options - the simplification options, or the
+         *     tolerance as a number
          * 
          * @return true if the method was capable of fitting curves
          *     through the path's segment points
          */
-        simplify(tolerance?: number): boolean
+        simplify(options?: object | number): boolean
 
         /** 
          * Interpolates between the two specified path items and uses the result

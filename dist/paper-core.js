@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 30 18:09:32 2026 +0100
+ * Date: Sun Nov 1 03:12:16 2026 +0100
  *
  ***
  *
@@ -10718,51 +10718,62 @@ var Path = PathItem.extend({
 		this.setSegments(segments);
 	},
 
-	simplify: function(tolerance) {
-		var segments = new PathFitter(this).fit(tolerance || 2.5);
-		if (segments)
-			this.setSegments(segments);
-		return !!segments;
+	simplify: function(options) {
+		var opts = typeof options === 'number'
+				? { tolerance: options }
+				: options || {},
+			segments = this._segments,
+			length = segments.length,
+			fitted = null;
+		if (length > 0) {
+			var range = this._getRange(opts.from, opts.to),
+				loop = range.loop,
+				from = range.from,
+				to = range.to,
+				first = segments[from < 0 ? from + length : from],
+				last = segments[to],
+				getTangent = function(handle, neighbor) {
+					return !loop && neighbor && !handle.isZero()
+							&& handle.negate();
+				};
+			fitted = new PathFitter(from < 0
+					? segments.slice(from).concat(segments.slice(0, to + 1))
+					: segments.slice(from, to + 1), loop).fit(
+					opts.tolerance || 2.5,
+					getTangent(first._handleIn, first.getPrevious()),
+					getTangent(last._handleOut, last.getNext()));
+			if (loop || !first.getPrevious() && !last.getNext()) {
+				this.setSegments(fitted);
+			} else {
+				var fullySelected = this.isFullySelected();
+				fitted[0].setHandleIn(first._handleIn);
+				fitted[fitted.length - 1].setHandleOut(last._handleOut);
+				if (from < 0) {
+					this.removeSegments(from + length);
+					this.removeSegments(0, to + 1);
+					this.addSegments(fitted);
+				} else {
+					this.removeSegments(from, to + 1);
+					this.insertSegments(from, fitted);
+				}
+				if (fullySelected)
+					this.setFullySelected(true);
+			}
+		}
+		return !!fitted;
 	},
 
 	smooth: function(options) {
-		var that = this,
-			opts = options || {},
+		var opts = options || {},
 			type = opts.type || 'asymmetric',
 			segments = this._segments,
 			length = segments.length,
-			closed = this._closed;
+			closed = this._closed,
+			range = this._getRange(opts.from, opts.to),
+			loop = range.loop,
+			from = range.from,
+			to = range.to;
 
-		function getIndex(value, _default) {
-			var index = value && value.index;
-			if (index != null) {
-				var path = value.path;
-				if (path && path !== that)
-					throw new Error(value._class + ' ' + index + ' of ' + path
-							+ ' is not part of ' + that);
-				if (_default && value instanceof Curve)
-					index++;
-			} else {
-				index = typeof value === 'number' ? value : _default;
-			}
-			return Math.min(index < 0 && closed
-					? index % length
-					: index < 0 ? index + length : index, length - 1);
-		}
-
-		var loop = closed && opts.from === undefined && opts.to === undefined,
-			from = getIndex(opts.from, 0),
-			to = getIndex(opts.to, length - 1);
-
-		if (from > to) {
-			if (closed) {
-				from -= length;
-			} else {
-				var tmp = from;
-				from = to;
-				to = tmp;
-			}
-		}
 		if (/^(?:asymmetric|continuous)$/.test(type)) {
 			var asymmetric = type === 'asymmetric',
 				min = Math.min,
@@ -10830,6 +10841,46 @@ var Path = PathItem.extend({
 						!loop && i === from, !loop && i === to);
 			}
 		}
+	},
+
+	_getRange: function(from, to) {
+		var that = this,
+			length = this._segments.length,
+			closed = this._closed;
+
+		function getIndex(value, _default) {
+			var index = value && value.index;
+			if (index != null) {
+				var path = value.path;
+				if (path && path !== that)
+					throw new Error(value._class + ' ' + index + ' of ' + path
+							+ ' is not part of ' + that);
+				if (_default && value instanceof Curve)
+					index++;
+			} else {
+				index = typeof value === 'number' ? value : _default;
+			}
+			return Math.min(index >= 0
+					? index
+					: closed
+						? (index % length + length) % length
+						: index + length, length - 1);
+		}
+
+		var loop = closed && from === undefined && to === undefined;
+		from = getIndex(from, 0);
+		to = getIndex(to, length - 1);
+
+		if (from > to) {
+			if (closed) {
+				from -= length;
+			} else {
+				var tmp = from;
+				from = to;
+				to = tmp;
+			}
+		}
+		return { from: from, to: to, loop: loop };
 	},
 
 	toShape: function(insert) {
@@ -12720,11 +12771,11 @@ new function() {
 			children[i][key](param);
 	};
 }, {
-	simplify: function(tolerance) {
+	simplify: function(options) {
 		var children = this._children,
 			res = false;
 		for (var i = 0, l = children.length; i < l; i++)
-			res = children[i].simplify(tolerance) || res;
+			res = children[i].simplify(options) || res;
 		return res;
 	}
 }));
@@ -15622,10 +15673,8 @@ var PathFlattener = Base.extend({
 );
 
 var PathFitter = Base.extend({
-	initialize: function(path) {
-		var points = this.points = [],
-			segments = path._segments,
-			closed = path._closed;
+	initialize: function(segments, closed) {
+		var points = this.points = [];
 		for (var i = 0, prev, l = segments.length; i < l; i++) {
 			var point = segments[i].point;
 			if (!prev || !prev.equals(point)) {
@@ -15639,7 +15688,7 @@ var PathFitter = Base.extend({
 		this.closed = closed;
 	},
 
-	fit: function(error) {
+	fit: function(error, tangent1, tangent2) {
 		var points = this.points,
 			length = points.length,
 			segments = null;
@@ -15647,8 +15696,9 @@ var PathFitter = Base.extend({
 			segments = [new Segment(points[0])];
 			if (length > 1) {
 				this.fitCubic(segments, error, 0, length - 1,
-						points[1].subtract(points[0]),
-						points[length - 2].subtract(points[length - 1]));
+						tangent1 || points[1].subtract(points[0]),
+						tangent2 || points[length - 2].subtract(
+								points[length - 1]));
 				if (this.closed) {
 					segments.shift();
 					segments.pop();
@@ -15658,14 +15708,14 @@ var PathFitter = Base.extend({
 		return segments;
 	},
 
-	fitCubic: function(segments, error, first, last, tan1, tan2) {
+	fitCubic: function(segments, error, first, last, tangent1, tangent2) {
 		var points = this.points;
 		if (last - first === 1) {
 			var pt1 = points[first],
 				pt2 = points[last],
 				dist = pt1.getDistance(pt2) / 3;
-			this.addCurve(segments, [pt1, pt1.add(tan1.normalize(dist)),
-					pt2.add(tan2.normalize(dist)), pt2]);
+			this.addCurve(segments, [pt1, pt1.add(tangent1.normalize(dist)),
+					pt2.add(tangent2.normalize(dist)), pt2]);
 			return;
 		}
 		var uPrime = this.chordLengthParameterize(first, last),
@@ -15673,7 +15723,8 @@ var PathFitter = Base.extend({
 			split,
 			parametersInOrder = true;
 		for (var i = 0; i <= 4; i++) {
-			var curve = this.generateBezier(first, last, uPrime, tan1, tan2);
+			var curve = this.generateBezier(first, last, uPrime, tangent1,
+					tangent2);
 			var max = this.findMaxError(first, last, curve, uPrime);
 			if (max.error < error && parametersInOrder) {
 				this.addCurve(segments, curve);
@@ -15685,9 +15736,10 @@ var PathFitter = Base.extend({
 			parametersInOrder = this.reparameterize(first, last, uPrime, curve);
 			maxError = max.error;
 		}
-		var tanCenter = points[split - 1].subtract(points[split + 1]);
-		this.fitCubic(segments, error, first, split, tan1, tanCenter);
-		this.fitCubic(segments, error, split, last, tanCenter.negate(), tan2);
+		var tangentCenter = points[split - 1].subtract(points[split + 1]);
+		this.fitCubic(segments, error, first, split, tangent1, tangentCenter);
+		this.fitCubic(segments, error, split, last, tangentCenter.negate(),
+				tangent2);
 	},
 
 	addCurve: function(segments, curve) {
@@ -15696,7 +15748,7 @@ var PathFitter = Base.extend({
 		segments.push(new Segment(curve[3], curve[2].subtract(curve[3])));
 	},
 
-	generateBezier: function(first, last, uPrime, tan1, tan2) {
+	generateBezier: function(first, last, uPrime, tangent1, tangent2) {
 		var epsilon = 1e-12,
 			abs = Math.abs,
 			points = this.points,
@@ -15713,8 +15765,8 @@ var PathFitter = Base.extend({
 				b1 = b * t,
 				b2 = b * u,
 				b3 = u * u * u,
-				a1 = tan1.normalize(b1),
-				a2 = tan2.normalize(b2),
+				a1 = tangent1.normalize(b1),
+				a2 = tangent2.normalize(b2),
 				tmp = points[first + i]
 					.subtract(pt1.multiply(b0 + b1))
 					.subtract(pt2.multiply(b2 + b3));
@@ -15750,8 +15802,8 @@ var PathFitter = Base.extend({
 			alpha1 = alpha2 = segLength / 3;
 		} else {
 			var line = pt2.subtract(pt1);
-			handle1 = tan1.normalize(alpha1);
-			handle2 = tan2.normalize(alpha2);
+			handle1 = tangent1.normalize(alpha1);
+			handle2 = tangent2.normalize(alpha2);
 			if (handle1.dot(line) - handle2.dot(line) > segLength * segLength) {
 				alpha1 = alpha2 = segLength / 3;
 				handle1 = handle2 = null;
@@ -15759,8 +15811,8 @@ var PathFitter = Base.extend({
 		}
 
 		return [pt1,
-				pt1.add(handle1 || tan1.normalize(alpha1)),
-				pt2.add(handle2 || tan2.normalize(alpha2)),
+				pt1.add(handle1 || tangent1.normalize(alpha1)),
+				pt2.add(handle2 || tangent2.normalize(alpha2)),
 				pt2];
 	},
 
