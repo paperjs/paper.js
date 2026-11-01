@@ -119,6 +119,7 @@ var paper = function(self, undefined) {
 
 /*#*/ include('tool/ToolEvent.js');
 /*#*/ include('tool/Tool.js');
+/*#*/ include('tool/ToolEffect.js');
 
 /*#*/ include('anim/Tween.js');
 
