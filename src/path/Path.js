@@ -1394,63 +1394,65 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     // NOTE: Documentation is in PathItem#simplify()
-    simplify: function(tolerance) {
-        var segments = new PathFitter(this).fit(tolerance || 2.5);
-        if (segments)
-            this.setSegments(segments);
-        return !!segments;
+    simplify: function(options) {
+        var opts = typeof options === 'number'
+                ? { tolerance: options }
+                : options || {},
+            segments = this._segments,
+            length = segments.length,
+            fitted = null;
+        if (length > 0) {
+            var range = this._getRange(opts.from, opts.to),
+                loop = range.loop,
+                from = range.from,
+                to = range.to,
+                first = segments[from < 0 ? from + length : from],
+                last = segments[to],
+                // Join the curves outside of the range tangentially, where
+                // they have handles:
+                getTangent = function(handle, neighbor) {
+                    return !loop && neighbor && !handle.isZero()
+                            && handle.negate();
+                };
+            fitted = new PathFitter(from < 0
+                    ? segments.slice(from).concat(segments.slice(0, to + 1))
+                    : segments.slice(from, to + 1), loop).fit(
+                    opts.tolerance || 2.5,
+                    getTangent(first._handleIn, first.getPrevious()),
+                    getTangent(last._handleOut, last.getNext()));
+            if (loop || !first.getPrevious() && !last.getNext()) {
+                this.setSegments(fitted);
+            } else {
+                var fullySelected = this.isFullySelected();
+                fitted[0].setHandleIn(first._handleIn);
+                fitted[fitted.length - 1].setHandleOut(last._handleOut);
+                if (from < 0) {
+                    this.removeSegments(from + length);
+                    this.removeSegments(0, to + 1);
+                    this.addSegments(fitted);
+                } else {
+                    this.removeSegments(from, to + 1);
+                    this.insertSegments(from, fitted);
+                }
+                if (fullySelected)
+                    this.setFullySelected(true);
+            }
+        }
+        return !!fitted;
     },
 
     // NOTE: Documentation is in PathItem#smooth()
     smooth: function(options) {
-        var that = this,
-            opts = options || {},
+        var opts = options || {},
             type = opts.type || 'asymmetric',
             segments = this._segments,
             length = segments.length,
-            closed = this._closed;
+            closed = this._closed,
+            range = this._getRange(opts.from, opts.to),
+            loop = range.loop,
+            from = range.from,
+            to = range.to;
 
-        // Helper method to pick the right from / to indices.
-        // Supports numbers and segment objects.
-        // For numbers, the `to` index is exclusive, while for segments and
-        // curves, it is inclusive, handled by the `offset` parameter.
-        function getIndex(value, _default) {
-            // Support both Segment and Curve through #index getter.
-            var index = value && value.index;
-            if (index != null) {
-                // Make sure the segment / curve is not from a wrong path.
-                var path = value.path;
-                if (path && path !== that)
-                    throw new Error(value._class + ' ' + index + ' of ' + path
-                            + ' is not part of ' + that);
-                // Add offset of 1 to curves to reach their end segment.
-                if (_default && value instanceof Curve)
-                    index++;
-            } else {
-                index = typeof value === 'number' ? value : _default;
-            }
-            // Handle negative values based on whether a path is open or not:
-            // Ranges on closed paths are allowed to wrapped around the
-            // beginning/end (e.g. start near the end, end near the beginning),
-            // while ranges on open paths stay within the path's open range.
-            return Math.min(index < 0 && closed
-                    ? index % length
-                    : index < 0 ? index + length : index, length - 1);
-        }
-
-        var loop = closed && opts.from === undefined && opts.to === undefined,
-            from = getIndex(opts.from, 0),
-            to = getIndex(opts.to, length - 1);
-
-        if (from > to) {
-            if (closed) {
-                from -= length;
-            } else {
-                var tmp = from;
-                from = to;
-                to = tmp;
-            }
-        }
         if (/^(?:asymmetric|continuous)$/.test(type)) {
             // Continuous smoothing approach based on work by Lubos Brieda,
             // Particle In Cell Consulting LLC, but further simplified by
@@ -1559,6 +1561,60 @@ var Path = PathItem.extend(/** @lends Path# */{
                         !loop && i === from, !loop && i === to);
             }
         }
+    },
+
+    // Resolve the `from` and `to` options of #smooth() and #simplify() to
+    // segment indices. Where a range on a closed path wraps around its end,
+    // `from` is negative.
+    _getRange: function(from, to) {
+        var that = this,
+            length = this._segments.length,
+            closed = this._closed;
+
+        // Helper method to pick the right from / to indices.
+        // Supports numbers and segment objects.
+        // For numbers, the `to` index is exclusive, while for segments and
+        // curves, it is inclusive, handled by the `offset` parameter.
+        function getIndex(value, _default) {
+            // Support both Segment and Curve through #index getter.
+            var index = value && value.index;
+            if (index != null) {
+                // Make sure the segment / curve is not from a wrong path.
+                var path = value.path;
+                if (path && path !== that)
+                    throw new Error(value._class + ' ' + index + ' of ' + path
+                            + ' is not part of ' + that);
+                // Add offset of 1 to curves to reach their end segment.
+                if (_default && value instanceof Curve)
+                    index++;
+            } else {
+                index = typeof value === 'number' ? value : _default;
+            }
+            // Negative values count from the end. Ranges on closed paths are
+            // allowed to wrap around the beginning/end (e.g. start near the
+            // end, end near the beginning), see below, while ranges on open
+            // paths stay within the path's open range.
+            return Math.min(index >= 0
+                    ? index
+                    : closed
+                        ? (index % length + length) % length
+                        : index + length, length - 1);
+        }
+
+        var loop = closed && from === undefined && to === undefined;
+        from = getIndex(from, 0);
+        to = getIndex(to, length - 1);
+
+        if (from > to) {
+            if (closed) {
+                from -= length;
+            } else {
+                var tmp = from;
+                from = to;
+                to = tmp;
+            }
+        }
+        return { from: from, to: to, loop: loop };
     },
 
     // TODO: reduceSegments([flatness])

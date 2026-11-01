@@ -21,10 +21,8 @@
  * @private
  */
 var PathFitter = Base.extend({
-    initialize: function(path) {
-        var points = this.points = [],
-            segments = path._segments,
-            closed = path._closed;
+    initialize: function(segments, closed) {
+        var points = this.points = [];
         // Copy over points from path and filter out adjacent duplicates.
         for (var i = 0, prev, l = segments.length; i < l; i++) {
             var point = segments[i].point;
@@ -41,7 +39,7 @@ var PathFitter = Base.extend({
         this.closed = closed;
     },
 
-    fit: function(error) {
+    fit: function(error, tangent1, tangent2) {
         var points = this.points,
             length = points.length,
             segments = null;
@@ -52,9 +50,10 @@ var PathFitter = Base.extend({
             if (length > 1) {
                 this.fitCubic(segments, error, 0, length - 1,
                         // Left Tangent
-                        points[1].subtract(points[0]),
+                        tangent1 || points[1].subtract(points[0]),
                         // Right Tangent
-                        points[length - 2].subtract(points[length - 1]));
+                        tangent2 || points[length - 2].subtract(
+                                points[length - 1]));
                 // Remove the duplicated segments for closed paths again.
                 if (this.closed) {
                     segments.shift();
@@ -66,15 +65,15 @@ var PathFitter = Base.extend({
     },
 
     // Fit a Bezier curve to a (sub)set of digitized points
-    fitCubic: function(segments, error, first, last, tan1, tan2) {
+    fitCubic: function(segments, error, first, last, tangent1, tangent2) {
         var points = this.points;
         //  Use heuristic if region only has two points in it
         if (last - first === 1) {
             var pt1 = points[first],
                 pt2 = points[last],
                 dist = pt1.getDistance(pt2) / 3;
-            this.addCurve(segments, [pt1, pt1.add(tan1.normalize(dist)),
-                    pt2.add(tan2.normalize(dist)), pt2]);
+            this.addCurve(segments, [pt1, pt1.add(tangent1.normalize(dist)),
+                    pt2.add(tangent2.normalize(dist)), pt2]);
             return;
         }
         // Parameterize points, and attempt to fit curve
@@ -84,7 +83,8 @@ var PathFitter = Base.extend({
             parametersInOrder = true;
         // Try 4 iterations
         for (var i = 0; i <= 4; i++) {
-            var curve = this.generateBezier(first, last, uPrime, tan1, tan2);
+            var curve = this.generateBezier(first, last, uPrime, tangent1,
+                    tangent2);
             //  Find max deviation of points to fitted curve
             var max = this.findMaxError(first, last, curve, uPrime);
             if (max.error < error && parametersInOrder) {
@@ -99,9 +99,10 @@ var PathFitter = Base.extend({
             maxError = max.error;
         }
         // Fitting failed -- split at max error point and fit recursively
-        var tanCenter = points[split - 1].subtract(points[split + 1]);
-        this.fitCubic(segments, error, first, split, tan1, tanCenter);
-        this.fitCubic(segments, error, split, last, tanCenter.negate(), tan2);
+        var tangentCenter = points[split - 1].subtract(points[split + 1]);
+        this.fitCubic(segments, error, first, split, tangent1, tangentCenter);
+        this.fitCubic(segments, error, split, last, tangentCenter.negate(),
+                tangent2);
     },
 
     addCurve: function(segments, curve) {
@@ -111,7 +112,7 @@ var PathFitter = Base.extend({
     },
 
     // Use least-squares method to find Bezier control points for region.
-    generateBezier: function(first, last, uPrime, tan1, tan2) {
+    generateBezier: function(first, last, uPrime, tangent1, tangent2) {
         var epsilon = /*#=*/Numerical.EPSILON,
             abs = Math.abs,
             points = this.points,
@@ -129,8 +130,8 @@ var PathFitter = Base.extend({
                 b1 = b * t,
                 b2 = b * u,
                 b3 = u * u * u,
-                a1 = tan1.normalize(b1),
-                a2 = tan2.normalize(b2),
+                a1 = tangent1.normalize(b1),
+                a2 = tangent2.normalize(b2),
                 tmp = points[first + i]
                     .subtract(pt1.multiply(b0 + b1))
                     .subtract(pt2.multiply(b2 + b3));
@@ -180,8 +181,8 @@ var PathFitter = Base.extend({
             var line = pt2.subtract(pt1);
             // Control points 1 and 2 are positioned an alpha distance out
             // on the tangent vectors, left and right, respectively
-            handle1 = tan1.normalize(alpha1);
-            handle2 = tan2.normalize(alpha2);
+            handle1 = tangent1.normalize(alpha1);
+            handle2 = tangent2.normalize(alpha2);
             if (handle1.dot(line) - handle2.dot(line) > segLength * segLength) {
                 // Fall back to the Wu/Barsky heuristic above.
                 alpha1 = alpha2 = segLength / 3;
@@ -192,8 +193,8 @@ var PathFitter = Base.extend({
         // First and last control points of the Bezier curve are
         // positioned exactly at the first and last data points
         return [pt1,
-                pt1.add(handle1 || tan1.normalize(alpha1)),
-                pt2.add(handle2 || tan2.normalize(alpha2)),
+                pt1.add(handle1 || tangent1.normalize(alpha1)),
+                pt2.add(handle2 || tangent2.normalize(alpha2)),
                 pt2];
     },
 

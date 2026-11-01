@@ -641,11 +641,27 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * This method can be used to process and simplify the point data received
      * from a mouse or touch device.
      *
+     * With `options.from` and `options.to`, only the segments in that range
+     * are replaced. The fitted curves join the curves outside of the range
+     * tangentially where these have handles.
+     *
      * @name PathItem#simplify
      * @function
      *
-     * @param {Number} [tolerance=2.5] the allowed maximum error when fitting
-     *     the curves through the segment points
+     * @option [options.tolerance=2.5] {Number} the allowed maximum error when
+     *     fitting the curves through the segment points
+     * @option options.from {Number|Segment|Curve} the segment or curve at which
+     *     to start simplifying, if not the full path shall be simplified
+     *     (inclusive). This can either be a segment index, or a segment or
+     *     curve object that is part of the path. If the passed number is
+     *     negative, the index is wrapped around the end of the path.
+     * @option options.to {Number|Segment|Curve} the segment or curve up to
+     *     which to simplify (inclusive). This can either be a segment index,
+     *     or a segment or curve object that is part of the path. If the passed
+     *     number is negative, the index is wrapped around the end of the path.
+     *
+     * @param {Object|Number} [options] the simplification options, or the
+     *     tolerance as a number
      * @return {Boolean} {@true if the method was capable of fitting curves
      *     through the path's segment points}
      *

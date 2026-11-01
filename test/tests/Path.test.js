@@ -322,6 +322,100 @@ describe('Path', () => {
     equals(() => path.selected, true)
   })
 
+  test('Path#simplify(options) with a range', () => {
+    const path = new Path()
+    for (let i = 0; i < 20; i++) {
+      path.add(i * 10, i % 2 ? 0 : 1)
+    }
+    const points = path.segments.map(segment => segment.point.clone())
+    equals(() => path.simplify({ from: 5, to: 14 }), true)
+    // The segments outside of the range stay, and the range shrinks:
+    equals(() => path.segments.length < 20, true)
+    equals(
+      () => path.segments.slice(0, 6).map(({ point }) => point),
+      points.slice(0, 6)
+    )
+    equals(
+      () => path.segments.slice(-5).map(({ point }) => point),
+      points.slice(-5)
+    )
+    equals(
+      () =>
+        path.segments.slice(0, 5).every(({ handleOut }) => handleOut.isZero()),
+      true
+    )
+  })
+
+  test('After simplifying a range of a fullySelected path, it should stay fullySelected', () => {
+    const path = new Path()
+    for (let i = 0; i < 20; i++) {
+      path.add(i * 10, i % 2 ? 0 : 1)
+    }
+    path.fullySelected = true
+    path.simplify({ from: 5, to: 14 })
+    equals(() => path.fullySelected, true)
+  })
+
+  test('Path#simplify(tolerance) is #simplify({ tolerance })', () => {
+    const create = () => {
+      const path = new Path()
+      for (let i = 0; i < 30; i++) {
+        path.add(i * 10, Math.sin(i / 3) * 20)
+      }
+      return path
+    }
+    const path = create()
+    path.simplify(10)
+    const other = create()
+    other.simplify({ tolerance: 10 })
+    equals(() => other.pathData, path.pathData)
+  })
+
+  test('Path#simplify(options) with a range wrapping around a closed path', () => {
+    const path = new Path({ closed: true })
+    for (let i = 0; i < 24; i++) {
+      path.add(new Point({ angle: i * 15, length: 100 }))
+    }
+    const points = path.segments.map(segment => segment.point.clone())
+    equals(() => path.simplify({ from: -6, to: 6 }), true)
+    equals(() => path.segments.length < 24, true)
+    // The segments between the range's ends stay in place:
+    equals(
+      () => path.segments.slice(0, 11).map(({ point }) => point),
+      points.slice(7, 18)
+    )
+  })
+
+  test('Path#simplify(options) up to a negative index on a closed path', () => {
+    const path = new Path({ closed: true })
+    for (let i = 0; i < 24; i++) {
+      path.add(new Point({ angle: i * 15, length: 100 }))
+    }
+    equals(() => path.simplify({ from: 0, to: -1 }), true)
+    equals(() => path.segments.length < 24, true)
+  })
+
+  test('Path#simplify(options) joins curves outside of the range tangentially', () => {
+    const path = new Path([
+      [[0, 0], null, [50, 0]],
+      [[100, 50], [0, -40], null],
+      [110, 70],
+      [120, 80],
+      [130, 90],
+      [[200, 100], null, null]
+    ])
+    path.simplify({ from: 1, to: 5 })
+    const { handleIn, handleOut } = path.segments[1]
+    equals(() => handleIn, new Point(0, -40))
+    equals(() => handleOut.normalize(), new Point(0, 1))
+  })
+
+  test('Path#smooth(options) up to a negative index on a closed path', () => {
+    const path = new Path.Rectangle({ point: [0, 0], size: [100, 100] })
+    path.smooth({ type: 'continuous', from: 0, to: -1 })
+    equals(() => path.segments[1].handleIn.isZero(), false)
+  })
+
   test('After smoothing a path using #smooth(), the path should stay fullySelected', () => {
     const path = new Path()
     for (let i = 0; i < 30; i++) {
