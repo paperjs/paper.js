@@ -10,10 +10,11 @@
  * All rights reserved.
  */
 
-import { describe } from 'vitest'
+import { describe, expect } from 'vitest'
 import paper, {
   Base,
   CompoundPath,
+  Group,
   Key,
   Matrix,
   PaperScope,
@@ -874,6 +875,91 @@ describe('View', () => {
     tool.remove()
   })
 
+  test('MouseEvent#toString()', () => {
+    const square = new Path.Rectangle({
+      point: [0, 0],
+      size: [50, 50],
+      fillColor: 'red',
+      name: 'square'
+    })
+    const strings = []
+    square.onMouseDown = square.onMouseDrag = event => {
+      strings.push(event.toString())
+    }
+    paper.view.dispatchMouseEvent('mousedown', [10, 10])
+    paper.view.dispatchMouseEvent('mousemove', [20, 30])
+    paper.view.dispatchMouseEvent('mouseup', [20, 30])
+    // Drags have a delta, the other events don't:
+    equals(
+      strings.map(string => string.replace(/, modifiers: .*/, '')),
+      [
+        `{ type: 'mousedown', point: { x: 10, y: 10 }, target: Path 'square'`,
+        `{ type: 'mousedrag', point: { x: 20, y: 30 }, target: Path 'square', ` +
+        'delta: { x: 10, y: 20 }'
+      ]
+    )
+  })
+
+  test('ToolEvent points, delta and item, and overriding them', () => {
+    const tool = new Tool()
+    const square = new Path.Rectangle({
+      point: [20, 20],
+      size: [20, 20],
+      fillColor: 'red'
+    })
+    // The top-most group or compound path that the item is in, but no layer:
+    const group = new Group([new Group([square])])
+    const drags = []
+    tool.onMouseDrag = event => {
+      drags.push({
+        point: event.point,
+        lastPoint: event.lastPoint,
+        downPoint: event.downPoint,
+        middlePoint: event.middlePoint,
+        delta: event.delta,
+        isGroup: event.item === group
+      })
+    }
+    const overrides = {
+      point: new Point(1, 2),
+      lastPoint: new Point(3, 4),
+      downPoint: new Point(5, 6),
+      middlePoint: new Point(7, 8),
+      delta: new Point(9, 10),
+      velocity: new Point(11, 12),
+      elapsed: 13,
+      item: square
+    }
+    let overridden
+    tool.onMouseUp = event => {
+      Object.assign(event, overrides)
+      overridden = Object.fromEntries(
+        Object.keys(overrides).map(key => [key, event[key]])
+      )
+      overridden.string = event.toString()
+    }
+    paper.view.dispatchMouseEvent('mousedown', [10, 10])
+    paper.view.dispatchMouseEvent('mousemove', [30, 30])
+    paper.view.dispatchMouseEvent('mouseup', [30, 30])
+    tool.remove()
+    equals(drags, [
+      {
+        point: new Point(30, 30),
+        lastPoint: new Point(10, 10),
+        downPoint: new Point(10, 10),
+        middlePoint: new Point(20, 20),
+        delta: new Point(20, 20),
+        isGroup: true
+      }
+    ])
+    const { string, ...values } = overridden
+    equals(values, overrides)
+    equals(
+      string.startsWith('{ type: mouseup, point: { x: 1, y: 2 }, count: 0'),
+      true
+    )
+  })
+
   test('tool.eventInterval repeats mousedrag while the mouse is held', assert => {
     const done = assert.async(),
       tool = new Tool({ eventInterval: 10 }),
@@ -952,5 +1038,116 @@ describe('View', () => {
       'getPixelSize()'
     )
     view.remove()
+  })
+
+  // Views only animate while their canvas is in view, which needs a layout
+  // that jsdom doesn't have:
+  describe.skipIf(isNodeContext)('Frames', () => {
+    test('View#onFrame is called on each frame until removed', assert => {
+      const done = assert.async()
+      const { view } = paper
+      const frames = []
+      document.body.appendChild(view.element)
+      view.onFrame = event => {
+        frames.push(event)
+        if (frames.length === 2) {
+          view.onFrame = null
+          view.element.remove()
+          equals(
+            frames.map(frame => frame.count),
+            [0, 1]
+          )
+          equals(frames[0].delta, 0, 'nothing before the first frame')
+          equals(frames[1].time, frames[1].delta, 'the time since the first')
+          done()
+        }
+      }
+    })
+  })
+
+  test('View#scaling, #scrollBy() and #draw()', () => {
+    const { view } = paper
+    view.scaling = [2, 3]
+    equals(view.scaling, new Point(2, 3))
+    view.scaling = [1, 1]
+    const center = view.center
+    view.scrollBy([10, 0])
+    equals(view.center, center.add(10, 0))
+    // draw() is the deprecated name of update():
+    view.requestUpdate()
+    view.draw()
+    equals(view.update(), false, 'drawn already')
+  })
+
+  test('View#remove() only removes a view once', () => {
+    const { view } = new Project(new Size(10, 10))
+    equals(view.remove(), true)
+    equals(view.remove(), false)
+  })
+
+  test('Views can be created from the id of their canvas', () => {
+    const canvas = document.createElement('canvas')
+    canvas.id = 'view-by-id'
+    document.body.appendChild(canvas)
+    const scope = new PaperScope().setup('view-by-id')
+    equals(scope.view.element === canvas, true)
+    scope.remove()
+    canvas.remove()
+    // Setting up a scope makes it the current one:
+    paper.activate()
+  })
+
+  test('MouseEvent#stopPropagation() stops at the item', () => {
+    const square = new Path.Rectangle({
+      point: [0, 0],
+      size: [50, 50],
+      fillColor: 'red'
+    })
+    const group = new Group([square])
+    const calls = []
+    square.onMouseDown = event => {
+      calls.push('square')
+      event.stopPropagation()
+    }
+    group.onMouseDown = () => calls.push('group')
+    paper.view.dispatchMouseEvent('mousedown', [10, 10])
+    paper.view.dispatchMouseEvent('mouseup', [10, 10])
+    equals(calls, ['square'])
+  })
+
+  test('View#dispatchKeyEvent() only dispatches keydown and keyup', () => {
+    expect(() => paper.view.dispatchKeyEvent('keypress', 'a')).toThrow(
+      `Unknown key event type: 'keypress'.`
+    )
+  })
+
+  test('Tool#minDistance, #maxDistance and #fixedDistance', () => {
+    const tool = new Tool({ minDistance: 10, maxDistance: 20 })
+    equals(
+      [tool.minDistance, tool.maxDistance, tool.fixedDistance],
+      [10, 20, null]
+    )
+    // Each keeps the other on its side:
+    tool.minDistance = 30
+    equals([tool.minDistance, tool.maxDistance], [30, 30])
+    tool.maxDistance = 5
+    equals([tool.minDistance, tool.maxDistance], [5, 5])
+    equals(tool.fixedDistance, 5)
+    tool.fixedDistance = 8
+    equals([tool.minDistance, tool.maxDistance], [8, 8])
+    tool.eventInterval = 100
+    equals(tool.eventInterval, 100)
+    tool.remove()
+  })
+
+  test('Tools without mousedrag handlers get drags as mousemove', () => {
+    const tool = new Tool()
+    const types = []
+    tool.onMouseMove = event => types.push(event.type)
+    paper.view.dispatchMouseEvent('mousedown', [10, 10])
+    paper.view.dispatchMouseEvent('mousemove', [20, 10])
+    paper.view.dispatchMouseEvent('mouseup', [20, 10])
+    tool.remove()
+    equals(types, ['mousemove'])
   })
 })

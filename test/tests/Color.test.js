@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { describe } from 'vitest'
+import { describe, expect } from 'vitest'
 import paper, {
   Color,
   Gradient,
@@ -312,6 +312,55 @@ describe('Color', () => {
     equals(() => stop2.offset, 0.75)
     equals(() => stop3.offset, 1)
     equals(() => stop4.offset, 0.5)
+  })
+
+  test('Gradients notify the items that use them', () => {
+    const gradient = new Gradient(['red', 'blue'])
+    const path = new Path.Rectangle({
+      point: [0, 0],
+      size: [50, 50],
+      fillColor: { gradient, origin: [0, 0], destination: [50, 0] }
+    })
+    // The color that the item keeps uses the gradient, not a copy of it:
+    equals(path.fillColor.gradient === gradient, true)
+    const { view } = paper
+    view.update()
+    const [first] = gradient.stops
+    first.color = 'green'
+    equals(view.update(), true, 'a stop changes')
+    gradient.radial = true
+    equals(view.update(), true, 'the gradient changes')
+    // New stops replace the old ones, which stop notifying it:
+    gradient.stops = ['yellow', 'black']
+    equals(view.update(), true, 'new stops')
+    first.color = 'white'
+    equals(view.update(), false, 'a replaced stop')
+    // Neither does a gradient that the item no longer uses:
+    path.fillColor = 'black'
+    view.update()
+    gradient.radial = false
+    equals(view.update(), false, 'a gradient no longer used')
+    expect(() => new Gradient(['red'])).toThrow(
+      'Gradient stop list needs to contain at least two stops.'
+    )
+  })
+
+  test('Gradient#clone() and #equals()', () => {
+    const gradient = new Gradient(['red', 'blue'], true)
+    const copy = gradient.clone()
+    equals(copy !== gradient && copy.equals(gradient), true)
+    equals(copy.radial, true)
+    // The copy has stops of its own:
+    copy.stops[0].color = 'green'
+    equals(gradient.stops[0].color, new Color('red'))
+    equals(copy.equals(gradient), false, 'different stops')
+    equals(
+      new Gradient(['red', 'blue', 'green']).equals(gradient),
+      false,
+      'more stops'
+    )
+    equals(gradient.equals(new Color('red')), false, 'no gradient')
+    equals(gradient.equals(gradient), true)
   })
 
   test('Gradients with applyMatrix', () => {

@@ -494,4 +494,31 @@ describe('StrokeProfile', () => {
     })
     equals(compound.strokeBounds.height, 10)
   })
+
+  test('StrokeProfileStop#equals() compares its values and place', () => {
+    // Without a path, by its offset:
+    const stop = new StrokeProfileStop()
+    stop.offset = 20
+    equals(stop.offset, 20)
+    const other = new StrokeProfileStop({ offset: 20 })
+    equals(stop.equals(other), true)
+    equals(stop.equals(stop), true)
+    equals(stop.equals({ offset: 20 }), false, 'no stop')
+    for (const [key, value] of Object.entries({
+      offset: 30,
+      width: 2,
+      aspect: 0.5,
+      angle: 45,
+      smooth: false
+    })) {
+      const changed = other.clone()
+      changed[key] = value
+      equals(stop.equals(changed), false, key)
+    }
+    // On paths, by its place between the segments:
+    equals(
+      createTaper().strokeProfile[1].equals(createTaper().strokeProfile[1]),
+      true
+    )
+  })
 })
