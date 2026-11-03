@@ -277,7 +277,7 @@ describe('Item', () => {
   test('item.replaceWith(item)', () => {
     const item = new Path()
     equals(() => item.replaceWith(item) == null, true)
-    equals(() => item.getParent() != null, true)
+    equals(() => item.parent != null, true)
   })
 
   test('item.insertChild(0, child)', () => {
