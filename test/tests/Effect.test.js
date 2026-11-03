@@ -216,6 +216,25 @@ describe('Effect', () => {
     equals(getViewPixel(29, 50), new Color(0, 0, 0, 0), 'drawn as it is')
   })
 
+  test('Composited and rasterized items keep what their effects draw', () => {
+    const path = createSquare()
+    path.addEffect({ type: 'offset', parameters: { distance: 10 } })
+    // Drawn through a temporary canvas, by the group's opacity and by the
+    // path's blend mode:
+    const group = new Group([path])
+    group.opacity = 0.5
+    paper.view.update(true)
+    equals(getViewPixel(15, 40).alpha, 0.5, null, { tolerance: 0.01 })
+    group.opacity = 1
+    path.blendMode = 'multiply'
+    paper.view.update(true)
+    equals(getViewPixel(15, 40), new Color(1, 0, 0, 1))
+    equals(
+      path.rasterize({ resolution: 72, insert: false }).bounds,
+      path.previewBounds
+    )
+  })
+
   test('Item#previewBounds measures the effects, the others the item', () => {
     const path = createSquare()
     path.strokeColor = 'black'

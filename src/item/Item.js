@@ -2083,7 +2083,8 @@ new function() { // Injection scope for various item event handlers
         if (!raster) {
             raster = new Raster(Item.NO_INSERT);
         }
-        var bounds = this.getStrokeBounds(),
+        // What the item draws, with its effects:
+        var bounds = this.getPreviewBounds(),
             scale = (resolution || this.getView().getResolution()) / 72,
             // Floor top-left corner and ceil bottom-right corner, to never
             // blur or cut pixels.
@@ -5058,10 +5059,11 @@ new function() { // Injection scope for hit-test functions shared with project
             isFresh = buffer && viewMatrix.equals(buffer.matrix)
                     && buffer.version === version;
             // Apply the parent's global matrix to the calculation of correct
-            // bounds, and include the item's shadow (#1628).
+            // bounds, with what effects draw, and include the item's shadow
+            // (#1628).
             var bounds = isFresh
                     ? buffer.bounds
-                    : this.getStrokeBounds(viewMatrix);
+                    : this.getPreviewBounds(viewMatrix);
             // Pass true for _dontMerge, as groups don't draw the shadows of
             // their children.
             if (!isFresh && style.getShadowColor(true)) {
