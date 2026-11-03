@@ -135,6 +135,9 @@ var Style = Base.extend(new function() {
         strokeWidth: /*#=*/Change.STROKE,
         strokeCap: /*#=*/Change.STROKE,
         strokeJoin: /*#=*/Change.STROKE,
+        // The dashes of strokes are their geometry too, see PathItem#dash():
+        dashArray: /*#=*/Change.STROKE,
+        dashOffset: /*#=*/Change.STROKE,
         // strokeScaling can change the coordinates of cached path items
         strokeScaling: /*#=*/(Change.STROKE | Change.GEOMETRY),
         miterLimit: /*#=*/Change.STROKE

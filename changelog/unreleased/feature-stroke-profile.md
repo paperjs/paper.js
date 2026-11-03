@@ -5,4 +5,5 @@
   stroke width, an aspect and an angle, with `StrokeProfileStop` and
   `Path#getStrokeProfileAt(offset)`. The stops stay between the same segments
   when the path is edited, and `splitAt()` and `join()` keep the pens of the
-  parts. Drawing, bounds and hit-testing don't follow the profile yet.
+  parts. Paths draw their stroke as the area that the pens sweep, and
+  `strokeBounds` and hit-testing measure it.

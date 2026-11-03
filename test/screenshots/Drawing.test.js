@@ -442,6 +442,112 @@ describe('Strokes', () => {
   })
 })
 
+describe('Stroke profiles', () => {
+  test('Tapers, pens, fills, gradients and effects', async () => {
+    createScene(300, 240)
+    // A taper, and a stroke that swells and thins like pressure:
+    new Path({
+      segments: [
+        [20, 25],
+        [130, 25]
+      ],
+      strokeColor: 'black',
+      strokeWidth: 16,
+      strokeProfile: [
+        { offset: 0, width: 0.1, smooth: false },
+        { offset: 110, width: 1.5, smooth: false }
+      ]
+    })
+    const wave = new Path({
+      segments: [
+        [20, 85],
+        [80, 50],
+        [140, 85]
+      ],
+      strokeColor: 'black',
+      strokeWidth: 20
+    })
+    wave.smooth({ type: 'catmull-rom' })
+    wave.strokeProfile = [
+      { offset: 0, width: 0.1 },
+      { offset: wave.length * 0.4, width: 1.2 },
+      { offset: wave.length, width: 0.1 }
+    ]
+    // A broad nib, a flat pen held at an angle:
+    const nib = new Path({
+      segments: [
+        [170, 80],
+        [200, 30],
+        [240, 80],
+        [280, 30]
+      ],
+      strokeColor: '#335',
+      strokeWidth: 24,
+      strokeCap: 'round',
+      strokeJoin: 'round'
+    })
+    nib.smooth({ type: 'catmull-rom' })
+    nib.strokeProfile = [{ offset: 0, aspect: 0.15, angle: -35 }]
+    // A closed path, and fills under and over the profile:
+    const ring = new Path.Circle({
+      center: [55, 155],
+      radius: 30,
+      strokeColor: '#e63',
+      strokeWidth: 12
+    })
+    ring.strokeProfile = [
+      { offset: 0, width: 0.3 },
+      { offset: ring.length / 2, width: 1.5 }
+    ]
+    ;['fill', 'stroke'].forEach((paintOrder, i) => {
+      const square = new Path.Rectangle({
+        point: [110 + i * 70, 125],
+        size: [50, 50],
+        fillColor: '#fc6',
+        strokeColor: '#39c',
+        strokeWidth: 14,
+        paintOrder
+      })
+      square.strokeProfile = [
+        { offset: 0, width: 0.2, smooth: false },
+        { offset: square.length, width: 1.6, smooth: false }
+      ]
+    })
+    // A gradient as the stroke color, and an effect before the profile, whose
+    // offset path doesn't carry it on yet (#2505):
+    const gradient = new Path({
+      segments: [
+        [20, 215],
+        [140, 215]
+      ],
+      strokeColor: {
+        gradient: { stops: ['#39c', '#e63'] },
+        origin: [20, 215],
+        destination: [140, 215]
+      },
+      strokeWidth: 18,
+      strokeCap: 'round'
+    })
+    gradient.strokeProfile = [
+      { offset: 0, width: 0.3 },
+      { offset: 60, width: 1 },
+      { offset: 120, width: 0.3 }
+    ]
+    const offset = new Path.Rectangle({
+      point: [195, 195],
+      size: [70, 30],
+      strokeColor: 'black',
+      strokeWidth: 6
+    })
+    offset.strokeProfile = [
+      { offset: 0, width: 0.3, smooth: false },
+      { offset: offset.length, width: 2, smooth: false }
+    ]
+    offset.addEffect({ type: 'offset', parameters: { distance: 6 } })
+    await expectScene()
+  })
+})
+
 describe('Rasters', () => {
   test('Transformed, smoothed and transparent', async () => {
     createScene(300, 200)
