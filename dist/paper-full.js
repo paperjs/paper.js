@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Nov 3 18:30:07 2026 +0100
+ * Date: Tue Nov 3 16:17:35 2026 +0100
  *
  ***
  *
@@ -1338,11 +1338,10 @@ var Numerical = new function() {
 				}
 				if (fx > 0) {
 					b = x;
-					x = nx <= a ? (a + b) * 0.5 : nx;
 				} else {
 					a = x;
-					x = nx >= b ? (a + b) * 0.5 : nx;
 				}
+				x = nx > a && nx < b ? nx : (a + b) * 0.5;
 			}
 			return clamp(x, a, b);
 		},
@@ -14348,6 +14347,22 @@ PathItem.inject(new function() {
 						df = function(phi) {
 							return dfcs(Math.cos(phi), Math.sin(phi));
 						},
+						ddf = function(phi) {
+							var c = Math.cos(phi),
+								s = Math.sin(phi);
+							return -t1 * b * c - t2 * a * s
+									+ 2 * (a * db - da * b) * (c * c - s * s)
+									- 4 * dAngle * (a * a - b * b) * s * c;
+						},
+						solve = function(f, df, phi0, phi1, f0, f1) {
+							var sign = f0 < 0 ? 1 : -1;
+							return Numerical.findRoot(function(phi) {
+								return sign * f(phi);
+							}, function(phi) {
+								return sign * df(phi);
+							}, (f1 * phi0 - f0 * phi1) / (f1 - f0), phi0, phi1,
+								32, epsilon);
+						},
 						sample = penSamples[0],
 						phi0 = sample.phi,
 						f0 = fcs(sample.cos, sample.sin),
@@ -14355,8 +14370,7 @@ PathItem.inject(new function() {
 						roots = [];
 
 					var addRoot = function(phi0, phi1, f0, f1) {
-						var phi = Numerical.findSignChange(f, phi0, phi1, f0,
-								f1, epsilon),
+						var phi = solve(f, df, phi0, phi1, f0, f1),
 							c = Math.cos(phi),
 							s = Math.sin(phi),
 							dfs = (dt1 * b + t1 * db) * c
@@ -14387,8 +14401,7 @@ PathItem.inject(new function() {
 						if (f0 * f1 <= 0 && f0 !== f1) {
 							addRoot(phi0, phi1, f0, f1);
 						} else if (d0 * d1 < 0) {
-							var phi = Numerical.findSignChange(df, phi0, phi1,
-									d0, d1, epsilon),
+							var phi = solve(df, ddf, phi0, phi1, d0, d1),
 								f2 = f(phi);
 							if (f2 * f0 < 0) {
 								addRoot(phi0, phi, f0, f2);
