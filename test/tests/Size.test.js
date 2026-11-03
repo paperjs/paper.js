@@ -11,7 +11,7 @@
  */
 
 import { describe } from 'vitest'
-import { Point, Size } from 'paper'
+import { Point, Shape, Size } from 'paper'
 import { equals, test } from '../helpers.js'
 
 describe('Size', () => {
@@ -50,5 +50,26 @@ describe('Size', () => {
 
   test('Size#values', () => {
     equals(new Size(10, 20).values, [10, 20])
+  })
+
+  test('Size#modulo() and Size.random()', () => {
+    equals(new Size(12, 5).modulo(new Size(5, 2)), new Size(2, 1))
+    const random = Size.random()
+    equals(
+      random.width >= 0 &&
+      random.width < 1 &&
+      random.height >= 0 &&
+      random.height < 1,
+      true
+    )
+  })
+
+  test('Changing the size of an item resizes it', () => {
+    const shape = new Shape.Rectangle({ point: [0, 0], size: [10, 10] })
+    shape.size.width = 20
+    shape.size.height = 30
+    equals(shape.size, new Size(20, 30))
+    shape.size.set(40, 50)
+    equals(shape.size, new Size(40, 50))
   })
 })

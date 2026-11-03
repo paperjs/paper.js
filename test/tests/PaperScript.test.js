@@ -1060,4 +1060,9 @@ describe('PaperScript', () => {
         })
     })
   })
+
+  test('PaperScope#execute() runs PaperScript in the scope', () => {
+    const exports = paper.execute('module.exports.sum = new Point(1, 2) + 3')
+    equals(exports.sum, new paper.Point(4, 5))
+  })
 })

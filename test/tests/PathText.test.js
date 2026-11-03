@@ -235,4 +235,29 @@ describe('PathText', () => {
     )
     paper.project.trackChanges = false
   })
+
+  test('new PathText(path, orientation), clones and transformed bounds', () => {
+    const path = new Path.Line([0, 0], [200, 0])
+    const text = new PathText(path, 'vertical')
+    equals([text.textPath === path, text.orientation], [true, 'vertical'])
+    text.orientation = 'horizontal'
+    text.set({ content: 'Abc', fontFamily: testFontFamily, fontSize: 12 })
+    text.startOffset = 10
+    // Clones copy the path, which is the text's child, and keep the offsets:
+    const copy = text.clone()
+    equals(
+      [
+        copy.textPath !== path && copy.textPath.compare(path),
+        copy.startOffset,
+        copy.content
+      ],
+      [true, 10, 'Abc']
+    )
+    // The bounds turn with the text:
+    const { width, height } = text.bounds
+    text.rotate(90, [0, 0])
+    equals(text.bounds.size, new paper.Size(height, width), null, {
+      tolerance: 1e-6
+    })
+  })
 })

@@ -404,4 +404,77 @@ describe('Raster', () => {
       done()
     }
   })
+
+  // A raster of 10 × 10 pixels, red on its left half and blue on its right:
+  function createHalves() {
+    const raster = new Raster({ size: [10, 10], position: [5, 5] })
+    const ctx = raster.getContext(true)
+    ctx.fillStyle = 'red'
+    ctx.fillRect(0, 0, 5, 10)
+    ctx.fillStyle = 'blue'
+    ctx.fillRect(5, 0, 5, 10)
+    return raster
+  }
+
+  test('Raster#getAverageColor() of all of it, a rectangle and a point', () => {
+    const raster = createHalves()
+    equals(raster.getAverageColor(), new Color(0.5, 0, 0.5), null, {
+      tolerance: 1e-2
+    })
+    equals(
+      raster.getAverageColor(new Rectangle(0, 0, 5, 10)),
+      new Color(1, 0, 0),
+      null,
+      { tolerance: 1e-2 }
+    )
+    equals(raster.getAverageColor(new Point(8, 5)), new Color(0, 0, 1), null, {
+      tolerance: 1e-2
+    })
+  })
+
+  test('Raster#getSubRaster() and image data', () => {
+    const raster = createHalves()
+    const sub = raster.getSubRaster(new Rectangle(5, 0, 5, 10))
+    equals(sub.size, new Size(5, 10))
+    equals(sub.getPixel(0, 0), new Color(0, 0, 1, 1))
+    // Image data, in pixels:
+    const data = raster.getImageData(new Rectangle(0, 0, 5, 10))
+    const copy = new Raster({ size: [10, 10], insert: false })
+    copy.putImageData(data, new Point(5, 0))
+    equals(copy.getPixel(7, 5), new Color(1, 0, 0, 1))
+    equals(copy.getPixel(2, 5).alpha, 0, 'left out')
+    copy.setImageData(raster.createImageData(new Size(4, 4)))
+    equals(copy.size, new Size(4, 4))
+    // Drawing an image into it:
+    copy.drawImage(raster.getSubCanvas(new Rectangle(0, 0, 2, 2)), [1, 1])
+    equals(copy.getPixel(2, 2), new Color(1, 0, 0, 1))
+    copy.clear()
+    equals(copy.getPixel(2, 2).alpha, 0, 'cleared')
+  })
+
+  test('Raster#size can be empty', () => {
+    const raster = createHalves()
+    raster.size = [0, 10]
+    equals([raster.size, raster.width], [new Size(0, 10), 0])
+  })
+
+  test('Raster#equals() compares the content, and #loaded', () => {
+    const raster = createHalves()
+    equals(raster.loaded, true)
+    equals(raster.equals(raster.clone({ insert: false })), true)
+    // Rasters of canvases compare their content:
+    equals(raster.equals(createHalves()), true, 'the same content')
+    equals(
+      raster.equals(new Raster({ size: [10, 10], insert: false })),
+      false,
+      'other content'
+    )
+  })
+
+  test('Hits on rasters report the pixel and its color', () => {
+    const raster = createHalves()
+    const hit = raster.hitTest(new Point(2, 5))
+    equals([hit.type, hit.offset], ['pixel', new Point(2, 5)])
+    equals(hit.color, new Color(1, 0, 0, 1))
+  })
 })
