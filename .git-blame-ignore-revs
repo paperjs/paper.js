@@ -1,0 +1,5 @@
+# Commits that only reformat the code, which `git blame` skips with:
+# git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Format the sources with Prettier and Penere
+036100be2fc479dbe2c0a473be0266405f382354
