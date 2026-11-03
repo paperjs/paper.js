@@ -235,6 +235,35 @@ describe('Effect', () => {
     )
   })
 
+  test('EffectInstance#equals() compares type, visibility and parameters', () => {
+    const instance = new EffectInstance({
+      type: 'offset',
+      parameters: { distance: 10 }
+    })
+    // Changes of instances that aren't on an item go nowhere:
+    instance.distance = 5
+    equals(instance.distance, 5)
+    const other = new EffectInstance({
+      type: 'offset',
+      parameters: { distance: 5 }
+    })
+    equals(instance.equals(other), true)
+    equals(instance.equals(instance), true)
+    other.visible = false
+    equals(instance.equals(other), false, 'visibility')
+    equals(
+      instance.equals(new EffectInstance({ type: 'offset' })),
+      false,
+      'parameters'
+    )
+    equals(
+      instance.equals(new EffectInstance({ type: 'outline' })),
+      false,
+      'type'
+    )
+    equals(instance.equals({ type: 'offset' }), false, 'no instance')
+  })
+
   test('Item#previewBounds measures the effects, the others the item', () => {
     const path = createSquare()
     path.strokeColor = 'black'

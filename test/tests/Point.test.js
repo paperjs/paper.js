@@ -169,4 +169,57 @@ describe('Point', () => {
     const path = new Path([[30, 40], [50, 60]])
     equals(path.firstSegment.point.values, [30, 40], 'segment point')
   })
+
+  test('Point.min() and Point.max()', () => {
+    equals(Point.min([1, 5], [3, 2]), new Point(1, 2))
+    equals(Point.max([1, 5], [3, 2]), new Point(3, 5))
+  })
+
+  test('Point#project()', () => {
+    equals(new Point(3, 4).project([1, 0]), new Point(3, 0))
+    equals(new Point(3, 4).project([0, 0]), new Point(0, 0), 'onto nothing')
+  })
+
+  test('Point#isNaN()', () => {
+    equals(new Point(NaN, 0).isNaN(), true)
+    equals(new Point(0, NaN).isNaN(), true)
+    equals(new Point(0, 0).isNaN(), false)
+  })
+
+  test('Point#quadrant and #isInQuadrant()', () => {
+    const points = [[1, 1], [-1, 1], [-1, -1], [1, -1]].map(p => new Point(p))
+    equals(
+      points.map(point => point.quadrant),
+      [1, 2, 3, 4]
+    )
+    equals(
+      points.map(point => [1, 2, 3, 4].filter(q => point.isInQuadrant(q))),
+      [[1], [2], [3], [4]]
+    )
+  })
+
+  test('Point#rotate() around a center', () => {
+    equals(new Point(20, 10).rotate(90, [10, 10]), new Point(10, 20))
+  })
+
+  test('Point#getDistance() squared', () => {
+    equals(new Point(0, 0).getDistance([3, 4], true), 25)
+  })
+
+  test('Points of zero length keep their angle', () => {
+    equals(new Point({ angle: 45 }).angle, 45)
+    const point = new Point({ angle: 30, length: 10 })
+    point.length = 0
+    equals([point.x, point.y, point.angle], [0, 0, 30])
+    point.length = 10
+    equals(point.angle, 30)
+  })
+
+  test('Changing the position of an item moves it', () => {
+    const path = new Path.Rectangle({ point: [0, 0], size: [10, 10] })
+    path.position.y = 25
+    equals(path.bounds.topLeft, new Point(0, 20))
+    path.position.set(15, 15)
+    equals(path.bounds.topLeft, new Point(10, 10))
+  })
 })

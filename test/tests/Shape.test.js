@@ -103,4 +103,67 @@ describe('Shape', () => {
     equals(shape.size, new Size(20, 20))
     equals(shape.radius, 10)
   })
+
+  test('Shape#equals() compares type, size and radius', () => {
+    const rectangle = new Shape.Rectangle({
+      point: [0, 0],
+      size: [40, 20],
+      radius: 5
+    })
+    equals(rectangle.equals(rectangle.clone()), true)
+    const other = rectangle.clone()
+    other.radius = 6
+    equals(rectangle.equals(other), false, 'radius')
+    equals(
+      rectangle.equals(new Shape.Ellipse({ point: [0, 0], size: [40, 20] })),
+      false,
+      'type'
+    )
+  })
+
+  test('Shape#size and #radius keep each other in shape', () => {
+    // Circles take the average of width and height:
+    const circle = new Shape.Circle({ center: [0, 0], radius: 10 })
+    circle.size = [20, 40]
+    equals([circle.size, circle.radius], [new Size(30, 30), 15])
+    // Ellipses take half of each:
+    const ellipse = new Shape.Ellipse({ point: [0, 0], size: [10, 10] })
+    ellipse.size = [20, 40]
+    equals(ellipse.radius, new Size(10, 20))
+    // Rectangles grow to fit their radius:
+    const rectangle = new Shape.Rectangle({ point: [0, 0], size: [10, 10] })
+    rectangle.radius = [10, 8]
+    equals(
+      [rectangle.size, rectangle.radius],
+      [new Size(20, 16), new Size(10, 8)]
+    )
+  })
+
+  test('Shape#contains() of rounded rectangles leaves out their corners', () => {
+    const rectangle = new Shape.Rectangle({
+      point: [0, 0],
+      size: [40, 40],
+      radius: 10,
+      fillColor: 'black'
+    })
+    equals(rectangle.contains([1, 1]), false, 'beyond the corner')
+    equals(rectangle.contains([4, 4]), true, 'within the corner')
+    equals(rectangle.contains([20, 1]), true, 'along the side')
+  })
+
+  test('Shapes with opacity draw directly unless filled and stroked', () => {
+    const getAlpha = shape => {
+      const raster = shape.rasterize({ resolution: 72, insert: false })
+      return raster.getPixel(raster.width / 2, raster.height / 2).alpha
+    }
+    const circle = new Shape.Circle({
+      center: [20, 20],
+      radius: 10,
+      fillColor: 'black',
+      opacity: 0.5
+    })
+    equals(getAlpha(circle), 0.5, null, { tolerance: 0.01 })
+    circle.set({ strokeColor: 'black', strokeWidth: 4 })
+    equals(getAlpha(circle), 0.5, null, { tolerance: 0.01 })
+  })
 })
