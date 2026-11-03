@@ -19,8 +19,8 @@ describe('Matrix', () => {
     function testAngle(a, ea) {
       const m = new Matrix().rotate(a),
         s = 'new Matrix().rotate(' + a + ')'
-      equals(m.getRotation(), Base.pick(ea, a), s + '.getRotation()')
-      equals(m.getScaling(), new Point(1, 1), s + '.getScaling()')
+      equals(m.rotation, Base.pick(ea, a), s + '.rotation')
+      equals(m.scaling, new Point(1, 1), s + '.scaling')
     }
 
     testAngle(0)
@@ -42,11 +42,11 @@ describe('Matrix', () => {
     function testScale(sx, sy, ex, ey, ea) {
       const m = new Matrix().scale(sx, sy),
         s = 'new Matrix().scale(' + sx + ', ' + sy + ')'
-      equals(m.getRotation(), ea || 0, s + '.getRotation()')
+      equals(m.rotation, ea || 0, s + '.rotation')
       equals(
-        m.getScaling(),
+        m.scaling,
         new Point(Base.pick(ex, sx), Base.pick(ey, sy)),
-        s + '.getScaling()'
+        s + '.scaling'
       )
     }
 
@@ -73,11 +73,11 @@ describe('Matrix', () => {
           a +
           ')'
         )
-      equals(m.getRotation(), ea || a, s + '.getRotation()')
+      equals(m.rotation, ea || a, s + '.rotation')
       equals(
-        m.getScaling(),
+        m.scaling,
         new Point(Base.pick(ex, sx), Base.pick(ey, sy)),
-        s + '.getScaling()'
+        s + '.scaling'
       )
     }
 

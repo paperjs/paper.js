@@ -698,8 +698,8 @@ describe('Curve', () => {
     )
     equals(moved.length, curve.length, 'length', options)
     equals(
-      Curve.getPeaks(moved.getValues()),
-      Curve.getPeaks(curve.getValues()),
+      Curve.getPeaks(moved.values),
+      Curve.getPeaks(curve.values),
       'peaks',
       options
     )
