@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Nov 3 19:30:32 2026 +0100
+ * Date: Tue Nov 3 19:55:50 2026 +0100
  *
  ***
  *
@@ -4474,7 +4474,7 @@ new function() {
 		if (!raster) {
 			raster = new Raster(Item.NO_INSERT);
 		}
-		var bounds = this.getStrokeBounds(),
+		var bounds = this.getPreviewBounds(),
 			scale = (resolution || this.getView().getResolution()) / 72,
 			topLeft = bounds.getTopLeft().floor(),
 			bottomRight = bounds.getBottomRight().ceil(),
@@ -5389,7 +5389,7 @@ new function() {
 					&& buffer.version === version;
 			var bounds = isFresh
 					? buffer.bounds
-					: this.getStrokeBounds(viewMatrix);
+					: this.getPreviewBounds(viewMatrix);
 			if (!isFresh && style.getShadowColor(true)) {
 				var mx = viewMatrix._shiftless(),
 					blur = mx.transform(
@@ -7097,6 +7097,8 @@ Item.inject(new function() {
 	}
 
 	return {
+		beans: true,
+
 		_effects: null,
 
 		getEffects: function() {
@@ -7216,7 +7218,7 @@ Item.inject(new function() {
 			return art;
 		},
 
-		getPreviewBounds: function() {
+		getPreviewBounds: function(matrix) {
 			var output = this.getEffectOutput(),
 				children = this._children;
 			if (output || children && hasEffects(this)) {
@@ -7232,10 +7234,12 @@ Item.inject(new function() {
 						}
 					}
 				}
-				if (bounds)
-					return this._matrix._transformBounds(bounds);
+				if (bounds) {
+					return (matrix ? matrix.appended(this._matrix)
+							: this._matrix)._transformBounds(bounds);
+				}
 			}
-			return this.getStrokeBounds();
+			return this.getStrokeBounds(matrix);
 		}
 	};
 });
