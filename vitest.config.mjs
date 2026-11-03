@@ -7,12 +7,13 @@ import { paperPlugin } from './test/vite-plugin-paper.mjs'
 export default defineConfig({
   plugins: [paperPlugin(), assetsPlugin()],
   test: {
-    // Measured on Node, with the sources loaded through src/load.js, see
+    // Measured on Node, with the sources loaded through src/load.js, and in
+    // the browser, through the source map of the library built from them, see
     // `pnpm test:coverage`:
     coverage: {
       provider: 'v8',
       include: ['src/**'],
-      exclude: ['src/load.js'],
+      exclude: ['src/load.js', '**/node_modules/**'],
       reporter: ['text-summary', 'html']
     },
     projects: [

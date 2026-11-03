@@ -21,7 +21,9 @@ const builds = {
   core: { paperScript: false },
   hosted: { paperScript: true, hosted: true }
 }
-const id = '\0paper'
+// Under the path of src/paper.js rather than as a virtual module, which
+// coverage leaves out:
+const id = path.join(root, 'src', 'paper.js')
 
 // Serve `paper` to the tests as a module, on Node and in the browser: the
 // library built in dist/paper-<build>.js, as in CI, or else built from the
@@ -57,8 +59,8 @@ export function paperPlugin() {
         )
       }
       if (source === id) {
-        const code = isBuilt
-          ? fs.readFileSync(file, 'utf8')
+        const { code, map } = isBuilt
+          ? { code: fs.readFileSync(file, 'utf8') }
           : buildFromSources(builds[PAPER_BUILD || 'hosted'])
         // Hide the runner's module, so the library doesn't export itself
         // through CommonJS, and on Node, let it require its Node layer
@@ -75,10 +77,17 @@ export function paperPlugin() {
               : ''
           )
         )
-        return (
-          `${header}${code}\nexport default paper\n` +
-          `export const { ${names.join(', ')} } = paper\n`
-        )
+        return {
+          code: (
+            `${header}${code}\nexport default paper\n` +
+            `export const { ${names.join(', ')} } = paper\n`
+          ),
+          // The header's lines come before the mapped ones:
+          map: map && {
+            ...map,
+            mappings: ';'.repeat(header.split('\n').length - 1) + map.mappings
+          }
+        }
       }
     }
   }
@@ -104,13 +113,76 @@ function getExportNames() {
   return names
 }
 
+// Build the library from the sources as `gulp build` does, with a source map
+// back to them, so that errors and coverage in the browser point to their
+// files. prepro reads the files itself, and outputs each line that isn't a
+// preprocessor statement, so tag these lines with their file and number as it
+// reads them, and turn the tags into the map:
 function buildFromSources(options) {
   const Prepro = require('prepro')
   const prepro = new Prepro()
+  const sources = []
   // Evaluate constants.js first, for the constants substitution (`/*#=*/`):
   prepro.evaluate(path.join(root, 'src', 'constants.js'))
   prepro.setup(() => ({
     __options: { ...require(path.join(root, 'src', 'options.js')), ...options }
   }))
-  return prepro.process(path.join(root, 'src', 'paper.js'))
+  const { readFileSync } = fs
+  fs.readFileSync = function (file, ...args) {
+    const content = readFileSync.call(this, file, ...args).toString()
+    const index = sources.push(file) - 1
+    return content
+      .split('\n')
+      .map((line, i) =>
+        /^\s*\/\*#\*\//.test(line) ? line : `${line}//@${index}:${i}`
+      )
+      .join('\n')
+  }
+  let code
+  try {
+    code = prepro.process(path.join(root, 'src', 'paper.js'))
+  } finally {
+    fs.readFileSync = readFileSync
+  }
+  let previous = [0, 0]
+  const lines = code.split('\n')
+  const mappings = lines.map((line, i) => {
+    const match = line.match(/\/\/@(\d+):(\d+)$/)
+    if (match) {
+      lines[i] = line.slice(0, match.index)
+      const current = [+match[1], +match[2]]
+      const segment = encode([
+        0,
+        current[0] - previous[0],
+        current[1] - previous[1],
+        0
+      ])
+      previous = current
+      return segment
+    }
+    return ''
+  })
+  return {
+    code: lines.join('\n'),
+    map: { version: 3, sources, mappings: mappings.join(';') }
+  }
+}
+
+// Encodes the values of a source map segment as base64 VLQs:
+function encode(values) {
+  const chars =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+  return values
+    .map(value => {
+      let vlq = value < 0 ? (-value << 1) | 1 : value << 1
+      let result = ''
+      do {
+        let digit = vlq & 31
+        vlq >>>= 5
+        if (vlq > 0) digit |= 32
+        result += chars[digit]
+      } while (vlq > 0)
+      return result
+    })
+    .join('')
 }
