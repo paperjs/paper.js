@@ -25,10 +25,11 @@
  *
  * @extends PathItem
  */
-var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
+var CompoundPath = PathItem.extend(
+  /** @lends CompoundPath# */ {
     _class: 'CompoundPath',
     _serializeFields: {
-        children: []
+      children: []
     },
     // Enforce creation of beans, as bean getters have hidden parameters.
     // See #getPathData() below.
@@ -97,70 +98,67 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
      * path.fillColor = 'black';
      */
     initialize: function CompoundPath(arg) {
-        // CompoundPath has children and supports named children.
-        this._children = [];
-        this._namedChildren = {};
-        if (!this._initialize(arg)) {
-            if (typeof arg === 'string') {
-                this.setPathData(arg);
-            } else {
-                this.addChildren(Array.isArray(arg) ? arg : arguments);
-            }
+      // CompoundPath has children and supports named children.
+      this._children = []
+      this._namedChildren = {}
+      if (!this._initialize(arg)) {
+        if (typeof arg === 'string') {
+          this.setPathData(arg)
+        } else {
+          this.addChildren(Array.isArray(arg) ? arg : arguments)
         }
+      }
     },
 
     _transformContent: function _transformContent(matrix) {
-        this._scaleStroke(matrix);
-        return _transformContent.base.apply(this, arguments);
+      this._scaleStroke(matrix)
+      return _transformContent.base.apply(this, arguments)
     },
 
     insertChildren: function insertChildren(index, items) {
-        // If we're passed a segment array describing a simple path instead of a
-        // compound-path, wrap it in another array to turn it into the array
-        // notation for compound-paths.
-        var list = items,
-            first = list[0];
-        if (first && typeof first[0] === 'number')
-            list = [list];
-        // Perform some conversions depending on the type of item passed:
-        // Convert array-notation to paths, and expand compound-paths in the
-        // items list by adding their children to the it replacing their parent.
-        for (var i = items.length - 1; i >= 0; i--) {
-            var item = list[i];
-            // Clone the list array before modifying it, as it may be a passed
-            // children array from another item.
-            if (list === items && !(item instanceof Path))
-                list = Base.slice(list);
-            if (Array.isArray(item)) {
-                list[i] = new Path({ segments: item, insert: false });
-            } else if (item instanceof CompoundPath) {
-                list.splice.apply(list, [i, 1].concat(item.removeChildren()));
-                item.remove();
-            }
+      // If we're passed a segment array describing a simple path instead of a
+      // compound-path, wrap it in another array to turn it into the array
+      // notation for compound-paths.
+      var list = items,
+        first = list[0]
+      if (first && typeof first[0] === 'number') list = [list]
+      // Perform some conversions depending on the type of item passed:
+      // Convert array-notation to paths, and expand compound-paths in the
+      // items list by adding their children to the it replacing their parent.
+      for (var i = items.length - 1; i >= 0; i--) {
+        var item = list[i]
+        // Clone the list array before modifying it, as it may be a passed
+        // children array from another item.
+        if (list === items && !(item instanceof Path)) list = Base.slice(list)
+        if (Array.isArray(item)) {
+          list[i] = new Path({ segments: item, insert: false })
+        } else if (item instanceof CompoundPath) {
+          list.splice.apply(list, [i, 1].concat(item.removeChildren()))
+          item.remove()
         }
-        return insertChildren.base.call(this, index, list);
+      }
+      return insertChildren.base.call(this, index, list)
     },
 
     // DOCS: reduce()
     reduce: function reduce(options) {
-        var children = this._children;
-        for (var i = children.length - 1; i >= 0; i--) {
-            var path = children[i].reduce(options);
-            if (path.isEmpty())
-                path.remove();
-        }
-        if (!children.length) { // Replace with a simple empty Path
-            var path = new Path(Item.NO_INSERT);
-            path.copyAttributes(this);
-            path.insertAbove(this);
-            this.remove();
-            return path;
-        }
-        var item = reduce.base.call(this);
-        // A single child takes on the attributes that it was drawn with:
-        if (item !== this)
-            item.copyAttributes(this, true);
-        return item;
+      var children = this._children
+      for (var i = children.length - 1; i >= 0; i--) {
+        var path = children[i].reduce(options)
+        if (path.isEmpty()) path.remove()
+      }
+      if (!children.length) {
+        // Replace with a simple empty Path
+        var path = new Path(Item.NO_INSERT)
+        path.copyAttributes(this)
+        path.insertAbove(this)
+        this.remove()
+        return path
+      }
+      var item = reduce.base.call(this)
+      // A single child takes on the attributes that it was drawn with:
+      if (item !== this) item.copyAttributes(this, true)
+      return item
     },
 
     /**
@@ -171,20 +169,19 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
      * @type Boolean
      * @see Path#closed
      */
-    isClosed: function() {
-        var children = this._children;
-        for (var i = 0, l = children.length; i < l; i++) {
-            if (!children[i]._closed)
-                return false;
-        }
-        return true;
+    isClosed: function () {
+      var children = this._children
+      for (var i = 0, l = children.length; i < l; i++) {
+        if (!children[i]._closed) return false
+      }
+      return true
     },
 
-    setClosed: function(closed) {
-        var children = this._children;
-        for (var i = 0, l = children.length; i < l; i++) {
-            children[i].setClosed(closed);
-        }
+    setClosed: function (closed) {
+      var children = this._children
+      for (var i = 0, l = children.length; i < l; i++) {
+        children[i].setClosed(closed)
+      }
     },
 
     /**
@@ -194,9 +191,9 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
      * @bean
      * @type Segment
      */
-    getFirstSegment: function() {
-        var first = this.getFirstChild();
-        return first && first.getFirstSegment();
+    getFirstSegment: function () {
+      var first = this.getFirstChild()
+      return first && first.getFirstSegment()
     },
 
     /**
@@ -206,9 +203,9 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
      * @bean
      * @type Segment
      */
-    getLastSegment: function() {
-        var last = this.getLastChild();
-        return last && last.getLastSegment();
+    getLastSegment: function () {
+      var last = this.getLastChild()
+      return last && last.getLastSegment()
     },
 
     /**
@@ -218,13 +215,13 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
      * @bean
      * @type Curve[]
      */
-    getCurves: function() {
-        var children = this._children,
-            curves = [];
-        for (var i = 0, l = children.length; i < l; i++) {
-            Base.push(curves, children[i].getCurves());
-        }
-        return curves;
+    getCurves: function () {
+      var children = this._children,
+        curves = []
+      for (var i = 0, l = children.length; i < l; i++) {
+        Base.push(curves, children[i].getCurves())
+      }
+      return curves
     },
 
     /**
@@ -234,9 +231,9 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
      * @bean
      * @type Curve
      */
-    getFirstCurve: function() {
-        var first = this.getFirstChild();
-        return first && first.getFirstCurve();
+    getFirstCurve: function () {
+      var first = this.getFirstChild()
+      return first && first.getFirstCurve()
     },
 
     /**
@@ -246,9 +243,9 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
      * @bean
      * @type Curve
      */
-    getLastCurve: function() {
-        var last = this.getLastChild();
-        return last && last.getLastCurve();
+    getLastCurve: function () {
+      var last = this.getLastChild()
+      return last && last.getLastCurve()
     },
 
     /**
@@ -260,12 +257,12 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
      * @bean
      * @type Number
      */
-    getArea: function() {
-        var children = this._children,
-            area = 0;
-        for (var i = 0, l = children.length; i < l; i++)
-            area += children[i].getArea();
-        return area;
+    getArea: function () {
+      var children = this._children,
+        area = 0
+      for (var i = 0, l = children.length; i < l; i++)
+        area += children[i].getArea()
+      return area
     },
 
     /**
@@ -275,128 +272,147 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
      * @bean
      * @type Number
      */
-    getLength: function() {
-        var children = this._children,
-            length = 0;
-        for (var i = 0, l = children.length; i < l; i++)
-            length += children[i].getLength();
-        return length;
+    getLength: function () {
+      var children = this._children,
+        length = 0
+      for (var i = 0, l = children.length; i < l; i++)
+        length += children[i].getLength()
+      return length
     },
 
-    getPathData: function(_matrix, _precision) {
-        // NOTE: #setPathData() is defined in PathItem.
-        var children = this._children,
-            paths = [];
-        for (var i = 0, l = children.length; i < l; i++) {
-            var child = children[i],
-                mx = child._matrix;
-            paths.push(child.getPathData(_matrix && !mx.isIdentity()
-                    ? _matrix.appended(mx) : _matrix, _precision));
-        }
-        return paths.join('');
+    getPathData: function (_matrix, _precision) {
+      // NOTE: #setPathData() is defined in PathItem.
+      var children = this._children,
+        paths = []
+      for (var i = 0, l = children.length; i < l; i++) {
+        var child = children[i],
+          mx = child._matrix
+        paths.push(
+          child.getPathData(
+            _matrix && !mx.isIdentity()
+              ? _matrix.appended(mx)
+              : _matrix,
+            _precision
+          )
+        )
+      }
+      return paths.join('')
     },
 
     _hitTestChildren: function _hitTestChildren(point, options, viewMatrix) {
-        return _hitTestChildren.base.call(this, point,
-                // If we're not specifically asked to returns paths through
-                // options.class == Path, do not test children for fill, since a
-                // compound path forms one shape.
-                // Also support legacy format `type: 'path'`.
-                options.class === Path || options.type === 'path' ? options
-                    : Base.set({}, options, { fill: false }),
-                viewMatrix);
+      return _hitTestChildren.base.call(
+        this,
+        point,
+        // If we're not specifically asked to returns paths through
+        // options.class == Path, do not test children for fill, since a
+        // compound path forms one shape.
+        // Also support legacy format `type: 'path'`.
+        options.class === Path || options.type === 'path'
+          ? options
+          : Base.set({}, options, { fill: false }),
+        viewMatrix
+      )
     },
 
-    _draw: function(ctx, param, viewMatrix, strokeMatrix) {
-        var children = this._children;
-        // Return early if the compound path doesn't have any children:
-        if (!children.length)
-            return;
+    _draw: function (ctx, param, viewMatrix, strokeMatrix) {
+      var children = this._children
+      // Return early if the compound path doesn't have any children:
+      if (!children.length) return
 
-        param = param.extend({ dontStart: true, dontFinish: true });
-        ctx.beginPath();
-        for (var i = 0, l = children.length; i < l; i++)
-            children[i].draw(ctx, param, strokeMatrix);
+      param = param.extend({ dontStart: true, dontFinish: true })
+      ctx.beginPath()
+      for (var i = 0, l = children.length; i < l; i++)
+        children[i].draw(ctx, param, strokeMatrix)
 
-        if (!param.clip)
-            this._paint(ctx, param, viewMatrix, strokeMatrix);
+      if (!param.clip) this._paint(ctx, param, viewMatrix, strokeMatrix)
     },
 
-    _drawSelected: function(ctx, matrix, selectionItems) {
-        var children = this._children;
-        for (var i = 0, l = children.length; i < l; i++) {
-            var child = children[i],
-                mx = child._matrix;
-            // Do not draw this child now if it's separately marked as selected,
-            // as it would be drawn twice otherwise.
-            if (!selectionItems[child._id]) {
-                child._drawSelected(ctx, mx.isIdentity() ? matrix
-                        : matrix.appended(mx));
-            }
+    _drawSelected: function (ctx, matrix, selectionItems) {
+      var children = this._children
+      for (var i = 0, l = children.length; i < l; i++) {
+        var child = children[i],
+          mx = child._matrix
+        // Do not draw this child now if it's separately marked as selected,
+        // as it would be drawn twice otherwise.
+        if (!selectionItems[child._id]) {
+          child._drawSelected(
+            ctx,
+            mx.isIdentity() ? matrix : matrix.appended(mx)
+          )
         }
+      }
     }
-},
-new function() { // Injection scope for PostScript-like drawing functions
+  },
+  new (function () {
+    // Injection scope for PostScript-like drawing functions
     /**
      * Helper method that returns the current path and checks if a moveTo()
      * command is required first.
      */
     function getCurrentPath(that, check) {
-        var children = that._children;
-        if (check && !children.length)
-            throw new Error('Use a moveTo() command first');
-        return children[children.length - 1];
+      var children = that._children
+      if (check && !children.length)
+        throw new Error('Use a moveTo() command first')
+      return children[children.length - 1]
     }
 
     // Redirect all other drawing commands to the current path
-    return Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo',
-            'arcTo', 'arcAround', 'arcTowards', 'lineBy', 'cubicCurveBy',
-            'quadraticCurveBy', 'curveBy', 'arcBy'],
-        function(key) {
-            this[key] = function() {
-                var path = getCurrentPath(this, true);
-                path[key].apply(path, arguments);
-            };
-        }, {
-            // NOTE: Documentation for these methods is found in PathItem, as
-            // they are considered abstract methods of PathItem and need to be
-            // defined in all implementing classes.
-            moveTo: function(/* point */) {
-                var current = getCurrentPath(this),
-                    // Reuse current path if nothing was added yet
-                    path = current && current.isEmpty() ? current
-                            : new Path(Item.NO_INSERT);
-                if (path !== current)
-                    this.addChild(path);
-                path.moveTo.apply(path, arguments);
-            },
-
-            moveBy: function(/* point */) {
-                var current = getCurrentPath(this, true),
-                    last = current && current.getLastSegment(),
-                    point = Point.read(arguments);
-                this.moveTo(last ? point.add(last._point) : point);
-            },
-
-            closePath: function(tolerance) {
-                getCurrentPath(this, true).closePath(tolerance);
-            }
+    return Base.each(
+      [
+        'lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo', 'arcTo',
+        'arcAround', 'arcTowards', 'lineBy', 'cubicCurveBy', 'quadraticCurveBy',
+        'curveBy', 'arcBy'
+      ],
+      function (key) {
+        this[key] = function () {
+          var path = getCurrentPath(this, true)
+          path[key].apply(path, arguments)
         }
-    );
-}, Base.each(['reverse', 'flatten', 'smooth'], function(key) {
-    // Injection scope for methods forwarded to the child paths.
-    // NOTE: Documentation is in PathItem
-    this[key] = function(param) {
-        var children = this._children;
-        for (var i = 0, l = children.length; i < l; i++)
-            children[i][key](param);
-    };
-}, {
-    simplify: function(options) {
+      },
+      {
+        // NOTE: Documentation for these methods is found in PathItem, as
+        // they are considered abstract methods of PathItem and need to be
+        // defined in all implementing classes.
+        moveTo: function (/* point */) {
+          var current = getCurrentPath(this),
+            // Reuse current path if nothing was added yet
+            path =
+              current && current.isEmpty() ? current : new Path(Item.NO_INSERT)
+          if (path !== current) this.addChild(path)
+          path.moveTo.apply(path, arguments)
+        },
+
+        moveBy: function (/* point */) {
+          var current = getCurrentPath(this, true),
+            last = current && current.getLastSegment(),
+            point = Point.read(arguments)
+          this.moveTo(last ? point.add(last._point) : point)
+        },
+
+        closePath: function (tolerance) {
+          getCurrentPath(this, true).closePath(tolerance)
+        }
+      }
+    )
+  })(),
+  Base.each(
+    ['reverse', 'flatten', 'smooth'],
+    function (key) {
+      // Injection scope for methods forwarded to the child paths.
+      // NOTE: Documentation is in PathItem
+      this[key] = function (param) {
+        var children = this._children
+        for (var i = 0, l = children.length; i < l; i++) children[i][key](param)
+      }
+    },
+    {
+      simplify: function (options) {
         var children = this._children,
-            res = false;
+          res = false
         for (var i = 0, l = children.length; i < l; i++)
-            res = children[i].simplify(options) || res;
-        return res;
+          res = children[i].simplify(options) || res
+        return res
+      }
     }
-}));
+  )
+)

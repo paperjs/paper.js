@@ -20,14 +20,15 @@
  *
  * @extends Item
  */
-var SymbolItem = Item.extend(/** @lends SymbolItem# */{
+var SymbolItem = Item.extend(
+  /** @lends SymbolItem# */ {
     _class: 'SymbolItem',
     _applyMatrix: false,
     _canApplyMatrix: false,
     // SymbolItem uses strokeBounds for bounds
     _boundsOptions: { stroke: true },
     _serializeFields: {
-        definition: null
+      definition: null
     },
 
     /**
@@ -70,24 +71,28 @@ var SymbolItem = Item.extend(/** @lends SymbolItem# */{
      * }
      */
     initialize: function SymbolItem(arg0, arg1) {
-        // Support two forms of item initialization: Passing one object literal
-        // describing all the different properties to be set, or a symbol (arg0)
-        // and a point where it should be placed (arg1).
-        // If _initialize can set properties through object literal, we're done.
-        // Otherwise we need to set symbol from arg0.
-        if (!this._initialize(arg0,
-                arg1 !== undefined && Point.read(arguments, 1)))
-            this.setDefinition(arg0 instanceof SymbolDefinition ?
-                    arg0 : new SymbolDefinition(arg0));
+      // Support two forms of item initialization: Passing one object literal
+      // describing all the different properties to be set, or a symbol (arg0)
+      // and a point where it should be placed (arg1).
+      // If _initialize can set properties through object literal, we're done.
+      // Otherwise we need to set symbol from arg0.
+      if (
+        !this._initialize(arg0, arg1 !== undefined && Point.read(arguments, 1))
+      )
+        this.setDefinition(
+          arg0 instanceof SymbolDefinition
+            ? arg0
+            : new SymbolDefinition(arg0)
+        )
     },
 
-    _equals: function(item) {
-        // TODO: Compare position too!
-        return this._definition === item._definition;
+    _equals: function (item) {
+      // TODO: Compare position too!
+      return this._definition === item._definition
     },
 
-    copyContent: function(source) {
-        this.setDefinition(source._definition);
+    copyContent: function (source) {
+      this.setDefinition(source._definition)
     },
 
     /**
@@ -96,13 +101,13 @@ var SymbolItem = Item.extend(/** @lends SymbolItem# */{
      * @bean
      * @type SymbolDefinition
      */
-    getDefinition: function() {
-        return this._definition;
+    getDefinition: function () {
+      return this._definition
     },
 
-    setDefinition: function(definition) {
-        this._definition = definition;
-        this._changed(/*#=*/Change.GEOMETRY);
+    setDefinition: function (definition) {
+      this._definition = definition
+      this._changed(/*#=*/ Change.GEOMETRY)
     },
 
     /**
@@ -113,36 +118,38 @@ var SymbolItem = Item.extend(/** @lends SymbolItem# */{
     getSymbol: '#getDefinition',
     setSymbol: '#setDefinition',
 
-    isEmpty: function() {
-        return this._definition._item.isEmpty();
+    isEmpty: function () {
+      return this._definition._item.isEmpty()
     },
 
-    _getBounds: function(matrix, options) {
-        var item = this._definition._item;
-        // Redirect the call to the definition item to calculate the bounds.
-        return item._getCachedBounds(item._matrix.prepended(matrix), options);
+    _getBounds: function (matrix, options) {
+      var item = this._definition._item
+      // Redirect the call to the definition item to calculate the bounds.
+      return item._getCachedBounds(item._matrix.prepended(matrix), options)
     },
 
-    _hitTestSelf: function(point, options, viewMatrix) {
-        // We need to call definition item hit test with `options.all = false`,
-        // as otherwise it would populate the array with its own matches.
-        // Instead we want only returning one match per symbol-item, see #1680
-        // The filters apply to the symbol-item, not to the definition's items:
-        var opts = options.extend({
-            all: false, match: null, class: null, type: null
-        });
-        var res = this._definition._item._hitTest(point, opts, viewMatrix);
-        // TODO: When the symbol's definition is a path, should hitResult
-        // contain information like HitResult#curve?
-        if (res)
-            res.item = this;
-        return res;
+    _hitTestSelf: function (point, options, viewMatrix) {
+      // We need to call definition item hit test with `options.all = false`,
+      // as otherwise it would populate the array with its own matches.
+      // Instead we want only returning one match per symbol-item, see #1680
+      // The filters apply to the symbol-item, not to the definition's items:
+      var opts = options.extend({
+        all: false,
+        match: null,
+        class: null,
+        type: null
+      })
+      var res = this._definition._item._hitTest(point, opts, viewMatrix)
+      // TODO: When the symbol's definition is a path, should hitResult
+      // contain information like HitResult#curve?
+      if (res) res.item = this
+      return res
     },
 
-    _draw: function(ctx, param) {
-        // The definition's item is shared by all its symbol items, so don't
-        // let them set its global matrix (#1684):
-        this._definition._item.draw(ctx, param.extend({ updateMatrix: false }));
+    _draw: function (ctx, param) {
+      // The definition's item is shared by all its symbol items, so don't
+      // let them set its global matrix (#1684):
+      this._definition._item.draw(ctx, param.extend({ updateMatrix: false }))
     },
 
     /**
@@ -154,27 +161,24 @@ var SymbolItem = Item.extend(/** @lends SymbolItem# */{
      * @return {Item} the copy of the definition's item, or `null` if the
      *     symbol item has no parent
      */
-    embed: function() {
-        if (!this._parent)
-            return null;
-        var item = this._definition._item.clone(false);
-        // The copy applies the matrix to its content or its own matrix,
-        // depending on its applyMatrix, as in Group#ungroup():
-        item.transform(this._matrix);
-        // Both items' opacities and visibilities apply when drawn, but only
-        // one blend mode can, the symbol item's if it has one:
-        item.setOpacity(item._opacity * this._opacity);
-        item.setVisible(item._visible && this._visible);
-        item.setLocked(item._locked || this._locked);
-        item.setGuide(item._guide || this._guide);
-        if (this._blendMode !== 'normal')
-            item.setBlendMode(this._blendMode);
-        item.setClipMask(this._clipMask);
-        item.setSelected(this.isSelected());
-        if (this._data)
-            item._data = Base.clone(this._data);
-        if (this._name)
-            item.setName(this._name);
-        return this.replaceWith(item) ? item : null;
+    embed: function () {
+      if (!this._parent) return null
+      var item = this._definition._item.clone(false)
+      // The copy applies the matrix to its content or its own matrix,
+      // depending on its applyMatrix, as in Group#ungroup():
+      item.transform(this._matrix)
+      // Both items' opacities and visibilities apply when drawn, but only
+      // one blend mode can, the symbol item's if it has one:
+      item.setOpacity(item._opacity * this._opacity)
+      item.setVisible(item._visible && this._visible)
+      item.setLocked(item._locked || this._locked)
+      item.setGuide(item._guide || this._guide)
+      if (this._blendMode !== 'normal') item.setBlendMode(this._blendMode)
+      item.setClipMask(this._clipMask)
+      item.setSelected(this.isSelected())
+      if (this._data) item._data = Base.clone(this._data)
+      if (this._name) item.setName(this._name)
+      return this.replaceWith(item) ? item : null
     }
-});
+  }
+)

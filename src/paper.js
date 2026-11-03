@@ -32,120 +32,130 @@
 
 // Allow the minification of the undefined variable by defining it as a local
 // parameter inside the paper scope.
-var paper = function(self, undefined) {
-// Strict mode makes e.g. Path#getNearestPoint() and Item#hitTest() faster:
-'use strict';
-/*#*/ include('init.js');
-// Inline Straps.js core (the Base class) inside the paper scope first:
-/*#*/ include('../node_modules/straps/straps.js');
+var paper = (function (self, undefined) {
+  // Strict mode makes e.g. Path#getNearestPoint() and Item#hitTest() faster:
+  'use strict'
+  /*#*/ include('init.js')
+  // Inline Straps.js core (the Base class) inside the paper scope first:
+  /*#*/ include('../node_modules/straps/straps.js')
 
-/*#*/ include('core/Base.js');
-/*#*/ include('core/Emitter.js');
-/*#*/ include('core/PaperScope.js');
-/*#*/ include('core/PaperScopeItem.js');
+  /*#*/ include('core/Base.js')
+  /*#*/ include('core/Emitter.js')
+  /*#*/ include('core/PaperScope.js')
+  /*#*/ include('core/PaperScopeItem.js')
 
-/*#*/ include('util/CollisionDetection.js');
-/*#*/ include('util/Formatter.js');
-/*#*/ include('util/Numerical.js');
-/*#*/ include('util/UID.js');
+  /*#*/ include('util/CollisionDetection.js')
+  /*#*/ include('util/Formatter.js')
+  /*#*/ include('util/Numerical.js')
+  /*#*/ include('util/UID.js')
 
-// Include Paper classes, which are later injected into PaperScope by setting
-// them on the 'this' object, e.g.:
-// var Point = Base.extend(...);
+  // Include Paper classes, which are later injected into PaperScope by setting
+  // them on the 'this' object, e.g.:
+  // var Point = Base.extend(...);
 
-/*#*/ include('basic/Point.js');
-/*#*/ include('basic/Size.js');
-/*#*/ include('basic/Rectangle.js');
-/*#*/ include('basic/RectangleBuilder.js');
-/*#*/ include('basic/Matrix.js');
-/*#*/ include('basic/Line.js');
+  /*#*/ include('basic/Point.js')
+  /*#*/ include('basic/Size.js')
+  /*#*/ include('basic/Rectangle.js')
+  /*#*/ include('basic/RectangleBuilder.js')
+  /*#*/ include('basic/Matrix.js')
+  /*#*/ include('basic/Line.js')
 
-/*#*/ include('item/ChangeFlag.js');
-/*#*/ include('item/Project.js');
-/*#*/ include('item/Item.js');
-/*#*/ include('item/Group.js');
-/*#*/ include('item/Layer.js');
-/*#*/ include('item/Shape.js');
-/*#*/ include('item/Raster.js');
-/*#*/ include('item/ItemDefinition.js');
-/*#*/ include('item/SymbolItem.js');
-/*#*/ include('item/SymbolDefinition.js');
-/*#*/ include('item/HitResult.js');
-/*#*/ include('item/EffectInstance.js');
-/*#*/ include('item/Effect.js');
-/*#*/ include('item/Item.Effects.js');
+  /*#*/ include('item/ChangeFlag.js')
+  /*#*/ include('item/Project.js')
+  /*#*/ include('item/Item.js')
+  /*#*/ include('item/Group.js')
+  /*#*/ include('item/Layer.js')
+  /*#*/ include('item/Shape.js')
+  /*#*/ include('item/Raster.js')
+  /*#*/ include('item/ItemDefinition.js')
+  /*#*/ include('item/SymbolItem.js')
+  /*#*/ include('item/SymbolDefinition.js')
+  /*#*/ include('item/HitResult.js')
+  /*#*/ include('item/EffectInstance.js')
+  /*#*/ include('item/Effect.js')
+  /*#*/ include('item/Item.Effects.js')
 
-/*#*/ include('path/Segment.js');
-/*#*/ include('path/SegmentPoint.js');
-/*#*/ include('path/Curve.js');
-/*#*/ include('path/CurveLocation.js');
-/*#*/ include('path/PathItem.js');
-/*#*/ include('path/Path.js');
-/*#*/ include('path/Path.Constructors.js');
-/*#*/ include('path/Path.StrokeProfile.js');
-/*#*/ include('path/StrokeProfileStop.js');
-/*#*/ include('path/CompoundPath.js');
-/*#*/ if (__options.booleanOperations) {
+  /*#*/ include('path/Segment.js')
+  /*#*/ include('path/SegmentPoint.js')
+  /*#*/ include('path/Curve.js')
+  /*#*/ include('path/CurveLocation.js')
+  /*#*/ include('path/PathItem.js')
+  /*#*/ include('path/Path.js')
+  /*#*/ include('path/Path.Constructors.js')
+  /*#*/ include('path/Path.StrokeProfile.js')
+  /*#*/ include('path/StrokeProfileStop.js')
+  /*#*/ include('path/CompoundPath.js')
+  // prepro reads its directives line by line:
+  // prettier-ignore
+  /*#*/ if (__options.booleanOperations) {
 /*#*/     include('path/PathItem.Boolean.js');
 /*#*/     include('path/PathItem.Offset.js');
 /*#*/ }
-/*#*/ include('path/PathFlattener.js');
-/*#*/ include('path/PathFitter.js');
+  /*#*/ include('path/PathFlattener.js')
+  /*#*/ include('path/PathFitter.js')
 
-/*#*/ include('text/TextItem.js');
-/*#*/ include('text/PointText.js');
-/*#*/ include('text/PathText.js');
-/*#*/ include('text/AreaText.js');
-/*#*/ include('text/TextStory.js');
-/*#*/ include('text/TextRange.js');
+  /*#*/ include('text/TextItem.js')
+  /*#*/ include('text/PointText.js')
+  /*#*/ include('text/PathText.js')
+  /*#*/ include('text/AreaText.js')
+  /*#*/ include('text/TextStory.js')
+  /*#*/ include('text/TextRange.js')
 
-/*#*/ include('style/Color.js');
-/*#*/ include('style/Gradient.js');
-/*#*/ include('style/GradientStop.js');
-/*#*/ include('style/PatternDefinition.js');
-/*#*/ include('style/Style.js');
+  /*#*/ include('style/Color.js')
+  /*#*/ include('style/Gradient.js')
+  /*#*/ include('style/GradientStop.js')
+  /*#*/ include('style/PatternDefinition.js')
+  /*#*/ include('style/Style.js')
 
-/*#*/ include('dom/DomElement.js');
-/*#*/ include('dom/DomEvent.js');
+  /*#*/ include('dom/DomElement.js')
+  /*#*/ include('dom/DomEvent.js')
 
-/*#*/ include('view/View.js');
-/*#*/ include('view/CanvasView.js');
+  /*#*/ include('view/View.js')
+  /*#*/ include('view/CanvasView.js')
 
-/*#*/ include('event/Event.js');
-/*#*/ include('event/DrawEvent.js');
-/*#*/ include('event/KeyEvent.js');
-/*#*/ include('event/Key.js');
-/*#*/ include('event/MouseEvent.js');
+  /*#*/ include('event/Event.js')
+  /*#*/ include('event/DrawEvent.js')
+  /*#*/ include('event/KeyEvent.js')
+  /*#*/ include('event/Key.js')
+  /*#*/ include('event/MouseEvent.js')
 
-/*#*/ include('tool/ToolEvent.js');
-/*#*/ include('tool/Tool.js');
+  /*#*/ include('tool/ToolEvent.js')
+  /*#*/ include('tool/Tool.js')
 
-/*#*/ include('anim/Tween.js');
+  /*#*/ include('anim/Tween.js')
 
-/*#*/ include('net/Http.js');
+  /*#*/ include('net/Http.js')
 
-/*#*/ include('canvas/CanvasProvider.js');
-/*#*/ include('canvas/BlendMode.js');
-/*#*/ if (__options.hosted) {
+  /*#*/ include('canvas/CanvasProvider.js')
+  /*#*/ include('canvas/BlendMode.js')
+  // prepro reads its directives line by line:
+  // prettier-ignore
+  /*#*/ if (__options.hosted) {
 /*#*/     include('item/HostItem.js');
 /*#*/     include('item/Item.Hosted.js');
 /*#*/ }
 
-/*#*/ if (__options.load) {
+  // prepro reads its directives line by line:
+  // prettier-ignore
+  /*#*/ if (__options.load) {
 /*#*/     include('canvas/ProxyContext.js');
 /*#*/ }
 
-/*#*/ if (__options.svg) {
+  // prepro reads its directives line by line:
+  // prettier-ignore
+  /*#*/ if (__options.svg) {
 /*#*/     include('svg/SvgElement.js');
 /*#*/     include('svg/SvgStyles.js');
 /*#*/     include('svg/SvgExport.js');
 /*#*/     include('svg/SvgImport.js');
 /*#*/ }
 
-/*#*/ if (__options.paperScript) {
+  // prepro reads its directives line by line:
+  // prettier-ignore
+  /*#*/ if (__options.paperScript) {
 /*#*/     include('core/PaperScript.js');
 /*#*/ }
 
-/*#*/ include('export.js');
-return paper;
-}(typeof self === 'object' ? self : null);
+  /*#*/ include('export.js')
+  return paper
+})(typeof self === 'object' ? self : null)

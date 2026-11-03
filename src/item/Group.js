@@ -19,14 +19,15 @@
  *
  * @extends Item
  */
-var Group = Item.extend(/** @lends Group# */{
+var Group = Item.extend(
+  /** @lends Group# */ {
     _class: 'Group',
     _selectBounds: false,
     _selectChildren: true,
     _serializeFields: {
-        isolated: false,
-        buffered: false,
-        children: []
+      isolated: false,
+      buffered: false,
+      children: []
     },
     _isolated: false,
     _buffered: false,
@@ -96,47 +97,49 @@ var Group = Item.extend(/** @lends Group# */{
      * });
      */
     initialize: function Group(arg) {
-        // Allow Group to have children and named children
-        this._children = [];
-        this._namedChildren = {};
-        if (!this._initialize(arg))
-            this.addChildren(Array.isArray(arg) ? arg : arguments);
+      // Allow Group to have children and named children
+      this._children = []
+      this._namedChildren = {}
+      if (!this._initialize(arg))
+        this.addChildren(Array.isArray(arg) ? arg : arguments)
     },
 
     // Styles set on groups apply to their children, and read as theirs:
     // @override
-    _getStyles: function() {
-        var children = this._children;
-        return children.length > 0 ? children.map(function(child) {
-            return child._style;
-        }) : null;
+    _getStyles: function () {
+      var children = this._children
+      return children.length > 0
+        ? children.map(function (child) {
+            return child._style
+          })
+        : null
     },
 
     _changed: function _changed(flags) {
-        _changed.base.call(this, flags);
-        if (flags & /*#=*/(ChangeFlag.CHILDREN | ChangeFlag.CLIPPING)) {
-            // Clear cached clip item whenever hierarchy changes
-            this._clipItem = undefined;
-        }
+      _changed.base.call(this, flags)
+      if (flags & /*#=*/ (ChangeFlag.CHILDREN | ChangeFlag.CLIPPING)) {
+        // Clear cached clip item whenever hierarchy changes
+        this._clipItem = undefined
+      }
     },
 
-    _getClipItem: function() {
-        // NOTE: _clipItem is the child that has _clipMask set to true.
-        var clipItem = this._clipItem;
-        // Distinguish null (no clipItem set) and undefined (clipItem was not
-        // looked for yet).
-        if (clipItem === undefined) {
-            clipItem = null;
-            var children = this._children;
-            for (var i = 0, l = children.length; i < l; i++) {
-                if (children[i]._clipMask) {
-                    clipItem = children[i];
-                    break;
-                }
-            }
-            this._clipItem = clipItem;
+    _getClipItem: function () {
+      // NOTE: _clipItem is the child that has _clipMask set to true.
+      var clipItem = this._clipItem
+      // Distinguish null (no clipItem set) and undefined (clipItem was not
+      // looked for yet).
+      if (clipItem === undefined) {
+        clipItem = null
+        var children = this._children
+        for (var i = 0, l = children.length; i < l; i++) {
+          if (children[i]._clipMask) {
+            clipItem = children[i]
+            break
+          }
         }
-        return clipItem;
+        this._clipItem = clipItem
+      }
+      return clipItem
     },
 
     /**
@@ -172,14 +175,13 @@ var Group = Item.extend(/** @lends Group# */{
      *     circle.position.x = view.center.x + offset;
      * }
      */
-    isClipped: function() {
-        return !!this._getClipItem();
+    isClipped: function () {
+      return !!this._getClipItem()
     },
 
-    setClipped: function(clipped) {
-        var child = this.getFirstChild();
-        if (child)
-            child.setClipMask(clipped);
+    setClipped: function (clipped) {
+      var child = this.getFirstChild()
+      if (child) child.setClipMask(clipped)
     },
 
     /**
@@ -188,21 +190,19 @@ var Group = Item.extend(/** @lends Group# */{
      *
      * @return {Item[]} the children, or `null` if the group has no parent
      */
-    ungroup: function() {
-        if (!this._parent)
-            return null;
-        var children = this._children.slice(),
-            clipItem = this._getClipItem(),
-            matrix = this._matrix;
-        if (clipItem)
-            clipItem.setClipMask(false);
-        // Transform the children by the group's matrix, which they apply to
-        // their content or their own matrix, depending on their applyMatrix:
-        if (!matrix.isIdentity()) {
-            for (var i = 0, l = children.length; i < l; i++)
-                children[i].transform(matrix);
-        }
-        return this.replaceWith.apply(this, children) ? children : null;
+    ungroup: function () {
+      if (!this._parent) return null
+      var children = this._children.slice(),
+        clipItem = this._getClipItem(),
+        matrix = this._matrix
+      if (clipItem) clipItem.setClipMask(false)
+      // Transform the children by the group's matrix, which they apply to
+      // their content or their own matrix, depending on their applyMatrix:
+      if (!matrix.isIdentity()) {
+        for (var i = 0, l = children.length; i < l; i++)
+          children[i].transform(matrix)
+      }
+      return this.replaceWith.apply(this, children) ? children : null
     },
 
     /**
@@ -218,13 +218,13 @@ var Group = Item.extend(/** @lends Group# */{
      * @type Boolean
      * @default false
      */
-    isIsolated: function() {
-        return this._isolated || this._buffered;
+    isIsolated: function () {
+      return this._isolated || this._buffered
     },
 
-    setIsolated: function(isolated) {
-        this._isolated = !!isolated;
-        this._changed(/*#=*/Change.ATTRIBUTE);
+    setIsolated: function (isolated) {
+      this._isolated = !!isolated
+      this._changed(/*#=*/ Change.ATTRIBUTE)
     },
 
     /**
@@ -287,80 +287,94 @@ var Group = Item.extend(/** @lends Group# */{
      *     circle.position.x = view.center.x + Math.sin(event.time) * 100;
      * }
      */
-    isBuffered: function() {
-        return this._buffered;
+    isBuffered: function () {
+      return this._buffered
     },
 
-    setBuffered: function(buffered) {
-        this._buffered = !!buffered;
-        // Start without a buffer, and free it when turned off:
-        this._buffer = null;
-        this._changed(/*#=*/Change.ATTRIBUTE);
+    setBuffered: function (buffered) {
+      this._buffered = !!buffered
+      // Start without a buffer, and free it when turned off:
+      this._buffer = null
+      this._changed(/*#=*/ Change.ATTRIBUTE)
     },
 
     _remove: function _remove(notifySelf, notifyParent) {
-        // Free the buffer of removed groups:
-        this._buffer = null;
-        return _remove.base.call(this, notifySelf, notifyParent);
+      // Free the buffer of removed groups:
+      this._buffer = null
+      return _remove.base.call(this, notifySelf, notifyParent)
     },
 
     _serialize: function _serialize(options, dictionary) {
-        var json = _serialize.base.call(this, options, dictionary);
-        // #isolated reads true for buffered groups, but store only their own:
-        if (!this._isolated)
-            delete json[1].isolated;
-        return json;
+      var json = _serialize.base.call(this, options, dictionary)
+      // #isolated reads true for buffered groups, but store only their own:
+      if (!this._isolated) delete json[1].isolated
+      return json
     },
 
     _getBounds: function _getBounds(matrix, options) {
-        var clipItem = this._getClipItem();
-        return clipItem
-            ? clipItem._getCachedBounds(clipItem._matrix.prepended(matrix),
-                Base.set({}, options, { stroke: false }))
-            : _getBounds.base.call(this, matrix, options);
+      var clipItem = this._getClipItem()
+      return clipItem
+        ? clipItem._getCachedBounds(
+            clipItem._matrix.prepended(matrix),
+            Base.set({}, options, { stroke: false })
+          )
+        : _getBounds.base.call(this, matrix, options)
     },
 
     _hitTestChildren: function _hitTestChildren(point, options, viewMatrix) {
-        var clipItem = this._getClipItem();
-        return (!clipItem || clipItem.contains(point))
-                && _hitTestChildren.base.call(this, point, options, viewMatrix,
-                    // Pass clipItem for hidden _exclude parameter
-                    clipItem);
+      var clipItem = this._getClipItem()
+      return (
+        (!clipItem || clipItem.contains(point)) &&
+        _hitTestChildren.base.call(
+          this,
+          point,
+          options,
+          viewMatrix,
+          // Pass clipItem for hidden _exclude parameter
+          clipItem
+        )
+      )
     },
 
-    _hitTestSelf: function(point, options, viewMatrix) {
-        // A group is hit wherever one of its children is hit, as in
-        // Illustrator. Without filters or the collecting of all hits, the
-        // children were already tested without result:
-        if (options.match || options.class || options.type || options.all) {
-            var res = this._hitTestChildren(point, options.extend({
-                all: null, match: null, class: null, type: null
-            }), viewMatrix);
-            if (res)
-                res.item = this;
-            return res;
-        }
+    _hitTestSelf: function (point, options, viewMatrix) {
+      // A group is hit wherever one of its children is hit, as in
+      // Illustrator. Without filters or the collecting of all hits, the
+      // children were already tested without result:
+      if (options.match || options.class || options.type || options.all) {
+        var res = this._hitTestChildren(
+          point,
+          options.extend({
+            all: null,
+            match: null,
+            class: null,
+            type: null
+          }),
+          viewMatrix
+        )
+        if (res) res.item = this
+        return res
+      }
     },
 
-    _draw: function(ctx, param) {
-        var clip = param.clip,
-            clipItem = this._getClipItem();
-        param = param.extend({ clipItem: !clip && clipItem, clip: false });
-        if (clip) {
-            // If told to clip with a group, we start our own path and draw each
-            // child just like in a compound-path. A single path can only add
-            // up shapes, so a nested clip item can't intersect them. Leave it
-            // out, which clips with all of the clipped content (#1618):
-            ctx.beginPath();
-            param.dontStart = param.dontFinish = true;
-        } else if (clipItem) {
-            clipItem.draw(ctx, param.extend({ clip: true }));
-        }
-        var children = this._children;
-        for (var i = 0, l = children.length; i < l; i++) {
-            var item = children[i];
-            if (item !== clipItem)
-                item.draw(ctx, param);
-        }
+    _draw: function (ctx, param) {
+      var clip = param.clip,
+        clipItem = this._getClipItem()
+      param = param.extend({ clipItem: !clip && clipItem, clip: false })
+      if (clip) {
+        // If told to clip with a group, we start our own path and draw each
+        // child just like in a compound-path. A single path can only add
+        // up shapes, so a nested clip item can't intersect them. Leave it
+        // out, which clips with all of the clipped content (#1618):
+        ctx.beginPath()
+        param.dontStart = param.dontFinish = true
+      } else if (clipItem) {
+        clipItem.draw(ctx, param.extend({ clip: true }))
+      }
+      var children = this._children
+      for (var i = 0, l = children.length; i < l; i++) {
+        var item = children[i]
+        if (item !== clipItem) item.draw(ctx, param)
+      }
     }
-});
+  }
+)

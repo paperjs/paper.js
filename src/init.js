@@ -29,10 +29,9 @@
 // the library, see for example `View.create()`.
 // NOTE: We're not modifying the global `self` here. We receive its value passed
 // to the paper.js function scope, and this is the one that is modified here.
-self = self || require('./node/self.js');
+self = self || require('./node/self.js')
 var window = self.window,
-    document = self.document;
+  document = self.document
 // A DOM whose canvas has no 2D context, as jsdom without the canvas module in
 // jest, can't draw either, so treat it like a worker as well (#1805):
-if (window && !document.createElement('canvas').getContext('2d'))
-    window = null;
+if (window && !document.createElement('canvas').getContext('2d')) window = null

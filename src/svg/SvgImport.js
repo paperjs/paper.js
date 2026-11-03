@@ -14,1067 +14,1173 @@
  * A function scope holding all the functionality needed to convert a SVG DOM
  * to a Paper.js DOM.
  */
-new function() {
-    // Define a couple of helper functions to easily read values from SVG
-    // objects, dealing with baseVal, and item lists.
-    // index is option, and if passed, causes a lookup in a list.
+new (function () {
+  // Define a couple of helper functions to easily read values from SVG
+  // objects, dealing with baseVal, and item lists.
+  // index is option, and if passed, causes a lookup in a list.
 
-    var definitions = {},
-        // The ids of the elements that <use> elements are importing, to skip
-        // circular references, as SVG does:
-        used = {},
-        rootSize,
-        // The absolute units of CSS in px:
-        units = { 'in': 96, pt: 96 / 72, pc: 96 / 6, cm: 96 / 2.54,
-            mm: 96 / 25.4 };
+  var definitions = {},
+    // The ids of the elements that <use> elements are importing, to skip
+    // circular references, as SVG does:
+    used = {},
+    rootSize,
+    // The absolute units of CSS in px:
+    units = { in: 96, pt: 96 / 72, pc: 96 / 6, cm: 96 / 2.54, mm: 96 / 25.4 }
 
-    function parseLength(value) {
-        var unit = /(in|pt|pc|cm|mm)\s*$/.exec(value);
-        return parseFloat(value) * (unit ? units[unit[1]] : 1);
+  function parseLength(value) {
+    var unit = /(in|pt|pc|cm|mm)\s*$/.exec(value)
+    return parseFloat(value) * (unit ? units[unit[1]] : 1)
+  }
+
+  function getValue(
+    node,
+    name,
+    isString,
+    allowNull,
+    allowPercent,
+    defaultValue
+  ) {
+    // Interpret value as number. Never return NaN, but 0 instead.
+    // If the value is a sequence of numbers, parseFloat will
+    // return the first occurring number, which is enough for now.
+    var value = SvgElement.get(node, name) || defaultValue,
+      res =
+        value == null
+          ? allowNull
+            ? null
+            : isString
+              ? ''
+              : 0
+          : isString
+            ? value
+            : parseLength(value)
+    // Support for dimensions in percentage of the root size. If root-size
+    // is not set (e.g. during <defs>), just scale the percentage value to
+    // 0..1, as required by gradients with gradientUnits="objectBoundingBox"
+    return /%\s*$/.test(value)
+      ? res /
+        100 * (
+          allowPercent
+            ? 1
+            : rootSize[/x|^width/.test(name) ? 'width' : 'height']
+        )
+      : res
+  }
+
+  function getPoint(node, x, y, allowNull, allowPercent, defaultX, defaultY) {
+    x = getValue(node, x || 'x', false, allowNull, allowPercent, defaultX)
+    y = getValue(node, y || 'y', false, allowNull, allowPercent, defaultY)
+    return allowNull && (x == null || y == null) ? null : new Point(x, y)
+  }
+
+  function getSize(node, w, h, allowNull, allowPercent) {
+    w = getValue(node, w || 'width', false, allowNull, allowPercent)
+    h = getValue(node, h || 'height', false, allowNull, allowPercent)
+    return allowNull && (w == null || h == null) ? null : new Size(w, h)
+  }
+
+  // Converts a string attribute value to the specified type
+  function convertValue(value, type, lookup, options) {
+    return value === 'none'
+      ? null
+      : type === 'number'
+        ? parseLength(value)
+        : type === 'array'
+          ? value
+            ? value.split(/[\s,]+/g).map(parseLength)
+            : []
+          : type === 'color'
+            ? getDefinition(value, options) || value
+            : type === 'lookup'
+              ? lookup[value]
+              : // Only the order of fill and stroke matters, without markers:
+                type === 'order'
+                ? /^(markers\s+)?stroke\b/.test(value)
+                  ? 'stroke'
+                  : 'fill'
+                : value
+  }
+
+  // Importer functions for various SVG node types
+
+  function importGroup(node, type, options, isRoot) {
+    var nodes = node.childNodes,
+      isClip = type === 'clippath' || type === 'mask',
+      isDefs = type === 'defs',
+      // The attributes of patterns describe their tiles, see
+      // importPattern():
+      isPattern = type === 'pattern',
+      // Paper.js marks the groups of its layers, see SvgExport:
+      ctor = node.hasAttribute('data-paper-layer') ? Layer : Group,
+      item = new ctor(),
+      project = item._project,
+      currentStyle = project._currentStyle,
+      parentSize = rootSize,
+      children = []
+    if (!isClip && !isDefs && !isPattern) {
+      item = applyAttributes(item, node, options, isRoot)
+      // Style on items needs to be handled differently than all other
+      // items: We first apply the style to the item, then use it as the
+      // project's currentStyle, so it is used as a default for the
+      // creation of all nested items. importSVG then needs to check for
+      // items and avoid calling applyAttributes() again.
+      project._currentStyle = item._style.clone()
     }
-
-    function getValue(node, name, isString, allowNull, allowPercent,
-            defaultValue) {
-        // Interpret value as number. Never return NaN, but 0 instead.
-        // If the value is a sequence of numbers, parseFloat will
-        // return the first occurring number, which is enough for now.
-        var value = SvgElement.get(node, name) || defaultValue,
-            res = value == null
-                ? allowNull
-                    ? null
-                    : isString ? '' : 0
-                : isString
-                    ? value
-                    : parseLength(value);
-        // Support for dimensions in percentage of the root size. If root-size
-        // is not set (e.g. during <defs>), just scale the percentage value to
-        // 0..1, as required by gradients with gradientUnits="objectBoundingBox"
-        return /%\s*$/.test(value)
-            ? (res / 100) * (allowPercent ? 1
-                : rootSize[/x|^width/.test(name) ? 'width' : 'height'])
-            : res;
+    if (type === 'svg' && !isRoot) {
+      // Percentages inside nested <svg> elements refer to their size:
+      rootSize = new Size(
+        getValue(node, 'width', false, false, false, '100%'),
+        getValue(node, 'height', false, false, false, '100%')
+      )
     }
-
-    function getPoint(node, x, y, allowNull, allowPercent, defaultX, defaultY) {
-        x = getValue(node, x || 'x', false, allowNull, allowPercent, defaultX);
-        y = getValue(node, y || 'y', false, allowNull, allowPercent, defaultY);
-        return allowNull && (x == null || y == null) ? null
-                : new Point(x, y);
+    if (isRoot) {
+      // Import all defs first, since in SVG they can be in any location.
+      // e.g. Affinity Designer exports defs as last.
+      var defs = node.querySelectorAll('defs')
+      for (var i = 0, l = defs.length; i < l; i++) {
+        importNode(defs[i], options, false)
+      }
     }
-
-    function getSize(node, w, h, allowNull, allowPercent) {
-        w = getValue(node, w || 'width', false, allowNull, allowPercent);
-        h = getValue(node, h || 'height', false, allowNull, allowPercent);
-        return allowNull && (w == null || h == null) ? null
-                : new Size(w, h);
+    // Collect the children in an array and apply them all at once.
+    for (var i = 0, l = nodes.length; i < l; i++) {
+      var childNode = nodes[i],
+        child
+      if (
+        childNode.nodeType === 1 &&
+        !/^defs$/i.test(childNode.nodeName) &&
+        (child = importNode(childNode, options, false)) &&
+        !(child instanceof SymbolDefinition)
+      )
+        children.push(child)
     }
-
-    // Converts a string attribute value to the specified type
-    function convertValue(value, type, lookup, options) {
-        return value === 'none' ? null
-                : type === 'number' ? parseLength(value)
-                : type === 'array' ?
-                    value ? value.split(/[\s,]+/g).map(parseLength) : []
-                : type === 'color' ? getDefinition(value, options) || value
-                : type === 'lookup' ? lookup[value]
-                // Only the order of fill and stroke matters, without markers:
-                : type === 'order' ? /^(markers\s+)?stroke\b/.test(value)
-                    ? 'stroke' : 'fill'
-                : value;
+    item.addChildren(children)
+    // Clip paths are reduced (unboxed) and their attributes applied at the
+    // end.
+    if (isClip) {
+      item = applyAttributes(item.reduce(), node, options, isRoot)
+      if (
+        type === 'mask' &&
+        !isClipMask(item, SvgElement.get(node, 'mask-type') === 'alpha')
+      )
+        console.warn(
+          "Approximating SVG mask '" +
+          node.id +
+          "' as a clipping mask."
+        )
     }
+    // Restore currentStyle and rootSize
+    project._currentStyle = currentStyle
+    rootSize = parentSize
+    if (isClip || isDefs) {
+      // We don't want the defs in the DOM. But we might want to use
+      // Symbols for them to save memory?
+      item.remove()
+      item = null
+    }
+    return item
+  }
 
-    // Importer functions for various SVG node types
+  // Masks are imported as clip masks, which is only exact when they consist
+  // of opaque, solid white shapes, or of any opaque shapes when their
+  // mask-type is 'alpha':
+  function isClipMask(item, isAlpha) {
+    if (item.getOpacity() !== 1) return false
+    if (item instanceof Group) {
+      return item._children.every(function (child) {
+        return isClipMask(child, isAlpha)
+      })
+    }
+    var color = item.getFillColor()
+    return (
+      (item instanceof PathItem || item instanceof Shape) &&
+      !item.hasStroke() &&
+      !!color &&
+      !color.gradient &&
+      !color.pattern &&
+      color.getAlpha() === 1 && (
+        // White in any color type:
+        isAlpha || (
+          color.getBrightness() === 1 &&
+          color.getSaturation() === 0
+        )
+      )
+    )
+  }
 
-    function importGroup(node, type, options, isRoot) {
-        var nodes = node.childNodes,
-            isClip = type === 'clippath' || type === 'mask',
-            isDefs = type === 'defs',
-            // The attributes of patterns describe their tiles, see
-            // importPattern():
-            isPattern = type === 'pattern',
-            // Paper.js marks the groups of its layers, see SvgExport:
-            ctor = node.hasAttribute('data-paper-layer') ? Layer : Group,
-            item = new ctor(),
-            project = item._project,
-            currentStyle = project._currentStyle,
-            parentSize = rootSize,
-            children = [];
-        if (!isClip && !isDefs && !isPattern) {
-            item = applyAttributes(item, node, options, isRoot);
-            // Style on items needs to be handled differently than all other
-            // items: We first apply the style to the item, then use it as the
-            // project's currentStyle, so it is used as a default for the
-            // creation of all nested items. importSVG then needs to check for
-            // items and avoid calling applyAttributes() again.
-            project._currentStyle = item._style.clone();
+  function importPoly(node, type) {
+    var coords = node.getAttribute('points').match(
+        /[+-]?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?/g
+      ),
+      points = []
+    for (var i = 0, l = coords.length; i < l; i += 2)
+      points.push(
+        new Point(
+          parseFloat(coords[i]),
+          parseFloat(coords[i + 1])
+        )
+      )
+    var path = new Path(points)
+    if (type === 'polygon') path.closePath()
+    return path
+  }
+
+  function importPath(node) {
+    return PathItem.create(node.getAttribute('d'))
+  }
+
+  function importGradient(node, type, options) {
+    var id = (getValue(node, 'href', true) || '').substring(1),
+      definition = getDefinitionById(id, options),
+      radial = type === 'radialgradient',
+      gradient
+    if (definition) {
+      // Gradients are always wrapped in a Color object, so get the
+      // gradient object from there.
+      gradient = definition.getGradient()
+      // Create a clone if radial setting is different:
+      if (gradient._radial ^ radial) {
+        gradient = gradient.clone()
+        gradient._radial = radial
+      }
+    } else {
+      var nodes = node.childNodes,
+        stops = []
+      for (var i = 0, l = nodes.length; i < l; i++) {
+        var child = nodes[i]
+        if (child.nodeType === 1)
+          stops.push(applyAttributes(new GradientStop(), child, options))
+      }
+      gradient = new Gradient(stops, radial)
+    }
+    var origin,
+      destination,
+      highlight,
+      scaleToBounds = (
+        getValue(node, 'gradientUnits', true) !==
+        'userSpaceOnUse'
+      )
+    // Allow percentages in all values if scaleToBounds is true:
+    if (radial) {
+      origin = getPoint(node, 'cx', 'cy', false, scaleToBounds, '50%', '50%')
+      destination = origin.add(
+        getValue(node, 'r', false, false, scaleToBounds, '50%'), 0
+      )
+      highlight = getPoint(node, 'fx', 'fy', true, scaleToBounds)
+    } else {
+      origin = getPoint(node, 'x1', 'y1', false, scaleToBounds, '0%', '0%')
+      destination = getPoint(
+        node,
+        'x2',
+        'y2',
+        false,
+        scaleToBounds,
+        '100%',
+        '0%'
+      )
+    }
+    var color = applyAttributes(
+      new Color(gradient, origin, destination, highlight), node,
+      options
+    )
+    // TODO: Consider adding support for _scaleToBounds to Color instead?
+    color._scaleToBounds = scaleToBounds
+    // We don't return the gradient, since we only need a reference to it in
+    // definitions, which is created in applyAttributes()
+    return null
+  }
+
+  function importPattern(node, type, options) {
+    // SVG draws the content of tiles relative to their top left corner, or
+    // maps the viewBox onto them:
+    var item = importGroup(node, type, options),
+      tile = new Rectangle(getPoint(node), getSize(node)),
+      viewBox = getValue(node, 'viewBox', true),
+      matrix = new Matrix().translate(tile.getPoint())
+    if (viewBox) {
+      var rect = new Rectangle(convertValue(viewBox, 'array'))
+      matrix
+        .scale(tile.getSize().divide(rect.getSize()))
+        .translate(rect.getPoint().negate())
+    }
+    item.transform(matrix)
+    applyAttributes(
+      new Color(new PatternDefinition(item, { tile: tile })),
+      node,
+      options
+    )
+    // As with gradients, the color is only needed in definitions, which
+    // applyAttributes() adds it to:
+    return null
+  }
+
+  // NOTE: All importers are lowercase, since jsdom is using uppercase
+  // nodeNames still.
+  var importers = {
+    '#document': function (node, type, options, isRoot) {
+      var nodes = node.childNodes
+      for (var i = 0, l = nodes.length; i < l; i++) {
+        var child = nodes[i]
+        if (child.nodeType === 1) return importNode(child, options, isRoot)
+      }
+    },
+    // https://www.w3.org/TR/SVG/struct.html#Groups
+    'g': importGroup,
+    // https://www.w3.org/TR/SVG/struct.html#NewDocument
+    'svg': importGroup,
+    'clippath': importGroup,
+    // https://www.w3.org/TR/SVG/masking.html#Masking
+    'mask': importGroup,
+    // https://www.w3.org/TR/SVG/shapes.html#PolygonElement
+    'polygon': importPoly,
+    // https://www.w3.org/TR/SVG/shapes.html#PolylineElement
+    'polyline': importPoly,
+    // https://www.w3.org/TR/SVG/paths.html
+    'path': importPath,
+    // https://www.w3.org/TR/SVG/pservers.html#LinearGradients
+    'lineargradient': importGradient,
+    // https://www.w3.org/TR/SVG/pservers.html#RadialGradients
+    'radialgradient': importGradient,
+    // https://www.w3.org/TR/SVG/pservers.html#Patterns
+    'pattern': importPattern,
+
+    // https://www.w3.org/TR/SVG/struct.html#ImageElement
+    'image': function (node, type, options) {
+      var raster = new Raster({
+          crossOrigin: options.crossOrigin,
+          source: getValue(node, 'href', true)
+        }),
+        // NOTE: 'slice' is treated as 'meet', as it requires clipping.
+        align = (
+          /none|x(Min|Mid|Max)Y(Min|Mid|Max)/.exec(
+            getValue(node, 'preserveAspectRatio', true)
+          ) ||
+          [null, 'Mid', 'Mid']
+        )
+      raster.on('load', function () {
+        // Keep the image's own pixels, and scale it to the size given
+        // in SVG, instead of resampling it to that size. Without a
+        // size, use the image's own, as browsers do (SVG 2):
+        var imageSize = this.getSize(),
+          size = getSize(node, null, null, true) || imageSize,
+          point = getPoint(node)
+        if (align[0] !== 'none') {
+          // Scale uniformly, and align the image in its box:
+          var factors = { Min: 0, Mid: 0.5, Max: 1 },
+            fitted = imageSize.multiply(
+              Math.min(
+                size.width / imageSize.width,
+                size.height / imageSize.height
+              )
+            )
+          point = point.add(
+            size.subtract(fitted).multiply(
+              [factors[align[1]], factors[align[2]]]
+            )
+          )
+          size = fitted
         }
-        if (type === 'svg' && !isRoot) {
-            // Percentages inside nested <svg> elements refer to their size:
-            rootSize = new Size(
-                    getValue(node, 'width', false, false, false, '100%'),
-                    getValue(node, 'height', false, false, false, '100%'));
-        }
-        if (isRoot) {
-            // Import all defs first, since in SVG they can be in any location.
-            // e.g. Affinity Designer exports defs as last.
-            var defs = node.querySelectorAll('defs');
-            for (var i = 0, l = defs.length; i < l; i++) {
-                importNode(defs[i], options, false);
-            }
-        }
-        // Collect the children in an array and apply them all at once.
-        for (var i = 0, l = nodes.length; i < l; i++) {
-            var childNode = nodes[i],
-                child;
-            if (childNode.nodeType === 1
-                    && !/^defs$/i.test(childNode.nodeName)
-                    && (child = importNode(childNode, options, false))
-                    && !(child instanceof SymbolDefinition))
-                children.push(child);
-        }
-        item.addChildren(children);
-        // Clip paths are reduced (unboxed) and their attributes applied at the
-        // end.
-        if (isClip) {
-            item = applyAttributes(item.reduce(), node, options, isRoot);
-            if (type === 'mask' && !isClipMask(item,
-                    SvgElement.get(node, 'mask-type') === 'alpha'))
-                console.warn('Approximating SVG mask \'' + node.id
-                        + '\' as a clipping mask.');
-        }
-        // Restore currentStyle and rootSize
-        project._currentStyle = currentStyle;
-        rootSize = parentSize;
-        if (isClip || isDefs) {
-            // We don't want the defs in the DOM. But we might want to use
-            // Symbols for them to save memory?
-            item.remove();
-            item = null;
-        }
-        return item;
-    }
+        // Since x and y start from the top left of an image, add
+        // half of its size. We also need to take the raster's matrix
+        // into account, which will be defined by the time the load
+        // event is called.
+        var center = point.add(size.divide(2))
+        this._matrix.append(
+          new Matrix().translate(center).scale(size.divide(imageSize))
+        )
+      })
+      return raster
+    },
 
-    // Masks are imported as clip masks, which is only exact when they consist
-    // of opaque, solid white shapes, or of any opaque shapes when their
-    // mask-type is 'alpha':
-    function isClipMask(item, isAlpha) {
-        if (item.getOpacity() !== 1)
-            return false;
-        if (item instanceof Group) {
-            return item._children.every(function(child) {
-                return isClipMask(child, isAlpha);
-            });
-        }
-        var color = item.getFillColor();
-        return (item instanceof PathItem || item instanceof Shape)
-                && !item.hasStroke() && !!color && !color.gradient
-                && !color.pattern
-                && color.getAlpha() === 1
-                // White in any color type:
-                && (isAlpha || color.getBrightness() === 1
-                    && color.getSaturation() === 0);
-    }
+    // https://www.w3.org/TR/SVG/struct.html#SymbolElement
+    'symbol': function (node, type, options, isRoot) {
+      return new SymbolDefinition(
+        // Pass true for dontCenter:
+        importGroup(node, type, options, isRoot), true
+      )
+    },
 
-    function importPoly(node, type) {
-        var coords = node.getAttribute('points').match(
-                    /[+-]?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?/g),
-            points = [];
-        for (var i = 0, l = coords.length; i < l; i += 2)
-            points.push(new Point(
-                    parseFloat(coords[i]),
-                    parseFloat(coords[i + 1])));
-        var path = new Path(points);
-        if (type === 'polygon')
-            path.closePath();
-        return path;
-    }
+    // https://www.w3.org/TR/SVG/struct.html#DefsElement
+    'defs': importGroup,
 
-    function importPath(node) {
-        return PathItem.create(node.getAttribute('d'));
-    }
-
-    function importGradient(node, type, options) {
-        var id = (getValue(node, 'href', true) || '').substring(1),
-            definition = getDefinitionById(id, options),
-            radial = type === 'radialgradient',
-            gradient;
-        if (definition) {
-            // Gradients are always wrapped in a Color object, so get the
-            // gradient object from there.
-            gradient = definition.getGradient();
-            // Create a clone if radial setting is different:
-            if (gradient._radial ^ radial) {
-                gradient = gradient.clone();
-                gradient._radial = radial;
-            }
-        } else {
-            var nodes = node.childNodes,
-                stops = [];
-            for (var i = 0, l = nodes.length; i < l; i++) {
-                var child = nodes[i];
-                if (child.nodeType === 1)
-                    stops.push(applyAttributes(new GradientStop(), child,
-                            options));
-            }
-            gradient = new Gradient(stops, radial);
-        }
-        var origin, destination, highlight,
-            scaleToBounds = getValue(node, 'gradientUnits', true) !==
-                'userSpaceOnUse';
-        // Allow percentages in all values if scaleToBounds is true:
-        if (radial) {
-            origin = getPoint(node, 'cx', 'cy', false, scaleToBounds,
-                '50%', '50%');
-            destination = origin.add(
-                getValue(node, 'r', false, false, scaleToBounds, '50%'), 0);
-            highlight = getPoint(node, 'fx', 'fy', true, scaleToBounds);
-        } else {
-            origin = getPoint(node, 'x1', 'y1', false, scaleToBounds,
-                '0%', '0%');
-            destination = getPoint(node, 'x2', 'y2', false, scaleToBounds,
-                '100%', '0%');
-        }
-        var color = applyAttributes(
-                new Color(gradient, origin, destination, highlight), node,
-                options);
-        // TODO: Consider adding support for _scaleToBounds to Color instead?
-        color._scaleToBounds = scaleToBounds;
-        // We don't return the gradient, since we only need a reference to it in
-        // definitions, which is created in applyAttributes()
-        return null;
-    }
-
-    function importPattern(node, type, options) {
-        // SVG draws the content of tiles relative to their top left corner, or
-        // maps the viewBox onto them:
-        var item = importGroup(node, type, options),
-            tile = new Rectangle(getPoint(node), getSize(node)),
-            viewBox = getValue(node, 'viewBox', true),
-            matrix = new Matrix().translate(tile.getPoint());
-        if (viewBox) {
-            var rect = new Rectangle(convertValue(viewBox, 'array'));
-            matrix.scale(tile.getSize().divide(rect.getSize()))
-                    .translate(rect.getPoint().negate());
-        }
-        item.transform(matrix);
-        applyAttributes(new Color(new PatternDefinition(item, { tile: tile })),
-                node, options);
-        // As with gradients, the color is only needed in definitions, which
-        // applyAttributes() adds it to:
-        return null;
-    }
-
-    // NOTE: All importers are lowercase, since jsdom is using uppercase
-    // nodeNames still.
-    var importers = {
-        '#document': function (node, type, options, isRoot) {
-            var nodes = node.childNodes;
-            for (var i = 0, l = nodes.length; i < l; i++) {
-                var child = nodes[i];
-                if (child.nodeType === 1)
-                    return importNode(child, options, isRoot);
-            }
-        },
-        // https://www.w3.org/TR/SVG/struct.html#Groups
-        g: importGroup,
-        // https://www.w3.org/TR/SVG/struct.html#NewDocument
-        svg: importGroup,
-        clippath: importGroup,
-        // https://www.w3.org/TR/SVG/masking.html#Masking
-        mask: importGroup,
-        // https://www.w3.org/TR/SVG/shapes.html#PolygonElement
-        polygon: importPoly,
-        // https://www.w3.org/TR/SVG/shapes.html#PolylineElement
-        polyline: importPoly,
-        // https://www.w3.org/TR/SVG/paths.html
-        path: importPath,
-        // https://www.w3.org/TR/SVG/pservers.html#LinearGradients
-        lineargradient: importGradient,
-        // https://www.w3.org/TR/SVG/pservers.html#RadialGradients
-        radialgradient: importGradient,
-        // https://www.w3.org/TR/SVG/pservers.html#Patterns
-        pattern: importPattern,
-
-        // https://www.w3.org/TR/SVG/struct.html#ImageElement
-        image: function (node, type, options) {
-            var raster = new Raster({
-                    crossOrigin: options.crossOrigin,
-                    source: getValue(node, 'href', true)
-                }),
-                // NOTE: 'slice' is treated as 'meet', as it requires clipping.
-                align = /none|x(Min|Mid|Max)Y(Min|Mid|Max)/.exec(
-                        getValue(node, 'preserveAspectRatio', true))
-                        || [null, 'Mid', 'Mid'];
-            raster.on('load', function() {
-                // Keep the image's own pixels, and scale it to the size given
-                // in SVG, instead of resampling it to that size. Without a
-                // size, use the image's own, as browsers do (SVG 2):
-                var imageSize = this.getSize(),
-                    size = getSize(node, null, null, true) || imageSize,
-                    point = getPoint(node);
-                if (align[0] !== 'none') {
-                    // Scale uniformly, and align the image in its box:
-                    var factors = { Min: 0, Mid: 0.5, Max: 1 },
-                        fitted = imageSize.multiply(Math.min(
-                            size.width / imageSize.width,
-                            size.height / imageSize.height));
-                    point = point.add(size.subtract(fitted).multiply(
-                            [factors[align[1]], factors[align[2]]]));
-                    size = fitted;
-                }
-                // Since x and y start from the top left of an image, add
-                // half of its size. We also need to take the raster's matrix
-                // into account, which will be defined by the time the load
-                // event is called.
-                var center = point.add(size.divide(2));
-                this._matrix.append(new Matrix().translate(center)
-                        .scale(size.divide(imageSize)));
-            });
-            return raster;
-        },
-
-        // https://www.w3.org/TR/SVG/struct.html#SymbolElement
-        symbol: function(node, type, options, isRoot) {
-            return new SymbolDefinition(
-                    // Pass true for dontCenter:
-                    importGroup(node, type, options, isRoot), true);
-        },
-
-        // https://www.w3.org/TR/SVG/struct.html#DefsElement
-        defs: importGroup,
-
-        // https://www.w3.org/TR/SVG/struct.html#UseElement
-        use: function(node, type, options) {
-            // Note the namespaced xlink:href attribute is just called href
-            // as a property on node.
-            // TODO: Support overflow and width, height, in combination with
-            // overflow: hidden. Paper.js currently does not support
-            // SymbolItem clipping, but perhaps it should?
-            var id = (getValue(node, 'href', true) || '').substring(1),
-                definition = getDefinitionById(id, options),
-                point = getPoint(node),
-                item = null;
-            if (definition instanceof SymbolDefinition) {
-                // When placing symbols, we need to take both point and matrix
-                // into account. place() does the right thing:
-                item = definition.place(point);
-            } else if (definition && !used[id]) {
-                // Import other items again in place, as they inherit the styles
-                // of the <use> element instead of where they are defined, and
-                // as rasters are only positioned once their image has loaded,
-                // which clones would miss:
-                used[id] = true;
-                try {
-                    item = importNode(getElementById(id), options, false)
-                            .translate(point);
-                } finally {
-                    delete used[id];
-                }
-            }
-            return item;
-        },
-
-        // https://www.w3.org/TR/SVG/shapes.html#InterfaceSVGCircleElement
-        circle: function(node) {
-            return new Shape.Circle(
-                    getPoint(node, 'cx', 'cy'),
-                    getValue(node, 'r'));
-        },
-
-        // https://www.w3.org/TR/SVG/shapes.html#InterfaceSVGEllipseElement
-        ellipse: function(node) {
-            // We only use object literal notation where the default one is not
-            // supported (e.g. center / radius fo Shape.Ellipse).
-            return new Shape.Ellipse({
-                center: getPoint(node, 'cx', 'cy'),
-                radius: getSize(node, 'rx', 'ry')
-            });
-        },
-
-        // https://www.w3.org/TR/SVG/shapes.html#RectElement
-        rect: function(node) {
-            // A missing rx or ry takes the value of the other one:
-            var rx = getValue(node, 'rx', false, true),
-                ry = getValue(node, 'ry', false, true);
-            return new Shape.Rectangle(new Rectangle(
-                        getPoint(node),
-                        getSize(node)
-                    ), new Size(
-                        rx == null ? ry || 0 : rx,
-                        ry == null ? rx || 0 : ry
-                    ));
-        },
-
-        // https://www.w3.org/TR/SVG/shapes.html#LineElement
-        line: function(node) {
-            return new Path.Line(
-                    getPoint(node, 'x1', 'y1'),
-                    getPoint(node, 'x2', 'y2'));
-        },
-
-        text: function(node) {
-            // Not supported by Paper.js
-            // x: multiple values for x
-            // y: multiple values for y
-            // dx: multiple values for x
-            // dy: multiple values for y
-            // TODO: Support for these is missing in Paper.js right now
-            // rotate: character rotation
-            // lengthAdjust:
-            var text = new PointText(getPoint(node).add(
-                    getPoint(node, 'dx', 'dy'))),
-                // Lines are placed in <tspan> elements with their own y, as
-                // exported by Paper.js and other editors:
-                lines = Base.each(node.childNodes, function(child) {
-                    if (/^tspan$/i.test(child.nodeName)
-                            && child.hasAttribute('y'))
-                        this.push(child.textContent.trim());
-                }, []);
-            text.setContent(lines.length > 1 ? lines.join('\n')
-                    : node.textContent.trim());
-            return text;
-        },
-
-        // https://www.w3.org/TR/SVG/struct.html#SwitchElement
-        // Conditional attributes are ignored and all children are rendered.
-        switch: importGroup
-    };
-
-    // Attributes and Styles
-
-    // NOTE: Parameter sequence for all apply*() functions is:
-    // (item, value, name, node) rather than (item, node, name, value),
-    // so we can omit the less likely parameters from right to left.
-
-    function applyTransform(item, value, name, node) {
-        if (item.transform) {
-            // https://www.w3.org/TR/SVG/types.html#DataTypeTransformList
-            // Parse SVG transform string. First we split at /)\s*/, to separate
-            // commands
-            var transforms = (node.getAttribute(name) || '').split(/\)\s*/g),
-                matrix = new Matrix();
-            for (var i = 0, l = transforms.length; i < l; i++) {
-                var transform = transforms[i];
-                if (!transform)
-                    break;
-                // Command come before the '(', values after
-                var parts = transform.split(/\(\s*/),
-                    command = parts[0].trim(),
-                    v = parts[1].split(/[\s,]+/g);
-                // Convert values to floats
-                for (var j = 0, m = v.length; j < m; j++)
-                    v[j] = parseFloat(v[j]);
-                switch (command) {
-                case 'matrix':
-                    matrix.append(
-                            new Matrix(v[0], v[1], v[2], v[3], v[4], v[5]));
-                    break;
-                case 'rotate':
-                    matrix.rotate(v[0], v[1] || 0, v[2] || 0);
-                    break;
-                case 'translate':
-                    matrix.translate(v[0], v[1] || 0);
-                    break;
-                case 'scale':
-                    matrix.scale(v);
-                    break;
-                case 'skewX':
-                    matrix.skew(v[0], 0);
-                    break;
-                case 'skewY':
-                    matrix.skew(0, v[0]);
-                    break;
-                }
-            }
-            item.transform(matrix);
-        }
-    }
-
-    function applyClipMask(item, value, name, node, styles, options) {
-        // https://www.w3.org/TR/SVG/masking.html#ClipPathProperty
-        var clip = getDefinition(value, options);
-        if (clip) {
-            clip = clip.clone();
-            clip.setClipMask(true);
-            // If item is already a group, move the clip-path inside
-            if (item instanceof Group) {
-                item.insertChild(0, clip);
-            } else {
-                return new Group(clip, item);
-            }
-        }
-    }
-
-    function applyOpacity(item, value, name) {
-        // https://www.w3.org/TR/SVG/painting.html#FillOpacityProperty
-        // https://www.w3.org/TR/SVG/painting.html#StrokeOpacityProperty
-        var key = name === 'fill-opacity' ? 'getFillColor' : 'getStrokeColor',
-            color = item[key] && item[key]();
-        if (color)
-            color.setAlpha(parseFloat(value));
-    }
-
-    // The primitives that SvgExport writes for a shadow after its blur:
-    var shadowPrimitives = 'feOffset,feFlood,feComposite,feComposite';
-
-    // Reads a shadow from a <filter> with the primitives that SvgExport writes
-    // for it, and only these, or returns null for any other filter:
-    function getFilterShadow(filter) {
-        var nodes = Base.slice(filter && filter.children || []),
-            names = nodes.map(function(node) {
-                return node.nodeName;
-            }).join(),
-            blur = names === 'feGaussianBlur,' + shadowPrimitives
-                    && nodes.shift();
-        if (!blur && names !== shadowPrimitives)
-            return null;
-        var offset = nodes[0],
-            flood = nodes[1],
-            color = new Color(flood.getAttribute('flood-color') || 'black'),
-            opacity = flood.getAttribute('flood-opacity');
-        if (opacity)
-            color.setAlpha(color.getAlpha() * parseFloat(opacity));
-        return {
-            color: color,
-            // Canvas blurs with a standard deviation of half the shadow blur:
-            blur: blur ? 2 * parseFloat(blur.getAttribute('stdDeviation')) : 0,
-            offset: new Point(parseFloat(offset.getAttribute('dx')) || 0,
-                    parseFloat(offset.getAttribute('dy')) || 0)
-        };
-    }
-
-    // Reads a shadow from a single CSS drop-shadow(), with its color before or
-    // after its lengths, of which its blur radius equals the shadow blur:
-    function getCssShadow(value) {
-        var match = value.match(/^\s*drop-shadow\((.*)\)\s*$/),
-            color = match && match[1].match(
-                    /(?:rgba?|hsla?)\([^)]*\)|#[0-9a-f]+|\b[a-z]+\b/i),
-            lengths = match && match[1].replace(color && color[0], '')
-                    .match(/-?[\d.]+/g);
-        return lengths && lengths.length >= 2 ? {
-            color: new Color(color ? color[0] : 'black'),
-            blur: parseFloat(lengths[2]) || 0,
-            offset: new Point(parseFloat(lengths[0]), parseFloat(lengths[1]))
-        } : null;
-    }
-
-    // Create apply-functions for attributes, and merge in those for SVGStyles.
-    // We need to define style attributes first, and merge in all others after,
-    // since transform needs to be applied after fill color, as transformations
-    // can affect gradient fills.
-    // Use Base.set() to control sequence of attributes and have all entries in
-    // SvgStyles (e.g. 'stroke') before the additional attributes below (e.g.
-    // 'stroke-opacity'). See issue #694.
-    var attributes = Base.set(Base.each(SvgStyles, function(entry) {
-        this[entry.attribute] = function(item, value, name, node, styles,
-                options) {
-            if (item[entry.set]) {
-                item[entry.set](convertValue(value, entry.type, entry.fromSVG,
-                        options));
-                if (entry.type === 'color') {
-                    // Do not use result of convertValue() above, since calling
-                    // the setter will convert a color and clone it if necessary
-                    var color = item[entry.get]();
-                    if (color) {
-                        // Emulate SVG's gradientUnits="objectBoundingBox"
-                        if (color._scaleToBounds) {
-                            var bounds = item.getBounds();
-                            color.transform(new Matrix()
-                                .translate(bounds.getPoint())
-                                .scale(bounds.getSize()));
-                        }
-                    }
-                }
-            }
-        };
-    }, {}), {
-        id: function(item, value) {
-            definitions[value] = item;
-            // Item names can't consist only of numbers, see #1754:
-            if (item.setName && value !== (+value) + '')
-                item.setName(value);
-        },
-
-        'clip-path': applyClipMask,
-        // Masks can only be approximated as clip masks, see isClipMask():
-        mask: applyClipMask,
-
-        gradientTransform: applyTransform,
-        patternTransform: applyTransform,
-        transform: applyTransform,
-
-        'fill-opacity': applyOpacity,
-        'stroke-opacity': applyOpacity,
-
-        visibility: function(item, value) {
-            if (item.setVisible)
-                item.setVisible(value === 'visible');
-        },
-
-        display: function(item, value) {
-            // NOTE: 'none' gets translated to null in getAttribute()
-            if (item.setVisible)
-                item.setVisible(value !== null);
-        },
-
-        filter: function(item, value) {
-            // Read shadows, as SvgExport writes them, or as CSS drop-shadow().
-            // Groups don't draw shadows, so leave them out (#1003):
-            var shadow = value && !(item instanceof Group)
-                    && item.setShadowColor && (/^url\(/.test(value)
-                        ? getFilterShadow(
-                            getElementById(getDefinitionId(value)))
-                        : getCssShadow(value));
-            if (shadow) {
-                item.setShadowColor(shadow.color);
-                item.setShadowBlur(shadow.blur);
-                item.setShadowOffset(shadow.offset);
-            }
-        },
-
-        // Paper.js's own blend modes, which CSS doesn't have, see SvgExport:
-        'data-paper-blend-mode': function(item, value) {
-            if (item.setBlendMode)
-                item.setBlendMode(value);
-        },
-
-        'font-style': function(item, value) {
-            // Paper.js combines the font style with the weight. Applied after
-            // font-weight, which comes first as one of the SvgStyles. Browsers
-            // report the computed weight, so normal comes as 400:
-            if (item.setFontWeight && /^(italic|oblique)$/.test(value)) {
-                var weight = ('' + item.getFontWeight())
-                        .replace(/\s*\b(italic|oblique)\b/gi, '');
-                item.setFontWeight(/^(normal|400)$/.test(weight) ? value
-                        : weight + ' ' + value);
-            }
-        },
-
-        'letter-spacing': function(item, value) {
-            // Convert to letter tracking, in thousandths of an em. 'normal' is
-            // 0:
-            if (item.setLetterTracking) {
-                var amount = parseFloat(value) || 0;
-                item.setLetterTracking(1000 * (/em$/.test(value) ? amount
-                        : amount / parseFloat(item.getFontSize())));
-            }
-        },
-
-        'stop-color': function(item, value) {
-            // https://www.w3.org/TR/SVG/pservers.html#StopColorProperty
-            if (item.setColor)
-                item.setColor(value);
-        },
-
-        'stop-opacity': function(item, value) {
-            // https://www.w3.org/TR/SVG/pservers.html#StopOpacityProperty
-            // NOTE: It is important that this is applied after stop-color!
-            if (item._color)
-                item._color.setAlpha(parseFloat(value));
-        },
-
-        offset: function(item, value) {
-            // https://www.w3.org/TR/SVG/pservers.html#StopElementOffsetAttribute
-            if (item.setOffset) {
-                var percent = value.match(/(.*)%$/);
-                item.setOffset(percent ? percent[1] / 100 : parseFloat(value));
-            }
-        },
-
-        viewBox: function(item, value, name, node, styles) {
-            // https://www.w3.org/TR/SVG/coords.html#ViewBoxAttribute
-            // TODO: implement preserveAspectRatio attribute
-            // viewBox will be applied both to the group that's created for the
-            // content in SymbolDefinition#item, and the SymbolItem itself.
-            var rect = new Rectangle(convertValue(value, 'array')),
-                size = getSize(node, null, null, true),
-                group,
-                matrix;
-            if (item instanceof Group) {
-                // This is either a top-level svg node, or the container for a
-                // symbol.
-                var scale = size ? size.divide(rect.getSize()) : 1,
-                matrix = new Matrix().scale(scale)
-                        .translate(rect.getPoint().negate());
-                group = item;
-            } else if (item instanceof SymbolDefinition) {
-                // The symbol is wrapping a group. Note that viewBox was already
-                // applied to the group, and the above code was executed for it.
-                // All that is left to handle here for SymbolDefinition is
-                // clipping. We can't do it at group level because
-                // applyAttributes() gets called for groups before their
-                // children are added, for styling reasons. See importGroup()
-                if (size)
-                    rect.setSize(size);
-                group = item._item;
-            }
-            if (group)  {
-                if (getAttribute(node, 'overflow', styles) !== 'visible') {
-                    // Add a clip path at the top of this symbol's group
-                    var clip = new Shape.Rectangle(rect);
-                    clip.setClipMask(true);
-                    group.addChild(clip);
-                }
-                if (matrix)
-                    group.transform(matrix);
-            }
-        }
-    });
-
-    function getAttribute(node, name, styles) {
-        // Inline styles override presentation attributes, as in CSS. After
-        // them, see if the given attribute is defined, and finally, if there is
-        // a style applied through CSS rules, filtering out inheritance from
-        // their parents.
-        var style = Base.camelize(name),
-            value = node.style && node.style[style];
-        if (!value) {
-            var attr = node.attributes[name];
-            value = attr && attr.value;
-            if (!value && node.style
-                    && styles.node[style] !== styles.parent[style])
-                value = styles.node[style];
-        }
-        // Return undefined if attribute is not defined, but null if it's
-        // defined as not set (e.g. fill / stroke).
-        return !value ? undefined
-                : value === 'none' ? null
-                : value;
-    }
-
-    /**
-     * Converts various SVG styles and attributes into Paper.js styles and
-     * attributes and applies them to the passed item.
-     *
-     * @param {SVGElement} node an SVG node to read style and attributes from
-     * @param {Item} item the item to apply the style and attributes to
-     */
-    function applyAttributes(item, node, options, isRoot) {
-        // SVG attributes can be set both as styles and direct node
-        // attributes, so we need to handle both.
-        var parent = node.parentNode,
-            styles = {
-                node: DomElement.getStyles(node) || {},
-                // Do not check for inheritance if this is root, to make the
-                // default SVG settings stick.
-                parent: !isRoot && DomElement.getStyles(parent) || {}
-            };
-        // jsdom doesn't compute SVG styles, so start the root with SVG's initial
-        // fill, as it differs from the default in Paper.js:
-        if (isRoot && !styles.node.fill && item.setFillColor)
-            item.setFillColor('black');
-        Base.each(attributes, function(apply, name) {
-            var value = getAttribute(node, name, styles);
-            // 'clip-path' attribute returns a new item, support it here:
-            item = value !== undefined
-                    && apply(item, value, name, node, styles, options) || item;
-        });
-        return item;
-    }
-
-    function getDefinitionById(id, options) {
-        // Definitions can be referenced before they appear in the document,
-        // so import them on demand, see #1146:
-        if (id && !definitions[id]) {
-            var node = getElementById(id);
-            if (node)
-                importNode(node, options, false);
-        }
-        return definitions[id];
-    }
-
-    function getDefinitionId(value) {
-        // When url() comes from a style property, '#'' seems to be missing on
-        // WebKit. We also get variations of quotes or no quotes, single or
-        // double, so handle it all with one regular expression:
-        var match = value && value.match(/\((?:["'#]*)([^"')]+)/),
-            name = match && match[1];
-        return name && window
-                // This is required by Firefox, which can produce absolute
-                // urls for local gradients, see #1001:
-                ? name.replace(window.location.href.split('#')[0] + '#', '')
-                : name;
-    }
-
-    function getDefinition(value, options) {
-        var id = getDefinitionId(value),
-            res = id && getDefinitionById(id, options);
-        // Patch in support for SVG's gradientUnits="objectBoundingBox" through
-        // Color#_scaleToBounds
-        if (res && res._scaleToBounds) {
-            // Always create a clone, so it can be transformed when used.
-            res = res.clone();
-            res._scaleToBounds = true;
-        }
-        return res;
-    }
-
-    // Returns the element's data: its data-* attributes with camelized names,
-    // as in `dataset`, merged with Paper.js's own JSON in data-paper-data:
-    function getData(node) {
-        var data = null,
-            attributes = node.attributes,
-            json = node.getAttribute('data-paper-data');
-        for (var i = 0, l = attributes.length; i < l; i++) {
-            var match = attributes[i].name.match(/^data-(?!paper-)(.+)$/);
-            if (match) {
-                data = data || {};
-                data[Base.camelize(match[1])] = attributes[i].value;
-            }
-        }
-        return json ? Base.set(data || {}, JSON.parse(json)) : data;
-    }
-
-    // Restore the names and data of segments as SvgExport stores them, unless
-    // another editor changed the path so that their indices don't fit anymore:
-    function setSegmentsData(item, node) {
-        var json = node.getAttribute('data-paper-segments');
-        if (json) {
-            var entries = JSON.parse(json),
-                paths = item._children || [item],
-                segments = [];
-            for (var i = 0, l = paths.length; i < l; i++)
-                segments.push.apply(segments, paths[i]._segments);
-            if (Math.max.apply(Math, Object.keys(entries)) < segments.length) {
-                for (var index in entries) {
-                    var entry = entries[index],
-                        segment = segments[index];
-                    if (entry.name)
-                        segment.setName(entry.name);
-                    if (entry.data)
-                        segment._data = entry.data;
-                }
-            }
-        }
-    }
-
-    var sandbox;
-
-    function getSandbox() {
-        // Imported SVG nodes are attached to a document so that their styles
-        // can be computed. Use a sandboxed iframe instead of the page itself,
-        // so nothing in the SVG can run code or load resources (#2100).
-        // Recreate it if it was removed from the page, as its document is
-        // gone then too.
-        if (!(sandbox && sandbox.contentDocument)) {
-            sandbox = document.createElement('iframe');
-            // Without 'allow-scripts', no scripts or event handlers can run.
-            // 'allow-same-origin' gives us access to the iframe's document.
-            sandbox.setAttribute('sandbox', 'allow-same-origin');
-            // Don't use `display: none`, as browsers then stub some SVG APIs:
-            sandbox.style.cssText = 'position: absolute; visibility: hidden;'
-                    + ' width: 0; height: 0; border: 0';
-            document.body.appendChild(sandbox);
-            var doc = sandbox.contentDocument,
-                meta = doc.createElement('meta');
-            meta.httpEquiv = 'Content-Security-Policy';
-            meta.content = "default-src 'none'; style-src 'unsafe-inline'";
-            doc.head.appendChild(meta);
-        }
-        return sandbox.contentDocument.body;
-    }
-
-    function getElementById(id) {
-        return getSandbox().ownerDocument.getElementById(id);
-    }
-
-    function importNode(node, options, isRoot) {
-        // jsdom in Node.js uses uppercase values for nodeName...
-        var type = node.nodeName.toLowerCase(),
-            isElement = type !== '#document',
-            container,
-            parent,
-            next;
-        if (isRoot && isElement) {
-            // Set rootSize to view size, as getSize() may refer to it (#1242).
-            rootSize = paper.getView().getSize();
-            // Now set rootSize to the root element size, and fall-back to view.
-            rootSize = getSize(node, null, null, true) || rootSize;
-            // We need to move the SVG node to a live document, so default
-            // styles are correctly inherited! For this we create and insert a
-            // temporary SVG container into the sandbox, which is removed again
-            // at the end. This container also helps fix a bug on IE.
-            container = SvgElement.create('svg', {
-                // If no stroke-width is set, IE/Edge appears to have a
-                // default of 0.01px. We can set a default style on the
-                // parent container as a more sensible fall-back. Also, browsers
-                // have a default miter-limit of 4, while Paper.js has 10
-                style: 'stroke-width: 1px; stroke-miterlimit: 10'
-            });
-            parent = node.parentNode;
-            next = node.nextSibling;
-            container.appendChild(node);
-            getSandbox().appendChild(container);
-        }
-        // Have items imported from SVG not bake in all transformations to their
-        // content and children, as this is how SVG works too, but preserve the
-        // current setting so we can restore it after. Also don't insert them
-        // into the scene graph automatically, as we do so by hand.
-        var settings = paper.settings,
-            applyMatrix = settings.applyMatrix,
-            insertItems = settings.insertItems,
-            importer = importers[type],
-            item;
-        // Restore everything in `finally` blocks, so that a failing import
-        // doesn't leave the node in the sandbox or the settings changed:
+    // https://www.w3.org/TR/SVG/struct.html#UseElement
+    'use': function (node, type, options) {
+      // Note the namespaced xlink:href attribute is just called href
+      // as a property on node.
+      // TODO: Support overflow and width, height, in combination with
+      // overflow: hidden. Paper.js currently does not support
+      // SymbolItem clipping, but perhaps it should?
+      var id = (getValue(node, 'href', true) || '').substring(1),
+        definition = getDefinitionById(id, options),
+        point = getPoint(node),
+        item = null
+      if (definition instanceof SymbolDefinition) {
+        // When placing symbols, we need to take both point and matrix
+        // into account. place() does the right thing:
+        item = definition.place(point)
+      } else if (definition && !used[id]) {
+        // Import other items again in place, as they inherit the styles
+        // of the <use> element instead of where they are defined, and
+        // as rasters are only positioned once their image has loaded,
+        // which clones would miss:
+        used[id] = true
         try {
-            settings.applyMatrix = false;
-            settings.insertItems = false;
-            try {
-                item = importer && importer(node, type, options, isRoot)
-                        || null;
-            } finally {
-                settings.insertItems = insertItems;
-                settings.applyMatrix = applyMatrix;
-            }
-            if (item) {
-                // Restore segment names and data before attributes can wrap
-                // the path in a clip group:
-                if (isElement && item instanceof PathItem)
-                    setSegmentsData(item, node);
-                // Do not apply attributes if this is a #document node.
-                // importGroup() applies them itself, see there for why:
-                if (isElement && importer !== importGroup)
-                    item = applyAttributes(item, node, options, isRoot);
-                var data = isElement && getData(node);
-                if (data)
-                    item._data = data;
-                // Support processItem callback, to provide mechanism to handle
-                // special attributes (e.g. inkscape:transform-center). Skip
-                // #document nodes, as their item is their root element's:
-                var onImport = options.onImport,
-                    processItem = isElement && (options.processItem
-                        // TODO: Remove in 1.0.0? (deprecated October 2026),
-                        // alias with positional arguments:
-                        || onImport && function(arg) {
-                            return onImport(arg.node, arg.item, options);
-                        });
-                if (processItem)
-                    item = processItem({ item: item, node: node }) || item;
-                if (options.expandShapes && item instanceof Shape) {
-                    item.remove();
-                    item = item.toPath();
-                }
-            }
+          item = importNode(getElementById(id), options, false)
+            .translate(point)
         } finally {
-            if (container) {
-                //  After import, move things back to how they were:
-                container.parentNode.removeChild(container);
-                if (parent) {
-                    if (next) {
-                        parent.insertBefore(node, next);
-                    } else {
-                        parent.appendChild(node);
-                    }
-                }
-            }
-            // Clear definitions at the end of import:
-            if (isRoot)
-                definitions = {};
+          delete used[id]
         }
-        // Now if settings.applyMatrix was set, apply recursively and set
-        // #applyMatrix = true on the item and all children.
-        if (isRoot && item && Base.pick(options.applyMatrix, applyMatrix))
-            item.matrix.apply(true, true);
-        return item;
+      }
+      return item
+    },
+
+    // https://www.w3.org/TR/SVG/shapes.html#InterfaceSVGCircleElement
+    'circle': function (node) {
+      return new Shape.Circle(
+        getPoint(node, 'cx', 'cy'),
+        getValue(node, 'r')
+      )
+    },
+
+    // https://www.w3.org/TR/SVG/shapes.html#InterfaceSVGEllipseElement
+    'ellipse': function (node) {
+      // We only use object literal notation where the default one is not
+      // supported (e.g. center / radius fo Shape.Ellipse).
+      return new Shape.Ellipse({
+        center: getPoint(node, 'cx', 'cy'),
+        radius: getSize(node, 'rx', 'ry')
+      })
+    },
+
+    // https://www.w3.org/TR/SVG/shapes.html#RectElement
+    'rect': function (node) {
+      // A missing rx or ry takes the value of the other one:
+      var rx = getValue(node, 'rx', false, true),
+        ry = getValue(node, 'ry', false, true)
+      return new Shape.Rectangle(
+        new Rectangle(
+          getPoint(node),
+          getSize(node)
+        ),
+        new Size(
+          rx == null ? ry || 0 : rx,
+          ry == null ? rx || 0 : ry
+        )
+      )
+    },
+
+    // https://www.w3.org/TR/SVG/shapes.html#LineElement
+    'line': function (node) {
+      return new Path.Line(
+        getPoint(node, 'x1', 'y1'),
+        getPoint(node, 'x2', 'y2')
+      )
+    },
+
+    'text': function (node) {
+      // Not supported by Paper.js
+      // x: multiple values for x
+      // y: multiple values for y
+      // dx: multiple values for x
+      // dy: multiple values for y
+      // TODO: Support for these is missing in Paper.js right now
+      // rotate: character rotation
+      // lengthAdjust:
+      var text = new PointText(
+          getPoint(node).add(
+            getPoint(node, 'dx', 'dy')
+          )
+        ),
+        // Lines are placed in <tspan> elements with their own y, as
+        // exported by Paper.js and other editors:
+        lines = Base.each(
+          node.childNodes,
+          function (child) {
+            if (/^tspan$/i.test(child.nodeName) && child.hasAttribute('y'))
+              this.push(child.textContent.trim())
+          },
+          []
+        )
+      text.setContent(
+        lines.length > 1 ? lines.join('\n') : node.textContent.trim()
+      )
+      return text
+    },
+
+    // https://www.w3.org/TR/SVG/struct.html#SwitchElement
+    // Conditional attributes are ignored and all children are rendered.
+    'switch': importGroup
+  }
+
+  // Attributes and Styles
+
+  // NOTE: Parameter sequence for all apply*() functions is:
+  // (item, value, name, node) rather than (item, node, name, value),
+  // so we can omit the less likely parameters from right to left.
+
+  function applyTransform(item, value, name, node) {
+    if (item.transform) {
+      // https://www.w3.org/TR/SVG/types.html#DataTypeTransformList
+      // Parse SVG transform string. First we split at /)\s*/, to separate
+      // commands
+      var transforms = (node.getAttribute(name) || '').split(/\)\s*/g),
+        matrix = new Matrix()
+      for (var i = 0, l = transforms.length; i < l; i++) {
+        var transform = transforms[i]
+        if (!transform) break
+        // Command come before the '(', values after
+        var parts = transform.split(/\(\s*/),
+          command = parts[0].trim(),
+          v = parts[1].split(/[\s,]+/g)
+        // Convert values to floats
+        for (var j = 0, m = v.length; j < m; j++) v[j] = parseFloat(v[j])
+        switch (command) {
+          case 'matrix':
+            matrix.append(
+              new Matrix(v[0], v[1], v[2], v[3], v[4], v[5])
+            )
+            break
+          case 'rotate':
+            matrix.rotate(v[0], v[1] || 0, v[2] || 0)
+            break
+          case 'translate':
+            matrix.translate(v[0], v[1] || 0)
+            break
+          case 'scale':
+            matrix.scale(v)
+            break
+          case 'skewX':
+            matrix.skew(v[0], 0)
+            break
+          case 'skewY':
+            matrix.skew(0, v[0])
+            break
+        }
+      }
+      item.transform(matrix)
+    }
+  }
+
+  function applyClipMask(item, value, name, node, styles, options) {
+    // https://www.w3.org/TR/SVG/masking.html#ClipPathProperty
+    var clip = getDefinition(value, options)
+    if (clip) {
+      clip = clip.clone()
+      clip.setClipMask(true)
+      // If item is already a group, move the clip-path inside
+      if (item instanceof Group) {
+        item.insertChild(0, clip)
+      } else {
+        return new Group(clip, item)
+      }
+    }
+  }
+
+  function applyOpacity(item, value, name) {
+    // https://www.w3.org/TR/SVG/painting.html#FillOpacityProperty
+    // https://www.w3.org/TR/SVG/painting.html#StrokeOpacityProperty
+    var key = name === 'fill-opacity' ? 'getFillColor' : 'getStrokeColor',
+      color = item[key] && item[key]()
+    if (color) color.setAlpha(parseFloat(value))
+  }
+
+  // The primitives that SvgExport writes for a shadow after its blur:
+  var shadowPrimitives = 'feOffset,feFlood,feComposite,feComposite'
+
+  // Reads a shadow from a <filter> with the primitives that SvgExport writes
+  // for it, and only these, or returns null for any other filter:
+  function getFilterShadow(filter) {
+    var nodes = Base.slice(filter && filter.children || []),
+      names = nodes
+        .map(function (node) {
+          return node.nodeName
+        })
+        .join(),
+      blur = (
+        names === 'feGaussianBlur,' + shadowPrimitives &&
+        nodes.shift()
+      )
+    if (!blur && names !== shadowPrimitives) return null
+    var offset = nodes[0],
+      flood = nodes[1],
+      color = new Color(flood.getAttribute('flood-color') || 'black'),
+      opacity = flood.getAttribute('flood-opacity')
+    if (opacity) color.setAlpha(color.getAlpha() * parseFloat(opacity))
+    return {
+      color: color,
+      // Canvas blurs with a standard deviation of half the shadow blur:
+      blur: blur ? 2 * parseFloat(blur.getAttribute('stdDeviation')) : 0,
+      offset: new Point(
+        parseFloat(offset.getAttribute('dx')) || 0,
+        parseFloat(offset.getAttribute('dy')) || 0
+      )
+    }
+  }
+
+  // Reads a shadow from a single CSS drop-shadow(), with its color before or
+  // after its lengths, of which its blur radius equals the shadow blur:
+  function getCssShadow(value) {
+    var match = value.match(/^\s*drop-shadow\((.*)\)\s*$/),
+      color = (
+        match &&
+        match[1].match(
+          /(?:rgba?|hsla?)\([^)]*\)|#[0-9a-f]+|\b[a-z]+\b/i
+        )
+      ),
+      lengths = (
+        match &&
+        match[1].replace(color && color[0], '').match(/-?[\d.]+/g)
+      )
+    return lengths && lengths.length >= 2
+      ? {
+          color: new Color(color ? color[0] : 'black'),
+          blur: parseFloat(lengths[2]) || 0,
+          offset: new Point(parseFloat(lengths[0]), parseFloat(lengths[1]))
+        }
+      : null
+  }
+
+  // Create apply-functions for attributes, and merge in those for SVGStyles.
+  // We need to define style attributes first, and merge in all others after,
+  // since transform needs to be applied after fill color, as transformations
+  // can affect gradient fills.
+  // Use Base.set() to control sequence of attributes and have all entries in
+  // SvgStyles (e.g. 'stroke') before the additional attributes below (e.g.
+  // 'stroke-opacity'). See issue #694.
+  var attributes = Base.set(
+    Base.each(
+      SvgStyles,
+      function (entry) {
+        this[entry.attribute] = function (
+          item,
+          value,
+          name,
+          node,
+          styles,
+          options
+        ) {
+          if (item[entry.set]) {
+            item[entry.set](
+              convertValue(value, entry.type, entry.fromSVG, options)
+            )
+            if (entry.type === 'color') {
+              // Do not use result of convertValue() above, since calling
+              // the setter will convert a color and clone it if necessary
+              var color = item[entry.get]()
+              if (color) {
+                // Emulate SVG's gradientUnits="objectBoundingBox"
+                if (color._scaleToBounds) {
+                  var bounds = item.getBounds()
+                  color.transform(
+                    new Matrix()
+                      .translate(bounds.getPoint())
+                      .scale(bounds.getSize())
+                  )
+                }
+              }
+            }
+          }
+        }
+      },
+      {}
+    ),
+    {
+      'id': function (item, value) {
+        definitions[value] = item
+        // Item names can't consist only of numbers, see #1754:
+        if (item.setName && value !== +value + '') item.setName(value)
+      },
+
+      'clip-path': applyClipMask,
+      // Masks can only be approximated as clip masks, see isClipMask():
+      'mask': applyClipMask,
+
+      'gradientTransform': applyTransform,
+      'patternTransform': applyTransform,
+      'transform': applyTransform,
+
+      'fill-opacity': applyOpacity,
+      'stroke-opacity': applyOpacity,
+
+      'visibility': function (item, value) {
+        if (item.setVisible) item.setVisible(value === 'visible')
+      },
+
+      'display': function (item, value) {
+        // NOTE: 'none' gets translated to null in getAttribute()
+        if (item.setVisible) item.setVisible(value !== null)
+      },
+
+      'filter': function (item, value) {
+        // Read shadows, as SvgExport writes them, or as CSS drop-shadow().
+        // Groups don't draw shadows, so leave them out (#1003):
+        var shadow = (
+          value &&
+          !(item instanceof Group) &&
+          item.setShadowColor && (
+            /^url\(/.test(value)
+              ? getFilterShadow(
+                  getElementById(getDefinitionId(value))
+                )
+              : getCssShadow(value)
+          )
+        )
+        if (shadow) {
+          item.setShadowColor(shadow.color)
+          item.setShadowBlur(shadow.blur)
+          item.setShadowOffset(shadow.offset)
+        }
+      },
+
+      // Paper.js's own blend modes, which CSS doesn't have, see SvgExport:
+      'data-paper-blend-mode': function (item, value) {
+        if (item.setBlendMode) item.setBlendMode(value)
+      },
+
+      'font-style': function (item, value) {
+        // Paper.js combines the font style with the weight. Applied after
+        // font-weight, which comes first as one of the SvgStyles. Browsers
+        // report the computed weight, so normal comes as 400:
+        if (item.setFontWeight && /^(italic|oblique)$/.test(value)) {
+          var weight = ('' + item.getFontWeight())
+            .replace(/\s*\b(italic|oblique)\b/gi, '')
+          item.setFontWeight(
+            /^(normal|400)$/.test(weight) ? value : weight + ' ' + value
+          )
+        }
+      },
+
+      'letter-spacing': function (item, value) {
+        // Convert to letter tracking, in thousandths of an em. 'normal' is
+        // 0:
+        if (item.setLetterTracking) {
+          var amount = parseFloat(value) || 0
+          item.setLetterTracking(
+            1000 * (
+              /em$/.test(value)
+                ? amount
+                : amount / parseFloat(item.getFontSize())
+            )
+          )
+        }
+      },
+
+      'stop-color': function (item, value) {
+        // https://www.w3.org/TR/SVG/pservers.html#StopColorProperty
+        if (item.setColor) item.setColor(value)
+      },
+
+      'stop-opacity': function (item, value) {
+        // https://www.w3.org/TR/SVG/pservers.html#StopOpacityProperty
+        // NOTE: It is important that this is applied after stop-color!
+        if (item._color) item._color.setAlpha(parseFloat(value))
+      },
+
+      'offset': function (item, value) {
+        // https://www.w3.org/TR/SVG/pservers.html#StopElementOffsetAttribute
+        if (item.setOffset) {
+          var percent = value.match(/(.*)%$/)
+          item.setOffset(percent ? percent[1] / 100 : parseFloat(value))
+        }
+      },
+
+      'viewBox': function (item, value, name, node, styles) {
+        // https://www.w3.org/TR/SVG/coords.html#ViewBoxAttribute
+        // TODO: implement preserveAspectRatio attribute
+        // viewBox will be applied both to the group that's created for the
+        // content in SymbolDefinition#item, and the SymbolItem itself.
+        var rect = new Rectangle(convertValue(value, 'array')),
+          size = getSize(node, null, null, true),
+          group,
+          matrix
+        if (item instanceof Group) {
+          // This is either a top-level svg node, or the container for a
+          // symbol.
+          var scale = size ? size.divide(rect.getSize()) : 1,
+            matrix = new Matrix()
+              .scale(scale)
+              .translate(rect.getPoint().negate())
+          group = item
+        } else if (item instanceof SymbolDefinition) {
+          // The symbol is wrapping a group. Note that viewBox was already
+          // applied to the group, and the above code was executed for it.
+          // All that is left to handle here for SymbolDefinition is
+          // clipping. We can't do it at group level because
+          // applyAttributes() gets called for groups before their
+          // children are added, for styling reasons. See importGroup()
+          if (size) rect.setSize(size)
+          group = item._item
+        }
+        if (group) {
+          if (getAttribute(node, 'overflow', styles) !== 'visible') {
+            // Add a clip path at the top of this symbol's group
+            var clip = new Shape.Rectangle(rect)
+            clip.setClipMask(true)
+            group.addChild(clip)
+          }
+          if (matrix) group.transform(matrix)
+        }
+      }
+    }
+  )
+
+  function getAttribute(node, name, styles) {
+    // Inline styles override presentation attributes, as in CSS. After
+    // them, see if the given attribute is defined, and finally, if there is
+    // a style applied through CSS rules, filtering out inheritance from
+    // their parents.
+    var style = Base.camelize(name),
+      value = node.style && node.style[style]
+    if (!value) {
+      var attr = node.attributes[name]
+      value = attr && attr.value
+      if (!value && node.style && styles.node[style] !== styles.parent[style])
+        value = styles.node[style]
+    }
+    // Return undefined if attribute is not defined, but null if it's
+    // defined as not set (e.g. fill / stroke).
+    return !value ? undefined : value === 'none' ? null : value
+  }
+
+  /**
+   * Converts various SVG styles and attributes into Paper.js styles and
+   * attributes and applies them to the passed item.
+   *
+   * @param {SVGElement} node an SVG node to read style and attributes from
+   * @param {Item} item the item to apply the style and attributes to
+   */
+  function applyAttributes(item, node, options, isRoot) {
+    // SVG attributes can be set both as styles and direct node
+    // attributes, so we need to handle both.
+    var parent = node.parentNode,
+      styles = {
+        node: DomElement.getStyles(node) || {},
+        // Do not check for inheritance if this is root, to make the
+        // default SVG settings stick.
+        parent: !isRoot && DomElement.getStyles(parent) || {}
+      }
+    // jsdom doesn't compute SVG styles, so start the root with SVG's initial
+    // fill, as it differs from the default in Paper.js:
+    if (isRoot && !styles.node.fill && item.setFillColor)
+      item.setFillColor('black')
+    Base.each(attributes, function (apply, name) {
+      var value = getAttribute(node, name, styles)
+      // 'clip-path' attribute returns a new item, support it here:
+      item = (
+        (
+          value !== undefined &&
+          apply(item, value, name, node, styles, options)
+        ) ||
+        item
+      )
+    })
+    return item
+  }
+
+  function getDefinitionById(id, options) {
+    // Definitions can be referenced before they appear in the document,
+    // so import them on demand, see #1146:
+    if (id && !definitions[id]) {
+      var node = getElementById(id)
+      if (node) importNode(node, options, false)
+    }
+    return definitions[id]
+  }
+
+  function getDefinitionId(value) {
+    // When url() comes from a style property, '#'' seems to be missing on
+    // WebKit. We also get variations of quotes or no quotes, single or
+    // double, so handle it all with one regular expression:
+    var match = value && value.match(/\((?:["'#]*)([^"')]+)/),
+      name = match && match[1]
+    return name && window
+      ? // This is required by Firefox, which can produce absolute
+        // urls for local gradients, see #1001:
+        name.replace(window.location.href.split('#')[0] + '#', '')
+      : name
+  }
+
+  function getDefinition(value, options) {
+    var id = getDefinitionId(value),
+      res = id && getDefinitionById(id, options)
+    // Patch in support for SVG's gradientUnits="objectBoundingBox" through
+    // Color#_scaleToBounds
+    if (res && res._scaleToBounds) {
+      // Always create a clone, so it can be transformed when used.
+      res = res.clone()
+      res._scaleToBounds = true
+    }
+    return res
+  }
+
+  // Returns the element's data: its data-* attributes with camelized names,
+  // as in `dataset`, merged with Paper.js's own JSON in data-paper-data:
+  function getData(node) {
+    var data = null,
+      attributes = node.attributes,
+      json = node.getAttribute('data-paper-data')
+    for (var i = 0, l = attributes.length; i < l; i++) {
+      var match = attributes[i].name.match(/^data-(?!paper-)(.+)$/)
+      if (match) {
+        data = data || {}
+        data[Base.camelize(match[1])] = attributes[i].value
+      }
+    }
+    return json ? Base.set(data || {}, JSON.parse(json)) : data
+  }
+
+  // Restore the names and data of segments as SvgExport stores them, unless
+  // another editor changed the path so that their indices don't fit anymore:
+  function setSegmentsData(item, node) {
+    var json = node.getAttribute('data-paper-segments')
+    if (json) {
+      var entries = JSON.parse(json),
+        paths = item._children || [item],
+        segments = []
+      for (var i = 0, l = paths.length; i < l; i++)
+        segments.push.apply(segments, paths[i]._segments)
+      if (Math.max.apply(Math, Object.keys(entries)) < segments.length) {
+        for (var index in entries) {
+          var entry = entries[index],
+            segment = segments[index]
+          if (entry.name) segment.setName(entry.name)
+          if (entry.data) segment._data = entry.data
+        }
+      }
+    }
+  }
+
+  var sandbox
+
+  function getSandbox() {
+    // Imported SVG nodes are attached to a document so that their styles
+    // can be computed. Use a sandboxed iframe instead of the page itself,
+    // so nothing in the SVG can run code or load resources (#2100).
+    // Recreate it if it was removed from the page, as its document is
+    // gone then too.
+    if (!(sandbox && sandbox.contentDocument)) {
+      sandbox = document.createElement('iframe')
+      // Without 'allow-scripts', no scripts or event handlers can run.
+      // 'allow-same-origin' gives us access to the iframe's document.
+      sandbox.setAttribute('sandbox', 'allow-same-origin')
+      // Don't use `display: none`, as browsers then stub some SVG APIs:
+      sandbox.style.cssText = (
+        'position: absolute; visibility: hidden;' +
+        ' width: 0; height: 0; border: 0'
+      )
+      document.body.appendChild(sandbox)
+      var doc = sandbox.contentDocument,
+        meta = doc.createElement('meta')
+      meta.httpEquiv = 'Content-Security-Policy'
+      meta.content = "default-src 'none'; style-src 'unsafe-inline'"
+      doc.head.appendChild(meta)
+    }
+    return sandbox.contentDocument.body
+  }
+
+  function getElementById(id) {
+    return getSandbox().ownerDocument.getElementById(id)
+  }
+
+  function importNode(node, options, isRoot) {
+    // jsdom in Node.js uses uppercase values for nodeName...
+    var type = node.nodeName.toLowerCase(),
+      isElement = type !== '#document',
+      container,
+      parent,
+      next
+    if (isRoot && isElement) {
+      // Set rootSize to view size, as getSize() may refer to it (#1242).
+      rootSize = paper.getView().getSize()
+      // Now set rootSize to the root element size, and fall-back to view.
+      rootSize = getSize(node, null, null, true) || rootSize
+      // We need to move the SVG node to a live document, so default
+      // styles are correctly inherited! For this we create and insert a
+      // temporary SVG container into the sandbox, which is removed again
+      // at the end. This container also helps fix a bug on IE.
+      container = SvgElement.create('svg', {
+        // If no stroke-width is set, IE/Edge appears to have a
+        // default of 0.01px. We can set a default style on the
+        // parent container as a more sensible fall-back. Also, browsers
+        // have a default miter-limit of 4, while Paper.js has 10
+        style: 'stroke-width: 1px; stroke-miterlimit: 10'
+      })
+      parent = node.parentNode
+      next = node.nextSibling
+      container.appendChild(node)
+      getSandbox().appendChild(container)
+    }
+    // Have items imported from SVG not bake in all transformations to their
+    // content and children, as this is how SVG works too, but preserve the
+    // current setting so we can restore it after. Also don't insert them
+    // into the scene graph automatically, as we do so by hand.
+    var settings = paper.settings,
+      applyMatrix = settings.applyMatrix,
+      insertItems = settings.insertItems,
+      importer = importers[type],
+      item
+    // Restore everything in `finally` blocks, so that a failing import
+    // doesn't leave the node in the sandbox or the settings changed:
+    try {
+      settings.applyMatrix = false
+      settings.insertItems = false
+      try {
+        item = (
+          importer && importer(node, type, options, isRoot) ||
+          null
+        )
+      } finally {
+        settings.insertItems = insertItems
+        settings.applyMatrix = applyMatrix
+      }
+      if (item) {
+        // Restore segment names and data before attributes can wrap
+        // the path in a clip group:
+        if (isElement && item instanceof PathItem) setSegmentsData(item, node)
+        // Do not apply attributes if this is a #document node.
+        // importGroup() applies them itself, see there for why:
+        if (isElement && importer !== importGroup)
+          item = applyAttributes(item, node, options, isRoot)
+        var data = isElement && getData(node)
+        if (data) item._data = data
+        // Support processItem callback, to provide mechanism to handle
+        // special attributes (e.g. inkscape:transform-center). Skip
+        // #document nodes, as their item is their root element's:
+        var onImport = options.onImport,
+          processItem = (
+            isElement && (
+              options.processItem || (
+                // TODO: Remove in 1.0.0? (deprecated October 2026),
+                // alias with positional arguments:
+                onImport &&
+                function (arg) {
+                  return onImport(arg.node, arg.item, options)
+                }
+              )
+            )
+          )
+        if (processItem) item = processItem({ item: item, node: node }) || item
+        if (options.expandShapes && item instanceof Shape) {
+          item.remove()
+          item = item.toPath()
+        }
+      }
+    } finally {
+      if (container) {
+        //  After import, move things back to how they were:
+        container.parentNode.removeChild(container)
+        if (parent) {
+          if (next) {
+            parent.insertBefore(node, next)
+          } else {
+            parent.appendChild(node)
+          }
+        }
+      }
+      // Clear definitions at the end of import:
+      if (isRoot) definitions = {}
+    }
+    // Now if settings.applyMatrix was set, apply recursively and set
+    // #applyMatrix = true on the item and all children.
+    if (isRoot && item && Base.pick(options.applyMatrix, applyMatrix))
+      item.matrix.apply(true, true)
+    return item
+  }
+
+  function importSVG(source, options, owner) {
+    if (!source) return null
+    options =
+      typeof options === 'function' ? { onLoad: options } : options || {}
+    // Remember current scope so we can restore it in onLoad.
+    var scope = paper,
+      item = null
+
+    function onLoad(svg) {
+      try {
+        var node =
+          typeof svg === 'object'
+            ? svg
+            : new self.DOMParser().parseFromString(
+                svg.trim(),
+                'image/svg+xml'
+              )
+        if (!node.nodeName) {
+          node = null
+          throw new Error('Unsupported SVG source: ' + source)
+        }
+        paper = scope
+        item = importNode(node, options, true)
+        if (!options || options.insert !== false) {
+          // TODO: Implement support for multiple Layers on Project.
+          // 1.0 removes the wrapping group for project imports, so
+          // the layers become the project's layers.
+          owner._insertItem(undefined, item)
+        }
+        var onLoad = options.onLoad
+        if (onLoad) onLoad(item, svg)
+      } catch (e) {
+        onError(e)
+      }
     }
 
-    function importSVG(source, options, owner) {
-        if (!source)
-            return null;
-        options = typeof options === 'function' ? { onLoad: options }
-                : options || {};
-        // Remember current scope so we can restore it in onLoad.
-        var scope = paper,
-            item = null;
-
-        function onLoad(svg) {
-            try {
-                var node = typeof svg === 'object'
-                    ? svg
-                    : new self.DOMParser().parseFromString(
-                        svg.trim(),
-                        'image/svg+xml'
-                    );
-                if (!node.nodeName) {
-                    node = null;
-                    throw new Error('Unsupported SVG source: ' + source);
-                }
-                paper = scope;
-                item = importNode(node, options, true);
-                if (!options || options.insert !== false) {
-                    // TODO: Implement support for multiple Layers on Project.
-                    // 1.0 removes the wrapping group for project imports, so
-                    // the layers become the project's layers.
-                    owner._insertItem(undefined, item);
-                }
-                var onLoad = options.onLoad;
-                if (onLoad)
-                    onLoad(item, svg);
-            } catch (e) {
-                onError(e);
-            }
-        }
-
-        function onError(message, status) {
-            var onError = options.onError;
-            if (onError) {
-                onError(message, status);
-            } else {
-                throw new Error(message);
-            }
-        }
-
-        // Have the group not pass on all transformations to its children,
-        // as this is how SVG works too.
-        // See if it's a string but handle markup separately, using `[\s\S]` to
-        // also match the first tag if it only starts on the second line in a
-        // multi-line string.
-        if (typeof source === 'string' && !/^[\s\S]*</.test(source)) {
-            // First see if we're meant to import an element with the given
-            // id.
-            var node = document.getElementById(source);
-            // Check if the string does not represent SVG data, in which
-            // case it must be the URL of a SVG to be loaded.
-            if (node) {
-                onLoad(node);
-            } else {
-                Http.request({
-                    url: source,
-                    async: true,
-                    onLoad: onLoad,
-                    onError: onError
-                });
-            }
-        } else if (typeof File !== 'undefined' && source instanceof File) {
-            // Load local file through FileReader
-            var reader = new FileReader();
-            reader.onload = function() {
-                onLoad(reader.result);
-            };
-            reader.onerror = function() {
-                onError(reader.error);
-            };
-            return reader.readAsText(source);
-        } else {
-            onLoad(source);
-        }
-
-        return item;
+    function onError(message, status) {
+      var onError = options.onError
+      if (onError) {
+        onError(message, status)
+      } else {
+        throw new Error(message)
+      }
     }
 
-    // NOTE: Documentation is in Item#importSVG()
-    Item.inject({
-        importSVG: function(node, options) {
-            return importSVG(node, options, this);
-        }
-    });
+    // Have the group not pass on all transformations to its children,
+    // as this is how SVG works too.
+    // See if it's a string but handle markup separately, using `[\s\S]` to
+    // also match the first tag if it only starts on the second line in a
+    // multi-line string.
+    if (typeof source === 'string' && !/^[\s\S]*</.test(source)) {
+      // First see if we're meant to import an element with the given
+      // id.
+      var node = document.getElementById(source)
+      // Check if the string does not represent SVG data, in which
+      // case it must be the URL of a SVG to be loaded.
+      if (node) {
+        onLoad(node)
+      } else {
+        Http.request({
+          url: source,
+          async: true,
+          onLoad: onLoad,
+          onError: onError
+        })
+      }
+    } else if (typeof File !== 'undefined' && source instanceof File) {
+      // Load local file through FileReader
+      var reader = new FileReader()
+      reader.onload = function () {
+        onLoad(reader.result)
+      }
+      reader.onerror = function () {
+        onError(reader.error)
+      }
+      return reader.readAsText(source)
+    } else {
+      onLoad(source)
+    }
 
-    // NOTE: Documentation is in Project#importSVG()
-    Project.inject({
-        importSVG: function(node, options) {
-            this.activate();
-            return importSVG(node, options, this);
-        }
-    });
-};
+    return item
+  }
+
+  // NOTE: Documentation is in Item#importSVG()
+  Item.inject({
+    importSVG: function (node, options) {
+      return importSVG(node, options, this)
+    }
+  })
+
+  // NOTE: Documentation is in Project#importSVG()
+  Project.inject({
+    importSVG: function (node, options) {
+      this.activate()
+      return importSVG(node, options, this)
+    }
+  })
+})()

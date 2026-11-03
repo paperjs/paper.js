@@ -6,6 +6,7 @@
   "evil": true,
   "supernew": true,
   "laxbreak": true,
+  "asi": true,
   "eqeqeq": false,
   "-W041": false,
   "eqnull": true,

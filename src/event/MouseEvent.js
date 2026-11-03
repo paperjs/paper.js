@@ -23,15 +23,16 @@
  * @extends Event
  */
 /* global MouseEvent: true */
-var MouseEvent = Event.extend(/** @lends MouseEvent# */{
+var MouseEvent = Event.extend(
+  /** @lends MouseEvent# */ {
     _class: 'MouseEvent',
 
     initialize: function MouseEvent(type, event, point, target, delta) {
-        this.type = type;
-        this.event = event;
-        this.point = point;
-        this.target = target;
-        this.delta = delta;
+      this.type = type
+      this.event = event
+      this.point = point
+      this.target = target
+      this.delta = delta
     },
 
     /**
@@ -79,12 +80,19 @@ var MouseEvent = Event.extend(/** @lends MouseEvent# */{
     /**
      * @return {String} a string representation of the mouse event
      */
-    toString: function() {
-        return "{ type: '" + this.type
-                + "', point: " + this.point
-                + ', target: ' + this.target
-                + (this.delta ? ', delta: ' + this.delta : '')
-                + ', modifiers: ' + this.getModifiers()
-                + ' }';
+    toString: function () {
+      return (
+        "{ type: '" +
+        this.type +
+        "', point: " +
+        this.point +
+        ', target: ' +
+        this.target +
+        (this.delta ? ', delta: ' + this.delta : '') +
+        ', modifiers: ' +
+        this.getModifiers() +
+        ' }'
+      )
     }
-});
+  }
+)

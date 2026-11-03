@@ -21,23 +21,24 @@
  *
  * @extends Event
  */
-var ToolEvent = Event.extend(/** @lends ToolEvent# */{
+var ToolEvent = Event.extend(
+  /** @lends ToolEvent# */ {
     _class: 'ToolEvent',
     // Have ToolEvent#item fall back to returning null, not undefined.
     _item: null,
 
     initialize: function ToolEvent(tool, type, event) {
-        this.tool = tool;
-        this.type = type;
-        this.event = event;
+      this.tool = tool
+      this.type = type
+      this.event = event
     },
 
     /**
      * Convenience method to allow local overrides of point values.
      * See application below.
      */
-    _choosePoint: function(point, toolPoint) {
-        return point ? point : toolPoint ? toolPoint.clone() : null;
+    _choosePoint: function (point, toolPoint) {
+      return point ? point : toolPoint ? toolPoint.clone() : null
     },
 
     /**
@@ -73,12 +74,12 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
      * @bean
      * @type Point
      */
-    getPoint: function() {
-        return this._choosePoint(this._point, this.tool._point);
+    getPoint: function () {
+      return this._choosePoint(this._point, this.tool._point)
     },
 
-    setPoint: function(point) {
-        this._point = point;
+    setPoint: function (point) {
+      this._point = point
     },
 
     /**
@@ -88,12 +89,12 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
      * @bean
      * @type Point
      */
-    getLastPoint: function() {
-        return this._choosePoint(this._lastPoint, this.tool._lastPoint);
+    getLastPoint: function () {
+      return this._choosePoint(this._lastPoint, this.tool._lastPoint)
     },
 
-    setLastPoint: function(lastPoint) {
-        this._lastPoint = lastPoint;
+    setLastPoint: function (lastPoint) {
+      this._lastPoint = lastPoint
     },
 
     /**
@@ -103,12 +104,12 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
      * @bean
      * @type Point
      */
-    getDownPoint: function() {
-        return this._choosePoint(this._downPoint, this.tool._downPoint);
+    getDownPoint: function () {
+      return this._choosePoint(this._downPoint, this.tool._downPoint)
     },
 
-    setDownPoint: function(downPoint) {
-        this._downPoint = downPoint;
+    setDownPoint: function (downPoint) {
+      this._downPoint = downPoint
     },
 
     /**
@@ -120,17 +121,17 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
      * @bean
      * @type Point
      */
-    getMiddlePoint: function() {
-        // For explanations, see getDelta()
-        if (!this._middlePoint && this.tool._lastPoint) {
-            // (point + lastPoint) / 2
-            return this.tool._point.add(this.tool._lastPoint).divide(2);
-        }
-        return this._middlePoint;
+    getMiddlePoint: function () {
+      // For explanations, see getDelta()
+      if (!this._middlePoint && this.tool._lastPoint) {
+        // (point + lastPoint) / 2
+        return this.tool._point.add(this.tool._lastPoint).divide(2)
+      }
+      return this._middlePoint
     },
 
-    setMiddlePoint: function(middlePoint) {
-        this._middlePoint = middlePoint;
+    setMiddlePoint: function (middlePoint) {
+      this._middlePoint = middlePoint
     },
 
     /**
@@ -141,19 +142,19 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
      * @bean
      * @type Point
      */
-    getDelta: function() {
-        // Do not put the calculated delta into delta, since this only reserved
-        // for overriding event.delta.
-        // Instead, keep calculating the delta each time, so the result can be
-        // directly modified by the script without changing the internal values.
-        // We could cache this and use clone, but this is almost as fast...
-        return !this._delta && this.tool._lastPoint
-                ? this.tool._point.subtract(this.tool._lastPoint)
-                : this._delta;
+    getDelta: function () {
+      // Do not put the calculated delta into delta, since this only reserved
+      // for overriding event.delta.
+      // Instead, keep calculating the delta each time, so the result can be
+      // directly modified by the script without changing the internal values.
+      // We could cache this and use clone, but this is almost as fast...
+      return !this._delta && this.tool._lastPoint
+        ? this.tool._point.subtract(this.tool._lastPoint)
+        : this._delta
     },
 
-    setDelta: function(delta) {
-        this._delta = delta;
+    setDelta: function (delta) {
+      this._delta = delta
     },
 
     /**
@@ -168,12 +169,12 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
      * @bean
      * @type Point
      */
-    getVelocity: function() {
-        return this._velocity || this.tool._velocity.clone();
+    getVelocity: function () {
+      return this._velocity || this.tool._velocity.clone()
     },
 
-    setVelocity: function(velocity) {
-        this._velocity = velocity;
+    setVelocity: function (velocity) {
+      this._velocity = velocity
     },
 
     /**
@@ -186,12 +187,12 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
      * @bean
      * @type Number
      */
-    getElapsed: function() {
-        return this._elapsed != null ? this._elapsed : this.tool._elapsed;
+    getElapsed: function () {
+      return this._elapsed != null ? this._elapsed : this.tool._elapsed
     },
 
-    setElapsed: function(elapsed) {
-        this._elapsed = elapsed;
+    setElapsed: function (elapsed) {
+      this._elapsed = elapsed
     },
 
     /**
@@ -200,18 +201,18 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
      * @bean
      * @type Number
      */
-    getCount: function() {
-        return this.tool[this._getCountName()];
+    getCount: function () {
+      return this.tool[this._getCountName()]
     },
 
-    setCount: function(count) {
-        this.tool[this._getCountName()] = count;
+    setCount: function (count) {
+      this.tool[this._getCountName()] = count
     },
 
-    _getCountName: function() {
-        // Use downCount for both mouse down and up, since the count is the
-        // same.
-        return /^mouse(down|up)$/.test(this.type) ? '_downCount' : '_moveCount';
+    _getCountName: function () {
+      // Use downCount for both mouse down and up, since the count is the
+      // same.
+      return /^mouse(down|up)$/.test(this.type) ? '_downCount' : '_moveCount'
     },
 
     /**
@@ -224,35 +225,42 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
      * @bean
      * @type Item
      */
-    getItem: function() {
-        if (!this._item) {
-            var result = this.tool._scope.project.hitTest(this.getPoint());
-            if (result) {
-                var item = result.item,
-                    // Find group parent, but exclude layers
-                    parent = item._parent;
-                while (/^(Group|CompoundPath)$/.test(parent._class)) {
-                    item = parent;
-                    parent = parent._parent;
-                }
-                this._item = item;
-            }
+    getItem: function () {
+      if (!this._item) {
+        var result = this.tool._scope.project.hitTest(this.getPoint())
+        if (result) {
+          var item = result.item,
+            // Find group parent, but exclude layers
+            parent = item._parent
+          while (/^(Group|CompoundPath)$/.test(parent._class)) {
+            item = parent
+            parent = parent._parent
+          }
+          this._item = item
         }
-        return this._item;
+      }
+      return this._item
     },
 
-    setItem: function(item) {
-        this._item = item;
+    setItem: function (item) {
+      this._item = item
     },
 
     /**
      * @return {String} a string representation of the tool event
      */
-    toString: function() {
-        return '{ type: ' + this.type
-                + ', point: ' + this.getPoint()
-                + ', count: ' + this.getCount()
-                + ', modifiers: ' + this.getModifiers()
-                + ' }';
+    toString: function () {
+      return (
+        '{ type: ' +
+        this.type +
+        ', point: ' +
+        this.getPoint() +
+        ', count: ' +
+        this.getCount() +
+        ', modifiers: ' +
+        this.getModifiers() +
+        ' }'
+      )
     }
-});
+  }
+)

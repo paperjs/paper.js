@@ -1,6 +1,5 @@
-# The sources, builds, Gulp tasks, examples and the boolean sweep keep the old
-# style until the ES modules port:
-src/
+# The builds, Gulp tasks, examples and the boolean sweep keep the old style
+# until the ES modules port:
 dist/
 gulp/
 gulpfile.js

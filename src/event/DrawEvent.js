@@ -17,11 +17,12 @@
  * handlers {@link Item#onDraw} and {@link Item#onDrawSelection}, which
  * describe its fields.
  */
-var DrawEvent = Base.extend(/** @lends DrawEvent# */{
+var DrawEvent = Base.extend(
+  /** @lends DrawEvent# */ {
     _class: 'DrawEvent',
 
     initialize: function DrawEvent(props) {
-        Base.set(this, props);
+      Base.set(this, props)
     },
 
     prevented: false,
@@ -30,10 +31,11 @@ var DrawEvent = Base.extend(/** @lends DrawEvent# */{
      * Skips the item's default drawing, as returning `false` from the handler
      * does.
      */
-    preventDefault: function() {
-        this.prevented = true;
+    preventDefault: function () {
+      this.prevented = true
     },
 
     // Emitter#emit() calls stop() when a handler returns false:
     stop: '#preventDefault'
-});
+  }
+)

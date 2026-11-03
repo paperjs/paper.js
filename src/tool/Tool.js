@@ -42,14 +42,16 @@
  *     path.add(event.point);
  * }
  */
-var Tool = PaperScopeItem.extend(/** @lends Tool# */{
+var Tool = PaperScopeItem.extend(
+  /** @lends Tool# */ {
     _class: 'Tool',
     _list: 'tools',
     // TODO: This should be `activeTool` instead?
     _reference: 'tool',
-    _events: ['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onMouseMove',
-            'onActivate', 'onDeactivate', 'onEditOptions', 'onKeyDown',
-            'onKeyUp'],
+    _events: [
+      'onMouseDown', 'onMouseUp', 'onMouseDrag', 'onMouseMove', 'onActivate',
+      'onDeactivate', 'onEditOptions', 'onKeyDown', 'onKeyUp'
+    ],
 
     /**
      * The scope that this tool belongs to.
@@ -62,11 +64,11 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 
     // DOCS: rewrite Tool constructor explanation
     initialize: function Tool(props) {
-        PaperScopeItem.call(this);
-        // -1 so first event is 0:
-        this._moveCount = -1;
-        this._downCount = -1;
-        this.set(props);
+      PaperScopeItem.call(this)
+      // -1 so first event is 0:
+      this._moveCount = -1
+      this._downCount = -1
+      this.set(props)
     },
 
     /**
@@ -91,16 +93,19 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      * @bean
      * @type Number
      */
-    getMinDistance: function() {
-        return this._minDistance;
+    getMinDistance: function () {
+      return this._minDistance
     },
 
-    setMinDistance: function(minDistance) {
-        this._minDistance = minDistance;
-        if (minDistance != null && this._maxDistance != null
-                && minDistance > this._maxDistance) {
-            this._maxDistance = minDistance;
-        }
+    setMinDistance: function (minDistance) {
+      this._minDistance = minDistance
+      if (
+        minDistance != null &&
+        this._maxDistance != null &&
+        minDistance > this._maxDistance
+      ) {
+        this._maxDistance = minDistance
+      }
     },
 
     /**
@@ -110,16 +115,19 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      * @bean
      * @type Number
      */
-    getMaxDistance: function() {
-        return this._maxDistance;
+    getMaxDistance: function () {
+      return this._maxDistance
     },
 
-    setMaxDistance: function(maxDistance) {
-        this._maxDistance = maxDistance;
-        if (this._minDistance != null && maxDistance != null
-                && maxDistance < this._minDistance) {
-            this._minDistance = maxDistance;
-        }
+    setMaxDistance: function (maxDistance) {
+      this._maxDistance = maxDistance
+      if (
+        this._minDistance != null &&
+        maxDistance != null &&
+        maxDistance < this._minDistance
+      ) {
+        this._minDistance = maxDistance
+      }
     },
 
     /**
@@ -138,12 +146,12 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      * // is held:
      * tool.eventInterval = 100;
      */
-    getEventInterval: function() {
-        return this._eventInterval;
+    getEventInterval: function () {
+      return this._eventInterval
     },
 
-    setEventInterval: function(interval) {
-        this._eventInterval = interval;
+    setEventInterval: function (interval) {
+      this._eventInterval = interval
     },
 
     // DOCS: document Tool#fixedDistance
@@ -151,13 +159,14 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      * @bean
      * @type Number
      */
-    getFixedDistance: function() {
-        return this._minDistance == this._maxDistance
-            ? this._minDistance : null;
+    getFixedDistance: function () {
+      return this._minDistance == this._maxDistance
+        ? this._minDistance
+        : null
     },
 
-    setFixedDistance: function(distance) {
-        this._minDistance = this._maxDistance = distance;
+    setFixedDistance: function (distance) {
+      this._minDistance = this._maxDistance = distance
     },
 
     /**
@@ -349,110 +358,112 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      *
      * @return {@true if at least one event handler was called}.
      */
-    _handleMouseEvent: function(type, event, point, mouse) {
-        // Update global reference to this scope.
-        paper = this._scope;
-        // If there is no mousedrag event installed, fall back to mousemove,
-        // with which we share the actual event handling code anyhow.
-        if (mouse.drag && !this.responds(type))
-            type = 'mousemove';
-        var move = mouse.move || mouse.drag,
-            responds = this.responds(type),
-            called = false,
-            tool = this,
-            // The time and velocity since the last tool event, in seconds and
-            // points per second, measured between the mouse reports, so the
-            // steps that maxDistance interpolates along the way share them:
-            time = event.timeStamp / 1000,
-            elapsed = this._time != null ? time - this._time : 0,
-            velocity = !mouse.down && this._point && elapsed > 0
-                    ? point.subtract(this._point).divide(elapsed)
-                    : new Point();
-        // Updates the internal tool state, taking into account minDistance and
-        // maxDistance and interpolating "fake" events along the moved distance
-        // to respect their settings, if necessary.
-        // Returns true as long as events should be fired, false when the target
-        // is reached.
-        function update(minDistance, maxDistance) {
-            var pt = point,
-                // Set toolPoint to the  previous point for moves or downPoint
-                // for clicks, so mouseup has a delta spanning over the full
-                // drag. Use the current point if this is the first mousedown,
-                // so there's always a delta.
-                toolPoint = move ? tool._point : (tool._downPoint || pt);
-            if (move) {
-                // After first move event was emitted, tool._moveCount = 0, so
-                // we need to include 0 in this check.
-                if (tool._moveCount >= 0 && pt.equals(toolPoint)) {
-                    return false;
-                }
-                if (toolPoint && (minDistance != null || maxDistance != null)) {
-                    var vector = pt.subtract(toolPoint),
-                        distance = vector.getLength();
-                    if (distance < (minDistance || 0))
-                        return false;
-                    // Produce a new point on the way to point if point is
-                    // further away than maxDistance
-                    if (maxDistance) {
-                        pt = toolPoint.add(vector.normalize(
-                                Math.min(distance, maxDistance)));
-                    }
-                }
-                tool._moveCount++;
+    _handleMouseEvent: function (type, event, point, mouse) {
+      // Update global reference to this scope.
+      paper = this._scope
+      // If there is no mousedrag event installed, fall back to mousemove,
+      // with which we share the actual event handling code anyhow.
+      if (mouse.drag && !this.responds(type)) type = 'mousemove'
+      var move = mouse.move || mouse.drag,
+        responds = this.responds(type),
+        called = false,
+        tool = this,
+        // The time and velocity since the last tool event, in seconds and
+        // points per second, measured between the mouse reports, so the
+        // steps that maxDistance interpolates along the way share them:
+        time = event.timeStamp / 1000,
+        elapsed = this._time != null ? time - this._time : 0,
+        velocity =
+          !mouse.down && this._point && elapsed > 0
+            ? point.subtract(this._point).divide(elapsed)
+            : new Point()
+      // Updates the internal tool state, taking into account minDistance and
+      // maxDistance and interpolating "fake" events along the moved distance
+      // to respect their settings, if necessary.
+      // Returns true as long as events should be fired, false when the target
+      // is reached.
+      function update(minDistance, maxDistance) {
+        var pt = point,
+          // Set toolPoint to the  previous point for moves or downPoint
+          // for clicks, so mouseup has a delta spanning over the full
+          // drag. Use the current point if this is the first mousedown,
+          // so there's always a delta.
+          toolPoint = move ? tool._point : tool._downPoint || pt
+        if (move) {
+          // After first move event was emitted, tool._moveCount = 0, so
+          // we need to include 0 in this check.
+          if (tool._moveCount >= 0 && pt.equals(toolPoint)) {
+            return false
+          }
+          if (toolPoint && (minDistance != null || maxDistance != null)) {
+            var vector = pt.subtract(toolPoint),
+              distance = vector.getLength()
+            if (distance < (minDistance || 0)) return false
+            // Produce a new point on the way to point if point is
+            // further away than maxDistance
+            if (maxDistance) {
+              pt = toolPoint.add(
+                vector.normalize(
+                  Math.min(distance, maxDistance)
+                )
+              )
             }
-            tool._point = pt;
-            tool._lastPoint = toolPoint || pt;
-            tool._velocity = velocity;
-            tool._elapsed = elapsed;
-            tool._time = time;
-            if (mouse.down) {
-                tool._moveCount = -1;
-                tool._downPoint = pt;
-                tool._downCount++;
-            }
-            return true;
+          }
+          tool._moveCount++
         }
-
-        function emit() {
-            if (responds) {
-                called = tool.emit(type, new ToolEvent(tool, type, event))
-                        || called;
-            }
-        }
-
+        tool._point = pt
+        tool._lastPoint = toolPoint || pt
+        tool._velocity = velocity
+        tool._elapsed = elapsed
+        tool._time = time
         if (mouse.down) {
-            update();
-            emit();
-            if (this._eventInterval > 0) {
-                // Repeat mousedrag at the last point while the mouse is held,
-                // until the mouse is released or another tool takes over:
-                clearInterval(this._timer);
-                this._timer = setInterval(function() {
-                    if (tool.isActive()) {
-                        paper = tool._scope;
-                        tool._lastPoint = tool._point;
-                        // Not moving, but keep the time of the last report:
-                        tool._velocity = new Point();
-                        tool._elapsed = tool._eventInterval / 1000;
-                        tool._moveCount++;
-                        if (tool.responds('mousedrag')) {
-                            tool.emit('mousedrag',
-                                    new ToolEvent(tool, 'mousedrag', event));
-                        }
-                    } else {
-                        clearInterval(tool._timer);
-                    }
-                }, this._eventInterval);
-            }
-        } else if (mouse.up) {
-            clearInterval(this._timer);
-            update(null, this._maxDistance);
-            emit();
-        } else if (responds) {
-            while (update(this._minDistance, this._maxDistance))
-                emit();
+          tool._moveCount = -1
+          tool._downPoint = pt
+          tool._downCount++
         }
-        return called;
+        return true
+      }
+
+      function emit() {
+        if (responds) {
+          called = (
+            tool.emit(type, new ToolEvent(tool, type, event)) ||
+            called
+          )
+        }
+      }
+
+      if (mouse.down) {
+        update()
+        emit()
+        if (this._eventInterval > 0) {
+          // Repeat mousedrag at the last point while the mouse is held,
+          // until the mouse is released or another tool takes over:
+          clearInterval(this._timer)
+          this._timer = setInterval(function () {
+            if (tool.isActive()) {
+              paper = tool._scope
+              tool._lastPoint = tool._point
+              // Not moving, but keep the time of the last report:
+              tool._velocity = new Point()
+              tool._elapsed = tool._eventInterval / 1000
+              tool._moveCount++
+              if (tool.responds('mousedrag')) {
+                tool.emit('mousedrag', new ToolEvent(tool, 'mousedrag', event))
+              }
+            } else {
+              clearInterval(tool._timer)
+            }
+          }, this._eventInterval)
+        }
+      } else if (mouse.up) {
+        clearInterval(this._timer)
+        update(null, this._maxDistance)
+        emit()
+      } else if (responds) {
+        while (update(this._minDistance, this._maxDistance)) emit()
+      }
+      return called
     }
     /**
      * {@grouptitle Event Handling}
@@ -521,4 +532,5 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      * @return {Boolean} {@true if the tool has one or more event handlers of
      * the specified type}
      */
-});
+  }
+)

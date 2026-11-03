@@ -38,7 +38,8 @@
  * knowledge of the underlying matrix (as opposed to say simply performing
  * matrix multiplication).
  */
-var Matrix = Base.extend(/** @lends Matrix# */{
+var Matrix = Base.extend(
+  /** @lends Matrix# */ {
     _class: 'Matrix',
 
     /**
@@ -71,32 +72,39 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @param {Matrix} matrix the matrix to copy the values from
      */
     initialize: function Matrix(arg, _dontNotify) {
-        var args = arguments,
-            count = args.length,
-            ok = true;
-        if (count >= 6) { // >= 6 to pass on optional _dontNotify argument.
-            this._set.apply(this, args);
-        } else if (count === 1 || count === 2) {
-            // Support both Matrix and Array arguments through #_set(), and pass
-            // on the optional _dontNotify argument:
-            if (arg instanceof Matrix) {
-                this._set(arg._a, arg._b, arg._c, arg._d, arg._tx, arg._ty,
-                        _dontNotify);
-            } else if (Array.isArray(arg)) {
-                this._set.apply(this,
-                        _dontNotify ? arg.concat([_dontNotify]) : arg);
-            } else {
-                ok = false;
-            }
-        } else if (!count) {
-            this.reset();
+      var args = arguments,
+        count = args.length,
+        ok = true
+      if (count >= 6) {
+        // >= 6 to pass on optional _dontNotify argument.
+        this._set.apply(this, args)
+      } else if (count === 1 || count === 2) {
+        // Support both Matrix and Array arguments through #_set(), and pass
+        // on the optional _dontNotify argument:
+        if (arg instanceof Matrix) {
+          this._set(
+            arg._a,
+            arg._b,
+            arg._c,
+            arg._d,
+            arg._tx,
+            arg._ty,
+            _dontNotify
+          )
+        } else if (Array.isArray(arg)) {
+          this._set.apply(this, _dontNotify ? arg.concat([_dontNotify]) : arg)
         } else {
-            ok = false;
+          ok = false
         }
-        if (!ok) {
-            throw new Error('Unsupported matrix parameters');
-        }
-        return this;
+      } else if (!count) {
+        this.reset()
+      } else {
+        ok = false
+      }
+      if (!ok) {
+        throw new Error('Unsupported matrix parameters')
+      }
+      return this
     },
 
     /**
@@ -111,40 +119,38 @@ var Matrix = Base.extend(/** @lends Matrix# */{
     set: '#initialize',
 
     // See Point#_set() for an explanation of #_set():
-    _set: function(a, b, c, d, tx, ty, _dontNotify) {
-        this._a = a;
-        this._b = b;
-        this._c = c;
-        this._d = d;
-        this._tx = tx;
-        this._ty = ty;
-        if (!_dontNotify)
-            this._changed();
-        return this;
+    _set: function (a, b, c, d, tx, ty, _dontNotify) {
+      this._a = a
+      this._b = b
+      this._c = c
+      this._d = d
+      this._tx = tx
+      this._ty = ty
+      if (!_dontNotify) this._changed()
+      return this
     },
 
-    _serialize: function(options, dictionary) {
-        return Base.serialize(this.getValues(), options, true, dictionary);
+    _serialize: function (options, dictionary) {
+      return Base.serialize(this.getValues(), options, true, dictionary)
     },
 
-    _changed: function() {
-        var owner = this._owner;
-        if (owner) {
-            // If owner has #applyMatrix set, directly bake the change in now.
-            if (owner._applyMatrix) {
-                owner.transform(null, true);
-            } else {
-                owner._changed(/*#=*/Change.MATRIX);
-            }
+    _changed: function () {
+      var owner = this._owner
+      if (owner) {
+        // If owner has #applyMatrix set, directly bake the change in now.
+        if (owner._applyMatrix) {
+          owner.transform(null, true)
+        } else {
+          owner._changed(/*#=*/ Change.MATRIX)
         }
+      }
     },
 
     /**
      * @return {Matrix} a copy of this transform
      */
-    clone: function() {
-        return new Matrix(this._a, this._b, this._c, this._d,
-                this._tx, this._ty);
+    clone: function () {
+      return new Matrix(this._a, this._b, this._c, this._d, this._tx, this._ty)
     },
 
     /**
@@ -153,33 +159,43 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @param {Matrix} matrix the matrix to compare this matrix to
      * @return {Boolean} {@true if the matrices are equal}
      */
-    equals: function(mx) {
-        return mx === this || mx && this._a === mx._a && this._b === mx._b
-                && this._c === mx._c && this._d === mx._d
-                && this._tx === mx._tx && this._ty === mx._ty;
+    equals: function (mx) {
+      return (
+        mx === this || (
+          mx &&
+          this._a === mx._a &&
+          this._b === mx._b &&
+          this._c === mx._c &&
+          this._d === mx._d &&
+          this._tx === mx._tx &&
+          this._ty === mx._ty
+        )
+      )
     },
 
     /**
      * @return {String} a string representation of this transform
      */
-    toString: function() {
-        var f = Formatter.instance;
-        return '[[' + [f.number(this._a), f.number(this._c),
-                    f.number(this._tx)].join(', ') + '], ['
-                + [f.number(this._b), f.number(this._d),
-                    f.number(this._ty)].join(', ') + ']]';
+    toString: function () {
+      var f = Formatter.instance
+      return (
+        '[[' +
+        [f.number(this._a), f.number(this._c), f.number(this._tx)].join(', ') +
+        '], [' +
+        [f.number(this._b), f.number(this._d), f.number(this._ty)].join(', ') +
+        ']]'
+      )
     },
 
     /**
      * Resets the matrix by setting its values to the ones of the identity
      * matrix that results in no transformation.
      */
-    reset: function(_dontNotify) {
-        this._a = this._d = 1;
-        this._b = this._c = this._tx = this._ty = 0;
-        if (!_dontNotify)
-            this._changed();
-        return this;
+    reset: function (_dontNotify) {
+      this._a = this._d = 1
+      this._b = this._c = this._tx = this._ty = 0
+      if (!_dontNotify) this._changed()
+      return this
     },
 
     /**
@@ -190,14 +206,14 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      *     transformations recursively on children
      * @return {Boolean} {@true if the matrix was applied}
      */
-    apply: function(recursively, _setApplyMatrix) {
-        var owner = this._owner;
-        if (owner) {
-            owner.transform(null, Base.pick(recursively, true), _setApplyMatrix);
-            // If the matrix was successfully applied, it will be reset now.
-            return this.isIdentity();
-        }
-        return false;
+    apply: function (recursively, _setApplyMatrix) {
+      var owner = this._owner
+      if (owner) {
+        owner.transform(null, Base.pick(recursively, true), _setApplyMatrix)
+        // If the matrix was successfully applied, it will be reset now.
+        return this.isIdentity()
+      }
+      return false
     },
 
     /**
@@ -217,14 +233,14 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @param {Number} dy the distance to translate in the y direction
      * @return {Matrix} this affine transform
      */
-    translate: function(/* point */) {
-        var point = Point.read(arguments),
-            x = point.x,
-            y = point.y;
-        this._tx += x * this._a + y * this._c;
-        this._ty += x * this._b + y * this._d;
-        this._changed();
-        return this;
+    translate: function (/* point */) {
+      var point = Point.read(arguments),
+        x = point.x,
+        y = point.y
+      this._tx += x * this._a + y * this._c
+      this._ty += x * this._b + y * this._d
+      this._changed()
+      return this
     },
 
     /**
@@ -246,20 +262,18 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @param {Point} [center] the center for the scaling transformation
      * @return {Matrix} this affine transform
      */
-    scale: function(/* scale, center */) {
-        var args = arguments,
-            scale = Point.read(args),
-            center = Point.read(args, 0, { readNull: true });
-        if (center)
-            this.translate(center);
-        this._a *= scale.x;
-        this._b *= scale.x;
-        this._c *= scale.y;
-        this._d *= scale.y;
-        if (center)
-            this.translate(center.negate());
-        this._changed();
-        return this;
+    scale: function (/* scale, center */) {
+      var args = arguments,
+        scale = Point.read(args),
+        center = Point.read(args, 0, { readNull: true })
+      if (center) this.translate(center)
+      this._a *= scale.x
+      this._b *= scale.x
+      this._c *= scale.y
+      this._d *= scale.y
+      if (center) this.translate(center.negate())
+      this._changed()
+      return this
     },
 
     /**
@@ -283,28 +297,28 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @param {Number} y the y coordinate of the anchor point
      * @return {Matrix} this affine transform
      */
-    rotate: function(angle /*, center */) {
-        angle *= Math.PI / 180;
-        var center = Point.read(arguments, 1),
-            // Concatenate rotation matrix into this one
-            x = center.x,
-            y = center.y,
-            cos = Math.cos(angle),
-            sin = Math.sin(angle),
-            tx = x - x * cos + y * sin,
-            ty = y - x * sin - y * cos,
-            a = this._a,
-            b = this._b,
-            c = this._c,
-            d = this._d;
-        this._a = cos * a + sin * c;
-        this._b = cos * b + sin * d;
-        this._c = -sin * a + cos * c;
-        this._d = -sin * b + cos * d;
-        this._tx += tx * a + ty * c;
-        this._ty += tx * b + ty * d;
-        this._changed();
-        return this;
+    rotate: function (angle /*, center */) {
+      angle *= Math.PI / 180
+      var center = Point.read(arguments, 1),
+        // Concatenate rotation matrix into this one
+        x = center.x,
+        y = center.y,
+        cos = Math.cos(angle),
+        sin = Math.sin(angle),
+        tx = x - x * cos + y * sin,
+        ty = y - x * sin - y * cos,
+        a = this._a,
+        b = this._b,
+        c = this._c,
+        d = this._d
+      this._a = cos * a + sin * c
+      this._b = cos * b + sin * d
+      this._c = -sin * a + cos * c
+      this._d = -sin * b + cos * d
+      this._tx += tx * a + ty * c
+      this._ty += tx * b + ty * d
+      this._changed()
+      return this
     },
 
     /**
@@ -326,24 +340,22 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @param {Point} [center] the center for the shear transformation
      * @return {Matrix} this affine transform
      */
-    shear: function(/* shear, center */) {
-        // Do not modify point, center, since that would arguments of which
-        // we're reading from!
-        var args = arguments,
-            shear = Point.read(args),
-            center = Point.read(args, 0, { readNull: true });
-        if (center)
-            this.translate(center);
-        var a = this._a,
-            b = this._b;
-        this._a += shear.y * this._c;
-        this._b += shear.y * this._d;
-        this._c += shear.x * a;
-        this._d += shear.x * b;
-        if (center)
-            this.translate(center.negate());
-        this._changed();
-        return this;
+    shear: function (/* shear, center */) {
+      // Do not modify point, center, since that would arguments of which
+      // we're reading from!
+      var args = arguments,
+        shear = Point.read(args),
+        center = Point.read(args, 0, { readNull: true })
+      if (center) this.translate(center)
+      var a = this._a,
+        b = this._b
+      this._a += shear.y * this._c
+      this._b += shear.y * this._d
+      this._c += shear.x * a
+      this._d += shear.x * b
+      if (center) this.translate(center.negate())
+      this._changed()
+      return this
     },
 
     /**
@@ -365,14 +377,16 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @param {Point} [center] the center for the skew transformation
      * @return {Matrix} this affine transform
      */
-    skew: function(/* skew, center */) {
-        var args = arguments,
-            skew = Point.read(args),
-            center = Point.read(args, 0, { readNull: true }),
-            toRadians = Math.PI / 180,
-            shear = new Point(Math.tan(skew.x * toRadians),
-                Math.tan(skew.y * toRadians));
-        return this.shear(shear, center);
+    skew: function (/* skew, center */) {
+      var args = arguments,
+        skew = Point.read(args),
+        center = Point.read(args, 0, { readNull: true }),
+        toRadians = Math.PI / 180,
+        shear = new Point(
+          Math.tan(skew.x * toRadians),
+          Math.tan(skew.y * toRadians)
+        )
+      return this.shear(shear, center)
     },
 
     /**
@@ -382,28 +396,27 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @param {Matrix} matrix the matrix to append
      * @return {Matrix} this matrix, modified
      */
-    append: function(mx, _dontNotify) {
-        if (mx) {
-            var a1 = this._a,
-                b1 = this._b,
-                c1 = this._c,
-                d1 = this._d,
-                a2 = mx._a,
-                b2 = mx._c,
-                c2 = mx._b,
-                d2 = mx._d,
-                tx2 = mx._tx,
-                ty2 = mx._ty;
-            this._a = a2 * a1 + c2 * c1;
-            this._c = b2 * a1 + d2 * c1;
-            this._b = a2 * b1 + c2 * d1;
-            this._d = b2 * b1 + d2 * d1;
-            this._tx += tx2 * a1 + ty2 * c1;
-            this._ty += tx2 * b1 + ty2 * d1;
-            if (!_dontNotify)
-                this._changed();
-        }
-        return this;
+    append: function (mx, _dontNotify) {
+      if (mx) {
+        var a1 = this._a,
+          b1 = this._b,
+          c1 = this._c,
+          d1 = this._d,
+          a2 = mx._a,
+          b2 = mx._c,
+          c2 = mx._b,
+          d2 = mx._d,
+          tx2 = mx._tx,
+          ty2 = mx._ty
+        this._a = a2 * a1 + c2 * c1
+        this._c = b2 * a1 + d2 * c1
+        this._b = a2 * b1 + c2 * d1
+        this._d = b2 * b1 + d2 * d1
+        this._tx += tx2 * a1 + ty2 * c1
+        this._ty += tx2 * b1 + ty2 * d1
+        if (!_dontNotify) this._changed()
+      }
+      return this
     },
 
     /**
@@ -413,30 +426,29 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @param {Matrix} matrix the matrix to prepend
      * @return {Matrix} this matrix, modified
      */
-    prepend: function(mx, _dontNotify) {
-        if (mx) {
-            var a1 = this._a,
-                b1 = this._b,
-                c1 = this._c,
-                d1 = this._d,
-                tx1 = this._tx,
-                ty1 = this._ty,
-                a2 = mx._a,
-                b2 = mx._c,
-                c2 = mx._b,
-                d2 = mx._d,
-                tx2 = mx._tx,
-                ty2 = mx._ty;
-            this._a = a2 * a1 + b2 * b1;
-            this._c = a2 * c1 + b2 * d1;
-            this._b = c2 * a1 + d2 * b1;
-            this._d = c2 * c1 + d2 * d1;
-            this._tx = a2 * tx1 + b2 * ty1 + tx2;
-            this._ty = c2 * tx1 + d2 * ty1 + ty2;
-            if (!_dontNotify)
-                this._changed();
-        }
-        return this;
+    prepend: function (mx, _dontNotify) {
+      if (mx) {
+        var a1 = this._a,
+          b1 = this._b,
+          c1 = this._c,
+          d1 = this._d,
+          tx1 = this._tx,
+          ty1 = this._ty,
+          a2 = mx._a,
+          b2 = mx._c,
+          c2 = mx._b,
+          d2 = mx._d,
+          tx2 = mx._tx,
+          ty2 = mx._ty
+        this._a = a2 * a1 + b2 * b1
+        this._c = a2 * c1 + b2 * d1
+        this._b = c2 * a1 + d2 * b1
+        this._d = c2 * c1 + d2 * d1
+        this._tx = a2 * tx1 + b2 * ty1 + tx2
+        this._ty = c2 * tx1 + d2 * ty1 + ty2
+        if (!_dontNotify) this._changed()
+      }
+      return this
     },
 
     /**
@@ -447,8 +459,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @param {Matrix} matrix the matrix to append
      * @return {Matrix} the newly created matrix
      */
-    appended: function(mx) {
-        return this.clone().append(mx);
+    appended: function (mx) {
+      return this.clone().append(mx)
     },
 
     /**
@@ -459,8 +471,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @param {Matrix} matrix the matrix to prepend
      * @return {Matrix} the newly created matrix
      */
-    prepended: function(mx) {
-        return this.clone().prepend(mx);
+    prepended: function (mx) {
+      return this.clone().prepend(mx)
     },
 
     /**
@@ -470,25 +482,25 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      *
      * @return {Matrix} this matrix, or `null`, if the matrix is singular.
      */
-    invert: function() {
-        var res = null;
-        if (this.isInvertible()) {
-            var a = this._a,
-                b = this._b,
-                c = this._c,
-                d = this._d,
-                tx = this._tx,
-                ty = this._ty,
-                det = a * d - b * c;
-            this._a = d / det;
-            this._b = -b / det;
-            this._c = -c / det;
-            this._d = a / det;
-            this._tx = (c * ty - d * tx) / det;
-            this._ty = (b * tx - a * ty) / det;
-            res = this;
-        }
-        return res;
+    invert: function () {
+      var res = null
+      if (this.isInvertible()) {
+        var a = this._a,
+          b = this._b,
+          c = this._c,
+          d = this._d,
+          tx = this._tx,
+          ty = this._ty,
+          det = a * d - b * c
+        this._a = d / det
+        this._b = -b / det
+        this._c = -c / det
+        this._d = a / det
+        this._tx = (c * ty - d * tx) / det
+        this._ty = (b * tx - a * ty) / det
+        res = this
+      }
+      return res
     },
 
     /**
@@ -498,8 +510,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      *
      * @return {Matrix} this matrix, or `null`, if the matrix is singular.
      */
-    inverted: function() {
-        return this.clone().invert();
+    inverted: function () {
+      return this.clone().invert()
     },
 
     /**
@@ -531,20 +543,26 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @return {Matrix} a clone of this matrix, with {@link #tx} and {@link #ty}
      * set to `0`.
      */
-    _shiftless: function() {
-        return new Matrix(this._a, this._b, this._c, this._d, 0, 0);
+    _shiftless: function () {
+      return new Matrix(this._a, this._b, this._c, this._d, 0, 0)
     },
 
-    _orNullIfIdentity: function() {
-        return this.isIdentity() ? null : this;
+    _orNullIfIdentity: function () {
+      return this.isIdentity() ? null : this
     },
 
     /**
      * @return {Boolean} whether this matrix is the identity matrix
      */
-    isIdentity: function() {
-        return this._a === 1 && this._b === 0 && this._c === 0 && this._d === 1
-                && this._tx === 0 && this._ty === 0;
+    isIdentity: function () {
+      return (
+        this._a === 1 &&
+        this._b === 0 &&
+        this._c === 0 &&
+        this._d === 1 &&
+        this._tx === 0 &&
+        this._ty === 0
+      )
     },
 
     /**
@@ -553,14 +571,14 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      *
      * @return {Boolean} whether the matrix is invertible
      */
-    isInvertible: function() {
-        var det = this._a * this._d - this._c * this._b;
-        return det && !isNaN(det) && isFinite(this._tx) && isFinite(this._ty);
+    isInvertible: function () {
+      var det = this._a * this._d - this._c * this._b
+      return det && !isNaN(det) && isFinite(this._tx) && isFinite(this._ty)
     },
 
     // The geometric mean of the scale factors, as used for strokes:
-    _getMeanScale: function() {
-        return Math.sqrt(Math.abs(this._a * this._d - this._b * this._c));
+    _getMeanScale: function () {
+      return Math.sqrt(Math.abs(this._a * this._d - this._b * this._c))
     },
 
     /**
@@ -569,8 +587,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      *
      * @return {Boolean} whether the matrix is singular
      */
-    isSingular: function() {
-        return !this.isInvertible();
+    isSingular: function () {
+      return !this.isInvertible()
     },
 
     /**
@@ -594,45 +612,45 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @param {Number} count the number of points to transform
      * @return {Number[]} the dst array, containing the transformed coordinates
      */
-    transform: function(/* point | */ src, dst, count) {
-        return arguments.length < 3
-            // TODO: Check for rectangle and use _tranformBounds?
-            ? this._transformPoint(Point.read(arguments))
-            : this._transformCoordinates(src, dst, count);
+    transform: function (/* point | */ src, dst, count) {
+      return arguments.length < 3
+        ? // TODO: Check for rectangle and use _tranformBounds?
+          this._transformPoint(Point.read(arguments))
+        : this._transformCoordinates(src, dst, count)
     },
 
     /**
      * A faster version of transform that only takes one point and does not
      * attempt to convert it.
      */
-    _transformPoint: function(point, dest, _dontNotify) {
-        var x = point.x,
-            y = point.y;
-        if (!dest)
-            dest = new Point();
-        return dest._set(
-                x * this._a + y * this._c + this._tx,
-                x * this._b + y * this._d + this._ty,
-                _dontNotify);
+    _transformPoint: function (point, dest, _dontNotify) {
+      var x = point.x,
+        y = point.y
+      if (!dest) dest = new Point()
+      return dest._set(
+        x * this._a + y * this._c + this._tx,
+        x * this._b + y * this._d + this._ty,
+        _dontNotify
+      )
     },
 
-    _transformCoordinates: function(src, dst, count) {
-        for (var i = 0, max = 2 * count; i < max; i += 2) {
-            var x = src[i],
-                y = src[i + 1];
-            dst[i] = x * this._a + y * this._c + this._tx;
-            dst[i + 1] = x * this._b + y * this._d + this._ty;
-        }
-        return dst;
+    _transformCoordinates: function (src, dst, count) {
+      for (var i = 0, max = 2 * count; i < max; i += 2) {
+        var x = src[i],
+          y = src[i + 1]
+        dst[i] = x * this._a + y * this._c + this._tx
+        dst[i + 1] = x * this._b + y * this._d + this._ty
+      }
+      return dst
     },
 
-    _transformCorners: function(rect) {
-        var x1 = rect.x,
-            y1 = rect.y,
-            x2 = x1 + rect.width,
-            y2 = y1 + rect.height,
-            coords = [ x1, y1, x2, y1, x2, y2, x1, y2 ];
-        return this._transformCoordinates(coords, coords, 4);
+    _transformCorners: function (rect) {
+      var x1 = rect.x,
+        y1 = rect.y,
+        x2 = x1 + rect.width,
+        y2 = y1 + rect.height,
+        coords = [x1, y1, x2, y1, x2, y2, x1, y2]
+      return this._transformCoordinates(coords, coords, 4)
     },
 
     /**
@@ -640,22 +658,21 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * point and finding the new bounding box to these points. This is not
      * really the transformed rectangle!
      */
-    _transformBounds: function(bounds, dest) {
-        var coords = this._transformCorners(bounds),
-            min = coords.slice(0, 2),
-            max = min.slice();
-        for (var i = 2; i < 8; i++) {
-            var val = coords[i],
-                j = i & 1;
-            if (val < min[j]) {
-                min[j] = val;
-            } else if (val > max[j]) {
-                max[j] = val;
-            }
+    _transformBounds: function (bounds, dest) {
+      var coords = this._transformCorners(bounds),
+        min = coords.slice(0, 2),
+        max = min.slice()
+      for (var i = 2; i < 8; i++) {
+        var val = coords[i],
+          j = i & 1
+        if (val < min[j]) {
+          min[j] = val
+        } else if (val > max[j]) {
+          max[j] = val
         }
-        if (!dest)
-            dest = new Rectangle();
-        return dest._set(min[0], min[1], max[0] - min[0], max[1] - min[1]);
+      }
+      if (!dest) dest = new Rectangle()
+      return dest._set(min[0], min[1], max[0] - min[0], max[1] - min[1])
     },
 
     /**
@@ -664,23 +681,23 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @param {Point} point the point to be transformed
      * @return {Point}
      */
-    inverseTransform: function(/* point */) {
-        return this._inverseTransform(Point.read(arguments));
+    inverseTransform: function (/* point */) {
+      return this._inverseTransform(Point.read(arguments))
     },
 
-    _inverseTransform: function(point) {
-        var res = null;
-        if (this.isInvertible()) {
-            var a = this._a,
-                b = this._b,
-                c = this._c,
-                d = this._d,
-                det = a * d - b * c,
-                x = point.x - this._tx,
-                y = point.y - this._ty;
-            res = new Point((x * d - y * c) / det, (y * a - x * b) / det);
-        }
-        return res;
+    _inverseTransform: function (point) {
+      var res = null
+      if (this.isInvertible()) {
+        var a = this._a,
+          b = this._b,
+          c = this._c,
+          d = this._d,
+          det = a * d - b * c,
+          x = point.x - this._tx,
+          y = point.y - this._ty
+        res = new Point((x * d - y * c) / det, (y * a - x * b) / det)
+      }
+      return res
     },
 
     /**
@@ -690,42 +707,43 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      *
      * @return {Object} the decomposed matrix
      */
-    decompose: function() {
-        // http://dev.w3.org/csswg/css3-2d-transforms/#matrix-decomposition
-        // http://www.maths-informatique-jeux.com/blog/frederic/?post/2013/12/01/Decomposition-of-2D-transform-matrices
-        // https://github.com/wisec/DOMinator/blob/master/layout/style/nsStyleAnimation.cpp#L946
-        var a = this._a,
-            b = this._b,
-            c = this._c,
-            d = this._d,
-            det = a * d - b * c,
-            sqrt = Math.sqrt,
-            atan2 = Math.atan2,
-            degrees = 180 / Math.PI,
-            rotate,
-            scale,
-            skew;
-        if (a !== 0 || b !== 0) {
-            var r = sqrt(a * a + b * b);
-            rotate = Math.acos(a / r) * (b > 0 ? 1 : -1);
-            scale = [r, det / r];
-            skew = [atan2(a * c + b * d, r * r), 0];
-        } else if (c !== 0 || d !== 0) {
-            var s = sqrt(c * c + d * d);
-            // rotate = Math.PI/2 - (d > 0 ? Math.acos(-c/s) : -Math.acos(c/s));
-            rotate = Math.asin(c / s)  * (d > 0 ? 1 : -1);
-            scale = [det / s, s];
-            skew = [0, atan2(a * c + b * d, s * s)];
-        } else { // a = b = c = d = 0
-            rotate = 0;
-            skew = scale = [0, 0];
-        }
-        return {
-            translation: this.getTranslation(),
-            rotation: rotate * degrees,
-            scaling: new Point(scale),
-            skewing: new Point(skew[0] * degrees, skew[1] * degrees)
-        };
+    decompose: function () {
+      // http://dev.w3.org/csswg/css3-2d-transforms/#matrix-decomposition
+      // http://www.maths-informatique-jeux.com/blog/frederic/?post/2013/12/01/Decomposition-of-2D-transform-matrices
+      // https://github.com/wisec/DOMinator/blob/master/layout/style/nsStyleAnimation.cpp#L946
+      var a = this._a,
+        b = this._b,
+        c = this._c,
+        d = this._d,
+        det = a * d - b * c,
+        sqrt = Math.sqrt,
+        atan2 = Math.atan2,
+        degrees = 180 / Math.PI,
+        rotate,
+        scale,
+        skew
+      if (a !== 0 || b !== 0) {
+        var r = sqrt(a * a + b * b)
+        rotate = Math.acos(a / r) * (b > 0 ? 1 : -1)
+        scale = [r, det / r]
+        skew = [atan2(a * c + b * d, r * r), 0]
+      } else if (c !== 0 || d !== 0) {
+        var s = sqrt(c * c + d * d)
+        // rotate = Math.PI/2 - (d > 0 ? Math.acos(-c/s) : -Math.acos(c/s));
+        rotate = Math.asin(c / s) * (d > 0 ? 1 : -1)
+        scale = [det / s, s]
+        skew = [0, atan2(a * c + b * d, s * s)]
+      } else {
+        // a = b = c = d = 0
+        rotate = 0
+        skew = scale = [0, 0]
+      }
+      return {
+        translation: this.getTranslation(),
+        rotation: rotate * degrees,
+        scaling: new Point(scale),
+        skewing: new Point(skew[0] * degrees, skew[1] * degrees)
+      }
     },
 
     /**
@@ -783,8 +801,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @bean
      * @type Number[]
      */
-    getValues: function() {
-        return [ this._a, this._b, this._c, this._d, this._tx, this._ty ];
+    getValues: function () {
+      return [this._a, this._b, this._c, this._d, this._tx, this._ty]
     },
 
     /**
@@ -793,9 +811,9 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @bean
      * @type Point
      */
-    getTranslation: function() {
-        // No decomposition is required to extract translation.
-        return new Point(this._tx, this._ty);
+    getTranslation: function () {
+      // No decomposition is required to extract translation.
+      return new Point(this._tx, this._ty)
     },
 
     /**
@@ -805,8 +823,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @type Point
      * @see #decompose()
      */
-    getScaling: function() {
-        return this.decompose().scaling;
+    getScaling: function () {
+      return this.decompose().scaling
     },
 
     /**
@@ -816,8 +834,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @type Number
      * @see #decompose()
      */
-    getRotation: function() {
-        return this.decompose().rotation;
+    getRotation: function () {
+      return this.decompose().rotation
     },
 
     /**
@@ -825,40 +843,46 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      *
      * @param {CanvasRenderingContext2D} ctx
      */
-    applyToContext: function(ctx) {
-        if (!this.isIdentity()) {
-            ctx.transform(this._a, this._b, this._c, this._d,
-                    this._tx, this._ty);
-        }
+    applyToContext: function (ctx) {
+      if (!this.isIdentity()) {
+        ctx.transform(this._a, this._b, this._c, this._d, this._tx, this._ty)
+      }
     },
 
     statics: {
-        /**
-         * Returns the horizontal and vertical half-extents of a circle of the
-         * given radius, transformed by the matrix, if any.
-         */
-        _getCircleExtents: function(radius, matrix) {
-            if (!matrix)
-                return [radius, radius];
-            // x = radius * (a * cos(t) + c * sin(t)) is at most
-            // radius * sqrt(a² + c²), and y the same with b and d:
-            var a = matrix._a,
-                b = matrix._b,
-                c = matrix._c,
-                d = matrix._d;
-            return [radius * Math.sqrt(a * a + c * c),
-                    radius * Math.sqrt(b * b + d * d)];
-        }
+      /**
+       * Returns the horizontal and vertical half-extents of a circle of the
+       * given radius, transformed by the matrix, if any.
+       */
+      _getCircleExtents: function (radius, matrix) {
+        if (!matrix) return [radius, radius]
+        // x = radius * (a * cos(t) + c * sin(t)) is at most
+        // radius * sqrt(a² + c²), and y the same with b and d:
+        var a = matrix._a,
+          b = matrix._b,
+          c = matrix._c,
+          d = matrix._d
+        return [
+          radius * Math.sqrt(a * a + c * c),
+          radius * Math.sqrt(b * b + d * d)
+        ]
+      }
     }
-}, Base.each(['a', 'b', 'c', 'd', 'tx', 'ty'], function(key) {
-    // Create getters and setters for all internal attributes.
-    var part = Base.capitalize(key),
-        prop = '_' + key;
-    this['get' + part] = function() {
-        return this[prop];
-    };
-    this['set' + part] = function(value) {
-        this[prop] = value;
-        this._changed();
-    };
-}, {}));
+  },
+  Base.each(
+    ['a', 'b', 'c', 'd', 'tx', 'ty'],
+    function (key) {
+      // Create getters and setters for all internal attributes.
+      var part = Base.capitalize(key),
+        prop = '_' + key
+      this['get' + part] = function () {
+        return this[prop]
+      }
+      this['set' + part] = function (value) {
+        this[prop] = value
+        this._changed()
+      }
+    },
+    {}
+  )
+)

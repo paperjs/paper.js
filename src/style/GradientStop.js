@@ -16,7 +16,8 @@
  *
  * @class The GradientStop object.
  */
-var GradientStop = Base.extend(/** @lends GradientStop# */{
+var GradientStop = Base.extend(
+  /** @lends GradientStop# */ {
     _class: 'GradientStop',
 
     /**
@@ -28,52 +29,54 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
      * assignment.
      */
     initialize: function GradientStop(arg0, arg1) {
-        // (color, offset)
-        var color = arg0,
-            offset = arg1;
-        if (typeof arg0 === 'object' && arg1 === undefined) {
-            // Make sure the first entry in the array is not a number, in which
-            // case the whole array would be a color, and the assignments would
-            // already have occurred correctly above.
-            if (Array.isArray(arg0) && typeof arg0[0] !== 'number') {
-                // ([color, offset])
-                color = arg0[0];
-                offset = arg0[1];
-            } else if ('color' in arg0 || 'offset' in arg0
-                    || 'rampPoint' in arg0) {
-                // (stop)
-                color = arg0.color;
-                offset = arg0.offset || arg0.rampPoint || 0;
-            }
+      // (color, offset)
+      var color = arg0,
+        offset = arg1
+      if (typeof arg0 === 'object' && arg1 === undefined) {
+        // Make sure the first entry in the array is not a number, in which
+        // case the whole array would be a color, and the assignments would
+        // already have occurred correctly above.
+        if (Array.isArray(arg0) && typeof arg0[0] !== 'number') {
+          // ([color, offset])
+          color = arg0[0]
+          offset = arg0[1]
+        } else if ('color' in arg0 || 'offset' in arg0 || 'rampPoint' in arg0) {
+          // (stop)
+          color = arg0.color
+          offset = arg0.offset || arg0.rampPoint || 0
         }
-        this.setColor(color);
-        this.setOffset(offset);
+      }
+      this.setColor(color)
+      this.setOffset(offset)
     },
 
     // TODO: Do we really need to also clone the color here?
     /**
      * @return {GradientStop} a copy of the gradient-stop
      */
-    clone: function() {
-        return new GradientStop(this._color.clone(), this._offset);
+    clone: function () {
+      return new GradientStop(this._color.clone(), this._offset)
     },
 
-    _serialize: function(options, dictionary) {
-        var color = this._color,
-            offset = this._offset;
-        return Base.serialize(offset == null ? [color] : [color, offset],
-                options, true, dictionary);
+    _serialize: function (options, dictionary) {
+      var color = this._color,
+        offset = this._offset
+      return Base.serialize(
+        offset == null ? [color] : [color, offset],
+        options,
+        true,
+        dictionary
+      )
     },
 
     /**
      * Called by various setters whenever a value changes
      */
-    _changed: function() {
-        // Notify the graident that uses this stop about the change, so it can
-        // notify its gradient colors, which in turn will notify the items they
-        // are used in:
-        if (this._owner)
-            this._owner._changed(/*#=*/Change.STYLE);
+    _changed: function () {
+      // Notify the graident that uses this stop about the change, so it can
+      // notify its gradient colors, which in turn will notify the items they
+      // are used in:
+      if (this._owner) this._owner._changed(/*#=*/ Change.STYLE)
     },
 
     /**
@@ -115,13 +118,13 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
      *     redStop.offset = Math.sin(event.time * 3) * 0.1 + 0.3;
      * }
      */
-    getOffset: function() {
-        return this._offset;
+    getOffset: function () {
+      return this._offset
     },
 
-    setOffset: function(offset) {
-        this._offset = offset;
-        this._changed();
+    setOffset: function (offset) {
+      this._offset = offset
+      this._changed()
     },
 
     /**
@@ -170,22 +173,27 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
      *     redStop.offset = Math.sin(event.time * 3) * 0.1 + 0.3;
      * }
      */
-    getColor: function() {
-        return this._color;
+    getColor: function () {
+      return this._color
     },
 
-    setColor: function(/* color */) {
-        // Clear old color owner before setting new one:
-        Color._setOwner(this._color, null);
-        this._color = Color._setOwner(Color.read(arguments, 0), this,
-                'setColor');
-        this._changed();
+    setColor: function (/* color */) {
+      // Clear old color owner before setting new one:
+      Color._setOwner(this._color, null)
+      this._color = Color._setOwner(Color.read(arguments, 0), this, 'setColor')
+      this._changed()
     },
 
-    equals: function(stop) {
-        return stop === this || stop && this._class === stop._class
-                && this._color.equals(stop._color)
-                && this._offset == stop._offset
-                || false;
+    equals: function (stop) {
+      return (
+        stop === this || (
+          stop &&
+          this._class === stop._class &&
+          this._color.equals(stop._color) &&
+          this._offset == stop._offset
+        ) ||
+        false
+      )
     }
-});
+  }
+)

@@ -19,7 +19,8 @@
  * internal properties such as segment lists and gradient positions don't need
  * to be updated with every transformation.
  */
-var SymbolDefinition = ItemDefinition.extend(/** @lends SymbolDefinition# */{
+var SymbolDefinition = ItemDefinition.extend(
+  /** @lends SymbolDefinition# */ {
     _class: 'SymbolDefinition',
     // Move the item to 0, 0, so it's centered when placed:
     _centerItem: true,
@@ -59,28 +60,23 @@ var SymbolDefinition = ItemDefinition.extend(/** @lends SymbolDefinition# */{
      * }
      */
     initialize: function SymbolDefinition(item, dontCenter) {
-        // JSON passes the options of the definition instead, which can
-        // include dontCenter:
-        var options = Base.isPlainObject(dontCenter) && dontCenter;
-        ItemDefinition.call(this, item,
-                options ? options.dontCenter : dontCenter);
-        if (options)
-            this.set(options, { dontCenter: true });
+      // JSON passes the options of the definition instead, which can
+      // include dontCenter:
+      var options = Base.isPlainObject(dontCenter) && dontCenter
+      ItemDefinition.call(this, item, options ? options.dontCenter : dontCenter)
+      if (options) this.set(options, { dontCenter: true })
     },
 
-    _serialize: function(options, dictionary) {
-        return dictionary.add(this, function() {
-            var json = [this._class, this._item],
-                props = {};
-            // Keep items that the definition didn't center in place:
-            if (!this._item.getPosition().isZero())
-                props.dontCenter = true;
-            if (this._name)
-                props.name = this._name;
-            if (Object.keys(props).length)
-                json.push(props);
-            return Base.serialize(json, options, false, dictionary);
-        });
+    _serialize: function (options, dictionary) {
+      return dictionary.add(this, function () {
+        var json = [this._class, this._item],
+          props = {}
+        // Keep items that the definition didn't center in place:
+        if (!this._item.getPosition().isZero()) props.dontCenter = true
+        if (this._name) props.name = this._name
+        if (Object.keys(props).length) json.push(props)
+        return Base.serialize(json, options, false, dictionary)
+      })
     },
 
     /**
@@ -121,8 +117,8 @@ var SymbolDefinition = ItemDefinition.extend(/** @lends SymbolDefinition# */{
      * @param {Point} [position] the position of the placed symbol
      * @return {SymbolItem}
      */
-    place: function(position) {
-        return new SymbolItem(this, position);
+    place: function (position) {
+      return new SymbolItem(this, position)
     },
 
     /**
@@ -130,12 +126,12 @@ var SymbolDefinition = ItemDefinition.extend(/** @lends SymbolDefinition# */{
      *
      * @return {SymbolDefinition}
      */
-    clone: function() {
-        // The copied item is already where this definition placed it:
-        return new SymbolDefinition(this._item.clone(false), {
-            dontCenter: true,
-            name: this._name
-        });
+    clone: function () {
+      // The copied item is already where this definition placed it:
+      return new SymbolDefinition(this._item.clone(false), {
+        dontCenter: true,
+        name: this._name
+      })
     },
 
     /**
@@ -144,9 +140,12 @@ var SymbolDefinition = ItemDefinition.extend(/** @lends SymbolDefinition# */{
      * @param {SymbolDefinition} symbol
      * @return {Boolean} {@true if they are equal}
      */
-    equals: function(symbol) {
-        return symbol === this
-                || symbol && this._item.equals(symbol._item)
-                || false;
+    equals: function (symbol) {
+      return (
+        symbol === this ||
+        symbol && this._item.equals(symbol._item) ||
+        false
+      )
     }
-});
+  }
+)

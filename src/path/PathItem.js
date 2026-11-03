@@ -19,7 +19,8 @@
  *
  * @extends Item
  */
-var PathItem = Item.extend(/** @lends PathItem# */{
+var PathItem = Item.extend(
+  /** @lends PathItem# */ {
     _class: 'PathItem',
     _selectBounds: false,
     _canScaleStroke: true,
@@ -28,81 +29,85 @@ var PathItem = Item.extend(/** @lends PathItem# */{
     beans: true,
 
     initialize: function PathItem() {
-        // Do nothing.
+      // Do nothing.
     },
 
     // Scale the stroke with the matrix that is applied to the content, when
     // settings.scaleStrokes asks for it:
-    _scaleStroke: function(matrix) {
-        var style = this._style;
-        if (this._project._scope.settings.scaleStrokes
-                && style.getStrokeScaling()) {
-            style.setStrokeWidth(style.getStrokeWidth()
-                    * matrix._getMeanScale());
-        }
+    _scaleStroke: function (matrix) {
+      var style = this._style
+      if (
+        this._project._scope.settings.scaleStrokes &&
+        style.getStrokeScaling()
+      ) {
+        style.setStrokeWidth(
+          style.getStrokeWidth() *
+          matrix._getMeanScale()
+        )
+      }
     },
 
-    statics: /** @lends PathItem */{
-        /**
-         * Creates a path item from the given SVG path-data, determining if the
-         * data describes a plain path or a compound-path with multiple
-         * sub-paths.
-         *
-         * @name PathItem.create
-         * @function
-         * @param {String} pathData the SVG path-data to parse
-         * @return {Path|CompoundPath} the newly created path item
-         */
-        /**
-         * Creates a path item from the given segments array, determining if the
-         * array describes a plain path or a compound-path with multiple
-         * sub-paths.
-         *
-         * @name PathItem.create
-         * @function
-         * @param {Number[][]} segments the segments array to parse
-         * @return {Path|CompoundPath} the newly created path item
-         */
-        /**
-         * Creates a path item from the given object, determining if the
-         * contained information describes a plain path or a compound-path with
-         * multiple sub-paths.
-         *
-         * @name PathItem.create
-         * @function
-         * @param {Object} object an object containing the properties describing
-         *     the item to be created
-         * @return {Path|CompoundPath} the newly created path item
-         */
-        create: function(arg) {
-            var data,
-                segments,
-                compound;
-            if (Base.isPlainObject(arg)) {
-                segments = arg.segments;
-                data = arg.pathData;
-            } else if (Array.isArray(arg)) {
-                segments = arg;
-            } else if (typeof arg === 'string') {
-                data = arg;
-            }
-            if (segments) {
-                var first = segments[0];
-                compound = first && Array.isArray(first[0]);
-            } else if (data) {
-                // If there are multiple moveTo commands or a closePath command
-                // followed by other commands, we have a CompoundPath.
-                compound = (data.match(/m/gi) || []).length > 1
-                        || /z\s*\S+/i.test(data);
-            }
-            var ctor = compound ? CompoundPath : Path;
-            return new ctor(arg);
+    statics: /** @lends PathItem */ {
+      /**
+       * Creates a path item from the given SVG path-data, determining if the
+       * data describes a plain path or a compound-path with multiple
+       * sub-paths.
+       *
+       * @name PathItem.create
+       * @function
+       * @param {String} pathData the SVG path-data to parse
+       * @return {Path|CompoundPath} the newly created path item
+       */
+      /**
+       * Creates a path item from the given segments array, determining if the
+       * array describes a plain path or a compound-path with multiple
+       * sub-paths.
+       *
+       * @name PathItem.create
+       * @function
+       * @param {Number[][]} segments the segments array to parse
+       * @return {Path|CompoundPath} the newly created path item
+       */
+      /**
+       * Creates a path item from the given object, determining if the
+       * contained information describes a plain path or a compound-path with
+       * multiple sub-paths.
+       *
+       * @name PathItem.create
+       * @function
+       * @param {Object} object an object containing the properties describing
+       *     the item to be created
+       * @return {Path|CompoundPath} the newly created path item
+       */
+      create: function (arg) {
+        var data, segments, compound
+        if (Base.isPlainObject(arg)) {
+          segments = arg.segments
+          data = arg.pathData
+        } else if (Array.isArray(arg)) {
+          segments = arg
+        } else if (typeof arg === 'string') {
+          data = arg
         }
+        if (segments) {
+          var first = segments[0]
+          compound = first && Array.isArray(first[0])
+        } else if (data) {
+          // If there are multiple moveTo commands or a closePath command
+          // followed by other commands, we have a CompoundPath.
+          compound = (
+            (data.match(/m/gi) || []).length > 1 ||
+            /z\s*\S+/i.test(data)
+          )
+        }
+        var ctor = compound ? CompoundPath : Path
+        return new ctor(arg)
+      }
     },
 
-    _asPathItem: function() {
-        // See Item#_asPathItem()
-        return this;
+    _asPathItem: function () {
+      // See Item#_asPathItem()
+      return this
     },
 
     /**
@@ -116,16 +121,15 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * @see Path#area
      * @see CompoundPath#area
      */
-    isClockwise: function() {
-        return this.getArea() >= 0;
+    isClockwise: function () {
+      return this.getArea() >= 0
     },
 
-    setClockwise: function(clockwise) {
-        // Only revers the path if its clockwise orientation is not the same
-        // as what it is now demanded to be.
-        // On-the-fly conversion to boolean:
-        if (this.isClockwise() != (clockwise = !!clockwise))
-            this.reverse();
+    setClockwise: function (clockwise) {
+      // Only revers the path if its clockwise orientation is not the same
+      // as what it is now demanded to be.
+      // On-the-fly conversion to boolean:
+      if (this.isClockwise() != (clockwise = !!clockwise)) this.reverse()
     },
 
     /**
@@ -135,147 +139,157 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * @bean
      * @type String
      */
-    setPathData: function(data) {
-        // NOTE: #getPathData() is defined in CompoundPath / Path
-        // This is a very compact SVG Path Data parser that works both for Path
-        // and CompoundPath.
+    setPathData: function (data) {
+      // NOTE: #getPathData() is defined in CompoundPath / Path
+      // This is a very compact SVG Path Data parser that works both for Path
+      // and CompoundPath.
 
-        // First split the path data into parts of command-coordinates pairs
-        // Commands are any of these characters: mzlhvcsqta
-        var parts = data && data.match(/[mlhvcsqtaz][^mlhvcsqtaz]*/ig),
-            coords,
-            relative = false,
-            previous,
-            control,
-            current = new Point(),
-            start = new Point(),
-            number = '([+-]?(?:\\d*\\.\\d+|\\d+\\.?)(?:[eE][+-]?\\d+)?)',
-            numbers = new RegExp(number, 'g'),
-            // The arc flags are single characters that don't need to be
-            // separated from what follows, e.g. 'a1 1 0 011 1', see #1808:
-            flag = '([01])',
-            arcs = new RegExp([number, number, number, flag, flag, number,
-                    number].join('[\\s,]*'), 'g');
+      // First split the path data into parts of command-coordinates pairs
+      // Commands are any of these characters: mzlhvcsqta
+      var parts = data && data.match(/[mlhvcsqtaz][^mlhvcsqtaz]*/gi),
+        coords,
+        relative = false,
+        previous,
+        control,
+        current = new Point(),
+        start = new Point(),
+        number = '([+-]?(?:\\d*\\.\\d+|\\d+\\.?)(?:[eE][+-]?\\d+)?)',
+        numbers = new RegExp(number, 'g'),
+        // The arc flags are single characters that don't need to be
+        // separated from what follows, e.g. 'a1 1 0 011 1', see #1808:
+        flag = '([01])',
+        arcs = new RegExp(
+          [number, number, number, flag, flag, number, number].join('[\\s,]*'),
+          'g'
+        )
 
-        function getCoord(index, coord) {
-            var val = +coords[index];
-            if (relative)
-                val += current[coord];
-            return val;
-        }
+      function getCoord(index, coord) {
+        var val = +coords[index]
+        if (relative) val += current[coord]
+        return val
+      }
 
-        function getPoint(index) {
-            return new Point(
-                getCoord(index, 'x'),
-                getCoord(index + 1, 'y')
-            );
-        }
+      function getPoint(index) {
+        return new Point(
+          getCoord(index, 'x'),
+          getCoord(index + 1, 'y')
+        )
+      }
 
-        // First clear the previous content
-        this.clear();
+      // First clear the previous content
+      this.clear()
 
-        for (var i = 0, l = parts && parts.length; i < l; i++) {
-            var part = parts[i],
-                command = part[0],
-                lower = command.toLowerCase();
-            // Match all coordinate values
-            coords = part.match(numbers);
-            var length = coords && coords.length;
-            relative = command === lower;
-            // Fix issues with z in the middle of SVG path data, not followed by
-            // a m command, see #413:
-            if (previous === 'z' && !/[mz]/.test(lower))
-                this.moveTo(current);
-            switch (lower) {
-            case 'm':
-            case 'l':
-                var move = lower === 'm';
-                for (var j = 0; j < length; j += 2) {
-                    this[move ? 'moveTo' : 'lineTo'](current = getPoint(j));
-                    if (move) {
-                        start = current;
-                        move = false;
-                    }
-                }
-                control = current;
-                break;
-            case 'h':
-            case 'v':
-                var coord = lower === 'h' ? 'x' : 'y';
-                current = current.clone(); // Clone as we're going to modify it.
-                for (var j = 0; j < length; j++) {
-                    current[coord] = getCoord(j, coord);
-                    this.lineTo(current);
-                }
-                control = current;
-                break;
-            case 'c':
-                for (var j = 0; j < length; j += 6) {
-                    this.cubicCurveTo(
-                            getPoint(j),
-                            control = getPoint(j + 2),
-                            current = getPoint(j + 4));
-                }
-                break;
-            case 's':
-                // Smooth cubicCurveTo
-                for (var j = 0; j < length; j += 4) {
-                    this.cubicCurveTo(
-                            /[cs]/.test(previous)
-                                    ? current.multiply(2).subtract(control)
-                                    : current,
-                            control = getPoint(j),
-                            current = getPoint(j + 2));
-                    previous = lower;
-                }
-                break;
-            case 'q':
-                for (var j = 0; j < length; j += 4) {
-                    this.quadraticCurveTo(
-                            control = getPoint(j),
-                            current = getPoint(j + 2));
-                }
-                break;
-            case 't':
-                // Smooth quadraticCurveTo
-                for (var j = 0; j < length; j += 2) {
-                    this.quadraticCurveTo(
-                            control = (/[qt]/.test(previous)
-                                    ? current.multiply(2).subtract(control)
-                                    : current),
-                            current = getPoint(j));
-                    previous = lower;
-                }
-                break;
-            case 'a':
-                while (coords = arcs.exec(part)) {
-                    this.arcTo(current = getPoint(6),
-                            new Size(+coords[1], +coords[2]),
-                            +coords[3], +coords[5], +coords[4]);
-                }
-                break;
-            case 'z':
-                // Merge first and last segment with Numerical.EPSILON tolerance
-                // to address imprecisions in relative SVG data.
-                this.closePath(/*#=*/Numerical.EPSILON);
-                // Correctly handle relative m commands, see #1101:
-                current = start;
-                break;
+      for (var i = 0, l = parts && parts.length; i < l; i++) {
+        var part = parts[i],
+          command = part[0],
+          lower = command.toLowerCase()
+        // Match all coordinate values
+        coords = part.match(numbers)
+        var length = coords && coords.length
+        relative = command === lower
+        // Fix issues with z in the middle of SVG path data, not followed by
+        // a m command, see #413:
+        if (previous === 'z' && !/[mz]/.test(lower)) this.moveTo(current)
+        switch (lower) {
+          case 'm':
+          case 'l':
+            var move = lower === 'm'
+            for (var j = 0; j < length; j += 2) {
+              this[move ? 'moveTo' : 'lineTo']((current = getPoint(j)))
+              if (move) {
+                start = current
+                move = false
+              }
             }
-            previous = lower;
+            control = current
+            break
+          case 'h':
+          case 'v':
+            var coord = lower === 'h' ? 'x' : 'y'
+            current = current.clone() // Clone as we're going to modify it.
+            for (var j = 0; j < length; j++) {
+              current[coord] = getCoord(j, coord)
+              this.lineTo(current)
+            }
+            control = current
+            break
+          case 'c':
+            for (var j = 0; j < length; j += 6) {
+              this.cubicCurveTo(
+                getPoint(j),
+                (control = getPoint(j + 2)),
+                (current = getPoint(j + 4))
+              )
+            }
+            break
+          case 's':
+            // Smooth cubicCurveTo
+            for (var j = 0; j < length; j += 4) {
+              this.cubicCurveTo(
+                /[cs]/.test(previous)
+                  ? current.multiply(2).subtract(control)
+                  : current,
+                (control = getPoint(j)),
+                (current = getPoint(j + 2))
+              )
+              previous = lower
+            }
+            break
+          case 'q':
+            for (var j = 0; j < length; j += 4) {
+              this.quadraticCurveTo(
+                (control = getPoint(j)),
+                (current = getPoint(j + 2))
+              )
+            }
+            break
+          case 't':
+            // Smooth quadraticCurveTo
+            for (var j = 0; j < length; j += 2) {
+              this.quadraticCurveTo(
+                (control = /[qt]/.test(previous)
+                  ? current.multiply(2).subtract(control)
+                  : current),
+                (current = getPoint(j))
+              )
+              previous = lower
+            }
+            break
+          case 'a':
+            while ((coords = arcs.exec(part))) {
+              this.arcTo(
+                (current = getPoint(6)),
+                new Size(+coords[1], +coords[2]),
+                +coords[3],
+                +coords[5],
+                +coords[4]
+              )
+            }
+            break
+          case 'z':
+            // Merge first and last segment with Numerical.EPSILON tolerance
+            // to address imprecisions in relative SVG data.
+            this.closePath(/*#=*/ Numerical.EPSILON)
+            // Correctly handle relative m commands, see #1101:
+            current = start
+            break
         }
+        previous = lower
+      }
     },
 
-    _canComposite: function() {
-        // A path with only a fill or a stroke can be directly blended, but if
-        // it has both, it needs to be drawn into a separate canvas first.
-        return !(this.hasFill() && this.hasStroke());
+    _canComposite: function () {
+      // A path with only a fill or a stroke can be directly blended, but if
+      // it has both, it needs to be drawn into a separate canvas first.
+      return !(this.hasFill() && this.hasStroke())
     },
 
-    _contains: function(point) {
-        // NOTE: point is reverse transformed by _matrix, so we don't need to
-        // apply the matrix here.
-/*#*/ if (__options.nativeContains || !__options.booleanOperations) {
+    _contains: function (point) {
+      // NOTE: point is reverse transformed by _matrix, so we don't need to
+      // apply the matrix here.
+      // prepro reads its directives line by line:
+      // prettier-ignore
+      /*#*/ if (__options.nativeContains || !__options.booleanOperations) {
         // To compare with native canvas approach:
         var ctx = CanvasProvider.getContext(1, 1);
         // Use dontFinish to tell _draw to only produce geometries for hit-test.
@@ -336,31 +350,44 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *     }
      * }
      */
-    getIntersections: function(path, include, _matrix, _returnFirst) {
-        // NOTE: For self-intersection, path is null. This means you can also
-        // just call path.getIntersections() without an argument to get self
-        // intersections.
-        // NOTE: The hidden argument _matrix is used internally to override the
-        // passed path's transformation matrix.
-        var self = this === path || !path, // self-intersections?
-            matrix1 = this._matrix._orNullIfIdentity(),
-            matrix2 = self ? matrix1
-                : (_matrix || path._matrix)._orNullIfIdentity();
-        // First check the bounds of the two paths. If they don't intersect,
-        // we don't need to iterate through their curves. Bounds that only
-        // touch need a tolerance, also at large coordinates:
-        var bounds1 = !self && this.getBounds(matrix1),
-            bounds2 = !self && path.getBounds(matrix2),
-            abs = Math.abs;
-        return self || bounds1.intersects(bounds2, Numerical.getEpsilon(
-                Math.max(abs(bounds1.left), abs(bounds1.right),
-                    abs(bounds1.top), abs(bounds1.bottom),
-                    abs(bounds2.left), abs(bounds2.right),
-                    abs(bounds2.top), abs(bounds2.bottom))))
-                ? Curve.getIntersections(
-                        this.getCurves(), !self && path.getCurves(), include,
-                        matrix1, matrix2, _returnFirst)
-                : [];
+    getIntersections: function (path, include, _matrix, _returnFirst) {
+      // NOTE: For self-intersection, path is null. This means you can also
+      // just call path.getIntersections() without an argument to get self
+      // intersections.
+      // NOTE: The hidden argument _matrix is used internally to override the
+      // passed path's transformation matrix.
+      var self = this === path || !path, // self-intersections?
+        matrix1 = this._matrix._orNullIfIdentity(),
+        matrix2 = self ? matrix1 : (_matrix || path._matrix)._orNullIfIdentity()
+      // First check the bounds of the two paths. If they don't intersect,
+      // we don't need to iterate through their curves. Bounds that only
+      // touch need a tolerance, also at large coordinates:
+      var bounds1 = !self && this.getBounds(matrix1),
+        bounds2 = !self && path.getBounds(matrix2),
+        abs = Math.abs
+      return (
+        self ||
+        bounds1.intersects(
+          bounds2,
+          Numerical.getEpsilon(
+            Math.max(
+              abs(bounds1.left),
+              abs(bounds1.right),
+              abs(bounds1.top),
+              abs(bounds1.bottom),
+              abs(bounds2.left),
+              abs(bounds2.right),
+              abs(bounds2.top),
+              abs(bounds2.bottom)
+            )
+          )
+        )
+      )
+        ? Curve.getIntersections(
+            this.getCurves(), !self && path.getCurves(), include,
+            matrix1, matrix2, _returnFirst
+          )
+        : []
     },
 
     /**
@@ -374,10 +401,10 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *     paths
      * @see #getIntersections(path)
      */
-    getCrossings: function(path) {
-        return this.getIntersections(path, function(inter) {
-            return inter.isCrossing();
-        });
+    getCrossings: function (path) {
+      return this.getIntersections(path, function (inter) {
+        return inter.isCrossing()
+      })
     },
 
     /**
@@ -387,19 +414,19 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * @return {CurveLocation} the location on the path that's the closest to
      * the specified point
      */
-    getNearestLocation: function(/* point */) {
-        var point = Point.read(arguments),
-            curves = this.getCurves(),
-            minDist = Infinity,
-            minLoc = null;
-        for (var i = 0, l = curves.length; i < l; i++) {
-            var loc = curves[i].getNearestLocation(point);
-            if (loc._distance < minDist) {
-                minDist = loc._distance;
-                minLoc = loc;
-            }
+    getNearestLocation: function (/* point */) {
+      var point = Point.read(arguments),
+        curves = this.getCurves(),
+        minDist = Infinity,
+        minLoc = null
+      for (var i = 0, l = curves.length; i < l; i++) {
+        var loc = curves[i].getNearestLocation(point)
+        if (loc._distance < minDist) {
+          minDist = loc._distance
+          minLoc = loc
         }
-        return minLoc;
+      }
+      return minLoc
     },
 
     /**
@@ -433,9 +460,9 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *     circle.position = nearestPoint;
      * }
      */
-    getNearestPoint: function(/* point */) {
-        var loc = this.getNearestLocation.apply(this, arguments);
-        return loc ? loc.getPoint() : loc;
+    getNearestPoint: function (/* point */) {
+      var loc = this.getNearestLocation.apply(this, arguments)
+      return loc ? loc.getPoint() : loc
     },
 
     /**
@@ -711,33 +738,37 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * @param {Number} factor the interpolation coefficient, typically between
      *     `0` and `1`, but extrapolation is possible too
      */
-    interpolate: function(from, to, factor) {
-        var isPath = !this._children,
-            name = isPath ? '_segments' : '_children',
-            itemsFrom = from[name],
-            itemsTo = to[name],
-            items = this[name];
-        if (!itemsFrom || !itemsTo || itemsFrom.length !== itemsTo.length) {
-            throw new Error('Invalid operands in interpolate() call: ' +
-                    from + ', ' + to);
+    interpolate: function (from, to, factor) {
+      var isPath = !this._children,
+        name = isPath ? '_segments' : '_children',
+        itemsFrom = from[name],
+        itemsTo = to[name],
+        items = this[name]
+      if (!itemsFrom || !itemsTo || itemsFrom.length !== itemsTo.length) {
+        throw new Error(
+          'Invalid operands in interpolate() call: ' +
+          from +
+          ', ' +
+          to
+        )
+      }
+      var current = items.length,
+        length = itemsTo.length
+      if (current < length) {
+        var ctor = isPath ? Segment : Path
+        for (var i = current; i < length; i++) {
+          this.add(new ctor())
         }
-        var current = items.length,
-            length = itemsTo.length;
-        if (current < length) {
-            var ctor = isPath ? Segment : Path;
-            for (var i = current; i < length; i++) {
-                this.add(new ctor());
-            }
-        } else if (current > length) {
-            this[isPath ? 'removeSegments' : 'removeChildren'](length, current);
-        }
-        for (var i = 0; i < length; i++) {
-            items[i].interpolate(itemsFrom[i], itemsTo[i], factor);
-        }
-        if (isPath) {
-            this.setClosed(from._closed);
-            this._changed(/*#=*/Change.GEOMETRY);
-        }
+      } else if (current > length) {
+        this[isPath ? 'removeSegments' : 'removeChildren'](length, current)
+      }
+      for (var i = 0; i < length; i++) {
+        items[i].interpolate(itemsFrom[i], itemsTo[i], factor)
+      }
+      if (isPath) {
+        this.setClosed(from._closed)
+        this._changed(/*#=*/ Change.GEOMETRY)
+      }
     },
 
     /**
@@ -753,38 +784,42 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * @param {PathItem} path the path to compare this path's geometry with
      * @return {Boolean} {@true if two paths describe the same shape}
      */
-    compare: function(path) {
-        var ok = false;
-        if (path) {
-            var paths1 = this._children || [this],
-                paths2 = path._children ? path._children.slice() : [path],
-                length1 = paths1.length,
-                length2 = paths2.length,
-                matched = [],
-                count = 0;
-            ok = true;
-            var boundsOverlaps = CollisionDetection.findItemBoundsCollisions(paths1, paths2, Numerical.GEOMETRIC_EPSILON);
-            for (var i1 = length1 - 1; i1 >= 0 && ok; i1--) {
-                var path1 = paths1[i1];
-                ok = false;
-                var pathBoundsOverlaps = boundsOverlaps[i1];
-                if (pathBoundsOverlaps) {
-                    for (var i2 = pathBoundsOverlaps.length - 1; i2 >= 0 && !ok; i2--) {
-                        if (path1.compare(paths2[pathBoundsOverlaps[i2]])) {
-                            if (!matched[pathBoundsOverlaps[i2]]) {
-                                matched[pathBoundsOverlaps[i2]] = true;
-                                count++;
-                            }
-                            ok = true;
-                        }
-                    }
+    compare: function (path) {
+      var ok = false
+      if (path) {
+        var paths1 = this._children || [this],
+          paths2 = path._children ? path._children.slice() : [path],
+          length1 = paths1.length,
+          length2 = paths2.length,
+          matched = [],
+          count = 0
+        ok = true
+        var boundsOverlaps = CollisionDetection.findItemBoundsCollisions(
+          paths1,
+          paths2,
+          Numerical.GEOMETRIC_EPSILON
+        )
+        for (var i1 = length1 - 1; i1 >= 0 && ok; i1--) {
+          var path1 = paths1[i1]
+          ok = false
+          var pathBoundsOverlaps = boundsOverlaps[i1]
+          if (pathBoundsOverlaps) {
+            for (var i2 = pathBoundsOverlaps.length - 1; i2 >= 0 && !ok; i2--) {
+              if (path1.compare(paths2[pathBoundsOverlaps[i2]])) {
+                if (!matched[pathBoundsOverlaps[i2]]) {
+                  matched[pathBoundsOverlaps[i2]] = true
+                  count++
                 }
+                ok = true
+              }
             }
-            // Each path in path2 needs to be matched at least once.
-            ok = ok && count === length2;
+          }
         }
-        return ok;
-    },
+        // Each path in path2 needs to be matched at least once.
+        ok = ok && count === length2
+      }
+      return ok
+    }
 
     /**
      * {@grouptitle Postscript Style Drawing Commands}
@@ -1215,4 +1250,5 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *     second segment are calculated
      * @param {Point} to the destination point of the newly added curve
      */
-});
+  }
+)

@@ -70,7 +70,8 @@
  * };
  *
  */
-var Style = Base.extend(new function() {
+var Style = Base.extend(
+  new (function () {
     // Defaults for items without text-styles (PathItem, Shape, Raster, ...):
     var itemDefaults = {
         // Paths
@@ -91,10 +92,10 @@ var Style = Base.extend(new function() {
         shadowOffset: new Point(),
         // Selection
         selectedColor: null
-    },
-    // Defaults for Group, Layer and Project (anything item that allows nesting
-    // needs to be able to pass down text styles as well):
-    groupDefaults = Base.set({}, itemDefaults, {
+      },
+      // Defaults for Group, Layer and Project (anything item that allows nesting
+      // needs to be able to pass down text styles as well):
+      groupDefaults = Base.set({}, itemDefaults, {
         // Characters
         fontFamily: 'sans-serif',
         fontWeight: 'normal',
@@ -126,279 +127,309 @@ var Style = Base.extend(new function() {
         lineWrap: 'normal',
         tabs: null,
         direction: null
-    }),
-    // Defaults for TextItem (override default fillColor to black):
-    textDefaults = Base.set({}, groupDefaults, {
+      }),
+      // Defaults for TextItem (override default fillColor to black):
+      textDefaults = Base.set({}, groupDefaults, {
         fillColor: new Color() // black
-    }),
-    flags = {
-        strokeWidth: /*#=*/Change.STROKE,
-        strokeCap: /*#=*/Change.STROKE,
-        strokeJoin: /*#=*/Change.STROKE,
+      }),
+      flags = {
+        strokeWidth: /*#=*/ Change.STROKE,
+        strokeCap: /*#=*/ Change.STROKE,
+        strokeJoin: /*#=*/ Change.STROKE,
         // The dashes of strokes are their geometry too, see PathItem#dash():
-        dashArray: /*#=*/Change.STROKE,
-        dashOffset: /*#=*/Change.STROKE,
+        dashArray: /*#=*/ Change.STROKE,
+        dashOffset: /*#=*/ Change.STROKE,
         // strokeScaling can change the coordinates of cached path items
-        strokeScaling: /*#=*/(Change.STROKE | Change.GEOMETRY),
-        miterLimit: /*#=*/Change.STROKE
-    },
-    item = {
+        strokeScaling: /*#=*/ Change.STROKE | Change.GEOMETRY,
+        miterLimit: /*#=*/ Change.STROKE
+      },
+      item = {
         // Enforce creation of beans, as bean getters have hidden parameters,
         // see _dontMerge argument below.
         beans: true
-    },
-    fields = /** @lends Style# */{
+      },
+      fields = /** @lends Style# */ {
         _class: 'Style',
         beans: true,
 
         initialize: function Style(style, _owner, _project) {
-            // We keep values in a separate object that we can iterate over.
-            this._values = {};
-            this._owner = _owner;
-            this._project = _owner && _owner._project || _project
-                    || paper.project;
-            // Use different defaults based on the owner
-            this._defaults = !_owner || _owner instanceof Group ? groupDefaults
-                    : _owner instanceof TextItem || _owner instanceof TextStory
-                        || _owner instanceof TextRange
-                        ? textDefaults
-                        : itemDefaults;
-            if (style)
-                this.set(style);
+          // We keep values in a separate object that we can iterate over.
+          this._values = {}
+          this._owner = _owner
+          this._project = (
+            _owner && _owner._project ||
+            _project ||
+            paper.project
+          )
+          // Use different defaults based on the owner
+          this._defaults =
+            !_owner || _owner instanceof Group
+              ? groupDefaults
+              : (
+                    _owner instanceof TextItem ||
+                    _owner instanceof TextStory ||
+                    _owner instanceof TextRange
+                  )
+                ? textDefaults
+                : itemDefaults
+          if (style) this.set(style)
         }
-    };
+      }
 
     // Iterate over groupDefaults to inject getters / setters, to cover all
     // properties
-    Base.each(groupDefaults, function(value, key) {
-        var isColor = /Color$/.test(key),
-            isPoint = key === 'shadowOffset',
-            part = Base.capitalize(key),
-            // All text properties but the decorations change the layout:
-            flag = !(key in itemDefaults) && key !== 'underline'
-                    && key !== 'strikethrough'
-                    ? /*#=*/Change.GEOMETRY
-                    : flags[key],
-            set = 'set' + part,
-            get = 'get' + part;
+    Base.each(groupDefaults, function (value, key) {
+      var isColor = /Color$/.test(key),
+        isPoint = key === 'shadowOffset',
+        part = Base.capitalize(key),
+        // All text properties but the decorations change the layout:
+        flag =
+          (
+            !(key in itemDefaults) &&
+            key !== 'underline' &&
+            key !== 'strikethrough'
+          )
+            ? /*#=*/ Change.GEOMETRY
+            : flags[key],
+        set = 'set' + part,
+        get = 'get' + part
 
-        // Define getters and setters to be injected into this class.
-        // This is how style values are handled:
-        // - Style values are all stored in this._values
-        // - The style object starts with an empty _values object, with fallback
-        //   on _defaults through code in the getter below.
-        // - Only the styles that are explicitly set on the object get defined
-        //   in _values.
-        // - Color values are not stored as converted colors immediately. The
-        //   raw value is stored, and conversion only happens in the getter.
-        fields[set] = function(value) {
-            var owner = this._owner,
-                // The styles the owner stands for, as a Group its children's:
-                styles = owner && owner._getStyles(this, key, true);
-            if (styles)
-                Style.apply(styles, key, value);
-            // Always store selectedColor in item _values to make sure that
-            // group selected bounds and position color is coherent whether it
-            // has children or not when the value is set.
-            if ((key === 'selectedColor' || !styles)
-                    && key in this._defaults) {
-                var old = this._values[key];
-                if (old !== value) {
-                    if (isColor) {
-                        // The old value may be a native string or other color
-                        // description that wasn't coerced to a color object yet
-                        if (old && old.constructor === Color) {
-                            Color._setOwner(old, null);
-                            old._canvasStyle = null;
-                        }
-                        if (value && value.constructor === Color) {
-                            // NOTE: If value is not a Color, it is only
-                            // converted and cloned in the getter further down.
-                            value = Color._setOwner(value, owner,
-                                    // Only provide a color-setter if the style
-                                    // is to be applied to the children:
-                                    styles && set);
-                        }
-                    }
-                    // NOTE: We do not convert the values to Colors in the
-                    // setter. This only happens once the getter is called.
-                    this._values[key] = value;
-                    // Notify the owner of the style change STYLE is always set,
-                    // additional flags come from flags, as used for STROKE:
-                    if (owner)
-                        owner._changed(flag || /*#=*/Change.STYLE);
-                }
+      // Define getters and setters to be injected into this class.
+      // This is how style values are handled:
+      // - Style values are all stored in this._values
+      // - The style object starts with an empty _values object, with fallback
+      //   on _defaults through code in the getter below.
+      // - Only the styles that are explicitly set on the object get defined
+      //   in _values.
+      // - Color values are not stored as converted colors immediately. The
+      //   raw value is stored, and conversion only happens in the getter.
+      fields[set] = function (value) {
+        var owner = this._owner,
+          // The styles the owner stands for, as a Group its children's:
+          styles = owner && owner._getStyles(this, key, true)
+        if (styles) Style.apply(styles, key, value)
+        // Always store selectedColor in item _values to make sure that
+        // group selected bounds and position color is coherent whether it
+        // has children or not when the value is set.
+        if ((key === 'selectedColor' || !styles) && key in this._defaults) {
+          var old = this._values[key]
+          if (old !== value) {
+            if (isColor) {
+              // The old value may be a native string or other color
+              // description that wasn't coerced to a color object yet
+              if (old && old.constructor === Color) {
+                Color._setOwner(old, null)
+                old._canvasStyle = null
+              }
+              if (value && value.constructor === Color) {
+                // NOTE: If value is not a Color, it is only
+                // converted and cloned in the getter further down.
+                value = Color._setOwner(
+                  value,
+                  owner,
+                  // Only provide a color-setter if the style
+                  // is to be applied to the children:
+                  styles && set
+                )
+              }
             }
-        };
+            // NOTE: We do not convert the values to Colors in the
+            // setter. This only happens once the getter is called.
+            this._values[key] = value
+            // Notify the owner of the style change STYLE is always set,
+            // additional flags come from flags, as used for STROKE:
+            if (owner) owner._changed(flag || /*#=*/ Change.STYLE)
+          }
+        }
+      }
 
-        fields[get] = function(_dontMerge) {
-            var owner = this._owner,
-                styles = owner && owner._getStyles(this, key),
-                value;
-            // If true is passed for _dontMerge, don't merge children styles.
-            if (styles && !_dontMerge) {
-                value = Style.merge(styles, key);
-            } else if (key in this._defaults) {
-                var value = this._values[key];
-                if (value === undefined) {
-                    value = this._defaults[key];
-                    // Clone defaults if available:
-                    if (value && value.clone) {
-                        value = value.clone();
-                    }
-                } else {
-                    var ctor = isColor ? Color : isPoint ? Point : null;
-                    if (ctor && !(value && value.constructor === ctor)) {
-                        // Convert to a Color / Point, and stored result of the
-                        // conversion.
-                        this._values[key] = value = ctor.read([value], 0,
-                                { readNull: true, clone: true });
-                    }
-                }
+      fields[get] = function (_dontMerge) {
+        var owner = this._owner,
+          styles = owner && owner._getStyles(this, key),
+          value
+        // If true is passed for _dontMerge, don't merge children styles.
+        if (styles && !_dontMerge) {
+          value = Style.merge(styles, key)
+        } else if (key in this._defaults) {
+          var value = this._values[key]
+          if (value === undefined) {
+            value = this._defaults[key]
+            // Clone defaults if available:
+            if (value && value.clone) {
+              value = value.clone()
             }
-            if (value && isColor) {
-                // Color._setOwner() may clone the color if it already has a
-                // different owner (e.g. resulting from `childValue` above).
-                // Only provide a color-setter if the style is to be applied to
-                // the children:
-                value = Color._setOwner(value, owner, styles && set);
+          } else {
+            var ctor = isColor ? Color : isPoint ? Point : null
+            if (ctor && !(value && value.constructor === ctor)) {
+              // Convert to a Color / Point, and stored result of the
+              // conversion.
+              this._values[key] = value = ctor.read([value], 0, {
+                readNull: true,
+                clone: true
+              })
             }
-            return value;
-        };
+          }
+        }
+        if (value && isColor) {
+          // Color._setOwner() may clone the color if it already has a
+          // different owner (e.g. resulting from `childValue` above).
+          // Only provide a color-setter if the style is to be applied to
+          // the children:
+          value = Color._setOwner(value, owner, styles && set)
+        }
+        return value
+      }
 
-        // Inject style getters and setters into the Item class, which redirect
-        // calls to the linked style object.
-        item[get] = function(_dontMerge) {
-            return this._style[get](_dontMerge);
-        };
+      // Inject style getters and setters into the Item class, which redirect
+      // calls to the linked style object.
+      item[get] = function (_dontMerge) {
+        return this._style[get](_dontMerge)
+      }
 
-        item[set] = function(value) {
-            this._style[set](value);
-        };
-    });
+      item[set] = function (value) {
+        this._style[set](value)
+      }
+    })
 
     // Create aliases for deprecated properties. The lookup table contains the
     // part after 'get' / 'set':
     // TODO: Remove once deprecated long enough, after December 2016.
-    Base.each({
+    Base.each(
+      {
         Font: 'FontFamily',
         WindingRule: 'FillRule'
-    }, function(value, key) {
+      },
+      function (value, key) {
         var get = 'get' + key,
-            set = 'set' + key;
-        fields[get] = item[get] = '#get' + value;
-        fields[set] = item[set] = '#set' + value;
-    });
+          set = 'set' + key
+        fields[get] = item[get] = '#get' + value
+        fields[set] = item[set] = '#set' + value
+      }
+    )
 
     // The properties as they were named before: tracking is letterTracking,
     // and leading a fixed lineHeight, see Style#getLeading():
-    fields.getTracking = item.getTracking = '#getLetterTracking';
-    fields.setTracking = item.setTracking = '#setLetterTracking';
-    item.getLeading = function() {
-        return this._style.getLeading();
-    };
-    item.setLeading = function(leading) {
-        this._style.setLeading(leading);
-    };
+    fields.getTracking = item.getTracking = '#getLetterTracking'
+    fields.setTracking = item.setTracking = '#setLetterTracking'
+    item.getLeading = function () {
+      return this._style.getLeading()
+    }
+    item.setLeading = function (leading) {
+      this._style.setLeading(leading)
+    }
 
-    Item.inject(item);
+    Item.inject(item)
     // Text ranges have the same style accessors as items:
-    TextRange.inject(item);
-    return fields;
-}, /** @lends Style# */{
+    TextRange.inject(item)
+    return fields
+  })(),
+  /** @lends Style# */ {
     statics: {
-        // The value that all styles share for key, or undefined if they differ:
-        merge: function(styles, key) {
-            var get = 'get' + Base.capitalize(key),
-                value;
-            for (var i = 0, l = styles.length; i < l; i++) {
-                var other = styles[i][get]();
-                if (!i) {
-                    value = other;
-                } else if (!Base.equals(value, other)) {
-                    return undefined;
-                }
-            }
-            return value;
-        },
-
-        apply: function(styles, key, value) {
-            var set = 'set' + Base.capitalize(key);
-            for (var i = 0, l = styles.length; i < l; i++)
-                styles[i][set](value);
+      // The value that all styles share for key, or undefined if they differ:
+      merge: function (styles, key) {
+        var get = 'get' + Base.capitalize(key),
+          value
+        for (var i = 0, l = styles.length; i < l; i++) {
+          var other = styles[i][get]()
+          if (!i) {
+            value = other
+          } else if (!Base.equals(value, other)) {
+            return undefined
+          }
         }
+        return value
+      },
+
+      apply: function (styles, key, value) {
+        var set = 'set' + Base.capitalize(key)
+        for (var i = 0, l = styles.length; i < l; i++) styles[i][set](value)
+      }
     },
 
-    set: function(style) {
-        // If the passed style object is also a Style, clone its cloneable
-        // fields rather than simply copying them.
-        var isStyle = style instanceof Style,
-            // Use the other stlyle's _values object for iteration
-            values = isStyle ? style._values : style;
-        if (values) {
-            for (var key in values) {
-                if (key in this._defaults || key in this._formerNames) {
-                    var value = values[key];
-                    // Delegate to setter, so Group styles work too.
-                    this[key] = value && isStyle && value.clone
-                            ? value.clone() : value;
-                }
-            }
+    set: function (style) {
+      // If the passed style object is also a Style, clone its cloneable
+      // fields rather than simply copying them.
+      var isStyle = style instanceof Style,
+        // Use the other stlyle's _values object for iteration
+        values = isStyle ? style._values : style
+      if (values) {
+        for (var key in values) {
+          if (key in this._defaults || key in this._formerNames) {
+            var value = values[key]
+            // Delegate to setter, so Group styles work too.
+            this[key] =
+              value && isStyle && value.clone
+                ? value.clone()
+                : value
+          }
         }
+      }
     },
 
-    equals: function(style) {
-        // Since we're dealing with defaults, loop through style values in both
-        // objects and compare with default fall-back. But in the secondary pass
-        // only check against keys that weren't already in the first object:
-        function compare(style1, style2, secondary) {
-            var values1 = style1._values,
-                values2 = style2._values,
-                defaults2 = style2._defaults;
-            for (var key in values1) {
-                var value1 = values1[key],
-                    value2 = values2[key];
-                if (!(secondary && key in values2) && !Base.equals(value1,
-                        value2 === undefined ? defaults2[key] : value2))
-                    return false;
-            }
-            return true;
+    equals: function (style) {
+      // Since we're dealing with defaults, loop through style values in both
+      // objects and compare with default fall-back. But in the secondary pass
+      // only check against keys that weren't already in the first object:
+      function compare(style1, style2, secondary) {
+        var values1 = style1._values,
+          values2 = style2._values,
+          defaults2 = style2._defaults
+        for (var key in values1) {
+          var value1 = values1[key],
+            value2 = values2[key]
+          if (
+            !(secondary && key in values2) &&
+            !Base.equals(value1, value2 === undefined ? defaults2[key] : value2)
+          )
+            return false
         }
+        return true
+      }
 
-        return style === this || style && this._class === style._class
-                && compare(this, style)
-                && compare(style, this, true)
-                || false;
+      return (
+        style === this || (
+          style &&
+          this._class === style._class &&
+          compare(this, style) &&
+          compare(style, this, true)
+        ) ||
+        false
+      )
     },
 
-    _dispose: function() {
-        var colors = [this.getFillColor(), this.getStrokeColor(),
-                this.getShadowColor()];
-        for (var i = 0; i < 3; i++) {
-            if (colors[i])
-                colors[i]._canvasStyle = null;
-        }
+    _dispose: function () {
+      var colors = [
+        this.getFillColor(),
+        this.getStrokeColor(),
+        this.getShadowColor()
+      ]
+      for (var i = 0; i < 3; i++) {
+        if (colors[i]) colors[i]._canvasStyle = null
+      }
     },
 
     // DOCS: Style#hasFill()
-    hasFill: function() {
-        var color = this.getFillColor();
-        return !!color && color.alpha > 0;
+    hasFill: function () {
+      var color = this.getFillColor()
+      return !!color && color.alpha > 0
     },
 
     // DOCS: Style#hasStroke()
-    hasStroke: function() {
-        var color = this.getStrokeColor();
-        return !!color && color.alpha > 0 && this.getStrokeWidth() > 0;
+    hasStroke: function () {
+      var color = this.getStrokeColor()
+      return !!color && color.alpha > 0 && this.getStrokeWidth() > 0
     },
 
     // DOCS: Style#hasShadow()
-    hasShadow: function() {
-        var color = this.getShadowColor();
-        // In order to draw a shadow, we need either a shadow blur or an
-        // offset, or both.
-        return !!color && color.alpha > 0 && (this.getShadowBlur() > 0
-                || !this.getShadowOffset().isZero());
+    hasShadow: function () {
+      var color = this.getShadowColor()
+      // In order to draw a shadow, we need either a shadow blur or an
+      // offset, or both.
+      return (
+        !!color &&
+        color.alpha > 0 &&
+        (this.getShadowBlur() > 0 || !this.getShadowOffset().isZero())
+      )
     },
 
     /**
@@ -407,38 +438,45 @@ var Style = Base.extend(new function() {
      * @bean
      * @type View
      */
-    getView: function() {
-        return this._project._view;
+    getView: function () {
+      return this._project._view
     },
 
     // Overrides
 
     // The font as canvas takes it:
-    _getCanvasFont: function() {
-        var fontSize = this.getFontSize(),
-            fontStyle = this.getFontStyle(),
-            // CSS reads unquoted families only as identifiers, which can't
-            // start with digits, so quote all but single words and the ones
-            // that are quoted already:
-            families = this.getFontFamily().split(',').map(function(family) {
-                family = family.trim();
-                return /^(["'].*|[a-z-]+)$/i.test(family) ? family
-                        : '"' + family.replace(/["\\]/g, '\\$&') + '"';
-            });
-        // Superscripts and subscripts are set smaller:
-        if (this.getBaselinePosition() !== 'normal' && !isNaN(fontSize))
-            fontSize *= this._scriptSize;
-        // To prevent an obscure iOS 7 crash, we have to convert the size to a
-        // string first before passing it to the regular expression.
-        // The following nonsensical statement would also prevent the bug,
-        // proving that the issue is not the regular expression itself, but
-        // something deeper down in the optimizer:
-        // `if (size === 0) size = 0;`
-        return (fontStyle !== 'normal' ? fontStyle + ' ' : '')
-                + (this.getCapitals() === 'small' ? 'small-caps ' : '')
-                + this.getFontWeight()
-                + ' ' + fontSize + (/[a-z]/i.test(fontSize + '') ? ' ' : 'px ')
-                + families.join(', ');
+    _getCanvasFont: function () {
+      var fontSize = this.getFontSize(),
+        fontStyle = this.getFontStyle(),
+        // CSS reads unquoted families only as identifiers, which can't
+        // start with digits, so quote all but single words and the ones
+        // that are quoted already:
+        families = this.getFontFamily()
+          .split(',')
+          .map(function (family) {
+            family = family.trim()
+            return /^(["'].*|[a-z-]+)$/i.test(family)
+              ? family
+              : '"' + family.replace(/["\\]/g, '\\$&') + '"'
+          })
+      // Superscripts and subscripts are set smaller:
+      if (this.getBaselinePosition() !== 'normal' && !isNaN(fontSize))
+        fontSize *= this._scriptSize
+      // To prevent an obscure iOS 7 crash, we have to convert the size to a
+      // string first before passing it to the regular expression.
+      // The following nonsensical statement would also prevent the bug,
+      // proving that the issue is not the regular expression itself, but
+      // something deeper down in the optimizer:
+      // `if (size === 0) size = 0;`
+      return (
+        (fontStyle !== 'normal' ? fontStyle + ' ' : '') +
+        (this.getCapitals() === 'small' ? 'small-caps ' : '') +
+        this.getFontWeight() +
+        ' ' +
+        fontSize +
+        (/[a-z]/i.test(fontSize + '') ? ' ' : 'px ') +
+        families.join(', ')
+      )
     },
 
     // The size of superscripts and subscripts, and how far they move, of the
@@ -451,26 +489,27 @@ var Style = Base.extend(new function() {
 
     // The letter tracking as canvas takes it: in thousandths of an em, which
     // canvas resolves through the font of the context:
-    _getCanvasLetterSpacing: function() {
-        return this.getLetterTracking() / 1000 + 'em';
+    _getCanvasLetterSpacing: function () {
+      return this.getLetterTracking() / 1000 + 'em'
     },
 
     // The font size in pixels, which it can be given in other units:
-    _getFontSize: function() {
-        var fontSize = this.getFontSize();
-        return /pt|em|%|px/.test(fontSize)
-                ? this.getView().getPixelSize(fontSize)
-                : fontSize;
+    _getFontSize: function () {
+      var fontSize = this.getFontSize()
+      return /pt|em|%|px/.test(fontSize)
+        ? this.getView().getPixelSize(fontSize)
+        : fontSize
     },
 
     // The line height in pixels: automatic ('auto', 1.2, or another factor)
     // of the font size, or fixed, with units as the font size takes them:
-    _getLineHeight: function() {
-        var lineHeight = this.getLineHeight();
-        return lineHeight === 'auto' ? 1.2 * this._getFontSize()
-                : typeof lineHeight === 'string'
-                    ? this.getView().getPixelSize(lineHeight)
-                    : lineHeight * this._getFontSize();
+    _getLineHeight: function () {
+      var lineHeight = this.getLineHeight()
+      return lineHeight === 'auto'
+        ? 1.2 * this._getFontSize()
+        : typeof lineHeight === 'string'
+          ? this.getView().getPixelSize(lineHeight)
+          : lineHeight * this._getFontSize()
     },
 
     /**
@@ -481,16 +520,21 @@ var Style = Base.extend(new function() {
      * @type Number
      * @deprecated use {@link #lineHeight} instead.
      */
-    getLeading: function() {
-        return this.getLineHeight() === undefined ? undefined
-                : this._getLineHeight();
+    getLeading: function () {
+      return this.getLineHeight() === undefined
+        ? undefined
+        : this._getLineHeight()
     },
 
-    setLeading: function(leading) {
-        this.setLineHeight(leading == null ? 'auto'
-                : typeof leading === 'number' ? leading + 'px'
-                : leading);
-    },
+    setLeading: function (leading) {
+      this.setLineHeight(
+        leading == null
+          ? 'auto'
+          : typeof leading === 'number'
+            ? leading + 'px'
+            : leading
+      )
+    }
 
     // DOCS: why isn't the example code showing up?
     /**
@@ -1070,4 +1114,5 @@ var Style = Base.extend(new function() {
      * @values 'ltr', 'rtl'
      * @default null
      */
-});
+  }
+)

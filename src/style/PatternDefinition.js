@@ -48,7 +48,8 @@
  *     strokeWidth: 20
  * });
  */
-var PatternDefinition = ItemDefinition.extend(/** @lends PatternDefinition# */{
+var PatternDefinition = ItemDefinition.extend(
+  /** @lends PatternDefinition# */ {
     _class: 'PatternDefinition',
 
     /**
@@ -63,35 +64,29 @@ var PatternDefinition = ItemDefinition.extend(/** @lends PatternDefinition# */{
      * @option [options.name] {String} the name of the pattern
      */
     initialize: function PatternDefinition(item, options) {
-        this._tile = null;
-        this._spacing = new Size();
-        ItemDefinition.call(this, item);
-        if (options)
-            this.set(options);
+      this._tile = null
+      this._spacing = new Size()
+      ItemDefinition.call(this, item)
+      if (options) this.set(options)
     },
 
-    _serialize: function(options, dictionary) {
-        return dictionary.add(this, function() {
-            var json = [this._class, this._item],
-                props = {};
-            // Leave out the options that are the defaults:
-            if (this._tile)
-                props.tile = this._tile;
-            if (!this._spacing.isZero())
-                props.spacing = this._spacing;
-            if (this._name)
-                props.name = this._name;
-            if (Object.keys(props).length)
-                json.push(props);
-            return Base.serialize(json, options, false, dictionary);
-        });
+    _serialize: function (options, dictionary) {
+      return dictionary.add(this, function () {
+        var json = [this._class, this._item],
+          props = {}
+        // Leave out the options that are the defaults:
+        if (this._tile) props.tile = this._tile
+        if (!this._spacing.isZero()) props.spacing = this._spacing
+        if (this._name) props.name = this._name
+        if (Object.keys(props).length) json.push(props)
+        return Base.serialize(json, options, false, dictionary)
+      })
     },
 
     _changed: function _changed(flags) {
-        _changed.base.call(this, flags);
-        // Draw the tiles again at each resolution that they're needed in:
-        if (flags & /*#=*/ChangeFlag.APPEARANCE)
-            this._canvases = {};
+      _changed.base.call(this, flags)
+      // Draw the tiles again at each resolution that they're needed in:
+      if (flags & /*#=*/ ChangeFlag.APPEARANCE) this._canvases = {}
     },
 
     /**
@@ -127,14 +122,13 @@ var PatternDefinition = ItemDefinition.extend(/** @lends PatternDefinition# */{
      * @type Rectangle
      * @default the bounds of the pattern's item
      */
-    getTile: function() {
-        return this._tile || this._item.getBounds();
+    getTile: function () {
+      return this._tile || this._item.getBounds()
     },
 
-    setTile: function(/* tile */) {
-        this._tile = Rectangle.read(arguments, 0,
-                { readNull: true, clone: true });
-        this._changed(/*#=*/Change.STYLE);
+    setTile: function (/* tile */) {
+      this._tile = Rectangle.read(arguments, 0, { readNull: true, clone: true })
+      this._changed(/*#=*/ Change.STYLE)
     },
 
     /**
@@ -144,13 +138,13 @@ var PatternDefinition = ItemDefinition.extend(/** @lends PatternDefinition# */{
      * @type Size
      * @default 0
      */
-    getSpacing: function() {
-        return this._spacing;
+    getSpacing: function () {
+      return this._spacing
     },
 
-    setSpacing: function(/* spacing */) {
-        this._spacing = Size.read(arguments, 0, { clone: true });
-        this._changed(/*#=*/Change.STYLE);
+    setSpacing: function (/* spacing */) {
+      this._spacing = Size.read(arguments, 0, { clone: true })
+      this._changed(/*#=*/ Change.STYLE)
     },
 
     /**
@@ -158,12 +152,12 @@ var PatternDefinition = ItemDefinition.extend(/** @lends PatternDefinition# */{
      *
      * @return {PatternDefinition}
      */
-    clone: function() {
-        return new PatternDefinition(this._item.clone(false), {
-            tile: this._tile,
-            spacing: this._spacing,
-            name: this._name
-        });
+    clone: function () {
+      return new PatternDefinition(this._item.clone(false), {
+        tile: this._tile,
+        spacing: this._spacing,
+        name: this._name
+      })
     },
 
     /**
@@ -172,69 +166,87 @@ var PatternDefinition = ItemDefinition.extend(/** @lends PatternDefinition# */{
      * @param {PatternDefinition} pattern
      * @return {Boolean} {@true if they are equal}
      */
-    equals: function(pattern) {
-        return pattern === this
-                || pattern && this._class === pattern._class
-                    && this._item.equals(pattern._item)
-                    && Base.equals(this._tile, pattern._tile)
-                    && this._spacing.equals(pattern._spacing)
-                || false;
+    equals: function (pattern) {
+      return (
+        pattern === this || (
+          pattern &&
+          this._class === pattern._class &&
+          this._item.equals(pattern._item) &&
+          Base.equals(this._tile, pattern._tile) &&
+          this._spacing.equals(pattern._spacing)
+        ) ||
+        false
+      )
     },
 
     // Returns a CanvasPattern of the tiles, placed through the matrix from the
     // pattern's coordinates to those of the context. The tiles are drawn at
     // the context's resolution, rounded up to quarter octaves, so that items
     // at nearby scales share them. See Color#toCanvasStyle():
-    _toCanvasStyle: function(ctx, matrix) {
-        var transform = ctx.getTransform(),
-            device = new Matrix(transform.a, transform.b, transform.c,
-                    transform.d, 0, 0).append(matrix),
-            scale = Math.max(
-                    Math.sqrt(device._a * device._a + device._b * device._b),
-                    Math.sqrt(device._c * device._c + device._d * device._d)),
-            level = Math.ceil(Math.log(scale) / Math.LN2 * 4
-                    - /*#=*/Numerical.EPSILON),
-            tile = this.getTile(),
-            cell = tile.getSize().add(this._spacing),
-            size = cell.multiply(Math.pow(2, level / 4)).ceil();
-        if (!(size.width > 0 && size.height > 0))
-            return 'rgba(0,0,0,0)';
-        var canvas = this._canvases[level];
-        if (!canvas) {
-            // The tiles are kept for as long as the pattern doesn't change, so
-            // they're never released to the CanvasProvider's pool, as with the
-            // buffers of groups, see Item#draw():
-            canvas = this._canvases[level] = self.OffscreenCanvas
-                    ? new self.OffscreenCanvas(size.width, size.height)
-                    : CanvasProvider.getCanvas(size);
-            var tileCtx = canvas.getContext('2d'),
-                mx = new Matrix().scale(size.divide(cell))
-                    .translate(tile.getPoint().negate());
-            mx.applyToContext(tileCtx);
-            // Leave the spacing between the tiles empty:
-            if (!this._spacing.isZero()) {
-                tileCtx.beginPath();
-                tileCtx.rect(tile.x, tile.y, tile.width, tile.height);
-                tileCtx.clip();
-            }
-            // The item is shared by all colors of the pattern, so don't let
-            // them set its global matrix, as in SymbolItem#_draw():
-            this._item.draw(tileCtx, new Base({
-                matrices: [mx],
-                updateMatrix: false
-            }));
+    _toCanvasStyle: function (ctx, matrix) {
+      var transform = ctx.getTransform(),
+        device = new Matrix(
+          transform.a,
+          transform.b,
+          transform.c,
+          transform.d,
+          0,
+          0
+        ).append(matrix),
+        scale = Math.max(
+          Math.sqrt(device._a * device._a + device._b * device._b),
+          Math.sqrt(device._c * device._c + device._d * device._d)
+        ),
+        level = Math.ceil(
+          Math.log(scale) / Math.LN2 * 4 -
+          /*#=*/ Numerical.EPSILON
+        ),
+        tile = this.getTile(),
+        cell = tile.getSize().add(this._spacing),
+        size = cell.multiply(Math.pow(2, level / 4)).ceil()
+      if (!(size.width > 0 && size.height > 0)) return 'rgba(0,0,0,0)'
+      var canvas = this._canvases[level]
+      if (!canvas) {
+        // The tiles are kept for as long as the pattern doesn't change, so
+        // they're never released to the CanvasProvider's pool, as with the
+        // buffers of groups, see Item#draw():
+        canvas = this._canvases[level] = self.OffscreenCanvas
+          ? new self.OffscreenCanvas(size.width, size.height)
+          : CanvasProvider.getCanvas(size)
+        var tileCtx = canvas.getContext('2d'),
+          mx = new Matrix()
+            .scale(size.divide(cell))
+            .translate(tile.getPoint().negate())
+        mx.applyToContext(tileCtx)
+        // Leave the spacing between the tiles empty:
+        if (!this._spacing.isZero()) {
+          tileCtx.beginPath()
+          tileCtx.rect(tile.x, tile.y, tile.width, tile.height)
+          tileCtx.clip()
         }
-        var pattern = ctx.createPattern(canvas, 'repeat'),
-            placement = matrix.appended(new Matrix().translate(tile.getPoint())
-                    .scale(cell.divide(size)));
-        // Reuse the context's DOMMatrix, as node-canvas only takes its own:
-        transform.a = placement._a;
-        transform.b = placement._b;
-        transform.c = placement._c;
-        transform.d = placement._d;
-        transform.e = placement._tx;
-        transform.f = placement._ty;
-        pattern.setTransform(transform);
-        return pattern;
+        // The item is shared by all colors of the pattern, so don't let
+        // them set its global matrix, as in SymbolItem#_draw():
+        this._item.draw(
+          tileCtx,
+          new Base({
+            matrices: [mx],
+            updateMatrix: false
+          })
+        )
+      }
+      var pattern = ctx.createPattern(canvas, 'repeat'),
+        placement = matrix.appended(
+          new Matrix().translate(tile.getPoint()).scale(cell.divide(size))
+        )
+      // Reuse the context's DOMMatrix, as node-canvas only takes its own:
+      transform.a = placement._a
+      transform.b = placement._b
+      transform.c = placement._c
+      transform.d = placement._d
+      transform.e = placement._tx
+      transform.f = placement._ty
+      pattern.setTransform(transform)
+      return pattern
     }
-});
+  }
+)

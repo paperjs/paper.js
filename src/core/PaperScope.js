@@ -32,7 +32,8 @@
  * The global {@link paper} object is simply a reference to the currently active
  * `PaperScope`.
  */
-var PaperScope = Base.extend(/** @lends PaperScope# */{
+var PaperScope = Base.extend(
+  /** @lends PaperScope# */ {
     _class: 'PaperScope',
 
     /**
@@ -43,68 +44,64 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      */
     // DOCS: initialize() parameters
     initialize: function PaperScope() {
-        // element is only used internally when creating scopes for PaperScript.
-        // Whenever a PaperScope is created, it automatically becomes the active
-        // one.
-        paper = this;
-        // Default configurable settings.
-        this.settings = new Base({
-            applyMatrix: true,
-            insertItems: true,
-            handleSize: 4,
-            segmentSize: null,
-            hitTolerance: 0,
-            scaleStrokes: false
-        });
-        this._project = null;
-        this.projects = [];
-        this.tools = [];
-        // Assign a unique id to each scope .
-        this._id = PaperScope._id++;
-        PaperScope._scopes[this._id] = this;
-        var proto = PaperScope.prototype;
-        if (!this.support) {
-            // Set up paper.support, as an object containing properties that
-            // describe the support of various features.
-            proto.support = {
-                nativeBlendModes: BlendMode.nativeModes
-            };
+      // element is only used internally when creating scopes for PaperScript.
+      // Whenever a PaperScope is created, it automatically becomes the active
+      // one.
+      paper = this
+      // Default configurable settings.
+      this.settings = new Base({
+        applyMatrix: true,
+        insertItems: true,
+        handleSize: 4,
+        segmentSize: null,
+        hitTolerance: 0,
+        scaleStrokes: false
+      })
+      this._project = null
+      this.projects = []
+      this.tools = []
+      // Assign a unique id to each scope .
+      this._id = PaperScope._id++
+      PaperScope._scopes[this._id] = this
+      var proto = PaperScope.prototype
+      if (!this.support) {
+        // Set up paper.support, as an object containing properties that
+        // describe the support of various features.
+        proto.support = {
+          nativeBlendModes: BlendMode.nativeModes
         }
-        if (!this.agent) {
-            // Use self.instead of window, to cover handle web-workers too.
-            var user = self.navigator.userAgent.toLowerCase(),
-                // Detect basic platforms, only mac internally required for now.
-                os = (/(darwin|win|mac|linux|freebsd|sunos)/.exec(user)||[])[0],
-                platform = os === 'darwin' ? 'mac' : os,
-                agent = proto.agent = proto.browser = { platform: platform };
-            if (platform)
-                agent[platform] = true;
-            // Use replace() to get all matches, and deal with Chrome/Webkit
-            // overlap:
-            // TODO: Do we need Mozilla next to Firefox? Other than the
-            // different treatment of the Chrome/Webkit overlap
-            // here: { chrome: true, webkit: false }, Mozilla missing is the
-            // only difference to jQuery.browser
-            user.replace(
-                /(opera|chrome|safari|webkit|firefox|msie|trident|atom|node|jsdom)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:v?([.\d]+))?/g,
-                function(match, n, v1, v2, rv) {
-                    // Do not set additional browsers once chrome is detected.
-                    if (!agent.chrome) {
-                        var v = n === 'opera' ? v2 :
-                                /^(node|trident)$/.test(n) ? rv : v1;
-                        agent.version = v;
-                        agent.versionNumber = parseFloat(v);
-                        n = { trident: 'msie', jsdom: 'node' }[n] || n;
-                        agent.name = n;
-                        agent[n] = true;
-                    }
-                }
-            );
-            if (agent.chrome)
-                delete agent.webkit;
-            if (agent.atom)
-                delete agent.chrome;
-        }
+      }
+      if (!this.agent) {
+        // Use self.instead of window, to cover handle web-workers too.
+        var user = self.navigator.userAgent.toLowerCase(),
+          // Detect basic platforms, only mac internally required for now.
+          os = (/(darwin|win|mac|linux|freebsd|sunos)/.exec(user) || [])[0],
+          platform = os === 'darwin' ? 'mac' : os,
+          agent = (proto.agent = proto.browser = { platform: platform })
+        if (platform) agent[platform] = true
+        // Use replace() to get all matches, and deal with Chrome/Webkit
+        // overlap:
+        // TODO: Do we need Mozilla next to Firefox? Other than the
+        // different treatment of the Chrome/Webkit overlap
+        // here: { chrome: true, webkit: false }, Mozilla missing is the
+        // only difference to jQuery.browser
+        user.replace(
+          /(opera|chrome|safari|webkit|firefox|msie|trident|atom|node|jsdom)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:v?([.\d]+))?/g,
+          function (match, n, v1, v2, rv) {
+            // Do not set additional browsers once chrome is detected.
+            if (!agent.chrome) {
+              var v = n === 'opera' ? v2 : /^(node|trident)$/.test(n) ? rv : v1
+              agent.version = v
+              agent.versionNumber = parseFloat(v)
+              n = { trident: 'msie', jsdom: 'node' }[n] || n
+              agent.name = n
+              agent[n] = true
+            }
+          }
+        )
+        if (agent.chrome) delete agent.webkit
+        if (agent.atom) delete agent.chrome
+      }
     },
 
     /**
@@ -113,7 +110,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      * @type String
      * @readonly
      */
-    version: /*#=*/__options.version,
+    version: /*#=*/ __options.version,
 
     /**
      * Gives access to paper's configurable settings.
@@ -148,12 +145,12 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      * @bean
      * @type Project
      */
-    getProject: function() {
-        return this._project;
+    getProject: function () {
+      return this._project
     },
 
-    setProject: function(project) {
-        this._project = project;
+    setProject: function (project) {
+      this._project = project
     },
 
     /**
@@ -169,9 +166,9 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      * @bean
      * @type View
      */
-    getView: function() {
-        var project = this._project;
-        return project && project._view;
+    getView: function () {
+      var project = this._project
+      return project && project._view
     },
 
     /**
@@ -199,8 +196,8 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      * @type PaperScript
      * @private
      */
-    getPaper: function() {
-        return this;
+    getPaper: function () {
+      return this
     },
 
     /**
@@ -218,8 +215,10 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      * @param {String} code the PaperScript code
      * @param {Object} [options] the compilation options
      */
-    execute: function(code, options) {
-/*#*/   if (__options.paperScript) {
+    execute: function (code, options) {
+      // prepro reads its directives line by line:
+      // prettier-ignore
+      /*#*/ if (__options.paperScript) {
             var exports = paper.PaperScript.execute(code, this, options);
             // Focus handling only exists in the browser, not in web workers:
             if (window)
@@ -242,27 +241,27 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      * @example
      * paper.install(window);
      */
-    install: function(scope) {
-        // Define project, view and tool as getters that redirect to these
-        // values on the PaperScope, so they are kept up to date
-        var that = this;
-        Base.each(['project', 'view', 'tool'], function(key) {
-            Base.define(scope, key, {
-                configurable: true,
-                get: function() {
-                    return that[key];
-                }
-            });
-        });
-        // Copy over all fields from this scope to the destination, except the
-        // hidden ones and the names that the destination has already, such as
-        // the native Event, MouseEvent and Symbol (#1832). Do not use
-        // Base.each, since we also want to enumerate over fields on
-        // PaperScope.prototype, e.g. all classes:
-        for (var key in this) {
-            if (!/^_/.test(key) && this[key] && !(key in scope))
-                scope[key] = this[key];
-        }
+    install: function (scope) {
+      // Define project, view and tool as getters that redirect to these
+      // values on the PaperScope, so they are kept up to date
+      var that = this
+      Base.each(['project', 'view', 'tool'], function (key) {
+        Base.define(scope, key, {
+          configurable: true,
+          get: function () {
+            return that[key]
+          }
+        })
+      })
+      // Copy over all fields from this scope to the destination, except the
+      // hidden ones and the names that the destination has already, such as
+      // the native Event, MouseEvent and Symbol (#1832). Do not use
+      // Base.each, since we also want to enumerate over fields on
+      // PaperScope.prototype, e.g. all classes:
+      for (var key in this) {
+        if (!/^_/.test(key) && this[key] && !(key in scope))
+          scope[key] = this[key]
+      }
     },
 
     /**
@@ -274,14 +273,14 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      * the element, or the size of the canvas to be created for usage in a web
      * worker.
      */
-    setup: function(element) {
-        // Make sure this is the active scope, so the created project and view
-        // are automatically associated with it.
-        paper = this;
-        // Create an empty project for the scope.
-        this.project = new Project(element);
-        // This is needed in PaperScript.load().
-        return this;
+    setup: function (element) {
+      // Make sure this is the active scope, so the created project and view
+      // are automatically associated with it.
+      paper = this
+      // Create an empty project for the scope.
+      this.project = new Project(element)
+      // This is needed in PaperScript.load().
+      return this
     },
 
     /**
@@ -292,65 +291,64 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      * @param {Number} height the height of the canvas
      * @return {HTMLCanvasElement} the canvas
      */
-    createCanvas: function(width, height) {
-        return CanvasProvider.getCanvas(width, height);
+    createCanvas: function (width, height) {
+      return CanvasProvider.getCanvas(width, height)
     },
 
     /**
      * Activates this PaperScope, so all newly created items will be placed
      * in its active project.
      */
-    activate: function() {
-        paper = this;
+    activate: function () {
+      paper = this
     },
 
     /**
      * Removes all projects, views and tools of this scope, along with their
      * installed event handlers.
      */
-    clear: function() {
-        var projects = this.projects,
-            tools = this.tools;
-        for (var i = projects.length - 1; i >= 0; i--)
-            projects[i].remove();
-        for (var i = tools.length - 1; i >= 0; i--)
-            tools[i].remove();
+    clear: function () {
+      var projects = this.projects,
+        tools = this.tools
+      for (var i = projects.length - 1; i >= 0; i--) projects[i].remove()
+      for (var i = tools.length - 1; i >= 0; i--) tools[i].remove()
     },
 
     /**
      * Clears this scope and removes it from the list of scopes.
      */
-    remove: function() {
-        this.clear();
-        delete PaperScope._scopes[this._id];
+    remove: function () {
+      this.clear()
+      delete PaperScope._scopes[this._id]
     },
 
-    statics: new function() {
-        // Produces helpers to e.g. check for both 'canvas' and
-        // 'data-paper-canvas' attributes:
-        function handleAttribute(name) {
-            name += 'Attribute';
-            return function(el, attr) {
-                return el[name](attr) || el[name]('data-paper-' + attr);
-            };
+    statics: new (function () {
+      // Produces helpers to e.g. check for both 'canvas' and
+      // 'data-paper-canvas' attributes:
+      function handleAttribute(name) {
+        name += 'Attribute'
+        return function (el, attr) {
+          return el[name](attr) || el[name]('data-paper-' + attr)
         }
+      }
 
-        return /** @lends PaperScope */{
-            _scopes: {},
-            _id: 0,
+      return /** @lends PaperScope */ {
+        _scopes: {},
+        _id: 0,
 
-            /**
-             * Retrieves a PaperScope object with the given scope id.
-             *
-             * @param id
-             * @return {PaperScope}
-             */
-            get: function(id) {
-                return this._scopes[id] || null;
-            },
+        /**
+         * Retrieves a PaperScope object with the given scope id.
+         *
+         * @param id
+         * @return {PaperScope}
+         */
+        get: function (id) {
+          return this._scopes[id] || null
+        },
 
-            getAttribute: handleAttribute('get'),
-            hasAttribute: handleAttribute('has')
-        };
-    }
-});
+        getAttribute: handleAttribute('get'),
+        hasAttribute: handleAttribute('has')
+      }
+    })()
+  }
+)

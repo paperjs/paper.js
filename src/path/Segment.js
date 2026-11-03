@@ -22,7 +22,8 @@
  * {@link Segment#handleOut}), describing the tangents of the two {@link Curve}
  * objects that are connected by this segment.
  */
-var Segment = Base.extend(/** @lends Segment# */{
+var Segment = Base.extend(
+  /** @lends Segment# */ {
     _class: 'Segment',
     _name: null,
     beans: true,
@@ -115,108 +116,122 @@ var Segment = Base.extend(/** @lends Segment# */{
      * @ignore
      */
     initialize: function Segment(arg0, arg1, arg2, arg3, arg4, arg5) {
-        var count = arguments.length,
-            point, handleIn, handleOut, selection, name, data;
-        // TODO: Should we use Point.read() or Point.readNamed() to read these?
-        if (count > 0) {
-            if (arg0 == null || typeof arg0 === 'object') {
-                // Handle undefined, null and passed objects:
-                if (count === 1 && arg0 && 'point' in arg0) {
-                    // NOTE: This copies from segments through accessors.
-                    point = arg0.point;
-                    handleIn = arg0.handleIn;
-                    handleOut = arg0.handleOut;
-                    selection = arg0.selection;
-                    name = arg0.name;
-                    // Copy the data of segments without creating it, as
-                    // #clone() does:
-                    data = arg0 instanceof Segment
-                            ? arg0._data && Base.clone(arg0._data)
-                            : arg0.data;
-                } else {
-                    // It doesn't matter if all of these arguments exist.
-                    // SegmentPoint() creates points with (0, 0) otherwise.
-                    point = arg0;
-                    handleIn = arg1;
-                    handleOut = arg2;
-                    selection = arg3;
-                }
-            } else {
-                // Read points from the arguments list as a row of numbers.
-                point = [ arg0, arg1 ];
-                handleIn = arg2 !== undefined ? [ arg2, arg3 ] : null;
-                handleOut = arg4 !== undefined ? [ arg4, arg5 ] : null;
-            }
-        }
-        new SegmentPoint(point, this, '_point');
-        new SegmentPoint(handleIn, this, '_handleIn');
-        new SegmentPoint(handleOut, this, '_handleOut');
-        if (selection)
-            this.setSelection(selection);
-        // Only store name and data when set, so other segments don't pay:
-        if (name)
-            this.setName(name);
-        if (data)
-            this._data = data;
-    },
-
-    _serialize: function(options, dictionary) {
-        var point = this._point,
-            selection = this._selection,
-            name = this._name,
-            data = this._data,
-            hasData = data && !Base.equals(data, {});
-        if (name || hasData) {
-            // Use the object notation, which can also hold name and data:
-            var props = Base.serialize({
-                point: point,
-                handleIn: this._handleIn,
-                handleOut: this._handleOut,
-                selection: selection
-            }, options, true, dictionary);
-            if (name)
-                props.name = name;
-            // Do not use compact mode for data, as in Item#_serialize():
-            if (hasData)
-                props.data = Base.serialize(data, options, false, dictionary);
-            // Pass the object as the only argument to #initialize():
-            return [props];
+      var count = arguments.length,
+        point,
+        handleIn,
+        handleOut,
+        selection,
+        name,
+        data
+      // TODO: Should we use Point.read() or Point.readNamed() to read these?
+      if (count > 0) {
+        if (arg0 == null || typeof arg0 === 'object') {
+          // Handle undefined, null and passed objects:
+          if (count === 1 && arg0 && 'point' in arg0) {
+            // NOTE: This copies from segments through accessors.
+            point = arg0.point
+            handleIn = arg0.handleIn
+            handleOut = arg0.handleOut
+            selection = arg0.selection
+            name = arg0.name
+            // Copy the data of segments without creating it, as
+            // #clone() does:
+            data =
+              arg0 instanceof Segment
+                ? arg0._data && Base.clone(arg0._data)
+                : arg0.data
+          } else {
+            // It doesn't matter if all of these arguments exist.
+            // SegmentPoint() creates points with (0, 0) otherwise.
+            point = arg0
+            handleIn = arg1
+            handleOut = arg2
+            selection = arg3
+          }
         } else {
-            // If it is has no handles, only serialize point, otherwise handles
-            // too.
-            var obj = selection || this.hasHandles()
-                    ? [point, this._handleIn, this._handleOut]
-                    : point;
-            if (selection)
-                obj.push(selection);
-            return Base.serialize(obj, options, true, dictionary);
+          // Read points from the arguments list as a row of numbers.
+          point = [arg0, arg1]
+          handleIn = arg2 !== undefined ? [arg2, arg3] : null
+          handleOut = arg4 !== undefined ? [arg4, arg5] : null
         }
+      }
+      new SegmentPoint(point, this, '_point')
+      new SegmentPoint(handleIn, this, '_handleIn')
+      new SegmentPoint(handleOut, this, '_handleOut')
+      if (selection) this.setSelection(selection)
+      // Only store name and data when set, so other segments don't pay:
+      if (name) this.setName(name)
+      if (data) this._data = data
     },
 
-    _changed: function(point) {
-        var path = this._path;
-        if (!path)
-            return;
-        // Delegate changes to affected curves if they exist.
-        var curves = path._curves,
-            index = this._index,
-            curve;
-        if (curves) {
-            // Updated the neighboring affected curves, depending on which point
-            // is changing.
-            // TODO: Consider exposing these curves too, through #curveIn,
-            // and #curveOut, next to #curve?
-            if ((!point || point === this._point || point === this._handleIn)
-                    && (curve = index > 0 ? curves[index - 1] : path._closed
-                        ? curves[curves.length - 1] : null))
-                curve._changed();
-            // No wrap around needed for outgoing curve, as only closed paths
-            // will have one for the last segment.
-            if ((!point || point === this._point || point === this._handleOut)
-                    && (curve = curves[index]))
-                curve._changed();
-        }
-        path._changed(/*#=*/Change.SEGMENTS);
+    _serialize: function (options, dictionary) {
+      var point = this._point,
+        selection = this._selection,
+        name = this._name,
+        data = this._data,
+        hasData = data && !Base.equals(data, {})
+      if (name || hasData) {
+        // Use the object notation, which can also hold name and data:
+        var props = Base.serialize(
+          {
+            point: point,
+            handleIn: this._handleIn,
+            handleOut: this._handleOut,
+            selection: selection
+          },
+          options,
+          true,
+          dictionary
+        )
+        if (name) props.name = name
+        // Do not use compact mode for data, as in Item#_serialize():
+        if (hasData)
+          props.data = Base.serialize(data, options, false, dictionary)
+        // Pass the object as the only argument to #initialize():
+        return [props]
+      } else {
+        // If it is has no handles, only serialize point, otherwise handles
+        // too.
+        var obj =
+          selection || this.hasHandles()
+            ? [point, this._handleIn, this._handleOut]
+            : point
+        if (selection) obj.push(selection)
+        return Base.serialize(obj, options, true, dictionary)
+      }
+    },
+
+    _changed: function (point) {
+      var path = this._path
+      if (!path) return
+      // Delegate changes to affected curves if they exist.
+      var curves = path._curves,
+        index = this._index,
+        curve
+      if (curves) {
+        // Updated the neighboring affected curves, depending on which point
+        // is changing.
+        // TODO: Consider exposing these curves too, through #curveIn,
+        // and #curveOut, next to #curve?
+        if (
+          (!point || point === this._point || point === this._handleIn) &&
+          (curve =
+            index > 0
+              ? curves[index - 1]
+              : path._closed
+                ? curves[curves.length - 1]
+                : null)
+        )
+          curve._changed()
+        // No wrap around needed for outgoing curve, as only closed paths
+        // will have one for the last segment.
+        if (
+          (!point || point === this._point || point === this._handleOut) &&
+          (curve = curves[index])
+        )
+          curve._changed()
+      }
+      path._changed(/*#=*/ Change.SEGMENTS)
     },
 
     /**
@@ -235,25 +250,30 @@ var Segment = Base.extend(/** @lends Segment# */{
      * path.segments[1].name = 'corner';
      * console.log(path.segments['corner'].point); // { x: 50, y: 10 }
      */
-    getName: function() {
-        return this._name;
+    getName: function () {
+      return this._name
     },
 
-    setName: function(name) {
-        // Keep the name lookup on the path's segments list in sync, as
-        // Item#setName() does on the children list. Paths only create it once
-        // a segment has a name:
-        var path = this._path,
-            named = path && path._namedSegments;
-        if (this._name && named)
-            Base.removeNamed(path._segments, named, this._name, this);
-        if (name === (+name) + '')
-            throw new Error(
-                    'Names consisting only of numbers are not supported.');
-        if (name && path)
-            Base.addNamed(path._segments, named || (path._namedSegments = {}),
-                    name, this);
-        this._name = name || undefined;
+    setName: function (name) {
+      // Keep the name lookup on the path's segments list in sync, as
+      // Item#setName() does on the children list. Paths only create it once
+      // a segment has a name:
+      var path = this._path,
+        named = path && path._namedSegments
+      if (this._name && named)
+        Base.removeNamed(path._segments, named, this._name, this)
+      if (name === +name + '')
+        throw new Error(
+          'Names consisting only of numbers are not supported.'
+        )
+      if (name && path)
+        Base.addNamed(
+          path._segments,
+          named || (path._namedSegments = {}),
+          name,
+          this
+        )
+      this._name = name || undefined
     },
 
     /**
@@ -282,14 +302,13 @@ var Segment = Base.extend(/** @lends Segment# */{
      * });
      * console.log(segment.data.isCorner); // true
      */
-    getData: function() {
-        if (!this._data)
-            this._data = {};
-        return this._data;
+    getData: function () {
+      if (!this._data) this._data = {}
+      return this._data
     },
 
-    setData: function(data) {
-        this._data = data;
+    setData: function (data) {
+      this._data = data
     },
 
     /**
@@ -298,12 +317,12 @@ var Segment = Base.extend(/** @lends Segment# */{
      * @bean
      * @type Point
      */
-    getPoint: function() {
-        return this._point;
+    getPoint: function () {
+      return this._point
     },
 
-    setPoint: function(/* point */) {
-        this._point.set(Point.read(arguments));
+    setPoint: function (/* point */) {
+      this._point.set(Point.read(arguments))
     },
 
     /**
@@ -313,12 +332,12 @@ var Segment = Base.extend(/** @lends Segment# */{
      * @bean
      * @type Point
      */
-    getHandleIn: function() {
-        return this._handleIn;
+    getHandleIn: function () {
+      return this._handleIn
     },
 
-    setHandleIn: function(/* point */) {
-        this._handleIn.set(Point.read(arguments));
+    setHandleIn: function (/* point */) {
+      this._handleIn.set(Point.read(arguments))
     },
 
     /**
@@ -328,12 +347,12 @@ var Segment = Base.extend(/** @lends Segment# */{
      * @bean
      * @type Point
      */
-    getHandleOut: function() {
-        return this._handleOut;
+    getHandleOut: function () {
+      return this._handleOut
     },
 
-    setHandleOut: function(/* point */) {
-        this._handleOut.set(Point.read(arguments));
+    setHandleOut: function (/* point */) {
+      this._handleOut.set(Point.read(arguments))
     },
 
     /**
@@ -347,8 +366,8 @@ var Segment = Base.extend(/** @lends Segment# */{
      * @see Curve#hasHandles()
      * @see Path#hasHandles()
      */
-    hasHandles: function() {
-        return !this._handleIn.isZero() || !this._handleOut.isZero();
+    hasHandles: function () {
+      return !this._handleIn.isZero() || !this._handleOut.isZero()
     },
 
     /**
@@ -358,50 +377,52 @@ var Segment = Base.extend(/** @lends Segment# */{
      * @return {Boolean} {@true if the segment is smooth}
      * @see Point#isCollinear()
      */
-    isSmooth: function() {
-        var handleIn = this._handleIn,
-            handleOut = this._handleOut;
-        return !handleIn.isZero() && !handleOut.isZero()
-                && handleIn.isCollinear(handleOut);
+    isSmooth: function () {
+      var handleIn = this._handleIn,
+        handleOut = this._handleOut
+      return (
+        !handleIn.isZero() &&
+        !handleOut.isZero() &&
+        handleIn.isCollinear(handleOut)
+      )
     },
 
     /**
      * Clears the segment's handles by setting their coordinates to zero,
      * turning the segment into a corner.
      */
-    clearHandles: function() {
-        this._handleIn._set(0, 0);
-        this._handleOut._set(0, 0);
+    clearHandles: function () {
+      this._handleIn._set(0, 0)
+      this._handleOut._set(0, 0)
     },
 
-    getSelection: function() {
-        return this._selection;
+    getSelection: function () {
+      return this._selection
     },
 
-    setSelection: function(selection) {
-        var oldSelection = this._selection,
-            path = this._path;
-        // Set the selection state even if path is not defined yet, to allow
-        // selected segments to be inserted into paths and make JSON
-        // deserialization work.
-        this._selection = selection = selection || 0;
-        // If the selection state of the segment has changed, we need to let
-        // it's path know and possibly add or remove it from
-        // project._selectionItems
-        if (path && selection !== oldSelection) {
-            path._updateSelection(this, oldSelection, selection);
-            // Let the project know, so the view draws the selection again, see
-            // Item#setSelection():
-            var project = path._project;
-            if (project)
-                project._changed(/*#=*/Change.ATTRIBUTE,
-                        path._getChangeOwner());
-        }
+    setSelection: function (selection) {
+      var oldSelection = this._selection,
+        path = this._path
+      // Set the selection state even if path is not defined yet, to allow
+      // selected segments to be inserted into paths and make JSON
+      // deserialization work.
+      this._selection = selection = selection || 0
+      // If the selection state of the segment has changed, we need to let
+      // it's path know and possibly add or remove it from
+      // project._selectionItems
+      if (path && selection !== oldSelection) {
+        path._updateSelection(this, oldSelection, selection)
+        // Let the project know, so the view draws the selection again, see
+        // Item#setSelection():
+        var project = path._project
+        if (project)
+          project._changed(/*#=*/ Change.ATTRIBUTE, path._getChangeOwner())
+      }
     },
 
-    _changeSelection: function(flag, selected) {
-        var selection = this._selection;
-        this.setSelection(selected ? selection | flag : selection & ~flag);
+    _changeSelection: function (flag, selected) {
+      var selection = this._selection
+      this.setSelection(selected ? selection | flag : selection & ~flag)
     },
 
     /**
@@ -419,12 +440,12 @@ var Segment = Base.extend(/** @lends Segment# */{
      * // Select the third segment point:
      * path.segments[2].selected = true;
      */
-    isSelected: function() {
-        return !!(this._selection & /*#=*/SegmentSelection.ALL);
+    isSelected: function () {
+      return !!(this._selection & /*#=*/ SegmentSelection.ALL)
     },
 
-    setSelected: function(selected) {
-        this._changeSelection(/*#=*/SegmentSelection.ALL, selected);
+    setSelected: function (selected) {
+      this._changeSelection(/*#=*/ SegmentSelection.ALL, selected)
     },
 
     /**
@@ -436,8 +457,8 @@ var Segment = Base.extend(/** @lends Segment# */{
      * @bean
      * @type Number
      */
-    getIndex: function() {
-        return this._index !== undefined ? this._index : null;
+    getIndex: function () {
+      return this._index !== undefined ? this._index : null
     },
 
     /**
@@ -446,8 +467,8 @@ var Segment = Base.extend(/** @lends Segment# */{
      * @bean
      * @type Path
      */
-    getPath: function() {
-        return this._path || null;
+    getPath: function () {
+      return this._path || null
     },
 
     /**
@@ -457,17 +478,16 @@ var Segment = Base.extend(/** @lends Segment# */{
      * @bean
      * @type Curve
      */
-    getCurve: function() {
-        var path = this._path,
-            index = this._index;
-        if (path) {
-            // The last segment of an open path belongs to the last curve.
-            if (index > 0 && !path._closed
-                    && index === path._segments.length - 1)
-                index--;
-            return path.getCurves()[index] || null;
-        }
-        return null;
+    getCurve: function () {
+      var path = this._path,
+        index = this._index
+      if (path) {
+        // The last segment of an open path belongs to the last curve.
+        if (index > 0 && !path._closed && index === path._segments.length - 1)
+          index--
+        return path.getCurves()[index] || null
+      }
+      return null
     },
 
     /**
@@ -476,12 +496,12 @@ var Segment = Base.extend(/** @lends Segment# */{
      * @bean
      * @type CurveLocation
      */
-    getLocation: function() {
-        var curve = this.getCurve();
-        return curve
-                // Determine whether the parameter for this segment is 0 or 1.
-                ? new CurveLocation(curve, this === curve._segment1 ? 0 : 1)
-                : null;
+    getLocation: function () {
+      var curve = this.getCurve()
+      return curve
+        ? // Determine whether the parameter for this segment is 0 or 1.
+          new CurveLocation(curve, this === curve._segment1 ? 0 : 1)
+        : null
     },
 
     /**
@@ -494,10 +514,15 @@ var Segment = Base.extend(/** @lends Segment# */{
      * @bean
      * @type Segment
      */
-    getNext: function() {
-        var segments = this._path && this._path._segments;
-        return segments && (segments[this._index + 1]
-                || this._path._closed && segments[0]) || null;
+    getNext: function () {
+      var segments = this._path && this._path._segments
+      return (
+        (
+          segments &&
+          (segments[this._index + 1] || this._path._closed && segments[0])
+        ) ||
+        null
+      )
     },
 
     /**
@@ -536,68 +561,72 @@ var Segment = Base.extend(/** @lends Segment# */{
      *
      * @see PathItem#smooth([options])
      */
-    smooth: function(options, _first, _last) {
-        // _first = _last = false;
-        var opts = options || {},
-            type = opts.type,
-            factor = opts.factor,
-            prev = this.getPrevious(),
-            next = this.getNext(),
-            // Some precalculations valid for both 'catmull-rom' and 'geometric'
-            p0 = (prev || this)._point,
-            p1 = this._point,
-            p2 = (next || this)._point,
-            d1 = p0.getDistance(p1),
-            d2 = p1.getDistance(p2);
-        if (!type || type === 'catmull-rom') {
-            // Implementation of by Catmull-Rom splines with factor parameter
-            // based on work by @nicholaswmin:
-            // https://github.com/nicholaswmin/VectorTests
-            // Using these factors produces different types of splines:
-            // 0.0: the standard, uniform Catmull-Rom spline
-            // 0.5: the centripetal Catmull-Rom spline, guaranteeing no self-
-            //      intersections
-            // 1.0: the chordal Catmull-Rom spline
-            var a = factor === undefined ? 0.5 : factor,
-                d1_a = Math.pow(d1, a),
-                d1_2a = d1_a * d1_a,
-                d2_a = Math.pow(d2, a),
-                d2_2a = d2_a * d2_a;
-            if (!_first && prev) {
-                var A = 2 * d2_2a + 3 * d2_a * d1_a + d1_2a,
-                    N = 3 * d2_a * (d2_a + d1_a);
-                this.setHandleIn(N !== 0
-                    ? new Point(
-                        (d2_2a * p0._x + A * p1._x - d1_2a * p2._x) / N - p1._x,
-                        (d2_2a * p0._y + A * p1._y - d1_2a * p2._y) / N - p1._y)
-                    : new Point());
-            }
-            if (!_last && next) {
-                var A = 2 * d1_2a + 3 * d1_a * d2_a + d2_2a,
-                    N = 3 * d1_a * (d1_a + d2_a);
-                this.setHandleOut(N !== 0
-                    ? new Point(
-                        (d1_2a * p2._x + A * p1._x - d2_2a * p0._x) / N - p1._x,
-                        (d1_2a * p2._y + A * p1._y - d2_2a * p0._y) / N - p1._y)
-                    : new Point());
-            }
-        } else if (type === 'geometric') {
-            // Geometric smoothing approach based on:
-            // http://www.antigrain.com/research/bezier_interpolation/
-            // http://scaledinnovation.com/analytics/splines/aboutSplines.html
-            // http://bseth99.github.io/projects/animate/2-bezier-curves.html
-            if (prev && next) {
-                var vector = p0.subtract(p2),
-                    t = factor === undefined ? 0.4 : factor,
-                    k = t * d1 / (d1 + d2);
-                if (!_first)
-                    this.setHandleIn(vector.multiply(k));
-                if (!_last)
-                    this.setHandleOut(vector.multiply(k - t));
-            }
-        } else {
-            throw new Error('Smoothing method \'' + type + '\' not supported.');
+    smooth: function (options, _first, _last) {
+      // _first = _last = false;
+      var opts = options || {},
+        type = opts.type,
+        factor = opts.factor,
+        prev = this.getPrevious(),
+        next = this.getNext(),
+        // Some precalculations valid for both 'catmull-rom' and 'geometric'
+        p0 = (prev || this)._point,
+        p1 = this._point,
+        p2 = (next || this)._point,
+        d1 = p0.getDistance(p1),
+        d2 = p1.getDistance(p2)
+      if (!type || type === 'catmull-rom') {
+        // Implementation of by Catmull-Rom splines with factor parameter
+        // based on work by @nicholaswmin:
+        // https://github.com/nicholaswmin/VectorTests
+        // Using these factors produces different types of splines:
+        // 0.0: the standard, uniform Catmull-Rom spline
+        // 0.5: the centripetal Catmull-Rom spline, guaranteeing no self-
+        //      intersections
+        // 1.0: the chordal Catmull-Rom spline
+        var a = factor === undefined ? 0.5 : factor,
+          d1_a = Math.pow(d1, a),
+          d1_2a = d1_a * d1_a,
+          d2_a = Math.pow(d2, a),
+          d2_2a = d2_a * d2_a
+        if (!_first && prev) {
+          var A = 2 * d2_2a + 3 * d2_a * d1_a + d1_2a,
+            N = 3 * d2_a * (d2_a + d1_a)
+          this.setHandleIn(
+            N !== 0
+              ? new Point(
+                  (d2_2a * p0._x + A * p1._x - d1_2a * p2._x) / N - p1._x,
+                  (d2_2a * p0._y + A * p1._y - d1_2a * p2._y) / N - p1._y
+                )
+              : new Point()
+          )
         }
+        if (!_last && next) {
+          var A = 2 * d1_2a + 3 * d1_a * d2_a + d2_2a,
+            N = 3 * d1_a * (d1_a + d2_a)
+          this.setHandleOut(
+            N !== 0
+              ? new Point(
+                  (d1_2a * p2._x + A * p1._x - d2_2a * p0._x) / N - p1._x,
+                  (d1_2a * p2._y + A * p1._y - d2_2a * p0._y) / N - p1._y
+                )
+              : new Point()
+          )
+        }
+      } else if (type === 'geometric') {
+        // Geometric smoothing approach based on:
+        // http://www.antigrain.com/research/bezier_interpolation/
+        // http://scaledinnovation.com/analytics/splines/aboutSplines.html
+        // http://bseth99.github.io/projects/animate/2-bezier-curves.html
+        if (prev && next) {
+          var vector = p0.subtract(p2),
+            t = factor === undefined ? 0.4 : factor,
+            k = t * d1 / (d1 + d2)
+          if (!_first) this.setHandleIn(vector.multiply(k))
+          if (!_last) this.setHandleOut(vector.multiply(k - t))
+        }
+      } else {
+        throw new Error("Smoothing method '" + type + "' not supported.")
+      }
     },
 
     /**
@@ -608,10 +637,17 @@ var Segment = Base.extend(/** @lends Segment# */{
      * @bean
      * @type Segment
      */
-    getPrevious: function() {
-        var segments = this._path && this._path._segments;
-        return segments && (segments[this._index - 1]
-                || this._path._closed && segments[segments.length - 1]) || null;
+    getPrevious: function () {
+      var segments = this._path && this._path._segments
+      return (
+        (
+          segments && (
+            segments[this._index - 1] ||
+            this._path._closed && segments[segments.length - 1]
+          )
+        ) ||
+        null
+      )
     },
 
     /**
@@ -620,8 +656,8 @@ var Segment = Base.extend(/** @lends Segment# */{
      *
      * @return {Boolean} {@true if this is the first segment}
      */
-    isFirst: function() {
-        return !this._index;
+    isFirst: function () {
+      return !this._index
     },
 
     /**
@@ -630,9 +666,9 @@ var Segment = Base.extend(/** @lends Segment# */{
      *
      * @return {Boolean} {@true if this is the last segment}
      */
-    isLast: function() {
-        var path = this._path;
-        return path && this._index === path._segments.length - 1 || false;
+    isLast: function () {
+      var path = this._path
+      return path && this._index === path._segments.length - 1 || false
     },
 
     /**
@@ -641,62 +677,63 @@ var Segment = Base.extend(/** @lends Segment# */{
      *
      * @return {Segment} the reversed segment
      */
-    reverse: function() {
-        var handleIn = this._handleIn,
-            handleOut = this._handleOut,
-            tmp = handleIn.clone();
-        handleIn.set(handleOut);
-        handleOut.set(tmp);
+    reverse: function () {
+      var handleIn = this._handleIn,
+        handleOut = this._handleOut,
+        tmp = handleIn.clone()
+      handleIn.set(handleOut)
+      handleOut.set(tmp)
     },
 
     /**
      * Returns the reversed the segment, without modifying the segment itself.
      * @return {Segment} the reversed segment
      */
-    reversed: function() {
-        return new Segment(this._point, this._handleOut, this._handleIn);
+    reversed: function () {
+      return new Segment(this._point, this._handleOut, this._handleIn)
     },
 
     /**
      * Removes the segment from the path that it belongs to.
      * @return {Boolean} {@true if the segment was removed}
      */
-    remove: function() {
-        return this._path ? !!this._path.removeSegment(this._index) : false;
+    remove: function () {
+      return this._path ? !!this._path.removeSegment(this._index) : false
     },
 
     /**
      * @return {Segment}
      */
-    clone: function() {
-        var segment = new Segment(this._point, this._handleIn, this._handleOut),
-            name = this._name,
-            data = this._data;
-        if (name)
-            segment._name = name;
-        if (data)
-            segment._data = Base.clone(data);
-        return segment;
+    clone: function () {
+      var segment = new Segment(this._point, this._handleIn, this._handleOut),
+        name = this._name,
+        data = this._data
+      if (name) segment._name = name
+      if (data) segment._data = Base.clone(data)
+      return segment
     },
 
-    equals: function(segment) {
-        return segment === this || segment && this._class === segment._class
-                && this._point.equals(segment._point)
-                && this._handleIn.equals(segment._handleIn)
-                && this._handleOut.equals(segment._handleOut)
-                || false;
+    equals: function (segment) {
+      return (
+        segment === this || (
+          segment &&
+          this._class === segment._class &&
+          this._point.equals(segment._point) &&
+          this._handleIn.equals(segment._handleIn) &&
+          this._handleOut.equals(segment._handleOut)
+        ) ||
+        false
+      )
     },
 
     /**
      * @return {String} a string representation of the segment
      */
-    toString: function() {
-        var parts = [ 'point: ' + this._point ];
-        if (!this._handleIn.isZero())
-            parts.push('handleIn: ' + this._handleIn);
-        if (!this._handleOut.isZero())
-            parts.push('handleOut: ' + this._handleOut);
-        return '{ ' + parts.join(', ') + ' }';
+    toString: function () {
+      var parts = ['point: ' + this._point]
+      if (!this._handleIn.isZero()) parts.push('handleIn: ' + this._handleIn)
+      if (!this._handleOut.isZero()) parts.push('handleOut: ' + this._handleOut)
+      return '{ ' + parts.join(', ') + ' }'
     },
 
     /**
@@ -704,9 +741,9 @@ var Segment = Base.extend(/** @lends Segment# */{
      *
      * @param {Matrix} matrix the matrix to transform the segment by
      */
-    transform: function(matrix) {
-        this._transformCoordinates(matrix, new Array(6), true);
-        this._changed();
+    transform: function (matrix) {
+      this._transformCoordinates(matrix, new Array(6), true)
+      this._changed()
     },
 
     /**
@@ -720,89 +757,100 @@ var Segment = Base.extend(/** @lends Segment# */{
      * @param {Number} factor the interpolation coefficient, typically between
      *     `0` and `1`, but extrapolation is possible too
      */
-    interpolate: function(from, to, factor) {
-        var u = 1 - factor,
-            v = factor,
-            point1 = from._point,
-            point2 = to._point,
-            handleIn1 = from._handleIn,
-            handleIn2 = to._handleIn,
-            handleOut2 = to._handleOut,
-            handleOut1 = from._handleOut;
-        this._point._set(
-                u * point1._x + v * point2._x,
-                u * point1._y + v * point2._y, true);
-        this._handleIn._set(
-                u * handleIn1._x + v * handleIn2._x,
-                u * handleIn1._y + v * handleIn2._y, true);
-        this._handleOut._set(
-                u * handleOut1._x + v * handleOut2._x,
-                u * handleOut1._y + v * handleOut2._y, true);
-        this._changed();
+    interpolate: function (from, to, factor) {
+      var u = 1 - factor,
+        v = factor,
+        point1 = from._point,
+        point2 = to._point,
+        handleIn1 = from._handleIn,
+        handleIn2 = to._handleIn,
+        handleOut2 = to._handleOut,
+        handleOut1 = from._handleOut
+      this._point._set(
+        u * point1._x + v * point2._x,
+        u * point1._y + v * point2._y,
+        true
+      )
+      this._handleIn._set(
+        u * handleIn1._x + v * handleIn2._x,
+        u * handleIn1._y + v * handleIn2._y,
+        true
+      )
+      this._handleOut._set(
+        u * handleOut1._x + v * handleOut2._x,
+        u * handleOut1._y + v * handleOut2._y,
+        true
+      )
+      this._changed()
     },
 
-    _transformCoordinates: function(matrix, coords, change) {
-        // Use matrix.transform version() that takes arrays of multiple
-        // points for largely improved performance, as no calls to
-        // Point.read() and Point constructors are necessary.
-        var point = this._point,
-            // If change is true, only transform handles if they are set, as
-            // _transformCoordinates is called only to change the segment, no
-            // to receive the coords.
-            // This saves some computation time. If change is false, always
-            // use the real handles, as we just want to receive a filled
-            // coords array for getBounds().
-            handleIn = !change || !this._handleIn.isZero()
-                    ? this._handleIn : null,
-            handleOut = !change || !this._handleOut.isZero()
-                    ? this._handleOut : null,
-            x = point._x,
-            y = point._y,
-            i = 2;
-        coords[0] = x;
-        coords[1] = y;
-        // We need to convert handles to absolute coordinates in order
-        // to transform them.
-        if (handleIn) {
-            coords[i++] = handleIn._x + x;
-            coords[i++] = handleIn._y + y;
+    _transformCoordinates: function (matrix, coords, change) {
+      // Use matrix.transform version() that takes arrays of multiple
+      // points for largely improved performance, as no calls to
+      // Point.read() and Point constructors are necessary.
+      var point = this._point,
+        // If change is true, only transform handles if they are set, as
+        // _transformCoordinates is called only to change the segment, no
+        // to receive the coords.
+        // This saves some computation time. If change is false, always
+        // use the real handles, as we just want to receive a filled
+        // coords array for getBounds().
+        handleIn =
+          !change || !this._handleIn.isZero()
+            ? this._handleIn
+            : null,
+        handleOut =
+          !change || !this._handleOut.isZero()
+            ? this._handleOut
+            : null,
+        x = point._x,
+        y = point._y,
+        i = 2
+      coords[0] = x
+      coords[1] = y
+      // We need to convert handles to absolute coordinates in order
+      // to transform them.
+      if (handleIn) {
+        coords[i++] = handleIn._x + x
+        coords[i++] = handleIn._y + y
+      }
+      if (handleOut) {
+        coords[i++] = handleOut._x + x
+        coords[i++] = handleOut._y + y
+      }
+      // If no matrix was previded, this was just called to get the coords and
+      // we are done now.
+      if (matrix) {
+        matrix._transformCoordinates(coords, coords, i / 2)
+        x = coords[0]
+        y = coords[1]
+        if (change) {
+          // If change is true, we need to set the new values back
+          point._x = x
+          point._y = y
+          i = 2
+          if (handleIn) {
+            handleIn._x = coords[i++] - x
+            handleIn._y = coords[i++] - y
+          }
+          if (handleOut) {
+            handleOut._x = coords[i++] - x
+            handleOut._y = coords[i++] - y
+          }
+        } else {
+          // We want to receive the results in coords, so make sure
+          // handleIn and out are defined too, even if they're 0
+          if (!handleIn) {
+            coords[i++] = x
+            coords[i++] = y
+          }
+          if (!handleOut) {
+            coords[i++] = x
+            coords[i++] = y
+          }
         }
-        if (handleOut) {
-            coords[i++] = handleOut._x + x;
-            coords[i++] = handleOut._y + y;
-        }
-        // If no matrix was previded, this was just called to get the coords and
-        // we are done now.
-        if (matrix) {
-            matrix._transformCoordinates(coords, coords, i / 2);
-            x = coords[0];
-            y = coords[1];
-            if (change) {
-                // If change is true, we need to set the new values back
-                point._x = x;
-                point._y = y;
-                i = 2;
-                if (handleIn) {
-                    handleIn._x = coords[i++] - x;
-                    handleIn._y = coords[i++] - y;
-                }
-                if (handleOut) {
-                    handleOut._x = coords[i++] - x;
-                    handleOut._y = coords[i++] - y;
-                }
-            } else {
-                // We want to receive the results in coords, so make sure
-                // handleIn and out are defined too, even if they're 0
-                if (!handleIn) {
-                    coords[i++] = x;
-                    coords[i++] = y;
-                }
-                if (!handleOut) {
-                    coords[i++] = x;
-                    coords[i++] = y;
-                }
-            }
-        }
-        return coords;
+      }
+      return coords
     }
-});
+  }
+)
