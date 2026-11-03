@@ -13,6 +13,7 @@
 import { describe, onTestFinished } from 'vitest'
 import paper, {
   Color,
+  CompoundPath,
   Effect,
   EffectInstance,
   Group,
@@ -304,6 +305,18 @@ describe('Effect', () => {
     equals(output.children[0].strokeColor, null, 'the fill')
     equals(output.children[1].fillColor, new Color(0, 0, 0), 'the stroke')
     equals(path.previewBounds, path.strokeBounds)
+    // Without a fill, only the stroke's outline, and without a stroke, the
+    // path as it is:
+    path.fillColor = null
+    // A square ring, with a hole:
+    equals(
+      path.getEffectOutput() instanceof CompoundPath,
+      true,
+      'only the stroke'
+    )
+    equals(path.getEffectOutput().fillColor, new Color(0, 0, 0))
+    path.set({ fillColor: 'red', strokeColor: null })
+    equals(path.getEffectOutput().bounds, path.bounds, 'no stroke')
   })
 
   test('Instances of unknown effects keep their parameters and round-trip', () => {

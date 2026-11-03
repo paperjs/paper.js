@@ -1150,4 +1150,44 @@ describe('View', () => {
     tool.remove()
     equals(types, ['mousemove'])
   })
+
+  test('Event#stop() stops propagation and prevents the default', () => {
+    const square = new Path.Rectangle({
+      point: [0, 0],
+      size: [50, 50],
+      fillColor: 'red'
+    })
+    const group = new Group([square])
+    const events = []
+    square.onMouseDown = event => {
+      event.stop()
+      events.push(event)
+    }
+    group.onMouseDown = event => events.push(event)
+    paper.view.dispatchMouseEvent('mousedown', [10, 10])
+    paper.view.dispatchMouseEvent('mouseup', [10, 10])
+    equals(events.length, 1)
+    equals([events[0].stopped, events[0].prevented], [true, true])
+  })
+
+  test('KeyEvent#toString()', () => {
+    const tool = new Tool()
+    let string
+    tool.onKeyDown = event => {
+      string = event.toString()
+    }
+    paper.view.dispatchKeyEvent('keydown', 'a')
+    paper.view.dispatchKeyEvent('keyup', 'a')
+    tool.remove()
+    equals(
+      string.startsWith(`{ type: 'keydown', key: 'a', character: 'a'`),
+      true
+    )
+  })
+
+  test('CanvasView needs a canvas or a size', () => {
+    expect(() => new paper.CanvasView(paper.project, new Size(0, 0))).toThrow(
+      'Cannot create CanvasView with the provided argument: '
+    )
+  })
 })

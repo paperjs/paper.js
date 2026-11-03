@@ -463,4 +463,37 @@ describe('Item Drawing', () => {
       equals(message, `Unsupported class-level event: 'mousedown'.`)
     })
   })
+
+  test('Blend modes of our own that canvas lacks', () => {
+    // Pixels in 0…255, so the values add up without rounding:
+    const below = new Color(153 / 255, 102 / 255, 51 / 255)
+    const above = new Color(51 / 255, 51 / 255, 51 / 255)
+    const expected = {
+      add: [204, 153, 102],
+      subtract: [102, 51, 0],
+      average: [102, 76.5, 51]
+    }
+    for (const [blendMode, rgb] of Object.entries(expected)) {
+      const group = new Group([
+        new Path.Rectangle({ point: [0, 0], size: [10, 10], fillColor: below }),
+        new Path.Rectangle({
+          point: [0, 0],
+          size: [10, 10],
+          fillColor: above,
+          blendMode
+        })
+      ])
+      const raster = group.rasterize({ resolution: 72, insert: false })
+      const { red, green, blue } = raster.getPixel(5, 5)
+      equals(
+        [red, green, blue].map(value => value * 255),
+        rgb,
+        blendMode,
+        {
+          tolerance: 1
+        }
+      )
+      group.remove()
+    }
+  })
 })

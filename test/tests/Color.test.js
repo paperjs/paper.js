@@ -335,7 +335,14 @@ describe('Color', () => {
     equals(view.update(), true, 'new stops')
     first.color = 'white'
     equals(view.update(), false, 'a replaced stop')
-    // Neither does a gradient that the item no longer uses:
+    // Neither does a gradient that the color no longer uses, or the item:
+    const { fillColor } = path
+    fillColor.gradient = new Gradient(['white', 'black'])
+    view.update()
+    gradient.radial = true
+    equals(view.update(), false, 'a gradient replaced in the color')
+    fillColor.gradient = gradient
+    view.update()
     path.fillColor = 'black'
     view.update()
     gradient.radial = false

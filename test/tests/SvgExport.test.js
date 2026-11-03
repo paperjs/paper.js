@@ -1480,4 +1480,19 @@ describe('SvgExport', () => {
     equals(letters[0].getAttribute('rotate'), '90', 'turned with the path')
     equals(letters[0].getAttribute('x'), '0', 'on it')
   })
+
+  test(`Strokes that don't scale export as vector-effect`, () => {
+    const items = [
+      new Path.Line({ from: [0, 0], to: [10, 0] }),
+      new Shape.Circle({ center: [0, 0], radius: 5 }),
+      new Group()
+    ]
+    equals(
+      items.map(item => {
+        item.set({ strokeColor: 'black', strokeScaling: false })
+        return item.exportSVG().getAttribute('vector-effect')
+      }),
+      ['non-scaling-stroke', 'non-scaling-stroke', null]
+    )
+  })
 })
