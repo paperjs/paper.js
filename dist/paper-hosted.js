@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Nov 3 19:25:42 2026 +0100
+ * Date: Tue Nov 3 19:30:32 2026 +0100
  *
  ***
  *
@@ -7170,23 +7170,28 @@ Item.inject(new function() {
 			var output = this._effectOutput;
 			if (output === undefined
 					|| this._effectVersion !== Effect._version) {
-				output = null;
-				if (this._hasEffects()) {
-					output = this._getEffectArt();
-					for (var i = 0, l = this._effects.length; i < l; i++) {
-						var instance = this._effects[i],
-							effect = instance.getEffect(),
-							onApply = effect && effect.onApply;
-						if (instance._visible && onApply) {
-							output = onApply.call(instance, {
-								art: output,
-								item: this
-							}) || output;
-						}
-					}
-				}
+				var art = this._hasEffects() && this._getEffectArt();
+				output = art ? this._applyEffects(art) || art : null;
 				this._effectOutput = output;
 				this._effectVersion = Effect._version;
+			}
+			return output;
+		},
+
+		_applyEffects: function(art) {
+			var output = null;
+			for (var i = 0, l = this._effects ? this._effects.length : 0; i < l;
+					i++) {
+				var instance = this._effects[i],
+					effect = instance.getEffect(),
+					onApply = effect && effect.onApply;
+				if (instance._visible && onApply) {
+					output = output || art;
+					output = onApply.call(instance, {
+						art: output,
+						item: this
+					}) || output;
+				}
 			}
 			return output;
 		},
@@ -10170,6 +10175,45 @@ var Path = PathItem.extend({
 					this._curves[i]._changed();
 			}
 		}
+		if (flags & 72)
+			this._strokeOutline = undefined;
+	},
+
+	_hasStrokeProfile: function() {
+		return !!this._strokeProfile && this.hasStroke()
+				&& !(this._parent instanceof CompoundPath);
+	},
+
+	_hasEffects: function _hasEffects() {
+		return _hasEffects.base.call(this) || this._hasStrokeProfile();
+	},
+
+	_applyEffects: function _applyEffects(art) {
+		var output = _applyEffects.base.call(this, art);
+		if (this._hasStrokeProfile()) {
+			if (output) {
+				var effect = Effect.get('outline');
+				output = effect && effect.onApply({ art: output, item: this })
+						|| output;
+			} else {
+				var outline = this._getStrokeOutline().clone({ insert: false });
+				outline.set({
+					fillColor: this.getStrokeColor(),
+					strokeColor: null
+				});
+				if (art.hasFill()) {
+					art.setStrokeColor(null);
+					output = new Group({
+						children: this.getPaintOrder() === 'stroke'
+								? [outline, art] : [art, outline],
+						insert: false
+					});
+				} else {
+					output = outline;
+				}
+			}
+		}
+		return output;
 	},
 
 	getStyle: function() {
@@ -11178,7 +11222,13 @@ var Path = PathItem.extend({
 					nearest = pt;
 				}
 			}
-			if (loc) {
+			var outline = hitStroke && this._hasStrokeProfile()
+					&& this._getStrokeOutline();
+			if (loc && outline) {
+				if (!outline.contains(strokePoint) && !isCloseEnough(
+						outline.getNearestPoint(strokePoint), tolerancePadding))
+					loc = null;
+			} else if (loc) {
 				var time = loc.getTime();
 				if (time === 0 || time === 1 && numSegments > 1) {
 					if (!checkSegmentStroke(loc.getSegment()))
@@ -11187,7 +11237,7 @@ var Path = PathItem.extend({
 					loc = null;
 				}
 			}
-			if (!loc && join === 'miter' && numSegments > 1) {
+			if (!loc && !outline && join === 'miter' && numSegments > 1) {
 				for (var i = 0; i < numSegments; i++) {
 					var segment = segments[i];
 					if (strokePoint.getDistance(
@@ -11703,7 +11753,10 @@ new function() {
 				: options.stroke
 				? 'getStrokeBounds'
 				: 'getBounds';
-		return Path[method](this._segments, this._closed, this, matrix, options);
+		return method === 'getStrokeBounds' && this._hasStrokeProfile()
+				? this._getStrokeOutline().getBounds(matrix)
+				: Path[method](this._segments, this._closed, this, matrix,
+					options);
 	},
 
 statics: {
@@ -15654,15 +15707,21 @@ PathItem.inject(new function() {
 
 		outline: function(options) {
 			options = options || {};
-			var path = prepare(this),
-				paths = getDashes(path._children || [path],
-					this.getDashArray(), this.getDashOffset()),
-				result = outlineStroke(paths,
-					Base.pick(options.width, this.getStrokeWidth()) / 2,
-					options.join || this.getStrokeJoin(),
-					options.cap || this.getStrokeCap(),
-					options.miterLimit || this.getMiterLimit());
-			result = createResult(this, result.reduce(), options);
+			var result;
+			if (!this._children && this._matrix.isIdentity()
+					&& options.width === undefined && !options.join
+					&& !options.cap && !options.miterLimit) {
+				result = this._getStrokeOutline().clone({ insert: false });
+			} else {
+				var path = prepare(this);
+				result = outlineStroke(getDashes(path._children || [path],
+							this.getDashArray(), this.getDashOffset()),
+						Base.pick(options.width, this.getStrokeWidth()) / 2,
+						options.join || this.getStrokeJoin(),
+						options.cap || this.getStrokeCap(),
+						options.miterLimit || this.getMiterLimit()).reduce();
+			}
+			result = createResult(this, result, options);
 			result.setFillColor(this.getStrokeColor());
 			result.setStrokeColor(null);
 			return result;
@@ -15680,6 +15739,14 @@ PathItem.inject(new function() {
 			result = createResult(this, result, options);
 			result.setDashArray([]);
 			return result;
+		},
+
+		_getStrokeOutline: function() {
+			return this._strokeOutline || (this._strokeOutline = outlineStroke(
+					getDashes([this.clone({ insert: false }).reduce()],
+						this.getDashArray(), this.getDashOffset()),
+					this.getStrokeWidth() / 2, this.getStrokeJoin(),
+					this.getStrokeCap(), this.getMiterLimit()).reduce());
 		}
 	};
 });
@@ -18731,6 +18798,8 @@ var Style = Base.extend(new function() {
 		strokeWidth: 193,
 		strokeCap: 193,
 		strokeJoin: 193,
+		dashArray: 193,
+		dashOffset: 193,
 		strokeScaling: 201,
 		miterLimit: 193
 	},
