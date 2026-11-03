@@ -13,6 +13,7 @@
 import { beforeAll, describe, expect, test } from 'vitest'
 import paper, {
   CompoundPath,
+  Group,
   Path,
   Point,
   Project,
@@ -148,6 +149,109 @@ describe('PathItem#offset() and #outline()', () => {
     equals(circle.outline().area, Math.PI * (55 * 55 - 45 * 45), null, {
       tolerance: 1
     })
+  })
+
+  test('PathItem#dash()', () => {
+    const circle = new Path.Circle({
+      center: [80, 50],
+      radius: 35,
+      strokeColor: 'black',
+      strokeWidth: 4,
+      dashArray: [12, 6]
+    })
+    const dashes = circle.dash()
+    equals(dashes instanceof Group, true)
+    equals(dashes.index, circle.index + 1)
+    equals(dashes.children.length, 13)
+    equals(
+      dashes.children.every(
+        dash => !dash.closed && dash.strokeWidth === 4 && !dash.dashArray.length
+      ),
+      true
+    )
+    // Twelve whole dashes, and the part of the last one before the end:
+    const length = circle.length
+    equals(
+      dashes.children.reduce((sum, dash) => sum + dash.length, 0),
+      Math.floor(length / 18) * 12 + Math.min(12, length % 18),
+      null,
+      { tolerance: 1e-6 }
+    )
+    equals(circle.dash({ insert: false }).parent, null)
+    equals(
+      circle.dash({ dashArray: [5, 5], dashOffset: 2, insert: false }).children
+        .length,
+      Math.ceil((length + 2) / 10)
+    )
+    // Without a pattern, the path stays as it is:
+    circle.dashArray = []
+    const whole = circle.dash({ insert: false })
+    equals([whole.children.length, whole.firstChild.closed], [1, true])
+    // Dashes keep the pens of the stroke profile where they lie:
+    const line = new Path({
+      segments: [[0, 0], [100, 0]],
+      strokeColor: 'black',
+      dashArray: [10, 30],
+      strokeProfile: [
+        { offset: 0, width: 1 },
+        { offset: 100, width: 3, smooth: false }
+      ],
+      insert: false
+    })
+    equals(
+      line
+        .dash({ insert: false })
+        .children.map(dash => dash.getStrokeProfileAt(0).width),
+      [0, 40, 80].map(offset => line.getStrokeProfileAt(offset).width)
+    )
+  })
+
+  test('PathItem#outline() of dashed strokes', () => {
+    // As the canvas draws them: each dash with the caps of the stroke, the
+    // pattern shifted by the dash offset:
+    const line = new Path({
+      segments: [[0, 0], [100, 0]],
+      strokeColor: 'black',
+      strokeWidth: 4,
+      dashArray: [10, 10],
+      insert: false
+    })
+    const getDashes = item => {
+      const outline = item.outline({ insert: false })
+      return [outline.children.length, Math.abs(outline.area)]
+    }
+    equals(getDashes(line), [5, 200])
+    line.dashOffset = 5
+    equals(getDashes(line), [6, 200])
+    // An odd number of lengths repeats, alternating dashes and gaps:
+    line.set({ dashArray: [10], dashOffset: 0 })
+    equals(getDashes(line), [5, 200])
+    line.set({ dashArray: [10, 10], strokeCap: 'round' })
+    equals(getDashes(line)[1], 5 * 40 + 5 * Math.PI * 4, null, {
+      tolerance: 0.1
+    })
+    // Patterns without lengths draw the stroke as it is:
+    line.set({ dashArray: [0, 0], strokeCap: 'butt' })
+    equals(Math.abs(line.outline({ insert: false }).area), 400)
+    // Closed paths start the pattern at their first segment:
+    const rectangle = new Path.Rectangle({
+      point: [0, 0],
+      size: [40, 40],
+      strokeColor: 'black',
+      strokeWidth: 2,
+      dashArray: [15, 5],
+      insert: false
+    })
+    equals(getDashes(rectangle), [8, 240])
+    // Dashes keep the pens of the stroke profile where they lie:
+    line.set({ dashArray: [10, 30], strokeCap: 'butt', strokeWidth: 10 })
+    line.strokeProfile = [
+      { offset: 0, width: 0.5 },
+      { offset: 100, width: 2, smooth: false }
+    ]
+    const dashes = line.outline({ insert: false }).children
+    equals(dashes.length, 3)
+    equals(dashes[2].bounds.height > dashes[0].bounds.height * 2, true)
   })
 
   test('PathItem#outline() of stroke profiles', () => {
