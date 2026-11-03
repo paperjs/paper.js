@@ -36,7 +36,7 @@ Base.inject(
             function (value, key) {
               // Hide internal properties even if they are enumerable
               if (!/^_/.test(key)) {
-                var type = typeof value
+                const type = typeof value
                 this.push(
                   key +
                   ': ' + (
@@ -123,8 +123,8 @@ Base.inject(
       extend: function extend() {
         // Override Base.extend() to register named classes in Base.exports,
         // for deserialization and injection into PaperScope.
-        var res = extend.base.apply(this, arguments),
-          name = res.prototype._class
+        const res = extend.base.apply(this, arguments)
+        const name = res.prototype._class
         if (name && !Base.exports[name]) Base.exports[name] = res
         return res
       },
@@ -135,6 +135,8 @@ Base.inject(
        * properties of objects.
        */
       equals: function (obj1, obj2) {
+        let length
+
         if (obj1 === obj2) return true
         // Call #equals() on both obj1 and obj2
         if (obj1 && obj1.equals) return obj1.equals(obj2)
@@ -148,21 +150,21 @@ Base.inject(
         ) {
           // Compare arrays
           if (Array.isArray(obj1) && Array.isArray(obj2)) {
-            var length = obj1.length
+            length = obj1.length
             if (length !== obj2.length) return false
             while (length--) {
               if (!Base.equals(obj1[length], obj2[length])) return false
             }
           } else {
             // Deep compare objects.
-            var keys = Object.keys(obj1),
-              length = keys.length
+            const keys = Object.keys(obj1)
+            length = keys.length
             // Ensure that both objects contain the same number of
             // properties before comparing deep equality.
             if (length !== Object.keys(obj2).length) return false
             while (length--) {
               // Deep compare each member
-              var key = keys[length]
+              const key = keys[length]
               if (!(
                 obj2.hasOwnProperty(key) &&
                 Base.equals(obj1[key], obj2[key])
@@ -196,15 +198,15 @@ Base.inject(
         // See if it's called directly on Base, and if so, read value and return
         // without object conversion.
         if (this === Base) {
-          var value = this.peek(list, start)
+          const value = this.peek(list, start)
           list.__index++
           return value
         }
-        var proto = this.prototype,
-          readIndex = proto._readIndex,
-          begin = start || readIndex && list.__index || 0,
-          length = list.length,
-          obj = list[begin]
+        const proto = this.prototype
+        const readIndex = proto._readIndex
+        const begin = start || readIndex && list.__index || 0
+        const length = list.length
+        let obj = list[begin]
         amount = amount || length - begin
         // When read() is called on a sub-class of which the object is already
         // an instance, or when there is only one value in the list and it's
@@ -234,7 +236,7 @@ Base.inject(
           // This is only in use in Rectangle so far: Nested calls to
           // `Base.readNamed()` would loose __filtered if it wasn't returned
           // on the object.
-          var filtered = obj.__filtered
+          const filtered = obj.__filtered
           if (filtered) {
             list.__filtered = filtered
             obj.__filtered = undefined
@@ -277,11 +279,11 @@ Base.inject(
        * @param {Number} amount the amount of elements that should be read
        */
       readList: function (list, start, options, amount) {
-        var res = [],
-          entry,
-          begin = start || 0,
-          end = amount ? begin + amount : list.length
-        for (var i = begin; i < end; i++) {
+        const res = []
+        let entry
+        const begin = start || 0
+        const end = amount ? begin + amount : list.length
+        for (let i = begin; i < end; i++) {
           res.push(
             Array.isArray((entry = list[i]))
               ? this.read(entry, 0, options)
@@ -309,14 +311,14 @@ Base.inject(
        * @param {Number} amount the amount of elements that can be read
        */
       readNamed: function (list, name, start, options, amount) {
-        var value = this.getNamed(list, name),
-          hasValue = value !== undefined
+        const value = this.getNamed(list, name)
+        const hasValue = value !== undefined
         if (hasValue) {
           // Create a _filtered object that inherits from `source`, and
           // override all fields that were already read with undefined.
-          var filtered = list.__filtered
+          let filtered = list.__filtered
           if (!filtered) {
-            var source = this.getSource(list)
+            const source = this.getSource(list)
             filtered = list.__filtered = Base.create(source)
             // Point __unfiltered to the original, so `Base.filter()` can
             // use it to get all keys to iterate over.
@@ -339,16 +341,16 @@ Base.inject(
        * @return {Boolean} {@true if any property was read from the source object}
        */
       readSupported: function (list, dest) {
-        var source = this.getSource(list),
-          that = this,
-          read = false
+        const source = this.getSource(list)
+        const that = this
+        let read = false
         if (source) {
           // If `source` is a filtered object, we get the keys from the the
           // original object (it's parent / prototype). See _filtered
           // inheritance trick in the argument reading code.
           Object.keys(source).forEach(function (key) {
             if (key in dest) {
-              var value = that.readNamed(list, key)
+              const value = that.readNamed(list, key)
               // Due to the _filtered inheritance trick, undefined is used
               // to mask already consumed named arguments.
               if (value !== undefined) {
@@ -365,9 +367,9 @@ Base.inject(
        * @return the arguments object if the list provides one at `list[0]`
        */
       getSource: function (list) {
-        var source = list.__source
+        let source = list.__source
         if (source === undefined) {
-          var arg = list.length === 1 && list[0]
+          const arg = list.length === 1 && list[0]
           source = list.__source =
             arg && Base.isPlainObject(arg)
               ? arg
@@ -383,7 +385,7 @@ Base.inject(
        *     provided, it returns the whole arguments object
        */
       getNamed: function (list, name) {
-        var source = this.getSource(list)
+        const source = this.getSource(list)
         if (source) {
           // Return the whole arguments object if no name is provided.
           return name ? source[name] : list.__filtered || source
@@ -413,7 +415,11 @@ Base.inject(
        *     of appearance
        */
       filter: function (dest, source, exclude, prioritize) {
-        var processed
+        let i
+        let key
+        let l
+
+        let processed
 
         function handleKey(key) {
           if (
@@ -422,15 +428,15 @@ Base.inject(
           ) {
             // Due to the _filtered inheritance trick, undefined is used
             // to mask already consumed named arguments.
-            var value = source[key]
+            const value = source[key]
             if (value !== undefined) dest[key] = value
           }
         }
 
         // If there are prioritized keys, process them first.
         if (prioritize) {
-          var keys = {}
-          for (var i = 0, key, l = prioritize.length; i < l; i++) {
+          const keys = {}
+          for (i = 0, key, l = prioritize.length; i < l; i++) {
             if ((key = prioritize[i]) in source) {
               handleKey(key)
               keys[key] = true
@@ -465,10 +471,13 @@ Base.inject(
        * `JSON.stringify()` for JSON serialization.
        */
       serialize: function (obj, options, compact, dictionary) {
+        let i
+        let l
+
         options = options || {}
 
-        var isRoot = !dictionary,
-          res
+        const isRoot = !dictionary
+        let res
         if (isRoot) {
           options.formatter = new Formatter(options.precision)
           // Create a simple dictionary object that handles all the storing
@@ -487,12 +496,12 @@ Base.inject(
               // See if we have reference entry with the given id already.
               // If not, call create on the item to allow it to create the
               // definition, then store the reference to it and return it.
-              var id = '#' + item._id,
-                ref = this.references[id]
+              const id = '#' + item._id
+              let ref = this.references[id]
               if (!ref) {
                 this.length++
-                var res = create.call(item),
-                  name = item._class
+                const res = create.call(item)
+                const name = item._class
                 // Also automatically insert class for dictionary
                 // entries.
                 if (name && res[0] !== name) res.unshift(name)
@@ -508,7 +517,7 @@ Base.inject(
           // If we don't serialize to compact form (meaning no type
           // identifier), see if _serialize didn't already add the class, e.g.
           // for classes that do not support compact form.
-          var name = obj._class
+          const name = obj._class
           // Enforce class names on root level, except if the class explicitly
           // asks to be serialized in compact form (Project).
           if (
@@ -521,13 +530,13 @@ Base.inject(
           }
         } else if (Array.isArray(obj)) {
           res = []
-          for (var i = 0, l = obj.length; i < l; i++)
+          for (i = 0, l = obj.length; i < l; i++)
             res[i] = Base.serialize(obj[i], options, compact, dictionary)
         } else if (Base.isPlainObject(obj)) {
           res = {}
-          var keys = Object.keys(obj)
-          for (var i = 0, l = keys.length; i < l; i++) {
-            var key = keys[i]
+          const keys = Object.keys(obj)
+          for (i = 0, l = keys.length; i < l; i++) {
+            const key = keys[i]
             res[key] = Base.serialize(obj[key], options, compact, dictionary)
           }
         } else if (typeof obj === 'number') {
@@ -558,14 +567,14 @@ Base.inject(
         _setDictionary,
         _isRoot
       ) {
-        var res = json,
-          isFirst = !_data,
-          hasDictionary = (
-            isFirst &&
-            json &&
-            json.length &&
-            json[0][0] === 'dictionary'
-          )
+        let res = json
+        const isFirst = !_data
+        const hasDictionary = (
+          isFirst &&
+          json &&
+          json.length &&
+          json[0][0] === 'dictionary'
+        )
         // A _data side-car to deserialize that can hold any kind of 'global'
         // data across a deserialization. It's currently only used to hold
         // dictionary definitions.
@@ -574,10 +583,10 @@ Base.inject(
           // See if it's a serialized type. If so, the rest of the array are
           // the arguments to #initialize(). Either way, we simply deserialize
           // all elements of the array.
-          var type = json[0],
-            // Handle stored dictionary specially, since we need to keep a
-            // lookup table to retrieve referenced items from.
-            isDictionary = type === 'dictionary'
+          let type = json[0]
+          // Handle stored dictionary specially, since we need to keep a
+          // lookup table to retrieve referenced items from.
+          const isDictionary = type === 'dictionary'
           // First see if this is perhaps a dictionary reference, and if so
           // return its definition instead.
           if (json.length == 1 && /^#/.test(type)) {
@@ -591,7 +600,7 @@ Base.inject(
           // Skip first type entry for arguments.
           // Pass true for _isRoot in children if we have a dictionary,
           // in which case we need to shift the root level one down.
-          for (var i = type ? 1 : 0, l = json.length; i < l; i++) {
+          for (let i = type ? 1 : 0, l = json.length; i < l; i++) {
             res.push(
               Base.deserialize(
                 json[i],
@@ -606,7 +615,7 @@ Base.inject(
           if (type) {
             // Create serialized type and pass collected arguments to
             // constructor().
-            var args = res
+            const args = res
             // If a create method is provided, handle our own creation. This
             // is used in #importJSON() to pass on insert = false to all
             // items except layers.
@@ -622,7 +631,7 @@ Base.inject(
           // deserialization, because serialized symbols may contain
           // references to serialized gradients
           if (_setDictionary) _data.dictionary = res
-          for (var key in json)
+          for (const key in json)
             res[key] = Base.deserialize(json[key], create, resolve, _data)
         }
         // Filter out deserialized dictionary:
@@ -630,7 +639,7 @@ Base.inject(
       },
 
       exportJSON: function (obj, options) {
-        var json = Base.serialize(obj, options)
+        const json = Base.serialize(obj, options)
         return options && options.asString == false
           ? json
           : JSON.stringify(json)
@@ -644,12 +653,12 @@ Base.inject(
           function (ctor, args, isRoot) {
             // If a target is provided and its of the right type
             // for the root item, import right into it.
-            var useTarget = (
-                isRoot &&
-                target &&
-                target.constructor === ctor
-              ),
-              obj = useTarget ? target : Base.create(ctor.prototype)
+            const useTarget = (
+              isRoot &&
+              target &&
+              target.constructor === ctor
+            )
+            const obj = useTarget ? target : Base.create(ctor.prototype)
             // NOTE: We don't set insert false for layers since we want
             // these to be created on the fly in the active project into
             // which we're importing (except for if it's a preexisting
@@ -659,7 +668,7 @@ Base.inject(
               obj instanceof Item &&
               (useTarget || !(obj instanceof Layer))
             ) {
-              var arg = args[0]
+              const arg = args[0]
               if (Base.isPlainObject(arg)) {
                 arg.insert = false
                 // When using target, make sure the `item.insert()`
@@ -686,7 +695,7 @@ Base.inject(
        * Utility function for pushing a large amount of items to an array.
        */
       push: function (list, items) {
-        var itemsLength = items.length
+        const itemsLength = items.length
         // It seems for "small" amounts of items, this performs better,
         // but once it reaches a certain amount, some browsers start crashing:
         if (itemsLength < 4096) {
@@ -694,9 +703,9 @@ Base.inject(
         } else {
           // Use a loop as the best way to handle big arrays (see #1493).
           // Set new array length once before the loop for better performance.
-          var startLength = list.length
+          const startLength = list.length
           list.length += itemsLength
-          for (var i = 0; i < itemsLength; i++) {
+          for (let i = 0; i < itemsLength; i++) {
             list[startLength + i] = items[i]
           }
         }
@@ -709,12 +718,15 @@ Base.inject(
        * property. Used for PaperScope#projects and Item#children.
        */
       splice: function (list, items, index, remove) {
-        var amount = items && items.length,
-          append = index === undefined
+        let i
+        let l
+
+        const amount = items && items.length
+        const append = index === undefined
         index = append ? list.length : index
         if (index > list.length) index = list.length
         // Update _index on the items to be added first.
-        for (var i = 0; i < amount; i++) items[i]._index = index + i
+        for (i = 0; i < amount; i++) items[i]._index = index + i
         if (append) {
           // Append them all at the end by using push
           Base.push(list, items)
@@ -722,14 +734,14 @@ Base.inject(
           return []
         } else {
           // Insert somewhere else and/or remove
-          var args = [index, remove]
+          const args = [index, remove]
           if (items) Base.push(args, items)
-          var removed = list.splice.apply(list, args)
+          const removed = list.splice.apply(list, args)
           // Erase the indices of the removed items
-          for (var i = 0, l = removed.length; i < l; i++)
+          for (i = 0, l = removed.length; i < l; i++)
             removed[i]._index = undefined
           // Adjust the indices of the items above.
-          for (var i = index + amount, l = list.length; i < l; i++)
+          for (i = index + amount, l = list.length; i < l; i++)
             list[i]._index = i
           return removed
         }
@@ -751,8 +763,8 @@ Base.inject(
        * Removes the named reference to an item added by Base.addNamed().
        */
       removeNamed: function (list, named, name, item) {
-        var namedArray = named[name],
-          index = namedArray ? namedArray.indexOf(item) : -1
+        const namedArray = named[name]
+        const index = namedArray ? namedArray.indexOf(item) : -1
         if (index !== -1) {
           // Remove the named reference
           if (list[name] == item) delete list[name]

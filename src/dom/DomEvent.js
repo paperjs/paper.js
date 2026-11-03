@@ -15,23 +15,23 @@
  * @namespace
  * @private
  */
-var DomEvent = /** @lends DomEvent */ {
+const DomEvent = /** @lends DomEvent */ {
   add: function (el, events) {
     // Do not fail if el is not defined, that way we can keep the code that
     // should not fail in web-workers to a minimum.
     if (el) {
-      for (var type in events) {
-        var func = events[type],
-          parts = type.split(/[\s,]+/g)
-        for (var i = 0, l = parts.length; i < l; i++) {
-          var name = parts[i]
+      for (const type in events) {
+        const func = events[type]
+        const parts = type.split(/[\s,]+/g)
+        for (let i = 0, l = parts.length; i < l; i++) {
+          const name = parts[i]
           // For touchstart/touchmove events on document, we need to
           // explicitly declare that the event is not passive (can be
           // prevented).  Otherwise chrome browser would ignore
           // `event.preventDefault()` calls and omit warnings.
           // See #1501 and:
           // https://www.chromestatus.com/features/5093566007214080
-          var options =
+          const options =
             (
               el === document &&
               (name === 'touchstart' || name === 'touchmove')
@@ -47,10 +47,10 @@ var DomEvent = /** @lends DomEvent */ {
   remove: function (el, events) {
     // See DomEvent.add() for an explanation of this check:
     if (el) {
-      for (var type in events) {
-        var func = events[type],
-          parts = type.split(/[\s,]+/g)
-        for (var i = 0, l = parts.length; i < l; i++)
+      for (const type in events) {
+        const func = events[type]
+        const parts = type.split(/[\s,]+/g)
+        for (let i = 0, l = parts.length; i < l; i++)
           el.removeEventListener(parts[i], func, false)
       }
     }
@@ -58,13 +58,13 @@ var DomEvent = /** @lends DomEvent */ {
 
   getPoint: function (event, target) {
     function find(touches) {
-      for (var i = 0, l = touches.length; i < l; i++) {
+      for (let i = 0, l = touches.length; i < l; i++) {
         if (touches[i].target === target) return touches[i]
       }
     }
 
-    var touches = event.targetTouches,
-      pos = event
+    const touches = event.targetTouches
+    let pos = event
     if (touches) {
       // Prefer the first touch on the target, also when it just ended, so
       // that touches elsewhere don't take over its drag (#1875):
@@ -98,19 +98,19 @@ var DomEvent = /** @lends DomEvent */ {
 }
 
 DomEvent.requestAnimationFrame = new (function () {
-  var nativeRequest = DomElement.getPrefixed(window, 'requestAnimationFrame'),
-    requested = false,
-    callbacks = [],
-    timer
+  const nativeRequest = DomElement.getPrefixed(window, 'requestAnimationFrame')
+  let requested = false
+  let callbacks = []
+  let timer
 
   function handleCallbacks() {
     // Make a local references to the current callbacks array and set
     // callbacks to a new empty array, so it can collect the functions for
     // the new requests.
-    var functions = callbacks
+    const functions = callbacks
     callbacks = []
     // Call the collected callback functions.
-    for (var i = 0, l = functions.length; i < l; i++) functions[i]()
+    for (let i = 0, l = functions.length; i < l; i++) functions[i]()
     // Now see if the above calls have collected new callbacks. Keep
     // requesting new frames as long as we have callbacks.
     requested = nativeRequest && callbacks.length

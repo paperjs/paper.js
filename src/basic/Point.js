@@ -26,7 +26,7 @@
  * console.log(point.x); // 10
  * console.log(point.y); // 5
  */
-var Point = Base.extend(
+const Point = Base.extend(
   /** @lends Point# */ {
     _class: 'Point',
     // Tell Base.read that the Point constructor supports reading with index
@@ -143,18 +143,18 @@ var Point = Base.extend(
      * @name Point#initialize
      */
     initialize: function Point(arg0, arg1) {
-      var type = typeof arg0,
-        reading = this.__read,
-        read = 0
+      const type = typeof arg0
+      const reading = this.__read
+      let read = 0
       if (type === 'number') {
-        var hasY = typeof arg1 === 'number'
+        const hasY = typeof arg1 === 'number'
         this._set(arg0, hasY ? arg1 : arg0)
         if (reading) read = hasY ? 2 : 1
       } else if (type === 'undefined' || arg0 === null) {
         this._set(0, 0)
         if (reading) read = arg0 === null ? 1 : 0
       } else {
-        var obj = type === 'string' ? arg0.split(/[\s,]+/) || [] : arg0
+        const obj = type === 'string' ? arg0.split(/[\s,]+/) || [] : arg0
         read = 1
         if (Array.isArray(obj)) {
           this._set(+obj[0], +(obj.length > 1 ? obj[1] : obj[0]))
@@ -267,12 +267,12 @@ var Point = Base.extend(
      * @return {String} a string representation of the point
      */
     toString: function () {
-      var f = Formatter.instance
+      const f = Formatter.instance
       return '{ x: ' + f.number(this.x) + ', y: ' + f.number(this.y) + ' }'
     },
 
     _serialize: function (options) {
-      var f = options.formatter
+      const f = options.formatter
       // For speed reasons, we directly call formatter.number() here, instead
       // of converting array through Base.serialize() which makes a copy.
       return [f.number(this.x), f.number(this.y)]
@@ -306,13 +306,13 @@ var Point = Base.extend(
       // Whenever chaining both x & y, use #set() instead of direct
       // assignment, so LinkedPoint does not report changes twice.
       if (this.isZero()) {
-        var angle = this._angle || 0
+        const angle = this._angle || 0
         this._set(
           Math.cos(angle) * length,
           Math.sin(angle) * length
         )
       } else {
-        var scale = length / this.getLength()
+        const scale = length / this.getLength()
         // Force calculation of angle now, so it will be preserved even when
         // x and y are 0
         if (Numerical.isZero(scale)) this.getAngle()
@@ -375,12 +375,12 @@ var Point = Base.extend(
             this._angle || 0
           : (this._angle = Math.atan2(this.y, this.x))
       } else {
-        var point = Point.read(arguments),
-          div = this.getLength() * point.getLength()
+        const point = Point.read(arguments)
+        const div = this.getLength() * point.getLength()
         if (Numerical.isZero(div)) {
           return NaN
         } else {
-          var a = this.dot(point) / div
+          const a = this.dot(point) / div
           return Math.acos(a < -1 ? -1 : a > 1 ? 1 : a)
         }
       }
@@ -393,7 +393,7 @@ var Point = Base.extend(
       // since updating x / y does not automatically change _angle!
       this._angle = angle
       if (!this.isZero()) {
-        var length = this.getLength()
+        const length = this.getLength()
         // Use #set() instead of direct assignment of x/y, so LinkedPoint
         // does not report changes twice.
         this._set(
@@ -451,7 +451,7 @@ var Point = Base.extend(
      * @return {Number} the angle between the two vectors
      */
     getDirectedAngle: function (/* point */) {
-      var point = Point.read(arguments)
+      const point = Point.read(arguments)
       return Math.atan2(this.cross(point), this.dot(point)) * 180 / Math.PI
     },
 
@@ -464,12 +464,12 @@ var Point = Base.extend(
      * @return {Number}
      */
     getDistance: function (/* point, squared */) {
-      var args = arguments,
-        point = Point.read(args),
-        x = point.x - this.x,
-        y = point.y - this.y,
-        d = x * x + y * y,
-        squared = Base.read(args)
+      const args = arguments
+      const point = Point.read(args)
+      const x = point.x - this.x
+      const y = point.y - this.y
+      const d = x * x + y * y
+      const squared = Base.read(args)
       return squared ? d : Math.sqrt(d)
     },
 
@@ -485,9 +485,9 @@ var Point = Base.extend(
      */
     normalize: function (length) {
       if (length === undefined) length = 1
-      var current = this.getLength(),
-        scale = current !== 0 ? length / current : 0,
-        point = new Point(this.x * scale, this.y * scale)
+      const current = this.getLength()
+      const scale = current !== 0 ? length / current : 0
+      const point = new Point(this.x * scale, this.y * scale)
       // Preserve angle.
       if (scale >= 0) point._angle = this._angle
       return point
@@ -507,9 +507,9 @@ var Point = Base.extend(
     rotate: function (angle, center) {
       if (angle === 0) return this.clone()
       angle = angle * Math.PI / 180
-      var point = center ? this.subtract(center) : this,
-        sin = Math.sin(angle),
-        cos = Math.cos(angle)
+      let point = center ? this.subtract(center) : this
+      const sin = Math.sin(angle)
+      const cos = Math.cos(angle)
       point = new Point(
         point.x * cos - point.y * sin,
         point.x * sin + point.y * cos
@@ -564,7 +564,7 @@ var Point = Base.extend(
      * console.log(result); // {x: 15, y: 30}
      */
     add: function (/* point */) {
-      var point = Point.read(arguments)
+      const point = Point.read(arguments)
       return new Point(this.x + point.x, this.y + point.y)
     },
 
@@ -604,7 +604,7 @@ var Point = Base.extend(
      * console.log(result); // {x: 5, y: 15}
      */
     subtract: function (/* point */) {
-      var point = Point.read(arguments)
+      const point = Point.read(arguments)
       return new Point(this.x - point.x, this.y - point.y)
     },
 
@@ -645,7 +645,7 @@ var Point = Base.extend(
      * console.log(result); // {x: 20, y: 20}
      */
     multiply: function (/* point */) {
-      var point = Point.read(arguments)
+      const point = Point.read(arguments)
       return new Point(this.x * point.x, this.y * point.y)
     },
 
@@ -685,7 +685,7 @@ var Point = Base.extend(
      * console.log(result); // {x: 4, y: 2}
      */
     divide: function (/* point */) {
-      var point = Point.read(arguments)
+      const point = Point.read(arguments)
       return new Point(this.x / point.x, this.y / point.y)
     },
 
@@ -724,7 +724,7 @@ var Point = Base.extend(
      * console.log(result); // {x: 2, y: 0}
      */
     modulo: function (/* point */) {
-      var point = Point.read(arguments)
+      const point = Point.read(arguments)
       return new Point(this.x % point.x, this.y % point.y)
     },
 
@@ -767,9 +767,9 @@ var Point = Base.extend(
      * @return {Boolean} {@true if it is within the given distance}
      */
     isClose: function (/* point, tolerance */) {
-      var args = arguments,
-        point = Point.read(args),
-        tolerance = Base.read(args)
+      const args = arguments
+      const point = Point.read(args)
+      const tolerance = Base.read(args)
       return this.getDistance(point) <= tolerance
     },
 
@@ -782,7 +782,7 @@ var Point = Base.extend(
      * @return {Boolean} {@true it is collinear}
      */
     isCollinear: function (/* point */) {
-      var point = Point.read(arguments)
+      const point = Point.read(arguments)
       return Point.isCollinear(this.x, this.y, point.x, point.y)
     },
 
@@ -798,7 +798,7 @@ var Point = Base.extend(
      * @return {Boolean} {@true it is orthogonal}
      */
     isOrthogonal: function (/* point */) {
-      var point = Point.read(arguments)
+      const point = Point.read(arguments)
       return Point.isOrthogonal(this.x, this.y, point.x, point.y)
     },
 
@@ -810,7 +810,7 @@ var Point = Base.extend(
      * @return {Boolean} {@true if both x and y are 0, within the tolerance}
      */
     isZero: function () {
-      var isZero = Numerical.isZero
+      const isZero = Numerical.isZero
       return isZero(this.x) && isZero(this.y)
     },
 
@@ -854,7 +854,7 @@ var Point = Base.extend(
      * @return {Number} the dot product of the two points
      */
     dot: function (/* point */) {
-      var point = Point.read(arguments)
+      const point = Point.read(arguments)
       return this.x * point.x + this.y * point.y
     },
 
@@ -865,7 +865,7 @@ var Point = Base.extend(
      * @return {Number} the cross product of the two points
      */
     cross: function (/* point */) {
-      var point = Point.read(arguments)
+      const point = Point.read(arguments)
       return this.x * point.y - this.y * point.x
     },
 
@@ -877,8 +877,8 @@ var Point = Base.extend(
      * @return {Point} the projection of the point onto another point
      */
     project: function (/* point */) {
-      var point = Point.read(arguments),
-        scale = point.isZero() ? 0 : this.dot(point) / point.dot(point)
+      const point = Point.read(arguments)
+      const scale = point.isZero() ? 0 : this.dot(point) / point.dot(point)
       return new Point(
         point.x * scale,
         point.y * scale
@@ -999,9 +999,9 @@ var Point = Base.extend(
      * console.log(clampPoint); // {x: 110, y: 40}
      */
     clamp: function (/* min, max */) {
-      var args = arguments,
-        min = Point.read(args),
-        max = Point.read(args)
+      const args = arguments
+      const min = Point.read(args)
+      const max = Point.read(args)
       return new Point(
         Numerical.clamp(this.x, min.x, max.x),
         Numerical.clamp(this.y, min.y, max.y)
@@ -1032,9 +1032,9 @@ var Point = Base.extend(
        * [point1, point2, point3].reduce(Point.min) // {x: 60, y: 5}
        */
       min: function (/* point1, point2 */) {
-        var args = arguments,
-          point1 = Point.read(args),
-          point2 = Point.read(args)
+        const args = arguments
+        const point1 = Point.read(args)
+        const point2 = Point.read(args)
         return new Point(
           Math.min(point1.x, point2.x),
           Math.min(point1.y, point2.y)
@@ -1064,9 +1064,9 @@ var Point = Base.extend(
        * [point1, point2, point3].reduce(Point.max) // {x: 250, y: 100}
        */
       max: function (/* point1, point2 */) {
-        var args = arguments,
-          point1 = Point.read(args),
-          point2 = Point.read(args)
+        const args = arguments
+        const point1 = Point.read(args)
+        const point2 = Point.read(args)
         return new Point(
           Math.max(point1.x, point2.x),
           Math.max(point1.y, point2.y)
@@ -1117,7 +1117,7 @@ var Point = Base.extend(
     ['round', 'ceil', 'floor', 'abs'],
     function (key) {
       // Inject round, ceil, floor, abs:
-      var op = Math[key]
+      const op = Math[key]
       this[key] = function () {
         return new Point(op(this.x), op(this.y))
       }
@@ -1135,7 +1135,7 @@ var Point = Base.extend(
  *
  * @private
  */
-var LinkedPoint = Point.extend({
+const LinkedPoint = Point.extend({
   // Have LinkedPoint appear as a normal Point in debugging
   initialize: function Point(x, y, owner, setter) {
     this._x = x

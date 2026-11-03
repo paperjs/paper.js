@@ -21,8 +21,8 @@
  * @classexample
  * view._context = new ProxyContext(view._context);
  */
-var ProxyContext = new (function () {
-  var descriptions = [
+const ProxyContext = new (function () {
+  const descriptions = [
     'save()', 'restore()', 'scale(x,y)', 'rotate(angle)', 'translate(x,y)',
     'transform(a,b,c,d,e,f)', 'setTransform(a,b,c,d,e,f)', 'globalAlpha',
     'globalCompositeOperation', 'strokeStyle', 'fillStyle',
@@ -45,15 +45,15 @@ var ProxyContext = new (function () {
     'putImageData(imagedata,dx,dy,dirtyX,dirtyY,dirtyWidth,dirtyHeight)',
     'setLineDash(array)', 'lineDashOffset'
   ]
-  var fields = /** @lends ProxyContext# */ {
+  const fields = /** @lends ProxyContext# */ {
     initialize: function (context) {
       this._ctx = context
       this._indents = 0
     },
 
     getIndentation: function () {
-      var str = ''
-      for (var i = 0; i < this._indents; i++) {
+      let str = ''
+      for (let i = 0; i < this._indents; i++) {
         str += '    '
       }
       return str
@@ -69,9 +69,9 @@ var ProxyContext = new (function () {
   }
 
   Base.each(descriptions, function (description) {
-    var match = description.match(/^([^(]+)(\()*/),
-      name = match[1],
-      isFunction = !!match[2]
+    const match = description.match(/^([^(]+)(\()*/)
+    const name = match[1]
+    const isFunction = !!match[2]
     if (isFunction) {
       fields[name] = function () {
         if (name === 'restore') this._indents--

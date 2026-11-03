@@ -15,7 +15,7 @@
  * @class
  * @private
  */
-var Formatter = Base.extend(
+const Formatter = Base.extend(
   /** @lends Formatter# */ {
     /**
      * @param {Number} [precision=5] the amount of fractional digits

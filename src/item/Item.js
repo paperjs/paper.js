@@ -20,7 +20,7 @@
  * is unique to their type, but share the underlying properties and functions
  * that they inherit from Item.
  */
-var Item = Base.extend(
+const Item = Base.extend(
   Emitter,
   /** @lends Item# */ {
     statics: /** @lends Item */ {
@@ -100,7 +100,7 @@ var Item = Base.extend(
   },
   new (function () {
     // Injection scope for various item event handlers
-    var handlers = [
+    const handlers = [
       'onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick', 'onDoubleClick',
       'onMouseMove', 'onMouseEnter', 'onMouseLeave'
     ]
@@ -191,12 +191,12 @@ var Item = Base.extend(
     _initialize: function (props, point) {
       // Define this Item's unique id. But allow the creation of internally
       // used paths with no ids.
-      var hasProps = props && Base.isPlainObject(props),
-        internal = hasProps && props.internal === true,
-        matrix = (this._matrix = new Matrix()),
-        // Allow setting another project than the currently active one.
-        project = hasProps && props.project || paper.project,
-        settings = paper.settings
+      const hasProps = props && Base.isPlainObject(props)
+      const internal = hasProps && props.internal === true
+      const matrix = (this._matrix = new Matrix())
+      // Allow setting another project than the currently active one.
+      const project = hasProps && props.project || paper.project
+      const settings = paper.settings
       if (!project) {
         throw new Error(
           'Unable to create an item without a project. ' +
@@ -238,14 +238,14 @@ var Item = Base.extend(
     },
 
     _serialize: function (options, dictionary) {
-      var props = {},
-        that = this
+      const props = {}
+      const that = this
 
       function serialize(fields) {
-        for (var key in fields) {
+        for (const key in fields) {
           // value is the default value, only serialize if the current
           // value is different from it.
-          var value = that[key]
+          const value = that[key]
           if (!Base.equals(value, fields[key])) {
             props[key] = Base.serialize(
               value,
@@ -276,9 +276,11 @@ var Item = Base.extend(
      * @param {ChangeFlag} flags describes what exactly has changed
      */
     _changed: function (flags) {
-      var symbol = this._symbol,
-        cacheParent = this._parent || symbol,
-        project = this._project
+      let item
+
+      const symbol = this._symbol
+      const cacheParent = this._parent || symbol
+      const project = this._project
       if (flags & /*#=*/ ChangeFlag.GEOMETRY) {
         // Clear cached bounds, position and decomposed matrix whenever
         // geometry changes.
@@ -310,27 +312,23 @@ var Item = Base.extend(
       // their effects, see #getEffectOutput(), and change the definition
       // that the top-most of them is the item of, notified below for itself:
       if (flags & /*#=*/ ChangeFlag.APPEARANCE) {
-        for (var item = this; item; item = item._parent) {
+        for (item = this; item; item = item._parent) {
           if (item._buffer) item._buffer.matrix = null
           item._effectOutput = undefined
           if (item._symbol && item !== this) item._symbol._changed(flags)
         }
       }
       // Changes of a text wrap, or of what's in it, change the text it wraps:
-      for (
-        var item = this;
-        item && !(item instanceof Layer);
-        item = item._parent
-      ) {
+      for (item = this; item && !(item instanceof Layer); item = item._parent) {
         if (item._textWrap) {
-          var layer = item.getLayer()
+          const layer = item.getLayer()
           if (layer) layer._textWrapVersion++
           break
         }
       }
       // A child that its parent doesn't show is part of the parent, as a
       // text's path is: its changes are the parent's.
-      var isOwner = this._getChangeOwner() === this
+      const isOwner = this._getChangeOwner() === this
       if (project) project._changed(flags, isOwner ? this : null)
       if (!isOwner) this._parent._changed(flags)
       // If this item is a symbol's definition, notify it of the change too
@@ -340,7 +338,7 @@ var Item = Base.extend(
     // The item that the changes of this item are logged for: itself, or the
     // parent that doesn't show it as a child, as a text doesn't show its path.
     _getChangeOwner: function () {
-      var parent = this._parent
+      const parent = this._parent
       return parent && !parent.getChildren() ? parent._getChangeOwner() : this
     },
 
@@ -430,7 +428,7 @@ var Item = Base.extend(
         throw new Error(
           'Names consisting only of numbers are not supported.'
         )
-      var owner = this._getOwner()
+      const owner = this._getOwner()
       if (name && owner)
         Base.addNamed(owner._children, owner._namedChildren, name, this)
       this._name = name || undefined
@@ -519,14 +517,14 @@ var Item = Base.extend(
     // Produce getter/setters for properties. We need setters because we want to
     // call _changed() if a property was modified.
     function (name) {
-      var part = Base.capitalize(name),
-        key = '_' + name,
-        flags = {
-          // #locked does not change appearance, all others do:
-          locked: /*#=*/ ChangeFlag.ATTRIBUTE,
-          // #visible changes appearance
-          visible: /*#=*/ Change.ATTRIBUTE | Change.GEOMETRY
-        }
+      const part = Base.capitalize(name)
+      const key = '_' + name
+      const flags = {
+        // #locked does not change appearance, all others do:
+        locked: /*#=*/ ChangeFlag.ATTRIBUTE,
+        // #visible changes appearance
+        visible: /*#=*/ Change.ATTRIBUTE | Change.GEOMETRY
+      }
       this['get' + part] = function () {
         return this[key]
       }
@@ -700,7 +698,7 @@ var Item = Base.extend(
      * circle.textWrap = { offset: 10 };
      */
     getTextWrap: function () {
-      var wrap = this._textWrap
+      const wrap = this._textWrap
       return wrap && Base.set({}, wrap)
     },
 
@@ -720,9 +718,9 @@ var Item = Base.extend(
     // Keep the layer's text wraps in sync, and have its area texts lay out
     // again, see AreaText#_getTextWraps():
     _updateTextWrap: function (remove) {
-      var layer = this.getLayer()
+      const layer = this.getLayer()
       if (layer) {
-        var items = layer._textWrapItems || (layer._textWrapItems = {})
+        const items = layer._textWrapItems || (layer._textWrapItems = {})
         if (this._textWrap && !remove) {
           items[this._id] = this
         } else {
@@ -739,7 +737,7 @@ var Item = Base.extend(
     setSelection: function (selection) {
       if (selection !== this._selection) {
         this._selection = selection
-        var project = this._project
+        const project = this._project
         if (project) {
           project._updateSelection(this)
           // The project draws the selection over the items, so it
@@ -750,7 +748,7 @@ var Item = Base.extend(
     },
 
     _changeSelection: function (flag, selected) {
-      var selection = this._selection
+      const selection = this._selection
       this.setSelection(selected ? selection | flag : selection & ~flag)
     },
 
@@ -782,8 +780,8 @@ var Item = Base.extend(
      */
     isSelected: function () {
       if (this._selectChildren) {
-        var children = this._children
-        for (var i = 0, l = children.length; i < l; i++)
+        const children = this._children
+        for (let i = 0, l = children.length; i < l; i++)
           if (children[i].isSelected()) return true
       }
       return !!(this._selection & /*#=*/ ItemSelection.ITEM)
@@ -791,8 +789,8 @@ var Item = Base.extend(
 
     setSelected: function (selected) {
       if (this._selectChildren) {
-        var children = this._children
-        for (var i = 0, l = children.length; i < l; i++)
+        const children = this._children
+        for (let i = 0, l = children.length; i < l; i++)
           children[i].setSelected(selected)
       }
       this._changeSelection(/*#=*/ ItemSelection.ITEM, selected)
@@ -806,10 +804,10 @@ var Item = Base.extend(
      * @type Boolean
      */
     isFullySelected: function () {
-      var children = this._children,
-        selected = !!(this._selection & /*#=*/ ItemSelection.ITEM)
+      const children = this._children
+      const selected = !!(this._selection & /*#=*/ ItemSelection.ITEM)
       if (children && selected) {
-        for (var i = 0, l = children.length; i < l; i++)
+        for (let i = 0, l = children.length; i < l; i++)
           if (!children[i].isFullySelected()) return false
         return true
       }
@@ -818,9 +816,9 @@ var Item = Base.extend(
     },
 
     setFullySelected: function (selected) {
-      var children = this._children
+      const children = this._children
       if (children) {
-        for (var i = 0, l = children.length; i < l; i++)
+        for (let i = 0, l = children.length; i < l; i++)
           children[i].setFullySelected(selected)
       }
       this._changeSelection(/*#=*/ ItemSelection.ITEM, selected)
@@ -943,12 +941,12 @@ var Item = Base.extend(
     getPosition: function (_dontLink) {
       // Cache position value.
       // Pass true for _dontLink in getCenter(), so receive back a normal point
-      var ctor = _dontLink ? Point : LinkedPoint
+      const ctor = _dontLink ? Point : LinkedPoint
       // Do not cache LinkedPoints directly, since we would not be able to
       // use them to calculate the difference in #setPosition, as when it is
       // modified, it would hold new values already and only then cause the
       // calling of #setPosition.
-      var position = (
+      const position = (
         this._position ||
         (this._position = this._getPositionFromBounds())
       )
@@ -990,7 +988,7 @@ var Item = Base.extend(
      * @default null
      */
     getPivot: function () {
-      var pivot = this._pivot
+      const pivot = this._pivot
       return pivot
         ? new LinkedPoint(pivot.x, pivot.y, this, 'setPivot')
         : null
@@ -1020,8 +1018,12 @@ var Item = Base.extend(
       beans: true,
 
       getBounds: function (matrix, options) {
-        var hasMatrix = options || matrix instanceof Matrix,
-          opts = Base.set({}, hasMatrix ? options : matrix, this._boundsOptions)
+        const hasMatrix = options || matrix instanceof Matrix
+        const opts = Base.set(
+          {},
+          hasMatrix ? options : matrix,
+          this._boundsOptions
+        )
         // We can only cache the bounds if the path uses stroke-scaling, or if
         // no stroke is involved in the calculation of the bounds.
         // When strokeScaling is false, the bounds are affected by the zoom
@@ -1035,7 +1037,7 @@ var Item = Base.extend(
         if (!opts.stroke || this.getStrokeScaling()) opts.cacheItem = this
         // If we're caching bounds, pass on this item as cacheItem, so
         // the children can setup _boundsCache structures for it.
-        var rect = this._getCachedBounds(hasMatrix && matrix, opts).rect
+        const rect = this._getCachedBounds(hasMatrix && matrix, opts).rect
         // If we're returning '#bounds', create a LinkedRectangle that uses
         // the setBounds() setter to update the Item whenever the bounds are
         // changed:
@@ -1052,7 +1054,7 @@ var Item = Base.extend(
       },
 
       getStrokeBounds: function (matrix) {
-        var rect = this.getBounds(matrix, { stroke: true })
+        const rect = this.getBounds(matrix, { stroke: true })
         // Link '#strokeBounds' to setStrokeBounds() as '#bounds' is linked to
         // setBounds() above:
         return !arguments.length
@@ -1068,11 +1070,11 @@ var Item = Base.extend(
       },
 
       setBounds: function (/* rect */) {
-        var rect = Rectangle.read(arguments),
-          bounds = this.getBounds(),
-          _matrix = this._matrix,
-          matrix = new Matrix(),
-          center = rect.getCenter()
+        const rect = Rectangle.read(arguments)
+        let bounds = this.getBounds()
+        const _matrix = this._matrix
+        const matrix = new Matrix()
+        let center = rect.getCenter()
         // Read this from bottom to top:
         // Translate to new center:
         matrix.translate(center)
@@ -1102,24 +1104,24 @@ var Item = Base.extend(
       },
 
       setStrokeBounds: function (/* rect */) {
-        var rect = Rectangle.read(arguments),
-          item = this,
-          bounds = this.getBounds(),
-          center = bounds.getCenter(),
-          // Negative sizes mirror the item, as in setBounds():
-          signX = rect.width < 0 ? -1 : 1,
-          signY = rect.height < 0 ? -1 : 1,
-          width = Math.abs(rect.width),
-          height = Math.abs(rect.height),
-          // Dimensions without size can't be scaled:
-          canScaleX = !!bounds.width,
-          canScaleY = !!bounds.height,
-          // The smallest scale that keeps the matrix invertible, for
-          // rectangles smaller than the stroke itself:
-          min = /*#=*/ Numerical.EPSILON,
-          epsilon = /*#=*/ Numerical.GEOMETRIC_EPSILON,
-          sx = 1,
-          sy = 1
+        const rect = Rectangle.read(arguments)
+        const item = this
+        const bounds = this.getBounds()
+        const center = bounds.getCenter()
+        // Negative sizes mirror the item, as in setBounds():
+        const signX = rect.width < 0 ? -1 : 1
+        const signY = rect.height < 0 ? -1 : 1
+        const width = Math.abs(rect.width)
+        const height = Math.abs(rect.height)
+        // Dimensions without size can't be scaled:
+        const canScaleX = !!bounds.width
+        const canScaleY = !!bounds.height
+        // The smallest scale that keeps the matrix invertible, for
+        // rectangles smaller than the stroke itself:
+        const min = /*#=*/ Numerical.EPSILON
+        const epsilon = /*#=*/ Numerical.GEOMETRIC_EPSILON
+        let sx = 1
+        let sy = 1
 
         function getMatrix(sx, sy) {
           return new Matrix().scale(signX * sx, signY * sy, center)
@@ -1129,7 +1131,7 @@ var Item = Base.extend(
         // and sy, without transforming it. The strokes of items that apply the
         // scaling to their content keep their width, see #_getStrokeMatrix():
         function getStrokeBounds(sx, sy) {
-          var matrix = getMatrix(sx, sy)
+          const matrix = getMatrix(sx, sy)
           return item.getBounds(matrix.appended(item._matrix), {
             stroke: true,
             transform: { matrix: matrix, item: item }
@@ -1139,30 +1141,30 @@ var Item = Base.extend(
         // Under non-uniform scaling, the extent of the stroke changes with the
         // angles of miters, bevels and square caps, so solve for the scales
         // with Newton's method, estimating the derivatives from small changes:
-        for (var i = 0; i < 16; i++) {
-          var size = getStrokeBounds(sx, sy).getSize(),
-            fx = canScaleX ? size.width - width : 0,
-            fy = canScaleY ? size.height - height : 0
+        for (let i = 0; i < 16; i++) {
+          const size = getStrokeBounds(sx, sy).getSize()
+          const fx = canScaleX ? size.width - width : 0
+          const fy = canScaleY ? size.height - height : 0
           if (Math.abs(fx) < epsilon && Math.abs(fy) < epsilon) break
           // Small changes, but large enough to be measured at tiny scales:
-          var hx = Math.max(sx, 1) * 1e-6,
-            hy = Math.max(sy, 1) * 1e-6,
-            sizeX = getStrokeBounds(sx + hx, sy).getSize(),
-            sizeY = getStrokeBounds(sx, sy + hy).getSize(),
-            a = canScaleX ? (sizeX.width - size.width) / hx : 1,
-            b =
-              canScaleX && canScaleY
-                ? (sizeY.width - size.width) / hy
-                : 0,
-            c =
-              canScaleX && canScaleY
-                ? (sizeX.height - size.height) / hx
-                : 0,
-            d = canScaleY ? (sizeY.height - size.height) / hy : 1,
-            det = a * d - b * c
+          const hx = Math.max(sx, 1) * 1e-6
+          const hy = Math.max(sy, 1) * 1e-6
+          const sizeX = getStrokeBounds(sx + hx, sy).getSize()
+          const sizeY = getStrokeBounds(sx, sy + hy).getSize()
+          const a = canScaleX ? (sizeX.width - size.width) / hx : 1
+          const b =
+            canScaleX && canScaleY
+              ? (sizeY.width - size.width) / hy
+              : 0
+          const c =
+            canScaleX && canScaleY
+              ? (sizeX.height - size.height) / hx
+              : 0
+          const d = canScaleY ? (sizeY.height - size.height) / hy : 1
+          const det = a * d - b * c
           if (!det) break
-          var nx = Math.max(sx - (fx * d - fy * b) / det, min),
-            ny = Math.max(sy - (fy * a - fx * c) / det, min)
+          const nx = Math.max(sx - (fx * d - fy * b) / det, min)
+          const ny = Math.max(sy - (fy * a - fx * c) / det, min)
           // Stop where rectangles smaller than the stroke keep the scales at
           // their minimum:
           if (nx === sx && ny === sy) break
@@ -1190,7 +1192,7 @@ var Item = Base.extend(
         // NOTE: We cannot cache these results here, since we do not get
         // _changed() notifications here for changing geometry in children.
         // But cacheName is used in sub-classes such as SymbolItem and Raster.
-        var children = this._children
+        const children = this._children
         // TODO: What to return if nothing is defined, e.g. empty Groups?
         // Scriptographer behaves weirdly then too.
         if (!children || !children.length) return new Rectangle()
@@ -1214,70 +1216,72 @@ var Item = Base.extend(
        * matrix concatenation and handles all the complicated caching mechanisms.
        */
       _getCachedBounds: function (matrix, options, noInternal) {
+        let cached
+
         // See if we can cache these bounds. We only cache the bounds
         // transformed with the internally stored _matrix, (the default if no
         // matrix is passed).
         // Do not transform by the internal matrix for internal, untransformed
         // bounds.
-        var internal = options.internal && !noInternal,
-          cacheItem = options.cacheItem,
-          _matrix = internal ? null : this._matrix._orNullIfIdentity()
+        const internal = options.internal && !noInternal
+        const cacheItem = options.cacheItem
+        const _matrix = internal ? null : this._matrix._orNullIfIdentity()
         // A passed identity matrix still replaces the internal matrix:
         matrix = matrix ? matrix._orNullIfIdentity() : _matrix
         // Create a key for caching, reflecting all bounds options.
-        var cacheKey = (
-            cacheItem &&
-            (matrix ? matrix.equals(_matrix) : !_matrix) &&
-            this._getBoundsCacheKey(options, internal)
-          ),
-          // Only items whose bounds come from other items need to pass the
-          // cacheItem chain on, so that clearing caches propagates up:
-          isIntermediate = (
-            cacheKey &&
-            cacheItem !== this &&
-            (this._children || this._definition)
-          ),
-          bounds = this._bounds
+        const cacheKey = (
+          cacheItem &&
+          (matrix ? matrix.equals(_matrix) : !_matrix) &&
+          this._getBoundsCacheKey(options, internal)
+        )
+        // Only items whose bounds come from other items need to pass the
+        // cacheItem chain on, so that clearing caches propagates up:
+        const isIntermediate = (
+          cacheKey &&
+          cacheItem !== this &&
+          (this._children || this._definition)
+        )
+        let bounds = this._bounds
         // NOTE: This needs to happen before returning cached values, since even
         // then, _boundsCache needs to be kept up-to-date.
         Item._updateBoundsCache(this._parent || this._symbol, cacheItem)
         if (isIntermediate) Item._updateBoundsCache(this, cacheItem)
         if (cacheKey && bounds && cacheKey in bounds) {
-          var cached = bounds[cacheKey]
+          cached = bounds[cacheKey]
           return {
             rect: cached.rect.clone(),
             nonscaling: cached.nonscaling
           }
         }
-        var res = this._getBounds(
-            matrix,
-            isIntermediate
-              ? Base.set({}, options, { cacheItem: this })
-              : options
-          ),
-          // Support two versions of _getBounds(): One that directly returns a
-          // Rectangle, and one that returns a bounds object with nonscaling.
-          rect = res.rect || res,
-          style = this._style,
-          nonscaling = (
-            res.nonscaling || (
-              style.hasStroke() &&
-              !style.getStrokeScaling()
-            )
+        const res = this._getBounds(
+          matrix,
+          isIntermediate
+            ? Base.set({}, options, { cacheItem: this })
+            : options
+        )
+        // Support two versions of _getBounds(): One that directly returns a
+        // Rectangle, and one that returns a bounds object with nonscaling.
+        const rect = res.rect || res
+        const style = this._style
+        const nonscaling = (
+          res.nonscaling || (
+            style.hasStroke() &&
+            !style.getStrokeScaling()
           )
+        )
         // If we can cache the result, update the _bounds cache structure
         // before returning
         if (cacheKey) {
           if (!bounds) {
             this._bounds = bounds = {}
           }
-          var cached = (bounds[cacheKey] = {
+          bounds[cacheKey] = {
             rect: rect.clone(),
             nonscaling: nonscaling,
             stroke: options.stroke,
             // Mark as internal, so Item#transform() won't transform it
             internal: internal
-          })
+          }
         }
         return {
           rect: rect,
@@ -1292,19 +1296,19 @@ var Item = Base.extend(
        * is always shiftless, meaning its translation vector is reset to zero.
        */
       _getStrokeMatrix: function (matrix, options) {
-        var parent = this.getStrokeScaling()
-            ? null
-            : options && options.internal
-              ? this
-              : this._parent || this._symbol && this._symbol._item,
-          mx = parent ? parent.getViewMatrix().invert() : matrix,
-          transform = !parent && options && options.transform
+        const parent = this.getStrokeScaling()
+          ? null
+          : options && options.internal
+            ? this
+            : this._parent || this._symbol && this._symbol._item
+        let mx = parent ? parent.getViewMatrix().invert() : matrix
+        const transform = !parent && options && options.transform
         // When predicting the bounds after a transformation, see
         // #setStrokeBounds(), it doesn't scale the strokes of items that apply
         // it to their content, all the way up to the transformed item:
         if (transform) {
           for (
-            var item = this;
+            let item = this;
             item && item._applyMatrix;
             item = item._parent
           ) {
@@ -1332,13 +1336,13 @@ var Item = Base.extend(
           if (parent && item) {
             // Set-up the parent's boundsCache structure if it does not
             // exist yet and add the item to it.
-            var id = item._id,
-              ref = (parent._boundsCache = parent._boundsCache || {
-                // Use a hash-table for ids and an array for the list,
-                // so we can keep track of items that were added already
-                ids: {},
-                list: []
-              })
+            const id = item._id
+            const ref = (parent._boundsCache = parent._boundsCache || {
+              // Use a hash-table for ids and an array for the list,
+              // so we can keep track of items that were added already
+              ids: {},
+              list: []
+            })
             if (!ref.ids[id]) {
               ref.list.push(item)
               ref.ids[id] = item
@@ -1354,12 +1358,12 @@ var Item = Base.extend(
         _clearBoundsCache: function (item) {
           // This is defined as a static method so Symbol can used it too.
           // Clear the position as well, since it's depending on bounds.
-          var cache = item._boundsCache
+          const cache = item._boundsCache
           if (cache) {
             // Erase cache before looping, to prevent circular recursion.
             item._bounds = item._position = item._boundsCache = undefined
-            for (var i = 0, list = cache.list, l = list.length; i < l; i++) {
-              var other = list[i]
+            for (let i = 0, list = cache.list, l = list.length; i < l; i++) {
+              const other = list[i]
               if (other !== item) {
                 other._bounds = other._position = undefined
                 // We need to recursively call _clearBoundsCache, as
@@ -1395,30 +1399,30 @@ var Item = Base.extend(
          * matrix, or in project coordinates if global is set.
          */
         _getBounds: function (items, matrix, options, global) {
-          var x1 = Infinity,
-            x2 = -x1,
-            y1 = x1,
-            y2 = x2,
-            nonscaling = false
+          let x1 = Infinity
+          let x2 = -x1
+          let y1 = x1
+          let y2 = x2
+          let nonscaling = false
           // NOTE: As soon as one child-item has non-scaling strokes, the full
           // bounds need to be considered non-scaling for caching purposes.
           options = options || {}
-          for (var i = 0, l = items.length; i < l; i++) {
-            var item = items[i]
+          for (let i = 0, l = items.length; i < l; i++) {
+            const item = items[i]
             // Item is handled if it is visible and not recursively empty.
             // This avoid errors with nested empty groups (#1467).
             if (item._visible && !item.isEmpty(true)) {
               // Pass true for noInternal, since even when getting
               // internal bounds for this item, we need to apply the
               // matrices to its children.
-              var bounds = item._getCachedBounds(
-                  global
-                    ? item.getGlobalMatrix(true)
-                    : matrix && matrix.appended(item._matrix),
-                  options,
-                  true
-                ),
-                rect = bounds.rect
+              const bounds = item._getCachedBounds(
+                global
+                  ? item.getGlobalMatrix(true)
+                  : matrix && matrix.appended(item._matrix),
+                options,
+                true
+              )
+              const rect = bounds.rect
               x1 = Math.min(rect.x, x1)
               y1 = Math.min(rect.y, y1)
               x2 = Math.max(rect.x + rect.width, x2)
@@ -1497,17 +1501,17 @@ var Item = Base.extend(
      * @type Number
      */
     getRotation: function () {
-      var decomposed = this._decompose()
+      const decomposed = this._decompose()
       // Return 0 if matrix wasn't decomposed, e.g. on items with #applyMatrix
       return decomposed ? decomposed.rotation : 0
     },
 
     setRotation: function (rotation) {
-      var current = this.getRotation()
+      const current = this.getRotation()
       if (current != null && rotation != null) {
         // Preserve the cached _decomposed values over rotation, and only
         // update the rotation property on it.
-        var decomposed = this._decomposed
+        const decomposed = this._decomposed
         this.rotate(rotation - current)
         if (decomposed) {
           decomposed.rotation = rotation
@@ -1527,22 +1531,22 @@ var Item = Base.extend(
      * @type Point
      */
     getScaling: function () {
-      var decomposed = this._decompose(),
-        s = decomposed && decomposed.scaling
+      const decomposed = this._decompose()
+      const s = decomposed && decomposed.scaling
       // Return [1, 1] if matrix wasn't decomposed, e.g. with #applyMatrix.
       return new LinkedPoint(s ? s.x : 1, s ? s.y : 1, this, 'setScaling')
     },
 
     setScaling: function (/* scaling */) {
-      var current = this.getScaling(),
-        // Clone existing points since we're caching internally.
-        scaling = Point.read(arguments, 0, { clone: true, readNull: true })
+      const current = this.getScaling()
+      // Clone existing points since we're caching internally.
+      const scaling = Point.read(arguments, 0, { clone: true, readNull: true })
       if (current && scaling && !current.equals(scaling)) {
         // See #setRotation() for preservation of _decomposed.
-        var rotation = this.getRotation(),
-          decomposed = this._decomposed,
-          matrix = new Matrix(),
-          isZero = Numerical.isZero
+        const rotation = this.getRotation()
+        const decomposed = this._decomposed
+        const matrix = new Matrix()
+        const isZero = Numerical.isZero
         // Create a matrix in which the scaling is applied in the non-
         // rotated state, so it is always applied before the rotation.
         // TODO: What about skewing? Do we need separately stored values for
@@ -1558,7 +1562,7 @@ var Item = Base.extend(
           matrix.scale(scaling.x, scaling.y)
           this._matrix.set(matrix)
         } else {
-          var center = this.getPosition(true)
+          const center = this.getPosition(true)
           matrix.translate(center)
           if (rotation) matrix.rotate(rotation)
           matrix.scale(scaling.x / current.x, scaling.y / current.y)
@@ -1588,7 +1592,7 @@ var Item = Base.extend(
       // Use Matrix#initialize to easily copy over values.
       // NOTE: calling initialize() also calls #_changed() for us, through its
       // call to #set() / #reset(), and this also handles _applyMatrix for us.
-      var matrix = this._matrix
+      const matrix = this._matrix
       matrix.set.apply(matrix, arguments)
     },
 
@@ -1601,9 +1605,9 @@ var Item = Base.extend(
      * @type Matrix
      */
     getGlobalMatrix: function (_dontClone) {
-      var parent = this._parent,
-        parentMatrix = parent && parent.getGlobalMatrix(true),
-        matrix = this._globalMatrix
+      const parent = this._parent
+      const parentMatrix = parent && parent.getGlobalMatrix(true)
+      let matrix = this._globalMatrix
       // The cached matrix is only valid if it was built from the parent's
       // current global matrix, which is replaced whenever it changes.
       if (!matrix || this._parentGlobalMatrix !== parentMatrix) {
@@ -1672,8 +1676,8 @@ var Item = Base.extend(
     _setProject: function (project, installEvents) {
       if (this._project !== project) {
         this._project = project
-        var children = this._children
-        for (var i = 0, l = children && children.length; i < l; i++)
+        const children = this._children
+        for (let i = 0, l = children && children.length; i < l; i++)
           children[i]._setProject(project)
       }
       // NOTE: _installEvents handles all children too!
@@ -1708,8 +1712,8 @@ var Item = Base.extend(
       // insertion and removal:
       if (this._selection) this._project._updateSelection(this, !install)
       if (this._textWrap) this._updateTextWrap(!install)
-      var children = this._children
-      for (var i = 0, l = children && children.length; i < l; i++)
+      const children = this._children
+      for (let i = 0, l = children && children.length; i < l; i++)
         children[i]._installEvents(install)
     },
 
@@ -1720,7 +1724,7 @@ var Item = Base.extend(
      * @bean
      */
     getLayer: function () {
-      var parent = this
+      let parent = this
       while ((parent = parent._parent)) {
         if (parent instanceof Layer) return parent
       }
@@ -1889,7 +1893,7 @@ var Item = Base.extend(
      * @bean
      */
     getNextSibling: function () {
-      var owner = this._getOwner()
+      const owner = this._getOwner()
       return owner && owner._children[this._index + 1] || null
     },
 
@@ -1900,7 +1904,7 @@ var Item = Base.extend(
      * @bean
      */
     getPreviousSibling: function () {
-      var owner = this._getOwner()
+      const owner = this._getOwner()
       return owner && owner._children[this._index - 1] || null
     },
 
@@ -1915,8 +1919,8 @@ var Item = Base.extend(
     },
 
     setIndex: function (index) {
-      var parent = this._parent,
-        children = parent && parent._children
+      const parent = this._parent
+      const children = parent && parent._children
       if (children) {
         parent.insertChildren(index in children ? index : undefined, [this])
       }
@@ -1985,15 +1989,17 @@ var Item = Base.extend(
      * }
      */
     clone: function (options) {
-      var copy = new this.constructor(Item.NO_INSERT),
-        children = this._children,
-        // `insert` follows settings.insertItems and `deep` is true by
-        // default. Also support a boolean parameter for insert:
-        insert = Base.pick(
-          options ? options.insert : undefined,
-          typeof options === 'boolean' ? options : paper.settings.insertItems
-        ),
-        deep = Base.pick(options ? options.deep : undefined, true)
+      let children
+
+      const copy = new this.constructor(Item.NO_INSERT)
+      children = this._children
+      // `insert` follows settings.insertItems and `deep` is true by
+      // default. Also support a boolean parameter for insert:
+      const insert = Base.pick(
+        options ? options.insert : undefined,
+        typeof options === 'boolean' ? options : paper.settings.insertItems
+      )
+      const deep = Base.pick(options ? options.deep : undefined, true)
       // On items with children, for performance reasons due to the way that
       // styles are currently "flattened" into existing children, we need to
       // clone attributes first, then content.
@@ -2006,12 +2012,12 @@ var Item = Base.extend(
       if (!children) copy.copyAttributes(this)
       if (insert) copy.insertAbove(this)
       // Make sure we're not overriding the original name in the same parent
-      var name = this._name,
-        parent = this._parent
+      let name = this._name
+      const parent = this._parent
       if (name && parent) {
-        var children = parent._children,
-          orig = name,
-          i = 1
+        children = parent._children
+        const orig = name
+        let i = 1
         while (children[name]) name = orig + ' ' + i++
         if (name !== orig) copy.setName(name)
       }
@@ -2024,10 +2030,10 @@ var Item = Base.extend(
      * @param {Item} source the item to copy the content from
      */
     copyContent: function (source) {
-      var children = source._children
+      const children = source._children
       // Clone all children and add them to the copy. tell #addChild we're
       // cloning, as needed by CompoundPath#insertChild().
-      for (var i = 0, l = children && children.length; i < l; i++) {
+      for (let i = 0, l = children && children.length; i < l; i++) {
         this.addChild(children[i].clone(false), true)
       }
     },
@@ -2047,9 +2053,9 @@ var Item = Base.extend(
       // Only copy over these fields if they are actually defined in 'source',
       // meaning the default value has been overwritten (default is on
       // prototype).
-      var keys = this._attributes
-      for (var i = 0, l = keys.length; i < l; i++) {
-        var key = keys[i]
+      const keys = this._attributes
+      for (let i = 0, l = keys.length; i < l; i++) {
+        const key = keys[i]
         if (source.hasOwnProperty(key)) this[key] = source[key]
       }
       // Use Matrix#initialize to easily copy over values.
@@ -2065,9 +2071,9 @@ var Item = Base.extend(
       // is also added to Project#_selectionItems if it is selected.
       this.setSelection(source._selection)
       // Copy over data, name and effects as well.
-      var data = source._data,
-        name = source._name,
-        effects = source._effects
+      const data = source._data
+      const name = source._name
+      const effects = source._effects
       this._data = data ? Base.clone(data) : null
       if (name) this.setName(name)
       this.setEffects(
@@ -2126,7 +2132,9 @@ var Item = Base.extend(
      * raster.scale(5);
      */
     rasterize: function (arg0, arg1) {
-      var resolution, insert, raster
+      let resolution
+      let insert
+      let raster
       if (Base.isPlainObject(arg0)) {
         resolution = arg0.resolution
         insert = arg0.insert
@@ -2139,20 +2147,20 @@ var Item = Base.extend(
         raster = new Raster(Item.NO_INSERT)
       }
       // What the item draws, with its effects:
-      var bounds = this.getPreviewBounds(),
-        scale = (resolution || this.getView().getResolution()) / 72,
-        // Floor top-left corner and ceil bottom-right corner, to never
-        // blur or cut pixels.
-        topLeft = bounds.getTopLeft().floor(),
-        bottomRight = bounds.getBottomRight().ceil(),
-        boundsSize = new Size(bottomRight.subtract(topLeft)),
-        rasterSize = boundsSize.multiply(scale)
+      const bounds = this.getPreviewBounds()
+      const scale = (resolution || this.getView().getResolution()) / 72
+      // Floor top-left corner and ceil bottom-right corner, to never
+      // blur or cut pixels.
+      const topLeft = bounds.getTopLeft().floor()
+      const bottomRight = bounds.getBottomRight().ceil()
+      const boundsSize = new Size(bottomRight.subtract(topLeft))
+      const rasterSize = boundsSize.multiply(scale)
       // Pass `true` for clear, so reused rasters don't draw over old pixels.
       raster.setSize(rasterSize, true)
 
       if (!rasterSize.isZero()) {
-        var ctx = raster.getContext(true),
-          matrix = new Matrix().translate(topLeft.negate())
+        const ctx = raster.getContext(true)
+        const matrix = new Matrix().translate(topLeft.negate())
         ctx.save()
         // Draw with the resolution as the pixel ratio, as views do:
         ctx.scale(scale, scale)
@@ -2205,7 +2213,7 @@ var Item = Base.extend(
      */
     contains: function (/* point */) {
       // See CompoundPath#_contains() for the reason for !!
-      var matrix = this._matrix
+      const matrix = this._matrix
       return (
         matrix.isInvertible() &&
         !!this._contains(matrix._inverseTransform(Point.read(arguments)))
@@ -2213,9 +2221,9 @@ var Item = Base.extend(
     },
 
     _contains: function (point) {
-      var children = this._children
+      const children = this._children
       if (children) {
-        for (var i = children.length - 1; i >= 0; i--) {
+        for (let i = children.length - 1; i >= 0; i--) {
           if (children[i].contains(point)) return true
         }
         return false
@@ -2262,23 +2270,23 @@ var Item = Base.extend(
      */
     intersects: function (item, _matrix) {
       if (!(item instanceof Item)) return false
-      var path1 = this._asPathItem(),
-        path2 = item._asPathItem(),
-        matrix1 = path1._matrix,
-        matrix2 = _matrix || path2._matrix
+      const path1 = this._asPathItem()
+      const path2 = item._asPathItem()
+      const matrix1 = path1._matrix
+      const matrix2 = _matrix || path2._matrix
 
       // Checks whether a point of any of the path's sub-paths lies inside
       // the other path, which then contains it, as the outlines don't cross:
       function contains(path, matrix, other, otherMatrix) {
-        var paths = path._children || [path]
-        for (var i = 0, l = paths.length; i < l; i++) {
-          var segment = paths[i]._segments[0],
-            point = (
-              segment &&
-              otherMatrix._inverseTransform(
-                matrix._transformPoint(segment._point)
-              )
+        const paths = path._children || [path]
+        for (let i = 0, l = paths.length; i < l; i++) {
+          const segment = paths[i]._segments[0]
+          const point = (
+            segment &&
+            otherMatrix._inverseTransform(
+              matrix._transformPoint(segment._point)
             )
+          )
           if (point && other._contains(point)) return true
         }
         return false
@@ -2296,7 +2304,7 @@ var Item = Base.extend(
   new (function () {
     // Injection scope for hit-test functions shared with project
     function hitTest(/* point, options */) {
-      var args = arguments
+      const args = arguments
       return this._hitTest(
         Point.read(args),
         HitResult.getOptions(args)
@@ -2304,10 +2312,10 @@ var Item = Base.extend(
     }
 
     function hitTestAll(/* point, options */) {
-      var args = arguments,
-        point = Point.read(args),
-        options = HitResult.getOptions(args),
-        all = []
+      const args = arguments
+      const point = Point.read(args)
+      const options = HitResult.getOptions(args)
+      const all = []
       this._hitTest(point, new Base({ all: all }, options))
       return all
     }
@@ -2315,12 +2323,12 @@ var Item = Base.extend(
     function hitTestChildren(point, options, viewMatrix, _exclude) {
       // NOTE: _exclude is only used in Group#_hitTestChildren()
       // to exclude #clipItem
-      var children = this._children
+      const children = this._children
       if (children) {
         // Loop backwards, so items that get drawn last are tested first.
-        for (var i = children.length - 1; i >= 0; i--) {
-          var child = children[i]
-          var res = (
+        for (let i = children.length - 1; i >= 0; i--) {
+          const child = children[i]
+          const res = (
             child !== _exclude &&
             child._hitTest(point, options, viewMatrix)
           )
@@ -2435,34 +2443,34 @@ var Item = Base.extend(
       // + tolerance, but only if this item does not have children, since
       // we'd have to travel up the chain already to determine these bounds.
       // Shells of hosted items know them without loading their children.
-      var matrix = this._matrix,
-        // If this is the first one in the recursion, the point is in global
-        // coordinates, so transform it by the item's globalMatrix:
-        pointMatrix = parentViewMatrix ? matrix : this.getGlobalMatrix(),
-        // Keep the accumulated matrices up to this item in options, so we
-        // can keep calculating the correct _tolerancePadding values.
-        viewMatrix = parentViewMatrix
-          ? parentViewMatrix.appended(matrix)
-          : // If this is the first one in the recursion, factor in the
-            // zoom of the view and the globalMatrix of the item.
-            pointMatrix.prepended(this.getView()._matrix),
-        // Calculate the transformed padding as 2D size that describes the
-        // transformed tolerance circle / ellipse. Make sure it's never 0
-        // since we're using it for division (see checkBounds()).
-        tolerance = Math.max(options.tolerance, /*#=*/ Numerical.EPSILON),
-        // Hit-tests are performed in the item's local coordinate space,
-        // while the tolerance is in project coordinates. To calculate the
-        // correct 2D padding for tolerance, we therefore need to apply the
-        // inverted accumulated matrices without the view's matrix.
-        tolerancePadding = (options._tolerancePadding = new Size(
-          Matrix._getCircleExtents(
-            tolerance,
-            viewMatrix
-              .prepended(this.getView()._matrix.inverted())
-              ._shiftless()
-              .invert()
-          )
-        ))
+      const matrix = this._matrix
+      // If this is the first one in the recursion, the point is in global
+      // coordinates, so transform it by the item's globalMatrix:
+      const pointMatrix = parentViewMatrix ? matrix : this.getGlobalMatrix()
+      // Keep the accumulated matrices up to this item in options, so we
+      // can keep calculating the correct _tolerancePadding values.
+      const viewMatrix = parentViewMatrix
+        ? parentViewMatrix.appended(matrix)
+        : // If this is the first one in the recursion, factor in the
+          // zoom of the view and the globalMatrix of the item.
+          pointMatrix.prepended(this.getView()._matrix)
+      // Calculate the transformed padding as 2D size that describes the
+      // transformed tolerance circle / ellipse. Make sure it's never 0
+      // since we're using it for division (see checkBounds()).
+      const tolerance = Math.max(options.tolerance, /*#=*/ Numerical.EPSILON)
+      // Hit-tests are performed in the item's local coordinate space,
+      // while the tolerance is in project coordinates. To calculate the
+      // correct 2D padding for tolerance, we therefore need to apply the
+      // inverted accumulated matrices without the view's matrix.
+      const tolerancePadding = (options._tolerancePadding = new Size(
+        Matrix._getCircleExtents(
+          tolerance,
+          viewMatrix
+            .prepended(this.getView()._matrix.inverted())
+            ._shiftless()
+            .invert()
+        )
+      ))
       // Transform point to local coordinates.
       point = pointMatrix._inverseTransform(point)
       // If the matrix is non-reversible, point will now be `null`:
@@ -2478,26 +2486,26 @@ var Item = Base.extend(
 
       // See if we should check self (own content), by filtering for type,
       // guides and selected items if that's required.
-      var checkSelf = !(
-          options.guides && !this._guide ||
-          options.selected && !this.isSelected() ||
-          // Support legacy Item#type property to match hyphenated
-          // class-names.
-          options.type && options.type !== Base.hyphenate(this._class) ||
-          options.class && !(this instanceof options.class)
-        ),
-        match = options.match,
-        that = this,
-        bounds,
-        res
+      const checkSelf = !(
+        options.guides && !this._guide ||
+        options.selected && !this.isSelected() ||
+        // Support legacy Item#type property to match hyphenated
+        // class-names.
+        options.type && options.type !== Base.hyphenate(this._class) ||
+        options.class && !(this instanceof options.class)
+      )
+      const match = options.match
+      const that = this
+      let bounds
+      let res
 
       function filter(hit) {
         // Path#_hitTestSelf() returns a list of all its hits when we're
         // collecting them, see hitTestAll():
         if (Array.isArray(hit)) {
-          var first = null
-          for (var i = 0, l = hit.length; i < l; i++) {
-            var res = filter(hit[i])
+          let first = null
+          for (let i = 0, l = hit.length; i < l; i++) {
+            const res = filter(hit[i])
             first = first || res
           }
           return first
@@ -2514,7 +2522,7 @@ var Item = Base.extend(
       }
 
       function checkPoint(type, part) {
-        var pt = part ? bounds['get' + part]() : that.getPosition()
+        const pt = part ? bounds['get' + part]() : that.getPosition()
         // Since there are transformations, we cannot simply use a numerical
         // tolerance value. Instead, we divide by a padding size, see above.
         if (point.subtract(pt).divide(tolerancePadding).length <= 1) {
@@ -2525,9 +2533,9 @@ var Item = Base.extend(
         }
       }
 
-      var checkPosition = options.position,
-        checkCenter = options.center,
-        checkBounds = options.bounds
+      const checkPosition = options.position
+      const checkCenter = options.center
+      const checkBounds = options.bounds
       // Ignore top level layers by checking for _parent:
       if (
         checkSelf &&
@@ -2545,11 +2553,11 @@ var Item = Base.extend(
         )
         if (!res && checkBounds) {
           // TODO: Move these into a static property on Rectangle?
-          var points = [
+          const points = [
             'TopLeft', 'TopRight', 'BottomLeft', 'BottomRight',
             'LeftCenter', 'TopCenter', 'RightCenter', 'BottomCenter'
           ]
-          for (var i = 0; i < 8 && !res; i++) {
+          for (let i = 0; i < 8 && !res; i++) {
             res = checkPoint('bounds', points[i])
           }
         }
@@ -2632,10 +2640,10 @@ var Item = Base.extend(
       // matchObject() is used to match against objects in a nested manner.
       // This is useful for matching against Item#data.
       function matchObject(obj1, obj2) {
-        for (var i in obj1) {
+        for (const i in obj1) {
           if (obj1.hasOwnProperty(i)) {
-            var val1 = obj1[i],
-              val2 = obj2[i]
+            const val1 = obj1[i]
+            const val2 = obj2[i]
             if (Base.isPlainObject(val1) && Base.isPlainObject(val2)) {
               if (!matchObject(val1, val2)) return false
             } else if (!Base.equals(val1, val2)) {
@@ -2645,10 +2653,10 @@ var Item = Base.extend(
         }
         return true
       }
-      var type = typeof name
+      const type = typeof name
       if (type === 'object') {
         // `name` is the match object, not a string
-        for (var key in name) {
+        for (const key in name) {
           if (name.hasOwnProperty(key) && !this.matches(key, name[key]))
             return false
         }
@@ -2658,7 +2666,7 @@ var Item = Base.extend(
       } else if (name === 'match') {
         return compare(this)
       } else {
-        var value = /^(empty|editable)$/.test(name)
+        let value = /^(empty|editable)$/.test(name)
           ? // Handle boolean test functions separately, by calling them
             // to get the value.
             this['is' + Base.capitalize(name)]()
@@ -2752,16 +2760,19 @@ var Item = Base.extend(
       // NOTE: We pass children instead of item as first argument so the
       // method can be used for Project#layers as well in Project.
       _getItems: function _getItems(item, options, matrix, param, firstOnly) {
+        let bounds
+        let rect
+
         if (!param) {
           // Set up a couple of "side-car" values for the recursive calls
           // of _getItems below, mainly related to the handling of
           // inside / overlapping:
-          var obj = typeof options === 'object' && options,
-            overlapping = obj && obj.overlapping,
-            inside = obj && obj.inside,
-            // If overlapping is set, we also perform the inside check:
-            bounds = overlapping || inside,
-            rect = bounds && Rectangle.read([bounds])
+          const obj = typeof options === 'object' && options
+          const overlapping = obj && obj.overlapping
+          const inside = obj && obj.inside
+          // If overlapping is set, we also perform the inside check:
+          bounds = overlapping || inside
+          rect = bounds && Rectangle.read([bounds])
           param = {
             items: [], // The list to contain the results.
             recursive: !obj || obj.recursive !== false,
@@ -2786,16 +2797,16 @@ var Item = Base.extend(
             })
           }
         }
-        var children = item._children,
-          items = param.items,
-          rect = param.rect
+        const children = item._children
+        const items = param.items
+        rect = param.rect
         matrix = rect && (matrix || new Matrix())
-        for (var i = 0, l = children && children.length; i < l; i++) {
-          var child = children[i],
-            childMatrix = matrix && matrix.appended(child._matrix),
-            add = true
+        for (let i = 0, l = children && children.length; i < l; i++) {
+          const child = children[i]
+          const childMatrix = matrix && matrix.appended(child._matrix)
+          let add = true
           if (rect) {
-            var bounds = child.getBounds(childMatrix)
+            bounds = child.getBounds(childMatrix)
             // Regardless of the setting of inside / overlapping, if the
             // bounds don't even intersect, we can skip this child.
             if (!rect.intersects(bounds)) continue
@@ -2856,19 +2867,19 @@ var Item = Base.extend(
      */
     importJSON: function (json) {
       json = typeof json === 'string' ? JSON.parse(json) : json
-      var props = json && json[0] === this._class && json[1]
+      const props = json && json[0] === this._class && json[1]
       if (Base.isPlainObject(props)) {
         // Importing into this item: first reset the fields that the JSON
         // leaves out to the values of a new item, so it ends up the same
         // as a newly imported one (#1425):
-        var item = new this.constructor(Item.NO_INSERT),
-          fields = Base.set(
-            {},
-            this._serializeFields,
-            this instanceof Group ? null : this._style._defaults
-          ),
-          defaults = {}
-        for (var key in fields) {
+        const item = new this.constructor(Item.NO_INSERT)
+        const fields = Base.set(
+          {},
+          this._serializeFields,
+          this instanceof Group ? null : this._style._defaults
+        )
+        const defaults = {}
+        for (const key in fields) {
           if (!(key in props) && !Base.equals(this[key], item[key]))
             defaults[key] = item[key]
         }
@@ -2877,7 +2888,7 @@ var Item = Base.extend(
       // Try importing into `this`. If another item is returned, try adding
       // it as a child (this won't be successful on some classes, returning
       // null).
-      var res = Base.importJSON(json, this)
+      const res = Base.importJSON(json, this)
       return res !== this ? this.addChild(res) : res
     },
 
@@ -3022,7 +3033,7 @@ var Item = Base.extend(
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
     insertChild: function (index, item) {
-      var res = item ? this.insertChildren(index, [item]) : null
+      const res = item ? this.insertChildren(index, [item]) : null
       return res && res[0]
     },
 
@@ -3049,7 +3060,11 @@ var Item = Base.extend(
      *     possible
      */
     insertChildren: function (index, items) {
-      var children = this._children
+      let i
+      let item
+      let l
+
+      const children = this._children
       if (children && items && items.length > 0) {
         // We need to clone items because it may be an Item#children array.
         // Also, we're removing elements if they don't match _type.
@@ -3058,10 +3073,10 @@ var Item = Base.extend(
         // Remove the items from their parents first, since they might be
         // inserted into their own parents, affecting indices.
         // Use the loop also to filter invalid items.
-        var inserted = {}
-        for (var i = items.length - 1; i >= 0; i--) {
-          var item = items[i],
-            id = item && item._id
+        const inserted = {}
+        for (i = items.length - 1; i >= 0; i--) {
+          item = items[i]
+          const id = item && item._id
           // If an item was inserted already, it must be included multiple
           // times in the items array. Only insert once. Also leave out
           // this item and its ancestors, which would create a cycle:
@@ -3081,12 +3096,12 @@ var Item = Base.extend(
         }
         if (!items.length) return null
         Base.splice(children, items, index, 0)
-        var project = this._project,
-          // See #_remove() for an explanation of this:
-          notifySelf = project._changes
-        for (var i = 0, l = items.length; i < l; i++) {
-          var item = items[i],
-            name = item._name
+        const project = this._project
+        // See #_remove() for an explanation of this:
+        const notifySelf = project._changes
+        for (i = 0, l = items.length; i < l; i++) {
+          item = items[i]
+          const name = item._name
           item._parent = this
           item._setProject(project, true)
           // Set the name again to make sure all name lookup structures
@@ -3116,10 +3131,10 @@ var Item = Base.extend(
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
     _insertAt: function (item, offset) {
-      var owner = item && item._getOwner(),
-        // Only insert if the item is not the same as `this`, and if it
-        // actually has an owner into which we can insert.
-        res = item !== this && owner ? this : null
+      const owner = item && item._getOwner()
+      // Only insert if the item is not the same as `this`, and if it
+      // actually has an owner into which we can insert.
+      const res = item !== this && owner ? this : null
       if (res) {
         // Notify parent of change. Don't notify item itself yet,
         // as we're doing so when adding it to the new owner below.
@@ -3153,7 +3168,7 @@ var Item = Base.extend(
      * Sends this item to the back of all other items within the same parent.
      */
     sendToBack: function () {
-      var owner = this._getOwner()
+      const owner = this._getOwner()
       return owner ? owner._insertItem(0, this) : null
     },
 
@@ -3161,7 +3176,7 @@ var Item = Base.extend(
      * Brings this item to the front of all other items within the same parent.
      */
     bringToFront: function () {
-      var owner = this._getOwner()
+      const owner = this._getOwner()
       return owner ? owner._insertItem(undefined, this) : null
     },
 
@@ -3246,9 +3261,9 @@ var Item = Base.extend(
      * @return {Item} the reduced item
      */
     reduce: function (options) {
-      var children = this._children
+      const children = this._children
       if (children && children.length === 1) {
-        var child = children[0].reduce(options)
+        const child = children[0].reduce(options)
         // Make sure the reduced item has the same parent as the original.
         if (this._parent) {
           child.insertAbove(this)
@@ -3265,7 +3280,7 @@ var Item = Base.extend(
      * Removes the item from its parent's named children list.
      */
     _removeNamed: function () {
-      var owner = this._getOwner()
+      const owner = this._getOwner()
       if (owner)
         Base.removeNamed(
           owner._children,
@@ -3279,9 +3294,9 @@ var Item = Base.extend(
      * Removes the item from its parent's children list.
      */
     _remove: function (notifySelf, notifyParent) {
-      var owner = this._getOwner(),
-        project = this._project,
-        index = this._index
+      const owner = this._getOwner()
+      const project = this._project
+      const index = this._index
       if (this._style) this._style._dispose()
       if (owner) {
         // Handle named children separately from index:
@@ -3336,8 +3351,8 @@ var Item = Base.extend(
      * @return {Boolean} {@true if the item was replaced}
      */
     replaceWith: function (item) {
-      var ok = item
-      for (var i = 0, l = arguments.length; i < l && ok; i++)
+      let ok = item
+      for (let i = 0, l = arguments.length; i < l && ok; i++)
         ok = arguments[i] && arguments[i].insertBelow(this)
       if (ok) this.remove()
       return ok && item
@@ -3368,8 +3383,8 @@ var Item = Base.extend(
       // Use Base.splice(), which adjusts #_index for the items above, and
       // deletes it for the removed items. Calling #_remove() afterwards is
       // fine, since it only calls Base.splice() if #_index is set.
-      var removed = Base.splice(this._children, null, start, end - start)
-      for (var i = removed.length - 1; i >= 0; i--) {
+      const removed = Base.splice(this._children, null, start, end - start)
+      for (let i = removed.length - 1; i >= 0; i--) {
         // Don't notify parent each time, notify it separately after.
         removed[i]._remove(true, false)
       }
@@ -3387,7 +3402,7 @@ var Item = Base.extend(
       if (this._children) {
         this._children.reverse()
         // Adjust indices
-        for (var i = 0, l = this._children.length; i < l; i++)
+        for (let i = 0, l = this._children.length; i < l; i++)
           this._children[i]._index = i
         this._changed(/*#=*/ Change.CHILDREN)
       }
@@ -3405,11 +3420,11 @@ var Item = Base.extend(
      * @return {Boolean}
      */
     isEmpty: function (recursively) {
-      var children = this._children
-      var numChildren = children ? children.length : 0
+      const children = this._children
+      const numChildren = children ? children.length : 0
       if (recursively) {
         // In recursive check, item is empty if all its children are empty.
-        for (var i = 0; i < numChildren; i++) {
+        for (let i = 0; i < numChildren; i++) {
           if (!children[i].isEmpty(recursively)) {
             return false
           }
@@ -3429,7 +3444,7 @@ var Item = Base.extend(
     // TODO: Item#isEditable is currently ignored in the documentation, as
     // locking an item currently has no effect
     isEditable: function () {
-      var item = this
+      let item = this
       while (item) {
         if (!item._visible || item._locked) return false
         item = item._parent
@@ -3482,15 +3497,15 @@ var Item = Base.extend(
       // Private method that produces a list of ancestors, starting with the
       // root and ending with the actual element as the last entry.
       function getList(item) {
-        var list = []
+        const list = []
         do {
           list.unshift(item)
         } while ((item = item._parent))
         return list
       }
-      var list1 = getList(this),
-        list2 = getList(item)
-      for (var i = 0, l = Math.min(list1.length, list2.length); i < l; i++) {
+      const list1 = getList(this)
+      const list2 = getList(item)
+      for (let i = 0, l = Math.min(list1.length, list2.length); i < l; i++) {
         if (list1[i] != list2[i]) {
           // Found the position in the parents list where the two start
           // to differ. Look at who's above who.
@@ -3572,7 +3587,7 @@ var Item = Base.extend(
      * @return {Boolean} {@true if it is inside the specified item}
      */
     isDescendant: function (item) {
-      var parent = this
+      let parent = this
       while ((parent = parent._parent)) {
         if (parent === item) return true
       }
@@ -3607,7 +3622,7 @@ var Item = Base.extend(
      * @return {Boolean} {@true if the items are grouped together}
      */
     isGroupedWith: function (item) {
-      var parent = this._parent
+      let parent = this._parent
       while (parent) {
         // Find group parents. Check for parent._parent, since don't want
         // top level layers, because they also inherit from Group
@@ -3895,11 +3910,11 @@ var Item = Base.extend(
   Base.each(
     ['rotate', 'scale', 'shear', 'skew'],
     function (key) {
-      var rotate = key === 'rotate'
+      const rotate = key === 'rotate'
       this[key] = function (/* value, center */) {
-        var args = arguments,
-          value = (rotate ? Base : Point).read(args),
-          center = Point.read(args, 0, { readNull: true })
+        const args = arguments
+        const value = (rotate ? Base : Point).read(args)
+        const center = Point.read(args, 0, { readNull: true })
         return this.transform(
           new Matrix()[key](value, center || this.getPosition(true))
         )
@@ -3914,7 +3929,7 @@ var Item = Base.extend(
        * @param {Point} delta the offset to translate the item by
        */
       translate: function (/* delta */) {
-        var mx = new Matrix()
+        const mx = new Matrix()
         return this.transform(mx.translate.apply(mx, arguments))
       },
 
@@ -4082,24 +4097,24 @@ var Item = Base.extend(
       //        'children', 'fill-gradients', 'fill-patterns', 'stroke-patterns',
       //        'lines'. Default: ['objects', 'children']
       transform: function (matrix, _applyRecursively, _setApplyMatrix) {
-        var _matrix = this._matrix,
-          transformMatrix = matrix && !matrix.isIdentity(),
-          // If no matrix is provided, or the matrix is the identity, we might
-          // still have some work to do: _setApplyMatrix or _applyRecursively.
-          applyMatrix = (
-            _setApplyMatrix && this._canApplyMatrix || (
-              this._applyMatrix &&
-              // Don't apply _matrix if the result of concatenating with
-              // matrix would be identity.
-              (
-                transformMatrix ||
-                !_matrix.isIdentity() ||
-                // Even if it's an identity matrix, we may still need to
-                // recursively apply the matrix to children.
-                _applyRecursively && this._children
-              )
+        const _matrix = this._matrix
+        const transformMatrix = matrix && !matrix.isIdentity()
+        // If no matrix is provided, or the matrix is the identity, we might
+        // still have some work to do: _setApplyMatrix or _applyRecursively.
+        let applyMatrix = (
+          _setApplyMatrix && this._canApplyMatrix || (
+            this._applyMatrix &&
+            // Don't apply _matrix if the result of concatenating with
+            // matrix would be identity.
+            (
+              transformMatrix ||
+              !_matrix.isIdentity() ||
+              // Even if it's an identity matrix, we may still need to
+              // recursively apply the matrix to children.
+              _applyRecursively && this._children
             )
           )
+        )
         // Bail out if there is nothing to do.
         if (!transformMatrix && !applyMatrix) return this
         // Simply prepend the internal matrix with the passed one:
@@ -4116,11 +4131,11 @@ var Item = Base.extend(
           // system.
           // TODO: Introduce options to control whether fills should be
           // transformed or not.
-          var style = this._style,
-            // Pass true for _dontMerge so we don't recursively transform
-            // styles on groups' children.
-            fillColor = style.getFillColor(true),
-            strokeColor = style.getStrokeColor(true)
+          const style = this._style
+          // Pass true for _dontMerge so we don't recursively transform
+          // styles on groups' children.
+          const fillColor = style.getFillColor(true)
+          const strokeColor = style.getStrokeColor(true)
           if (fillColor) fillColor.transform(matrix)
           if (strokeColor) strokeColor.transform(matrix)
         }
@@ -4137,7 +4152,7 @@ var Item = Base.extend(
         ) {
           // Pivot is provided in the parent's coordinate system, so transform
           // it along too.
-          var pivot = this._pivot
+          const pivot = this._pivot
           if (pivot) _matrix._transformPoint(pivot, pivot, true)
           // Reset the internal matrix to the identity transformation if
           // it was possible to apply it, but do not notify owner of change.
@@ -4148,20 +4163,20 @@ var Item = Base.extend(
         }
         // Calling _changed will clear _bounds and _position, but depending
         // on matrix we can calculate and set them again, so preserve them.
-        var bounds = this._bounds,
-          position = this._position
+        const bounds = this._bounds
+        const position = this._position
         if (transformMatrix || applyMatrix) {
           this._changed(/*#=*/ Change.MATRIX)
         }
         // Detect matrices that contain only translations and scaling
         // and transform the cached _bounds and _position without having to
         // fully recalculate each time.
-        var decomp = transformMatrix && bounds && matrix.decompose()
+        const decomp = transformMatrix && bounds && matrix.decompose()
         if (decomp && decomp.skewing.isZero() && decomp.rotation % 90 === 0) {
           // Transform the old bound by looping through all the cached
           // bounds in _bounds and transform each.
-          for (var key in bounds) {
-            var cache = bounds[key]
+          for (const key in bounds) {
+            const cache = bounds[key]
             // If any item involved in the determination of these bounds has
             // non-scaling strokes, or if a scaling matrix is applied to
             // the content without scaling its strokes, delete the cache
@@ -4177,14 +4192,14 @@ var Item = Base.extend(
             } else if (applyMatrix || !cache.internal) {
               // If these are internal bounds, only transform them if this
               // item applied its matrix.
-              var rect = cache.rect
+              const rect = cache.rect
               matrix._transformBounds(rect, rect)
             }
           }
           this._bounds = bounds
           // If we have cached bounds, try to determine _position as its
           // center. Use _boundsOptions do get the cached default bounds.
-          var cached =
+          const cached =
             bounds[
               this._getBoundsCacheKey(
                 this._boundsOptions || {}
@@ -4205,9 +4220,9 @@ var Item = Base.extend(
       },
 
       _transformContent: function (matrix, applyRecursively, setApplyMatrix) {
-        var children = this._children
+        const children = this._children
         if (children) {
-          for (var i = 0, l = children.length; i < l; i++) {
+          for (let i = 0, l = children.length; i < l; i++) {
             children[i].transform(matrix, applyRecursively, setApplyMatrix)
           }
           return true
@@ -4337,10 +4352,10 @@ var Item = Base.extend(
         fit = Base.read(arguments)
         // TODO: Remove the boolean values in 1.0.0? (deprecated October 2026)
         if (fit === true) fit = 'cover'
-        var bounds = this.getBounds(),
-          hor = rectangle.width / bounds.width,
-          ver = rectangle.height / bounds.height,
-          size
+        const bounds = this.getBounds()
+        const hor = rectangle.width / bounds.width
+        const ver = rectangle.height / bounds.height
+        let size
 
         // Empty sides of the item or the rectangle give ratios of Infinity or
         // 0, which can't scale it, so only use the others:
@@ -4354,12 +4369,12 @@ var Item = Base.extend(
             isScaling(ver) ? rectangle.height : bounds.height
           )
         } else {
-          var ratios = [hor, ver].filter(isScaling),
-            scale = !ratios.length
-              ? 1
-              : fit === 'cover'
-                ? Math.max.apply(Math, ratios)
-                : Math.min.apply(Math, ratios)
+          const ratios = [hor, ver].filter(isScaling)
+          const scale = !ratios.length
+            ? 1
+            : fit === 'cover'
+              ? Math.max.apply(Math, ratios)
+              : Math.min.apply(Math, ratios)
           size = bounds.getSize().multiply(scale)
         }
         this.setBounds(
@@ -5015,7 +5030,7 @@ var Item = Base.extend(
       // We can access internal properties since we're only using this on
       // items without children, where styles would be merged. Text passes
       // the style of each of its runs.
-      var matrix = this._matrix
+      const matrix = this._matrix
       style = style || this._style
       if (style.hasFill()) {
         ctx.fillStyle = style
@@ -5027,13 +5042,13 @@ var Item = Base.extend(
           .getStrokeColor()
           .toCanvasStyle(ctx, matrix, strokeMatrix)
         ctx.lineWidth = style.getStrokeWidth()
-        var strokeJoin = style.getStrokeJoin(),
-          strokeCap = style.getStrokeCap(),
-          miterLimit = style.getMiterLimit()
+        const strokeJoin = style.getStrokeJoin()
+        const strokeCap = style.getStrokeCap()
+        const miterLimit = style.getMiterLimit()
         if (strokeJoin) ctx.lineJoin = strokeJoin
         if (strokeCap) ctx.lineCap = strokeCap
         if (miterLimit) ctx.miterLimit = miterLimit
-        var dashArray = style.getDashArray()
+        const dashArray = style.getDashArray()
         if (dashArray && dashArray.length) {
           ctx.setLineDash(dashArray)
           ctx.lineDashOffset = style.getDashOffset()
@@ -5051,11 +5066,11 @@ var Item = Base.extend(
      * context, shared by Path, CompoundPath and Shape.
      */
     _paint: function (ctx, param, viewMatrix, strokeMatrix) {
-      var style = this._style,
-        hasFill = style.hasFill(),
-        hasStroke = style.hasStroke()
+      const style = this._style
+      const hasFill = style.hasFill()
+      const hasStroke = style.hasStroke()
       if (hasFill || hasStroke) {
-        var isStrokeFirst = hasStroke && style.getPaintOrder() === 'stroke'
+        const isStrokeFirst = hasStroke && style.getPaintOrder() === 'stroke'
         this._setStyles(ctx, param, viewMatrix, strokeMatrix)
         // If shadowColor is defined, clear it after the first paint, so it
         // won't be applied to both fill and stroke.
@@ -5066,8 +5081,11 @@ var Item = Base.extend(
         if (hasFill) {
           // Elliptical radial gradients are drawn as circles, through
           // the matrix that stretches them, see Color#toCanvasStyle():
-          var fillColor = style.getFillColor(),
-            ellipse = fillColor._getEllipseMatrix(this._matrix, strokeMatrix)
+          const fillColor = style.getFillColor()
+          const ellipse = fillColor._getEllipseMatrix(
+            this._matrix,
+            strokeMatrix
+          )
           if (ellipse) {
             ctx.save()
             ellipse.applyToContext(ctx)
@@ -5086,14 +5104,14 @@ var Item = Base.extend(
       // completely. As almost no browser supports ctx.currentTransform,
       // we need to calculate our own here, and then use it to transform
       // the shadow-blur and offset accordingly.
-      var style = this._style,
-        pixelRatio = param.pixelRatio || 1,
-        mx = viewMatrix._shiftless().prepend(
-          new Matrix().scale(pixelRatio, pixelRatio)
-        ),
-        // Transform the blur value as a vector and use its new length:
-        blur = mx.transform(new Point(style.getShadowBlur(), 0)),
-        offset = mx.transform(this.getShadowOffset())
+      const style = this._style
+      const pixelRatio = param.pixelRatio || 1
+      const mx = viewMatrix._shiftless().prepend(
+        new Matrix().scale(pixelRatio, pixelRatio)
+      )
+      // Transform the blur value as a vector and use its new length:
+      const blur = mx.transform(new Point(style.getShadowBlur(), 0))
+      const offset = mx.transform(this.getShadowOffset())
       ctx.shadowColor = style.getShadowColor().toCanvasStyle(ctx)
       ctx.shadowBlur = blur.getLength()
       ctx.shadowOffsetX = offset.x
@@ -5101,19 +5119,21 @@ var Item = Base.extend(
     },
 
     draw: function (ctx, param, parentStrokeMatrix) {
+      let offset
+
       // Each time the project gets drawn, it's _updateVersion is increased.
       // Keep the _updateVersion of drawn items in sync, so we have an easy
       // way to know for which selected items we need to draw selection info.
-      var updateVersion = (this._updateVersion = this._project._updateVersion)
+      this._updateVersion = this._project._updateVersion
       // Now bail out if no actual drawing is required.
       if (!this._visible || this._opacity === 0) return
       // Keep calculating the current global matrix, by keeping a history
       // and pushing / popping as we go along.
-      var matrices = param.matrices,
-        viewMatrix = param.viewMatrix,
-        matrix = this._matrix,
-        parentMatrix = matrices[matrices.length - 1],
-        globalMatrix = parentMatrix.appended(matrix)
+      const matrices = param.matrices
+      let viewMatrix = param.viewMatrix
+      const matrix = this._matrix
+      const parentMatrix = matrices[matrices.length - 1]
+      const globalMatrix = parentMatrix.appended(matrix)
       // If this item is not invertible, do not draw it. It appears to be a
       // good idea generally to not draw in such circumstances, e.g. SVG
       // handles it the same way.
@@ -5142,47 +5162,47 @@ var Item = Base.extend(
       // over their fill.
       // Exclude Raster items since they never draw a stroke and handle
       // opacity by themselves (they also don't call _setStyles)
-      var blendMode = this._blendMode,
-        opacity = Numerical.clamp(this._opacity, 0, 1),
-        normalBlend = blendMode === 'normal',
-        nativeBlend = BlendMode.nativeModes[blendMode],
-        style = this._style,
-        // Canvas fills and strokes separately, so items with both can only
-        // cast the shadow of one. Draw them on a temporary canvas, and cast
-        // the shadow when compositing it, which native blending can. Pass
-        // true for _dontMerge, as groups don't draw the shadows of their
-        // children (#892):
-        shadow = (
-          (normalBlend || nativeBlend) &&
-          style.getShadowColor(true) &&
-          style.hasShadow() &&
-          style.hasFill() &&
-          style.hasStroke()
-        ),
-        // Determine if we can draw directly, or if we need to draw into a
-        // separate canvas and then composite onto the main canvas.
-        direct = (
-          !shadow && ( // e.g. CompoundPath
-            (
-              normalBlend &&
-              opacity === 1 &&
-              !(this instanceof Group && this.isIsolated())
-            ) || (
-              // If native blending is possible, see if the item allows it
-              (nativeBlend || normalBlend && opacity < 1) &&
-              this._canComposite()
-            )
-          ) ||
-          param.dontStart ||
-          param.clip
-        ),
-        pixelRatio = param.pixelRatio || 1,
-        mainCtx,
-        itemOffset,
-        prevOffset,
-        itemSize,
-        buffer,
-        isFresh
+      const blendMode = this._blendMode
+      const opacity = Numerical.clamp(this._opacity, 0, 1)
+      const normalBlend = blendMode === 'normal'
+      const nativeBlend = BlendMode.nativeModes[blendMode]
+      const style = this._style
+      // Canvas fills and strokes separately, so items with both can only
+      // cast the shadow of one. Draw them on a temporary canvas, and cast
+      // the shadow when compositing it, which native blending can. Pass
+      // true for _dontMerge, as groups don't draw the shadows of their
+      // children (#892):
+      const shadow = (
+        (normalBlend || nativeBlend) &&
+        style.getShadowColor(true) &&
+        style.hasShadow() &&
+        style.hasFill() &&
+        style.hasStroke()
+      )
+      // Determine if we can draw directly, or if we need to draw into a
+      // separate canvas and then composite onto the main canvas.
+      const direct = (
+        !shadow && ( // e.g. CompoundPath
+          (
+            normalBlend &&
+            opacity === 1 &&
+            !(this instanceof Group && this.isIsolated())
+          ) || (
+            // If native blending is possible, see if the item allows it
+            (nativeBlend || normalBlend && opacity < 1) &&
+            this._canComposite()
+          )
+        ) ||
+        param.dontStart ||
+        param.clip
+      )
+      const pixelRatio = param.pixelRatio || 1
+      let mainCtx
+      let itemOffset
+      let prevOffset
+      let itemSize
+      let buffer
+      let isFresh
       if (!direct) {
         // Buffered groups drawn by a view keep their temporary canvas, and
         // only draw into it again when it's stale, see Group#buffered.
@@ -5194,7 +5214,7 @@ var Item = Base.extend(
           !param.clipItem &&
           (this._buffer || (this._buffer = {}))
         )
-        var version = this._project._bufferVersion
+        const version = this._project._bufferVersion
         isFresh = (
           buffer &&
           viewMatrix.equals(buffer.matrix) &&
@@ -5203,7 +5223,7 @@ var Item = Base.extend(
         // Apply the parent's global matrix to the calculation of correct
         // bounds, with what effects draw, and include the item's shadow
         // (#1628).
-        var bounds = isFresh
+        let bounds = isFresh
           ? buffer.bounds
           : this.getPreviewBounds(viewMatrix)
         // Pass true for _dontMerge, as groups don't draw the shadows of
@@ -5212,11 +5232,11 @@ var Item = Base.extend(
           // Transform the shadow the same way as in _setStyles(), and
           // cover its blur up to three times the standard deviation,
           // which is half of shadowBlur in Canvas.
-          var mx = viewMatrix._shiftless(),
-            blur = mx.transform(
-              new Point(style.getShadowBlur(true), 0)
-            ),
-            offset = mx.transform(style.getShadowOffset(true))
+          const mx = viewMatrix._shiftless()
+          const blur = mx.transform(
+            new Point(style.getShadowBlur(true), 0)
+          )
+          offset = mx.transform(style.getShadowOffset(true))
           bounds = bounds.unite(
             new Rectangle(
               bounds.getPoint().add(offset),
@@ -5232,7 +5252,7 @@ var Item = Base.extend(
         // Only cover the part of the bounds that is visible on the canvas
         // that we're drawing into (#1644). NOTE: Item#rasterize() doesn't
         // set param.offset, so new Point() turns it into 0, 0.
-        var canvas = ctx.canvas
+        const canvas = ctx.canvas
         bounds = bounds.intersect(
           new Rectangle(
             new Point(param.offset),
@@ -5258,7 +5278,7 @@ var Item = Base.extend(
         // since only that part of it is composited:
         mainCtx = ctx
         if (buffer) {
-          var bufferCanvas = buffer.canvas
+          let bufferCanvas = buffer.canvas
           isFresh = (
             isFresh &&
             itemOffset.equals(buffer.offset) &&
@@ -5289,35 +5309,35 @@ var Item = Base.extend(
       }
       ctx.save()
       // Get the transformation matrix for non-scaling strokes.
-      var strokeMatrix = parentStrokeMatrix
-          ? parentStrokeMatrix.appended(matrix)
-          : // pass `true` for dontMerge
-            this._canScaleStroke &&
-            !this.getStrokeScaling(true) &&
-            viewMatrix,
-        // If we're drawing into a separate canvas and a clipItem is defined
-        // for the current rendering loop, we need to draw the clip item
-        // again.
-        clip = !direct && param.clipItem,
-        // Clip items only clip, and the children of compound paths only add
-        // to the path of their parent, so neither emits:
-        event = (
-          this.responds('draw') &&
-          !isFresh &&
-          !param.clip &&
-          !param.dontStart &&
-          new DrawEvent({
-            item: this,
-            context: ctx,
-            matrix: viewMatrix.clone(),
-            pixelRatio: pixelRatio,
-            view: param.view || null
-          })
-        ),
-        // If we're drawing with a strokeMatrix, the CTM is reset either way
-        // so we don't need to set it, except when we also have to draw a
-        // clipItem, or emit the draw event in the item's coordinates.
-        transform = !strokeMatrix || clip || event
+      const strokeMatrix = parentStrokeMatrix
+        ? parentStrokeMatrix.appended(matrix)
+        : // pass `true` for dontMerge
+          this._canScaleStroke &&
+          !this.getStrokeScaling(true) &&
+          viewMatrix
+      // If we're drawing into a separate canvas and a clipItem is defined
+      // for the current rendering loop, we need to draw the clip item
+      // again.
+      const clip = !direct && param.clipItem
+      // Clip items only clip, and the children of compound paths only add
+      // to the path of their parent, so neither emits:
+      const event = (
+        this.responds('draw') &&
+        !isFresh &&
+        !param.clip &&
+        !param.dontStart &&
+        new DrawEvent({
+          item: this,
+          context: ctx,
+          matrix: viewMatrix.clone(),
+          pixelRatio: pixelRatio,
+          view: param.view || null
+        })
+      )
+      // If we're drawing with a strokeMatrix, the CTM is reset either way
+      // so we don't need to set it, except when we also have to draw a
+      // clipItem, or emit the draw event in the item's coordinates.
+      const transform = !strokeMatrix || clip || event
       // If drawing directly, handle opacity and native blending now,
       // otherwise we will do it later when the temporary canvas is composited.
       if (direct) {
@@ -5361,15 +5381,15 @@ var Item = Base.extend(
         // Also offset again when drawing non-directly.
         // NOTE: Don't use itemOffset since offset might be from the parent,
         // e.g. CompoundPath
-        var offset = param.offset
+        offset = param.offset
         if (offset) ctx.translate(-offset.x, -offset.y)
       }
       if (!isFresh && !(event && event.prevented)) {
-        var drawParam =
-            shadow && !direct
-              ? param.extend({ dontShadow: true })
-              : param,
-          output = this.getEffectOutput()
+        const drawParam =
+          shadow && !direct
+            ? param.extend({ dontShadow: true })
+            : param
+        const output = this.getEffectOutput()
         if (output) {
           // The output of the effects is drawn in the item's place, in
           // its coordinates, see #effects:
@@ -5421,7 +5441,7 @@ var Item = Base.extend(
      * graph anymore or is invisible.
      */
     _isUpdated: function (updateVersion) {
-      var parent = this._parent
+      const parent = this._parent
       // For compound-paths, use the _updateVersion of the parent, because the
       // shape gets drawn at once at might get cached (e.g. Path2D soon).
       if (parent instanceof CompoundPath)
@@ -5430,7 +5450,7 @@ var Item = Base.extend(
       // _updateVersion of all its children will not be updated, but the
       // children should still be considered updated, and selections should be
       // drawn for them. Excluded are only items with _visible == false:
-      var updated = this._updateVersion === updateVersion
+      let updated = this._updateVersion === updateVersion
       if (
         !updated &&
         parent &&
@@ -5453,36 +5473,36 @@ var Item = Base.extend(
       updateVersion,
       handlersOnly
     ) {
-      var selection = this._selection,
-        itemSelected = selection & /*#=*/ ItemSelection.ITEM,
-        boundsSelected = (
-          selection & /*#=*/ ItemSelection.BOUNDS ||
-          itemSelected && this._selectBounds
-        ),
-        strokeBoundsSelected = (
-          selection &
-          /*#=*/ ItemSelection.STROKE_BOUNDS
-        ),
-        positionSelected = selection & /*#=*/ ItemSelection.POSITION
+      const selection = this._selection
+      let itemSelected = selection & /*#=*/ ItemSelection.ITEM
+      const boundsSelected = (
+        selection & /*#=*/ ItemSelection.BOUNDS ||
+        itemSelected && this._selectBounds
+      )
+      const strokeBoundsSelected = (
+        selection &
+        /*#=*/ ItemSelection.STROKE_BOUNDS
+      )
+      const positionSelected = selection & /*#=*/ ItemSelection.POSITION
       if (!this._drawSelected) itemSelected = false
       // Items of symbol definitions are drawn too, but aren't inserted:
       if (selection && this._isUpdated(updateVersion) && this.isInserted()) {
         // Allow definition of selected color on a per item and per
         // layer level, with a fallback to #009dec
-        var layer,
-          color = (
-            this.getSelectedColor(true) || (
-              (layer = this.getLayer()) &&
-              layer.getSelectedColor(true)
-            )
-          ),
-          mx = matrix.appended(this.getGlobalMatrix(true)),
-          half = size / 2
+        let layer
+        const color = (
+          this.getSelectedColor(true) || (
+            (layer = this.getLayer()) &&
+            layer.getSelectedColor(true)
+          )
+        )
+        const mx = matrix.appended(this.getGlobalMatrix(true))
+        const half = size / 2
         ctx.strokeStyle = ctx.fillStyle = color
           ? color.toCanvasStyle(ctx)
           : '#009dec'
         if (this.responds('drawselection')) {
-          var event = new DrawEvent({
+          const event = new DrawEvent({
             item: this,
             context: ctx,
             matrix: mx.clone(),
@@ -5501,37 +5521,39 @@ var Item = Base.extend(
         if (positionSelected) {
           // Convert position from the parent's coordinates system to the
           // global one:
-          var pos = this.getPosition(true),
-            parent = this._parent,
-            point = parent ? parent.localToGlobal(pos) : pos,
-            x = point.x,
-            y = point.y
+          const pos = this.getPosition(true)
+          const parent = this._parent
+          const point = parent ? parent.localToGlobal(pos) : pos
+          const x = point.x
+          const y = point.y
           ctx.beginPath()
           ctx.arc(x, y, half, 0, Math.PI * 2, true)
           ctx.stroke()
-          var deltas = [[0, -1], [1, 0], [0, 1], [-1, 0]],
-            start = half,
-            end = size + 1
-          for (var i = 0; i < 4; i++) {
-            var delta = deltas[i],
-              dx = delta[0],
-              dy = delta[1]
+          const deltas = [[0, -1], [1, 0], [0, 1], [-1, 0]]
+          const start = half
+          const end = size + 1
+          for (let i = 0; i < 4; i++) {
+            const delta = deltas[i]
+            const dx = delta[0]
+            const dy = delta[1]
             ctx.moveTo(x + dx * start, y + dy * start)
             ctx.lineTo(x + dx * end, y + dy * end)
             ctx.stroke()
           }
         }
-        var drawBounds = function (bounds) {
-          var coords = mx._transformCorners(bounds)
+        const drawBounds = function (bounds) {
+          let i
+
+          const coords = mx._transformCorners(bounds)
           // Now draw a rectangle that connects the transformed
           // bounds corners, and draw the corners.
           ctx.beginPath()
-          for (var i = 0; i < 8; i++) {
+          for (i = 0; i < 8; i++) {
             ctx[!i ? 'moveTo' : 'lineTo'](coords[i], coords[++i])
           }
           ctx.closePath()
           ctx.stroke()
-          for (var i = 0; i < 8; i++) {
+          for (i = 0; i < 8; i++) {
             ctx.fillRect(coords[i] - half, coords[++i] - half, size, size)
           }
         }
@@ -5549,7 +5571,7 @@ var Item = Base.extend(
     ['down', 'drag', 'up', 'move'],
     function (key) {
       this['removeOn' + Base.capitalize(key)] = function () {
-        var hash = {}
+        const hash = {}
         hash[key] = true
         return this.removeOn(hash)
       }
@@ -5685,11 +5707,11 @@ var Item = Base.extend(
        */
       // TODO: implement Item#removeOnFrame
       removeOn: function (obj) {
-        for (var name in obj) {
+        for (const name in obj) {
           if (obj[name]) {
-            var key = 'mouse' + name,
-              project = this._project,
-              sets = (project._removeSets = project._removeSets || {})
+            const key = 'mouse' + name
+            const project = this._project
+            const sets = (project._removeSets = project._removeSets || {})
             sets[key] = sets[key] || {}
             sets[key][this._id] = this
           }
@@ -5816,13 +5838,13 @@ var Item = Base.extend(
           to = null
         }
       }
-      var easing = options && options.easing,
-        start = options && options.start,
-        duration = (
-          options != null &&
-          (typeof options === 'number' ? options : options.duration)
-        ),
-        tween = new Tween(this, from, to, duration, easing, start)
+      const easing = options && options.easing
+      const start = options && options.start
+      const duration = (
+        options != null &&
+        (typeof options === 'number' ? options : options.duration)
+      )
+      const tween = new Tween(this, from, to, duration, easing, start)
       function onFrame(event) {
         tween._handleFrame(event.time * 1000)
         if (!tween.running) {

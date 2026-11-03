@@ -15,7 +15,7 @@
  * @class The Line object represents..
  * @private
  */
-var Line = Base.extend(
+const Line = Base.extend(
   /** @lends Line# */ {
     _class: 'Line',
 
@@ -28,7 +28,7 @@ var Line = Base.extend(
      * @param {Boolean} [asVector=false]
      */
     initialize: function Line(arg0, arg1, arg2, arg3, arg4) {
-      var asVector = false
+      let asVector
       if (arguments.length >= 4) {
         this._px = arg0
         this._py = arg1
@@ -159,19 +159,19 @@ var Line = Base.extend(
           v2x -= p2x
           v2y -= p2y
         }
-        var cross = v1x * v2y - v1y * v2x
+        const cross = v1x * v2y - v1y * v2x
         // Avoid divisions by 0, and errors when getting too close to 0
         if (!Numerical.isMachineZero(cross)) {
-          var dx = p1x - p2x,
-            dy = p1y - p2y,
-            u1 = (v2x * dy - v2y * dx) / cross,
-            u2 = (v1x * dy - v1y * dx) / cross,
-            // Check the ranges of the u parameters if the line is not
-            // allowed to extend beyond the definition points, but
-            // compare with EPSILON tolerance over the [0, 1] bounds.
-            epsilon = /*#=*/ Numerical.EPSILON,
-            uMin = -epsilon,
-            uMax = 1 + epsilon
+          const dx = p1x - p2x
+          const dy = p1y - p2y
+          let u1 = (v2x * dy - v2y * dx) / cross
+          const u2 = (v1x * dy - v1y * dx) / cross
+          // Check the ranges of the u parameters if the line is not
+          // allowed to extend beyond the definition points, but
+          // compare with EPSILON tolerance over the [0, 1] bounds.
+          const epsilon = /*#=*/ Numerical.EPSILON
+          const uMin = -epsilon
+          const uMax = 1 + epsilon
           if (isInfinite || uMin < u1 && u1 < uMax && uMin < u2 && u2 < uMax) {
             if (!isInfinite) {
               // Address the tolerance at the bounds by clipping to
@@ -191,10 +191,10 @@ var Line = Base.extend(
           vx -= px
           vy -= py
         }
-        var v2x = x - px,
-          v2y = y - py,
-          // ccw = v2.cross(v1);
-          ccw = v2x * vy - v2y * vx
+        const v2x = x - px
+        const v2y = y - py
+        // ccw = v2.cross(v1);
+        let ccw = v2x * vy - v2y * vx
         if (!isInfinite && Numerical.isMachineZero(ccw)) {
           // If the point is on the infinite line, check if it's on the
           // finite line too: Project v2 onto v1 and determine ccw based

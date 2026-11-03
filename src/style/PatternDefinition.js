@@ -48,7 +48,7 @@
  *     strokeWidth: 20
  * });
  */
-var PatternDefinition = ItemDefinition.extend(
+const PatternDefinition = ItemDefinition.extend(
   /** @lends PatternDefinition# */ {
     _class: 'PatternDefinition',
 
@@ -72,8 +72,8 @@ var PatternDefinition = ItemDefinition.extend(
 
     _serialize: function (options, dictionary) {
       return dictionary.add(this, function () {
-        var json = [this._class, this._item],
-          props = {}
+        const json = [this._class, this._item]
+        const props = {}
         // Leave out the options that are the defaults:
         if (this._tile) props.tile = this._tile
         if (!this._spacing.isZero()) props.spacing = this._spacing
@@ -184,28 +184,28 @@ var PatternDefinition = ItemDefinition.extend(
     // the context's resolution, rounded up to quarter octaves, so that items
     // at nearby scales share them. See Color#toCanvasStyle():
     _toCanvasStyle: function (ctx, matrix) {
-      var transform = ctx.getTransform(),
-        device = new Matrix(
-          transform.a,
-          transform.b,
-          transform.c,
-          transform.d,
-          0,
-          0
-        ).append(matrix),
-        scale = Math.max(
-          Math.sqrt(device._a * device._a + device._b * device._b),
-          Math.sqrt(device._c * device._c + device._d * device._d)
-        ),
-        level = Math.ceil(
-          Math.log(scale) / Math.LN2 * 4 -
-          /*#=*/ Numerical.EPSILON
-        ),
-        tile = this.getTile(),
-        cell = tile.getSize().add(this._spacing),
-        size = cell.multiply(Math.pow(2, level / 4)).ceil()
+      const transform = ctx.getTransform()
+      const device = new Matrix(
+        transform.a,
+        transform.b,
+        transform.c,
+        transform.d,
+        0,
+        0
+      ).append(matrix)
+      const scale = Math.max(
+        Math.sqrt(device._a * device._a + device._b * device._b),
+        Math.sqrt(device._c * device._c + device._d * device._d)
+      )
+      const level = Math.ceil(
+        Math.log(scale) / Math.LN2 * 4 -
+        /*#=*/ Numerical.EPSILON
+      )
+      const tile = this.getTile()
+      const cell = tile.getSize().add(this._spacing)
+      const size = cell.multiply(Math.pow(2, level / 4)).ceil()
       if (!(size.width > 0 && size.height > 0)) return 'rgba(0,0,0,0)'
-      var canvas = this._canvases[level]
+      let canvas = this._canvases[level]
       if (!canvas) {
         // The tiles are kept for as long as the pattern doesn't change, so
         // they're never released to the CanvasProvider's pool, as with the
@@ -213,10 +213,10 @@ var PatternDefinition = ItemDefinition.extend(
         canvas = this._canvases[level] = self.OffscreenCanvas
           ? new self.OffscreenCanvas(size.width, size.height)
           : CanvasProvider.getCanvas(size)
-        var tileCtx = canvas.getContext('2d'),
-          mx = new Matrix()
-            .scale(size.divide(cell))
-            .translate(tile.getPoint().negate())
+        const tileCtx = canvas.getContext('2d')
+        const mx = new Matrix()
+          .scale(size.divide(cell))
+          .translate(tile.getPoint().negate())
         mx.applyToContext(tileCtx)
         // Leave the spacing between the tiles empty:
         if (!this._spacing.isZero()) {
@@ -234,10 +234,10 @@ var PatternDefinition = ItemDefinition.extend(
           })
         )
       }
-      var pattern = ctx.createPattern(canvas, 'repeat'),
-        placement = matrix.appended(
-          new Matrix().translate(tile.getPoint()).scale(cell.divide(size))
-        )
+      const pattern = ctx.createPattern(canvas, 'repeat')
+      const placement = matrix.appended(
+        new Matrix().translate(tile.getPoint()).scale(cell.divide(size))
+      )
       // Reuse the context's DOMMatrix, as node-canvas only takes its own:
       transform.a = placement._a
       transform.b = placement._b

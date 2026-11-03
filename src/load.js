@@ -18,16 +18,16 @@ if (typeof window === 'object') {
   if (!window.include) {
     // Get the last script tag and assume it's the one that loaded this file
     // then get its src attribute and figure out the location of our root.
-    var scripts = document.getElementsByTagName('script'),
-      src = scripts[scripts.length - 1].getAttribute('src'),
-      // Assume that we're loading from a non-root folder, either through
-      // ../../dist/paper-full.js, or directly through ../../src/load.js,
-      // and match root as all the path's parts that lead to that folder,
-      // exclude the last bit (dist|src), as that's a sub-folder of paper.
-      root = src.match(/^(.*\/)\w*\//)[1],
-      load = function (src) {
-        document.write('<script src="' + src + '"></script>')
-      }
+    const scripts = document.getElementsByTagName('script')
+    const src = scripts[scripts.length - 1].getAttribute('src')
+    // Assume that we're loading from a non-root folder, either through
+    // ../../dist/paper-full.js, or directly through ../../src/load.js,
+    // and match root as all the path's parts that lead to that folder,
+    // exclude the last bit (dist|src), as that's a sub-folder of paper.
+    const root = src.match(/^(.*\/)\w*\//)[1]
+    const load = function (src) {
+      document.write('<script src="' + src + '"></script>')
+    }
     // First load the prepro's browser.js file, which provides the include()
     // function for the browser.
     load(root + 'node_modules/prepro/lib/browser.js')
@@ -51,11 +51,11 @@ if (typeof window === 'object') {
   }
 } else if (typeof require !== 'undefined') {
   // Node.js based loading through Prepro.js:
-  var prepro = require('prepro/lib/node'),
-    // Load the default browser-based options for further amendments.
-    // Step out and back into src, in case this is loaded from
-    // dist/paper-node.js
-    options = require('../src/options.js')
+  const prepro = require('prepro/lib/node')
+  // Load the default browser-based options for further amendments.
+  // Step out and back into src, in case this is loaded from
+  // dist/paper-node.js
+  const options = require('../src/options.js')
   // Override Node.js specific options.
   options.load = true
   options.hosted = true

@@ -32,9 +32,9 @@
  * });
  * path.addEffect({ type: 'shrink', parameters: { amount: 0.8 } });
  */
-var Effect = Base.extend(
+const Effect = Base.extend(
   new (function () {
-    var effects = {}
+    const effects = {}
 
     return /** @lends Effect# */ {
       _class: 'Effect',
@@ -47,8 +47,8 @@ var Effect = Base.extend(
        *     and {@link #onEditParameters}
        */
       initialize: function Effect(props) {
-        var defaults = {},
-          accessors = {}
+        const defaults = {}
+        const accessors = {}
         this._type = props.type
         this._label = props.label || props.type
         this._parameters = props.parameters || {}
@@ -191,7 +191,7 @@ var Effect = Base.extend(
          * @return {Boolean} {@true if the effect was registered}
          */
         remove: function (effect) {
-          var type = effect._type
+          const type = effect._type
           if (effects[type] === effect) {
             delete effects[type]
             Effect._version++
@@ -210,11 +210,11 @@ new (function () {
   // the paths replaced by what it returns:
   function applyToPaths(art, func) {
     if (art instanceof PathItem) return func(art)
-    var children = art._children
+    const children = art._children
     if (children) {
-      for (var i = children.length - 1; i >= 0; i--) {
-        var child = children[i],
-          result = applyToPaths(child, func)
+      for (let i = children.length - 1; i >= 0; i--) {
+        const child = children[i]
+        const result = applyToPaths(child, func)
         if (result !== child) child.replaceWith(result)
       }
     }
@@ -242,7 +242,7 @@ new (function () {
     },
 
     onApply: function (event) {
-      var instance = this
+      const instance = this
       return applyToPaths(event.art, function (path) {
         return path.offset(instance.distance, {
           join: instance.join,
@@ -262,7 +262,7 @@ new (function () {
     onApply: function (event) {
       return applyToPaths(event.art, function (path) {
         if (!path.hasStroke()) return path
-        var outline = path.outline({ insert: false })
+        const outline = path.outline({ insert: false })
         if (!path.hasFill()) return outline
         path.setStrokeColor(null)
         return new Group({

@@ -40,10 +40,10 @@
  * // converted to a Color.
  * circle.fillColor = '#ff0000';
  */
-var Color = Base.extend(
+const Color = Base.extend(
   new (function () {
     // Link color types to component indices and types:
-    var types = {
+    const types = {
       gray: ['gray'],
       rgb: ['red', 'green', 'blue'],
       hsb: ['hue', 'saturation', 'brightness'],
@@ -53,20 +53,20 @@ var Color = Base.extend(
     }
 
     // Parsers of values for setters, by type and property
-    var componentParsers = {},
-      // Cache and canvas context for color name lookup
-      namedColors = {
-        // node-canvas appears to return wrong values for 'transparent'.
-        // Fix it by having it pre-cashed here:
-        transparent: [0, 0, 0, 0]
-      },
-      colorCtx
+    const componentParsers = {}
+    // Cache and canvas context for color name lookup
+    const namedColors = {
+      // node-canvas appears to return wrong values for 'transparent'.
+      // Fix it by having it pre-cashed here:
+      transparent: [0, 0, 0, 0]
+    }
+    let colorCtx
 
     // The gradient points are in the coordinates of the item's parent. If the
     // item's content is transformed by a matrix, get them into its own
     // coordinates by the inverse, and then through the strokeMatrix:
     function getCanvasTransform(matrix, strokeMatrix) {
-      var inverse = matrix && matrix.inverted()
+      const inverse = matrix && matrix.inverted()
       return strokeMatrix && inverse
         ? strokeMatrix.appended(inverse)
         : strokeMatrix || inverse
@@ -76,31 +76,31 @@ var Color = Base.extend(
     // gradient color's components into those of `dest`, which may be the
     // components themselves, exactly for any matrix.
     function transformGradient(components, dest, matrix) {
-      var origin = components[1],
-        highlight = components[3],
-        aspect = components[4],
-        along = components[2].subtract(origin),
-        across = along.rotate(90),
-        // Vectors map without the translation:
-        linear = matrix._shiftless(),
-        u = linear._transformPoint(along),
-        start = matrix._transformPoint(origin),
-        vector = u
+      const origin = components[1]
+      const highlight = components[3]
+      let aspect = components[4]
+      const along = components[2].subtract(origin)
+      const across = along.rotate(90)
+      // Vectors map without the translation:
+      const linear = matrix._shiftless()
+      const u = linear._transformPoint(along)
+      const start = matrix._transformPoint(origin)
+      let vector = u
       if (!along.isZero()) {
         if (components[0]._radial) {
           // The ellipse with the radius along the gradient and the
           // aspect across it maps to the ellipse of the vectors u and w.
           // Its radii and axis follow from the parts of [u w] that rotate
           // and that reflect, p and q:
-          var w = linear._transformPoint(across.multiply(aspect)),
-            v = w.rotate(-90),
-            p = u.add(v),
-            q = u.subtract(v),
-            pLength = p.getLength(),
-            qLength = q.getLength(),
-            major = (pLength + qLength) / 2,
-            minor = Math.abs(pLength - qLength) / 2,
-            axis = u.normalize()
+          const w = linear._transformPoint(across.multiply(aspect))
+          const v = w.rotate(-90)
+          const p = u.add(v)
+          const q = u.subtract(v)
+          const pLength = p.getLength()
+          const qLength = q.getLength()
+          let major = (pLength + qLength) / 2
+          const minor = Math.abs(pLength - qLength) / 2
+          let axis = u.normalize()
           aspect = 1
           // Without either part, the ellipse is a circle:
           if (Math.min(pLength, qLength) > /*#=*/ Numerical.EPSILON * major) {
@@ -123,8 +123,8 @@ var Color = Base.extend(
           // Linear gradients keep their stripes, which run across them:
           // the destination is where the line from the origin at right
           // angles to the mapped stripes meets the mapped end stripe.
-          var stripe = linear._transformPoint(across),
-            normal = stripe.rotate(90)
+          const stripe = linear._transformPoint(across)
+          const normal = stripe.rotate(90)
           if (!normal.isZero()) {
             vector = normal.multiply(
               u.dot(normal) / normal.dot(normal)
@@ -146,10 +146,10 @@ var Color = Base.extend(
     // The matrix that stretches the circle of an elliptical radial gradient
     // into its ellipse, around its origin and along its axis:
     function getEllipseMatrix(components) {
-      var aspect = components[4]
+      const aspect = components[4]
       if (components[0]._radial && aspect !== 1) {
-        var origin = components[1],
-          angle = components[2].subtract(origin).getAngle()
+        const origin = components[1]
+        const angle = components[2].subtract(origin).getAngle()
         return new Matrix()
           .translate(origin)
           .rotate(angle)
@@ -160,22 +160,26 @@ var Color = Base.extend(
     }
 
     function fromCSS(string) {
-      var match = (
-          string.match(
-            /^#([\da-f]{2})([\da-f]{2})([\da-f]{2})([\da-f]{2})?$/i
-          ) ||
-          string.match(
-            /^#([\da-f])([\da-f])([\da-f])([\da-f])?$/i
-          )
-        ),
-        type = 'rgb',
-        components
+      let i
+      let value
+      let l
+
+      let match = (
+        string.match(
+          /^#([\da-f]{2})([\da-f]{2})([\da-f]{2})([\da-f]{2})?$/i
+        ) ||
+        string.match(
+          /^#([\da-f])([\da-f])([\da-f])([\da-f])?$/i
+        )
+      )
+      let type = 'rgb'
+      let components
       if (match) {
         // Hex with optional alpha channel:
-        var amount = match[4] ? 4 : 3
+        const amount = match[4] ? 4 : 3
         components = new Array(amount)
-        for (var i = 0; i < amount; i++) {
-          var value = match[i + 1]
+        for (i = 0; i < amount; i++) {
+          value = match[i + 1]
           components[i] = parseInt(
             value.length == 1
               ? value + value
@@ -187,16 +191,16 @@ var Color = Base.extend(
         // RGB / RGBA or HSL / HSLA
         type = match[1]
         components = match[2].trim().split(/[,\s]+/g)
-        var isHSL = type === 'hsl'
-        for (var i = 0, l = Math.min(components.length, 4); i < l; i++) {
-          var component = components[i]
+        const isHSL = type === 'hsl'
+        for (i = 0, l = Math.min(components.length, 4); i < l; i++) {
+          const component = components[i]
           // Use `parseFloat()` instead of `+value` to parse '\d+%' to
           // float for HSL:
-          var value = parseFloat(component)
+          value = parseFloat(component)
           if (isHSL) {
             if (i === 0) {
               // handle 'deg', 'turn', 'rad' 'grad':
-              var unit = component.match(/([a-z]*)$/)[1]
+              const unit = component.match(/([a-z]*)$/)[1]
               value *= {
                 turn: 360,
                 rad: 180 / Math.PI,
@@ -214,7 +218,7 @@ var Color = Base.extend(
         }
       } else {
         // Named
-        var color = namedColors[string]
+        let color = namedColors[string]
         if (!color) {
           // Use a canvas to draw with the given name, then retrieve
           // RGB values and build a cache for all the used colors.
@@ -234,7 +238,7 @@ var Color = Base.extend(
             // pixel:
             colorCtx.fillStyle = string
             colorCtx.fillRect(0, 0, 1, 1)
-            var data = colorCtx.getImageData(0, 0, 1, 1).data
+            const data = colorCtx.getImageData(0, 0, 1, 1).data
             color = namedColors[string] = [
               data[0] / 255,
               data[1] / 255,
@@ -252,7 +256,7 @@ var Color = Base.extend(
 
     // For hsb-rgb conversion, used to lookup the right parameters in the
     // values array.
-    var hsbIndices = [
+    const hsbIndices = [
       [0, 3, 1], // 0
       [2, 0, 1], // 1
       [1, 0, 3], // 2
@@ -264,48 +268,13 @@ var Color = Base.extend(
     // Calling convention for converters:
     // The components are passed as an arguments list, and returned as an array.
     // alpha is left out, because the conversion does not change it.
-    var converters = {
+    const converters = {
       'rgb-hsb': function (r, g, b) {
-        var max = Math.max(r, g, b),
-          min = Math.min(r, g, b),
-          delta = max - min,
-          h =
-            delta === 0
-              ? 0
-              : (
-                  max == r
-                    ? (g - b) / delta + (g < b ? 6 : 0)
-                    : max == g
-                      ? (b - r) / delta + 2
-                      : (r - g) / delta + 4
-                ) *
-                60 // max == b
-        return [h, max === 0 ? 0 : delta / max, max]
-      },
-
-      'hsb-rgb': function (h, s, b) {
-        // Scale h to 0..6 with modulo for negative values too
-        h = (((h / 60) % 6) + 6) % 6
-        var i = Math.floor(h), // 0..5
-          f = h - i,
-          i = hsbIndices[i],
-          v = [
-            b, // b, index 0
-            b * (1 - s), // p, index 1
-            b * (1 - s * f), // q, index 2
-            b * (1 - s * (1 - f)) // t, index 3
-          ]
-        return [v[i[0]], v[i[1]], v[i[2]]]
-      },
-
-      // HSL code is based on:
-      // http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
-      'rgb-hsl': function (r, g, b) {
-        var max = Math.max(r, g, b),
-          min = Math.min(r, g, b),
-          delta = max - min,
-          achromatic = delta === 0,
-          h = achromatic
+        const max = Math.max(r, g, b)
+        const min = Math.min(r, g, b)
+        const delta = max - min
+        const h =
+          delta === 0
             ? 0
             : (
                 max == r
@@ -314,13 +283,50 @@ var Color = Base.extend(
                     ? (b - r) / delta + 2
                     : (r - g) / delta + 4
               ) *
-              60, // max == b
-          l = (max + min) / 2,
-          s = achromatic
-            ? 0
-            : l < 0.5
-              ? delta / (max + min)
-              : delta / (2 - max - min)
+              60 // max == b
+        return [h, max === 0 ? 0 : delta / max, max]
+      },
+
+      'hsb-rgb': function (h, s, b) {
+        let i
+
+        // Scale h to 0..6 with modulo for negative values too
+        h = (((h / 60) % 6) + 6) % 6
+        i = Math.floor(h) // 0..5
+        const f = h - i
+        i = hsbIndices[i]
+        const v = [
+          b, // b, index 0
+          b * (1 - s), // p, index 1
+          b * (1 - s * f), // q, index 2
+          b * (1 - s * (1 - f)) // t, index 3
+        ]
+        return [v[i[0]], v[i[1]], v[i[2]]]
+      },
+
+      // HSL code is based on:
+      // http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
+      'rgb-hsl': function (r, g, b) {
+        const max = Math.max(r, g, b)
+        const min = Math.min(r, g, b)
+        const delta = max - min
+        const achromatic = delta === 0
+        const h = achromatic
+          ? 0
+          : (
+              max == r
+                ? (g - b) / delta + (g < b ? 6 : 0)
+                : max == g
+                  ? (b - r) / delta + 2
+                  : (r - g) / delta + 4
+            ) *
+            60 // max == b
+        const l = (max + min) / 2
+        const s = achromatic
+          ? 0
+          : l < 0.5
+            ? delta / (max + min)
+            : delta / (2 - max - min)
         return [h, s, l]
       },
 
@@ -328,12 +334,12 @@ var Color = Base.extend(
         // Scale h to 0..1 with modulo for negative values too
         h = (((h / 360) % 1) + 1) % 1
         if (s === 0) return [l, l, l]
-        var t3s = [h + 1 / 3, h, h - 1 / 3],
-          t2 = l < 0.5 ? l * (1 + s) : l + s - l * s,
-          t1 = 2 * l - t2,
-          c = []
-        for (var i = 0; i < 3; i++) {
-          var t3 = t3s[i]
+        const t3s = [h + 1 / 3, h, h - 1 / 3]
+        const t2 = l < 0.5 ? l * (1 + s) : l + s - l * s
+        const t1 = 2 * l - t2
+        const c = []
+        for (let i = 0; i < 3; i++) {
+          let t3 = t3s[i]
           if (t3 < 0) t3 += 1
           if (t3 > 1) t3 -= 1
           c[i] =
@@ -401,62 +407,62 @@ var Color = Base.extend(
         Base.each(
           properties,
           function (name, index) {
-            var part = Base.capitalize(name),
-              // Both hue and saturation have overlapping properties between
-              // hsb and hsl. Handle this here separately, by testing for
-              // overlaps and skipping conversion if the type is /hs[bl]/
-              hasOverlap = /^(hue|saturation)$/.test(name),
-              // Produce value parser function for the given type / property
-              parser = (componentParsers[type][index] =
-                type === 'gradient'
-                  ? name === 'gradient'
-                    ? // gradient property of gradient color:
-                      function (value) {
-                        var current = this._components[0]
-                        value = Gradient.read(
-                          Array.isArray(value)
-                            ? value
-                            : arguments,
-                          0,
-                          { readNull: true }
-                        )
-                        if (current !== value) {
-                          if (current) current._removeOwner(this)
-                          if (value) value._addOwner(this)
-                        }
-                        return value
+            const part = Base.capitalize(name)
+            // Both hue and saturation have overlapping properties between
+            // hsb and hsl. Handle this here separately, by testing for
+            // overlaps and skipping conversion if the type is /hs[bl]/
+            const hasOverlap = /^(hue|saturation)$/.test(name)
+            // Produce value parser function for the given type / property
+            const parser = (componentParsers[type][index] =
+              type === 'gradient'
+                ? name === 'gradient'
+                  ? // gradient property of gradient color:
+                    function (value) {
+                      const current = this._components[0]
+                      value = Gradient.read(
+                        Array.isArray(value)
+                          ? value
+                          : arguments,
+                        0,
+                        { readNull: true }
+                      )
+                      if (current !== value) {
+                        if (current) current._removeOwner(this)
+                        if (value) value._addOwner(this)
                       }
-                    : name === 'aspect'
-                      ? // The aspect of radial gradients, 1 for circles:
-                        function (value) {
-                          return value == null ? 1 : +value
-                        }
-                      : // The point properties of gradient colors:
-                        function (/* value */) {
-                          return Point.read(arguments, 0, {
-                            readNull: name === 'highlight',
-                            clone: true
-                          })
-                        }
-                  : type === 'pattern'
-                    ? name === 'pattern'
-                      ? function (/* value */) {
-                          return PatternDefinition.read(arguments, 0, {
-                            readNull: true
-                          })
-                        }
-                      : // The matrix that places the tiles, a copy:
-                        function (value) {
-                          return value ? new Matrix(value) : new Matrix()
-                        }
-                    : // Normal number component properties:
+                      return value
+                    }
+                  : name === 'aspect'
+                    ? // The aspect of radial gradients, 1 for circles:
                       function (value) {
-                        // NOTE: We don't clamp values here, they're only
-                        // clamped once the actual CSS values are produced.
-                        // Gotta love the fact that isNaN(null) is false,
-                        // while isNaN(undefined) is true.
-                        return value == null || isNaN(value) ? 0 : +value
-                      })
+                        return value == null ? 1 : +value
+                      }
+                    : // The point properties of gradient colors:
+                      function (/* value */) {
+                        return Point.read(arguments, 0, {
+                          readNull: name === 'highlight',
+                          clone: true
+                        })
+                      }
+                : type === 'pattern'
+                  ? name === 'pattern'
+                    ? function (/* value */) {
+                        return PatternDefinition.read(arguments, 0, {
+                          readNull: true
+                        })
+                      }
+                    : // The matrix that places the tiles, a copy:
+                      function (value) {
+                        return value ? new Matrix(value) : new Matrix()
+                      }
+                  : // Normal number component properties:
+                    function (value) {
+                      // NOTE: We don't clamp values here, they're only
+                      // clamped once the actual CSS values are produced.
+                      // Gotta love the fact that isNaN(null) is false,
+                      // while isNaN(undefined) is true.
+                      return value == null || isNaN(value) ? 0 : +value
+                    })
             this['get' + part] = function () {
               return (
                 this._type === type ||
@@ -733,14 +739,19 @@ var Color = Base.extend(
          * path.strokeColor = new Color(pattern, new Matrix().rotate(45));
          */
         initialize: function Color(arg) {
+          let i
+          let parsers
+          let l
+          let value
+
           // We are storing color internally as an array of components
-          var args = arguments,
-            reading = this.__read,
-            read = 0,
-            type,
-            components,
-            alpha,
-            values
+          let args = arguments
+          const reading = this.__read
+          let read = 0
+          let type
+          let components
+          let alpha
+          let values
           // If first argument is an array, replace arguments with it.
           if (Array.isArray(arg)) {
             args = arg
@@ -748,7 +759,7 @@ var Color = Base.extend(
           }
           // First see if it's a type string argument, and if so, set it and
           // shift it out of the arguments list.
-          var argType = arg != null && typeof arg
+          let argType = arg != null && typeof arg
           if (argType === 'string' && arg in types) {
             type = arg
             arg = args[1]
@@ -786,7 +797,7 @@ var Color = Base.extend(
                   values.length >= 3
                     ? 'rgb'
                     : 'gray'
-              var length = types[type].length
+              const length = types[type].length
               alpha = values[length]
               if (reading) {
                 read +=
@@ -796,7 +807,7 @@ var Color = Base.extend(
               }
               if (values.length > length) values = Base.slice(values, 0, length)
             } else if (argType === 'string') {
-              var converted = fromCSS(arg)
+              const converted = fromCSS(arg)
               type = converted[0]
               components = converted[1]
               if (components.length === 4) {
@@ -811,8 +822,8 @@ var Color = Base.extend(
                 // Clone all points and the matrix, since they belong
                 // to the other color already.
                 if (type === 'gradient') {
-                  for (var i = 1; i < 4; i++) {
-                    var point = components[i]
+                  for (i = 1; i < 4; i++) {
+                    const point = components[i]
                     if (point) components[i] = point.clone()
                   }
                 } else if (type === 'pattern') {
@@ -843,11 +854,11 @@ var Color = Base.extend(
                           ? 'gray'
                           : 'rgb'
                 // Convert to array and parse in one loop, for efficiency
-                var properties = types[type],
-                  parsers = componentParsers[type]
+                const properties = types[type]
+                parsers = componentParsers[type]
                 this._components = components = []
-                for (var i = 0, l = properties.length; i < l; i++) {
-                  var value = arg[properties[i]]
+                for (i = 0, l = properties.length; i < l; i++) {
+                  value = arg[properties[i]]
                   // Allow implicit definition of gradients through
                   // stops / radial properties. Conversion happens
                   // here on the fly:
@@ -877,9 +888,9 @@ var Color = Base.extend(
             // values are defined, parsers are still called to produce
             // defaults.
             this._components = components = []
-            var parsers = componentParsers[this._type]
-            for (var i = 0, l = parsers.length; i < l; i++) {
-              var value = parsers[i].call(this, values && values[i])
+            parsers = componentParsers[this._type]
+            for (i = 0, l = parsers.length; i < l; i++) {
+              value = parsers[i].call(this, values && values[i])
               if (value != null) components[i] = value
             }
           }
@@ -902,8 +913,8 @@ var Color = Base.extend(
         set: '#initialize',
 
         _serialize: function (options, dictionary) {
-          var components = this.getComponents(),
-            hasAlpha = this._alpha != null
+          const components = this.getComponents()
+          const hasAlpha = this._alpha != null
           // Leave out the aspect of circles, and with it an unset highlight,
           // and the identity matrix of patterns, unless the alpha follows:
           if (this._type === 'gradient' && components[4] === 1 && !hasAlpha)
@@ -943,10 +954,10 @@ var Color = Base.extend(
          * @return {Number[]} the converted components as an array
          */
         _convert: function (type) {
-          var converter
+          const converter = converters[this._type + '-' + type]
           return this._type === type
             ? this._components.slice()
-            : (converter = converters[this._type + '-' + type])
+            : converter
               ? converter.apply(this, this._components)
               : // Convert to and from rgb if no direct converter exists
                 converters['rgb-' + type].apply(
@@ -995,7 +1006,7 @@ var Color = Base.extend(
          * @type Number[]
          */
         getComponents: function () {
-          var components = this._components.slice()
+          const components = this._components.slice()
           if (this._alpha != null) components.push(this._alpha)
           return components
         },
@@ -1048,7 +1059,7 @@ var Color = Base.extend(
          * @return {Boolean} {@true if the colors are the same}
          */
         equals: function (color) {
-          var col = Base.isPlainValue(color, true)
+          const col = Base.isPlainValue(color, true)
             ? Color.read(arguments)
             : color
           return (
@@ -1079,13 +1090,13 @@ var Color = Base.extend(
          * @return {String} a string representation of the color
          */
         toString: function () {
-          var properties = this._properties,
-            parts = [],
-            // Gradients and patterns have objects among their components:
-            isObject = /^(gradient|pattern)$/.test(this._type),
-            f = Formatter.instance
-          for (var i = 0, l = properties.length; i < l; i++) {
-            var value = this._components[i]
+          const properties = this._properties
+          const parts = []
+          // Gradients and patterns have objects among their components:
+          const isObject = /^(gradient|pattern)$/.test(this._type)
+          const f = Formatter.instance
+          for (let i = 0, l = properties.length; i < l; i++) {
+            const value = this._components[i]
             if (value != null)
               parts.push(
                 properties[i] +
@@ -1106,8 +1117,8 @@ var Color = Base.extend(
          */
         toCSS: function (hex) {
           // TODO: Support HSL / HSLA CSS3 colors directly, without conversion
-          var components = this._convert('rgb'),
-            alpha = hex || this._alpha == null ? 1 : this._alpha
+          let components = this._convert('rgb')
+          const alpha = hex || this._alpha == null ? 1 : this._alpha
           function convert(val) {
             return Math.round((val < 0 ? 0 : val > 1 ? 1 : val) * 255)
           }
@@ -1135,8 +1146,8 @@ var Color = Base.extend(
         // Returns the components of a gradient color in the coordinates it's
         // drawn in, see getCanvasTransform():
         _getCanvasComponents: function (matrix, strokeMatrix) {
-          var components = this._components,
-            transform = getCanvasTransform(matrix, strokeMatrix)
+          const components = this._components
+          const transform = getCanvasTransform(matrix, strokeMatrix)
           return transform
             ? transformGradient(components, [components[0]], transform)
             : components
@@ -1166,8 +1177,8 @@ var Color = Base.extend(
           // changes without notifying the color, so they aren't cached. They
           // are placed in the coordinates of the item's parent, as gradients:
           if (this._type === 'pattern') {
-            var transform = getCanvasTransform(matrix, strokeMatrix),
-              placement = this._components[1]
+            const transform = getCanvasTransform(matrix, strokeMatrix)
+            const placement = this._components[1]
             return this._components[0]._toCanvasStyle(
               ctx,
               transform
@@ -1178,7 +1189,7 @@ var Color = Base.extend(
           // Gradients drawn with a strokeMatrix depend on it, and it can
           // change without notifying the color, so we can't cache these, nor
           // elliptical ones, which are drawn in two ways:
-          var isCacheable = !(
+          const isCacheable = !(
             this._type === 'gradient' &&
             (strokeMatrix || this._components[4] !== 1)
           )
@@ -1187,13 +1198,13 @@ var Color = Base.extend(
           if (this._type !== 'gradient')
             return (this._canvasStyle = this.toCSS())
           // Gradient code form here onwards
-          var components = this._getCanvasComponents(matrix, strokeMatrix),
-            gradient = components[0],
-            stops = gradient._stops,
-            origin = components[1],
-            destination = components[2],
-            highlight = components[3],
-            canvasGradient
+          const components = this._getCanvasComponents(matrix, strokeMatrix)
+          const gradient = components[0]
+          const stops = gradient._stops
+          const origin = components[1]
+          const destination = components[2]
+          let highlight = components[3]
+          let canvasGradient
           if (isEllipse && highlight) {
             highlight =
               getEllipseMatrix(components)._inverseTransform(
@@ -1201,13 +1212,13 @@ var Color = Base.extend(
               )
           }
           if (gradient._radial) {
-            var radius = destination.getDistance(origin)
+            const radius = destination.getDistance(origin)
             if (highlight) {
-              var vector = highlight.subtract(origin)
+              const vector = highlight.subtract(origin)
               if (vector.getLength() > radius)
                 highlight = origin.add(vector.normalize(radius - 0.1))
             }
-            var start = highlight || origin
+            const start = highlight || origin
             canvasGradient = ctx.createRadialGradient(
               start.x,
               start.y,
@@ -1224,9 +1235,9 @@ var Color = Base.extend(
               destination.y
             )
           }
-          for (var i = 0, l = stops.length; i < l; i++) {
-            var stop = stops[i],
-              offset = stop._offset
+          for (let i = 0, l = stops.length; i < l; i++) {
+            const stop = stops[i]
+            const offset = stop._offset
             // Use the defined offset, and fall back to automatic linear
             // calculation.
             // NOTE: that if _offset is 0 for the first entry, the fall-back
@@ -1250,7 +1261,7 @@ var Color = Base.extend(
          * @param {Matrix} matrix the matrix to transform the color by
          */
         transform: function (matrix) {
-          var components = this._components
+          const components = this._components
           if (this._type === 'gradient') {
             transformGradient(components, components, matrix)
             this._changed()
@@ -1543,7 +1554,7 @@ var Color = Base.extend(
            * circle.fillColor = Color.random();
            */
           random: function () {
-            var random = Math.random
+            const random = Math.random
             return new Color(random(), random(), random())
           },
 
@@ -1565,7 +1576,7 @@ var Color = Base.extend(
     )
   })(),
   new (function () {
-    var operators = {
+    const operators = {
       add: function (a, b) {
         return a + b
       },
@@ -1588,10 +1599,10 @@ var Color = Base.extend(
       function (operator, name) {
         this[name] = function (color) {
           color = Color.read(arguments)
-          var type = this._type,
-            components1 = this._components,
-            components2 = color._convert(type)
-          for (var i = 0, l = components1.length; i < l; i++)
+          const type = this._type
+          const components1 = this._components
+          const components2 = color._convert(type)
+          for (let i = 0, l = components1.length; i < l; i++)
             components2[i] = operator(components1[i], components2[i])
           return new Color(
             type,

@@ -28,25 +28,25 @@
  */
 PathItem.inject(
   new (function () {
-    var min = Math.min,
-      max = Math.max,
-      abs = Math.abs,
-      // The boolean operators decide if an area is part of the result, from
-      // whether it is inside each of the two operands.
-      operators = {
-        unite: function (inside1, inside2) {
-          return inside1 || inside2
-        },
-        intersect: function (inside1, inside2) {
-          return inside1 && inside2
-        },
-        subtract: function (inside1, inside2) {
-          return inside1 && !inside2
-        },
-        exclude: function (inside1, inside2) {
-          return inside1 !== inside2
-        }
+    const min = Math.min
+    const max = Math.max
+    const abs = Math.abs
+    // The boolean operators decide if an area is part of the result, from
+    // whether it is inside each of the two operands.
+    const operators = {
+      unite: function (inside1, inside2) {
+        return inside1 || inside2
+      },
+      intersect: function (inside1, inside2) {
+        return inside1 && inside2
+      },
+      subtract: function (inside1, inside2) {
+        return inside1 && !inside2
+      },
+      exclude: function (inside1, inside2) {
+        return inside1 !== inside2
       }
+    }
 
     function getPaths(path) {
       return path._children || [path]
@@ -58,7 +58,7 @@ PathItem.inject(
      * remove empty curves, and closes open paths if required.
      */
     function preparePath(path, close) {
-      var res = path
+      const res = path
         .clone(false)
         .reduce({ simplify: true })
         .transform(null, true, true)
@@ -70,16 +70,16 @@ PathItem.inject(
      * them does.
      */
     function closePaths(item) {
-      var paths = getPaths(item)
-      for (var i = 0, l = paths.length; i < l; i++) {
-        var path = paths[i]
+      const paths = getPaths(item)
+      for (let i = 0, l = paths.length; i < l; i++) {
+        const path = paths[i]
         if (!path._closed && !path.isEmpty()) {
           // Close with epsilon tolerance, to avoid tiny straight
           // that would cause issues with intersection detection.
           // If the ends meet, this joins them and keeps the curve
           // that ends there. Only a new closing curve is straight
           // (#1929):
-          var count = path._segments.length
+          const count = path._segments.length
           path.closePath(/*#=*/ Numerical.EPSILON)
           if (path._segments.length === count) {
             path.getFirstSegment().setHandleIn(0, 0)
@@ -91,17 +91,17 @@ PathItem.inject(
     }
 
     function createResult(paths, simplify, path1, path2, options) {
-      var result = new CompoundPath(Item.NO_INSERT)
+      let result = new CompoundPath(Item.NO_INSERT)
       result.addChildren(paths, true)
       // See if the item can be reduced to just a simple Path.
       result = result.reduce({ simplify: simplify })
       if (Base.pick(options && options.insert, paper.settings.insertItems)) {
         // Insert the resulting path above whichever of the paths that are
         // siblings of path1 appears furthest up in the stack:
-        var above = path1,
-          others = [].concat(path2 || [])
-        for (var i = 0, l = others.length; i < l; i++) {
-          var other = others[i]
+        let above = path1
+        const others = [].concat(path2 || [])
+        for (let i = 0, l = others.length; i < l; i++) {
+          const other = others[i]
           if (path1.isSibling(other) && other.getIndex() > above.getIndex())
             above = other
         }
@@ -135,15 +135,15 @@ PathItem.inject(
       // We do not modify the operands themselves, but trace copies of them.
       // NOTE: The result paths might not belong to the same type i.e.
       // subtract(A:Path, B:Path):CompoundPath etc.
-      var paths
+      let paths
       if (operation === 'exclude' && Array.isArray(path2) && path2.length > 1) {
         // Resolved on its own, each path fills where its winding is odd.
         // So together, they fill where an odd number of them do, as one
         // compound path with the even-odd rule:
-        var items = [path1].concat(path2),
-          compound = new CompoundPath(Item.NO_INSERT)
+        const items = [path1].concat(path2)
+        const compound = new CompoundPath(Item.NO_INSERT)
         compound.setFillRule('evenodd')
-        for (var i = 0, l = items.length; i < l; i++) {
+        for (let i = 0, l = items.length; i < l; i++) {
           compound.addChildren(
             tracePaths([preparePath(items[i], true)], operators.unite)
           )
@@ -164,22 +164,22 @@ PathItem.inject(
      * of similar size. To subtract them, we subtract their union.
      */
     function combinePaths(paths, operation) {
-      var isUnite = operation === 'unite' || operation === 'subtract'
+      const isUnite = operation === 'unite' || operation === 'subtract'
 
       function combine(entries) {
         if (entries.length > 1) {
           if (isUnite) {
             // Split the paths along the longer side of their bounds,
             // so each step unites paths that lie close to each other:
-            var bounds = entries[0].bounds
-            for (var i = 1, l = entries.length; i < l; i++)
+            let bounds = entries[0].bounds
+            for (let i = 1, l = entries.length; i < l; i++)
               bounds = bounds.unite(entries[i].bounds)
-            var key = bounds.width > bounds.height ? 'x' : 'y'
+            const key = bounds.width > bounds.height ? 'x' : 'y'
             entries.sort(function (entry1, entry2) {
               return entry1.center[key] - entry2.center[key]
             })
           }
-          var middle = entries.length >> 1
+          const middle = entries.length >> 1
           return traceBoolean(
             combine(entries.slice(0, middle)),
             combine(entries.slice(middle)),
@@ -190,30 +190,33 @@ PathItem.inject(
         return entries[0].path
       }
 
-      var entries = [].concat(paths || []).map(function (path) {
-        var bounds = path.getBounds()
+      const entries = [].concat(paths || []).map(function (path) {
+        const bounds = path.getBounds()
         return { path: path, bounds: bounds, center: bounds.getCenter() }
       })
       return entries.length ? combine(entries) : null
     }
 
     function splitBoolean(path1, path2, operation, options) {
-      var _path1 = preparePath(path1),
-        _path2 = preparePath(combinePaths(path2, operation)),
-        crossings = _path1.getIntersections(_path2, filterIntersection),
-        subtract = operation === 'subtract',
-        divide = operation === 'divide',
-        pieces = [],
-        paths = []
+      let i
+      let l
+
+      const _path1 = preparePath(path1)
+      const _path2 = preparePath(combinePaths(path2, operation))
+      const crossings = _path1.getIntersections(_path2, filterIntersection)
+      const subtract = operation === 'subtract'
+      const divide = operation === 'divide'
+      const pieces = []
+      const paths = []
 
       // Split the paths of path1 at all crossings, backwards so the earlier
       // locations stay valid. A split returns the part after it, or for a
       // closed path, the path itself, opened at the split, so pieces are
       // only tested once all splitting is done (#1540):
-      for (var i = crossings.length - 1; i >= 0; i--) {
-        var crossing = crossings[i],
-          split = crossing.getPath(),
-          path = crossing.split()
+      for (i = crossings.length - 1; i >= 0; i--) {
+        const crossing = crossings[i]
+        const split = crossing.getPath()
+        const path = crossing.split()
         if (path) {
           // Clear the handles on both sides of the split, as they might
           // have belonged to curves:
@@ -224,14 +227,14 @@ PathItem.inject(
       }
       // Add what's left of the paths of path1, split or not, which for a
       // compound path are its children (#1541):
-      var children = _path1._children || [_path1]
-      for (var i = 0, l = children.length; i < l; i++) {
+      const children = _path1._children || [_path1]
+      for (i = 0, l = children.length; i < l; i++) {
         if (pieces.indexOf(children[i]) === -1) pieces.push(children[i])
       }
       // Simply see if the point halfway across each piece is inside path2,
       // and include or exclude it based on the operation.
-      for (var i = 0, l = pieces.length; i < l; i++) {
-        var piece = pieces[i]
+      for (i = 0, l = pieces.length; i < l; i++) {
+        const piece = pieces[i]
         if (
           divide || (
             _path2.contains(
@@ -252,26 +255,26 @@ PathItem.inject(
      * tell with it which path lies inside which.
      */
     function getRayWinding(point, v) {
-      var winding = 0,
-        x = point.x,
-        y = point.y
+      let winding = 0
+      const x = point.x
+      const y = point.y
       // Only curves that reach the ray at all:
       if (
         y >= min(v[1], v[3], v[5], v[7]) &&
         y <= max(v[1], v[3], v[5], v[7]) &&
         x < max(v[0], v[2], v[4], v[6])
       ) {
-        var monoCurves = Curve.getMonoCurves(v),
-          roots = []
-        for (var i = 0, l = monoCurves.length; i < l; i++) {
-          var mv = monoCurves[i],
-            y0 = mv[1],
-            y3 = mv[7],
-            dir = y0 < y3 ? 1 : y0 > y3 ? -1 : 0
+        const monoCurves = Curve.getMonoCurves(v)
+        const roots = []
+        for (let i = 0, l = monoCurves.length; i < l; i++) {
+          const mv = monoCurves[i]
+          const y0 = mv[1]
+          const y3 = mv[7]
+          const dir = y0 < y3 ? 1 : y0 > y3 ? -1 : 0
           if (dir && y >= min(y0, y3) && y < max(y0, y3)) {
             // The monotone curve crosses the ray once. solveCubic()
             // can miss it close to the ends, where it is at the end:
-            var px =
+            const px =
               Curve.solveCubic(mv, 1, y, roots, 0, 1) > 0
                 ? Curve.getPoint(mv, roots[0]).x
                 : abs(y - y0) < abs(y - y3)
@@ -301,47 +304,47 @@ PathItem.inject(
      * @return {Item[]} the reoriented paths
      */
     function reorientPaths(paths, isInside, clockwise) {
-      var length = paths && paths.length
+      const length = paths && paths.length
       if (length) {
-        var lookup = Base.each(
-            paths,
-            function (path, i) {
-              // Build a lookup table with information for each path's
-              // original index and winding contribution.
-              this[path._id] = {
-                container: null,
-                winding: path.isClockwise() ? 1 : -1,
-                index: i
-              }
-            },
-            {}
-          ),
-          // Now sort the paths by their areas, from large to small.
-          sorted = paths.slice().sort(function (a, b) {
-            return abs(b.getArea()) - abs(a.getArea())
-          }),
-          // Get reference to the first, largest path and insert it
-          // already.
-          first = sorted[0]
+        const lookup = Base.each(
+          paths,
+          function (path, i) {
+            // Build a lookup table with information for each path's
+            // original index and winding contribution.
+            this[path._id] = {
+              container: null,
+              winding: path.isClockwise() ? 1 : -1,
+              index: i
+            }
+          },
+          {}
+        )
+        // Now sort the paths by their areas, from large to small.
+        const sorted = paths.slice().sort(function (a, b) {
+          return abs(b.getArea()) - abs(a.getArea())
+        })
+        // Get reference to the first, largest path and insert it
+        // already.
+        const first = sorted[0]
         // create lookup containing potentially overlapping path bounds
-        var collisions = CollisionDetection.findItemBoundsCollisions(
+        const collisions = CollisionDetection.findItemBoundsCollisions(
           sorted,
           null,
           Numerical.GEOMETRIC_EPSILON
         )
         if (clockwise == null) clockwise = first.isClockwise()
         // Now determine the winding for each path, from large to small.
-        for (var i = 0; i < length; i++) {
-          var path1 = sorted[i],
-            entry1 = lookup[path1._id],
-            containerWinding = 0,
-            indices = collisions[i]
+        for (let i = 0; i < length; i++) {
+          const path1 = sorted[i]
+          const entry1 = lookup[path1._id]
+          let containerWinding = 0
+          const indices = collisions[i]
           if (indices) {
-            var point = null // interior point, only get it if required.
-            for (var j = indices.length - 1; j >= 0; j--) {
+            let point = null // interior point, only get it if required.
+            for (let j = indices.length - 1; j >= 0; j--) {
               if (indices[j] < i) {
                 point = point || path1.getInteriorPoint()
-                var path2 = sorted[indices[j]]
+                const path2 = sorted[indices[j]]
                 // As we run through the paths from largest to
                 // smallest, for any current path, all potentially
                 // containing paths have already been processed and
@@ -349,13 +352,13 @@ PathItem.inject(
                 // orientation of contained paths based on winding,
                 // find one containing path with different
                 // "insideness" and set opposite orientation.
-                var curves = path2.getCurves(),
-                  winding = 0
-                for (var k = 0, n = curves.length; k < n; k++) {
+                const curves = path2.getCurves()
+                let winding = 0
+                for (let k = 0, n = curves.length; k < n; k++) {
                   winding += getRayWinding(point, curves[k].getValues())
                 }
                 if (winding) {
-                  var entry2 = lookup[path2._id]
+                  const entry2 = lookup[path2._id]
                   containerWinding = entry2.winding
                   entry1.winding += containerWinding
                   entry1.container = entry2.exclude
@@ -377,7 +380,7 @@ PathItem.inject(
           } else {
             // If the containing path is not excluded, we're done
             // searching for the orientation defining path.
-            var container = entry1.container
+            const container = entry1.container
             path1.setClockwise(
               container ? !container.isClockwise() : clockwise
             )
@@ -409,39 +412,41 @@ PathItem.inject(
      * @private
      */
     function getWinding(point, curves, dir, dontFlip) {
+      let res
+
       // Determine the index of the abscissa and ordinate values in the curve
       // values arrays, based on the direction:
-      var ia = dir ? 1 : 0, // the abscissa index
-        io = ia ^ 1, // the ordinate index
-        pv = [point.x, point.y],
-        pa = pv[ia], // the point's abscissa
-        po = pv[io], // the point's ordinate
-        // Use a separate epsilon for winding contribution code.
-        windingEpsilon = 1e-9,
-        paL = pa - windingEpsilon,
-        paR = pa + windingEpsilon,
-        windingL = 0,
-        windingR = 0,
-        pathWindingL = 0,
-        pathWindingR = 0,
-        onPath = false,
-        onAnyPath = false,
-        roots = [],
-        vPrev,
-        vClose
+      const ia = dir ? 1 : 0 // the abscissa index
+      const io = ia ^ 1 // the ordinate index
+      const pv = [point.x, point.y]
+      const pa = pv[ia] // the point's abscissa
+      const po = pv[io] // the point's ordinate
+      // Use a separate epsilon for winding contribution code.
+      const windingEpsilon = 1e-9
+      const paL = pa - windingEpsilon
+      const paR = pa + windingEpsilon
+      let windingL = 0
+      let windingR = 0
+      let pathWindingL = 0
+      let pathWindingR = 0
+      let onPath = false
+      let onAnyPath = false
+      const roots = []
+      let vPrev
+      let vClose
 
       function addWinding(v) {
-        var o0 = v[io + 0],
-          o3 = v[io + 6]
+        const o0 = v[io + 0]
+        const o3 = v[io + 6]
         if (po < min(o0, o3) || po > max(o0, o3)) {
           // If the curve is outside the ordinates' range, no intersection
           // with the ray is possible.
           return
         }
-        var a0 = v[ia + 0],
-          a1 = v[ia + 2],
-          a2 = v[ia + 4],
-          a3 = v[ia + 6]
+        const a0 = v[ia + 0]
+        const a1 = v[ia + 2]
+        const a2 = v[ia + 4]
+        const a3 = v[ia + 6]
         if (o0 === o3) {
           // A horizontal curve is not necessarily between two non-
           // horizontal curves. We have to take cases like these into
@@ -458,24 +463,24 @@ PathItem.inject(
           return
         }
         // Determine the curve-time value corresponding to the point.
-        var t =
-            po === o0
-              ? 0
-              : po === o3
+        const t =
+          po === o0
+            ? 0
+            : po === o3
+              ? 1
+              : // If the abscissa is outside the curve, we can use any
+                // value except 0 (requires special handling). Use 1, as it
+                // does not require additional calculations for the point.
+                paL > max(a0, a1, a2, a3) || paR < min(a0, a1, a2, a3)
                 ? 1
-                : // If the abscissa is outside the curve, we can use any
-                  // value except 0 (requires special handling). Use 1, as it
-                  // does not require additional calculations for the point.
-                  paL > max(a0, a1, a2, a3) || paR < min(a0, a1, a2, a3)
-                  ? 1
-                  : Curve.solveCubic(v, io, po, roots, 0, 1) > 0
-                    ? roots[0]
-                    : 1,
-          a =
-            t === 0 ? a0 : t === 1 ? a3 : Curve.getPoint(v, t)[dir ? 'y' : 'x'],
-          winding = o0 > o3 ? 1 : -1,
-          windingPrev = vPrev[io] > vPrev[io + 6] ? 1 : -1,
-          a3Prev = vPrev[ia + 6]
+                : Curve.solveCubic(v, io, po, roots, 0, 1) > 0
+                  ? roots[0]
+                  : 1
+        const a =
+          t === 0 ? a0 : t === 1 ? a3 : Curve.getPoint(v, t)[dir ? 'y' : 'x']
+        const winding = o0 > o3 ? 1 : -1
+        const windingPrev = vPrev[io] > vPrev[io + 6] ? 1 : -1
+        const a3Prev = vPrev[ia + 6]
         if (po !== o0) {
           // Standard case, curve is not crossed at its starting point.
           if (a < paL) {
@@ -525,28 +530,28 @@ PathItem.inject(
 
       function handleCurve(v) {
         // Get the ordinates:
-        var o0 = v[io + 0],
-          o1 = v[io + 2],
-          o2 = v[io + 4],
-          o3 = v[io + 6]
+        const o0 = v[io + 0]
+        const o1 = v[io + 2]
+        const o2 = v[io + 4]
+        const o3 = v[io + 6]
         // Only handle curves that can cross the point's ordinate.
         if (po <= max(o0, o1, o2, o3) && po >= min(o0, o1, o2, o3)) {
           // Get the abscissas:
-          var a0 = v[ia + 0],
-            a1 = v[ia + 2],
-            a2 = v[ia + 4],
-            a3 = v[ia + 6],
-            // Get monotone curves. If the curve is outside the point's
-            // abscissa, it can be treated as a monotone curve:
-            monoCurves =
-              (
-                paL > max(a0, a1, a2, a3) ||
-                paR < min(a0, a1, a2, a3)
-              )
-                ? [v]
-                : Curve.getMonoCurves(v, dir),
-            res
-          for (var i = 0, l = monoCurves.length; i < l; i++) {
+          const a0 = v[ia + 0]
+          const a1 = v[ia + 2]
+          const a2 = v[ia + 4]
+          const a3 = v[ia + 6]
+          // Get monotone curves. If the curve is outside the point's
+          // abscissa, it can be treated as a monotone curve:
+          const monoCurves =
+            (
+              paL > max(a0, a1, a2, a3) ||
+              paR < min(a0, a1, a2, a3)
+            )
+              ? [v]
+              : Curve.getMonoCurves(v, dir)
+          let res
+          for (let i = 0, l = monoCurves.length; i < l; i++) {
             // Calling addWinding() my lead to direction flipping, in
             // which case we already have the result and can return it.
             if ((res = addWinding(monoCurves[i]))) return res
@@ -554,11 +559,11 @@ PathItem.inject(
         }
       }
 
-      for (var i = 0, l = curves.length; i < l; i++) {
-        var curve = curves[i],
-          path = curve._path,
-          v = curve.getValues(),
-          res
+      for (let i = 0, l = curves.length; i < l; i++) {
+        const curve = curves[i]
+        const path = curve._path
+        const v = curve.getValues()
+
         if (!i || curves[i - 1]._path !== path) {
           // We're on a new (sub-)path, so we need to determine values of
           // the last non-horizontal curve on this path.
@@ -584,9 +589,9 @@ PathItem.inject(
             // find one that is not horizontal.
             // Fall-back to the first curve's values if none is found:
             vPrev = v
-            var prev = path.getLastCurve()
+            let prev = path.getLastCurve()
             while (prev && prev !== curve) {
-              var v2 = prev.getValues()
+              const v2 = prev.getValues()
               if (v2[io] !== v2[io + 6]) {
                 vPrev = v2
                 break
@@ -645,13 +650,13 @@ PathItem.inject(
      * curves remain straight.
      */
     function getPart(v, hasHandles, time1, time2, point1, point2) {
-      var part
+      let part
       if (hasHandles) {
         part = Curve.getPart(v, time1, time2).slice()
-        var dx1 = point1.x - part[0],
-          dy1 = point1.y - part[1],
-          dx2 = point2.x - part[6],
-          dy2 = point2.y - part[7]
+        const dx1 = point1.x - part[0]
+        const dy1 = point1.y - part[1]
+        const dx2 = point2.x - part[6]
+        const dy2 = point2.y - part[7]
         part[0] += dx1
         part[1] += dy1
         part[2] += dx1
@@ -684,22 +689,46 @@ PathItem.inject(
      * @return {Object} the graph's vertices, edges, half-edges and faces
      */
     function createGraph(operands) {
-      var curves = [],
-        curveOperands = [],
-        offsets = {},
-        nonZeros = [],
-        bounds = null
-      for (var i = 0, l = operands.length; i < l; i++) {
-        var operand = operands[i],
-          paths = getPaths(operand)
+      let bounds
+      let i
+      let l
+      let j
+      let k
+      let m
+      let n
+      let curve
+      let collisions
+      let b
+      let list
+      let windings
+      let edge
+      let v
+      let vertex
+      let outgoing
+      let halfEdge
+      let point
+      let face
+      let index
+      let component
+      let indices
+      let other
+
+      const curves = []
+      const curveOperands = []
+      const offsets = {}
+      const nonZeros = []
+      bounds = null
+      for (i = 0, l = operands.length; i < l; i++) {
+        const operand = operands[i]
+        const paths = getPaths(operand)
         nonZeros.push(operand.getFillRule() === 'nonzero')
         bounds = bounds
           ? bounds.unite(operand.getBounds())
           : operand.getBounds()
-        for (var j = 0, k = paths.length; j < k; j++) {
-          var pathCurves = paths[j].getCurves()
+        for (j = 0, k = paths.length; j < k; j++) {
+          const pathCurves = paths[j].getCurves()
           offsets[paths[j]._id] = curves.length
-          for (var m = 0, n = pathCurves.length; m < n; m++) {
+          for (m = 0, n = pathCurves.length; m < n; m++) {
             curves.push(pathCurves[m])
             curveOperands.push(i)
           }
@@ -707,19 +736,19 @@ PathItem.inject(
       }
       // Points closer than epsilon are one vertex. It is relative to the size
       // of the operands, but not below the resolution of their coordinates:
-      var epsilon = Numerical.getEpsilon(
-          max(
-            abs(bounds.left), abs(bounds.right),
-            abs(bounds.top), abs(bounds.bottom)
-          ),
-          bounds.getTopLeft().getDistance(bounds.getBottomRight()) *
-          /*#=*/ Numerical.GEOMETRIC_EPSILON
+      const epsilon = Numerical.getEpsilon(
+        max(
+          abs(bounds.left), abs(bounds.right),
+          abs(bounds.top), abs(bounds.bottom)
         ),
-        values = [],
-        cuts = [],
-        xs = [],
-        ys = [],
-        isEnds = []
+        bounds.getTopLeft().getDistance(bounds.getBottomRight()) *
+        /*#=*/ Numerical.GEOMETRIC_EPSILON
+      )
+      const values = []
+      const cuts = []
+      const xs = []
+      const ys = []
+      const isEnds = []
 
       function addCut(index, time, point, isEnd) {
         cuts[index].push({ time: time, point: xs.length })
@@ -730,8 +759,8 @@ PathItem.inject(
 
       // 1. Cut the curves at their ends and at all intersections, including
       // those within the same operand and the ends of overlaps:
-      for (var i = 0, l = curves.length; i < l; i++) {
-        var curve = curves[i]
+      for (i = 0, l = curves.length; i < l; i++) {
+        curve = curves[i]
         values.push(curve.getValues())
         cuts.push([])
         addCut(i, 0, curve._segment1._point, true)
@@ -739,24 +768,24 @@ PathItem.inject(
       }
       // The curves whose bounds come within 2 epsilon of each other, for the
       // intersections and the hot pixels below:
-      var collisions = CollisionDetection.findCurveBoundsCollisions(
-          values, values, 2 * epsilon
-        ),
-        locations = CurveLocation.expand(
-          Curve.getIntersections(
-            curves,
-            null,
-            null,
-            null,
-            null,
-            false,
-            epsilon,
-            collisions
-          )
+      collisions = CollisionDetection.findCurveBoundsCollisions(
+        values, values, 2 * epsilon
+      )
+      const locations = CurveLocation.expand(
+        Curve.getIntersections(
+          curves,
+          null,
+          null,
+          null,
+          null,
+          false,
+          epsilon,
+          collisions
         )
-      for (var i = 0, l = locations.length; i < l; i++) {
-        var loc = locations[i],
-          curve = loc.getCurve()
+      )
+      for (i = 0, l = locations.length; i < l; i++) {
+        const loc = locations[i]
+        curve = loc.getCurve()
         addCut(
           offsets[curve._path._id] + curve.getIndex(),
           loc.getTime(),
@@ -768,9 +797,9 @@ PathItem.inject(
       // and overlap themselves and the other curves along it. Cut them where
       // they reverse, so that their pieces run in one direction, and the
       // hot pixels below cut the curves they overlap at the same vertices:
-      for (var i = 0, l = curves.length; i < l; i++) {
-        var times = Curve.getReversals(values[i], epsilon)
-        for (var j = 0, k = times.length; j < k; j++) {
+      for (i = 0, l = curves.length; i < l; i++) {
+        const times = Curve.getReversals(values[i], epsilon)
+        for (j = 0, k = times.length; j < k; j++) {
           addCut(i, times[j], Curve.getPoint(values[i], times[j]), false)
         }
       }
@@ -778,10 +807,10 @@ PathItem.inject(
       // 2. Merge points closer than epsilon into vertices, through union-find
       // on the points sorted by x. A vertex takes the position of a curve end
       // if it has one, so the operands' own vertices stay where they are:
-      var count = xs.length,
-        parents = new Array(count),
-        order = new Array(count)
-      for (var i = 0; i < count; i++) parents[i] = order[i] = i
+      const count = xs.length
+      const parents = new Array(count)
+      const order = new Array(count)
+      for (i = 0; i < count; i++) parents[i] = order[i] = i
 
       function getRoot(i) {
         while (parents[i] !== i) i = parents[i] = parents[parents[i]]
@@ -791,26 +820,27 @@ PathItem.inject(
       order.sort(function (a, b) {
         return xs[a] - xs[b]
       })
-      for (var i = 0; i < count; i++) {
-        var a = order[i]
-        for (var j = i + 1; j < count && xs[order[j]] - xs[a] <= epsilon; j++) {
-          var b = order[j],
-            dx = xs[b] - xs[a],
-            dy = ys[b] - ys[a]
+      for (i = 0; i < count; i++) {
+        const a = order[i]
+        for (j = i + 1; j < count && xs[order[j]] - xs[a] <= epsilon; j++) {
+          b = order[j]
+          const dx = xs[b] - xs[a]
+          const dy = ys[b] - ys[a]
           if (dx * dx + dy * dy <= epsilon * epsilon)
             parents[getRoot(a)] = getRoot(b)
         }
       }
-      var vertexIndices, vertices
+      let vertexIndices
+      let vertices
 
       function createVertices() {
         vertexIndices = {}
         vertices = []
-        for (var i = 0; i < count; i++) {
-          var root = getRoot(i),
-            index = vertexIndices[root]
+        for (let i = 0; i < count; i++) {
+          const root = getRoot(i)
+          const index = vertexIndices[root]
           if (index === undefined) {
-            index = vertexIndices[root] = vertices.length
+            vertexIndices[root] = vertices.length
             vertices.push({
               x: xs[i],
               y: ys[i],
@@ -857,7 +887,7 @@ PathItem.inject(
 
       // The last curve that tested each vertex in getHotPixels(), to test
       // each only once per curve:
-      var marks
+      let marks
 
       // 2b. Cut the curves where they pass within epsilon of a vertex, the
       // hot pixels of snap rounding. Moving the pieces to their vertices
@@ -869,19 +899,19 @@ PathItem.inject(
       // lies on a curve that it cuts, so we find it among the cuts of the
       // curves whose bounds come that close:
       function getHotPixels(i) {
-        var v = values[i],
-          left = min(v[0], v[2], v[4], v[6]) - 2 * epsilon,
-          top = min(v[1], v[3], v[5], v[7]) - 2 * epsilon,
-          right = max(v[0], v[2], v[4], v[6]) + 2 * epsilon,
-          bottom = max(v[1], v[3], v[5], v[7]) + 2 * epsilon,
-          indices = collisions[i],
-          hotPixels = []
-        for (var j = 0, k = indices.length; j < k; j++) {
-          var list = cuts[indices[j]]
-          for (var m = 0, n = list.length; m < n; m++) {
-            var index = getVertex(list[m].point)
+        const v = values[i]
+        const left = min(v[0], v[2], v[4], v[6]) - 2 * epsilon
+        const top = min(v[1], v[3], v[5], v[7]) - 2 * epsilon
+        const right = max(v[0], v[2], v[4], v[6]) + 2 * epsilon
+        const bottom = max(v[1], v[3], v[5], v[7]) + 2 * epsilon
+        const indices = collisions[i]
+        const hotPixels = []
+        for (let j = 0, k = indices.length; j < k; j++) {
+          const list = cuts[indices[j]]
+          for (let m = 0, n = list.length; m < n; m++) {
+            const index = getVertex(list[m].point)
             if (marks[index] !== i) {
-              var vertex = vertices[index]
+              const vertex = vertices[index]
               marks[index] = i
               if (
                 vertex.x >= left &&
@@ -901,9 +931,9 @@ PathItem.inject(
       // The pieces of a curve that a vertex may cut, as the ones that don't
       // end in it, and whose bounds come within epsilon of it:
       function isNearPiece(piece, index, vertex) {
-        var v = piece.values,
-          x = vertex.x,
-          y = vertex.y
+        const v = piece.values
+        const x = vertex.x
+        const y = vertex.y
         return (
           getVertex(piece.cut1.point) !== index &&
           getVertex(piece.cut2.point) !== index &&
@@ -923,20 +953,23 @@ PathItem.inject(
       }
 
       function cutAtHotPixels(i) {
-        var candidates = getHotPixels(i)
+        let j
+        let k
+
+        const candidates = getHotPixels(i)
         if (candidates.length) {
-          var list = sortCuts(cuts[i]),
-            pieces = []
-          for (var j = 1, k = list.length; j < k; j++)
+          const list = sortCuts(cuts[i])
+          const pieces = []
+          for (j = 1, k = list.length; j < k; j++)
             addPiece(pieces, i, list[j - 1], list[j])
           while (pieces.length) {
-            var piece = pieces.pop()
-            for (var j = 0, k = candidates.length; j < k; j++) {
-              var index = candidates[j],
-                vertex = vertices[index]
+            const piece = pieces.pop()
+            for (j = 0, k = candidates.length; j < k; j++) {
+              const index = candidates[j]
+              const vertex = vertices[index]
               if (isNearPiece(piece, index, vertex)) {
-                var point = new Point(vertex.x, vertex.y),
-                  t = Curve.getNearestTime(piece.values, point)
+                const point = new Point(vertex.x, vertex.y)
+                const t = Curve.getNearestTime(piece.values, point)
                 if (
                   t > 0 &&
                   t < 1 &&
@@ -944,15 +977,15 @@ PathItem.inject(
                     Curve.getPoint(piece.values, t), epsilon
                   )
                 ) {
-                  var cut1 = piece.cut1,
-                    cut2 = piece.cut2,
-                    cut = {
-                      time: curves[i].hasHandles()
-                        ? cut1.time +
-                          (cut2.time - cut1.time) * t
-                        : Curve.getNearestTime(values[i], point),
-                      point: vertex.point
-                    }
+                  const cut1 = piece.cut1
+                  const cut2 = piece.cut2
+                  const cut = {
+                    time: curves[i].hasHandles()
+                      ? cut1.time +
+                        (cut2.time - cut1.time) * t
+                      : Curve.getNearestTime(values[i], point),
+                    point: vertex.point
+                  }
                   cuts[i].push(cut)
                   addPiece(pieces, i, cut1, cut)
                   addPiece(pieces, i, cut, cut2)
@@ -970,19 +1003,22 @@ PathItem.inject(
       // epsilon, the precision of the result. Returns true if it merged
       // any, as moving vertices can bring pieces within epsilon of others:
       function mergeShortPieces() {
-        var pieces = [],
-          isMerged = false
-        for (var i = 0, l = curves.length; i < l; i++) {
-          var list = sortCuts(cuts[i])
-          for (var j = 1, k = list.length; j < k; j++) {
-            var cut1 = list[j - 1],
-              cut2 = list[j]
+        let i
+        let l
+
+        const pieces = []
+        let isMerged = false
+        for (i = 0, l = curves.length; i < l; i++) {
+          const list = sortCuts(cuts[i])
+          for (let j = 1, k = list.length; j < k; j++) {
+            const cut1 = list[j - 1]
+            const cut2 = list[j]
             if (getVertex(cut1.point) !== getVertex(cut2.point)) {
               // The pieces are at least as long as their ends are
               // apart, so we only measure them if close:
-              var v = getPiece(i, cut1, cut2),
-                dx = v[6] - v[0],
-                dy = v[7] - v[1]
+              const v = getPiece(i, cut1, cut2)
+              const dx = v[6] - v[0]
+              const dy = v[7] - v[1]
               if (
                 dx * dx + dy * dy < 16 * epsilon * epsilon &&
                 Curve.getLength(v) < 4 * epsilon
@@ -991,9 +1027,9 @@ PathItem.inject(
             }
           }
         }
-        for (var i = 0, l = pieces.length; i < l; i++) {
-          var root1 = getRoot(pieces[i][0]),
-            root2 = getRoot(pieces[i][1])
+        for (i = 0, l = pieces.length; i < l; i++) {
+          const root1 = getRoot(pieces[i][0])
+          const root2 = getRoot(pieces[i][1])
           if (root1 !== root2) {
             parents[root1] = root2
             isMerged = true
@@ -1007,24 +1043,24 @@ PathItem.inject(
       // which ends as each merge leaves fewer of them:
       do {
         marks = new Array(vertices.length)
-        for (var i = 0, l = curves.length; i < l; i++) cutAtHotPixels(i)
+        for (i = 0, l = curves.length; i < l; i++) cutAtHotPixels(i)
       } while (mergeShortPieces())
 
       // 3. Create the edges between the vertices along each curve, with the
       // change in winding of each operand when crossing them from right to
       // left. Coincident pieces become one edge that adds up their changes:
-      var edges = [],
-        edgesByVertex = []
+      const edges = []
+      const edgesByVertex = []
 
       function getCoincidence(edge1, edge2) {
         // Compare points along edge2 to edge1, and return the direction
         // of edge2 relative to edge1 if they coincide, or 0:
-        var v1 = edge1.values,
-          v2 = edge2.values,
-          times = []
-        for (var i = 1; i <= 3; i++) {
-          var point = Curve.getPoint(v2, i / 4),
-            time = Curve.getNearestTime(v1, point)
+        const v1 = edge1.values
+        const v2 = edge2.values
+        const times = []
+        for (let i = 1; i <= 3; i++) {
+          const point = Curve.getPoint(v2, i / 4)
+          const time = Curve.getNearestTime(v1, point)
           if (!point.isClose(Curve.getPoint(v1, time), epsilon)) return 0
           times.push(time)
         }
@@ -1033,17 +1069,17 @@ PathItem.inject(
 
       function addEdge(edge) {
         // Look up the edges between the same vertices by the first one:
-        var first = min(edge.from, edge.to),
-          last = max(edge.from, edge.to),
-          list = edgesByVertex[first] || (edgesByVertex[first] = [])
-        for (var i = 0, l = list.length; i < l; i++) {
-          var other = list[i],
-            direction = (
-              max(other.from, other.to) === last &&
-              getCoincidence(other, edge)
-            )
+        const first = min(edge.from, edge.to)
+        const last = max(edge.from, edge.to)
+        const list = edgesByVertex[first] || (edgesByVertex[first] = [])
+        for (let i = 0, l = list.length; i < l; i++) {
+          const other = list[i]
+          const direction = (
+            max(other.from, other.to) === last &&
+            getCoincidence(other, edge)
+          )
           if (direction) {
-            for (var j = 0; j < 2; j++)
+            for (let j = 0; j < 2; j++)
               other.windings[j] += direction * edge.windings[j]
             return
           }
@@ -1052,20 +1088,20 @@ PathItem.inject(
         edges.push(edge)
       }
 
-      for (var i = 0, l = curves.length; i < l; i++) {
-        var list = cuts[i], // Sorted in 2c.
-          isStraight = !curves[i].hasHandles(),
-          prev = list[0]
-        for (var j = 1, k = list.length; j < k; j++) {
-          var cut = list[j],
-            from = getVertex(prev.point),
-            to = getVertex(cut.point),
-            part = getPiece(i, prev, cut)
+      for (i = 0, l = curves.length; i < l; i++) {
+        list = cuts[i] // Sorted in 2c.
+        const isStraight = !curves[i].hasHandles()
+        let prev = list[0]
+        for (j = 1, k = list.length; j < k; j++) {
+          const cut = list[j]
+          const from = getVertex(prev.point)
+          const to = getVertex(cut.point)
+          const part = getPiece(i, prev, cut)
           // Drop pieces that start and end in the same vertex, unless
           // they form a loop that is longer than the pieces that vertices
           // merge, see above:
           if (from !== to || Curve.getLength(part) >= 4 * epsilon) {
-            var windings = [0, 0]
+            windings = [0, 0]
             windings[curveOperands[i]] = 1
             addEdge({
               values: part,
@@ -1087,14 +1123,14 @@ PathItem.inject(
       // from its end. Their angles are measured to points a short distance
       // along them, where tangent curves already separate, but no other
       // vertex is reached yet:
-      var halfEdges = []
+      const halfEdges = []
 
       // The point at the distance along the half-edge. Straight edges keep
       // their handles at their ends, so their times don't run evenly:
       function getPointAt(halfEdge, distance) {
-        var v = halfEdge.values,
-          edge = halfEdge.edge,
-          t = distance / edge.length
+        const v = halfEdge.values
+        const edge = halfEdge.edge
+        const t = distance / edge.length
         return edge.isStraight
           ? new Point(v[0] + (v[6] - v[0]) * t, v[1] + (v[7] - v[1]) * t)
           : Curve.getPoint(v, Curve.getTimeAt(v, distance))
@@ -1106,12 +1142,12 @@ PathItem.inject(
         // first one the second one runs, half way along the shorter one,
         // as they don't cross before they end, or return 0 if it doesn't
         // run alongside the first one there:
-        var v1 = halfEdge1.values,
-          point = getPointAt(
-            halfEdge2,
-            min(halfEdge1.edge.length, halfEdge2.edge.length) / 2
-          ),
-          time = Curve.getNearestTime(v1, point)
+        const v1 = halfEdge1.values
+        const point = getPointAt(
+          halfEdge2,
+          min(halfEdge1.edge.length, halfEdge2.edge.length) / 2
+        )
+        const time = Curve.getNearestTime(v1, point)
         return time > 0 && time < 1
           ? (
               Curve.getTangent(v1, time).cross(
@@ -1127,17 +1163,20 @@ PathItem.inject(
       // all directions in which it leaves its vertex, or null if the range
       // isn't within a half-plane:
       function getDirections(v) {
-        var angles = []
-        for (var i = 0; i < 6; i += 2) {
-          var dx = v[i + 2] - v[i],
-            dy = v[i + 3] - v[i + 1]
+        let i
+        let l
+
+        const angles = []
+        for (i = 0; i < 6; i += 2) {
+          const dx = v[i + 2] - v[i]
+          const dy = v[i + 3] - v[i + 1]
           if (dx || dy) angles.push(Math.atan2(dy, dx))
         }
-        var first = angles[0],
-          from = 0,
-          to = 0
-        for (var i = 1, l = angles.length; i < l; i++) {
-          var difference = (
+        const first = angles[0]
+        let from = 0
+        let to = 0
+        for (i = 1, l = angles.length; i < l; i++) {
+          const difference = (
             (
               (angles[i] - first + 3 * Math.PI) %
               (2 * Math.PI)
@@ -1161,10 +1200,13 @@ PathItem.inject(
       // the ranges, at least half the shortest chord along the half-edges,
       // and so at least cos(width / 2) times that away from the vertex:
       function sortByDirections(outgoing) {
-        var distance = Infinity
-        for (var j = 0, k = outgoing.length; j < k; j++) {
-          var halfEdge = halfEdges[outgoing[j]],
-            v = halfEdge.values
+        let j
+        let k
+
+        let distance = Infinity
+        for (j = 0, k = outgoing.length; j < k; j++) {
+          const halfEdge = halfEdges[outgoing[j]]
+          const v = halfEdge.values
           halfEdge.directions = getDirections(v)
           if (!halfEdge.directions) return false
           distance = min(
@@ -1175,17 +1217,17 @@ PathItem.inject(
             ) / 2
           )
         }
-        var sorted = outgoing.slice().sort(function (a, b) {
-            return (
-              halfEdges[a].directions.start -
-              halfEdges[b].directions.start
-            )
-          }),
-          gap = Infinity,
-          width = 0
-        for (var j = 0, k = sorted.length; j < k; j++) {
-          var directions1 = halfEdges[sorted[j]].directions,
-            directions2 = halfEdges[sorted[(j + 1) % k]].directions
+        const sorted = outgoing.slice().sort(function (a, b) {
+          return (
+            halfEdges[a].directions.start -
+            halfEdges[b].directions.start
+          )
+        })
+        let gap = Infinity
+        let width = 0
+        for (j = 0, k = sorted.length; j < k; j++) {
+          const directions1 = halfEdges[sorted[j]].directions
+          const directions2 = halfEdges[sorted[(j + 1) % k]].directions
           gap = min(
             gap,
             directions2.start -
@@ -1205,15 +1247,15 @@ PathItem.inject(
             2 * epsilon
           )
         ) {
-          for (var j = 0, k = sorted.length; j < k; j++) outgoing[j] = sorted[j]
+          for (j = 0, k = sorted.length; j < k; j++) outgoing[j] = sorted[j]
           return true
         }
         return false
       }
 
-      for (var i = 0, l = edges.length; i < l; i++) {
-        var edge = edges[i],
-          v = edge.values
+      for (i = 0, l = edges.length; i < l; i++) {
+        edge = edges[i]
+        v = edge.values
         edge.reversed = [v[6], v[7], v[4], v[5], v[2], v[3], v[0], v[1]]
         halfEdges.push(
           { edge: edge, values: v, from: edge.from, to: edge.to },
@@ -1222,22 +1264,22 @@ PathItem.inject(
         vertices[edge.from].outgoing.push(2 * i)
         vertices[edge.to].outgoing.push(2 * i + 1)
       }
-      for (var i = 0, l = vertices.length; i < l; i++) {
-        var vertex = vertices[i],
-          outgoing = vertex.outgoing
+      for (i = 0, l = vertices.length; i < l; i++) {
+        vertex = vertices[i]
+        outgoing = vertex.outgoing
         // Up to two half-edges are in the same cyclic order either way,
         // and where their ranges of directions are apart far enough,
         // these give the order already:
         if (outgoing.length > 2 && !sortByDirections(outgoing)) {
-          var distance = Infinity
-          for (var j = 0, k = outgoing.length; j < k; j++) {
-            var edge = halfEdges[outgoing[j]].edge
+          let distance = Infinity
+          for (j = 0, k = outgoing.length; j < k; j++) {
+            edge = halfEdges[outgoing[j]].edge
             edge.length = edge.length || Curve.getLength(edge.values)
             distance = min(distance, edge.length / 2)
           }
-          for (var j = 0, k = outgoing.length; j < k; j++) {
-            var halfEdge = halfEdges[outgoing[j]],
-              point = getPointAt(halfEdge, distance)
+          for (j = 0, k = outgoing.length; j < k; j++) {
+            halfEdge = halfEdges[outgoing[j]]
+            point = getPointAt(halfEdge, distance)
             halfEdge.point = point
             halfEdge.angle = Math.atan2(point.y - vertex.y, point.x - vertex.x)
           }
@@ -1247,33 +1289,33 @@ PathItem.inject(
           outgoing.sort(function (a, b) {
             return halfEdges[a].angle - halfEdges[b].angle
           })
-          var start = -Math.PI,
-            gap = 0
-          for (var j = 0, k = outgoing.length; j < k; j++) {
-            var angle = halfEdges[outgoing[j]].angle,
-              previous = halfEdges[outgoing[(j || k) - 1]].angle,
-              difference = (
-                (
-                  (angle - previous + 2 * Math.PI) %
-                  (2 * Math.PI)
-                ) ||
-                2 * Math.PI
-              )
+          let start = -Math.PI
+          let gap = 0
+          for (j = 0, k = outgoing.length; j < k; j++) {
+            const angle = halfEdges[outgoing[j]].angle
+            const previous = halfEdges[outgoing[(j || k) - 1]].angle
+            const difference = (
+              (
+                (angle - previous + 2 * Math.PI) %
+                (2 * Math.PI)
+              ) ||
+              2 * Math.PI
+            )
             if (difference > gap) {
               gap = difference
               start = angle
             }
           }
-          for (var j = 0, k = outgoing.length; j < k; j++) {
-            var halfEdge = halfEdges[outgoing[j]]
+          for (j = 0, k = outgoing.length; j < k; j++) {
+            halfEdge = halfEdges[outgoing[j]]
             halfEdge.angle = (
               (halfEdge.angle - start + 2 * Math.PI) %
               (2 * Math.PI)
             )
           }
           outgoing.sort(function (a, b) {
-            var halfEdge1 = halfEdges[a],
-              halfEdge2 = halfEdges[b]
+            const halfEdge1 = halfEdges[a]
+            const halfEdge2 = halfEdges[b]
             return (
               (
                 halfEdge1.point.isClose(halfEdge2.point, epsilon) &&
@@ -1283,33 +1325,33 @@ PathItem.inject(
             )
           })
         }
-        for (var j = 0, k = outgoing.length; j < k; j++)
+        for (j = 0, k = outgoing.length; j < k; j++)
           halfEdges[outgoing[j]].position = j
       }
       // Walking along a face with the face on the left, the next half-edge
       // leaves the reached vertex right before the one we came back on, in
       // counter-clockwise order:
-      for (var i = 0, l = halfEdges.length; i < l; i++) {
-        var outgoing = vertices[halfEdges[i].to].outgoing,
-          position = halfEdges[i ^ 1].position
+      for (i = 0, l = halfEdges.length; i < l; i++) {
+        outgoing = vertices[halfEdges[i].to].outgoing
+        const position = halfEdges[i ^ 1].position
         halfEdges[i].next = outgoing[(position || outgoing.length) - 1]
       }
 
       // 5. Collect the faces, each on the left of its half-edges, and their
       // signed areas, which are negative for the outside of each connected
       // component of the graph:
-      var faces = []
-      for (var i = 0, l = halfEdges.length; i < l; i++) {
+      const faces = []
+      for (i = 0, l = halfEdges.length; i < l; i++) {
         if (halfEdges[i].face === undefined) {
-          var face = {
-              halfEdges: [],
-              area: 0,
-              windings: null,
-              component: null
-            },
-            index = i
+          face = {
+            halfEdges: [],
+            area: 0,
+            windings: null,
+            component: null
+          }
+          index = i
           do {
-            var halfEdge = halfEdges[index]
+            halfEdge = halfEdges[index]
             halfEdge.face = face
             face.halfEdges.push(index)
             face.area += Curve.getArea(halfEdge.values)
@@ -1323,32 +1365,32 @@ PathItem.inject(
       // component of the graph across its edges. A component that lies
       // within others gets the windings of its outside from a ray cast
       // against their edges:
-      var components = [],
-        rays = [],
-        bounds = []
-      for (var i = 0, l = faces.length; i < l; i++) {
-        var face = faces[i]
+      const components = []
+      const rays = []
+      bounds = []
+      for (i = 0, l = faces.length; i < l; i++) {
+        face = faces[i]
         if (!face.component) {
-          var component = {
-              edges: [],
-              bounds: [Infinity, Infinity, -Infinity, -Infinity],
-              outside: face
-            },
-            list = [face]
+          component = {
+            edges: [],
+            bounds: [Infinity, Infinity, -Infinity, -Infinity],
+            outside: face
+          }
+          list = [face]
           face.component = component
-          for (var j = 0; j < list.length; j++) {
-            var indices = list[j].halfEdges
+          for (j = 0; j < list.length; j++) {
+            indices = list[j].halfEdges
             if (list[j].area < component.outside.area)
               component.outside = list[j]
-            for (var k = 0, n = indices.length; k < n; k++) {
-              var other = halfEdges[indices[k] ^ 1].face
+            for (k = 0, n = indices.length; k < n; k++) {
+              other = halfEdges[indices[k] ^ 1].face
               if (!other.component) {
                 other.component = component
                 list.push(other)
               }
             }
           }
-          var vertex = vertices[halfEdges[component.outside.halfEdges[0]].from]
+          vertex = vertices[halfEdges[component.outside.halfEdges[0]].from]
           components.push(component)
           rays.push([vertex.x, vertex.y, Infinity, vertex.y])
           bounds.push(component.bounds)
@@ -1356,52 +1398,52 @@ PathItem.inject(
       }
       // Collect the edges and bounds of each component, to cast each ray
       // only against the components whose bounds it reaches:
-      for (var i = 0, l = edges.length; i < l; i++) {
-        var edge = edges[i],
-          v = edge.values,
-          component = halfEdges[2 * i].face.component,
-          b = component.bounds
+      for (i = 0, l = edges.length; i < l; i++) {
+        edge = edges[i]
+        v = edge.values
+        component = halfEdges[2 * i].face.component
+        b = component.bounds
         component.edges.push(edge)
         b[0] = min(b[0], v[0], v[2], v[4], v[6])
         b[1] = min(b[1], v[1], v[3], v[5], v[7])
         b[2] = max(b[2], v[0], v[2], v[4], v[6])
         b[3] = max(b[3], v[1], v[3], v[5], v[7])
       }
-      var collisions = CollisionDetection.findBoundsCollisions(
+      collisions = CollisionDetection.findBoundsCollisions(
         rays,
         bounds,
         0,
         true
       )
-      for (var i = 0, l = components.length; i < l; i++) {
-        var outside = components[i].outside,
-          point = new Point(rays[i][0], rays[i][1]),
-          indices = collisions[i],
-          windings = [0, 0]
-        for (var j = 0, k = indices.length; j < k; j++) {
+      for (i = 0, l = components.length; i < l; i++) {
+        const outside = components[i].outside
+        point = new Point(rays[i][0], rays[i][1])
+        indices = collisions[i]
+        windings = [0, 0]
+        for (j = 0, k = indices.length; j < k; j++) {
           if (indices[j] !== i) {
-            var list = components[indices[j]].edges
-            for (var m = 0, n = list.length; m < n; m++) {
-              var edge = list[m],
-                winding = getRayWinding(point, edge.values)
+            list = components[indices[j]].edges
+            for (m = 0, n = list.length; m < n; m++) {
+              edge = list[m]
+              const winding = getRayWinding(point, edge.values)
               windings[0] += winding * edge.windings[0]
               windings[1] += winding * edge.windings[1]
             }
           }
         }
         outside.windings = windings
-        var queue = [outside]
-        for (var j = 0; j < queue.length; j++) {
-          var face = queue[j],
-            indices = face.halfEdges
-          for (var k = 0, n = indices.length; k < n; k++) {
-            var index = indices[k],
-              other = halfEdges[index ^ 1].face
+        const queue = [outside]
+        for (j = 0; j < queue.length; j++) {
+          face = queue[j]
+          indices = face.halfEdges
+          for (k = 0, n = indices.length; k < n; k++) {
+            index = indices[k]
+            other = halfEdges[index ^ 1].face
             if (!other.windings) {
               // The face on the left of a half-edge has the higher
               // winding when the half-edge runs along its edge:
-              var windings = halfEdges[index].edge.windings,
-                sign = index & 1 ? -1 : 1
+              windings = halfEdges[index].edge.windings
+              const sign = index & 1 ? -1 : 1
               other.windings = [
                 face.windings[0] - sign * windings[0],
                 face.windings[1] - sign * windings[1]
@@ -1435,13 +1477,16 @@ PathItem.inject(
      * @return {Path[]} the traced paths
      */
     function tracePaths(operands, operator) {
-      var graph = createGraph(operands),
-        halfEdges = graph.halfEdges,
-        faces = graph.faces,
-        nonZeros = graph.nonZeros
-      for (var i = 0, l = faces.length; i < l; i++) {
-        var face = faces[i],
-          windings = face.windings
+      let i
+      let l
+
+      const graph = createGraph(operands)
+      const halfEdges = graph.halfEdges
+      const faces = graph.faces
+      const nonZeros = graph.nonZeros
+      for (i = 0, l = faces.length; i < l; i++) {
+        const face = faces[i]
+        const windings = face.windings
         face.isInside = !!operator(
           nonZeros[0] ? !!windings[0] : !!(windings[0] & 1),
           nonZeros[1] ? !!windings[1] : !!(windings[1] & 1)
@@ -1458,7 +1503,7 @@ PathItem.inject(
       // The curve times along a half-edge, and if the next one continues
       // it along the same curve:
       function getTimes(index) {
-        var edge = halfEdges[index].edge
+        const edge = halfEdges[index].edge
         return index & 1 ? [edge.time2, edge.time1] : [edge.time1, edge.time2]
       }
 
@@ -1469,12 +1514,12 @@ PathItem.inject(
         )
       }
 
-      var paths = [],
-        isVisited = []
-      for (var i = 0, l = halfEdges.length; i < l; i++) {
+      const paths = []
+      const isVisited = []
+      for (i = 0, l = halfEdges.length; i < l; i++) {
         if (!isVisited[i] && isBoundary(i)) {
-          var contour = [],
-            index = i
+          const contour = []
+          let index = i
           do {
             isVisited[index] = true
             contour.push(index)
@@ -1483,8 +1528,8 @@ PathItem.inject(
           } while (index !== i)
           // Start where a piece doesn't continue the one before it, as
           // the pieces of a closed curve don't continue across its end:
-          var length = contour.length,
-            start = 0
+          const length = contour.length
+          let start = 0
           while (
             start < length &&
             isContinued(
@@ -1494,29 +1539,29 @@ PathItem.inject(
             start++
           // Join the pieces of the same curve that follow each other
           // back into one part of it:
-          var segments = [],
-            handleIn = null
-          for (var j = 0; j < length;) {
-            var first = contour[(start + j) % length],
-              last = first
+          const segments = []
+          let handleIn = null
+          for (let j = 0; j < length;) {
+            const first = contour[(start + j) % length]
+            let last = first
             while (
               ++j < length &&
               isContinued(last, contour[(start + j) % length])
             )
               last = contour[(start + j) % length]
-            var edge = halfEdges[first].edge,
-              isStraight = edge.isStraight,
-              v =
-                first === last
-                  ? halfEdges[first].values
-                  : getPart(
-                      graph.values[edge.curve],
-                      !isStraight,
-                      getTimes(first)[0],
-                      getTimes(last)[1],
-                      graph.vertices[halfEdges[first].from],
-                      graph.vertices[halfEdges[last].to]
-                    )
+            const edge = halfEdges[first].edge
+            const isStraight = edge.isStraight
+            const v =
+              first === last
+                ? halfEdges[first].values
+                : getPart(
+                    graph.values[edge.curve],
+                    !isStraight,
+                    getTimes(first)[0],
+                    getTimes(last)[1],
+                    graph.vertices[halfEdges[first].from],
+                    graph.vertices[halfEdges[last].to]
+                  )
             segments.push(
               new Segment(
                 new Point(v[0], v[1]),
@@ -1530,7 +1575,7 @@ PathItem.inject(
             )
           }
           if (handleIn) segments[0].setHandleIn(handleIn)
-          var path = new Path(Item.NO_INSERT)
+          const path = new Path(Item.NO_INSERT)
           path.setSegments(segments)
           path.setClosed(true)
           // Only add paths that cover an area to the result.
@@ -1545,7 +1590,7 @@ PathItem.inject(
      * operation resolves path1 on its own.
      */
     function getOperands(path1, path2) {
-      var operands = [preparePath(path1, true)]
+      const operands = [preparePath(path1, true)]
       if (path2) operands.push(preparePath(path2, true))
       return operands
     }
@@ -1730,20 +1775,20 @@ PathItem.inject(
        * @return {PathItem} the resulting path item
        */
       resolveCrossings: function () {
-        var children = this._children,
-          // Trace the outline of the area that the path item fills
-          // according to its fill rule, without the curves inside it:
-          paths = tracePaths(
-            [closePaths(this.clone(false))],
-            function (inside) {
-              return inside
-            }
-          )
+        const children = this._children
+        // Trace the outline of the area that the path item fills
+        // according to its fill rule, without the curves inside it:
+        const paths = tracePaths(
+          [closePaths(this.clone(false))],
+          function (inside) {
+            return inside
+          }
+        )
         // Determine how to return the paths: First try to recycle the
         // current path / compound-path, if the amount of paths does not
         // require a conversion.
-        var length = paths.length,
-          item
+        const length = paths.length
+        let item
         if (length > 1 && children) {
           if (paths !== children) this.setChildren(paths)
           item = this
@@ -1779,7 +1824,7 @@ PathItem.inject(
        * @return {PathItem} a reference to the item itself, reoriented
        */
       reorient: function (nonZero, clockwise) {
-        var children = this._children
+        const children = this._children
         if (children && children.length) {
           this.setChildren(
             reorientPaths(
@@ -1804,8 +1849,11 @@ PathItem.inject(
        * @type Point
        */
       getInteriorPoint: function () {
-        var bounds = this.getBounds(),
-          point = bounds.getCenter(true)
+        let i
+        let l
+
+        const bounds = this.getBounds()
+        const point = bounds.getCenter(true)
         // contains() includes the boundary, but a point on the path isn't
         // interior, e.g. a vertex shared with another path (#1837):
         if (
@@ -1822,29 +1870,29 @@ PathItem.inject(
           // the middle of the band around the center where no
           // y-monotone curve starts or ends, so that it crosses the path
           // instead of touching it or running along it (#1837):
-          var curves = this.getCurves(),
-            monoCurves = [],
-            ys = [],
-            intercepts = [],
-            roots = []
-          for (var i = 0, l = curves.length; i < l; i++)
+          const curves = this.getCurves()
+          const monoCurves = []
+          const ys = []
+          const intercepts = []
+          const roots = []
+          for (i = 0, l = curves.length; i < l; i++)
             Base.push(
               monoCurves,
               Curve.getMonoCurves(
                 curves[i].getValues()
               )
             )
-          for (var i = 0, l = monoCurves.length; i < l; i++)
+          for (i = 0, l = monoCurves.length; i < l; i++)
             ys.push(monoCurves[i][1], monoCurves[i][7])
           ys.sort(function (a, b) {
             return a - b
           })
           // The center lies between the top and the bottom of the
           // bounds, which are among the ys, unless the path is flat:
-          var y = point.y,
-            below = y,
-            above = y
-          for (var i = 0, l = ys.length; i < l && above === y; i++) {
+          let y = point.y
+          let below = y
+          let above = y
+          for (i = 0, l = ys.length; i < l && above === y; i++) {
             if (ys[i] <= y) {
               below = ys[i]
             } else {
@@ -1852,10 +1900,10 @@ PathItem.inject(
             }
           }
           y = point.y = (below + above) / 2
-          for (var i = 0, l = monoCurves.length; i < l; i++) {
-            var mv = monoCurves[i],
-              mo0 = mv[1],
-              mo3 = mv[7]
+          for (i = 0, l = monoCurves.length; i < l; i++) {
+            const mv = monoCurves[i]
+            const mo0 = mv[1]
+            const mo3 = mv[7]
             if (y > min(mo0, mo3) && y < max(mo0, mo3)) {
               intercepts.push(
                 Curve.solveCubic(mv, 1, y, roots, 0, 1) === 1

@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-var CanvasProvider = (Base.exports.CanvasProvider = {
+const CanvasProvider = (Base.exports.CanvasProvider = {
   canvases: [],
 
   getCanvas: function (width, height, options) {
@@ -23,27 +23,27 @@ var CanvasProvider = (Base.exports.CanvasProvider = {
     }
     // With options.minimum, a pooled canvas that is at least as large is
     // reused without resizing it, since resizing reallocates its pixels:
-    var minimum = options && options.minimum,
-      canvases = this.canvases,
-      fits = function (canvas) {
-        return minimum
-          ? canvas.width >= width && canvas.height >= height
-          : canvas.width === width && canvas.height === height
-      },
-      index = canvases.length - 1
-    for (var i = index; i >= 0; i--) {
+    const minimum = options && options.minimum
+    const canvases = this.canvases
+    const fits = function (canvas) {
+      return minimum
+        ? canvas.width >= width && canvas.height >= height
+        : canvas.width === width && canvas.height === height
+    }
+    let index = canvases.length - 1
+    for (let i = index; i >= 0; i--) {
       if (fits(canvases[i])) {
         index = i
         break
       }
     }
-    var canvas =
-        index >= 0
-          ? canvases.splice(index, 1)[0]
-          : window
-            ? document.createElement('canvas')
-            : new self.OffscreenCanvas(width, height),
-      ctx = canvas.getContext('2d', options || {})
+    const canvas =
+      index >= 0
+        ? canvases.splice(index, 1)[0]
+        : window
+          ? document.createElement('canvas')
+          : new self.OffscreenCanvas(width, height)
+    const ctx = canvas.getContext('2d', options || {})
     if (!ctx) {
       throw new Error(
         'Canvas ' +
@@ -73,13 +73,13 @@ var CanvasProvider = (Base.exports.CanvasProvider = {
   },
 
   getContext: function (width, height, options) {
-    var canvas = this.getCanvas(width, height, options)
+    const canvas = this.getCanvas(width, height, options)
     return canvas ? canvas.getContext('2d') : null
   },
 
   // release can receive either a canvas or a context.
   release: function (obj) {
-    var canvas = obj && obj.canvas ? obj.canvas : obj
+    const canvas = obj && obj.canvas ? obj.canvas : obj
     if (canvas && canvas.getContext) {
       // Keep small canvases at their size, so getCanvas() can reuse them
       // without reallocating their pixels, but free the pixels of larger

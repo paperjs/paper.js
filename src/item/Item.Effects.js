@@ -17,9 +17,9 @@ Item.inject(
   new (function () {
     // Returns whether the item or its content have visible effects:
     function hasEffects(item) {
-      var children = item._children
+      const children = item._children
       if (item._hasEffects()) return true
-      for (var i = 0, l = children ? children.length : 0; i < l; i++) {
+      for (let i = 0, l = children ? children.length : 0; i < l; i++) {
         if (hasEffects(children[i])) return true
       }
       return false
@@ -107,10 +107,10 @@ Item.inject(
        * @return {EffectInstance[]} the inserted instances
        */
       insertEffects: function (index, effects) {
-        var list = this._effects || (this._effects = []),
-          inserted = []
-        for (var i = 0, l = effects.length; i < l; i++) {
-          var instance = new EffectInstance(effects[i])
+        const list = this._effects || (this._effects = [])
+        const inserted = []
+        for (let i = 0, l = effects.length; i < l; i++) {
+          const instance = new EffectInstance(effects[i])
           instance._item = this
           inserted.push(instance)
         }
@@ -139,14 +139,14 @@ Item.inject(
        * @return {EffectInstance[]} the removed instances
        */
       removeEffects: function (start, end) {
-        var list = this._effects,
-          removed = []
+        const list = this._effects
+        let removed = []
         if (list) {
           start = start || 0
           end = Base.pick(end, list.length)
           removed = Base.splice(list, null, start, end - start)
-          for (var i = 0, l = removed.length; i < l; i++) {
-            var instance = removed[i]
+          for (let i = 0, l = removed.length; i < l; i++) {
+            const instance = removed[i]
             instance._item = instance._index = null
           }
           if (removed.length) this._changed(/*#=*/ Change.ATTRIBUTE)
@@ -157,8 +157,8 @@ Item.inject(
 
       // Returns whether any of the item's effects are visible:
       _hasEffects: function () {
-        var list = this._effects
-        for (var i = 0, l = list ? list.length : 0; i < l; i++) {
+        const list = this._effects
+        for (let i = 0, l = list ? list.length : 0; i < l; i++) {
           if (list[i]._visible) return true
         }
         return false
@@ -173,9 +173,9 @@ Item.inject(
        * @return {?Item} the output of the effects
        */
       getEffectOutput: function () {
-        var output = this._effectOutput
+        let output = this._effectOutput
         if (output === undefined || this._effectVersion !== Effect._version) {
-          var art = this._hasEffects() && this._getEffectArt()
+          const art = this._hasEffects() && this._getEffectArt()
           output = art ? this._applyEffects(art) || art : null
           this._effectOutput = output
           this._effectVersion = Effect._version
@@ -186,15 +186,15 @@ Item.inject(
       // Applies the visible effects to the art in turn, and returns what they
       // make of it, or null if none applied:
       _applyEffects: function (art) {
-        var output = null
+        let output = null
         for (
-          var i = 0, l = this._effects ? this._effects.length : 0;
+          let i = 0, l = this._effects ? this._effects.length : 0;
           i < l;
           i++
         ) {
-          var instance = this._effects[i],
-            effect = instance.getEffect(),
-            onApply = effect && effect.onApply
+          const instance = this._effects[i]
+          const effect = instance.getEffect()
+          const onApply = effect && effect.onApply
           // Unknown effects leave the art as it is:
           if (instance._visible && onApply) {
             output = output || art
@@ -214,15 +214,15 @@ Item.inject(
       // coordinates, with the effects of its content expanded and without its
       // own:
       _getEffectArt: function () {
-        var art = this.clone({ insert: false })
+        const art = this.clone({ insert: false })
         art.setEffects(null)
         art.setMatrix(new Matrix())
 
         function expand(source, copy) {
-          var children = source._children
-          for (var i = 0, l = children ? children.length : 0; i < l; i++) {
-            var child = children[i],
-              output = child.getEffectOutput()
+          const children = source._children
+          for (let i = 0, l = children ? children.length : 0; i < l; i++) {
+            const child = children[i]
+            let output = child.getEffectOutput()
             if (output) {
               output = output.clone({ insert: false })
               output.transform(child._matrix)
@@ -247,18 +247,18 @@ Item.inject(
        * @type Rectangle
        */
       getPreviewBounds: function (matrix) {
-        var output = this.getEffectOutput(),
-          children = this._children
+        const output = this.getEffectOutput()
+        const children = this._children
         // Without effects in it, it's the item's own:
         if (output || children && hasEffects(this)) {
-          var bounds = null
+          let bounds = null
           if (output) {
             bounds = output.getStrokeBounds()
           } else {
-            for (var i = 0, l = children.length; i < l; i++) {
-              var child = children[i]
+            for (let i = 0, l = children.length; i < l; i++) {
+              const child = children[i]
               if (child._visible) {
-                var rect = child.getPreviewBounds()
+                const rect = child.getPreviewBounds()
                 bounds = bounds ? bounds.unite(rect) : rect
               }
             }

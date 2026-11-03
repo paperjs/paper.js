@@ -18,12 +18,12 @@
 // NOTE: Adjust value here before calling `gulp publish`, which then updates the
 // various JSON package files and commits, tags and pushes the release, for the
 // release workflow on GitHub Actions to publish it.
-var version = '0.17.0'
+const version = '0.17.0'
 
 // If this file is loaded in the browser, we're in load.js mode.
-var load = typeof window === 'object'
+const load = typeof window === 'object'
 
-var __options = {
+const __options = {
   version: version + (load ? '-load' : ''),
   load: load,
   parser: 'acorn',

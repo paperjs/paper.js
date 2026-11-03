@@ -18,15 +18,15 @@
 // move the stops by their offsets.
 Path.inject(
   new (function () {
-    var tMin = /*#=*/ Numerical.CURVETIME_EPSILON,
-      tMax = 1 - tMin,
-      // The values of the pen, with their defaults where no stop sets them:
-      defaults = { width: 1, aspect: 1, angle: 0 }
+    const tMin = /*#=*/ Numerical.CURVETIME_EPSILON
+    const tMax = 1 - tMin
+    // The values of the pen, with their defaults where no stop sets them:
+    const defaults = { width: 1, aspect: 1, angle: 0 }
 
     // Returns the stops of the path as { offset, width, aspect, angle,
     // smooth } entries in order:
     function getEntries(path) {
-      var profile = path._strokeProfile || []
+      const profile = path._strokeProfile || []
       return profile.map(function (stop) {
         return {
           offset: stop.getOffset(),
@@ -45,16 +45,16 @@ Path.inject(
     // of closed paths, and stays as the nearest entry beyond the ends of open
     // ones. Where a step lies at the offset, `after` picks the side after it:
     function getValue(entries, key, offset, length, closed, after) {
-      var stops = entries.filter(function (entry) {
-          return entry[key] != null
-        }),
-        count = stops.length,
-        index = -1
+      const stops = entries.filter(function (entry) {
+        return entry[key] != null
+      })
+      const count = stops.length
+      let index = -1
 
       // The stop at the index, also beyond the ends of closed paths:
       function getStop(index) {
-        var turns = Math.floor(index / count),
-          stop = stops[index - turns * count]
+        const turns = Math.floor(index / count)
+        const stop = stops[index - turns * count]
         return {
           offset: stop.offset + turns * length,
           value: stop[key],
@@ -66,28 +66,28 @@ Path.inject(
       // flat at smooth stops, so that each stop only shapes the curves on
       // either side of it, and straight on to the other stop otherwise:
       function getSlope(index, forward) {
-        var stop = getStop(index),
-          other = getStop(forward ? index + 1 : index - 1)
+        const stop = getStop(index)
+        const other = getStop(forward ? index + 1 : index - 1)
         return stop.smooth
           ? 0
           : (other.value - stop.value) / (other.offset - stop.offset)
       }
 
       if (count) {
-        for (var i = 0; i < count; i++) {
-          var stopOffset = stops[i].offset
+        for (let i = 0; i < count; i++) {
+          const stopOffset = stops[i].offset
           if (stopOffset < offset || stopOffset === offset && after) index = i
         }
         if (closed || index >= 0 && index < count - 1) {
           // The cubic Hermite curve between the stops around the offset:
-          var stop1 = getStop(index),
-            stop2 = getStop(index + 1),
-            h = stop2.offset - stop1.offset,
-            t = (offset - stop1.offset) / h,
-            v1 = stop1.value,
-            v2 = stop2.value,
-            m1 = getSlope(index, true) * h,
-            m2 = getSlope(index + 1, false) * h
+          const stop1 = getStop(index)
+          const stop2 = getStop(index + 1)
+          const h = stop2.offset - stop1.offset
+          const t = (offset - stop1.offset) / h
+          const v1 = stop1.value
+          const v2 = stop2.value
+          const m1 = getSlope(index, true) * h
+          const m2 = getSlope(index + 1, false) * h
           return [
             ((2 * t - 3) * t * t + 1) * v1 +
             ((t - 2) * t + 1) * t * m1 +
@@ -110,9 +110,9 @@ Path.inject(
 
     // Returns the values of the entries at the offset, as an entry:
     function getValues(entries, offset, length, closed, after) {
-      var values = { offset: offset }
-      for (var key in defaults) {
-        var value = getValue(entries, key, offset, length, closed, after)
+      const values = { offset: offset }
+      for (const key in defaults) {
+        const value = getValue(entries, key, offset, length, closed, after)
         values[key] = value && value[0]
       }
       return values
@@ -135,12 +135,12 @@ Path.inject(
       fallbacks
     ) {
       function getEnd(offset, after) {
-        var values = getValues(entries, offset, length, closed, after)
-        for (var key in fallbacks) {
+        const values = getValues(entries, offset, length, closed, after)
+        for (const key in fallbacks) {
           if (values[key] == null) values[key] = fallbacks[key]
         }
-        var stop = null
-        for (var i = 0, l = entries.length; i < l; i++) {
+        let stop = null
+        for (let i = 0, l = entries.length; i < l; i++) {
           if (entries[i].offset === offset && (after || !stop))
             stop = entries[i]
         }
@@ -148,10 +148,10 @@ Path.inject(
         return values
       }
 
-      var part = []
-      for (var i = 0, l = entries.length; i < l; i++) {
-        var entry = entries[i],
-          offset = entry.offset
+      const part = []
+      for (let i = 0, l = entries.length; i < l; i++) {
+        const entry = entries[i]
+        let offset = entry.offset
         if (closed && offset < from) offset += length
         if (
           (offset > from || offset === from && !hasStart) &&
@@ -174,18 +174,24 @@ Path.inject(
     // Returns the index at the fraction of the length of the curves from the
     // one at start on, wrapping around closed paths:
     function getSpanIndex(path, start, count, fraction) {
-      var curves = path.getCurves(),
-        lengths = [],
-        total = 0
-      for (var i = 0; i < count; i++) {
-        var length = curves[(start + i) % curves.length].getLength()
+      let i
+
+      const curves = path.getCurves()
+      const lengths = []
+      let total = 0
+      for (i = 0; i < count; i++) {
+        const length = curves[(start + i) % curves.length].getLength()
         lengths.push(length)
         total += length
       }
-      var rest = fraction * total,
-        i = 0
+      let rest = fraction * total
+      i = 0
       while (i < count - 1 && rest >= lengths[i]) rest -= lengths[i++]
-      var index = start + i + (lengths[i] ? Math.min(rest / lengths[i], 1) : 0)
+      const index = (
+        start +
+        i +
+        (lengths[i] ? Math.min(rest / lengths[i], 1) : 0)
+      )
       return path._closed ? index % curves.length : index
     }
 
@@ -241,12 +247,16 @@ Path.inject(
       },
 
       setStrokeProfile: function (stops) {
-        var previous = this._strokeProfile,
-          profile = null
+        let i
+        let l
+        let stop
+
+        const previous = this._strokeProfile
+        let profile = null
         if (stops && stops.length) {
           profile = []
-          for (var i = 0, l = stops.length; i < l; i++) {
-            var stop = stops[i]
+          for (i = 0, l = stops.length; i < l; i++) {
+            stop = stops[i]
             if (!(stop instanceof StrokeProfileStop)) {
               stop = new StrokeProfileStop(stop)
             } else if (stop._path && stop._path !== this) {
@@ -261,8 +271,8 @@ Path.inject(
           }
         }
         // The stops that the path no longer has keep their offsets:
-        for (var i = 0, l = previous ? previous.length : 0; i < l; i++) {
-          var stop = previous[i]
+        for (i = 0, l = previous ? previous.length : 0; i < l; i++) {
+          stop = previous[i]
           if (!profile || profile.indexOf(stop) === -1) {
             stop._offset = stop.getOffset()
             stop._index = stop._path = null
@@ -299,14 +309,14 @@ Path.inject(
        * path.strokeProfile = path.strokeProfile.concat(stop);
        */
       getStrokeProfileAt: function (offset) {
-        var values = getValues(
+        const values = getValues(
           getEntries(this),
           offset,
           this.getLength(),
           this._closed,
           true
         )
-        for (var key in defaults) {
+        for (const key in defaults) {
           if (values[key] == null) values[key] = defaults[key]
         }
         return new StrokeProfileStop(values)
@@ -317,31 +327,31 @@ Path.inject(
       // values change. Steps have two entries at the same offset. See
       // PathItem#outline():
       _getStrokeProfilePens: function () {
-        var entries = getEntries(this),
-          length = this.getLength(),
-          closed = this._closed,
-          pens = []
+        const entries = getEntries(this)
+        const length = this.getLength()
+        const closed = this._closed
+        const pens = []
 
         function getPen(offset, after) {
-          var values = getValues(entries, offset, length, closed, after)
-          for (var key in defaults) {
+          const values = getValues(entries, offset, length, closed, after)
+          for (const key in defaults) {
             if (values[key] == null) values[key] = defaults[key]
           }
           return values
         }
 
-        var offsets = [0].concat(
+        const offsets = [0].concat(
           entries.map(function (entry) {
             return entry.offset
           }),
           length
         )
-        for (var i = 0, l = offsets.length; i < l; i++) {
-          var offset = offsets[i]
+        for (let i = 0, l = offsets.length; i < l; i++) {
+          const offset = offsets[i]
           if (!i || offset > offsets[i - 1]) {
             if (offset > 0) pens.push(getPen(offset, false))
             if (offset < length) {
-              var pen = getPen(offset, true)
+              const pen = getPen(offset, true)
               if (!offset || !Base.equals(pen, pens[pens.length - 1]))
                 pens.push(pen)
             }
@@ -354,12 +364,12 @@ Path.inject(
       // with their first and second derivatives, as { width: [value, d1,
       // d2], aspect, angle }, see PathItem#outline():
       _getStrokeProfileValues: function () {
-        var entries = getEntries(this),
-          length = this.getLength(),
-          closed = this._closed
+        const entries = getEntries(this)
+        const length = this.getLength()
+        const closed = this._closed
         return function (offset, after) {
-          var values = {}
-          for (var key in defaults) {
+          const values = {}
+          for (const key in defaults) {
             values[key] = getValue(
               entries,
               key,
@@ -382,16 +392,16 @@ Path.inject(
       // segment. Offsets wrap around closed paths, and stay within open
       // ones:
       _getIndexAt: function (offset) {
-        var length = this.getLength()
+        const length = this.getLength()
         offset = this._closed
           ? length
             ? (offset % length + length) % length
             : 0
           : Math.min(Math.max(offset, 0), length)
-        var loc = this.getLocationAt(offset)
+        const loc = this.getLocationAt(offset)
         if (loc) {
-          var time = loc.getTime(),
-            curveLength = loc.getCurve().getLength()
+          const time = loc.getTime()
+          const curveLength = loc.getCurve().getLength()
           return (
             loc.getIndex() + (
               time < tMin || !curveLength
@@ -406,10 +416,10 @@ Path.inject(
       },
 
       _getOffsetAtIndex: function (index) {
-        var curves = this.getCurves(),
-          i = Math.floor(index),
-          offset = 0
-        for (var j = 0, l = Math.min(i, curves.length); j < l; j++)
+        const curves = this.getCurves()
+        const i = Math.floor(index)
+        let offset = 0
+        for (let j = 0, l = Math.min(i, curves.length); j < l; j++)
           offset += curves[j].getLength()
         return i < curves.length
           ? offset + (index - i) * curves[i].getLength()
@@ -425,7 +435,7 @@ Path.inject(
       // Keeps the stops that the callback returns true for, and lets go of
       // the others:
       _filterStrokeProfile: function (callback) {
-        var profile = this._strokeProfile.filter(callback)
+        const profile = this._strokeProfile.filter(callback)
         this.setStrokeProfile(profile)
       },
 
@@ -433,21 +443,21 @@ Path.inject(
       // the ones on the curve that the segments divide at the same fraction
       // of its length, see #_add():
       _insertStrokeProfile: function (index, amount) {
-        var profile = this._strokeProfile,
-          count = this._segments.length - amount,
-          closed = this._closed,
-          // The curve that the segments divide, if any:
-          divided = closed
-            ? (index + count - 1) % count
-            : index > 0 && index < count
-              ? index - 1
-              : -1,
-          // Its first segment's index after the insertion:
-          start = divided < index ? divided : divided + amount
+        const profile = this._strokeProfile
+        const count = this._segments.length - amount
+        const closed = this._closed
+        // The curve that the segments divide, if any:
+        const divided = closed
+          ? (index + count - 1) % count
+          : index > 0 && index < count
+            ? index - 1
+            : -1
+        // Its first segment's index after the insertion:
+        const start = divided < index ? divided : divided + amount
         if (count) {
-          for (var i = 0, l = profile.length; i < l; i++) {
-            var stop = profile[i],
-              x = stop._index
+          for (let i = 0, l = profile.length; i < l; i++) {
+            const stop = profile[i]
+            const x = stop._index
             if (divided >= 0 && x > divided && x < divided + 1) {
               stop._index = getSpanIndex(this, start, amount + 1, x - divided)
             } else if (x >= index) {
@@ -463,17 +473,17 @@ Path.inject(
       // same fraction of the length there, which becomes one curve. The ones
       // beyond the new ends of open paths go. See #removeSegments():
       _removeStrokeProfile: function (start, end) {
-        var count = this._segments.length,
-          closed = this._closed,
-          amount = end - start,
-          curves = this.getCurves(),
-          // The segment before the removed ones, and its index after:
-          before = closed ? (start + count - 1) % count : start - 1,
-          index = before < start ? before : before - amount,
-          span = amount + 1
+        const count = this._segments.length
+        const closed = this._closed
+        const amount = end - start
+        const curves = this.getCurves()
+        // The segment before the removed ones, and its index after:
+        const before = closed ? (start + count - 1) % count : start - 1
+        const index = before < start ? before : before - amount
+        const span = amount + 1
 
         function isKept(stop) {
-          var x = stop._index
+          const x = stop._index
           return closed
             ? amount < count
             : start
@@ -482,17 +492,17 @@ Path.inject(
         }
 
         this._filterStrokeProfile(isKept)
-        var profile = this._strokeProfile || []
-        for (var i = 0, l = profile.length; i < l; i++) {
-          var stop = profile[i],
-            x = stop._index,
-            // How far the stop lies from the segment before:
-            d = closed ? (x - before + count) % count : x - before
+        const profile = this._strokeProfile || []
+        for (let i = 0, l = profile.length; i < l; i++) {
+          const stop = profile[i]
+          const x = stop._index
+          // How far the stop lies from the segment before:
+          const d = closed ? (x - before + count) % count : x - before
           if (before >= 0 && d > 0 && d < span) {
-            var position = 0,
-              total = 0
-            for (var j = 0; j < span; j++) {
-              var length =
+            let position = 0
+            let total = 0
+            for (let j = 0; j < span; j++) {
+              const length =
                 curves[(before + j) % curves.length]
                   .getLength()
               if (j < Math.floor(d)) {
@@ -512,10 +522,10 @@ Path.inject(
 
       // Moves the stops after the segments were reversed, see #reverse():
       _reverseStrokeProfile: function () {
-        var profile = this._strokeProfile,
-          count = this._segments.length
-        for (var i = 0, l = profile.length; i < l; i++) {
-          var stop = profile[i]
+        const profile = this._strokeProfile
+        const count = this._segments.length
+        for (let i = 0, l = profile.length; i < l; i++) {
+          const stop = profile[i]
           stop._index = this._closed
             ? (2 * count - 1 - stop._index) % count
             : count - 1 - stop._index
@@ -528,7 +538,7 @@ Path.inject(
       // Takes the stroke profile off the path, as entries by offset, for
       // methods that move it by offsets, see #_setStrokeProfileParts():
       _takeStrokeProfile: function () {
-        var part = {
+        const part = {
           entries: getEntries(this),
           length: this.getLength(),
           closed: this._closed
@@ -542,26 +552,26 @@ Path.inject(
       // the first at its start and the last at its end. Where they meet,
       // each keeps its values there as a stop:
       _setStrokeProfileParts: function (parts) {
-        var length = this.getLength(),
-          closed = this._closed,
-          entries = [],
-          // Where the parts meet, the values that only some of them set
-          // are the defaults in the others:
-          fallbacks = {}
+        const length = this.getLength()
+        const closed = this._closed
+        const entries = []
+        // Where the parts meet, the values that only some of them set
+        // are the defaults in the others:
+        const fallbacks = {}
         parts.forEach(function (part) {
           part.entries.forEach(function (entry) {
-            for (var key in defaults) {
+            for (const key in defaults) {
               if (entry[key] != null) fallbacks[key] = defaults[key]
             }
           })
         })
-        for (var i = 0, l = parts.length; i < l; i++) {
-          var part = parts[i],
-            start = i ? length - part.length : 0,
-            hasStart = closed || i > 0,
-            hasEnd = closed || i < l - 1
+        for (let i = 0, l = parts.length; i < l; i++) {
+          const part = parts[i]
+          const start = i ? length - part.length : 0
+          const hasStart = closed || i > 0
+          const hasEnd = closed || i < l - 1
           if (part.entries.length || l > 1 || closed) {
-            var shifted = getPart(
+            const shifted = getPart(
               part.entries,
               0,
               part.length,
@@ -571,8 +581,8 @@ Path.inject(
               hasEnd,
               fallbacks
             )
-            for (var j = 0, m = shifted.length; j < m; j++) {
-              var entry = shifted[j]
+            for (let j = 0, m = shifted.length; j < m; j++) {
+              const entry = shifted[j]
               entry.offset += start
               entries.push(entry)
             }
@@ -586,7 +596,7 @@ Path.inject(
       // Sets the stroke profile from a part of a profile taken off the path,
       // see #_takeStrokeProfile(), between two offsets on it:
       _setStrokeProfilePart: function (part, from, to) {
-        var length = part.length
+        const length = part.length
         this.setStrokeProfile(
           getPart(
             part.entries,

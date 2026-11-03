@@ -21,7 +21,7 @@
  *
  * @extends Item
  */
-var TextItem = Item.extend(
+const TextItem = Item.extend(
   /** @lends TextItem# */ {
     _class: 'TextItem',
     _applyMatrix: false,
@@ -45,7 +45,7 @@ var TextItem = Item.extend(
       // it should be placed (arg).
       // See if a point is passed, and if so, pass it on to _initialize().
       // If not, it might be a properties object literal.
-      var hasProps = (
+      const hasProps = (
         arg &&
         Base.isPlainObject(arg) &&
         arg.x === undefined &&
@@ -56,19 +56,19 @@ var TextItem = Item.extend(
 
     // Styles that differ within the text are kept by run and by paragraph:
     _serialize: function _serialize(options, dictionary) {
-      var json = _serialize.base.call(this, options, dictionary),
-        props = json[1],
-        story = this._story,
-        content = story._content,
-        runs = story._getRuns(),
-        paragraphs = story._paragraphs,
-        keys = story._paragraphKeys,
-        itemKeys = story._itemKeys
+      const json = _serialize.base.call(this, options, dictionary)
+      const props = json[1]
+      const story = this._story
+      const content = story._content
+      const runs = story._getRuns()
+      const paragraphs = story._paragraphs
+      const keys = story._paragraphKeys
+      const itemKeys = story._itemKeys
 
       // Style values that differ from the defaults, serialized with the
       // item's options and dictionary, where gradients go:
       function serialize(json, style, key) {
-        var value = style[key]
+        const value = style[key]
         if (value !== undefined && !Base.equals(value, style._defaults[key]))
           json[key] = Base.serialize(value, options, false, dictionary)
       }
@@ -78,10 +78,10 @@ var TextItem = Item.extend(
         // which is quicker than reading them through a range. Those it
         // doesn't set are the defaults, which the JSON leaves out:
         props.runs = runs.map(function (run) {
-          var style = run.style,
-            values = style._values,
-            json = { content: content.slice(run.start, run.end) }
-          for (var key in style._defaults) {
+          const style = run.style
+          const values = style._values
+          const json = { content: content.slice(run.start, run.end) }
+          for (const key in style._defaults) {
             if (key in values && !(key in keys || key in itemKeys))
               serialize(json, style, key)
           }
@@ -95,8 +95,8 @@ var TextItem = Item.extend(
         })
       ) {
         props.paragraphs = paragraphs.map(function (style) {
-          var json = {}
-          for (var key in keys) serialize(json, style, key)
+          const json = {}
+          for (const key in keys) serialize(json, style, key)
           return json
         })
       }
@@ -104,17 +104,17 @@ var TextItem = Item.extend(
     },
 
     _equals: function (item) {
-      var story1 = this._story,
-        story2 = item._story,
-        runs1 = story1._getRuns(),
-        runs2 = story2._getRuns(),
-        paragraphs1 = story1._paragraphs,
-        paragraphs2 = story2._paragraphs
+      const story1 = this._story
+      const story2 = item._story
+      const runs1 = story1._getRuns()
+      const runs2 = story2._getRuns()
+      const paragraphs1 = story1._paragraphs
+      const paragraphs2 = story2._paragraphs
       return (
         story1._content === story2._content &&
         runs1.length === runs2.length &&
         runs1.every(function (run, i) {
-          var other = runs2[i]
+          const other = runs2[i]
           return (
             run.end === other.end &&
             run.style.equals(other.style)
@@ -133,7 +133,7 @@ var TextItem = Item.extend(
       // the text starts in its story, which the item before it decides:
       if (flags & /*#=*/ (ChangeFlag.GEOMETRY | /*#=*/ ChangeFlag.STYLE)) {
         this._layout = this._fontMetrics = null
-        var next = this.getNextTextItem()
+        const next = this.getNextTextItem()
         if (next) next._changed(/*#=*/ Change.GEOMETRY)
       }
     },
@@ -150,7 +150,7 @@ var TextItem = Item.extend(
     // styles, and keeps only the properties of the text item itself:
     // @override
     _getStyles: function (style, key) {
-      var story = this._story
+      const story = this._story
       return !(key in story._itemKeys)
         ? key in story._paragraphKeys
           ? story._paragraphs
@@ -241,15 +241,15 @@ var TextItem = Item.extend(
      * @return {Boolean} {@true if the text item was linked}
      */
     link: function (next) {
-      var story = this._story,
-        other = next._story
+      const story = this._story
+      const other = next._story
       if (other === story) return false
       // Join the other story's content, styles and text items:
-      var items = story._items,
-        joined = other._items
+      const items = story._items
+      const joined = other._items
       story._append(other)
       items.splice.apply(items, [items.indexOf(this) + 1, 0].concat(joined))
-      for (var i = 0, l = joined.length; i < l; i++) joined[i]._story = story
+      for (let i = 0, l = joined.length; i < l; i++) joined[i]._story = story
       story._changed(/*#=*/ Change.CONTENT)
       return true
     },
@@ -272,9 +272,11 @@ var TextItem = Item.extend(
      * @return {Boolean} {@true if the text item was unlinked}
      */
     unlink: function (which) {
-      var story = this._story,
-        items = story._items,
-        index = items.indexOf(this)
+      let start
+
+      const story = this._story
+      const items = story._items
+      const index = items.indexOf(this)
       which = which || 'both'
       if (
         items.length > 1 &&
@@ -286,8 +288,8 @@ var TextItem = Item.extend(
         if (which === 'both') {
           // The item keeps the style its text started with, in a story
           // of its own:
-          var start = this.getVisibleRange()._start,
-            own = new TextStory([this])
+          start = this.getVisibleRange()._start
+          const own = new TextStory([this])
           own._runs[0].style = new Style(
             story._getRangeStyles('fontSize', start, start)[0],
             own
@@ -298,11 +300,11 @@ var TextItem = Item.extend(
           this._changed(/*#=*/ Change.CONTENT)
         } else {
           // Break the story where the items after the break start:
-          var at = which === 'before' ? index : index + 1,
-            start = items[at].getVisibleRange()._start,
-            moved = items.splice(at, items.length - at),
-            rest = story._extract(start, moved)
-          for (var i = 0, l = moved.length; i < l; i++) moved[i]._story = rest
+          const at = which === 'before' ? index : index + 1
+          start = items[at].getVisibleRange()._start
+          const moved = items.splice(at, items.length - at)
+          const rest = story._extract(start, moved)
+          for (let i = 0, l = moved.length; i < l; i++) moved[i]._story = rest
           story._changed(/*#=*/ Change.CONTENT)
           rest._changed(/*#=*/ Change.CONTENT)
         }
@@ -318,7 +320,7 @@ var TextItem = Item.extend(
      * @type TextItem
      */
     getNextTextItem: function () {
-      var items = this._story._items
+      const items = this._story._items
       return items[items.indexOf(this) + 1] || null
     },
 
@@ -329,7 +331,7 @@ var TextItem = Item.extend(
      * @type TextItem
      */
     getPreviousTextItem: function () {
-      var items = this._story._items
+      const items = this._story._items
       return items[items.indexOf(this) - 1] || null
     },
 
@@ -342,7 +344,7 @@ var TextItem = Item.extend(
      * @type TextRange
      */
     getVisibleRange: function () {
-      var range = this._getVisibleRange()
+      const range = this._getVisibleRange()
       return new TextRange(this._story, range[0], range[1])
     },
 
@@ -366,7 +368,7 @@ var TextItem = Item.extend(
     },
 
     _getStart: function () {
-      var previous = this.getPreviousTextItem()
+      const previous = this.getPreviousTextItem()
       return previous ? previous._getVisibleRange()[1] : 0
     },
 
@@ -382,20 +384,20 @@ var TextItem = Item.extend(
     // `direction`, as shaping can differ by it. With `byLetter`, and in runs
     // with manual kerning or rotated letters, each letter is a piece:
     _measure: function (start, end, direction, byLetter) {
-      var view = this.getView(),
-        story = this._story,
-        content = story._content,
-        runs = story._runs,
-        letters = null,
-        index = 0,
-        pieces = [],
-        total = 0,
-        lineHeight = 0,
-        ascent = 0,
-        descent = 0,
-        group = '',
-        groupWidth = 0,
-        previous = null
+      const view = this.getView()
+      const story = this._story
+      const content = story._content
+      const runs = story._runs
+      let letters = null
+      let index = 0
+      const pieces = []
+      let total = 0
+      let lineHeight = 0
+      let ascent = 0
+      let descent = 0
+      let group = ''
+      let groupWidth = 0
+      let previous = null
 
       // The advance of `text` after the group measured so far:
       function advance(piece, text) {
@@ -409,7 +411,7 @@ var TextItem = Item.extend(
           group = ''
           groupWidth = 0
         }
-        var before = groupWidth
+        const before = groupWidth
         group += text
         groupWidth = (
           view.getTextWidth(piece.font, [group], piece.tracking, direction) *
@@ -421,8 +423,8 @@ var TextItem = Item.extend(
       // Adds the piece of `text`, from `from` to `to` in the story, with
       // `extra` space after it:
       function add(piece, text, from, to, extra) {
-        var shown = piece.capitals ? text.toUpperCase() : text,
-          width = advance(piece, shown) + extra
+        const shown = piece.capitals ? text.toUpperCase() : text
+        const width = advance(piece, shown) + extra
         pieces.push(
           (previous = Base.set({}, piece, {
             content: shown,
@@ -435,21 +437,21 @@ var TextItem = Item.extend(
         total += width
       }
 
-      for (var i = 0, l = runs.length, pos = 0; i < l; i++) {
-        var run = runs[i],
-          next = pos + run.length,
-          from = Math.max(pos, start),
-          to = Math.min(next, end)
+      for (let i = 0, l = runs.length, pos = 0; i < l; i++) {
+        const run = runs[i]
+        const next = pos + run.length
+        const from = Math.max(pos, start)
+        const to = Math.min(next, end)
         // An empty line takes its line height from the run it's in:
         if (from < to || start === end && from === to && !lineHeight) {
-          var style = run.style,
-            piece = this._getPiece(style),
-            kerning = style.getLetterKerning()
+          const style = run.style
+          const piece = this._getPiece(style)
+          const kerning = style.getLetterKerning()
           if (byLetter || kerning != null || piece.rotation) {
             // Walk the letters once, through all the runs:
             letters = letters || story._getLetters()
             while (index < letters.length && letters[index]._start < to) {
-              var letter = letters[index++]
+              const letter = letters[index++]
               if (letter._start >= from) {
                 if (kerning != null) {
                   // Manual kerning replaces the font's pair:
@@ -496,10 +498,10 @@ var TextItem = Item.extend(
      * @type TextRange[]
      */
     getLines: function () {
-      var that = this,
-        story = this._story
+      const that = this
+      const story = this._story
       return this._getLayout().map(function (line) {
-        var range = new TextRange(story, line.start, line.end)
+        const range = new TextRange(story, line.start, line.end)
         range.baseline = new Line(
           new Point(line.x, line.y),
           new Point(line.x + line.width, line.y)
@@ -513,20 +515,20 @@ var TextItem = Item.extend(
     // the font's ascent and descent and the line height, how far it moves them
     // from the baseline, its scaling and rotation:
     _getPiece: function (style) {
-      var size = style._getFontSize(),
-        font = style._getCanvasFont(),
-        position = style.getBaselinePosition(),
-        scale = Point.read([style.getLetterScaling()]),
-        // The font's metrics, kept until the text changes, as its layout,
-        // or guessed from its size without them:
-        cache = this._fontMetrics || (this._fontMetrics = {}),
-        metrics = (
-          cache[font] ||
-          (cache[font] = (
-            this.getView().getFontMetrics(font) ||
-            { ascent: 0.75 * size, descent: 0.25 * size }
-          ))
-        )
+      const size = style._getFontSize()
+      const font = style._getCanvasFont()
+      const position = style.getBaselinePosition()
+      const scale = Point.read([style.getLetterScaling()])
+      // The font's metrics, kept until the text changes, as its layout,
+      // or guessed from its size without them:
+      const cache = this._fontMetrics || (this._fontMetrics = {})
+      const metrics = (
+        cache[font] ||
+        (cache[font] = (
+          this.getView().getFontMetrics(font) ||
+          { ascent: 0.75 * size, descent: 0.25 * size }
+        ))
+      )
       return {
         style: style,
         font: font,
@@ -551,7 +553,7 @@ var TextItem = Item.extend(
     // its line height, which leaves the same leading above its ascent as
     // below its descent:
     _getBox: function (entry, x, y) {
-      var leading = (entry.lineHeight - entry.ascent - entry.descent) / 2
+      const leading = (entry.lineHeight - entry.ascent - entry.descent) / 2
       return new Rectangle(
         x,
         y - entry.ascent - leading,
@@ -563,12 +565,12 @@ var TextItem = Item.extend(
     // The room between `left` and `right` that the paragraph's indents leave
     // a line, with the first line's indent on its first:
     _indent: function (paragraph, isFirst, left, right) {
-      var isRightToLeft = paragraph.getDirection() === 'rtl',
-        start = (
-          paragraph.getStartIndent() +
-          (isFirst ? paragraph.getFirstLineIndent() : 0)
-        ),
-        end = paragraph.getEndIndent()
+      const isRightToLeft = paragraph.getDirection() === 'rtl'
+      const start = (
+        paragraph.getStartIndent() +
+        (isFirst ? paragraph.getFirstLineIndent() : 0)
+      )
+      const end = paragraph.getEndIndent()
       return [
         left + (isRightToLeft ? end : start),
         right - (isRightToLeft ? start : end)
@@ -578,21 +580,21 @@ var TextItem = Item.extend(
     // Places the line in the room by the paragraph's justification, by its
     // justifyLast on the last line of a justified paragraph:
     _place: function (line, paragraph, isLast, room) {
-      var justification = paragraph.getJustification(),
-        justifyLast = paragraph.getJustifyLast(),
-        direction = paragraph.getDirection(),
-        side = this._getSide(
-          (
-            justification === 'justify' &&
-            isLast &&
-            justifyLast !== 'all'
-          )
-            ? justifyLast
-            : justification,
-          direction
-        ),
-        left = room[0],
-        right = room[1]
+      const justification = paragraph.getJustification()
+      const justifyLast = paragraph.getJustifyLast()
+      const direction = paragraph.getDirection()
+      const side = this._getSide(
+        (
+          justification === 'justify' &&
+          isLast &&
+          justifyLast !== 'all'
+        )
+          ? justifyLast
+          : justification,
+        direction
+      )
+      const left = room[0]
+      const right = room[1]
       if (side === 'justify' || side === 'all')
         this._justify(line, right - left, direction)
       if (direction === 'rtl') this._mirror(line.pieces, line.width)
@@ -610,34 +612,34 @@ var TextItem = Item.extend(
     // Spreads the line's extra width between its words, by moving each piece
     // by the spaces before it:
     _justify: function (line, width, direction) {
-      var pieces = line.pieces,
-        content = this._story._content,
-        spaces = (
-          content
-            .slice(
-              pieces.length ? pieces[0].start : 0,
-              pieces.length ? pieces[pieces.length - 1].end : 0
-            )
-            .match(/\s+/g) || []
-        ).length
+      const pieces = line.pieces
+      const content = this._story._content
+      const spaces = (
+        content
+          .slice(
+            pieces.length ? pieces[0].start : 0,
+            pieces.length ? pieces[pieces.length - 1].end : 0
+          )
+          .match(/\s+/g) || []
+      ).length
       if (spaces && width > line.width) {
-        var extra = (width - line.width) / spaces,
-          moved = 0,
-          result = []
-        for (var i = 0, l = pieces.length; i < l; i++) {
+        const extra = (width - line.width) / spaces
+        let moved = 0
+        const result = []
+        for (let i = 0, l = pieces.length; i < l; i++) {
           // Split pieces at their spaces, so each word can move. Pieces
           // without any, as a soft hyphen's, move whole:
-          var piece = pieces[i],
-            parts = piece.content.split(/(\s+)/),
-            from = piece.start,
-            x = piece.x
+          const piece = pieces[i]
+          const parts = piece.content.split(/(\s+)/)
+          let from = piece.start
+          let x = piece.x
           if (parts.length === 1) {
             result.push(Base.set({}, piece, { x: x + moved }))
           } else {
-            for (var j = 0, m = parts.length; j < m; j++) {
-              var part = parts[j]
+            for (let j = 0, m = parts.length; j < m; j++) {
+              const part = parts[j]
               if (part) {
-                var advance = this._measure(
+                const advance = this._measure(
                   from,
                   from + part.length,
                   direction
@@ -669,24 +671,24 @@ var TextItem = Item.extend(
     // Places the pieces of a line as wide as `width`, laid out from the left
     // in reading order, from the right, as right-to-left paragraphs read:
     _mirror: function (pieces, width) {
-      for (var i = 0, l = pieces.length; i < l; i++) {
-        var piece = pieces[i]
+      for (let i = 0, l = pieces.length; i < l; i++) {
+        const piece = pieces[i]
         piece.x = width - piece.x - piece.width
       }
     },
 
     // Moves the line, and its pieces, by `x` and `y`:
     _shift: function (line, x, y) {
-      var pieces = line.pieces
+      const pieces = line.pieces
       line.x = (line.x || 0) + x
       line.y += y
-      for (var i = 0, l = pieces.length; i < l; i++) pieces[i].x += x
+      for (let i = 0, l = pieces.length; i < l; i++) pieces[i].x += x
     },
 
     // Where lines align by `justification`, 'start' and 'end' resolved by the
     // paragraph's `direction`:
     _getSide: function (justification, direction) {
-      var isRightToLeft = direction === 'rtl'
+      const isRightToLeft = direction === 'rtl'
       return justification === 'start'
         ? isRightToLeft
           ? 'right'
@@ -703,42 +705,42 @@ var TextItem = Item.extend(
     _draw: function (ctx, param, viewMatrix) {
       if (param.dontFinish || param.clip) {
         // The glyph outlines aren't known, so clip with the bounds (#1845):
-        var rect = this.getInternalBounds()
+        const rect = this.getInternalBounds()
         if (!param.dontStart) ctx.beginPath()
         ctx.rect(rect.x, rect.y, rect.width, rect.height)
       } else if (this._story._content) {
-        var story = this._story,
-          lines = this._getLayout(),
-          paragraph = null,
-          // Glyphs can only be stroked through the transformation,
-          // unlike paths, so approximate non-scaling strokes by dividing
-          // the width and the dashes by the scale (#1703):
-          scale = (
-            !this._style.getStrokeScaling() &&
-            viewMatrix._getMeanScale()
-          )
+        const story = this._story
+        const lines = this._getLayout()
+        let paragraph = null
+        // Glyphs can only be stroked through the transformation,
+        // unlike paths, so approximate non-scaling strokes by dividing
+        // the width and the dashes by the scale (#1703):
+        const scale = (
+          !this._style.getStrokeScaling() &&
+          viewMatrix._getMeanScale()
+        )
         ctx.textAlign = 'left'
-        for (var i = 0, l = lines.length; i < l; i++) {
-          var line = lines[i],
-            pieces = line.pieces
+        for (let i = 0, l = lines.length; i < l; i++) {
+          const line = lines[i]
+          const pieces = line.pieces
           // Canvas orders the letters within the pieces by their
           // paragraph's direction, looked up once for all its lines:
           if (!paragraph || line.start > paragraph.end) {
             paragraph = story._getParagraph(line.start)
-            var direction = paragraph.style.getDirection() || 'ltr'
+            const direction = paragraph.style.getDirection() || 'ltr'
             if (ctx.direction !== direction) ctx.direction = direction
           }
-          for (var j = 0, m = pieces.length; j < m; j++) {
-            var piece = pieces[j],
-              style = piece.style,
-              hasFill = style.hasFill(),
-              hasStroke = style.hasStroke(),
-              isStrokeFirst = (
-                hasStroke &&
-                style.getPaintOrder() === 'stroke'
-              ),
-              size = piece.size,
-              x = piece.dx || 0
+          for (let j = 0, m = pieces.length; j < m; j++) {
+            const piece = pieces[j]
+            const style = piece.style
+            const hasFill = style.hasFill()
+            const hasStroke = style.hasStroke()
+            const isStrokeFirst = (
+              hasStroke &&
+              style.getPaintOrder() === 'stroke'
+            )
+            const size = piece.size
+            let x = piece.dx || 0
             this._setStyles(ctx, param, viewMatrix, null, style)
             if (hasStroke && scale) {
               ctx.lineWidth /= scale
@@ -754,7 +756,7 @@ var TextItem = Item.extend(
             if (piece.rotation) ctx.rotate(piece.rotation * Math.PI / 180)
             // Underlines and strikethroughs, in the fill color:
             if (hasFill) {
-              var thickness = size / 15
+              const thickness = size / 15
               if (style.getUnderline())
                 ctx.fillRect(x, size / 8, piece.width, thickness)
               if (style.getStrikethrough()) {
@@ -785,20 +787,20 @@ var TextItem = Item.extend(
       if (options.fill) {
         // The glyph outlines aren't known, so hit the letters' boxes, also
         // within the tolerance around them (#632):
-        var lines = this._getLayout()
-        for (var i = 0, l = lines.length; i < l; i++) {
-          var line = lines[i],
-            pieces = line.pieces
-          for (var j = 0, m = pieces.length; j < m; j++) {
-            var piece = pieces[j],
-              local = point
-                .subtract(piece.x, line.y + piece.y)
-                .rotate(-piece.rotation),
-              rect = this._getBox(piece, piece.dx || 0, 0),
-              closest = local.clamp(
-                rect.getTopLeft(true),
-                rect.getBottomRight(true)
-              )
+        const lines = this._getLayout()
+        for (let i = 0, l = lines.length; i < l; i++) {
+          const line = lines[i]
+          const pieces = line.pieces
+          for (let j = 0, m = pieces.length; j < m; j++) {
+            const piece = pieces[j]
+            const local = point
+              .subtract(piece.x, line.y + piece.y)
+              .rotate(-piece.rotation)
+            const rect = this._getBox(piece, piece.dx || 0, 0)
+            const closest = local.clamp(
+              rect.getTopLeft(true),
+              rect.getBottomRight(true)
+            )
             // Transparent fills are hit too, see Path#_hitTestSelf():
             if (
               piece.style.getFillColor() && (
@@ -1208,7 +1210,7 @@ TextItem.inject(
     ],
     function (name) {
       this[name] = function () {
-        var story = this._story
+        const story = this._story
         return story[name].apply(story, arguments)
       }
     },

@@ -15,7 +15,7 @@
  * @class
  * @private
  */
-var PathFlattener = Base.extend(
+const PathFlattener = Base.extend(
   {
     _class: 'PathFlattener',
 
@@ -49,19 +49,19 @@ var PathFlattener = Base.extend(
     ) {
       // Instead of relying on path.curves, we only use segments here and
       // get the curve values from them.
-      var curves = [], // The curve values as returned by getValues()
-        parts = [], // The calculated, subdivided parts of the path
-        length = 0, // The total length of the path
-        // By default, we're not subdividing more than 32 times.
-        minSpan = 1 / (maxRecursion || 32),
-        segments = path._segments,
-        segment1 = segments[0],
-        segment2
+      const curves = [] // The curve values as returned by getValues()
+      const parts = [] // The calculated, subdivided parts of the path
+      let length = 0 // The total length of the path
+      // By default, we're not subdividing more than 32 times.
+      const minSpan = 1 / (maxRecursion || 32)
+      const segments = path._segments
+      let segment1 = segments[0]
+      let segment2
 
       // Iterate through all curves and compute the parts for each of them,
       // by recursively calling computeParts().
       function addCurve(segment1, segment2) {
-        var curve = Curve.getValues(segment1, segment2, matrix)
+        const curve = Curve.getValues(segment1, segment2, matrix)
         curves.push(curve)
         computeParts(curve, segment1._index, 0, 1)
       }
@@ -76,16 +76,16 @@ var PathFlattener = Base.extend(
           // precision for display purposes.
           !Curve.isFlatEnough(curve, flatness || 0.25)
         ) {
-          var halves = Curve.subdivide(curve, 0.5),
-            tMid = (t1 + t2) / 2
+          const halves = Curve.subdivide(curve, 0.5)
+          const tMid = (t1 + t2) / 2
           // Recursively subdivide and compute parts again.
           computeParts(halves[0], index, t1, tMid)
           computeParts(halves[1], index, tMid, t2)
         } else {
           // Calculate the length of the curve interpreted as a line.
-          var dx = curve[6] - curve[0],
-            dy = curve[7] - curve[1],
-            dist = Math.sqrt(dx * dx + dy * dy)
+          const dx = curve[6] - curve[0]
+          const dy = curve[7] - curve[1]
+          const dist = Math.sqrt(dx * dx + dy * dy)
           if (dist > 0) {
             length += dist
             parts.push({
@@ -101,7 +101,7 @@ var PathFlattener = Base.extend(
         }
       }
 
-      for (var i = 1, l = segments.length; i < l; i++) {
+      for (let i = 1, l = segments.length; i < l; i++) {
         segment2 = segments[i]
         addCurve(segment1, segment2)
         segment1 = segment2
@@ -118,11 +118,10 @@ var PathFlattener = Base.extend(
     _get: function (offset) {
       // Make sure we're not beyond the requested offset already. Search the
       // start position backwards from where to then process the loop below.
-      var parts = this.parts,
-        length = parts.length,
-        start,
-        i,
-        j = this.index
+      const parts = this.parts
+      const length = parts.length
+      let i
+      let j = this.index
       for (;;) {
         i = j
         if (!j || parts[--j].offset < offset) break
@@ -130,21 +129,21 @@ var PathFlattener = Base.extend(
       // Find the part that succeeds the given offset, then interpolate
       // with the previous part
       for (; i < length; i++) {
-        var part = parts[i]
+        const part = parts[i]
         if (part.offset >= offset) {
           // Found the right part, remember current position
           this.index = i
           // Now get the previous part so we can linearly interpolate
           // the curve parameter
-          var prev = parts[i - 1],
-            // Make sure we only use the previous parameter value if its
-            // for the same curve, by checking index. Use 0 otherwise.
-            prevTime = prev && prev.index === part.index ? prev.time : 0,
-            prevOffset = prev ? prev.offset : 0,
-            factor = (offset - prevOffset) / (part.offset - prevOffset)
+          const prev = parts[i - 1]
+          // Make sure we only use the previous parameter value if its
+          // for the same curve, by checking index. Use 0 otherwise.
+          const prevTime = prev && prev.index === part.index ? prev.time : 0
+          const prevOffset = prev ? prev.offset : 0
+          let factor = (offset - prevOffset) / (part.offset - prevOffset)
           if (part.isStraight) {
             // The part's time at the point on its line:
-            var v = part.curve
+            const v = part.curve
             factor = Curve.getTimeOf(
               v,
               new Point(
@@ -171,7 +170,7 @@ var PathFlattener = Base.extend(
     Curve._evaluateMethods,
     function (name) {
       this[name + 'At'] = function (offset) {
-        var param = this._get(offset)
+        const param = this._get(offset)
         return Curve[name](this.curves[param.index], param.time)
       }
     },

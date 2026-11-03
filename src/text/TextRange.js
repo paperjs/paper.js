@@ -31,13 +31,13 @@
  *     word.fontSize = 8 + word.content.length * 3;
  * });
  */
-var TextRange = Base.extend(
+const TextRange = Base.extend(
   /** @lends TextRange# */ {
     _class: 'TextRange',
     beans: true,
 
     initialize: function TextRange(story, start, end) {
-      var length = story._content.length
+      const length = story._content.length
       this._story = story
       this._start = Math.max(0, Math.min(start, length))
       this._end = Math.max(this._start, Math.min(end, length))
@@ -112,15 +112,15 @@ var TextRange = Base.extend(
     // The range's content and its style properties that differ from the
     // defaults, and that it has throughout:
     toJSON: function () {
-      var style = this._style,
-        defaults = style._defaults,
-        json = {
-          start: this._start,
-          end: this._end,
-          content: this.getContent()
-        }
-      for (var key in defaults) {
-        var value = style[key]
+      const style = this._style
+      const defaults = style._defaults
+      const json = {
+        start: this._start,
+        end: this._end,
+        content: this.getContent()
+      }
+      for (const key in defaults) {
+        const value = style[key]
         if (value !== undefined && !Base.equals(value, defaults[key]))
           json[key] = Base.serialize(value)
       }
@@ -134,13 +134,13 @@ var TextRange = Base.extend(
   Base.each(
     ['Runs', 'Paragraphs', 'Words', 'Letters'],
     function (name) {
-      var get = 'get' + name
+      const get = 'get' + name
       // The story's runs, paragraphs, words or letters within the range, clipped
       // to it. An empty paragraph is within it where the range holds its place:
       this[get] = function () {
-        var story = this._story,
-          start = this._start,
-          end = this._end
+        const story = this._story
+        const start = this._start
+        const end = this._end
         return story[get]()
           .filter(function (range) {
             return (

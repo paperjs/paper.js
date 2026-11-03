@@ -17,7 +17,7 @@
  * test. It is returned by {@link Item#hitTest(point)} and
  * {@link Project#hitTest(point)}.
  */
-var HitResult = Base.extend(
+const HitResult = Base.extend(
   /** @lends HitResult# */ {
     _class: 'HitResult',
 
@@ -112,7 +112,7 @@ var HitResult = Base.extend(
        * @private
        */
       getOptions: function (args) {
-        var options = args && Base.read(args)
+        const options = args && Base.read(args)
         return new Base(
           {
             // Type of item, for instanceof check: Group, Layer, Path,

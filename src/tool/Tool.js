@@ -42,7 +42,7 @@
  *     path.add(event.point);
  * }
  */
-var Tool = PaperScopeItem.extend(
+const Tool = PaperScopeItem.extend(
   /** @lends Tool# */ {
     _class: 'Tool',
     _list: 'tools',
@@ -364,31 +364,31 @@ var Tool = PaperScopeItem.extend(
       // If there is no mousedrag event installed, fall back to mousemove,
       // with which we share the actual event handling code anyhow.
       if (mouse.drag && !this.responds(type)) type = 'mousemove'
-      var move = mouse.move || mouse.drag,
-        responds = this.responds(type),
-        called = false,
-        tool = this,
-        // The time and velocity since the last tool event, in seconds and
-        // points per second, measured between the mouse reports, so the
-        // steps that maxDistance interpolates along the way share them:
-        time = event.timeStamp / 1000,
-        elapsed = this._time != null ? time - this._time : 0,
-        velocity =
-          !mouse.down && this._point && elapsed > 0
-            ? point.subtract(this._point).divide(elapsed)
-            : new Point()
+      const move = mouse.move || mouse.drag
+      const responds = this.responds(type)
+      let called = false
+      const tool = this
+      // The time and velocity since the last tool event, in seconds and
+      // points per second, measured between the mouse reports, so the
+      // steps that maxDistance interpolates along the way share them:
+      const time = event.timeStamp / 1000
+      const elapsed = this._time != null ? time - this._time : 0
+      const velocity =
+        !mouse.down && this._point && elapsed > 0
+          ? point.subtract(this._point).divide(elapsed)
+          : new Point()
       // Updates the internal tool state, taking into account minDistance and
       // maxDistance and interpolating "fake" events along the moved distance
       // to respect their settings, if necessary.
       // Returns true as long as events should be fired, false when the target
       // is reached.
       function update(minDistance, maxDistance) {
-        var pt = point,
-          // Set toolPoint to the  previous point for moves or downPoint
-          // for clicks, so mouseup has a delta spanning over the full
-          // drag. Use the current point if this is the first mousedown,
-          // so there's always a delta.
-          toolPoint = move ? tool._point : tool._downPoint || pt
+        let pt = point
+        // Set toolPoint to the  previous point for moves or downPoint
+        // for clicks, so mouseup has a delta spanning over the full
+        // drag. Use the current point if this is the first mousedown,
+        // so there's always a delta.
+        const toolPoint = move ? tool._point : tool._downPoint || pt
         if (move) {
           // After first move event was emitted, tool._moveCount = 0, so
           // we need to include 0 in this check.
@@ -396,8 +396,8 @@ var Tool = PaperScopeItem.extend(
             return false
           }
           if (toolPoint && (minDistance != null || maxDistance != null)) {
-            var vector = pt.subtract(toolPoint),
-              distance = vector.getLength()
+            const vector = pt.subtract(toolPoint)
+            const distance = vector.getLength()
             if (distance < (minDistance || 0)) return false
             // Produce a new point on the way to point if point is
             // further away than maxDistance

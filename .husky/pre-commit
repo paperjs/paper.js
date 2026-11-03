@@ -1,1 +1,1 @@
-pnpm jshint --ensure-branch develop
+if [ "$(git rev-parse --abbrev-ref HEAD)" = develop ]; then pnpm eslint; fi

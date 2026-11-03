@@ -13,7 +13,7 @@
 // The private base of SymbolDefinition and PatternDefinition, which hold an
 // item outside of the scene graph that other items draw. The item refers back
 // to its definition through #_symbol, which Item#_changed() notifies:
-var ItemDefinition = Base.extend({
+const ItemDefinition = Base.extend({
   // Definitions that center their items move them to 0, 0, see #setItem():
   _centerItem: false,
   _name: null,
@@ -26,7 +26,7 @@ var ItemDefinition = Base.extend({
 
   // Called whenever the definition's item changes:
   _changed: function (flags) {
-    var project = this.project
+    const project = this.project
     if (flags & /*#=*/ ChangeFlag.GEOMETRY)
       // Clear cached bounds of all items that this definition is linked
       // to.

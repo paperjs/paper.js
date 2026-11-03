@@ -24,4 +24,4 @@ Please list related issues and discussion by using the following syntax:
 
 - [ ] New tests added or existing tests modified to cover all changes
 - [ ] Changelog entries added in `changelog/unreleased`, see its README
-- [ ] Code conforms with the JSHint rules (`pnpm jshint` passes)
+- [ ] Code conforms with the ESLint rules (`pnpm eslint` passes)

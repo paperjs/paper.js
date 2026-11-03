@@ -17,7 +17,7 @@
  * handlers {@link Item#onDraw} and {@link Item#onDrawSelection}, which
  * describe its fields.
  */
-var DrawEvent = Base.extend(
+const DrawEvent = Base.extend(
   /** @lends DrawEvent# */ {
     _class: 'DrawEvent',
 

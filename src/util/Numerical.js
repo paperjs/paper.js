@@ -19,48 +19,48 @@ var Numerical = new (function () {
   // The nodes and weights of the 15-point Gauss-Kronrod rule from the center
   // out, as they are symmetric, and the weights of the 7-point Gauss rule
   // that shares every other node with it:
-  var kronrodNodes = [
-      0, 0.2077849550078984676006894, 0.4058451513773971669066064,
-      0.5860872354676911302941448, 0.7415311855993944398638648,
-      0.8648644233597690727897128, 0.9491079123427585245261897,
-      0.9914553711208126392068547
-    ],
-    kronrodWeights = [
-      0.2094821410847278280129992, 0.204432940075298892414162,
-      0.1903505780647854099132564, 0.1690047266392679028265834,
-      0.1406532597155259187451896, 0.1047900103222501838398763,
-      0.0630920926299785532907007, 0.022935322010529224963732
-    ],
-    gaussWeights = [
-      0.417959183673469387755102, 0.3818300505051189449503698,
-      0.2797053914892766679014678, 0.1294849661688696932706114
-    ]
+  const kronrodNodes = [
+    0, 0.2077849550078984676006894, 0.4058451513773971669066064,
+    0.5860872354676911302941448, 0.7415311855993944398638648,
+    0.8648644233597690727897128, 0.9491079123427585245261897,
+    0.9914553711208126392068547
+  ]
+  const kronrodWeights = [
+    0.2094821410847278280129992, 0.204432940075298892414162,
+    0.1903505780647854099132564, 0.1690047266392679028265834,
+    0.1406532597155259187451896, 0.1047900103222501838398763,
+    0.0630920926299785532907007, 0.022935322010529224963732
+  ]
+  const gaussWeights = [
+    0.417959183673469387755102, 0.3818300505051189449503698,
+    0.2797053914892766679014678, 0.1294849661688696932706114
+  ]
 
   // Math short-cuts for often used methods and values
-  var abs = Math.abs,
-    sqrt = Math.sqrt,
-    pow = Math.pow,
-    // Fallback to polyfill:
-    log2 = (
-      Math.log2 ||
-      function (x) {
-        return Math.log(x) * Math.LOG2E
-      }
-    ),
-    // Constants
-    EPSILON = 1e-12,
-    MACHINE_EPSILON = 1.12e-16
+  const abs = Math.abs
+  const sqrt = Math.sqrt
+  const pow = Math.pow
+  // Fallback to polyfill:
+  const log2 = (
+    Math.log2 ||
+    function (x) {
+      return Math.log(x) * Math.LOG2E
+    }
+  )
+  // Constants
+  const EPSILON = 1e-12
+  const MACHINE_EPSILON = 1.12e-16
 
   // The 15-point Gauss-Kronrod estimate of the integral of f from a to b,
   // and of its error, by the difference to the Gauss rule within:
   function getKronrod(f, a, b) {
-    var A = (b - a) * 0.5,
-      B = A + a,
-      fx = f(B),
-      kronrod = kronrodWeights[0] * fx,
-      gauss = gaussWeights[0] * fx
-    for (var i = 1; i < 8; i++) {
-      var Ax = A * kronrodNodes[i]
+    const A = (b - a) * 0.5
+    const B = A + a
+    let fx = f(B)
+    let kronrod = kronrodWeights[0] * fx
+    let gauss = gaussWeights[0] * fx
+    for (let i = 1; i < 8; i++) {
+      const Ax = A * kronrodNodes[i]
       fx = f(B + Ax) + f(B - Ax)
       kronrod += kronrodWeights[i] * fx
       if (!(i & 1)) gauss += gaussWeights[i >> 1] * fx
@@ -71,7 +71,7 @@ var Numerical = new (function () {
   // Halves the range until the estimates' errors stay within the tolerance,
   // or the halves can't be told apart anymore:
   function integrate(f, a, b, estimate, tolerance) {
-    var m = (a + b) * 0.5
+    const m = (a + b) * 0.5
     return estimate[1] <= tolerance || m === a || m === b
       ? estimate[0]
       : integrate(f, a, m, getKronrod(f, a, m), tolerance) +
@@ -86,29 +86,29 @@ var Numerical = new (function () {
     // d = b^2 - a * c  computed accurately enough by a tricky scheme.
     // Ported from @hkrish's polysolve.c
     function split(v) {
-      var x = v * 134217729,
-        y = v - x,
-        hi = y + x, // Don't optimize y away!
-        lo = v - hi
+      const x = v * 134217729
+      const y = v - x
+      const hi = y + x // Don't optimize y away!
+      const lo = v - hi
       return [hi, lo]
     }
 
-    var D = b * b - a * c,
-      E = b * b + a * c
+    let D = b * b - a * c
+    const E = b * b + a * c
     if (abs(D) * 3 < E) {
-      var ad = split(a),
-        bd = split(b),
-        cd = split(c),
-        p = b * b,
-        dp = bd[0] * bd[0] - p + 2 * bd[0] * bd[1] + bd[1] * bd[1],
-        q = a * c,
-        dq = (
-          ad[0] * cd[0] -
-          q +
-          ad[0] * cd[1] +
-          ad[1] * cd[0] +
-          ad[1] * cd[1]
-        )
+      const ad = split(a)
+      const bd = split(b)
+      const cd = split(c)
+      const p = b * b
+      const dp = bd[0] * bd[0] - p + 2 * bd[0] * bd[1] + bd[1] * bd[1]
+      const q = a * c
+      const dq = (
+        ad[0] * cd[0] -
+        q +
+        ad[0] * cd[1] +
+        ad[1] * cd[0] +
+        ad[1] * cd[1]
+      )
       D = p - q + (dp - dq) // Don’t omit parentheses!
     }
     return D
@@ -120,7 +120,7 @@ var Numerical = new (function () {
     // that all the bits in the mantissa remain unchanged.
     // Use the infinity norm (max(sum(abs(a)…)) to determine the appropriate
     // scale factor. See @hkrish in #1087#issuecomment-231526156
-    var norm = Math.max.apply(Math, arguments)
+    const norm = Math.max.apply(Math, arguments)
     return norm && (norm < 1e-8 || norm > 1e8)
       ? pow(2, -Math.round(log2(norm)))
       : 0
@@ -218,7 +218,7 @@ var Numerical = new (function () {
      * relative to the integral.
      */
     integrate: function (f, a, b, tolerance) {
-      var estimate = getKronrod(f, a, b)
+      const estimate = getKronrod(f, a, b)
       return integrate(f, a, b, estimate, abs(estimate[0]) * tolerance)
     },
 
@@ -227,11 +227,11 @@ var Numerical = new (function () {
      * that are known to be smooth enough for it.
      */
     gauss: function (f, a, b) {
-      var A = (b - a) * 0.5,
-        B = A + a,
-        gauss = gaussWeights[0] * f(B)
-      for (var i = 2; i < 8; i += 2) {
-        var Ax = A * kronrodNodes[i]
+      const A = (b - a) * 0.5
+      const B = A + a
+      let gauss = gaussWeights[0] * f(B)
+      for (let i = 2; i < 8; i += 2) {
+        const Ax = A * kronrodNodes[i]
         gauss += gaussWeights[i >> 1] * (f(B + Ax) + f(B - Ax))
       }
       return A * gauss
@@ -241,11 +241,11 @@ var Numerical = new (function () {
      * Root finding using Newton-Raphson Method combined with Bisection.
      */
     findRoot: function (f, df, x, a, b, n, tolerance) {
-      for (var i = 0; i < n; i++) {
-        var fx = f(x),
-          // Calculate a new candidate with the Newton-Raphson method.
-          dx = fx / df(x),
-          nx = x - dx
+      for (let i = 0; i < n; i++) {
+        const fx = f(x)
+        // Calculate a new candidate with the Newton-Raphson method.
+        const dx = fx / df(x)
+        const nx = x - dx
         // See if we can trust the Newton-Raphson result. If not we use
         // bisection to find another candidate for Newton's method.
         if (abs(dx) < tolerance) {
@@ -286,29 +286,29 @@ var Numerical = new (function () {
      */
     findSignChange: function (f, a, b, fa, fb, tolerance) {
       // Search for the change from negative to positive values:
-      var sign = fa < 0 ? 1 : -1,
-        steps = Math.max(Math.ceil(log2((b - a) / tolerance)) - 1, 0),
-        // Bound the steps to those of bisection plus one:
-        scaled = tolerance * Math.pow(2, steps + 1),
-        k1 = 0.2 / (b - a)
+      const sign = fa < 0 ? 1 : -1
+      const steps = Math.max(Math.ceil(log2((b - a) / tolerance)) - 1, 0)
+      // Bound the steps to those of bisection plus one:
+      let scaled = tolerance * Math.pow(2, steps + 1)
+      const k1 = 0.2 / (b - a)
       fa *= sign
       fb *= sign
       while (b - a > 2 * tolerance) {
-        var half = (a + b) / 2,
-          r = scaled - (b - a) / 2,
-          // The secant, nudged towards the middle:
-          xf = (fb * a - fa * b) / (fb - fa),
-          sigma = half - xf,
-          delta = k1 * (b - a) * (b - a),
-          xt =
-            delta <= abs(sigma)
-              ? xf + (sigma < 0 ? -delta : delta)
-              : half,
-          x =
-            abs(xt - half) <= r
-              ? xt
-              : half - (sigma < 0 ? -r : r),
-          fx = sign * f(x)
+        const half = (a + b) / 2
+        const r = scaled - (b - a) / 2
+        // The secant, nudged towards the middle:
+        const xf = (fb * a - fa * b) / (fb - fa)
+        const sigma = half - xf
+        const delta = k1 * (b - a) * (b - a)
+        const xt =
+          delta <= abs(sigma)
+            ? xf + (sigma < 0 ? -delta : delta)
+            : half
+        const x =
+          abs(xt - half) <= r
+            ? xt
+            : half - (sigma < 0 ? -r : r)
+        const fx = sign * f(x)
         if (fx > 0) {
           b = x
           fb = fx
@@ -346,8 +346,8 @@ var Numerical = new (function () {
      * @author Harikrishnan Gopalakrishnan <hari.exeption@gmail.com>
      */
     solveQuadratic: function (a, b, c, roots, min, max) {
-      var x1,
-        x2 = Infinity
+      let x1
+      let x2 = Infinity
       if (abs(a) < EPSILON) {
         // This could just be a linear equation
         if (abs(b) < EPSILON) return abs(c) < EPSILON ? -1 : 0
@@ -356,11 +356,11 @@ var Numerical = new (function () {
         // a, b, c are expected to be the coefficients of the equation:
         // Ax² - 2Bx + C == 0, so we take b = -b/2:
         b *= -0.5
-        var D = getDiscriminant(a, b, c)
+        let D = getDiscriminant(a, b, c)
         // If the discriminant is very small, we can try to normalize
         // the coefficients, so that we may get better accuracy.
         if (D && abs(D) < MACHINE_EPSILON) {
-          var f = getNormalizationFactor(abs(a), abs(b), abs(c))
+          const f = getNormalizationFactor(abs(a), abs(b), abs(c))
           if (f) {
             a *= f
             b *= f
@@ -370,8 +370,8 @@ var Numerical = new (function () {
         }
         if (D >= -MACHINE_EPSILON) {
           // No real roots if D < 0
-          var Q = D < 0 ? 0 : sqrt(D),
-            R = b + (b < 0 ? -Q : Q)
+          const Q = D < 0 ? 0 : sqrt(D)
+          const R = b + (b < 0 ? -Q : Q)
           // Try to minimize floating point noise.
           if (R === 0) {
             x1 = c / a
@@ -382,10 +382,10 @@ var Numerical = new (function () {
           }
         }
       }
-      var count = 0,
-        boundless = min == null,
-        minB = min - EPSILON,
-        maxB = max + EPSILON
+      let count = 0
+      const boundless = min == null
+      const minB = min - EPSILON
+      const maxB = max + EPSILON
       // We need to include EPSILON in the comparisons with min / max,
       // as some solutions are ever so lightly out of bounds.
       if (isFinite(x1) && (boundless || x1 > minB && x1 < maxB))
@@ -427,12 +427,12 @@ var Numerical = new (function () {
      * @author Harikrishnan Gopalakrishnan <hari.exeption@gmail.com>
      */
     solveCubic: function (a, b, c, d, roots, min, max) {
-      var f = getNormalizationFactor(abs(a), abs(b), abs(c), abs(d)),
-        x,
-        b1,
-        c2,
-        qd,
-        q
+      const f = getNormalizationFactor(abs(a), abs(b), abs(c), abs(d))
+      let x
+      let b1
+      let c2
+      let qd
+      let q
       if (f) {
         a *= f
         b *= f
@@ -443,7 +443,7 @@ var Numerical = new (function () {
       function evaluate(x0) {
         x = x0
         // Evaluate q, q', b1 and c2 at x
-        var tmp = a * x
+        const tmp = a * x
         b1 = tmp + b
         c2 = b1 * x + c
         qd = (tmp + b1) * x + c2
@@ -467,13 +467,13 @@ var Numerical = new (function () {
         // iteration) and solve the quadratic.
         evaluate(-(b / a) / 3)
         // Get a good initial approximation.
-        var t = q / a,
-          r = pow(abs(t), 1 / 3),
-          s = t < 0 ? -1 : 1,
-          td = -qd / a,
-          // See Kahan's notes on why 1.324718*... works.
-          rd = td > 0 ? 1.324717957244746 * Math.max(r, sqrt(td)) : r,
-          x0 = x - s * rd
+        const t = q / a
+        const r = pow(abs(t), 1 / 3)
+        const s = t < 0 ? -1 : 1
+        const td = -qd / a
+        // See Kahan's notes on why 1.324718*... works.
+        const rd = td > 0 ? 1.324717957244746 * Math.max(r, sqrt(td)) : r
+        let x0 = x - s * rd
         if (x0 !== x) {
           do {
             evaluate(x0)
@@ -489,8 +489,8 @@ var Numerical = new (function () {
         }
       }
       // The cubic has been deflated to a quadratic.
-      var count = Numerical.solveQuadratic(a, b1, c2, roots, min, max),
-        boundless = min == null
+      let count = Numerical.solveQuadratic(a, b1, c2, roots, min, max)
+      const boundless = min == null
       if (
         isFinite(x) &&
         (count === 0 || count > 0 && x !== roots[0] && x !== roots[1]) &&
@@ -518,24 +518,24 @@ var Numerical = new (function () {
      * @return {Number} the number of roots found
      */
     solveBernstein: function (coefficients, errors, roots, width) {
-      var count = 0
+      let count = 0
 
       // Splits the coefficients at the middle through the algorithm of
       // de Casteljau, and their errors with them, plus the rounding of
       // each step:
       function subdivide(values, bounds) {
-        var left = [],
-          right = [],
-          leftBounds = [],
-          rightBounds = [],
-          v = values.slice(),
-          e = bounds.slice()
-        for (var n = v.length; n > 0; n--) {
+        const left = []
+        const right = []
+        const leftBounds = []
+        const rightBounds = []
+        const v = values.slice()
+        const e = bounds.slice()
+        for (let n = v.length; n > 0; n--) {
           left.push(v[0])
           right.unshift(v[n - 1])
           leftBounds.push(e[0])
           rightBounds.unshift(e[n - 1])
-          for (var i = 0; i < n - 1; i++) {
+          for (let i = 0; i < n - 1; i++) {
             v[i] = (v[i] + v[i + 1]) / 2
             e[i] = (
               (e[i] + e[i + 1]) / 2 +
@@ -547,23 +547,23 @@ var Numerical = new (function () {
       }
 
       function evaluate(values, t) {
-        var v = values.slice()
-        for (var n = v.length - 1; n > 0; n--) {
-          for (var i = 0; i < n; i++) v[i] = v[i] + (v[i + 1] - v[i]) * t
+        const v = values.slice()
+        for (let n = v.length - 1; n > 0; n--) {
+          for (let i = 0; i < n; i++) v[i] = v[i] + (v[i + 1] - v[i]) * t
         }
         return v[0]
       }
 
       function solve(values, bounds, from, to) {
-        var changes = 0,
-          zeros = 0,
-          sign = 0
-        for (var i = 0, l = values.length; i < l; i++) {
-          var value = values[i]
+        let changes = 0
+        let zeros = 0
+        let sign = 0
+        for (let i = 0, l = values.length; i < l; i++) {
+          const value = values[i]
           if (abs(value) <= bounds[i]) {
             zeros++
           } else {
-            var s = value > 0 ? 1 : -1
+            const s = value > 0 ? 1 : -1
             if (sign && s !== sign) changes++
             sign = s
           }
@@ -576,15 +576,15 @@ var Numerical = new (function () {
         } else if (changes === 1 && !zeros) {
           // Exactly one root, between the ends of opposite signs,
           // which bisection refines to the precision of the numbers:
-          var a = 0,
-            b = 1,
-            isNegative = values[0] < 0
+          let a = 0
+          let b = 1
+          const isNegative = values[0] < 0
           while (
             from + (to - from) * a < from + (to - from) * b &&
             (a + b) / 2 > a &&
             (a + b) / 2 < b
           ) {
-            var t = (a + b) / 2
+            const t = (a + b) / 2
             if (evaluate(values, t) < 0 === isNegative) {
               a = t
             } else {
@@ -593,8 +593,8 @@ var Numerical = new (function () {
           }
           roots[count++] = from + (to - from) * (a + b) / 2
         } else if (changes || zeros) {
-          var parts = subdivide(values, bounds),
-            middle = (from + to) / 2
+          const parts = subdivide(values, bounds)
+          const middle = (from + to) / 2
           solve(parts[0], parts[2], from, middle)
           solve(parts[1], parts[3], middle, to)
         }

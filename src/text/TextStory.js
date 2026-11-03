@@ -18,7 +18,7 @@
  *     style, and the styles of its paragraphs. A text item that isn't linked
  *     has a story of its own.
  */
-var TextStory = Base.extend(
+const TextStory = Base.extend(
   /** @lends TextStory# */ {
     _class: 'TextStory',
     beans: true,
@@ -67,7 +67,7 @@ var TextStory = Base.extend(
 
     // A copy of the story's content and styles, for the text items `items`:
     _clone: function (items) {
-      var story = new TextStory(items)
+      const story = new TextStory(items)
       story._content = this._content
       story._runs = this._runs.map(function (run) {
         return { length: run.length, style: new Style(run.style, story) }
@@ -81,13 +81,13 @@ var TextStory = Base.extend(
     // Joins the content and styles of the story `other` onto the end of this
     // one. The paragraph they meet in keeps this one's style:
     _append: function (other) {
-      var that = this,
-        runs = other._runs.map(function (run) {
-          return {
-            length: run.length,
-            style: new Style(run.style, that)
-          }
-        })
+      const that = this
+      const runs = other._runs.map(function (run) {
+        return {
+          length: run.length,
+          style: new Style(run.style, that)
+        }
+      })
       this._content += other._content
       this._runs = this._runs.concat(runs).filter(function (run) {
         return run.length > 0
@@ -103,9 +103,10 @@ var TextStory = Base.extend(
     // Takes the content from `start` on out of the story, into a new one for
     // the text items `items`. The paragraph it breaks continues in both:
     _extract: function (start, items) {
-      var rest = this._clone(items),
-        content = this._content,
-        paragraph = this._paragraphs[this._countBreaks(content.slice(0, start))]
+      const rest = this._clone(items)
+      const content = this._content
+      const paragraph =
+        this._paragraphs[this._countBreaks(content.slice(0, start))]
       rest.replace('', 0, start)
       rest._paragraphs[0] = new Style(paragraph, rest)
       this.replace('', start, content.length)
@@ -117,8 +118,8 @@ var TextStory = Base.extend(
 
     // Changes to the story change the text items it flows through:
     _changed: function (flags) {
-      var items = this._items
-      for (var i = 0, l = items.length; i < l; i++) items[i]._changed(flags)
+      const items = this._items
+      for (let i = 0, l = items.length; i < l; i++) items[i]._changed(flags)
     },
 
     /**
@@ -174,17 +175,17 @@ var TextStory = Base.extend(
         end = start.end
         start = start.start
       }
-      var old = this._content,
-        length = old.length,
-        runs = this._runs,
-        paragraphs = this._paragraphs
+      const old = this._content
+      const length = old.length
+      const runs = this._runs
+      const paragraphs = this._paragraphs
       content = '' + content
       start = Math.max(0, Math.min(start, length))
       end = Math.max(start, Math.min(end, length))
       // 1. The runs: the new content becomes one, between the split runs.
-      var i = this._split(start),
-        j = this._split(end),
-        source = (i < j ? runs[i] : runs[i - 1] || runs[i]).style
+      const i = this._split(start)
+      const j = this._split(end)
+      const source = (i < j ? runs[i] : runs[i - 1] || runs[i]).style
       runs.splice(i, j - i, {
         length: content.length,
         style: new Style(source, this)
@@ -195,12 +196,12 @@ var TextStory = Base.extend(
       if (!this._runs.length) this._runs = [runs[i]]
       // 2. The paragraphs: those whose breaks are replaced merge into the
       // first, and new breaks split it, keeping its style.
-      var first = this._countBreaks(old.slice(0, start)),
-        removed = this._countBreaks(old.slice(start, end)),
-        added = this._countBreaks(content),
-        style = paragraphs[first],
-        inserted = []
-      for (var k = 0; k < added; k++) inserted.push(new Style(style, this))
+      const first = this._countBreaks(old.slice(0, start))
+      const removed = this._countBreaks(old.slice(start, end))
+      const added = this._countBreaks(content)
+      const style = paragraphs[first]
+      const inserted = []
+      for (let k = 0; k < added; k++) inserted.push(new Style(style, this))
       paragraphs.splice.apply(paragraphs, [first + 1, removed].concat(inserted))
       this._content = old.slice(0, start) + content + old.slice(end)
       this._changed(/*#=*/ Change.CONTENT)
@@ -209,10 +210,10 @@ var TextStory = Base.extend(
     // The paragraph that `pos` is in: its style, and where it starts and ends,
     // before its line break:
     _getParagraph: function (pos) {
-      var content = this._content,
-        before = content.slice(0, pos),
-        start = /(\r\n|\n|\r)[^\r\n]*$/.exec(before),
-        end = /\r\n|\n|\r/.exec(content.slice(pos))
+      const content = this._content
+      const before = content.slice(0, pos)
+      const start = /(\r\n|\n|\r)[^\r\n]*$/.exec(before)
+      const end = /\r\n|\n|\r/.exec(content.slice(pos))
       return {
         style: this._paragraphs[this._countBreaks(before)],
         start: start ? start.index + start[1].length : 0,
@@ -222,16 +223,16 @@ var TextStory = Base.extend(
 
     // The number of line breaks in content, where its paragraphs end:
     _countBreaks: function (content) {
-      var matches = content.match(/\r\n|\n|\r/g)
+      const matches = content.match(/\r\n|\n|\r/g)
       return matches ? matches.length : 0
     },
 
     // Splits the run at `index`, and returns the index of the run that starts
     // there:
     _split: function (index) {
-      var runs = this._runs
-      for (var i = 0, l = runs.length, start = 0; i < l; i++) {
-        var run = runs[i]
+      const runs = this._runs
+      for (let i = 0, l = runs.length, start = 0; i < l; i++) {
+        const run = runs[i]
         if (start === index) return i
         if (index < start + run.length) {
           runs.splice(i + 1, 0, {
@@ -249,30 +250,34 @@ var TextStory = Base.extend(
     // The styles that the range from start to end stands for: those of the
     // paragraphs it touches, or of its runs, split at its ends for `setting`.
     _getRangeStyles: function (key, start, end, setting) {
-      var runs = this._runs
+      let i
+      let l
+      let pos
+
+      const runs = this._runs
       if (key in this._itemKeys) {
         return []
       } else if (key in this._paragraphKeys) {
-        var content = this._content,
-          first = this._countBreaks(content.slice(0, start)),
-          last = this._countBreaks(
-            content.slice(0, Math.max(start, end - 1))
-          )
+        const content = this._content
+        const first = this._countBreaks(content.slice(0, start))
+        const last = this._countBreaks(
+          content.slice(0, Math.max(start, end - 1))
+        )
         return this._paragraphs.slice(first, last + 1)
       } else if (setting) {
-        var i = this._split(start)
+        i = this._split(start)
         return runs.slice(i, this._split(end)).map(function (run) {
           return run.style
         })
       } else {
         // An empty range has the style of the character before it, as
         // content typed there would:
-        var from = start < end ? start : Math.max(0, start - 1),
-          to = start < end ? end : from + 1,
-          styles = []
-        for (var i = 0, l = runs.length, pos = 0; i < l; i++) {
-          var run = runs[i],
-            next = pos + run.length
+        const from = start < end ? start : Math.max(0, start - 1)
+        const to = start < end ? end : from + 1
+        const styles = []
+        for (i = 0, l = runs.length, pos = 0; i < l; i++) {
+          const run = runs[i]
+          const next = pos + run.length
           if (from < next && to > pos) styles.push(run.style)
           pos = next
         }
@@ -301,7 +306,7 @@ var TextStory = Base.extend(
      * @type TextRange[]
      */
     getRuns: function () {
-      var that = this
+      const that = this
       return this._getRuns().map(function (run) {
         return new TextRange(that, run.start, run.end)
       })
@@ -309,11 +314,11 @@ var TextStory = Base.extend(
 
     // The runs, with the neighbours that share a style joined:
     _getRuns: function () {
-      var runs = this._runs,
-        joined = []
-      for (var i = 0, l = runs.length, start = 0, end = 0; i < l; i++) {
-        var run = runs[i],
-          next = runs[i + 1]
+      const runs = this._runs
+      const joined = []
+      for (let i = 0, l = runs.length, start = 0, end = 0; i < l; i++) {
+        const run = runs[i]
+        const next = runs[i + 1]
         end += run.length
         if (!next || !run.style.equals(next.style)) {
           joined.push({ start: start, end: end, style: run.style })
@@ -324,11 +329,11 @@ var TextStory = Base.extend(
     },
 
     setRuns: function (runs) {
-      var that = this
+      const that = this
       runs = runs.map(function (run) {
         return run instanceof TextRange ? run.toJSON() : run
       })
-      var content = runs
+      const content = runs
         .map(function (run) {
           return run.content || ''
         })
@@ -337,7 +342,7 @@ var TextStory = Base.extend(
       this._runs = runs
         .map(function (run) {
           // Style#set() takes only the style properties, not the content:
-          var style = new Style(that._runs[0].style, that)
+          const style = new Style(that._runs[0].style, that)
           style.set(run)
           return { length: (run.content || '').length, style: style }
         })
@@ -357,11 +362,11 @@ var TextStory = Base.extend(
      * @type TextRange[]
      */
     getParagraphs: function () {
-      var ranges = [],
-        breaks = /\r\n|\n|\r/g,
-        content = this._content,
-        start = 0,
-        match
+      const ranges = []
+      const breaks = /\r\n|\n|\r/g
+      const content = this._content
+      let start = 0
+      let match
       while ((match = breaks.exec(content))) {
         ranges.push(new TextRange(this, start, match.index))
         start = match.index + match[0].length
@@ -371,17 +376,17 @@ var TextStory = Base.extend(
     },
 
     setParagraphs: function (paragraphs) {
-      var styles = this._paragraphs,
-        keys = this._paragraphKeys
+      const styles = this._paragraphs
+      const keys = this._paragraphKeys
       for (
-        var i = 0, l = Math.min(paragraphs.length, styles.length);
+        let i = 0, l = Math.min(paragraphs.length, styles.length);
         i < l;
         i++
       ) {
-        var paragraph = paragraphs[i],
-          style = styles[i]
-        for (var key in keys) {
-          var value = paragraph[key]
+        const paragraph = paragraphs[i]
+        const style = styles[i]
+        for (const key in keys) {
+          const value = paragraph[key]
           if (value !== undefined) style[key] = value
         }
       }
@@ -419,17 +424,17 @@ var TextStory = Base.extend(
     },
 
     _segment: function (granularity, pattern) {
-      var content = this._content,
-        ranges = [],
-        Segmenter = typeof Intl !== 'undefined' && Intl.Segmenter
+      const content = this._content
+      const ranges = []
+      const Segmenter = typeof Intl !== 'undefined' && Intl.Segmenter
       if (Segmenter) {
-        var segments = new Segmenter(undefined, {
-            granularity: granularity
-          }).segment(content),
-          iterator = segments[Symbol.iterator](),
-          step
+        const segments = new Segmenter(undefined, {
+          granularity: granularity
+        }).segment(content)
+        const iterator = segments[Symbol.iterator]()
+        let step
         while (!(step = iterator.next()).done) {
-          var segment = step.value
+          const segment = step.value
           if (granularity !== 'word' || segment.isWordLike) {
             ranges.push(
               new TextRange(
@@ -441,7 +446,7 @@ var TextStory = Base.extend(
           }
         }
       } else {
-        var match
+        let match
         while ((match = pattern.exec(content))) {
           ranges.push(
             new TextRange(this, match.index, match.index + match[0].length)

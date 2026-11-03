@@ -61,7 +61,7 @@
  *     destination: path.bounds.rightCenter
  * };
  */
-var Gradient = Base.extend(
+const Gradient = Base.extend(
   /** @lends Gradient# */ {
     _class: 'Gradient',
 
@@ -106,7 +106,7 @@ var Gradient = Base.extend(
     _changed: function () {
       // Loop through the gradient-colors that use this gradient and notify
       // them, so they can notify the items they belong to.
-      for (var i = 0, l = this._owners && this._owners.length; i < l; i++) {
+      for (let i = 0, l = this._owners && this._owners.length; i < l; i++) {
         this._owners[i]._changed()
       }
     },
@@ -124,7 +124,7 @@ var Gradient = Base.extend(
      * Called by Color whenever this gradient stops being used.
      */
     _removeOwner: function (color) {
-      var index = this._owners ? this._owners.indexOf(color) : -1
+      const index = this._owners ? this._owners.indexOf(color) : -1
       if (index != -1) {
         this._owners.splice(index, 1)
         if (!this._owners.length) this._owners = undefined
@@ -135,8 +135,8 @@ var Gradient = Base.extend(
      * @return {Gradient} a copy of the gradient
      */
     clone: function () {
-      var stops = []
-      for (var i = 0, l = this._stops.length; i < l; i++) {
+      const stops = []
+      for (let i = 0, l = this._stops.length; i < l; i++) {
         stops[i] = this._stops[i].clone()
       }
       return new Gradient(stops, this._radial)
@@ -153,20 +153,22 @@ var Gradient = Base.extend(
     },
 
     setStops: function (stops) {
+      let i
+      let l
+
       if (stops.length < 2) {
         throw new Error(
           'Gradient stop list needs to contain at least two stops.'
         )
       }
       // If this gradient already contains stops, first remove their owner.
-      var _stops = this._stops
+      let _stops = this._stops
       if (_stops) {
-        for (var i = 0, l = _stops.length; i < l; i++)
-          _stops[i]._owner = undefined
+        for (i = 0, l = _stops.length; i < l; i++) _stops[i]._owner = undefined
       }
       _stops = this._stops = GradientStop.readList(stops, 0, { clone: true })
       // Now assign this gradient as the new gradients' owner.
-      for (var i = 0, l = _stops.length; i < l; i++) _stops[i]._owner = this
+      for (i = 0, l = _stops.length; i < l; i++) _stops[i]._owner = this
       this._changed()
     },
 
@@ -194,11 +196,11 @@ var Gradient = Base.extend(
     equals: function (gradient) {
       if (gradient === this) return true
       if (gradient && this._class === gradient._class) {
-        var stops1 = this._stops,
-          stops2 = gradient._stops,
-          length = stops1.length
+        const stops1 = this._stops
+        const stops2 = gradient._stops
+        const length = stops1.length
         if (length === stops2.length) {
-          for (var i = 0; i < length; i++) {
+          for (let i = 0; i < length; i++) {
             if (!stops1[i].equals(stops2[i])) return false
           }
           return true

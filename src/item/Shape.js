@@ -17,7 +17,7 @@
  *
  * @extends Item
  */
-var Shape = Item.extend(
+const Shape = Item.extend(
   /** @lends Shape# */ {
     _class: 'Shape',
     _applyMatrix: false,
@@ -80,19 +80,19 @@ var Shape = Item.extend(
      * @type Size
      */
     getSize: function () {
-      var size = this._size
+      const size = this._size
       return new LinkedSize(size.width, size.height, this, 'setSize')
     },
 
     setSize: function (/* size */) {
-      var size = Size.read(arguments)
+      const size = Size.read(arguments)
       if (!this._size) {
         // First time, e.g. when reading from JSON...
         this._size = size.clone()
       } else if (!this._size.equals(size)) {
-        var type = this._type,
-          width = size.width,
-          height = size.height
+        const type = this._type
+        let width = size.width
+        let height = size.height
         if (type === 'rectangle') {
           // Shrink radius accordingly
           this._radius.set(Size.min(this._radius, size.divide(2).abs()))
@@ -118,17 +118,19 @@ var Shape = Item.extend(
      * @type Number|Size
      */
     getRadius: function () {
-      var rad = this._radius
+      const rad = this._radius
       return this._type === 'circle'
         ? rad
         : new LinkedSize(rad.width, rad.height, this, 'setRadius')
     },
 
     setRadius: function (radius) {
-      var type = this._type
+      let size
+
+      const type = this._type
       if (type === 'circle') {
         if (radius === this._radius) return
-        var size = radius * 2
+        size = radius * 2
         this._radius = radius
         if (this._size) {
           this._size._set(size, size)
@@ -146,7 +148,7 @@ var Shape = Item.extend(
           this._radius.set(radius)
           if (type === 'rectangle') {
             // Grow size accordingly
-            var size = Size.max(this._size, radius.multiply(2))
+            size = Size.max(this._size, radius.multiply(2))
             this._size.set(size)
           } else if (type === 'ellipse') {
             this._size._set(radius.width * 2, radius.height * 2)
@@ -175,7 +177,7 @@ var Shape = Item.extend(
      * @see Path#toShape(insert)
      */
     toPath: function (insert) {
-      var path = this._asPathItem()
+      const path = this._asPathItem()
       // Respect the setting of paper.settings.applyMatrix for new paths:
       if (paper.settings.applyMatrix) path.setApplyMatrix(true)
       if (Base.pick(insert, paper.settings.insertItems)) path.insertAbove(this)
@@ -186,7 +188,7 @@ var Shape = Item.extend(
 
     _asPathItem: function () {
       // TODO: Move to Path.createTYPE creators instead of fake constructors.
-      var path = new Path[Base.capitalize(this._type)]({
+      const path = new Path[Base.capitalize(this._type)]({
         center: new Point(),
         size: this._size,
         radius: this._radius,
@@ -199,72 +201,72 @@ var Shape = Item.extend(
     },
 
     _draw: function (ctx, param, viewMatrix, strokeMatrix) {
-      var style = this._style,
-        hasFill = style.hasFill(),
-        hasStroke = style.hasStroke(),
-        dontPaint = param.dontFinish || param.clip,
-        untransformed = !strokeMatrix
+      const style = this._style
+      const hasFill = style.hasFill()
+      const hasStroke = style.hasStroke()
+      const dontPaint = param.dontFinish || param.clip
+      const untransformed = !strokeMatrix
       if (hasFill || hasStroke || dontPaint) {
-        var type = this._type,
-          radius = this._radius,
-          isCircle = type === 'circle'
+        const type = this._type
+        const radius = this._radius
+        const isCircle = type === 'circle'
         if (!param.dontStart) ctx.beginPath()
         if (untransformed && isCircle) {
           ctx.arc(0, 0, radius, 0, Math.PI * 2, true)
         } else {
-          var rx = isCircle ? radius : radius.width,
-            ry = isCircle ? radius : radius.height,
-            size = this._size,
-            width = size.width,
-            height = size.height
+          const rx = isCircle ? radius : radius.width
+          const ry = isCircle ? radius : radius.height
+          const size = this._size
+          const width = size.width
+          const height = size.height
           if (untransformed && type === 'rectangle' && rx === 0 && ry === 0) {
             // Rectangles with no rounding
             ctx.rect(-width / 2, -height / 2, width, height)
           } else {
             // Round rectangles, ellipses, transformed circles
-            var x = width / 2,
-              y = height / 2,
-              // Use 1 - KAPPA to calculate position of control points
-              // from the corners inwards.
-              kappa = 1 - /*#=*/ Numerical.KAPPA,
-              cx = rx * kappa,
-              cy = ry * kappa,
-              // Build the coordinates list, so it can optionally be
-              // transformed by the strokeMatrix.
-              c = [
-                -x,
-                -y + ry,
-                -x,
-                -y + cy,
-                -x + cx,
-                -y,
-                -x + rx,
-                -y,
-                x - rx,
-                -y,
-                x - cx,
-                -y,
-                x,
-                -y + cy,
-                x,
-                -y + ry,
-                x,
-                y - ry,
-                x,
-                y - cy,
-                x - cx,
-                y,
-                x - rx,
-                y,
-                -x + rx,
-                y,
-                -x + cx,
-                y,
-                -x,
-                y - cy,
-                -x,
-                y - ry
-              ]
+            const x = width / 2
+            const y = height / 2
+            // Use 1 - KAPPA to calculate position of control points
+            // from the corners inwards.
+            const kappa = 1 - /*#=*/ Numerical.KAPPA
+            const cx = rx * kappa
+            const cy = ry * kappa
+            // Build the coordinates list, so it can optionally be
+            // transformed by the strokeMatrix.
+            const c = [
+              -x,
+              -y + ry,
+              -x,
+              -y + cy,
+              -x + cx,
+              -y,
+              -x + rx,
+              -y,
+              x - rx,
+              -y,
+              x - cx,
+              -y,
+              x,
+              -y + cy,
+              x,
+              -y + ry,
+              x,
+              y - ry,
+              x,
+              y - cy,
+              x - cx,
+              y,
+              x - rx,
+              y,
+              -x + rx,
+              y,
+              -x + cx,
+              y,
+              -x,
+              y - cy,
+              -x,
+              y - ry
+            ]
             if (strokeMatrix) strokeMatrix.transform(c, c, 32)
             ctx.moveTo(c[0], c[1])
             ctx.bezierCurveTo(c[2], c[3], c[4], c[5], c[6], c[7])
@@ -288,14 +290,14 @@ var Shape = Item.extend(
     },
 
     _getBounds: function (matrix, options) {
-      var size = this._size,
-        rect = new Rectangle(size).setCenter(0, 0),
-        style = this._style,
-        strokeRadius = (
-          options.stroke &&
-          style.hasStroke() &&
-          style.getStrokeWidth() / 2
-        )
+      const size = this._size
+      let rect = new Rectangle(size).setCenter(0, 0)
+      const style = this._style
+      const strokeRadius = (
+        options.stroke &&
+        style.hasStroke() &&
+        style.getStrokeWidth() / 2
+      )
       // If we're getting the strokeBounds, include the stroke width before
       // or after transforming the rect, based on strokeScaling.
       if (matrix) {
@@ -304,7 +306,7 @@ var Shape = Item.extend(
         } else {
           // Use the exact bounds of the transformed ellipse, the unit
           // circle transformed by the matrix scaled to its radii:
-          var extents = Matrix._getCircleExtents(
+          const extents = Matrix._getCircleExtents(
             1,
             matrix.clone().scale(size.width / 2, size.height / 2)
           )
@@ -329,17 +331,17 @@ var Shape = Item.extend(
     // Returns the center of the quarter corner ellipse for rounded rectangle,
     // if the point lies within its bounding box.
     function getCornerCenter(that, point) {
-      var radius = that._radius
+      const radius = that._radius
       if (!radius.isZero()) {
-        var halfSize = that._size.divide(2)
-        for (var q = 1; q <= 4; q++) {
+        const halfSize = that._size.divide(2)
+        for (let q = 1; q <= 4; q++) {
           // Calculate the bounding boxes of the four quarter ellipses
           // that define the rounded rectangle, and hit-test these.
           // Setup `dir` to be in quadrant `q` (See Point#isInQuadrant()):
-          var dir = new Point(q > 1 && q < 4 ? -1 : 1, q > 2 ? -1 : 1),
-            corner = dir.multiply(halfSize),
-            center = corner.subtract(dir.multiply(radius)),
-            rect = new Rectangle(corner, center)
+          const dir = new Point(q > 1 && q < 4 ? -1 : 1, q > 2 ? -1 : 1)
+          const corner = dir.multiply(halfSize)
+          const center = corner.subtract(dir.multiply(radius))
+          const rect = new Rectangle(corner, center)
           if (rect.contains(point)) return { point: center, quadrant: q }
         }
       }
@@ -348,7 +350,7 @@ var Shape = Item.extend(
     return /** @lends Shape# */ {
       _contains: function _contains(point) {
         if (this._type === 'rectangle') {
-          var center = getCornerCenter(this, point)
+          const center = getCornerCenter(this, point)
           return center
             ? // If there's a quarter ellipse center, use the same
               // check as for ellipses below.
@@ -363,7 +365,7 @@ var Shape = Item.extend(
         // Hit-test the shape as its path, see #toPath(), which measures
         // strokes and tolerance where they're drawn (#2334), but without
         // its segments, handles and curves, which shapes don't have:
-        var hit = this._asPathItem()._hitTestSelf(
+        const hit = this._asPathItem()._hitTestSelf(
           point,
           Base.set({}, options, {
             segments: false,
@@ -385,7 +387,7 @@ var Shape = Item.extend(
       function createShape(type, point, size, radius, args) {
         // Use `Base.create()` to avoid calling `initialize()` until after the
         // internal fields are set here, then call `_initialize()` directly:
-        var item = Base.create(Shape.prototype)
+        const item = Base.create(Shape.prototype)
         item._type = type
         item._size = size
         item._radius = radius
@@ -423,9 +425,9 @@ var Shape = Item.extend(
          * });
          */
         Circle: function (/* center, radius */) {
-          var args = arguments,
-            center = Point.readNamed(args, 'center'),
-            radius = Base.readNamed(args, 'radius')
+          const args = arguments
+          const center = Point.readNamed(args, 'center')
+          const radius = Base.readNamed(args, 'radius')
           return createShape(
             'circle',
             center,
@@ -526,12 +528,12 @@ var Shape = Item.extend(
          * });
          */
         Rectangle: function (/* rectangle */) {
-          var args = arguments,
-            rect = Rectangle.readNamed(args, 'rectangle'),
-            radius = Size.min(
-              Size.readNamed(args, 'radius'),
-              rect.getSize(true).divide(2)
-            )
+          const args = arguments
+          const rect = Rectangle.readNamed(args, 'rectangle')
+          const radius = Size.min(
+            Size.readNamed(args, 'radius'),
+            rect.getSize(true).divide(2)
+          )
           return createShape(
             'rectangle',
             rect.getCenter(true),
@@ -577,9 +579,9 @@ var Shape = Item.extend(
          * });
          */
         Ellipse: function (/* rectangle */) {
-          var args = arguments,
-            ellipse = Shape._readEllipse(args),
-            radius = ellipse.radius
+          const args = arguments
+          const ellipse = Shape._readEllipse(args)
+          const radius = ellipse.radius
           return createShape(
             'ellipse',
             ellipse.center,
@@ -592,12 +594,13 @@ var Shape = Item.extend(
         // Private method to read ellipse center and radius from arguments list,
         // shared with Path.Ellipse constructor.
         _readEllipse: function (args) {
-          var center, radius
+          let center
+          let radius
           if (Base.hasNamed(args, 'radius')) {
             center = Point.readNamed(args, 'center')
             radius = Size.readNamed(args, 'radius')
           } else {
-            var rect = Rectangle.readNamed(args, 'rectangle')
+            const rect = Rectangle.readNamed(args, 'rectangle')
             center = rect.getCenter(true)
             radius = rect.getSize(true).divide(2)
           }

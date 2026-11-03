@@ -25,7 +25,7 @@
  *
  * @extends PathItem
  */
-var CompoundPath = PathItem.extend(
+const CompoundPath = PathItem.extend(
   /** @lends CompoundPath# */ {
     _class: 'CompoundPath',
     _serializeFields: {
@@ -119,14 +119,14 @@ var CompoundPath = PathItem.extend(
       // If we're passed a segment array describing a simple path instead of a
       // compound-path, wrap it in another array to turn it into the array
       // notation for compound-paths.
-      var list = items,
-        first = list[0]
+      let list = items
+      const first = list[0]
       if (first && typeof first[0] === 'number') list = [list]
       // Perform some conversions depending on the type of item passed:
       // Convert array-notation to paths, and expand compound-paths in the
       // items list by adding their children to the it replacing their parent.
-      for (var i = items.length - 1; i >= 0; i--) {
-        var item = list[i]
+      for (let i = items.length - 1; i >= 0; i--) {
+        const item = list[i]
         // Clone the list array before modifying it, as it may be a passed
         // children array from another item.
         if (list === items && !(item instanceof Path)) list = Base.slice(list)
@@ -142,20 +142,22 @@ var CompoundPath = PathItem.extend(
 
     // DOCS: reduce()
     reduce: function reduce(options) {
-      var children = this._children
-      for (var i = children.length - 1; i >= 0; i--) {
-        var path = children[i].reduce(options)
+      let path
+
+      const children = this._children
+      for (let i = children.length - 1; i >= 0; i--) {
+        path = children[i].reduce(options)
         if (path.isEmpty()) path.remove()
       }
       if (!children.length) {
         // Replace with a simple empty Path
-        var path = new Path(Item.NO_INSERT)
+        path = new Path(Item.NO_INSERT)
         path.copyAttributes(this)
         path.insertAbove(this)
         this.remove()
         return path
       }
-      var item = reduce.base.call(this)
+      const item = reduce.base.call(this)
       // A single child takes on the attributes that it was drawn with:
       if (item !== this) item.copyAttributes(this, true)
       return item
@@ -170,16 +172,16 @@ var CompoundPath = PathItem.extend(
      * @see Path#closed
      */
     isClosed: function () {
-      var children = this._children
-      for (var i = 0, l = children.length; i < l; i++) {
+      const children = this._children
+      for (let i = 0, l = children.length; i < l; i++) {
         if (!children[i]._closed) return false
       }
       return true
     },
 
     setClosed: function (closed) {
-      var children = this._children
-      for (var i = 0, l = children.length; i < l; i++) {
+      const children = this._children
+      for (let i = 0, l = children.length; i < l; i++) {
         children[i].setClosed(closed)
       }
     },
@@ -192,7 +194,7 @@ var CompoundPath = PathItem.extend(
      * @type Segment
      */
     getFirstSegment: function () {
-      var first = this.getFirstChild()
+      const first = this.getFirstChild()
       return first && first.getFirstSegment()
     },
 
@@ -204,7 +206,7 @@ var CompoundPath = PathItem.extend(
      * @type Segment
      */
     getLastSegment: function () {
-      var last = this.getLastChild()
+      const last = this.getLastChild()
       return last && last.getLastSegment()
     },
 
@@ -216,9 +218,9 @@ var CompoundPath = PathItem.extend(
      * @type Curve[]
      */
     getCurves: function () {
-      var children = this._children,
-        curves = []
-      for (var i = 0, l = children.length; i < l; i++) {
+      const children = this._children
+      const curves = []
+      for (let i = 0, l = children.length; i < l; i++) {
         Base.push(curves, children[i].getCurves())
       }
       return curves
@@ -232,7 +234,7 @@ var CompoundPath = PathItem.extend(
      * @type Curve
      */
     getFirstCurve: function () {
-      var first = this.getFirstChild()
+      const first = this.getFirstChild()
       return first && first.getFirstCurve()
     },
 
@@ -244,7 +246,7 @@ var CompoundPath = PathItem.extend(
      * @type Curve
      */
     getLastCurve: function () {
-      var last = this.getLastChild()
+      const last = this.getLastChild()
       return last && last.getLastCurve()
     },
 
@@ -258,9 +260,9 @@ var CompoundPath = PathItem.extend(
      * @type Number
      */
     getArea: function () {
-      var children = this._children,
-        area = 0
-      for (var i = 0, l = children.length; i < l; i++)
+      const children = this._children
+      let area = 0
+      for (let i = 0, l = children.length; i < l; i++)
         area += children[i].getArea()
       return area
     },
@@ -273,20 +275,20 @@ var CompoundPath = PathItem.extend(
      * @type Number
      */
     getLength: function () {
-      var children = this._children,
-        length = 0
-      for (var i = 0, l = children.length; i < l; i++)
+      const children = this._children
+      let length = 0
+      for (let i = 0, l = children.length; i < l; i++)
         length += children[i].getLength()
       return length
     },
 
     getPathData: function (_matrix, _precision) {
       // NOTE: #setPathData() is defined in PathItem.
-      var children = this._children,
-        paths = []
-      for (var i = 0, l = children.length; i < l; i++) {
-        var child = children[i],
-          mx = child._matrix
+      const children = this._children
+      const paths = []
+      for (let i = 0, l = children.length; i < l; i++) {
+        const child = children[i]
+        const mx = child._matrix
         paths.push(
           child.getPathData(
             _matrix && !mx.isIdentity()
@@ -315,23 +317,23 @@ var CompoundPath = PathItem.extend(
     },
 
     _draw: function (ctx, param, viewMatrix, strokeMatrix) {
-      var children = this._children
+      const children = this._children
       // Return early if the compound path doesn't have any children:
       if (!children.length) return
 
       param = param.extend({ dontStart: true, dontFinish: true })
       ctx.beginPath()
-      for (var i = 0, l = children.length; i < l; i++)
+      for (let i = 0, l = children.length; i < l; i++)
         children[i].draw(ctx, param, strokeMatrix)
 
       if (!param.clip) this._paint(ctx, param, viewMatrix, strokeMatrix)
     },
 
     _drawSelected: function (ctx, matrix, selectionItems) {
-      var children = this._children
-      for (var i = 0, l = children.length; i < l; i++) {
-        var child = children[i],
-          mx = child._matrix
+      const children = this._children
+      for (let i = 0, l = children.length; i < l; i++) {
+        const child = children[i]
+        const mx = child._matrix
         // Do not draw this child now if it's separately marked as selected,
         // as it would be drawn twice otherwise.
         if (!selectionItems[child._id]) {
@@ -350,7 +352,7 @@ var CompoundPath = PathItem.extend(
      * command is required first.
      */
     function getCurrentPath(that, check) {
-      var children = that._children
+      const children = that._children
       if (check && !children.length)
         throw new Error('Use a moveTo() command first')
       return children[children.length - 1]
@@ -365,7 +367,7 @@ var CompoundPath = PathItem.extend(
       ],
       function (key) {
         this[key] = function () {
-          var path = getCurrentPath(this, true)
+          const path = getCurrentPath(this, true)
           path[key].apply(path, arguments)
         }
       },
@@ -374,18 +376,18 @@ var CompoundPath = PathItem.extend(
         // they are considered abstract methods of PathItem and need to be
         // defined in all implementing classes.
         moveTo: function (/* point */) {
-          var current = getCurrentPath(this),
-            // Reuse current path if nothing was added yet
-            path =
-              current && current.isEmpty() ? current : new Path(Item.NO_INSERT)
+          const current = getCurrentPath(this)
+          // Reuse current path if nothing was added yet
+          const path =
+            current && current.isEmpty() ? current : new Path(Item.NO_INSERT)
           if (path !== current) this.addChild(path)
           path.moveTo.apply(path, arguments)
         },
 
         moveBy: function (/* point */) {
-          var current = getCurrentPath(this, true),
-            last = current && current.getLastSegment(),
-            point = Point.read(arguments)
+          const current = getCurrentPath(this, true)
+          const last = current && current.getLastSegment()
+          const point = Point.read(arguments)
           this.moveTo(last ? point.add(last._point) : point)
         },
 
@@ -401,15 +403,15 @@ var CompoundPath = PathItem.extend(
       // Injection scope for methods forwarded to the child paths.
       // NOTE: Documentation is in PathItem
       this[key] = function (param) {
-        var children = this._children
-        for (var i = 0, l = children.length; i < l; i++) children[i][key](param)
+        const children = this._children
+        for (let i = 0, l = children.length; i < l; i++) children[i][key](param)
       }
     },
     {
       simplify: function (options) {
-        var children = this._children,
-          res = false
-        for (var i = 0, l = children.length; i < l; i++)
+        const children = this._children
+        let res = false
+        for (let i = 0, l = children.length; i < l; i++)
           res = children[i].simplify(options) || res
         return res
       }

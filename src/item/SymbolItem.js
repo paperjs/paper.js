@@ -20,7 +20,7 @@
  *
  * @extends Item
  */
-var SymbolItem = Item.extend(
+const SymbolItem = Item.extend(
   /** @lends SymbolItem# */ {
     _class: 'SymbolItem',
     _applyMatrix: false,
@@ -123,7 +123,7 @@ var SymbolItem = Item.extend(
     },
 
     _getBounds: function (matrix, options) {
-      var item = this._definition._item
+      const item = this._definition._item
       // Redirect the call to the definition item to calculate the bounds.
       return item._getCachedBounds(item._matrix.prepended(matrix), options)
     },
@@ -133,13 +133,13 @@ var SymbolItem = Item.extend(
       // as otherwise it would populate the array with its own matches.
       // Instead we want only returning one match per symbol-item, see #1680
       // The filters apply to the symbol-item, not to the definition's items:
-      var opts = options.extend({
+      const opts = options.extend({
         all: false,
         match: null,
         class: null,
         type: null
       })
-      var res = this._definition._item._hitTest(point, opts, viewMatrix)
+      const res = this._definition._item._hitTest(point, opts, viewMatrix)
       // TODO: When the symbol's definition is a path, should hitResult
       // contain information like HitResult#curve?
       if (res) res.item = this
@@ -163,7 +163,7 @@ var SymbolItem = Item.extend(
      */
     embed: function () {
       if (!this._parent) return null
-      var item = this._definition._item.clone(false)
+      const item = this._definition._item.clone(false)
       // The copy applies the matrix to its content or its own matrix,
       // depending on its applyMatrix, as in Group#ungroup():
       item.transform(this._matrix)

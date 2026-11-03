@@ -18,7 +18,7 @@
  * @extends PathItem
  */
 // DOCS: Explain that path matrix is always applied with each transformation.
-var Path = PathItem.extend(
+const Path = PathItem.extend(
   /** @lends Path# */ {
     _class: 'Path',
     _serializeFields: {
@@ -106,20 +106,20 @@ var Path = PathItem.extend(
       // check its first entry for object as well.
       // But first see if segments are directly passed at all. If not, try
       // _set(arg).
-      var args = arguments,
-        segments = Array.isArray(arg)
-          ? typeof arg[0] === 'object'
-            ? arg
-            : args
-          : // See if it behaves like a segment or a point, but filter out
-            // rectangles, as accepted by some Path.Constructor constructors.
-            (
-                arg &&
-                arg.size === undefined &&
-                (arg.x !== undefined || arg.point !== undefined)
-              )
-            ? args
-            : null
+      const args = arguments
+      const segments = Array.isArray(arg)
+        ? typeof arg[0] === 'object'
+          ? arg
+          : args
+        : // See if it behaves like a segment or a point, but filter out
+          // rectangles, as accepted by some Path.Constructor constructors.
+          (
+              arg &&
+              arg.size === undefined &&
+              (arg.x !== undefined || arg.point !== undefined)
+            )
+          ? args
+          : null
       // Always call setSegments() to initialize a few related variables.
       if (segments && segments.length > 0) {
         // This sets _curves and _segmentSelection too!
@@ -146,7 +146,7 @@ var Path = PathItem.extend(
     },
 
     copyContent: function (source) {
-      var profile = source._strokeProfile
+      const profile = source._strokeProfile
       this.setSegments(source._segments)
       this._closed = source._closed
       // The same segments, so the same indices:
@@ -175,7 +175,7 @@ var Path = PathItem.extend(
         } else if (this._curves) {
           // Only notify all curves if we're not told that only segments
           // have changed and took already care of notifications.
-          for (var i = 0, l = this._curves.length; i < l; i++)
+          for (let i = 0, l = this._curves.length; i < l; i++)
             this._curves[i]._changed()
         }
       }
@@ -200,17 +200,17 @@ var Path = PathItem.extend(
     },
 
     _applyEffects: function _applyEffects(art) {
-      var output = _applyEffects.base.call(this, art)
+      let output = _applyEffects.base.call(this, art)
       if (this._hasStrokeProfile()) {
         if (output) {
-          var effect = Effect.get('outline')
+          const effect = Effect.get('outline')
           output = (
             effect && effect.onApply({ art: output, item: this }) ||
             output
           )
         } else {
           // Without effects, it's the path's own outline:
-          var outline = this._getStrokeOutline().clone({ insert: false })
+          const outline = this._getStrokeOutline().clone({ insert: false })
           outline.set({
             fillColor: this.getStrokeColor(),
             strokeColor: null
@@ -234,7 +234,7 @@ var Path = PathItem.extend(
 
     getStyle: function () {
       // If this path is part of a compound-path, return the parent's style.
-      var parent = this._parent
+      const parent = this._parent
       return (parent instanceof CompoundPath ? parent : this)._style
     },
 
@@ -261,22 +261,22 @@ var Path = PathItem.extend(
     },
 
     setSegments: function (segments) {
-      var fullySelected = this.isFullySelected(),
-        length = segments && segments.length,
-        named = this._namedSegments,
-        // The new segments keep the stroke profile by the fractions of
-        // its offsets along the path:
-        profile = this._strokeProfile,
-        pathLength = profile && this.getLength(),
-        fractions = (
-          profile &&
-          profile.map(function (stop) {
-            return pathLength ? stop.getOffset() / pathLength : 0
-          })
-        )
+      const fullySelected = this.isFullySelected()
+      let length = segments && segments.length
+      const named = this._namedSegments
+      // The new segments keep the stroke profile by the fractions of
+      // its offsets along the path:
+      const profile = this._strokeProfile
+      let pathLength = profile && this.getLength()
+      const fractions = (
+        profile &&
+        profile.map(function (stop) {
+          return pathLength ? stop.getOffset() / pathLength : 0
+        })
+      )
       this._strokeProfile = null
       if (named) {
-        for (var name in named) delete this._segments[name]
+        for (const name in named) delete this._segments[name]
         this._namedSegments = null
       }
       this._segments.length = 0
@@ -287,7 +287,7 @@ var Path = PathItem.extend(
         // See if the last segment is a boolean describing the path's closed
         // state. This is part of the shorter segment array notation that
         // can also be nested to create compound-paths out of one array.
-        var last = segments[length - 1]
+        const last = segments[length - 1]
         if (typeof last === 'boolean') {
           this.setClosed(last)
           length--
@@ -300,7 +300,7 @@ var Path = PathItem.extend(
       if (profile) {
         this._strokeProfile = profile
         pathLength = this.getLength()
-        for (var i = 0, l = profile.length; i < l; i++)
+        for (let i = 0, l = profile.length; i < l; i++)
           profile[i]._index = this._getIndexAt(fractions[i] * pathLength)
         this._sortStrokeProfile()
       }
@@ -333,12 +333,12 @@ var Path = PathItem.extend(
      * @type Curve[]
      */
     getCurves: function () {
-      var curves = this._curves,
-        segments = this._segments
+      let curves = this._curves
+      const segments = this._segments
       if (!curves) {
-        var length = this._countCurves()
+        const length = this._countCurves()
         curves = this._curves = new Array(length)
-        for (var i = 0; i < length; i++)
+        for (let i = 0; i < length; i++)
           curves[i] = new Curve(
             this,
             segments[i],
@@ -366,7 +366,7 @@ var Path = PathItem.extend(
      * @type Curve
      */
     getLastCurve: function () {
-      var curves = this.getCurves()
+      const curves = this.getCurves()
       return curves[curves.length - 1]
     },
 
@@ -396,7 +396,7 @@ var Path = PathItem.extend(
       if (this._closed != (closed = !!closed)) {
         // Opening the path lets go of the stops on its closing curve:
         if (!closed && this._strokeProfile) {
-          var last = this._segments.length - 1
+          const last = this._segments.length - 1
           this._filterStrokeProfile(function (stop) {
             return stop._index <= last
           })
@@ -404,7 +404,7 @@ var Path = PathItem.extend(
         this._closed = closed
         // Update _curves length
         if (this._curves) {
-          var length = (this._curves.length = this._countCurves())
+          const length = (this._curves.length = this._countCurves())
           // If we were closing this path, we need to add a new curve now
           if (closed)
             this._curves[length - 1] = new Curve(
@@ -426,20 +426,20 @@ var Path = PathItem.extend(
 
     getPathData: function (_matrix, _precision) {
       // NOTE: #setPathData() is defined in PathItem.
-      var segments = this._segments,
-        length = segments.length,
-        f = new Formatter(_precision),
-        coords = new Array(6),
-        first = true,
-        curX,
-        curY,
-        prevX,
-        prevY,
-        inX,
-        inY,
-        outX,
-        outY,
-        parts = []
+      const segments = this._segments
+      const length = segments.length
+      const f = new Formatter(_precision)
+      const coords = new Array(6)
+      let first = true
+      let curX
+      let curY
+      let prevX
+      let prevY
+      let inX
+      let inY
+      let outX
+      let outY
+      const parts = []
 
       function addSegment(segment, skipLine) {
         segment._transformCoordinates(_matrix, coords)
@@ -459,8 +459,8 @@ var Path = PathItem.extend(
           ) {
             // l = relative lineto:
             if (!skipLine) {
-              var dx = curX - prevX,
-                dy = curY - prevY
+              const dx = curX - prevX
+              const dy = curY - prevY
               parts.push(
                 dx === 0
                   ? 'v' + f.number(dy)
@@ -489,7 +489,7 @@ var Path = PathItem.extend(
 
       if (!length) return ''
 
-      for (var i = 0; i < length; i++) addSegment(segments[i])
+      for (let i = 0; i < length; i++) addSegment(segments[i])
       // Close path by drawing first segment again
       if (this._closed && length > 0) {
         addSegment(segments[0], true)
@@ -507,9 +507,9 @@ var Path = PathItem.extend(
     },
 
     _transformContent: function (matrix) {
-      var segments = this._segments,
-        coords = new Array(6)
-      for (var i = 0, l = segments.length; i < l; i++)
+      const segments = this._segments
+      const coords = new Array(6)
+      for (let i = 0, l = segments.length; i < l; i++)
         segments[i]._transformCoordinates(matrix, coords, true)
       this._scaleStroke(matrix)
       return true
@@ -522,16 +522,19 @@ var Path = PathItem.extend(
      * the segments list automatically.
      */
     _add: function (segs, index) {
+      let i
+      let l
+
       // Local short-cuts:
-      var segments = this._segments,
-        curves = this._curves,
-        amount = segs.length,
-        append = index == null,
-        index = append ? segments.length : index
+      const segments = this._segments
+      const curves = this._curves
+      const amount = segs.length
+      const append = index == null
+      index = append ? segments.length : index
       // Scan through segments to add first, convert if necessary and set
       // _path and _index references on them.
-      for (var i = 0; i < amount; i++) {
-        var segment = segs[i]
+      for (i = 0; i < amount; i++) {
+        let segment = segs[i]
         // If the segments belong to another path already, clone them before
         // adding:
         if (segment._path) segment = segs[i] = segment.clone()
@@ -551,18 +554,19 @@ var Path = PathItem.extend(
         // Insert somewhere else
         segments.splice.apply(segments, [index, 0].concat(segs))
         // Adjust the indices of the segments above.
-        for (var i = index + amount, l = segments.length; i < l; i++)
+        for (i = index + amount, l = segments.length; i < l; i++)
           segments[i]._index = i
       }
       // Keep the curves list in sync all the time in case it was requested
       // already.
       if (curves) {
-        var total = this._countCurves(),
-          // If we're adding a new segment to the end of an open path,
-          // we need to step one index down to get its curve.
-          start = index > 0 && index + amount - 1 === total ? index - 1 : index,
-          insert = start,
-          end = Math.min(start + amount, total)
+        const total = this._countCurves()
+        // If we're adding a new segment to the end of an open path,
+        // we need to step one index down to get its curve.
+        const start =
+          index > 0 && index + amount - 1 === total ? index - 1 : index
+        let insert = start
+        const end = Math.min(start + amount, total)
         if (segs._curves) {
           // Reuse removed curves.
           curves.splice.apply(curves, [start, 0].concat(segs._curves))
@@ -570,7 +574,7 @@ var Path = PathItem.extend(
         }
         // Insert new curves, but do not initialize their segments yet,
         // since #_adjustCurves() handles all that for us.
-        for (var i = insert; i < end; i++)
+        for (i = insert; i < end; i++)
           curves.splice(i, 0, new Curve(this, null, null))
         // Adjust segments for the curves before and after the removed ones
         this._adjustCurves(start, end)
@@ -586,10 +590,10 @@ var Path = PathItem.extend(
      * Adjusts segments of curves before and after inserted / removed segments.
      */
     _adjustCurves: function (start, end) {
-      var segments = this._segments,
-        curves = this._curves,
-        curve
-      for (var i = start; i < end; i++) {
+      const segments = this._segments
+      const curves = this._curves
+      let curve
+      for (let i = start; i < end; i++) {
         curve = curves[i]
         curve._path = this
         curve._segment1 = segments[i]
@@ -617,7 +621,7 @@ var Path = PathItem.extend(
      * on its amount of #segments and #closed state.
      */
     _countCurves: function () {
-      var length = this._segments.length
+      const length = this._segments.length
       // Reduce length by one if it's an open path:
       return !this._closed && length > 0 ? length - 1 : length
     },
@@ -692,7 +696,7 @@ var Path = PathItem.extend(
      * path.add(new Point(170, 75));
      */
     add: function (segment1 /*, segment2, ... */) {
-      var args = arguments
+      const args = arguments
       return args.length > 1 && typeof segment1 !== 'number'
         ? // addSegments
           this._add(Segment.readList(args))
@@ -737,7 +741,7 @@ var Path = PathItem.extend(
      * myPath.segments[2].selected = true;
      */
     insert: function (index, segment1 /*, segment2, ... */) {
-      var args = arguments
+      const args = arguments
       return args.length > 2 && typeof segment1 !== 'number'
         ? // insertSegments
           this._add(Segment.readList(args, 1), index)
@@ -878,6 +882,10 @@ var Path = PathItem.extend(
      * path.selected = true;
      */
     removeSegments: function (start, end, _includeCurves) {
+      let curves
+      let i
+      let l
+
       start = start || 0
       end = Base.pick(end, this._segments.length)
       // On closed paths, wrap around from the end to the beginning:
@@ -885,18 +893,18 @@ var Path = PathItem.extend(
         return this.removeSegments(start).concat(
           this.removeSegments(0, end)
         )
-      var segments = this._segments,
-        count = segments.length // segment count before removal
+      const segments = this._segments
+      const count = segments.length // segment count before removal
       if (this._strokeProfile && start < Math.min(end, count))
         this._removeStrokeProfile(start, Math.min(end, count))
       // Moving the stroke profile may have created the curves:
-      var curves = this._curves,
-        removed = segments.splice(start, end - start),
-        amount = removed.length
+      curves = this._curves
+      const removed = segments.splice(start, end - start)
+      const amount = removed.length
       if (!amount) return removed
       // Update selection state accordingly
-      for (var i = 0; i < amount; i++) {
-        var segment = removed[i]
+      for (i = 0; i < amount; i++) {
+        const segment = removed[i]
         if (segment._selection)
           this._updateSelection(segment, segment._selection, 0)
         if (segment._name)
@@ -910,21 +918,20 @@ var Path = PathItem.extend(
         segment._index = segment._path = null
       }
       // Adjust the indices of the segments above.
-      for (var i = start, l = segments.length; i < l; i++)
-        segments[i]._index = i
+      for (i = start, l = segments.length; i < l; i++) segments[i]._index = i
       // Keep curves in sync
       if (curves) {
         // If we're removing the last segment, remove the last curve (the
         // one to the left of the segment, not to the right, as normally).
         // Also take into account closed paths, which have one curve more
         // than segments.
-        var index =
-            start > 0 && end === count + (this._closed ? 1 : 0)
-              ? start - 1
-              : start,
-          curves = curves.splice(index, amount)
+        const index =
+          start > 0 && end === count + (this._closed ? 1 : 0)
+            ? start - 1
+            : start
+        curves = curves.splice(index, amount)
         // Unlink the removed curves from the path.
-        for (var i = curves.length - 1; i >= 0; i--) curves[i]._path = null
+        for (i = curves.length - 1; i >= 0; i--) curves[i]._path = null
         // Return the removed curves as well, if we're asked to include
         // them, but exclude the first curve, since that's shared with the
         // previous segment and does not connect the returned segments.
@@ -951,8 +958,8 @@ var Path = PathItem.extend(
      * @see Curve#hasHandles()
      */
     hasHandles: function () {
-      var segments = this._segments
-      for (var i = 0, l = segments.length; i < l; i++) {
+      const segments = this._segments
+      for (let i = 0, l = segments.length; i < l; i++) {
         if (segments[i].hasHandles()) return true
       }
       return false
@@ -963,8 +970,8 @@ var Path = PathItem.extend(
      * turning the path into a polygon (or a polyline if it isn't closed).
      */
     clearHandles: function () {
-      var segments = this._segments
-      for (var i = 0, l = segments.length; i < l; i++)
+      const segments = this._segments
+      for (let i = 0, l = segments.length; i < l; i++)
         segments[i].clearHandles()
     },
 
@@ -976,9 +983,9 @@ var Path = PathItem.extend(
      */
     getLength: function () {
       if (this._length == null) {
-        var curves = this.getCurves(),
-          length = 0
-        for (var i = 0, l = curves.length; i < l; i++)
+        const curves = this.getCurves()
+        let length = 0
+        for (let i = 0, l = curves.length; i < l; i++)
           length += curves[i].getLength()
         this._length = length
       }
@@ -993,13 +1000,13 @@ var Path = PathItem.extend(
      * @type Number
      */
     getArea: function () {
-      var area = this._area
+      let area = this._area
       if (area == null) {
-        var segments = this._segments,
-          closed = this._closed
+        const segments = this._segments
+        const closed = this._closed
         area = 0
-        for (var i = 0, l = segments.length; i < l; i++) {
-          var last = i + 1 === l
+        for (let i = 0, l = segments.length; i < l; i++) {
+          const last = i + 1 === l
           area += Curve.getArea(
             Curve.getValues(
               segments[i], segments[last ? 0 : i + 1],
@@ -1090,7 +1097,7 @@ var Path = PathItem.extend(
      * }
      */
     isFullySelected: function () {
-      var length = this._segments.length
+      const length = this._segments.length
       return (
         this.isSelected() &&
         length > 0 && (
@@ -1114,16 +1121,16 @@ var Path = PathItem.extend(
     },
 
     _selectSegments: function (selected) {
-      var segments = this._segments,
-        length = segments.length,
-        selection = selected ? /*#=*/ SegmentSelection.ALL : 0
+      const segments = this._segments
+      const length = segments.length
+      const selection = selected ? /*#=*/ SegmentSelection.ALL : 0
       this._segmentSelection = selection * length
-      for (var i = 0; i < length; i++) segments[i]._selection = selection
+      for (let i = 0; i < length; i++) segments[i]._selection = selection
     },
 
     _updateSelection: function (segment, oldSelection, newSelection) {
       segment._selection = newSelection
-      var selection = (this._segmentSelection += newSelection - oldSelection)
+      const selection = (this._segmentSelection += newSelection - oldSelection)
       // Set this path as selected in case we have selected segments. Do not
       // unselect if we're down to 0, as the path itself can still remain
       // selected even when empty.
@@ -1141,8 +1148,8 @@ var Path = PathItem.extend(
      * @see Curve#divideAt(location)
      */
     divideAt: function (location) {
-      var loc = this.getLocationAt(location),
-        curve
+      const loc = this.getLocationAt(location)
+      let curve
       return loc && (curve = loc.getCurve().divideAt(loc.getCurveOffset()))
         ? curve._segment1
         : null
@@ -1206,22 +1213,22 @@ var Path = PathItem.extend(
      */
     splitAt: function (location) {
       // NOTE: getLocationAt() handles both offset and location:
-      var loc = this.getLocationAt(location),
-        index = loc && loc.index,
-        time = loc && loc.time,
-        tMin = /*#=*/ Numerical.CURVETIME_EPSILON,
-        tMax = 1 - tMin
+      const loc = this.getLocationAt(location)
+      let index = loc && loc.index
+      let time = loc && loc.time
+      const tMin = /*#=*/ Numerical.CURVETIME_EPSILON
+      const tMax = 1 - tMin
       if (time > tMax) {
         // time == 1 is the same location as time == 0 and index++
         index++
         time = 0
       }
-      var curves = this.getCurves()
+      const curves = this.getCurves()
       if (loc && index < curves.length) {
         // Both parts keep their shapes, so the stroke profile moves along
         // by offsets:
-        var cut = loc.getOffset(),
-          profile = this._strokeProfile && this._takeStrokeProfile()
+        const cut = loc.getOffset()
+        const profile = this._strokeProfile && this._takeStrokeProfile()
         // Only divide curves if we're not on an existing segment already.
         if (time >= tMin) {
           // Divide the curve with the index at the given curve-time.
@@ -1233,8 +1240,8 @@ var Path = PathItem.extend(
         // for includeCurves, since we want to preserve and move them to
         // the new path through _add(), allowing us to have CurveLocation
         // keep the connection to the new path through moved curves.
-        var segs = this.removeSegments(index, this._segments.length, true),
-          path
+        const segs = this.removeSegments(index, this._segments.length, true)
+        let path
         if (this._closed) {
           // If the path is closed, open it and move the segments round,
           // otherwise create two paths.
@@ -1271,12 +1278,12 @@ var Path = PathItem.extend(
      * @deprecated use use {@link #splitAt(offset)} instead.
      */
     split: function (index, time) {
-      var curve,
-        location =
-          time === undefined
-            ? index
-            : (curve = this.getCurves()[index]) &&
-              curve.getLocationAtTime(time)
+      let curve
+      const location =
+        time === undefined
+          ? index
+          : (curve = this.getCurves()[index]) &&
+            curve.getLocationAtTime(time)
       return location != null ? this.splitAt(location) : null
     },
 
@@ -1354,27 +1361,27 @@ var Path = PathItem.extend(
      * path.selected = true;
      */
     join: function (path, tolerance) {
-      var epsilon = tolerance || 0,
-        // The joined paths keep their shapes, so their stroke profiles
-        // move along by offsets, as parts in their order along the path:
-        parts = null
+      const epsilon = tolerance || 0
+      // The joined paths keep their shapes, so their stroke profiles
+      // move along by offsets, as parts in their order along the path:
+      let parts = null
       if (path && path !== this) {
-        var segments = path._segments,
-          last1 = this.getLastSegment(),
-          last2 = path.getLastSegment()
+        const segments = path._segments
+        const last1 = this.getLastSegment()
+        let last2 = path.getLastSegment()
         if (!last2)
           // an empty path?
           return this
         if (this._strokeProfile || path._strokeProfile)
           parts = [this._takeStrokeProfile()]
         if (last1 && last1._point.isClose(last2._point, epsilon)) path.reverse()
-        var first2 = path.getFirstSegment()
+        const first2 = path.getFirstSegment()
         if (last1 && last1._point.isClose(first2._point, epsilon)) {
           if (parts) parts.push(path._takeStrokeProfile())
           last1.setHandleOut(first2._handleOut)
           this._add(segments.slice(1))
         } else {
-          var first1 = this.getFirstSegment()
+          const first1 = this.getFirstSegment()
           if (first1 && first1._point.isClose(first2._point, epsilon))
             path.reverse()
           last2 = path.getLastSegment()
@@ -1394,8 +1401,8 @@ var Path = PathItem.extend(
       // If the first and last segment touch, close the resulting path and
       // merge the end segments. Also do this if no path argument was provided
       // in which cases the path is joined with itself only if its ends touch.
-      var first = this.getFirstSegment(),
-        last = this.getLastSegment()
+      const first = this.getFirstSegment()
+      const last = this.getLastSegment()
       if (first !== last && first._point.isClose(last._point, epsilon)) {
         if (!parts && this._strokeProfile) parts = [this._takeStrokeProfile()]
         first.setHandleIn(last._handleIn)
@@ -1419,14 +1426,14 @@ var Path = PathItem.extend(
      * @return {Path} the reduced path
      */
     reduce: function (options) {
-      var curves = this.getCurves(),
-        // TODO: Find a better name, to not confuse with PathItem#simplify()
-        simplify = options && options.simplify,
-        // When not simplifying, only remove curves if their lengths are
-        // absolutely 0.
-        tolerance = simplify ? /*#=*/ Numerical.GEOMETRIC_EPSILON : 0
-      for (var i = curves.length - 1; i >= 0; i--) {
-        var curve = curves[i]
+      const curves = this.getCurves()
+      // TODO: Find a better name, to not confuse with PathItem#simplify()
+      const simplify = options && options.simplify
+      // When not simplifying, only remove curves if their lengths are
+      // absolutely 0.
+      const tolerance = simplify ? /*#=*/ Numerical.GEOMETRIC_EPSILON : 0
+      for (let i = curves.length - 1; i >= 0; i--) {
+        const curve = curves[i]
         // When simplifying, compare curves with isCollinear() will remove
         // any collinear neighboring curves regardless of their orientation.
         // This serves as a reliable way to remove linear overlaps but only
@@ -1446,9 +1453,9 @@ var Path = PathItem.extend(
     reverse: function () {
       this._segments.reverse()
       // Reverse the handles:
-      for (var i = 0, l = this._segments.length; i < l; i++) {
-        var segment = this._segments[i]
-        var handleIn = segment._handleIn
+      for (let i = 0, l = this._segments.length; i < l; i++) {
+        const segment = this._segments[i]
+        const handleIn = segment._handleIn
         segment._handleIn = segment._handleOut
         segment._handleOut = handleIn
         segment._index = i
@@ -1463,11 +1470,11 @@ var Path = PathItem.extend(
     flatten: function (flatness) {
       // Use PathFlattener to subdivide the curves into parts that are flat
       // enough, as specified by `flatness` / Curve.isFlatEnough():
-      var flattener = new PathFlattener(this, flatness || 0.25, 256, true),
-        parts = flattener.parts,
-        length = parts.length,
-        segments = []
-      for (var i = 0; i < length; i++) {
+      const flattener = new PathFlattener(this, flatness || 0.25, 256, true)
+      const parts = flattener.parts
+      const length = parts.length
+      const segments = []
+      for (let i = 0; i < length; i++) {
         segments.push(new Segment(parts[i].curve.slice(0, 2)))
       }
       if (!this._closed && length > 0) {
@@ -1479,30 +1486,30 @@ var Path = PathItem.extend(
 
     // NOTE: Documentation is in PathItem#simplify()
     simplify: function (options) {
-      var opts =
-          typeof options === 'number'
-            ? { tolerance: options }
-            : options || {},
-        segments = this._segments,
-        length = segments.length,
-        fitted = null
+      const opts =
+        typeof options === 'number'
+          ? { tolerance: options }
+          : options || {}
+      const segments = this._segments
+      const length = segments.length
+      let fitted = null
       if (length > 0) {
-        var range = this._getRange(opts.from, opts.to),
-          loop = range.loop,
-          from = range.from,
-          to = range.to,
-          first = segments[from < 0 ? from + length : from],
-          last = segments[to],
-          // Join the curves outside of the range tangentially, where
-          // they have handles:
-          getTangent = function (handle, neighbor) {
-            return (
-              !loop &&
-              neighbor &&
-              !handle.isZero() &&
-              handle.negate()
-            )
-          }
+        const range = this._getRange(opts.from, opts.to)
+        const loop = range.loop
+        const from = range.from
+        const to = range.to
+        const first = segments[from < 0 ? from + length : from]
+        const last = segments[to]
+        // Join the curves outside of the range tangentially, where
+        // they have handles:
+        const getTangent = function (handle, neighbor) {
+          return (
+            !loop &&
+            neighbor &&
+            !handle.isZero() &&
+            handle.negate()
+          )
+        }
         fitted = new PathFitter(
           from < 0
             ? segments.slice(from).concat(segments.slice(0, to + 1))
@@ -1516,7 +1523,7 @@ var Path = PathItem.extend(
         if (loop || !first.getPrevious() && !last.getNext()) {
           this.setSegments(fitted)
         } else {
-          var fullySelected = this.isFullySelected()
+          const fullySelected = this.isFullySelected()
           fitted[0].setHandleIn(first._handleIn)
           fitted[fitted.length - 1].setHandleOut(last._handleOut)
           if (from < 0) {
@@ -1535,15 +1542,19 @@ var Path = PathItem.extend(
 
     // NOTE: Documentation is in PathItem#smooth()
     smooth: function (options) {
-      var opts = options || {},
-        type = opts.type || 'asymmetric',
-        segments = this._segments,
-        length = segments.length,
-        closed = this._closed,
-        range = this._getRange(opts.from, opts.to),
-        loop = range.loop,
-        from = range.from,
-        to = range.to
+      let i
+      let j
+      let max
+
+      const opts = options || {}
+      const type = opts.type || 'asymmetric'
+      const segments = this._segments
+      const length = segments.length
+      const closed = this._closed
+      const range = this._getRange(opts.from, opts.to)
+      const loop = range.loop
+      const from = range.from
+      const to = range.to
 
       if (/^(?:asymmetric|continuous)$/.test(type)) {
         // Continuous smoothing approach based on work by Lubos Brieda,
@@ -1556,16 +1567,16 @@ var Path = PathItem.extend(
         // We use different parameters for the two supported smooth methods
         // that use this algorithm: continuous and asymmetric. asymmetric
         // was the only approach available in v0.9.25 & below.
-        var asymmetric = type === 'asymmetric',
-          min = Math.min,
-          amount = to - from + 1,
-          n = amount - 1,
-          // Overlap by up to 4 points on closed paths since a current
-          // segment is affected by its 4 neighbors on both sides (?).
-          padding = loop ? min(amount, 4) : 1,
-          paddingLeft = padding,
-          paddingRight = padding,
-          knots = []
+        const asymmetric = type === 'asymmetric'
+        const min = Math.min
+        const amount = to - from + 1
+        let n = amount - 1
+        // Overlap by up to 4 points on closed paths since a current
+        // segment is affected by its 4 neighbors on both sides (?).
+        const padding = loop ? min(amount, 4) : 1
+        let paddingLeft = padding
+        let paddingRight = padding
+        const knots = []
         if (!closed) {
           // If the path is open and a range is defined, try using a
           // padding of 1 on either side.
@@ -1575,7 +1586,7 @@ var Path = PathItem.extend(
         // Set up the knots array now, taking the paddings into account.
         n += paddingLeft + paddingRight
         if (n <= 1) return
-        for (var i = 0, j = from - paddingLeft; i <= n; i++, j++) {
+        for (i = 0, j = from - paddingLeft; i <= n; i++, j++) {
           knots[i] = segments[(j < 0 ? j + length : j) % length]._point
         }
 
@@ -1601,24 +1612,24 @@ var Path = PathItem.extend(
         // v = 2 (L), 2 (I), 0 (R)
 
         // (L): u = 1, v = 2
-        var x = knots[0]._x + 2 * knots[1]._x,
-          y = knots[0]._y + 2 * knots[1]._y,
-          f = 2,
-          n_1 = n - 1,
-          rx = [x],
-          ry = [y],
-          rf = [f],
-          px = [],
-          py = []
+        let x = knots[0]._x + 2 * knots[1]._x
+        let y = knots[0]._y + 2 * knots[1]._y
+        let f = 2
+        const n_1 = n - 1
+        const rx = [x]
+        const ry = [y]
+        const rf = [f]
+        const px = []
+        const py = []
         // Solve with the Thomas algorithm
-        for (var i = 1; i < n; i++) {
-          var internal = i < n_1,
-            //  internal--(I)  asymmetric--(R) (R)--continuous
-            a = internal ? 1 : asymmetric ? 1 : 2,
-            b = internal ? 4 : asymmetric ? 2 : 7,
-            u = internal ? 4 : asymmetric ? 3 : 8,
-            v = internal ? 2 : asymmetric ? 0 : 1,
-            m = a / f
+        for (i = 1; i < n; i++) {
+          const internal = i < n_1
+          //  internal--(I)  asymmetric--(R) (R)--continuous
+          const a = internal ? 1 : asymmetric ? 1 : 2
+          const b = internal ? 4 : asymmetric ? 2 : 7
+          const u = internal ? 4 : asymmetric ? 3 : 8
+          const v = internal ? 2 : asymmetric ? 0 : 1
+          const m = a / f
           f = rf[i] = b - m
           x = rx[i] = u * knots[i]._x + v * knots[i + 1]._x - m * x
           y = ry[i] = u * knots[i]._y + v * knots[i + 1]._y - m * y
@@ -1626,7 +1637,7 @@ var Path = PathItem.extend(
 
         px[n_1] = rx[n_1] / rf[n_1]
         py[n_1] = ry[n_1] / rf[n_1]
-        for (var i = n - 2; i >= 0; i--) {
+        for (i = n - 2; i >= 0; i--) {
           px[i] = (rx[i] - px[i + 1]) / rf[i]
           py[i] = (ry[i] - py[i + 1]) / rf[i]
         }
@@ -1635,20 +1646,20 @@ var Path = PathItem.extend(
 
         // Now update the segments
         for (
-          var i = paddingLeft, max = n - paddingRight, j = from;
+          i = paddingLeft, max = n - paddingRight, j = from;
           i <= max;
           i++, j++
         ) {
-          var segment = segments[j < 0 ? j + length : j],
-            pt = segment._point,
-            hx = px[i] - pt._x,
-            hy = py[i] - pt._y
+          const segment = segments[j < 0 ? j + length : j]
+          const pt = segment._point
+          const hx = px[i] - pt._x
+          const hy = py[i] - pt._y
           if (loop || i < max) segment.setHandleOut(hx, hy)
           if (loop || i > paddingLeft) segment.setHandleIn(-hx, -hy)
         }
       } else {
         // All other smoothing methods are handled directly on the segments:
-        for (var i = from; i <= to; i++) {
+        for (i = from; i <= to; i++) {
           segments[i < 0 ? i + length : i].smooth(
             opts,
             !loop && i === from,
@@ -1662,9 +1673,9 @@ var Path = PathItem.extend(
     // segment indices. Where a range on a closed path wraps around its end,
     // `from` is negative.
     _getRange: function (from, to) {
-      var that = this,
-        length = this._segments.length,
-        closed = this._closed
+      const that = this
+      const length = this._segments.length
+      const closed = this._closed
 
       // Helper method to pick the right from / to indices.
       // Supports numbers and segment objects.
@@ -1672,10 +1683,10 @@ var Path = PathItem.extend(
       // curves, it is inclusive, handled by the `offset` parameter.
       function getIndex(value, _default) {
         // Support both Segment and Curve through #index getter.
-        var index = value && value.index
+        let index = value && value.index
         if (index != null) {
           // Make sure the segment / curve is not from a wrong path.
-          var path = value.path
+          const path = value.path
           if (path && path !== that)
             throw new Error(
               value._class +
@@ -1705,7 +1716,7 @@ var Path = PathItem.extend(
         )
       }
 
-      var loop = closed && from === undefined && to === undefined
+      const loop = closed && from === undefined && to === undefined
       from = getIndex(from, 0)
       to = getIndex(to, length - 1)
 
@@ -1713,7 +1724,7 @@ var Path = PathItem.extend(
         if (closed) {
           from -= length
         } else {
-          var tmp = from
+          const tmp = from
           from = to
           to = tmp
         }
@@ -1737,17 +1748,17 @@ var Path = PathItem.extend(
     toShape: function (insert) {
       if (!this._closed) return null
 
-      var segments = this._segments,
-        type,
-        size,
-        radius,
-        topCenter
+      const segments = this._segments
+      let type
+      let size
+      let radius
+      let topCenter
 
       function isCollinear(i, j) {
-        var seg1 = segments[i],
-          seg2 = seg1.getNext(),
-          seg3 = segments[j],
-          seg4 = seg3.getNext()
+        const seg1 = segments[i]
+        const seg2 = seg1.getNext()
+        const seg3 = segments[j]
+        const seg4 = seg3.getNext()
         return (
           seg1._handleOut.isZero() &&
           seg2._handleIn.isZero() &&
@@ -1760,9 +1771,9 @@ var Path = PathItem.extend(
       }
 
       function isOrthogonal(i) {
-        var seg2 = segments[i],
-          seg1 = seg2.getPrevious(),
-          seg3 = seg2.getNext()
+        const seg2 = segments[i]
+        const seg1 = seg2.getPrevious()
+        const seg3 = seg2.getNext()
         return (
           seg1._handleOut.isZero() &&
           seg2._handleIn.isZero() &&
@@ -1775,21 +1786,21 @@ var Path = PathItem.extend(
       }
 
       function isArc(i) {
-        var seg1 = segments[i],
-          seg2 = seg1.getNext(),
-          handle1 = seg1._handleOut,
-          handle2 = seg2._handleIn,
-          kappa = /*#=*/ Numerical.KAPPA
+        const seg1 = segments[i]
+        const seg2 = seg1.getNext()
+        const handle1 = seg1._handleOut
+        const handle2 = seg2._handleIn
+        const kappa = /*#=*/ Numerical.KAPPA
         // Look at handle length and the distance to the imaginary corner
         // point and see if it their relation is kappa.
         if (handle1.isOrthogonal(handle2)) {
-          var pt1 = seg1._point,
-            pt2 = seg2._point,
-            // Find the corner point by intersecting the lines described
-            // by both handles:
-            corner = new Line(pt1, handle1, true).intersect(
-              new Line(pt2, handle2, true), true
-            )
+          const pt1 = seg1._point
+          const pt2 = seg2._point
+          // Find the corner point by intersecting the lines described
+          // by both handles:
+          const corner = new Line(pt1, handle1, true).intersect(
+            new Line(pt2, handle2, true), true
+          )
           return (
             corner &&
             Numerical.isZero(
@@ -1866,13 +1877,13 @@ var Path = PathItem.extend(
       }
 
       if (type) {
-        var center = this.getPosition(true),
-          shape = new type({
-            center: center,
-            size: size,
-            radius: radius,
-            insert: false
-          })
+        const center = this.getPosition(true)
+        const shape = new type({
+          center: center,
+          size: size,
+          radius: radius,
+          insert: false
+        })
         // Pass `true` to exclude the matrix, so we can prepend after
         shape.copyAttributes(this, true)
         shape._matrix.prepend(this._matrix)
@@ -1889,30 +1900,33 @@ var Path = PathItem.extend(
 
     // NOTE: Documentation is in PathItem#compare()
     compare: function compare(path) {
+      let v2
+      let overlaps
+
       // If a compound-path is involved, redirect to PathItem#compare()
       if (!path || path instanceof CompoundPath)
         return compare.base.call(this, path)
-      var curves1 = this.getCurves(),
-        curves2 = path.getCurves(),
-        length1 = curves1.length,
-        length2 = curves2.length
+      const curves1 = this.getCurves()
+      const curves2 = path.getCurves()
+      const length1 = curves1.length
+      const length2 = curves2.length
       if (!length1 || !length2) {
         // If one path defines curves and the other doesn't, we can't have
         // matching geometries.
         return length1 == length2
       }
-      var v1 = curves1[0].getValues(),
-        values2 = [],
-        pos1 = 0,
-        pos2,
-        end1 = 0,
-        end2
+      let v1 = curves1[0].getValues()
+      const values2 = []
+      let pos1 = 0
+      let pos2
+      let end1 = 0
+      let end2
       // First, loop through curves2, looking for the start of the overlapping
       // sequence with curves1[0]. Also cache curve values for later reuse.
-      for (var i = 0; i < length2; i++) {
-        var v2 = curves2[i].getValues()
+      for (let i = 0; i < length2; i++) {
+        v2 = curves2[i].getValues()
         values2.push(v2)
-        var overlaps = Curve.getOverlaps(v1, v2)
+        overlaps = Curve.getOverlaps(v1, v2)
         if (overlaps) {
           // If the overlap doesn't start at the beginning of v2, then it
           // can only be a partial overlap with curves2[0], and the start
@@ -1926,15 +1940,15 @@ var Path = PathItem.extend(
       }
       // Now loop through both curve arrays, find their overlaps, verify that
       // they keep joining, and see if we end back at the start on both paths.
-      var abs = Math.abs,
-        epsilon = /*#=*/ Numerical.CURVETIME_EPSILON,
-        v2 = values2[pos2],
-        start2
+      const abs = Math.abs
+      const epsilon = /*#=*/ Numerical.CURVETIME_EPSILON
+      v2 = values2[pos2]
+      let start2
       while (v1 && v2) {
-        var overlaps = Curve.getOverlaps(v1, v2)
+        overlaps = Curve.getOverlaps(v1, v2)
         if (overlaps) {
           // Check that the overlaps are joining on curves1.
-          var t1 = overlaps[0][0]
+          const t1 = overlaps[0][0]
           if (abs(t1 - end1) < epsilon) {
             end1 = overlaps[1][0]
             if (end1 === 1) {
@@ -1944,7 +1958,7 @@ var Path = PathItem.extend(
               end1 = 0
             }
             // Check that the overlaps are joining on curves2.
-            var t2 = overlaps[0][1]
+            const t2 = overlaps[0][1]
             if (abs(t2 - end2) < epsilon) {
               if (!start2) start2 = [pos2, t2]
               end2 = overlaps[1][1]
@@ -1972,51 +1986,54 @@ var Path = PathItem.extend(
     },
 
     _hitTestSelf: function (point, options, viewMatrix, strokeMatrix) {
-      var that = this,
-        style = this.getStyle(),
-        segments = this._segments,
-        numSegments = segments.length,
-        closed = this._closed,
-        // Measure where the stroke is drawn with a round pen: for
-        // non-scaling strokes in the view's coordinates, through the
-        // inverted strokeMatrix that Item#_hitTest() passes, otherwise in
-        // the item's own. Curve times are the same in both (#2334):
-        strokeSpace = strokeMatrix && strokeMatrix.inverted(),
-        strokePoint = point.transform(strokeSpace),
-        // The tolerance padding in that space, see Item#_hitTest(): for
-        // non-scaling strokes, the tolerance of the project in the view's
-        // coordinates. The stroke padding is added on top of it below.
-        tolerancePadding = strokeSpace
-          ? new Size(
-              Matrix._getCircleExtents(
-                Math.max(options.tolerance, /*#=*/ Numerical.EPSILON),
-                this.getView()._matrix._shiftless()
-              )
+      let i
+      let l
+
+      const that = this
+      const style = this.getStyle()
+      const segments = this._segments
+      const numSegments = segments.length
+      const closed = this._closed
+      // Measure where the stroke is drawn with a round pen: for
+      // non-scaling strokes in the view's coordinates, through the
+      // inverted strokeMatrix that Item#_hitTest() passes, otherwise in
+      // the item's own. Curve times are the same in both (#2334):
+      const strokeSpace = strokeMatrix && strokeMatrix.inverted()
+      const strokePoint = point.transform(strokeSpace)
+      // The tolerance padding in that space, see Item#_hitTest(): for
+      // non-scaling strokes, the tolerance of the project in the view's
+      // coordinates. The stroke padding is added on top of it below.
+      const tolerancePadding = strokeSpace
+        ? new Size(
+            Matrix._getCircleExtents(
+              Math.max(options.tolerance, /*#=*/ Numerical.EPSILON),
+              this.getView()._matrix._shiftless()
             )
-          : options._tolerancePadding,
-        strokePadding = tolerancePadding,
-        join,
-        cap,
-        miterLimit,
-        area,
-        loc,
-        res,
-        // When collecting all hits for hitTestAll(), we report every
-        // segment and handle in range, not just the first one:
-        hits = options.all && [],
-        hitStroke = options.stroke && style.hasStroke(),
-        // Transparent fills are hit too, only no fill isn't, as in SVG
-        // (#1157):
-        hitFill = options.fill && !!style.getFillColor(),
-        hitCurves = options.curves,
-        strokeRadius = hitStroke
-          ? style.getStrokeWidth() / 2
-          : // Set radius to 0 when we're hit-testing fills with
-            // tolerance, to handle tolerance through stroke hit-test
-            // functionality. Also use 0 when hit-testing curves.
-            hitFill && options.tolerance > 0 || hitCurves
-            ? 0
-            : null
+          )
+        : options._tolerancePadding
+      let strokePadding = tolerancePadding
+      let join
+      let cap
+      let miterLimit
+      let area
+      let loc
+      let res
+      // When collecting all hits for hitTestAll(), we report every
+      // segment and handle in range, not just the first one:
+      const hits = options.all && []
+      const hitStroke = options.stroke && style.hasStroke()
+      // Transparent fills are hit too, only no fill isn't, as in SVG
+      // (#1157):
+      const hitFill = options.fill && !!style.getFillColor()
+      const hitCurves = options.curves
+      const strokeRadius = hitStroke
+        ? style.getStrokeWidth() / 2
+        : // Set radius to 0 when we're hit-testing fills with
+          // tolerance, to handle tolerance through stroke hit-test
+          // functionality. Also use 0 when hit-testing curves.
+          hitFill && options.tolerance > 0 || hitCurves
+          ? 0
+          : null
       if (strokeRadius !== null) {
         if (strokeRadius > 0) {
           join = style.getStrokeJoin()
@@ -2040,10 +2057,10 @@ var Path = PathItem.extend(
 
       function checkSegmentPoint(seg, pt, name) {
         if (!options.selected || pt.isSelected()) {
-          var anchor = seg._point
+          const anchor = seg._point
           if (pt !== anchor) pt = pt.add(anchor)
           if (isCloseEnough(pt.transform(strokeSpace), strokePadding)) {
-            var hit = new HitResult(name, that, {
+            const hit = new HitResult(name, that, {
               segment: seg,
               point: pt
             })
@@ -2079,16 +2096,16 @@ var Path = PathItem.extend(
       // Returns the tangent where the curve meets the segment, looking past
       // curves without length, which have no direction:
       function getJoinTangent(curve, forward) {
-        for (var i = 0; curve && i < numSegments; i++) {
+        for (let i = 0; curve && i < numSegments; i++) {
           if (curve.hasLength()) return curve.getTangentAtTime(forward ? 0 : 1)
           curve = forward ? curve.getNext() : curve.getPrevious()
         }
       }
 
       function isFlatJoin(segment) {
-        var curve = segment.getCurve(),
-          tangent1 = getJoinTangent(curve.getPrevious(), false),
-          tangent2 = getJoinTangent(curve, true)
+        const curve = segment.getCurve()
+        const tangent1 = getJoinTangent(curve.getPrevious(), false)
+        const tangent2 = getJoinTangent(curve, true)
         return (
           tangent1 &&
           tangent2 &&
@@ -2100,7 +2117,7 @@ var Path = PathItem.extend(
       function checkSegmentStroke(segment) {
         // Handle joins / caps that are not round specifically, by
         // hit-testing their polygon areas.
-        var isJoin = (
+        const isJoin = (
           closed || (
             segment._index > 0 &&
             segment._index < numSegments - 1
@@ -2153,7 +2170,7 @@ var Path = PathItem.extend(
             // Also use stroke check with tolerancePadding if the point
             // is not inside the area itself, to use test caps and joins
             // with same tolerance.
-            var loc
+            let loc
             return (
               area.contains(strokePoint) || (
                 (loc = area.getNearestLocation(strokePoint)) &&
@@ -2175,21 +2192,21 @@ var Path = PathItem.extend(
         )
           return res
       } else if (options.segments || options.handles) {
-        for (var i = 0; i < numSegments; i++)
+        for (i = 0; i < numSegments; i++)
           if ((res = checkSegmentPoints(segments[i]))) return res
       }
       // If we're querying for stroke, perform that before fill
       if (strokeRadius !== null) {
         // Find the nearest location where the stroke is measured, as
         // PathItem#getNearestLocation() does in the item's coordinates:
-        var curves = this.getCurves(),
-          minDistance = Infinity,
-          nearest
-        for (var i = 0, l = curves.length; i < l; i++) {
-          var values = curves[i].getValues(strokeSpace),
-            t = Curve.getNearestTime(values, strokePoint),
-            pt = Curve.getPoint(values, t),
-            distance = pt.getDistance(strokePoint)
+        const curves = this.getCurves()
+        let minDistance = Infinity
+        let nearest
+        for (i = 0, l = curves.length; i < l; i++) {
+          const values = curves[i].getValues(strokeSpace)
+          const t = Curve.getNearestTime(values, strokePoint)
+          const pt = Curve.getPoint(values, t)
+          const distance = pt.getDistance(strokePoint)
           if (distance < minDistance) {
             minDistance = distance
             loc = new CurveLocation(curves[i], t)
@@ -2200,7 +2217,7 @@ var Path = PathItem.extend(
         // stroke. But we still check for segments with the radius fallback
         // check if there is only one segment.
         // Stroke profiles are hit within the outline of their stroke:
-        var outline = (
+        const outline = (
           hitStroke &&
           this._hasStrokeProfile() &&
           this._getStrokeOutline()
@@ -2217,7 +2234,7 @@ var Path = PathItem.extend(
           // Now see if we're on a segment, and if so, check for its
           // stroke join / cap first. If not, do a normal radius check
           // for round strokes.
-          var time = loc.getTime()
+          const time = loc.getTime()
           if (time === 0 || time === 1 && numSegments > 1) {
             if (!checkSegmentStroke(loc.getSegment())) loc = null
           } else if (!isCloseEnough(nearest, strokePadding)) {
@@ -2227,8 +2244,8 @@ var Path = PathItem.extend(
         // If we have miter joins, we may not be done yet, since they can be
         // longer than the radius. Check for each segment within reach now.
         if (!loc && !outline && join === 'miter' && numSegments > 1) {
-          for (var i = 0; i < numSegments; i++) {
-            var segment = segments[i]
+          for (i = 0; i < numSegments; i++) {
+            const segment = segments[i]
             if (
               (
                 strokePoint.getDistance(
@@ -2285,7 +2302,7 @@ var Path = PathItem.extend(
       // getPointAt, getTangentAt, getNormalAt, getWeightedTangentAt,
       // getWeightedNormalAt, getCurvatureAt
       this[name + 'At'] = function (offset) {
-        var loc = this.getLocationAt(offset)
+        const loc = this.getLocationAt(offset)
         return loc && loc[name]()
       }
     },
@@ -2305,10 +2322,10 @@ var Path = PathItem.extend(
        * @return {?CurveLocation} the curve location of the specified point
        */
       getLocationOf: function (/* point */) {
-        var point = Point.read(arguments),
-          curves = this.getCurves()
-        for (var i = 0, l = curves.length; i < l; i++) {
-          var loc = curves[i].getLocationOf(point)
+        const point = Point.read(arguments)
+        const curves = this.getCurves()
+        for (let i = 0, l = curves.length; i < l; i++) {
+          const loc = curves[i].getLocationOf(point)
           if (loc) return loc
         }
         return null
@@ -2322,7 +2339,7 @@ var Path = PathItem.extend(
        * @return {?Number} the length of the path up to the specified point
        */
       getOffsetOf: function (/* point */) {
-        var loc = this.getLocationOf.apply(this, arguments)
+        const loc = this.getLocationOf.apply(this, arguments)
         return loc ? loc.getOffset() : null
       },
 
@@ -2336,11 +2353,11 @@ var Path = PathItem.extend(
        */
       getLocationAt: function (offset) {
         if (typeof offset === 'number') {
-          var curves = this.getCurves(),
-            length = 0
-          for (var i = 0, l = curves.length; i < l; i++) {
-            var start = length,
-              curve = curves[i]
+          const curves = this.getCurves()
+          let length = 0
+          for (let i = 0, l = curves.length; i < l; i++) {
+            const start = length
+            const curve = curves[i]
             length += curve.getLength()
             if (length > offset) {
               // Found the segment within which the length lies
@@ -2597,21 +2614,21 @@ var Path = PathItem.extend(
        * provided tangent
        */
       getOffsetsWithTangent: function (/* tangent */) {
-        var tangent = Point.read(arguments)
+        const tangent = Point.read(arguments)
         if (tangent.isZero()) {
           return []
         }
 
-        var offsets = []
-        var curveStart = 0
-        var curves = this.getCurves()
-        for (var i = 0, l = curves.length; i < l; i++) {
-          var curve = curves[i]
+        const offsets = []
+        let curveStart = 0
+        const curves = this.getCurves()
+        for (let i = 0, l = curves.length; i < l; i++) {
+          const curve = curves[i]
           // Calculate curves times at vector tangent...
-          var curveTimes = curve.getTimesWithTangent(tangent)
-          for (var j = 0, m = curveTimes.length; j < m; j++) {
+          const curveTimes = curve.getTimesWithTangent(tangent)
+          for (let j = 0, m = curveTimes.length; j < m; j++) {
             // ...and convert them to path offsets...
-            var offset = curveStart + curve.getOffsetAtTime(curveTimes[j])
+            const offset = curveStart + curve.getOffsetAtTime(curveTimes[j])
             // ...avoiding duplicates.
             if (offsets.indexOf(offset) < 0) {
               offsets.push(offset)
@@ -2637,17 +2654,17 @@ var Path = PathItem.extend(
 
     function drawHandles(ctx, segments, matrix, handleSize, segmentSize) {
       // Only draw the handles and segments whose size is positive.
-      var handleHalf = handleSize / 2,
-        half = segmentSize / 2,
-        miniSize = segmentSize - 2,
-        miniHalf = half - 1,
-        coords = new Array(6),
-        pX,
-        pY
+      const handleHalf = handleSize / 2
+      const half = segmentSize / 2
+      const miniSize = segmentSize - 2
+      const miniHalf = half - 1
+      const coords = new Array(6)
+      let pX
+      let pY
 
       function drawHandle(index) {
-        var hX = coords[index],
-          hY = coords[index + 1]
+        const hX = coords[index]
+        const hY = coords[index + 1]
         if (handleSize > 0 && (pX != hX || pY != hY)) {
           ctx.beginPath()
           ctx.moveTo(pX, pY)
@@ -2659,9 +2676,9 @@ var Path = PathItem.extend(
         }
       }
 
-      for (var i = 0, l = segments.length; i < l; i++) {
-        var segment = segments[i],
-          selection = segment._selection
+      for (let i = 0, l = segments.length; i < l; i++) {
+        const segment = segments[i]
+        const selection = segment._selection
         segment._transformCoordinates(matrix, coords)
         pX = coords[0]
         pY = coords[1]
@@ -2673,7 +2690,7 @@ var Path = PathItem.extend(
         // If the point is not selected, draw a white square that is 1px
         // smaller on all sides, but only draw it if size is big enough.
         if (miniSize > 0 && !(selection & /*#=*/ SegmentSelection.POINT)) {
-          var fillStyle = ctx.fillStyle
+          const fillStyle = ctx.fillStyle
           ctx.fillStyle = '#ffffff'
           ctx.fillRect(pX - miniHalf, pY - miniHalf, miniSize, miniSize)
           ctx.fillStyle = fillStyle
@@ -2682,20 +2699,22 @@ var Path = PathItem.extend(
     }
 
     function drawSegments(ctx, path, matrix) {
-      var segments = path._segments,
-        length = segments.length,
-        coords = new Array(6),
-        first = true,
-        curX,
-        curY,
-        prevX,
-        prevY,
-        inX,
-        inY,
-        outX,
-        outY
+      const segments = path._segments
+      const length = segments.length
+      const coords = new Array(6)
+      let first = true
+      let curX
+      let curY
+      let prevX
+      let prevY
+      let inX
+      let inY
+      let outX
+      let outY
 
       function drawSegment(segment) {
+        let handle
+
         // Optimise code when no matrix is provided by accessing segment
         // points hand handles directly, since this is the default when
         // drawing paths. Matrix is only used for drawing selections and
@@ -2705,7 +2724,7 @@ var Path = PathItem.extend(
           curX = coords[0]
           curY = coords[1]
         } else {
-          var point = segment._point
+          const point = segment._point
           curX = point._x
           curY = point._y
         }
@@ -2717,7 +2736,7 @@ var Path = PathItem.extend(
             inX = coords[2]
             inY = coords[3]
           } else {
-            var handle = segment._handleIn
+            handle = segment._handleIn
             inX = curX + handle._x
             inY = curY + handle._y
           }
@@ -2738,20 +2757,20 @@ var Path = PathItem.extend(
           outX = coords[4]
           outY = coords[5]
         } else {
-          var handle = segment._handleOut
+          handle = segment._handleOut
           outX = prevX + handle._x
           outY = prevY + handle._y
         }
       }
 
-      for (var i = 0; i < length; i++) drawSegment(segments[i])
+      for (let i = 0; i < length; i++) drawSegment(segments[i])
       // Close path by drawing first segment again
       if (path._closed && length > 0) drawSegment(segments[0])
     }
 
     return {
       _draw: function (ctx, param, viewMatrix, strokeMatrix) {
-        var dontPaint = param.dontFinish || param.clip
+        const dontPaint = param.dontFinish || param.clip
         if (!param.dontStart) ctx.beginPath()
         if (this.hasFill() || this.hasStroke() || dontPaint) {
           // Prepare the canvas path if we have any situation that
@@ -2767,9 +2786,9 @@ var Path = PathItem.extend(
         drawSegments(ctx, this, matrix)
         // Now stroke it and draw its handles:
         ctx.stroke()
-        var settings = paper.settings,
-          handleSize = settings.handleSize,
-          segmentSize = settings.segmentSize
+        const settings = paper.settings
+        const handleSize = settings.handleSize
+        const segmentSize = settings.segmentSize
         // segmentSize is null by default, which Base.pick() keeps:
         drawHandles(
           ctx,
@@ -2788,7 +2807,7 @@ var Path = PathItem.extend(
      * command is required first.
      */
     function getCurrentSegment(that) {
-      var segments = that._segments
+      const segments = that._segments
       if (!segments.length) throw new Error('Use a moveTo() command first')
       return segments[segments.length - 1]
     }
@@ -2799,22 +2818,22 @@ var Path = PathItem.extend(
      * `matrix` maps `center` and `vector` from the unit circle to an ellipse.
      */
     function addArc(that, center, vector, extent, to, matrix) {
-      var current = getCurrentSegment(that),
-        epsilon = /*#=*/ Numerical.ANGULAR_EPSILON,
-        // Calculate amount of segments required to approximate over
-        // `extend` degrees (extend / 90), but prevent ceil() from
-        // rounding up small imprecisions by subtracting epsilon.
-        count = Math.ceil((Math.abs(extent) - epsilon) / 90)
+      const current = getCurrentSegment(that)
+      const epsilon = /*#=*/ Numerical.ANGULAR_EPSILON
+      // Calculate amount of segments required to approximate over
+      // `extend` degrees (extend / 90), but prevent ceil() from
+      // rounding up small imprecisions by subtracting epsilon.
+      const count = Math.ceil((Math.abs(extent) - epsilon) / 90)
       if (count) {
-        var inc = extent / count,
-          half = inc * Math.PI / 360,
-          z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
-          segments = []
-        for (var i = 0; i <= count; i++) {
+        const inc = extent / count
+        const half = inc * Math.PI / 360
+        const z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half))
+        const segments = []
+        for (let i = 0; i <= count; i++) {
           // Explicitly use to point for last segment, since depending
           // on values the calculation adds imprecision:
-          var pt = to,
-            out = null
+          let pt = to
+          let out = null
           if (i < count) {
             out = vector.rotate(90).multiply(z)
             if (matrix) {
@@ -2829,7 +2848,7 @@ var Path = PathItem.extend(
             current.setHandleOut(out)
           } else {
             // Add new Segment
-            var _in = vector.rotate(-90).multiply(z)
+            let _in = vector.rotate(-90).multiply(z)
             if (matrix) {
               _in = matrix._transformPoint(vector.add(_in)).subtract(pt)
             }
@@ -2853,7 +2872,7 @@ var Path = PathItem.extend(
         // moveTo should only be called at the beginning of paths. But it
         // can ce called again if there is nothing drawn yet, in which case
         // the first segment gets readjusted.
-        var segments = this._segments
+        const segments = this._segments
         if (segments.length === 1) this.removeSegment(0)
         // Let's not be picky about calling moveTo() when not at the
         // beginning of a path, just bail out:
@@ -2870,12 +2889,12 @@ var Path = PathItem.extend(
       },
 
       cubicCurveTo: function (/* handle1, handle2, to */) {
-        var args = arguments,
-          handle1 = Point.read(args),
-          handle2 = Point.read(args),
-          to = Point.read(args),
-          // First modify the current segment:
-          current = getCurrentSegment(this)
+        const args = arguments
+        const handle1 = Point.read(args)
+        const handle2 = Point.read(args)
+        const to = Point.read(args)
+        // First modify the current segment:
+        const current = getCurrentSegment(this)
         // Convert to relative values:
         current.setHandleOut(handle1.subtract(current._point))
         // And add the new segment, with handleIn set to c2
@@ -2883,10 +2902,10 @@ var Path = PathItem.extend(
       },
 
       quadraticCurveTo: function (/* handle, to */) {
-        var args = arguments,
-          handle = Point.read(args),
-          to = Point.read(args),
-          current = getCurrentSegment(this)._point
+        const args = arguments
+        const handle = Point.read(args)
+        const to = Point.read(args)
+        const current = getCurrentSegment(this)._point
         // This is exact:
         // If we have the three quad points: A E D,
         // and the cubic is A B C D,
@@ -2900,18 +2919,18 @@ var Path = PathItem.extend(
       },
 
       curveTo: function (/* through, to, time */) {
-        var args = arguments,
-          through = Point.read(args),
-          to = Point.read(args),
-          t = Base.pick(Base.read(args), 0.5),
-          t1 = 1 - t,
-          current = getCurrentSegment(this)._point,
-          // handle = (through - (1 - t)^2 * current - t^2 * to) /
-          // (2 * (1 - t) * t)
-          handle = through
-            .subtract(current.multiply(t1 * t1))
-            .subtract(to.multiply(t * t))
-            .divide(2 * t * t1)
+        const args = arguments
+        const through = Point.read(args)
+        const to = Point.read(args)
+        const t = Base.pick(Base.read(args), 0.5)
+        const t1 = 1 - t
+        const current = getCurrentSegment(this)._point
+        // handle = (through - (1 - t)^2 * current - t^2 * to) /
+        // (2 * (1 - t) * t)
+        const handle = through
+          .subtract(current.multiply(t1 * t1))
+          .subtract(to.multiply(t * t))
+          .divide(2 * t * t1)
         if (handle.isNaN())
           throw new Error(
             'Cannot put a curve through points with parameter = ' + t
@@ -2923,31 +2942,35 @@ var Path = PathItem.extend(
         /* to, clockwise | through, to
                 | to, radius, rotation, clockwise, large */
       ) {
+        let through
+        let clockwise
+        let middle
+
         // Get the start point:
-        var args = arguments,
-          abs = Math.abs,
-          sqrt = Math.sqrt,
-          from = getCurrentSegment(this)._point,
-          to = Point.read(args),
-          through,
-          // Peek at next value to see if it's clockwise, with true as the
-          // default value.
-          peek = Base.peek(args),
-          clockwise = Base.pick(peek, true),
-          center,
-          extent,
-          vector,
-          matrix
+        const args = arguments
+        const abs = Math.abs
+        const sqrt = Math.sqrt
+        const from = getCurrentSegment(this)._point
+        let to = Point.read(args)
+
+        // Peek at next value to see if it's clockwise, with true as the
+        // default value.
+        const peek = Base.peek(args)
+        clockwise = Base.pick(peek, true)
+        let center
+        let extent
+        let vector
+        let matrix
         // We're handling three different approaches to drawing arcs in one
         // large function:
         if (typeof clockwise === 'boolean') {
           // #1: arcTo(to, clockwise)
-          var middle = from.add(to).divide(2),
-            through = middle.add(
-              middle.subtract(from).rotate(
-                clockwise ? -90 : 90
-              )
+          middle = from.add(to).divide(2)
+          through = middle.add(
+            middle.subtract(from).rotate(
+              clockwise ? -90 : 90
             )
+          )
         } else if (Base.remain(args) <= 2) {
           // #2: arcTo(through, to)
           through = to
@@ -2956,8 +2979,8 @@ var Path = PathItem.extend(
           // #3: arcTo(to, radius, rotation, clockwise, large)
           // Draw arc in SVG style, but only if `from` and `to` are not
           // equal (#1613).
-          var radius = Size.read(args),
-            isZero = Numerical.isZero
+          const radius = Size.read(args)
+          const isZero = Numerical.isZero
           // If rx = 0 or ry = 0 then this arc is treated as a
           // straight line joining the endpoints.
           // NOTE: radius.isZero() would require both values to be 0.
@@ -2965,21 +2988,21 @@ var Path = PathItem.extend(
             return this.lineTo(to)
           // See for an explanation of the following calculations:
           // https://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
-          var rotation = Base.read(args),
-            clockwise = !!Base.read(args),
-            large = !!Base.read(args),
-            middle = from.add(to).divide(2),
-            pt = from.subtract(middle).rotate(-rotation),
-            x = pt.x,
-            y = pt.y,
-            rx = abs(radius.width),
-            ry = abs(radius.height),
-            rxSq = rx * rx,
-            rySq = ry * ry,
-            xSq = x * x,
-            ySq = y * y
+          const rotation = Base.read(args)
+          clockwise = !!Base.read(args)
+          const large = !!Base.read(args)
+          middle = from.add(to).divide(2)
+          const pt = from.subtract(middle).rotate(-rotation)
+          const x = pt.x
+          const y = pt.y
+          let rx = abs(radius.width)
+          let ry = abs(radius.height)
+          let rxSq = rx * rx
+          let rySq = ry * ry
+          const xSq = x * x
+          const ySq = y * y
           // "...ensure radii are large enough"
-          var factor = sqrt(xSq / rxSq + ySq / rySq)
+          let factor = sqrt(xSq / rxSq + ySq / rySq)
           if (factor > 1) {
             rx *= factor
             ry *= factor
@@ -3018,18 +3041,18 @@ var Path = PathItem.extend(
           // Construct the two perpendicular middle lines to
           // (from, through) and (through, to), and intersect them to get
           // the center.
-          var l1 = new Line(
-              from.add(through).divide(2),
-              through.subtract(from).rotate(90),
-              true
-            ),
-            l2 = new Line(
-              through.add(to).divide(2),
-              to.subtract(through).rotate(90),
-              true
-            ),
-            line = new Line(from, to),
-            throughSide = line.getSide(through)
+          const l1 = new Line(
+            from.add(through).divide(2),
+            through.subtract(from).rotate(90),
+            true
+          )
+          const l2 = new Line(
+            through.add(to).divide(2),
+            to.subtract(through).rotate(90),
+            true
+          )
+          const line = new Line(from, to)
+          const throughSide = line.getSide(through)
           center = l1.intersect(l2, true)
           // If the two lines are collinear, there cannot be an arc as the
           // circle is infinitely big and has no center point. If side is
@@ -3044,7 +3067,7 @@ var Path = PathItem.extend(
           }
           vector = from.subtract(center)
           extent = vector.getDirectedAngle(to.subtract(center))
-          var centerSide = line.getSide(center, true)
+          const centerSide = line.getSide(center, true)
           if (centerSide === 0) {
             // If the center is lying on the line, we might have gotten
             // the wrong sign for extent above. Use the sign of the side
@@ -3061,35 +3084,35 @@ var Path = PathItem.extend(
       },
 
       arcAround: function (/* center, angle */) {
-        var args = arguments,
-          center = Point.read(args),
-          angle = Base.read(args),
-          vector = getCurrentSegment(this)._point.subtract(center)
+        const args = arguments
+        const center = Point.read(args)
+        const angle = Base.read(args)
+        const vector = getCurrentSegment(this)._point.subtract(center)
         addArc(this, center, vector, angle, center.add(vector.rotate(angle)))
       },
 
       arcTowards: function (/* to */) {
-        var to = Point.read(arguments),
-          current = getCurrentSegment(this),
-          previous = current.getPrevious(),
-          from = current._point,
-          tangent = previous
-            ? new Curve(previous, current).getTangentAtTime(1)
-            : new Point(),
-          normal = tangent.rotate(90),
-          vector = to.subtract(from),
-          // The distance of `to` from the tangent, signed by its side:
-          distance = vector.dot(normal)
+        const to = Point.read(arguments)
+        const current = getCurrentSegment(this)
+        const previous = current.getPrevious()
+        const from = current._point
+        const tangent = previous
+          ? new Curve(previous, current).getTangentAtTime(1)
+          : new Point()
+        const normal = tangent.rotate(90)
+        const vector = to.subtract(from)
+        // The distance of `to` from the tangent, signed by its side:
+        const distance = vector.dot(normal)
         if (!Numerical.isZero(distance)) {
           // The center lies on the normal, as far from `from` as from
           // `to`, and the arc continues in the direction of the tangent:
-          var center = from.add(
-              normal.multiply(
-                vector.dot(vector) / (2 * distance)
-              )
-            ),
-            start = from.subtract(center),
-            extent = start.getDirectedAngle(to.subtract(center))
+          const center = from.add(
+            normal.multiply(
+              vector.dot(vector) / (2 * distance)
+            )
+          )
+          const start = from.subtract(center)
+          let extent = start.getDirectedAngle(to.subtract(center))
           if (extent * distance < 0) extent += distance > 0 ? 360 : -360
           addArc(this, center, start, extent, to)
         } else if (vector.dot(tangent) > 0) {
@@ -3103,26 +3126,26 @@ var Path = PathItem.extend(
       },
 
       lineBy: function (/* to */) {
-        var to = Point.read(arguments),
-          current = getCurrentSegment(this)._point
+        const to = Point.read(arguments)
+        const current = getCurrentSegment(this)._point
         this.lineTo(current.add(to))
       },
 
       curveBy: function (/* through, to, parameter */) {
-        var args = arguments,
-          through = Point.read(args),
-          to = Point.read(args),
-          parameter = Base.read(args),
-          current = getCurrentSegment(this)._point
+        const args = arguments
+        const through = Point.read(args)
+        const to = Point.read(args)
+        const parameter = Base.read(args)
+        const current = getCurrentSegment(this)._point
         this.curveTo(current.add(through), current.add(to), parameter)
       },
 
       cubicCurveBy: function (/* handle1, handle2, to */) {
-        var args = arguments,
-          handle1 = Point.read(args),
-          handle2 = Point.read(args),
-          to = Point.read(args),
-          current = getCurrentSegment(this)._point
+        const args = arguments
+        const handle1 = Point.read(args)
+        const handle2 = Point.read(args)
+        const to = Point.read(args)
+        const current = getCurrentSegment(this)._point
         this.cubicCurveTo(
           current.add(handle1),
           current.add(handle2),
@@ -3131,21 +3154,21 @@ var Path = PathItem.extend(
       },
 
       quadraticCurveBy: function (/* handle, to */) {
-        var args = arguments,
-          handle = Point.read(args),
-          to = Point.read(args),
-          current = getCurrentSegment(this)._point
+        const args = arguments
+        const handle = Point.read(args)
+        const to = Point.read(args)
+        const current = getCurrentSegment(this)._point
         this.quadraticCurveTo(current.add(handle), current.add(to))
       },
 
       // TODO: Implement version for: (to, radius, rotation, clockwise, large)
       arcBy: function (/* to, clockwise | through, to */) {
-        var args = arguments,
-          current = getCurrentSegment(this)._point,
-          point = current.add(Point.read(args)),
-          // Peek at next value to see if it's clockwise, with true as
-          // default value.
-          clockwise = Base.pick(Base.peek(args), true)
+        const args = arguments
+        const current = getCurrentSegment(this)._point
+        const point = current.add(Point.read(args))
+        // Peek at next value to see if it's clockwise, with true as
+        // default value.
+        const clockwise = Base.pick(Base.peek(args), true)
         if (typeof clockwise === 'boolean') {
           this.arcTo(point, clockwise)
         } else {
@@ -3169,7 +3192,7 @@ var Path = PathItem.extend(
     // additional ones after.
 
     _getBounds: function (matrix, options) {
-      var method = options.handle
+      const method = options.handle
         ? 'getHandleBounds'
         : options.stroke
           ? 'getStrokeBounds'
@@ -3195,20 +3218,20 @@ var Path = PathItem.extend(
         options,
         strokePadding
       ) {
-        var first = segments[0]
+        const first = segments[0]
         // If there are no segments, return "empty" rectangle, just like groups,
         // since #bounds is assumed to never return null.
         if (!first) return new Rectangle()
-        var coords = new Array(6),
-          // Make coordinates for first segment available in prevCoords.
-          prevCoords = first._transformCoordinates(matrix, new Array(6)),
-          min = prevCoords.slice(0, 2), // Start with values of first point
-          max = min.slice(), // clone
-          roots = new Array(2)
+        let coords = new Array(6)
+        // Make coordinates for first segment available in prevCoords.
+        let prevCoords = first._transformCoordinates(matrix, new Array(6))
+        const min = prevCoords.slice(0, 2) // Start with values of first point
+        const max = min.slice() // clone
+        const roots = new Array(2)
 
         function processSegment(segment) {
           segment._transformCoordinates(matrix, coords)
-          for (var i = 0; i < 2; i++) {
+          for (let i = 0; i < 2; i++) {
             Curve._addBounds(
               prevCoords[i], // prev.point
               prevCoords[i + 4], // prev.handleOut
@@ -3222,12 +3245,12 @@ var Path = PathItem.extend(
             )
           }
           // Swap coordinate buffers.
-          var tmp = prevCoords
+          const tmp = prevCoords
           prevCoords = coords
           coords = tmp
         }
 
-        for (var i = 1, l = segments.length; i < l; i++)
+        for (let i = 1, l = segments.length; i < l; i++)
           processSegment(segments[i])
         if (closed) processSegment(first)
         return new Rectangle(min[0], min[1], max[0] - min[0], max[1] - min[1])
@@ -3239,31 +3262,31 @@ var Path = PathItem.extend(
        * @private
        */
       getStrokeBounds: function (segments, closed, path, matrix, options) {
-        var style = path.getStyle(),
-          stroke = style.hasStroke(),
-          strokeRadius = style.getStrokeWidth() / 2,
-          strokeMatrix = stroke && path._getStrokeMatrix(matrix, options),
-          strokePadding = (
-            stroke &&
-            Matrix._getCircleExtents(strokeRadius, strokeMatrix)
-          ),
-          // Start with normal path bounds with added stroke padding. Then we
-          // only need to look at each segment and handle join / cap / miter.
-          bounds = Path.getBounds(
-            segments,
-            closed,
-            path,
-            matrix,
-            options,
-            strokePadding
-          )
+        const style = path.getStyle()
+        const stroke = style.hasStroke()
+        const strokeRadius = style.getStrokeWidth() / 2
+        const strokeMatrix = stroke && path._getStrokeMatrix(matrix, options)
+        const strokePadding = (
+          stroke &&
+          Matrix._getCircleExtents(strokeRadius, strokeMatrix)
+        )
+        // Start with normal path bounds with added stroke padding. Then we
+        // only need to look at each segment and handle join / cap / miter.
+        let bounds = Path.getBounds(
+          segments,
+          closed,
+          path,
+          matrix,
+          options,
+          strokePadding
+        )
         if (!stroke) return bounds
-        var join = style.getStrokeJoin(),
-          cap = style.getStrokeCap(),
-          miterLimit = style.getMiterLimit(),
-          // Create a rectangle of padding size, used for union with bounds
-          // further down
-          joinBounds = new Rectangle(new Size(strokePadding).multiply(2))
+        const join = style.getStrokeJoin()
+        const cap = style.getStrokeCap()
+        const miterLimit = style.getMiterLimit()
+        // Create a rectangle of padding size, used for union with bounds
+        // further down
+        const joinBounds = new Rectangle(new Size(strokePadding).multiply(2))
 
         // helper function that is passed to _addBevelJoin() and _addSquareCap()
         // to handle the point transformations.
@@ -3312,9 +3335,9 @@ var Path = PathItem.extend(
           }
         }
 
-        var length = segments.length - (closed ? 0 : 1)
+        const length = segments.length - (closed ? 0 : 1)
         if (length > 0) {
-          for (var i = 1; i < length; i++) {
+          for (let i = 1; i < length; i++) {
             addJoin(segments[i], join)
           }
           if (closed) {
@@ -3337,11 +3360,11 @@ var Path = PathItem.extend(
        * the curve's own space.
        */
       _getStrokeNormal: function (curve, time, radius, matrix, strokeMatrix) {
-        var mx = matrix ? matrix._shiftless() : new Matrix(),
-          inverse = strokeMatrix && strokeMatrix.inverted(),
-          tangent = curve.getTangentAtTime(time).transform(
-            inverse ? inverse.append(mx) : mx
-          )
+        const mx = matrix ? matrix._shiftless() : new Matrix()
+        const inverse = strokeMatrix && strokeMatrix.inverted()
+        const tangent = curve.getTangentAtTime(time).transform(
+          inverse ? inverse.append(mx) : mx
+        )
         return new Point(tangent.y, -tangent.x).normalize(radius)
       },
 
@@ -3360,24 +3383,24 @@ var Path = PathItem.extend(
         // vectors to support Style#strokeScaling. The join is constructed
         // where the stroke is drawn, see _getStrokeNormal(), and its vectors
         // transformed from there.
-        var curve2 = segment.getCurve(),
-          curve1 = curve2.getPrevious(),
-          point = curve2.getPoint1().transform(matrix),
-          normal1 = Path._getStrokeNormal(
-            curve1,
-            1,
-            radius,
-            matrix,
-            strokeMatrix
-          ),
-          normal2 = Path._getStrokeNormal(
-            curve2,
-            0,
-            radius,
-            matrix,
-            strokeMatrix
-          ),
-          angle = normal1.getDirectedAngle(normal2)
+        const curve2 = segment.getCurve()
+        const curve1 = curve2.getPrevious()
+        const point = curve2.getPoint1().transform(matrix)
+        let normal1 = Path._getStrokeNormal(
+          curve1,
+          1,
+          radius,
+          matrix,
+          strokeMatrix
+        )
+        let normal2 = Path._getStrokeNormal(
+          curve2,
+          0,
+          radius,
+          matrix,
+          strokeMatrix
+        )
+        const angle = normal1.getDirectedAngle(normal2)
         if (angle < 0 || angle >= 180) {
           normal1 = normal1.negate()
           normal2 = normal2.negate()
@@ -3386,7 +3409,7 @@ var Path = PathItem.extend(
         addPoint(point.add(normal1.transform(strokeMatrix)))
         if (join === 'miter') {
           // Intersect the two lines
-          var corner = new Line(
+          const corner = new Line(
             normal1,
             new Point(-normal1.y, normal1.x),
             true
@@ -3417,20 +3440,20 @@ var Path = PathItem.extend(
         // Calculate the corner points of butt and square caps, using different
         // matrices to transform segment points and stroke vectors to support
         // Style#strokeScaling.
-        var point = segment._point.transform(matrix),
-          loc = segment.getLocation(),
-          time = loc.getTime(),
-          // Checking the time for 0 is to see whether this is the first or
-          // the last segment of the open path, in order to determine in which
-          // direction to flip the normal.
-          vector = Path._getStrokeNormal(
-            loc.getCurve(),
-            time,
-            time === 0 ? radius : -radius,
-            matrix,
-            strokeMatrix
-          ),
-          normal = vector.transform(strokeMatrix)
+        let point = segment._point.transform(matrix)
+        const loc = segment.getLocation()
+        const time = loc.getTime()
+        // Checking the time for 0 is to see whether this is the first or
+        // the last segment of the open path, in order to determine in which
+        // direction to flip the normal.
+        const vector = Path._getStrokeNormal(
+          loc.getCurve(),
+          time,
+          time === 0 ? radius : -radius,
+          matrix,
+          strokeMatrix
+        )
+        const normal = vector.transform(strokeMatrix)
         // For square caps, we need to step away from point in the direction of
         // the tangent, which is the normal rotated before transforming it, as
         // the matrices don't preserve angles (#2065).
@@ -3453,14 +3476,14 @@ var Path = PathItem.extend(
       getHandleBounds: function (segments, closed, path, matrix, options) {
         // If there are no segments, return "empty" rectangle, as getBounds().
         if (!segments.length) return new Rectangle()
-        var style = path.getStyle(),
-          stroke = options.stroke && style.hasStroke(),
-          strokePadding,
-          joinPadding
+        const style = path.getStyle()
+        const stroke = options.stroke && style.hasStroke()
+        let strokePadding
+        let joinPadding
         if (stroke) {
-          var strokeMatrix = path._getStrokeMatrix(matrix, options),
-            strokeRadius = style.getStrokeWidth() / 2,
-            joinRadius = strokeRadius
+          const strokeMatrix = path._getStrokeMatrix(matrix, options)
+          const strokeRadius = style.getStrokeWidth() / 2
+          let joinRadius = strokeRadius
           if (style.getStrokeJoin() === 'miter')
             joinRadius = strokeRadius * style.getMiterLimit()
           if (style.getStrokeCap() === 'square')
@@ -3468,25 +3491,25 @@ var Path = PathItem.extend(
           strokePadding = Matrix._getCircleExtents(strokeRadius, strokeMatrix)
           joinPadding = Matrix._getCircleExtents(joinRadius, strokeMatrix)
         }
-        var coords = new Array(6),
-          x1 = Infinity,
-          x2 = -x1,
-          y1 = x1,
-          y2 = x2
-        for (var i = 0, l = segments.length; i < l; i++) {
-          var segment = segments[i]
+        const coords = new Array(6)
+        let x1 = Infinity
+        let x2 = -x1
+        let y1 = x1
+        let y2 = x2
+        for (let i = 0, l = segments.length; i < l; i++) {
+          const segment = segments[i]
           segment._transformCoordinates(matrix, coords)
-          for (var j = 0; j < 6; j += 2) {
+          for (let j = 0; j < 6; j += 2) {
             // Use different padding for points or handles
-            var padding = !j ? joinPadding : strokePadding,
-              paddingX = padding ? padding[0] : 0,
-              paddingY = padding ? padding[1] : 0,
-              x = coords[j],
-              y = coords[j + 1],
-              xn = x - paddingX,
-              xx = x + paddingX,
-              yn = y - paddingY,
-              yx = y + paddingY
+            const padding = !j ? joinPadding : strokePadding
+            const paddingX = padding ? padding[0] : 0
+            const paddingY = padding ? padding[1] : 0
+            const x = coords[j]
+            const y = coords[j + 1]
+            const xn = x - paddingX
+            const xx = x + paddingX
+            const yn = y - paddingY
+            const yx = y + paddingY
             if (xn < x1) x1 = xn
             if (xx > x2) x2 = xx
             if (yn < y1) y1 = yn
