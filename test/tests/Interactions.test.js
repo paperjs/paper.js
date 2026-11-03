@@ -800,6 +800,35 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     equals(Key.isDown('space'), false, `Key.isDown('space')`)
   })
 
+  test('Key events are released when the window loses focus', () => {
+    equals(
+      getKeyEvents(() => {
+        triggerKeyEvent('keydown', 'a')
+        triggerKeyEvent('keypress', 'a')
+        window.dispatchEvent(new window.FocusEvent('blur'))
+      }).join(', '),
+      'keydown a "a", keyup a "a"'
+    )
+    equals(Key.isDown('a'), false)
+  })
+
+  test('Key events are released with meta on macOS', () => {
+    // macOS sends no keyup for keys released while meta is down, so they're
+    // released after meta. Simulate it in any browser:
+    const { agent } = paper
+    const { mac } = agent
+    agent.mac = true
+    equals(
+      getKeyEvents(() => {
+        triggerKeyEvent('keydown', 'Meta', { metaKey: true })
+        triggerKeyEvent('keydown', 'a', { metaKey: true })
+        triggerKeyEvent('keyup', 'Meta')
+      }).join(', '),
+      'keydown meta +meta, keydown a "a" +meta, keyup a "a", keyup meta'
+    )
+    agent.mac = mac
+  })
+
   test('Key events with keypress', () => {
     equals(
       getKeyEvents(() => {

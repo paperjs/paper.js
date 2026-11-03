@@ -11,7 +11,7 @@
  */
 
 import { describe, expect } from 'vitest'
-import { Path, Point, Segment, Size } from 'paper'
+import { Matrix, Path, Point, Segment, Size } from 'paper'
 import { equals, test } from '../helpers.js'
 
 describe('Segment', () => {
@@ -198,5 +198,50 @@ describe('Segment', () => {
     equals(() => path.segments[0].point.selected, true)
     path.segments[0].point.selected = false
     equals(() => path.segments[0].point.selected, false)
+  })
+
+  test('Segment#smooth() geometrically, and unknown types', () => {
+    const path = new Path([[0, 0], [100, 50], [300, 0]])
+    const segment = path.segments[1]
+    segment.smooth({ type: 'geometric', factor: 0.5 })
+    // The handles run along the line between the neighbors, scaled by the
+    // distances to them:
+    equals(segment.handleIn.isCollinear(new Point(300, 0)), true)
+    equals(
+      segment.handleOut.length / segment.handleIn.length,
+      path.segments[2].point.getDistance(segment.point) /
+      path.segments[0].point.getDistance(segment.point),
+      null,
+      { tolerance: 1e-9 }
+    )
+    expect(() => segment.smooth({ type: 'unknown' })).toThrow(
+      `Smoothing method 'unknown' not supported.`
+    )
+  })
+
+  test('Segment#clearHandles(), #isFirst(), #isLast() and #transform()', () => {
+    const path = new Path([
+      [[0, 0], null, [10, 0]],
+      [[50, 50], [-10, 0], [10, 0]],
+      [[100, 0], [-10, 0], null]
+    ])
+    const [first, middle, last] = path.segments
+    equals([first.isFirst(), first.isLast()], [true, false])
+    equals([last.isFirst(), last.isLast()], [false, true])
+    equals(new Segment().isLast(), false, 'without a path')
+    middle.clearHandles()
+    equals([middle.handleIn, middle.handleOut], [new Point(), new Point()])
+    first.transform(new Matrix().translate(5, 5))
+    equals([first.point, first.handleOut], [new Point(5, 5), new Point(10, 0)])
+  })
+
+  test('Selected segments keep their selection through JSON', () => {
+    const path = new Path([[0, 0], [100, 0]])
+    path.segments[1].selected = true
+    const copy = new Path().importJSON(path.exportJSON())
+    equals(
+      copy.segments.map(segment => segment.selected),
+      [false, true]
+    )
   })
 })

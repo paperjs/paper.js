@@ -2086,4 +2086,22 @@ describe('Item', () => {
       'paper.setup() or create a Project first.'
     )
   })
+
+  test('Item#on() and #off() with objects, and #once()', () => {
+    const path = new Path()
+    const calls = []
+    const handlers = {
+      custom: () => calls.push('custom'),
+      other: () => calls.push('other')
+    }
+    path.on(handlers)
+    path.emit('custom')
+    path.emit('other')
+    path.off(handlers)
+    path.emit('custom')
+    path.once('custom', () => calls.push('once'))
+    path.emit('custom')
+    path.emit('custom')
+    equals(calls, ['custom', 'other', 'once'])
+  })
 })
