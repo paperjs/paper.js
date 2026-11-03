@@ -17,6 +17,7 @@ import paper, {
   Gradient,
   Group,
   Path,
+  PatternDefinition,
   Point,
   PointText,
   Project,
@@ -144,6 +145,79 @@ describe('JSON', () => {
     p2.rotate(-30)
 
     testExportImportJSON(paper.project)
+  })
+
+  test('Symbol items write their definition as definition', () => {
+    const definition = new SymbolDefinition(
+      new Path.Rectangle({ point: [0, 0], size: [10, 10], fillColor: 'red' })
+    )
+    const json = definition.place([100, 100]).exportJSON({ asString: false }),
+      props = json[1][1]
+    equals('definition' in props && !('symbol' in props), true)
+    // JSON that writes it as symbol, as before, still imports:
+    props.symbol = props.definition
+    delete props.definition
+    const item = new Project().importJSON(json)
+    equals(item.className, 'SymbolItem')
+    equals(item.definition.item.bounds, new Rectangle(-5, -5, 10, 10))
+    equals(item.position, new Point(100, 100))
+  })
+
+  test('Symbol and pattern definitions write their names', () => {
+    const symbol = new SymbolDefinition(
+      new Path.Rectangle({ point: [0, 0], size: [10, 10], fillColor: 'red' })
+    )
+    symbol.name = 'Star'
+    const pattern = new PatternDefinition(
+      new Path.Rectangle({ point: [0, 0], size: [5, 5], fillColor: 'red' }),
+      { name: 'Dots' }
+    )
+    const placed = new Project().importJSON(
+      symbol.place([100, 100]).exportJSON()
+    )
+    equals(placed.definition.name, 'Star')
+    equals(placed.definition.item.bounds, new Rectangle(-5, -5, 10, 10))
+    const filled = new Project().importJSON(
+      new Path.Rectangle({
+        point: [0, 0],
+        size: [40, 40],
+        fillColor: { pattern }
+      }).exportJSON()
+    )
+    equals(filled.fillColor.pattern.name, 'Dots')
+    equals(filled.fillColor.pattern.spacing, new Size(0, 0))
+  })
+
+  test('Symbol definitions take dontCenter in their options', () => {
+    const item = new Project().importJSON([
+      'SymbolItem',
+      {
+        definition: [
+          'SymbolDefinition',
+          ['Path', { segments: [[0, 0], [10, 0], [10, 10]] }],
+          { name: 'Star', dontCenter: true }
+        ]
+      }
+    ])
+    const definition = item.definition
+    equals(definition.name, 'Star')
+    equals(definition.item.bounds, new Rectangle(0, 0, 10, 10))
+    equals('dontCenter' in definition, false)
+  })
+
+  test('Symbol definitions keep their items in place', () => {
+    const centered = new SymbolDefinition(
+      new Path.Rectangle({ point: [0, 0], size: [10, 10] })
+    )
+    equals(centered.exportJSON({ asString: false }).length, 2)
+    const definition = new SymbolDefinition(
+      new Path.Rectangle({ point: [0, 0], size: [10, 10] }),
+      true
+    )
+    const item = new Project().importJSON(
+      definition.place([100, 100]).exportJSON()
+    )
+    equals(item.definition.item.bounds, new Rectangle(0, 0, 10, 10))
   })
 
   test('PointText testing', () => {

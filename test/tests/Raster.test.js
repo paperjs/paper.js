@@ -44,6 +44,16 @@ describe('Raster', () => {
     equals(raster.size, new Size(640, 480), true)
   })
 
+  test('raster.size keeps the content, scaled to the new size', () => {
+    const raster = new Raster({ size: [400, 400], insert: false })
+    const ctx = raster.getContext(true)
+    ctx.fillStyle = '#ff0000'
+    ctx.fillRect(0, 0, 400, 400)
+    raster.size = [200, 100]
+    equals(raster.size, new Size(200, 100), true)
+    equals(raster.getPixel(100, 50), new Color(1, 0, 0, 1), 'red')
+  })
+
   test('Create a raster from a URL', assert => {
     const done = assert.async()
     const raster = new Raster('assets/paper-js.gif')

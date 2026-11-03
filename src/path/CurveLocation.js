@@ -343,11 +343,15 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                 // of both locations to determine if they're in the same spot,
                 // taking into account the wrapping around path ends. This is
                 // necessary to avoid issues wit CURVETIME_EPSILON imprecisions.
+                // The offsets differ at least by how far the points are apart,
+                // both ways around the path, so we only measure them if close:
                 var abs = Math.abs,
                     epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
-                    diff = abs(this.getOffset() - loc.getOffset()),
                     i1 = !_ignoreOther && this._intersection,
-                    i2 = !_ignoreOther && loc._intersection;
+                    i2 = !_ignoreOther && loc._intersection,
+                    diff = this.getPoint().isClose(loc.getPoint(), epsilon)
+                        ? abs(this.getOffset() - loc.getOffset())
+                        : Infinity;
                 res = (diff < epsilon
                         || p1 && abs(p1.getLength() - diff) < epsilon)
                     // Compare the the other location, but prevent endless

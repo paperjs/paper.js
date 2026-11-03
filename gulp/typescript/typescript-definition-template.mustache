@@ -60,6 +60,7 @@ declare namespace paper {
             destination: PointLike,
             highlight?: PointLike
         }
+        | { pattern: PatternDefinition, matrix?: Matrix }
     )
 
     type GradientStopLike = GradientStop | ColorLike | [ ColorLike, number ]

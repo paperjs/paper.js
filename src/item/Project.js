@@ -35,6 +35,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     _list: 'projects',
     _reference: 'project',
     _compactSerialize: true, // Never include the class name for Project
+    // Also for all projects, see Project.onActivate:
+    _events: {
+        onActivate: { classLevel: true },
+        onDeactivate: { classLevel: true }
+    },
 
     // TODO: Add arguments to define pages
     /**
@@ -65,8 +70,13 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
                 element || CanvasProvider.getCanvas(1, 1));
         this._selectionItems = {};
         this._selectionCount = 0;
+        // See Project#hasDrawHandlers():
+        this._drawCount = 0;
         // See Item#draw() for an explanation of _updateVersion
         this._updateVersion = 0;
+        // Counts the changes that make all buffers stale, as no item reports
+        // them, see Group#buffered:
+        this._bufferVersion = 0;
     },
 
     _serialize: function(options, dictionary) {
@@ -95,15 +105,24 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
             }
         }
         // Log changes of inserted items, see #trackChanges:
+        if (item && item.isInserted())
+            this._logChange('item', item, flags);
+    },
+
+    // Logs the changes of items and definitions, each once with its flags
+    // combined, as `{ item, flags }` or `{ definition, flags }`:
+    _logChange: function(name, object, flags) {
         var changes = this._changes;
-        if (changes && item && item.isInserted()) {
+        if (changes) {
             var changesById = this._changesById,
-                id = item._id,
+                id = object._id,
                 entry = changesById[id];
             if (entry) {
                 entry.flags |= flags;
             } else {
-                changes.push(changesById[id] = { item: item, flags: flags });
+                entry = changesById[id] = { flags: flags };
+                entry[name] = object;
+                changes.push(entry);
             }
         }
     },
@@ -132,16 +151,26 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * Returns the changes logged since tracking was activated or since the
      * last call, and clears the log. Each item is listed once, with the
      * {@link ChangeFlag} values of all its changes combined. Removed items are
-     * listed with the `ChangeFlag.INSERTION` flag.
+     * listed with the `ChangeFlag.INSERTION` flag, and items that moved to
+     * another project are left out, as that one lists them. Symbol and pattern
+     * definitions whose item, tile, spacing or name changed are listed too,
+     * as `{ definition, flags }`.
      *
-     * @return {Object[]} the changes as `{ item, flags }` objects, or `null`
-     *     if {@link #trackChanges} is off
+     * @return {Object[]} the changes as `{ item, flags }` and
+     *     `{ definition, flags }` objects, or `null` if {@link #trackChanges}
+     *     is off
      */
     takeChanges: function() {
-        var changes = this._changes;
+        var changes = this._changes,
+            that = this;
         if (changes) {
             this._changes = [];
             this._changesById = {};
+            // Items that moved to another project since are logged there:
+            changes = changes.filter(function(change) {
+                var item = change.item;
+                return !item || item._project === that;
+            });
         }
         return changes || null;
     },
@@ -162,6 +191,49 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      *
      * @name Project#activate
      * @function
+     */
+
+    /**
+     * The function to be called when the project is activated through
+     * {@link #activate()}. The function receives the previously active
+     * project, which is the project itself when it was already active.
+     *
+     * @name Project#onActivate
+     * @property
+     * @type ?Function
+     */
+
+    /**
+     * The function to be called when another project is activated through
+     * {@link #activate()} while this one is active, or when this one is
+     * removed while active.
+     *
+     * @name Project#onDeactivate
+     * @property
+     * @type ?Function
+     */
+
+    /**
+     * The function to be called when any project is activated, as
+     * {@link #onActivate} is for a single project, including the projects
+     * that activate themselves when they are created, with `this` set to the
+     * project. `Project.on('activate', handler)` and
+     * `Project.off('activate', handler)` attach and detach them too. Classes
+     * are shared by all {@link PaperScope} objects, and so are their handlers.
+     *
+     * @name Project.onActivate
+     * @property
+     * @type ?Function
+     */
+
+    /**
+     * The function to be called when any project is deactivated, as
+     * {@link #onDeactivate} is for a single project, see
+     * {@link Project.onActivate}.
+     *
+     * @name Project.onDeactivate
+     * @property
+     * @type ?Function
      */
 
     /**
@@ -325,6 +397,35 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @deprecated use {@link #symbolDefinitions} instead.
      */
     getSymbols: 'getSymbolDefinitions',
+
+    /**
+     * The pattern definitions that the fill and stroke colors of the items in
+     * the project use.
+     *
+     * @bean
+     * @type PatternDefinition[]
+     */
+    getPatternDefinitions: function() {
+        var definitions = [],
+            ids = {};
+        this.getItems({
+            match: function(item) {
+                var style = item._style;
+                [style.getFillColor(true), style.getStrokeColor(true)].forEach(
+                    function(color) {
+                        var definition = color && color._type === 'pattern'
+                                && color._components[0];
+                        if (definition && !ids[definition._id]) {
+                            ids[definition._id] = true;
+                            definitions.push(definition);
+                        }
+                    }
+                );
+                return false; // No need to collect them.
+            }
+        });
+        return definitions;
+    },
 
     /**
      * The selected items contained within the project.
@@ -989,7 +1090,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         }
     },
 
-    draw: function(ctx, matrix, pixelRatio) {
+    // Views pass themselves as _view, to draw buffered groups through their
+    // buffers, see Group#buffered:
+    draw: function(ctx, matrix, pixelRatio, _view) {
         // Increase the _updateVersion before the draw-loop. After that, items
         // that are visible will have their _updateVersion set to the new value.
         this._updateVersion++;
@@ -1000,6 +1103,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
             param = new Base({
                 offset: new Point(0, 0),
                 pixelRatio: pixelRatio,
+                view: _view,
                 viewMatrix: matrix.isIdentity() ? null : matrix,
                 matrices: [new Matrix()], // Start with the identity matrix.
                 // Tell the drawing routine that we want to keep _globalMatrix

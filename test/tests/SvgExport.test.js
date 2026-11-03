@@ -16,6 +16,7 @@ import paper, {
   Base,
   CanvasProvider,
   Color,
+  CompoundPath,
   Group,
   Layer,
   Matrix,
@@ -165,6 +166,33 @@ describe('SvgExport', () => {
     )
   })
 
+  test('Item#exportSVG() with bounds', () => {
+    const path = new Path.Rectangle({
+      point: [10, 20],
+      size: [30, 40],
+      strokeColor: 'black',
+      strokeWidth: 2
+    })
+    let node = path.exportSVG({ bounds: 'content' })
+    equals(node.nodeName.toLowerCase(), 'svg')
+    equals(node.getAttribute('viewBox'), '9,19,32,42')
+    equals(node.getAttribute('width'), '32')
+    equals(node.getAttribute('height'), '42')
+    equals(node.firstChild.nodeName.toLowerCase(), 'path')
+    node = path.exportSVG({ bounds: new Rectangle(0, 0, 100, 50) })
+    equals(node.getAttribute('viewBox'), '0,0,100,50')
+    // Without bounds or matrix, the item is exported on its own:
+    equals(path.exportSVG().nodeName.toLowerCase(), 'path')
+  })
+
+  test('Item#exportSVG() with matrix', () => {
+    const path = new Path.Rectangle([10, 20], [30, 40])
+    const node = path.exportSVG({ matrix: new Matrix().scale(2, [0, 0]) })
+    equals(node.nodeName.toLowerCase(), 'svg')
+    equals(node.firstChild.getAttribute('transform'), 'scale(2,2)')
+    equals(node.firstChild.firstChild.nodeName.toLowerCase(), 'path')
+  })
+
   test('Export SVG group with mixed children styles (#1732)', () => {
     const group = new Group([
       new Path.Rectangle({
@@ -254,6 +282,99 @@ describe('SvgExport', () => {
     const imported = paper.project.importSVG(svg),
       copy = imported.getItem({ name: path.name })
     equals(() => copy && copy.data.tag, '<tag>')
+  })
+
+  test('Export SVG with segment names and data (#2398)', () => {
+    const path = new Path({
+      segments: [[20, 80], [[50, 20], [-10, 0], [10, 0]], [80, 80]],
+      closed: true
+    })
+    path.segments[1].name = 'top'
+    path.segments[1].data.locked = true
+    path.segments[2].data = { weight: 2 }
+    equals(
+      path.exportSVG().getAttribute('data-paper-segments'),
+      '{"1":{"name":"top","data":{"locked":true}},"2":{"data":{"weight":2}}}'
+    )
+    const copy = paper.project.importSVG(path.exportSVG({ asString: true }))
+    equals(copy.segments.length, 3, 'segments')
+    equals(copy.segments.top, copy.segments[1], 'found by name')
+    equals(copy.segments[1].data, { locked: true }, 'data')
+    equals(copy.segments[2].data, { weight: 2 }, 'data without name')
+    equals(copy.segments[0].name, null, 'unnamed')
+    equals(copy.data, {}, 'not in item data')
+  })
+
+  test('Export SVG without segment names and data (#2398)', () => {
+    const path = new Path.Rectangle([0, 0], [10, 10])
+    path.firstSegment.data // Accessing creates empty data.
+    equals(
+      path.exportSVG().hasAttribute('data-paper-segments'),
+      false,
+      'no attribute'
+    )
+    equals(path.exportSVG({ matchShapes: true }).nodeName, 'rect', 'shape')
+    // Shapes have no segments, so named ones keep it a polygon:
+    path.firstSegment.name = 'corner'
+    const node = path.exportSVG({ matchShapes: true })
+    equals(node.nodeName, 'polygon', 'polygon with named segments')
+    equals(node.getAttribute('data-paper-segments'), '{"0":{"name":"corner"}}')
+    const copy = paper.project.importSVG(
+      path.exportSVG({ matchShapes: true, asString: true })
+    )
+    equals(copy.segments.corner, copy.firstSegment, 'found by name')
+  })
+
+  test('Export SVG compound path with segment names and data (#2398)', () => {
+    const compound = new CompoundPath({
+      children: [
+        new Path.Rectangle([0, 0], [100, 100]),
+        new Path.Rectangle([25, 25], [50, 50])
+      ]
+    })
+    compound.children[0].segments[3].name = 'outer'
+    compound.children[1].segments[0].name = 'inner'
+    compound.children[1].segments[2].data.hole = true
+    const node = compound.exportSVG()
+    equals(node.nodeName, 'path', 'one element')
+    // Keyed by the index across the segments of all children:
+    equals(
+      node.getAttribute('data-paper-segments'),
+      '{"3":{"name":"outer"},"4":{"name":"inner"},"6":{"data":{"hole":true}}}'
+    )
+    const copy = paper.project.importSVG(
+      compound.exportSVG({ asString: true })
+    )
+    const [outer, inner] = copy.children
+    equals(outer.segments.outer, outer.segments[3], 'outer')
+    equals(inner.segments.inner, inner.segments[0], 'inner')
+    equals(inner.segments[2].data, { hole: true }, 'data')
+  })
+
+  test('Export SVG gradients in the coordinates of items that keep their matrix (#2410)', () => {
+    const item = new Path.Rectangle({
+      rectangle: new Rectangle(50, 50, 100, 100),
+      fillColor: {
+        gradient: { stops: ['white', 'blue'] },
+        origin: [50, 100],
+        destination: [150, 100]
+      },
+      applyMatrix: false
+    })
+    item.rotate(90)
+    const svg = item.exportSVG()
+    const gradient = svg.querySelector('linearGradient')
+    equals(
+      ['x1', 'y1', 'x2', 'y2'].map(key => +gradient.getAttribute(key)),
+      [50, 100, 150, 100],
+      'as the path is in them, before its transform'
+    )
+    const color = paper.project.importSVG(svg).fillColor
+    equals(
+      [color.origin, color.destination],
+      [item.fillColor.origin, item.fillColor.destination],
+      'and back in the coordinates of its parent'
+    )
   })
 
   test('Export SVG with nested groups as clip masks', () => {
@@ -700,6 +821,54 @@ describe('SvgExport', () => {
         fillColor: 'red',
         matrix: [1, 1, 1, 1, 1, 1]
       })
+      const svg = paper.project.exportSVG({
+        bounds: 'content',
+        asString: true
+      })
+      compareSVG(assert.async(), svg, paper.project.activeLayer)
+    })
+
+    // Each with one item, as compareSVG() places the export by the bounds
+    // without strokes:
+    test('Export gradients of shapes, which keep their matrix (#2410)', assert => {
+      const rect = new Shape.Rectangle({
+        point: [100, 100],
+        size: [200, 100],
+        fillColor: {
+          gradient: { stops: ['yellow', 'red', 'blue'] },
+          origin: [100, 150],
+          destination: [300, 150]
+        }
+      })
+      rect.rotate(40)
+      rect.scale(1.5)
+      const svg = paper.project.exportSVG({
+        bounds: 'content',
+        asString: true
+      })
+      compareSVG(assert.async(), svg, paper.project.activeLayer)
+    })
+
+    test('Export gradients of paths that keep their matrix (#2410)', assert => {
+      const circle = new Path.Circle({
+        center: [250, 350],
+        radius: 80,
+        fillColor: {
+          gradient: { stops: ['white', 'green', 'black'], radial: true },
+          origin: [250, 350],
+          destination: [330, 350],
+          highlight: [230, 330]
+        },
+        strokeColor: {
+          gradient: { stops: ['yellow', 'red', 'blue'] },
+          origin: [170, 350],
+          destination: [330, 350]
+        },
+        strokeWidth: 20,
+        applyMatrix: false
+      })
+      circle.rotate(-60)
+      circle.scale(0.8)
       const svg = paper.project.exportSVG({
         bounds: 'content',
         asString: true

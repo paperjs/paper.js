@@ -183,6 +183,32 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     expect.assertions(0)
   })
 
+  test('Item#removeOnUp() / #removeOnDrag()', () => {
+    // Moves are drags only for handlers of drags:
+    const tool = new Tool({ onMouseDrag() {} })
+    const up = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const drag = new Path.Rectangle(new Point(20, 0), new Size(10))
+    up.removeOnUp()
+    drag.removeOnDrag()
+    triggerMouseEvent('mousedown', new Point(5, 5))
+    triggerMouseEvent('mousemove', new Point(6, 6))
+    equals(drag.isInserted(), false)
+    equals(up.isInserted(), true)
+    triggerMouseEvent('mouseup', new Point(6, 6))
+    equals(up.isInserted(), false)
+    // Releasing the mouse without dragging forgets the items to remove on
+    // drag:
+    const stale = new Path.Rectangle(new Point(40, 0), new Size(10))
+    stale.removeOnDrag()
+    triggerMouseEvent('mousedown', new Point(5, 5))
+    triggerMouseEvent('mouseup', new Point(5, 5))
+    triggerMouseEvent('mousedown', new Point(5, 5))
+    triggerMouseEvent('mousemove', new Point(6, 6))
+    triggerMouseEvent('mouseup', new Point(6, 6))
+    equals(stale.isInserted(), true)
+    tool.remove()
+  })
+
   test('Item#onClick()', assert => {
     const done = assert.async()
     const item = new Path.Rectangle(new Point(0, 0), new Size(10))

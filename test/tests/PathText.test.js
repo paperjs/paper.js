@@ -218,4 +218,21 @@ describe('PathText', () => {
     )
     paper.project.trackChanges = false
   })
+
+  test(`Selecting the text path is logged as the text's change`, () => {
+    const text = createPathText([0, 0], [200, 0], 'On a path')
+    paper.project.trackChanges = true
+    paper.project.takeChanges()
+    text.textPath.selected = true
+    text.textPath.firstSegment.selected = false
+    equals(
+      paper.project
+        .takeChanges()
+        .map(change => (change.item === text ? 'text' : change.item.className))
+        .join(),
+      'text',
+      `as the text's`
+    )
+    paper.project.trackChanges = false
+  })
 })

@@ -526,6 +526,23 @@ describe('Curve', () => {
     })
   })
 
+  test('Curve#getTimeOf() off a slanted curve', () => {
+    // The solutions of each coordinate lie further from a point off a slanted
+    // curve than the curve itself, up to sqrt(2) times at 45°:
+    const curve = new Curve(
+      new Point(100, 100),
+      new Point(30, -10),
+      new Point(-40, 10),
+      new Point(200, 200)
+    )
+    for (let i = 1; i < 10; i++) {
+      const time = i / 10,
+        normal = curve.getNormalAtTime(time),
+        point = curve.getPointAtTime(time).add(normal.multiply(0.9e-7))
+      equals(curve.getTimeOf(point), time)
+    }
+  })
+
   test('Curve#getTimeOf() at large coordinates', () => {
     // Beyond about 2e8, GEOMETRIC_EPSILON is below the resolution of the
     // coordinates, and points on the curve weren't recognized as such:
@@ -546,6 +563,18 @@ describe('Curve', () => {
     equals(() => curve.getPartLength(0.25, 0.75), 44)
     equals(() => curve.getPartLength(0.5, 0.75), 22)
     equals(() => curve.getPartLength(0.75, 1), 10)
+  })
+
+  test('Curve#getPartLength() and #getTimeAt() where the curve slows down sharply', () => {
+    const curve = new Curve([
+      55.01, 431.5, -18.24, 499.57, 480.33, 100.07, 499.09, 93.15
+    ])
+    // The lengths by Simpson's rule with 2,000,000 steps on each side of
+    // where the curve is slowest, at 0.07237:
+    equals(() => curve.getPartLength(0, 0.1), 12.330377828)
+    equals(() => curve.getPartLength(0, 0.15), 21.884684886)
+    equals(() => curve.length, 579.795060932)
+    equals(() => curve.getTimeAt(21.884684886), 0.15)
   })
 
   test('Curve#divideAt(offset)', () => {
@@ -720,5 +749,21 @@ describe('Curve', () => {
       new Rectangle(0, -5, 100, 10),
       'path.firstCurve.strokeBounds'
     )
+  })
+
+  test('Curve#getNearestPoint() between the first samples of a fast curve', () => {
+    // The curve covers a lot of ground at its start, so the nearest point lies
+    // between its first samples, which lie further away than those around
+    // another, local minimum at t = 0.21:
+    const curve = new Curve(
+      [936.78495, -14.40565],
+      [188.72013, -0.05602],
+      [269, -97],
+      [65, 167]
+    )
+    const point = new Point(939.37781, -9.40163)
+    equals(curve.getNearestPoint(point).getDistance(point), 4.99919, null, {
+      tolerance: 1e-5
+    })
   })
 })

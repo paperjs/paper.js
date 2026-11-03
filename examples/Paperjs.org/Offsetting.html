@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Offsetting</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        body {
+            background: #f6f4f0;
+            font: 13px/1.4 -apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #333;
+        }
+        .panel {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 240px;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 12px;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.12);
+        }
+        .panel h1 {
+            margin: 0 0 10px;
+            font-size: 16px;
+        }
+        .panel label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin: 6px 0;
+        }
+        .panel input[type=range] {
+            width: 120px;
+        }
+        .panel select {
+            width: 128px;
+        }
+        .panel .info {
+            margin-top: 10px;
+            color: #888;
+            font-size: 11px;
+        }
+        .panel a {
+            color: #e0306a;
+        }
+    </style>
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        // Some of the paths that the offsetting of Bézier curves has to survive:
+        // cusps, loops, and turns much tighter than the stroke is wide.
+        var presets = {
+            'Offsetting': 'M721.1909,218.83184c-1.028,-1.028 2.48827,-0.53606 2.50162,-0.53606c8.3842,0 16.62869,2.05447 23.94408,6.25405c11.27823,6.47454 29.60192,29.58754 13.40154,40.56199c-44.66606,30.25765 -136.47229,-19.05999 -62.36183,-51.99797',
+            'Effed': 'M519.84665,296.07521c0,-2.30167 -0.21182,-4.33948 1.26052,-6.3026c9.17271,-12.23028 7.56313,20.20928 7.56313,23.31964c0,1.05043 1.05043,3.1513 0,3.1513c-0.93954,0 -0.89042,-1.65747 -1.26052,-2.52104c-4.03527,-9.41564 -6.42799,-18.85632 -11.97495,-27.73146c-0.6357,-1.01711 -8.14272,-10.86642 -8.19339,-10.71443c-0.59836,1.79508 0,5.00518 0,6.93287c0,16.71589 10.20873,2.01534 17.64729,9.45391c0.53031,0.53031 -3.78644,1.26052 -4.41182,1.26052',
+            'Trouble': 'M518,66c0,0 34.29362,49.21334 24.29362,249.21334c10,-200 730.35501,322.08393 -447.29362,-31.21334',
+            'Crazy': 'M466,467c0,0 -105,-235 0,0c-376.816,-119.63846 -469.06596,-146.09389 -650.61329,-266.59735c-282.68388,-230.49081 300.86045,-10.26825 452.77726,121.52815',
+            'Islands': 'M466,467c-65,-34 136,64 0,0c308,-28 520,-471 522,-137c-214,-144 -1489,123 -923,-163',
+            'Hook': 'M394.65374,254.50073c-48.30932,181.8027 -357.16038,-261.37014 40.83962,-261.37014c-191.72051,-24.33714 389.60133,-77.5846 501.29159,-7.53624c188.72013,-0.05602 -602.78495,84.40565 -871.78495,181.40565',
+            'Swirl': 'M524,509c200,-253 -474,-399 -74,-399c-150,300 150,290 200,290c50,-150 -250,-220 -550,-120',
+            'Star': null
+        };
+
+        var settings = {
+            preset: 'Offsetting',
+            mode: 'outline',
+            width: 62,
+            join: 'round',
+            cap: 'round',
+            miterLimit: 10,
+            closed: false,
+            breathe: false,
+            fullySelected: true,
+            selectionColor: '#00a0ff'
+        };
+
+        var results = new Group();
+        var path;
+        var drawing;
+        var hit;
+        var isDragging = false;
+        var isPanning = false;
+        var contoursTimer;
+        var info = document.getElementById('info');
+
+        function createPreset(name) {
+            if (path)
+                path.remove();
+            path = presets[name]
+                ? new Path(presets[name])
+                : new Path.Star({ center: [400, 300], points: 7, radius1: 90,
+                        radius2: 220 });
+            path.set({
+                strokeColor: '#222',
+                strokeWidth: 1.5,
+                strokeScaling: false,
+                selectedColor: '#222'
+            });
+            path.fullySelected = true;
+            settings.closed = path.closed;
+            document.getElementById('closed').checked = path.closed;
+            fitView();
+            update();
+        }
+
+        function fitView() {
+            var bounds = path.bounds.expand(settings.width + 40),
+                size = view.viewSize - [280, 40];
+            view.zoom = 1;
+            view.zoom = Math.min(size.width / bounds.width,
+                    size.height / bounds.height, 2);
+            view.center = bounds.center + [140 / view.zoom, 0];
+        }
+
+        function getOptions(width) {
+            return {
+                width: width,
+                join: settings.join,
+                cap: settings.cap,
+                miterLimit: settings.miterLimit,
+                insert: false
+            };
+        }
+
+        function update(width) {
+            console.log(path.pathData);
+            width = width || settings.width;
+            results.removeChildren();
+            var time = Date.now(),
+                showContours = settings.mode === 'contours' && !isDragging
+                    && !settings.breathe,
+                outline = null;
+            if (showContours) {
+                // The outlines of ever wider strokes, from pink to yellow:
+                var count = 12;
+                for (var i = count; i >= 1; i--) {
+                    var contour = path.outline(getOptions(width * i / count));
+                    contour.set({
+                        fillColor: null,
+                        strokeColor: {
+                            hue: 340 + i * 70 / count,
+                            saturation: 0.8,
+                            brightness: 1
+                        },
+                        strokeWidth: 2,
+                        strokeScaling: false
+                    });
+                    results.addChild(contour);
+                }
+            } else {
+                outline = path.outline(getOptions(width));
+                if (settings.mode === 'compare') {
+                    // The canvas' own stroke, beneath the outline's contour:
+                    var stroke = path.clone({ insert: false });
+                    stroke.set({
+                        strokeColor: 'rgba(224, 48, 106, 0.35)',
+                        strokeWidth: width,
+                        strokeJoin: settings.join,
+                        strokeCap: settings.cap,
+                        miterLimit: settings.miterLimit,
+                        strokeScaling: true,
+                        selected: false
+                    });
+                    results.addChild(stroke);
+                    outline.set({
+                        fillColor: null,
+                        strokeColor: '#1060ff',
+                        strokeWidth: 1,
+                        strokeScaling: false
+                    });
+                } else {
+                    var bounds = outline.bounds;
+                    outline.set({
+                        fillColor: {
+                            gradient: { stops: ['#ff3d7f', '#ff9a3d', '#ffd23d'] },
+                            origin: bounds.topLeft,
+                            destination: bounds.bottomRight
+                        },
+                        strokeColor: '#7a1238',
+                        strokeWidth: 1,
+                        strokeScaling: false
+                    });
+                }
+                results.addChild(outline);
+            }
+            // The results copy the path's selection, so select the outline on
+            // its own, fully with its handles, or only its segments:
+            results.selected = false;
+            if (outline) {
+                outline.selectedColor = settings.selectionColor;
+                outline[settings.fullySelected ? 'fullySelected' : 'selected']
+                        = true;
+            }
+            results.insertBelow(path);
+            info.textContent = (showContours ? '12 outlines' : 'Outline') + ' in '
+                    + (Date.now() - time) + ' ms, of ' + path.curves.length
+                    + ' curves.';
+            if (settings.mode === 'contours' && !showContours)
+                scheduleContours();
+        }
+
+        // Contours take a while, so draw them once the path stops changing:
+        function scheduleContours() {
+            clearTimeout(contoursTimer);
+            contoursTimer = setTimeout(function() {
+                if (!isDragging && !settings.breathe)
+                    update();
+            }, 200);
+        }
+
+        function onFrame(event) {
+            if (settings.breathe)
+                update(settings.width * (0.65 + 0.35 * Math.sin(event.time * 2)));
+        }
+
+        function onMouseDown(event) {
+            hit = path.hitTest(event.point, {
+                segments: true,
+                handles: true,
+                tolerance: 8 / view.zoom
+            });
+            isDragging = true;
+            if (!hit && !isPanning) {
+                // Draw a new path by hand:
+                drawing = new Path({
+                    segments: [event.point],
+                    strokeColor: '#222',
+                    strokeWidth: 1.5,
+                    strokeScaling: false
+                });
+            }
+        }
+
+        function onMouseDrag(event) {
+            if (isPanning) {
+                view.center -= event.delta;
+                // The view moved, so the event's next delta would be off:
+                event.point -= event.delta;
+            } else if (hit) {
+                var name = {
+                    'segment': 'point',
+                    'handle-in': 'handleIn',
+                    'handle-out': 'handleOut'
+                }[hit.type];
+                if (name) {
+                    hit.segment[name] += event.delta;
+                    update();
+                }
+            } else if (drawing) {
+                drawing.add(event.point);
+            }
+        }
+
+        function onMouseUp() {
+            isDragging = false;
+            if (drawing) {
+                if (drawing.segments.length > 2) {
+                    drawing.simplify(10);
+                    drawing.closed = settings.closed;
+                    drawing.selectedColor = '#222';
+                    drawing.fullySelected = true;
+                    path.remove();
+                    path = drawing;
+                } else {
+                    drawing.remove();
+                }
+                drawing = null;
+            }
+            update();
+        }
+
+        function onKeyDown(event) {
+            if (event.key === 'space') {
+                isPanning = true;
+                return false;
+            }
+        }
+
+        function onKeyUp(event) {
+            if (event.key === 'space')
+                isPanning = false;
+        }
+
+        document.getElementById('canvas').addEventListener('wheel',
+            function(event) {
+                var point = view.viewToProject(
+                        DomEvent.getOffset(event, view.element));
+                view.scale(Math.pow(1.002, -event.deltaY), point);
+                event.preventDefault();
+            });
+
+        function bind(id, key, convert) {
+            var input = document.getElementById(id);
+            input.addEventListener('input', function() {
+                settings[key] = convert ? convert(input) : input.value;
+                if (key === 'preset') {
+                    createPreset(settings.preset);
+                } else {
+                    if (key === 'closed')
+                        path.closed = settings.closed;
+                    update();
+                }
+            });
+        }
+
+        bind('preset', 'preset');
+        bind('mode', 'mode');
+        bind('width', 'width', function(input) { return +input.value; });
+        bind('join', 'join');
+        bind('cap', 'cap');
+        bind('miter-limit', 'miterLimit', function(input) { return +input.value; });
+        bind('closed', 'closed', function(input) { return input.checked; });
+        bind('breathe', 'breathe', function(input) { return input.checked; });
+        bind('fully-selected', 'fullySelected', function(input) {
+            return input.checked;
+        });
+        bind('selection-color', 'selectionColor');
+
+        document.getElementById('export').addEventListener('click', function() {
+            var svg = project.exportSVG({ asString: true });
+            this.href = URL.createObjectURL(new Blob([svg],
+                    { type: 'image/svg+xml' }));
+        });
+
+        createPreset(settings.preset);
+    </script>
+</head>
+<body>
+    <canvas id="canvas" resize></canvas>
+    <div class="panel">
+        <h1>Offsetting</h1>
+        <label>Path
+            <select id="preset">
+                <option>Offsetting</option>
+                <option>Effed</option>
+                <option>Trouble</option>
+                <option>Crazy</option>
+                <option>Islands</option>
+                <option>Hook</option>
+                <option>Swirl</option>
+                <option>Star</option>
+            </select>
+        </label>
+        <label>Show
+            <select id="mode">
+                <option value="outline">Outline</option>
+                <option value="contours">Contour lines</option>
+                <option value="compare">Canvas stroke</option>
+            </select>
+        </label>
+        <label>Width <input id="width" type="range" min="2" max="200" value="62"></label>
+        <label>Join
+            <select id="join">
+                <option>round</option>
+                <option>miter</option>
+                <option>bevel</option>
+            </select>
+        </label>
+        <label>Cap
+            <select id="cap">
+                <option>round</option>
+                <option>square</option>
+                <option>butt</option>
+            </select>
+        </label>
+        <label>Miter limit <input id="miter-limit" type="range" min="1" max="20" value="10"></label>
+        <label>Closed <input id="closed" type="checkbox"></label>
+        <label>Breathe <input id="breathe" type="checkbox"></label>
+        <label>Handles <input id="fully-selected" type="checkbox" checked></label>
+        <label>Selection <input id="selection-color" type="color" value="#00a0ff"></label>
+        <div class="info">
+            <p id="info"></p>
+            <p>Drag the points and handles, or draw a new path in the empty
+            space. Zoom with the scroll wheel, pan with the space bar held.</p>
+            <a id="export" href="#" download="Offsetting.svg">Export SVG</a>
+        </div>
+    </div>
+</body>
+</html>

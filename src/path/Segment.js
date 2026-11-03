@@ -224,7 +224,8 @@ var Segment = Base.extend(/** @lends Segment# */{
      * by name through its path's segments list. If several segments share a
      * name, the first one is found.
      *
-     * The name is stored in JSON, but not in SVG.
+     * The name is stored in JSON, and in SVG in the `data-paper-segments`
+     * attribute of the path, see {@link Segment#data}.
      *
      * @bean
      * @type ?String
@@ -259,7 +260,10 @@ var Segment = Base.extend(/** @lends Segment# */{
      * A plain javascript object which can be used to store arbitrary data on
      * the segment.
      *
-     * The data is stored in JSON, but not in SVG.
+     * The data is stored in JSON, and in SVG in the `data-paper-segments`
+     * attribute of the path, keyed by the index of the segment. Paper.js drops
+     * it on import if the indices don't fit the path anymore, as happens when
+     * another editor removes segments.
      *
      * @bean
      * @type Object
@@ -386,9 +390,12 @@ var Segment = Base.extend(/** @lends Segment# */{
         // project._selectionItems
         if (path && selection !== oldSelection) {
             path._updateSelection(this, oldSelection, selection);
-            // Let path know that we changed something and the view should be
-            // redrawn
-            path._changed(/*#=*/Change.ATTRIBUTE);
+            // Let the project know, so the view draws the selection again, see
+            // Item#setSelection():
+            var project = path._project;
+            if (project)
+                project._changed(/*#=*/Change.ATTRIBUTE,
+                        path._getChangeOwner());
         }
     },
 

@@ -142,7 +142,6 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     },
 
     // DOCS: reduce()
-    // TEST: reduce()
     reduce: function reduce(options) {
         var children = this._children;
         for (var i = children.length - 1; i >= 0; i--) {
@@ -157,7 +156,11 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
             this.remove();
             return path;
         }
-        return reduce.base.call(this);
+        var item = reduce.base.call(this);
+        // A single child takes on the attributes that it was drawn with:
+        if (item !== this)
+            item.copyAttributes(this, true);
+        return item;
     },
 
     /**
@@ -347,8 +350,8 @@ new function() { // Injection scope for PostScript-like drawing functions
 
     // Redirect all other drawing commands to the current path
     return Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo',
-            'arcTo', 'lineBy', 'cubicCurveBy', 'quadraticCurveBy', 'curveBy',
-            'arcBy'],
+            'arcTo', 'arcAround', 'arcTowards', 'lineBy', 'cubicCurveBy',
+            'quadraticCurveBy', 'curveBy', 'arcBy'],
         function(key) {
             this[key] = function() {
                 var path = getCurrentPath(this, true);
@@ -380,15 +383,20 @@ new function() { // Injection scope for PostScript-like drawing functions
             }
         }
     );
-}, Base.each(['reverse', 'flatten', 'simplify', 'smooth'], function(key) {
+}, Base.each(['reverse', 'flatten', 'smooth'], function(key) {
     // Injection scope for methods forwarded to the child paths.
     // NOTE: Documentation is in PathItem
     this[key] = function(param) {
-        var children = this._children,
-            res;
-        for (var i = 0, l = children.length; i < l; i++) {
-            res = children[i][key](param) || res;
-        }
-        return res;
+        var children = this._children;
+        for (var i = 0, l = children.length; i < l; i++)
+            children[i][key](param);
     };
-}, {}));
+}, {
+    simplify: function(options) {
+        var children = this._children,
+            res = false;
+        for (var i = 0, l = children.length; i < l; i++)
+            res = children[i].simplify(options) || res;
+        return res;
+    }
+}));

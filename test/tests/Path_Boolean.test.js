@@ -2944,6 +2944,20 @@ describe('Path Boolean Operations', () => {
     equals(path.unite().area, 277470.37613)
   })
 
+  test('unite where a circle crosses a line just before its end', () => {
+    // 6.7e-8 from the end, which is further than epsilon of these small paths.
+    // Snapped to the end, the intersection lies too far from the circle, and
+    // the result is empty:
+    const path1 = new Path(
+        'M3.650624159,1.280897223c-0.002372999,-0.0817644 -0.004746,-0.1635288 -0.007119,-0.2452932l0.02716499,-0.000788394l-0.027102691,-0.00197098c0.002160154,-0.029702911 0.040522802,-0.037240572 0.053838774,-0.010797763c0.006914247,0.013730545 0.008958691,0.030255892 0.017052213,0.043336983l-0.01627424,0.01006933c0.001972479,0.067963993 0.003944959,0.135927986 0.005917437,0.203891979z'
+      ),
+      path2 = new Path(
+        'M3.696926518,1.03672547c-0.00101108,0.014218011 -0.012993267,0.025145797 -0.027244044,0.024846637c-0.014250777,-0.000299159 -0.025763807,-0.011720168 -0.026177316,-0.025968085c-0.000025875,-0.000891543 -0.000007144,-0.001783822 0.000056123,-0.002673493c0.00101108,-0.014218011 0.012993267,-0.025145797 0.027244044,-0.024846637c0.014250777,0.000299159 0.025763807,0.011720168 0.026177316,0.025968085c0.000025875,0.000891543 0.000007144,0.001783822 -0.000056123,0.002673493z'
+      )
+    equals(path1.unite(path2).area, 0.0148374, null, { tolerance: 1e-7 })
+    equals(path2.unite(path1).area, 0.0148374, null, { tolerance: 1e-7 })
+  })
+
   test('#1123: intersect, moved by 1e-12', () => {
     // An edge 2.2 epsilon long with tangent pieces next to it, which loses the
     // whole result unless its vertices are merged. The area is linesweeper's,
@@ -3165,5 +3179,186 @@ describe('Path Boolean Operations', () => {
     equals(new CompoundPath().unite(paths).area, 76832.96358, null, {
       tolerance: 1e-4
     })
+  })
+
+  test('Unite paths with a straight edge that a curve leaves tangentially', () => {
+    // The straight edge ends a little past the curve's start, so the order of
+    // the edges there is told along the short piece between them. Rotated, so
+    // the edges aren't parallel to the axes:
+    const path1 = new Path('M0,-50L0,50.0003L-40,50.0003L-40,-50Z')
+    const path2 = new Path('M0,50C0,30 10,10 30,-20L40,60Z')
+    path1.rotate(30, [0, 0])
+    path2.rotate(30, [0, 0])
+    equals(path1.unite(path2).area, path1.area + path2.area, null, {
+      tolerance: 1e-3
+    })
+  })
+
+  test('Boolean operations with a curve that turns back along a straight edge', () => {
+    // The curve's control points lie along the square's top edge, and it runs
+    // back and forth along it, overlapping it and itself:
+    const square = new Path.Rectangle({ point: [0, 0], size: [100, 100] })
+    const sliver = new Path('M50,0C30,0 80,0 60,0Z')
+    equals(square.unite(sliver).area, 10000)
+    equals(square.subtract(sliver).area, 10000)
+    equals(square.intersect(sliver).isEmpty(), true)
+    square.rotate(30, [0, 0])
+    sliver.rotate(30, [0, 0])
+    equals(square.unite(sliver).area, 10000)
+  })
+
+  test('Boolean operations with a curve that crosses another one twice at nearly the same point', () => {
+    // From the outline of a round cap: The sliver runs out along the straight
+    // edge of the sector, past its corner, and back, and so crosses its arc
+    // twice right at the corner, which the arc's piece around these
+    // crossings is much too short to tell apart through its implicit form:
+    const sector = new Path({
+      segments: [
+        [518, 66],
+        [
+          [543.4339399005719, 48.276718669103715],
+          null,
+          [-9.788297996014824, -14.046777135198777]
+        ],
+        [
+          [500.27671866910373, 40.566060099428114],
+          [14.046777135198777, -9.788297996014824],
+          [-14.046777135198777, 9.788297996014824]
+        ],
+        [
+          [492.5660600994281, 83.72328133089628],
+          [-9.788297996014824, -14.046777135198777]
+        ]
+      ],
+      closed: true
+    })
+    const sliver = new Path({
+      segments: [
+        [
+          [517.7844047666216, 66.15021928388006],
+          [0.02642628751709708, -0.018401827839298335],
+          [52.58213163149162, -36.64111480219838]
+        ],
+        [
+          [517.8436208556217, 66.10897433453103],
+          [19.017891667455274, -13.252348860808162],
+          [3.979039320256561e-12, -2.7426949600339867e-12]
+        ]
+      ],
+      closed: true
+    })
+    const area = Math.abs(sector.area)
+    equals(Math.abs(sector.unite(sliver).area), area, null, { tolerance: 1e-3 })
+    equals(Math.abs(sliver.unite(sector).area), area, null, { tolerance: 1e-3 })
+    equals(Math.abs(sector.subtract(sliver).area), area, null, {
+      tolerance: 1e-3
+    })
+  })
+
+  test('Unite paths where merging vertices moves one by more than epsilon', () => {
+    // A curve of path1 ends within 2 epsilon of the corner of path2, and path1
+    // has a curve shorter than 4 epsilon there, whose ends merge into one
+    // vertex. That moves the corner's vertex towards the next curve of path1,
+    // which then needs to be cut at it, although it wasn't within epsilon of
+    // it before:
+    const path1 = new Path({
+      segments: [
+        [
+          [183.79355827441708, 241.2860406485226],
+          [-0.45639956554700234, 1.1935881781922149],
+          [0.3098694658409613, -0.8103787977256616]
+        ],
+        [
+          [194.6241257036517, 228.70963346316088],
+          [-5.548376724694151, 4.148648228840301],
+          [0, 0]
+        ],
+        [
+          [194.6271405001143, 228.70737937663708],
+          [0, 0],
+          [0.12059749168304279, -0.09016184225993129]
+        ]
+      ],
+      closed: true
+    })
+    const path2 = new Path({
+      segments: [
+        [
+          [271.9994910663176, 332.17787176347343],
+          [0, 0],
+          [-0.1382586889270101, 0.10345675804433085]
+        ],
+        [194.62408085062052, 228.70957298404534],
+        [395.4240808505734, 78.67957298408056]
+      ],
+      closed: true
+    })
+    const area = Math.abs(path1.area) + Math.abs(path2.area)
+    equals(Math.abs(path1.unite(path2).area), area, null, { tolerance: 0.05 })
+    equals(Math.abs(path2.unite(path1).area), area, null, { tolerance: 0.05 })
+  })
+
+  test('Unite paths that cross at a shallow angle near a short curve', () => {
+    // The crossing of path1 with the short first curve of path2 lies within
+    // epsilon of both, but further from the solutions of each coordinate on
+    // the slanted curve, which made Curve.getTimeOf() miss it:
+    const path1 = new Path({
+      segments: [
+        [
+          [103.21917825643318, 347.37267841016796],
+          [-0.27962038483039464, 0.37715571322286223],
+          [0.016117586867480327, -0.02194140033174108]
+        ],
+        [
+          [120.3798473435689, 330.70772398787096],
+          [-6.014781360537, 5.206279724090848],
+          [0.0010644346346282418, -0.0009274881340957108]
+        ],
+        [
+          [155.08547069670644, 377.51011446340397],
+          [5.380490588730851, -5.801057235299652],
+          [-0.30121930748910586, 0.34531226178205543]
+        ]
+      ],
+      closed: true
+    })
+    const path2 = new Path({
+      segments: [
+        [
+          [120.31502843403102, 330.7734203898585],
+          [-0.3051713944616523, 0.362189469779878],
+          [0.027003696982163206, -0.03247186158017712]
+        ],
+        [
+          [120.40812775795484, 330.6835388886052],
+          [-0.03504075651248684, 0.02745811147212862],
+          [6.046905424522123, -5.162773435744214]
+        ],
+        [
+          [139.56657439072833, 316.4773020220021],
+          [-6.732219454443793, 4.258264075146428],
+          [0.001830813002072773, -0.0011689521418816184]
+        ],
+        [
+          [191.1222320894217, 346.887661787947],
+          [2.113586219360542, -1.3242650054888259],
+          [-6.66478492247694, 4.215206205655761]
+        ]
+      ],
+      closed: true
+    })
+    const area = Math.abs(path1.intersect(path2).area)
+    equals(
+      Math.abs(path1.unite(path2).area),
+      Math.abs(path1.area) + Math.abs(path2.area) - area,
+      null,
+      { tolerance: 0.05 }
+    )
+    equals(
+      Math.abs(path2.unite(path1).area),
+      Math.abs(path1.area) + Math.abs(path2.area) - area,
+      null,
+      { tolerance: 0.05 }
+    )
   })
 })

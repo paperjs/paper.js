@@ -1079,6 +1079,27 @@ describe('SvgImport', () => {
     equals(importData(''), {}, 'without data')
   })
 
+  test('Import SVG segment names and data (#2398)', () => {
+    function importPath(segments) {
+      const svg = paper.project.importSVG(
+        '<svg xmlns="http://www.w3.org/2000/svg">' +
+        '<path d="M20,80 L50,20 L80,80" ' +
+        `data-paper-segments='${segments}'/></svg>`
+      )
+      const path = svg.lastChild
+      svg.remove()
+      return path
+    }
+    let path = importPath('{"1":{"name":"top","data":{"locked":true}}}')
+    equals(path.segments.top, path.segments[1], 'found by name')
+    equals(path.segments[1].data, { locked: true }, 'data')
+    equals(path.data, {}, 'not in item data')
+    // Another editor may have changed the path, so drop them all:
+    path = importPath('{"0":{"name":"start"},"3":{"name":"end"}}')
+    equals(path.segments.start, undefined, 'dropped')
+    equals(path.segments[0].name, null, 'dropped with the rest')
+  })
+
   test('Import and export the SVG class attribute through callbacks', () => {
     const item = paper.project.importSVG(
       '<svg xmlns="http://www.w3.org/2000/svg">' +

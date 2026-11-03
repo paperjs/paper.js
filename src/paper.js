@@ -33,6 +33,8 @@
 // Allow the minification of the undefined variable by defining it as a local
 // parameter inside the paper scope.
 var paper = function(self, undefined) {
+// Strict mode makes e.g. Path#getNearestPoint() and Item#hitTest() faster:
+'use strict';
 /*#*/ include('init.js');
 // Inline Straps.js core (the Base class) inside the paper scope first:
 /*#*/ include('../node_modules/straps/straps.js');
@@ -65,9 +67,13 @@ var paper = function(self, undefined) {
 /*#*/ include('item/Layer.js');
 /*#*/ include('item/Shape.js');
 /*#*/ include('item/Raster.js');
+/*#*/ include('item/ItemDefinition.js');
 /*#*/ include('item/SymbolItem.js');
 /*#*/ include('item/SymbolDefinition.js');
 /*#*/ include('item/HitResult.js');
+/*#*/ include('item/EffectInstance.js');
+/*#*/ include('item/Effect.js');
+/*#*/ include('item/Item.Effects.js');
 
 /*#*/ include('path/Segment.js');
 /*#*/ include('path/SegmentPoint.js');
@@ -76,9 +82,12 @@ var paper = function(self, undefined) {
 /*#*/ include('path/PathItem.js');
 /*#*/ include('path/Path.js');
 /*#*/ include('path/Path.Constructors.js');
+/*#*/ include('path/Path.StrokeProfile.js');
+/*#*/ include('path/StrokeProfileStop.js');
 /*#*/ include('path/CompoundPath.js');
 /*#*/ if (__options.booleanOperations) {
 /*#*/     include('path/PathItem.Boolean.js');
+/*#*/     include('path/PathItem.Offset.js');
 /*#*/ }
 /*#*/ include('path/PathFlattener.js');
 /*#*/ include('path/PathFitter.js');
@@ -93,6 +102,7 @@ var paper = function(self, undefined) {
 /*#*/ include('style/Color.js');
 /*#*/ include('style/Gradient.js');
 /*#*/ include('style/GradientStop.js');
+/*#*/ include('style/PatternDefinition.js');
 /*#*/ include('style/Style.js');
 
 /*#*/ include('dom/DomElement.js');
@@ -102,6 +112,7 @@ var paper = function(self, undefined) {
 /*#*/ include('view/CanvasView.js');
 
 /*#*/ include('event/Event.js');
+/*#*/ include('event/DrawEvent.js');
 /*#*/ include('event/KeyEvent.js');
 /*#*/ include('event/Key.js');
 /*#*/ include('event/MouseEvent.js');

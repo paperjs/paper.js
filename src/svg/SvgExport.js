@@ -19,7 +19,9 @@ new function() {
     var formatter,
         // Getting the style values of groups walks all their children, so
         // cache the values of parents during each export:
-        parentStyles;
+        parentStyles,
+        // The matrix of the transform of the element being exported:
+        elementMatrix;
 
     function getTransform(matrix, coordinates, center) {
         // Use new Base() so we can use Base#set() on it.
@@ -68,6 +70,8 @@ new function() {
                 attrs.transform = 'matrix(' + matrix.getValues().join(',') + ')';
             }
         }
+        // The matrix of the element's transform, see exportGradient():
+        elementMatrix = matrix;
         return attrs;
     }
 
@@ -153,8 +157,10 @@ new function() {
     }
 
     function exportPath(item, options) {
-        var matchShapes = options.matchShapes;
-        if (matchShapes) {
+        var matchShapes = options.matchShapes,
+            segmentsData = getSegmentsData(item);
+        // Shapes have no segments that could keep their names and data:
+        if (matchShapes && !segmentsData) {
             var shape = item.toShape(false);
             if (shape)
                 return exportShape(shape, options);
@@ -186,6 +192,8 @@ new function() {
             type = 'path';
             attrs.d = item.getPathData(null, options.precision);
         }
+        if (segmentsData)
+            attrs['data-paper-segments'] = segmentsData;
         return SvgElement.create(type, attrs, formatter);
     }
 
@@ -218,10 +226,38 @@ new function() {
 
     function exportCompoundPath(item, options) {
         var attrs = getTransform(item._matrix);
-        var data = item.getPathData(null, options.precision);
+        var data = item.getPathData(null, options.precision),
+            segmentsData = getSegmentsData(item);
         if (data)
             attrs.d = data;
+        if (segmentsData)
+            attrs['data-paper-segments'] = segmentsData;
         return SvgElement.create('path', attrs, formatter);
+    }
+
+    // Path data has no place for the names and data of segments, so store them
+    // as JSON, keyed by the index of the segment across all paths of the item:
+    function getSegmentsData(item) {
+        var paths = item._children || [item],
+            entries = null,
+            index = 0;
+        for (var i = 0, l = paths.length; i < l; i++) {
+            var segments = paths[i]._segments;
+            for (var j = 0, m = segments.length; j < m; j++, index++) {
+                var segment = segments[j],
+                    name = segment._name,
+                    data = segment._data,
+                    hasData = data && !Base.equals(data, {});
+                if (name || hasData) {
+                    var entry = (entries = entries || {})[index] = {};
+                    if (name)
+                        entry.name = name;
+                    if (hasData)
+                        entry.data = data;
+                }
+            }
+        }
+        return entries && JSON.stringify(entries);
     }
 
     function exportSymbolItem(item, options) {
@@ -247,6 +283,12 @@ new function() {
     }
 
     function exportGradient(color, options) {
+        // Gradients are in the coordinates of the item's parent, but SVG reads
+        // them in those of the element, after its transform (#2410):
+        if (!elementMatrix.isIdentity()) {
+            color = color.clone();
+            color.transform(elementMatrix.inverted());
+        }
         // NOTE: As long as the fillTransform attribute is not implemented,
         // we need to create a separate gradient object for each gradient,
         // even when they share the same gradient definition.
@@ -260,12 +302,26 @@ new function() {
                 destination = color.getDestination(),
                 attrs;
             if (radial) {
-                attrs = {
-                    cx: origin.x,
-                    cy: origin.y,
-                    r: origin.getDistance(destination)
-                };
-                var highlight = color.getHighlight();
+                var aspect = color.getAspect(),
+                    highlight = color.getHighlight(),
+                    center = origin;
+                attrs = { r: origin.getDistance(destination) };
+                if (aspect !== 1) {
+                    // An ellipse is a circle at 0, 0, rotated to the
+                    // gradient's axis and scaled across it:
+                    var angle = destination.subtract(origin).getAngle(),
+                        local = new Matrix().translate(origin).rotate(angle)
+                            .scale(1, aspect);
+                    center = new Point();
+                    if (highlight)
+                        highlight = local._inverseTransform(highlight);
+                    attrs.gradientTransform = 'translate('
+                            + formatter.point(origin) + ') rotate('
+                            + formatter.number(angle) + ') scale(1,'
+                            + formatter.number(aspect) + ')';
+                }
+                attrs.cx = center.x;
+                attrs.cy = center.y;
                 if (highlight) {
                     attrs.fx = highlight.x;
                     attrs.fy = highlight.y;
@@ -302,6 +358,58 @@ new function() {
             setDefinition(color, gradientNode, 'color', options);
         }
         return 'url(#' + gradientNode.id + ')';
+    }
+
+    function exportPattern(color, options) {
+        // Patterns are placed in the coordinates of the item's parent too, see
+        // exportGradient(). Exporting them changes elementMatrix, so restore
+        // it after, for the other color of the element:
+        var matrix = elementMatrix;
+        if (!matrix.isIdentity()) {
+            color = color.clone();
+            color.transform(matrix.inverted());
+        }
+        var patternNode = getDefinition(color, 'pattern');
+        if (!patternNode) {
+            var pattern = color.getPattern(),
+                item = pattern._item,
+                tile = pattern.getTile(),
+                spacing = pattern._spacing,
+                cell = new Rectangle(tile.getPoint(),
+                        tile.getSize().add(spacing)),
+                transform = getTransform(color.getMatrix()).transform,
+                // SVG draws the content of tiles relative to their top left
+                // corner, so map the cell onto itself through viewBox:
+                attrs = {
+                    x: cell.x,
+                    y: cell.y,
+                    width: cell.width,
+                    height: cell.height,
+                    viewBox: formatter.rectangle(cell),
+                    patternUnits: 'userSpaceOnUse'
+                },
+                content = exportSVG(item, options);
+            if (transform)
+                attrs.patternTransform = transform;
+            patternNode = SvgElement.create('pattern', attrs, formatter);
+            // Leave the spacing between the tiles empty, as on the canvas:
+            if (!spacing.isZero() && !tile.contains(item.getStrokeBounds())) {
+                var rect = new Shape.Rectangle({
+                        rectangle: tile,
+                        insert: false
+                    }),
+                    clip = exportClip(rect, options),
+                    group = SvgElement.create('g');
+                setDefinition(rect, clip, 'clip', options);
+                group.setAttribute('clip-path', 'url(#' + clip.id + ')');
+                group.appendChild(content);
+                content = group;
+            }
+            patternNode.appendChild(content);
+            setDefinition(color, patternNode, 'pattern', options);
+        }
+        elementMatrix = matrix;
+        return 'url(#' + patternNode.id + ')';
     }
 
     function exportShadow(item, options) {
@@ -532,9 +640,11 @@ new function() {
         } else {
             attrs[entry.attribute] = value == null ? 'none'
                     : type === 'color' ? value.gradient
-                        // true for noAlpha, see above
                         ? exportGradient(value, options)
-                        : value.toCSS(true)
+                        : value.pattern
+                            ? exportPattern(value, options)
+                            // true for noAlpha, see above
+                            : value.toCSS(true)
                     : type === 'array' ? value.join(',')
                     : type === 'lookup' ? entry.toSVG[value]
                     // Tracking is in thousandths of an em:
@@ -548,6 +658,7 @@ new function() {
             parent = !isRoot && item.getParent(),
             parentStyle = parent && (parentStyles[parent._id] =
                     parentStyles[parent._id] || {}),
+            isGroup = item instanceof Group,
             style = [];
 
         if (item._name != null)
@@ -557,14 +668,19 @@ new function() {
             // Get a given style only if it differs from the value on the parent
             // (A layer or group which can have style values in SVG).
             var get = entry.get,
-                value = item[get]();
+                value = item[get](),
+                // SVG reads gradients and patterns in the coordinates of the
+                // elements that draw them, so they don't go on groups (#2410):
+                isPaintServer = entry.type === 'color' && value
+                        && (value.gradient || value.pattern);
             if (parent && !(get in parentStyle))
                 parentStyle[get] = parent[get]();
             // Skip undefined values, as found on groups with mixed children:
-            if (value !== undefined && (entry.exportFilter
-                    ? entry.exportFilter(item, value)
-                    : options.reduceAttributes == false
-                        || !parent || !Base.equals(parentStyle[get], value))) {
+            if (value !== undefined && (isPaintServer ? !isGroup
+                    : entry.exportFilter
+                        ? entry.exportFilter(item, value)
+                        : options.reduceAttributes == false
+                            || !parent || !Base.equals(parentStyle[get], value))) {
                 setAttributes(attrs, style, entry, value, options);
             }
         });
@@ -645,6 +761,13 @@ new function() {
     }
 
     function exportSVG(item, options, isRoot) {
+        var output = item.getEffectOutput();
+        if (output) {
+            // Write the output of the item's effects in its place, expanded:
+            output = output.clone({ insert: false });
+            output.transform(item._matrix);
+            return exportSVG(output, options, isRoot);
+        }
         var exporter = exporters[item._class],
             node = exporter && exporter(item, options);
         if (node) {
@@ -677,50 +800,56 @@ new function() {
         return options;
     }
 
+    // Export the items in an svg root element, sized to the bounds and
+    // transformed by the matrix of the options:
+    function exportRoot(items, view, bounds, options) {
+        var mx = options.matrix || bounds === 'view' && view._matrix,
+            matrix = mx && Matrix.read([mx]),
+            rect = bounds === 'view'
+                ? new Rectangle([0, 0], view.getViewSize())
+                : bounds === 'content'
+                    ? Item._getBounds(items, matrix, { stroke: true }).rect
+                    : Rectangle.read([bounds], 0, { readNull: true }),
+            attrs = {
+                version: '1.1',
+                xmlns: SvgElement.svg,
+                'xmlns:xlink': SvgElement.xlink,
+            };
+        if (rect) {
+            attrs.width = rect.width;
+            attrs.height = rect.height;
+            if (rect.x || rect.x === 0 || rect.y || rect.y === 0)
+                attrs.viewBox = formatter.rectangle(rect);
+        }
+        var node = SvgElement.create('svg', attrs, formatter),
+            parent = node;
+        // If the view has a transformation, wrap all items in a group with
+        // that transformation applied to.
+        if (matrix && !matrix.isIdentity()) {
+            parent = node.appendChild(SvgElement.create('g',
+                    getTransform(matrix), formatter));
+        }
+        for (var i = 0, l = items.length; i < l; i++) {
+            parent.appendChild(exportSVG(items[i], options, true));
+        }
+        return exportDefinitions(node, options);
+    }
+
     Item.inject({
         exportSVG: function(options) {
             options = setOptions(options);
-            return exportDefinitions(exportSVG(this, options, true), options);
+            var bounds = options.bounds;
+            return bounds || options.matrix
+                ? exportRoot([this], this.getView(), bounds, options)
+                : exportDefinitions(exportSVG(this, options, true), options);
         }
     });
 
     Project.inject({
         exportSVG: function(options) {
             options = setOptions(options);
-            var children = this._children,
-                view = this.getView(),
-                bounds = Base.pick(options.bounds, 'view'),
-                mx = options.matrix || bounds === 'view' && view._matrix,
-                matrix = mx && Matrix.read([mx]),
-                rect = bounds === 'view'
-                    ? new Rectangle([0, 0], view.getViewSize())
-                    : bounds === 'content'
-                        ? Item._getBounds(children, matrix, { stroke: true })
-                            .rect
-                        : Rectangle.read([bounds], 0, { readNull: true }),
-                attrs = {
-                    version: '1.1',
-                    xmlns: SvgElement.svg,
-                    'xmlns:xlink': SvgElement.xlink,
-                };
-            if (rect) {
-                attrs.width = rect.width;
-                attrs.height = rect.height;
-                if (rect.x || rect.x === 0 || rect.y || rect.y === 0)
-                    attrs.viewBox = formatter.rectangle(rect);
-            }
-            var node = SvgElement.create('svg', attrs, formatter),
-                parent = node;
-            // If the view has a transformation, wrap all layers in a group with
-            // that transformation applied to.
-            if (matrix && !matrix.isIdentity()) {
-                parent = node.appendChild(SvgElement.create('g',
-                        getTransform(matrix), formatter));
-            }
-            for (var i = 0, l = children.length; i < l; i++) {
-                parent.appendChild(exportSVG(children[i], options, true));
-            }
-            return exportDefinitions(node, options);
+            return exportRoot(this._children, this.getView(),
+                    Base.pick(options.bounds, 'view'), options);
         }
     });
 };

@@ -106,9 +106,12 @@ Base.exports.PaperScript = function() {
     }
 
     // Compound assignment of a property, which evaluates the object and the
-    // key only once, e.g. for `array[index()] += 1`:
-    function __$assign__(object, key, operator, value) {
-        return object[key] = __$__(object[key], operator, value);
+    // key only once, e.g. for `array[index()] += 1`. Postfix updates such as
+    // `array[index()]++` return the old value:
+    function __$assign__(object, key, operator, value, postfix) {
+        var old = object[key],
+            res = object[key] = __$__(old, operator, value);
+        return postfix ? old : res;
     }
 
     // Unary Operator Handler
@@ -141,8 +144,6 @@ Base.exports.PaperScript = function() {
      *     into JavaScript code along with source-maps and other information.
      */
     function compile(code, options) {
-        if (!code)
-            return '';
         options = options || {};
         // Use Acorn or Esprima to translate the code into an AST structure
         // which is then walked and parsed for operators to overload. Instead of
@@ -192,6 +193,12 @@ Base.exports.PaperScript = function() {
             insertions = insertions.filter(function(insertion) {
                 return insertion[0] < range[0] || insertion[1] > range[1];
             });
+            // Keep the replacement apart from the identifiers or keywords
+            // that minified code may put right next to it, as in `return-1`:
+            if (/[\w$]/.test(code.charAt(start - 1)) && /^[\w$]/.test(str))
+                str = ' ' + str;
+            if (/[\w$]/.test(code.charAt(end)) && /[\w$]$/.test(str))
+                str += ' ';
             insertions.push([range[0], range[1],
                     str.length - range[1] + range[0]]);
             code = code.substring(0, start) + str + code.substring(end);
@@ -241,59 +248,53 @@ Base.exports.PaperScript = function() {
                         // We can't replace that with array[__$__(i, "+", 1)].
                         || parentType === 'MemberExpression' && parent.computed
                 )) {
-                    if (node.type === 'UpdateExpression') {
-                        var arg = getCode(node.argument),
-                            exp = '__$__(' + arg + ', "' + node.operator[0]
-                                    + '", 1)',
-                            str = arg + ' = ' + exp;
-                        if (node.prefix) {
-                            // A prefixed update expression (++a / --a),
-                            // wrap expression in paranthesis. See #1611
-                            str = '(' + str + ')';
-                        } else if (
-                            // A suffixed update expression (a++, a--),
-                            // assign the old value before updating it.
-                            // See #691, #1450
-                            parentType === 'AssignmentExpression' ||
-                            parentType === 'VariableDeclarator' ||
-                            parentType === 'BinaryExpression'
-                        ) {
-                            // Handle special case where the old value is
-                            // assigned to itself, and the expression is just
-                            // executed after, e.g.: `var x = ***; x = x++;`
-                            if (getCode(parent.left || parent.id) === arg)
-                                str = exp;
-                            str = arg + '; ' + str;
+                    var isUpdate = node.type === 'UpdateExpression',
+                        target = isUpdate ? node.argument : node.left;
+                    if (isUpdate || /^.=$/.test(node.operator)
+                            && target.type !== 'Literal') {
+                        var left = getCode(target),
+                            right = isUpdate ? '1' : getCode(node.right),
+                            operator = node.operator[0],
+                            // The value of updates is used, except in
+                            // statements and before the end of sequences:
+                            isUsed = isUpdate && !(
+                                parentType === 'ExpressionStatement' ||
+                                parentType === 'SequenceExpression' &&
+                                    node !== parent.expressions[
+                                        parent.expressions.length - 1]
+                            ),
+                            // Postfix updates (a++, a--) result in the old
+                            // value, see #691, #1450:
+                            isPostfix = isUsed && !node.prefix,
+                            // Assign properties through __$assign__(),
+                            // which evaluates their object and key once,
+                            // except for private ones and those of super:
+                            member = target.type === 'MemberExpression'
+                                && target.object.type !== 'Super'
+                                && target.property.type
+                                    !== 'PrivateIdentifier',
+                            exp = member
+                                ? '__$assign__(' + getCode(target.object)
+                                    + ', ' + (target.computed
+                                        ? getCode(target.property)
+                                        : JSON.stringify(
+                                            target.property.name))
+                                    + ', "' + operator + '", ' + right
+                                    + (isPostfix ? ', true' : '') + ')'
+                                : left + ' = __$__(' + left + ', "'
+                                    + operator + '", ' + right + ')';
+                        if (isUsed && !member) {
+                            // Turn the assignment into an expression of the
+                            // new value, or of the old one before it, see
+                            // #1611:
+                            exp = isPostfix
+                                ? '[' + left + ', ' + exp + '][0]'
+                                : '(' + exp + ')';
                         }
-                        replaceCode(node, str);
-                    } else { // AssignmentExpression
-                        if (/^.=$/.test(node.operator)
-                                && node.left.type !== 'Literal') {
-                            var target = node.left,
-                                left = getCode(target),
-                                right = getCode(node.right),
-                                operator = node.operator[0],
-                                // Assign properties through __$assign__(),
-                                // which evaluates their object and key once,
-                                // except for private ones and those of super:
-                                member = target.type === 'MemberExpression'
-                                    && target.object.type !== 'Super'
-                                    && target.property.type
-                                        !== 'PrivateIdentifier',
-                                exp = member
-                                    ? '__$assign__(' + getCode(target.object)
-                                        + ', ' + (target.computed
-                                            ? getCode(target.property)
-                                            : JSON.stringify(
-                                                target.property.name))
-                                        + ', "' + operator + '", ' + right + ')'
-                                    : left + ' = __$__(' + left + ', "'
-                                        + operator + '", ' + right + ')';
-                            // If the original expression is wrapped in
-                            // parenthesis, do the same with the replacement:
-                            replaceCode(node, /^\(.*\)$/.test(getCode(node))
-                                    ? '(' + exp + ')' : exp);
-                        }
+                        // If the original expression is wrapped in
+                        // parenthesis, do the same with the replacement:
+                        replaceCode(node, /^\(.*\)$/.test(getCode(node))
+                                ? '(' + exp + ')' : exp);
                     }
                 }
                 break;
@@ -335,26 +336,42 @@ Base.exports.PaperScript = function() {
 
         // Static imports are turned into calls of __$import__(), which
         // execute() binds to the loader in options.load. `as` asks for the
-        // module's 'default' export or its 'namespace', see __$import__():
-        function getImport(source, as) {
-            return '__$import__(' + JSON.stringify(source.value)
-                    + (as ? ', "' + as + '"' : '') + ')';
+        // module's 'default' export or its 'namespace', see __$import__(), and
+        // the import attributes are passed on as an object:
+        function getImport(node, as) {
+            var attributes = node.attributes || [],
+                args = [JSON.stringify(node.source.value)];
+            if (as || attributes.length)
+                args.push(as ? '"' + as + '"' : 'undefined');
+            if (attributes.length) {
+                var values = {};
+                attributes.forEach(function(attribute) {
+                    var key = attribute.key;
+                    values[key.name || key.value] = attribute.value.value;
+                });
+                args.push(JSON.stringify(values));
+            }
+            return '__$import__(' + args.join(', ') + ')';
         }
 
         function handleModules(node) {
 			switch (node.type) {
             case 'ImportExpression':
                 // `import(specifier)` resolves to the module's namespace, as a
-                // Promise, so a failed load rejects instead of throwing:
+                // Promise, so a failed load rejects instead of throwing, and
+                // `import(specifier, options)` passes on `options.with`:
                 replaceCode(node, 'Promise.resolve().then(function() { '
                         + 'return __$import__(' + getCode(node.source)
-                        + ', "dynamic"); })');
+                        + ', "dynamic"' + (node.options
+                            ? ', (' + getCode(node.options) + ' || {}).with'
+                            : '')
+                        + '); })');
                 break;
             case 'ImportDeclaration':
                 // `import x from 'm'` assigns the module's default export,
                 // `import * as x from 'm'` its namespace, and
                 // `import { a, b as c } from 'm'` reads names from its exports:
-                var module = getImport(node.source),
+                var module = getImport(node),
                     named = [];
                 var vars = node.specifiers.map(function(specifier) {
                     var local = specifier.local.name;
@@ -363,7 +380,7 @@ Base.exports.PaperScript = function() {
                                 + '__.' + specifier.imported.name);
                         return null;
                     }
-                    return local + ' = ' + getImport(node.source,
+                    return local + ' = ' + getImport(node,
                             specifier.type === 'ImportDefaultSpecifier'
                                 ? 'default' : 'namespace');
                 }).filter(Boolean);
@@ -382,10 +399,10 @@ Base.exports.PaperScript = function() {
                 isModule = true;
                 replaceCode(node, node.exported
                         ? 'module.exports.' + node.exported.name + ' = '
-                            + getImport(node.source, 'namespace') + ';'
+                            + getImport(node, 'namespace') + ';'
                         : '(function(m) { for (var k in m) if (k !== '
                             + '"default") module.exports[k] = m[k]; })('
-                            + getImport(node.source) + ');');
+                            + getImport(node) + ');');
                 break;
             case 'ExportDefaultDeclaration':
                 // Convert `export default` to `module.exports.default = `,
@@ -426,7 +443,7 @@ Base.exports.PaperScript = function() {
                     // `export { a, b as c }` exports the local names under
                     // the exported ones, and `export { a } from 'm'` those
                     // of another module:
-                    var source = node.source && getImport(node.source) + '.';
+                    var source = node.source && getImport(node) + '.';
                     var exports = specifiers.map(function(specifier) {
                         var local = specifier.local.name,
                             exported = specifier.exported.name;
@@ -519,11 +536,8 @@ Base.exports.PaperScript = function() {
                 || agent.webkit && version >= 537.76 // >= Safari 7.0.4
                 || agent.firefox && version >= 23
                 || agent.node)) {
-            if (agent.node) {
-                // -2 required to remove function header:
-                // https://code.google.com/p/chromium/issues/detail?id=331655
-                offset -= 2;
-            } else if (window && url && !window.location.href.indexOf(url)) {
+            if (!agent.node && window && url
+                    && !window.location.href.indexOf(url)) {
                 // If the code stems from the actual html page, determine the
                 // offset of inlined code.
                 var html = document.getElementsByTagName('html')[0].innerHTML,
@@ -569,11 +583,24 @@ Base.exports.PaperScript = function() {
             paperFeatures.moduleExports !== false
         ) {
             // Now do the parsing magic
-            walkAST(parse(code, {
-                ranges: true,
-                preserveParens: true,
-                sourceType: 'module'
-            }), null, paperFeatures);
+            var ast;
+            try {
+                ast = parse(code, {
+                    ranges: true,
+                    preserveParens: true,
+                    sourceType: 'module'
+                });
+            } catch (e) {
+                // Name the code's file in the location of syntax errors, with
+                // columns from 1, as browsers do:
+                if (url && e.loc) {
+                    e.message = e.message.replace(/ \(\d+:\d+\)$/, '')
+                            + ' (at ' + url + ':' + e.loc.line + ':'
+                            + (e.loc.column + 1) + ')';
+                }
+                throw e;
+            }
+            walkAST(ast, null, paperFeatures);
             // Mark ES modules like Babel and TypeScript do, so importers can
             // tell their default export from CommonJS-style exports. Added on
             // a new line at the end, so the lines before keep their numbers:
@@ -596,6 +623,9 @@ Base.exports.PaperScript = function() {
                         + self.btoa(unescape(encodeURIComponent(
                             JSON.stringify(map))));
             }
+        }
+        // Name the code in stack traces and devtools:
+        if (map || url) {
             code += "\n//# sourceURL=" + (url || 'paperscript');
         }
         return {
@@ -624,18 +654,25 @@ Base.exports.PaperScript = function() {
      * @option options.handlers {String[]} the names of further global
      *     handlers to export next to `onFrame`, `onResize` and the tool's
      *     handlers, for hosts that call them themselves
+     * @option options.evaluate {Function} the evaluator for hosts that
+     *     evaluate code their own way: called with the source of a function
+     *     expression and `options.url`, and returning the function, e.g. by
+     *     evaluating the source as a script of that url
      * @option options.load {Function} the loader for static `import`
-     *     statements, called with the specifier as written and the
-     *     `options.url` of the importing script, and returning the module's
-     *     exports, e.g. the result of executing it. Modules with ES `export`
-     *     statements have their default export as `default` and are marked
-     *     with `__esModule`, so `import x` receives the default export, and
-     *     for CommonJS-style exports the whole exports. `import * as x`
+     *     statements, called with the specifier as written, the `options.url`
+     *     of the importing script, and the import attributes as an object,
+     *     e.g. `{ type: 'paperscript' }` for `import x from 'm' with { type:
+     *     'paperscript' }`, or `undefined` without them, and returning the
+     *     module's exports, e.g. the result of executing it. Modules with ES
+     *     `export` statements have their default export as `default` and are
+     *     marked with `__esModule`, so `import x` receives the default export,
+     *     and for CommonJS-style exports the whole exports. `import * as x`
      *     receives all exports, and for CommonJS-style exports, these as
      *     `default` too. Dynamic `import(specifier)` resolves to that
      *     namespace as a Promise, and its loader may return a Promise as well.
-     *     The loader runs each module once and handles cycles. Parsing
-     *     `import` requires a current Acorn as `self.acorn`
+     *     `import(specifier, options)` passes on `options.with` as the
+     *     attributes. The loader runs each module once and handles cycles.
+     *     Parsing `import` requires a current Acorn as `self.acorn`
      *
      * Code with top-level `await` runs as an async function. `execute()` then
      * returns a Promise of the exports, and installs the global handlers once
@@ -699,12 +736,12 @@ Base.exports.PaperScript = function() {
         // handleModules():
         var load = options && options.load,
             url = options && options.url;
-        function __$import__(specifier, as) {
+        function __$import__(specifier, as, attributes) {
             if (!load) {
                 throw new Error('Unable to import \'' + specifier + '\': no '
                         + 'loader was passed to PaperScript.execute().');
             }
-            var exports = load(specifier, url);
+            var exports = load(specifier, url, attributes);
             // Dynamic imports may receive a Promise from the loader:
             return as === 'dynamic'
                     ? Promise.resolve(exports).then(function(exports) {
@@ -751,8 +788,13 @@ Base.exports.PaperScript = function() {
         // Top-level `await` requires an async function:
         var signature = (compiled.async ? 'async ' : '') + 'function('
                 + params + ') {',
-            agent = paper.agent;
-        if (document && (agent.chrome
+            agent = paper.agent,
+            evaluate = options && options.evaluate;
+        if (evaluate) {
+            // The code stays on the line of the signature, so that its lines
+            // keep their numbers:
+            func = evaluate('(' + signature + code + '\n})', compiled.url);
+        } else if (document && (agent.chrome
                 || agent.firefox && agent.versionNumber < 40)) {
             // On older Firefox, all error numbers inside dynamically compiled
             // code are relative to the line where the eval / compilation
@@ -774,10 +816,12 @@ Base.exports.PaperScript = function() {
             delete document.__paperscript__;
             head.removeChild(script);
         } else {
-            // Return the function from a wrapper, as Function() can't create
-            // async functions. The code stays on the same line as with
-            // Function(params, code), for the line numbers of source maps:
-            func = Function('return ' + signature + code + '\n}')();
+            // Evaluated globally as a script through an indirect eval, which,
+            // unlike Function(), adds no header before the code, so that its
+            // lines keep their numbers in every engine:
+            func = (0, eval)( // jshint ignore:line
+                '(' + signature + code + '\n})'
+            );
         }
 
         // Install the 'global' tool and view handlers, and we're done!

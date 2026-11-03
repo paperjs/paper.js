@@ -705,6 +705,17 @@ PathItem.inject(new function() {
             addCut(offsets[curve._path._id] + curve.getIndex(), loc.getTime(),
                     loc.getPoint(), false);
         }
+        // Curves whose control points lie along a line can reverse along it,
+        // and overlap themselves and the other curves along it. Cut them where
+        // they reverse, so that their pieces run in one direction, and the
+        // hot pixels below cut the curves they overlap at the same vertices:
+        for (var i = 0, l = curves.length; i < l; i++) {
+            var times = Curve.getReversals(values[i], epsilon);
+            for (var j = 0, k = times.length; j < k; j++) {
+                addCut(i, times[j], Curve.getPoint(values[i], times[j]),
+                        false);
+            }
+        }
 
         // 2. Merge points closer than epsilon into vertices, through union-find
         // on the points sorted by x. A vertex takes the position of a curve end
@@ -777,7 +788,7 @@ PathItem.inject(new function() {
 
         // The last curve that tested each vertex in getHotPixels(), to test
         // each only once per curve:
-        var marks = new Array(vertices.length);
+        var marks;
 
         // 2b. Cut the curves where they pass within epsilon of a vertex, the
         // hot pixels of snap rounding. Moving the pieces to their vertices
@@ -836,7 +847,7 @@ PathItem.inject(new function() {
             });
         }
 
-        for (var i = 0, l = curves.length; i < l; i++) {
+        function cutAtHotPixels(i) {
             var candidates = getHotPixels(i);
             if (candidates.length) {
                 var list = sortCuts(cuts[i]),
@@ -877,28 +888,48 @@ PathItem.inject(new function() {
         // 2c. Merge the vertices that pieces shorter than 4 epsilon join: As
         // the hot pixels reach 2 epsilon, the order of the edges around such
         // vertices can't be told apart. Merged vertices span up to about 5
-        // epsilon, the precision of the result:
-        var pieces = [];
-        for (var i = 0, l = curves.length; i < l; i++) {
-            var list = sortCuts(cuts[i]);
-            for (var j = 1, k = list.length; j < k; j++) {
-                var cut1 = list[j - 1],
-                    cut2 = list[j];
-                if (getVertex(cut1.point) !== getVertex(cut2.point)
-                        && Curve.getLength(getPiece(i, cut1, cut2))
-                            < 4 * epsilon)
-                    pieces.push([cut1.point, cut2.point]);
+        // epsilon, the precision of the result. Returns true if it merged
+        // any, as moving vertices can bring pieces within epsilon of others:
+        function mergeShortPieces() {
+            var pieces = [],
+                isMerged = false;
+            for (var i = 0, l = curves.length; i < l; i++) {
+                var list = sortCuts(cuts[i]);
+                for (var j = 1, k = list.length; j < k; j++) {
+                    var cut1 = list[j - 1],
+                        cut2 = list[j];
+                    if (getVertex(cut1.point) !== getVertex(cut2.point)) {
+                        // The pieces are at least as long as their ends are
+                        // apart, so we only measure them if close:
+                        var v = getPiece(i, cut1, cut2),
+                            dx = v[6] - v[0],
+                            dy = v[7] - v[1];
+                        if (dx * dx + dy * dy < 16 * epsilon * epsilon
+                                && Curve.getLength(v) < 4 * epsilon)
+                            pieces.push([cut1.point, cut2.point]);
+                    }
+                }
             }
-        }
-        if (pieces.length) {
             for (var i = 0, l = pieces.length; i < l; i++) {
                 var root1 = getRoot(pieces[i][0]),
                     root2 = getRoot(pieces[i][1]);
-                if (root1 !== root2)
+                if (root1 !== root2) {
                     parents[root1] = root2;
+                    isMerged = true;
+                }
             }
-            createVertices();
+            if (isMerged)
+                createVertices();
+            return isMerged;
         }
+
+        // Cut at the hot pixels and merge, until no vertices move any more,
+        // which ends as each merge leaves fewer of them:
+        do {
+            marks = new Array(vertices.length);
+            for (var i = 0, l = curves.length; i < l; i++)
+                cutAtHotPixels(i);
+        } while (mergeShortPieces());
 
         // 3. Create the edges between the vertices along each curve, with the
         // change in winding of each operand when crossing them from right to
@@ -978,6 +1009,18 @@ PathItem.inject(new function() {
         // vertex is reached yet:
         var halfEdges = [];
 
+        // The point at the distance along the half-edge. Straight edges keep
+        // their handles at their ends, so their times don't run evenly:
+        function getPointAt(halfEdge, distance) {
+            var v = halfEdge.values,
+                edge = halfEdge.edge,
+                t = distance / edge.length;
+            return edge.isStraight
+                    ? new Point(v[0] + (v[6] - v[0]) * t,
+                        v[1] + (v[7] - v[1]) * t)
+                    : Curve.getPoint(v, Curve.getTimeAt(v, distance));
+        }
+
         function getSide(halfEdge1, halfEdge2) {
             // Half-edges that leave a vertex tangentially and can't be told
             // apart where their angles are measured: Tell on which side of the
@@ -985,12 +1028,8 @@ PathItem.inject(new function() {
             // as they don't cross before they end, or return 0 if it doesn't
             // run alongside the first one there:
             var v1 = halfEdge1.values,
-                v2 = halfEdge2.values,
-                edge2 = halfEdge2.edge,
-                length = min(halfEdge1.edge.length, edge2.length) / 2,
-                point = Curve.getPoint(v2, edge2.isStraight
-                        ? length / edge2.length
-                        : Curve.getTimeAt(v2, length)),
+                point = getPointAt(halfEdge2, min(halfEdge1.edge.length,
+                        halfEdge2.edge.length) / 2),
                 time = Curve.getNearestTime(v1, point);
             return time > 0 && time < 1
                     ? Curve.getTangent(v1, time).cross(
@@ -1089,10 +1128,7 @@ PathItem.inject(new function() {
                 }
                 for (var j = 0, k = outgoing.length; j < k; j++) {
                     var halfEdge = halfEdges[outgoing[j]],
-                        v = halfEdge.values,
-                        point = Curve.getPoint(v, halfEdge.edge.isStraight
-                                ? distance / halfEdge.edge.length
-                                : Curve.getTimeAt(v, distance));
+                        point = getPointAt(halfEdge, distance);
                     halfEdge.point = point;
                     halfEdge.angle = Math.atan2(point.y - vertex.y,
                             point.x - vertex.x);

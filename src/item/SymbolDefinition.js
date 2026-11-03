@@ -19,8 +19,10 @@
  * internal properties such as segment lists and gradient positions don't need
  * to be updated with every transformation.
  */
-var SymbolDefinition = Base.extend(/** @lends SymbolDefinition# */{
+var SymbolDefinition = ItemDefinition.extend(/** @lends SymbolDefinition# */{
     _class: 'SymbolDefinition',
+    // Move the item to 0, 0, so it's centered when placed:
+    _centerItem: true,
 
     /**
      * Creates a Symbol definition.
@@ -57,16 +59,27 @@ var SymbolDefinition = Base.extend(/** @lends SymbolDefinition# */{
      * }
      */
     initialize: function SymbolDefinition(item, dontCenter) {
-        this._id = UID.get();
-        this.project = paper.project;
-        if (item)
-            this.setItem(item, dontCenter);
+        // JSON passes the options of the definition instead, which can
+        // include dontCenter:
+        var options = Base.isPlainObject(dontCenter) && dontCenter;
+        ItemDefinition.call(this, item,
+                options ? options.dontCenter : dontCenter);
+        if (options)
+            this.set(options, { dontCenter: true });
     },
 
     _serialize: function(options, dictionary) {
         return dictionary.add(this, function() {
-            return Base.serialize([this._class, this._item],
-                    options, false, dictionary);
+            var json = [this._class, this._item],
+                props = {};
+            // Keep items that the definition didn't center in place:
+            if (!this._item.getPosition().isZero())
+                props.dontCenter = true;
+            if (this._name)
+                props.name = this._name;
+            if (Object.keys(props).length)
+                json.push(props);
+            return Base.serialize(json, options, false, dictionary);
         });
     },
 
@@ -79,46 +92,20 @@ var SymbolDefinition = Base.extend(/** @lends SymbolDefinition# */{
      */
 
     /**
-     * Private notifier that is called whenever a change occurs in this symbol's
-     * definition.
+     * The name of the symbol.
      *
-     * @param {ChangeFlag} flags describes what exactly has changed
+     * @name SymbolDefinition#name
+     * @property
+     * @type String
      */
-    _changed: function(flags) {
-        if (flags & /*#=*/ChangeFlag.GEOMETRY)
-            // Clear cached bounds of all items that this symbol is linked to.
-            Item._clearBoundsCache(this);
-        if (flags & /*#=*/ChangeFlag.APPEARANCE)
-            this.project._changed(flags);
-    },
 
     /**
      * The item used as the symbol's definition.
      *
-     * @bean
+     * @name SymbolDefinition#item
+     * @property
      * @type Item
      */
-    getItem: function() {
-        return this._item;
-    },
-
-    setItem: function(item, _dontCenter) {
-        // Make sure we're not stealing another symbol's definition
-        if (item._symbol)
-            item = item.clone();
-        // Remove previous definition's reference to this symbol
-        if (this._item)
-            this._item._symbol = null;
-        this._item = item;
-        // Remove item from DOM, as it's embedded in Symbol now.
-        item.remove();
-        item.setSelected(false);
-        // Move position to 0, 0, so it's centered when placed.
-        if (!_dontCenter)
-            item.setPosition(new Point());
-        item._symbol = this;
-        this._changed(/*#=*/Change.GEOMETRY);
-    },
 
     /**
      * @bean
@@ -139,12 +126,16 @@ var SymbolDefinition = Base.extend(/** @lends SymbolDefinition# */{
     },
 
     /**
-     * Returns a copy of the symbol.
+     * Returns a copy of the symbol, with a copy of its item and its name.
      *
      * @return {SymbolDefinition}
      */
     clone: function() {
-        return new SymbolDefinition(this._item.clone(false));
+        // The copied item is already where this definition placed it:
+        return new SymbolDefinition(this._item.clone(false), {
+            dontCenter: true,
+            name: this._name
+        });
     },
 
     /**

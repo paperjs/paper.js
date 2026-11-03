@@ -42,6 +42,7 @@ let style            = {} as paper.Style;
 let color            = {} as paper.Color;
 let gradient         = {} as paper.Gradient;
 let gradientStop     = {} as paper.GradientStop;
+let pattern          = {} as paper.PatternDefinition;
 let textItem         = {} as paper.TextItem;
 let pointText        = {} as paper.PointText;
 let view             = {} as paper.View;
@@ -958,6 +959,9 @@ new paper.Color(object);
 new paper.Color('');
 new paper.Color(gradient, pointLike, pointLike);
 new paper.Color(gradient, pointLike, pointLike, pointLike);
+new paper.Color(pattern);
+new paper.Color(pattern, matrix);
+new paper.Color({ pattern: pattern, matrix: matrix });
 color.type;
 color.components;
 color.alpha;
@@ -971,6 +975,8 @@ color.brightness;
 color.lightness;
 color.gradient;
 color.highlight;
+color.pattern;
+color.matrix;
 color.set(0, 0, 0);
 color.set(0, 0, 0, 0);
 color.set(0);
@@ -1005,6 +1011,20 @@ gradient.stops;
 gradient.radial;
 gradient.clone();
 gradient.equals(gradient);
+
+
+//
+// PatternDefinition
+//
+
+new paper.PatternDefinition(item);
+new paper.PatternDefinition(item, { tile: rectangle, spacing: size });
+pattern.item;
+pattern.tile;
+pattern.spacing;
+pattern.clone();
+pattern.equals(pattern);
+item.fillColor = { pattern: pattern };
 
 
 //

@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { describe } from 'vitest'
+import { describe, onTestFinished } from 'vitest'
 import paper, {
   Color,
   PaperScope,
@@ -57,6 +57,122 @@ describe('PaperScript', () => {
     executeCode(
       'var x = 1; var y = 4 * x++; y; module.exports = x + " " + y',
       '2 4'
+    )
+  })
+
+  // Each case: code that exports its results, and the expected exports. The
+  // compiled code has to parse, with both the bundled and a current Acorn:
+  function executeUpdates(cases) {
+    cases.forEach(([code, expected]) => {
+      const compiled = PaperScript.compile(code)
+      try {
+        acornLatest.parse(compiled.code, { ecmaVersion: 'latest' })
+      } catch (err) {
+        ok(false, err + ': ' + compiled.code)
+      }
+      executeCode(code, expected)
+    })
+  }
+
+  const updateCases = [
+    // Statements and sequences:
+    ['var x = 1; x++; ++x; x--, ++x; module.exports = x', 3],
+    // Operands of logical, conditional and binary operators:
+    ['var x = 1, y = true && x++; module.exports = [x, y]', [2, 1]],
+    ['var x = 1, y = true && ++x; module.exports = [x, y]', [2, 2]],
+    ['var x = 0, y = false || x--; module.exports = [x, y]', [-1, 0]],
+    ['var x = 1, y = x ? x++ : 0; module.exports = [x, y]', [2, 1]],
+    ['var x = 1, y = 10 * x++ + ++x; module.exports = [x, y]', [3, 13]],
+    // Sequences, arguments and literals:
+    ['var x = 1, y = (x++, x++); module.exports = [x, y]', [3, 2]],
+    [
+      'function f(a, b) { return [a, b]; }\n' +
+      'var x = 1; module.exports = f(x++, ++x).concat(x)',
+      [1, 3, 3]
+    ],
+    [
+      'var x = 1, a = [x++, x], o = { v: x-- }; module.exports = [a, o.v, x]',
+      [[1, 2], 2, 1]
+    ],
+    // Assignments of properties, returns and loops:
+    [
+      'var x = 1, o = {}; o.v = x++; o.w = --x; module.exports = [o.v, o.w, x]',
+      [1, 1, 1]
+    ],
+    [
+      'var x = 1; function f() { return x++; } module.exports = [f(), x]',
+      [1, 2]
+    ],
+    [
+      'for (var i = 0, j = 0; i < 3; i++, j++) {} module.exports = [i, j]',
+      [3, 3]
+    ],
+    ['var i = 3, n = 0; while (i--) n++; module.exports = [i, n]', [-1, 3]],
+    // Properties evaluate their object and key once:
+    [
+      'var calls = 0, o = { v: 1 }, a = [1];\n' +
+      'function obj() { calls++; return o; }\n' +
+        'function key() { calls++; return 0; }\n' +
+        'var r = [obj().v++, ++obj().v, a[key()]++, ++a[key()],\n' +
+        '  obj()["v"]--];\n' +
+        'obj().v++;\n' +
+        'module.exports = [r, o.v, a[0], calls]',
+      [[1, 3, 1, 3, 3], 3, 3, 6]
+    ],
+    // Points are updated through operator overloading:
+    [
+      'var p = new Point(1, 2), q = p++, r = ++p; module.exports = [p, q, r]',
+      [new Point(3, 4), new Point(1, 2), new Point(3, 4)]
+    ],
+    [
+      'var o = { p: new Point(1, 2) }, q = o.p--; module.exports = [o.p, q]',
+      [new Point(0, 1), new Point(1, 2)]
+    ]
+  ]
+
+  test('PaperScript update expressions', () => {
+    executeUpdates(updateCases)
+    withAcornLatest(() => {
+      executeUpdates(updateCases)
+      executeUpdates([
+        [
+          'var x = 1, f = () => x++, g = () => ++x;\n' +
+          'module.exports = [f(), g(), x]',
+          [1, 3, 3]
+        ]
+      ])
+    })
+  })
+
+  test('PaperScript update expressions in minified code', () => {
+    // Minimized from socket.io's client:
+    executeUpdates([
+      [
+        'var o = 2, t = "a=="; "=" === t[t.length - 2] && o--;\n' +
+        'module.exports = o',
+        1
+      ],
+      [
+        'var S = { requestsCount: 0 };\n' +
+        'function F() {\n' +
+          '  "undefined" != typeof S &&\n' +
+          '    (this.B = S.requestsCount++, this.C = 1)\n' +
+          '}\n' +
+          'var f = new F(); module.exports = [f.B, f.C, S.requestsCount]',
+        [0, 1, 1]
+      ]
+    ])
+  })
+
+  test('PaperScript keeps keywords apart from replaced expressions', () => {
+    // Minified code puts operators right after keywords:
+    executeCode(
+      'function f(i) { return-1!=i } module.exports = f(1) + " " + f(-1)',
+      'true false'
+    )
+    executeCode(
+      'var a = [1]; module.exports = typeof-a[0] + " " + (void-a[0])',
+      'number undefined'
     )
   })
 
@@ -124,6 +240,70 @@ describe('PaperScript', () => {
       )
       ok(stack.indexOf(document.baseURI) !== -1, stack)
       getScope().remove()
+      document.body.removeChild(canvas)
+      current.activate()
+    })
+  }
+
+  if (!isNodeContext) {
+    test('PaperScript.load() with scripts of a canvas', () => {
+      const current = paper,
+        canvas = document.createElement('canvas'),
+        scripts = []
+      canvas.id = 'paperscript-load-canvas'
+      document.body.appendChild(canvas)
+
+      function createScript(code, type, attributes) {
+        const script = document.createElement('script')
+        script.type = type
+        script.text = code
+        script.setAttribute('canvas', canvas.id)
+        for (const name in attributes) {
+          script.setAttribute(name, attributes[name])
+        }
+        document.body.appendChild(script)
+        scripts.push(script)
+        return script
+      }
+
+      const first = createScript(
+        'paper.loaded = ["first"];',
+        'text/paperscript'
+      )
+      const scope = PaperScript.load(first)
+      equals(scope.view.element === canvas, true)
+      // Further scripts of the canvas share its scope, also as
+      // text/x-paperscript:
+      const second = createScript(
+        'paper.loaded.push("second");',
+        'text/x-paperscript'
+      )
+      equals(PaperScript.load(second) === scope, true)
+      // Loaded scripts and ignored ones don't load (again):
+      const ignored = createScript(
+        'paper.loaded.push("ignored");',
+        'text/paperscript',
+        { ignore: 'true' }
+      )
+      equals(PaperScript.load(first), undefined)
+      equals(PaperScript.load(ignored), undefined)
+      // Without a script, all scripts of the document that aren't loaded
+      // load:
+      createScript('paper.loaded.push("third");', 'text/paperscript')
+      PaperScript.load()
+      equals(scope.loaded, ['first', 'second', 'third'])
+      // Scripts of a missing canvas throw:
+      const missing = createScript('', 'text/paperscript')
+      missing.setAttribute('canvas', 'missing-canvas')
+      let message
+      try {
+        PaperScript.load(missing)
+      } catch (e) {
+        message = e.message
+      }
+      equals(message, 'Unable to find canvas with id "missing-canvas"')
+      scripts.forEach(script => document.body.removeChild(script))
+      scope.remove()
       document.body.removeChild(canvas)
       current.activate()
     })
@@ -332,6 +512,82 @@ describe('PaperScript', () => {
     })
   })
 
+  test('PaperScript import attributes', () => {
+    withAcornLatest(() => {
+      const calls = []
+      function load(specifier, url, attributes) {
+        calls.push([specifier, attributes])
+        return { x: 1 }
+      }
+      PaperScript.execute(
+        'import { x } from "a.js" with { type: "paperscript" };\n' +
+        'import b from "b.js" with { "type": "javascript" };\n' +
+        'import "c.js";\n' +
+        'export { x as y } from "d.js" with { type: "paperscript" };\n' +
+        'export * from "e.js" with { type: "paperscript" };\n' +
+        'export * as f from "f.js" with { type: "paperscript" };',
+        paper,
+        { load }
+      )
+      equals(calls, [
+        ['a.js', { type: 'paperscript' }],
+        ['b.js', { type: 'javascript' }],
+        ['c.js', undefined],
+        ['d.js', { type: 'paperscript' }],
+        ['e.js', { type: 'paperscript' }],
+        ['f.js', { type: 'paperscript' }]
+      ])
+    })
+  })
+
+  test('PaperScript dynamic import attributes', assert => {
+    const done = assert.async()
+    withAcornLatest(() => {
+      const calls = [],
+        order = []
+      function load(specifier, url, attributes) {
+        calls.push([specifier, attributes])
+        return { x: 1 }
+      }
+      // Log the order in which specifier and options are evaluated:
+      paper.log = value => {
+        order.push(value)
+        return value
+      }
+      let exports
+      try {
+        exports = PaperScript.execute(
+          'module.exports.results = [\n' +
+          '    import(log("a.js"), log({ with: { type: "paperscript" } })),\n' +
+          '    import("b.js", {}),\n' +
+          '    import("c.js")\n' +
+          '];',
+          paper,
+          { load }
+        )
+      } finally {
+        delete paper.log
+      }
+      Promise.all(exports.results)
+        .then(() => {
+          equals(calls, [
+            ['a.js', { type: 'paperscript' }],
+            ['b.js', undefined],
+            ['c.js', undefined]
+          ])
+          equals(
+            order,
+            ['a.js', { with: { type: 'paperscript' } }],
+            'the options are evaluated once, after the specifier'
+          )
+        })
+        .then(done, error => {
+          ok(false, error + '')
+          done()
+        })
+    })
+  })
+
   test('PaperScript compound assignments evaluate their targets once', () => {
     executeCode(
       'var calls = 0;\n' +
@@ -343,6 +599,20 @@ describe('PaperScript', () => {
       'module.exports = [calls, points[0], o.p, (o.p -= 1)];',
       [2, new Point(2, 3), new Point(2, 2), new Point(1, 1)]
     )
+  })
+
+  test('PaperScript exports from destructuring with defaults and rests', () => {
+    withAcornLatest(() => {
+      const exports = PaperScript.execute(
+        'export const { a = 1, ...rest } = { b: 2 };\n' +
+        'export const [x = new Point(1, 2) * 2, ...ys] = [undefined, 4, 5];',
+        paper
+      )
+      equals(
+        () => [exports.a, exports.rest, exports.x, exports.ys],
+        [1, { b: 2 }, new Point(2, 4), [4, 5]]
+      )
+    })
   })
 
   test('PaperScript binary operators', () => {
@@ -376,6 +646,17 @@ describe('PaperScript', () => {
     ].forEach(entry => {
       executeCode('module.exports = ' + entry[0], entry[1])
     })
+  })
+
+  test('PaperScript operators on numbers in variables', () => {
+    // Operations on literals alone are left as they are, so the numbers
+    // come from variables:
+    executeCode(
+      'var a = 6, b = 4, s = "5";\n' +
+      'module.exports = [a + b, a - b, a * b, a / b, a % b, a == "6", ' +
+      'a != b, -a, +s]',
+      [10, 2, 24, 1.5, 2, true, true, -6, 5]
+    )
   })
 
   test('PaperScript equality operators', () => {
@@ -446,6 +727,10 @@ describe('PaperScript', () => {
     executeCode('var s = "a"; s += 1; module.exports = s', 'a1')
   })
 
+  test('PaperScript.compile() with empty code', () => {
+    equals(PaperScript.compile('').code, '')
+  })
+
   test('PaperScript with operator overloading turned off', () => {
     const code = 'var p = new Point(1, 2); module.exports = p + 1;'
     equals(
@@ -473,6 +758,37 @@ describe('PaperScript', () => {
     )
     equals(exports, { project: true, view: true, point: true })
   })
+
+  // Scripts only see the globals of paper's `self` in browsers, not in Node:
+  if (!isNodeContext) {
+    test('PaperScript.execute() with a scope installed globally', () => {
+      const current = paper,
+        scope = new PaperScope().setup(new Size(10, 10)),
+        keys = new Set(Object.keys(self))
+      scope.install(self)
+      onTestFinished(() => {
+        for (const key of Object.keys(self)) {
+          if (!keys.has(key)) delete self[key]
+        }
+        scope.remove()
+        current.activate()
+      })
+      // The installed project and view follow the active project:
+      const exports = PaperScript.execute(
+        'var first = project,\n' +
+        '    second = new Project(new Size(10, 10)),\n' +
+        '    isSecond = project === second && view === second.view;\n' +
+        'first.activate();\n' +
+        'module.exports = {\n' +
+        '    second: isSecond && second !== first,\n' +
+        '    first: project === first && project === paper.project,\n' +
+        '    view: view === first.view\n' +
+        '};',
+        scope
+      )
+      equals(exports, { second: true, first: true, view: true })
+    })
+  }
 
   test('PaperScript.execute() handlers', () => {
     const view = paper.view,
@@ -548,6 +864,80 @@ describe('PaperScript', () => {
       message = e.message
     }
     equals(() => /Unexpected token/.test(message), true, message)
+  })
+
+  test('PaperScript syntax errors name the url', () => {
+    let message
+    try {
+      PaperScript.compile('var a = 1;\nvar b = ;', { url: 'test.js' })
+    } catch (e) {
+      message = e.message
+    }
+    equals(message, 'Unexpected token (at test.js:2:9)')
+  })
+
+  test('PaperScript names the url in stack traces', () => {
+    const stack = PaperScript.execute(
+      'module.exports = new Error().stack',
+      paper,
+      { url: 'file:///scripts/test.js' }
+    )
+    equals(() => stack.indexOf('file:///scripts/test.js:') !== -1, true, stack)
+  })
+
+  test('PaperScript stack traces have the lines of the code', () => {
+    const stack = PaperScript.execute(
+      '// One\n// Two\nmodule.exports = new Error().stack',
+      paper,
+      { url: 'file:///scripts/lines.js' }
+    )
+    equals(() => /lines\.js:3:\d+/.test(stack), true, stack)
+  })
+
+  test('PaperScript stack traces have the lines of code that awaits', assert => {
+    const done = assert.async()
+    withAcornLatest(() => {
+      PaperScript.execute(
+        'await null;\n// Two\nthrow new Error("failed");',
+        paper,
+        { url: 'file:///scripts/awaits.js' }
+      ).then(
+        () => {
+          ok(false, 'the code should reject')
+          done()
+        },
+        error => {
+          equals(
+            () => /awaits\.js:3:\d+/.test(error.stack),
+            true,
+            error.stack
+          )
+          done()
+        }
+      )
+    })
+  })
+
+  test('PaperScript.execute() with an evaluator', () => {
+    let evaluated
+    const stack = PaperScript.execute(
+      'module.exports = new Error().stack',
+      paper,
+      {
+        url: 'file:///scripts/test.js',
+        evaluate(source, url) {
+          evaluated = url
+          return (0, eval)(source)
+        }
+      }
+    )
+    equals(evaluated, 'file:///scripts/test.js')
+    // The code keeps its line numbers:
+    equals(
+      () => stack.indexOf('file:///scripts/test.js:1:') !== -1,
+      true,
+      stack
+    )
   })
 
   test('PaperScript dynamic imports', assert => {

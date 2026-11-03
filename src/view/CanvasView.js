@@ -105,7 +105,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
      *
      * @param {Boolean} [force=false] whether to redraw the view even if nothing
      * has changed, e.g. after a web font used by text items has finished
-     * loading
+     * loading, also in buffered groups, see {@link Group#buffered}
      * @return {Boolean} {@true if the view was updated}
      */
     update: function(force) {
@@ -115,8 +115,12 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
             ctx = this._context,
             size = this._viewSize;
         ctx.clearRect(0, 0, size.width + 1, size.height + 1);
-        if (project)
-            project.draw(ctx, this._matrix, this._pixelRatio);
+        if (project) {
+            // Forced updates follow changes that the buffers don't know of:
+            if (force)
+                project._bufferVersion++;
+            project.draw(ctx, this._matrix, this._pixelRatio, this);
+        }
         this._needsUpdate = false;
         return true;
     }

@@ -18,6 +18,7 @@ import paper, {
   Path,
   PathItem,
   Point,
+  Rectangle,
   Segment,
   Size
 } from 'paper'
@@ -319,6 +320,100 @@ describe('Path', () => {
     path.selected = true
     path.simplify()
     equals(() => path.selected, true)
+  })
+
+  test('Path#simplify(options) with a range', () => {
+    const path = new Path()
+    for (let i = 0; i < 20; i++) {
+      path.add(i * 10, i % 2 ? 0 : 1)
+    }
+    const points = path.segments.map(segment => segment.point.clone())
+    equals(() => path.simplify({ from: 5, to: 14 }), true)
+    // The segments outside of the range stay, and the range shrinks:
+    equals(() => path.segments.length < 20, true)
+    equals(
+      () => path.segments.slice(0, 6).map(({ point }) => point),
+      points.slice(0, 6)
+    )
+    equals(
+      () => path.segments.slice(-5).map(({ point }) => point),
+      points.slice(-5)
+    )
+    equals(
+      () =>
+        path.segments.slice(0, 5).every(({ handleOut }) => handleOut.isZero()),
+      true
+    )
+  })
+
+  test('After simplifying a range of a fullySelected path, it should stay fullySelected', () => {
+    const path = new Path()
+    for (let i = 0; i < 20; i++) {
+      path.add(i * 10, i % 2 ? 0 : 1)
+    }
+    path.fullySelected = true
+    path.simplify({ from: 5, to: 14 })
+    equals(() => path.fullySelected, true)
+  })
+
+  test('Path#simplify(tolerance) is #simplify({ tolerance })', () => {
+    const create = () => {
+      const path = new Path()
+      for (let i = 0; i < 30; i++) {
+        path.add(i * 10, Math.sin(i / 3) * 20)
+      }
+      return path
+    }
+    const path = create()
+    path.simplify(10)
+    const other = create()
+    other.simplify({ tolerance: 10 })
+    equals(() => other.pathData, path.pathData)
+  })
+
+  test('Path#simplify(options) with a range wrapping around a closed path', () => {
+    const path = new Path({ closed: true })
+    for (let i = 0; i < 24; i++) {
+      path.add(new Point({ angle: i * 15, length: 100 }))
+    }
+    const points = path.segments.map(segment => segment.point.clone())
+    equals(() => path.simplify({ from: -6, to: 6 }), true)
+    equals(() => path.segments.length < 24, true)
+    // The segments between the range's ends stay in place:
+    equals(
+      () => path.segments.slice(0, 11).map(({ point }) => point),
+      points.slice(7, 18)
+    )
+  })
+
+  test('Path#simplify(options) up to a negative index on a closed path', () => {
+    const path = new Path({ closed: true })
+    for (let i = 0; i < 24; i++) {
+      path.add(new Point({ angle: i * 15, length: 100 }))
+    }
+    equals(() => path.simplify({ from: 0, to: -1 }), true)
+    equals(() => path.segments.length < 24, true)
+  })
+
+  test('Path#simplify(options) joins curves outside of the range tangentially', () => {
+    const path = new Path([
+      [[0, 0], null, [50, 0]],
+      [[100, 50], [0, -40], null],
+      [110, 70],
+      [120, 80],
+      [130, 90],
+      [[200, 100], null, null]
+    ])
+    path.simplify({ from: 1, to: 5 })
+    const { handleIn, handleOut } = path.segments[1]
+    equals(() => handleIn, new Point(0, -40))
+    equals(() => handleOut.normalize(), new Point(0, 1))
+  })
+
+  test('Path#smooth(options) up to a negative index on a closed path', () => {
+    const path = new Path.Rectangle({ point: [0, 0], size: [100, 100] })
+    path.smooth({ type: 'continuous', from: 0, to: -1 })
+    equals(() => path.segments[1].handleIn.isZero(), false)
   })
 
   test('After smoothing a path using #smooth(), the path should stay fullySelected', () => {
@@ -917,6 +1012,92 @@ describe('Path', () => {
     path.moveTo(point)
     path.arcTo(point, new Size(10), 0, true, true)
     expect.assertions(0)
+  })
+
+  test('Path#arcAround(center, angle)', () => {
+    const path = new Path()
+    path.moveTo([100, 0])
+    path.arcAround([0, 0], 90)
+    equals(() => path.lastSegment.point, new Point(0, 100))
+    equals(() => path.segments.length, 2)
+    path.arcAround([0, 0], -180)
+    equals(() => path.lastSegment.point, new Point(0, -100))
+    equals(() => path.bounds, new Rectangle(0, -100, 100, 200))
+  })
+
+  test('Path#arcAround(center, angle) with full circles and no angle', () => {
+    const path = new Path()
+    path.moveTo([100, 0])
+    path.arcAround([0, 0], 0)
+    equals(() => path.segments.length, 1)
+    path.arcAround([0, 0], 360)
+    equals(() => path.segments.length, 5)
+    equals(() => path.lastSegment.point, new Point(100, 0))
+    equals(() => path.bounds, new Rectangle(-100, -100, 200, 200))
+  })
+
+  test('Path#arcAround(center, angle) with tiny angles', () => {
+    const path = new Path()
+    path.moveTo([100, 0])
+    path.arcAround([0, 0], 1e-6)
+    equals(() => path.segments.length, 2)
+    equals(() => path.lastSegment.point, new Point(100, 0).rotate(1e-6))
+  })
+
+  test('Path#arcAround(center, angle) with tiny angles that end where they start', () => {
+    const path = new Path()
+    path.moveTo([101, 1])
+    path.arcAround([1, 1], 1e-17)
+    equals(() => path.segments.length, 1)
+  })
+
+  test('Path#arcTowards(to)', () => {
+    const path = new Path()
+    path.moveTo([0, 0])
+    path.lineTo([100, 0])
+    path.arcTowards([200, 100])
+    equals(() => path.lastSegment.point, new Point(200, 100))
+    equals(() => path.segments[1].handleOut.normalize(), new Point(1, 0))
+    equals(() => path.bounds, new Rectangle(0, 0, 200, 100))
+  })
+
+  test('Path#arcTowards(to) beyond half circles', () => {
+    const path = new Path()
+    path.moveTo([0, 0])
+    path.lineTo([100, 0])
+    path.arcTowards([50, 50])
+    equals(() => path.lastSegment.point, new Point(50, 50))
+    equals(() => path.segments[1].handleOut.normalize(), new Point(1, 0))
+    equals(() => path.bounds, new Rectangle(0, 0, 150, 100))
+  })
+
+  test('Path#arcTowards(to) after curves', () => {
+    const path = new Path()
+    path.moveTo([0, 100])
+    path.cubicCurveTo([0, 50], [50, 0], [100, 0])
+    path.arcTowards([200, 100])
+    equals(() => path.segments[1].handleOut.normalize(), new Point(1, 0))
+    equals(() => path.lastSegment.point, new Point(200, 100))
+  })
+
+  test('Path#arcTowards(to) on the tangent', () => {
+    const path = new Path()
+    path.moveTo([0, 0])
+    path.lineTo([100, 0])
+    path.arcTowards([200, 0])
+    equals(() => path.segments.length, 3)
+    equals(() => path.lastSegment.point, new Point(200, 0))
+    expect(() => path.arcTowards([100, 0])).toThrow(
+      'Cannot create an arc with the given arguments'
+    )
+  })
+
+  test('Path#arcTowards(to) without a tangent', () => {
+    const path = new Path()
+    path.moveTo([0, 0])
+    expect(() => path.arcTowards([100, 100])).toThrow(
+      'Cannot create an arc with the given arguments'
+    )
   })
 
   test('Path#closed with blend mode', () => {

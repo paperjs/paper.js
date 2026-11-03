@@ -89,6 +89,9 @@ new function() {
         var nodes = node.childNodes,
             isClip = type === 'clippath' || type === 'mask',
             isDefs = type === 'defs',
+            // The attributes of patterns describe their tiles, see
+            // importPattern():
+            isPattern = type === 'pattern',
             // Paper.js marks the groups of its layers, see SvgExport:
             ctor = node.hasAttribute('data-paper-layer') ? Layer : Group,
             item = new ctor(),
@@ -96,7 +99,7 @@ new function() {
             currentStyle = project._currentStyle,
             parentSize = rootSize,
             children = [];
-        if (!isClip && !isDefs) {
+        if (!isClip && !isDefs && !isPattern) {
             item = applyAttributes(item, node, options, isRoot);
             // Style on items needs to be handled differently than all other
             // items: We first apply the style to the item, then use it as the
@@ -165,6 +168,7 @@ new function() {
         var color = item.getFillColor();
         return (item instanceof PathItem || item instanceof Shape)
                 && !item.hasStroke() && !!color && !color.gradient
+                && !color.pattern
                 && color.getAlpha() === 1
                 // White in any color type:
                 && (isAlpha || color.getBrightness() === 1
@@ -240,6 +244,26 @@ new function() {
         return null;
     }
 
+    function importPattern(node, type, options) {
+        // SVG draws the content of tiles relative to their top left corner, or
+        // maps the viewBox onto them:
+        var item = importGroup(node, type, options),
+            tile = new Rectangle(getPoint(node), getSize(node)),
+            viewBox = getValue(node, 'viewBox', true),
+            matrix = new Matrix().translate(tile.getPoint());
+        if (viewBox) {
+            var rect = new Rectangle(convertValue(viewBox, 'array'));
+            matrix.scale(tile.getSize().divide(rect.getSize()))
+                    .translate(rect.getPoint().negate());
+        }
+        item.transform(matrix);
+        applyAttributes(new Color(new PatternDefinition(item, { tile: tile })),
+                node, options);
+        // As with gradients, the color is only needed in definitions, which
+        // applyAttributes() adds it to:
+        return null;
+    }
+
     // NOTE: All importers are lowercase, since jsdom is using uppercase
     // nodeNames still.
     var importers = {
@@ -268,6 +292,8 @@ new function() {
         lineargradient: importGradient,
         // https://www.w3.org/TR/SVG/pservers.html#RadialGradients
         radialgradient: importGradient,
+        // https://www.w3.org/TR/SVG/pservers.html#Patterns
+        pattern: importPattern,
 
         // https://www.w3.org/TR/SVG/struct.html#ImageElement
         image: function (node, type, options) {
@@ -574,6 +600,7 @@ new function() {
         mask: applyClipMask,
 
         gradientTransform: applyTransform,
+        patternTransform: applyTransform,
         transform: applyTransform,
 
         'fill-opacity': applyOpacity,
@@ -798,6 +825,29 @@ new function() {
         return json ? Base.set(data || {}, JSON.parse(json)) : data;
     }
 
+    // Restore the names and data of segments as SvgExport stores them, unless
+    // another editor changed the path so that their indices don't fit anymore:
+    function setSegmentsData(item, node) {
+        var json = node.getAttribute('data-paper-segments');
+        if (json) {
+            var entries = JSON.parse(json),
+                paths = item._children || [item],
+                segments = [];
+            for (var i = 0, l = paths.length; i < l; i++)
+                segments.push.apply(segments, paths[i]._segments);
+            if (Math.max.apply(Math, Object.keys(entries)) < segments.length) {
+                for (var index in entries) {
+                    var entry = entries[index],
+                        segment = segments[index];
+                    if (entry.name)
+                        segment.setName(entry.name);
+                    if (entry.data)
+                        segment._data = entry.data;
+                }
+            }
+        }
+    }
+
     var sandbox;
 
     function getSandbox() {
@@ -878,6 +928,10 @@ new function() {
                 settings.applyMatrix = applyMatrix;
             }
             if (item) {
+                // Restore segment names and data before attributes can wrap
+                // the path in a clip group:
+                if (isElement && item instanceof PathItem)
+                    setSegmentsData(item, node);
                 // Do not apply attributes if this is a #document node.
                 // importGroup() applies them itself, see there for why:
                 if (isElement && importer !== importGroup)

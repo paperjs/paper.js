@@ -57,9 +57,11 @@ var PaperScopeItem = Base.extend(Emitter, /** @lends PaperScopeItem# */{
         if (this._index == null)
             return false;
         Base.splice(this._scope[this._list], null, this._index, 1);
-        // Clear the active tool reference if it was pointint to this.
-        if (this._scope[this._reference] == this)
+        // Clear the active reference if it was pointing to this:
+        if (this._scope[this._reference] == this) {
             this._scope[this._reference] = null;
+            this.emit('deactivate');
+        }
         this._scope = null;
         return true;
     },

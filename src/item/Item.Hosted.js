@@ -17,11 +17,13 @@ new function() {
     // The fields that #_load() fills in, by the class that defines them:
     var contentFields = [
             [Item, ['_style', '_applyMatrix', '_opacity', '_blendMode',
-                    '_pivot', '_data', '_textWrap']],
+                    '_pivot', '_data', '_textWrap', '_effects']],
             [Path, ['_segments', '_closed', '_version', '_curves',
-                    '_segmentSelection']],
+                    '_segmentSelection', '_strokeProfile']],
             [CompoundPath, ['_children', '_namedChildren']],
+            [SymbolItem, ['_definition']],
             [HostItem, ['_values']],
+            [Raster, ['_size', '_loaded']],
             [TextItem, ['_story', '_orientation', '_layout', '_fontMetrics']],
             // The text path is a text's content, not one of its children:
             [PathText, ['_children', '_startOffset', '_endOffset',
@@ -32,13 +34,32 @@ new function() {
         // The fields that #_loadChildren() fills in on containers of hosted
         // items, Group and HostItem with _hasChildren:
         childrenFields = ['_children', '_namedChildren'],
+        // The fields that #_loadPixels() fills in on rasters from the host's
+        // image, after their content:
+        pixelFields = ['_image', '_canvas', '_context'],
         // The host boxes per item: bounds, strokeBounds and roughBounds.
         boxSize = 12,
         shellPrototypes = {},
+        // The flags of the host's records, see Project#host, and the two
+        // more of Project#invalidate():
+        recordFlags = {
+            selected: 1,
+            visible: 2,
+            locked: 4,
+            strokeScaling: 8,
+            content: 16,
+            children: 32,
+            clipMask: 64,
+            guide: 128,
+            empty: 256
+        },
         // The changes that outdate the host's boxes:
         boundsFlags = /*#=*/(ChangeFlag.GEOMETRY | ChangeFlag.STROKE),
         // Set while loading or invalidating, which aren't changes:
-        isLoading = false;
+        isLoading = false,
+        // The copies of definitions that one insertion or copy brings into a
+        // project with another host, see copyDefinitions():
+        definitionCopies = null;
 
     function defineValue(item, name, value) {
         Object.defineProperty(item, name, {
@@ -88,6 +109,22 @@ new function() {
                     defineLoader(shell, field, '_loadChildren');
                 });
             }
+            if (shell instanceof Raster) {
+                pixelFields.forEach(function(field) {
+                    defineLoader(shell, field, '_loadPixels');
+                });
+                // Pixels that are still with the host export without a source:
+                var serializeFields = Base.set({}, proto._serializeFields);
+                delete serializeFields.crossOrigin;
+                delete serializeFields.source;
+                Object.defineProperty(shell, '_serializeFields', {
+                    get: function() {
+                        return this.hasOwnProperty('_canvas')
+                                ? proto._serializeFields
+                                : serializeFields;
+                    }
+                });
+            }
             // Fill the bounds cache from the host boxes, until the item or
             // one of its descendants changes and Paper.js measures it itself:
             shell._getCachedBounds = function(matrix, options, noInternal) {
@@ -128,17 +165,18 @@ new function() {
     function setRecord(item, columns, i) {
         var flags = columns.flags[i],
             matrix = columns.matrices && columns.matrices[i];
-        item._visible = !!(flags & 2);
-        item._locked = !!(flags & 4);
-        item._strokeScaling = !!(flags & 8);
-        item._clipMask = !!(flags & 64);
-        item._guide = !!(flags & 128);
-        item._empty = !!(flags & 256);
+        item._visible = !!(flags & recordFlags.visible);
+        item._locked = !!(flags & recordFlags.locked);
+        item._strokeScaling = !!(flags & recordFlags.strokeScaling);
+        item._clipMask = !!(flags & recordFlags.clipMask);
+        item._guide = !!(flags & recordFlags.guide);
+        item._empty = !!(flags & recordFlags.empty);
         item._selection = item._selection & ~/*#=*/ItemSelection.ITEM
-                | (flags & 1 ? /*#=*/ItemSelection.ITEM : 0);
+                | (flags & recordFlags.selected ? /*#=*/ItemSelection.ITEM : 0);
         item._matrix._set.apply(item._matrix,
                 (matrix || [1, 0, 0, 1, 0, 0]).concat([true]));
-        item._boxes = columns.boxes;
+        // Without boxes, the item asks for them, see #_getHostBounds():
+        item._boxes = columns.boxes || undefined;
         item._boxIndex = i * boxSize;
         item._bounds = undefined;
         item._hostBounds = true;
@@ -185,19 +223,244 @@ new function() {
 
     // Loading and invalidating items isn't a change of the document, so we
     // keep it out of the change log. Loading linked text loads the children
-    // of the containers of its other items while it loads:
+    // of the containers of its other items while it loads. What it creates
+    // belongs to the project that it loads for, which we make the active one
+    // meanwhile, without activating it:
     function whileLoading(project, callback) {
         var changes = project._changes,
-            loading = isLoading;
+            loading = isLoading,
+            active = paper.project;
         project._changes = null;
         isLoading = true;
+        paper.project = project;
         try {
             callback();
         } finally {
             project._changes = changes;
             isLoading = loading;
+            paper.project = active;
         }
     }
+
+    // Imports the host's JSON, resolving its references to the definitions
+    // that the host shares between items, see Project#host:
+    function importJSON(project, json, target) {
+        return Base.importJSON(json, target, function(key) {
+            return getDefinition(project, key);
+        });
+    }
+
+    // Each definition loads once, and keeps its key, which it exports as its
+    // reference:
+    function getDefinition(project, key) {
+        var definitionsByKey = project._definitionsByKey,
+            definition = definitionsByKey[key];
+        if (!definition) {
+            // Project#symbolDefinitions loads them outside of items, too:
+            whileLoading(project, function() {
+                definition = definitionsByKey[key] = importJSON(project,
+                        project._host.getDefinition(key));
+            });
+            definition._key = key;
+        }
+        return definition;
+    }
+
+    // Marks the change of a container whose children changed in order other
+    // than by items inserted and removed, which the changes of their items
+    // don't tell the host, see Project#takeChanges(). The mark goes with the
+    // change, as containers outside the document aren't logged:
+    function setReordered(item) {
+        var project = item && item._project,
+            change = project && project._changes
+                && project._changesById[item._id];
+        if (change)
+            change.reordered = true;
+    }
+
+    // Whether the item comes from a project with another host. Only their own
+    // host draws host items, so they can't enter the project of another one:
+    function isFromOtherHost(item, from, project) {
+        var host = from && from._host,
+            isOther = !!host && host !== project._host;
+        if (isOther && (item instanceof HostItem
+                || item.getItems({ class: HostItem }).length))
+            throw new Error('Unable to add host items to the project of '
+                    + 'another host.');
+        return isOther;
+    }
+
+    // The items that one insertion or copy brings into a project with another
+    // host share the copies of their definitions:
+    function whileEntering(callback) {
+        var copies = definitionCopies;
+        definitionCopies = copies || {};
+        try {
+            return callback();
+        } finally {
+            definitionCopies = copies;
+        }
+    }
+
+    // The pattern colors of an item, with those of the runs of its text.
+    // Linked text shares its runs with the other items of its story:
+    function getPatternColors(item) {
+        var story = item._story,
+            styles = [item._style],
+            colors = [];
+        if (story && !item.isLinked()) {
+            story._runs.forEach(function(run) {
+                styles.push(run.style);
+            });
+        }
+        styles.forEach(function(style) {
+            [style.getFillColor(true), style.getStrokeColor(true)].forEach(
+                function(color) {
+                    if (color && color._type === 'pattern')
+                        colors.push(color);
+                }
+            );
+        });
+        return colors;
+    }
+
+    // Items that enter a project with another host bring copies of the
+    // definitions of their host along, which the new host takes as new ones.
+    // The items of one insertion or copy share them, see whileEntering():
+    function copyDefinitions(project, item) {
+        var copies = definitionCopies || {};
+
+        function getCopy(definition) {
+            var copy = copies[definition._id];
+            if (!copy) {
+                // Cloning creates the copy in the project, without logging
+                // it, as the items that use it list it:
+                whileLoading(project, function() {
+                    copy = copies[definition._id] = definition.clone();
+                });
+                // The items of the copy don't move, so we copy the
+                // definitions that they use here:
+                copyItem(copy._item);
+                copy._item.getItems({}).forEach(copyItem);
+            }
+            return copy;
+        }
+
+        function copyItem(item) {
+            var definition = item._definition;
+            if (definition && definition._key != null)
+                item.setDefinition(getCopy(definition));
+            getPatternColors(item).forEach(function(color) {
+                var pattern = color._components[0];
+                if (pattern._key != null)
+                    color.setPattern(getCopy(pattern));
+            });
+        }
+
+        copyItem(item);
+    }
+
+    // Reloads a definition into the same object, so the colors and symbol
+    // items that use it change along with it. One that the host no longer
+    // has is emptied, and draws nothing:
+    function reloadDefinition(project, definition) {
+        var json = project._host.getDefinition(definition._key),
+            loaded = json ? importJSON(project, json)
+                : new definition.constructor(new Group({ insert: false }));
+        // The loaded item is where its definition placed it:
+        definition.setItem(loaded._item, true);
+        definition._name = loaded._name;
+        if (definition instanceof PatternDefinition) {
+            definition.setTile(loaded._tile);
+            definition.setSpacing(loaded._spacing);
+        }
+    }
+
+    // The new definitions that the changed items use, which the host doesn't
+    // have yet: those without a key, nested ones first. Items that are still
+    // shells use only the host's:
+    function getNewDefinitions(project) {
+        var changes = project._changes || [],
+            definitions = [],
+            ids = {};
+
+        function addDefinition(definition) {
+            if (definition && definition._key == null && !ids[definition._id]) {
+                ids[definition._id] = true;
+                addDefinitions(definition._item);
+                definitions.push(definition);
+            }
+        }
+
+        function addDefinitions(item) {
+            if (!item._shell) {
+                addDefinition(item._definition);
+                getPatternColors(item).forEach(function(color) {
+                    addDefinition(color._components[0]);
+                });
+                // The children of the host's items are logged themselves:
+                if (item._key == null && item._children)
+                    item._children.forEach(addDefinitions);
+            }
+        }
+
+        for (var i = 0, l = changes.length; i < l; i++) {
+            var item = changes[i].item,
+                definition = changes[i].definition;
+            if (item ? item.isInserted() : definition._key != null)
+                addDefinitions(item || definition._item);
+        }
+        return definitions;
+    }
+
+    // The host's definitions of the given class, followed by the new ones:
+    function getDefinitions(project, ctor) {
+        var keys = project._host.getDefinitionKeys(ctor.prototype._class);
+        return keys.map(function(key) {
+            return getDefinition(project, key);
+        }).concat(getNewDefinitions(project).filter(function(definition) {
+            return definition instanceof ctor;
+        }));
+    }
+
+    // Definitions that the host shares export as references to its keys:
+    ItemDefinition.inject({
+        _key: null,
+
+        // The key of the host's definition, see Project#host. It can only be
+        // set once, on a definition created by a script, to register the key
+        // that the host gave its new definition:
+        getKey: function() {
+            return this._key;
+        },
+
+        setKey: function(key) {
+            var definitionsByKey = this.project._definitionsByKey;
+            if (this._key != null)
+                throw new Error('Unable to change the key of a definition.');
+            if (!definitionsByKey)
+                throw new Error('Unable to set a key in a project without a '
+                        + 'host.');
+            this._key = key;
+            definitionsByKey[key] = this;
+        },
+
+        setName: function setName(name) {
+            if (this._key != null)
+                throw new Error('Unable to rename a definition of the host.');
+            setName.base.call(this, name);
+        }
+    });
+
+    [SymbolDefinition, PatternDefinition].forEach(function(ctor) {
+        ctor.inject({
+            _serialize: function _serialize(options, dictionary) {
+                return this._key != null
+                        ? ['@' + this._key]
+                        : _serialize.base.call(this, options, dictionary);
+            }
+        });
+    });
 
     Item.inject(/** @lends Item# */{
         _key: null,
@@ -226,10 +489,108 @@ new function() {
             itemsByKey[key] = this;
         },
 
+        // An item that moves to a project with another host is new there: it
+        // loads from its own host first, while still in its project, and then
+        // drops its key. The children follow as _setProject() reaches them:
+        _setProject: function _setProject(project, installEvents) {
+            var from = this._project,
+                host = from && from._host,
+                isNewHost = host && host !== project._host;
+            if (isNewHost && this._key != null) {
+                if (this._shell)
+                    this._load();
+                if (this._contentFields && !this.hasOwnProperty('_children')
+                        && (this instanceof Group || this._hasChildren))
+                    this._loadChildren();
+                delete from._itemsByKey[this._key];
+                // Its bounds no longer come from the host's boxes:
+                this._key = this._boxes = null;
+                this._hostBounds = false;
+            }
+            _setProject.base.call(this, project, installEvents);
+            // Copy once the item is in the new project, which logs the change,
+            // as part of its insertion:
+            if (isNewHost) {
+                // Linked text brings a copy of its story along, which flows on
+                // through the items that stay:
+                var story = this._story;
+                if (story && this.isLinked()) {
+                    var items = story._items;
+                    items.splice(items.indexOf(this), 1);
+                    this._story = story._clone([this]);
+                    story._changed(/*#=*/Change.CONTENT);
+                }
+                copyDefinitions(project, this);
+            }
+        },
+
+        // Copies made in a project with another host use copies of the
+        // definitions there too, as items that move do:
+        copyAttributes: function copyAttributes(source, excludeMatrix) {
+            var project = this._project,
+                isNewHost = project
+                    && isFromOtherHost(this, source._project, project);
+            copyAttributes.base.call(this, source, excludeMatrix);
+            if (isNewHost)
+                copyDefinitions(project, this);
+        },
+
+        // Check all items before moving any, as removing comes first. An item
+        // of the host that moves reorders the children it joins, and those it
+        // leaves in another project. One from another host is new here:
+        insertChildren: function insertChildren(index, items) {
+            var that = this,
+                isEntering = false,
+                reordered = [];
+            for (var i = 0, l = items ? items.length : 0; i < l; i++) {
+                var item = items[i];
+                if (item instanceof Item) {
+                    var isOther = isFromOtherHost(item, item._project,
+                            this._project);
+                    if (isOther)
+                        isEntering = true;
+                    if (item._key != null) {
+                        if (!isOther)
+                            reordered.push(this);
+                        if (item._project !== this._project)
+                            reordered.push(item._parent);
+                    }
+                }
+            }
+            var res = isEntering
+                    ? whileEntering(function() {
+                        return insertChildren.base.call(that, index, items);
+                    })
+                    : insertChildren.base.call(this, index, items);
+            reordered.forEach(setReordered);
+            return res;
+        },
+
+        clone: function clone(options) {
+            var that = this,
+                project = this._project;
+            return project && project._host
+                    ? whileEntering(function() {
+                        return clone.base.call(that, options);
+                    })
+                    : clone.base.call(this, options);
+        },
+
+        reverseChildren: function reverseChildren() {
+            reverseChildren.base.call(this);
+            setReordered(this);
+        },
+
         _getHostBounds: function(options) {
             var boxes = this._boxes,
-                i = this._boxIndex
-                    + (options.handle ? 8 : options.stroke ? 4 : 0);
+                i = this._boxIndex;
+            // Hosts that don't send the boxes with the records give them when
+            // asked, until they send the record again:
+            if (boxes === undefined && this._key != null) {
+                boxes = this._boxes = this._project._host.getBounds(this._key);
+                i = this._boxIndex = 0;
+            }
+            i += options.handle ? 8 : options.stroke ? 4 : 0;
             return boxes
                     ? new Rectangle(boxes[i], boxes[i + 1], boxes[i + 2],
                         boxes[i + 3])
@@ -312,7 +673,7 @@ new function() {
                 json = JSON.parse(json);
             var linked = json[1].linked;
             delete json[1].linked;
-            Base.importJSON(json, this);
+            importJSON(project, json, this);
             this._shell = false;
             if (linked)
                 this._loadLinked(linked);
@@ -361,6 +722,64 @@ new function() {
         }
     });
 
+    Raster.inject({
+        // Load the pixels after the content, which would reset them otherwise,
+        // in the form of the host's canvas:
+        _loadPixels: function() {
+            if (this._shell)
+                this._load();
+            var project = this._project,
+                canvas = project._host.getImage(this._key),
+                that = this;
+            whileLoading(project, function() {
+                pixelFields.forEach(function(name) {
+                    defineValue(that, name, null);
+                });
+                that._setImage(canvas);
+            });
+        },
+
+        // Drop loaded pixels along with the content, to load them again:
+        _unload: function _unload() {
+            var that = this;
+            _unload.base.call(this);
+            if (this._contentFields) {
+                pixelFields.forEach(function(name) {
+                    delete that[name];
+                });
+            }
+        },
+
+        // The host's size holds the place of the pixels while loading, so
+        // we don't create a canvas for it:
+        set: function set(props, exclude) {
+            if (isLoading && this._shell && props && props.size) {
+                this._size = new Size(props.size);
+                exclude = Base.set({ size: true }, exclude);
+            }
+            return set.base.call(this, props, exclude);
+        },
+
+        // Rasters that move to another host bring their pixels along:
+        _setProject: function _setProject(project, installEvents) {
+            var host = this._project && this._project._host;
+            if (host && host !== project._host && this._key != null)
+                this.getElement();
+            _setProject.base.call(this, project, installEvents);
+        },
+
+        // Pixels that the host fails to give draw nothing. Scripts that ask
+        // for them get the error:
+        _draw: function _draw(ctx, param, viewMatrix) {
+            try {
+                this.getElement();
+            } catch (e) {
+                return;
+            }
+            _draw.base.call(this, ctx, param, viewMatrix);
+        }
+    });
+
     TextItem.inject({
         // New text takes the project's current text style, when the host set
         // one, see Project#currentTextStyle:
@@ -387,7 +806,8 @@ new function() {
                 this._story = story;
             } else {
                 // importJSON() parses and deserializes the story's JSON:
-                this.set(Base.importJSON(project._host.getStory(this._key)));
+                this.set(importJSON(project,
+                        project._host.getStory(this._key)));
                 for (var i = 0, l = items.length; i < l; i++) {
                     if (items[i] !== this)
                         items[i]._loadContent();
@@ -496,31 +916,80 @@ new function() {
                 item._edited = true;
         },
 
+        insertLayer: function insertLayer(index, layer) {
+            var that = this;
+            return layer instanceof Layer
+                    && isFromOtherHost(layer, layer._project, this)
+                    ? whileEntering(function() {
+                        return insertLayer.base.call(that, index, layer);
+                    })
+                    : insertLayer.base.call(this, index, layer);
+        },
+
+        // The new definitions that the changed items use come first, nested
+        // ones first, so the host can create them before the items that refer
+        // to them. Other definitions without a key aren't the host's:
         takeChanges: function takeChanges() {
-            var changes = takeChanges.base.call(this);
-            for (var i = 0, l = changes ? changes.length : 0; i < l; i++)
-                changes[i].item._edited = false;
-            return changes;
+            var definitions = this._host && getNewDefinitions(this),
+                changes = takeChanges.base.call(this);
+            for (var i = 0, l = changes ? changes.length : 0; i < l; i++) {
+                if (changes[i].item)
+                    changes[i].item._edited = false;
+            }
+            return definitions && changes
+                    ? definitions.map(function(definition) {
+                        return {
+                            definition: definition,
+                            flags: /*#=*/Change.INSERTION
+                        };
+                    }).concat(changes.filter(function(change) {
+                        return change.item || change.definition._key != null;
+                    }))
+                    : changes;
+        },
+
+        getSymbolDefinitions: function getSymbolDefinitions() {
+            return this._host
+                    ? getDefinitions(this, SymbolDefinition)
+                    : getSymbolDefinitions.base.call(this);
+        },
+
+        getPatternDefinitions: function getPatternDefinitions() {
+            return this._host
+                    ? getDefinitions(this, PatternDefinition)
+                    : getPatternDefinitions.base.call(this);
         },
 
         /**
          * The host document that the project's items come from. Setting it
          * creates the project's layers from the host's records. All items
          * are created as shells that load their content and children from the
-         * host on first access.
+         * host on first access. The host draws its items, so setting it also
+         * turns off {@link View#autoUpdate}, which would draw them all and
+         * load them in full.
          *
          * The host provides:
          * - `getChildren(key)`, which returns the records of the children of
          *   the node with the given key, or of the top level for `null`, as
          *   columns: `keys`, `types` (indices into `typeNames`), `typeNames`,
          *   `flags` (selected: 1, visible: 2, locked: 4, strokeScaling: 8,
-         *   clipMask: 64, guide: 128, empty: 256), `boxes` (bounds,
-         *   strokeBounds and roughBounds in the item's coordinates, 12 numbers
-         *   per item), and the sparse objects `names` and `matrices`.
+         *   clipMask: 64, guide: 128, empty: 256), optionally `boxes`
+         *   (bounds, strokeBounds and roughBounds in the item's coordinates, 12
+         *   numbers per item), and the sparse objects `names` and `matrices`.
+         * - `getBounds(key)`, for hosts that don't send `boxes`, which returns
+         *   the node's 12 numbers, or `null` for an empty node. Items ask for
+         *   them when their bounds are needed, and again after the host sent
+         *   their record again.
          * - `getItem(key)`, which returns the node's own content in the form
          *   of {@link Item#importJSON(json)}, without children. Linked text
          *   gives `linked`, the keys of its story's text items in order, and
-         *   leaves out its story.
+         *   leaves out its story. Rasters give their `size` without a `source`
+         *   and `crossOrigin`.
+         * - `getImage(key)`, for rasters, which returns the node's pixels as a
+         *   canvas with a 2D context, of the size that `getItem()` gives.
+         *   Rasters load them on first access to their pixels, and Paper.js
+         *   never loads them by itself, except to draw them. Rasters whose
+         *   pixels the host fails to give draw nothing.
          * - `getStory(key)`, for linked text, which returns its story with the
          *   key of any of its text items: `content` or `runs`, `paragraphs`,
          *   and the character and paragraph styles, as
@@ -542,6 +1011,53 @@ new function() {
          *   `content`, as for a hyphen, all in the item's coordinates. `key`
          *   is null for text that the host doesn't know yet. Without it,
          *   Paper.js lays out text itself.
+         * - `getDefinition(key)`, for the pattern and symbol definitions that
+         *   the host shares between its items, which the JSON of its items
+         *   refers to as `['@key']`, as in `fillColor: ['pattern',
+         *   ['@pattern/Dots'], matrix]` or `definition: ['@symbol/Star']`.
+         *   It returns the definition in the form of
+         *   {@link Item#exportJSON(options)}, with its whole item:
+         *   `['PatternDefinition', item, { tile, spacing }]` or
+         *   `['SymbolDefinition', item]`, always: for a key that it has no
+         *   definition of, an empty one of the type, as
+         *   `['SymbolDefinition', ['Group', {}]]`. Each definition loads
+         *   once, and the JSON of the items that use it, as
+         *   {@link Item#exportJSON(options)} writes it, refers to it by its
+         *   key again. Definitions that scripts create have no key, and are
+         *   written out whole, until the host sets their `key`, which it can
+         *   only set once. {@link Project#takeChanges()} lists those that the
+         *   changed items use first, nested ones first, as
+         *   `{ definition, flags }` with the `ChangeFlag.INSERTION` flag,
+         *   followed by the changes of the host's definitions. Renaming those
+         *   isn't supported.
+         * - `getDefinitionKeys(type)`, which returns the keys of all the
+         *   host's definitions of the type, `'SymbolDefinition'` or
+         *   `'PatternDefinition'`, for {@link #symbolDefinitions} and
+         *   {@link #patternDefinitions}.
+         *
+         * Items that move into a project with another host load in full from
+         * their own host first, and drop their keys, so they are new items
+         * there. They bring copies without keys of the symbol and pattern
+         * definitions of their host along, shared by the items of one
+         * insertion or copy, so the new host takes them as new ones too.
+         * Linked text brings a copy of its story along, which flows on through
+         * the items that stay. Host items can't enter the project of another
+         * host.
+         *
+         * The host draws the items, and the selection. To show what scripts
+         * draw in {@link Item#onDraw} and {@link Item#onDrawSelection}, it
+         * calls `project.draw(ctx, matrix, pixelRatio)`, which in a hosted
+         * project only calls these handlers, with the context, the view's
+         * matrix and pixel ratio that the host gives, for the visible items
+         * that have them, and for the selected ones. Handlers of classes,
+         * such as `Path.onDraw`, load all items once. The host asks
+         * {@link #hasDrawHandlers()} whether it needs to call it.
+         *
+         * {@link Project#takeChanges()} marks the changes of the items whose
+         * children changed in order other than by new items inserted and
+         * items removed, which the other changes don't tell, with
+         * `reordered: true`: the host reads their children whole, and can
+         * place the others' new items by their indices.
          *
          * @bean
          * @type Object
@@ -556,7 +1072,9 @@ new function() {
                         + 'layers.');
             var that = this;
             this._host = host;
+            this._view.setAutoUpdate(false);
             this._itemsByKey = {};
+            this._definitionsByKey = {};
             whileLoading(this, function() {
                 setChildren(that, that, host.getChildren(null));
                 that._activeLayer = that._children[0] || null;
@@ -586,30 +1104,118 @@ new function() {
         },
 
         /**
+         * Checks whether any item of the project or class has draw handlers,
+         * {@link Item#onDraw} or, for the selected items,
+         * {@link Item#onDrawSelection}, for hosts that draw the items
+         * themselves, see {@link #host}.
+         *
+         * @return {Boolean} {@true if drawing the project calls any handlers}
+         */
+        hasDrawHandlers: function() {
+            if (this._drawCount || Item._drawCount)
+                return true;
+            var items = this._selectionItems;
+            for (var id in items) {
+                if (items[id].responds('drawselection'))
+                    return true;
+            }
+            return false;
+        },
+
+        // The host draws the items, so drawing only calls the draw handlers,
+        // see #host. Without handlers of classes, only the items that are
+        // loaded can have any, so we don't load the others:
+        draw: function draw(ctx, matrix, pixelRatio, _view) {
+            if (!this._host)
+                return draw.base.call(this, ctx, matrix, pixelRatio, _view);
+            var updateVersion = ++this._updateVersion,
+                view = this._view,
+                loadAll = Item._drawCount > 0;
+
+            function drawItems(items, parentMatrix) {
+                for (var i = 0, l = items.length; i < l; i++) {
+                    var item = items[i];
+                    if (item._visible) {
+                        // Mark the item as drawn, for its selection:
+                        item._updateVersion = updateVersion;
+                        var globalMatrix = parentMatrix.appended(item._matrix);
+                        // Clip items only clip, see Item#draw():
+                        if (!item._clipMask && item.responds('draw')) {
+                            var viewMatrix = matrix.appended(globalMatrix);
+                            ctx.save();
+                            viewMatrix.applyToContext(ctx);
+                            item.emit('draw', new DrawEvent({
+                                item: item,
+                                context: ctx,
+                                matrix: viewMatrix,
+                                pixelRatio: pixelRatio,
+                                view: view
+                            }));
+                            ctx.restore();
+                        }
+                        if ((item instanceof Group || item._hasChildren)
+                                && (loadAll || item.hasOwnProperty('_children')))
+                            drawItems(item._children, globalMatrix);
+                    }
+                }
+            }
+
+            drawItems(this._children, new Matrix());
+            if (this._selectionCount > 0) {
+                var items = this._selectionItems,
+                    size = this._scope.settings.handleSize;
+                ctx.save();
+                ctx.lineWidth = 1;
+                for (var id in items) {
+                    var item = items[id];
+                    // Others would load their content just to draw nothing:
+                    if (item.responds('drawselection'))
+                        item._drawSelection(ctx, matrix, size, items,
+                                updateVersion, true);
+                }
+                ctx.restore();
+            }
+        },
+
+        /**
          * Updates the items of changed host nodes, given in the column format
          * of the host's `getChildren()`, with two more flags: 16 when the
          * node's own content changed, so the item loads it again on next
          * access, and 32 when its list of children changed, so it loads them
          * again right away if it had loaded them, keeping the items of nodes
-         * that remain. Nodes without items are skipped.
+         * that remain. Nodes without items are skipped. `definitions` lists
+         * the keys of changed definitions of the host's `getDefinition()`,
+         * which load again right away into the same objects, so the colors
+         * and symbol items that use them change along. A definition that the
+         * host no longer has, for which `getDefinition()` may return `null`
+         * here, is emptied and draws nothing. The columns may hold only
+         * definitions.
          *
          * @param {Object} columns the records of the changed nodes
          */
         invalidate: function(columns) {
             var itemsByKey = this._itemsByKey,
-                keys = columns.keys,
+                definitionsByKey = this._definitionsByKey,
+                keys = columns.keys || [],
+                definitionKeys = columns.definitions || [],
                 names = columns.names || {},
                 reloads = [],
                 that = this;
             whileLoading(this, function() {
+                for (var i = 0, l = definitionKeys.length; i < l; i++) {
+                    var definition = definitionsByKey[definitionKeys[i]];
+                    if (definition)
+                        reloadDefinition(that, definition);
+                }
                 for (var i = 0, l = keys.length; i < l; i++) {
                     var item = itemsByKey[keys[i]],
                         flags = columns.flags[i];
                     if (item) {
-                        var reload = flags & 16 && item._unload();
+                        var reload = flags & recordFlags.content
+                                && item._unload();
                         if (reload)
                             reloads.push(reload);
-                        if (flags & 32)
+                        if (flags & recordFlags.children)
                             item._reloadChildren();
                         if ((names[i] || undefined) !== item._name)
                             item.setName(names[i] || null);

@@ -401,7 +401,8 @@ describe('Path Intersections', () => {
         time: 0.27769,
         crossing: true
       },
-      { point: { x: 376, y: 480 }, index: 1, time: 0, crossing: true },
+      // Where the paths start to overlap, whether they cross is undefined:
+      { point: { x: 376, y: 480 }, index: 1, time: 0 },
       {
         point: { x: 343.68011, y: 469.7389 },
         index: 1,

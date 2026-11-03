@@ -14,7 +14,9 @@ import { describe, test } from 'vitest'
 import paper, {
   CompoundPath,
   Group,
+  Matrix,
   Path,
+  PatternDefinition,
   PointText,
   Raster,
   Rectangle
@@ -267,6 +269,98 @@ describe('Gradients', () => {
   })
 })
 
+describe('Patterns', () => {
+  test('Vector and image patterns, strokes, text and transforms', async () => {
+    const style = createScene(300, 200)
+    const dots = new PatternDefinition(
+      new Path.Circle({ center: [5, 5], radius: 3, fillColor: '#e63' }),
+      { tile: new Rectangle(0, 0, 10, 10) }
+    )
+    const stripes = new PatternDefinition(
+      new Path.Rectangle({
+        rectangle: new Rectangle(0, 0, 4, 12),
+        fillColor: '#39c'
+      }),
+      { spacing: [4, 0] }
+    )
+    new Path.Rectangle({
+      rectangle: new Rectangle(10, 10, 80, 80),
+      fillColor: { pattern: dots }
+    })
+    new Path.Circle({
+      center: [150, 50],
+      radius: 32,
+      strokeWidth: 16,
+      strokeColor: { pattern: stripes, matrix: new Matrix().rotate(45) }
+    })
+    // The raster of a star, as an image pattern. Scaled images change how
+    // Chrome draws the same image later, so leave paper-js.gif to Rasters:
+    const raster = new Path.Star({
+      center: [0, 0],
+      points: 5,
+      radius1: 4,
+      radius2: 9,
+      fillColor: '#9c3',
+      insert: false
+    }).rasterize({ resolution: 144, insert: false })
+    new Path.Circle({
+      center: [250, 50],
+      radius: 40,
+      fillColor: { pattern: new PatternDefinition(raster, { spacing: 2 }) }
+    })
+    new PointText({
+      ...style,
+      point: [10, 160],
+      content: 'Pattern',
+      fontSize: 40,
+      fillColor: { pattern: stripes }
+    })
+    // The pattern transforms with the item:
+    const rect = new Path.Rectangle({
+      rectangle: new Rectangle(190, 120, 80, 60),
+      fillColor: { pattern: dots },
+      strokeColor: 'black'
+    })
+    rect.rotate(20)
+    rect.scale(1.2, 0.8)
+    await expectScene()
+  })
+})
+
+describe('Elliptical gradients', () => {
+  test('Applied, kept in a matrix, and exported to SVG', async () => {
+    createScene(250, 240)
+    const fillColor = {
+      gradient: { stops: ['white', '#fc3', '#e63', '#39c'], radial: true },
+      origin: [75, 60],
+      destination: [115, 60],
+      highlight: [65, 50]
+    }
+    function createItem(applyMatrix, x) {
+      const item = new Path.Rectangle({
+        rectangle: new Rectangle(35, 20, 80, 80),
+        fillColor,
+        applyMatrix
+      })
+      item.translate(x, 0)
+      item.scale(1.2, 0.8)
+      item.shear(0.4, 0)
+      return item
+    }
+    // The transformation applied, and kept in the matrix:
+    createItem(true, 0)
+    createItem(false, 110)
+    // Below them, the browser's rendering of both, exported to SVG:
+    const svg = paper.project.exportSVG({
+      asString: true,
+      bounds: new Rectangle(0, 0, 250, 120)
+    })
+    const raster = await loadRaster('data:image/svg+xml;base64,' + btoa(svg))
+    raster.position = paper.view.center.add(0, 60)
+    await expectScene()
+  })
+})
+
 describe('Strokes', () => {
   test('Joins, caps, dashes and miter limits', async () => {
     createScene(300, 200)
@@ -344,6 +438,160 @@ describe('Strokes', () => {
       })
       star.scale(2.5, 1.2)
     })
+    await expectScene()
+  })
+})
+
+describe('Stroke profiles', () => {
+  test('Tapers, pens, fills, gradients and effects', async () => {
+    createScene(300, 240)
+    // A taper, and a stroke that swells and thins like pressure:
+    new Path({
+      segments: [
+        [20, 25],
+        [130, 25]
+      ],
+      strokeColor: 'black',
+      strokeWidth: 16,
+      strokeProfile: [
+        { offset: 0, width: 0.1, smooth: false },
+        { offset: 110, width: 1.5, smooth: false }
+      ]
+    })
+    const wave = new Path({
+      segments: [
+        [20, 85],
+        [80, 50],
+        [140, 85]
+      ],
+      strokeColor: 'black',
+      strokeWidth: 20
+    })
+    wave.smooth({ type: 'catmull-rom' })
+    wave.strokeProfile = [
+      { offset: 0, width: 0.1 },
+      { offset: wave.length * 0.4, width: 1.2 },
+      { offset: wave.length, width: 0.1 }
+    ]
+    // A broad nib, a flat pen held at an angle:
+    const nib = new Path({
+      segments: [
+        [170, 80],
+        [200, 30],
+        [240, 80],
+        [280, 30]
+      ],
+      strokeColor: '#335',
+      strokeWidth: 24,
+      strokeCap: 'round',
+      strokeJoin: 'round'
+    })
+    nib.smooth({ type: 'catmull-rom' })
+    nib.strokeProfile = [{ offset: 0, aspect: 0.15, angle: -35 }]
+    // A closed path, and fills under and over the profile:
+    const ring = new Path.Circle({
+      center: [55, 155],
+      radius: 30,
+      strokeColor: '#e63',
+      strokeWidth: 12
+    })
+    ring.strokeProfile = [
+      { offset: 0, width: 0.3 },
+      { offset: ring.length / 2, width: 1.5 }
+    ]
+    ;['fill', 'stroke'].forEach((paintOrder, i) => {
+      const square = new Path.Rectangle({
+        point: [110 + i * 70, 125],
+        size: [50, 50],
+        fillColor: '#fc6',
+        strokeColor: '#39c',
+        strokeWidth: 14,
+        paintOrder
+      })
+      square.strokeProfile = [
+        { offset: 0, width: 0.2, smooth: false },
+        { offset: square.length, width: 1.6, smooth: false }
+      ]
+    })
+    // A gradient as the stroke color, and an effect before the profile, whose
+    // offset path doesn't carry it on yet (#2505):
+    const gradient = new Path({
+      segments: [
+        [20, 215],
+        [140, 215]
+      ],
+      strokeColor: {
+        gradient: { stops: ['#39c', '#e63'] },
+        origin: [20, 215],
+        destination: [140, 215]
+      },
+      strokeWidth: 18,
+      strokeCap: 'round'
+    })
+    gradient.strokeProfile = [
+      { offset: 0, width: 0.3 },
+      { offset: 60, width: 1 },
+      { offset: 120, width: 0.3 }
+    ]
+    const offset = new Path.Rectangle({
+      point: [195, 195],
+      size: [70, 30],
+      strokeColor: 'black',
+      strokeWidth: 6
+    })
+    offset.strokeProfile = [
+      { offset: 0, width: 0.3, smooth: false },
+      { offset: offset.length, width: 2, smooth: false }
+    ]
+    offset.addEffect({ type: 'offset', parameters: { distance: 6 } })
+    await expectScene()
+  })
+})
+
+describe('Live effects', () => {
+  test('Offset and outline, composited and rasterized', async () => {
+    createScene(300, 200)
+    const createStar = (x, y, props) =>
+      new Path.Star({
+        center: [x, y],
+        points: 5,
+        radius1: 12,
+        radius2: 26,
+        fillColor: '#39c',
+        strokeColor: 'black',
+        strokeWidth: 3,
+        ...props
+      })
+    // Offset and outline on their own:
+    createStar(50, 50).addEffect({
+      type: 'offset',
+      parameters: { distance: 8, join: 'round' }
+    })
+    createStar(150, 50, { strokeWidth: 8 }).addEffect({ type: 'outline' })
+    // What the offset draws beyond the item, through a temporary canvas for
+    // the group's opacity, the item's blend mode and its shadow:
+    const faded = createStar(250, 50)
+    faded.addEffect({ type: 'offset', parameters: { distance: 10 } })
+    new Group({ children: [faded], opacity: 0.5 })
+    new Path.Rectangle({
+      point: [20, 110],
+      size: [160, 70],
+      fillColor: '#fc6'
+    })
+    createStar(60, 145, {
+      fillColor: '#e63',
+      blendMode: 'multiply'
+    }).addEffect({ type: 'offset', parameters: { distance: 10 } })
+    createStar(140, 145, {
+      shadowColor: 'rgba(0, 0, 0, 0.5)',
+      shadowBlur: 6,
+      shadowOffset: [4, 4]
+    }).addEffect({ type: 'offset', parameters: { distance: 10 } })
+    // A raster of an item with an effect, without the item:
+    const rasterized = createStar(250, 145)
+    rasterized.addEffect({ type: 'offset', parameters: { distance: 10 } })
+    rasterized.rasterize({ resolution: 144 })
+    rasterized.remove()
     await expectScene()
   })
 })

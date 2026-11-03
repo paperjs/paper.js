@@ -10,8 +10,18 @@
  * All rights reserved.
  */
 
-import { describe } from 'vitest'
-import paper, { ChangeFlag, Group, Layer, Path, Project, Tool } from 'paper'
+import { describe, onTestFinished } from 'vitest'
+import paper, {
+  ChangeFlag,
+  Group,
+  Layer,
+  Path,
+  PatternDefinition,
+  Project,
+  SymbolDefinition,
+  SymbolItem,
+  Tool
+} from 'paper'
 import { equals, test } from '../helpers.js'
 
 describe('Project', () => {
@@ -22,6 +32,90 @@ describe('Project', () => {
     const path = new Path()
     equals(() => project.activeLayer.children[0] === path, true)
     equals(() => secondDoc.activeLayer.children.length === 0, true)
+  })
+
+  test('onActivate and onDeactivate', () => {
+    const first = new Project()
+    const second = new Project()
+    const events = []
+    first.onActivate = previous => events.push(['first', previous === second])
+    first.onDeactivate = () => events.push('first deactivate')
+    second.onActivate = previous => events.push(['second', previous === first])
+    second.onDeactivate = () => events.push('second deactivate')
+    first.activate()
+    equals(events, ['second deactivate', ['first', true]])
+    events.length = 0
+    first.remove()
+    equals(events, ['first deactivate'], 'removing the active project')
+    events.length = 0
+    second.remove()
+    equals(events, [], 'removing an inactive project')
+  })
+
+  test('Project.onActivate and Project.onDeactivate', () => {
+    const events = []
+    const activate = function (previous) {
+      events.push(['activate', this, previous])
+    }
+    const deactivate = function () {
+      events.push(['deactivate', this])
+    }
+    Project.on('activate', activate)
+    Project.onDeactivate = deactivate
+    onTestFinished(() => {
+      Project.off('activate', activate)
+      Project.onDeactivate = null
+    })
+    const previous = paper.project
+    const first = new Project()
+    equals(
+      () => (
+        events.length === 2 &&
+        events[0][0] === 'deactivate' &&
+        events[0][1] === previous &&
+        events[1][0] === 'activate' &&
+        events[1][1] === first &&
+        events[1][2] === previous
+      ),
+      true,
+      'heard from a new project'
+    )
+    const second = new Project()
+    second.onActivate = () => events.push(['own'])
+    events.length = 0
+    previous.activate()
+    second.activate()
+    equals(
+      () => (
+        events[2][0] === 'deactivate' &&
+        events[2][1] === previous &&
+        events[3][0] === 'own' &&
+        events[4][0] === 'activate' &&
+        events[4][1] === second
+      ),
+      true,
+      'after the handlers of the project'
+    )
+    events.length = 0
+    second.remove()
+    equals(
+      () => events.length === 1 && events[0][1] === second,
+      true,
+      'removing the active project'
+    )
+    Project.off('activate', activate)
+    first.activate()
+    events.length = 0
+    previous.activate()
+    equals(
+      () => (
+        events.length === 1 &&
+        events[0][0] === 'deactivate' &&
+        events[0][1] === first
+      ),
+      true,
+      'none after off()'
+    )
   })
 
   test('clear()', () => {
@@ -155,6 +249,18 @@ describe('Project', () => {
     equals(!!(changes[0].flags & ChangeFlag.INSERTION), true)
   })
 
+  test('trackChanges leaves out items that moved to another project', () => {
+    const project = new Project()
+    const path = new Path.Circle([50, 50], 20)
+    const other = new Project()
+    project.trackChanges = true
+    path.fillColor = 'red'
+    other.activeLayer.addChild(path)
+    const changes = project.takeChanges()
+    equals(changes.length, 1)
+    equals(changes[0].item === project.activeLayer, true, 'the parent it left')
+  })
+
   test('trackChanges ignores items that are not inserted', () => {
     const project = new Project()
     const path1 = new Path.Rectangle([0, 0], [20, 20])
@@ -170,6 +276,51 @@ describe('Project', () => {
     equals(changes[0].item === result || changes[1].item === result, true)
   })
 
+  test('trackChanges logs changes of definitions', () => {
+    const project = new Project()
+    const symbol = new SymbolDefinition(new Path.Rectangle([0, 0], [10, 10]))
+    const pattern = new PatternDefinition(new Path.Rectangle([0, 0], [5, 5]))
+    project.trackChanges = true
+    symbol.item.fillColor = 'red'
+    pattern.spacing = 10
+    pattern.name = 'Dots'
+    const changes = project.takeChanges()
+    equals(changes.length, 2)
+    equals(changes[0].definition === symbol, true)
+    equals(!!(changes[0].flags & ChangeFlag.STYLE), true)
+    equals(changes[1].definition === pattern, true)
+    equals(!!(changes[1].flags & ChangeFlag.STYLE), true)
+    equals(!!(changes[1].flags & ChangeFlag.ATTRIBUTE), true)
+  })
+
+  test('project.patternDefinitions', () => {
+    const project = new Project()
+    const pattern = new PatternDefinition(new Path.Rectangle([0, 0], [5, 5]))
+    const other = new PatternDefinition(new Path.Circle([0, 0], 5))
+    new Path.Rectangle({
+      point: [0, 0],
+      size: [40, 40],
+      fillColor: { pattern }
+    })
+    new Path.Rectangle({
+      point: [50, 0],
+      size: [40, 40],
+      fillColor: { pattern },
+      strokeColor: { pattern: other }
+    })
+    new Group(
+      new Path.Rectangle({
+        point: [100, 0],
+        size: [40, 40],
+        fillColor: { pattern: other }
+      })
+    )
+    const definitions = project.patternDefinitions
+    equals(definitions.length, 2)
+    equals(definitions[0] === pattern, true)
+    equals(definitions[1] === other, true)
+  })
+
   test('project.scope, view.scope, item.scope and tool.scope (#1634)', () => {
     const path = new Path(),
       tool = new Tool()
@@ -183,5 +334,63 @@ describe('Project', () => {
       true
     )
     tool.remove()
+  })
+
+  test('isEmpty()', () => {
+    const project = new Project()
+    equals(project.isEmpty(), true)
+    new Path.Circle([50, 50], 20)
+    equals(project.isEmpty(), false)
+  })
+
+  test('remove()', () => {
+    const project = new Project()
+    const view = project.view
+    equals(project.index, paper.projects.indexOf(project))
+    equals(project.remove(), true)
+    equals(project.view, null)
+    equals(view.project, null)
+    equals(paper.projects.includes(project), false)
+    equals(project.remove(), false)
+  })
+
+  test('project.symbolDefinitions', () => {
+    const project = new Project()
+    const definition = new SymbolDefinition(new Path.Circle([0, 0], 10))
+    const other = new SymbolDefinition(new Path.Rectangle([0, 0], [10, 10]))
+    new SymbolItem(definition)
+    new Group(new SymbolItem(other), new SymbolItem(definition))
+    const definitions = project.symbolDefinitions
+    equals(definitions.length, 2)
+    equals(definitions[0] === definition, true)
+    equals(definitions[1] === other, true)
+  })
+
+  test('selectAll() / deselectAll()', () => {
+    const project = new Project()
+    const path = new Path.Circle([50, 50], 20)
+    const group = new Group(new Path.Rectangle([0, 0], [10, 10]))
+    new Layer(new Path.Circle([100, 100], 10))
+    project.selectAll()
+    equals(path.fullySelected, true)
+    equals(group.firstChild.fullySelected, true)
+    equals(project.layers[1].firstChild.fullySelected, true)
+    project.deselectAll()
+    equals(project.selectedItems.length, 0)
+    equals(path.selected, false)
+    equals(path.segments[0].selected, false)
+  })
+
+  test('trackChanges logs inserted layers', () => {
+    const project = new Project()
+    const layer = new Layer({ insert: false })
+    equals(project.trackChanges, false)
+    project.trackChanges = true
+    equals(project.trackChanges, true)
+    project.addLayer(layer)
+    const changes = project.takeChanges()
+    equals(changes.length, 1)
+    equals(changes[0].item === layer, true)
+    equals(!!(changes[0].flags & ChangeFlag.INSERTION), true)
   })
 })

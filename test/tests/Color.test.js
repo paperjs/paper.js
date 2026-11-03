@@ -11,7 +11,16 @@
  */
 
 import { describe } from 'vitest'
-import { Color, Gradient, GradientStop, Group, Path, Shape } from 'paper'
+import paper, {
+  Color,
+  Gradient,
+  GradientStop,
+  Group,
+  Matrix,
+  Path,
+  Point,
+  Shape
+} from 'paper'
 import { comparePixels, equals, test } from '../helpers.js'
 
 describe('Color', () => {
@@ -338,6 +347,88 @@ describe('Color', () => {
     shape.rotate(45)
 
     comparePixels(path, shape)
+  })
+
+  test('Gradients transform with their item, also unevenly (#1744)', () => {
+    // Items that keep their matrix draw their gradient through it, as it should
+    // look. Items that apply it transform their gradient color, which has to
+    // give the same:
+    ;[true, false].forEach(radial => {
+      const gradientColor = {
+        gradient: { stops: ['yellow', 'red', 'blue'], radial },
+        origin: [250, 250],
+        destination: [400, 300],
+        highlight: radial ? [280, 240] : null
+      }
+      const path = new Path.Rectangle({
+        topLeft: [100, 100],
+        bottomRight: [400, 400],
+        fillColor: gradientColor,
+        applyMatrix: true
+      })
+      const shape = new Shape.Rectangle({
+        topLeft: [100, 100],
+        bottomRight: [400, 400],
+        fillColor: gradientColor,
+        applyMatrix: false
+      })
+      for (const item of [path, shape]) {
+        item.scale(2, 0.5)
+        item.shear(0.5, 0)
+        item.rotate(30)
+      }
+      comparePixels(path, shape, radial ? 'radial' : 'linear')
+    })
+  })
+
+  test('Color#aspect', () => {
+    function createColor() {
+      return new Color({
+        gradient: { stops: ['white', 'blue'], radial: true },
+        origin: [0, 0],
+        destination: [10, 0]
+      })
+    }
+    const color = createColor()
+    equals(color.aspect, 1, 'circles by default')
+    color.transform(new Matrix().scale(2, 1))
+    equals(color.destination, new Point(20, 0), 'the destination')
+    equals(color.aspect, 0.5, 'and the aspect of an uneven scale')
+    const sheared = createColor()
+    sheared.transform(new Matrix().shear(1, 0))
+    // A shear by 1 turns a circle into an ellipse whose axes are in the ratio
+    // of the golden ratio squared:
+    equals(sheared.aspect, (3 - Math.sqrt(5)) / 2, 'the aspect of a shear')
+    equals(
+      sheared.destination.length,
+      10 * ((1 + Math.sqrt(5)) / 2),
+      'its major axis'
+    )
+    const linear = new Color({
+      gradient: { stops: ['white', 'blue'] },
+      origin: [0, 0],
+      destination: [10, 0]
+    })
+    linear.transform(new Matrix().shear(0, 1))
+    equals(
+      linear.destination,
+      new Point(10, 0),
+      'linear gradients keep running across their stripes'
+    )
+    const path = new Path({ fillColor: createColor() })
+    equals(
+      path.exportJSON().includes('[10,0]]'),
+      true,
+      'JSON of circles as before'
+    )
+    path.fillColor = color
+    const copy = new Path().importJSON(path.exportJSON())
+    equals(copy.fillColor.aspect, 0.5, 'JSON of ellipses')
+    const imported = paper.project.importSVG(
+      path.exportSVG({ asString: true })
+    )
+    equals(imported.fillColor.aspect, 0.5, 'SVG, through gradientTransform')
+    equals(imported.fillColor.destination, color.destination, 'its axis')
   })
 
   test('Gradients with strokeScaling: false', () => {
