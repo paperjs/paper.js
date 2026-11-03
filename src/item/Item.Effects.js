@@ -177,24 +177,31 @@ Item.inject(new function() {
             var output = this._effectOutput;
             if (output === undefined
                     || this._effectVersion !== Effect._version) {
-                output = null;
-                if (this._hasEffects()) {
-                    output = this._getEffectArt();
-                    for (var i = 0, l = this._effects.length; i < l; i++) {
-                        var instance = this._effects[i],
-                            effect = instance.getEffect(),
-                            onApply = effect && effect.onApply;
-                        // Unknown effects leave the art as it is:
-                        if (instance._visible && onApply) {
-                            output = onApply.call(instance, {
-                                art: output,
-                                item: this
-                            }) || output;
-                        }
-                    }
-                }
+                var art = this._hasEffects() && this._getEffectArt();
+                output = art ? this._applyEffects(art) || art : null;
                 this._effectOutput = output;
                 this._effectVersion = Effect._version;
+            }
+            return output;
+        },
+
+        // Applies the visible effects to the art in turn, and returns what they
+        // make of it, or null if none applied:
+        _applyEffects: function(art) {
+            var output = null;
+            for (var i = 0, l = this._effects ? this._effects.length : 0; i < l;
+                    i++) {
+                var instance = this._effects[i],
+                    effect = instance.getEffect(),
+                    onApply = effect && effect.onApply;
+                // Unknown effects leave the art as it is:
+                if (instance._visible && onApply) {
+                    output = output || art;
+                    output = onApply.call(instance, {
+                        art: output,
+                        item: this
+                    }) || output;
+                }
             }
             return output;
         },

@@ -11,7 +11,13 @@
  */
 
 import { describe } from 'vitest'
-import { Path, Project, StrokeProfileStop } from 'paper'
+import {
+  CompoundPath,
+  Path,
+  Project,
+  Rectangle,
+  StrokeProfileStop
+} from 'paper'
 import { equals, test } from '../helpers.js'
 
 describe('StrokeProfile', () => {
@@ -453,5 +459,39 @@ describe('StrokeProfile', () => {
     equals(copy.strokeProfile[0].path === copy, true)
     equals(getOffsets(copy), [0, 200])
     equals(copy.compare(path), true)
+  })
+
+  test('Paths draw, bound and hit-test the outline of their profile', () => {
+    const path = createTaper()
+    path.strokeColor = 'black'
+    // From 5 wide at the start to 20 at the end:
+    equals(path.strokeBounds, new Rectangle(0, -10, 200, 20), null, {
+      tolerance: 0.5
+    })
+    equals(path.previewBounds, path.strokeBounds)
+    equals(path.outline({ insert: false }).bounds, path.strokeBounds)
+    const isHit = point => !!path.hitTest(point, { stroke: true, tolerance: 0 })
+    equals([isHit([190, 8]), isHit([10, 8])], [true, false])
+    const raster = path.rasterize({ resolution: 72, insert: false })
+    const getAlpha = point =>
+      raster.getPixel(raster.globalToLocal(point).add(raster.size.divide(2)))
+        .alpha
+    equals([getAlpha([190, 8]), getAlpha([10, 8])], [1, 0])
+    // Changing the profile changes all of them:
+    path.strokeProfile[1].width = 1
+    equals(path.strokeBounds.height, 10, null, { tolerance: 0.01 })
+    equals(isHit([190, 8]), false)
+    // Dashes too, and changing them changes the outline:
+    path.dashArray = [20, 20]
+    equals([isHit([10, 0]), isHit([30, 0])], [true, false])
+    path.dashOffset = 20
+    equals([isHit([10, 0]), isHit([30, 0])], [false, true])
+    // Compound paths draw the strokes of their children as one:
+    const compound = new CompoundPath({
+      children: [createTaper()],
+      strokeColor: 'black',
+      strokeWidth: 10
+    })
+    equals(compound.strokeBounds.height, 10)
   })
 })

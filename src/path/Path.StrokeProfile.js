@@ -201,8 +201,11 @@ Path.inject(new function() {
          * the returned array directly isn't tracked, as with
          * {@link #segments}.
          *
-         * {@link PathItem#outline()} follows the profile, but the path is
-         * still drawn, measured and hit-tested with its stroke width.
+         * The path draws its stroke as the area that the pens sweep, filled
+         * with the stroke color, as {@link PathItem#outline()} returns it,
+         * and {@link Item#strokeBounds} and hit-testing measure that area.
+         * The children of compound paths are drawn with the stroke of their
+         * parent, without their profiles.
          *
          * @bean
          * @type ?StrokeProfileStop[]

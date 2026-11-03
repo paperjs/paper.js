@@ -2022,15 +2022,23 @@ PathItem.inject(new function() {
          */
         outline: function(options) {
             options = options || {};
-            var path = prepare(this),
-                paths = getDashes(path._children || [path],
-                    this.getDashArray(), this.getDashOffset()),
-                result = outlineStroke(paths,
-                    Base.pick(options.width, this.getStrokeWidth()) / 2,
-                    options.join || this.getStrokeJoin(),
-                    options.cap || this.getStrokeCap(),
-                    options.miterLimit || this.getMiterLimit());
-            result = createResult(this, result.reduce(), options);
+            var result;
+            if (!this._children && this._matrix.isIdentity()
+                    && options.width === undefined && !options.join
+                    && !options.cap && !options.miterLimit) {
+                // Paths keep the outline of their own stroke, see
+                // #_getStrokeOutline():
+                result = this._getStrokeOutline().clone({ insert: false });
+            } else {
+                var path = prepare(this);
+                result = outlineStroke(getDashes(path._children || [path],
+                            this.getDashArray(), this.getDashOffset()),
+                        Base.pick(options.width, this.getStrokeWidth()) / 2,
+                        options.join || this.getStrokeJoin(),
+                        options.cap || this.getStrokeCap(),
+                        options.miterLimit || this.getMiterLimit()).reduce();
+            }
+            result = createResult(this, result, options);
             result.setFillColor(this.getStrokeColor());
             result.setStrokeColor(null);
             return result;
@@ -2084,6 +2092,18 @@ PathItem.inject(new function() {
             result = createResult(this, result, options);
             result.setDashArray([]);
             return result;
+        },
+
+        // The outline of the path's stroke in its own coordinates, with its
+        // dashes, kept until its geometry or its stroke changes, see
+        // Path#_changed(). Paths with a stroke profile draw, bound and
+        // hit-test their stroke with it:
+        _getStrokeOutline: function() {
+            return this._strokeOutline || (this._strokeOutline = outlineStroke(
+                    getDashes([this.clone({ insert: false }).reduce()],
+                        this.getDashArray(), this.getDashOffset()),
+                    this.getStrokeWidth() / 2, this.getStrokeJoin(),
+                    this.getStrokeCap(), this.getMiterLimit()).reduce());
         }
     };
 });

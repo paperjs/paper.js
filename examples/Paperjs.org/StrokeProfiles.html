@@ -171,11 +171,12 @@
         }
 
         function setupPath(path) {
-            // The stroke width is the base of the profile, and the envelope
-            // draws the stroke, with a hairline of the path on top, and the
-            // stops over its selection. Round caps and joins are the pens:
+            // The stroke width is the base of the profile, and the path draws
+            // the area that its pens sweep, with a hairline of the path on top
+            // and the stops over its selection. Round caps and joins are the
+            // pens:
             path.set({
-                strokeColor: null,
+                strokeColor: colors.fill,
                 strokeWidth: settings.width,
                 strokeCap: 'round',
                 strokeJoin: 'round',
@@ -224,19 +225,22 @@
             };
         }
 
-        // Draws the area that the pen sweeps, as the outline of the stroke,
-        // with a hairline of the path on top:
+        // Draws a hairline of the path over its stroke, and the curves of the
+        // stroke's outline when they're shown:
         function drawEnvelope() {
             envelope.removeChildren();
-            // The outline takes the path's attributes, including its selection,
-            // so select it on its own, fully with its handles, or not at all:
-            var outline = path.outline({ insert: false });
-            outline.set({
-                fillColor: colors.fill,
-                selected: false,
-                fullySelected: settings.showSelection,
-                selectedColor: settings.selectionColor
-            });
+            if (settings.showSelection) {
+                // The outline takes the path's attributes, including its
+                // selection, so select it on its own, fully with its handles:
+                var outline = path.outline({ insert: false });
+                outline.set({
+                    fillColor: null,
+                    selected: false,
+                    fullySelected: true,
+                    selectedColor: settings.selectionColor
+                });
+                envelope.addChild(outline);
+            }
             var hairline = path.clone({ insert: false });
             hairline.set({
                 strokeColor: '#222',
@@ -246,8 +250,8 @@
                 selected: false,
                 onDrawSelection: null
             });
-            envelope.addChildren([outline, hairline]);
-            envelope.insertBelow(path);
+            envelope.addChild(hairline);
+            envelope.insertAbove(path);
         }
 
         // Draws the pen of a stop with the canvas context, in the pixels of
@@ -335,6 +339,9 @@
             var time = Date.now();
             path.strokeWidth = settings.width;
             path.closed = settings.closed;
+            // The path keeps its outline until it changes, and its stroke
+            // bounds measure it:
+            path.getStrokeBounds();
             drawEnvelope();
             info.textContent = (path.strokeProfile || []).length + ' stops, '
                     + path.curves.length + ' curves, outlined in '
@@ -386,17 +393,14 @@
             return null;
         }
 
-        // The location on the path within the envelope at the point, where a
+        // The location on the path within its stroke at the point, where a
         // new stop would go:
         function hitEnvelope(point) {
-            var loc = path.getNearestLocation(point);
-            if (loc) {
-                var pen = getPen(loc.offset);
-                if (loc.distance <= Math.max(pen.major.length,
-                        pen.minor.length, 6 / view.zoom))
-                    return loc;
-            }
-            return null;
+            var hit = path.hitTest(point, {
+                stroke: true,
+                tolerance: 6 / view.zoom
+            });
+            return hit && hit.location;
         }
 
         function hitPath(point) {
@@ -690,7 +694,7 @@
             <p>Faded parts of a stop are values it takes from the stops
             around it, and grey values in the fields too; changing them makes
             them its own.</p>
-            <p>The area that the pen sweeps is the path's
+            <p>The path draws the area that its pens sweep, the same as its
             <code>outline()</code>, and the stops are drawn over its selection
             through <code>onDrawSelection</code>.</p>
             <p><button id="log">Log path</button> logs the path and its

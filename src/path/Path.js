@@ -170,6 +170,50 @@ var Path = PathItem.extend(/** @lends Path# */{
                     this._curves[i]._changed();
             }
         }
+        if (flags & /*#=*/(ChangeFlag.GEOMETRY | ChangeFlag.STROKE))
+            this._strokeOutline = undefined;
+    },
+
+    // Whether the path draws its stroke as the outline of its stroke profile.
+    // Compound paths draw the strokes of their children as one:
+    _hasStrokeProfile: function() {
+        return !!this._strokeProfile && this.hasStroke()
+                && !(this._parent instanceof CompoundPath);
+    },
+
+    // Paths with a stroke profile draw their stroke as its outline, filled with
+    // the stroke color, after their effects:
+    _hasEffects: function _hasEffects() {
+        return _hasEffects.base.call(this) || this._hasStrokeProfile();
+    },
+
+    _applyEffects: function _applyEffects(art) {
+        var output = _applyEffects.base.call(this, art);
+        if (this._hasStrokeProfile()) {
+            if (output) {
+                var effect = Effect.get('outline');
+                output = effect && effect.onApply({ art: output, item: this })
+                        || output;
+            } else {
+                // Without effects, it's the path's own outline:
+                var outline = this._getStrokeOutline().clone({ insert: false });
+                outline.set({
+                    fillColor: this.getStrokeColor(),
+                    strokeColor: null
+                });
+                if (art.hasFill()) {
+                    art.setStrokeColor(null);
+                    output = new Group({
+                        children: this.getPaintOrder() === 'stroke'
+                                ? [outline, art] : [art, outline],
+                        insert: false
+                    });
+                } else {
+                    output = outline;
+                }
+            }
+        }
+        return output;
     },
 
     getStyle: function() {
@@ -2009,7 +2053,14 @@ var Path = PathItem.extend(/** @lends Path# */{
             // Note that paths need at least two segments to have an actual
             // stroke. But we still check for segments with the radius fallback
             // check if there is only one segment.
-            if (loc) {
+            // Stroke profiles are hit within the outline of their stroke:
+            var outline = hitStroke && this._hasStrokeProfile()
+                    && this._getStrokeOutline();
+            if (loc && outline) {
+                if (!outline.contains(strokePoint) && !isCloseEnough(
+                        outline.getNearestPoint(strokePoint), tolerancePadding))
+                    loc = null;
+            } else if (loc) {
                 // Now see if we're on a segment, and if so, check for its
                 // stroke join / cap first. If not, do a normal radius check
                 // for round strokes.
@@ -2023,7 +2074,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             }
             // If we have miter joins, we may not be done yet, since they can be
             // longer than the radius. Check for each segment within reach now.
-            if (!loc && join === 'miter' && numSegments > 1) {
+            if (!loc && !outline && join === 'miter' && numSegments > 1) {
                 for (var i = 0; i < numSegments; i++) {
                     var segment = segments[i];
                     if (strokePoint.getDistance(
@@ -2933,7 +2984,11 @@ new function() { // PostScript-style drawing commands
                 : options.stroke
                 ? 'getStrokeBounds'
                 : 'getBounds';
-        return Path[method](this._segments, this._closed, this, matrix, options);
+        return method === 'getStrokeBounds' && this._hasStrokeProfile()
+                // Stroke profiles cover the outline of their stroke:
+                ? this._getStrokeOutline().getBounds(matrix)
+                : Path[method](this._segments, this._closed, this, matrix,
+                    options);
     },
 
 // Mess with indentation in order to get more line-space below:
