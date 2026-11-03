@@ -1837,6 +1837,93 @@ PathItem.inject(new function() {
                 .reduce();
     }
 
+    // Returns the dashes of the paths as open paths, as the canvas draws them:
+    // the pattern starts over on each path, an odd number of lengths repeats
+    // to alternate dashes and gaps, and patterns without lengths leave the
+    // paths as they are. Each path is cut in one pass along its curves, and
+    // the dashes keep the parts of its stroke profile:
+    function getDashes(paths, dashArray, dashOffset) {
+        var count = dashArray.length,
+            isDashed = dashArray.some(function(dash) {
+                return dash > 0;
+            }),
+            dashes = [];
+
+        function getDash(i) {
+            return dashArray[((i % count) + count) % count];
+        }
+
+        function addDashes(path) {
+            var curves = path.getCurves(),
+                length = path.getLength(),
+                profile = path._strokeProfile && path._takeStrokeProfile(),
+                index = 0,
+                start = 0,
+                from = -dashOffset,
+                j = 0;
+
+            // The curve and its time at the offset, walking on from the last
+            // one, as the offsets only grow:
+            function getLocation(offset) {
+                var curve = curves[index];
+                while (index < curves.length - 1
+                        && start + curve.getLength() < offset) {
+                    start += curve.getLength();
+                    curve = curves[++index];
+                }
+                return {
+                    index: index,
+                    time: Curve.getTimeAt(curve.getValues(),
+                            Math.min(offset - start, curve.getLength())) || 0
+                };
+            }
+
+            function addDash(from, to) {
+                var a = getLocation(from),
+                    b = getLocation(to),
+                    segments = [];
+                for (var i = a.index; i <= b.index; i++) {
+                    var v = Curve.getPart(curves[i].getValues(),
+                            i === a.index ? a.time : 0,
+                            i === b.index ? b.time : 1);
+                    if (segments.length) {
+                        segments[segments.length - 1].setHandleOut(
+                                v[2] - v[0], v[3] - v[1]);
+                    } else {
+                        segments.push(new Segment(new Point(v[0], v[1]), null,
+                                new Point(v[2] - v[0], v[3] - v[1])));
+                    }
+                    segments.push(new Segment(new Point(v[6], v[7]),
+                            new Point(v[4] - v[6], v[5] - v[7])));
+                }
+                var dash = new Path({ segments: segments, insert: false });
+                if (profile)
+                    dash._setStrokeProfilePart(profile, from, to);
+                dashes.push(dash);
+            }
+
+            // Step back in the pattern to where it starts before the path:
+            while (from > 0)
+                from -= getDash(--j) + getDash(--j);
+            while (from < length) {
+                var to = from + getDash(j++);
+                if (Math.min(to, length) - Math.max(from, 0)
+                        > /*#=*/Numerical.GEOMETRIC_EPSILON)
+                    addDash(Math.max(from, 0), Math.min(to, length));
+                from = to + getDash(j++);
+            }
+        }
+
+        for (var i = 0, l = paths.length; i < l; i++) {
+            if (isDashed) {
+                addDashes(paths[i]);
+            } else {
+                dashes.push(paths[i]);
+            }
+        }
+        return dashes;
+    }
+
     function createResult(item, result, options) {
         if (Base.pick(options && options.insert, paper.settings.insertItems))
             result.insertAbove(item);
@@ -1900,6 +1987,8 @@ PathItem.inject(new function() {
          * Outlines the stroke of the path item, and returns the area that it
          * covers as a new path item, filled with the stroke's color. As with
          * the boolean operations, the path item's matrix is applied first.
+         * Dashed strokes are outlined as their dashes, each with the stroke's
+         * caps, as the canvas draws them, see {@link #dash(options)}.
          *
          * Paths with a {@link Path#strokeProfile} are outlined as the area
          * that its pens sweep. Their round joins and caps are the pens
@@ -1934,7 +2023,9 @@ PathItem.inject(new function() {
         outline: function(options) {
             options = options || {};
             var path = prepare(this),
-                result = outlineStroke(path._children || [path],
+                paths = getDashes(path._children || [path],
+                    this.getDashArray(), this.getDashOffset()),
+                result = outlineStroke(paths,
                     Base.pick(options.width, this.getStrokeWidth()) / 2,
                     options.join || this.getStrokeJoin(),
                     options.cap || this.getStrokeCap(),
@@ -1942,6 +2033,56 @@ PathItem.inject(new function() {
             result = createResult(this, result.reduce(), options);
             result.setFillColor(this.getStrokeColor());
             result.setStrokeColor(null);
+            return result;
+        },
+
+        /**
+         * Cuts the stroke of the path item into its dashes, as the canvas draws
+         * them with the {@link Style#dashArray} and {@link Style#dashOffset}
+         * of the path item or those of the options, and returns them as a new
+         * group of open paths with the path item's style, without its dash
+         * pattern. The pattern starts over on each path of a compound path,
+         * and the dashes keep the parts of the paths' stroke profiles. As with
+         * the boolean operations, the path item's matrix is applied first.
+         *
+         * @option [options.dashArray=this.dashArray] {Number[]} the lengths of
+         *     the dashes and the gaps between them
+         * @option [options.dashOffset=this.dashOffset] {Number} the offset
+         *     into the pattern at which the dashes start
+         * @option [options.insert=true] {Boolean} whether the resulting group
+         *     should be inserted back into the scene graph, above this path
+         *     item
+         *
+         * @param {Object} [options] the dash options
+         * @return {Group} the dashes, as a new group of paths
+         *
+         * @example {@paperscript}
+         * var path = new Path.Circle({
+         *     center: [80, 50],
+         *     radius: 35,
+         *     strokeColor: 'black',
+         *     strokeWidth: 4,
+         *     dashArray: [12, 6]
+         * });
+         * // Turn every other dash red:
+         * var dashes = path.dash();
+         * dashes.children.forEach(function(dash, i) {
+         *     if (i % 2)
+         *         dash.strokeColor = 'red';
+         * });
+         * path.remove();
+         */
+        dash: function(options) {
+            options = options || {};
+            var path = prepare(this),
+                result = new Group({
+                    children: getDashes(path._children || [path],
+                        Base.pick(options.dashArray, this.getDashArray()),
+                        Base.pick(options.dashOffset, this.getDashOffset())),
+                    insert: false
+                });
+            result = createResult(this, result, options);
+            result.setDashArray([]);
             return result;
         }
     };
