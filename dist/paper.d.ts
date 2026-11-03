@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.16.0 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.17.0 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 22 01:32:47 2026 +0200
+ * Date: Tue Nov 3 20:04:01 2026 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -60,6 +60,7 @@ declare namespace paper {
             destination: PointLike,
             highlight?: PointLike
         }
+        | { pattern: PatternDefinition, matrix?: Matrix }
     )
 
     type GradientStopLike = GradientStop | ColorLike | [ ColorLike, number ]
@@ -286,6 +287,25 @@ declare namespace paper {
         get highlight(): Point
         set highlight(value: PointLike)
 
+        /** 
+         * The aspect of a radial gradient: its radius across the line from
+         * the origin to the destination, as a factor of its radius along it,
+         * which makes it an ellipse. Transforming a gradient color sets it, so
+         * that the gradient stretches, shears and rotates with its item.
+         */
+        aspect: number
+
+        /** 
+         * The pattern whose tiles the color repeats.
+         */
+        pattern: PatternDefinition
+
+        /** 
+         * The matrix that places the tiles of the pattern in the item's
+         * coordinates.
+         */
+        matrix: Matrix
+
 
         /** 
          * Creates a RGB Color object.
@@ -327,11 +347,18 @@ declare namespace paper {
         /** 
          * Creates a gradient Color object.
          */
-        constructor(gradient: Gradient, origin: PointLike, destination: PointLike, highlight?: PointLike)
+        constructor(gradient: Gradient, origin: PointLike, destination: PointLike, highlight?: PointLike, aspect?: number)
 
         /** 
-         * Creates a HSB, HSL or gradient Color object from the properties of
-         * the provided object:
+         * Creates a pattern Color object, which repeats the tiles of the
+         * pattern, placed by the matrix in the item's coordinates. As with
+         * gradient colors, the matrix is transformed along with the item.
+         */
+        constructor(pattern: PatternDefinition, matrix?: Matrix)
+
+        /** 
+         * Creates a HSB, HSL, gradient or pattern Color object from the
+         * properties of the provided object:
          * 
          * @option hsb.hue {Number} the hue of the color as a value in degrees
          *     between `0` and `360`
@@ -358,6 +385,10 @@ declare namespace paper {
          *     the gradient, as an alternative to providing a gradient object
          * @option gradient.radial {Boolean} controls whether the gradient is
          *     radial, as an alternative to providing a gradient object
+         * @option pattern.pattern {PatternDefinition} the pattern whose tiles
+         *     the color repeats
+         * @option pattern.matrix {Matrix} the matrix that places the tiles in
+         *     the item's coordinates
          * 
          * @param object - an object describing the components and
          * properties of the color
@@ -419,9 +450,13 @@ declare namespace paper {
         toCSS(hex: boolean): string
 
         /** 
-         * Transform the gradient color by the specified matrix.
+         * Transform the gradient or pattern color by the specified matrix.
+         * Radial gradients become ellipses, see {@link #aspect}, and the
+         * stripes of linear gradients keep running across them, also when the
+         * matrix scales unevenly or shears. Pattern colors transform their
+         * {@link #matrix}.
          * 
-         * @param matrix - the matrix to transform the gradient color by
+         * @param matrix - the matrix to transform the color by
          */
         transform(matrix: Matrix): void
 
@@ -1435,6 +1470,175 @@ declare namespace paper {
     }
 
     /** 
+     * The DrawEvent object is received by the {@link Item}'s drawing
+     * handlers {@link Item#onDraw} and {@link Item#onDrawSelection}, which
+     * describe its fields.
+     */
+    class DrawEvent  {
+
+        /** 
+         * Skips the item's default drawing, as returning `false` from the handler
+         * does.
+         */
+        preventDefault(): void
+
+    }
+
+    /** 
+     * A live effect, which derives what is drawn from an item without
+     * changing the item itself, as the effects in Illustrator do. Creating one
+     * registers it under its type, replacing any effect registered there before,
+     * and items use it by that type, see {@link Item#effects}, each through an
+     * {@link EffectInstance} with its own parameters.
+     */
+    class Effect  {
+        /** 
+         * The type that the effect is registered under, and that items use it
+         * by.
+         */
+        readonly type: string
+
+        /** 
+         * The label of the effect, for hosts to show to users.
+         */
+        readonly label: string
+
+        /** 
+         * The declared parameters of the effect by their names, as objects
+         * that describe them for hosts to build their settings from, with the
+         * default as their `value`, e.g.
+         * `{ label: 'Amount', type: 'number', range: [0, 100], value: 10 }`.
+         * The instances of the effect have them as properties.
+         */
+        readonly parameters: any
+
+        /** 
+         * The function that applies the effect, called with the instance as
+         * `this`, and returning what the effect makes of the art that it gets,
+         * which it doesn't change.
+         * 
+         * @option event.art {Item} the item to apply the effect to, or what
+         *     the effect before it returned
+         * @option event.item {Item} the item that the instance is part of
+         */
+        onApply: Function | null
+
+        /** 
+         * The function that hosts call when the user edits the parameters of
+         * an instance, with the instance as `this`, to set its properties.
+         * Paper.js itself doesn't call it.
+         */
+        onEditParameters: Function | null
+
+
+        /** 
+         * Creates an effect and registers it under its type.
+         * 
+         * @param props - the {@link #type} of the effect, its
+         *     {@link #label} and {@link #parameters}, and {@link #onApply}
+         *     and {@link #onEditParameters}
+         */
+        constructor(props: object)
+
+        /** 
+         * Removes the effect from the registered effects.
+         * 
+         * @return true if the effect was registered
+         */
+        remove(): boolean
+
+        /** 
+         * Registers the effect under its type, replacing any effect
+         * registered there before. Effects register themselves when they
+         * are created.
+         * 
+         * @return the effect
+         */
+        static add(effect: Effect): Effect
+
+        /** 
+         * Returns the effect registered under the type.
+         * 
+         * @return the effect, or `null`
+         */
+        static get(type: string): Effect | null
+
+        /** 
+         * Returns all registered effects.
+         * 
+         * @return the effects
+         */
+        static getAll(): Effect[]
+
+        /** 
+         * Removes the effect from the registered effects.
+         * 
+         * @return true if the effect was registered
+         */
+        static remove(effect: Effect): boolean
+
+    }
+
+    /** 
+     * The use of an {@link Effect} on an item, see {@link Item#effects},
+     * with its parameters. The parameters that the effect declares are also its
+     * properties. Instances of effects that aren't registered keep their
+     * parameters and leave what they get as it is, so that they still round-trip.
+     */
+    class EffectInstance  {
+        /** 
+         * The type of the effect that the instance uses, also when it isn't
+         * registered.
+         */
+        readonly type: string
+
+        /** 
+         * The effect that the instance uses, registered under its {@link #type},
+         * or `null` if there is none.
+         */
+        readonly effect: Effect | null
+
+        /** 
+         * Whether the effect applies. Effects that aren't visible are skipped.
+         */
+        visible: boolean
+
+        /** 
+         * The parameters of the instance. Changing them on the returned object
+         * updates it, as setting them as its properties does. Parameters that it
+         * doesn't have yet are added by setting them all, as are changes within
+         * values such as arrays.
+         */
+        parameters: any
+
+        /** 
+         * The item that the instance is part of.
+         */
+        readonly item: Item | null
+
+        /** 
+         * The index of the instance in the {@link Item#effects} of its item.
+         */
+        readonly index: number | null
+
+
+        /** 
+         * Removes the instance from its item.
+         * 
+         * @return true if the instance was removed
+         */
+        remove(): boolean
+
+        /** 
+         * Checks whether the instance is equal to the supplied one.
+         * 
+         * @return true if they are equal
+         */
+        equals(instance: EffectInstance): boolean
+
+    }
+
+    /** 
      * The Event object is the base class for any of the other event types,
      * such as {@link MouseEvent}, {@link ToolEvent} and {@link KeyEvent}.
      */
@@ -1572,9 +1776,42 @@ declare namespace paper {
          * like CSS's `isolation: isolate`. Without it, a compositing mode such as
          * `'destination-out'` affects everything drawn below the group, also in
          * other layers. Groups with an {@link Item#opacity} below 1 or a
-         * {@link Item#blendMode} are isolated anyway.
+         * {@link Item#blendMode} are isolated anyway, and buffered groups always,
+         * see {@link #buffered}.
          */
         isolated: boolean
+
+        /** 
+         * Specifies whether the group is buffered: when a view draws it, it draws
+         * its content into a canvas of its own, which it keeps, and only draws
+         * into it again when something in the group changes, or the part of it
+         * that the view shows does, e.g. after zooming or panning. Otherwise, the
+         * view only composites the buffer, with the group's {@link Item#opacity}
+         * and {@link Item#blendMode}. This pays off for large groups and layers
+         * that rarely change, such as a complex background below animated items.
+         * 
+         * It doesn't pay off when the buffer is drawn again on every frame: while
+         * the view pans or zooms on every frame, while the group itself is moved
+         * or transformed, or when an item inside it is animated. Put animated
+         * items into another group or layer instead.
+         * 
+         * The buffer costs memory: it covers the part of the group that the view
+         * shows, at up to `width × height × 4 × pixelRatio²` bytes for a group
+         * that fills the whole view.
+         * 
+         * Buffered groups are always {@link #isolated}: the blend modes of their
+         * children only apply within them, not to the items below them, also in
+         * other layers.
+         * 
+         * Hit-testing, SVG export, {@link Item#rasterize} and drawing into other
+         * canvases than the view's don't use the buffer.
+         * 
+         * A buffered group keeps one buffer, so inside a {@link SymbolDefinition}
+         * that is placed several times, it draws into it again for each placement.
+         * Changes to any symbol definition make all buffers stale, as do forced
+         * updates through `view.update(true)`.
+         */
+        buffered: boolean
 
 
         /** 
@@ -1684,6 +1921,36 @@ declare namespace paper {
      * that they inherit from Item.
      */
     class Item  {
+        /** 
+         * The live effects of the item, in the order in which they apply, as
+         * the instances of the {@link Effect effects} that they use. They
+         * derive what is drawn from the item without changing it: drawing
+         * draws their output, and {@link #previewBounds} measures it, while
+         * hit testing, {@link #bounds} and {@link #strokeBounds} stay with the
+         * item itself. It is set to plain objects describing them, `{ type,
+         * parameters, visible }`, with the `type` of the effect.
+         * Changing the returned array directly isn't tracked, as with
+         * {@link Path#segments}.
+         * 
+         * Paper.js has these effects, and {@link Effect} creates more:
+         * 
+         * - `offset`: offsets the paths, see {@link PathItem#offset}, with
+         *   the parameters `distance` (`0`), `join` (`'miter'`) and
+         *   `miterLimit` (`10`).
+         * - `outline`: outlines the strokes of the paths as filled areas next
+         *   to their fills, see {@link PathItem#outline}, following their
+         *   {@link Path#strokeProfile}.
+         */
+        effects: EffectInstance[]
+
+        /** 
+         * The bounds of what the item looks like with its effects, in the
+         * coordinate space of its parent: of their output with its strokes, or of
+         * its children's with their effects, and its {@link #strokeBounds}
+         * without them, as Illustrator's "Use Preview Bounds".
+         */
+        readonly previewBounds: Rectangle
+
         /** 
          * The key of the host's node that the item represents, in a project
          * backed by a host document, see {@link Project#host}. It can only be
@@ -2179,6 +2446,136 @@ declare namespace paper {
          */
         onMouseLeave: Function | null
 
+        /** 
+         * The function to be called whenever the item is drawn: in views, in
+         * {@link #rasterize}, and once for each placement of a symbol whose
+         * definition contains it. It is called right before the item's default
+         * drawing, and draws with the canvas API beneath it, or replaces it by
+         * returning `false` or calling `event.preventDefault()`. The function
+         * receives a {@link DrawEvent} object with these fields:
+         * 
+         * @option event.item {Item} the item that is drawn
+         * @option event.context {CanvasRenderingContext2D} the canvas context,
+         *     transformed into the item's coordinates
+         * @option event.matrix {Matrix} the matrix from the item's coordinates to
+         *     the pixels of the view, without its pixel ratio, for drawing things
+         *     at a size in pixels
+         * @option event.pixelRatio {Number} the device pixels per pixel: the
+         *     view's pixel ratio, or the resolution divided by 72 in
+         *     {@link #rasterize}
+         * @option event.view {View} the view drawn into, or `null` in
+         *     {@link #rasterize}
+         * 
+         * What the handler draws isn't part of the item's hit testing, its bounds
+         * or its SVG export. In buffered groups, it is only called when the group
+         * draws its buffer again, see {@link Group#buffered}.
+         */
+        onDraw: Function | null
+
+        /** 
+         * The function to be called when the selection of the selected item is
+         * drawn, over all the content. It is called right before the item's
+         * default selection drawing, and draws with the canvas API beneath it, or
+         * replaces it by returning `false` or calling `event.preventDefault()`. The
+         * function receives a {@link DrawEvent} object with these fields:
+         * 
+         * @option event.item {Item} the selected item
+         * @option event.context {CanvasRenderingContext2D} the canvas context, in
+         *     the pixels of the view, with the selection color as its `strokeStyle`
+         *     and `fillStyle`, and a `lineWidth` of 1
+         * @option event.matrix {Matrix} the matrix from the item's coordinates to
+         *     the pixels of the view
+         * @option event.size {Number} the size of the handles, see
+         *     {@link PaperScope#settings}
+         * @option event.color {Color} the selection color, see
+         *     {@link #selectedColor}
+         * @option event.view {View} the view drawn into
+         * 
+         * What the handler draws isn't part of the item's hit testing, its bounds
+         * or its SVG export.
+         */
+        onDrawSelection: Function | null
+
+        /** 
+         * The function to be called whenever any item of the class or of its
+         * subclasses is drawn, as {@link #onDraw} is for a single item, e.g.
+         * `Path.onDraw` for all paths, including the ones created later. The
+         * item's own handlers are called first, then the ones of its class and of
+         * the classes it inherits from, up to `Item`, with `this` set to the item.
+         * `Path.on('draw', handler)` and `Path.off('draw', handler)` attach and
+         * detach them too. Only the drawing events can be handled for classes of
+         * items. Classes are shared by all {@link PaperScope} objects, and so are
+         * their handlers.
+         */
+        static onDraw: Function | null
+
+        /** 
+         * The function to be called when the selection of any selected item of the
+         * class or of its subclasses is drawn, as {@link #onDrawSelection} is for
+         * a single item, e.g. `Path.onDrawSelection` for all paths, see
+         * {@link Item.onDraw}.
+         */
+        static onDrawSelection: Function | null
+
+
+        /** 
+         * Adds an effect at the end of the item's effects.
+         * 
+         * @param effect - the plain object describing the effect
+         * 
+         * @return the added instance
+         */
+        addEffect(effect: object): EffectInstance
+
+        /** 
+         * Inserts an effect into the item's effects at the given index.
+         * 
+         * @param index - the index at which to insert the effect
+         * @param effect - the plain object describing the effect
+         * 
+         * @return the inserted instance
+         */
+        insertEffect(index: number, effect: object): EffectInstance
+
+        /** 
+         * Inserts effects into the item's effects at the given index.
+         * 
+         * @param index - the index at which to insert the effects
+         * @param effects - the plain objects describing the effects
+         * 
+         * @return the inserted instances
+         */
+        insertEffects(index: number, effects: object[]): EffectInstance[]
+
+        /** 
+         * Removes the effect at the given index from the item's effects.
+         * 
+         * @param index - the index of the effect to remove
+         * 
+         * @return the removed instance, or `null`
+         */
+        removeEffect(index: number): EffectInstance
+
+        /** 
+         * Removes the effects from the start index to the end index from the
+         * item's effects, or all of them.
+         * 
+         * @param start - the index of the first effect to remove
+         * @param end - the index after the last one
+         * 
+         * @return the removed instances
+         */
+        removeEffects(start?: number, end?: number): EffectInstance[]
+
+        /** 
+         * Returns what the item's visible effects make of it, in the item's own
+         * coordinates, outside of the scene graph, or `null` if it has none. It
+         * is kept until the item, its content, its effects or the registered
+         * effects change, so changing it isn't tracked.
+         * 
+         * @return the output of the effects
+         */
+        getEffectOutput(): Item | null
 
         /** 
          * Sets the properties of the passed object literal on this item to the
@@ -2487,15 +2884,17 @@ declare namespace paper {
         importJSON(json: string): Item
 
         /** 
-         * Exports the item with its content and child items as an SVG DOM.
+         * Exports the item with its content and child items as an SVG DOM. With
+         * `options.bounds` or `options.matrix`, the item is wrapped in an `<svg>`
+         * element sized to the bounds, as {@link Project#exportSVG} does.
          * 
-         * @option [options.bounds='view'] {String|Rectangle} the bounds of the area
-         *     to export, either as a string ({@values 'view', content'}), or a
+         * @option [options.bounds] {String|Rectangle} the bounds of the area to
+         *     export, either as a string ({@values 'view', content'}), or a
          *     {@link Rectangle} object: `'view'` uses the view bounds,
-         *     `'content'` uses the stroke bounds of all content
-         * @option [options.matrix=paper.view.matrix] {Matrix} the matrix with which
-         *     to transform the exported content: If `options.bounds` is set to
-         *     `'view'`, `paper.view.matrix` is used, for all other settings of
+         *     `'content'` uses the stroke bounds of the item
+         * @option [options.matrix] {Matrix} the matrix with which to transform the
+         *     exported content: If `options.bounds` is set to `'view'`,
+         *     `paper.view.matrix` is used, for all other settings of
          *     `options.bounds` the identity matrix is used.
          * @option [options.asString=false] {Boolean} whether a SVG node or a
          *     `String` is to be returned
@@ -3105,7 +3504,7 @@ declare namespace paper {
          * 
          * @param type - the type of event: {@values 'frame', mousedown',
          *     'mouseup', 'mousedrag', 'click', 'doubleclick', 'mousemove',
-         *     'mouseenter', 'mouseleave'}
+         *     'mouseenter', 'mouseleave', 'draw', 'drawselection'}
          * @param function - the function to be called when the event
          *     occurs, receiving a {@link MouseEvent} or {@link Event} object as its
          *     sole argument
@@ -3119,7 +3518,7 @@ declare namespace paper {
          * 
          * @param object - an object containing one or more of the following
          *     properties: {@values frame, mousedown, mouseup, mousedrag, click,
-         *     doubleclick, mousemove, mouseenter, mouseleave}
+         *     doubleclick, mousemove, mouseenter, mouseleave, draw, drawselection}
          * 
          * @return this item itself, so calls can be chained
          */
@@ -3130,7 +3529,7 @@ declare namespace paper {
          * 
          * @param type - the type of event: {@values 'frame', mousedown',
          *     'mouseup', 'mousedrag', 'click', 'doubleclick', 'mousemove',
-         *     'mouseenter', 'mouseleave'}
+         *     'mouseenter', 'mouseleave', 'draw', 'drawselection'}
          * @param function - the function to be detached
          * 
          * @return this item itself, so calls can be chained
@@ -3142,7 +3541,7 @@ declare namespace paper {
          * 
          * @param object - an object containing one or more of the following
          *     properties: {@values frame, mousedown, mouseup, mousedrag, click,
-         *     doubleclick, mousemove, mouseenter, mouseleave}
+         *     doubleclick, mousemove, mouseenter, mouseleave, draw, drawselection}
          * 
          * @return this item itself, so calls can be chained
          */
@@ -3153,7 +3552,7 @@ declare namespace paper {
          * 
          * @param type - the type of event: {@values 'frame', mousedown',
          *     'mouseup', 'mousedrag', 'click', 'doubleclick', 'mousemove',
-         *     'mouseenter', 'mouseleave'}
+         *     'mouseenter', 'mouseleave', 'draw', 'drawselection'}
          * @param event - an object literal containing properties describing
          * the event
          * 
@@ -3166,7 +3565,7 @@ declare namespace paper {
          * 
          * @param type - the type of event: {@values 'frame', mousedown',
          *     'mouseup', 'mousedrag', 'click', 'doubleclick', 'mousemove',
-         *     'mouseenter', 'mouseleave'}
+         *     'mouseenter', 'mouseleave', 'draw', 'drawselection'}
          * 
          * @return true if the item has one or more event handlers of
          * the specified type
@@ -3929,6 +4328,9 @@ declare namespace paper {
         CompoundPath: typeof CompoundPath
         Curve: typeof Curve
         CurveLocation: typeof CurveLocation
+        DrawEvent: typeof DrawEvent
+        Effect: typeof Effect
+        EffectInstance: typeof EffectInstance
         Event: typeof Event
         Gradient: typeof Gradient
         GradientStop: typeof GradientStop
@@ -3946,6 +4348,7 @@ declare namespace paper {
         Path: typeof Path
         PathItem: typeof PathItem
         PathText: typeof PathText
+        PatternDefinition: typeof PatternDefinition
         Point: typeof Point
         PointText: typeof PointText
         Project: typeof Project
@@ -3954,6 +4357,7 @@ declare namespace paper {
         Segment: typeof Segment
         Shape: typeof Shape
         Size: typeof Size
+        StrokeProfileStop: typeof StrokeProfileStop
         Style: typeof Style
         SymbolDefinition: typeof SymbolDefinition
         SymbolItem: typeof SymbolItem
@@ -4079,18 +4483,25 @@ declare namespace paper {
          * @option options.handlers {String[]} the names of further global
          *     handlers to export next to `onFrame`, `onResize` and the tool's
          *     handlers, for hosts that call them themselves
+         * @option options.evaluate {Function} the evaluator for hosts that
+         *     evaluate code their own way: called with the source of a function
+         *     expression and `options.url`, and returning the function, e.g. by
+         *     evaluating the source as a script of that url
          * @option options.load {Function} the loader for static `import`
-         *     statements, called with the specifier as written and the
-         *     `options.url` of the importing script, and returning the module's
-         *     exports, e.g. the result of executing it. Modules with ES `export`
-         *     statements have their default export as `default` and are marked
-         *     with `__esModule`, so `import x` receives the default export, and
-         *     for CommonJS-style exports the whole exports. `import * as x`
+         *     statements, called with the specifier as written, the `options.url`
+         *     of the importing script, and the import attributes as an object,
+         *     e.g. `{ type: 'paperscript' }` for `import x from 'm' with { type:
+         *     'paperscript' }`, or `undefined` without them, and returning the
+         *     module's exports, e.g. the result of executing it. Modules with ES
+         *     `export` statements have their default export as `default` and are
+         *     marked with `__esModule`, so `import x` receives the default export,
+         *     and for CommonJS-style exports the whole exports. `import * as x`
          *     receives all exports, and for CommonJS-style exports, these as
          *     `default` too. Dynamic `import(specifier)` resolves to that
          *     namespace as a Promise, and its loader may return a Promise as well.
-         *     The loader runs each module once and handles cycles. Parsing
-         *     `import` requires a current Acorn as `self.acorn`
+         *     `import(specifier, options)` passes on `options.with` as the
+         *     attributes. The loader runs each module once and handles cycles.
+         *     Parsing `import` requires a current Acorn as `self.acorn`
          * 
          * Code with top-level `await` runs as an async function. `execute()` then
          * returns a Promise of the exports, and installs the global handlers once
@@ -4103,7 +4514,7 @@ declare namespace paper {
          * @return the exports defined in the executed code, or
          *     with top-level `await`, a Promise of them
          */
-        static execute(code: string, scope: PaperScope, options?: { url?: string, source?: string, handlers?: string[], load?: Function }): object | Promise<any>
+        static execute(code: string, scope: PaperScope, options?: { url?: string, source?: string, handlers?: string[], evaluate?: Function, load?: Function }): object | Promise<any>
 
         /** 
          * Loads, compiles and executes PaperScript code in the HTML document. Note
@@ -4129,6 +4540,38 @@ declare namespace paper {
      * The path item represents a path in a Paper.js project.
      */
     class Path extends PathItem {
+        /** 
+         * The stroke profile of the path: the stops along it that set the pen
+         * that draws its stroke, an ellipse with a width, as a factor of its
+         * {@link Style#strokeWidth}, an aspect and an angle, see
+         * {@link StrokeProfileStop}. The stops are sorted by their offsets.
+         * Between the stops that set a value, it changes along the path,
+         * easing into and out of smooth stops and in straight lines from the
+         * others, see {@link StrokeProfileStop#smooth}, and beyond the ends
+         * of open paths, it stays as at the first and last of them. Two stops
+         * at the same offset make a step. The stops stay between the same
+         * segments when they move. Without a stroke profile, the stroke is
+         * drawn with a round pen of the stroke width all along.
+         * 
+         * It is a property of the path, not of its style, as it is tied to
+         * its segments. It can be set to stops or plain objects describing
+         * them, `{ offset, width, aspect, angle, smooth }`, and JSON stores
+         * them with the indices that tie them to the segments instead of
+         * their offsets, `{ index, width, aspect, angle, smooth }`. Changing
+         * the returned array directly isn't tracked, as with
+         * {@link #segments}.
+         * 
+         * The path draws its stroke as the area that the pens sweep, filled
+         * with the stroke color, as {@link PathItem#outline} returns it,
+         * and {@link Item#strokeBounds} and hit-testing measure that area.
+         * The children of compound paths are drawn with the stroke of their
+         * parent, without their profiles. With {@link Style#strokeScaling}
+         * off, the profile scales with the view. {@link PathItem#offset},
+         * the boolean operations, {@link PathItem#interpolate} and SVG
+         * export return paths without the profile.
+         */
+        strokeProfile: StrokeProfileStop[] | null
+
         /** 
          * The segments contained within the path. Segments that define a
          * {@link Segment#name} can also be accessed by name.
@@ -4212,6 +4655,23 @@ declare namespace paper {
          *     path
          */
         constructor(object: object)
+
+        /** 
+         * Returns the pen of the {@link #strokeProfile} at the given offset
+         * along the path, as a stop that isn't on the path, with all its
+         * values: its width as a factor of the {@link Style#strokeWidth}, its
+         * aspect and its angle, `1`, `1` and `0` where no stop sets them.
+         * Where the profile has a step, it returns the values after it. Adding
+         * the stop to the profile keeps the values at the offset, and where
+         * they change in straight lines, also around it if the stop isn't
+         * smooth. As a smooth stop, the values ease into it and out of it.
+         * 
+         * @param offset - the offset on the path, where `0` is at the
+         *     beginning of the path and {@link Path#length} at the end
+         * 
+         * @return the pen at the offset
+         */
+        getStrokeProfileAt(offset: number): StrokeProfileStop
 
         /** 
          * Adds one or more segments to the end of the {@link #segments} array of
@@ -4862,6 +5322,82 @@ declare namespace paper {
         reorient(nonZero?: boolean, clockwise?: boolean): PathItem
 
         /** 
+         * Offsets the path item by the given distance and returns the result
+         * as a new path item. Closed paths and compound paths grow by positive
+         * distances and shrink by negative ones, open paths are offset along
+         * their normals for positive distances, and against them for negative
+         * ones. As with the boolean operations, the path item's matrix is
+         * applied first.
+         * 
+         * @option [options.join='miter'] {String} the shape of the corners
+         *     that the offset adds where the path turns away from it:
+         *     {@values 'miter', 'round', 'bevel'}
+         * @option [options.miterLimit=10] {Number} the limit of miter corners,
+         *     see {@link Style#miterLimit}
+         * @option [options.insert=true] {Boolean} whether the resulting item
+         *     should be inserted back into the scene graph, above this path
+         * 
+         * @param distance - the distance to offset the path item by
+         * @param options - the offset options
+         * 
+         * @return the resulting path item
+         */
+        offset(distance: number, options?: { join?: string, miterLimit?: number, insert?: boolean }): PathItem
+
+        /** 
+         * Outlines the stroke of the path item, and returns the area that it
+         * covers as a new path item, filled with the stroke's color. As with
+         * the boolean operations, the path item's matrix is applied first.
+         * Dashed strokes are outlined as their dashes, each with the stroke's
+         * caps, as the canvas draws them, see {@link #dash}.
+         * 
+         * Paths with a {@link Path#strokeProfile} are outlined as the area
+         * that its pens sweep. Their round joins and caps are the pens
+         * themselves, and their other joins and caps connect the points where
+         * the pens touch the sides of the stroke. Steps in the profile end
+         * the parts of the stroke straight across, as butt caps do.
+         * 
+         * @option [options.width=this.strokeWidth] {Number} the width of the
+         *     stroke
+         * @option [options.join=this.strokeJoin] {String} the shape of the
+         *     stroke's corners: {@values 'miter', 'round', 'bevel'}
+         * @option [options.cap=this.strokeCap] {String} the shape of the
+         *     stroke's ends: {@values 'round', 'square', 'butt'}
+         * @option [options.miterLimit=this.miterLimit] {Number} the limit of
+         *     miter corners, see {@link Style#miterLimit}
+         * @option [options.insert=true] {Boolean} whether the resulting item
+         *     should be inserted back into the scene graph, above this path
+         * 
+         * @param options - the outline options
+         * 
+         * @return the resulting path item
+         */
+        outline(options?: { width?: number, join?: string, cap?: string, miterLimit?: number, insert?: boolean }): PathItem
+
+        /** 
+         * Cuts the stroke of the path item into its dashes, as the canvas draws
+         * them with the {@link Style#dashArray} and {@link Style#dashOffset}
+         * of the path item or those of the options, and returns them as a new
+         * group of open paths with the path item's style, without its dash
+         * pattern. The pattern starts over on each path of a compound path,
+         * and the dashes keep the parts of the paths' stroke profiles. As with
+         * the boolean operations, the path item's matrix is applied first.
+         * 
+         * @option [options.dashArray=this.dashArray] {Number[]} the lengths of
+         *     the dashes and the gaps between them
+         * @option [options.dashOffset=this.dashOffset] {Number} the offset
+         *     into the pattern at which the dashes start
+         * @option [options.insert=true] {Boolean} whether the resulting group
+         *     should be inserted back into the scene graph, above this path
+         *     item
+         * 
+         * @param options - the dash options
+         * 
+         * @return the dashes, as a new group of paths
+         */
+        dash(options?: { dashArray?: number[], dashOffset?: number, insert?: boolean }): Group
+
+        /** 
          * Creates a path item from the given SVG path-data, determining if the
          * data describes a plain path or a compound-path with multiple
          * sub-paths.
@@ -5064,13 +5600,29 @@ declare namespace paper {
          * This method can be used to process and simplify the point data received
          * from a mouse or touch device.
          * 
-         * @param tolerance - the allowed maximum error when fitting
-         *     the curves through the segment points
+         * With `options.from` and `options.to`, only the segments in that range
+         * are replaced. The fitted curves join the curves outside of the range
+         * tangentially where these have handles.
+         * 
+         * @option [options.tolerance=2.5] {Number} the allowed maximum error when
+         *     fitting the curves through the segment points
+         * @option options.from {Number|Segment|Curve} the segment or curve at which
+         *     to start simplifying, if not the full path shall be simplified
+         *     (inclusive). This can either be a segment index, or a segment or
+         *     curve object that is part of the path. If the passed number is
+         *     negative, the index is wrapped around the end of the path.
+         * @option options.to {Number|Segment|Curve} the segment or curve up to
+         *     which to simplify (inclusive). This can either be a segment index,
+         *     or a segment or curve object that is part of the path. If the passed
+         *     number is negative, the index is wrapped around the end of the path.
+         * 
+         * @param options - the simplification options, or the
+         *     tolerance as a number
          * 
          * @return true if the method was capable of fitting curves
          *     through the path's segment points
          */
-        simplify(tolerance?: number): boolean
+        simplify(options?: object | number): boolean
 
         /** 
          * Interpolates between the two specified path items and uses the result
@@ -5154,6 +5706,35 @@ declare namespace paper {
          *     drawn in clockwise direction
          */
         arcTo(to: PointLike, clockwise?: boolean): void
+
+        /** 
+         * Adds an arc that sweeps the specified angle around the specified
+         * `center` point, from the position of the last segment in the path, by
+         * adding one or more segments to the path. Positive angles draw the arc in
+         * clockwise direction, negative ones in anticlockwise direction.
+         * 
+         * @param center - the center of the arc
+         * @param angle - the angle in degrees that the arc sweeps over
+         */
+        arcAround(center: PointLike, angle: number): void
+
+        /** 
+         * Adds an arc from the position of the last segment in the path to the
+         * specified point, by adding one or more segments to the path. The arc
+         * continues in the direction in which the path ends, without a corner.
+         * 
+         * @param to - the point where the arc should end
+         */
+        arcTowards(to: PointLike): void
+
+        /** 
+         * Adds an arc from the position of the last segment in the path to the
+         * specified point, by adding one or more segments to the path. The arc
+         * continues in the direction in which the path ends, without a corner.
+         * 
+         * @param to - the point where the arc should end
+         */
+        arcTowards(x: number, y: number): void
 
         /** 
          * Adds a curve from the last segment in the path through the specified
@@ -5354,6 +5935,71 @@ declare namespace paper {
          *     text's attributes
          */
         constructor(object: object)
+
+    }
+
+    /** 
+     * A pattern definition repeats an item as the tile of pattern colors,
+     * which fill and stroke items with it, see {@link Color#pattern}: a
+     * {@link Raster} for image patterns, or any other item for vector patterns. As
+     * with symbol definitions, the item is removed from the scene graph, and all
+     * pattern colors that use the pattern share it, so they change along with it.
+     */
+    class PatternDefinition  {
+        /** 
+         * The project that this pattern belongs to.
+         */
+        readonly project: Project
+
+        /** 
+         * The name of the pattern.
+         */
+        name: string
+
+        /** 
+         * The item that the pattern repeats. Unlike the items of symbols, it isn't
+         * moved to 0, 0, so the tiles are at its own coordinates.
+         */
+        item: Item
+
+        /** 
+         * The rectangle that is repeated, in the coordinates of the pattern's
+         * item.
+         */
+        get tile(): Rectangle
+        set tile(value: RectangleLike)
+
+        /** 
+         * The gap between the tiles, horizontally and vertically.
+         */
+        get spacing(): Size
+        set spacing(value: SizeLike)
+
+
+        /** 
+         * Creates a pattern definition.
+         * 
+         * @option [options.tile] {Rectangle} the rectangle that is repeated,
+         *     the bounds of the item by default
+         * @option [options.spacing=0] {Size} the gap between the tiles
+         * @option [options.name] {String} the name of the pattern
+         * 
+         * @param item - the item to repeat, which is removed from the scene
+         *     graph and becomes the pattern's tile content
+         */
+        constructor(item: Item, options?: { tile?: RectangleLike, spacing?: SizeLike, name?: string })
+
+        /** 
+         * Returns a copy of the pattern, with a copy of its item and its name.
+         */
+        clone(): PatternDefinition
+
+        /** 
+         * Checks whether the pattern is equal to the supplied pattern.
+         * 
+         * @return true if they are equal
+         */
+        equals(pattern: PatternDefinition): boolean
 
     }
 
@@ -6014,20 +6660,32 @@ declare namespace paper {
          * The host document that the project's items come from. Setting it
          * creates the project's layers from the host's records. All items
          * are created as shells that load their content and children from the
-         * host on first access.
+         * host on first access. The host draws its items, so setting it also
+         * turns off {@link View#autoUpdate}, which would draw them all and
+         * load them in full.
          * 
          * The host provides:
          * - `getChildren(key)`, which returns the records of the children of
          *   the node with the given key, or of the top level for `null`, as
          *   columns: `keys`, `types` (indices into `typeNames`), `typeNames`,
          *   `flags` (selected: 1, visible: 2, locked: 4, strokeScaling: 8,
-         *   clipMask: 64, guide: 128, empty: 256), `boxes` (bounds,
-         *   strokeBounds and roughBounds in the item's coordinates, 12 numbers
-         *   per item), and the sparse objects `names` and `matrices`.
+         *   clipMask: 64, guide: 128, empty: 256), optionally `boxes`
+         *   (bounds, strokeBounds and roughBounds in the item's coordinates, 12
+         *   numbers per item), and the sparse objects `names` and `matrices`.
+         * - `getBounds(key)`, for hosts that don't send `boxes`, which returns
+         *   the node's 12 numbers, or `null` for an empty node. Items ask for
+         *   them when their bounds are needed, and again after the host sent
+         *   their record again.
          * - `getItem(key)`, which returns the node's own content in the form
          *   of {@link Item#importJSON}, without children. Linked text
          *   gives `linked`, the keys of its story's text items in order, and
-         *   leaves out its story.
+         *   leaves out its story. Rasters give their `size` without a `source`
+         *   and `crossOrigin`.
+         * - `getImage(key)`, for rasters, which returns the node's pixels as a
+         *   canvas with a 2D context, of the size that `getItem()` gives.
+         *   Rasters load them on first access to their pixels, and Paper.js
+         *   never loads them by itself, except to draw them. Rasters whose
+         *   pixels the host fails to give draw nothing.
          * - `getStory(key)`, for linked text, which returns its story with the
          *   key of any of its text items: `content` or `runs`, `paragraphs`,
          *   and the character and paragraph styles, as
@@ -6049,6 +6707,53 @@ declare namespace paper {
          *   `content`, as for a hyphen, all in the item's coordinates. `key`
          *   is null for text that the host doesn't know yet. Without it,
          *   Paper.js lays out text itself.
+         * - `getDefinition(key)`, for the pattern and symbol definitions that
+         *   the host shares between its items, which the JSON of its items
+         *   refers to as `['@key']`, as in `fillColor: ['pattern',
+         *   ['@pattern/Dots'], matrix]` or `definition: ['@symbol/Star']`.
+         *   It returns the definition in the form of
+         *   {@link Item#exportJSON}, with its whole item:
+         *   `['PatternDefinition', item, { tile, spacing }]` or
+         *   `['SymbolDefinition', item]`, always: for a key that it has no
+         *   definition of, an empty one of the type, as
+         *   `['SymbolDefinition', ['Group', {}]]`. Each definition loads
+         *   once, and the JSON of the items that use it, as
+         *   {@link Item#exportJSON} writes it, refers to it by its
+         *   key again. Definitions that scripts create have no key, and are
+         *   written out whole, until the host sets their `key`, which it can
+         *   only set once. {@link Project#takeChanges} lists those that the
+         *   changed items use first, nested ones first, as
+         *   `{ definition, flags }` with the `ChangeFlag.INSERTION` flag,
+         *   followed by the changes of the host's definitions. Renaming those
+         *   isn't supported.
+         * - `getDefinitionKeys(type)`, which returns the keys of all the
+         *   host's definitions of the type, `'SymbolDefinition'` or
+         *   `'PatternDefinition'`, for {@link #symbolDefinitions} and
+         *   {@link #patternDefinitions}.
+         * 
+         * Items that move into a project with another host load in full from
+         * their own host first, and drop their keys, so they are new items
+         * there. They bring copies without keys of the symbol and pattern
+         * definitions of their host along, shared by the items of one
+         * insertion or copy, so the new host takes them as new ones too.
+         * Linked text brings a copy of its story along, which flows on through
+         * the items that stay. Host items can't enter the project of another
+         * host.
+         * 
+         * The host draws the items, and the selection. To show what scripts
+         * draw in {@link Item#onDraw} and {@link Item#onDrawSelection}, it
+         * calls `project.draw(ctx, matrix, pixelRatio)`, which in a hosted
+         * project only calls these handlers, with the context, the view's
+         * matrix and pixel ratio that the host gives, for the visible items
+         * that have them, and for the selected ones. Handlers of classes,
+         * such as `Path.onDraw`, load all items once. The host asks
+         * {@link #hasDrawHandlers} whether it needs to call it.
+         * 
+         * {@link Project#takeChanges} marks the changes of the items whose
+         * children changed in order other than by new items inserted and
+         * items removed, which the other changes don't tell, with
+         * `reordered: true`: the host reads their children whole, and can
+         * place the others' new items by their indices.
          */
         host: any
 
@@ -6058,6 +6763,37 @@ declare namespace paper {
          * their own document to update only what has changed.
          */
         trackChanges: boolean
+
+        /** 
+         * The function to be called when the project is activated through
+         * {@link #activate}. The function receives the previously active
+         * project, which is the project itself when it was already active.
+         */
+        onActivate: Function | null
+
+        /** 
+         * The function to be called when another project is activated through
+         * {@link #activate} while this one is active, or when this one is
+         * removed while active.
+         */
+        onDeactivate: Function | null
+
+        /** 
+         * The function to be called when any project is activated, as
+         * {@link #onActivate} is for a single project, including the projects
+         * that activate themselves when they are created, with `this` set to the
+         * project. `Project.on('activate', handler)` and
+         * `Project.off('activate', handler)` attach and detach them too. Classes
+         * are shared by all {@link PaperScope} objects, and so are their handlers.
+         */
+        static onActivate: Function | null
+
+        /** 
+         * The function to be called when any project is deactivated, as
+         * {@link #onDeactivate} is for a single project, see
+         * {@link Project.onActivate}.
+         */
+        static onDeactivate: Function | null
 
         /** 
          * The scope that this project belongs to.
@@ -6110,6 +6846,12 @@ declare namespace paper {
         readonly symbols: SymbolDefinition[]
 
         /** 
+         * The pattern definitions that the fill and stroke colors of the items in
+         * the project use.
+         */
+        readonly patternDefinitions: PatternDefinition[]
+
+        /** 
          * The selected items contained within the project.
          */
         readonly selectedItems: Item[]
@@ -6140,12 +6882,28 @@ declare namespace paper {
         getItemByKey(key: number): Item
 
         /** 
+         * Checks whether any item of the project or class has draw handlers,
+         * {@link Item#onDraw} or, for the selected items,
+         * {@link Item#onDrawSelection}, for hosts that draw the items
+         * themselves, see {@link #host}.
+         * 
+         * @return true if drawing the project calls any handlers
+         */
+        hasDrawHandlers(): boolean
+
+        /** 
          * Updates the items of changed host nodes, given in the column format
          * of the host's `getChildren()`, with two more flags: 16 when the
          * node's own content changed, so the item loads it again on next
          * access, and 32 when its list of children changed, so it loads them
          * again right away if it had loaded them, keeping the items of nodes
-         * that remain. Nodes without items are skipped.
+         * that remain. Nodes without items are skipped. `definitions` lists
+         * the keys of changed definitions of the host's `getDefinition()`,
+         * which load again right away into the same objects, so the colors
+         * and symbol items that use them change along. A definition that the
+         * host no longer has, for which `getDefinition()` may return `null`
+         * here, is emptied and draws nothing. The columns may hold only
+         * definitions.
          * 
          * @param columns - the records of the changed nodes
          */
@@ -6155,10 +6913,14 @@ declare namespace paper {
          * Returns the changes logged since tracking was activated or since the
          * last call, and clears the log. Each item is listed once, with the
          * {@link ChangeFlag} values of all its changes combined. Removed items are
-         * listed with the `ChangeFlag.INSERTION` flag.
+         * listed with the `ChangeFlag.INSERTION` flag, and items that moved to
+         * another project are left out, as that one lists them. Symbol and pattern
+         * definitions whose item, tile, spacing or name changed are listed too,
+         * as `{ definition, flags }`.
          * 
-         * @return the changes as `{ item, flags }` objects, or `null`
-         *     if {link #trackChanges} is off
+         * @return the changes as `{ item, flags }` and
+         *     `{ definition, flags }` objects, or `null` if {link #trackChanges}
+         *     is off
          */
         takeChanges(): object[]
 
@@ -7145,7 +7907,8 @@ declare namespace paper {
          * by name through its path's segments list. If several segments share a
          * name, the first one is found.
          * 
-         * The name is stored in JSON, but not in SVG.
+         * The name is stored in JSON, and in SVG in the `data-paper-segments`
+         * attribute of the path, see {@link Segment#data}.
          */
         name: string | null
 
@@ -7153,7 +7916,10 @@ declare namespace paper {
          * A plain javascript object which can be used to store arbitrary data on
          * the segment.
          * 
-         * The data is stored in JSON, but not in SVG.
+         * The data is stored in JSON, and in SVG in the `data-paper-segments`
+         * attribute of the path, keyed by the index of the segment. Paper.js drops
+         * it on import if the indices don't fit the path anymore, as happens when
+         * another editor removes segments.
          */
         data: any
 
@@ -7807,6 +8573,85 @@ declare namespace paper {
     }
 
     /** 
+     * A stop of the stroke profile of a path, see
+     * {@link Path#strokeProfile}: the pen that draws its stroke at an offset along
+     * the path, an ellipse with a width, an aspect and an angle. Between the
+     * stops, each of them changes along the path, easing into and out of smooth
+     * stops and in straight lines from the others, see {@link #smooth}. A stop can set
+     * only some of them, and leave the others to the stops around it.
+     */
+    class StrokeProfileStop  {
+        /** 
+         * The path whose stroke profile the stop is part of.
+         */
+        readonly path: Path | null
+
+        /** 
+         * The offset of the stop along its path, as in
+         * {@link Path#getPointAt}. Unlike the offset of gradient stops, it
+         * is a length, not a fraction. The stop stays between the same segments
+         * when they move, so its offset changes with the lengths of the curves
+         * before it.
+         */
+        offset: number
+
+        /** 
+         * The width of the pen at the stop, as a factor of the path's
+         * {@link Style#strokeWidth}: `1` for the stroke width, `2` for twice
+         * as wide. Stops without a width leave it to the stops around them, and
+         * without any, it is `1`.
+         */
+        width: number | null
+
+        /** 
+         * The aspect of the pen at the stop: its height as a factor of its width,
+         * `1` for a round pen, less for a flat nib. Stops without an aspect leave
+         * it to the stops around them, and without any, it is `1`.
+         */
+        aspect: number | null
+
+        /** 
+         * The angle of the pen at the stop, in degrees, in the path's coordinates.
+         * Angles aren't wrapped: from `0` at one stop to `720` at the next, the
+         * pen turns twice. Stops without an angle leave it to the stops around
+         * them, and without any, it is `0`.
+         */
+        angle: number | null
+
+        /** 
+         * Whether the values ease into and out of the stop: they arrive at it and
+         * leave it flat, and between two smooth stops, a value follows a cubic
+         * from one to the other, without overshooting them. As the slopes don't
+         * depend on other stops, changing a stop only changes the values up to the
+         * stops on either side of it. Without smoothing, the values change in
+         * straight lines to the stops on either side.
+         */
+        smooth: boolean
+
+
+        /** 
+         * Creates a stroke profile stop.
+         * 
+         * @param object - the properties of the stop, its `offset`,
+         *     `width`, `aspect`, `angle` and `smooth`
+         */
+        constructor(object?: object)
+
+        /** 
+         * @return a copy of the stop, without a path
+         */
+        clone(): StrokeProfileStop
+
+        /** 
+         * Checks whether the stop is equal to the supplied one.
+         * 
+         * @return true if they are equal
+         */
+        equals(stop: StrokeProfileStop): boolean
+
+    }
+
+    /** 
      * Style is used for changing the visual styles of items
      * contained within a Paper.js project and is returned by
      * {@link Item#style} and {@link Project#currentStyle}.
@@ -8149,6 +8994,11 @@ declare namespace paper {
         readonly project: Project
 
         /** 
+         * The name of the symbol.
+         */
+        name: string
+
+        /** 
          * The item used as the symbol's definition.
          */
         item: Item
@@ -8175,7 +9025,7 @@ declare namespace paper {
         place(position?: PointLike): SymbolItem
 
         /** 
-         * Returns a copy of the symbol.
+         * Returns a copy of the symbol, with a copy of its item and its name.
          */
         clone(): SymbolDefinition
 
@@ -8771,7 +9621,8 @@ declare namespace paper {
 
         /** 
          * The function to be called when another tool is activated through
-         * {@link #activate}, while this one is active.
+         * {@link #activate} while this one is active, or when this one is
+         * removed while active.
          */
         onDeactivate: Function | null
 
@@ -9273,7 +10124,7 @@ declare namespace paper {
          * 
          * @param force - whether to redraw the view even if nothing
          * has changed, e.g. after a web font used by text items has finished
-         * loading
+         * loading, also in buffered groups, see {@link Group#buffered}
          * 
          * @return true if the view was updated
          */
