@@ -4,3 +4,6 @@ node_modules/
 /dist/paperjs.zip
 .vitest/
 coverage/
+
+# The baseline release, extracted by test/legacy/legacy.mjs:
+test/legacy/build/
