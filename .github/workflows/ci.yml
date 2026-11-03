@@ -21,9 +21,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Lint
-        run: pnpm jshint
-      # The tests follow the style of dito.js, which the sources follow later:
-      - name: Lint the tests
         run: pnpm eslint
       # Test the built library, as that's what gets published:
       - name: Build

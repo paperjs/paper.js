@@ -16,9 +16,11 @@
  *
  * @private
  */
-var SegmentPoint = Point.extend({
+const SegmentPoint = Point.extend({
   initialize: function SegmentPoint(point, owner, key) {
-    var x, y, selected
+    let x
+    let y
+    let selected
     if (!point) {
       x = y = 0
     } else if ((x = point[0]) !== undefined) {
@@ -27,7 +29,7 @@ var SegmentPoint = Point.extend({
     } else {
       // So we don't have to modify the point argument which would cause
       // deoptimization:
-      var pt = point
+      let pt = point
       // If not Point-like already, read Point from arguments
       if ((x = pt.x) === undefined) {
         pt = Point.read(arguments)
@@ -72,7 +74,7 @@ var SegmentPoint = Point.extend({
   },
 
   isZero: function () {
-    var isZero = Numerical.isZero
+    const isZero = Numerical.isZero
     // Provide our own version of Point#isZero() that does not use the x / y
     // accessors but the internal properties directly, for performance
     // reasons, since it is used a lot internally.
@@ -88,7 +90,7 @@ var SegmentPoint = Point.extend({
   },
 
   _getSelection: function () {
-    var owner = this._owner
+    const owner = this._owner
     return this === owner._point
       ? /*#=*/ SegmentSelection.POINT
       : this === owner._handleIn

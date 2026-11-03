@@ -14,65 +14,65 @@
  * @name Key
  * @namespace
  */
-var Key = new (function () {
-  var keyLookup = {
-      // Unify different key identifier naming schemes, e.g. on Gecko, IE:
-      '\t': 'tab',
-      ' ': 'space',
-      '\xA0': 'space', // Option + Space on macOS = non-breaking space.
-      '\b': 'backspace',
-      '\x7f': 'delete',
-      'Spacebar': 'space',
-      'Del': 'delete',
-      'Win': 'meta',
-      'Esc': 'escape'
-    },
-    // To find corresponding characters for special keys in keydown events:
-    charLookup = {
-      tab: '\t',
-      space: ' ',
-      enter: '\r'
-    },
-    // Only keypress reliable gets char-codes that are actually representing
-    // characters with all modifiers taken into account across all browsers.
-    // So we need to perform a little trickery here to use these codes with
-    // onKeyDown/Up:
-    // - keydown is used to handle modifiers and special keys such as
-    //   arrows, space, control, etc, for which events are fired right away.
-    // - keypress fires the actual onKeyDown event for all other keys.
-    // - keyup handles the onKeyUp events for both.
-    keyMap = {}, // Map for currently pressed keys
-    charMap = {}, // key -> char mappings for pressed keys
-    metaFixMap, // Keys that will not receive keyup events due to Mac bug
-    downKey, // The key from the keydown event, if it wasn't handled already
-    // Use new Base() to convert into a Base object, for #toString()
-    modifiers = new Base({
-      shift: false,
-      control: false,
-      alt: false, // WAS: option
-      meta: false, // WAS: command
-      capsLock: false,
-      space: false
-    }).inject({
-      // Short-cut to modifiers.alt for backward compatibility
-      option: {
-        get: function () {
-          return this.alt
-        }
-      },
-
-      // Platform independent short-cut to modifiers.control / meta,
-      // based on whichever key is used for commands.
-      command: {
-        get: function () {
-          var agent = paper && paper.agent
-          return agent && agent.mac ? this.meta : this.control
-        }
+const Key = new (function () {
+  const keyLookup = {
+    // Unify different key identifier naming schemes, e.g. on Gecko, IE:
+    '\t': 'tab',
+    ' ': 'space',
+    '\xA0': 'space', // Option + Space on macOS = non-breaking space.
+    '\b': 'backspace',
+    '\x7f': 'delete',
+    'Spacebar': 'space',
+    'Del': 'delete',
+    'Win': 'meta',
+    'Esc': 'escape'
+  }
+  // To find corresponding characters for special keys in keydown events:
+  const charLookup = {
+    tab: '\t',
+    space: ' ',
+    enter: '\r'
+  }
+  // Only keypress reliable gets char-codes that are actually representing
+  // characters with all modifiers taken into account across all browsers.
+  // So we need to perform a little trickery here to use these codes with
+  // onKeyDown/Up:
+  // - keydown is used to handle modifiers and special keys such as
+  //   arrows, space, control, etc, for which events are fired right away.
+  // - keypress fires the actual onKeyDown event for all other keys.
+  // - keyup handles the onKeyUp events for both.
+  const keyMap = {} // Map for currently pressed keys
+  const charMap = {} // key -> char mappings for pressed keys
+  let metaFixMap // Keys that will not receive keyup events due to Mac bug
+  let downKey // The key from the keydown event, if it wasn't handled already
+  // Use new Base() to convert into a Base object, for #toString()
+  const modifiers = new Base({
+    shift: false,
+    control: false,
+    alt: false, // WAS: option
+    meta: false, // WAS: command
+    capsLock: false,
+    space: false
+  }).inject({
+    // Short-cut to modifiers.alt for backward compatibility
+    option: {
+      get: function () {
+        return this.alt
       }
-    })
+    },
+
+    // Platform independent short-cut to modifiers.control / meta,
+    // based on whichever key is used for commands.
+    command: {
+      get: function () {
+        const agent = paper && paper.agent
+        return agent && agent.mac ? this.meta : this.control
+      }
+    }
+  })
 
   function getKey(event) {
-    var key = event.key
+    let key = event.key
     // Use short version for arrow keys: ArrowLeft -> Left
     key = /^Arrow[A-Z]/.test(key)
       ? key.substr(5)
@@ -103,7 +103,7 @@ var Key = new (function () {
         ? charLookup[key] || (key.length > 1 ? '' : key)
         : charMap[key] || ''
     }
-    var name
+    let name
     keyMap[key] = down
     // Link the key from keydown with the character form keypress, so keyup
     // can retrieve the character again.
@@ -118,7 +118,7 @@ var Key = new (function () {
     // Detect modifiers and mark them as pressed / released
     if (key.length > 1 && (name = Base.camelize(key)) in modifiers) {
       modifiers[name] = down
-      var agent = paper && paper.agent
+      const agent = paper && paper.agent
       if (name === 'meta' && agent && agent.mac) {
         // Fix a strange behavior on Mac where no keyup events are
         // received for any keys pressed while the meta key is down.
@@ -127,7 +127,7 @@ var Key = new (function () {
         if (down) {
           metaFixMap = {}
         } else {
-          for (var k in metaFixMap) {
+          for (const k in metaFixMap) {
             // Make sure it wasn't released already in the meantime:
             if (k in charMap) handleKey(false, k, metaFixMap[k], event, view)
           }
@@ -145,7 +145,7 @@ var Key = new (function () {
 
   DomEvent.add(document, {
     keydown: function (event) {
-      var key = getKey(event)
+      const key = getKey(event)
       // Directly handle any special keys (key.length > 1) in keydown, as
       // not all of them will receive keypress events. Neither do keys
       // pressed with control, alt or meta in modern browsers.
@@ -161,12 +161,12 @@ var Key = new (function () {
 
     keypress: function (event) {
       if (downKey) {
-        var key = getKey(event),
-          code = event.charCode,
-          // Try event.charCode if its above 32 and fall back onto the
-          // key value if it's a single character, empty otherwise.
-          character =
-            code >= 32 ? String.fromCharCode(code) : key.length > 1 ? '' : key
+        let key = getKey(event)
+        const code = event.charCode
+        // Try event.charCode if its above 32 and fall back onto the
+        // key value if it's a single character, empty otherwise.
+        const character =
+          code >= 32 ? String.fromCharCode(code) : key.length > 1 ? '' : key
         if (key !== downKey) {
           // This shouldn't happen, but it does in Chrome on Ubuntu.
           // In these cases, character is actually the key we want!
@@ -179,7 +179,7 @@ var Key = new (function () {
     },
 
     keyup: function (event) {
-      var key = getKey(event)
+      const key = getKey(event)
       if (key in charMap) handleKey(false, key, charMap[key], event)
     }
   })
@@ -187,7 +187,7 @@ var Key = new (function () {
   DomEvent.add(window, {
     blur: function (event) {
       // Emit key-up events for all currently pressed keys.
-      for (var key in charMap) handleKey(false, key, charMap[key], event)
+      for (const key in charMap) handleKey(false, key, charMap[key], event)
     }
   })
 

@@ -28,7 +28,7 @@
  * Without the attribute, the view sets the element's CSS width and height to
  * its own size, see {@link #viewSize}.
  */
-var View = Base.extend(
+const View = Base.extend(
   Emitter,
   /** @lends View# */ {
     _class: 'View',
@@ -43,7 +43,7 @@ var View = Base.extend(
         // scaled canvases (e.g. when dealing with pixel-ratio), without the
         // padding and border (#1160, #2033), and without the transforms of
         // ancestors, which only scale the canvas on screen:
-        var size = new Size(element.offsetWidth, element.offsetHeight)
+        const size = new Size(element.offsetWidth, element.offsetHeight)
         return size.isNaN() || size.isZero()
           ? // If the element is invisible, we cannot directly access
             // element.width / height, because they would appear 0.
@@ -52,7 +52,7 @@ var View = Base.extend(
           : size.subtract(DomElement.getInsets(element))
       }
 
-      var size
+      let size
       if (window && element) {
         // Generate an id for this view / element if it does not have one
         this._id = element.getAttribute('id')
@@ -61,7 +61,7 @@ var View = Base.extend(
         // Install event handlers
         DomEvent.add(element, this._viewEvents)
         // Borrowed from Hammer.js:
-        var none = 'none'
+        const none = 'none'
         DomElement.setPrefixed(element.style, {
           userDrag: none,
           userSelect: none,
@@ -73,7 +73,7 @@ var View = Base.extend(
         // If the element has the resize attribute, listen to resize events
         // and update its coordinate space accordingly
         if (PaperScope.hasAttribute(element, 'resize')) {
-          var that = this
+          const that = this
           DomEvent.add(
             window,
             (this._windowEvents = {
@@ -92,9 +92,9 @@ var View = Base.extend(
         ) {
           this._stats = new Stats()
           // Align top-left to the element
-          var stats = this._stats.domElement,
-            style = stats.style,
-            offset = DomElement.getOffset(element)
+          const stats = this._stats.domElement
+          const style = stats.style
+          const offset = DomElement.getOffset(element)
           style.position = 'absolute'
           style.left = offset.x + 'px'
           style.top = offset.y + 'px'
@@ -148,7 +148,7 @@ var View = Base.extend(
       View._views.splice(View._views.indexOf(this), 1)
       delete View._viewsById[this._id]
       // Unlink from project
-      var project = this._project
+      const project = this._project
       if (project._view === this) project._view = null
       // Uninstall event handlers again for this view.
       DomEvent.remove(this._element, this._viewEvents)
@@ -236,7 +236,7 @@ var View = Base.extend(
      */
     requestUpdate: function () {
       if (!this._requested) {
-        var that = this
+        const that = this
         DomEvent.requestAnimationFrame(function () {
           that._requested = false
           // Only handle the frame and request the next one if we don't
@@ -245,7 +245,7 @@ var View = Base.extend(
           if (that._animate) {
             // Request next update before handling the current frame
             that.requestUpdate()
-            var element = that._element
+            const element = that._element
             // Only keep animating if we're allowed to, based on whether
             // the document is visible and the setting of keepalive. We
             // keep requesting frame regardless though, so the animation
@@ -297,8 +297,8 @@ var View = Base.extend(
     _handleFrame: function () {
       // Set the global paper object to the current scope
       paper = this._scope
-      var now = Date.now() / 1000,
-        delta = this._last ? now - this._last : 0
+      const now = Date.now() / 1000
+      const delta = this._last ? now - this._last : 0
       this._last = now
       // Use new Base() to convert into a Base object, for #toString()
       this.emit(
@@ -315,7 +315,7 @@ var View = Base.extend(
     },
 
     _animateItem: function (item, animate) {
-      var items = this._frameItems
+      const items = this._frameItems
       if (animate) {
         items[item._id] = {
           item: item,
@@ -336,8 +336,8 @@ var View = Base.extend(
 
     // Handles _frameItems and fires the 'frame' event on them.
     _handleFrameItems: function (event) {
-      for (var i in this._frameItems) {
-        var entry = this._frameItems[i]
+      for (const i in this._frameItems) {
+        const entry = this._frameItems[i]
         entry.item.emit(
           'frame',
           new Base(event, {
@@ -424,13 +424,13 @@ var View = Base.extend(
      * @type Size
      */
     getViewSize: function () {
-      var size = this._viewSize
+      const size = this._viewSize
       return new LinkedSize(size.width, size.height, this, 'setViewSize')
     },
 
     setViewSize: function (/* size */) {
-      var size = Size.read(arguments),
-        delta = size.subtract(this._viewSize)
+      const size = Size.read(arguments)
+      const delta = size.subtract(this._viewSize)
       if (delta.isZero()) return
       this._setElementSize(size.width, size.height)
       this._viewSize.set(size)
@@ -448,7 +448,7 @@ var View = Base.extend(
      * Private method, overridden in CanvasView for HiDPI support.
      */
     _setElementSize: function (width, height) {
-      var element = this._element
+      const element = this._element
       if (element) {
         if (element.width !== width) element.width = width
         if (element.height !== height) element.height = height
@@ -510,21 +510,21 @@ var View = Base.extend(
     // CanvasProvider, which also works in workers with an OffscreenCanvas.
     // Without either, sizes are read as pixels, and text has no width.
     getPixelSize: function (size) {
-      var agent = paper.agent,
-        element = this._element,
-        ctx,
-        pixels
+      const agent = paper.agent
+      const element = this._element
+      let ctx
+      let pixels
       if (element && agent && agent.firefox) {
         // Firefox doesn't convert context.font sizes to pixels, so use the
         // DOM there, which still doesn't work in workers:
-        var parent = element.parentNode,
-          temp = document.createElement('div')
+        const parent = element.parentNode
+        const temp = document.createElement('div')
         temp.style.fontSize = size
         parent.appendChild(temp)
         pixels = parseFloat(DomElement.getStyles(temp).fontSize)
         parent.removeChild(temp)
       } else if ((ctx = this._context || CanvasProvider.getContext(1, 1))) {
-        var prevFont = ctx.font
+        const prevFont = ctx.font
         ctx.font = size + ' serif'
         pixels = parseFloat(ctx.font)
         ctx.font = prevFont
@@ -536,19 +536,19 @@ var View = Base.extend(
     },
 
     getTextWidth: function (font, lines, letterSpacing, direction) {
-      var ctx = this._context || CanvasProvider.getContext(1, 1),
-        width = 0
+      const ctx = this._context || CanvasProvider.getContext(1, 1)
+      let width = 0
       if (ctx) {
-        var prevFont = ctx.font,
-          prevLetterSpacing = ctx.letterSpacing,
-          prevDirection = ctx.direction,
-          // Shaping can differ by direction, as with mirrored brackets:
-          textDirection = direction || 'ltr'
+        const prevFont = ctx.font
+        const prevLetterSpacing = ctx.letterSpacing
+        const prevDirection = ctx.direction
+        // Shaping can differ by direction, as with mirrored brackets:
+        const textDirection = direction || 'ltr'
         ctx.font = font
         ctx.letterSpacing = letterSpacing
         if (prevDirection !== textDirection) ctx.direction = textDirection
         // Measure the real width of the text:
-        for (var i = 0, l = lines.length; i < l; i++)
+        for (let i = 0, l = lines.length; i < l; i++)
           width = Math.max(width, ctx.measureText(lines[i]).width)
         ctx.font = prevFont
         ctx.letterSpacing = prevLetterSpacing
@@ -559,16 +559,16 @@ var View = Base.extend(
     },
 
     getFontMetrics: function (font) {
-      var ctx = this._context || CanvasProvider.getContext(1, 1),
-        metrics = null
+      const ctx = this._context || CanvasProvider.getContext(1, 1)
+      let metrics = null
       if (ctx) {
-        var prevFont = ctx.font
+        const prevFont = ctx.font
         ctx.font = font
         // Browsers tell the font's own ascent and descent, node-canvas
         // those of its em box:
-        var measured = ctx.measureText('H'),
-          ascent = measured.fontBoundingBoxAscent,
-          descent = measured.fontBoundingBoxDescent
+        const measured = ctx.measureText('H')
+        let ascent = measured.fontBoundingBoxAscent
+        let descent = measured.fontBoundingBoxDescent
         if (ascent === undefined) {
           ascent = measured.emHeightAscent
           descent = measured.emHeightDescent
@@ -583,11 +583,11 @@ var View = Base.extend(
   Base.each(
     ['rotate', 'scale', 'shear', 'skew'],
     function (key) {
-      var rotate = key === 'rotate'
+      const rotate = key === 'rotate'
       this[key] = function (/* value, center */) {
-        var args = arguments,
-          value = (rotate ? Base : Point).read(args),
-          center = Point.read(args, 0, { readNull: true })
+        const args = arguments
+        const value = (rotate ? Base : Point).read(args)
+        const center = Point.read(args, 0, { readNull: true })
         return this.transform(
           new Matrix()[key](value, center || this.getCenter(true))
         )
@@ -606,7 +606,7 @@ var View = Base.extend(
        * @param {Point} delta the offset to translate the view by
        */
       translate: function (/* delta */) {
-        var mx = new Matrix()
+        const mx = new Matrix()
         return this.transform(mx.translate.apply(mx, arguments))
       },
 
@@ -621,7 +621,7 @@ var View = Base.extend(
       },
 
       setCenter: function (/* center */) {
-        var center = Point.read(arguments)
+        const center = Point.read(arguments)
         this.translate(this.getCenter().subtract(center))
       },
 
@@ -634,7 +634,7 @@ var View = Base.extend(
        * @see #scaling
        */
       getZoom: function () {
-        var scaling = this._decompose().scaling
+        const scaling = this._decompose().scaling
         // Use average since it can be non-uniform, and ignore mirroring.
         return (Math.abs(scaling.x) + Math.abs(scaling.y)) / 2
       },
@@ -661,7 +661,7 @@ var View = Base.extend(
       },
 
       setRotation: function (rotation) {
-        var current = this.getRotation()
+        const current = this.getRotation()
         if (current != null && rotation != null) {
           // Rotate around the center in view coordinates, so the rotation
           // adds to the decomposed one, also on mirrored views (#1893):
@@ -683,14 +683,17 @@ var View = Base.extend(
        * @see #zoom
        */
       getScaling: function () {
-        var scaling = this._decompose().scaling
+        const scaling = this._decompose().scaling
         return new LinkedPoint(scaling.x, scaling.y, this, 'setScaling')
       },
 
       setScaling: function (/* scaling */) {
-        var current = this.getScaling(),
-          // Clone existing points since we're caching internally.
-          scaling = Point.read(arguments, 0, { clone: true, readNull: true })
+        const current = this.getScaling()
+        // Clone existing points since we're caching internally.
+        const scaling = Point.read(arguments, 0, {
+          clone: true,
+          readNull: true
+        })
         if (current && scaling) {
           this.scale(scaling.x / current.x, scaling.y / current.y)
         }
@@ -711,7 +714,7 @@ var View = Base.extend(
         // Use Matrix#initialize to easily copy over values.
         // NOTE: calling initialize() also calls #_changed() for us, through its
         // call to #set() / #reset(), and this also handles _applyMatrix for us.
-        var matrix = this._matrix
+        const matrix = this._matrix
         matrix.set.apply(matrix, arguments)
       },
 
@@ -831,22 +834,22 @@ var View = Base.extend(
         // rotated views show all of it as well, and scale both axes of the view
         // to the same amount, so that the rectangle keeps its aspect ratio,
         // also if the view was stretched before:
-        var matrix = this._matrix,
-          size = this._viewSize,
-          bounds = matrix._transformBounds(rectangle),
-          scaleX = new Point(matrix._a, matrix._c).getLength(),
-          scaleY = new Point(matrix._b, matrix._d).getLength(),
-          // Empty sides of the rectangle give ratios of Infinity, which can't
-          // scale the view, so only use the others:
-          ratios = [
-            size.width / bounds.width * scaleX,
-            size.height / bounds.height * scaleY
-          ].filter(function (ratio) {
-            return ratio > 0 && isFinite(ratio)
-          })
+        const matrix = this._matrix
+        const size = this._viewSize
+        const bounds = matrix._transformBounds(rectangle)
+        const scaleX = new Point(matrix._a, matrix._c).getLength()
+        const scaleY = new Point(matrix._b, matrix._d).getLength()
+        // Empty sides of the rectangle give ratios of Infinity, which can't
+        // scale the view, so only use the others:
+        const ratios = [
+          size.width / bounds.width * scaleX,
+          size.height / bounds.height * scaleY
+        ].filter(function (ratio) {
+          return ratio > 0 && isFinite(ratio)
+        })
         this.setCenter(rectangle.getCenter())
         if (ratios.length) {
-          var amount =
+          const amount =
             fit === 'cover'
               ? Math.max.apply(Math, ratios)
               : Math.min.apply(Math, ratios)
@@ -912,14 +915,14 @@ var View = Base.extend(
      * @return {Point} the event point in project coordinates.
      */
     getEventPoint: function (event) {
-      var element = this._element,
-        offset = DomEvent.getOffset(event, element),
-        size = DomElement.getSize(element)
+      const element = this._element
+      let offset = DomEvent.getOffset(event, element)
+      const size = DomElement.getSize(element)
       // Map the offset on screen, with CSS sizes and transforms applied, to
       // the content box in view coordinates (#549, #1729). Elements that
       // aren't rendered have no size to map from:
       if (!size.isZero()) {
-        var cssSize = new Size(element.offsetWidth, element.offsetHeight)
+        const cssSize = new Size(element.offsetWidth, element.offsetHeight)
         offset = offset
           .multiply(cssSize.divide(size))
           .subtract(DomElement.getInsets(element, true))
@@ -1280,7 +1283,7 @@ var View = Base.extend(
           element = document.getElementById(element)
         // Factory to provide the right View subclass for a given element.
         // Produces only CanvasView or View items (for workers) for now:
-        var ctor = window ? CanvasView : View
+        const ctor = window ? CanvasView : View
         return new ctor(project, element)
       }
     }
@@ -1293,23 +1296,23 @@ var View = Base.extend(
      * events in the browser, and #dispatchMouseEvent() and #dispatchKeyEvent()
      * for hosts without a DOM, such as workers.
      */
-    var prevFocus,
-      tempFocus,
-      dragging = false, // mousedown that started on a view.
-      mouseDown = false // mousedown anywhere.
+    let prevFocus
+    let tempFocus
+    let dragging = false // mousedown that started on a view.
+    let mouseDown = false // mousedown anywhere.
 
     function getView(event) {
       // Get the view from the current event target.
-      var target = DomEvent.getTarget(event)
+      const target = DomEvent.getTarget(event)
       // Some node do not have the getAttribute method, e.g. SVG nodes.
       return target.getAttribute && View._viewsById[target.getAttribute('id')]
     }
 
     function updateFocus() {
-      var view = View._focused
+      let view = View._focused
       if (!view || !view.isVisible()) {
         // Find the first visible view
-        for (var i = 0, l = View._views.length; i < l; i++) {
+        for (let i = 0, l = View._views.length; i < l; i++) {
           if ((view = View._views[i]).isVisible()) {
             View._focused = tempFocus = view
             break
@@ -1324,13 +1327,13 @@ var View = Base.extend(
 
     // The DOM events, which install themselves on the elements of views, see
     // _viewEvents, and on the document:
-    var viewEvents = {}
+    const viewEvents = {}
 
     if (window) {
       // Touch handling inspired by Hammer.js
-      var mousedown = 'touchstart',
-        mousemove = 'touchmove',
-        mouseup = 'touchend touchcancel'
+      let mousedown = 'touchstart'
+      let mousemove = 'touchmove'
+      let mouseup = 'touchend touchcancel'
       // Do not add mouse events on mobile and tablet devices
       if (!(
         'ontouchstart' in window &&
@@ -1344,13 +1347,13 @@ var View = Base.extend(
         mouseup += ' mouseup'
       }
 
-      var docEvents = {
+      const docEvents = {
         // NOTE: mouseleave does not seem to work on document in IE:
         mouseout: function (event) {
           // When the moues leaves the document, fire one last mousemove
           // event, to give items the change to receive a mouseleave, etc.
-          var view = View._focused,
-            target = DomEvent.getRelatedTarget(event)
+          const view = View._focused
+          const target = DomEvent.getRelatedTarget(event)
           if (view && (!target || target.nodeName === 'HTML'))
             handleMouseMove(view, event)
         },
@@ -1365,7 +1368,7 @@ var View = Base.extend(
       viewEvents[mousedown] = function (event) {
         // Get the view from the event, and store a reference to the view
         // that should receive keyboard input.
-        var view = (View._focused = getView(event))
+        const view = (View._focused = getView(event))
         if (!dragging) {
           dragging = true
           view._handleMouseEvent('mousedown', event)
@@ -1373,11 +1376,11 @@ var View = Base.extend(
       }
 
       docEvents[mousemove] = function (event) {
-        var view = View._focused
+        let view = View._focused
         if (!mouseDown) {
           // See if we can get the view from the current event target, and
           // handle the mouse move over it.
-          var target = getView(event)
+          const target = getView(event)
           if (target) {
             if (view !== target) {
               // Temporarily focus this view without making it sticky,
@@ -1409,7 +1412,7 @@ var View = Base.extend(
       }
 
       docEvents[mouseup] = function (event) {
-        var view = View._focused
+        const view = View._focused
         if (view && dragging) view._handleMouseEvent('mouseup', event)
         mouseDown = dragging = false
       }
@@ -1428,24 +1431,24 @@ var View = Base.extend(
      * with support for bubbling (event-propagation).
      */
 
-    var called = false,
-      prevented = false,
-      // Event fallbacks for "virutal" events, e.g. if an item doesn't respond
-      // to doubleclick, fall back to click:
-      fallbacks = {
-        doubleclick: 'click',
-        mousedrag: 'mousemove'
-      },
-      // Various variables required by #_handleMouseEvent()
-      wasInView = false,
-      downPoint,
-      lastPoint,
-      downItem,
-      overItem,
-      dragItem,
-      clickItem,
-      clickTime,
-      dblClick
+    let called = false
+    let prevented = false
+    // Event fallbacks for "virutal" events, e.g. if an item doesn't respond
+    // to doubleclick, fall back to click:
+    const fallbacks = {
+      doubleclick: 'click',
+      mousedrag: 'mousemove'
+    }
+    // Various variables required by #_handleMouseEvent()
+    let wasInView = false
+    let downPoint
+    let lastPoint
+    let downItem
+    let overItem
+    let dragItem
+    let clickItem
+    let clickTime
+    let dblClick
 
     // Returns true if event was prevented, false otherwise.
     function emitMouseEvent(
@@ -1457,8 +1460,8 @@ var View = Base.extend(
       prevPoint,
       stopItem
     ) {
-      var stopped = false,
-        mouseEvent
+      let stopped = false
+      let mouseEvent
 
       // Returns true if the event was stopped, false otherwise.
       function emit(obj, type) {
@@ -1482,7 +1485,7 @@ var View = Base.extend(
             if (mouseEvent.stopped) return (stopped = true)
           }
         } else {
-          var fallback = fallbacks[type]
+          const fallback = fallbacks[type]
           if (fallback) return emit(obj, fallback)
         }
       }
@@ -1573,7 +1576,7 @@ var View = Base.extend(
      * Required by code that is counting the amount of required natives events.
      * The mapping is native -> virtual.
      */
-    var itemEventsMap = {
+    const itemEventsMap = {
       // mouseup too, as the press needs the item for needsUp():
       mousedown: {
         mousedown: 1,
@@ -1625,7 +1628,7 @@ var View = Base.extend(
       dispatchMouseEvent: function (type, point, options) {
         if (!/^mouse(down|move|up)$/.test(type))
           throw new Error("Unknown mouse event type: '" + type + "'.")
-        var event = createEvent(type, options || {})
+        const event = createEvent(type, options || {})
         // Track presses and drags as the DOM events do:
         if (type === 'mousedown') {
           View._focused = this
@@ -1675,14 +1678,14 @@ var View = Base.extend(
        * tools.
        */
       _handleMouseEvent: function (type, event, point, dispatched) {
-        var itemEvents = this._itemEvents,
-          // Look up hitItems, which tells us whether a given native mouse
-          // event requires an item hit-test or not, before changing type
-          // to the virtual value (e.g. mousemove -> mousedrag):
-          hitItems = itemEvents.native[type],
-          nativeMove = type === 'mousemove',
-          tool = this._scope.tool,
-          view = this
+        const itemEvents = this._itemEvents
+        // Look up hitItems, which tells us whether a given native mouse
+        // event requires an item hit-test or not, before changing type
+        // to the virtual value (e.g. mousemove -> mousedrag):
+        const hitItems = itemEvents.native[type]
+        const nativeMove = type === 'mousemove'
+        const tool = this._scope.tool
+        const view = this
 
         function responds(type) {
           return (
@@ -1699,8 +1702,8 @@ var View = Base.extend(
         function needsUp(hitItem) {
           if (view.responds('mouseup') || tool && tool.responds('mouseup'))
             return true
-          for (var item = hitItem; item; item = item._parent) {
-            for (var key in itemEventsMap.mouseup) {
+          for (let item = hitItem; item; item = item._parent) {
+            for (const key in itemEventsMap.mouseup) {
               if (item.responds(key)) return true
             }
           }
@@ -1728,35 +1731,35 @@ var View = Base.extend(
         // The moves come from the whole document, so outside of drags, the
         // pointer is only over the view when no other element covers it,
         // such as a menu (#992). Its own element and its ancestors don't:
-        var target = DomEvent.getTarget(event),
-          isCovered = (
-            nativeMove &&
-            !dragging &&
-            target &&
-            target.nodeType === 1 &&
-            !target.contains(this._element)
-          ),
-          inView = (
-            dispatched ||
-            !isCovered && this.getBounds().contains(point)
-          ),
-          // Run the hit-test on items first, but only if we're required
-          // to do so for this given mouse event, see hitItems and
-          // #_countItemEvent():
-          hit = (
-            hitItems &&
-            inView &&
-            view._project.hitTest(point, {
-              tolerance: view._scope.settings.hitTolerance,
-              fill: true,
-              stroke: true
-            })
-          ),
-          hitItem = hit && hit.item || null,
-          // Keep track if view event should be handled, so we can use it
-          // to decide if tool._handleMouseEvent() shall be called after.
-          handle = false,
-          mouse = {}
+        const target = DomEvent.getTarget(event)
+        const isCovered = (
+          nativeMove &&
+          !dragging &&
+          target &&
+          target.nodeType === 1 &&
+          !target.contains(this._element)
+        )
+        const inView = (
+          dispatched ||
+          !isCovered && this.getBounds().contains(point)
+        )
+        // Run the hit-test on items first, but only if we're required
+        // to do so for this given mouse event, see hitItems and
+        // #_countItemEvent():
+        const hit = (
+          hitItems &&
+          inView &&
+          view._project.hitTest(point, {
+            tolerance: view._scope.settings.hitTolerance,
+            fill: true,
+            stroke: true
+          })
+        )
+        const hitItem = hit && hit.item || null
+        // Keep track if view event should be handled, so we can use it
+        // to decide if tool._handleMouseEvent() shall be called after.
+        let handle = false
+        const mouse = {}
         // Create a simple lookup object to quickly check for different
         // mouse event types.
         mouse[type.substr(5)] = true
@@ -1812,7 +1815,7 @@ var View = Base.extend(
             // to mousedown like native dblclick events, but not for a
             // third click. Firefox uses 300ms as the max time
             // difference:
-            var time = Date.now()
+            const time = Date.now()
             dblClick = (
               !dblClick &&
               hitItem === clickItem &&
@@ -1825,7 +1828,7 @@ var View = Base.extend(
             // prevented the default, and if the hitItem or any of its
             // parents actually respond to mousedrag events.
             if (!prevented && hitItem) {
-              var item = hitItem
+              let item = hitItem
               while (item && !item.responds('mousedrag')) item = item._parent
               if (item) dragItem = hitItem
             }
@@ -1884,9 +1887,9 @@ var View = Base.extend(
        * Private method to handle key events.
        */
       _handleKeyEvent: function (type, event, key, character) {
-        var scope = this._scope,
-          tool = scope.tool,
-          keyEvent
+        const scope = this._scope
+        const tool = scope.tool
+        let keyEvent
 
         function emit(obj) {
           if (obj.responds(type)) {
@@ -1912,10 +1915,10 @@ var View = Base.extend(
         // If the view requires counting of installed mouse events,
         // change the event counters now according to itemEventsMap
         // (defined in the code further above).
-        var itemEvents = this._itemEvents,
-          native = itemEvents.native,
-          virtual = itemEvents.virtual
-        for (var key in itemEventsMap) {
+        const itemEvents = this._itemEvents
+        const native = itemEvents.native
+        const virtual = itemEvents.virtual
+        for (const key in itemEventsMap) {
           native[key] = (
             (native[key] || 0) +
             (itemEventsMap[key][type] || 0) * sign

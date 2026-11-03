@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-var SvgStyles = Base.each(
+const SvgStyles = Base.each(
   {
     // Fill
     fillColor: ['fill', 'color'],
@@ -79,8 +79,8 @@ var SvgStyles = Base.each(
     ]
   },
   function (entry, key) {
-    var part = Base.capitalize(key),
-      lookup = entry[2]
+    const part = Base.capitalize(key)
+    const lookup = entry[2]
     this[key] = {
       type: entry[1],
       property: key,

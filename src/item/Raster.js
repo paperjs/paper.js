@@ -17,7 +17,7 @@
  *
  * @extends Item
  */
-var Raster = Item.extend(
+const Raster = Item.extend(
   /** @lends Raster# */ {
     _class: 'Raster',
     _applyMatrix: false,
@@ -132,20 +132,20 @@ var Raster = Item.extend(
           position !== undefined && Point.read([position])
         )
       ) {
-        var image,
-          type = typeof source,
-          object =
-            type === 'string'
-              ? document && document.getElementById(source)
-              : type === 'object'
-                ? source
-                : null
+        let image
+        const type = typeof source
+        const object =
+          type === 'string'
+            ? document && document.getElementById(source)
+            : type === 'object'
+              ? source
+              : null
         if (object && object !== Item.NO_INSERT) {
           if (object.getContext || object.naturalHeight != null) {
             image = object
           } else if (object) {
             // See if the arguments describe the raster size:
-            var size = Size.read(arguments)
+            const size = Size.read(arguments)
             if (!size.isZero()) {
               image = CanvasProvider.getCanvas(size)
             }
@@ -169,14 +169,14 @@ var Raster = Item.extend(
     },
 
     copyContent: function (source) {
-      var image = source._image,
-        canvas = source._canvas
+      const image = source._image
+      const canvas = source._canvas
       if (image) {
         this._setImage(image)
       } else if (canvas) {
         // If the Raster contains a Canvas object, we need to create a new
         // one and draw this raster's canvas on it.
-        var copyCanvas = CanvasProvider.getCanvas(source._size)
+        const copyCanvas = CanvasProvider.getCanvas(source._size)
         copyCanvas.getContext('2d').drawImage(canvas, 0, 0)
         this._setImage(copyCanvas)
       }
@@ -191,7 +191,7 @@ var Raster = Item.extend(
      * @type Size
      */
     getSize: function () {
-      var size = this._size
+      const size = this._size
       return new LinkedSize(
         size ? size.width : 0,
         size ? size.height : 0,
@@ -201,12 +201,12 @@ var Raster = Item.extend(
     },
 
     setSize: function (_size, _clear) {
-      var size = Size.read(arguments)
+      const size = Size.read(arguments)
       if (!size.equals(this._size)) {
         // NOTE: this._size could be null
         if (size.width > 0 && size.height > 0) {
-          var element = !_clear && this.getElement(),
-            canvas = CanvasProvider.getCanvas(size)
+          const element = !_clear && this.getElement()
+          const canvas = CanvasProvider.getCanvas(size)
           // Draw the element onto the new canvas before #_setImage()
           // releases the old one, which frees its pixels:
           if (element) {
@@ -267,7 +267,7 @@ var Raster = Item.extend(
     },
 
     isEmpty: function () {
-      var size = this._size
+      const size = this._size
       return !size || size.width === 0 && size.height === 0
     },
 
@@ -279,10 +279,10 @@ var Raster = Item.extend(
      * @type Size
      */
     getResolution: function () {
-      var matrix = this._matrix,
-        orig = new Point(0, 0).transform(matrix),
-        u = new Point(1, 0).transform(matrix).subtract(orig),
-        v = new Point(0, 1).transform(matrix).subtract(orig)
+      const matrix = this._matrix
+      const orig = new Point(0, 0).transform(matrix)
+      const u = new Point(1, 0).transform(matrix).subtract(orig)
+      const v = new Point(0, 1).transform(matrix).subtract(orig)
       return new Size(
         72 / u.getLength(),
         72 / v.getLength()
@@ -311,11 +311,11 @@ var Raster = Item.extend(
     },
 
     setImage: function (image) {
-      var that = this
+      const that = this
 
       function emit(event) {
-        var view = that.getView(),
-          type = event && event.type || 'load'
+        const view = that.getView()
+        const type = event && event.type || 'load'
         if (view && that.responds(type)) {
           paper = view._scope
           that.emit(type, new Event(event))
@@ -401,7 +401,7 @@ var Raster = Item.extend(
      */
     getCanvas: function () {
       if (!this._canvas) {
-        var ctx = CanvasProvider.getContext(this._size)
+        const ctx = CanvasProvider.getContext(this._size)
         // Since drawImage into canvas might fail based on security policies
         // wrap the call in try-catch and only set _canvas if we succeeded.
         try {
@@ -468,13 +468,13 @@ var Raster = Item.extend(
      * });
      */
     getSource: function () {
-      var image = this._image
+      const image = this._image
       return image && image.src || this.toDataURL()
     },
 
     setSource: function (src) {
-      var image = new self.Image(),
-        crossOrigin = this._crossOrigin
+      const image = new self.Image()
+      const crossOrigin = this._crossOrigin
       if (crossOrigin) image.crossOrigin = crossOrigin
       // Prevent setting image source to `null`, as this isn't supported by
       // browsers, and it would actually throw exceptions in JSDOM.
@@ -502,13 +502,13 @@ var Raster = Item.extend(
      * console.log(view.element.toDataURL('image/png').substring(0, 32));
      */
     getCrossOrigin: function () {
-      var image = this._image
+      const image = this._image
       return image && image.crossOrigin || this._crossOrigin || ''
     },
 
     setCrossOrigin: function (crossOrigin) {
       this._crossOrigin = crossOrigin
-      var image = this._image
+      const image = this._image
       if (image) image.crossOrigin = crossOrigin
     },
 
@@ -574,8 +574,8 @@ var Raster = Item.extend(
      * @return {HTMLCanvasElement} the sub image as a Canvas object
      */
     getSubCanvas: function (/* rect */) {
-      var rect = Rectangle.read(arguments),
-        ctx = CanvasProvider.getContext(rect.getSize())
+      const rect = Rectangle.read(arguments)
+      const ctx = CanvasProvider.getContext(rect.getSize())
       ctx.drawImage(
         this.getCanvas(),
         rect.x,
@@ -600,8 +600,8 @@ var Raster = Item.extend(
      * @return {Raster} the sub raster as a newly created raster item
      */
     getSubRaster: function (/* rect */) {
-      var rect = Rectangle.read(arguments),
-        raster = new Raster(Item.NO_INSERT)
+      const rect = Rectangle.read(arguments)
+      const raster = new Raster(Item.NO_INSERT)
       raster._setImage(this.getSubCanvas(rect))
       raster.translate(rect.getCenter().subtract(this.getSize().divide(2)))
       raster._matrix.prepend(this._matrix)
@@ -627,10 +627,10 @@ var Raster = Item.extend(
     toDataURL: function () {
       // See if the linked image is base64 encoded already, if so reuse it,
       // otherwise try using canvas.toDataURL()
-      var image = this._image,
-        src = image && image.src
+      const image = this._image
+      const src = image && image.src
       if (/^data:/.test(src)) return src
-      var canvas = this.getCanvas()
+      const canvas = this.getCanvas()
       return canvas ? canvas.toDataURL.apply(canvas, arguments) : null
     },
 
@@ -642,7 +642,7 @@ var Raster = Item.extend(
      * coordinates
      */
     drawImage: function (image /*, point */) {
-      var point = Point.read(arguments, 1)
+      const point = Point.read(arguments, 1)
       this.getContext(true).drawImage(image, point.x, point.y)
     },
 
@@ -656,7 +656,11 @@ var Raster = Item.extend(
      * specified path, rectangle or point
      */
     getAverageColor: function (object) {
-      var bounds, path
+      let i
+      let l
+
+      let bounds
+      let path
       if (!object) {
         bounds = this.getBounds()
       } else if (object instanceof PathItem) {
@@ -676,12 +680,12 @@ var Raster = Item.extend(
       // Use a sample size of max 32 x 32 pixels, into which the path is
       // scaled as a clipping path, and then the actual image is drawn in and
       // sampled.
-      var sampleSize = 32,
-        width = Math.min(bounds.width, sampleSize),
-        height = Math.min(bounds.height, sampleSize)
+      const sampleSize = 32
+      const width = Math.min(bounds.width, sampleSize)
+      const height = Math.min(bounds.height, sampleSize)
       // Reuse the same sample context for speed. Memory consumption is low
       // since it's only 32 x 32 pixels.
-      var ctx = Raster._sampleContext
+      let ctx = Raster._sampleContext
       if (!ctx) {
         ctx = Raster._sampleContext = CanvasProvider.getContext(
           new Size(sampleSize)
@@ -692,7 +696,7 @@ var Raster = Item.extend(
       }
       ctx.save()
       // Scale the context so that the bounds ends up at the given sample size
-      var matrix = new Matrix()
+      const matrix = new Matrix()
         .scale(width / bounds.width, height / bounds.height)
         .translate(-bounds.x, -bounds.y)
       matrix.applyToContext(ctx)
@@ -701,29 +705,29 @@ var Raster = Item.extend(
       if (path) path.draw(ctx, new Base({ clip: true, matrices: [matrix] }))
       // Now draw the image clipped into it.
       this._matrix.applyToContext(ctx)
-      var element = this.getElement(),
-        size = this._size
+      const element = this.getElement()
+      const size = this._size
       if (element) ctx.drawImage(element, -size.width / 2, -size.height / 2)
       ctx.restore()
       // Get pixel data from the context and calculate the average color value
       // from it, taking alpha into account.
-      var pixels = ctx.getImageData(
-          0.5,
-          0.5,
-          Math.ceil(width),
-          Math.ceil(height)
-        ).data,
-        channels = [0, 0, 0],
-        total = 0
-      for (var i = 0, l = pixels.length; i < l; i += 4) {
-        var alpha = pixels[i + 3]
+      const pixels = ctx.getImageData(
+        0.5,
+        0.5,
+        Math.ceil(width),
+        Math.ceil(height)
+      ).data
+      const channels = [0, 0, 0]
+      let total = 0
+      for (i = 0, l = pixels.length; i < l; i += 4) {
+        let alpha = pixels[i + 3]
         total += alpha
         alpha /= 255
         channels[0] += pixels[i] * alpha
         channels[1] += pixels[i + 1] * alpha
         channels[2] += pixels[i + 2] * alpha
       }
-      for (var i = 0; i < 3; i++) channels[i] /= total
+      for (i = 0; i < 3; i++) channels[i] /= total
       return total ? Color.read(channels) : null
     },
 
@@ -747,8 +751,8 @@ var Raster = Item.extend(
      * @return {Color} the color of the pixel
      */
     getPixel: function (/* point */) {
-      var point = Point.read(arguments)
-      var data = this.getContext().getImageData(point.x, point.y, 1, 1).data
+      const point = Point.read(arguments)
+      const data = this.getContext().getImageData(point.x, point.y, 1, 1).data
       // Alpha is separate now:
       return new Color(
         'rgb',
@@ -776,14 +780,14 @@ var Raster = Item.extend(
      * @param {Color} color the color that the pixel will be set to
      */
     setPixel: function (/* point, color */) {
-      var args = arguments,
-        point = Point.read(args),
-        color = Color.read(args),
-        components = color._convert('rgb'),
-        alpha = color._alpha,
-        ctx = this.getContext(true),
-        imageData = ctx.createImageData(1, 1),
-        data = imageData.data
+      const args = arguments
+      const point = Point.read(args)
+      const color = Color.read(args)
+      const components = color._convert('rgb')
+      const alpha = color._alpha
+      const ctx = this.getContext(true)
+      const imageData = ctx.createImageData(1, 1)
+      const data = imageData.data
       data[0] = components[0] * 255
       data[1] = components[1] * 255
       data[2] = components[2] * 255
@@ -795,7 +799,7 @@ var Raster = Item.extend(
      * Clears the image, if it is backed by a canvas.
      */
     clear: function () {
-      var size = this._size
+      const size = this._size
       this.getContext(true).clearRect(0, 0, size.width + 1, size.height + 1)
     },
 
@@ -806,7 +810,7 @@ var Raster = Item.extend(
      * @return {ImageData}
      */
     createImageData: function (/* size */) {
-      var size = Size.read(arguments)
+      const size = Size.read(arguments)
       return this.getContext().createImageData(size.width, size.height)
     },
 
@@ -819,7 +823,7 @@ var Raster = Item.extend(
      * @return {ImageData} the image data of the specified area
      */
     getImageData: function (/* rect */) {
-      var rect = Rectangle.read(arguments)
+      let rect = Rectangle.read(arguments)
       if (rect.isEmpty()) rect = new Rectangle(this._size)
       return this.getContext().getImageData(
         rect.x,
@@ -835,7 +839,7 @@ var Raster = Item.extend(
      * @param {Point} point
      */
     putImageData: function (data /*, point */) {
-      var point = Point.read(arguments, 1)
+      const point = Point.read(arguments, 1)
       this.getContext(true).putImageData(data, point.x, point.y)
     },
 
@@ -888,13 +892,13 @@ var Raster = Item.extend(
      */
 
     _getBounds: function (matrix, options) {
-      var rect = new Rectangle(this._size).setCenter(0, 0)
+      const rect = new Rectangle(this._size).setCenter(0, 0)
       return matrix ? matrix._transformBounds(rect) : rect
     },
 
     _hitTestSelf: function (point) {
       if (this._contains(point)) {
-        var that = this
+        const that = this
         return new HitResult('pixel', that, {
           offset: point.add(that._size.divide(2)).round(),
           // Inject as Straps.js accessor, so #toString renders well too
@@ -908,10 +912,10 @@ var Raster = Item.extend(
     },
 
     _draw: function (ctx, param, viewMatrix) {
-      var element = this.getElement()
+      const element = this.getElement()
       if (param.dontFinish || param.clip) {
         // Clip with the raster's rectangle (#1845):
-        var rect = this.getInternalBounds()
+        const rect = this.getInternalBounds()
         if (!param.dontStart) ctx.beginPath()
         ctx.rect(rect.x, rect.y, rect.width, rect.height)
       } else if (element && element.width > 0 && element.height > 0) {
@@ -925,8 +929,8 @@ var Raster = Item.extend(
 
         // `Raster#smoothing` controlls both the `imageSmoothingQuality`
         // and `imageSmoothingEnabled` canvas context properties:
-        var smoothing = this._smoothing,
-          disabled = smoothing === 'off'
+        const smoothing = this._smoothing
+        const disabled = smoothing === 'off'
         DomElement.setPrefixed(
           ctx,
           disabled ? 'imageSmoothingEnabled' : 'imageSmoothingQuality',

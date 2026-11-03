@@ -24,7 +24,7 @@
  * convenient ways to work with parts of the path, finding lengths, positions or
  * tangents at given offsets.
  */
-var Curve = Base.extend(
+const Curve = Base.extend(
   /** @lends Curve# */ {
     _class: 'Curve',
     // Enforce creation of beans, as some bean getters have hidden parameters.
@@ -62,13 +62,13 @@ var Curve = Base.extend(
      * @param {Number} y2
      */
     initialize: function Curve(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
-      var count = arguments.length,
-        seg1,
-        seg2,
-        point1,
-        point2,
-        handle1,
-        handle2
+      const count = arguments.length
+      let seg1
+      let seg2
+      let point1
+      let point2
+      let handle1
+      let handle2
       // The following code has to either set seg1 & seg2,
       // or point1, point2, handle1 & handle2. At the end, the internal
       // segments are created accordingly.
@@ -160,7 +160,7 @@ var Curve = Base.extend(
      * @return {String} a string representation of the curve
      */
     toString: function () {
-      var parts = ['point1: ' + this._segment1._point]
+      const parts = ['point1: ' + this._segment1._point]
       if (!this._segment1._handleOut.isZero())
         parts.push('handle1: ' + this._segment1._handleOut)
       if (!this._segment2._handleIn.isZero())
@@ -192,10 +192,10 @@ var Curve = Base.extend(
      * @return {Boolean} {@true if the curve was removed}
      */
     remove: function () {
-      var removed = false
+      let removed = false
       if (this._path) {
-        var segment2 = this._segment2,
-          handleOut = segment2._handleOut
+        const segment2 = this._segment2
+        const handleOut = segment2._handleOut
         removed = segment2.remove()
         if (removed) this._segment1._handleOut.set(handleOut)
       }
@@ -306,7 +306,7 @@ var Curve = Base.extend(
      * @type Curve
      */
     getNext: function () {
-      var curves = this._path && this._path._curves
+      const curves = this._path && this._path._curves
       return (
         (
           curves && (
@@ -326,7 +326,7 @@ var Curve = Base.extend(
      * @type Curve
      */
     getPrevious: function () {
-      var curves = this._path && this._path._curves
+      const curves = this._path && this._path._curves
       return (
         (
           curves && (
@@ -353,7 +353,7 @@ var Curve = Base.extend(
      * @return {Boolean} {@true if this is the last curve}
      */
     isLast: function () {
-      var path = this._path
+      const path = this._path
       return (
         path && this._segment1._index === path._curves.length - 1 ||
         false
@@ -408,9 +408,9 @@ var Curve = Base.extend(
      */
     getPoints: function () {
       // Convert to array of absolute points
-      var coords = this.getValues(),
-        points = []
-      for (var i = 0; i < 8; i += 2)
+      const coords = this.getValues()
+      const points = []
+      for (let i = 0; i < 8; i += 2)
         points.push(new Point(coords[i], coords[i + 1]))
       return points
     }
@@ -506,17 +506,17 @@ var Curve = Base.extend(
      */
     divideAtTime: function (time) {
       // Only divide if not at the beginning or end.
-      var tMin = /*#=*/ Numerical.CURVETIME_EPSILON,
-        tMax = 1 - tMin,
-        res = null
+      const tMin = /*#=*/ Numerical.CURVETIME_EPSILON
+      const tMax = 1 - tMin
+      let res = null
       if (time >= tMin && time <= tMax) {
-        var parts = Curve.subdivide(this.getValues(), time),
-          left = parts[0],
-          right = parts[1],
-          setHandles = this.hasHandles(),
-          seg1 = this._segment1,
-          seg2 = this._segment2,
-          path = this._path
+        const parts = Curve.subdivide(this.getValues(), time)
+        const left = parts[0]
+        const right = parts[1]
+        const setHandles = this.hasHandles()
+        const seg1 = this._segment1
+        const seg2 = this._segment2
+        const path = this._path
         if (setHandles) {
           // Adjust the handles on the existing segments. The new segment
           // will be inserted between the existing segment1 and segment2:
@@ -525,13 +525,13 @@ var Curve = Base.extend(
           seg2._handleIn._set(right[4] - right[6], right[5] - right[7])
         }
         // Create the new segment:
-        var x = left[6],
-          y = left[7],
-          segment = new Segment(
-            new Point(x, y),
-            setHandles && new Point(left[4] - x, left[5] - y),
-            setHandles && new Point(right[2] - x, right[3] - y)
-          )
+        const x = left[6]
+        const y = left[7]
+        const segment = new Segment(
+          new Point(x, y),
+          setHandles && new Point(left[4] - x, left[5] - y),
+          setHandles && new Point(right[2] - x, right[3] - y)
+        )
         // Insert it in the segments list, if needed:
         if (path) {
           // By inserting at seg1.index + 1, we make sure to insert at
@@ -561,7 +561,7 @@ var Curve = Base.extend(
      * @see Path#splitAt(offset)
      */
     splitAt: function (location) {
-      var path = this._path
+      const path = this._path
       return path ? path.splitAt(location) : null
     },
 
@@ -628,57 +628,57 @@ var Curve = Base.extend(
 
     statics: /** @lends Curve */ {
       getValues: function (segment1, segment2, matrix, straight) {
-        var p1 = segment1._point,
-          h1 = segment1._handleOut,
-          h2 = segment2._handleIn,
-          p2 = segment2._point,
-          x1 = p1.x,
-          y1 = p1.y,
-          x2 = p2.x,
-          y2 = p2.y,
-          values = straight
-            ? [x1, y1, x1, y1, x2, y2, x2, y2]
-            : [
-                x1,
-                y1,
-                x1 + h1._x,
-                y1 + h1._y,
-                x2 + h2._x,
-                y2 + h2._y,
-                x2,
-                y2
-              ]
+        const p1 = segment1._point
+        const h1 = segment1._handleOut
+        const h2 = segment2._handleIn
+        const p2 = segment2._point
+        const x1 = p1.x
+        const y1 = p1.y
+        const x2 = p2.x
+        const y2 = p2.y
+        const values = straight
+          ? [x1, y1, x1, y1, x2, y2, x2, y2]
+          : [
+              x1,
+              y1,
+              x1 + h1._x,
+              y1 + h1._y,
+              x2 + h2._x,
+              y2 + h2._y,
+              x2,
+              y2
+            ]
         if (matrix) matrix._transformCoordinates(values, values, 4)
         return values
       },
 
       subdivide: function (v, t) {
-        var x0 = v[0],
-          y0 = v[1],
-          x1 = v[2],
-          y1 = v[3],
-          x2 = v[4],
-          y2 = v[5],
-          x3 = v[6],
-          y3 = v[7]
+        const x0 = v[0]
+        const y0 = v[1]
+        const x1 = v[2]
+        const y1 = v[3]
+        const x2 = v[4]
+        const y2 = v[5]
+        const x3 = v[6]
+        const y3 = v[7]
         if (t === undefined) t = 0.5
         // Triangle computation, with loops unrolled.
-        var u = 1 - t,
-          // Interpolate from 4 to 3 points
-          x4 = u * x0 + t * x1,
-          y4 = u * y0 + t * y1,
-          x5 = u * x1 + t * x2,
-          y5 = u * y1 + t * y2,
-          x6 = u * x2 + t * x3,
-          y6 = u * y2 + t * y3,
-          // Interpolate from 3 to 2 points
-          x7 = u * x4 + t * x5,
-          y7 = u * y4 + t * y5,
-          x8 = u * x5 + t * x6,
-          y8 = u * y5 + t * y6,
-          // Interpolate from 2 points to 1 point
-          x9 = u * x7 + t * x8,
-          y9 = u * y7 + t * y8
+        const u = 1 - t
+        // Interpolate from 4 to 3 points
+        const x4 = u * x0 + t * x1
+        const y4 = u * y0 + t * y1
+        const x5 = u * x1 + t * x2
+        const y5 = u * y1 + t * y2
+        const x6 = u * x2 + t * x3
+        const y6 = u * y2 + t * y3
+        // Interpolate from 3 to 2 points
+        const x7 = u * x4 + t * x5
+        const y7 = u * y4 + t * y5
+        const x8 = u * x5 + t * x6
+        const y8 = u * y5 + t * y6
+        // Interpolate from 2 points to 1 point
+        const x9 = u * x7 + t * x8
+        const y9 = u * y7 + t * y8
         // We now have all the values we need to build the sub-curves:
         return [
           [x0, y0, x4, y4, x7, y7, x9, y9], // left
@@ -699,13 +699,13 @@ var Curve = Base.extend(
        * @private
        */
       getMonoCurves: function (v, dir) {
-        var curves = [],
-          // Determine the ordinate index in the curve values array.
-          io = dir ? 0 : 1,
-          o0 = v[io + 0],
-          o1 = v[io + 2],
-          o2 = v[io + 4],
-          o3 = v[io + 6]
+        const curves = []
+        // Determine the ordinate index in the curve values array.
+        const io = dir ? 0 : 1
+        const o0 = v[io + 0]
+        const o1 = v[io + 2]
+        const o2 = v[io + 4]
+        const o3 = v[io + 6]
         if (
           (o0 >= o1) === (o1 >= o2) && (o1 >= o2) === (o2 >= o3) ||
           Curve.isStraight(v)
@@ -714,19 +714,19 @@ var Curve = Base.extend(
           // in coordinate direction are guaranteed to be monotone.
           curves.push(v)
         } else {
-          var a = 3 * (o1 - o2) - o0 + o3,
-            b = 2 * (o0 + o2) - 4 * o1,
-            c = o1 - o0,
-            tMin = /*#=*/ Numerical.CURVETIME_EPSILON,
-            tMax = 1 - tMin,
-            roots = [],
-            n = Numerical.solveQuadratic(a, b, c, roots, tMin, tMax)
+          const a = 3 * (o1 - o2) - o0 + o3
+          const b = 2 * (o0 + o2) - 4 * o1
+          const c = o1 - o0
+          const tMin = /*#=*/ Numerical.CURVETIME_EPSILON
+          const tMax = 1 - tMin
+          const roots = []
+          const n = Numerical.solveQuadratic(a, b, c, roots, tMin, tMax)
           if (!n) {
             curves.push(v)
           } else {
             roots.sort()
-            var t = roots[0],
-              parts = Curve.subdivide(v, t)
+            let t = roots[0]
+            let parts = Curve.subdivide(v, t)
             curves.push(parts[0])
             if (n > 1) {
               t = (roots[1] - t) / (1 - t)
@@ -742,19 +742,19 @@ var Curve = Base.extend(
       // Converts from the point coordinates (p0, p1, p2, p3) for one axis to
       // the polynomial coefficients and solves the polynomial for val
       solveCubic: function (v, coord, val, roots, min, max) {
-        var v0 = v[coord],
-          v1 = v[coord + 2],
-          v2 = v[coord + 4],
-          v3 = v[coord + 6],
-          res = 0
+        const v0 = v[coord]
+        const v1 = v[coord + 2]
+        const v2 = v[coord + 4]
+        const v3 = v[coord + 6]
+        let res = 0
         // If val is outside the curve values, no solution is possible.
         if (!(
           v0 < val && v3 < val && v1 < val && v2 < val ||
           v0 > val && v3 > val && v1 > val && v2 > val
         )) {
-          var c = 3 * (v1 - v0),
-            b = 3 * (v2 - v1) - c,
-            a = v3 - v0 - c - b
+          const c = 3 * (v1 - v0)
+          const b = 3 * (v2 - v1) - c
+          const a = v3 - v0 - c - b
           res = Numerical.solveCubic(a, b, c, v0 - val, roots, min, max)
         }
         return res
@@ -762,9 +762,9 @@ var Curve = Base.extend(
 
       // TODO: Find better name
       getPart: function (v, from, to) {
-        var flip = from > to
+        const flip = from > to
         if (flip) {
-          var tmp = from
+          const tmp = from
           from = to
           to = tmp
         }
@@ -790,18 +790,18 @@ var Curve = Base.extend(
       isFlatEnough: function (v, flatness) {
         // Thanks to Kaspar Fischer and Roger Willcocks for the following:
         // http://hcklbrrfnn.files.wordpress.com/2012/08/bez.pdf
-        var x0 = v[0],
-          y0 = v[1],
-          x1 = v[2],
-          y1 = v[3],
-          x2 = v[4],
-          y2 = v[5],
-          x3 = v[6],
-          y3 = v[7],
-          ux = 3 * x1 - 2 * x0 - x3,
-          uy = 3 * y1 - 2 * y0 - y3,
-          vx = 3 * x2 - 2 * x3 - x0,
-          vy = 3 * y2 - 2 * y3 - y0
+        const x0 = v[0]
+        const y0 = v[1]
+        const x1 = v[2]
+        const y1 = v[3]
+        const x2 = v[4]
+        const y2 = v[5]
+        const x3 = v[6]
+        const y3 = v[7]
+        const ux = 3 * x1 - 2 * x0 - x3
+        const uy = 3 * y1 - 2 * y0 - y3
+        const vx = 3 * x2 - 2 * x3 - x0
+        const vy = 3 * y2 - 2 * y3 - y0
         return (
           Math.max(ux * ux, vx * vx) + Math.max(uy * uy, vy * vy) <=
           16 * flatness * flatness
@@ -810,14 +810,14 @@ var Curve = Base.extend(
 
       getArea: function (v) {
         // http://objectmix.com/graphics/133553-area-closed-bezier-curve.html
-        var x0 = v[0],
-          y0 = v[1],
-          x1 = v[2],
-          y1 = v[3],
-          x2 = v[4],
-          y2 = v[5],
-          x3 = v[6],
-          y3 = v[7]
+        const x0 = v[0]
+        const y0 = v[1]
+        const x1 = v[2]
+        const y1 = v[3]
+        const x2 = v[4]
+        const y2 = v[5]
+        const x3 = v[6]
+        const y3 = v[7]
         return (
           3 * (
             (y3 - y0) * (x1 + x2) -
@@ -840,14 +840,14 @@ var Curve = Base.extend(
         // Code ported and further optimised from:
         // http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
         function add(value, padding) {
-          var left = value - padding,
-            right = value + padding
+          const left = value - padding
+          const right = value + padding
           if (left < min[coord]) min[coord] = left
           if (right > max[coord]) max[coord] = right
         }
 
-        var minPad = min[coord] + padding,
-          maxPad = max[coord] - padding
+        const minPad = min[coord] + padding
+        const maxPad = max[coord] - padding
         // Perform a rough bounds checking first: The curve can only extend the
         // current bounds if at least one value is outside the min-max range.
         if (
@@ -872,20 +872,20 @@ var Curve = Base.extend(
             // Calculate derivative of our bezier polynomial, divided by 3.
             // Doing so allows for simpler calculations of a, b, c and leads
             // to the same quadratic roots.
-            var a = 3 * (v1 - v2) - v0 + v3,
-              b = 2 * (v0 + v2) - 4 * v1,
-              c = v1 - v0,
-              count = Numerical.solveQuadratic(a, b, c, roots),
-              // Add some tolerance for good roots, as t = 0, 1 are added
-              // separately anyhow, and we don't want joins to be added
-              // with radii in getStrokeBounds()
-              tMin = /*#=*/ Numerical.CURVETIME_EPSILON,
-              tMax = 1 - tMin
+            const a = 3 * (v1 - v2) - v0 + v3
+            const b = 2 * (v0 + v2) - 4 * v1
+            const c = v1 - v0
+            const count = Numerical.solveQuadratic(a, b, c, roots)
+            // Add some tolerance for good roots, as t = 0, 1 are added
+            // separately anyhow, and we don't want joins to be added
+            // with radii in getStrokeBounds()
+            const tMin = /*#=*/ Numerical.CURVETIME_EPSILON
+            const tMax = 1 - tMin
             // See above for an explanation of padding = 0 here:
             add(v3, 0)
-            for (var i = 0; i < count; i++) {
-              var t = roots[i],
-                u = 1 - t
+            for (let i = 0; i < count; i++) {
+              const t = roots[i]
+              const u = 1 - t
               // Test for good roots and only add to bounds if good.
               if (tMin <= t && t <= tMax)
                 // Calculate bezier polynomial at t.
@@ -907,12 +907,12 @@ var Curve = Base.extend(
     function (name) {
       this[name] = function () {
         if (!this._bounds) this._bounds = {}
-        var bounds = this._bounds[name]
+        let bounds = this._bounds[name]
         if (!bounds) {
           // Calculate the curve bounds by passing a segment list for the
           // curve to the static Path.get*Bounds methods. Without a path,
           // there is no stroke, so the stroke bounds are the bounds.
-          var path = this._path
+          const path = this._path
           bounds = this._bounds[name] = Path[path ? name : 'getBounds'](
             [this._segment1, this._segment2], false, path
           )
@@ -946,11 +946,11 @@ var Curve = Base.extend(
       getHandleBounds: function () {
         // Unlike Path.getHandleBounds(), only include the curve's own handles,
         // not the outer handles of its two segments.
-        var v = this.getValues(),
-          x1 = Math.min(v[0], v[2], v[4], v[6]),
-          y1 = Math.min(v[1], v[3], v[5], v[7]),
-          x2 = Math.max(v[0], v[2], v[4], v[6]),
-          y2 = Math.max(v[1], v[3], v[5], v[7])
+        const v = this.getValues()
+        const x1 = Math.min(v[0], v[2], v[4], v[6])
+        const y1 = Math.min(v[1], v[3], v[5], v[7])
+        const x2 = Math.max(v[0], v[2], v[4], v[6])
+        const y2 = Math.max(v[1], v[3], v[5], v[7])
         return new Rectangle(x1, y1, x2 - x1, y2 - y1)
       }
 
@@ -969,14 +969,14 @@ var Curve = Base.extend(
       // Injection scope for tests both as instance and static methods
       // NOTE: Curve#isStraight is documented further down.
       isStraight: function (x1, y1, h1x, h1y, h2x, h2y, x2, y2) {
-        var isZero = Numerical.isZero
+        const isZero = Numerical.isZero
         if (isZero(h1x) && isZero(h1y) && isZero(h2x) && isZero(h2y)) {
           // No handles.
           return true
         } else {
-          var isCollinear = Point.isCollinear,
-            vx = x2 - x1,
-            vy = y2 - y1
+          const isCollinear = Point.isCollinear
+          const vx = x2 - x1
+          const vy = y2 - y1
           if (isZero(vx) && isZero(vy)) {
             // Zero-length line, with some handles defined.
             return false
@@ -987,8 +987,8 @@ var Curve = Base.extend(
             // Collinear handles: In addition to v.isCollinear(h) checks, we
             // need to measure the distance to the line, in order to be able
             // to use the same epsilon as in Curve#getTimeOf(), see #1066.
-            var getDistance = Line.getDistance,
-              epsilon = /*#=*/ Numerical.GEOMETRIC_EPSILON
+            const getDistance = Line.getDistance
+            const epsilon = /*#=*/ Numerical.GEOMETRIC_EPSILON
             if (
               (
                 getDistance(x1, y1, vx, vy, x1 + h1x, y1 + h1y, true) <
@@ -999,9 +999,9 @@ var Curve = Base.extend(
               )
             ) {
               // Project handles onto line to see if they are in range:
-              var div = vx * vx + vy * vy,
-                s1 = (vx * h1x + vy * h1y) / div,
-                s2 = (vx * h2x + vy * h2y) / div
+              const div = vx * vx + vy * vy
+              const s1 = (vx * h1x + vy * h1y) / div
+              const s2 = (vx * h2x + vy * h2y) / div
               return s1 >= 0 && s1 <= 1 && s2 <= 0 && s2 >= -1
             }
           }
@@ -1011,8 +1011,8 @@ var Curve = Base.extend(
 
       // NOTE: Curve#isLinear is documented further down.
       isLinear: function (x1, y1, h1x, h1y, h2x, h2y, x2, y2) {
-        var x = (x2 - x1) / 3,
-          y = (y2 - y1) / 3
+        const x = (x2 - x1) / 3
+        const y = (y2 - y1) / 3
         return h1x === x && h1y === y && -h2x === x && -h2y === y
       }
     },
@@ -1021,10 +1021,10 @@ var Curve = Base.extend(
       // static version that handles a curve values array, both passing the
       // coordinates without creating points, as these are called a lot:
       this[name] = function (epsilon) {
-        var p1 = this._segment1._point,
-          h1 = this._segment1._handleOut,
-          h2 = this._segment2._handleIn,
-          p2 = this._segment2._point
+        const p1 = this._segment1._point
+        const h1 = this._segment1._handleOut
+        const h2 = this._segment2._handleIn
+        const p2 = this._segment2._point
         return test(
           p1._x,
           p1._y,
@@ -1039,10 +1039,10 @@ var Curve = Base.extend(
       }
 
       this.statics[name] = function (v, epsilon) {
-        var x1 = v[0],
-          y1 = v[1],
-          x2 = v[6],
-          y2 = v[7]
+        const x1 = v[0]
+        const y1 = v[1]
+        const x2 = v[6]
+        const y2 = v[7]
         return test(
           x1,
           y1,
@@ -1231,7 +1231,7 @@ var Curve = Base.extend(
      * tangential to the given tangent
      */
     getTimesWithTangent: function (/* tangent */) {
-      var tangent = Point.read(arguments)
+      const tangent = Point.read(arguments)
       return tangent.isZero()
         ? []
         : Curve.getTimesWithTangent(this.getValues(), tangent)
@@ -1267,7 +1267,7 @@ var Curve = Base.extend(
      * @return {?Number} the length of the path up to the specified point
      */
     getOffsetOf: function (/* point */) {
-      var loc = this.getLocationOf.apply(this, arguments)
+      const loc = this.getLocationOf.apply(this, arguments)
       return loc ? loc.getOffset() : null
     },
 
@@ -1302,10 +1302,10 @@ var Curve = Base.extend(
      * the specified point
      */
     getNearestLocation: function (/* point */) {
-      var point = Point.read(arguments),
-        values = this.getValues(),
-        t = Curve.getNearestTime(values, point),
-        pt = Curve.getPoint(values, t)
+      const point = Point.read(arguments)
+      const values = this.getValues()
+      const t = Curve.getNearestTime(values, point)
+      const pt = Curve.getPoint(values, t)
       return new CurveLocation(this, t, pt, null, point.getDistance(pt))
     },
 
@@ -1318,7 +1318,7 @@ var Curve = Base.extend(
      * specified point
      */
     getNearestPoint: function (/* point */) {
-      var loc = this.getNearestLocation.apply(this, arguments)
+      const loc = this.getNearestLocation.apply(this, arguments)
       return loc ? loc.getPoint() : loc
     }
 
@@ -1450,7 +1450,7 @@ var Curve = Base.extend(
   },
   new (function () {
     // Injection scope for various curve evaluation methods
-    var methods = [
+    const methods = [
       'getPoint', 'getTangent', 'getNormal', 'getWeightedTangent',
       'getWeightedNormal', 'getCurvature'
     ]
@@ -1464,7 +1464,7 @@ var Curve = Base.extend(
         // getWeightedNormalAtTime, getCurvatureAtTime
         // TODO: Remove _isTime handling in 1.0.0? (deprecated Jan 2016):
         this[name + 'At'] = function (location, _isTime) {
-          var values = this.getValues()
+          const values = this.getValues()
           return Curve[name](
             values,
             _isTime ? location : Curve.getTimeAt(values, location)
@@ -1489,17 +1489,17 @@ var Curve = Base.extend(
     // getCoefficients() returns:
     function getLengthIntegrand(c) {
       // The coefficients of the derivative of the curve's polynomial:
-      var ax = 3 * c[0],
-        bx = 2 * c[1],
-        cx = c[2],
-        ay = 3 * c[3],
-        by = 2 * c[4],
-        cy = c[5]
+      const ax = 3 * c[0]
+      const bx = 2 * c[1]
+      const cx = c[2]
+      const ay = 3 * c[3]
+      const by = 2 * c[4]
+      const cy = c[5]
 
       return function (t) {
         // Calculate quadratic equations of derivatives for x and y
-        var dx = (ax * t + bx) * t + cx,
-          dy = (ay * t + by) * t + cy
+        const dx = (ax * t + bx) * t + cx
+        const dy = (ay * t + by) * t + cy
         return Math.sqrt(dx * dx + dy * dy)
       }
     }
@@ -1511,31 +1511,31 @@ var Curve = Base.extend(
     function getPartLength(c, ds, a, b) {
       if (a > b) return -getPartLength(c, ds, b, a)
       // The coefficients of the derivative, as in getLengthIntegrand():
-      var ax = 3 * c[0],
-        bx = 2 * c[1],
-        cx = c[2],
-        ay = 3 * c[3],
-        by = 2 * c[4],
-        cy = c[5],
-        tolerance = /*#=*/ Numerical.GEOMETRIC_EPSILON,
-        // Between a and b, the derivative is a quadratic curve with these
-        // control points, and its speed is at least its projection onto
-        // their sum:
-        x0 = (ax * a + bx) * a + cx,
-        y0 = (ay * a + by) * a + cy,
-        x1 = ax * a * b + bx * (a + b) * 0.5 + cx,
-        y1 = ay * a * b + by * (a + b) * 0.5 + cy,
-        x2 = (ax * b + bx) * b + cx,
-        y2 = (ay * b + by) * b + cy,
-        sx = x0 + x1 + x2,
-        sy = y0 + y1 + y2,
-        p0 = x0 * sx + y0 * sy,
-        p1 = x1 * sx + y1 * sy,
-        p2 = x2 * sx + y2 * sy,
-        l0 = x0 * x0 + y0 * y0,
-        l1 = x1 * x1 + y1 * y1,
-        l2 = x2 * x2 + y2 * y2,
-        max = l0 > l1 ? (l0 > l2 ? l0 : l2) : l1 > l2 ? l1 : l2
+      const ax = 3 * c[0]
+      const bx = 2 * c[1]
+      const cx = c[2]
+      const ay = 3 * c[3]
+      const by = 2 * c[4]
+      const cy = c[5]
+      const tolerance = /*#=*/ Numerical.GEOMETRIC_EPSILON
+      // Between a and b, the derivative is a quadratic curve with these
+      // control points, and its speed is at least its projection onto
+      // their sum:
+      const x0 = (ax * a + bx) * a + cx
+      const y0 = (ay * a + by) * a + cy
+      const x1 = ax * a * b + bx * (a + b) * 0.5 + cx
+      const y1 = ay * a * b + by * (a + b) * 0.5 + cy
+      const x2 = (ax * b + bx) * b + cx
+      const y2 = (ay * b + by) * b + cy
+      const sx = x0 + x1 + x2
+      const sy = y0 + y1 + y2
+      const p0 = x0 * sx + y0 * sy
+      const p1 = x1 * sx + y1 * sy
+      const p2 = x2 * sx + y2 * sy
+      const l0 = x0 * x0 + y0 * y0
+      const l1 = x1 * x1 + y1 * y1
+      const l2 = x2 * x2 + y2 * y2
+      const max = l0 > l1 ? (l0 > l2 ? l0 : l2) : l1 > l2 ? l1 : l2
       // Where the middle projection is at least a tenth of the largest
       // control point and the ones at the ends don't point backwards, the
       // speed can only get low at the ends, from where it grows steadily:
@@ -1548,9 +1548,9 @@ var Curve = Base.extend(
         // Where the control points also lie closer together than a tenth
         // of the lowest speed, the 7-point Gauss rule's error shrinks
         // with the seventh power of that ratio to within the tolerance:
-        var min = p0 < p1 ? (p0 < p2 ? p0 : p2) : p1 < p2 ? p1 : p2,
-          d01 = (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0),
-          d12 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)
+        const min = p0 < p1 ? (p0 < p2 ? p0 : p2) : p1 < p2 ? p1 : p2
+        const d01 = (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)
+        const d12 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)
         return (
           (d01 > d12 ? d01 : d12) * (sx * sx + sy * sy) <
           0.01 * min * min
@@ -1560,27 +1560,27 @@ var Curve = Base.extend(
       }
       // The speed turns where the derivative is normal to its own
       // derivative:
-      var times = [],
-        count = Math.max(
-          0,
-          Numerical.solveCubic(
-            2 * (ax * ax + ay * ay),
-            3 * (ax * bx + ay * by),
-            bx * bx + by * by + 2 * (ax * cx + ay * cy),
-            bx * cx + by * cy,
-            times,
-            a,
-            b
-          )
-        ),
-        length = 0
+      const times = []
+      const count = Math.max(
+        0,
+        Numerical.solveCubic(
+          2 * (ax * ax + ay * ay),
+          3 * (ax * bx + ay * by),
+          bx * bx + by * by + 2 * (ax * cx + ay * cy),
+          bx * cx + by * cy,
+          times,
+          a,
+          b
+        )
+      )
+      let length = 0
       times.length = count
       times.sort(function (t1, t2) {
         return t1 - t2
       })
       times.push(b)
-      for (var i = 0; i <= count; i++) {
-        var t = times[i]
+      for (let i = 0; i <= count; i++) {
+        const t = times[i]
         if (t > a) {
           length += Numerical.integrate(ds, a, t, tolerance)
           a = t
@@ -1590,15 +1590,15 @@ var Curve = Base.extend(
     }
 
     function getCoefficients(v) {
-      var x0 = v[0],
-        y0 = v[1],
-        x1 = v[2],
-        y1 = v[3],
-        x2 = v[4],
-        y2 = v[5],
-        x3 = v[6],
-        y3 = v[7],
-        isZero = Numerical.isZero
+      const x0 = v[0]
+      const y0 = v[1]
+      let x1 = v[2]
+      let y1 = v[3]
+      let x2 = v[4]
+      let y2 = v[5]
+      const x3 = v[6]
+      const y3 = v[7]
+      const isZero = Numerical.isZero
       // If the curve handles are almost zero, reset the control points to the
       // anchors.
       if (isZero(x1 - x0) && isZero(y1 - y0)) {
@@ -1611,12 +1611,12 @@ var Curve = Base.extend(
       }
       // Calculate the polynomial coefficients, and return them along with
       // the control points that evaluate() needs at the ends:
-      var cx = 3 * (x1 - x0),
-        bx = 3 * (x2 - x1) - cx,
-        ax = x3 - x0 - cx - bx,
-        cy = 3 * (y1 - y0),
-        by = 3 * (y2 - y1) - cy,
-        ay = y3 - y0 - cy - by
+      const cx = 3 * (x1 - x0)
+      const bx = 3 * (x2 - x1) - cx
+      const ax = x3 - x0 - cx - bx
+      const cy = 3 * (y1 - y0)
+      const by = 3 * (y2 - y1) - cy
+      const ay = y3 - y0 - cy - by
       return [ax, bx, cx, ay, by, cy, x1, y1, x2, y2]
     }
 
@@ -1628,25 +1628,28 @@ var Curve = Base.extend(
     }
 
     function evaluate(v, t, type, normalized) {
+      let x2
+      let y2
+
       // Do not produce results if parameter is out of range or invalid.
       if (t == null || t < 0 || t > 1) return null
-      var x0 = v[0],
-        y0 = v[1],
-        x3 = v[6],
-        y3 = v[7],
-        c = getCoefficients(v),
-        ax = c[0],
-        bx = c[1],
-        cx = c[2],
-        ay = c[3],
-        by = c[4],
-        cy = c[5],
-        x1 = c[6],
-        y1 = c[7],
-        x2 = c[8],
-        y2 = c[9],
-        x,
-        y
+      const x0 = v[0]
+      const y0 = v[1]
+      const x3 = v[6]
+      const y3 = v[7]
+      const c = getCoefficients(v)
+      const ax = c[0]
+      const bx = c[1]
+      const cx = c[2]
+      const ay = c[3]
+      const by = c[4]
+      const cy = c[5]
+      const x1 = c[6]
+      const y1 = c[7]
+      x2 = c[8]
+      y2 = c[9]
+      let x
+      let y
       if (type === 0) {
         // type === 0: getPoint()
         x = getCoordinate(x0, x3, ax, bx, cx, t)
@@ -1655,8 +1658,8 @@ var Curve = Base.extend(
         // type === 1: getTangent()
         // type === 2: getNormal()
         // type === 3: getCurvature()
-        var tMin = /*#=*/ Numerical.CURVETIME_EPSILON,
-          tMax = 1 - tMin
+        const tMin = /*#=*/ Numerical.CURVETIME_EPSILON
+        const tMax = 1 - tMin
         // 1: tangent, 1st derivative
         // 2: normal, 1st derivative
         // 3: curvature, 1st derivative & 2nd derivative
@@ -1681,7 +1684,7 @@ var Curve = Base.extend(
             y = y2 - y1
           }
           // Now normalize x & y
-          var len = Math.sqrt(x * x + y * y)
+          const len = Math.sqrt(x * x + y * y)
           if (len) {
             x /= len
             y /= len
@@ -1691,9 +1694,9 @@ var Curve = Base.extend(
           // Calculate 2nd derivative, and curvature from there:
           // http://cagd.cs.byu.edu/~557/text/ch2.pdf page#31
           // k = |dx * d2y - dy * d2x| / (( dx^2 + dy^2 )^(3/2))
-          var x2 = 6 * ax * t + 2 * bx,
-            y2 = 6 * ay * t + 2 * by,
-            d = Math.pow(x * x + y * y, 3 / 2)
+          x2 = 6 * ax * t + 2 * bx
+          y2 = 6 * ay * t + 2 * by
+          const d = Math.pow(x * x + y * y, 3 / 2)
           // For JS optimizations we always return a Point, although
           // curvature is just a numeric value, stored in x:
           x = d !== 0 ? (x * y2 - y * x2) / d : 0
@@ -1722,33 +1725,33 @@ var Curve = Base.extend(
           // considered if they are within 0..1. If the roots are outside,
           // then we degrade the type of curve down to an 'arch'.
 
-          var x0 = v[0],
-            y0 = v[1],
-            x1 = v[2],
-            y1 = v[3],
-            x2 = v[4],
-            y2 = v[5],
-            x3 = v[6],
-            y3 = v[7],
-            // Calculate coefficients of I(s, t), of which the roots are
-            // inflection points.
-            a1 = x0 * (y3 - y2) + y0 * (x2 - x3) + x3 * y2 - y3 * x2,
-            a2 = x1 * (y0 - y3) + y1 * (x3 - x0) + x0 * y3 - y0 * x3,
-            a3 = x2 * (y1 - y0) + y2 * (x0 - x1) + x1 * y0 - y1 * x0,
-            d3 = 3 * a3,
-            d2 = d3 - a2,
-            d1 = d2 - a2 + a1,
-            // Normalize the vector (d1, d2, d3) to keep error consistent,
-            // but treat it as zero if it is within the rounding error of
-            // the products of coordinates above, as for straight curves:
-            l = Math.sqrt(d1 * d1 + d2 * d2 + d3 * d3),
-            magnitude = Math.max(
-              Math.abs(x0), Math.abs(y0), Math.abs(x1), Math.abs(y1),
-              Math.abs(x2), Math.abs(y2), Math.abs(x3), Math.abs(y3)
-            ),
-            s = l > magnitude * Numerical.getEpsilon(magnitude) ? 1 / l : 0,
-            isZero = Numerical.isZero,
-            serpentine = 'serpentine' // short-cut
+          const x0 = v[0]
+          const y0 = v[1]
+          const x1 = v[2]
+          const y1 = v[3]
+          const x2 = v[4]
+          const y2 = v[5]
+          const x3 = v[6]
+          const y3 = v[7]
+          // Calculate coefficients of I(s, t), of which the roots are
+          // inflection points.
+          const a1 = x0 * (y3 - y2) + y0 * (x2 - x3) + x3 * y2 - y3 * x2
+          const a2 = x1 * (y0 - y3) + y1 * (x3 - x0) + x0 * y3 - y0 * x3
+          const a3 = x2 * (y1 - y0) + y2 * (x0 - x1) + x1 * y0 - y1 * x0
+          let d3 = 3 * a3
+          let d2 = d3 - a2
+          let d1 = d2 - a2 + a1
+          // Normalize the vector (d1, d2, d3) to keep error consistent,
+          // but treat it as zero if it is within the rounding error of
+          // the products of coordinates above, as for straight curves:
+          const l = Math.sqrt(d1 * d1 + d2 * d2 + d3 * d3)
+          const magnitude = Math.max(
+            Math.abs(x0), Math.abs(y0), Math.abs(x1), Math.abs(y1),
+            Math.abs(x2), Math.abs(y2), Math.abs(x3), Math.abs(y3)
+          )
+          const s = l > magnitude * Numerical.getEpsilon(magnitude) ? 1 / l : 0
+          const isZero = Numerical.isZero
+          const serpentine = 'serpentine' // short-cut
           d1 *= s
           d2 *= s
           d3 *= s
@@ -1758,11 +1761,11 @@ var Curve = Base.extend(
             // getPeaks(), are the ends themselves, not points inside the
             // curve, and would make isCrossing() sample at a zero
             // distance (#1879, #1387):
-            var tMin = /*#=*/ Numerical.CURVETIME_EPSILON,
-              tMax = 1 - tMin,
-              hasRoots = t1 !== undefined,
-              t1Ok = hasRoots && t1 > tMin && t1 < tMax,
-              t2Ok = hasRoots && t2 > tMin && t2 < tMax
+            const tMin = /*#=*/ Numerical.CURVETIME_EPSILON
+            const tMax = 1 - tMin
+            const hasRoots = t1 !== undefined
+            let t1Ok = hasRoots && t1 > tMin && t1 < tMax
+            let t2Ok = hasRoots && t2 > tMin && t2 < tMax
             // Degrade to arch for serpentine, cusp or loop if no solutions
             // within 0..1 are found. loop requires 2 solutions to be valid.
             if (
@@ -1790,12 +1793,12 @@ var Curve = Base.extend(
               ? type(isZero(d3) ? 'line' : 'quadratic') // 5. / 4.
               : type(serpentine, d3 / (3 * d2)) // 3b.
           }
-          var d = 3 * d2 * d2 - 4 * d1 * d3
+          const d = 3 * d2 * d2 - 4 * d1 * d3
           if (isZero(d)) {
             return type('cusp', d2 / (2 * d1)) // 3a.
           }
-          var f1 = d > 0 ? Math.sqrt(d / 3) : Math.sqrt(-d),
-            f2 = 2 * d1
+          const f1 = d > 0 ? Math.sqrt(d / 3) : Math.sqrt(-d)
+          const f2 = 2 * d1
           return type(
             d > 0 ? serpentine : 'loop', // 1. / 2.
             (d2 + f1) / f2,
@@ -1804,12 +1807,14 @@ var Curve = Base.extend(
         },
 
         getLength: function (v, a, b) {
+          let c
+
           if (a === undefined) a = 0
           if (b === undefined) b = 1
           if (Curve.isStraight(v)) {
             // Sub-divide the linear curve at a and b, so we can simply
             // calculate the Pythagorean Theorem to get the range's length.
-            var c = v
+            c = v
             if (b < 1) {
               c = Curve.subdivide(c, b)[0] // left
               a /= b // Scale parameter to new sub-curve.
@@ -1818,11 +1823,11 @@ var Curve = Base.extend(
               c = Curve.subdivide(c, a)[1] // right
             }
             // The length of straight curves can be calculated more easily.
-            var dx = c[6] - c[0], // x3 - x0
-              dy = c[7] - c[1] // y3 - y0
+            const dx = c[6] - c[0] // x3 - x0
+            const dy = c[7] - c[1] // y3 - y0
             return Math.sqrt(dx * dx + dy * dy)
           }
-          var c = getCoefficients(v)
+          c = getCoefficients(v)
           return getPartLength(c, getLengthIntegrand(c), a, b)
         },
 
@@ -1831,17 +1836,17 @@ var Curve = Base.extend(
           if (offset === 0) return start
           // See if we're going forward or backward, and handle cases
           // differently
-          var abs = Math.abs,
-            epsilon = /*#=*/ Numerical.EPSILON,
-            forward = offset > 0,
-            a = forward ? start : 0,
-            b = forward ? 1 : start,
-            // Use the same integrand for both the range length and the part
-            // lengths in f(t) below:
-            c = getCoefficients(v),
-            ds = getLengthIntegrand(c),
-            rangeLength = getPartLength(c, ds, a, b),
-            diff = abs(offset) - rangeLength
+          const abs = Math.abs
+          const epsilon = /*#=*/ Numerical.EPSILON
+          const forward = offset > 0
+          const a = forward ? start : 0
+          const b = forward ? 1 : start
+          // Use the same integrand for both the range length and the part
+          // lengths in f(t) below:
+          const c = getCoefficients(v)
+          const ds = getLengthIntegrand(c)
+          const rangeLength = getPartLength(c, ds, a, b)
+          const diff = abs(offset) - rangeLength
           if (abs(diff) < epsilon) {
             // Matched the end:
             return forward ? b : a
@@ -1851,8 +1856,8 @@ var Curve = Base.extend(
           }
           // Use offset / rangeLength for an initial guess for t, to
           // bring us closer:
-          var guess = offset / rangeLength,
-            length = 0
+          const guess = offset / rangeLength
+          let length = 0
           // Iteratively calculate curve range lengths, and add them up.
           // This is much faster than not modifying start and calculating
           // total length each time.
@@ -1884,27 +1889,27 @@ var Curve = Base.extend(
           // from it, as the distance grows with the square of the time
           // there. At large coordinates, the epsilon can't be below their
           // resolution:
-          var abs = Math.abs,
-            x0 = v[0],
-            y0 = v[1],
-            x3 = v[6],
-            y3 = v[7],
-            px = point.x,
-            py = point.y,
-            epsilon = (
-              tolerance ||
-              Numerical.getEpsilon(
-                Math.max(
-                  abs(x0), abs(y0), abs(v[2]), abs(v[3]),
-                  abs(v[4]), abs(v[5]), abs(x3), abs(y3)
-                ),
-                /*#=*/ Numerical.GEOMETRIC_EPSILON
-              )
+          const abs = Math.abs
+          const x0 = v[0]
+          const y0 = v[1]
+          const x3 = v[6]
+          const y3 = v[7]
+          const px = point.x
+          const py = point.y
+          const epsilon = (
+            tolerance ||
+            Numerical.getEpsilon(
+              Math.max(
+                abs(x0), abs(y0), abs(v[2]), abs(v[3]),
+                abs(v[4]), abs(v[5]), abs(x3), abs(y3)
+              ),
+              /*#=*/ Numerical.GEOMETRIC_EPSILON
             )
+          )
 
           function isClose(x, y) {
-            var dx = x - px,
-              dy = y - py
+            const dx = x - px
+            const dy = y - py
             return Math.sqrt(dx * dx + dy * dy) <= epsilon
           }
 
@@ -1913,28 +1918,28 @@ var Curve = Base.extend(
           // Solve the cubic for both x- and y-coordinates and consider all
           // solutions, testing them with the same epsilon. Calculate the
           // curve points as in evaluate(), but without creating them:
-          var c = getCoefficients(v),
-            ax = c[0],
-            bx = c[1],
-            cx = c[2],
-            ay = c[3],
-            by = c[4],
-            cy = c[5],
-            roots = []
-          for (var i = 0; i < 2; i++) {
-            var count = Curve.solveCubic(v, i, i ? py : px, roots, 0, 1)
-            for (var j = 0; j < count; j++) {
-              var t = roots[j],
-                x = getCoordinate(x0, x3, ax, bx, cx, t),
-                y = getCoordinate(y0, y3, ay, by, cy, t)
+          const c = getCoefficients(v)
+          const ax = c[0]
+          const bx = c[1]
+          const cx = c[2]
+          const ay = c[3]
+          const by = c[4]
+          const cy = c[5]
+          const roots = []
+          for (let i = 0; i < 2; i++) {
+            const count = Curve.solveCubic(v, i, i ? py : px, roots, 0, 1)
+            for (let j = 0; j < count; j++) {
+              let t = roots[j]
+              const x = getCoordinate(x0, x3, ax, bx, cx, t)
+              const y = getCoordinate(y0, y3, ay, by, cy, t)
               if (isClose(x, y)) return t
               // A point off a slanted curve is further from the
               // solution of one coordinate than from the curve: Move
               // along the tangent to the foot of its normal, and test
               // that one too:
-              var dx = (3 * ax * t + 2 * bx) * t + cx,
-                dy = (3 * ay * t + 2 * by) * t + cy,
-                length2 = dx * dx + dy * dy
+              const dx = (3 * ax * t + 2 * bx) * t + cx
+              const dy = (3 * ay * t + 2 * by) * t + cy
+              const length2 = dx * dx + dy * dy
               if (length2) {
                 t = Math.max(
                   0,
@@ -1954,22 +1959,24 @@ var Curve = Base.extend(
         },
 
         getNearestTime: function (v, point) {
-          var x0 = v[0],
-            y0 = v[1],
-            x3 = v[6],
-            y3 = v[7],
-            px = point.x,
-            py = point.y
+          let i
+
+          const x0 = v[0]
+          const y0 = v[1]
+          const x3 = v[6]
+          const y3 = v[7]
+          const px = point.x
+          const py = point.y
           if (Curve.isStraight(v)) {
-            var vx = x3 - x0,
-              vy = y3 - y0,
-              det = vx * vx + vy * vy
+            const vx = x3 - x0
+            const vy = y3 - y0
+            const det = vx * vx + vy * vy
             // Avoid divisions by zero.
             if (det === 0) return 0
             // Project the point onto the line and calculate its linear
             // parameter u along the line:
             // u = (point - p1).dot(v) / v.dot(v)
-            var u = ((px - x0) * vx + (py - y0) * vy) / det
+            const u = ((px - x0) * vx + (py - y0) * vy) / det
             return u < /*#=*/ Numerical.EPSILON
               ? 0
               : u > /*#=*/ (1 - Numerical.EPSILON)
@@ -1979,43 +1986,42 @@ var Curve = Base.extend(
 
           // Calculate curve points as in evaluate(), but without creating
           // them, as getDistance() is called a lot:
-          var c = getCoefficients(v),
-            ax = c[0],
-            bx = c[1],
-            cx = c[2],
-            ay = c[3],
-            by = c[4],
-            cy = c[5],
-            count = 100,
-            distances = [],
-            minDist = Infinity,
-            minT = 0
+          const c = getCoefficients(v)
+          const ax = c[0]
+          const bx = c[1]
+          const cx = c[2]
+          const ay = c[3]
+          const by = c[4]
+          const cy = c[5]
+          const count = 100
+          const distances = []
+          let minDist = Infinity
+          let minT = 0
 
           function getDistance(t) {
-            var dx = getCoordinate(x0, x3, ax, bx, cx, t) - px,
-              dy = getCoordinate(y0, y3, ay, by, cy, t) - py
+            const dx = getCoordinate(x0, x3, ax, bx, cx, t) - px
+            const dy = getCoordinate(y0, y3, ay, by, cy, t) - py
             return dx * dx + dy * dy
           }
 
-          for (var i = 0; i <= count; i++)
-            distances.push(getDistance(i / count))
+          for (i = 0; i <= count; i++) distances.push(getDistance(i / count))
 
           // Refine the solution around each sample closer than its
           // neighbors until we reach the desired precision, as the nearest
           // point may lie between any of these and the next samples:
-          for (var i = 0; i <= count; i++) {
-            var dist = distances[i]
+          for (i = 0; i <= count; i++) {
+            let dist = distances[i]
             if (
               (i === 0 || dist < distances[i - 1]) &&
               (i === count || dist <= distances[i + 1])
             ) {
-              var t = i / count,
-                step = 1 / (count * 2)
+              let t = i / count
+              let step = 1 / (count * 2)
               while (step > /*#=*/ Numerical.CURVETIME_EPSILON) {
-                var t1 = t - step,
-                  t2 = t + step,
-                  dist1 = t1 >= 0 ? getDistance(t1) : Infinity,
-                  dist2 = t2 <= 1 ? getDistance(t2) : Infinity
+                const t1 = t - step
+                const t2 = t + step
+                const dist1 = t1 >= 0 ? getDistance(t1) : Infinity
+                const dist2 = t2 <= 1 ? getDistance(t2) : Infinity
                 if (dist1 < dist && dist1 <= dist2) {
                   t = t1
                   dist = dist1
@@ -2073,16 +2079,16 @@ var Curve = Base.extend(
          * @return {Number[]} the roots of all found peaks
          */
         getPeaks: function (v) {
-          var c = getCoefficients(v),
-            ax = c[0],
-            bx = c[1],
-            cx = c[2],
-            ay = c[3],
-            by = c[4],
-            cy = c[5],
-            tMin = /*#=*/ Numerical.CURVETIME_EPSILON,
-            tMax = 1 - tMin,
-            roots = []
+          const c = getCoefficients(v)
+          const ax = c[0]
+          const bx = c[1]
+          const cx = c[2]
+          const ay = c[3]
+          const by = c[4]
+          const cy = c[5]
+          const tMin = /*#=*/ Numerical.CURVETIME_EPSILON
+          const tMax = 1 - tMin
+          const roots = []
           Numerical.solveCubic(
             9 * (ax * ax + ay * ay),
             9 * (ax * bx + by * ay),
@@ -2107,36 +2113,38 @@ var Curve = Base.extend(
          * @return {Number[]} the sorted times of the reversals
          */
         getReversals: function (v, tolerance) {
+          let i
+
           // The line's direction, along the longest of the chord and handles:
-          var dx = v[6] - v[0],
-            dy = v[7] - v[1]
-          for (var i = 0; i < 4; i += 2) {
-            var hx = v[i + 2] - v[i],
-              hy = v[i + 3] - v[i + 1]
+          let dx = v[6] - v[0]
+          let dy = v[7] - v[1]
+          for (i = 0; i < 4; i += 2) {
+            const hx = v[i + 2] - v[i]
+            const hy = v[i + 3] - v[i + 1]
             if (hx * hx + hy * hy > dx * dx + dy * dy) {
               dx = hx
               dy = hy
             }
           }
-          var length = Math.sqrt(dx * dx + dy * dy),
-            o = []
+          const length = Math.sqrt(dx * dx + dy * dy)
+          const o = []
           if (!length) return []
-          for (var i = 0; i < 8; i += 2) {
-            var x = v[i] - v[0],
-              y = v[i + 1] - v[1]
+          for (i = 0; i < 8; i += 2) {
+            const x = v[i] - v[0]
+            const y = v[i + 1] - v[1]
             if (Math.abs(x * dy - y * dx) > tolerance * length) return []
             // The control point's position along the line:
             o.push((x * dx + y * dy) / length)
           }
-          var roots = [],
-            count = Numerical.solveQuadratic(
-              3 * (o[1] - o[2]) - o[0] + o[3],
-              2 * (o[0] + o[2]) - 4 * o[1],
-              o[1] - o[0],
-              roots,
-              /*#=*/ Numerical.CURVETIME_EPSILON,
-              /*#=*/ 1 - Numerical.CURVETIME_EPSILON
-            )
+          const roots = []
+          const count = Numerical.solveQuadratic(
+            3 * (o[1] - o[2]) - o[0] + o[3],
+            2 * (o[0] + o[2]) - 4 * o[1],
+            o[1] - o[0],
+            roots,
+            /*#=*/ Numerical.CURVETIME_EPSILON,
+            /*#=*/ 1 - Numerical.CURVETIME_EPSILON
+          )
           return count > 0
             ? roots.slice(0, count).sort(function (a, b) {
                 return a - b
@@ -2156,39 +2164,41 @@ var Curve = Base.extend(
          * is tangential to the given tangent
          */
         getTimesWithTangent: function (v, tangent) {
+          let den
+
           // Algorithm adapted from:
           // https://stackoverflow.com/a/34837312/7615922
           // The coefficients of the derivative of the curve's polynomial:
-          var c = getCoefficients(v),
-            ax = 3 * c[0],
-            bx = 2 * c[1],
-            cx = c[2],
-            ay = 3 * c[3],
-            by = 2 * c[4],
-            cy = c[5],
-            normalized = tangent.normalize(),
-            tx = normalized.x,
-            ty = normalized.y,
-            den = 2 * ax * ty - 2 * ay * tx,
-            times = []
+          const c = getCoefficients(v)
+          const ax = 3 * c[0]
+          const bx = 2 * c[1]
+          const cx = c[2]
+          const ay = 3 * c[3]
+          const by = 2 * c[4]
+          const cy = c[5]
+          const normalized = tangent.normalize()
+          const tx = normalized.x
+          const ty = normalized.y
+          den = 2 * ax * ty - 2 * ay * tx
+          const times = []
           if (Math.abs(den) < Numerical.CURVETIME_EPSILON) {
-            var num = cx * ty - cy * tx,
-              den = bx * ty - by * tx
+            const num = cx * ty - cy * tx
+            den = bx * ty - by * tx
             if (den != 0) {
-              var t = -num / den
+              const t = -num / den
               if (t >= 0 && t <= 1) times.push(t)
             }
           } else {
-            var delta = (
-                (bx * bx - 4 * ax * cx) * ty * ty +
-                (-2 * bx * by + 4 * ay * cx + 4 * ax * cy) * tx * ty +
-                (by * by - 4 * ay * cy) * tx * tx
-              ),
-              k = bx * ty - by * tx
+            const delta = (
+              (bx * bx - 4 * ax * cx) * ty * ty +
+              (-2 * bx * by + 4 * ay * cx + 4 * ax * cy) * tx * ty +
+              (by * by - 4 * ay * cy) * tx * tx
+            )
+            const k = bx * ty - by * tx
             if (delta >= 0 && den != 0) {
-              var d = Math.sqrt(delta),
-                t0 = -(k + d) / den,
-                t1 = (-k + d) / den
+              const d = Math.sqrt(delta)
+              const t0 = -(k + d) / den
+              const t1 = (-k + d) / den
               if (t0 >= 0 && t0 <= 1) times.push(t0)
               if (t1 >= 0 && t1 <= 1) times.push(t1)
             }
@@ -2209,10 +2219,10 @@ var Curve = Base.extend(
       // NOTE: We don't pass p1 and p2, because v1 and v2 may be transformed
       // by their path.matrix, while c1 and c2 are untransformed. Passing null
       // for point in CurveLocation() will do the right thing.
-      var excludeStart = !overlap && c1.getPrevious() === c2,
-        excludeEnd = !overlap && c1 !== c2 && c1.getNext() === c2,
-        tMin = /*#=*/ Numerical.CURVETIME_EPSILON,
-        tMax = 1 - tMin
+      const excludeStart = !overlap && c1.getPrevious() === c2
+      const excludeEnd = !overlap && c1 !== c2 && c1.getNext() === c2
+      const tMin = /*#=*/ Numerical.CURVETIME_EPSILON
+      const tMax = 1 - tMin
       // Check t1 and t2 against correct bounds, based on excludeStart/End:
       // - excludeStart means the start of c1 connects to the end of c2
       // - excludeEnd means the end of c1 connects to the start of c2
@@ -2230,8 +2240,8 @@ var Curve = Base.extend(
           t2 >= (excludeEnd ? tMin : 0) &&
           t2 <= (excludeStart ? tMax : 1)
         ) {
-          var loc1 = new CurveLocation(c1, t1, null, overlap),
-            loc2 = new CurveLocation(c2, t2, null, overlap)
+          const loc1 = new CurveLocation(c1, t1, null, overlap)
+          const loc2 = new CurveLocation(c2, t2, null, overlap)
           // Link the two locations to each other.
           loc1._intersection = loc2
           loc2._intersection = loc1
@@ -2258,6 +2268,10 @@ var Curve = Base.extend(
       uMax,
       tolerance
     ) {
+      let t
+      let u
+      let parts
+
       // Avoid deeper recursion, by counting the total amount of recursions,
       // as well as the total amount of calls, to avoid massive call-trees as
       // suggested by @iconexperience in #904#issuecomment-225283430.
@@ -2265,33 +2279,33 @@ var Curve = Base.extend(
       if (++calls >= 4096 || ++recursion >= 40) return calls
       // Use an epsilon smaller than CURVETIME_EPSILON to compare curve-time
       // parameters in fat-line clipping code.
-      var fatLineEpsilon = 1e-9,
-        // Let P be the first curve and Q be the second
-        q0x = v2[0],
-        q0y = v2[1],
-        q3x = v2[6],
-        q3y = v2[7],
-        getSignedDistance = Line.getSignedDistance,
-        // Calculate the fat-line L for Q is the baseline l and two
-        // offsets which completely encloses the curve P.
-        d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3]),
-        d2 = getSignedDistance(q0x, q0y, q3x, q3y, v2[4], v2[5]),
-        factor = d1 * d2 > 0 ? 3 / 4 : 4 / 9,
-        dMin = factor * Math.min(0, d1, d2),
-        dMax = factor * Math.max(0, d1, d2),
-        // Calculate non-parametric bezier curve D(ti, di(t)):
-        // - di(t) is the distance of P from baseline l of the fat-line
-        // - ti is equally spaced in [0, 1]
-        dp0 = getSignedDistance(q0x, q0y, q3x, q3y, v1[0], v1[1]),
-        dp1 = getSignedDistance(q0x, q0y, q3x, q3y, v1[2], v1[3]),
-        dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
-        dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
-        // Get the top and bottom parts of the convex-hull
-        hull = getConvexHull(dp0, dp1, dp2, dp3),
-        top = hull[0],
-        bottom = hull[1],
-        tMinClip,
-        tMaxClip
+      const fatLineEpsilon = 1e-9
+      // Let P be the first curve and Q be the second
+      const q0x = v2[0]
+      const q0y = v2[1]
+      const q3x = v2[6]
+      const q3y = v2[7]
+      const getSignedDistance = Line.getSignedDistance
+      // Calculate the fat-line L for Q is the baseline l and two
+      // offsets which completely encloses the curve P.
+      const d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3])
+      const d2 = getSignedDistance(q0x, q0y, q3x, q3y, v2[4], v2[5])
+      const factor = d1 * d2 > 0 ? 3 / 4 : 4 / 9
+      const dMin = factor * Math.min(0, d1, d2)
+      const dMax = factor * Math.max(0, d1, d2)
+      // Calculate non-parametric bezier curve D(ti, di(t)):
+      // - di(t) is the distance of P from baseline l of the fat-line
+      // - ti is equally spaced in [0, 1]
+      const dp0 = getSignedDistance(q0x, q0y, q3x, q3y, v1[0], v1[1])
+      const dp1 = getSignedDistance(q0x, q0y, q3x, q3y, v1[2], v1[3])
+      const dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5])
+      const dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7])
+      // Get the top and bottom parts of the convex-hull
+      const hull = getConvexHull(dp0, dp1, dp2, dp3)
+      const top = hull[0]
+      const bottom = hull[1]
+      let tMinClip
+      let tMaxClip
       // Stop iteration if all points and control points are collinear.
       if (
         (
@@ -2317,12 +2331,12 @@ var Curve = Base.extend(
         return calls
       // tMin and tMax are within the range (0, 1). Project it back to the
       // original parameter range for v2.
-      var tMinNew = tMin + (tMax - tMin) * tMinClip,
-        tMaxNew = tMin + (tMax - tMin) * tMaxClip
+      let tMinNew = tMin + (tMax - tMin) * tMinClip
+      let tMaxNew = tMin + (tMax - tMin) * tMaxClip
       if (Math.max(uMax - uMin, tMaxNew - tMinNew) < fatLineEpsilon) {
         // We have isolated the intersection with sufficient precision
-        var t = (tMinNew + tMaxNew) / 2,
-          u = (uMin + uMax) / 2
+        t = (tMinNew + tMaxNew) / 2
+        u = (uMin + uMax) / 2
         addLocation(
           locations,
           include,
@@ -2334,7 +2348,7 @@ var Curve = Base.extend(
       } else {
         // Apply the result of the clipping to curve 1:
         v1 = Curve.getPart(v1, tMinClip, tMaxClip)
-        var uDiff = uMax - uMin
+        const uDiff = uMax - uMin
         if (tMaxClip - tMinClip > 0.8) {
           // With a tolerance, crossings within it of the shared end of
           // neighbouring curves merge into it: cut off the parts of both
@@ -2342,27 +2356,27 @@ var Curve = Base.extend(
           // Otherwise, find the intersections of the pieces where
           // clipping stalls through the implicit form of v2, unless they
           // both lie on the same implicit curve, as parts of one curve:
-          var isNext = (
-              tolerance &&
-              tMaxNew === 1 &&
-              uMin === 0 &&
-              c1.getNext() === c2
-            ),
-            isPrevious = (
-              tolerance &&
-              !isNext &&
-              tMinNew === 0 &&
-              uMax === 1 &&
-              c1.getPrevious() === c2
-            )
+          const isNext = (
+            tolerance &&
+            tMaxNew === 1 &&
+            uMin === 0 &&
+            c1.getNext() === c2
+          )
+          const isPrevious = (
+            tolerance &&
+            !isNext &&
+            tMinNew === 0 &&
+            uMax === 1 &&
+            c1.getPrevious() === c2
+          )
           if (isNext || isPrevious) {
-            var offset = isNext ? tolerance : -tolerance,
-              s1 = Curve.getTimeAt(v1, -offset),
-              s2 = Curve.getTimeAt(v2, offset)
+            const offset = isNext ? tolerance : -tolerance
+            const s1 = Curve.getTimeAt(v1, -offset)
+            const s2 = Curve.getTimeAt(v2, offset)
             // Pieces shorter than the tolerance have nothing left:
             if (s1 !== null && s2 !== null) {
-              var t = tMinNew + (tMaxNew - tMinNew) * s1,
-                u = uMin + (uMax - uMin) * s2
+              t = tMinNew + (tMaxNew - tMinNew) * s1
+              u = uMin + (uMax - uMin) * s2
               if (isNext) {
                 v1 = Curve.getPart(v1, 0, s1)
                 v2 = Curve.getPart(v2, s2, 1)
@@ -2389,8 +2403,8 @@ var Curve = Base.extend(
           )) {
             // Subdivide the curve which has converged the least.
             if (tMaxNew - tMinNew > uDiff) {
-              var parts = Curve.subdivide(v1, 0.5),
-                t = (tMinNew + tMaxNew) / 2
+              parts = Curve.subdivide(v1, 0.5)
+              t = (tMinNew + tMaxNew) / 2
               calls = addCurveIntersections(
                 v2, parts[0], c2, c1, locations, include, !flip,
                 recursion, calls, uMin, uMax, tMinNew, t,
@@ -2402,8 +2416,8 @@ var Curve = Base.extend(
                 tolerance
               )
             } else {
-              var parts = Curve.subdivide(v2, 0.5),
-                u = (uMin + uMax) / 2
+              parts = Curve.subdivide(v2, 0.5)
+              u = (uMin + uMax) / 2
               calls = addCurveIntersections(
                 parts[0], v1, c2, c1, locations, include, !flip,
                 recursion, calls, uMin, u, tMinNew, tMaxNew,
@@ -2467,10 +2481,12 @@ var Curve = Base.extend(
       uMax,
       tolerance
     ) {
-      var x0 = v2[0],
-        y0 = v2[1],
-        size = 0
-      for (var i = 0; i < 8; i += 2) {
+      let i
+
+      const x0 = v2[0]
+      const y0 = v2[1]
+      let size = 0
+      for (i = 0; i < 8; i += 2) {
         size = Math.max(
           size,
           Math.abs(v1[i] - x0),
@@ -2485,22 +2501,22 @@ var Curve = Base.extend(
         // form of a cubic that is a quadratic vanishes, so use the
         // quadratic's when it is within the tolerance: their distance is
         // at most 4/27 of the cubic's third difference.
-        var p = getLocalPoints(v1, x0, y0, size),
-          q = getLocalPoints(v2, x0, y0, size),
-          dx = v2[6] - 3 * (v2[4] - v2[2]) - x0,
-          dy = v2[7] - 3 * (v2[5] - v2[3]) - y0,
-          isQuadratic = (
-            4 / 27 * Math.sqrt(dx * dx + dy * dy) <=
-            tolerance
-          ),
-          polynomial = isQuadratic
-            ? getQuadraticImplicit(p, [q[0], getQuadraticHandle(q), q[3]])
-            : getCubicImplicit(p, q),
-          roots = [],
-          speed = 0
+        const p = getLocalPoints(v1, x0, y0, size)
+        const q = getLocalPoints(v2, x0, y0, size)
+        const dx = v2[6] - 3 * (v2[4] - v2[2]) - x0
+        const dy = v2[7] - 3 * (v2[5] - v2[3]) - y0
+        const isQuadratic = (
+          4 / 27 * Math.sqrt(dx * dx + dy * dy) <=
+          tolerance
+        )
+        const polynomial = isQuadratic
+          ? getQuadraticImplicit(p, [q[0], getQuadraticHandle(q), q[3]])
+          : getCubicImplicit(p, q)
+        const roots = []
+        let speed = 0
         // The width in curve time along which v1 moves less than the
         // tolerance, from a bound of its speed:
-        for (var i = 0; i < 6; i += 2) {
+        for (i = 0; i < 6; i += 2) {
           speed = Math.max(
             speed,
             3 *
@@ -2516,7 +2532,7 @@ var Curve = Base.extend(
           })
         )
           return false
-        var count = Numerical.solveBernstein(
+        const count = Numerical.solveBernstein(
           polynomial.coefficients,
           polynomial.errors,
           roots,
@@ -2525,9 +2541,9 @@ var Curve = Base.extend(
         // More roots than its degree mean that the errors swamp the
         // polynomial, e.g. for a piece of v2 much shorter than v1:
         if (count >= polynomial.coefficients.length) return false
-        for (var i = 0; i < count; i++) {
-          var t = roots[i],
-            u = Curve.getTimeOf(v2, Curve.getPoint(v1, t), tolerance)
+        for (i = 0; i < count; i++) {
+          let t = roots[i]
+          let u = Curve.getTimeOf(v2, Curve.getPoint(v1, t), tolerance)
           if (u !== null) {
             t = tMin + (tMax - tMin) * t
             u = uMin + (uMax - uMin) * u
@@ -2550,11 +2566,11 @@ var Curve = Base.extend(
     // their coefficients, accumulated through each operation: the errors of
     // the operands, plus the rounding of the result, u * |result|.
     function getLocalPoints(v, x0, y0, size) {
-      var u = /*#=*/ Numerical.MACHINE_EPSILON,
-        points = []
-      for (var i = 0; i < 8; i += 2) {
-        var x = (v[i] - x0) / size,
-          y = (v[i + 1] - y0) / size
+      const u = /*#=*/ Numerical.MACHINE_EPSILON
+      const points = []
+      for (let i = 0; i < 8; i += 2) {
+        const x = (v[i] - x0) / size
+        const y = (v[i + 1] - y0) / size
         // A subtraction and a division:
         points.push({
           x: x,
@@ -2580,29 +2596,29 @@ var Curve = Base.extend(
     // along the cubic p in Bernstein form, which as they are linear in x and y
     // have the factors at the control points of p as their coefficients:
     function getLinearFactor(p, q, i, j, factor) {
-      var u = /*#=*/ Numerical.MACHINE_EPSILON,
-        coefficients = [],
-        errors = []
-      for (var k = 0; k < 4; k++) {
-        var r = p[k],
-          dx1 = q[i].x - r.x,
-          dy1 = q[j].y - r.y,
-          dx2 = q[j].x - r.x,
-          dy2 = q[i].y - r.y,
-          error1 = getProductError(
-            dx1,
-            q[i].ex + r.ex + u * Math.abs(dx1),
-            dy1,
-            q[j].ey + r.ey + u * Math.abs(dy1)
-          ),
-          error2 = getProductError(
-            dx2,
-            q[j].ex + r.ex + u * Math.abs(dx2),
-            dy2,
-            q[i].ey + r.ey + u * Math.abs(dy2)
-          ),
-          difference = dx1 * dy1 - dx2 * dy2,
-          value = factor * difference
+      const u = /*#=*/ Numerical.MACHINE_EPSILON
+      const coefficients = []
+      const errors = []
+      for (let k = 0; k < 4; k++) {
+        const r = p[k]
+        const dx1 = q[i].x - r.x
+        const dy1 = q[j].y - r.y
+        const dx2 = q[j].x - r.x
+        const dy2 = q[i].y - r.y
+        const error1 = getProductError(
+          dx1,
+          q[i].ex + r.ex + u * Math.abs(dx1),
+          dy1,
+          q[j].ey + r.ey + u * Math.abs(dy1)
+        )
+        const error2 = getProductError(
+          dx2,
+          q[j].ex + r.ex + u * Math.abs(dx2),
+          dy2,
+          q[i].ey + r.ey + u * Math.abs(dy2)
+        )
+        const difference = dx1 * dy1 - dx2 * dy2
+        const value = factor * difference
         coefficients.push(value)
         errors.push(
           factor * (error1 + error2 + u * Math.abs(difference)) +
@@ -2613,10 +2629,10 @@ var Curve = Base.extend(
     }
 
     // The binomial coefficients up to the degree of the cubic implicit form:
-    var binomials = [[1]]
-    for (var i = 1; i <= 9; i++) {
-      var row = [1]
-      for (var j = 1; j < i; j++)
+    const binomials = [[1]]
+    for (let i = 1; i <= 9; i++) {
+      const row = [1]
+      for (let j = 1; j < i; j++)
         row.push(binomials[i - 1][j - 1] + binomials[i - 1][j])
       row.push(1)
       binomials.push(row)
@@ -2624,23 +2640,23 @@ var Curve = Base.extend(
 
     // Multiplies polynomials in Bernstein form:
     function multiply(a, b) {
-      var u = /*#=*/ Numerical.MACHINE_EPSILON,
-        m = a.coefficients.length - 1,
-        n = b.coefficients.length - 1,
-        coefficients = [],
-        errors = []
-      for (var k = 0; k <= m + n; k++) {
-        var sum = 0,
-          error = 0
-        for (var i = Math.max(0, k - n), l = Math.min(m, k); i <= l; i++) {
-          var factor = (
-              binomials[m][i] *
-              binomials[n][k - i] /
-              binomials[m + n][k]
-            ),
-            a1 = a.coefficients[i],
-            b1 = b.coefficients[k - i],
-            term = factor * (a1 * b1)
+      const u = /*#=*/ Numerical.MACHINE_EPSILON
+      const m = a.coefficients.length - 1
+      const n = b.coefficients.length - 1
+      const coefficients = []
+      const errors = []
+      for (let k = 0; k <= m + n; k++) {
+        let sum = 0
+        let error = 0
+        for (let i = Math.max(0, k - n), l = Math.min(m, k); i <= l; i++) {
+          const factor = (
+            binomials[m][i] *
+            binomials[n][k - i] /
+            binomials[m + n][k]
+          )
+          const a1 = a.coefficients[i]
+          const b1 = b.coefficients[k - i]
+          const term = factor * (a1 * b1)
           sum += term
           // The factor's division, its product, and the sum:
           error += (
@@ -2655,10 +2671,10 @@ var Curve = Base.extend(
     }
 
     function add(a, b, sign) {
-      var coefficients = [],
-        errors = []
-      for (var i = 0, l = a.coefficients.length; i < l; i++) {
-        var sum = a.coefficients[i] + sign * b.coefficients[i]
+      const coefficients = []
+      const errors = []
+      for (let i = 0, l = a.coefficients.length; i < l; i++) {
+        const sum = a.coefficients[i] + sign * b.coefficients[i]
         coefficients.push(sum)
         errors.push(
           a.errors[i] +
@@ -2673,13 +2689,13 @@ var Curve = Base.extend(
       // f(x, y) = | l32  l31        l30 |
       //           | l31  l30 + l21  l20 |
       //           | l30  l20        l10 |
-      var l32 = getLinearFactor(p, q, 3, 2, 1 * 3),
-        l31 = getLinearFactor(p, q, 3, 1, 1 * 3),
-        l30 = getLinearFactor(p, q, 3, 0, 1 * 1),
-        l21 = getLinearFactor(p, q, 2, 1, 3 * 3),
-        l20 = getLinearFactor(p, q, 2, 0, 3 * 1),
-        l10 = getLinearFactor(p, q, 1, 0, 3 * 1),
-        m = add(l30, l21, 1)
+      const l32 = getLinearFactor(p, q, 3, 2, 1 * 3)
+      const l31 = getLinearFactor(p, q, 3, 1, 1 * 3)
+      const l30 = getLinearFactor(p, q, 3, 0, 1 * 1)
+      const l21 = getLinearFactor(p, q, 2, 1, 3 * 3)
+      const l20 = getLinearFactor(p, q, 2, 0, 3 * 1)
+      const l10 = getLinearFactor(p, q, 1, 0, 3 * 1)
+      const m = add(l30, l21, 1)
       return add(
         add(
           multiply(l32, add(multiply(m, l10), multiply(l20, l20), -1)),
@@ -2693,9 +2709,9 @@ var Curve = Base.extend(
 
     // The handle of a cubic that is a quadratic, (3 * q1 - q0) / 2:
     function getQuadraticHandle(q) {
-      var u = /*#=*/ Numerical.MACHINE_EPSILON,
-        x = (3 * q[1].x - q[0].x) / 2,
-        y = (3 * q[1].y - q[0].y) / 2
+      const u = /*#=*/ Numerical.MACHINE_EPSILON
+      const x = (3 * q[1].x - q[0].x) / 2
+      const y = (3 * q[1].y - q[0].y) / 2
       return {
         x: x,
         y: y,
@@ -2707,9 +2723,9 @@ var Curve = Base.extend(
     function getQuadraticImplicit(p, q) {
       // f(x, y) = | l21  l20 |
       //           | l20  l10 |
-      var l21 = getLinearFactor(p, q, 2, 1, 1 * 2),
-        l20 = getLinearFactor(p, q, 2, 0, 1 * 1),
-        l10 = getLinearFactor(p, q, 1, 0, 2 * 1)
+      const l21 = getLinearFactor(p, q, 2, 1, 1 * 2)
+      const l20 = getLinearFactor(p, q, 2, 0, 1 * 1)
+      const l10 = getLinearFactor(p, q, 1, 0, 2 * 1)
       return add(multiply(l21, l10), multiply(l20, l20), -1)
     }
 
@@ -2728,14 +2744,14 @@ var Curve = Base.extend(
      * BOTTOM: The part that lies below the median.
      */
     function getConvexHull(dq0, dq1, dq2, dq3) {
-      var p0 = [0, dq0],
-        p1 = [1 / 3, dq1],
-        p2 = [2 / 3, dq2],
-        p3 = [1, dq3],
-        // Find vertical signed distance of p1 and p2 from line [p0, p3]
-        dist1 = dq1 - (2 * dq0 + dq3) / 3,
-        dist2 = dq2 - (dq0 + 2 * dq3) / 3,
-        hull
+      const p0 = [0, dq0]
+      const p1 = [1 / 3, dq1]
+      const p2 = [2 / 3, dq2]
+      const p3 = [1, dq3]
+      // Find vertical signed distance of p1 and p2 from line [p0, p3]
+      const dist1 = dq1 - (2 * dq0 + dq3) / 3
+      const dist2 = dq2 - (dq0 + 2 * dq3) / 3
+      let hull
       // Check if p1 and p2 are on the opposite side of the line [p0, p3]
       if (dist1 * dist2 < 0) {
         // p1 and p2 lie on different sides of [p0, p3]. The hull is a
@@ -2750,7 +2766,7 @@ var Curve = Base.extend(
         // a triangle if the vertical distance of one of the middle points
         // (p1, p2) is equal or less than half the vertical distance of the
         // other middle point.
-        var distRatio = dist1 / dist2
+        const distRatio = dist1 / dist2
         hull = [
           // p2 is inside, the hull is a triangle.
           distRatio >= 2
@@ -2787,11 +2803,11 @@ var Curve = Base.extend(
     }
 
     function clipConvexHullPart(part, top, threshold) {
-      var px = part[0][0],
-        py = part[0][1]
-      for (var i = 1, l = part.length; i < l; i++) {
-        var qx = part[i][0],
-          qy = part[i][1]
+      let px = part[0][0]
+      let py = part[0][1]
+      for (let i = 1, l = part.length; i < l; i++) {
+        const qx = part[i][0]
+        const qy = part[i][1]
         if (top ? qy >= threshold : qy <= threshold) {
           return qy === threshold
             ? qx
@@ -2811,24 +2827,24 @@ var Curve = Base.extend(
      * and the curve.
      */
     function getCurveLineIntersections(v, px, py, vx, vy) {
-      var isZero = Numerical.isZero
+      const isZero = Numerical.isZero
       if (isZero(vx) && isZero(vy)) {
         // Handle special case of a line with no direction as a point,
         // and check if it is on the curve.
-        var t = Curve.getTimeOf(v, new Point(px, py))
+        const t = Curve.getTimeOf(v, new Point(px, py))
         return t === null ? [] : [t]
       }
       // Calculate angle to the x-axis (1, 0).
-      var angle = Math.atan2(-vy, vx),
-        sin = Math.sin(angle),
-        cos = Math.cos(angle),
-        // (rlx1, rly1) = (0, 0)
-        // Calculate the curve values of the rotated curve.
-        rv = [],
-        roots = []
-      for (var i = 0; i < 8; i += 2) {
-        var x = v[i] - px,
-          y = v[i + 1] - py
+      const angle = Math.atan2(-vy, vx)
+      const sin = Math.sin(angle)
+      const cos = Math.cos(angle)
+      // (rlx1, rly1) = (0, 0)
+      // Calculate the curve values of the rotated curve.
+      const rv = []
+      const roots = []
+      for (let i = 0; i < 8; i += 2) {
+        const x = v[i] - px
+        const y = v[i + 1] - py
         rv.push(
           x * cos - y * sin,
           x * sin + y * cos
@@ -2840,7 +2856,7 @@ var Curve = Base.extend(
       // The ends of the curve are on the line if their rotated y is about 0,
       // even when the rounding of the rotation keeps solveCubic() from
       // finding them, e.g. as double roots at a zero-length handle (#1848):
-      var epsilon = /*#=*/ Numerical.GEOMETRIC_EPSILON
+      const epsilon = /*#=*/ Numerical.GEOMETRIC_EPSILON
       if (Math.abs(rv[1]) < epsilon) roots.push(0)
       if (Math.abs(rv[7]) < epsilon) roots.push(1)
       return roots
@@ -2859,19 +2875,19 @@ var Curve = Base.extend(
       // addCurveLineIntersections() is called so that v1 is always the curve
       // and v2 the line. flip indicates whether the curves need to be flipped
       // in the call to addLocation().
-      var x1 = v2[0],
-        y1 = v2[1],
-        x2 = v2[6],
-        y2 = v2[7],
-        roots = getCurveLineIntersections(v1, x1, y1, x2 - x1, y2 - y1)
+      const x1 = v2[0]
+      const y1 = v2[1]
+      const x2 = v2[6]
+      const y2 = v2[7]
+      const roots = getCurveLineIntersections(v1, x1, y1, x2 - x1, y2 - y1)
       // NOTE: count could be -1 for infinite solutions, but that should only
       // happen with lines, in which case we should not be here.
-      for (var i = 0, l = roots.length; i < l; i++) {
+      for (let i = 0, l = roots.length; i < l; i++) {
         // For each found solution on the rotated curve, get the point on
         // the real curve and with that the location on the line.
-        var t1 = roots[i],
-          p1 = Curve.getPoint(v1, t1),
-          t2 = Curve.getTimeOf(v2, p1, tolerance)
+        const t1 = roots[i]
+        const p1 = Curve.getPoint(v1, t1)
+        const t2 = Curve.getTimeOf(v2, p1, tolerance)
         if (t2 !== null) {
           // Only use the time values if there was no recursion, and let
           // addLocation() figure out the actual time values otherwise.
@@ -2896,7 +2912,7 @@ var Curve = Base.extend(
       include,
       tolerance
     ) {
-      var pt = Line.intersect(
+      const pt = Line.intersect(
         v1[0], v1[1], v1[6], v1[7],
         v2[0], v2[1], v2[6], v2[7]
       )
@@ -2921,29 +2937,31 @@ var Curve = Base.extend(
       include,
       tolerance
     ) {
-      var min = Math.min,
-        max = Math.max,
-        abs = Math.abs,
-        minX1 = min(v1[0], v1[2], v1[4], v1[6]),
-        maxX1 = max(v1[0], v1[2], v1[4], v1[6]),
-        minY1 = min(v1[1], v1[3], v1[5], v1[7]),
-        maxY1 = max(v1[1], v1[3], v1[5], v1[7]),
-        minX2 = min(v2[0], v2[2], v2[4], v2[6]),
-        maxX2 = max(v2[0], v2[2], v2[4], v2[6]),
-        minY2 = min(v2[1], v2[3], v2[5], v2[7]),
-        maxY2 = max(v2[1], v2[3], v2[5], v2[7]),
-        // Bounds that only touch need a tolerance, also at large
-        // coordinates:
-        epsilon = Numerical.getEpsilon(
-          max(
-            abs(minX1), abs(maxX1), abs(minY1), abs(maxY1),
-            abs(minX2), abs(maxX2), abs(minY2), abs(maxY2)
-          )
+      let i
+
+      const min = Math.min
+      const max = Math.max
+      const abs = Math.abs
+      const minX1 = min(v1[0], v1[2], v1[4], v1[6])
+      const maxX1 = max(v1[0], v1[2], v1[4], v1[6])
+      const minY1 = min(v1[1], v1[3], v1[5], v1[7])
+      const maxY1 = max(v1[1], v1[3], v1[5], v1[7])
+      const minX2 = min(v2[0], v2[2], v2[4], v2[6])
+      const maxX2 = max(v2[0], v2[2], v2[4], v2[6])
+      const minY2 = min(v2[1], v2[3], v2[5], v2[7])
+      const maxY2 = max(v2[1], v2[3], v2[5], v2[7])
+      // Bounds that only touch need a tolerance, also at large
+      // coordinates:
+      const epsilon = Numerical.getEpsilon(
+        max(
+          abs(minX1), abs(maxX1), abs(minY1), abs(maxY1),
+          abs(minX2), abs(maxX2), abs(minY2), abs(maxY2)
         )
+      )
 
       // Avoid checking curves if completely out of control bounds, but not
       // curves that getOverlaps() may still find to overlap:
-      var boundsEpsilon = max(
+      const boundsEpsilon = max(
         epsilon,
         tolerance || /*#=*/ Numerical.GEOMETRIC_EPSILON
       )
@@ -2954,10 +2972,10 @@ var Curve = Base.extend(
         minY1 - boundsEpsilon < maxY2
       ) {
         // Now detect and handle overlaps:
-        var overlaps = getOverlaps(v1, v2, tolerance)
+        const overlaps = getOverlaps(v1, v2, tolerance)
         if (overlaps) {
-          for (var i = 0; i < 2; i++) {
-            var overlap = overlaps[i]
+          for (i = 0; i < 2; i++) {
+            const overlap = overlaps[i]
             addLocation(
               locations,
               include,
@@ -2969,20 +2987,20 @@ var Curve = Base.extend(
             )
           }
         } else {
-          var straight1 = Curve.isStraight(v1),
-            straight2 = Curve.isStraight(v2),
-            straight = straight1 && straight2,
-            before = locations.length,
-            // Intersections with lines snap to their ends within the
-            // geometric epsilon, but not further than a smaller
-            // tolerance, as the points of one may lie no further apart:
-            lineTolerance =
-              (
-                tolerance <
-                /*#=*/ Numerical.GEOMETRIC_EPSILON
-              )
-                ? tolerance
-                : null
+          const straight1 = Curve.isStraight(v1)
+          const straight2 = Curve.isStraight(v2)
+          const straight = straight1 && straight2
+          const before = locations.length
+          // Intersections with lines snap to their ends within the
+          // geometric epsilon, but not further than a smaller
+          // tolerance, as the points of one may lie no further apart:
+          const lineTolerance =
+            (
+              tolerance <
+              /*#=*/ Numerical.GEOMETRIC_EPSILON
+            )
+              ? tolerance
+              : null
           // Determine the correct intersection method based on whether
           // one or curves are straight lines:
           if (straight) {
@@ -3030,13 +3048,13 @@ var Curve = Base.extend(
           // passed, but only if haven't found a line-line intersection
           // already: #805#issuecomment-148503018
           if (!straight || locations.length === before) {
-            var endEpsilon = tolerance || epsilon
-            for (var i = 0; i < 4; i++) {
-              var isSecond = i >> 1, // 0, 0, 1, 1
-                t = i & 1, // 0, 1, 0, 1
-                v = isSecond ? v2 : v1,
-                x = v[t * 6],
-                y = v[t * 6 + 1]
+            const endEpsilon = tolerance || epsilon
+            for (i = 0; i < 4; i++) {
+              const isSecond = i >> 1 // 0, 0, 1, 1
+              const t = i & 1 // 0, 1, 0, 1
+              const v = isSecond ? v2 : v1
+              const x = v[t * 6]
+              const y = v[t * 6 + 1]
               // Only ends in the other curve's bounds can lie on it:
               if (
                 isSecond
@@ -3049,7 +3067,7 @@ var Curve = Base.extend(
                     y >= minY2 - endEpsilon &&
                     y <= maxY2 + endEpsilon
               ) {
-                var u = Curve.getTimeOf(
+                const u = Curve.getTimeOf(
                   isSecond ? v1 : v2,
                   new Point(x, y),
                   endEpsilon
@@ -3073,9 +3091,9 @@ var Curve = Base.extend(
     }
 
     function getSelfIntersection(v1, c1, locations, include) {
-      var info = Curve.classify(v1)
+      const info = Curve.classify(v1)
       if (info.type === 'loop') {
-        var roots = info.roots
+        const roots = info.roots
         addLocation(locations, include, c1, roots[0], c1, roots[1])
       }
       return locations
@@ -3091,51 +3109,53 @@ var Curve = Base.extend(
       _tolerance,
       _collisions
     ) {
+      let i
+
       // Boolean operations pass their own tolerance, the distance under
       // which curves count as overlapping or touching:
-      var self = !curves2
+      const self = !curves2
       if (self) curves2 = curves1
-      var length1 = curves1.length,
-        length2 = curves2.length,
-        values1 = new Array(length1),
-        values2 = self ? values1 : new Array(length2),
-        locations = []
+      const length1 = curves1.length
+      const length2 = curves2.length
+      const values1 = new Array(length1)
+      const values2 = self ? values1 : new Array(length2)
+      const locations = []
 
-      for (var i = 0; i < length1; i++) {
+      for (i = 0; i < length1; i++) {
         values1[i] = curves1[i].getValues(matrix1)
       }
       if (!self) {
-        for (var i = 0; i < length2; i++) {
+        for (i = 0; i < length2; i++) {
           values2[i] = curves2[i].getValues(matrix2)
         }
       }
       // Boolean operations may pass the collisions of the curves' bounds,
       // found within at least their tolerance:
-      var boundsCollisions = (
+      const boundsCollisions = (
         _collisions ||
         CollisionDetection.findCurveBoundsCollisions(
           values1, values2,
           _tolerance || /*#=*/ Numerical.GEOMETRIC_EPSILON
         )
       )
-      for (var index1 = 0; index1 < length1; index1++) {
-        var curve1 = curves1[index1],
-          v1 = values1[index1]
+      for (let index1 = 0; index1 < length1; index1++) {
+        const curve1 = curves1[index1]
+        const v1 = values1[index1]
         if (self) {
           // First check for self-intersections within the same curve.
           getSelfIntersection(v1, curve1, locations, include)
         }
         // Check for intersections with potentially intersecting curves.
-        var collisions1 = boundsCollisions[index1]
+        const collisions1 = boundsCollisions[index1]
         if (collisions1) {
-          for (var j = 0; j < collisions1.length; j++) {
+          for (let j = 0; j < collisions1.length; j++) {
             // There might be already one location from the above
             // self-intersection check:
             if (_returnFirst && locations.length) return locations
-            var index2 = collisions1[j]
+            const index2 = collisions1[j]
             if (!self || index2 > index1) {
-              var curve2 = curves2[index2],
-                v2 = values2[index2]
+              const curve2 = curves2[index2]
+              const v2 = values2[index2]
               getCurveIntersections(
                 v1,
                 v2,
@@ -3165,26 +3185,26 @@ var Curve = Base.extend(
       // within geometric epsilon distance, so we have to check for that too.
 
       function getSquaredLineLength(v) {
-        var x = v[6] - v[0],
-          y = v[7] - v[1]
+        const x = v[6] - v[0]
+        const y = v[7] - v[1]
         return x * x + y * y
       }
 
-      var abs = Math.abs,
-        getDistance = Line.getDistance,
-        timeEpsilon = /*#=*/ Numerical.CURVETIME_EPSILON,
-        geomEpsilon = tolerance || /*#=*/ Numerical.GEOMETRIC_EPSILON,
-        straight1 = Curve.isStraight(v1),
-        straight2 = Curve.isStraight(v2),
-        straightBoth = straight1 && straight2,
-        flip = getSquaredLineLength(v1) < getSquaredLineLength(v2),
-        l1 = flip ? v2 : v1,
-        l2 = flip ? v1 : v2,
-        // Get l1 start and end point values for faster referencing.
-        px = l1[0],
-        py = l1[1],
-        vx = l1[6] - px,
-        vy = l1[7] - py
+      const abs = Math.abs
+      const getDistance = Line.getDistance
+      const timeEpsilon = /*#=*/ Numerical.CURVETIME_EPSILON
+      const geomEpsilon = tolerance || /*#=*/ Numerical.GEOMETRIC_EPSILON
+      let straight1 = Curve.isStraight(v1)
+      let straight2 = Curve.isStraight(v2)
+      let straightBoth = straight1 && straight2
+      const flip = getSquaredLineLength(v1) < getSquaredLineLength(v2)
+      const l1 = flip ? v2 : v1
+      const l2 = flip ? v1 : v2
+      // Get l1 start and end point values for faster referencing.
+      const px = l1[0]
+      const py = l1[1]
+      const vx = l1[6] - px
+      const vy = l1[7] - py
       // See if the starting and end point of curve two are very close to the
       // picked line. Note that the curve for the picked line might not
       // actually be a line, so we have to perform more checks after.
@@ -3214,25 +3234,25 @@ var Curve = Base.extend(
         return null
       }
 
-      var v = [v1, v2],
-        pairs = []
+      const v = [v1, v2]
+      let pairs = []
       // Iterate through all end points:
       // First p1 of curve 1 & 2, then p2 of curve 1 & 2.
-      for (var i = 0; i < 4 && pairs.length < 2; i++) {
-        var i1 = i & 1, // 0, 1, 0, 1
-          i2 = i1 ^ 1, // 1, 0, 1, 0
-          t1 = i >> 1, // 0, 0, 1, 1
-          t2 = Curve.getTimeOf(
-            v[i1],
-            new Point(
-              v[i2][t1 ? 6 : 0],
-              v[i2][t1 ? 7 : 1]
-            ),
-            geomEpsilon
-          )
+      for (let i = 0; i < 4 && pairs.length < 2; i++) {
+        const i1 = i & 1 // 0, 1, 0, 1
+        const i2 = i1 ^ 1 // 1, 0, 1, 0
+        const t1 = i >> 1 // 0, 0, 1, 1
+        const t2 = Curve.getTimeOf(
+          v[i1],
+          new Point(
+            v[i2][t1 ? 6 : 0],
+            v[i2][t1 ? 7 : 1]
+          ),
+          geomEpsilon
+        )
         if (t2 != null) {
           // If point is on curve
-          var pair = i1 ? [t1, t2] : [t2, t1]
+          const pair = i1 ? [t1, t2] : [t2, t1]
           // Filter out tiny overlaps.
           if (
             !pairs.length || (
@@ -3251,8 +3271,8 @@ var Curve = Base.extend(
       } else if (!straightBoth) {
         // Straight pairs don't need further checks. If we found 2 pairs,
         // the end points on v1 & v2 should be the same.
-        var o1 = Curve.getPart(v1, pairs[0][0], pairs[1][0]),
-          o2 = Curve.getPart(v2, pairs[0][1], pairs[1][1])
+        const o1 = Curve.getPart(v1, pairs[0][0], pairs[1][0])
+        const o2 = Curve.getPart(v2, pairs[0][1], pairs[1][1])
         // Check if handles of the overlapping curves are the same too.
         if (
           abs(o2[2] - o1[2]) > geomEpsilon ||
@@ -3277,8 +3297,8 @@ var Curve = Base.extend(
        *     the curves
        */
       getIntersections: function (curve) {
-        var v1 = this.getValues(),
-          v2 = curve && curve !== this && curve.getValues()
+        const v1 = this.getValues()
+        const v2 = curve && curve !== this && curve.getValues()
         return v2
           ? getCurveIntersections(v1, v2, this, curve, [])
           : getSelfIntersection(v1, this, [])

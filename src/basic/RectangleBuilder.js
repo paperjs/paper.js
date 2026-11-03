@@ -13,7 +13,7 @@
 // Reads object literals such as `{ right: 100, width: 50 }` in any order: The
 // first side or center set per axis moves the rectangle and keeps its size,
 // further ones change the size.
-var RectangleBuilder = Rectangle.extend({
+const RectangleBuilder = Rectangle.extend({
   // Redefine the bean accessors of the overridden setters, including #size,
   // whose getter has a hidden parameter:
   beans: true,
@@ -29,11 +29,11 @@ var RectangleBuilder = Rectangle.extend({
   _fh: 1,
 
   setSize: function (/* size */) {
-    var size = Size.read(arguments),
-      sx = this._sx,
-      sy = this._sy,
-      w = size.width,
-      h = size.height
+    const size = Size.read(arguments)
+    const sx = this._sx
+    const sy = this._sy
+    const w = size.width
+    const h = size.height
     if (sx) {
       this.x += (this.width - w) * sx
     }
@@ -47,7 +47,7 @@ var RectangleBuilder = Rectangle.extend({
 
   setLeft: function (left) {
     if (!this._fw) {
-      var amount = left - this.x
+      const amount = left - this.x
       this.width -= this._sx === 0.5 ? amount * 2 : amount
     }
     this.x = left
@@ -56,7 +56,7 @@ var RectangleBuilder = Rectangle.extend({
 
   setTop: function (top) {
     if (!this._fh) {
-      var amount = top - this.y
+      const amount = top - this.y
       this.height -= this._sy === 0.5 ? amount * 2 : amount
     }
     this.y = top
@@ -65,7 +65,7 @@ var RectangleBuilder = Rectangle.extend({
 
   setRight: function (right) {
     if (!this._fw) {
-      var amount = right - this.x
+      const amount = right - this.x
       this.width = this._sx === 0.5 ? amount * 2 : amount
     }
     this.x = right - this.width
@@ -75,7 +75,7 @@ var RectangleBuilder = Rectangle.extend({
 
   setBottom: function (bottom) {
     if (!this._fh) {
-      var amount = bottom - this.y
+      const amount = bottom - this.y
       this.height = this._sy === 0.5 ? amount * 2 : amount
     }
     this.y = bottom - this.height

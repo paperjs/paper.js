@@ -19,16 +19,22 @@ new (function () {
   // objects, dealing with baseVal, and item lists.
   // index is option, and if passed, causes a lookup in a list.
 
-  var definitions = {},
-    // The ids of the elements that <use> elements are importing, to skip
-    // circular references, as SVG does:
-    used = {},
-    rootSize,
-    // The absolute units of CSS in px:
-    units = { in: 96, pt: 96 / 72, pc: 96 / 6, cm: 96 / 2.54, mm: 96 / 25.4 }
+  let definitions = {}
+  // The ids of the elements that <use> elements are importing, to skip
+  // circular references, as SVG does:
+  const used = {}
+  let rootSize
+  // The absolute units of CSS in px:
+  const units = {
+    in: 96,
+    pt: 96 / 72,
+    pc: 96 / 6,
+    cm: 96 / 2.54,
+    mm: 96 / 25.4
+  }
 
   function parseLength(value) {
-    var unit = /(in|pt|pc|cm|mm)\s*$/.exec(value)
+    const unit = /(in|pt|pc|cm|mm)\s*$/.exec(value)
     return parseFloat(value) * (unit ? units[unit[1]] : 1)
   }
 
@@ -43,17 +49,17 @@ new (function () {
     // Interpret value as number. Never return NaN, but 0 instead.
     // If the value is a sequence of numbers, parseFloat will
     // return the first occurring number, which is enough for now.
-    var value = SvgElement.get(node, name) || defaultValue,
-      res =
-        value == null
-          ? allowNull
-            ? null
-            : isString
-              ? ''
-              : 0
+    const value = SvgElement.get(node, name) || defaultValue
+    const res =
+      value == null
+        ? allowNull
+          ? null
           : isString
-            ? value
-            : parseLength(value)
+            ? ''
+            : 0
+        : isString
+          ? value
+          : parseLength(value)
     // Support for dimensions in percentage of the root size. If root-size
     // is not set (e.g. during <defs>), just scale the percentage value to
     // 0..1, as required by gradients with gradientUnits="objectBoundingBox"
@@ -104,19 +110,23 @@ new (function () {
   // Importer functions for various SVG node types
 
   function importGroup(node, type, options, isRoot) {
-    var nodes = node.childNodes,
-      isClip = type === 'clippath' || type === 'mask',
-      isDefs = type === 'defs',
-      // The attributes of patterns describe their tiles, see
-      // importPattern():
-      isPattern = type === 'pattern',
-      // Paper.js marks the groups of its layers, see SvgExport:
-      ctor = node.hasAttribute('data-paper-layer') ? Layer : Group,
-      item = new ctor(),
-      project = item._project,
-      currentStyle = project._currentStyle,
-      parentSize = rootSize,
-      children = []
+    let i
+    let l
+    let child
+
+    const nodes = node.childNodes
+    const isClip = type === 'clippath' || type === 'mask'
+    const isDefs = type === 'defs'
+    // The attributes of patterns describe their tiles, see
+    // importPattern():
+    const isPattern = type === 'pattern'
+    // Paper.js marks the groups of its layers, see SvgExport:
+    const ctor = node.hasAttribute('data-paper-layer') ? Layer : Group
+    let item = new ctor()
+    const project = item._project
+    const currentStyle = project._currentStyle
+    const parentSize = rootSize
+    const children = []
     if (!isClip && !isDefs && !isPattern) {
       item = applyAttributes(item, node, options, isRoot)
       // Style on items needs to be handled differently than all other
@@ -136,15 +146,15 @@ new (function () {
     if (isRoot) {
       // Import all defs first, since in SVG they can be in any location.
       // e.g. Affinity Designer exports defs as last.
-      var defs = node.querySelectorAll('defs')
-      for (var i = 0, l = defs.length; i < l; i++) {
+      const defs = node.querySelectorAll('defs')
+      for (i = 0, l = defs.length; i < l; i++) {
         importNode(defs[i], options, false)
       }
     }
     // Collect the children in an array and apply them all at once.
-    for (var i = 0, l = nodes.length; i < l; i++) {
-      var childNode = nodes[i],
-        child
+    for (i = 0, l = nodes.length; i < l; i++) {
+      const childNode = nodes[i]
+
       if (
         childNode.nodeType === 1 &&
         !/^defs$/i.test(childNode.nodeName) &&
@@ -190,7 +200,7 @@ new (function () {
         return isClipMask(child, isAlpha)
       })
     }
-    var color = item.getFillColor()
+    const color = item.getFillColor()
     return (
       (item instanceof PathItem || item instanceof Shape) &&
       !item.hasStroke() &&
@@ -208,18 +218,18 @@ new (function () {
   }
 
   function importPoly(node, type) {
-    var coords = node.getAttribute('points').match(
-        /[+-]?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?/g
-      ),
-      points = []
-    for (var i = 0, l = coords.length; i < l; i += 2)
+    const coords = node.getAttribute('points').match(
+      /[+-]?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?/g
+    )
+    const points = []
+    for (let i = 0, l = coords.length; i < l; i += 2)
       points.push(
         new Point(
           parseFloat(coords[i]),
           parseFloat(coords[i + 1])
         )
       )
-    var path = new Path(points)
+    const path = new Path(points)
     if (type === 'polygon') path.closePath()
     return path
   }
@@ -229,10 +239,10 @@ new (function () {
   }
 
   function importGradient(node, type, options) {
-    var id = (getValue(node, 'href', true) || '').substring(1),
-      definition = getDefinitionById(id, options),
-      radial = type === 'radialgradient',
-      gradient
+    const id = (getValue(node, 'href', true) || '').substring(1)
+    const definition = getDefinitionById(id, options)
+    const radial = type === 'radialgradient'
+    let gradient
     if (definition) {
       // Gradients are always wrapped in a Color object, so get the
       // gradient object from there.
@@ -243,22 +253,22 @@ new (function () {
         gradient._radial = radial
       }
     } else {
-      var nodes = node.childNodes,
-        stops = []
-      for (var i = 0, l = nodes.length; i < l; i++) {
-        var child = nodes[i]
+      const nodes = node.childNodes
+      const stops = []
+      for (let i = 0, l = nodes.length; i < l; i++) {
+        const child = nodes[i]
         if (child.nodeType === 1)
           stops.push(applyAttributes(new GradientStop(), child, options))
       }
       gradient = new Gradient(stops, radial)
     }
-    var origin,
-      destination,
-      highlight,
-      scaleToBounds = (
-        getValue(node, 'gradientUnits', true) !==
-        'userSpaceOnUse'
-      )
+    let origin
+    let destination
+    let highlight
+    const scaleToBounds = (
+      getValue(node, 'gradientUnits', true) !==
+      'userSpaceOnUse'
+    )
     // Allow percentages in all values if scaleToBounds is true:
     if (radial) {
       origin = getPoint(node, 'cx', 'cy', false, scaleToBounds, '50%', '50%')
@@ -278,7 +288,7 @@ new (function () {
         '0%'
       )
     }
-    var color = applyAttributes(
+    const color = applyAttributes(
       new Color(gradient, origin, destination, highlight), node,
       options
     )
@@ -292,12 +302,12 @@ new (function () {
   function importPattern(node, type, options) {
     // SVG draws the content of tiles relative to their top left corner, or
     // maps the viewBox onto them:
-    var item = importGroup(node, type, options),
-      tile = new Rectangle(getPoint(node), getSize(node)),
-      viewBox = getValue(node, 'viewBox', true),
-      matrix = new Matrix().translate(tile.getPoint())
+    const item = importGroup(node, type, options)
+    const tile = new Rectangle(getPoint(node), getSize(node))
+    const viewBox = getValue(node, 'viewBox', true)
+    const matrix = new Matrix().translate(tile.getPoint())
     if (viewBox) {
-      var rect = new Rectangle(convertValue(viewBox, 'array'))
+      const rect = new Rectangle(convertValue(viewBox, 'array'))
       matrix
         .scale(tile.getSize().divide(rect.getSize()))
         .translate(rect.getPoint().negate())
@@ -315,11 +325,11 @@ new (function () {
 
   // NOTE: All importers are lowercase, since jsdom is using uppercase
   // nodeNames still.
-  var importers = {
+  const importers = {
     '#document': function (node, type, options, isRoot) {
-      var nodes = node.childNodes
-      for (var i = 0, l = nodes.length; i < l; i++) {
-        var child = nodes[i]
+      const nodes = node.childNodes
+      for (let i = 0, l = nodes.length; i < l; i++) {
+        const child = nodes[i]
         if (child.nodeType === 1) return importNode(child, options, isRoot)
       }
     },
@@ -345,33 +355,33 @@ new (function () {
 
     // https://www.w3.org/TR/SVG/struct.html#ImageElement
     'image': function (node, type, options) {
-      var raster = new Raster({
-          crossOrigin: options.crossOrigin,
-          source: getValue(node, 'href', true)
-        }),
-        // NOTE: 'slice' is treated as 'meet', as it requires clipping.
-        align = (
-          /none|x(Min|Mid|Max)Y(Min|Mid|Max)/.exec(
-            getValue(node, 'preserveAspectRatio', true)
-          ) ||
-          [null, 'Mid', 'Mid']
-        )
+      const raster = new Raster({
+        crossOrigin: options.crossOrigin,
+        source: getValue(node, 'href', true)
+      })
+      // NOTE: 'slice' is treated as 'meet', as it requires clipping.
+      const align = (
+        /none|x(Min|Mid|Max)Y(Min|Mid|Max)/.exec(
+          getValue(node, 'preserveAspectRatio', true)
+        ) ||
+        [null, 'Mid', 'Mid']
+      )
       raster.on('load', function () {
         // Keep the image's own pixels, and scale it to the size given
         // in SVG, instead of resampling it to that size. Without a
         // size, use the image's own, as browsers do (SVG 2):
-        var imageSize = this.getSize(),
-          size = getSize(node, null, null, true) || imageSize,
-          point = getPoint(node)
+        const imageSize = this.getSize()
+        let size = getSize(node, null, null, true) || imageSize
+        let point = getPoint(node)
         if (align[0] !== 'none') {
           // Scale uniformly, and align the image in its box:
-          var factors = { Min: 0, Mid: 0.5, Max: 1 },
-            fitted = imageSize.multiply(
-              Math.min(
-                size.width / imageSize.width,
-                size.height / imageSize.height
-              )
+          const factors = { Min: 0, Mid: 0.5, Max: 1 }
+          const fitted = imageSize.multiply(
+            Math.min(
+              size.width / imageSize.width,
+              size.height / imageSize.height
             )
+          )
           point = point.add(
             size.subtract(fitted).multiply(
               [factors[align[1]], factors[align[2]]]
@@ -383,7 +393,7 @@ new (function () {
         // half of its size. We also need to take the raster's matrix
         // into account, which will be defined by the time the load
         // event is called.
-        var center = point.add(size.divide(2))
+        const center = point.add(size.divide(2))
         this._matrix.append(
           new Matrix().translate(center).scale(size.divide(imageSize))
         )
@@ -409,10 +419,10 @@ new (function () {
       // TODO: Support overflow and width, height, in combination with
       // overflow: hidden. Paper.js currently does not support
       // SymbolItem clipping, but perhaps it should?
-      var id = (getValue(node, 'href', true) || '').substring(1),
-        definition = getDefinitionById(id, options),
-        point = getPoint(node),
-        item = null
+      const id = (getValue(node, 'href', true) || '').substring(1)
+      const definition = getDefinitionById(id, options)
+      const point = getPoint(node)
+      let item = null
       if (definition instanceof SymbolDefinition) {
         // When placing symbols, we need to take both point and matrix
         // into account. place() does the right thing:
@@ -454,8 +464,8 @@ new (function () {
     // https://www.w3.org/TR/SVG/shapes.html#RectElement
     'rect': function (node) {
       // A missing rx or ry takes the value of the other one:
-      var rx = getValue(node, 'rx', false, true),
-        ry = getValue(node, 'ry', false, true)
+      const rx = getValue(node, 'rx', false, true)
+      const ry = getValue(node, 'ry', false, true)
       return new Shape.Rectangle(
         new Rectangle(
           getPoint(node),
@@ -485,21 +495,21 @@ new (function () {
       // TODO: Support for these is missing in Paper.js right now
       // rotate: character rotation
       // lengthAdjust:
-      var text = new PointText(
-          getPoint(node).add(
-            getPoint(node, 'dx', 'dy')
-          )
-        ),
-        // Lines are placed in <tspan> elements with their own y, as
-        // exported by Paper.js and other editors:
-        lines = Base.each(
-          node.childNodes,
-          function (child) {
-            if (/^tspan$/i.test(child.nodeName) && child.hasAttribute('y'))
-              this.push(child.textContent.trim())
-          },
-          []
+      const text = new PointText(
+        getPoint(node).add(
+          getPoint(node, 'dx', 'dy')
         )
+      )
+      // Lines are placed in <tspan> elements with their own y, as
+      // exported by Paper.js and other editors:
+      const lines = Base.each(
+        node.childNodes,
+        function (child) {
+          if (/^tspan$/i.test(child.nodeName) && child.hasAttribute('y'))
+            this.push(child.textContent.trim())
+        },
+        []
+      )
       text.setContent(
         lines.length > 1 ? lines.join('\n') : node.textContent.trim()
       )
@@ -522,17 +532,17 @@ new (function () {
       // https://www.w3.org/TR/SVG/types.html#DataTypeTransformList
       // Parse SVG transform string. First we split at /)\s*/, to separate
       // commands
-      var transforms = (node.getAttribute(name) || '').split(/\)\s*/g),
-        matrix = new Matrix()
-      for (var i = 0, l = transforms.length; i < l; i++) {
-        var transform = transforms[i]
+      const transforms = (node.getAttribute(name) || '').split(/\)\s*/g)
+      const matrix = new Matrix()
+      for (let i = 0, l = transforms.length; i < l; i++) {
+        const transform = transforms[i]
         if (!transform) break
         // Command come before the '(', values after
-        var parts = transform.split(/\(\s*/),
-          command = parts[0].trim(),
-          v = parts[1].split(/[\s,]+/g)
+        const parts = transform.split(/\(\s*/)
+        const command = parts[0].trim()
+        const v = parts[1].split(/[\s,]+/g)
         // Convert values to floats
-        for (var j = 0, m = v.length; j < m; j++) v[j] = parseFloat(v[j])
+        for (let j = 0, m = v.length; j < m; j++) v[j] = parseFloat(v[j])
         switch (command) {
           case 'matrix':
             matrix.append(
@@ -562,7 +572,7 @@ new (function () {
 
   function applyClipMask(item, value, name, node, styles, options) {
     // https://www.w3.org/TR/SVG/masking.html#ClipPathProperty
-    var clip = getDefinition(value, options)
+    let clip = getDefinition(value, options)
     if (clip) {
       clip = clip.clone()
       clip.setClipMask(true)
@@ -578,32 +588,32 @@ new (function () {
   function applyOpacity(item, value, name) {
     // https://www.w3.org/TR/SVG/painting.html#FillOpacityProperty
     // https://www.w3.org/TR/SVG/painting.html#StrokeOpacityProperty
-    var key = name === 'fill-opacity' ? 'getFillColor' : 'getStrokeColor',
-      color = item[key] && item[key]()
+    const key = name === 'fill-opacity' ? 'getFillColor' : 'getStrokeColor'
+    const color = item[key] && item[key]()
     if (color) color.setAlpha(parseFloat(value))
   }
 
   // The primitives that SvgExport writes for a shadow after its blur:
-  var shadowPrimitives = 'feOffset,feFlood,feComposite,feComposite'
+  const shadowPrimitives = 'feOffset,feFlood,feComposite,feComposite'
 
   // Reads a shadow from a <filter> with the primitives that SvgExport writes
   // for it, and only these, or returns null for any other filter:
   function getFilterShadow(filter) {
-    var nodes = Base.slice(filter && filter.children || []),
-      names = nodes
-        .map(function (node) {
-          return node.nodeName
-        })
-        .join(),
-      blur = (
-        names === 'feGaussianBlur,' + shadowPrimitives &&
-        nodes.shift()
-      )
+    const nodes = Base.slice(filter && filter.children || [])
+    const names = nodes
+      .map(function (node) {
+        return node.nodeName
+      })
+      .join()
+    const blur = (
+      names === 'feGaussianBlur,' + shadowPrimitives &&
+      nodes.shift()
+    )
     if (!blur && names !== shadowPrimitives) return null
-    var offset = nodes[0],
-      flood = nodes[1],
-      color = new Color(flood.getAttribute('flood-color') || 'black'),
-      opacity = flood.getAttribute('flood-opacity')
+    const offset = nodes[0]
+    const flood = nodes[1]
+    const color = new Color(flood.getAttribute('flood-color') || 'black')
+    const opacity = flood.getAttribute('flood-opacity')
     if (opacity) color.setAlpha(color.getAlpha() * parseFloat(opacity))
     return {
       color: color,
@@ -619,17 +629,17 @@ new (function () {
   // Reads a shadow from a single CSS drop-shadow(), with its color before or
   // after its lengths, of which its blur radius equals the shadow blur:
   function getCssShadow(value) {
-    var match = value.match(/^\s*drop-shadow\((.*)\)\s*$/),
-      color = (
-        match &&
-        match[1].match(
-          /(?:rgba?|hsla?)\([^)]*\)|#[0-9a-f]+|\b[a-z]+\b/i
-        )
-      ),
-      lengths = (
-        match &&
-        match[1].replace(color && color[0], '').match(/-?[\d.]+/g)
+    const match = value.match(/^\s*drop-shadow\((.*)\)\s*$/)
+    const color = (
+      match &&
+      match[1].match(
+        /(?:rgba?|hsla?)\([^)]*\)|#[0-9a-f]+|\b[a-z]+\b/i
       )
+    )
+    const lengths = (
+      match &&
+      match[1].replace(color && color[0], '').match(/-?[\d.]+/g)
+    )
     return lengths && lengths.length >= 2
       ? {
           color: new Color(color ? color[0] : 'black'),
@@ -646,7 +656,7 @@ new (function () {
   // Use Base.set() to control sequence of attributes and have all entries in
   // SvgStyles (e.g. 'stroke') before the additional attributes below (e.g.
   // 'stroke-opacity'). See issue #694.
-  var attributes = Base.set(
+  const attributes = Base.set(
     Base.each(
       SvgStyles,
       function (entry) {
@@ -665,11 +675,11 @@ new (function () {
             if (entry.type === 'color') {
               // Do not use result of convertValue() above, since calling
               // the setter will convert a color and clone it if necessary
-              var color = item[entry.get]()
+              const color = item[entry.get]()
               if (color) {
                 // Emulate SVG's gradientUnits="objectBoundingBox"
                 if (color._scaleToBounds) {
-                  var bounds = item.getBounds()
+                  const bounds = item.getBounds()
                   color.transform(
                     new Matrix()
                       .translate(bounds.getPoint())
@@ -713,7 +723,7 @@ new (function () {
       'filter': function (item, value) {
         // Read shadows, as SvgExport writes them, or as CSS drop-shadow().
         // Groups don't draw shadows, so leave them out (#1003):
-        var shadow = (
+        const shadow = (
           value &&
           !(item instanceof Group) &&
           item.setShadowColor && (
@@ -741,7 +751,7 @@ new (function () {
         // font-weight, which comes first as one of the SvgStyles. Browsers
         // report the computed weight, so normal comes as 400:
         if (item.setFontWeight && /^(italic|oblique)$/.test(value)) {
-          var weight = ('' + item.getFontWeight())
+          const weight = ('' + item.getFontWeight())
             .replace(/\s*\b(italic|oblique)\b/gi, '')
           item.setFontWeight(
             /^(normal|400)$/.test(weight) ? value : weight + ' ' + value
@@ -753,7 +763,7 @@ new (function () {
         // Convert to letter tracking, in thousandths of an em. 'normal' is
         // 0:
         if (item.setLetterTracking) {
-          var amount = parseFloat(value) || 0
+          const amount = parseFloat(value) || 0
           item.setLetterTracking(
             1000 * (
               /em$/.test(value)
@@ -778,27 +788,29 @@ new (function () {
       'offset': function (item, value) {
         // https://www.w3.org/TR/SVG/pservers.html#StopElementOffsetAttribute
         if (item.setOffset) {
-          var percent = value.match(/(.*)%$/)
+          const percent = value.match(/(.*)%$/)
           item.setOffset(percent ? percent[1] / 100 : parseFloat(value))
         }
       },
 
       'viewBox': function (item, value, name, node, styles) {
+        let matrix
+
         // https://www.w3.org/TR/SVG/coords.html#ViewBoxAttribute
         // TODO: implement preserveAspectRatio attribute
         // viewBox will be applied both to the group that's created for the
         // content in SymbolDefinition#item, and the SymbolItem itself.
-        var rect = new Rectangle(convertValue(value, 'array')),
-          size = getSize(node, null, null, true),
-          group,
-          matrix
+        const rect = new Rectangle(convertValue(value, 'array'))
+        const size = getSize(node, null, null, true)
+        let group
+
         if (item instanceof Group) {
           // This is either a top-level svg node, or the container for a
           // symbol.
-          var scale = size ? size.divide(rect.getSize()) : 1,
-            matrix = new Matrix()
-              .scale(scale)
-              .translate(rect.getPoint().negate())
+          const scale = size ? size.divide(rect.getSize()) : 1
+          matrix = new Matrix()
+            .scale(scale)
+            .translate(rect.getPoint().negate())
           group = item
         } else if (item instanceof SymbolDefinition) {
           // The symbol is wrapping a group. Note that viewBox was already
@@ -813,7 +825,7 @@ new (function () {
         if (group) {
           if (getAttribute(node, 'overflow', styles) !== 'visible') {
             // Add a clip path at the top of this symbol's group
-            var clip = new Shape.Rectangle(rect)
+            const clip = new Shape.Rectangle(rect)
             clip.setClipMask(true)
             group.addChild(clip)
           }
@@ -828,10 +840,10 @@ new (function () {
     // them, see if the given attribute is defined, and finally, if there is
     // a style applied through CSS rules, filtering out inheritance from
     // their parents.
-    var style = Base.camelize(name),
-      value = node.style && node.style[style]
+    const style = Base.camelize(name)
+    let value = node.style && node.style[style]
     if (!value) {
-      var attr = node.attributes[name]
+      const attr = node.attributes[name]
       value = attr && attr.value
       if (!value && node.style && styles.node[style] !== styles.parent[style])
         value = styles.node[style]
@@ -851,19 +863,19 @@ new (function () {
   function applyAttributes(item, node, options, isRoot) {
     // SVG attributes can be set both as styles and direct node
     // attributes, so we need to handle both.
-    var parent = node.parentNode,
-      styles = {
-        node: DomElement.getStyles(node) || {},
-        // Do not check for inheritance if this is root, to make the
-        // default SVG settings stick.
-        parent: !isRoot && DomElement.getStyles(parent) || {}
-      }
+    const parent = node.parentNode
+    const styles = {
+      node: DomElement.getStyles(node) || {},
+      // Do not check for inheritance if this is root, to make the
+      // default SVG settings stick.
+      parent: !isRoot && DomElement.getStyles(parent) || {}
+    }
     // jsdom doesn't compute SVG styles, so start the root with SVG's initial
     // fill, as it differs from the default in Paper.js:
     if (isRoot && !styles.node.fill && item.setFillColor)
       item.setFillColor('black')
     Base.each(attributes, function (apply, name) {
-      var value = getAttribute(node, name, styles)
+      const value = getAttribute(node, name, styles)
       // 'clip-path' attribute returns a new item, support it here:
       item = (
         (
@@ -880,7 +892,7 @@ new (function () {
     // Definitions can be referenced before they appear in the document,
     // so import them on demand, see #1146:
     if (id && !definitions[id]) {
-      var node = getElementById(id)
+      const node = getElementById(id)
       if (node) importNode(node, options, false)
     }
     return definitions[id]
@@ -890,8 +902,8 @@ new (function () {
     // When url() comes from a style property, '#'' seems to be missing on
     // WebKit. We also get variations of quotes or no quotes, single or
     // double, so handle it all with one regular expression:
-    var match = value && value.match(/\((?:["'#]*)([^"')]+)/),
-      name = match && match[1]
+    const match = value && value.match(/\((?:["'#]*)([^"')]+)/)
+    const name = match && match[1]
     return name && window
       ? // This is required by Firefox, which can produce absolute
         // urls for local gradients, see #1001:
@@ -900,8 +912,8 @@ new (function () {
   }
 
   function getDefinition(value, options) {
-    var id = getDefinitionId(value),
-      res = id && getDefinitionById(id, options)
+    const id = getDefinitionId(value)
+    let res = id && getDefinitionById(id, options)
     // Patch in support for SVG's gradientUnits="objectBoundingBox" through
     // Color#_scaleToBounds
     if (res && res._scaleToBounds) {
@@ -915,11 +927,11 @@ new (function () {
   // Returns the element's data: its data-* attributes with camelized names,
   // as in `dataset`, merged with Paper.js's own JSON in data-paper-data:
   function getData(node) {
-    var data = null,
-      attributes = node.attributes,
-      json = node.getAttribute('data-paper-data')
-    for (var i = 0, l = attributes.length; i < l; i++) {
-      var match = attributes[i].name.match(/^data-(?!paper-)(.+)$/)
+    let data = null
+    const attributes = node.attributes
+    const json = node.getAttribute('data-paper-data')
+    for (let i = 0, l = attributes.length; i < l; i++) {
+      const match = attributes[i].name.match(/^data-(?!paper-)(.+)$/)
       if (match) {
         data = data || {}
         data[Base.camelize(match[1])] = attributes[i].value
@@ -931,17 +943,17 @@ new (function () {
   // Restore the names and data of segments as SvgExport stores them, unless
   // another editor changed the path so that their indices don't fit anymore:
   function setSegmentsData(item, node) {
-    var json = node.getAttribute('data-paper-segments')
+    const json = node.getAttribute('data-paper-segments')
     if (json) {
-      var entries = JSON.parse(json),
-        paths = item._children || [item],
-        segments = []
-      for (var i = 0, l = paths.length; i < l; i++)
+      const entries = JSON.parse(json)
+      const paths = item._children || [item]
+      const segments = []
+      for (let i = 0, l = paths.length; i < l; i++)
         segments.push.apply(segments, paths[i]._segments)
       if (Math.max.apply(Math, Object.keys(entries)) < segments.length) {
-        for (var index in entries) {
-          var entry = entries[index],
-            segment = segments[index]
+        for (const index in entries) {
+          const entry = entries[index]
+          const segment = segments[index]
           if (entry.name) segment.setName(entry.name)
           if (entry.data) segment._data = entry.data
         }
@@ -949,7 +961,7 @@ new (function () {
     }
   }
 
-  var sandbox
+  let sandbox
 
   function getSandbox() {
     // Imported SVG nodes are attached to a document so that their styles
@@ -968,8 +980,8 @@ new (function () {
         ' width: 0; height: 0; border: 0'
       )
       document.body.appendChild(sandbox)
-      var doc = sandbox.contentDocument,
-        meta = doc.createElement('meta')
+      const doc = sandbox.contentDocument
+      const meta = doc.createElement('meta')
       meta.httpEquiv = 'Content-Security-Policy'
       meta.content = "default-src 'none'; style-src 'unsafe-inline'"
       doc.head.appendChild(meta)
@@ -983,11 +995,11 @@ new (function () {
 
   function importNode(node, options, isRoot) {
     // jsdom in Node.js uses uppercase values for nodeName...
-    var type = node.nodeName.toLowerCase(),
-      isElement = type !== '#document',
-      container,
-      parent,
-      next
+    const type = node.nodeName.toLowerCase()
+    const isElement = type !== '#document'
+    let container
+    let parent
+    let next
     if (isRoot && isElement) {
       // Set rootSize to view size, as getSize() may refer to it (#1242).
       rootSize = paper.getView().getSize()
@@ -1013,11 +1025,11 @@ new (function () {
     // content and children, as this is how SVG works too, but preserve the
     // current setting so we can restore it after. Also don't insert them
     // into the scene graph automatically, as we do so by hand.
-    var settings = paper.settings,
-      applyMatrix = settings.applyMatrix,
-      insertItems = settings.insertItems,
-      importer = importers[type],
-      item
+    const settings = paper.settings
+    const applyMatrix = settings.applyMatrix
+    const insertItems = settings.insertItems
+    const importer = importers[type]
+    let item
     // Restore everything in `finally` blocks, so that a failing import
     // doesn't leave the node in the sandbox or the settings changed:
     try {
@@ -1040,24 +1052,24 @@ new (function () {
         // importGroup() applies them itself, see there for why:
         if (isElement && importer !== importGroup)
           item = applyAttributes(item, node, options, isRoot)
-        var data = isElement && getData(node)
+        const data = isElement && getData(node)
         if (data) item._data = data
         // Support processItem callback, to provide mechanism to handle
         // special attributes (e.g. inkscape:transform-center). Skip
         // #document nodes, as their item is their root element's:
-        var onImport = options.onImport,
-          processItem = (
-            isElement && (
-              options.processItem || (
-                // TODO: Remove in 1.0.0? (deprecated October 2026),
-                // alias with positional arguments:
-                onImport &&
-                function (arg) {
-                  return onImport(arg.node, arg.item, options)
-                }
-              )
+        const onImport = options.onImport
+        const processItem = (
+          isElement && (
+            options.processItem || (
+              // TODO: Remove in 1.0.0? (deprecated October 2026),
+              // alias with positional arguments:
+              onImport &&
+              function (arg) {
+                return onImport(arg.node, arg.item, options)
+              }
             )
           )
+        )
         if (processItem) item = processItem({ item: item, node: node }) || item
         if (options.expandShapes && item instanceof Shape) {
           item.remove()
@@ -1091,12 +1103,12 @@ new (function () {
     options =
       typeof options === 'function' ? { onLoad: options } : options || {}
     // Remember current scope so we can restore it in onLoad.
-    var scope = paper,
-      item = null
+    const scope = paper
+    let item = null
 
     function onLoad(svg) {
       try {
-        var node =
+        let node =
           typeof svg === 'object'
             ? svg
             : new self.DOMParser().parseFromString(
@@ -1115,7 +1127,7 @@ new (function () {
           // the layers become the project's layers.
           owner._insertItem(undefined, item)
         }
-        var onLoad = options.onLoad
+        const onLoad = options.onLoad
         if (onLoad) onLoad(item, svg)
       } catch (e) {
         onError(e)
@@ -1123,7 +1135,7 @@ new (function () {
     }
 
     function onError(message, status) {
-      var onError = options.onError
+      const onError = options.onError
       if (onError) {
         onError(message, status)
       } else {
@@ -1139,7 +1151,7 @@ new (function () {
     if (typeof source === 'string' && !/^[\s\S]*</.test(source)) {
       // First see if we're meant to import an element with the given
       // id.
-      var node = document.getElementById(source)
+      const node = document.getElementById(source)
       // Check if the string does not represent SVG data, in which
       // case it must be the URL of a SVG to be loaded.
       if (node) {
@@ -1154,7 +1166,7 @@ new (function () {
       }
     } else if (typeof File !== 'undefined' && source instanceof File) {
       // Load local file through FileReader
-      var reader = new FileReader()
+      const reader = new FileReader()
       reader.onload = function () {
         onLoad(reader.result)
       }

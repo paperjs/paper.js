@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-var ItemSelection = {
+const ItemSelection = {
   ITEM: 1,
   BOUNDS: 2,
   POSITION: 4,

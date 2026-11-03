@@ -15,7 +15,7 @@
  * @namespace
  * @private
  */
-var Emitter = {
+const Emitter = {
   on: function (type, func) {
     // If an object literal is passed, attach all callbacks defined in it
     if (typeof type !== 'string') {
@@ -27,8 +27,8 @@ var Emitter = {
         this
       )
     } else {
-      var types = this._eventTypes,
-        entry = types && types[type]
+      const types = this._eventTypes
+      const entry = types && types[type]
       // Handlers on the prototype of a class are called for all its
       // objects, see Item.onDraw:
       if (this === this.constructor.prototype && !(entry && entry.classLevel))
@@ -39,7 +39,7 @@ var Emitter = {
         )
       // Objects inherit the handlers of their prototypes, but keep their
       // own:
-      var handlers = (this._callbacks = (
+      let handlers = (this._callbacks = (
         this.hasOwnProperty('_callbacks') &&
         this._callbacks
       ) || {})
@@ -68,13 +68,13 @@ var Emitter = {
       )
       return
     }
-    var types = this._eventTypes,
-      entry = types && types[type],
-      handlers = (
-        this.hasOwnProperty('_callbacks') &&
-        this._callbacks[type]
-      ),
-      index
+    const types = this._eventTypes
+    const entry = types && types[type]
+    const handlers = (
+      this.hasOwnProperty('_callbacks') &&
+      this._callbacks[type]
+    )
+    let index
     if (handlers) {
       // See if this is the last handler that we're detaching (or if we
       // are detaching all handlers), and call uninstall if defined.
@@ -104,14 +104,14 @@ var Emitter = {
 
   emit: function (type, event) {
     // Returns true if any events were emitted, false otherwise.
-    var handlers = this._getHandlers(type)
+    const handlers = this._getHandlers(type)
     if (!handlers.length) return false
-    var args = Base.slice(arguments, 1),
-      // Set the current target to `this` if the event object defines
-      // #target but not #currentTarget.
-      setTarget = event && event.target && !event.currentTarget
+    const args = Base.slice(arguments, 1)
+    // Set the current target to `this` if the event object defines
+    // #target but not #currentTarget.
+    const setTarget = event && event.target && !event.currentTarget
     if (setTarget) event.currentTarget = this
-    for (var i = 0, l = handlers.length; i < l; i++) {
+    for (let i = 0, l = handlers.length; i < l; i++) {
       if (handlers[i].apply(this, args) == false) {
         // If the handler returns false, prevent the default behavior
         // and stop propagation of the event by calling stop()
@@ -127,11 +127,11 @@ var Emitter = {
   responds: function (type) {
     // Drawing asks every item, so check the object's own handlers first,
     // and only walk up its prototypes while there are handlers above:
-    var callbacks = this._callbacks
+    const callbacks = this._callbacks
     if (callbacks) {
       if (this.hasOwnProperty('_callbacks') && callbacks[type]) return true
       for (
-        var obj = this.constructor.prototype;
+        let obj = this.constructor.prototype;
         obj && obj._callbacks;
         obj = Object.getPrototypeOf(obj)
       ) {
@@ -145,9 +145,9 @@ var Emitter = {
   // Collect the object's own handlers and then the ones of its prototypes,
   // in a new list that changes caused by on / off won't affect:
   _getHandlers: function (type) {
-    var handlers = []
-    for (var obj = this; obj; obj = Object.getPrototypeOf(obj)) {
-      var callbacks = (
+    const handlers = []
+    for (let obj = this; obj; obj = Object.getPrototypeOf(obj)) {
+      const callbacks = (
         obj.hasOwnProperty('_callbacks') &&
         obj._callbacks[type]
       )
@@ -163,14 +163,14 @@ var Emitter = {
 
   _installEvents: function (install) {
     // Only the object's own handlers, not the ones of its prototypes:
-    var types = this._eventTypes,
-      handlers = this.hasOwnProperty('_callbacks') && this._callbacks,
-      key = install ? 'install' : 'uninstall'
+    const types = this._eventTypes
+    const handlers = this.hasOwnProperty('_callbacks') && this._callbacks
+    const key = install ? 'install' : 'uninstall'
     if (types) {
-      for (var type in handlers) {
+      for (const type in handlers) {
         if (handlers[type].length > 0) {
-          var entry = types[type],
-            func = entry && entry[key]
+          const entry = types[type]
+          const func = entry && entry[key]
           if (func) func.call(this, type)
         }
       }
@@ -195,18 +195,18 @@ var Emitter = {
     // NOTE: This needs to be defined in the first injection scope, as for
     // simplicity, we don't loop through all of them here.
     inject: function inject(src) {
-      var events = src._events
+      const events = src._events
       if (events) {
         // events can either be an object literal or an array of
         // strings describing the on*-names.
         // We need to map lowercased event types to the event
         // entries represented by these on*-names in _events.
-        var types = {}
+        const types = {}
         Base.each(events, function (entry, key) {
-          var isString = typeof entry === 'string',
-            name = isString ? entry : key,
-            part = Base.capitalize(name),
-            type = name.substring(2).toLowerCase()
+          const isString = typeof entry === 'string'
+          let name = isString ? entry : key
+          const part = Base.capitalize(name)
+          const type = name.substring(2).toLowerCase()
           // Map the event type name to the event entry.
           types[type] = isString ? {} : entry
           // Create getters and setters for the property
@@ -218,14 +218,14 @@ var Emitter = {
           }
           src['set' + part] = function (func) {
             // Detach the previous event, if there was one.
-            var prev = this['get' + part]()
+            const prev = this['get' + part]()
             if (prev) this.off(type, prev)
             if (func) this.on(type, func)
             this[name] = func
           }
           // And on the class, for the types that support it:
           if (!isString && entry.classLevel) {
-            var statics = (src.statics = src.statics || {})
+            const statics = (src.statics = src.statics || {})
             statics['get' + part] = function () {
               return this.prototype['get' + part]()
             }

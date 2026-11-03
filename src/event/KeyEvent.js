@@ -20,7 +20,7 @@
  *
  * @extends Event
  */
-var KeyEvent = Event.extend(
+const KeyEvent = Event.extend(
   /** @lends KeyEvent# */ {
     _class: 'KeyEvent',
 

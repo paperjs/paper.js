@@ -19,7 +19,7 @@
  * internal properties such as segment lists and gradient positions don't need
  * to be updated with every transformation.
  */
-var SymbolDefinition = ItemDefinition.extend(
+const SymbolDefinition = ItemDefinition.extend(
   /** @lends SymbolDefinition# */ {
     _class: 'SymbolDefinition',
     // Move the item to 0, 0, so it's centered when placed:
@@ -62,15 +62,15 @@ var SymbolDefinition = ItemDefinition.extend(
     initialize: function SymbolDefinition(item, dontCenter) {
       // JSON passes the options of the definition instead, which can
       // include dontCenter:
-      var options = Base.isPlainObject(dontCenter) && dontCenter
+      const options = Base.isPlainObject(dontCenter) && dontCenter
       ItemDefinition.call(this, item, options ? options.dontCenter : dontCenter)
       if (options) this.set(options, { dontCenter: true })
     },
 
     _serialize: function (options, dictionary) {
       return dictionary.add(this, function () {
-        var json = [this._class, this._item],
-          props = {}
+        const json = [this._class, this._item]
+        const props = {}
         // Keep items that the definition didn't center in place:
         if (!this._item.getPosition().isZero()) props.dontCenter = true
         if (this._name) props.name = this._name

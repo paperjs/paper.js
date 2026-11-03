@@ -18,7 +18,7 @@
  * properties. Instances of effects that aren't registered keep their
  * parameters and leave what they get as it is, so that they still round-trip.
  */
-var EffectInstance = Base.extend(
+const EffectInstance = Base.extend(
   /** @lends EffectInstance# */ {
     _class: 'EffectInstance',
     // JSON writes the effects of items as plain objects:
@@ -43,9 +43,9 @@ var EffectInstance = Base.extend(
     // properties, and their defaults:
     _setEffect: function (effect) {
       if (effect) {
-        var parameters = this._parameters,
-          defaults = effect._defaults
-        for (var key in defaults) {
+        const parameters = this._parameters
+        const defaults = effect._defaults
+        for (const key in defaults) {
           if (parameters[key] === undefined) parameters[key] = defaults[key]
         }
         Object.defineProperties(this, effect._accessors)
@@ -57,7 +57,7 @@ var EffectInstance = Base.extend(
     // Returns the plain object that items create the instance from, with a
     // copy of its parameters:
     _getProps: function () {
-      var props = {
+      const props = {
         type: this._type,
         parameters: Base.set({}, this._parameters)
       }
@@ -70,7 +70,7 @@ var EffectInstance = Base.extend(
     },
 
     _changed: function () {
-      var item = this._item
+      const item = this._item
       if (item) item._changed(/*#=*/ Change.ATTRIBUTE)
     },
 
@@ -93,7 +93,7 @@ var EffectInstance = Base.extend(
      * @type ?Effect
      */
     getEffect: function () {
-      var effect = Effect.get(this._type)
+      const effect = Effect.get(this._type)
       // Bind the instance again when its effect is redefined:
       if (effect !== this._effect) this._setEffect(effect)
       return effect
@@ -133,10 +133,10 @@ var EffectInstance = Base.extend(
      * instance.parameters = { distance: 5, join: 'round' };
      */
     getParameters: function () {
-      var linked = this._linkedParameters
+      let linked = this._linkedParameters
       if (!linked) {
         // The parameters as accessors that update the instance:
-        var instance = this
+        const instance = this
         linked = this._linkedParameters = {}
         Base.each(this._parameters, function (value, key) {
           Object.defineProperty(linked, key, {

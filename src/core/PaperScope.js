@@ -32,7 +32,7 @@
  * The global {@link paper} object is simply a reference to the currently active
  * `PaperScope`.
  */
-var PaperScope = Base.extend(
+const PaperScope = Base.extend(
   /** @lends PaperScope# */ {
     _class: 'PaperScope',
 
@@ -63,7 +63,7 @@ var PaperScope = Base.extend(
       // Assign a unique id to each scope .
       this._id = PaperScope._id++
       PaperScope._scopes[this._id] = this
-      var proto = PaperScope.prototype
+      const proto = PaperScope.prototype
       if (!this.support) {
         // Set up paper.support, as an object containing properties that
         // describe the support of various features.
@@ -73,11 +73,11 @@ var PaperScope = Base.extend(
       }
       if (!this.agent) {
         // Use self.instead of window, to cover handle web-workers too.
-        var user = self.navigator.userAgent.toLowerCase(),
-          // Detect basic platforms, only mac internally required for now.
-          os = (/(darwin|win|mac|linux|freebsd|sunos)/.exec(user) || [])[0],
-          platform = os === 'darwin' ? 'mac' : os,
-          agent = (proto.agent = proto.browser = { platform: platform })
+        const user = self.navigator.userAgent.toLowerCase()
+        // Detect basic platforms, only mac internally required for now.
+        const os = (/(darwin|win|mac|linux|freebsd|sunos)/.exec(user) || [])[0]
+        const platform = os === 'darwin' ? 'mac' : os
+        const agent = (proto.agent = proto.browser = { platform: platform })
         if (platform) agent[platform] = true
         // Use replace() to get all matches, and deal with Chrome/Webkit
         // overlap:
@@ -86,11 +86,12 @@ var PaperScope = Base.extend(
         // here: { chrome: true, webkit: false }, Mozilla missing is the
         // only difference to jQuery.browser
         user.replace(
-          /(opera|chrome|safari|webkit|firefox|msie|trident|atom|node|jsdom)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:v?([.\d]+))?/g,
+          /(opera|chrome|safari|webkit|firefox|msie|trident|atom|node|jsdom)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv:v?([.\d]+))?/g,
           function (match, n, v1, v2, rv) {
             // Do not set additional browsers once chrome is detected.
             if (!agent.chrome) {
-              var v = n === 'opera' ? v2 : /^(node|trident)$/.test(n) ? rv : v1
+              const v =
+                n === 'opera' ? v2 : /^(node|trident)$/.test(n) ? rv : v1
               agent.version = v
               agent.versionNumber = parseFloat(v)
               n = { trident: 'msie', jsdom: 'node' }[n] || n
@@ -167,7 +168,7 @@ var PaperScope = Base.extend(
      * @type View
      */
     getView: function () {
-      var project = this._project
+      const project = this._project
       return project && project._view
     },
 
@@ -219,7 +220,7 @@ var PaperScope = Base.extend(
       // prepro reads its directives line by line:
       // prettier-ignore
       /*#*/ if (__options.paperScript) {
-            var exports = paper.PaperScript.execute(code, this, options);
+            const exports = paper.PaperScript.execute(code, this, options);
             // Focus handling only exists in the browser, not in web workers:
             if (window)
                 View.updateFocus();
@@ -244,7 +245,7 @@ var PaperScope = Base.extend(
     install: function (scope) {
       // Define project, view and tool as getters that redirect to these
       // values on the PaperScope, so they are kept up to date
-      var that = this
+      const that = this
       Base.each(['project', 'view', 'tool'], function (key) {
         Base.define(scope, key, {
           configurable: true,
@@ -258,7 +259,7 @@ var PaperScope = Base.extend(
       // the native Event, MouseEvent and Symbol (#1832). Do not use
       // Base.each, since we also want to enumerate over fields on
       // PaperScope.prototype, e.g. all classes:
-      for (var key in this) {
+      for (const key in this) {
         if (!/^_/.test(key) && this[key] && !(key in scope))
           scope[key] = this[key]
       }
@@ -308,10 +309,12 @@ var PaperScope = Base.extend(
      * installed event handlers.
      */
     clear: function () {
-      var projects = this.projects,
-        tools = this.tools
-      for (var i = projects.length - 1; i >= 0; i--) projects[i].remove()
-      for (var i = tools.length - 1; i >= 0; i--) tools[i].remove()
+      let i
+
+      const projects = this.projects
+      const tools = this.tools
+      for (i = projects.length - 1; i >= 0; i--) projects[i].remove()
+      for (i = tools.length - 1; i >= 0; i--) tools[i].remove()
     },
 
     /**

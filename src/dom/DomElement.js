@@ -15,14 +15,14 @@
  * @namespace
  * @private
  */
-var DomElement = new (function () {
+const DomElement = new (function () {
   // Handles both getting and setting of vendor prefix values
   function handlePrefix(el, name, set, value) {
-    var prefixes = ['', 'webkit', 'moz', 'Moz', 'ms', 'o'],
-      suffix = name[0].toUpperCase() + name.substring(1)
-    for (var i = 0; i < 6; i++) {
-      var prefix = prefixes[i],
-        key = prefix ? prefix + suffix : name
+    const prefixes = ['', 'webkit', 'moz', 'Moz', 'ms', 'o']
+    const suffix = name[0].toUpperCase() + name.substring(1)
+    for (let i = 0; i < 6; i++) {
+      const prefix = prefixes[i]
+      const key = prefix ? prefix + suffix : name
       if (key in el) {
         if (set) {
           el[key] = value
@@ -37,20 +37,20 @@ var DomElement = new (function () {
   return /** @lends DomElement */ {
     getStyles: function (el) {
       // If el is a document (nodeType == 9), use it directly
-      var doc = el && el.nodeType !== 9 ? el.ownerDocument : el,
-        view = doc && doc.defaultView
+      const doc = el && el.nodeType !== 9 ? el.ownerDocument : el
+      const view = doc && doc.defaultView
       return view && view.getComputedStyle(el, '')
     },
 
     getBounds: function (el, viewport) {
-      var doc = el.ownerDocument,
-        body = doc.body,
-        html = doc.documentElement,
-        rect = el.getBoundingClientRect(),
-        x = rect.left - (html.clientLeft || body.clientLeft || 0),
-        y = rect.top - (html.clientTop || body.clientTop || 0)
+      const doc = el.ownerDocument
+      const body = doc.body
+      const html = doc.documentElement
+      const rect = el.getBoundingClientRect()
+      let x = rect.left - (html.clientLeft || body.clientLeft || 0)
+      let y = rect.top - (html.clientTop || body.clientTop || 0)
       if (!viewport) {
-        var view = doc.defaultView
+        const view = doc.defaultView
         x += view.pageXOffset || html.scrollLeft || body.scrollLeft
         y += view.pageYOffset || html.scrollTop || body.scrollTop
       }
@@ -58,9 +58,9 @@ var DomElement = new (function () {
     },
 
     getViewportBounds: function (el) {
-      var doc = el.ownerDocument,
-        view = doc.defaultView,
-        html = doc.documentElement
+      const doc = el.ownerDocument
+      const view = doc.defaultView
+      const html = doc.documentElement
       return new Rectangle(
         0,
         0,
@@ -82,7 +82,7 @@ var DomElement = new (function () {
      * and border widths, or with `start`, only the left and top ones.
      */
     getInsets: function (el, start) {
-      var style = DomElement.getStyles(el)
+      const style = DomElement.getStyles(el)
       function get(side) {
         return (
           parseFloat(style['padding' + side]) +
@@ -132,7 +132,7 @@ var DomElement = new (function () {
 
     setPrefixed: function (el, name, value) {
       if (typeof name === 'object') {
-        for (var key in name) handlePrefix(el, key, true, name[key])
+        for (const key in name) handlePrefix(el, key, true, name[key])
       } else {
         handlePrefix(el, name, true, value)
       }

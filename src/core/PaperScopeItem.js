@@ -19,7 +19,7 @@
  *
  * @private
  */
-var PaperScopeItem = Base.extend(
+const PaperScopeItem = Base.extend(
   Emitter,
   /** @lends PaperScopeItem# */ {
     /**
@@ -36,7 +36,7 @@ var PaperScopeItem = Base.extend(
 
     activate: function () {
       if (!this._scope) return false
-      var prev = this._scope[this._reference]
+      const prev = this._scope[this._reference]
       if (prev && prev !== this) prev.emit('deactivate')
       this._scope[this._reference] = this
       this.emit('activate', prev)

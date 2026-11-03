@@ -19,7 +19,7 @@
  *
  * @extends TextItem
  */
-var PointText = TextItem.extend(
+const PointText = TextItem.extend(
   /** @lends PointText# */ {
     _class: 'PointText',
 
@@ -68,12 +68,12 @@ var PointText = TextItem.extend(
     getPoint: function () {
       // Se Item#getPosition for an explanation why we create new LinkedPoint
       // objects each time.
-      var point = this._matrix.getTranslation()
+      const point = this._matrix.getTranslation()
       return new LinkedPoint(point.x, point.y, this, 'setPoint')
     },
 
     setPoint: function (/* point */) {
-      var point = Point.read(arguments)
+      const point = Point.read(arguments)
       this.translate(point.subtract(this._matrix.getTranslation()))
     },
 
@@ -83,21 +83,21 @@ var PointText = TextItem.extend(
     // before, aligned by its paragraph's justification and indents:
     // @override
     _layOut: function () {
-      var story = this._story,
-        length = story._content.length,
-        paragraphs = new TextRange(story, this._getStart(), length)
-          .getParagraphs(),
-        lines = [],
-        y = 0,
-        spaceAfter = 0
-      for (var i = 0, l = paragraphs.length; i < l; i++) {
-        var range = paragraphs[i],
-          paragraph = story._getParagraph(range._start).style,
-          line = this._measure(
-            range._start,
-            range._end,
-            paragraph.getDirection()
-          )
+      const story = this._story
+      const length = story._content.length
+      const paragraphs = new TextRange(story, this._getStart(), length)
+        .getParagraphs()
+      const lines = []
+      let y = 0
+      let spaceAfter = 0
+      for (let i = 0, l = paragraphs.length; i < l; i++) {
+        const range = paragraphs[i]
+        const paragraph = story._getParagraph(range._start).style
+        const line = this._measure(
+          range._start,
+          range._end,
+          paragraph.getDirection()
+        )
         if (i > 0) {
           y += (
             line.lineHeight +
@@ -114,15 +114,15 @@ var PointText = TextItem.extend(
     },
 
     _getBounds: function (matrix, options) {
-      var lines = this._getLayout(),
-        rect = new Rectangle(),
-        strokeWidth = 0
-      for (var i = 0, l = lines.length; i < l; i++) {
-        var line = lines[i],
-          box = this._getBox(line, line.x, line.y)
+      const lines = this._getLayout()
+      let rect = new Rectangle()
+      let strokeWidth = 0
+      for (let i = 0, l = lines.length; i < l; i++) {
+        const line = lines[i]
+        const box = this._getBox(line, line.x, line.y)
         rect = i ? rect.unite(box) : box
-        for (var j = 0, m = line.pieces.length; j < m; j++) {
-          var style = line.pieces[j].style
+        for (let j = 0, m = line.pieces.length; j < m; j++) {
+          const style = line.pieces[j].style
           if (style.hasStroke())
             strokeWidth = Math.max(strokeWidth, style.getStrokeWidth())
         }

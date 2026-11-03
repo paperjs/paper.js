@@ -12,24 +12,24 @@
 
 Path.inject({
   statics: new (function () {
-    var kappa = /*#=*/ Numerical.KAPPA,
-      ellipseSegments = [
-        new Segment([-1, 0], [0, kappa], [0, -kappa]),
-        new Segment([0, -1], [-kappa, 0], [kappa, 0]),
-        new Segment([1, 0], [0, -kappa], [0, kappa]),
-        new Segment([0, 1], [kappa, 0], [-kappa, 0])
-      ]
+    const kappa = /*#=*/ Numerical.KAPPA
+    const ellipseSegments = [
+      new Segment([-1, 0], [0, kappa], [0, -kappa]),
+      new Segment([0, -1], [-kappa, 0], [kappa, 0]),
+      new Segment([1, 0], [0, -kappa], [0, kappa]),
+      new Segment([0, 1], [kappa, 0], [-kappa, 0])
+    ]
 
     function createPath(segments, closed, args) {
-      var props = Base.getNamed(args),
-        // Let Item#_initialize() handle the insertion:
-        path = new Path(
-          props && {
-            insert: props.insert,
-            project: props.project,
-            parent: props.parent
-          }
-        )
+      const props = Base.getNamed(args)
+      // Let Item#_initialize() handle the insertion:
+      const path = new Path(
+        props && {
+          insert: props.insert,
+          project: props.project,
+          parent: props.parent
+        }
+      )
       path._add(segments)
       // No need to use setter for _closed since _add() called _changed().
       path._closed = closed
@@ -39,9 +39,9 @@ Path.inject({
     }
 
     function createEllipse(center, radius, args) {
-      var segments = new Array(4)
-      for (var i = 0; i < 4; i++) {
-        var segment = ellipseSegments[i]
+      const segments = new Array(4)
+      for (let i = 0; i < 4; i++) {
+        const segment = ellipseSegments[i]
         segments[i] = new Segment(
           segment._point.multiply(radius).add(center),
           segment._handleIn.multiply(radius),
@@ -85,7 +85,7 @@ Path.inject({
        * });
        */
       Line: function (/* from, to */) {
-        var args = arguments
+        const args = arguments
         return createPath(
           [
             new Segment(Point.readNamed(args, 'from')),
@@ -125,9 +125,9 @@ Path.inject({
        * });
        */
       Circle: function (/* center, radius */) {
-        var args = arguments,
-          center = Point.readNamed(args, 'center'),
-          radius = Base.readNamed(args, 'radius')
+        const args = arguments
+        const center = Point.readNamed(args, 'center')
+        const radius = Base.readNamed(args, 'radius')
         return createEllipse(center, new Size(radius), args)
       },
 
@@ -222,14 +222,14 @@ Path.inject({
        * });
        */
       Rectangle: function (/* rectangle */) {
-        var args = arguments,
-          rect = Rectangle.readNamed(args, 'rectangle'),
-          radius = Size.readNamed(args, 'radius', 0, { readNull: true }),
-          bl = rect.getBottomLeft(true),
-          tl = rect.getTopLeft(true),
-          tr = rect.getTopRight(true),
-          br = rect.getBottomRight(true),
-          segments
+        const args = arguments
+        const rect = Rectangle.readNamed(args, 'rectangle')
+        let radius = Size.readNamed(args, 'radius', 0, { readNull: true })
+        const bl = rect.getBottomLeft(true)
+        const tl = rect.getTopLeft(true)
+        const tr = rect.getTopRight(true)
+        const br = rect.getBottomRight(true)
+        let segments
         if (!radius || radius.isZero()) {
           segments = [
             new Segment(bl),
@@ -239,10 +239,10 @@ Path.inject({
           ]
         } else {
           radius = Size.min(radius, rect.getSize(true).divide(2))
-          var rx = radius.width,
-            ry = radius.height,
-            hx = rx * kappa,
-            hy = ry * kappa
+          const rx = radius.width
+          const ry = radius.height
+          const hx = rx * kappa
+          const hy = ry * kappa
           segments = [
             new Segment(bl.add(rx, 0), null, [-hx, 0]),
             new Segment(bl.subtract(0, ry), [0, hy]),
@@ -301,8 +301,8 @@ Path.inject({
        * });
        */
       Ellipse: function (/* rectangle */) {
-        var args = arguments,
-          ellipse = Shape._readEllipse(args)
+        const args = arguments
+        const ellipse = Shape._readEllipse(args)
         return createEllipse(ellipse.center, ellipse.radius, args)
       },
 
@@ -348,13 +348,13 @@ Path.inject({
        * });
        */
       Arc: function (/* from, through, to */) {
-        var args = arguments,
-          from = Point.readNamed(args, 'from'),
-          through = Point.readNamed(args, 'through'),
-          to = Point.readNamed(args, 'to'),
-          // Draw the arc on a temporary path, and create the result
-          // from its segments like all the other constructors:
-          arc = new Path(Item.NO_INSERT)
+        const args = arguments
+        const from = Point.readNamed(args, 'from')
+        const through = Point.readNamed(args, 'through')
+        const to = Point.readNamed(args, 'to')
+        // Draw the arc on a temporary path, and create the result
+        // from its segments like all the other constructors:
+        const arc = new Path(Item.NO_INSERT)
         arc.moveTo(from)
         arc.arcTo(through, to)
         return createPath(arc._segments, false, args)
@@ -397,18 +397,18 @@ Path.inject({
        * });
        */
       RegularPolygon: function (/* center, sides, radius */) {
-        var args = arguments,
-          center = Point.readNamed(args, 'center'),
-          sides = Base.readNamed(args, 'sides'),
-          radius = Base.readNamed(args, 'radius'),
-          step = -360 / sides,
-          // Start at the top as Illustrator does: at the top vertex, or
-          // the right end of the top edge with an even number of sides,
-          // counterclockwise:
-          offset = sides % 2 ? 0 : -0.5,
-          vector = new Point(0, -radius),
-          segments = new Array(sides)
-        for (var i = 0; i < sides; i++)
+        const args = arguments
+        const center = Point.readNamed(args, 'center')
+        const sides = Base.readNamed(args, 'sides')
+        const radius = Base.readNamed(args, 'radius')
+        const step = -360 / sides
+        // Start at the top as Illustrator does: at the top vertex, or
+        // the right end of the top edge with an even number of sides,
+        // counterclockwise:
+        const offset = sides % 2 ? 0 : -0.5
+        const vector = new Point(0, -radius)
+        const segments = new Array(sides)
+        for (let i = 0; i < sides; i++)
           segments[i] = new Segment(
             center.add(
               vector.rotate((i + offset) * step)
@@ -458,15 +458,15 @@ Path.inject({
        * });
        */
       Star: function (/* center, points, radius1, radius2 */) {
-        var args = arguments,
-          center = Point.readNamed(args, 'center'),
-          points = Base.readNamed(args, 'points') * 2,
-          radius1 = Base.readNamed(args, 'radius1'),
-          radius2 = Base.readNamed(args, 'radius2'),
-          step = 360 / points,
-          vector = new Point(0, -1),
-          segments = new Array(points)
-        for (var i = 0; i < points; i++)
+        const args = arguments
+        const center = Point.readNamed(args, 'center')
+        const points = Base.readNamed(args, 'points') * 2
+        const radius1 = Base.readNamed(args, 'radius1')
+        const radius2 = Base.readNamed(args, 'radius2')
+        const step = 360 / points
+        const vector = new Point(0, -1)
+        const segments = new Array(points)
+        for (let i = 0; i < points; i++)
           segments[i] = new Segment(
             center.add(
               vector.rotate(step * i).multiply(i % 2 ? radius2 : radius1)

@@ -15,7 +15,7 @@
  * @namespace
  * @private
  */
-var UID = {
+const UID = {
   _id: 1,
   _pools: {},
 
@@ -28,7 +28,7 @@ var UID = {
   get: function (name) {
     if (name) {
       // Use one UID pool per given constructor
-      var pool = this._pools[name]
+      let pool = this._pools[name]
       if (!pool) pool = this._pools[name] = { _id: 1 }
       return pool._id++
     } else {

@@ -21,7 +21,7 @@
  *
  * @extends Event
  */
-var ToolEvent = Event.extend(
+const ToolEvent = Event.extend(
   /** @lends ToolEvent# */ {
     _class: 'ToolEvent',
     // Have ToolEvent#item fall back to returning null, not undefined.
@@ -227,11 +227,11 @@ var ToolEvent = Event.extend(
      */
     getItem: function () {
       if (!this._item) {
-        var result = this.tool._scope.project.hitTest(this.getPoint())
+        const result = this.tool._scope.project.hitTest(this.getPoint())
         if (result) {
-          var item = result.item,
-            // Find group parent, but exclude layers
-            parent = item._parent
+          let item = result.item
+          // Find group parent, but exclude layers
+          let parent = item._parent
           while (/^(Group|CompoundPath)$/.test(parent._class)) {
             item = parent
             parent = parent._parent

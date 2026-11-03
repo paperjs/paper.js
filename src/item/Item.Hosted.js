@@ -15,68 +15,68 @@
 // content on first access to any of the fields that hold it.
 new (function () {
   // The fields that #_load() fills in, by the class that defines them:
-  var contentFields = [
+  const contentFields = [
+    [
+      Item,
       [
-        Item,
-        [
-          '_style', '_applyMatrix', '_opacity', '_blendMode', '_pivot', '_data',
-          '_textWrap', '_effects'
-        ]
-      ],
-      [
-        Path,
-        [
-          '_segments', '_closed', '_version', '_curves', '_segmentSelection',
-          '_strokeProfile'
-        ]
-      ],
-      [CompoundPath, ['_children', '_namedChildren']],
-      [SymbolItem, ['_definition']],
-      [HostItem, ['_values']],
-      [Raster, ['_size', '_loaded']],
-      [TextItem, ['_story', '_orientation', '_layout', '_fontMetrics']],
-      // The text path is a text's content, not one of its children:
-      [
-        PathText,
-        ['_children', '_startOffset', '_endOffset', '_alignment', '_spacing']
-      ],
-      [
-        AreaText,
-        [
-          '_children', '_columns', '_rows', '_gutter', '_inset',
-          '_verticalAlign'
-        ]
+        '_style', '_applyMatrix', '_opacity', '_blendMode', '_pivot', '_data',
+        '_textWrap', '_effects'
       ]
     ],
-    // The fields that #_loadChildren() fills in on containers of hosted
-    // items, Group and HostItem with _hasChildren:
-    childrenFields = ['_children', '_namedChildren'],
-    // The fields that #_loadPixels() fills in on rasters from the host's
-    // image, after their content:
-    pixelFields = ['_image', '_canvas', '_context'],
-    // The host boxes per item: bounds, strokeBounds and roughBounds.
-    boxSize = 12,
-    shellPrototypes = {},
-    // The flags of the host's records, see Project#host, and the two
-    // more of Project#invalidate():
-    recordFlags = {
-      selected: 1,
-      visible: 2,
-      locked: 4,
-      strokeScaling: 8,
-      content: 16,
-      children: 32,
-      clipMask: 64,
-      guide: 128,
-      empty: 256
-    },
-    // The changes that outdate the host's boxes:
-    boundsFlags = /*#=*/ ChangeFlag.GEOMETRY | ChangeFlag.STROKE,
-    // Set while loading or invalidating, which aren't changes:
-    isLoading = false,
-    // The copies of definitions that one insertion or copy brings into a
-    // project with another host, see copyDefinitions():
-    definitionCopies = null
+    [
+      Path,
+      [
+        '_segments', '_closed', '_version', '_curves', '_segmentSelection',
+        '_strokeProfile'
+      ]
+    ],
+    [CompoundPath, ['_children', '_namedChildren']],
+    [SymbolItem, ['_definition']],
+    [HostItem, ['_values']],
+    [Raster, ['_size', '_loaded']],
+    [TextItem, ['_story', '_orientation', '_layout', '_fontMetrics']],
+    // The text path is a text's content, not one of its children:
+    [
+      PathText,
+      ['_children', '_startOffset', '_endOffset', '_alignment', '_spacing']
+    ],
+    [
+      AreaText,
+      [
+        '_children', '_columns', '_rows', '_gutter', '_inset',
+        '_verticalAlign'
+      ]
+    ]
+  ]
+  // The fields that #_loadChildren() fills in on containers of hosted
+  // items, Group and HostItem with _hasChildren:
+  const childrenFields = ['_children', '_namedChildren']
+  // The fields that #_loadPixels() fills in on rasters from the host's
+  // image, after their content:
+  const pixelFields = ['_image', '_canvas', '_context']
+  // The host boxes per item: bounds, strokeBounds and roughBounds.
+  const boxSize = 12
+  const shellPrototypes = {}
+  // The flags of the host's records, see Project#host, and the two
+  // more of Project#invalidate():
+  const recordFlags = {
+    selected: 1,
+    visible: 2,
+    locked: 4,
+    strokeScaling: 8,
+    content: 16,
+    children: 32,
+    clipMask: 64,
+    guide: 128,
+    empty: 256
+  }
+  // The changes that outdate the host's boxes:
+  const boundsFlags = /*#=*/ ChangeFlag.GEOMETRY | ChangeFlag.STROKE
+  // Set while loading or invalidating, which aren't changes:
+  let isLoading = false
+  // The copies of definitions that one insertion or copy brings into a
+  // project with another host, see copyDefinitions():
+  let definitionCopies = null
 
   function defineValue(item, name, value) {
     Object.defineProperty(item, name, {
@@ -105,14 +105,14 @@ new (function () {
   }
 
   function getShellPrototype(ctor) {
-    var proto = ctor && ctor.prototype,
-      name = proto && proto._class,
-      shell = shellPrototypes[name]
+    const proto = ctor && ctor.prototype
+    const name = proto && proto._class
+    let shell = shellPrototypes[name]
     if (!shell) {
       if (!(proto instanceof Item))
         throw new Error("Unknown item type: '" + name + "'.")
       shell = shellPrototypes[name] = Object.create(proto)
-      var fields = (shell._contentFields = [])
+      const fields = (shell._contentFields = [])
       contentFields.forEach(function (entry) {
         if (shell instanceof entry[0]) Base.push(fields, entry[1])
       })
@@ -129,7 +129,7 @@ new (function () {
           defineLoader(shell, field, '_loadPixels')
         })
         // Pixels that are still with the host export without a source:
-        var serializeFields = Base.set({}, proto._serializeFields)
+        const serializeFields = Base.set({}, proto._serializeFields)
         delete serializeFields.crossOrigin
         delete serializeFields.source
         Object.defineProperty(shell, '_serializeFields', {
@@ -153,7 +153,7 @@ new (function () {
       shell._changed = function (flags) {
         if (!isLoading) {
           if (flags & boundsFlags) {
-            for (var item = this; item; item = item._parent)
+            for (let item = this; item; item = item._parent)
               item._hostBounds = false
           }
           proto._changed.call(this, flags)
@@ -177,8 +177,8 @@ new (function () {
 
   // Sets the fields that the host's columns describe for item i.
   function setRecord(item, columns, i) {
-    var flags = columns.flags[i],
-      matrix = columns.matrices && columns.matrices[i]
+    const flags = columns.flags[i]
+    const matrix = columns.matrices && columns.matrices[i]
     item._visible = !!(flags & recordFlags.visible)
     item._locked = !!(flags & recordFlags.locked)
     item._strokeScaling = !!(flags & recordFlags.strokeScaling)
@@ -203,17 +203,20 @@ new (function () {
   // Creates or reuses the items that the host's columns describe, as the
   // children of owner, an item or the project.
   function setChildren(owner, project, columns) {
-    var keys = columns.keys,
-      names = columns.names || {},
-      itemsByKey = project._itemsByKey,
-      parent = owner instanceof Item ? owner : null,
-      children = [],
-      namedChildren = {}
-    for (var i = 0, l = keys.length; i < l; i++) {
-      var key = keys[i],
-        ctor = Base.exports[columns.typeNames[columns.types[i]]],
-        item = itemsByKey[key],
-        name = names[i]
+    let i
+    let l
+
+    const keys = columns.keys
+    const names = columns.names || {}
+    const itemsByKey = project._itemsByKey
+    const parent = owner instanceof Item ? owner : null
+    const children = []
+    const namedChildren = {}
+    for (i = 0, l = keys.length; i < l; i++) {
+      const key = keys[i]
+      const ctor = Base.exports[columns.typeNames[columns.types[i]]]
+      let item = itemsByKey[key]
+      const name = names[i]
       if (!item || item.constructor !== ctor) {
         item = itemsByKey[key] = Object.create(getShellPrototype(ctor))
         item._id = UID.get()
@@ -232,7 +235,7 @@ new (function () {
     }
     owner._children = children
     owner._namedChildren = namedChildren
-    for (var i = 0, l = children.length; i < l; i++) {
+    for (i = 0, l = children.length; i < l; i++) {
       if (children[i]._selection) project._updateSelection(children[i])
     }
   }
@@ -243,9 +246,9 @@ new (function () {
   // belongs to the project that it loads for, which we make the active one
   // meanwhile, without activating it:
   function whileLoading(project, callback) {
-    var changes = project._changes,
-      loading = isLoading,
-      active = paper.project
+    const changes = project._changes
+    const loading = isLoading
+    const active = paper.project
     project._changes = null
     isLoading = true
     paper.project = project
@@ -269,8 +272,8 @@ new (function () {
   // Each definition loads once, and keeps its key, which it exports as its
   // reference:
   function getDefinition(project, key) {
-    var definitionsByKey = project._definitionsByKey,
-      definition = definitionsByKey[key]
+    const definitionsByKey = project._definitionsByKey
+    let definition = definitionsByKey[key]
     if (!definition) {
       // Project#symbolDefinitions loads them outside of items, too:
       whileLoading(project, function () {
@@ -289,20 +292,20 @@ new (function () {
   // don't tell the host, see Project#takeChanges(). The mark goes with the
   // change, as containers outside the document aren't logged:
   function setReordered(item) {
-    var project = item && item._project,
-      change = (
-        project &&
-        project._changes &&
-        project._changesById[item._id]
-      )
+    const project = item && item._project
+    const change = (
+      project &&
+      project._changes &&
+      project._changesById[item._id]
+    )
     if (change) change.reordered = true
   }
 
   // Whether the item comes from a project with another host. Only their own
   // host draws host items, so they can't enter the project of another one:
   function isFromOtherHost(item, from, project) {
-    var host = from && from._host,
-      isOther = !!host && host !== project._host
+    const host = from && from._host
+    const isOther = !!host && host !== project._host
     if (
       isOther &&
       (item instanceof HostItem || item.getItems({ class: HostItem }).length)
@@ -317,7 +320,7 @@ new (function () {
   // The items that one insertion or copy brings into a project with another
   // host share the copies of their definitions:
   function whileEntering(callback) {
-    var copies = definitionCopies
+    const copies = definitionCopies
     definitionCopies = copies || {}
     try {
       return callback()
@@ -329,9 +332,9 @@ new (function () {
   // The pattern colors of an item, with those of the runs of its text.
   // Linked text shares its runs with the other items of its story:
   function getPatternColors(item) {
-    var story = item._story,
-      styles = [item._style],
-      colors = []
+    const story = item._story
+    const styles = [item._style]
+    const colors = []
     if (story && !item.isLinked()) {
       story._runs.forEach(function (run) {
         styles.push(run.style)
@@ -351,10 +354,10 @@ new (function () {
   // definitions of their host along, which the new host takes as new ones.
   // The items of one insertion or copy share them, see whileEntering():
   function copyDefinitions(project, item) {
-    var copies = definitionCopies || {}
+    const copies = definitionCopies || {}
 
     function getCopy(definition) {
-      var copy = copies[definition._id]
+      let copy = copies[definition._id]
       if (!copy) {
         // Cloning creates the copy in the project, without logging
         // it, as the items that use it list it:
@@ -370,11 +373,11 @@ new (function () {
     }
 
     function copyItem(item) {
-      var definition = item._definition
+      const definition = item._definition
       if (definition && definition._key != null)
         item.setDefinition(getCopy(definition))
       getPatternColors(item).forEach(function (color) {
-        var pattern = color._components[0]
+        const pattern = color._components[0]
         if (pattern._key != null) color.setPattern(getCopy(pattern))
       })
     }
@@ -386,10 +389,10 @@ new (function () {
   // items that use it change along with it. One that the host no longer
   // has is emptied, and draws nothing:
   function reloadDefinition(project, definition) {
-    var json = project._host.getDefinition(definition._key),
-      loaded = json
-        ? importJSON(project, json)
-        : new definition.constructor(new Group({ insert: false }))
+    const json = project._host.getDefinition(definition._key)
+    const loaded = json
+      ? importJSON(project, json)
+      : new definition.constructor(new Group({ insert: false }))
     // The loaded item is where its definition placed it:
     definition.setItem(loaded._item, true)
     definition._name = loaded._name
@@ -403,9 +406,9 @@ new (function () {
   // have yet: those without a key, nested ones first. Items that are still
   // shells use only the host's:
   function getNewDefinitions(project) {
-    var changes = project._changes || [],
-      definitions = [],
-      ids = {}
+    const changes = project._changes || []
+    const definitions = []
+    const ids = {}
 
     function addDefinition(definition) {
       if (definition && definition._key == null && !ids[definition._id]) {
@@ -427,9 +430,9 @@ new (function () {
       }
     }
 
-    for (var i = 0, l = changes.length; i < l; i++) {
-      var item = changes[i].item,
-        definition = changes[i].definition
+    for (let i = 0, l = changes.length; i < l; i++) {
+      const item = changes[i].item
+      const definition = changes[i].definition
       if (item ? item.isInserted() : definition._key != null)
         addDefinitions(item || definition._item)
     }
@@ -438,7 +441,7 @@ new (function () {
 
   // The host's definitions of the given class, followed by the new ones:
   function getDefinitions(project, ctor) {
-    var keys = project._host.getDefinitionKeys(ctor.prototype._class)
+    const keys = project._host.getDefinitionKeys(ctor.prototype._class)
     return keys
       .map(function (key) {
         return getDefinition(project, key)
@@ -462,7 +465,7 @@ new (function () {
     },
 
     setKey: function (key) {
-      var definitionsByKey = this.project._definitionsByKey
+      const definitionsByKey = this.project._definitionsByKey
       if (this._key != null)
         throw new Error('Unable to change the key of a definition.')
       if (!definitionsByKey)
@@ -509,7 +512,7 @@ new (function () {
       },
 
       setKey: function (key) {
-        var itemsByKey = this._project._itemsByKey
+        const itemsByKey = this._project._itemsByKey
         if (this._key != null)
           throw new Error('Unable to change the key of an item.')
         if (!itemsByKey)
@@ -525,9 +528,9 @@ new (function () {
       // loads from its own host first, while still in its project, and then
       // drops its key. The children follow as _setProject() reaches them:
       _setProject: function _setProject(project, installEvents) {
-        var from = this._project,
-          host = from && from._host,
-          isNewHost = host && host !== project._host
+        const from = this._project
+        const host = from && from._host
+        const isNewHost = host && host !== project._host
         if (isNewHost && this._key != null) {
           if (this._shell) this._load()
           if (
@@ -547,9 +550,9 @@ new (function () {
         if (isNewHost) {
           // Linked text brings a copy of its story along, which flows on
           // through the items that stay:
-          var story = this._story
+          const story = this._story
           if (story && this.isLinked()) {
-            var items = story._items
+            const items = story._items
             items.splice(items.indexOf(this), 1)
             this._story = story._clone([this])
             story._changed(/*#=*/ Change.CONTENT)
@@ -561,11 +564,11 @@ new (function () {
       // Copies made in a project with another host use copies of the
       // definitions there too, as items that move do:
       copyAttributes: function copyAttributes(source, excludeMatrix) {
-        var project = this._project,
-          isNewHost = (
-            project &&
-            isFromOtherHost(this, source._project, project)
-          )
+        const project = this._project
+        const isNewHost = (
+          project &&
+          isFromOtherHost(this, source._project, project)
+        )
         copyAttributes.base.call(this, source, excludeMatrix)
         if (isNewHost) copyDefinitions(project, this)
       },
@@ -574,13 +577,13 @@ new (function () {
       // of the host that moves reorders the children it joins, and those it
       // leaves in another project. One from another host is new here:
       insertChildren: function insertChildren(index, items) {
-        var that = this,
-          isEntering = false,
-          reordered = []
-        for (var i = 0, l = items ? items.length : 0; i < l; i++) {
-          var item = items[i]
+        const that = this
+        let isEntering = false
+        const reordered = []
+        for (let i = 0, l = items ? items.length : 0; i < l; i++) {
+          const item = items[i]
           if (item instanceof Item) {
-            var isOther = isFromOtherHost(item, item._project, this._project)
+            const isOther = isFromOtherHost(item, item._project, this._project)
             if (isOther) isEntering = true
             if (item._key != null) {
               if (!isOther) reordered.push(this)
@@ -588,7 +591,7 @@ new (function () {
             }
           }
         }
-        var res = isEntering
+        const res = isEntering
           ? whileEntering(function () {
               return insertChildren.base.call(that, index, items)
             })
@@ -598,8 +601,8 @@ new (function () {
       },
 
       clone: function clone(options) {
-        var that = this,
-          project = this._project
+        const that = this
+        const project = this._project
         return project && project._host
           ? whileEntering(function () {
               return clone.base.call(that, options)
@@ -613,8 +616,8 @@ new (function () {
       },
 
       _getHostBounds: function (options) {
-        var boxes = this._boxes,
-          i = this._boxIndex
+        let boxes = this._boxes
+        let i = this._boxIndex
         // Hosts that don't send the boxes with the records give them when
         // asked, until they send the record again:
         if (boxes === undefined && this._key != null) {
@@ -630,17 +633,17 @@ new (function () {
       _getHostBoundsCache: function () {
         // The boxes are in the item's own coordinates, so they only match
         // the bounds in the parent's coordinates without a matrix:
-        var bounds = {},
-          isIdentity = this._matrix.isIdentity(),
-          nonscaling = !this._strokeScaling
+        const bounds = {}
+        const isIdentity = this._matrix.isIdentity()
+        const nonscaling = !this._strokeScaling
         ;[[0, 0], [1, 0], [1, 1]].forEach(function (entry) {
-          var stroke = entry[0],
-            handle = entry[1],
-            key = '' + stroke + handle,
-            rect = this._getHostBounds({
-              stroke: stroke,
-              handle: handle
-            })
+          const stroke = entry[0]
+          const handle = entry[1]
+          const key = '' + stroke + handle
+          const rect = this._getHostBounds({
+            stroke: stroke,
+            handle: handle
+          })
           bounds[key + 1] = {
             rect: rect,
             nonscaling: nonscaling,
@@ -658,7 +661,7 @@ new (function () {
       },
 
       _load: function () {
-        var that = this
+        const that = this
         whileLoading(this._project, function () {
           that._loadContent()
         })
@@ -667,13 +670,13 @@ new (function () {
       // Load the content in place, while loading. Also used for items that
       // a script created and keyed, which have no shell accessors:
       _loadContent: function () {
-        var project = this._project,
-          json = project._host.getItem(this._key),
-          ctor = this.constructor,
-          // Keep what the record set, and the children's own loading:
-          kept = ['_id', '_parent', '_index', '_matrix'],
-          values = {},
-          that = this
+        const project = this._project
+        let json = project._host.getItem(this._key)
+        const ctor = this.constructor
+        // Keep what the record set, and the children's own loading:
+        const kept = ['_id', '_parent', '_index', '_matrix']
+        const values = {}
+        const that = this
         if (this instanceof Group || this._hasChildren)
           Base.push(kept, childrenFields)
         // Start shells from the class defaults, so loading doesn't recurse
@@ -699,7 +702,7 @@ new (function () {
         // Linked text gives the keys of its story's text items, which
         // aren't a property of the item, see TextItem#_loadLinked():
         if (typeof json === 'string') json = JSON.parse(json)
-        var linked = json[1].linked
+        const linked = json[1].linked
         delete json[1].linked
         importJSON(project, json, this)
         this._shell = false
@@ -707,9 +710,9 @@ new (function () {
       },
 
       _loadChildren: function () {
-        var project = this._project,
-          columns = project._host.getChildren(this._key),
-          that = this
+        const project = this._project
+        const columns = project._host.getChildren(this._key)
+        const that = this
         whileLoading(project, function () {
           setChildren(that, project, columns)
         })
@@ -723,7 +726,7 @@ new (function () {
         if (!this._contentFields) {
           this._loadContent()
         } else if (!this._shell) {
-          var that = this
+          const that = this
           this._contentFields.forEach(function (name) {
             delete that[name]
           })
@@ -736,10 +739,10 @@ new (function () {
       // Project#invalidate(), while loading:
       _reloadChildren: function () {
         if (this.hasOwnProperty('_children')) {
-          var project = this._project,
-            children = this._children
-          for (var i = 0, l = children.length; i < l; i++) {
-            var child = children[i]
+          const project = this._project
+          const children = this._children
+          for (let i = 0, l = children.length; i < l; i++) {
+            const child = children[i]
             child._parent = child._index = null
             project._updateSelection(child, true)
           }
@@ -754,9 +757,9 @@ new (function () {
     // in the form of the host's canvas:
     _loadPixels: function () {
       if (this._shell) this._load()
-      var project = this._project,
-        canvas = project._host.getImage(this._key),
-        that = this
+      const project = this._project
+      const canvas = project._host.getImage(this._key)
+      const that = this
       whileLoading(project, function () {
         pixelFields.forEach(function (name) {
           defineValue(that, name, null)
@@ -767,7 +770,7 @@ new (function () {
 
     // Drop loaded pixels along with the content, to load them again:
     _unload: function _unload() {
-      var that = this
+      const that = this
       _unload.base.call(this)
       if (this._contentFields) {
         pixelFields.forEach(function (name) {
@@ -788,7 +791,7 @@ new (function () {
 
     // Rasters that move to another host bring their pixels along:
     _setProject: function _setProject(project, installEvents) {
-      var host = this._project && this._project._host
+      const host = this._project && this._project._host
       if (host && host !== project._host && this._key != null) this.getElement()
       _setProject.base.call(this, project, installEvents)
     },
@@ -819,13 +822,16 @@ new (function () {
     // keys: the first of them to load loads the story and the others,
     // which join it, as an item does that loads again after invalidate():
     _loadLinked: function (keys) {
-      var project = this._project,
-        that = this,
-        items = keys.map(function (key) {
-          return key === that._key ? that : project.getItemByKey(key)
-        }),
-        story = null
-      for (var i = 0, l = items.length; i < l && !story; i++) {
+      let i
+      let l
+
+      const project = this._project
+      const that = this
+      const items = keys.map(function (key) {
+        return key === that._key ? that : project.getItemByKey(key)
+      })
+      let story = null
+      for (i = 0, l = items.length; i < l && !story; i++) {
         if (items[i] !== this && !items[i]._shell) story = items[i]._story
       }
       if (story) {
@@ -833,7 +839,7 @@ new (function () {
       } else {
         // importJSON() parses and deserializes the story's JSON:
         this.set(importJSON(project, project._host.getStory(this._key)))
-        for (var i = 0, l = items.length; i < l; i++) {
+        for (i = 0, l = items.length; i < l; i++) {
           if (items[i] !== this) items[i]._loadContent()
         }
         this._story._items = items
@@ -846,14 +852,14 @@ new (function () {
     // once it has unloaded all items, so linked text loads its story
     // anew:
     _unload: function _unload() {
-      var path = !this._shell && this.getTextPath(),
-        that = this
+      const path = !this._shell && this.getTextPath()
+      const that = this
       _unload.base.call(this)
       return (
         path &&
         function () {
           if (that._shell) that._loadContent()
-          var loaded = that.getTextPath()
+          const loaded = that.getTextPath()
           if (
             loaded &&
             loaded !== path &&
@@ -874,24 +880,24 @@ new (function () {
     // what drawing needs from the styles of the story's runs, see
     // #_getPiece(), and their content from the story, see Project#host:
     _getHostLayout: function (host) {
-      var that = this,
-        story = this._story,
-        content = story._content,
-        // Text the script didn't edit since it loaded is the host's
-        // own, which it can lay out without the JSON:
-        json = this._key != null && !this._edited ? null : this.exportJSON(),
-        layout = host.layOut(json, this._getStart(), this._key)
+      const that = this
+      const story = this._story
+      const content = story._content
+      // Text the script didn't edit since it loaded is the host's
+      // own, which it can lay out without the JSON:
+      const json = this._key != null && !this._edited ? null : this.exportJSON()
+      const layout = host.layOut(json, this._getStart(), this._key)
       this._visibleEnd = layout.end
       return layout.lines.map(function (line) {
         line.pieces = line.pieces.map(function (placed) {
           // The style of the run that the piece starts in, which any
           // character property finds:
-          var style = story._getRangeStyles(
-              'fontSize',
-              placed.start,
-              placed.end
-            )[0],
-            piece = Base.set(that._getPiece(style), placed)
+          const style = story._getRangeStyles(
+            'fontSize',
+            placed.start,
+            placed.end
+          )[0]
+          const piece = Base.set(that._getPiece(style), placed)
           if (piece.content == null) {
             piece.content = content.slice(piece.start, piece.end)
             if (piece.capitals) piece.content = piece.content.toUpperCase()
@@ -908,7 +914,7 @@ new (function () {
   ;[PointText, PathText, AreaText].forEach(function (ctor) {
     ctor.inject({
       _layOut: function _layOut() {
-        var host = this._project._host
+        const host = this._project._host
         return host && host.layOut
           ? this._getHostLayout(host)
           : _layOut.base.call(this)
@@ -947,7 +953,7 @@ new (function () {
       },
 
       insertLayer: function insertLayer(index, layer) {
-        var that = this
+        const that = this
         return (
           layer instanceof Layer &&
           isFromOtherHost(layer, layer._project, this)
@@ -962,9 +968,9 @@ new (function () {
       // ones first, so the host can create them before the items that refer
       // to them. Other definitions without a key aren't the host's:
       takeChanges: function takeChanges() {
-        var definitions = this._host && getNewDefinitions(this),
-          changes = takeChanges.base.call(this)
-        for (var i = 0, l = changes ? changes.length : 0; i < l; i++) {
+        const definitions = this._host && getNewDefinitions(this)
+        const changes = takeChanges.base.call(this)
+        for (let i = 0, l = changes ? changes.length : 0; i < l; i++) {
           if (changes[i].item) changes[i].item._edited = false
         }
         return definitions && changes
@@ -1107,7 +1113,7 @@ new (function () {
             'Unable to set the host of a project with ' +
             'layers.'
           )
-        var that = this
+        const that = this
         this._host = host
         this._view.setAutoUpdate(false)
         this._itemsByKey = {}
@@ -1126,12 +1132,12 @@ new (function () {
        * @return {Item} the item, or `null` if the host has no such node
        */
       getItemByKey: function (key) {
-        var itemsByKey = this._itemsByKey,
-          item = itemsByKey[key]
+        const itemsByKey = this._itemsByKey
+        let item = itemsByKey[key]
         if (!item || !item.isInserted()) {
-          var keys = this._host.getAncestorKeys(key) || []
-          for (var i = 0, l = keys.length; i < l; i++) {
-            var ancestor = itemsByKey[keys[i]]
+          const keys = this._host.getAncestorKeys(key) || []
+          for (let i = 0, l = keys.length; i < l; i++) {
+            const ancestor = itemsByKey[keys[i]]
             if (ancestor) ancestor.getChildren()
           }
           item = itemsByKey[key]
@@ -1149,8 +1155,8 @@ new (function () {
        */
       hasDrawHandlers: function () {
         if (this._drawCount || Item._drawCount) return true
-        var items = this._selectionItems
-        for (var id in items) {
+        const items = this._selectionItems
+        for (const id in items) {
           if (items[id].responds('drawselection')) return true
         }
         return false
@@ -1162,20 +1168,20 @@ new (function () {
       draw: function draw(ctx, matrix, pixelRatio, _view) {
         if (!this._host)
           return draw.base.call(this, ctx, matrix, pixelRatio, _view)
-        var updateVersion = ++this._updateVersion,
-          view = this._view,
-          loadAll = Item._drawCount > 0
+        const updateVersion = ++this._updateVersion
+        const view = this._view
+        const loadAll = Item._drawCount > 0
 
         function drawItems(items, parentMatrix) {
-          for (var i = 0, l = items.length; i < l; i++) {
-            var item = items[i]
+          for (let i = 0, l = items.length; i < l; i++) {
+            const item = items[i]
             if (item._visible) {
               // Mark the item as drawn, for its selection:
               item._updateVersion = updateVersion
-              var globalMatrix = parentMatrix.appended(item._matrix)
+              const globalMatrix = parentMatrix.appended(item._matrix)
               // Clip items only clip, see Item#draw():
               if (!item._clipMask && item.responds('draw')) {
-                var viewMatrix = matrix.appended(globalMatrix)
+                const viewMatrix = matrix.appended(globalMatrix)
                 ctx.save()
                 viewMatrix.applyToContext(ctx)
                 item.emit(
@@ -1201,12 +1207,12 @@ new (function () {
 
         drawItems(this._children, new Matrix())
         if (this._selectionCount > 0) {
-          var items = this._selectionItems,
-            size = this._scope.settings.handleSize
+          const items = this._selectionItems
+          const size = this._scope.settings.handleSize
           ctx.save()
           ctx.lineWidth = 1
-          for (var id in items) {
-            var item = items[id]
+          for (const id in items) {
+            const item = items[id]
             // Others would load their content just to draw nothing:
             if (item.responds('drawselection'))
               item._drawSelection(ctx, matrix, size, items, updateVersion, true)
@@ -1232,23 +1238,26 @@ new (function () {
        * @param {Object} columns the records of the changed nodes
        */
       invalidate: function (columns) {
-        var itemsByKey = this._itemsByKey,
-          definitionsByKey = this._definitionsByKey,
-          keys = columns.keys || [],
-          definitionKeys = columns.definitions || [],
-          names = columns.names || {},
-          reloads = [],
-          that = this
+        const itemsByKey = this._itemsByKey
+        const definitionsByKey = this._definitionsByKey
+        const keys = columns.keys || []
+        const definitionKeys = columns.definitions || []
+        const names = columns.names || {}
+        const reloads = []
+        const that = this
         whileLoading(this, function () {
-          for (var i = 0, l = definitionKeys.length; i < l; i++) {
-            var definition = definitionsByKey[definitionKeys[i]]
+          let i
+          let l
+
+          for (i = 0, l = definitionKeys.length; i < l; i++) {
+            const definition = definitionsByKey[definitionKeys[i]]
             if (definition) reloadDefinition(that, definition)
           }
-          for (var i = 0, l = keys.length; i < l; i++) {
-            var item = itemsByKey[keys[i]],
-              flags = columns.flags[i]
+          for (i = 0, l = keys.length; i < l; i++) {
+            const item = itemsByKey[keys[i]]
+            const flags = columns.flags[i]
             if (item) {
-              var reload = (
+              const reload = (
                 flags & recordFlags.content &&
                 item._unload()
               )

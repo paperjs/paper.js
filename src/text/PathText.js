@@ -24,10 +24,10 @@
  *
  * @extends TextItem
  */
-var PathText = TextItem.extend(
+const PathText = TextItem.extend(
   new (function () {
     // The fields that change the layout, with their defaults:
-    var fields = {
+    const fields = {
       startOffset: 0,
       endOffset: null,
       alignment: 'baseline',
@@ -37,8 +37,8 @@ var PathText = TextItem.extend(
     return Base.each(
       fields,
       function (value, name) {
-        var part = Base.capitalize(name),
-          key = '_' + name
+        const part = Base.capitalize(name)
+        const key = '_' + name
         this[key] = value
         this['get' + part] = function () {
           return this[key]
@@ -54,8 +54,8 @@ var PathText = TextItem.extend(
 
         copyContent: function copyContent(source) {
           copyContent.base.call(this, source)
-          for (var name in fields) {
-            var key = '_' + name
+          for (const name in fields) {
+            const key = '_' + name
             this[key] = source[key]
           }
         }
@@ -87,7 +87,7 @@ var PathText = TextItem.extend(
      * @return {PathText} the newly created path text
      */
     initialize: function PathText(path, orientation) {
-      var hasProps = Base.isPlainObject(path)
+      const hasProps = Base.isPlainObject(path)
       this._children = []
       TextItem.call(this, hasProps ? path : null)
       if (!hasProps) {
@@ -138,50 +138,54 @@ var PathText = TextItem.extend(
     // other:
     // @override
     _layOut: function () {
-      var path = this.getTextPath(),
-        story = this._story,
-        start = this._getStart(),
-        flatteners = (path ? path._children || [path] : []).map(
-          function (child) {
-            // In the text's coordinates, through the compound
-            // path's matrix too:
-            return new PathFlattener(
-              child,
-              0.25,
-              32,
-              false,
-              child === path
-                ? path._matrix
-                : path._matrix.appended(child._matrix)
-            )
-          }
-        ),
-        lengths = flatteners.map(function (flattener) {
-          return flattener.length
-        }),
-        length = lengths.reduce(function (sum, length) {
-          return sum + length
-        }, 0),
-        from = Math.max(0, Math.min(this._startOffset, length)),
-        to =
-          this._endOffset == null
-            ? length
-            : Math.max(from, Math.min(this._endOffset, length)),
-        spacing = this._spacing,
-        paragraph = story._getParagraph(start).style,
-        measured = this._measure(
-          start,
-          story._content.length,
-          paragraph.getDirection(),
-          true
-        ),
-        letters = measured.pieces,
-        pieces = [],
-        width = 0
+      let i
+      let l
+      let piece
+
+      const path = this.getTextPath()
+      const story = this._story
+      const start = this._getStart()
+      const flatteners = (path ? path._children || [path] : []).map(
+        function (child) {
+          // In the text's coordinates, through the compound
+          // path's matrix too:
+          return new PathFlattener(
+            child,
+            0.25,
+            32,
+            false,
+            child === path
+              ? path._matrix
+              : path._matrix.appended(child._matrix)
+          )
+        }
+      )
+      const lengths = flatteners.map(function (flattener) {
+        return flattener.length
+      })
+      const length = lengths.reduce(function (sum, length) {
+        return sum + length
+      }, 0)
+      const from = Math.max(0, Math.min(this._startOffset, length))
+      const to =
+        this._endOffset == null
+          ? length
+          : Math.max(from, Math.min(this._endOffset, length))
+      const spacing = this._spacing
+      const paragraph = story._getParagraph(start).style
+      const measured = this._measure(
+        start,
+        story._content.length,
+        paragraph.getDirection(),
+        true
+      )
+      const letters = measured.pieces
+      const pieces = []
+      let width = 0
       // 1. The letters that fit, each spaced on from the one before, from
       // the right in a right-to-left first paragraph:
-      for (var i = 0, l = letters.length; i < l; i++) {
-        var piece = letters[i]
+      for (i = 0, l = letters.length; i < l; i++) {
+        piece = letters[i]
         if (width + piece.width > to - from) break
         piece.x = width
         pieces.push(piece)
@@ -191,44 +195,44 @@ var PathText = TextItem.extend(
       if (paragraph.getDirection() === 'rtl') this._mirror(pieces, width)
       // 2. Placed along the paths by the first paragraph's
       // justification, with the part of the letters that sits on them:
-      var side = this._getSide(
-          paragraph.getJustification(),
-          paragraph.getDirection()
-        ),
-        offset =
-          side === 'right'
-            ? to - width
-            : side === 'center'
-              ? from + (to - from - width) / 2
-              : from,
-        alignment = this._alignment,
-        below =
-          alignment === 'ascender'
-            ? measured.ascent
-            : alignment === 'descender'
-              ? -measured.descent
-              : alignment === 'center'
-                ? (measured.ascent - measured.descent) / 2
-                : 0
-      for (var i = 0, l = pieces.length; i < l; i++) {
-        var piece = pieces[i],
-          middle = offset + piece.x + piece.width / 2,
-          index = 0
+      const side = this._getSide(
+        paragraph.getJustification(),
+        paragraph.getDirection()
+      )
+      const offset =
+        side === 'right'
+          ? to - width
+          : side === 'center'
+            ? from + (to - from - width) / 2
+            : from
+      const alignment = this._alignment
+      const below =
+        alignment === 'ascender'
+          ? measured.ascent
+          : alignment === 'descender'
+            ? -measured.descent
+            : alignment === 'center'
+              ? (measured.ascent - measured.descent) / 2
+              : 0
+      for (i = 0, l = pieces.length; i < l; i++) {
+        piece = pieces[i]
+        let middle = offset + piece.x + piece.width / 2
+        let index = 0
         while (index < lengths.length - 1 && middle > lengths[index]) {
           middle -= lengths[index]
           index++
         }
-        var flattener = flatteners[index],
-          tangent = flattener.getTangentAt(middle).normalize(),
-          point = flattener.getPointAt(middle).add(
-            tangent.rotate(90).multiply(below + piece.y)
-          )
+        const flattener = flatteners[index]
+        const tangent = flattener.getTangentAt(middle).normalize()
+        const point = flattener.getPointAt(middle).add(
+          tangent.rotate(90).multiply(below + piece.y)
+        )
         piece.x = point.x
         piece.y = point.y
         piece.dx = -piece.width / 2
         piece.rotation += tangent.getAngle()
       }
-      var last = pieces[pieces.length - 1]
+      const last = pieces[pieces.length - 1]
       this._visibleEnd = last ? last.end : start
       return [
         Base.set(measured, {
@@ -241,14 +245,14 @@ var PathText = TextItem.extend(
 
     // The letters' boxes, turned with them:
     _getBounds: function (matrix, options) {
-      var pieces = this._getLayout()[0].pieces,
-        bounds = null
-      for (var i = 0, l = pieces.length; i < l; i++) {
-        var piece = pieces[i],
-          rect = this._getBox(piece, piece.dx, 0),
-          local = new Matrix()
-            .translate(piece.x, piece.y)
-            .rotate(piece.rotation)
+      const pieces = this._getLayout()[0].pieces
+      let bounds = null
+      for (let i = 0, l = pieces.length; i < l; i++) {
+        const piece = pieces[i]
+        let rect = this._getBox(piece, piece.dx, 0)
+        const local = new Matrix()
+          .translate(piece.x, piece.y)
+          .rotate(piece.rotation)
         if (matrix) local.prepend(matrix)
         rect = local._transformBounds(rect, rect)
         bounds = bounds ? bounds.unite(rect) : rect

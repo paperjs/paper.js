@@ -16,7 +16,7 @@
  *
  * @class The GradientStop object.
  */
-var GradientStop = Base.extend(
+const GradientStop = Base.extend(
   /** @lends GradientStop# */ {
     _class: 'GradientStop',
 
@@ -30,8 +30,8 @@ var GradientStop = Base.extend(
      */
     initialize: function GradientStop(arg0, arg1) {
       // (color, offset)
-      var color = arg0,
-        offset = arg1
+      let color = arg0
+      let offset = arg1
       if (typeof arg0 === 'object' && arg1 === undefined) {
         // Make sure the first entry in the array is not a number, in which
         // case the whole array would be a color, and the assignments would
@@ -59,8 +59,8 @@ var GradientStop = Base.extend(
     },
 
     _serialize: function (options, dictionary) {
-      var color = this._color,
-        offset = this._offset
+      const color = this._color
+      const offset = this._offset
       return Base.serialize(
         offset == null ? [color] : [color, offset],
         options,

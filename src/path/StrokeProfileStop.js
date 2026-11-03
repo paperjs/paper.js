@@ -20,7 +20,7 @@
  * stops and in straight lines from the others, see {@link #smooth}. A stop can set
  * only some of them, and leave the others to the stops around it.
  */
-var StrokeProfileStop = Base.extend(
+const StrokeProfileStop = Base.extend(
   /** @lends StrokeProfileStop# */ {
     _class: 'StrokeProfileStop',
     // JSON writes the stops of paths as plain objects:
@@ -70,9 +70,9 @@ var StrokeProfileStop = Base.extend(
     },
 
     _serialize: function (options, dictionary) {
-      var props = { index: this._index }
+      const props = { index: this._index }
       ;['width', 'aspect', 'angle'].forEach(function (key) {
-        var value = this['_' + key]
+        const value = this['_' + key]
         if (value != null) props[key] = value
       }, this)
       if (!this._smooth) props.smooth = false
@@ -104,12 +104,12 @@ var StrokeProfileStop = Base.extend(
      * @type Number
      */
     getOffset: function () {
-      var path = this._path
+      const path = this._path
       return path ? path._getOffsetAtIndex(this._index) : this._offset
     },
 
     setOffset: function (offset) {
-      var path = this._path
+      const path = this._path
       if (path) {
         this._index = path._getIndexAt(offset)
         path._sortStrokeProfile()

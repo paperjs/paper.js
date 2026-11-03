@@ -16,7 +16,7 @@
  */
 Base.exports.PaperScript = (function () {
   // See if there is a global Acorn in the browser already.
-  var acorn = self.acorn
+  let acorn = self.acorn
   // Also try importing an outside version of Acorn.
   if (!acorn && typeof require !== 'undefined') {
     try {
@@ -27,7 +27,8 @@ Base.exports.PaperScript = (function () {
   if (!acorn) {
     // Provide our own local exports and module object so that Acorn gets
     // assigned to it and ends up in the local acorn object.
-    var exports, module
+    let exports
+    let module
     acorn = exports = module = {}
     // In a block, as Acorn starts with a parenthesis, which would call the
     // line before it otherwise:
@@ -43,7 +44,7 @@ Base.exports.PaperScript = (function () {
     // not be immediately available, so we need to check for it here again.
     // We also give self.acorn the preference over the bundled one, so
     // people can load their own preferred version in sketch.paperjs.org
-    var parser = self.acorn || acorn
+    const parser = self.acorn || acorn
     // Acorn 8 and newer require ecmaVersion, and parse all current syntax
     // with 'latest', which the bundled version doesn't know:
     if (parseInt(parser.version, 10) >= 8)
@@ -53,7 +54,7 @@ Base.exports.PaperScript = (function () {
 
   // Operators to overload
 
-  var binaryOperators = {
+  const binaryOperators = {
     // The hidden math methods are to be injected specifically, see below.
     '+': '__add',
     '-': '__subtract',
@@ -64,13 +65,13 @@ Base.exports.PaperScript = (function () {
     '!=': '__equals'
   }
 
-  var unaryOperators = {
+  const unaryOperators = {
     '-': '__negate',
     '+': '__self'
   }
 
   // Inject underscored math methods as aliases to Point, Size and Color.
-  var fields = Base.each(
+  const fields = Base.each(
     ['add', 'subtract', 'multiply', 'divide', 'modulo', 'equals', 'negate'],
     function (name) {
       // Create an alias for each math method to be injected into the
@@ -94,9 +95,9 @@ Base.exports.PaperScript = (function () {
 
   // Binary Operator Handler
   function __$__(left, operator, right) {
-    var handler = binaryOperators[operator]
+    const handler = binaryOperators[operator]
     if (left && left[handler]) {
-      var res = left[handler](right)
+      const res = left[handler](right)
       return operator === '!=' ? !res : res
     }
     switch (operator) {
@@ -121,14 +122,14 @@ Base.exports.PaperScript = (function () {
   // key only once, e.g. for `array[index()] += 1`. Postfix updates such as
   // `array[index()]++` return the old value:
   function __$assign__(object, key, operator, value, postfix) {
-    var old = object[key],
-      res = (object[key] = __$__(old, operator, value))
+    const old = object[key]
+    const res = (object[key] = __$__(old, operator, value))
     return postfix ? old : res
   }
 
   // Unary Operator Handler
   function $__(operator, value) {
-    var handler = unaryOperators[operator]
+    const handler = unaryOperators[operator]
     if (value && value[handler]) return value[handler]()
     switch (operator) {
       case '+':
@@ -166,16 +167,16 @@ Base.exports.PaperScript = (function () {
 
     // Track code insertions so their differences can be added to the
     // original offsets.
-    var insertions = []
+    let insertions = []
 
     // Converts an original offset to the one in the current state of the
     // modified code.
     function getOffset(offset) {
       // Add the changes of all replacements that end before this
       // location in the original code, to get its current offset:
-      var current = offset
-      for (var i = 0, l = insertions.length; i < l; i++) {
-        var insertion = insertions[i]
+      let current = offset
+      for (let i = 0, l = insertions.length; i < l; i++) {
+        const insertion = insertions[i]
         if (insertion[1] <= offset) current += insertion[2]
       }
       return current
@@ -197,9 +198,9 @@ Base.exports.PaperScript = (function () {
     // replacements doesn't matter. A replacement of code that contains
     // others takes their place:
     function replaceCode(node, str) {
-      var range = node.range,
-        start = getOffset(range[0]),
-        end = getOffset(range[1])
+      const range = node.range
+      const start = getOffset(range[0])
+      const end = getOffset(range[1])
       insertions = insertions.filter(function (insertion) {
         return insertion[0] < range[0] || insertion[1] > range[1]
       })
@@ -213,13 +214,18 @@ Base.exports.PaperScript = (function () {
     }
 
     function handleOverloading(node, parent) {
+      let left
+      let right
+      let operator
+      let parentType
+
       switch (node.type) {
         case 'UnaryExpression': // -a
           if (
             node.operator in unaryOperators &&
             node.argument.type !== 'Literal'
           ) {
-            var arg = getCode(node.argument)
+            const arg = getCode(node.argument)
             replaceCode(
               node,
               '$__("' +
@@ -235,10 +241,10 @@ Base.exports.PaperScript = (function () {
             node.operator in binaryOperators &&
             node.left.type !== 'Literal'
           ) {
-            var left = getCode(node.left),
-              right = getCode(node.right),
-              between = getBetween(node.left, node.right),
-              operator = node.operator
+            left = getCode(node.left)
+            right = getCode(node.right)
+            const between = getBetween(node.left, node.right)
+            operator = node.operator
             replaceCode(
               node,
               '__$__(' +
@@ -259,7 +265,7 @@ Base.exports.PaperScript = (function () {
           break
         case 'UpdateExpression': // a++, a--, ++a, --a
         case 'AssignmentExpression': /// a += b, a -= b
-          var parentType = parent && parent.type
+          parentType = parent && parent.type
           if (!(
             // Filter out for statements to allow loop increments
             // to perform well
@@ -276,65 +282,65 @@ Base.exports.PaperScript = (function () {
             // We can't replace that with array[__$__(i, "+", 1)].
             parentType === 'MemberExpression' && parent.computed
           )) {
-            var isUpdate = node.type === 'UpdateExpression',
-              target = isUpdate ? node.argument : node.left
+            const isUpdate = node.type === 'UpdateExpression'
+            const target = isUpdate ? node.argument : node.left
             if (
               isUpdate || (
                 /^.=$/.test(node.operator) &&
                 target.type !== 'Literal'
               )
             ) {
-              var left = getCode(target),
-                right = isUpdate ? '1' : getCode(node.right),
-                operator = node.operator[0],
-                // The value of updates is used, except in
-                // statements and before the end of sequences:
-                isUsed = (
-                  isUpdate &&
-                  !(
-                    parentType === 'ExpressionStatement' || (
-                      parentType === 'SequenceExpression' &&
-                      node !== parent.expressions[parent.expressions.length - 1]
-                    )
+              left = getCode(target)
+              right = isUpdate ? '1' : getCode(node.right)
+              operator = node.operator[0]
+              // The value of updates is used, except in
+              // statements and before the end of sequences:
+              const isUsed = (
+                isUpdate &&
+                !(
+                  parentType === 'ExpressionStatement' || (
+                    parentType === 'SequenceExpression' &&
+                    node !== parent.expressions[parent.expressions.length - 1]
                   )
-                ),
-                // Postfix updates (a++, a--) result in the old
-                // value, see #691, #1450:
-                isPostfix = isUsed && !node.prefix,
-                // Assign properties through __$assign__(),
-                // which evaluates their object and key once,
-                // except for private ones and those of super:
-                member = (
-                  target.type === 'MemberExpression' &&
-                  target.object.type !== 'Super' && (
-                    target.property.type !==
-                    'PrivateIdentifier'
-                  )
-                ),
-                exp = member
-                  ? '__$assign__(' +
-                    getCode(target.object) +
-                    ', ' + (
-                      target.computed
-                        ? getCode(target.property)
-                        : JSON.stringify(
-                            target.property.name
-                          )
-                    ) +
-                    ', "' +
-                    operator +
-                    '", ' +
-                    right +
-                    (isPostfix ? ', true' : '') +
-                    ')'
-                  : left +
-                    ' = __$__(' +
-                    left +
-                    ', "' +
-                    operator +
-                    '", ' +
-                    right +
-                    ')'
+                )
+              )
+              // Postfix updates (a++, a--) result in the old
+              // value, see #691, #1450:
+              const isPostfix = isUsed && !node.prefix
+              // Assign properties through __$assign__(),
+              // which evaluates their object and key once,
+              // except for private ones and those of super:
+              const member = (
+                target.type === 'MemberExpression' &&
+                target.object.type !== 'Super' && (
+                  target.property.type !==
+                  'PrivateIdentifier'
+                )
+              )
+              let exp = member
+                ? '__$assign__(' +
+                  getCode(target.object) +
+                  ', ' + (
+                    target.computed
+                      ? getCode(target.property)
+                      : JSON.stringify(
+                          target.property.name
+                        )
+                  ) +
+                  ', "' +
+                  operator +
+                  '", ' +
+                  right +
+                  (isPostfix ? ', true' : '') +
+                  ')'
+                : left +
+                  ' = __$__(' +
+                  left +
+                  ', "' +
+                  operator +
+                  '", ' +
+                  right +
+                  ')'
               if (isUsed && !member) {
                 // Turn the assignment into an expression of the
                 // new value, or of the old one before it, see
@@ -385,22 +391,22 @@ Base.exports.PaperScript = (function () {
 
     // The number of modules imported with named specifiers, for the names
     // of the variables that hold them:
-    var moduleCount = 0,
-      // Whether the code exports with ES module syntax, to mark it so:
-      isModule = false
+    let moduleCount = 0
+    // Whether the code exports with ES module syntax, to mark it so:
+    let isModule = false
 
     // Static imports are turned into calls of __$import__(), which
     // execute() binds to the loader in options.load. `as` asks for the
     // module's 'default' export or its 'namespace', see __$import__(), and
     // the import attributes are passed on as an object:
     function getImport(node, as) {
-      var attributes = node.attributes || [],
-        args = [JSON.stringify(node.source.value)]
+      const attributes = node.attributes || []
+      const args = [JSON.stringify(node.source.value)]
       if (as || attributes.length) args.push(as ? '"' + as + '"' : 'undefined')
       if (attributes.length) {
-        var values = {}
+        const values = {}
         attributes.forEach(function (attribute) {
-          var key = attribute.key
+          const key = attribute.key
           values[key.name || key.value] = attribute.value.value
         })
         args.push(JSON.stringify(values))
@@ -409,6 +415,12 @@ Base.exports.PaperScript = (function () {
     }
 
     function handleModules(node) {
+      let module
+      let named
+      let vars
+      let declaration
+      let specifiers
+
       switch (node.type) {
         case 'ImportExpression':
           // `import(specifier)` resolves to the module's namespace, as a
@@ -431,11 +443,11 @@ Base.exports.PaperScript = (function () {
           // `import x from 'm'` assigns the module's default export,
           // `import * as x from 'm'` its namespace, and
           // `import { a, b as c } from 'm'` reads names from its exports:
-          var module = getImport(node),
-            named = []
-          var vars = node.specifiers
+          module = getImport(node)
+          named = []
+          vars = node.specifiers
             .map(function (specifier) {
-              var local = specifier.local.name
+              const local = specifier.local.name
               if (specifier.type === 'ImportSpecifier') {
                 named.push(
                   local +
@@ -504,12 +516,12 @@ Base.exports.PaperScript = (function () {
           isModule = true
           // Convert named exports to `module.exports.NAME = NAME;`
           // statements both for new declarations and existing specifiers:
-          var declaration = node.declaration
-          var specifiers = node.specifiers
+          declaration = node.declaration
+          specifiers = node.specifiers
           if (declaration) {
             // Declare variables, functions and classes as they are,
             // and export the declared names after:
-            var names = []
+            const names = []
             if (declaration.declarations) {
               declaration.declarations.forEach(function (dec) {
                 collectNames(dec.id, names)
@@ -519,7 +531,7 @@ Base.exports.PaperScript = (function () {
             }
             // Variable declarations may end without a semicolon,
             // which the exports added after them need:
-            var code = getCode(declaration)
+            let code = getCode(declaration)
             if (declaration.declarations && !/;\s*$/.test(code)) code += ';'
             replaceCode(
               node,
@@ -542,11 +554,11 @@ Base.exports.PaperScript = (function () {
             // `export { a, b as c }` exports the local names under
             // the exported ones, and `export { a } from 'm'` those
             // of another module:
-            var source = node.source && getImport(node) + '.'
-            var exports = specifiers
+            const source = node.source && getImport(node) + '.'
+            const exports = specifiers
               .map(function (specifier) {
-                var local = specifier.local.name,
-                  exported = specifier.exported.name
+                const local = specifier.local.name
+                const exported = specifier.exported.name
                 return (
                   'module.exports.' +
                   exported +
@@ -567,22 +579,22 @@ Base.exports.PaperScript = (function () {
 
     // The number of functions that walkAST() is inside of, to find
     // top-level `await`, which makes the whole script an async function:
-    var functions = 0,
-      isAsync = false
+    let functions = 0
+    let isAsync = false
 
     // Recursively walks the AST and replaces the code of certain nodes
     function walkAST(node, parent, paperFeatures) {
       if (node) {
-        var isFunction = /Function/.test(node.type)
+        const isFunction = /Function/.test(node.type)
         if (isFunction) functions++
         // The easiest way to walk through the whole AST is to simply
         // loop over each property of the node and filter out fields we
         // don't need to consider...
-        for (var key in node) {
+        for (const key in node) {
           if (key !== 'range' && key !== 'loc') {
-            var value = node[key]
+            const value = node[key]
             if (Array.isArray(value)) {
-              for (var i = 0, l = value.length; i < l; i++) {
+              for (let i = 0, l = value.length; i < l; i++) {
                 walkAST(value[i], node, paperFeatures)
               }
             } else if (value && typeof value === 'object') {
@@ -614,12 +626,12 @@ Base.exports.PaperScript = (function () {
     // Encodes a Variable Length Quantity as a Base64 string.
     // See: https://www.html5rocks.com/en/tutorials/developertools/sourcemaps/
     function encodeVLQ(value) {
-      var res = '',
-        base64 =
-          'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+      let res = ''
+      const base64 =
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
       value = (Math.abs(value) << 1) + (value < 0 ? 1 : 0)
       while (value || !res) {
-        var next = value & (32 - 1)
+        let next = value & (32 - 1)
         value >>= 5
         if (value) next |= 32
         res += base64[next]
@@ -627,18 +639,18 @@ Base.exports.PaperScript = (function () {
       return res
     }
 
-    var url = options.url || '',
-      sourceMaps = options.sourceMaps,
-      paperFeatures = options.paperFeatures || {},
-      // Include the original code in the sourceMap if there is no linked
-      // source file so the debugger can still display it correctly.
-      source = options.source || code,
-      offset = options.offset || 0,
-      agent = paper.agent,
-      version = agent.versionNumber,
-      offsetCode = false,
-      lineBreaks = /\r\n|\n|\r/gm,
-      map
+    const url = options.url || ''
+    const sourceMaps = options.sourceMaps
+    const paperFeatures = options.paperFeatures || {}
+    // Include the original code in the sourceMap if there is no linked
+    // source file so the debugger can still display it correctly.
+    const source = options.source || code
+    let offset = options.offset || 0
+    const agent = paper.agent
+    const version = agent.versionNumber
+    let offsetCode = false
+    const lineBreaks = /\r\n|\n|\r/gm
+    let map
     // TODO: Verify these browser versions for source map support, and check
     // other browsers.
     if (
@@ -652,8 +664,8 @@ Base.exports.PaperScript = (function () {
       if (!agent.node && window && url && !window.location.href.indexOf(url)) {
         // If the code stems from the actual html page, determine the
         // offset of inlined code.
-        var html = document.getElementsByTagName('html')[0].innerHTML,
-          index = html.indexOf(code)
+        const html = document.getElementsByTagName('html')[0].innerHTML
+        const index = html.indexOf(code)
         // Count the amount of line breaks in the html before this code
         // to determine the offset, unless the script isn't in the html.
         if (index >= 0) {
@@ -675,7 +687,7 @@ Base.exports.PaperScript = (function () {
           agent.node
         )
       )
-      var mappings = ['AA' + encodeVLQ(offsetCode ? 0 : offset) + 'A']
+      const mappings = ['AA' + encodeVLQ(offsetCode ? 0 : offset) + 'A']
       // Create empty entries by the amount of lines + 1, so join can be
       // used below to produce the actual instructions that many times.
       mappings.length = (
@@ -703,7 +715,7 @@ Base.exports.PaperScript = (function () {
       paperFeatures.moduleExports !== false
     ) {
       // Now do the parsing magic
-      var ast
+      let ast
       try {
         ast = parse(code, {
           ranges: true,
@@ -822,41 +834,43 @@ Base.exports.PaperScript = (function () {
    *     with top-level `await`, a Promise of them
    */
   function execute(code, scope, options) {
+    let exports
+
     // Set currently active scope.
     paper = scope
-    var view = scope.getView(),
-      // Only create a tool if the tool object is accessed or something
-      // resembling a global tool handler is contained in the code, but
-      // no tool objects are actually created.
-      tool =
-        (
-          new RegExp(
-            '\\btool\\.\\w+|\\s+(?:' +
-            Tool.prototype._events.join('|') +
-            ')\\b'
-          ).test(code) &&
-          !/\bnew\s+Tool\b/.test(code)
-        )
-          ? new Tool()
-          : null,
-      toolHandlers = tool ? tool._events : [],
-      // Compile a list of all handlers that can be defined globally
-      // inside the PaperScript. These are passed on to the function as
-      // undefined arguments, so that their name exists, rather than
-      // injecting a code line that defines them as variables. They are
-      // exported again at the end of the function.
-      handlers = ['onFrame', 'onResize'].concat(
-        toolHandlers,
-        options && options.handlers || []
-      ),
-      // compile a list of parameter names for all variables that need to
-      // appear as globals inside the script. At the same time, also
-      // collect their values, so we can pass them on as arguments in the
-      // function call.
-      params = [],
-      args = [],
-      func,
-      compiled = typeof code === 'object' ? code : compile(code, options)
+    const view = scope.getView()
+    // Only create a tool if the tool object is accessed or something
+    // resembling a global tool handler is contained in the code, but
+    // no tool objects are actually created.
+    const tool =
+      (
+        new RegExp(
+          '\\btool\\.\\w+|\\s+(?:' +
+          Tool.prototype._events.join('|') +
+          ')\\b'
+        ).test(code) &&
+        !/\bnew\s+Tool\b/.test(code)
+      )
+        ? new Tool()
+        : null
+    const toolHandlers = tool ? tool._events : []
+    // Compile a list of all handlers that can be defined globally
+    // inside the PaperScript. These are passed on to the function as
+    // undefined arguments, so that their name exists, rather than
+    // injecting a code line that defines them as variables. They are
+    // exported again at the end of the function.
+    const handlers = ['onFrame', 'onResize'].concat(
+      toolHandlers,
+      options && options.handlers || []
+    )
+    // compile a list of parameter names for all variables that need to
+    // appear as globals inside the script. At the same time, also
+    // collect their values, so we can pass them on as arguments in the
+    // function call.
+    const params = []
+    const args = []
+    let func
+    const compiled = typeof code === 'object' ? code : compile(code, options)
     code = compiled.code
     function expose(scope, hidden) {
       // Look through all enumerable properties on the scope and expose
@@ -865,7 +879,7 @@ Base.exports.PaperScript = (function () {
       // native Event, MouseEvent and Symbol, as PaperScope#install()
       // doesn't either, but fields set on the scope itself do, e.g. a
       // console that a host provides:
-      for (var key in scope) {
+      for (const key in scope) {
         // Next to \b well also need to match \s and \W in the beginning
         // of $__, since $ is not part of \w. And that causes \b to not
         // match ^ longer, so include that specifically too.
@@ -889,8 +903,8 @@ Base.exports.PaperScript = (function () {
     }
     // Static imports call the loader that the host passes, see
     // handleModules():
-    var load = options && options.load,
-      url = options && options.url
+    const load = options && options.load
+    const url = options && options.url
     function __$import__(specifier, as, attributes) {
       if (!load) {
         throw new Error(
@@ -900,7 +914,7 @@ Base.exports.PaperScript = (function () {
           'loader was passed to PaperScript.execute().'
         )
       }
-      var exports = load(specifier, url, attributes)
+      const exports = load(specifier, url, attributes)
       // Dynamic imports may receive a Promise from the loader:
       return as === 'dynamic'
         ? Promise.resolve(exports).then(function (exports) {
@@ -913,7 +927,7 @@ Base.exports.PaperScript = (function () {
     // as their namespace. CommonJS-style exports are the default export,
     // and also appear in the namespace, as in Node:
     function getImported(exports, as) {
-      var isModule = exports && exports.__esModule
+      const isModule = exports && exports.__esModule
       return as === 'default'
         ? isModule
           ? exports.default
@@ -940,7 +954,7 @@ Base.exports.PaperScript = (function () {
     // the string describing the properties for the returned exports object
     // at the end of the code execution, so we can retrieve their values
     // from the function call.
-    var exports = Base.each(
+    exports = Base.each(
       handlers,
       function (key) {
         // Check for each handler explicitly and only export them if they
@@ -959,14 +973,14 @@ Base.exports.PaperScript = (function () {
     // End by returning `module.exports` at the end of the generated code:
     code += '\nreturn module.exports;'
     // Top-level `await` requires an async function:
-    var signature = (
-        (compiled.async ? 'async ' : '') +
-        'function(' +
-        params +
-        ') {'
-      ),
-      agent = paper.agent,
-      evaluate = options && options.evaluate
+    const signature = (
+      (compiled.async ? 'async ' : '') +
+      'function(' +
+      params +
+      ') {'
+    )
+    const agent = paper.agent
+    const evaluate = options && options.evaluate
     if (evaluate) {
       // The code stays on the line of the signature, so that its lines
       // keep their numbers:
@@ -981,8 +995,8 @@ Base.exports.PaperScript = (function () {
       // script tag.
       // We also use this on Chrome to fix issues with compiled functions:
       // https://code.google.com/p/chromium/issues/detail?id=331655
-      var script = document.createElement('script'),
-        head = document.head || document.getElementsByTagName('head')[0]
+      const script = document.createElement('script')
+      const head = document.head || document.getElementsByTagName('head')[0]
       // Add a new-line before the code on Firefox since the error
       // messages appear to be aligned to line number 0...
       if (agent.firefox) code = '\n' + code
@@ -999,14 +1013,14 @@ Base.exports.PaperScript = (function () {
       // Evaluated globally as a script through an indirect eval, which,
       // unlike Function(), adds no header before the code, so that its
       // lines keep their numbers in every engine:
-      func = (0, eval)('(' + signature + code + '\n})') // jshint ignore:line
+      func = (0, eval)('(' + signature + code + '\n})')
     }
 
     // Install the 'global' tool and view handlers, and we're done!
     function install(exports) {
-      var obj = exports || {}
+      const obj = exports || {}
       Base.each(toolHandlers, function (key) {
-        var value = obj[key]
+        const value = obj[key]
         if (value) tool[key] = value
       })
       if (view) {
@@ -1026,7 +1040,7 @@ Base.exports.PaperScript = (function () {
       return exports
     }
 
-    var exports = func && func.apply(scope, args)
+    exports = func && func.apply(scope, args)
     // Async functions return a Promise of the exports:
     return compiled.async ? exports.then(install) : install(exports)
   }
@@ -1044,15 +1058,15 @@ Base.exports.PaperScript = (function () {
       // through PaperScope.get().
       // If a canvas id is provided, pass it on to the PaperScope so a
       // project is created for it now.
-      var canvasId = PaperScope.getAttribute(script, 'canvas'),
-        canvas = document.getElementById(canvasId),
-        // To avoid possible duplicate browser requests for PaperScript
-        // files, support the data-src attribute as well as src:
-        // TODO: Consider switching from data-paper- to data- prefix
-        // in PaperScope.getAttribute() and use it here too:
-        src = script.src || script.getAttribute('data-src'),
-        async = PaperScope.hasAttribute(script, 'async'),
-        scopeAttribute = 'data-paper-scope'
+      const canvasId = PaperScope.getAttribute(script, 'canvas')
+      const canvas = document.getElementById(canvasId)
+      // To avoid possible duplicate browser requests for PaperScript
+      // files, support the data-src attribute as well as src:
+      // TODO: Consider switching from data-paper- to data- prefix
+      // in PaperScope.getAttribute() and use it here too:
+      const src = script.src || script.getAttribute('data-src')
+      const async = PaperScope.hasAttribute(script, 'async')
+      const scopeAttribute = 'data-paper-scope'
       if (!canvas)
         throw new Error(
           'Unable to find canvas with id "' +
@@ -1061,7 +1075,7 @@ Base.exports.PaperScript = (function () {
         )
       // See if there already is a scope for this canvas and reuse it, to
       // support multiple scripts per canvas. Otherwise create a new one.
-      var scope = (
+      const scope = (
         PaperScope.get(canvas.getAttribute(scopeAttribute)) ||
         new PaperScope().setup(canvas)
       )

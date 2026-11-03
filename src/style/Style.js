@@ -70,129 +70,129 @@
  * };
  *
  */
-var Style = Base.extend(
+const Style = Base.extend(
   new (function () {
     // Defaults for items without text-styles (PathItem, Shape, Raster, ...):
-    var itemDefaults = {
-        // Paths
-        fillColor: null,
-        fillRule: 'nonzero',
-        strokeColor: null,
-        strokeWidth: 1,
-        strokeCap: 'butt',
-        strokeJoin: 'miter',
-        strokeScaling: true,
-        miterLimit: 10,
-        dashOffset: 0,
-        dashArray: [],
-        paintOrder: 'fill',
-        // Shadows
-        shadowColor: null,
-        shadowBlur: 0,
-        shadowOffset: new Point(),
-        // Selection
-        selectedColor: null
-      },
-      // Defaults for Group, Layer and Project (anything item that allows nesting
-      // needs to be able to pass down text styles as well):
-      groupDefaults = Base.set({}, itemDefaults, {
-        // Characters
-        fontFamily: 'sans-serif',
-        fontWeight: 'normal',
-        fontStyle: 'normal',
-        fontSize: 12,
-        fontVariations: null,
-        lineHeight: 'auto',
-        letterTracking: 0,
-        letterKerning: null,
-        baselineShift: 0,
-        baselinePosition: 'normal',
-        letterScaling: 1,
-        letterRotation: 0,
-        capitals: 'normal',
-        underline: false,
-        strikethrough: false,
-        features: null,
-        // Paragraphs
-        justification: 'left',
-        justifyLast: 'left',
-        justifySpacing: null,
-        startIndent: 0,
-        endIndent: 0,
-        firstLineIndent: 0,
-        spaceBefore: 0,
-        spaceAfter: 0,
-        hyphenation: false,
-        composer: 'paragraph',
-        lineWrap: 'normal',
-        tabs: null,
-        direction: null
-      }),
-      // Defaults for TextItem (override default fillColor to black):
-      textDefaults = Base.set({}, groupDefaults, {
-        fillColor: new Color() // black
-      }),
-      flags = {
-        strokeWidth: /*#=*/ Change.STROKE,
-        strokeCap: /*#=*/ Change.STROKE,
-        strokeJoin: /*#=*/ Change.STROKE,
-        // The dashes of strokes are their geometry too, see PathItem#dash():
-        dashArray: /*#=*/ Change.STROKE,
-        dashOffset: /*#=*/ Change.STROKE,
-        // strokeScaling can change the coordinates of cached path items
-        strokeScaling: /*#=*/ Change.STROKE | Change.GEOMETRY,
-        miterLimit: /*#=*/ Change.STROKE
-      },
-      item = {
-        // Enforce creation of beans, as bean getters have hidden parameters,
-        // see _dontMerge argument below.
-        beans: true
-      },
-      fields = /** @lends Style# */ {
-        _class: 'Style',
-        beans: true,
+    const itemDefaults = {
+      // Paths
+      fillColor: null,
+      fillRule: 'nonzero',
+      strokeColor: null,
+      strokeWidth: 1,
+      strokeCap: 'butt',
+      strokeJoin: 'miter',
+      strokeScaling: true,
+      miterLimit: 10,
+      dashOffset: 0,
+      dashArray: [],
+      paintOrder: 'fill',
+      // Shadows
+      shadowColor: null,
+      shadowBlur: 0,
+      shadowOffset: new Point(),
+      // Selection
+      selectedColor: null
+    }
+    // Defaults for Group, Layer and Project (anything item that allows nesting
+    // needs to be able to pass down text styles as well):
+    const groupDefaults = Base.set({}, itemDefaults, {
+      // Characters
+      fontFamily: 'sans-serif',
+      fontWeight: 'normal',
+      fontStyle: 'normal',
+      fontSize: 12,
+      fontVariations: null,
+      lineHeight: 'auto',
+      letterTracking: 0,
+      letterKerning: null,
+      baselineShift: 0,
+      baselinePosition: 'normal',
+      letterScaling: 1,
+      letterRotation: 0,
+      capitals: 'normal',
+      underline: false,
+      strikethrough: false,
+      features: null,
+      // Paragraphs
+      justification: 'left',
+      justifyLast: 'left',
+      justifySpacing: null,
+      startIndent: 0,
+      endIndent: 0,
+      firstLineIndent: 0,
+      spaceBefore: 0,
+      spaceAfter: 0,
+      hyphenation: false,
+      composer: 'paragraph',
+      lineWrap: 'normal',
+      tabs: null,
+      direction: null
+    })
+    // Defaults for TextItem (override default fillColor to black):
+    const textDefaults = Base.set({}, groupDefaults, {
+      fillColor: new Color() // black
+    })
+    const flags = {
+      strokeWidth: /*#=*/ Change.STROKE,
+      strokeCap: /*#=*/ Change.STROKE,
+      strokeJoin: /*#=*/ Change.STROKE,
+      // The dashes of strokes are their geometry too, see PathItem#dash():
+      dashArray: /*#=*/ Change.STROKE,
+      dashOffset: /*#=*/ Change.STROKE,
+      // strokeScaling can change the coordinates of cached path items
+      strokeScaling: /*#=*/ Change.STROKE | Change.GEOMETRY,
+      miterLimit: /*#=*/ Change.STROKE
+    }
+    const item = {
+      // Enforce creation of beans, as bean getters have hidden parameters,
+      // see _dontMerge argument below.
+      beans: true
+    }
+    const fields = /** @lends Style# */ {
+      _class: 'Style',
+      beans: true,
 
-        initialize: function Style(style, _owner, _project) {
-          // We keep values in a separate object that we can iterate over.
-          this._values = {}
-          this._owner = _owner
-          this._project = (
-            _owner && _owner._project ||
-            _project ||
-            paper.project
-          )
-          // Use different defaults based on the owner
-          this._defaults =
-            !_owner || _owner instanceof Group
-              ? groupDefaults
-              : (
-                    _owner instanceof TextItem ||
-                    _owner instanceof TextStory ||
-                    _owner instanceof TextRange
-                  )
-                ? textDefaults
-                : itemDefaults
-          if (style) this.set(style)
-        }
+      initialize: function Style(style, _owner, _project) {
+        // We keep values in a separate object that we can iterate over.
+        this._values = {}
+        this._owner = _owner
+        this._project = (
+          _owner && _owner._project ||
+          _project ||
+          paper.project
+        )
+        // Use different defaults based on the owner
+        this._defaults =
+          !_owner || _owner instanceof Group
+            ? groupDefaults
+            : (
+                  _owner instanceof TextItem ||
+                  _owner instanceof TextStory ||
+                  _owner instanceof TextRange
+                )
+              ? textDefaults
+              : itemDefaults
+        if (style) this.set(style)
       }
+    }
 
     // Iterate over groupDefaults to inject getters / setters, to cover all
     // properties
     Base.each(groupDefaults, function (value, key) {
-      var isColor = /Color$/.test(key),
-        isPoint = key === 'shadowOffset',
-        part = Base.capitalize(key),
-        // All text properties but the decorations change the layout:
-        flag =
-          (
-            !(key in itemDefaults) &&
-            key !== 'underline' &&
-            key !== 'strikethrough'
-          )
-            ? /*#=*/ Change.GEOMETRY
-            : flags[key],
-        set = 'set' + part,
-        get = 'get' + part
+      const isColor = /Color$/.test(key)
+      const isPoint = key === 'shadowOffset'
+      const part = Base.capitalize(key)
+      // All text properties but the decorations change the layout:
+      const flag =
+        (
+          !(key in itemDefaults) &&
+          key !== 'underline' &&
+          key !== 'strikethrough'
+        )
+          ? /*#=*/ Change.GEOMETRY
+          : flags[key]
+      const set = 'set' + part
+      const get = 'get' + part
 
       // Define getters and setters to be injected into this class.
       // This is how style values are handled:
@@ -204,15 +204,15 @@ var Style = Base.extend(
       // - Color values are not stored as converted colors immediately. The
       //   raw value is stored, and conversion only happens in the getter.
       fields[set] = function (value) {
-        var owner = this._owner,
-          // The styles the owner stands for, as a Group its children's:
-          styles = owner && owner._getStyles(this, key, true)
+        const owner = this._owner
+        // The styles the owner stands for, as a Group its children's:
+        const styles = owner && owner._getStyles(this, key, true)
         if (styles) Style.apply(styles, key, value)
         // Always store selectedColor in item _values to make sure that
         // group selected bounds and position color is coherent whether it
         // has children or not when the value is set.
         if ((key === 'selectedColor' || !styles) && key in this._defaults) {
-          var old = this._values[key]
+          const old = this._values[key]
           if (old !== value) {
             if (isColor) {
               // The old value may be a native string or other color
@@ -244,14 +244,16 @@ var Style = Base.extend(
       }
 
       fields[get] = function (_dontMerge) {
-        var owner = this._owner,
-          styles = owner && owner._getStyles(this, key),
-          value
+        let value
+
+        const owner = this._owner
+        const styles = owner && owner._getStyles(this, key)
+
         // If true is passed for _dontMerge, don't merge children styles.
         if (styles && !_dontMerge) {
           value = Style.merge(styles, key)
         } else if (key in this._defaults) {
-          var value = this._values[key]
+          value = this._values[key]
           if (value === undefined) {
             value = this._defaults[key]
             // Clone defaults if available:
@@ -259,7 +261,7 @@ var Style = Base.extend(
               value = value.clone()
             }
           } else {
-            var ctor = isColor ? Color : isPoint ? Point : null
+            const ctor = isColor ? Color : isPoint ? Point : null
             if (ctor && !(value && value.constructor === ctor)) {
               // Convert to a Color / Point, and stored result of the
               // conversion.
@@ -300,8 +302,8 @@ var Style = Base.extend(
         WindingRule: 'FillRule'
       },
       function (value, key) {
-        var get = 'get' + key,
-          set = 'set' + key
+        const get = 'get' + key
+        const set = 'set' + key
         fields[get] = item[get] = '#get' + value
         fields[set] = item[set] = '#set' + value
       }
@@ -327,10 +329,10 @@ var Style = Base.extend(
     statics: {
       // The value that all styles share for key, or undefined if they differ:
       merge: function (styles, key) {
-        var get = 'get' + Base.capitalize(key),
-          value
-        for (var i = 0, l = styles.length; i < l; i++) {
-          var other = styles[i][get]()
+        const get = 'get' + Base.capitalize(key)
+        let value
+        for (let i = 0, l = styles.length; i < l; i++) {
+          const other = styles[i][get]()
           if (!i) {
             value = other
           } else if (!Base.equals(value, other)) {
@@ -341,21 +343,21 @@ var Style = Base.extend(
       },
 
       apply: function (styles, key, value) {
-        var set = 'set' + Base.capitalize(key)
-        for (var i = 0, l = styles.length; i < l; i++) styles[i][set](value)
+        const set = 'set' + Base.capitalize(key)
+        for (let i = 0, l = styles.length; i < l; i++) styles[i][set](value)
       }
     },
 
     set: function (style) {
       // If the passed style object is also a Style, clone its cloneable
       // fields rather than simply copying them.
-      var isStyle = style instanceof Style,
-        // Use the other stlyle's _values object for iteration
-        values = isStyle ? style._values : style
+      const isStyle = style instanceof Style
+      // Use the other stlyle's _values object for iteration
+      const values = isStyle ? style._values : style
       if (values) {
-        for (var key in values) {
+        for (const key in values) {
           if (key in this._defaults || key in this._formerNames) {
-            var value = values[key]
+            const value = values[key]
             // Delegate to setter, so Group styles work too.
             this[key] =
               value && isStyle && value.clone
@@ -371,12 +373,12 @@ var Style = Base.extend(
       // objects and compare with default fall-back. But in the secondary pass
       // only check against keys that weren't already in the first object:
       function compare(style1, style2, secondary) {
-        var values1 = style1._values,
-          values2 = style2._values,
-          defaults2 = style2._defaults
-        for (var key in values1) {
-          var value1 = values1[key],
-            value2 = values2[key]
+        const values1 = style1._values
+        const values2 = style2._values
+        const defaults2 = style2._defaults
+        for (const key in values1) {
+          const value1 = values1[key]
+          const value2 = values2[key]
           if (
             !(secondary && key in values2) &&
             !Base.equals(value1, value2 === undefined ? defaults2[key] : value2)
@@ -398,31 +400,31 @@ var Style = Base.extend(
     },
 
     _dispose: function () {
-      var colors = [
+      const colors = [
         this.getFillColor(),
         this.getStrokeColor(),
         this.getShadowColor()
       ]
-      for (var i = 0; i < 3; i++) {
+      for (let i = 0; i < 3; i++) {
         if (colors[i]) colors[i]._canvasStyle = null
       }
     },
 
     // DOCS: Style#hasFill()
     hasFill: function () {
-      var color = this.getFillColor()
+      const color = this.getFillColor()
       return !!color && color.alpha > 0
     },
 
     // DOCS: Style#hasStroke()
     hasStroke: function () {
-      var color = this.getStrokeColor()
+      const color = this.getStrokeColor()
       return !!color && color.alpha > 0 && this.getStrokeWidth() > 0
     },
 
     // DOCS: Style#hasShadow()
     hasShadow: function () {
-      var color = this.getShadowColor()
+      const color = this.getShadowColor()
       // In order to draw a shadow, we need either a shadow blur or an
       // offset, or both.
       return (
@@ -446,19 +448,19 @@ var Style = Base.extend(
 
     // The font as canvas takes it:
     _getCanvasFont: function () {
-      var fontSize = this.getFontSize(),
-        fontStyle = this.getFontStyle(),
-        // CSS reads unquoted families only as identifiers, which can't
-        // start with digits, so quote all but single words and the ones
-        // that are quoted already:
-        families = this.getFontFamily()
-          .split(',')
-          .map(function (family) {
-            family = family.trim()
-            return /^(["'].*|[a-z-]+)$/i.test(family)
-              ? family
-              : '"' + family.replace(/["\\]/g, '\\$&') + '"'
-          })
+      let fontSize = this.getFontSize()
+      const fontStyle = this.getFontStyle()
+      // CSS reads unquoted families only as identifiers, which can't
+      // start with digits, so quote all but single words and the ones
+      // that are quoted already:
+      const families = this.getFontFamily()
+        .split(',')
+        .map(function (family) {
+          family = family.trim()
+          return /^(["'].*|[a-z-]+)$/i.test(family)
+            ? family
+            : '"' + family.replace(/["\\]/g, '\\$&') + '"'
+        })
       // Superscripts and subscripts are set smaller:
       if (this.getBaselinePosition() !== 'normal' && !isNaN(fontSize))
         fontSize *= this._scriptSize
@@ -495,7 +497,7 @@ var Style = Base.extend(
 
     // The font size in pixels, which it can be given in other units:
     _getFontSize: function () {
-      var fontSize = this.getFontSize()
+      const fontSize = this.getFontSize()
       return /pt|em|%|px/.test(fontSize)
         ? this.getView().getPixelSize(fontSize)
         : fontSize
@@ -504,7 +506,7 @@ var Style = Base.extend(
     // The line height in pixels: automatic ('auto', 1.2, or another factor)
     // of the font size, or fixed, with units as the font size takes them:
     _getLineHeight: function () {
-      var lineHeight = this.getLineHeight()
+      const lineHeight = this.getLineHeight()
       return lineHeight === 'auto'
         ? 1.2 * this._getFontSize()
         : typeof lineHeight === 'string'

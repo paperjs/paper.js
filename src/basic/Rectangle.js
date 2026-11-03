@@ -17,7 +17,7 @@
  * point (x, y), its width, and its height. It should not be confused with a
  * rectangular path, it is not an item.
  */
-var Rectangle = Base.extend(
+const Rectangle = Base.extend(
   /** @lends Rectangle# */ {
     _class: 'Rectangle',
     // Tell Base.read that the Rectangle constructor supports reading with index
@@ -77,9 +77,9 @@ var Rectangle = Base.extend(
      * @param {Rectangle} rectangle
      */
     initialize: function Rectangle(arg0, arg1, arg2, arg3) {
-      var args = arguments,
-        type = typeof arg0,
-        read
+      const args = arguments
+      const type = typeof arg0
+      let read
       if (type === 'number') {
         // new Rectangle(x, y, width, height)
         this._set(arg0, arg1, arg2, arg3)
@@ -109,7 +109,7 @@ var Rectangle = Base.extend(
           // Use `Base.readSupported()` to read and consume whatever
           // property the rectangle can receive, but handle `from` / `to`
           // separately below.
-          var builder = new RectangleBuilder()
+          const builder = new RectangleBuilder()
           if (Base.readSupported(args, builder)) {
             read = 1
           }
@@ -122,16 +122,16 @@ var Rectangle = Base.extend(
         // We're supporting both reading from a normal arguments list and
         // covering the Rectangle({ from: , to: }) constructor, through
         // Point.readNamed().
-        var frm = Point.readNamed(args, 'from'),
-          next = Base.peek(args),
-          x = frm.x,
-          y = frm.y,
-          width,
-          height
+        const frm = Point.readNamed(args, 'from')
+        const next = Base.peek(args)
+        let x = frm.x
+        let y = frm.y
+        let width
+        let height
         if (next && next.x !== undefined || Base.hasNamed(args, 'to')) {
           // new Rectangle(from, to)
           // Read above why we can use readNamed() to cover both cases.
-          var to = Point.readNamed(args, 'to')
+          const to = Point.readNamed(args, 'to')
           width = to.x - x
           height = to.y - y
           // Check if horizontal or vertical order needs to be reversed.
@@ -145,7 +145,7 @@ var Rectangle = Base.extend(
           }
         } else {
           // new Rectangle(point, size)
-          var size = Size.read(args)
+          const size = Size.read(args)
           width = size.width
           height = size.height
         }
@@ -155,7 +155,7 @@ var Rectangle = Base.extend(
       // arguments.__filtered wouldn't survive the function call even if a
       // previous arguments list was passed through Function#apply().
       // Return it on the object instead, see Base.read()
-      var filtered = args.__filtered
+      const filtered = args.__filtered
       if (filtered) this.__filtered = filtered
       if (this.__read) this.__read = read
       return this
@@ -225,7 +225,7 @@ var Rectangle = Base.extend(
      * @return {Boolean} {@true if the rectangles are equal}
      */
     equals: function (rect) {
-      var rt = Base.isPlainValue(rect)
+      const rt = Base.isPlainValue(rect)
         ? Rectangle.read(arguments)
         : rect
       return (
@@ -244,7 +244,7 @@ var Rectangle = Base.extend(
      * @return {String} a string representation of this rectangle
      */
     toString: function () {
-      var f = Formatter.instance
+      const f = Formatter.instance
       return (
         '{ x: ' +
         f.number(this.x) +
@@ -259,7 +259,7 @@ var Rectangle = Base.extend(
     },
 
     _serialize: function (options) {
-      var f = options.formatter
+      const f = options.formatter
       // See Point#_serialize()
       return [
         f.number(this.x),
@@ -289,12 +289,12 @@ var Rectangle = Base.extend(
      * @type Point
      */
     getPoint: function (_dontLink) {
-      var ctor = _dontLink ? Point : LinkedPoint
+      const ctor = _dontLink ? Point : LinkedPoint
       return new ctor(this.x, this.y, this, 'setPoint')
     },
 
     setPoint: function (/* point */) {
-      var point = Point.read(arguments)
+      const point = Point.read(arguments)
       this.x = point.x
       this.y = point.y
     },
@@ -306,12 +306,12 @@ var Rectangle = Base.extend(
      * @type Size
      */
     getSize: function (_dontLink) {
-      var ctor = _dontLink ? Size : LinkedSize
+      const ctor = _dontLink ? Size : LinkedSize
       return new ctor(this.width, this.height, this, 'setSize')
     },
 
     setSize: function (/* size */) {
-      var size = Size.read(arguments)
+      const size = Size.read(arguments)
       this.width = size.width
       this.height = size.height
     },
@@ -421,12 +421,12 @@ var Rectangle = Base.extend(
      * @type Point
      */
     getCenter: function (_dontLink) {
-      var ctor = _dontLink ? Point : LinkedPoint
+      const ctor = _dontLink ? Point : LinkedPoint
       return new ctor(this.getCenterX(), this.getCenterY(), this, 'setCenter')
     },
 
     setCenter: function (/* point */) {
-      var point = Point.read(arguments)
+      const point = Point.read(arguments)
       this.setCenterX(point.x)
       this.setCenterY(point.y)
       // A special setter where we allow chaining, because it comes in handy
@@ -608,8 +608,8 @@ var Rectangle = Base.extend(
     },
 
     _containsPoint: function (point) {
-      var x = point.x,
-        y = point.y
+      const x = point.x
+      const y = point.y
       return (
         x >= this.x &&
         y >= this.y &&
@@ -619,8 +619,8 @@ var Rectangle = Base.extend(
     },
 
     _containsRectangle: function (rect) {
-      var x = rect.x,
-        y = rect.y
+      const x = rect.x
+      const y = rect.y
       return (
         x >= this.x &&
         y >= this.y &&
@@ -677,8 +677,8 @@ var Rectangle = Base.extend(
      * }
      */
     intersects: function (/* rect, epsilon */) {
-      var rect = Rectangle.read(arguments),
-        epsilon = Base.read(arguments) || 0
+      const rect = Rectangle.read(arguments)
+      const epsilon = Base.read(arguments) || 0
       return (
         rect.x + rect.width > this.x - epsilon &&
         rect.y + rect.height > this.y - epsilon &&
@@ -729,11 +729,11 @@ var Rectangle = Base.extend(
      * intersectionPath.fillColor = 'red';
      */
     intersect: function (/* rect */) {
-      var rect = Rectangle.read(arguments),
-        x1 = Math.max(this.x, rect.x),
-        y1 = Math.max(this.y, rect.y),
-        x2 = Math.min(this.x + this.width, rect.x + rect.width),
-        y2 = Math.min(this.y + this.height, rect.y + rect.height)
+      const rect = Rectangle.read(arguments)
+      const x1 = Math.max(this.x, rect.x)
+      const y1 = Math.max(this.y, rect.y)
+      const x2 = Math.min(this.x + this.width, rect.x + rect.width)
+      const y2 = Math.min(this.y + this.height, rect.y + rect.height)
       return new Rectangle(x1, y1, x2 - x1, y2 - y1)
     },
 
@@ -746,11 +746,11 @@ var Rectangle = Base.extend(
      * rectangle and this rectangle
      */
     unite: function (/* rect */) {
-      var rect = Rectangle.read(arguments),
-        x1 = Math.min(this.x, rect.x),
-        y1 = Math.min(this.y, rect.y),
-        x2 = Math.max(this.x + this.width, rect.x + rect.width),
-        y2 = Math.max(this.y + this.height, rect.y + rect.height)
+      const rect = Rectangle.read(arguments)
+      const x1 = Math.min(this.x, rect.x)
+      const y1 = Math.min(this.y, rect.y)
+      const x2 = Math.max(this.x + this.width, rect.x + rect.width)
+      const y2 = Math.max(this.y + this.height, rect.y + rect.height)
       return new Rectangle(x1, y1, x2 - x1, y2 - y1)
     },
 
@@ -771,11 +771,11 @@ var Rectangle = Base.extend(
      * original rectangle and the specified point
      */
     include: function (/* point */) {
-      var point = Point.read(arguments)
-      var x1 = Math.min(this.x, point.x),
-        y1 = Math.min(this.y, point.y),
-        x2 = Math.max(this.x + this.width, point.x),
-        y2 = Math.max(this.y + this.height, point.y)
+      const point = Point.read(arguments)
+      const x1 = Math.min(this.x, point.x)
+      const y1 = Math.min(this.y, point.y)
+      const x2 = Math.max(this.x + this.width, point.x)
+      const y2 = Math.max(this.y + this.height, point.y)
       return new Rectangle(x1, y1, x2 - x1, y2 - y1)
     },
 
@@ -802,9 +802,9 @@ var Rectangle = Base.extend(
      * @return {Rectangle} the expanded rectangle
      */
     expand: function (/* amount */) {
-      var amount = Size.read(arguments),
-        hor = amount.width,
-        ver = amount.height
+      const amount = Size.read(arguments)
+      const hor = amount.width
+      const ver = amount.height
       return new Rectangle(
         this.x - hor / 2,
         this.y - ver / 2,
@@ -836,12 +836,12 @@ var Rectangle = Base.extend(
      * @return {Rectangle} the scaled rectangle
      */
     scale: function (/* scale, center */) {
-      var args = arguments,
-        scale = Point.read(args),
-        center = (
-          Point.read(args, 0, { readNull: true }) ||
-          this.getCenter(true)
-        )
+      const args = arguments
+      const scale = Point.read(args)
+      const center = (
+        Point.read(args, 0, { readNull: true }) ||
+        this.getCenter(true)
+      )
       // Scale the corners from the center, which also normalizes the
       // rectangle for negative amounts:
       return new Rectangle(
@@ -862,26 +862,26 @@ var Rectangle = Base.extend(
       ['Bottom', 'Center']
     ],
     function (parts, index) {
-      var part = parts.join(''),
-        // find out if the first of the pair is an x or y property,
-        // by checking the first character for [R]ight or [L]eft;
-        xFirst = /^[RL]/.test(part)
+      const part = parts.join('')
+      // find out if the first of the pair is an x or y property,
+      // by checking the first character for [R]ight or [L]eft;
+      const xFirst = /^[RL]/.test(part)
       // Rename Center to CenterX or CenterY:
       if (index >= 4) parts[1] += xFirst ? 'Y' : 'X'
-      var x = parts[xFirst ? 0 : 1],
-        y = parts[xFirst ? 1 : 0],
-        getX = 'get' + x,
-        getY = 'get' + y,
-        setX = 'set' + x,
-        setY = 'set' + y,
-        get = 'get' + part,
-        set = 'set' + part
+      const x = parts[xFirst ? 0 : 1]
+      const y = parts[xFirst ? 1 : 0]
+      const getX = 'get' + x
+      const getY = 'get' + y
+      const setX = 'set' + x
+      const setY = 'set' + y
+      const get = 'get' + part
+      const set = 'set' + part
       this[get] = function (_dontLink) {
-        var ctor = _dontLink ? Point : LinkedPoint
+        const ctor = _dontLink ? Point : LinkedPoint
         return new ctor(this[getX](), this[getY](), this, set)
       }
       this[set] = function (/* point */) {
-        var point = Point.read(arguments)
+        const point = Point.read(arguments)
         this[setX](point.x)
         this[setY](point.y)
       }
@@ -903,7 +903,7 @@ var Rectangle = Base.extend(
  *
  * @private
  */
-var LinkedRectangle = Rectangle.extend(
+const LinkedRectangle = Rectangle.extend(
   {
     // Have LinkedRectangle appear as a normal Rectangle in debugging
     initialize: function Rectangle(x, y, width, height, owner, setter) {
@@ -923,13 +923,13 @@ var LinkedRectangle = Rectangle.extend(
     }
   },
   new (function () {
-    var proto = Rectangle.prototype
+    const proto = Rectangle.prototype
 
     return Base.each(
       ['x', 'y', 'width', 'height'],
       function (key) {
-        var part = Base.capitalize(key),
-          internal = '_' + key
+        const part = Base.capitalize(key)
+        const internal = '_' + key
         this['get' + part] = function () {
           return this[internal]
         }
@@ -949,7 +949,7 @@ var LinkedRectangle = Rectangle.extend(
           'BottomCenter'
         ],
         function (key) {
-          var name = 'set' + key
+          const name = 'set' + key
           this[name] = function (/* value */) {
             // Make sure the above setters of x, y, width, height do not
             // each notify the owner, as we're going to take care of this
@@ -993,7 +993,7 @@ var LinkedRectangle = Rectangle.extend(
           },
 
           setSelected: function (selected) {
-            var owner = this._owner
+            const owner = this._owner
             if (owner._changeSelection) {
               owner._changeSelection(this._getSelection(), selected)
             }

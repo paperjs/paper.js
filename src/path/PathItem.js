@@ -19,7 +19,7 @@
  *
  * @extends Item
  */
-var PathItem = Item.extend(
+const PathItem = Item.extend(
   /** @lends PathItem# */ {
     _class: 'PathItem',
     _selectBounds: false,
@@ -35,7 +35,7 @@ var PathItem = Item.extend(
     // Scale the stroke with the matrix that is applied to the content, when
     // settings.scaleStrokes asks for it:
     _scaleStroke: function (matrix) {
-      var style = this._style
+      const style = this._style
       if (
         this._project._scope.settings.scaleStrokes &&
         style.getStrokeScaling()
@@ -80,7 +80,9 @@ var PathItem = Item.extend(
        * @return {Path|CompoundPath} the newly created path item
        */
       create: function (arg) {
-        var data, segments, compound
+        let data
+        let segments
+        let compound
         if (Base.isPlainObject(arg)) {
           segments = arg.segments
           data = arg.pathData
@@ -90,7 +92,7 @@ var PathItem = Item.extend(
           data = arg
         }
         if (segments) {
-          var first = segments[0]
+          const first = segments[0]
           compound = first && Array.isArray(first[0])
         } else if (data) {
           // If there are multiple moveTo commands or a closePath command
@@ -100,7 +102,7 @@ var PathItem = Item.extend(
             /z\s*\S+/i.test(data)
           )
         }
-        var ctor = compound ? CompoundPath : Path
+        const ctor = compound ? CompoundPath : Path
         return new ctor(arg)
       }
     },
@@ -128,8 +130,7 @@ var PathItem = Item.extend(
     setClockwise: function (clockwise) {
       // Only revers the path if its clockwise orientation is not the same
       // as what it is now demanded to be.
-      // On-the-fly conversion to boolean:
-      if (this.isClockwise() != (clockwise = !!clockwise)) this.reverse()
+      if (this.isClockwise() != !!clockwise) this.reverse()
     },
 
     /**
@@ -140,31 +141,35 @@ var PathItem = Item.extend(
      * @type String
      */
     setPathData: function (data) {
+      let move
+      let j
+      let coord
+
       // NOTE: #getPathData() is defined in CompoundPath / Path
       // This is a very compact SVG Path Data parser that works both for Path
       // and CompoundPath.
 
       // First split the path data into parts of command-coordinates pairs
       // Commands are any of these characters: mzlhvcsqta
-      var parts = data && data.match(/[mlhvcsqtaz][^mlhvcsqtaz]*/gi),
-        coords,
-        relative = false,
-        previous,
-        control,
-        current = new Point(),
-        start = new Point(),
-        number = '([+-]?(?:\\d*\\.\\d+|\\d+\\.?)(?:[eE][+-]?\\d+)?)',
-        numbers = new RegExp(number, 'g'),
-        // The arc flags are single characters that don't need to be
-        // separated from what follows, e.g. 'a1 1 0 011 1', see #1808:
-        flag = '([01])',
-        arcs = new RegExp(
-          [number, number, number, flag, flag, number, number].join('[\\s,]*'),
-          'g'
-        )
+      const parts = data && data.match(/[mlhvcsqtaz][^mlhvcsqtaz]*/gi)
+      let coords
+      let relative = false
+      let previous
+      let control
+      let current = new Point()
+      let start = new Point()
+      const number = '([+-]?(?:\\d*\\.\\d+|\\d+\\.?)(?:[eE][+-]?\\d+)?)'
+      const numbers = new RegExp(number, 'g')
+      // The arc flags are single characters that don't need to be
+      // separated from what follows, e.g. 'a1 1 0 011 1', see #1808:
+      const flag = '([01])'
+      const arcs = new RegExp(
+        [number, number, number, flag, flag, number, number].join('[\\s,]*'),
+        'g'
+      )
 
       function getCoord(index, coord) {
-        var val = +coords[index]
+        let val = +coords[index]
         if (relative) val += current[coord]
         return val
       }
@@ -179,13 +184,13 @@ var PathItem = Item.extend(
       // First clear the previous content
       this.clear()
 
-      for (var i = 0, l = parts && parts.length; i < l; i++) {
-        var part = parts[i],
-          command = part[0],
-          lower = command.toLowerCase()
+      for (let i = 0, l = parts && parts.length; i < l; i++) {
+        const part = parts[i]
+        const command = part[0]
+        const lower = command.toLowerCase()
         // Match all coordinate values
         coords = part.match(numbers)
-        var length = coords && coords.length
+        const length = coords && coords.length
         relative = command === lower
         // Fix issues with z in the middle of SVG path data, not followed by
         // a m command, see #413:
@@ -193,8 +198,8 @@ var PathItem = Item.extend(
         switch (lower) {
           case 'm':
           case 'l':
-            var move = lower === 'm'
-            for (var j = 0; j < length; j += 2) {
+            move = lower === 'm'
+            for (j = 0; j < length; j += 2) {
               this[move ? 'moveTo' : 'lineTo']((current = getPoint(j)))
               if (move) {
                 start = current
@@ -205,16 +210,16 @@ var PathItem = Item.extend(
             break
           case 'h':
           case 'v':
-            var coord = lower === 'h' ? 'x' : 'y'
+            coord = lower === 'h' ? 'x' : 'y'
             current = current.clone() // Clone as we're going to modify it.
-            for (var j = 0; j < length; j++) {
+            for (j = 0; j < length; j++) {
               current[coord] = getCoord(j, coord)
               this.lineTo(current)
             }
             control = current
             break
           case 'c':
-            for (var j = 0; j < length; j += 6) {
+            for (j = 0; j < length; j += 6) {
               this.cubicCurveTo(
                 getPoint(j),
                 (control = getPoint(j + 2)),
@@ -224,7 +229,7 @@ var PathItem = Item.extend(
             break
           case 's':
             // Smooth cubicCurveTo
-            for (var j = 0; j < length; j += 4) {
+            for (j = 0; j < length; j += 4) {
               this.cubicCurveTo(
                 /[cs]/.test(previous)
                   ? current.multiply(2).subtract(control)
@@ -236,7 +241,7 @@ var PathItem = Item.extend(
             }
             break
           case 'q':
-            for (var j = 0; j < length; j += 4) {
+            for (j = 0; j < length; j += 4) {
               this.quadraticCurveTo(
                 (control = getPoint(j)),
                 (current = getPoint(j + 2))
@@ -245,7 +250,7 @@ var PathItem = Item.extend(
             break
           case 't':
             // Smooth quadraticCurveTo
-            for (var j = 0; j < length; j += 2) {
+            for (j = 0; j < length; j += 2) {
               this.quadraticCurveTo(
                 (control = /[qt]/.test(previous)
                   ? current.multiply(2).subtract(control)
@@ -291,17 +296,17 @@ var PathItem = Item.extend(
       // prettier-ignore
       /*#*/ if (__options.nativeContains || !__options.booleanOperations) {
         // To compare with native canvas approach:
-        var ctx = CanvasProvider.getContext(1, 1);
+        const ctx = CanvasProvider.getContext(1, 1);
         // Use dontFinish to tell _draw to only produce geometries for hit-test.
         this._draw(ctx, new Base({ dontFinish: true }));
-        var res = ctx.isPointInPath(point.x, point.y, this.getFillRule());
+        const res = ctx.isPointInPath(point.x, point.y, this.getFillRule());
         CanvasProvider.release(ctx);
         return res;
 /*#*/ } else { // !__options.nativeContains && __options.booleanOperations
         // Check the transformed point against the untransformed (internal)
         // handle bounds, which is the fastest rough bounding box to calculate
         // for a quick check before calculating the actual winding.
-        var winding = point.isInside(
+        const winding = point.isInside(
                 this.getBounds({ internal: true, handle: true }))
                     ? this._getWinding(point)
                     : {};
@@ -356,15 +361,17 @@ var PathItem = Item.extend(
       // intersections.
       // NOTE: The hidden argument _matrix is used internally to override the
       // passed path's transformation matrix.
-      var self = this === path || !path, // self-intersections?
-        matrix1 = this._matrix._orNullIfIdentity(),
-        matrix2 = self ? matrix1 : (_matrix || path._matrix)._orNullIfIdentity()
+      const self = this === path || !path // self-intersections?
+      const matrix1 = this._matrix._orNullIfIdentity()
+      const matrix2 = self
+        ? matrix1
+        : (_matrix || path._matrix)._orNullIfIdentity()
       // First check the bounds of the two paths. If they don't intersect,
       // we don't need to iterate through their curves. Bounds that only
       // touch need a tolerance, also at large coordinates:
-      var bounds1 = !self && this.getBounds(matrix1),
-        bounds2 = !self && path.getBounds(matrix2),
-        abs = Math.abs
+      const bounds1 = !self && this.getBounds(matrix1)
+      const bounds2 = !self && path.getBounds(matrix2)
+      const abs = Math.abs
       return (
         self ||
         bounds1.intersects(
@@ -415,12 +422,12 @@ var PathItem = Item.extend(
      * the specified point
      */
     getNearestLocation: function (/* point */) {
-      var point = Point.read(arguments),
-        curves = this.getCurves(),
-        minDist = Infinity,
-        minLoc = null
-      for (var i = 0, l = curves.length; i < l; i++) {
-        var loc = curves[i].getNearestLocation(point)
+      const point = Point.read(arguments)
+      const curves = this.getCurves()
+      let minDist = Infinity
+      let minLoc = null
+      for (let i = 0, l = curves.length; i < l; i++) {
+        const loc = curves[i].getNearestLocation(point)
         if (loc._distance < minDist) {
           minDist = loc._distance
           minLoc = loc
@@ -461,7 +468,7 @@ var PathItem = Item.extend(
      * }
      */
     getNearestPoint: function (/* point */) {
-      var loc = this.getNearestLocation.apply(this, arguments)
+      const loc = this.getNearestLocation.apply(this, arguments)
       return loc ? loc.getPoint() : loc
     },
 
@@ -739,11 +746,13 @@ var PathItem = Item.extend(
      *     `0` and `1`, but extrapolation is possible too
      */
     interpolate: function (from, to, factor) {
-      var isPath = !this._children,
-        name = isPath ? '_segments' : '_children',
-        itemsFrom = from[name],
-        itemsTo = to[name],
-        items = this[name]
+      let i
+
+      const isPath = !this._children
+      const name = isPath ? '_segments' : '_children'
+      const itemsFrom = from[name]
+      const itemsTo = to[name]
+      const items = this[name]
       if (!itemsFrom || !itemsTo || itemsFrom.length !== itemsTo.length) {
         throw new Error(
           'Invalid operands in interpolate() call: ' +
@@ -752,17 +761,17 @@ var PathItem = Item.extend(
           to
         )
       }
-      var current = items.length,
-        length = itemsTo.length
+      const current = items.length
+      const length = itemsTo.length
       if (current < length) {
-        var ctor = isPath ? Segment : Path
-        for (var i = current; i < length; i++) {
+        const ctor = isPath ? Segment : Path
+        for (i = current; i < length; i++) {
           this.add(new ctor())
         }
       } else if (current > length) {
         this[isPath ? 'removeSegments' : 'removeChildren'](length, current)
       }
-      for (var i = 0; i < length; i++) {
+      for (i = 0; i < length; i++) {
         items[i].interpolate(itemsFrom[i], itemsTo[i], factor)
       }
       if (isPath) {
@@ -785,26 +794,26 @@ var PathItem = Item.extend(
      * @return {Boolean} {@true if two paths describe the same shape}
      */
     compare: function (path) {
-      var ok = false
+      let ok = false
       if (path) {
-        var paths1 = this._children || [this],
-          paths2 = path._children ? path._children.slice() : [path],
-          length1 = paths1.length,
-          length2 = paths2.length,
-          matched = [],
-          count = 0
+        const paths1 = this._children || [this]
+        const paths2 = path._children ? path._children.slice() : [path]
+        const length1 = paths1.length
+        const length2 = paths2.length
+        const matched = []
+        let count = 0
         ok = true
-        var boundsOverlaps = CollisionDetection.findItemBoundsCollisions(
+        const boundsOverlaps = CollisionDetection.findItemBoundsCollisions(
           paths1,
           paths2,
           Numerical.GEOMETRIC_EPSILON
         )
-        for (var i1 = length1 - 1; i1 >= 0 && ok; i1--) {
-          var path1 = paths1[i1]
+        for (let i1 = length1 - 1; i1 >= 0 && ok; i1--) {
+          const path1 = paths1[i1]
           ok = false
-          var pathBoundsOverlaps = boundsOverlaps[i1]
+          const pathBoundsOverlaps = boundsOverlaps[i1]
           if (pathBoundsOverlaps) {
-            for (var i2 = pathBoundsOverlaps.length - 1; i2 >= 0 && !ok; i2--) {
+            for (let i2 = pathBoundsOverlaps.length - 1; i2 >= 0 && !ok; i2--) {
               if (path1.compare(paths2[pathBoundsOverlaps[i2]])) {
                 if (!matched[pathBoundsOverlaps[i2]]) {
                   matched[pathBoundsOverlaps[i2]] = true

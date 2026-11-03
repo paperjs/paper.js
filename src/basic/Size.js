@@ -28,7 +28,7 @@
  * var rect = new Rectangle(new Point(20, 15), size);
  * console.log(rect); // { x: 20, y: 15, width: 10, height: 5 }
  */
-var Size = Base.extend(
+const Size = Base.extend(
   /** @lends Size# */ {
     _class: 'Size',
     // Tell Base.read that the Point constructor supports reading with index
@@ -97,18 +97,18 @@ var Size = Base.extend(
      * console.log(size.height); // 50
      */
     initialize: function Size(arg0, arg1) {
-      var type = typeof arg0,
-        reading = this.__read,
-        read = 0
+      const type = typeof arg0
+      const reading = this.__read
+      let read = 0
       if (type === 'number') {
-        var hasHeight = typeof arg1 === 'number'
+        const hasHeight = typeof arg1 === 'number'
         this._set(arg0, hasHeight ? arg1 : arg0)
         if (reading) read = hasHeight ? 2 : 1
       } else if (type === 'undefined' || arg0 === null) {
         this._set(0, 0)
         if (reading) read = arg0 === null ? 1 : 0
       } else {
-        var obj = type === 'string' ? arg0.split(/[\s,]+/) || [] : arg0
+        const obj = type === 'string' ? arg0.split(/[\s,]+/) || [] : arg0
         read = 1
         if (Array.isArray(obj)) {
           this._set(+obj[0], +(obj.length > 1 ? obj[1] : obj[0]))
@@ -199,7 +199,7 @@ var Size = Base.extend(
      * @return {String} a string representation of the size
      */
     toString: function () {
-      var f = Formatter.instance
+      const f = Formatter.instance
       return (
         '{ width: ' +
         f.number(this.width) +
@@ -210,7 +210,7 @@ var Size = Base.extend(
     },
 
     _serialize: function (options) {
-      var f = options.formatter
+      const f = options.formatter
       // See Point#_serialize()
       return [f.number(this.width), f.number(this.height)]
     },
@@ -260,7 +260,7 @@ var Size = Base.extend(
      * console.log(result); // {width: 15, height: 30}
      */
     add: function (/* size */) {
-      var size = Size.read(arguments)
+      const size = Size.read(arguments)
       return new Size(this.width + size.width, this.height + size.height)
     },
 
@@ -299,7 +299,7 @@ var Size = Base.extend(
      * console.log(result); // {width: 5, height: 15}
      */
     subtract: function (/* size */) {
-      var size = Size.read(arguments)
+      const size = Size.read(arguments)
       return new Size(this.width - size.width, this.height - size.height)
     },
 
@@ -337,7 +337,7 @@ var Size = Base.extend(
      * console.log(result); // {width: 20, height: 20}
      */
     multiply: function (/* size */) {
-      var size = Size.read(arguments)
+      const size = Size.read(arguments)
       return new Size(this.width * size.width, this.height * size.height)
     },
 
@@ -375,7 +375,7 @@ var Size = Base.extend(
      * console.log(result); // {width: 4, height: 2}
      */
     divide: function (/* size */) {
-      var size = Size.read(arguments)
+      const size = Size.read(arguments)
       return new Size(this.width / size.width, this.height / size.height)
     },
 
@@ -414,7 +414,7 @@ var Size = Base.extend(
      * console.log(result); // {width: 2, height: 0}
      */
     modulo: function (/* size */) {
-      var size = Size.read(arguments)
+      const size = Size.read(arguments)
       return new Size(this.width % size.width, this.height % size.height)
     },
 
@@ -447,7 +447,7 @@ var Size = Base.extend(
      *     tolerance}
      */
     isZero: function () {
-      var isZero = Numerical.isZero
+      const isZero = Numerical.isZero
       return isZero(this.width) && isZero(this.height)
     },
 
@@ -601,7 +601,7 @@ var Size = Base.extend(
     ['round', 'ceil', 'floor', 'abs'],
     function (key) {
       // Inject round, ceil, floor, abs:
-      var op = Math[key]
+      const op = Math[key]
       this[key] = function () {
         return new Size(op(this.width), op(this.height))
       }
@@ -619,7 +619,7 @@ var Size = Base.extend(
  *
  * @private
  */
-var LinkedSize = Size.extend({
+const LinkedSize = Size.extend({
   // Have LinkedSize appear as a normal Size in debugging
   initialize: function Size(width, height, owner, setter) {
     this._width = width

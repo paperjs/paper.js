@@ -15,7 +15,7 @@
  * @class
  * @private
  */
-var CanvasView = View.extend(
+const CanvasView = View.extend(
   /** @lends CanvasView# */ {
     _class: 'CanvasView',
 
@@ -36,7 +36,7 @@ var CanvasView = View.extend(
       // Handle canvas argument
       if (!(canvas instanceof window.HTMLCanvasElement)) {
         // See if the arguments describe the view size:
-        var size = Size.read(arguments, 1)
+        const size = Size.read(arguments, 1)
         if (size.isZero())
           throw new Error(
             'Cannot create CanvasView with the provided argument: ' +
@@ -44,7 +44,7 @@ var CanvasView = View.extend(
           )
         canvas = CanvasProvider.getCanvas(size)
       }
-      var ctx = (this._context = canvas.getContext('2d'))
+      const ctx = (this._context = canvas.getContext('2d'))
       // Save context right away, and restore in #remove(). Also restore() and
       // save() again in _setElementSize() to prevent accumulation of scaling.
       ctx.save()
@@ -65,8 +65,8 @@ var CanvasView = View.extend(
     },
 
     _setElementSize: function _setElementSize(width, height) {
-      var pixelRatio = this._pixelRatio,
-        element = this._element
+      const pixelRatio = this._pixelRatio
+      const element = this._element
       // Upscale the canvas if the pixel ratio is more than 1.
       _setElementSize.base.call(this, width * pixelRatio, height * pixelRatio)
       // Set the size of non-resizable canvases through their style, as they
@@ -74,21 +74,21 @@ var CanvasView = View.extend(
       // ratio of 1, so they behave the same on every screen (#2088):
       if (!PaperScope.hasAttribute(element, 'resize')) {
         // With border-box sizing, the style includes padding and border:
-        var style = element.style,
-          insets =
-            (
-              DomElement.getStyles(element).boxSizing ===
-              'border-box'
-            )
-              ? DomElement.getInsets(element)
-              : new Size()
+        const style = element.style
+        const insets =
+          (
+            DomElement.getStyles(element).boxSizing ===
+            'border-box'
+          )
+            ? DomElement.getInsets(element)
+            : new Size()
         style.width = width + insets.width + 'px'
         style.height = height + insets.height + 'px'
       }
       if (pixelRatio !== 1) {
         // Scale the context to counter the fact that we've manually scaled
         // our canvas element.
-        var ctx = this._context
+        const ctx = this._context
         ctx.restore()
         ctx.save()
         ctx.scale(pixelRatio, pixelRatio)
@@ -115,9 +115,9 @@ var CanvasView = View.extend(
      */
     update: function (force) {
       if (!this._needsUpdate && !force) return false
-      var project = this._project,
-        ctx = this._context,
-        size = this._viewSize
+      const project = this._project
+      const ctx = this._context
+      const size = this._viewSize
       ctx.clearRect(0, 0, size.width + 1, size.height + 1)
       if (project) {
         // Forced updates follow changes that the buffers don't know of:

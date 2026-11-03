@@ -22,7 +22,7 @@
  * {@link Segment#handleOut}), describing the tangents of the two {@link Curve}
  * objects that are connected by this segment.
  */
-var Segment = Base.extend(
+const Segment = Base.extend(
   /** @lends Segment# */ {
     _class: 'Segment',
     _name: null,
@@ -116,13 +116,13 @@ var Segment = Base.extend(
      * @ignore
      */
     initialize: function Segment(arg0, arg1, arg2, arg3, arg4, arg5) {
-      var count = arguments.length,
-        point,
-        handleIn,
-        handleOut,
-        selection,
-        name,
-        data
+      const count = arguments.length
+      let point
+      let handleIn
+      let handleOut
+      let selection
+      let name
+      let data
       // TODO: Should we use Point.read() or Point.readNamed() to read these?
       if (count > 0) {
         if (arg0 == null || typeof arg0 === 'object') {
@@ -165,14 +165,14 @@ var Segment = Base.extend(
     },
 
     _serialize: function (options, dictionary) {
-      var point = this._point,
-        selection = this._selection,
-        name = this._name,
-        data = this._data,
-        hasData = data && !Base.equals(data, {})
+      const point = this._point
+      const selection = this._selection
+      const name = this._name
+      const data = this._data
+      const hasData = data && !Base.equals(data, {})
       if (name || hasData) {
         // Use the object notation, which can also hold name and data:
-        var props = Base.serialize(
+        const props = Base.serialize(
           {
             point: point,
             handleIn: this._handleIn,
@@ -192,7 +192,7 @@ var Segment = Base.extend(
       } else {
         // If it is has no handles, only serialize point, otherwise handles
         // too.
-        var obj =
+        const obj =
           selection || this.hasHandles()
             ? [point, this._handleIn, this._handleOut]
             : point
@@ -202,12 +202,12 @@ var Segment = Base.extend(
     },
 
     _changed: function (point) {
-      var path = this._path
+      const path = this._path
       if (!path) return
       // Delegate changes to affected curves if they exist.
-      var curves = path._curves,
-        index = this._index,
-        curve
+      const curves = path._curves
+      const index = this._index
+      let curve
       if (curves) {
         // Updated the neighboring affected curves, depending on which point
         // is changing.
@@ -258,8 +258,8 @@ var Segment = Base.extend(
       // Keep the name lookup on the path's segments list in sync, as
       // Item#setName() does on the children list. Paths only create it once
       // a segment has a name:
-      var path = this._path,
-        named = path && path._namedSegments
+      const path = this._path
+      const named = path && path._namedSegments
       if (this._name && named)
         Base.removeNamed(path._segments, named, this._name, this)
       if (name === +name + '')
@@ -378,8 +378,8 @@ var Segment = Base.extend(
      * @see Point#isCollinear()
      */
     isSmooth: function () {
-      var handleIn = this._handleIn,
-        handleOut = this._handleOut
+      const handleIn = this._handleIn
+      const handleOut = this._handleOut
       return (
         !handleIn.isZero() &&
         !handleOut.isZero() &&
@@ -401,8 +401,8 @@ var Segment = Base.extend(
     },
 
     setSelection: function (selection) {
-      var oldSelection = this._selection,
-        path = this._path
+      const oldSelection = this._selection
+      const path = this._path
       // Set the selection state even if path is not defined yet, to allow
       // selected segments to be inserted into paths and make JSON
       // deserialization work.
@@ -414,14 +414,14 @@ var Segment = Base.extend(
         path._updateSelection(this, oldSelection, selection)
         // Let the project know, so the view draws the selection again, see
         // Item#setSelection():
-        var project = path._project
+        const project = path._project
         if (project)
           project._changed(/*#=*/ Change.ATTRIBUTE, path._getChangeOwner())
       }
     },
 
     _changeSelection: function (flag, selected) {
-      var selection = this._selection
+      const selection = this._selection
       this.setSelection(selected ? selection | flag : selection & ~flag)
     },
 
@@ -479,8 +479,8 @@ var Segment = Base.extend(
      * @type Curve
      */
     getCurve: function () {
-      var path = this._path,
-        index = this._index
+      const path = this._path
+      let index = this._index
       if (path) {
         // The last segment of an open path belongs to the last curve.
         if (index > 0 && !path._closed && index === path._segments.length - 1)
@@ -497,7 +497,7 @@ var Segment = Base.extend(
      * @type CurveLocation
      */
     getLocation: function () {
-      var curve = this.getCurve()
+      const curve = this.getCurve()
       return curve
         ? // Determine whether the parameter for this segment is 0 or 1.
           new CurveLocation(curve, this === curve._segment1 ? 0 : 1)
@@ -515,7 +515,7 @@ var Segment = Base.extend(
      * @type Segment
      */
     getNext: function () {
-      var segments = this._path && this._path._segments
+      const segments = this._path && this._path._segments
       return (
         (
           segments &&
@@ -562,18 +562,21 @@ var Segment = Base.extend(
      * @see PathItem#smooth([options])
      */
     smooth: function (options, _first, _last) {
+      let A
+      let N
+
       // _first = _last = false;
-      var opts = options || {},
-        type = opts.type,
-        factor = opts.factor,
-        prev = this.getPrevious(),
-        next = this.getNext(),
-        // Some precalculations valid for both 'catmull-rom' and 'geometric'
-        p0 = (prev || this)._point,
-        p1 = this._point,
-        p2 = (next || this)._point,
-        d1 = p0.getDistance(p1),
-        d2 = p1.getDistance(p2)
+      const opts = options || {}
+      const type = opts.type
+      const factor = opts.factor
+      const prev = this.getPrevious()
+      const next = this.getNext()
+      // Some precalculations valid for both 'catmull-rom' and 'geometric'
+      const p0 = (prev || this)._point
+      const p1 = this._point
+      const p2 = (next || this)._point
+      const d1 = p0.getDistance(p1)
+      const d2 = p1.getDistance(p2)
       if (!type || type === 'catmull-rom') {
         // Implementation of by Catmull-Rom splines with factor parameter
         // based on work by @nicholaswmin:
@@ -583,14 +586,14 @@ var Segment = Base.extend(
         // 0.5: the centripetal Catmull-Rom spline, guaranteeing no self-
         //      intersections
         // 1.0: the chordal Catmull-Rom spline
-        var a = factor === undefined ? 0.5 : factor,
-          d1_a = Math.pow(d1, a),
-          d1_2a = d1_a * d1_a,
-          d2_a = Math.pow(d2, a),
-          d2_2a = d2_a * d2_a
+        const a = factor === undefined ? 0.5 : factor
+        const d1_a = Math.pow(d1, a)
+        const d1_2a = d1_a * d1_a
+        const d2_a = Math.pow(d2, a)
+        const d2_2a = d2_a * d2_a
         if (!_first && prev) {
-          var A = 2 * d2_2a + 3 * d2_a * d1_a + d1_2a,
-            N = 3 * d2_a * (d2_a + d1_a)
+          A = 2 * d2_2a + 3 * d2_a * d1_a + d1_2a
+          N = 3 * d2_a * (d2_a + d1_a)
           this.setHandleIn(
             N !== 0
               ? new Point(
@@ -601,8 +604,8 @@ var Segment = Base.extend(
           )
         }
         if (!_last && next) {
-          var A = 2 * d1_2a + 3 * d1_a * d2_a + d2_2a,
-            N = 3 * d1_a * (d1_a + d2_a)
+          A = 2 * d1_2a + 3 * d1_a * d2_a + d2_2a
+          N = 3 * d1_a * (d1_a + d2_a)
           this.setHandleOut(
             N !== 0
               ? new Point(
@@ -618,9 +621,9 @@ var Segment = Base.extend(
         // http://scaledinnovation.com/analytics/splines/aboutSplines.html
         // http://bseth99.github.io/projects/animate/2-bezier-curves.html
         if (prev && next) {
-          var vector = p0.subtract(p2),
-            t = factor === undefined ? 0.4 : factor,
-            k = t * d1 / (d1 + d2)
+          const vector = p0.subtract(p2)
+          const t = factor === undefined ? 0.4 : factor
+          const k = t * d1 / (d1 + d2)
           if (!_first) this.setHandleIn(vector.multiply(k))
           if (!_last) this.setHandleOut(vector.multiply(k - t))
         }
@@ -638,7 +641,7 @@ var Segment = Base.extend(
      * @type Segment
      */
     getPrevious: function () {
-      var segments = this._path && this._path._segments
+      const segments = this._path && this._path._segments
       return (
         (
           segments && (
@@ -667,7 +670,7 @@ var Segment = Base.extend(
      * @return {Boolean} {@true if this is the last segment}
      */
     isLast: function () {
-      var path = this._path
+      const path = this._path
       return path && this._index === path._segments.length - 1 || false
     },
 
@@ -678,9 +681,9 @@ var Segment = Base.extend(
      * @return {Segment} the reversed segment
      */
     reverse: function () {
-      var handleIn = this._handleIn,
-        handleOut = this._handleOut,
-        tmp = handleIn.clone()
+      const handleIn = this._handleIn
+      const handleOut = this._handleOut
+      const tmp = handleIn.clone()
       handleIn.set(handleOut)
       handleOut.set(tmp)
     },
@@ -705,9 +708,9 @@ var Segment = Base.extend(
      * @return {Segment}
      */
     clone: function () {
-      var segment = new Segment(this._point, this._handleIn, this._handleOut),
-        name = this._name,
-        data = this._data
+      const segment = new Segment(this._point, this._handleIn, this._handleOut)
+      const name = this._name
+      const data = this._data
       if (name) segment._name = name
       if (data) segment._data = Base.clone(data)
       return segment
@@ -730,7 +733,7 @@ var Segment = Base.extend(
      * @return {String} a string representation of the segment
      */
     toString: function () {
-      var parts = ['point: ' + this._point]
+      const parts = ['point: ' + this._point]
       if (!this._handleIn.isZero()) parts.push('handleIn: ' + this._handleIn)
       if (!this._handleOut.isZero()) parts.push('handleOut: ' + this._handleOut)
       return '{ ' + parts.join(', ') + ' }'
@@ -758,14 +761,14 @@ var Segment = Base.extend(
      *     `0` and `1`, but extrapolation is possible too
      */
     interpolate: function (from, to, factor) {
-      var u = 1 - factor,
-        v = factor,
-        point1 = from._point,
-        point2 = to._point,
-        handleIn1 = from._handleIn,
-        handleIn2 = to._handleIn,
-        handleOut2 = to._handleOut,
-        handleOut1 = from._handleOut
+      const u = 1 - factor
+      const v = factor
+      const point1 = from._point
+      const point2 = to._point
+      const handleIn1 = from._handleIn
+      const handleIn2 = to._handleIn
+      const handleOut2 = to._handleOut
+      const handleOut1 = from._handleOut
       this._point._set(
         u * point1._x + v * point2._x,
         u * point1._y + v * point2._y,
@@ -788,24 +791,24 @@ var Segment = Base.extend(
       // Use matrix.transform version() that takes arrays of multiple
       // points for largely improved performance, as no calls to
       // Point.read() and Point constructors are necessary.
-      var point = this._point,
-        // If change is true, only transform handles if they are set, as
-        // _transformCoordinates is called only to change the segment, no
-        // to receive the coords.
-        // This saves some computation time. If change is false, always
-        // use the real handles, as we just want to receive a filled
-        // coords array for getBounds().
-        handleIn =
-          !change || !this._handleIn.isZero()
-            ? this._handleIn
-            : null,
-        handleOut =
-          !change || !this._handleOut.isZero()
-            ? this._handleOut
-            : null,
-        x = point._x,
-        y = point._y,
-        i = 2
+      const point = this._point
+      // If change is true, only transform handles if they are set, as
+      // _transformCoordinates is called only to change the segment, no
+      // to receive the coords.
+      // This saves some computation time. If change is false, always
+      // use the real handles, as we just want to receive a filled
+      // coords array for getBounds().
+      const handleIn =
+        !change || !this._handleIn.isZero()
+          ? this._handleIn
+          : null
+      const handleOut =
+        !change || !this._handleOut.isZero()
+          ? this._handleOut
+          : null
+      let x = point._x
+      let y = point._y
+      let i = 2
       coords[0] = x
       coords[1] = y
       // We need to convert handles to absolute coordinates in order

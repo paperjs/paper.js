@@ -22,7 +22,7 @@
  *
  * @extends Group
  */
-var Layer = Group.extend(
+const Layer = Group.extend(
   /** @lends Layer# */ {
     _class: 'Layer',
     // Counts the changes of the layer's text wraps, by which its area texts

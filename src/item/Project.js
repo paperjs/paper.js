@@ -30,7 +30,7 @@
  * An array of all open projects is accessible through the
  * {@link PaperScope#projects} variable.
  */
-var Project = PaperScopeItem.extend(
+const Project = PaperScopeItem.extend(
   /** @lends Project# */ {
     _class: 'Project',
     _list: 'projects',
@@ -95,7 +95,7 @@ var Project = PaperScopeItem.extend(
      */
     _changed: function (flags, item) {
       if (flags & /*#=*/ ChangeFlag.APPEARANCE) {
-        var view = this._view
+        const view = this._view
         if (view) {
           // Never draw changes right away. Simply mark view as "dirty"
           // and request an update through view.requestUpdate().
@@ -110,11 +110,11 @@ var Project = PaperScopeItem.extend(
     // Logs the changes of items and definitions, each once with its flags
     // combined, as `{ item, flags }` or `{ definition, flags }`:
     _logChange: function (name, object, flags) {
-      var changes = this._changes
+      const changes = this._changes
       if (changes) {
-        var changesById = this._changesById,
-          id = object._id,
-          entry = changesById[id]
+        const changesById = this._changesById
+        const id = object._id
+        let entry = changesById[id]
         if (entry) {
           entry.flags |= flags
         } else {
@@ -159,14 +159,14 @@ var Project = PaperScopeItem.extend(
      *     is off
      */
     takeChanges: function () {
-      var changes = this._changes,
-        that = this
+      let changes = this._changes
+      const that = this
       if (changes) {
         this._changes = []
         this._changesById = {}
         // Items that moved to another project since are logged there:
         changes = changes.filter(function (change) {
-          var item = change.item
+          const item = change.item
           return !item || item._project === that
         })
       }
@@ -238,8 +238,8 @@ var Project = PaperScopeItem.extend(
      * Clears the project by removing all {@link Project#layers}.
      */
     clear: function () {
-      var children = this._children
-      for (var i = children.length - 1; i >= 0; i--) children[i].remove()
+      const children = this._children
+      for (let i = children.length - 1; i >= 0; i--) children[i].remove()
     },
 
     /**
@@ -369,13 +369,13 @@ var Project = PaperScopeItem.extend(
      * @type SymbolDefinition[]
      */
     getSymbolDefinitions: function () {
-      var definitions = [],
-        ids = {}
+      const definitions = []
+      const ids = {}
       this.getItems({
         class: SymbolItem,
         match: function (item) {
-          var definition = item._definition,
-            id = definition._id
+          const definition = item._definition
+          const id = definition._id
           if (!ids[id]) {
             ids[id] = true
             definitions.push(definition)
@@ -401,14 +401,14 @@ var Project = PaperScopeItem.extend(
      * @type PatternDefinition[]
      */
     getPatternDefinitions: function () {
-      var definitions = [],
-        ids = {}
+      const definitions = []
+      const ids = {}
       this.getItems({
         match: function (item) {
-          var style = item._style
+          const style = item._style
           ;[style.getFillColor(true), style.getStrokeColor(true)].forEach(
             function (color) {
-              var definition = (
+              const definition = (
                 color &&
                 color._type === 'pattern' &&
                 color._components[0]
@@ -435,11 +435,11 @@ var Project = PaperScopeItem.extend(
       // TODO: Return groups if their children are all selected, and filter
       // out their children from the list.
       // TODO: The order of these items should be that of their drawing order.
-      var selectionItems = this._selectionItems,
-        items = []
-      for (var id in selectionItems) {
-        var item = selectionItems[id],
-          selection = item._selection
+      const selectionItems = this._selectionItems
+      const items = []
+      for (const id in selectionItems) {
+        const item = selectionItems[id]
+        const selection = item._selection
         if ((selection & /*#=*/ ItemSelection.ITEM) && item.isInserted()) {
           items.push(item)
         } else if (!selection) {
@@ -451,8 +451,8 @@ var Project = PaperScopeItem.extend(
     // TODO: Implement setSelectedItems?
 
     _updateSelection: function (item, remove) {
-      var id = item._id,
-        selectionItems = this._selectionItems
+      const id = item._id
+      const selectionItems = this._selectionItems
       // Only keep track of inserted items, so removed ones can be collected:
       if (item._selection && !remove && item.isInserted()) {
         if (selectionItems[id] !== item) {
@@ -469,8 +469,8 @@ var Project = PaperScopeItem.extend(
      * Selects all items in the project.
      */
     selectAll: function () {
-      var children = this._children
-      for (var i = 0, l = children.length; i < l; i++)
+      const children = this._children
+      for (let i = 0, l = children.length; i < l; i++)
         children[i].setFullySelected(true)
     },
 
@@ -478,8 +478,8 @@ var Project = PaperScopeItem.extend(
      * Deselects all selected items in the project.
      */
     deselectAll: function () {
-      var selectionItems = this._selectionItems
-      for (var i in selectionItems) selectionItems[i].setFullySelected(false)
+      const selectionItems = this._selectionItems
+      for (const i in selectionItems) selectionItems[i].setFullySelected(false)
     },
 
     /**
@@ -512,7 +512,7 @@ var Project = PaperScopeItem.extend(
         layer._setProject(this, true)
         // Set the name again to make sure all name lookup structures
         // are kept in sync.
-        var name = layer._name
+        const name = layer._name
         if (name) layer.setName(name)
         // See Item#_remove() for an explanation of this:
         if (this._changes) layer._changed(/*#=*/ Change.INSERTION)
@@ -907,7 +907,7 @@ var Project = PaperScopeItem.extend(
       this.activate()
       // Provide the activeLayer as a possible target for layers, but only if
       // it's empty.
-      var layer = this._activeLayer
+      const layer = this._activeLayer
       return Base.importJSON(json, layer && layer.isEmpty() && layer)
     },
 
@@ -1064,18 +1064,18 @@ var Project = PaperScopeItem.extend(
      */
 
     removeOn: function (type) {
-      var sets = this._removeSets
+      const sets = this._removeSets
       if (sets) {
         // Always clear the drag set on mouseup
         if (type === 'mouseup') sets.mousedrag = null
-        var set = sets[type]
+        const set = sets[type]
         if (set) {
-          for (var id in set) {
-            var item = set[id]
+          for (const id in set) {
+            const item = set[id]
             // If we remove this item, we also need to erase it from all
             // other sets.
-            for (var key in sets) {
-              var other = sets[key]
+            for (const key in sets) {
+              const other = sets[key]
               if (other && other != set) delete other[item._id]
             }
             item.remove()
@@ -1094,19 +1094,19 @@ var Project = PaperScopeItem.extend(
       ctx.save()
       matrix.applyToContext(ctx)
       // Use new Base() so we can use param.extend() to easily override values
-      var children = this._children,
-        param = new Base({
-          offset: new Point(0, 0),
-          pixelRatio: pixelRatio,
-          view: _view,
-          viewMatrix: matrix.isIdentity() ? null : matrix,
-          matrices: [new Matrix()], // Start with the identity matrix.
-          // Tell the drawing routine that we want to keep _globalMatrix
-          // up to date. Item#rasterize() and Raster#getAverageColor()
-          // should not set this.
-          updateMatrix: true
-        })
-      for (var i = 0, l = children.length; i < l; i++) {
+      const children = this._children
+      const param = new Base({
+        offset: new Point(0, 0),
+        pixelRatio: pixelRatio,
+        view: _view,
+        viewMatrix: matrix.isIdentity() ? null : matrix,
+        matrices: [new Matrix()], // Start with the identity matrix.
+        // Tell the drawing routine that we want to keep _globalMatrix
+        // up to date. Item#rasterize() and Raster#getAverageColor()
+        // should not set this.
+        updateMatrix: true
+      })
+      for (let i = 0, l = children.length; i < l; i++) {
         children[i].draw(ctx, param)
       }
       ctx.restore()
@@ -1115,10 +1115,10 @@ var Project = PaperScopeItem.extend(
       if (this._selectionCount > 0) {
         ctx.save()
         ctx.lineWidth = 1
-        var items = this._selectionItems,
-          size = this._scope.settings.handleSize,
-          version = this._updateVersion
-        for (var id in items) {
+        const items = this._selectionItems
+        const size = this._scope.settings.handleSize
+        const version = this._updateVersion
+        for (const id in items) {
           items[id]._drawSelection(ctx, matrix, size, items, version)
         }
         ctx.restore()

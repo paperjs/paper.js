@@ -17,7 +17,7 @@
 // Returns false if the canvas module is missing or not working.
 
 module.exports = function (self, requireName) {
-  var Canvas
+  let Canvas
   try {
     Canvas = require('canvas').Canvas
   } catch (error) {
@@ -29,8 +29,8 @@ module.exports = function (self, requireName) {
     return false
   }
 
-  var HTMLCanvasElement = self.HTMLCanvasElement,
-    idlUtils
+  const HTMLCanvasElement = self.HTMLCanvasElement
+  let idlUtils
   try {
     idlUtils = require('jsdom/lib/generated/idl/utils')
   } catch (error) {
@@ -41,27 +41,27 @@ module.exports = function (self, requireName) {
   // Add fake HTMLCanvasElement#type property:
   Object.defineProperty(HTMLCanvasElement.prototype, 'type', {
     get: function () {
-      var canvas = idlUtils.implForWrapper(this)._canvas
+      const canvas = idlUtils.implForWrapper(this)._canvas
       return canvas && canvas.type || 'image'
     },
 
     set: function (type) {
       // Allow replacement of internal node-canvas, so we can switch to a
       // PDF canvas.
-      var impl = idlUtils.implForWrapper(this),
-        size = impl._canvas || impl
+      const impl = idlUtils.implForWrapper(this)
+      const size = impl._canvas || impl
       impl._canvas = new Canvas(size.width, size.height, type)
       impl._context = null
     }
   })
 
   // Extend HTMLCanvasElement with useful methods from the underlying Canvas:
-  var methods = [
+  const methods = [
     'toBuffer', 'pngStream', 'createPNGStream', 'jpegStream', 'createJPEGStream'
   ]
   methods.forEach(function (key) {
     HTMLCanvasElement.prototype[key] = function () {
-      var canvas = idlUtils.implForWrapper(this)._canvas
+      const canvas = idlUtils.implForWrapper(this)._canvas
       return canvas[key].apply(canvas, arguments)
     }
   })

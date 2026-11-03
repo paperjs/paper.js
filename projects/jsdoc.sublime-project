@@ -20,7 +20,7 @@
   "SublimeLinter":
   {
     "linters": {
-      "jshint": {
+      "eslint": {
         "@disable": true,
         "args": [],
         "excludes": []

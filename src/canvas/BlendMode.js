@@ -10,24 +10,24 @@
  * All rights reserved.
  */
 
-var BlendMode = new (function () {
-  var min = Math.min,
-    max = Math.max,
-    abs = Math.abs,
-    sr,
-    sg,
-    sb,
-    sa, // source
-    br,
-    bg,
-    bb,
-    ba, // backdrop
-    dr,
-    dg,
-    db // destination
+const BlendMode = new (function () {
+  const min = Math.min
+  const max = Math.max
+  const abs = Math.abs
+  let sr
+  let sg
+  let sb
+  let sa // source
+  let br
+  let bg
+  let bb
+  let ba // backdrop
+  let dr
+  let dg
+  let db // destination
 
   // Emulate Paper.js's own blend modes, which canvas doesn't have:
-  var modes = {
+  const modes = {
     'add': function () {
       dr = min(br + sr, 255)
       dg = min(bg + sg, 255)
@@ -85,10 +85,10 @@ var BlendMode = new (function () {
 
   this.process = function (mode, srcContext, dstContext, alpha, offset, size) {
     // Only composite the part of the source canvas that size covers:
-    var width = size.width,
-      height = size.height,
-      normal = mode === 'normal',
-      process = modes[mode]
+    const width = size.width
+    const height = size.height
+    const normal = mode === 'normal'
+    const process = modes[mode]
     // Leave all modes but our own to canvas:
     if (!process) {
       dstContext.save()
@@ -110,10 +110,15 @@ var BlendMode = new (function () {
       )
       dstContext.restore()
     } else {
-      var dstData = dstContext.getImageData(offset.x, offset.y, width, height),
-        dst = dstData.data,
-        src = srcContext.getImageData(0, 0, width, height).data
-      for (var i = 0, l = dst.length; i < l; i += 4) {
+      const dstData = dstContext.getImageData(
+        offset.x,
+        offset.y,
+        width,
+        height
+      )
+      const dst = dstData.data
+      const src = srcContext.getImageData(0, 0, width, height).data
+      for (let i = 0, l = dst.length; i < l; i += 4) {
         sr = src[i]
         br = dst[i]
         sg = src[i + 1]
@@ -123,8 +128,8 @@ var BlendMode = new (function () {
         sa = src[i + 3]
         ba = dst[i + 3]
         process()
-        var a1 = sa * alpha / 255,
-          a2 = 1 - a1
+        const a1 = sa * alpha / 255
+        const a2 = 1 - a1
         dst[i] = a1 * dr + a2 * br
         dst[i + 1] = a1 * dg + a2 * bg
         dst[i + 2] = a1 * db + a2 * bb

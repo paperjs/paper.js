@@ -19,7 +19,7 @@
  *
  * @extends Item
  */
-var Group = Item.extend(
+const Group = Item.extend(
   /** @lends Group# */ {
     _class: 'Group',
     _selectBounds: false,
@@ -107,7 +107,7 @@ var Group = Item.extend(
     // Styles set on groups apply to their children, and read as theirs:
     // @override
     _getStyles: function () {
-      var children = this._children
+      const children = this._children
       return children.length > 0
         ? children.map(function (child) {
             return child._style
@@ -125,13 +125,13 @@ var Group = Item.extend(
 
     _getClipItem: function () {
       // NOTE: _clipItem is the child that has _clipMask set to true.
-      var clipItem = this._clipItem
+      let clipItem = this._clipItem
       // Distinguish null (no clipItem set) and undefined (clipItem was not
       // looked for yet).
       if (clipItem === undefined) {
         clipItem = null
-        var children = this._children
-        for (var i = 0, l = children.length; i < l; i++) {
+        const children = this._children
+        for (let i = 0, l = children.length; i < l; i++) {
           if (children[i]._clipMask) {
             clipItem = children[i]
             break
@@ -180,7 +180,7 @@ var Group = Item.extend(
     },
 
     setClipped: function (clipped) {
-      var child = this.getFirstChild()
+      const child = this.getFirstChild()
       if (child) child.setClipMask(clipped)
     },
 
@@ -192,14 +192,14 @@ var Group = Item.extend(
      */
     ungroup: function () {
       if (!this._parent) return null
-      var children = this._children.slice(),
-        clipItem = this._getClipItem(),
-        matrix = this._matrix
+      const children = this._children.slice()
+      const clipItem = this._getClipItem()
+      const matrix = this._matrix
       if (clipItem) clipItem.setClipMask(false)
       // Transform the children by the group's matrix, which they apply to
       // their content or their own matrix, depending on their applyMatrix:
       if (!matrix.isIdentity()) {
-        for (var i = 0, l = children.length; i < l; i++)
+        for (let i = 0, l = children.length; i < l; i++)
           children[i].transform(matrix)
       }
       return this.replaceWith.apply(this, children) ? children : null
@@ -305,14 +305,14 @@ var Group = Item.extend(
     },
 
     _serialize: function _serialize(options, dictionary) {
-      var json = _serialize.base.call(this, options, dictionary)
+      const json = _serialize.base.call(this, options, dictionary)
       // #isolated reads true for buffered groups, but store only their own:
       if (!this._isolated) delete json[1].isolated
       return json
     },
 
     _getBounds: function _getBounds(matrix, options) {
-      var clipItem = this._getClipItem()
+      const clipItem = this._getClipItem()
       return clipItem
         ? clipItem._getCachedBounds(
             clipItem._matrix.prepended(matrix),
@@ -322,7 +322,7 @@ var Group = Item.extend(
     },
 
     _hitTestChildren: function _hitTestChildren(point, options, viewMatrix) {
-      var clipItem = this._getClipItem()
+      const clipItem = this._getClipItem()
       return (
         (!clipItem || clipItem.contains(point)) &&
         _hitTestChildren.base.call(
@@ -341,7 +341,7 @@ var Group = Item.extend(
       // Illustrator. Without filters or the collecting of all hits, the
       // children were already tested without result:
       if (options.match || options.class || options.type || options.all) {
-        var res = this._hitTestChildren(
+        const res = this._hitTestChildren(
           point,
           options.extend({
             all: null,
@@ -357,8 +357,8 @@ var Group = Item.extend(
     },
 
     _draw: function (ctx, param) {
-      var clip = param.clip,
-        clipItem = this._getClipItem()
+      const clip = param.clip
+      const clipItem = this._getClipItem()
       param = param.extend({ clipItem: !clip && clipItem, clip: false })
       if (clip) {
         // If told to clip with a group, we start our own path and draw each
@@ -370,9 +370,9 @@ var Group = Item.extend(
       } else if (clipItem) {
         clipItem.draw(ctx, param.extend({ clip: true }))
       }
-      var children = this._children
-      for (var i = 0, l = children.length; i < l; i++) {
-        var item = children[i]
+      const children = this._children
+      for (let i = 0, l = children.length; i < l; i++) {
+        const item = children[i]
         if (item !== clipItem) item.draw(ctx, param)
       }
     }

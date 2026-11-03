@@ -24,7 +24,7 @@
  * @see Item#tweenTo(to, options)
  * @see Item#tweenFrom(from, options)
  */
-var Tween = Base.extend(
+const Tween = Base.extend(
   Emitter,
   /** @lends Tween# */ {
     _class: 'Tween',
@@ -77,7 +77,7 @@ var Tween = Base.extend(
 
         // decelerating to zero velocity
         easeOutQuart: function (t) {
-          return 1 - --t * t * t * t // jshint ignore:line
+          return 1 - --t * t * t * t
         },
 
         // acceleration until halfway, then deceleration
@@ -145,7 +145,7 @@ var Tween = Base.extend(
 
         // decelerating to zero velocity
         easeOutCirc: function (t) {
-          return Math.sqrt(1 - --t * t) // jshint ignore:line
+          return Math.sqrt(1 - --t * t)
         },
 
         // acceleration until halfway, then deceleration
@@ -171,8 +171,8 @@ var Tween = Base.extend(
      */
     initialize: function Tween(object, from, to, duration, easing, start) {
       this.object = object
-      var type = typeof easing
-      var isFunction = type === 'function'
+      const type = typeof easing
+      const isFunction = type === 'function'
       this.type = isFunction
         ? type
         : type === 'string'
@@ -184,7 +184,7 @@ var Tween = Base.extend(
 
       this._then = null
       this._startTime = null
-      var state = from || to
+      const state = from || to
       this._keys = state ? Object.keys(state) : []
       this._parsedKeys = this._parseKeys(this._keys)
       this._from = state && this._getState(from)
@@ -279,23 +279,23 @@ var Tween = Base.extend(
           this.running = false
         }
 
-        var factor = this.easing(progress),
-          keys = this._keys,
-          getValue = function (value) {
-            return typeof value === 'function'
-              ? value(factor, progress)
-              : value
-          }
-        for (var i = 0, l = keys && keys.length; i < l; i++) {
-          var key = keys[i],
-            from = getValue(this._from[key]),
-            to = getValue(this._to[key]),
-            // Some paper objects have math functions (e.g.: Point,
-            // Color) which can directly be used to do the tweening.
-            value =
-              from && to && from.multiply && to.multiply
-                ? to.subtract(from).multiply(factor).add(from)
-                : ((to - from) * factor) + from
+        const factor = this.easing(progress)
+        const keys = this._keys
+        const getValue = function (value) {
+          return typeof value === 'function'
+            ? value(factor, progress)
+            : value
+        }
+        for (let i = 0, l = keys && keys.length; i < l; i++) {
+          const key = keys[i]
+          const from = getValue(this._from[key])
+          const to = getValue(this._to[key])
+          // Some paper objects have math functions (e.g.: Point,
+          // Color) which can directly be used to do the tweening.
+          const value =
+            from && to && from.multiply && to.multiply
+              ? to.subtract(from).multiply(factor).add(from)
+              : ((to - from) * factor) + from
           this._setProperty(this._parsedKeys[key], value)
         }
 
@@ -361,22 +361,24 @@ var Tween = Base.extend(
     },
 
     _handleFrame: function (time) {
-      var startTime = this._startTime
+      let startTime = this._startTime
       // The first frame starts the tween, also when its time is 0:
       if (startTime == null) startTime = this._startTime = time
       this.update((time - startTime) / this.duration)
     },
 
     _getState: function (state) {
-      var keys = this._keys,
-        result = {}
-      for (var i = 0, l = keys.length; i < l; i++) {
-        var key = keys[i],
-          path = this._parsedKeys[key],
-          current = this._getProperty(path),
-          value
+      let value
+
+      const keys = this._keys
+      const result = {}
+      for (let i = 0, l = keys.length; i < l; i++) {
+        const key = keys[i]
+        const path = this._parsedKeys[key]
+        const current = this._getProperty(path)
+
         if (state) {
-          var resolved = this._resolveValue(current, state[key])
+          const resolved = this._resolveValue(current, state[key])
           // Temporarily set the resolved value, so we can retrieve the
           // coerced value from paper's internal magic.
           this._setProperty(path, resolved)
@@ -397,20 +399,18 @@ var Tween = Base.extend(
     _resolveValue: function (current, value) {
       if (value) {
         if (Array.isArray(value) && value.length === 2) {
-          var operator = value[0]
+          const operator = value[0]
           return (
             operator &&
             operator.match &&
-            // We're (unnecessarily) escaping '*/' here to not confuse
-            // the ol' JSDoc parser...
-            operator.match(/^[+\-\*\/]=/)
+            operator.match(/^[+\-*/]=/)
           )
             ? this._calculate(current, operator[0], value[1])
             : value
         } else if (typeof value === 'string') {
-          var match = value.match(/^[+\-*/]=(.*)/)
+          const match = value.match(/^[+\-*/]=(.*)/)
           if (match) {
-            var parsed = JSON.parse(
+            const parsed = JSON.parse(
               match[1].replace(
                 /(['"])?([a-zA-Z0-9_]+)(['"])?:/g,
                 '"$2": '
@@ -426,7 +426,7 @@ var Tween = Base.extend(
     _calculate: function (left, operator, right) {
       // Use the math functions of objects that have them (e.g.: Point,
       // Color), and the operator itself for numbers.
-      var name = {
+      const name = {
         '+': 'add',
         '-': 'subtract',
         '*': 'multiply',
@@ -446,29 +446,29 @@ var Tween = Base.extend(
     },
 
     _parseKeys: function (keys) {
-      var parsed = {}
-      for (var i = 0, l = keys.length; i < l; i++) {
-        var key = keys[i],
-          path = key
-            // Convert from JS property access notation to JSON pointer:
-            .replace(/\.([^.]*)/g, '/$1')
-            // Expand array property access notation ([])
-            .replace(/\[['"]?([^'"\]]*)['"]?\]/g, '/$1')
+      const parsed = {}
+      for (let i = 0, l = keys.length; i < l; i++) {
+        const key = keys[i]
+        const path = key
+          // Convert from JS property access notation to JSON pointer:
+          .replace(/\.([^.]*)/g, '/$1')
+          // Expand array property access notation ([])
+          .replace(/\[['"]?([^'"\]]*)['"]?\]/g, '/$1')
         parsed[key] = path.split('/')
       }
       return parsed
     },
 
     _getProperty: function (path, offset) {
-      var obj = this.object
-      for (var i = 0, l = path.length - (offset || 0); i < l && obj; i++) {
+      let obj = this.object
+      for (let i = 0, l = path.length - (offset || 0); i < l && obj; i++) {
         obj = obj[path[i]]
       }
       return obj
     },
 
     _setProperty: function (path, value) {
-      var dest = this._getProperty(path, 1)
+      const dest = this._getProperty(path, 1)
       if (dest) {
         dest[path[path.length - 1]] = value
       }
