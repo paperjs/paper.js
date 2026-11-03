@@ -280,8 +280,8 @@ importers:
         specifier: ^3.9.10
         version: 3.9.10
       prettier-plugin-penere:
-        specifier: ^0.4.0
-        version: 0.4.0(prettier@3.9.10)
+        specifier: ^0.5.0
+        version: 0.5.0(prettier@3.9.10)
       require-dir:
         specifier: ^1.2.0
         version: 1.2.0
@@ -2227,8 +2227,8 @@ packages:
     resolution: {integrity: sha512-SxToR7P8Y2lWmv/kTzVLC1t/GDI2WGjMwNhLLE9qtH8Q13C+aEmuRlzDst4Up4s0Wc8sF2M+J57iB3cMLqftfg==}
     engines: {node: '>=6.0.0'}
 
-  prettier-plugin-penere@0.4.0:
-    resolution: {integrity: sha512-gYFEuMzYi7sC8zFLzEfUMTIy5ao0uQJQbB0JBA25vtYI2SGin7rrB521/MIcxI3Ef0UyWQPh/uKvax1Sf6RxEA==}
+  prettier-plugin-penere@0.5.0:
+    resolution: {integrity: sha512-Ua8c9CYrqUUNn7ozuYeTHGTDUpicMSoO2eL4e8pCaWm+uKJ3IeS7JykP7OMgcsMbUVnZPCTLtrgxikTj4SM1dQ==}
     engines: {node: '>=20'}
     peerDependencies:
       prettier: ~3.9.0
@@ -4758,7 +4758,7 @@ snapshots:
     dependencies:
       fast-diff: 1.3.0
 
-  prettier-plugin-penere@0.4.0(prettier@3.9.10):
+  prettier-plugin-penere@0.5.0(prettier@3.9.10):
     dependencies:
       prettier: 3.9.10
 

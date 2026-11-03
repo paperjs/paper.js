@@ -91,7 +91,7 @@
     "playwright": "^1.64.1",
     "prepro": "^2.5.0",
     "prettier": "^3.9.10",
-    "prettier-plugin-penere": "^0.4.0",
+    "prettier-plugin-penere": "^0.5.0",
     "require-dir": "^1.2.0",
     "resemblejs": "^3.2.5",
     "run-sequence": "^2.2.1",

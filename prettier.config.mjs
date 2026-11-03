@@ -1,5 +1,4 @@
-// Prettier, with the settings of dito.js. Only the tests use it so far, the
-// sources follow with the ES modules port.
+// Prettier, with the settings of dito.js, for the sources and the tests.
 
 /**
  * @type {import('prettier').Options}
