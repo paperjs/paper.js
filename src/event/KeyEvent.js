@@ -20,14 +20,15 @@
  *
  * @extends Event
  */
-var KeyEvent = Event.extend(/** @lends KeyEvent# */{
+var KeyEvent = Event.extend(
+  /** @lends KeyEvent# */ {
     _class: 'KeyEvent',
 
     initialize: function KeyEvent(type, event, key, character) {
-        this.type = type;
-        this.event = event;
-        this.key = key;
-        this.character = character;
+      this.type = type
+      this.event = event
+      this.key = key
+      this.character = character
     },
 
     /**
@@ -60,11 +61,18 @@ var KeyEvent = Event.extend(/** @lends KeyEvent# */{
     /**
      * @return {String} a string representation of the key event
      */
-    toString: function() {
-        return "{ type: '" + this.type
-                + "', key: '" + this.key
-                + "', character: '" + this.character
-                + "', modifiers: " + this.getModifiers()
-                + " }";
+    toString: function () {
+      return (
+        "{ type: '" +
+        this.type +
+        "', key: '" +
+        this.key +
+        "', character: '" +
+        this.character +
+        "', modifiers: " +
+        this.getModifiers() +
+        ' }'
+      )
     }
-});
+  }
+)

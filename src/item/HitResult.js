@@ -17,17 +17,17 @@
  * test. It is returned by {@link Item#hitTest(point)} and
  * {@link Project#hitTest(point)}.
  */
-var HitResult = Base.extend(/** @lends HitResult# */{
+var HitResult = Base.extend(
+  /** @lends HitResult# */ {
     _class: 'HitResult',
 
     initialize: function HitResult(type, item, values) {
-        this.type = type;
-        this.item = item;
-        // Inject passed values, so we can be flexible about the HitResult
-        // properties.
-        // This allows the definition of getters too, e.g. for 'pixel'.
-        if (values)
-            this.inject(values);
+      this.type = type
+      this.item = item
+      // Inject passed values, so we can be flexible about the HitResult
+      // properties.
+      // This allows the definition of getters too, e.g. for 'pixel'.
+      if (values) this.inject(values)
     },
 
     /**
@@ -106,43 +106,47 @@ var HitResult = Base.extend(/** @lends HitResult# */{
      */
 
     statics: {
-        /**
-         * Merges default options into options hash for #hitTest() calls.
-         *
-         * @private
-         */
-        getOptions: function(args) {
-            var options = args && Base.read(args);
-            return new Base({
-                // Type of item, for instanceof check: Group, Layer, Path,
-                // CompoundPath, Shape, Raster, SymbolItem, ...
-                type: null,
-                // Tolerance
-                tolerance: paper.settings.hitTolerance,
-                // Hit the fill of items
-                fill: !options,
-                // Hit the curves of path items, taking into account the stroke
-                // width.
-                stroke: !options,
-                // Hit the part of segments that curves pass through, excluding
-                // its segments (Segment#point)
-                segments: !options,
-                // Hit the parts of segments that define the curvature
-                handles: false,
-                // Only first or last segment hits on path (mutually exclusive
-                // with segments: true)
-                ends: false,
-                // Hit test the item position
-                position: false,
-                // Hit test the center of the bounds
-                center: false,
-                // Hit test the corners and side-centers of the bounding box
-                bounds: false,
-                //  Hit items that are marked as guides
-                guides: false,
-                // Only hit selected objects
-                selected: false
-            }, options);
-        }
+      /**
+       * Merges default options into options hash for #hitTest() calls.
+       *
+       * @private
+       */
+      getOptions: function (args) {
+        var options = args && Base.read(args)
+        return new Base(
+          {
+            // Type of item, for instanceof check: Group, Layer, Path,
+            // CompoundPath, Shape, Raster, SymbolItem, ...
+            type: null,
+            // Tolerance
+            tolerance: paper.settings.hitTolerance,
+            // Hit the fill of items
+            fill: !options,
+            // Hit the curves of path items, taking into account the stroke
+            // width.
+            stroke: !options,
+            // Hit the part of segments that curves pass through, excluding
+            // its segments (Segment#point)
+            segments: !options,
+            // Hit the parts of segments that define the curvature
+            handles: false,
+            // Only first or last segment hits on path (mutually exclusive
+            // with segments: true)
+            ends: false,
+            // Hit test the item position
+            position: false,
+            // Hit test the center of the bounds
+            center: false,
+            // Hit test the corners and side-centers of the bounding box
+            bounds: false,
+            //  Hit items that are marked as guides
+            guides: false,
+            // Only hit selected objects
+            selected: false
+          },
+          options
+        )
+      }
     }
-});
+  }
+)

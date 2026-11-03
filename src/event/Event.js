@@ -17,12 +17,13 @@
  * such as {@link MouseEvent}, {@link ToolEvent} and {@link KeyEvent}.
  */
 /* global Event: true */
-var Event = Base.extend(/** @lends Event# */{
+var Event = Base.extend(
+  /** @lends Event# */ {
     _class: 'Event',
 
     initialize: function Event(event) {
-        this.event = event;
-        this.type = event && event.type;
+      this.event = event
+      this.type = event && event.type
     },
 
     prevented: false,
@@ -32,17 +33,17 @@ var Event = Base.extend(/** @lends Event# */{
      * Cancels the event if it is cancelable, without stopping further
      * propagation of the event.
      */
-    preventDefault: function() {
-        this.prevented = true;
-        this.event.preventDefault();
+    preventDefault: function () {
+      this.prevented = true
+      this.event.preventDefault()
     },
 
     /**
      * Prevents further propagation of the current event.
      */
-    stopPropagation: function() {
-        this.stopped = true;
-        this.event.stopPropagation();
+    stopPropagation: function () {
+      this.stopped = true
+      this.event.stopPropagation()
     },
 
     /**
@@ -53,9 +54,9 @@ var Event = Base.extend(/** @lends Event# */{
      * Any handler can also return `false` to indicate that `stop()` should be
      * called right after.
      */
-    stop: function() {
-        this.stopPropagation();
-        this.preventDefault();
+    stop: function () {
+      this.stopPropagation()
+      this.preventDefault()
     },
 
     /**
@@ -70,8 +71,8 @@ var Event = Base.extend(/** @lends Event# */{
      * @bean
      * @type Number
      */
-    getTime: function() {
-        return this.event.timeStamp / 1000;
+    getTime: function () {
+      return this.event.timeStamp / 1000
     },
 
     /**
@@ -79,8 +80,8 @@ var Event = Base.extend(/** @lends Event# */{
      * @type Number
      * @deprecated use {@link #time} instead, which is in seconds.
      */
-    getTimeStamp: function() {
-        return this.event.timeStamp;
+    getTimeStamp: function () {
+      return this.event.timeStamp
     },
 
     /**
@@ -90,7 +91,8 @@ var Event = Base.extend(/** @lends Event# */{
      * @type object
      * @see Key.modifiers
      */
-    getModifiers: function() {
-        return Key.modifiers;
+    getModifiers: function () {
+      return Key.modifiers
     }
-});
+  }
+)

@@ -21,35 +21,37 @@
  *
  * @extends Item
  */
-var HostItem = Item.extend(/** @lends HostItem# */{
+var HostItem = Item.extend(
+  /** @lends HostItem# */ {
     _class: 'HostItem',
     _applyMatrix: false,
     _canApplyMatrix: false,
     _hasChildren: false,
 
     initialize: function HostItem(props) {
-        this._values = {};
-        if (this._hasChildren) {
-            this._children = [];
-            this._namedChildren = {};
-        }
-        this._initialize(props);
+      this._values = {}
+      if (this._hasChildren) {
+        this._children = []
+        this._namedChildren = {}
+      }
+      this._initialize(props)
     },
 
-    _getBounds: function(matrix, options) {
-        // The host's bounds also cover what it paints beyond the children:
-        var rect = this._getHostBounds(options);
-        return matrix ? matrix._transformBounds(rect) : rect;
+    _getBounds: function (matrix, options) {
+      // The host's bounds also cover what it paints beyond the children:
+      var rect = this._getHostBounds(options)
+      return matrix ? matrix._transformBounds(rect) : rect
     },
 
-    _hitTestSelf: function(point, options) {
-        var bounds = this._getHostBounds({ stroke: true, handle: true });
-        if (options.fill && bounds._containsPoint(point)) {
-            return new HitResult('fill', this);
-        }
+    _hitTestSelf: function (point, options) {
+      var bounds = this._getHostBounds({ stroke: true, handle: true })
+      if (options.fill && bounds._containsPoint(point)) {
+        return new HitResult('fill', this)
+      }
     },
 
-    _draw: function() {
-        // The host draws its own nodes.
+    _draw: function () {
+      // The host draws its own nodes.
     }
-});
+  }
+)

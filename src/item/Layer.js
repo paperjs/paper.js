@@ -22,7 +22,8 @@
  *
  * @extends Group
  */
-var Layer = Group.extend(/** @lends Layer# */{
+var Layer = Group.extend(
+  /** @lends Layer# */ {
     _class: 'Layer',
     // Counts the changes of the layer's text wraps, by which its area texts
     // know to lay out again, see Item#textWrap:
@@ -66,19 +67,19 @@ var Layer = Group.extend(/** @lends Layer# */{
      * });
      */
     initialize: function Layer() {
-        Group.apply(this, arguments);
+      Group.apply(this, arguments)
     },
 
     /**
      * Private helper to return the owner, either the parent, or the project
      * for top-level layers, if they are inserted in it.
      */
-    _getOwner: function() {
-        return this._parent || this._index != null && this._project;
+    _getOwner: function () {
+      return this._parent || this._index != null && this._project
     },
 
     isInserted: function isInserted() {
-        return this._parent ? isInserted.base.call(this) : this._index != null;
+      return this._parent ? isInserted.base.call(this) : this._index != null
     },
 
     /**
@@ -91,10 +92,10 @@ var Layer = Group.extend(/** @lends Layer# */{
      * firstLayer.activate();
      * console.log(project.activeLayer == firstLayer); // true
      */
-    activate: function() {
-        this._project._activeLayer = this;
+    activate: function () {
+      this._project._activeLayer = this
     },
 
-    _hitTestSelf: function() {
-    }
-});
+    _hitTestSelf: function () {}
+  }
+)

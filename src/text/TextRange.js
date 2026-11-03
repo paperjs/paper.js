@@ -31,16 +31,17 @@
  *     word.fontSize = 8 + word.content.length * 3;
  * });
  */
-var TextRange = Base.extend(/** @lends TextRange# */{
+var TextRange = Base.extend(
+  /** @lends TextRange# */ {
     _class: 'TextRange',
     beans: true,
 
     initialize: function TextRange(story, start, end) {
-        var length = story._content.length;
-        this._story = story;
-        this._start = Math.max(0, Math.min(start, length));
-        this._end = Math.max(this._start, Math.min(end, length));
-        this._style = new Style(null, this);
+      var length = story._content.length
+      this._story = story
+      this._start = Math.max(0, Math.min(start, length))
+      this._end = Math.max(this._start, Math.min(end, length))
+      this._style = new Style(null, this)
     },
 
     /**
@@ -49,8 +50,8 @@ var TextRange = Base.extend(/** @lends TextRange# */{
      * @bean
      * @type TextStory
      */
-    getStory: function() {
-        return this._story;
+    getStory: function () {
+      return this._story
     },
 
     /**
@@ -59,8 +60,8 @@ var TextRange = Base.extend(/** @lends TextRange# */{
      * @bean
      * @type Number
      */
-    getStart: function() {
-        return this._start;
+    getStart: function () {
+      return this._start
     },
 
     /**
@@ -69,8 +70,8 @@ var TextRange = Base.extend(/** @lends TextRange# */{
      * @bean
      * @type Number
      */
-    getEnd: function() {
-        return this._end;
+    getEnd: function () {
+      return this._end
     },
 
     /**
@@ -79,8 +80,8 @@ var TextRange = Base.extend(/** @lends TextRange# */{
      * @bean
      * @type String
      */
-    getContent: function() {
-        return this._story._content.slice(this._start, this._end);
+    getContent: function () {
+      return this._story._content.slice(this._start, this._end)
     },
 
     /**
@@ -90,63 +91,77 @@ var TextRange = Base.extend(/** @lends TextRange# */{
      * @bean
      * @type Style
      */
-    getStyle: function() {
-        return this._style;
+    getStyle: function () {
+      return this._style
     },
 
-    setStyle: function(style) {
-        this._style.set(style);
+    setStyle: function (style) {
+      this._style.set(style)
     },
 
     // The range's style stands for those of the text's runs and paragraphs
     // that it covers, see Style.merge() and Style.apply():
-    _getStyles: function(style, key, setting) {
-        return this._story._getRangeStyles(key, this._start, this._end,
-                setting);
+    _getStyles: function (style, key, setting) {
+      return this._story._getRangeStyles(key, this._start, this._end, setting)
     },
 
-    _changed: function(flags) {
-        this._story._changed(flags);
+    _changed: function (flags) {
+      this._story._changed(flags)
     },
 
     // The range's content and its style properties that differ from the
     // defaults, and that it has throughout:
-    toJSON: function() {
-        var style = this._style,
-            defaults = style._defaults,
-            json = {
-                start: this._start,
-                end: this._end,
-                content: this.getContent()
-            };
-        for (var key in defaults) {
-            var value = style[key];
-            if (value !== undefined && !Base.equals(value, defaults[key]))
-                json[key] = Base.serialize(value);
+    toJSON: function () {
+      var style = this._style,
+        defaults = style._defaults,
+        json = {
+          start: this._start,
+          end: this._end,
+          content: this.getContent()
         }
-        return json;
+      for (var key in defaults) {
+        var value = style[key]
+        if (value !== undefined && !Base.equals(value, defaults[key]))
+          json[key] = Base.serialize(value)
+      }
+      return json
     },
 
-    toString: function() {
-        return this.getContent();
+    toString: function () {
+      return this.getContent()
     }
-}, Base.each(['Runs', 'Paragraphs', 'Words', 'Letters'], function(name) {
-    var get = 'get' + name;
-    // The story's runs, paragraphs, words or letters within the range, clipped
-    // to it. An empty paragraph is within it where the range holds its place:
-    this[get] = function() {
+  },
+  Base.each(
+    ['Runs', 'Paragraphs', 'Words', 'Letters'],
+    function (name) {
+      var get = 'get' + name
+      // The story's runs, paragraphs, words or letters within the range, clipped
+      // to it. An empty paragraph is within it where the range holds its place:
+      this[get] = function () {
         var story = this._story,
-            start = this._start,
-            end = this._end;
-        return story[get]().filter(function(range) {
-            return range._start < end && range._end > start
-                    || range._start === range._end
-                        && range._start >= start && range._start <= end;
-        }).map(function(range) {
-            return new TextRange(story, Math.max(range._start, start),
-                    Math.min(range._end, end));
-        });
-    };
-}, {
-    beans: true
-}));
+          start = this._start,
+          end = this._end
+        return story[get]()
+          .filter(function (range) {
+            return (
+              range._start < end && range._end > start || (
+                range._start === range._end &&
+                range._start >= start &&
+                range._start <= end
+              )
+            )
+          })
+          .map(function (range) {
+            return new TextRange(
+              story,
+              Math.max(range._start, start),
+              Math.min(range._end, end)
+            )
+          })
+      }
+    },
+    {
+      beans: true
+    }
+  )
+)

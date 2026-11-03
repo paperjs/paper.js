@@ -10,7 +10,8 @@
  * All rights reserved.
  */
 
-var SvgStyles = Base.each({
+var SvgStyles = Base.each(
+  {
     // Fill
     fillColor: ['fill', 'color'],
     fillRule: ['fill-rule', 'string'],
@@ -19,16 +20,24 @@ var SvgStyles = Base.each({
     strokeWidth: ['stroke-width', 'number'],
     strokeCap: ['stroke-linecap', 'string'],
     strokeJoin: ['stroke-linejoin', 'string'],
-    strokeScaling: ['vector-effect', 'lookup', {
+    strokeScaling: [
+      'vector-effect',
+      'lookup',
+      {
         true: 'none',
         false: 'non-scaling-stroke'
-    }, function(item, value) {
+      },
+      function (item, value) {
         // no inheritance, only applies to graphical elements
-        return !value // false, meaning non-scaling-stroke
-                && (item instanceof PathItem
-                    || item instanceof Shape
-                    || item instanceof TextItem);
-    }],
+        return (
+          !value && ( // false, meaning non-scaling-stroke
+            item instanceof PathItem ||
+            item instanceof Shape ||
+            item instanceof TextItem
+          )
+        )
+      }
+    ],
     miterLimit: ['stroke-miterlimit', 'number'],
     dashArray: ['stroke-dasharray', 'array'],
     dashOffset: ['stroke-dashoffset', 'number'],
@@ -39,34 +48,58 @@ var SvgStyles = Base.each({
     fontSize: ['font-size', 'number'],
     letterTracking: ['letter-spacing', 'tracking'],
     // The later of the justifications that share an anchor are imported:
-    justification: ['text-anchor', 'lookup', {
+    justification: [
+      'text-anchor',
+      'lookup',
+      {
         justify: 'start',
         start: 'start',
         end: 'end',
         left: 'start',
         center: 'middle',
         right: 'end'
-    }],
+      }
+    ],
     // Item, not inherited, so export them where they differ from the default:
-    opacity: ['opacity', 'number', null, function(item, value) {
-        return value !== 1;
-    }],
-    blendMode: ['mix-blend-mode', 'style', null, function(item, value) {
-        return value !== 'normal';
-    }]
-}, function(entry, key) {
+    opacity: [
+      'opacity',
+      'number',
+      null,
+      function (item, value) {
+        return value !== 1
+      }
+    ],
+    blendMode: [
+      'mix-blend-mode',
+      'style',
+      null,
+      function (item, value) {
+        return value !== 'normal'
+      }
+    ]
+  },
+  function (entry, key) {
     var part = Base.capitalize(key),
-        lookup = entry[2];
+      lookup = entry[2]
     this[key] = {
-        type: entry[1],
-        property: key,
-        attribute: entry[0],
-        toSVG: lookup,
-        fromSVG: lookup && Base.each(lookup, function(value, name) {
-            this[value] = name;
-        }, {}),
-        exportFilter: entry[3],
-        get: 'get' + part,
-        set: 'set' + part
-    };
-}, {});
+      type: entry[1],
+      property: key,
+      attribute: entry[0],
+      toSVG: lookup,
+      fromSVG: (
+        lookup &&
+        Base.each(
+          lookup,
+          function (value, name) {
+            this[value] = name
+          },
+          {}
+        )
+      ),
+      exportFilter: entry[3],
+      get: 'get' + part,
+      set: 'set' + part
+    }
+  },
+  {}
+)

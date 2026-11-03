@@ -17,37 +17,38 @@
 // global one in the whole scope.
 
 var paper = new (PaperScope.inject(Base.exports, {
-    Base: Base,
-    Numerical: Numerical,
-    ChangeFlag: ChangeFlag,
-    Key: Key,
-    DomEvent: DomEvent,
-    DomElement: DomElement,
-    // Export jsdom document and window too, for Node.js
-    document: document,
-    window: window,
-    // TODO: Remove in 1.0.0? (deprecated January 2016):
-    PlacedSymbol: SymbolItem,
-    Symbol: SymbolDefinition
-}))();
+  Base: Base,
+  Numerical: Numerical,
+  ChangeFlag: ChangeFlag,
+  Key: Key,
+  DomEvent: DomEvent,
+  DomElement: DomElement,
+  // Export jsdom document and window too, for Node.js
+  document: document,
+  window: window,
+  // TODO: Remove in 1.0.0? (deprecated January 2016):
+  PlacedSymbol: SymbolItem,
+  Symbol: SymbolDefinition
+}))()
 
 // If we're on node, require some additional functionality now before finishing:
 // - PaperScript support in require() with sourceMaps
 // - exportFrames / exportImage on CanvasView
 if (paper.agent.node) {
-    require('./node/extend.js')(paper);
+  require('./node/extend.js')(paper)
 }
 
 // https://github.com/umdjs/umd
 if (typeof define === 'function' && define.amd) {
-    // Support AMD (e.g. require.js)
-    // Use named module AMD syntax since there are other unnamed calls to
-    // define() inside the built library (from inlined Acorn / Esprima) that
-    // apparently confuse the require.js optimizer.
-    define('paper', paper);
-} else if (typeof module === 'object' && module) { // could be `null`
-    // Support CommonJS module
-    // NOTE: Do not check typeof module.exports === 'object' since it will be
-    // the Base constructor function after straps.js is included.
-    module.exports = paper;
+  // Support AMD (e.g. require.js)
+  // Use named module AMD syntax since there are other unnamed calls to
+  // define() inside the built library (from inlined Acorn / Esprima) that
+  // apparently confuse the require.js optimizer.
+  define('paper', paper)
+} else if (typeof module === 'object' && module) {
+  // could be `null`
+  // Support CommonJS module
+  // NOTE: Do not check typeof module.exports === 'object' since it will be
+  // the Base constructor function after straps.js is included.
+  module.exports = paper
 }

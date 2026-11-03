@@ -26,7 +26,8 @@
  * console.log(point.x); // 10
  * console.log(point.y); // 5
  */
-var Point = Base.extend(/** @lends Point# */{
+var Point = Base.extend(
+  /** @lends Point# */ {
     _class: 'Point',
     // Tell Base.read that the Point constructor supports reading with index
     _readIndex: true,
@@ -142,41 +143,38 @@ var Point = Base.extend(/** @lends Point# */{
      * @name Point#initialize
      */
     initialize: function Point(arg0, arg1) {
-        var type = typeof arg0,
-            reading = this.__read,
-            read = 0;
-        if (type === 'number') {
-            var hasY = typeof arg1 === 'number';
-            this._set(arg0, hasY ? arg1 : arg0);
-            if (reading)
-                read = hasY ? 2 : 1;
-        } else if (type === 'undefined' || arg0 === null) {
-            this._set(0, 0);
-            if (reading)
-                read = arg0 === null ? 1 : 0;
+      var type = typeof arg0,
+        reading = this.__read,
+        read = 0
+      if (type === 'number') {
+        var hasY = typeof arg1 === 'number'
+        this._set(arg0, hasY ? arg1 : arg0)
+        if (reading) read = hasY ? 2 : 1
+      } else if (type === 'undefined' || arg0 === null) {
+        this._set(0, 0)
+        if (reading) read = arg0 === null ? 1 : 0
+      } else {
+        var obj = type === 'string' ? arg0.split(/[\s,]+/) || [] : arg0
+        read = 1
+        if (Array.isArray(obj)) {
+          this._set(+obj[0], +(obj.length > 1 ? obj[1] : obj[0]))
+        } else if ('x' in obj) {
+          this._set(obj.x || 0, obj.y || 0)
+        } else if ('width' in obj) {
+          this._set(obj.width || 0, obj.height || 0)
+        } else if ('angle' in obj) {
+          this._set(obj.length || 0, 0)
+          this.setAngle(obj.angle || 0)
+        } else if ('angleInRadians' in obj) {
+          this._set(obj.length || 0, 0)
+          this.setAngleInRadians(obj.angleInRadians || 0)
         } else {
-            var obj = type === 'string' ? arg0.split(/[\s,]+/) || [] : arg0;
-            read = 1;
-            if (Array.isArray(obj)) {
-                this._set(+obj[0], +(obj.length > 1 ? obj[1] : obj[0]));
-            } else if ('x' in obj) {
-                this._set(obj.x || 0, obj.y || 0);
-            } else if ('width' in obj) {
-                this._set(obj.width || 0, obj.height || 0);
-            } else if ('angle' in obj) {
-                this._set(obj.length || 0, 0);
-                this.setAngle(obj.angle || 0);
-            } else if ('angleInRadians' in obj) {
-                this._set(obj.length || 0, 0);
-                this.setAngleInRadians(obj.angleInRadians || 0);
-            } else {
-                this._set(0, 0);
-                read = 0;
-            }
+          this._set(0, 0)
+          read = 0
         }
-        if (reading)
-            this.__read = read;
-        return this;
+      }
+      if (reading) this.__read = read
+      return this
     },
 
     /**
@@ -200,10 +198,10 @@ var Point = Base.extend(/** @lends Point# */{
      * - {@link #set()} is a shortcut to #initialize() on all basic types, to
      *   offer the same amount of flexibility when setting values.
      */
-    _set: function(x, y) {
-        this.x = x;
-        this.y = y;
-        return this;
+    _set: function (x, y) {
+      this.x = x
+      this.y = y
+      return this
     },
 
     /**
@@ -233,12 +231,19 @@ var Point = Base.extend(/** @lends Point# */{
      * console.log(point == new Point(1, 1)); // false
      * console.log(point != new Point(1, 1)); // true
      */
-    equals: function(point) {
-        return this === point || point
-                && (this.x === point.x && this.y === point.y
-                    || Array.isArray(point)
-                        && this.x === point[0] && this.y === point[1])
-                || false;
+    equals: function (point) {
+      return (
+        this === point || (
+          point && (
+            this.x === point.x && this.y === point.y || (
+              Array.isArray(point) &&
+              this.x === point[0] &&
+              this.y === point[1]
+            )
+          )
+        ) ||
+        false
+      )
     },
 
     /**
@@ -254,23 +259,23 @@ var Point = Base.extend(/** @lends Point# */{
      *
      * @return {Point} the cloned point
      */
-    clone: function() {
-        return new Point(this.x, this.y);
+    clone: function () {
+      return new Point(this.x, this.y)
     },
 
     /**
      * @return {String} a string representation of the point
      */
-    toString: function() {
-        var f = Formatter.instance;
-        return '{ x: ' + f.number(this.x) + ', y: ' + f.number(this.y) + ' }';
+    toString: function () {
+      var f = Formatter.instance
+      return '{ x: ' + f.number(this.x) + ', y: ' + f.number(this.y) + ' }'
     },
 
-    _serialize: function(options) {
-        var f = options.formatter;
-        // For speed reasons, we directly call formatter.number() here, instead
-        // of converting array through Base.serialize() which makes a copy.
-        return [f.number(this.x), f.number(this.y)];
+    _serialize: function (options) {
+      var f = options.formatter
+      // For speed reasons, we directly call formatter.number() here, instead
+      // of converting array through Base.serialize() which makes a copy.
+      return [f.number(this.x), f.number(this.y)]
     },
 
     /**
@@ -280,8 +285,8 @@ var Point = Base.extend(/** @lends Point# */{
      * @bean
      * @type Number[]
      */
-    getValues: function() {
-        return [this.x, this.y];
+    getValues: function () {
+      return [this.x, this.y]
     },
 
     /**
@@ -293,30 +298,29 @@ var Point = Base.extend(/** @lends Point# */{
      * @bean
      * @type Number
      */
-    getLength: function() {
-        return Math.sqrt(this.x * this.x + this.y * this.y);
+    getLength: function () {
+      return Math.sqrt(this.x * this.x + this.y * this.y)
     },
 
-    setLength: function(length) {
-        // Whenever chaining both x & y, use #set() instead of direct
-        // assignment, so LinkedPoint does not report changes twice.
-        if (this.isZero()) {
-            var angle = this._angle || 0;
-            this._set(
-                Math.cos(angle) * length,
-                Math.sin(angle) * length
-            );
-        } else {
-            var scale = length / this.getLength();
-            // Force calculation of angle now, so it will be preserved even when
-            // x and y are 0
-            if (Numerical.isZero(scale))
-                this.getAngle();
-            this._set(
-                this.x * scale,
-                this.y * scale
-            );
-        }
+    setLength: function (length) {
+      // Whenever chaining both x & y, use #set() instead of direct
+      // assignment, so LinkedPoint does not report changes twice.
+      if (this.isZero()) {
+        var angle = this._angle || 0
+        this._set(
+          Math.cos(angle) * length,
+          Math.sin(angle) * length
+        )
+      } else {
+        var scale = length / this.getLength()
+        // Force calculation of angle now, so it will be preserved even when
+        // x and y are 0
+        if (Numerical.isZero(scale)) this.getAngle()
+        this._set(
+          this.x * scale,
+          this.y * scale
+        )
+      }
     },
     /**
      * Returns the smaller angle between two vectors. The angle is unsigned, no
@@ -334,12 +338,12 @@ var Point = Base.extend(/** @lends Point# */{
      * @name Point#getAngle
      * @type Number
      */
-    getAngle: function(/* point */) {
-        return this.getAngleInRadians.apply(this, arguments) * 180 / Math.PI;
+    getAngle: function (/* point */) {
+      return this.getAngleInRadians.apply(this, arguments) * 180 / Math.PI
     },
 
-    setAngle: function(angle) {
-        this.setAngleInRadians.call(this, angle * Math.PI / 180);
+    setAngle: function (angle) {
+      this.setAngleInRadians.call(this, angle * Math.PI / 180)
     },
 
     getAngleInDegrees: '#getAngle',
@@ -361,42 +365,42 @@ var Point = Base.extend(/** @lends Point# */{
      * @name Point#getAngleInRadians
      * @type Number
      */
-    getAngleInRadians: function(/* point */) {
-        if (!arguments.length) {
-            return this.isZero()
-                    // Return the preserved angle in case the vector has no
-                    // length, and update the internal _angle in case the
-                    // vector has a length. See #setAngle() for more
-                    // explanations.
-                    ? this._angle || 0
-                    : this._angle = Math.atan2(this.y, this.x);
+    getAngleInRadians: function (/* point */) {
+      if (!arguments.length) {
+        return this.isZero()
+          ? // Return the preserved angle in case the vector has no
+            // length, and update the internal _angle in case the
+            // vector has a length. See #setAngle() for more
+            // explanations.
+            this._angle || 0
+          : (this._angle = Math.atan2(this.y, this.x))
+      } else {
+        var point = Point.read(arguments),
+          div = this.getLength() * point.getLength()
+        if (Numerical.isZero(div)) {
+          return NaN
         } else {
-            var point = Point.read(arguments),
-                div = this.getLength() * point.getLength();
-            if (Numerical.isZero(div)) {
-                return NaN;
-            } else {
-                var a = this.dot(point) / div;
-                return Math.acos(a < -1 ? -1 : a > 1 ? 1 : a);
-            }
+          var a = this.dot(point) / div
+          return Math.acos(a < -1 ? -1 : a > 1 ? 1 : a)
         }
+      }
     },
 
-    setAngleInRadians: function(angle) {
-        // We store a reference to _angle internally so we still preserve it
-        // when the vector's length is set to zero, and then anything else.
-        // Note that we cannot rely on it if x and y are something else than 0,
-        // since updating x / y does not automatically change _angle!
-        this._angle = angle;
-        if (!this.isZero()) {
-            var length = this.getLength();
-            // Use #set() instead of direct assignment of x/y, so LinkedPoint
-            // does not report changes twice.
-            this._set(
-                Math.cos(angle) * length,
-                Math.sin(angle) * length
-            );
-        }
+    setAngleInRadians: function (angle) {
+      // We store a reference to _angle internally so we still preserve it
+      // when the vector's length is set to zero, and then anything else.
+      // Note that we cannot rely on it if x and y are something else than 0,
+      // since updating x / y does not automatically change _angle!
+      this._angle = angle
+      if (!this.isZero()) {
+        var length = this.getLength()
+        // Use #set() instead of direct assignment of x/y, so LinkedPoint
+        // does not report changes twice.
+        this._set(
+          Math.cos(angle) * length,
+          Math.sin(angle) * length
+        )
+      }
     },
 
     /**
@@ -426,10 +430,11 @@ var Point = Base.extend(/** @lends Point# */{
      * point.angle = 280;
      * console.log(point.quadrant); // 4
      */
-    getQuadrant: function() {
-        return this.x >= 0 ? this.y >= 0 ? 1 : 4 : this.y >= 0 ? 2 : 3;
+    getQuadrant: function () {
+      return this.x >= 0 ? (this.y >= 0 ? 1 : 4) : this.y >= 0 ? 2 : 3
     }
-}, /** @lends Point# */{
+  },
+  /** @lends Point# */ {
     // Explicitly deactivate the creation of beans, as we have functions here
     // that look like bean getters but actually read arguments.
     // See #getDirectedAngle(), #getDistance()
@@ -445,9 +450,9 @@ var Point = Base.extend(/** @lends Point# */{
      * @param {Point} point
      * @return {Number} the angle between the two vectors
      */
-    getDirectedAngle: function(/* point */) {
-        var point = Point.read(arguments);
-        return Math.atan2(this.cross(point), this.dot(point)) * 180 / Math.PI;
+    getDirectedAngle: function (/* point */) {
+      var point = Point.read(arguments)
+      return Math.atan2(this.cross(point), this.dot(point)) * 180 / Math.PI
     },
 
     /**
@@ -458,14 +463,14 @@ var Point = Base.extend(/** @lends Point# */{
      * remain squared, or its square root should be calculated
      * @return {Number}
      */
-    getDistance: function(/* point, squared */) {
-        var args = arguments,
-            point = Point.read(args),
-            x = point.x - this.x,
-            y = point.y - this.y,
-            d = x * x + y * y,
-            squared = Base.read(args);
-        return squared ? d : Math.sqrt(d);
+    getDistance: function (/* point, squared */) {
+      var args = arguments,
+        point = Point.read(args),
+        x = point.x - this.x,
+        y = point.y - this.y,
+        d = x * x + y * y,
+        squared = Base.read(args)
+      return squared ? d : Math.sqrt(d)
     },
 
     /**
@@ -478,16 +483,14 @@ var Point = Base.extend(/** @lends Point# */{
      * @return {Point} the normalized vector of the vector that is represented
      *     by this point's coordinates
      */
-    normalize: function(length) {
-        if (length === undefined)
-            length = 1;
-        var current = this.getLength(),
-            scale = current !== 0 ? length / current : 0,
-            point = new Point(this.x * scale, this.y * scale);
-        // Preserve angle.
-        if (scale >= 0)
-            point._angle = this._angle;
-        return point;
+    normalize: function (length) {
+      if (length === undefined) length = 1
+      var current = this.getLength(),
+        scale = current !== 0 ? length / current : 0,
+        point = new Point(this.x * scale, this.y * scale)
+      // Preserve angle.
+      if (scale >= 0) point._angle = this._angle
+      return point
     },
 
     /**
@@ -501,18 +504,17 @@ var Point = Base.extend(/** @lends Point# */{
      * @param {Point} center the center point of the rotation
      * @return {Point} the rotated point
      */
-    rotate: function(angle, center) {
-        if (angle === 0)
-            return this.clone();
-        angle = angle * Math.PI / 180;
-        var point = center ? this.subtract(center) : this,
-            sin = Math.sin(angle),
-            cos = Math.cos(angle);
-        point = new Point(
-            point.x * cos - point.y * sin,
-            point.x * sin + point.y * cos
-        );
-        return center ? point.add(center) : point;
+    rotate: function (angle, center) {
+      if (angle === 0) return this.clone()
+      angle = angle * Math.PI / 180
+      var point = center ? this.subtract(center) : this,
+        sin = Math.sin(angle),
+        cos = Math.cos(angle)
+      point = new Point(
+        point.x * cos - point.y * sin,
+        point.x * sin + point.y * cos
+      )
+      return center ? point.add(center) : point
     },
 
     /**
@@ -522,8 +524,8 @@ var Point = Base.extend(/** @lends Point# */{
      * @param {Matrix} matrix
      * @return {Point} the transformed point
      */
-    transform: function(matrix) {
-        return matrix ? matrix._transformPoint(this) : this;
+    transform: function (matrix) {
+      return matrix ? matrix._transformPoint(this) : this
     },
 
     /**
@@ -561,9 +563,9 @@ var Point = Base.extend(/** @lends Point# */{
      * var result = point1.add(point2); // JavaScript
      * console.log(result); // {x: 15, y: 30}
      */
-    add: function(/* point */) {
-        var point = Point.read(arguments);
-        return new Point(this.x + point.x, this.y + point.y);
+    add: function (/* point */) {
+      var point = Point.read(arguments)
+      return new Point(this.x + point.x, this.y + point.y)
     },
 
     /**
@@ -601,9 +603,9 @@ var Point = Base.extend(/** @lends Point# */{
      * var result = firstPoint.subtract(secondPoint); // JavaScript
      * console.log(result); // {x: 5, y: 15}
      */
-    subtract: function(/* point */) {
-        var point = Point.read(arguments);
-        return new Point(this.x - point.x, this.y - point.y);
+    subtract: function (/* point */) {
+      var point = Point.read(arguments)
+      return new Point(this.x - point.x, this.y - point.y)
     },
 
     /**
@@ -642,9 +644,9 @@ var Point = Base.extend(/** @lends Point# */{
      * var result = firstPoint.multiply(secondPoint); // JavaScript
      * console.log(result); // {x: 20, y: 20}
      */
-    multiply: function(/* point */) {
-        var point = Point.read(arguments);
-        return new Point(this.x * point.x, this.y * point.y);
+    multiply: function (/* point */) {
+      var point = Point.read(arguments)
+      return new Point(this.x * point.x, this.y * point.y)
     },
 
     /**
@@ -682,9 +684,9 @@ var Point = Base.extend(/** @lends Point# */{
      * var result = firstPoint.divide(secondPoint); // JavaScript
      * console.log(result); // {x: 4, y: 2}
      */
-    divide: function(/* point */) {
-        var point = Point.read(arguments);
-        return new Point(this.x / point.x, this.y / point.y);
+    divide: function (/* point */) {
+      var point = Point.read(arguments)
+      return new Point(this.x / point.x, this.y / point.y)
     },
 
     /**
@@ -721,9 +723,9 @@ var Point = Base.extend(/** @lends Point# */{
      * var result = point.modulo(new Point(5, 2)); // JavaScript
      * console.log(result); // {x: 2, y: 0}
      */
-    modulo: function(/* point */) {
-        var point = Point.read(arguments);
-        return new Point(this.x % point.x, this.y % point.y);
+    modulo: function (/* point */) {
+      var point = Point.read(arguments)
+      return new Point(this.x % point.x, this.y % point.y)
     },
 
     /**
@@ -741,8 +743,8 @@ var Point = Base.extend(/** @lends Point# */{
      * var result = point.negate(); // JavaScript
      * console.log(result); // {x: -12, y: 6}
      */
-    negate: function() {
-        return new Point(-this.x, -this.y);
+    negate: function () {
+      return new Point(-this.x, -this.y)
     },
 
     /**
@@ -753,8 +755,8 @@ var Point = Base.extend(/** @lends Point# */{
      * @param {Rectangle} rect the rectangle to check against
      * @return {Boolean} {@true if the point is inside the rectangle}
      */
-    isInside: function(/* rect */) {
-        return Rectangle.read(arguments).contains(this);
+    isInside: function (/* rect */) {
+      return Rectangle.read(arguments).contains(this)
     },
 
     /**
@@ -764,11 +766,11 @@ var Point = Base.extend(/** @lends Point# */{
      * @param {Number} tolerance the maximum distance allowed
      * @return {Boolean} {@true if it is within the given distance}
      */
-    isClose: function(/* point, tolerance */) {
-        var args = arguments,
-            point = Point.read(args),
-            tolerance = Base.read(args);
-        return this.getDistance(point) <= tolerance;
+    isClose: function (/* point, tolerance */) {
+      var args = arguments,
+        point = Point.read(args),
+        tolerance = Base.read(args)
+      return this.getDistance(point) <= tolerance
     },
 
     /**
@@ -779,9 +781,9 @@ var Point = Base.extend(/** @lends Point# */{
      * @param {Point} point the vector to check against
      * @return {Boolean} {@true it is collinear}
      */
-    isCollinear: function(/* point */) {
-        var point = Point.read(arguments);
-        return Point.isCollinear(this.x, this.y, point.x, point.y);
+    isCollinear: function (/* point */) {
+      var point = Point.read(arguments)
+      return Point.isCollinear(this.x, this.y, point.x, point.y)
     },
 
     // TODO: Remove version with typo after a while (deprecated June 2015)
@@ -795,9 +797,9 @@ var Point = Base.extend(/** @lends Point# */{
      * @param {Point} point the vector to check against
      * @return {Boolean} {@true it is orthogonal}
      */
-    isOrthogonal: function(/* point */) {
-        var point = Point.read(arguments);
-        return Point.isOrthogonal(this.x, this.y, point.x, point.y);
+    isOrthogonal: function (/* point */) {
+      var point = Point.read(arguments)
+      return Point.isOrthogonal(this.x, this.y, point.x, point.y)
     },
 
     /**
@@ -807,9 +809,9 @@ var Point = Base.extend(/** @lends Point# */{
      *
      * @return {Boolean} {@true if both x and y are 0, within the tolerance}
      */
-    isZero: function() {
-        var isZero = Numerical.isZero;
-        return isZero(this.x) && isZero(this.y);
+    isZero: function () {
+      var isZero = Numerical.isZero
+      return isZero(this.x) && isZero(this.y)
     },
 
     /**
@@ -818,8 +820,8 @@ var Point = Base.extend(/** @lends Point# */{
      *
      * @return {Boolean} {@true if either x or y are not a number}
      */
-    isNaN: function() {
-        return isNaN(this.x) || isNaN(this.y);
+    isNaN: function () {
+      return isNaN(this.x) || isNaN(this.y)
     },
 
     /**
@@ -831,15 +833,17 @@ var Point = Base.extend(/** @lends Point# */{
      * @return {Boolean} {@true if either x or y are not a number}
      * @see #quadrant
      */
-    isInQuadrant: function(q) {
-        // Map quadrant to x & y coordinate pairs and multiply with coordinates,
-        // then check sign:
-        // 1: [ 1,  1]
-        // 2: [-1,  1]
-        // 3: [-1, -1]
-        // 4: [ 1, -1]
-        return this.x * (q > 1 && q < 4 ? -1 : 1) >= 0
-            && this.y * (q > 2 ? -1 : 1) >= 0;
+    isInQuadrant: function (q) {
+      // Map quadrant to x & y coordinate pairs and multiply with coordinates,
+      // then check sign:
+      // 1: [ 1,  1]
+      // 2: [-1,  1]
+      // 3: [-1, -1]
+      // 4: [ 1, -1]
+      return (
+        this.x * (q > 1 && q < 4 ? -1 : 1) >= 0 &&
+        this.y * (q > 2 ? -1 : 1) >= 0
+      )
     },
 
     /**
@@ -849,9 +853,9 @@ var Point = Base.extend(/** @lends Point# */{
      * @param {Point} point
      * @return {Number} the dot product of the two points
      */
-    dot: function(/* point */) {
-        var point = Point.read(arguments);
-        return this.x * point.x + this.y * point.y;
+    dot: function (/* point */) {
+      var point = Point.read(arguments)
+      return this.x * point.x + this.y * point.y
     },
 
     /**
@@ -860,9 +864,9 @@ var Point = Base.extend(/** @lends Point# */{
      * @param {Point} point
      * @return {Number} the cross product of the two points
      */
-    cross: function(/* point */) {
-        var point = Point.read(arguments);
-        return this.x * point.y - this.y * point.x;
+    cross: function (/* point */) {
+      var point = Point.read(arguments)
+      return this.x * point.y - this.y * point.x
     },
 
     /**
@@ -872,13 +876,13 @@ var Point = Base.extend(/** @lends Point# */{
      * @param {Point} point
      * @return {Point} the projection of the point onto another point
      */
-    project: function(/* point */) {
-        var point = Point.read(arguments),
-            scale = point.isZero() ? 0 : this.dot(point) / point.dot(point);
-        return new Point(
-            point.x * scale,
-            point.y * scale
-        );
+    project: function (/* point */) {
+      var point = Point.read(arguments),
+        scale = point.isZero() ? 0 : this.dot(point) / point.dot(point)
+      return new Point(
+        point.x * scale,
+        point.y * scale
+      )
     },
 
     /**
@@ -994,123 +998,133 @@ var Point = Base.extend(/** @lends Point# */{
      * var clampPoint = point.clamp(rect.topLeft, rect.bottomRight);
      * console.log(clampPoint); // {x: 110, y: 40}
      */
-    clamp: function(/* min, max */) {
-        var args = arguments,
-            min = Point.read(args),
-            max = Point.read(args);
-        return new Point(
-            Numerical.clamp(this.x, min.x, max.x),
-            Numerical.clamp(this.y, min.y, max.y)
-        );
+    clamp: function (/* min, max */) {
+      var args = arguments,
+        min = Point.read(args),
+        max = Point.read(args)
+      return new Point(
+        Numerical.clamp(this.x, min.x, max.x),
+        Numerical.clamp(this.y, min.y, max.y)
+      )
     },
 
-    statics: /** @lends Point */{
-        /**
-         * Returns a new point object with the smallest {@link #x} and
-         * {@link #y} of the supplied points.
-         *
-         * @static
-         * @param {Point} point1
-         * @param {Point} point2
-         * @return {Point} the newly created point object
-         *
-         * @example
-         * var point1 = new Point(10, 100);
-         * var point2 = new Point(200, 5);
-         * var minPoint = Point.min(point1, point2);
-         * console.log(minPoint); // {x: 10, y: 5}
-         *
-         * @example
-         * // Find the minimum of multiple points:
-         * var point1 = new Point(60, 100);
-         * var point2 = new Point(200, 5);
-         * var point3 = new Point(250, 35);
-         * [point1, point2, point3].reduce(Point.min) // {x: 60, y: 5}
-         */
-        min: function(/* point1, point2 */) {
-            var args = arguments,
-                point1 = Point.read(args),
-                point2 = Point.read(args);
-            return new Point(
-                Math.min(point1.x, point2.x),
-                Math.min(point1.y, point2.y)
-            );
-        },
+    statics: /** @lends Point */ {
+      /**
+       * Returns a new point object with the smallest {@link #x} and
+       * {@link #y} of the supplied points.
+       *
+       * @static
+       * @param {Point} point1
+       * @param {Point} point2
+       * @return {Point} the newly created point object
+       *
+       * @example
+       * var point1 = new Point(10, 100);
+       * var point2 = new Point(200, 5);
+       * var minPoint = Point.min(point1, point2);
+       * console.log(minPoint); // {x: 10, y: 5}
+       *
+       * @example
+       * // Find the minimum of multiple points:
+       * var point1 = new Point(60, 100);
+       * var point2 = new Point(200, 5);
+       * var point3 = new Point(250, 35);
+       * [point1, point2, point3].reduce(Point.min) // {x: 60, y: 5}
+       */
+      min: function (/* point1, point2 */) {
+        var args = arguments,
+          point1 = Point.read(args),
+          point2 = Point.read(args)
+        return new Point(
+          Math.min(point1.x, point2.x),
+          Math.min(point1.y, point2.y)
+        )
+      },
 
-        /**
-         * Returns a new point object with the largest {@link #x} and
-         * {@link #y} of the supplied points.
-         *
-         * @static
-         * @param {Point} point1
-         * @param {Point} point2
-         * @return {Point} the newly created point object
-         *
-         * @example
-         * var point1 = new Point(10, 100);
-         * var point2 = new Point(200, 5);
-         * var maxPoint = Point.max(point1, point2);
-         * console.log(maxPoint); // {x: 200, y: 100}
-         *
-         * @example
-         * // Find the maximum of multiple points:
-         * var point1 = new Point(60, 100);
-         * var point2 = new Point(200, 5);
-         * var point3 = new Point(250, 35);
-         * [point1, point2, point3].reduce(Point.max) // {x: 250, y: 100}
-         */
-        max: function(/* point1, point2 */) {
-            var args = arguments,
-                point1 = Point.read(args),
-                point2 = Point.read(args);
-            return new Point(
-                Math.max(point1.x, point2.x),
-                Math.max(point1.y, point2.y)
-            );
-        },
+      /**
+       * Returns a new point object with the largest {@link #x} and
+       * {@link #y} of the supplied points.
+       *
+       * @static
+       * @param {Point} point1
+       * @param {Point} point2
+       * @return {Point} the newly created point object
+       *
+       * @example
+       * var point1 = new Point(10, 100);
+       * var point2 = new Point(200, 5);
+       * var maxPoint = Point.max(point1, point2);
+       * console.log(maxPoint); // {x: 200, y: 100}
+       *
+       * @example
+       * // Find the maximum of multiple points:
+       * var point1 = new Point(60, 100);
+       * var point2 = new Point(200, 5);
+       * var point3 = new Point(250, 35);
+       * [point1, point2, point3].reduce(Point.max) // {x: 250, y: 100}
+       */
+      max: function (/* point1, point2 */) {
+        var args = arguments,
+          point1 = Point.read(args),
+          point2 = Point.read(args)
+        return new Point(
+          Math.max(point1.x, point2.x),
+          Math.max(point1.y, point2.y)
+        )
+      },
 
-        /**
-         * Returns a point object with random {@link #x} and {@link #y} values
-         * between `0` and `1`.
-         *
-         * @return {Point} the newly created point object
-         * @static
-         *
-         * @example
-         * var maxPoint = new Point(100, 100);
-         * var randomPoint = Point.random();
-         *
-         * // A point between {x:0, y:0} and {x:100, y:100}:
-         * var point = maxPoint * randomPoint;
-         */
-        random: function() {
-            return new Point(Math.random(), Math.random());
-        },
+      /**
+       * Returns a point object with random {@link #x} and {@link #y} values
+       * between `0` and `1`.
+       *
+       * @return {Point} the newly created point object
+       * @static
+       *
+       * @example
+       * var maxPoint = new Point(100, 100);
+       * var randomPoint = Point.random();
+       *
+       * // A point between {x:0, y:0} and {x:100, y:100}:
+       * var point = maxPoint * randomPoint;
+       */
+      random: function () {
+        return new Point(Math.random(), Math.random())
+      },
 
-        isCollinear: function(x1, y1, x2, y2) {
-            // NOTE: We use normalized vectors so that the epsilon comparison is
-            // reliable. We could instead scale the epsilon based on the vector
-            // length. But instead of normalizing the vectors before calculating
-            // the cross product, we can scale the epsilon accordingly.
-            return Math.abs(x1 * y2 - y1 * x2)
-                    <= Math.sqrt((x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2))
-                        * /*#=*/Numerical.TRIGONOMETRIC_EPSILON;
-        },
+      isCollinear: function (x1, y1, x2, y2) {
+        // NOTE: We use normalized vectors so that the epsilon comparison is
+        // reliable. We could instead scale the epsilon based on the vector
+        // length. But instead of normalizing the vectors before calculating
+        // the cross product, we can scale the epsilon accordingly.
+        return (
+          Math.abs(x1 * y2 - y1 * x2) <=
+          Math.sqrt((x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2)) *
+          /*#=*/ Numerical.TRIGONOMETRIC_EPSILON
+        )
+      },
 
-        isOrthogonal: function(x1, y1, x2, y2) {
-            // See Point.isCollinear()
-            return Math.abs(x1 * x2 + y1 * y2)
-                    <= Math.sqrt((x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2))
-                        * /*#=*/Numerical.TRIGONOMETRIC_EPSILON;
-        }
+      isOrthogonal: function (x1, y1, x2, y2) {
+        // See Point.isCollinear()
+        return (
+          Math.abs(x1 * x2 + y1 * y2) <=
+          Math.sqrt((x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2)) *
+          /*#=*/ Numerical.TRIGONOMETRIC_EPSILON
+        )
+      }
     }
-}, Base.each(['round', 'ceil', 'floor', 'abs'], function(key) {
-    // Inject round, ceil, floor, abs:
-    var op = Math[key];
-    this[key] = function() {
-        return new Point(op(this.x), op(this.y));
-    };
-}, {}));
+  },
+  Base.each(
+    ['round', 'ceil', 'floor', 'abs'],
+    function (key) {
+      // Inject round, ceil, floor, abs:
+      var op = Math[key]
+      this[key] = function () {
+        return new Point(op(this.x), op(this.y))
+      }
+    },
+    {}
+  )
+)
 
 /**
  * @name LinkedPoint
@@ -1122,50 +1136,49 @@ var Point = Base.extend(/** @lends Point# */{
  * @private
  */
 var LinkedPoint = Point.extend({
-    // Have LinkedPoint appear as a normal Point in debugging
-    initialize: function Point(x, y, owner, setter) {
-        this._x = x;
-        this._y = y;
-        this._owner = owner;
-        this._setter = setter;
-    },
+  // Have LinkedPoint appear as a normal Point in debugging
+  initialize: function Point(x, y, owner, setter) {
+    this._x = x
+    this._y = y
+    this._owner = owner
+    this._setter = setter
+  },
 
-    // See Point#_set() for an explanation of #_set():
-    _set: function(x, y, _dontNotify) {
-        this._x = x;
-        this._y = y;
-        if (!_dontNotify)
-            this._owner[this._setter](this);
-        return this;
-    },
+  // See Point#_set() for an explanation of #_set():
+  _set: function (x, y, _dontNotify) {
+    this._x = x
+    this._y = y
+    if (!_dontNotify) this._owner[this._setter](this)
+    return this
+  },
 
-    getX: function() {
-        return this._x;
-    },
+  getX: function () {
+    return this._x
+  },
 
-    setX: function(x) {
-        this._x = x;
-        this._owner[this._setter](this);
-    },
+  setX: function (x) {
+    this._x = x
+    this._owner[this._setter](this)
+  },
 
-    getY: function() {
-        return this._y;
-    },
+  getY: function () {
+    return this._y
+  },
 
-    setY: function(y) {
-        this._y = y;
-        this._owner[this._setter](this);
-    },
+  setY: function (y) {
+    this._y = y
+    this._owner[this._setter](this)
+  },
 
-    isSelected: function() {
-        return !!(this._owner._selection & this._getSelection());
-    },
+  isSelected: function () {
+    return !!(this._owner._selection & this._getSelection())
+  },
 
-    setSelected: function(selected) {
-        this._owner._changeSelection(this._getSelection(), selected);
-    },
+  setSelected: function (selected) {
+    this._owner._changeSelection(this._getSelection(), selected)
+  },
 
-    _getSelection: function() {
-        return this._setter === 'setPosition' ? /*#=*/ItemSelection.POSITION : 0;
-    }
-});
+  _getSelection: function () {
+    return this._setter === 'setPosition' ? /*#=*/ ItemSelection.POSITION : 0
+  }
+})

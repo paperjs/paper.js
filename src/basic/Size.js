@@ -28,7 +28,8 @@
  * var rect = new Rectangle(new Point(20, 15), size);
  * console.log(rect); // { x: 20, y: 15, width: 10, height: 5 }
  */
-var Size = Base.extend(/** @lends Size# */{
+var Size = Base.extend(
+  /** @lends Size# */ {
     _class: 'Size',
     // Tell Base.read that the Point constructor supports reading with index
     _readIndex: true,
@@ -96,35 +97,32 @@ var Size = Base.extend(/** @lends Size# */{
      * console.log(size.height); // 50
      */
     initialize: function Size(arg0, arg1) {
-        var type = typeof arg0,
-            reading = this.__read,
-            read = 0;
-        if (type === 'number') {
-            var hasHeight = typeof arg1 === 'number';
-            this._set(arg0, hasHeight ? arg1 : arg0);
-            if (reading)
-                read = hasHeight ? 2 : 1;
-        } else if (type === 'undefined' || arg0 === null) {
-            this._set(0, 0);
-            if (reading)
-                read = arg0 === null ? 1 : 0;
+      var type = typeof arg0,
+        reading = this.__read,
+        read = 0
+      if (type === 'number') {
+        var hasHeight = typeof arg1 === 'number'
+        this._set(arg0, hasHeight ? arg1 : arg0)
+        if (reading) read = hasHeight ? 2 : 1
+      } else if (type === 'undefined' || arg0 === null) {
+        this._set(0, 0)
+        if (reading) read = arg0 === null ? 1 : 0
+      } else {
+        var obj = type === 'string' ? arg0.split(/[\s,]+/) || [] : arg0
+        read = 1
+        if (Array.isArray(obj)) {
+          this._set(+obj[0], +(obj.length > 1 ? obj[1] : obj[0]))
+        } else if ('width' in obj) {
+          this._set(obj.width || 0, obj.height || 0)
+        } else if ('x' in obj) {
+          this._set(obj.x || 0, obj.y || 0)
         } else {
-            var obj = type === 'string' ? arg0.split(/[\s,]+/) || [] : arg0;
-            read = 1;
-            if (Array.isArray(obj)) {
-                this._set(+obj[0], +(obj.length > 1 ? obj[1] : obj[0]));
-            } else if ('width' in obj) {
-                this._set(obj.width || 0, obj.height || 0);
-            } else if ('x' in obj) {
-                this._set(obj.x || 0, obj.y || 0);
-            } else {
-                this._set(0, 0);
-                read = 0;
-            }
+          this._set(0, 0)
+          read = 0
         }
-        if (reading)
-            this.__read = read;
-        return this;
+      }
+      if (reading) this.__read = read
+      return this
     },
 
     /**
@@ -139,10 +137,10 @@ var Size = Base.extend(/** @lends Size# */{
     set: '#initialize',
 
     // See Point#_set() for an explanation of #_set():
-    _set: function(width, height) {
-        this.width = width;
-        this.height = height;
-        return this;
+    _set: function (width, height) {
+      this.width = width
+      this.height = height
+      return this
     },
 
     /**
@@ -172,35 +170,49 @@ var Size = Base.extend(/** @lends Size# */{
      * console.log(size == new Size(1, 1)); // false
      * console.log(size != new Size(1, 1)); // true
      */
-    equals: function(size) {
-        return size === this || size && (this.width === size.width
-                && this.height === size.height
-                || Array.isArray(size) && this.width === size[0]
-                    && this.height === size[1]) || false;
+    equals: function (size) {
+      return (
+        size === this ||
+        size && (
+          (
+            this.width === size.width &&
+            this.height === size.height
+          ) || (
+            Array.isArray(size) &&
+            this.width === size[0] &&
+            this.height === size[1]
+          )
+        ) ||
+        false
+      )
     },
 
     /**
      * Returns a copy of the size.
      * @return {Size}
      */
-    clone: function() {
-        return new Size(this.width, this.height);
+    clone: function () {
+      return new Size(this.width, this.height)
     },
 
     /**
      * @return {String} a string representation of the size
      */
-    toString: function() {
-        var f = Formatter.instance;
-        return '{ width: ' + f.number(this.width)
-                + ', height: ' + f.number(this.height) + ' }';
+    toString: function () {
+      var f = Formatter.instance
+      return (
+        '{ width: ' +
+        f.number(this.width) +
+        ', height: ' +
+        f.number(this.height) +
+        ' }'
+      )
     },
 
-    _serialize: function(options) {
-        var f = options.formatter;
-        // See Point#_serialize()
-        return [f.number(this.width),
-                f.number(this.height)];
+    _serialize: function (options) {
+      var f = options.formatter
+      // See Point#_serialize()
+      return [f.number(this.width), f.number(this.height)]
     },
 
     /**
@@ -210,8 +222,8 @@ var Size = Base.extend(/** @lends Size# */{
      * @bean
      * @type Number[]
      */
-    getValues: function() {
-        return [this.width, this.height];
+    getValues: function () {
+      return [this.width, this.height]
     },
 
     /**
@@ -247,9 +259,9 @@ var Size = Base.extend(/** @lends Size# */{
      * var result = size1.add(size2); // JavaScript
      * console.log(result); // {width: 15, height: 30}
      */
-    add: function(/* size */) {
-        var size = Size.read(arguments);
-        return new Size(this.width + size.width, this.height + size.height);
+    add: function (/* size */) {
+      var size = Size.read(arguments)
+      return new Size(this.width + size.width, this.height + size.height)
     },
 
     /**
@@ -286,9 +298,9 @@ var Size = Base.extend(/** @lends Size# */{
      * var result = firstSize.subtract(secondSize); // JavaScript
      * console.log(result); // {width: 5, height: 15}
      */
-    subtract: function(/* size */) {
-        var size = Size.read(arguments);
-        return new Size(this.width - size.width, this.height - size.height);
+    subtract: function (/* size */) {
+      var size = Size.read(arguments)
+      return new Size(this.width - size.width, this.height - size.height)
     },
 
     /**
@@ -324,9 +336,9 @@ var Size = Base.extend(/** @lends Size# */{
      * var result = firstSize.multiply(secondSize); // JavaScript
      * console.log(result); // {width: 20, height: 20}
      */
-    multiply: function(/* size */) {
-        var size = Size.read(arguments);
-        return new Size(this.width * size.width, this.height * size.height);
+    multiply: function (/* size */) {
+      var size = Size.read(arguments)
+      return new Size(this.width * size.width, this.height * size.height)
     },
 
     /**
@@ -362,9 +374,9 @@ var Size = Base.extend(/** @lends Size# */{
      * var result = firstSize.divide(secondSize); // JavaScript
      * console.log(result); // {width: 4, height: 2}
      */
-    divide: function(/* size */) {
-        var size = Size.read(arguments);
-        return new Size(this.width / size.width, this.height / size.height);
+    divide: function (/* size */) {
+      var size = Size.read(arguments)
+      return new Size(this.width / size.width, this.height / size.height)
     },
 
     /**
@@ -401,9 +413,9 @@ var Size = Base.extend(/** @lends Size# */{
      * var result = size.modulo(new Size(5, 2)); // JavaScript
      * console.log(result); // {width: 2, height: 0}
      */
-    modulo: function(/* size */) {
-        var size = Size.read(arguments);
-        return new Size(this.width % size.width, this.height % size.height);
+    modulo: function (/* size */) {
+      var size = Size.read(arguments)
+      return new Size(this.width % size.width, this.height % size.height)
     },
 
     /**
@@ -421,8 +433,8 @@ var Size = Base.extend(/** @lends Size# */{
      * var result = size.negate(); // JavaScript
      * console.log(result); // {width: -12, height: 6}
      */
-    negate: function() {
-        return new Size(-this.width, -this.height);
+    negate: function () {
+      return new Size(-this.width, -this.height)
     },
 
     /**
@@ -434,9 +446,9 @@ var Size = Base.extend(/** @lends Size# */{
      * @return {Boolean} {@true if both width and height are 0, within the
      *     tolerance}
      */
-    isZero: function() {
-        var isZero = Numerical.isZero;
-        return isZero(this.width) && isZero(this.height);
+    isZero: function () {
+      var isZero = Numerical.isZero
+      return isZero(this.width) && isZero(this.height)
     },
 
     /**
@@ -444,8 +456,8 @@ var Size = Base.extend(/** @lends Size# */{
      *
      * @return {Boolean} {@true if the width or height of the size are NaN}
      */
-    isNaN: function() {
-        return isNaN(this.width) || isNaN(this.height);
+    isNaN: function () {
+      return isNaN(this.width) || isNaN(this.height)
     },
 
     /**
@@ -509,86 +521,94 @@ var Size = Base.extend(/** @lends Size# */{
      * console.log(absSize); // {x: 5, y: 10}
      */
 
-    statics: /** @lends Size */{
-        /**
-         * Returns a new size object with the smallest {@link #width} and
-         * {@link #height} of the supplied sizes.
-         *
-         * @static
-         * @param {Size} size1
-         * @param {Size} size2
-         * @return {Size} the newly created size object
-         *
-         * @example
-         * var size1 = new Size(10, 100);
-         * var size2 = new Size(200, 5);
-         * var minSize = Size.min(size1, size2);
-         * console.log(minSize); // {width: 10, height: 5}
-         *
-         * @example
-         * // Find the minimum of multiple sizes:
-         * var size1 = new Size(60, 100);
-         * var size2 = new Size(200, 5);
-         * var size3 = new Size(250, 35);
-         * [size1, size2, size3].reduce(Size.min) // {width: 60, height: 5}
-         */
-        min: function(size1, size2) {
-            return new Size(
-                Math.min(size1.width, size2.width),
-                Math.min(size1.height, size2.height));
-        },
+    statics: /** @lends Size */ {
+      /**
+       * Returns a new size object with the smallest {@link #width} and
+       * {@link #height} of the supplied sizes.
+       *
+       * @static
+       * @param {Size} size1
+       * @param {Size} size2
+       * @return {Size} the newly created size object
+       *
+       * @example
+       * var size1 = new Size(10, 100);
+       * var size2 = new Size(200, 5);
+       * var minSize = Size.min(size1, size2);
+       * console.log(minSize); // {width: 10, height: 5}
+       *
+       * @example
+       * // Find the minimum of multiple sizes:
+       * var size1 = new Size(60, 100);
+       * var size2 = new Size(200, 5);
+       * var size3 = new Size(250, 35);
+       * [size1, size2, size3].reduce(Size.min) // {width: 60, height: 5}
+       */
+      min: function (size1, size2) {
+        return new Size(
+          Math.min(size1.width, size2.width),
+          Math.min(size1.height, size2.height)
+        )
+      },
 
-        /**
-         * Returns a new size object with the largest {@link #width} and
-         * {@link #height} of the supplied sizes.
-         *
-         * @static
-         * @param {Size} size1
-         * @param {Size} size2
-         * @return {Size} the newly created size object
-         *
-         * @example
-         * var size1 = new Size(10, 100);
-         * var size2 = new Size(200, 5);
-         * var maxSize = Size.max(size1, size2);
-         * console.log(maxSize); // {width: 200, height: 100}
-         *
-         * @example
-         * // Find the maximum of multiple sizes:
-         * var size1 = new Size(60, 100);
-         * var size2 = new Size(200, 5);
-         * var size3 = new Size(250, 35);
-         * [size1, size2, size3].reduce(Size.max) // {width: 250, height: 100}
-         */
-        max: function(size1, size2) {
-            return new Size(
-                Math.max(size1.width, size2.width),
-                Math.max(size1.height, size2.height));
-        },
+      /**
+       * Returns a new size object with the largest {@link #width} and
+       * {@link #height} of the supplied sizes.
+       *
+       * @static
+       * @param {Size} size1
+       * @param {Size} size2
+       * @return {Size} the newly created size object
+       *
+       * @example
+       * var size1 = new Size(10, 100);
+       * var size2 = new Size(200, 5);
+       * var maxSize = Size.max(size1, size2);
+       * console.log(maxSize); // {width: 200, height: 100}
+       *
+       * @example
+       * // Find the maximum of multiple sizes:
+       * var size1 = new Size(60, 100);
+       * var size2 = new Size(200, 5);
+       * var size3 = new Size(250, 35);
+       * [size1, size2, size3].reduce(Size.max) // {width: 250, height: 100}
+       */
+      max: function (size1, size2) {
+        return new Size(
+          Math.max(size1.width, size2.width),
+          Math.max(size1.height, size2.height)
+        )
+      },
 
-        /**
-         * Returns a size object with random {@link #width} and {@link #height}
-         * values between `0` and `1`.
-         *
-         * @return {Size} the newly created size object
-         * @static
-         *
-         * @example
-         * var maxSize = new Size(100, 100);
-         * var randomSize = Size.random();
-         * var size = maxSize * randomSize;
-         */
-        random: function() {
-            return new Size(Math.random(), Math.random());
-        }
+      /**
+       * Returns a size object with random {@link #width} and {@link #height}
+       * values between `0` and `1`.
+       *
+       * @return {Size} the newly created size object
+       * @static
+       *
+       * @example
+       * var maxSize = new Size(100, 100);
+       * var randomSize = Size.random();
+       * var size = maxSize * randomSize;
+       */
+      random: function () {
+        return new Size(Math.random(), Math.random())
+      }
     }
-}, Base.each(['round', 'ceil', 'floor', 'abs'], function(key) {
-    // Inject round, ceil, floor, abs:
-    var op = Math[key];
-    this[key] = function() {
-        return new Size(op(this.width), op(this.height));
-    };
-}, {}));
+  },
+  Base.each(
+    ['round', 'ceil', 'floor', 'abs'],
+    function (key) {
+      // Inject round, ceil, floor, abs:
+      var op = Math[key]
+      this[key] = function () {
+        return new Size(op(this.width), op(this.height))
+      }
+    },
+    {}
+  )
+)
 
 /**
  * @name LinkedSize
@@ -600,38 +620,37 @@ var Size = Base.extend(/** @lends Size# */{
  * @private
  */
 var LinkedSize = Size.extend({
-    // Have LinkedSize appear as a normal Size in debugging
-    initialize: function Size(width, height, owner, setter) {
-        this._width = width;
-        this._height = height;
-        this._owner = owner;
-        this._setter = setter;
-    },
+  // Have LinkedSize appear as a normal Size in debugging
+  initialize: function Size(width, height, owner, setter) {
+    this._width = width
+    this._height = height
+    this._owner = owner
+    this._setter = setter
+  },
 
-    // See Point#_set() for an explanation of #_set():
-    _set: function(width, height, _dontNotify) {
-        this._width = width;
-        this._height = height;
-        if (!_dontNotify)
-            this._owner[this._setter](this);
-        return this;
-    },
+  // See Point#_set() for an explanation of #_set():
+  _set: function (width, height, _dontNotify) {
+    this._width = width
+    this._height = height
+    if (!_dontNotify) this._owner[this._setter](this)
+    return this
+  },
 
-    getWidth: function() {
-        return this._width;
-    },
+  getWidth: function () {
+    return this._width
+  },
 
-    setWidth: function(width) {
-        this._width = width;
-        this._owner[this._setter](this);
-    },
+  setWidth: function (width) {
+    this._width = width
+    this._owner[this._setter](this)
+  },
 
-    getHeight: function() {
-        return this._height;
-    },
+  getHeight: function () {
+    return this._height
+  },
 
-    setHeight: function(height) {
-        this._height = height;
-        this._owner[this._setter](this);
-    }
-});
+  setHeight: function (height) {
+    this._height = height
+    this._owner[this._setter](this)
+  }
+})

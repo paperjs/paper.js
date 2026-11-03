@@ -20,7 +20,8 @@
  * stops and in straight lines from the others, see {@link #smooth}. A stop can set
  * only some of them, and leave the others to the stops around it.
  */
-var StrokeProfileStop = Base.extend(/** @lends StrokeProfileStop# */{
+var StrokeProfileStop = Base.extend(
+  /** @lends StrokeProfileStop# */ {
     _class: 'StrokeProfileStop',
     // JSON writes the stops of paths as plain objects:
     _compactSerialize: true,
@@ -41,48 +42,45 @@ var StrokeProfileStop = Base.extend(/** @lends StrokeProfileStop# */{
      * ];
      */
     initialize: function StrokeProfileStop(props) {
-        props = props || {};
-        this._path = null;
-        // The index of the segment before the stop plus the fraction of the
-        // arc length to the next segment, once the stop is on a path. JSON
-        // stores it instead of the offset, see Path#strokeProfile:
-        this._index = props.index != null ? props.index : null;
-        this._offset = props.offset || 0;
-        // The values that the stop doesn't set are null:
-        this._width = props.width != null ? props.width : null;
-        this._aspect = props.aspect != null ? props.aspect : null;
-        this._angle = props.angle != null ? props.angle : null;
-        this._smooth = props.smooth !== false;
+      props = props || {}
+      this._path = null
+      // The index of the segment before the stop plus the fraction of the
+      // arc length to the next segment, once the stop is on a path. JSON
+      // stores it instead of the offset, see Path#strokeProfile:
+      this._index = props.index != null ? props.index : null
+      this._offset = props.offset || 0
+      // The values that the stop doesn't set are null:
+      this._width = props.width != null ? props.width : null
+      this._aspect = props.aspect != null ? props.aspect : null
+      this._angle = props.angle != null ? props.angle : null
+      this._smooth = props.smooth !== false
     },
 
     /**
      * @return {StrokeProfileStop} a copy of the stop, without a path
      */
-    clone: function() {
-        return new StrokeProfileStop({
-            offset: this.getOffset(),
-            width: this._width,
-            aspect: this._aspect,
-            angle: this._angle,
-            smooth: this._smooth
-        });
+    clone: function () {
+      return new StrokeProfileStop({
+        offset: this.getOffset(),
+        width: this._width,
+        aspect: this._aspect,
+        angle: this._angle,
+        smooth: this._smooth
+      })
     },
 
-    _serialize: function(options, dictionary) {
-        var props = { index: this._index };
-        ['width', 'aspect', 'angle'].forEach(function(key) {
-            var value = this['_' + key];
-            if (value != null)
-                props[key] = value;
-        }, this);
-        if (!this._smooth)
-            props.smooth = false;
-        return Base.serialize(props, options, true, dictionary);
+    _serialize: function (options, dictionary) {
+      var props = { index: this._index }
+      ;['width', 'aspect', 'angle'].forEach(function (key) {
+        var value = this['_' + key]
+        if (value != null) props[key] = value
+      }, this)
+      if (!this._smooth) props.smooth = false
+      return Base.serialize(props, options, true, dictionary)
     },
 
-    _changed: function() {
-        if (this._path)
-            this._path._changed(/*#=*/Change.STROKE);
+    _changed: function () {
+      if (this._path) this._path._changed(/*#=*/ Change.STROKE)
     },
 
     /**
@@ -91,8 +89,8 @@ var StrokeProfileStop = Base.extend(/** @lends StrokeProfileStop# */{
      * @bean
      * @type ?Path
      */
-    getPath: function() {
-        return this._path;
+    getPath: function () {
+      return this._path
     },
 
     /**
@@ -105,20 +103,20 @@ var StrokeProfileStop = Base.extend(/** @lends StrokeProfileStop# */{
      * @bean
      * @type Number
      */
-    getOffset: function() {
-        var path = this._path;
-        return path ? path._getOffsetAtIndex(this._index) : this._offset;
+    getOffset: function () {
+      var path = this._path
+      return path ? path._getOffsetAtIndex(this._index) : this._offset
     },
 
-    setOffset: function(offset) {
-        var path = this._path;
-        if (path) {
-            this._index = path._getIndexAt(offset);
-            path._sortStrokeProfile();
-            this._changed();
-        } else {
-            this._offset = offset;
-        }
+    setOffset: function (offset) {
+      var path = this._path
+      if (path) {
+        this._index = path._getIndexAt(offset)
+        path._sortStrokeProfile()
+        this._changed()
+      } else {
+        this._offset = offset
+      }
     },
 
     /**
@@ -130,13 +128,13 @@ var StrokeProfileStop = Base.extend(/** @lends StrokeProfileStop# */{
      * @bean
      * @type ?Number
      */
-    getWidth: function() {
-        return this._width;
+    getWidth: function () {
+      return this._width
     },
 
-    setWidth: function(width) {
-        this._width = width;
-        this._changed();
+    setWidth: function (width) {
+      this._width = width
+      this._changed()
     },
 
     /**
@@ -147,13 +145,13 @@ var StrokeProfileStop = Base.extend(/** @lends StrokeProfileStop# */{
      * @bean
      * @type ?Number
      */
-    getAspect: function() {
-        return this._aspect;
+    getAspect: function () {
+      return this._aspect
     },
 
-    setAspect: function(aspect) {
-        this._aspect = aspect;
-        this._changed();
+    setAspect: function (aspect) {
+      this._aspect = aspect
+      this._changed()
     },
 
     /**
@@ -165,13 +163,13 @@ var StrokeProfileStop = Base.extend(/** @lends StrokeProfileStop# */{
      * @bean
      * @type ?Number
      */
-    getAngle: function() {
-        return this._angle;
+    getAngle: function () {
+      return this._angle
     },
 
-    setAngle: function(angle) {
-        this._angle = angle;
-        this._changed();
+    setAngle: function (angle) {
+      this._angle = angle
+      this._changed()
     },
 
     /**
@@ -186,13 +184,13 @@ var StrokeProfileStop = Base.extend(/** @lends StrokeProfileStop# */{
      * @type Boolean
      * @default true
      */
-    isSmooth: function() {
-        return this._smooth;
+    isSmooth: function () {
+      return this._smooth
     },
 
-    setSmooth: function(smooth) {
-        this._smooth = !!smooth;
-        this._changed();
+    setSmooth: function (smooth) {
+      this._smooth = !!smooth
+      this._changed()
     },
 
     /**
@@ -201,15 +199,21 @@ var StrokeProfileStop = Base.extend(/** @lends StrokeProfileStop# */{
      * @param {StrokeProfileStop} stop
      * @return {Boolean} {@true if they are equal}
      */
-    equals: function(stop) {
-        return stop === this || stop instanceof StrokeProfileStop
-                && this._width === stop._width
-                && this._aspect === stop._aspect
-                && this._angle === stop._angle
-                && this._smooth === stop._smooth
-                && (this._path
-                    ? this._index === stop._index
-                    : this._offset === stop._offset)
-                || false;
+    equals: function (stop) {
+      return (
+        stop === this || (
+          stop instanceof StrokeProfileStop &&
+          this._width === stop._width &&
+          this._aspect === stop._aspect &&
+          this._angle === stop._angle &&
+          this._smooth === stop._smooth && (
+            this._path
+              ? this._index === stop._index
+              : this._offset === stop._offset
+          )
+        ) ||
+        false
+      )
     }
-});
+  }
+)
