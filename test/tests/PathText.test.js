@@ -260,4 +260,28 @@ describe('PathText', () => {
       tolerance: 1e-6
     })
   })
+
+  test('The justification places the text, the alignment its height', () => {
+    const text = createPathText([0, 0], [200, 0], 'Hi')
+    const width = letterWidth(text, 'Hi')
+    const lefts = ['left', 'center', 'right'].map(justification => {
+      text.justification = justification
+      return text.bounds.left
+    })
+    equals(lefts, [0, (200 - width) / 2, 200 - width], null, {
+      tolerance: 0.01
+    })
+    // The letters sit on the path with their baseline, or with the other
+    // heights of the font:
+    text.justification = 'left'
+    const bottoms = ['baseline', 'ascender', 'descender', 'center'].map(
+      alignment => {
+        text.alignment = alignment
+        return text.bounds.bottom
+      }
+    )
+    const [baseline, ascender, descender, center] = bottoms
+    equals(ascender > baseline && descender < baseline, true, 'ascender')
+    equals(center > baseline && center < ascender, true, 'center')
+  })
 })
