@@ -205,7 +205,10 @@ Path.inject(new function() {
          * with the stroke color, as {@link PathItem#outline()} returns it,
          * and {@link Item#strokeBounds} and hit-testing measure that area.
          * The children of compound paths are drawn with the stroke of their
-         * parent, without their profiles.
+         * parent, without their profiles. With {@link Style#strokeScaling}
+         * off, the profile scales with the view. {@link PathItem#offset()},
+         * the boolean operations, {@link PathItem#interpolate()} and SVG
+         * export return paths without the profile.
          *
          * @bean
          * @type ?StrokeProfileStop[]
