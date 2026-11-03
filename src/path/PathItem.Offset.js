@@ -475,6 +475,24 @@ PathItem.inject(new function() {
                         df = function(phi) {
                             return dfcs(Math.cos(phi), Math.sin(phi));
                         },
+                        ddf = function(phi) {
+                            var c = Math.cos(phi),
+                                s = Math.sin(phi);
+                            return -t1 * b * c - t2 * a * s
+                                    + 2 * (a * db - da * b) * (c * c - s * s)
+                                    - 4 * dAngle * (a * a - b * b) * s * c;
+                        },
+                        // The root of f between the angles where it changes its
+                        // sign, by Newton's method from the secant's root:
+                        solve = function(f, df, phi0, phi1, f0, f1) {
+                            var sign = f0 < 0 ? 1 : -1;
+                            return Numerical.findRoot(function(phi) {
+                                return sign * f(phi);
+                            }, function(phi) {
+                                return sign * df(phi);
+                            }, (f1 * phi0 - f0 * phi1) / (f1 - f0), phi0, phi1,
+                                32, epsilon);
+                        },
                         sample = penSamples[0],
                         phi0 = sample.phi,
                         f0 = fcs(sample.cos, sample.sin),
@@ -485,8 +503,7 @@ PathItem.inject(new function() {
                     // with the change of φ along the length that keeps it
                     // there, for the derivative of its point:
                     var addRoot = function(phi0, phi1, f0, f1) {
-                        var phi = Numerical.findSignChange(f, phi0, phi1, f0,
-                                f1, epsilon),
+                        var phi = solve(f, df, phi0, phi1, f0, f1),
                             c = Math.cos(phi),
                             s = Math.sin(phi),
                             dfs = (dt1 * b + t1 * db) * c
@@ -519,8 +536,7 @@ PathItem.inject(new function() {
                         } else if (d0 * d1 < 0) {
                             // Two roots close together hide between the
                             // samples if the extremum between them crosses:
-                            var phi = Numerical.findSignChange(df, phi0, phi1,
-                                    d0, d1, epsilon),
+                            var phi = solve(df, ddf, phi0, phi1, d0, d1),
                                 f2 = f(phi);
                             if (f2 * f0 < 0) {
                                 addRoot(phi0, phi, f0, f2);

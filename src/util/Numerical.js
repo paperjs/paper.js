@@ -245,17 +245,14 @@ var Numerical = new function() {
                 }
                 // Update the root-bounding interval and test for containment of
                 // the candidate. If candidate is outside the root-bounding
-                // interval, use bisection instead.
-                // There is no need to compare to lower / upper because the
-                // tangent line has positive slope, guaranteeing that the x-axis
-                // intercept is larger than lower / smaller than upper.
+                // interval, use bisection instead, also where the function
+                // falls and the tangent line points away from the root.
                 if (fx > 0) {
                     b = x;
-                    x = nx <= a ? (a + b) * 0.5 : nx;
                 } else {
                     a = x;
-                    x = nx >= b ? (a + b) * 0.5 : nx;
                 }
+                x = nx > a && nx < b ? nx : (a + b) * 0.5;
             }
             // Return the best result even though we haven't gotten close
             // enough to the root... (In paper.js this never seems to happen).
