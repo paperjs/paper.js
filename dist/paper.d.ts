@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Nov 3 19:55:50 2026 +0100
+ * Date: Tue Nov 3 20:04:01 2026 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -4565,7 +4565,10 @@ declare namespace paper {
          * with the stroke color, as {@link PathItem#outline} returns it,
          * and {@link Item#strokeBounds} and hit-testing measure that area.
          * The children of compound paths are drawn with the stroke of their
-         * parent, without their profiles.
+         * parent, without their profiles. With {@link Style#strokeScaling}
+         * off, the profile scales with the view. {@link PathItem#offset},
+         * the boolean operations, {@link PathItem#interpolate} and SVG
+         * export return paths without the profile.
          */
         strokeProfile: StrokeProfileStop[] | null
 
