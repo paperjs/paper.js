@@ -27,6 +27,10 @@ Item.inject(new function() {
     }
 
     return /** @lends Item# */{
+        // Enforce creation of beans, as #getPreviewBounds() has a hidden
+        // parameter, as #getStrokeBounds() does:
+        beans: true,
+
         _effects: null,
 
         /**
@@ -242,7 +246,7 @@ Item.inject(new function() {
          * @bean
          * @type Rectangle
          */
-        getPreviewBounds: function() {
+        getPreviewBounds: function(matrix) {
             var output = this.getEffectOutput(),
                 children = this._children;
             // Without effects in it, it's the item's own:
@@ -259,10 +263,12 @@ Item.inject(new function() {
                         }
                     }
                 }
-                if (bounds)
-                    return this._matrix._transformBounds(bounds);
+                if (bounds) {
+                    return (matrix ? matrix.appended(this._matrix)
+                            : this._matrix)._transformBounds(bounds);
+                }
             }
-            return this.getStrokeBounds();
+            return this.getStrokeBounds(matrix);
         }
     };
 });

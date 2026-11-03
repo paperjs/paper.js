@@ -548,6 +548,54 @@ describe('Stroke profiles', () => {
   })
 })
 
+describe('Live effects', () => {
+  test('Offset and outline, composited and rasterized', async () => {
+    createScene(300, 200)
+    const createStar = (x, y, props) =>
+      new Path.Star({
+        center: [x, y],
+        points: 5,
+        radius1: 12,
+        radius2: 26,
+        fillColor: '#39c',
+        strokeColor: 'black',
+        strokeWidth: 3,
+        ...props
+      })
+    // Offset and outline on their own:
+    createStar(50, 50).addEffect({
+      type: 'offset',
+      parameters: { distance: 8, join: 'round' }
+    })
+    createStar(150, 50, { strokeWidth: 8 }).addEffect({ type: 'outline' })
+    // What the offset draws beyond the item, through a temporary canvas for
+    // the group's opacity, the item's blend mode and its shadow:
+    const faded = createStar(250, 50)
+    faded.addEffect({ type: 'offset', parameters: { distance: 10 } })
+    new Group({ children: [faded], opacity: 0.5 })
+    new Path.Rectangle({
+      point: [20, 110],
+      size: [160, 70],
+      fillColor: '#fc6'
+    })
+    createStar(60, 145, {
+      fillColor: '#e63',
+      blendMode: 'multiply'
+    }).addEffect({ type: 'offset', parameters: { distance: 10 } })
+    createStar(140, 145, {
+      shadowColor: 'rgba(0, 0, 0, 0.5)',
+      shadowBlur: 6,
+      shadowOffset: [4, 4]
+    }).addEffect({ type: 'offset', parameters: { distance: 10 } })
+    // A raster of an item with an effect, without the item:
+    const rasterized = createStar(250, 145)
+    rasterized.addEffect({ type: 'offset', parameters: { distance: 10 } })
+    rasterized.rasterize({ resolution: 144 })
+    rasterized.remove()
+    await expectScene()
+  })
+})
+
 describe('Rasters', () => {
   test('Transformed, smoothed and transparent', async () => {
     createScene(300, 200)
