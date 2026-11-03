@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Nov 3 16:17:35 2026 +0100
+ * Date: Tue Nov 3 19:25:42 2026 +0100
  *
  ***
  *
@@ -15542,6 +15542,85 @@ PathItem.inject(new function() {
 				.reduce();
 	}
 
+	function getDashes(paths, dashArray, dashOffset) {
+		var count = dashArray.length,
+			isDashed = dashArray.some(function(dash) {
+				return dash > 0;
+			}),
+			dashes = [];
+
+		function getDash(i) {
+			return dashArray[((i % count) + count) % count];
+		}
+
+		function addDashes(path) {
+			var curves = path.getCurves(),
+				length = path.getLength(),
+				profile = path._strokeProfile && path._takeStrokeProfile(),
+				index = 0,
+				start = 0,
+				from = -dashOffset,
+				j = 0;
+
+			function getLocation(offset) {
+				var curve = curves[index];
+				while (index < curves.length - 1
+						&& start + curve.getLength() < offset) {
+					start += curve.getLength();
+					curve = curves[++index];
+				}
+				return {
+					index: index,
+					time: Curve.getTimeAt(curve.getValues(),
+							Math.min(offset - start, curve.getLength())) || 0
+				};
+			}
+
+			function addDash(from, to) {
+				var a = getLocation(from),
+					b = getLocation(to),
+					segments = [];
+				for (var i = a.index; i <= b.index; i++) {
+					var v = Curve.getPart(curves[i].getValues(),
+							i === a.index ? a.time : 0,
+							i === b.index ? b.time : 1);
+					if (segments.length) {
+						segments[segments.length - 1].setHandleOut(
+								v[2] - v[0], v[3] - v[1]);
+					} else {
+						segments.push(new Segment(new Point(v[0], v[1]), null,
+								new Point(v[2] - v[0], v[3] - v[1])));
+					}
+					segments.push(new Segment(new Point(v[6], v[7]),
+							new Point(v[4] - v[6], v[5] - v[7])));
+				}
+				var dash = new Path({ segments: segments, insert: false });
+				if (profile)
+					dash._setStrokeProfilePart(profile, from, to);
+				dashes.push(dash);
+			}
+
+			while (from > 0)
+				from -= getDash(--j) + getDash(--j);
+			while (from < length) {
+				var to = from + getDash(j++);
+				if (Math.min(to, length) - Math.max(from, 0)
+						> 1e-7)
+					addDash(Math.max(from, 0), Math.min(to, length));
+				from = to + getDash(j++);
+			}
+		}
+
+		for (var i = 0, l = paths.length; i < l; i++) {
+			if (isDashed) {
+				addDashes(paths[i]);
+			} else {
+				dashes.push(paths[i]);
+			}
+		}
+		return dashes;
+	}
+
 	function createResult(item, result, options) {
 		if (Base.pick(options && options.insert, paper.settings.insertItems))
 			result.insertAbove(item);
@@ -15576,7 +15655,9 @@ PathItem.inject(new function() {
 		outline: function(options) {
 			options = options || {};
 			var path = prepare(this),
-				result = outlineStroke(path._children || [path],
+				paths = getDashes(path._children || [path],
+					this.getDashArray(), this.getDashOffset()),
+				result = outlineStroke(paths,
 					Base.pick(options.width, this.getStrokeWidth()) / 2,
 					options.join || this.getStrokeJoin(),
 					options.cap || this.getStrokeCap(),
@@ -15584,6 +15665,20 @@ PathItem.inject(new function() {
 			result = createResult(this, result.reduce(), options);
 			result.setFillColor(this.getStrokeColor());
 			result.setStrokeColor(null);
+			return result;
+		},
+
+		dash: function(options) {
+			options = options || {};
+			var path = prepare(this),
+				result = new Group({
+					children: getDashes(path._children || [path],
+						Base.pick(options.dashArray, this.getDashArray()),
+						Base.pick(options.dashOffset, this.getDashOffset())),
+					insert: false
+				});
+			result = createResult(this, result, options);
+			result.setDashArray([]);
 			return result;
 		}
 	};

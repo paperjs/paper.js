@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Nov 3 16:17:35 2026 +0100
+ * Date: Tue Nov 3 19:25:42 2026 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -5342,6 +5342,8 @@ declare namespace paper {
          * Outlines the stroke of the path item, and returns the area that it
          * covers as a new path item, filled with the stroke's color. As with
          * the boolean operations, the path item's matrix is applied first.
+         * Dashed strokes are outlined as their dashes, each with the stroke's
+         * caps, as the canvas draws them, see {@link #dash}.
          * 
          * Paths with a {@link Path#strokeProfile} are outlined as the area
          * that its pens sweep. Their round joins and caps are the pens
@@ -5365,6 +5367,29 @@ declare namespace paper {
          * @return the resulting path item
          */
         outline(options?: { width?: number, join?: string, cap?: string, miterLimit?: number, insert?: boolean }): PathItem
+
+        /** 
+         * Cuts the stroke of the path item into its dashes, as the canvas draws
+         * them with the {@link Style#dashArray} and {@link Style#dashOffset}
+         * of the path item or those of the options, and returns them as a new
+         * group of open paths with the path item's style, without its dash
+         * pattern. The pattern starts over on each path of a compound path,
+         * and the dashes keep the parts of the paths' stroke profiles. As with
+         * the boolean operations, the path item's matrix is applied first.
+         * 
+         * @option [options.dashArray=this.dashArray] {Number[]} the lengths of
+         *     the dashes and the gaps between them
+         * @option [options.dashOffset=this.dashOffset] {Number} the offset
+         *     into the pattern at which the dashes start
+         * @option [options.insert=true] {Boolean} whether the resulting group
+         *     should be inserted back into the scene graph, above this path
+         *     item
+         * 
+         * @param options - the dash options
+         * 
+         * @return the dashes, as a new group of paths
+         */
+        dash(options?: { dashArray?: number[], dashOffset?: number, insert?: boolean }): Group
 
         /** 
          * Creates a path item from the given SVG path-data, determining if the
