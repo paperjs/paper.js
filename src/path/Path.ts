@@ -38,17 +38,23 @@ import {
   SegmentSelection,
   Shape,
   Size,
+  StrokeProfileStop,
   capitalize,
   curveEvaluations,
   defineDeprecatedConstructors,
-  defineStrokeProfile,
   equals,
+  getProfileEntries,
+  getProfilePart,
+  getProfileSpanIndex,
+  getProfileValue,
+  getProfileValues,
   getStrokeOutline,
   inject,
   isPlainObject,
   isRectangle,
   isZero,
   paper,
+  profileDefaults,
   push,
   readEllipse,
   readRectangle,
@@ -61,6 +67,8 @@ import type { RectangleLike } from '../basic/Rectangle.ts'
 import type { Style } from '../style/Style.ts'
 import type { SegmentLike } from './Segment.ts'
 import type { SegmentPoint } from './SegmentPoint.ts'
+import type { StrokeProfileStopProps } from './StrokeProfileStop.ts'
+import type { Entry, PenValues, ProfilePart } from './strokeProfile.ts'
 
 /**
  * The path item represents a path in a Paper.js project.
@@ -84,6 +92,8 @@ export class Path extends PathItem {
   // The cached length and area, cleared by #_changed():
   _length: number
   _area: number
+  // The stops of the stroke profile, null without one, see #strokeProfile:
+  declare _strokeProfile: StrokeProfileStop[] | null
   // The cached outline of the stroke profile, see #_getStrokeOutline():
   _strokeOutline: PathItem
 
@@ -3442,6 +3452,407 @@ export class Path extends PathItem {
     return (this._strokeOutline ??= getStrokeOutline(this))
   }
 
+  /**
+   * {@grouptitle Stroke Profile}
+   *
+   * The stroke profile of the path: the stops along it that set the pen
+   * that draws its stroke, an ellipse with a width, as a factor of its
+   * {@link Style#strokeWidth}, an aspect and an angle, see
+   * {@link StrokeProfileStop}. The stops are sorted by their offsets.
+   * Between the stops that set a value, it changes along the path,
+   * easing into and out of smooth stops and in straight lines from the
+   * others, see {@link StrokeProfileStop#smooth}, and beyond the ends
+   * of open paths, it stays as at the first and last of them. Two stops
+   * at the same offset make a step. The stops stay between the same
+   * segments when they move. Without a stroke profile, the stroke is
+   * drawn with a round pen of the stroke width all along.
+   *
+   * It is a property of the path, not of its style, as it is tied to
+   * its segments. It can be set to stops or plain objects describing
+   * them, `{ offset, width, aspect, angle, smooth }`, and JSON stores
+   * them with the indices that tie them to the segments instead of
+   * their offsets, `{ index, width, aspect, angle, smooth }`. Changing
+   * the returned array directly isn't tracked, as with
+   * {@link #segments}.
+   *
+   * The path draws its stroke as the area that the pens sweep, filled
+   * with the stroke color, as {@link PathItem#outline()} returns it,
+   * and {@link Item#strokeBounds} and hit-testing measure that area.
+   * The children of compound paths are drawn with the stroke of their
+   * parent, without their profiles. With {@link Style#strokeScaling}
+   * off, the profile scales with the view. {@link PathItem#offset()},
+   * the boolean operations, {@link PathItem#interpolate()} and SVG
+   * export return paths without the profile.
+   *
+   * @example
+   * var path = Path.line([20, 50], [180, 50]);
+   * path.strokeColor = 'black';
+   * path.strokeWidth = 10;
+   * // Taper the stroke from half its width to twice its width:
+   * path.strokeProfile = [
+   *     { offset: 0, width: 0.5 },
+   *     { offset: path.length, width: 2 }
+   * ];
+   * console.log(path.getStrokeProfileAt(80).width); // 1.25
+   */
+  get strokeProfile(): StrokeProfileStop[] | null {
+    return this._strokeProfile
+  }
+
+  set strokeProfile(
+    stops: (StrokeProfileStop | StrokeProfileStopProps)[] | null
+  ) {
+    const previous = this._strokeProfile
+    let profile = null
+    if (stops?.length) {
+      profile = stops.map(value => {
+        const stop =
+          value instanceof StrokeProfileStop
+            ? value._path && value._path !== this
+              ? value.clone()
+              : value
+            : new StrokeProfileStop(value)
+        if (stop._path !== this) {
+          stop._index ??= this._getIndexAt(stop._offset)
+          stop._path = this
+        }
+        return stop
+      })
+    }
+    // The stops that the path no longer has keep their offsets:
+    for (const stop of previous ?? []) {
+      if (!profile?.includes(stop)) {
+        stop._offset = stop.offset
+        stop._index = stop._path = null
+      }
+    }
+    this._strokeProfile = profile
+    if (profile) {
+      this._sortStrokeProfile()
+    }
+    this._changed(Change.STROKE)
+  }
+
+  /**
+   * Returns the pen of the {@link #strokeProfile} at the given offset
+   * along the path, as a stop that isn't on the path, with all its
+   * values: its width as a factor of the {@link Style#strokeWidth}, its
+   * aspect and its angle, `1`, `1` and `0` where no stop sets them.
+   * Where the profile has a step, it returns the values after it. Adding
+   * the stop to the profile keeps the values at the offset, and where
+   * they change in straight lines, also around it if the stop isn't
+   * smooth. As a smooth stop, the values ease into it and out of it.
+   *
+   * @param offset the offset on the path, where `0` is at the
+   *     beginning of the path and {@link Path#length} at the end
+   * @return the pen at the offset
+   *
+   * @example
+   * var path = Path.line([20, 50], [180, 50]);
+   * path.strokeProfile = [
+   *     { offset: 0, width: 0.5 },
+   *     { offset: path.length, width: 2, angle: 90 }
+   * ];
+   * // Add a stop halfway, with the values there:
+   * var stop = path.getStrokeProfileAt(path.length / 2);
+   * console.log(stop.width, stop.aspect, stop.angle); // 1.25 1 90
+   * path.strokeProfile = path.strokeProfile.concat(stop);
+   */
+  getStrokeProfileAt(offset: number): StrokeProfileStop {
+    const values = getProfileValues(
+      getProfileEntries(this),
+      offset,
+      this.length,
+      this._closed,
+      true
+    )
+    for (const [key, value] of Object.entries(profileDefaults)) {
+      values[key] ??= value
+    }
+    return new StrokeProfileStop(values)
+  }
+
+  // Returns the pens all along the path, as entries with all values at
+  // its ends and at the offsets of the stops, where the curves of the
+  // values change. Steps have two entries at the same offset. See
+  // PathItem#outline():
+  _getStrokeProfilePens(): Entry[] {
+    const entries = getProfileEntries(this)
+    const { length, _closed: closed } = this
+    const pens = []
+
+    const getPen = (offset: number, after: boolean) => {
+      const values = getProfileValues(entries, offset, length, closed, after)
+      for (const [key, value] of Object.entries(profileDefaults)) {
+        values[key] ??= value
+      }
+      return values
+    }
+
+    const offsets = [0, ...entries.map(entry => entry.offset), length]
+    for (let i = 0, l = offsets.length; i < l; i++) {
+      const offset = offsets[i]
+      if (!i || offset > offsets[i - 1]) {
+        if (offset > 0) {
+          pens.push(getPen(offset, false))
+        }
+        if (offset < length) {
+          const pen = getPen(offset, true)
+          if (!offset || !equals(pen, pens[pens.length - 1])) {
+            pens.push(pen)
+          }
+        }
+      }
+    }
+    return pens
+  }
+
+  // Returns a function that returns the values of the pen at an offset
+  // with their first and second derivatives, as { width: [value, d1,
+  // d2], aspect, angle }, see PathItem#outline():
+  _getStrokeProfileValues(): (offset: number, after: boolean) => PenValues {
+    const entries = getProfileEntries(this)
+    const { length, _closed: closed } = this
+    return (offset, after) => {
+      const values = {} as PenValues
+      for (const [key, value] of Object.entries(profileDefaults)) {
+        values[key] = getProfileValue(
+          entries,
+          key,
+          offset,
+          length,
+          closed,
+          after
+        ) || [
+          value,
+          0,
+          0
+        ]
+      }
+      return values
+    }
+  }
+
+  // Returns the index of the stop at the offset: the index of the
+  // segment before it plus the fraction of the arc length to the next
+  // segment. Offsets wrap around closed paths, and stay within open
+  // ones:
+  _getIndexAt(offset: number): number {
+    const { length } = this
+    const position = this._closed
+      ? length
+        ? (offset % length + length) % length
+        : 0
+      : Math.min(Math.max(offset, 0), length)
+    const location = this.getLocationAt(position)
+    if (location) {
+      const { time } = location
+      const curveLength = location.curve.length
+      return (
+        location.index + (
+          time < CURVETIME_EPSILON || !curveLength
+            ? 0
+            : time > 1 - CURVETIME_EPSILON
+              ? 1
+              : location.curveOffset / curveLength
+        )
+      )
+    }
+    return this.curves.length
+  }
+
+  _getOffsetAtIndex(index: number): number {
+    const { curves } = this
+    const i = Math.floor(index)
+    let offset = 0
+    for (let j = 0, l = Math.min(i, curves.length); j < l; j++) {
+      offset += curves[j].length
+    }
+    return i < curves.length
+      ? offset + (index - i) * curves[i].length
+      : offset
+  }
+
+  _sortStrokeProfile() {
+    this._strokeProfile.sort((a, b) => a._index - b._index)
+  }
+
+  // Keeps the stops that the callback returns true for, and lets go of
+  // the others:
+  _filterStrokeProfile(
+    callback: (stop: StrokeProfileStop) => boolean
+  ) {
+    this.strokeProfile = this._strokeProfile.filter(callback)
+  }
+
+  // Moves the stops after segments were inserted at the index, keeping
+  // the ones on the curve that the segments divide at the same fraction
+  // of its length, see #_add():
+  _insertStrokeProfile(index: number, amount: number) {
+    const profile = this._strokeProfile
+    const count = this._segments.length - amount
+    const closed = this._closed
+    // The curve that the segments divide, if any:
+    const divided = closed
+      ? (index + count - 1) % count
+      : index > 0 && index < count
+        ? index - 1
+        : -1
+    // Its first segment's index after the insertion:
+    const start = divided < index ? divided : divided + amount
+    if (count) {
+      for (const stop of profile) {
+        const x = stop._index
+        if (divided >= 0 && x > divided && x < divided + 1) {
+          stop._index = getProfileSpanIndex(
+            this,
+            start,
+            amount + 1,
+            x - divided
+          )
+        } else if (x >= index) {
+          stop._index = x + amount
+        }
+      }
+      this._sortStrokeProfile()
+    }
+  }
+
+  // Moves the stops before the segments from start to end are removed,
+  // keeping the ones between the segments that remain around them at the
+  // same fraction of the length there, which becomes one curve. The ones
+  // beyond the new ends of open paths go. See #removeSegments():
+  _removeStrokeProfile(start: number, end: number) {
+    const count = this._segments.length
+    const closed = this._closed
+    const amount = end - start
+    const { curves } = this
+    // The segment before the removed ones, and its index after:
+    const before = closed ? (start + count - 1) % count : start - 1
+    const index = before < start ? before : before - amount
+    const span = amount + 1
+
+    const isKept = (stop: StrokeProfileStop) => {
+      const x = stop._index
+      return closed
+        ? amount < count
+        : start
+          ? end < count || x <= before
+          : x >= end
+    }
+
+    this._filterStrokeProfile(isKept)
+    const profile = this._strokeProfile ?? []
+    for (const stop of profile) {
+      const x = stop._index
+      // How far the stop lies from the segment before:
+      const d = closed ? (x - before + count) % count : x - before
+      if (before >= 0 && d > 0 && d < span) {
+        let position = 0
+        let total = 0
+        for (let j = 0; j < span; j++) {
+          const { length } = curves[(before + j) % curves.length]
+          if (j < Math.floor(d)) {
+            position += length
+          } else if (j === Math.floor(d)) {
+            position += (d - j) * length
+          }
+          total += length
+        }
+        stop._index = index + (total ? position / total : d / span)
+      } else if (x >= end) {
+        stop._index = x - amount
+      }
+    }
+    if (profile.length) {
+      this._sortStrokeProfile()
+    }
+  }
+
+  // Moves the stops after the segments were reversed, see #reverse():
+  _reverseStrokeProfile() {
+    const profile = this._strokeProfile
+    const count = this._segments.length
+    for (const stop of profile) {
+      stop._index = this._closed
+        ? (2 * count - 1 - stop._index) % count
+        : count - 1 - stop._index
+    }
+    // Keep the order of steps reversed too:
+    profile.reverse()
+    this._sortStrokeProfile()
+  }
+
+  // Takes the stroke profile off the path, as entries by offset, for
+  // methods that move it by offsets, see #_setStrokeProfileParts():
+  _takeStrokeProfile(): ProfilePart {
+    const part = {
+      entries: getProfileEntries(this),
+      length: this.length,
+      closed: this._closed
+    }
+    if (this._strokeProfile) {
+      this.strokeProfile = null
+    }
+    return part
+  }
+
+  // Sets the stroke profile from parts taken off paths, see
+  // #_takeStrokeProfile(), which now follow each other along the path,
+  // the first at its start and the last at its end. Where they meet,
+  // each keeps its values there as a stop:
+  _setStrokeProfileParts(parts: ProfilePart[]) {
+    const { length, _closed: closed } = this
+    const entries = []
+    // Where the parts meet, the values that only some of them set
+    // are the defaults in the others:
+    const fallbacks = {}
+    for (const part of parts) {
+      for (const entry of part.entries) {
+        for (const [key, value] of Object.entries(profileDefaults)) {
+          if (entry[key] != null) {
+            fallbacks[key] = value
+          }
+        }
+      }
+    }
+    for (let i = 0, l = parts.length; i < l; i++) {
+      const part = parts[i]
+      const start = i ? length - part.length : 0
+      const hasStart = closed || i > 0
+      const hasEnd = closed || i < l - 1
+      if (part.entries.length || l > 1 || closed) {
+        const shifted = getProfilePart(
+          part.entries, 0, part.length, part.length, part.closed,
+          hasStart, hasEnd, fallbacks
+        )
+        for (const entry of shifted) {
+          entry.offset += start
+          entries.push(entry)
+        }
+      }
+    }
+    // On closed paths, the values before the end come first:
+    if (closed && entries.length) {
+      entries.unshift(entries.pop())
+    }
+    this.strokeProfile = entries
+  }
+
+  // Sets the stroke profile from a part of a profile taken off the path,
+  // see #_takeStrokeProfile(), between two offsets on it:
+  _setStrokeProfilePart(
+    part: ProfilePart,
+    from: number,
+    to: number
+  ) {
+    const { length, closed } = part
+    this.strokeProfile = getProfilePart(
+      part.entries, from, to, length, closed,
+      closed || from > 0, closed || to < length
+    )
+  }
+
   static {
     defineDeprecatedConstructors(this, [
       'line',
@@ -3452,8 +3863,8 @@ export class Path extends PathItem {
       'regularPolygon',
       'star'
     ])
-    defineStrokeProfile(this)
     Object.assign(this.prototype, {
+      _strokeProfile: null,
       _serializeFields: {
         ...PathItem.prototype._serializeFields,
         segments: [],
