@@ -252,20 +252,6 @@ export function getSegmentHandleBounds(
  * preserve angles (#2065). For strokes that scale with the matrix, this is
  * the curve's own space.
  */
-function getStrokeNormal(
-  curve: Curve,
-  time: number,
-  radius: number,
-  matrix: Matrix,
-  strokeMatrix: Matrix
-): Point {
-  const shiftless = matrix?._shiftless() ?? new Matrix()
-  const inverse = strokeMatrix?.inverted()
-  const tangent = curve
-    .getTangentAtTime(time)
-    .transform(inverse?.append(shiftless) ?? shiftless)
-  return new Point(tangent.y, -tangent.x).normalize(radius)
-}
 
 export function addBevelJoin(
   segment: Segment,
@@ -352,4 +338,19 @@ export function addSquareCap(
   }
   addPoint(point.add(normal))
   addPoint(point.subtract(normal))
+}
+
+function getStrokeNormal(
+  curve: Curve,
+  time: number,
+  radius: number,
+  matrix: Matrix,
+  strokeMatrix: Matrix
+): Point {
+  const shiftless = matrix?._shiftless() ?? new Matrix()
+  const inverse = strokeMatrix?.inverted()
+  const tangent = curve
+    .getTangentAtTime(time)
+    .transform(inverse?.append(shiftless) ?? shiftless)
+  return new Point(tangent.y, -tangent.x).normalize(radius)
 }
