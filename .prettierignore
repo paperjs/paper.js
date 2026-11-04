@@ -1,8 +1,5 @@
-# The builds, Gulp tasks, examples and the boolean sweep keep the old style
-# until the ES modules port:
+# The builds, examples and the boolean sweep keep the old style until the ES
+# modules port:
 dist/
-gulp/
-gulpfile.js
 examples/
-packages/
 test/booleans/

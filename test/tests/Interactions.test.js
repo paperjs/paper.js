@@ -35,7 +35,7 @@ const { document } = paper
 /**
  * These tests are focused on user interactions.
  * They trigger events and check callbacks.
- * Warning: when running tests locally from `gulp test:browser` command, don't
+ * Warning: when running tests locally with `pnpm test:browser`, don't
  * move your mouse over the window because that could perturbate tests
  * execution.
  */
