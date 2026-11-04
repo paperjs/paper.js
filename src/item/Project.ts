@@ -1120,7 +1120,10 @@ export interface Project {
    *     }
    * });
    */
-  importSVG(svg: SVGElement | string, options?: Record<string, any>): Item
+  importSVG(
+    svg: SVGElement | string,
+    options?: Record<string, any>
+  ): Item | null
   /**
    * Imports the provided external SVG file, converts it into Paper.js items
    * and adds them to the active layer of this project.
@@ -1138,5 +1141,5 @@ export interface Project {
   importSVG(
     svg: SVGElement | string,
     onLoad: (item: Item, svg: string) => void
-  ): Item
+  ): Item | null
 }
