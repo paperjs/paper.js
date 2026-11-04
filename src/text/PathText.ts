@@ -18,6 +18,7 @@ import { Rectangle } from '../basic/Rectangle.ts'
 import { Matrix } from '../basic/Matrix.ts'
 import { PathFlattener } from '../path/PathFlattener.ts'
 import type { PathItem } from '../path/PathItem.ts'
+import type { Path } from '../path/Path.ts'
 
 // The fields that change the layout, with their defaults:
 const fields = {
@@ -94,7 +95,7 @@ export class PathText extends TextItem {
     const path = this.textPath
     const story = this._story
     const start = this._getStart()
-    const flatteners = (path ? path._children || [path] : []).map(
+    const flatteners = ((path ? path._children || [path] : []) as Path[]).map(
       child =>
         // In the text's coordinates, through the compound path's matrix too:
         new PathFlattener(

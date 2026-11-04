@@ -1759,7 +1759,8 @@ export class Item extends Emitter {
    * is called, item is always defined, of the same class as `this` and has
    * equal general state attributes such as matrix, style, opacity, etc.
    */
-  _equals(item: Item): boolean {
+  // Subclasses narrow item to their own class, which equals() makes sure of:
+  _equals(item: any): boolean {
     return equals(this._children, item._children)
   }
 

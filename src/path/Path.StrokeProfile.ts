@@ -478,8 +478,6 @@ declare module './Path.ts' {
     _takeStrokeProfile(): ProfilePart
     _setStrokeProfileParts(parts: ProfilePart[]): void
     _setStrokeProfilePart(part: ProfilePart, from: number, to: number): void
-    // Defined in PathItem.Offset, from the outline of the stroke:
-    _getStrokeOutline(): Path
   }
 }
 
