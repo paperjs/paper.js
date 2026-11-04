@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { describe, onTestFinished } from 'vitest'
+import { describe, onTestFinished, vi } from 'vitest'
 import paper, {
   Color,
   PaperScope,
@@ -181,13 +181,13 @@ describe('PaperScript', () => {
   })
 
   if (!isNodeContext) {
-    test('PaperScript.load() with source urls (#1753)', () => {
+    test('PaperScript.load() with source urls (#1753)', async () => {
       const current = paper,
         canvas = document.createElement('canvas')
       canvas.id = 'paperscript-canvas'
       document.body.appendChild(canvas)
 
-      function load(code, src, detached) {
+      async function load(code, src, detached) {
         const script = document.createElement('script')
         script.type = 'text/paperscript'
         script.setAttribute('canvas', canvas.id)
@@ -203,7 +203,11 @@ describe('PaperScript', () => {
           PaperScript.load(script)
           document.body.removeChild(script)
         }
-        return getScope().stack
+        // Scripts with a source run once fetched, and so do the ones after:
+        const scope = getScope()
+        const stack = await vi.waitUntil(() => scope.stack)
+        scope.stack = null
+        return stack
       }
 
       // With the built library, PaperScript doesn't set the global `paper`,
@@ -215,12 +219,12 @@ describe('PaperScript', () => {
       // Stack traces name the sourceURL that devtools list the code under:
       const src = 'data:text/plain,paper.stack=new%20Error().stack;'
 
-      let stack = load(null, src)
+      let stack = await load(null, src)
       ok(stack.indexOf(src) !== -1, stack)
-      stack = load('paper.stack = new Error("inline").stack;')
+      stack = await load('paper.stack = new Error("inline").stack;')
       ok(stack.indexOf(document.baseURI) !== -1, stack)
       // Inline code that isn't part of the html:
-      stack = load(
+      stack = await load(
         'paper.stack = new Error("detached").stack;',
         null,
         true

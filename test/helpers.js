@@ -106,14 +106,14 @@ console.error = function (...args) {
 export let currentProject
 
 // Run each test in a project of its own, with a 100 × 100 view to make the
-// interactions tests simpler by working with integers. `assert.async()`
-// returns a function that the test calls when done, as in QUnit:
+// interactions tests simpler by working with integers. Tests may be async, or
+// call `assert.async()` for a function to call when done, as in QUnit:
 export function test(name, run) {
   return vitestTest(name, async () => {
     currentProject = new Project(new Size(100, 100))
     const pending = []
     try {
-      run({
+      await run({
         async() {
           let done
           pending.push(new Promise(resolve => (done = resolve)))
