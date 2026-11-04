@@ -18,13 +18,13 @@ export default [
   },
   pluginPrettierRecommended,
   {
-    // The sources, which prepro joins into one script, so their files use
-    // each other's declarations without importing them:
+    // The sources, as ES modules. Files not ported yet still use each other's
+    // declarations without importing them, so no-undef waits for the port:
     files: ['src/**/*.js'],
     ...pluginJs.configs.recommended,
     languageOptions: {
-      ecmaVersion: 2015,
-      sourceType: 'script',
+      ecmaVersion: 2022,
+      sourceType: 'module',
       globals: { ...globals.node, ...globals.browser }
     },
     rules: {
