@@ -9,7 +9,7 @@
 *
 * All rights reserved.
 *
-* Date: Wed Nov 4 02:16:34 2026 +0100
+* Date: Wed Nov 4 02:14:47 2026 +0100
 *
 ***
 *
@@ -2615,7 +2615,7 @@ var paper = (function(self, undefined) {
 				const v2y = y - py;
 				let ccw = v2x * vy - v2y * vx;
 				if (!isInfinite && Numerical.isMachineZero(ccw)) {
-					ccw = (v2x * vx + v2x * vx) / (vx * vx + vy * vy);
+					ccw = (v2x * vx + v2y * vy) / (vx * vx + vy * vy);
 					if (ccw >= 0 && ccw <= 1) ccw = 0;
 				}
 				return ccw < 0 ? -1 : ccw > 0 ? 1 : 0;
