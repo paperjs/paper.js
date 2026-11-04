@@ -45,6 +45,7 @@ import {
   equals,
   getStrokeOutline,
   inject,
+  isPlainObject,
   isZero,
   paper,
   push,
@@ -150,26 +151,33 @@ export class Path extends PathItem {
     // arguments describing separate segments.
     // If it is an array, it can also be a description of a point, so
     // check its first entry for object as well.
-    // But first see if segments are directly passed at all. If not, try
-    // _set(arg).
     const [arg] = args
+    // See if it behaves like a segment or a point, but filter out rectangles,
+    // as accepted by some Path.Constructor constructors:
+    const isSegment = (
+      !!arg &&
+      arg.size === undefined &&
+      (arg.x !== undefined || arg.point !== undefined)
+    )
+    // An object literal that describes a segment makes the segment of its
+    // keys, and its other properties go to set():
+    const isSegmentObject = isSegment && args.length === 1 && isPlainObject(arg)
+    const { x, y, point, handleIn, handleOut, ...props } = isSegmentObject
+      ? arg
+      : {}
     const segments = Array.isArray(arg)
       ? typeof arg[0] === 'object'
         ? arg
         : args
-      : // See if it behaves like a segment or a point, but filter out
-        // rectangles, as accepted by some Path.Constructor constructors.
-        (
-            arg &&
-            arg.size === undefined &&
-            (arg.x !== undefined || arg.point !== undefined)
-          )
-        ? args
-        : null
+      : isSegmentObject
+        ? [point !== undefined ? { point, handleIn, handleOut } : { x, y }]
+        : isSegment
+          ? args
+          : null
     const isPathData = !segments && typeof arg === 'string'
     // Only pass on arg as props if it isn't consumed for segments or path
     // data, which go in after #_initializeContent() set up the segments:
-    this._initialize(!segments && !isPathData && arg)
+    this._initialize(isSegmentObject ? props : !segments && !isPathData && arg)
     if (segments && segments.length > 0) {
       this.segments = segments
     } else if (isPathData) {

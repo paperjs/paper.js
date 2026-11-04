@@ -24,6 +24,28 @@ import paper, {
 import { equals, test } from '../helpers.js'
 
 describe('Path', () => {
+  test('new Path({ x, y, strokeColor })', () => {
+    // The segment's keys make the segment, and the rest goes to set():
+    const path = new Path({ x: 10, y: 20, strokeColor: 'red', insert: false })
+    equals(path.segments.toString(), '{ point: { x: 10, y: 20 } }')
+    equals(path.strokeColor, new Color('red'))
+    equals(path.parent, null)
+  })
+
+  test('new Path({ point, handleIn, handleOut, name })', () => {
+    const path = new Path({
+      point: [10, 20],
+      handleIn: [-5, 0],
+      handleOut: [5, 0],
+      name: 'curve'
+    })
+    equals(
+      path.segments.toString(),
+      '{ point: { x: 10, y: 20 }, handleIn: { x: -5, y: 0 }, handleOut: { x: 5, y: 0 } }'
+    )
+    equals(path.name, 'curve')
+  })
+
   test('Path#length', () => {
     const path = new Path([
       new Segment(
