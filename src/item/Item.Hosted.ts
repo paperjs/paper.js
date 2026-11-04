@@ -285,7 +285,7 @@ inject(Item.prototype, {
   insertChildren(this: Item, index: number, items: Item[]): Item[] | null {
     let isEntering = false
     const reordered = []
-    for (const item of items || []) {
+    for (const item of items ?? []) {
       if (item instanceof Item) {
         const isOther = isFromOtherHost(item, item._project, this._project)
         isEntering ||= isOther
@@ -625,7 +625,7 @@ inject(Project.prototype, {
   },
 
   set currentTextStyle(style: Style | object) {
-    this._currentTextStyle ||= new Style(null, null, this)
+    this._currentTextStyle ??= new Style(null, null, this)
     this._currentTextStyle.set(style)
   },
 
@@ -653,7 +653,7 @@ inject(Project.prototype, {
   takeChanges(this: Project) {
     const definitions = this._host && getNewDefinitions(this)
     const changes = takeChanges.call(this)
-    for (const { item } of changes || []) {
+    for (const { item } of changes ?? []) {
       if (item) {
         item._edited = false
       }
@@ -697,7 +697,7 @@ inject(Project.prototype, {
     this._definitionsByKey = {}
     whileLoading(this, () => {
       setChildren(this, this, host.getChildren(null))
-      this._activeLayer = this._children[0] || null
+      this._activeLayer = this._children[0] ?? null
     })
   },
 
@@ -705,7 +705,7 @@ inject(Project.prototype, {
     const itemsByKey = this._itemsByKey
     let item = itemsByKey[key]
     if (!item || !item.isInserted()) {
-      for (const ancestorKey of this._host.getAncestorKeys(key) || []) {
+      for (const ancestorKey of this._host.getAncestorKeys(key) ?? []) {
         const ancestor = itemsByKey[ancestorKey]
         if (ancestor) {
           // Reading the children loads them:
@@ -714,7 +714,7 @@ inject(Project.prototype, {
       }
       item = itemsByKey[key]
     }
-    return item && item.isInserted() ? item : null
+    return item?.isInserted() ? item : null
   },
 
   hasDrawHandlers(this: Project): boolean {
@@ -794,8 +794,8 @@ inject(Project.prototype, {
   invalidate(this: Project, columns: HostColumns) {
     const itemsByKey = this._itemsByKey
     const definitionsByKey = this._definitionsByKey
-    const keys = columns.keys || []
-    const definitionKeys = columns.definitions || []
+    const keys = columns.keys ?? []
+    const definitionKeys = columns.definitions ?? []
     const names = columns.names || {}
     const reloads = []
     whileLoading(this, () => {
@@ -1171,7 +1171,7 @@ function getShellPrototype(ctor: new (...args: any[]) => Item): Item {
 // Sets the fields that the host's columns describe for the item at index.
 function setRecord(item: Item, columns: HostColumns, index: number) {
   const flags = columns.flags[index]
-  const [a, b, c, d, tx, ty] = columns.matrices?.[index] || [1, 0, 0, 1, 0, 0]
+  const [a, b, c, d, tx, ty] = columns.matrices?.[index] ?? [1, 0, 0, 1, 0, 0]
   item._visible = !!(flags & recordFlags.visible)
   item._locked = !!(flags & recordFlags.locked)
   item._strokeScaling = !!(flags & recordFlags.strokeScaling)
@@ -1184,7 +1184,7 @@ function setRecord(item: Item, columns: HostColumns, index: number) {
   )
   item._matrix._set(a, b, c, d, tx, ty, true)
   // Without boxes, the item asks for them, see #_getHostBounds():
-  item._boxes = columns.boxes || undefined
+  item._boxes = columns.boxes ?? undefined
   item._boxIndex = index * boxSize
   item._bounds = undefined
   item._hostBounds = true
@@ -1310,7 +1310,7 @@ function isFromOtherHost(item: Item, from: Project, project: Project) {
 // host share the copies of their definitions:
 function whileEntering<T>(callback: () => T): T {
   const copies = definitionCopies
-  definitionCopies = copies || {}
+  definitionCopies = copies ?? {}
   try {
     return callback()
   } finally {
@@ -1343,7 +1343,7 @@ function getPatternColors(item: Item): Color[] {
 // definitions of their host along, which the new host takes as new ones.
 // The items of one insertion or copy share them, see whileEntering():
 function copyDefinitions(project: Project, item: Item) {
-  const copies = definitionCopies || {}
+  const copies = definitionCopies ?? {}
 
   function getCopy<T extends Definition>(definition: T): T {
     let copy = copies[definition._id] as T
@@ -1398,7 +1398,7 @@ function reloadDefinition(project: Project, definition: Definition) {
 // have yet: those without a key, nested ones first. Items that are still
 // shells use only the host's:
 function getNewDefinitions(project: Project): Definition[] {
-  const changes = project._changes || []
+  const changes = project._changes ?? []
   const definitions = []
   const ids = {}
 

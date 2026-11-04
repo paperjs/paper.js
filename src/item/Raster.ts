@@ -205,8 +205,8 @@ export class Raster extends Item {
   get size(): Size {
     const size = this._size
     return new LinkedSize(
-      size ? size.width : 0,
-      size ? size.height : 0,
+      size?.width ?? 0,
+      size?.height ?? 0,
       this,
       'size'
     )
@@ -250,7 +250,7 @@ export class Raster extends Item {
    * The width of the raster in pixels.
    */
   get width(): number {
-    return this._size ? this._size.width : 0
+    return this._size?.width ?? 0
   }
 
   set width(width: number) {
@@ -261,7 +261,7 @@ export class Raster extends Item {
    * The height of the raster in pixels.
    */
   get height(): number {
-    return this._size ? this._size.height : 0
+    return this._size?.height ?? 0
   }
 
   set height(height: number) {
@@ -361,7 +361,7 @@ export class Raster extends Item {
       // A Image object
       this._image = img
       this._canvas = null
-      this._loaded = !!(img && img.src && img.complete)
+      this._loaded = !!(img?.src && img.complete)
     }
     // Both canvas and image have width / height attributes. Due to IE,
     // naturalWidth / Height needs to be checked for a swell, because it
@@ -372,7 +372,7 @@ export class Raster extends Item {
     // loaded image sets its own:
     this._size =
       image && !this._loaded
-        ? this._size || new Size()
+        ? this._size ?? new Size()
         : new Size(
             image ? img.naturalWidth || image.width : 0,
             image ? img.naturalHeight || image.height : 0
@@ -496,7 +496,7 @@ export class Raster extends Item {
    */
   get crossOrigin(): string {
     const image = this._image
-    return image && image.crossOrigin || this._crossOrigin || ''
+    return image?.crossOrigin || this._crossOrigin || ''
   }
 
   set crossOrigin(crossOrigin: string) {
@@ -622,7 +622,7 @@ export class Raster extends Item {
       return src
     }
     const { canvas } = this
-    return canvas ? canvas.toDataURL(type, quality) : null
+    return canvas?.toDataURL(type, quality) ?? null
   }
 
   /**
@@ -870,7 +870,7 @@ export class Raster extends Item {
         ctx.beginPath()
       }
       ctx.rect(rect.x, rect.y, rect.width, rect.height)
-    } else if (element && element.width > 0 && element.height > 0) {
+    } else if (element?.width > 0 && element.height > 0) {
       // Only draw if image is not empty (#1320).
       // Handle opacity for Rasters separately from the rest, since Rasters
       // never draw a stroke. See Item#draw().

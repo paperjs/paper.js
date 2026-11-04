@@ -178,7 +178,7 @@ export class Path extends PathItem {
     // Only pass on arg as props if it isn't consumed for segments or path
     // data, which go in after #_initializeContent() set up the segments:
     this._initialize(isSegmentObject ? props : !segments && !isPathData && arg)
-    if (segments && segments.length > 0) {
+    if (segments?.length > 0) {
       this.segments = segments
     } else if (isPathData) {
       this.pathData = arg
@@ -316,7 +316,7 @@ export class Path extends PathItem {
 
   set segments(segments: SegmentLike[]) {
     const { fullySelected } = this
-    let length = segments && segments.length
+    let length = segments?.length
     const named = this._namedSegments
     // The new segments keep the stroke profile by the fractions of
     // its offsets along the path:
@@ -639,7 +639,7 @@ export class Path extends PathItem {
       curve = curves[i]
       curve._path = this
       curve._segment1 = segments[i]
-      curve._segment2 = segments[i + 1] || segments[0]
+      curve._segment2 = segments[i + 1] ?? segments[0]
       curve._changed()
     }
     // If it's the first segment, correct the last segment of closed
@@ -647,7 +647,7 @@ export class Path extends PathItem {
     if (
       (curve = curves[this._closed && !start ? segments.length - 1 : start - 1])
     ) {
-      curve._segment2 = segments[start] || segments[0]
+      curve._segment2 = segments[start] ?? segments[0]
       curve._changed()
     }
     // Fix the segment after the modified range, if it exists
@@ -881,7 +881,7 @@ export class Path extends PathItem {
    * path.selected = true;
    */
   removeSegment(index: number): Segment | null {
-    return this.removeSegments(index, index + 1)[0] || null
+    return this.removeSegments(index, index + 1)[0] ?? null
   }
 
   /**
@@ -1234,8 +1234,8 @@ export class Path extends PathItem {
   splitAt(location: number | CurveLocation): Path | null {
     // NOTE: getLocationAt() handles both offset and location:
     const loc = this.getLocationAt(location)
-    let index = loc && loc.index
-    let time = loc && loc.time
+    let index = loc?.index
+    let time = loc?.time
     const tMin = CURVETIME_EPSILON
     const tMax = 1 - tMin
     if (time > tMax) {
@@ -1377,11 +1377,11 @@ export class Path extends PathItem {
       if (this._strokeProfile || path._strokeProfile) {
         parts = [this._takeStrokeProfile()]
       }
-      if (last1 && last1._point.isClose(last2._point, epsilon)) {
+      if (last1?._point.isClose(last2._point, epsilon)) {
         path.reverse()
       }
       const first2 = path.firstSegment
-      if (last1 && last1._point.isClose(first2._point, epsilon)) {
+      if (last1?._point.isClose(first2._point, epsilon)) {
         if (parts) {
           parts.push(path._takeStrokeProfile())
         }
@@ -1389,14 +1389,14 @@ export class Path extends PathItem {
         this._add(segments.slice(1))
       } else {
         const first1 = this.firstSegment
-        if (first1 && first1._point.isClose(first2._point, epsilon)) {
+        if (first1?._point.isClose(first2._point, epsilon)) {
           path.reverse()
         }
         last2 = path.lastSegment
         if (parts) {
           parts.push(path._takeStrokeProfile())
         }
-        if (first1 && first1._point.isClose(last2._point, epsilon)) {
+        if (first1?._point.isClose(last2._point, epsilon)) {
           if (parts) {
             parts.reverse()
           }
@@ -1508,7 +1508,7 @@ export class Path extends PathItem {
   // NOTE: Documentation is in PathItem#simplify()
   simplify(options?: any): boolean {
     const opts =
-      typeof options === 'number' ? { tolerance: options } : options || {}
+      typeof options === 'number' ? { tolerance: options } : options ?? {}
     const segments = this._segments
     const { length } = segments
     let fitted = null
@@ -1559,7 +1559,7 @@ export class Path extends PathItem {
     let j: number
     let max: number
 
-    const opts = options || {}
+    const opts = options ?? {}
     const type = opts.type || 'asymmetric'
     const segments = this._segments
     const { length } = segments
@@ -1699,7 +1699,7 @@ export class Path extends PathItem {
     // curves, it is inclusive, handled by the `offset` parameter.
     const getIndex = (value: any, _default: number) => {
       // Support both Segment and Curve through #index getter.
-      let index = value && value.index
+      let index = value?.index
       if (index != null) {
         // Make sure the segment / curve is not from a wrong path.
         const { path } = value
@@ -1975,7 +1975,7 @@ export class Path extends PathItem {
                 pos2 = 0
               }
               // Reuse cached values from initial search.
-              v2 = values2[pos2] || curves2[pos2].getValues()
+              v2 = values2[pos2] ?? curves2[pos2].getValues()
               end2 = 0
             }
             if (!v1) {
@@ -2335,7 +2335,7 @@ export class Path extends PathItem {
    */
   getOffsetOf(point: PointLike | number, y?: number): number | null {
     const loc = this.getLocationOf(point, y)
-    return loc ? loc.offset : null
+    return loc?.offset ?? null
   }
 
   /**
@@ -2797,7 +2797,7 @@ export class Path extends PathItem {
           coords[i + 2], // segment.handleIn
           coords[i], // segment.point,
           i,
-          strokePadding ? strokePadding[i] : 0,
+          strokePadding?.[i] ?? 0,
           min,
           max,
           roots
@@ -2961,8 +2961,8 @@ export class Path extends PathItem {
       for (let j = 0; j < 6; j += 2) {
         // Use different padding for points or handles
         const padding = !j ? joinPadding : strokePadding
-        const paddingX = padding ? padding[0] : 0
-        const paddingY = padding ? padding[1] : 0
+        const paddingX = padding?.[0] ?? 0
+        const paddingY = padding?.[1] ?? 0
         const x = coords[j]
         const y = coords[j + 1]
         const xn = x - paddingX
@@ -2991,7 +2991,7 @@ export class Path extends PathItem {
   // #_changed(). Paths with a stroke profile draw, bound and hit-test
   // their stroke with it:
   _getStrokeOutline(): PathItem {
-    return (this._strokeOutline ||= getStrokeOutline(this))
+    return (this._strokeOutline ??= getStrokeOutline(this))
   }
 
   static {
@@ -3017,7 +3017,7 @@ export class Path extends PathItem {
       inject(this.prototype, {
         [`get${capitalize(key)}At`](offset: number | CurveLocation) {
           const location = this.getLocationAt(offset)
-          return location && location[key]
+          return location?.[key] ?? null
         }
       })
     }
@@ -3571,7 +3571,7 @@ function addBevelJoin(
     ).intersect(new Line(normal2, new Point(-normal2.y, normal2.x), true), true)
     // See if we actually get a bevel point and if its distance is below
     // the miterLimit. If not, make a normal bevel.
-    if (corner && corner.length <= miterLimit * radius) {
+    if (corner?.length <= miterLimit * radius) {
       addPoint(point.add(corner.transform(strokeMatrix)))
     }
   }

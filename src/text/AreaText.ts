@@ -174,7 +174,7 @@ export class AreaText extends TextItem {
   // @override
   _getLayout(): TextLine[] {
     const { layer } = this
-    const version = layer && layer._textWrapVersion
+    const version = layer?._textWrapVersion
     if (this._textWrapVersion !== version) {
       this._textWrapVersion = version
       this._layout = null
@@ -245,7 +245,7 @@ export class AreaText extends TextItem {
             paragraph,
             pos === paragraph.start,
             span,
-            getCut ? getCut(result.length) : 0,
+            getCut?.(result.length) ?? 0,
             // A word too wide for any line takes one of its own where
             // nothing narrows the region:
             span[1] - span[0] >= bounds.width - GEOMETRIC_EPSILON
@@ -376,14 +376,14 @@ export class AreaText extends TextItem {
       // much room above them as below:
       for (let r = 0, l = regions.length; r < l; r++) {
         const last = getLast(layout, r)
-        if (last && last.free > 0) {
+        if (last?.free > 0) {
           const { end } = last.line
           // The room below the lines laid out from `offset` down, beyond
           // what's wanted, or null if the region then shows less:
           const getExcess = (offset: number) => {
             offsets[r] = offset
             const moved = getLast(layAll(), r)
-            return moved && moved.line.end === end
+            return moved?.line.end === end
               ? moved.free - (align === 'center' ? offset : 0)
               : null
           }
@@ -547,7 +547,7 @@ export class AreaText extends TextItem {
   // group's clip path, and the bounds of anything else:
   _getTextWraps(): any[] {
     const { layer } = this
-    const items = layer && layer._textWrapItems
+    const items = layer?._textWrapItems
     const toText = this._getGlobalMatrix(true).inverted()
     const wraps = []
 

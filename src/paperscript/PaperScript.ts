@@ -331,7 +331,7 @@ export function compile(code: string, options: CompileOptions = {}): Compiled {
   // module's 'default' export or its 'namespace', see __$import__(), and
   // the import attributes are passed on as an object:
   function getImport(node: Node, as?: string): string {
-    const attributes = node.attributes || []
+    const attributes = node.attributes ?? []
     const args = [JSON.stringify(node.source.value)]
     if (as || attributes.length) {
       args.push(as ? `"${as}"` : 'undefined')
@@ -542,7 +542,7 @@ export function compile(code: string, options: CompileOptions = {}): Compiled {
     const mappings = ['AA' + encodeVLQ(offset) + 'A']
     // Create empty entries by the amount of lines + 1, so join can be
     // used below to produce the actual instructions that many times.
-    mappings.length = (code.match(lineBreaks) || []).length + 1
+    mappings.length = (code.match(lineBreaks) ?? []).length + 1
     map = {
       version: 3,
       file: url,
@@ -763,7 +763,7 @@ export function execute(
 
   // Install the 'global' tool and view handlers, and we're done!
   function install(exports: any) {
-    const obj = exports || {}
+    const obj = exports ?? {}
     for (const key of toolHandlers) {
       const value = obj[key]
       if (value) {
@@ -791,7 +791,7 @@ export function execute(
     return exports
   }
 
-  const exports = func && func.apply(scope, args)
+  const exports = func?.apply(scope, args)
   // Async functions return a Promise of the exports:
   return compiled.async ? exports.then(install) : install(exports)
 }

@@ -123,7 +123,7 @@ export class Group extends Item {
     // Distinguish null (no clipItem set) and undefined (clipItem was not
     // looked for yet).
     if (clipItem === undefined) {
-      clipItem = this._children.find(child => child._clipMask) || null
+      clipItem = this._children.find(child => child._clipMask) ?? null
       this._clipItem = clipItem
     }
     return clipItem

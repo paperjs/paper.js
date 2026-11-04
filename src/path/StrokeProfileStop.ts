@@ -67,7 +67,7 @@ export class StrokeProfileStop extends Base {
    */
   constructor(object?: StrokeProfileStopProps) {
     super()
-    const { index, offset, width, aspect, angle, smooth } = object || {}
+    const { index, offset, width, aspect, angle, smooth } = object ?? {}
     this._path = null
     this._index = index ?? null
     this._offset = offset || 0
@@ -124,7 +124,7 @@ export class StrokeProfileStop extends Base {
    */
   get offset(): number {
     const path = this._path
-    return path ? path._getOffsetAtIndex(this._index) : this._offset
+    return path?._getOffsetAtIndex(this._index) ?? this._offset
   }
 
   set offset(offset: number) {

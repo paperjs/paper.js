@@ -149,7 +149,7 @@ export class ToolEvent extends Event {
    * no time passed, it's zero.
    */
   get velocity(): Point {
-    return this.#velocity || this.tool._velocity.clone()
+    return this.#velocity ?? this.tool._velocity.clone()
   }
 
   set velocity(velocity: Point) {
@@ -229,5 +229,5 @@ export class ToolEvent extends Event {
 
 // Convenience function to allow local overrides of point values, see point:
 function choosePoint(point: Point, toolPoint: Point): Point {
-  return point ? point : toolPoint ? toolPoint.clone() : null
+  return point ?? toolPoint?.clone() ?? null
 }

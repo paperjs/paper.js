@@ -76,7 +76,7 @@ export function defineStrokeProfile(ctor: typeof Path) {
         })
       }
       // The stops that the path no longer has keep their offsets:
-      for (const stop of previous || []) {
+      for (const stop of previous ?? []) {
         if (!profile?.includes(stop)) {
           stop._offset = stop.offset
           stop._index = stop._path = null
@@ -271,7 +271,7 @@ export function defineStrokeProfile(ctor: typeof Path) {
       }
 
       this._filterStrokeProfile(isKept)
-      const profile = this._strokeProfile || []
+      const profile = this._strokeProfile ?? []
       for (const stop of profile) {
         const x = stop._index
         // How far the stop lies from the segment before:
@@ -482,7 +482,7 @@ declare module './Path.ts' {
 // Returns the stops of the path as { offset, width, aspect, angle,
 // smooth } entries in order:
 function getEntries(path: Path): Entry[] {
-  return (path._strokeProfile || []).map(stop => ({
+  return (path._strokeProfile ?? []).map(stop => ({
     offset: stop.offset,
     width: stop._width,
     aspect: stop._aspect,
@@ -572,7 +572,7 @@ function getValues(
   const values = { offset }
   for (const key of Object.keys(defaults)) {
     const value = getValue(entries, key, offset, length, closed, after)
-    values[key] = value && value[0]
+    values[key] = value?.[0] ?? null
   }
   return values
 }
@@ -599,7 +599,7 @@ function getPart(
         stop = entry
       }
     }
-    values.smooth = !!stop && stop.smooth
+    values.smooth = !!stop?.smooth
     return values
   }
 

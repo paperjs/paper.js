@@ -25,7 +25,7 @@ export function getStyles(element: Element | Document): CSSStyleDeclaration {
       ? element.ownerDocument
       : (element as Document)
   const view = document?.defaultView
-  return view && view.getComputedStyle(element as Element, '')
+  return view?.getComputedStyle(element as Element, '') ?? null
 }
 
 /**

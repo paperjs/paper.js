@@ -108,7 +108,7 @@ export abstract class PathItem extends Item {
       // If there are multiple moveTo commands or a closePath command
       // followed by other commands, we have a CompoundPath.
       isCompound = (
-        (pathData.match(/m/gi) || []).length > 1 ||
+        (pathData.match(/m/gi) ?? []).length > 1 ||
         /z\s*\S+/i.test(pathData)
       )
     }
@@ -184,7 +184,7 @@ export abstract class PathItem extends Item {
     // First clear the previous content
     this.clear()
 
-    for (const part of parts || []) {
+    for (const part of parts ?? []) {
       const command = part[0]
       const lower = command.toLowerCase()
       // Match all coordinate values
@@ -477,7 +477,7 @@ export abstract class PathItem extends Item {
    */
   getNearestPoint(point: PointLike | number, y?: number): Point {
     const location = this.getNearestLocation(point, y)
-    return location && location.point
+    return location?.point ?? null
   }
 
   /**
@@ -800,10 +800,8 @@ export abstract class PathItem extends Item {
   compare(path: PathItem): boolean {
     let ok = false
     if (path) {
-      const paths1 = (this._children || [this]) as PathItem[]
-      const paths2 = (
-        path._children ? path._children.slice() : [path]
-      ) as PathItem[]
+      const paths1 = (this._children ?? [this]) as PathItem[]
+      const paths2 = (path._children?.slice() ?? [path]) as PathItem[]
       const length1 = paths1.length
       const length2 = paths2.length
       const matched = []
@@ -1452,7 +1450,7 @@ export abstract class PathItem extends Item {
    */
   reorient(nonZero?: boolean, clockwise?: boolean): this {
     const children = this._children
-    if (children && children.length) {
+    if (children?.length) {
       this.children = reorientPaths(
         this.removeChildren() as PathItem[],
         // Handle both even-odd and non-zero rule.

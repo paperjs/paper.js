@@ -144,7 +144,7 @@ const operators: Record<string, Operator> = {
 }
 
 function getPaths(path: PathItem): Path[] {
-  return (path._children || [path]) as Path[]
+  return (path._children ?? [path]) as Path[]
 }
 
 /*
@@ -206,7 +206,7 @@ export function createResult(
     // Insert the resulting path above whichever of the paths that are
     // siblings of path1 appears furthest up in the stack:
     let above = path1
-    const others = [].concat(path2 || [])
+    const others = [].concat(path2 ?? [])
     for (let i = 0, l = others.length; i < l; i++) {
       const other = others[i]
       if (path1.isSibling(other) && other.index > above.index) {
@@ -315,7 +315,7 @@ function combinePaths(
     return entries[0].path
   }
 
-  const entries = [].concat(paths || []).map((path: PathItem) => {
+  const entries = [].concat(paths ?? []).map((path: PathItem) => {
     const { bounds } = path
     return { path, bounds, center: bounds.center }
   })
@@ -441,7 +441,7 @@ export function reorientPaths(
   isInside: (winding: number) => boolean,
   clockwise?: boolean
 ): PathItem[] {
-  const length = paths && paths.length
+  const length = paths?.length
   if (length) {
     // Build a lookup table with information for each path's
     // original index and winding contribution.
@@ -486,7 +486,7 @@ export function reorientPaths(
         let point = null // interior point, only get it if required.
         for (let j = indices.length - 1; j >= 0; j--) {
           if (indices[j] < i) {
-            point = point || path1.interiorPoint
+            point ??= path1.interiorPoint
             const path2 = sorted[indices[j]]
             // As we run through the paths from largest to
             // smallest, for any current path, all potentially
@@ -843,7 +843,7 @@ export function createGraph(operands: PathItem[]): Graph {
     const operand = operands[i]
     const paths = getPaths(operand)
     nonZeros.push(operand.fillRule === 'nonzero')
-    bounds = bounds ? bounds.unite(operand.bounds) : operand.bounds
+    bounds = bounds?.unite(operand.bounds) ?? operand.bounds
     for (let j = 0, k = paths.length; j < k; j++) {
       const pathCurves = paths[j].curves
       offsets[paths[j]._id] = curves.length
@@ -1184,7 +1184,7 @@ export function createGraph(operands: PathItem[]): Graph {
     // Look up the edges between the same vertices by the first one:
     const first = min(edge.from, edge.to)
     const last = max(edge.from, edge.to)
-    const list = edgesByVertex[first] || (edgesByVertex[first] = [])
+    const list = (edgesByVertex[first] ??= [])
     for (let i = 0, l = list.length; i < l; i++) {
       const other = list[i]
       const direction = (

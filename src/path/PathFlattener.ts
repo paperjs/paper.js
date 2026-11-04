@@ -164,9 +164,8 @@ export class PathFlattener extends Base {
         const previous = parts[i - 1]
         // Make sure we only use the previous parameter value if its
         // for the same curve, by checking index. Use 0 otherwise.
-        const previousTime =
-          previous && previous.index === part.index ? previous.time : 0
-        const previousOffset = previous ? previous.offset : 0
+        const previousTime = previous?.index === part.index ? previous.time : 0
+        const previousOffset = previous?.offset ?? 0
         let factor = (offset - previousOffset) / (part.offset - previousOffset)
         if (part.isStraight) {
           // The part's time at the point on its line:

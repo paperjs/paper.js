@@ -578,7 +578,7 @@ export class View extends Emitter {
     letterSpacing: string,
     direction?: string
   ): number {
-    const ctx = this._context || getContext(1, 1)
+    const ctx = this._context ?? getContext(1, 1)
     let width = 0
     if (ctx) {
       const prevFont = ctx.font
@@ -608,7 +608,7 @@ export class View extends Emitter {
   }
 
   getFontMetrics(font: string): { ascent: number; descent: number } | null {
-    const ctx = this._context || getContext(1, 1)
+    const ctx = this._context ?? getContext(1, 1)
     let metrics = null
     if (ctx) {
       const prevFont = ctx.font
@@ -1025,7 +1025,7 @@ export class View extends Emitter {
         stroke: true
       })
     )
-    const hitItem: Item = hit?.item || null
+    const hitItem: Item = hit?.item ?? null
     // Keep track if view event should be handled, so we can use it
     // to decide if tool._handleMouseEvent() shall be called after.
     let handle = false

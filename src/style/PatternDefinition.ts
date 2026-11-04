@@ -129,7 +129,7 @@ export class PatternDefinition extends ItemDefinition {
    * @default the bounds of the pattern's item
    */
   get tile(): Rectangle {
-    return this._tile || this._item.bounds
+    return this._tile ?? this._item.bounds
   }
 
   set tile(tile: RectangleLike | null) {
