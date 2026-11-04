@@ -1,0 +1,1668 @@
+/*
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
+ * http://paperjs.org/
+ *
+ * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
+ * http://juerglehni.com/ & https://puckey.studio/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ */
+
+import { Base } from '../core/Base.ts'
+import { serialize } from '../core/serialization.ts'
+import { Formatter } from '../util/Formatter.ts'
+import { equals, inject, isPlainObject } from '../util/object.ts'
+import { EPSILON } from '../util/numerical.ts'
+import { Change } from '../constants.ts'
+import { Point } from '../basic/Point.ts'
+import type { PointLike } from '../basic/Point.ts'
+import { Matrix } from '../basic/Matrix.ts'
+import { CanvasProvider } from '../canvas/CanvasProvider.ts'
+import { Gradient } from './Gradient.ts'
+import { PatternDefinition } from './PatternDefinition.ts'
+
+/**
+ * What a color can be passed as, where a function takes one: a color, a CSS
+ * string, a gray value, an array of components, or an object describing the
+ * components, see the {@link Color} constructors.
+ */
+export type ColorLike = Color | string | number | number[] | object
+
+// Link color types to component indices and types:
+const types = {
+  gray: ['gray'],
+  rgb: ['red', 'green', 'blue'],
+  hsb: ['hue', 'saturation', 'brightness'],
+  hsl: ['hue', 'saturation', 'lightness'],
+  gradient: ['gradient', 'origin', 'destination', 'highlight', 'aspect'],
+  pattern: ['pattern', 'matrix']
+}
+
+// Parsers of values for setters, by type and component, see the static block
+// of Color:
+const componentParsers: Record<string, ((value: any) => any)[]> = {}
+
+// Cache and canvas context for color name lookup
+const namedColors = {
+  // node-canvas appears to return wrong values for 'transparent'. Fix it by
+  // having it pre-cached here:
+  transparent: [0, 0, 0, 0]
+}
+let colorContext: CanvasRenderingContext2D
+
+// The gradient points are in the coordinates of the item's parent. If the
+// item's content is transformed by a matrix, get them into its own
+// coordinates by the inverse, and then through the strokeMatrix:
+function getCanvasTransform(matrix: Matrix, strokeMatrix: Matrix): Matrix {
+  const inverse = matrix?.inverted()
+  return strokeMatrix && inverse
+    ? strokeMatrix.appended(inverse)
+    : strokeMatrix || inverse
+}
+
+// Transforms the origin, destination, highlight and aspect of the gradient
+// color's components into those of `dest`, which may be the components
+// themselves, exactly for any matrix.
+function transformGradient(components: any[], dest: any[], matrix: Matrix) {
+  const origin = components[1]
+  const highlight = components[3]
+  let aspect = components[4]
+  const along = components[2].subtract(origin)
+  const across = along.rotate(90)
+  // Vectors map without the translation:
+  const linear = matrix._shiftless()
+  const u = linear._transformPoint(along)
+  const start = matrix._transformPoint(origin)
+  let vector = u
+  if (!along.isZero()) {
+    if (components[0]._radial) {
+      // The ellipse with the radius along the gradient and the aspect across
+      // it maps to the ellipse of the vectors u and w. Its radii and axis
+      // follow from the parts of [u w] that rotate and that reflect, p and q:
+      const w = linear._transformPoint(across.multiply(aspect))
+      const v = w.rotate(-90)
+      const p = u.add(v)
+      const q = u.subtract(v)
+      const pLength = p.length
+      const qLength = q.length
+      let major = (pLength + qLength) / 2
+      const minor = Math.abs(pLength - qLength) / 2
+      let axis = u.normalize()
+      aspect = 1
+      // Without either part, the ellipse is a circle:
+      if (Math.min(pLength, qLength) > EPSILON * major) {
+        axis = new Point({ angle: (p.angle + q.angle) / 2, length: 1 })
+        // Take the axis closest to the mapped one:
+        if (Math.abs(axis.cross(u)) > Math.abs(axis.dot(u))) {
+          axis = axis.rotate(90)
+          aspect = major / minor
+          major = minor
+        } else {
+          aspect = minor / major
+        }
+        if (axis.dot(u) < 0) {
+          axis = axis.negate()
+        }
+      }
+      vector = axis.multiply(major)
+    } else {
+      // Linear gradients keep their stripes, which run across them: the
+      // destination is where the line from the origin at right angles to the
+      // mapped stripes meets the mapped end stripe.
+      const stripe = linear._transformPoint(across)
+      const normal = stripe.rotate(90)
+      if (!normal.isZero()) {
+        vector = normal.multiply(u.dot(normal) / normal.dot(normal))
+      }
+    }
+  }
+  dest[1] = (dest[1] || new Point())._set(start.x, start.y, true)
+  dest[2] = (dest[2] || new Point())._set(
+    start.x + vector.x,
+    start.y + vector.y,
+    true
+  )
+  if (highlight) {
+    dest[3] = matrix._transformPoint(highlight, dest[3], true)
+  }
+  dest[4] = aspect
+  return dest
+}
+
+// The matrix that stretches the circle of an elliptical radial gradient into
+// its ellipse, around its origin and along its axis:
+function getEllipseMatrix(components: any[]): Matrix {
+  const aspect = components[4]
+  if (components[0]._radial && aspect !== 1) {
+    const origin = components[1]
+    const { angle } = components[2].subtract(origin)
+    return new Matrix()
+      .translate(origin)
+      .rotate(angle)
+      .scale(1, aspect)
+      .rotate(-angle)
+      .translate(origin.negate())
+  }
+}
+
+function fromCSS(string: string): [string, number[]] {
+  let match = (
+    string.match(/^#([\da-f]{2})([\da-f]{2})([\da-f]{2})([\da-f]{2})?$/i) ||
+    string.match(/^#([\da-f])([\da-f])([\da-f])([\da-f])?$/i)
+  )
+  let type = 'rgb'
+  let components: number[]
+  if (match) {
+    // Hex with optional alpha channel:
+    const amount = match[4] ? 4 : 3
+    components = new Array(amount)
+    for (let i = 0; i < amount; i++) {
+      const value = match[i + 1]
+      components[i] = (
+        parseInt(value.length == 1 ? value + value : value, 16) / 255
+      )
+    }
+  } else if ((match = string.match(/^(rgb|hsl)a?\((.*)\)$/))) {
+    // RGB / RGBA or HSL / HSLA
+    type = match[1]
+    const parts = match[2].trim().split(/[,\s]+/g)
+    const isHSL = type === 'hsl'
+    components = []
+    for (let i = 0, l = Math.min(parts.length, 4); i < l; i++) {
+      const part = parts[i]
+      // Use `parseFloat()` instead of `+value` to parse '\d+%' to float for
+      // HSL:
+      let value = parseFloat(part)
+      if (isHSL) {
+        if (i === 0) {
+          // handle 'deg', 'turn', 'rad' 'grad':
+          const unit = part.match(/([a-z]*)$/)[1]
+          value *= {
+            turn: 360,
+            rad: 180 / Math.PI,
+            grad: 0.9 // 360 / 400
+          }[unit] || 1
+        } else if (i < 3) {
+          // Percentages to 0..1
+          value /= 100
+        }
+      } else if (i < 3) {
+        // RGB color values to 0..1
+        value /= /%$/.test(part) ? 100 : 255
+      }
+      components[i] = value
+    }
+  } else {
+    // Named
+    let color = namedColors[string]
+    if (!color) {
+      // Use a canvas to draw with the given name, then retrieve RGB values and
+      // build a cache for all the used colors.
+      if (!colorContext) {
+        colorContext = CanvasProvider.getContext(1, 1, {
+          willReadFrequently: true
+        })
+        if (colorContext) {
+          colorContext.globalCompositeOperation = 'copy'
+        }
+      }
+      if (colorContext) {
+        // Set the current fillStyle to transparent, so that it will be
+        // transparent instead of the previously set color in case the new
+        // color can not be interpreted.
+        colorContext.fillStyle = 'rgba(0,0,0,0)'
+        // Set the fillStyle of the context to the passed name and fill the
+        // canvas with it, then retrieve the data for the drawn pixel:
+        colorContext.fillStyle = string
+        colorContext.fillRect(0, 0, 1, 1)
+        const { data } = colorContext.getImageData(0, 0, 1, 1)
+        color = namedColors[string] = [
+          data[0] / 255,
+          data[1] / 255,
+          data[2] / 255
+        ]
+      } else {
+        // Without a canvas, CSS color names can't be resolved.
+        color = [0, 0, 0]
+      }
+    }
+    components = color.slice()
+  }
+  return [type, components]
+}
+
+// For hsb-rgb conversion, used to lookup the right parameters in the values
+// array.
+const hsbIndices = [
+  [0, 3, 1], // 0
+  [2, 0, 1], // 1
+  [1, 0, 3], // 2
+  [1, 2, 0], // 3
+  [3, 1, 0], // 4
+  [0, 1, 2] // 5
+]
+
+// Calling convention for converters: The components are passed as arguments,
+// and returned as an array. alpha is left out, because the conversion does
+// not change it.
+const converters: Record<string, (...components: any[]) => any[]> = {
+  'rgb-hsb'(r, g, b) {
+    const max = Math.max(r, g, b)
+    const min = Math.min(r, g, b)
+    const delta = max - min
+    const h =
+      delta === 0
+        ? 0
+        : (
+            max == r
+              ? (g - b) / delta + (g < b ? 6 : 0)
+              : max == g
+                ? (b - r) / delta + 2
+                : (r - g) / delta + 4
+          ) *
+          60 // max == b
+    return [h, max === 0 ? 0 : delta / max, max]
+  },
+
+  'hsb-rgb'(h, s, b) {
+    // Scale h to 0..6 with modulo for negative values too
+    h = (((h / 60) % 6) + 6) % 6
+    const i = Math.floor(h) // 0..5
+    const f = h - i
+    const indices = hsbIndices[i]
+    const v = [
+      b, // b, index 0
+      b * (1 - s), // p, index 1
+      b * (1 - s * f), // q, index 2
+      b * (1 - s * (1 - f)) // t, index 3
+    ]
+    return [v[indices[0]], v[indices[1]], v[indices[2]]]
+  },
+
+  // HSL code is based on:
+  // http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
+  'rgb-hsl'(r, g, b) {
+    const max = Math.max(r, g, b)
+    const min = Math.min(r, g, b)
+    const delta = max - min
+    const achromatic = delta === 0
+    const h = achromatic
+      ? 0
+      : (
+          max == r
+            ? (g - b) / delta + (g < b ? 6 : 0)
+            : max == g
+              ? (b - r) / delta + 2
+              : (r - g) / delta + 4
+        ) *
+        60 // max == b
+    const l = (max + min) / 2
+    const s = achromatic
+      ? 0
+      : l < 0.5
+        ? delta / (max + min)
+        : delta / (2 - max - min)
+    return [h, s, l]
+  },
+
+  'hsl-rgb'(h, s, l) {
+    // Scale h to 0..1 with modulo for negative values too
+    h = (((h / 360) % 1) + 1) % 1
+    if (s === 0) {
+      return [l, l, l]
+    }
+    const t3s = [h + 1 / 3, h, h - 1 / 3]
+    const t2 = l < 0.5 ? l * (1 + s) : l + s - l * s
+    const t1 = 2 * l - t2
+    const c = []
+    for (let i = 0; i < 3; i++) {
+      let t3 = t3s[i]
+      if (t3 < 0) {
+        t3 += 1
+      }
+      if (t3 > 1) {
+        t3 -= 1
+      }
+      c[i] =
+        6 * t3 < 1
+          ? t1 + (t2 - t1) * 6 * t3
+          : 2 * t3 < 1
+            ? t2
+            : 3 * t3 < 2
+              ? t1 + (t2 - t1) * ((2 / 3) - t3) * 6
+              : t1
+    }
+    return c
+  },
+
+  'rgb-gray'(r, g, b) {
+    // Using the standard NTSC conversion formula that is used for calculating
+    // the effective luminance of an RGB color:
+    // http://www.mathworks.com/support/solutions/en/data/1-1ASCU/index.html?solution=1-1ASCU
+    return [r * 0.2989 + g * 0.587 + b * 0.114]
+  },
+
+  'gray-rgb'(g) {
+    return [g, g, g]
+  },
+
+  'gray-hsb'(g) {
+    return [0, 0, g]
+  },
+
+  'gray-hsl'(g) {
+    // TODO: Is lightness really the same as brightness for gray?
+    return [0, 0, g]
+  },
+
+  'gradient-rgb'(/* gradient */) {
+    // TODO: Implement
+    return []
+  },
+
+  'rgb-gradient'(/* r, g, b */) {
+    // TODO: Implement
+    return []
+  },
+
+  // Patterns have no colors to convert, but this lets other colors read their
+  // components, as undefined:
+  'pattern-rgb'(/* pattern */) {
+    return []
+  },
+
+  'rgb-pattern'(/* r, g, b */) {
+    return []
+  }
+}
+
+const operators = {
+  add: (a: number, b: number) => a + b,
+  subtract: (a: number, b: number) => a - b,
+  multiply: (a: number, b: number) => a * b,
+  divide: (a: number, b: number) => a / b
+}
+
+/**
+ * All properties and functions that expect color values in the form
+ * of instances of Color objects, also accept named colors and hex values as
+ * strings which are then converted to instances of
+ * {@link Color} internally.
+ *
+ * @classexample {@paperscript}
+ * // Named color values:
+ *
+ * // Create a circle shaped path at {x: 80, y: 50}
+ * // with a radius of 30.
+ * var circle = new Path.Circle(new Point(80, 50), 30);
+ *
+ * // Pass a color name to the fillColor property, which is internally
+ * // converted to a Color.
+ * circle.fillColor = 'green';
+ *
+ * @classexample {@paperscript}
+ * // Hex color values:
+ *
+ * // Create a circle shaped path at {x: 80, y: 50}
+ * // with a radius of 30.
+ * var circle = new Path.Circle(new Point(80, 50), 30);
+ *
+ * // Pass a hex string to the fillColor property, which is internally
+ * // converted to a Color.
+ * circle.fillColor = '#ff0000';
+ */
+export class Color extends Base {
+  #type: string
+  #components: any[]
+  #alpha: number
+  // The owner that the color notifies of changes, and the property of the
+  // owner that holds it, if it's to be set again on changes, see _changed():
+  #owner: any
+  #key: string
+  // The cached style for drawing, which Style clears when disposing:
+  _canvasStyle: string | CanvasGradient | CanvasPattern
+
+  /**
+   * Creates a RGB Color object.
+   *
+   * @param red the amount of red in the color as a value between
+   *     `0` and `1`
+   * @param green the amount of green in the color as a value
+   *     between `0` and `1`
+   * @param blue the amount of blue in the color as a value
+   *     between `0` and `1`
+   * @param alpha the alpha of the color as a value between `0`
+   *     and `1`
+   *
+   * @example {@paperscript}
+   * // Creating a RGB Color:
+   *
+   * // Create a circle shaped path at {x: 80, y: 50}
+   * // with a radius of 30:
+   * var circle = new Path.Circle(new Point(80, 50), 30);
+   *
+   * // 100% red, 0% blue, 50% blue:
+   * circle.fillColor = new Color(1, 0, 0.5);
+   */
+  constructor(red: number, green: number, blue: number, alpha?: number)
+  /**
+   * Creates a gray Color object.
+   *
+   * @param gray the amount of gray in the color as a value
+   *     between `0` and `1`
+   * @param alpha the alpha of the color as a value between `0`
+   *     and `1`
+   *
+   * @example {@paperscript}
+   * // Creating a gray Color:
+   *
+   * // Create a circle shaped path at {x: 80, y: 50}
+   * // with a radius of 30:
+   * var circle = new Path.Circle(new Point(80, 50), 30);
+   *
+   * // Create a GrayColor with 50% gray:
+   * circle.fillColor = new Color(0.5);
+   */
+  constructor(gray: number, alpha?: number)
+  /**
+   * Creates a HSB, HSL, gradient or pattern Color object from the
+   * properties of the provided object:
+   *
+   * @option hsb.hue {Number} the hue of the color as a value in degrees
+   *     between `0` and `360`
+   * @option hsb.saturation {Number} the saturation of the color as a
+   *     value between `0` and `1`
+   * @option hsb.brightness {Number} the brightness of the color as a
+   *     value between `0` and `1`
+   * @option hsb.alpha {Number} the alpha of the color as a value between
+   *     `0` and `1`
+   *
+   * @option hsl.hue {Number} the hue of the color as a value in degrees
+   *     between `0` and `360`
+   * @option hsl.saturation {Number} the saturation of the color as a
+   *     value between `0` and `1`
+   * @option hsl.lightness {Number} the lightness of the color as a value
+   *     between `0` and `1`<br>
+   * @option hsl.alpha {Number} the alpha of the color as a value between
+   *     `0` and `1`
+   *
+   * @option gradient.gradient {Gradient} the gradient object that
+   *     describes the color stops and type of gradient to be used
+   * @option gradient.origin {Point} the origin point of the gradient
+   * @option gradient.destination {Point} the destination point of the
+   *     gradient
+   * @option gradient.stops {GradientStop[]} the gradient stops describing
+   *     the gradient, as an alternative to providing a gradient object
+   * @option gradient.radial {Boolean} controls whether the gradient is
+   *     radial, as an alternative to providing a gradient object
+   *
+   * @option pattern.pattern {PatternDefinition} the pattern whose tiles
+   *     the color repeats
+   * @option pattern.matrix {Matrix} the matrix that places the tiles in
+   *     the item's coordinates
+   *
+   * @param object an object describing the components and
+   * properties of the color
+   *
+   * @example {@paperscript}
+   * // Creating a HSB Color:
+   *
+   * // Create a circle shaped path at {x: 80, y: 50}
+   * // with a radius of 30:
+   * var circle = new Path.Circle(new Point(80, 50), 30);
+   *
+   * // Create an HSB Color with a hue of 90 degrees, a saturation
+   * // 100% and a brightness of 100%:
+   * circle.fillColor = { hue: 90, saturation: 1, brightness: 1 };
+   *
+   * @example {@paperscript}
+   * // Creating a HSL Color:
+   *
+   * // Create a circle shaped path at {x: 80, y: 50}
+   * // with a radius of 30:
+   * var circle = new Path.Circle(new Point(80, 50), 30);
+   *
+   * // Create an HSL Color with a hue of 90 degrees, a saturation
+   * // 100% and a lightness of 50%:
+   * circle.fillColor = { hue: 90, saturation: 1, lightness: 0.5 };
+   *
+   * @example {@paperscript height=200}
+   * // Creating a gradient color from an object literal:
+   *
+   * // Define two points which we will be using to construct
+   * // the path and to position the gradient color:
+   * var topLeft = view.center - [80, 80];
+   * var bottomRight = view.center + [80, 80];
+   *
+   * var path = new Path.Rectangle({
+   *  topLeft: topLeft,
+   *  bottomRight: bottomRight,
+   *  // Fill the path with a gradient of three color stops
+   *  // that runs between the two points we defined earlier:
+   *  fillColor: {
+   *      stops: ['yellow', 'red', 'blue'],
+   *      origin: topLeft,
+   *      destination: bottomRight
+   *  }
+   * });
+   */
+  constructor(object: object)
+  /**
+   * Creates a Color object from a CSS string. All common CSS color string
+   * formats are supported:
+   * - Named colors (e.g. `'red'`, `'fuchsia'`, …)
+   * - Hex strings (`'#ffff00'`, `'#ff0'`, …)
+   * - RGB strings (`'rgb(255, 128, 0)'`, `'rgba(255, 128, 0, 0.5)'`, …)
+   * - HSL strings (`'hsl(180deg, 20%, 50%)'`,
+   *   `'hsla(3.14rad, 20%, 50%, 0.5)'`, …)
+   *
+   * @param color the color's CSS string representation
+   *
+   * @example {@paperscript}
+   * var circle = new Path.Circle({
+   *     center: [80, 50],
+   *     radius: 30,
+   *     fillColor: new Color('rgba(255, 255, 0, 0.5)')
+   * });
+   */
+  constructor(color: string)
+  /**
+   * Creates a gradient Color object.
+   *
+   * @param gradient
+   * @param origin
+   * @param destination
+   * @param highlight
+   * @param aspect
+   *
+   * @example {@paperscript height=200}
+   * // Applying a linear gradient color containing evenly distributed
+   * // color stops:
+   *
+   * // Define two points which we will be using to construct
+   * // the path and to position the gradient color:
+   * var topLeft = view.center - [80, 80];
+   * var bottomRight = view.center + [80, 80];
+   *
+   * // Create a rectangle shaped path between
+   * // the topLeft and bottomRight points:
+   * var path = new Path.Rectangle(topLeft, bottomRight);
+   *
+   * // Create the gradient, passing it an array of colors to be converted
+   * // to evenly distributed color stops:
+   * var gradient = new Gradient(['yellow', 'red', 'blue']);
+   *
+   * // Have the gradient color run between the topLeft and
+   * // bottomRight points we defined earlier:
+   * var gradientColor = new Color(gradient, topLeft, bottomRight);
+   *
+   * // Set the fill color of the path to the gradient color:
+   * path.fillColor = gradientColor;
+   *
+   * @example {@paperscript height=200}
+   * // Applying a radial gradient color containing unevenly distributed
+   * // color stops:
+   *
+   * // Create a circle shaped path at the center of the view
+   * // with a radius of 80:
+   * var path = new Path.Circle({
+   *     center: view.center,
+   *     radius: 80
+   * });
+   *
+   * // The stops array: yellow mixes with red between 0 and 15%,
+   * // 15% to 30% is pure red, red mixes with black between 30% to 100%:
+   * var stops = [
+   *     ['yellow', 0],
+   *     ['red', 0.15],
+   *     ['red', 0.3],
+   *     ['black', 0.9]
+   * ];
+   *
+   * // Create a radial gradient using the color stops array:
+   * var gradient = new Gradient(stops, true);
+   *
+   * // We will use the center point of the circle shaped path as
+   * // the origin point for our gradient color
+   * var from = path.position;
+   *
+   * // The destination point of the gradient color will be the
+   * // center point of the path + 80pt in horizontal direction:
+   * var to = path.position + [80, 0];
+   *
+   * // Create the gradient color:
+   * var gradientColor = new Color(gradient, from, to);
+   *
+   * // Set the fill color of the path to the gradient color:
+   * path.fillColor = gradientColor;
+   */
+  constructor(
+    gradient: Gradient,
+    origin: PointLike,
+    destination: PointLike,
+    highlight?: PointLike,
+    aspect?: number
+  )
+  /**
+   * Creates a pattern Color object, which repeats the tiles of the
+   * pattern, placed by the matrix in the item's coordinates. As with
+   * gradient colors, the matrix is transformed along with the item.
+   *
+   * @param pattern
+   * @param matrix
+   *
+   * @example {@paperscript height=200}
+   * // Filling a rectangle with a dotted pattern, and stroking it with
+   * // the same pattern, turned by 45 degrees:
+   * var dot = new Path.Circle({
+   *     center: [4, 4],
+   *     radius: 2,
+   *     fillColor: 'black'
+   * });
+   * var pattern = new PatternDefinition(dot, {
+   *     tile: new Rectangle(0, 0, 8, 8)
+   * });
+   *
+   * var path = new Path.Rectangle({
+   *     point: [40, 40],
+   *     size: [160, 120],
+   *     strokeWidth: 16
+   * });
+   * path.fillColor = new Color(pattern);
+   * path.strokeColor = new Color(pattern, new Matrix().rotate(45));
+   */
+  constructor(pattern: PatternDefinition, matrix?: Matrix)
+  constructor(color?: ColorLike)
+  /**
+   * Creates a color of the given type from its components, followed by the
+   * alpha value if there is one, as JSON stores colors.
+   *
+   * @param type the type of the color: `'gray'`, `'rgb'`, `'hsb'`, `'hsl'`,
+   *     `'gradient'` or `'pattern'`
+   * @param components
+   */
+  constructor(type: string, ...components: any[])
+  constructor(...args: any[]) {
+    super()
+    this.set(...args)
+  }
+
+  /**
+   * Sets the color to the passed values. Note that any sequence of
+   * parameters that is supported by the various {@link Color()}
+   * constructors also work for calls of `set()`.
+   *
+   * @param values
+   * @return
+   */
+  set(...args: any[]): this {
+    let [arg] = args
+    // If first argument is an array, replace arguments with it.
+    if (Array.isArray(arg)) {
+      args = arg
+      arg = args[0]
+    }
+    let type: string
+    let components: any[]
+    let alpha: number
+    let values: any[]
+    // First see if it's a type string argument, and if so, set it and shift
+    // it out of the arguments list.
+    let argType = arg != null && typeof arg
+    if (argType === 'string' && arg in types) {
+      type = arg
+      arg = args[1]
+      if (Array.isArray(arg)) {
+        // Internal constructor that is called with the following arguments,
+        // without parsing: (type, components, alpha)
+        components = arg
+        alpha = args[2]
+      } else {
+        // For deserialization, shift out and process normally.
+        args = args.slice(1)
+        argType = typeof arg
+      }
+    }
+    if (!components) {
+      // Determine if there is a values array
+      values =
+        argType === 'number'
+          ? args
+          : argType === 'object' && arg.length != null
+            ? arg
+            : null
+      // The various branches below produce a values array if the values still
+      // need parsing, and a components array if they are already parsed.
+      if (values) {
+        type ||= values.length >= 3 ? 'rgb' : 'gray'
+        const { length } = types[type]
+        alpha = values[length]
+        if (values.length > length) {
+          values = values.slice(0, length)
+        }
+      } else if (argType === 'string') {
+        ;[type, components] = fromCSS(arg)
+        if (components.length === 4) {
+          alpha = components[3]
+          components.length--
+        }
+      } else if (argType === 'object') {
+        if (arg.constructor === Color) {
+          type = arg.#type
+          components = arg.#components.slice()
+          alpha = arg.#alpha
+          // Clone all points and the matrix, since they belong to the other
+          // color already.
+          if (type === 'gradient') {
+            for (let i = 1; i < 4; i++) {
+              components[i] = components[i]?.clone()
+            }
+          } else if (type === 'pattern') {
+            components[1] = components[1].clone()
+          }
+        } else if (arg.constructor === Gradient) {
+          type = 'gradient'
+          values = args
+        } else if (arg.constructor === PatternDefinition) {
+          type = 'pattern'
+          values = args
+        } else {
+          // Determine type by presence of object property names
+          type =
+            'hue' in arg
+              ? 'lightness' in arg
+                ? 'hsl'
+                : 'hsb'
+              : 'gradient' in arg || 'stops' in arg || 'radial' in arg
+                ? 'gradient'
+                : 'pattern' in arg
+                  ? 'pattern'
+                  : 'gray' in arg
+                    ? 'gray'
+                    : 'rgb'
+          // Convert to array and parse in one loop, for efficiency. The
+          // gradient parser reads the components, so set them first:
+          const parsers = componentParsers[type]
+          this.#components = components = []
+          types[type].forEach((name: string, index: number) => {
+            let value = arg[name]
+            // Allow implicit definition of gradients through stops / radial
+            // properties. Conversion happens here on the fly:
+            if (
+              value == null &&
+              index === 0 &&
+              type === 'gradient' &&
+              'stops' in arg
+            ) {
+              value = { stops: arg.stops, radial: arg.radial }
+            }
+            value = parsers[index].call(this, value)
+            if (value != null) {
+              components[index] = value
+            }
+          })
+          alpha = arg.alpha
+        }
+      }
+    }
+    // Default fallbacks: rgb, black
+    this.#type = type || 'rgb'
+    if (!components) {
+      // Produce a components array now, and parse values. Even if no values
+      // are defined, parsers are still called to produce defaults.
+      this.#components = components = []
+      componentParsers[this.#type].forEach((parser, index) => {
+        const value = parser.call(this, values?.[index])
+        if (value != null) {
+          components[index] = value
+        }
+      })
+    }
+    this.#components = components
+    this.#alpha = alpha
+    return this
+  }
+
+  _serialize(options: any, dictionary: any) {
+    const { components } = this
+    const hasAlpha = this.#alpha != null
+    // Leave out the aspect of circles, and with it an unset highlight, and
+    // the identity matrix of patterns, unless the alpha follows:
+    if (this.#type === 'gradient' && components[4] === 1 && !hasAlpha) {
+      components.length = components[3] ? 4 : 3
+    }
+    if (this.#type === 'pattern' && components[1].isIdentity() && !hasAlpha) {
+      components.length = 1
+    }
+    return serialize(
+      // We can omit the type for gray and rgb:
+      /^(gray|rgb)$/.test(this.#type)
+        ? components
+        : [this.#type, ...components],
+      options,
+      true,
+      dictionary
+    )
+  }
+
+  /**
+   * Called by various setters whenever a color value changes
+   */
+  _changed() {
+    this._canvasStyle = null
+    const owner = this.#owner
+    if (owner) {
+      if (this.#key) {
+        owner[this.#key] = this
+      } else {
+        owner._changed(Change.STYLE)
+      }
+    }
+  }
+
+  /**
+   * @return the converted components as an array
+   */
+  _convert(type: string): any[] {
+    const components = this.#components
+    const converter = converters[`${this.#type}-${type}`]
+    return this.#type === type
+      ? components.slice()
+      : converter
+        ? converter(...components)
+        : // Convert to and from rgb if no direct converter exists
+          converters[`rgb-${type}`](
+            ...converters[`${this.#type}-rgb`](...components)
+          )
+  }
+
+  /**
+   * Converts the color to another type.
+   *
+   * @param type the color type to convert to. Possible values:
+   * {@values 'rgb', 'gray', 'hsb', 'hsl'}
+   * @return the converted color as a new instance
+   */
+  convert(type: string): Color {
+    return new Color(type, this._convert(type), this.#alpha)
+  }
+
+  /**
+   * The type of the color as a string.
+   *
+   * @values 'rgb', 'gray', 'hsb', 'hsl'
+   *
+   * @example
+   * var color = new Color(1, 0, 0);
+   * console.log(color.type); // 'rgb'
+   */
+  get type(): string {
+    return this.#type
+  }
+
+  set type(type: string) {
+    this.#components = this._convert(type)
+    this.#type = type
+  }
+
+  /**
+   * The color components that define the color, including the alpha value
+   * if defined.
+   */
+  get components(): any[] {
+    const components = this.#components.slice()
+    if (this.#alpha != null) {
+      components.push(this.#alpha)
+    }
+    return components
+  }
+
+  /**
+   * The color's alpha value as a number between `0` and `1`.
+   * All colors of the different subclasses support alpha values.
+   *
+   * @default 1
+   *
+   * @example {@paperscript}
+   * // A filled path with a half transparent stroke:
+   * var circle = new Path.Circle(new Point(80, 50), 30);
+   *
+   * // Fill the circle with red and give it a 20pt green stroke:
+   * circle.style = {
+   *  fillColor: 'red',
+   *  strokeColor: 'green',
+   *  strokeWidth: 20
+   * };
+   *
+   * // Make the stroke half transparent:
+   * circle.strokeColor.alpha = 0.5;
+   */
+  get alpha(): number {
+    return this.#alpha != null ? this.#alpha : 1
+  }
+
+  set alpha(alpha: number) {
+    this.#alpha = alpha == null ? null : Math.min(Math.max(alpha, 0), 1)
+    this._changed()
+  }
+
+  /**
+   * Checks if the color has an alpha value.
+   *
+   * @return {@true if the color has an alpha value}
+   */
+  hasAlpha(): boolean {
+    return this.#alpha != null
+  }
+
+  /**
+   * Checks if the component color values of the color are the
+   * same as those of the supplied one.
+   *
+   * @param color the color to compare with
+   * @return {@true if the colors are the same}
+   */
+  equals(color: any): boolean {
+    const other =
+      isPlainObject(color) || Array.isArray(color) || typeof color === 'string'
+        ? Color.from(color)
+        : color
+    return !!(
+      other === this || (
+        other instanceof Color &&
+        this.#type === other.#type &&
+        this.alpha === other.alpha &&
+        equals(this.#components, other.#components)
+      )
+    )
+  }
+
+  /**
+   * Returns a copy of the color object.
+   *
+   * @return a copy of the color object
+   */
+  clone(): Color {
+    return new Color(this)
+  }
+
+  /**
+   * {@grouptitle String Representations}
+   * @return a string representation of the color
+   */
+  toString(): string {
+    const { instance } = Formatter
+    // Gradients and patterns have objects among their components:
+    const isObject = /^(gradient|pattern)$/.test(this.#type)
+    const parts = []
+    types[this.#type].forEach((name: string, index: number) => {
+      const value = this.#components[index]
+      if (value != null) {
+        parts.push(`${name}: ${isObject ? value : instance.number(value)}`)
+      }
+    })
+    if (this.#alpha != null) {
+      parts.push(`alpha: ${instance.number(this.#alpha)}`)
+    }
+    return `{ ${parts.join(', ')} }`
+  }
+
+  /**
+   * Returns the color as a CSS string.
+   *
+   * @param hex whether to return the color in hexadecimal
+   * representation or as a CSS RGB / RGBA string.
+   * @return a CSS string representation of the color
+   */
+  toCSS(hex?: boolean): string {
+    // TODO: Support HSL / HSLA CSS3 colors directly, without conversion
+    const convert = (value: number) =>
+      Math.round((value < 0 ? 0 : value > 1 ? 1 : value) * 255)
+    const [red, green, blue] = this._convert('rgb').map(convert)
+    const alpha = hex || this.#alpha == null ? 1 : this.#alpha
+    return hex
+      ? '#' +
+        ((1 << 24) + (red << 16) + (green << 8) + blue).toString(16).slice(1)
+      : alpha < 1
+        ? `rgba(${red},${green},${blue},${alpha < 0 ? 0 : alpha})`
+        : `rgb(${red},${green},${blue})`
+  }
+
+  // Returns the components of a gradient color in the coordinates it's drawn
+  // in, see getCanvasTransform():
+  #getCanvasComponents(matrix: Matrix, strokeMatrix: Matrix): any[] {
+    const components = this.#components
+    const transform = getCanvasTransform(matrix, strokeMatrix)
+    return transform
+      ? transformGradient(components, [components[0]], transform)
+      : components
+  }
+
+  // Returns the matrix that elliptical radial gradients are drawn through, as
+  // canvas only draws circles, or null for other colors. See Item#_paint():
+  _getEllipseMatrix(matrix: Matrix, strokeMatrix: Matrix): Matrix {
+    return (
+      (
+        this.#type === 'gradient' &&
+        getEllipseMatrix(this.#getCanvasComponents(matrix, strokeMatrix))
+      ) ||
+      null
+    )
+  }
+
+  // Pass true for `isEllipse` to get an elliptical radial gradient as the
+  // circle to draw through #_getEllipseMatrix(). Strokes and text can't be
+  // drawn through a matrix without distorting them, so they draw such
+  // gradients as circles.
+  toCanvasStyle(
+    context: CanvasRenderingContext2D,
+    matrix?: Matrix,
+    strokeMatrix?: Matrix,
+    isEllipse?: boolean
+  ): string | CanvasGradient | CanvasPattern {
+    // Patterns are drawn at the resolution of the context, which changes
+    // without notifying the color, so they aren't cached. They are placed in
+    // the coordinates of the item's parent, as gradients:
+    if (this.#type === 'pattern') {
+      const transform = getCanvasTransform(matrix, strokeMatrix)
+      const placement = this.#components[1]
+      return this.#components[0]._toCanvasStyle(
+        context,
+        transform ? transform.appended(placement) : placement
+      )
+    }
+    // Gradients drawn with a strokeMatrix depend on it, and it can change
+    // without notifying the color, so we can't cache these, nor elliptical
+    // ones, which are drawn in two ways:
+    const isCacheable = !(
+      this.#type === 'gradient' &&
+      (strokeMatrix || this.#components[4] !== 1)
+    )
+    if (this._canvasStyle && isCacheable) {
+      return this._canvasStyle
+    }
+    // Normal colors are simply represented by their CSS string.
+    if (this.#type !== 'gradient') {
+      return (this._canvasStyle = this.toCSS())
+    }
+    // Gradient code form here onwards
+    const components = this.#getCanvasComponents(matrix, strokeMatrix)
+    const [gradient, origin, destination] = components
+    let highlight = components[3]
+    let canvasGradient: CanvasGradient
+    if (isEllipse && highlight) {
+      highlight = getEllipseMatrix(components)._inverseTransform(highlight)
+    }
+    if (gradient._radial) {
+      const radius = destination.getDistance(origin)
+      if (highlight) {
+        const vector = highlight.subtract(origin)
+        if (vector.length > radius) {
+          highlight = origin.add(vector.normalize(radius - 0.1))
+        }
+      }
+      const start = highlight || origin
+      canvasGradient = context.createRadialGradient(
+        start.x, start.y, 0,
+        origin.x, origin.y, radius
+      )
+    } else {
+      canvasGradient = context.createLinearGradient(
+        origin.x, origin.y,
+        destination.x, destination.y
+      )
+    }
+    const stops = gradient._stops
+    stops.forEach((stop, index) => {
+      const offset = stop._offset
+      // Use the defined offset, and fall back to automatic linear
+      // calculation.
+      // NOTE: that if _offset is 0 for the first entry, the fall-back will be
+      // so too.
+      canvasGradient.addColorStop(
+        offset == null ? index / (stops.length - 1) : offset,
+        stop._color.toCanvasStyle()
+      )
+    })
+    if (isCacheable) {
+      this._canvasStyle = canvasGradient
+    }
+    return canvasGradient
+  }
+
+  /**
+   * Transform the gradient or pattern color by the specified matrix.
+   * Radial gradients become ellipses, see {@link #aspect}, and the
+   * stripes of linear gradients keep running across them, also when the
+   * matrix scales unevenly or shears. Pattern colors transform their
+   * {@link #matrix}.
+   *
+   * @param matrix the matrix to transform the color by
+   */
+  transform(matrix: Matrix) {
+    const components = this.#components
+    if (this.#type === 'gradient') {
+      transformGradient(components, components, matrix)
+      this._changed()
+    } else if (this.#type === 'pattern') {
+      components[1].prepend(matrix)
+      this._changed()
+    }
+  }
+
+  /**
+   * Returns the passed color if it is one already, or else a new color
+   * created from the passed value, as {@link Color()} reads it.
+   *
+   * @param color
+   */
+  static from(color: ColorLike): Color {
+    return color instanceof Color ? color : new Color(color)
+  }
+
+  /**
+   * Returns a color object with random {@link #red}, {@link #green}
+   * and {@link #blue} values between `0` and `1`.
+   *
+   * @return the newly created color object
+   *
+   * @example {@paperscript}
+   * var circle = new Path.Circle(view.center, 50);
+   * // Set a random color as circle fill color.
+   * circle.fillColor = Color.random();
+   */
+  static random(): Color {
+    const { random } = Math
+    return new Color(random(), random(), random())
+  }
+
+  // Sets the owner of the color, which it notifies of changes, and the key of
+  // the property that holds it, cloning the color if it belongs to another
+  // owner already:
+  static _setOwner(color: Color, owner: any, key?: string): Color {
+    if (color) {
+      // Clone color if owner changes:
+      if (color.#owner && owner && color.#owner !== owner) {
+        color = color.clone()
+      }
+      if (!color.#owner !== !owner) {
+        color.#owner = owner || null
+        color.#key = key || null
+      }
+    }
+    return color
+  }
+
+  static {
+    // Produce getters and setters for the various color components known by
+    // the different color types. Requesting any of these components on any
+    // color internally converts the color to the required type and then
+    // returns its component.
+    for (const [type, names] of Object.entries(types)) {
+      componentParsers[type] = []
+      names.forEach((name: string, index: number) => {
+        // Both hue and saturation have overlapping properties between hsb and
+        // hsl. Handle this here separately, by testing for overlaps and
+        // skipping conversion if the type is /hs[bl]/
+        const hasOverlap = /^(hue|saturation)$/.test(name)
+        // Produce value parser function for the given type / property
+        const parser = (componentParsers[type][index] =
+          type === 'gradient'
+            ? name === 'gradient'
+              ? // The gradient property of gradient colors:
+                function (this: Color, value: any) {
+                  const current = this.#components[0]
+                  const gradient = value == null ? null : Gradient.from(value)
+                  if (current !== gradient) {
+                    current?._removeOwner(this)
+                    gradient?._addOwner(this)
+                  }
+                  return gradient
+                }
+              : name === 'aspect'
+                ? // The aspect of radial gradients, 1 for circles:
+                  (value: any) => (value == null ? 1 : +value)
+                : // The point properties of gradient colors, as copies:
+                  (value: any) =>
+                    value == null && name === 'highlight'
+                      ? null
+                      : new Point(value)
+            : type === 'pattern'
+              ? name === 'pattern'
+                ? (value: any) =>
+                    value == null ? null : PatternDefinition.from(value)
+                : // The matrix that places the tiles, a copy:
+                  (value: any) => (value ? new Matrix(value) : new Matrix())
+              : // Normal number component properties:
+                (value: any) =>
+                  // NOTE: We don't clamp values here, they're only clamped once
+                  // the actual CSS values are produced. Gotta love the fact that
+                  // isNaN(null) is false, while isNaN(undefined) is true.
+                  value == null || isNaN(value) ? 0 : +value)
+        inject(this.prototype, {
+          get [name]() {
+            return (
+              this.#type === type ||
+              hasOverlap && /^hs[bl]$/.test(this.#type)
+            )
+              ? this.#components[index]
+              : this._convert(type)[index]
+          },
+          set [name](value: any) {
+            // Convert to the requested type before setting the value
+            if (
+              this.#type !== type &&
+              !(hasOverlap && /^hs[bl]$/.test(this.#type))
+            ) {
+              this.#components = this._convert(type)
+              this.#type = type
+            }
+            this.#components[index] = parser.call(this, value)
+            this._changed()
+          }
+        })
+      })
+    }
+
+    // Produce the operators add, subtract, multiply and divide:
+    for (const [name, operator] of Object.entries(operators)) {
+      inject(this.prototype, {
+        [name](color: ColorLike) {
+          const other = Color.from(color)
+          const type = this.#type
+          const components = other._convert(type)
+          this.#components.forEach((value: number, index: number) => {
+            components[index] = operator(value, components[index])
+          })
+          return new Color(
+            type,
+            components,
+            this.#alpha != null ? operator(this.#alpha, other.alpha) : null
+          )
+        }
+      })
+    }
+  }
+}
+
+// The members defined at runtime rather than in the class body:
+export interface Color {
+  /**
+   * {@grouptitle RGB Components}
+   *
+   * The amount of red in the color as a value between `0` and `1`.
+   *
+   *
+   * @example {@paperscript}
+   * // Changing the amount of red in a color:
+   * var circle = new Path.Circle(new Point(80, 50), 30);
+   * circle.fillColor = 'blue';
+   *
+   * // Blue + red = purple:
+   * circle.fillColor.red = 1;
+   */
+  red: number
+
+  /**
+   * The amount of green in the color as a value between `0` and `1`.
+   *
+   *
+   * @example {@paperscript}
+   * // Changing the amount of green in a color:
+   * var circle = new Path.Circle(new Point(80, 50), 30);
+   *
+   * // First we set the fill color to red:
+   * circle.fillColor = 'red';
+   *
+   * // Red + green = yellow:
+   * circle.fillColor.green = 1;
+   */
+  green: number
+
+  /**
+   * The amount of blue in the color as a value between `0` and `1`.
+   *
+   *
+   * @example {@paperscript}
+   * // Changing the amount of blue in a color:
+   * var circle = new Path.Circle(new Point(80, 50), 30);
+   *
+   * // First we set the fill color to red:
+   * circle.fillColor = 'red';
+   *
+   * // Red + blue = purple:
+   * circle.fillColor.blue = 1;
+   */
+  blue: number
+
+  /**
+   * {@grouptitle Gray Components}
+   *
+   * The amount of gray in the color as a value between `0` and `1`.
+   */
+  gray: number
+
+  /**
+   * {@grouptitle HSB Components}
+   *
+   * The hue of the color as a value in degrees between `0` and `360`.
+   *
+   *
+   * @example {@paperscript}
+   * // Changing the hue of a color:
+   * var circle = new Path.Circle(new Point(80, 50), 30);
+   * circle.fillColor = 'red';
+   * circle.fillColor.hue += 30;
+   *
+   * @example {@paperscript}
+   * // Hue cycling:
+   *
+   * // Create a rectangle shaped path, using the dimensions
+   * // of the view:
+   * var path = new Path.Rectangle(view.bounds);
+   * path.fillColor = 'red';
+   *
+   * function onFrame(event) {
+   *  path.fillColor.hue += 0.5;
+   * }
+   */
+  hue: number
+
+  /**
+   * The saturation of the color as a value between `0` and `1`.
+   */
+  saturation: number
+
+  /**
+   * The brightness of the color as a value between `0` and `1`.
+   */
+  brightness: number
+
+  /**
+   * {@grouptitle HSL Components}
+   *
+   * The lightness of the color as a value between `0` and `1`.
+   *
+   * Note that all other components are shared with HSB.
+   */
+  lightness: number
+
+  /**
+   * {@grouptitle Gradient Components}
+   *
+   * The gradient object describing the type of gradient and the stops.
+   */
+  gradient: Gradient
+
+  /**
+   * The origin point of the gradient.
+   *
+   *
+   * @example {@paperscript height=200}
+   * // Move the origin point of the gradient, by moving your mouse over
+   * // the view below:
+   *
+   * // Create a rectangle shaped path with the same dimensions as
+   * // that of the view and fill it with a gradient color:
+   * var path = new Path.Rectangle(view.bounds);
+   * var gradient = new Gradient(['yellow', 'red', 'blue']);
+   *
+   * // Have the gradient color run from the top left point of the view,
+   * // to the bottom right point of the view:
+   * var from = view.bounds.topLeft;
+   * var to = view.bounds.bottomRight;
+   * var gradientColor = new Color(gradient, from, to);
+   * path.fillColor = gradientColor;
+   *
+   * function onMouseMove(event) {
+   *  // Set the origin point of the path's gradient color
+   *  // to the position of the mouse:
+   *  path.fillColor.origin = event.point;
+   * }
+   */
+  get origin(): Point
+  set origin(point: PointLike)
+
+  /**
+   * The destination point of the gradient.
+   *
+   *
+   * @example {@paperscript height=300}
+   * // Move the destination point of the gradient, by moving your mouse
+   * // over the view below:
+   *
+   * // Create a circle shaped path at the center of the view,
+   * // using 40% of the height of the view as its radius
+   * // and fill it with a radial gradient color:
+   * var path = new Path.Circle({
+   *  center: view.center,
+   *  radius: view.bounds.height * 0.4
+   * });
+   *
+   * var gradient = new Gradient(['yellow', 'red', 'black'], true);
+   * var from = view.center;
+   * var to = view.bounds.bottomRight;
+   * var gradientColor = new Color(gradient, from, to);
+   * path.fillColor = gradientColor;
+   *
+   * function onMouseMove(event) {
+   *  // Set the origin point of the path's gradient color
+   *  // to the position of the mouse:
+   *  path.fillColor.destination = event.point;
+   * }
+   */
+  get destination(): Point
+  set destination(point: PointLike)
+
+  /**
+   * The highlight point of the gradient.
+   *
+   *
+   * @example {@paperscript height=300}
+   * // Create a circle shaped path at the center of the view,
+   * // using 40% of the height of the view as its radius
+   * // and fill it with a radial gradient color:
+   * var path = new Path.Circle({
+   *  center: view.center,
+   *  radius: view.bounds.height * 0.4
+   * });
+   *
+   * path.fillColor = {
+   *  gradient: {
+   *      stops: ['yellow', 'red', 'black'],
+   *      radial: true
+   *  },
+   *  origin: path.position,
+   *  destination: path.bounds.rightCenter
+   * };
+   *
+   * function onMouseMove(event) {
+   *  // Set the origin highlight of the path's gradient color
+   *  // to the position of the mouse:
+   *  path.fillColor.highlight = event.point;
+   * }
+   */
+  get highlight(): Point
+  set highlight(point: PointLike)
+
+  /**
+   * The aspect of a radial gradient: its radius across the line from
+   * the origin to the destination, as a factor of its radius along it,
+   * which makes it an ellipse. Transforming a gradient color sets it, so
+   * that the gradient stretches, shears and rotates with its item.
+   *
+   * @default 1
+   *
+   * @example {@paperscript height=200}
+   * // An elliptical radial gradient, twice as wide as tall:
+   * var path = new Path.Ellipse({
+   *  center: view.center,
+   *  radius: [80, 40],
+   *  fillColor: {
+   *      gradient: {
+   *          stops: ['yellow', 'red', 'black'],
+   *          radial: true
+   *      },
+   *      origin: view.center,
+   *      destination: view.center + [80, 0],
+   *      aspect: 0.5
+   *  }
+   * });
+   */
+  aspect: number
+
+  /**
+   * {@grouptitle Pattern Components}
+   *
+   * The pattern whose tiles the color repeats.
+   */
+  pattern: PatternDefinition
+
+  /**
+   * The matrix that places the tiles of the pattern in the item's
+   * coordinates.
+   */
+  matrix: Matrix
+
+  /**
+   * Returns the addition of the supplied value to all components of
+   * the color as a new color.
+   * The object itself is not modified!
+   *
+   * @operator
+   * @param number the number to add
+   * @return the addition of the color and the value as a new
+   * color
+   *
+   * @example
+   * var color = new Color(0.5, 0.25, 0);
+   * var result = color + 0.25; // PaperScript
+   * var result = color.add(0.25); // JavaScript
+   * console.log(result); // { red: 0.75, green: 0.5, blue: 0.25 }
+   */
+  add(number: number): Color
+  /**
+   * Returns the addition of the supplied color to the color as a new
+   * color.
+   * The object itself is not modified!
+   *
+   * @operator
+   * @param color the color to add
+   * @return the addition of the two colors as a new color
+   *
+   * @example
+   * var color1 = new Color(0, 1, 1);
+   * var color2 = new Color(1, 0, 0);
+   * var result = color1 + color2; // PaperScript
+   * var result = color1.add(color2); // JavaScript
+   * console.log(result); // { red: 1, green: 1, blue: 1 }
+   */
+  add(color: ColorLike): Color
+
+  /**
+   * Returns the subtraction of the supplied value to all components of
+   * the color as a new color.
+   * The object itself is not modified!
+   *
+   * @operator
+   * @param number the number to subtract
+   * @return the subtraction of the color and the value as a new
+   * color
+   *
+   * @example
+   * var color = new Color(0.5, 1, 1);
+   * var result = color - 0.5; // PaperScript
+   * var result = color.subtract(0.5); // JavaScript
+   * console.log(result); // { red: 0, green: 0.5, blue: 0.5 }
+   */
+  subtract(number: number): Color
+  /**
+   * Returns the subtraction of the supplied color to the color as a new
+   * color.
+   * The object itself is not modified!
+   *
+   * @operator
+   * @param color the color to subtract
+   * @return the subtraction of the two colors as a new color
+   *
+   * @example
+   * var color1 = new Color(1, 1, 1);
+   * var color2 = new Color(1, 0, 0);
+   * var result = color1 - color2; // PaperScript
+   * var result = color1.subtract(color2); // JavaScript
+   * console.log(result); // { red: 0, green: 1, blue: 1 }
+   */
+  subtract(color: ColorLike): Color
+
+  /**
+   * Returns the multiplication of the supplied value to all components
+   * of the color as a new color.
+   * The object itself is not modified!
+   *
+   * @operator
+   * @param number the number to multiply
+   * @return the multiplication of the color and the value as a
+   * new color
+   *
+   * @example
+   * var color = new Color(0.5, 1, 1);
+   * var result = color * 0.5; // PaperScript
+   * var result = color.multiply(0.5); // JavaScript
+   * console.log(result); // { red: 0.25, green: 0.5, blue: 0.5 }
+   */
+  multiply(number: number): Color
+  /**
+   * Returns the multiplication of the supplied color to the color as a
+   * new color.
+   * The object itself is not modified!
+   *
+   * @operator
+   * @param color the color to multiply
+   * @return the multiplication of the two colors as a new color
+   *
+   * @example
+   * var color1 = new Color(0, 1, 1);
+   * var color2 = new Color(0.5, 0, 0.5);
+   * var result = color1 * color2; // PaperScript
+   * var result = color1.multiply(color2); // JavaScript
+   * console.log(result); // { red: 0, green: 0, blue: 0.5 }
+   */
+  multiply(color: ColorLike): Color
+
+  /**
+   * Returns the division of the supplied value to all components of
+   * the color as a new color.
+   * The object itself is not modified!
+   *
+   * @operator
+   * @param number the number to divide
+   * @return the division of the color and the value as a new
+   * color
+   *
+   * @example
+   * var color = new Color(0.5, 1, 1);
+   * var result = color / 2; // PaperScript
+   * var result = color.divide(2); // JavaScript
+   * console.log(result); // { red: 0.25, green: 0.5, blue: 0.5 }
+   */
+  divide(number: number): Color
+  /**
+   * Returns the division of the supplied color to the color as a new
+   * color.
+   * The object itself is not modified!
+   *
+   * @operator
+   * @param color the color to divide
+   * @return the division of the two colors as a new color
+   *
+   * @example
+   * var color1 = new Color(0, 1, 1);
+   * var color2 = new Color(0.5, 1, 2);
+   * var result = color1 / color2; // PaperScript
+   * var result = color1.divide(color2); // JavaScript
+   * console.log(result); // { red: 0, green: 1, blue: 0.5 }
+   */
+  divide(color: ColorLike): Color
+}
