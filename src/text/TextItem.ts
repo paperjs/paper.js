@@ -170,7 +170,7 @@ export class TextItem extends Item {
   }
 
   // A copy shows a copy of the story, on its own:
-  copyContent(source: TextItem) {
+  copyContent(source: this) {
     super.copyContent(source)
     this._story = source._story._clone([this])
     this._orientation = source._orientation

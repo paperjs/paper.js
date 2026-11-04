@@ -51,6 +51,7 @@ import { HitResult } from './HitResult.ts'
 import type { Project } from './Project.ts'
 import type { SymbolDefinition } from './SymbolDefinition.ts'
 import type { View } from '../view/View.ts'
+import type { PathItem } from '../path/PathItem.ts'
 
 type Handler = (this: Item, ...args: any[]) => any
 
@@ -1838,9 +1839,10 @@ export class Item extends Emitter {
   /**
    * Copies the content of the specified item over to this item.
    *
-   * @param source the item to copy the content from
+   * @param source the item to copy the content from, of the same class as
+   *     this item, as which subclasses read it
    */
-  copyContent(source: Item) {
+  copyContent(source: any) {
     const children = source._children
     if (children) {
       // Clone all children and add them to the copy.
@@ -2037,7 +2039,7 @@ export class Item extends Emitter {
   // TODO: Move #getIntersections() to Item, make it handle all type of items
   // through _asPathItem(), and support Group items as well, taking nested
   // matrices into account properly!
-  _asPathItem(): Path {
+  _asPathItem(): PathItem {
     // Creates a temporary rectangular path item with this item's bounds.
     // Keep the matrix unapplied, so getIntersections() can override it:
     return new Path.Rectangle({
@@ -2978,7 +2980,8 @@ export class Item extends Emitter {
    *
    * @return an array containing the removed items
    */
-  clear(): Item[] | null {
+  // Typed loosely, as Path#clear() returns its removed segments:
+  clear(): any[] | null {
     return this.removeChildren()
   }
 
