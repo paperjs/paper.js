@@ -45,7 +45,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   //
   test('Item#onMouseDown()', assert => {
     const done = assert.async()
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     const point = new Point(5, 5)
     item.onMouseDown = event => {
@@ -61,7 +61,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
 
   test('Item#onMouseDown() with stroked item', assert => {
     const done = assert.async()
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.strokeColor = 'red'
     const point = new Point(0, 0)
     item.onMouseDown = event => {
@@ -76,7 +76,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('Item#onMouseDown() is not triggered when item is not filled', () => {
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.onMouseDown = () => {
       throw new Error('this should not be called')
     }
@@ -85,7 +85,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('Item#onMouseDown() is not triggered when item is not visible', () => {
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     item.visible = false
     item.onMouseDown = () => {
@@ -96,7 +96,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('Item#onMouseDown() is not triggered when item is locked', () => {
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     item.locked = true
     item.onMouseDown = () => {
@@ -107,7 +107,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('Item#onMouseDown() is not triggered when another item is in front', () => {
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     item.clone()
     item.onMouseDown = () => {
@@ -118,7 +118,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('Item#onMouseDown() is not triggered if event target is document', () => {
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     item.onMouseDown = () => {
       throw new Error('this should not be called')
@@ -129,7 +129,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
 
   test('Item#onMouseMove()', assert => {
     const done = assert.async()
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     const point = new Point(5, 5)
     item.onMouseMove = event => {
@@ -144,7 +144,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('Item#onMouseMove() is not re-triggered if point is the same', () => {
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     const point = new Point(5, 5)
     0
@@ -158,7 +158,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
 
   test('Item#onMouseUp()', assert => {
     const done = assert.async()
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     const point = new Point(5, 5)
     item.onMouseUp = event => {
@@ -174,7 +174,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('Item#onMouseUp() is only triggered after mouse down', () => {
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     item.onMouseUp = () => {
       throw new Error('this should not be called')
@@ -186,8 +186,8 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   test('Item#removeOnUp() / #removeOnDrag()', () => {
     // Moves are drags only for handlers of drags:
     const tool = new Tool({ onMouseDrag() {} })
-    const up = new Path.Rectangle(new Point(0, 0), new Size(10))
-    const drag = new Path.Rectangle(new Point(20, 0), new Size(10))
+    const up = Path.rectangle(new Point(0, 0), new Size(10))
+    const drag = Path.rectangle(new Point(20, 0), new Size(10))
     up.removeOnUp()
     drag.removeOnDrag()
     triggerMouseEvent('mousedown', new Point(5, 5))
@@ -198,7 +198,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     equals(up.isInserted(), false)
     // Releasing the mouse without dragging forgets the items to remove on
     // drag:
-    const stale = new Path.Rectangle(new Point(40, 0), new Size(10))
+    const stale = Path.rectangle(new Point(40, 0), new Size(10))
     stale.removeOnDrag()
     triggerMouseEvent('mousedown', new Point(5, 5))
     triggerMouseEvent('mouseup', new Point(5, 5))
@@ -211,7 +211,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
 
   test('Item#onClick()', assert => {
     const done = assert.async()
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     const point = new Point(5, 5)
     item.onClick = event => {
@@ -227,7 +227,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('Item#onClick() is not triggered if up point is not on item', () => {
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     item.onClick = () => {
       throw new Error('this should not be called')
@@ -238,7 +238,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('Item#onClick() is not triggered if down point is not on item', () => {
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     item.onClick = () => {
       throw new Error('this should not be called')
@@ -250,7 +250,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
 
   test('Item#onDoubleClick()', assert => {
     const done = assert.async()
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     const point = new Point(5, 5)
     item.onDoubleClick = event => {
@@ -268,7 +268,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('Item#onDoubleClick() is not triggered if both clicks are not on same item', () => {
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     item.clone().translate(5)
     item.onDoubleClick = () => {
@@ -283,7 +283,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
 
   test('Item#onDoubleClick() is not triggered if time between both clicks is too long', assert => {
     const done = assert.async()
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     const point = new Point(5, 5)
     item.onDoubleClick = () => {
@@ -301,7 +301,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
 
   test('Item#onDoubleClick() is not triggered if time between both mouse downs is too long (#1451)', assert => {
     const done = assert.async()
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     const point = new Point(5, 5)
     item.onDoubleClick = () => {
@@ -319,7 +319,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
 
   test('Item#onDoubleClick() is triggered if the second mouse down is held long (#1451)', assert => {
     const done = assert.async()
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     const point = new Point(5, 5)
     item.onDoubleClick = event => {
@@ -335,7 +335,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('Item#onDoubleClick() is only triggered if both mouse downs are close (#1451)', () => {
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     const types = []
     item.onClick = item.onDoubleClick = event => {
@@ -353,7 +353,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('Item#onDoubleClick() is not triggered again by a third click', () => {
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     const types = []
     item.onClick = item.onDoubleClick = event => {
@@ -368,7 +368,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
 
   test('Item#onMouseEnter()', assert => {
     const done = assert.async()
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     const point = new Point(5, 5)
     item.onMouseEnter = event => {
@@ -383,7 +383,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('Item#onMouseEnter() is not triggered through covering elements (#992)', () => {
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     const types = []
     item.onMouseEnter =
@@ -411,7 +411,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('Mouse events keep Key.modifiers in sync (#1140)', () => {
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     const shift = []
     item.onMouseDown = item.onMouseUp = event => {
@@ -432,7 +432,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('Touches on empty canvas are left to the browser (#1930)', () => {
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     item.onMouseUp = () => {}
     // An item that responds to mouseup needs the mousedown on it prevented,
@@ -451,7 +451,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('Item#onMouseEnter() is only re-triggered after mouse leave', () => {
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     item.onMouseEnter = () => {
       equals(true, true)
@@ -469,7 +469,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
 
   test('Item#onMouseLeave()', assert => {
     const done = assert.async()
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     const point1 = new Point(5, 5)
     const point2 = new Point(15, 15)
@@ -487,7 +487,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
 
   test('Item#onMouseLeave() when the mouse leaves the document', assert => {
     const done = assert.async()
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     const point1 = new Point(5, 5)
     const point2 = new Point(-5, 5)
@@ -504,7 +504,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
 
   test('Item#onMouseDrag()', assert => {
     const done = assert.async()
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     const point1 = new Point(5, 5)
     const point2 = new Point(15, 15)
@@ -521,7 +521,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('Item#onMouseDrag() is not triggered after mouse up', () => {
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     item.onMouseDrag = () => {
       equals(true, true)
@@ -534,7 +534,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('Item#onMouseDrag() is not triggered if mouse down was on another item', () => {
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     const item2 = item.clone().translate(10)
     item2.onMouseDrag = () => {
@@ -623,7 +623,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('Item#onMouseDown() after moving it from a removed group to a new group (#1791)', () => {
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     let count = 0
     item.onMouseDown = () => {
@@ -638,7 +638,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('Item#onMouseDown() after removing it from a removed group (#2079)', () => {
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     let count = 0
     item.onMouseDown = () => {
@@ -654,7 +654,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('Item#onMouseDown() after removing the handler of an item in a removed group (#2079)', () => {
-    const item = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     item.onMouseDown = () => {
       throw new Error('this should not be called')
@@ -662,7 +662,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     const group = new Group(item)
     group.remove()
     item.onMouseDown = null
-    const item2 = new Path.Rectangle(new Point(0, 0), new Size(10))
+    const item2 = Path.rectangle(new Point(0, 0), new Size(10))
     item2.fillColor = 'red'
     let count = 0
     item2.onMouseDown = () => {
@@ -674,8 +674,8 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('Item#onMouseDown() after moving another item to another project', () => {
-    const item1 = new Path.Rectangle(new Point(0, 0), new Size(10)),
-      item2 = new Path.Rectangle(new Point(20, 20), new Size(10))
+    const item1 = Path.rectangle(new Point(0, 0), new Size(10)),
+      item2 = Path.rectangle(new Point(20, 20), new Size(10))
     item1.fillColor = item2.fillColor = 'red'
     let count1 = 0,
       count2 = 0
@@ -705,7 +705,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
       return paper.view._itemEvents.native.mousedown || 0
     }
 
-    const item = new Path.Rectangle({
+    const item = Path.rectangle({
       point: [0, 0],
       size: [10, 10],
       insert: false

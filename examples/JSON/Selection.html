@@ -6,21 +6,21 @@
     <link rel="stylesheet" href="../css/style.css">
     <script type="text/javascript" src="../../dist/paper-full.js"></script>
     <script type="text/paperscript" canvas="canvas1">
-        var path = new Path.Ellipse({
+        var path = Path.ellipse({
             from: [10, 10],
             to: [200, 100],
             fillColor: 'red'
         });
         path.firstSegment.handleOut.selected = true;
 
-        var circle = new Path.Circle({
+        var circle = Path.circle({
             center: [50, 150],
             radius: 25,
             fillColor: 'blue'
         });
         circle.selected = true;
 
-        var rectangle = new Path.Rectangle({
+        var rectangle = Path.rectangle({
             from: [25, 200],
             to: [100, 225],
             fillColor: 'green'

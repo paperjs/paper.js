@@ -40,12 +40,12 @@ export class CompoundPath extends PathItem {
    *
    * @example {@paperscript}
    * // Create a circle shaped path with a hole in it:
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: new Point(50, 50),
    *     radius: 30
    * });
    *
-   * var innerCircle = new Path.Circle({
+   * var innerCircle = Path.circle({
    *     center: new Point(50, 50),
    *     radius: 10
    * });
@@ -68,11 +68,11 @@ export class CompoundPath extends PathItem {
    * @example {@paperscript}
    * var path = new CompoundPath({
    *     children: [
-   *         new Path.Circle({
+   *         Path.circle({
    *             center: new Point(50, 50),
    *             radius: 30
    *         }),
-   *         new Path.Circle({
+   *         Path.circle({
    *             center: new Point(50, 50),
    *             radius: 10
    *         })

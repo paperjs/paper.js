@@ -422,7 +422,7 @@ declare module './Path.ts' {
      * export return paths without the profile.
      *
      * @example
-     * var path = new Path.Line([20, 50], [180, 50]);
+     * var path = Path.line([20, 50], [180, 50]);
      * path.strokeColor = 'black';
      * path.strokeWidth = 10;
      * // Taper the stroke from half its width to twice its width:
@@ -452,7 +452,7 @@ declare module './Path.ts' {
      * @return the pen at the offset
      *
      * @example
-     * var path = new Path.Line([20, 50], [180, 50]);
+     * var path = Path.line([20, 50], [180, 50]);
      * path.strokeProfile = [
      *     { offset: 0, width: 0.5 },
      *     { offset: path.length, width: 2, angle: 90 }

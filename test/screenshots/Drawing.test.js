@@ -60,8 +60,8 @@ describe('Blend modes', () => {
     modes.forEach((blendMode, i) => {
       const x = (i % 6) * 70 + 35
       const y = Math.floor(i / 6) * 80 + 35
-      new Path.Circle({ center: [x - 8, y], radius: 20, fillColor: '#e63' })
-      new Path.Circle({
+      Path.circle({ center: [x - 8, y], radius: 20, fillColor: '#e63' })
+      Path.circle({
         center: [x + 8, y],
         radius: 20,
         fillColor: '#39c',
@@ -84,7 +84,7 @@ describe('Blend modes', () => {
     const circles = x =>
       colors.map(
         (fillColor, i) =>
-          new Path.Circle({
+          Path.circle({
             center: [x + i * 25, 55],
             radius: 30,
             fillColor,
@@ -108,12 +108,12 @@ describe('Shadows', () => {
       shadowBlur: 8,
       shadowOffset: [5, 5]
     }
-    new Path.Rectangle({
+    Path.rectangle({
       rectangle: new Rectangle(20, 20, 60, 60),
       fillColor: '#fc3',
       ...shadow
     })
-    new Path.Circle({
+    Path.circle({
       center: [150, 50],
       radius: 30,
       strokeColor: '#39c',
@@ -121,7 +121,7 @@ describe('Shadows', () => {
       ...shadow
     })
     // Fill and stroke cast one shadow together:
-    new Path.Star({
+    Path.star({
       center: [250, 50],
       points: 5,
       radius1: 15,
@@ -133,8 +133,8 @@ describe('Shadows', () => {
     })
     new Group({
       children: [
-        new Path.Circle({ center: [60, 140], radius: 25, fillColor: '#9c3' }),
-        new Path.Circle({ center: [90, 150], radius: 25, fillColor: '#39c' })
+        Path.circle({ center: [60, 140], radius: 25, fillColor: '#9c3' }),
+        Path.circle({ center: [90, 150], radius: 25, fillColor: '#39c' })
       ],
       ...shadow
     })
@@ -156,24 +156,24 @@ describe('Clipping', () => {
       Array.from(
         { length: 10 },
         (_, i) =>
-          new Path.Rectangle({
+          Path.rectangle({
             rectangle: new Rectangle(x + i * 10, 10, 5, 100),
             fillColor: i % 2 ? '#39c' : '#e63'
           })
       )
     new Group({
       children: [
-        new Path.Circle({ center: [50, 60], radius: 40 }),
+        Path.circle({ center: [50, 60], radius: 40 }),
         ...stripes(0)
       ],
       clipped: true
     })
     new Group({
       children: [
-        new Path.Rectangle(new Rectangle(110, 20, 80, 80)),
+        Path.rectangle(new Rectangle(110, 20, 80, 80)),
         new Group({
           children: [
-            new Path.Circle({ center: [150, 60], radius: 45 }),
+            Path.circle({ center: [150, 60], radius: 45 }),
             ...stripes(100)
           ],
           clipped: true
@@ -185,8 +185,8 @@ describe('Clipping', () => {
       children: [
         new CompoundPath({
           children: [
-            new Path.Circle({ center: [250, 60], radius: 45 }),
-            new Path.Circle({ center: [250, 60], radius: 20 })
+            Path.circle({ center: [250, 60], radius: 45 }),
+            Path.circle({ center: [250, 60], radius: 20 })
           ],
           fillRule: 'evenodd'
         }),
@@ -201,7 +201,7 @@ describe('Clipping', () => {
 describe('Gradients', () => {
   test('Linear, radial, highlights and strokes', async () => {
     createScene(300, 200)
-    new Path.Rectangle({
+    Path.rectangle({
       rectangle: new Rectangle(10, 10, 80, 80),
       fillColor: {
         gradient: { stops: ['#fc3', '#e63', '#39c'] },
@@ -209,7 +209,7 @@ describe('Gradients', () => {
         destination: [90, 90]
       }
     })
-    new Path.Circle({
+    Path.circle({
       center: [150, 50],
       radius: 40,
       fillColor: {
@@ -218,7 +218,7 @@ describe('Gradients', () => {
         destination: [190, 50]
       }
     })
-    new Path.Circle({
+    Path.circle({
       center: [250, 50],
       radius: 40,
       fillColor: {
@@ -228,7 +228,7 @@ describe('Gradients', () => {
         highlight: [235, 35]
       }
     })
-    new Path.Circle({
+    Path.circle({
       center: [50, 150],
       radius: 30,
       strokeWidth: 12,
@@ -239,7 +239,7 @@ describe('Gradients', () => {
       }
     })
     // The gradient transforms with the item:
-    const rect = new Path.Rectangle({
+    const rect = Path.rectangle({
       rectangle: new Rectangle(120, 120, 60, 60),
       fillColor: {
         gradient: {
@@ -257,7 +257,7 @@ describe('Gradients', () => {
     })
     rect.rotate(30)
     rect.scale(1.3, 0.8)
-    new Path.Rectangle({
+    Path.rectangle({
       rectangle: new Rectangle(210, 120, 80, 60),
       fillColor: {
         gradient: { stops: [['#fc3', 0.2], ['rgba(57, 153, 204, 0)', 0.8]] },
@@ -273,21 +273,21 @@ describe('Patterns', () => {
   test('Vector and image patterns, strokes, text and transforms', async () => {
     const style = createScene(300, 200)
     const dots = new PatternDefinition(
-      new Path.Circle({ center: [5, 5], radius: 3, fillColor: '#e63' }),
+      Path.circle({ center: [5, 5], radius: 3, fillColor: '#e63' }),
       { tile: new Rectangle(0, 0, 10, 10) }
     )
     const stripes = new PatternDefinition(
-      new Path.Rectangle({
+      Path.rectangle({
         rectangle: new Rectangle(0, 0, 4, 12),
         fillColor: '#39c'
       }),
       { spacing: [4, 0] }
     )
-    new Path.Rectangle({
+    Path.rectangle({
       rectangle: new Rectangle(10, 10, 80, 80),
       fillColor: { pattern: dots }
     })
-    new Path.Circle({
+    Path.circle({
       center: [150, 50],
       radius: 32,
       strokeWidth: 16,
@@ -295,7 +295,7 @@ describe('Patterns', () => {
     })
     // The raster of a star, as an image pattern. Scaled images change how
     // Chrome draws the same image later, so leave paper-js.gif to Rasters:
-    const raster = new Path.Star({
+    const raster = Path.star({
       center: [0, 0],
       points: 5,
       radius1: 4,
@@ -303,7 +303,7 @@ describe('Patterns', () => {
       fillColor: '#9c3',
       insert: false
     }).rasterize({ resolution: 144, insert: false })
-    new Path.Circle({
+    Path.circle({
       center: [250, 50],
       radius: 40,
       fillColor: { pattern: new PatternDefinition(raster, { spacing: 2 }) }
@@ -316,7 +316,7 @@ describe('Patterns', () => {
       fillColor: { pattern: stripes }
     })
     // The pattern transforms with the item:
-    const rect = new Path.Rectangle({
+    const rect = Path.rectangle({
       rectangle: new Rectangle(190, 120, 80, 60),
       fillColor: { pattern: dots },
       strokeColor: 'black'
@@ -337,7 +337,7 @@ describe('Elliptical gradients', () => {
       highlight: [65, 50]
     }
     function createItem(applyMatrix, x) {
-      const item = new Path.Rectangle({
+      const item = Path.rectangle({
         rectangle: new Rectangle(35, 20, 80, 80),
         fillColor,
         applyMatrix
@@ -399,7 +399,7 @@ describe('Strokes', () => {
       dashArray: [12, 6, 2, 6],
       dashOffset: 4
     })
-    new Path.Circle({
+    Path.circle({
       center: [60, 170],
       radius: 20,
       strokeColor: '#e63',
@@ -425,7 +425,7 @@ describe('Strokes', () => {
   test(`Strokes that scale, and strokes that don't`, async () => {
     createScene(300, 120)
     ;[true, false].forEach((strokeScaling, i) => {
-      const star = new Path.Star({
+      const star = Path.star({
         center: [80 + i * 150, 60],
         points: 5,
         radius1: 10,
@@ -489,7 +489,7 @@ describe('Stroke profiles', () => {
     nib.smooth({ type: 'catmull-rom' })
     nib.strokeProfile = [{ offset: 0, aspect: 0.15, angle: -35 }]
     // A closed path, and fills under and over the profile:
-    const ring = new Path.Circle({
+    const ring = Path.circle({
       center: [55, 155],
       radius: 30,
       strokeColor: '#e63',
@@ -500,7 +500,7 @@ describe('Stroke profiles', () => {
       { offset: ring.length / 2, width: 1.5 }
     ]
     ;['fill', 'stroke'].forEach((paintOrder, i) => {
-      const square = new Path.Rectangle({
+      const square = Path.rectangle({
         point: [110 + i * 70, 125],
         size: [50, 50],
         fillColor: '#fc6',
@@ -533,7 +533,7 @@ describe('Stroke profiles', () => {
       { offset: 60, width: 1 },
       { offset: 120, width: 0.3 }
     ]
-    const offset = new Path.Rectangle({
+    const offset = Path.rectangle({
       point: [195, 195],
       size: [70, 30],
       strokeColor: 'black',
@@ -552,7 +552,7 @@ describe('Live effects', () => {
   test('Offset and outline, composited and rasterized', async () => {
     createScene(300, 200)
     const createStar = (x, y, props) =>
-      new Path.Star({
+      Path.star({
         center: [x, y],
         points: 5,
         radius1: 12,
@@ -573,7 +573,7 @@ describe('Live effects', () => {
     const faded = createStar(250, 50)
     faded.addEffect({ type: 'offset', parameters: { distance: 10 } })
     new Group({ children: [faded], opacity: 0.5 })
-    new Path.Rectangle({
+    Path.rectangle({
       point: [20, 110],
       size: [160, 70],
       fillColor: '#fc6'

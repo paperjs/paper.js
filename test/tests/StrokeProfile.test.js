@@ -203,7 +203,7 @@ describe('StrokeProfile', () => {
   })
 
   test('Closed paths interpolate around their ends', () => {
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [0, 0],
       size: [100, 100],
       strokeWidth: 10,
@@ -310,7 +310,7 @@ describe('StrokeProfile', () => {
     path.reverse()
     equals(getOffsets(path), [0, 200])
     equals(getWidths(path, [0, 50, 200]), [20, 16.25, 5])
-    const rectangle = new Path.Rectangle({
+    const rectangle = Path.rectangle({
       point: [0, 0],
       size: [100, 100],
       strokeProfile: [
@@ -328,7 +328,7 @@ describe('StrokeProfile', () => {
     const part = path.splitAt(150)
     equals(getWidths(path, [0, 75, 150]), [5, 10.625, 16.25])
     equals(getWidths(part, [0, 50]), [16.25, 20])
-    const rectangle = new Path.Rectangle({
+    const rectangle = Path.rectangle({
       point: [0, 0],
       size: [100, 100],
       strokeWidth: 10,
@@ -402,7 +402,7 @@ describe('StrokeProfile', () => {
   })
 
   test('Path#closed = false lets go of the stops on the closing curve', () => {
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [0, 0],
       size: [100, 100],
       strokeProfile: [

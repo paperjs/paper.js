@@ -8,14 +8,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=9">
     <script type="text/javascript" src="../../dist/paper-full.js"></script>
     <script type="text/paperscript" canvas="canvas">
-        var rect = new Shape.Rectangle({
+        var rect = Shape.rectangle({
             point: [200, 100],
             size: [200, 300],
             fillColor: 'red'
         });
         rect.rotate(40);
 
-        var circle = new Shape.Circle({
+        var circle = Shape.circle({
             center: [200, 300],
             radius: 100,
             fillColor: 'green'
@@ -23,14 +23,14 @@
         circle.scale(0.5, 1);
         circle.rotate(40);
 
-        var ellipse = new Shape.Ellipse({
+        var ellipse = Shape.ellipse({
             point: [300, 300],
             size: [100, 200],
             fillColor: 'blue'
         });
         ellipse.rotate(-40);
 
-        var rect = new Shape.Rectangle({
+        var rect = Shape.rectangle({
             point: [250, 20],
             size: [200, 300],
             radius: [40, 20],

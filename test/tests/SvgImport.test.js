@@ -45,7 +45,7 @@ describe('SvgImport', () => {
       y2: 45
     }
     const imported = paper.project.importSVG(createSVG('line', attrs))
-    const path = new Path.Line([attrs.x1, attrs.y1], [attrs.x2, attrs.y2])
+    const path = Path.line([attrs.x1, attrs.y1], [attrs.x2, attrs.y2])
     equals(imported, path)
   })
 
@@ -59,7 +59,7 @@ describe('SvgImport', () => {
     const imported = paper.project.importSVG(createSVG('rect', attrs), {
       expandShapes: true
     })
-    const path = new Path.Rectangle(attrs)
+    const path = Path.rectangle(attrs)
     equals(imported, path)
   })
 
@@ -75,7 +75,7 @@ describe('SvgImport', () => {
     const imported = paper.project.importSVG(createSVG('rect', attrs), {
       expandShapes: true
     })
-    const path = new Path.Rectangle(
+    const path = Path.rectangle(
       new Rectangle(attrs),
       new Size(attrs.rx, attrs.ry)
     )
@@ -231,7 +231,7 @@ describe('SvgImport', () => {
     const imported = paper.project.importSVG(createSVG('ellipse', attrs), {
       expandShapes: true
     })
-    const path = new Path.Ellipse({
+    const path = Path.ellipse({
       center: new Point(attrs.cx, attrs.cy),
       radius: new Point(attrs.rx, attrs.ry)
     })
@@ -247,7 +247,7 @@ describe('SvgImport', () => {
     const imported = paper.project.importSVG(createSVG('circle', attrs), {
       expandShapes: true
     })
-    const path = new Path.Circle({
+    const path = Path.circle({
       center: new Point(attrs.cx, attrs.cy),
       radius: attrs.r
     })
@@ -687,7 +687,7 @@ describe('SvgImport', () => {
     equals(imported.children.length, 1)
     equals(
       imported.firstChild,
-      new Shape.Rectangle({
+      Shape.rectangle({
         size: [100, 100],
         fillColor: 'red'
       })

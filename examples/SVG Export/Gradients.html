@@ -14,7 +14,7 @@
             from = new Point(view.center.x),
             to = from + [radius, 0];
 
-        var circle = new Path.Circle({
+        var circle = Path.circle({
             center: from,
             radius: radius,
             fillColor: {
@@ -29,7 +29,7 @@
         var from = view.bounds.leftCenter,
             to = view.bounds.bottomRight;
 
-        var rect = new Path.Rectangle({
+        var rect = Path.rectangle({
             from: from,
             to: to,
             fillColor: {

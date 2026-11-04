@@ -21,7 +21,7 @@ import {
   Point,
   Rectangle,
   Size,
-  capitalize,
+  defineDeprecatedConstructors,
   equals,
   isPlainObject,
   isRectangle,
@@ -41,167 +41,209 @@ export class Shape extends Item {
   _size: Size
   _radius: number | Size
 
-  declare static Circle: {
-    /**
-     * Creates a circular shape item.
-     *
-     * @param center the center point of the circle
-     * @param radius the radius of the circle
-     * @return the newly created shape
-     *
-     * @example {@paperscript}
-     * var shape = new Shape.Circle(new Point(80, 50), 30);
-     * shape.strokeColor = 'black';
-     */
-    new (center: PointLike, radius: number): Shape
-    /**
-     * Creates a circular shape item from the properties described by an
-     * object literal.
-     *
-     * @param object an object containing properties describing the shape's
-     *     attributes
-     * @return the newly created shape
-     *
-     * @example {@paperscript}
-     * var shape = new Shape.Circle({
-     *     center: [80, 50],
-     *     radius: 30,
-     *     strokeColor: 'black'
-     * });
-     */
-    new (object: object): Shape
+  /**
+   * Creates a circular shape item.
+   *
+   * @param center the center point of the circle
+   * @param radius the radius of the circle
+   * @return the newly created shape
+   *
+   * @example {@paperscript}
+   * var shape = Shape.circle(new Point(80, 50), 30);
+   * shape.strokeColor = 'black';
+   */
+  static circle(center: PointLike, radius: number): Shape
+  /**
+   * Creates a circular shape item from the properties described by an
+   * object literal.
+   *
+   * @param object an object containing properties describing the shape's
+   *     attributes
+   * @return the newly created shape
+   *
+   * @example {@paperscript}
+   * var shape = Shape.circle({
+   *     center: [80, 50],
+   *     radius: 30,
+   *     strokeColor: 'black'
+   * });
+   */
+  static circle(object: object): Shape
+  static circle(center: any, radius?: number): Shape {
+    const {
+      center: point,
+      radius: circleRadius,
+      ...props
+    } = isPlainObject(center) && radius === undefined
+      ? center
+      : { center, radius }
+    return createShape(
+      'circle',
+      point,
+      new Size(circleRadius * 2),
+      circleRadius,
+      props
+    )
   }
 
-  declare static Rectangle: {
-    /**
-     * Creates a rectangular shape item, with optionally rounded corners.
-     *
-     * @param rectangle the rectangle object describing the geometry of the
-     *     rectangular shape to be created
-     * @param [radius=null] the size of the rounded corners
-     * @return the newly created shape
-     *
-     * @example {@paperscript}
-     * var rectangle = new Rectangle(new Point(20, 20), new Size(60, 60));
-     * var shape = new Shape.Rectangle(rectangle);
-     * shape.strokeColor = 'black';
-     *
-     * @example {@paperscript} // The same, with rounder corners
-     * var rectangle = new Rectangle(new Point(20, 20), new Size(60, 60));
-     * var cornerSize = new Size(10, 10);
-     * var shape = new Shape.Rectangle(rectangle, cornerSize);
-     * shape.strokeColor = 'black';
-     */
-    new (rectangle: RectangleLike, radius?: SizeLike | number): Shape
-    /**
-     * Creates a rectangular shape item from a point and a size object.
-     *
-     * @param point the rectangle's top-left corner.
-     * @param size the rectangle's size.
-     * @return the newly created shape
-     *
-     * @example {@paperscript}
-     * var point = new Point(20, 20);
-     * var size = new Size(60, 60);
-     * var shape = new Shape.Rectangle(point, size);
-     * shape.strokeColor = 'black';
-     */
-    new (point: PointLike, size: SizeLike): Shape
-    /**
-     * Creates a rectangular shape item from the passed points. These do not
-     * necessarily need to be the top left and bottom right corners, the
-     * constructor figures out how to fit a rectangle between them.
-     *
-     * @param from the first point defining the rectangle
-     * @param to the second point defining the rectangle
-     * @return the newly created shape
-     *
-     * @example {@paperscript}
-     * var from = new Point(20, 20);
-     * var to = new Point(80, 80);
-     * var shape = new Shape.Rectangle(from, to);
-     * shape.strokeColor = 'black';
-     */
-    new (from: PointLike, to: PointLike): Shape
-    /**
-     * Creates a rectangular shape item from the properties described by an
-     * object literal.
-     *
-     * @param object an object containing properties describing the shape's
-     *     attributes
-     * @return the newly created shape
-     *
-     * @example {@paperscript}
-     * var shape = new Shape.Rectangle({
-     *     point: [20, 20],
-     *     size: [60, 60],
-     *     strokeColor: 'black'
-     * });
-     *
-     * @example {@paperscript}
-     * var shape = new Shape.Rectangle({
-     *     from: [20, 20],
-     *     to: [80, 80],
-     *     strokeColor: 'black'
-     * });
-     *
-     * @example {@paperscript}
-     * var shape = new Shape.Rectangle({
-     *     rectangle: {
-     *         topLeft: [20, 20],
-     *         bottomRight: [80, 80]
-     *     },
-     *     strokeColor: 'black'
-     * });
-     *
-     * @example {@paperscript}
-     * var shape = new Shape.Rectangle({
-     *     topLeft: [20, 20],
-     *     bottomRight: [80, 80],
-     *     radius: 10,
-     *     strokeColor: 'black'
-     * });
-     */
-    new (object: object): Shape
+  /**
+   * Creates a rectangular shape item, with optionally rounded corners.
+   *
+   * @param rectangle the rectangle object describing the geometry of the
+   *     rectangular shape to be created
+   * @param [radius=null] the size of the rounded corners
+   * @return the newly created shape
+   *
+   * @example {@paperscript}
+   * var rectangle = new Rectangle(new Point(20, 20), new Size(60, 60));
+   * var shape = Shape.rectangle(rectangle);
+   * shape.strokeColor = 'black';
+   *
+   * @example {@paperscript} // The same, with rounder corners
+   * var rectangle = new Rectangle(new Point(20, 20), new Size(60, 60));
+   * var cornerSize = new Size(10, 10);
+   * var shape = Shape.rectangle(rectangle, cornerSize);
+   * shape.strokeColor = 'black';
+   */
+  static rectangle(rectangle: RectangleLike, radius?: SizeLike | number): Shape
+  /**
+   * Creates a rectangular shape item from a point and a size object.
+   *
+   * @param point the rectangle's top-left corner.
+   * @param size the rectangle's size.
+   * @return the newly created shape
+   *
+   * @example {@paperscript}
+   * var point = new Point(20, 20);
+   * var size = new Size(60, 60);
+   * var shape = Shape.rectangle(point, size);
+   * shape.strokeColor = 'black';
+   */
+  static rectangle(point: PointLike, size: SizeLike): Shape
+  /**
+   * Creates a rectangular shape item from the passed points. These do not
+   * necessarily need to be the top left and bottom right corners, the
+   * constructor figures out how to fit a rectangle between them.
+   *
+   * @param from the first point defining the rectangle
+   * @param to the second point defining the rectangle
+   * @return the newly created shape
+   *
+   * @example {@paperscript}
+   * var from = new Point(20, 20);
+   * var to = new Point(80, 80);
+   * var shape = Shape.rectangle(from, to);
+   * shape.strokeColor = 'black';
+   */
+  static rectangle(from: PointLike, to: PointLike): Shape
+  /**
+   * Creates a rectangular shape item from the properties described by an
+   * object literal.
+   *
+   * @param object an object containing properties describing the shape's
+   *     attributes
+   * @return the newly created shape
+   *
+   * @example {@paperscript}
+   * var shape = Shape.rectangle({
+   *     point: [20, 20],
+   *     size: [60, 60],
+   *     strokeColor: 'black'
+   * });
+   *
+   * @example {@paperscript}
+   * var shape = Shape.rectangle({
+   *     from: [20, 20],
+   *     to: [80, 80],
+   *     strokeColor: 'black'
+   * });
+   *
+   * @example {@paperscript}
+   * var shape = Shape.rectangle({
+   *     rectangle: {
+   *         topLeft: [20, 20],
+   *         bottomRight: [80, 80]
+   *     },
+   *     strokeColor: 'black'
+   * });
+   *
+   * @example {@paperscript}
+   * var shape = Shape.rectangle({
+   *     topLeft: [20, 20],
+   *     bottomRight: [80, 80],
+   *     radius: 10,
+   *     strokeColor: 'black'
+   * });
+   */
+  static rectangle(object: object): Shape
+  static rectangle(rectangle: any, radius?: any): Shape {
+    // A second argument is either the radius, or the size or the second point
+    // if the first one is a point, not a rectangle:
+    const { radius: cornerRadius, ...object } =
+      isPlainObject(rectangle) && radius === undefined
+        ? rectangle
+        : radius === undefined || isRectangle(rectangle)
+          ? { rectangle, radius }
+          : { rectangle: new Rectangle(rectangle, radius) }
+    const [rect, props] = readRectangle(object)
+    const size = rect._getSize(true)
+    return createShape(
+      'rectangle',
+      rect._getCenter(true),
+      size,
+      Size.min(new Size(cornerRadius ?? 0), size.divide(2)),
+      props
+    )
   }
 
-  declare static Ellipse: {
-    /**
-     * Creates an elliptical shape item.
-     *
-     * @param rectangle the rectangle circumscribing the ellipse
-     * @return the newly created shape
-     *
-     * @example {@paperscript}
-     * var rectangle = new Rectangle(new Point(20, 20), new Size(180, 60));
-     * var shape = new Shape.Ellipse(rectangle);
-     * shape.fillColor = 'black';
-     */
-    new (rectangle: RectangleLike): Shape
-    /**
-     * Creates an elliptical shape item from the properties described by an
-     * object literal.
-     *
-     * @param object an object containing properties describing the shape's
-     *     attributes
-     * @return the newly created shape
-     *
-     * @example {@paperscript}
-     * var shape = new Shape.Ellipse({
-     *     point: [20, 20],
-     *     size: [180, 60],
-     *     fillColor: 'black'
-     * });
-     *
-     * @example {@paperscript} // Placing by center and radius
-     * var shape = new Shape.Ellipse({
-     *     center: [110, 50],
-     *     radius: [90, 30],
-     *     fillColor: 'black'
-     * });
-     */
-    new (object: object): Shape
+  /**
+   * Creates an elliptical shape item.
+   *
+   * @param rectangle the rectangle circumscribing the ellipse
+   * @return the newly created shape
+   *
+   * @example {@paperscript}
+   * var rectangle = new Rectangle(new Point(20, 20), new Size(180, 60));
+   * var shape = Shape.ellipse(rectangle);
+   * shape.fillColor = 'black';
+   */
+  static ellipse(rectangle: RectangleLike): Shape
+  /**
+   * Creates an elliptical shape item from the properties described by an
+   * object literal.
+   *
+   * @param object an object containing properties describing the shape's
+   *     attributes
+   * @return the newly created shape
+   *
+   * @example {@paperscript}
+   * var shape = Shape.ellipse({
+   *     point: [20, 20],
+   *     size: [180, 60],
+   *     fillColor: 'black'
+   * });
+   *
+   * @example {@paperscript} // Placing by center and radius
+   * var shape = Shape.ellipse({
+   *     center: [110, 50],
+   *     radius: [90, 30],
+   *     fillColor: 'black'
+   * });
+   */
+  static ellipse(object: object): Shape
+  static ellipse(rectangle: any): Shape {
+    const { center, radius, props } = readEllipse(
+      isPlainObject(rectangle) ? rectangle : { rectangle }
+    )
+    return createShape('ellipse', center, radius.multiply(2), radius, props)
   }
+
+  /** @deprecated Use {@link Shape.circle()} instead. */
+  declare static Circle: new (...args: any[]) => Shape
+  /** @deprecated Use {@link Shape.rectangle()} instead. */
+  declare static Rectangle: new (...args: any[]) => Shape
+  /** @deprecated Use {@link Shape.ellipse()} instead. */
+  declare static Ellipse: new (...args: any[]) => Shape
 
   // The factories above and JSON create shapes from their properties,
   // centered at the point:
@@ -360,8 +402,7 @@ export class Shape extends Item {
   }
 
   _asPathItem(): Path {
-    // TODO: Move to Path.createTYPE creators instead of fake constructors.
-    const path = new Path[capitalize(this._type)]({
+    const path = Path[this._type]({
       center: new Point(),
       size: this._size,
       radius: this._radius,
@@ -537,6 +578,7 @@ export class Shape extends Item {
   }
 
   static {
+    defineDeprecatedConstructors(this, ['circle', 'rectangle', 'ellipse'])
     Object.assign(this.prototype, {
       _applyMatrix: false,
       _canApplyMatrix: false,
@@ -552,50 +594,6 @@ export class Shape extends Item {
     })
   }
 }
-
-Shape.Circle = function (center: any, radius?: number) {
-  const {
-    center: point,
-    radius: circleRadius,
-    ...props
-  } = isPlainObject(center) && radius === undefined
-    ? center
-    : { center, radius }
-  return createShape(
-    'circle',
-    point,
-    new Size(circleRadius * 2),
-    circleRadius,
-    props
-  )
-} as any
-
-Shape.Rectangle = function (rectangle: any, radius?: any) {
-  // A second argument is either the radius, or the size or the second point
-  // if the first one is a point, not a rectangle:
-  const { radius: cornerRadius, ...object } =
-    isPlainObject(rectangle) && radius === undefined
-      ? rectangle
-      : radius === undefined || isRectangle(rectangle)
-        ? { rectangle, radius }
-        : { rectangle: new Rectangle(rectangle, radius) }
-  const [rect, props] = readRectangle(object)
-  const size = rect._getSize(true)
-  return createShape(
-    'rectangle',
-    rect._getCenter(true),
-    size,
-    Size.min(new Size(cornerRadius ?? 0), size.divide(2)),
-    props
-  )
-} as any
-
-Shape.Ellipse = function (rectangle: any) {
-  const { center, radius, props } = readEllipse(
-    isPlainObject(rectangle) ? rectangle : { rectangle }
-  )
-  return createShape('ellipse', center, radius.multiply(2), radius, props)
-} as any
 
 function createShape(
   type: string,

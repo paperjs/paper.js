@@ -77,3 +77,14 @@ export function inject<T extends object>(
   }
   return Object.defineProperties(target, descriptors)
 }
+
+// Defines the constructors of 0.17 that factories replace, deprecated, e.g.
+// `new Path.Circle()` for `Path.circle()`:
+export function defineDeprecatedConstructors(ctor: any, names: string[]) {
+  for (const name of names) {
+    const factory = ctor[name]
+    ctor[name[0].toUpperCase() + name.slice(1)] = function (...args: any[]) {
+      return factory.apply(ctor, args)
+    }
+  }
+}

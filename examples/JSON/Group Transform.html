@@ -6,9 +6,9 @@
     <link rel="stylesheet" href="../css/style.css">
     <script type="text/javascript" src="../../dist/paper-full.js"></script>
     <script type="text/paperscript" canvas="canvas1">
-        var circle1 = new Path.Circle(new Point(100, 100), 50);
+        var circle1 = Path.circle(new Point(100, 100), 50);
         circle1.fillColor = 'red';
-        var circle2 = new Path.Circle(new Point(200, 100), 50);
+        var circle2 = Path.circle(new Point(200, 100), 50);
         circle2.fillColor = 'blue';
         var group = new Group(circle1, circle2);
         group.translate([100, 100]);

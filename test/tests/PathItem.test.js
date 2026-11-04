@@ -210,11 +210,11 @@ describe('PathItem', () => {
 
   test('PathItem#compare()', () => {
     const empty = new Path()
-    const circle = new Path.Circle({
+    const circle = Path.circle({
       center: [100, 100],
       radius: 100
     })
-    const square = new Path.Rectangle({
+    const square = Path.rectangle({
       point: [100, 100],
       size: [100, 100]
     })

@@ -58,7 +58,7 @@ export class Group extends Item {
    * function onMouseDown(event) {
    *     // Create a new circle shaped path at the position
    *     // of the mouse:
-   *     var path = new Path.Circle(event.point, 5);
+   *     var path = Path.circle(event.point, 5);
    *     path.fillColor = 'black';
    *
    *     // Add the path to the group's children list:
@@ -135,7 +135,7 @@ export class Group extends Item {
    * clipping mask.
    *
    * @example {@paperscript}
-   * var star = new Path.Star({
+   * var star = Path.star({
    *     center: view.center,
    *     points: 6,
    *     radius1: 20,
@@ -143,7 +143,7 @@ export class Group extends Item {
    *     fillColor: 'red'
    * });
    *
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: view.center,
    *     radius: 25,
    *     strokeColor: 'black'
@@ -254,7 +254,7 @@ export class Group extends Item {
    * var background = project.activeLayer;
    * background.buffered = true;
    * for (var i = 0; i < 2000; i++) {
-   *     new Path.Circle({
+   *     Path.circle({
    *         center: Point.random() * view.size,
    *         radius: 5 + Math.random() * 10,
    *         fillColor: { hue: Math.random() * 360, saturation: 0.5,
@@ -263,7 +263,7 @@ export class Group extends Item {
    *     });
    * }
    *
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: view.center,
    *     radius: 20,
    *     fillColor: 'black'

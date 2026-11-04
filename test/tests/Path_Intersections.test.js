@@ -210,8 +210,8 @@ describe('Path Intersections', () => {
   })
 
   test('overlapping circles', () => {
-    const path1 = new Path.Circle(new Point(50, 50), 50)
-    const path2 = new Path.Circle(new Point(100, 100), 50)
+    const path1 = Path.circle(new Point(50, 50), 50)
+    const path2 = Path.circle(new Point(100, 100), 50)
     testIntersections(path1.getIntersections(path2), [
       { point: { x: 100, y: 50 }, index: 0, crossing: true },
       { point: { x: 50, y: 100 }, index: 1, crossing: true }
@@ -219,8 +219,8 @@ describe('Path Intersections', () => {
   })
 
   test('circle and square (existing segments overlaps on curves)', () => {
-    const path1 = new Path.Circle(new Point(110, 110), 80)
-    const path2 = new Path.Rectangle(new Point(110, 110), [100, 100])
+    const path1 = Path.circle(new Point(110, 110), 80)
+    const path2 = Path.rectangle(new Point(110, 110), [100, 100])
     testIntersections(path1.getIntersections(path2), [
       { point: { x: 190, y: 110 }, index: 0, time: 0, crossing: true },
       { point: { x: 110, y: 190 }, index: 1, time: 0, crossing: true }
@@ -282,24 +282,24 @@ describe('Path Intersections', () => {
   })
 
   test('#intersects() with contained items (#1751)', () => {
-    const outer = new Path.Circle([100, 100], 50),
-      inner = new Path.Circle([100, 100], 20),
+    const outer = Path.circle([100, 100], 50),
+      inner = Path.circle([100, 100], 20),
       ring = new CompoundPath({
         children: [
-          new Path.Circle([300, 100], 50),
-          new Path.Circle([300, 100], 30)
+          Path.circle([300, 100], 50),
+          Path.circle([300, 100], 30)
         ],
         fillRule: 'evenodd'
       }),
-      inHole = new Path.Circle([300, 100], 10),
-      inBand = new Path.Circle([300, 60], 5),
-      far = new Path.Circle([500, 100], 10),
+      inHole = Path.circle([300, 100], 10),
+      inBand = Path.circle([300, 60], 5),
+      far = Path.circle([500, 100], 10),
       // A compound path of which only the second child lies inside outer:
       apart = new CompoundPath([
-        new Path.Circle([500, 300], 10),
-        new Path.Circle([100, 100], 5)
+        Path.circle([500, 300], 10),
+        Path.circle([100, 100], 5)
       ]),
-      shape = new Shape.Circle({ center: [100, 100], radius: 10 })
+      shape = Shape.circle({ center: [100, 100], radius: 10 })
     equals(outer.intersects(inner), true, 'outer contains inner')
     equals(inner.intersects(outer), true, 'inner is contained by outer')
     equals(ring.intersects(inHole), false, 'circle in the hole of a ring')
@@ -751,11 +751,11 @@ describe('Path Intersections', () => {
   })
 
   test('#1638', () => {
-    const circle1 = new Path.Circle({
+    const circle1 = Path.circle({
       center: [100, 100],
       radius: 100
     })
-    const circle2 = new Path.Circle({
+    const circle2 = Path.circle({
       center: [150, 150],
       radius: 100
     })
@@ -814,14 +814,14 @@ describe('Path Intersections', () => {
     })
     testIntersections(path1.getCrossings(path2), [])
 
-    const rect1 = new Path.Rectangle(
+    const rect1 = Path.rectangle(
       new Point(100, 100),
       new Size(100, 100)
     )
     const rect2 = rect1.clone()
     testIntersections(rect1.getCrossings(rect2), [])
 
-    const circ1 = new Path.Circle(new Point(300, 300), 40)
+    const circ1 = Path.circle(new Point(300, 300), 40)
     const circ2 = circ1.clone()
     testIntersections(circ1.getCrossings(circ2), [])
   })
@@ -846,22 +846,22 @@ describe('Path Intersections', () => {
 
   test('#1940: intersections at coordinates beyond 16384', () => {
     // Rectangles with shared edges, beyond where EPSILON is lost:
-    const rect1 = new Path.Rectangle({
+    const rect1 = Path.rectangle({
       point: [16385, 100],
       size: [300, 300]
     })
-    const rect2 = new Path.Rectangle({
+    const rect2 = Path.rectangle({
       point: [16385, -150],
       size: [300, 300]
     })
     equals(rect1.getIntersections(rect2).length, 4)
     equals(rect1.intersect(rect2).area, 300 * 50)
     // Paths whose bounds only touch:
-    const square1 = new Path.Rectangle({
+    const square1 = Path.rectangle({
       point: [20000, 0],
       size: [100, 100]
     })
-    const square2 = new Path.Rectangle({
+    const square2 = Path.rectangle({
       point: [20100, 0],
       size: [100, 100]
     })

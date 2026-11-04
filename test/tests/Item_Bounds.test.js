@@ -29,8 +29,8 @@ import { equals, test } from '../helpers.js'
 
 describe('Item Bounds', () => {
   test('item.bounds caching', () => {
-    const circle = new Path.Circle(new Point(100, 100), 50)
-    const rectangle = new Path.Rectangle(
+    const circle = Path.circle(new Point(100, 100), 50)
+    const rectangle = Path.rectangle(
       new Point(75, 75),
       new Point(175, 175)
     )
@@ -68,7 +68,7 @@ describe('Item Bounds', () => {
 
   test('group.bounds when group contains empty group', () => {
     const group = new Group()
-    const rectangle = new Path.Rectangle(
+    const rectangle = Path.rectangle(
       new Point(75, 75),
       new Point(175, 175)
     )
@@ -88,7 +88,7 @@ describe('Item Bounds', () => {
 
   test('group.bounds and position after children were modified', () => {
     const group = new Group()
-    const rectangle = new Path.Rectangle(
+    const rectangle = Path.rectangle(
       new Point(100, 100),
       new Point(200, 200)
     )
@@ -150,7 +150,7 @@ describe('Item Bounds', () => {
     // Empty children don't contribute to the handle bounds of their group:
     const group = new Group([
       new Path(),
-      new Path.Rectangle(new Point(75, 75), new Point(175, 175))
+      Path.rectangle(new Point(75, 75), new Point(175, 175))
     ])
     equals(
       group.handleBounds,
@@ -176,7 +176,7 @@ describe('Item Bounds', () => {
   })
 
   test('shape.strokeBounds when scaled without strokeScaling', () => {
-    const shape = new Shape.Rectangle({
+    const shape = Shape.rectangle({
       point: [5, 5],
       size: [20, 20],
       strokeScaling: false,
@@ -517,7 +517,7 @@ describe('Item Bounds', () => {
   })
 
   test('path.strokeBounds with rectangles', () => {
-    const path = new paper.Path.Rectangle({
+    const path = paper.Path.rectangle({
       point: [100, 100],
       size: [100, 100],
       strokeWidth: 50,
@@ -531,7 +531,7 @@ describe('Item Bounds', () => {
   })
 
   test('path.strokeBounds without strokeScaling and zoomed view', () => {
-    const path = new Path.Circle({
+    const path = Path.circle({
       center: [0, 0],
       radius: 100,
       strokeColor: 'black',
@@ -557,7 +557,7 @@ describe('Item Bounds', () => {
   })
 
   test('shape.strokeBounds without strokeScaling and zoomed view', () => {
-    const path = new Shape.Circle({
+    const path = Shape.circle({
       center: [0, 0],
       radius: 100,
       strokeColor: 'black',
@@ -882,7 +882,7 @@ describe('Item Bounds', () => {
   })
 
   test('path.strokeBounds with rectangles', () => {
-    const path = new paper.Path.Rectangle({
+    const path = paper.Path.rectangle({
       point: [100, 100],
       size: [100, 100],
       strokeWidth: 50,
@@ -896,7 +896,7 @@ describe('Item Bounds', () => {
   })
 
   test('path.strokeBounds without strokeScaling and zoomed view', () => {
-    const path = new Path.Circle({
+    const path = Path.circle({
       center: [0, 0],
       radius: 100,
       strokeColor: 'black',
@@ -945,7 +945,7 @@ describe('Item Bounds', () => {
   })
 
   test('shape.strokeBounds without strokeScaling and zoomed view', () => {
-    const shape = new Shape.Circle({
+    const shape = Shape.circle({
       center: [0, 0],
       radius: 100,
       strokeColor: 'black',
@@ -987,7 +987,7 @@ describe('Item Bounds', () => {
     // To test for a strange strokeBounds regression caused by commit
     // 1ac8e46d55643f663e439d2cb5d05a40fc68d011
 
-    const path = new Path.Circle({
+    const path = Path.circle({
       center: [0, 0],
       radius: 100
     })
@@ -1031,7 +1031,7 @@ describe('Item Bounds', () => {
   })
 
   test('path.strokeBounds with applyMatrix disabled', () => {
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       applyMatrix: true,
       point: [10, 10],
       size: [20, 20],
@@ -1080,7 +1080,7 @@ describe('Item Bounds', () => {
   })
 
   test('path.strokeBounds with applyMatrix enabled', () => {
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       applyMatrix: false,
       point: [10, 10],
       size: [20, 20],
@@ -1103,7 +1103,7 @@ describe('Item Bounds', () => {
   })
 
   test('symbolItem.bounds with strokeScaling disabled', () => {
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       center: [0, 0],
       size: [20, 20],
       strokeWidth: 10,
@@ -1128,7 +1128,7 @@ describe('Item Bounds', () => {
   })
 
   test('item.visible and item.parents.bounds (#1248)', () => {
-    const item = new Path.Rectangle({
+    const item = Path.rectangle({
       point: [0, 0],
       size: [50, 100],
       visible: false
@@ -1148,11 +1148,11 @@ describe('Item Bounds', () => {
   })
 
   test('group.internalBounds with child and child.applyMatrix = false (#1250)', () => {
-    const item1 = Shape.Rectangle({
+    const item1 = Shape.rectangle({
       point: [100, 100],
       size: [200, 200]
     })
-    const item2 = new Path.Rectangle({
+    const item2 = Path.rectangle({
       point: [0, 0],
       size: [100, 100]
     })
@@ -1175,7 +1175,7 @@ describe('Item Bounds', () => {
     const symbol = new SymbolItem(new Path())
     symbol.opacity = 0.5
     symbol.skew(10)
-    const item = new Path.Circle(new Point(0, 0), 10)
+    const item = Path.circle(new Point(0, 0), 10)
     paper.view.update()
     equals(item._globalMatrix, new Matrix())
   })
@@ -1194,7 +1194,7 @@ describe('Item Bounds', () => {
   })
 
   test('path.strokeBounds applies stroke padding properly (#1824)', () => {
-    const ellipse = new Path.Ellipse({
+    const ellipse = Path.ellipse({
       point: [100, 100],
       size: [50, 80],
       strokeWidth: 32,
@@ -1213,7 +1213,7 @@ describe('Item Bounds', () => {
     // Half the bounds of an ellipse with radii [100, 50] rotated by 30°:
     // [sqrt((cos(30°) * 100)² + (sin(30°) * 50)²),
     //  sqrt((sin(30°) * 100)² + (cos(30°) * 50)²)] = [sqrt(8125), sqrt(4375)]
-    const ellipse = new Shape.Ellipse({
+    const ellipse = Shape.ellipse({
         center: [200, 200],
         radius: [100, 50],
         strokeColor: 'black',
@@ -1240,7 +1240,7 @@ describe('Item Bounds', () => {
     )
 
     // A rotated circle keeps its bounds:
-    const circle = new Shape.Circle({
+    const circle = Shape.circle({
       center: [200, 200],
       radius: 50,
       strokeColor: 'black',
@@ -1326,7 +1326,7 @@ describe('Item Bounds', () => {
   })
 
   test('group.bounds with child and group matrices that cancel out (#1457)', () => {
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [100, 0],
       size: [50, 50],
       applyMatrix: false
@@ -1380,7 +1380,7 @@ describe('Item Bounds', () => {
   })
 
   test('symbolItem.bounds with item and symbol matrices that cancel out (#1457)', () => {
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [100, 0],
       size: [50, 50],
       applyMatrix: false
@@ -1399,8 +1399,8 @@ describe('Item Bounds', () => {
     const matrix = new Matrix(1, 0, 1, 1, 0, 0),
       offset = 10 * Math.SQRT2
 
-    function createPath(constructor, options) {
-      const path = new constructor(
+    function createPath(factory, options) {
+      const path = factory(
         Object.assign(
           {
             applyMatrix: false,
@@ -1415,7 +1415,7 @@ describe('Item Bounds', () => {
     }
 
     function createLine(cap) {
-      return createPath(Path.Line, {
+      return createPath(Path.line, {
         from: [0, 0],
         to: [100, 0],
         strokeCap: cap
@@ -1423,7 +1423,7 @@ describe('Item Bounds', () => {
     }
 
     function createRectangle(join) {
-      return createPath(Path.Rectangle, {
+      return createPath(Path.rectangle, {
         point: [0, 0],
         size: [100, 100],
         strokeJoin: join
@@ -1467,7 +1467,7 @@ describe('Item Bounds', () => {
 
     // The example from the issue: The stroke outline of a rectangle with miter
     // joins is the rectangle expanded by the stroke radius:
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [200, 200],
       size: [100, 75],
       applyMatrix: false,
@@ -1478,7 +1478,7 @@ describe('Item Bounds', () => {
     path.rotate(60)
     path.scale(4, 1)
     path.rotate(30)
-    const outline = new Path.Rectangle(
+    const outline = Path.rectangle(
       new Rectangle(200, 200, 100, 75)
         .expand(20)
     )
@@ -1519,7 +1519,7 @@ describe('Item Bounds', () => {
   })
 
   test('group.bounds of nested groups after changing a path', () => {
-    const path = new Path.Rectangle([0, 0], [10, 10]),
+    const path = Path.rectangle([0, 0], [10, 10]),
       inner = new Group([path]),
       middle = new Group([inner]),
       outer = new Group([middle])
@@ -1555,7 +1555,7 @@ describe('Item Bounds', () => {
   test('group.bounds after changing the symbol definition (#940)', () => {
     // The definition's item: Rectangle(-5, -5, 10, 10)
     const definition = new SymbolDefinition(
-        new Path.Rectangle({
+        Path.rectangle({
           point: [-5, -5],
           size: [10, 10],
           fillColor: 'red',
@@ -1628,7 +1628,7 @@ describe('Item Bounds', () => {
     )
 
     // Replacing the definition's item: Rectangle(-20, -20, 40, 40)
-    definition.item = new Path.Circle({ center: [0, 0], radius: 20 })
+    definition.item = Path.circle({ center: [0, 0], radius: 20 })
     equals(
       group.bounds,
       new Rectangle(30, 30, 90, 40),
@@ -1648,14 +1648,14 @@ describe('Item Bounds', () => {
 
   test('Item.getBounds(items[, options]) (#2252)', () => {
     // Items in different, transformed groups, in project coordinates:
-    const path1 = new Path.Rectangle({
+    const path1 = Path.rectangle({
         point: [0, 0],
         size: [10, 10],
         strokeColor: 'black',
         strokeWidth: 2
       }),
       path2 = path1.clone(),
-      hidden = new Path.Rectangle({ point: [500, 500], size: [10, 10] }),
+      hidden = Path.rectangle({ point: [500, 500], size: [10, 10] }),
       group1 = new Group({ children: [path1], applyMatrix: false }),
       group2 = new Group({
         children: [path2, hidden],
@@ -1678,7 +1678,7 @@ describe('Item Bounds', () => {
   })
 
   test('path.strokeBounds after scaling, when cached before', () => {
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [10, 10],
       size: [20, 20],
       strokeColor: 'red',
@@ -1716,7 +1716,7 @@ describe('Item Bounds', () => {
   })
 
   test('shape.strokeBounds after scaling, when cached before', () => {
-    const shape = new Shape.Rectangle({
+    const shape = Shape.rectangle({
       point: [10, 10],
       size: [20, 20],
       strokeColor: 'red',
@@ -1737,7 +1737,7 @@ describe('Item Bounds', () => {
   })
 
   test('item.strokeBounds after changing the stroke of items without a parent (#2343)', () => {
-    const shape = new Shape.Rectangle({
+    const shape = Shape.rectangle({
       point: [0, 0],
       size: [10, 10],
       strokeColor: 'black',
@@ -1772,7 +1772,7 @@ describe('Item Bounds', () => {
       'text.strokeBounds after changing strokeWidth'
     )
 
-    const definition = new Shape.Rectangle({
+    const definition = Shape.rectangle({
       center: [0, 0],
       size: [10, 10],
       strokeColor: 'black',
@@ -1795,7 +1795,7 @@ describe('Item Bounds', () => {
 
     const group = new Group({
       children: [
-        new Shape.Rectangle({
+        Shape.rectangle({
           point: [0, 0],
           size: [10, 10],
           strokeColor: 'black',
@@ -1870,7 +1870,7 @@ describe('Item Bounds', () => {
       )
     }
 
-    const star = new Path.Star({
+    const star = Path.star({
         center: [50, 50],
         points: 5,
         radius1: 20,
@@ -1893,7 +1893,7 @@ describe('Item Bounds', () => {
   test('item.strokeBounds = rect (#1030)', () => {
     // The stroke reaches 5 beyond the bounds on each side, also at the
     // mitered corners:
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [10, 10],
       size: [20, 20],
       strokeColor: 'black',
@@ -1914,7 +1914,7 @@ describe('Item Bounds', () => {
       'path.bounds after setting strokeBounds.width'
     )
     // Without a stroke, the same as setting bounds:
-    const unstroked = new Path.Rectangle({
+    const unstroked = Path.rectangle({
       point: [10, 10],
       size: [20, 20]
     })
@@ -1925,7 +1925,7 @@ describe('Item Bounds', () => {
       'unstroked.bounds'
     )
     // The shape's matrix scales its stroke along, by 4 and 2 here:
-    const shape = new Shape.Rectangle({
+    const shape = Shape.rectangle({
       point: [10, 10],
       size: [20, 20],
       strokeColor: 'black',
@@ -1944,7 +1944,7 @@ describe('Item Bounds', () => {
     // Under non-uniform scaling, miters, bevels and square caps change with
     // the angles, and items that keep their matrix scale their strokes along:
     function star(attributes) {
-      return new Path.Star(
+      return Path.star(
         Object.assign(
           {
             center: [50, 50],
@@ -1958,7 +1958,7 @@ describe('Item Bounds', () => {
     }
 
     function rectangle() {
-      return new Path.Rectangle([10, 10], [50, 50])
+      return Path.rectangle([10, 10], [50, 50])
     }
 
     const items = {
@@ -1976,39 +1976,39 @@ describe('Item Bounds', () => {
       }),
       'rotated rectangle': rectangle().rotate(30),
       'sheared rectangle': rectangle().shear(0.5, 0),
-      'path with strokeScaling false': new Path.Rectangle({
+      'path with strokeScaling false': Path.rectangle({
         point: [10, 10],
         size: [50, 50],
         strokeScaling: false
       }),
-      'rotated shape': new Shape.Rectangle({
+      'rotated shape': Shape.rectangle({
         point: [10, 10],
         size: [50, 50]
       }).rotate(30),
-      'sheared circle shape': new Shape.Circle({
+      'sheared circle shape': Shape.circle({
         center: [50, 50],
         radius: 30
       }).shear(0.5, 0.2),
-      'shape with strokeScaling false': new Shape.Rectangle({
+      'shape with strokeScaling false': Shape.rectangle({
         point: [10, 10],
         size: [50, 50],
         strokeScaling: false
       }),
       'compound path': new CompoundPath([
-        new Path.Circle([30, 30], 20),
-        new Path.Rectangle([40, 40], [30, 30])
+        Path.circle([30, 30], 20),
+        Path.rectangle([40, 40], [30, 30])
       ]),
       'group of paths': new Group([
-        new Path.Rectangle([10, 10], [30, 30]),
+        Path.rectangle([10, 10], [30, 30]),
         star()
       ]),
       'rotated group that keeps its matrix': new Group({
-        children: [new Path.Rectangle([10, 10], [30, 30]), star()],
+        children: [Path.rectangle([10, 10], [30, 30]), star()],
         applyMatrix: false
       }).rotate(20),
       'group with a shape': new Group([
-        new Path.Rectangle([10, 10], [30, 30]),
-        new Shape.Circle({ center: [80, 40], radius: 20 })
+        Path.rectangle([10, 10], [30, 30]),
+        Shape.circle({ center: [80, 40], radius: 20 })
       ])
     }
     for (const [name, item] of Object.entries(items)) {
@@ -2027,7 +2027,7 @@ describe('Item Bounds', () => {
 
   test('item.strokeBounds = rect at its limits (#1030)', () => {
     function rectangle() {
-      return new Path.Rectangle({
+      return Path.rectangle({
         point: [10, 10],
         size: [20, 20],
         strokeColor: 'black',
@@ -2060,7 +2060,7 @@ describe('Item Bounds', () => {
     equals(path.bounds, new Rectangle(0, 5, 0, 40), 'without width')
     // Dimensions without size can't be scaled, so a horizontal line only fits
     // in width, and is centered in height:
-    const line = new Path.Line({
+    const line = Path.line({
       from: [10, 10],
       to: [50, 10],
       strokeColor: 'black',
@@ -2082,7 +2082,7 @@ describe('Item Bounds', () => {
     equals(group.bounds, new Rectangle(50, 25, 0, 0), 'empty group')
     // Strokes many times larger than their item change abruptly with its
     // proportions, but are reached too:
-    const star = new Path.Star({
+    const star = Path.star({
       center: [50, 50],
       points: 5,
       radius1: 2,

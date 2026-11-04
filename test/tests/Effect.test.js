@@ -26,7 +26,7 @@ import { equals, test } from '../helpers.js'
 
 describe('Effect', () => {
   function createSquare() {
-    return new Path.Rectangle({
+    return Path.rectangle({
       point: [20, 20],
       size: [40, 40],
       fillColor: 'red'
@@ -274,10 +274,10 @@ describe('Effect', () => {
     equals(path.strokeBounds, new Rectangle(18, 18, 44, 44))
     equals(path.previewBounds, new Rectangle(8, 8, 64, 64))
     // Groups measure their children with their effects:
-    const group = new Group([path, new Path.Circle([100, 40], 10)])
+    const group = new Group([path, Path.circle([100, 40], 10)])
     equals(group.previewBounds, new Rectangle(8, 8, 102, 64))
     equals(
-      new Path.Circle([0, 0], 10).previewBounds,
+      Path.circle([0, 0], 10).previewBounds,
       new Rectangle(-10, -10, 20, 20),
       'without effects'
     )

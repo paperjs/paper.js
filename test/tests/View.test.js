@@ -144,7 +144,7 @@ describe('View', () => {
   })
 
   test('view.update(force) (#1913)', () => {
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       from: [0, 0],
       to: [100, 100],
       fillColor: 'red'
@@ -301,7 +301,7 @@ describe('View', () => {
   })
 
   test('view.dispatchMouseEvent()', () => {
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [10, 10],
       size: [20, 20],
       fillColor: 'red'
@@ -370,7 +370,7 @@ describe('View', () => {
   })
 
   test('view.dispatchMouseEvent() with settings.hitTolerance (#1971)', () => {
-    const path = new Path.Line({
+    const path = Path.line({
         from: [10, 10],
         to: [50, 10],
         strokeColor: 'black'
@@ -395,7 +395,7 @@ describe('View', () => {
   test('view.dispatchMouseEvent() outside the view', () => {
     // Hosts can draw around the view, e.g. around an artboard:
     const point = paper.view.bounds.leftCenter.subtract([50, 0]),
-      path = new Path.Circle({
+      path = Path.circle({
         center: point,
         radius: 10,
         fillColor: 'red'
@@ -642,7 +642,7 @@ describe('View', () => {
         document.body.appendChild(container)
         const project = new Project(canvas)
         const view = project.view
-        const item = new Path.Rectangle(new Point(45, 35), new Size(10))
+        const item = Path.rectangle(new Point(45, 35), new Size(10))
         let point = null
         let hit = false
         item.fillColor = 'red'
@@ -697,7 +697,7 @@ describe('View', () => {
   }
 
   test('Selections are drawn with a line width of 1', () => {
-    const path = new Path.Line({
+    const path = Path.line({
       from: [10, 50],
       to: [90, 50],
       selected: true
@@ -725,7 +725,7 @@ describe('View', () => {
     // The stroke reaches from 20 to 40 around the left edge at 30. The
     // selection's 1pt lines cover the pixels on both sides of these
     // coordinates, and its 4pt corner handles reach 2 further:
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
         point: [30, 30],
         size: [40, 40],
         strokeColor: 'red',
@@ -811,9 +811,9 @@ describe('View', () => {
     }
 
     ;[
-      new Path.Rectangle(rect),
-      new CompoundPath({ children: [new Path.Rectangle(rect)] }),
-      new Shape.Rectangle(rect)
+      Path.rectangle(rect),
+      new CompoundPath({ children: [Path.rectangle(rect)] }),
+      Shape.rectangle(rect)
     ].forEach(item => {
       item.set(props)
       paper.view.update(true)
@@ -866,7 +866,7 @@ describe('View', () => {
   })
 
   test('MouseEvent#toString()', () => {
-    const square = new Path.Rectangle({
+    const square = Path.rectangle({
       point: [0, 0],
       size: [50, 50],
       fillColor: 'red',
@@ -892,7 +892,7 @@ describe('View', () => {
 
   test('ToolEvent points, delta and item, and overriding them', () => {
     const tool = new Tool()
-    const square = new Path.Rectangle({
+    const square = Path.rectangle({
       point: [20, 20],
       size: [20, 20],
       fillColor: 'red'
@@ -1081,7 +1081,7 @@ describe('View', () => {
   })
 
   test('MouseEvent#stopPropagation() stops at the item', () => {
-    const square = new Path.Rectangle({
+    const square = Path.rectangle({
       point: [0, 0],
       size: [50, 50],
       fillColor: 'red'
@@ -1135,7 +1135,7 @@ describe('View', () => {
   })
 
   test('Event#stop() stops propagation and prevents the default', () => {
-    const square = new Path.Rectangle({
+    const square = Path.rectangle({
       point: [0, 0],
       size: [50, 50],
       fillColor: 'red'

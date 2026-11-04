@@ -59,7 +59,7 @@ describe('TextDirection', () => {
 
   function createDirectionPathText(content, direction) {
     return new PathText({
-      textPath: new Path.Line([0, 0], [200, 0]),
+      textPath: Path.line([0, 0], [200, 0]),
       content,
       fontFamily: testFontFamily,
       fontSize: 12,
@@ -88,7 +88,7 @@ describe('TextDirection', () => {
 
   test('Right-to-left justified lines spread from the right', () => {
     const text = new AreaText({
-      textPath: new Path.Rectangle([0, 0], [100, 100]),
+      textPath: Path.rectangle([0, 0], [100, 100]),
       content: [shalom, olam, shalom, olam, shalom, olam].join(' '),
       fontFamily: testFontFamily,
       fontSize: 12,

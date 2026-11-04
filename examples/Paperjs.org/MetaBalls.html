@@ -20,14 +20,14 @@
         var circlePaths = [];
         var radius = 50;
         for (var i = 0, l = ballPositions.length; i < l; i++) {
-            var circlePath = new Path.Circle({
+            var circlePath = Path.circle({
                 center: ballPositions[i],
                 radius: 50
             });
             circlePaths.push(circlePath);
         }
 
-        var largeCircle = new Path.Circle({
+        var largeCircle = Path.circle({
             center: [676, 433],
             radius: 100
         });

@@ -6,13 +6,13 @@
     <link rel="stylesheet" href="../css/style.css">
     <script type="text/javascript" src="../../dist/paper-full.js"></script>
     <script type="text/paperscript" canvas="canvas1">
-        var circle = new Shape.Circle({
+        var circle = Shape.circle({
             center: [100, 100],
             radius: 50,
             fillColor: 'red'
         });
 
-        var ellipse = new Shape.Ellipse({
+        var ellipse = Shape.ellipse({
             center: [100, 200],
             radius: [50, 25],
             fillColor: 'blue',
@@ -21,7 +21,7 @@
             rotation: 20
         });
 
-        var rect = new Shape.Rectangle({
+        var rect = Shape.rectangle({
             center: [100, 300],
             size: [100, 50],
             fillColor: 'green',
@@ -30,7 +30,7 @@
             rotation: -20
         });
 
-        var roundRect = new Shape.Rectangle({
+        var roundRect = Shape.rectangle({
             center: [100, 400],
             size: [50, 100],
             radius: [15, 20],

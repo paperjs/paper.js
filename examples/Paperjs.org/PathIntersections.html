@@ -35,7 +35,7 @@
         function showIntersections(path1, path2) {
             var intersections = path1.getIntersections(path2);
             for (var i = 0; i < intersections.length; i++) {
-                new Path.Circle({
+                Path.circle({
                     center: intersections[i].point,
                     radius: 5,
                     fillColor: '#009dec'

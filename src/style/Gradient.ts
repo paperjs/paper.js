@@ -36,7 +36,7 @@ export type GradientLike =
  *
  * // Create a rectangle shaped path between
  * // the topLeft and bottomRight points:
- * var path = new Path.Rectangle({
+ * var path = Path.rectangle({
  *     topLeft: topLeft,
  *     bottomRight: bottomRight,
  *     // Fill the path with a gradient of three color stops
@@ -54,7 +54,7 @@ export type GradientLike =
  * // Create a circle shaped path at the center of the view,
  * // using 40% of the height of the view as its radius
  * // and fill it with a radial gradient color:
- * var path = new Path.Circle({
+ * var path = Path.circle({
  *     center: view.center,
  *     radius: view.bounds.height * 0.4
  * });

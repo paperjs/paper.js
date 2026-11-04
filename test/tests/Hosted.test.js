@@ -236,7 +236,7 @@ describe('Hosted', () => {
   function createDocument() {
     const document = new Project()
     const layer = new Layer({ name: 'art' })
-    new Path.Circle({
+    Path.circle({
       center: [50, 50],
       radius: 20,
       fillColor: 'red',
@@ -244,7 +244,7 @@ describe('Hosted', () => {
     })
     const group = new Group({ name: 'group' })
     group.addChild(
-      new Path.Rectangle({
+      Path.rectangle({
         point: [200, 200],
         size: [40, 20],
         strokeColor: 'blue',
@@ -254,8 +254,8 @@ describe('Hosted', () => {
     group.addChild(
       new CompoundPath({
         children: [
-          new Path.Rectangle([300, 300], [50, 50]),
-          new Path.Rectangle([310, 310], [30, 30])
+          Path.rectangle([300, 300], [50, 50]),
+          Path.rectangle([310, 310], [30, 30])
         ],
         fillColor: 'green',
         selected: true
@@ -553,7 +553,7 @@ describe('Hosted', () => {
       try {
         equals(project.hasDrawHandlers(), true, 'with them')
         // Items that are inserted meanwhile don't count them as their own:
-        project.layers[0].addChild(new Path.Circle([0, 0], 10))
+        project.layers[0].addChild(Path.circle([0, 0], 10))
       } finally {
         Path.onDraw = null
       }
@@ -631,7 +631,7 @@ describe('Hosted', () => {
     const circle = layer.children.circle
     document.layers[0].insertChild(
       0,
-      new Path.Star({
+      Path.star({
         center: [150, 50],
         points: 5,
         radius1: 10,
@@ -675,7 +675,7 @@ describe('Hosted', () => {
     const project = res.project
     const layer = project.layers[0]
     // A script creates a circle, which the host writes back and keys:
-    const circle = new Path.Circle({
+    const circle = Path.circle({
       center: [20, 20],
       radius: 5,
       fillColor: 'blue',
@@ -821,7 +821,7 @@ describe('Hosted', () => {
 
   test('Item#key registers new items once', () => {
     const res = createHostedProject()
-    const path = new Path.Line({
+    const path = Path.line({
       from: [0, 0],
       to: [10, 10],
       parent: res.project.layers[0]
@@ -891,7 +891,7 @@ describe('Hosted', () => {
         .takeChanges()
         .some(change => change.item === layer && change.reordered === true)
     // New items and removed ones tell their own places:
-    layer.addChild(new Path.Circle([0, 0], 10))
+    layer.addChild(Path.circle([0, 0], 10))
     second.remove()
     equals(isReordered(), false)
     // An item of the host that moves, or a reversal, doesn't:
@@ -994,7 +994,7 @@ describe('Hosted', () => {
       blend.exportJSON(),
       '["TestBlend",{"applyMatrix":false,"steps":5}]'
     )
-    blend.addChild(new Path.Circle({ center: [0, 0], radius: 10 }))
+    blend.addChild(Path.circle({ center: [0, 0], radius: 10 }))
     equals(blend.children.length, 1)
     // Without a host record, a HostItem has empty bounds, whatever its
     // children are:
@@ -1012,14 +1012,14 @@ describe('Hosted', () => {
         name: 'point'
       })
     new PathText({
-      textPath: new Path.Line([0, 100], [200, 100]),
+      textPath: Path.line([0, 100], [200, 100]),
       content: 'Along a path',
       fontFamily: testFontFamily,
       startOffset: 10,
       name: 'path'
     })
     new AreaText({
-      textPath: new Path.Rectangle([0, 200], [100, 100]),
+      textPath: Path.rectangle([0, 200], [100, 100]),
       content: 'Text in an area breaks into lines that fit it.',
       fontFamily: testFontFamily,
       columns: 2,
@@ -1226,7 +1226,7 @@ describe('Hosted', () => {
         content: 'Hi',
         strokeColor: 'blue'
       }),
-      path = new Path.Circle({ center: [50, 50], radius: 10 })
+      path = Path.circle({ center: [50, 50], radius: 10 })
     equals(text.fillColor, new Color('red'), `text: the text style's fill`)
     equals(text.strokeColor, null, 'and no stroke')
     equals(stroked.strokeColor, new Color('blue'), 'unless it sets one')
@@ -1308,7 +1308,7 @@ describe('Hosted', () => {
     const frames = [0, 1, 2].map(
       i =>
         new AreaText({
-          textPath: new Path.Rectangle([200 + i * 60, 0], [50, 40]),
+          textPath: Path.rectangle([200 + i * 60, 0], [50, 40]),
           fontFamily: testFontFamily,
           parent: layer
         })
@@ -1469,20 +1469,20 @@ describe('Hosted', () => {
     const document = new Project()
     new Layer({ name: 'art' })
     const pattern = new PatternDefinition(
-      new Path.Rectangle({ point: [0, 0], size: [5, 5], fillColor: 'red' }),
+      Path.rectangle({ point: [0, 0], size: [5, 5], fillColor: 'red' }),
       { tile: new Rectangle(0, 0, 10, 10) }
     )
     const symbol = new SymbolDefinition(
-      new Path.Rectangle({ point: [0, 0], size: [10, 10], fillColor: 'red' })
+      Path.rectangle({ point: [0, 0], size: [10, 10], fillColor: 'red' })
     )
     symbol.name = 'Star'
-    new Path.Rectangle({
+    Path.rectangle({
       point: [0, 0],
       size: [40, 40],
       fillColor: { pattern },
       name: 'first'
     })
-    new Path.Rectangle({
+    Path.rectangle({
       point: [50, 0],
       size: [40, 40],
       fillColor: { pattern },
@@ -1641,17 +1641,17 @@ describe('Hosted', () => {
       project = res.project
     project.trackChanges = true
     const inner = new PatternDefinition(
-      new Path.Rectangle({ point: [0, 0], size: [5, 5], fillColor: 'blue' })
+      Path.rectangle({ point: [0, 0], size: [5, 5], fillColor: 'blue' })
     )
     const symbol = new SymbolDefinition(
-      new Path.Rectangle({
+      Path.rectangle({
         point: [0, 0],
         size: [10, 10],
         fillColor: { pattern: inner }
       })
     )
     // Definitions that no inserted item uses aren't the host's:
-    new SymbolDefinition(new Path.Rectangle([0, 0], [10, 10]))
+    new SymbolDefinition(Path.rectangle([0, 0], [10, 10]))
     const group = new Group({
       children: [symbol.place([0, 0])],
       parent: project.layers[0]
@@ -1681,7 +1681,7 @@ describe('Hosted', () => {
     project.trackChanges = true
     pattern.spacing = 10
     const inner = new PatternDefinition(
-      new Path.Rectangle({
+      Path.rectangle({
         point: [0, 0],
         size: [5, 5],
         fillColor: 'blue',
@@ -1703,7 +1703,7 @@ describe('Hosted', () => {
     const res = createHostedDefinitions(),
       project = res.project
     const symbol = new SymbolDefinition(
-      new Path.Rectangle({ point: [0, 0], size: [10, 10], fillColor: 'blue' })
+      Path.rectangle({ point: [0, 0], size: [10, 10], fillColor: 'blue' })
     )
     const item = symbol.place([0, 0])
     project.layers[0].addChild(item)
@@ -1763,7 +1763,7 @@ describe('Hosted', () => {
       project = res.project
     res.host.definitions.set(
       'symbol/Unused',
-      new SymbolDefinition(new Path.Rectangle([0, 0], [10, 10]))
+      new SymbolDefinition(Path.rectangle([0, 0], [10, 10]))
     )
     res.host.takeCalls()
     project.trackChanges = true
@@ -1784,7 +1784,7 @@ describe('Hosted', () => {
       []
     )
     // New definitions follow, once items use them:
-    const symbol = new SymbolDefinition(new Path.Rectangle([0, 0], [10, 10]))
+    const symbol = new SymbolDefinition(Path.rectangle([0, 0], [10, 10]))
     equals(project.symbolDefinitions.length, 2)
     project.layers[0].addChild(symbol.place([0, 0]))
     equals(project.symbolDefinitions.length, 3)
@@ -1848,7 +1848,7 @@ describe('Hosted', () => {
       to = createHostedProject(),
       getDefinition = from.host.getDefinition
     // The host's symbol fills its square with the host's pattern, by key:
-    const square = new Path.Rectangle({
+    const square = Path.rectangle({
       point: [0, 0],
       size: [10, 10],
       fillColor: { pattern: from.pattern },

@@ -179,12 +179,12 @@ describe('Raster', () => {
   })
 
   test('Raster#getAverageColor(path)', () => {
-    new Path.Rectangle({
+    Path.rectangle({
       point: [0, 0],
       size: [100, 100],
       fillColor: new Color(0, 1, 0)
     })
-    const circle = new Path.Circle({
+    const circle = Path.circle({
       center: [50, 50],
       radius: 25,
       fillColor: new Color(1, 0, 0)
@@ -197,16 +197,16 @@ describe('Raster', () => {
   })
 
   test('Raster#getAverageColor(path) with compound path', () => {
-    new Path.Rectangle({
+    Path.rectangle({
       point: [0, 0],
       size: [100, 100],
       fillColor: new Color(0, 1, 0)
     })
-    const path = new Path.Circle({
+    const path = Path.circle({
       center: [50, 50],
       radius: 25
     })
-    const path2 = new Path.Circle({
+    const path2 = Path.circle({
       center: [50, 50],
       radius: 10
     })
@@ -306,14 +306,14 @@ describe('Raster', () => {
     function createClipped(clipItem) {
       clipItem.clipMask = true
       return new Group([
-        new Path.Circle({
+        Path.circle({
           center: [100, 100],
           radius: 50,
           fillColor: 'blue'
         }),
         new Group([
           clipItem,
-          new Path.Rectangle({
+          Path.rectangle({
             point: [0, 0],
             size: [200, 200],
             fillColor: 'red'
@@ -331,11 +331,11 @@ describe('Raster', () => {
     }
 
     function createRectangle() {
-      return new Path.Rectangle([25, 25], [50, 50])
+      return Path.rectangle([25, 25], [50, 50])
     }
 
     function createCircle() {
-      return new Path.Circle({ center: [150, 150], radius: 20 })
+      return Path.circle({ center: [150, 150], radius: 20 })
     }
 
     comparePixels(

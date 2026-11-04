@@ -70,7 +70,7 @@ describe('PathItem#offset() and #outline()', () => {
   }
 
   test('PathItem#offset() of closed paths', () => {
-    const rect = new Path.Rectangle({ point: [0, 0], size: [100, 50] })
+    const rect = Path.rectangle({ point: [0, 0], size: [100, 50] })
     equals(rect.offset(10).bounds, new Rectangle(-10, -10, 120, 70))
     equals(rect.offset(10).area, 120 * 70)
     // The corners are quarter circles:
@@ -90,8 +90,8 @@ describe('PathItem#offset() and #outline()', () => {
   test('PathItem#offset() of compound paths', () => {
     const path = new CompoundPath({
       children: [
-        new Path.Rectangle([0, 0], [100, 100]),
-        new Path.Rectangle([25, 25], [50, 50])
+        Path.rectangle([0, 0], [100, 100]),
+        Path.rectangle([25, 25], [50, 50])
       ]
     })
     path.reorient()
@@ -140,7 +140,7 @@ describe('PathItem#offset() and #outline()', () => {
       line.outline({ width: 10, cap: 'square' }).bounds,
       new Rectangle(-5, -5, 110, 10)
     )
-    const circle = new Path.Circle({
+    const circle = Path.circle({
       center: [200, 200],
       radius: 50,
       strokeColor: 'black',
@@ -152,7 +152,7 @@ describe('PathItem#offset() and #outline()', () => {
   })
 
   test('PathItem#dash()', () => {
-    const circle = new Path.Circle({
+    const circle = Path.circle({
       center: [80, 50],
       radius: 35,
       strokeColor: 'black',
@@ -234,7 +234,7 @@ describe('PathItem#offset() and #outline()', () => {
     line.set({ dashArray: [0, 0], strokeCap: 'butt' })
     equals(Math.abs(line.outline({ insert: false }).area), 400)
     // Closed paths start the pattern at their first segment:
-    const rectangle = new Path.Rectangle({
+    const rectangle = Path.rectangle({
       point: [0, 0],
       size: [40, 40],
       strokeColor: 'black',
@@ -317,7 +317,7 @@ describe('PathItem#offset() and #outline()', () => {
       { offset: 10, width: 3 },
       { offset: 100, width: 1 }
     ])
-    const pen = new Path.Circle({ center: [10, 0], radius: 30, insert: false })
+    const pen = Path.circle({ center: [10, 0], radius: 30, insert: false })
     equals(pen.subtract(burst, { insert: false }).area, 0, null, {
       tolerance: 0.5
     })
@@ -441,8 +441,8 @@ describe('PathItem#offset() and #outline()', () => {
       { offset: 1028.81462, width: 3.2, aspect: 1.29, angle: 2378.48632 }
     ]
     // The last pen lies within the outline, sampled on its exact ellipse, as
-    // the cubics of Path.Ellipse bulge out a little. Its edge is the outline's
-    // there:
+    // the cubics of Path.ellipse() bulge out a little. Its edge is the
+    // outline's there:
     const end = spin.lastSegment.point
     const outline = spin.outline({ insert: false })
     const outside = []

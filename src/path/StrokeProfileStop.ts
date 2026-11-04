@@ -57,7 +57,7 @@ export class StrokeProfileStop extends Base {
    *     `aspect`, `angle` and `smooth`
    *
    * @example
-   * var path = new Path.Line([20, 50], [180, 50]);
+   * var path = Path.line([20, 50], [180, 50]);
    * path.strokeColor = 'black';
    * path.strokeWidth = 10;
    * path.strokeProfile = [

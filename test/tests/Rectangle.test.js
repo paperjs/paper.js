@@ -161,7 +161,7 @@ describe('Rectangle', () => {
       rect[key] = entry[0]
       equals(rect, new Rectangle(entry[1]), 'rect.' + key)
       // item.bounds is fitted to the changed rectangle:
-      const path = new Path.Rectangle(new Rectangle(0, 0, 100, 100))
+      const path = Path.rectangle(new Rectangle(0, 0, 100, 100))
       path.bounds[key] = entry[0]
       equals(path.bounds, new Rectangle(entry[1]), 'path.bounds.' + key)
     }
@@ -357,7 +357,7 @@ describe('Rectangle', () => {
   test('Rectangle#values', () => {
     equals(new Rectangle(10, 20, 30, 40).values, [10, 20, 30, 40])
     // Rectangles linked to their items read through them:
-    const path = new Path.Rectangle([50, 60], [70, 80])
+    const path = Path.rectangle([50, 60], [70, 80])
     equals(path.bounds.values, [50, 60, 70, 80], 'item bounds')
   })
 })

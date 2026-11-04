@@ -78,10 +78,10 @@
                 return new Path('M120,380c180,-10 300,-220 220,-260c-80,-40 -150,120 -20,190c130,70 330,40 440,-120');
             },
             'Circle': function() {
-                return new Path.Circle({ center: [420, 300], radius: 180 });
+                return Path.circle({ center: [420, 300], radius: 180 });
             },
             'Star': function() {
-                return new Path.Star({ center: [420, 300], points: 6,
+                return Path.star({ center: [420, 300], points: 6,
                         radius1: 90, radius2: 210 });
             }
         };

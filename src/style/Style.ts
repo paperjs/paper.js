@@ -162,7 +162,7 @@ export function defineStyleAccessors(ctor: { prototype: object }) {
  *
  * @classexample {@paperscript} // Styling paths
  *
- * var path = new Path.Circle(new Point(80, 50), 30);
+ * var path = Path.circle(new Point(80, 50), 30);
  * path.style = {
  *     fillColor: new Color(1, 0, 0),
  *     strokeColor: 'black',
@@ -181,12 +181,12 @@ export function defineStyleAccessors(ctor: { prototype: object }) {
  * };
  *
  * @classexample {@paperscript} // Styling groups
- * var path1 = new Path.Circle({
+ * var path1 = Path.circle({
  *     center: [100, 50],
  *     radius: 30
  * });
  *
- * var path2 = new Path.Rectangle({
+ * var path2 = Path.rectangle({
  *     from: [170, 20],
  *     to: [230, 80]
  * });
@@ -519,7 +519,7 @@ export interface StyleProperties {
    *
    * // Create a circle shaped path at { x: 80, y: 50 }
    * // with a radius of 35:
-   * var circle = new Path.Circle(new Point(80, 50), 35);
+   * var circle = Path.circle(new Point(80, 50), 35);
    *
    * // Set its stroke color to RGB red:
    * circle.strokeColor = new Color(1, 0, 0);
@@ -537,7 +537,7 @@ export interface StyleProperties {
    *
    * // Create a circle shaped path at { x: 80, y: 50 }
    * // with a radius of 35:
-   * var circle = new Path.Circle(new Point(80, 50), 35);
+   * var circle = Path.circle(new Point(80, 50), 35);
    *
    * // Set its stroke color to black:
    * circle.strokeColor = 'black';
@@ -630,7 +630,7 @@ export interface StyleProperties {
    * Specifies an array containing the dash and gap lengths of the stroke.
    *
    * @example {@paperscript}
-   * var path = new Path.Circle(new Point(80, 50), 40);
+   * var path = Path.circle(new Point(80, 50), 40);
    * path.strokeWidth = 2;
    * path.strokeColor = 'black';
    *
@@ -688,7 +688,7 @@ export interface StyleProperties {
    *
    * // Create a circle shaped path at { x: 80, y: 50 }
    * // with a radius of 35:
-   * var circle = new Path.Circle(new Point(80, 50), 35);
+   * var circle = Path.circle(new Point(80, 50), 35);
    *
    * // Set the fill color of the circle to RGB red:
    * circle.fillColor = new Color(1, 0, 0);
@@ -714,7 +714,7 @@ export interface StyleProperties {
    * @example {@paperscript}
    * // Creating a circle with a black shadow:
    *
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: [80, 50],
    *     radius: 35,
    *     fillColor: 'white',

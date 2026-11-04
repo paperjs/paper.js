@@ -25,7 +25,7 @@ import { equals, test } from '../helpers.js'
 
 describe('Symbol & Placed Symbol', () => {
   test('SymbolItem#bounds', () => {
-    const path = new Path.Circle([0, 0], 50)
+    const path = Path.circle([0, 0], 50)
     path.strokeColor = 'black'
     path.strokeWidth = 1
     path.strokeCap = 'round'
@@ -60,7 +60,7 @@ describe('Symbol & Placed Symbol', () => {
   })
 
   test('bounds of group of SymbolItem instances', () => {
-    const path = new Path.Circle(new Point(), 10)
+    const path = Path.circle(new Point(), 10)
     const definition = new SymbolDefinition(path)
     const instances = []
     for (let i = 0; i < 10; i++) {
@@ -72,7 +72,7 @@ describe('Symbol & Placed Symbol', () => {
   })
 
   test('bounds of a SymbolItem that contains a group of items', () => {
-    const path = new Path.Circle(new Point(), 10)
+    const path = Path.circle(new Point(), 10)
     const path2 = path.clone()
     path2.position.x += 20
     equals(path.bounds, new Rectangle(-10, -10, 20, 20), 'path bounds')
@@ -90,8 +90,8 @@ describe('Symbol & Placed Symbol', () => {
   })
 
   test('Changing the definition of a symbol should change the bounds of all instances of it.', () => {
-    const path = new Path.Circle(new Point(), 10)
-    const path2 = new Path.Circle(new Point(), 20)
+    const path = Path.circle(new Point(), 10)
+    const path2 = Path.circle(new Point(), 20)
     const definition = new SymbolDefinition(path)
     const instance = definition.place(new Point(0, 0))
     equals(
@@ -114,7 +114,7 @@ describe('Symbol & Placed Symbol', () => {
   })
 
   test('SymbolDefinition item selection', () => {
-    const path = new Path.Circle([50, 50], 50)
+    const path = Path.circle([50, 50], 50)
     path.selected = true
     const definition = new SymbolDefinition(path)
     equals(() => definition.item.selected === false, true)
@@ -141,7 +141,7 @@ describe('Symbol & Placed Symbol', () => {
       return count
     }
 
-    const group = new Group(new Path.Rectangle([0, 0], [20, 20])),
+    const group = new Group(Path.rectangle([0, 0], [20, 20])),
       definition = new SymbolDefinition(group),
       placed = definition.place([50, 50]),
       path = group.firstChild
@@ -164,7 +164,7 @@ describe('Symbol & Placed Symbol', () => {
   })
 
   test('SymbolDefinition#place()', () => {
-    const path = new Path.Circle([0, 0], 50)
+    const path = Path.circle([0, 0], 50)
     const symbol = new SymbolDefinition(path)
     const placed = symbol.place()
     equals(() => placed.parent === paper.project.activeLayer, true)
@@ -175,14 +175,14 @@ describe('Symbol & Placed Symbol', () => {
   })
 
   test('SymbolDefinition#place(position)', () => {
-    const path = new Path.Circle([0, 0], 50)
+    const path = Path.circle([0, 0], 50)
     const symbol = new SymbolDefinition(path)
     const placed = symbol.place(new Point(100, 100))
     equals(() => placed.position.toString(), '{ x: 100, y: 100 }')
   })
 
   test('SymbolItem#bounds with #applyMatrix = false', () => {
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       center: [0, 0],
       size: [50, 50],
       strokeColor: 'red',
@@ -196,7 +196,7 @@ describe('Symbol & Placed Symbol', () => {
 
   test('SymbolItem#hitTestAll', () => {
     const symbol = new SymbolDefinition(
-      new Path.Circle({
+      Path.circle({
         center: [0, 0],
         radius: 10,
         fillColor: 'orange'
@@ -236,7 +236,7 @@ describe('Symbol & Placed Symbol', () => {
 
     const definition = new SymbolDefinition(
         new Group(
-          new Path.Circle({
+          Path.circle({
             center: [0, 0],
             radius: 10,
             fillColor: 'orange'
@@ -313,8 +313,8 @@ describe('Symbol & Placed Symbol', () => {
     const definition = new SymbolDefinition(
         new CompoundPath({
           children: [
-            new Path.Circle({ center: [0, 0], radius: 20 }),
-            new Path.Circle({ center: [0, 0], radius: 10 })
+            Path.circle({ center: [0, 0], radius: 20 }),
+            Path.circle({ center: [0, 0], radius: 10 })
           ],
           fillColor: 'orange',
           fillRule: 'evenodd'
@@ -338,7 +338,7 @@ describe('Symbol & Placed Symbol', () => {
   })
 
   test('SymbolItem drawing keeps the global matrix of the definition (#1684)', () => {
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       center: [0, 0],
       size: [20, 20],
       strokeWidth: 10,
@@ -373,7 +373,7 @@ describe('Symbol & Placed Symbol', () => {
   })
   test('SymbolItem#embed()', () => {
     const layer = paper.project.activeLayer
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       center: [0, 0],
       size: [20, 10],
       fillColor: 'red'
@@ -400,7 +400,7 @@ describe('Symbol & Placed Symbol', () => {
 
   test('SymbolItem#embed() with #applyMatrix = false', () => {
     const group = new Group({
-      children: [new Path.Rectangle([0, 0], [20, 10])],
+      children: [Path.rectangle([0, 0], [20, 10])],
       applyMatrix: false
     })
     group.scale(2)
@@ -416,7 +416,7 @@ describe('Symbol & Placed Symbol', () => {
   })
 
   test('SymbolItem#embed() keeps the attributes', () => {
-    const path = new Path.Circle({
+    const path = Path.circle({
       center: [0, 0],
       radius: 10,
       opacity: 0.5
@@ -446,10 +446,10 @@ describe('Symbol & Placed Symbol', () => {
   })
 
   test('SymbolItem#embed() as a clipping mask', () => {
-    const definition = new SymbolDefinition(new Path.Circle([0, 0], 10))
+    const definition = new SymbolDefinition(Path.circle([0, 0], 10))
     const placed = definition.place([50, 50])
     const group = new Group({
-      children: [placed, new Path.Rectangle([0, 0], [100, 100])],
+      children: [placed, Path.rectangle([0, 0], [100, 100])],
       clipped: true
     })
     const embedded = placed.embed()
@@ -458,7 +458,7 @@ describe('Symbol & Placed Symbol', () => {
   })
 
   test('SymbolItem#embed() without a parent', () => {
-    const definition = new SymbolDefinition(new Path.Circle([0, 0], 10))
+    const definition = new SymbolDefinition(Path.circle([0, 0], 10))
     const placed = new SymbolItem({ definition, insert: false })
     equals(placed.embed(), null)
   })

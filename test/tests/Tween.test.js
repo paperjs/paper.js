@@ -17,7 +17,7 @@ import { equals, test } from '../helpers.js'
 describe('Tween', () => {
   test('Item#tween() counts its duration from the first frame', () => {
     const view = new Project().view
-    const path = new Path.Circle({ center: [0, 0], radius: 10 })
+    const path = Path.circle({ center: [0, 0], radius: 10 })
     path.tween({ position: [0, 0] }, { position: [100, 0] }, 1000)
     // Play the frames that the view emits while animating, the first of
     // them at time 0:
@@ -30,7 +30,7 @@ describe('Tween', () => {
   })
 
   test('Tween#update() interpolates points and colors', () => {
-    const path = new Path.Circle({
+    const path = Path.circle({
       center: [0, 0],
       radius: 10,
       fillColor: 'black'
@@ -46,7 +46,7 @@ describe('Tween', () => {
   })
 
   test('Tween#update() with relative values', () => {
-    const path = new Path.Circle({
+    const path = Path.circle({
       center: [50, 25],
       radius: 10,
       opacity: 0.5
@@ -86,7 +86,7 @@ describe('Tween', () => {
   })
 
   test('Tween with easing type easeInOutSine', () => {
-    const path = new Path.Circle({ center: [0, 0], radius: 10 })
+    const path = Path.circle({ center: [0, 0], radius: 10 })
     const tween = path.tween(
       { position: [0, 0] },
       { position: [100, 0] },
@@ -127,7 +127,7 @@ describe('Tween', () => {
   })
 
   test('Tween with an easing function', () => {
-    const path = new Path.Circle({ center: [0, 0], radius: 10 })
+    const path = Path.circle({ center: [0, 0], radius: 10 })
     const tween = path.tween(
       { position: [0, 0] },
       { position: [100, 0] },
@@ -139,7 +139,7 @@ describe('Tween', () => {
   })
 
   test('Tween#update() with relative numbers', () => {
-    const path = new Path.Circle({ center: [0, 0], radius: 10, opacity: 0.2 })
+    const path = Path.circle({ center: [0, 0], radius: 10, opacity: 0.2 })
     path
       .tween({ opacity: '+= 0.2' }, { duration: 1000, start: false })
       .start()
@@ -163,7 +163,7 @@ describe('Tween', () => {
   })
 
   test('Tween#onUpdate, #then() and #stop()', () => {
-    const path = new Path.Circle({ center: [0, 0], radius: 10 })
+    const path = Path.circle({ center: [0, 0], radius: 10 })
     const tween = path.tween(
       { position: [0, 0] },
       { position: [100, 0] },
@@ -192,7 +192,7 @@ describe('Tween', () => {
 
   test('Item#tween() runs on the frames of the view', () => {
     const view = new Project().view
-    const path = new Path.Circle({ center: [0, 0], radius: 10 })
+    const path = Path.circle({ center: [0, 0], radius: 10 })
     const tween = path.tween({ position: [0, 0] }, { position: [100, 0] }, 1000)
     equals(tween.running, true)
     // Play the frames that the view emits while animating:

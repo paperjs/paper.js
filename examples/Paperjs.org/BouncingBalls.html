@@ -29,10 +29,10 @@
             // applies the transformations to the content, just like Path.
             var ball = new CompoundPath({
                 children: [
-                    new Path.Circle({
+                    Path.circle({
                         radius: radius
                     }),
-                    new Path.Circle({
+                    Path.circle({
                         center: radius / 8,
                         radius: radius / 3
                     })

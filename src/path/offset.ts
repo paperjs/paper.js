@@ -208,7 +208,7 @@ export function outlinePathItem(
     const path = prepare(item)
     result = outlineStroke(
       getDashes(
-        (path._children || [path]) as Path[],
+        (path._children ?? [path]) as Path[],
         item.dashArray,
         item.dashOffset
       ),
@@ -237,7 +237,7 @@ export function dashPathItem(
   const path = prepare(item)
   let result = new Group({
     children: getDashes(
-      (path._children || [path]) as Path[],
+      (path._children ?? [path]) as Path[],
       options?.dashArray ?? item.dashArray,
       options?.dashOffset ?? item.dashOffset
     ),
@@ -475,8 +475,8 @@ function outlineStroke(
         const center = segments[0]._point
         areas.push(
           cap === 'round'
-            ? new Path.Circle({ center, radius, insert: false })
-            : new Path.Rectangle({
+            ? Path.circle({ center, radius, insert: false })
+            : Path.rectangle({
                 point: center.subtract(radius),
                 size: [2 * radius, 2 * radius],
                 insert: false
@@ -683,7 +683,7 @@ function outlineStroke(
         for (let i = 1, l = angles.length; i < l; i++) {
           const phi0 = angles[i - 1]
           const sweep = angles[i] - phi0
-          // Arcs of up to 90°, as Path.Ellipse has:
+          // Arcs of up to 90°, as Path.ellipse() makes:
           const count = Math.ceil(sweep / (Math.PI / 2) - 1e-9)
           const step = sweep / count
           if (sweep > GEOMETRIC_EPSILON) {

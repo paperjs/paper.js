@@ -20,7 +20,7 @@ describe('Item Order', () => {
     line.add([0, 0], [100, 100])
     line.name = 'line'
 
-    const circle = new Path.Circle([50, 50], 50)
+    const circle = Path.circle([50, 50], 50)
     circle.name = 'circle'
 
     const group = new Group([circle])

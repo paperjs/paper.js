@@ -19,7 +19,7 @@ describe('PathFlattener', () => {
     // A line without handles, whose curve-time eases in and out, and one
     // with collinear handles of uneven lengths:
     const paths = [
-      new Path.Line([0, 0], [100, 0]),
+      Path.line([0, 0], [100, 0]),
       new Path({
         segments: [[[0, 0], null, [10, 10]], [[100, 100], [-60, -60]]]
       })

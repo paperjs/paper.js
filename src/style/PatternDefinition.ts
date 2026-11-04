@@ -36,7 +36,7 @@ import type { Project } from '../item/Project.ts'
  *
  * @classexample {@paperscript height=200}
  * // A dotted pattern, filling and stroking a circle:
- * var dot = new Path.Circle({
+ * var dot = Path.circle({
  *     center: [5, 5],
  *     radius: 3,
  *     fillColor: 'red'
@@ -52,7 +52,7 @@ import type { Project } from '../item/Project.ts'
  *     spacing: 2
  * });
  *
- * var circle = new Path.Circle({
+ * var circle = Path.circle({
  *     center: view.center,
  *     radius: 70,
  *     fillColor: { pattern: pattern },

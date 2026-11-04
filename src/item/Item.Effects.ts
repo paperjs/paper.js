@@ -198,7 +198,7 @@ declare module './Item.ts' {
      *   {@link Path#strokeProfile}.
      *
      * @example {@paperscript}
-     * var path = new Path.Star({
+     * var path = Path.star({
      *     center: view.center,
      *     points: 5,
      *     radius1: 20,

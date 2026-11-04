@@ -13,7 +13,7 @@ const radius = view.bounds.width * 0.4
 let from = new Point(view.center.x)
 let to = from.add(radius, 0)
 
-const circle = new Path.Circle({
+const circle = Path.circle({
   center: from,
   radius,
   fillColor: {
@@ -28,7 +28,7 @@ const circle = new Path.Circle({
 from = view.bounds.leftCenter
 to = view.bounds.bottomRight
 
-const rect = new Path.Rectangle({
+const rect = Path.rectangle({
   from,
   to,
   fillColor: {

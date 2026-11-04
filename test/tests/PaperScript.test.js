@@ -676,7 +676,7 @@ describe('PaperScript', () => {
     )
     // On properties and elements, the most common use in scripts:
     executeCode(
-      'var path = new Path.Circle({ center: [50, 50], radius: 10 });' +
+      'var path = Path.circle({ center: [50, 50], radius: 10 });' +
       ' path.position += [10, 0]; module.exports = path.position',
       new Point(60, 50)
     )

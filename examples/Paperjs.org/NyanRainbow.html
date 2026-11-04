@@ -46,7 +46,7 @@
             var count = 50;
 
             // Create a symbol, which we will use to place instances of later:
-            var path = new Path.Circle({
+            var path = Path.circle({
                 center: new Point(0, 0),
                 radius: 5,
                 fillColor: 'white',
@@ -137,7 +137,7 @@
                 var top = paths[0].lastSegment.point;
                 var bottom = paths[paths.length - 1].firstSegment.point;
                 var radius = (bottom - top).length / 2;
-                var circle = new Path.Circle({
+                var circle = Path.circle({
                     center: top + (bottom - top) / 2,
                     radius: radius,
                     fillColor: 'black'

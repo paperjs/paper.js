@@ -131,7 +131,7 @@ describe('Getting and Matching Items', () => {
 
   test('Project#getItems() with a match function', () => {
     const path = new Path(),
-      group = new Group([new Path.Circle([50, 50], 10)]),
+      group = new Group([Path.circle([50, 50], 10)]),
       circle = group.firstChild
 
     function isPath(item) {
@@ -230,7 +230,7 @@ describe('Getting and Matching Items', () => {
   })
 
   test('Project#getItems() overlapping', () => {
-    const path = new Path.Circle({
+    const path = Path.circle({
       radius: 100,
       center: [200, 200],
       fillColor: 'red'
@@ -262,7 +262,7 @@ describe('Getting and Matching Items', () => {
   })
 
   test('Project#getItems() inside', () => {
-    const path = new Path.Circle({
+    const path = Path.circle({
       radius: 100,
       center: [200, 200],
       fillColor: 'red'
@@ -288,8 +288,8 @@ describe('Getting and Matching Items', () => {
   test('Project#getItems() overlapping with a hole (#1751)', () => {
     const ring = new CompoundPath({
       children: [
-        new Path.Circle([100, 100], 50),
-        new Path.Circle([100, 100], 30)
+        Path.circle([100, 100], 50),
+        Path.circle([100, 100], 30)
       ],
       fillRule: 'evenodd'
     })
@@ -310,7 +310,7 @@ describe('Getting and Matching Items', () => {
 
   test('Project#getItems() overlapping and inside with Shape, Raster and PointText (#1300)', () => {
     // The reported case:
-    const shape = new Shape.Rectangle({
+    const shape = Shape.rectangle({
       point: [20, 20],
       size: [10, 10],
       fillColor: 'pink'
@@ -331,7 +331,7 @@ describe('Getting and Matching Items', () => {
     const entries = [
       {
         create() {
-          return new Shape.Rectangle({
+          return Shape.rectangle({
             center: [0, 0],
             size: [100, 50]
           })
@@ -341,10 +341,10 @@ describe('Getting and Matching Items', () => {
       },
       {
         create() {
-          return new Shape.Circle({ center: [0, 0], radius: 50 })
+          return Shape.circle({ center: [0, 0], radius: 50 })
         },
         createPath() {
-          return new Path.Circle({ center: [0, 0], radius: 50 })
+          return Path.circle({ center: [0, 0], radius: 50 })
         },
         edge: 'leftCenter',
         isCornerFilled: false
@@ -402,7 +402,7 @@ describe('Getting and Matching Items', () => {
           rect = item.internalBounds,
           path = entry.createPath
             ? entry.createPath()
-            : new Path.Rectangle(rect),
+            : Path.rectangle(rect),
           isRotated = (
             name === 'rotated' ||
             name === 'in transformed group'

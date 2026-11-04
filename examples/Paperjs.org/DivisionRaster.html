@@ -29,14 +29,14 @@ function moveHandler(event) {
 
     size /= isLandscape ? [2, 1] : [1, 2];
 
-    var path = new Path.Rectangle({
+    var path = Path.rectangle({
         point: this.bounds.topLeft.floor(),
         size: size.ceil(),
         onMouseMove: moveHandler
     });
     path.fillColor = raster.getAverageColor(path);
 
-    var path = new Path.Rectangle({
+    var path = Path.rectangle({
         point: isLandscape
             ? this.bounds.topCenter.ceil()
             : this.bounds.leftCenter.ceil(),
@@ -57,7 +57,7 @@ function onResize(event) {
 
     // Create a path that fills the view, and fill it with
     // the average color of the raster:
-    new Path.Rectangle({
+    Path.rectangle({
         rectangle: view.bounds,
         fillColor: raster.getAverageColor(view.bounds),
         onMouseMove: moveHandler

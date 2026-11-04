@@ -6,13 +6,13 @@
     <link rel="stylesheet" href="../css/style.css">
     <script type="text/javascript" src="../../dist/paper-full.js"></script>
     <script type="text/paperscript" canvas="canvas">
-        var redPath = new Path.Circle({
+        var redPath = Path.circle({
             center: view.center,
             radius: 5,
             fillColor: 'red'
         });
 
-        var whitePath = new Path.Circle({
+        var whitePath = Path.circle({
             center: view.center,
             radius: 5,
             fillColor: 'white'
