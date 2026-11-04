@@ -11,7 +11,7 @@
         // and sideways to turn it, as its pattern moves and turns with it.
 
         // A line, repeated with a gap below it:
-        var line = new Path.Rectangle({
+        var line = Path.rectangle({
             point: [0, 0],
             size: [10, 1.5],
             fillColor: '#1d2b3a'
@@ -19,12 +19,12 @@
         var lines = new PatternDefinition(line, { spacing: [0, 2.5] });
 
         var radius = Math.min(view.size.width, view.size.height) * 0.32;
-        var still = new Path.Circle({
+        var still = Path.circle({
             center: view.center - [radius * 0.4, 0],
             radius: radius,
             fillColor: { pattern: lines }
         });
-        var moving = new Path.Circle({
+        var moving = Path.circle({
             center: view.center + [radius * 0.4, 0],
             radius: radius,
             fillColor: { pattern: lines },

@@ -446,7 +446,7 @@ function exportPattern(color: Color, options: Options): string {
     patternNode = createSvgElement('pattern', attrs, formatter)
     // Leave the spacing between the tiles empty, as on the canvas:
     if (!spacing.isZero() && !tile.contains(item.strokeBounds)) {
-      const rect = new Shape.Rectangle({
+      const rect = Shape.rectangle({
         rectangle: tile,
         insert: false
       })

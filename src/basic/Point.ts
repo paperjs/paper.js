@@ -94,11 +94,11 @@ export class Point extends Base {
    *
    * // Create a circle shaped path at x: 50, y: 50
    * // with a radius of 30:
-   * var path = new Path.Circle([50, 50], 30);
+   * var path = Path.circle([50, 50], 30);
    * path.fillColor = 'red';
    *
    * // Which is the same as doing:
-   * var path = new Path.Circle(new Point(50, 50), 30);
+   * var path = Path.circle(new Point(50, 50), 30);
    * path.fillColor = 'red';
    */
   constructor(array: number[])
@@ -147,7 +147,7 @@ export class Point extends Base {
    *
    * // Creates a circle shaped path at x: 50, y: 50
    * // with a radius of 30:
-   * var path = new Path.Circle(center, 30);
+   * var path = Path.circle(center, 30);
    * path.fillColor = 'red';
    */
   constructor(
@@ -1032,7 +1032,7 @@ export interface Point {
    * @default false
    *
    * @example {@paperscript}
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: [80, 50],
    *     radius: 40
    * });

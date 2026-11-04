@@ -21,7 +21,7 @@
         text.paragraphs[1].fillColor = '#c04';
 
         // A circle, linked to the rectangle, so the story flows on into it:
-        var circle = new AreaText(new Path.Circle({
+        var circle = new AreaText(Path.circle({
             center: [640, 200],
             radius: 140
         }));
@@ -47,7 +47,7 @@
 
         // A circle above the columns, which pushes their text aside, and
         // follows the mouse:
-        var wrap = new Path.Circle({
+        var wrap = Path.circle({
             center: [250, 170],
             radius: 50,
             fillColor: '#048',

@@ -10,7 +10,7 @@
                 // The radius is the distance between the position
                 // where the user clicked and the current position
                 // of the mouse.
-                var path = new Path.Circle({
+                var path = Path.circle({
                     center: event.downPoint,
                     radius: (event.downPoint - event.point).length,
                     fillColor: 'white',

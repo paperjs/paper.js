@@ -339,7 +339,7 @@ export abstract class PathItem extends Item {
    *     paths
    * @see #getCrossings(path)
    * @example {@paperscript} // Finding the intersections between two paths
-   * var path = new Path.Rectangle(new Point(30, 25), new Size(50, 50));
+   * var path = Path.rectangle(new Point(30, 25), new Size(50, 50));
    * path.strokeColor = 'black';
    *
    * var secondPath = path.clone();
@@ -352,7 +352,7 @@ export abstract class PathItem extends Item {
    *     intersectionGroup.removeChildren();
    *
    *     for (var i = 0; i < intersections.length; i++) {
-   *         var intersectionPath = new Path.Circle({
+   *         var intersectionPath = Path.circle({
    *             center: intersections[i].point,
    *             radius: 4,
    *             fillColor: 'red',
@@ -452,7 +452,7 @@ export abstract class PathItem extends Item {
    * point
    *
    * @example {@paperscript height=200}
-   * var star = new Path.Star({
+   * var star = Path.star({
    *     center: view.center,
    *     points: 10,
    *     radius1: 30,
@@ -460,7 +460,7 @@ export abstract class PathItem extends Item {
    *     strokeColor: 'black'
    * });
    *
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: view.center,
    *     radius: 3,
    *     fillColor: 'red'
@@ -501,7 +501,7 @@ export abstract class PathItem extends Item {
    *
    * // Create a circle shaped path at { x: 80, y: 50 }
    * // with a radius of 35:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: [80, 50],
    *     radius: 35
    * });
@@ -591,7 +591,7 @@ export abstract class PathItem extends Item {
    *
    * // Create a rectangular path with its top-left point at
    * // {x: 30, y: 25} and a size of {width: 50, height: 50}:
-   * var path = new Path.Rectangle({
+   * var path = Path.rectangle({
    *     point: [30, 25],
    *     size: [50, 50],
    *     strokeColor: 'black',
@@ -638,7 +638,7 @@ export abstract class PathItem extends Item {
    * // Create 5 rectangles, next to each other:
    * var paths = [];
    * for (var i = 0; i < 5; i++) {
-   *     paths.push(new Path.Rectangle({
+   *     paths.push(Path.rectangle({
    *         point: [30 + i * 100, 30],
    *         size: [50, 50],
    *         fullySelected: true
@@ -879,7 +879,7 @@ export abstract class PathItem extends Item {
    * path.arcTo(throughPoint, toPoint);
    *
    * // Add a red circle shaped path at the position of 'throughPoint':
-   * var circle = new Path.Circle(throughPoint, 3);
+   * var circle = Path.circle(throughPoint, 3);
    * circle.fillColor = 'red';
    *
    * @example {@paperscript height=300}
@@ -1262,15 +1262,15 @@ export abstract class PathItem extends Item {
    * @return the resulting path item
    *
    * @example {@paperscript}
-   * var result = new Path.RegularPolygon([50, 50], 3, 40)
-   *     .unite(new Path.Circle([50, 50], 25));
+   * var result = Path.regularPolygon([50, 50], 3, 40)
+   *     .unite(Path.circle([50, 50], 25));
    * result.fillColor = 'red';
    *
    * @example {@paperscript}
    * // Uniting many paths at once:
    * var circles = [];
    * for (var i = 0; i < 6; i++) {
-   *     circles.push(new Path.Circle([30 + i * 20, 50], 20));
+   *     circles.push(Path.circle([30 + i * 20, 50], 20));
    * }
    * var result = circles[0].unite(circles.slice(1));
    * result.fillColor = 'red';
@@ -1300,8 +1300,8 @@ export abstract class PathItem extends Item {
    * @return the resulting path item
    *
    * @example {@paperscript}
-   * var result = new Path.RegularPolygon([50, 50], 3, 40)
-   *     .intersect(new Path.Circle([50, 50], 25));
+   * var result = Path.regularPolygon([50, 50], 3, 40)
+   *     .intersect(Path.circle([50, 50], 25));
    * result.fillColor = 'red';
    */
   intersect(path: PathItem | PathItem[], options?: BooleanOptions): PathItem {
@@ -1328,8 +1328,8 @@ export abstract class PathItem extends Item {
    * @return the resulting path item
    *
    * @example {@paperscript}
-   * var result = new Path.RegularPolygon([50, 50], 3, 40)
-   *     .subtract(new Path.Circle([50, 50], 25));
+   * var result = Path.regularPolygon([50, 50], 3, 40)
+   *     .subtract(Path.circle([50, 50], 25));
    * result.fillColor = 'red';
    */
   subtract(path: PathItem | PathItem[], options?: BooleanOptions): PathItem {
@@ -1352,8 +1352,8 @@ export abstract class PathItem extends Item {
    * @return the resulting path item
    *
    * @example {@paperscript}
-   * var result = new Path.RegularPolygon([50, 50], 3, 40)
-   *     .exclude(new Path.Circle([50, 50], 25));
+   * var result = Path.regularPolygon([50, 50], 3, 40)
+   *     .exclude(Path.circle([50, 50], 25));
    * result.fillColor = 'red';
    */
   exclude(path: PathItem | PathItem[], options?: BooleanOptions): PathItem {
@@ -1493,7 +1493,7 @@ export abstract class PathItem extends Item {
    * @return the resulting path item
    *
    * @example {@paperscript}
-   * var path = new Path.Star([50, 50], 5, 20, 40);
+   * var path = Path.star([50, 50], 5, 20, 40);
    * path.strokeColor = 'black';
    * var result = path.offset(10, { join: 'round' });
    * result.strokeColor = 'red';
@@ -1530,7 +1530,7 @@ export abstract class PathItem extends Item {
    * @return the resulting path item
    *
    * @example {@paperscript}
-   * var path = new Path.Arc([20, 70], [50, 20], [80, 70]);
+   * var path = Path.arc([20, 70], [50, 20], [80, 70]);
    * path.strokeColor = 'black';
    * path.strokeWidth = 20;
    * path.strokeCap = 'round';
@@ -1564,7 +1564,7 @@ export abstract class PathItem extends Item {
    * @return the dashes, as a new group of paths
    *
    * @example {@paperscript}
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: [80, 50],
    *     radius: 35,
    *     strokeColor: 'black',

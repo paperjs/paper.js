@@ -9,7 +9,7 @@
         var point1 = new Point(10, 10);
         var size1 = new Size(50, 50);
         var rectangle1 = new Rectangle(point1, size1);
-        var path1 = new Path.Rectangle(rectangle1);
+        var path1 = Path.rectangle(rectangle1);
         path1.strokeColor = 'black';
         path1.fillColor = 'red';
         path1.id = "square1";
@@ -20,7 +20,7 @@
 
         var point2 = new Point(75, 75);
         var point22 = new Point(100, 100);
-        var path2 = new Path.Rectangle(point2, point22);
+        var path2 = Path.rectangle(point2, point22);
         path2.strokeColor = 'red';
         path2.strokeWidth = '4';
         path2.fillColor = 'blue';
@@ -31,14 +31,14 @@
         var point3 = new Point(150, 150);
         var size3 = new Size(50, 50);
         var rectangle3 = new Rectangle(point3, size3);
-        var path3 = new Path.Rectangle(rectangle3);
+        var path3 = Path.rectangle(rectangle3);
         path3.strokeColor = 'blue';
 
         var point4 = new Point(200, 200);
         var size4 = new Size(100, 100);
         var rectangle4 = new Rectangle(point4, size4);
         var cornerSize4 = new Size(30, 30);
-        var path4 = new Path.Rectangle(rectangle4, cornerSize4);
+        var path4 = Path.rectangle(rectangle4, cornerSize4);
         path4.strokeColor= 'yellow';
         path4.fillColor='purple';
 

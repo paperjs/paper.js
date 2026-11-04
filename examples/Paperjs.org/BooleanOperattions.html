@@ -15,7 +15,7 @@
 
         var originals = new Group({ insert: false }); // Don't insert in DOM.
 
-        var square = new Path.Rectangle({
+        var square = Path.rectangle({
             position: view.center,
             size: 300,
             parent: originals,
@@ -23,14 +23,14 @@
         });
 
         // Make a ring using subtraction of two circles:
-        var inner = new Path.Circle({
+        var inner = Path.circle({
             center: view.center,
             radius: 100,
             parent: originals,
             fillColor: 'white'
         });
 
-        var outer = new Path.Circle({
+        var outer = Path.circle({
             center: view.center,
             radius: 140,
             parent: originals,

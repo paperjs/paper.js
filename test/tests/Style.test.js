@@ -125,13 +125,13 @@ describe('Style', () => {
   })
 
   test('getting Groupy#fillColor 2', () => {
-    const star = new Path.Circle({
+    const star = Path.circle({
       center: [100, 100],
       radius: 40,
       fillColor: 'red'
     })
 
-    const circle = new Path.Circle({
+    const circle = Path.circle({
       center: [100, 100],
       radius: 25,
       strokeColor: 'black'
@@ -246,7 +246,7 @@ describe('Style', () => {
       return paper.view.context.canvas.toDataURL()
     }
 
-    const item = new Path.Circle({
+    const item = Path.circle({
       center: paper.view.center,
       radius: 70,
       fillColor: 'red'

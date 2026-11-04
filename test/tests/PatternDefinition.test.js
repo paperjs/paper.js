@@ -29,7 +29,7 @@ import { comparePixels, equals, test, testFontFamily } from '../helpers.js'
 // A pattern of red 5 × 5 squares in the top left corner of 10 × 10 tiles:
 function createPattern(options) {
   return new PatternDefinition(
-    new Path.Rectangle({
+    Path.rectangle({
       point: [0, 0],
       size: [5, 5],
       fillColor: 'red'
@@ -46,7 +46,7 @@ function createTiles(area, matrix, options) {
   for (let x = -10 * step; x < 20 * step; x += step) {
     for (let y = -10 * step; y < 20 * step; y += step) {
       squares.push(
-        new Path.Rectangle({
+        Path.rectangle({
           point: [x, y],
           size: [size, size],
           fillColor: color
@@ -65,7 +65,7 @@ function createTiles(area, matrix, options) {
 describe('PatternDefinition', () => {
   test('Pattern fills', () => {
     const pattern = createPattern()
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [0, 0],
       size: [40, 40],
       fillColor: { pattern }
@@ -73,7 +73,7 @@ describe('PatternDefinition', () => {
     equals(path.fillColor.type, 'pattern')
     equals(path.fillColor.pattern, pattern)
     equals(path.fillColor.matrix, new Matrix())
-    comparePixels(path, createTiles(new Path.Rectangle([0, 0], [40, 40])))
+    comparePixels(path, createTiles(Path.rectangle([0, 0], [40, 40])))
   })
 
   test('Image patterns', () => {
@@ -82,7 +82,7 @@ describe('PatternDefinition', () => {
     const ctx = raster._getContext(true)
     ctx.fillStyle = 'red'
     ctx.fillRect(0, 0, 5, 5)
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [0, 0],
       size: [40, 40],
       fillColor: { pattern: new PatternDefinition(raster) }
@@ -90,49 +90,49 @@ describe('PatternDefinition', () => {
     comparePixels(
       path,
       createTiles(
-        new Path.Rectangle([0, 0], [40, 40]),
+        Path.rectangle([0, 0], [40, 40]),
         new Matrix().translate(-5, -5)
       )
     )
   })
 
   test('Pattern strokes', () => {
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [10, 10],
       size: [40, 40],
       strokeColor: { pattern: createPattern() },
       strokeWidth: 10
     })
-    const area = new Path.Rectangle([5, 5], [50, 50]).subtract(
-      new Path.Rectangle([15, 15], [30, 30])
+    const area = Path.rectangle([5, 5], [50, 50]).subtract(
+      Path.rectangle([15, 15], [30, 30])
     )
     comparePixels(path, createTiles(area))
   })
 
   test('Pattern with a rotated matrix', () => {
     const matrix = new Matrix().rotate(90)
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [0, 0],
       size: [40, 40],
       fillColor: new Color(createPattern(), matrix)
     })
     comparePixels(
       path,
-      createTiles(new Path.Rectangle([0, 0], [40, 40]), matrix)
+      createTiles(Path.rectangle([0, 0], [40, 40]), matrix)
     )
   })
 
   test('Pattern with spacing', () => {
     const pattern = createPattern({ spacing: 5 })
     equals(pattern.spacing, new Size(5, 5))
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [0, 0],
       size: [40, 40],
       fillColor: { pattern }
     })
     comparePixels(
       path,
-      createTiles(new Path.Rectangle([0, 0], [40, 40]), null, { step: 15 })
+      createTiles(Path.rectangle([0, 0], [40, 40]), null, { step: 15 })
     )
   })
 
@@ -140,12 +140,12 @@ describe('PatternDefinition', () => {
     const matrix = new Matrix().translate(3, 7).scale(2)
     // Shapes keep their matrix, paths apply it to their segments:
     for (const item of [
-      new Shape.Rectangle({
+      Shape.rectangle({
         point: [0, 0],
         size: [20, 20],
         fillColor: { pattern: createPattern() }
       }),
-      new Path.Rectangle({
+      Path.rectangle({
         point: [0, 0],
         size: [20, 20],
         fillColor: { pattern: createPattern() }
@@ -155,7 +155,7 @@ describe('PatternDefinition', () => {
       equals(item.fillColor.matrix, matrix, item.className)
       comparePixels(
         item,
-        createTiles(new Path.Rectangle([3, 7], [40, 40]), matrix),
+        createTiles(Path.rectangle([3, 7], [40, 40]), matrix),
         item.className
       )
     }
@@ -166,7 +166,7 @@ describe('PatternDefinition', () => {
     // stroke of half the width, with the pattern scaled along with the item:
     const pattern = createPattern()
     const create = strokeScaling =>
-      new Shape.Rectangle({
+      Shape.rectangle({
         point: [10, 10],
         size: [20, 20],
         strokeColor: { pattern },
@@ -178,23 +178,23 @@ describe('PatternDefinition', () => {
 
   test('Changing the pattern item updates the drawings that use it', () => {
     const pattern = createPattern()
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [0, 0],
       size: [40, 40],
       fillColor: { pattern }
     })
-    comparePixels(path, createTiles(new Path.Rectangle([0, 0], [40, 40])))
+    comparePixels(path, createTiles(Path.rectangle([0, 0], [40, 40])))
     pattern.item.fillColor = 'blue'
     comparePixels(
       path,
-      createTiles(new Path.Rectangle([0, 0], [40, 40]), null, {
+      createTiles(Path.rectangle([0, 0], [40, 40]), null, {
         color: 'blue'
       })
     )
     pattern.tile = new Rectangle(0, 0, 5, 5)
     comparePixels(
       path,
-      createTiles(new Path.Rectangle([0, 0], [40, 40]), null, {
+      createTiles(Path.rectangle([0, 0], [40, 40]), null, {
         step: 5,
         color: 'blue'
       })
@@ -202,7 +202,7 @@ describe('PatternDefinition', () => {
   })
 
   test('Changing the children of the pattern item updates the drawings', () => {
-    const square = new Path.Rectangle({
+    const square = Path.rectangle({
       point: [0, 0],
       size: [5, 5],
       fillColor: 'red'
@@ -210,12 +210,12 @@ describe('PatternDefinition', () => {
     const pattern = new PatternDefinition(new Group(square), {
       tile: new Rectangle(0, 0, 10, 10)
     })
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [0, 0],
       size: [40, 40],
       fillColor: { pattern }
     })
-    const area = () => new Path.Rectangle([0, 0], [40, 40])
+    const area = () => Path.rectangle([0, 0], [40, 40])
     comparePixels(path, createTiles(area()))
     square.fillColor = 'blue'
     comparePixels(path, createTiles(area(), null, { color: 'blue' }), 'style')
@@ -230,7 +230,7 @@ describe('PatternDefinition', () => {
   test('PointText with a pattern fill', () => {
     // A tile that is red all over fills the text as red does:
     const pattern = new PatternDefinition(
-      new Path.Rectangle({
+      Path.rectangle({
         point: [0, 0],
         size: [10, 10],
         fillColor: 'red'
@@ -249,7 +249,7 @@ describe('PatternDefinition', () => {
 
   test('SVG export and import', () => {
     const items = [
-      new Path.Rectangle({
+      Path.rectangle({
         point: [0, 0],
         size: [40, 40],
         fillColor: new Color(createPattern(), new Matrix().rotate(90)),
@@ -258,7 +258,7 @@ describe('PatternDefinition', () => {
       }),
       // Patterns on an element with a transform, one with a tile that doesn't
       // contain its item, with spacing, which needs to be clipped:
-      new Shape.Rectangle({
+      Shape.rectangle({
         point: [0, 0],
         size: [40, 40],
         fillColor: {
@@ -283,12 +283,12 @@ describe('PatternDefinition', () => {
 
   test('JSON export and import', () => {
     const pattern = createPattern({ spacing: 5 })
-    new Path.Rectangle({
+    Path.rectangle({
       point: [0, 0],
       size: [40, 40],
       fillColor: { pattern }
     })
-    new Shape.Rectangle({
+    Shape.rectangle({
       point: [0, 0],
       size: [40, 40],
       strokeColor: new Color(pattern, new Matrix().rotate(45)),

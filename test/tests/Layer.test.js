@@ -109,7 +109,7 @@ describe('Layer', () => {
   })
 
   test('#bounds with nested empty items', () => {
-    const item = new Path.Rectangle(new Point(10, 10), new Size(10))
+    const item = Path.rectangle(new Point(10, 10), new Size(10))
     new Group(new Group())
     equals(item.bounds, paper.project.activeLayer.bounds)
   })

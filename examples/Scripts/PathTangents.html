@@ -33,7 +33,7 @@
             layer.removeChildren();
 
             // draw a line at view center to show vector direction
-            var line = new Path.Line({
+            var line = Path.line({
                 from: view.center + vector,
                 to: view.center - vector,
                 strokeColor: 'black',
@@ -45,19 +45,19 @@
             for (var i = 0; i < offsets.length; i++) {
                 var point = path.getPointAt(offsets[i]);
                 // draw a circle around point
-                new Path.Circle({
+                Path.circle({
                     center: point,
                     radius: 5,
                     strokeColor: 'red'
                 });
                 // draw a line showing tangent
-                new Path.Line({
+                Path.line({
                     from: point + vector,
                     to: point - vector,
                     strokeColor: 'red'
                 });
                 // draw a line showing point precisely on the path
-                new Path.Line({
+                Path.line({
                     from: point + vector.rotate(90).normalize(10),
                     to: point - vector.rotate(90).normalize(10),
                     strokeColor: 'red'

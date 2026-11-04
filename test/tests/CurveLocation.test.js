@@ -62,7 +62,7 @@ describe('CurveLocation', () => {
     equals(crossing.intersection.intersection === crossing, true)
     equals([crossing.isCrossing(), crossing.isTouching()], [true, false])
     // Touching, by a circle on the line:
-    const circle = new Path.Circle({ center: [50, -50], radius: 50 })
+    const circle = Path.circle({ center: [50, -50], radius: 50 })
     const [touching] = line.getIntersections(circle)
     equals([touching.isCrossing(), touching.isTouching()], [false, true])
     // Locations that aren't intersections do neither:

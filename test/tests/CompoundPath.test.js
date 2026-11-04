@@ -51,7 +51,7 @@ describe('Compound Path', () => {
 
   test('CompoundPath#reduce() with a single child keeps its attributes', () => {
     const compound = new CompoundPath({
-      children: [new Path.Rectangle([0, 0], [10, 10])],
+      children: [Path.rectangle([0, 0], [10, 10])],
       fillColor: 'red',
       strokeWidth: 3,
       opacity: 0.5,
@@ -67,9 +67,9 @@ describe('Compound Path', () => {
   })
 
   test('CompoundPath#reorient()', () => {
-    const path1 = new Path.Rectangle([300, 300], [100, 100])
-    const path2 = new Path.Rectangle([50, 50], [200, 200])
-    const path3 = new Path.Rectangle([0, 0], [500, 500])
+    const path1 = Path.rectangle([300, 300], [100, 100])
+    const path2 = Path.rectangle([50, 50], [200, 200])
+    const path3 = Path.rectangle([0, 0], [500, 500])
 
     equals(() => path1.clockwise, true)
     equals(() => path2.clockwise, true)
@@ -114,11 +114,11 @@ describe('Compound Path', () => {
   test('new CompoundPath(items) with a compound path', () => {
     const inner = new CompoundPath({
       children: [
-        new Path.Rectangle([0, 0], [10, 10]),
-        new Path.Rectangle([2, 2], [5, 5])
+        Path.rectangle([0, 0], [10, 10]),
+        Path.rectangle([2, 2], [5, 5])
       ]
     })
-    const compound = new CompoundPath([inner, new Path.Circle([50, 50], 5)])
+    const compound = new CompoundPath([inner, Path.circle([50, 50], 5)])
     // The children of the inner compound path move up, and it is removed:
     equals(() => compound.children.length, 3)
     equals(() => inner.children.length, 0)
@@ -127,7 +127,7 @@ describe('Compound Path', () => {
 
   test('CompoundPath#reduce() with empty children', () => {
     const compound = new CompoundPath({
-      children: [new Path(), new Path.Rectangle([0, 0], [10, 10]), new Path()]
+      children: [new Path(), Path.rectangle([0, 0], [10, 10]), new Path()]
     })
     const result = compound.reduce()
     equals(() => result instanceof Path, true)
@@ -153,8 +153,8 @@ describe('Compound Path', () => {
   test('CompoundPath#reduce() with several children', () => {
     const compound = new CompoundPath({
       children: [
-        new Path.Rectangle([0, 0], [10, 10]),
-        new Path.Rectangle([20, 0], [10, 10])
+        Path.rectangle([0, 0], [10, 10]),
+        Path.rectangle([20, 0], [10, 10])
       ]
     })
     equals(() => compound.reduce() === compound, true)
@@ -168,7 +168,7 @@ describe('Compound Path', () => {
           [0, 0],
           [10, 0]
         ]),
-        new Path.Rectangle([20, 0], [10, 10])
+        Path.rectangle([20, 0], [10, 10])
       ]
     })
     equals(() => compound.closed, false)
@@ -229,8 +229,8 @@ describe('Compound Path', () => {
   test('CompoundPath#reverse()', () => {
     const compound = new CompoundPath({
       children: [
-        new Path.Rectangle([0, 0], [10, 10]),
-        new Path.Circle([50, 50], 5)
+        Path.rectangle([0, 0], [10, 10]),
+        Path.circle([50, 50], 5)
       ]
     })
     compound.reverse()
@@ -241,8 +241,8 @@ describe('Compound Path', () => {
   test('CompoundPath#flatten()', () => {
     const compound = new CompoundPath({
       children: [
-        new Path.Rectangle([0, 0], [10, 10]),
-        new Path.Circle([50, 50], 50)
+        Path.rectangle([0, 0], [10, 10]),
+        Path.circle([50, 50], 50)
       ]
     })
     compound.flatten(1)

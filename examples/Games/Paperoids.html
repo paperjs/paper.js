@@ -100,7 +100,7 @@
             return group;
         },
         explosion: new function() {
-            var explosionPath = new Path.Circle(new Point(), 1);
+            var explosionPath = Path.circle(new Point(), 1);
             explosionPath.fillColor = 'white';
             explosionPath.strokeColor = null;
             return new SymbolDefinition(explosionPath);
@@ -258,7 +258,7 @@
                     angle: angle,
                     length: 10
                 });
-                var bullet = new Path.Circle({
+                var bullet = Path.circle({
                     center: position + vector,
                     radius: 0.5,
                     parent: group,

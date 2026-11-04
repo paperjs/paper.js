@@ -216,7 +216,7 @@ describe('Point', () => {
   })
 
   test('Changing the position of an item moves it', () => {
-    const path = new Path.Rectangle({ point: [0, 0], size: [10, 10] })
+    const path = Path.rectangle({ point: [0, 0], size: [10, 10] })
     path.position.y = 25
     equals(path.bounds.topLeft, new Point(0, 20))
     path.position.set(15, 15)

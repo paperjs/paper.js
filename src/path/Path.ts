@@ -40,20 +40,24 @@ import {
   Size,
   capitalize,
   curveEvaluations,
-  defineConstructors,
+  defineDeprecatedConstructors,
   defineStrokeProfile,
   equals,
   getStrokeOutline,
   inject,
   isPlainObject,
+  isRectangle,
   isZero,
   paper,
   push,
+  readEllipse,
+  readRectangle,
   removeNamed
 } from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
 import type { Project } from '../item/Project.ts'
 import type { SizeLike } from '../basic/Size.ts'
+import type { RectangleLike } from '../basic/Rectangle.ts'
 import type { Style } from '../style/Style.ts'
 import type { SegmentLike } from './Segment.ts'
 import type { SegmentPoint } from './SegmentPoint.ts'
@@ -184,6 +188,454 @@ export class Path extends PathItem {
       this.pathData = arg
     }
   }
+
+  /**
+   * {@grouptitle Shaped Paths}
+   *
+   * Creates a linear path item from two points describing a line.
+   *
+   * @param from the line's starting point
+   * @param to the line's ending point
+   * @return the newly created path
+   *
+   * @example {@paperscript}
+   * var from = new Point(20, 20);
+   * var to = new Point(80, 80);
+   * var path = Path.line(from, to);
+   * path.strokeColor = 'black';
+   */
+  static line(from: PointLike, to: PointLike): Path
+  /**
+   * Creates a linear path item from the properties described by an object
+   * literal.
+   *
+   * @param object an object containing properties describing the path's
+   *     attributes
+   * @return the newly created path
+   *
+   * @example {@paperscript}
+   * var path = Path.line({
+   *     from: [20, 20],
+   *     to: [80, 80],
+   *     strokeColor: 'black'
+   * });
+   */
+  static line(object: { from: PointLike; to: PointLike } & PathProps): Path
+  static line(...args: any[]): Path {
+    const { from, to, ...props } = getNamedArguments(args, ['from', 'to'])
+    return createPath([new Segment(from), new Segment(to)], false, props)
+  }
+
+  /**
+   * Creates a circular path item.
+   *
+   * @param center the center point of the circle
+   * @param radius the radius of the circle
+   * @return the newly created path
+   *
+   * @example {@paperscript}
+   * var path = Path.circle(new Point(80, 50), 30);
+   * path.strokeColor = 'black';
+   */
+  static circle(center: PointLike, radius: number): Path
+  /**
+   * Creates a circular path item from the properties described by an object
+   * literal.
+   *
+   * @param object an object containing properties describing the path's
+   *     attributes
+   * @return the newly created path
+   *
+   * @example {@paperscript}
+   * var path = Path.circle({
+   *     center: [80, 50],
+   *     radius: 30,
+   *     strokeColor: 'black'
+   * });
+   */
+  static circle(object: { center: PointLike; radius: number } & PathProps): Path
+  static circle(...args: any[]): Path {
+    const { center, radius, ...props } = getNamedArguments(args, [
+      'center',
+      'radius'
+    ])
+    return createEllipse(Point.from(center), Size.from(radius), props)
+  }
+
+  /**
+   * Creates a rectangular path item, with optionally rounded corners.
+   *
+   * @param rectangle the rectangle object describing the geometry of the
+   *     rectangular path to be created
+   * @param radius the size of the rounded corners
+   * @return the newly created path
+   *
+   * @example {@paperscript}
+   * var rectangle = new Rectangle(new Point(20, 20), new Size(60, 60));
+   * var path = Path.rectangle(rectangle);
+   * path.strokeColor = 'black';
+   *
+   * @example {@paperscript} // The same, with rounder corners
+   * var rectangle = new Rectangle(new Point(20, 20), new Size(60, 60));
+   * var cornerSize = new Size(10, 10);
+   * var path = Path.rectangle(rectangle, cornerSize);
+   * path.strokeColor = 'black';
+   */
+  static rectangle(rectangle: RectangleLike, radius?: SizeLike | number): Path
+  /**
+   * Creates a rectangular path item from a point and a size object.
+   *
+   * @param point the rectangle's top-left corner.
+   * @param size the rectangle's size.
+   * @return the newly created path
+   *
+   * @example {@paperscript}
+   * var point = new Point(20, 20);
+   * var size = new Size(60, 60);
+   * var path = Path.rectangle(point, size);
+   * path.strokeColor = 'black';
+   */
+  static rectangle(point: PointLike, size: SizeLike): Path
+  /**
+   * Creates a rectangular path item from the passed points. These do not
+   * necessarily need to be the top left and bottom right corners, the
+   * factory figures out how to fit a rectangle between them.
+   *
+   * @param from the first point defining the rectangle
+   * @param to the second point defining the rectangle
+   * @return the newly created path
+   *
+   * @example {@paperscript}
+   * var from = new Point(20, 20);
+   * var to = new Point(80, 80);
+   * var path = Path.rectangle(from, to);
+   * path.strokeColor = 'black';
+   */
+  static rectangle(from: PointLike, to: PointLike): Path
+  /**
+   * Creates a rectangular path item from the properties described by an
+   * object literal.
+   *
+   * @param object an object containing properties describing the path's
+   *     attributes
+   * @return the newly created path
+   *
+   * @example {@paperscript}
+   * var path = Path.rectangle({
+   *     point: [20, 20],
+   *     size: [60, 60],
+   *     strokeColor: 'black'
+   * });
+   *
+   * @example {@paperscript}
+   * var path = Path.rectangle({
+   *     from: [20, 20],
+   *     to: [80, 80],
+   *     strokeColor: 'black'
+   * });
+   *
+   * @example {@paperscript}
+   * var path = Path.rectangle({
+   *     rectangle: {
+   *         topLeft: [20, 20],
+   *         bottomRight: [80, 80]
+   *     },
+   *     strokeColor: 'black'
+   * });
+   *
+   * @example {@paperscript}
+   * var path = Path.rectangle({
+   *     topLeft: [20, 20],
+   *     bottomRight: [80, 80],
+   *     radius: 10,
+   *     strokeColor: 'black'
+   * });
+   */
+  static rectangle(object: PathProps): Path
+  static rectangle(arg0: any, arg1?: any): Path {
+    // The named form, or a rectangle followed by the corner radius, or the
+    // point and the size, or the two points that describe it:
+    const { radius, ...object } =
+      arg1 === undefined
+        ? isPlainObject(arg0)
+          ? arg0
+          : { rectangle: arg0 }
+        : isRectangle(arg0)
+          ? { rectangle: arg0, radius: arg1 }
+          : { rectangle: new Rectangle(arg0, arg1) }
+    const [rect, props] = readRectangle(object)
+    const size = radius && Size.from(radius)
+    // From the top left, as SVG converts rectangles, so dashes match (#601):
+    const tl = rect._getTopLeft(true)
+    const tr = rect._getTopRight(true)
+    const br = rect._getBottomRight(true)
+    const bl = rect._getBottomLeft(true)
+    let segments: Segment[]
+    if (size && !size.isZero()) {
+      const { width: rx, height: ry } = Size.min(
+        size,
+        rect._getSize(true).divide(2)
+      )
+      const hx = rx * KAPPA
+      const hy = ry * KAPPA
+      segments = [
+        new Segment(tl.add(rx, 0), [-hx, 0], null),
+        new Segment(tr.subtract(rx, 0), null, [hx, 0]),
+        new Segment(tr.add(0, ry), [0, -hy], null),
+        new Segment(br.subtract(0, ry), null, [0, hy]),
+        new Segment(br.subtract(rx, 0), [hx, 0]),
+        new Segment(bl.add(rx, 0), null, [-hx, 0]),
+        new Segment(bl.subtract(0, ry), [0, hy]),
+        new Segment(tl.add(0, ry), null, [0, -hy])
+      ]
+    } else {
+      segments = [
+        new Segment(tl),
+        new Segment(tr),
+        new Segment(br),
+        new Segment(bl)
+      ]
+    }
+    return createPath(segments, true, props)
+  }
+
+  /**
+   * Creates an elliptical path item.
+   *
+   * @param rectangle the rectangle circumscribing the ellipse
+   * @return the newly created path
+   *
+   * @example {@paperscript}
+   * var rectangle = new Rectangle(new Point(20, 20), new Size(180, 60));
+   * var path = Path.ellipse(rectangle);
+   * path.fillColor = 'black';
+   */
+  static ellipse(rectangle: RectangleLike): Path
+  /**
+   * Creates an elliptical path item from the properties described by an
+   * object literal.
+   *
+   * @param object an object containing properties describing the path's
+   *     attributes
+   * @return the newly created path
+   *
+   * @example {@paperscript}
+   * var path = Path.ellipse({
+   *     point: [20, 20],
+   *     size: [180, 60],
+   *     fillColor: 'black'
+   * });
+   *
+   * @example {@paperscript} // Placing by center and radius
+   * var shape = Path.ellipse({
+   *     center: [110, 50],
+   *     radius: [90, 30],
+   *     fillColor: 'black'
+   * });
+   */
+  static ellipse(object: PathProps): Path
+  static ellipse(rectangle: any): Path {
+    const object = isPlainObject(rectangle) ? rectangle : { rectangle }
+    // Placed by its center and radius, or by the rectangle around it:
+    const { center, radius, props } = readEllipse(object)
+    return createEllipse(center, radius, props)
+  }
+
+  /**
+   * Creates a circular arc path item.
+   *
+   * @param from the starting point of the circular arc
+   * @param through the point the arc passes through
+   * @param to the end point of the arc
+   * @return the newly created path
+   *
+   * @example {@paperscript}
+   * var from = new Point(20, 20);
+   * var through = new Point(60, 20);
+   * var to = new Point(80, 80);
+   * var path = Path.arc(from, through, to);
+   * path.strokeColor = 'black';
+   */
+  static arc(from: PointLike, through: PointLike, to: PointLike): Path
+  /**
+   * Creates an circular arc path item from the properties described by an
+   * object literal.
+   *
+   * @param object an object containing properties describing the path's
+   *     attributes
+   * @return the newly created path
+   *
+   * @example {@paperscript}
+   * var path = Path.arc({
+   *     from: [20, 20],
+   *     through: [60, 20],
+   *     to: [80, 80],
+   *     strokeColor: 'black'
+   * });
+   */
+  static arc(
+    object: { from: PointLike; through: PointLike; to: PointLike } & PathProps
+  ): Path
+  static arc(...args: any[]): Path {
+    const { from, through, to, ...props } = getNamedArguments(args, [
+      'from',
+      'through',
+      'to'
+    ])
+    // Draw the arc on a temporary path, and create the result from its
+    // segments like all the other factories:
+    const arc = new Path(Item.NO_INSERT)
+    arc.moveTo(from)
+    arc.arcTo(through, to)
+    return createPath(arc._segments, false, props)
+  }
+
+  /**
+   * Creates a regular polygon shaped path item. As in Illustrator, it stands
+   * on a flat bottom edge, and its segments run counterclockwise from its top
+   * vertex, or with an even number of sides, from the right end of its top
+   * edge.
+   *
+   * @param center the center point of the polygon
+   * @param sides the number of sides of the polygon
+   * @param radius the radius of the polygon
+   * @return the newly created path
+   *
+   * @example {@paperscript}
+   * var center = new Point(50, 50);
+   * var sides = 3;
+   * var radius = 40;
+   * var triangle = Path.regularPolygon(center, sides, radius);
+   * triangle.fillColor = 'black';
+   */
+  static regularPolygon(center: PointLike, sides: number, radius: number): Path
+  /**
+   * Creates a regular polygon shaped path item from the properties described
+   * by an object literal.
+   *
+   * @param object an object containing properties describing the path's
+   *     attributes
+   * @return the newly created path
+   *
+   * @example {@paperscript}
+   * var triangle = Path.regularPolygon({
+   *     center: [50, 50],
+   *     sides: 10,
+   *     radius: 40,
+   *     fillColor: 'black'
+   * });
+   */
+  static regularPolygon(
+    object: { center: PointLike; sides: number; radius: number } & PathProps
+  ): Path
+  static regularPolygon(...args: any[]): Path {
+    const { center, sides, radius, ...props } = getNamedArguments(args, [
+      'center',
+      'sides',
+      'radius'
+    ])
+    const centerPoint = Point.from(center)
+    const step = -360 / sides
+    // Start at the top as Illustrator does: at the top vertex, or the right
+    // end of the top edge with an even number of sides, counterclockwise:
+    const offset = sides % 2 ? 0 : -0.5
+    const vector = new Point(0, -radius)
+    const segments = []
+    for (let i = 0; i < sides; i++) {
+      segments.push(
+        new Segment(centerPoint.add(vector.rotate((i + offset) * step)))
+      )
+    }
+    return createPath(segments, true, props)
+  }
+
+  /**
+   * Creates a star shaped path item.
+   *
+   * The largest of `radius1` and `radius2` will be the outer radius of the
+   * star. The smallest of radius1 and radius2 will be the inner radius.
+   *
+   * @param center the center point of the star
+   * @param points the number of points of the star
+   * @param radius1
+   * @param radius2
+   * @return the newly created path
+   *
+   * @example {@paperscript}
+   * var center = new Point(50, 50);
+   * var points = 12;
+   * var radius1 = 25;
+   * var radius2 = 40;
+   * var path = Path.star(center, points, radius1, radius2);
+   * path.fillColor = 'black';
+   */
+  static star(
+    center: PointLike,
+    points: number,
+    radius1: number,
+    radius2: number
+  ): Path
+  /**
+   * Creates a star shaped path item from the properties described by an
+   * object literal.
+   *
+   * @param object an object containing properties describing the path's
+   *     attributes
+   * @return the newly created path
+   *
+   * @example {@paperscript}
+   * var path = Path.star({
+   *     center: [50, 50],
+   *     points: 12,
+   *     radius1: 25,
+   *     radius2: 40,
+   *     fillColor: 'black'
+   * });
+   */
+  static star(
+    object: {
+      center: PointLike
+      points: number
+      radius1: number
+      radius2: number
+    } & PathProps
+  ): Path
+  static star(...args: any[]): Path {
+    const { center, points, radius1, radius2, ...props } = getNamedArguments(
+      args,
+      ['center', 'points', 'radius1', 'radius2']
+    )
+    const centerPoint = Point.from(center)
+    const count = points * 2
+    const step = 360 / count
+    const vector = new Point(0, -1)
+    const segments = []
+    for (let i = 0; i < count; i++) {
+      segments.push(
+        new Segment(
+          centerPoint.add(
+            vector.rotate(step * i).multiply(i % 2 ? radius2 : radius1)
+          )
+        )
+      )
+    }
+    return createPath(segments, true, props)
+  }
+
+  /** @deprecated Use {@link Path.line()} instead. */
+  declare static Line: new (...args: any[]) => Path
+  /** @deprecated Use {@link Path.circle()} instead. */
+  declare static Circle: new (...args: any[]) => Path
+  /** @deprecated Use {@link Path.rectangle()} instead. */
+  declare static Rectangle: new (...args: any[]) => Path
+  /** @deprecated Use {@link Path.ellipse()} instead. */
+  declare static Ellipse: new (...args: any[]) => Path
+  /** @deprecated Use {@link Path.arc()} instead. */
+  declare static Arc: new (...args: any[]) => Path
+  /** @deprecated Use {@link Path.regularPolygon()} instead. */
+  declare static RegularPolygon: new (...args: any[]) => Path
+  /** @deprecated Use {@link Path.star()} instead. */
+  declare static Star: new (...args: any[]) => Path
 
   _initializeContent(project: Project) {
     super._initializeContent(project)
@@ -864,7 +1316,7 @@ export class Path extends PathItem {
    *
    * // Create a circle shaped path at { x: 80, y: 50 }
    * // with a radius of 35:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: new Point(80, 50),
    *     radius: 35,
    *     strokeColor: 'black'
@@ -902,7 +1354,7 @@ export class Path extends PathItem {
    *
    * // Create a circle shaped path at { x: 80, y: 50 }
    * // with a radius of 35:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: new Point(80, 50),
    *     radius: 35,
    *     strokeColor: 'black'
@@ -1070,13 +1522,13 @@ export class Path extends PathItem {
    *
    * @example {@paperscript}
    * // A path is fully selected, if all of its segments are selected:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: [80, 50],
    *     radius: 35
    * });
    * path.fullySelected = true;
    *
-   * var path2 = new Path.Circle({
+   * var path2 = Path.circle({
    *     center: [180, 50],
    *     radius: 35
    * });
@@ -1181,7 +1633,7 @@ export class Path extends PathItem {
    * @return the newly created path after splitting, if any
    *
    * @example {@paperscript}
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: view.center,
    *     radius: 40,
    *     strokeColor: 'black'
@@ -1211,7 +1663,7 @@ export class Path extends PathItem {
    * path2.position.x += 20;
    *
    * @example {@paperscript} // Splitting a closed path
-   * var path = new Path.Rectangle({
+   * var path = Path.rectangle({
    *     from: [20, 20],
    *     to: [80, 80],
    *     strokeColor: 'black'
@@ -1758,7 +2210,7 @@ export class Path extends PathItem {
     if (!this._closed) return null
 
     const segments = this._segments
-    let type: any
+    let create: (props: object) => Shape
     let size: Size
     let radius: Size | number
     let topCenter: Point
@@ -1833,8 +2285,8 @@ export class Path extends PathItem {
       isCollinear(1, 3) &&
       isOrthogonal(1)
     ) {
-      // From the top left, as Path.Rectangle() creates it:
-      type = Shape.Rectangle
+      // From the top left, as Path.rectangle() creates it:
+      create = Shape.rectangle
       size = new Size(getDistance(0, 1), getDistance(0, 3))
       topCenter = segments[0]._point.add(segments[1]._point).divide(2)
     } else if (
@@ -1847,7 +2299,7 @@ export class Path extends PathItem {
       isCollinear(2, 6)
     ) {
       // It's a rounded rectangle, from the start of its top side.
-      type = Shape.Rectangle
+      create = Shape.rectangle
       size = new Size(getDistance(7, 2), getDistance(0, 5))
       // Subtract side lengths from total width and divide by 2 to get the
       // corner radius size.
@@ -1865,19 +2317,19 @@ export class Path extends PathItem {
       // If the distance between (point0 and point2) and (point1
       // and point3) are equal, then it is a circle
       if (isZero(getDistance(0, 2) - getDistance(1, 3))) {
-        type = Shape.Circle
+        create = Shape.circle
         radius = getDistance(0, 2) / 2
       } else {
-        type = Shape.Ellipse
+        create = Shape.ellipse
         radius = new Size(getDistance(2, 0) / 2, getDistance(3, 1) / 2)
       }
-      // From the right, as Path.Ellipse() creates it, so the top is the last:
+      // From the right, as Path.ellipse() creates it, so the top is the last:
       topCenter = segments[3]._point
     }
 
-    if (type) {
+    if (create) {
       const center = this._getPosition(true)
-      const shape = new type({
+      const shape = create({
         center,
         size,
         radius,
@@ -2991,7 +3443,15 @@ export class Path extends PathItem {
   }
 
   static {
-    defineConstructors(this)
+    defineDeprecatedConstructors(this, [
+      'line',
+      'circle',
+      'rectangle',
+      'ellipse',
+      'arc',
+      'regularPolygon',
+      'star'
+    ])
     defineStrokeProfile(this)
     Object.assign(this.prototype, {
       _serializeFields: {
@@ -3037,7 +3497,7 @@ export interface Path {
    *
    * @example {@paperscript}
    * // Selecting an item:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: [80, 50],
    *     radius: 35
    * });
@@ -3045,7 +3505,7 @@ export interface Path {
    *
    * @example {@paperscript}
    * // A path is selected, if one or more of its segments is selected:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: [80, 50],
    *     radius: 35
    * });
@@ -3088,7 +3548,7 @@ export interface Path {
    * var point = path.getPointAt(offset);
    *
    * // Create a small circle shaped path at the point:
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: point,
    *     radius: 3,
    *     fillColor: 'red'
@@ -3114,7 +3574,7 @@ export interface Path {
    *     var point = path.getPointAt(offset);
    *
    *     // Create a small circle shaped path at the point:
-   *     var circle = new Path.Circle({
+   *     var circle = Path.circle({
    *         center: point,
    *         radius: 3,
    *         fillColor: 'red'
@@ -3614,4 +4074,52 @@ function addSquareCap(
   }
   addPoint(point.add(normal))
   addPoint(point.subtract(normal))
+}
+
+// The properties of the named forms besides their geometry, set on the path:
+type PathProps = { [key: string]: any }
+
+// The segments of the unit circle, as [point, handleIn, handleOut]:
+// From the right, as SVG converts ellipses, so dashes match (#601):
+const ellipseSegments = [
+  [[1, 0], [0, -KAPPA], [0, KAPPA]],
+  [[0, 1], [KAPPA, 0], [-KAPPA, 0]],
+  [[-1, 0], [0, KAPPA], [0, -KAPPA]],
+  [[0, -1], [-KAPPA, 0], [KAPPA, 0]]
+]
+
+// Returns the arguments as an object by their names: the single plain object
+// of the named form, or the positional arguments:
+function getNamedArguments(args: any[], names: string[]): PathProps {
+  return args.length === 1 && isPlainObject(args[0])
+    ? args[0]
+    : Object.fromEntries(names.map((name, index) => [name, args[index]]))
+}
+
+function createPath(
+  segments: Segment[],
+  closed: boolean,
+  { insert, project, parent, ...props }: PathProps
+): Path {
+  // Let Item#_initialize() handle the insertion:
+  const path = new Path({ insert, project, parent })
+  path._add(segments)
+  // No need to use setter for _closed since _add() called _changed().
+  path._closed = closed
+  // Set named arguments at the end, since some depend on geometry to be
+  // defined (e.g. #clockwise)
+  return path.set(props)
+}
+
+function createEllipse(center: Point, radius: Size, props: PathProps): Path {
+  const { width, height } = radius
+  const segments = ellipseSegments.map(
+    ([[x, y], [inX, inY], [outX, outY]]) =>
+      new Segment(
+        center.add(x * width, y * height),
+        [inX * width, inY * height],
+        [outX * width, outY * height]
+      )
+  )
+  return createPath(segments, true, props)
 }

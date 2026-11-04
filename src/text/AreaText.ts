@@ -86,7 +86,7 @@ export class AreaText extends TextItem {
       this.textPath =
         area instanceof PathItem
           ? area
-          : new Path.Rectangle({
+          : Path.rectangle({
               rectangle: Rectangle.from(area),
               insert: false
             })
@@ -133,7 +133,7 @@ export class AreaText extends TextItem {
     if (path) {
       const { bounds } = path
       if (!bounds.height) {
-        path = new Path.Rectangle({
+        path = Path.rectangle({
           rectangle: new Rectangle(bounds.x, bounds.y, bounds.width, 1),
           insert: false
         })
@@ -496,7 +496,7 @@ export class AreaText extends TextItem {
         const { bounds } = path
         const xs = path
           .getIntersections(
-            new Path.Line({
+            Path.line({
               from: [bounds.left - 1, y],
               to: [bounds.right + 1, y],
               insert: false
@@ -574,7 +574,7 @@ export class AreaText extends TextItem {
         }
       } else {
         paths.push(
-          new Path.Rectangle({
+          Path.rectangle({
             rectangle: item.getBounds(matrix),
             insert: false
           })

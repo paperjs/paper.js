@@ -341,7 +341,7 @@ export interface Tool {
    * tool.onMouseDown = function(event) {
    *     // Create a new circle shaped path with a radius of 10
    *     // at the position of the mouse (event.point):
-   *     var path = new Path.Circle({
+   *     var path = Path.circle({
    *         center: event.point,
    *         radius: 10,
    *         fillColor: 'black'
@@ -382,7 +382,7 @@ export interface Tool {
    * // Moving a path to the position of the mouse:
    *
    * // Create a circle shaped path with a radius of 10 at {x: 0, y: 0}:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: [0, 0],
    *     radius: 10,
    *     fillColor: 'black'
@@ -406,7 +406,7 @@ export interface Tool {
    * tool.onMouseUp = function(event) {
    *     // Create a new circle shaped path with a radius of 10
    *     // at the position of the mouse (event.point):
-   *     var path = new Path.Circle({
+   *     var path = Path.circle({
    *         center: event.point,
    *         radius: 10,
    *         fillColor: 'black'
@@ -430,7 +430,7 @@ export interface Tool {
    * // Scaling a path whenever the user presses the space bar:
    *
    * // Create a circle shaped path:
-   *     var path = new Path.Circle({
+   *     var path = Path.circle({
    *         center: new Point(50, 50),
    *         radius: 30,
    *         fillColor: 'red'

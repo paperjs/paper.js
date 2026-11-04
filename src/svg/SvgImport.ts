@@ -513,14 +513,14 @@ const importers: Record<string, Importer> = {
 
   // https://www.w3.org/TR/SVG/shapes.html#InterfaceSVGCircleElement
   'circle'(node) {
-    return new Shape.Circle(getPoint(node, 'cx', 'cy'), getValue(node, 'r'))
+    return Shape.circle(getPoint(node, 'cx', 'cy'), getValue(node, 'r'))
   },
 
   // https://www.w3.org/TR/SVG/shapes.html#InterfaceSVGEllipseElement
   'ellipse'(node) {
     // We only use object literal notation where the default one is not
-    // supported (e.g. center / radius fo Shape.Ellipse).
-    return new Shape.Ellipse({
+    // supported (e.g. center / radius of Shape.ellipse()).
+    return Shape.ellipse({
       center: getPoint(node, 'cx', 'cy'),
       radius: getSize(node, 'rx', 'ry')
     })
@@ -531,7 +531,7 @@ const importers: Record<string, Importer> = {
     // A missing rx or ry takes the value of the other one:
     const rx = getValue(node, 'rx', false, true)
     const ry = getValue(node, 'ry', false, true)
-    return new Shape.Rectangle(
+    return Shape.rectangle(
       new Rectangle(getPoint(node), getSize(node)),
       new Size(rx == null ? ry || 0 : rx, ry == null ? rx || 0 : ry)
     )
@@ -539,7 +539,7 @@ const importers: Record<string, Importer> = {
 
   // https://www.w3.org/TR/SVG/shapes.html#LineElement
   'line'(node) {
-    return new Path.Line(getPoint(node, 'x1', 'y1'), getPoint(node, 'x2', 'y2'))
+    return Path.line(getPoint(node, 'x1', 'y1'), getPoint(node, 'x2', 'y2'))
   },
 
   'text'(node) {
@@ -861,7 +861,7 @@ Object.assign(attributes, {
     if (group) {
       if (getAttribute(node, 'overflow', styles) !== 'visible') {
         // Add a clip path at the top of this symbol's group
-        const clip = new Shape.Rectangle(rect)
+        const clip = Shape.rectangle(rect)
         clip.clipMask = true
         group.addChild(clip)
       }

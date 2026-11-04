@@ -17,7 +17,7 @@ import { equals, test, testFontFamily } from '../helpers.js'
 describe('PathText', () => {
   function createPathText(from, to, content) {
     return new PathText({
-      textPath: new Path.Line(from, to),
+      textPath: Path.line(from, to),
       content,
       fontFamily: testFontFamily,
       fontSize: 12
@@ -69,7 +69,7 @@ describe('PathText', () => {
   })
 
   test('A text path with a transformation of its own', () => {
-    const path = new Path.Line([0, 0], [200, 0])
+    const path = Path.line([0, 0], [200, 0])
     path.applyMatrix = false
     path.rotate(90, [50, 0])
     const text = new PathText({
@@ -119,8 +119,8 @@ describe('PathText', () => {
       text = new PathText({
         textPath: new CompoundPath({
           children: [
-            new Path.Line([0, 0], [width + 1, 0]),
-            new Path.Line([0, 50], [200, 50])
+            Path.line([0, 0], [width + 1, 0]),
+            Path.line([0, 50], [200, 50])
           ]
         }),
         content: 'ABCD',
@@ -237,7 +237,7 @@ describe('PathText', () => {
   })
 
   test('new PathText(path, orientation), clones and transformed bounds', () => {
-    const path = new Path.Line([0, 0], [200, 0])
+    const path = Path.line([0, 0], [200, 0])
     const text = new PathText(path, 'vertical')
     equals([text.textPath === path, text.orientation], [true, 'vertical'])
     text.orientation = 'horizontal'

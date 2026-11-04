@@ -9,7 +9,7 @@
         var lineGroup = new Group();
         var lineCount = 100;
         for (var i = 0; i < lineCount; i++) {
-            var linePath = new Path.Line([0, 0], [0, 0]);
+            var linePath = Path.line([0, 0], [0, 0]);
             lineGroup.addChild(linePath);
         }
         lineGroup.strokeColor = 'red';

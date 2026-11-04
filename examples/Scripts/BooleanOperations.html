@@ -41,90 +41,90 @@
 
         runTest('Overlapping circles', function() {
             return [
-                new Path.Circle(new Point(80, 110), 50),
-                new Path.Circle(new Point(150, 110), 70)
+                Path.circle(new Point(80, 110), 50),
+                Path.circle(new Point(150, 110), 70)
             ];
         });
 
         runTest('Overlapping circles 2', function() {
             return [
-                new paper.Path.Circle(new paper.Point(50, 50), 50),
-                new paper.Path.Circle(new paper.Point(100, 100), 50)
+                paper.Path.circle(new paper.Point(50, 50), 50),
+                paper.Path.circle(new paper.Point(100, 100), 50)
             ];
         });
 
         runTest('Disjoint circles', function() {
             return [
-                new Path.Circle(new Point(60, 110), 50),
-                new Path.Circle(new Point(170, 110), 50)
+                Path.circle(new Point(60, 110), 50),
+                Path.circle(new Point(170, 110), 50)
             ];
         });
 
         runTest('Overlapping circles - enveloping', function() {
             return [
-                new Path.Circle(new Point(110, 110), 100),
-                new Path.Circle(new Point(120, 110), 60)
+                Path.circle(new Point(110, 110), 100),
+                Path.circle(new Point(120, 110), 60)
             ];
         });
 
         runTest('Polygon and square', function() {
             return [
-                new Path.RegularPolygon(new Point(80, 110), 12, 80),
-                new Path.Rectangle(new Point(100, 80), [80, 80])
+                Path.regularPolygon(new Point(80, 110), 12, 80),
+                Path.rectangle(new Point(100, 80), [80, 80])
             ];
         });
 
         runTest('Circle and square (overlaps exactly on existing segments)', function() {
             return [
-                new Path.Circle(new Point(110, 110), 80),
-                new Path.Rectangle(new Point(110, 110), [80, 80])
+                Path.circle(new Point(110, 110), 80),
+                Path.rectangle(new Point(110, 110), [80, 80])
             ];
         });
 
         runTest('Circle and square (existing segments overlaps on curves)', function() {
             return [
-                new Path.Circle(new Point(110, 110), 80),
-                new Path.Rectangle(new Point(110, 110), [100, 100])
+                Path.circle(new Point(110, 110), 80),
+                Path.rectangle(new Point(110, 110), [100, 100])
             ];
         });
 
         runTest('Square and square (one segment overlaps on a line)', function() {
-            var pathA = new Path.Rectangle(new Point(80, 125), [50, 50]).rotate(45);
-            var pathB = new Path.Rectangle(new Point(pathA.segments[2].point.x, 110), [80, 80]);
+            var pathA = Path.rectangle(new Point(80, 125), [50, 50]).rotate(45);
+            var pathB = Path.rectangle(new Point(pathA.segments[2].point.x, 110), [80, 80]);
             return [pathA, pathB];
         });
 
         runTest('Rectangle and rectangle (overlaps exactly on existing curves)', function() {
             return [
-                new Path.Rectangle(new Point(30.5, 50.5), [100, 150]),
-                new Path.Rectangle(new Point(130.5, 60.5), [100, 150])
+                Path.rectangle(new Point(30.5, 50.5), [100, 150]),
+                Path.rectangle(new Point(130.5, 60.5), [100, 150])
             ];
         });
 
         runTest('Circle and banana (multiple intersections within same curve segment)', function() {
-            var pathA = new Path.Circle(new Point(80, 110), 80);
-            var pathB = new Path.Circle(new Point(130, 110), 80);
+            var pathA = Path.circle(new Point(80, 110), 80);
+            var pathB = Path.circle(new Point(130, 110), 80);
             pathB.segments[3].point = pathB.segments[3].point.add([ 0, -120 ]);
             return [pathA, pathB];
         });
 
         runTest('Overlapping stars 1', function() {
             return [
-                new Path.Star(new Point(80, 110), 10, 20, 80),
-                new Path.Star(new Point(120, 110), 10, 30, 100)
+                Path.star(new Point(80, 110), 10, 20, 80),
+                Path.star(new Point(120, 110), 10, 30, 100)
             ];
         });
 
         runTest('Overlapping stars 2', function() {
             return [
-                new Path.Star(new Point(110, 110), 20, 20, 80),
-                new Path.Star(new Point(110, 110), 6, 30, 100)
+                Path.star(new Point(110, 110), 20, 20, 80),
+                Path.star(new Point(110, 110), 6, 30, 100)
             ];
         });
 
         // runTest('Circles overlap exactly over each other');
-        // pathA = new Path.Circle(new Point(110, 110), 100);
-        // pathB = new Path.Circle(new Point(110, 110), 100);
+        // pathA = Path.circle(new Point(110, 110), 100);
+        // pathB = Path.circle(new Point(110, 110), 100);
         // // pathB.translate([0.5,0])
         // testBooleanStatic(pathA, pathB);
 
@@ -163,7 +163,7 @@
             var pathB = new CompoundPath();
             group.children[1].clockwise = true;
             pathB.addChild(group.children[1]);
-            pathB.addChild(new Path.Circle([110, 110], 30));
+            pathB.addChild(Path.circle([110, 110], 30));
             return [pathA, pathB];
         });
 
@@ -179,7 +179,7 @@
             var pathB = new CompoundPath();
             group.children[1].clockwise = true;
             pathB.addChild(group.children[1]);
-            pathB.addChild(new Path.Circle([40, 80], 20));
+            pathB.addChild(Path.circle([40, 80], 20));
             return [pathA, pathB];
         });
 
@@ -189,9 +189,9 @@
             var pathB = new CompoundPath();
             group.children[1].clockwise = true;
             pathB.addChild(group.children[1]);
-            var npath = new Path.Circle([40, 80], 20);
+            var npath = Path.circle([40, 80], 20);
             pathB.addChild(npath);
-            npath = new Path.Circle([120, 110], 30);
+            npath = Path.circle([120, 110], 30);
             pathB.addChild(npath);
             return [pathA, pathB];
         });
@@ -200,21 +200,21 @@
             var group = paper.project.importSVG(document.getElementById('glyphsacirc'), svgOptions);
             var pathA = group.children[0];
             var pathB = new CompoundPath();
-            var npath = new Path.Circle([110, 110], 100);
+            var npath = Path.circle([110, 110], 100);
             pathB.addChild(npath);
-            npath = new Path.Circle([110, 110], 60);
+            npath = Path.circle([110, 110], 60);
             pathB.addChild(npath);
-            npath = new Path.Circle([110, 110], 30);
+            npath = Path.circle([110, 110], 30);
             pathB.addChild(npath);
             return [pathA, pathB];
         });
 
         runTest('CompoundPaths 6 - holes and islands 4 (curves overlap exactly on existing curves)', function() {
-            var pathA = new Path.Rectangle(new Point(50.5, 50.5), [100, 120]);
+            var pathA = Path.rectangle(new Point(50.5, 50.5), [100, 120]);
             var pathB = new CompoundPath();
-            pathB.addChild(new Path.Rectangle(new Point(140.5, 30.5), [100, 150]));
-            pathB.addChild(new Path.Rectangle(new Point(150.5, 65.5), [50, 100]));
-            // pathB = new Path.Rectangle(new Point(150.5, 80.5), [80, 80])
+            pathB.addChild(Path.rectangle(new Point(140.5, 30.5), [100, 150]));
+            pathB.addChild(Path.rectangle(new Point(150.5, 65.5), [50, 100]));
+            // pathB = Path.rectangle(new Point(150.5, 80.5), [80, 80])
             return [pathA, pathB];
         });
 
@@ -222,15 +222,15 @@
         // // To resolve self intersection on a single path,
         // // pass an empty second operand and do a Union operation
         // runTest('Self-intersecting paths 1 - Resolve self-intersection on single path');
-        // pathA = new Path.Star(new Point(110, 110), 10, 20, 80);
+        // pathA = Path.star(new Point(110, 110), 10, 20, 80);
         // pathA.smooth();
         // pathB = new Path();
         // testBooleanStatic(pathA, pathB, caption, false, true, true, true);
 
         // runTest('Self-intersecting paths 2 - Resolve self-intersecting CompoundPath');
         // pathA = new CompoundPath();
-        // pathA.addChild(new Path.Circle([100, 110], 60));
-        // pathA.addChild(new Path.Circle([160, 110], 30));
+        // pathA.addChild(Path.circle([100, 110], 60));
+        // pathA.addChild(Path.circle([160, 110], 30));
         // pathB = new Path();
         // testBooleanStatic(pathA, pathB, caption, false, true, true, true);
 
@@ -366,7 +366,7 @@
         if (!pnt) return;
         c = c || '#000';
         if (remove === undefined) { remove = true; }
-        var cir = new Path.Circle(pnt, 2);
+        var cir = Path.circle(pnt, 2);
         cir.style.fillColor = c;
         cir.style.strokeColor = tc;
         if (t !== undefined || t !== null) {
@@ -404,7 +404,7 @@
         var crv = s.curve;
         var t1 = crv.getNormalAtTime(0).normalize(10);
         var p = s.point.clone().add(t1);
-        var cir = new Path.Circle(s.point, 2);
+        var cir = Path.circle(s.point, 2);
         cir.style.fillColor = c;
         cir.style.strokeColor = tc;
         var text = new PointText(p);
@@ -430,10 +430,10 @@
         var p = crv.getPointAtTime(0.57);
         var t1 = crv.getTangentAtTime(0.57).normalize(-10);
         var p2 = p.clone().add(t1);
-        var l = new Path.Line(p, p2).rotate(30, p);
-        var l2 = new Path.Line(p, p2).rotate(-30, p);
+        var l = Path.line(p, p2).rotate(30, p);
+        var l2 = Path.line(p, p2).rotate(-30, p);
         p = crv.getPointAtTime(0.43);
-        var cir = new Path.Circle(p, 8);
+        var cir = Path.circle(p, 8);
         var text = new PointText(p.subtract([0, -4]));
         text.justification = 'center';
         text.fillColor = tc;

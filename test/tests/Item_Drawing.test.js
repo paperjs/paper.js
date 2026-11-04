@@ -45,7 +45,7 @@ describe('Item Drawing', () => {
 
   describe('Item#onDraw', () => {
     test('is called in views with the documented fields', () => {
-      const path = new Path.Rectangle({
+      const path = Path.rectangle({
         point: [0, 0],
         size: [20, 20],
         fillColor: 'red',
@@ -82,7 +82,7 @@ describe('Item Drawing', () => {
     })
 
     test('is called in rasterize() with the documented fields', () => {
-      const path = new Path.Rectangle({
+      const path = Path.rectangle({
         point: [0, 0],
         size: [20, 20],
         fillColor: 'red',
@@ -122,7 +122,7 @@ describe('Item Drawing', () => {
     test('draws beneath the default drawing in a transformed group', () => {
       const group = new Group({
         children: [
-          new Path.Rectangle({
+          Path.rectangle({
             point: [10, 10],
             size: [20, 20],
             fillColor: 'red'
@@ -143,7 +143,7 @@ describe('Item Drawing', () => {
     // Paths without stroke scaling draw in view coordinates, but the handler
     // still gets the item's:
     test('draws in the item coordinates without stroke scaling', () => {
-      const path = new Path.Rectangle({
+      const path = Path.rectangle({
         point: [0, 0],
         size: [20, 20],
         strokeColor: 'red',
@@ -160,12 +160,12 @@ describe('Item Drawing', () => {
     })
 
     test(`isn't called for clip masks, which only clip`, () => {
-      const mask = new Path.Rectangle({
+      const mask = Path.rectangle({
         point: [0, 0],
         size: [50, 50],
         clipMask: true
       })
-      const path = new Path.Rectangle({
+      const path = Path.rectangle({
         point: [10, 10],
         size: [60, 60],
         fillColor: 'red'
@@ -180,7 +180,7 @@ describe('Item Drawing', () => {
     })
 
     test('event.preventDefault() skips the default drawing', () => {
-      const path = new Path.Rectangle({
+      const path = Path.rectangle({
         point: [10, 10],
         size: [20, 20],
         fillColor: 'red'
@@ -196,7 +196,7 @@ describe('Item Drawing', () => {
     })
 
     test('is called once per placement of a symbol', () => {
-      const path = new Path.Rectangle({
+      const path = Path.rectangle({
         point: [0, 0],
         size: [10, 10],
         fillColor: 'red'
@@ -219,7 +219,7 @@ describe('Item Drawing', () => {
     })
 
     test('is only called in buffered groups when they draw their buffer', () => {
-      const path = new Path.Rectangle({
+      const path = Path.rectangle({
         point: [10, 10],
         size: [20, 20],
         fillColor: 'red'
@@ -231,7 +231,7 @@ describe('Item Drawing', () => {
       }
       paper.view.update()
       equals(count, 1, 'drawn into the buffer')
-      new Path.Rectangle({
+      Path.rectangle({
         point: [50, 50],
         size: [20, 20],
         fillColor: 'red'
@@ -244,7 +244,7 @@ describe('Item Drawing', () => {
     })
 
     test(`doesn't draw into hit testing, bounds and SVG export`, () => {
-      const path = new Path.Rectangle({
+      const path = Path.rectangle({
         point: [10, 10],
         size: [20, 20],
         fillColor: 'red'
@@ -263,7 +263,7 @@ describe('Item Drawing', () => {
 
   describe('Item#onDrawSelection', () => {
     test('is called for selected items with the documented fields', () => {
-      const path = new Path.Rectangle({
+      const path = Path.rectangle({
         point: [10, 10],
         size: [20, 20],
         strokeColor: 'red',
@@ -305,7 +305,7 @@ describe('Item Drawing', () => {
     })
 
     test('draws over the content and false skips the default', () => {
-      const path = new Path.Rectangle({
+      const path = Path.rectangle({
         point: [10, 10],
         size: [20, 20],
         strokeColor: 'black',
@@ -313,7 +313,7 @@ describe('Item Drawing', () => {
         selected: true
       })
       // A later sibling covering the path:
-      new Path.Rectangle({
+      Path.rectangle({
         point: [0, 0],
         size: [50, 50],
         fillColor: 'green'
@@ -355,13 +355,13 @@ describe('Item Drawing', () => {
           items.push(this === event.item && this)
         }
         equals(typeof Path.onDraw, 'function', 'Path.onDraw')
-        const first = new Path.Rectangle([0, 0], [10, 10])
-        const group = new Group(new Path.Circle([30, 30], 5))
+        const first = Path.rectangle([0, 0], [10, 10])
+        const group = new Group(Path.circle([30, 30], 5))
         paper.view.update(true)
         equals(items.length, 2, 'only the paths')
         equals(items[0] === first, true, 'with this as the item')
         // Including the paths created later:
-        const later = new Path.Rectangle([20, 0], [10, 10])
+        const later = Path.rectangle([20, 0], [10, 10])
         items.length = 0
         paper.view.update(true)
         equals(items.length, 3)
@@ -377,7 +377,7 @@ describe('Item Drawing', () => {
     test('The item handlers come first, then the classes up to Item', () => {
       withHandlers(() => {
         const calls = []
-        const path = new Path.Rectangle([0, 0], [10, 10])
+        const path = Path.rectangle([0, 0], [10, 10])
         path.onDraw = () => calls.push('path')
         Path.on('draw', () => calls.push('Path'))
         // Also called for the layer, which is an item too:
@@ -393,7 +393,7 @@ describe('Item Drawing', () => {
 
     test('Returning false skips the default drawing', () => {
       withHandlers(() => {
-        new Path.Rectangle({ point: [0, 0], size: [20, 20], fillColor: 'red' })
+        Path.rectangle({ point: [0, 0], size: [20, 20], fillColor: 'red' })
         Path.onDraw = () => false
         paper.view.update(true)
         equals(getViewPixel(10, 10), empty, 'skipped')
@@ -409,12 +409,12 @@ describe('Item Drawing', () => {
         Path.onDrawSelection = function () {
           items.push(this)
         }
-        const selected = new Path.Rectangle({
+        const selected = Path.rectangle({
           point: [0, 0],
           size: [10, 10],
           selected: true
         })
-        new Path.Rectangle([20, 0], [10, 10])
+        Path.rectangle([20, 0], [10, 10])
         paper.view.update(true)
         equals(items.length, 1)
         equals(items[0] === selected, true)
@@ -445,8 +445,8 @@ describe('Item Drawing', () => {
       withHandlers(() => {
         const calls = []
         Path.onDraw = () => calls.push('Path')
-        const first = new Path.Rectangle([0, 0], [10, 10])
-        const second = new Path.Rectangle([20, 0], [10, 10])
+        const first = Path.rectangle([0, 0], [10, 10])
+        const second = Path.rectangle([20, 0], [10, 10])
         first.onDraw = () => calls.push('first')
         equals(second.onDraw, null, 'not the class handler')
         equals(second.responds('draw'), true)
@@ -481,8 +481,8 @@ describe('Item Drawing', () => {
     }
     for (const [blendMode, rgb] of Object.entries(expected)) {
       const group = new Group([
-        new Path.Rectangle({ point: [0, 0], size: [10, 10], fillColor: below }),
-        new Path.Rectangle({
+        Path.rectangle({ point: [0, 0], size: [10, 10], fillColor: below }),
+        Path.rectangle({
           point: [0, 0],
           size: [10, 10],
           fillColor: above,

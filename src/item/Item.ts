@@ -383,7 +383,7 @@ export class Item extends Emitter {
    *
    * @example {@paperscript}
    * // Setting properties through an object literal
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: [80, 50],
    *     radius: 35
    * });
@@ -443,7 +443,7 @@ export class Item extends Emitter {
    * through its parent's children list.
    *
    * @example {@paperscript}
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: [80, 50],
    *     radius: 35
    * });
@@ -495,7 +495,7 @@ export class Item extends Emitter {
    * @example {@paperscript}
    * // Applying several styles to an item in one go, by passing an object
    * // to its style property:
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: [80, 50],
    *     radius: 30
    * });
@@ -507,13 +507,13 @@ export class Item extends Emitter {
    *
    * @example {@paperscript split=true height=100}
    * // Copying the style of another item:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: [50, 50],
    *     radius: 30,
    *     fillColor: 'red'
    * });
    *
-   * var path2 = new Path.Circle({
+   * var path2 = Path.circle({
    *     center: new Point(180, 50),
    *     radius: 20
    * });
@@ -529,13 +529,13 @@ export class Item extends Emitter {
    *     strokeWidth: 4
    * };
    *
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: [50, 50],
    *     radius: 30
    * });
    * path.style = myStyle;
    *
-   * var path2 = new Path.Circle({
+   * var path2 = Path.circle({
    *     center: new Point(150, 50),
    *     radius: 20
    * });
@@ -568,7 +568,7 @@ export class Item extends Emitter {
    * @default null
    *
    * @example
-   * var circle = new Path.Circle({ center: [100, 100], radius: 40 });
+   * var circle = Path.circle({ center: [100, 100], radius: 40 });
    * circle.textWrap = { offset: 10 };
    */
   get textWrap(): { offset: number; invert: boolean } | null {
@@ -653,7 +653,7 @@ export class Item extends Emitter {
    *
    * @example {@paperscript}
    * // Selecting an item:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: [80, 50],
    *     radius: 35
    * });
@@ -789,7 +789,7 @@ export class Item extends Emitter {
    * // Changing the position of a path:
    *
    * // Create a circle at position { x: 10, y: 10 }
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: new Point(10, 10),
    *     radius: 10,
    *     fillColor: 'red'
@@ -805,7 +805,7 @@ export class Item extends Emitter {
    * // Changing the x coordinate of an item's position:
    *
    * // Create a circle at position { x: 20, y: 20 }
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: new Point(20, 20),
    *     radius: 10,
    *     fillColor: 'red'
@@ -1644,7 +1644,7 @@ export class Item extends Emitter {
    *
    * @example {@paperscript}
    * // Accessing items in the children array:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: [80, 50],
    *     radius: 35
    * });
@@ -1658,7 +1658,7 @@ export class Item extends Emitter {
    *
    * @example {@paperscript}
    * // Accessing children by name:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: [80, 50],
    *     radius: 35
    * });
@@ -1674,7 +1674,7 @@ export class Item extends Emitter {
    *
    * @example {@paperscript}
    * // Passing an array of items to item.children:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: [80, 50],
    *     radius: 35
    * });
@@ -1789,7 +1789,7 @@ export class Item extends Emitter {
    *
    * @example {@paperscript}
    * // Cloning items:
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: [50, 50],
    *     radius: 10,
    *     fillColor: 'red'
@@ -1928,7 +1928,7 @@ export class Item extends Emitter {
    *
    * @example {@paperscript}
    * // Rasterizing an item:
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: [50, 50],
    *     radius: 5,
    *     fillColor: 'red'
@@ -1990,7 +1990,7 @@ export class Item extends Emitter {
    *
    * @example {@paperscript} // Click within and outside the star below
    * // Create a star shaped path:
-   * var path = new Path.Star({
+   * var path = Path.star({
    *     center: [50, 50],
    *     points: 12,
    *     radius1: 20,
@@ -2052,7 +2052,7 @@ export class Item extends Emitter {
   _asPathItem(): PathItem {
     // Creates a temporary rectangular path item with this item's bounds.
     // Keep the matrix unapplied, so getIntersections() can override it:
-    return new Path.Rectangle({
+    return Path.rectangle({
       rectangle: this.internalBounds,
       applyMatrix: false,
       matrix: this._matrix,
@@ -2085,7 +2085,7 @@ export class Item extends Emitter {
       path: Item, matrix: Matrix,
       other: Item, otherMatrix: Matrix
     ) {
-      for (const child of path._children || [path]) {
+      for (const child of path._children ?? [path]) {
         const segment = (child as Path)._segments[0]
         const point = (
           segment &&
@@ -2541,9 +2541,7 @@ export class Item extends Emitter {
         inside: !!inside,
         overlapping: !!overlapping,
         rect,
-        path: (
-          overlapping && new Path.Rectangle({ rectangle: rect, insert: false })
-        )
+        path: overlapping && Path.rectangle({ rectangle: rect, insert: false })
       }
       if (obj) {
         // Use a copy of the options object that doesn't contain these
@@ -3464,7 +3462,7 @@ export class Item extends Emitter {
    *
    * // Create a rectangle shaped path with its top left corner
    * // at {x: 80, y: 25} and a size of {width: 75, height: 50}:
-   * var path = new Path.Rectangle({
+   * var path = Path.rectangle({
    *     point: [80, 25],
    *     size: [75, 50],
    *     fillColor: 'black'
@@ -3472,7 +3470,7 @@ export class Item extends Emitter {
    *
    * // Create a circle shaped path with its center at {x: 80, y: 50}
    * // and a radius of 30.
-   * var circlePath = new Path.Circle({
+   * var circlePath = Path.circle({
    *     center: [80, 50],
    *     radius: 30,
    *     fillColor: 'red'
@@ -3488,7 +3486,7 @@ export class Item extends Emitter {
    *
    * // Create a rectangle shaped path with its top left corner
    * // at {x: 80, y: 25} and a size of {width: 75, height: 50}:
-   * var path = new Path.Rectangle({
+   * var path = Path.rectangle({
    *     point: [80, 25],
    *     size: [75, 50],
    *     fillColor: 'black'
@@ -3496,7 +3494,7 @@ export class Item extends Emitter {
    *
    * // Create a circle shaped path with its center at {x: 80, y: 50}
    * // and a radius of 30.
-   * var circlePath = new Path.Circle({
+   * var circlePath = Path.circle({
    *     center: [80, 50],
    *     radius: 30,
    *     fillColor: 'red'
@@ -3508,7 +3506,7 @@ export class Item extends Emitter {
    *
    * @example {@paperscript height=200}
    * // Fitting an item to the bounding rectangle of the view
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: [80, 50],
    *     radius: 30,
    *     fillColor: 'red'
@@ -4142,7 +4140,7 @@ export class Item extends Emitter {
    * function onMouseDrag(event) {
    *     // Create a circle shaped path at the mouse position,
    *     // with a radius of 10:
-   *     var path = new Path.Circle({
+   *     var path = Path.circle({
    *         center: event.point,
    *         radius: 10,
    *         fillColor: 'black'
@@ -4195,7 +4193,7 @@ export class Item extends Emitter {
    *
    * @example {@paperscript height=100}
    * // Tween fillColor:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     radius: view.bounds.height * 0.4,
    *     center: view.center
    * });
@@ -4206,7 +4204,7 @@ export class Item extends Emitter {
    * );
    * @example {@paperscript height=100}
    * // Tween rotation:
-   * var path = new Shape.Rectangle({
+   * var path = Shape.rectangle({
    *     fillColor: 'red',
    *     center: [50, view.center.y],
    *     size: [60, 60]
@@ -4229,7 +4227,7 @@ export class Item extends Emitter {
    *
    * @example {@paperscript height=200}
    * // Tween a nested property with relative values
-   * var path = new Path.Rectangle({
+   * var path = Path.rectangle({
    *     size: [100, 100],
    *     position: view.center,
    *     fillColor: 'red',
@@ -4254,13 +4252,13 @@ export class Item extends Emitter {
    *
    * @example {@paperscript height=100}
    * // Start an empty tween and just use the update callback:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     fillColor: 'blue',
    *     radius: view.bounds.height * 0.4,
    *     center: view.center,
    * });
    * var pathFrom = path.clone({ insert: false })
-   * var pathTo = new Path.Rectangle({
+   * var pathTo = Path.rectangle({
    *     position: view.center,
    *     rectangle: path.bounds,
    *     insert: false
@@ -4321,7 +4319,7 @@ export class Item extends Emitter {
    *
    * @example {@paperscript height=100}
    * // Tween fillColor from red to the path's initial fillColor:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     fillColor: 'blue',
    *     radius: view.bounds.height * 0.4,
    *     center: view.center
@@ -4525,7 +4523,7 @@ export interface Item {
    * @default false
    *
    * @example {@paperscript}
-   * var unlockedItem = new Path.Circle({
+   * var unlockedItem = Path.circle({
    *     center: view.center - [35, 0],
    *     radius: 30,
    *     fillColor: 'springgreen',
@@ -4534,7 +4532,7 @@ export interface Item {
    *     }
    * });
    *
-   * var lockedItem = new Path.Circle({
+   * var lockedItem = Path.circle({
    *     center: view.center + [35, 0],
    *     radius: 30,
    *     fillColor: 'crimson',
@@ -4561,7 +4559,7 @@ export interface Item {
    *
    * @example {@paperscript}
    * // Hiding an item:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: [50, 50],
    *     radius: 20,
    *     fillColor: 'red'
@@ -4594,16 +4592,16 @@ export interface Item {
    *
    * // Create a white rectangle in the background
    * // with the same dimensions as the view:
-   * var background = new Path.Rectangle(view.bounds);
+   * var background = Path.rectangle(view.bounds);
    * background.fillColor = 'white';
    *
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: [80, 50],
    *     radius: 35,
    *     fillColor: 'red'
    * });
    *
-   * var circle2 = new Path.Circle({
+   * var circle2 = Path.circle({
    *     center: new Point(120, 50),
    *     radius: 35,
    *     fillColor: 'blue'
@@ -4621,13 +4619,13 @@ export interface Item {
    *
    * @example {@paperscript}
    * // Making an item 50% transparent:
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: [80, 50],
    *     radius: 35,
    *     fillColor: 'red'
    * });
    *
-   * var circle2 = new Path.Circle({
+   * var circle2 = Path.circle({
    *     center: new Point(120, 50),
    *     radius: 35,
    *     fillColor: 'blue',
@@ -4697,7 +4695,7 @@ export interface Item {
    *
    * // Create a rectangle shaped path with its top left
    * // point at {x: 80, y: 25} and a size of {width: 50, height: 50}:
-   * var path = new Path.Rectangle(new Point(80, 25), new Size(50, 50));
+   * var path = Path.rectangle(new Point(80, 25), new Size(50, 50));
    * path.fillColor = 'black';
    *
    * // Rotate the path by 30 degrees:
@@ -4710,12 +4708,12 @@ export interface Item {
    * // point at {x: 175, y: 50} and a size of {width: 100, height: 100}:
    * var topLeft = new Point(175, 50);
    * var size = new Size(100, 100);
-   * var path = new Path.Rectangle(topLeft, size);
+   * var path = Path.rectangle(topLeft, size);
    * path.fillColor = 'black';
    *
    * // Draw a circle shaped path in the center of the view,
    * // to show the rotation point:
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: view.center,
    *     radius: 5,
    *     fillColor: 'white'
@@ -4741,7 +4739,7 @@ export interface Item {
    *
    * // Create a circle shaped path at { x: 80, y: 50 }
    * // with a radius of 20:
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: [80, 50],
    *     radius: 20,
    *     fillColor: 'red'
@@ -4755,7 +4753,7 @@ export interface Item {
    *
    * // Create a circle shaped path at { x: 80, y: 50 }
    * // with a radius of 20:
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: [80, 50],
    *     radius: 20,
    *     fillColor: 'red'
@@ -4778,7 +4776,7 @@ export interface Item {
    *
    * // Create a circle shaped path at { x: 100, y: 50 }
    * // with a radius of 20:
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: [100, 50],
    *     radius: 20,
    *     fillColor: 'red'
@@ -4838,7 +4836,7 @@ export interface Item {
    * function onMouseMove(event) {
    *     // Create a circle shaped path at the mouse position,
    *     // with a radius of 10:
-   *     var path = new Path.Circle({
+   *     var path = Path.circle({
    *         center: event.point,
    *         radius: 10,
    *         fillColor: 'black'
@@ -4858,7 +4856,7 @@ export interface Item {
    * function onMouseDown(event) {
    *     // Create a circle shaped path at the mouse position,
    *     // with a radius of 10:
-   *     var path = new Path.Circle({
+   *     var path = Path.circle({
    *         center: event.point,
    *         radius: 10,
    *         fillColor: 'black'
@@ -4878,7 +4876,7 @@ export interface Item {
    * function onMouseDrag(event) {
    *     // Create a circle shaped path at the mouse position,
    *     // with a radius of 10:
-   *     var path = new Path.Circle({
+   *     var path = Path.circle({
    *         center: event.point,
    *         radius: 10,
    *         fillColor: 'black'
@@ -4898,7 +4896,7 @@ export interface Item {
    * function onMouseDown(event) {
    *     // Create a circle shaped path at the mouse position,
    *     // with a radius of 10:
-   *     var path = new Path.Circle({
+   *     var path = Path.circle({
    *         center: event.point,
    *         radius: 10,
    *         fillColor: 'black'
@@ -4922,7 +4920,7 @@ export interface Item {
    *
    * // Create a circle shaped path at { x: 80, y: 50 }
    * // with a radius of 35:
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: [80, 50],
    *     radius: 35
    * });
@@ -4941,7 +4939,7 @@ export interface Item {
    *
    * // Create a circle shaped path at { x: 80, y: 50 }
    * // with a radius of 35:
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: [80, 50],
    *     radius: 35,
    *     strokeColor: 'red'
@@ -5033,7 +5031,7 @@ export interface Item {
    * Specifies an array containing the dash and gap lengths of the stroke.
    *
    * @example {@paperscript}
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: [80, 50],
    *     radius: 40,
    *     strokeWidth: 2,
@@ -5080,7 +5078,7 @@ export interface Item {
    *
    * // Create a circle shaped path at { x: 80, y: 50 }
    * // with a radius of 35:
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: [80, 50],
    *     radius: 35
    * });
@@ -5108,7 +5106,7 @@ export interface Item {
    * @example {@paperscript}
    * // Creating a circle with a black shadow:
    *
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: [80, 50],
    *     radius: 35,
    *     fillColor: 'white',
@@ -5170,7 +5168,7 @@ export interface Item {
    *
    * // Create a rectangle shaped path with its top left point at:
    * // {x: 50, y: 25} and a size of {width: 50, height: 50}
-   * var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
+   * var path = Path.rectangle(new Point(50, 25), new Size(50, 50));
    * path.fillColor = 'black';
    *
    * path.onFrame = function(event) {
@@ -5195,7 +5193,7 @@ export interface Item {
    * // Press the mouse button down on the circle shaped path, to make it red:
    *
    * // Create a circle shaped path at the center of the view:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: view.center,
    *     radius: 25,
    *     fillColor: 'black'
@@ -5214,7 +5212,7 @@ export interface Item {
    * for (var i = 0; i < 30; i++) {
    *     // Create a circle shaped path at a random position
    *     // in the view:
-   *     var path = new Path.Circle({
+   *     var path = Path.circle({
    *         center: Point.random() * view.size,
    *         radius: 25,
    *         fillColor: 'black',
@@ -5244,7 +5242,7 @@ export interface Item {
    * // Press and drag the mouse on the blue circle to move it:
    *
    * // Create a circle shaped path at the center of the view:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: view.center,
    *     radius: 50,
    *     fillColor: 'blue'
@@ -5272,7 +5270,7 @@ export interface Item {
    * // Release the mouse button over the circle shaped path, to make it red:
    *
    * // Create a circle shaped path at the center of the view:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: view.center,
    *     radius: 25,
    *     fillColor: 'black'
@@ -5301,7 +5299,7 @@ export interface Item {
    * // Click on the circle shaped path, to make it red:
    *
    * // Create a circle shaped path at the center of the view:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: view.center,
    *     radius: 25,
    *     fillColor: 'black'
@@ -5320,7 +5318,7 @@ export interface Item {
    * for (var i = 0; i < 30; i++) {
    *     // Create a circle shaped path at a random position
    *     // in the view:
-   *     var path = new Path.Circle({
+   *     var path = Path.circle({
    *         center: Point.random() * view.size,
    *         radius: 25,
    *         fillColor: 'black',
@@ -5350,7 +5348,7 @@ export interface Item {
    * // Double click on the circle shaped path, to make it red:
    *
    * // Create a circle shaped path at the center of the view:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: view.center,
    *     radius: 25,
    *     fillColor: 'black'
@@ -5369,7 +5367,7 @@ export interface Item {
    * for (var i = 0; i < 30; i++) {
    *     // Create a circle shaped path at a random position
    *     // in the view:
-   *     var path = new Path.Circle({
+   *     var path = Path.circle({
    *         center: Point.random() * view.size,
    *         radius: 25,
    *         fillColor: 'black',
@@ -5399,7 +5397,7 @@ export interface Item {
    * // Move over the circle shaped path, to change its opacity:
    *
    * // Create a circle shaped path at the center of the view:
-   *     var path = new Path.Circle({
+   *     var path = Path.circle({
    *     center: view.center,
    *     radius: 25,
    *     fillColor: 'black'
@@ -5431,7 +5429,7 @@ export interface Item {
    * // to black.
    *
    * // Create a circle shaped path at the center of the view:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: view.center,
    *     radius: 25,
    *     fillColor: 'black'
@@ -5463,7 +5461,7 @@ export interface Item {
    * // When the mouse is pressed:
    * function onMouseDown(event) {
    *     // Create a circle shaped path at the position of the mouse:
-   *     var path = new Path.Circle(event.point, 25);
+   *     var path = Path.circle(event.point, 25);
    *     path.fillColor = 'black';
    *
    *     // When the mouse enters the item, set its fill color to red:
@@ -5491,7 +5489,7 @@ export interface Item {
    * // of it again to set its fill color to red:
    *
    * // Create a circle shaped path at the center of the view:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: view.center,
    *     radius: 25,
    *     fillColor: 'black'
@@ -5531,7 +5529,7 @@ export interface Item {
    *
    * @example {@paperscript}
    * // Draw a hairline cross through the center of a circle, beneath it:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: view.center,
    *     radius: 25,
    *     fillColor: 'rgba(255, 0, 0, 0.5)'
@@ -5577,7 +5575,7 @@ export interface Item {
    *
    * @example {@paperscript}
    * // Draw the selection of a path as a dot at each segment:
-   * var path = new Path.Star({
+   * var path = Path.star({
    *     center: view.center,
    *     points: 5,
    *     radius1: 20,
@@ -5625,7 +5623,7 @@ export interface Item {
    * // shape and back to black again, when it leaves its shape.
    *
    * // Create a circle shaped path at the center of the view:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: view.center,
    *     radius: 25,
    *     fillColor: 'black'
@@ -5656,7 +5654,7 @@ export interface Item {
    * // shape and back to black again, when it leaves its shape.
    *
    * // Create a circle shaped path at the center of the view:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: view.center,
    *     radius: 25
    * });
@@ -5688,7 +5686,7 @@ export interface Item {
    * // When the mouse is pressed:
    * function onMouseDown(event) {
    *     // Create a circle shaped path at the position of the mouse:
-   *     var path = new Path.Circle({
+   *     var path = Path.circle({
    *         center: event.point,
    *         radius: 25,
    *         fillColor: 'black'

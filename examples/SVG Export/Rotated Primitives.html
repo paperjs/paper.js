@@ -20,14 +20,14 @@
         path.lineTo(-50, 150);
         path.position += 100;
 
-        var rect = new Path.Rectangle({
+        var rect = Path.rectangle({
             point: [200, 100],
             size: [200, 300],
             fillColor: 'red'
         });
         rect.rotate(40);
 
-        var circle = new Path.Circle({
+        var circle = Path.circle({
             center: [200, 300],
             radius: 100,
             fillColor: 'green'
@@ -35,14 +35,14 @@
         circle.scale(0.5, 1);
         circle.rotate(40);
 
-        var ellipse = new Path.Ellipse({
+        var ellipse = Path.ellipse({
             point: [300, 300],
             size: [100, 200],
             fillColor: 'blue'
         });
         ellipse.rotate(-40);
 
-        var rect = new Path.Rectangle({
+        var rect = Path.rectangle({
             point: [250, 20],
             size: [200, 300],
             radius: [40, 20],

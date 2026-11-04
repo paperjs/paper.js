@@ -79,14 +79,14 @@ describe('Item Cloning', () => {
   })
 
   test('CompoundPath#clone()', () => {
-    const path1 = new Path.Rectangle([200, 200], [100, 100])
-    const path2 = new Path.Rectangle([50, 50], [200, 200])
+    const path1 = Path.rectangle([200, 200], [100, 100])
+    const path2 = Path.rectangle([50, 50], [200, 200])
     const compound = new CompoundPath(path1, path2)
     cloneAndCompare(compound)
   })
 
   test('Layer#clone()', () => {
-    new Path.Rectangle([200, 200], [100, 100])
+    Path.rectangle([200, 200], [100, 100])
     cloneAndCompare(paper.project.activeLayer)
   })
 
@@ -99,7 +99,7 @@ describe('Item Cloning', () => {
   })
 
   test('Group#clone()', () => {
-    const path = new Path.Circle([150, 150], 60)
+    const path = Path.circle([150, 150], 60)
     path.style = {
       strokeCap: 'round',
       strokeJoin: 'round',
@@ -109,7 +109,7 @@ describe('Item Cloning', () => {
       strokeColor: new Color(0, 0, 1),
       miterLimit: 5
     }
-    const secondPath = new Path.Circle([175, 175], 85)
+    const secondPath = Path.circle([175, 175], 85)
     const group = new Group([path, secondPath])
     cloneAndCompare(group)
   })
@@ -128,7 +128,7 @@ describe('Item Cloning', () => {
   })
 
   test('SymbolItem#clone()', () => {
-    const path = new Path.Circle([150, 150], 60)
+    const path = Path.circle([150, 150], 60)
     const definition = new SymbolDefinition(path)
     const item = new SymbolItem(definition)
     item.position = [100, 100]
@@ -137,7 +137,7 @@ describe('Item Cloning', () => {
   })
 
   test('Symbol#clone()', () => {
-    const path = new Path.Circle([150, 150], 60)
+    const path = Path.circle([150, 150], 60)
     path.style = {
       strokeCap: 'round',
       strokeJoin: 'round',
@@ -158,14 +158,14 @@ describe('Item Cloning', () => {
 
   test('Symbol#clone() keeps an item that is not centered in place', () => {
     const definition = new SymbolDefinition(
-      new Path.Circle([150, 150], 60),
+      Path.circle([150, 150], 60),
       true
     )
     equals(definition.clone().item.position, new Point(150, 150))
   })
 
   test('PatternDefinition#clone()', () => {
-    const definition = new PatternDefinition(new Path.Circle([5, 5], 5), {
+    const definition = new PatternDefinition(Path.circle([5, 5], 5), {
       tile: new Rectangle(0, 0, 20, 20),
       spacing: [5, 5],
       name: 'Dots'
@@ -178,7 +178,7 @@ describe('Item Cloning', () => {
   })
 
   test('Raster#clone()', () => {
-    const path = new Path.Circle([150, 150], 60)
+    const path = Path.circle([150, 150], 60)
     path.style = {
       fillColor: new Color(0, 0, 1),
       strokeColor: new Color(0, 0, 1)
@@ -193,16 +193,16 @@ describe('Item Cloning', () => {
   })
 
   test('Group with clipmask', () => {
-    const path = new Path.Circle([100, 100], 30),
-      path2 = new Path.Circle([100, 100], 20),
+    const path = Path.circle([100, 100], 30),
+      path2 = Path.circle([100, 100], 20),
       group = new Group([path, path2])
     group.clipped = true
     cloneAndCompare(group)
   })
 
   test('Item#clone() Hierarchy', () => {
-    const path1 = new Path.Circle([150, 150], 60)
-    const path2 = new Path.Circle([150, 150], 60)
+    const path1 = Path.circle([150, 150], 60)
+    const path2 = Path.circle([150, 150], 60)
     const clone = path1.clone()
     equals(() => path2.isAbove(path1), true)
     equals(() => clone.isAbove(path1), true)
@@ -213,7 +213,7 @@ describe('Item Cloning', () => {
     const group = new Group({
       applyMatrix: false,
       children: [
-        new Shape.Rectangle({
+        Shape.rectangle({
           size: [100, 100],
           point: [100, 100],
           strokeColor: 'red'

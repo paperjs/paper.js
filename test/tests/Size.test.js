@@ -65,7 +65,7 @@ describe('Size', () => {
   })
 
   test('Changing the size of an item resizes it', () => {
-    const shape = new Shape.Rectangle({ point: [0, 0], size: [10, 10] })
+    const shape = Shape.rectangle({ point: [0, 0], size: [10, 10] })
     shape.size.width = 20
     shape.size.height = 30
     equals(shape.size, new Size(20, 30))

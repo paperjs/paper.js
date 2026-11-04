@@ -65,14 +65,14 @@ describe('Path', () => {
   })
 
   test('Path#area', () => {
-    const rect = new Path.Rectangle({
+    const rect = Path.rectangle({
       point: [0, 0],
       size: [10, 10]
     })
 
     equals(() => rect.area, 100)
 
-    const circle = new Path.Circle({
+    const circle = Path.circle({
       center: [0, 0],
       radius: 10
     })
@@ -320,7 +320,7 @@ describe('Path', () => {
   })
 
   test('After cloning a selected item, it should be added to the Project#selectedItems array', () => {
-    const path = new Path.Circle(new Size(80, 50), 35)
+    const path = Path.circle(new Size(80, 50), 35)
     path.selected = true
     path.clone()
 
@@ -426,7 +426,7 @@ describe('Path', () => {
   })
 
   test('Path#smooth(options) up to a negative index on a closed path', () => {
-    const path = new Path.Rectangle({ point: [0, 0], size: [100, 100] })
+    const path = Path.rectangle({ point: [0, 0], size: [100, 100] })
     path.smooth({ type: 'continuous', from: 0, to: -1 })
     equals(() => path.segments[1].handleIn.isZero(), false)
   })
@@ -459,7 +459,7 @@ describe('Path', () => {
   })
 
   test('Path#reverse()', () => {
-    const path = new Path.Circle([100, 100], 30)
+    const path = Path.circle([100, 100], 30)
     path.reverse()
     equals(
       path.segments.toString(),
@@ -476,7 +476,7 @@ describe('Path', () => {
   })
 
   test('Path#fullySelected', () => {
-    const path = new Path.Circle([100, 100], 10)
+    const path = Path.circle([100, 100], 10)
     path.fullySelected = true
     path.segments[1].selected = false
     equals(() => path.fullySelected, false)
@@ -490,15 +490,15 @@ describe('Path', () => {
 
   test('Path#interpolate(from, to, factor)', () => {
     const path = new Path(),
-      path0 = new Path.Circle({
+      path0 = Path.circle({
         center: [0, 0],
         radius: 10
       }),
-      path1 = new Path.Ellipse({
+      path1 = Path.ellipse({
         center: [10, 20],
         radius: [20, 10]
       }),
-      halfway = new Path.Ellipse({
+      halfway = Path.ellipse({
         center: [5, 10],
         radius: [15, 10]
       })
@@ -614,7 +614,7 @@ describe('Path', () => {
   })
 
   test('Path#curves on closed paths', () => {
-    const path = new Path.Circle(new Point(100, 100), 100)
+    const path = Path.circle(new Point(100, 100), 100)
     equals(
       path.curves.toString(),
       '{ point1: { x: 200, y: 100 }, handle1: { x: 0, y: 55.22847 }, handle2: { x: 55.22847, y: 0 }, point2: { x: 100, y: 200 } },{ point1: { x: 100, y: 200 }, handle1: { x: -55.22847, y: 0 }, handle2: { x: 0, y: 55.22847 }, point2: { x: 0, y: 100 } },{ point1: { x: 0, y: 100 }, handle1: { x: 0, y: -55.22847 }, handle2: { x: -55.22847, y: 0 }, point2: { x: 100, y: 0 } },{ point1: { x: 100, y: 0 }, handle1: { x: 55.22847, y: 0 }, handle2: { x: 0, y: -55.22847 }, point2: { x: 200, y: 100 } }'
@@ -628,7 +628,7 @@ describe('Path', () => {
   })
 
   test('Path#flatten(maxDistance)', () => {
-    const path = new Path.Circle(new Size(80, 50), 35)
+    const path = Path.circle(new Size(80, 50), 35)
 
     // Convert its curves to points, with a flatness of 5:
     path.flatten(5)
@@ -783,7 +783,7 @@ describe('Path', () => {
   })
 
   test('Splitting a straight path should produce segments without handles', () => {
-    const path1 = new Path.Line([0, 0], [50, 50])
+    const path1 = Path.line([0, 0], [50, 50])
     const path2 = path1.splitAt(path1.length / 2)
     equals(
       () => (
@@ -795,7 +795,7 @@ describe('Path', () => {
   })
 
   test('Splitting a path with one curve in the middle result in two paths of the same length with one curve each', () => {
-    const path1 = new Path.Line([0, 0], [100, 100])
+    const path1 = Path.line([0, 0], [100, 100])
     const loc = path1.getLocationAt(path1.length / 2)
     const path2 = path1.splitAt(loc)
     equals(() => path1.curves.length, 1)
@@ -914,7 +914,7 @@ describe('Path', () => {
   })
 
   test('Path#getOffsetsWithTangent()', () => {
-    const path = new Path.Circle(new Point(0, 0), 50)
+    const path = Path.circle(new Point(0, 0), 50)
     const length = path.length
     equals(
       path.getOffsetsWithTangent(),

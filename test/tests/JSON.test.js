@@ -41,16 +41,16 @@ describe('JSON', () => {
     let topLeft = new Point(200, 200)
     let size = new Size(150, 100)
     let rectangle = new Rectangle(topLeft, size)
-    let path = new Path.Ellipse(rectangle)
+    let path = Path.ellipse(rectangle)
     path.fillColor = 'black'
 
     topLeft = new Point(5, 400)
     size = new Size(100, 50)
     rectangle = new Rectangle(topLeft, size)
-    path = new Path.Ellipse(rectangle)
+    path = Path.ellipse(rectangle)
     path.fillColor = 'yellow'
 
-    path = new Path.Circle(new Point(50, 50), 25)
+    path = Path.circle(new Point(50, 50), 25)
     path.fillColor = 'red'
 
     testExportImportJSON(paper.project)
@@ -58,9 +58,9 @@ describe('JSON', () => {
 
   test('CompoundPath', () => {
     paper.project.currentStyle.fillColor = 'black'
-    const path1 = new Path.Rectangle([200, 200], [100, 100])
-    const path2 = new Path.Rectangle([50, 50], [200, 200])
-    const path3 = new Path.Rectangle([0, 0], [400, 400])
+    const path1 = Path.rectangle([200, 200], [100, 100])
+    const path2 = Path.rectangle([50, 50], [200, 200])
+    const path3 = Path.rectangle([0, 0], [400, 400])
     new CompoundPath(path1, path2, path3)
 
     testExportImportJSON(paper.project)
@@ -72,7 +72,7 @@ describe('JSON', () => {
   })
 
   test('Gradients', () => {
-    const path = new Path.Circle([100, 100], 40)
+    const path = Path.circle([100, 100], 40)
     const gradient = new Gradient(['yellow', 'red', 'black'], true)
     const from = path.position
     const to = path.bounds.rightCenter
@@ -83,9 +83,9 @@ describe('JSON', () => {
   })
 
   test('Group transform', () => {
-    const circle1 = new Path.Circle([100, 100], 50)
+    const circle1 = Path.circle([100, 100], 50)
     circle1.fillColor = 'red'
-    const circle2 = new Path.Circle([200, 100], 50)
+    const circle2 = Path.circle([200, 100], 50)
     circle2.fillColor = 'blue'
     const group = new Group(circle1, circle2)
     group.translate([100, 100])
@@ -98,7 +98,7 @@ describe('JSON', () => {
     const point1 = new Point(10, 10)
     const size1 = new Size(50, 50)
     const rectangle1 = new Rectangle(point1, size1)
-    const path1 = new Path.Rectangle(rectangle1)
+    const path1 = Path.rectangle(rectangle1)
     path1.strokeColor = 'black'
     path1.fillColor = 'red'
     path1.name = 'square1'
@@ -109,7 +109,7 @@ describe('JSON', () => {
 
     const point2 = new Point(75, 75)
     const point22 = new Point(100, 100)
-    const path2 = new Path.Rectangle(point2, point22)
+    const path2 = Path.rectangle(point2, point22)
     path2.strokeColor = 'red'
     path2.strokeWidth = 4
     path2.fillColor = 'blue'
@@ -119,21 +119,21 @@ describe('JSON', () => {
     const point3 = new Point(150, 150)
     const size3 = new Size(50, 50)
     const rectangle3 = new Rectangle(point3, size3)
-    const path3 = new Path.Rectangle(rectangle3)
+    const path3 = Path.rectangle(rectangle3)
     path3.strokeColor = 'blue'
 
     const point4 = new Point(200, 200)
     const size4 = new Size(100, 100)
     const rectangle4 = new Rectangle(point4, size4)
     const cornerSize4 = new Size(30, 30)
-    const path4 = new Path.Rectangle(rectangle4, cornerSize4)
+    const path4 = Path.rectangle(rectangle4, cornerSize4)
     path4.strokeColor = 'yellow'
     path4.fillColor = 'purple'
     testExportImportJSON(paper.project)
   })
 
   test('Symbols', () => {
-    const ellipse = new Path.Ellipse({
+    const ellipse = Path.ellipse({
       from: [0, 0],
       to: [200, 100],
       fillColor: 'red'
@@ -149,7 +149,7 @@ describe('JSON', () => {
 
   test('Symbol items write their definition as definition', () => {
     const definition = new SymbolDefinition(
-      new Path.Rectangle({ point: [-5, -5], size: [10, 10], fillColor: 'red' })
+      Path.rectangle({ point: [-5, -5], size: [10, 10], fillColor: 'red' })
     )
     const json = definition.place([100, 100]).exportJSON({ asString: false }),
       props = json[1][1]
@@ -162,11 +162,11 @@ describe('JSON', () => {
 
   test('Symbol and pattern definitions write their names', () => {
     const symbol = new SymbolDefinition(
-      new Path.Rectangle({ point: [-5, -5], size: [10, 10], fillColor: 'red' })
+      Path.rectangle({ point: [-5, -5], size: [10, 10], fillColor: 'red' })
     )
     symbol.name = 'Star'
     const pattern = new PatternDefinition(
-      new Path.Rectangle({ point: [0, 0], size: [5, 5], fillColor: 'red' }),
+      Path.rectangle({ point: [0, 0], size: [5, 5], fillColor: 'red' }),
       { name: 'Dots' }
     )
     const placed = new Project().importJSON(
@@ -175,7 +175,7 @@ describe('JSON', () => {
     equals(placed.definition.name, 'Star')
     equals(placed.definition.item.bounds, new Rectangle(-5, -5, 10, 10))
     const filled = new Project().importJSON(
-      new Path.Rectangle({
+      Path.rectangle({
         point: [0, 0],
         size: [40, 40],
         fillColor: { pattern }
@@ -187,7 +187,7 @@ describe('JSON', () => {
 
   test('Symbol definitions keep their items in place', () => {
     const definition = new SymbolDefinition(
-      new Path.Rectangle({ point: [0, 0], size: [10, 10] })
+      Path.rectangle({ point: [0, 0], size: [10, 10] })
     )
     // Without a name, the definition writes only its item:
     equals(definition.exportJSON({ asString: false }).length, 2)
@@ -214,7 +214,7 @@ describe('JSON', () => {
   })
 
   test('transform test 1', () => {
-    const circlePath = new Path.Circle(new Point(280, 100), 25)
+    const circlePath = Path.circle(new Point(280, 100), 25)
     circlePath.strokeColor = 'black'
     circlePath.fillColor = 'white'
 
@@ -229,7 +229,7 @@ describe('JSON', () => {
   })
 
   test('transform test 2', () => {
-    const path = new Path.Rectangle(new Point(50, 50), new Size(100, 50))
+    const path = Path.rectangle(new Point(50, 50), new Size(100, 50))
     path.style = {
       fillColor: 'white',
       strokeColor: 'black'
@@ -279,7 +279,7 @@ describe('JSON', () => {
     const topLeft = [100, 100]
     const bottomRight = [200, 200]
 
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       topLeft,
       bottomRight,
       // Fill the path with a gradient of three color stops
@@ -324,7 +324,7 @@ describe('JSON', () => {
   })
 
   test('Shape#importJSON() with type after radius (#1820)', () => {
-    const circle = new Shape.Circle({
+    const circle = Shape.circle({
       center: [50, 50],
       radius: 25,
       fillColor: 'red'
@@ -341,7 +341,7 @@ describe('JSON', () => {
       'imported.bounds'
     )
 
-    const ellipse = new Shape.Ellipse({
+    const ellipse = Shape.ellipse({
       center: [50, 50],
       radius: [40, 20]
     })
@@ -360,7 +360,7 @@ describe('JSON', () => {
   })
 
   test('Item#importJSON() resets the fields that the JSON leaves out (#1425, #1324)', () => {
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [10, 10],
       size: [20, 20],
       fillColor: 'red',
@@ -389,7 +389,7 @@ describe('JSON', () => {
     equals(path.parent === parent && path.index === index, true, 'place')
     equals(path.responds('mousedown'), true, 'handlers')
     // Groups lose the children that the JSON doesn't have:
-    const group = new Group([new Path.Circle([50, 50], 10)])
+    const group = new Group([Path.circle([50, 50], 10)])
     group.importJSON('["Group",{}]')
     equals(group.children.length, 0, 'group children')
   })

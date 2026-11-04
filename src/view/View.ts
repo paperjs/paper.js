@@ -762,7 +762,7 @@ export class View extends Emitter {
    * // Fitting the view to the bounds of an item:
    *
    * // Create a circle shaped path around the top left corner of the view:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: [0, 0],
    *     radius: 50,
    *     fillColor: 'orange'
@@ -1362,7 +1362,7 @@ export interface View {
    *
    * // Create a rectangle shaped path with its top left point at:
    * // {x: 50, y: 25} and a size of {width: 50, height: 50}
-   * var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
+   * var path = Path.rectangle(new Point(50, 25), new Size(50, 50));
    * path.fillColor = 'black';
    *
    * view.onFrame = function(event) {
@@ -1379,7 +1379,7 @@ export interface View {
    * // Repositioning items when a view is resized:
    *
    * // Create a circle shaped path in the center of the view:
-   * var path = new Path.Circle(view.bounds.center, 30);
+   * var path = Path.circle(view.bounds.center, 30);
    * path.fillColor = 'red';
    *
    * view.onResize = function(event) {
@@ -1496,7 +1496,7 @@ export interface View {
    * // Scaling a path whenever the user presses the space bar:
    *
    * // Create a circle shaped path:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: new Point(50, 50),
    *     radius: 30,
    *     fillColor: 'red'
@@ -1548,7 +1548,7 @@ export interface View {
    * @example {@paperscript}
    * // Create a rectangle shaped path with its top left point at:
    * // {x: 50, y: 25} and a size of {width: 50, height: 50}
-   * var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
+   * var path = Path.rectangle(new Point(50, 25), new Size(50, 50));
    * path.fillColor = 'black';
    *
    * var frameHandler = function(event) {
@@ -1569,7 +1569,7 @@ export interface View {
    * @example {@paperscript}
    * // Create a rectangle shaped path with its top left point at:
    * // {x: 50, y: 25} and a size of {width: 50, height: 50}
-   * var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
+   * var path = Path.rectangle(new Point(50, 25), new Size(50, 50));
    * path.fillColor = 'black';
    *
    * var frameHandler = function(event) {
@@ -1595,7 +1595,7 @@ export interface View {
    * @example {@paperscript}
    * // Create a rectangle shaped path with its top left point at:
    * // {x: 50, y: 25} and a size of {width: 50, height: 50}
-   * var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
+   * var path = Path.rectangle(new Point(50, 25), new Size(50, 50));
    * path.fillColor = 'black';
    *
    * var frameHandler = function(event) {

@@ -21,7 +21,7 @@
             colors.push(color);
         }
 
-        var path = new Path.Rectangle(view.bounds);
+        var path = Path.rectangle(view.bounds);
         var gradient = new Gradient(colors, true);
         var radius = Math.max(view.size.width, view.size.height) * 0.75;
         path.fillColor = new Color(gradient, point, point + [radius, 0]);

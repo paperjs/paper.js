@@ -63,7 +63,7 @@
         dashedItems = [];
         // Draw Circle
         if (values.showCircle) {
-            dashedItems.push(new Path.Circle(vectorStart, vector.length));
+            dashedItems.push(Path.circle(vectorStart, vector.length));
         }
         // Draw Labels
         if (values.showAngleLength) {
@@ -99,9 +99,9 @@
         var through = from.rotate(vector.angle / 2);
         var to = from.rotate(vector.angle);
         var end = center + to;
-        dashedItems.push(new Path.Line(center,
+        dashedItems.push(Path.line(center,
                 center + new Point(radius + threshold, 0)));
-        dashedItems.push(new Path.Arc(center + from, center + through, end));
+        dashedItems.push(Path.arc(center + from, center + through, end));
         var arrowVector = to.normalize(7.5).rotate(vector.angle < 0 ? -90 : 90);
         dashedItems.push(new Path([
                 end + arrowVector.rotate(135),

@@ -41,7 +41,7 @@ describe('PathItem Contains', () => {
 
   test('Path#contains() (regular polygon: #208)', () => {
     // A hexagon with a vertex at the top, as it was created in #208:
-    const path = new Path.RegularPolygon([0, 0], 6, 20).rotate(30)
+    const path = Path.regularPolygon([0, 0], 6, 20).rotate(30)
 
     testPoint(path, new Point(0, -20), true)
     testPoint(path, new Point(0, -10), true)
@@ -63,7 +63,7 @@ describe('PathItem Contains', () => {
   })
 
   test('Path#contains() (circle contours)', () => {
-    const path = new Path.Circle({
+    const path = Path.circle({
       center: [100, 100],
       radius: 50,
       fillColor: 'blue'
@@ -80,7 +80,7 @@ describe('PathItem Contains', () => {
   })
 
   test('Path#contains() (transformed circle contours)', () => {
-    const path = new Path.Circle({
+    const path = Path.circle({
       center: [200, 200],
       radius: 50,
       fillColor: 'blue'
@@ -102,12 +102,12 @@ describe('PathItem Contains', () => {
       point: new Point(0, 0),
       size: new Size(200, 40)
     })
-    const path = new Path.Rectangle(rectangle, new Size(20, 20))
+    const path = Path.rectangle(rectangle, new Size(20, 20))
     testPoint(path, new Point(100, 20), true)
   })
 
   test('Path#contains() (open circle)', () => {
-    const path = new Path.Circle([100, 100], 100)
+    const path = Path.circle([100, 100], 100)
     // Open between its top and right, filled up to the chord between them:
     path.closed = false
     path.fillColor = '#ff0000'
@@ -116,8 +116,8 @@ describe('PathItem Contains', () => {
 
   test('CompoundPath#contains() (donut)', () => {
     const path = new CompoundPath([
-      new Path.Circle([0, 0], 50),
-      new Path.Circle([0, 0], 25)
+      Path.circle([0, 0], 50),
+      Path.circle([0, 0], 25)
     ])
 
     function testDonut(path, title) {
@@ -252,7 +252,7 @@ describe('PathItem Contains', () => {
   })
 
   test('Shape#contains()', () => {
-    let shape = new Shape.Circle([0, 0], 100)
+    let shape = Shape.circle([0, 0], 100)
 
     testPoint(shape, new Point(0, 0), true)
     testPoint(shape, new Point(0, -100), true)
@@ -262,7 +262,7 @@ describe('PathItem Contains', () => {
 
     let size = new Size(100, 200)
     let half = size.divide(2)
-    shape = new Shape.Ellipse(new Rectangle(half.negate(), size))
+    shape = Shape.ellipse(new Rectangle(half.negate(), size))
     testPoint(shape, new Point(0, 0), true)
     testPoint(shape, new Point(0, -1).multiply(half), true)
     testPoint(
@@ -283,7 +283,7 @@ describe('PathItem Contains', () => {
 
     ;((size = new Size(100, 200)),
       (half = size.divide(2)),
-      (shape = new Shape.Rectangle(half.negate(), size)))
+      (shape = Shape.rectangle(half.negate(), size)))
     testPoint(shape, new Point(0, 0), true)
     testPoint(shape, new Point(0, 0.9).multiply(half), true)
     testPoint(shape, new Point(0, 1).multiply(half), true)
@@ -294,7 +294,7 @@ describe('PathItem Contains', () => {
   })
 
   test('Path#contains() (rectangle contours)', () => {
-    const path = new Path.Rectangle(new Point(100, 100), [200, 200]),
+    const path = Path.rectangle(new Point(100, 100), [200, 200]),
       curves = path.curves
 
     for (let i = 0; i < curves.length; i++) {
@@ -304,7 +304,7 @@ describe('PathItem Contains', () => {
   })
 
   test('Path#contains() (rotated rectangle contours)', () => {
-    const path = new Path.Rectangle(new Point(100, 100), [200, 200]),
+    const path = Path.rectangle(new Point(100, 100), [200, 200]),
       curves = path.curves
 
     path.rotate(45)
@@ -414,11 +414,11 @@ describe('PathItem Contains', () => {
   test('CompoundPath#contains() (nested touching circles and other edge cases: #944)', () => {
     let cp = new CompoundPath({
       children: [
-        new Path.Circle({
+        Path.circle({
           center: [200, 200],
           radius: 100
         }),
-        new Path.Circle({
+        Path.circle({
           center: [150, 200],
           radius: 50
         })
@@ -429,20 +429,20 @@ describe('PathItem Contains', () => {
 
     cp = new CompoundPath({
       children: [
-        new Path.Circle({
+        Path.circle({
           center: [200, 200],
           radius: 100
         }),
-        new Path.Circle({
+        Path.circle({
           center: [200, 200],
           radius: 100,
           clockwise: false
         }),
-        new Path.Circle({
+        Path.circle({
           center: [200, 200],
           radius: 100
         }),
-        new Path.Circle({
+        Path.circle({
           center: [150, 200],
           radius: 50,
           clockwise: false
@@ -453,11 +453,11 @@ describe('PathItem Contains', () => {
 
     cp = new CompoundPath({
       children: [
-        new Path.Rectangle({
+        Path.rectangle({
           point: [100, 100],
           size: [200, 200]
         }),
-        new Path.Rectangle({
+        Path.rectangle({
           point: [100, 150],
           size: [100, 100]
         })
@@ -468,11 +468,11 @@ describe('PathItem Contains', () => {
 
     cp = new CompoundPath({
       children: [
-        new Path.Rectangle({
+        Path.rectangle({
           point: [100, 100],
           size: [200, 200]
         }),
-        new Path.Rectangle({
+        Path.rectangle({
           point: [100, 100],
           size: [200, 200]
         })
@@ -483,11 +483,11 @@ describe('PathItem Contains', () => {
 
     cp = new CompoundPath({
       children: [
-        new Path.Rectangle({
+        Path.rectangle({
           point: [100, 100],
           size: [200, 200]
         }),
-        new Path.Rectangle({
+        Path.rectangle({
           point: [300, 100],
           size: [200, 200]
         })
