@@ -3,7 +3,7 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "lib": ["ES2022", "DOM"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     // Only syntax that Node can strip, so the sources run without a build:
     "erasableSyntaxOnly": true,
     "verbatimModuleSyntax": true,
