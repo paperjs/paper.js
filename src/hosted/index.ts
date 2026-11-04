@@ -21,6 +21,12 @@ import { inject } from '../util/object.ts'
 registerClasses({ HostItem })
 inject(PaperScope.prototype, { HostItem }, { enumerable: true })
 
+declare module '../core/PaperScope.ts' {
+  interface PaperScope {
+    HostItem: typeof HostItem
+  }
+}
+
 export * from '../index.ts'
 export { default } from '../index.ts'
 export { HostItem }
