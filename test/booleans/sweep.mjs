@@ -10,17 +10,17 @@
  * All rights reserved.
  */
 
-// The perturbation sweep of the boolean operations, see `gulp test:booleans`.
+// The perturbation sweep of the boolean operations, see run.mjs.
 // For each boolean operation in the tests, in issues.json and in the cases of
-// generate.js, it moves the second operand by tiny amounts, and counts how many
+// generate.mjs, it moves the second operand by tiny amounts, and counts how many
 // of these results keep the fill of the unmoved one. It also counts the points
 // that the results fill wrongly, by the operation applied to the operands' own
 // contains(), at random points away from the outlines and at points stepped
 // off the outlines by multiples of the operation's epsilon, and checks that
 // the operations' graphs are planar.
 //
-// Usage: node sweep.js <paper build> <first case>[:<step>] [exclusion], or
-// <paper build> count. The points left out lie within 1e-4 times the diagonal
+// Usage: node sweep.mjs <paper entry> <first case>[:<step>] [exclusion], or
+// <paper entry> count, e.g. src/node/index.ts as the entry. The points left out lie within 1e-4 times the diagonal
 // of the operands' bounds of an outline, or within the given multiple of the
 // operation's epsilon. With a scale and a translation as fifth and sixth
 // arguments, the operands are scaled about the origin and moved by both, and
@@ -29,11 +29,12 @@
 // from the first case on, so that the caller can restart after a case that
 // doesn't return.
 
-var fs = require('fs'),
-    path = require('path'),
-    vm = require('vm');
+import fs from 'node:fs';
+import path from 'node:path';
+import vm from 'node:vm';
+import generate from './generate.mjs';
 
-var paper = require(path.resolve(process.argv[2])),
+var paper = (await import(path.resolve(process.argv[2]))).default,
     exclusion = +process.argv[4],
     scale = +process.argv[5] || 1,
     translation = +process.argv[6] || 0;
@@ -103,7 +104,7 @@ function collect(file) {
     var source = fs.readFileSync(file, 'utf8')
             .replace(/^import\b[^;]*?\bfrom\s+'[^']+'$/gm, '');
     vm.runInThisContext(source, { filename: file });
-    Base.set(prototype, originals);
+    Object.assign(prototype, originals);
     return cases;
 }
 
@@ -115,8 +116,8 @@ function isClosed(item) {
 
 function isNear(item, point, tolerance) {
     // Only look for the nearest point on curves whose bounds come close:
-    return item.getCurves().some(function(curve) {
-        return curve.getBounds().expand(2 * tolerance).contains(point)
+    return item.curves.some(function(curve) {
+        return curve.bounds.expand(2 * tolerance).contains(point)
                 && curve.getNearestPoint(point).getDistance(point) < tolerance;
     });
 }
@@ -228,10 +229,10 @@ function addNearSamples(a, b, result, op, epsilon, count, near) {
 }
 
 function sweep(entry) {
-    var a = Item.importJSON(entry.a),
-        b = Item.importJSON(entry.b),
+    var a = paper.project.importJSON(entry.a),
+        b = paper.project.importJSON(entry.b),
         op = entry.op,
-        options = Base.set({}, entry.options, { insert: false }),
+        options = Object.assign({}, entry.options, { insert: false }),
         result = { label: entry.label, op: op };
     a.remove();
     b.remove();
@@ -315,8 +316,10 @@ function sweep(entry) {
 }
 
 var cases = collect(
-        path.join(__dirname, '..', 'tests', 'Path_Boolean.test.js'))
-        .concat(require('./issues.json'), require('./generate.js')(paper, 40, 1));
+        path.join(import.meta.dirname, '..', 'tests', 'Path_Boolean.test.js'))
+        .concat(JSON.parse(fs.readFileSync(
+                path.join(import.meta.dirname, 'issues.json'), 'utf8')),
+            generate(paper, 40, 1));
 if (process.argv[3] === 'count') {
     console.log(cases.length);
 } else {
