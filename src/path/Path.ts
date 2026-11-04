@@ -54,6 +54,7 @@ import { PathFlattener } from './PathFlattener.ts'
 import { PathFitter } from './PathFitter.ts'
 import { defineConstructors } from './Path.Constructors.ts'
 import { defineStrokeProfile } from './Path.StrokeProfile.ts'
+import { getStrokeOutline } from './PathItem.Offset.ts'
 
 /**
  * The path item represents a path in a Paper.js project.
@@ -78,7 +79,7 @@ export class Path extends PathItem {
   _length: number
   _area: number
   // The cached outline of the stroke profile, see #_getStrokeOutline():
-  _strokeOutline: Path
+  _strokeOutline: PathItem
 
   /**
    * Creates a new path item and places it at the top of the active layer.
@@ -180,7 +181,7 @@ export class Path extends PathItem {
     this._initialize(!segments && !isPathData && arg)
   }
 
-  _equals(item: Item): boolean {
+  _equals(item: this): boolean {
     return (
       this._closed === item._closed &&
       equals(this._segments, item._segments) &&
@@ -2733,13 +2734,19 @@ export class Path extends PathItem {
     const segments = this._segments
     const closed = this._closed
     return options.handle
-      ? Path.getHandleBounds(segments, closed, this, matrix, options)
+      ? Path._getSegmentHandleBounds(segments, closed, this, matrix, options)
       : !options.stroke
-        ? Path.getBounds(segments, closed, this, matrix, options)
+        ? Path._getSegmentBounds(segments, closed, this, matrix, options)
         : this._hasStrokeProfile()
           ? // Stroke profiles cover the outline of their stroke:
             this._getStrokeOutline().getBounds(matrix)
-          : Path.getStrokeBounds(segments, closed, this, matrix, options)
+          : Path._getSegmentStrokeBounds(
+              segments,
+              closed,
+              this,
+              matrix,
+              options
+            )
   }
 
   /**
@@ -2747,7 +2754,7 @@ export class Path extends PathItem {
    *
    * @private
    */
-  static getBounds(
+  static _getSegmentBounds(
     segments: Segment[],
     closed: boolean,
     path?: Path,
@@ -2801,7 +2808,7 @@ export class Path extends PathItem {
    *
    * @private
    */
-  static getStrokeBounds(
+  static _getSegmentStrokeBounds(
     segments: Segment[],
     closed: boolean,
     path: Path,
@@ -2818,7 +2825,7 @@ export class Path extends PathItem {
     )
     // Start with normal path bounds with added stroke padding. Then we
     // only need to look at each segment and handle join / cap / miter.
-    let bounds = Path.getBounds(
+    let bounds = Path._getSegmentBounds(
       segments,
       closed,
       path,
@@ -2902,7 +2909,7 @@ export class Path extends PathItem {
    *
    * @private
    */
-  static getHandleBounds(
+  static _getSegmentHandleBounds(
     segments: Segment[],
     closed: boolean,
     path: Path,
@@ -2962,6 +2969,14 @@ export class Path extends PathItem {
       }
     }
     return new Rectangle(x1, y1, x2 - x1, y2 - y1)
+  }
+
+  // The outline of the path's stroke in its own coordinates, with its
+  // dashes, kept until its geometry or its stroke changes, see
+  // #_changed(). Paths with a stroke profile draw, bound and hit-test
+  // their stroke with it:
+  _getStrokeOutline(): PathItem {
+    return (this._strokeOutline ||= getStrokeOutline(this))
   }
 
   static {

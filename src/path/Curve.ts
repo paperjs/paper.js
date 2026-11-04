@@ -589,25 +589,30 @@ export class Curve extends Base {
    * The bounding rectangle of the curve excluding stroke width.
    */
   get bounds(): Rectangle {
-    return this.#getBounds('getBounds')
+    return this.#getBounds(false)
   }
 
   /**
    * The bounding rectangle of the curve including stroke width.
    */
   get strokeBounds(): Rectangle {
-    return this.#getBounds('getStrokeBounds')
+    return this.#getBounds(true)
   }
 
-  #getBounds(name: 'getBounds' | 'getStrokeBounds'): Rectangle {
+  #getBounds(stroke: boolean): Rectangle {
     this.#bounds ||= {}
-    let bounds = this.#bounds[name]
+    const key = stroke ? 'strokeBounds' : 'bounds'
+    let bounds = this.#bounds[key]
     if (!bounds) {
       // Calculate the curve bounds by passing a segment list for the
-      // curve to the static Path.get*Bounds methods. Without a path,
-      // there is no stroke, so the stroke bounds are the bounds.
+      // curve to the static Path._getSegment*Bounds() methods. Without a
+      // path, there is no stroke, so the stroke bounds are the bounds.
       const path = this._path
-      bounds = this.#bounds[name] = Path[path ? name : 'getBounds'](
+      const getBounds =
+        path && stroke
+          ? Path._getSegmentStrokeBounds
+          : Path._getSegmentBounds
+      bounds = this.#bounds[key] = getBounds(
         [this._segment1, this._segment2],
         false,
         path
@@ -620,7 +625,7 @@ export class Curve extends Base {
    * The bounding rectangle of the curve including handles.
    */
   get handleBounds(): Rectangle {
-    // Unlike Path.getHandleBounds(), only include the curve's own handles,
+    // Unlike Path._getSegmentHandleBounds(), only include the curve's own handles,
     // not the outer handles of its two segments.
     const v = this.getValues()
     const x1 = Math.min(v[0], v[2], v[4], v[6])

@@ -38,7 +38,12 @@ export type SegmentProps = {
 /**
  * What a segment can be passed as, where a function takes one.
  */
-export type SegmentLike = Segment | PointLike | SegmentProps
+export type SegmentLike =
+  | Segment
+  | PointLike
+  | SegmentProps
+  // A point with its handles, as JSON stores segments:
+  | [PointLike, PointLike?, PointLike?]
 
 /**
  * The Segment object represents the points of a path through which its

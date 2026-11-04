@@ -25,7 +25,9 @@ type EffectProps = {
   type: string
   label?: string
   parameters?: Record<string, EffectParameter>
-  onApply?: (this: EffectInstance, event: EffectEvent) => Item | void
+  // Called on the instance, or on the effect itself where Path applies the
+  // outline effect to its stroke profile without one:
+  onApply?: (this: EffectInstance | Effect, event: EffectEvent) => Item | void
   onEditParameters?: (this: EffectInstance) => void
 }
 
@@ -239,7 +241,7 @@ function registerEffects() {
       miterLimit: { label: 'Miter Limit', type: 'number', value: 10 }
     },
 
-    onApply(event) {
+    onApply(this: EffectInstance, event) {
       return applyToPaths(event.art, path =>
         path.offset(this.distance, {
           join: this.join,

@@ -568,7 +568,7 @@ export class View extends Emitter {
     font: string,
     lines: string[],
     letterSpacing: string,
-    direction?: CanvasDirection
+    direction?: string
   ): number {
     const ctx = this._context || getContext(1, 1)
     let width = 0
@@ -577,7 +577,7 @@ export class View extends Emitter {
       const prevLetterSpacing = ctx.letterSpacing
       const prevDirection = ctx.direction
       // Shaping can differ by direction, as with mirrored brackets:
-      const textDirection = direction || 'ltr'
+      const textDirection = (direction || 'ltr') as CanvasDirection
       ctx.font = font
       ctx.letterSpacing = letterSpacing
       if (prevDirection !== textDirection) {

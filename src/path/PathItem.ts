@@ -39,6 +39,17 @@ import {
   tracePaths
 } from './PathItem.Boolean.ts'
 import type { BooleanOptions, Graph, Winding } from './PathItem.Boolean.ts'
+import type { Group } from '../item/Group.ts'
+import {
+  dashPathItem,
+  offsetPathItem,
+  outlinePathItem
+} from './PathItem.Offset.ts'
+import type {
+  DashOptions,
+  OffsetOptions,
+  OutlineOptions
+} from './PathItem.Offset.ts'
 
 /**
  * The PathItem class is the base for any items that describe paths and
@@ -1461,6 +1472,119 @@ export abstract class PathItem extends Item {
     return getInteriorPoint(this)
   }
 
+  /**
+   * {@grouptitle Offsetting and Outlining}
+   *
+   * Offsets the path item by the given distance and returns the result
+   * as a new path item. Closed paths and compound paths grow by positive
+   * distances and shrink by negative ones, open paths are offset along
+   * their normals for positive distances, and against them for negative
+   * ones. As with the boolean operations, the path item's matrix is
+   * applied first.
+   *
+   * @option [options.join='miter'] {String} the shape of the corners
+   *     that the offset adds where the path turns away from it:
+   *     {@values 'miter', 'round', 'bevel'}
+   * @option [options.miterLimit=10] {Number} the limit of miter corners,
+   *     see {@link Style#miterLimit}
+   * @option [options.insert=true] {Boolean} whether the resulting item
+   *     should be inserted back into the scene graph, above this path
+   *
+   * @param distance the distance to offset the path item by
+   * @param options the offset options
+   * @return the resulting path item
+   *
+   * @example {@paperscript}
+   * var path = new Path.Star([50, 50], 5, 20, 40);
+   * path.strokeColor = 'black';
+   * var result = path.offset(10, { join: 'round' });
+   * result.strokeColor = 'red';
+   */
+  offset(distance: number, options?: OffsetOptions): PathItem {
+    return offsetPathItem(this, distance, options)
+  }
+
+  /**
+   * Outlines the stroke of the path item, and returns the area that it
+   * covers as a new path item, filled with the stroke's color. As with
+   * the boolean operations, the path item's matrix is applied first.
+   * Dashed strokes are outlined as their dashes, each with the stroke's
+   * caps, as the canvas draws them, see {@link #dash(options)}.
+   *
+   * Paths with a {@link Path#strokeProfile} are outlined as the area
+   * that its pens sweep. Their round joins and caps are the pens
+   * themselves, and their other joins and caps connect the points where
+   * the pens touch the sides of the stroke. Steps in the profile end
+   * the parts of the stroke straight across, as butt caps do.
+   *
+   * @option [options.width=this.strokeWidth] {Number} the width of the
+   *     stroke
+   * @option [options.join=this.strokeJoin] {String} the shape of the
+   *     stroke's corners: {@values 'miter', 'round', 'bevel'}
+   * @option [options.cap=this.strokeCap] {String} the shape of the
+   *     stroke's ends: {@values 'round', 'square', 'butt'}
+   * @option [options.miterLimit=this.miterLimit] {Number} the limit of
+   *     miter corners, see {@link Style#miterLimit}
+   * @option [options.insert=true] {Boolean} whether the resulting item
+   *     should be inserted back into the scene graph, above this path
+   *
+   * @param options the outline options
+   * @return the resulting path item
+   *
+   * @example {@paperscript}
+   * var path = new Path.Arc([20, 70], [50, 20], [80, 70]);
+   * path.strokeColor = 'black';
+   * path.strokeWidth = 20;
+   * path.strokeCap = 'round';
+   * var result = path.outline();
+   * result.strokeColor = 'red';
+   * result.strokeWidth = 1;
+   * path.remove();
+   */
+  outline(options?: OutlineOptions): PathItem {
+    return outlinePathItem(this, options)
+  }
+
+  /**
+   * Cuts the stroke of the path item into its dashes, as the canvas draws
+   * them with the {@link Style#dashArray} and {@link Style#dashOffset}
+   * of the path item or those of the options, and returns them as a new
+   * group of open paths with the path item's style, without its dash
+   * pattern. The pattern starts over on each path of a compound path,
+   * and the dashes keep the parts of the paths' stroke profiles. As with
+   * the boolean operations, the path item's matrix is applied first.
+   *
+   * @option [options.dashArray=this.dashArray] {Number[]} the lengths of
+   *     the dashes and the gaps between them
+   * @option [options.dashOffset=this.dashOffset] {Number} the offset
+   *     into the pattern at which the dashes start
+   * @option [options.insert=true] {Boolean} whether the resulting group
+   *     should be inserted back into the scene graph, above this path
+   *     item
+   *
+   * @param options the dash options
+   * @return the dashes, as a new group of paths
+   *
+   * @example {@paperscript}
+   * var path = new Path.Circle({
+   *     center: [80, 50],
+   *     radius: 35,
+   *     strokeColor: 'black',
+   *     strokeWidth: 4,
+   *     dashArray: [12, 6]
+   * });
+   * // Turn every other dash red:
+   * var dashes = path.dash();
+   * dashes.children.forEach(function(dash, i) {
+   *     if (i % 2)
+   *         dash.strokeColor = 'red';
+   * });
+   * path.remove();
+   */
+  dash(options?: DashOptions): Group {
+    return dashPathItem(this, options)
+  }
+
   // The graph of a boolean operation, to check its planarity in the tests:
   static _createGraph(path1: PathItem, path2?: PathItem): Graph {
     return createGraph(getOperands(path1, path2))
@@ -1470,6 +1594,7 @@ export abstract class PathItem extends Item {
   abstract get closed(): boolean
   abstract set closed(closed: boolean)
   abstract get area(): number
+  abstract get length(): number
   abstract get curves(): Curve[]
 
   static {
