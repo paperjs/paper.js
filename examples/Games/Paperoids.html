@@ -217,7 +217,7 @@
 
                 // if bounding rect collision, do a line intersection test
                 if (crashRock) {
-                    var tempRock = crashRock.symbol.definition.clone();
+                    var tempRock = crashRock.definition.item.clone();
                     tempRock.transform(crashRock.matrix);
                     tempRock.remove();
                     var intersections = this.item.firstChild.getIntersections(tempRock);
@@ -348,7 +348,7 @@
                 }
             },
             explode: function(rock) {
-                var boomRock = rock.symbol.definition.clone();
+                var boomRock = rock.definition.item.clone();
                 boomRock.position = rock.position;
                 for (var i = 0; i < boomRock.segments.length; i++) {
                     var segmentPoint = boomRock.segments[i].point;

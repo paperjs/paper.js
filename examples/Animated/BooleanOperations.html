@@ -93,7 +93,7 @@
             }
             result.selected = true;
             result.fillColor = colors[curIndex % colors.length];
-            result.moveBelow(text);
+            result.insertBelow(text);
 
             // If the result is a group, color each of its children differently:
             if (result instanceof Group) {

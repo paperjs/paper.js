@@ -21,7 +21,7 @@
 
         // Transform the raster so it fills the bounding rectangle
         // of the view:
-        raster.fitBounds(view.bounds, true);
+        raster.fitBounds(view.bounds, 'cover');
 
         // Hide the raster:
         raster.visible = false;
@@ -67,7 +67,7 @@
         // Whenever the window is resized, we need to fit the raster
         // in the bounding rectangle of the view again:
         function onResize() {
-            raster.fitBounds(view.bounds, true);
+            raster.fitBounds(view.bounds, 'cover');
         }
 
         function onFrame(event) {
