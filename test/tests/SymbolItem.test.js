@@ -25,14 +25,14 @@ import { equals, test } from '../helpers.js'
 
 describe('Symbol & Placed Symbol', () => {
   test('SymbolItem#bounds', () => {
-    const path = new Path.Circle([50, 50], 50)
+    const path = new Path.Circle([0, 0], 50)
     path.strokeColor = 'black'
     path.strokeWidth = 1
     path.strokeCap = 'round'
     path.strokeJoin = 'round'
     equals(
       path.strokeBounds,
-      new Rectangle(-0.5, -0.5, 101, 101),
+      new Rectangle(-50.5, -50.5, 101, 101),
       'Path initial bounds'
     )
     const definition = new SymbolDefinition(path)
@@ -79,11 +79,12 @@ describe('Symbol & Placed Symbol', () => {
     equals(path2.bounds, new Rectangle(10, -10, 20, 20), 'path2 bounds')
     const group = new Group(path, path2)
     equals(group.bounds, new Rectangle(-10, -10, 40, 20), 'Group bounds')
+    // The group keeps its place, with its origin at the placed position:
     const definition = new SymbolDefinition(group)
     const instance = definition.place(new Point(50, 50))
     equals(
       instance.bounds,
-      new Rectangle(30, 40, 40, 20),
+      new Rectangle(40, 40, 40, 20),
       'Instance bounds'
     )
   })
@@ -163,7 +164,7 @@ describe('Symbol & Placed Symbol', () => {
   })
 
   test('SymbolDefinition#place()', () => {
-    const path = new Path.Circle([50, 50], 50)
+    const path = new Path.Circle([0, 0], 50)
     const symbol = new SymbolDefinition(path)
     const placed = symbol.place()
     equals(() => placed.parent === paper.project.activeLayer, true)
@@ -174,7 +175,7 @@ describe('Symbol & Placed Symbol', () => {
   })
 
   test('SymbolDefinition#place(position)', () => {
-    const path = new Path.Circle([50, 50], 50)
+    const path = new Path.Circle([0, 0], 50)
     const symbol = new SymbolDefinition(path)
     const placed = symbol.place(new Point(100, 100))
     equals(() => placed.position.toString(), '{ x: 100, y: 100 }')
@@ -182,7 +183,7 @@ describe('Symbol & Placed Symbol', () => {
 
   test('SymbolItem#bounds with #applyMatrix = false', () => {
     const path = new Path.Rectangle({
-      point: [100, 100],
+      center: [0, 0],
       size: [50, 50],
       strokeColor: 'red',
       applyMatrix: false,
@@ -338,6 +339,7 @@ describe('Symbol & Placed Symbol', () => {
 
   test('SymbolItem drawing keeps the global matrix of the definition (#1684)', () => {
     const path = new Path.Rectangle({
+      center: [0, 0],
       size: [20, 20],
       strokeWidth: 10,
       strokeColor: 'red',
@@ -372,7 +374,7 @@ describe('Symbol & Placed Symbol', () => {
   test('SymbolItem#embed()', () => {
     const layer = paper.project.activeLayer
     const path = new Path.Rectangle({
-      point: [0, 0],
+      center: [0, 0],
       size: [20, 10],
       fillColor: 'red'
     })

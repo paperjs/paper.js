@@ -475,10 +475,7 @@ const importers: Record<string, Importer> = {
 
   // https://www.w3.org/TR/SVG/struct.html#SymbolElement
   'symbol'(node, type, options, isRoot) {
-    return new SymbolDefinition(
-      // Keep the content where it is, as SVG does:
-      importGroup(node, type, options, isRoot), { dontCenter: true }
-    )
+    return new SymbolDefinition(importGroup(node, type, options, isRoot))
   },
 
   // https://www.w3.org/TR/SVG/struct.html#DefsElement
