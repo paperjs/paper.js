@@ -89,10 +89,17 @@ export default [
   },
   {
     // TypeScript checks redeclarations itself, and allows a class to merge
-    // with an interface of the same name:
+    // with an interface of the same name. Its own rule for unused variables
+    // knows the interfaces that module augmentations declare:
     files: ['src/**/*.ts'],
+    plugins: { '@typescript-eslint': tseslint.plugin },
     rules: {
-      'no-redeclare': 'off'
+      'no-redeclare': 'off',
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { vars: 'local', args: 'none', caughtErrors: 'none' }
+      ]
     }
   },
   {

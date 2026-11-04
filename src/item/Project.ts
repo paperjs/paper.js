@@ -42,6 +42,8 @@ type ProjectChange = {
   item?: Item
   definition?: SymbolDefinition | PatternDefinition
   flags: number
+  // Whether the children were reordered, see Item.Hosted:
+  reordered?: boolean
 }
 
 /**

@@ -543,7 +543,7 @@ export class Item extends Emitter {
   // The styles that the item's style stands for, merged when read and set on
   // all when written, see Style.merge() and Style.apply().
   // @overridable
-  _getStyles(/* style, key, setting */): Style[] | null {
+  _getStyles(style?: Style, key?: string, setting?: boolean): Style[] | null {
     // None for plain items: their style is their own.
     return null
   }

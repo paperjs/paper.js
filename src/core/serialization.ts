@@ -33,6 +33,15 @@ export function registerClasses(
 }
 
 /**
+ * Returns the class registered under the name, see registerClasses().
+ *
+ * @private
+ */
+export function getClass(name: string): new (...args: any[]) => any {
+  return classes[name]
+}
+
+/**
  * Serializes the passed object into a format that can be passed to
  * `JSON.stringify()` for JSON serialization.
  */
