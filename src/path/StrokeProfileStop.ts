@@ -124,14 +124,14 @@ export class StrokeProfileStop extends Base {
    */
   get offset(): number {
     const path = this._path
-    return path?._getOffsetAtIndex(this._index) ?? this._offset
+    return path?._strokeProfile.getOffsetAt(this._index) ?? this._offset
   }
 
   set offset(offset: number) {
     const path = this._path
     if (path) {
-      this._index = path._getIndexAt(offset)
-      path._sortStrokeProfile()
+      this._index = path._strokeProfile.getIndexAt(offset)
+      path._strokeProfile.sort()
       this.#changed()
     } else {
       this._offset = offset

@@ -37,7 +37,9 @@ import {
   findSignChange,
   isZero,
   paper,
-  solveQuadratic
+  setStrokeProfilePart,
+  solveQuadratic,
+  takeStrokeProfile
 } from '../internal.ts'
 import type { Item } from '../item/Item.ts'
 import type { PathItem } from './PathItem.ts'
@@ -566,8 +568,8 @@ function outlineStroke(
   // the sides end, at stops, steps, corners and reversals, we add the
   // pens there as they are, as each lies within the area.
   function addProfilePath(path: Path) {
-    const pens = path._getStrokeProfilePens()
-    const getValues = path._getStrokeProfileValues()
+    const pens = path._strokeProfile.getPens()
+    const getValues = path._strokeProfile.getValues()
     const { _closed: closed, length, curves } = path
     const spans: Span[] = []
     const ends: PartEnd[] = []
@@ -2456,7 +2458,7 @@ function getDashes(
 
   function addDashes(path: Path) {
     const { curves, length } = path
-    const profile = path._strokeProfile && path._takeStrokeProfile()
+    const profile = path._strokeProfile && takeStrokeProfile(path)
     let index = 0
     let start = 0
     let from = -dashOffset
@@ -2512,7 +2514,7 @@ function getDashes(
       }
       const dash = new Path({ segments, insert: false })
       if (profile) {
-        dash._setStrokeProfilePart(profile, from, to)
+        setStrokeProfilePart(dash, profile, from, to)
       }
       dashes.push(dash)
     }
