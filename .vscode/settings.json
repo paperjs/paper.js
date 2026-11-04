@@ -1,5 +1,18 @@
 {
   "files.exclude": {
     "pnpm-lock.yaml": true
+  },
+  "javascript.preferences.quoteStyle": "single",
+  "typescript.preferences.quoteStyle": "single",
+  "javascript.format.semicolons": "remove",
+  "typescript.format.semicolons": "remove",
+  // ESLint formats through its Prettier rule, and leaves alone the folders it
+  // ignores, which keep their old style until the ES modules port:
+  "eslint.useFlatConfig": true,
+  "editor.formatOnSave": false,
+  "[javascript][typescript]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
   }
 }
