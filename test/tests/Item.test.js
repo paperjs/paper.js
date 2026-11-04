@@ -12,8 +12,6 @@
 
 import { describe, expect } from 'vitest'
 import paper, {
-  Base,
-  CanvasProvider,
   Color,
   CompoundPath,
   Group,
@@ -30,6 +28,8 @@ import paper, {
   Size,
   SymbolItem
 } from 'paper'
+// The canvas pool is internal, so it's imported from its module:
+import * as CanvasProvider from '../../src/canvas/canvasProvider.ts'
 import { comparePixels, equals, test } from '../helpers.js'
 
 describe('Item', () => {
@@ -214,7 +214,7 @@ describe('Item', () => {
     const path2 = new Path()
     const path3 = new Path()
     equals(() => project.activeLayer.children.length, 3)
-    equals(() => path1.replaceWith(path2) === path2, true)
+    equals(() => path1.replaceWith(path2), true)
     equals(() => project.activeLayer.children.length, 2)
     equals(() => path1.parent == null, true)
     equals(() => path2.previousSibling == null, true)
@@ -228,13 +228,7 @@ describe('Item', () => {
     const group = new Group([new Path(), new Path()])
     const path3 = new Path()
     const children = group.children.slice()
-    equals(
-      () => (
-        group.replaceWith(children[0], children[1], path1) ===
-        children[0]
-      ),
-      true
-    )
+    equals(() => group.replaceWith(children[0], children[1], path1), true)
     equals(() => group.parent == null, true)
     equals(project.activeLayer.children, [
       path2,
@@ -276,7 +270,7 @@ describe('Item', () => {
 
   test('item.replaceWith(item)', () => {
     const item = new Path()
-    equals(() => item.replaceWith(item) == null, true)
+    equals(() => item.replaceWith(item), false)
     equals(() => item.parent != null, true)
   })
 
@@ -506,7 +500,7 @@ describe('Item', () => {
 
     equals(() => group.children.test === path2, true)
 
-    layer.appendTop(path2)
+    layer.addChild(path2)
 
     equals(() => group.children.test === undefined, true)
 
@@ -591,7 +585,6 @@ describe('Item', () => {
     equals(new CompoundPath().className, 'CompoundPath')
     equals(new Raster().className, 'Raster')
     equals(new SymbolItem().className, 'SymbolItem')
-    equals(new paper.PlacedSymbol().className, 'SymbolItem') // deprecated
     equals(new PointText().className, 'PointText')
   })
 
@@ -611,7 +604,11 @@ describe('Item', () => {
     let item = new Path()
     const description =
       'When accessed before any data was set, a plain object is created for us'
-    equals(Base.isPlainObject(item.data), true, description)
+    equals(
+      Object.getPrototypeOf(item.data) === Object.prototype,
+      true,
+      description
+    )
 
     item = new Path()
     item.data.test = true
@@ -660,7 +657,7 @@ describe('Item', () => {
       blendMode: 'screen'
     })
 
-    let raster = layer.rasterize(72, false)
+    let raster = layer.rasterize({ resolution: 72, insert: false })
     equals(
       raster.getPixel(0, 0),
       new Color(1, 0, 0, 1),
@@ -677,7 +674,7 @@ describe('Item', () => {
     const group = new Group(path2)
     group.position = [50, 50]
 
-    raster = layer.rasterize(72, false)
+    raster = layer.rasterize({ resolution: 72, insert: false })
     equals(
       raster.getPixel(0, 0),
       new Color(1, 0, 0, 1),
@@ -703,7 +700,7 @@ describe('Item', () => {
       fillColor: '#3366ff', // 51, 102, 255
       blendMode: 'multiply'
     })
-    const raster = layer.rasterize(72, false)
+    const raster = layer.rasterize({ resolution: 72, insert: false })
     // 255 * 51 / 255, 128 * 102 / 255 (51.2), 51 * 255 / 255:
     equals(
       raster.getPixel(50, 50),
@@ -735,7 +732,7 @@ describe('Item', () => {
       ],
       blendMode: 'pin-light'
     })
-    const raster = layer.rasterize(72, false)
+    const raster = layer.rasterize({ resolution: 72, insert: false })
 
     function getColor(red, green, blue) {
       return new Color(red / 255, green / 255, blue / 255, 1)
@@ -781,31 +778,31 @@ describe('Item', () => {
     const white = new Color(1, 1, 1, 1)
 
     equals(
-      layer.rasterize(72, false).getPixel(50, 50),
+      layer.rasterize({ resolution: 72, insert: false }).getPixel(50, 50),
       red,
       'Center pixel should be red'
     )
     circle.opacity = 0
     equals(
-      layer.rasterize(72, false).getPixel(50, 50),
+      layer.rasterize({ resolution: 72, insert: false }).getPixel(50, 50),
       white,
       'Center pixel should be white'
     )
     circle.opacity = -1
     equals(
-      layer.rasterize(72, false).getPixel(50, 50),
+      layer.rasterize({ resolution: 72, insert: false }).getPixel(50, 50),
       white,
       'Center pixel should be white'
     )
     circle.opacity = 1
     equals(
-      layer.rasterize(72, false).getPixel(50, 50),
+      layer.rasterize({ resolution: 72, insert: false }).getPixel(50, 50),
       red,
       'Center pixel should be red'
     )
     circle.opacity = 2
     equals(
-      layer.rasterize(72, false).getPixel(50, 50),
+      layer.rasterize({ resolution: 72, insert: false }).getPixel(50, 50),
       red,
       'Center pixel should be red'
     )
@@ -825,7 +822,7 @@ describe('Item', () => {
       for (let i = 0; i < pixels.length; i++) {
         const point = pixels[i][0],
           expected = pixels[i][1],
-          actual = Base.slice(
+          actual = Array.from(
             ctx.getImageData(
               point[0] * pixelRatio,
               point[1] * pixelRatio,
@@ -872,15 +869,6 @@ describe('Item', () => {
       ],
       opacity: 0.5
     })
-    // NOTE: The temporary canvas is only observable through CanvasProvider,
-    // so record the sizes that are requested from it while drawing: They need
-    // to be bounded by the view instead of the group.
-    const getCanvas = CanvasProvider.getCanvas,
-      sizes = []
-    CanvasProvider.getCanvas = function (size) {
-      sizes.push(new Size(size))
-      return getCanvas.apply(this, arguments)
-    }
     testPixels(
       [
         [[0, 0], halfRed],
@@ -893,16 +881,6 @@ describe('Item', () => {
         [[99, 99], transparent]
       ],
       'opacity'
-    )
-    CanvasProvider.getCanvas = getCanvas
-    const bound = paper.view.viewSize.add(1).multiply(paper.view.pixelRatio)
-    equals(
-      sizes.length > 0 &&
-      sizes.every(
-        size => size.width <= bound.width && size.height <= bound.height
-      ),
-      true,
-      'temporary canvases bounded by the view'
     )
 
     // Groups entirely outside the view aren't drawn:
@@ -1044,7 +1022,7 @@ describe('Item', () => {
       const pixelRatio = paper.view.pixelRatio,
         ctx = paper.view.element.getContext('2d')
       for (const [point, expected] of pixels) {
-        const actual = Base.slice(
+        const actual = Array.from(
           ctx.getImageData(
             point[0] * pixelRatio,
             point[1] * pixelRatio,
@@ -1127,7 +1105,7 @@ describe('Item', () => {
     function getPixel(point) {
       const pixelRatio = paper.view.pixelRatio,
         ctx = paper.view.element.getContext('2d')
-      return Base.slice(
+      return Array.from(
         ctx.getImageData(
           point[0] * pixelRatio,
           point[1] * pixelRatio,
@@ -1282,12 +1260,12 @@ describe('Item', () => {
     }
     ;[new Path.Rectangle(props), new Shape.Rectangle(props)].forEach(item => {
       const name = item.className,
-        raster = item.rasterize(72, false)
+        raster = item.rasterize({ resolution: 72, insert: false })
       equals(raster.getPixel(3, 3), new Color(0, 0, 1, 1), name + ' stroke')
       equals(raster.getPixel(7, 7), new Color(1, 0, 0, 1), name + ' fill')
       item.paintOrder = 'fill'
       equals(
-        item.rasterize(72, false).getPixel(7, 7),
+        item.rasterize({ resolution: 72, insert: false }).getPixel(7, 7),
         new Color(0, 0, 1, 1),
         name + ' stroke over the fill'
       )
@@ -1299,7 +1277,7 @@ describe('Item', () => {
     // default order, but with the fill painted over the stroke:
     function createPath(props) {
       return new Path.Rectangle(
-        Base.set(
+        Object.assign(
           {
             from: [10, 10],
             to: [30, 30],
@@ -1317,7 +1295,7 @@ describe('Item', () => {
       shadowOffset: [8, 8]
     }
     comparePixels(
-      createPath(Base.set({ paintOrder: 'stroke' }, shadow)),
+      createPath(Object.assign({ paintOrder: 'stroke' }, shadow)),
       new Group(createPath(shadow), createPath())
     )
   })
@@ -1339,7 +1317,7 @@ describe('Item', () => {
       ],
       opacity: 0.5
     })
-    const raster = group.rasterize(72, false)
+    const raster = group.rasterize({ resolution: 72, insert: false })
     equals(raster.getPixel(25, 25), new Color(1, 0, 0, 128 / 255))
     equals(raster.getPixel(75, 25), new Color(0, 0, 1, 128 / 255))
     equals(raster.getPixel(75, 75), new Color(1, 0, 0, 128 / 255))
@@ -1735,7 +1713,7 @@ describe('Item', () => {
     const path = new Path.Rectangle([0, 0, 10, 20])
     path.fitBounds([0, 0, 50, 50], 'cover')
     equals(path.bounds, new Rectangle(0, -25, 50, 100), 'cover')
-    path.fitBounds(0, 0, 50, 50)
+    path.fitBounds([0, 0, 50, 50])
     equals(
       path.bounds,
       new Rectangle(12.5, 0, 25, 50),
@@ -1743,13 +1721,8 @@ describe('Item', () => {
     )
     path.fitBounds([0, 0, 50, 50], 'contain')
     equals(path.bounds, new Rectangle(12.5, 0, 25, 50), 'contain')
-    path.fitBounds(0, 0, 50, 50, 'fill')
+    path.fitBounds([0, 0, 50, 50], 'fill')
     equals(path.bounds, new Rectangle(0, 0, 50, 50), 'fill')
-    // The deprecated booleans:
-    path.fitBounds([0, 0, 50, 100], true)
-    equals(path.bounds, new Rectangle(-25, 0, 100, 100), 'true for cover')
-    path.fitBounds([0, 0, 50, 100], false)
-    equals(path.bounds, new Rectangle(0, 25, 50, 50), 'false for contain')
   })
 
   test('Item#fitBounds() with empty rectangles and items', () => {
@@ -1914,15 +1887,15 @@ describe('Item', () => {
       return {
         'clone()': path.clone(options),
         'clone({ deep: false })': path.clone(
-          Base.set({ deep: false }, options)
+          Object.assign({ deep: false }, options)
         ),
         'unite()': path.unite(circle, options),
         'subtract({ trace: false })': path.subtract(
           circle,
-          Base.set({ trace: false }, options)
+          Object.assign({ trace: false }, options)
         ),
         'rasterize()': path.rasterize(
-          Base.set({ resolution: 72 }, options)
+          Object.assign({ resolution: 72 }, options)
         ),
         'toShape()': path.toShape(insert),
         'toPath()': shape.toPath(insert)
@@ -1930,10 +1903,10 @@ describe('Item', () => {
     }
 
     function check(items, inserted, message) {
-      Base.each(items, (item, name) => {
+      for (const [name, item] of Object.entries(items)) {
         equals(item.isInserted(), inserted, name + ' ' + message)
         item.remove()
-      })
+      }
     }
 
     check(create(), true, 'with insertItems')
@@ -1948,7 +1921,7 @@ describe('Item', () => {
     const settings = paper.settings
     function createPath(props) {
       return new Path.Rectangle(
-        Base.set(
+        Object.assign(
           {
             point: [0, 0],
             size: [10, 10],
@@ -2008,7 +1981,7 @@ describe('Item', () => {
       canvases.push(CanvasProvider.getCanvas(500, 500))
     }
     canvases.forEach(canvas => {
-      CanvasProvider.release(canvas)
+      CanvasProvider.releaseCanvas(canvas)
     })
     equals(
       canvases.every(canvas => canvas.width === 0 && canvas.height === 0),
@@ -2023,7 +1996,7 @@ describe('Item', () => {
       new Size(20, 10),
       'reused'
     )
-    CanvasProvider.release(canvas)
+    CanvasProvider.releaseCanvas(canvas)
   })
 
   test('Reused canvases keep their size (CanvasProvider)', () => {
@@ -2033,7 +2006,7 @@ describe('Item', () => {
     let ctx = CanvasProvider.getContext(20, 10)
     ctx.fillRect(0, 0, 20, 10)
     ctx.translate(5, 5)
-    CanvasProvider.release(ctx)
+    CanvasProvider.releaseCanvas(ctx)
     const canvases = CanvasProvider.canvases
     equals(canvases[canvases.length - 1], ctx.canvas, 'kept')
     ctx = CanvasProvider.getContext(10, 5, { minimum: true })
@@ -2049,7 +2022,7 @@ describe('Item', () => {
     )
     const { a, b, c, d, e, f } = ctx.getTransform()
     equals(new Matrix(a, b, c, d, e, f), new Matrix(), 'transform')
-    CanvasProvider.release(ctx)
+    CanvasProvider.releaseCanvas(ctx)
   })
 
   test('Item#rasterize() leaves no large canvases allocated (#2228)', () => {

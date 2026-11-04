@@ -12,7 +12,6 @@
 
 import { describe, expect } from 'vitest'
 import paper, {
-  Base,
   CompoundPath,
   Group,
   Key,
@@ -25,11 +24,11 @@ import paper, {
   Shape,
   Size,
   Tool,
-  View,
-  document,
-  window
+  View
 } from 'paper'
 import { equals, isNodeContext, test, triggerMouseEvent } from '../helpers.js'
+
+const { document, window } = paper
 
 describe('View', () => {
   test('view.zoom of mirrored view (#1411)', () => {
@@ -154,7 +153,7 @@ describe('View', () => {
 
     function getPixel() {
       const pixelRatio = paper.view.pixelRatio
-      return Base.slice(
+      return Array.from(
         ctx.getImageData(50 * pixelRatio, 50 * pixelRatio, 1, 1).data
       )
     }
@@ -240,13 +239,13 @@ describe('View', () => {
       'tall, cover: view.bounds'
     )
     paper.view.zoom = 1
-    paper.view.fitBounds(10, 20, 50, 200)
+    paper.view.fitBounds([10, 20, 50, 200])
     equals(
       paper.view.bounds,
       new Rectangle(-65, 20, 200, 200),
       'tall, passed as numbers: view.bounds'
     )
-    paper.view.fitBounds(10, 20, 50, 200, 'cover')
+    paper.view.fitBounds([10, 20, 50, 200], 'cover')
     equals(
       paper.view.bounds,
       new Rectangle(10, 95, 50, 50),
@@ -422,22 +421,13 @@ describe('View', () => {
     const tool = new Tool(),
       log = []
     tool.onMouseDown = tool.onKeyDown = event => {
-      log.push(event.type + ' ' + event.time + ' ' + event.timeStamp)
+      log.push(event.type + ' ' + event.time)
     }
     paper.view.dispatchMouseEvent('mousedown', [10, 10], { time: 1.5 })
     paper.view.dispatchMouseEvent('mouseup', [10, 10], { time: 1.6 })
     paper.view.dispatchKeyEvent('keydown', 'a', { time: 2.25 })
     paper.view.dispatchKeyEvent('keyup', 'a', { time: 2.3 })
-    // The deprecated options.timeStamp in milliseconds still works:
-    paper.view.dispatchMouseEvent('mousedown', [10, 10], {
-      timeStamp: 3500
-    })
-    paper.view.dispatchMouseEvent('mouseup', [10, 10], { timeStamp: 3600 })
-    equals(log, [
-      'mousedown 1.5 1500',
-      'keydown 2.25 2250',
-      'mousedown 3.5 3500'
-    ])
+    equals(log, ['mousedown 1.5', 'keydown 2.25'])
     tool.remove()
   })
 
@@ -1065,18 +1055,11 @@ describe('View', () => {
     })
   })
 
-  test('View#scaling, #scrollBy() and #draw()', () => {
+  test('View#scaling', () => {
     const { view } = paper
     view.scaling = [2, 3]
     equals(view.scaling, new Point(2, 3))
     view.scaling = [1, 1]
-    const center = view.center
-    view.scrollBy([10, 0])
-    equals(view.center, center.add(10, 0))
-    // draw() is the deprecated name of update():
-    view.requestUpdate()
-    view.draw()
-    equals(view.update(), false, 'drawn already')
   })
 
   test('View#remove() only removes a view once', () => {

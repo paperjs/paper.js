@@ -213,8 +213,6 @@ describe('Symbol & Placed Symbol', () => {
     paper.install(scope)
     equals(scope.Symbol, 'native')
     equals(() => scope.SymbolDefinition === SymbolDefinition, true)
-    // The deprecated alias is still available on paper itself:
-    equals(() => paper.Symbol === SymbolDefinition, true)
   })
 
   test('paper.install() keeps what the scope already has (#1832, #1652)', () => {

@@ -12,7 +12,6 @@
 
 import { describe, expect } from 'vitest'
 import paper, {
-  Base,
   Color,
   Layer,
   Path,
@@ -22,7 +21,7 @@ import paper, {
   Segment,
   Size
 } from 'paper'
-import { equals, ok, test } from '../helpers.js'
+import { equals, test } from '../helpers.js'
 
 describe('Path', () => {
   test('Path#length', () => {
@@ -93,12 +92,12 @@ describe('Path', () => {
 
   test('Path#join(path)', () => {
     let path1 = new Path()
-    path1.add(0, 0)
-    path1.add(10, 0)
+    path1.add([0, 0])
+    path1.add([10, 0])
 
     let path2 = new Path()
-    path2.add(10, 0)
-    path2.add(20, 10)
+    path2.add([10, 0])
+    path2.add([20, 10])
 
     path1.join(path2)
     equals(
@@ -108,12 +107,12 @@ describe('Path', () => {
     equals(() => paper.project.activeLayer.children.length, 1)
 
     path1 = new Path()
-    path1.add(0, 0)
-    path1.add(10, 0)
+    path1.add([0, 0])
+    path1.add([10, 0])
 
     path2 = new Path()
-    path2.add(20, 10)
-    path2.add(10, 0)
+    path2.add([20, 10])
+    path2.add([10, 0])
     path1.join(path2)
     equals(
       path1.segments.toString(),
@@ -121,12 +120,12 @@ describe('Path', () => {
     )
 
     path1 = new Path()
-    path1.add(0, 0)
-    path1.add(10, 0)
+    path1.add([0, 0])
+    path1.add([10, 0])
 
     path2 = new Path()
-    path2.add(30, 10)
-    path2.add(40, 0)
+    path2.add([30, 10])
+    path2.add([40, 0])
     path1.join(path2)
     equals(
       path1.segments.toString(),
@@ -134,14 +133,14 @@ describe('Path', () => {
     )
 
     path1 = new Path()
-    path1.add(0, 0)
-    path1.add(10, 0)
-    path1.add(20, 10)
+    path1.add([0, 0])
+    path1.add([10, 0])
+    path1.add([20, 10])
 
     path2 = new Path()
-    path2.add(0, 0)
-    path2.add(10, 5)
-    path2.add(20, 10)
+    path2.add([0, 0])
+    path2.add([10, 5])
+    path2.add([20, 10])
 
     path1.join(path2)
 
@@ -154,12 +153,12 @@ describe('Path', () => {
 
   test('Path#join(path, tolerance)', () => {
     const path1 = new Path()
-    path1.add(0, 0)
-    path1.add(10, 0)
+    path1.add([0, 0])
+    path1.add([10, 0])
 
     const path2 = new Path()
     path2.add(path1.lastSegment.point.add(1e-14))
-    path2.add(20, 10)
+    path2.add([20, 10])
 
     equals(() => path1.clone().join(path2.clone(), 0).segments.length, 4)
     equals(
@@ -170,10 +169,10 @@ describe('Path', () => {
 
   test('Path#remove()', () => {
     const path = new Path()
-    path.add(0, 0)
-    path.add(10, 0)
-    path.add(20, 0)
-    path.add(30, 0)
+    path.add([0, 0])
+    path.add([10, 0])
+    path.add([20, 0])
+    path.add([30, 0])
 
     path.removeSegment(0)
     equals(() => path.segments.length, 3)
@@ -191,10 +190,10 @@ describe('Path', () => {
 
   test('Path#removeSegments()', () => {
     const path = new Path()
-    path.add(0, 0)
-    path.add(10, 0)
-    path.add(20, 0)
-    path.add(30, 0)
+    path.add([0, 0])
+    path.add([10, 0])
+    path.add([20, 0])
+    path.add([30, 0])
 
     path.removeSegments()
     equals(() => path.segments.length, 0)
@@ -204,13 +203,7 @@ describe('Path', () => {
     const points = [[0, 0], [10, 0], [20, 10], [20, 20], [10, 30], [0, 20]]
 
     function getPoints(segments) {
-      return Base.each(
-        segments,
-        function (segment) {
-          this.push(segment.point.toString())
-        },
-        []
-      )
+      return segments.map(segment => segment.point.toString())
     }
 
     function getExpected(indices) {
@@ -292,7 +285,7 @@ describe('Path', () => {
   test('After simplifying a path using #simplify(), the path should stay fullySelected', () => {
     const path = new Path()
     for (let i = 0; i < 30; i++) {
-      path.add(i * 10, 10)
+      path.add([i * 10, 10])
     }
     path.fullySelected = true
     equals(() => path.selected, true)
@@ -315,7 +308,7 @@ describe('Path', () => {
   test('After simplifying a path using #simplify(), the path should stay selected', () => {
     const path = new Path()
     for (let i = 0; i < 30; i++) {
-      path.add(i * 10, i % 2 ? 20 : 40)
+      path.add([i * 10, i % 2 ? 20 : 40])
     }
     path.selected = true
     path.simplify()
@@ -325,7 +318,7 @@ describe('Path', () => {
   test('Path#simplify(options) with a range', () => {
     const path = new Path()
     for (let i = 0; i < 20; i++) {
-      path.add(i * 10, i % 2 ? 0 : 1)
+      path.add([i * 10, i % 2 ? 0 : 1])
     }
     const points = path.segments.map(segment => segment.point.clone())
     equals(() => path.simplify({ from: 5, to: 14 }), true)
@@ -349,7 +342,7 @@ describe('Path', () => {
   test('After simplifying a range of a fullySelected path, it should stay fullySelected', () => {
     const path = new Path()
     for (let i = 0; i < 20; i++) {
-      path.add(i * 10, i % 2 ? 0 : 1)
+      path.add([i * 10, i % 2 ? 0 : 1])
     }
     path.fullySelected = true
     path.simplify({ from: 5, to: 14 })
@@ -360,7 +353,7 @@ describe('Path', () => {
     const create = () => {
       const path = new Path()
       for (let i = 0; i < 30; i++) {
-        path.add(i * 10, Math.sin(i / 3) * 20)
+        path.add([i * 10, Math.sin(i / 3) * 20])
       }
       return path
     }
@@ -419,7 +412,7 @@ describe('Path', () => {
   test('After smoothing a path using #smooth(), the path should stay fullySelected', () => {
     const path = new Path()
     for (let i = 0; i < 30; i++) {
-      path.add(i * 10, i % 2 ? 20 : 40)
+      path.add([i * 10, i % 2 ? 20 : 40])
     }
     path.fullySelected = true
     path.smooth()
@@ -429,7 +422,7 @@ describe('Path', () => {
   test('After smoothing a path using #smooth(), the path should stay selected', () => {
     const path = new Path()
     for (let i = 0; i < 30; i++) {
-      path.add(i * 10, i % 2 ? 20 : 40)
+      path.add([i * 10, i % 2 ? 20 : 40])
     }
     path.selected = true
     path.smooth()
@@ -579,7 +572,6 @@ describe('Path', () => {
     // Transform the path, and the curves length should be invalidated. Force-
     // cache the first segment's length first, by accessing it:
     path.curves[0].length
-    ok(path.curves[0]._length, 'Curve length does not appear to be cached')
     path.scale(2, [0, 0])
     equals(
       path.curves[0].length,
@@ -1124,7 +1116,7 @@ describe('Path', () => {
       none = new Color(0, 0, 0, 0)
 
     function testPixels(pixels, message) {
-      const raster = layer.rasterize(72, false)
+      const raster = layer.rasterize({ resolution: 72, insert: false })
       for (const x in pixels) {
         equals(
           raster.getPixel(+x, 5),

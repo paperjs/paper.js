@@ -12,7 +12,6 @@
 
 import { describe } from 'vitest'
 import paper, {
-  Base,
   CompoundPath,
   Group,
   Item,
@@ -1401,7 +1400,7 @@ describe('Item Bounds', () => {
 
     function createPath(constructor, options) {
       const path = new constructor(
-        Base.set(
+        Object.assign(
           {
             applyMatrix: false,
             strokeColor: 'red',
@@ -1858,7 +1857,7 @@ describe('Item Bounds', () => {
     // the same transformation applied to the geometry itself:
     function create(attributes, applyMatrix) {
       return new Path(
-        Base.set(
+        Object.assign(
           {
             strokeColor: 'black',
             strokeWidth: 10,
@@ -1945,7 +1944,7 @@ describe('Item Bounds', () => {
     // the angles, and items that keep their matrix scale their strokes along:
     function star(attributes) {
       return new Path.Star(
-        Base.set(
+        Object.assign(
           {
             center: [50, 50],
             points: 5,
@@ -2011,7 +2010,7 @@ describe('Item Bounds', () => {
         new Shape.Circle({ center: [80, 40], radius: 20 })
       ])
     }
-    Base.each(items, (item, name) => {
+    for (const [name, item] of Object.entries(items)) {
       item.strokeColor = 'black'
       item.strokeWidth = 10
       ;[
@@ -2022,7 +2021,7 @@ describe('Item Bounds', () => {
         item.strokeBounds = rect
         equals(item.strokeBounds, rect, name + ', ' + rect)
       })
-    })
+    }
   })
 
   test('item.strokeBounds = rect at its limits (#1030)', () => {

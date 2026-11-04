@@ -25,11 +25,6 @@ describe('Segment', () => {
     equals(segment.toString(), '{ point: { x: 10, y: 10 } }')
   })
 
-  test('new Segment(x, y)', () => {
-    const segment = new Segment(10, 10)
-    equals(segment.toString(), '{ point: { x: 10, y: 10 } }')
-  })
-
   test('new Segment(undefined)', () => {
     const segment = new Segment(undefined)
     equals(segment.toString(), '{ point: { x: 0, y: 0 } }')
@@ -77,14 +72,6 @@ describe('Segment', () => {
   test('new Segment(undefined, null, null)', () => {
     const segment = new Segment(undefined, null, null)
     equals(segment.toString(), '{ point: { x: 0, y: 0 } }')
-  })
-
-  test('new Segment(x, y, inX, inY, outX, outY)', () => {
-    const segment = new Segment(10, 10, 5, 5, 15, 15)
-    equals(
-      segment.toString(),
-      '{ point: { x: 10, y: 10 }, handleIn: { x: 5, y: 5 }, handleOut: { x: 15, y: 15 } }'
-    )
   })
 
   test('new Segment(size)', () => {
@@ -160,9 +147,6 @@ describe('Segment', () => {
     equals(copy.segments[1].handleIn, new Point(-10, 0))
     equals(copy.segments[2].data, { isCorner: true, point: new Point(5, 5) })
     equals(copy.segments[2].point, new Point(50, 50))
-    const segment = new Segment().importJSON(path.segments[1].exportJSON())
-    equals(segment.name, 'corner')
-    equals(segment.handleOut, new Point(10, 0))
     path.segments[1].name = null
     path.segments[2].data = {}
     equals(

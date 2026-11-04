@@ -11,7 +11,7 @@
  */
 
 import { describe } from 'vitest'
-import { Base, Shape, Size } from 'paper'
+import { Shape, Size } from 'paper'
 import { equals, test } from '../helpers.js'
 
 describe('Shape', () => {
@@ -52,13 +52,13 @@ describe('Shape', () => {
       })
     }
 
-    Base.each(shapes, (shape, name) => {
+    for (const [name, shape] of Object.entries(shapes)) {
       equals(
         shape.toPath().toShape(),
         shape,
         name + '.toPath().toShape()'
       )
-    })
+    }
   })
 
   test('new Shape.Rectangle() with position set before size', () => {

@@ -11,7 +11,7 @@
  */
 
 import { describe } from 'vitest'
-import { Base, Matrix, Point } from 'paper'
+import { Matrix, Point } from 'paper'
 import { equals, test } from '../helpers.js'
 
 describe('Matrix', () => {
@@ -19,7 +19,7 @@ describe('Matrix', () => {
     function testAngle(a, ea) {
       const m = new Matrix().rotate(a),
         s = 'new Matrix().rotate(' + a + ')'
-      equals(m.rotation, Base.pick(ea, a), s + '.rotation')
+      equals(m.rotation, ea ?? a, s + '.rotation')
       equals(m.scaling, new Point(1, 1), s + '.scaling')
     }
 
@@ -45,7 +45,7 @@ describe('Matrix', () => {
       equals(m.rotation, ea || 0, s + '.rotation')
       equals(
         m.scaling,
-        new Point(Base.pick(ex, sx), Base.pick(ey, sy)),
+        new Point(ex ?? sx, ey ?? sy),
         s + '.scaling'
       )
     }
@@ -76,7 +76,7 @@ describe('Matrix', () => {
       equals(m.rotation, ea || a, s + '.rotation')
       equals(
         m.scaling,
-        new Point(Base.pick(ex, sx), Base.pick(ey, sy)),
+        new Point(ex ?? sx, ey ?? sy),
         s + '.scaling'
       )
     }

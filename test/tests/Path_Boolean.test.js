@@ -11,7 +11,7 @@
  */
 
 import { describe } from 'vitest'
-import paper, { Base, CompoundPath, Group, Path, PathItem, Point } from 'paper'
+import paper, { CompoundPath, Group, Path, PathItem, Point } from 'paper'
 import { compareBoolean, equals, test } from '../helpers.js'
 
 describe('Path Boolean Operations', () => {
@@ -327,29 +327,26 @@ describe('Path Boolean Operations', () => {
 
   test('#784#issuecomment-168605018', () => {
     const path1 = new CompoundPath()
-    path1.setChildren(
-      [
-        new Path({
-          segments: [
-            [401.77542835664826, 286.9803609495646],
-            [410.6261525310172, 207.97354059345616],
-            [460.3783408790767, 174.43669899386418]
-          ],
-          closed: true
-        }),
-        new Path({
-          segments: [
-            [410.6261524612045, 207.9735406405153],
-            [
-              410.6261525310172, 207.97354059345614,
-              -0.0005059167983745283, -0.0007686158121771314
-            ]
-          ],
-          closed: true
-        })
-      ],
-      true
-    )
+    path1.children = [
+      new Path({
+        segments: [
+          [401.77542835664826, 286.9803609495646],
+          [410.6261525310172, 207.97354059345616],
+          [460.3783408790767, 174.43669899386418]
+        ],
+        closed: true
+      }),
+      new Path({
+        segments: [
+          [410.6261524612045, 207.9735406405153],
+          [
+            410.6261525310172, 207.97354059345614,
+            -0.0005059167983745283, -0.0007686158121771314
+          ]
+        ],
+        closed: true
+      })
+    ]
     const path2 = new Path({
       segments: [
         [
@@ -396,12 +393,12 @@ describe('Path Boolean Operations', () => {
     p.translate(100, 100)
     p.scale(4)
     compareBoolean(() => {
-      p.windingRule = 'evenodd'
+      p.fillRule = 'evenodd'
       return p.unite()
     }, 'M228.55086,143.23924l-38.88978,-21.02822l27.82967,96.42806c-34.09062,-20.75559 -47.33495,-62.77314 -32.21096,-98.79709l-0.35495,-0.19193c0.64433,-1.18671 1.31713,-2.35551 2.01826,-3.50647c0,0 0,0 0,0c-0.58827,1.22495 -1.1426,2.45812 -1.66331,3.6984l4.38129,2.36902l-2.05829,-7.13185c-0.22261,0.3531 -0.44251,0.70791 -0.6597,1.06443c0.58173,-1.21134 1.19664,-2.41465 1.84504,-3.60884z')
 
     compareBoolean(() => {
-      p.windingRule = 'nonzero'
+      p.fillRule = 'nonzero'
       return p.unite()
     }, 'M228.55086,143.23924l-38.88978,-21.02822l27.82967,96.42806c-34.09062,-20.75559 -47.33495,-62.77314 -32.21096,-98.79709l-0.35495,-0.19193c0.64433,-1.18671 1.31713,-2.35551 2.01826,-3.50647c0.58173,-1.21134 1.19664,-2.41465 1.84504,-3.60884z')
   })
@@ -874,7 +871,7 @@ describe('Path Boolean Operations', () => {
     path.segments[3].point.y -= 60
 
     const resolved = path.resolveCrossings()
-    const orientation = resolved.children.map(child => child.isClockwise())
+    const orientation = resolved.children.map(child => child.clockwise)
     // The three lobes are islands of the filled area, which share the same
     // orientation, as in reorient():
     equals(
@@ -1308,7 +1305,7 @@ describe('Path Boolean Operations', () => {
           'path.' +
           operation +
           '(rect2, ' +
-          JSON.stringify(Base.set({ insert: false }, options)) +
+          JSON.stringify(Object.assign({ insert: false }, options)) +
           ')'
         )
 
@@ -1316,7 +1313,7 @@ describe('Path Boolean Operations', () => {
 
         let result = path[operation](
           rect2,
-          Base.set({ insert: false }, options)
+          Object.assign({ insert: false }, options)
         )
 
         equals(result.parent, null, name + '.parent')

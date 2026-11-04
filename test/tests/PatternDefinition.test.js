@@ -79,7 +79,7 @@ describe('PatternDefinition', () => {
   test('Image patterns', () => {
     // Rasters are centered at 0, 0, and their bounds are the default tile:
     const raster = new Raster(new Size(10, 10))
-    const ctx = raster.getContext(true)
+    const ctx = raster._getContext(true)
     ctx.fillStyle = 'red'
     ctx.fillRect(0, 0, 5, 5)
     const path = new Path.Rectangle({

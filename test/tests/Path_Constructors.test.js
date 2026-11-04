@@ -11,7 +11,7 @@
  */
 
 import { describe } from 'vitest'
-import paper, { Base, Group, Path, Point, Project, Rectangle } from 'paper'
+import paper, { Group, Path, Point, Project, Rectangle } from 'paper'
 import { equals, test } from '../helpers.js'
 
 describe('Path Constructors', () => {
@@ -303,8 +303,8 @@ describe('Path Constructors', () => {
       { parent: group, insert: false }
     ].forEach((options, index) => {
       const expected = new Path(options)
-      Base.each(props, (values, name) => {
-        const path = new Path[name](Base.set({}, values, options)),
+      for (const [name, values] of Object.entries(props)) {
+        const path = new Path[name](Object.assign({}, values, options)),
           message = 'new Path.' + name + '() with options #' + index
         equals(
           path.project === expected.project,
@@ -321,7 +321,7 @@ describe('Path Constructors', () => {
           expected.isInserted(),
           message + ': isInserted()'
         )
-      })
+      }
     })
     // The geometry is still defined before the other named arguments are set:
     equals(

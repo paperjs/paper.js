@@ -235,8 +235,8 @@ describe('Color', () => {
     equals(color, new Color(0.5))
   })
 
-  test('Color.read()', () => {
-    const color = Color.read([0, 0, 1])
+  test('Color.from()', () => {
+    const color = Color.from([0, 0, 1])
     equals(color, new Color(0, 0, 1))
   })
 
@@ -302,16 +302,13 @@ describe('Color', () => {
     const stop1 = new GradientStop({ offset: 0.5 })
     const stop2 = new GradientStop('red', 0.75)
     const stop3 = new GradientStop(['white', 1])
-    const stop4 = new GradientStop({ rampPoint: 0.5 }) // deprecated
     new Gradient([stop1, stop2, stop3], true)
     equals(() => stop1.color, new Color(0, 0, 0))
     equals(() => stop2.color, new Color(1, 0, 0))
     equals(() => stop3.color, new Color(1, 1, 1))
-    equals(() => stop4.color, new Color(0, 0, 0))
     equals(() => stop1.offset, 0.5)
     equals(() => stop2.offset, 0.75)
     equals(() => stop3.offset, 1)
-    equals(() => stop4.offset, 0.5)
   })
 
   test('Gradients notify the items that use them', () => {
@@ -527,15 +524,15 @@ describe('Color', () => {
     // not be reused when drawing at another resolution, or with scaling.
     // NOTE: comparePixels() moves the items, clearing their cached styles, so
     // we rasterize them directly here:
-    shape.rasterize(72, false)
+    shape.rasterize({ resolution: 72, insert: false })
     comparePixels(
-      shape.rasterize(144, false),
-      expected.rasterize(144, false)
+      shape.rasterize({ resolution: 144, insert: false }),
+      expected.rasterize({ resolution: 144, insert: false })
     )
     shape.strokeScaling = true
     comparePixels(
-      shape.rasterize(144, false),
-      expected.rasterize(144, false)
+      shape.rasterize({ resolution: 144, insert: false }),
+      expected.rasterize({ resolution: 144, insert: false })
     )
 
     // A non-scaling stroke on a transformed path has to look the same as the

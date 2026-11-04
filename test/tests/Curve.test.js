@@ -112,12 +112,6 @@ describe('Curve', () => {
         entry[1],
         'curve.getPointAtTime(' + entry[0] + ');'
       )
-      // Legacy version:
-      equals(
-        curve.getPointAt(entry[0], true),
-        entry[1],
-        'Legacy: curve.getPointAt(' + entry[0] + ', true);'
-      )
     }
 
     equals(
@@ -169,17 +163,6 @@ describe('Curve', () => {
         entry[1],
         'curve.getWeightedTangentAtTime(' + entry[0] + ');'
       )
-      // Legacy version:
-      equals(
-        curve.getTangentAt(entry[0], true),
-        entry[1].normalize(),
-        'Legacy: curve.getTangentAt(' + entry[0] + ', true);'
-      )
-      equals(
-        curve.getWeightedTangentAt(entry[0], true),
-        entry[1],
-        'Legacy: curve.getWeightedTangentAt(' + entry[0] + ', true);'
-      )
     }
   })
 
@@ -209,17 +192,6 @@ describe('Curve', () => {
         entry[1],
         'curve.getWeightedNormalAtTime(' + entry[0] + ');'
       )
-      // Legacy version:
-      equals(
-        curve.getNormalAt(entry[0], true),
-        entry[1].normalize(),
-        'Legacy: curve.getNormalAt(' + entry[0] + ', true);'
-      )
-      equals(
-        curve.getWeightedNormalAt(entry[0], true),
-        entry[1],
-        'Legacy: curve.getWeightedNormalAt(' + entry[0] + ', true);'
-      )
     }
   })
 
@@ -243,12 +215,6 @@ describe('Curve', () => {
         curve.getCurvatureAtTime(entry[0]),
         entry[1],
         'curve.getCurvatureAtTime(' + entry[0] + ');'
-      )
-      // Legacy version:
-      equals(
-        curve.getCurvatureAt(entry[0], true),
-        entry[1],
-        'Legacy: curve.getCurvatureAt(' + entry[0] + ', true);'
       )
     }
   })
@@ -274,12 +240,6 @@ describe('Curve', () => {
         entry[1],
         'curve.getCurvatureAtTime(' + entry[0] + ');'
       )
-      // Legacy version:
-      equals(
-        curve.getCurvatureAt(entry[0], true),
-        entry[1],
-        'Legacy: curve.getCurvatureAt(' + entry[0] + ', true);'
-      )
     }
   })
 
@@ -303,13 +263,6 @@ describe('Curve', () => {
       equals(t1, t2, message, Numerical.CURVETIME_EPSILON)
       equals(() => curve.getOffsetAtTime(t1), o1)
       equals(() => curve.getOffsetAtTime(t2), curve.length + o2)
-      // Legacy version:
-      equals(
-        curve.getParameterAt(o1),
-        curve.getParameterAt(o2),
-        'Legacy: ' + message,
-        Numerical.CURVETIME_EPSILON
-      )
       // Test other methods with negatives offsets
       equals(
         curve.getTangentAt(o1),
@@ -493,13 +446,6 @@ describe('Curve', () => {
         const curve = path.curves[i]
         const time = curve.getTimeOf(point1)
         if (time) {
-          // Legacy-check-hack:
-          equals(
-            curve.getParameterOf(point1),
-            time,
-            'Legacy: curve.getParameterOf() should return the same' +
-            ' as curve.getTimeOf()'
-          )
           point2 = curve.getLocationAtTime(time).point
           break
         }
@@ -698,8 +644,8 @@ describe('Curve', () => {
     )
     equals(moved.length, curve.length, 'length', options)
     equals(
-      Curve.getPeaks(moved.values),
-      Curve.getPeaks(curve.values),
+      Curve.getPeaks(moved.getValues()),
+      Curve.getPeaks(curve.getValues()),
       'peaks',
       options
     )

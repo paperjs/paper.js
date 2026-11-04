@@ -13,12 +13,10 @@
 import { describe } from 'vitest'
 import paper, {
   AreaText,
-  Base,
   ChangeFlag,
   Color,
   CompoundPath,
   Group,
-  HostItem,
   Layer,
   Matrix,
   Path,
@@ -32,9 +30,14 @@ import paper, {
   Size,
   SymbolDefinition,
   SymbolItem,
-  TextItem
+  TextItem,
+  registerClasses
 } from 'paper'
 import { equals, test, testFontFamily } from '../helpers.js'
+
+// Hosted items aren't part of the core library, so these tests only run where
+// the scope has them:
+const { HostItem } = paper
 
 describe.skipIf(!HostItem)('Hosted', () => {
   // The host document is played by another project, served through the host
@@ -85,7 +88,7 @@ describe.skipIf(!HostItem)('Hosted', () => {
             { stroke: true, handle: true }
           ].forEach((options, j) => {
             const rect = item.getBounds(
-              Base.set({ internal: true }, options)
+              Object.assign({ internal: true }, options)
             )
             columns.boxes.set(
               [rect.x, rect.y, rect.width, rect.height],
@@ -187,14 +190,17 @@ describe.skipIf(!HostItem)('Hosted', () => {
         host.calls.push(['getDefinition', key])
         const definition = host.definitions.get(key),
           name = definition.name || undefined
-        return Base.serialize(
-          definition instanceof PatternDefinition
-            ? [
-                'PatternDefinition',
-                definition.item,
-                { tile: definition.tile, spacing: definition.spacing, name }
-              ]
-            : ['SymbolDefinition', definition.item, { name }]
+        // The JSON form of the definition and its item:
+        return JSON.parse(
+          JSON.stringify(
+            definition instanceof PatternDefinition
+              ? [
+                  'PatternDefinition',
+                  definition.item,
+                  { tile: definition.tile, spacing: definition.spacing, name }
+                ]
+              : ['SymbolDefinition', definition.item, { name }]
+          )
         )
       },
 
@@ -423,7 +429,7 @@ describe.skipIf(!HostItem)('Hosted', () => {
   describe('Drawing', () => {
     // The host draws into a canvas of its own:
     function createContext() {
-      return new Raster({ size: [400, 400], insert: false }).getContext(true)
+      return new Raster({ size: [400, 400], insert: false })._getContext(true)
     }
 
     function getPixel(ctx, x, y) {
@@ -715,8 +721,8 @@ describe.skipIf(!HostItem)('Hosted', () => {
   function createHostedRaster() {
     const document = new Project()
     const raster = new Raster({ size: [4, 2], position: [50, 50] })
-    raster.getContext(true).fillStyle = 'red'
-    raster.getContext(true).fillRect(0, 0, 4, 2)
+    raster._getContext(true).fillStyle = 'red'
+    raster._getContext(true).fillRect(0, 0, 4, 2)
     const host = createHost(document)
     const project = new Project()
     project.host = host
@@ -960,20 +966,22 @@ describe.skipIf(!HostItem)('Hosted', () => {
   })
 
   test('HostItem', () => {
-    const Blend = HostItem.extend({
-      _class: 'TestBlend',
-      _serializeFields: { steps: 0 },
-      _hasChildren: true,
+    class Blend extends HostItem {
+      static {
+        Object.assign(this.prototype, {
+          _serializeFields: {
+            ...HostItem.prototype._serializeFields,
+            steps: 0
+          },
+          _hasChildren: true
+        })
+      }
 
-      initialize: function TestBlend() {
-        HostItem.apply(this, arguments)
-      },
-
-      getSteps() {
+      get steps() {
         return this._values.steps || 0
-      },
+      }
 
-      setSteps(steps) {
+      set steps(steps) {
         this._values.steps = steps
         this._changed(
           ChangeFlag.CONTENT |
@@ -981,7 +989,8 @@ describe.skipIf(!HostItem)('Hosted', () => {
           ChangeFlag.APPEARANCE
         )
       }
-    })
+    }
+    registerClasses({ TestBlend: Blend })
     const blend = new Blend({ steps: 5, insert: false })
     equals(blend.steps, 5)
     equals(
@@ -1039,7 +1048,7 @@ describe.skipIf(!HostItem)('Hosted', () => {
       const text =
           json === null
             ? host.getNode(key)
-            : new Base.exports[json[0]]({
+            : new paper[json[0]]({
                 insert: false
               }).importJSON(json),
         lines = text._layOut()
@@ -1047,9 +1056,9 @@ describe.skipIf(!HostItem)('Hosted', () => {
       return {
         end: text._visibleEnd,
         lines: lines.map(line =>
-          Base.set({}, line, {
+          Object.assign({}, line, {
             pieces: line.pieces.map(piece => {
-              const plain = Base.set({}, piece)
+              const plain = Object.assign({}, piece)
               delete plain.style
               delete plain.font
               delete plain.scale

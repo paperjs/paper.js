@@ -12,8 +12,6 @@
 
 import { describe } from 'vitest'
 import paper, {
-  Base,
-  CanvasProvider,
   Color,
   Group,
   Path,
@@ -22,6 +20,8 @@ import paper, {
   Rectangle,
   Shape
 } from 'paper'
+// The canvas pool is internal, so it's imported from its module:
+import * as CanvasProvider from '../../src/canvas/canvasProvider.ts'
 import {
   comparePixels,
   equals,
@@ -147,7 +147,7 @@ describe('TextItem', () => {
     // fill:
     function createText(props) {
       return new PointText(
-        Base.set(
+        Object.assign(
           {
             fontFamily: 'Arial, Helvetica',
             fontSize: 40,
@@ -173,16 +173,16 @@ describe('TextItem', () => {
     )
   })
 
-  test('PointText#tracking', () => {
+  test('PointText#letterTracking', () => {
     const text = new PointText({
       point: [10, 20],
       content: 'Hello'
     })
-    equals(text.tracking, 0, 'text.tracking by default')
-    text.tracking = 100
-    equals(text.tracking, 100, 'text.tracking')
+    equals(text.letterTracking, 0, 'text.letterTracking by default')
+    text.letterTracking = 100
+    equals(text.letterTracking, 100, 'text.letterTracking')
     const imported = paper.project.importJSON(text.exportJSON())
-    equals(imported.tracking, 100, 'imported.tracking from JSON')
+    equals(imported.letterTracking, 100, 'imported.letterTracking from JSON')
   })
 
   // node-canvas doesn't support letterSpacing:
@@ -197,7 +197,7 @@ describe('TextItem', () => {
       const bounds = text.bounds
       // Tracking is in thousandths of an em, and canvas adds the spacing
       // after each of the 12 characters, including the last one:
-      text.tracking = 500
+      text.letterTracking = 500
       equals(
         text.bounds,
         new Rectangle(
@@ -208,7 +208,7 @@ describe('TextItem', () => {
         ),
         'text.bounds'
       )
-      text.tracking = 1000
+      text.letterTracking = 1000
       equals(
         text.bounds,
         new Rectangle(
@@ -232,7 +232,7 @@ describe('TextItem', () => {
       )
       // No tracking ignores spacing left on the view's context:
       paper.view.context.letterSpacing = '5px'
-      text.tracking = 0
+      text.letterTracking = 0
       text.justification = 'left'
       equals(text.bounds, bounds, 'text.bounds without tracking')
       paper.view.context.letterSpacing = '0px'
@@ -245,7 +245,7 @@ describe('TextItem', () => {
       const text = new PointText({
         fontFamily: 'Arial, Helvetica',
         fontSize: 20,
-        tracking: 250,
+        letterTracking: 250,
         point: [10, 60],
         content: 'Hello'
       })
@@ -367,7 +367,7 @@ describe('TextItem', () => {
 
     function drawText(props) {
       const text = new PointText(
-        Base.set(
+        Object.assign(
           {
             fontFamily: 'Arial, Helvetica',
             fontSize: 30,
@@ -395,7 +395,7 @@ describe('TextItem', () => {
     // Text with a fill and a stroke casts the shadow of both, which reaches
     // further than that of the fill alone:
     const stroked = drawText(
-      Base.set(
+      Object.assign(
         {
           strokeColor: 'blue',
           strokeWidth: 4

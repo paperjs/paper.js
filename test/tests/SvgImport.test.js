@@ -12,8 +12,6 @@
 
 import { describe } from 'vitest'
 import paper, {
-  Base,
-  CanvasProvider,
   Color,
   Matrix,
   Path,
@@ -23,10 +21,10 @@ import paper, {
   Raster,
   Rectangle,
   Shape,
-  Size,
-  document,
-  window
+  Size
 } from 'paper'
+// The canvas pool is internal, so it's imported from its module:
+import * as CanvasProvider from '../../src/canvas/canvasProvider.ts'
 import {
   compareSVG,
   createSVG,
@@ -35,6 +33,8 @@ import {
   push,
   test
 } from '../helpers.js'
+
+const { document, window } = paper
 
 describe('SvgImport', () => {
   test('Import SVG line', () => {
@@ -341,12 +341,12 @@ describe('SvgImport', () => {
     }
 
     // Tracking is in thousandths of an em, so pixels depend on the font size:
-    equals(importText('letter-spacing="0.1em"').tracking, 100)
+    equals(importText('letter-spacing="0.1em"').letterTracking, 100)
     equals(
-      importText('font-size="20" style="letter-spacing: 2px"').tracking,
+      importText('font-size="20" style="letter-spacing: 2px"').letterTracking,
       100
     )
-    equals(importText('letter-spacing="normal"').tracking, 0)
+    equals(importText('letter-spacing="normal"').letterTracking, 0)
   })
 
   test('Import SVG text with font-style', () => {
@@ -607,11 +607,10 @@ describe('SvgImport', () => {
       'xMaxYMin': '40 x 10'
     }
 
-    const svg = Base.each(
-      images,
-      function (size, align) {
+    const svg = Object.entries(images)
+      .map(([align, size]) => {
         size = size.split(' x ')
-        this.push(
+        return (
           '<image xlink:href="' +
           url +
           '" x="10" y="20"' +
@@ -623,9 +622,8 @@ describe('SvgImport', () => {
           (align ? ' preserveAspectRatio="' + align + '"' : '') +
           '/>'
         )
-      },
-      []
-    ).join('')
+      })
+      .join('')
 
     const imported = paper.project.importSVG(
       '<svg xmlns="http://www.w3.org/2000/svg"' +
@@ -1138,21 +1136,6 @@ describe('SvgImport', () => {
     equals(node.lastChild.hasAttribute('class'), false, 'without class')
   })
 
-  test('Import SVG with the deprecated onImport callback', () => {
-    const options = {
-      onImport(node, item, opts) {
-        item.data.className = node.getAttribute('class')
-        item.data.hasOptions = opts === options
-      }
-    }
-    const item = paper.project.importSVG(
-      '<svg xmlns="http://www.w3.org/2000/svg">' +
-      '<rect class="door" width="10" height="10"/></svg>',
-      options
-    )
-    equals(item.firstChild.data, { className: 'door', hasOptions: true })
-  })
-
   test('Import SVG cleans up after errors', () => {
     const svg =
       '<svg xmlns="http://www.w3.org/2000/svg" data-paper-data="invalid JSON"><rect width="100" height="100"/></svg>'
@@ -1268,14 +1251,14 @@ describe('SvgImport', () => {
       'gradients-4': {},
       'rectangles': {}
     }
-    Base.each(svgFiles, (options, name) => {
+    for (let [name, options] of Object.entries(svgFiles)) {
       if (options) {
         name += '.svg'
         test('Import ' + name, assert => {
           importSVG(assert, 'assets/' + name, null, options)
         })
       }
-    })
+    }
 
     test(
       'Import SVG Image with preserveAspectRatio renders as in browsers ' +
