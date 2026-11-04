@@ -32,9 +32,10 @@ export interface EventDeclaration {
 export class Emitter extends Base {
   // The declared event types of the class, keyed by type, see defineEvents():
   declare static events: Record<string, EventDeclaration>
-  // The handlers by type. Objects inherit the ones of their prototypes:
+  // The handlers by type, and the ones set through the on… properties. Not
+  // private, as class-level handlers live on prototypes, which never get #
+  // fields, and objects inherit the handlers of their prototypes:
   declare _callbacks: Record<string, Handler[]>
-  // The handlers set through the on… properties, by type:
   declare _handlers: Record<string, Handler>
 
   on(type: string | Record<string, Handler>, func?: Handler): this {
