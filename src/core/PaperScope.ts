@@ -11,8 +11,8 @@
  */
 
 import { Base } from './Base.ts'
-import { BlendMode } from '../canvas/BlendMode.ts'
-import { CanvasProvider } from '../canvas/CanvasProvider.ts'
+import { nativeBlendModes } from '../canvas/blendModes.ts'
+import { getCanvas } from '../canvas/canvasProvider.ts'
 import { Project } from '../item/Project.ts'
 import type { Tool } from '../tool/Tool.ts'
 import type { View } from '../view/View.ts'
@@ -150,7 +150,7 @@ export class PaperScope extends Base {
    * features.
    */
   get support(): { nativeBlendModes: Record<string, boolean> } {
-    return { nativeBlendModes: BlendMode.nativeModes }
+    return { nativeBlendModes }
   }
 
   /**
@@ -261,7 +261,7 @@ export class PaperScope extends Base {
    * @return the canvas
    */
   createCanvas(width: number, height: number): HTMLCanvasElement {
-    return CanvasProvider.getCanvas(width, height)
+    return getCanvas(width, height) as HTMLCanvasElement
   }
 
   /**
