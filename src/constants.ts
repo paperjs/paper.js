@@ -144,3 +144,18 @@ export const SegmentSelection = {
   HANDLE_OUT: 4,
   ALL: 1 | 2 | 4 // POINT | HANDLE_IN | HANDLE_OUT
 }
+
+/**
+ * The values that curves evaluate at a curve-time: Curve has the statics
+ * `getPoint()`, `getTangent()` … and the methods `getPointAt()`,
+ * `getPointAtTime()` …, and Path, CurveLocation and PathFlattener generate
+ * their evaluators from it too.
+ */
+export const curveEvaluations = [
+  'point',
+  'tangent',
+  'normal',
+  'weightedTangent',
+  'weightedNormal',
+  'curvature'
+]
