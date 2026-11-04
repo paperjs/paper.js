@@ -11,13 +11,14 @@
  */
 
 /**
- * @name Formatter
- * @class
  * @private
  */
 export class Formatter {
+  precision: number
+  multiplier: number
+
   /**
-   * @param {Number} [precision=5] the amount of fractional digits
+   * @param precision the amount of fractional digits
    */
   constructor(precision = 5) {
     this.precision = precision
@@ -28,7 +29,7 @@ export class Formatter {
    * Utility function for rendering numbers as strings at a precision of
    * up to the amount of fractional digits.
    *
-   * @param {Number} num the number to be converted to a string
+   * @param num the number to be converted to a string
    */
   number(val) {
     // It would be nice to use Number#toFixed() instead, but it pads with 0,

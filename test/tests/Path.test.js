@@ -588,7 +588,9 @@ describe('Path', () => {
     )
 
     const points = []
-    for (let i = 0; i < 40; i++) points.push(Point.random())
+    for (let i = 0; i < 40; i++) {
+      points.push(Point.random())
+    }
     path = new Path(points)
     equals(path.segments.length, 40, 'segments.length')
     equals(path.curves.length, 39, 'curves.length')

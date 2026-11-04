@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM"],
+    // Only syntax that Node can strip, so the sources run without a build:
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": false
+  },
+  // The ported files, until all of src is:
+  "files": [
+    "src/constants.ts",
+    "src/core/Base.ts",
+    "src/core/serialization.ts",
+    "src/util/Formatter.ts",
+    "src/util/Numerical.ts",
+    "src/util/UID.ts",
+    "src/util/list.ts",
+    "src/util/object.ts",
+    "src/util/string.ts",
+    "src/basic/Point.ts",
+    "src/basic/Size.ts",
+    "src/basic/Line.ts",
+    "src/basic/Rectangle.ts",
+    "src/basic/RectangleBuilder.ts",
+    "src/basic/Matrix.ts"
+  ]
+}

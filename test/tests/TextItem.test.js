@@ -268,8 +268,12 @@ describe('TextItem', () => {
       let differences = 0
       let inked = 0
       for (let i = 3, l = expected.data.length; i < l; i += 4) {
-        if (actual.data[i] !== expected.data[i]) differences++
-        if (expected.data[i]) inked++
+        if (actual.data[i] !== expected.data[i]) {
+          differences++
+        }
+        if (expected.data[i]) {
+          inked++
+        }
       }
       equals(inked > 0, true, 'drawn pixels')
       equals(differences, 0, 'differing pixels')
@@ -354,8 +358,9 @@ describe('TextItem', () => {
               data[i + 2] === color[2] &&
               data[i + 3] === 255
             : data[i + 3] > 0
-        )
+        ) {
           count++
+        }
       }
       return count
     }

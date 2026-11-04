@@ -51,7 +51,9 @@ function getKronrod(f, a, b) {
     const Ax = A * kronrodNodes[i]
     fx = f(B + Ax) + f(B - Ax)
     kronrod += kronrodWeights[i] * fx
-    if (!(i & 1)) gauss += gaussWeights[i >> 1] * fx
+    if (!(i & 1)) {
+      gauss += gaussWeights[i >> 1] * fx
+    }
   }
   return [A * kronrod, abs(A * (kronrod - gauss))]
 }
@@ -102,21 +104,19 @@ function getDiscriminant(a, b, c) {
   return D
 }
 
-function getNormalizationFactor() {
+function getNormalizationFactor(...values: number[]) {
   // Normalize coefficients à la Jenkins & Traub's RPOLY.
   // Normalization is done by scaling coefficients with a power of 2, so
   // that all the bits in the mantissa remain unchanged.
   // Use the infinity norm (max(sum(abs(a)…)) to determine the appropriate
   // scale factor. See @hkrish in #1087#issuecomment-231526156
-  const norm = Math.max.apply(Math, arguments)
+  const norm = Math.max(...values)
   return norm && (norm < 1e-8 || norm > 1e8)
     ? pow(2, -Math.round(log2(norm)))
     : 0
 }
 
 /**
- * @name Numerical
- * @namespace
  * @private
  */
 export const Numerical = {
@@ -199,10 +199,10 @@ export const Numerical = {
   /**
    * Returns a number whose value is clamped by the given range.
    *
-   * @param {Number} value the value to be clamped
-   * @param {Number} min the lower boundary of the range
-   * @param {Number} max the upper boundary of the range
-   * @return {Number} a number in the range of [min, max]
+   * @param value the value to be clamped
+   * @param min the lower boundary of the range
+   * @param max the upper boundary of the range
+   * @return a number in the range of [min, max]
    */
   clamp,
 
@@ -269,13 +269,13 @@ export const Numerical = {
    * and never more slowly than bisection. After kurbo's solve_itp():
    * https://github.com/linebender/kurbo/blob/main/kurbo/src/common.rs
    *
-   * @param {Function} f the function
-   * @param {Number} a the start of the interval
-   * @param {Number} b the end of the interval
-   * @param {Number} fa the value of the function at `a`
-   * @param {Number} fb the value of the function at `b`
-   * @param {Number} tolerance the width of the interval to narrow it to
-   * @return {Number} the position of the sign change
+   * @param f the function
+   * @param a the start of the interval
+   * @param b the end of the interval
+   * @param fa the value of the function at `a`
+   * @param fb the value of the function at `b`
+   * @param tolerance the width of the interval to narrow it to
+   * @return the position of the sign change
    */
   findSignChange(f, a, b, fa, fb, tolerance) {
     // Search for the change from negative to positive values:
@@ -327,13 +327,13 @@ export const Numerical = {
    *  Harikrishnan G.
    *  https://gist.github.com/hkrish/9e0de1f121971ee0fbab281f5c986de9
    *
-   * @param {Number} a the quadratic term
-   * @param {Number} b the linear term
-   * @param {Number} c the constant term
-   * @param {Number[]} roots the array to store the roots in
-   * @param {Number} [min] the lower bound of the allowed roots
-   * @param {Number} [max] the upper bound of the allowed roots
-   * @return {Number} the number of real roots found, or -1 if there are
+   * @param a the quadratic term
+   * @param b the linear term
+   * @param c the constant term
+   * @param roots the array to store the roots in
+   * @param min the lower bound of the allowed roots
+   * @param max the upper bound of the allowed roots
+   * @return the number of real roots found, or -1 if there are
    * infinite solutions
    *
    * @author Harikrishnan Gopalakrishnan <hari.exeption@gmail.com>
@@ -381,10 +381,12 @@ export const Numerical = {
     const maxB = max + EPSILON
     // We need to include EPSILON in the comparisons with min / max,
     // as some solutions are ever so lightly out of bounds.
-    if (isFinite(x1) && (boundless || x1 > minB && x1 < maxB))
+    if (isFinite(x1) && (boundless || x1 > minB && x1 < maxB)) {
       roots[count++] = boundless ? x1 : clamp(x1, min, max)
-    if (x2 !== x1 && isFinite(x2) && (boundless || x2 > minB && x2 < maxB))
+    }
+    if (x2 !== x1 && isFinite(x2) && (boundless || x2 > minB && x2 < maxB)) {
       roots[count++] = boundless ? x2 : clamp(x2, min, max)
+    }
     return count
   },
 
@@ -407,14 +409,14 @@ export const Numerical = {
    * W. Kahan's paper contains inferences on accuracy of cubic
    * zero-finding methods. Also testing methods for robustness.
    *
-   * @param {Number} a the cubic term (x³ term)
-   * @param {Number} b the quadratic term (x² term)
-   * @param {Number} c the linear term (x term)
-   * @param {Number} d the constant term
-   * @param {Number[]} roots the array to store the roots in
-   * @param {Number} [min] the lower bound of the allowed roots
-   * @param {Number} [max] the upper bound of the allowed roots
-   * @return {Number} the number of real roots found, or -1 if there are
+   * @param a the cubic term (x³ term)
+   * @param b the quadratic term (x² term)
+   * @param c the linear term (x term)
+   * @param d the constant term
+   * @param roots the array to store the roots in
+   * @param min the lower bound of the allowed roots
+   * @param max the upper bound of the allowed roots
+   * @return the number of real roots found, or -1 if there are
    * infinite solutions
    *
    * @author Harikrishnan Gopalakrishnan <hari.exeption@gmail.com>
@@ -488,8 +490,9 @@ export const Numerical = {
       isFinite(x) &&
       (count === 0 || count > 0 && x !== roots[0] && x !== roots[1]) &&
       (boundless || x > min - EPSILON && x < max + EPSILON)
-    )
+    ) {
       roots[count++] = boundless ? x : clamp(x, min, max)
+    }
     return count
   },
 
@@ -502,13 +505,13 @@ export const Numerical = {
    * A part with only such coefficients counts as one root, as does a
    * part narrower than the given width that may still have one.
    *
-   * @param {Number[]} coefficients the Bernstein coefficients
-   * @param {Number[]} errors the bounds of the rounding errors of the
+   * @param coefficients the Bernstein coefficients
+   * @param errors the bounds of the rounding errors of the
    *     coefficients
-   * @param {Number[]} roots the array to store the roots in
-   * @param {Number} width the width of the parts in which a possible root
+   * @param roots the array to store the roots in
+   * @param width the width of the parts in which a possible root
    *     counts as one
-   * @return {Number} the number of roots found
+   * @return the number of roots found
    */
   solveBernstein(coefficients, errors, roots, width) {
     let count = 0
@@ -542,7 +545,9 @@ export const Numerical = {
     function evaluate(values, t) {
       const v = values.slice()
       for (let n = v.length - 1; n > 0; n--) {
-        for (let i = 0; i < n; i++) v[i] = v[i] + (v[i + 1] - v[i]) * t
+        for (let i = 0; i < n; i++) {
+          v[i] = v[i] + (v[i + 1] - v[i]) * t
+        }
       }
       return v[0]
     }
@@ -557,7 +562,9 @@ export const Numerical = {
           zeros++
         } else {
           const s = value > 0 ? 1 : -1
-          if (sign && s !== sign) changes++
+          if (sign && s !== sign) {
+            changes++
+          }
           sign = s
         }
       }

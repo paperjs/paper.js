@@ -134,7 +134,9 @@ describe('TextDirection', () => {
     text.paragraphs[1].direction = 'rtl'
     const measured = recordCalls('measureText', () => text.bounds)
     const directions = {}
-    for (const call of measured) directions[call.content] = call.direction
+    for (const call of measured) {
+      directions[call.content] = call.direction
+    }
     equals(
       directions['Hello '],
       'ltr',

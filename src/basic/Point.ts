@@ -10,10 +10,28 @@
  * All rights reserved.
  */
 
+import { Base } from '../core/Base.ts'
+import { Numerical } from '../util/Numerical.ts'
+import { Formatter } from '../util/Formatter.ts'
+import { ItemSelection } from '../constants.ts'
+import { Rectangle } from './Rectangle.ts'
+import type { RectangleLike } from './Rectangle.ts'
+import type { Size } from './Size.ts'
+import type { Matrix } from './Matrix.ts'
+
 /**
- * @name Point
- *
- * @class The Point object represents a point in the two dimensional space
+ * What a point can be passed as, where a function takes one.
+ */
+export type PointLike =
+  | Point
+  | number[]
+  | { x: number; y: number }
+  | { width: number; height: number }
+  | { angle: number; length: number }
+  | { angleInRadians: number; length: number }
+
+/**
+ * The Point object represents a point in the two dimensional space
  * of the Paper.js project. It is also used to represent two dimensional
  * vector objects.
  *
@@ -26,19 +44,25 @@
  * console.log(point.x); // 10
  * console.log(point.y); // 5
  */
-import { Base } from '../core/Base.js'
-import { Numerical } from '../util/Numerical.js'
-import { Formatter } from '../util/Formatter.js'
-import { ItemSelection } from '../constants.js'
-import { Rectangle } from './Rectangle.js'
-
 export class Point extends Base {
+  /**
+   * The x coordinate of the point
+   */
+  declare x: number
+
+  /**
+   * The y coordinate of the point
+   */
+  declare y: number
+
+  // The angle that the vector keeps when its length is set to 0:
+  #angle: number
+
   /**
    * Creates a Point object with the given x and y coordinates.
    *
-   * @name Point#initialize
-   * @param {Number} x the x coordinate
-   * @param {Number} y the y coordinate
+   * @param x the x coordinate
+   * @param y the y coordinate
    *
    * @example
    * // Create a point at x: 10, y: 5
@@ -46,12 +70,12 @@ export class Point extends Base {
    * console.log(point.x); // 10
    * console.log(point.y); // 5
    */
+  constructor(x: number, y?: number)
   /**
    * Creates a Point object using the numbers in the given array as
    * coordinates.
    *
-   * @name Point#initialize
-   * @param {Array} array
+   * @param array
    *
    * @example
    * // Creating a point at x: 10, y: 5 using an array of numbers:
@@ -72,11 +96,11 @@ export class Point extends Base {
    * var path = new Path.Circle(new Point(50, 50), 30);
    * path.fillColor = 'red';
    */
+  constructor(array: number[])
   /**
    * Creates a Point object using the properties in the given object.
    *
-   * @name Point#initialize
-   * @param {Object} object the object describing the point's properties
+   * @param object the object describing the point's properties
    *
    * @example
    * // Creating a point using an object literal with length and angle
@@ -121,12 +145,17 @@ export class Point extends Base {
    * var path = new Path.Circle(center, 30);
    * path.fillColor = 'red';
    */
+  constructor(
+    object:
+      | { x: number; y: number }
+      | { angle: number; length: number }
+      | { angleInRadians: number; length: number }
+  )
   /**
    * Creates a Point object using the width and height values of the given
    * Size object.
    *
-   * @name Point#initialize
-   * @param {Size} size
+   * @param size
    *
    * @example
    * // Creating a point using a size object.
@@ -137,17 +166,24 @@ export class Point extends Base {
    * var point = new Point(size);
    * console.log(point); // { x: 100, y: 50 }
    */
+  constructor(size: Size)
   /**
    * Creates a Point object using the coordinates of the given Point object.
    *
-   * @param {Point} point
-   * @name Point#initialize
+   * @param point
    */
-  constructor(x, y) {
+  constructor(point?: Point)
+  /**
+   * Creates a Point object from any of the values that a function taking a
+   * point accepts, as {@link Point.from()} does.
+   *
+   * @param point
+   * @param y
+   */
+  constructor(point: PointLike | number, y?: number)
+  constructor(x?: PointLike | number | string, y?: number) {
     super()
-    // Linked points set their owner after super(), so don't notify it yet:
-    if (arguments.length) this.set(x, y)
-    else this._set(0, 0, true)
+    this.set(x, y)
   }
 
   /**
@@ -155,18 +191,15 @@ export class Point extends Base {
    * that is supported by the various {@link Point()} constructors also work
    * for calls of `set()`.
    *
-   * @function
-   * @param {...*} values
-   * @return {Point}
+   * @param values
    */
-  set(arg0, arg1) {
-    const type = typeof arg0
-    if (type === 'number') {
+  set(arg0?: PointLike | number | string, arg1?: number): this {
+    if (typeof arg0 === 'number') {
       this._set(arg0, typeof arg1 === 'number' ? arg1 : arg0)
-    } else if (type === 'undefined' || arg0 === null) {
+    } else if (arg0 === undefined || arg0 === null) {
       this._set(0, 0)
     } else {
-      const obj = type === 'string' ? arg0.split(/[\s,]+/) || [] : arg0
+      const obj: any = typeof arg0 === 'string' ? arg0.split(/[\s,]+/) : arg0
       if (Array.isArray(obj)) {
         this._set(+obj[0], +(obj.length > 1 ? obj[1] : obj[0]))
       } else if ('x' in obj) {
@@ -178,7 +211,7 @@ export class Point extends Base {
         this.angle = obj.angle || 0
       } else if ('angleInRadians' in obj) {
         this._set(obj.length || 0, 0)
-        this._setAngleInRadians(obj.angleInRadians || 0)
+        this.#setAngleInRadians(obj.angleInRadians || 0)
       } else {
         this._set(0, 0)
       }
@@ -197,7 +230,7 @@ export class Point extends Base {
    *   basic types, to offer the same amount of flexibility when setting
    *   values.
    */
-  _set(x, y) {
+  _set(x: number, y: number): this {
     this.x = x
     this.y = y
     return this
@@ -207,22 +240,20 @@ export class Point extends Base {
    * The x coordinate of the point
    *
    * @name Point#x
-   * @type Number
    */
 
   /**
    * The y coordinate of the point
    *
    * @name Point#y
-   * @type Number
    */
 
   /**
    * Checks whether the coordinates of the point are equal to that of the
    * supplied point.
    *
-   * @param {Point|Number[]} point
-   * @return {Boolean} {@true if the points are equal}
+   * @param point
+   * @return {@true if the points are equal}
    *
    * @example
    * var point = new Point(5, 10);
@@ -230,8 +261,8 @@ export class Point extends Base {
    * console.log(point == new Point(1, 1)); // false
    * console.log(point != new Point(1, 1)); // true
    */
-  equals(point) {
-    return (
+  equals(point: any): boolean {
+    return !!(
       this === point || (
         point && (
           this.x === point.x && this.y === point.y || (
@@ -240,8 +271,7 @@ export class Point extends Base {
             this.y === point[1]
           )
         )
-      ) ||
-      false
+      )
     )
   }
 
@@ -256,21 +286,21 @@ export class Point extends Base {
    * var point2 = point1.clone();
    * point2.x = 1; // doesn't change point1.x
    *
-   * @return {Point} the cloned point
+   * @return the cloned point
    */
-  clone() {
+  clone(): Point {
     return new Point(this.x, this.y)
   }
 
   /**
-   * @return {String} a string representation of the point
+   * @return a string representation of the point
    */
-  toString() {
+  toString(): string {
     const f = Formatter.instance
     return '{ x: ' + f.number(this.x) + ', y: ' + f.number(this.y) + ' }'
   }
 
-  _serialize(options) {
+  _serialize(options: { formatter: Formatter }): number[] {
     const f = options.formatter
     // For speed reasons, we directly call formatter.number() here, instead
     // of converting array through serialize() which makes a copy.
@@ -280,10 +310,8 @@ export class Point extends Base {
   /**
    * The point's coordinates as an array, `[x, y]`, as
    * {@link Matrix#values} gives those of a matrix.
-   *
-   * @type Number[]
    */
-  get values() {
+  get values(): number[] {
     return [this.x, this.y]
   }
 
@@ -292,18 +320,16 @@ export class Point extends Base {
    * Each point can be interpreted as a vector that points from the origin (`x
    * = 0`, `y = 0`) to the point's location. Setting the length changes the
    * location but keeps the vector's angle.
-   *
-   * @type Number
    */
-  get length() {
+  get length(): number {
     return Math.sqrt(this.x * this.x + this.y * this.y)
   }
 
-  set length(length) {
+  set length(length: number) {
     // Whenever chaining both x & y, use #_set() instead of direct
     // assignment, so LinkedPoint does not report changes twice.
     if (this.isZero()) {
-      const angle = this._angle || 0
+      const angle = this.#angle || 0
       this._set(
         Math.cos(angle) * length,
         Math.sin(angle) * length
@@ -312,7 +338,9 @@ export class Point extends Base {
       const scale = length / this.length
       // Force calculation of angle now, so it will be preserved even when
       // x and y are 0
-      if (Numerical.isZero(scale)) this.angle
+      if (Numerical.isZero(scale)) {
+        this.angle
+      }
       this._set(
         this.x * scale,
         this.y * scale
@@ -321,29 +349,27 @@ export class Point extends Base {
   }
   /**
    * The vector's angle in degrees, measured from the x-axis to the vector.
-   *
-   * @type Number
    */
-  get angle() {
+  get angle(): number {
     // Return the preserved angle in case the vector has no length, and
-    // update the internal _angle in case it has one, see
-    // #_setAngleInRadians():
+    // update the internal #angle in case it has one, see
+    // #setAngleInRadians():
     const angle = this.isZero()
-      ? this._angle || 0
-      : (this._angle = Math.atan2(this.y, this.x))
+      ? this.#angle || 0
+      : (this.#angle = Math.atan2(this.y, this.x))
     return angle * 180 / Math.PI
   }
 
-  set angle(angle) {
-    this._setAngleInRadians(angle * Math.PI / 180)
+  set angle(angle: number) {
+    this.#setAngleInRadians(angle * Math.PI / 180)
   }
 
-  _setAngleInRadians(angle) {
-    // We store a reference to _angle internally so we still preserve it
+  #setAngleInRadians(angle: number) {
+    // We store a reference to #angle internally so we still preserve it
     // when the vector's length is set to zero, and then anything else.
     // Note that we cannot rely on it if x and y are something else than 0,
-    // since updating x / y does not automatically change _angle!
-    this._angle = angle
+    // since updating x / y does not automatically change #angle!
+    this.#angle = angle
     if (!this.isZero()) {
       const { length } = this
       // Use #_set() instead of direct assignment of x/y, so LinkedPoint
@@ -356,10 +382,10 @@ export class Point extends Base {
    * Returns the smaller angle between two vectors. The angle is unsigned, no
    * information about rotational direction is given.
    *
-   * @param {Point} point
-   * @return {Number} the angle in degrees
+   * @param point
+   * @return the angle in degrees
    */
-  getAngle(point, y) {
+  getAngle(point: PointLike | number, y?: number): number {
     return this.getAngleInRadians(point, y) * 180 / Math.PI
   }
 
@@ -367,16 +393,16 @@ export class Point extends Base {
    * Returns the smaller angle between two vectors in radians. The angle is
    * unsigned, no information about rotational direction is given.
    *
-   * @param {Point} point
-   * @return {Number} the angle in radians
+   * @param point
+   * @return the angle in radians
    */
-  getAngleInRadians(point, y) {
-    point = Point.from(point, y)
-    const div = this.length * point.length
+  getAngleInRadians(point: PointLike | number, y?: number): number {
+    const other = Point.from(point, y)
+    const div = this.length * other.length
     if (Numerical.isZero(div)) {
       return NaN
     } else {
-      const a = this.dot(point) / div
+      const a = this.dot(other) / div
       return Math.acos(a < -1 ? -1 : a > 1 ? 1 : a)
     }
   }
@@ -389,7 +415,6 @@ export class Point extends Base {
    * are in quadrant `3` and angles between 270 and 360 degrees are in
    * quadrant `4`.
    *
-   * @type Number
    *
    * @example
    * var point = new Point({
@@ -407,7 +432,7 @@ export class Point extends Base {
    * point.angle = 280;
    * console.log(point.quadrant); // 4
    */
-  get quadrant() {
+  get quadrant(): number {
     return this.x >= 0 ? (this.y >= 0 ? 1 : 4) : this.y >= 0 ? 2 : 3
   }
 
@@ -418,26 +443,25 @@ export class Point extends Base {
    * Read more about angle units and orientation in the description of the
    * {@link #angle} property.
    *
-   * @param {Point} point
-   * @return {Number} the angle between the two vectors
+   * @param point
+   * @return the angle between the two vectors
    */
-  getDirectedAngle(point, y) {
-    point = Point.from(point, y)
-    return Math.atan2(this.cross(point), this.dot(point)) * 180 / Math.PI
+  getDirectedAngle(point: PointLike | number, y?: number): number {
+    const other = Point.from(point, y)
+    return Math.atan2(this.cross(other), this.dot(other)) * 180 / Math.PI
   }
 
   /**
    * Returns the distance between the point and another point.
    *
-   * @param {Point} point
-   * @param {Boolean} [squared=false] Controls whether the distance should
+   * @param point
+   * @param squared Controls whether the distance should
    * remain squared, or its square root should be calculated
-   * @return {Number}
    */
-  getDistance(point, squared) {
-    point = Point.from(point)
-    const x = point.x - this.x
-    const y = point.y - this.y
+  getDistance(point: PointLike, squared?: boolean): number {
+    const other = Point.from(point)
+    const x = other.x - this.x
+    const y = other.y - this.y
     const d = x * x + y * y
     return squared ? d : Math.sqrt(d)
   }
@@ -448,16 +472,18 @@ export class Point extends Base {
    * parameter defines the length to normalize to. The object itself is not
    * modified!
    *
-   * @param {Number} [length=1] The length of the normalized vector
-   * @return {Point} the normalized vector of the vector that is represented
+   * @param length The length of the normalized vector
+   * @return the normalized vector of the vector that is represented
    *     by this point's coordinates
    */
-  normalize(length = 1) {
+  normalize(length = 1): Point {
     const current = this.length
     const scale = current !== 0 ? length / current : 0
     const point = new Point(this.x * scale, this.y * scale)
     // Preserve angle.
-    if (scale >= 0) point._angle = this._angle
+    if (scale >= 0) {
+      point.#angle = this.#angle
+    }
     return point
   }
 
@@ -468,11 +494,11 @@ export class Point extends Base {
    * Read more about angle units and orientation in the description of the
    * {@link #angle} property.
    *
-   * @param {Number} angle the rotation angle
-   * @param {Point} center the center point of the rotation
-   * @return {Point} the rotated point
+   * @param angle the rotation angle
+   * @param center the center point of the rotation
+   * @return the rotated point
    */
-  rotate(angle, center) {
+  rotate(angle: number, center?: PointLike): Point {
     if (angle === 0) return this.clone()
     angle = angle * Math.PI / 180
     let point = center ? this.subtract(center) : this
@@ -489,10 +515,10 @@ export class Point extends Base {
    * Transforms the point by the matrix as a new point. The object itself is
    * not modified!
    *
-   * @param {Matrix} matrix
-   * @return {Point} the transformed point
+   * @param matrix
+   * @return the transformed point
    */
-  transform(matrix) {
+  transform(matrix: Matrix): Point {
     return matrix ? matrix._transformPoint(this) : this
   }
 
@@ -502,10 +528,9 @@ export class Point extends Base {
    * The object itself is not modified!
    *
    * @name Point#add
-   * @function
    * @operator
-   * @param {Number} number the number to add
-   * @return {Point} the addition of the point and the value as a new point
+   * @param number the number to add
+   * @return the addition of the point and the value as a new point
    *
    * @example
    * var point = new Point(5, 10);
@@ -519,10 +544,9 @@ export class Point extends Base {
    * The object itself is not modified!
    *
    * @name Point#add
-   * @function
    * @operator
-   * @param {Point} point the point to add
-   * @return {Point} the addition of the two points as a new point
+   * @param point the point to add
+   * @return the addition of the two points as a new point
    *
    * @example
    * var point1 = new Point(5, 10);
@@ -531,9 +555,9 @@ export class Point extends Base {
    * var result = point1.add(point2); // JavaScript
    * console.log(result); // {x: 15, y: 30}
    */
-  add(point, y) {
-    point = Point.from(point, y)
-    return new Point(this.x + point.x, this.y + point.y)
+  add(point: PointLike | number, y?: number): Point {
+    const other = Point.from(point, y)
+    return new Point(this.x + other.x, this.y + other.y)
   }
 
   /**
@@ -542,10 +566,9 @@ export class Point extends Base {
    * The object itself is not modified!
    *
    * @name Point#subtract
-   * @function
    * @operator
-   * @param {Number} number the number to subtract
-   * @return {Point} the subtraction of the point and the value as a new point
+   * @param number the number to subtract
+   * @return the subtraction of the point and the value as a new point
    *
    * @example
    * var point = new Point(10, 20);
@@ -559,10 +582,9 @@ export class Point extends Base {
    * The object itself is not modified!
    *
    * @name Point#subtract
-   * @function
    * @operator
-   * @param {Point} point the point to subtract
-   * @return {Point} the subtraction of the two points as a new point
+   * @param point the point to subtract
+   * @return the subtraction of the two points as a new point
    *
    * @example
    * var firstPoint = new Point(10, 20);
@@ -571,9 +593,9 @@ export class Point extends Base {
    * var result = firstPoint.subtract(secondPoint); // JavaScript
    * console.log(result); // {x: 5, y: 15}
    */
-  subtract(point, y) {
-    point = Point.from(point, y)
-    return new Point(this.x - point.x, this.y - point.y)
+  subtract(point: PointLike | number, y?: number): Point {
+    const other = Point.from(point, y)
+    return new Point(this.x - other.x, this.y - other.y)
   }
 
   /**
@@ -582,10 +604,9 @@ export class Point extends Base {
    * The object itself is not modified!
    *
    * @name Point#multiply
-   * @function
    * @operator
-   * @param {Number} number the number to multiply by
-   * @return {Point} the multiplication of the point and the value as a new
+   * @param number the number to multiply by
+   * @return the multiplication of the point and the value as a new
    *     point
    *
    * @example
@@ -600,10 +621,9 @@ export class Point extends Base {
    * The object itself is not modified!
    *
    * @name Point#multiply
-   * @function
    * @operator
-   * @param {Point} point the point to multiply by
-   * @return {Point} the multiplication of the two points as a new point
+   * @param point the point to multiply by
+   * @return the multiplication of the two points as a new point
    *
    * @example
    * var firstPoint = new Point(5, 10);
@@ -612,9 +632,9 @@ export class Point extends Base {
    * var result = firstPoint.multiply(secondPoint); // JavaScript
    * console.log(result); // {x: 20, y: 20}
    */
-  multiply(point, y) {
-    point = Point.from(point, y)
-    return new Point(this.x * point.x, this.y * point.y)
+  multiply(point: PointLike | number, y?: number): Point {
+    const other = Point.from(point, y)
+    return new Point(this.x * other.x, this.y * other.y)
   }
 
   /**
@@ -623,10 +643,9 @@ export class Point extends Base {
    * The object itself is not modified!
    *
    * @name Point#divide
-   * @function
    * @operator
-   * @param {Number} number the number to divide by
-   * @return {Point} the division of the point and the value as a new point
+   * @param number the number to divide by
+   * @return the division of the point and the value as a new point
    *
    * @example
    * var point = new Point(10, 20);
@@ -640,10 +659,9 @@ export class Point extends Base {
    * The object itself is not modified!
    *
    * @name Point#divide
-   * @function
    * @operator
-   * @param {Point} point the point to divide by
-   * @return {Point} the division of the two points as a new point
+   * @param point the point to divide by
+   * @return the division of the two points as a new point
    *
    * @example
    * var firstPoint = new Point(8, 10);
@@ -652,9 +670,9 @@ export class Point extends Base {
    * var result = firstPoint.divide(secondPoint); // JavaScript
    * console.log(result); // {x: 4, y: 2}
    */
-  divide(point, y) {
-    point = Point.from(point, y)
-    return new Point(this.x / point.x, this.y / point.y)
+  divide(point: PointLike | number, y?: number): Point {
+    const other = Point.from(point, y)
+    return new Point(this.x / other.x, this.y / other.y)
   }
 
   /**
@@ -662,10 +680,9 @@ export class Point extends Base {
    * by the supplied value as a new point.
    *
    * @name Point#modulo
-   * @function
    * @operator
-   * @param {Number} value
-   * @return {Point} the integer remainders of dividing the point by the value
+   * @param value
+   * @return the integer remainders of dividing the point by the value
    * as a new point
    *
    * @example
@@ -679,10 +696,9 @@ export class Point extends Base {
    * by the supplied value as a new point.
    *
    * @name Point#modulo
-   * @function
    * @operator
-   * @param {Point} point
-   * @return {Point} the integer remainders of dividing the points by each
+   * @param point
+   * @return the integer remainders of dividing the points by each
    * other as a new point
    *
    * @example
@@ -691,9 +707,9 @@ export class Point extends Base {
    * var result = point.modulo(new Point(5, 2)); // JavaScript
    * console.log(result); // {x: 2, y: 0}
    */
-  modulo(point, y) {
-    point = Point.from(point, y)
-    return new Point(this.x % point.x, this.y % point.y)
+  modulo(point: PointLike | number, y?: number): Point {
+    const other = Point.from(point, y)
+    return new Point(this.x % other.x, this.y % other.y)
   }
 
   /**
@@ -702,8 +718,7 @@ export class Point extends Base {
    * The object itself is not modified!
    *
    * @name Point#negate
-   * @function
-   * @return {Point} the negation of the point as a new point
+   * @return the negation of the point as a new point
    *
    * @example
    * var point = new Point(12, -6);
@@ -711,7 +726,7 @@ export class Point extends Base {
    * var result = point.negate(); // JavaScript
    * console.log(result); // {x: -12, y: 6}
    */
-  negate() {
+  negate(): Point {
     return new Point(-this.x, -this.y)
   }
 
@@ -720,21 +735,21 @@ export class Point extends Base {
    *
    * Checks whether the point is inside the boundaries of the rectangle.
    *
-   * @param {Rectangle} rect the rectangle to check against
-   * @return {Boolean} {@true if the point is inside the rectangle}
+   * @param rect the rectangle to check against
+   * @return {@true if the point is inside the rectangle}
    */
-  isInside(rect) {
+  isInside(rect: RectangleLike): boolean {
     return Rectangle.from(rect).contains(this)
   }
 
   /**
    * Checks if the point is within a given distance of another point.
    *
-   * @param {Point} point the point to check against
-   * @param {Number} tolerance the maximum distance allowed
-   * @return {Boolean} {@true if it is within the given distance}
+   * @param point the point to check against
+   * @param tolerance the maximum distance allowed
+   * @return {@true if it is within the given distance}
    */
-  isClose(point, tolerance) {
+  isClose(point: PointLike, tolerance: number): boolean {
     return this.getDistance(point) <= tolerance
   }
 
@@ -743,12 +758,12 @@ export class Point extends Base {
    * another vector, within a tolerance of 1e-8 for the sine of the angle
    * between them.
    *
-   * @param {Point} point the vector to check against
-   * @return {Boolean} {@true it is collinear}
+   * @param point the vector to check against
+   * @return {@true it is collinear}
    */
-  isCollinear(point, y) {
-    point = Point.from(point, y)
-    return Point.isCollinear(this.x, this.y, point.x, point.y)
+  isCollinear(point: PointLike | number, y?: number): boolean {
+    const other = Point.from(point, y)
+    return Point.isCollinear(this.x, this.y, other.x, other.y)
   }
 
   /**
@@ -756,12 +771,12 @@ export class Point extends Base {
    * (perpendicular) to another vector, within a tolerance of 1e-8 for the
    * cosine of the angle between them.
    *
-   * @param {Point} point the vector to check against
-   * @return {Boolean} {@true it is orthogonal}
+   * @param point the vector to check against
+   * @return {@true it is orthogonal}
    */
-  isOrthogonal(point, y) {
-    point = Point.from(point, y)
-    return Point.isOrthogonal(this.x, this.y, point.x, point.y)
+  isOrthogonal(point: PointLike | number, y?: number): boolean {
+    const other = Point.from(point, y)
+    return Point.isOrthogonal(this.x, this.y, other.x, other.y)
   }
 
   /**
@@ -769,9 +784,9 @@ export class Point extends Base {
    * a tolerance of 1e-12, unlike {@link #equals(point)}, which compares
    * exactly.
    *
-   * @return {Boolean} {@true if both x and y are 0, within the tolerance}
+   * @return {@true if both x and y are 0, within the tolerance}
    */
-  isZero() {
+  isZero(): boolean {
     const isZero = Numerical.isZero
     return isZero(this.x) && isZero(this.y)
   }
@@ -780,9 +795,9 @@ export class Point extends Base {
    * Checks if this point has an undefined value for at least one of its
    * coordinates.
    *
-   * @return {Boolean} {@true if either x or y are not a number}
+   * @return {@true if either x or y are not a number}
    */
-  isNaN() {
+  isNaN(): boolean {
     return isNaN(this.x) || isNaN(this.y)
   }
 
@@ -791,11 +806,11 @@ export class Point extends Base {
    * vector lies on the boundary between two quadrants, `true` will be
    * returned for both quadrants.
    *
-   * @param {Number} quadrant the quadrant to check against
-   * @return {Boolean} {@true if either x or y are not a number}
+   * @param quadrant the quadrant to check against
+   * @return {@true if either x or y are not a number}
    * @see #quadrant
    */
-  isInQuadrant(q) {
+  isInQuadrant(quadrant: number): boolean {
     // Map quadrant to x & y coordinate pairs and multiply with coordinates,
     // then check sign:
     // 1: [ 1,  1]
@@ -803,8 +818,8 @@ export class Point extends Base {
     // 3: [-1, -1]
     // 4: [ 1, -1]
     return (
-      this.x * (q > 1 && q < 4 ? -1 : 1) >= 0 &&
-      this.y * (q > 2 ? -1 : 1) >= 0
+      this.x * (quadrant > 1 && quadrant < 4 ? -1 : 1) >= 0 &&
+      this.y * (quadrant > 2 ? -1 : 1) >= 0
     )
   }
 
@@ -812,38 +827,38 @@ export class Point extends Base {
    * {@grouptitle Vector Math Functions}
    * Returns the dot product of the point and another point.
    *
-   * @param {Point} point
-   * @return {Number} the dot product of the two points
+   * @param point
+   * @return the dot product of the two points
    */
-  dot(point, y) {
-    point = Point.from(point, y)
-    return this.x * point.x + this.y * point.y
+  dot(point: PointLike | number, y?: number): number {
+    const other = Point.from(point, y)
+    return this.x * other.x + this.y * other.y
   }
 
   /**
    * Returns the cross product of the point and another point.
    *
-   * @param {Point} point
-   * @return {Number} the cross product of the two points
+   * @param point
+   * @return the cross product of the two points
    */
-  cross(point, y) {
-    point = Point.from(point, y)
-    return this.x * point.y - this.y * point.x
+  cross(point: PointLike | number, y?: number): number {
+    const other = Point.from(point, y)
+    return this.x * other.y - this.y * other.x
   }
 
   /**
    * Returns the projection of the point onto another point.
    * Both points are interpreted as vectors.
    *
-   * @param {Point} point
-   * @return {Point} the projection of the point onto another point
+   * @param point
+   * @return the projection of the point onto another point
    */
-  project(point, y) {
-    point = Point.from(point, y)
-    const scale = point.isZero() ? 0 : this.dot(point) / point.dot(point)
+  project(point: PointLike | number, y?: number): Point {
+    const other = Point.from(point, y)
+    const scale = other.isZero() ? 0 : this.dot(other) / other.dot(other)
     return new Point(
-      point.x * scale,
-      point.y * scale
+      other.x * scale,
+      other.y * scale
     )
   }
 
@@ -862,7 +877,6 @@ export class Point extends Base {
    *
    * @name Point#selected
    * @property
-   * @type Boolean
    * @default false
    *
    * @example {@paperscript}
@@ -886,8 +900,6 @@ export class Point extends Base {
    * object itself is not modified!
    *
    * @name Point#round
-   * @function
-   * @return {Point}
    *
    * @example
    * var point = new Point(10.2, 10.9);
@@ -901,8 +913,6 @@ export class Point extends Base {
    * modified!
    *
    * @name Point#ceil
-   * @function
-   * @return {Point}
    *
    * @example
    * var point = new Point(10.2, 10.9);
@@ -916,8 +926,6 @@ export class Point extends Base {
    * modified!
    *
    * @name Point#floor
-   * @function
-   * @return {Point}
    *
    * @example
    * var point = new Point(10.2, 10.9);
@@ -930,8 +938,6 @@ export class Point extends Base {
    * and {@link #y} values. The object itself is not modified!
    *
    * @name Point#abs
-   * @function
-   * @return {Point}
    *
    * @example
    * var point = new Point(-5, 10);
@@ -944,9 +950,9 @@ export class Point extends Base {
    * the range between the given minimum and maximum points. The object
    * itself is not modified!
    *
-   * @param {Point} min the point with the smallest values
-   * @param {Point} max the point with the largest values
-   * @return {Point} the clamped point as a new point
+   * @param min the point with the smallest values
+   * @param max the point with the largest values
+   * @return the clamped point as a new point
    *
    * @example
    * var point = new Point(-5, 150);
@@ -960,12 +966,12 @@ export class Point extends Base {
    * var clampPoint = point.clamp(rect.topLeft, rect.bottomRight);
    * console.log(clampPoint); // {x: 110, y: 40}
    */
-  clamp(min, max) {
-    min = Point.from(min)
-    max = Point.from(max)
+  clamp(min: PointLike, max: PointLike): Point {
+    const { x: minX, y: minY } = Point.from(min)
+    const { x: maxX, y: maxY } = Point.from(max)
     return new Point(
-      Numerical.clamp(this.x, min.x, max.x),
-      Numerical.clamp(this.y, min.y, max.y)
+      Numerical.clamp(this.x, minX, maxX),
+      Numerical.clamp(this.y, minY, maxY)
     )
   }
 
@@ -973,12 +979,10 @@ export class Point extends Base {
    * Returns the passed point if it is one already, or else a new point
    * created from the passed values, as {@link Point()} reads them.
    *
-   * @static
-   * @param {Point|Number[]|Object|Number} point
-   * @param {Number} [y]
-   * @return {Point}
+   * @param point
+   * @param y
    */
-  static from(point, y) {
+  static from(point: PointLike | number, y?: number): Point {
     return point instanceof Point ? point : new Point(point, y)
   }
 
@@ -986,10 +990,9 @@ export class Point extends Base {
    * Returns a new point object with the smallest {@link #x} and
    * {@link #y} of the supplied points.
    *
-   * @static
-   * @param {Point} point1
-   * @param {Point} point2
-   * @return {Point} the newly created point object
+   * @param point1
+   * @param point2
+   * @return the newly created point object
    *
    * @example
    * var point1 = new Point(10, 100);
@@ -1004,23 +1007,19 @@ export class Point extends Base {
    * var point3 = new Point(250, 35);
    * [point1, point2, point3].reduce(Point.min) // {x: 60, y: 5}
    */
-  static min(point1, point2) {
-    point1 = Point.from(point1)
-    point2 = Point.from(point2)
-    return new Point(
-      Math.min(point1.x, point2.x),
-      Math.min(point1.y, point2.y)
-    )
+  static min(point1: PointLike, point2: PointLike): Point {
+    const p1 = Point.from(point1)
+    const p2 = Point.from(point2)
+    return new Point(Math.min(p1.x, p2.x), Math.min(p1.y, p2.y))
   }
 
   /**
    * Returns a new point object with the largest {@link #x} and
    * {@link #y} of the supplied points.
    *
-   * @static
-   * @param {Point} point1
-   * @param {Point} point2
-   * @return {Point} the newly created point object
+   * @param point1
+   * @param point2
+   * @return the newly created point object
    *
    * @example
    * var point1 = new Point(10, 100);
@@ -1035,21 +1034,17 @@ export class Point extends Base {
    * var point3 = new Point(250, 35);
    * [point1, point2, point3].reduce(Point.max) // {x: 250, y: 100}
    */
-  static max(point1, point2) {
-    point1 = Point.from(point1)
-    point2 = Point.from(point2)
-    return new Point(
-      Math.max(point1.x, point2.x),
-      Math.max(point1.y, point2.y)
-    )
+  static max(point1: PointLike, point2: PointLike): Point {
+    const p1 = Point.from(point1)
+    const p2 = Point.from(point2)
+    return new Point(Math.max(p1.x, p2.x), Math.max(p1.y, p2.y))
   }
 
   /**
    * Returns a point object with random {@link #x} and {@link #y} values
    * between `0` and `1`.
    *
-   * @return {Point} the newly created point object
-   * @static
+   * @return the newly created point object
    *
    * @example
    * var maxPoint = new Point(100, 100);
@@ -1058,11 +1053,16 @@ export class Point extends Base {
    * // A point between {x:0, y:0} and {x:100, y:100}:
    * var point = maxPoint * randomPoint;
    */
-  static random() {
+  static random(): Point {
     return new Point(Math.random(), Math.random())
   }
 
-  static isCollinear(x1, y1, x2, y2) {
+  static isCollinear(
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number
+  ): boolean {
     // NOTE: We use normalized vectors so that the epsilon comparison is
     // reliable. We could instead scale the epsilon based on the vector
     // length. But instead of normalizing the vectors before calculating
@@ -1074,7 +1074,12 @@ export class Point extends Base {
     )
   }
 
-  static isOrthogonal(x1, y1, x2, y2) {
+  static isOrthogonal(
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number
+  ): boolean {
     // See Point.isCollinear()
     return (
       Math.abs(x1 * x2 + y1 * y2) <=
@@ -1095,58 +1100,68 @@ export class Point extends Base {
 }
 
 /**
- * @name LinkedPoint
- *
- * @class An internal version of Point that notifies its owner of each change
- * through setting itself again on the setter that corresponds to the getter
- * that produced this LinkedPoint.
+ * An internal version of Point that notifies its owner of each change
+ * through setting itself again on the property that produced it.
  *
  * @private
  */
 export class LinkedPoint extends Point {
-  constructor(x, y, owner, key) {
+  #x: number
+  #y: number
+  #owner: any
+  #key: string
+
+  constructor(x: number, y: number, owner: any, key: string) {
     super()
-    this._x = x
-    this._y = y
-    this._owner = owner
-    this._key = key
+    this.#x = x
+    this.#y = y
+    this.#owner = owner
+    this.#key = key
   }
 
-  // See Point#_set() for an explanation of #_set():
-  _set(x, y, _dontNotify) {
-    this._x = x
-    this._y = y
-    if (!_dontNotify) this._owner[this._key] = this
+  // See Point#_set() for an explanation of _set():
+  _set(x: number, y: number, _dontNotify?: boolean): this {
+    // Point's constructor calls this before the private fields exist, and the
+    // constructor below sets them:
+    if (#x in this) {
+      this.#x = x
+      this.#y = y
+      if (!_dontNotify) {
+        this.#owner[this.#key] = this
+      }
+    }
     return this
   }
 
-  get x() {
-    return this._x
+  // @ts-expect-error: Point declares x as a field, LinkedPoint reads #x
+  get x(): number {
+    return this.#x
   }
 
-  set x(x) {
-    this._x = x
-    this._owner[this._key] = this
+  set x(x: number) {
+    this.#x = x
+    this.#owner[this.#key] = this
   }
 
-  get y() {
-    return this._y
+  // @ts-expect-error: See x
+  get y(): number {
+    return this.#y
   }
 
-  set y(y) {
-    this._y = y
-    this._owner[this._key] = this
+  set y(y: number) {
+    this.#y = y
+    this.#owner[this.#key] = this
   }
 
-  get selected() {
-    return !!(this._owner._selection & this._getSelection())
+  get selected(): boolean {
+    return !!(this.#owner._selection & this.#getSelection())
   }
 
-  set selected(selected) {
-    this._owner._changeSelection(this._getSelection(), selected)
+  set selected(selected: boolean) {
+    this.#owner._changeSelection(this.#getSelection(), selected)
   }
 
-  _getSelection() {
-    return this._key === 'position' ? ItemSelection.POSITION : 0
+  #getSelection(): number {
+    return this.#key === 'position' ? ItemSelection.POSITION : 0
   }
 }

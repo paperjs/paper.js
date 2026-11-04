@@ -40,9 +40,13 @@ export function splice(list, items, index, remove) {
   const amount = items && items.length
   const append = index === undefined
   index = append ? list.length : index
-  if (index > list.length) index = list.length
+  if (index > list.length) {
+    index = list.length
+  }
   // Update _index on the items to be added first.
-  for (let i = 0; i < amount; i++) items[i]._index = index + i
+  for (let i = 0; i < amount; i++) {
+    items[i]._index = index + i
+  }
   if (append) {
     // Append them all at the end by using push
     push(list, items)
@@ -51,12 +55,18 @@ export function splice(list, items, index, remove) {
   } else {
     // Insert somewhere else and/or remove
     const args = [index, remove]
-    if (items) push(args, items)
+    if (items) {
+      push(args, items)
+    }
     const removed = list.splice(...args)
     // Erase the indices of the removed items
-    for (const item of removed) item._index = undefined
+    for (const item of removed) {
+      item._index = undefined
+    }
     // Adjust the indices of the items above.
-    for (let i = index + amount, l = list.length; i < l; i++) list[i]._index = i
+    for (let i = index + amount, l = list.length; i < l; i++) {
+      list[i]._index = i
+    }
     return removed
   }
 }
@@ -69,7 +79,9 @@ export function splice(list, items, index, remove) {
 export function addNamed(list, named, name, item) {
   ;(named[name] = named[name] || []).push(item)
   // Only set this item if there isn't one under the same name already
-  if (!(name in list)) list[name] = item
+  if (!(name in list)) {
+    list[name] = item
+  }
 }
 
 /**
@@ -80,7 +92,9 @@ export function removeNamed(list, named, name, item) {
   const index = namedArray ? namedArray.indexOf(item) : -1
   if (index !== -1) {
     // Remove the named reference
-    if (list[name] == item) delete list[name]
+    if (list[name] == item) {
+      delete list[name]
+    }
     // Remove this entry
     namedArray.splice(index, 1)
     // If there are any items left in the named array, set the first of them

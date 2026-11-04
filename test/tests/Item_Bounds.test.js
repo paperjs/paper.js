@@ -1499,7 +1499,9 @@ describe('Item Bounds', () => {
           strokeJoin: join,
           strokeCap: 'square'
         })
-        if (mirror) path.scale(-1, 1)
+        if (mirror) {
+          path.scale(-1, 1)
+        }
         path.rotate(30)
         return path
       }

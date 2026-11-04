@@ -361,7 +361,9 @@ describe('PaperScript', () => {
     const exports = PaperScript.execute('function onActivate() {}', paper),
       tool = paper.tools[paper.tools.length - 1]
     equals(() => tool && tool.onActivate === exports.onActivate, true)
-    if (tool) tool.remove()
+    if (tool) {
+      tool.remove()
+    }
   })
 
   // Hosts can provide a current Acorn as self.acorn, for the syntax that the
@@ -768,7 +770,9 @@ describe('PaperScript', () => {
       scope.install(self)
       onTestFinished(() => {
         for (const key of Object.keys(self)) {
-          if (!keys.has(key)) delete self[key]
+          if (!keys.has(key)) {
+            delete self[key]
+          }
         }
         scope.remove()
         current.activate()
@@ -835,7 +839,9 @@ describe('PaperScript', () => {
         const script = document.createElement('script')
         script.type = 'text/paperscript'
         script.setAttribute('canvas', canvas.id)
-        if (ignore) script.setAttribute('data-paper-ignore', 'true')
+        if (ignore) {
+          script.setAttribute('data-paper-ignore', 'true')
+        }
         script.text = code
         document.body.appendChild(script)
         PaperScript.load(script)

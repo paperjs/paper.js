@@ -13,9 +13,6 @@
 /**
  * The flags that describe what has changed in an item, as reported by
  * {@link Project#takeChanges()}. They are bit flags that can be combined.
- *
- * @name ChangeFlag
- * @namespace
  */
 export const ChangeFlag = {
   /**
@@ -23,7 +20,6 @@ export const ChangeFlag = {
    * STROKE, STYLE and ATTRIBUTE (except for the invisible ones: locked, name)
    *
    * @property
-   * @type Number
    */
   APPEARANCE: 0x1,
 
@@ -31,7 +27,6 @@ export const ChangeFlag = {
    * A change in the item's children
    *
    * @property
-   * @type Number
    */
   CHILDREN: 0x2,
 
@@ -40,7 +35,6 @@ export const ChangeFlag = {
    * moved)
    *
    * @property
-   * @type Number
    */
   INSERTION: 0x4,
 
@@ -48,7 +42,6 @@ export const ChangeFlag = {
    * Item geometry (path, bounds)
    *
    * @property
-   * @type Number
    */
   GEOMETRY: 0x8,
 
@@ -56,7 +49,6 @@ export const ChangeFlag = {
    * The item's matrix has changed
    *
    * @property
-   * @type Number
    */
   MATRIX: 0x10,
 
@@ -65,7 +57,6 @@ export const ChangeFlag = {
    * notified. This is to implement an optimization in _changed() calls
    *
    * @property
-   * @type Number
    */
   SEGMENTS: 0x20,
 
@@ -73,7 +64,6 @@ export const ChangeFlag = {
    * Stroke geometry (excluding color)
    *
    * @property
-   * @type Number
    */
   STROKE: 0x40,
 
@@ -81,7 +71,6 @@ export const ChangeFlag = {
    * Fill style or stroke color / dash
    *
    * @property
-   * @type Number
    */
   STYLE: 0x80,
 
@@ -89,7 +78,6 @@ export const ChangeFlag = {
    * Item attributes: visible, blendMode, locked, name, opacity, clipMask ...
    *
    * @property
-   * @type Number
    */
   ATTRIBUTE: 0x100,
 
@@ -97,7 +85,6 @@ export const ChangeFlag = {
    * Text content
    *
    * @property
-   * @type Number
    */
   CONTENT: 0x200,
 
@@ -105,7 +92,6 @@ export const ChangeFlag = {
    * Raster pixels
    *
    * @property
-   * @type Number
    */
   PIXELS: 0x400,
 
@@ -113,7 +99,6 @@ export const ChangeFlag = {
    * Clipping in one of the child items
    *
    * @property
-   * @type Number
    */
   CLIPPING: 0x800,
 
@@ -121,7 +106,6 @@ export const ChangeFlag = {
    * The view has been transformed
    *
    * @property
-   * @type Number
    */
   VIEW: 0x1000
 }

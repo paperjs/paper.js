@@ -2,6 +2,31 @@
 import globals from 'globals'
 import pluginJs from '@eslint/js'
 import pluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
+import tseslint from 'typescript-eslint'
+
+// Bodies of if, else and loops take braces, except for a single return, break
+// or throw:
+const unbraced =
+  '/^(BlockStatement|ReturnStatement|BreakStatement|ThrowStatement)$/'
+const loops = 'ForStatement, ForInStatement, ForOfStatement, WhileStatement'
+const braces = [
+  {
+    selector: `IfStatement:not([consequent.type=${unbraced}])`,
+    message: 'Use braces, except for a single return, break or throw.'
+  },
+  {
+    selector: `IfStatement[alternate]:not([alternate.type=${
+      unbraced
+    }], [alternate.type='IfStatement'])`,
+    message: 'Use braces, except for a single return, break or throw.'
+  },
+  {
+    selector: `:matches(${loops}, DoWhileStatement):not([body.type=${
+      unbraced
+    }])`,
+    message: 'Use braces, except for a single return, break or throw.'
+  }
+]
 
 export default [
   {
@@ -20,9 +45,10 @@ export default [
   {
     // The sources, as ES modules. Files not ported yet still use each other's
     // declarations without importing them, so no-undef waits for the port:
-    files: ['src/**/*.js'],
+    files: ['src/**/*.{js,ts}'],
     ...pluginJs.configs.recommended,
     languageOptions: {
+      parser: tseslint.parser,
       ecmaVersion: 2022,
       sourceType: 'module',
       globals: { ...globals.node, ...globals.browser }
@@ -57,7 +83,8 @@ export default [
       // paper.js takes undefined as a parameter, for minification:
       'no-shadow-restricted-names': 'off',
       // The constants of Numerical are written as published:
-      'no-loss-of-precision': 'off'
+      'no-loss-of-precision': 'off',
+      'no-restricted-syntax': ['error', ...braces]
     }
   },
   {
@@ -123,7 +150,8 @@ export default [
           selector: `Literal[raw=/^"/]:not(Literal[raw=/'/][raw=/\`/])`,
           message:
             'Avoid double quotes. Use backticks for strings with single quotes.'
-        }
+        },
+        ...braces
       ]
     }
   }

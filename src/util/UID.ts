@@ -11,8 +11,6 @@
  */
 
 /**
- * @name UID
- * @namespace
  * @private
  */
 export const UID = {
@@ -22,14 +20,15 @@ export const UID = {
   /**
    * Returns the next unique id.
    * @method get
-   * @return {Number} the next unique id
-   * @static
+   * @return the next unique id
    **/
   get(name) {
     if (name) {
       // Use one UID pool per given constructor
       let pool = this._pools[name]
-      if (!pool) pool = this._pools[name] = { _id: 1 }
+      if (!pool) {
+        pool = this._pools[name] = { _id: 1 }
+      }
       return pool._id++
     } else {
       // Use the global UID pool:

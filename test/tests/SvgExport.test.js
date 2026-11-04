@@ -118,7 +118,9 @@ describe('SvgExport', () => {
       .map(point => point.split(',').map(parseFloat))
     const path = new Path()
     path.moveTo(points[0])
-    for (let i = 1; i < points.length; i++) path.lineTo(points[i])
+    for (let i = 1; i < points.length; i++) {
+      path.lineTo(points[i])
+    }
     return path
   }
 
@@ -732,7 +734,9 @@ describe('SvgExport', () => {
       }
     }
 
-    for (let i = 0; i < rasters.length; i++) rasters[i].on('load', onLoad)
+    for (let i = 0; i < rasters.length; i++) {
+      rasters[i].on('load', onLoad)
+    }
   })
 
   test('Export SVG layers as Inkscape layers through a callback', () => {
@@ -745,7 +749,9 @@ describe('SvgExport', () => {
       processNode({ item, node }) {
         if (item instanceof Layer) {
           node.setAttributeNS(ns, 'inkscape:groupmode', 'layer')
-          if (item.name) node.setAttributeNS(ns, 'inkscape:label', item.name)
+          if (item.name) {
+            node.setAttributeNS(ns, 'inkscape:label', item.name)
+          }
         }
       }
     })

@@ -381,7 +381,9 @@ describe('Item Drawing', () => {
         Path.on('draw', () => calls.push('Path'))
         // Also called for the layer, which is an item too:
         Item.on('draw', function () {
-          if (this === path) calls.push('Item')
+          if (this === path) {
+            calls.push('Item')
+          }
         })
         paper.view.update(true)
         equals(calls, ['path', 'Path', 'Item'])
@@ -422,7 +424,9 @@ describe('Item Drawing', () => {
       withHandlers(() => {
         const calls = []
         Item.on('draw', function () {
-          if (this instanceof Later) calls.push('Item')
+          if (this instanceof Later) {
+            calls.push('Item')
+          }
         })
         // A class created after the handler:
         const Later = Path.extend({ _class: 'LaterPath' })

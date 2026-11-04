@@ -55,7 +55,9 @@ function createTiles(area, matrix, options) {
     }
   }
   const tiles = new Group(squares)
-  if (matrix) tiles.transform(matrix)
+  if (matrix) {
+    tiles.transform(matrix)
+  }
   area.clipMask = true
   return new Group(area, tiles)
 }

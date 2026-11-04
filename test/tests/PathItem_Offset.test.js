@@ -456,8 +456,9 @@ describe('PathItem#offset() and #outline()', () => {
       if (
         !outline.contains(point) &&
         outline.getNearestPoint(point).getDistance(point) > 0.01
-      )
+      ) {
         outside.push(point)
+      }
     }
     equals(outside.length, 0, 'the last pen')
     equals(getDeviation(spin, outline) < 0.2, true, 'outside the pens')

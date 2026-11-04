@@ -315,7 +315,9 @@ describe('HitResult', () => {
       error = e
     }
     let description = 'This hit-test should not throw an error'
-    if (error) description += ': ' + error
+    if (error) {
+      description += ': ' + error
+    }
     equals(error == null, true, description)
   })
 
@@ -332,7 +334,9 @@ describe('HitResult', () => {
       error = e
     }
     let description = 'This hit-test should not throw an error'
-    if (error) description += ': ' + error
+    if (error) {
+      description += ': ' + error
+    }
     equals(error == null, true, description)
   })
 
@@ -1471,8 +1475,9 @@ describe('HitResult', () => {
           if (
             !kept.hitTest(point, options) !==
             !applied.hitTest(point, options)
-          )
+          ) {
             count++
+          }
         }
       }
       equals(count, 0, name + ': points hit differently')
@@ -1557,8 +1562,9 @@ describe('HitResult', () => {
           if (
             !shape.hitTest(point, options) !==
             !path.hitTest(point, options)
-          )
+          ) {
             count++
+          }
         }
       }
       equals(count, 0, name + ': points hit differently')

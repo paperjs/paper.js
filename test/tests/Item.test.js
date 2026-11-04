@@ -579,7 +579,9 @@ describe('Item', () => {
       error = e
     }
     let description = 'Cloning a linked size should not throw an error'
-    if (error) description += ': ' + error
+    if (error) {
+      description += ': ' + error
+    }
     equals(error == null, true, description)
   })
 
@@ -2002,8 +2004,9 @@ describe('Item', () => {
     // Keeping released canvases at their size kept their pixels allocated
     // for the life of the page:
     const canvases = []
-    for (let i = 0; i < 12; i++)
+    for (let i = 0; i < 12; i++) {
       canvases.push(CanvasProvider.getCanvas(500, 500))
+    }
     canvases.forEach(canvas => {
       CanvasProvider.release(canvas)
     })
