@@ -26,6 +26,7 @@ import {
   serialize
 } from '../internal.ts'
 import type { Matrix } from '../basic/Matrix.ts'
+import type { Project } from '../item/Project.ts'
 import type { PathItem } from '../path/PathItem.ts'
 
 // How a style sets its letters, see TextItem#_getPiece(), and, placed on a
@@ -84,12 +85,11 @@ export class TextItem extends Item {
   // Where the visible part of the story ends, see #_layOut():
   _visibleEnd: number
 
-  constructor() {
-    super()
+  _initializeContent(project: Project) {
     // The text's own style stands for its runs' and paragraphs' styles,
-    // see #_getStyles(). The subclasses initialize the item after this,
-    // which sets its style:
+    // see #_getStyles(), so the story comes before the style:
     this._story = new TextStory([this])
+    super._initializeContent(project)
   }
 
   // Styles that differ within the text are kept by run and by paragraph:
