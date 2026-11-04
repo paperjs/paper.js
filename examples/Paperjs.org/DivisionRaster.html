@@ -53,7 +53,7 @@ function onResize(event) {
 
     // Transform the raster so that it fills the bounding rectangle
     // of the view:
-    raster.fitBounds(view.bounds, true);
+    raster.fitBounds(view.bounds, 'cover');
 
     // Create a path that fills the view, and fill it with
     // the average color of the raster:
