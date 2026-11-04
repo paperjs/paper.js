@@ -14,17 +14,10 @@ export default defineConfig({
           import.meta.dirname,
           'src/paperscript/index.ts'
         )
-      },
-      {
-        find: /^paper$/,
-        replacement: path.resolve(import.meta.dirname, 'src/index.ts')
       }
     ]
   },
   test: {
-    // Don't cache transformed modules across runs: the library is one module
-    // built from all the sources, or read from dist/, which the cache misses:
-    fsModuleCache: false,
     // Measured on Node, with the sources loaded through src/load.js, and in
     // the browser, through the source map of the library built from them, see
     // `pnpm test:coverage`:
@@ -37,6 +30,8 @@ export default defineConfig({
     projects: [
       {
         extends: true,
+        // On Node, with the window that paper/node sets up:
+        resolve: { alias: [getPaperAlias('src/node/index.ts')] },
         test: {
           name: 'node',
           include: ['test/tests/**/*.test.js'],
@@ -51,6 +46,7 @@ export default defineConfig({
       },
       {
         extends: true,
+        resolve: { alias: [getPaperAlias('src/index.ts')] },
         test: {
           name: 'browser',
           include: ['test/tests/**/*.test.js'],
@@ -64,6 +60,7 @@ export default defineConfig({
       },
       {
         extends: true,
+        resolve: { alias: [getPaperAlias('src/index.ts')] },
         test: {
           name: 'screenshots',
           include: ['test/screenshots/**/*.test.js'],
@@ -131,5 +128,13 @@ function assetsPlugin() {
         }
       })
     }
+  }
+}
+
+// Resolve `paper` to the entry with the given path:
+function getPaperAlias(entry) {
+  return {
+    find: /^paper$/,
+    replacement: path.resolve(import.meta.dirname, entry)
   }
 }
