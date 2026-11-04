@@ -43,9 +43,8 @@ export default [
   },
   pluginPrettierRecommended,
   {
-    // The sources, as ES modules. Files not ported yet still use each other's
-    // declarations without importing them, so no-undef waits for the port:
-    files: ['src/**/*.{js,ts}'],
+    // The sources, in TypeScript, which checks undefined names itself:
+    files: ['src/**/*.ts'],
     ...pluginJs.configs.recommended,
     languageOptions: {
       parser: tseslint.parser,
@@ -57,31 +56,12 @@ export default [
       ...pluginJs.configs.recommended.rules,
       'prettier/prettier': 'error',
       'no-undef': 'off',
-      // PaperScript.js hands the bundled Acorn its own exports and module:
-      'no-unused-vars': [
-        'error',
-        {
-          vars: 'local',
-          args: 'none',
-          caughtErrors: 'none',
-          varsIgnorePattern: '^(exports|module)$'
-        }
-      ],
-      // prepro joins the files, so later ones read what init.js assigns, and
       // coords[i++] keeps one shape for every pair in Segment:
       'no-useless-assignment': 'off',
       'no-var': 'error',
       'one-var': ['error', 'never'],
       'prefer-const': ['error', { destructuring: 'all' }],
       'no-empty': ['error', { allowEmptyCatch: true }],
-      // The sources call hasOwnProperty() on their own objects in 22 places:
-      'no-prototype-builtins': 'off',
-      // The sources declare their own Event, MouseEvent, window and document:
-      'no-redeclare': ['error', { builtinGlobals: false }],
-      // init.js and self.js set up the environment:
-      'no-global-assign': ['error', { exceptions: ['self', 'window'] }],
-      // paper.js takes undefined as a parameter, for minification:
-      'no-shadow-restricted-names': 'off',
       // The constants of Numerical are written as published:
       'no-loss-of-precision': 'off',
       'no-restricted-syntax': ['error', ...braces]
@@ -100,19 +80,6 @@ export default [
         'error',
         { vars: 'local', args: 'none', caughtErrors: 'none' }
       ]
-    }
-  },
-  {
-    // load.js runs these declarations twice, once through constants.js, and
-    // paper.js and export.js both declare paper there:
-    files: [
-      'src/paper.js',
-      'src/export.js',
-      'src/util/Numerical.js',
-      'src/item/ChangeFlag.js'
-    ],
-    rules: {
-      'no-var': 'off'
     }
   },
   {
