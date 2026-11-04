@@ -13,8 +13,8 @@ import { getDocument, getWindow } from '../internal.ts'
 
 type Canvas = HTMLCanvasElement | OffscreenCanvas
 
-// The released canvases, for getCanvas() to reuse:
-const canvases: Canvas[] = []
+// The released canvases, for getCanvas() to reuse, exported for the tests:
+export const canvases: Canvas[] = []
 
 /**
  * Returns a canvas of the given size, reusing one that was released if there
