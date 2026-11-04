@@ -60,6 +60,17 @@ export class TextRange extends Base {
   }
 
   /**
+   * Sets the properties of the passed object literal on the range, e.g. its
+   * style properties.
+   *
+   * @param props an object describing the properties to set
+   */
+  set(props: Record<string, any>): this {
+    Object.assign(this, props)
+    return this
+  }
+
+  /**
    * The story the range is part of.
    */
   get story(): TextStory {
