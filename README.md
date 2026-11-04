@@ -40,7 +40,6 @@ set it up with a canvas element:
 
 ```js
 import paper from 'paper'
-// Or, with CommonJS: const paper = require('paper')
 
 paper.setup(document.getElementById('canvas'))
 
@@ -56,22 +55,31 @@ paper.view.onFrame = event => {
 }
 ```
 
-The module exports the global `paper` scope as its default export, with all
-classes as its properties. Use `paper.view` and `paper.project` after calling
-`paper.setup()`, rather than importing them, as they only exist from then on.
-To use the core version without PaperScript, import `'paper/dist/paper-core'`
-instead. With TypeScript, the default import requires `esModuleInterop`.
+The module exports the first `paper` scope as its default export, with all
+classes as its properties, and the classes as named exports too. Use
+`paper.view` and `paper.project` after calling `paper.setup()`, rather than
+importing them, as they only exist from then on.
 
-### Which Version to Use
+The package has these entries:
 
-The various distributions come with two different pre-build versions of
-Paper.js, in minified and normal variants:
+- `paper` – The core library, also as `paper/core`.
+- `paper/paperscript` – PaperScript, which adds the operators and the loading
+  of `<script type="text/paperscript">` tags when imported, and exports
+  `PaperScript` to compile and execute code. It brings Acorn.js along.
+- `paper/node` – The core library on Node.js, see
+  [Using Paper.js on Node.js](#using-paperjs-on-nodejs).
+- `paper/hosted` – The core library with hosted projects, whose items a host
+  stores and loads on demand.
 
-- `paper-full.js` – The full version for the browser, including PaperScript
-  support and Acorn.js
-- `paper-core.js` – The core version for the browser, without PaperScript
-  support nor Acorn.js. You can use this to shave off some bytes and compilation
-  time when working with JavaScript directly.
+### Script Files
+
+For `<script>` tags, the package also comes with two script files, in minified
+and normal variants, which set the global `paper`:
+
+- `dist/paper-full.js` – The full version, including PaperScript and Acorn.js
+- `dist/paper-core.js` – The core version, without PaperScript and Acorn.js.
+  You can use this to shave off some bytes and compilation time when working
+  with JavaScript directly.
 
 ### Installing Node.js and NPM
 
@@ -90,89 +98,35 @@ maintain multiple versions of Node.js on the same platform, as often required by
 different projects:  
 <https://nodesource.com/blog/installing-node-js-tutorial-using-nvm-on-mac-os-x-and-ubuntu/>
 
-Homebrew is recommended on macOS also if you intend to install Paper.js with
-rendering to the Canvas on Node.js, as described in the next paragraph.
-
 For Linux, see <https://nodejs.org/download/> to locate 32-bit and 64-bit
 Node.js binaries as well as sources, or use NVM, as described in the paragraph
 above.
 
-### Installing Paper.js Using NPM
+### Using Paper.js on Node.js
 
-Paper.js comes in three different versions on NPM: `paper`, `paper-jsdom` and
-`paper-jsdom-canvas`. Depending on your use case, you need to required a
-different one:
+On Node.js, Paper.js draws through
+[happy-dom](https://github.com/capricorn86/happy-dom) and
+[@napi-rs/canvas](https://github.com/Brooooooklyn/canvas), which come with
+prebuilt binaries and need no native libraries. Install them next to Paper.js:
 
-- `paper` is the main library, and can be used directly in a browser
-  context, e.g. a web browser or worker.
-- `paper-jsdom` is a shim module for Node.js, offering headless use with SVG
-  importing and exporting through [jsdom](https://github.com/tmpvar/jsdom).
-- `paper-jsdom-canvas` is a shim module for Node.js, offering canvas rendering
-  through [Node-Canvas](https://github.com/Automattic/node-canvas) as well as
-  SVG importing and exporting through [jsdom](https://github.com/tmpvar/jsdom).
+    npm install paper happy-dom @napi-rs/canvas
 
-In order to install `paper-jsdom-canvas`, you need the [Cairo Graphics
-library](https://cairographics.org/) installed in your system:
+Then import the `paper/node` entry, which sets up a window for Paper.js to draw
+in:
 
-### Installing Native Dependencies
+```js
+import paper from 'paper/node'
 
-Paper.js relies on [Node-Canvas](https://github.com/Automattic/node-canvas) for
-rendering, which in turn relies on the native libraries
-[Cairo](https://cairographics.org/) and [Pango](https://www.pango.org/).
+paper.setup(new paper.Size(300, 200))
+new paper.Path.Circle({ center: [150, 100], radius: 50, fillColor: 'red' })
+await paper.view.exportImage('circle.png')
+```
 
-#### Installing Native Dependencies on macOS
-
-Paper.js relies on Node-Canvas for rendering, which in turn relies on Cairo and
-Pango. The easiest way to install Cairo is through
-[Homebrew](https://brew.sh/), by issuing the command:
-
-    brew install cairo pango
-
-Note that currently there is an issue on macOS with Cairo. If the above causes
-errors, the following will most likely fix it:
-
-    PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig/ npm install paper
-
-Also, whenever you would like to update the modules, you will need to execute:
-
-    PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig/ npm update
-
-If you keep forgetting about this requirement, or would like to be able to type
-simple and clean commands, add this to your `.bash_profile` file:
-
-    # PKG Config for Pango / Cairo
-    export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
-
-After adding this line, your commands should work in the expected way:
-
-    npm install paper
-    npm update
-
-#### Installing Native Dependencies on Debian/Ubuntu Linux
-
-    sudo apt-get install pkg-config libcairo2-dev libpango1.0-dev libssl-dev libjpeg62-dev libgif-dev
-
-You might also need to install the build-essential package if you don't usually
-build from c++ sources:
-
-    sudo apt-get install build-essential
-
-#### Installing Native Dependencies for Electron
-
-In order to build Node-Canvas for use of `paper-jsdom-canvas` in Electron, which
-is likely to use a different version of V8 than the Node binary installed in
-your system, you need to manually specify the location of Electron’s headers.
-Follow these steps to do so:
-
-[Electron — Using Native Node
-Modules](https://electron.atom.io/docs/tutorial/using-native-node-modules/)
-
-#### After Native Dependencies have been installed
-
-You should now be able to install the Paper.js module with jsdom and Canvas
-rendering from NPM:
-
-    npm install paper-jsdom-canvas
+Views on Node.js can write their image with `exportImage(path)`, and the frames
+of their animation with `exportFrames(options)`. Fonts for text are registered
+with the exported `GlobalFonts`, e.g.
+`GlobalFonts.registerFromPath('fonts/Inter.ttf', 'Inter')`. Paper.js needs
+Node.js 22.22 or newer.
 
 ## Development
 
@@ -197,8 +151,9 @@ run:
 
 ### Setting Up For Building
 
-Paper.js uses [Gulp.js](https://gulpjs.com/) for building, and has a couple of
-dependencies as NPM modules. Read the chapter [Installing Node.js and
+Paper.js is written in TypeScript, builds with
+[Rolldown](https://rolldown.rs/), and has a couple of dependencies as NPM
+modules. Read the chapter [Installing Node.js and
 NPM](#installing-nodejs-and-npm) if you still need to install these.
 
 Development uses [pnpm](https://pnpm.io/), which needs to be installed too. See
@@ -213,37 +168,20 @@ following commands from the Paper.js directory:
 ### Building the Library
 
 The Paper.js sources are distributed across many separate files, organised in
-subfolders inside the `src` folder. To compile them all into distributable
-files, you can run the `build` task:
+subfolders inside the `src` folder. To build them into the distributed files,
+run:
 
     pnpm build
 
-You will then find the built library files inside the `dist` folder, named
-`paper-full.js` and `paper-core.js`, along with their minified versions and
-source maps. Read more about this in
-[Which Version to Use?](#which-version-to-use).
+You will then find the ES modules of the entries in `dist/esm`, their type
+declarations in `dist/types`, and the script files `paper-full.js` and
+`paper-core.js` in `dist`, along with their minified versions and source maps.
+Read more about this in [Script Files](#script-files).
 
-### Running Directly from Separate Source Files
+### Running Directly from the Sources
 
-As a handy alternative to building the library after each change to try it out
-in your scripts, there is the `load` task, that replaces the built libraries
-with symbolic links to the `scrc/load.js` script. This script then load the
-library directly from all the separate source files in the `src` folder, through
-the [Prepro.js](https://github.com/lehni/prepro.js) JavaScript preprocessing
-library.
-
-This means you can switch between loading from sources and loading a built
-library simply by running.
-
-    pnpm load
-
-And to go back to a built library
-
-    pnpm build
-
-Note that your PaperScripts examples do not need to change, they can keep
-loading `dist/paper-full.js`, which will always do the right thing. Note also
-that `src/load.js` handles both browsers and Node.js, as supported by Prepro.js.
+The sources are ES modules in TypeScript that Node.js runs without a build,
+and so do the tests, so changes can be tried without building the library.
 
 ### Other Build Tasks
 
@@ -279,8 +217,7 @@ Your docs will then be located at `dist/docs`.
 ### Testing
 
 The tests run with [Vitest](https://vitest.dev/), on Node.js and in Chromium
-through [Playwright](https://playwright.dev/), against the library built from
-the sources:
+through [Playwright](https://playwright.dev/), on the sources:
 
     pnpm test
 
@@ -293,10 +230,8 @@ The browser tests need Chromium for Playwright, which this installs once:
 
     pnpm exec playwright install chromium
 
-Once the library is built in `dist`, the tests run against that instead. Select
-another build than `paper-full.js` with `PAPER_BUILD`, e.g.
-`PAPER_BUILD=hosted pnpm test:node`. Vitest also runs single files, and watches
-for changes with `pnpm exec vitest`.
+Vitest also runs single files, and watches for changes with
+`pnpm exec vitest`.
 
 The screenshot tests in `test/screenshots` compare what the library draws with
 reference images. Rendering differs between systems, so they run in Playwright's
