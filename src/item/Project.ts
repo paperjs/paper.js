@@ -370,11 +370,7 @@ export class Project extends PaperScopeItem {
         const style = item._style
         for (const key of ['fillColor', 'strokeColor']) {
           const color = style._get(key, true)
-          const definition = (
-            color &&
-            color._type === 'pattern' &&
-            color._components[0]
-          )
+          const definition = color?.type === 'pattern' && color.pattern
           if (definition && !ids[definition._id]) {
             ids[definition._id] = true
             definitions.push(definition)
