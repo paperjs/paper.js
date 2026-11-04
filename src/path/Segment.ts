@@ -849,13 +849,14 @@ export class Segment extends Base {
     if (segment instanceof Segment) {
       return segment
     } else if (Array.isArray(segment)) {
-      return typeof segment[0] === 'number' && segment.length > 2
-        ? new Segment(
-            segment.slice(0, 2) as number[],
-            segment.slice(2, 4) as number[],
-            segment.slice(4, 6) as number[]
-          )
-        : new Segment(...(segment as [PointLike, PointLike, PointLike]))
+      // Numbers are a point, or a point and its handles, as flat pairs:
+      const points =
+        typeof segment[0] === 'number'
+          ? [0, 2, 4]
+              .filter(index => index < segment.length)
+              .map(index => segment.slice(index, index + 2) as number[])
+          : (segment as PointLike[])
+      return new Segment(...(points as [PointLike, PointLike, PointLike]))
     } else {
       return new Segment(segment as any)
     }
