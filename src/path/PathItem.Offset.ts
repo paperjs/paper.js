@@ -156,7 +156,7 @@ export function offsetPathItem(
   const join = options?.join || 'miter'
   const miterLimit = options?.miterLimit || 10
   const path = prepare(item)
-  const paths = (path._children || [path]) as Path[]
+  const paths = (path._children ?? [path]) as Path[]
   let result: PathItem
   if (!distance) {
     result = path
@@ -668,7 +668,7 @@ function outlineStroke(
         const full = 2 * Math.PI
         const angles: number[] = []
         const ellipse = new Path({ insert: false })
-        for (const { from, to } of strips || []) {
+        for (const { from, to } of strips ?? []) {
           angles.push(
             (from.phi % full + full) % full,
             (to.phi % full + full) % full
@@ -933,7 +933,7 @@ function outlineStroke(
 
       // Fitting asks for the same times for each end of a strip:
       function getStrips(t: number): Strip[] {
-        return cache[t] || (cache[t] = getContacts(part, t, span).strips)
+        return (cache[t] ??= getContacts(part, t, span).strips)
       }
 
       // The point at the end of the strip at the time, or the curve's
@@ -1580,7 +1580,7 @@ function outlineStroke(
             const t = getTime(part, offset)
             const previous = t
               ? part
-              : allParts[j - 1] || allParts[allParts.length - 1]
+              : allParts[j - 1] ?? allParts[allParts.length - 1]
             addPen(
               Curve.getPoint(part.v, t),
               pen,
@@ -1700,7 +1700,7 @@ function offsetSide(
     paths.push(run)
   }
 
-  const contours = (outline._children || [outline]) as Path[]
+  const contours = (outline._children ?? [outline]) as Path[]
   for (let i = 0, l = contours.length; i < l; i++) {
     const { curves } = contours[i]
     const count = curves.length

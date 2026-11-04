@@ -84,7 +84,7 @@ export class CurveLocation extends Base {
     }
     this.#setCurve(locationCurve)
     this.#time = locationTime
-    this.#point = point || locationCurve.getPointAtTime(locationTime)
+    this.#point = point ?? locationCurve.getPointAtTime(locationTime)
     this.#overlap = _overlap
     this._distance = _distance
     this._intersection = null
@@ -95,7 +95,7 @@ export class CurveLocation extends Base {
     // To ensure we use the right path (e.g. after splitting), we shall
     // always access the path on the result of #curve.
     this.#path = path
-    this.#version = path ? path._version : 0
+    this.#version = path?._version ?? 0
   }
 
   #setCurve(curve: Curve) {
@@ -188,7 +188,7 @@ export class CurveLocation extends Base {
    */
   get path(): Path {
     const { curve } = this
-    return curve && curve._path
+    return curve?._path ?? null
   }
 
   /**
@@ -197,7 +197,7 @@ export class CurveLocation extends Base {
    */
   get index(): number {
     const { curve } = this
-    return curve && curve.index
+    return curve?.index ?? null
   }
 
   /**
@@ -282,7 +282,7 @@ export class CurveLocation extends Base {
 
   divide(): Curve | null {
     const { curve } = this
-    const res = curve && curve.divideAtTime(this.time)
+    const res = curve?.divideAtTime(this.time) ?? null
     // Change to the newly inserted segment, also adjusts #time.
     if (res) {
       this.#setSegment(res._segment1)
@@ -293,7 +293,7 @@ export class CurveLocation extends Base {
   split(): Path | null {
     const { curve } = this
     const path = curve._path
-    const res = curve && curve.splitAtTime(this.time)
+    const res = curve?.splitAtTime(this.time) ?? null
     if (res) {
       // Set the segment to the end-segment of the path after splitting.
       this.#setSegment(path.lastSegment)
@@ -445,7 +445,7 @@ export class CurveLocation extends Base {
       // Find the largest offset of unambiguous direction on the curve,
       // taking their loops, cusps, inflections, and "peaks" into account.
       const v = curve.getValues()
-      const roots = Curve.classify(v).roots || Curve.getPeaks(v)
+      const roots = Curve.classify(v).roots ?? Curve.getPeaks(v)
       const count = roots.length
       const offset = Curve.getLength(
         v,
@@ -548,7 +548,7 @@ export class CurveLocation extends Base {
       // they are. If they aren't check the other neighbors with search()
       const found = (
         merge &&
-        (location.equals(other) ? other : search(m, -1) || search(m, 1))
+        (location.equals(other) ? other : search(m, -1) ?? search(m, 1))
       )
       if (found) {
         // We're done, don't insert, merge with the found location
@@ -603,7 +603,7 @@ export class CurveLocation extends Base {
       inject(this.prototype, {
         get [key]() {
           const { curve, time } = this
-          return time != null && curve && curve[evaluate](time)
+          return time != null && curve ? curve[evaluate](time) : null
         }
       })
     }

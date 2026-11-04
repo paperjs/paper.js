@@ -304,7 +304,7 @@ export class Segment extends Base {
    * console.log(segment.data.isCorner); // true
    */
   get data(): any {
-    return (this._data ||= {})
+    return (this._data ??= {})
   }
 
   set data(data: object) {
@@ -452,7 +452,7 @@ export class Segment extends Base {
    * The path that the segment belongs to.
    */
   get path(): Path | null {
-    return this._path || null
+    return this._path ?? null
   }
 
   /**
@@ -467,7 +467,7 @@ export class Segment extends Base {
       if (index > 0 && !path._closed && index === path._segments.length - 1) {
         index--
       }
-      return path.curves[index] || null
+      return path.curves[index] ?? null
     }
     return null
   }
@@ -542,12 +542,12 @@ export class Segment extends Base {
     _first?: boolean,
     _last?: boolean
   ) {
-    const { type, factor } = options || {}
+    const { type, factor } = options ?? {}
     const { previous, next } = this
     // Some precalculations valid for both 'catmull-rom' and 'geometric'
-    const p0 = (previous || this)._point
+    const p0 = (previous ?? this)._point
     const p1 = this._point
-    const p2 = (next || this)._point
+    const p2 = (next ?? this)._point
     const d1 = p0.getDistance(p1)
     const d2 = p1.getDistance(p2)
     if (!type || type === 'catmull-rom') {

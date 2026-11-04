@@ -46,7 +46,7 @@ export function getClass(name: string): new (...args: any[]) => any {
 export function serialize(
   obj: any, options?: any, compact?: boolean, dictionary?: any
 ) {
-  options = options || {}
+  options ??= {}
   const isRoot = !dictionary
   let res
   if (isRoot) {
@@ -141,7 +141,7 @@ export function deserialize(
   // A _data side-car to deserialize that can hold any kind of 'global' data
   // across a deserialization. It's currently only used to hold dictionary
   // definitions.
-  _data = _data || {}
+  _data ??= {}
   if (Array.isArray(json)) {
     // See if it's a serialized type. If so, the rest of the array are the
     // arguments to the constructor. Either way, we simply deserialize all
@@ -204,5 +204,5 @@ export function exportJSON(
   options?: { asString?: boolean; precision?: number }
 ) {
   const json = serialize(obj, options)
-  return options && options.asString == false ? json : JSON.stringify(json)
+  return options?.asString == false ? json : JSON.stringify(json)
 }

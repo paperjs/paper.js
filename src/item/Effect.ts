@@ -92,9 +92,9 @@ export class Effect extends Base {
     const accessors: PropertyDescriptorMap = {}
     this.#type = props.type
     this.#label = props.label || props.type
-    this.#parameters = props.parameters || {}
-    this.onApply = props.onApply || null
-    this.onEditParameters = props.onEditParameters || null
+    this.#parameters = props.parameters ?? {}
+    this.onApply = props.onApply ?? null
+    this.onEditParameters = props.onEditParameters ?? null
     // The declared parameters become properties of the instances:
     for (const [key, parameter] of Object.entries(this.#parameters)) {
       if (key in EffectInstance.prototype) {

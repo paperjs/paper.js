@@ -212,7 +212,7 @@ export class Tool extends PaperScopeItem {
       // for clicks, so mouseup has a delta spanning over the full
       // drag. Use the current point if this is the first mousedown,
       // so there's always a delta.
-      const toolPoint = move ? this._point : this._downPoint || current
+      const toolPoint = move ? this._point : this._downPoint ?? current
       if (move) {
         // After first move event was emitted, tool._moveCount = 0, so
         // we need to include 0 in this check.
@@ -236,7 +236,7 @@ export class Tool extends PaperScopeItem {
         this._moveCount++
       }
       this._point = current
-      this._lastPoint = toolPoint || current
+      this._lastPoint = toolPoint ?? current
       this._velocity = velocity
       this._elapsed = elapsed
       this.#time = time

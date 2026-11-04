@@ -202,7 +202,7 @@ export class CompoundPath extends PathItem {
    */
   get firstSegment(): Segment | null {
     const first = this.firstChild as Path
-    return first && first.firstSegment
+    return first?.firstSegment ?? null
   }
 
   /**
@@ -211,7 +211,7 @@ export class CompoundPath extends PathItem {
    */
   get lastSegment(): Segment | null {
     const last = this.lastChild as Path
-    return last && last.lastSegment
+    return last?.lastSegment ?? null
   }
 
   /**
@@ -232,7 +232,7 @@ export class CompoundPath extends PathItem {
    */
   get firstCurve(): Curve | null {
     const first = this.firstChild as Path
-    return first && first.firstCurve
+    return first?.firstCurve ?? null
   }
 
   /**
@@ -241,7 +241,7 @@ export class CompoundPath extends PathItem {
    */
   get lastCurve(): Curve | null {
     const last = this.lastChild as Path
-    return last && last.lastCurve
+    return last?.lastCurve ?? null
   }
 
   /**
@@ -347,8 +347,7 @@ export class CompoundPath extends PathItem {
   moveTo(point: PointLike | number, y?: number) {
     const current = getCurrentPath(this)
     // Reuse current path if nothing was added yet
-    const path =
-      current && current.isEmpty() ? current : new Path(Item.NO_INSERT)
+    const path = current?.isEmpty() ? current : new Path(Item.NO_INSERT)
     if (path !== current) {
       this.addChild(path)
     }

@@ -37,7 +37,7 @@ export function push(list, items) {
  * PaperScope#projects and Item#children.
  */
 export function splice(list, items, index, remove) {
-  const amount = items && items.length
+  const amount = items?.length ?? 0
   const append = index === undefined
   index = append ? list.length : index
   if (index > list.length) {
@@ -77,7 +77,7 @@ export function splice(list, items, index, remove) {
  * removed. Used for Item#children and Path#segments.
  */
 export function addNamed(list, named, name, item) {
-  ;(named[name] = named[name] || []).push(item)
+  ;(named[name] ??= []).push(item)
   // Only set this item if there isn't one under the same name already
   if (!(name in list)) {
     list[name] = item
@@ -89,7 +89,7 @@ export function addNamed(list, named, name, item) {
  */
 export function removeNamed(list, named, name, item) {
   const namedArray = named[name]
-  const index = namedArray ? namedArray.indexOf(item) : -1
+  const index = namedArray?.indexOf(item) ?? -1
   if (index !== -1) {
     // Remove the named reference
     if (list[name] == item) {

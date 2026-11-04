@@ -622,7 +622,7 @@ export class Matrix extends Base {
    */
   _transformPoint(point: Point, dest?: Point, _dontNotify?: boolean): Point {
     const { x, y } = point
-    return (dest || new Point())._set(
+    return (dest ?? new Point())._set(
       x * this._a + y * this._c + this._tx,
       x * this._b + y * this._d + this._ty,
       // @ts-expect-error: Only LinkedPoint and SegmentPoint take _dontNotify
@@ -667,7 +667,7 @@ export class Matrix extends Base {
         max[j] = val
       }
     }
-    return (dest || new Rectangle())._set(
+    return (dest ?? new Rectangle())._set(
       min[0], min[1],
       max[0] - min[0], max[1] - min[1]
     )

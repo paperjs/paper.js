@@ -443,7 +443,7 @@ const importers: Record<string, Importer> = {
       // in SVG, instead of resampling it to that size. Without a
       // size, use the image's own, as browsers do (SVG 2):
       const imageSize = raster.size
-      let size = getSize(node, null, null, true) || imageSize
+      let size = getSize(node, null, null, true) ?? imageSize
       let point = getPoint(node)
       if (align[0] !== 'none') {
         // Scale uniformly, and align the image in its box:
@@ -646,7 +646,7 @@ const shadowPrimitives = 'feOffset,feFlood,feComposite,feComposite'
 // Reads a shadow from a <filter> with the primitives that SvgExport writes
 // for it, and only these, or returns null for any other filter:
 function getFilterShadow(filter: Element) {
-  const nodes = Array.from(filter?.children || [])
+  const nodes = Array.from(filter?.children ?? [])
   const names = nodes.map(node => node.nodeName).join()
   const blur = (
     names === `feGaussianBlur,${shadowPrimitives}` &&
@@ -684,11 +684,11 @@ function getCssShadow(value: string) {
   )
   const lengths = (
     match &&
-    match[1].replace(color && color[0], '').match(/-?[\d.]+/g)
+    match[1].replace(color?.[0] ?? '', '').match(/-?[\d.]+/g)
   )
-  return lengths && lengths.length >= 2
+  return lengths?.length >= 2
     ? {
-        color: new Color(color ? color[0] : 'black'),
+        color: new Color(color?.[0] ?? 'black'),
         blur: parseFloat(lengths[2]) || 0,
         offset: new Point(parseFloat(lengths[0]), parseFloat(lengths[1]))
       }
@@ -849,7 +849,7 @@ Object.assign(attributes, {
     if (item instanceof Group) {
       // This is either a top-level svg node, or the container for a
       // symbol.
-      const scale = size ? size.divide(rect.size) : 1
+      const scale = size?.divide(rect.size) ?? 1
       matrix = new Matrix().scale(scale).translate(rect.point.negate())
       group = item
     } else if (item instanceof SymbolDefinition) {
@@ -884,10 +884,10 @@ function getAttribute(node: any, name: string, styles: Styles) {
   // a style applied through CSS rules, filtering out inheritance from
   // their parents.
   const style = camelize(name)
-  let value = node.style && node.style[style]
+  let value = node.style?.[style]
   if (!value) {
     const attr = node.attributes[name]
-    value = attr && attr.value
+    value = attr?.value
     if (!value && node.style && styles.node[style] !== styles.parent[style]) {
       value = styles.node[style]
     }
@@ -914,7 +914,7 @@ function applyAttributes(
   // attributes, so we need to handle both.
   const parent = node.parentNode as Element
   const styles: Styles = {
-    node: getStyles(node) || {},
+    node: getStyles(node) ?? {},
     // Do not check for inheritance if this is root, to make the
     // default SVG settings stick.
     parent: !isRoot && getStyles(parent) || {}
@@ -954,8 +954,8 @@ function getDefinitionId(value: string): string {
   // When url() comes from a style property, '#'' seems to be missing on
   // WebKit. We also get variations of quotes or no quotes, single or
   // double, so handle it all with one regular expression:
-  const match = value && value.match(/\((?:["'#]*)([^"')]+)/)
-  const name = match && match[1]
+  const match = value?.match(/\((?:["'#]*)([^"')]+)/)
+  const name = match?.[1]
   const window = getWindow()
   return name && window
     ? // This is required by Firefox, which can produce absolute
@@ -969,7 +969,7 @@ function getDefinition(value: string, options: Options): any {
   let res = id && getDefinitionById(id, options)
   // Patch in support for SVG's gradientUnits="objectBoundingBox" through
   // Color#_scaleToBounds
-  if (res && res._scaleToBounds) {
+  if (res?._scaleToBounds) {
     // Always create a clone, so it can be transformed when used.
     res = res.clone()
     res._scaleToBounds = true
@@ -985,11 +985,11 @@ function getData(node: Element): Record<string, any> | null {
   for (const { name, value } of node.attributes) {
     const match = name.match(/^data-(?!paper-)(.+)$/)
     if (match) {
-      data ||= {}
+      data ??= {}
       data[camelize(match[1])] = value
     }
   }
-  return json ? Object.assign(data || {}, JSON.parse(json)) : data
+  return json ? Object.assign(data ?? {}, JSON.parse(json)) : data
 }
 
 // Restore the names and data of segments as SvgExport stores them, unless
@@ -998,7 +998,7 @@ function setSegmentsData(item: any, node: Element) {
   const json = node.getAttribute('data-paper-segments')
   if (json) {
     const entries = JSON.parse(json)
-    const paths: Path[] = item._children || [item]
+    const paths: Path[] = item._children ?? [item]
     const segments = paths.flatMap(path => path._segments)
     if (Math.max(...Object.keys(entries).map(Number)) < segments.length) {
       for (const [index, entry] of Object.entries<any>(entries)) {
@@ -1058,7 +1058,7 @@ function importNode(node: Element, options: Options, isRoot?: boolean): any {
     // Set rootSize to view size, as getSize() may refer to it (#1242).
     rootSize = paper.view.size
     // Now set rootSize to the root element size, and fall-back to view.
-    rootSize = getSize(node, null, null, true) || rootSize
+    rootSize = getSize(node, null, null, true) ?? rootSize
     // We need to move the SVG node to a live document, so default
     // styles are correctly inherited! For this we create and insert a
     // temporary SVG container into the sandbox, which is removed again
@@ -1089,7 +1089,7 @@ function importNode(node: Element, options: Options, isRoot?: boolean): any {
     settings.applyMatrix = false
     settings.insertItems = false
     try {
-      item = importer && importer(node, type, options, isRoot) || null
+      item = importer?.(node, type, options, isRoot) ?? null
     } finally {
       settings.insertItems = insertItems
       settings.applyMatrix = applyMatrix
@@ -1155,7 +1155,7 @@ function importSVG(
     return null
   }
   const importOptions: Options =
-    typeof options === 'function' ? { onLoad: options } : options || {}
+    typeof options === 'function' ? { onLoad: options } : options ?? {}
   // Remember current scope so we can restore it in onLoad.
   const scope = paper
   let item = null

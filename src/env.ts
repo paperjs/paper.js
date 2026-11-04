@@ -25,7 +25,7 @@ let document: Document = null
  * @private
  */
 export function setEnvironment(environment: Window & typeof globalThis) {
-  document = environment?.document || null
+  document = environment?.document ?? null
   window = document?.createElement('canvas').getContext('2d')
     ? environment
     : null

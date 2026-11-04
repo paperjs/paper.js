@@ -348,7 +348,7 @@ export class TextItem extends Item {
    */
   get nextTextItem(): TextItem | null {
     const items = this._story._items
-    return items[items.indexOf(this) + 1] || null
+    return items[items.indexOf(this) + 1] ?? null
   }
 
   /**
@@ -356,7 +356,7 @@ export class TextItem extends Item {
    */
   get previousTextItem(): TextItem | null {
     const items = this._story._items
-    return items[items.indexOf(this) - 1] || null
+    return items[items.indexOf(this) - 1] ?? null
   }
 
   /**
@@ -378,7 +378,7 @@ export class TextItem extends Item {
 
   // The layout of the text, see #_layOut(), kept until the text changes:
   _getLayout(): TextLine[] {
-    return this._layout || (this._layout = this._layOut())
+    return (this._layout ??= this._layOut())
   }
 
   // The lines of the text, as #_measure() makes them, and where the visible
@@ -390,8 +390,7 @@ export class TextItem extends Item {
   }
 
   _getStart(): number {
-    const previous = this.previousTextItem
-    return previous ? previous._getVisibleRange()[1] : 0
+    return this.previousTextItem?._getVisibleRange()[1] ?? 0
   }
 
   isEmpty(): boolean {
@@ -485,7 +484,7 @@ export class TextItem extends Item {
         const kerning = style.letterKerning
         if (byLetter || kerning != null || piece.rotation) {
           // Walk the letters once, through all the runs:
-          letters = letters || story._getLetters()
+          letters ??= story._getLetters()
           while (index < letters.length && letters[index]._start < to) {
             const letter = letters[index++]
             if (letter._start >= from) {
@@ -553,7 +552,7 @@ export class TextItem extends Item {
     const scale = Point.from(style.letterScaling)
     // The font's metrics, kept until the text changes, as its layout, or
     // guessed from its size without them:
-    const cache = this._fontMetrics || (this._fontMetrics = {})
+    const cache = (this._fontMetrics ??= {})
     const metrics = (
       cache[font] ||
       (cache[font] = this.view.getFontMetrics(font) || {
@@ -658,7 +657,7 @@ export class TextItem extends Item {
           pieces.length ? pieces[0].start : 0,
           pieces.length ? pieces[pieces.length - 1].end : 0
         )
-        .match(/\s+/g) || []
+        .match(/\s+/g) ?? []
     ).length
     if (spaces && width > line.width) {
       const extra = (width - line.width) / spaces

@@ -39,7 +39,7 @@ export class TextStory extends Base {
     this._content = ''
     this._runs = [{ length: 0, style: new Style(null, this) }]
     this._paragraphs = [new Style(null, this)]
-    this._items = items || []
+    this._items = items ?? []
   }
 
   /**
@@ -204,7 +204,7 @@ export class TextStory extends Base {
   // The number of line breaks in content, where its paragraphs end:
   #countBreaks(content: string): number {
     const matches = content.match(/\r\n|\n|\r/g)
-    return matches ? matches.length : 0
+    return matches?.length ?? 0
   }
 
   // Splits the run at `index`, and returns the index of the run that starts

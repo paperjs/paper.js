@@ -104,7 +104,7 @@ export class PathText extends TextItem {
     const path = this.textPath
     const story = this._story
     const start = this._getStart()
-    const flatteners = ((path ? path._children || [path] : []) as Path[]).map(
+    const flatteners = ((path ? path._children ?? [path] : []) as Path[]).map(
       child =>
         // In the text's coordinates, through the compound path's matrix too:
         new PathFlattener(
@@ -183,7 +183,7 @@ export class PathText extends TextItem {
       piece.rotation += tangent.angle
     }
     const last = pieces[pieces.length - 1]
-    this._visibleEnd = last ? last.end : start
+    this._visibleEnd = last?.end ?? start
     return [
       Object.assign(measured, {
         pieces,
@@ -207,9 +207,9 @@ export class PathText extends TextItem {
         local.prepend(matrix)
       }
       rect = local._transformBounds(rect, rect)
-      bounds = bounds ? bounds.unite(rect) : rect
+      bounds = bounds?.unite(rect) ?? rect
     }
-    return bounds || new Rectangle()
+    return bounds ?? new Rectangle()
   }
 
   static {
