@@ -756,7 +756,7 @@ export class Segment extends Base {
   _transformCoordinates(
     matrix: Matrix | null,
     coords: number[],
-    change: boolean
+    change?: boolean
   ) {
     // Use matrix.transform version() that takes arrays of multiple
     // points for largely improved performance, as no calls to
@@ -824,6 +824,21 @@ export class Segment extends Base {
       }
     }
     return coords
+  }
+
+  /**
+   * Returns the passed segment if it is one already, or else a new segment
+   * created from the passed value: an array of a point and its handles, or
+   * anything that {@link Segment()} reads.
+   *
+   * @param segment
+   */
+  static from(segment: SegmentLike): Segment {
+    return segment instanceof Segment
+      ? segment
+      : Array.isArray(segment) && typeof segment[0] === 'object'
+        ? new Segment(...(segment as [PointLike, PointLike, PointLike]))
+        : new Segment(segment as any)
   }
 
   static {
