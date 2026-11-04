@@ -10,13 +10,15 @@
  * All rights reserved.
  */
 
-import { curveEvaluations } from '../constants.ts'
-import { Base } from '../core/Base.ts'
-import { inject } from '../util/object.ts'
-import { capitalize } from '../util/string.ts'
-import { Point } from '../basic/Point.ts'
+import {
+  Base,
+  Curve,
+  Point,
+  capitalize,
+  curveEvaluations,
+  inject
+} from '../internal.ts'
 import type { Matrix } from '../basic/Matrix.ts'
-import { Curve } from './Curve.ts'
 import type { Path } from './Path.ts'
 import type { Segment } from './Segment.ts'
 

@@ -10,14 +10,16 @@
  * All rights reserved.
  */
 
-import { Change } from '../constants.ts'
-import { inject } from '../util/object.ts'
-import { splice } from '../util/list.ts'
-import { Matrix } from '../basic/Matrix.ts'
+import {
+  Change,
+  Effect,
+  EffectInstance,
+  Item,
+  Matrix,
+  inject,
+  splice
+} from '../internal.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'
-import { Item } from './Item.ts'
-import { Effect } from './Effect.ts'
-import { EffectInstance } from './EffectInstance.ts'
 
 type EffectProps = {
   type: string

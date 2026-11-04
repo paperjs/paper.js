@@ -10,8 +10,7 @@
  * All rights reserved.
  */
 
-import { Base } from '../core/Base.ts'
-import { Key } from './Key.ts'
+import { Base, Key } from '../internal.ts'
 import type { KeyModifiers } from './Key.ts'
 
 /**

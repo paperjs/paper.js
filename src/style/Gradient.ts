@@ -10,10 +10,7 @@
  * All rights reserved.
  */
 
-import { Base } from '../core/Base.ts'
-import { serialize } from '../core/serialization.ts'
-import { getUID } from '../util/uid.ts'
-import { GradientStop } from './GradientStop.ts'
+import { Base, GradientStop, getUID, serialize } from '../internal.ts'
 import type { GradientStopLike } from './GradientStop.ts'
 import type { Color } from './Color.ts'
 

@@ -1,3 +1,12 @@
+import {
+  View,
+  addEvents,
+  camelize,
+  getDocument,
+  getWindow,
+  hyphenate,
+  paper
+} from '../internal.ts'
 /*
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
@@ -9,12 +18,6 @@
  *
  * All rights reserved.
  */
-
-import { getDocument, getWindow } from '../env.ts'
-import { paper } from '../core/PaperScope.ts'
-import { addEvents } from '../dom/domEvent.ts'
-import { camelize, hyphenate } from '../util/string.ts'
-import { View } from '../view/View.ts'
 
 export interface KeyModifiers {
   shift: boolean

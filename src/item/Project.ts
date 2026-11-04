@@ -10,29 +10,31 @@
  * All rights reserved.
  */
 
-import { PaperScopeItem } from '../core/PaperScopeItem.ts'
-import { defineEvents } from '../core/Emitter.ts'
-import { serialize } from '../core/serialization.ts'
-import { Change, ChangeFlag, ItemSelection } from '../constants.ts'
-import { splice } from '../util/list.ts'
-import { Point } from '../basic/Point.ts'
-import type { PointLike } from '../basic/Point.ts'
-import { Matrix } from '../basic/Matrix.ts'
-import { Style } from '../style/Style.ts'
-import type { PatternDefinition } from '../style/PatternDefinition.ts'
-import { getCanvas } from '../canvas/canvasProvider.ts'
-import { View } from '../view/View.ts'
-import type { Size } from '../basic/Size.ts'
-import type { PaperScope } from '../core/PaperScope.ts'
 import {
+  Change,
+  ChangeFlag,
   Item,
+  ItemSelection,
+  Layer,
+  Matrix,
+  PaperScopeItem,
+  Point,
+  Style,
+  SymbolItem,
+  View,
+  defineEvents,
+  getCanvas,
   hitTest,
   hitTestAll,
   hitTestChildren,
-  importJSON
-} from './Item.ts'
-import { Layer } from './Layer.ts'
-import { SymbolItem } from './SymbolItem.ts'
+  importJSON,
+  serialize,
+  splice
+} from '../internal.ts'
+import type { PointLike } from '../basic/Point.ts'
+import type { PatternDefinition } from '../style/PatternDefinition.ts'
+import type { Size } from '../basic/Size.ts'
+import type { PaperScope } from '../core/PaperScope.ts'
 import type { SymbolDefinition } from './SymbolDefinition.ts'
 import type { HitResult } from './HitResult.ts'
 

@@ -10,10 +10,8 @@
  * All rights reserved.
  */
 
-import { Point } from '../basic/Point.ts'
+import { Point, SegmentSelection, isZero } from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
-import { isZero } from '../util/numerical.ts'
-import { SegmentSelection } from '../constants.ts'
 import type { Segment } from './Segment.ts'
 
 /**

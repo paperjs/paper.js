@@ -10,12 +10,15 @@
  * All rights reserved.
  */
 
-import { Base } from '../core/Base.ts'
-import { paper } from '../core/PaperScope.ts'
-import { Change, ChangeFlag } from '../constants.ts'
-import { getUID } from '../util/uid.ts'
-import { Point } from '../basic/Point.ts'
-import { Item } from './Item.ts'
+import {
+  Base,
+  Change,
+  ChangeFlag,
+  Item,
+  Point,
+  getUID,
+  paper
+} from '../internal.ts'
 import type { Project } from './Project.ts'
 
 // The private base of SymbolDefinition and PatternDefinition, which hold an

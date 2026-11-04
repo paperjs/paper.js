@@ -1,3 +1,4 @@
+import { Emitter, defineEvents } from '../internal.ts'
 /*
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
@@ -9,8 +10,6 @@
  *
  * All rights reserved.
  */
-
-import { Emitter, defineEvents } from '../core/Emitter.ts'
 
 type Easing = (t: number) => number
 

@@ -20,27 +20,27 @@
  * @author Jürg Lehni <juerg@scratchdisk.com>
  */
 
-import { paper } from '../core/PaperScope.ts'
 import {
   CURVETIME_EPSILON,
+  CompoundPath,
+  Curve,
   EPSILON,
   GEOMETRIC_EPSILON,
+  Group,
+  Line,
+  Matrix,
+  Path,
+  Point,
+  Segment,
   clamp,
   findRoot,
   findSignChange,
   isZero,
+  paper,
   solveQuadratic
-} from '../util/numerical.ts'
-import { Point } from '../basic/Point.ts'
-import { Line } from '../basic/Line.ts'
-import { Matrix } from '../basic/Matrix.ts'
+} from '../internal.ts'
 import type { Item } from '../item/Item.ts'
-import { Group } from '../item/Group.ts'
 import type { PathItem } from './PathItem.ts'
-import { Path } from './Path.ts'
-import { CompoundPath } from './CompoundPath.ts'
-import { Segment } from './Segment.ts'
-import { Curve } from './Curve.ts'
 
 // The options of PathItem#offset():
 export type OffsetOptions = {

@@ -10,16 +10,20 @@
  * All rights reserved.
  */
 
-import { Base } from '../core/Base.ts'
-import { serialize } from '../core/serialization.ts'
-import { equals } from '../util/object.ts'
-import { addNamed, removeNamed } from '../util/list.ts'
-import { Change, SegmentSelection } from '../constants.ts'
-import { Point } from '../basic/Point.ts'
+import {
+  Base,
+  Change,
+  CurveLocation,
+  Point,
+  SegmentPoint,
+  SegmentSelection,
+  addNamed,
+  equals,
+  removeNamed,
+  serialize
+} from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
 import type { Matrix } from '../basic/Matrix.ts'
-import { SegmentPoint } from './SegmentPoint.ts'
-import { CurveLocation } from './CurveLocation.ts'
 import type { Curve } from './Curve.ts'
 import type { Path } from './Path.ts'
 

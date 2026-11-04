@@ -1,3 +1,4 @@
+import { Base, inject } from '../internal.ts'
 /*
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
@@ -9,9 +10,6 @@
  *
  * All rights reserved.
  */
-
-import { Base } from './Base.ts'
-import { inject } from '../util/object.ts'
 
 type Handler = (this: any, ...args: any[]) => any
 

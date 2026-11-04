@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { Group } from './Group.ts'
+import { Group } from '../internal.ts'
 import type { Item } from './Item.ts'
 import type { Project } from './Project.ts'
 

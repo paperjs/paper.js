@@ -10,22 +10,28 @@
  * All rights reserved.
  */
 
-import { paper } from '../core/PaperScope.ts'
-import { Change } from '../constants.ts'
-import { equals, isPlainObject } from '../util/object.ts'
-import { capitalize } from '../util/string.ts'
-import { KAPPA } from '../util/numerical.ts'
-import { Point } from '../basic/Point.ts'
+import {
+  Change,
+  HitResult,
+  Item,
+  KAPPA,
+  LinkedSize,
+  Matrix,
+  Path,
+  Point,
+  Rectangle,
+  Size,
+  capitalize,
+  equals,
+  isPlainObject,
+  paper,
+  readEllipse,
+  readRectangle
+} from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
-import { Size, LinkedSize } from '../basic/Size.ts'
 import type { SizeLike } from '../basic/Size.ts'
-import { Rectangle, readEllipse, readRectangle } from '../basic/Rectangle.ts'
 import type { RectangleLike } from '../basic/Rectangle.ts'
-import { Matrix } from '../basic/Matrix.ts'
-import { Path } from '../path/Path.ts'
-import { Item } from './Item.ts'
 import type { BoundsOptions } from './Item.ts'
-import { HitResult } from './HitResult.ts'
 
 export class Shape extends Item {
   // Not private, as hosted shells are created without the constructor, see

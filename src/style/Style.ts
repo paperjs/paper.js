@@ -10,18 +10,21 @@
  * All rights reserved.
  */
 
-import { Base } from '../core/Base.ts'
-import { paper } from '../core/PaperScope.ts'
-import { Change } from '../constants.ts'
-import { equals, inject } from '../util/object.ts'
-import { Point } from '../basic/Point.ts'
+import {
+  Base,
+  Change,
+  Color,
+  Group,
+  Point,
+  TextItem,
+  TextRange,
+  TextStory,
+  equals,
+  inject,
+  paper
+} from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
-import { Color } from './Color.ts'
 import type { ColorLike } from './Color.ts'
-import { Group } from '../item/Group.ts'
-import { TextItem } from '../text/TextItem.ts'
-import { TextStory } from '../text/TextStory.ts'
-import { TextRange } from '../text/TextRange.ts'
 import type { Project } from '../item/Project.ts'
 import type { View } from '../view/View.ts'
 

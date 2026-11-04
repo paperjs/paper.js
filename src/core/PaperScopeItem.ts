@@ -10,10 +10,8 @@
  * All rights reserved.
  */
 
-import { Emitter } from './Emitter.ts'
-import { paper } from './PaperScope.ts'
+import { Emitter, paper, splice } from '../internal.ts'
 import type { PaperScope } from './PaperScope.ts'
-import { splice } from '../util/list.ts'
 import type { View } from '../view/View.ts'
 
 /**

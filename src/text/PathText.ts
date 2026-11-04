@@ -10,13 +10,16 @@
  * All rights reserved.
  */
 
-import { TextItem } from './TextItem.ts'
+import {
+  Change,
+  Matrix,
+  PathFlattener,
+  Rectangle,
+  TextItem,
+  inject,
+  isPlainObject
+} from '../internal.ts'
 import type { TextLine } from './TextItem.ts'
-import { Change } from '../constants.ts'
-import { inject, isPlainObject } from '../util/object.ts'
-import { Rectangle } from '../basic/Rectangle.ts'
-import { Matrix } from '../basic/Matrix.ts'
-import { PathFlattener } from '../path/PathFlattener.ts'
 import type { PathItem } from '../path/PathItem.ts'
 import type { Path } from '../path/Path.ts'
 

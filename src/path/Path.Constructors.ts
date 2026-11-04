@@ -10,17 +10,21 @@
  * All rights reserved.
  */
 
-import { Item } from '../item/Item.ts'
-import { Point } from '../basic/Point.ts'
+import {
+  Item,
+  KAPPA,
+  Path,
+  Point,
+  Rectangle,
+  Segment,
+  Size,
+  isPlainObject,
+  readEllipse,
+  readRectangle
+} from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
-import { Size } from '../basic/Size.ts'
 import type { SizeLike } from '../basic/Size.ts'
-import { Rectangle, readEllipse, readRectangle } from '../basic/Rectangle.ts'
 import type { RectangleLike } from '../basic/Rectangle.ts'
-import { KAPPA } from '../util/numerical.ts'
-import { isPlainObject } from '../util/object.ts'
-import { Segment } from './Segment.ts'
-import { Path } from './Path.ts'
 
 // The properties of the named forms besides their geometry, set on the path:
 type PathProps = { [key: string]: any }

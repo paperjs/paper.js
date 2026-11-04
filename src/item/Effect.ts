@@ -10,10 +10,7 @@
  * All rights reserved.
  */
 
-import { Base } from '../core/Base.ts'
-import { PathItem } from '../path/PathItem.ts'
-import { Group } from './Group.ts'
-import { EffectInstance } from './EffectInstance.ts'
+import { Base, EffectInstance, Group, PathItem } from '../internal.ts'
 import type { Item } from './Item.ts'
 
 // The description of a parameter, e.g. `{ label, type, range, value }`:

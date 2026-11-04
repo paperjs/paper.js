@@ -10,16 +10,11 @@
  * All rights reserved.
  */
 
-import { Item } from '../item/Item.ts'
+import { Item, Path, PathItem, Point, inject, push } from '../internal.ts'
 import type { HitResult } from '../item/HitResult.ts'
-import { Point } from '../basic/Point.ts'
 import type { PointLike } from '../basic/Point.ts'
 import type { SizeLike } from '../basic/Size.ts'
 import type { Matrix } from '../basic/Matrix.ts'
-import { inject } from '../util/object.ts'
-import { push } from '../util/list.ts'
-import { PathItem } from './PathItem.ts'
-import { Path } from './Path.ts'
 import type { Segment } from './Segment.ts'
 import type { Curve } from './Curve.ts'
 

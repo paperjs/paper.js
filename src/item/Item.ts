@@ -10,44 +10,55 @@
  * All rights reserved.
  */
 
-import { Emitter, defineEvents } from '../core/Emitter.ts'
-import { paper } from '../core/PaperScope.ts'
-import type { PaperScope } from '../core/PaperScope.ts'
-import { deserialize, serialize } from '../core/serialization.ts'
-import { Change, ChangeFlag, ItemSelection } from '../constants.ts'
-import { equals, inject, isPlainObject } from '../util/object.ts'
-import { addNamed, removeNamed, splice } from '../util/list.ts'
-import { capitalize, hyphenate } from '../util/string.ts'
-import { getUID } from '../util/uid.ts'
 import {
+  Change,
+  ChangeFlag,
+  Color,
+  CompoundPath,
+  DrawEvent,
   EPSILON,
+  Emitter,
   GEOMETRIC_EPSILON,
+  Group,
+  HitResult,
+  ItemSelection,
+  Layer,
+  LinkedPoint,
+  LinkedRectangle,
+  Matrix,
+  Path,
+  Point,
+  Raster,
+  Rectangle,
+  Size,
+  Style,
+  Tween,
+  addNamed,
+  blend,
+  capitalize,
   clamp,
-  isZero
-} from '../util/numerical.ts'
-import { Point, LinkedPoint } from '../basic/Point.ts'
-import type { PointLike } from '../basic/Point.ts'
-import { Size } from '../basic/Size.ts'
-import { Rectangle, LinkedRectangle } from '../basic/Rectangle.ts'
-import type { RectangleLike } from '../basic/Rectangle.ts'
-import { Matrix } from '../basic/Matrix.ts'
-import { Style, defineStyleAccessors } from '../style/Style.ts'
-import { Color } from '../style/Color.ts'
-import type { ColorLike } from '../style/Color.ts'
-import {
+  defineEvents,
+  defineStyleAccessors,
+  deserialize,
+  equals,
   getCanvas,
   getContext,
-  releaseCanvas
-} from '../canvas/canvasProvider.ts'
-import { blend, nativeBlendModes } from '../canvas/blendModes.ts'
-import { DrawEvent } from '../event/DrawEvent.ts'
-import { Tween } from '../anim/Tween.ts'
-import { Path } from '../path/Path.ts'
-import { CompoundPath } from '../path/CompoundPath.ts'
-import { Group } from './Group.ts'
-import { Layer } from './Layer.ts'
-import { Raster } from './Raster.ts'
-import { HitResult } from './HitResult.ts'
+  getUID,
+  hyphenate,
+  inject,
+  isPlainObject,
+  isZero,
+  nativeBlendModes,
+  paper,
+  releaseCanvas,
+  removeNamed,
+  serialize,
+  splice
+} from '../internal.ts'
+import type { PaperScope } from '../core/PaperScope.ts'
+import type { PointLike } from '../basic/Point.ts'
+import type { RectangleLike } from '../basic/Rectangle.ts'
+import type { ColorLike } from '../style/Color.ts'
 import type { Project } from './Project.ts'
 import type { SymbolDefinition } from './SymbolDefinition.ts'
 import type { View } from '../view/View.ts'

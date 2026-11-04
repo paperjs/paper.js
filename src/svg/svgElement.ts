@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { getDocument } from '../env.ts'
+import { getDocument } from '../internal.ts'
 import type { Formatter } from '../util/Formatter.ts'
 
 // SVG related namespaces

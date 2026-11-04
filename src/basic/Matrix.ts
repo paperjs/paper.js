@@ -15,14 +15,16 @@
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 
-import { Base } from '../core/Base.ts'
-import { serialize } from '../core/serialization.ts'
-import { Formatter } from '../util/Formatter.ts'
-import { inject } from '../util/object.ts'
-import { Change } from '../constants.ts'
-import { Point } from './Point.ts'
+import {
+  Base,
+  Change,
+  Formatter,
+  Point,
+  Rectangle,
+  inject,
+  serialize
+} from '../internal.ts'
 import type { PointLike } from './Point.ts'
-import { Rectangle } from './Rectangle.ts'
 
 /**
  * An affine transformation matrix performs a linear mapping from 2D

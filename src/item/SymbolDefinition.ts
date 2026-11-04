@@ -10,11 +10,13 @@
  * All rights reserved.
  */
 
-import { serialize } from '../core/serialization.ts'
-import { isPlainObject } from '../util/object.ts'
+import {
+  ItemDefinition,
+  SymbolItem,
+  isPlainObject,
+  serialize
+} from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
-import { ItemDefinition } from './ItemDefinition.ts'
-import { SymbolItem } from './SymbolItem.ts'
 import type { Item } from './Item.ts'
 import type { Project } from './Project.ts'
 

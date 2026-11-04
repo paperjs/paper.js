@@ -10,8 +10,7 @@
  * All rights reserved.
  */
 
-import { Base } from '../core/Base.ts'
-import { paper } from '../core/PaperScope.ts'
+import { Base, paper } from '../internal.ts'
 import type { Point } from '../basic/Point.ts'
 import type { Color } from '../style/Color.ts'
 import type { CurveLocation } from '../path/CurveLocation.ts'

@@ -10,11 +10,7 @@
  * All rights reserved.
  */
 
-import { Base } from '../core/Base.ts'
-import { serialize } from '../core/serialization.ts'
-import { Change } from '../constants.ts'
-import { equals } from '../util/object.ts'
-import { Effect } from './Effect.ts'
+import { Base, Change, Effect, equals, serialize } from '../internal.ts'
 import type { Item } from './Item.ts'
 
 type EffectInstanceProps = {

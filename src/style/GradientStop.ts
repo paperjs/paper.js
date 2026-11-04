@@ -10,9 +10,7 @@
  * All rights reserved.
  */
 
-import { Base } from '../core/Base.ts'
-import { serialize } from '../core/serialization.ts'
-import { Color } from './Color.ts'
+import { Base, Color, serialize } from '../internal.ts'
 import type { ColorLike } from './Color.ts'
 import type { Gradient } from './Gradient.ts'
 

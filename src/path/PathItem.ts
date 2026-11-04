@@ -10,41 +10,41 @@
  * All rights reserved.
  */
 
-import { Item } from '../item/Item.ts'
-import { Point } from '../basic/Point.ts'
-import type { PointLike } from '../basic/Point.ts'
-import { Size } from '../basic/Size.ts'
-import type { SizeLike } from '../basic/Size.ts'
-import type { Matrix } from '../basic/Matrix.ts'
-import { Change } from '../constants.ts'
-import { EPSILON, GEOMETRIC_EPSILON, getEpsilon } from '../util/numerical.ts'
-import { findItemBoundsCollisions } from '../util/collisions.ts'
-import { isPlainObject } from '../util/object.ts'
-import { Curve } from './Curve.ts'
-import type { CurveLocation } from './CurveLocation.ts'
-import { Segment } from './Segment.ts'
-import type { SegmentLike } from './Segment.ts'
-import { Path } from './Path.ts'
-import { CompoundPath } from './CompoundPath.ts'
 import {
+  Change,
+  CompoundPath,
+  Curve,
+  EPSILON,
+  GEOMETRIC_EPSILON,
+  Item,
+  Path,
+  Point,
+  Segment,
+  Size,
   closePaths,
   createGraph,
   createResult,
+  dashPathItem,
+  findItemBoundsCollisions,
+  getEpsilon,
   getInteriorPoint,
   getOperands,
   getWinding,
+  isPlainObject,
+  offsetPathItem,
+  outlinePathItem,
   reorientPaths,
   splitBoolean,
   traceBoolean,
   tracePaths
-} from './PathItem.Boolean.ts'
+} from '../internal.ts'
+import type { PointLike } from '../basic/Point.ts'
+import type { SizeLike } from '../basic/Size.ts'
+import type { Matrix } from '../basic/Matrix.ts'
+import type { CurveLocation } from './CurveLocation.ts'
+import type { SegmentLike } from './Segment.ts'
 import type { BooleanOptions, Graph, Winding } from './PathItem.Boolean.ts'
 import type { Group } from '../item/Group.ts'
-import {
-  dashPathItem,
-  offsetPathItem,
-  outlinePathItem
-} from './PathItem.Offset.ts'
 import type {
   DashOptions,
   OffsetOptions,

@@ -10,11 +10,8 @@
  * All rights reserved.
  */
 
-import { PaperScopeItem } from '../core/PaperScopeItem.ts'
-import { defineEvents } from '../core/Emitter.ts'
+import { PaperScopeItem, Point, ToolEvent, defineEvents } from '../internal.ts'
 import type { PaperScope } from '../core/PaperScope.ts'
-import { Point } from '../basic/Point.ts'
-import { ToolEvent } from './ToolEvent.ts'
 import type { KeyEvent } from '../event/KeyEvent.ts'
 
 type Handler = (this: Tool, ...args: any[]) => any

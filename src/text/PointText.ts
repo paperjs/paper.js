@@ -10,13 +10,16 @@
  * All rights reserved.
  */
 
-import { TextItem } from './TextItem.ts'
+import {
+  LinkedPoint,
+  Point,
+  Rectangle,
+  TextItem,
+  TextRange,
+  isPlainObject
+} from '../internal.ts'
 import type { TextLine } from './TextItem.ts'
-import { isPlainObject } from '../util/object.ts'
-import { Point, LinkedPoint } from '../basic/Point.ts'
 import type { PointLike } from '../basic/Point.ts'
-import { Rectangle } from '../basic/Rectangle.ts'
-import { TextRange } from './TextRange.ts'
 import type { Matrix } from '../basic/Matrix.ts'
 
 /**

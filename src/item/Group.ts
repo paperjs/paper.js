@@ -10,8 +10,7 @@
  * All rights reserved.
  */
 
-import { Item } from './Item.ts'
-import { Change, ChangeFlag } from '../constants.ts'
+import { Change, ChangeFlag, Item } from '../internal.ts'
 import type { Point } from '../basic/Point.ts'
 import type { Matrix } from '../basic/Matrix.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'

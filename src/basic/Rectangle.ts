@@ -10,14 +10,19 @@
  * All rights reserved.
  */
 
-import { Base } from '../core/Base.ts'
-import { Formatter } from '../util/Formatter.ts'
-import { inject, isPlainObject } from '../util/object.ts'
-import { capitalize } from '../util/string.ts'
-import { ItemSelection } from '../constants.ts'
-import { Point, LinkedPoint } from './Point.ts'
+import {
+  Base,
+  Formatter,
+  ItemSelection,
+  LinkedPoint,
+  LinkedSize,
+  Point,
+  Size,
+  capitalize,
+  inject,
+  isPlainObject
+} from '../internal.ts'
 import type { PointLike } from './Point.ts'
-import { Size, LinkedSize } from './Size.ts'
 import type { SizeLike } from './Size.ts'
 
 /**

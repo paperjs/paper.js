@@ -1,3 +1,4 @@
+import { Point, getDocument, getOffset, getWindow } from '../internal.ts'
 /*
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
@@ -9,10 +10,6 @@
  *
  * All rights reserved.
  */
-
-import { getDocument, getWindow } from '../env.ts'
-import { getOffset } from './domElement.ts'
-import { Point } from '../basic/Point.ts'
 
 type Listener = (event: any) => void
 
