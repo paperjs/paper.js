@@ -95,4 +95,13 @@ describe('Line', () => {
       -100 / Math.sqrt(500)
     )
   })
+
+  test('getSide() of points on the line beyond its ends', () => {
+    // A vertical line, where the projection onto the line depends on y only:
+    const line = new Line(new Point(0, 0), new Point(0, 10))
+    equals(() => line.getSide(new Point(0, 20)), 1)
+    equals(() => line.getSide(new Point(0, -10)), -1)
+    equals(() => line.getSide(new Point(0, 5)), 0)
+    equals(() => line.getSide(new Point(0, 20), true), 0)
+  })
 })
