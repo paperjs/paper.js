@@ -400,8 +400,7 @@ export class Style extends Base {
     // In order to draw a shadow, we need either a shadow blur or an offset, or
     // both.
     return (
-      !!color &&
-      color.alpha > 0 &&
+      color?.alpha > 0 &&
       (this.shadowBlur > 0 || !this.shadowOffset.isZero())
     )
   }

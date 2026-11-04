@@ -1005,8 +1005,7 @@ export class View extends Emitter {
     const isCovered = (
       nativeMove &&
       !dragging &&
-      target &&
-      target.nodeType === 1 &&
+      target?.nodeType === 1 &&
       !target.contains(this._element)
     )
     const inView = (

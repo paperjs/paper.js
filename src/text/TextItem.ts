@@ -429,8 +429,7 @@ export class TextItem extends Item {
     function advance(piece: TextPiece, text: string): number {
       if (
         !(
-          previous &&
-          previous.font === piece.font &&
+          previous?.font === piece.font &&
           previous.tracking === piece.tracking &&
           previous.scale.equals(piece.scale) &&
           previous.y === piece.y
