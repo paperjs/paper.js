@@ -80,10 +80,11 @@ declare module '../view/CanvasView.ts' {
 // Create the window to draw in. Its document lies in the working directory, so
 // relative URLs load files from there, through file: URLs, which happy-dom
 // can't load by itself:
+const canvasAdapter = new CanvasAdapter()
 const window = new happyDom.Window({
   url: pathToFileURL(`${process.cwd()}/`).href,
   settings: {
-    canvasAdapter: new CanvasAdapter(),
+    canvasAdapter,
     enableImageFileLoading: true,
     // Give iframes their documents, as SVG import computes styles in one:
     enableIframePageLoading: true,
@@ -99,6 +100,45 @@ const window = new happyDom.Window({
     }
   }
 })
+
+// happy-dom completes images and fires their load events before
+// @napi-rs/canvas has decoded them, so they would draw nothing. Hold both back
+// until the decoding is done, for the images of this window:
+// NOTE: Remove once @napi-rs/canvas fixes this:
+// https://github.com/Brooooooklyn/canvas/issues/1423
+{
+  const { HTMLImageElement, PropertySymbol } = happyDom
+  const { dispatchEvent } = HTMLImageElement.prototype
+  HTMLImageElement.prototype.dispatchEvent = function (event) {
+    // Only the first call, not those of the event's phases:
+    if (
+      event.type === 'load' &&
+      !event[PropertySymbol.dispatching] &&
+      this[PropertySymbol.window] === window
+    ) {
+      const buffer = this[PropertySymbol.buffer]
+      this[PropertySymbol.complete] = false
+      canvasAdapter
+        .decodeImage(this)
+        .then(
+          () => true,
+          () => false
+        )
+        .then(isDecoded => {
+          // Unless the image changed its source in the meantime:
+          if (this[PropertySymbol.buffer] === buffer) {
+            this[PropertySymbol.complete] = true
+            dispatchEvent.call(
+              this,
+              isDecoded ? event : new window.Event('error')
+            )
+          }
+        })
+      return true
+    }
+    return dispatchEvent.call(this, event)
+  }
+}
 
 setEnvironment(window as unknown as Window & typeof globalThis)
 
