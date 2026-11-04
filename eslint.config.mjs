@@ -88,6 +88,14 @@ export default [
     }
   },
   {
+    // TypeScript checks redeclarations itself, and allows a class to merge
+    // with an interface of the same name:
+    files: ['src/**/*.ts'],
+    rules: {
+      'no-redeclare': 'off'
+    }
+  },
+  {
     // load.js runs these declarations twice, once through constants.js, and
     // paper.js and export.js both declare paper there:
     files: [

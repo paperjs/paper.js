@@ -519,7 +519,6 @@ export class Point extends Base {
    * the point as a new point.
    * The object itself is not modified!
    *
-   * @name Point#add
    * @operator
    * @param number the number to add
    * @return the addition of the point and the value as a new point
@@ -530,12 +529,12 @@ export class Point extends Base {
    * var result = point.add(20); // JavaScript
    * console.log(result); // {x: 25, y: 30}
    */
+  add(number: number): Point
   /**
    * Returns the addition of the supplied point to the point as a new
    * point.
    * The object itself is not modified!
    *
-   * @name Point#add
    * @operator
    * @param point the point to add
    * @return the addition of the two points as a new point
@@ -547,6 +546,8 @@ export class Point extends Base {
    * var result = point1.add(point2); // JavaScript
    * console.log(result); // {x: 15, y: 30}
    */
+  add(point: PointLike): Point
+  add(x: number, y: number): Point
   add(point: PointLike | number, y?: number): Point {
     const other = Point.from(point, y)
     return new Point(this.x + other.x, this.y + other.y)
@@ -557,7 +558,6 @@ export class Point extends Base {
    * the point as a new point.
    * The object itself is not modified!
    *
-   * @name Point#subtract
    * @operator
    * @param number the number to subtract
    * @return the subtraction of the point and the value as a new point
@@ -568,12 +568,12 @@ export class Point extends Base {
    * var result = point.subtract(5); // JavaScript
    * console.log(result); // {x: 5, y: 15}
    */
+  subtract(number: number): Point
   /**
    * Returns the subtraction of the supplied point to the point as a new
    * point.
    * The object itself is not modified!
    *
-   * @name Point#subtract
    * @operator
    * @param point the point to subtract
    * @return the subtraction of the two points as a new point
@@ -585,6 +585,8 @@ export class Point extends Base {
    * var result = firstPoint.subtract(secondPoint); // JavaScript
    * console.log(result); // {x: 5, y: 15}
    */
+  subtract(point: PointLike): Point
+  subtract(x: number, y: number): Point
   subtract(point: PointLike | number, y?: number): Point {
     const other = Point.from(point, y)
     return new Point(this.x - other.x, this.y - other.y)
@@ -595,7 +597,6 @@ export class Point extends Base {
    * the point as a new point.
    * The object itself is not modified!
    *
-   * @name Point#multiply
    * @operator
    * @param number the number to multiply by
    * @return the multiplication of the point and the value as a new
@@ -607,12 +608,12 @@ export class Point extends Base {
    * var result = point.multiply(2); // JavaScript
    * console.log(result); // {x: 20, y: 40}
    */
+  multiply(number: number): Point
   /**
    * Returns the multiplication of the supplied point to the point as a new
    * point.
    * The object itself is not modified!
    *
-   * @name Point#multiply
    * @operator
    * @param point the point to multiply by
    * @return the multiplication of the two points as a new point
@@ -624,6 +625,8 @@ export class Point extends Base {
    * var result = firstPoint.multiply(secondPoint); // JavaScript
    * console.log(result); // {x: 20, y: 20}
    */
+  multiply(point: PointLike): Point
+  multiply(x: number, y: number): Point
   multiply(point: PointLike | number, y?: number): Point {
     const other = Point.from(point, y)
     return new Point(this.x * other.x, this.y * other.y)
@@ -634,7 +637,6 @@ export class Point extends Base {
    * the point as a new point.
    * The object itself is not modified!
    *
-   * @name Point#divide
    * @operator
    * @param number the number to divide by
    * @return the division of the point and the value as a new point
@@ -645,12 +647,12 @@ export class Point extends Base {
    * var result = point.divide(2); // JavaScript
    * console.log(result); // {x: 5, y: 10}
    */
+  divide(number: number): Point
   /**
    * Returns the division of the supplied point to the point as a new
    * point.
    * The object itself is not modified!
    *
-   * @name Point#divide
    * @operator
    * @param point the point to divide by
    * @return the division of the two points as a new point
@@ -662,6 +664,8 @@ export class Point extends Base {
    * var result = firstPoint.divide(secondPoint); // JavaScript
    * console.log(result); // {x: 4, y: 2}
    */
+  divide(point: PointLike): Point
+  divide(x: number, y: number): Point
   divide(point: PointLike | number, y?: number): Point {
     const other = Point.from(point, y)
     return new Point(this.x / other.x, this.y / other.y)
@@ -671,23 +675,6 @@ export class Point extends Base {
    * The modulo operator returns the integer remainders of dividing the point
    * by the supplied value as a new point.
    *
-   * @name Point#modulo
-   * @operator
-   * @param value
-   * @return the integer remainders of dividing the point by the value
-   * as a new point
-   *
-   * @example
-   * var point = new Point(12, 6);
-   * var result = point % 5; // PaperScript
-   * var result = point.modulo(5); // JavaScript
-   * console.log(result); // {x: 2, y: 1}
-   */
-  /**
-   * The modulo operator returns the integer remainders of dividing the point
-   * by the supplied value as a new point.
-   *
-   * @name Point#modulo
    * @operator
    * @param point
    * @return the integer remainders of dividing the points by each
@@ -699,6 +686,24 @@ export class Point extends Base {
    * var result = point.modulo(new Point(5, 2)); // JavaScript
    * console.log(result); // {x: 2, y: 0}
    */
+  modulo(number: number): Point
+  /**
+   * The modulo operator returns the integer remainders of dividing the point
+   * by the supplied value as a new point.
+   *
+   * @operator
+   * @param value
+   * @return the integer remainders of dividing the point by the value
+   * as a new point
+   *
+   * @example
+   * var point = new Point(12, 6);
+   * var result = point % 5; // PaperScript
+   * var result = point.modulo(5); // JavaScript
+   * console.log(result); // {x: 2, y: 1}
+   */
+  modulo(point: PointLike): Point
+  modulo(x: number, y: number): Point
   modulo(point: PointLike | number, y?: number): Point {
     const other = Point.from(point, y)
     return new Point(this.x % other.x, this.y % other.y)
@@ -709,7 +714,6 @@ export class Point extends Base {
    * PaperScript uses it for the unary minus operator.
    * The object itself is not modified!
    *
-   * @name Point#negate
    * @return the negation of the point as a new point
    *
    * @example
@@ -852,89 +856,6 @@ export class Point extends Base {
       other.y * scale
     )
   }
-
-  /**
-   * This property is only valid if the point is an anchor or handle point
-   * of a {@link Segment} or a {@link Curve}, or the position of an
-   * {@link Item}, as returned by {@link Item#position},
-   * {@link Segment#point}, {@link Segment#handleIn},
-   * {@link Segment#handleOut}, {@link Curve#point1}, {@link Curve#point2},
-   * {@link Curve#handle1}, {@link Curve#handle2}.
-   *
-   * In those cases, it returns {@true if it the point is selected}.
-   *
-   * Paper.js renders selected points on top of your project. This is very
-   * useful when debugging.
-   *
-   * @name Point#selected
-   * @property
-   * @default false
-   *
-   * @example {@paperscript}
-   * var path = new Path.Circle({
-   *     center: [80, 50],
-   *     radius: 40
-   * });
-   *
-   * // Select the third segment point:
-   * path.segments[2].point.selected = true;
-   *
-   * // Select the item's position, which is the pivot point
-   * // around which it is transformed:
-   * path.position.selected = true;
-   */
-
-  /**
-   * {@grouptitle Math Functions}
-   *
-   * Returns a new point with rounded {@link #x} and {@link #y} values. The
-   * object itself is not modified!
-   *
-   * @name Point#round
-   *
-   * @example
-   * var point = new Point(10.2, 10.9);
-   * var roundPoint = point.round();
-   * console.log(roundPoint); // {x: 10, y: 11}
-   */
-
-  /**
-   * Returns a new point with the nearest greater non-fractional values to the
-   * specified {@link #x} and {@link #y} values. The object itself is not
-   * modified!
-   *
-   * @name Point#ceil
-   *
-   * @example
-   * var point = new Point(10.2, 10.9);
-   * var ceilPoint = point.ceil();
-   * console.log(ceilPoint); // {x: 11, y: 11}
-   */
-
-  /**
-   * Returns a new point with the nearest smaller non-fractional values to the
-   * specified {@link #x} and {@link #y} values. The object itself is not
-   * modified!
-   *
-   * @name Point#floor
-   *
-   * @example
-   * var point = new Point(10.2, 10.9);
-   * var floorPoint = point.floor();
-   * console.log(floorPoint); // {x: 10, y: 10}
-   */
-
-  /**
-   * Returns a new point with the absolute values of the specified {@link #x}
-   * and {@link #y} values. The object itself is not modified!
-   *
-   * @name Point#abs
-   *
-   * @example
-   * var point = new Point(-5, 10);
-   * var absPoint = point.abs();
-   * console.log(absPoint); // {x: 5, y: 10}
-   */
 
   /**
    * Returns a new point with the {@link #x} and {@link #y} values clamped to
@@ -1084,6 +1005,91 @@ export class Point extends Base {
       }
     }
   }
+}
+
+// The members defined at runtime rather than in the class body:
+export interface Point {
+  /**
+   * This property is only valid if the point is an anchor or handle point
+   * of a {@link Segment} or a {@link Curve}, or the position of an
+   * {@link Item}, as returned by {@link Item#position},
+   * {@link Segment#point}, {@link Segment#handleIn},
+   * {@link Segment#handleOut}, {@link Curve#point1}, {@link Curve#point2},
+   * {@link Curve#handle1}, {@link Curve#handle2}.
+   *
+   * In those cases, it returns {@true if it the point is selected}.
+   *
+   * Paper.js renders selected points on top of your project. This is very
+   * useful when debugging.
+   *
+   * @default false
+   *
+   * @example {@paperscript}
+   * var path = new Path.Circle({
+   *     center: [80, 50],
+   *     radius: 40
+   * });
+   *
+   * // Select the third segment point:
+   * path.segments[2].point.selected = true;
+   *
+   * // Select the item's position, which is the pivot point
+   * // around which it is transformed:
+   * path.position.selected = true;
+   */
+  selected: boolean
+
+  /**
+   * {@grouptitle Math Functions}
+   *
+   * Returns a new point with rounded {@link #x} and {@link #y} values. The
+   * object itself is not modified!
+   *
+   *
+   * @example
+   * var point = new Point(10.2, 10.9);
+   * var roundPoint = point.round();
+   * console.log(roundPoint); // {x: 10, y: 11}
+   */
+  round(): Point
+
+  /**
+   * Returns a new point with the nearest greater non-fractional values to the
+   * specified {@link #x} and {@link #y} values. The object itself is not
+   * modified!
+   *
+   *
+   * @example
+   * var point = new Point(10.2, 10.9);
+   * var ceilPoint = point.ceil();
+   * console.log(ceilPoint); // {x: 11, y: 11}
+   */
+  ceil(): Point
+
+  /**
+   * Returns a new point with the nearest smaller non-fractional values to the
+   * specified {@link #x} and {@link #y} values. The object itself is not
+   * modified!
+   *
+   *
+   * @example
+   * var point = new Point(10.2, 10.9);
+   * var floorPoint = point.floor();
+   * console.log(floorPoint); // {x: 10, y: 10}
+   */
+  floor(): Point
+
+  /**
+   * Returns a new point with the absolute values of the specified {@link #x}
+   * and {@link #y} values. The object itself is not modified!
+   *
+   *
+   * @example
+   * var point = new Point(-5, 10);
+   * var absPoint = point.abs();
+   * console.log(absPoint); // {x: 5, y: 10}
+   */
+  abs(): Point
 }
 
 /**

@@ -743,42 +743,6 @@ export class Matrix extends Base {
   }
 
   /**
-   * The value that affects the transformation along the x axis when scaling
-   * or rotating, positioned at (0, 0) in the transformation matrix.
-   */
-  declare a: number
-
-  /**
-   * The value that affects the transformation along the y axis when rotating
-   * or skewing, positioned at (1, 0) in the transformation matrix.
-   */
-  declare b: number
-
-  /**
-   * The value that affects the transformation along the x axis when rotating
-   * or skewing, positioned at (0, 1) in the transformation matrix.
-   */
-  declare c: number
-
-  /**
-   * The value that affects the transformation along the y axis when scaling
-   * or rotating, positioned at (1, 1) in the transformation matrix.
-   */
-  declare d: number
-
-  /**
-   * The distance by which to translate along the x axis, positioned at (2, 0)
-   * in the transformation matrix.
-   */
-  declare tx: number
-
-  /**
-   * The distance by which to translate along the y axis, positioned at (2, 1)
-   * in the transformation matrix.
-   */
-  declare ty: number
-
-  /**
    * The matrix values as an array, in the same sequence as they are passed
    * to {@link Matrix()}.
    */
@@ -856,4 +820,43 @@ export class Matrix extends Base {
       })
     }
   }
+}
+
+// The members defined at runtime rather than in the class body:
+export interface Matrix {
+  /**
+   * The value that affects the transformation along the x axis when scaling
+   * or rotating, positioned at (0, 0) in the transformation matrix.
+   */
+  a: number
+
+  /**
+   * The value that affects the transformation along the y axis when rotating
+   * or skewing, positioned at (1, 0) in the transformation matrix.
+   */
+  b: number
+
+  /**
+   * The value that affects the transformation along the x axis when rotating
+   * or skewing, positioned at (0, 1) in the transformation matrix.
+   */
+  c: number
+
+  /**
+   * The value that affects the transformation along the y axis when scaling
+   * or rotating, positioned at (1, 1) in the transformation matrix.
+   */
+  d: number
+
+  /**
+   * The distance by which to translate along the x axis, positioned at (2, 0)
+   * in the transformation matrix.
+   */
+  tx: number
+
+  /**
+   * The distance by which to translate along the y axis, positioned at (2, 1)
+   * in the transformation matrix.
+   */
+  ty: number
 }

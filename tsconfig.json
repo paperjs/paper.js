@@ -17,7 +17,7 @@
     "src/constants.ts",
     "src/core/Base.ts",
     "src/core/serialization.ts",
-    "src/util/collisionDetection.ts",
+    "src/util/collisions.ts",
     "src/util/Formatter.ts",
     "src/util/numerical.ts",
     "src/util/uid.ts",
@@ -28,7 +28,6 @@
     "src/basic/Size.ts",
     "src/basic/Line.ts",
     "src/basic/Rectangle.ts",
-    "src/basic/RectangleBuilder.ts",
     "src/basic/Matrix.ts"
   ]
 }

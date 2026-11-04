@@ -223,7 +223,6 @@ export class Size extends Base {
    * Returns the addition of the supplied value to the width and height of the
    * size as a new size. The object itself is not modified!
    *
-   * @name Size#add
    * @operator
    * @param number the number to add
    * @return the addition of the size and the value as a new size
@@ -234,11 +233,11 @@ export class Size extends Base {
    * var result = size.add(20); // JavaScript
    * console.log(result); // {width: 25, height: 30}
    */
+  add(number: number): Size
   /**
    * Returns the addition of the width and height of the supplied size to the
    * size as a new size. The object itself is not modified!
    *
-   * @name Size#add
    * @operator
    * @param size the size to add
    * @return the addition of the two sizes as a new size
@@ -250,6 +249,8 @@ export class Size extends Base {
    * var result = size1.add(size2); // JavaScript
    * console.log(result); // {width: 15, height: 30}
    */
+  add(size: SizeLike): Size
+  add(width: number, height: number): Size
   add(size: SizeLike | number, height?: number): Size {
     const other = Size.from(size, height)
     return new Size(this.width + other.width, this.height + other.height)
@@ -260,7 +261,6 @@ export class Size extends Base {
    * of the size as a new size. The object itself is not modified!
    * The object itself is not modified!
    *
-   * @name Size#subtract
    * @operator
    * @param number the number to subtract
    * @return the subtraction of the size and the value as a new size
@@ -271,11 +271,11 @@ export class Size extends Base {
    * var result = size.subtract(5); // JavaScript
    * console.log(result); // {width: 5, height: 15}
    */
+  subtract(number: number): Size
   /**
    * Returns the subtraction of the width and height of the supplied size from
    * the size as a new size. The object itself is not modified!
    *
-   * @name Size#subtract
    * @operator
    * @param size the size to subtract
    * @return the subtraction of the two sizes as a new size
@@ -287,6 +287,8 @@ export class Size extends Base {
    * var result = firstSize.subtract(secondSize); // JavaScript
    * console.log(result); // {width: 5, height: 15}
    */
+  subtract(size: SizeLike): Size
+  subtract(width: number, height: number): Size
   subtract(size: SizeLike | number, height?: number): Size {
     const other = Size.from(size, height)
     return new Size(this.width - other.width, this.height - other.height)
@@ -296,7 +298,6 @@ export class Size extends Base {
    * Returns the multiplication of the supplied value with the width and
    * height of the size as a new size. The object itself is not modified!
    *
-   * @name Size#multiply
    * @operator
    * @param number the number to multiply by
    * @return the multiplication of the size and the value as a new size
@@ -307,11 +308,11 @@ export class Size extends Base {
    * var result = size.multiply(2); // JavaScript
    * console.log(result); // {width: 20, height: 40}
    */
+  multiply(number: number): Size
   /**
    * Returns the multiplication of the width and height of the supplied size
    * with the size as a new size. The object itself is not modified!
    *
-   * @name Size#multiply
    * @operator
    * @param size the size to multiply by
    * @return the multiplication of the two sizes as a new size
@@ -323,6 +324,8 @@ export class Size extends Base {
    * var result = firstSize.multiply(secondSize); // JavaScript
    * console.log(result); // {width: 20, height: 20}
    */
+  multiply(size: SizeLike): Size
+  multiply(width: number, height: number): Size
   multiply(size: SizeLike | number, height?: number): Size {
     const other = Size.from(size, height)
     return new Size(this.width * other.width, this.height * other.height)
@@ -332,7 +335,6 @@ export class Size extends Base {
    * Returns the division of the supplied value by the width and height of the
    * size as a new size. The object itself is not modified!
    *
-   * @name Size#divide
    * @operator
    * @param number the number to divide by
    * @return the division of the size and the value as a new size
@@ -343,11 +345,11 @@ export class Size extends Base {
    * var result = size.divide(2); // JavaScript
    * console.log(result); // {width: 5, height: 10}
    */
+  divide(number: number): Size
   /**
    * Returns the division of the width and height of the supplied size by the
    * size as a new size. The object itself is not modified!
    *
-   * @name Size#divide
    * @operator
    * @param size the size to divide by
    * @return the division of the two sizes as a new size
@@ -359,6 +361,8 @@ export class Size extends Base {
    * var result = firstSize.divide(secondSize); // JavaScript
    * console.log(result); // {width: 4, height: 2}
    */
+  divide(size: SizeLike): Size
+  divide(width: number, height: number): Size
   divide(size: SizeLike | number, height?: number): Size {
     const other = Size.from(size, height)
     return new Size(this.width / other.width, this.height / other.height)
@@ -366,25 +370,8 @@ export class Size extends Base {
 
   /**
    * The modulo operator returns the integer remainders of dividing the size
-   * by the supplied value as a new size.
-   *
-   * @name Size#modulo
-   * @operator
-   * @param value
-   * @return the integer remainders of dividing the size by the value
-   * as a new size
-   *
-   * @example
-   * var size = new Size(12, 6);
-   * var result = size % 5; // PaperScript
-   * var result = size.modulo(5); // JavaScript
-   * console.log(result); // {width: 2, height: 1}
-   */
-  /**
-   * The modulo operator returns the integer remainders of dividing the size
    * by the supplied size as a new size.
    *
-   * @name Size#modulo
    * @operator
    * @param size
    * @return the integer remainders of dividing the sizes by each
@@ -396,6 +383,24 @@ export class Size extends Base {
    * var result = size.modulo(new Size(5, 2)); // JavaScript
    * console.log(result); // {width: 2, height: 0}
    */
+  modulo(number: number): Size
+  /**
+   * The modulo operator returns the integer remainders of dividing the size
+   * by the supplied value as a new size.
+   *
+   * @operator
+   * @param value
+   * @return the integer remainders of dividing the size by the value
+   * as a new size
+   *
+   * @example
+   * var size = new Size(12, 6);
+   * var result = size % 5; // PaperScript
+   * var result = size.modulo(5); // JavaScript
+   * console.log(result); // {width: 2, height: 1}
+   */
+  modulo(size: SizeLike): Size
+  modulo(width: number, height: number): Size
   modulo(size: SizeLike | number, height?: number): Size {
     const other = Size.from(size, height)
     return new Size(this.width % other.width, this.height % other.height)
@@ -406,7 +411,6 @@ export class Size extends Base {
    * PaperScript uses it for the unary minus operator.
    * The object itself is not modified!
    *
-   * @name Size#negate
    * @return the negation of the size as a new size
    *
    * @example
@@ -439,59 +443,6 @@ export class Size extends Base {
   isNaN(): boolean {
     return isNaN(this.width) || isNaN(this.height)
   }
-
-  /**
-   * {@grouptitle Math Functions}
-   *
-   * Returns a new size with rounded {@link #width} and {@link #height}
-   * values. The object itself is not modified!
-   *
-   * @name Size#round
-   *
-   * @example
-   * var size = new Size(10.2, 10.9);
-   * var roundSize = size.round();
-   * console.log(roundSize); // {x: 10, y: 11}
-   */
-
-  /**
-   * Returns a new size with the nearest greater non-fractional values to the
-   * specified {@link #width} and {@link #height} values. The object itself is
-   * not modified!
-   *
-   * @name Size#ceil
-   *
-   * @example
-   * var size = new Size(10.2, 10.9);
-   * var ceilSize = size.ceil();
-   * console.log(ceilSize); // {x: 11, y: 11}
-   */
-
-  /**
-   * Returns a new size with the nearest smaller non-fractional values to the
-   * specified {@link #width} and {@link #height} values. The object itself is
-   * not modified!
-   *
-   * @name Size#floor
-   *
-   * @example
-   * var size = new Size(10.2, 10.9);
-   * var floorSize = size.floor();
-   * console.log(floorSize); // {x: 10, y: 10}
-   */
-
-  /**
-   * Returns a new size with the absolute values of the specified
-   * {@link #width} and {@link #height} values. The object itself is not
-   * modified!
-   *
-   * @name Size#abs
-   *
-   * @example
-   * var size = new Size(-5, 10);
-   * var absSize = size.abs();
-   * console.log(absSize); // {x: 5, y: 10}
-   */
 
   /**
    * Returns the passed size if it is one already, or else a new size created
@@ -588,6 +539,62 @@ export class Size extends Base {
       }
     }
   }
+}
+
+// The members defined at runtime rather than in the class body:
+export interface Size {
+  /**
+   * {@grouptitle Math Functions}
+   *
+   * Returns a new size with rounded {@link #width} and {@link #height}
+   * values. The object itself is not modified!
+   *
+   *
+   * @example
+   * var size = new Size(10.2, 10.9);
+   * var roundSize = size.round();
+   * console.log(roundSize); // {x: 10, y: 11}
+   */
+  round(): Size
+
+  /**
+   * Returns a new size with the nearest greater non-fractional values to the
+   * specified {@link #width} and {@link #height} values. The object itself is
+   * not modified!
+   *
+   *
+   * @example
+   * var size = new Size(10.2, 10.9);
+   * var ceilSize = size.ceil();
+   * console.log(ceilSize); // {x: 11, y: 11}
+   */
+  ceil(): Size
+
+  /**
+   * Returns a new size with the nearest smaller non-fractional values to the
+   * specified {@link #width} and {@link #height} values. The object itself is
+   * not modified!
+   *
+   *
+   * @example
+   * var size = new Size(10.2, 10.9);
+   * var floorSize = size.floor();
+   * console.log(floorSize); // {x: 10, y: 10}
+   */
+  floor(): Size
+
+  /**
+   * Returns a new size with the absolute values of the specified
+   * {@link #width} and {@link #height} values. The object itself is not
+   * modified!
+   *
+   *
+   * @example
+   * var size = new Size(-5, 10);
+   * var absSize = size.abs();
+   * console.log(absSize); // {x: 5, y: 10}
+   */
+  abs(): Size
 }
 
 /**
