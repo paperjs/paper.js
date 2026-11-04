@@ -13,10 +13,39 @@
     "Jürg Lehni <juerg@scratchdisk.com> (http://scratchdisk.com)",
     "Jonathan Puckey <jonathan@puckey.studio> (http://studiomoniker.com)"
   ],
-  "main": "dist/paper-full.js",
-  "types": "dist/paper.d.ts",
+  "type": "module",
+  "main": "./dist/esm/paper.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/esm/paper.js"
+    },
+    "./core": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/esm/paper.js"
+    },
+    "./paperscript": {
+      "types": "./dist/types/paperscript/index.d.ts",
+      "default": "./dist/esm/paperscript.js"
+    },
+    "./node": {
+      "types": "./dist/types/node/index.d.ts",
+      "default": "./dist/esm/node.js"
+    },
+    "./hosted": {
+      "types": "./dist/types/hosted/index.d.ts",
+      "default": "./dist/esm/hosted.js"
+    },
+    "./dist/paper-core": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/esm/paper.js"
+    },
+    "./dist/*.js": "./dist/*.js",
+    "./package.json": "./package.json"
+  },
   "scripts": {
-    "build": "node build.mjs",
+    "build": "node build.mjs && tsc -p tsconfig.build.json",
     "dist": "gulp dist",
     "zip": "gulp zip",
     "docs": "gulp docs",
@@ -25,7 +54,7 @@
     "eslint": "eslint src test '*.mjs'",
     "test": "vitest run --project node --project browser",
     "test:browser": "vitest run --project browser",
-    "test:coverage": "PAPER_BUILD=load vitest run --project node --project browser --coverage --testTimeout=60000",
+    "test:coverage": "vitest run --project node --project browser --coverage --testTimeout=60000",
     "test:node": "vitest run --project node",
     "test:screenshots": "sh test/screenshots/docker.sh",
     "prepare": "husky"
@@ -33,35 +62,22 @@
   "files": [
     "AUTHORS.md",
     "CHANGELOG.md",
+    "dist/esm/",
     "dist/paper-*.js",
     "dist/paper-*.js.map",
-    "dist/*.d.ts",
-    "dist/node/*",
-    "dist/docs/**",
-    "examples/",
+    "dist/types/",
     "LICENSE.txt",
     "README.md"
   ],
   "engines": {
-    "node": ">=8.0.0"
-  },
-  "browser": {
-    "./dist/node/extend.js": "./dist/node/browser.js",
-    "./dist/node/self.js": "./dist/node/browser.js",
-    "canvas": false,
-    "jsdom": false,
-    "jsdom/lib/generated/idl/utils": false,
-    "jsdom/lib/jsdom/living/generated/utils": false,
-    "source-map-support": false
+    "node": ">=22.22.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@jridgewell/remapping": "^2.3.5",
     "@napi-rs/canvas": "^1.1.0",
     "@vitest/browser-playwright": "^5.0.5",
     "@vitest/coverage-v8": "^5.0.5",
     "ansi-colors": "^4.1.3",
-    "canvas": "^3.2.3",
     "del": "^5.1.0",
     "eslint": "^10.13.0",
     "eslint-config-prettier": "^10.1.8",
@@ -77,21 +93,18 @@
     "gulp-zip": "^5.1.0",
     "happy-dom": "^21.0.4",
     "husky": "^9.1.7",
-    "jsdom": "^28.1.0",
     "merge-stream": "^2.0.0",
     "minimist": "^1.2.8",
     "mustache": "^4.2.0",
-    "oxc-minify": "^0.156.0",
     "playwright": "^1.64.1",
-    "prepro": "^2.5.0",
     "prettier": "^3.9.10",
     "prettier-plugin-penere": "^0.5.0",
     "require-dir": "^1.2.0",
     "resemblejs": "^3.2.5",
+    "rolldown": "1.2.14",
     "run-sequence": "^2.2.1",
     "source-map-support": "^0.5.21",
     "stats.js": "^0.17.0",
-    "straps": "^3.0.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.72.1",
     "vitest": "^5.0.5"
@@ -116,5 +129,17 @@
   "packageManager": "pnpm@12.9.0",
   "dependencies": {
     "acorn": "~8.15.0"
+  },
+  "peerDependencies": {
+    "@napi-rs/canvas": "^1.1.0",
+    "happy-dom": "^21.0.4"
+  },
+  "peerDependenciesMeta": {
+    "@napi-rs/canvas": {
+      "optional": true
+    },
+    "happy-dom": {
+      "optional": true
+    }
   }
 }
