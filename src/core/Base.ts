@@ -16,6 +16,9 @@ import { exportJSON, serialize } from './serialization.ts'
  * @private
  */
 export class Base {
+  // The name of the class, which registerClasses() defines on its prototype:
+  declare readonly className: string
+
   /**
    * Exports (serializes) this object to a JSON data object or string.
    *
