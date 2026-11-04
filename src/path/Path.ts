@@ -52,6 +52,8 @@ import { Curve } from './Curve.ts'
 import { CurveLocation } from './CurveLocation.ts'
 import { PathFlattener } from './PathFlattener.ts'
 import { PathFitter } from './PathFitter.ts'
+import { defineConstructors } from './Path.Constructors.ts'
+import { defineStrokeProfile } from './Path.StrokeProfile.ts'
 
 /**
  * The path item represents a path in a Paper.js project.
@@ -178,7 +180,7 @@ export class Path extends PathItem {
     this._initialize(!segments && !isPathData && arg)
   }
 
-  _equals(item: Path): boolean {
+  _equals(item: Item): boolean {
     return (
       this._closed === item._closed &&
       equals(this._segments, item._segments) &&
@@ -186,7 +188,7 @@ export class Path extends PathItem {
     )
   }
 
-  copyContent(source: Path) {
+  copyContent(source: this) {
     const profile = source._strokeProfile
     this.segments = source._segments
     this._closed = source._closed
@@ -2963,6 +2965,8 @@ export class Path extends PathItem {
   }
 
   static {
+    defineConstructors(this)
+    defineStrokeProfile(this)
     Object.assign(this.prototype, {
       _serializeFields: {
         ...PathItem.prototype._serializeFields,

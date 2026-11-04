@@ -77,7 +77,7 @@ export class PathText extends TextItem {
     }
   }
 
-  copyContent(source: PathText) {
+  copyContent(source: this) {
     super.copyContent(source)
     for (const name in fields) {
       const key = `_${name}`

@@ -93,7 +93,7 @@ export class AreaText extends TextItem {
     }
   }
 
-  copyContent(source: AreaText) {
+  copyContent(source: this) {
     super.copyContent(source)
     for (const name in fields) {
       const key = `_${name}`
