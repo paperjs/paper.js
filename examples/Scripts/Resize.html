@@ -26,10 +26,10 @@
 
         function onResize(event) {
             // Resize the red circle to fill the bounds of the view:
-            redPath.fitBounds(view.bounds, true);
+            redPath.fitBounds(view.bounds, 'cover');
 
             // Resize the white circle to fit within the bounds of the view:
-            whitePath.fitBounds(view.bounds, false);
+            whitePath.fitBounds(view.bounds);
 
             // Move the text to the center of the view:
             text.position = view.bounds.center;
