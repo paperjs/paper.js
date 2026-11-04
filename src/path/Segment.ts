@@ -48,6 +48,8 @@ export type SegmentLike =
   | SegmentProps
   // A point with its handles, as JSON stores segments:
   | [PointLike, PointLike?, PointLike?]
+  // The coordinates of a point and its handles, flat:
+  | number[]
 
 /**
  * The Segment object represents the points of a path through which its
@@ -837,17 +839,26 @@ export class Segment extends Base {
 
   /**
    * Returns the passed segment if it is one already, or else a new segment
-   * created from the passed value: an array of a point and its handles, or
+   * created from the passed value: an array of a point and its handles, a
+   * flat array of their coordinates, `[x, y, inX, inY, outX, outY]`, or
    * anything that {@link Segment()} reads.
    *
    * @param segment
    */
   static from(segment: SegmentLike): Segment {
-    return segment instanceof Segment
-      ? segment
-      : Array.isArray(segment) && typeof segment[0] === 'object'
-        ? new Segment(...(segment as [PointLike, PointLike, PointLike]))
-        : new Segment(segment as any)
+    if (segment instanceof Segment) {
+      return segment
+    } else if (Array.isArray(segment)) {
+      return typeof segment[0] === 'number' && segment.length > 2
+        ? new Segment(
+            segment.slice(0, 2) as number[],
+            segment.slice(2, 4) as number[],
+            segment.slice(4, 6) as number[]
+          )
+        : new Segment(...(segment as [PointLike, PointLike, PointLike]))
+    } else {
+      return new Segment(segment as any)
+    }
   }
 
   static {
