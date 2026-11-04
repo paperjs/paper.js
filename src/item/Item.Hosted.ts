@@ -1386,8 +1386,7 @@ function reloadDefinition(project: Project, definition: Definition) {
     : new (definition.constructor as new (item: Item) => Definition)(
         new Group({ insert: false })
       )
-  // The loaded item is where its definition placed it:
-  definition._setItem(loaded._item, true)
+  definition._setItem(loaded._item)
   definition._name = loaded._name
   if (definition instanceof PatternDefinition) {
     definition.tile = loaded._tile

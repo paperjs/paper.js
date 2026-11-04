@@ -15,7 +15,6 @@ import {
   Change,
   ChangeFlag,
   Item,
-  Point,
   getUID,
   paper
 } from '../internal.ts'
@@ -25,8 +24,6 @@ import type { Project } from './Project.ts'
 // item outside of the scene graph that other items draw. The item refers back
 // to its definition through Item#_symbol, which Item#_changed() notifies:
 export class ItemDefinition extends Base {
-  // Definitions that center their items move them to 0, 0, see #_setItem():
-  declare _centerItem: boolean
   declare _name: string
   // Read by the dictionary of JSON and by Project:
   _id: number
@@ -82,7 +79,7 @@ export class ItemDefinition extends Base {
     this._setItem(item)
   }
 
-  _setItem(item: Item, _dontCenter?: boolean) {
+  _setItem(item: Item) {
     // Make sure we're not stealing another definition's item
     const ownItem = item._symbol ? item.clone() : item
     // Remove previous item's reference to this definition
@@ -93,17 +90,11 @@ export class ItemDefinition extends Base {
     // Remove item from DOM, as it's embedded in the definition now.
     ownItem.remove()
     ownItem.selected = false
-    if (this._centerItem && !_dontCenter) {
-      ownItem.position = new Point()
-    }
     ownItem._symbol = this
     this._changed(Change.GEOMETRY)
   }
 
   static {
-    Object.assign(this.prototype, {
-      _centerItem: false,
-      _name: null
-    })
+    this.prototype._name = null
   }
 }

@@ -1104,6 +1104,7 @@ describe('Item Bounds', () => {
 
   test('symbolItem.bounds with strokeScaling disabled', () => {
     const path = new Path.Rectangle({
+      center: [0, 0],
       size: [20, 20],
       strokeWidth: 10,
       strokeColor: 'red',
@@ -1385,7 +1386,7 @@ describe('Item Bounds', () => {
       applyMatrix: false
     })
     path.translate(-100, 0)
-    const symbol = new SymbolItem(new SymbolDefinition(path, true))
+    const symbol = new SymbolItem(new SymbolDefinition(path))
     symbol.translate(100, 0)
     equals(symbol.bounds, new Rectangle(100, 0, 50, 50), 'symbol.bounds')
     equals(path.bounds, new Rectangle(0, 0, 50, 50), 'path.bounds')
@@ -1552,10 +1553,10 @@ describe('Item Bounds', () => {
   })
 
   test('group.bounds after changing the symbol definition (#940)', () => {
-    // The definition's item is centered: Rectangle(-5, -5, 10, 10)
+    // The definition's item: Rectangle(-5, -5, 10, 10)
     const definition = new SymbolDefinition(
         new Path.Rectangle({
-          point: [0, 0],
+          point: [-5, -5],
           size: [10, 10],
           fillColor: 'red',
           strokeColor: 'black',
@@ -1626,8 +1627,8 @@ describe('Item Bounds', () => {
       'layer.bounds after moving a segment of the definition'
     )
 
-    // Replacing the definition's item, centered: Rectangle(-20, -20, 40, 40)
-    definition.item = new Path.Circle({ center: [100, 100], radius: 20 })
+    // Replacing the definition's item: Rectangle(-20, -20, 40, 40)
+    definition.item = new Path.Circle({ center: [0, 0], radius: 20 })
     equals(
       group.bounds,
       new Rectangle(30, 30, 90, 40),
@@ -1772,7 +1773,7 @@ describe('Item Bounds', () => {
     )
 
     const definition = new Shape.Rectangle({
-      point: [0, 0],
+      center: [0, 0],
       size: [10, 10],
       strokeColor: 'black',
       strokeWidth: 2

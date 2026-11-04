@@ -149,7 +149,7 @@ describe('JSON', () => {
 
   test('Symbol items write their definition as definition', () => {
     const definition = new SymbolDefinition(
-      new Path.Rectangle({ point: [0, 0], size: [10, 10], fillColor: 'red' })
+      new Path.Rectangle({ point: [-5, -5], size: [10, 10], fillColor: 'red' })
     )
     const json = definition.place([100, 100]).exportJSON({ asString: false }),
       props = json[1][1]
@@ -162,7 +162,7 @@ describe('JSON', () => {
 
   test('Symbol and pattern definitions write their names', () => {
     const symbol = new SymbolDefinition(
-      new Path.Rectangle({ point: [0, 0], size: [10, 10], fillColor: 'red' })
+      new Path.Rectangle({ point: [-5, -5], size: [10, 10], fillColor: 'red' })
     )
     symbol.name = 'Star'
     const pattern = new PatternDefinition(
@@ -185,32 +185,12 @@ describe('JSON', () => {
     equals(filled.fillColor.pattern.spacing, new Size(0, 0))
   })
 
-  test('Symbol definitions take dontCenter in their options', () => {
-    const item = new Project().importJSON([
-      'SymbolItem',
-      {
-        definition: [
-          'SymbolDefinition',
-          ['Path', { segments: [[0, 0], [10, 0], [10, 10]] }],
-          { name: 'Star', dontCenter: true }
-        ]
-      }
-    ])
-    const definition = item.definition
-    equals(definition.name, 'Star')
-    equals(definition.item.bounds, new Rectangle(0, 0, 10, 10))
-    equals('dontCenter' in definition, false)
-  })
-
   test('Symbol definitions keep their items in place', () => {
-    const centered = new SymbolDefinition(
+    const definition = new SymbolDefinition(
       new Path.Rectangle({ point: [0, 0], size: [10, 10] })
     )
-    equals(centered.exportJSON({ asString: false }).length, 2)
-    const definition = new SymbolDefinition(
-      new Path.Rectangle({ point: [0, 0], size: [10, 10] }),
-      true
-    )
+    // Without a name, the definition writes only its item:
+    equals(definition.exportJSON({ asString: false }).length, 2)
     const item = new Project().importJSON(
       definition.place([100, 100]).exportJSON()
     )
