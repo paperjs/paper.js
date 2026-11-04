@@ -24,6 +24,7 @@ import {
   capitalize,
   equals,
   isPlainObject,
+  isRectangle,
   paper,
   readEllipse,
   readRectangle
@@ -462,7 +463,8 @@ export class Shape extends Item {
   }
 
   _getBounds(matrix: Matrix, options: BoundsOptions): Rectangle {
-    const { width, height } = this._size
+    // set() may transform the shape before it sets its size:
+    const { width, height } = this._size ?? new Size()
     let rect = new Rectangle(-width / 2, -height / 2, width, height)
     const style = this._style
     const strokeRadius = (
@@ -602,16 +604,9 @@ function createShape(
   radius: number | Size,
   props: object
 ): Shape {
-  // Set the type first, as size and radius depend on it, see #_prioritize:
-  return new Shape({ type, size, radius, ...props }, center)
-}
-
-// Tells whether the value describes a rectangle, rather than a point:
-function isRectangle(value: any): boolean {
-  return (
-    value instanceof Rectangle ||
-    (Array.isArray(value) ? value.length === 4 : value.width !== undefined)
-  )
+  // The geometry overrides what the properties hold for it, e.g. the
+  // undefined size of Path#toShape(). #_prioritize sets the type first:
+  return new Shape({ ...props, type, size, radius }, center)
 }
 
 // Returns the center of the quarter corner ellipse for rounded rectangle, if

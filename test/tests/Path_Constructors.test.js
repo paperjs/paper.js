@@ -11,12 +11,21 @@
  */
 
 import { describe } from 'vitest'
-import paper, { Group, Path, Point, Project, Rectangle } from 'paper'
+import paper, { Group, Path, Point, Project, Rectangle, Size } from 'paper'
 import { equals, test } from '../helpers.js'
 
 describe('Path Constructors', () => {
   test('new Path.Rectangle([50, 50], [100, 100])', () => {
     const path = new Path.Rectangle([50, 50], [100, 100])
+    equals(
+      path.segments.toString(),
+      '{ point: { x: 50, y: 150 } },{ point: { x: 50, y: 50 } },{ point: { x: 150, y: 50 } },{ point: { x: 150, y: 150 } }'
+    )
+  })
+
+  test('new Path.Rectangle(new Size(50, 50), new Size(100, 100))', () => {
+    // Like any value without an x, the size is the point:
+    const path = new Path.Rectangle(new Size(50, 50), new Size(100, 100))
     equals(
       path.segments.toString(),
       '{ point: { x: 50, y: 150 } },{ point: { x: 50, y: 50 } },{ point: { x: 150, y: 50 } },{ point: { x: 150, y: 150 } }'
