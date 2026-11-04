@@ -19,7 +19,6 @@ import { Point, LinkedPoint } from './Point.ts'
 import type { PointLike } from './Point.ts'
 import { Size, LinkedSize } from './Size.ts'
 import type { SizeLike } from './Size.ts'
-import { RectangleBuilder } from './RectangleBuilder.ts'
 
 /**
  * What a rectangle can be passed as, where a function takes one.
@@ -410,67 +409,6 @@ export class Rectangle extends Base {
       ? new Point(this.centerX, this.centerY)
       : new LinkedPoint(this.centerX, this.centerY, this, 'center')
   }
-
-  /**
-   * The top-left point of the rectangle. Note that this doesn't move the
-   * whole rectangle; the bottom-right corner stays where it was.
-   */
-  declare topLeft: Point
-
-  /**
-   * The top-right point of the rectangle. Note that this doesn't move the
-   * whole rectangle; the bottom-left corner stays where it was.
-   */
-  declare topRight: Point
-
-  /**
-   * The bottom-left point of the rectangle. Note that this doesn't move the
-   * whole rectangle; the top-right corner stays where it was.
-   */
-  declare bottomLeft: Point
-
-  /**
-   * The bottom-right point of the rectangle. Note that this doesn't move the
-   * whole rectangle; the top-left corner stays where it was.
-   */
-  declare bottomRight: Point
-
-  /**
-   * The left-center point of the rectangle. Setting it moves the left hand
-   * side while the right hand side stays where it was, and moves the whole
-   * rectangle vertically.
-   */
-  declare leftCenter: Point
-
-  /**
-   * The top-center point of the rectangle. Setting it moves the top while
-   * the bottom stays where it was, and moves the whole rectangle
-   * horizontally.
-   */
-  declare topCenter: Point
-
-  /**
-   * The right-center point of the rectangle. Setting it moves the right
-   * hand side while the left hand side stays where it was, and moves the
-   * whole rectangle vertically.
-   */
-  declare rightCenter: Point
-
-  /**
-   * The bottom-center point of the rectangle. Setting it moves the bottom
-   * while the top stays where it was, and moves the whole rectangle
-   * horizontally.
-   */
-  declare bottomCenter: Point
-
-  declare _getTopLeft: (_dontLink?: boolean) => Point
-  declare _getTopRight: (_dontLink?: boolean) => Point
-  declare _getBottomLeft: (_dontLink?: boolean) => Point
-  declare _getBottomRight: (_dontLink?: boolean) => Point
-  declare _getLeftCenter: (_dontLink?: boolean) => Point
-  declare _getTopCenter: (_dontLink?: boolean) => Point
-  declare _getRightCenter: (_dontLink?: boolean) => Point
-  declare _getBottomCenter: (_dontLink?: boolean) => Point
 
   /**
    * The area of the rectangle.
@@ -884,6 +822,78 @@ export class Rectangle extends Base {
   }
 }
 
+// The members defined at runtime rather than in the class body:
+export interface Rectangle {
+  /**
+   * The top-left point of the rectangle. Note that this doesn't move the
+   * whole rectangle; the bottom-right corner stays where it was.
+   */
+  get topLeft(): Point
+  set topLeft(point: PointLike)
+
+  /**
+   * The top-right point of the rectangle. Note that this doesn't move the
+   * whole rectangle; the bottom-left corner stays where it was.
+   */
+  get topRight(): Point
+  set topRight(point: PointLike)
+
+  /**
+   * The bottom-left point of the rectangle. Note that this doesn't move the
+   * whole rectangle; the top-right corner stays where it was.
+   */
+  get bottomLeft(): Point
+  set bottomLeft(point: PointLike)
+
+  /**
+   * The bottom-right point of the rectangle. Note that this doesn't move the
+   * whole rectangle; the top-left corner stays where it was.
+   */
+  get bottomRight(): Point
+  set bottomRight(point: PointLike)
+
+  /**
+   * The left-center point of the rectangle. Setting it moves the left hand
+   * side while the right hand side stays where it was, and moves the whole
+   * rectangle vertically.
+   */
+  get leftCenter(): Point
+  set leftCenter(point: PointLike)
+
+  /**
+   * The top-center point of the rectangle. Setting it moves the top while
+   * the bottom stays where it was, and moves the whole rectangle
+   * horizontally.
+   */
+  get topCenter(): Point
+  set topCenter(point: PointLike)
+
+  /**
+   * The right-center point of the rectangle. Setting it moves the right
+   * hand side while the left hand side stays where it was, and moves the
+   * whole rectangle vertically.
+   */
+  get rightCenter(): Point
+  set rightCenter(point: PointLike)
+
+  /**
+   * The bottom-center point of the rectangle. Setting it moves the bottom
+   * while the top stays where it was, and moves the whole rectangle
+   * horizontally.
+   */
+  get bottomCenter(): Point
+  set bottomCenter(point: PointLike)
+
+  _getTopLeft(_dontLink?: boolean): Point
+  _getTopRight(_dontLink?: boolean): Point
+  _getBottomLeft(_dontLink?: boolean): Point
+  _getBottomRight(_dontLink?: boolean): Point
+  _getLeftCenter(_dontLink?: boolean): Point
+  _getTopCenter(_dontLink?: boolean): Point
+  _getRightCenter(_dontLink?: boolean): Point
+  _getBottomCenter(_dontLink?: boolean): Point
+}
+
 /**
  * An internal version of Rectangle that notifies its owner of each change
  * through setting itself again on the property that produced it.
@@ -1034,5 +1044,143 @@ export class LinkedRectangle extends Rectangle {
         }
       })
     }
+  }
+}
+
+// Reads object literals such as `{ right: 100, width: 50 }` in any order: The
+// first side or center set per axis moves the rectangle and keeps its size,
+// further ones change the size.
+class RectangleBuilder extends Rectangle {
+  // #fixWidth / #fixHeight protect the width / height against changes. They
+  // are on by default, and switched off once properties are used that change
+  // the outside of the rectangle, so combinations of: left / top / right /
+  // bottom.
+  // #anchorX / #anchorY can either be 0 (left), 0.5 (center) or 1 (right),
+  // and are used as direct factors to calculate the x / y adjustments from
+  // the size differences.
+  #fixWidth = true
+  #fixHeight = true
+  #anchorX = 0
+  #anchorY = 0
+
+  constructor(object: object) {
+    super()
+    // Set the supported properties in the order of the object:
+    for (const [key, value] of Object.entries(object)) {
+      if (key in this && value !== undefined) {
+        this[key] = value
+      }
+    }
+  }
+
+  get size(): Size {
+    return super.size
+  }
+
+  set size(size: SizeLike) {
+    const { width, height } = Size.from(size)
+    if (this.#anchorX) {
+      this.x += (this.width - width) * this.#anchorX
+    }
+    if (this.#anchorY) {
+      this.y += (this.height - height) * this.#anchorY
+    }
+    this.width = width
+    this.height = height
+    this.#fixWidth = this.#fixHeight = true
+  }
+
+  get left(): number {
+    return super.left
+  }
+
+  set left(left: number) {
+    if (!this.#fixWidth) {
+      const amount = left - this.x
+      this.width -= this.#anchorX === 0.5 ? amount * 2 : amount
+    }
+    this.x = left
+    this.#anchorX = 0
+    this.#fixWidth = false
+  }
+
+  get top(): number {
+    return super.top
+  }
+
+  set top(top: number) {
+    if (!this.#fixHeight) {
+      const amount = top - this.y
+      this.height -= this.#anchorY === 0.5 ? amount * 2 : amount
+    }
+    this.y = top
+    this.#anchorY = 0
+    this.#fixHeight = false
+  }
+
+  get right(): number {
+    return super.right
+  }
+
+  set right(right: number) {
+    if (!this.#fixWidth) {
+      const amount = right - this.x
+      this.width = this.#anchorX === 0.5 ? amount * 2 : amount
+    }
+    this.x = right - this.width
+    this.#anchorX = 1
+    this.#fixWidth = false
+  }
+
+  get bottom(): number {
+    return super.bottom
+  }
+
+  set bottom(bottom: number) {
+    if (!this.#fixHeight) {
+      const amount = bottom - this.y
+      this.height = this.#anchorY === 0.5 ? amount * 2 : amount
+    }
+    this.y = bottom - this.height
+    this.#anchorY = 1
+    this.#fixHeight = false
+  }
+
+  get centerX(): number {
+    return super.centerX
+  }
+
+  set centerX(x: number) {
+    // If we're asked to fix the width or if #anchorX is already in center
+    // mode, just keep moving the center.
+    if (this.#fixWidth || this.#anchorX === 0.5) {
+      this.x = x - this.width / 2
+    } else {
+      if (this.#anchorX) {
+        this.x += (x - this.x) * 2 * this.#anchorX
+      }
+      this.width = (x - this.x) * 2
+    }
+    this.#anchorX = 0.5
+    this.#fixWidth = false
+  }
+
+  get centerY(): number {
+    return super.centerY
+  }
+
+  set centerY(y: number) {
+    // If we're asked to fix the height or if #anchorY is already in center
+    // mode, just keep moving the center.
+    if (this.#fixHeight || this.#anchorY === 0.5) {
+      this.y = y - this.height / 2
+    } else {
+      if (this.#anchorY) {
+        this.y += (y - this.y) * 2 * this.#anchorY
+      }
+      this.height = (y - this.y) * 2
+    }
+    this.#anchorY = 0.5
+    this.#fixHeight = false
   }
 }
