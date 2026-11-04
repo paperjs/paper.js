@@ -26,7 +26,19 @@ import { Segment } from './Segment.ts'
 import type { SegmentLike } from './Segment.ts'
 import { Path } from './Path.ts'
 import { CompoundPath } from './CompoundPath.ts'
-import { getWinding } from './PathItem.Boolean.ts'
+import {
+  closePaths,
+  createGraph,
+  createResult,
+  getInteriorPoint,
+  getOperands,
+  getWinding,
+  reorientPaths,
+  splitBoolean,
+  traceBoolean,
+  tracePaths
+} from './PathItem.Boolean.ts'
+import type { BooleanOptions, Graph, Winding } from './PathItem.Boolean.ts'
 
 /**
  * The PathItem class is the base for any items that describe paths and
@@ -284,7 +296,7 @@ export abstract class PathItem extends Item {
     // Check the transformed point against the untransformed (internal)
     // handle bounds, which is the fastest rough bounding box to calculate
     // for a quick check before calculating the actual winding.
-    const winding = point.isInside(
+    const winding: Partial<Winding> = point.isInside(
       this.getBounds(null, { internal: true, handle: true })
     )
       ? getWinding(point, this.curves)
@@ -1223,6 +1235,236 @@ export abstract class PathItem extends Item {
    * @param to the destination point of the newly added curve
    */
   abstract quadraticCurveBy(handle: PointLike, to: PointLike): void
+
+  /**
+   * {@grouptitle Boolean Path Operations}
+   *
+   * Unites the geometry of the specified path with this path's geometry
+   * and returns the result as a new path item. With an array of paths,
+   * the result covers the areas inside any of them or this path. Each
+   * path keeps its own fill rule.
+   *
+   * @option [options.insert=true] {Boolean} whether the resulting item
+   *     should be inserted back into the scene graph, above all paths
+   *     involved in the operation
+   *
+   * @param path the path or paths to unite with
+   * @param options the boolean operation options
+   * @return the resulting path item
+   *
+   * @example {@paperscript}
+   * var result = new Path.RegularPolygon([50, 50], 3, 40)
+   *     .unite(new Path.Circle([50, 50], 25));
+   * result.fillColor = 'red';
+   *
+   * @example {@paperscript}
+   * // Uniting many paths at once:
+   * var circles = [];
+   * for (var i = 0; i < 6; i++) {
+   *     circles.push(new Path.Circle([30 + i * 20, 50], 20));
+   * }
+   * var result = circles[0].unite(circles.slice(1));
+   * result.fillColor = 'red';
+   */
+  unite(path?: PathItem | PathItem[], options?: BooleanOptions): PathItem {
+    return traceBoolean(this, path, 'unite', options)
+  }
+
+  /**
+   * Intersects the geometry of the specified path with this path's
+   * geometry and returns the result as a new path item. With an array of
+   * paths, the result covers the areas inside all of them and this path.
+   * Each path keeps its own fill rule.
+   *
+   * @option [options.insert=true] {Boolean} whether the resulting item
+   *     should be inserted back into the scene graph, above all paths
+   *     involved in the operation
+   * @option [options.trace=true] {Boolean} whether the tracing method is
+   *     used, treating all paths as areas when determining which parts
+   *     of the paths are to be kept in the result, or whether the first
+   *     path is only to be split at intersections, keeping the parts of
+   *     the curves that intersect with the areas of all other paths.
+   *
+   * @param path the path or paths to intersect
+   *     with
+   * @param options the boolean operation options
+   * @return the resulting path item
+   *
+   * @example {@paperscript}
+   * var result = new Path.RegularPolygon([50, 50], 3, 40)
+   *     .intersect(new Path.Circle([50, 50], 25));
+   * result.fillColor = 'red';
+   */
+  intersect(path: PathItem | PathItem[], options?: BooleanOptions): PathItem {
+    return traceBoolean(this, path, 'intersect', options)
+  }
+
+  /**
+   * Subtracts the geometry of the specified path from this path's
+   * geometry and returns the result as a new path item. With an array of
+   * paths, the result covers the areas inside this path and outside all
+   * of them. Each path keeps its own fill rule.
+   *
+   * @option [options.insert=true] {Boolean} whether the resulting item
+   *     should be inserted back into the scene graph, above all paths
+   *     involved in the operation
+   * @option [options.trace=true] {Boolean} whether the tracing method is
+   *     used, treating all paths as areas when determining which parts
+   *     of the paths are to be kept in the result, or whether the first
+   *     path is only to be split at intersections, removing the parts of
+   *     the curves that intersect with the area of any other path.
+   *
+   * @param path the path or paths to subtract
+   * @param options the boolean operation options
+   * @return the resulting path item
+   *
+   * @example {@paperscript}
+   * var result = new Path.RegularPolygon([50, 50], 3, 40)
+   *     .subtract(new Path.Circle([50, 50], 25));
+   * result.fillColor = 'red';
+   */
+  subtract(path: PathItem | PathItem[], options?: BooleanOptions): PathItem {
+    return traceBoolean(this, path, 'subtract', options)
+  }
+
+  /**
+   * Excludes the intersection of the geometry of the specified path with
+   * this path's geometry and returns the result as a new path item. With
+   * an array of paths, the result covers the areas inside an odd number
+   * of the paths, this one included. Each path keeps its own fill rule.
+   *
+   * @option [options.insert=true] {Boolean} whether the resulting item
+   *     should be inserted back into the scene graph, above all paths
+   *     involved in the operation
+   *
+   * @param path the path or paths to exclude the
+   *     intersection of
+   * @param options the boolean operation options
+   * @return the resulting path item
+   *
+   * @example {@paperscript}
+   * var result = new Path.RegularPolygon([50, 50], 3, 40)
+   *     .exclude(new Path.Circle([50, 50], 25));
+   * result.fillColor = 'red';
+   */
+  exclude(path: PathItem | PathItem[], options?: BooleanOptions): PathItem {
+    return traceBoolean(this, path, 'exclude', options)
+  }
+
+  /**
+   * Splits the geometry of this path along the geometry of the specified
+   * path returns the result as a new group item. This is equivalent to
+   * calling {@link #subtract(path)} and {@link #intersect(path)} and
+   * putting the results into a new group.
+   *
+   * @option [options.insert=true] {Boolean} whether the resulting item
+   *     should be inserted back into the scene graph, above both paths
+   *     involved in the operation
+   * @option [options.trace=true] {Boolean} whether the tracing method is
+   *     used, treating both paths as areas when determining which parts
+   *     of the paths are to be kept in the result, or whether the first
+   *     path is only to be split at intersections.
+   *
+   * @param path the path to divide by
+   * @param options the boolean operation options
+   * @return the resulting path item
+   */
+  divide(path: PathItem, options?: BooleanOptions): PathItem {
+    return options && (options.trace == false || options.stroke)
+      ? splitBoolean(this, path, 'divide', options)
+      : createResult(
+          [this.subtract(path, options), this.intersect(path, options)],
+          true,
+          this,
+          path,
+          options
+        )
+  }
+
+  /*
+   * Resolves all crossings of a path item by splitting the path or
+   * compound-path in each self-intersection and tracing the result.
+   * If possible, the existing path / compound-path is modified if the
+   * amount of resulting paths allows so, otherwise a new path /
+   * compound-path is created, replacing the current one.
+   *
+   * @return the resulting path item
+   */
+  resolveCrossings(): PathItem {
+    const children = this._children
+    // Trace the outline of the area that the path item fills
+    // according to its fill rule, without the curves inside it:
+    const paths = tracePaths([closePaths(this.clone(false))], inside => inside)
+    // Determine how to return the paths: First try to recycle the
+    // current path / compound-path, if the amount of paths does not
+    // require a conversion.
+    const { length } = paths
+    let item: PathItem
+    if (length > 1 && children) {
+      if (paths !== children) {
+        this.children = paths
+      }
+      item = this
+    } else if (length === 1 && !children) {
+      const path = this as PathItem as Path
+      if (paths[0] !== path) {
+        path.segments = paths[0].removeSegments()
+      }
+      item = this
+    }
+    // Otherwise create a new compound-path and see if we can reduce it,
+    // and attempt to replace this item with it.
+    if (!item) {
+      const compound = new CompoundPath(Item.NO_INSERT)
+      compound.addChildren(paths)
+      item = compound.reduce() as PathItem
+      item.copyAttributes(this)
+      this.replaceWith(item)
+    }
+    return item
+  }
+
+  /**
+   * Fixes the orientation of the sub-paths of a compound-path, assuming
+   * that non of its sub-paths intersect, by reorienting them so that they
+   * are of different winding direction than their containing paths,
+   * except for disjoint sub-paths, i.e. islands, which are oriented so
+   * that they have the same winding direction as the the biggest path.
+   *
+   * @param [nonZero=false] controls if the non-zero fill-rule
+   *     is to be applied, by counting the winding of each nested path and
+   *     discarding sub-paths that do not contribute to the final result
+   * @param clockwise if provided, the orientation of the root
+   *     paths will be set to the orientation specified by `clockwise`,
+   *     otherwise the orientation of the largest root child is used.
+   * @return a reference to the item itself, reoriented
+   */
+  reorient(nonZero?: boolean, clockwise?: boolean): this {
+    const children = this._children
+    if (children && children.length) {
+      this.children = reorientPaths(
+        this.removeChildren() as PathItem[],
+        // Handle both even-odd and non-zero rule.
+        winding => !!(nonZero ? winding : winding & 1),
+        clockwise
+      )
+    } else if (clockwise !== undefined) {
+      this.clockwise = clockwise
+    }
+    return this
+  }
+
+  /**
+   * Returns a point that is guaranteed to be inside the path.
+   */
+  get interiorPoint(): Point {
+    return getInteriorPoint(this)
+  }
+
+  // The graph of a boolean operation, to check its planarity in the tests:
+  static _createGraph(path1: PathItem, path2?: PathItem): Graph {
+    return createGraph(getOperands(path1, path2))
+  }
 
   // Documented in Path and CompoundPath, which both define them:
   abstract get closed(): boolean
