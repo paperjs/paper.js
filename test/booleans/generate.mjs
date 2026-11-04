@@ -15,7 +15,7 @@
 // by tiny amounts, and curves with loops and cusps. Returns them in the form
 // of the cases in issues.json.
 
-module.exports = function(paper, count, seed) {
+export default function(paper, count, seed) {
     var Path = paper.Path,
         Point = paper.Point,
         Segment = paper.Segment,
