@@ -808,21 +808,18 @@ export class Matrix extends Base {
 
   static {
     // Inject accessors for the values, that notify the owner of changes:
-    inject(
-      this.prototype,
-      ...['a', 'b', 'c', 'd', 'tx', 'ty'].map(key => {
-        const field = `_${key}`
-        return {
-          get [key]() {
-            return this[field]
-          },
-          set [key](value: number) {
-            this[field] = value
-            this.#changed()
-          }
+    for (const key of ['a', 'b', 'c', 'd', 'tx', 'ty']) {
+      const field = `_${key}`
+      inject(this.prototype, {
+        get [key]() {
+          return this[field]
+        },
+        set [key](value: number) {
+          this[field] = value
+          this.#changed()
         }
       })
-    )
+    }
   }
 }
 
