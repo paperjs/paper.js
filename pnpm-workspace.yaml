@@ -12,7 +12,6 @@ linkWorkspacePackages: true
 # compromised releases. Exempt Jürg's own packages:
 minimumReleaseAgeExclude:
   - prepro
-  - gulp-prepro
   - straps
   - prettier-plugin-penere
 
