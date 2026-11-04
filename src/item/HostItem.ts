@@ -54,7 +54,7 @@ export class HostItem extends Item {
   _getBounds(matrix: Matrix, options: BoundsOptions): Rectangle {
     // The host's bounds also cover what it paints beyond the children:
     const rect = this._getHostBounds(options)
-    return matrix ? matrix._transformBounds(rect) : rect
+    return matrix?._transformBounds(rect) ?? rect
   }
 
   _hitTestSelf(point: Point, options: Record<string, any>): HitResult {

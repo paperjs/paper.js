@@ -135,6 +135,6 @@ export class PointText extends TextItem {
     if (options.stroke && strokeWidth) {
       rect = rect.expand(strokeWidth)
     }
-    return matrix ? matrix._transformBounds(rect, rect) : rect
+    return matrix?._transformBounds(rect, rect) ?? rect
   }
 }

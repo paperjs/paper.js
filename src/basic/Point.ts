@@ -516,7 +516,7 @@ export class Point extends Base {
    * @return the transformed point
    */
   transform(matrix: Matrix): Point {
-    return matrix ? matrix._transformPoint(this) : this
+    return matrix?._transformPoint(this) ?? this
   }
 
   /**

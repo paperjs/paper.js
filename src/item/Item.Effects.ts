@@ -167,7 +167,7 @@ inject(Item.prototype, {
       }
       if (bounds) {
         return (
-          matrix ? matrix.appended(this._matrix) : this._matrix
+          matrix?.appended(this._matrix) ?? this._matrix
         )._transformBounds(bounds)
       }
     }
