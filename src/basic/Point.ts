@@ -11,7 +11,7 @@
  */
 
 import { Base } from '../core/Base.ts'
-import { Numerical } from '../util/Numerical.ts'
+import { TRIGONOMETRIC_EPSILON, clamp, isZero } from '../util/numerical.ts'
 import { Formatter } from '../util/Formatter.ts'
 import { ItemSelection } from '../constants.ts'
 import { Rectangle } from './Rectangle.ts'
@@ -237,18 +237,6 @@ export class Point extends Base {
   }
 
   /**
-   * The x coordinate of the point
-   *
-   * @name Point#x
-   */
-
-  /**
-   * The y coordinate of the point
-   *
-   * @name Point#y
-   */
-
-  /**
    * Checks whether the coordinates of the point are equal to that of the
    * supplied point.
    *
@@ -296,15 +284,19 @@ export class Point extends Base {
    * @return a string representation of the point
    */
   toString(): string {
-    const f = Formatter.instance
-    return '{ x: ' + f.number(this.x) + ', y: ' + f.number(this.y) + ' }'
+    const { instance } = Formatter
+    return `{ x: ${
+      instance.number(this.x)
+    }, y: ${
+      instance.number(this.y)
+    } }`
   }
 
   _serialize(options: { formatter: Formatter }): number[] {
-    const f = options.formatter
+    const { formatter } = options
     // For speed reasons, we directly call formatter.number() here, instead
     // of converting array through serialize() which makes a copy.
-    return [f.number(this.x), f.number(this.y)]
+    return [formatter.number(this.x), formatter.number(this.y)]
   }
 
   /**
@@ -338,7 +330,7 @@ export class Point extends Base {
       const scale = length / this.length
       // Force calculation of angle now, so it will be preserved even when
       // x and y are 0
-      if (Numerical.isZero(scale)) {
+      if (isZero(scale)) {
         this.angle
       }
       this._set(
@@ -399,7 +391,7 @@ export class Point extends Base {
   getAngleInRadians(point: PointLike | number, y?: number): number {
     const other = Point.from(point, y)
     const div = this.length * other.length
-    if (Numerical.isZero(div)) {
+    if (isZero(div)) {
       return NaN
     } else {
       const a = this.dot(other) / div
@@ -787,7 +779,6 @@ export class Point extends Base {
    * @return {@true if both x and y are 0, within the tolerance}
    */
   isZero(): boolean {
-    const isZero = Numerical.isZero
     return isZero(this.x) && isZero(this.y)
   }
 
@@ -970,8 +961,8 @@ export class Point extends Base {
     const { x: minX, y: minY } = Point.from(min)
     const { x: maxX, y: maxY } = Point.from(max)
     return new Point(
-      Numerical.clamp(this.x, minX, maxX),
-      Numerical.clamp(this.y, minY, maxY)
+      clamp(this.x, minX, maxX),
+      clamp(this.y, minY, maxY)
     )
   }
 
@@ -1008,9 +999,9 @@ export class Point extends Base {
    * [point1, point2, point3].reduce(Point.min) // {x: 60, y: 5}
    */
   static min(point1: PointLike, point2: PointLike): Point {
-    const p1 = Point.from(point1)
-    const p2 = Point.from(point2)
-    return new Point(Math.min(p1.x, p2.x), Math.min(p1.y, p2.y))
+    const first = Point.from(point1)
+    const second = Point.from(point2)
+    return new Point(Math.min(first.x, second.x), Math.min(first.y, second.y))
   }
 
   /**
@@ -1035,9 +1026,9 @@ export class Point extends Base {
    * [point1, point2, point3].reduce(Point.max) // {x: 250, y: 100}
    */
   static max(point1: PointLike, point2: PointLike): Point {
-    const p1 = Point.from(point1)
-    const p2 = Point.from(point2)
-    return new Point(Math.max(p1.x, p2.x), Math.max(p1.y, p2.y))
+    const first = Point.from(point1)
+    const second = Point.from(point2)
+    return new Point(Math.max(first.x, second.x), Math.max(first.y, second.y))
   }
 
   /**
@@ -1058,10 +1049,8 @@ export class Point extends Base {
   }
 
   static isCollinear(
-    x1: number,
-    y1: number,
-    x2: number,
-    y2: number
+    x1: number, y1: number,
+    x2: number, y2: number
   ): boolean {
     // NOTE: We use normalized vectors so that the epsilon comparison is
     // reliable. We could instead scale the epsilon based on the vector
@@ -1070,21 +1059,19 @@ export class Point extends Base {
     return (
       Math.abs(x1 * y2 - y1 * x2) <=
       Math.sqrt((x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2)) *
-      Numerical.TRIGONOMETRIC_EPSILON
+      TRIGONOMETRIC_EPSILON
     )
   }
 
   static isOrthogonal(
-    x1: number,
-    y1: number,
-    x2: number,
-    y2: number
+    x1: number, y1: number,
+    x2: number, y2: number
   ): boolean {
     // See Point.isCollinear()
     return (
       Math.abs(x1 * x2 + y1 * y2) <=
       Math.sqrt((x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2)) *
-      Numerical.TRIGONOMETRIC_EPSILON
+      TRIGONOMETRIC_EPSILON
     )
   }
 
