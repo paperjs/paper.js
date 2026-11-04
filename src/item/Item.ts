@@ -1055,7 +1055,8 @@ export class Item extends Emitter {
       // the children can setup _boundsCache structures for it.
       opts.cacheItem = this
     }
-    return this._getCachedBounds(hasMatrix && (matrix as Matrix), opts).rect
+    return this._getCachedBounds(hasMatrix ? (matrix as Matrix) : null, opts)
+      .rect
   }
 
   /**
@@ -1201,7 +1202,7 @@ export class Item extends Emitter {
         }
       }
     }
-    return mx && mx._shiftless()
+    return mx?._shiftless() ?? null
   }
 
   /**
@@ -1311,7 +1312,7 @@ export class Item extends Emitter {
         const bounds = item._getCachedBounds(
           global
             ? item._getGlobalMatrix(true)
-            : matrix && matrix.appended(item._matrix),
+            : matrix?.appended(item._matrix),
           opts,
           true
         )
@@ -2076,7 +2077,7 @@ export class Item extends Emitter {
     const path1 = this._asPathItem()
     const path2 = item._asPathItem()
     const matrix1 = path1._matrix
-    const matrix2 = _matrix || path2._matrix
+    const matrix2 = _matrix ?? path2._matrix
 
     // Checks whether a point of any of the path's sub-paths lies inside
     // the other path, which then contains it, as the outlines don't cross:
@@ -2552,10 +2553,10 @@ export class Item extends Emitter {
     }
     const children = item._children
     const { items, rect } = param
-    const transform = rect && (matrix ?? new Matrix())
+    const transform = rect ? (matrix ?? new Matrix()) : null
     if (children) {
       for (const child of children) {
-        const childMatrix = transform && transform.appended(child._matrix)
+        const childMatrix = transform?.appended(child._matrix)
         let add = true
         if (rect) {
           const bounds = child.getBounds(childMatrix)
@@ -3858,9 +3859,9 @@ export class Item extends Emitter {
     const strokeMatrix = parentStrokeMatrix
       ? parentStrokeMatrix.appended(matrix)
       : // Pass `true` for dontMerge
-        this._canScaleStroke &&
-        !this._style._get('strokeScaling', true) &&
-        viewMatrix
+        this._canScaleStroke && !this._style._get('strokeScaling', true)
+        ? viewMatrix
+        : null
     // If we're drawing into a separate canvas and a clipItem is defined
     // for the current rendering loop, we need to draw the clip item
     // again.

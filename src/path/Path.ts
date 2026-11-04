@@ -2011,7 +2011,7 @@ export class Path extends PathItem {
     // non-scaling strokes in the view's coordinates, through the
     // inverted strokeMatrix that Item#_hitTest() passes, otherwise in
     // the item's own. Curve times are the same in both (#2334):
-    const strokeSpace = strokeMatrix && strokeMatrix.inverted()
+    const strokeSpace = strokeMatrix?.inverted()
     const strokePoint = point.transform(strokeSpace)
     // The tolerance padding in that space, see Item#_hitTest(): for
     // non-scaling strokes, the tolerance of the project in the view's
@@ -2833,7 +2833,7 @@ export class Path extends PathItem {
     const { style } = path
     const stroke = style.hasStroke()
     const strokeRadius = style.strokeWidth / 2
-    const strokeMatrix = stroke && path._getStrokeMatrix(matrix, options)
+    const strokeMatrix = stroke ? path._getStrokeMatrix(matrix, options) : null
     const strokePadding = (
       stroke &&
       Matrix._getCircleExtents(strokeRadius, strokeMatrix)
@@ -3525,11 +3525,11 @@ function getStrokeNormal(
   matrix: Matrix,
   strokeMatrix: Matrix
 ): Point {
-  const shiftless = matrix ? matrix._shiftless() : new Matrix()
-  const inverse = strokeMatrix && strokeMatrix.inverted()
+  const shiftless = matrix?._shiftless() ?? new Matrix()
+  const inverse = strokeMatrix?.inverted()
   const tangent = curve
     .getTangentAtTime(time)
-    .transform(inverse ? inverse.append(shiftless) : shiftless)
+    .transform(inverse?.append(shiftless) ?? shiftless)
   return new Point(tangent.y, -tangent.x).normalize(radius)
 }
 

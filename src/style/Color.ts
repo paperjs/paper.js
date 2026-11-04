@@ -63,7 +63,7 @@ function getCanvasTransform(matrix: Matrix, strokeMatrix: Matrix): Matrix {
   const inverse = matrix?.inverted()
   return strokeMatrix && inverse
     ? strokeMatrix.appended(inverse)
-    : strokeMatrix || inverse
+    : strokeMatrix ?? inverse
 }
 
 // Transforms the origin, destination, highlight and aspect of the gradient
@@ -1074,7 +1074,7 @@ export class Color extends Base {
       const placement = this.#components[1]
       return this.#components[0]._toCanvasStyle(
         context,
-        transform ? transform.appended(placement) : placement
+        transform?.appended(placement) ?? placement
       )
     }
     // Gradients drawn with a strokeMatrix depend on it, and it can change
