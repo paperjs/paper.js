@@ -4006,8 +4006,7 @@ export class Item extends Emitter {
     let updated = this._updateVersion === updateVersion
     if (
       !updated &&
-      parent &&
-      parent._visible &&
+      parent?._visible &&
       parent._isUpdated(updateVersion)
     ) {
       this._updateVersion = updateVersion

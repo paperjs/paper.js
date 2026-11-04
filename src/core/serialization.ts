@@ -134,8 +134,7 @@ export function deserialize(
   const isFirst = !_data
   const hasDictionary = (
     isFirst &&
-    json &&
-    json.length &&
+    json?.length &&
     json[0][0] === 'dictionary'
   )
   // A _data side-car to deserialize that can hold any kind of 'global' data
