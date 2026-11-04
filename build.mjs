@@ -10,150 +10,131 @@
  * All rights reserved.
  */
 
-// Build the library from the sources into dist/, as script files that set the
-// global `paper`, with source maps: `node build.mjs`, or `pnpm build`.
+// Build the library from the sources into dist/: the ES modules of the entries,
+// and the script files that set the global `paper`, with source maps:
+// `node build.mjs`, or `pnpm build`.
 import fs from 'node:fs'
 import path from 'node:path'
-import { createRequire } from 'node:module'
-import { minifySync } from 'oxc-minify'
-import remapping from '@jridgewell/remapping'
+import { execSync } from 'node:child_process'
+import { build } from 'rolldown'
 
-const require = createRequire(import.meta.url)
 const root = import.meta.dirname
 const dist = path.join(root, 'dist')
+const { version } = JSON.parse(
+  fs.readFileSync(path.join(root, 'package.json'), 'utf8')
+)
+const date = execSync('git log -1 --pretty=format:%ad').toString().trim()
 
-export const builds = {
-  full: { paperScript: true },
-  core: { paperScript: false },
-  hosted: { paperScript: true, hosted: true }
+// The entries of the package, see `exports` in package.json:
+const entries = {
+  paper: 'src/index.ts',
+  paperscript: 'src/paperscript/index.ts',
+  node: 'src/node/index.ts',
+  hosted: 'src/hosted/index.ts'
 }
 
-export function build() {
-  // The version, with the branch as suffix outside of releases, and the date
-  // of the last commit:
-  const options = require('./gulp/utils/options.js')
-  for (const [name, buildOptions] of Object.entries(builds)) {
-    const file = `paper-${name}.js`
-    const { code, map } = buildFromSources({ ...options, ...buildOptions })
-    map.sources = map.sources.map(source => path.relative(dist, source))
-    // Print the code again without its comments, except the license header:
-    write(file, code, map, {
-      compress: false,
-      mangle: false,
-      codegen: { removeWhitespace: false, legalComments: 'inline' }
-    })
-    if (name !== 'hosted') {
-      // The sources use ES2015, which the minifier may use too:
-      write(`paper-${name}.min.js`, code, map, {
-        compress: { target: 'es2015' },
-        codegen: { asciiOnly: true, legalComments: 'inline' }
+// The script files, whose global `paper` is the first scope, the default
+// export of the core, with PaperScript in the full one:
+const scripts = {
+  'paper-core': ['src/index.ts'],
+  'paper-full': ['src/index.ts', 'src/paperscript/index.ts']
+}
+
+export async function buildAll() {
+  // tsc writes the declarations to dist/types after this, see `pnpm build`:
+  remove('esm')
+  remove('types')
+  await build({
+    input: Object.fromEntries(
+      Object.entries(entries).map(([name, file]) => [name, resolve(file)])
+    ),
+    // The dependencies and peers stay imports:
+    external: [/^node:/, 'acorn', 'happy-dom', '@napi-rs/canvas'],
+    output: {
+      dir: path.join(dist, 'esm'),
+      format: 'es',
+      banner: getBanner(false),
+      sourcemap: true
+    }
+  })
+  for (const [name, files] of Object.entries(scripts)) {
+    for (const minify of [false, true]) {
+      const file = `${name}${minify ? '.min' : ''}.js`
+      remove(file)
+      remove(`${file}.map`)
+      await build({
+        input: `\0${name}`,
+        plugins: [getScriptPlugin(name, files)],
+        output: {
+          file: path.join(dist, file),
+          format: 'iife',
+          name: 'paper',
+          exports: 'default',
+          banner: getBanner(files.length > 1),
+          sourcemap: true,
+          minify
+        }
       })
     }
   }
-  // The Node.js layer, which the library requires at runtime:
-  fs.mkdirSync(path.join(dist, 'node'), { recursive: true })
-  for (const file of fs.readdirSync(path.join(root, 'src', 'node'))) {
-    fs.copyFileSync(
-      path.join(root, 'src', 'node', file),
-      path.join(dist, 'node', file)
-    )
-  }
 }
 
-// Build the library from the sources as one script, with a source map back to
-// them, used for dist/ and by the tests. prepro reads the files itself, and
-// outputs each line that isn't a preprocessor statement, so tag these lines
-// with their file and number as it reads them, and turn the tags into the map:
-export function buildFromSources(options) {
-  const Prepro = require('prepro')
-  const prepro = new Prepro()
-  const sources = []
-  const sourcesContent = []
-  // Evaluate constants.js first, for the constants substitution (`/*#=*/`):
-  prepro.evaluate(path.join(root, 'src', 'constants.js'))
-  prepro.setup(() => ({ __options: options }))
-  const { readFileSync } = fs
-  fs.readFileSync = function (file, ...args) {
-    const content = readFileSync.call(this, file, ...args).toString()
-    const index = sources.push(file) - 1
-    sourcesContent.push(content)
-    return content
-      .split('\n')
-      .map((line, i) =>
-        /^\s*\/\*#\*\//.test(line) ? line : `${line}//@${index}:${i}`
-      )
-      .join('\n')
-  }
-  let code
-  try {
-    code = prepro.process(path.join(root, 'src', 'paper.js'))
-  } finally {
-    fs.readFileSync = readFileSync
-  }
-  let previous = [0, 0]
-  const lines = code.split('\n')
-  const mappings = lines.map((line, i) => {
-    const match = line.match(/\/\/@(\d+):(\d+)$/)
-    if (match) {
-      lines[i] = line.slice(0, match.index)
-      const current = [+match[1], +match[2]]
-      const segment = encode([
-        0,
-        current[0] - previous[0],
-        current[1] - previous[1],
-        0
-      ])
-      previous = current
-      return segment
-    }
-    return ''
-  })
+// Each script file is built from a module of its own, which imports the
+// entries and exports the scope:
+function getScriptPlugin(name, files) {
+  const id = `\0${name}`
   return {
-    code: lines.join('\n'),
-    map: { version: 3, sources, sourcesContent, mappings: mappings.join(';') }
+    name: 'paper-script',
+    resolveId(source) {
+      return source === id ? id : null
+    },
+    load(source) {
+      return source === id
+        ? [
+            `import paper from '${resolve(files[0])}'`,
+            ...files.slice(1).map(file => `import '${resolve(file)}'`),
+            'export default paper'
+          ].join('\n')
+        : null
+    }
   }
 }
 
-// Write the code through oxc-minify with the given options, and its source map
-// composed with the one of the sources:
-function write(file, code, map, options) {
-  const result = minifySync(file, code, { ...options, sourcemap: true })
-  if (result.errors.length) {
-    throw new Error(`Unable to build ${file}: ${result.errors[0].message}`)
-  }
-  // On develop, dist/paper-*.js are symlinks to src/load.js:
-  fs.rmSync(path.join(dist, file), { force: true })
-  fs.writeFileSync(
-    path.join(dist, file),
-    `${result.code}\n//# sourceMappingURL=${file}.map\n`
-  )
-  fs.writeFileSync(
-    path.join(dist, `${file}.map`),
-    remapping([result.map, map], () => null).toString()
-  )
+function getBanner(withAcorn) {
+  const acorn = `
+ *
+ ***
+ *
+ * Acorn.js
+ * https://marijnhaverbeke.nl/acorn/
+ *
+ * Acorn is a tiny, fast JavaScript parser written in JavaScript,
+ * created by Marijn Haverbeke and released under an MIT license.`
+  return `/*!
+ * Paper.js v${version} - The Swiss Army Knife of Vector Graphics Scripting.
+ * http://paperjs.org/
+ *
+ * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
+ * http://juerglehni.com/ & https://puckey.studio/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ *
+ * Date: ${date}${withAcorn ? acorn : ''}
+ */`
 }
 
-// Encode the values of a source map segment as base64 VLQs:
-function encode(values) {
-  const chars =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-  return values
-    .map(value => {
-      let vlq = value < 0 ? (-value << 1) | 1 : value << 1
-      let result = ''
-      do {
-        let digit = vlq & 31
-        vlq >>>= 5
-        if (vlq > 0) {
-          digit |= 32
-        }
-        result += chars[digit]
-      } while (vlq > 0)
-      return result
-    })
-    .join('')
+function resolve(file) {
+  return path.join(root, file)
+}
+
+// Remove an output first, also where it's a symlink, so the build doesn't write
+// through it:
+function remove(file) {
+  fs.rmSync(path.join(dist, file), { recursive: true, force: true })
 }
 
 if (import.meta.main) {
-  build()
+  await buildAll()
 }
