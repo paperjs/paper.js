@@ -1,33 +1,21 @@
-// Please note: When loading paper as a normal module installed in node_modules,
-// you would use this instead:
-// var paper = require('paper-jsdom-canvas');
-var paper = require('../../dist/paper-core.js');
-var fs = require('fs');
+// paper/node needs the optional peers happy-dom and @napi-rs/canvas installed.
+import path from 'node:path'
+import paper from 'paper/node'
 
-var canvas = paper.createCanvas(800, 600);
-paper.setup(canvas);
+const canvas = paper.createCanvas(800, 600)
+paper.setup(canvas)
 
-var url = 'http://assets.paperjs.org/images/marilyn.jpg';
-var raster = new paper.Raster(url);
-raster.position = paper.view.center;
+const url = 'http://assets.paperjs.org/images/marilyn.jpg'
+const raster = new paper.Raster(url)
+raster.position = paper.view.center
 
-raster.onLoad = function() {
-    paper.view.update();
-    console.log('The image has loaded:' + raster.bounds);
+raster.onLoad = async function () {
+  console.log(`The image has loaded:${raster.bounds}`)
+  // Saving the canvas to a file.
+  await paper.view.exportImage(path.join(import.meta.dirname, 'canvas.png'))
+  console.log('saved png')
+}
 
-    // Saving the canvas to a file.
-    out = fs.createWriteStream(__dirname + '/canvas.png');
-    stream = canvas.pngStream();
-
-    stream.on('data', function(chunk) {
-        out.write(chunk);
-    });
-
-    stream.on('end', function() {
-        console.log('saved png');
-    });
-};
-
-raster.onError = function(message) {
-    console.error(message);
-};
+raster.onError = function (message) {
+  console.error(message)
+}

@@ -1,52 +1,53 @@
-// Please note: When loading paper as a normal module installed in node_modules,
-// you would use this instead:
-// var paper = require('paper-jsdom-canvas');
-var paper = require('../../dist/paper-core.js');
-paper.setup(new paper.Size(1024, 768));
+// paper/node needs the optional peers happy-dom and @napi-rs/canvas installed.
+import paper from 'paper/node'
 
-var layer = paper.project.activeLayer;
+const { Path, Point, Size } = paper
 
-var values = {
-    count: 34,
-    points: 32
-};
+paper.setup(new Size(1024, 768))
 
-initialize();
+const layer = paper.project.activeLayer
 
-paper.view.exportFrames({
-    amount: 100,
-    directory: __dirname,
-    onComplete: function() {
-        console.log('Done exporting.');
-    },
-    onProgress: function(event) {
-        console.log(event.percentage + '% complete, frame took: ' + event.delta);
-    }
-});
-
-function initialize() {
-    for (var i = 0; i < values.count; i++) {
-        var offset = new paper.Point(20 + 10 * i, 0);
-        var path = new paper.Path();
-        path.fillColor = i % 2 ? 'red' : 'black';
-        path.closed = true;
-
-        var l = offset.length;
-        for (var j = 0; j < values.points * 2; j++) {
-            offset.angle += 360 / values.points;
-            var vector = offset.normalize(l * (j % 2 ? 0.1 : -0.1));
-            path.add(offset.add(vector));
-        }
-        path.smooth();
-        layer.insertChild(0, path);
-    }
-    layer.fitBounds(paper.view.bounds);
+const values = {
+  count: 34,
+  points: 32
 }
 
-paper.view.onFrame = function(event) {
-    for (var i = 0, l = layer.children.length; i < l; i++) {
-        var item = layer.children[i];
-        var angle = (values.count - i) * Math.sin(event.count / 128) / 10;
-        item.rotate(angle);
+initialize()
+
+paper.view.onFrame = function (event) {
+  for (let i = 0, l = layer.children.length; i < l; i++) {
+    const item = layer.children[i]
+    const angle = ((values.count - i) * Math.sin(event.count / 128)) / 10
+    item.rotate(angle)
+  }
+}
+
+paper.view.exportFrames({
+  amount: 100,
+  directory: import.meta.dirname,
+  onComplete() {
+    console.log('Done exporting.')
+  },
+  onProgress(event) {
+    console.log(`${event.percentage}% complete, frame took: ${event.delta}`)
+  }
+})
+
+function initialize() {
+  for (let i = 0; i < values.count; i++) {
+    const offset = new Point(20 + 10 * i, 0)
+    const path = new Path()
+    path.fillColor = i % 2 ? 'red' : 'black'
+    path.closed = true
+
+    const l = offset.length
+    for (let j = 0; j < values.points * 2; j++) {
+      offset.angle += 360 / values.points
+      const vector = offset.normalize(l * (j % 2 ? 0.1 : -0.1))
+      path.add(offset.add(vector))
     }
-};
+    path.smooth()
+    layer.insertChild(0, path)
+  }
+  layer.fitBounds(paper.view.bounds)
+}
