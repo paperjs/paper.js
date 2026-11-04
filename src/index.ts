@@ -123,6 +123,7 @@ registerClasses(classes)
 const members = {
   ...classes,
   Base,
+  PaperScope,
   Numerical,
   ChangeFlag,
   Key,
