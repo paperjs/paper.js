@@ -16,11 +16,9 @@
 // Usage: node test/offsetting/sweep.mjs [--update] [--verbose]
 
 import fs from 'node:fs'
-import { createRequire } from 'node:module'
+import paper from '../../src/node/index.ts'
 import { caps, checkOutline, createPath, joins, widths } from './check.mjs'
 
-const require = createRequire(import.meta.url)
-const paper = require('../../dist/paper-full.js')
 const dir = new URL('.', import.meta.url).pathname
 const cases = JSON.parse(fs.readFileSync(dir + 'cases.json', 'utf8'))
 const update = process.argv.includes('--update')
