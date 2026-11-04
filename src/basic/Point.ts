@@ -999,17 +999,14 @@ export class Point extends Base {
 
   static {
     // Inject round, ceil, floor, abs:
-    inject(
-      this.prototype,
-      ...['round', 'ceil', 'floor', 'abs'].map(key => {
-        const op = Math[key]
-        return {
-          [key]() {
-            return new Point(op(this.x), op(this.y))
-          }
+    for (const key of ['round', 'ceil', 'floor', 'abs']) {
+      const op = Math[key]
+      inject(this.prototype, {
+        [key]() {
+          return new Point(op(this.x), op(this.y))
         }
       })
-    )
+    }
   }
 }
 

@@ -800,27 +800,24 @@ export class Rectangle extends Base {
       rightCenter: ['right', 'centerY'],
       bottomCenter: ['centerX', 'bottom']
     }
-    inject(
-      this.prototype,
-      ...Object.entries(corners).map(([key, [keyX, keyY]]) => {
-        const getter = `_get${capitalize(key)}`
-        return {
-          [getter](_dontLink?: boolean) {
-            return _dontLink
-              ? new Point(this[keyX], this[keyY])
-              : new LinkedPoint(this[keyX], this[keyY], this, key)
-          },
-          get [key]() {
-            return this[getter]()
-          },
-          set [key](point: PointLike) {
-            const { x, y } = Point.from(point)
-            this[keyX] = x
-            this[keyY] = y
-          }
+    for (const [key, [keyX, keyY]] of Object.entries(corners)) {
+      const getter = `_get${capitalize(key)}`
+      inject(this.prototype, {
+        [getter](_dontLink?: boolean) {
+          return _dontLink
+            ? new Point(this[keyX], this[keyY])
+            : new LinkedPoint(this[keyX], this[keyY], this, key)
+        },
+        get [key]() {
+          return this[getter]()
+        },
+        set [key](point: PointLike) {
+          const { x, y } = Point.from(point)
+          this[keyX] = x
+          this[keyY] = y
         }
       })
-    )
+    }
   }
 }
 
@@ -1035,25 +1032,19 @@ export class LinkedRectangle extends Rectangle {
       'bottomRight', 'leftCenter', 'topCenter', 'rightCenter',
       'bottomCenter'
     ]
-    inject(
-      this.prototype,
-      ...keys.map(key => {
-        const { get } = Object.getOwnPropertyDescriptor(
-          Rectangle.prototype,
-          key
-        )
-        return {
-          get [key]() {
-            return get.call(this)
-          },
-          set [key](value) {
-            const rect = this.clone()
-            rect[key] = value
-            this._set(rect.x, rect.y, rect.width, rect.height)
-          }
+    for (const key of keys) {
+      const { get } = Object.getOwnPropertyDescriptor(Rectangle.prototype, key)
+      inject(this.prototype, {
+        get [key]() {
+          return get.call(this)
+        },
+        set [key](value) {
+          const rect = this.clone()
+          rect[key] = value
+          this._set(rect.x, rect.y, rect.width, rect.height)
         }
       })
-    )
+    }
   }
 }
 

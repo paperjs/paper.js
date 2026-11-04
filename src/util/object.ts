@@ -62,16 +62,13 @@ export function equals(arg1, arg2) {
 }
 
 /**
- * Defines the members of the sources on the target the way a class body
- * does: not enumerable, and with accessors copied rather than evaluated.
+ * Defines the members of the source on the target the way a class body does:
+ * not enumerable, and with accessors copied rather than evaluated.
  */
-export function inject<T extends object>(target: T, ...sources: object[]): T {
-  for (const source of sources) {
-    const descriptors = Object.getOwnPropertyDescriptors(source)
-    for (const descriptor of Object.values(descriptors)) {
-      descriptor.enumerable = false
-    }
-    Object.defineProperties(target, descriptors)
+export function inject<T extends object>(target: T, source: object): T {
+  const descriptors = Object.getOwnPropertyDescriptors(source)
+  for (const descriptor of Object.values(descriptors)) {
+    descriptor.enumerable = false
   }
-  return target
+  return Object.defineProperties(target, descriptors)
 }
