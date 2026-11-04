@@ -36,16 +36,19 @@ export function getCanvas(
   if (!window && !globalThis.OffscreenCanvas) {
     return null
   }
+  // Accept a size object as the first argument, followed by the options:
+  const size =
+    typeof width === 'object'
+      ? width
+      : { width, height: height as number }
   if (typeof width === 'object') {
     options = height as typeof options
-    height = width.height
-    width = width.width
   }
   const minimum = options?.minimum
   const fits = (canvas: Canvas) =>
     minimum
-      ? canvas.width >= width && canvas.height >= height
-      : canvas.width === width && canvas.height === height
+      ? canvas.width >= size.width && canvas.height >= size.height
+      : canvas.width === size.width && canvas.height === size.height
   let index = canvases.length - 1
   for (let i = index; i >= 0; i--) {
     if (fits(canvases[i])) {
@@ -58,7 +61,7 @@ export function getCanvas(
       ? canvases.splice(index, 1)[0]
       : window
         ? getDocument().createElement('canvas')
-        : new OffscreenCanvas(width, height as number)
+        : new OffscreenCanvas(size.width, size.height)
   const context = canvas.getContext('2d', options || {}) as any
   if (!context) {
     throw new Error(`Canvas ${canvas} is unable to provide a 2D context.`)
@@ -78,8 +81,8 @@ export function getCanvas(
     }
   } else {
     // Resizing clears the pixels and resets the context's state.
-    canvas.width = width
-    canvas.height = height as number
+    canvas.width = size.width
+    canvas.height = size.height
   }
   return canvas
 }
