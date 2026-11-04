@@ -10,18 +10,18 @@
  * All rights reserved.
  */
 
-var fs = require('fs'),
-  path = require('path')
+const fs = require('fs')
+const path = require('path')
 
 module.exports = function (paper) {
   if (paper.PaperScript) {
-    var sourceMapSupport =
-        'require("source-map-support").install(paper.PaperScript.sourceMapSupport);\n',
-      sourceMaps = {}
+    const sourceMapSupport =
+      'require("source-map-support").install(paper.PaperScript.sourceMapSupport);\n'
+    const sourceMaps = {}
 
     paper.PaperScript.sourceMapSupport = {
       retrieveSourceMap: function (source) {
-        var map = sourceMaps[source]
+        const map = sourceMaps[source]
         return map ? { url: source, map: map } : null
       }
     }
@@ -32,15 +32,15 @@ module.exports = function (paper) {
       // needs to receive a Canvas object when called and returns the
       // PaperScope.
       module.exports = function (canvas) {
-        var source = fs.readFileSync(filename, 'utf8'),
-          code = sourceMapSupport + source,
-          compiled = paper.PaperScript.compile(code, {
-            url: filename,
-            source: source,
-            sourceMaps: true,
-            offset: -1 // remove sourceMapSupport...
-          }),
-          scope = new paper.PaperScope()
+        const source = fs.readFileSync(filename, 'utf8')
+        const code = sourceMapSupport + source
+        const compiled = paper.PaperScript.compile(code, {
+          url: filename,
+          source: source,
+          sourceMaps: true,
+          offset: -1 // remove sourceMapSupport...
+        })
+        const scope = new paper.PaperScope()
         // Keep track of sourceMaps so retrieveSourceMap() can link them up
         scope.setup(canvas)
         scope.__filename = filename
@@ -60,7 +60,7 @@ module.exports = function (paper) {
       // Do not use CanvasProvider.getCanvas(), since we may be changing
       // the underlying node-canvas when requesting PDF support, and don't
       // want to release it after back into the pool.
-      var canvas = paper.document.createElement('canvas')
+      const canvas = paper.document.createElement('canvas')
       canvas.width = width
       canvas.height = height
       canvas.type = type
@@ -95,13 +95,13 @@ module.exports = function (paper) {
       if (!options.directory) throw new Error('Missing options.directory')
       if (options.format && !/^(jpeg|png)$/.test(options.format))
         throw new Error('Unsupported format. Use "png" or "jpeg"')
-      var view = this,
-        count = 0,
-        frameDuration = 1 / options.fps,
-        startTime = Date.now(),
-        lastTime = startTime,
-        padding = options.padding || (options.amount - 1 + '').length,
-        paddedStr = Array(padding + 1).join('0')
+      const view = this
+      let count = 0
+      const frameDuration = 1 / options.fps
+      const startTime = Date.now()
+      let lastTime = startTime
+      const padding = options.padding || (options.amount - 1 + '').length
+      const paddedStr = Array(padding + 1).join('0')
 
       // Start exporting frames by exporting the first frame:
       exportFrame(options)
@@ -116,16 +116,16 @@ module.exports = function (paper) {
             count: count
           })
         )
-        var file = path.join(
+        const file = path.join(
           options.directory,
           options.prefix +
           (paddedStr + count).slice(-padding) +
           '.' +
           options.format
         )
-        var out = view.exportImage(file, function () {
+        view.exportImage(file, function () {
           // Once the file has been closed, export the next fame:
-          var then = Date.now()
+          const then = Date.now()
           if (options.onProgress) {
             options.onProgress({
               count: count,
@@ -155,9 +155,9 @@ module.exports = function (paper) {
     // DOCS: CanvasView#exportImage(path, callback);
     exportImage: function (path, callback) {
       this.update()
-      var out = fs.createWriteStream(path),
-        format = /\.jp(e?)g$/.test(path) ? 'jpeg' : 'png',
-        stream = this._element[format + 'Stream']()
+      const out = fs.createWriteStream(path)
+      const format = /\.jp(e?)g$/.test(path) ? 'jpeg' : 'png'
+      const stream = this._element[format + 'Stream']()
       stream.pipe(out)
       if (callback) {
         out.on('close', callback)

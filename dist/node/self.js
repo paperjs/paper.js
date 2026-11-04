@@ -13,20 +13,21 @@
 // Node.js emulation layer of browser environment, based on jsdom with node-
 // canvas integration.
 
-var path = require('path')
+const path = require('path')
 // Determine the name by which name the module was required (either 'paper',
 // 'paper-jsdom' or 'paper-jsdom-canvas'), and use this to determine if error
 // exceptions should be thrown or if loading should fail silently.
-var parent = module.parent && module.parent.parent,
-  // The REPL's module has no filename:
-  requireName = (
-    parent &&
-    parent.filename &&
-    path.basename(path.dirname(parent.filename))
-  )
+const parent = module.parent && module.parent.parent
+// The REPL's module has no filename:
+let requireName = (
+  parent &&
+  parent.filename &&
+  path.basename(path.dirname(parent.filename))
+)
 requireName = /^paper/.test(requireName) ? requireName : 'paper'
 
-var jsdom, self
+let jsdom
+let self
 
 try {
   jsdom = require('jsdom')
@@ -40,8 +41,7 @@ try {
 
 if (jsdom) {
   // Create our document and window objects through jsdom.
-  /* global document:true, window:true */
-  var document = new jsdom.JSDOM('<html><body></body></html>', {
+  const document = new jsdom.JSDOM('<html><body></body></html>', {
     // Use the current working directory as the document's origin, so
     // requests to local files work correctly with CORS.
     url: 'file://' + process.cwd() + '/',

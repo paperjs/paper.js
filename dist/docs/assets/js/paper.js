@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Nov 4 01:01:07 2026 +0100
+ * Date: Wed Nov 4 00:59:27 2026 +0100
  *
  ***
  *
@@ -34,8 +34,8 @@ var paper = (function (self, undefined) {
   'use strict'
 
 self = self || require('./node/self.js')
-var window = self.window,
-  document = self.document
+let window = self.window
+const document = self.document
 
 if (window && !document.createElement('canvas').getContext('2d')) window = null
 
@@ -251,7 +251,7 @@ Base.inject(
 			this,
 			function (value, key) {
 			  if (!/^_/.test(key)) {
-				var type = typeof value
+				const type = typeof value
 				this.push(
 				  key +
 				  ': ' + (
@@ -296,13 +296,15 @@ Base.inject(
 	  exports: {},
 
 	  extend: function extend() {
-		var res = extend.base.apply(this, arguments),
-		  name = res.prototype._class
+		const res = extend.base.apply(this, arguments)
+		const name = res.prototype._class
 		if (name && !Base.exports[name]) Base.exports[name] = res
 		return res
 	  },
 
 	  equals: function (obj1, obj2) {
+		let length
+
 		if (obj1 === obj2) return true
 		if (obj1 && obj1.equals) return obj1.equals(obj2)
 		if (obj2 && obj2.equals) return obj2.equals(obj1)
@@ -313,17 +315,17 @@ Base.inject(
 		  typeof obj2 === 'object'
 		) {
 		  if (Array.isArray(obj1) && Array.isArray(obj2)) {
-			var length = obj1.length
+			length = obj1.length
 			if (length !== obj2.length) return false
 			while (length--) {
 			  if (!Base.equals(obj1[length], obj2[length])) return false
 			}
 		  } else {
-			var keys = Object.keys(obj1),
-			  length = keys.length
+			const keys = Object.keys(obj1)
+			length = keys.length
 			if (length !== Object.keys(obj2).length) return false
 			while (length--) {
-			  var key = keys[length]
+			  const key = keys[length]
 			  if (!(
 				obj2.hasOwnProperty(key) &&
 				Base.equals(obj1[key], obj2[key])
@@ -338,15 +340,15 @@ Base.inject(
 
 	  read: function (list, start, options, amount) {
 		if (this === Base) {
-		  var value = this.peek(list, start)
+		  const value = this.peek(list, start)
 		  list.__index++
 		  return value
 		}
-		var proto = this.prototype,
-		  readIndex = proto._readIndex,
-		  begin = start || readIndex && list.__index || 0,
-		  length = list.length,
-		  obj = list[begin]
+		const proto = this.prototype
+		const readIndex = proto._readIndex
+		const begin = start || readIndex && list.__index || 0
+		const length = list.length
+		let obj = list[begin]
 		amount = amount || length - begin
 		if (
 		  obj instanceof this ||
@@ -368,7 +370,7 @@ Base.inject(
 		)
 		if (readIndex) {
 		  list.__index = begin + obj.__read
-		  var filtered = obj.__filtered
+		  const filtered = obj.__filtered
 		  if (filtered) {
 			list.__filtered = filtered
 			obj.__filtered = undefined
@@ -387,11 +389,11 @@ Base.inject(
 	  },
 
 	  readList: function (list, start, options, amount) {
-		var res = [],
-		  entry,
-		  begin = start || 0,
-		  end = amount ? begin + amount : list.length
-		for (var i = begin; i < end; i++) {
+		const res = []
+		let entry
+		const begin = start || 0
+		const end = amount ? begin + amount : list.length
+		for (let i = begin; i < end; i++) {
 		  res.push(
 			Array.isArray((entry = list[i]))
 			  ? this.read(entry, 0, options)
@@ -402,12 +404,12 @@ Base.inject(
 	  },
 
 	  readNamed: function (list, name, start, options, amount) {
-		var value = this.getNamed(list, name),
-		  hasValue = value !== undefined
+		const value = this.getNamed(list, name)
+		const hasValue = value !== undefined
 		if (hasValue) {
-		  var filtered = list.__filtered
+		  let filtered = list.__filtered
 		  if (!filtered) {
-			var source = this.getSource(list)
+			const source = this.getSource(list)
 			filtered = list.__filtered = Base.create(source)
 			filtered.__unfiltered = source
 		  }
@@ -417,13 +419,13 @@ Base.inject(
 	  },
 
 	  readSupported: function (list, dest) {
-		var source = this.getSource(list),
-		  that = this,
-		  read = false
+		const source = this.getSource(list)
+		const that = this
+		let read = false
 		if (source) {
 		  Object.keys(source).forEach(function (key) {
 			if (key in dest) {
-			  var value = that.readNamed(list, key)
+			  const value = that.readNamed(list, key)
 			  if (value !== undefined) {
 				dest[key] = value
 			  }
@@ -435,9 +437,9 @@ Base.inject(
 	  },
 
 	  getSource: function (list) {
-		var source = list.__source
+		let source = list.__source
 		if (source === undefined) {
-		  var arg = list.length === 1 && list[0]
+		  const arg = list.length === 1 && list[0]
 		  source = list.__source =
 			arg && Base.isPlainObject(arg)
 			  ? arg
@@ -447,7 +449,7 @@ Base.inject(
 	  },
 
 	  getNamed: function (list, name) {
-		var source = this.getSource(list)
+		const source = this.getSource(list)
 		if (source) {
 		  return name ? source[name] : list.__filtered || source
 		}
@@ -458,21 +460,25 @@ Base.inject(
 	  },
 
 	  filter: function (dest, source, exclude, prioritize) {
-		var processed
+		let i
+		let key
+		let l
+
+		let processed
 
 		function handleKey(key) {
 		  if (
 			!(exclude && key in exclude) &&
 			!(processed && key in processed)
 		  ) {
-			var value = source[key]
+			const value = source[key]
 			if (value !== undefined) dest[key] = value
 		  }
 		}
 
 		if (prioritize) {
-		  var keys = {}
-		  for (var i = 0, key, l = prioritize.length; i < l; i++) {
+		  const keys = {}
+		  for (i = 0, key, l = prioritize.length; i < l; i++) {
 			if ((key = prioritize[i]) in source) {
 			  handleKey(key)
 			  keys[key] = true
@@ -494,10 +500,13 @@ Base.inject(
 	  },
 
 	  serialize: function (obj, options, compact, dictionary) {
+		let i
+		let l
+
 		options = options || {}
 
-		var isRoot = !dictionary,
-		  res
+		const isRoot = !dictionary
+		let res
 		if (isRoot) {
 		  options.formatter = new Formatter(options.precision)
 		  dictionary = {
@@ -505,12 +514,12 @@ Base.inject(
 			definitions: {},
 			references: {},
 			add: function (item, create) {
-			  var id = '#' + item._id,
-				ref = this.references[id]
+			  const id = '#' + item._id
+			  let ref = this.references[id]
 			  if (!ref) {
 				this.length++
-				var res = create.call(item),
-				  name = item._class
+				const res = create.call(item)
+				const name = item._class
 				if (name && res[0] !== name) res.unshift(name)
 				this.definitions[id] = res
 				ref = this.references[id] = [id]
@@ -521,7 +530,7 @@ Base.inject(
 		}
 		if (obj && obj._serialize) {
 		  res = obj._serialize(options, dictionary)
-		  var name = obj._class
+		  const name = obj._class
 		  if (
 			name &&
 			!obj._compactSerialize &&
@@ -532,13 +541,13 @@ Base.inject(
 		  }
 		} else if (Array.isArray(obj)) {
 		  res = []
-		  for (var i = 0, l = obj.length; i < l; i++)
+		  for (i = 0, l = obj.length; i < l; i++)
 			res[i] = Base.serialize(obj[i], options, compact, dictionary)
 		} else if (Base.isPlainObject(obj)) {
 		  res = {}
-		  var keys = Object.keys(obj)
-		  for (var i = 0, l = keys.length; i < l; i++) {
-			var key = keys[i]
+		  const keys = Object.keys(obj)
+		  for (i = 0, l = keys.length; i < l; i++) {
+			const key = keys[i]
 			res[key] = Base.serialize(obj[key], options, compact, dictionary)
 		  }
 		} else if (typeof obj === 'number') {
@@ -559,18 +568,18 @@ Base.inject(
 		_setDictionary,
 		_isRoot
 	  ) {
-		var res = json,
-		  isFirst = !_data,
-		  hasDictionary = (
-			isFirst &&
-			json &&
-			json.length &&
-			json[0][0] === 'dictionary'
-		  )
+		let res = json
+		const isFirst = !_data
+		const hasDictionary = (
+		  isFirst &&
+		  json &&
+		  json.length &&
+		  json[0][0] === 'dictionary'
+		)
 		_data = _data || {}
 		if (Array.isArray(json)) {
-		  var type = json[0],
-			isDictionary = type === 'dictionary'
+		  let type = json[0]
+		  const isDictionary = type === 'dictionary'
 		  if (json.length == 1 && /^#/.test(type)) {
 			return _data.dictionary[type]
 		  }
@@ -579,7 +588,7 @@ Base.inject(
 		  }
 		  type = Base.exports[type]
 		  res = []
-		  for (var i = type ? 1 : 0, l = json.length; i < l; i++) {
+		  for (let i = type ? 1 : 0, l = json.length; i < l; i++) {
 			res.push(
 			  Base.deserialize(
 				json[i],
@@ -592,7 +601,7 @@ Base.inject(
 			)
 		  }
 		  if (type) {
-			var args = res
+			const args = res
 			if (create) {
 			  res = create(type, args, isFirst || _isRoot)
 			} else {
@@ -602,14 +611,14 @@ Base.inject(
 		} else if (Base.isPlainObject(json)) {
 		  res = {}
 		  if (_setDictionary) _data.dictionary = res
-		  for (var key in json)
+		  for (const key in json)
 			res[key] = Base.deserialize(json[key], create, resolve, _data)
 		}
 		return hasDictionary ? res[1] : res
 	  },
 
 	  exportJSON: function (obj, options) {
-		var json = Base.serialize(obj, options)
+		const json = Base.serialize(obj, options)
 		return options && options.asString == false
 		  ? json
 		  : JSON.stringify(json)
@@ -619,18 +628,18 @@ Base.inject(
 		return Base.deserialize(
 		  typeof json === 'string' ? JSON.parse(json) : json,
 		  function (ctor, args, isRoot) {
-			var useTarget = (
-				isRoot &&
-				target &&
-				target.constructor === ctor
-			  ),
-			  obj = useTarget ? target : Base.create(ctor.prototype)
+			const useTarget = (
+			  isRoot &&
+			  target &&
+			  target.constructor === ctor
+			)
+			const obj = useTarget ? target : Base.create(ctor.prototype)
 			if (
 			  args.length === 1 &&
 			  obj instanceof Item &&
 			  (useTarget || !(obj instanceof Layer))
 			) {
-			  var arg = args[0]
+			  const arg = args[0]
 			  if (Base.isPlainObject(arg)) {
 				arg.insert = false
 				if (useTarget) {
@@ -647,13 +656,13 @@ Base.inject(
 	  },
 
 	  push: function (list, items) {
-		var itemsLength = items.length
+		const itemsLength = items.length
 		if (itemsLength < 4096) {
 		  list.push.apply(list, items)
 		} else {
-		  var startLength = list.length
+		  const startLength = list.length
 		  list.length += itemsLength
-		  for (var i = 0; i < itemsLength; i++) {
+		  for (let i = 0; i < itemsLength; i++) {
 			list[startLength + i] = items[i]
 		  }
 		}
@@ -661,21 +670,24 @@ Base.inject(
 	  },
 
 	  splice: function (list, items, index, remove) {
-		var amount = items && items.length,
-		  append = index === undefined
+		let i
+		let l
+
+		const amount = items && items.length
+		const append = index === undefined
 		index = append ? list.length : index
 		if (index > list.length) index = list.length
-		for (var i = 0; i < amount; i++) items[i]._index = index + i
+		for (i = 0; i < amount; i++) items[i]._index = index + i
 		if (append) {
 		  Base.push(list, items)
 		  return []
 		} else {
-		  var args = [index, remove]
+		  const args = [index, remove]
 		  if (items) Base.push(args, items)
-		  var removed = list.splice.apply(list, args)
-		  for (var i = 0, l = removed.length; i < l; i++)
+		  const removed = list.splice.apply(list, args)
+		  for (i = 0, l = removed.length; i < l; i++)
 			removed[i]._index = undefined
-		  for (var i = index + amount, l = list.length; i < l; i++)
+		  for (i = index + amount, l = list.length; i < l; i++)
 			list[i]._index = i
 		  return removed
 		}
@@ -687,8 +699,8 @@ Base.inject(
 	  },
 
 	  removeNamed: function (list, named, name, item) {
-		var namedArray = named[name],
-		  index = namedArray ? namedArray.indexOf(item) : -1
+		const namedArray = named[name]
+		const index = namedArray ? namedArray.indexOf(item) : -1
 		if (index !== -1) {
 		  if (list[name] == item) delete list[name]
 		  namedArray.splice(index, 1)
@@ -719,7 +731,7 @@ Base.inject(
   }
 )
 
-var Emitter = {
+const Emitter = {
   on: function (type, func) {
 	if (typeof type !== 'string') {
 	  Base.each(
@@ -730,15 +742,15 @@ var Emitter = {
 		this
 	  )
 	} else {
-	  var types = this._eventTypes,
-		entry = types && types[type]
+	  const types = this._eventTypes
+	  const entry = types && types[type]
 	  if (this === this.constructor.prototype && !(entry && entry.classLevel))
 		throw new Error(
 		  "Unsupported class-level event: '" +
 		  type +
 		  "'."
 		)
-	  var handlers = (this._callbacks = (
+	  let handlers = (this._callbacks = (
 		this.hasOwnProperty('_callbacks') &&
 		this._callbacks
 	  ) || {})
@@ -763,13 +775,13 @@ var Emitter = {
 	  )
 	  return
 	}
-	var types = this._eventTypes,
-	  entry = types && types[type],
-	  handlers = (
-		this.hasOwnProperty('_callbacks') &&
-		this._callbacks[type]
-	  ),
-	  index
+	const types = this._eventTypes
+	const entry = types && types[type]
+	const handlers = (
+	  this.hasOwnProperty('_callbacks') &&
+	  this._callbacks[type]
+	)
+	let index
 	if (handlers) {
 	  if (
 		!func || (
@@ -794,12 +806,12 @@ var Emitter = {
   },
 
   emit: function (type, event) {
-	var handlers = this._getHandlers(type)
+	const handlers = this._getHandlers(type)
 	if (!handlers.length) return false
-	var args = Base.slice(arguments, 1),
-	  setTarget = event && event.target && !event.currentTarget
+	const args = Base.slice(arguments, 1)
+	const setTarget = event && event.target && !event.currentTarget
 	if (setTarget) event.currentTarget = this
-	for (var i = 0, l = handlers.length; i < l; i++) {
+	for (let i = 0, l = handlers.length; i < l; i++) {
 	  if (handlers[i].apply(this, args) == false) {
 		if (event && event.stop) event.stop()
 		break
@@ -810,11 +822,11 @@ var Emitter = {
   },
 
   responds: function (type) {
-	var callbacks = this._callbacks
+	const callbacks = this._callbacks
 	if (callbacks) {
 	  if (this.hasOwnProperty('_callbacks') && callbacks[type]) return true
 	  for (
-		var obj = this.constructor.prototype;
+		let obj = this.constructor.prototype;
 		obj && obj._callbacks;
 		obj = Object.getPrototypeOf(obj)
 	  ) {
@@ -826,9 +838,9 @@ var Emitter = {
   },
 
   _getHandlers: function (type) {
-	var handlers = []
-	for (var obj = this; obj; obj = Object.getPrototypeOf(obj)) {
-	  var callbacks = (
+	const handlers = []
+	for (let obj = this; obj; obj = Object.getPrototypeOf(obj)) {
+	  const callbacks = (
 		obj.hasOwnProperty('_callbacks') &&
 		obj._callbacks[type]
 	  )
@@ -842,14 +854,14 @@ var Emitter = {
   fire: '#emit',
 
   _installEvents: function (install) {
-	var types = this._eventTypes,
-	  handlers = this.hasOwnProperty('_callbacks') && this._callbacks,
-	  key = install ? 'install' : 'uninstall'
+	const types = this._eventTypes
+	const handlers = this.hasOwnProperty('_callbacks') && this._callbacks
+	const key = install ? 'install' : 'uninstall'
 	if (types) {
-	  for (var type in handlers) {
+	  for (const type in handlers) {
 		if (handlers[type].length > 0) {
-		  var entry = types[type],
-			func = entry && entry[key]
+		  const entry = types[type]
+		  const func = entry && entry[key]
 		  if (func) func.call(this, type)
 		}
 	  }
@@ -868,27 +880,27 @@ var Emitter = {
 	},
 
 	inject: function inject(src) {
-	  var events = src._events
+	  const events = src._events
 	  if (events) {
-		var types = {}
+		const types = {}
 		Base.each(events, function (entry, key) {
-		  var isString = typeof entry === 'string',
-			name = isString ? entry : key,
-			part = Base.capitalize(name),
-			type = name.substring(2).toLowerCase()
+		  const isString = typeof entry === 'string'
+		  let name = isString ? entry : key
+		  const part = Base.capitalize(name)
+		  const type = name.substring(2).toLowerCase()
 		  types[type] = isString ? {} : entry
 		  name = '_' + name
 		  src['get' + part] = function () {
 			return this.hasOwnProperty(name) ? this[name] : null
 		  }
 		  src['set' + part] = function (func) {
-			var prev = this['get' + part]()
+			const prev = this['get' + part]()
 			if (prev) this.off(type, prev)
 			if (func) this.on(type, func)
 			this[name] = func
 		  }
 		  if (!isString && entry.classLevel) {
-			var statics = (src.statics = src.statics || {})
+			const statics = (src.statics = src.statics || {})
 			statics['get' + part] = function () {
 			  return this.prototype['get' + part]()
 			}
@@ -904,7 +916,7 @@ var Emitter = {
   }
 }
 
-var PaperScope = Base.extend(
+const PaperScope = Base.extend(
    {
 	_class: 'PaperScope',
 
@@ -923,23 +935,24 @@ var PaperScope = Base.extend(
 	  this.tools = []
 	  this._id = PaperScope._id++
 	  PaperScope._scopes[this._id] = this
-	  var proto = PaperScope.prototype
+	  const proto = PaperScope.prototype
 	  if (!this.support) {
 		proto.support = {
 		  nativeBlendModes: BlendMode.nativeModes
 		}
 	  }
 	  if (!this.agent) {
-		var user = self.navigator.userAgent.toLowerCase(),
-		  os = (/(darwin|win|mac|linux|freebsd|sunos)/.exec(user) || [])[0],
-		  platform = os === 'darwin' ? 'mac' : os,
-		  agent = (proto.agent = proto.browser = { platform: platform })
+		const user = self.navigator.userAgent.toLowerCase()
+		const os = (/(darwin|win|mac|linux|freebsd|sunos)/.exec(user) || [])[0]
+		const platform = os === 'darwin' ? 'mac' : os
+		const agent = (proto.agent = proto.browser = { platform: platform })
 		if (platform) agent[platform] = true
 		user.replace(
-		  /(opera|chrome|safari|webkit|firefox|msie|trident|atom|node|jsdom)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:v?([.\d]+))?/g,
+		  /(opera|chrome|safari|webkit|firefox|msie|trident|atom|node|jsdom)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv:v?([.\d]+))?/g,
 		  function (match, n, v1, v2, rv) {
 			if (!agent.chrome) {
-			  var v = n === 'opera' ? v2 : /^(node|trident)$/.test(n) ? rv : v1
+			  const v =
+				n === 'opera' ? v2 : /^(node|trident)$/.test(n) ? rv : v1
 			  agent.version = v
 			  agent.versionNumber = parseFloat(v)
 			  n = { trident: 'msie', jsdom: 'node' }[n] || n
@@ -964,7 +977,7 @@ var PaperScope = Base.extend(
 	},
 
 	getView: function () {
-	  var project = this._project
+	  const project = this._project
 	  return project && project._view
 	},
 
@@ -973,14 +986,14 @@ var PaperScope = Base.extend(
 	},
 
 	execute: function (code, options) {
-			var exports = paper.PaperScript.execute(code, this, options);
+			const exports = paper.PaperScript.execute(code, this, options);
 			if (window)
 				View.updateFocus();
 			return exports;
 	},
 
 	install: function (scope) {
-	  var that = this
+	  const that = this
 	  Base.each(['project', 'view', 'tool'], function (key) {
 		Base.define(scope, key, {
 		  configurable: true,
@@ -989,7 +1002,7 @@ var PaperScope = Base.extend(
 		  }
 		})
 	  })
-	  for (var key in this) {
+	  for (const key in this) {
 		if (!/^_/.test(key) && this[key] && !(key in scope))
 		  scope[key] = this[key]
 	  }
@@ -1010,10 +1023,12 @@ var PaperScope = Base.extend(
 	},
 
 	clear: function () {
-	  var projects = this.projects,
-		tools = this.tools
-	  for (var i = projects.length - 1; i >= 0; i--) projects[i].remove()
-	  for (var i = tools.length - 1; i >= 0; i--) tools[i].remove()
+	  let i
+
+	  const projects = this.projects
+	  const tools = this.tools
+	  for (i = projects.length - 1; i >= 0; i--) projects[i].remove()
+	  for (i = tools.length - 1; i >= 0; i--) tools[i].remove()
 	},
 
 	remove: function () {
@@ -1044,7 +1059,7 @@ var PaperScope = Base.extend(
   }
 )
 
-var PaperScopeItem = Base.extend(
+const PaperScopeItem = Base.extend(
   Emitter,
    {
 	initialize: function (activate) {
@@ -1055,7 +1070,7 @@ var PaperScopeItem = Base.extend(
 
 	activate: function () {
 	  if (!this._scope) return false
-	  var prev = this._scope[this._reference]
+	  const prev = this._scope[this._reference]
 	  if (prev && prev !== this) prev.emit('deactivate')
 	  this._scope[this._reference] = this
 	  this.emit('activate', prev)
@@ -1087,32 +1102,32 @@ var PaperScopeItem = Base.extend(
   }
 )
 
-var CollisionDetection =  {
+const CollisionDetection =  {
   findItemBoundsCollisions: function (items1, items2, tolerance) {
 	function getBounds(items) {
-	  var bounds = new Array(items.length)
-	  for (var i = 0; i < items.length; i++) {
-		var rect = items[i].getBounds()
+	  const bounds = new Array(items.length)
+	  for (let i = 0; i < items.length; i++) {
+		const rect = items[i].getBounds()
 		bounds[i] = [rect.left, rect.top, rect.right, rect.bottom]
 	  }
 	  return bounds
 	}
 
-	var bounds1 = getBounds(items1),
-	  bounds2 =
-		!items2 || items2 === items1
-		  ? bounds1
-		  : getBounds(items2)
+	const bounds1 = getBounds(items1)
+	const bounds2 =
+	  !items2 || items2 === items1
+		? bounds1
+		: getBounds(items2)
 	return this.findBoundsCollisions(bounds1, bounds2, tolerance || 0)
   },
 
   findCurveBoundsCollisions: function (curves1, curves2, tolerance) {
 	function getBounds(curves) {
-	  var min = Math.min,
-		max = Math.max,
-		bounds = new Array(curves.length)
-	  for (var i = 0; i < curves.length; i++) {
-		var v = curves[i]
+	  const min = Math.min
+	  const max = Math.max
+	  const bounds = new Array(curves.length)
+	  for (let i = 0; i < curves.length; i++) {
+		const v = curves[i]
 		bounds[i] = [
 		  min(v[0], v[2], v[4], v[6]),
 		  min(v[1], v[3], v[5], v[7]),
@@ -1123,25 +1138,27 @@ var CollisionDetection =  {
 	  return bounds
 	}
 
-	var bounds1 = getBounds(curves1),
-	  bounds2 =
-		!curves2 || curves2 === curves1
-		  ? bounds1
-		  : getBounds(curves2)
+	const bounds1 = getBounds(curves1)
+	const bounds2 =
+	  !curves2 || curves2 === curves1
+		? bounds1
+		: getBounds(curves2)
 	return this.findBoundsCollisions(bounds1, bounds2, tolerance || 0)
   },
 
   findBoundsCollisions: function (boundsA, boundsB, tolerance, sweepVertical) {
-	var self = !boundsB || boundsA === boundsB,
-	  allBounds = self ? boundsA : boundsA.concat(boundsB),
-	  lengthA = boundsA.length,
-	  lengthAll = allBounds.length
+	let i
+
+	const self = !boundsB || boundsA === boundsB
+	const allBounds = self ? boundsA : boundsA.concat(boundsB)
+	const lengthA = boundsA.length
+	const lengthAll = allBounds.length
 
 	function binarySearch(indices, coord, value) {
-	  var lo = 0,
-		hi = indices.length
+	  let lo = 0
+	  let hi = indices.length
 	  while (lo < hi) {
-		var mid = (hi + lo) >>> 1
+		const mid = (hi + lo) >>> 1
 		if (allBounds[indices[mid]][coord] < value) {
 		  lo = mid + 1
 		} else {
@@ -1151,40 +1168,40 @@ var CollisionDetection =  {
 	  return lo - 1
 	}
 
-	var pri0 = sweepVertical ? 1 : 0,
-	  pri1 = pri0 + 2,
-	  sec0 = sweepVertical ? 0 : 1,
-	  sec1 = sec0 + 2
-	var allIndicesByPri0 = new Array(lengthAll)
-	for (var i = 0; i < lengthAll; i++) {
+	const pri0 = sweepVertical ? 1 : 0
+	const pri1 = pri0 + 2
+	const sec0 = sweepVertical ? 0 : 1
+	const sec1 = sec0 + 2
+	const allIndicesByPri0 = new Array(lengthAll)
+	for (i = 0; i < lengthAll; i++) {
 	  allIndicesByPri0[i] = i
 	}
 	allIndicesByPri0.sort(function (i1, i2) {
 	  return allBounds[i1][pri0] - allBounds[i2][pri0]
 	})
-	var activeIndicesByPri1 = [],
-	  allCollisions = new Array(lengthA)
-	for (var i = 0; i < lengthAll; i++) {
-	  var curIndex = allIndicesByPri0[i],
-		curBounds = allBounds[curIndex],
-		origIndex = self ? curIndex : curIndex - lengthA,
-		isCurrentA = curIndex < lengthA,
-		isCurrentB = self || !isCurrentA,
-		curCollisions = isCurrentA ? [] : null
+	const activeIndicesByPri1 = []
+	const allCollisions = new Array(lengthA)
+	for (i = 0; i < lengthAll; i++) {
+	  const curIndex = allIndicesByPri0[i]
+	  const curBounds = allBounds[curIndex]
+	  const origIndex = self ? curIndex : curIndex - lengthA
+	  const isCurrentA = curIndex < lengthA
+	  const isCurrentB = self || !isCurrentA
+	  const curCollisions = isCurrentA ? [] : null
 	  if (activeIndicesByPri1.length) {
-		var pruneCount = binarySearch(
+		const pruneCount = binarySearch(
 		  activeIndicesByPri1,
 		  pri1,
 		  curBounds[pri0] - tolerance
 		) + 1
 		activeIndicesByPri1.splice(0, pruneCount)
-		var curSec1 = curBounds[sec1],
-		  curSec0 = curBounds[sec0]
-		for (var j = 0; j < activeIndicesByPri1.length; j++) {
-		  var activeIndex = activeIndicesByPri1[j],
-			activeBounds = allBounds[activeIndex],
-			isActiveA = activeIndex < lengthA,
-			isActiveB = self || activeIndex >= lengthA
+		const curSec1 = curBounds[sec1]
+		const curSec0 = curBounds[sec0]
+		for (let j = 0; j < activeIndicesByPri1.length; j++) {
+		  const activeIndex = activeIndicesByPri1[j]
+		  const activeBounds = allBounds[activeIndex]
+		  const isActiveA = activeIndex < lengthA
+		  const isActiveB = self || activeIndex >= lengthA
 
 		  if (
 			(
@@ -1212,15 +1229,15 @@ var CollisionDetection =  {
 		allCollisions[curIndex] = curCollisions
 	  }
 	  if (activeIndicesByPri1.length) {
-		var curPri1 = curBounds[pri1],
-		  index = binarySearch(activeIndicesByPri1, pri1, curPri1)
+		const curPri1 = curBounds[pri1]
+		const index = binarySearch(activeIndicesByPri1, pri1, curPri1)
 		activeIndicesByPri1.splice(index + 1, 0, curIndex)
 	  } else {
 		activeIndicesByPri1.push(curIndex)
 	  }
 	}
-	for (var i = 0; i < allCollisions.length; i++) {
-	  var collisions = allCollisions[i]
+	for (i = 0; i < allCollisions.length; i++) {
+	  const collisions = allCollisions[i]
 	  if (collisions) {
 		collisions.sort(function (i1, i2) {
 		  return i1 - i2
@@ -1231,7 +1248,7 @@ var CollisionDetection =  {
   }
 }
 
-var Formatter = Base.extend(
+const Formatter = Base.extend(
    {
 	initialize: function (precision) {
 	  this.precision = Base.pick(precision, 5)
@@ -1273,43 +1290,43 @@ var Formatter = Base.extend(
 Formatter.instance = new Formatter()
 
 var Numerical = new (function () {
-  var kronrodNodes = [
-	  0, 0.2077849550078984676006894, 0.4058451513773971669066064,
-	  0.5860872354676911302941448, 0.7415311855993944398638648,
-	  0.8648644233597690727897128, 0.9491079123427585245261897,
-	  0.9914553711208126392068547
-	],
-	kronrodWeights = [
-	  0.2094821410847278280129992, 0.204432940075298892414162,
-	  0.1903505780647854099132564, 0.1690047266392679028265834,
-	  0.1406532597155259187451896, 0.1047900103222501838398763,
-	  0.0630920926299785532907007, 0.022935322010529224963732
-	],
-	gaussWeights = [
-	  0.417959183673469387755102, 0.3818300505051189449503698,
-	  0.2797053914892766679014678, 0.1294849661688696932706114
-	]
+  const kronrodNodes = [
+	0, 0.2077849550078984676006894, 0.4058451513773971669066064,
+	0.5860872354676911302941448, 0.7415311855993944398638648,
+	0.8648644233597690727897128, 0.9491079123427585245261897,
+	0.9914553711208126392068547
+  ]
+  const kronrodWeights = [
+	0.2094821410847278280129992, 0.204432940075298892414162,
+	0.1903505780647854099132564, 0.1690047266392679028265834,
+	0.1406532597155259187451896, 0.1047900103222501838398763,
+	0.0630920926299785532907007, 0.022935322010529224963732
+  ]
+  const gaussWeights = [
+	0.417959183673469387755102, 0.3818300505051189449503698,
+	0.2797053914892766679014678, 0.1294849661688696932706114
+  ]
 
-  var abs = Math.abs,
-	sqrt = Math.sqrt,
-	pow = Math.pow,
-	log2 = (
-	  Math.log2 ||
-	  function (x) {
-		return Math.log(x) * Math.LOG2E
-	  }
-	),
-	EPSILON = 1e-12,
-	MACHINE_EPSILON = 1.12e-16
+  const abs = Math.abs
+  const sqrt = Math.sqrt
+  const pow = Math.pow
+  const log2 = (
+	Math.log2 ||
+	function (x) {
+	  return Math.log(x) * Math.LOG2E
+	}
+  )
+  const EPSILON = 1e-12
+  const MACHINE_EPSILON = 1.12e-16
 
   function getKronrod(f, a, b) {
-	var A = (b - a) * 0.5,
-	  B = A + a,
-	  fx = f(B),
-	  kronrod = kronrodWeights[0] * fx,
-	  gauss = gaussWeights[0] * fx
-	for (var i = 1; i < 8; i++) {
-	  var Ax = A * kronrodNodes[i]
+	const A = (b - a) * 0.5
+	const B = A + a
+	let fx = f(B)
+	let kronrod = kronrodWeights[0] * fx
+	let gauss = gaussWeights[0] * fx
+	for (let i = 1; i < 8; i++) {
+	  const Ax = A * kronrodNodes[i]
 	  fx = f(B + Ax) + f(B - Ax)
 	  kronrod += kronrodWeights[i] * fx
 	  if (!(i & 1)) gauss += gaussWeights[i >> 1] * fx
@@ -1318,7 +1335,7 @@ var Numerical = new (function () {
   }
 
   function integrate(f, a, b, estimate, tolerance) {
-	var m = (a + b) * 0.5
+	const m = (a + b) * 0.5
 	return estimate[1] <= tolerance || m === a || m === b
 	  ? estimate[0]
 	  : integrate(f, a, m, getKronrod(f, a, m), tolerance) +
@@ -1331,36 +1348,36 @@ var Numerical = new (function () {
 
   function getDiscriminant(a, b, c) {
 	function split(v) {
-	  var x = v * 134217729,
-		y = v - x,
-		hi = y + x,
-		lo = v - hi
+	  const x = v * 134217729
+	  const y = v - x
+	  const hi = y + x
+	  const lo = v - hi
 	  return [hi, lo]
 	}
 
-	var D = b * b - a * c,
-	  E = b * b + a * c
+	let D = b * b - a * c
+	const E = b * b + a * c
 	if (abs(D) * 3 < E) {
-	  var ad = split(a),
-		bd = split(b),
-		cd = split(c),
-		p = b * b,
-		dp = bd[0] * bd[0] - p + 2 * bd[0] * bd[1] + bd[1] * bd[1],
-		q = a * c,
-		dq = (
-		  ad[0] * cd[0] -
-		  q +
-		  ad[0] * cd[1] +
-		  ad[1] * cd[0] +
-		  ad[1] * cd[1]
-		)
+	  const ad = split(a)
+	  const bd = split(b)
+	  const cd = split(c)
+	  const p = b * b
+	  const dp = bd[0] * bd[0] - p + 2 * bd[0] * bd[1] + bd[1] * bd[1]
+	  const q = a * c
+	  const dq = (
+		ad[0] * cd[0] -
+		q +
+		ad[0] * cd[1] +
+		ad[1] * cd[0] +
+		ad[1] * cd[1]
+	  )
 	  D = p - q + (dp - dq)
 	}
 	return D
   }
 
   function getNormalizationFactor() {
-	var norm = Math.max.apply(Math, arguments)
+	const norm = Math.max.apply(Math, arguments)
 	return norm && (norm < 1e-8 || norm > 1e8)
 	  ? pow(2, -Math.round(log2(norm)))
 	  : 0
@@ -1390,26 +1407,26 @@ var Numerical = new (function () {
 	clamp: clamp,
 
 	integrate: function (f, a, b, tolerance) {
-	  var estimate = getKronrod(f, a, b)
+	  const estimate = getKronrod(f, a, b)
 	  return integrate(f, a, b, estimate, abs(estimate[0]) * tolerance)
 	},
 
 	gauss: function (f, a, b) {
-	  var A = (b - a) * 0.5,
-		B = A + a,
-		gauss = gaussWeights[0] * f(B)
-	  for (var i = 2; i < 8; i += 2) {
-		var Ax = A * kronrodNodes[i]
+	  const A = (b - a) * 0.5
+	  const B = A + a
+	  let gauss = gaussWeights[0] * f(B)
+	  for (let i = 2; i < 8; i += 2) {
+		const Ax = A * kronrodNodes[i]
 		gauss += gaussWeights[i >> 1] * (f(B + Ax) + f(B - Ax))
 	  }
 	  return A * gauss
 	},
 
 	findRoot: function (f, df, x, a, b, n, tolerance) {
-	  for (var i = 0; i < n; i++) {
-		var fx = f(x),
-		  dx = fx / df(x),
-		  nx = x - dx
+	  for (let i = 0; i < n; i++) {
+		const fx = f(x)
+		const dx = fx / df(x)
+		const nx = x - dx
 		if (abs(dx) < tolerance) {
 		  x = nx
 		  break
@@ -1425,27 +1442,27 @@ var Numerical = new (function () {
 	},
 
 	findSignChange: function (f, a, b, fa, fb, tolerance) {
-	  var sign = fa < 0 ? 1 : -1,
-		steps = Math.max(Math.ceil(log2((b - a) / tolerance)) - 1, 0),
-		scaled = tolerance * Math.pow(2, steps + 1),
-		k1 = 0.2 / (b - a)
+	  const sign = fa < 0 ? 1 : -1
+	  const steps = Math.max(Math.ceil(log2((b - a) / tolerance)) - 1, 0)
+	  let scaled = tolerance * Math.pow(2, steps + 1)
+	  const k1 = 0.2 / (b - a)
 	  fa *= sign
 	  fb *= sign
 	  while (b - a > 2 * tolerance) {
-		var half = (a + b) / 2,
-		  r = scaled - (b - a) / 2,
-		  xf = (fb * a - fa * b) / (fb - fa),
-		  sigma = half - xf,
-		  delta = k1 * (b - a) * (b - a),
-		  xt =
-			delta <= abs(sigma)
-			  ? xf + (sigma < 0 ? -delta : delta)
-			  : half,
-		  x =
-			abs(xt - half) <= r
-			  ? xt
-			  : half - (sigma < 0 ? -r : r),
-		  fx = sign * f(x)
+		const half = (a + b) / 2
+		const r = scaled - (b - a) / 2
+		const xf = (fb * a - fa * b) / (fb - fa)
+		const sigma = half - xf
+		const delta = k1 * (b - a) * (b - a)
+		const xt =
+		  delta <= abs(sigma)
+			? xf + (sigma < 0 ? -delta : delta)
+			: half
+		const x =
+		  abs(xt - half) <= r
+			? xt
+			: half - (sigma < 0 ? -r : r)
+		const fx = sign * f(x)
 		if (fx > 0) {
 		  b = x
 		  fb = fx
@@ -1461,16 +1478,16 @@ var Numerical = new (function () {
 	},
 
 	solveQuadratic: function (a, b, c, roots, min, max) {
-	  var x1,
-		x2 = Infinity
+	  let x1
+	  let x2 = Infinity
 	  if (abs(a) < EPSILON) {
 		if (abs(b) < EPSILON) return abs(c) < EPSILON ? -1 : 0
 		x1 = -c / b
 	  } else {
 		b *= -0.5
-		var D = getDiscriminant(a, b, c)
+		let D = getDiscriminant(a, b, c)
 		if (D && abs(D) < MACHINE_EPSILON) {
-		  var f = getNormalizationFactor(abs(a), abs(b), abs(c))
+		  const f = getNormalizationFactor(abs(a), abs(b), abs(c))
 		  if (f) {
 			a *= f
 			b *= f
@@ -1479,8 +1496,8 @@ var Numerical = new (function () {
 		  }
 		}
 		if (D >= -MACHINE_EPSILON) {
-		  var Q = D < 0 ? 0 : sqrt(D),
-			R = b + (b < 0 ? -Q : Q)
+		  const Q = D < 0 ? 0 : sqrt(D)
+		  const R = b + (b < 0 ? -Q : Q)
 		  if (R === 0) {
 			x1 = c / a
 			x2 = -x1
@@ -1490,10 +1507,10 @@ var Numerical = new (function () {
 		  }
 		}
 	  }
-	  var count = 0,
-		boundless = min == null,
-		minB = min - EPSILON,
-		maxB = max + EPSILON
+	  let count = 0
+	  const boundless = min == null
+	  const minB = min - EPSILON
+	  const maxB = max + EPSILON
 	  if (isFinite(x1) && (boundless || x1 > minB && x1 < maxB))
 		roots[count++] = boundless ? x1 : clamp(x1, min, max)
 	  if (x2 !== x1 && isFinite(x2) && (boundless || x2 > minB && x2 < maxB))
@@ -1502,12 +1519,12 @@ var Numerical = new (function () {
 	},
 
 	solveCubic: function (a, b, c, d, roots, min, max) {
-	  var f = getNormalizationFactor(abs(a), abs(b), abs(c), abs(d)),
-		x,
-		b1,
-		c2,
-		qd,
-		q
+	  const f = getNormalizationFactor(abs(a), abs(b), abs(c), abs(d))
+	  let x
+	  let b1
+	  let c2
+	  let qd
+	  let q
 	  if (f) {
 		a *= f
 		b *= f
@@ -1517,7 +1534,7 @@ var Numerical = new (function () {
 
 	  function evaluate(x0) {
 		x = x0
-		var tmp = a * x
+		const tmp = a * x
 		b1 = tmp + b
 		c2 = b1 * x + c
 		qd = (tmp + b1) * x + c2
@@ -1535,12 +1552,12 @@ var Numerical = new (function () {
 		x = 0
 	  } else {
 		evaluate(-(b / a) / 3)
-		var t = q / a,
-		  r = pow(abs(t), 1 / 3),
-		  s = t < 0 ? -1 : 1,
-		  td = -qd / a,
-		  rd = td > 0 ? 1.324717957244746 * Math.max(r, sqrt(td)) : r,
-		  x0 = x - s * rd
+		const t = q / a
+		const r = pow(abs(t), 1 / 3)
+		const s = t < 0 ? -1 : 1
+		const td = -qd / a
+		const rd = td > 0 ? 1.324717957244746 * Math.max(r, sqrt(td)) : r
+		let x0 = x - s * rd
 		if (x0 !== x) {
 		  do {
 			evaluate(x0)
@@ -1552,8 +1569,8 @@ var Numerical = new (function () {
 		  }
 		}
 	  }
-	  var count = Numerical.solveQuadratic(a, b1, c2, roots, min, max),
-		boundless = min == null
+	  let count = Numerical.solveQuadratic(a, b1, c2, roots, min, max)
+	  const boundless = min == null
 	  if (
 		isFinite(x) &&
 		(count === 0 || count > 0 && x !== roots[0] && x !== roots[1]) &&
@@ -1564,21 +1581,21 @@ var Numerical = new (function () {
 	},
 
 	solveBernstein: function (coefficients, errors, roots, width) {
-	  var count = 0
+	  let count = 0
 
 	  function subdivide(values, bounds) {
-		var left = [],
-		  right = [],
-		  leftBounds = [],
-		  rightBounds = [],
-		  v = values.slice(),
-		  e = bounds.slice()
-		for (var n = v.length; n > 0; n--) {
+		const left = []
+		const right = []
+		const leftBounds = []
+		const rightBounds = []
+		const v = values.slice()
+		const e = bounds.slice()
+		for (let n = v.length; n > 0; n--) {
 		  left.push(v[0])
 		  right.unshift(v[n - 1])
 		  leftBounds.push(e[0])
 		  rightBounds.unshift(e[n - 1])
-		  for (var i = 0; i < n - 1; i++) {
+		  for (let i = 0; i < n - 1; i++) {
 			v[i] = (v[i] + v[i + 1]) / 2
 			e[i] = (
 			  (e[i] + e[i + 1]) / 2 +
@@ -1590,23 +1607,23 @@ var Numerical = new (function () {
 	  }
 
 	  function evaluate(values, t) {
-		var v = values.slice()
-		for (var n = v.length - 1; n > 0; n--) {
-		  for (var i = 0; i < n; i++) v[i] = v[i] + (v[i + 1] - v[i]) * t
+		const v = values.slice()
+		for (let n = v.length - 1; n > 0; n--) {
+		  for (let i = 0; i < n; i++) v[i] = v[i] + (v[i + 1] - v[i]) * t
 		}
 		return v[0]
 	  }
 
 	  function solve(values, bounds, from, to) {
-		var changes = 0,
-		  zeros = 0,
-		  sign = 0
-		for (var i = 0, l = values.length; i < l; i++) {
-		  var value = values[i]
+		let changes = 0
+		let zeros = 0
+		let sign = 0
+		for (let i = 0, l = values.length; i < l; i++) {
+		  const value = values[i]
 		  if (abs(value) <= bounds[i]) {
 			zeros++
 		  } else {
-			var s = value > 0 ? 1 : -1
+			const s = value > 0 ? 1 : -1
 			if (sign && s !== sign) changes++
 			sign = s
 		  }
@@ -1617,15 +1634,15 @@ var Numerical = new (function () {
 		) {
 		  roots[count++] = (from + to) / 2
 		} else if (changes === 1 && !zeros) {
-		  var a = 0,
-			b = 1,
-			isNegative = values[0] < 0
+		  let a = 0
+		  let b = 1
+		  const isNegative = values[0] < 0
 		  while (
 			from + (to - from) * a < from + (to - from) * b &&
 			(a + b) / 2 > a &&
 			(a + b) / 2 < b
 		  ) {
-			var t = (a + b) / 2
+			const t = (a + b) / 2
 			if (evaluate(values, t) < 0 === isNegative) {
 			  a = t
 			} else {
@@ -1634,8 +1651,8 @@ var Numerical = new (function () {
 		  }
 		  roots[count++] = from + (to - from) * (a + b) / 2
 		} else if (changes || zeros) {
-		  var parts = subdivide(values, bounds),
-			middle = (from + to) / 2
+		  const parts = subdivide(values, bounds)
+		  const middle = (from + to) / 2
 		  solve(parts[0], parts[2], from, middle)
 		  solve(parts[1], parts[3], middle, to)
 		}
@@ -1647,13 +1664,13 @@ var Numerical = new (function () {
   }
 })()
 
-var UID = {
+const UID = {
   _id: 1,
   _pools: {},
 
   get: function (name) {
 	if (name) {
-	  var pool = this._pools[name]
+	  let pool = this._pools[name]
 	  if (!pool) pool = this._pools[name] = { _id: 1 }
 	  return pool._id++
 	} else {
@@ -1662,24 +1679,24 @@ var UID = {
   }
 }
 
-var Point = Base.extend(
+const Point = Base.extend(
    {
 	_class: 'Point',
 	_readIndex: true,
 
 	initialize: function Point(arg0, arg1) {
-	  var type = typeof arg0,
-		reading = this.__read,
-		read = 0
+	  const type = typeof arg0
+	  const reading = this.__read
+	  let read = 0
 	  if (type === 'number') {
-		var hasY = typeof arg1 === 'number'
+		const hasY = typeof arg1 === 'number'
 		this._set(arg0, hasY ? arg1 : arg0)
 		if (reading) read = hasY ? 2 : 1
 	  } else if (type === 'undefined' || arg0 === null) {
 		this._set(0, 0)
 		if (reading) read = arg0 === null ? 1 : 0
 	  } else {
-		var obj = type === 'string' ? arg0.split(/[\s,]+/) || [] : arg0
+		const obj = type === 'string' ? arg0.split(/[\s,]+/) || [] : arg0
 		read = 1
 		if (Array.isArray(obj)) {
 		  this._set(+obj[0], +(obj.length > 1 ? obj[1] : obj[0]))
@@ -1730,12 +1747,12 @@ var Point = Base.extend(
 	},
 
 	toString: function () {
-	  var f = Formatter.instance
+	  const f = Formatter.instance
 	  return '{ x: ' + f.number(this.x) + ', y: ' + f.number(this.y) + ' }'
 	},
 
 	_serialize: function (options) {
-	  var f = options.formatter
+	  const f = options.formatter
 	  return [f.number(this.x), f.number(this.y)]
 	},
 
@@ -1749,13 +1766,13 @@ var Point = Base.extend(
 
 	setLength: function (length) {
 	  if (this.isZero()) {
-		var angle = this._angle || 0
+		const angle = this._angle || 0
 		this._set(
 		  Math.cos(angle) * length,
 		  Math.sin(angle) * length
 		)
 	  } else {
-		var scale = length / this.getLength()
+		const scale = length / this.getLength()
 		if (Numerical.isZero(scale)) this.getAngle()
 		this._set(
 		  this.x * scale,
@@ -1781,12 +1798,12 @@ var Point = Base.extend(
 			this._angle || 0
 		  : (this._angle = Math.atan2(this.y, this.x))
 	  } else {
-		var point = Point.read(arguments),
-		  div = this.getLength() * point.getLength()
+		const point = Point.read(arguments)
+		const div = this.getLength() * point.getLength()
 		if (Numerical.isZero(div)) {
 		  return NaN
 		} else {
-		  var a = this.dot(point) / div
+		  const a = this.dot(point) / div
 		  return Math.acos(a < -1 ? -1 : a > 1 ? 1 : a)
 		}
 	  }
@@ -1795,7 +1812,7 @@ var Point = Base.extend(
 	setAngleInRadians: function (angle) {
 	  this._angle = angle
 	  if (!this.isZero()) {
-		var length = this.getLength()
+		const length = this.getLength()
 		this._set(
 		  Math.cos(angle) * length,
 		  Math.sin(angle) * length
@@ -1811,25 +1828,25 @@ var Point = Base.extend(
 	beans: false,
 
 	getDirectedAngle: function () {
-	  var point = Point.read(arguments)
+	  const point = Point.read(arguments)
 	  return Math.atan2(this.cross(point), this.dot(point)) * 180 / Math.PI
 	},
 
 	getDistance: function () {
-	  var args = arguments,
-		point = Point.read(args),
-		x = point.x - this.x,
-		y = point.y - this.y,
-		d = x * x + y * y,
-		squared = Base.read(args)
+	  const args = arguments
+	  const point = Point.read(args)
+	  const x = point.x - this.x
+	  const y = point.y - this.y
+	  const d = x * x + y * y
+	  const squared = Base.read(args)
 	  return squared ? d : Math.sqrt(d)
 	},
 
 	normalize: function (length) {
 	  if (length === undefined) length = 1
-	  var current = this.getLength(),
-		scale = current !== 0 ? length / current : 0,
-		point = new Point(this.x * scale, this.y * scale)
+	  const current = this.getLength()
+	  const scale = current !== 0 ? length / current : 0
+	  const point = new Point(this.x * scale, this.y * scale)
 	  if (scale >= 0) point._angle = this._angle
 	  return point
 	},
@@ -1837,9 +1854,9 @@ var Point = Base.extend(
 	rotate: function (angle, center) {
 	  if (angle === 0) return this.clone()
 	  angle = angle * Math.PI / 180
-	  var point = center ? this.subtract(center) : this,
-		sin = Math.sin(angle),
-		cos = Math.cos(angle)
+	  let point = center ? this.subtract(center) : this
+	  const sin = Math.sin(angle)
+	  const cos = Math.cos(angle)
 	  point = new Point(
 		point.x * cos - point.y * sin,
 		point.x * sin + point.y * cos
@@ -1852,27 +1869,27 @@ var Point = Base.extend(
 	},
 
 	add: function () {
-	  var point = Point.read(arguments)
+	  const point = Point.read(arguments)
 	  return new Point(this.x + point.x, this.y + point.y)
 	},
 
 	subtract: function () {
-	  var point = Point.read(arguments)
+	  const point = Point.read(arguments)
 	  return new Point(this.x - point.x, this.y - point.y)
 	},
 
 	multiply: function () {
-	  var point = Point.read(arguments)
+	  const point = Point.read(arguments)
 	  return new Point(this.x * point.x, this.y * point.y)
 	},
 
 	divide: function () {
-	  var point = Point.read(arguments)
+	  const point = Point.read(arguments)
 	  return new Point(this.x / point.x, this.y / point.y)
 	},
 
 	modulo: function () {
-	  var point = Point.read(arguments)
+	  const point = Point.read(arguments)
 	  return new Point(this.x % point.x, this.y % point.y)
 	},
 
@@ -1885,26 +1902,26 @@ var Point = Base.extend(
 	},
 
 	isClose: function () {
-	  var args = arguments,
-		point = Point.read(args),
-		tolerance = Base.read(args)
+	  const args = arguments
+	  const point = Point.read(args)
+	  const tolerance = Base.read(args)
 	  return this.getDistance(point) <= tolerance
 	},
 
 	isCollinear: function () {
-	  var point = Point.read(arguments)
+	  const point = Point.read(arguments)
 	  return Point.isCollinear(this.x, this.y, point.x, point.y)
 	},
 
 	isColinear: '#isCollinear',
 
 	isOrthogonal: function () {
-	  var point = Point.read(arguments)
+	  const point = Point.read(arguments)
 	  return Point.isOrthogonal(this.x, this.y, point.x, point.y)
 	},
 
 	isZero: function () {
-	  var isZero = Numerical.isZero
+	  const isZero = Numerical.isZero
 	  return isZero(this.x) && isZero(this.y)
 	},
 
@@ -1920,18 +1937,18 @@ var Point = Base.extend(
 	},
 
 	dot: function () {
-	  var point = Point.read(arguments)
+	  const point = Point.read(arguments)
 	  return this.x * point.x + this.y * point.y
 	},
 
 	cross: function () {
-	  var point = Point.read(arguments)
+	  const point = Point.read(arguments)
 	  return this.x * point.y - this.y * point.x
 	},
 
 	project: function () {
-	  var point = Point.read(arguments),
-		scale = point.isZero() ? 0 : this.dot(point) / point.dot(point)
+	  const point = Point.read(arguments)
+	  const scale = point.isZero() ? 0 : this.dot(point) / point.dot(point)
 	  return new Point(
 		point.x * scale,
 		point.y * scale
@@ -1939,9 +1956,9 @@ var Point = Base.extend(
 	},
 
 	clamp: function () {
-	  var args = arguments,
-		min = Point.read(args),
-		max = Point.read(args)
+	  const args = arguments
+	  const min = Point.read(args)
+	  const max = Point.read(args)
 	  return new Point(
 		Numerical.clamp(this.x, min.x, max.x),
 		Numerical.clamp(this.y, min.y, max.y)
@@ -1950,9 +1967,9 @@ var Point = Base.extend(
 
 	statics:  {
 	  min: function () {
-		var args = arguments,
-		  point1 = Point.read(args),
-		  point2 = Point.read(args)
+		const args = arguments
+		const point1 = Point.read(args)
+		const point2 = Point.read(args)
 		return new Point(
 		  Math.min(point1.x, point2.x),
 		  Math.min(point1.y, point2.y)
@@ -1960,9 +1977,9 @@ var Point = Base.extend(
 	  },
 
 	  max: function () {
-		var args = arguments,
-		  point1 = Point.read(args),
-		  point2 = Point.read(args)
+		const args = arguments
+		const point1 = Point.read(args)
+		const point2 = Point.read(args)
 		return new Point(
 		  Math.max(point1.x, point2.x),
 		  Math.max(point1.y, point2.y)
@@ -1993,7 +2010,7 @@ var Point = Base.extend(
   Base.each(
 	['round', 'ceil', 'floor', 'abs'],
 	function (key) {
-	  var op = Math[key]
+	  const op = Math[key]
 	  this[key] = function () {
 		return new Point(op(this.x), op(this.y))
 	  }
@@ -2002,7 +2019,7 @@ var Point = Base.extend(
   )
 )
 
-var LinkedPoint = Point.extend({
+const LinkedPoint = Point.extend({
   initialize: function Point(x, y, owner, setter) {
 	this._x = x
 	this._y = y
@@ -2048,24 +2065,24 @@ var LinkedPoint = Point.extend({
   }
 })
 
-var Size = Base.extend(
+const Size = Base.extend(
    {
 	_class: 'Size',
 	_readIndex: true,
 
 	initialize: function Size(arg0, arg1) {
-	  var type = typeof arg0,
-		reading = this.__read,
-		read = 0
+	  const type = typeof arg0
+	  const reading = this.__read
+	  let read = 0
 	  if (type === 'number') {
-		var hasHeight = typeof arg1 === 'number'
+		const hasHeight = typeof arg1 === 'number'
 		this._set(arg0, hasHeight ? arg1 : arg0)
 		if (reading) read = hasHeight ? 2 : 1
 	  } else if (type === 'undefined' || arg0 === null) {
 		this._set(0, 0)
 		if (reading) read = arg0 === null ? 1 : 0
 	  } else {
-		var obj = type === 'string' ? arg0.split(/[\s,]+/) || [] : arg0
+		const obj = type === 'string' ? arg0.split(/[\s,]+/) || [] : arg0
 		read = 1
 		if (Array.isArray(obj)) {
 		  this._set(+obj[0], +(obj.length > 1 ? obj[1] : obj[0]))
@@ -2112,7 +2129,7 @@ var Size = Base.extend(
 	},
 
 	toString: function () {
-	  var f = Formatter.instance
+	  const f = Formatter.instance
 	  return (
 		'{ width: ' +
 		f.number(this.width) +
@@ -2123,7 +2140,7 @@ var Size = Base.extend(
 	},
 
 	_serialize: function (options) {
-	  var f = options.formatter
+	  const f = options.formatter
 	  return [f.number(this.width), f.number(this.height)]
 	},
 
@@ -2132,27 +2149,27 @@ var Size = Base.extend(
 	},
 
 	add: function () {
-	  var size = Size.read(arguments)
+	  const size = Size.read(arguments)
 	  return new Size(this.width + size.width, this.height + size.height)
 	},
 
 	subtract: function () {
-	  var size = Size.read(arguments)
+	  const size = Size.read(arguments)
 	  return new Size(this.width - size.width, this.height - size.height)
 	},
 
 	multiply: function () {
-	  var size = Size.read(arguments)
+	  const size = Size.read(arguments)
 	  return new Size(this.width * size.width, this.height * size.height)
 	},
 
 	divide: function () {
-	  var size = Size.read(arguments)
+	  const size = Size.read(arguments)
 	  return new Size(this.width / size.width, this.height / size.height)
 	},
 
 	modulo: function () {
-	  var size = Size.read(arguments)
+	  const size = Size.read(arguments)
 	  return new Size(this.width % size.width, this.height % size.height)
 	},
 
@@ -2161,7 +2178,7 @@ var Size = Base.extend(
 	},
 
 	isZero: function () {
-	  var isZero = Numerical.isZero
+	  const isZero = Numerical.isZero
 	  return isZero(this.width) && isZero(this.height)
 	},
 
@@ -2192,7 +2209,7 @@ var Size = Base.extend(
   Base.each(
 	['round', 'ceil', 'floor', 'abs'],
 	function (key) {
-	  var op = Math[key]
+	  const op = Math[key]
 	  this[key] = function () {
 		return new Size(op(this.width), op(this.height))
 	  }
@@ -2201,7 +2218,7 @@ var Size = Base.extend(
   )
 )
 
-var LinkedSize = Size.extend({
+const LinkedSize = Size.extend({
   initialize: function Size(width, height, owner, setter) {
 	this._width = width
 	this._height = height
@@ -2235,16 +2252,16 @@ var LinkedSize = Size.extend({
   }
 })
 
-var Rectangle = Base.extend(
+const Rectangle = Base.extend(
    {
 	_class: 'Rectangle',
 	_readIndex: true,
 	beans: true,
 
 	initialize: function Rectangle(arg0, arg1, arg2, arg3) {
-	  var args = arguments,
-		type = typeof arg0,
-		read
+	  const args = arguments
+	  const type = typeof arg0
+	  let read
 	  if (type === 'number') {
 		this._set(arg0, arg1, arg2, arg3)
 		read = 4
@@ -2263,7 +2280,7 @@ var Rectangle = Base.extend(
 		  this._set(arg0.x || 0, arg0.y || 0, arg0.width || 0, arg0.height || 0)
 		  read = 1
 		} else if (arg0.from === undefined && arg0.to === undefined) {
-		  var builder = new RectangleBuilder()
+		  const builder = new RectangleBuilder()
 		  if (Base.readSupported(args, builder)) {
 			read = 1
 		  }
@@ -2271,14 +2288,14 @@ var Rectangle = Base.extend(
 		}
 	  }
 	  if (read === undefined) {
-		var frm = Point.readNamed(args, 'from'),
-		  next = Base.peek(args),
-		  x = frm.x,
-		  y = frm.y,
-		  width,
-		  height
+		const frm = Point.readNamed(args, 'from')
+		const next = Base.peek(args)
+		let x = frm.x
+		let y = frm.y
+		let width
+		let height
 		if (next && next.x !== undefined || Base.hasNamed(args, 'to')) {
-		  var to = Point.readNamed(args, 'to')
+		  const to = Point.readNamed(args, 'to')
 		  width = to.x - x
 		  height = to.y - y
 		  if (width < 0) {
@@ -2290,14 +2307,14 @@ var Rectangle = Base.extend(
 			height = -height
 		  }
 		} else {
-		  var size = Size.read(args)
+		  const size = Size.read(args)
 		  width = size.width
 		  height = size.height
 		}
 		this._set(x, y, width, height)
 		read = args.__index
 	  }
-	  var filtered = args.__filtered
+	  const filtered = args.__filtered
 	  if (filtered) this.__filtered = filtered
 	  if (this.__read) this.__read = read
 	  return this
@@ -2318,7 +2335,7 @@ var Rectangle = Base.extend(
 	},
 
 	equals: function (rect) {
-	  var rt = Base.isPlainValue(rect)
+	  const rt = Base.isPlainValue(rect)
 		? Rectangle.read(arguments)
 		: rect
 	  return (
@@ -2334,7 +2351,7 @@ var Rectangle = Base.extend(
 	},
 
 	toString: function () {
-	  var f = Formatter.instance
+	  const f = Formatter.instance
 	  return (
 		'{ x: ' +
 		f.number(this.x) +
@@ -2349,7 +2366,7 @@ var Rectangle = Base.extend(
 	},
 
 	_serialize: function (options) {
-	  var f = options.formatter
+	  const f = options.formatter
 	  return [
 		f.number(this.x),
 		f.number(this.y),
@@ -2363,23 +2380,23 @@ var Rectangle = Base.extend(
 	},
 
 	getPoint: function (_dontLink) {
-	  var ctor = _dontLink ? Point : LinkedPoint
+	  const ctor = _dontLink ? Point : LinkedPoint
 	  return new ctor(this.x, this.y, this, 'setPoint')
 	},
 
 	setPoint: function () {
-	  var point = Point.read(arguments)
+	  const point = Point.read(arguments)
 	  this.x = point.x
 	  this.y = point.y
 	},
 
 	getSize: function (_dontLink) {
-	  var ctor = _dontLink ? Size : LinkedSize
+	  const ctor = _dontLink ? Size : LinkedSize
 	  return new ctor(this.width, this.height, this, 'setSize')
 	},
 
 	setSize: function () {
-	  var size = Size.read(arguments)
+	  const size = Size.read(arguments)
 	  this.width = size.width
 	  this.height = size.height
 	},
@@ -2435,12 +2452,12 @@ var Rectangle = Base.extend(
 	},
 
 	getCenter: function (_dontLink) {
-	  var ctor = _dontLink ? Point : LinkedPoint
+	  const ctor = _dontLink ? Point : LinkedPoint
 	  return new ctor(this.getCenterX(), this.getCenterY(), this, 'setCenter')
 	},
 
 	setCenter: function () {
-	  var point = Point.read(arguments)
+	  const point = Point.read(arguments)
 	  this.setCenterX(point.x)
 	  this.setCenterY(point.y)
 	  return this
@@ -2464,8 +2481,8 @@ var Rectangle = Base.extend(
 	},
 
 	_containsPoint: function (point) {
-	  var x = point.x,
-		y = point.y
+	  const x = point.x
+	  const y = point.y
 	  return (
 		x >= this.x &&
 		y >= this.y &&
@@ -2475,8 +2492,8 @@ var Rectangle = Base.extend(
 	},
 
 	_containsRectangle: function (rect) {
-	  var x = rect.x,
-		y = rect.y
+	  const x = rect.x
+	  const y = rect.y
 	  return (
 		x >= this.x &&
 		y >= this.y &&
@@ -2486,8 +2503,8 @@ var Rectangle = Base.extend(
 	},
 
 	intersects: function () {
-	  var rect = Rectangle.read(arguments),
-		epsilon = Base.read(arguments) || 0
+	  const rect = Rectangle.read(arguments)
+	  const epsilon = Base.read(arguments) || 0
 	  return (
 		rect.x + rect.width > this.x - epsilon &&
 		rect.y + rect.height > this.y - epsilon &&
@@ -2497,36 +2514,36 @@ var Rectangle = Base.extend(
 	},
 
 	intersect: function () {
-	  var rect = Rectangle.read(arguments),
-		x1 = Math.max(this.x, rect.x),
-		y1 = Math.max(this.y, rect.y),
-		x2 = Math.min(this.x + this.width, rect.x + rect.width),
-		y2 = Math.min(this.y + this.height, rect.y + rect.height)
+	  const rect = Rectangle.read(arguments)
+	  const x1 = Math.max(this.x, rect.x)
+	  const y1 = Math.max(this.y, rect.y)
+	  const x2 = Math.min(this.x + this.width, rect.x + rect.width)
+	  const y2 = Math.min(this.y + this.height, rect.y + rect.height)
 	  return new Rectangle(x1, y1, x2 - x1, y2 - y1)
 	},
 
 	unite: function () {
-	  var rect = Rectangle.read(arguments),
-		x1 = Math.min(this.x, rect.x),
-		y1 = Math.min(this.y, rect.y),
-		x2 = Math.max(this.x + this.width, rect.x + rect.width),
-		y2 = Math.max(this.y + this.height, rect.y + rect.height)
+	  const rect = Rectangle.read(arguments)
+	  const x1 = Math.min(this.x, rect.x)
+	  const y1 = Math.min(this.y, rect.y)
+	  const x2 = Math.max(this.x + this.width, rect.x + rect.width)
+	  const y2 = Math.max(this.y + this.height, rect.y + rect.height)
 	  return new Rectangle(x1, y1, x2 - x1, y2 - y1)
 	},
 
 	include: function () {
-	  var point = Point.read(arguments)
-	  var x1 = Math.min(this.x, point.x),
-		y1 = Math.min(this.y, point.y),
-		x2 = Math.max(this.x + this.width, point.x),
-		y2 = Math.max(this.y + this.height, point.y)
+	  const point = Point.read(arguments)
+	  const x1 = Math.min(this.x, point.x)
+	  const y1 = Math.min(this.y, point.y)
+	  const x2 = Math.max(this.x + this.width, point.x)
+	  const y2 = Math.max(this.y + this.height, point.y)
 	  return new Rectangle(x1, y1, x2 - x1, y2 - y1)
 	},
 
 	expand: function () {
-	  var amount = Size.read(arguments),
-		hor = amount.width,
-		ver = amount.height
+	  const amount = Size.read(arguments)
+	  const hor = amount.width
+	  const ver = amount.height
 	  return new Rectangle(
 		this.x - hor / 2,
 		this.y - ver / 2,
@@ -2536,12 +2553,12 @@ var Rectangle = Base.extend(
 	},
 
 	scale: function () {
-	  var args = arguments,
-		scale = Point.read(args),
-		center = (
-		  Point.read(args, 0, { readNull: true }) ||
-		  this.getCenter(true)
-		)
+	  const args = arguments
+	  const scale = Point.read(args)
+	  const center = (
+		Point.read(args, 0, { readNull: true }) ||
+		this.getCenter(true)
+	  )
 	  return new Rectangle(
 		this.getTopLeft(true).subtract(center).multiply(scale).add(center),
 		this.getBottomRight(true).subtract(center).multiply(scale).add(center)
@@ -2560,23 +2577,23 @@ var Rectangle = Base.extend(
 	  ['Bottom', 'Center']
 	],
 	function (parts, index) {
-	  var part = parts.join(''),
-		xFirst = /^[RL]/.test(part)
+	  const part = parts.join('')
+	  const xFirst = /^[RL]/.test(part)
 	  if (index >= 4) parts[1] += xFirst ? 'Y' : 'X'
-	  var x = parts[xFirst ? 0 : 1],
-		y = parts[xFirst ? 1 : 0],
-		getX = 'get' + x,
-		getY = 'get' + y,
-		setX = 'set' + x,
-		setY = 'set' + y,
-		get = 'get' + part,
-		set = 'set' + part
+	  const x = parts[xFirst ? 0 : 1]
+	  const y = parts[xFirst ? 1 : 0]
+	  const getX = 'get' + x
+	  const getY = 'get' + y
+	  const setX = 'set' + x
+	  const setY = 'set' + y
+	  const get = 'get' + part
+	  const set = 'set' + part
 	  this[get] = function (_dontLink) {
-		var ctor = _dontLink ? Point : LinkedPoint
+		const ctor = _dontLink ? Point : LinkedPoint
 		return new ctor(this[getX](), this[getY](), this, set)
 	  }
 	  this[set] = function () {
-		var point = Point.read(arguments)
+		const point = Point.read(arguments)
 		this[setX](point.x)
 		this[setY](point.y)
 	  }
@@ -2587,7 +2604,7 @@ var Rectangle = Base.extend(
   )
 )
 
-var LinkedRectangle = Rectangle.extend(
+const LinkedRectangle = Rectangle.extend(
   {
 	initialize: function Rectangle(x, y, width, height, owner, setter) {
 	  this._set(x, y, width, height, true)
@@ -2605,13 +2622,13 @@ var LinkedRectangle = Rectangle.extend(
 	}
   },
   new (function () {
-	var proto = Rectangle.prototype
+	const proto = Rectangle.prototype
 
 	return Base.each(
 	  ['x', 'y', 'width', 'height'],
 	  function (key) {
-		var part = Base.capitalize(key),
-		  internal = '_' + key
+		const part = Base.capitalize(key)
+		const internal = '_' + key
 		this['get' + part] = function () {
 		  return this[internal]
 		}
@@ -2629,7 +2646,7 @@ var LinkedRectangle = Rectangle.extend(
 		  'BottomCenter'
 		],
 		function (key) {
-		  var name = 'set' + key
+		  const name = 'set' + key
 		  this[name] = function () {
 			this._dontNotify = true
 			proto[name].apply(this, arguments)
@@ -2643,7 +2660,7 @@ var LinkedRectangle = Rectangle.extend(
 		  },
 
 		  setSelected: function (selected) {
-			var owner = this._owner
+			const owner = this._owner
 			if (owner._changeSelection) {
 			  owner._changeSelection(this._getSelection(), selected)
 			}
@@ -2660,18 +2677,18 @@ var LinkedRectangle = Rectangle.extend(
   })()
 )
 
-var RectangleBuilder = Rectangle.extend({
+const RectangleBuilder = Rectangle.extend({
   beans: true,
 
   _fw: 1,
   _fh: 1,
 
   setSize: function () {
-	var size = Size.read(arguments),
-	  sx = this._sx,
-	  sy = this._sy,
-	  w = size.width,
-	  h = size.height
+	const size = Size.read(arguments)
+	const sx = this._sx
+	const sy = this._sy
+	const w = size.width
+	const h = size.height
 	if (sx) {
 	  this.x += (this.width - w) * sx
 	}
@@ -2685,7 +2702,7 @@ var RectangleBuilder = Rectangle.extend({
 
   setLeft: function (left) {
 	if (!this._fw) {
-	  var amount = left - this.x
+	  const amount = left - this.x
 	  this.width -= this._sx === 0.5 ? amount * 2 : amount
 	}
 	this.x = left
@@ -2694,7 +2711,7 @@ var RectangleBuilder = Rectangle.extend({
 
   setTop: function (top) {
 	if (!this._fh) {
-	  var amount = top - this.y
+	  const amount = top - this.y
 	  this.height -= this._sy === 0.5 ? amount * 2 : amount
 	}
 	this.y = top
@@ -2703,7 +2720,7 @@ var RectangleBuilder = Rectangle.extend({
 
   setRight: function (right) {
 	if (!this._fw) {
-	  var amount = right - this.x
+	  const amount = right - this.x
 	  this.width = this._sx === 0.5 ? amount * 2 : amount
 	}
 	this.x = right - this.width
@@ -2713,7 +2730,7 @@ var RectangleBuilder = Rectangle.extend({
 
   setBottom: function (bottom) {
 	if (!this._fh) {
-	  var amount = bottom - this.y
+	  const amount = bottom - this.y
 	  this.height = this._sy === 0.5 ? amount * 2 : amount
 	}
 	this.y = bottom - this.height
@@ -2748,14 +2765,14 @@ var RectangleBuilder = Rectangle.extend({
   }
 })
 
-var Matrix = Base.extend(
+const Matrix = Base.extend(
    {
 	_class: 'Matrix',
 
 	initialize: function Matrix(arg, _dontNotify) {
-	  var args = arguments,
-		count = args.length,
-		ok = true
+	  const args = arguments
+	  const count = args.length
+	  let ok = true
 	  if (count >= 6) {
 		this._set.apply(this, args)
 	  } else if (count === 1 || count === 2) {
@@ -2803,7 +2820,7 @@ var Matrix = Base.extend(
 	},
 
 	_changed: function () {
-	  var owner = this._owner
+	  const owner = this._owner
 	  if (owner) {
 		if (owner._applyMatrix) {
 		  owner.transform(null, true)
@@ -2832,7 +2849,7 @@ var Matrix = Base.extend(
 	},
 
 	toString: function () {
-	  var f = Formatter.instance
+	  const f = Formatter.instance
 	  return (
 		'[[' +
 		[f.number(this._a), f.number(this._c), f.number(this._tx)].join(', ') +
@@ -2850,7 +2867,7 @@ var Matrix = Base.extend(
 	},
 
 	apply: function (recursively, _setApplyMatrix) {
-	  var owner = this._owner
+	  const owner = this._owner
 	  if (owner) {
 		owner.transform(null, Base.pick(recursively, true), _setApplyMatrix)
 		return this.isIdentity()
@@ -2859,9 +2876,9 @@ var Matrix = Base.extend(
 	},
 
 	translate: function () {
-	  var point = Point.read(arguments),
-		x = point.x,
-		y = point.y
+	  const point = Point.read(arguments)
+	  const x = point.x
+	  const y = point.y
 	  this._tx += x * this._a + y * this._c
 	  this._ty += x * this._b + y * this._d
 	  this._changed()
@@ -2869,9 +2886,9 @@ var Matrix = Base.extend(
 	},
 
 	scale: function () {
-	  var args = arguments,
-		scale = Point.read(args),
-		center = Point.read(args, 0, { readNull: true })
+	  const args = arguments
+	  const scale = Point.read(args)
+	  const center = Point.read(args, 0, { readNull: true })
 	  if (center) this.translate(center)
 	  this._a *= scale.x
 	  this._b *= scale.x
@@ -2884,17 +2901,17 @@ var Matrix = Base.extend(
 
 	rotate: function (angle ) {
 	  angle *= Math.PI / 180
-	  var center = Point.read(arguments, 1),
-		x = center.x,
-		y = center.y,
-		cos = Math.cos(angle),
-		sin = Math.sin(angle),
-		tx = x - x * cos + y * sin,
-		ty = y - x * sin - y * cos,
-		a = this._a,
-		b = this._b,
-		c = this._c,
-		d = this._d
+	  const center = Point.read(arguments, 1)
+	  const x = center.x
+	  const y = center.y
+	  const cos = Math.cos(angle)
+	  const sin = Math.sin(angle)
+	  const tx = x - x * cos + y * sin
+	  const ty = y - x * sin - y * cos
+	  const a = this._a
+	  const b = this._b
+	  const c = this._c
+	  const d = this._d
 	  this._a = cos * a + sin * c
 	  this._b = cos * b + sin * d
 	  this._c = -sin * a + cos * c
@@ -2906,12 +2923,12 @@ var Matrix = Base.extend(
 	},
 
 	shear: function () {
-	  var args = arguments,
-		shear = Point.read(args),
-		center = Point.read(args, 0, { readNull: true })
+	  const args = arguments
+	  const shear = Point.read(args)
+	  const center = Point.read(args, 0, { readNull: true })
 	  if (center) this.translate(center)
-	  var a = this._a,
-		b = this._b
+	  const a = this._a
+	  const b = this._b
 	  this._a += shear.y * this._c
 	  this._b += shear.y * this._d
 	  this._c += shear.x * a
@@ -2922,29 +2939,29 @@ var Matrix = Base.extend(
 	},
 
 	skew: function () {
-	  var args = arguments,
-		skew = Point.read(args),
-		center = Point.read(args, 0, { readNull: true }),
-		toRadians = Math.PI / 180,
-		shear = new Point(
-		  Math.tan(skew.x * toRadians),
-		  Math.tan(skew.y * toRadians)
-		)
+	  const args = arguments
+	  const skew = Point.read(args)
+	  const center = Point.read(args, 0, { readNull: true })
+	  const toRadians = Math.PI / 180
+	  const shear = new Point(
+		Math.tan(skew.x * toRadians),
+		Math.tan(skew.y * toRadians)
+	  )
 	  return this.shear(shear, center)
 	},
 
 	append: function (mx, _dontNotify) {
 	  if (mx) {
-		var a1 = this._a,
-		  b1 = this._b,
-		  c1 = this._c,
-		  d1 = this._d,
-		  a2 = mx._a,
-		  b2 = mx._c,
-		  c2 = mx._b,
-		  d2 = mx._d,
-		  tx2 = mx._tx,
-		  ty2 = mx._ty
+		const a1 = this._a
+		const b1 = this._b
+		const c1 = this._c
+		const d1 = this._d
+		const a2 = mx._a
+		const b2 = mx._c
+		const c2 = mx._b
+		const d2 = mx._d
+		const tx2 = mx._tx
+		const ty2 = mx._ty
 		this._a = a2 * a1 + c2 * c1
 		this._c = b2 * a1 + d2 * c1
 		this._b = a2 * b1 + c2 * d1
@@ -2958,18 +2975,18 @@ var Matrix = Base.extend(
 
 	prepend: function (mx, _dontNotify) {
 	  if (mx) {
-		var a1 = this._a,
-		  b1 = this._b,
-		  c1 = this._c,
-		  d1 = this._d,
-		  tx1 = this._tx,
-		  ty1 = this._ty,
-		  a2 = mx._a,
-		  b2 = mx._c,
-		  c2 = mx._b,
-		  d2 = mx._d,
-		  tx2 = mx._tx,
-		  ty2 = mx._ty
+		const a1 = this._a
+		const b1 = this._b
+		const c1 = this._c
+		const d1 = this._d
+		const tx1 = this._tx
+		const ty1 = this._ty
+		const a2 = mx._a
+		const b2 = mx._c
+		const c2 = mx._b
+		const d2 = mx._d
+		const tx2 = mx._tx
+		const ty2 = mx._ty
 		this._a = a2 * a1 + b2 * b1
 		this._c = a2 * c1 + b2 * d1
 		this._b = c2 * a1 + d2 * b1
@@ -2990,15 +3007,15 @@ var Matrix = Base.extend(
 	},
 
 	invert: function () {
-	  var res = null
+	  let res = null
 	  if (this.isInvertible()) {
-		var a = this._a,
-		  b = this._b,
-		  c = this._c,
-		  d = this._d,
-		  tx = this._tx,
-		  ty = this._ty,
-		  det = a * d - b * c
+		const a = this._a
+		const b = this._b
+		const c = this._c
+		const d = this._d
+		const tx = this._tx
+		const ty = this._ty
+		const det = a * d - b * c
 		this._a = d / det
 		this._b = -b / det
 		this._c = -c / det
@@ -3038,7 +3055,7 @@ var Matrix = Base.extend(
 	},
 
 	isInvertible: function () {
-	  var det = this._a * this._d - this._c * this._b
+	  const det = this._a * this._d - this._c * this._b
 	  return det && !isNaN(det) && isFinite(this._tx) && isFinite(this._ty)
 	},
 
@@ -3058,8 +3075,8 @@ var Matrix = Base.extend(
 	},
 
 	_transformPoint: function (point, dest, _dontNotify) {
-	  var x = point.x,
-		y = point.y
+	  const x = point.x
+	  const y = point.y
 	  if (!dest) dest = new Point()
 	  return dest._set(
 		x * this._a + y * this._c + this._tx,
@@ -3069,9 +3086,9 @@ var Matrix = Base.extend(
 	},
 
 	_transformCoordinates: function (src, dst, count) {
-	  for (var i = 0, max = 2 * count; i < max; i += 2) {
-		var x = src[i],
-		  y = src[i + 1]
+	  for (let i = 0, max = 2 * count; i < max; i += 2) {
+		const x = src[i]
+		const y = src[i + 1]
 		dst[i] = x * this._a + y * this._c + this._tx
 		dst[i + 1] = x * this._b + y * this._d + this._ty
 	  }
@@ -3079,21 +3096,21 @@ var Matrix = Base.extend(
 	},
 
 	_transformCorners: function (rect) {
-	  var x1 = rect.x,
-		y1 = rect.y,
-		x2 = x1 + rect.width,
-		y2 = y1 + rect.height,
-		coords = [x1, y1, x2, y1, x2, y2, x1, y2]
+	  const x1 = rect.x
+	  const y1 = rect.y
+	  const x2 = x1 + rect.width
+	  const y2 = y1 + rect.height
+	  const coords = [x1, y1, x2, y1, x2, y2, x1, y2]
 	  return this._transformCoordinates(coords, coords, 4)
 	},
 
 	_transformBounds: function (bounds, dest) {
-	  var coords = this._transformCorners(bounds),
-		min = coords.slice(0, 2),
-		max = min.slice()
-	  for (var i = 2; i < 8; i++) {
-		var val = coords[i],
-		  j = i & 1
+	  const coords = this._transformCorners(bounds)
+	  const min = coords.slice(0, 2)
+	  const max = min.slice()
+	  for (let i = 2; i < 8; i++) {
+		const val = coords[i]
+		const j = i & 1
 		if (val < min[j]) {
 		  min[j] = val
 		} else if (val > max[j]) {
@@ -3109,39 +3126,39 @@ var Matrix = Base.extend(
 	},
 
 	_inverseTransform: function (point) {
-	  var res = null
+	  let res = null
 	  if (this.isInvertible()) {
-		var a = this._a,
-		  b = this._b,
-		  c = this._c,
-		  d = this._d,
-		  det = a * d - b * c,
-		  x = point.x - this._tx,
-		  y = point.y - this._ty
+		const a = this._a
+		const b = this._b
+		const c = this._c
+		const d = this._d
+		const det = a * d - b * c
+		const x = point.x - this._tx
+		const y = point.y - this._ty
 		res = new Point((x * d - y * c) / det, (y * a - x * b) / det)
 	  }
 	  return res
 	},
 
 	decompose: function () {
-	  var a = this._a,
-		b = this._b,
-		c = this._c,
-		d = this._d,
-		det = a * d - b * c,
-		sqrt = Math.sqrt,
-		atan2 = Math.atan2,
-		degrees = 180 / Math.PI,
-		rotate,
-		scale,
-		skew
+	  const a = this._a
+	  const b = this._b
+	  const c = this._c
+	  const d = this._d
+	  const det = a * d - b * c
+	  const sqrt = Math.sqrt
+	  const atan2 = Math.atan2
+	  const degrees = 180 / Math.PI
+	  let rotate
+	  let scale
+	  let skew
 	  if (a !== 0 || b !== 0) {
-		var r = sqrt(a * a + b * b)
+		const r = sqrt(a * a + b * b)
 		rotate = Math.acos(a / r) * (b > 0 ? 1 : -1)
 		scale = [r, det / r]
 		skew = [atan2(a * c + b * d, r * r), 0]
 	  } else if (c !== 0 || d !== 0) {
-		var s = sqrt(c * c + d * d)
+		const s = sqrt(c * c + d * d)
 		rotate = Math.asin(c / s) * (d > 0 ? 1 : -1)
 		scale = [det / s, s]
 		skew = [0, atan2(a * c + b * d, s * s)]
@@ -3182,10 +3199,10 @@ var Matrix = Base.extend(
 	statics: {
 	  _getCircleExtents: function (radius, matrix) {
 		if (!matrix) return [radius, radius]
-		var a = matrix._a,
-		  b = matrix._b,
-		  c = matrix._c,
-		  d = matrix._d
+		const a = matrix._a
+		const b = matrix._b
+		const c = matrix._c
+		const d = matrix._d
 		return [
 		  radius * Math.sqrt(a * a + c * c),
 		  radius * Math.sqrt(b * b + d * d)
@@ -3196,8 +3213,8 @@ var Matrix = Base.extend(
   Base.each(
 	['a', 'b', 'c', 'd', 'tx', 'ty'],
 	function (key) {
-	  var part = Base.capitalize(key),
-		prop = '_' + key
+	  const part = Base.capitalize(key)
+	  const prop = '_' + key
 	  this['get' + part] = function () {
 		return this[prop]
 	  }
@@ -3210,12 +3227,12 @@ var Matrix = Base.extend(
   )
 )
 
-var Line = Base.extend(
+const Line = Base.extend(
    {
 	_class: 'Line',
 
 	initialize: function Line(arg0, arg1, arg2, arg3, arg4) {
-	  var asVector = false
+	  let asVector
 	  if (arguments.length >= 4) {
 		this._px = arg0
 		this._py = arg1
@@ -3305,15 +3322,15 @@ var Line = Base.extend(
 		  v2x -= p2x
 		  v2y -= p2y
 		}
-		var cross = v1x * v2y - v1y * v2x
+		const cross = v1x * v2y - v1y * v2x
 		if (!Numerical.isMachineZero(cross)) {
-		  var dx = p1x - p2x,
-			dy = p1y - p2y,
-			u1 = (v2x * dy - v2y * dx) / cross,
-			u2 = (v1x * dy - v1y * dx) / cross,
-			epsilon = 1e-12,
-			uMin = -epsilon,
-			uMax = 1 + epsilon
+		  const dx = p1x - p2x
+		  const dy = p1y - p2y
+		  let u1 = (v2x * dy - v2y * dx) / cross
+		  const u2 = (v1x * dy - v1y * dx) / cross
+		  const epsilon = 1e-12
+		  const uMin = -epsilon
+		  const uMax = 1 + epsilon
 		  if (isInfinite || uMin < u1 && u1 < uMax && uMin < u2 && u2 < uMax) {
 			if (!isInfinite) {
 			  u1 = u1 <= 0 ? 0 : u1 >= 1 ? 1 : u1
@@ -3331,9 +3348,9 @@ var Line = Base.extend(
 		  vx -= px
 		  vy -= py
 		}
-		var v2x = x - px,
-		  v2y = y - py,
-		  ccw = v2x * vy - v2y * vx
+		const v2x = x - px
+		const v2y = y - py
+		let ccw = v2x * vy - v2y * vx
 		if (!isInfinite && Numerical.isMachineZero(ccw)) {
 		  ccw = (v2x * vx + v2x * vx) / (vx * vx + vy * vy)
 		  if (ccw >= 0 && ccw <= 1) ccw = 0
@@ -3415,7 +3432,7 @@ var Change = {
   VIEW: ChangeFlag.VIEW | ChangeFlag.APPEARANCE
 }
 
-var Project = PaperScopeItem.extend(
+const Project = PaperScopeItem.extend(
    {
 	_class: 'Project',
 	_list: 'projects',
@@ -3446,7 +3463,7 @@ var Project = PaperScopeItem.extend(
 
 	_changed: function (flags, item) {
 	  if (flags & 1) {
-		var view = this._view
+		const view = this._view
 		if (view) {
 		  view._needsUpdate = true
 		  if (!view._requested && view._autoUpdate) view.requestUpdate()
@@ -3456,11 +3473,11 @@ var Project = PaperScopeItem.extend(
 	},
 
 	_logChange: function (name, object, flags) {
-	  var changes = this._changes
+	  const changes = this._changes
 	  if (changes) {
-		var changesById = this._changesById,
-		  id = object._id,
-		  entry = changesById[id]
+		const changesById = this._changesById
+		const id = object._id
+		let entry = changesById[id]
 		if (entry) {
 		  entry.flags |= flags
 		} else {
@@ -3483,13 +3500,13 @@ var Project = PaperScopeItem.extend(
 	},
 
 	takeChanges: function () {
-	  var changes = this._changes,
-		that = this
+	  let changes = this._changes
+	  const that = this
 	  if (changes) {
 		this._changes = []
 		this._changesById = {}
 		changes = changes.filter(function (change) {
-		  var item = change.item
+		  const item = change.item
 		  return !item || item._project === that
 		})
 	  }
@@ -3501,8 +3518,8 @@ var Project = PaperScopeItem.extend(
 	},
 
 	clear: function () {
-	  var children = this._children
-	  for (var i = children.length - 1; i >= 0; i--) children[i].remove()
+	  const children = this._children
+	  for (let i = children.length - 1; i >= 0; i--) children[i].remove()
 	},
 
 	isEmpty: function () {
@@ -3544,13 +3561,13 @@ var Project = PaperScopeItem.extend(
 	},
 
 	getSymbolDefinitions: function () {
-	  var definitions = [],
-		ids = {}
+	  const definitions = []
+	  const ids = {}
 	  this.getItems({
 		class: SymbolItem,
 		match: function (item) {
-		  var definition = item._definition,
-			id = definition._id
+		  const definition = item._definition
+		  const id = definition._id
 		  if (!ids[id]) {
 			ids[id] = true
 			definitions.push(definition)
@@ -3564,14 +3581,14 @@ var Project = PaperScopeItem.extend(
 	getSymbols: 'getSymbolDefinitions',
 
 	getPatternDefinitions: function () {
-	  var definitions = [],
-		ids = {}
+	  const definitions = []
+	  const ids = {}
 	  this.getItems({
 		match: function (item) {
-		  var style = item._style
+		  const style = item._style
 		  ;[style.getFillColor(true), style.getStrokeColor(true)].forEach(
 			function (color) {
-			  var definition = (
+			  const definition = (
 				color &&
 				color._type === 'pattern' &&
 				color._components[0]
@@ -3589,11 +3606,11 @@ var Project = PaperScopeItem.extend(
 	},
 
 	getSelectedItems: function () {
-	  var selectionItems = this._selectionItems,
-		items = []
-	  for (var id in selectionItems) {
-		var item = selectionItems[id],
-		  selection = item._selection
+	  const selectionItems = this._selectionItems
+	  const items = []
+	  for (const id in selectionItems) {
+		const item = selectionItems[id]
+		const selection = item._selection
 		if ((selection & 1) && item.isInserted()) {
 		  items.push(item)
 		} else if (!selection) {
@@ -3604,8 +3621,8 @@ var Project = PaperScopeItem.extend(
 	},
 
 	_updateSelection: function (item, remove) {
-	  var id = item._id,
-		selectionItems = this._selectionItems
+	  const id = item._id
+	  const selectionItems = this._selectionItems
 	  if (item._selection && !remove && item.isInserted()) {
 		if (selectionItems[id] !== item) {
 		  this._selectionCount++
@@ -3618,14 +3635,14 @@ var Project = PaperScopeItem.extend(
 	},
 
 	selectAll: function () {
-	  var children = this._children
-	  for (var i = 0, l = children.length; i < l; i++)
+	  const children = this._children
+	  for (let i = 0, l = children.length; i < l; i++)
 		children[i].setFullySelected(true)
 	},
 
 	deselectAll: function () {
-	  var selectionItems = this._selectionItems
-	  for (var i in selectionItems) selectionItems[i].setFullySelected(false)
+	  const selectionItems = this._selectionItems
+	  for (const i in selectionItems) selectionItems[i].setFullySelected(false)
 	},
 
 	addLayer: function (layer) {
@@ -3637,7 +3654,7 @@ var Project = PaperScopeItem.extend(
 		layer._remove(false, true)
 		Base.splice(this._children, [layer], index, 0)
 		layer._setProject(this, true)
-		var name = layer._name
+		const name = layer._name
 		if (name) layer.setName(name)
 		if (this._changes) layer._changed(5)
 		if (!this._activeLayer) this._activeLayer = layer
@@ -3670,20 +3687,20 @@ var Project = PaperScopeItem.extend(
 
 	importJSON: function (json) {
 	  this.activate()
-	  var layer = this._activeLayer
+	  const layer = this._activeLayer
 	  return Base.importJSON(json, layer && layer.isEmpty() && layer)
 	},
 
 	removeOn: function (type) {
-	  var sets = this._removeSets
+	  const sets = this._removeSets
 	  if (sets) {
 		if (type === 'mouseup') sets.mousedrag = null
-		var set = sets[type]
+		const set = sets[type]
 		if (set) {
-		  for (var id in set) {
-			var item = set[id]
-			for (var key in sets) {
-			  var other = sets[key]
+		  for (const id in set) {
+			const item = set[id]
+			for (const key in sets) {
+			  const other = sets[key]
 			  if (other && other != set) delete other[item._id]
 			}
 			item.remove()
@@ -3697,16 +3714,16 @@ var Project = PaperScopeItem.extend(
 	  this._updateVersion++
 	  ctx.save()
 	  matrix.applyToContext(ctx)
-	  var children = this._children,
-		param = new Base({
-		  offset: new Point(0, 0),
-		  pixelRatio: pixelRatio,
-		  view: _view,
-		  viewMatrix: matrix.isIdentity() ? null : matrix,
-		  matrices: [new Matrix()],
-		  updateMatrix: true
-		})
-	  for (var i = 0, l = children.length; i < l; i++) {
+	  const children = this._children
+	  const param = new Base({
+		offset: new Point(0, 0),
+		pixelRatio: pixelRatio,
+		view: _view,
+		viewMatrix: matrix.isIdentity() ? null : matrix,
+		matrices: [new Matrix()],
+		updateMatrix: true
+	  })
+	  for (let i = 0, l = children.length; i < l; i++) {
 		children[i].draw(ctx, param)
 	  }
 	  ctx.restore()
@@ -3714,10 +3731,10 @@ var Project = PaperScopeItem.extend(
 	  if (this._selectionCount > 0) {
 		ctx.save()
 		ctx.lineWidth = 1
-		var items = this._selectionItems,
-		  size = this._scope.settings.handleSize,
-		  version = this._updateVersion
-		for (var id in items) {
+		const items = this._selectionItems
+		const size = this._scope.settings.handleSize
+		const version = this._updateVersion
+		for (const id in items) {
 		  items[id]._drawSelection(ctx, matrix, size, items, version)
 		}
 		ctx.restore()
@@ -3726,7 +3743,7 @@ var Project = PaperScopeItem.extend(
   }
 )
 
-var Item = Base.extend(
+const Item = Base.extend(
   Emitter,
    {
 	statics:  {
@@ -3783,7 +3800,7 @@ var Item = Base.extend(
 	_prioritize: ['applyMatrix']
   },
   new (function () {
-	var handlers = [
+	const handlers = [
 	  'onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick', 'onDoubleClick',
 	  'onMouseMove', 'onMouseEnter', 'onMouseLeave'
 	]
@@ -3853,11 +3870,11 @@ var Item = Base.extend(
 	},
 
 	_initialize: function (props, point) {
-	  var hasProps = props && Base.isPlainObject(props),
-		internal = hasProps && props.internal === true,
-		matrix = (this._matrix = new Matrix()),
-		project = hasProps && props.project || paper.project,
-		settings = paper.settings
+	  const hasProps = props && Base.isPlainObject(props)
+	  const internal = hasProps && props.internal === true
+	  const matrix = (this._matrix = new Matrix())
+	  const project = hasProps && props.project || paper.project
+	  const settings = paper.settings
 	  if (!project) {
 		throw new Error(
 		  'Unable to create an item without a project. ' +
@@ -3892,12 +3909,12 @@ var Item = Base.extend(
 	},
 
 	_serialize: function (options, dictionary) {
-	  var props = {},
-		that = this
+	  const props = {}
+	  const that = this
 
 	  function serialize(fields) {
-		for (var key in fields) {
-		  var value = that[key]
+		for (const key in fields) {
+		  const value = that[key]
 		  if (!Base.equals(value, fields[key])) {
 			props[key] = Base.serialize(
 			  value,
@@ -3915,9 +3932,11 @@ var Item = Base.extend(
 	},
 
 	_changed: function (flags) {
-	  var symbol = this._symbol,
-		cacheParent = this._parent || symbol,
-		project = this._project
+	  let item
+
+	  const symbol = this._symbol
+	  const cacheParent = this._parent || symbol
+	  const project = this._project
 	  if (flags & 8) {
 		this._bounds = this._position = this._decomposed = undefined
 	  } else if (flags & 64) {
@@ -3936,31 +3955,27 @@ var Item = Base.extend(
 		Item._clearBoundsCache(this)
 	  }
 	  if (flags & 1) {
-		for (var item = this; item; item = item._parent) {
+		for (item = this; item; item = item._parent) {
 		  if (item._buffer) item._buffer.matrix = null
 		  item._effectOutput = undefined
 		  if (item._symbol && item !== this) item._symbol._changed(flags)
 		}
 	  }
-	  for (
-		var item = this;
-		item && !(item instanceof Layer);
-		item = item._parent
-	  ) {
+	  for (item = this; item && !(item instanceof Layer); item = item._parent) {
 		if (item._textWrap) {
-		  var layer = item.getLayer()
+		  const layer = item.getLayer()
 		  if (layer) layer._textWrapVersion++
 		  break
 		}
 	  }
-	  var isOwner = this._getChangeOwner() === this
+	  const isOwner = this._getChangeOwner() === this
 	  if (project) project._changed(flags, isOwner ? this : null)
 	  if (!isOwner) this._parent._changed(flags)
 	  if (symbol) symbol._changed(flags)
 	},
 
 	_getChangeOwner: function () {
-	  var parent = this._parent
+	  const parent = this._parent
 	  return parent && !parent.getChildren() ? parent._getChangeOwner() : this
 	},
 
@@ -3979,7 +3994,7 @@ var Item = Base.extend(
 		throw new Error(
 		  'Names consisting only of numbers are not supported.'
 		)
-	  var owner = this._getOwner()
+	  const owner = this._getOwner()
 	  if (name && owner)
 		Base.addNamed(owner._children, owner._namedChildren, name, this)
 	  this._name = name || undefined
@@ -4000,12 +4015,12 @@ var Item = Base.extend(
   Base.each(
 	['locked', 'visible', 'blendMode', 'opacity', 'guide'],
 	function (name) {
-	  var part = Base.capitalize(name),
-		key = '_' + name,
-		flags = {
-		  locked: 256,
-		  visible: 257 | Change.GEOMETRY
-		}
+	  const part = Base.capitalize(name)
+	  const key = '_' + name
+	  const flags = {
+		locked: 256,
+		visible: 257 | Change.GEOMETRY
+	  }
 	  this['get' + part] = function () {
 		return this[key]
 	  }
@@ -4022,7 +4037,7 @@ var Item = Base.extend(
 	beans: true,
 
 	getTextWrap: function () {
-	  var wrap = this._textWrap
+	  const wrap = this._textWrap
 	  return wrap && Base.set({}, wrap)
 	},
 
@@ -4040,9 +4055,9 @@ var Item = Base.extend(
 	},
 
 	_updateTextWrap: function (remove) {
-	  var layer = this.getLayer()
+	  const layer = this.getLayer()
 	  if (layer) {
-		var items = layer._textWrapItems || (layer._textWrapItems = {})
+		const items = layer._textWrapItems || (layer._textWrapItems = {})
 		if (this._textWrap && !remove) {
 		  items[this._id] = this
 		} else {
@@ -4059,7 +4074,7 @@ var Item = Base.extend(
 	setSelection: function (selection) {
 	  if (selection !== this._selection) {
 		this._selection = selection
-		var project = this._project
+		const project = this._project
 		if (project) {
 		  project._updateSelection(this)
 		  project._changed(257, this._getChangeOwner())
@@ -4068,14 +4083,14 @@ var Item = Base.extend(
 	},
 
 	_changeSelection: function (flag, selected) {
-	  var selection = this._selection
+	  const selection = this._selection
 	  this.setSelection(selected ? selection | flag : selection & ~flag)
 	},
 
 	isSelected: function () {
 	  if (this._selectChildren) {
-		var children = this._children
-		for (var i = 0, l = children.length; i < l; i++)
+		const children = this._children
+		for (let i = 0, l = children.length; i < l; i++)
 		  if (children[i].isSelected()) return true
 	  }
 	  return !!(this._selection & 1)
@@ -4083,18 +4098,18 @@ var Item = Base.extend(
 
 	setSelected: function (selected) {
 	  if (this._selectChildren) {
-		var children = this._children
-		for (var i = 0, l = children.length; i < l; i++)
+		const children = this._children
+		for (let i = 0, l = children.length; i < l; i++)
 		  children[i].setSelected(selected)
 	  }
 	  this._changeSelection(1, selected)
 	},
 
 	isFullySelected: function () {
-	  var children = this._children,
-		selected = !!(this._selection & 1)
+	  const children = this._children
+	  const selected = !!(this._selection & 1)
 	  if (children && selected) {
-		for (var i = 0, l = children.length; i < l; i++)
+		for (let i = 0, l = children.length; i < l; i++)
 		  if (!children[i].isFullySelected()) return false
 		return true
 	  }
@@ -4102,9 +4117,9 @@ var Item = Base.extend(
 	},
 
 	setFullySelected: function (selected) {
-	  var children = this._children
+	  const children = this._children
 	  if (children) {
-		for (var i = 0, l = children.length; i < l; i++)
+		for (let i = 0, l = children.length; i < l; i++)
 		  children[i].setFullySelected(selected)
 	  }
 	  this._changeSelection(1, selected)
@@ -4136,8 +4151,8 @@ var Item = Base.extend(
 	},
 
 	getPosition: function (_dontLink) {
-	  var ctor = _dontLink ? Point : LinkedPoint
-	  var position = (
+	  const ctor = _dontLink ? Point : LinkedPoint
+	  const position = (
 		this._position ||
 		(this._position = this._getPositionFromBounds())
 	  )
@@ -4155,7 +4170,7 @@ var Item = Base.extend(
 	},
 
 	getPivot: function () {
-	  var pivot = this._pivot
+	  const pivot = this._pivot
 	  return pivot
 		? new LinkedPoint(pivot.x, pivot.y, this, 'setPivot')
 		: null
@@ -4180,10 +4195,14 @@ var Item = Base.extend(
 	  beans: true,
 
 	  getBounds: function (matrix, options) {
-		var hasMatrix = options || matrix instanceof Matrix,
-		  opts = Base.set({}, hasMatrix ? options : matrix, this._boundsOptions)
+		const hasMatrix = options || matrix instanceof Matrix
+		const opts = Base.set(
+		  {},
+		  hasMatrix ? options : matrix,
+		  this._boundsOptions
+		)
 		if (!opts.stroke || this.getStrokeScaling()) opts.cacheItem = this
-		var rect = this._getCachedBounds(hasMatrix && matrix, opts).rect
+		const rect = this._getCachedBounds(hasMatrix && matrix, opts).rect
 		return !arguments.length
 		  ? new LinkedRectangle(
 			  rect.x,
@@ -4197,7 +4216,7 @@ var Item = Base.extend(
 	  },
 
 	  getStrokeBounds: function (matrix) {
-		var rect = this.getBounds(matrix, { stroke: true })
+		const rect = this.getBounds(matrix, { stroke: true })
 		return !arguments.length
 		  ? new LinkedRectangle(
 			  rect.x,
@@ -4211,11 +4230,11 @@ var Item = Base.extend(
 	  },
 
 	  setBounds: function () {
-		var rect = Rectangle.read(arguments),
-		  bounds = this.getBounds(),
-		  _matrix = this._matrix,
-		  matrix = new Matrix(),
-		  center = rect.getCenter()
+		const rect = Rectangle.read(arguments)
+		let bounds = this.getBounds()
+		const _matrix = this._matrix
+		const matrix = new Matrix()
+		let center = rect.getCenter()
 		matrix.translate(center)
 		if (rect.width != bounds.width || rect.height != bounds.height) {
 		  if (!_matrix.isInvertible()) {
@@ -4236,56 +4255,56 @@ var Item = Base.extend(
 	  },
 
 	  setStrokeBounds: function () {
-		var rect = Rectangle.read(arguments),
-		  item = this,
-		  bounds = this.getBounds(),
-		  center = bounds.getCenter(),
-		  signX = rect.width < 0 ? -1 : 1,
-		  signY = rect.height < 0 ? -1 : 1,
-		  width = Math.abs(rect.width),
-		  height = Math.abs(rect.height),
-		  canScaleX = !!bounds.width,
-		  canScaleY = !!bounds.height,
-		  min = 1e-12,
-		  epsilon = 1e-7,
-		  sx = 1,
-		  sy = 1
+		const rect = Rectangle.read(arguments)
+		const item = this
+		const bounds = this.getBounds()
+		const center = bounds.getCenter()
+		const signX = rect.width < 0 ? -1 : 1
+		const signY = rect.height < 0 ? -1 : 1
+		const width = Math.abs(rect.width)
+		const height = Math.abs(rect.height)
+		const canScaleX = !!bounds.width
+		const canScaleY = !!bounds.height
+		const min = 1e-12
+		const epsilon = 1e-7
+		let sx = 1
+		let sy = 1
 
 		function getMatrix(sx, sy) {
 		  return new Matrix().scale(signX * sx, signY * sy, center)
 		}
 
 		function getStrokeBounds(sx, sy) {
-		  var matrix = getMatrix(sx, sy)
+		  const matrix = getMatrix(sx, sy)
 		  return item.getBounds(matrix.appended(item._matrix), {
 			stroke: true,
 			transform: { matrix: matrix, item: item }
 		  })
 		}
 
-		for (var i = 0; i < 16; i++) {
-		  var size = getStrokeBounds(sx, sy).getSize(),
-			fx = canScaleX ? size.width - width : 0,
-			fy = canScaleY ? size.height - height : 0
+		for (let i = 0; i < 16; i++) {
+		  const size = getStrokeBounds(sx, sy).getSize()
+		  const fx = canScaleX ? size.width - width : 0
+		  const fy = canScaleY ? size.height - height : 0
 		  if (Math.abs(fx) < epsilon && Math.abs(fy) < epsilon) break
-		  var hx = Math.max(sx, 1) * 1e-6,
-			hy = Math.max(sy, 1) * 1e-6,
-			sizeX = getStrokeBounds(sx + hx, sy).getSize(),
-			sizeY = getStrokeBounds(sx, sy + hy).getSize(),
-			a = canScaleX ? (sizeX.width - size.width) / hx : 1,
-			b =
-			  canScaleX && canScaleY
-				? (sizeY.width - size.width) / hy
-				: 0,
-			c =
-			  canScaleX && canScaleY
-				? (sizeX.height - size.height) / hx
-				: 0,
-			d = canScaleY ? (sizeY.height - size.height) / hy : 1,
-			det = a * d - b * c
+		  const hx = Math.max(sx, 1) * 1e-6
+		  const hy = Math.max(sy, 1) * 1e-6
+		  const sizeX = getStrokeBounds(sx + hx, sy).getSize()
+		  const sizeY = getStrokeBounds(sx, sy + hy).getSize()
+		  const a = canScaleX ? (sizeX.width - size.width) / hx : 1
+		  const b =
+			canScaleX && canScaleY
+			  ? (sizeY.width - size.width) / hy
+			  : 0
+		  const c =
+			canScaleX && canScaleY
+			  ? (sizeX.height - size.height) / hx
+			  : 0
+		  const d = canScaleY ? (sizeY.height - size.height) / hy : 1
+		  const det = a * d - b * c
 		  if (!det) break
-		  var nx = Math.max(sx - (fx * d - fy * b) / det, min),
-			ny = Math.max(sy - (fy * a - fx * c) / det, min)
+		  const nx = Math.max(sx - (fx * d - fy * b) / det, min)
+		  const ny = Math.max(sy - (fy * a - fx * c) / det, min)
 		  if (nx === sx && ny === sy) break
 		  sx = nx
 		  sy = ny
@@ -4300,7 +4319,7 @@ var Item = Base.extend(
 	  },
 
 	  _getBounds: function (matrix, options) {
-		var children = this._children
+		const children = this._children
 		if (!children || !children.length) return new Rectangle()
 		Item._updateBoundsCache(this, options.cacheItem)
 		return Item._getBounds(children, matrix, options)
@@ -4315,54 +4334,56 @@ var Item = Base.extend(
 	  },
 
 	  _getCachedBounds: function (matrix, options, noInternal) {
-		var internal = options.internal && !noInternal,
-		  cacheItem = options.cacheItem,
-		  _matrix = internal ? null : this._matrix._orNullIfIdentity()
+		let cached
+
+		const internal = options.internal && !noInternal
+		const cacheItem = options.cacheItem
+		const _matrix = internal ? null : this._matrix._orNullIfIdentity()
 		matrix = matrix ? matrix._orNullIfIdentity() : _matrix
-		var cacheKey = (
-			cacheItem &&
-			(matrix ? matrix.equals(_matrix) : !_matrix) &&
-			this._getBoundsCacheKey(options, internal)
-		  ),
-		  isIntermediate = (
-			cacheKey &&
-			cacheItem !== this &&
-			(this._children || this._definition)
-		  ),
-		  bounds = this._bounds
+		const cacheKey = (
+		  cacheItem &&
+		  (matrix ? matrix.equals(_matrix) : !_matrix) &&
+		  this._getBoundsCacheKey(options, internal)
+		)
+		const isIntermediate = (
+		  cacheKey &&
+		  cacheItem !== this &&
+		  (this._children || this._definition)
+		)
+		let bounds = this._bounds
 		Item._updateBoundsCache(this._parent || this._symbol, cacheItem)
 		if (isIntermediate) Item._updateBoundsCache(this, cacheItem)
 		if (cacheKey && bounds && cacheKey in bounds) {
-		  var cached = bounds[cacheKey]
+		  cached = bounds[cacheKey]
 		  return {
 			rect: cached.rect.clone(),
 			nonscaling: cached.nonscaling
 		  }
 		}
-		var res = this._getBounds(
-			matrix,
-			isIntermediate
-			  ? Base.set({}, options, { cacheItem: this })
-			  : options
-		  ),
-		  rect = res.rect || res,
-		  style = this._style,
-		  nonscaling = (
-			res.nonscaling || (
-			  style.hasStroke() &&
-			  !style.getStrokeScaling()
-			)
+		const res = this._getBounds(
+		  matrix,
+		  isIntermediate
+			? Base.set({}, options, { cacheItem: this })
+			: options
+		)
+		const rect = res.rect || res
+		const style = this._style
+		const nonscaling = (
+		  res.nonscaling || (
+			style.hasStroke() &&
+			!style.getStrokeScaling()
 		  )
+		)
 		if (cacheKey) {
 		  if (!bounds) {
 			this._bounds = bounds = {}
 		  }
-		  var cached = (bounds[cacheKey] = {
+		  bounds[cacheKey] = {
 			rect: rect.clone(),
 			nonscaling: nonscaling,
 			stroke: options.stroke,
 			internal: internal
-		  })
+		  }
 		}
 		return {
 		  rect: rect,
@@ -4371,16 +4392,16 @@ var Item = Base.extend(
 	  },
 
 	  _getStrokeMatrix: function (matrix, options) {
-		var parent = this.getStrokeScaling()
-			? null
-			: options && options.internal
-			  ? this
-			  : this._parent || this._symbol && this._symbol._item,
-		  mx = parent ? parent.getViewMatrix().invert() : matrix,
-		  transform = !parent && options && options.transform
+		const parent = this.getStrokeScaling()
+		  ? null
+		  : options && options.internal
+			? this
+			: this._parent || this._symbol && this._symbol._item
+		let mx = parent ? parent.getViewMatrix().invert() : matrix
+		const transform = !parent && options && options.transform
 		if (transform) {
 		  for (
-			var item = this;
+			let item = this;
 			item && item._applyMatrix;
 			item = item._parent
 		  ) {
@@ -4396,11 +4417,11 @@ var Item = Base.extend(
 	  statics:  {
 		_updateBoundsCache: function (parent, item) {
 		  if (parent && item) {
-			var id = item._id,
-			  ref = (parent._boundsCache = parent._boundsCache || {
-				ids: {},
-				list: []
-			  })
+			const id = item._id
+			const ref = (parent._boundsCache = parent._boundsCache || {
+			  ids: {},
+			  list: []
+			})
 			if (!ref.ids[id]) {
 			  ref.list.push(item)
 			  ref.ids[id] = item
@@ -4409,11 +4430,11 @@ var Item = Base.extend(
 		},
 
 		_clearBoundsCache: function (item) {
-		  var cache = item._boundsCache
+		  const cache = item._boundsCache
 		  if (cache) {
 			item._bounds = item._position = item._boundsCache = undefined
-			for (var i = 0, list = cache.list, l = list.length; i < l; i++) {
-			  var other = list[i]
+			for (let i = 0, list = cache.list, l = list.length; i < l; i++) {
+			  const other = list[i]
 			  if (other !== item) {
 				other._bounds = other._position = undefined
 				if (other._boundsCache) Item._clearBoundsCache(other)
@@ -4427,23 +4448,23 @@ var Item = Base.extend(
 		},
 
 		_getBounds: function (items, matrix, options, global) {
-		  var x1 = Infinity,
-			x2 = -x1,
-			y1 = x1,
-			y2 = x2,
-			nonscaling = false
+		  let x1 = Infinity
+		  let x2 = -x1
+		  let y1 = x1
+		  let y2 = x2
+		  let nonscaling = false
 		  options = options || {}
-		  for (var i = 0, l = items.length; i < l; i++) {
-			var item = items[i]
+		  for (let i = 0, l = items.length; i < l; i++) {
+			const item = items[i]
 			if (item._visible && !item.isEmpty(true)) {
-			  var bounds = item._getCachedBounds(
-				  global
-					? item.getGlobalMatrix(true)
-					: matrix && matrix.appended(item._matrix),
-				  options,
-				  true
-				),
-				rect = bounds.rect
+			  const bounds = item._getCachedBounds(
+				global
+				  ? item.getGlobalMatrix(true)
+				  : matrix && matrix.appended(item._matrix),
+				options,
+				true
+			  )
+			  const rect = bounds.rect
 			  x1 = Math.min(rect.x, x1)
 			  y1 = Math.min(rect.y, y1)
 			  x2 = Math.max(rect.x + rect.width, x2)
@@ -4472,14 +4493,14 @@ var Item = Base.extend(
 	},
 
 	getRotation: function () {
-	  var decomposed = this._decompose()
+	  const decomposed = this._decompose()
 	  return decomposed ? decomposed.rotation : 0
 	},
 
 	setRotation: function (rotation) {
-	  var current = this.getRotation()
+	  const current = this.getRotation()
 	  if (current != null && rotation != null) {
-		var decomposed = this._decomposed
+		const decomposed = this._decomposed
 		this.rotate(rotation - current)
 		if (decomposed) {
 		  decomposed.rotation = rotation
@@ -4489,19 +4510,19 @@ var Item = Base.extend(
 	},
 
 	getScaling: function () {
-	  var decomposed = this._decompose(),
-		s = decomposed && decomposed.scaling
+	  const decomposed = this._decompose()
+	  const s = decomposed && decomposed.scaling
 	  return new LinkedPoint(s ? s.x : 1, s ? s.y : 1, this, 'setScaling')
 	},
 
 	setScaling: function () {
-	  var current = this.getScaling(),
-		scaling = Point.read(arguments, 0, { clone: true, readNull: true })
+	  const current = this.getScaling()
+	  const scaling = Point.read(arguments, 0, { clone: true, readNull: true })
 	  if (current && scaling && !current.equals(scaling)) {
-		var rotation = this.getRotation(),
-		  decomposed = this._decomposed,
-		  matrix = new Matrix(),
-		  isZero = Numerical.isZero
+		const rotation = this.getRotation()
+		const decomposed = this._decomposed
+		const matrix = new Matrix()
+		const isZero = Numerical.isZero
 		if (isZero(current.x) || isZero(current.y)) {
 		  matrix.translate(decomposed.translation)
 		  if (rotation) {
@@ -4510,7 +4531,7 @@ var Item = Base.extend(
 		  matrix.scale(scaling.x, scaling.y)
 		  this._matrix.set(matrix)
 		} else {
-		  var center = this.getPosition(true)
+		  const center = this.getPosition(true)
 		  matrix.translate(center)
 		  if (rotation) matrix.rotate(rotation)
 		  matrix.scale(scaling.x / current.x, scaling.y / current.y)
@@ -4530,14 +4551,14 @@ var Item = Base.extend(
 	},
 
 	setMatrix: function () {
-	  var matrix = this._matrix
+	  const matrix = this._matrix
 	  matrix.set.apply(matrix, arguments)
 	},
 
 	getGlobalMatrix: function (_dontClone) {
-	  var parent = this._parent,
-		parentMatrix = parent && parent.getGlobalMatrix(true),
-		matrix = this._globalMatrix
+	  const parent = this._parent
+	  const parentMatrix = parent && parent.getGlobalMatrix(true)
+	  let matrix = this._globalMatrix
 	  if (!matrix || this._parentGlobalMatrix !== parentMatrix) {
 		matrix = this._globalMatrix = this._matrix.clone()
 		if (parentMatrix) matrix.prepend(parentMatrix)
@@ -4570,8 +4591,8 @@ var Item = Base.extend(
 	_setProject: function (project, installEvents) {
 	  if (this._project !== project) {
 		this._project = project
-		var children = this._children
-		for (var i = 0, l = children && children.length; i < l; i++)
+		const children = this._children
+		for (let i = 0, l = children && children.length; i < l; i++)
 		  children[i]._setProject(project)
 	  }
 	  if (installEvents) this._installEvents(true)
@@ -4589,13 +4610,13 @@ var Item = Base.extend(
 	  _installEvents.base.call(this, install)
 	  if (this._selection) this._project._updateSelection(this, !install)
 	  if (this._textWrap) this._updateTextWrap(!install)
-	  var children = this._children
-	  for (var i = 0, l = children && children.length; i < l; i++)
+	  const children = this._children
+	  for (let i = 0, l = children && children.length; i < l; i++)
 		children[i]._installEvents(install)
 	},
 
 	getLayer: function () {
-	  var parent = this
+	  let parent = this
 	  while ((parent = parent._parent)) {
 		if (parent instanceof Layer) return parent
 	  }
@@ -4633,12 +4654,12 @@ var Item = Base.extend(
 	},
 
 	getNextSibling: function () {
-	  var owner = this._getOwner()
+	  const owner = this._getOwner()
 	  return owner && owner._children[this._index + 1] || null
 	},
 
 	getPreviousSibling: function () {
-	  var owner = this._getOwner()
+	  const owner = this._getOwner()
 	  return owner && owner._children[this._index - 1] || null
 	},
 
@@ -4647,8 +4668,8 @@ var Item = Base.extend(
 	},
 
 	setIndex: function (index) {
-	  var parent = this._parent,
-		children = parent && parent._children
+	  const parent = this._parent
+	  const children = parent && parent._children
 	  if (children) {
 		parent.insertChildren(index in children ? index : undefined, [this])
 	  }
@@ -4679,23 +4700,25 @@ var Item = Base.extend(
 	},
 
 	clone: function (options) {
-	  var copy = new this.constructor(Item.NO_INSERT),
-		children = this._children,
-		insert = Base.pick(
-		  options ? options.insert : undefined,
-		  typeof options === 'boolean' ? options : paper.settings.insertItems
-		),
-		deep = Base.pick(options ? options.deep : undefined, true)
+	  let children
+
+	  const copy = new this.constructor(Item.NO_INSERT)
+	  children = this._children
+	  const insert = Base.pick(
+		options ? options.insert : undefined,
+		typeof options === 'boolean' ? options : paper.settings.insertItems
+	  )
+	  const deep = Base.pick(options ? options.deep : undefined, true)
 	  if (children) copy.copyAttributes(this)
 	  if (!children || deep) copy.copyContent(this)
 	  if (!children) copy.copyAttributes(this)
 	  if (insert) copy.insertAbove(this)
-	  var name = this._name,
-		parent = this._parent
+	  let name = this._name
+	  const parent = this._parent
 	  if (name && parent) {
-		var children = parent._children,
-		  orig = name,
-		  i = 1
+		children = parent._children
+		const orig = name
+		let i = 1
 		while (children[name]) name = orig + ' ' + i++
 		if (name !== orig) copy.setName(name)
 	  }
@@ -4703,26 +4726,26 @@ var Item = Base.extend(
 	},
 
 	copyContent: function (source) {
-	  var children = source._children
-	  for (var i = 0, l = children && children.length; i < l; i++) {
+	  const children = source._children
+	  for (let i = 0, l = children && children.length; i < l; i++) {
 		this.addChild(children[i].clone(false), true)
 	  }
 	},
 
 	copyAttributes: function (source, excludeMatrix) {
 	  this.setStyle(source._style)
-	  var keys = this._attributes
-	  for (var i = 0, l = keys.length; i < l; i++) {
-		var key = keys[i]
+	  const keys = this._attributes
+	  for (let i = 0, l = keys.length; i < l; i++) {
+		const key = keys[i]
 		if (source.hasOwnProperty(key)) this[key] = source[key]
 	  }
 	  if (!excludeMatrix) this._matrix.set(source._matrix, true)
 	  this.setApplyMatrix(source._applyMatrix)
 	  this.setPivot(source._pivot)
 	  this.setSelection(source._selection)
-	  var data = source._data,
-		name = source._name,
-		effects = source._effects
+	  const data = source._data
+	  const name = source._name
+	  const effects = source._effects
 	  this._data = data ? Base.clone(data) : null
 	  if (name) this.setName(name)
 	  this.setEffects(
@@ -4734,7 +4757,9 @@ var Item = Base.extend(
 	},
 
 	rasterize: function (arg0, arg1) {
-	  var resolution, insert, raster
+	  let resolution
+	  let insert
+	  let raster
 	  if (Base.isPlainObject(arg0)) {
 		resolution = arg0.resolution
 		insert = arg0.insert
@@ -4746,17 +4771,17 @@ var Item = Base.extend(
 	  if (!raster) {
 		raster = new Raster(Item.NO_INSERT)
 	  }
-	  var bounds = this.getPreviewBounds(),
-		scale = (resolution || this.getView().getResolution()) / 72,
-		topLeft = bounds.getTopLeft().floor(),
-		bottomRight = bounds.getBottomRight().ceil(),
-		boundsSize = new Size(bottomRight.subtract(topLeft)),
-		rasterSize = boundsSize.multiply(scale)
+	  const bounds = this.getPreviewBounds()
+	  const scale = (resolution || this.getView().getResolution()) / 72
+	  const topLeft = bounds.getTopLeft().floor()
+	  const bottomRight = bounds.getBottomRight().ceil()
+	  const boundsSize = new Size(bottomRight.subtract(topLeft))
+	  const rasterSize = boundsSize.multiply(scale)
 	  raster.setSize(rasterSize, true)
 
 	  if (!rasterSize.isZero()) {
-		var ctx = raster.getContext(true),
-		  matrix = new Matrix().translate(topLeft.negate())
+		const ctx = raster.getContext(true)
+		const matrix = new Matrix().translate(topLeft.negate())
 		ctx.save()
 		ctx.scale(scale, scale)
 		matrix.applyToContext(ctx)
@@ -4775,7 +4800,7 @@ var Item = Base.extend(
 	},
 
 	contains: function () {
-	  var matrix = this._matrix
+	  const matrix = this._matrix
 	  return (
 		matrix.isInvertible() &&
 		!!this._contains(matrix._inverseTransform(Point.read(arguments)))
@@ -4783,9 +4808,9 @@ var Item = Base.extend(
 	},
 
 	_contains: function (point) {
-	  var children = this._children
+	  const children = this._children
 	  if (children) {
-		for (var i = children.length - 1; i >= 0; i--) {
+		for (let i = children.length - 1; i >= 0; i--) {
 		  if (children[i].contains(point)) return true
 		}
 		return false
@@ -4808,21 +4833,21 @@ var Item = Base.extend(
 
 	intersects: function (item, _matrix) {
 	  if (!(item instanceof Item)) return false
-	  var path1 = this._asPathItem(),
-		path2 = item._asPathItem(),
-		matrix1 = path1._matrix,
-		matrix2 = _matrix || path2._matrix
+	  const path1 = this._asPathItem()
+	  const path2 = item._asPathItem()
+	  const matrix1 = path1._matrix
+	  const matrix2 = _matrix || path2._matrix
 
 	  function contains(path, matrix, other, otherMatrix) {
-		var paths = path._children || [path]
-		for (var i = 0, l = paths.length; i < l; i++) {
-		  var segment = paths[i]._segments[0],
-			point = (
-			  segment &&
-			  otherMatrix._inverseTransform(
-				matrix._transformPoint(segment._point)
-			  )
+		const paths = path._children || [path]
+		for (let i = 0, l = paths.length; i < l; i++) {
+		  const segment = paths[i]._segments[0]
+		  const point = (
+			segment &&
+			otherMatrix._inverseTransform(
+			  matrix._transformPoint(segment._point)
 			)
+		  )
 		  if (point && other._contains(point)) return true
 		}
 		return false
@@ -4837,7 +4862,7 @@ var Item = Base.extend(
   },
   new (function () {
 	function hitTest() {
-	  var args = arguments
+	  const args = arguments
 	  return this._hitTest(
 		Point.read(args),
 		HitResult.getOptions(args)
@@ -4845,20 +4870,20 @@ var Item = Base.extend(
 	}
 
 	function hitTestAll() {
-	  var args = arguments,
-		point = Point.read(args),
-		options = HitResult.getOptions(args),
-		all = []
+	  const args = arguments
+	  const point = Point.read(args)
+	  const options = HitResult.getOptions(args)
+	  const all = []
 	  this._hitTest(point, new Base({ all: all }, options))
 	  return all
 	}
 
 	function hitTestChildren(point, options, viewMatrix, _exclude) {
-	  var children = this._children
+	  const children = this._children
 	  if (children) {
-		for (var i = children.length - 1; i >= 0; i--) {
-		  var child = children[i]
-		  var res = (
+		for (let i = children.length - 1; i >= 0; i--) {
+		  const child = children[i]
+		  const res = (
 			child !== _exclude &&
 			child._hitTest(point, options, viewMatrix)
 		  )
@@ -4892,22 +4917,22 @@ var Item = Base.extend(
 		return null
 	  }
 
-	  var matrix = this._matrix,
-		pointMatrix = parentViewMatrix ? matrix : this.getGlobalMatrix(),
-		viewMatrix = parentViewMatrix
-		  ? parentViewMatrix.appended(matrix)
-		  :
-			pointMatrix.prepended(this.getView()._matrix),
-		tolerance = Math.max(options.tolerance, 1e-12),
-		tolerancePadding = (options._tolerancePadding = new Size(
-		  Matrix._getCircleExtents(
-			tolerance,
-			viewMatrix
-			  .prepended(this.getView()._matrix.inverted())
-			  ._shiftless()
-			  .invert()
-		  )
-		))
+	  const matrix = this._matrix
+	  const pointMatrix = parentViewMatrix ? matrix : this.getGlobalMatrix()
+	  const viewMatrix = parentViewMatrix
+		? parentViewMatrix.appended(matrix)
+		:
+		  pointMatrix.prepended(this.getView()._matrix)
+	  const tolerance = Math.max(options.tolerance, 1e-12)
+	  const tolerancePadding = (options._tolerancePadding = new Size(
+		Matrix._getCircleExtents(
+		  tolerance,
+		  viewMatrix
+			.prepended(this.getView()._matrix.inverted())
+			._shiftless()
+			.invert()
+		)
+	  ))
 	  point = pointMatrix._inverseTransform(point)
 	  if (
 		!point ||
@@ -4919,22 +4944,22 @@ var Item = Base.extend(
 		return null
 	  }
 
-	  var checkSelf = !(
-		  options.guides && !this._guide ||
-		  options.selected && !this.isSelected() ||
-		  options.type && options.type !== Base.hyphenate(this._class) ||
-		  options.class && !(this instanceof options.class)
-		),
-		match = options.match,
-		that = this,
-		bounds,
-		res
+	  const checkSelf = !(
+		options.guides && !this._guide ||
+		options.selected && !this.isSelected() ||
+		options.type && options.type !== Base.hyphenate(this._class) ||
+		options.class && !(this instanceof options.class)
+	  )
+	  const match = options.match
+	  const that = this
+	  let bounds
+	  let res
 
 	  function filter(hit) {
 		if (Array.isArray(hit)) {
-		  var first = null
-		  for (var i = 0, l = hit.length; i < l; i++) {
-			var res = filter(hit[i])
+		  let first = null
+		  for (let i = 0, l = hit.length; i < l; i++) {
+			const res = filter(hit[i])
 			first = first || res
 		  }
 		  return first
@@ -4948,7 +4973,7 @@ var Item = Base.extend(
 	  }
 
 	  function checkPoint(type, part) {
-		var pt = part ? bounds['get' + part]() : that.getPosition()
+		const pt = part ? bounds['get' + part]() : that.getPosition()
 		if (point.subtract(pt).divide(tolerancePadding).length <= 1) {
 		  return new HitResult(type, that, {
 			name: part ? Base.hyphenate(part) : type,
@@ -4957,9 +4982,9 @@ var Item = Base.extend(
 		}
 	  }
 
-	  var checkPosition = options.position,
-		checkCenter = options.center,
-		checkBounds = options.bounds
+	  const checkPosition = options.position
+	  const checkCenter = options.center
+	  const checkBounds = options.bounds
 	  if (
 		checkSelf &&
 		this._parent &&
@@ -4973,11 +4998,11 @@ var Item = Base.extend(
 		  checkCenter && checkPoint('center', 'Center')
 		)
 		if (!res && checkBounds) {
-		  var points = [
+		  const points = [
 			'TopLeft', 'TopRight', 'BottomLeft', 'BottomRight',
 			'LeftCenter', 'TopCenter', 'RightCenter', 'BottomCenter'
 		  ]
-		  for (var i = 0; i < 8 && !res; i++) {
+		  for (let i = 0; i < 8 && !res; i++) {
 			res = checkPoint('bounds', points[i])
 		  }
 		}
@@ -5015,10 +5040,10 @@ var Item = Base.extend(
 
 	matches: function (name, compare) {
 	  function matchObject(obj1, obj2) {
-		for (var i in obj1) {
+		for (const i in obj1) {
 		  if (obj1.hasOwnProperty(i)) {
-			var val1 = obj1[i],
-			  val2 = obj2[i]
+			const val1 = obj1[i]
+			const val2 = obj2[i]
 			if (Base.isPlainObject(val1) && Base.isPlainObject(val2)) {
 			  if (!matchObject(val1, val2)) return false
 			} else if (!Base.equals(val1, val2)) {
@@ -5028,9 +5053,9 @@ var Item = Base.extend(
 		}
 		return true
 	  }
-	  var type = typeof name
+	  const type = typeof name
 	  if (type === 'object') {
-		for (var key in name) {
+		for (const key in name) {
 		  if (name.hasOwnProperty(key) && !this.matches(key, name[key]))
 			return false
 		}
@@ -5040,7 +5065,7 @@ var Item = Base.extend(
 	  } else if (name === 'match') {
 		return compare(this)
 	  } else {
-		var value = /^(empty|editable)$/.test(name)
+		let value = /^(empty|editable)$/.test(name)
 		  ?
 			this['is' + Base.capitalize(name)]()
 		  :
@@ -5077,12 +5102,15 @@ var Item = Base.extend(
 
 	statics:  {
 	  _getItems: function _getItems(item, options, matrix, param, firstOnly) {
+		let bounds
+		let rect
+
 		if (!param) {
-		  var obj = typeof options === 'object' && options,
-			overlapping = obj && obj.overlapping,
-			inside = obj && obj.inside,
-			bounds = overlapping || inside,
-			rect = bounds && Rectangle.read([bounds])
+		  const obj = typeof options === 'object' && options
+		  const overlapping = obj && obj.overlapping
+		  const inside = obj && obj.inside
+		  bounds = overlapping || inside
+		  rect = bounds && Rectangle.read([bounds])
 		  param = {
 			items: [],
 			recursive: !obj || obj.recursive !== false,
@@ -5105,16 +5133,16 @@ var Item = Base.extend(
 			})
 		  }
 		}
-		var children = item._children,
-		  items = param.items,
-		  rect = param.rect
+		const children = item._children
+		const items = param.items
+		rect = param.rect
 		matrix = rect && (matrix || new Matrix())
-		for (var i = 0, l = children && children.length; i < l; i++) {
-		  var child = children[i],
-			childMatrix = matrix && matrix.appended(child._matrix),
-			add = true
+		for (let i = 0, l = children && children.length; i < l; i++) {
+		  const child = children[i]
+		  const childMatrix = matrix && matrix.appended(child._matrix)
+		  let add = true
 		  if (rect) {
-			var bounds = child.getBounds(childMatrix)
+			bounds = child.getBounds(childMatrix)
 			if (!rect.intersects(bounds)) continue
 			if (!(
 			  rect.contains(bounds) || (
@@ -5141,22 +5169,22 @@ var Item = Base.extend(
 
 	importJSON: function (json) {
 	  json = typeof json === 'string' ? JSON.parse(json) : json
-	  var props = json && json[0] === this._class && json[1]
+	  const props = json && json[0] === this._class && json[1]
 	  if (Base.isPlainObject(props)) {
-		var item = new this.constructor(Item.NO_INSERT),
-		  fields = Base.set(
-			{},
-			this._serializeFields,
-			this instanceof Group ? null : this._style._defaults
-		  ),
-		  defaults = {}
-		for (var key in fields) {
+		const item = new this.constructor(Item.NO_INSERT)
+		const fields = Base.set(
+		  {},
+		  this._serializeFields,
+		  this instanceof Group ? null : this._style._defaults
+		)
+		const defaults = {}
+		for (const key in fields) {
 		  if (!(key in props) && !Base.equals(this[key], item[key]))
 			defaults[key] = item[key]
 		}
 		this.set(defaults)
 	  }
-	  var res = Base.importJSON(json, this)
+	  const res = Base.importJSON(json, this)
 	  return res !== this ? this.addChild(res) : res
 	},
 
@@ -5165,7 +5193,7 @@ var Item = Base.extend(
 	},
 
 	insertChild: function (index, item) {
-	  var res = item ? this.insertChildren(index, [item]) : null
+	  const res = item ? this.insertChildren(index, [item]) : null
 	  return res && res[0]
 	},
 
@@ -5174,13 +5202,17 @@ var Item = Base.extend(
 	},
 
 	insertChildren: function (index, items) {
-	  var children = this._children
+	  let i
+	  let item
+	  let l
+
+	  const children = this._children
 	  if (children && items && items.length > 0) {
 		items = Base.slice(items)
-		var inserted = {}
-		for (var i = items.length - 1; i >= 0; i--) {
-		  var item = items[i],
-			id = item && item._id
+		const inserted = {}
+		for (i = items.length - 1; i >= 0; i--) {
+		  item = items[i]
+		  const id = item && item._id
 		  if (
 			!item ||
 			inserted[id] ||
@@ -5195,11 +5227,11 @@ var Item = Base.extend(
 		}
 		if (!items.length) return null
 		Base.splice(children, items, index, 0)
-		var project = this._project,
-		  notifySelf = project._changes
-		for (var i = 0, l = items.length; i < l; i++) {
-		  var item = items[i],
-			name = item._name
+		const project = this._project
+		const notifySelf = project._changes
+		for (i = 0, l = items.length; i < l; i++) {
+		  item = items[i]
+		  const name = item._name
 		  item._parent = this
 		  item._setProject(project, true)
 		  if (name) item.setName(name)
@@ -5215,8 +5247,8 @@ var Item = Base.extend(
 	_insertItem: '#insertChild',
 
 	_insertAt: function (item, offset) {
-	  var owner = item && item._getOwner(),
-		res = item !== this && owner ? this : null
+	  const owner = item && item._getOwner()
+	  const res = item !== this && owner ? this : null
 	  if (res) {
 		res._remove(false, true)
 		owner._insertItem(item._index + offset, res)
@@ -5233,12 +5265,12 @@ var Item = Base.extend(
 	},
 
 	sendToBack: function () {
-	  var owner = this._getOwner()
+	  const owner = this._getOwner()
 	  return owner ? owner._insertItem(0, this) : null
 	},
 
 	bringToFront: function () {
-	  var owner = this._getOwner()
+	  const owner = this._getOwner()
 	  return owner ? owner._insertItem(undefined, this) : null
 	},
 
@@ -5261,9 +5293,9 @@ var Item = Base.extend(
 	},
 
 	reduce: function (options) {
-	  var children = this._children
+	  const children = this._children
 	  if (children && children.length === 1) {
-		var child = children[0].reduce(options)
+		const child = children[0].reduce(options)
 		if (this._parent) {
 		  child.insertAbove(this)
 		  this.remove()
@@ -5276,7 +5308,7 @@ var Item = Base.extend(
 	},
 
 	_removeNamed: function () {
-	  var owner = this._getOwner()
+	  const owner = this._getOwner()
 	  if (owner)
 		Base.removeNamed(
 		  owner._children,
@@ -5287,9 +5319,9 @@ var Item = Base.extend(
 	},
 
 	_remove: function (notifySelf, notifyParent) {
-	  var owner = this._getOwner(),
-		project = this._project,
-		index = this._index
+	  const owner = this._getOwner()
+	  const project = this._project
+	  const index = this._index
 	  if (this._style) this._style._dispose()
 	  if (owner) {
 		if (this._name) this._removeNamed()
@@ -5316,8 +5348,8 @@ var Item = Base.extend(
 	},
 
 	replaceWith: function (item) {
-	  var ok = item
-	  for (var i = 0, l = arguments.length; i < l && ok; i++)
+	  let ok = item
+	  for (let i = 0, l = arguments.length; i < l && ok; i++)
 		ok = arguments[i] && arguments[i].insertBelow(this)
 	  if (ok) this.remove()
 	  return ok && item
@@ -5327,8 +5359,8 @@ var Item = Base.extend(
 	  if (!this._children) return null
 	  start = start || 0
 	  end = Base.pick(end, this._children.length)
-	  var removed = Base.splice(this._children, null, start, end - start)
-	  for (var i = removed.length - 1; i >= 0; i--) {
+	  const removed = Base.splice(this._children, null, start, end - start)
+	  for (let i = removed.length - 1; i >= 0; i--) {
 		removed[i]._remove(true, false)
 	  }
 	  if (removed.length > 0) this._changed(11)
@@ -5340,17 +5372,17 @@ var Item = Base.extend(
 	reverseChildren: function () {
 	  if (this._children) {
 		this._children.reverse()
-		for (var i = 0, l = this._children.length; i < l; i++)
+		for (let i = 0, l = this._children.length; i < l; i++)
 		  this._children[i]._index = i
 		this._changed(11)
 	  }
 	},
 
 	isEmpty: function (recursively) {
-	  var children = this._children
-	  var numChildren = children ? children.length : 0
+	  const children = this._children
+	  const numChildren = children ? children.length : 0
 	  if (recursively) {
-		for (var i = 0; i < numChildren; i++) {
+		for (let i = 0; i < numChildren; i++) {
 		  if (!children[i].isEmpty(recursively)) {
 			return false
 		  }
@@ -5361,7 +5393,7 @@ var Item = Base.extend(
 	},
 
 	isEditable: function () {
-	  var item = this
+	  let item = this
 	  while (item) {
 		if (!item._visible || item._locked) return false
 		item = item._parent
@@ -5383,15 +5415,15 @@ var Item = Base.extend(
 
 	_getOrder: function (item) {
 	  function getList(item) {
-		var list = []
+		const list = []
 		do {
 		  list.unshift(item)
 		} while ((item = item._parent))
 		return list
 	  }
-	  var list1 = getList(this),
-		list2 = getList(item)
-	  for (var i = 0, l = Math.min(list1.length, list2.length); i < l; i++) {
+	  const list1 = getList(this)
+	  const list2 = getList(item)
+	  for (let i = 0, l = Math.min(list1.length, list2.length); i < l; i++) {
 		if (list1[i] != list2[i]) {
 		  return list1[i]._index < list2[i]._index ? 1 : -1
 		}
@@ -5424,7 +5456,7 @@ var Item = Base.extend(
 	},
 
 	isDescendant: function (item) {
-	  var parent = this
+	  let parent = this
 	  while ((parent = parent._parent)) {
 		if (parent === item) return true
 	  }
@@ -5440,7 +5472,7 @@ var Item = Base.extend(
 	},
 
 	isGroupedWith: function (item) {
-	  var parent = this._parent
+	  let parent = this._parent
 	  while (parent) {
 		if (
 		  parent._parent &&
@@ -5457,11 +5489,11 @@ var Item = Base.extend(
   Base.each(
 	['rotate', 'scale', 'shear', 'skew'],
 	function (key) {
-	  var rotate = key === 'rotate'
+	  const rotate = key === 'rotate'
 	  this[key] = function () {
-		var args = arguments,
-		  value = (rotate ? Base : Point).read(args),
-		  center = Point.read(args, 0, { readNull: true })
+		const args = arguments
+		const value = (rotate ? Base : Point).read(args)
+		const center = Point.read(args, 0, { readNull: true })
 		return this.transform(
 		  new Matrix()[key](value, center || this.getPosition(true))
 		)
@@ -5469,31 +5501,31 @@ var Item = Base.extend(
 	},
 	 {
 	  translate: function () {
-		var mx = new Matrix()
+		const mx = new Matrix()
 		return this.transform(mx.translate.apply(mx, arguments))
 	  },
 
 	  transform: function (matrix, _applyRecursively, _setApplyMatrix) {
-		var _matrix = this._matrix,
-		  transformMatrix = matrix && !matrix.isIdentity(),
-		  applyMatrix = (
-			_setApplyMatrix && this._canApplyMatrix || (
-			  this._applyMatrix &&
-			  (
-				transformMatrix ||
-				!_matrix.isIdentity() ||
-				_applyRecursively && this._children
-			  )
+		const _matrix = this._matrix
+		const transformMatrix = matrix && !matrix.isIdentity()
+		let applyMatrix = (
+		  _setApplyMatrix && this._canApplyMatrix || (
+			this._applyMatrix &&
+			(
+			  transformMatrix ||
+			  !_matrix.isIdentity() ||
+			  _applyRecursively && this._children
 			)
 		  )
+		)
 		if (!transformMatrix && !applyMatrix) return this
 		if (transformMatrix) {
 		  if (!matrix.isInvertible() && _matrix.isInvertible())
 			_matrix._backup = _matrix.getValues()
 		  _matrix.prepend(matrix, true)
-		  var style = this._style,
-			fillColor = style.getFillColor(true),
-			strokeColor = style.getStrokeColor(true)
+		  const style = this._style
+		  const fillColor = style.getFillColor(true)
+		  const strokeColor = style.getStrokeColor(true)
 		  if (fillColor) fillColor.transform(matrix)
 		  if (strokeColor) strokeColor.transform(matrix)
 		}
@@ -5504,20 +5536,20 @@ var Item = Base.extend(
 			_matrix, _applyRecursively, _setApplyMatrix
 		  ))
 		) {
-		  var pivot = this._pivot
+		  const pivot = this._pivot
 		  if (pivot) _matrix._transformPoint(pivot, pivot, true)
 		  _matrix.reset(true)
 		  if (_setApplyMatrix && this._canApplyMatrix) this._applyMatrix = true
 		}
-		var bounds = this._bounds,
-		  position = this._position
+		const bounds = this._bounds
+		const position = this._position
 		if (transformMatrix || applyMatrix) {
 		  this._changed(25)
 		}
-		var decomp = transformMatrix && bounds && matrix.decompose()
+		const decomp = transformMatrix && bounds && matrix.decompose()
 		if (decomp && decomp.skewing.isZero() && decomp.rotation % 90 === 0) {
-		  for (var key in bounds) {
-			var cache = bounds[key]
+		  for (const key in bounds) {
+			const cache = bounds[key]
 			if (
 			  cache.nonscaling || (
 				applyMatrix &&
@@ -5527,12 +5559,12 @@ var Item = Base.extend(
 			) {
 			  delete bounds[key]
 			} else if (applyMatrix || !cache.internal) {
-			  var rect = cache.rect
+			  const rect = cache.rect
 			  matrix._transformBounds(rect, rect)
 			}
 		  }
 		  this._bounds = bounds
-		  var cached =
+		  const cached =
 			bounds[
 			  this._getBoundsCacheKey(
 				this._boundsOptions || {}
@@ -5548,9 +5580,9 @@ var Item = Base.extend(
 	  },
 
 	  _transformContent: function (matrix, applyRecursively, setApplyMatrix) {
-		var children = this._children
+		const children = this._children
 		if (children) {
-		  for (var i = 0, l = children.length; i < l; i++) {
+		  for (let i = 0, l = children.length; i < l; i++) {
 			children[i].transform(matrix, applyRecursively, setApplyMatrix)
 		  }
 		  return true
@@ -5581,10 +5613,10 @@ var Item = Base.extend(
 		rectangle = Rectangle.read(arguments)
 		fit = Base.read(arguments)
 		if (fit === true) fit = 'cover'
-		var bounds = this.getBounds(),
-		  hor = rectangle.width / bounds.width,
-		  ver = rectangle.height / bounds.height,
-		  size
+		const bounds = this.getBounds()
+		const hor = rectangle.width / bounds.width
+		const ver = rectangle.height / bounds.height
+		let size
 
 		function isScaling(ratio) {
 		  return ratio > 0 && isFinite(ratio)
@@ -5596,12 +5628,12 @@ var Item = Base.extend(
 			isScaling(ver) ? rectangle.height : bounds.height
 		  )
 		} else {
-		  var ratios = [hor, ver].filter(isScaling),
-			scale = !ratios.length
-			  ? 1
-			  : fit === 'cover'
-				? Math.max.apply(Math, ratios)
-				: Math.min.apply(Math, ratios)
+		  const ratios = [hor, ver].filter(isScaling)
+		  const scale = !ratios.length
+			? 1
+			: fit === 'cover'
+			  ? Math.max.apply(Math, ratios)
+			  : Math.min.apply(Math, ratios)
 		  size = bounds.getSize().multiply(scale)
 		}
 		this.setBounds(
@@ -5614,7 +5646,7 @@ var Item = Base.extend(
    {
 
 	_setStyles: function (ctx, param, viewMatrix, strokeMatrix, style) {
-	  var matrix = this._matrix
+	  const matrix = this._matrix
 	  style = style || this._style
 	  if (style.hasFill()) {
 		ctx.fillStyle = style
@@ -5626,13 +5658,13 @@ var Item = Base.extend(
 		  .getStrokeColor()
 		  .toCanvasStyle(ctx, matrix, strokeMatrix)
 		ctx.lineWidth = style.getStrokeWidth()
-		var strokeJoin = style.getStrokeJoin(),
-		  strokeCap = style.getStrokeCap(),
-		  miterLimit = style.getMiterLimit()
+		const strokeJoin = style.getStrokeJoin()
+		const strokeCap = style.getStrokeCap()
+		const miterLimit = style.getMiterLimit()
 		if (strokeJoin) ctx.lineJoin = strokeJoin
 		if (strokeCap) ctx.lineCap = strokeCap
 		if (miterLimit) ctx.miterLimit = miterLimit
-		var dashArray = style.getDashArray()
+		const dashArray = style.getDashArray()
 		if (dashArray && dashArray.length) {
 		  ctx.setLineDash(dashArray)
 		  ctx.lineDashOffset = style.getDashOffset()
@@ -5643,19 +5675,22 @@ var Item = Base.extend(
 	},
 
 	_paint: function (ctx, param, viewMatrix, strokeMatrix) {
-	  var style = this._style,
-		hasFill = style.hasFill(),
-		hasStroke = style.hasStroke()
+	  const style = this._style
+	  const hasFill = style.hasFill()
+	  const hasStroke = style.hasStroke()
 	  if (hasFill || hasStroke) {
-		var isStrokeFirst = hasStroke && style.getPaintOrder() === 'stroke'
+		const isStrokeFirst = hasStroke && style.getPaintOrder() === 'stroke'
 		this._setStyles(ctx, param, viewMatrix, strokeMatrix)
 		if (isStrokeFirst) {
 		  ctx.stroke()
 		  ctx.shadowColor = 'rgba(0,0,0,0)'
 		}
 		if (hasFill) {
-		  var fillColor = style.getFillColor(),
-			ellipse = fillColor._getEllipseMatrix(this._matrix, strokeMatrix)
+		  const fillColor = style.getFillColor()
+		  const ellipse = fillColor._getEllipseMatrix(
+			this._matrix,
+			strokeMatrix
+		  )
 		  if (ellipse) {
 			ctx.save()
 			ellipse.applyToContext(ctx)
@@ -5670,13 +5705,13 @@ var Item = Base.extend(
 	},
 
 	_setShadow: function (ctx, param, viewMatrix) {
-	  var style = this._style,
-		pixelRatio = param.pixelRatio || 1,
-		mx = viewMatrix._shiftless().prepend(
-		  new Matrix().scale(pixelRatio, pixelRatio)
-		),
-		blur = mx.transform(new Point(style.getShadowBlur(), 0)),
-		offset = mx.transform(this.getShadowOffset())
+	  const style = this._style
+	  const pixelRatio = param.pixelRatio || 1
+	  const mx = viewMatrix._shiftless().prepend(
+		new Matrix().scale(pixelRatio, pixelRatio)
+	  )
+	  const blur = mx.transform(new Point(style.getShadowBlur(), 0))
+	  const offset = mx.transform(this.getShadowOffset())
 	  ctx.shadowColor = style.getShadowColor().toCanvasStyle(ctx)
 	  ctx.shadowBlur = blur.getLength()
 	  ctx.shadowOffsetX = offset.x
@@ -5684,13 +5719,15 @@ var Item = Base.extend(
 	},
 
 	draw: function (ctx, param, parentStrokeMatrix) {
-	  var updateVersion = (this._updateVersion = this._project._updateVersion)
+	  let offset
+
+	  this._updateVersion = this._project._updateVersion
 	  if (!this._visible || this._opacity === 0) return
-	  var matrices = param.matrices,
-		viewMatrix = param.viewMatrix,
-		matrix = this._matrix,
-		parentMatrix = matrices[matrices.length - 1],
-		globalMatrix = parentMatrix.appended(matrix)
+	  const matrices = param.matrices
+	  let viewMatrix = param.viewMatrix
+	  const matrix = this._matrix
+	  const parentMatrix = matrices[matrices.length - 1]
+	  const globalMatrix = parentMatrix.appended(matrix)
 	  if (!globalMatrix.isInvertible()) return
 
 	  viewMatrix = viewMatrix ? viewMatrix.appended(globalMatrix) : globalMatrix
@@ -5701,39 +5738,39 @@ var Item = Base.extend(
 		this._parentGlobalMatrix = this._parent && parentMatrix
 	  }
 
-	  var blendMode = this._blendMode,
-		opacity = Numerical.clamp(this._opacity, 0, 1),
-		normalBlend = blendMode === 'normal',
-		nativeBlend = BlendMode.nativeModes[blendMode],
-		style = this._style,
-		shadow = (
-		  (normalBlend || nativeBlend) &&
-		  style.getShadowColor(true) &&
-		  style.hasShadow() &&
-		  style.hasFill() &&
-		  style.hasStroke()
-		),
-		direct = (
-		  !shadow && (
-			(
-			  normalBlend &&
-			  opacity === 1 &&
-			  !(this instanceof Group && this.isIsolated())
-			) || (
-			  (nativeBlend || normalBlend && opacity < 1) &&
-			  this._canComposite()
-			)
-		  ) ||
-		  param.dontStart ||
-		  param.clip
-		),
-		pixelRatio = param.pixelRatio || 1,
-		mainCtx,
-		itemOffset,
-		prevOffset,
-		itemSize,
-		buffer,
-		isFresh
+	  const blendMode = this._blendMode
+	  const opacity = Numerical.clamp(this._opacity, 0, 1)
+	  const normalBlend = blendMode === 'normal'
+	  const nativeBlend = BlendMode.nativeModes[blendMode]
+	  const style = this._style
+	  const shadow = (
+		(normalBlend || nativeBlend) &&
+		style.getShadowColor(true) &&
+		style.hasShadow() &&
+		style.hasFill() &&
+		style.hasStroke()
+	  )
+	  const direct = (
+		!shadow && (
+		  (
+			normalBlend &&
+			opacity === 1 &&
+			!(this instanceof Group && this.isIsolated())
+		  ) || (
+			(nativeBlend || normalBlend && opacity < 1) &&
+			this._canComposite()
+		  )
+		) ||
+		param.dontStart ||
+		param.clip
+	  )
+	  const pixelRatio = param.pixelRatio || 1
+	  let mainCtx
+	  let itemOffset
+	  let prevOffset
+	  let itemSize
+	  let buffer
+	  let isFresh
 	  if (!direct) {
 		buffer = (
 		  this._buffered &&
@@ -5741,21 +5778,21 @@ var Item = Base.extend(
 		  !param.clipItem &&
 		  (this._buffer || (this._buffer = {}))
 		)
-		var version = this._project._bufferVersion
+		const version = this._project._bufferVersion
 		isFresh = (
 		  buffer &&
 		  viewMatrix.equals(buffer.matrix) &&
 		  buffer.version === version
 		)
-		var bounds = isFresh
+		let bounds = isFresh
 		  ? buffer.bounds
 		  : this.getPreviewBounds(viewMatrix)
 		if (!isFresh && style.getShadowColor(true)) {
-		  var mx = viewMatrix._shiftless(),
-			blur = mx.transform(
-			  new Point(style.getShadowBlur(true), 0)
-			),
-			offset = mx.transform(style.getShadowOffset(true))
+		  const mx = viewMatrix._shiftless()
+		  const blur = mx.transform(
+			new Point(style.getShadowBlur(true), 0)
+		  )
+		  offset = mx.transform(style.getShadowOffset(true))
 		  bounds = bounds.unite(
 			new Rectangle(
 			  bounds.getPoint().add(offset),
@@ -5768,7 +5805,7 @@ var Item = Base.extend(
 		  buffer.version = version
 		  buffer.bounds = bounds
 		}
-		var canvas = ctx.canvas
+		const canvas = ctx.canvas
 		bounds = bounds.intersect(
 		  new Rectangle(
 			new Point(param.offset),
@@ -5785,7 +5822,7 @@ var Item = Base.extend(
 		itemSize = bounds.getSize().ceil().add(1).multiply(pixelRatio).floor()
 		mainCtx = ctx
 		if (buffer) {
-		  var bufferCanvas = buffer.canvas
+		  let bufferCanvas = buffer.canvas
 		  isFresh = (
 			isFresh &&
 			itemOffset.equals(buffer.offset) &&
@@ -5813,27 +5850,27 @@ var Item = Base.extend(
 		if (pixelRatio !== 1) ctx.scale(pixelRatio, pixelRatio)
 	  }
 	  ctx.save()
-	  var strokeMatrix = parentStrokeMatrix
-		  ? parentStrokeMatrix.appended(matrix)
-		  :
-			this._canScaleStroke &&
-			!this.getStrokeScaling(true) &&
-			viewMatrix,
-		clip = !direct && param.clipItem,
-		event = (
-		  this.responds('draw') &&
-		  !isFresh &&
-		  !param.clip &&
-		  !param.dontStart &&
-		  new DrawEvent({
-			item: this,
-			context: ctx,
-			matrix: viewMatrix.clone(),
-			pixelRatio: pixelRatio,
-			view: param.view || null
-		  })
-		),
-		transform = !strokeMatrix || clip || event
+	  const strokeMatrix = parentStrokeMatrix
+		? parentStrokeMatrix.appended(matrix)
+		:
+		  this._canScaleStroke &&
+		  !this.getStrokeScaling(true) &&
+		  viewMatrix
+	  const clip = !direct && param.clipItem
+	  const event = (
+		this.responds('draw') &&
+		!isFresh &&
+		!param.clip &&
+		!param.dontStart &&
+		new DrawEvent({
+		  item: this,
+		  context: ctx,
+		  matrix: viewMatrix.clone(),
+		  pixelRatio: pixelRatio,
+		  view: param.view || null
+		})
+	  )
+	  const transform = !strokeMatrix || clip || event
 	  if (direct) {
 		ctx.globalAlpha = opacity
 		if (nativeBlend) ctx.globalCompositeOperation = blendMode
@@ -5865,15 +5902,15 @@ var Item = Base.extend(
 	  }
 	  if (strokeMatrix) {
 		ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
-		var offset = param.offset
+		offset = param.offset
 		if (offset) ctx.translate(-offset.x, -offset.y)
 	  }
 	  if (!isFresh && !(event && event.prevented)) {
-		var drawParam =
-			shadow && !direct
-			  ? param.extend({ dontShadow: true })
-			  : param,
-		  output = this.getEffectOutput()
+		const drawParam =
+		  shadow && !direct
+			? param.extend({ dontShadow: true })
+			: param
+		const output = this.getEffectOutput()
 		if (output) {
 		  output.draw(
 			ctx,
@@ -5909,10 +5946,10 @@ var Item = Base.extend(
 	},
 
 	_isUpdated: function (updateVersion) {
-	  var parent = this._parent
+	  const parent = this._parent
 	  if (parent instanceof CompoundPath)
 		return parent._isUpdated(updateVersion)
-	  var updated = this._updateVersion === updateVersion
+	  let updated = this._updateVersion === updateVersion
 	  if (
 		!updated &&
 		parent &&
@@ -5933,33 +5970,33 @@ var Item = Base.extend(
 	  updateVersion,
 	  handlersOnly
 	) {
-	  var selection = this._selection,
-		itemSelected = selection & 1,
-		boundsSelected = (
-		  selection & 2 ||
-		  itemSelected && this._selectBounds
-		),
-		strokeBoundsSelected = (
-		  selection &
-		  8
-		),
-		positionSelected = selection & 4
+	  const selection = this._selection
+	  let itemSelected = selection & 1
+	  const boundsSelected = (
+		selection & 2 ||
+		itemSelected && this._selectBounds
+	  )
+	  const strokeBoundsSelected = (
+		selection &
+		8
+	  )
+	  const positionSelected = selection & 4
 	  if (!this._drawSelected) itemSelected = false
 	  if (selection && this._isUpdated(updateVersion) && this.isInserted()) {
-		var layer,
-		  color = (
-			this.getSelectedColor(true) || (
-			  (layer = this.getLayer()) &&
-			  layer.getSelectedColor(true)
-			)
-		  ),
-		  mx = matrix.appended(this.getGlobalMatrix(true)),
-		  half = size / 2
+		let layer
+		const color = (
+		  this.getSelectedColor(true) || (
+			(layer = this.getLayer()) &&
+			layer.getSelectedColor(true)
+		  )
+		)
+		const mx = matrix.appended(this.getGlobalMatrix(true))
+		const half = size / 2
 		ctx.strokeStyle = ctx.fillStyle = color
 		  ? color.toCanvasStyle(ctx)
 		  : '#009dec'
 		if (this.responds('drawselection')) {
-		  var event = new DrawEvent({
+		  const event = new DrawEvent({
 			item: this,
 			context: ctx,
 			matrix: mx.clone(),
@@ -5975,35 +6012,37 @@ var Item = Base.extend(
 		if (handlersOnly) return
 		if (itemSelected) this._drawSelected(ctx, mx, selectionItems)
 		if (positionSelected) {
-		  var pos = this.getPosition(true),
-			parent = this._parent,
-			point = parent ? parent.localToGlobal(pos) : pos,
-			x = point.x,
-			y = point.y
+		  const pos = this.getPosition(true)
+		  const parent = this._parent
+		  const point = parent ? parent.localToGlobal(pos) : pos
+		  const x = point.x
+		  const y = point.y
 		  ctx.beginPath()
 		  ctx.arc(x, y, half, 0, Math.PI * 2, true)
 		  ctx.stroke()
-		  var deltas = [[0, -1], [1, 0], [0, 1], [-1, 0]],
-			start = half,
-			end = size + 1
-		  for (var i = 0; i < 4; i++) {
-			var delta = deltas[i],
-			  dx = delta[0],
-			  dy = delta[1]
+		  const deltas = [[0, -1], [1, 0], [0, 1], [-1, 0]]
+		  const start = half
+		  const end = size + 1
+		  for (let i = 0; i < 4; i++) {
+			const delta = deltas[i]
+			const dx = delta[0]
+			const dy = delta[1]
 			ctx.moveTo(x + dx * start, y + dy * start)
 			ctx.lineTo(x + dx * end, y + dy * end)
 			ctx.stroke()
 		  }
 		}
-		var drawBounds = function (bounds) {
-		  var coords = mx._transformCorners(bounds)
+		const drawBounds = function (bounds) {
+		  let i
+
+		  const coords = mx._transformCorners(bounds)
 		  ctx.beginPath()
-		  for (var i = 0; i < 8; i++) {
+		  for (i = 0; i < 8; i++) {
 			ctx[!i ? 'moveTo' : 'lineTo'](coords[i], coords[++i])
 		  }
 		  ctx.closePath()
 		  ctx.stroke()
-		  for (var i = 0; i < 8; i++) {
+		  for (i = 0; i < 8; i++) {
 			ctx.fillRect(coords[i] - half, coords[++i] - half, size, size)
 		  }
 		}
@@ -6021,7 +6060,7 @@ var Item = Base.extend(
 	['down', 'drag', 'up', 'move'],
 	function (key) {
 	  this['removeOn' + Base.capitalize(key)] = function () {
-		var hash = {}
+		const hash = {}
 		hash[key] = true
 		return this.removeOn(hash)
 	  }
@@ -6029,11 +6068,11 @@ var Item = Base.extend(
 	 {
 
 	  removeOn: function (obj) {
-		for (var name in obj) {
+		for (const name in obj) {
 		  if (obj[name]) {
-			var key = 'mouse' + name,
-			  project = this._project,
-			  sets = (project._removeSets = project._removeSets || {})
+			const key = 'mouse' + name
+			const project = this._project
+			const sets = (project._removeSets = project._removeSets || {})
 			sets[key] = sets[key] || {}
 			sets[key][this._id] = this
 		  }
@@ -6053,13 +6092,13 @@ var Item = Base.extend(
 		  to = null
 		}
 	  }
-	  var easing = options && options.easing,
-		start = options && options.start,
-		duration = (
-		  options != null &&
-		  (typeof options === 'number' ? options : options.duration)
-		),
-		tween = new Tween(this, from, to, duration, easing, start)
+	  const easing = options && options.easing
+	  const start = options && options.start
+	  const duration = (
+		options != null &&
+		(typeof options === 'number' ? options : options.duration)
+	  )
+	  const tween = new Tween(this, from, to, duration, easing, start)
 	  function onFrame(event) {
 		tween._handleFrame(event.time * 1000)
 		if (!tween.running) {
@@ -6082,7 +6121,7 @@ var Item = Base.extend(
   }
 )
 
-var Group = Item.extend(
+const Group = Item.extend(
    {
 	_class: 'Group',
 	_selectBounds: false,
@@ -6104,7 +6143,7 @@ var Group = Item.extend(
 	},
 
 	_getStyles: function () {
-	  var children = this._children
+	  const children = this._children
 	  return children.length > 0
 		? children.map(function (child) {
 			return child._style
@@ -6120,11 +6159,11 @@ var Group = Item.extend(
 	},
 
 	_getClipItem: function () {
-	  var clipItem = this._clipItem
+	  let clipItem = this._clipItem
 	  if (clipItem === undefined) {
 		clipItem = null
-		var children = this._children
-		for (var i = 0, l = children.length; i < l; i++) {
+		const children = this._children
+		for (let i = 0, l = children.length; i < l; i++) {
 		  if (children[i]._clipMask) {
 			clipItem = children[i]
 			break
@@ -6140,18 +6179,18 @@ var Group = Item.extend(
 	},
 
 	setClipped: function (clipped) {
-	  var child = this.getFirstChild()
+	  const child = this.getFirstChild()
 	  if (child) child.setClipMask(clipped)
 	},
 
 	ungroup: function () {
 	  if (!this._parent) return null
-	  var children = this._children.slice(),
-		clipItem = this._getClipItem(),
-		matrix = this._matrix
+	  const children = this._children.slice()
+	  const clipItem = this._getClipItem()
+	  const matrix = this._matrix
 	  if (clipItem) clipItem.setClipMask(false)
 	  if (!matrix.isIdentity()) {
-		for (var i = 0, l = children.length; i < l; i++)
+		for (let i = 0, l = children.length; i < l; i++)
 		  children[i].transform(matrix)
 	  }
 	  return this.replaceWith.apply(this, children) ? children : null
@@ -6182,13 +6221,13 @@ var Group = Item.extend(
 	},
 
 	_serialize: function _serialize(options, dictionary) {
-	  var json = _serialize.base.call(this, options, dictionary)
+	  const json = _serialize.base.call(this, options, dictionary)
 	  if (!this._isolated) delete json[1].isolated
 	  return json
 	},
 
 	_getBounds: function _getBounds(matrix, options) {
-	  var clipItem = this._getClipItem()
+	  const clipItem = this._getClipItem()
 	  return clipItem
 		? clipItem._getCachedBounds(
 			clipItem._matrix.prepended(matrix),
@@ -6198,7 +6237,7 @@ var Group = Item.extend(
 	},
 
 	_hitTestChildren: function _hitTestChildren(point, options, viewMatrix) {
-	  var clipItem = this._getClipItem()
+	  const clipItem = this._getClipItem()
 	  return (
 		(!clipItem || clipItem.contains(point)) &&
 		_hitTestChildren.base.call(
@@ -6213,7 +6252,7 @@ var Group = Item.extend(
 
 	_hitTestSelf: function (point, options, viewMatrix) {
 	  if (options.match || options.class || options.type || options.all) {
-		var res = this._hitTestChildren(
+		const res = this._hitTestChildren(
 		  point,
 		  options.extend({
 			all: null,
@@ -6229,8 +6268,8 @@ var Group = Item.extend(
 	},
 
 	_draw: function (ctx, param) {
-	  var clip = param.clip,
-		clipItem = this._getClipItem()
+	  const clip = param.clip
+	  const clipItem = this._getClipItem()
 	  param = param.extend({ clipItem: !clip && clipItem, clip: false })
 	  if (clip) {
 		ctx.beginPath()
@@ -6238,16 +6277,16 @@ var Group = Item.extend(
 	  } else if (clipItem) {
 		clipItem.draw(ctx, param.extend({ clip: true }))
 	  }
-	  var children = this._children
-	  for (var i = 0, l = children.length; i < l; i++) {
-		var item = children[i]
+	  const children = this._children
+	  for (let i = 0, l = children.length; i < l; i++) {
+		const item = children[i]
 		if (item !== clipItem) item.draw(ctx, param)
 	  }
 	}
   }
 )
 
-var Layer = Group.extend(
+const Layer = Group.extend(
    {
 	_class: 'Layer',
 	_textWrapVersion: 0,
@@ -6272,7 +6311,7 @@ var Layer = Group.extend(
   }
 )
 
-var Shape = Item.extend(
+const Shape = Item.extend(
    {
 	_class: 'Shape',
 	_applyMatrix: false,
@@ -6315,18 +6354,18 @@ var Shape = Item.extend(
 	setShape: '#setType',
 
 	getSize: function () {
-	  var size = this._size
+	  const size = this._size
 	  return new LinkedSize(size.width, size.height, this, 'setSize')
 	},
 
 	setSize: function () {
-	  var size = Size.read(arguments)
+	  const size = Size.read(arguments)
 	  if (!this._size) {
 		this._size = size.clone()
 	  } else if (!this._size.equals(size)) {
-		var type = this._type,
-		  width = size.width,
-		  height = size.height
+		const type = this._type
+		let width = size.width
+		let height = size.height
 		if (type === 'rectangle') {
 		  this._radius.set(Size.min(this._radius, size.divide(2).abs()))
 		} else if (type === 'circle') {
@@ -6341,17 +6380,19 @@ var Shape = Item.extend(
 	},
 
 	getRadius: function () {
-	  var rad = this._radius
+	  const rad = this._radius
 	  return this._type === 'circle'
 		? rad
 		: new LinkedSize(rad.width, rad.height, this, 'setRadius')
 	},
 
 	setRadius: function (radius) {
-	  var type = this._type
+	  let size
+
+	  const type = this._type
 	  if (type === 'circle') {
 		if (radius === this._radius) return
-		var size = radius * 2
+		size = radius * 2
 		this._radius = radius
 		if (this._size) {
 		  this._size._set(size, size)
@@ -6366,7 +6407,7 @@ var Shape = Item.extend(
 		  if (this._radius.equals(radius)) return
 		  this._radius.set(radius)
 		  if (type === 'rectangle') {
-			var size = Size.max(this._size, radius.multiply(2))
+			size = Size.max(this._size, radius.multiply(2))
 			this._size.set(size)
 		  } else if (type === 'ellipse') {
 			this._size._set(radius.width * 2, radius.height * 2)
@@ -6381,7 +6422,7 @@ var Shape = Item.extend(
 	},
 
 	toPath: function (insert) {
-	  var path = this._asPathItem()
+	  const path = this._asPathItem()
 	  if (paper.settings.applyMatrix) path.setApplyMatrix(true)
 	  if (Base.pick(insert, paper.settings.insertItems)) path.insertAbove(this)
 	  return path
@@ -6390,7 +6431,7 @@ var Shape = Item.extend(
 	toShape: '#clone',
 
 	_asPathItem: function () {
-	  var path = new Path[Base.capitalize(this._type)]({
+	  const path = new Path[Base.capitalize(this._type)]({
 		center: new Point(),
 		size: this._size,
 		radius: this._radius,
@@ -6401,66 +6442,66 @@ var Shape = Item.extend(
 	},
 
 	_draw: function (ctx, param, viewMatrix, strokeMatrix) {
-	  var style = this._style,
-		hasFill = style.hasFill(),
-		hasStroke = style.hasStroke(),
-		dontPaint = param.dontFinish || param.clip,
-		untransformed = !strokeMatrix
+	  const style = this._style
+	  const hasFill = style.hasFill()
+	  const hasStroke = style.hasStroke()
+	  const dontPaint = param.dontFinish || param.clip
+	  const untransformed = !strokeMatrix
 	  if (hasFill || hasStroke || dontPaint) {
-		var type = this._type,
-		  radius = this._radius,
-		  isCircle = type === 'circle'
+		const type = this._type
+		const radius = this._radius
+		const isCircle = type === 'circle'
 		if (!param.dontStart) ctx.beginPath()
 		if (untransformed && isCircle) {
 		  ctx.arc(0, 0, radius, 0, Math.PI * 2, true)
 		} else {
-		  var rx = isCircle ? radius : radius.width,
-			ry = isCircle ? radius : radius.height,
-			size = this._size,
-			width = size.width,
-			height = size.height
+		  const rx = isCircle ? radius : radius.width
+		  const ry = isCircle ? radius : radius.height
+		  const size = this._size
+		  const width = size.width
+		  const height = size.height
 		  if (untransformed && type === 'rectangle' && rx === 0 && ry === 0) {
 			ctx.rect(-width / 2, -height / 2, width, height)
 		  } else {
-			var x = width / 2,
-			  y = height / 2,
-			  kappa = 1 - 0.5522847498307936,
-			  cx = rx * kappa,
-			  cy = ry * kappa,
-			  c = [
-				-x,
-				-y + ry,
-				-x,
-				-y + cy,
-				-x + cx,
-				-y,
-				-x + rx,
-				-y,
-				x - rx,
-				-y,
-				x - cx,
-				-y,
-				x,
-				-y + cy,
-				x,
-				-y + ry,
-				x,
-				y - ry,
-				x,
-				y - cy,
-				x - cx,
-				y,
-				x - rx,
-				y,
-				-x + rx,
-				y,
-				-x + cx,
-				y,
-				-x,
-				y - cy,
-				-x,
-				y - ry
-			  ]
+			const x = width / 2
+			const y = height / 2
+			const kappa = 1 - 0.5522847498307936
+			const cx = rx * kappa
+			const cy = ry * kappa
+			const c = [
+			  -x,
+			  -y + ry,
+			  -x,
+			  -y + cy,
+			  -x + cx,
+			  -y,
+			  -x + rx,
+			  -y,
+			  x - rx,
+			  -y,
+			  x - cx,
+			  -y,
+			  x,
+			  -y + cy,
+			  x,
+			  -y + ry,
+			  x,
+			  y - ry,
+			  x,
+			  y - cy,
+			  x - cx,
+			  y,
+			  x - rx,
+			  y,
+			  -x + rx,
+			  y,
+			  -x + cx,
+			  y,
+			  -x,
+			  y - cy,
+			  -x,
+			  y - ry
+			]
 			if (strokeMatrix) strokeMatrix.transform(c, c, 32)
 			ctx.moveTo(c[0], c[1])
 			ctx.bezierCurveTo(c[2], c[3], c[4], c[5], c[6], c[7])
@@ -6482,19 +6523,19 @@ var Shape = Item.extend(
 	},
 
 	_getBounds: function (matrix, options) {
-	  var size = this._size,
-		rect = new Rectangle(size).setCenter(0, 0),
-		style = this._style,
-		strokeRadius = (
-		  options.stroke &&
-		  style.hasStroke() &&
-		  style.getStrokeWidth() / 2
-		)
+	  const size = this._size
+	  let rect = new Rectangle(size).setCenter(0, 0)
+	  const style = this._style
+	  const strokeRadius = (
+		options.stroke &&
+		style.hasStroke() &&
+		style.getStrokeWidth() / 2
+	  )
 	  if (matrix) {
 		if (this._type === 'rectangle') {
 		  rect = matrix._transformBounds(rect)
 		} else {
-		  var extents = Matrix._getCircleExtents(
+		  const extents = Matrix._getCircleExtents(
 			1,
 			matrix.clone().scale(size.width / 2, size.height / 2)
 		  )
@@ -6516,14 +6557,14 @@ var Shape = Item.extend(
   },
   new (function () {
 	function getCornerCenter(that, point) {
-	  var radius = that._radius
+	  const radius = that._radius
 	  if (!radius.isZero()) {
-		var halfSize = that._size.divide(2)
-		for (var q = 1; q <= 4; q++) {
-		  var dir = new Point(q > 1 && q < 4 ? -1 : 1, q > 2 ? -1 : 1),
-			corner = dir.multiply(halfSize),
-			center = corner.subtract(dir.multiply(radius)),
-			rect = new Rectangle(corner, center)
+		const halfSize = that._size.divide(2)
+		for (let q = 1; q <= 4; q++) {
+		  const dir = new Point(q > 1 && q < 4 ? -1 : 1, q > 2 ? -1 : 1)
+		  const corner = dir.multiply(halfSize)
+		  const center = corner.subtract(dir.multiply(radius))
+		  const rect = new Rectangle(corner, center)
 		  if (rect.contains(point)) return { point: center, quadrant: q }
 		}
 	  }
@@ -6532,7 +6573,7 @@ var Shape = Item.extend(
 	return  {
 	  _contains: function _contains(point) {
 		if (this._type === 'rectangle') {
-		  var center = getCornerCenter(this, point)
+		  const center = getCornerCenter(this, point)
 		  return center
 			?
 			  point.subtract(center.point).divide(this._radius).getLength() <= 1
@@ -6543,7 +6584,7 @@ var Shape = Item.extend(
 	  },
 
 	  _hitTestSelf: function (point, options, viewMatrix, strokeMatrix) {
-		var hit = this._asPathItem()._hitTestSelf(
+		const hit = this._asPathItem()._hitTestSelf(
 		  point,
 		  Base.set({}, options, {
 			segments: false,
@@ -6562,7 +6603,7 @@ var Shape = Item.extend(
   {
 	statics: new (function () {
 	  function createShape(type, point, size, radius, args) {
-		var item = Base.create(Shape.prototype)
+		const item = Base.create(Shape.prototype)
 		item._type = type
 		item._size = size
 		item._radius = radius
@@ -6572,9 +6613,9 @@ var Shape = Item.extend(
 
 	  return  {
 		Circle: function () {
-		  var args = arguments,
-			center = Point.readNamed(args, 'center'),
-			radius = Base.readNamed(args, 'radius')
+		  const args = arguments
+		  const center = Point.readNamed(args, 'center')
+		  const radius = Base.readNamed(args, 'radius')
 		  return createShape(
 			'circle',
 			center,
@@ -6585,12 +6626,12 @@ var Shape = Item.extend(
 		},
 
 		Rectangle: function () {
-		  var args = arguments,
-			rect = Rectangle.readNamed(args, 'rectangle'),
-			radius = Size.min(
-			  Size.readNamed(args, 'radius'),
-			  rect.getSize(true).divide(2)
-			)
+		  const args = arguments
+		  const rect = Rectangle.readNamed(args, 'rectangle')
+		  const radius = Size.min(
+			Size.readNamed(args, 'radius'),
+			rect.getSize(true).divide(2)
+		  )
 		  return createShape(
 			'rectangle',
 			rect.getCenter(true),
@@ -6601,9 +6642,9 @@ var Shape = Item.extend(
 		},
 
 		Ellipse: function () {
-		  var args = arguments,
-			ellipse = Shape._readEllipse(args),
-			radius = ellipse.radius
+		  const args = arguments
+		  const ellipse = Shape._readEllipse(args)
+		  const radius = ellipse.radius
 		  return createShape(
 			'ellipse',
 			ellipse.center,
@@ -6614,12 +6655,13 @@ var Shape = Item.extend(
 		},
 
 		_readEllipse: function (args) {
-		  var center, radius
+		  let center
+		  let radius
 		  if (Base.hasNamed(args, 'radius')) {
 			center = Point.readNamed(args, 'center')
 			radius = Size.readNamed(args, 'radius')
 		  } else {
-			var rect = Rectangle.readNamed(args, 'rectangle')
+			const rect = Rectangle.readNamed(args, 'rectangle')
 			center = rect.getCenter(true)
 			radius = rect.getSize(true).divide(2)
 		  }
@@ -6630,7 +6672,7 @@ var Shape = Item.extend(
   }
 )
 
-var Raster = Item.extend(
+const Raster = Item.extend(
    {
 	_class: 'Raster',
 	_applyMatrix: false,
@@ -6652,19 +6694,19 @@ var Raster = Item.extend(
 		  position !== undefined && Point.read([position])
 		)
 	  ) {
-		var image,
-		  type = typeof source,
-		  object =
-			type === 'string'
-			  ? document && document.getElementById(source)
-			  : type === 'object'
-				? source
-				: null
+		let image
+		const type = typeof source
+		const object =
+		  type === 'string'
+			? document && document.getElementById(source)
+			: type === 'object'
+			  ? source
+			  : null
 		if (object && object !== Item.NO_INSERT) {
 		  if (object.getContext || object.naturalHeight != null) {
 			image = object
 		  } else if (object) {
-			var size = Size.read(arguments)
+			const size = Size.read(arguments)
 			if (!size.isZero()) {
 			  image = CanvasProvider.getCanvas(size)
 			}
@@ -6687,12 +6729,12 @@ var Raster = Item.extend(
 	},
 
 	copyContent: function (source) {
-	  var image = source._image,
-		canvas = source._canvas
+	  const image = source._image
+	  const canvas = source._canvas
 	  if (image) {
 		this._setImage(image)
 	  } else if (canvas) {
-		var copyCanvas = CanvasProvider.getCanvas(source._size)
+		const copyCanvas = CanvasProvider.getCanvas(source._size)
 		copyCanvas.getContext('2d').drawImage(canvas, 0, 0)
 		this._setImage(copyCanvas)
 	  }
@@ -6700,7 +6742,7 @@ var Raster = Item.extend(
 	},
 
 	getSize: function () {
-	  var size = this._size
+	  const size = this._size
 	  return new LinkedSize(
 		size ? size.width : 0,
 		size ? size.height : 0,
@@ -6710,11 +6752,11 @@ var Raster = Item.extend(
 	},
 
 	setSize: function (_size, _clear) {
-	  var size = Size.read(arguments)
+	  const size = Size.read(arguments)
 	  if (!size.equals(this._size)) {
 		if (size.width > 0 && size.height > 0) {
-		  var element = !_clear && this.getElement(),
-			canvas = CanvasProvider.getCanvas(size)
+		  const element = !_clear && this.getElement()
+		  const canvas = CanvasProvider.getCanvas(size)
 		  if (element) {
 			canvas
 			  .getContext('2d')
@@ -6751,15 +6793,15 @@ var Raster = Item.extend(
 	},
 
 	isEmpty: function () {
-	  var size = this._size
+	  const size = this._size
 	  return !size || size.width === 0 && size.height === 0
 	},
 
 	getResolution: function () {
-	  var matrix = this._matrix,
-		orig = new Point(0, 0).transform(matrix),
-		u = new Point(1, 0).transform(matrix).subtract(orig),
-		v = new Point(0, 1).transform(matrix).subtract(orig)
+	  const matrix = this._matrix
+	  const orig = new Point(0, 0).transform(matrix)
+	  const u = new Point(1, 0).transform(matrix).subtract(orig)
+	  const v = new Point(0, 1).transform(matrix).subtract(orig)
 	  return new Size(
 		72 / u.getLength(),
 		72 / v.getLength()
@@ -6773,11 +6815,11 @@ var Raster = Item.extend(
 	},
 
 	setImage: function (image) {
-	  var that = this
+	  const that = this
 
 	  function emit(event) {
-		var view = that.getView(),
-		  type = event && event.type || 'load'
+		const view = that.getView()
+		const type = event && event.type || 'load'
 		if (view && that.responds(type)) {
 		  paper = view._scope
 		  that.emit(type, new Event(event))
@@ -6830,7 +6872,7 @@ var Raster = Item.extend(
 
 	getCanvas: function () {
 	  if (!this._canvas) {
-		var ctx = CanvasProvider.getContext(this._size)
+		const ctx = CanvasProvider.getContext(this._size)
 		try {
 		  if (this._image) ctx.drawImage(this._image, 0, 0)
 		  this._canvas = ctx.canvas
@@ -6857,26 +6899,26 @@ var Raster = Item.extend(
 	},
 
 	getSource: function () {
-	  var image = this._image
+	  const image = this._image
 	  return image && image.src || this.toDataURL()
 	},
 
 	setSource: function (src) {
-	  var image = new self.Image(),
-		crossOrigin = this._crossOrigin
+	  const image = new self.Image()
+	  const crossOrigin = this._crossOrigin
 	  if (crossOrigin) image.crossOrigin = crossOrigin
 	  if (src) image.src = src
 	  this.setImage(image)
 	},
 
 	getCrossOrigin: function () {
-	  var image = this._image
+	  const image = this._image
 	  return image && image.crossOrigin || this._crossOrigin || ''
 	},
 
 	setCrossOrigin: function (crossOrigin) {
 	  this._crossOrigin = crossOrigin
-	  var image = this._image
+	  const image = this._image
 	  if (image) image.crossOrigin = crossOrigin
 	},
 
@@ -6902,8 +6944,8 @@ var Raster = Item.extend(
 	beans: false,
 
 	getSubCanvas: function () {
-	  var rect = Rectangle.read(arguments),
-		ctx = CanvasProvider.getContext(rect.getSize())
+	  const rect = Rectangle.read(arguments)
+	  const ctx = CanvasProvider.getContext(rect.getSize())
 	  ctx.drawImage(
 		this.getCanvas(),
 		rect.x,
@@ -6919,8 +6961,8 @@ var Raster = Item.extend(
 	},
 
 	getSubRaster: function () {
-	  var rect = Rectangle.read(arguments),
-		raster = new Raster(Item.NO_INSERT)
+	  const rect = Rectangle.read(arguments)
+	  const raster = new Raster(Item.NO_INSERT)
 	  raster._setImage(this.getSubCanvas(rect))
 	  raster.translate(rect.getCenter().subtract(this.getSize().divide(2)))
 	  raster._matrix.prepend(this._matrix)
@@ -6929,20 +6971,24 @@ var Raster = Item.extend(
 	},
 
 	toDataURL: function () {
-	  var image = this._image,
-		src = image && image.src
+	  const image = this._image
+	  const src = image && image.src
 	  if (/^data:/.test(src)) return src
-	  var canvas = this.getCanvas()
+	  const canvas = this.getCanvas()
 	  return canvas ? canvas.toDataURL.apply(canvas, arguments) : null
 	},
 
 	drawImage: function (image ) {
-	  var point = Point.read(arguments, 1)
+	  const point = Point.read(arguments, 1)
 	  this.getContext(true).drawImage(image, point.x, point.y)
 	},
 
 	getAverageColor: function (object) {
-	  var bounds, path
+	  let i
+	  let l
+
+	  let bounds
+	  let path
 	  if (!object) {
 		bounds = this.getBounds()
 	  } else if (object instanceof PathItem) {
@@ -6956,10 +7002,10 @@ var Raster = Item.extend(
 		}
 	  }
 	  if (!bounds) return null
-	  var sampleSize = 32,
-		width = Math.min(bounds.width, sampleSize),
-		height = Math.min(bounds.height, sampleSize)
-	  var ctx = Raster._sampleContext
+	  const sampleSize = 32
+	  const width = Math.min(bounds.width, sampleSize)
+	  const height = Math.min(bounds.height, sampleSize)
+	  let ctx = Raster._sampleContext
 	  if (!ctx) {
 		ctx = Raster._sampleContext = CanvasProvider.getContext(
 		  new Size(sampleSize)
@@ -6968,39 +7014,39 @@ var Raster = Item.extend(
 		ctx.clearRect(0, 0, sampleSize + 1, sampleSize + 1)
 	  }
 	  ctx.save()
-	  var matrix = new Matrix()
+	  const matrix = new Matrix()
 		.scale(width / bounds.width, height / bounds.height)
 		.translate(-bounds.x, -bounds.y)
 	  matrix.applyToContext(ctx)
 	  if (path) path.draw(ctx, new Base({ clip: true, matrices: [matrix] }))
 	  this._matrix.applyToContext(ctx)
-	  var element = this.getElement(),
-		size = this._size
+	  const element = this.getElement()
+	  const size = this._size
 	  if (element) ctx.drawImage(element, -size.width / 2, -size.height / 2)
 	  ctx.restore()
-	  var pixels = ctx.getImageData(
-		  0.5,
-		  0.5,
-		  Math.ceil(width),
-		  Math.ceil(height)
-		).data,
-		channels = [0, 0, 0],
-		total = 0
-	  for (var i = 0, l = pixels.length; i < l; i += 4) {
-		var alpha = pixels[i + 3]
+	  const pixels = ctx.getImageData(
+		0.5,
+		0.5,
+		Math.ceil(width),
+		Math.ceil(height)
+	  ).data
+	  const channels = [0, 0, 0]
+	  let total = 0
+	  for (i = 0, l = pixels.length; i < l; i += 4) {
+		let alpha = pixels[i + 3]
 		total += alpha
 		alpha /= 255
 		channels[0] += pixels[i] * alpha
 		channels[1] += pixels[i + 1] * alpha
 		channels[2] += pixels[i + 2] * alpha
 	  }
-	  for (var i = 0; i < 3; i++) channels[i] /= total
+	  for (i = 0; i < 3; i++) channels[i] /= total
 	  return total ? Color.read(channels) : null
 	},
 
 	getPixel: function () {
-	  var point = Point.read(arguments)
-	  var data = this.getContext().getImageData(point.x, point.y, 1, 1).data
+	  const point = Point.read(arguments)
+	  const data = this.getContext().getImageData(point.x, point.y, 1, 1).data
 	  return new Color(
 		'rgb',
 		[data[0] / 255, data[1] / 255, data[2] / 255],
@@ -7009,14 +7055,14 @@ var Raster = Item.extend(
 	},
 
 	setPixel: function () {
-	  var args = arguments,
-		point = Point.read(args),
-		color = Color.read(args),
-		components = color._convert('rgb'),
-		alpha = color._alpha,
-		ctx = this.getContext(true),
-		imageData = ctx.createImageData(1, 1),
-		data = imageData.data
+	  const args = arguments
+	  const point = Point.read(args)
+	  const color = Color.read(args)
+	  const components = color._convert('rgb')
+	  const alpha = color._alpha
+	  const ctx = this.getContext(true)
+	  const imageData = ctx.createImageData(1, 1)
+	  const data = imageData.data
 	  data[0] = components[0] * 255
 	  data[1] = components[1] * 255
 	  data[2] = components[2] * 255
@@ -7025,17 +7071,17 @@ var Raster = Item.extend(
 	},
 
 	clear: function () {
-	  var size = this._size
+	  const size = this._size
 	  this.getContext(true).clearRect(0, 0, size.width + 1, size.height + 1)
 	},
 
 	createImageData: function () {
-	  var size = Size.read(arguments)
+	  const size = Size.read(arguments)
 	  return this.getContext().createImageData(size.width, size.height)
 	},
 
 	getImageData: function () {
-	  var rect = Rectangle.read(arguments)
+	  let rect = Rectangle.read(arguments)
 	  if (rect.isEmpty()) rect = new Rectangle(this._size)
 	  return this.getContext().getImageData(
 		rect.x,
@@ -7046,7 +7092,7 @@ var Raster = Item.extend(
 	},
 
 	putImageData: function (data ) {
-	  var point = Point.read(arguments, 1)
+	  const point = Point.read(arguments, 1)
 	  this.getContext(true).putImageData(data, point.x, point.y)
 	},
 
@@ -7056,13 +7102,13 @@ var Raster = Item.extend(
 	},
 
 	_getBounds: function (matrix, options) {
-	  var rect = new Rectangle(this._size).setCenter(0, 0)
+	  const rect = new Rectangle(this._size).setCenter(0, 0)
 	  return matrix ? matrix._transformBounds(rect) : rect
 	},
 
 	_hitTestSelf: function (point) {
 	  if (this._contains(point)) {
-		var that = this
+		const that = this
 		return new HitResult('pixel', that, {
 		  offset: point.add(that._size.divide(2)).round(),
 		  color: {
@@ -7075,9 +7121,9 @@ var Raster = Item.extend(
 	},
 
 	_draw: function (ctx, param, viewMatrix) {
-	  var element = this.getElement()
+	  const element = this.getElement()
 	  if (param.dontFinish || param.clip) {
-		var rect = this.getInternalBounds()
+		const rect = this.getInternalBounds()
 		if (!param.dontStart) ctx.beginPath()
 		ctx.rect(rect.x, rect.y, rect.width, rect.height)
 	  } else if (element && element.width > 0 && element.height > 0) {
@@ -7085,8 +7131,8 @@ var Raster = Item.extend(
 
 		this._setStyles(ctx, param, viewMatrix)
 
-		var smoothing = this._smoothing,
-		  disabled = smoothing === 'off'
+		const smoothing = this._smoothing
+		const disabled = smoothing === 'off'
 		DomElement.setPrefixed(
 		  ctx,
 		  disabled ? 'imageSmoothingEnabled' : 'imageSmoothingQuality',
@@ -7103,7 +7149,7 @@ var Raster = Item.extend(
   }
 )
 
-var ItemDefinition = Base.extend({
+const ItemDefinition = Base.extend({
   _centerItem: false,
   _name: null,
 
@@ -7114,7 +7160,7 @@ var ItemDefinition = Base.extend({
   },
 
   _changed: function (flags) {
-	var project = this.project
+	const project = this.project
 	if (flags & 8)
 	  Item._clearBoundsCache(this)
 	if (flags & 1) {
@@ -7149,7 +7195,7 @@ var ItemDefinition = Base.extend({
   }
 })
 
-var SymbolItem = Item.extend(
+const SymbolItem = Item.extend(
    {
 	_class: 'SymbolItem',
 	_applyMatrix: false,
@@ -7195,18 +7241,18 @@ var SymbolItem = Item.extend(
 	},
 
 	_getBounds: function (matrix, options) {
-	  var item = this._definition._item
+	  const item = this._definition._item
 	  return item._getCachedBounds(item._matrix.prepended(matrix), options)
 	},
 
 	_hitTestSelf: function (point, options, viewMatrix) {
-	  var opts = options.extend({
+	  const opts = options.extend({
 		all: false,
 		match: null,
 		class: null,
 		type: null
 	  })
-	  var res = this._definition._item._hitTest(point, opts, viewMatrix)
+	  const res = this._definition._item._hitTest(point, opts, viewMatrix)
 	  if (res) res.item = this
 	  return res
 	},
@@ -7217,7 +7263,7 @@ var SymbolItem = Item.extend(
 
 	embed: function () {
 	  if (!this._parent) return null
-	  var item = this._definition._item.clone(false)
+	  const item = this._definition._item.clone(false)
 	  item.transform(this._matrix)
 	  item.setOpacity(item._opacity * this._opacity)
 	  item.setVisible(item._visible && this._visible)
@@ -7233,21 +7279,21 @@ var SymbolItem = Item.extend(
   }
 )
 
-var SymbolDefinition = ItemDefinition.extend(
+const SymbolDefinition = ItemDefinition.extend(
    {
 	_class: 'SymbolDefinition',
 	_centerItem: true,
 
 	initialize: function SymbolDefinition(item, dontCenter) {
-	  var options = Base.isPlainObject(dontCenter) && dontCenter
+	  const options = Base.isPlainObject(dontCenter) && dontCenter
 	  ItemDefinition.call(this, item, options ? options.dontCenter : dontCenter)
 	  if (options) this.set(options, { dontCenter: true })
 	},
 
 	_serialize: function (options, dictionary) {
 	  return dictionary.add(this, function () {
-		var json = [this._class, this._item],
-		  props = {}
+		const json = [this._class, this._item]
+		const props = {}
 		if (!this._item.getPosition().isZero()) props.dontCenter = true
 		if (this._name) props.name = this._name
 		if (Object.keys(props).length) json.push(props)
@@ -7279,7 +7325,7 @@ var SymbolDefinition = ItemDefinition.extend(
   }
 )
 
-var HitResult = Base.extend(
+const HitResult = Base.extend(
    {
 	_class: 'HitResult',
 
@@ -7291,7 +7337,7 @@ var HitResult = Base.extend(
 
 	statics: {
 	  getOptions: function (args) {
-		var options = args && Base.read(args)
+		const options = args && Base.read(args)
 		return new Base(
 		  {
 			type: null,
@@ -7314,7 +7360,7 @@ var HitResult = Base.extend(
   }
 )
 
-var EffectInstance = Base.extend(
+const EffectInstance = Base.extend(
    {
 	_class: 'EffectInstance',
 	_compactSerialize: true,
@@ -7333,9 +7379,9 @@ var EffectInstance = Base.extend(
 
 	_setEffect: function (effect) {
 	  if (effect) {
-		var parameters = this._parameters,
-		  defaults = effect._defaults
-		for (var key in defaults) {
+		const parameters = this._parameters
+		const defaults = effect._defaults
+		for (const key in defaults) {
 		  if (parameters[key] === undefined) parameters[key] = defaults[key]
 		}
 		Object.defineProperties(this, effect._accessors)
@@ -7345,7 +7391,7 @@ var EffectInstance = Base.extend(
 	},
 
 	_getProps: function () {
-	  var props = {
+	  const props = {
 		type: this._type,
 		parameters: Base.set({}, this._parameters)
 	  }
@@ -7358,7 +7404,7 @@ var EffectInstance = Base.extend(
 	},
 
 	_changed: function () {
-	  var item = this._item
+	  const item = this._item
 	  if (item) item._changed(257)
 	},
 
@@ -7367,7 +7413,7 @@ var EffectInstance = Base.extend(
 	},
 
 	getEffect: function () {
-	  var effect = Effect.get(this._type)
+	  const effect = Effect.get(this._type)
 	  if (effect !== this._effect) this._setEffect(effect)
 	  return effect
 	},
@@ -7382,9 +7428,9 @@ var EffectInstance = Base.extend(
 	},
 
 	getParameters: function () {
-	  var linked = this._linkedParameters
+	  let linked = this._linkedParameters
 	  if (!linked) {
-		var instance = this
+		const instance = this
 		linked = this._linkedParameters = {}
 		Base.each(this._parameters, function (value, key) {
 		  Object.defineProperty(linked, key, {
@@ -7434,16 +7480,16 @@ var EffectInstance = Base.extend(
   }
 )
 
-var Effect = Base.extend(
+const Effect = Base.extend(
   new (function () {
-	var effects = {}
+	const effects = {}
 
 	return  {
 	  _class: 'Effect',
 
 	  initialize: function Effect(props) {
-		var defaults = {},
-		  accessors = {}
+		const defaults = {}
+		const accessors = {}
 		this._type = props.type
 		this._label = props.label || props.type
 		this._parameters = props.parameters || {}
@@ -7505,7 +7551,7 @@ var Effect = Base.extend(
 		},
 
 		remove: function (effect) {
-		  var type = effect._type
+		  const type = effect._type
 		  if (effects[type] === effect) {
 			delete effects[type]
 			Effect._version++
@@ -7521,11 +7567,11 @@ var Effect = Base.extend(
 new (function () {
   function applyToPaths(art, func) {
 	if (art instanceof PathItem) return func(art)
-	var children = art._children
+	const children = art._children
 	if (children) {
-	  for (var i = children.length - 1; i >= 0; i--) {
-		var child = children[i],
-		  result = applyToPaths(child, func)
+	  for (let i = children.length - 1; i >= 0; i--) {
+		const child = children[i]
+		const result = applyToPaths(child, func)
 		if (result !== child) child.replaceWith(result)
 	  }
 	}
@@ -7552,7 +7598,7 @@ new (function () {
 	},
 
 	onApply: function (event) {
-	  var instance = this
+	  const instance = this
 	  return applyToPaths(event.art, function (path) {
 		return path.offset(instance.distance, {
 		  join: instance.join,
@@ -7570,7 +7616,7 @@ new (function () {
 	onApply: function (event) {
 	  return applyToPaths(event.art, function (path) {
 		if (!path.hasStroke()) return path
-		var outline = path.outline({ insert: false })
+		const outline = path.outline({ insert: false })
 		if (!path.hasFill()) return outline
 		path.setStrokeColor(null)
 		return new Group({
@@ -7585,9 +7631,9 @@ new (function () {
 Item.inject(
   new (function () {
 	function hasEffects(item) {
-	  var children = item._children
+	  const children = item._children
 	  if (item._hasEffects()) return true
-	  for (var i = 0, l = children ? children.length : 0; i < l; i++) {
+	  for (let i = 0, l = children ? children.length : 0; i < l; i++) {
 		if (hasEffects(children[i])) return true
 	  }
 	  return false
@@ -7616,10 +7662,10 @@ Item.inject(
 	  },
 
 	  insertEffects: function (index, effects) {
-		var list = this._effects || (this._effects = []),
-		  inserted = []
-		for (var i = 0, l = effects.length; i < l; i++) {
-		  var instance = new EffectInstance(effects[i])
+		const list = this._effects || (this._effects = [])
+		const inserted = []
+		for (let i = 0, l = effects.length; i < l; i++) {
+		  const instance = new EffectInstance(effects[i])
 		  instance._item = this
 		  inserted.push(instance)
 		}
@@ -7633,14 +7679,14 @@ Item.inject(
 	  },
 
 	  removeEffects: function (start, end) {
-		var list = this._effects,
-		  removed = []
+		const list = this._effects
+		let removed = []
 		if (list) {
 		  start = start || 0
 		  end = Base.pick(end, list.length)
 		  removed = Base.splice(list, null, start, end - start)
-		  for (var i = 0, l = removed.length; i < l; i++) {
-			var instance = removed[i]
+		  for (let i = 0, l = removed.length; i < l; i++) {
+			const instance = removed[i]
 			instance._item = instance._index = null
 		  }
 		  if (removed.length) this._changed(257)
@@ -7650,17 +7696,17 @@ Item.inject(
 	  },
 
 	  _hasEffects: function () {
-		var list = this._effects
-		for (var i = 0, l = list ? list.length : 0; i < l; i++) {
+		const list = this._effects
+		for (let i = 0, l = list ? list.length : 0; i < l; i++) {
 		  if (list[i]._visible) return true
 		}
 		return false
 	  },
 
 	  getEffectOutput: function () {
-		var output = this._effectOutput
+		let output = this._effectOutput
 		if (output === undefined || this._effectVersion !== Effect._version) {
-		  var art = this._hasEffects() && this._getEffectArt()
+		  const art = this._hasEffects() && this._getEffectArt()
 		  output = art ? this._applyEffects(art) || art : null
 		  this._effectOutput = output
 		  this._effectVersion = Effect._version
@@ -7669,15 +7715,15 @@ Item.inject(
 	  },
 
 	  _applyEffects: function (art) {
-		var output = null
+		let output = null
 		for (
-		  var i = 0, l = this._effects ? this._effects.length : 0;
+		  let i = 0, l = this._effects ? this._effects.length : 0;
 		  i < l;
 		  i++
 		) {
-		  var instance = this._effects[i],
-			effect = instance.getEffect(),
-			onApply = effect && effect.onApply
+		  const instance = this._effects[i]
+		  const effect = instance.getEffect()
+		  const onApply = effect && effect.onApply
 		  if (instance._visible && onApply) {
 			output = output || art
 			output = (
@@ -7693,15 +7739,15 @@ Item.inject(
 	  },
 
 	  _getEffectArt: function () {
-		var art = this.clone({ insert: false })
+		const art = this.clone({ insert: false })
 		art.setEffects(null)
 		art.setMatrix(new Matrix())
 
 		function expand(source, copy) {
-		  var children = source._children
-		  for (var i = 0, l = children ? children.length : 0; i < l; i++) {
-			var child = children[i],
-			  output = child.getEffectOutput()
+		  const children = source._children
+		  for (let i = 0, l = children ? children.length : 0; i < l; i++) {
+			const child = children[i]
+			let output = child.getEffectOutput()
 			if (output) {
 			  output = output.clone({ insert: false })
 			  output.transform(child._matrix)
@@ -7717,17 +7763,17 @@ Item.inject(
 	  },
 
 	  getPreviewBounds: function (matrix) {
-		var output = this.getEffectOutput(),
-		  children = this._children
+		const output = this.getEffectOutput()
+		const children = this._children
 		if (output || children && hasEffects(this)) {
-		  var bounds = null
+		  let bounds = null
 		  if (output) {
 			bounds = output.getStrokeBounds()
 		  } else {
-			for (var i = 0, l = children.length; i < l; i++) {
-			  var child = children[i]
+			for (let i = 0, l = children.length; i < l; i++) {
+			  const child = children[i]
 			  if (child._visible) {
-				var rect = child.getPreviewBounds()
+				const rect = child.getPreviewBounds()
 				bounds = bounds ? bounds.unite(rect) : rect
 			  }
 			}
@@ -7744,7 +7790,7 @@ Item.inject(
   })()
 )
 
-var Segment = Base.extend(
+const Segment = Base.extend(
    {
 	_class: 'Segment',
 	_name: null,
@@ -7752,13 +7798,13 @@ var Segment = Base.extend(
 	_selection: 0,
 
 	initialize: function Segment(arg0, arg1, arg2, arg3, arg4, arg5) {
-	  var count = arguments.length,
-		point,
-		handleIn,
-		handleOut,
-		selection,
-		name,
-		data
+	  const count = arguments.length
+	  let point
+	  let handleIn
+	  let handleOut
+	  let selection
+	  let name
+	  let data
 	  if (count > 0) {
 		if (arg0 == null || typeof arg0 === 'object') {
 		  if (count === 1 && arg0 && 'point' in arg0) {
@@ -7792,13 +7838,13 @@ var Segment = Base.extend(
 	},
 
 	_serialize: function (options, dictionary) {
-	  var point = this._point,
-		selection = this._selection,
-		name = this._name,
-		data = this._data,
-		hasData = data && !Base.equals(data, {})
+	  const point = this._point
+	  const selection = this._selection
+	  const name = this._name
+	  const data = this._data
+	  const hasData = data && !Base.equals(data, {})
 	  if (name || hasData) {
-		var props = Base.serialize(
+		const props = Base.serialize(
 		  {
 			point: point,
 			handleIn: this._handleIn,
@@ -7814,7 +7860,7 @@ var Segment = Base.extend(
 		  props.data = Base.serialize(data, options, false, dictionary)
 		return [props]
 	  } else {
-		var obj =
+		const obj =
 		  selection || this.hasHandles()
 			? [point, this._handleIn, this._handleOut]
 			: point
@@ -7824,11 +7870,11 @@ var Segment = Base.extend(
 	},
 
 	_changed: function (point) {
-	  var path = this._path
+	  const path = this._path
 	  if (!path) return
-	  var curves = path._curves,
-		index = this._index,
-		curve
+	  const curves = path._curves
+	  const index = this._index
+	  let curve
 	  if (curves) {
 		if (
 		  (!point || point === this._point || point === this._handleIn) &&
@@ -7854,8 +7900,8 @@ var Segment = Base.extend(
 	},
 
 	setName: function (name) {
-	  var path = this._path,
-		named = path && path._namedSegments
+	  const path = this._path
+	  const named = path && path._namedSegments
 	  if (this._name && named)
 		Base.removeNamed(path._segments, named, this._name, this)
 	  if (name === +name + '')
@@ -7910,8 +7956,8 @@ var Segment = Base.extend(
 	},
 
 	isSmooth: function () {
-	  var handleIn = this._handleIn,
-		handleOut = this._handleOut
+	  const handleIn = this._handleIn
+	  const handleOut = this._handleOut
 	  return (
 		!handleIn.isZero() &&
 		!handleOut.isZero() &&
@@ -7929,19 +7975,19 @@ var Segment = Base.extend(
 	},
 
 	setSelection: function (selection) {
-	  var oldSelection = this._selection,
-		path = this._path
+	  const oldSelection = this._selection
+	  const path = this._path
 	  this._selection = selection = selection || 0
 	  if (path && selection !== oldSelection) {
 		path._updateSelection(this, oldSelection, selection)
-		var project = path._project
+		const project = path._project
 		if (project)
 		  project._changed(257, path._getChangeOwner())
 	  }
 	},
 
 	_changeSelection: function (flag, selected) {
-	  var selection = this._selection
+	  const selection = this._selection
 	  this.setSelection(selected ? selection | flag : selection & ~flag)
 	},
 
@@ -7962,8 +8008,8 @@ var Segment = Base.extend(
 	},
 
 	getCurve: function () {
-	  var path = this._path,
-		index = this._index
+	  const path = this._path
+	  let index = this._index
 	  if (path) {
 		if (index > 0 && !path._closed && index === path._segments.length - 1)
 		  index--
@@ -7973,7 +8019,7 @@ var Segment = Base.extend(
 	},
 
 	getLocation: function () {
-	  var curve = this.getCurve()
+	  const curve = this.getCurve()
 	  return curve
 		?
 		  new CurveLocation(curve, this === curve._segment1 ? 0 : 1)
@@ -7981,7 +8027,7 @@ var Segment = Base.extend(
 	},
 
 	getNext: function () {
-	  var segments = this._path && this._path._segments
+	  const segments = this._path && this._path._segments
 	  return (
 		(
 		  segments &&
@@ -7992,25 +8038,28 @@ var Segment = Base.extend(
 	},
 
 	smooth: function (options, _first, _last) {
-	  var opts = options || {},
-		type = opts.type,
-		factor = opts.factor,
-		prev = this.getPrevious(),
-		next = this.getNext(),
-		p0 = (prev || this)._point,
-		p1 = this._point,
-		p2 = (next || this)._point,
-		d1 = p0.getDistance(p1),
-		d2 = p1.getDistance(p2)
+	  let A
+	  let N
+
+	  const opts = options || {}
+	  const type = opts.type
+	  const factor = opts.factor
+	  const prev = this.getPrevious()
+	  const next = this.getNext()
+	  const p0 = (prev || this)._point
+	  const p1 = this._point
+	  const p2 = (next || this)._point
+	  const d1 = p0.getDistance(p1)
+	  const d2 = p1.getDistance(p2)
 	  if (!type || type === 'catmull-rom') {
-		var a = factor === undefined ? 0.5 : factor,
-		  d1_a = Math.pow(d1, a),
-		  d1_2a = d1_a * d1_a,
-		  d2_a = Math.pow(d2, a),
-		  d2_2a = d2_a * d2_a
+		const a = factor === undefined ? 0.5 : factor
+		const d1_a = Math.pow(d1, a)
+		const d1_2a = d1_a * d1_a
+		const d2_a = Math.pow(d2, a)
+		const d2_2a = d2_a * d2_a
 		if (!_first && prev) {
-		  var A = 2 * d2_2a + 3 * d2_a * d1_a + d1_2a,
-			N = 3 * d2_a * (d2_a + d1_a)
+		  A = 2 * d2_2a + 3 * d2_a * d1_a + d1_2a
+		  N = 3 * d2_a * (d2_a + d1_a)
 		  this.setHandleIn(
 			N !== 0
 			  ? new Point(
@@ -8021,8 +8070,8 @@ var Segment = Base.extend(
 		  )
 		}
 		if (!_last && next) {
-		  var A = 2 * d1_2a + 3 * d1_a * d2_a + d2_2a,
-			N = 3 * d1_a * (d1_a + d2_a)
+		  A = 2 * d1_2a + 3 * d1_a * d2_a + d2_2a
+		  N = 3 * d1_a * (d1_a + d2_a)
 		  this.setHandleOut(
 			N !== 0
 			  ? new Point(
@@ -8034,9 +8083,9 @@ var Segment = Base.extend(
 		}
 	  } else if (type === 'geometric') {
 		if (prev && next) {
-		  var vector = p0.subtract(p2),
-			t = factor === undefined ? 0.4 : factor,
-			k = t * d1 / (d1 + d2)
+		  const vector = p0.subtract(p2)
+		  const t = factor === undefined ? 0.4 : factor
+		  const k = t * d1 / (d1 + d2)
 		  if (!_first) this.setHandleIn(vector.multiply(k))
 		  if (!_last) this.setHandleOut(vector.multiply(k - t))
 		}
@@ -8046,7 +8095,7 @@ var Segment = Base.extend(
 	},
 
 	getPrevious: function () {
-	  var segments = this._path && this._path._segments
+	  const segments = this._path && this._path._segments
 	  return (
 		(
 		  segments && (
@@ -8063,14 +8112,14 @@ var Segment = Base.extend(
 	},
 
 	isLast: function () {
-	  var path = this._path
+	  const path = this._path
 	  return path && this._index === path._segments.length - 1 || false
 	},
 
 	reverse: function () {
-	  var handleIn = this._handleIn,
-		handleOut = this._handleOut,
-		tmp = handleIn.clone()
+	  const handleIn = this._handleIn
+	  const handleOut = this._handleOut
+	  const tmp = handleIn.clone()
 	  handleIn.set(handleOut)
 	  handleOut.set(tmp)
 	},
@@ -8084,9 +8133,9 @@ var Segment = Base.extend(
 	},
 
 	clone: function () {
-	  var segment = new Segment(this._point, this._handleIn, this._handleOut),
-		name = this._name,
-		data = this._data
+	  const segment = new Segment(this._point, this._handleIn, this._handleOut)
+	  const name = this._name
+	  const data = this._data
 	  if (name) segment._name = name
 	  if (data) segment._data = Base.clone(data)
 	  return segment
@@ -8106,7 +8155,7 @@ var Segment = Base.extend(
 	},
 
 	toString: function () {
-	  var parts = ['point: ' + this._point]
+	  const parts = ['point: ' + this._point]
 	  if (!this._handleIn.isZero()) parts.push('handleIn: ' + this._handleIn)
 	  if (!this._handleOut.isZero()) parts.push('handleOut: ' + this._handleOut)
 	  return '{ ' + parts.join(', ') + ' }'
@@ -8118,14 +8167,14 @@ var Segment = Base.extend(
 	},
 
 	interpolate: function (from, to, factor) {
-	  var u = 1 - factor,
-		v = factor,
-		point1 = from._point,
-		point2 = to._point,
-		handleIn1 = from._handleIn,
-		handleIn2 = to._handleIn,
-		handleOut2 = to._handleOut,
-		handleOut1 = from._handleOut
+	  const u = 1 - factor
+	  const v = factor
+	  const point1 = from._point
+	  const point2 = to._point
+	  const handleIn1 = from._handleIn
+	  const handleIn2 = to._handleIn
+	  const handleOut2 = to._handleOut
+	  const handleOut1 = from._handleOut
 	  this._point._set(
 		u * point1._x + v * point2._x,
 		u * point1._y + v * point2._y,
@@ -8145,18 +8194,18 @@ var Segment = Base.extend(
 	},
 
 	_transformCoordinates: function (matrix, coords, change) {
-	  var point = this._point,
-		handleIn =
-		  !change || !this._handleIn.isZero()
-			? this._handleIn
-			: null,
-		handleOut =
-		  !change || !this._handleOut.isZero()
-			? this._handleOut
-			: null,
-		x = point._x,
-		y = point._y,
-		i = 2
+	  const point = this._point
+	  const handleIn =
+		!change || !this._handleIn.isZero()
+		  ? this._handleIn
+		  : null
+	  const handleOut =
+		!change || !this._handleOut.isZero()
+		  ? this._handleOut
+		  : null
+	  let x = point._x
+	  let y = point._y
+	  let i = 2
 	  coords[0] = x
 	  coords[1] = y
 	  if (handleIn) {
@@ -8199,15 +8248,17 @@ var Segment = Base.extend(
   }
 )
 
-var SegmentPoint = Point.extend({
+const SegmentPoint = Point.extend({
   initialize: function SegmentPoint(point, owner, key) {
-	var x, y, selected
+	let x
+	let y
+	let selected
 	if (!point) {
 	  x = y = 0
 	} else if ((x = point[0]) !== undefined) {
 	  y = point[1]
 	} else {
-	  var pt = point
+	  let pt = point
 	  if ((x = pt.x) === undefined) {
 		pt = Point.read(arguments)
 		x = pt.x
@@ -8248,7 +8299,7 @@ var SegmentPoint = Point.extend({
   },
 
   isZero: function () {
-	var isZero = Numerical.isZero
+	const isZero = Numerical.isZero
 	return isZero(this._x) && isZero(this._y)
   },
 
@@ -8261,7 +8312,7 @@ var SegmentPoint = Point.extend({
   },
 
   _getSelection: function () {
-	var owner = this._owner
+	const owner = this._owner
 	return this === owner._point
 	  ? 1
 	  : this === owner._handleIn
@@ -8272,19 +8323,19 @@ var SegmentPoint = Point.extend({
   }
 })
 
-var Curve = Base.extend(
+const Curve = Base.extend(
    {
 	_class: 'Curve',
 	beans: true,
 
 	initialize: function Curve(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
-	  var count = arguments.length,
-		seg1,
-		seg2,
-		point1,
-		point2,
-		handle1,
-		handle2
+	  const count = arguments.length
+	  let seg1
+	  let seg2
+	  let point1
+	  let point2
+	  let handle1
+	  let handle2
 	  if (count === 3) {
 		this._path = arg0
 		seg1 = arg1
@@ -8350,7 +8401,7 @@ var Curve = Base.extend(
 	},
 
 	toString: function () {
-	  var parts = ['point1: ' + this._segment1._point]
+	  const parts = ['point1: ' + this._segment1._point]
 	  if (!this._segment1._handleOut.isZero())
 		parts.push('handle1: ' + this._segment1._handleOut)
 	  if (!this._segment2._handleIn.isZero())
@@ -8364,10 +8415,10 @@ var Curve = Base.extend(
 	},
 
 	remove: function () {
-	  var removed = false
+	  let removed = false
 	  if (this._path) {
-		var segment2 = this._segment2,
-		  handleOut = segment2._handleOut
+		const segment2 = this._segment2
+		const handleOut = segment2._handleOut
 		removed = segment2.remove()
 		if (removed) this._segment1._handleOut.set(handleOut)
 	  }
@@ -8423,7 +8474,7 @@ var Curve = Base.extend(
 	},
 
 	getNext: function () {
-	  var curves = this._path && this._path._curves
+	  const curves = this._path && this._path._curves
 	  return (
 		(
 		  curves && (
@@ -8436,7 +8487,7 @@ var Curve = Base.extend(
 	},
 
 	getPrevious: function () {
-	  var curves = this._path && this._path._curves
+	  const curves = this._path && this._path._curves
 	  return (
 		(
 		  curves && (
@@ -8453,7 +8504,7 @@ var Curve = Base.extend(
 	},
 
 	isLast: function () {
-	  var path = this._path
+	  const path = this._path
 	  return (
 		path && this._segment1._index === path._curves.length - 1 ||
 		false
@@ -8481,9 +8532,9 @@ var Curve = Base.extend(
 	},
 
 	getPoints: function () {
-	  var coords = this.getValues(),
-		points = []
-	  for (var i = 0; i < 8; i += 2)
+	  const coords = this.getValues()
+	  const points = []
+	  for (let i = 0; i < 8; i += 2)
 		points.push(new Point(coords[i], coords[i + 1]))
 	  return points
 	}
@@ -8520,28 +8571,28 @@ var Curve = Base.extend(
 	},
 
 	divideAtTime: function (time) {
-	  var tMin = 1e-8,
-		tMax = 1 - tMin,
-		res = null
+	  const tMin = 1e-8
+	  const tMax = 1 - tMin
+	  let res = null
 	  if (time >= tMin && time <= tMax) {
-		var parts = Curve.subdivide(this.getValues(), time),
-		  left = parts[0],
-		  right = parts[1],
-		  setHandles = this.hasHandles(),
-		  seg1 = this._segment1,
-		  seg2 = this._segment2,
-		  path = this._path
+		const parts = Curve.subdivide(this.getValues(), time)
+		const left = parts[0]
+		const right = parts[1]
+		const setHandles = this.hasHandles()
+		const seg1 = this._segment1
+		const seg2 = this._segment2
+		const path = this._path
 		if (setHandles) {
 		  seg1._handleOut._set(left[2] - left[0], left[3] - left[1])
 		  seg2._handleIn._set(right[4] - right[6], right[5] - right[7])
 		}
-		var x = left[6],
-		  y = left[7],
-		  segment = new Segment(
-			new Point(x, y),
-			setHandles && new Point(left[4] - x, left[5] - y),
-			setHandles && new Point(right[2] - x, right[3] - y)
-		  )
+		const x = left[6]
+		const y = left[7]
+		const segment = new Segment(
+		  new Point(x, y),
+		  setHandles && new Point(left[4] - x, left[5] - y),
+		  setHandles && new Point(right[2] - x, right[3] - y)
+		)
 		if (path) {
 		  path.insert(seg1._index + 1, segment)
 		  res = this.getNext()
@@ -8555,7 +8606,7 @@ var Curve = Base.extend(
 	},
 
 	splitAt: function (location) {
-	  var path = this._path
+	  const path = this._path
 	  return path ? path.splitAt(location) : null
 	},
 
@@ -8586,53 +8637,53 @@ var Curve = Base.extend(
 
 	statics:  {
 	  getValues: function (segment1, segment2, matrix, straight) {
-		var p1 = segment1._point,
-		  h1 = segment1._handleOut,
-		  h2 = segment2._handleIn,
-		  p2 = segment2._point,
-		  x1 = p1.x,
-		  y1 = p1.y,
-		  x2 = p2.x,
-		  y2 = p2.y,
-		  values = straight
-			? [x1, y1, x1, y1, x2, y2, x2, y2]
-			: [
-				x1,
-				y1,
-				x1 + h1._x,
-				y1 + h1._y,
-				x2 + h2._x,
-				y2 + h2._y,
-				x2,
-				y2
-			  ]
+		const p1 = segment1._point
+		const h1 = segment1._handleOut
+		const h2 = segment2._handleIn
+		const p2 = segment2._point
+		const x1 = p1.x
+		const y1 = p1.y
+		const x2 = p2.x
+		const y2 = p2.y
+		const values = straight
+		  ? [x1, y1, x1, y1, x2, y2, x2, y2]
+		  : [
+			  x1,
+			  y1,
+			  x1 + h1._x,
+			  y1 + h1._y,
+			  x2 + h2._x,
+			  y2 + h2._y,
+			  x2,
+			  y2
+			]
 		if (matrix) matrix._transformCoordinates(values, values, 4)
 		return values
 	  },
 
 	  subdivide: function (v, t) {
-		var x0 = v[0],
-		  y0 = v[1],
-		  x1 = v[2],
-		  y1 = v[3],
-		  x2 = v[4],
-		  y2 = v[5],
-		  x3 = v[6],
-		  y3 = v[7]
+		const x0 = v[0]
+		const y0 = v[1]
+		const x1 = v[2]
+		const y1 = v[3]
+		const x2 = v[4]
+		const y2 = v[5]
+		const x3 = v[6]
+		const y3 = v[7]
 		if (t === undefined) t = 0.5
-		var u = 1 - t,
-		  x4 = u * x0 + t * x1,
-		  y4 = u * y0 + t * y1,
-		  x5 = u * x1 + t * x2,
-		  y5 = u * y1 + t * y2,
-		  x6 = u * x2 + t * x3,
-		  y6 = u * y2 + t * y3,
-		  x7 = u * x4 + t * x5,
-		  y7 = u * y4 + t * y5,
-		  x8 = u * x5 + t * x6,
-		  y8 = u * y5 + t * y6,
-		  x9 = u * x7 + t * x8,
-		  y9 = u * y7 + t * y8
+		const u = 1 - t
+		const x4 = u * x0 + t * x1
+		const y4 = u * y0 + t * y1
+		const x5 = u * x1 + t * x2
+		const y5 = u * y1 + t * y2
+		const x6 = u * x2 + t * x3
+		const y6 = u * y2 + t * y3
+		const x7 = u * x4 + t * x5
+		const y7 = u * y4 + t * y5
+		const x8 = u * x5 + t * x6
+		const y8 = u * y5 + t * y6
+		const x9 = u * x7 + t * x8
+		const y9 = u * y7 + t * y8
 		return [
 		  [x0, y0, x4, y4, x7, y7, x9, y9],
 		  [x9, y9, x8, y8, x6, y6, x3, y3]
@@ -8640,31 +8691,31 @@ var Curve = Base.extend(
 	  },
 
 	  getMonoCurves: function (v, dir) {
-		var curves = [],
-		  io = dir ? 0 : 1,
-		  o0 = v[io + 0],
-		  o1 = v[io + 2],
-		  o2 = v[io + 4],
-		  o3 = v[io + 6]
+		const curves = []
+		const io = dir ? 0 : 1
+		const o0 = v[io + 0]
+		const o1 = v[io + 2]
+		const o2 = v[io + 4]
+		const o3 = v[io + 6]
 		if (
 		  (o0 >= o1) === (o1 >= o2) && (o1 >= o2) === (o2 >= o3) ||
 		  Curve.isStraight(v)
 		) {
 		  curves.push(v)
 		} else {
-		  var a = 3 * (o1 - o2) - o0 + o3,
-			b = 2 * (o0 + o2) - 4 * o1,
-			c = o1 - o0,
-			tMin = 1e-8,
-			tMax = 1 - tMin,
-			roots = [],
-			n = Numerical.solveQuadratic(a, b, c, roots, tMin, tMax)
+		  const a = 3 * (o1 - o2) - o0 + o3
+		  const b = 2 * (o0 + o2) - 4 * o1
+		  const c = o1 - o0
+		  const tMin = 1e-8
+		  const tMax = 1 - tMin
+		  const roots = []
+		  const n = Numerical.solveQuadratic(a, b, c, roots, tMin, tMax)
 		  if (!n) {
 			curves.push(v)
 		  } else {
 			roots.sort()
-			var t = roots[0],
-			  parts = Curve.subdivide(v, t)
+			let t = roots[0]
+			let parts = Curve.subdivide(v, t)
 			curves.push(parts[0])
 			if (n > 1) {
 			  t = (roots[1] - t) / (1 - t)
@@ -8678,27 +8729,27 @@ var Curve = Base.extend(
 	  },
 
 	  solveCubic: function (v, coord, val, roots, min, max) {
-		var v0 = v[coord],
-		  v1 = v[coord + 2],
-		  v2 = v[coord + 4],
-		  v3 = v[coord + 6],
-		  res = 0
+		const v0 = v[coord]
+		const v1 = v[coord + 2]
+		const v2 = v[coord + 4]
+		const v3 = v[coord + 6]
+		let res = 0
 		if (!(
 		  v0 < val && v3 < val && v1 < val && v2 < val ||
 		  v0 > val && v3 > val && v1 > val && v2 > val
 		)) {
-		  var c = 3 * (v1 - v0),
-			b = 3 * (v2 - v1) - c,
-			a = v3 - v0 - c - b
+		  const c = 3 * (v1 - v0)
+		  const b = 3 * (v2 - v1) - c
+		  const a = v3 - v0 - c - b
 		  res = Numerical.solveCubic(a, b, c, v0 - val, roots, min, max)
 		}
 		return res
 	  },
 
 	  getPart: function (v, from, to) {
-		var flip = from > to
+		const flip = from > to
 		if (flip) {
-		  var tmp = from
+		  const tmp = from
 		  from = to
 		  to = tmp
 		}
@@ -8710,18 +8761,18 @@ var Curve = Base.extend(
 	  },
 
 	  isFlatEnough: function (v, flatness) {
-		var x0 = v[0],
-		  y0 = v[1],
-		  x1 = v[2],
-		  y1 = v[3],
-		  x2 = v[4],
-		  y2 = v[5],
-		  x3 = v[6],
-		  y3 = v[7],
-		  ux = 3 * x1 - 2 * x0 - x3,
-		  uy = 3 * y1 - 2 * y0 - y3,
-		  vx = 3 * x2 - 2 * x3 - x0,
-		  vy = 3 * y2 - 2 * y3 - y0
+		const x0 = v[0]
+		const y0 = v[1]
+		const x1 = v[2]
+		const y1 = v[3]
+		const x2 = v[4]
+		const y2 = v[5]
+		const x3 = v[6]
+		const y3 = v[7]
+		const ux = 3 * x1 - 2 * x0 - x3
+		const uy = 3 * y1 - 2 * y0 - y3
+		const vx = 3 * x2 - 2 * x3 - x0
+		const vy = 3 * y2 - 2 * y3 - y0
 		return (
 		  Math.max(ux * ux, vx * vx) + Math.max(uy * uy, vy * vy) <=
 		  16 * flatness * flatness
@@ -8729,14 +8780,14 @@ var Curve = Base.extend(
 	  },
 
 	  getArea: function (v) {
-		var x0 = v[0],
-		  y0 = v[1],
-		  x1 = v[2],
-		  y1 = v[3],
-		  x2 = v[4],
-		  y2 = v[5],
-		  x3 = v[6],
-		  y3 = v[7]
+		const x0 = v[0]
+		const y0 = v[1]
+		const x1 = v[2]
+		const y1 = v[3]
+		const x2 = v[4]
+		const y2 = v[5]
+		const x3 = v[6]
+		const y3 = v[7]
 		return (
 		  3 * (
 			(y3 - y0) * (x1 + x2) -
@@ -8752,14 +8803,14 @@ var Curve = Base.extend(
 
 	  _addBounds: function (v0, v1, v2, v3, coord, padding, min, max, roots) {
 		function add(value, padding) {
-		  var left = value - padding,
-			right = value + padding
+		  const left = value - padding
+		  const right = value + padding
 		  if (left < min[coord]) min[coord] = left
 		  if (right > max[coord]) max[coord] = right
 		}
 
-		var minPad = min[coord] + padding,
-		  maxPad = max[coord] - padding
+		const minPad = min[coord] + padding
+		const maxPad = max[coord] - padding
 		if (
 		  v0 < minPad ||
 		  v1 < minPad ||
@@ -8774,16 +8825,16 @@ var Curve = Base.extend(
 			add(v0, 0)
 			add(v3, 0)
 		  } else {
-			var a = 3 * (v1 - v2) - v0 + v3,
-			  b = 2 * (v0 + v2) - 4 * v1,
-			  c = v1 - v0,
-			  count = Numerical.solveQuadratic(a, b, c, roots),
-			  tMin = 1e-8,
-			  tMax = 1 - tMin
+			const a = 3 * (v1 - v2) - v0 + v3
+			const b = 2 * (v0 + v2) - 4 * v1
+			const c = v1 - v0
+			const count = Numerical.solveQuadratic(a, b, c, roots)
+			const tMin = 1e-8
+			const tMax = 1 - tMin
 			add(v3, 0)
-			for (var i = 0; i < count; i++) {
-			  var t = roots[i],
-				u = 1 - t
+			for (let i = 0; i < count; i++) {
+			  const t = roots[i]
+			  const u = 1 - t
 			  if (tMin <= t && t <= tMax)
 				add(
 				  u * u * u * v0 +
@@ -8803,9 +8854,9 @@ var Curve = Base.extend(
 	function (name) {
 	  this[name] = function () {
 		if (!this._bounds) this._bounds = {}
-		var bounds = this._bounds[name]
+		let bounds = this._bounds[name]
 		if (!bounds) {
-		  var path = this._path
+		  const path = this._path
 		  bounds = this._bounds[name] = Path[path ? name : 'getBounds'](
 			[this._segment1, this._segment2], false, path
 		  )
@@ -8816,11 +8867,11 @@ var Curve = Base.extend(
 	 {
 
 	  getHandleBounds: function () {
-		var v = this.getValues(),
-		  x1 = Math.min(v[0], v[2], v[4], v[6]),
-		  y1 = Math.min(v[1], v[3], v[5], v[7]),
-		  x2 = Math.max(v[0], v[2], v[4], v[6]),
-		  y2 = Math.max(v[1], v[3], v[5], v[7])
+		const v = this.getValues()
+		const x1 = Math.min(v[0], v[2], v[4], v[6])
+		const y1 = Math.min(v[1], v[3], v[5], v[7])
+		const x2 = Math.max(v[0], v[2], v[4], v[6])
+		const y2 = Math.max(v[1], v[3], v[5], v[7])
 		return new Rectangle(x1, y1, x2 - x1, y2 - y1)
 	  }
 
@@ -8829,21 +8880,21 @@ var Curve = Base.extend(
   Base.each(
 	{
 	  isStraight: function (x1, y1, h1x, h1y, h2x, h2y, x2, y2) {
-		var isZero = Numerical.isZero
+		const isZero = Numerical.isZero
 		if (isZero(h1x) && isZero(h1y) && isZero(h2x) && isZero(h2y)) {
 		  return true
 		} else {
-		  var isCollinear = Point.isCollinear,
-			vx = x2 - x1,
-			vy = y2 - y1
+		  const isCollinear = Point.isCollinear
+		  const vx = x2 - x1
+		  const vy = y2 - y1
 		  if (isZero(vx) && isZero(vy)) {
 			return false
 		  } else if (
 			isCollinear(vx, vy, h1x, h1y) &&
 			isCollinear(vx, vy, h2x, h2y)
 		  ) {
-			var getDistance = Line.getDistance,
-			  epsilon = 1e-7
+			const getDistance = Line.getDistance
+			const epsilon = 1e-7
 			if (
 			  (
 				getDistance(x1, y1, vx, vy, x1 + h1x, y1 + h1y, true) <
@@ -8853,9 +8904,9 @@ var Curve = Base.extend(
 				epsilon
 			  )
 			) {
-			  var div = vx * vx + vy * vy,
-				s1 = (vx * h1x + vy * h1y) / div,
-				s2 = (vx * h2x + vy * h2y) / div
+			  const div = vx * vx + vy * vy
+			  const s1 = (vx * h1x + vy * h1y) / div
+			  const s2 = (vx * h2x + vy * h2y) / div
 			  return s1 >= 0 && s1 <= 1 && s2 <= 0 && s2 >= -1
 			}
 		  }
@@ -8864,17 +8915,17 @@ var Curve = Base.extend(
 	  },
 
 	  isLinear: function (x1, y1, h1x, h1y, h2x, h2y, x2, y2) {
-		var x = (x2 - x1) / 3,
-		  y = (y2 - y1) / 3
+		const x = (x2 - x1) / 3
+		const y = (y2 - y1) / 3
 		return h1x === x && h1y === y && -h2x === x && -h2y === y
 	  }
 	},
 	function (test, name) {
 	  this[name] = function (epsilon) {
-		var p1 = this._segment1._point,
-		  h1 = this._segment1._handleOut,
-		  h2 = this._segment2._handleIn,
-		  p2 = this._segment2._point
+		const p1 = this._segment1._point
+		const h1 = this._segment1._handleOut
+		const h2 = this._segment2._handleIn
+		const p2 = this._segment2._point
 		return test(
 		  p1._x,
 		  p1._y,
@@ -8889,10 +8940,10 @@ var Curve = Base.extend(
 	  }
 
 	  this.statics[name] = function (v, epsilon) {
-		var x1 = v[0],
-		  y1 = v[1],
-		  x2 = v[6],
-		  y2 = v[7]
+		const x1 = v[0]
+		const y1 = v[1]
+		const x2 = v[6]
+		const y2 = v[7]
 		return test(
 		  x1,
 		  y1,
@@ -8973,7 +9024,7 @@ var Curve = Base.extend(
 	getParameterAt: '#getTimeAt',
 
 	getTimesWithTangent: function () {
-	  var tangent = Point.read(arguments)
+	  const tangent = Point.read(arguments)
 	  return tangent.isZero()
 		? []
 		: Curve.getTimesWithTangent(this.getValues(), tangent)
@@ -8988,7 +9039,7 @@ var Curve = Base.extend(
 	},
 
 	getOffsetOf: function () {
-	  var loc = this.getLocationOf.apply(this, arguments)
+	  const loc = this.getLocationOf.apply(this, arguments)
 	  return loc ? loc.getOffset() : null
 	},
 
@@ -8999,21 +9050,21 @@ var Curve = Base.extend(
 	getParameterOf: '#getTimeOf',
 
 	getNearestLocation: function () {
-	  var point = Point.read(arguments),
-		values = this.getValues(),
-		t = Curve.getNearestTime(values, point),
-		pt = Curve.getPoint(values, t)
+	  const point = Point.read(arguments)
+	  const values = this.getValues()
+	  const t = Curve.getNearestTime(values, point)
+	  const pt = Curve.getPoint(values, t)
 	  return new CurveLocation(this, t, pt, null, point.getDistance(pt))
 	},
 
 	getNearestPoint: function () {
-	  var loc = this.getNearestLocation.apply(this, arguments)
+	  const loc = this.getNearestLocation.apply(this, arguments)
 	  return loc ? loc.getPoint() : loc
 	}
 
   },
   new (function () {
-	var methods = [
+	const methods = [
 	  'getPoint', 'getTangent', 'getNormal', 'getWeightedTangent',
 	  'getWeightedNormal', 'getCurvature'
 	]
@@ -9021,7 +9072,7 @@ var Curve = Base.extend(
 	  methods,
 	  function (name) {
 		this[name + 'At'] = function (location, _isTime) {
-		  var values = this.getValues()
+		  const values = this.getValues()
 		  return Curve[name](
 			values,
 			_isTime ? location : Curve.getTimeAt(values, location)
@@ -9042,53 +9093,53 @@ var Curve = Base.extend(
   new (function () {
 
 	function getLengthIntegrand(c) {
-	  var ax = 3 * c[0],
-		bx = 2 * c[1],
-		cx = c[2],
-		ay = 3 * c[3],
-		by = 2 * c[4],
-		cy = c[5]
+	  const ax = 3 * c[0]
+	  const bx = 2 * c[1]
+	  const cx = c[2]
+	  const ay = 3 * c[3]
+	  const by = 2 * c[4]
+	  const cy = c[5]
 
 	  return function (t) {
-		var dx = (ax * t + bx) * t + cx,
-		  dy = (ay * t + by) * t + cy
+		const dx = (ax * t + bx) * t + cx
+		const dy = (ay * t + by) * t + cy
 		return Math.sqrt(dx * dx + dy * dy)
 	  }
 	}
 
 	function getPartLength(c, ds, a, b) {
 	  if (a > b) return -getPartLength(c, ds, b, a)
-	  var ax = 3 * c[0],
-		bx = 2 * c[1],
-		cx = c[2],
-		ay = 3 * c[3],
-		by = 2 * c[4],
-		cy = c[5],
-		tolerance = 1e-7,
-		x0 = (ax * a + bx) * a + cx,
-		y0 = (ay * a + by) * a + cy,
-		x1 = ax * a * b + bx * (a + b) * 0.5 + cx,
-		y1 = ay * a * b + by * (a + b) * 0.5 + cy,
-		x2 = (ax * b + bx) * b + cx,
-		y2 = (ay * b + by) * b + cy,
-		sx = x0 + x1 + x2,
-		sy = y0 + y1 + y2,
-		p0 = x0 * sx + y0 * sy,
-		p1 = x1 * sx + y1 * sy,
-		p2 = x2 * sx + y2 * sy,
-		l0 = x0 * x0 + y0 * y0,
-		l1 = x1 * x1 + y1 * y1,
-		l2 = x2 * x2 + y2 * y2,
-		max = l0 > l1 ? (l0 > l2 ? l0 : l2) : l1 > l2 ? l1 : l2
+	  const ax = 3 * c[0]
+	  const bx = 2 * c[1]
+	  const cx = c[2]
+	  const ay = 3 * c[3]
+	  const by = 2 * c[4]
+	  const cy = c[5]
+	  const tolerance = 1e-7
+	  const x0 = (ax * a + bx) * a + cx
+	  const y0 = (ay * a + by) * a + cy
+	  const x1 = ax * a * b + bx * (a + b) * 0.5 + cx
+	  const y1 = ay * a * b + by * (a + b) * 0.5 + cy
+	  const x2 = (ax * b + bx) * b + cx
+	  const y2 = (ay * b + by) * b + cy
+	  const sx = x0 + x1 + x2
+	  const sy = y0 + y1 + y2
+	  const p0 = x0 * sx + y0 * sy
+	  const p1 = x1 * sx + y1 * sy
+	  const p2 = x2 * sx + y2 * sy
+	  const l0 = x0 * x0 + y0 * y0
+	  const l1 = x1 * x1 + y1 * y1
+	  const l2 = x2 * x2 + y2 * y2
+	  const max = l0 > l1 ? (l0 > l2 ? l0 : l2) : l1 > l2 ? l1 : l2
 	  if (
 		p0 >= 0 &&
 		p2 >= 0 &&
 		p1 > 0 &&
 		p1 * p1 > 0.01 * (sx * sx + sy * sy) * max
 	  ) {
-		var min = p0 < p1 ? (p0 < p2 ? p0 : p2) : p1 < p2 ? p1 : p2,
-		  d01 = (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0),
-		  d12 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)
+		const min = p0 < p1 ? (p0 < p2 ? p0 : p2) : p1 < p2 ? p1 : p2
+		const d01 = (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)
+		const d12 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)
 		return (
 		  (d01 > d12 ? d01 : d12) * (sx * sx + sy * sy) <
 		  0.01 * min * min
@@ -9096,27 +9147,27 @@ var Curve = Base.extend(
 		  ? Numerical.gauss(ds, a, b)
 		  : Numerical.integrate(ds, a, b, tolerance)
 	  }
-	  var times = [],
-		count = Math.max(
-		  0,
-		  Numerical.solveCubic(
-			2 * (ax * ax + ay * ay),
-			3 * (ax * bx + ay * by),
-			bx * bx + by * by + 2 * (ax * cx + ay * cy),
-			bx * cx + by * cy,
-			times,
-			a,
-			b
-		  )
-		),
-		length = 0
+	  const times = []
+	  const count = Math.max(
+		0,
+		Numerical.solveCubic(
+		  2 * (ax * ax + ay * ay),
+		  3 * (ax * bx + ay * by),
+		  bx * bx + by * by + 2 * (ax * cx + ay * cy),
+		  bx * cx + by * cy,
+		  times,
+		  a,
+		  b
+		)
+	  )
+	  let length = 0
 	  times.length = count
 	  times.sort(function (t1, t2) {
 		return t1 - t2
 	  })
 	  times.push(b)
-	  for (var i = 0; i <= count; i++) {
-		var t = times[i]
+	  for (let i = 0; i <= count; i++) {
+		const t = times[i]
 		if (t > a) {
 		  length += Numerical.integrate(ds, a, t, tolerance)
 		  a = t
@@ -9126,15 +9177,15 @@ var Curve = Base.extend(
 	}
 
 	function getCoefficients(v) {
-	  var x0 = v[0],
-		y0 = v[1],
-		x1 = v[2],
-		y1 = v[3],
-		x2 = v[4],
-		y2 = v[5],
-		x3 = v[6],
-		y3 = v[7],
-		isZero = Numerical.isZero
+	  const x0 = v[0]
+	  const y0 = v[1]
+	  let x1 = v[2]
+	  let y1 = v[3]
+	  let x2 = v[4]
+	  let y2 = v[5]
+	  const x3 = v[6]
+	  const y3 = v[7]
+	  const isZero = Numerical.isZero
 	  if (isZero(x1 - x0) && isZero(y1 - y0)) {
 		x1 = x0
 		y1 = y0
@@ -9143,12 +9194,12 @@ var Curve = Base.extend(
 		x2 = x3
 		y2 = y3
 	  }
-	  var cx = 3 * (x1 - x0),
-		bx = 3 * (x2 - x1) - cx,
-		ax = x3 - x0 - cx - bx,
-		cy = 3 * (y1 - y0),
-		by = 3 * (y2 - y1) - cy,
-		ay = y3 - y0 - cy - by
+	  const cx = 3 * (x1 - x0)
+	  const bx = 3 * (x2 - x1) - cx
+	  const ax = x3 - x0 - cx - bx
+	  const cy = 3 * (y1 - y0)
+	  const by = 3 * (y2 - y1) - cy
+	  const ay = y3 - y0 - cy - by
 	  return [ax, bx, cx, ay, by, cy, x1, y1, x2, y2]
 	}
 
@@ -9157,30 +9208,33 @@ var Curve = Base.extend(
 	}
 
 	function evaluate(v, t, type, normalized) {
+	  let x2
+	  let y2
+
 	  if (t == null || t < 0 || t > 1) return null
-	  var x0 = v[0],
-		y0 = v[1],
-		x3 = v[6],
-		y3 = v[7],
-		c = getCoefficients(v),
-		ax = c[0],
-		bx = c[1],
-		cx = c[2],
-		ay = c[3],
-		by = c[4],
-		cy = c[5],
-		x1 = c[6],
-		y1 = c[7],
-		x2 = c[8],
-		y2 = c[9],
-		x,
-		y
+	  const x0 = v[0]
+	  const y0 = v[1]
+	  const x3 = v[6]
+	  const y3 = v[7]
+	  const c = getCoefficients(v)
+	  const ax = c[0]
+	  const bx = c[1]
+	  const cx = c[2]
+	  const ay = c[3]
+	  const by = c[4]
+	  const cy = c[5]
+	  const x1 = c[6]
+	  const y1 = c[7]
+	  x2 = c[8]
+	  y2 = c[9]
+	  let x
+	  let y
 	  if (type === 0) {
 		x = getCoordinate(x0, x3, ax, bx, cx, t)
 		y = getCoordinate(y0, y3, ay, by, cy, t)
 	  } else {
-		var tMin = 1e-8,
-		  tMax = 1 - tMin
+		const tMin = 1e-8
+		const tMax = 1 - tMin
 		if (t < tMin) {
 		  x = cx
 		  y = cy
@@ -9196,16 +9250,16 @@ var Curve = Base.extend(
 			x = x2 - x1
 			y = y2 - y1
 		  }
-		  var len = Math.sqrt(x * x + y * y)
+		  const len = Math.sqrt(x * x + y * y)
 		  if (len) {
 			x /= len
 			y /= len
 		  }
 		}
 		if (type === 3) {
-		  var x2 = 6 * ax * t + 2 * bx,
-			y2 = 6 * ay * t + 2 * by,
-			d = Math.pow(x * x + y * y, 3 / 2)
+		  x2 = 6 * ax * t + 2 * bx
+		  y2 = 6 * ay * t + 2 * by
+		  const d = Math.pow(x * x + y * y, 3 / 2)
 		  x = d !== 0 ? (x * y2 - y * x2) / d : 0
 		  y = 0
 		}
@@ -9217,38 +9271,38 @@ var Curve = Base.extend(
 	  statics: {
 		classify: function (v) {
 
-		  var x0 = v[0],
-			y0 = v[1],
-			x1 = v[2],
-			y1 = v[3],
-			x2 = v[4],
-			y2 = v[5],
-			x3 = v[6],
-			y3 = v[7],
-			a1 = x0 * (y3 - y2) + y0 * (x2 - x3) + x3 * y2 - y3 * x2,
-			a2 = x1 * (y0 - y3) + y1 * (x3 - x0) + x0 * y3 - y0 * x3,
-			a3 = x2 * (y1 - y0) + y2 * (x0 - x1) + x1 * y0 - y1 * x0,
-			d3 = 3 * a3,
-			d2 = d3 - a2,
-			d1 = d2 - a2 + a1,
-			l = Math.sqrt(d1 * d1 + d2 * d2 + d3 * d3),
-			magnitude = Math.max(
-			  Math.abs(x0), Math.abs(y0), Math.abs(x1), Math.abs(y1),
-			  Math.abs(x2), Math.abs(y2), Math.abs(x3), Math.abs(y3)
-			),
-			s = l > magnitude * Numerical.getEpsilon(magnitude) ? 1 / l : 0,
-			isZero = Numerical.isZero,
-			serpentine = 'serpentine'
+		  const x0 = v[0]
+		  const y0 = v[1]
+		  const x1 = v[2]
+		  const y1 = v[3]
+		  const x2 = v[4]
+		  const y2 = v[5]
+		  const x3 = v[6]
+		  const y3 = v[7]
+		  const a1 = x0 * (y3 - y2) + y0 * (x2 - x3) + x3 * y2 - y3 * x2
+		  const a2 = x1 * (y0 - y3) + y1 * (x3 - x0) + x0 * y3 - y0 * x3
+		  const a3 = x2 * (y1 - y0) + y2 * (x0 - x1) + x1 * y0 - y1 * x0
+		  let d3 = 3 * a3
+		  let d2 = d3 - a2
+		  let d1 = d2 - a2 + a1
+		  const l = Math.sqrt(d1 * d1 + d2 * d2 + d3 * d3)
+		  const magnitude = Math.max(
+			Math.abs(x0), Math.abs(y0), Math.abs(x1), Math.abs(y1),
+			Math.abs(x2), Math.abs(y2), Math.abs(x3), Math.abs(y3)
+		  )
+		  const s = l > magnitude * Numerical.getEpsilon(magnitude) ? 1 / l : 0
+		  const isZero = Numerical.isZero
+		  const serpentine = 'serpentine'
 		  d1 *= s
 		  d2 *= s
 		  d3 *= s
 
 		  function type(type, t1, t2) {
-			var tMin = 1e-8,
-			  tMax = 1 - tMin,
-			  hasRoots = t1 !== undefined,
-			  t1Ok = hasRoots && t1 > tMin && t1 < tMax,
-			  t2Ok = hasRoots && t2 > tMin && t2 < tMax
+			const tMin = 1e-8
+			const tMax = 1 - tMin
+			const hasRoots = t1 !== undefined
+			let t1Ok = hasRoots && t1 > tMin && t1 < tMax
+			let t2Ok = hasRoots && t2 > tMin && t2 < tMax
 			if (
 			  hasRoots &&
 			  (!(t1Ok || t2Ok) || type === 'loop' && !(t1Ok && t2Ok))
@@ -9274,12 +9328,12 @@ var Curve = Base.extend(
 			  ? type(isZero(d3) ? 'line' : 'quadratic')
 			  : type(serpentine, d3 / (3 * d2))
 		  }
-		  var d = 3 * d2 * d2 - 4 * d1 * d3
+		  const d = 3 * d2 * d2 - 4 * d1 * d3
 		  if (isZero(d)) {
 			return type('cusp', d2 / (2 * d1))
 		  }
-		  var f1 = d > 0 ? Math.sqrt(d / 3) : Math.sqrt(-d),
-			f2 = 2 * d1
+		  const f1 = d > 0 ? Math.sqrt(d / 3) : Math.sqrt(-d)
+		  const f2 = 2 * d1
 		  return type(
 			d > 0 ? serpentine : 'loop',
 			(d2 + f1) / f2,
@@ -9288,10 +9342,12 @@ var Curve = Base.extend(
 		},
 
 		getLength: function (v, a, b) {
+		  let c
+
 		  if (a === undefined) a = 0
 		  if (b === undefined) b = 1
 		  if (Curve.isStraight(v)) {
-			var c = v
+			c = v
 			if (b < 1) {
 			  c = Curve.subdivide(c, b)[0]
 			  a /= b
@@ -9299,33 +9355,33 @@ var Curve = Base.extend(
 			if (a > 0) {
 			  c = Curve.subdivide(c, a)[1]
 			}
-			var dx = c[6] - c[0],
-			  dy = c[7] - c[1]
+			const dx = c[6] - c[0]
+			const dy = c[7] - c[1]
 			return Math.sqrt(dx * dx + dy * dy)
 		  }
-		  var c = getCoefficients(v)
+		  c = getCoefficients(v)
 		  return getPartLength(c, getLengthIntegrand(c), a, b)
 		},
 
 		getTimeAt: function (v, offset, start) {
 		  if (start === undefined) start = offset < 0 ? 1 : 0
 		  if (offset === 0) return start
-		  var abs = Math.abs,
-			epsilon = 1e-12,
-			forward = offset > 0,
-			a = forward ? start : 0,
-			b = forward ? 1 : start,
-			c = getCoefficients(v),
-			ds = getLengthIntegrand(c),
-			rangeLength = getPartLength(c, ds, a, b),
-			diff = abs(offset) - rangeLength
+		  const abs = Math.abs
+		  const epsilon = 1e-12
+		  const forward = offset > 0
+		  const a = forward ? start : 0
+		  const b = forward ? 1 : start
+		  const c = getCoefficients(v)
+		  const ds = getLengthIntegrand(c)
+		  const rangeLength = getPartLength(c, ds, a, b)
+		  const diff = abs(offset) - rangeLength
 		  if (abs(diff) < epsilon) {
 			return forward ? b : a
 		  } else if (diff > epsilon) {
 			return null
 		  }
-		  var guess = offset / rangeLength,
-			length = 0
+		  const guess = offset / rangeLength
+		  let length = 0
 		  function f(t) {
 			length += getPartLength(c, ds, start, t)
 			start = t
@@ -9343,50 +9399,50 @@ var Curve = Base.extend(
 		},
 
 		getTimeOf: function (v, point, tolerance) {
-		  var abs = Math.abs,
-			x0 = v[0],
-			y0 = v[1],
-			x3 = v[6],
-			y3 = v[7],
-			px = point.x,
-			py = point.y,
-			epsilon = (
-			  tolerance ||
-			  Numerical.getEpsilon(
-				Math.max(
-				  abs(x0), abs(y0), abs(v[2]), abs(v[3]),
-				  abs(v[4]), abs(v[5]), abs(x3), abs(y3)
-				),
-				1e-7
-			  )
+		  const abs = Math.abs
+		  const x0 = v[0]
+		  const y0 = v[1]
+		  const x3 = v[6]
+		  const y3 = v[7]
+		  const px = point.x
+		  const py = point.y
+		  const epsilon = (
+			tolerance ||
+			Numerical.getEpsilon(
+			  Math.max(
+				abs(x0), abs(y0), abs(v[2]), abs(v[3]),
+				abs(v[4]), abs(v[5]), abs(x3), abs(y3)
+			  ),
+			  1e-7
 			)
+		  )
 
 		  function isClose(x, y) {
-			var dx = x - px,
-			  dy = y - py
+			const dx = x - px
+			const dy = y - py
 			return Math.sqrt(dx * dx + dy * dy) <= epsilon
 		  }
 
 		  if (isClose(x0, y0)) return 0
 		  if (isClose(x3, y3)) return 1
-		  var c = getCoefficients(v),
-			ax = c[0],
-			bx = c[1],
-			cx = c[2],
-			ay = c[3],
-			by = c[4],
-			cy = c[5],
-			roots = []
-		  for (var i = 0; i < 2; i++) {
-			var count = Curve.solveCubic(v, i, i ? py : px, roots, 0, 1)
-			for (var j = 0; j < count; j++) {
-			  var t = roots[j],
-				x = getCoordinate(x0, x3, ax, bx, cx, t),
-				y = getCoordinate(y0, y3, ay, by, cy, t)
+		  const c = getCoefficients(v)
+		  const ax = c[0]
+		  const bx = c[1]
+		  const cx = c[2]
+		  const ay = c[3]
+		  const by = c[4]
+		  const cy = c[5]
+		  const roots = []
+		  for (let i = 0; i < 2; i++) {
+			const count = Curve.solveCubic(v, i, i ? py : px, roots, 0, 1)
+			for (let j = 0; j < count; j++) {
+			  let t = roots[j]
+			  const x = getCoordinate(x0, x3, ax, bx, cx, t)
+			  const y = getCoordinate(y0, y3, ay, by, cy, t)
 			  if (isClose(x, y)) return t
-			  var dx = (3 * ax * t + 2 * bx) * t + cx,
-				dy = (3 * ay * t + 2 * by) * t + cy,
-				length2 = dx * dx + dy * dy
+			  const dx = (3 * ax * t + 2 * bx) * t + cx
+			  const dy = (3 * ay * t + 2 * by) * t + cy
+			  const length2 = dx * dx + dy * dy
 			  if (length2) {
 				t = Math.max(
 				  0,
@@ -9406,18 +9462,20 @@ var Curve = Base.extend(
 		},
 
 		getNearestTime: function (v, point) {
-		  var x0 = v[0],
-			y0 = v[1],
-			x3 = v[6],
-			y3 = v[7],
-			px = point.x,
-			py = point.y
+		  let i
+
+		  const x0 = v[0]
+		  const y0 = v[1]
+		  const x3 = v[6]
+		  const y3 = v[7]
+		  const px = point.x
+		  const py = point.y
 		  if (Curve.isStraight(v)) {
-			var vx = x3 - x0,
-			  vy = y3 - y0,
-			  det = vx * vx + vy * vy
+			const vx = x3 - x0
+			const vy = y3 - y0
+			const det = vx * vx + vy * vy
 			if (det === 0) return 0
-			var u = ((px - x0) * vx + (py - y0) * vy) / det
+			const u = ((px - x0) * vx + (py - y0) * vy) / det
 			return u < 1e-12
 			  ? 0
 			  : u > 0.999999999999
@@ -9425,40 +9483,39 @@ var Curve = Base.extend(
 				: Curve.getTimeOf(v, new Point(x0 + u * vx, y0 + u * vy))
 		  }
 
-		  var c = getCoefficients(v),
-			ax = c[0],
-			bx = c[1],
-			cx = c[2],
-			ay = c[3],
-			by = c[4],
-			cy = c[5],
-			count = 100,
-			distances = [],
-			minDist = Infinity,
-			minT = 0
+		  const c = getCoefficients(v)
+		  const ax = c[0]
+		  const bx = c[1]
+		  const cx = c[2]
+		  const ay = c[3]
+		  const by = c[4]
+		  const cy = c[5]
+		  const count = 100
+		  const distances = []
+		  let minDist = Infinity
+		  let minT = 0
 
 		  function getDistance(t) {
-			var dx = getCoordinate(x0, x3, ax, bx, cx, t) - px,
-			  dy = getCoordinate(y0, y3, ay, by, cy, t) - py
+			const dx = getCoordinate(x0, x3, ax, bx, cx, t) - px
+			const dy = getCoordinate(y0, y3, ay, by, cy, t) - py
 			return dx * dx + dy * dy
 		  }
 
-		  for (var i = 0; i <= count; i++)
-			distances.push(getDistance(i / count))
+		  for (i = 0; i <= count; i++) distances.push(getDistance(i / count))
 
-		  for (var i = 0; i <= count; i++) {
-			var dist = distances[i]
+		  for (i = 0; i <= count; i++) {
+			let dist = distances[i]
 			if (
 			  (i === 0 || dist < distances[i - 1]) &&
 			  (i === count || dist <= distances[i + 1])
 			) {
-			  var t = i / count,
-				step = 1 / (count * 2)
+			  let t = i / count
+			  let step = 1 / (count * 2)
 			  while (step > 1e-8) {
-				var t1 = t - step,
-				  t2 = t + step,
-				  dist1 = t1 >= 0 ? getDistance(t1) : Infinity,
-				  dist2 = t2 <= 1 ? getDistance(t2) : Infinity
+				const t1 = t - step
+				const t2 = t + step
+				const dist1 = t1 >= 0 ? getDistance(t1) : Infinity
+				const dist2 = t2 <= 1 ? getDistance(t2) : Infinity
 				if (dist1 < dist && dist1 <= dist2) {
 				  t = t1
 				  dist = dist1
@@ -9503,16 +9560,16 @@ var Curve = Base.extend(
 		},
 
 		getPeaks: function (v) {
-		  var c = getCoefficients(v),
-			ax = c[0],
-			bx = c[1],
-			cx = c[2],
-			ay = c[3],
-			by = c[4],
-			cy = c[5],
-			tMin = 1e-8,
-			tMax = 1 - tMin,
-			roots = []
+		  const c = getCoefficients(v)
+		  const ax = c[0]
+		  const bx = c[1]
+		  const cx = c[2]
+		  const ay = c[3]
+		  const by = c[4]
+		  const cy = c[5]
+		  const tMin = 1e-8
+		  const tMax = 1 - tMin
+		  const roots = []
 		  Numerical.solveCubic(
 			9 * (ax * ax + ay * ay),
 			9 * (ax * bx + by * ay),
@@ -9526,34 +9583,36 @@ var Curve = Base.extend(
 		},
 
 		getReversals: function (v, tolerance) {
-		  var dx = v[6] - v[0],
-			dy = v[7] - v[1]
-		  for (var i = 0; i < 4; i += 2) {
-			var hx = v[i + 2] - v[i],
-			  hy = v[i + 3] - v[i + 1]
+		  let i
+
+		  let dx = v[6] - v[0]
+		  let dy = v[7] - v[1]
+		  for (i = 0; i < 4; i += 2) {
+			const hx = v[i + 2] - v[i]
+			const hy = v[i + 3] - v[i + 1]
 			if (hx * hx + hy * hy > dx * dx + dy * dy) {
 			  dx = hx
 			  dy = hy
 			}
 		  }
-		  var length = Math.sqrt(dx * dx + dy * dy),
-			o = []
+		  const length = Math.sqrt(dx * dx + dy * dy)
+		  const o = []
 		  if (!length) return []
-		  for (var i = 0; i < 8; i += 2) {
-			var x = v[i] - v[0],
-			  y = v[i + 1] - v[1]
+		  for (i = 0; i < 8; i += 2) {
+			const x = v[i] - v[0]
+			const y = v[i + 1] - v[1]
 			if (Math.abs(x * dy - y * dx) > tolerance * length) return []
 			o.push((x * dx + y * dy) / length)
 		  }
-		  var roots = [],
-			count = Numerical.solveQuadratic(
-			  3 * (o[1] - o[2]) - o[0] + o[3],
-			  2 * (o[0] + o[2]) - 4 * o[1],
-			  o[1] - o[0],
-			  roots,
-			  1e-8,
-			  1 - Numerical.CURVETIME_EPSILON
-			)
+		  const roots = []
+		  const count = Numerical.solveQuadratic(
+			3 * (o[1] - o[2]) - o[0] + o[3],
+			2 * (o[0] + o[2]) - 4 * o[1],
+			o[1] - o[0],
+			roots,
+			1e-8,
+			1 - Numerical.CURVETIME_EPSILON
+		  )
 		  return count > 0
 			? roots.slice(0, count).sort(function (a, b) {
 				return a - b
@@ -9562,36 +9621,38 @@ var Curve = Base.extend(
 		},
 
 		getTimesWithTangent: function (v, tangent) {
-		  var c = getCoefficients(v),
-			ax = 3 * c[0],
-			bx = 2 * c[1],
-			cx = c[2],
-			ay = 3 * c[3],
-			by = 2 * c[4],
-			cy = c[5],
-			normalized = tangent.normalize(),
-			tx = normalized.x,
-			ty = normalized.y,
-			den = 2 * ax * ty - 2 * ay * tx,
-			times = []
+		  let den
+
+		  const c = getCoefficients(v)
+		  const ax = 3 * c[0]
+		  const bx = 2 * c[1]
+		  const cx = c[2]
+		  const ay = 3 * c[3]
+		  const by = 2 * c[4]
+		  const cy = c[5]
+		  const normalized = tangent.normalize()
+		  const tx = normalized.x
+		  const ty = normalized.y
+		  den = 2 * ax * ty - 2 * ay * tx
+		  const times = []
 		  if (Math.abs(den) < Numerical.CURVETIME_EPSILON) {
-			var num = cx * ty - cy * tx,
-			  den = bx * ty - by * tx
+			const num = cx * ty - cy * tx
+			den = bx * ty - by * tx
 			if (den != 0) {
-			  var t = -num / den
+			  const t = -num / den
 			  if (t >= 0 && t <= 1) times.push(t)
 			}
 		  } else {
-			var delta = (
-				(bx * bx - 4 * ax * cx) * ty * ty +
-				(-2 * bx * by + 4 * ay * cx + 4 * ax * cy) * tx * ty +
-				(by * by - 4 * ay * cy) * tx * tx
-			  ),
-			  k = bx * ty - by * tx
+			const delta = (
+			  (bx * bx - 4 * ax * cx) * ty * ty +
+			  (-2 * bx * by + 4 * ay * cx + 4 * ax * cy) * tx * ty +
+			  (by * by - 4 * ay * cy) * tx * tx
+			)
+			const k = bx * ty - by * tx
 			if (delta >= 0 && den != 0) {
-			  var d = Math.sqrt(delta),
-				t0 = -(k + d) / den,
-				t1 = (-k + d) / den
+			  const d = Math.sqrt(delta)
+			  const t0 = -(k + d) / den
+			  const t1 = (-k + d) / den
 			  if (t0 >= 0 && t0 <= 1) times.push(t0)
 			  if (t1 >= 0 && t1 <= 1) times.push(t1)
 			}
@@ -9604,10 +9665,10 @@ var Curve = Base.extend(
   new (function () {
 
 	function addLocation(locations, include, c1, t1, c2, t2, overlap) {
-	  var excludeStart = !overlap && c1.getPrevious() === c2,
-		excludeEnd = !overlap && c1 !== c2 && c1.getNext() === c2,
-		tMin = 1e-8,
-		tMax = 1 - tMin
+	  const excludeStart = !overlap && c1.getPrevious() === c2
+	  const excludeEnd = !overlap && c1 !== c2 && c1.getNext() === c2
+	  const tMin = 1e-8
+	  const tMax = 1 - tMin
 	  if (
 		t1 !== null &&
 		t1 >= (excludeStart ? tMin : 0) &&
@@ -9618,8 +9679,8 @@ var Curve = Base.extend(
 		  t2 >= (excludeEnd ? tMin : 0) &&
 		  t2 <= (excludeStart ? tMax : 1)
 		) {
-		  var loc1 = new CurveLocation(c1, t1, null, overlap),
-			loc2 = new CurveLocation(c2, t2, null, overlap)
+		  const loc1 = new CurveLocation(c1, t1, null, overlap)
+		  const loc2 = new CurveLocation(c2, t2, null, overlap)
 		  loc1._intersection = loc2
 		  loc2._intersection = loc1
 		  if (!include || include(loc1)) {
@@ -9645,27 +9706,31 @@ var Curve = Base.extend(
 	  uMax,
 	  tolerance
 	) {
+	  let t
+	  let u
+	  let parts
+
 	  if (++calls >= 4096 || ++recursion >= 40) return calls
-	  var fatLineEpsilon = 1e-9,
-		q0x = v2[0],
-		q0y = v2[1],
-		q3x = v2[6],
-		q3y = v2[7],
-		getSignedDistance = Line.getSignedDistance,
-		d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3]),
-		d2 = getSignedDistance(q0x, q0y, q3x, q3y, v2[4], v2[5]),
-		factor = d1 * d2 > 0 ? 3 / 4 : 4 / 9,
-		dMin = factor * Math.min(0, d1, d2),
-		dMax = factor * Math.max(0, d1, d2),
-		dp0 = getSignedDistance(q0x, q0y, q3x, q3y, v1[0], v1[1]),
-		dp1 = getSignedDistance(q0x, q0y, q3x, q3y, v1[2], v1[3]),
-		dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
-		dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
-		hull = getConvexHull(dp0, dp1, dp2, dp3),
-		top = hull[0],
-		bottom = hull[1],
-		tMinClip,
-		tMaxClip
+	  const fatLineEpsilon = 1e-9
+	  const q0x = v2[0]
+	  const q0y = v2[1]
+	  const q3x = v2[6]
+	  const q3y = v2[7]
+	  const getSignedDistance = Line.getSignedDistance
+	  const d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3])
+	  const d2 = getSignedDistance(q0x, q0y, q3x, q3y, v2[4], v2[5])
+	  const factor = d1 * d2 > 0 ? 3 / 4 : 4 / 9
+	  const dMin = factor * Math.min(0, d1, d2)
+	  const dMax = factor * Math.max(0, d1, d2)
+	  const dp0 = getSignedDistance(q0x, q0y, q3x, q3y, v1[0], v1[1])
+	  const dp1 = getSignedDistance(q0x, q0y, q3x, q3y, v1[2], v1[3])
+	  const dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5])
+	  const dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7])
+	  const hull = getConvexHull(dp0, dp1, dp2, dp3)
+	  const top = hull[0]
+	  const bottom = hull[1]
+	  let tMinClip
+	  let tMaxClip
 	  if (
 		(
 		  d1 === 0 &&
@@ -9686,11 +9751,11 @@ var Curve = Base.extend(
 		)
 	  )
 		return calls
-	  var tMinNew = tMin + (tMax - tMin) * tMinClip,
-		tMaxNew = tMin + (tMax - tMin) * tMaxClip
+	  let tMinNew = tMin + (tMax - tMin) * tMinClip
+	  let tMaxNew = tMin + (tMax - tMin) * tMaxClip
 	  if (Math.max(uMax - uMin, tMaxNew - tMinNew) < fatLineEpsilon) {
-		var t = (tMinNew + tMaxNew) / 2,
-		  u = (uMin + uMax) / 2
+		t = (tMinNew + tMaxNew) / 2
+		u = (uMin + uMax) / 2
 		addLocation(
 		  locations,
 		  include,
@@ -9701,28 +9766,28 @@ var Curve = Base.extend(
 		)
 	  } else {
 		v1 = Curve.getPart(v1, tMinClip, tMaxClip)
-		var uDiff = uMax - uMin
+		const uDiff = uMax - uMin
 		if (tMaxClip - tMinClip > 0.8) {
-		  var isNext = (
-			  tolerance &&
-			  tMaxNew === 1 &&
-			  uMin === 0 &&
-			  c1.getNext() === c2
-			),
-			isPrevious = (
-			  tolerance &&
-			  !isNext &&
-			  tMinNew === 0 &&
-			  uMax === 1 &&
-			  c1.getPrevious() === c2
-			)
+		  const isNext = (
+			tolerance &&
+			tMaxNew === 1 &&
+			uMin === 0 &&
+			c1.getNext() === c2
+		  )
+		  const isPrevious = (
+			tolerance &&
+			!isNext &&
+			tMinNew === 0 &&
+			uMax === 1 &&
+			c1.getPrevious() === c2
+		  )
 		  if (isNext || isPrevious) {
-			var offset = isNext ? tolerance : -tolerance,
-			  s1 = Curve.getTimeAt(v1, -offset),
-			  s2 = Curve.getTimeAt(v2, offset)
+			const offset = isNext ? tolerance : -tolerance
+			const s1 = Curve.getTimeAt(v1, -offset)
+			const s2 = Curve.getTimeAt(v2, offset)
 			if (s1 !== null && s2 !== null) {
-			  var t = tMinNew + (tMaxNew - tMinNew) * s1,
-				u = uMin + (uMax - uMin) * s2
+			  t = tMinNew + (tMaxNew - tMinNew) * s1
+			  u = uMin + (uMax - uMin) * s2
 			  if (isNext) {
 				v1 = Curve.getPart(v1, 0, s1)
 				v2 = Curve.getPart(v2, s2, 1)
@@ -9748,8 +9813,8 @@ var Curve = Base.extend(
 			)
 		  )) {
 			if (tMaxNew - tMinNew > uDiff) {
-			  var parts = Curve.subdivide(v1, 0.5),
-				t = (tMinNew + tMaxNew) / 2
+			  parts = Curve.subdivide(v1, 0.5)
+			  t = (tMinNew + tMaxNew) / 2
 			  calls = addCurveIntersections(
 				v2, parts[0], c2, c1, locations, include, !flip,
 				recursion, calls, uMin, uMax, tMinNew, t,
@@ -9761,8 +9826,8 @@ var Curve = Base.extend(
 				tolerance
 			  )
 			} else {
-			  var parts = Curve.subdivide(v2, 0.5),
-				u = (uMin + uMax) / 2
+			  parts = Curve.subdivide(v2, 0.5)
+			  u = (uMin + uMax) / 2
 			  calls = addCurveIntersections(
 				parts[0], v1, c2, c1, locations, include, !flip,
 				recursion, calls, uMin, u, tMinNew, tMaxNew,
@@ -9808,10 +9873,12 @@ var Curve = Base.extend(
 	  uMax,
 	  tolerance
 	) {
-	  var x0 = v2[0],
-		y0 = v2[1],
-		size = 0
-	  for (var i = 0; i < 8; i += 2) {
+	  let i
+
+	  const x0 = v2[0]
+	  const y0 = v2[1]
+	  let size = 0
+	  for (i = 0; i < 8; i += 2) {
 		size = Math.max(
 		  size,
 		  Math.abs(v1[i] - x0),
@@ -9821,20 +9888,20 @@ var Curve = Base.extend(
 		)
 	  }
 	  if (size) {
-		var p = getLocalPoints(v1, x0, y0, size),
-		  q = getLocalPoints(v2, x0, y0, size),
-		  dx = v2[6] - 3 * (v2[4] - v2[2]) - x0,
-		  dy = v2[7] - 3 * (v2[5] - v2[3]) - y0,
-		  isQuadratic = (
-			4 / 27 * Math.sqrt(dx * dx + dy * dy) <=
-			tolerance
-		  ),
-		  polynomial = isQuadratic
-			? getQuadraticImplicit(p, [q[0], getQuadraticHandle(q), q[3]])
-			: getCubicImplicit(p, q),
-		  roots = [],
-		  speed = 0
-		for (var i = 0; i < 6; i += 2) {
+		const p = getLocalPoints(v1, x0, y0, size)
+		const q = getLocalPoints(v2, x0, y0, size)
+		const dx = v2[6] - 3 * (v2[4] - v2[2]) - x0
+		const dy = v2[7] - 3 * (v2[5] - v2[3]) - y0
+		const isQuadratic = (
+		  4 / 27 * Math.sqrt(dx * dx + dy * dy) <=
+		  tolerance
+		)
+		const polynomial = isQuadratic
+		  ? getQuadraticImplicit(p, [q[0], getQuadraticHandle(q), q[3]])
+		  : getCubicImplicit(p, q)
+		const roots = []
+		let speed = 0
+		for (i = 0; i < 6; i += 2) {
 		  speed = Math.max(
 			speed,
 			3 *
@@ -9850,16 +9917,16 @@ var Curve = Base.extend(
 		  })
 		)
 		  return false
-		var count = Numerical.solveBernstein(
+		const count = Numerical.solveBernstein(
 		  polynomial.coefficients,
 		  polynomial.errors,
 		  roots,
 		  speed ? tolerance / speed : 1
 		)
 		if (count >= polynomial.coefficients.length) return false
-		for (var i = 0; i < count; i++) {
-		  var t = roots[i],
-			u = Curve.getTimeOf(v2, Curve.getPoint(v1, t), tolerance)
+		for (i = 0; i < count; i++) {
+		  let t = roots[i]
+		  let u = Curve.getTimeOf(v2, Curve.getPoint(v1, t), tolerance)
 		  if (u !== null) {
 			t = tMin + (tMax - tMin) * t
 			u = uMin + (uMax - uMin) * u
@@ -9879,11 +9946,11 @@ var Curve = Base.extend(
 	}
 
 	function getLocalPoints(v, x0, y0, size) {
-	  var u = 1.12e-16,
-		points = []
-	  for (var i = 0; i < 8; i += 2) {
-		var x = (v[i] - x0) / size,
-		  y = (v[i + 1] - y0) / size
+	  const u = 1.12e-16
+	  const points = []
+	  for (let i = 0; i < 8; i += 2) {
+		const x = (v[i] - x0) / size
+		const y = (v[i + 1] - y0) / size
 		points.push({
 		  x: x,
 		  y: y,
@@ -9904,29 +9971,29 @@ var Curve = Base.extend(
 	}
 
 	function getLinearFactor(p, q, i, j, factor) {
-	  var u = 1.12e-16,
-		coefficients = [],
-		errors = []
-	  for (var k = 0; k < 4; k++) {
-		var r = p[k],
-		  dx1 = q[i].x - r.x,
-		  dy1 = q[j].y - r.y,
-		  dx2 = q[j].x - r.x,
-		  dy2 = q[i].y - r.y,
-		  error1 = getProductError(
-			dx1,
-			q[i].ex + r.ex + u * Math.abs(dx1),
-			dy1,
-			q[j].ey + r.ey + u * Math.abs(dy1)
-		  ),
-		  error2 = getProductError(
-			dx2,
-			q[j].ex + r.ex + u * Math.abs(dx2),
-			dy2,
-			q[i].ey + r.ey + u * Math.abs(dy2)
-		  ),
-		  difference = dx1 * dy1 - dx2 * dy2,
-		  value = factor * difference
+	  const u = 1.12e-16
+	  const coefficients = []
+	  const errors = []
+	  for (let k = 0; k < 4; k++) {
+		const r = p[k]
+		const dx1 = q[i].x - r.x
+		const dy1 = q[j].y - r.y
+		const dx2 = q[j].x - r.x
+		const dy2 = q[i].y - r.y
+		const error1 = getProductError(
+		  dx1,
+		  q[i].ex + r.ex + u * Math.abs(dx1),
+		  dy1,
+		  q[j].ey + r.ey + u * Math.abs(dy1)
+		)
+		const error2 = getProductError(
+		  dx2,
+		  q[j].ex + r.ex + u * Math.abs(dx2),
+		  dy2,
+		  q[i].ey + r.ey + u * Math.abs(dy2)
+		)
+		const difference = dx1 * dy1 - dx2 * dy2
+		const value = factor * difference
 		coefficients.push(value)
 		errors.push(
 		  factor * (error1 + error2 + u * Math.abs(difference)) +
@@ -9936,33 +10003,33 @@ var Curve = Base.extend(
 	  return { coefficients: coefficients, errors: errors }
 	}
 
-	var binomials = [[1]]
-	for (var i = 1; i <= 9; i++) {
-	  var row = [1]
-	  for (var j = 1; j < i; j++)
+	const binomials = [[1]]
+	for (let i = 1; i <= 9; i++) {
+	  const row = [1]
+	  for (let j = 1; j < i; j++)
 		row.push(binomials[i - 1][j - 1] + binomials[i - 1][j])
 	  row.push(1)
 	  binomials.push(row)
 	}
 
 	function multiply(a, b) {
-	  var u = 1.12e-16,
-		m = a.coefficients.length - 1,
-		n = b.coefficients.length - 1,
-		coefficients = [],
-		errors = []
-	  for (var k = 0; k <= m + n; k++) {
-		var sum = 0,
-		  error = 0
-		for (var i = Math.max(0, k - n), l = Math.min(m, k); i <= l; i++) {
-		  var factor = (
-			  binomials[m][i] *
-			  binomials[n][k - i] /
-			  binomials[m + n][k]
-			),
-			a1 = a.coefficients[i],
-			b1 = b.coefficients[k - i],
-			term = factor * (a1 * b1)
+	  const u = 1.12e-16
+	  const m = a.coefficients.length - 1
+	  const n = b.coefficients.length - 1
+	  const coefficients = []
+	  const errors = []
+	  for (let k = 0; k <= m + n; k++) {
+		let sum = 0
+		let error = 0
+		for (let i = Math.max(0, k - n), l = Math.min(m, k); i <= l; i++) {
+		  const factor = (
+			binomials[m][i] *
+			binomials[n][k - i] /
+			binomials[m + n][k]
+		  )
+		  const a1 = a.coefficients[i]
+		  const b1 = b.coefficients[k - i]
+		  const term = factor * (a1 * b1)
 		  sum += term
 		  error += (
 			factor * getProductError(a1, a.errors[i], b1, b.errors[k - i]) +
@@ -9976,10 +10043,10 @@ var Curve = Base.extend(
 	}
 
 	function add(a, b, sign) {
-	  var coefficients = [],
-		errors = []
-	  for (var i = 0, l = a.coefficients.length; i < l; i++) {
-		var sum = a.coefficients[i] + sign * b.coefficients[i]
+	  const coefficients = []
+	  const errors = []
+	  for (let i = 0, l = a.coefficients.length; i < l; i++) {
+		const sum = a.coefficients[i] + sign * b.coefficients[i]
 		coefficients.push(sum)
 		errors.push(
 		  a.errors[i] +
@@ -9991,13 +10058,13 @@ var Curve = Base.extend(
 	}
 
 	function getCubicImplicit(p, q) {
-	  var l32 = getLinearFactor(p, q, 3, 2, 1 * 3),
-		l31 = getLinearFactor(p, q, 3, 1, 1 * 3),
-		l30 = getLinearFactor(p, q, 3, 0, 1 * 1),
-		l21 = getLinearFactor(p, q, 2, 1, 3 * 3),
-		l20 = getLinearFactor(p, q, 2, 0, 3 * 1),
-		l10 = getLinearFactor(p, q, 1, 0, 3 * 1),
-		m = add(l30, l21, 1)
+	  const l32 = getLinearFactor(p, q, 3, 2, 1 * 3)
+	  const l31 = getLinearFactor(p, q, 3, 1, 1 * 3)
+	  const l30 = getLinearFactor(p, q, 3, 0, 1 * 1)
+	  const l21 = getLinearFactor(p, q, 2, 1, 3 * 3)
+	  const l20 = getLinearFactor(p, q, 2, 0, 3 * 1)
+	  const l10 = getLinearFactor(p, q, 1, 0, 3 * 1)
+	  const m = add(l30, l21, 1)
 	  return add(
 		add(
 		  multiply(l32, add(multiply(m, l10), multiply(l20, l20), -1)),
@@ -10010,9 +10077,9 @@ var Curve = Base.extend(
 	}
 
 	function getQuadraticHandle(q) {
-	  var u = 1.12e-16,
-		x = (3 * q[1].x - q[0].x) / 2,
-		y = (3 * q[1].y - q[0].y) / 2
+	  const u = 1.12e-16
+	  const x = (3 * q[1].x - q[0].x) / 2
+	  const y = (3 * q[1].y - q[0].y) / 2
 	  return {
 		x: x,
 		y: y,
@@ -10022,24 +10089,24 @@ var Curve = Base.extend(
 	}
 
 	function getQuadraticImplicit(p, q) {
-	  var l21 = getLinearFactor(p, q, 2, 1, 1 * 2),
-		l20 = getLinearFactor(p, q, 2, 0, 1 * 1),
-		l10 = getLinearFactor(p, q, 1, 0, 2 * 1)
+	  const l21 = getLinearFactor(p, q, 2, 1, 1 * 2)
+	  const l20 = getLinearFactor(p, q, 2, 0, 1 * 1)
+	  const l10 = getLinearFactor(p, q, 1, 0, 2 * 1)
 	  return add(multiply(l21, l10), multiply(l20, l20), -1)
 	}
 
 	function getConvexHull(dq0, dq1, dq2, dq3) {
-	  var p0 = [0, dq0],
-		p1 = [1 / 3, dq1],
-		p2 = [2 / 3, dq2],
-		p3 = [1, dq3],
-		dist1 = dq1 - (2 * dq0 + dq3) / 3,
-		dist2 = dq2 - (dq0 + 2 * dq3) / 3,
-		hull
+	  const p0 = [0, dq0]
+	  const p1 = [1 / 3, dq1]
+	  const p2 = [2 / 3, dq2]
+	  const p3 = [1, dq3]
+	  const dist1 = dq1 - (2 * dq0 + dq3) / 3
+	  const dist2 = dq2 - (dq0 + 2 * dq3) / 3
+	  let hull
 	  if (dist1 * dist2 < 0) {
 		hull = [[p0, p1, p3], [p0, p2, p3]]
 	  } else {
-		var distRatio = dist1 / dist2
+		const distRatio = dist1 / dist2
 		hull = [
 		  distRatio >= 2
 			? [p0, p1, p3]
@@ -10065,11 +10132,11 @@ var Curve = Base.extend(
 	}
 
 	function clipConvexHullPart(part, top, threshold) {
-	  var px = part[0][0],
-		py = part[0][1]
-	  for (var i = 1, l = part.length; i < l; i++) {
-		var qx = part[i][0],
-		  qy = part[i][1]
+	  let px = part[0][0]
+	  let py = part[0][1]
+	  for (let i = 1, l = part.length; i < l; i++) {
+		const qx = part[i][0]
+		const qy = part[i][1]
 		if (top ? qy >= threshold : qy <= threshold) {
 		  return qy === threshold
 			? qx
@@ -10082,26 +10149,26 @@ var Curve = Base.extend(
 	}
 
 	function getCurveLineIntersections(v, px, py, vx, vy) {
-	  var isZero = Numerical.isZero
+	  const isZero = Numerical.isZero
 	  if (isZero(vx) && isZero(vy)) {
-		var t = Curve.getTimeOf(v, new Point(px, py))
+		const t = Curve.getTimeOf(v, new Point(px, py))
 		return t === null ? [] : [t]
 	  }
-	  var angle = Math.atan2(-vy, vx),
-		sin = Math.sin(angle),
-		cos = Math.cos(angle),
-		rv = [],
-		roots = []
-	  for (var i = 0; i < 8; i += 2) {
-		var x = v[i] - px,
-		  y = v[i + 1] - py
+	  const angle = Math.atan2(-vy, vx)
+	  const sin = Math.sin(angle)
+	  const cos = Math.cos(angle)
+	  const rv = []
+	  const roots = []
+	  for (let i = 0; i < 8; i += 2) {
+		const x = v[i] - px
+		const y = v[i + 1] - py
 		rv.push(
 		  x * cos - y * sin,
 		  x * sin + y * cos
 		)
 	  }
 	  Curve.solveCubic(rv, 1, 0, roots, 0, 1)
-	  var epsilon = 1e-7
+	  const epsilon = 1e-7
 	  if (Math.abs(rv[1]) < epsilon) roots.push(0)
 	  if (Math.abs(rv[7]) < epsilon) roots.push(1)
 	  return roots
@@ -10117,15 +10184,15 @@ var Curve = Base.extend(
 	  flip,
 	  tolerance
 	) {
-	  var x1 = v2[0],
-		y1 = v2[1],
-		x2 = v2[6],
-		y2 = v2[7],
-		roots = getCurveLineIntersections(v1, x1, y1, x2 - x1, y2 - y1)
-	  for (var i = 0, l = roots.length; i < l; i++) {
-		var t1 = roots[i],
-		  p1 = Curve.getPoint(v1, t1),
-		  t2 = Curve.getTimeOf(v2, p1, tolerance)
+	  const x1 = v2[0]
+	  const y1 = v2[1]
+	  const x2 = v2[6]
+	  const y2 = v2[7]
+	  const roots = getCurveLineIntersections(v1, x1, y1, x2 - x1, y2 - y1)
+	  for (let i = 0, l = roots.length; i < l; i++) {
+		const t1 = roots[i]
+		const p1 = Curve.getPoint(v1, t1)
+		const t2 = Curve.getTimeOf(v2, p1, tolerance)
 		if (t2 !== null) {
 		  addLocation(
 			locations,
@@ -10148,7 +10215,7 @@ var Curve = Base.extend(
 	  include,
 	  tolerance
 	) {
-	  var pt = Line.intersect(
+	  const pt = Line.intersect(
 		v1[0], v1[1], v1[6], v1[7],
 		v2[0], v2[1], v2[6], v2[7]
 	  )
@@ -10173,25 +10240,27 @@ var Curve = Base.extend(
 	  include,
 	  tolerance
 	) {
-	  var min = Math.min,
-		max = Math.max,
-		abs = Math.abs,
-		minX1 = min(v1[0], v1[2], v1[4], v1[6]),
-		maxX1 = max(v1[0], v1[2], v1[4], v1[6]),
-		minY1 = min(v1[1], v1[3], v1[5], v1[7]),
-		maxY1 = max(v1[1], v1[3], v1[5], v1[7]),
-		minX2 = min(v2[0], v2[2], v2[4], v2[6]),
-		maxX2 = max(v2[0], v2[2], v2[4], v2[6]),
-		minY2 = min(v2[1], v2[3], v2[5], v2[7]),
-		maxY2 = max(v2[1], v2[3], v2[5], v2[7]),
-		epsilon = Numerical.getEpsilon(
-		  max(
-			abs(minX1), abs(maxX1), abs(minY1), abs(maxY1),
-			abs(minX2), abs(maxX2), abs(minY2), abs(maxY2)
-		  )
-		)
+	  let i
 
-	  var boundsEpsilon = max(
+	  const min = Math.min
+	  const max = Math.max
+	  const abs = Math.abs
+	  const minX1 = min(v1[0], v1[2], v1[4], v1[6])
+	  const maxX1 = max(v1[0], v1[2], v1[4], v1[6])
+	  const minY1 = min(v1[1], v1[3], v1[5], v1[7])
+	  const maxY1 = max(v1[1], v1[3], v1[5], v1[7])
+	  const minX2 = min(v2[0], v2[2], v2[4], v2[6])
+	  const maxX2 = max(v2[0], v2[2], v2[4], v2[6])
+	  const minY2 = min(v2[1], v2[3], v2[5], v2[7])
+	  const maxY2 = max(v2[1], v2[3], v2[5], v2[7])
+	  const epsilon = Numerical.getEpsilon(
+		max(
+		  abs(minX1), abs(maxX1), abs(minY1), abs(maxY1),
+		  abs(minX2), abs(maxX2), abs(minY2), abs(maxY2)
+		)
+	  )
+
+	  const boundsEpsilon = max(
 		epsilon,
 		tolerance || 1e-7
 	  )
@@ -10201,10 +10270,10 @@ var Curve = Base.extend(
 		maxY1 + boundsEpsilon > minY2 &&
 		minY1 - boundsEpsilon < maxY2
 	  ) {
-		var overlaps = getOverlaps(v1, v2, tolerance)
+		const overlaps = getOverlaps(v1, v2, tolerance)
 		if (overlaps) {
-		  for (var i = 0; i < 2; i++) {
-			var overlap = overlaps[i]
+		  for (i = 0; i < 2; i++) {
+			const overlap = overlaps[i]
 			addLocation(
 			  locations,
 			  include,
@@ -10216,17 +10285,17 @@ var Curve = Base.extend(
 			)
 		  }
 		} else {
-		  var straight1 = Curve.isStraight(v1),
-			straight2 = Curve.isStraight(v2),
-			straight = straight1 && straight2,
-			before = locations.length,
-			lineTolerance =
-			  (
-				tolerance <
-				1e-7
-			  )
-				? tolerance
-				: null
+		  const straight1 = Curve.isStraight(v1)
+		  const straight2 = Curve.isStraight(v2)
+		  const straight = straight1 && straight2
+		  const before = locations.length
+		  const lineTolerance =
+			(
+			  tolerance <
+			  1e-7
+			)
+			  ? tolerance
+			  : null
 		  if (straight) {
 			addLineIntersection(
 			  v1,
@@ -10267,13 +10336,13 @@ var Curve = Base.extend(
 			)
 		  }
 		  if (!straight || locations.length === before) {
-			var endEpsilon = tolerance || epsilon
-			for (var i = 0; i < 4; i++) {
-			  var isSecond = i >> 1,
-				t = i & 1,
-				v = isSecond ? v2 : v1,
-				x = v[t * 6],
-				y = v[t * 6 + 1]
+			const endEpsilon = tolerance || epsilon
+			for (i = 0; i < 4; i++) {
+			  const isSecond = i >> 1
+			  const t = i & 1
+			  const v = isSecond ? v2 : v1
+			  const x = v[t * 6]
+			  const y = v[t * 6 + 1]
 			  if (
 				isSecond
 				  ? x >= minX1 - endEpsilon &&
@@ -10285,7 +10354,7 @@ var Curve = Base.extend(
 					y >= minY2 - endEpsilon &&
 					y <= maxY2 + endEpsilon
 			  ) {
-				var u = Curve.getTimeOf(
+				const u = Curve.getTimeOf(
 				  isSecond ? v1 : v2,
 				  new Point(x, y),
 				  endEpsilon
@@ -10309,9 +10378,9 @@ var Curve = Base.extend(
 	}
 
 	function getSelfIntersection(v1, c1, locations, include) {
-	  var info = Curve.classify(v1)
+	  const info = Curve.classify(v1)
 	  if (info.type === 'loop') {
-		var roots = info.roots
+		const roots = info.roots
 		addLocation(locations, include, c1, roots[0], c1, roots[1])
 	  }
 	  return locations
@@ -10327,43 +10396,45 @@ var Curve = Base.extend(
 	  _tolerance,
 	  _collisions
 	) {
-	  var self = !curves2
-	  if (self) curves2 = curves1
-	  var length1 = curves1.length,
-		length2 = curves2.length,
-		values1 = new Array(length1),
-		values2 = self ? values1 : new Array(length2),
-		locations = []
+	  let i
 
-	  for (var i = 0; i < length1; i++) {
+	  const self = !curves2
+	  if (self) curves2 = curves1
+	  const length1 = curves1.length
+	  const length2 = curves2.length
+	  const values1 = new Array(length1)
+	  const values2 = self ? values1 : new Array(length2)
+	  const locations = []
+
+	  for (i = 0; i < length1; i++) {
 		values1[i] = curves1[i].getValues(matrix1)
 	  }
 	  if (!self) {
-		for (var i = 0; i < length2; i++) {
+		for (i = 0; i < length2; i++) {
 		  values2[i] = curves2[i].getValues(matrix2)
 		}
 	  }
-	  var boundsCollisions = (
+	  const boundsCollisions = (
 		_collisions ||
 		CollisionDetection.findCurveBoundsCollisions(
 		  values1, values2,
 		  _tolerance || 1e-7
 		)
 	  )
-	  for (var index1 = 0; index1 < length1; index1++) {
-		var curve1 = curves1[index1],
-		  v1 = values1[index1]
+	  for (let index1 = 0; index1 < length1; index1++) {
+		const curve1 = curves1[index1]
+		const v1 = values1[index1]
 		if (self) {
 		  getSelfIntersection(v1, curve1, locations, include)
 		}
-		var collisions1 = boundsCollisions[index1]
+		const collisions1 = boundsCollisions[index1]
 		if (collisions1) {
-		  for (var j = 0; j < collisions1.length; j++) {
+		  for (let j = 0; j < collisions1.length; j++) {
 			if (_returnFirst && locations.length) return locations
-			var index2 = collisions1[j]
+			const index2 = collisions1[j]
 			if (!self || index2 > index1) {
-			  var curve2 = curves2[index2],
-				v2 = values2[index2]
+			  const curve2 = curves2[index2]
+			  const v2 = values2[index2]
 			  getCurveIntersections(
 				v1,
 				v2,
@@ -10383,25 +10454,25 @@ var Curve = Base.extend(
 	function getOverlaps(v1, v2, tolerance) {
 
 	  function getSquaredLineLength(v) {
-		var x = v[6] - v[0],
-		  y = v[7] - v[1]
+		const x = v[6] - v[0]
+		const y = v[7] - v[1]
 		return x * x + y * y
 	  }
 
-	  var abs = Math.abs,
-		getDistance = Line.getDistance,
-		timeEpsilon = 1e-8,
-		geomEpsilon = tolerance || 1e-7,
-		straight1 = Curve.isStraight(v1),
-		straight2 = Curve.isStraight(v2),
-		straightBoth = straight1 && straight2,
-		flip = getSquaredLineLength(v1) < getSquaredLineLength(v2),
-		l1 = flip ? v2 : v1,
-		l2 = flip ? v1 : v2,
-		px = l1[0],
-		py = l1[1],
-		vx = l1[6] - px,
-		vy = l1[7] - py
+	  const abs = Math.abs
+	  const getDistance = Line.getDistance
+	  const timeEpsilon = 1e-8
+	  const geomEpsilon = tolerance || 1e-7
+	  let straight1 = Curve.isStraight(v1)
+	  let straight2 = Curve.isStraight(v2)
+	  let straightBoth = straight1 && straight2
+	  const flip = getSquaredLineLength(v1) < getSquaredLineLength(v2)
+	  const l1 = flip ? v2 : v1
+	  const l2 = flip ? v1 : v2
+	  const px = l1[0]
+	  const py = l1[1]
+	  const vx = l1[6] - px
+	  const vy = l1[7] - py
 	  if (
 		getDistance(px, py, vx, vy, l2[0], l2[1], true) < geomEpsilon &&
 		getDistance(px, py, vx, vy, l2[6], l2[7], true) < geomEpsilon
@@ -10422,22 +10493,22 @@ var Curve = Base.extend(
 		return null
 	  }
 
-	  var v = [v1, v2],
-		pairs = []
-	  for (var i = 0; i < 4 && pairs.length < 2; i++) {
-		var i1 = i & 1,
-		  i2 = i1 ^ 1,
-		  t1 = i >> 1,
-		  t2 = Curve.getTimeOf(
-			v[i1],
-			new Point(
-			  v[i2][t1 ? 6 : 0],
-			  v[i2][t1 ? 7 : 1]
-			),
-			geomEpsilon
-		  )
+	  const v = [v1, v2]
+	  let pairs = []
+	  for (let i = 0; i < 4 && pairs.length < 2; i++) {
+		const i1 = i & 1
+		const i2 = i1 ^ 1
+		const t1 = i >> 1
+		const t2 = Curve.getTimeOf(
+		  v[i1],
+		  new Point(
+			v[i2][t1 ? 6 : 0],
+			v[i2][t1 ? 7 : 1]
+		  ),
+		  geomEpsilon
+		)
 		if (t2 != null) {
-		  var pair = i1 ? [t1, t2] : [t2, t1]
+		  const pair = i1 ? [t1, t2] : [t2, t1]
 		  if (
 			!pairs.length || (
 			  abs(pair[0] - pairs[0][0]) > timeEpsilon &&
@@ -10452,8 +10523,8 @@ var Curve = Base.extend(
 	  if (pairs.length !== 2) {
 		pairs = null
 	  } else if (!straightBoth) {
-		var o1 = Curve.getPart(v1, pairs[0][0], pairs[1][0]),
-		  o2 = Curve.getPart(v2, pairs[0][1], pairs[1][1])
+		const o1 = Curve.getPart(v1, pairs[0][0], pairs[1][0])
+		const o2 = Curve.getPart(v2, pairs[0][1], pairs[1][1])
 		if (
 		  abs(o2[2] - o1[2]) > geomEpsilon ||
 		  abs(o2[3] - o1[3]) > geomEpsilon ||
@@ -10467,8 +10538,8 @@ var Curve = Base.extend(
 
 	return  {
 	  getIntersections: function (curve) {
-		var v1 = this.getValues(),
-		  v2 = curve && curve !== this && curve.getValues()
+		const v1 = this.getValues()
+		const v2 = curve && curve !== this && curve.getValues()
 		return v2
 		  ? getCurveIntersections(v1, v2, this, curve, [])
 		  : getSelfIntersection(v1, this, [])
@@ -10482,7 +10553,7 @@ var Curve = Base.extend(
   })()
 )
 
-var CurveLocation = Base.extend(
+const CurveLocation = Base.extend(
    {
 	_class: 'CurveLocation',
 
@@ -10494,7 +10565,7 @@ var CurveLocation = Base.extend(
 	  _distance
 	) {
 	  if (time >= 0.99999999) {
-		var next = curve.getNext()
+		const next = curve.getNext()
 		if (next) {
 		  time = 0
 		  curve = next
@@ -10522,7 +10593,7 @@ var CurveLocation = Base.extend(
 	},
 
 	_setSegment: function (segment) {
-	  var curve = segment.getCurve()
+	  const curve = segment.getCurve()
 	  if (curve) {
 		this._setCurve(curve)
 	  } else {
@@ -10536,10 +10607,10 @@ var CurveLocation = Base.extend(
 	},
 
 	getSegment: function () {
-	  var segment = this._segment
+	  let segment = this._segment
 	  if (!segment) {
-		var curve = this.getCurve(),
-		  time = this.getTime()
+		const curve = this.getCurve()
+		const time = this.getTime()
 		if (time === 0) {
 		  segment = curve._segment1
 		} else if (time === 1) {
@@ -10559,14 +10630,14 @@ var CurveLocation = Base.extend(
 	},
 
 	getCurve: function () {
-	  var path = this._path,
-		that = this
+	  const path = this._path
+	  const that = this
 	  if (path && path._version !== this._version) {
 		this._time = this._offset = this._curveOffset = this._curve = null
 	  }
 
 	  function trySegment(segment) {
-		var curve = segment && segment.getCurve()
+		const curve = segment && segment.getCurve()
 		if (curve && (that._time = curve.getTimeOf(that._point)) != null) {
 		  that._setCurve(curve)
 		  return curve
@@ -10582,18 +10653,18 @@ var CurveLocation = Base.extend(
 	},
 
 	getPath: function () {
-	  var curve = this.getCurve()
+	  const curve = this.getCurve()
 	  return curve && curve._path
 	},
 
 	getIndex: function () {
-	  var curve = this.getCurve()
+	  const curve = this.getCurve()
 	  return curve && curve.getIndex()
 	},
 
 	getTime: function () {
-	  var curve = this.getCurve(),
-		time = this._time
+	  const curve = this.getCurve()
+	  const time = this._time
 	  return curve && time == null
 		? (this._time = curve.getTimeOf(this._point))
 		: time
@@ -10606,14 +10677,14 @@ var CurveLocation = Base.extend(
 	},
 
 	getOffset: function () {
-	  var offset = this._offset
+	  let offset = this._offset
 	  if (offset == null) {
 		offset = 0
-		var path = this.getPath(),
-		  index = this.getIndex()
+		const path = this.getPath()
+		const index = this.getIndex()
 		if (path && index != null) {
-		  var curves = path.getCurves()
-		  for (var i = 0; i < index; i++) offset += curves[i].getLength()
+		  const curves = path.getCurves()
+		  for (let i = 0; i < index; i++) offset += curves[i].getLength()
 		}
 		this._offset = offset += this.getCurveOffset()
 	  }
@@ -10621,10 +10692,10 @@ var CurveLocation = Base.extend(
 	},
 
 	getCurveOffset: function () {
-	  var offset = this._curveOffset
+	  let offset = this._curveOffset
 	  if (offset == null) {
-		var curve = this.getCurve(),
-		  time = this.getTime()
+		const curve = this.getCurve()
+		const time = this.getTime()
 		this._curveOffset = offset = (
 		  time != null &&
 		  curve &&
@@ -10643,8 +10714,8 @@ var CurveLocation = Base.extend(
 	},
 
 	divide: function () {
-	  var curve = this.getCurve(),
-		res = curve && curve.divideAtTime(this.getTime())
+	  const curve = this.getCurve()
+	  const res = curve && curve.divideAtTime(this.getTime())
 	  if (res) {
 		this._setSegment(res._segment1)
 	  }
@@ -10652,9 +10723,9 @@ var CurveLocation = Base.extend(
 	},
 
 	split: function () {
-	  var curve = this.getCurve(),
-		path = curve._path,
-		res = curve && curve.splitAtTime(this.getTime())
+	  const curve = this.getCurve()
+	  const path = curve._path
+	  const res = curve && curve.splitAtTime(this.getTime())
 	  if (res) {
 		this._setSegment(path.getLastSegment())
 	  }
@@ -10662,20 +10733,20 @@ var CurveLocation = Base.extend(
 	},
 
 	equals: function (loc, _ignoreOther) {
-	  var res = this === loc
+	  let res = this === loc
 	  if (!res && loc instanceof CurveLocation) {
-		var c1 = this.getCurve(),
-		  c2 = loc.getCurve(),
-		  p1 = c1._path,
-		  p2 = c2._path
+		const c1 = this.getCurve()
+		const c2 = loc.getCurve()
+		const p1 = c1._path
+		const p2 = c2._path
 		if (p1 === p2) {
-		  var abs = Math.abs,
-			epsilon = 1e-7,
-			i1 = !_ignoreOther && this._intersection,
-			i2 = !_ignoreOther && loc._intersection,
-			diff = this.getPoint().isClose(loc.getPoint(), epsilon)
-			  ? abs(this.getOffset() - loc.getOffset())
-			  : Infinity
+		  const abs = Math.abs
+		  const epsilon = 1e-7
+		  const i1 = !_ignoreOther && this._intersection
+		  const i2 = !_ignoreOther && loc._intersection
+		  const diff = this.getPoint().isClose(loc.getPoint(), epsilon)
+			? abs(this.getOffset() - loc.getOffset())
+			: Infinity
 		  res = (
 			(diff < epsilon || p1 && abs(p1.getLength() - diff) < epsilon) &&
 			(!i1 && !i2 || i1 && i2 && i1.equals(i2, true))
@@ -10686,13 +10757,13 @@ var CurveLocation = Base.extend(
 	},
 
 	toString: function () {
-	  var parts = [],
-		point = this.getPoint(),
-		f = Formatter.instance
+	  const parts = []
+	  const point = this.getPoint()
+	  const f = Formatter.instance
 	  if (point) parts.push('point: ' + point)
-	  var index = this.getIndex()
+	  const index = this.getIndex()
 	  if (index != null) parts.push('index: ' + index)
-	  var time = this.getTime()
+	  const time = this.getTime()
 	  if (time != null) parts.push('time: ' + f.number(time))
 	  if (this._distance != null)
 		parts.push('distance: ' + f.number(this._distance))
@@ -10700,10 +10771,10 @@ var CurveLocation = Base.extend(
 	},
 
 	isTouching: function () {
-	  var inter = this._intersection
+	  const inter = this._intersection
 	  if (inter && this.getTangent().isCollinear(inter.getTangent())) {
-		var curve1 = this.getCurve(),
-		  curve2 = inter.getCurve()
+		const curve1 = this.getCurve()
+		const curve2 = inter.getCurve()
 		return !(
 		  curve1.isStraight() &&
 		  curve2.isStraight() &&
@@ -10714,34 +10785,34 @@ var CurveLocation = Base.extend(
 	},
 
 	isCrossing: function () {
-	  var inter = this._intersection
+	  const inter = this._intersection
 	  if (!inter) return false
-	  var t1 = this.getTime(),
-		t2 = inter.getTime(),
-		tMin = 1e-8,
-		tMax = 1 - tMin,
-		t1Inside = t1 >= tMin && t1 <= tMax,
-		t2Inside = t2 >= tMin && t2 <= tMax
+	  const t1 = this.getTime()
+	  const t2 = inter.getTime()
+	  const tMin = 1e-8
+	  const tMax = 1 - tMin
+	  const t1Inside = t1 >= tMin && t1 <= tMax
+	  const t2Inside = t2 >= tMin && t2 <= tMax
 	  if (t1Inside && t2Inside) return !this.isTouching()
-	  var c2 = this.getCurve(),
-		c1 = c2 && t1 < tMin ? c2.getPrevious() : c2,
-		c4 = inter.getCurve(),
-		c3 = c4 && t2 < tMin ? c4.getPrevious() : c4
+	  let c2 = this.getCurve()
+	  const c1 = c2 && t1 < tMin ? c2.getPrevious() : c2
+	  let c4 = inter.getCurve()
+	  const c3 = c4 && t2 < tMin ? c4.getPrevious() : c4
 	  if (t1 > tMax) c2 = c2.getNext()
 	  if (t2 > tMax) c4 = c4.getNext()
 	  if (!c1 || !c2 || !c3 || !c4) return false
 
-	  var offsets = []
+	  const offsets = []
 
 	  function addOffsets(curve, end) {
-		var v = curve.getValues(),
-		  roots = Curve.classify(v).roots || Curve.getPeaks(v),
-		  count = roots.length,
-		  offset = Curve.getLength(
-			v,
-			end && count ? roots[count - 1] : 0,
-			!end && count ? roots[0] : 1
-		  )
+		const v = curve.getValues()
+		const roots = Curve.classify(v).roots || Curve.getPeaks(v)
+		const count = roots.length
+		const offset = Curve.getLength(
+		  v,
+		  end && count ? roots[count - 1] : 0,
+		  !end && count ? roots[0] : 1
+		)
 		offsets.push(count ? offset : offset / 32)
 	  }
 
@@ -10760,20 +10831,20 @@ var CurveLocation = Base.extend(
 		addOffsets(c3, true)
 		addOffsets(c4, false)
 	  }
-	  var pt = this.getPoint(),
-		offset = Math.min.apply(Math, offsets),
-		v2 = t1Inside
-		  ? c2.getTangentAtTime(t1)
-		  : c2.getPointAt(offset).subtract(pt),
-		v1 = t1Inside ? v2.negate() : c1.getPointAt(-offset).subtract(pt),
-		v4 = t2Inside
-		  ? c4.getTangentAtTime(t2)
-		  : c4.getPointAt(offset).subtract(pt),
-		v3 = t2Inside ? v4.negate() : c3.getPointAt(-offset).subtract(pt),
-		a1 = v1.getAngle(),
-		a2 = v2.getAngle(),
-		a3 = v3.getAngle(),
-		a4 = v4.getAngle()
+	  const pt = this.getPoint()
+	  const offset = Math.min.apply(Math, offsets)
+	  const v2 = t1Inside
+		? c2.getTangentAtTime(t1)
+		: c2.getPointAt(offset).subtract(pt)
+	  const v1 = t1Inside ? v2.negate() : c1.getPointAt(-offset).subtract(pt)
+	  const v4 = t2Inside
+		? c4.getTangentAtTime(t2)
+		: c4.getPointAt(offset).subtract(pt)
+	  const v3 = t2Inside ? v4.negate() : c3.getPointAt(-offset).subtract(pt)
+	  const a1 = v1.getAngle()
+	  const a2 = v2.getAngle()
+	  const a3 = v3.getAngle()
+	  const a4 = v4.getAngle()
 	  return !!(
 		t1Inside
 		  ? (isInRange(a1, a3, a4) ^ isInRange(a2, a3, a4)) &&
@@ -10790,10 +10861,10 @@ var CurveLocation = Base.extend(
   Base.each(
 	Curve._evaluateMethods,
 	function (name) {
-	  var get = name + 'At'
+	  const get = name + 'At'
 	  this[name] = function () {
-		var curve = this.getCurve(),
-		  time = this.getTime()
+		const curve = this.getCurve()
+		const time = this.getTime()
 		return time != null && curve && curve[get](time, true)
 	  }
 	},
@@ -10804,13 +10875,15 @@ var CurveLocation = Base.extend(
   new (function () {
 
 	function insert(locations, loc, merge) {
-	  var length = locations.length,
-		l = 0,
-		r = length - 1
+	  let found
+
+	  const length = locations.length
+	  let l = 0
+	  let r = length - 1
 
 	  function search(index, dir) {
-		for (var i = index + dir; i >= -1 && i <= length; i += dir) {
-		  var loc2 = locations[((i % length) + length) % length]
+		for (let i = index + dir; i >= -1 && i <= length; i += dir) {
+		  const loc2 = locations[((i % length) + length) % length]
 		  if (
 			!loc
 			  .getPoint()
@@ -10823,9 +10896,9 @@ var CurveLocation = Base.extend(
 	  }
 
 	  while (l <= r) {
-		var m = (l + r) >>> 1,
-		  loc2 = locations[m],
-		  found
+		const m = (l + r) >>> 1
+		const loc2 = locations[m]
+
 		if (
 		  merge &&
 		  (found = loc.equals(loc2) ? loc2 : search(m, -1) || search(m, 1))
@@ -10835,16 +10908,16 @@ var CurveLocation = Base.extend(
 		  }
 		  return found
 		}
-		var path1 = loc.getPath(),
-		  path2 = loc2.getPath(),
-		  diff =
-			path1 !== path2
-			  ?
-				path1._id - path2._id
-			  :
-				loc.getIndex() +
-				loc.getTime() -
-				(loc2.getIndex() + loc2.getTime())
+		const path1 = loc.getPath()
+		const path2 = loc2.getPath()
+		const diff =
+		  path1 !== path2
+			?
+			  path1._id - path2._id
+			:
+			  loc.getIndex() +
+			  loc.getTime() -
+			  (loc2.getIndex() + loc2.getTime())
 		if (diff < 0) {
 		  r = m - 1
 		} else {
@@ -10860,8 +10933,8 @@ var CurveLocation = Base.extend(
 		insert: insert,
 
 		expand: function (locations) {
-		  var expanded = locations.slice()
-		  for (var i = locations.length - 1; i >= 0; i--) {
+		  const expanded = locations.slice()
+		  for (let i = locations.length - 1; i >= 0; i--) {
 			insert(expanded, locations[i]._intersection, false)
 		  }
 		  return expanded
@@ -10871,7 +10944,7 @@ var CurveLocation = Base.extend(
   })()
 )
 
-var PathItem = Item.extend(
+const PathItem = Item.extend(
    {
 	_class: 'PathItem',
 	_selectBounds: false,
@@ -10882,7 +10955,7 @@ var PathItem = Item.extend(
 	},
 
 	_scaleStroke: function (matrix) {
-	  var style = this._style
+	  const style = this._style
 	  if (
 		this._project._scope.settings.scaleStrokes &&
 		style.getStrokeScaling()
@@ -10896,7 +10969,9 @@ var PathItem = Item.extend(
 
 	statics:  {
 	  create: function (arg) {
-		var data, segments, compound
+		let data
+		let segments
+		let compound
 		if (Base.isPlainObject(arg)) {
 		  segments = arg.segments
 		  data = arg.pathData
@@ -10906,7 +10981,7 @@ var PathItem = Item.extend(
 		  data = arg
 		}
 		if (segments) {
-		  var first = segments[0]
+		  const first = segments[0]
 		  compound = first && Array.isArray(first[0])
 		} else if (data) {
 		  compound = (
@@ -10914,7 +10989,7 @@ var PathItem = Item.extend(
 			/z\s*\S+/i.test(data)
 		  )
 		}
-		var ctor = compound ? CompoundPath : Path
+		const ctor = compound ? CompoundPath : Path
 		return new ctor(arg)
 	  }
 	},
@@ -10928,28 +11003,31 @@ var PathItem = Item.extend(
 	},
 
 	setClockwise: function (clockwise) {
-	  if (this.isClockwise() != (clockwise = !!clockwise)) this.reverse()
+	  if (this.isClockwise() != !!clockwise) this.reverse()
 	},
 
 	setPathData: function (data) {
+	  let move
+	  let j
+	  let coord
 
-	  var parts = data && data.match(/[mlhvcsqtaz][^mlhvcsqtaz]*/gi),
-		coords,
-		relative = false,
-		previous,
-		control,
-		current = new Point(),
-		start = new Point(),
-		number = '([+-]?(?:\\d*\\.\\d+|\\d+\\.?)(?:[eE][+-]?\\d+)?)',
-		numbers = new RegExp(number, 'g'),
-		flag = '([01])',
-		arcs = new RegExp(
-		  [number, number, number, flag, flag, number, number].join('[\\s,]*'),
-		  'g'
-		)
+	  const parts = data && data.match(/[mlhvcsqtaz][^mlhvcsqtaz]*/gi)
+	  let coords
+	  let relative = false
+	  let previous
+	  let control
+	  let current = new Point()
+	  let start = new Point()
+	  const number = '([+-]?(?:\\d*\\.\\d+|\\d+\\.?)(?:[eE][+-]?\\d+)?)'
+	  const numbers = new RegExp(number, 'g')
+	  const flag = '([01])'
+	  const arcs = new RegExp(
+		[number, number, number, flag, flag, number, number].join('[\\s,]*'),
+		'g'
+	  )
 
 	  function getCoord(index, coord) {
-		var val = +coords[index]
+		let val = +coords[index]
 		if (relative) val += current[coord]
 		return val
 	  }
@@ -10963,19 +11041,19 @@ var PathItem = Item.extend(
 
 	  this.clear()
 
-	  for (var i = 0, l = parts && parts.length; i < l; i++) {
-		var part = parts[i],
-		  command = part[0],
-		  lower = command.toLowerCase()
+	  for (let i = 0, l = parts && parts.length; i < l; i++) {
+		const part = parts[i]
+		const command = part[0]
+		const lower = command.toLowerCase()
 		coords = part.match(numbers)
-		var length = coords && coords.length
+		const length = coords && coords.length
 		relative = command === lower
 		if (previous === 'z' && !/[mz]/.test(lower)) this.moveTo(current)
 		switch (lower) {
 		  case 'm':
 		  case 'l':
-			var move = lower === 'm'
-			for (var j = 0; j < length; j += 2) {
+			move = lower === 'm'
+			for (j = 0; j < length; j += 2) {
 			  this[move ? 'moveTo' : 'lineTo']((current = getPoint(j)))
 			  if (move) {
 				start = current
@@ -10986,16 +11064,16 @@ var PathItem = Item.extend(
 			break
 		  case 'h':
 		  case 'v':
-			var coord = lower === 'h' ? 'x' : 'y'
+			coord = lower === 'h' ? 'x' : 'y'
 			current = current.clone()
-			for (var j = 0; j < length; j++) {
+			for (j = 0; j < length; j++) {
 			  current[coord] = getCoord(j, coord)
 			  this.lineTo(current)
 			}
 			control = current
 			break
 		  case 'c':
-			for (var j = 0; j < length; j += 6) {
+			for (j = 0; j < length; j += 6) {
 			  this.cubicCurveTo(
 				getPoint(j),
 				(control = getPoint(j + 2)),
@@ -11004,7 +11082,7 @@ var PathItem = Item.extend(
 			}
 			break
 		  case 's':
-			for (var j = 0; j < length; j += 4) {
+			for (j = 0; j < length; j += 4) {
 			  this.cubicCurveTo(
 				/[cs]/.test(previous)
 				  ? current.multiply(2).subtract(control)
@@ -11016,7 +11094,7 @@ var PathItem = Item.extend(
 			}
 			break
 		  case 'q':
-			for (var j = 0; j < length; j += 4) {
+			for (j = 0; j < length; j += 4) {
 			  this.quadraticCurveTo(
 				(control = getPoint(j)),
 				(current = getPoint(j + 2))
@@ -11024,7 +11102,7 @@ var PathItem = Item.extend(
 			}
 			break
 		  case 't':
-			for (var j = 0; j < length; j += 2) {
+			for (j = 0; j < length; j += 2) {
 			  this.quadraticCurveTo(
 				(control = /[qt]/.test(previous)
 				  ? current.multiply(2).subtract(control)
@@ -11059,7 +11137,7 @@ var PathItem = Item.extend(
 	},
 
 	_contains: function (point) {
-		var winding = point.isInside(
+		const winding = point.isInside(
 				this.getBounds({ internal: true, handle: true }))
 					? this._getWinding(point)
 					: {};
@@ -11069,12 +11147,14 @@ var PathItem = Item.extend(
 	},
 
 	getIntersections: function (path, include, _matrix, _returnFirst) {
-	  var self = this === path || !path,
-		matrix1 = this._matrix._orNullIfIdentity(),
-		matrix2 = self ? matrix1 : (_matrix || path._matrix)._orNullIfIdentity()
-	  var bounds1 = !self && this.getBounds(matrix1),
-		bounds2 = !self && path.getBounds(matrix2),
-		abs = Math.abs
+	  const self = this === path || !path
+	  const matrix1 = this._matrix._orNullIfIdentity()
+	  const matrix2 = self
+		? matrix1
+		: (_matrix || path._matrix)._orNullIfIdentity()
+	  const bounds1 = !self && this.getBounds(matrix1)
+	  const bounds2 = !self && path.getBounds(matrix2)
+	  const abs = Math.abs
 	  return (
 		self ||
 		bounds1.intersects(
@@ -11107,12 +11187,12 @@ var PathItem = Item.extend(
 	},
 
 	getNearestLocation: function () {
-	  var point = Point.read(arguments),
-		curves = this.getCurves(),
-		minDist = Infinity,
-		minLoc = null
-	  for (var i = 0, l = curves.length; i < l; i++) {
-		var loc = curves[i].getNearestLocation(point)
+	  const point = Point.read(arguments)
+	  const curves = this.getCurves()
+	  let minDist = Infinity
+	  let minLoc = null
+	  for (let i = 0, l = curves.length; i < l; i++) {
+		const loc = curves[i].getNearestLocation(point)
 		if (loc._distance < minDist) {
 		  minDist = loc._distance
 		  minLoc = loc
@@ -11122,16 +11202,18 @@ var PathItem = Item.extend(
 	},
 
 	getNearestPoint: function () {
-	  var loc = this.getNearestLocation.apply(this, arguments)
+	  const loc = this.getNearestLocation.apply(this, arguments)
 	  return loc ? loc.getPoint() : loc
 	},
 
 	interpolate: function (from, to, factor) {
-	  var isPath = !this._children,
-		name = isPath ? '_segments' : '_children',
-		itemsFrom = from[name],
-		itemsTo = to[name],
-		items = this[name]
+	  let i
+
+	  const isPath = !this._children
+	  const name = isPath ? '_segments' : '_children'
+	  const itemsFrom = from[name]
+	  const itemsTo = to[name]
+	  const items = this[name]
 	  if (!itemsFrom || !itemsTo || itemsFrom.length !== itemsTo.length) {
 		throw new Error(
 		  'Invalid operands in interpolate() call: ' +
@@ -11140,17 +11222,17 @@ var PathItem = Item.extend(
 		  to
 		)
 	  }
-	  var current = items.length,
-		length = itemsTo.length
+	  const current = items.length
+	  const length = itemsTo.length
 	  if (current < length) {
-		var ctor = isPath ? Segment : Path
-		for (var i = current; i < length; i++) {
+		const ctor = isPath ? Segment : Path
+		for (i = current; i < length; i++) {
 		  this.add(new ctor())
 		}
 	  } else if (current > length) {
 		this[isPath ? 'removeSegments' : 'removeChildren'](length, current)
 	  }
-	  for (var i = 0; i < length; i++) {
+	  for (i = 0; i < length; i++) {
 		items[i].interpolate(itemsFrom[i], itemsTo[i], factor)
 	  }
 	  if (isPath) {
@@ -11160,26 +11242,26 @@ var PathItem = Item.extend(
 	},
 
 	compare: function (path) {
-	  var ok = false
+	  let ok = false
 	  if (path) {
-		var paths1 = this._children || [this],
-		  paths2 = path._children ? path._children.slice() : [path],
-		  length1 = paths1.length,
-		  length2 = paths2.length,
-		  matched = [],
-		  count = 0
+		const paths1 = this._children || [this]
+		const paths2 = path._children ? path._children.slice() : [path]
+		const length1 = paths1.length
+		const length2 = paths2.length
+		const matched = []
+		let count = 0
 		ok = true
-		var boundsOverlaps = CollisionDetection.findItemBoundsCollisions(
+		const boundsOverlaps = CollisionDetection.findItemBoundsCollisions(
 		  paths1,
 		  paths2,
 		  Numerical.GEOMETRIC_EPSILON
 		)
-		for (var i1 = length1 - 1; i1 >= 0 && ok; i1--) {
-		  var path1 = paths1[i1]
+		for (let i1 = length1 - 1; i1 >= 0 && ok; i1--) {
+		  const path1 = paths1[i1]
 		  ok = false
-		  var pathBoundsOverlaps = boundsOverlaps[i1]
+		  const pathBoundsOverlaps = boundsOverlaps[i1]
 		  if (pathBoundsOverlaps) {
-			for (var i2 = pathBoundsOverlaps.length - 1; i2 >= 0 && !ok; i2--) {
+			for (let i2 = pathBoundsOverlaps.length - 1; i2 >= 0 && !ok; i2--) {
 			  if (path1.compare(paths2[pathBoundsOverlaps[i2]])) {
 				if (!matched[pathBoundsOverlaps[i2]]) {
 				  matched[pathBoundsOverlaps[i2]] = true
@@ -11198,7 +11280,7 @@ var PathItem = Item.extend(
   }
 )
 
-var Path = PathItem.extend(
+const Path = PathItem.extend(
    {
 	_class: 'Path',
 	_serializeFields: {
@@ -11212,19 +11294,19 @@ var Path = PathItem.extend(
 	  this._closed = false
 	  this._segments = []
 	  this._version = 0
-	  var args = arguments,
-		segments = Array.isArray(arg)
-		  ? typeof arg[0] === 'object'
-			? arg
-			: args
-		  :
-			(
-				arg &&
-				arg.size === undefined &&
-				(arg.x !== undefined || arg.point !== undefined)
-			  )
-			? args
-			: null
+	  const args = arguments
+	  const segments = Array.isArray(arg)
+		? typeof arg[0] === 'object'
+		  ? arg
+		  : args
+		:
+		  (
+			  arg &&
+			  arg.size === undefined &&
+			  (arg.x !== undefined || arg.point !== undefined)
+			)
+		  ? args
+		  : null
 	  if (segments && segments.length > 0) {
 		this.setSegments(segments)
 	  } else {
@@ -11247,7 +11329,7 @@ var Path = PathItem.extend(
 	},
 
 	copyContent: function (source) {
-	  var profile = source._strokeProfile
+	  const profile = source._strokeProfile
 	  this.setSegments(source._segments)
 	  this._closed = source._closed
 	  if (profile || this._strokeProfile) {
@@ -11273,7 +11355,7 @@ var Path = PathItem.extend(
 		if (flags & 32) {
 		  this._version++
 		} else if (this._curves) {
-		  for (var i = 0, l = this._curves.length; i < l; i++)
+		  for (let i = 0, l = this._curves.length; i < l; i++)
 			this._curves[i]._changed()
 		}
 	  }
@@ -11294,16 +11376,16 @@ var Path = PathItem.extend(
 	},
 
 	_applyEffects: function _applyEffects(art) {
-	  var output = _applyEffects.base.call(this, art)
+	  let output = _applyEffects.base.call(this, art)
 	  if (this._hasStrokeProfile()) {
 		if (output) {
-		  var effect = Effect.get('outline')
+		  const effect = Effect.get('outline')
 		  output = (
 			effect && effect.onApply({ art: output, item: this }) ||
 			output
 		  )
 		} else {
-		  var outline = this._getStrokeOutline().clone({ insert: false })
+		  const outline = this._getStrokeOutline().clone({ insert: false })
 		  outline.set({
 			fillColor: this.getStrokeColor(),
 			strokeColor: null
@@ -11326,7 +11408,7 @@ var Path = PathItem.extend(
 	},
 
 	getStyle: function () {
-	  var parent = this._parent
+	  const parent = this._parent
 	  return (parent instanceof CompoundPath ? parent : this)._style
 	},
 
@@ -11335,27 +11417,27 @@ var Path = PathItem.extend(
 	},
 
 	setSegments: function (segments) {
-	  var fullySelected = this.isFullySelected(),
-		length = segments && segments.length,
-		named = this._namedSegments,
-		profile = this._strokeProfile,
-		pathLength = profile && this.getLength(),
-		fractions = (
-		  profile &&
-		  profile.map(function (stop) {
-			return pathLength ? stop.getOffset() / pathLength : 0
-		  })
-		)
+	  const fullySelected = this.isFullySelected()
+	  let length = segments && segments.length
+	  const named = this._namedSegments
+	  const profile = this._strokeProfile
+	  let pathLength = profile && this.getLength()
+	  const fractions = (
+		profile &&
+		profile.map(function (stop) {
+		  return pathLength ? stop.getOffset() / pathLength : 0
+		})
+	  )
 	  this._strokeProfile = null
 	  if (named) {
-		for (var name in named) delete this._segments[name]
+		for (const name in named) delete this._segments[name]
 		this._namedSegments = null
 	  }
 	  this._segments.length = 0
 	  this._segmentSelection = 0
 	  this._curves = undefined
 	  if (length) {
-		var last = segments[length - 1]
+		const last = segments[length - 1]
 		if (typeof last === 'boolean') {
 		  this.setClosed(last)
 		  length--
@@ -11366,7 +11448,7 @@ var Path = PathItem.extend(
 	  if (profile) {
 		this._strokeProfile = profile
 		pathLength = this.getLength()
-		for (var i = 0, l = profile.length; i < l; i++)
+		for (let i = 0, l = profile.length; i < l; i++)
 		  profile[i]._index = this._getIndexAt(fractions[i] * pathLength)
 		this._sortStrokeProfile()
 	  }
@@ -11381,12 +11463,12 @@ var Path = PathItem.extend(
 	},
 
 	getCurves: function () {
-	  var curves = this._curves,
-		segments = this._segments
+	  let curves = this._curves
+	  const segments = this._segments
 	  if (!curves) {
-		var length = this._countCurves()
+		const length = this._countCurves()
 		curves = this._curves = new Array(length)
-		for (var i = 0; i < length; i++)
+		for (let i = 0; i < length; i++)
 		  curves[i] = new Curve(
 			this,
 			segments[i],
@@ -11401,7 +11483,7 @@ var Path = PathItem.extend(
 	},
 
 	getLastCurve: function () {
-	  var curves = this.getCurves()
+	  const curves = this.getCurves()
 	  return curves[curves.length - 1]
 	},
 
@@ -11412,14 +11494,14 @@ var Path = PathItem.extend(
 	setClosed: function (closed) {
 	  if (this._closed != (closed = !!closed)) {
 		if (!closed && this._strokeProfile) {
-		  var last = this._segments.length - 1
+		  const last = this._segments.length - 1
 		  this._filterStrokeProfile(function (stop) {
 			return stop._index <= last
 		  })
 		}
 		this._closed = closed
 		if (this._curves) {
-		  var length = (this._curves.length = this._countCurves())
+		  const length = (this._curves.length = this._countCurves())
 		  if (closed)
 			this._curves[length - 1] = new Curve(
 			  this,
@@ -11435,20 +11517,20 @@ var Path = PathItem.extend(
 	beans: true,
 
 	getPathData: function (_matrix, _precision) {
-	  var segments = this._segments,
-		length = segments.length,
-		f = new Formatter(_precision),
-		coords = new Array(6),
-		first = true,
-		curX,
-		curY,
-		prevX,
-		prevY,
-		inX,
-		inY,
-		outX,
-		outY,
-		parts = []
+	  const segments = this._segments
+	  const length = segments.length
+	  const f = new Formatter(_precision)
+	  const coords = new Array(6)
+	  let first = true
+	  let curX
+	  let curY
+	  let prevX
+	  let prevY
+	  let inX
+	  let inY
+	  let outX
+	  let outY
+	  const parts = []
 
 	  function addSegment(segment, skipLine) {
 		segment._transformCoordinates(_matrix, coords)
@@ -11467,8 +11549,8 @@ var Path = PathItem.extend(
 			outY === prevY
 		  ) {
 			if (!skipLine) {
-			  var dx = curX - prevX,
-				dy = curY - prevY
+			  const dx = curX - prevX
+			  const dy = curY - prevY
 			  parts.push(
 				dx === 0
 				  ? 'v' + f.number(dy)
@@ -11496,7 +11578,7 @@ var Path = PathItem.extend(
 
 	  if (!length) return ''
 
-	  for (var i = 0; i < length; i++) addSegment(segments[i])
+	  for (let i = 0; i < length; i++) addSegment(segments[i])
 	  if (this._closed && length > 0) {
 		addSegment(segments[0], true)
 		parts.push('z')
@@ -11509,22 +11591,25 @@ var Path = PathItem.extend(
 	},
 
 	_transformContent: function (matrix) {
-	  var segments = this._segments,
-		coords = new Array(6)
-	  for (var i = 0, l = segments.length; i < l; i++)
+	  const segments = this._segments
+	  const coords = new Array(6)
+	  for (let i = 0, l = segments.length; i < l; i++)
 		segments[i]._transformCoordinates(matrix, coords, true)
 	  this._scaleStroke(matrix)
 	  return true
 	},
 
 	_add: function (segs, index) {
-	  var segments = this._segments,
-		curves = this._curves,
-		amount = segs.length,
-		append = index == null,
-		index = append ? segments.length : index
-	  for (var i = 0; i < amount; i++) {
-		var segment = segs[i]
+	  let i
+	  let l
+
+	  const segments = this._segments
+	  const curves = this._curves
+	  const amount = segs.length
+	  const append = index == null
+	  index = append ? segments.length : index
+	  for (i = 0; i < amount; i++) {
+		let segment = segs[i]
 		if (segment._path) segment = segs[i] = segment.clone()
 		segment._path = this
 		segment._index = index + i
@@ -11536,19 +11621,20 @@ var Path = PathItem.extend(
 		Base.push(segments, segs)
 	  } else {
 		segments.splice.apply(segments, [index, 0].concat(segs))
-		for (var i = index + amount, l = segments.length; i < l; i++)
+		for (i = index + amount, l = segments.length; i < l; i++)
 		  segments[i]._index = i
 	  }
 	  if (curves) {
-		var total = this._countCurves(),
-		  start = index > 0 && index + amount - 1 === total ? index - 1 : index,
-		  insert = start,
-		  end = Math.min(start + amount, total)
+		const total = this._countCurves()
+		const start =
+		  index > 0 && index + amount - 1 === total ? index - 1 : index
+		let insert = start
+		const end = Math.min(start + amount, total)
 		if (segs._curves) {
 		  curves.splice.apply(curves, [start, 0].concat(segs._curves))
 		  insert += segs._curves.length
 		}
-		for (var i = insert; i < end; i++)
+		for (i = insert; i < end; i++)
 		  curves.splice(i, 0, new Curve(this, null, null))
 		this._adjustCurves(start, end)
 	  }
@@ -11558,10 +11644,10 @@ var Path = PathItem.extend(
 	},
 
 	_adjustCurves: function (start, end) {
-	  var segments = this._segments,
-		curves = this._curves,
-		curve
-	  for (var i = start; i < end; i++) {
+	  const segments = this._segments
+	  const curves = this._curves
+	  let curve
+	  for (let i = start; i < end; i++) {
 		curve = curves[i]
 		curve._path = this
 		curve._segment1 = segments[i]
@@ -11582,12 +11668,12 @@ var Path = PathItem.extend(
 	},
 
 	_countCurves: function () {
-	  var length = this._segments.length
+	  const length = this._segments.length
 	  return !this._closed && length > 0 ? length - 1 : length
 	},
 
 	add: function (segment1 ) {
-	  var args = arguments
+	  const args = arguments
 	  return args.length > 1 && typeof segment1 !== 'number'
 		?
 		  this._add(Segment.readList(args))
@@ -11596,7 +11682,7 @@ var Path = PathItem.extend(
 	},
 
 	insert: function (index, segment1 ) {
-	  var args = arguments
+	  const args = arguments
 	  return args.length > 2 && typeof segment1 !== 'number'
 		?
 		  this._add(Segment.readList(args, 1), index)
@@ -11625,22 +11711,26 @@ var Path = PathItem.extend(
 	},
 
 	removeSegments: function (start, end, _includeCurves) {
+	  let curves
+	  let i
+	  let l
+
 	  start = start || 0
 	  end = Base.pick(end, this._segments.length)
 	  if (start > end && this._closed)
 		return this.removeSegments(start).concat(
 		  this.removeSegments(0, end)
 		)
-	  var segments = this._segments,
-		count = segments.length
+	  const segments = this._segments
+	  const count = segments.length
 	  if (this._strokeProfile && start < Math.min(end, count))
 		this._removeStrokeProfile(start, Math.min(end, count))
-	  var curves = this._curves,
-		removed = segments.splice(start, end - start),
-		amount = removed.length
+	  curves = this._curves
+	  const removed = segments.splice(start, end - start)
+	  const amount = removed.length
 	  if (!amount) return removed
-	  for (var i = 0; i < amount; i++) {
-		var segment = removed[i]
+	  for (i = 0; i < amount; i++) {
+		const segment = removed[i]
 		if (segment._selection)
 		  this._updateSelection(segment, segment._selection, 0)
 		if (segment._name)
@@ -11652,15 +11742,14 @@ var Path = PathItem.extend(
 		  )
 		segment._index = segment._path = null
 	  }
-	  for (var i = start, l = segments.length; i < l; i++)
-		segments[i]._index = i
+	  for (i = start, l = segments.length; i < l; i++) segments[i]._index = i
 	  if (curves) {
-		var index =
-			start > 0 && end === count + (this._closed ? 1 : 0)
-			  ? start - 1
-			  : start,
-		  curves = curves.splice(index, amount)
-		for (var i = curves.length - 1; i >= 0; i--) curves[i]._path = null
+		const index =
+		  start > 0 && end === count + (this._closed ? 1 : 0)
+			? start - 1
+			: start
+		curves = curves.splice(index, amount)
+		for (i = curves.length - 1; i >= 0; i--) curves[i]._path = null
 		if (_includeCurves) removed._curves = curves.slice(1)
 		this._adjustCurves(index, index)
 	  }
@@ -11671,24 +11760,24 @@ var Path = PathItem.extend(
 	clear: '#removeSegments',
 
 	hasHandles: function () {
-	  var segments = this._segments
-	  for (var i = 0, l = segments.length; i < l; i++) {
+	  const segments = this._segments
+	  for (let i = 0, l = segments.length; i < l; i++) {
 		if (segments[i].hasHandles()) return true
 	  }
 	  return false
 	},
 
 	clearHandles: function () {
-	  var segments = this._segments
-	  for (var i = 0, l = segments.length; i < l; i++)
+	  const segments = this._segments
+	  for (let i = 0, l = segments.length; i < l; i++)
 		segments[i].clearHandles()
 	},
 
 	getLength: function () {
 	  if (this._length == null) {
-		var curves = this.getCurves(),
-		  length = 0
-		for (var i = 0, l = curves.length; i < l; i++)
+		const curves = this.getCurves()
+		let length = 0
+		for (let i = 0, l = curves.length; i < l; i++)
 		  length += curves[i].getLength()
 		this._length = length
 	  }
@@ -11696,13 +11785,13 @@ var Path = PathItem.extend(
 	},
 
 	getArea: function () {
-	  var area = this._area
+	  let area = this._area
 	  if (area == null) {
-		var segments = this._segments,
-		  closed = this._closed
+		const segments = this._segments
+		const closed = this._closed
 		area = 0
-		for (var i = 0, l = segments.length; i < l; i++) {
-		  var last = i + 1 === l
+		for (let i = 0, l = segments.length; i < l; i++) {
+		  const last = i + 1 === l
 		  area += Curve.getArea(
 			Curve.getValues(
 			  segments[i], segments[last ? 0 : i + 1],
@@ -11716,7 +11805,7 @@ var Path = PathItem.extend(
 	},
 
 	isFullySelected: function () {
-	  var length = this._segments.length
+	  const length = this._segments.length
 	  return (
 		this.isSelected() &&
 		length > 0 && (
@@ -11737,46 +11826,46 @@ var Path = PathItem.extend(
 	},
 
 	_selectSegments: function (selected) {
-	  var segments = this._segments,
-		length = segments.length,
-		selection = selected ? 7 : 0
+	  const segments = this._segments
+	  const length = segments.length
+	  const selection = selected ? 7 : 0
 	  this._segmentSelection = selection * length
-	  for (var i = 0; i < length; i++) segments[i]._selection = selection
+	  for (let i = 0; i < length; i++) segments[i]._selection = selection
 	},
 
 	_updateSelection: function (segment, oldSelection, newSelection) {
 	  segment._selection = newSelection
-	  var selection = (this._segmentSelection += newSelection - oldSelection)
+	  const selection = (this._segmentSelection += newSelection - oldSelection)
 	  if (selection > 0) this.setSelected(true)
 	},
 
 	divideAt: function (location) {
-	  var loc = this.getLocationAt(location),
-		curve
+	  const loc = this.getLocationAt(location)
+	  let curve
 	  return loc && (curve = loc.getCurve().divideAt(loc.getCurveOffset()))
 		? curve._segment1
 		: null
 	},
 
 	splitAt: function (location) {
-	  var loc = this.getLocationAt(location),
-		index = loc && loc.index,
-		time = loc && loc.time,
-		tMin = 1e-8,
-		tMax = 1 - tMin
+	  const loc = this.getLocationAt(location)
+	  let index = loc && loc.index
+	  let time = loc && loc.time
+	  const tMin = 1e-8
+	  const tMax = 1 - tMin
 	  if (time > tMax) {
 		index++
 		time = 0
 	  }
-	  var curves = this.getCurves()
+	  const curves = this.getCurves()
 	  if (loc && index < curves.length) {
-		var cut = loc.getOffset(),
-		  profile = this._strokeProfile && this._takeStrokeProfile()
+		const cut = loc.getOffset()
+		const profile = this._strokeProfile && this._takeStrokeProfile()
 		if (time >= tMin) {
 		  curves[index++].divideAtTime(time)
 		}
-		var segs = this.removeSegments(index, this._segments.length, true),
-		  path
+		const segs = this.removeSegments(index, this._segments.length, true)
+		let path
 		if (this._closed) {
 		  this.setClosed(false)
 		  path = this
@@ -11801,34 +11890,34 @@ var Path = PathItem.extend(
 	},
 
 	split: function (index, time) {
-	  var curve,
-		location =
-		  time === undefined
-			? index
-			: (curve = this.getCurves()[index]) &&
-			  curve.getLocationAtTime(time)
+	  let curve
+	  const location =
+		time === undefined
+		  ? index
+		  : (curve = this.getCurves()[index]) &&
+			curve.getLocationAtTime(time)
 	  return location != null ? this.splitAt(location) : null
 	},
 
 	join: function (path, tolerance) {
-	  var epsilon = tolerance || 0,
-		parts = null
+	  const epsilon = tolerance || 0
+	  let parts = null
 	  if (path && path !== this) {
-		var segments = path._segments,
-		  last1 = this.getLastSegment(),
-		  last2 = path.getLastSegment()
+		const segments = path._segments
+		const last1 = this.getLastSegment()
+		let last2 = path.getLastSegment()
 		if (!last2)
 		  return this
 		if (this._strokeProfile || path._strokeProfile)
 		  parts = [this._takeStrokeProfile()]
 		if (last1 && last1._point.isClose(last2._point, epsilon)) path.reverse()
-		var first2 = path.getFirstSegment()
+		const first2 = path.getFirstSegment()
 		if (last1 && last1._point.isClose(first2._point, epsilon)) {
 		  if (parts) parts.push(path._takeStrokeProfile())
 		  last1.setHandleOut(first2._handleOut)
 		  this._add(segments.slice(1))
 		} else {
-		  var first1 = this.getFirstSegment()
+		  const first1 = this.getFirstSegment()
 		  if (first1 && first1._point.isClose(first2._point, epsilon))
 			path.reverse()
 		  last2 = path.getLastSegment()
@@ -11844,8 +11933,8 @@ var Path = PathItem.extend(
 		if (path._closed) this._add([segments[0]])
 		path.remove()
 	  }
-	  var first = this.getFirstSegment(),
-		last = this.getLastSegment()
+	  const first = this.getFirstSegment()
+	  const last = this.getLastSegment()
 	  if (first !== last && first._point.isClose(last._point, epsilon)) {
 		if (!parts && this._strokeProfile) parts = [this._takeStrokeProfile()]
 		first.setHandleIn(last._handleIn)
@@ -11857,11 +11946,11 @@ var Path = PathItem.extend(
 	},
 
 	reduce: function (options) {
-	  var curves = this.getCurves(),
-		simplify = options && options.simplify,
-		tolerance = simplify ? 1e-7 : 0
-	  for (var i = curves.length - 1; i >= 0; i--) {
-		var curve = curves[i]
+	  const curves = this.getCurves()
+	  const simplify = options && options.simplify
+	  const tolerance = simplify ? 1e-7 : 0
+	  for (let i = curves.length - 1; i >= 0; i--) {
+		const curve = curves[i]
 		if (
 		  !curve.hasHandles() && (
 			!curve.hasLength(tolerance) ||
@@ -11875,9 +11964,9 @@ var Path = PathItem.extend(
 
 	reverse: function () {
 	  this._segments.reverse()
-	  for (var i = 0, l = this._segments.length; i < l; i++) {
-		var segment = this._segments[i]
-		var handleIn = segment._handleIn
+	  for (let i = 0, l = this._segments.length; i < l; i++) {
+		const segment = this._segments[i]
+		const handleIn = segment._handleIn
 		segment._handleIn = segment._handleOut
 		segment._handleOut = handleIn
 		segment._index = i
@@ -11888,11 +11977,11 @@ var Path = PathItem.extend(
 	},
 
 	flatten: function (flatness) {
-	  var flattener = new PathFlattener(this, flatness || 0.25, 256, true),
-		parts = flattener.parts,
-		length = parts.length,
-		segments = []
-	  for (var i = 0; i < length; i++) {
+	  const flattener = new PathFlattener(this, flatness || 0.25, 256, true)
+	  const parts = flattener.parts
+	  const length = parts.length
+	  const segments = []
+	  for (let i = 0; i < length; i++) {
 		segments.push(new Segment(parts[i].curve.slice(0, 2)))
 	  }
 	  if (!this._closed && length > 0) {
@@ -11902,28 +11991,28 @@ var Path = PathItem.extend(
 	},
 
 	simplify: function (options) {
-	  var opts =
-		  typeof options === 'number'
-			? { tolerance: options }
-			: options || {},
-		segments = this._segments,
-		length = segments.length,
-		fitted = null
+	  const opts =
+		typeof options === 'number'
+		  ? { tolerance: options }
+		  : options || {}
+	  const segments = this._segments
+	  const length = segments.length
+	  let fitted = null
 	  if (length > 0) {
-		var range = this._getRange(opts.from, opts.to),
-		  loop = range.loop,
-		  from = range.from,
-		  to = range.to,
-		  first = segments[from < 0 ? from + length : from],
-		  last = segments[to],
-		  getTangent = function (handle, neighbor) {
-			return (
-			  !loop &&
-			  neighbor &&
-			  !handle.isZero() &&
-			  handle.negate()
-			)
-		  }
+		const range = this._getRange(opts.from, opts.to)
+		const loop = range.loop
+		const from = range.from
+		const to = range.to
+		const first = segments[from < 0 ? from + length : from]
+		const last = segments[to]
+		const getTangent = function (handle, neighbor) {
+		  return (
+			!loop &&
+			neighbor &&
+			!handle.isZero() &&
+			handle.negate()
+		  )
+		}
 		fitted = new PathFitter(
 		  from < 0
 			? segments.slice(from).concat(segments.slice(0, to + 1))
@@ -11937,7 +12026,7 @@ var Path = PathItem.extend(
 		if (loop || !first.getPrevious() && !last.getNext()) {
 		  this.setSegments(fitted)
 		} else {
-		  var fullySelected = this.isFullySelected()
+		  const fullySelected = this.isFullySelected()
 		  fitted[0].setHandleIn(first._handleIn)
 		  fitted[fitted.length - 1].setHandleOut(last._handleOut)
 		  if (from < 0) {
@@ -11955,51 +12044,55 @@ var Path = PathItem.extend(
 	},
 
 	smooth: function (options) {
-	  var opts = options || {},
-		type = opts.type || 'asymmetric',
-		segments = this._segments,
-		length = segments.length,
-		closed = this._closed,
-		range = this._getRange(opts.from, opts.to),
-		loop = range.loop,
-		from = range.from,
-		to = range.to
+	  let i
+	  let j
+	  let max
+
+	  const opts = options || {}
+	  const type = opts.type || 'asymmetric'
+	  const segments = this._segments
+	  const length = segments.length
+	  const closed = this._closed
+	  const range = this._getRange(opts.from, opts.to)
+	  const loop = range.loop
+	  const from = range.from
+	  const to = range.to
 
 	  if (/^(?:asymmetric|continuous)$/.test(type)) {
-		var asymmetric = type === 'asymmetric',
-		  min = Math.min,
-		  amount = to - from + 1,
-		  n = amount - 1,
-		  padding = loop ? min(amount, 4) : 1,
-		  paddingLeft = padding,
-		  paddingRight = padding,
-		  knots = []
+		const asymmetric = type === 'asymmetric'
+		const min = Math.min
+		const amount = to - from + 1
+		let n = amount - 1
+		const padding = loop ? min(amount, 4) : 1
+		let paddingLeft = padding
+		let paddingRight = padding
+		const knots = []
 		if (!closed) {
 		  paddingLeft = min(1, from)
 		  paddingRight = min(1, length - to - 1)
 		}
 		n += paddingLeft + paddingRight
 		if (n <= 1) return
-		for (var i = 0, j = from - paddingLeft; i <= n; i++, j++) {
+		for (i = 0, j = from - paddingLeft; i <= n; i++, j++) {
 		  knots[i] = segments[(j < 0 ? j + length : j) % length]._point
 		}
 
-		var x = knots[0]._x + 2 * knots[1]._x,
-		  y = knots[0]._y + 2 * knots[1]._y,
-		  f = 2,
-		  n_1 = n - 1,
-		  rx = [x],
-		  ry = [y],
-		  rf = [f],
-		  px = [],
-		  py = []
-		for (var i = 1; i < n; i++) {
-		  var internal = i < n_1,
-			a = internal ? 1 : asymmetric ? 1 : 2,
-			b = internal ? 4 : asymmetric ? 2 : 7,
-			u = internal ? 4 : asymmetric ? 3 : 8,
-			v = internal ? 2 : asymmetric ? 0 : 1,
-			m = a / f
+		let x = knots[0]._x + 2 * knots[1]._x
+		let y = knots[0]._y + 2 * knots[1]._y
+		let f = 2
+		const n_1 = n - 1
+		const rx = [x]
+		const ry = [y]
+		const rf = [f]
+		const px = []
+		const py = []
+		for (i = 1; i < n; i++) {
+		  const internal = i < n_1
+		  const a = internal ? 1 : asymmetric ? 1 : 2
+		  const b = internal ? 4 : asymmetric ? 2 : 7
+		  const u = internal ? 4 : asymmetric ? 3 : 8
+		  const v = internal ? 2 : asymmetric ? 0 : 1
+		  const m = a / f
 		  f = rf[i] = b - m
 		  x = rx[i] = u * knots[i]._x + v * knots[i + 1]._x - m * x
 		  y = ry[i] = u * knots[i]._y + v * knots[i + 1]._y - m * y
@@ -12007,7 +12100,7 @@ var Path = PathItem.extend(
 
 		px[n_1] = rx[n_1] / rf[n_1]
 		py[n_1] = ry[n_1] / rf[n_1]
-		for (var i = n - 2; i >= 0; i--) {
+		for (i = n - 2; i >= 0; i--) {
 		  px[i] = (rx[i] - px[i + 1]) / rf[i]
 		  py[i] = (ry[i] - py[i + 1]) / rf[i]
 		}
@@ -12015,19 +12108,19 @@ var Path = PathItem.extend(
 		py[n] = (3 * knots[n]._y - py[n_1]) / 2
 
 		for (
-		  var i = paddingLeft, max = n - paddingRight, j = from;
+		  i = paddingLeft, max = n - paddingRight, j = from;
 		  i <= max;
 		  i++, j++
 		) {
-		  var segment = segments[j < 0 ? j + length : j],
-			pt = segment._point,
-			hx = px[i] - pt._x,
-			hy = py[i] - pt._y
+		  const segment = segments[j < 0 ? j + length : j]
+		  const pt = segment._point
+		  const hx = px[i] - pt._x
+		  const hy = py[i] - pt._y
 		  if (loop || i < max) segment.setHandleOut(hx, hy)
 		  if (loop || i > paddingLeft) segment.setHandleIn(-hx, -hy)
 		}
 	  } else {
-		for (var i = from; i <= to; i++) {
+		for (i = from; i <= to; i++) {
 		  segments[i < 0 ? i + length : i].smooth(
 			opts,
 			!loop && i === from,
@@ -12038,14 +12131,14 @@ var Path = PathItem.extend(
 	},
 
 	_getRange: function (from, to) {
-	  var that = this,
-		length = this._segments.length,
-		closed = this._closed
+	  const that = this
+	  const length = this._segments.length
+	  const closed = this._closed
 
 	  function getIndex(value, _default) {
-		var index = value && value.index
+		let index = value && value.index
 		if (index != null) {
-		  var path = value.path
+		  const path = value.path
 		  if (path && path !== that)
 			throw new Error(
 			  value._class +
@@ -12070,7 +12163,7 @@ var Path = PathItem.extend(
 		)
 	  }
 
-	  var loop = closed && from === undefined && to === undefined
+	  const loop = closed && from === undefined && to === undefined
 	  from = getIndex(from, 0)
 	  to = getIndex(to, length - 1)
 
@@ -12078,7 +12171,7 @@ var Path = PathItem.extend(
 		if (closed) {
 		  from -= length
 		} else {
-		  var tmp = from
+		  const tmp = from
 		  from = to
 		  to = tmp
 		}
@@ -12089,17 +12182,17 @@ var Path = PathItem.extend(
 	toShape: function (insert) {
 	  if (!this._closed) return null
 
-	  var segments = this._segments,
-		type,
-		size,
-		radius,
-		topCenter
+	  const segments = this._segments
+	  let type
+	  let size
+	  let radius
+	  let topCenter
 
 	  function isCollinear(i, j) {
-		var seg1 = segments[i],
-		  seg2 = seg1.getNext(),
-		  seg3 = segments[j],
-		  seg4 = seg3.getNext()
+		const seg1 = segments[i]
+		const seg2 = seg1.getNext()
+		const seg3 = segments[j]
+		const seg4 = seg3.getNext()
 		return (
 		  seg1._handleOut.isZero() &&
 		  seg2._handleIn.isZero() &&
@@ -12112,9 +12205,9 @@ var Path = PathItem.extend(
 	  }
 
 	  function isOrthogonal(i) {
-		var seg2 = segments[i],
-		  seg1 = seg2.getPrevious(),
-		  seg3 = seg2.getNext()
+		const seg2 = segments[i]
+		const seg1 = seg2.getPrevious()
+		const seg3 = seg2.getNext()
 		return (
 		  seg1._handleOut.isZero() &&
 		  seg2._handleIn.isZero() &&
@@ -12127,17 +12220,17 @@ var Path = PathItem.extend(
 	  }
 
 	  function isArc(i) {
-		var seg1 = segments[i],
-		  seg2 = seg1.getNext(),
-		  handle1 = seg1._handleOut,
-		  handle2 = seg2._handleIn,
-		  kappa = 0.5522847498307936
+		const seg1 = segments[i]
+		const seg2 = seg1.getNext()
+		const handle1 = seg1._handleOut
+		const handle2 = seg2._handleIn
+		const kappa = 0.5522847498307936
 		if (handle1.isOrthogonal(handle2)) {
-		  var pt1 = seg1._point,
-			pt2 = seg2._point,
-			corner = new Line(pt1, handle1, true).intersect(
-			  new Line(pt2, handle2, true), true
-			)
+		  const pt1 = seg1._point
+		  const pt2 = seg2._point
+		  const corner = new Line(pt1, handle1, true).intersect(
+			new Line(pt2, handle2, true), true
+		  )
 		  return (
 			corner &&
 			Numerical.isZero(
@@ -12206,13 +12299,13 @@ var Path = PathItem.extend(
 	  }
 
 	  if (type) {
-		var center = this.getPosition(true),
-		  shape = new type({
-			center: center,
-			size: size,
-			radius: radius,
-			insert: false
-		  })
+		const center = this.getPosition(true)
+		const shape = new type({
+		  center: center,
+		  size: size,
+		  radius: radius,
+		  insert: false
+		})
 		shape.copyAttributes(this, true)
 		shape._matrix.prepend(this._matrix)
 		shape.rotate(topCenter.subtract(center).getAngle() + 90)
@@ -12226,46 +12319,49 @@ var Path = PathItem.extend(
 	toPath: '#clone',
 
 	compare: function compare(path) {
+	  let v2
+	  let overlaps
+
 	  if (!path || path instanceof CompoundPath)
 		return compare.base.call(this, path)
-	  var curves1 = this.getCurves(),
-		curves2 = path.getCurves(),
-		length1 = curves1.length,
-		length2 = curves2.length
+	  const curves1 = this.getCurves()
+	  const curves2 = path.getCurves()
+	  const length1 = curves1.length
+	  const length2 = curves2.length
 	  if (!length1 || !length2) {
 		return length1 == length2
 	  }
-	  var v1 = curves1[0].getValues(),
-		values2 = [],
-		pos1 = 0,
-		pos2,
-		end1 = 0,
-		end2
-	  for (var i = 0; i < length2; i++) {
-		var v2 = curves2[i].getValues()
+	  let v1 = curves1[0].getValues()
+	  const values2 = []
+	  let pos1 = 0
+	  let pos2
+	  let end1 = 0
+	  let end2
+	  for (let i = 0; i < length2; i++) {
+		v2 = curves2[i].getValues()
 		values2.push(v2)
-		var overlaps = Curve.getOverlaps(v1, v2)
+		overlaps = Curve.getOverlaps(v1, v2)
 		if (overlaps) {
 		  pos2 = !i && overlaps[0][0] > 0 ? length2 - 1 : i
 		  end2 = overlaps[0][1]
 		  break
 		}
 	  }
-	  var abs = Math.abs,
-		epsilon = 1e-8,
-		v2 = values2[pos2],
-		start2
+	  const abs = Math.abs
+	  const epsilon = 1e-8
+	  v2 = values2[pos2]
+	  let start2
 	  while (v1 && v2) {
-		var overlaps = Curve.getOverlaps(v1, v2)
+		overlaps = Curve.getOverlaps(v1, v2)
 		if (overlaps) {
-		  var t1 = overlaps[0][0]
+		  const t1 = overlaps[0][0]
 		  if (abs(t1 - end1) < epsilon) {
 			end1 = overlaps[1][0]
 			if (end1 === 1) {
 			  v1 = ++pos1 < length1 ? curves1[pos1].getValues() : null
 			  end1 = 0
 			}
-			var t2 = overlaps[0][1]
+			const t2 = overlaps[0][1]
 			if (abs(t2 - end2) < epsilon) {
 			  if (!start2) start2 = [pos2, t2]
 			  end2 = overlaps[1][1]
@@ -12287,38 +12383,41 @@ var Path = PathItem.extend(
 	},
 
 	_hitTestSelf: function (point, options, viewMatrix, strokeMatrix) {
-	  var that = this,
-		style = this.getStyle(),
-		segments = this._segments,
-		numSegments = segments.length,
-		closed = this._closed,
-		strokeSpace = strokeMatrix && strokeMatrix.inverted(),
-		strokePoint = point.transform(strokeSpace),
-		tolerancePadding = strokeSpace
-		  ? new Size(
-			  Matrix._getCircleExtents(
-				Math.max(options.tolerance, 1e-12),
-				this.getView()._matrix._shiftless()
-			  )
+	  let i
+	  let l
+
+	  const that = this
+	  const style = this.getStyle()
+	  const segments = this._segments
+	  const numSegments = segments.length
+	  const closed = this._closed
+	  const strokeSpace = strokeMatrix && strokeMatrix.inverted()
+	  const strokePoint = point.transform(strokeSpace)
+	  const tolerancePadding = strokeSpace
+		? new Size(
+			Matrix._getCircleExtents(
+			  Math.max(options.tolerance, 1e-12),
+			  this.getView()._matrix._shiftless()
 			)
-		  : options._tolerancePadding,
-		strokePadding = tolerancePadding,
-		join,
-		cap,
-		miterLimit,
-		area,
-		loc,
-		res,
-		hits = options.all && [],
-		hitStroke = options.stroke && style.hasStroke(),
-		hitFill = options.fill && !!style.getFillColor(),
-		hitCurves = options.curves,
-		strokeRadius = hitStroke
-		  ? style.getStrokeWidth() / 2
-		  :
-			hitFill && options.tolerance > 0 || hitCurves
-			? 0
-			: null
+		  )
+		: options._tolerancePadding
+	  let strokePadding = tolerancePadding
+	  let join
+	  let cap
+	  let miterLimit
+	  let area
+	  let loc
+	  let res
+	  const hits = options.all && []
+	  const hitStroke = options.stroke && style.hasStroke()
+	  const hitFill = options.fill && !!style.getFillColor()
+	  const hitCurves = options.curves
+	  const strokeRadius = hitStroke
+		? style.getStrokeWidth() / 2
+		:
+		  hitFill && options.tolerance > 0 || hitCurves
+		  ? 0
+		  : null
 	  if (strokeRadius !== null) {
 		if (strokeRadius > 0) {
 		  join = style.getStrokeJoin()
@@ -12336,10 +12435,10 @@ var Path = PathItem.extend(
 
 	  function checkSegmentPoint(seg, pt, name) {
 		if (!options.selected || pt.isSelected()) {
-		  var anchor = seg._point
+		  const anchor = seg._point
 		  if (pt !== anchor) pt = pt.add(anchor)
 		  if (isCloseEnough(pt.transform(strokeSpace), strokePadding)) {
-			var hit = new HitResult(name, that, {
+			const hit = new HitResult(name, that, {
 			  segment: seg,
 			  point: pt
 			})
@@ -12369,16 +12468,16 @@ var Path = PathItem.extend(
 	  }
 
 	  function getJoinTangent(curve, forward) {
-		for (var i = 0; curve && i < numSegments; i++) {
+		for (let i = 0; curve && i < numSegments; i++) {
 		  if (curve.hasLength()) return curve.getTangentAtTime(forward ? 0 : 1)
 		  curve = forward ? curve.getNext() : curve.getPrevious()
 		}
 	  }
 
 	  function isFlatJoin(segment) {
-		var curve = segment.getCurve(),
-		  tangent1 = getJoinTangent(curve.getPrevious(), false),
-		  tangent2 = getJoinTangent(curve, true)
+		const curve = segment.getCurve()
+		const tangent1 = getJoinTangent(curve.getPrevious(), false)
+		const tangent2 = getJoinTangent(curve, true)
 		return (
 		  tangent1 &&
 		  tangent2 &&
@@ -12388,7 +12487,7 @@ var Path = PathItem.extend(
 	  }
 
 	  function checkSegmentStroke(segment) {
-		var isJoin = (
+		const isJoin = (
 		  closed || (
 			segment._index > 0 &&
 			segment._index < numSegments - 1
@@ -12427,7 +12526,7 @@ var Path = PathItem.extend(
 			)
 		  }
 		  if (!area.isEmpty()) {
-			var loc
+			let loc
 			return (
 			  area.contains(strokePoint) || (
 				(loc = area.getNearestLocation(strokePoint)) &&
@@ -12447,25 +12546,25 @@ var Path = PathItem.extend(
 		)
 		  return res
 	  } else if (options.segments || options.handles) {
-		for (var i = 0; i < numSegments; i++)
+		for (i = 0; i < numSegments; i++)
 		  if ((res = checkSegmentPoints(segments[i]))) return res
 	  }
 	  if (strokeRadius !== null) {
-		var curves = this.getCurves(),
-		  minDistance = Infinity,
-		  nearest
-		for (var i = 0, l = curves.length; i < l; i++) {
-		  var values = curves[i].getValues(strokeSpace),
-			t = Curve.getNearestTime(values, strokePoint),
-			pt = Curve.getPoint(values, t),
-			distance = pt.getDistance(strokePoint)
+		const curves = this.getCurves()
+		let minDistance = Infinity
+		let nearest
+		for (i = 0, l = curves.length; i < l; i++) {
+		  const values = curves[i].getValues(strokeSpace)
+		  const t = Curve.getNearestTime(values, strokePoint)
+		  const pt = Curve.getPoint(values, t)
+		  const distance = pt.getDistance(strokePoint)
 		  if (distance < minDistance) {
 			minDistance = distance
 			loc = new CurveLocation(curves[i], t)
 			nearest = pt
 		  }
 		}
-		var outline = (
+		const outline = (
 		  hitStroke &&
 		  this._hasStrokeProfile() &&
 		  this._getStrokeOutline()
@@ -12479,7 +12578,7 @@ var Path = PathItem.extend(
 		  )
 			loc = null
 		} else if (loc) {
-		  var time = loc.getTime()
+		  const time = loc.getTime()
 		  if (time === 0 || time === 1 && numSegments > 1) {
 			if (!checkSegmentStroke(loc.getSegment())) loc = null
 		  } else if (!isCloseEnough(nearest, strokePadding)) {
@@ -12487,8 +12586,8 @@ var Path = PathItem.extend(
 		  }
 		}
 		if (!loc && !outline && join === 'miter' && numSegments > 1) {
-		  for (var i = 0; i < numSegments; i++) {
-			var segment = segments[i]
+		  for (i = 0; i < numSegments; i++) {
+			const segment = segments[i]
 			if (
 			  (
 				strokePoint.getDistance(
@@ -12534,7 +12633,7 @@ var Path = PathItem.extend(
 	Curve._evaluateMethods,
 	function (name) {
 	  this[name + 'At'] = function (offset) {
-		var loc = this.getLocationAt(offset)
+		const loc = this.getLocationAt(offset)
 		return loc && loc[name]()
 	  }
 	},
@@ -12542,27 +12641,27 @@ var Path = PathItem.extend(
 	  beans: false,
 
 	  getLocationOf: function () {
-		var point = Point.read(arguments),
-		  curves = this.getCurves()
-		for (var i = 0, l = curves.length; i < l; i++) {
-		  var loc = curves[i].getLocationOf(point)
+		const point = Point.read(arguments)
+		const curves = this.getCurves()
+		for (let i = 0, l = curves.length; i < l; i++) {
+		  const loc = curves[i].getLocationOf(point)
 		  if (loc) return loc
 		}
 		return null
 	  },
 
 	  getOffsetOf: function () {
-		var loc = this.getLocationOf.apply(this, arguments)
+		const loc = this.getLocationOf.apply(this, arguments)
 		return loc ? loc.getOffset() : null
 	  },
 
 	  getLocationAt: function (offset) {
 		if (typeof offset === 'number') {
-		  var curves = this.getCurves(),
-			length = 0
-		  for (var i = 0, l = curves.length; i < l; i++) {
-			var start = length,
-			  curve = curves[i]
+		  const curves = this.getCurves()
+		  let length = 0
+		  for (let i = 0, l = curves.length; i < l; i++) {
+			const start = length
+			const curve = curves[i]
 			length += curve.getLength()
 			if (length > offset) {
 			  return curve.getLocationAt(offset - start)
@@ -12578,19 +12677,19 @@ var Path = PathItem.extend(
 	  },
 
 	  getOffsetsWithTangent: function () {
-		var tangent = Point.read(arguments)
+		const tangent = Point.read(arguments)
 		if (tangent.isZero()) {
 		  return []
 		}
 
-		var offsets = []
-		var curveStart = 0
-		var curves = this.getCurves()
-		for (var i = 0, l = curves.length; i < l; i++) {
-		  var curve = curves[i]
-		  var curveTimes = curve.getTimesWithTangent(tangent)
-		  for (var j = 0, m = curveTimes.length; j < m; j++) {
-			var offset = curveStart + curve.getOffsetAtTime(curveTimes[j])
+		const offsets = []
+		let curveStart = 0
+		const curves = this.getCurves()
+		for (let i = 0, l = curves.length; i < l; i++) {
+		  const curve = curves[i]
+		  const curveTimes = curve.getTimesWithTangent(tangent)
+		  for (let j = 0, m = curveTimes.length; j < m; j++) {
+			const offset = curveStart + curve.getOffsetAtTime(curveTimes[j])
 			if (offsets.indexOf(offset) < 0) {
 			  offsets.push(offset)
 			}
@@ -12604,17 +12703,17 @@ var Path = PathItem.extend(
   new (function () {
 
 	function drawHandles(ctx, segments, matrix, handleSize, segmentSize) {
-	  var handleHalf = handleSize / 2,
-		half = segmentSize / 2,
-		miniSize = segmentSize - 2,
-		miniHalf = half - 1,
-		coords = new Array(6),
-		pX,
-		pY
+	  const handleHalf = handleSize / 2
+	  const half = segmentSize / 2
+	  const miniSize = segmentSize - 2
+	  const miniHalf = half - 1
+	  const coords = new Array(6)
+	  let pX
+	  let pY
 
 	  function drawHandle(index) {
-		var hX = coords[index],
-		  hY = coords[index + 1]
+		const hX = coords[index]
+		const hY = coords[index + 1]
 		if (handleSize > 0 && (pX != hX || pY != hY)) {
 		  ctx.beginPath()
 		  ctx.moveTo(pX, pY)
@@ -12626,9 +12725,9 @@ var Path = PathItem.extend(
 		}
 	  }
 
-	  for (var i = 0, l = segments.length; i < l; i++) {
-		var segment = segments[i],
-		  selection = segment._selection
+	  for (let i = 0, l = segments.length; i < l; i++) {
+		const segment = segments[i]
+		const selection = segment._selection
 		segment._transformCoordinates(matrix, coords)
 		pX = coords[0]
 		pY = coords[1]
@@ -12637,7 +12736,7 @@ var Path = PathItem.extend(
 		if (segmentSize <= 0) continue
 		ctx.fillRect(pX - half, pY - half, segmentSize, segmentSize)
 		if (miniSize > 0 && !(selection & 1)) {
-		  var fillStyle = ctx.fillStyle
+		  const fillStyle = ctx.fillStyle
 		  ctx.fillStyle = '#ffffff'
 		  ctx.fillRect(pX - miniHalf, pY - miniHalf, miniSize, miniSize)
 		  ctx.fillStyle = fillStyle
@@ -12646,26 +12745,28 @@ var Path = PathItem.extend(
 	}
 
 	function drawSegments(ctx, path, matrix) {
-	  var segments = path._segments,
-		length = segments.length,
-		coords = new Array(6),
-		first = true,
-		curX,
-		curY,
-		prevX,
-		prevY,
-		inX,
-		inY,
-		outX,
-		outY
+	  const segments = path._segments
+	  const length = segments.length
+	  const coords = new Array(6)
+	  let first = true
+	  let curX
+	  let curY
+	  let prevX
+	  let prevY
+	  let inX
+	  let inY
+	  let outX
+	  let outY
 
 	  function drawSegment(segment) {
+		let handle
+
 		if (matrix) {
 		  segment._transformCoordinates(matrix, coords)
 		  curX = coords[0]
 		  curY = coords[1]
 		} else {
-		  var point = segment._point
+		  const point = segment._point
 		  curX = point._x
 		  curY = point._y
 		}
@@ -12677,7 +12778,7 @@ var Path = PathItem.extend(
 			inX = coords[2]
 			inY = coords[3]
 		  } else {
-			var handle = segment._handleIn
+			handle = segment._handleIn
 			inX = curX + handle._x
 			inY = curY + handle._y
 		  }
@@ -12698,19 +12799,19 @@ var Path = PathItem.extend(
 		  outX = coords[4]
 		  outY = coords[5]
 		} else {
-		  var handle = segment._handleOut
+		  handle = segment._handleOut
 		  outX = prevX + handle._x
 		  outY = prevY + handle._y
 		}
 	  }
 
-	  for (var i = 0; i < length; i++) drawSegment(segments[i])
+	  for (let i = 0; i < length; i++) drawSegment(segments[i])
 	  if (path._closed && length > 0) drawSegment(segments[0])
 	}
 
 	return {
 	  _draw: function (ctx, param, viewMatrix, strokeMatrix) {
-		var dontPaint = param.dontFinish || param.clip
+		const dontPaint = param.dontFinish || param.clip
 		if (!param.dontStart) ctx.beginPath()
 		if (this.hasFill() || this.hasStroke() || dontPaint) {
 		  drawSegments(ctx, this, strokeMatrix)
@@ -12723,9 +12824,9 @@ var Path = PathItem.extend(
 		ctx.beginPath()
 		drawSegments(ctx, this, matrix)
 		ctx.stroke()
-		var settings = paper.settings,
-		  handleSize = settings.handleSize,
-		  segmentSize = settings.segmentSize
+		const settings = paper.settings
+		const handleSize = settings.handleSize
+		const segmentSize = settings.segmentSize
 		drawHandles(
 		  ctx,
 		  this._segments,
@@ -12738,23 +12839,23 @@ var Path = PathItem.extend(
   })(),
   new (function () {
 	function getCurrentSegment(that) {
-	  var segments = that._segments
+	  const segments = that._segments
 	  if (!segments.length) throw new Error('Use a moveTo() command first')
 	  return segments[segments.length - 1]
 	}
 
 	function addArc(that, center, vector, extent, to, matrix) {
-	  var current = getCurrentSegment(that),
-		epsilon = 1e-5,
-		count = Math.ceil((Math.abs(extent) - epsilon) / 90)
+	  const current = getCurrentSegment(that)
+	  const epsilon = 1e-5
+	  const count = Math.ceil((Math.abs(extent) - epsilon) / 90)
 	  if (count) {
-		var inc = extent / count,
-		  half = inc * Math.PI / 360,
-		  z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
-		  segments = []
-		for (var i = 0; i <= count; i++) {
-		  var pt = to,
-			out = null
+		const inc = extent / count
+		const half = inc * Math.PI / 360
+		const z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half))
+		const segments = []
+		for (let i = 0; i <= count; i++) {
+		  let pt = to
+		  let out = null
 		  if (i < count) {
 			out = vector.rotate(90).multiply(z)
 			if (matrix) {
@@ -12767,7 +12868,7 @@ var Path = PathItem.extend(
 		  if (!i) {
 			current.setHandleOut(out)
 		  } else {
-			var _in = vector.rotate(-90).multiply(z)
+			let _in = vector.rotate(-90).multiply(z)
 			if (matrix) {
 			  _in = matrix._transformPoint(vector.add(_in)).subtract(pt)
 			}
@@ -12783,7 +12884,7 @@ var Path = PathItem.extend(
 
 	return {
 	  moveTo: function () {
-		var segments = this._segments
+		const segments = this._segments
 		if (segments.length === 1) this.removeSegment(0)
 		if (!segments.length) this._add([new Segment(Point.read(arguments))])
 	  },
@@ -12797,20 +12898,20 @@ var Path = PathItem.extend(
 	  },
 
 	  cubicCurveTo: function () {
-		var args = arguments,
-		  handle1 = Point.read(args),
-		  handle2 = Point.read(args),
-		  to = Point.read(args),
-		  current = getCurrentSegment(this)
+		const args = arguments
+		const handle1 = Point.read(args)
+		const handle2 = Point.read(args)
+		const to = Point.read(args)
+		const current = getCurrentSegment(this)
 		current.setHandleOut(handle1.subtract(current._point))
 		this._add([new Segment(to, handle2.subtract(to))])
 	  },
 
 	  quadraticCurveTo: function () {
-		var args = arguments,
-		  handle = Point.read(args),
-		  to = Point.read(args),
-		  current = getCurrentSegment(this)._point
+		const args = arguments
+		const handle = Point.read(args)
+		const to = Point.read(args)
+		const current = getCurrentSegment(this)._point
 		this.cubicCurveTo(
 		  handle.add(current.subtract(handle).multiply(1 / 3)),
 		  handle.add(to.subtract(handle).multiply(1 / 3)),
@@ -12819,16 +12920,16 @@ var Path = PathItem.extend(
 	  },
 
 	  curveTo: function () {
-		var args = arguments,
-		  through = Point.read(args),
-		  to = Point.read(args),
-		  t = Base.pick(Base.read(args), 0.5),
-		  t1 = 1 - t,
-		  current = getCurrentSegment(this)._point,
-		  handle = through
-			.subtract(current.multiply(t1 * t1))
-			.subtract(to.multiply(t * t))
-			.divide(2 * t * t1)
+		const args = arguments
+		const through = Point.read(args)
+		const to = Point.read(args)
+		const t = Base.pick(Base.read(args), 0.5)
+		const t1 = 1 - t
+		const current = getCurrentSegment(this)._point
+		const handle = through
+		  .subtract(current.multiply(t1 * t1))
+		  .subtract(to.multiply(t * t))
+		  .divide(2 * t * t1)
 		if (handle.isNaN())
 		  throw new Error(
 			'Cannot put a curve through points with parameter = ' + t
@@ -12838,47 +12939,51 @@ var Path = PathItem.extend(
 
 	  arcTo: function (
 	  ) {
-		var args = arguments,
-		  abs = Math.abs,
-		  sqrt = Math.sqrt,
-		  from = getCurrentSegment(this)._point,
-		  to = Point.read(args),
-		  through,
-		  peek = Base.peek(args),
-		  clockwise = Base.pick(peek, true),
-		  center,
-		  extent,
-		  vector,
-		  matrix
+		let through
+		let clockwise
+		let middle
+
+		const args = arguments
+		const abs = Math.abs
+		const sqrt = Math.sqrt
+		const from = getCurrentSegment(this)._point
+		let to = Point.read(args)
+
+		const peek = Base.peek(args)
+		clockwise = Base.pick(peek, true)
+		let center
+		let extent
+		let vector
+		let matrix
 		if (typeof clockwise === 'boolean') {
-		  var middle = from.add(to).divide(2),
-			through = middle.add(
-			  middle.subtract(from).rotate(
-				clockwise ? -90 : 90
-			  )
+		  middle = from.add(to).divide(2)
+		  through = middle.add(
+			middle.subtract(from).rotate(
+			  clockwise ? -90 : 90
 			)
+		  )
 		} else if (Base.remain(args) <= 2) {
 		  through = to
 		  to = Point.read(args)
 		} else if (!from.equals(to)) {
-		  var radius = Size.read(args),
-			isZero = Numerical.isZero
+		  const radius = Size.read(args)
+		  const isZero = Numerical.isZero
 		  if (isZero(radius.width) || isZero(radius.height))
 			return this.lineTo(to)
-		  var rotation = Base.read(args),
-			clockwise = !!Base.read(args),
-			large = !!Base.read(args),
-			middle = from.add(to).divide(2),
-			pt = from.subtract(middle).rotate(-rotation),
-			x = pt.x,
-			y = pt.y,
-			rx = abs(radius.width),
-			ry = abs(radius.height),
-			rxSq = rx * rx,
-			rySq = ry * ry,
-			xSq = x * x,
-			ySq = y * y
-		  var factor = sqrt(xSq / rxSq + ySq / rySq)
+		  const rotation = Base.read(args)
+		  clockwise = !!Base.read(args)
+		  const large = !!Base.read(args)
+		  middle = from.add(to).divide(2)
+		  const pt = from.subtract(middle).rotate(-rotation)
+		  const x = pt.x
+		  const y = pt.y
+		  let rx = abs(radius.width)
+		  let ry = abs(radius.height)
+		  let rxSq = rx * rx
+		  let rySq = ry * ry
+		  const xSq = x * x
+		  const ySq = y * y
+		  let factor = sqrt(xSq / rxSq + ySq / rySq)
 		  if (factor > 1) {
 			rx *= factor
 			ry *= factor
@@ -12905,18 +13010,18 @@ var Path = PathItem.extend(
 		  else if (clockwise && extent < 0) extent += 360
 		}
 		if (through) {
-		  var l1 = new Line(
-			  from.add(through).divide(2),
-			  through.subtract(from).rotate(90),
-			  true
-			),
-			l2 = new Line(
-			  through.add(to).divide(2),
-			  to.subtract(through).rotate(90),
-			  true
-			),
-			line = new Line(from, to),
-			throughSide = line.getSide(through)
+		  const l1 = new Line(
+			from.add(through).divide(2),
+			through.subtract(from).rotate(90),
+			true
+		  )
+		  const l2 = new Line(
+			through.add(to).divide(2),
+			to.subtract(through).rotate(90),
+			true
+		  )
+		  const line = new Line(from, to)
+		  const throughSide = line.getSide(through)
 		  center = l1.intersect(l2, true)
 		  if (!center) {
 			if (!throughSide) return this.lineTo(to)
@@ -12926,7 +13031,7 @@ var Path = PathItem.extend(
 		  }
 		  vector = from.subtract(center)
 		  extent = vector.getDirectedAngle(to.subtract(center))
-		  var centerSide = line.getSide(center, true)
+		  const centerSide = line.getSide(center, true)
 		  if (centerSide === 0) {
 			extent = throughSide * abs(extent)
 		  } else if (throughSide === centerSide) {
@@ -12937,32 +13042,32 @@ var Path = PathItem.extend(
 	  },
 
 	  arcAround: function () {
-		var args = arguments,
-		  center = Point.read(args),
-		  angle = Base.read(args),
-		  vector = getCurrentSegment(this)._point.subtract(center)
+		const args = arguments
+		const center = Point.read(args)
+		const angle = Base.read(args)
+		const vector = getCurrentSegment(this)._point.subtract(center)
 		addArc(this, center, vector, angle, center.add(vector.rotate(angle)))
 	  },
 
 	  arcTowards: function () {
-		var to = Point.read(arguments),
-		  current = getCurrentSegment(this),
-		  previous = current.getPrevious(),
-		  from = current._point,
-		  tangent = previous
-			? new Curve(previous, current).getTangentAtTime(1)
-			: new Point(),
-		  normal = tangent.rotate(90),
-		  vector = to.subtract(from),
-		  distance = vector.dot(normal)
+		const to = Point.read(arguments)
+		const current = getCurrentSegment(this)
+		const previous = current.getPrevious()
+		const from = current._point
+		const tangent = previous
+		  ? new Curve(previous, current).getTangentAtTime(1)
+		  : new Point()
+		const normal = tangent.rotate(90)
+		const vector = to.subtract(from)
+		const distance = vector.dot(normal)
 		if (!Numerical.isZero(distance)) {
-		  var center = from.add(
-			  normal.multiply(
-				vector.dot(vector) / (2 * distance)
-			  )
-			),
-			start = from.subtract(center),
-			extent = start.getDirectedAngle(to.subtract(center))
+		  const center = from.add(
+			normal.multiply(
+			  vector.dot(vector) / (2 * distance)
+			)
+		  )
+		  const start = from.subtract(center)
+		  let extent = start.getDirectedAngle(to.subtract(center))
 		  if (extent * distance < 0) extent += distance > 0 ? 360 : -360
 		  addArc(this, center, start, extent, to)
 		} else if (vector.dot(tangent) > 0) {
@@ -12975,26 +13080,26 @@ var Path = PathItem.extend(
 	  },
 
 	  lineBy: function () {
-		var to = Point.read(arguments),
-		  current = getCurrentSegment(this)._point
+		const to = Point.read(arguments)
+		const current = getCurrentSegment(this)._point
 		this.lineTo(current.add(to))
 	  },
 
 	  curveBy: function () {
-		var args = arguments,
-		  through = Point.read(args),
-		  to = Point.read(args),
-		  parameter = Base.read(args),
-		  current = getCurrentSegment(this)._point
+		const args = arguments
+		const through = Point.read(args)
+		const to = Point.read(args)
+		const parameter = Base.read(args)
+		const current = getCurrentSegment(this)._point
 		this.curveTo(current.add(through), current.add(to), parameter)
 	  },
 
 	  cubicCurveBy: function () {
-		var args = arguments,
-		  handle1 = Point.read(args),
-		  handle2 = Point.read(args),
-		  to = Point.read(args),
-		  current = getCurrentSegment(this)._point
+		const args = arguments
+		const handle1 = Point.read(args)
+		const handle2 = Point.read(args)
+		const to = Point.read(args)
+		const current = getCurrentSegment(this)._point
 		this.cubicCurveTo(
 		  current.add(handle1),
 		  current.add(handle2),
@@ -13003,18 +13108,18 @@ var Path = PathItem.extend(
 	  },
 
 	  quadraticCurveBy: function () {
-		var args = arguments,
-		  handle = Point.read(args),
-		  to = Point.read(args),
-		  current = getCurrentSegment(this)._point
+		const args = arguments
+		const handle = Point.read(args)
+		const to = Point.read(args)
+		const current = getCurrentSegment(this)._point
 		this.quadraticCurveTo(current.add(handle), current.add(to))
 	  },
 
 	  arcBy: function () {
-		var args = arguments,
-		  current = getCurrentSegment(this)._point,
-		  point = current.add(Point.read(args)),
-		  clockwise = Base.pick(Base.peek(args), true)
+		const args = arguments
+		const current = getCurrentSegment(this)._point
+		const point = current.add(Point.read(args))
+		const clockwise = Base.pick(Base.peek(args), true)
 		if (typeof clockwise === 'boolean') {
 		  this.arcTo(point, clockwise)
 		} else {
@@ -13031,7 +13136,7 @@ var Path = PathItem.extend(
   {
 
 	_getBounds: function (matrix, options) {
-	  var method = options.handle
+	  const method = options.handle
 		? 'getHandleBounds'
 		: options.stroke
 		  ? 'getStrokeBounds'
@@ -13051,17 +13156,17 @@ var Path = PathItem.extend(
 		options,
 		strokePadding
 	  ) {
-		var first = segments[0]
+		const first = segments[0]
 		if (!first) return new Rectangle()
-		var coords = new Array(6),
-		  prevCoords = first._transformCoordinates(matrix, new Array(6)),
-		  min = prevCoords.slice(0, 2),
-		  max = min.slice(),
-		  roots = new Array(2)
+		let coords = new Array(6)
+		let prevCoords = first._transformCoordinates(matrix, new Array(6))
+		const min = prevCoords.slice(0, 2)
+		const max = min.slice()
+		const roots = new Array(2)
 
 		function processSegment(segment) {
 		  segment._transformCoordinates(matrix, coords)
-		  for (var i = 0; i < 2; i++) {
+		  for (let i = 0; i < 2; i++) {
 			Curve._addBounds(
 			  prevCoords[i],
 			  prevCoords[i + 4],
@@ -13074,39 +13179,39 @@ var Path = PathItem.extend(
 			  roots
 			)
 		  }
-		  var tmp = prevCoords
+		  const tmp = prevCoords
 		  prevCoords = coords
 		  coords = tmp
 		}
 
-		for (var i = 1, l = segments.length; i < l; i++)
+		for (let i = 1, l = segments.length; i < l; i++)
 		  processSegment(segments[i])
 		if (closed) processSegment(first)
 		return new Rectangle(min[0], min[1], max[0] - min[0], max[1] - min[1])
 	  },
 
 	  getStrokeBounds: function (segments, closed, path, matrix, options) {
-		var style = path.getStyle(),
-		  stroke = style.hasStroke(),
-		  strokeRadius = style.getStrokeWidth() / 2,
-		  strokeMatrix = stroke && path._getStrokeMatrix(matrix, options),
-		  strokePadding = (
-			stroke &&
-			Matrix._getCircleExtents(strokeRadius, strokeMatrix)
-		  ),
-		  bounds = Path.getBounds(
-			segments,
-			closed,
-			path,
-			matrix,
-			options,
-			strokePadding
-		  )
+		const style = path.getStyle()
+		const stroke = style.hasStroke()
+		const strokeRadius = style.getStrokeWidth() / 2
+		const strokeMatrix = stroke && path._getStrokeMatrix(matrix, options)
+		const strokePadding = (
+		  stroke &&
+		  Matrix._getCircleExtents(strokeRadius, strokeMatrix)
+		)
+		let bounds = Path.getBounds(
+		  segments,
+		  closed,
+		  path,
+		  matrix,
+		  options,
+		  strokePadding
+		)
 		if (!stroke) return bounds
-		var join = style.getStrokeJoin(),
-		  cap = style.getStrokeCap(),
-		  miterLimit = style.getMiterLimit(),
-		  joinBounds = new Rectangle(new Size(strokePadding).multiply(2))
+		const join = style.getStrokeJoin()
+		const cap = style.getStrokeCap()
+		const miterLimit = style.getMiterLimit()
+		const joinBounds = new Rectangle(new Size(strokePadding).multiply(2))
 
 		function addPoint(point) {
 		  bounds = bounds.include(point)
@@ -13149,9 +13254,9 @@ var Path = PathItem.extend(
 		  }
 		}
 
-		var length = segments.length - (closed ? 0 : 1)
+		const length = segments.length - (closed ? 0 : 1)
 		if (length > 0) {
-		  for (var i = 1; i < length; i++) {
+		  for (let i = 1; i < length; i++) {
 			addJoin(segments[i], join)
 		  }
 		  if (closed) {
@@ -13165,11 +13270,11 @@ var Path = PathItem.extend(
 	  },
 
 	  _getStrokeNormal: function (curve, time, radius, matrix, strokeMatrix) {
-		var mx = matrix ? matrix._shiftless() : new Matrix(),
-		  inverse = strokeMatrix && strokeMatrix.inverted(),
-		  tangent = curve.getTangentAtTime(time).transform(
-			inverse ? inverse.append(mx) : mx
-		  )
+		const mx = matrix ? matrix._shiftless() : new Matrix()
+		const inverse = strokeMatrix && strokeMatrix.inverted()
+		const tangent = curve.getTangentAtTime(time).transform(
+		  inverse ? inverse.append(mx) : mx
+		)
 		return new Point(tangent.y, -tangent.x).normalize(radius)
 	  },
 
@@ -13183,24 +13288,24 @@ var Path = PathItem.extend(
 		addPoint,
 		isArea
 	  ) {
-		var curve2 = segment.getCurve(),
-		  curve1 = curve2.getPrevious(),
-		  point = curve2.getPoint1().transform(matrix),
-		  normal1 = Path._getStrokeNormal(
-			curve1,
-			1,
-			radius,
-			matrix,
-			strokeMatrix
-		  ),
-		  normal2 = Path._getStrokeNormal(
-			curve2,
-			0,
-			radius,
-			matrix,
-			strokeMatrix
-		  ),
-		  angle = normal1.getDirectedAngle(normal2)
+		const curve2 = segment.getCurve()
+		const curve1 = curve2.getPrevious()
+		const point = curve2.getPoint1().transform(matrix)
+		let normal1 = Path._getStrokeNormal(
+		  curve1,
+		  1,
+		  radius,
+		  matrix,
+		  strokeMatrix
+		)
+		let normal2 = Path._getStrokeNormal(
+		  curve2,
+		  0,
+		  radius,
+		  matrix,
+		  strokeMatrix
+		)
+		const angle = normal1.getDirectedAngle(normal2)
 		if (angle < 0 || angle >= 180) {
 		  normal1 = normal1.negate()
 		  normal2 = normal2.negate()
@@ -13208,7 +13313,7 @@ var Path = PathItem.extend(
 		if (isArea) addPoint(point)
 		addPoint(point.add(normal1.transform(strokeMatrix)))
 		if (join === 'miter') {
-		  var corner = new Line(
+		  const corner = new Line(
 			normal1,
 			new Point(-normal1.y, normal1.x),
 			true
@@ -13232,17 +13337,17 @@ var Path = PathItem.extend(
 		addPoint,
 		isArea
 	  ) {
-		var point = segment._point.transform(matrix),
-		  loc = segment.getLocation(),
-		  time = loc.getTime(),
-		  vector = Path._getStrokeNormal(
-			loc.getCurve(),
-			time,
-			time === 0 ? radius : -radius,
-			matrix,
-			strokeMatrix
-		  ),
-		  normal = vector.transform(strokeMatrix)
+		let point = segment._point.transform(matrix)
+		const loc = segment.getLocation()
+		const time = loc.getTime()
+		const vector = Path._getStrokeNormal(
+		  loc.getCurve(),
+		  time,
+		  time === 0 ? radius : -radius,
+		  matrix,
+		  strokeMatrix
+		)
+		const normal = vector.transform(strokeMatrix)
 		if (cap === 'square') {
 		  if (isArea) {
 			addPoint(point.subtract(normal))
@@ -13256,14 +13361,14 @@ var Path = PathItem.extend(
 
 	  getHandleBounds: function (segments, closed, path, matrix, options) {
 		if (!segments.length) return new Rectangle()
-		var style = path.getStyle(),
-		  stroke = options.stroke && style.hasStroke(),
-		  strokePadding,
-		  joinPadding
+		const style = path.getStyle()
+		const stroke = options.stroke && style.hasStroke()
+		let strokePadding
+		let joinPadding
 		if (stroke) {
-		  var strokeMatrix = path._getStrokeMatrix(matrix, options),
-			strokeRadius = style.getStrokeWidth() / 2,
-			joinRadius = strokeRadius
+		  const strokeMatrix = path._getStrokeMatrix(matrix, options)
+		  const strokeRadius = style.getStrokeWidth() / 2
+		  let joinRadius = strokeRadius
 		  if (style.getStrokeJoin() === 'miter')
 			joinRadius = strokeRadius * style.getMiterLimit()
 		  if (style.getStrokeCap() === 'square')
@@ -13271,24 +13376,24 @@ var Path = PathItem.extend(
 		  strokePadding = Matrix._getCircleExtents(strokeRadius, strokeMatrix)
 		  joinPadding = Matrix._getCircleExtents(joinRadius, strokeMatrix)
 		}
-		var coords = new Array(6),
-		  x1 = Infinity,
-		  x2 = -x1,
-		  y1 = x1,
-		  y2 = x2
-		for (var i = 0, l = segments.length; i < l; i++) {
-		  var segment = segments[i]
+		const coords = new Array(6)
+		let x1 = Infinity
+		let x2 = -x1
+		let y1 = x1
+		let y2 = x2
+		for (let i = 0, l = segments.length; i < l; i++) {
+		  const segment = segments[i]
 		  segment._transformCoordinates(matrix, coords)
-		  for (var j = 0; j < 6; j += 2) {
-			var padding = !j ? joinPadding : strokePadding,
-			  paddingX = padding ? padding[0] : 0,
-			  paddingY = padding ? padding[1] : 0,
-			  x = coords[j],
-			  y = coords[j + 1],
-			  xn = x - paddingX,
-			  xx = x + paddingX,
-			  yn = y - paddingY,
-			  yx = y + paddingY
+		  for (let j = 0; j < 6; j += 2) {
+			const padding = !j ? joinPadding : strokePadding
+			const paddingX = padding ? padding[0] : 0
+			const paddingY = padding ? padding[1] : 0
+			const x = coords[j]
+			const y = coords[j + 1]
+			const xn = x - paddingX
+			const xx = x + paddingX
+			const yn = y - paddingY
+			const yx = y + paddingY
 			if (xn < x1) x1 = xn
 			if (xx > x2) x2 = xx
 			if (yn < y1) y1 = yn
@@ -13303,32 +13408,32 @@ var Path = PathItem.extend(
 
 Path.inject({
   statics: new (function () {
-	var kappa = 0.5522847498307936,
-	  ellipseSegments = [
-		new Segment([-1, 0], [0, kappa], [0, -kappa]),
-		new Segment([0, -1], [-kappa, 0], [kappa, 0]),
-		new Segment([1, 0], [0, -kappa], [0, kappa]),
-		new Segment([0, 1], [kappa, 0], [-kappa, 0])
-	  ]
+	const kappa = 0.5522847498307936
+	const ellipseSegments = [
+	  new Segment([-1, 0], [0, kappa], [0, -kappa]),
+	  new Segment([0, -1], [-kappa, 0], [kappa, 0]),
+	  new Segment([1, 0], [0, -kappa], [0, kappa]),
+	  new Segment([0, 1], [kappa, 0], [-kappa, 0])
+	]
 
 	function createPath(segments, closed, args) {
-	  var props = Base.getNamed(args),
-		path = new Path(
-		  props && {
-			insert: props.insert,
-			project: props.project,
-			parent: props.parent
-		  }
-		)
+	  const props = Base.getNamed(args)
+	  const path = new Path(
+		props && {
+		  insert: props.insert,
+		  project: props.project,
+		  parent: props.parent
+		}
+	  )
 	  path._add(segments)
 	  path._closed = closed
 	  return path.set(props, { insert: true, project: true, parent: true })
 	}
 
 	function createEllipse(center, radius, args) {
-	  var segments = new Array(4)
-	  for (var i = 0; i < 4; i++) {
-		var segment = ellipseSegments[i]
+	  const segments = new Array(4)
+	  for (let i = 0; i < 4; i++) {
+		const segment = ellipseSegments[i]
 		segments[i] = new Segment(
 		  segment._point.multiply(radius).add(center),
 		  segment._handleIn.multiply(radius),
@@ -13340,7 +13445,7 @@ Path.inject({
 
 	return  {
 	  Line: function () {
-		var args = arguments
+		const args = arguments
 		return createPath(
 		  [
 			new Segment(Point.readNamed(args, 'from')),
@@ -13352,21 +13457,21 @@ Path.inject({
 	  },
 
 	  Circle: function () {
-		var args = arguments,
-		  center = Point.readNamed(args, 'center'),
-		  radius = Base.readNamed(args, 'radius')
+		const args = arguments
+		const center = Point.readNamed(args, 'center')
+		const radius = Base.readNamed(args, 'radius')
 		return createEllipse(center, new Size(radius), args)
 	  },
 
 	  Rectangle: function () {
-		var args = arguments,
-		  rect = Rectangle.readNamed(args, 'rectangle'),
-		  radius = Size.readNamed(args, 'radius', 0, { readNull: true }),
-		  bl = rect.getBottomLeft(true),
-		  tl = rect.getTopLeft(true),
-		  tr = rect.getTopRight(true),
-		  br = rect.getBottomRight(true),
-		  segments
+		const args = arguments
+		const rect = Rectangle.readNamed(args, 'rectangle')
+		let radius = Size.readNamed(args, 'radius', 0, { readNull: true })
+		const bl = rect.getBottomLeft(true)
+		const tl = rect.getTopLeft(true)
+		const tr = rect.getTopRight(true)
+		const br = rect.getBottomRight(true)
+		let segments
 		if (!radius || radius.isZero()) {
 		  segments = [
 			new Segment(bl),
@@ -13376,10 +13481,10 @@ Path.inject({
 		  ]
 		} else {
 		  radius = Size.min(radius, rect.getSize(true).divide(2))
-		  var rx = radius.width,
-			ry = radius.height,
-			hx = rx * kappa,
-			hy = ry * kappa
+		  const rx = radius.width
+		  const ry = radius.height
+		  const hx = rx * kappa
+		  const hy = ry * kappa
 		  segments = [
 			new Segment(bl.add(rx, 0), null, [-hx, 0]),
 			new Segment(bl.subtract(0, ry), [0, hy]),
@@ -13397,34 +13502,34 @@ Path.inject({
 	  RoundRectangle: '#Rectangle',
 
 	  Ellipse: function () {
-		var args = arguments,
-		  ellipse = Shape._readEllipse(args)
+		const args = arguments
+		const ellipse = Shape._readEllipse(args)
 		return createEllipse(ellipse.center, ellipse.radius, args)
 	  },
 
 	  Oval: '#Ellipse',
 
 	  Arc: function () {
-		var args = arguments,
-		  from = Point.readNamed(args, 'from'),
-		  through = Point.readNamed(args, 'through'),
-		  to = Point.readNamed(args, 'to'),
-		  arc = new Path(Item.NO_INSERT)
+		const args = arguments
+		const from = Point.readNamed(args, 'from')
+		const through = Point.readNamed(args, 'through')
+		const to = Point.readNamed(args, 'to')
+		const arc = new Path(Item.NO_INSERT)
 		arc.moveTo(from)
 		arc.arcTo(through, to)
 		return createPath(arc._segments, false, args)
 	  },
 
 	  RegularPolygon: function () {
-		var args = arguments,
-		  center = Point.readNamed(args, 'center'),
-		  sides = Base.readNamed(args, 'sides'),
-		  radius = Base.readNamed(args, 'radius'),
-		  step = -360 / sides,
-		  offset = sides % 2 ? 0 : -0.5,
-		  vector = new Point(0, -radius),
-		  segments = new Array(sides)
-		for (var i = 0; i < sides; i++)
+		const args = arguments
+		const center = Point.readNamed(args, 'center')
+		const sides = Base.readNamed(args, 'sides')
+		const radius = Base.readNamed(args, 'radius')
+		const step = -360 / sides
+		const offset = sides % 2 ? 0 : -0.5
+		const vector = new Point(0, -radius)
+		const segments = new Array(sides)
+		for (let i = 0; i < sides; i++)
 		  segments[i] = new Segment(
 			center.add(
 			  vector.rotate((i + offset) * step)
@@ -13434,15 +13539,15 @@ Path.inject({
 	  },
 
 	  Star: function () {
-		var args = arguments,
-		  center = Point.readNamed(args, 'center'),
-		  points = Base.readNamed(args, 'points') * 2,
-		  radius1 = Base.readNamed(args, 'radius1'),
-		  radius2 = Base.readNamed(args, 'radius2'),
-		  step = 360 / points,
-		  vector = new Point(0, -1),
-		  segments = new Array(points)
-		for (var i = 0; i < points; i++)
+		const args = arguments
+		const center = Point.readNamed(args, 'center')
+		const points = Base.readNamed(args, 'points') * 2
+		const radius1 = Base.readNamed(args, 'radius1')
+		const radius2 = Base.readNamed(args, 'radius2')
+		const step = 360 / points
+		const vector = new Point(0, -1)
+		const segments = new Array(points)
+		for (let i = 0; i < points; i++)
 		  segments[i] = new Segment(
 			center.add(
 			  vector.rotate(step * i).multiply(i % 2 ? radius2 : radius1)
@@ -13456,12 +13561,12 @@ Path.inject({
 
 Path.inject(
   new (function () {
-	var tMin = 1e-8,
-	  tMax = 1 - tMin,
-	  defaults = { width: 1, aspect: 1, angle: 0 }
+	const tMin = 1e-8
+	const tMax = 1 - tMin
+	const defaults = { width: 1, aspect: 1, angle: 0 }
 
 	function getEntries(path) {
-	  var profile = path._strokeProfile || []
+	  const profile = path._strokeProfile || []
 	  return profile.map(function (stop) {
 		return {
 		  offset: stop.getOffset(),
@@ -13474,15 +13579,15 @@ Path.inject(
 	}
 
 	function getValue(entries, key, offset, length, closed, after) {
-	  var stops = entries.filter(function (entry) {
-		  return entry[key] != null
-		}),
-		count = stops.length,
-		index = -1
+	  const stops = entries.filter(function (entry) {
+		return entry[key] != null
+	  })
+	  const count = stops.length
+	  let index = -1
 
 	  function getStop(index) {
-		var turns = Math.floor(index / count),
-		  stop = stops[index - turns * count]
+		const turns = Math.floor(index / count)
+		const stop = stops[index - turns * count]
 		return {
 		  offset: stop.offset + turns * length,
 		  value: stop[key],
@@ -13491,27 +13596,27 @@ Path.inject(
 	  }
 
 	  function getSlope(index, forward) {
-		var stop = getStop(index),
-		  other = getStop(forward ? index + 1 : index - 1)
+		const stop = getStop(index)
+		const other = getStop(forward ? index + 1 : index - 1)
 		return stop.smooth
 		  ? 0
 		  : (other.value - stop.value) / (other.offset - stop.offset)
 	  }
 
 	  if (count) {
-		for (var i = 0; i < count; i++) {
-		  var stopOffset = stops[i].offset
+		for (let i = 0; i < count; i++) {
+		  const stopOffset = stops[i].offset
 		  if (stopOffset < offset || stopOffset === offset && after) index = i
 		}
 		if (closed || index >= 0 && index < count - 1) {
-		  var stop1 = getStop(index),
-			stop2 = getStop(index + 1),
-			h = stop2.offset - stop1.offset,
-			t = (offset - stop1.offset) / h,
-			v1 = stop1.value,
-			v2 = stop2.value,
-			m1 = getSlope(index, true) * h,
-			m2 = getSlope(index + 1, false) * h
+		  const stop1 = getStop(index)
+		  const stop2 = getStop(index + 1)
+		  const h = stop2.offset - stop1.offset
+		  const t = (offset - stop1.offset) / h
+		  const v1 = stop1.value
+		  const v2 = stop2.value
+		  const m1 = getSlope(index, true) * h
+		  const m2 = getSlope(index + 1, false) * h
 		  return [
 			((2 * t - 3) * t * t + 1) * v1 +
 			((t - 2) * t + 1) * t * m1 +
@@ -13533,9 +13638,9 @@ Path.inject(
 	}
 
 	function getValues(entries, offset, length, closed, after) {
-	  var values = { offset: offset }
-	  for (var key in defaults) {
-		var value = getValue(entries, key, offset, length, closed, after)
+	  const values = { offset: offset }
+	  for (const key in defaults) {
+		const value = getValue(entries, key, offset, length, closed, after)
 		values[key] = value && value[0]
 	  }
 	  return values
@@ -13552,12 +13657,12 @@ Path.inject(
 	  fallbacks
 	) {
 	  function getEnd(offset, after) {
-		var values = getValues(entries, offset, length, closed, after)
-		for (var key in fallbacks) {
+		const values = getValues(entries, offset, length, closed, after)
+		for (const key in fallbacks) {
 		  if (values[key] == null) values[key] = fallbacks[key]
 		}
-		var stop = null
-		for (var i = 0, l = entries.length; i < l; i++) {
+		let stop = null
+		for (let i = 0, l = entries.length; i < l; i++) {
 		  if (entries[i].offset === offset && (after || !stop))
 			stop = entries[i]
 		}
@@ -13565,10 +13670,10 @@ Path.inject(
 		return values
 	  }
 
-	  var part = []
-	  for (var i = 0, l = entries.length; i < l; i++) {
-		var entry = entries[i],
-		  offset = entry.offset
+	  const part = []
+	  for (let i = 0, l = entries.length; i < l; i++) {
+		const entry = entries[i]
+		let offset = entry.offset
 		if (closed && offset < from) offset += length
 		if (
 		  (offset > from || offset === from && !hasStart) &&
@@ -13589,18 +13694,24 @@ Path.inject(
 	}
 
 	function getSpanIndex(path, start, count, fraction) {
-	  var curves = path.getCurves(),
-		lengths = [],
-		total = 0
-	  for (var i = 0; i < count; i++) {
-		var length = curves[(start + i) % curves.length].getLength()
+	  let i
+
+	  const curves = path.getCurves()
+	  const lengths = []
+	  let total = 0
+	  for (i = 0; i < count; i++) {
+		const length = curves[(start + i) % curves.length].getLength()
 		lengths.push(length)
 		total += length
 	  }
-	  var rest = fraction * total,
-		i = 0
+	  let rest = fraction * total
+	  i = 0
 	  while (i < count - 1 && rest >= lengths[i]) rest -= lengths[i++]
-	  var index = start + i + (lengths[i] ? Math.min(rest / lengths[i], 1) : 0)
+	  const index = (
+		start +
+		i +
+		(lengths[i] ? Math.min(rest / lengths[i], 1) : 0)
+	  )
 	  return path._closed ? index % curves.length : index
 	}
 
@@ -13612,12 +13723,16 @@ Path.inject(
 	  },
 
 	  setStrokeProfile: function (stops) {
-		var previous = this._strokeProfile,
-		  profile = null
+		let i
+		let l
+		let stop
+
+		const previous = this._strokeProfile
+		let profile = null
 		if (stops && stops.length) {
 		  profile = []
-		  for (var i = 0, l = stops.length; i < l; i++) {
-			var stop = stops[i]
+		  for (i = 0, l = stops.length; i < l; i++) {
+			stop = stops[i]
 			if (!(stop instanceof StrokeProfileStop)) {
 			  stop = new StrokeProfileStop(stop)
 			} else if (stop._path && stop._path !== this) {
@@ -13631,8 +13746,8 @@ Path.inject(
 			profile.push(stop)
 		  }
 		}
-		for (var i = 0, l = previous ? previous.length : 0; i < l; i++) {
-		  var stop = previous[i]
+		for (i = 0, l = previous ? previous.length : 0; i < l; i++) {
+		  stop = previous[i]
 		  if (!profile || profile.indexOf(stop) === -1) {
 			stop._offset = stop.getOffset()
 			stop._index = stop._path = null
@@ -13644,45 +13759,45 @@ Path.inject(
 	  },
 
 	  getStrokeProfileAt: function (offset) {
-		var values = getValues(
+		const values = getValues(
 		  getEntries(this),
 		  offset,
 		  this.getLength(),
 		  this._closed,
 		  true
 		)
-		for (var key in defaults) {
+		for (const key in defaults) {
 		  if (values[key] == null) values[key] = defaults[key]
 		}
 		return new StrokeProfileStop(values)
 	  },
 
 	  _getStrokeProfilePens: function () {
-		var entries = getEntries(this),
-		  length = this.getLength(),
-		  closed = this._closed,
-		  pens = []
+		const entries = getEntries(this)
+		const length = this.getLength()
+		const closed = this._closed
+		const pens = []
 
 		function getPen(offset, after) {
-		  var values = getValues(entries, offset, length, closed, after)
-		  for (var key in defaults) {
+		  const values = getValues(entries, offset, length, closed, after)
+		  for (const key in defaults) {
 			if (values[key] == null) values[key] = defaults[key]
 		  }
 		  return values
 		}
 
-		var offsets = [0].concat(
+		const offsets = [0].concat(
 		  entries.map(function (entry) {
 			return entry.offset
 		  }),
 		  length
 		)
-		for (var i = 0, l = offsets.length; i < l; i++) {
-		  var offset = offsets[i]
+		for (let i = 0, l = offsets.length; i < l; i++) {
+		  const offset = offsets[i]
 		  if (!i || offset > offsets[i - 1]) {
 			if (offset > 0) pens.push(getPen(offset, false))
 			if (offset < length) {
-			  var pen = getPen(offset, true)
+			  const pen = getPen(offset, true)
 			  if (!offset || !Base.equals(pen, pens[pens.length - 1]))
 				pens.push(pen)
 			}
@@ -13692,12 +13807,12 @@ Path.inject(
 	  },
 
 	  _getStrokeProfileValues: function () {
-		var entries = getEntries(this),
-		  length = this.getLength(),
-		  closed = this._closed
+		const entries = getEntries(this)
+		const length = this.getLength()
+		const closed = this._closed
 		return function (offset, after) {
-		  var values = {}
-		  for (var key in defaults) {
+		  const values = {}
+		  for (const key in defaults) {
 			values[key] = getValue(
 			  entries,
 			  key,
@@ -13716,16 +13831,16 @@ Path.inject(
 	  },
 
 	  _getIndexAt: function (offset) {
-		var length = this.getLength()
+		const length = this.getLength()
 		offset = this._closed
 		  ? length
 			? (offset % length + length) % length
 			: 0
 		  : Math.min(Math.max(offset, 0), length)
-		var loc = this.getLocationAt(offset)
+		const loc = this.getLocationAt(offset)
 		if (loc) {
-		  var time = loc.getTime(),
-			curveLength = loc.getCurve().getLength()
+		  const time = loc.getTime()
+		  const curveLength = loc.getCurve().getLength()
 		  return (
 			loc.getIndex() + (
 			  time < tMin || !curveLength
@@ -13740,10 +13855,10 @@ Path.inject(
 	  },
 
 	  _getOffsetAtIndex: function (index) {
-		var curves = this.getCurves(),
-		  i = Math.floor(index),
-		  offset = 0
-		for (var j = 0, l = Math.min(i, curves.length); j < l; j++)
+		const curves = this.getCurves()
+		const i = Math.floor(index)
+		let offset = 0
+		for (let j = 0, l = Math.min(i, curves.length); j < l; j++)
 		  offset += curves[j].getLength()
 		return i < curves.length
 		  ? offset + (index - i) * curves[i].getLength()
@@ -13757,24 +13872,24 @@ Path.inject(
 	  },
 
 	  _filterStrokeProfile: function (callback) {
-		var profile = this._strokeProfile.filter(callback)
+		const profile = this._strokeProfile.filter(callback)
 		this.setStrokeProfile(profile)
 	  },
 
 	  _insertStrokeProfile: function (index, amount) {
-		var profile = this._strokeProfile,
-		  count = this._segments.length - amount,
-		  closed = this._closed,
-		  divided = closed
-			? (index + count - 1) % count
-			: index > 0 && index < count
-			  ? index - 1
-			  : -1,
-		  start = divided < index ? divided : divided + amount
+		const profile = this._strokeProfile
+		const count = this._segments.length - amount
+		const closed = this._closed
+		const divided = closed
+		  ? (index + count - 1) % count
+		  : index > 0 && index < count
+			? index - 1
+			: -1
+		const start = divided < index ? divided : divided + amount
 		if (count) {
-		  for (var i = 0, l = profile.length; i < l; i++) {
-			var stop = profile[i],
-			  x = stop._index
+		  for (let i = 0, l = profile.length; i < l; i++) {
+			const stop = profile[i]
+			const x = stop._index
 			if (divided >= 0 && x > divided && x < divided + 1) {
 			  stop._index = getSpanIndex(this, start, amount + 1, x - divided)
 			} else if (x >= index) {
@@ -13786,16 +13901,16 @@ Path.inject(
 	  },
 
 	  _removeStrokeProfile: function (start, end) {
-		var count = this._segments.length,
-		  closed = this._closed,
-		  amount = end - start,
-		  curves = this.getCurves(),
-		  before = closed ? (start + count - 1) % count : start - 1,
-		  index = before < start ? before : before - amount,
-		  span = amount + 1
+		const count = this._segments.length
+		const closed = this._closed
+		const amount = end - start
+		const curves = this.getCurves()
+		const before = closed ? (start + count - 1) % count : start - 1
+		const index = before < start ? before : before - amount
+		const span = amount + 1
 
 		function isKept(stop) {
-		  var x = stop._index
+		  const x = stop._index
 		  return closed
 			? amount < count
 			: start
@@ -13804,16 +13919,16 @@ Path.inject(
 		}
 
 		this._filterStrokeProfile(isKept)
-		var profile = this._strokeProfile || []
-		for (var i = 0, l = profile.length; i < l; i++) {
-		  var stop = profile[i],
-			x = stop._index,
-			d = closed ? (x - before + count) % count : x - before
+		const profile = this._strokeProfile || []
+		for (let i = 0, l = profile.length; i < l; i++) {
+		  const stop = profile[i]
+		  const x = stop._index
+		  const d = closed ? (x - before + count) % count : x - before
 		  if (before >= 0 && d > 0 && d < span) {
-			var position = 0,
-			  total = 0
-			for (var j = 0; j < span; j++) {
-			  var length =
+			let position = 0
+			let total = 0
+			for (let j = 0; j < span; j++) {
+			  const length =
 				curves[(before + j) % curves.length]
 				  .getLength()
 			  if (j < Math.floor(d)) {
@@ -13832,10 +13947,10 @@ Path.inject(
 	  },
 
 	  _reverseStrokeProfile: function () {
-		var profile = this._strokeProfile,
-		  count = this._segments.length
-		for (var i = 0, l = profile.length; i < l; i++) {
-		  var stop = profile[i]
+		const profile = this._strokeProfile
+		const count = this._segments.length
+		for (let i = 0, l = profile.length; i < l; i++) {
+		  const stop = profile[i]
 		  stop._index = this._closed
 			? (2 * count - 1 - stop._index) % count
 			: count - 1 - stop._index
@@ -13845,7 +13960,7 @@ Path.inject(
 	  },
 
 	  _takeStrokeProfile: function () {
-		var part = {
+		const part = {
 		  entries: getEntries(this),
 		  length: this.getLength(),
 		  closed: this._closed
@@ -13855,24 +13970,24 @@ Path.inject(
 	  },
 
 	  _setStrokeProfileParts: function (parts) {
-		var length = this.getLength(),
-		  closed = this._closed,
-		  entries = [],
-		  fallbacks = {}
+		const length = this.getLength()
+		const closed = this._closed
+		const entries = []
+		const fallbacks = {}
 		parts.forEach(function (part) {
 		  part.entries.forEach(function (entry) {
-			for (var key in defaults) {
+			for (const key in defaults) {
 			  if (entry[key] != null) fallbacks[key] = defaults[key]
 			}
 		  })
 		})
-		for (var i = 0, l = parts.length; i < l; i++) {
-		  var part = parts[i],
-			start = i ? length - part.length : 0,
-			hasStart = closed || i > 0,
-			hasEnd = closed || i < l - 1
+		for (let i = 0, l = parts.length; i < l; i++) {
+		  const part = parts[i]
+		  const start = i ? length - part.length : 0
+		  const hasStart = closed || i > 0
+		  const hasEnd = closed || i < l - 1
 		  if (part.entries.length || l > 1 || closed) {
-			var shifted = getPart(
+			const shifted = getPart(
 			  part.entries,
 			  0,
 			  part.length,
@@ -13882,8 +13997,8 @@ Path.inject(
 			  hasEnd,
 			  fallbacks
 			)
-			for (var j = 0, m = shifted.length; j < m; j++) {
-			  var entry = shifted[j]
+			for (let j = 0, m = shifted.length; j < m; j++) {
+			  const entry = shifted[j]
 			  entry.offset += start
 			  entries.push(entry)
 			}
@@ -13894,7 +14009,7 @@ Path.inject(
 	  },
 
 	  _setStrokeProfilePart: function (part, from, to) {
-		var length = part.length
+		const length = part.length
 		this.setStrokeProfile(
 		  getPart(
 			part.entries,
@@ -13911,7 +14026,7 @@ Path.inject(
   })()
 )
 
-var StrokeProfileStop = Base.extend(
+const StrokeProfileStop = Base.extend(
    {
 	_class: 'StrokeProfileStop',
 	_compactSerialize: true,
@@ -13938,9 +14053,9 @@ var StrokeProfileStop = Base.extend(
 	},
 
 	_serialize: function (options, dictionary) {
-	  var props = { index: this._index }
+	  const props = { index: this._index }
 	  ;['width', 'aspect', 'angle'].forEach(function (key) {
-		var value = this['_' + key]
+		const value = this['_' + key]
 		if (value != null) props[key] = value
 	  }, this)
 	  if (!this._smooth) props.smooth = false
@@ -13956,12 +14071,12 @@ var StrokeProfileStop = Base.extend(
 	},
 
 	getOffset: function () {
-	  var path = this._path
+	  const path = this._path
 	  return path ? path._getOffsetAtIndex(this._index) : this._offset
 	},
 
 	setOffset: function (offset) {
-	  var path = this._path
+	  const path = this._path
 	  if (path) {
 		this._index = path._getIndexAt(offset)
 		path._sortStrokeProfile()
@@ -14026,7 +14141,7 @@ var StrokeProfileStop = Base.extend(
   }
 )
 
-var CompoundPath = PathItem.extend(
+const CompoundPath = PathItem.extend(
    {
 	_class: 'CompoundPath',
 	_serializeFields: {
@@ -14052,11 +14167,11 @@ var CompoundPath = PathItem.extend(
 	},
 
 	insertChildren: function insertChildren(index, items) {
-	  var list = items,
-		first = list[0]
+	  let list = items
+	  const first = list[0]
 	  if (first && typeof first[0] === 'number') list = [list]
-	  for (var i = items.length - 1; i >= 0; i--) {
-		var item = list[i]
+	  for (let i = items.length - 1; i >= 0; i--) {
+		const item = list[i]
 		if (list === items && !(item instanceof Path)) list = Base.slice(list)
 		if (Array.isArray(item)) {
 		  list[i] = new Path({ segments: item, insert: false })
@@ -14069,89 +14184,91 @@ var CompoundPath = PathItem.extend(
 	},
 
 	reduce: function reduce(options) {
-	  var children = this._children
-	  for (var i = children.length - 1; i >= 0; i--) {
-		var path = children[i].reduce(options)
+	  let path
+
+	  const children = this._children
+	  for (let i = children.length - 1; i >= 0; i--) {
+		path = children[i].reduce(options)
 		if (path.isEmpty()) path.remove()
 	  }
 	  if (!children.length) {
-		var path = new Path(Item.NO_INSERT)
+		path = new Path(Item.NO_INSERT)
 		path.copyAttributes(this)
 		path.insertAbove(this)
 		this.remove()
 		return path
 	  }
-	  var item = reduce.base.call(this)
+	  const item = reduce.base.call(this)
 	  if (item !== this) item.copyAttributes(this, true)
 	  return item
 	},
 
 	isClosed: function () {
-	  var children = this._children
-	  for (var i = 0, l = children.length; i < l; i++) {
+	  const children = this._children
+	  for (let i = 0, l = children.length; i < l; i++) {
 		if (!children[i]._closed) return false
 	  }
 	  return true
 	},
 
 	setClosed: function (closed) {
-	  var children = this._children
-	  for (var i = 0, l = children.length; i < l; i++) {
+	  const children = this._children
+	  for (let i = 0, l = children.length; i < l; i++) {
 		children[i].setClosed(closed)
 	  }
 	},
 
 	getFirstSegment: function () {
-	  var first = this.getFirstChild()
+	  const first = this.getFirstChild()
 	  return first && first.getFirstSegment()
 	},
 
 	getLastSegment: function () {
-	  var last = this.getLastChild()
+	  const last = this.getLastChild()
 	  return last && last.getLastSegment()
 	},
 
 	getCurves: function () {
-	  var children = this._children,
-		curves = []
-	  for (var i = 0, l = children.length; i < l; i++) {
+	  const children = this._children
+	  const curves = []
+	  for (let i = 0, l = children.length; i < l; i++) {
 		Base.push(curves, children[i].getCurves())
 	  }
 	  return curves
 	},
 
 	getFirstCurve: function () {
-	  var first = this.getFirstChild()
+	  const first = this.getFirstChild()
 	  return first && first.getFirstCurve()
 	},
 
 	getLastCurve: function () {
-	  var last = this.getLastChild()
+	  const last = this.getLastChild()
 	  return last && last.getLastCurve()
 	},
 
 	getArea: function () {
-	  var children = this._children,
-		area = 0
-	  for (var i = 0, l = children.length; i < l; i++)
+	  const children = this._children
+	  let area = 0
+	  for (let i = 0, l = children.length; i < l; i++)
 		area += children[i].getArea()
 	  return area
 	},
 
 	getLength: function () {
-	  var children = this._children,
-		length = 0
-	  for (var i = 0, l = children.length; i < l; i++)
+	  const children = this._children
+	  let length = 0
+	  for (let i = 0, l = children.length; i < l; i++)
 		length += children[i].getLength()
 	  return length
 	},
 
 	getPathData: function (_matrix, _precision) {
-	  var children = this._children,
-		paths = []
-	  for (var i = 0, l = children.length; i < l; i++) {
-		var child = children[i],
-		  mx = child._matrix
+	  const children = this._children
+	  const paths = []
+	  for (let i = 0, l = children.length; i < l; i++) {
+		const child = children[i]
+		const mx = child._matrix
 		paths.push(
 		  child.getPathData(
 			_matrix && !mx.isIdentity()
@@ -14176,22 +14293,22 @@ var CompoundPath = PathItem.extend(
 	},
 
 	_draw: function (ctx, param, viewMatrix, strokeMatrix) {
-	  var children = this._children
+	  const children = this._children
 	  if (!children.length) return
 
 	  param = param.extend({ dontStart: true, dontFinish: true })
 	  ctx.beginPath()
-	  for (var i = 0, l = children.length; i < l; i++)
+	  for (let i = 0, l = children.length; i < l; i++)
 		children[i].draw(ctx, param, strokeMatrix)
 
 	  if (!param.clip) this._paint(ctx, param, viewMatrix, strokeMatrix)
 	},
 
 	_drawSelected: function (ctx, matrix, selectionItems) {
-	  var children = this._children
-	  for (var i = 0, l = children.length; i < l; i++) {
-		var child = children[i],
-		  mx = child._matrix
+	  const children = this._children
+	  for (let i = 0, l = children.length; i < l; i++) {
+		const child = children[i]
+		const mx = child._matrix
 		if (!selectionItems[child._id]) {
 		  child._drawSelected(
 			ctx,
@@ -14203,7 +14320,7 @@ var CompoundPath = PathItem.extend(
   },
   new (function () {
 	function getCurrentPath(that, check) {
-	  var children = that._children
+	  const children = that._children
 	  if (check && !children.length)
 		throw new Error('Use a moveTo() command first')
 	  return children[children.length - 1]
@@ -14217,23 +14334,23 @@ var CompoundPath = PathItem.extend(
 	  ],
 	  function (key) {
 		this[key] = function () {
-		  var path = getCurrentPath(this, true)
+		  const path = getCurrentPath(this, true)
 		  path[key].apply(path, arguments)
 		}
 	  },
 	  {
 		moveTo: function () {
-		  var current = getCurrentPath(this),
-			path =
-			  current && current.isEmpty() ? current : new Path(Item.NO_INSERT)
+		  const current = getCurrentPath(this)
+		  const path =
+			current && current.isEmpty() ? current : new Path(Item.NO_INSERT)
 		  if (path !== current) this.addChild(path)
 		  path.moveTo.apply(path, arguments)
 		},
 
 		moveBy: function () {
-		  var current = getCurrentPath(this, true),
-			last = current && current.getLastSegment(),
-			point = Point.read(arguments)
+		  const current = getCurrentPath(this, true)
+		  const last = current && current.getLastSegment()
+		  const point = Point.read(arguments)
 		  this.moveTo(last ? point.add(last._point) : point)
 		},
 
@@ -14247,15 +14364,15 @@ var CompoundPath = PathItem.extend(
 	['reverse', 'flatten', 'smooth'],
 	function (key) {
 	  this[key] = function (param) {
-		var children = this._children
-		for (var i = 0, l = children.length; i < l; i++) children[i][key](param)
+		const children = this._children
+		for (let i = 0, l = children.length; i < l; i++) children[i][key](param)
 	  }
 	},
 	{
 	  simplify: function (options) {
-		var children = this._children,
-		  res = false
-		for (var i = 0, l = children.length; i < l; i++)
+		const children = this._children
+		let res = false
+		for (let i = 0, l = children.length; i < l; i++)
 		  res = children[i].simplify(options) || res
 		return res
 	  }
@@ -14265,30 +14382,30 @@ var CompoundPath = PathItem.extend(
 
 PathItem.inject(
   new (function () {
-	var min = Math.min,
-	  max = Math.max,
-	  abs = Math.abs,
-	  operators = {
-		unite: function (inside1, inside2) {
-		  return inside1 || inside2
-		},
-		intersect: function (inside1, inside2) {
-		  return inside1 && inside2
-		},
-		subtract: function (inside1, inside2) {
-		  return inside1 && !inside2
-		},
-		exclude: function (inside1, inside2) {
-		  return inside1 !== inside2
-		}
+	const min = Math.min
+	const max = Math.max
+	const abs = Math.abs
+	const operators = {
+	  unite: function (inside1, inside2) {
+		return inside1 || inside2
+	  },
+	  intersect: function (inside1, inside2) {
+		return inside1 && inside2
+	  },
+	  subtract: function (inside1, inside2) {
+		return inside1 && !inside2
+	  },
+	  exclude: function (inside1, inside2) {
+		return inside1 !== inside2
 	  }
+	}
 
 	function getPaths(path) {
 	  return path._children || [path]
 	}
 
 	function preparePath(path, close) {
-	  var res = path
+	  const res = path
 		.clone(false)
 		.reduce({ simplify: true })
 		.transform(null, true, true)
@@ -14296,11 +14413,11 @@ PathItem.inject(
 	}
 
 	function closePaths(item) {
-	  var paths = getPaths(item)
-	  for (var i = 0, l = paths.length; i < l; i++) {
-		var path = paths[i]
+	  const paths = getPaths(item)
+	  for (let i = 0, l = paths.length; i < l; i++) {
+		const path = paths[i]
 		if (!path._closed && !path.isEmpty()) {
-		  var count = path._segments.length
+		  const count = path._segments.length
 		  path.closePath(1e-12)
 		  if (path._segments.length === count) {
 			path.getFirstSegment().setHandleIn(0, 0)
@@ -14312,14 +14429,14 @@ PathItem.inject(
 	}
 
 	function createResult(paths, simplify, path1, path2, options) {
-	  var result = new CompoundPath(Item.NO_INSERT)
+	  let result = new CompoundPath(Item.NO_INSERT)
 	  result.addChildren(paths, true)
 	  result = result.reduce({ simplify: simplify })
 	  if (Base.pick(options && options.insert, paper.settings.insertItems)) {
-		var above = path1,
-		  others = [].concat(path2 || [])
-		for (var i = 0, l = others.length; i < l; i++) {
-		  var other = others[i]
+		let above = path1
+		const others = [].concat(path2 || [])
+		for (let i = 0, l = others.length; i < l; i++) {
+		  const other = others[i]
 		  if (path1.isSibling(other) && other.getIndex() > above.getIndex())
 			above = other
 		}
@@ -14340,12 +14457,12 @@ PathItem.inject(
 		/^(subtract|intersect)$/.test(operation)
 	  )
 		return splitBoolean(path1, path2, operation, options)
-	  var paths
+	  let paths
 	  if (operation === 'exclude' && Array.isArray(path2) && path2.length > 1) {
-		var items = [path1].concat(path2),
-		  compound = new CompoundPath(Item.NO_INSERT)
+		const items = [path1].concat(path2)
+		const compound = new CompoundPath(Item.NO_INSERT)
 		compound.setFillRule('evenodd')
-		for (var i = 0, l = items.length; i < l; i++) {
+		for (let i = 0, l = items.length; i < l; i++) {
 		  compound.addChildren(
 			tracePaths([preparePath(items[i], true)], operators.unite)
 		  )
@@ -14361,20 +14478,20 @@ PathItem.inject(
 	}
 
 	function combinePaths(paths, operation) {
-	  var isUnite = operation === 'unite' || operation === 'subtract'
+	  const isUnite = operation === 'unite' || operation === 'subtract'
 
 	  function combine(entries) {
 		if (entries.length > 1) {
 		  if (isUnite) {
-			var bounds = entries[0].bounds
-			for (var i = 1, l = entries.length; i < l; i++)
+			let bounds = entries[0].bounds
+			for (let i = 1, l = entries.length; i < l; i++)
 			  bounds = bounds.unite(entries[i].bounds)
-			var key = bounds.width > bounds.height ? 'x' : 'y'
+			const key = bounds.width > bounds.height ? 'x' : 'y'
 			entries.sort(function (entry1, entry2) {
 			  return entry1.center[key] - entry2.center[key]
 			})
 		  }
-		  var middle = entries.length >> 1
+		  const middle = entries.length >> 1
 		  return traceBoolean(
 			combine(entries.slice(0, middle)),
 			combine(entries.slice(middle)),
@@ -14385,38 +14502,41 @@ PathItem.inject(
 		return entries[0].path
 	  }
 
-	  var entries = [].concat(paths || []).map(function (path) {
-		var bounds = path.getBounds()
+	  const entries = [].concat(paths || []).map(function (path) {
+		const bounds = path.getBounds()
 		return { path: path, bounds: bounds, center: bounds.getCenter() }
 	  })
 	  return entries.length ? combine(entries) : null
 	}
 
 	function splitBoolean(path1, path2, operation, options) {
-	  var _path1 = preparePath(path1),
-		_path2 = preparePath(combinePaths(path2, operation)),
-		crossings = _path1.getIntersections(_path2, filterIntersection),
-		subtract = operation === 'subtract',
-		divide = operation === 'divide',
-		pieces = [],
-		paths = []
+	  let i
+	  let l
 
-	  for (var i = crossings.length - 1; i >= 0; i--) {
-		var crossing = crossings[i],
-		  split = crossing.getPath(),
-		  path = crossing.split()
+	  const _path1 = preparePath(path1)
+	  const _path2 = preparePath(combinePaths(path2, operation))
+	  const crossings = _path1.getIntersections(_path2, filterIntersection)
+	  const subtract = operation === 'subtract'
+	  const divide = operation === 'divide'
+	  const pieces = []
+	  const paths = []
+
+	  for (i = crossings.length - 1; i >= 0; i--) {
+		const crossing = crossings[i]
+		const split = crossing.getPath()
+		const path = crossing.split()
 		if (path) {
 		  path.getFirstSegment().setHandleIn(0, 0)
 		  split.getLastSegment().setHandleOut(0, 0)
 		  if (pieces.indexOf(path) === -1) pieces.push(path)
 		}
 	  }
-	  var children = _path1._children || [_path1]
-	  for (var i = 0, l = children.length; i < l; i++) {
+	  const children = _path1._children || [_path1]
+	  for (i = 0, l = children.length; i < l; i++) {
 		if (pieces.indexOf(children[i]) === -1) pieces.push(children[i])
 	  }
-	  for (var i = 0, l = pieces.length; i < l; i++) {
-		var piece = pieces[i]
+	  for (i = 0, l = pieces.length; i < l; i++) {
+		const piece = pieces[i]
 		if (
 		  divide || (
 			_path2.contains(
@@ -14431,23 +14551,23 @@ PathItem.inject(
 	}
 
 	function getRayWinding(point, v) {
-	  var winding = 0,
-		x = point.x,
-		y = point.y
+	  let winding = 0
+	  const x = point.x
+	  const y = point.y
 	  if (
 		y >= min(v[1], v[3], v[5], v[7]) &&
 		y <= max(v[1], v[3], v[5], v[7]) &&
 		x < max(v[0], v[2], v[4], v[6])
 	  ) {
-		var monoCurves = Curve.getMonoCurves(v),
-		  roots = []
-		for (var i = 0, l = monoCurves.length; i < l; i++) {
-		  var mv = monoCurves[i],
-			y0 = mv[1],
-			y3 = mv[7],
-			dir = y0 < y3 ? 1 : y0 > y3 ? -1 : 0
+		const monoCurves = Curve.getMonoCurves(v)
+		const roots = []
+		for (let i = 0, l = monoCurves.length; i < l; i++) {
+		  const mv = monoCurves[i]
+		  const y0 = mv[1]
+		  const y3 = mv[7]
+		  const dir = y0 < y3 ? 1 : y0 > y3 ? -1 : 0
 		  if (dir && y >= min(y0, y3) && y < max(y0, y3)) {
-			var px =
+			const px =
 			  Curve.solveCubic(mv, 1, y, roots, 0, 1) > 0
 				? Curve.getPoint(mv, roots[0]).x
 				: abs(y - y0) < abs(y - y3)
@@ -14461,47 +14581,47 @@ PathItem.inject(
 	}
 
 	function reorientPaths(paths, isInside, clockwise) {
-	  var length = paths && paths.length
+	  const length = paths && paths.length
 	  if (length) {
-		var lookup = Base.each(
-			paths,
-			function (path, i) {
-			  this[path._id] = {
-				container: null,
-				winding: path.isClockwise() ? 1 : -1,
-				index: i
-			  }
-			},
-			{}
-		  ),
-		  sorted = paths.slice().sort(function (a, b) {
-			return abs(b.getArea()) - abs(a.getArea())
-		  }),
-		  first = sorted[0]
-		var collisions = CollisionDetection.findItemBoundsCollisions(
+		const lookup = Base.each(
+		  paths,
+		  function (path, i) {
+			this[path._id] = {
+			  container: null,
+			  winding: path.isClockwise() ? 1 : -1,
+			  index: i
+			}
+		  },
+		  {}
+		)
+		const sorted = paths.slice().sort(function (a, b) {
+		  return abs(b.getArea()) - abs(a.getArea())
+		})
+		const first = sorted[0]
+		const collisions = CollisionDetection.findItemBoundsCollisions(
 		  sorted,
 		  null,
 		  Numerical.GEOMETRIC_EPSILON
 		)
 		if (clockwise == null) clockwise = first.isClockwise()
-		for (var i = 0; i < length; i++) {
-		  var path1 = sorted[i],
-			entry1 = lookup[path1._id],
-			containerWinding = 0,
-			indices = collisions[i]
+		for (let i = 0; i < length; i++) {
+		  const path1 = sorted[i]
+		  const entry1 = lookup[path1._id]
+		  let containerWinding = 0
+		  const indices = collisions[i]
 		  if (indices) {
-			var point = null
-			for (var j = indices.length - 1; j >= 0; j--) {
+			let point = null
+			for (let j = indices.length - 1; j >= 0; j--) {
 			  if (indices[j] < i) {
 				point = point || path1.getInteriorPoint()
-				var path2 = sorted[indices[j]]
-				var curves = path2.getCurves(),
-				  winding = 0
-				for (var k = 0, n = curves.length; k < n; k++) {
+				const path2 = sorted[indices[j]]
+				const curves = path2.getCurves()
+				let winding = 0
+				for (let k = 0, n = curves.length; k < n; k++) {
 				  winding += getRayWinding(point, curves[k].getValues())
 				}
 				if (winding) {
-				  var entry2 = lookup[path2._id]
+				  const entry2 = lookup[path2._id]
 				  containerWinding = entry2.winding
 				  entry1.winding += containerWinding
 				  entry1.container = entry2.exclude
@@ -14516,7 +14636,7 @@ PathItem.inject(
 			entry1.exclude = true
 			paths[entry1.index] = null
 		  } else {
-			var container = entry1.container
+			const container = entry1.container
 			path1.setClockwise(
 			  container ? !container.isClockwise() : clockwise
 			)
@@ -14527,56 +14647,58 @@ PathItem.inject(
 	}
 
 	function getWinding(point, curves, dir, dontFlip) {
-	  var ia = dir ? 1 : 0,
-		io = ia ^ 1,
-		pv = [point.x, point.y],
-		pa = pv[ia],
-		po = pv[io],
-		windingEpsilon = 1e-9,
-		paL = pa - windingEpsilon,
-		paR = pa + windingEpsilon,
-		windingL = 0,
-		windingR = 0,
-		pathWindingL = 0,
-		pathWindingR = 0,
-		onPath = false,
-		onAnyPath = false,
-		roots = [],
-		vPrev,
-		vClose
+	  let res
+
+	  const ia = dir ? 1 : 0
+	  const io = ia ^ 1
+	  const pv = [point.x, point.y]
+	  const pa = pv[ia]
+	  const po = pv[io]
+	  const windingEpsilon = 1e-9
+	  const paL = pa - windingEpsilon
+	  const paR = pa + windingEpsilon
+	  let windingL = 0
+	  let windingR = 0
+	  let pathWindingL = 0
+	  let pathWindingR = 0
+	  let onPath = false
+	  let onAnyPath = false
+	  const roots = []
+	  let vPrev
+	  let vClose
 
 	  function addWinding(v) {
-		var o0 = v[io + 0],
-		  o3 = v[io + 6]
+		const o0 = v[io + 0]
+		const o3 = v[io + 6]
 		if (po < min(o0, o3) || po > max(o0, o3)) {
 		  return
 		}
-		var a0 = v[ia + 0],
-		  a1 = v[ia + 2],
-		  a2 = v[ia + 4],
-		  a3 = v[ia + 6]
+		const a0 = v[ia + 0]
+		const a1 = v[ia + 2]
+		const a2 = v[ia + 4]
+		const a3 = v[ia + 6]
 		if (o0 === o3) {
 		  if (a0 < paR && a3 > paL || a3 < paR && a0 > paL) {
 			onPath = true
 		  }
 		  return
 		}
-		var t =
-			po === o0
-			  ? 0
-			  : po === o3
+		const t =
+		  po === o0
+			? 0
+			: po === o3
+			  ? 1
+			  :
+				paL > max(a0, a1, a2, a3) || paR < min(a0, a1, a2, a3)
 				? 1
-				:
-				  paL > max(a0, a1, a2, a3) || paR < min(a0, a1, a2, a3)
-				  ? 1
-				  : Curve.solveCubic(v, io, po, roots, 0, 1) > 0
-					? roots[0]
-					: 1,
-		  a =
-			t === 0 ? a0 : t === 1 ? a3 : Curve.getPoint(v, t)[dir ? 'y' : 'x'],
-		  winding = o0 > o3 ? 1 : -1,
-		  windingPrev = vPrev[io] > vPrev[io + 6] ? 1 : -1,
-		  a3Prev = vPrev[ia + 6]
+				: Curve.solveCubic(v, io, po, roots, 0, 1) > 0
+				  ? roots[0]
+				  : 1
+		const a =
+		  t === 0 ? a0 : t === 1 ? a3 : Curve.getPoint(v, t)[dir ? 'y' : 'x']
+		const winding = o0 > o3 ? 1 : -1
+		const windingPrev = vPrev[io] > vPrev[io + 6] ? 1 : -1
+		const a3Prev = vPrev[ia + 6]
 		if (po !== o0) {
 		  if (a < paL) {
 			pathWindingL += winding
@@ -14613,34 +14735,34 @@ PathItem.inject(
 	  }
 
 	  function handleCurve(v) {
-		var o0 = v[io + 0],
-		  o1 = v[io + 2],
-		  o2 = v[io + 4],
-		  o3 = v[io + 6]
+		const o0 = v[io + 0]
+		const o1 = v[io + 2]
+		const o2 = v[io + 4]
+		const o3 = v[io + 6]
 		if (po <= max(o0, o1, o2, o3) && po >= min(o0, o1, o2, o3)) {
-		  var a0 = v[ia + 0],
-			a1 = v[ia + 2],
-			a2 = v[ia + 4],
-			a3 = v[ia + 6],
-			monoCurves =
-			  (
-				paL > max(a0, a1, a2, a3) ||
-				paR < min(a0, a1, a2, a3)
-			  )
-				? [v]
-				: Curve.getMonoCurves(v, dir),
-			res
-		  for (var i = 0, l = monoCurves.length; i < l; i++) {
+		  const a0 = v[ia + 0]
+		  const a1 = v[ia + 2]
+		  const a2 = v[ia + 4]
+		  const a3 = v[ia + 6]
+		  const monoCurves =
+			(
+			  paL > max(a0, a1, a2, a3) ||
+			  paR < min(a0, a1, a2, a3)
+			)
+			  ? [v]
+			  : Curve.getMonoCurves(v, dir)
+		  let res
+		  for (let i = 0, l = monoCurves.length; i < l; i++) {
 			if ((res = addWinding(monoCurves[i]))) return res
 		  }
 		}
 	  }
 
-	  for (var i = 0, l = curves.length; i < l; i++) {
-		var curve = curves[i],
-		  path = curve._path,
-		  v = curve.getValues(),
-		  res
+	  for (let i = 0, l = curves.length; i < l; i++) {
+		const curve = curves[i]
+		const path = curve._path
+		const v = curve.getValues()
+
 		if (!i || curves[i - 1]._path !== path) {
 		  vPrev = null
 		  if (!path._closed) {
@@ -14657,9 +14779,9 @@ PathItem.inject(
 
 		  if (!vPrev) {
 			vPrev = v
-			var prev = path.getLastCurve()
+			let prev = path.getLastCurve()
 			while (prev && prev !== curve) {
-			  var v2 = prev.getValues()
+			  const v2 = prev.getValues()
 			  if (v2[io] !== v2[io + 6]) {
 				vPrev = v2
 				break
@@ -14700,13 +14822,13 @@ PathItem.inject(
 	}
 
 	function getPart(v, hasHandles, time1, time2, point1, point2) {
-	  var part
+	  let part
 	  if (hasHandles) {
 		part = Curve.getPart(v, time1, time2).slice()
-		var dx1 = point1.x - part[0],
-		  dy1 = point1.y - part[1],
-		  dx2 = point2.x - part[6],
-		  dy2 = point2.y - part[7]
+		const dx1 = point1.x - part[0]
+		const dy1 = point1.y - part[1]
+		const dx2 = point2.x - part[6]
+		const dy2 = point2.y - part[7]
 		part[0] += dx1
 		part[1] += dy1
 		part[2] += dx1
@@ -14731,40 +14853,64 @@ PathItem.inject(
 	}
 
 	function createGraph(operands) {
-	  var curves = [],
-		curveOperands = [],
-		offsets = {},
-		nonZeros = [],
-		bounds = null
-	  for (var i = 0, l = operands.length; i < l; i++) {
-		var operand = operands[i],
-		  paths = getPaths(operand)
+	  let bounds
+	  let i
+	  let l
+	  let j
+	  let k
+	  let m
+	  let n
+	  let curve
+	  let collisions
+	  let b
+	  let list
+	  let windings
+	  let edge
+	  let v
+	  let vertex
+	  let outgoing
+	  let halfEdge
+	  let point
+	  let face
+	  let index
+	  let component
+	  let indices
+	  let other
+
+	  const curves = []
+	  const curveOperands = []
+	  const offsets = {}
+	  const nonZeros = []
+	  bounds = null
+	  for (i = 0, l = operands.length; i < l; i++) {
+		const operand = operands[i]
+		const paths = getPaths(operand)
 		nonZeros.push(operand.getFillRule() === 'nonzero')
 		bounds = bounds
 		  ? bounds.unite(operand.getBounds())
 		  : operand.getBounds()
-		for (var j = 0, k = paths.length; j < k; j++) {
-		  var pathCurves = paths[j].getCurves()
+		for (j = 0, k = paths.length; j < k; j++) {
+		  const pathCurves = paths[j].getCurves()
 		  offsets[paths[j]._id] = curves.length
-		  for (var m = 0, n = pathCurves.length; m < n; m++) {
+		  for (m = 0, n = pathCurves.length; m < n; m++) {
 			curves.push(pathCurves[m])
 			curveOperands.push(i)
 		  }
 		}
 	  }
-	  var epsilon = Numerical.getEpsilon(
-		  max(
-			abs(bounds.left), abs(bounds.right),
-			abs(bounds.top), abs(bounds.bottom)
-		  ),
-		  bounds.getTopLeft().getDistance(bounds.getBottomRight()) *
-		  1e-7
+	  const epsilon = Numerical.getEpsilon(
+		max(
+		  abs(bounds.left), abs(bounds.right),
+		  abs(bounds.top), abs(bounds.bottom)
 		),
-		values = [],
-		cuts = [],
-		xs = [],
-		ys = [],
-		isEnds = []
+		bounds.getTopLeft().getDistance(bounds.getBottomRight()) *
+		1e-7
+	  )
+	  const values = []
+	  const cuts = []
+	  const xs = []
+	  const ys = []
+	  const isEnds = []
 
 	  function addCut(index, time, point, isEnd) {
 		cuts[index].push({ time: time, point: xs.length })
@@ -14773,31 +14919,31 @@ PathItem.inject(
 		isEnds.push(isEnd)
 	  }
 
-	  for (var i = 0, l = curves.length; i < l; i++) {
-		var curve = curves[i]
+	  for (i = 0, l = curves.length; i < l; i++) {
+		curve = curves[i]
 		values.push(curve.getValues())
 		cuts.push([])
 		addCut(i, 0, curve._segment1._point, true)
 		addCut(i, 1, curve._segment2._point, true)
 	  }
-	  var collisions = CollisionDetection.findCurveBoundsCollisions(
-		  values, values, 2 * epsilon
-		),
-		locations = CurveLocation.expand(
-		  Curve.getIntersections(
-			curves,
-			null,
-			null,
-			null,
-			null,
-			false,
-			epsilon,
-			collisions
-		  )
+	  collisions = CollisionDetection.findCurveBoundsCollisions(
+		values, values, 2 * epsilon
+	  )
+	  const locations = CurveLocation.expand(
+		Curve.getIntersections(
+		  curves,
+		  null,
+		  null,
+		  null,
+		  null,
+		  false,
+		  epsilon,
+		  collisions
 		)
-	  for (var i = 0, l = locations.length; i < l; i++) {
-		var loc = locations[i],
-		  curve = loc.getCurve()
+	  )
+	  for (i = 0, l = locations.length; i < l; i++) {
+		const loc = locations[i]
+		curve = loc.getCurve()
 		addCut(
 		  offsets[curve._path._id] + curve.getIndex(),
 		  loc.getTime(),
@@ -14805,17 +14951,17 @@ PathItem.inject(
 		  false
 		)
 	  }
-	  for (var i = 0, l = curves.length; i < l; i++) {
-		var times = Curve.getReversals(values[i], epsilon)
-		for (var j = 0, k = times.length; j < k; j++) {
+	  for (i = 0, l = curves.length; i < l; i++) {
+		const times = Curve.getReversals(values[i], epsilon)
+		for (j = 0, k = times.length; j < k; j++) {
 		  addCut(i, times[j], Curve.getPoint(values[i], times[j]), false)
 		}
 	  }
 
-	  var count = xs.length,
-		parents = new Array(count),
-		order = new Array(count)
-	  for (var i = 0; i < count; i++) parents[i] = order[i] = i
+	  const count = xs.length
+	  const parents = new Array(count)
+	  const order = new Array(count)
+	  for (i = 0; i < count; i++) parents[i] = order[i] = i
 
 	  function getRoot(i) {
 		while (parents[i] !== i) i = parents[i] = parents[parents[i]]
@@ -14825,26 +14971,27 @@ PathItem.inject(
 	  order.sort(function (a, b) {
 		return xs[a] - xs[b]
 	  })
-	  for (var i = 0; i < count; i++) {
-		var a = order[i]
-		for (var j = i + 1; j < count && xs[order[j]] - xs[a] <= epsilon; j++) {
-		  var b = order[j],
-			dx = xs[b] - xs[a],
-			dy = ys[b] - ys[a]
+	  for (i = 0; i < count; i++) {
+		const a = order[i]
+		for (j = i + 1; j < count && xs[order[j]] - xs[a] <= epsilon; j++) {
+		  b = order[j]
+		  const dx = xs[b] - xs[a]
+		  const dy = ys[b] - ys[a]
 		  if (dx * dx + dy * dy <= epsilon * epsilon)
 			parents[getRoot(a)] = getRoot(b)
 		}
 	  }
-	  var vertexIndices, vertices
+	  let vertexIndices
+	  let vertices
 
 	  function createVertices() {
 		vertexIndices = {}
 		vertices = []
-		for (var i = 0; i < count; i++) {
-		  var root = getRoot(i),
-			index = vertexIndices[root]
+		for (let i = 0; i < count; i++) {
+		  const root = getRoot(i)
+		  const index = vertexIndices[root]
 		  if (index === undefined) {
-			index = vertexIndices[root] = vertices.length
+			vertexIndices[root] = vertices.length
 			vertices.push({
 			  x: xs[i],
 			  y: ys[i],
@@ -14887,22 +15034,22 @@ PathItem.inject(
 		})
 	  }
 
-	  var marks
+	  let marks
 
 	  function getHotPixels(i) {
-		var v = values[i],
-		  left = min(v[0], v[2], v[4], v[6]) - 2 * epsilon,
-		  top = min(v[1], v[3], v[5], v[7]) - 2 * epsilon,
-		  right = max(v[0], v[2], v[4], v[6]) + 2 * epsilon,
-		  bottom = max(v[1], v[3], v[5], v[7]) + 2 * epsilon,
-		  indices = collisions[i],
-		  hotPixels = []
-		for (var j = 0, k = indices.length; j < k; j++) {
-		  var list = cuts[indices[j]]
-		  for (var m = 0, n = list.length; m < n; m++) {
-			var index = getVertex(list[m].point)
+		const v = values[i]
+		const left = min(v[0], v[2], v[4], v[6]) - 2 * epsilon
+		const top = min(v[1], v[3], v[5], v[7]) - 2 * epsilon
+		const right = max(v[0], v[2], v[4], v[6]) + 2 * epsilon
+		const bottom = max(v[1], v[3], v[5], v[7]) + 2 * epsilon
+		const indices = collisions[i]
+		const hotPixels = []
+		for (let j = 0, k = indices.length; j < k; j++) {
+		  const list = cuts[indices[j]]
+		  for (let m = 0, n = list.length; m < n; m++) {
+			const index = getVertex(list[m].point)
 			if (marks[index] !== i) {
-			  var vertex = vertices[index]
+			  const vertex = vertices[index]
 			  marks[index] = i
 			  if (
 				vertex.x >= left &&
@@ -14920,9 +15067,9 @@ PathItem.inject(
 	  }
 
 	  function isNearPiece(piece, index, vertex) {
-		var v = piece.values,
-		  x = vertex.x,
-		  y = vertex.y
+		const v = piece.values
+		const x = vertex.x
+		const y = vertex.y
 		return (
 		  getVertex(piece.cut1.point) !== index &&
 		  getVertex(piece.cut2.point) !== index &&
@@ -14942,20 +15089,23 @@ PathItem.inject(
 	  }
 
 	  function cutAtHotPixels(i) {
-		var candidates = getHotPixels(i)
+		let j
+		let k
+
+		const candidates = getHotPixels(i)
 		if (candidates.length) {
-		  var list = sortCuts(cuts[i]),
-			pieces = []
-		  for (var j = 1, k = list.length; j < k; j++)
+		  const list = sortCuts(cuts[i])
+		  const pieces = []
+		  for (j = 1, k = list.length; j < k; j++)
 			addPiece(pieces, i, list[j - 1], list[j])
 		  while (pieces.length) {
-			var piece = pieces.pop()
-			for (var j = 0, k = candidates.length; j < k; j++) {
-			  var index = candidates[j],
-				vertex = vertices[index]
+			const piece = pieces.pop()
+			for (j = 0, k = candidates.length; j < k; j++) {
+			  const index = candidates[j]
+			  const vertex = vertices[index]
 			  if (isNearPiece(piece, index, vertex)) {
-				var point = new Point(vertex.x, vertex.y),
-				  t = Curve.getNearestTime(piece.values, point)
+				const point = new Point(vertex.x, vertex.y)
+				const t = Curve.getNearestTime(piece.values, point)
 				if (
 				  t > 0 &&
 				  t < 1 &&
@@ -14963,15 +15113,15 @@ PathItem.inject(
 					Curve.getPoint(piece.values, t), epsilon
 				  )
 				) {
-				  var cut1 = piece.cut1,
-					cut2 = piece.cut2,
-					cut = {
-					  time: curves[i].hasHandles()
-						? cut1.time +
-						  (cut2.time - cut1.time) * t
-						: Curve.getNearestTime(values[i], point),
-					  point: vertex.point
-					}
+				  const cut1 = piece.cut1
+				  const cut2 = piece.cut2
+				  const cut = {
+					time: curves[i].hasHandles()
+					  ? cut1.time +
+						(cut2.time - cut1.time) * t
+					  : Curve.getNearestTime(values[i], point),
+					point: vertex.point
+				  }
 				  cuts[i].push(cut)
 				  addPiece(pieces, i, cut1, cut)
 				  addPiece(pieces, i, cut, cut2)
@@ -14984,17 +15134,20 @@ PathItem.inject(
 	  }
 
 	  function mergeShortPieces() {
-		var pieces = [],
-		  isMerged = false
-		for (var i = 0, l = curves.length; i < l; i++) {
-		  var list = sortCuts(cuts[i])
-		  for (var j = 1, k = list.length; j < k; j++) {
-			var cut1 = list[j - 1],
-			  cut2 = list[j]
+		let i
+		let l
+
+		const pieces = []
+		let isMerged = false
+		for (i = 0, l = curves.length; i < l; i++) {
+		  const list = sortCuts(cuts[i])
+		  for (let j = 1, k = list.length; j < k; j++) {
+			const cut1 = list[j - 1]
+			const cut2 = list[j]
 			if (getVertex(cut1.point) !== getVertex(cut2.point)) {
-			  var v = getPiece(i, cut1, cut2),
-				dx = v[6] - v[0],
-				dy = v[7] - v[1]
+			  const v = getPiece(i, cut1, cut2)
+			  const dx = v[6] - v[0]
+			  const dy = v[7] - v[1]
 			  if (
 				dx * dx + dy * dy < 16 * epsilon * epsilon &&
 				Curve.getLength(v) < 4 * epsilon
@@ -15003,9 +15156,9 @@ PathItem.inject(
 			}
 		  }
 		}
-		for (var i = 0, l = pieces.length; i < l; i++) {
-		  var root1 = getRoot(pieces[i][0]),
-			root2 = getRoot(pieces[i][1])
+		for (i = 0, l = pieces.length; i < l; i++) {
+		  const root1 = getRoot(pieces[i][0])
+		  const root2 = getRoot(pieces[i][1])
 		  if (root1 !== root2) {
 			parents[root1] = root2
 			isMerged = true
@@ -15017,19 +15170,19 @@ PathItem.inject(
 
 	  do {
 		marks = new Array(vertices.length)
-		for (var i = 0, l = curves.length; i < l; i++) cutAtHotPixels(i)
+		for (i = 0, l = curves.length; i < l; i++) cutAtHotPixels(i)
 	  } while (mergeShortPieces())
 
-	  var edges = [],
-		edgesByVertex = []
+	  const edges = []
+	  const edgesByVertex = []
 
 	  function getCoincidence(edge1, edge2) {
-		var v1 = edge1.values,
-		  v2 = edge2.values,
-		  times = []
-		for (var i = 1; i <= 3; i++) {
-		  var point = Curve.getPoint(v2, i / 4),
-			time = Curve.getNearestTime(v1, point)
+		const v1 = edge1.values
+		const v2 = edge2.values
+		const times = []
+		for (let i = 1; i <= 3; i++) {
+		  const point = Curve.getPoint(v2, i / 4)
+		  const time = Curve.getNearestTime(v1, point)
 		  if (!point.isClose(Curve.getPoint(v1, time), epsilon)) return 0
 		  times.push(time)
 		}
@@ -15037,17 +15190,17 @@ PathItem.inject(
 	  }
 
 	  function addEdge(edge) {
-		var first = min(edge.from, edge.to),
-		  last = max(edge.from, edge.to),
-		  list = edgesByVertex[first] || (edgesByVertex[first] = [])
-		for (var i = 0, l = list.length; i < l; i++) {
-		  var other = list[i],
-			direction = (
-			  max(other.from, other.to) === last &&
-			  getCoincidence(other, edge)
-			)
+		const first = min(edge.from, edge.to)
+		const last = max(edge.from, edge.to)
+		const list = edgesByVertex[first] || (edgesByVertex[first] = [])
+		for (let i = 0, l = list.length; i < l; i++) {
+		  const other = list[i]
+		  const direction = (
+			max(other.from, other.to) === last &&
+			getCoincidence(other, edge)
+		  )
 		  if (direction) {
-			for (var j = 0; j < 2; j++)
+			for (let j = 0; j < 2; j++)
 			  other.windings[j] += direction * edge.windings[j]
 			return
 		  }
@@ -15056,17 +15209,17 @@ PathItem.inject(
 		edges.push(edge)
 	  }
 
-	  for (var i = 0, l = curves.length; i < l; i++) {
-		var list = cuts[i],
-		  isStraight = !curves[i].hasHandles(),
-		  prev = list[0]
-		for (var j = 1, k = list.length; j < k; j++) {
-		  var cut = list[j],
-			from = getVertex(prev.point),
-			to = getVertex(cut.point),
-			part = getPiece(i, prev, cut)
+	  for (i = 0, l = curves.length; i < l; i++) {
+		list = cuts[i]
+		const isStraight = !curves[i].hasHandles()
+		let prev = list[0]
+		for (j = 1, k = list.length; j < k; j++) {
+		  const cut = list[j]
+		  const from = getVertex(prev.point)
+		  const to = getVertex(cut.point)
+		  const part = getPiece(i, prev, cut)
 		  if (from !== to || Curve.getLength(part) >= 4 * epsilon) {
-			var windings = [0, 0]
+			windings = [0, 0]
 			windings[curveOperands[i]] = 1
 			addEdge({
 			  values: part,
@@ -15083,24 +15236,24 @@ PathItem.inject(
 		}
 	  }
 
-	  var halfEdges = []
+	  const halfEdges = []
 
 	  function getPointAt(halfEdge, distance) {
-		var v = halfEdge.values,
-		  edge = halfEdge.edge,
-		  t = distance / edge.length
+		const v = halfEdge.values
+		const edge = halfEdge.edge
+		const t = distance / edge.length
 		return edge.isStraight
 		  ? new Point(v[0] + (v[6] - v[0]) * t, v[1] + (v[7] - v[1]) * t)
 		  : Curve.getPoint(v, Curve.getTimeAt(v, distance))
 	  }
 
 	  function getSide(halfEdge1, halfEdge2) {
-		var v1 = halfEdge1.values,
-		  point = getPointAt(
-			halfEdge2,
-			min(halfEdge1.edge.length, halfEdge2.edge.length) / 2
-		  ),
-		  time = Curve.getNearestTime(v1, point)
+		const v1 = halfEdge1.values
+		const point = getPointAt(
+		  halfEdge2,
+		  min(halfEdge1.edge.length, halfEdge2.edge.length) / 2
+		)
+		const time = Curve.getNearestTime(v1, point)
 		return time > 0 && time < 1
 		  ? (
 			  Curve.getTangent(v1, time).cross(
@@ -15113,17 +15266,20 @@ PathItem.inject(
 	  }
 
 	  function getDirections(v) {
-		var angles = []
-		for (var i = 0; i < 6; i += 2) {
-		  var dx = v[i + 2] - v[i],
-			dy = v[i + 3] - v[i + 1]
+		let i
+		let l
+
+		const angles = []
+		for (i = 0; i < 6; i += 2) {
+		  const dx = v[i + 2] - v[i]
+		  const dy = v[i + 3] - v[i + 1]
 		  if (dx || dy) angles.push(Math.atan2(dy, dx))
 		}
-		var first = angles[0],
-		  from = 0,
-		  to = 0
-		for (var i = 1, l = angles.length; i < l; i++) {
-		  var difference = (
+		const first = angles[0]
+		let from = 0
+		let to = 0
+		for (i = 1, l = angles.length; i < l; i++) {
+		  const difference = (
 			(
 			  (angles[i] - first + 3 * Math.PI) %
 			  (2 * Math.PI)
@@ -15142,10 +15298,13 @@ PathItem.inject(
 	  }
 
 	  function sortByDirections(outgoing) {
-		var distance = Infinity
-		for (var j = 0, k = outgoing.length; j < k; j++) {
-		  var halfEdge = halfEdges[outgoing[j]],
-			v = halfEdge.values
+		let j
+		let k
+
+		let distance = Infinity
+		for (j = 0, k = outgoing.length; j < k; j++) {
+		  const halfEdge = halfEdges[outgoing[j]]
+		  const v = halfEdge.values
 		  halfEdge.directions = getDirections(v)
 		  if (!halfEdge.directions) return false
 		  distance = min(
@@ -15156,17 +15315,17 @@ PathItem.inject(
 			) / 2
 		  )
 		}
-		var sorted = outgoing.slice().sort(function (a, b) {
-			return (
-			  halfEdges[a].directions.start -
-			  halfEdges[b].directions.start
-			)
-		  }),
-		  gap = Infinity,
-		  width = 0
-		for (var j = 0, k = sorted.length; j < k; j++) {
-		  var directions1 = halfEdges[sorted[j]].directions,
-			directions2 = halfEdges[sorted[(j + 1) % k]].directions
+		const sorted = outgoing.slice().sort(function (a, b) {
+		  return (
+			halfEdges[a].directions.start -
+			halfEdges[b].directions.start
+		  )
+		})
+		let gap = Infinity
+		let width = 0
+		for (j = 0, k = sorted.length; j < k; j++) {
+		  const directions1 = halfEdges[sorted[j]].directions
+		  const directions2 = halfEdges[sorted[(j + 1) % k]].directions
 		  gap = min(
 			gap,
 			directions2.start -
@@ -15186,15 +15345,15 @@ PathItem.inject(
 			2 * epsilon
 		  )
 		) {
-		  for (var j = 0, k = sorted.length; j < k; j++) outgoing[j] = sorted[j]
+		  for (j = 0, k = sorted.length; j < k; j++) outgoing[j] = sorted[j]
 		  return true
 		}
 		return false
 	  }
 
-	  for (var i = 0, l = edges.length; i < l; i++) {
-		var edge = edges[i],
-		  v = edge.values
+	  for (i = 0, l = edges.length; i < l; i++) {
+		edge = edges[i]
+		v = edge.values
 		edge.reversed = [v[6], v[7], v[4], v[5], v[2], v[3], v[0], v[1]]
 		halfEdges.push(
 		  { edge: edge, values: v, from: edge.from, to: edge.to },
@@ -15203,52 +15362,52 @@ PathItem.inject(
 		vertices[edge.from].outgoing.push(2 * i)
 		vertices[edge.to].outgoing.push(2 * i + 1)
 	  }
-	  for (var i = 0, l = vertices.length; i < l; i++) {
-		var vertex = vertices[i],
-		  outgoing = vertex.outgoing
+	  for (i = 0, l = vertices.length; i < l; i++) {
+		vertex = vertices[i]
+		outgoing = vertex.outgoing
 		if (outgoing.length > 2 && !sortByDirections(outgoing)) {
-		  var distance = Infinity
-		  for (var j = 0, k = outgoing.length; j < k; j++) {
-			var edge = halfEdges[outgoing[j]].edge
+		  let distance = Infinity
+		  for (j = 0, k = outgoing.length; j < k; j++) {
+			edge = halfEdges[outgoing[j]].edge
 			edge.length = edge.length || Curve.getLength(edge.values)
 			distance = min(distance, edge.length / 2)
 		  }
-		  for (var j = 0, k = outgoing.length; j < k; j++) {
-			var halfEdge = halfEdges[outgoing[j]],
-			  point = getPointAt(halfEdge, distance)
+		  for (j = 0, k = outgoing.length; j < k; j++) {
+			halfEdge = halfEdges[outgoing[j]]
+			point = getPointAt(halfEdge, distance)
 			halfEdge.point = point
 			halfEdge.angle = Math.atan2(point.y - vertex.y, point.x - vertex.x)
 		  }
 		  outgoing.sort(function (a, b) {
 			return halfEdges[a].angle - halfEdges[b].angle
 		  })
-		  var start = -Math.PI,
-			gap = 0
-		  for (var j = 0, k = outgoing.length; j < k; j++) {
-			var angle = halfEdges[outgoing[j]].angle,
-			  previous = halfEdges[outgoing[(j || k) - 1]].angle,
-			  difference = (
-				(
-				  (angle - previous + 2 * Math.PI) %
-				  (2 * Math.PI)
-				) ||
-				2 * Math.PI
-			  )
+		  let start = -Math.PI
+		  let gap = 0
+		  for (j = 0, k = outgoing.length; j < k; j++) {
+			const angle = halfEdges[outgoing[j]].angle
+			const previous = halfEdges[outgoing[(j || k) - 1]].angle
+			const difference = (
+			  (
+				(angle - previous + 2 * Math.PI) %
+				(2 * Math.PI)
+			  ) ||
+			  2 * Math.PI
+			)
 			if (difference > gap) {
 			  gap = difference
 			  start = angle
 			}
 		  }
-		  for (var j = 0, k = outgoing.length; j < k; j++) {
-			var halfEdge = halfEdges[outgoing[j]]
+		  for (j = 0, k = outgoing.length; j < k; j++) {
+			halfEdge = halfEdges[outgoing[j]]
 			halfEdge.angle = (
 			  (halfEdge.angle - start + 2 * Math.PI) %
 			  (2 * Math.PI)
 			)
 		  }
 		  outgoing.sort(function (a, b) {
-			var halfEdge1 = halfEdges[a],
-			  halfEdge2 = halfEdges[b]
+			const halfEdge1 = halfEdges[a]
+			const halfEdge2 = halfEdges[b]
 			return (
 			  (
 				halfEdge1.point.isClose(halfEdge2.point, epsilon) &&
@@ -15258,27 +15417,27 @@ PathItem.inject(
 			)
 		  })
 		}
-		for (var j = 0, k = outgoing.length; j < k; j++)
+		for (j = 0, k = outgoing.length; j < k; j++)
 		  halfEdges[outgoing[j]].position = j
 	  }
-	  for (var i = 0, l = halfEdges.length; i < l; i++) {
-		var outgoing = vertices[halfEdges[i].to].outgoing,
-		  position = halfEdges[i ^ 1].position
+	  for (i = 0, l = halfEdges.length; i < l; i++) {
+		outgoing = vertices[halfEdges[i].to].outgoing
+		const position = halfEdges[i ^ 1].position
 		halfEdges[i].next = outgoing[(position || outgoing.length) - 1]
 	  }
 
-	  var faces = []
-	  for (var i = 0, l = halfEdges.length; i < l; i++) {
+	  const faces = []
+	  for (i = 0, l = halfEdges.length; i < l; i++) {
 		if (halfEdges[i].face === undefined) {
-		  var face = {
-			  halfEdges: [],
-			  area: 0,
-			  windings: null,
-			  component: null
-			},
-			index = i
+		  face = {
+			halfEdges: [],
+			area: 0,
+			windings: null,
+			component: null
+		  }
+		  index = i
 		  do {
-			var halfEdge = halfEdges[index]
+			halfEdge = halfEdges[index]
 			halfEdge.face = face
 			face.halfEdges.push(index)
 			face.area += Curve.getArea(halfEdge.values)
@@ -15288,81 +15447,81 @@ PathItem.inject(
 		}
 	  }
 
-	  var components = [],
-		rays = [],
-		bounds = []
-	  for (var i = 0, l = faces.length; i < l; i++) {
-		var face = faces[i]
+	  const components = []
+	  const rays = []
+	  bounds = []
+	  for (i = 0, l = faces.length; i < l; i++) {
+		face = faces[i]
 		if (!face.component) {
-		  var component = {
-			  edges: [],
-			  bounds: [Infinity, Infinity, -Infinity, -Infinity],
-			  outside: face
-			},
-			list = [face]
+		  component = {
+			edges: [],
+			bounds: [Infinity, Infinity, -Infinity, -Infinity],
+			outside: face
+		  }
+		  list = [face]
 		  face.component = component
-		  for (var j = 0; j < list.length; j++) {
-			var indices = list[j].halfEdges
+		  for (j = 0; j < list.length; j++) {
+			indices = list[j].halfEdges
 			if (list[j].area < component.outside.area)
 			  component.outside = list[j]
-			for (var k = 0, n = indices.length; k < n; k++) {
-			  var other = halfEdges[indices[k] ^ 1].face
+			for (k = 0, n = indices.length; k < n; k++) {
+			  other = halfEdges[indices[k] ^ 1].face
 			  if (!other.component) {
 				other.component = component
 				list.push(other)
 			  }
 			}
 		  }
-		  var vertex = vertices[halfEdges[component.outside.halfEdges[0]].from]
+		  vertex = vertices[halfEdges[component.outside.halfEdges[0]].from]
 		  components.push(component)
 		  rays.push([vertex.x, vertex.y, Infinity, vertex.y])
 		  bounds.push(component.bounds)
 		}
 	  }
-	  for (var i = 0, l = edges.length; i < l; i++) {
-		var edge = edges[i],
-		  v = edge.values,
-		  component = halfEdges[2 * i].face.component,
-		  b = component.bounds
+	  for (i = 0, l = edges.length; i < l; i++) {
+		edge = edges[i]
+		v = edge.values
+		component = halfEdges[2 * i].face.component
+		b = component.bounds
 		component.edges.push(edge)
 		b[0] = min(b[0], v[0], v[2], v[4], v[6])
 		b[1] = min(b[1], v[1], v[3], v[5], v[7])
 		b[2] = max(b[2], v[0], v[2], v[4], v[6])
 		b[3] = max(b[3], v[1], v[3], v[5], v[7])
 	  }
-	  var collisions = CollisionDetection.findBoundsCollisions(
+	  collisions = CollisionDetection.findBoundsCollisions(
 		rays,
 		bounds,
 		0,
 		true
 	  )
-	  for (var i = 0, l = components.length; i < l; i++) {
-		var outside = components[i].outside,
-		  point = new Point(rays[i][0], rays[i][1]),
-		  indices = collisions[i],
-		  windings = [0, 0]
-		for (var j = 0, k = indices.length; j < k; j++) {
+	  for (i = 0, l = components.length; i < l; i++) {
+		const outside = components[i].outside
+		point = new Point(rays[i][0], rays[i][1])
+		indices = collisions[i]
+		windings = [0, 0]
+		for (j = 0, k = indices.length; j < k; j++) {
 		  if (indices[j] !== i) {
-			var list = components[indices[j]].edges
-			for (var m = 0, n = list.length; m < n; m++) {
-			  var edge = list[m],
-				winding = getRayWinding(point, edge.values)
+			list = components[indices[j]].edges
+			for (m = 0, n = list.length; m < n; m++) {
+			  edge = list[m]
+			  const winding = getRayWinding(point, edge.values)
 			  windings[0] += winding * edge.windings[0]
 			  windings[1] += winding * edge.windings[1]
 			}
 		  }
 		}
 		outside.windings = windings
-		var queue = [outside]
-		for (var j = 0; j < queue.length; j++) {
-		  var face = queue[j],
-			indices = face.halfEdges
-		  for (var k = 0, n = indices.length; k < n; k++) {
-			var index = indices[k],
-			  other = halfEdges[index ^ 1].face
+		const queue = [outside]
+		for (j = 0; j < queue.length; j++) {
+		  face = queue[j]
+		  indices = face.halfEdges
+		  for (k = 0, n = indices.length; k < n; k++) {
+			index = indices[k]
+			other = halfEdges[index ^ 1].face
 			if (!other.windings) {
-			  var windings = halfEdges[index].edge.windings,
-				sign = index & 1 ? -1 : 1
+			  windings = halfEdges[index].edge.windings
+			  const sign = index & 1 ? -1 : 1
 			  other.windings = [
 				face.windings[0] - sign * windings[0],
 				face.windings[1] - sign * windings[1]
@@ -15385,13 +15544,16 @@ PathItem.inject(
 	}
 
 	function tracePaths(operands, operator) {
-	  var graph = createGraph(operands),
-		halfEdges = graph.halfEdges,
-		faces = graph.faces,
-		nonZeros = graph.nonZeros
-	  for (var i = 0, l = faces.length; i < l; i++) {
-		var face = faces[i],
-		  windings = face.windings
+	  let i
+	  let l
+
+	  const graph = createGraph(operands)
+	  const halfEdges = graph.halfEdges
+	  const faces = graph.faces
+	  const nonZeros = graph.nonZeros
+	  for (i = 0, l = faces.length; i < l; i++) {
+		const face = faces[i]
+		const windings = face.windings
 		face.isInside = !!operator(
 		  nonZeros[0] ? !!windings[0] : !!(windings[0] & 1),
 		  nonZeros[1] ? !!windings[1] : !!(windings[1] & 1)
@@ -15406,7 +15568,7 @@ PathItem.inject(
 	  }
 
 	  function getTimes(index) {
-		var edge = halfEdges[index].edge
+		const edge = halfEdges[index].edge
 		return index & 1 ? [edge.time2, edge.time1] : [edge.time1, edge.time2]
 	  }
 
@@ -15417,20 +15579,20 @@ PathItem.inject(
 		)
 	  }
 
-	  var paths = [],
-		isVisited = []
-	  for (var i = 0, l = halfEdges.length; i < l; i++) {
+	  const paths = []
+	  const isVisited = []
+	  for (i = 0, l = halfEdges.length; i < l; i++) {
 		if (!isVisited[i] && isBoundary(i)) {
-		  var contour = [],
-			index = i
+		  const contour = []
+		  let index = i
 		  do {
 			isVisited[index] = true
 			contour.push(index)
 			index = halfEdges[index].next
 			while (!isBoundary(index)) index = halfEdges[index ^ 1].next
 		  } while (index !== i)
-		  var length = contour.length,
-			start = 0
+		  const length = contour.length
+		  let start = 0
 		  while (
 			start < length &&
 			isContinued(
@@ -15438,29 +15600,29 @@ PathItem.inject(
 			)
 		  )
 			start++
-		  var segments = [],
-			handleIn = null
-		  for (var j = 0; j < length;) {
-			var first = contour[(start + j) % length],
-			  last = first
+		  const segments = []
+		  let handleIn = null
+		  for (let j = 0; j < length;) {
+			const first = contour[(start + j) % length]
+			let last = first
 			while (
 			  ++j < length &&
 			  isContinued(last, contour[(start + j) % length])
 			)
 			  last = contour[(start + j) % length]
-			var edge = halfEdges[first].edge,
-			  isStraight = edge.isStraight,
-			  v =
-				first === last
-				  ? halfEdges[first].values
-				  : getPart(
-					  graph.values[edge.curve],
-					  !isStraight,
-					  getTimes(first)[0],
-					  getTimes(last)[1],
-					  graph.vertices[halfEdges[first].from],
-					  graph.vertices[halfEdges[last].to]
-					)
+			const edge = halfEdges[first].edge
+			const isStraight = edge.isStraight
+			const v =
+			  first === last
+				? halfEdges[first].values
+				: getPart(
+					graph.values[edge.curve],
+					!isStraight,
+					getTimes(first)[0],
+					getTimes(last)[1],
+					graph.vertices[halfEdges[first].from],
+					graph.vertices[halfEdges[last].to]
+				  )
 			segments.push(
 			  new Segment(
 				new Point(v[0], v[1]),
@@ -15474,7 +15636,7 @@ PathItem.inject(
 			)
 		  }
 		  if (handleIn) segments[0].setHandleIn(handleIn)
-		  var path = new Path(Item.NO_INSERT)
+		  const path = new Path(Item.NO_INSERT)
 		  path.setSegments(segments)
 		  path.setClosed(true)
 		  if (path.getArea() !== 0) paths.push(path)
@@ -15484,7 +15646,7 @@ PathItem.inject(
 	}
 
 	function getOperands(path1, path2) {
-	  var operands = [preparePath(path1, true)]
+	  const operands = [preparePath(path1, true)]
 	  if (path2) operands.push(preparePath(path2, true))
 	  return operands
 	}
@@ -15532,15 +15694,15 @@ PathItem.inject(
 	  },
 
 	  resolveCrossings: function () {
-		var children = this._children,
-		  paths = tracePaths(
-			[closePaths(this.clone(false))],
-			function (inside) {
-			  return inside
-			}
-		  )
-		var length = paths.length,
-		  item
+		const children = this._children
+		const paths = tracePaths(
+		  [closePaths(this.clone(false))],
+		  function (inside) {
+			return inside
+		  }
+		)
+		const length = paths.length
+		let item
 		if (length > 1 && children) {
 		  if (paths !== children) this.setChildren(paths)
 		  item = this
@@ -15559,7 +15721,7 @@ PathItem.inject(
 	  },
 
 	  reorient: function (nonZero, clockwise) {
-		var children = this._children
+		const children = this._children
 		if (children && children.length) {
 		  this.setChildren(
 			reorientPaths(
@@ -15577,8 +15739,11 @@ PathItem.inject(
 	  },
 
 	  getInteriorPoint: function () {
-		var bounds = this.getBounds(),
-		  point = bounds.getCenter(true)
+		let i
+		let l
+
+		const bounds = this.getBounds()
+		const point = bounds.getCenter(true)
 		if (
 		  !this.contains(point) ||
 		  this.getNearestPoint(point).isClose(
@@ -15586,27 +15751,27 @@ PathItem.inject(
 			1e-7
 		  )
 		) {
-		  var curves = this.getCurves(),
-			monoCurves = [],
-			ys = [],
-			intercepts = [],
-			roots = []
-		  for (var i = 0, l = curves.length; i < l; i++)
+		  const curves = this.getCurves()
+		  const monoCurves = []
+		  const ys = []
+		  const intercepts = []
+		  const roots = []
+		  for (i = 0, l = curves.length; i < l; i++)
 			Base.push(
 			  monoCurves,
 			  Curve.getMonoCurves(
 				curves[i].getValues()
 			  )
 			)
-		  for (var i = 0, l = monoCurves.length; i < l; i++)
+		  for (i = 0, l = monoCurves.length; i < l; i++)
 			ys.push(monoCurves[i][1], monoCurves[i][7])
 		  ys.sort(function (a, b) {
 			return a - b
 		  })
-		  var y = point.y,
-			below = y,
-			above = y
-		  for (var i = 0, l = ys.length; i < l && above === y; i++) {
+		  let y = point.y
+		  let below = y
+		  let above = y
+		  for (i = 0, l = ys.length; i < l && above === y; i++) {
 			if (ys[i] <= y) {
 			  below = ys[i]
 			} else {
@@ -15614,10 +15779,10 @@ PathItem.inject(
 			}
 		  }
 		  y = point.y = (below + above) / 2
-		  for (var i = 0, l = monoCurves.length; i < l; i++) {
-			var mv = monoCurves[i],
-			  mo0 = mv[1],
-			  mo3 = mv[7]
+		  for (i = 0, l = monoCurves.length; i < l; i++) {
+			const mv = monoCurves[i]
+			const mo0 = mv[1]
+			const mo3 = mv[7]
 			if (y > min(mo0, mo3) && y < max(mo0, mo3)) {
 			  intercepts.push(
 				Curve.solveCubic(mv, 1, y, roots, 0, 1) === 1
@@ -15641,25 +15806,25 @@ PathItem.inject(
 
 PathItem.inject(
   new (function () {
-	var abs = Math.abs,
-	  clamp = Numerical.clamp,
-	  errorThreshold = 0.1,
-	  epsilon = 1e-12,
-	  geomEpsilon = 1e-7,
-	  penSamples = []
+	const abs = Math.abs
+	const clamp = Numerical.clamp
+	const errorThreshold = 0.1
+	const epsilon = 1e-12
+	const geomEpsilon = 1e-7
+	const penSamples = []
 
-	for (var i = 0; i <= 32; i++) {
-	  var phi = (i + 0.5) * Math.PI / 16
+	for (let i = 0; i <= 32; i++) {
+	  const phi = (i + 0.5) * Math.PI / 16
 	  penSamples.push({ phi: phi, cos: Math.cos(phi), sin: Math.sin(phi) })
 	}
 
 	function outlineStroke(paths, radius, join, cap, miterLimit) {
-	  var tolerance = Math.min(errorThreshold, radius / 100),
-		areas = []
+	  const tolerance = Math.min(errorThreshold, radius / 100)
+	  const areas = []
 
 	  function addSides(side1, side2, isStrip) {
-		var part = new Path({ segments: side1, insert: false })
-		for (var i = side2.length - 1; i >= 0; i--)
+		let part = new Path({ segments: side1, insert: false })
+		for (let i = side2.length - 1; i >= 0; i--)
 		  part.add(side2[i].reversed())
 		part.setClosed(true)
 		part = part.unite()
@@ -15667,14 +15832,14 @@ PathItem.inject(
 	  }
 
 	  function isThin(part) {
-		var half = tolerance / 2
+		const half = tolerance / 2
 		if (abs(part.getArea()) > half * part.getLength()) return false
-		var curves = part.getCurves()
-		for (var i = 0, l = curves.length; i < l; i++) {
-		  var curve = curves[i],
-			inside = curve.getPointAtTime(0.5).subtract(
-			  curve.getNormalAtTime(0.5).multiply(half)
-			)
+		const curves = part.getCurves()
+		for (let i = 0, l = curves.length; i < l; i++) {
+		  const curve = curves[i]
+		  const inside = curve.getPointAtTime(0.5).subtract(
+			curve.getNormalAtTime(0.5).multiply(half)
+		  )
 		  if (
 			part.contains(inside) && (
 			  part.getNearestPoint(inside).getDistance(inside) >
@@ -15687,10 +15852,10 @@ PathItem.inject(
 	  }
 
 	  function addPart(v) {
-		var curvature = Curve.getCurvature(v, 0.5)
+		const curvature = Curve.getCurvature(v, 0.5)
 		if (abs(curvature) * radius > 1) {
-		  var inner = curvature > 0 ? -radius : radius,
-			evolute = getEvolute(v, inner, tolerance)
+		  const inner = curvature > 0 ? -radius : radius
+		  const evolute = getEvolute(v, inner, tolerance)
 		  addSides(getOffsetSegments(v, -inner, tolerance), evolute)
 		  addSides(getOffsetSegments(v, inner, tolerance), evolute)
 		} else {
@@ -15702,7 +15867,7 @@ PathItem.inject(
 	  }
 
 	  function addSector(point, normal1, normal2, direction) {
-		var sector = new Path({ insert: false })
+		const sector = new Path({ insert: false })
 		sector.moveTo(point)
 		sector.lineTo(point.add(normal1))
 		sector.arcTo(point.add(direction.normalize(radius)), point.add(normal2))
@@ -15715,9 +15880,9 @@ PathItem.inject(
 	  }
 
 	  function addJoin(point, tangent1, tangent2) {
-		var normal1 = new Point(tangent1.y, -tangent1.x).multiply(radius),
-		  normal2 = new Point(tangent2.y, -tangent2.x).multiply(radius),
-		  angle = normal1.getDirectedAngle(normal2)
+		let normal1 = new Point(tangent1.y, -tangent1.x).multiply(radius)
+		let normal2 = new Point(tangent2.y, -tangent2.x).multiply(radius)
+		const angle = normal1.getDirectedAngle(normal2)
 		if (
 		  !Numerical.isZero(tangent1.cross(tangent2)) ||
 		  tangent1.dot(tangent2) < 0
@@ -15726,21 +15891,21 @@ PathItem.inject(
 			normal1 = normal1.negate()
 			normal2 = normal2.negate()
 		  }
-		  var widening = (
-			  Math.sqrt(tolerance / radius) *
-			  180 /
-			  Math.PI *
-			  (angle < 0 ? -1 : 1)
-			),
-			outer1 = normal1.rotate(-widening),
-			outer2 = normal2.rotate(widening),
-			direction = normal1.add(normal2)
+		  const widening = (
+			Math.sqrt(tolerance / radius) *
+			180 /
+			Math.PI *
+			(angle < 0 ? -1 : 1)
+		  )
+		  const outer1 = normal1.rotate(-widening)
+		  const outer2 = normal2.rotate(widening)
+		  let direction = normal1.add(normal2)
 		  if (direction.getLength() < geomEpsilon * radius) direction = tangent1
 		  if (join === 'round') {
 			addSector(point, outer1, outer2, direction)
 		  } else {
-			var length = radius / Math.cos(abs(angle) * Math.PI / 360),
-			  points = [point, point.add(outer1), point.add(normal1)]
+			const length = radius / Math.cos(abs(angle) * Math.PI / 360)
+			const points = [point, point.add(outer1), point.add(normal1)]
 			if (join === 'miter' && length <= miterLimit * radius)
 			  points.push(point.add(direction.normalize(length)))
 			addPolygon(points.concat(point.add(normal2), point.add(outer2)))
@@ -15749,11 +15914,11 @@ PathItem.inject(
 	  }
 
 	  function addCap(point, tangent) {
-		var normal = new Point(-tangent.y, tangent.x).multiply(radius)
+		const normal = new Point(-tangent.y, tangent.x).multiply(radius)
 		if (cap === 'round') {
 		  addSector(point, normal, normal.negate(), tangent)
 		} else if (cap === 'square') {
-		  var ahead = tangent.multiply(radius)
+		  const ahead = tangent.multiply(radius)
 		  addPolygon([
 			point.add(normal),
 			point.add(normal).add(ahead),
@@ -15773,32 +15938,38 @@ PathItem.inject(
 	  }
 
 	  function addPath(path) {
-		var segments = path._segments,
-		  closed = path._closed,
-		  curves = path.getCurves()
-		for (var i = 0, l = segments.length; i < l; i++) {
-		  var segment = segments[i],
-			handleIn = segment._handleIn,
-			handleOut = segment._handleOut
+		let i
+		let l
+		let j
+		let m
+		let t0
+
+		const segments = path._segments
+		const closed = path._closed
+		const curves = path.getCurves()
+		for (i = 0, l = segments.length; i < l; i++) {
+		  const segment = segments[i]
+		  const handleIn = segment._handleIn
+		  const handleOut = segment._handleOut
 		  if (!handleIn.isZero() && !handleOut.isZero()) {
-			var angle = (
-				abs(
-				  handleOut.getDirectedAngle(
-					handleIn.negate()
-				  )
-				) *
-				Math.PI /
-				180
-			  ),
-			  lengthIn = handleIn.getLength(),
-			  lengthOut = handleOut.getLength()
+			const angle = (
+			  abs(
+				handleOut.getDirectedAngle(
+				  handleIn.negate()
+				)
+			  ) *
+			  Math.PI /
+			  180
+			)
+			const lengthIn = handleIn.getLength()
+			const lengthOut = handleOut.getLength()
 			if (
 			  angle && (
 				angle * Math.max(radius, lengthIn, lengthOut) <
 				tolerance
 			  )
 			) {
-			  var direction = handleOut.normalize().subtract(
+			  const direction = handleOut.normalize().subtract(
 				handleIn.normalize()
 			  )
 			  segment.setHandleIn(direction.normalize(-lengthIn))
@@ -15808,7 +15979,7 @@ PathItem.inject(
 		}
 		if (!path.getLength()) {
 		  if (segments.length && !closed && cap !== 'butt') {
-			var center = segments[0]._point
+			const center = segments[0]._point
 			areas.push(
 			  cap === 'round'
 				? new Path.Circle({
@@ -15824,38 +15995,40 @@ PathItem.inject(
 			)
 		  }
 		} else {
-		  var ends = []
-		  for (var i = 0, l = curves.length; i < l; i++) {
-			var curve = curves[i]
+		  const ends = []
+		  for (i = 0, l = curves.length; i < l; i++) {
+			const curve = curves[i]
 			if (curve.hasLength(geomEpsilon)) {
-			  var v = regularize(curve.getValues(), tolerance / 4),
-				reversals = Curve.getReversals(v, tolerance),
-				start = Curve.getTangent(v, 0),
-				end = Curve.getTangent(v, 1)
+			  const v = regularize(curve.getValues(), tolerance / 4)
+			  const reversals = Curve.getReversals(v, tolerance)
+			  let start = Curve.getTangent(v, 0)
+			  let end = Curve.getTangent(v, 1)
 			  if (reversals.length) {
-				var points = [new Point(v[0], v[1])]
-				for (var j = 0, m = reversals.length; j < m; j++)
+				const points = [new Point(v[0], v[1])]
+				for (j = 0, m = reversals.length; j < m; j++)
 				  points.push(Curve.getPoint(v, reversals[j]))
 				points.push(new Point(v[6], v[7]))
 				start = points[1].subtract(points[0]).normalize()
 				end = points[points.length - 1].subtract(
 				  points[points.length - 2]
 				).normalize()
-				for (var j = 1, m = points.length; j < m; j++) {
-				  var p1 = points[j - 1],
-					p2 = points[j]
+				for (j = 1, m = points.length; j < m; j++) {
+				  const p1 = points[j - 1]
+				  const p2 = points[j]
 				  addPart([p1.x, p1.y, p1.x, p1.y, p2.x, p2.y, p2.x, p2.y])
 				  if (j < m - 1) {
-					var tangent = p2.subtract(p1).normalize(),
-					  normal = new Point(-tangent.y, tangent.x).multiply(radius)
+					const tangent = p2.subtract(p1).normalize()
+					const normal = new Point(-tangent.y, tangent.x).multiply(
+					  radius
+					)
 					addSector(p2, normal, normal.negate(), tangent)
 					addSector(p2, normal.negate(), normal, tangent.negate())
 				  }
 				}
 			  } else {
-				var times = getCuspTimes(v, radius).concat(1)
-				for (var j = 0, t0 = 0, m = times.length; j < m; j++) {
-				  var t = times[j]
+				const times = getCuspTimes(v, radius).concat(1)
+				for (j = 0, t0 = 0, m = times.length; j < m; j++) {
+				  const t = times[j]
 				  if (
 					t === 1 || (
 					  !isSliver(v, t0, t) &&
@@ -15870,15 +16043,15 @@ PathItem.inject(
 			  ends.push({ curve: curve, start: start, end: end })
 			}
 		  }
-		  for (var i = 1, l = ends.length; i <= l; i++) {
-			var end1 = ends[i - 1],
-			  end2 = ends[i % l]
+		  for (i = 1, l = ends.length; i <= l; i++) {
+			const end1 = ends[i - 1]
+			const end2 = ends[i % l]
 			if (i < l || closed)
 			  addJoin(end2.curve._segment1._point, end1.end, end2.start)
 		  }
 		  if (!closed && ends.length) {
-			var first = ends[0],
-			  last = ends[ends.length - 1]
+			const first = ends[0]
+			const last = ends[ends.length - 1]
 			addCap(first.curve._segment1._point, first.start.negate())
 			addCap(last.curve._segment2._point, last.end)
 		  }
@@ -15886,22 +16059,33 @@ PathItem.inject(
 	  }
 
 	  function addProfilePath(path) {
-		var pens = path._getStrokeProfilePens(),
-		  getValues = path._getStrokeProfileValues(),
-		  closed = path._closed,
-		  length = path.getLength(),
-		  curves = path.getCurves(),
-		  spans = [],
-		  ends = [],
-		  allParts = []
+		let pen
+		let i
+		let l
+		let offset
+		let j
+		let m
+		let start
+		let part
+		let first
+		let last
+
+		const pens = path._getStrokeProfilePens()
+		const getValues = path._getStrokeProfileValues()
+		const closed = path._closed
+		const length = path.getLength()
+		const curves = path.getCurves()
+		const spans = []
+		const ends = []
+		const allParts = []
 
 		function getPen(offset, after) {
-		  var values = getValues(offset, after),
-			width = values.width,
-			aspect = values.aspect,
-			angle = values.angle,
-			toRadians = Math.PI / 180,
-			a = radius * width[0]
+		  const values = getValues(offset, after)
+		  const width = values.width
+		  const aspect = values.aspect
+		  const angle = values.angle
+		  const toRadians = Math.PI / 180
+		  const a = radius * width[0]
 		  return {
 			a: a,
 			b: a * aspect[0],
@@ -15922,7 +16106,7 @@ PathItem.inject(
 		}
 
 		function getSpanPen(span, offset) {
-		  var end = span.next.offset
+		  const end = span.next.offset
 		  return offset < end
 			? getPen(Math.max(offset, span.entry.offset), true)
 			: getPen(end, false)
@@ -15938,7 +16122,7 @@ PathItem.inject(
 		}
 
 		function getTime(part, offset) {
-		  var start = part.offset
+		  const start = part.offset
 		  return offset <= start
 			? 0
 			: offset >= start + part.length
@@ -15953,8 +16137,8 @@ PathItem.inject(
 
 		function getSpan(offset, after) {
 		  if (closed && !after && !offset) offset = length
-		  for (var i = 0, l = spans.length; i < l; i++) {
-			var span = spans[i]
+		  for (let i = 0, l = spans.length; i < l; i++) {
+			const span = spans[i]
 			if (after ? offset < span.next.offset : offset <= span.next.offset)
 			  return span
 		  }
@@ -15967,9 +16151,9 @@ PathItem.inject(
 		  }
 
 		  if (pen.a > 0 && pen.b > 0) {
-			var full = 2 * Math.PI,
-			  angles = [],
-			  ellipse = new Path({ insert: false })
+			const full = 2 * Math.PI
+			const angles = []
+			const ellipse = new Path({ insert: false })
 			;(strips || []).forEach(function (strip) {
 			  ;[strip.from.phi, strip.to.phi].forEach(function (phi) {
 				angles.push((phi % full + full) % full)
@@ -15981,13 +16165,13 @@ PathItem.inject(
 			if (!angles.length) angles.push(0)
 			angles.push(angles[0] + full)
 			ellipse.moveTo(getPoint(angles[0]))
-			for (var i = 1, l = angles.length; i < l; i++) {
-			  var phi0 = angles[i - 1],
-				sweep = angles[i] - phi0,
-				count = Math.ceil(sweep / (Math.PI / 2) - 1e-9),
-				step = sweep / count
+			for (let i = 1, l = angles.length; i < l; i++) {
+			  const phi0 = angles[i - 1]
+			  const sweep = angles[i] - phi0
+			  const count = Math.ceil(sweep / (Math.PI / 2) - 1e-9)
+			  const step = sweep / count
 			  if (sweep > geomEpsilon) {
-				for (var j = 1; j <= count; j++) {
+				for (let j = 1; j <= count; j++) {
 				  ellipse.arcTo(
 					getPoint(phi0 + (j - 0.5) * step),
 					getPoint(phi0 + j * step)
@@ -16008,139 +16192,144 @@ PathItem.inject(
 		}
 
 		function getAxes(pen) {
-		  var cos = Math.cos(pen.angle),
-			sin = Math.sin(pen.angle)
+		  const cos = Math.cos(pen.angle)
+		  const sin = Math.sin(pen.angle)
 		  return [new Point(cos, sin), new Point(-sin, cos)]
 		}
 
 		function getContacts(part, t, span) {
-		  var v = part.v,
-			pen = getSpanPen(span, getOffset(part, t)),
-			a = pen.a,
-			b = pen.b,
-			da = pen.da,
-			db = pen.db,
-			dAngle = pen.dAngle,
-			contacts = { sides: null, strips: [] }
-		  if (a > 0) {
-			var point = Curve.getPoint(v, t),
-			  tangent = Curve.getTangent(v, t),
-			  normal = new Point(-tangent.y, tangent.x),
-			  curvature = Curve.getCurvature(v, t),
-			  axes = getAxes(pen),
-			  t1 = tangent.dot(axes[0]),
-			  t2 = tangent.dot(axes[1]),
-			  dt1 = (dAngle - curvature) * t2,
-			  dt2 = (curvature - dAngle) * t1,
-			  fcs = function (c, s) {
-				return (
-				  t1 * b * c +
-				  t2 * a * s +
-				  da * b * c * c +
-				  a * db * s * s +
-				  dAngle * (a * a - b * b) * s * c
-				)
-			  },
-			  dfcs = function (c, s) {
-				return (
-				  -t1 * b * s +
-				  t2 * a * c +
-				  2 * (a * db - da * b) * s * c +
-				  dAngle *
-				  (a * a - b * b) *
-				  (c * c - s * s)
-				)
-			  },
-			  f = function (phi) {
-				return fcs(Math.cos(phi), Math.sin(phi))
-			  },
-			  df = function (phi) {
-				return dfcs(Math.cos(phi), Math.sin(phi))
-			  },
-			  ddf = function (phi) {
-				var c = Math.cos(phi),
-				  s = Math.sin(phi)
-				return (
-				  -t1 * b * c -
-				  t2 * a * s +
-				  2 * (a * db - da * b) * (c * c - s * s) -
-				  4 * dAngle * (a * a - b * b) * s * c
-				)
-			  },
-			  solve = function (f, df, phi0, phi1, f0, f1) {
-				var sign = f0 < 0 ? 1 : -1
-				return Numerical.findRoot(
-				  function (phi) {
-					return sign * f(phi)
-				  },
-				  function (phi) {
-					return sign * df(phi)
-				  },
-				  (f1 * phi0 - f0 * phi1) / (f1 - f0),
-				  phi0,
-				  phi1,
-				  32,
-				  epsilon
-				)
-			  },
-			  sample = penSamples[0],
-			  phi0 = sample.phi,
-			  f0 = fcs(sample.cos, sample.sin),
-			  d0 = dfcs(sample.cos, sample.sin),
-			  roots = []
+		  let sample
+		  let i
+		  let l
+		  let phi
 
-			var addRoot = function (phi0, phi1, f0, f1) {
-			  var phi = solve(f, df, phi0, phi1, f0, f1),
-				c = Math.cos(phi),
-				s = Math.sin(phi),
-				dfs = (
-				  (dt1 * b + t1 * db) * c +
-				  (dt2 * a + t2 * da) * s +
-				  da * db +
-				  pen.dda * b * c * c +
-				  a * pen.ddb * s * s +
-				  (
-					pen.ddAngle * (a * a - b * b) +
-					2 * dAngle * (a * da - b * db)
-				  ) *
-				  s *
-				  c
-				),
-				dfphi = df(phi),
-				dphi = dfphi ? -dfs / dfphi : 0,
-				side = {
-				  phi: phi,
-				  point: point
-					.add(axes[0].multiply(a * c))
-					.add(axes[1].multiply(b * s)),
-				  derivative: axes[0]
-					.multiply(
-					  t1 +
-					  da * c -
-					  (a * dphi + dAngle * b) * s
+		  const v = part.v
+		  const pen = getSpanPen(span, getOffset(part, t))
+		  const a = pen.a
+		  const b = pen.b
+		  const da = pen.da
+		  const db = pen.db
+		  const dAngle = pen.dAngle
+		  const contacts = { sides: null, strips: [] }
+		  if (a > 0) {
+			const point = Curve.getPoint(v, t)
+			const tangent = Curve.getTangent(v, t)
+			const normal = new Point(-tangent.y, tangent.x)
+			const curvature = Curve.getCurvature(v, t)
+			const axes = getAxes(pen)
+			const t1 = tangent.dot(axes[0])
+			const t2 = tangent.dot(axes[1])
+			const dt1 = (dAngle - curvature) * t2
+			const dt2 = (curvature - dAngle) * t1
+			const fcs = function (c, s) {
+			  return (
+				t1 * b * c +
+				t2 * a * s +
+				da * b * c * c +
+				a * db * s * s +
+				dAngle * (a * a - b * b) * s * c
+			  )
+			}
+			const dfcs = function (c, s) {
+			  return (
+				-t1 * b * s +
+				t2 * a * c +
+				2 * (a * db - da * b) * s * c +
+				dAngle *
+				(a * a - b * b) *
+				(c * c - s * s)
+			  )
+			}
+			const f = function (phi) {
+			  return fcs(Math.cos(phi), Math.sin(phi))
+			}
+			const df = function (phi) {
+			  return dfcs(Math.cos(phi), Math.sin(phi))
+			}
+			const ddf = function (phi) {
+			  const c = Math.cos(phi)
+			  const s = Math.sin(phi)
+			  return (
+				-t1 * b * c -
+				t2 * a * s +
+				2 * (a * db - da * b) * (c * c - s * s) -
+				4 * dAngle * (a * a - b * b) * s * c
+			  )
+			}
+			const solve = function (f, df, phi0, phi1, f0, f1) {
+			  const sign = f0 < 0 ? 1 : -1
+			  return Numerical.findRoot(
+				function (phi) {
+				  return sign * f(phi)
+				},
+				function (phi) {
+				  return sign * df(phi)
+				},
+				(f1 * phi0 - f0 * phi1) / (f1 - f0),
+				phi0,
+				phi1,
+				32,
+				epsilon
+			  )
+			}
+			sample = penSamples[0]
+			let phi0 = sample.phi
+			let f0 = fcs(sample.cos, sample.sin)
+			let d0 = dfcs(sample.cos, sample.sin)
+			const roots = []
+
+			const addRoot = function (phi0, phi1, f0, f1) {
+			  const phi = solve(f, df, phi0, phi1, f0, f1)
+			  const c = Math.cos(phi)
+			  const s = Math.sin(phi)
+			  const dfs = (
+				(dt1 * b + t1 * db) * c +
+				(dt2 * a + t2 * da) * s +
+				da * db +
+				pen.dda * b * c * c +
+				a * pen.ddb * s * s +
+				(
+				  pen.ddAngle * (a * a - b * b) +
+				  2 * dAngle * (a * da - b * db)
+				) *
+				s *
+				c
+			  )
+			  const dfphi = df(phi)
+			  const dphi = dfphi ? -dfs / dfphi : 0
+			  const side = {
+				phi: phi,
+				point: point
+				  .add(axes[0].multiply(a * c))
+				  .add(axes[1].multiply(b * s)),
+				derivative: axes[0]
+				  .multiply(
+					t1 +
+					da * c -
+					(a * dphi + dAngle * b) * s
+				  )
+				  .add(
+					axes[1].multiply(
+					  t2 +
+					  db * s +
+					  (b * dphi + dAngle * a) * c
 					)
-					.add(
-					  axes[1].multiply(
-						t2 +
-						db * s +
-						(b * dphi + dAngle * a) * c
-					  )
-					)
-				}
+				  )
+			  }
 			  side.distance = side.point.subtract(point).dot(normal)
 			  roots.push(side)
 			}
 
-			for (var i = 1, l = penSamples.length; i < l; i++) {
-			  var sample = penSamples[i],
-				phi1 = sample.phi,
-				f1 = fcs(sample.cos, sample.sin),
-				d1 = dfcs(sample.cos, sample.sin)
+			for (i = 1, l = penSamples.length; i < l; i++) {
+			  sample = penSamples[i]
+			  const phi1 = sample.phi
+			  const f1 = fcs(sample.cos, sample.sin)
+			  const d1 = dfcs(sample.cos, sample.sin)
 			  if (f0 * f1 <= 0 && f0 !== f1) {
 				addRoot(phi0, phi1, f0, f1)
 			  } else if (d0 * d1 < 0) {
-				var phi = solve(df, ddf, phi0, phi1, d0, d1),
-				  f2 = f(phi)
+				phi = solve(df, ddf, phi0, phi1, d0, d1)
+				const f2 = f(phi)
 				if (f2 * f0 < 0) {
 				  addRoot(phi0, phi, f0, f2)
 				  addRoot(phi, phi1, f2, f1)
@@ -16150,21 +16339,21 @@ PathItem.inject(
 			  f0 = f1
 			  d0 = d1
 			}
-			var count = roots.length
-			for (var i = 0; i < count; i++) {
-			  var from = roots[i],
-				to = roots[(i + 1) % count],
-				phi = (
-				  from.phi +
+			const count = roots.length
+			for (i = 0; i < count; i++) {
+			  const from = roots[i]
+			  const to = roots[(i + 1) % count]
+			  phi = (
+				from.phi +
+				(
 				  (
-					(
-					  (to.phi - from.phi + 2 * Math.PI) %
-					  (2 * Math.PI)
-					) ||
-					2 * Math.PI
-				  ) /
-				  2
-				)
+					(to.phi - from.phi + 2 * Math.PI) %
+					(2 * Math.PI)
+				  ) ||
+				  2 * Math.PI
+				) /
+				2
+			  )
 			  if (f(phi) > 0) {
 				contacts.strips.push({
 				  from: from,
@@ -16194,30 +16383,37 @@ PathItem.inject(
 		}
 
 		function addPiece(part, span, ta, tb) {
-		  var v = part.v,
-			turn = (
-			  abs(
-				getSpanPen(span, getOffset(part, tb)).angle -
-				getSpanPen(span, getOffset(part, ta)).angle
-			  ) +
-			  getTurn(v, ta, tb)
-			),
-			count = Math.max(16, Math.ceil(turn * 18 / Math.PI)),
-			splits = [[ta, ta], [tb, tb]],
-			cache = {}
+		  let i
+		  let t0
+		  let s0
+		  let t1
+		  let s1
+		  let l
+
+		  const v = part.v
+		  const turn = (
+			abs(
+			  getSpanPen(span, getOffset(part, tb)).angle -
+			  getSpanPen(span, getOffset(part, ta)).angle
+			) +
+			getTurn(v, ta, tb)
+		  )
+		  const count = Math.max(16, Math.ceil(turn * 18 / Math.PI))
+		  const splits = [[ta, ta], [tb, tb]]
+		  const cache = {}
 
 		  function getStrips(t) {
 			return cache[t] || (cache[t] = getContacts(part, t, span).strips)
 		  }
 
 		  function getEnd(t, j, end) {
-			var strip = getStrips(t)[j]
+			const strip = getStrips(t)[j]
 			return strip ? strip[end].point : Curve.getPoint(v, t)
 		  }
 
 		  function getMotions(strip) {
-			var vector = strip.to.point.subtract(strip.from.point),
-			  normal = new Point(-vector.y, vector.x)
+			const vector = strip.to.point.subtract(strip.from.point)
+			const normal = new Point(-vector.y, vector.x)
 			return [
 			  strip.from.derivative.dot(normal),
 			  strip.to.derivative.dot(normal)
@@ -16225,9 +16421,9 @@ PathItem.inject(
 		  }
 
 		  function isMoving(side) {
-			var point = side[0]._point
+			const point = side[0]._point
 			return side.some(function (segment) {
-			  var other = segment._point
+			  const other = segment._point
 			  return (
 				other.getDistance(point) > tolerance || (
 				  other.add(segment._handleIn).getDistance(point) >
@@ -16242,9 +16438,9 @@ PathItem.inject(
 
 		  function isSame(strips, before) {
 			if (strips.length !== before.length) return false
-			for (var i = 0, l = strips.length; i < l; i++) {
-			  var phi = strips[i].from.phi
-			  for (var j = 0; j < l; j++) {
+			for (let i = 0, l = strips.length; i < l; i++) {
+			  const phi = strips[i].from.phi
+			  for (let j = 0; j < l; j++) {
 				if (
 				  j !== i && (
 					getAngle(phi, before[j].from.phi) <
@@ -16258,13 +16454,13 @@ PathItem.inject(
 		  }
 
 		  function getAngle(phi1, phi2) {
-			var angle = Math.abs(phi1 - phi2) % (2 * Math.PI)
+			const angle = Math.abs(phi1 - phi2) % (2 * Math.PI)
 			return Math.min(angle, 2 * Math.PI - angle)
 		  }
 
 		  function isClose(strips, before) {
 			return strips.every(function (strip, i) {
-			  var other = before[i]
+			  const other = before[i]
 			  return (
 				getAngle(strip.from.phi, other.from.phi) < 0.35 &&
 				getAngle(strip.to.phi, other.to.phi) < 0.35
@@ -16272,9 +16468,8 @@ PathItem.inject(
 			})
 		  }
 
-		  var samples = []
-		  for (var i = 0; i < count; i++)
-			samples.push(ta + (tb - ta) * i / count)
+		  const samples = []
+		  for (i = 0; i < count; i++) samples.push(ta + (tb - ta) * i / count)
 		  samples.push(tb)
 		  getCurvatureExtrema(v)
 			.concat(getInflections(v))
@@ -16286,13 +16481,9 @@ PathItem.inject(
 		  samples.sort(function (a, b) {
 			return a - b
 		  })
-		  for (
-			var i = 1, t0 = ta, s0 = getStrips(ta);
-			i < samples.length;
-			i++
-		  ) {
-			var t1 = samples[i],
-			  s1 = getStrips(t1)
+		  for (i = 1, t0 = ta, s0 = getStrips(ta); i < samples.length; i++) {
+			t1 = samples[i]
+			s1 = getStrips(t1)
 			if (
 			  isSame(s1, s0) &&
 			  !isClose(s1, s0) &&
@@ -16302,10 +16493,10 @@ PathItem.inject(
 			  continue
 			}
 			while (!isSame(s1, s0)) {
-			  var t = t0,
-				u = t1
-			  for (var j = 0; j < 40; j++) {
-				var middle = (t + u) / 2
+			  let t = t0
+			  let u = t1
+			  for (let j = 0; j < 40; j++) {
+				const middle = (t + u) / 2
 				if (isSame(getStrips(middle), s0)) {
 				  t = middle
 				} else {
@@ -16322,13 +16513,15 @@ PathItem.inject(
 			  s0 = getStrips(u)
 			}
 			s0.forEach(function (strip, j) {
-			  var m0 = getMotions(strip),
-				m1 = getMotions(s1[j])
-			  for (var k = 0; k < 2; k++) {
+			  let k
+
+			  const m0 = getMotions(strip)
+			  const m1 = getMotions(s1[j])
+			  for (k = 0; k < 2; k++) {
 				if (m0[k] * m1[k] < 0) {
-				  var t = Numerical.findSignChange(
+				  const t = Numerical.findSignChange(
 					function (t) {
-					  var strip = getStrips(t)[j]
+					  const strip = getStrips(t)[j]
 					  return strip ? getMotions(strip)[k] : 0
 					}, t0, t1, m0[k], m1[k], 1e-9
 				  )
@@ -16342,45 +16535,45 @@ PathItem.inject(
 		  splits.sort(function (a, b) {
 			return a[0] - b[0]
 		  })
-		  for (var i = 1, l = splits.length; i < l; i++) {
-			var t0 = splits[i - 1][1],
-			  t1 = splits[i][0],
-			  strips =
-				t1 - t0 > geomEpsilon
-				  ? getStrips((t0 + t1) / 2)
-				  : []
+		  for (i = 1, l = splits.length; i < l; i++) {
+			t0 = splits[i - 1][1]
+			t1 = splits[i][0]
+			const strips =
+			  t1 - t0 > geomEpsilon
+				? getStrips((t0 + t1) / 2)
+				: []
 			strips.forEach(function (strip, j) {
-			  var motions = getMotions(strip),
-				from = fitSide(
-				  function (t) {
-					return getEnd(t, j, 'from')
-				  },
-				  t0,
-				  t1
-				),
-				to = fitSide(
-				  function (t) {
-					return getEnd(t, j, 'to')
-				  },
-				  t0,
-				  t1
-				)
+			  const motions = getMotions(strip)
+			  const from = fitSide(
+				function (t) {
+				  return getEnd(t, j, 'from')
+				},
+				t0,
+				t1
+			  )
+			  const to = fitSide(
+				function (t) {
+				  return getEnd(t, j, 'to')
+				},
+				t0,
+				t1
+			  )
 			  if (
 				motions[0] * motions[1] < 0 &&
 				(isMoving(from) || isMoving(to))
 			  ) {
-				var still = fitSide(
+				const still = fitSide(
 				  function (t) {
-					var strip = getStrips(t)[j]
+					const strip = getStrips(t)[j]
 					if (!strip) return Curve.getPoint(v, t)
-					var motions = getMotions(strip),
-					  point = strip.from.point,
-					  factor = clamp(
-						motions[0] /
-						(motions[0] - motions[1]),
-						0,
-						1
-					  )
+					const motions = getMotions(strip)
+					const point = strip.from.point
+					const factor = clamp(
+					  motions[0] /
+					  (motions[0] - motions[1]),
+					  0,
+					  1
+					)
 					return point.add(
 					  strip.to.point.subtract(point).multiply(factor)
 					)
@@ -16398,39 +16591,43 @@ PathItem.inject(
 		}
 
 		function addPart(part) {
-		  var start = part.offset,
-			end = start + part.length
+		  const start = part.offset
+		  const end = start + part.length
 		  part.curveLength = Curve.getLength(part.v)
-		  for (var i = 0, l = spans.length; i < l; i++) {
-			var span = spans[i],
-			  from = Math.max(span.entry.offset, start),
-			  to = Math.min(span.next.offset, end),
-			  ta = getTime(part, from),
-			  tb = getTime(part, to)
+		  for (let i = 0, l = spans.length; i < l; i++) {
+			const span = spans[i]
+			const from = Math.max(span.entry.offset, start)
+			const to = Math.min(span.next.offset, end)
+			const ta = getTime(part, from)
+			const tb = getTime(part, to)
 			if (to > from && tb > ta) addPiece(part, span, ta, tb)
 		  }
 		}
 
 		function fitSide(evaluate, t0, t1) {
-		  var count = 8,
-			segments = [new Segment(evaluate(t0))]
+		  const count = 8
+		  const segments = [new Segment(evaluate(t0))]
 
 		  function fit(t0, t1, p0, p3, depth) {
-			var delta = (t1 - t0) * 1e-5,
-			  chord = p3.subtract(p0),
-			  tangent0 = evaluate(t0 + delta).subtract(p0),
-			  tangent3 = p3.subtract(evaluate(t1 - delta)),
-			  points = [],
-			  times = [],
-			  total = 0,
-			  gap = 0,
-			  index
+			let i
+			let prev
+			let point
+
+			const delta = (t1 - t0) * 1e-5
+			const chord = p3.subtract(p0)
+			let tangent0 = evaluate(t0 + delta).subtract(p0)
+			let tangent3 = p3.subtract(evaluate(t1 - delta))
+			const points = []
+			const times = []
+			let total = 0
+			let gap = 0
+			let index
 			tangent0 = (tangent0.isZero() ? chord : tangent0)
 			  .normalize()
 			tangent3 = (tangent3.isZero() ? chord : tangent3)
 			  .normalize()
-			for (var i = 0, prev = p0; i <= count; i++) {
-			  var point =
+			for (i = 0, prev = p0; i <= count; i++) {
+			  point =
 				i < count
 				  ? evaluate(
 					  t0 + (
@@ -16440,7 +16637,7 @@ PathItem.inject(
 					  )
 					)
 				  : p3
-			  var distance = point.getDistance(prev)
+			  const distance = point.getDistance(prev)
 			  total += distance
 			  if (distance > gap) {
 				gap = distance
@@ -16452,36 +16649,35 @@ PathItem.inject(
 			  }
 			  prev = point
 			}
-			for (var i = 0; i < count; i++)
-			  times[i] = total ? times[i] / total : 0
-			var length = chord.getLength(),
-			  handle1,
-			  handle2,
-			  c,
-			  error
-			for (var iteration = 0; iteration < 4; iteration++) {
-			  var c11 = 0,
-				c12 = 0,
-				c22 = 0,
-				x1 = 0,
-				x2 = 0
-			  for (var i = 0; i < count; i++) {
-				var u = times[i],
-				  w = 1 - u,
-				  a1 = tangent0.multiply(3 * w * w * u),
-				  a2 = tangent3.multiply(-3 * w * u * u),
-				  rest = points[i]
-					.subtract(p0.multiply(w * w * (w + 3 * u)))
-					.subtract(p3.multiply(u * u * (u + 3 * w)))
+			for (i = 0; i < count; i++) times[i] = total ? times[i] / total : 0
+			const length = chord.getLength()
+			let handle1
+			let handle2
+			let c
+			let error
+			for (let iteration = 0; iteration < 4; iteration++) {
+			  let c11 = 0
+			  let c12 = 0
+			  let c22 = 0
+			  let x1 = 0
+			  let x2 = 0
+			  for (i = 0; i < count; i++) {
+				const u = times[i]
+				const w = 1 - u
+				const a1 = tangent0.multiply(3 * w * w * u)
+				const a2 = tangent3.multiply(-3 * w * u * u)
+				const rest = points[i]
+				  .subtract(p0.multiply(w * w * (w + 3 * u)))
+				  .subtract(p3.multiply(u * u * (u + 3 * w)))
 				c11 += a1.dot(a1)
 				c12 += a1.dot(a2)
 				c22 += a2.dot(a2)
 				x1 += a1.dot(rest)
 				x2 += a2.dot(rest)
 			  }
-			  var det = c11 * c22 - c12 * c12,
-				alpha = det ? (x1 * c22 - x2 * c12) / det : 0,
-				beta = det ? (c11 * x2 - c12 * x1) / det : 0
+			  const det = c11 * c22 - c12 * c12
+			  let alpha = det ? (x1 * c22 - x2 * c12) / det : 0
+			  let beta = det ? (c11 * x2 - c12 * x1) / det : 0
 			  if (!(
 				alpha > epsilon &&
 				beta > epsilon &&
@@ -16503,8 +16699,8 @@ PathItem.inject(
 				p3.y
 			  ]
 			  error = 0
-			  for (var i = 0; i < count; i++) {
-				var time = Curve.getNearestTime(c, points[i])
+			  for (i = 0; i < count; i++) {
+				const time = Curve.getNearestTime(c, points[i])
 				error = Math.max(
 				  error,
 				  points[i].getDistance(
@@ -16515,8 +16711,8 @@ PathItem.inject(
 			  }
 			  if (error <= tolerance) break
 			}
-			for (var i = 0; i <= count; i++) {
-			  var point = evaluate(
+			for (i = 0; i <= count; i++) {
+			  point = evaluate(
 				t0 + (
 				  (t1 - t0) *
 				  (i + 0.5) /
@@ -16531,20 +16727,20 @@ PathItem.inject(
 			  )
 			}
 			if (gap > Math.max(total / 2, tolerance)) {
-			  var from = index ? points[index - 1] : p0,
-				to = index < count ? points[index] : p3,
-				point = Curve.getPoint(
-				  c,
+			  const from = index ? points[index - 1] : p0
+			  const to = index < count ? points[index] : p3
+			  point = Curve.getPoint(
+				c,
+				(
 				  (
-					(
-					  index
-						? times[index - 1]
-						: 0
-					) +
-					(index < count ? times[index] : 1)
-				  ) /
-				  2
-				)
+					index
+					  ? times[index - 1]
+					  : 0
+				  ) +
+				  (index < count ? times[index] : 1)
+				) /
+				2
+			  )
 			  error = Math.max(
 				error,
 				Line.getDistance(
@@ -16553,8 +16749,8 @@ PathItem.inject(
 			  )
 			}
 			if (error > tolerance && depth < 12) {
-			  var t = (t0 + t1) / 2,
-				point = evaluate(t)
+			  const t = (t0 + t1) / 2
+			  point = evaluate(t)
 			  fit(t0, t, p0, point, depth + 1)
 			  fit(t, t1, point, p3, depth + 1)
 			} else {
@@ -16568,15 +16764,15 @@ PathItem.inject(
 		}
 
 		function addJoin(end1, end2) {
-		  var point = end2.point,
-			part1 = end1.last,
-			part2 = end2.first,
-			offset = part2.offset,
-			tangent1 = end1.end,
-			tangent2 = end2.start,
-			cross = tangent1.cross(tangent2),
-			span = getSpan(offset, true),
-			pen = getSpanPen(span, offset)
+		  const point = end2.point
+		  const part1 = end1.last
+		  const part2 = end2.first
+		  const offset = part2.offset
+		  const tangent1 = end1.end
+		  const tangent2 = end2.start
+		  const cross = tangent1.cross(tangent2)
+		  const span = getSpan(offset, true)
+		  const pen = getSpanPen(span, offset)
 		  if (!Numerical.isZero(cross) || tangent1.dot(tangent2) < 0) {
 			if (join === 'round') {
 			  addPen(
@@ -16587,53 +16783,53 @@ PathItem.inject(
 				)
 			  )
 			} else {
-			  var span1 = getSpan(offset, false),
-				k = cross > 0 ? 1 : 0,
-				sides1 = getSides(part1, 1, span1),
-				sides2 = getSides(part2, 0, span)
+			  const span1 = getSpan(offset, false)
+			  const k = cross > 0 ? 1 : 0
+			  const sides1 = getSides(part1, 1, span1)
+			  const sides2 = getSides(part2, 0, span)
 			  if (sides1 && sides2) {
-				var widening = Math.sqrt(tolerance / radius),
-				  widen = function (side, pen, direction) {
-					var axes = getAxes(pen),
-					  c = Math.cos(side.phi),
-					  s = Math.sin(side.phi),
-					  along = axes[0]
-						.multiply(-pen.a * s)
-						.add(axes[1].multiply(pen.b * c))
-						.dot(side.derivative),
-					  phi = (
-						side.phi + (
-						  widening *
-						  (along > 0 ? direction : -direction)
-						)
+				const widening = Math.sqrt(tolerance / radius)
+				const widen = function (side, pen, direction) {
+				  const axes = getAxes(pen)
+				  const c = Math.cos(side.phi)
+				  const s = Math.sin(side.phi)
+				  const along = axes[0]
+					.multiply(-pen.a * s)
+					.add(axes[1].multiply(pen.b * c))
+					.dot(side.derivative)
+				  const phi = (
+					side.phi + (
+					  widening *
+					  (along > 0 ? direction : -direction)
+					)
+				  )
+				  return side.point
+					.add(
+					  axes[0].multiply(
+						pen.a * (Math.cos(phi) - c)
 					  )
-					return side.point
-					  .add(
-						axes[0].multiply(
-						  pen.a * (Math.cos(phi) - c)
-						)
+					)
+					.add(
+					  axes[1].multiply(
+						pen.b * (Math.sin(phi) - s)
 					  )
-					  .add(
-						axes[1].multiply(
-						  pen.b * (Math.sin(phi) - s)
-						)
-					  )
-				  },
-				  side1 = sides1[k].point,
-				  side2 = sides2[k].point,
-				  direction1 = sides1[k].derivative.normalize(),
-				  direction2 = sides2[k].derivative.normalize(),
-				  points = [
-					sides1[1 - k].point,
-					widen(
-					  sides1[k],
-					  getSpanPen(span1, part1.offset + part1.length),
-					  -1
-					),
-					side1
-				  ]
+					)
+				}
+				const side1 = sides1[k].point
+				const side2 = sides2[k].point
+				const direction1 = sides1[k].derivative.normalize()
+				const direction2 = sides2[k].derivative.normalize()
+				const points = [
+				  sides1[1 - k].point,
+				  widen(
+					sides1[k],
+					getSpanPen(span1, part1.offset + part1.length),
+					-1
+				  ),
+				  side1
+				]
 				if (join === 'miter') {
-				  var miter = Line.intersect(
+				  const miter = Line.intersect(
 					side1.x, side1.y,
 					direction1.x, direction1.y,
 					side2.x, side2.y,
@@ -16661,9 +16857,9 @@ PathItem.inject(
 		}
 
 		function addCap(part, t, tangent) {
-		  var offset = part.offset + (t ? part.length : 0),
-			span = getSpan(offset, !t),
-			pen = getSpanPen(span, offset)
+		  const offset = part.offset + (t ? part.length : 0)
+		  const span = getSpan(offset, !t)
+		  const pen = getSpanPen(span, offset)
 		  if (cap === 'round') {
 			addPen(
 			  Curve.getPoint(part.v, t),
@@ -16671,32 +16867,32 @@ PathItem.inject(
 			  getContacts(part, t, span).strips
 			)
 		  } else if (cap === 'square') {
-			var sides = getSides(part, t, span)
+			const sides = getSides(part, t, span)
 			if (sides) {
-			  var axes = getAxes(pen),
-				reach = new Point(
-				  pen.a * tangent.dot(axes[0]),
-				  pen.b * tangent.dot(axes[1])
-				).getLength(),
-				ahead = tangent.multiply(reach)
-			  var side0 = sides[0].point,
-				side1 = sides[1].point
+			  const axes = getAxes(pen)
+			  const reach = new Point(
+				pen.a * tangent.dot(axes[0]),
+				pen.b * tangent.dot(axes[1])
+			  ).getLength()
+			  const ahead = tangent.multiply(reach)
+			  const side0 = sides[0].point
+			  const side1 = sides[1].point
 			  addPolygon([side0, side0.add(ahead), side1.add(ahead), side1])
 			}
 		  }
 		}
 
 		if (!length) {
-		  var segments = path._segments
+		  const segments = path._segments
 		  if (segments.length && !closed && cap !== 'butt') {
-			var center = segments[0]._point,
-			  pen = getPen(0, true),
-			  axes = getAxes(pen)
+			const center = segments[0]._point
+			pen = getPen(0, true)
+			const axes = getAxes(pen)
 			if (cap === 'round') {
 			  addPen(center, pen)
 			} else {
-			  var x = axes[0].multiply(pen.a),
-				y = axes[1].multiply(pen.b)
+			  const x = axes[0].multiply(pen.a)
+			  const y = axes[1].multiply(pen.b)
 			  addPolygon([
 				center.subtract(x).subtract(y),
 				center.add(x).subtract(y),
@@ -16706,27 +16902,27 @@ PathItem.inject(
 			}
 		  }
 		} else {
-		  for (var i = 1, l = pens.length; i < l; i++) {
+		  for (i = 1, l = pens.length; i < l; i++) {
 			if (pens[i].offset > pens[i - 1].offset)
 			  spans.push({ entry: pens[i - 1], next: pens[i] })
 		  }
-		  for (var i = 0, offset = 0, l = curves.length; i < l; i++) {
-			var curve = curves[i],
-			  curveLength = curve.getLength()
+		  for (i = 0, offset = 0, l = curves.length; i < l; i++) {
+			const curve = curves[i]
+			const curveLength = curve.getLength()
 			if (curve.hasLength(geomEpsilon)) {
-			  var v = regularize(curve.getValues(), tolerance / 4),
-				reversals = Curve.getReversals(v, tolerance),
-				parts = []
+			  const v = regularize(curve.getValues(), tolerance / 4)
+			  const reversals = Curve.getReversals(v, tolerance)
+			  const parts = []
 			  if (reversals.length) {
-				var points = [new Point(v[0], v[1])]
-				for (var j = 0, m = reversals.length; j < m; j++)
+				const points = [new Point(v[0], v[1])]
+				for (j = 0, m = reversals.length; j < m; j++)
 				  points.push(Curve.getPoint(v, reversals[j]))
 				points.push(new Point(v[6], v[7]))
-				for (var j = 1, start = offset, m = points.length; j < m; j++) {
-				  var p1 = points[j - 1],
-					p2 = points[j],
-					third = p2.subtract(p1).divide(3),
-					distance = p1.getDistance(p2)
+				for (j = 1, start = offset, m = points.length; j < m; j++) {
+				  const p1 = points[j - 1]
+				  const p2 = points[j]
+				  const third = p2.subtract(p1).divide(3)
+				  const distance = p1.getDistance(p2)
 				  parts.push({
 					v: [
 					  p1.x,
@@ -16751,10 +16947,10 @@ PathItem.inject(
 				})
 			  }
 			  parts.forEach(addPart)
-			  for (var j = 1, m = parts.length; j < m; j++) {
-				var part = parts[j],
-				  start = part.offset,
-				  span = getSpan(start)
+			  for (j = 1, m = parts.length; j < m; j++) {
+				part = parts[j]
+				start = part.offset
+				const span = getSpan(start)
 				addPen(
 				  new Point(part.v[0], part.v[1]),
 				  getSpanPen(span, start),
@@ -16763,8 +16959,8 @@ PathItem.inject(
 				)
 			  }
 			  allParts.push.apply(allParts, parts)
-			  var first = parts[0],
-				last = parts[parts.length - 1]
+			  first = parts[0]
+			  last = parts[parts.length - 1]
 			  ends.push({
 				point: curve._segment1._point,
 				first: first,
@@ -16775,42 +16971,35 @@ PathItem.inject(
 			}
 			offset += curveLength
 		  }
-		  for (var i = 0, l = pens.length; i < l; i++) {
-			var offset = pens[i].offset,
-			  isStep = (
-				i > 0 && pens[i - 1].offset === offset ||
-				i < l - 1 && pens[i + 1].offset === offset
-			  )
+		  for (i = 0, l = pens.length; i < l; i++) {
+			offset = pens[i].offset
+			const isStep = (
+			  i > 0 && pens[i - 1].offset === offset ||
+			  i < l - 1 && pens[i + 1].offset === offset
+			)
 			if (
 			  !isStep &&
 			  (closed ? offset < length : offset > 0 && offset < length)
 			) {
-			  var pen = getPen(offset, true),
-				before = getPen(offset, false),
-				size = Math.max(pen.a, pen.b),
-				jump = (
-				  size * (
-					Math.abs(pen.da - before.da) +
-					Math.abs(pen.db - before.db) +
-					size * Math.abs(pen.dAngle - before.dAngle)
-				  )
+			  pen = getPen(offset, true)
+			  const before = getPen(offset, false)
+			  const size = Math.max(pen.a, pen.b)
+			  const jump = (
+				size * (
+				  Math.abs(pen.da - before.da) +
+				  Math.abs(pen.db - before.db) +
+				  size * Math.abs(pen.dAngle - before.dAngle)
 				)
+			  )
 			  if (jump > geomEpsilon) {
-				for (
-				  var j = 0;
-				  (
-					allParts[j].offset +
-					allParts[j].length
-				  ) <=
-				  offset;
-				  j++
-				) {}
-				var part = allParts[j],
-				  t = getTime(part, offset),
-				  previous = t
-					? part
-					: allParts[j - 1] ||
-					  allParts[allParts.length - 1]
+				j = 0
+				while (allParts[j].offset + allParts[j].length <= offset) j++
+				part = allParts[j]
+				const t = getTime(part, offset)
+				const previous = t
+				  ? part
+				  : allParts[j - 1] ||
+					allParts[allParts.length - 1]
 				addPen(
 				  Curve.getPoint(part.v, t),
 				  pen,
@@ -16825,20 +17014,20 @@ PathItem.inject(
 			  }
 			}
 		  }
-		  for (var i = 1, l = ends.length; i <= l; i++) {
+		  for (i = 1, l = ends.length; i <= l; i++) {
 			if (i < l || closed) addJoin(ends[i - 1], ends[i % l])
 		  }
 		  if (!closed && ends.length) {
-			var first = ends[0],
-			  last = ends[ends.length - 1]
+			first = ends[0]
+			last = ends[ends.length - 1]
 			addCap(first.first, 0, first.start.negate())
 			addCap(last.last, 1, last.end)
 		  }
 		}
 	  }
 
-	  for (var i = 0, l = paths.length; i < l; i++) {
-		var path = paths[i]
+	  for (let i = 0, l = paths.length; i < l; i++) {
+		const path = paths[i]
 		if (path._strokeProfile) {
 		  addProfilePath(path)
 		} else {
@@ -16853,24 +17042,26 @@ PathItem.inject(
 	}
 
 	function offsetSide(path, offset, join, miterLimit) {
-	  var radius = abs(offset),
-		outline = outlineStroke([path], radius, join, 'butt', miterLimit),
-		first = path.getFirstSegment(),
-		last = path.getLastSegment(),
-		caps = [
-		  [first._point, path.getFirstCurve().getNormalAtTime(0)],
-		  [last._point, path.getLastCurve().getNormalAtTime(1)]
-		],
-		tolerance = radius / 1e4,
-		paths = []
+	  let j
+
+	  const radius = abs(offset)
+	  const outline = outlineStroke([path], radius, join, 'butt', miterLimit)
+	  const first = path.getFirstSegment()
+	  const last = path.getLastSegment()
+	  const caps = [
+		[first._point, path.getFirstCurve().getNormalAtTime(0)],
+		[last._point, path.getLastCurve().getNormalAtTime(1)]
+	  ]
+	  const tolerance = radius / 1e4
+	  const paths = []
 
 	  function isCap(curve) {
 		if (!curve.hasHandles()) {
-		  for (var i = 0; i < 2; i++) {
-			var point = caps[i][0],
-			  normal = caps[i][1],
-			  vector1 = curve._segment1._point.subtract(point),
-			  vector2 = curve._segment2._point.subtract(point)
+		  for (let i = 0; i < 2; i++) {
+			const point = caps[i][0]
+			const normal = caps[i][1]
+			const vector1 = curve._segment1._point.subtract(point)
+			const vector2 = curve._segment2._point.subtract(point)
 			if (
 			  abs(vector1.cross(normal)) < tolerance &&
 			  abs(vector2.cross(normal)) < tolerance
@@ -16882,8 +17073,8 @@ PathItem.inject(
 	  }
 
 	  function isOnSide(curve) {
-		var point = curve.getPointAtTime(0.5),
-		  location = path.getNearestLocation(point)
+		const point = curve.getPointAtTime(0.5)
+		const location = path.getNearestLocation(point)
 		return (
 		  !isCap(curve) && (
 			(
@@ -16896,15 +17087,15 @@ PathItem.inject(
 	  }
 
 	  function addRun(curves) {
-		var segments = [
+		const segments = [
 		  new Segment(
 			curves[0]._segment1._point,
 			null,
 			curves[0]._segment1._handleOut
 		  )
 		]
-		for (var i = 0, l = curves.length; i < l; i++) {
-		  var segment = curves[i]._segment2
+		for (let i = 0, l = curves.length; i < l; i++) {
+		  const segment = curves[i]._segment2
 		  segments.push(
 			new Segment(
 			  segment._point,
@@ -16913,7 +17104,7 @@ PathItem.inject(
 			)
 		  )
 		}
-		var run = new Path({ segments: segments, insert: false })
+		const run = new Path({ segments: segments, insert: false })
 		if (
 		  path.getNearestLocation(run.getFirstSegment()._point).getOffset() >
 		  path.getNearestLocation(
@@ -16924,22 +17115,22 @@ PathItem.inject(
 		paths.push(run)
 	  }
 
-	  var contours = outline._children || [outline]
-	  for (var i = 0, l = contours.length; i < l; i++) {
-		var curves = contours[i].getCurves(),
-		  count = curves.length,
-		  keeps = [],
-		  start = -1
-		for (var j = 0; j < count; j++) {
+	  const contours = outline._children || [outline]
+	  for (let i = 0, l = contours.length; i < l; i++) {
+		const curves = contours[i].getCurves()
+		const count = curves.length
+		const keeps = []
+		let start = -1
+		for (j = 0; j < count; j++) {
 		  keeps.push(isOnSide(curves[j]))
 		  if (!keeps[j]) start = j
 		}
 		if (count && start === -1) {
 		  paths.push(contours[i].clone({ insert: false }))
 		} else {
-		  var run = []
-		  for (var j = 1; j <= count; j++) {
-			var index = (start + j) % count
+		  let run = []
+		  for (j = 1; j <= count; j++) {
+			const index = (start + j) % count
 			if (keeps[index]) {
 			  run.push(curves[index])
 			} else if (run.length) {
@@ -16953,14 +17144,14 @@ PathItem.inject(
 	}
 
 	function getTurn(v, t1, t2) {
-	  var times = [t1].concat(
-		  getInflections(v).filter(function (t) {
-			return t > t1 && t < t2
-		  }),
-		  t2
-		),
-		turn = 0
-	  for (var i = 1, l = times.length; i < l; i++) {
+	  const times = [t1].concat(
+		getInflections(v).filter(function (t) {
+		  return t > t1 && t < t2
+		}),
+		t2
+	  )
+	  let turn = 0
+	  for (let i = 1, l = times.length; i < l; i++) {
 		turn += abs(
 		  Curve.getTangent(v, times[i - 1]).getDirectedAngle(
 			Curve.getTangent(v, times[i])
@@ -16971,23 +17162,23 @@ PathItem.inject(
 	}
 
 	function getCuspTimes(v, radius) {
-	  var times = getCurvatureExtrema(v)
-		  .concat(getInflections(v), 0, 1)
-		  .sort(function (a, b) {
-			return a - b
-		  }),
-		cusps = []
+	  const times = getCurvatureExtrema(v)
+		.concat(getInflections(v), 0, 1)
+		.sort(function (a, b) {
+		  return a - b
+		})
+	  const cusps = []
 
 	  function f(t) {
-		var curvature = Curve.getCurvature(v, t) * radius
+		const curvature = Curve.getCurvature(v, t) * radius
 		return 1 - curvature * curvature
 	  }
 
-	  for (var i = 1, l = times.length; i < l; i++) {
-		var t0 = times[i - 1],
-		  t1 = times[i],
-		  f0 = f(t0),
-		  f1 = f(t1)
+	  for (let i = 1, l = times.length; i < l; i++) {
+		const t0 = times[i - 1]
+		const t1 = times[i]
+		const f0 = f(t0)
+		const f1 = f(t1)
 		if (f0 * f1 < 0)
 		  cusps.push(Numerical.findSignChange(f, t0, t1, f0, f1, epsilon))
 	  }
@@ -16995,25 +17186,25 @@ PathItem.inject(
 	}
 
 	function getEvoluteAt(v, t) {
-	  var x0 = v[0],
-		y0 = v[1],
-		cx = 3 * (v[2] - x0),
-		cy = 3 * (v[3] - y0),
-		bx = 3 * (v[4] - v[2]) - cx,
-		by = 3 * (v[5] - v[3]) - cy,
-		ax = v[6] - x0 - cx - bx,
-		ay = v[7] - y0 - cy - by,
-		dx = (3 * ax * t + 2 * bx) * t + cx,
-		dy = (3 * ay * t + 2 * by) * t + cy,
-		ddx = 6 * ax * t + 2 * bx,
-		ddy = 6 * ay * t + 2 * by,
-		cross = dx * ddy - dy * ddx,
-		length2 = dx * dx + dy * dy,
-		speed = (
-		  3 * (dx * ddx + dy * ddy) * cross -
-		  length2 * (dx * 6 * ay - dy * 6 * ax)
-		),
-		perp = new Point(-dy, dx)
+	  const x0 = v[0]
+	  const y0 = v[1]
+	  const cx = 3 * (v[2] - x0)
+	  const cy = 3 * (v[3] - y0)
+	  const bx = 3 * (v[4] - v[2]) - cx
+	  const by = 3 * (v[5] - v[3]) - cy
+	  const ax = v[6] - x0 - cx - bx
+	  const ay = v[7] - y0 - cy - by
+	  const dx = (3 * ax * t + 2 * bx) * t + cx
+	  const dy = (3 * ay * t + 2 * by) * t + cy
+	  const ddx = 6 * ax * t + 2 * bx
+	  const ddy = 6 * ay * t + 2 * by
+	  const cross = dx * ddy - dy * ddx
+	  const length2 = dx * dx + dy * dy
+	  const speed = (
+		3 * (dx * ddx + dy * ddy) * cross -
+		length2 * (dx * 6 * ay - dy * 6 * ax)
+	  )
+	  const perp = new Point(-dy, dx)
 	  return {
 		point: Curve.getPoint(v, t).add(perp.multiply(length2 / cross)),
 		derivative: perp.multiply(speed / (cross * cross)),
@@ -17023,17 +17214,17 @@ PathItem.inject(
 	}
 
 	function getCurvatureExtrema(v) {
-	  var count = 32,
-		times = []
+	  const count = 32
+	  const times = []
 
 	  function f(t) {
 		return getEvoluteAt(v, t).speed
 	  }
 
-	  for (var i = 1, f0 = f(0); i <= count; i++) {
-		var t0 = (i - 1) / count,
-		  t1 = i / count,
-		  f1 = f(t1)
+	  for (let i = 1, f0 = f(0); i <= count; i++) {
+		const t0 = (i - 1) / count
+		const t1 = i / count
+		const f1 = f(t1)
 		if (f0 * f1 < 0) {
 		  times.push(Numerical.findSignChange(f, t0, t1, f0, f1, epsilon))
 		}
@@ -17043,17 +17234,17 @@ PathItem.inject(
 	}
 
 	function getEvolute(v, inner, tolerance) {
-	  var c = regularizeCusp(v, tolerance / 4),
-		times = getCurvatureExtrema(c).concat(1),
-		t0 = 0,
-		e0 = evaluate(0),
-		segments = [new Segment(e0.point)]
+	  const c = regularizeCusp(v, tolerance / 4)
+	  const times = getCurvatureExtrema(c).concat(1)
+	  let t0 = 0
+	  let e0 = evaluate(0)
+	  const segments = [new Segment(e0.point)]
 
 	  function evaluate(t) {
-		var e = getEvoluteAt(c, t),
-		  distance = inner > 0 ? -e.radius : e.radius
+		let e = getEvoluteAt(c, t)
+		const distance = inner > 0 ? -e.radius : e.radius
 		if (!(distance >= 0 && distance < abs(inner) - tolerance)) {
-		  var derivative = Curve.getWeightedTangent(c, t)
+		  const derivative = Curve.getWeightedTangent(c, t)
 		  e = {
 			point: Curve.getPoint(c, t).add(
 			  Curve.getNormal(c, t).multiply(inner)
@@ -17067,14 +17258,14 @@ PathItem.inject(
 	  }
 
 	  function fit(t0, e0, t1, e1, depth) {
-		var tm = (t0 + t1) / 2,
-		  em = evaluate(tm),
-		  h0 = e0.derivative.multiply((t1 - t0) / 3),
-		  h1 = e1.derivative.multiply((t0 - t1) / 3),
-		  mid = e0.point
-			.add(e1.point)
-			.multiply(0.5)
-			.add(h0.add(h1).multiply(3 / 8))
+		const tm = (t0 + t1) / 2
+		const em = evaluate(tm)
+		const h0 = e0.derivative.multiply((t1 - t0) / 3)
+		const h1 = e1.derivative.multiply((t0 - t1) / 3)
+		const mid = e0.point
+		  .add(e1.point)
+		  .multiply(0.5)
+		  .add(h0.add(h1).multiply(3 / 8))
 		if (depth < 8 && mid.getDistance(em.point) > tolerance / 10) {
 		  fit(t0, e0, tm, em, depth + 1)
 		  fit(tm, em, t1, e1, depth + 1)
@@ -17084,8 +17275,8 @@ PathItem.inject(
 		}
 	  }
 
-	  for (var i = 0, l = times.length; i < l; i++) {
-		var e1 = evaluate(times[i])
+	  for (let i = 0, l = times.length; i < l; i++) {
+		const e1 = evaluate(times[i])
 		fit(t0, e0, times[i], e1, 0)
 		t0 = times[i]
 		e0 = e1
@@ -17113,27 +17304,27 @@ PathItem.inject(
 	}
 
 	function offsetCubic(v, d, tolerance) {
-	  var c = regularizeCusp(v, tolerance / 4),
-		p0 = new Point(c[0], c[1]),
-		p1 = new Point(c[2], c[3]),
-		p2 = new Point(c[4], c[5]),
-		p3 = new Point(c[6], c[7]),
-		q0 = p1.subtract(p0).multiply(3),
-		q1 = p2.subtract(p1).multiply(3),
-		q2 = p3.subtract(p2).multiply(3),
-		q1xq0 = q1.cross(q0),
-		q2xq0 = q2.cross(q0),
-		q2xq1 = q2.cross(q1),
-		c0 = 2 * d * q1xq0,
-		c1 = 2 * d * (q2xq0 - 2 * q1xq0),
-		c2 = 2 * d * (q2xq1 - q2xq0 + q1xq0),
-		utan0 = Curve.getTangent(c, 0),
-		utan1 = Curve.getTangent(c, 1),
-		segments = [new Segment(p0.add(getUnitNormal(utan0, d)))],
-		count = 8,
-		weights = []
-	  for (var i = 0; i < count; i++) {
-		var t = (i + 1) / (count + 1)
+	  const c = regularizeCusp(v, tolerance / 4)
+	  const p0 = new Point(c[0], c[1])
+	  const p1 = new Point(c[2], c[3])
+	  const p2 = new Point(c[4], c[5])
+	  const p3 = new Point(c[6], c[7])
+	  const q0 = p1.subtract(p0).multiply(3)
+	  const q1 = p2.subtract(p1).multiply(3)
+	  const q2 = p3.subtract(p2).multiply(3)
+	  const q1xq0 = q1.cross(q0)
+	  const q2xq0 = q2.cross(q0)
+	  const q2xq1 = q2.cross(q1)
+	  const c0 = 2 * d * q1xq0
+	  const c1 = 2 * d * (q2xq0 - 2 * q1xq0)
+	  const c2 = 2 * d * (q2xq1 - q2xq0 + q1xq0)
+	  const utan0 = Curve.getTangent(c, 0)
+	  const utan1 = Curve.getTangent(c, 1)
+	  const segments = [new Segment(p0.add(getUnitNormal(utan0, d)))]
+	  const count = 8
+	  const weights = []
+	  for (let i = 0; i < count; i++) {
+		const t = (i + 1) / (count + 1)
 		weights.push(3 * (1 - t) * (1 - t) * t)
 	  }
 
@@ -17146,10 +17337,10 @@ PathItem.inject(
 	  }
 
 	  function derive(t) {
-		var u = 1 - t,
-		  w0 = u * u,
-		  w1 = 2 * t * u,
-		  w2 = t * t
+		const u = 1 - t
+		const w0 = u * u
+		const w1 = 2 * t * u
+		const w2 = t * t
 		return new Point(
 		  w0 * q0.x + w1 * q1.x + w2 * q2.x,
 		  w0 * q0.y + w1 * q1.y + w2 * q2.y
@@ -17157,21 +17348,21 @@ PathItem.inject(
 	  }
 
 	  function getCusp(t) {
-		var ds2 = derive(t).dot(derive(t))
+		const ds2 = derive(t).dot(derive(t))
 		return ((c2 * t + c1) * t + c0) / (ds2 * Math.sqrt(ds2)) + 1
 	  }
 
 	  function getEndCusp(tangent, y) {
-		var length = Math.max(tangent.getLength(), epsilon)
+		const length = Math.max(tangent.getLength(), epsilon)
 		return y / (length * length * length) + 1
 	  }
 
 	  function getOffsetCurve(part, a, b) {
-		var s = (part.t1 - part.t0) / 3,
-		  start = evaluate(part.t0).add(getUnitNormal(part.utan0, d)),
-		  end = evaluate(part.t1).add(getUnitNormal(part.utan1, d)),
-		  l0 = s * derive(part.t0).getLength() + a * d,
-		  l1 = s * derive(part.t1).getLength() - b * d
+		const s = (part.t1 - part.t0) / 3
+		const start = evaluate(part.t0).add(getUnitNormal(part.utan0, d))
+		const end = evaluate(part.t1).add(getUnitNormal(part.utan1, d))
+		const l0 = s * derive(part.t0).getLength() + a * d
+		const l1 = s * derive(part.t1).getLength() - b * d
 		return [
 		  start,
 		  l0 * part.cusp0 > 0
@@ -17185,52 +17376,52 @@ PathItem.inject(
 	  }
 
 	  function getError(part, points, ts) {
-		var error = 0,
-		  normals = [],
-		  vectors = [],
-		  x0 = points[0].x,
-		  y0 = points[0].y,
-		  x1 = points[1].x,
-		  y1 = points[1].y,
-		  x2 = points[2].x,
-		  y2 = points[2].y,
-		  x3 = points[3].x,
-		  y3 = points[3].y,
-		  sign = part.cusp0 < 0 ? -1 : 1
-		for (var i = 0; i < count; i++) {
-		  var ta = (i + 1) / (count + 1),
-			u = 1 - ta,
-			w0 = u * u * u,
-			w1 = 3 * u * u * ta,
-			w2 = 3 * u * ta * ta,
-			w3 = ta * ta * ta,
-			px = w0 * x0 + w1 * x1 + w2 * x2 + w3 * x3,
-			py = w0 * y0 + w1 * y1 + w2 * y2 + w3 * y3,
-			tx = (
-			  (x1 - x0) * u * u +
-			  (x2 - x1) * 2 * u * ta +
-			  (x3 - x2) * ta * ta
-			),
-			ty = (
-			  (y1 - y0) * u * u +
-			  (y2 - y1) * 2 * u * ta +
-			  (y3 - y2) * ta * ta
-			),
-			t = ts[i],
-			point = evaluate(t),
-			derivative = derive(t)
+		let error = 0
+		const normals = []
+		const vectors = []
+		const x0 = points[0].x
+		const y0 = points[0].y
+		const x1 = points[1].x
+		const y1 = points[1].y
+		const x2 = points[2].x
+		const y2 = points[2].y
+		const x3 = points[3].x
+		const y3 = points[3].y
+		const sign = part.cusp0 < 0 ? -1 : 1
+		for (let i = 0; i < count; i++) {
+		  const ta = (i + 1) / (count + 1)
+		  const u = 1 - ta
+		  const w0 = u * u * u
+		  const w1 = 3 * u * u * ta
+		  const w2 = 3 * u * ta * ta
+		  const w3 = ta * ta * ta
+		  const px = w0 * x0 + w1 * x1 + w2 * x2 + w3 * x3
+		  const py = w0 * y0 + w1 * y1 + w2 * y2 + w3 * y3
+		  const tx = (
+			(x1 - x0) * u * u +
+			(x2 - x1) * 2 * u * ta +
+			(x3 - x2) * ta * ta
+		  )
+		  const ty = (
+			(y1 - y0) * u * u +
+			(y2 - y1) * 2 * u * ta +
+			(y3 - y2) * ta * ta
+		  )
+		  let t = ts[i]
+		  let point = evaluate(t)
+		  const derivative = derive(t)
 		  t += (
 			(tx * (px - point.x) + ty * (py - point.y)) /
 			(tx * derivative.x + ty * derivative.y)
 		  )
 		  t = ts[i] = clamp(t, part.t0, part.t1)
 		  point = evaluate(t)
-		  var length = Math.sqrt(tx * tx + ty * ty),
-			nx = -ty / length * sign,
-			ny = tx / length * sign,
-			vx = px - point.x - nx * d,
-			vy = py - point.y - ny * d,
-			squared = vx * vx + vy * vy
+		  const length = Math.sqrt(tx * tx + ty * ty)
+		  const nx = -ty / length * sign
+		  const ny = tx / length * sign
+		  const vx = px - point.x - nx * d
+		  const vy = py - point.y - ny * d
+		  const squared = vx * vx + vy * vy
 		  normals.push(new Point(nx, ny))
 		  vectors.push(new Point(vx, vy))
 		  error = Math.max(error, isFinite(squared) ? squared : 1e12)
@@ -17239,28 +17430,28 @@ PathItem.inject(
 	  }
 
 	  function refine(part, a, b, error) {
-		var blend = 1e-3,
-		  aa = 0,
-		  ab = 0,
-		  ac = 0,
-		  bb = 0,
-		  bc = 0
-		for (var i = 0; i < count; i++) {
-		  var n = error.normals[i],
-			vector = error.vectors[i],
-			cn = vector.dot(n),
-			ct = vector.cross(n),
-			an = weights[i] * part.utan0.dot(n),
-			at = weights[i] * part.utan0.cross(n),
-			bn = weights[count - 1 - i] * part.utan1.dot(n),
-			bt = weights[count - 1 - i] * part.utan1.cross(n)
+		const blend = 1e-3
+		let aa = 0
+		let ab = 0
+		let ac = 0
+		let bb = 0
+		let bc = 0
+		for (let i = 0; i < count; i++) {
+		  const n = error.normals[i]
+		  const vector = error.vectors[i]
+		  const cn = vector.dot(n)
+		  const ct = vector.cross(n)
+		  const an = weights[i] * part.utan0.dot(n)
+		  const at = weights[i] * part.utan0.cross(n)
+		  const bn = weights[count - 1 - i] * part.utan1.dot(n)
+		  const bt = weights[count - 1 - i] * part.utan1.cross(n)
 		  aa += an * an + blend * at * at
 		  ab += an * bn + blend * at * bt
 		  ac += an * cn + blend * at * ct
 		  bb += bn * bn + blend * bt * bt
 		  bc += bn * cn + blend * bt * ct
 		}
-		var idet = 1 / (d * (aa * bb - ab * ab))
+		const idet = 1 / (d * (aa * bb - ab * ab))
 		return [
 		  a - idet * (ac * bb - ab * bc),
 		  b - idet * (aa * bc - ac * ab)
@@ -17268,24 +17459,24 @@ PathItem.inject(
 	  }
 
 	  function getTimeWithTangent(utan0, t0, t1, tangent, force) {
-		var z0 = tangent.cross(q0),
-		  z1 = tangent.cross(q1),
-		  z2 = tangent.cross(q2),
-		  roots = [],
-		  found = Numerical.solveQuadratic(
-			z2 - 2 * z1 + z0,
-			2 * (z1 - z0),
-			z0,
-			roots,
-			t0,
-			t1
-		  ),
-		  t = roots[0]
+		const z0 = tangent.cross(q0)
+		const z1 = tangent.cross(q1)
+		const z2 = tangent.cross(q2)
+		const roots = []
+		const found = Numerical.solveQuadratic(
+		  z2 - 2 * z1 + z0,
+		  2 * (z1 - z0),
+		  z0,
+		  roots,
+		  t0,
+		  t1
+		)
+		let t = roots[0]
 		if (found !== 1) {
 		  if (!force) return null
 		  t = derive(t0).getLength() > derive(t1).getLength() ? t1 : t0
 		}
-		var q = derive(t)
+		const q = derive(t)
 		return {
 		  t: t,
 		  utan:
@@ -17299,14 +17490,16 @@ PathItem.inject(
 	  }
 
 	  function getSubdivision(part) {
-		var t = (part.t0 + part.t1) / 2,
-		  q = derive(t),
-		  x0 = abs(part.utan0.cross(q)),
-		  x1 = abs(part.utan1.cross(q))
+		let i
+
+		const t = (part.t0 + part.t1) / 2
+		const q = derive(t)
+		const x0 = abs(part.utan0.cross(q))
+		const x1 = abs(part.utan1.cross(q))
 		if (x0 > 0.1 * x1 && x1 > 0.1 * x0) return { t: t, utan: q.normalize() }
-		var chord = evaluate(part.t1).subtract(evaluate(part.t0))
+		const chord = evaluate(part.t1).subtract(evaluate(part.t0))
 		if (chord.cross(part.utan0) * chord.cross(part.utan1) < 0) {
-		  var split = getTimeWithTangent(
+		  const split = getTimeWithTangent(
 			part.utan0,
 			part.t0,
 			part.t1,
@@ -17315,11 +17508,11 @@ PathItem.inject(
 		  )
 		  if (split) return split
 		}
-		var tangents = [part.utan0],
-		  ts = [part.t0],
-		  inflections = getInflections(c)
-		for (var i = 0; i < inflections.length; i++) {
-		  var ti = inflections[i]
+		const tangents = [part.utan0]
+		const ts = [part.t0]
+		const inflections = getInflections(c)
+		for (i = 0; i < inflections.length; i++) {
+		  const ti = inflections[i]
 		  if (ti > part.t0 && ti < part.t1) {
 			tangents.push(derive(ti))
 			ts.push(ti)
@@ -17327,25 +17520,25 @@ PathItem.inject(
 		}
 		tangents.push(part.utan1)
 		ts.push(part.t1)
-		var angles = [],
-		  sum = 0
-		for (var i = 0; i < tangents.length - 1; i++) {
-		  var angle = Math.atan2(
+		const angles = []
+		let sum = 0
+		for (i = 0; i < tangents.length - 1; i++) {
+		  const angle = Math.atan2(
 			tangents[i].cross(tangents[i + 1]),
 			tangents[i].dot(tangents[i + 1])
 		  )
 		  sum += abs(angle)
 		  angles.push(angle)
 		}
-		var target = sum / 2,
-		  j = 0
+		let target = sum / 2
+		let j = 0
 		while (abs(angles[j]) < target) {
 		  target -= abs(angles[j])
 		  j++
 		}
-		var base = tangents[j],
-		  turn = angles[j] < 0 ? -target : target,
-		  tangent = base.rotate(turn * 180 / Math.PI)
+		const base = tangents[j]
+		const turn = angles[j] < 0 ? -target : target
+		const tangent = base.rotate(turn * 180 / Math.PI)
 		return getTimeWithTangent(
 		  j ? base.normalize() : part.utan0,
 		  ts[j],
@@ -17377,8 +17570,10 @@ PathItem.inject(
 	  }
 
 	  function offsetPart(part) {
+		let i
+
 		if (part.cusp0 * part.cusp1 < 0) {
-		  var t = Numerical.findSignChange(
+		  const t = Numerical.findSignChange(
 			getCusp,
 			part.t0,
 			part.t1,
@@ -17395,39 +17590,39 @@ PathItem.inject(
 		  )
 		  return
 		}
-		var angle = Math.atan2(
-			part.utan1.cross(part.utan0),
-			part.utan1.dot(part.utan0)
-		  ),
-		  a = 2 / 3 / (1 + Math.cos(angle / 2)) * 2 * Math.sin(angle / 2),
-		  b = -a,
-		  dt = (part.t1 - part.t0) / (count + 1),
-		  ts = []
-		for (var i = 0; i < count; i++) ts.push(part.t0 + (i + 1) * dt)
-		var points = getOffsetCurve(part, a, b),
-		  error = getError(part, points, ts),
-		  tolerance2 = tolerance * tolerance
-		for (var i = 0; i < 2 && error.squared > tolerance2; i++) {
-		  var refined = refine(part, a, b, error),
-			points2 = getOffsetCurve(part, refined[0], refined[1]),
-			error2 = getError(part, points2, ts)
+		const angle = Math.atan2(
+		  part.utan1.cross(part.utan0),
+		  part.utan1.dot(part.utan0)
+		)
+		let a = 2 / 3 / (1 + Math.cos(angle / 2)) * 2 * Math.sin(angle / 2)
+		let b = -a
+		const dt = (part.t1 - part.t0) / (count + 1)
+		const ts = []
+		for (i = 0; i < count; i++) ts.push(part.t0 + (i + 1) * dt)
+		let points = getOffsetCurve(part, a, b)
+		let error = getError(part, points, ts)
+		const tolerance2 = tolerance * tolerance
+		for (i = 0; i < 2 && error.squared > tolerance2; i++) {
+		  const refined = refine(part, a, b, error)
+		  const points2 = getOffsetCurve(part, refined[0], refined[1])
+		  const error2 = getError(part, points2, ts)
 		  if (error2.squared >= error.squared) break
 		  a = refined[0]
 		  b = refined[1]
 		  points = points2
 		  error = error2
 		}
-		var isShort = (
+		const isShort = (
 		  points[1].getDistance(points[0]) < tolerance &&
 		  points[2].getDistance(points[0]) < tolerance &&
 		  points[3].getDistance(points[0]) < tolerance
 		)
 		if (part.depth < 8 && error.squared > tolerance2 && !isShort) {
-		  var split = getSubdivision(part),
-			cusp = getCusp(split.t)
+		  const split = getSubdivision(part)
+		  const cusp = getCusp(split.t)
 		  subdivide(part, split.t, split.utan, cusp, cusp)
 		} else {
-		  var last = segments[segments.length - 1]
+		  const last = segments[segments.length - 1]
 		  last.setHandleOut(points[1].subtract(points[0]))
 		  segments.push(new Segment(points[3], points[2].subtract(points[3])))
 		}
@@ -17446,32 +17641,32 @@ PathItem.inject(
 	}
 
 	function getInflections(v) {
-	  var p0 = new Point(v[0], v[1]),
-		p1 = new Point(v[2], v[3]),
-		p2 = new Point(v[4], v[5]),
-		p3 = new Point(v[6], v[7]),
-		a = p1.subtract(p0),
-		b = p2.subtract(p1).subtract(a),
-		c = p3.subtract(p0).subtract(p2.subtract(p1).multiply(3)),
-		roots = [],
-		count = Numerical.solveQuadratic(
-		  b.cross(c),
-		  a.cross(c),
-		  a.cross(b),
-		  roots,
-		  0,
-		  1
-		)
+	  const p0 = new Point(v[0], v[1])
+	  const p1 = new Point(v[2], v[3])
+	  const p2 = new Point(v[4], v[5])
+	  const p3 = new Point(v[6], v[7])
+	  const a = p1.subtract(p0)
+	  const b = p2.subtract(p1).subtract(a)
+	  const c = p3.subtract(p0).subtract(p2.subtract(p1).multiply(3))
+	  const roots = []
+	  const count = Numerical.solveQuadratic(
+		b.cross(c),
+		a.cross(c),
+		a.cross(b),
+		roots,
+		0,
+		1
+	  )
 	  return count > 0 ? roots.slice(0, count) : []
 	}
 
 	function regularize(v, dimension) {
-	  var p0 = new Point(v[0], v[1]),
-		p1 = new Point(v[2], v[3]),
-		p2 = new Point(v[4], v[5]),
-		p3 = new Point(v[6], v[7]),
-		handle1 = p1.subtract(p0),
-		handle2 = p2.subtract(p3)
+	  const p0 = new Point(v[0], v[1])
+	  let p1 = new Point(v[2], v[3])
+	  let p2 = new Point(v[4], v[5])
+	  const p3 = new Point(v[6], v[7])
+	  const handle1 = p1.subtract(p0)
+	  const handle2 = p2.subtract(p3)
 	  if (handle1.getLength() < dimension) {
 		if (!handle1.isZero()) {
 		  p1 = p0.add(handle1.normalize(dimension))
@@ -17496,56 +17691,56 @@ PathItem.inject(
 	}
 
 	function regularizeCusp(v, dimension) {
-	  var p0 = new Point(v[0], v[1]),
-		p1 = new Point(v[2], v[3]),
-		p2 = new Point(v[4], v[5]),
-		p3 = new Point(v[6], v[7]),
-		d01 = p1.subtract(p0),
-		d02 = p2.subtract(p0),
-		d03 = p3.subtract(p0),
-		d12 = p2.subtract(p1),
-		d23 = p3.subtract(p2),
-		det012 = d01.cross(d02),
-		det123 = d12.cross(d23),
-		det013 = d01.cross(d03),
-		det023 = d02.cross(d03)
+	  const p0 = new Point(v[0], v[1])
+	  let p1 = new Point(v[2], v[3])
+	  let p2 = new Point(v[4], v[5])
+	  const p3 = new Point(v[6], v[7])
+	  const d01 = p1.subtract(p0)
+	  const d02 = p2.subtract(p0)
+	  const d03 = p3.subtract(p0)
+	  const d12 = p2.subtract(p1)
+	  const d23 = p3.subtract(p2)
+	  const det012 = d01.cross(d02)
+	  const det123 = d12.cross(d23)
+	  const det013 = d01.cross(d03)
+	  const det023 = d02.cross(d03)
 	  if (det012 * det123 > 0 && det012 * det013 < 0 && det012 * det023 < 0) {
-		var q0 = d01.multiply(3),
-		  q1 = d12.multiply(3),
-		  q2 = d23.multiply(3),
-		  t = Curve.getNearestTime(
-			[
-			  q0.x,
-			  q0.y,
-			  q0.x + (q1.x - q0.x) * 2 / 3,
-			  q0.y + (q1.y - q0.y) * 2 / 3,
-			  q2.x + (q1.x - q2.x) * 2 / 3,
-			  q2.y + (q1.y - q2.y) * 2 / 3,
-			  q2.x,
-			  q2.y
-			],
-			new Point(0, 0)
-		  ),
-		  u = 1 - t,
-		  q = q0
-			.multiply(u * u)
-			.add(q1.multiply(2 * t * u))
-			.add(q2.multiply(t * t)),
-		  dq = q1
-			.subtract(q0)
-			.multiply(2 * u)
-			.add(q2.subtract(q1).multiply(2 * t)),
-		  cross = q.cross(dq),
-		  distance2 = q.dot(q)
+		const q0 = d01.multiply(3)
+		const q1 = d12.multiply(3)
+		const q2 = d23.multiply(3)
+		const t = Curve.getNearestTime(
+		  [
+			q0.x,
+			q0.y,
+			q0.x + (q1.x - q0.x) * 2 / 3,
+			q0.y + (q1.y - q0.y) * 2 / 3,
+			q2.x + (q1.x - q2.x) * 2 / 3,
+			q2.y + (q1.y - q2.y) * 2 / 3,
+			q2.x,
+			q2.y
+		  ],
+		  new Point(0, 0)
+		)
+		const u = 1 - t
+		const q = q0
+		  .multiply(u * u)
+		  .add(q1.multiply(2 * t * u))
+		  .add(q2.multiply(t * t))
+		const dq = q1
+		  .subtract(q0)
+		  .multiply(2 * u)
+		  .add(q2.subtract(q1).multiply(2 * t))
+		const cross = q.cross(dq)
+		const distance2 = q.dot(q)
 		if (
 		  distance2 * distance2 * distance2 <=
 		  cross * dimension * cross * dimension
 		) {
-		  var a = 3 * det012 + det023 - 2 * det013,
-			b = -3 * det012 + det013,
-			discriminant = b * b - 4 * a * det012,
-			l01 = d01.getLength(),
-			l23 = d23.getLength()
+		  const a = 3 * det012 + det023 - 2 * det013
+		  const b = -3 * det012 + det013
+		  const discriminant = b * b - 4 * a * det012
+		  const l01 = d01.getLength()
+		  const l23 = d23.getLength()
 		  if (discriminant > 0) {
 			if (l01 > 2 * dimension)
 			  p1 = p1.subtract(d01.multiply(dimension / l01))
@@ -17564,27 +17759,27 @@ PathItem.inject(
 	}
 
 	function getDashes(paths, dashArray, dashOffset) {
-	  var count = dashArray.length,
-		isDashed = dashArray.some(function (dash) {
-		  return dash > 0
-		}),
-		dashes = []
+	  const count = dashArray.length
+	  const isDashed = dashArray.some(function (dash) {
+		return dash > 0
+	  })
+	  const dashes = []
 
 	  function getDash(i) {
 		return dashArray[((i % count) + count) % count]
 	  }
 
 	  function addDashes(path) {
-		var curves = path.getCurves(),
-		  length = path.getLength(),
-		  profile = path._strokeProfile && path._takeStrokeProfile(),
-		  index = 0,
-		  start = 0,
-		  from = -dashOffset,
-		  j = 0
+		const curves = path.getCurves()
+		const length = path.getLength()
+		const profile = path._strokeProfile && path._takeStrokeProfile()
+		let index = 0
+		let start = 0
+		let from = -dashOffset
+		let j = 0
 
 		function getLocation(offset) {
-		  var curve = curves[index]
+		  let curve = curves[index]
 		  while (
 			index < curves.length - 1 &&
 			start + curve.getLength() < offset
@@ -17602,11 +17797,11 @@ PathItem.inject(
 		}
 
 		function addDash(from, to) {
-		  var a = getLocation(from),
-			b = getLocation(to),
-			segments = []
-		  for (var i = a.index; i <= b.index; i++) {
-			var v = Curve.getPart(
+		  const a = getLocation(from)
+		  const b = getLocation(to)
+		  const segments = []
+		  for (let i = a.index; i <= b.index; i++) {
+			const v = Curve.getPart(
 			  curves[i].getValues(),
 			  i === a.index ? a.time : 0,
 			  i === b.index ? b.time : 1
@@ -17631,14 +17826,14 @@ PathItem.inject(
 			  )
 			)
 		  }
-		  var dash = new Path({ segments: segments, insert: false })
+		  const dash = new Path({ segments: segments, insert: false })
 		  if (profile) dash._setStrokeProfilePart(profile, from, to)
 		  dashes.push(dash)
 		}
 
 		while (from > 0) from -= getDash(--j) + getDash(--j)
 		while (from < length) {
-		  var to = from + getDash(j++)
+		  const to = from + getDash(j++)
 		  if (
 			Math.min(to, length) - Math.max(from, 0) >
 			1e-7
@@ -17648,7 +17843,7 @@ PathItem.inject(
 		}
 	  }
 
-	  for (var i = 0, l = paths.length; i < l; i++) {
+	  for (let i = 0, l = paths.length; i < l; i++) {
 		if (isDashed) {
 		  addDashes(paths[i])
 		} else {
@@ -17667,15 +17862,15 @@ PathItem.inject(
 
 	return  {
 	  offset: function (distance, options) {
-		var join = options && options.join || 'miter',
-		  miterLimit = options && options.miterLimit || 10,
-		  path = prepare(this),
-		  paths = path._children || [path],
-		  result
+		const join = options && options.join || 'miter'
+		const miterLimit = options && options.miterLimit || 10
+		const path = prepare(this)
+		const paths = path._children || [path]
+		let result
 		if (!distance) {
 		  result = path
 		} else if (this._children || this._closed) {
-		  var outline = outlineStroke(
+		  const outline = outlineStroke(
 			paths,
 			abs(distance),
 			join,
@@ -17698,7 +17893,7 @@ PathItem.inject(
 
 	  outline: function (options) {
 		options = options || {}
-		var result
+		let result
 		if (
 		  !this._children &&
 		  this._matrix.isIdentity() &&
@@ -17709,7 +17904,7 @@ PathItem.inject(
 		) {
 		  result = this._getStrokeOutline().clone({ insert: false })
 		} else {
-		  var path = prepare(this)
+		  const path = prepare(this)
 		  result = outlineStroke(
 			getDashes(
 			  path._children || [path],
@@ -17730,15 +17925,15 @@ PathItem.inject(
 
 	  dash: function (options) {
 		options = options || {}
-		var path = prepare(this),
-		  result = new Group({
-			children: getDashes(
-			  path._children || [path],
-			  Base.pick(options.dashArray, this.getDashArray()),
-			  Base.pick(options.dashOffset, this.getDashOffset())
-			),
-			insert: false
-		  })
+		const path = prepare(this)
+		let result = new Group({
+		  children: getDashes(
+			path._children || [path],
+			Base.pick(options.dashArray, this.getDashArray()),
+			Base.pick(options.dashOffset, this.getDashOffset())
+		  ),
+		  insert: false
+		})
 		result = createResult(this, result, options)
 		result.setDashArray([])
 		return result
@@ -17764,7 +17959,7 @@ PathItem.inject(
   })()
 )
 
-var PathFlattener = Base.extend(
+const PathFlattener = Base.extend(
   {
 	_class: 'PathFlattener',
 
@@ -17775,16 +17970,16 @@ var PathFlattener = Base.extend(
 	  ignoreStraight,
 	  matrix
 	) {
-	  var curves = [],
-		parts = [],
-		length = 0,
-		minSpan = 1 / (maxRecursion || 32),
-		segments = path._segments,
-		segment1 = segments[0],
-		segment2
+	  const curves = []
+	  const parts = []
+	  let length = 0
+	  const minSpan = 1 / (maxRecursion || 32)
+	  const segments = path._segments
+	  let segment1 = segments[0]
+	  let segment2
 
 	  function addCurve(segment1, segment2) {
-		var curve = Curve.getValues(segment1, segment2, matrix)
+		const curve = Curve.getValues(segment1, segment2, matrix)
 		curves.push(curve)
 		computeParts(curve, segment1._index, 0, 1)
 	  }
@@ -17795,14 +17990,14 @@ var PathFlattener = Base.extend(
 		  !(ignoreStraight && Curve.isStraight(curve)) &&
 		  !Curve.isFlatEnough(curve, flatness || 0.25)
 		) {
-		  var halves = Curve.subdivide(curve, 0.5),
-			tMid = (t1 + t2) / 2
+		  const halves = Curve.subdivide(curve, 0.5)
+		  const tMid = (t1 + t2) / 2
 		  computeParts(halves[0], index, t1, tMid)
 		  computeParts(halves[1], index, tMid, t2)
 		} else {
-		  var dx = curve[6] - curve[0],
-			dy = curve[7] - curve[1],
-			dist = Math.sqrt(dx * dx + dy * dy)
+		  const dx = curve[6] - curve[0]
+		  const dy = curve[7] - curve[1]
+		  const dist = Math.sqrt(dx * dx + dy * dy)
 		  if (dist > 0) {
 			length += dist
 			parts.push({
@@ -17816,7 +18011,7 @@ var PathFlattener = Base.extend(
 		}
 	  }
 
-	  for (var i = 1, l = segments.length; i < l; i++) {
+	  for (let i = 1, l = segments.length; i < l; i++) {
 		segment2 = segments[i]
 		addCurve(segment1, segment2)
 		segment1 = segment2
@@ -17829,25 +18024,24 @@ var PathFlattener = Base.extend(
 	},
 
 	_get: function (offset) {
-	  var parts = this.parts,
-		length = parts.length,
-		start,
-		i,
-		j = this.index
+	  const parts = this.parts
+	  const length = parts.length
+	  let i
+	  let j = this.index
 	  for (;;) {
 		i = j
 		if (!j || parts[--j].offset < offset) break
 	  }
 	  for (; i < length; i++) {
-		var part = parts[i]
+		const part = parts[i]
 		if (part.offset >= offset) {
 		  this.index = i
-		  var prev = parts[i - 1],
-			prevTime = prev && prev.index === part.index ? prev.time : 0,
-			prevOffset = prev ? prev.offset : 0,
-			factor = (offset - prevOffset) / (part.offset - prevOffset)
+		  const prev = parts[i - 1]
+		  const prevTime = prev && prev.index === part.index ? prev.time : 0
+		  const prevOffset = prev ? prev.offset : 0
+		  let factor = (offset - prevOffset) / (part.offset - prevOffset)
 		  if (part.isStraight) {
-			var v = part.curve
+			const v = part.curve
 			factor = Curve.getTimeOf(
 			  v,
 			  new Point(
@@ -17872,7 +18066,7 @@ var PathFlattener = Base.extend(
 	Curve._evaluateMethods,
 	function (name) {
 	  this[name + 'At'] = function (offset) {
-		var param = this._get(offset)
+		const param = this._get(offset)
 		return Curve[name](this.curves[param.index], param.time)
 	  }
 	},
@@ -17880,11 +18074,15 @@ var PathFlattener = Base.extend(
   )
 )
 
-var PathFitter = Base.extend({
+const PathFitter = Base.extend({
   initialize: function (segments, closed) {
-	var points = (this.points = [])
-	for (var i = 0, prev, l = segments.length; i < l; i++) {
-	  var point = segments[i].point
+	let i
+	let prev
+	let l
+
+	const points = (this.points = [])
+	for (i = 0, prev, l = segments.length; i < l; i++) {
+	  const point = segments[i].point
 	  if (!prev || !prev.equals(point)) {
 		points.push((prev = point.clone()))
 	  }
@@ -17897,9 +18095,9 @@ var PathFitter = Base.extend({
   },
 
   fit: function (error, tangent1, tangent2) {
-	var points = this.points,
-	  length = points.length,
-	  segments = null
+	const points = this.points
+	const length = points.length
+	let segments = null
 	if (length > 0) {
 	  segments = [new Segment(points[0])]
 	  if (length > 1) {
@@ -17924,11 +18122,11 @@ var PathFitter = Base.extend({
   },
 
   fitCubic: function (segments, error, first, last, tangent1, tangent2) {
-	var points = this.points
+	const points = this.points
 	if (last - first === 1) {
-	  var pt1 = points[first],
-		pt2 = points[last],
-		dist = pt1.getDistance(pt2) / 3
+	  const pt1 = points[first]
+	  const pt2 = points[last]
+	  const dist = pt1.getDistance(pt2) / 3
 	  this.addCurve(segments, [
 		pt1,
 		pt1.add(tangent1.normalize(dist)),
@@ -17937,13 +18135,13 @@ var PathFitter = Base.extend({
 	  ])
 	  return
 	}
-	var uPrime = this.chordLengthParameterize(first, last),
-	  maxError = Math.max(error, error * error),
-	  split,
-	  parametersInOrder = true
-	for (var i = 0; i <= 4; i++) {
-	  var curve = this.generateBezier(first, last, uPrime, tangent1, tangent2)
-	  var max = this.findMaxError(first, last, curve, uPrime)
+	const uPrime = this.chordLengthParameterize(first, last)
+	let maxError = Math.max(error, error * error)
+	let split
+	let parametersInOrder = true
+	for (let i = 0; i <= 4; i++) {
+	  const curve = this.generateBezier(first, last, uPrime, tangent1, tangent2)
+	  const max = this.findMaxError(first, last, curve, uPrime)
 	  if (max.error < error && parametersInOrder) {
 		this.addCurve(segments, curve)
 		return
@@ -17953,7 +18151,7 @@ var PathFitter = Base.extend({
 	  parametersInOrder = this.reparameterize(first, last, uPrime, curve)
 	  maxError = max.error
 	}
-	var tangentCenter = points[split - 1].subtract(points[split + 1])
+	const tangentCenter = points[split - 1].subtract(points[split + 1])
 	this.fitCubic(segments, error, first, split, tangent1, tangentCenter)
 	this.fitCubic(
 	  segments,
@@ -17966,33 +18164,33 @@ var PathFitter = Base.extend({
   },
 
   addCurve: function (segments, curve) {
-	var prev = segments[segments.length - 1]
+	const prev = segments[segments.length - 1]
 	prev.setHandleOut(curve[1].subtract(curve[0]))
 	segments.push(new Segment(curve[3], curve[2].subtract(curve[3])))
   },
 
   generateBezier: function (first, last, uPrime, tangent1, tangent2) {
-	var epsilon = 1e-12,
-	  abs = Math.abs,
-	  points = this.points,
-	  pt1 = points[first],
-	  pt2 = points[last],
-	  C = [[0, 0], [0, 0]],
-	  X = [0, 0]
+	const epsilon = 1e-12
+	const abs = Math.abs
+	const points = this.points
+	const pt1 = points[first]
+	const pt2 = points[last]
+	const C = [[0, 0], [0, 0]]
+	const X = [0, 0]
 
-	for (var i = 0, l = last - first + 1; i < l; i++) {
-	  var u = uPrime[i],
-		t = 1 - u,
-		b = 3 * u * t,
-		b0 = t * t * t,
-		b1 = b * t,
-		b2 = b * u,
-		b3 = u * u * u,
-		a1 = tangent1.normalize(b1),
-		a2 = tangent2.normalize(b2),
-		tmp = points[first + i]
-		  .subtract(pt1.multiply(b0 + b1))
-		  .subtract(pt2.multiply(b2 + b3))
+	for (let i = 0, l = last - first + 1; i < l; i++) {
+	  const u = uPrime[i]
+	  const t = 1 - u
+	  const b = 3 * u * t
+	  const b0 = t * t * t
+	  const b1 = b * t
+	  const b2 = b * u
+	  const b3 = u * u * u
+	  const a1 = tangent1.normalize(b1)
+	  const a2 = tangent2.normalize(b2)
+	  const tmp = points[first + i]
+		.subtract(pt1.multiply(b0 + b1))
+		.subtract(pt2.multiply(b2 + b3))
 	  C[0][0] += a1.dot(a1)
 	  C[0][1] += a1.dot(a2)
 	  C[1][0] = C[0][1]
@@ -18001,29 +18199,29 @@ var PathFitter = Base.extend({
 	  X[1] += a2.dot(tmp)
 	}
 
-	var detC0C1 = C[0][0] * C[1][1] - C[1][0] * C[0][1],
-	  alpha1,
-	  alpha2
+	const detC0C1 = C[0][0] * C[1][1] - C[1][0] * C[0][1]
+	let alpha1
+	let alpha2
 	if (abs(detC0C1) > epsilon) {
-	  var detC0X = C[0][0] * X[1] - C[1][0] * X[0],
-		detXC1 = X[0] * C[1][1] - X[1] * C[0][1]
+	  const detC0X = C[0][0] * X[1] - C[1][0] * X[0]
+	  const detXC1 = X[0] * C[1][1] - X[1] * C[0][1]
 	  alpha1 = detXC1 / detC0C1
 	  alpha2 = detC0X / detC0C1
 	} else {
-	  var c0 = C[0][0] + C[0][1],
-		c1 = C[1][0] + C[1][1]
+	  const c0 = C[0][0] + C[0][1]
+	  const c1 = C[1][0] + C[1][1]
 	  alpha1 = alpha2 =
 		abs(c0) > epsilon ? X[0] / c0 : abs(c1) > epsilon ? X[1] / c1 : 0
 	}
 
-	var segLength = pt2.getDistance(pt1),
-	  eps = epsilon * segLength,
-	  handle1,
-	  handle2
+	const segLength = pt2.getDistance(pt1)
+	const eps = epsilon * segLength
+	let handle1
+	let handle2
 	if (alpha1 < eps || alpha2 < eps) {
 	  alpha1 = alpha2 = segLength / 3
 	} else {
-	  var line = pt2.subtract(pt1)
+	  const line = pt2.subtract(pt1)
 	  handle1 = tangent1.normalize(alpha1)
 	  handle2 = tangent2.normalize(alpha2)
 	  if (handle1.dot(line) - handle2.dot(line) > segLength * segLength) {
@@ -18041,36 +18239,41 @@ var PathFitter = Base.extend({
   },
 
   reparameterize: function (first, last, u, curve) {
-	for (var i = first; i <= last; i++) {
+	let i
+	let l
+
+	for (i = first; i <= last; i++) {
 	  u[i - first] = this.findRoot(curve, this.points[i], u[i - first])
 	}
-	for (var i = 1, l = u.length; i < l; i++) {
+	for (i = 1, l = u.length; i < l; i++) {
 	  if (u[i] <= u[i - 1]) return false
 	}
 	return true
   },
 
   findRoot: function (curve, point, u) {
-	var curve1 = [],
-	  curve2 = []
-	for (var i = 0; i <= 2; i++) {
+	let i
+
+	const curve1 = []
+	const curve2 = []
+	for (i = 0; i <= 2; i++) {
 	  curve1[i] = curve[i + 1].subtract(curve[i]).multiply(3)
 	}
-	for (var i = 0; i <= 1; i++) {
+	for (i = 0; i <= 1; i++) {
 	  curve2[i] = curve1[i + 1].subtract(curve1[i]).multiply(2)
 	}
-	var pt = this.evaluate(3, curve, u),
-	  pt1 = this.evaluate(2, curve1, u),
-	  pt2 = this.evaluate(1, curve2, u),
-	  diff = pt.subtract(point),
-	  df = pt1.dot(pt1) + diff.dot(pt2)
+	const pt = this.evaluate(3, curve, u)
+	const pt1 = this.evaluate(2, curve1, u)
+	const pt2 = this.evaluate(1, curve2, u)
+	const diff = pt.subtract(point)
+	const df = pt1.dot(pt1) + diff.dot(pt2)
 	return Numerical.isMachineZero(df) ? u : u - diff.dot(pt1) / df
   },
 
   evaluate: function (degree, curve, t) {
-	var tmp = curve.slice()
-	for (var i = 1; i <= degree; i++) {
-	  for (var j = 0; j <= degree - i; j++) {
+	const tmp = curve.slice()
+	for (let i = 1; i <= degree; i++) {
+	  for (let j = 0; j <= degree - i; j++) {
 		tmp[j] = tmp[j].multiply(1 - t).add(tmp[j + 1].multiply(t))
 	  }
 	}
@@ -18078,26 +18281,29 @@ var PathFitter = Base.extend({
   },
 
   chordLengthParameterize: function (first, last) {
-	var u = [0]
-	for (var i = first + 1; i <= last; i++) {
+	let i
+	let m
+
+	const u = [0]
+	for (i = first + 1; i <= last; i++) {
 	  u[i - first] = (
 		u[i - first - 1] +
 		this.points[i].getDistance(this.points[i - 1])
 	  )
 	}
-	for (var i = 1, m = last - first; i <= m; i++) {
+	for (i = 1, m = last - first; i <= m; i++) {
 	  u[i] /= u[m]
 	}
 	return u
   },
 
   findMaxError: function (first, last, curve, u) {
-	var index = Math.floor((last - first + 1) / 2),
-	  maxDist = 0
-	for (var i = first + 1; i < last; i++) {
-	  var P = this.evaluate(3, curve, u[i - first])
-	  var v = P.subtract(this.points[i])
-	  var dist = v.x * v.x + v.y * v.y
+	let index = Math.floor((last - first + 1) / 2)
+	let maxDist = 0
+	for (let i = first + 1; i < last; i++) {
+	  const P = this.evaluate(3, curve, u[i - first])
+	  const v = P.subtract(this.points[i])
+	  const dist = v.x * v.x + v.y * v.y
 	  if (dist >= maxDist) {
 		maxDist = dist
 		index = i
@@ -18110,7 +18316,7 @@ var PathFitter = Base.extend({
   }
 })
 
-var TextItem = Item.extend(
+const TextItem = Item.extend(
    {
 	_class: 'TextItem',
 	_applyMatrix: false,
@@ -18124,7 +18330,7 @@ var TextItem = Item.extend(
 	_boundsOptions: { handle: false },
 	initialize: function TextItem(arg) {
 	  this._story = new TextStory([this])
-	  var hasProps = (
+	  const hasProps = (
 		arg &&
 		Base.isPlainObject(arg) &&
 		arg.x === undefined &&
@@ -18134,27 +18340,27 @@ var TextItem = Item.extend(
 	},
 
 	_serialize: function _serialize(options, dictionary) {
-	  var json = _serialize.base.call(this, options, dictionary),
-		props = json[1],
-		story = this._story,
-		content = story._content,
-		runs = story._getRuns(),
-		paragraphs = story._paragraphs,
-		keys = story._paragraphKeys,
-		itemKeys = story._itemKeys
+	  const json = _serialize.base.call(this, options, dictionary)
+	  const props = json[1]
+	  const story = this._story
+	  const content = story._content
+	  const runs = story._getRuns()
+	  const paragraphs = story._paragraphs
+	  const keys = story._paragraphKeys
+	  const itemKeys = story._itemKeys
 
 	  function serialize(json, style, key) {
-		var value = style[key]
+		const value = style[key]
 		if (value !== undefined && !Base.equals(value, style._defaults[key]))
 		  json[key] = Base.serialize(value, options, false, dictionary)
 	  }
 
 	  if (runs.length > 1) {
 		props.runs = runs.map(function (run) {
-		  var style = run.style,
-			values = style._values,
-			json = { content: content.slice(run.start, run.end) }
-		  for (var key in style._defaults) {
+		  const style = run.style
+		  const values = style._values
+		  const json = { content: content.slice(run.start, run.end) }
+		  for (const key in style._defaults) {
 			if (key in values && !(key in keys || key in itemKeys))
 			  serialize(json, style, key)
 		  }
@@ -18168,8 +18374,8 @@ var TextItem = Item.extend(
 		})
 	  ) {
 		props.paragraphs = paragraphs.map(function (style) {
-		  var json = {}
-		  for (var key in keys) serialize(json, style, key)
+		  const json = {}
+		  for (const key in keys) serialize(json, style, key)
 		  return json
 		})
 	  }
@@ -18177,17 +18383,17 @@ var TextItem = Item.extend(
 	},
 
 	_equals: function (item) {
-	  var story1 = this._story,
-		story2 = item._story,
-		runs1 = story1._getRuns(),
-		runs2 = story2._getRuns(),
-		paragraphs1 = story1._paragraphs,
-		paragraphs2 = story2._paragraphs
+	  const story1 = this._story
+	  const story2 = item._story
+	  const runs1 = story1._getRuns()
+	  const runs2 = story2._getRuns()
+	  const paragraphs1 = story1._paragraphs
+	  const paragraphs2 = story2._paragraphs
 	  return (
 		story1._content === story2._content &&
 		runs1.length === runs2.length &&
 		runs1.every(function (run, i) {
-		  var other = runs2[i]
+		  const other = runs2[i]
 		  return (
 			run.end === other.end &&
 			run.style.equals(other.style)
@@ -18204,7 +18410,7 @@ var TextItem = Item.extend(
 	  _changed.base.call(this, flags)
 	  if (flags & 136) {
 		this._layout = this._fontMetrics = null
-		var next = this.getNextTextItem()
+		const next = this.getNextTextItem()
 		if (next) next._changed(9)
 	  }
 	},
@@ -18217,7 +18423,7 @@ var TextItem = Item.extend(
 	},
 
 	_getStyles: function (style, key) {
-	  var story = this._story
+	  const story = this._story
 	  return !(key in story._itemKeys)
 		? key in story._paragraphKeys
 		  ? story._paragraphs
@@ -18269,14 +18475,14 @@ var TextItem = Item.extend(
 	},
 
 	link: function (next) {
-	  var story = this._story,
-		other = next._story
+	  const story = this._story
+	  const other = next._story
 	  if (other === story) return false
-	  var items = story._items,
-		joined = other._items
+	  const items = story._items
+	  const joined = other._items
 	  story._append(other)
 	  items.splice.apply(items, [items.indexOf(this) + 1, 0].concat(joined))
-	  for (var i = 0, l = joined.length; i < l; i++) joined[i]._story = story
+	  for (let i = 0, l = joined.length; i < l; i++) joined[i]._story = story
 	  story._changed(521)
 	  return true
 	},
@@ -18286,9 +18492,11 @@ var TextItem = Item.extend(
 	},
 
 	unlink: function (which) {
-	  var story = this._story,
-		items = story._items,
-		index = items.indexOf(this)
+	  let start
+
+	  const story = this._story
+	  const items = story._items
+	  const index = items.indexOf(this)
 	  which = which || 'both'
 	  if (
 		items.length > 1 &&
@@ -18298,8 +18506,8 @@ var TextItem = Item.extend(
 		)
 	  ) {
 		if (which === 'both') {
-		  var start = this.getVisibleRange()._start,
-			own = new TextStory([this])
+		  start = this.getVisibleRange()._start
+		  const own = new TextStory([this])
 		  own._runs[0].style = new Style(
 			story._getRangeStyles('fontSize', start, start)[0],
 			own
@@ -18309,11 +18517,11 @@ var TextItem = Item.extend(
 		  story._changed(521)
 		  this._changed(521)
 		} else {
-		  var at = which === 'before' ? index : index + 1,
-			start = items[at].getVisibleRange()._start,
-			moved = items.splice(at, items.length - at),
-			rest = story._extract(start, moved)
-		  for (var i = 0, l = moved.length; i < l; i++) moved[i]._story = rest
+		  const at = which === 'before' ? index : index + 1
+		  start = items[at].getVisibleRange()._start
+		  const moved = items.splice(at, items.length - at)
+		  const rest = story._extract(start, moved)
+		  for (let i = 0, l = moved.length; i < l; i++) moved[i]._story = rest
 		  story._changed(521)
 		  rest._changed(521)
 		}
@@ -18323,17 +18531,17 @@ var TextItem = Item.extend(
 	},
 
 	getNextTextItem: function () {
-	  var items = this._story._items
+	  const items = this._story._items
 	  return items[items.indexOf(this) + 1] || null
 	},
 
 	getPreviousTextItem: function () {
-	  var items = this._story._items
+	  const items = this._story._items
 	  return items[items.indexOf(this) - 1] || null
 	},
 
 	getVisibleRange: function () {
-	  var range = this._getVisibleRange()
+	  const range = this._getVisibleRange()
 	  return new TextRange(this._story, range[0], range[1])
 	},
 
@@ -18350,7 +18558,7 @@ var TextItem = Item.extend(
 	},
 
 	_getStart: function () {
-	  var previous = this.getPreviousTextItem()
+	  const previous = this.getPreviousTextItem()
 	  return previous ? previous._getVisibleRange()[1] : 0
 	},
 
@@ -18359,20 +18567,20 @@ var TextItem = Item.extend(
 	},
 
 	_measure: function (start, end, direction, byLetter) {
-	  var view = this.getView(),
-		story = this._story,
-		content = story._content,
-		runs = story._runs,
-		letters = null,
-		index = 0,
-		pieces = [],
-		total = 0,
-		lineHeight = 0,
-		ascent = 0,
-		descent = 0,
-		group = '',
-		groupWidth = 0,
-		previous = null
+	  const view = this.getView()
+	  const story = this._story
+	  const content = story._content
+	  const runs = story._runs
+	  let letters = null
+	  let index = 0
+	  const pieces = []
+	  let total = 0
+	  let lineHeight = 0
+	  let ascent = 0
+	  let descent = 0
+	  let group = ''
+	  let groupWidth = 0
+	  let previous = null
 
 	  function advance(piece, text) {
 		if (!(
@@ -18385,7 +18593,7 @@ var TextItem = Item.extend(
 		  group = ''
 		  groupWidth = 0
 		}
-		var before = groupWidth
+		const before = groupWidth
 		group += text
 		groupWidth = (
 		  view.getTextWidth(piece.font, [group], piece.tracking, direction) *
@@ -18395,8 +18603,8 @@ var TextItem = Item.extend(
 	  }
 
 	  function add(piece, text, from, to, extra) {
-		var shown = piece.capitals ? text.toUpperCase() : text,
-		  width = advance(piece, shown) + extra
+		const shown = piece.capitals ? text.toUpperCase() : text
+		const width = advance(piece, shown) + extra
 		pieces.push(
 		  (previous = Base.set({}, piece, {
 			content: shown,
@@ -18409,19 +18617,19 @@ var TextItem = Item.extend(
 		total += width
 	  }
 
-	  for (var i = 0, l = runs.length, pos = 0; i < l; i++) {
-		var run = runs[i],
-		  next = pos + run.length,
-		  from = Math.max(pos, start),
-		  to = Math.min(next, end)
+	  for (let i = 0, l = runs.length, pos = 0; i < l; i++) {
+		const run = runs[i]
+		const next = pos + run.length
+		const from = Math.max(pos, start)
+		const to = Math.min(next, end)
 		if (from < to || start === end && from === to && !lineHeight) {
-		  var style = run.style,
-			piece = this._getPiece(style),
-			kerning = style.getLetterKerning()
+		  const style = run.style
+		  const piece = this._getPiece(style)
+		  const kerning = style.getLetterKerning()
 		  if (byLetter || kerning != null || piece.rotation) {
 			letters = letters || story._getLetters()
 			while (index < letters.length && letters[index]._start < to) {
-			  var letter = letters[index++]
+			  const letter = letters[index++]
 			  if (letter._start >= from) {
 				if (kerning != null) {
 				  previous = null
@@ -18458,10 +18666,10 @@ var TextItem = Item.extend(
 	},
 
 	getLines: function () {
-	  var that = this,
-		story = this._story
+	  const that = this
+	  const story = this._story
 	  return this._getLayout().map(function (line) {
-		var range = new TextRange(story, line.start, line.end)
+		const range = new TextRange(story, line.start, line.end)
 		range.baseline = new Line(
 		  new Point(line.x, line.y),
 		  new Point(line.x + line.width, line.y)
@@ -18472,18 +18680,18 @@ var TextItem = Item.extend(
 	},
 
 	_getPiece: function (style) {
-	  var size = style._getFontSize(),
-		font = style._getCanvasFont(),
-		position = style.getBaselinePosition(),
-		scale = Point.read([style.getLetterScaling()]),
-		cache = this._fontMetrics || (this._fontMetrics = {}),
-		metrics = (
-		  cache[font] ||
-		  (cache[font] = (
-			this.getView().getFontMetrics(font) ||
-			{ ascent: 0.75 * size, descent: 0.25 * size }
-		  ))
-		)
+	  const size = style._getFontSize()
+	  const font = style._getCanvasFont()
+	  const position = style.getBaselinePosition()
+	  const scale = Point.read([style.getLetterScaling()])
+	  const cache = this._fontMetrics || (this._fontMetrics = {})
+	  const metrics = (
+		cache[font] ||
+		(cache[font] = (
+		  this.getView().getFontMetrics(font) ||
+		  { ascent: 0.75 * size, descent: 0.25 * size }
+		))
+	  )
 	  return {
 		style: style,
 		font: font,
@@ -18505,7 +18713,7 @@ var TextItem = Item.extend(
 	},
 
 	_getBox: function (entry, x, y) {
-	  var leading = (entry.lineHeight - entry.ascent - entry.descent) / 2
+	  const leading = (entry.lineHeight - entry.ascent - entry.descent) / 2
 	  return new Rectangle(
 		x,
 		y - entry.ascent - leading,
@@ -18515,12 +18723,12 @@ var TextItem = Item.extend(
 	},
 
 	_indent: function (paragraph, isFirst, left, right) {
-	  var isRightToLeft = paragraph.getDirection() === 'rtl',
-		start = (
-		  paragraph.getStartIndent() +
-		  (isFirst ? paragraph.getFirstLineIndent() : 0)
-		),
-		end = paragraph.getEndIndent()
+	  const isRightToLeft = paragraph.getDirection() === 'rtl'
+	  const start = (
+		paragraph.getStartIndent() +
+		(isFirst ? paragraph.getFirstLineIndent() : 0)
+	  )
+	  const end = paragraph.getEndIndent()
 	  return [
 		left + (isRightToLeft ? end : start),
 		right - (isRightToLeft ? start : end)
@@ -18528,21 +18736,21 @@ var TextItem = Item.extend(
 	},
 
 	_place: function (line, paragraph, isLast, room) {
-	  var justification = paragraph.getJustification(),
-		justifyLast = paragraph.getJustifyLast(),
-		direction = paragraph.getDirection(),
-		side = this._getSide(
-		  (
-			justification === 'justify' &&
-			isLast &&
-			justifyLast !== 'all'
-		  )
-			? justifyLast
-			: justification,
-		  direction
-		),
-		left = room[0],
-		right = room[1]
+	  const justification = paragraph.getJustification()
+	  const justifyLast = paragraph.getJustifyLast()
+	  const direction = paragraph.getDirection()
+	  const side = this._getSide(
+		(
+		  justification === 'justify' &&
+		  isLast &&
+		  justifyLast !== 'all'
+		)
+		  ? justifyLast
+		  : justification,
+		direction
+	  )
+	  const left = room[0]
+	  const right = room[1]
 	  if (side === 'justify' || side === 'all')
 		this._justify(line, right - left, direction)
 	  if (direction === 'rtl') this._mirror(line.pieces, line.width)
@@ -18558,32 +18766,32 @@ var TextItem = Item.extend(
 	},
 
 	_justify: function (line, width, direction) {
-	  var pieces = line.pieces,
-		content = this._story._content,
-		spaces = (
-		  content
-			.slice(
-			  pieces.length ? pieces[0].start : 0,
-			  pieces.length ? pieces[pieces.length - 1].end : 0
-			)
-			.match(/\s+/g) || []
-		).length
+	  const pieces = line.pieces
+	  const content = this._story._content
+	  const spaces = (
+		content
+		  .slice(
+			pieces.length ? pieces[0].start : 0,
+			pieces.length ? pieces[pieces.length - 1].end : 0
+		  )
+		  .match(/\s+/g) || []
+	  ).length
 	  if (spaces && width > line.width) {
-		var extra = (width - line.width) / spaces,
-		  moved = 0,
-		  result = []
-		for (var i = 0, l = pieces.length; i < l; i++) {
-		  var piece = pieces[i],
-			parts = piece.content.split(/(\s+)/),
-			from = piece.start,
-			x = piece.x
+		const extra = (width - line.width) / spaces
+		let moved = 0
+		const result = []
+		for (let i = 0, l = pieces.length; i < l; i++) {
+		  const piece = pieces[i]
+		  const parts = piece.content.split(/(\s+)/)
+		  let from = piece.start
+		  let x = piece.x
 		  if (parts.length === 1) {
 			result.push(Base.set({}, piece, { x: x + moved }))
 		  } else {
-			for (var j = 0, m = parts.length; j < m; j++) {
-			  var part = parts[j]
+			for (let j = 0, m = parts.length; j < m; j++) {
+			  const part = parts[j]
 			  if (part) {
-				var advance = this._measure(
+				const advance = this._measure(
 				  from,
 				  from + part.length,
 				  direction
@@ -18613,21 +18821,21 @@ var TextItem = Item.extend(
 	},
 
 	_mirror: function (pieces, width) {
-	  for (var i = 0, l = pieces.length; i < l; i++) {
-		var piece = pieces[i]
+	  for (let i = 0, l = pieces.length; i < l; i++) {
+		const piece = pieces[i]
 		piece.x = width - piece.x - piece.width
 	  }
 	},
 
 	_shift: function (line, x, y) {
-	  var pieces = line.pieces
+	  const pieces = line.pieces
 	  line.x = (line.x || 0) + x
 	  line.y += y
-	  for (var i = 0, l = pieces.length; i < l; i++) pieces[i].x += x
+	  for (let i = 0, l = pieces.length; i < l; i++) pieces[i].x += x
 	},
 
 	_getSide: function (justification, direction) {
-	  var isRightToLeft = direction === 'rtl'
+	  const isRightToLeft = direction === 'rtl'
 	  return justification === 'start'
 		? isRightToLeft
 		  ? 'right'
@@ -18641,37 +18849,37 @@ var TextItem = Item.extend(
 
 	_draw: function (ctx, param, viewMatrix) {
 	  if (param.dontFinish || param.clip) {
-		var rect = this.getInternalBounds()
+		const rect = this.getInternalBounds()
 		if (!param.dontStart) ctx.beginPath()
 		ctx.rect(rect.x, rect.y, rect.width, rect.height)
 	  } else if (this._story._content) {
-		var story = this._story,
-		  lines = this._getLayout(),
-		  paragraph = null,
-		  scale = (
-			!this._style.getStrokeScaling() &&
-			viewMatrix._getMeanScale()
-		  )
+		const story = this._story
+		const lines = this._getLayout()
+		let paragraph = null
+		const scale = (
+		  !this._style.getStrokeScaling() &&
+		  viewMatrix._getMeanScale()
+		)
 		ctx.textAlign = 'left'
-		for (var i = 0, l = lines.length; i < l; i++) {
-		  var line = lines[i],
-			pieces = line.pieces
+		for (let i = 0, l = lines.length; i < l; i++) {
+		  const line = lines[i]
+		  const pieces = line.pieces
 		  if (!paragraph || line.start > paragraph.end) {
 			paragraph = story._getParagraph(line.start)
-			var direction = paragraph.style.getDirection() || 'ltr'
+			const direction = paragraph.style.getDirection() || 'ltr'
 			if (ctx.direction !== direction) ctx.direction = direction
 		  }
-		  for (var j = 0, m = pieces.length; j < m; j++) {
-			var piece = pieces[j],
-			  style = piece.style,
-			  hasFill = style.hasFill(),
-			  hasStroke = style.hasStroke(),
-			  isStrokeFirst = (
-				hasStroke &&
-				style.getPaintOrder() === 'stroke'
-			  ),
-			  size = piece.size,
-			  x = piece.dx || 0
+		  for (let j = 0, m = pieces.length; j < m; j++) {
+			const piece = pieces[j]
+			const style = piece.style
+			const hasFill = style.hasFill()
+			const hasStroke = style.hasStroke()
+			const isStrokeFirst = (
+			  hasStroke &&
+			  style.getPaintOrder() === 'stroke'
+			)
+			const size = piece.size
+			let x = piece.dx || 0
 			this._setStyles(ctx, param, viewMatrix, null, style)
 			if (hasStroke && scale) {
 			  ctx.lineWidth /= scale
@@ -18686,7 +18894,7 @@ var TextItem = Item.extend(
 			ctx.translate(piece.x, line.y + piece.y)
 			if (piece.rotation) ctx.rotate(piece.rotation * Math.PI / 180)
 			if (hasFill) {
-			  var thickness = size / 15
+			  const thickness = size / 15
 			  if (style.getUnderline())
 				ctx.fillRect(x, size / 8, piece.width, thickness)
 			  if (style.getStrikethrough()) {
@@ -18714,20 +18922,20 @@ var TextItem = Item.extend(
 
 	_hitTestSelf: function (point, options) {
 	  if (options.fill) {
-		var lines = this._getLayout()
-		for (var i = 0, l = lines.length; i < l; i++) {
-		  var line = lines[i],
-			pieces = line.pieces
-		  for (var j = 0, m = pieces.length; j < m; j++) {
-			var piece = pieces[j],
-			  local = point
-				.subtract(piece.x, line.y + piece.y)
-				.rotate(-piece.rotation),
-			  rect = this._getBox(piece, piece.dx || 0, 0),
-			  closest = local.clamp(
-				rect.getTopLeft(true),
-				rect.getBottomRight(true)
-			  )
+		const lines = this._getLayout()
+		for (let i = 0, l = lines.length; i < l; i++) {
+		  const line = lines[i]
+		  const pieces = line.pieces
+		  for (let j = 0, m = pieces.length; j < m; j++) {
+			const piece = pieces[j]
+			const local = point
+			  .subtract(piece.x, line.y + piece.y)
+			  .rotate(-piece.rotation)
+			const rect = this._getBox(piece, piece.dx || 0, 0)
+			const closest = local.clamp(
+			  rect.getTopLeft(true),
+			  rect.getBottomRight(true)
+			)
 			if (
 			  piece.style.getFillColor() && (
 				local
@@ -18759,7 +18967,7 @@ TextItem.inject(
 	],
 	function (name) {
 	  this[name] = function () {
-		var story = this._story
+		const story = this._story
 		return story[name].apply(story, arguments)
 	  }
 	},
@@ -18767,7 +18975,7 @@ TextItem.inject(
   )
 )
 
-var PointText = TextItem.extend(
+const PointText = TextItem.extend(
    {
 	_class: 'PointText',
 
@@ -18776,31 +18984,31 @@ var PointText = TextItem.extend(
 	},
 
 	getPoint: function () {
-	  var point = this._matrix.getTranslation()
+	  const point = this._matrix.getTranslation()
 	  return new LinkedPoint(point.x, point.y, this, 'setPoint')
 	},
 
 	setPoint: function () {
-	  var point = Point.read(arguments)
+	  const point = Point.read(arguments)
 	  this.translate(point.subtract(this._matrix.getTranslation()))
 	},
 
 	_layOut: function () {
-	  var story = this._story,
-		length = story._content.length,
-		paragraphs = new TextRange(story, this._getStart(), length)
-		  .getParagraphs(),
-		lines = [],
-		y = 0,
-		spaceAfter = 0
-	  for (var i = 0, l = paragraphs.length; i < l; i++) {
-		var range = paragraphs[i],
-		  paragraph = story._getParagraph(range._start).style,
-		  line = this._measure(
-			range._start,
-			range._end,
-			paragraph.getDirection()
-		  )
+	  const story = this._story
+	  const length = story._content.length
+	  const paragraphs = new TextRange(story, this._getStart(), length)
+		.getParagraphs()
+	  const lines = []
+	  let y = 0
+	  let spaceAfter = 0
+	  for (let i = 0, l = paragraphs.length; i < l; i++) {
+		const range = paragraphs[i]
+		const paragraph = story._getParagraph(range._start).style
+		const line = this._measure(
+		  range._start,
+		  range._end,
+		  paragraph.getDirection()
+		)
 		if (i > 0) {
 		  y += (
 			line.lineHeight +
@@ -18817,15 +19025,15 @@ var PointText = TextItem.extend(
 	},
 
 	_getBounds: function (matrix, options) {
-	  var lines = this._getLayout(),
-		rect = new Rectangle(),
-		strokeWidth = 0
-	  for (var i = 0, l = lines.length; i < l; i++) {
-		var line = lines[i],
-		  box = this._getBox(line, line.x, line.y)
+	  const lines = this._getLayout()
+	  let rect = new Rectangle()
+	  let strokeWidth = 0
+	  for (let i = 0, l = lines.length; i < l; i++) {
+		const line = lines[i]
+		const box = this._getBox(line, line.x, line.y)
 		rect = i ? rect.unite(box) : box
-		for (var j = 0, m = line.pieces.length; j < m; j++) {
-		  var style = line.pieces[j].style
+		for (let j = 0, m = line.pieces.length; j < m; j++) {
+		  const style = line.pieces[j].style
 		  if (style.hasStroke())
 			strokeWidth = Math.max(strokeWidth, style.getStrokeWidth())
 		}
@@ -18836,9 +19044,9 @@ var PointText = TextItem.extend(
   }
 )
 
-var PathText = TextItem.extend(
+const PathText = TextItem.extend(
   new (function () {
-	var fields = {
+	const fields = {
 	  startOffset: 0,
 	  endOffset: null,
 	  alignment: 'baseline',
@@ -18848,8 +19056,8 @@ var PathText = TextItem.extend(
 	return Base.each(
 	  fields,
 	  function (value, name) {
-		var part = Base.capitalize(name),
-		  key = '_' + name
+		const part = Base.capitalize(name)
+		const key = '_' + name
 		this[key] = value
 		this['get' + part] = function () {
 		  return this[key]
@@ -18865,8 +19073,8 @@ var PathText = TextItem.extend(
 
 		copyContent: function copyContent(source) {
 		  copyContent.base.call(this, source)
-		  for (var name in fields) {
-			var key = '_' + name
+		  for (const name in fields) {
+			const key = '_' + name
 			this[key] = source[key]
 		  }
 		}
@@ -18875,7 +19083,7 @@ var PathText = TextItem.extend(
   })(),
    {
 	initialize: function PathText(path, orientation) {
-	  var hasProps = Base.isPlainObject(path)
+	  const hasProps = Base.isPlainObject(path)
 	  this._children = []
 	  TextItem.call(this, hasProps ? path : null)
 	  if (!hasProps) {
@@ -18885,46 +19093,50 @@ var PathText = TextItem.extend(
 	},
 
 	_layOut: function () {
-	  var path = this.getTextPath(),
-		story = this._story,
-		start = this._getStart(),
-		flatteners = (path ? path._children || [path] : []).map(
-		  function (child) {
-			return new PathFlattener(
-			  child,
-			  0.25,
-			  32,
-			  false,
-			  child === path
-				? path._matrix
-				: path._matrix.appended(child._matrix)
-			)
-		  }
-		),
-		lengths = flatteners.map(function (flattener) {
-		  return flattener.length
-		}),
-		length = lengths.reduce(function (sum, length) {
-		  return sum + length
-		}, 0),
-		from = Math.max(0, Math.min(this._startOffset, length)),
-		to =
-		  this._endOffset == null
-			? length
-			: Math.max(from, Math.min(this._endOffset, length)),
-		spacing = this._spacing,
-		paragraph = story._getParagraph(start).style,
-		measured = this._measure(
-		  start,
-		  story._content.length,
-		  paragraph.getDirection(),
-		  true
-		),
-		letters = measured.pieces,
-		pieces = [],
-		width = 0
-	  for (var i = 0, l = letters.length; i < l; i++) {
-		var piece = letters[i]
+	  let i
+	  let l
+	  let piece
+
+	  const path = this.getTextPath()
+	  const story = this._story
+	  const start = this._getStart()
+	  const flatteners = (path ? path._children || [path] : []).map(
+		function (child) {
+		  return new PathFlattener(
+			child,
+			0.25,
+			32,
+			false,
+			child === path
+			  ? path._matrix
+			  : path._matrix.appended(child._matrix)
+		  )
+		}
+	  )
+	  const lengths = flatteners.map(function (flattener) {
+		return flattener.length
+	  })
+	  const length = lengths.reduce(function (sum, length) {
+		return sum + length
+	  }, 0)
+	  const from = Math.max(0, Math.min(this._startOffset, length))
+	  const to =
+		this._endOffset == null
+		  ? length
+		  : Math.max(from, Math.min(this._endOffset, length))
+	  const spacing = this._spacing
+	  const paragraph = story._getParagraph(start).style
+	  const measured = this._measure(
+		start,
+		story._content.length,
+		paragraph.getDirection(),
+		true
+	  )
+	  const letters = measured.pieces
+	  const pieces = []
+	  let width = 0
+	  for (i = 0, l = letters.length; i < l; i++) {
+		piece = letters[i]
 		if (width + piece.width > to - from) break
 		piece.x = width
 		pieces.push(piece)
@@ -18932,44 +19144,44 @@ var PathText = TextItem.extend(
 	  }
 	  width -= pieces.length ? spacing : 0
 	  if (paragraph.getDirection() === 'rtl') this._mirror(pieces, width)
-	  var side = this._getSide(
-		  paragraph.getJustification(),
-		  paragraph.getDirection()
-		),
-		offset =
-		  side === 'right'
-			? to - width
-			: side === 'center'
-			  ? from + (to - from - width) / 2
-			  : from,
-		alignment = this._alignment,
-		below =
-		  alignment === 'ascender'
-			? measured.ascent
-			: alignment === 'descender'
-			  ? -measured.descent
-			  : alignment === 'center'
-				? (measured.ascent - measured.descent) / 2
-				: 0
-	  for (var i = 0, l = pieces.length; i < l; i++) {
-		var piece = pieces[i],
-		  middle = offset + piece.x + piece.width / 2,
-		  index = 0
+	  const side = this._getSide(
+		paragraph.getJustification(),
+		paragraph.getDirection()
+	  )
+	  const offset =
+		side === 'right'
+		  ? to - width
+		  : side === 'center'
+			? from + (to - from - width) / 2
+			: from
+	  const alignment = this._alignment
+	  const below =
+		alignment === 'ascender'
+		  ? measured.ascent
+		  : alignment === 'descender'
+			? -measured.descent
+			: alignment === 'center'
+			  ? (measured.ascent - measured.descent) / 2
+			  : 0
+	  for (i = 0, l = pieces.length; i < l; i++) {
+		piece = pieces[i]
+		let middle = offset + piece.x + piece.width / 2
+		let index = 0
 		while (index < lengths.length - 1 && middle > lengths[index]) {
 		  middle -= lengths[index]
 		  index++
 		}
-		var flattener = flatteners[index],
-		  tangent = flattener.getTangentAt(middle).normalize(),
-		  point = flattener.getPointAt(middle).add(
-			tangent.rotate(90).multiply(below + piece.y)
-		  )
+		const flattener = flatteners[index]
+		const tangent = flattener.getTangentAt(middle).normalize()
+		const point = flattener.getPointAt(middle).add(
+		  tangent.rotate(90).multiply(below + piece.y)
+		)
 		piece.x = point.x
 		piece.y = point.y
 		piece.dx = -piece.width / 2
 		piece.rotation += tangent.getAngle()
 	  }
-	  var last = pieces[pieces.length - 1]
+	  const last = pieces[pieces.length - 1]
 	  this._visibleEnd = last ? last.end : start
 	  return [
 		Base.set(measured, {
@@ -18981,14 +19193,14 @@ var PathText = TextItem.extend(
 	},
 
 	_getBounds: function (matrix, options) {
-	  var pieces = this._getLayout()[0].pieces,
-		bounds = null
-	  for (var i = 0, l = pieces.length; i < l; i++) {
-		var piece = pieces[i],
-		  rect = this._getBox(piece, piece.dx, 0),
-		  local = new Matrix()
-			.translate(piece.x, piece.y)
-			.rotate(piece.rotation)
+	  const pieces = this._getLayout()[0].pieces
+	  let bounds = null
+	  for (let i = 0, l = pieces.length; i < l; i++) {
+		const piece = pieces[i]
+		let rect = this._getBox(piece, piece.dx, 0)
+		const local = new Matrix()
+		  .translate(piece.x, piece.y)
+		  .rotate(piece.rotation)
 		if (matrix) local.prepend(matrix)
 		rect = local._transformBounds(rect, rect)
 		bounds = bounds ? bounds.unite(rect) : rect
@@ -18998,9 +19210,9 @@ var PathText = TextItem.extend(
   }
 )
 
-var AreaText = TextItem.extend(
+const AreaText = TextItem.extend(
   new (function () {
-	var fields = {
+	const fields = {
 	  columns: 1,
 	  rows: 1,
 	  gutter: 18,
@@ -19011,8 +19223,8 @@ var AreaText = TextItem.extend(
 	return Base.each(
 	  fields,
 	  function (value, name) {
-		var part = Base.capitalize(name),
-		  key = '_' + name
+		const part = Base.capitalize(name)
+		const key = '_' + name
 		this[key] = value
 		this['get' + part] = function () {
 		  return this[key]
@@ -19028,8 +19240,8 @@ var AreaText = TextItem.extend(
 
 		copyContent: function copyContent(source) {
 		  copyContent.base.call(this, source)
-		  for (var name in fields) {
-			var key = '_' + name
+		  for (const name in fields) {
+			const key = '_' + name
 			this[key] = source[key]
 		  }
 		}
@@ -19038,7 +19250,7 @@ var AreaText = TextItem.extend(
   })(),
    {
 	initialize: function AreaText(area, orientation) {
-	  var hasProps = Base.isPlainObject(area) && area.width === undefined
+	  const hasProps = Base.isPlainObject(area) && area.width === undefined
 	  this._children = []
 	  TextItem.call(this, hasProps ? area : null)
 	  if (!hasProps) {
@@ -19060,10 +19272,10 @@ var AreaText = TextItem.extend(
 	},
 
 	fitHeight: function () {
-	  var that = this,
-		path = this.getTextPath()
+	  const that = this
+	  let path = this.getTextPath()
 	  if (path) {
-		var bounds = path.getBounds()
+		const bounds = path.getBounds()
 		if (!bounds.height) {
 		  path = new Path.Rectangle({
 			rectangle: new Rectangle(bounds.x, bounds.y, bounds.width, 1),
@@ -19071,24 +19283,24 @@ var AreaText = TextItem.extend(
 		  })
 		  this.setTextPath(path)
 		}
-		var top = bounds.getTopCenter(),
-		  fits = function (height) {
-			path.scale(1, height / path.getBounds().height, top)
-			return (
-			  that._getVisibleRange()[1] ===
-			  that._story._content.length
-			)
-		  },
-		  low = 0,
-		  high = path.getBounds().height,
-		  count = 0
+		const top = bounds.getTopCenter()
+		const fits = function (height) {
+		  path.scale(1, height / path.getBounds().height, top)
+		  return (
+			that._getVisibleRange()[1] ===
+			that._story._content.length
+		  )
+		}
+		let low = 0
+		let high = path.getBounds().height
+		let count = 0
 		while (!fits(high) && count++ < 32) {
 		  low = high
 		  high *= 2
 		}
 		if (count <= 32) {
 		  while (high - low > 0.01) {
-			var height = (low + high) / 2
+			const height = (low + high) / 2
 			if (fits(height)) {
 			  high = height
 			} else {
@@ -19104,8 +19316,8 @@ var AreaText = TextItem.extend(
 	},
 
 	_getLayout: function _getLayout() {
-	  var layer = this.getLayer(),
-		version = layer && layer._textWrapVersion
+	  const layer = this.getLayer()
+	  const version = layer && layer._textWrapVersion
 	  if (this._textWrapVersion !== version) {
 		this._textWrapVersion = version
 		this._layout = null
@@ -19114,60 +19326,65 @@ var AreaText = TextItem.extend(
 	},
 
 	_layOut: function () {
-	  var that = this,
-		story = this._story,
-		content = story._content,
-		regions = this._getRegions(),
-		wraps = this._getTextWraps(),
-		offsets = regions.map(function () {
-		  return 0
-		}),
-		state
+	  let r
+	  let l
+	  let end
+	  let getExcess
 
-	  var lay = function (getCut) {
-		var pos = state.pos,
-		  region = state.region,
-		  y = state.y,
-		  paragraph = story._getParagraph(pos),
-		  style = paragraph.style,
-		  space =
-			pos === paragraph.start && y !== null
-			  ? Math.max(state.spaceAfter, style.getSpaceBefore())
-			  : 0,
-		  result = [],
-		  isComplete = false
+	  const that = this
+	  const story = this._story
+	  const content = story._content
+	  const regions = this._getRegions()
+	  const wraps = this._getTextWraps()
+	  const offsets = regions.map(function () {
+		return 0
+	  })
+	  let state
+
+	  const lay = function (getCut) {
+		let pos = state.pos
+		let region = state.region
+		let y = state.y
+		const paragraph = story._getParagraph(pos)
+		const style = paragraph.style
+		let space =
+		  pos === paragraph.start && y !== null
+			? Math.max(state.spaceAfter, style.getSpaceBefore())
+			: 0
+		const result = []
+		let isComplete = false
 		while (regions[region]) {
-		  var bounds = regions[region],
-			next = that._measure(
-			  pos,
-			  Math.min(pos + 1, paragraph.end),
-			  style.getDirection()
-			),
-			baseline =
-			  y === null
-				? bounds.top + offsets[region] + next.ascent
-				: y + next.lineHeight + space
+		  const bounds = regions[region]
+		  const next = that._measure(
+			pos,
+			Math.min(pos + 1, paragraph.end),
+			style.getDirection()
+		  )
+		  const baseline =
+			y === null
+			  ? bounds.top + offsets[region] + next.ascent
+			  : y + next.lineHeight + space
 		  if (!next.lineHeight || next.lineHeight < 0) break
 		  if (baseline + next.descent > bounds.bottom) {
 			region++
 			y = null
 			continue
 		  }
-		  var spans = that._getSpans(bounds, baseline, next, wraps)
+		  const spans = that._getSpans(bounds, baseline, next, wraps)
 		  if (style.getDirection() === 'rtl') spans.reverse()
-		  for (var i = 0, l = spans.length; i < l && !isComplete; i++) {
-			var span = spans[i],
-			  line = that._breakLine(
-				pos,
-				paragraph,
-				pos === paragraph.start,
-				span,
-				getCut ? getCut(result.length) : 0,
-				span[1] - span[0] >= (
-				  bounds.width -
-				  1e-7
-				)
+		  for (let i = 0, l = spans.length; i < l && !isComplete; i++) {
+			const span = spans[i]
+			const line = that._breakLine(
+			  pos,
+			  paragraph,
+			  pos === paragraph.start,
+			  span,
+			  getCut ? getCut(result.length) : 0,
+			  span[1] - span[0] >= (
+				bounds.width -
+				1e-7
 			  )
+			)
 			if (line) {
 			  line.y = baseline
 			  line.region = region
@@ -19193,10 +19410,10 @@ var AreaText = TextItem.extend(
 		}
 	  }
 
-	  var search = function (high, precision, isAbove) {
-		var low = 0
+	  const search = function (high, precision, isAbove) {
+		let low = 0
 		while (high - low > precision) {
-		  var value = (low + high) / 2
+		  const value = (low + high) / 2
 		  if (isAbove(value)) {
 			high = value
 		  } else {
@@ -19206,29 +19423,29 @@ var AreaText = TextItem.extend(
 		return [low, high]
 	  }
 
-	  var keeps = function (attempt, count) {
+	  const keeps = function (attempt, count) {
 		return attempt.isComplete && attempt.lines.length === count
 	  }
 
-	  var balance = function (count, from) {
-		var cutFrom = function (cut) {
-			return function (index) {
-			  return index >= from ? cut : 0
-			}
-		  },
-		  widest = regions.reduce(function (width, bounds) {
-			return Math.max(width, bounds.width)
-		  }, 0),
-		  cut = search(widest, 0.5, function (cut) {
-			return !keeps(lay(cutFrom(cut)), count)
-		  })[0]
+	  const balance = function (count, from) {
+		const cutFrom = function (cut) {
+		  return function (index) {
+			return index >= from ? cut : 0
+		  }
+		}
+		const widest = regions.reduce(function (width, bounds) {
+		  return Math.max(width, bounds.width)
+		}, 0)
+		const cut = search(widest, 0.5, function (cut) {
+		  return !keeps(lay(cutFrom(cut)), count)
+		})[0]
 		return cut > 0 && lay(cutFrom(cut))
 	  }
 
-	  var layAll = function () {
-		var layout = [],
-		  result,
-		  match
+	  const layAll = function () {
+		const layout = []
+		let result
+		let match
 		state = {
 		  pos: that._getStart(),
 		  region: 0,
@@ -19237,9 +19454,9 @@ var AreaText = TextItem.extend(
 		}
 		do {
 		  result = lay()
-		  var lines = result.lines,
-			count = lines.length,
-			wrap = result.paragraph.getLineWrap()
+		  const lines = result.lines
+		  const count = lines.length
+		  const wrap = result.paragraph.getLineWrap()
 		  if (result.isComplete && count > 1) {
 			if (wrap === 'balance') {
 			  result = balance(count, 0) || result
@@ -19266,9 +19483,9 @@ var AreaText = TextItem.extend(
 		return layout
 	  }
 
-	  var getLast = function (layout, region) {
-		for (var i = layout.length - 1; i >= 0; i--) {
-		  var line = layout[i]
+	  const getLast = function (layout, region) {
+		for (let i = layout.length - 1; i >= 0; i--) {
+		  const line = layout[i]
 		  if (line.region === region) {
 			return {
 			  line: line,
@@ -19283,32 +19500,32 @@ var AreaText = TextItem.extend(
 		return null
 	  }
 
-	  var layout = layAll(),
-		align = this._verticalAlign
+	  let layout = layAll()
+	  const align = this._verticalAlign
 	  if (align !== 'top') {
-		for (var r = 0, l = regions.length; r < l; r++) {
-		  var last = getLast(layout, r)
+		for (r = 0, l = regions.length; r < l; r++) {
+		  const last = getLast(layout, r)
 		  if (last && last.free > 0) {
-			var end = last.line.end,
-			  getExcess = function (offset) {
-				offsets[r] = offset
-				var moved = getLast(layAll(), r)
-				return moved && moved.line.end === end
-				  ? moved.free - (
-					  align === 'center'
-						? offset
-						: 0
-					)
-				  : null
-			  },
-			  excess = getExcess(
-				align === 'center'
-				  ? last.free / 2
-				  : last.free
-			  )
+			end = last.line.end
+			getExcess = function (offset) {
+			  offsets[r] = offset
+			  const moved = getLast(layAll(), r)
+			  return moved && moved.line.end === end
+				? moved.free - (
+					align === 'center'
+					  ? offset
+					  : 0
+				  )
+				: null
+			}
+			const excess = getExcess(
+			  align === 'center'
+				? last.free / 2
+				: last.free
+			)
 			if (excess === null || Math.abs(excess) > 0.01) {
 			  offsets[r] = search(last.free, 0.01, function (offset) {
-				var excess = getExcess(offset)
+				const excess = getExcess(offset)
 				return excess === null || excess < 0
 			  })[0]
 			}
@@ -19321,17 +19538,17 @@ var AreaText = TextItem.extend(
 	},
 
 	_getRegions: function () {
-	  var path = this.getTextPath(),
-		regions = []
+	  const path = this.getTextPath()
+	  const regions = []
 	  if (path) {
-		var bounds = path.getBounds().expand(-2 * this._inset),
-		  gutter = this._gutter,
-		  rows = Math.max(1, this._rows),
-		  columns = Math.max(1, this._columns),
-		  width = (bounds.width - gutter * (columns - 1)) / columns,
-		  height = (bounds.height - gutter * (rows - 1)) / rows
-		for (var row = 0; row < rows; row++) {
-		  for (var column = 0; column < columns; column++) {
+		const bounds = path.getBounds().expand(-2 * this._inset)
+		const gutter = this._gutter
+		const rows = Math.max(1, this._rows)
+		const columns = Math.max(1, this._columns)
+		const width = (bounds.width - gutter * (columns - 1)) / columns
+		const height = (bounds.height - gutter * (rows - 1)) / rows
+		for (let row = 0; row < rows; row++) {
+		  for (let column = 0; column < columns; column++) {
 			regions.push(
 			  new Rectangle(
 				bounds.x + column * (width + gutter),
@@ -19347,100 +19564,104 @@ var AreaText = TextItem.extend(
 	},
 
 	_getSpans: function (region, baseline, line, wraps) {
-	  var that = this,
-		top = baseline - line.ascent,
-		bottom = baseline + line.descent,
-		middle = (top + bottom) / 2,
-		unite = function (stretches1, stretches2) {
-		  var all = stretches1.concat(stretches2).sort(function (a, b) {
-			  return a[0] - b[0]
-			}),
-			result = []
-		  for (var i = 0, l = all.length; i < l; i++) {
-			var last = result[result.length - 1],
-			  stretch = all[i]
-			if (last && stretch[0] <= last[1]) {
-			  last[1] = Math.max(last[1], stretch[1])
-			} else {
-			  result.push(stretch.slice())
-			}
+	  let wrap
+	  let offset
+	  let invert
+
+	  const that = this
+	  const top = baseline - line.ascent
+	  const bottom = baseline + line.descent
+	  const middle = (top + bottom) / 2
+	  const unite = function (stretches1, stretches2) {
+		const all = stretches1.concat(stretches2).sort(function (a, b) {
+		  return a[0] - b[0]
+		})
+		const result = []
+		for (let i = 0, l = all.length; i < l; i++) {
+		  const last = result[result.length - 1]
+		  const stretch = all[i]
+		  if (last && stretch[0] <= last[1]) {
+			last[1] = Math.max(last[1], stretch[1])
+		  } else {
+			result.push(stretch.slice())
 		  }
-		  return result
-		},
-		intersect = function (stretches1, stretches2) {
-		  var result = []
-		  for (var i = 0, l = stretches1.length; i < l; i++) {
-			for (var j = 0, m = stretches2.length; j < m; j++) {
-			  var left = Math.max(stretches1[i][0], stretches2[j][0]),
-				right = Math.min(stretches1[i][1], stretches2[j][1])
-			  if (right > left) result.push([left, right])
-			}
+		}
+		return result
+	  }
+	  const intersect = function (stretches1, stretches2) {
+		const result = []
+		for (let i = 0, l = stretches1.length; i < l; i++) {
+		  for (let j = 0, m = stretches2.length; j < m; j++) {
+			const left = Math.max(stretches1[i][0], stretches2[j][0])
+			const right = Math.min(stretches1[i][1], stretches2[j][1])
+			if (right > left) result.push([left, right])
 		  }
-		  return result
-		},
-		subtract = function (stretches1, stretches2) {
-		  return intersect(
-			stretches1,
-			stretches2.reduce(
-			  function (outside, stretch) {
-				var last = outside.pop()
-				return outside.concat([
-				  [last[0], stretch[0]],
-				  [stretch[1], last[1]]
-				])
-			  }, [[-Infinity, Infinity]]
-			)
+		}
+		return result
+	  }
+	  const subtract = function (stretches1, stretches2) {
+		return intersect(
+		  stretches1,
+		  stretches2.reduce(
+			function (outside, stretch) {
+			  const last = outside.pop()
+			  return outside.concat([
+				[last[0], stretch[0]],
+				[stretch[1], last[1]]
+			  ])
+			}, [[-Infinity, Infinity]]
 		  )
-		},
-		inside = function (paths, y) {
-		  var stretches = []
-		  for (var i = 0, l = paths.length; i < l; i++) {
-			var path = paths[i],
-			  bounds = path.getBounds(),
-			  xs = path
-				.getIntersections(
-				  new Path.Line({
-					from: [bounds.left - 1, y],
-					to: [bounds.right + 1, y],
-					insert: false
-				  })
-				)
-				.map(function (location) {
-				  return location.point.x
-				})
-				.sort(function (a, b) {
-				  return a - b
-				})
-			for (var j = 0; j + 1 < xs.length; j += 2)
-			  stretches.push([xs[j], xs[j + 1]])
-		  }
-		  return unite(stretches, [])
-		},
-		spans = [top, middle, bottom].reduce(
-		  function (spans, y) {
-			return intersect(spans, inside([that.getTextPath()], y))
-		  },
-		  [[region.left, region.right]]
 		)
-	  for (var i = 0, l = wraps.length; i < l; i++) {
-		var wrap = wraps[i],
-		  offset = wrap.offset,
-		  invert = wrap.invert,
-		  ys = [top - offset, top, middle, bottom, bottom + offset],
-		  covered = ys
-			.reduce(function (covered, y) {
-			  var stretches = inside(wrap.paths, y)
-			  return covered
-				? invert
-				  ? intersect(covered, stretches)
-				  : unite(covered, stretches)
-				: stretches
-			}, null)
-			.map(function (stretch) {
-			  return invert
-				? [stretch[0] + offset, stretch[1] - offset]
-				: [stretch[0] - offset, stretch[1] + offset]
+	  }
+	  const inside = function (paths, y) {
+		const stretches = []
+		for (let i = 0, l = paths.length; i < l; i++) {
+		  const path = paths[i]
+		  const bounds = path.getBounds()
+		  const xs = path
+			.getIntersections(
+			  new Path.Line({
+				from: [bounds.left - 1, y],
+				to: [bounds.right + 1, y],
+				insert: false
+			  })
+			)
+			.map(function (location) {
+			  return location.point.x
 			})
+			.sort(function (a, b) {
+			  return a - b
+			})
+		  for (let j = 0; j + 1 < xs.length; j += 2)
+			stretches.push([xs[j], xs[j + 1]])
+		}
+		return unite(stretches, [])
+	  }
+	  let spans = [top, middle, bottom].reduce(
+		function (spans, y) {
+		  return intersect(spans, inside([that.getTextPath()], y))
+		},
+		[[region.left, region.right]]
+	  )
+	  for (let i = 0, l = wraps.length; i < l; i++) {
+		wrap = wraps[i]
+		offset = wrap.offset
+		invert = wrap.invert
+		const ys = [top - offset, top, middle, bottom, bottom + offset]
+		const covered = ys
+		  .reduce(function (covered, y) {
+			const stretches = inside(wrap.paths, y)
+			return covered
+			  ? invert
+				? intersect(covered, stretches)
+				: unite(covered, stretches)
+			  : stretches
+		  }, null)
+		  .map(function (stretch) {
+			return invert
+			  ? [stretch[0] + offset, stretch[1] - offset]
+			  : [stretch[0] - offset, stretch[1] + offset]
+		  })
 		spans = invert
 		  ? intersect(spans, covered)
 		  : subtract(spans, unite(covered, []))
@@ -19449,28 +19670,28 @@ var AreaText = TextItem.extend(
 	},
 
 	_getTextWraps: function () {
-	  var layer = this.getLayer(),
-		items = layer && layer._textWrapItems,
-		toText = this.getGlobalMatrix(true).inverted(),
-		wraps = []
+	  const layer = this.getLayer()
+	  const items = layer && layer._textWrapItems
+	  const toText = this.getGlobalMatrix(true).inverted()
+	  const wraps = []
 
-	  var isShown = function (item) {
+	  const isShown = function (item) {
 		for (; item !== layer; item = item._parent) {
 		  if (!item._visible) return false
 		}
 		return true
 	  }
 
-	  var getOutline = function (item, paths) {
-		var matrix = toText.appended(item._parent.getGlobalMatrix(true))
+	  const getOutline = function (item, paths) {
+		const matrix = toText.appended(item._parent.getGlobalMatrix(true))
 		if (item instanceof PathItem) {
-		  var path = item.clone({ insert: false, deep: true })
+		  const path = item.clone({ insert: false, deep: true })
 		  path.transform(matrix)
 		  paths.push(path)
 		} else if (item instanceof Group) {
-		  var clipItem = item._getClipItem(),
-			children = clipItem ? [clipItem] : item._children
-		  for (var i = 0, l = children.length; i < l; i++) {
+		  const clipItem = item._getClipItem()
+		  const children = clipItem ? [clipItem] : item._children
+		  for (let i = 0, l = children.length; i < l; i++) {
 			if (children[i]._visible) getOutline(children[i], paths)
 		  }
 		} else {
@@ -19484,8 +19705,8 @@ var AreaText = TextItem.extend(
 		return paths
 	  }
 
-	  for (var id in items) {
-		var item = items[id]
+	  for (const id in items) {
+		const item = items[id]
 		if (item !== this && item.isAbove(this) && isShown(item)) {
 		  wraps.push(Base.set({ paths: getOutline(item, []) }, item._textWrap))
 		}
@@ -19494,30 +19715,30 @@ var AreaText = TextItem.extend(
 	},
 
 	_breakLine: function (start, paragraph, isFirst, room, cut, canForce) {
-	  var that = this,
-		content = this._story._content,
-		style = paragraph.style,
-		direction = style.getDirection(),
-		indented = this._indent(style, isFirst, room[0], room[1]),
-		words = /[^\s\u00ad]*\u00ad|\S+\s*|\s+/g,
-		text = content.slice(start, paragraph.end),
-		ends = [],
-		match
+	  const that = this
+	  const content = this._story._content
+	  const style = paragraph.style
+	  const direction = style.getDirection()
+	  const indented = this._indent(style, isFirst, room[0], room[1])
+	  const words = /[^\s\u00ad]*\u00ad|\S+\s*|\s+/g
+	  const text = content.slice(start, paragraph.end)
+	  const ends = []
+	  let match
 
-	  var measure = function (end) {
-		var line = that._measure(
+	  const measure = function (end) {
+		const line = that._measure(
 		  start,
 		  start + content.slice(start, end).replace(/\s+$/, '').length,
 		  direction
 		)
 		if (content[end - 1] === '\u00ad') {
-		  var last = line.pieces[line.pieces.length - 1],
-			width = (
-			  that
-				.getView()
-				.getTextWidth(last.font, ['-'], last.tracking, direction) *
-			  last.scale.x
-			)
+		  const last = line.pieces[line.pieces.length - 1]
+		  const width = (
+			that
+			  .getView()
+			  .getTextWidth(last.font, ['-'], last.tracking, direction) *
+			last.scale.x
+		  )
 		  line.pieces.push(
 			Base.set({}, last, {
 			  content: '-',
@@ -19534,31 +19755,31 @@ var AreaText = TextItem.extend(
 
 	  while ((match = words.exec(text)))
 		ends.push(start + match.index + match[0].length)
-	  var width = indented[1] - indented[0] - cut,
-		fits = function (index) {
-		  return measure(ends[index]).width <= width
-		},
-		low = -1,
-		high = 0
+	  const width = indented[1] - indented[0] - cut
+	  const fits = function (index) {
+		return measure(ends[index]).width <= width
+	  }
+	  let low = -1
+	  let high = 0
 	  while (high < ends.length && fits(high)) {
 		low = high
 		high = 2 * high + 1
 	  }
 	  high = Math.min(high, ends.length)
 	  while (high - low > 1) {
-		var middle = (low + high) >> 1
+		const middle = (low + high) >> 1
 		if (fits(middle)) {
 		  low = middle
 		} else {
 		  high = middle
 		}
 	  }
-	  var end = low >= 0 ? ends[low] : start
+	  let end = low >= 0 ? ends[low] : start
 	  if (end === start && ends.length) {
 		if (!canForce) return null
 		end = ends[0]
 	  }
-	  var line = measure(end)
+	  const line = measure(end)
 	  this._place(line, style, end === paragraph.end, indented)
 	  line.end = end
 	  return line
@@ -19566,7 +19787,7 @@ var AreaText = TextItem.extend(
   }
 )
 
-var TextStory = Base.extend(
+const TextStory = Base.extend(
    {
 	_class: 'TextStory',
 	beans: true,
@@ -19606,7 +19827,7 @@ var TextStory = Base.extend(
 	},
 
 	_clone: function (items) {
-	  var story = new TextStory(items)
+	  const story = new TextStory(items)
 	  story._content = this._content
 	  story._runs = this._runs.map(function (run) {
 		return { length: run.length, style: new Style(run.style, story) }
@@ -19618,13 +19839,13 @@ var TextStory = Base.extend(
 	},
 
 	_append: function (other) {
-	  var that = this,
-		runs = other._runs.map(function (run) {
-		  return {
-			length: run.length,
-			style: new Style(run.style, that)
-		  }
-		})
+	  const that = this
+	  const runs = other._runs.map(function (run) {
+		return {
+		  length: run.length,
+		  style: new Style(run.style, that)
+		}
+	  })
 	  this._content += other._content
 	  this._runs = this._runs.concat(runs).filter(function (run) {
 		return run.length > 0
@@ -19638,9 +19859,10 @@ var TextStory = Base.extend(
 	},
 
 	_extract: function (start, items) {
-	  var rest = this._clone(items),
-		content = this._content,
-		paragraph = this._paragraphs[this._countBreaks(content.slice(0, start))]
+	  const rest = this._clone(items)
+	  const content = this._content
+	  const paragraph =
+		this._paragraphs[this._countBreaks(content.slice(0, start))]
 	  rest.replace('', 0, start)
 	  rest._paragraphs[0] = new Style(paragraph, rest)
 	  this.replace('', start, content.length)
@@ -19650,8 +19872,8 @@ var TextStory = Base.extend(
 	_getStyles: function () {},
 
 	_changed: function (flags) {
-	  var items = this._items
-	  for (var i = 0, l = items.length; i < l; i++) items[i]._changed(flags)
+	  const items = this._items
+	  for (let i = 0, l = items.length; i < l; i++) items[i]._changed(flags)
 	},
 
 	getContent: function () {
@@ -19667,16 +19889,16 @@ var TextStory = Base.extend(
 		end = start.end
 		start = start.start
 	  }
-	  var old = this._content,
-		length = old.length,
-		runs = this._runs,
-		paragraphs = this._paragraphs
+	  const old = this._content
+	  const length = old.length
+	  const runs = this._runs
+	  const paragraphs = this._paragraphs
 	  content = '' + content
 	  start = Math.max(0, Math.min(start, length))
 	  end = Math.max(start, Math.min(end, length))
-	  var i = this._split(start),
-		j = this._split(end),
-		source = (i < j ? runs[i] : runs[i - 1] || runs[i]).style
+	  const i = this._split(start)
+	  const j = this._split(end)
+	  const source = (i < j ? runs[i] : runs[i - 1] || runs[i]).style
 	  runs.splice(i, j - i, {
 		length: content.length,
 		style: new Style(source, this)
@@ -19685,22 +19907,22 @@ var TextStory = Base.extend(
 		return run.length > 0
 	  })
 	  if (!this._runs.length) this._runs = [runs[i]]
-	  var first = this._countBreaks(old.slice(0, start)),
-		removed = this._countBreaks(old.slice(start, end)),
-		added = this._countBreaks(content),
-		style = paragraphs[first],
-		inserted = []
-	  for (var k = 0; k < added; k++) inserted.push(new Style(style, this))
+	  const first = this._countBreaks(old.slice(0, start))
+	  const removed = this._countBreaks(old.slice(start, end))
+	  const added = this._countBreaks(content)
+	  const style = paragraphs[first]
+	  const inserted = []
+	  for (let k = 0; k < added; k++) inserted.push(new Style(style, this))
 	  paragraphs.splice.apply(paragraphs, [first + 1, removed].concat(inserted))
 	  this._content = old.slice(0, start) + content + old.slice(end)
 	  this._changed(521)
 	},
 
 	_getParagraph: function (pos) {
-	  var content = this._content,
-		before = content.slice(0, pos),
-		start = /(\r\n|\n|\r)[^\r\n]*$/.exec(before),
-		end = /\r\n|\n|\r/.exec(content.slice(pos))
+	  const content = this._content
+	  const before = content.slice(0, pos)
+	  const start = /(\r\n|\n|\r)[^\r\n]*$/.exec(before)
+	  const end = /\r\n|\n|\r/.exec(content.slice(pos))
 	  return {
 		style: this._paragraphs[this._countBreaks(before)],
 		start: start ? start.index + start[1].length : 0,
@@ -19709,14 +19931,14 @@ var TextStory = Base.extend(
 	},
 
 	_countBreaks: function (content) {
-	  var matches = content.match(/\r\n|\n|\r/g)
+	  const matches = content.match(/\r\n|\n|\r/g)
 	  return matches ? matches.length : 0
 	},
 
 	_split: function (index) {
-	  var runs = this._runs
-	  for (var i = 0, l = runs.length, start = 0; i < l; i++) {
-		var run = runs[i]
+	  const runs = this._runs
+	  for (let i = 0, l = runs.length, start = 0; i < l; i++) {
+		const run = runs[i]
 		if (start === index) return i
 		if (index < start + run.length) {
 		  runs.splice(i + 1, 0, {
@@ -19732,28 +19954,32 @@ var TextStory = Base.extend(
 	},
 
 	_getRangeStyles: function (key, start, end, setting) {
-	  var runs = this._runs
+	  let i
+	  let l
+	  let pos
+
+	  const runs = this._runs
 	  if (key in this._itemKeys) {
 		return []
 	  } else if (key in this._paragraphKeys) {
-		var content = this._content,
-		  first = this._countBreaks(content.slice(0, start)),
-		  last = this._countBreaks(
-			content.slice(0, Math.max(start, end - 1))
-		  )
+		const content = this._content
+		const first = this._countBreaks(content.slice(0, start))
+		const last = this._countBreaks(
+		  content.slice(0, Math.max(start, end - 1))
+		)
 		return this._paragraphs.slice(first, last + 1)
 	  } else if (setting) {
-		var i = this._split(start)
+		i = this._split(start)
 		return runs.slice(i, this._split(end)).map(function (run) {
 		  return run.style
 		})
 	  } else {
-		var from = start < end ? start : Math.max(0, start - 1),
-		  to = start < end ? end : from + 1,
-		  styles = []
-		for (var i = 0, l = runs.length, pos = 0; i < l; i++) {
-		  var run = runs[i],
-			next = pos + run.length
+		const from = start < end ? start : Math.max(0, start - 1)
+		const to = start < end ? end : from + 1
+		const styles = []
+		for (i = 0, l = runs.length, pos = 0; i < l; i++) {
+		  const run = runs[i]
+		  const next = pos + run.length
 		  if (from < next && to > pos) styles.push(run.style)
 		  pos = next
 		}
@@ -19766,18 +19992,18 @@ var TextStory = Base.extend(
 	},
 
 	getRuns: function () {
-	  var that = this
+	  const that = this
 	  return this._getRuns().map(function (run) {
 		return new TextRange(that, run.start, run.end)
 	  })
 	},
 
 	_getRuns: function () {
-	  var runs = this._runs,
-		joined = []
-	  for (var i = 0, l = runs.length, start = 0, end = 0; i < l; i++) {
-		var run = runs[i],
-		  next = runs[i + 1]
+	  const runs = this._runs
+	  const joined = []
+	  for (let i = 0, l = runs.length, start = 0, end = 0; i < l; i++) {
+		const run = runs[i]
+		const next = runs[i + 1]
 		end += run.length
 		if (!next || !run.style.equals(next.style)) {
 		  joined.push({ start: start, end: end, style: run.style })
@@ -19788,11 +20014,11 @@ var TextStory = Base.extend(
 	},
 
 	setRuns: function (runs) {
-	  var that = this
+	  const that = this
 	  runs = runs.map(function (run) {
 		return run instanceof TextRange ? run.toJSON() : run
 	  })
-	  var content = runs
+	  const content = runs
 		.map(function (run) {
 		  return run.content || ''
 		})
@@ -19800,7 +20026,7 @@ var TextStory = Base.extend(
 	  this.setContent(content)
 	  this._runs = runs
 		.map(function (run) {
-		  var style = new Style(that._runs[0].style, that)
+		  const style = new Style(that._runs[0].style, that)
 		  style.set(run)
 		  return { length: (run.content || '').length, style: style }
 		})
@@ -19813,11 +20039,11 @@ var TextStory = Base.extend(
 	},
 
 	getParagraphs: function () {
-	  var ranges = [],
-		breaks = /\r\n|\n|\r/g,
-		content = this._content,
-		start = 0,
-		match
+	  const ranges = []
+	  const breaks = /\r\n|\n|\r/g
+	  const content = this._content
+	  let start = 0
+	  let match
 	  while ((match = breaks.exec(content))) {
 		ranges.push(new TextRange(this, start, match.index))
 		start = match.index + match[0].length
@@ -19827,17 +20053,17 @@ var TextStory = Base.extend(
 	},
 
 	setParagraphs: function (paragraphs) {
-	  var styles = this._paragraphs,
-		keys = this._paragraphKeys
+	  const styles = this._paragraphs
+	  const keys = this._paragraphKeys
 	  for (
-		var i = 0, l = Math.min(paragraphs.length, styles.length);
+		let i = 0, l = Math.min(paragraphs.length, styles.length);
 		i < l;
 		i++
 	  ) {
-		var paragraph = paragraphs[i],
-		  style = styles[i]
-		for (var key in keys) {
-		  var value = paragraph[key]
+		const paragraph = paragraphs[i]
+		const style = styles[i]
+		for (const key in keys) {
+		  const value = paragraph[key]
 		  if (value !== undefined) style[key] = value
 		}
 	  }
@@ -19860,17 +20086,17 @@ var TextStory = Base.extend(
 	},
 
 	_segment: function (granularity, pattern) {
-	  var content = this._content,
-		ranges = [],
-		Segmenter = typeof Intl !== 'undefined' && Intl.Segmenter
+	  const content = this._content
+	  const ranges = []
+	  const Segmenter = typeof Intl !== 'undefined' && Intl.Segmenter
 	  if (Segmenter) {
-		var segments = new Segmenter(undefined, {
-			granularity: granularity
-		  }).segment(content),
-		  iterator = segments[Symbol.iterator](),
-		  step
+		const segments = new Segmenter(undefined, {
+		  granularity: granularity
+		}).segment(content)
+		const iterator = segments[Symbol.iterator]()
+		let step
 		while (!(step = iterator.next()).done) {
-		  var segment = step.value
+		  const segment = step.value
 		  if (granularity !== 'word' || segment.isWordLike) {
 			ranges.push(
 			  new TextRange(
@@ -19882,7 +20108,7 @@ var TextStory = Base.extend(
 		  }
 		}
 	  } else {
-		var match
+		let match
 		while ((match = pattern.exec(content))) {
 		  ranges.push(
 			new TextRange(this, match.index, match.index + match[0].length)
@@ -19894,13 +20120,13 @@ var TextStory = Base.extend(
   }
 )
 
-var TextRange = Base.extend(
+const TextRange = Base.extend(
    {
 	_class: 'TextRange',
 	beans: true,
 
 	initialize: function TextRange(story, start, end) {
-	  var length = story._content.length
+	  const length = story._content.length
 	  this._story = story
 	  this._start = Math.max(0, Math.min(start, length))
 	  this._end = Math.max(this._start, Math.min(end, length))
@@ -19940,15 +20166,15 @@ var TextRange = Base.extend(
 	},
 
 	toJSON: function () {
-	  var style = this._style,
-		defaults = style._defaults,
-		json = {
-		  start: this._start,
-		  end: this._end,
-		  content: this.getContent()
-		}
-	  for (var key in defaults) {
-		var value = style[key]
+	  const style = this._style
+	  const defaults = style._defaults
+	  const json = {
+		start: this._start,
+		end: this._end,
+		content: this.getContent()
+	  }
+	  for (const key in defaults) {
+		const value = style[key]
 		if (value !== undefined && !Base.equals(value, defaults[key]))
 		  json[key] = Base.serialize(value)
 	  }
@@ -19962,11 +20188,11 @@ var TextRange = Base.extend(
   Base.each(
 	['Runs', 'Paragraphs', 'Words', 'Letters'],
 	function (name) {
-	  var get = 'get' + name
+	  const get = 'get' + name
 	  this[get] = function () {
-		var story = this._story,
-		  start = this._start,
-		  end = this._end
+		const story = this._story
+		const start = this._start
+		const end = this._end
 		return story[get]()
 		  .filter(function (range) {
 			return (
@@ -19992,9 +20218,9 @@ var TextRange = Base.extend(
   )
 )
 
-var Color = Base.extend(
+const Color = Base.extend(
   new (function () {
-	var types = {
+	const types = {
 	  gray: ['gray'],
 	  rgb: ['red', 'green', 'blue'],
 	  hsb: ['hue', 'saturation', 'brightness'],
@@ -20003,40 +20229,40 @@ var Color = Base.extend(
 	  pattern: ['pattern', 'matrix']
 	}
 
-	var componentParsers = {},
-	  namedColors = {
-		transparent: [0, 0, 0, 0]
-	  },
-	  colorCtx
+	const componentParsers = {}
+	const namedColors = {
+	  transparent: [0, 0, 0, 0]
+	}
+	let colorCtx
 
 	function getCanvasTransform(matrix, strokeMatrix) {
-	  var inverse = matrix && matrix.inverted()
+	  const inverse = matrix && matrix.inverted()
 	  return strokeMatrix && inverse
 		? strokeMatrix.appended(inverse)
 		: strokeMatrix || inverse
 	}
 
 	function transformGradient(components, dest, matrix) {
-	  var origin = components[1],
-		highlight = components[3],
-		aspect = components[4],
-		along = components[2].subtract(origin),
-		across = along.rotate(90),
-		linear = matrix._shiftless(),
-		u = linear._transformPoint(along),
-		start = matrix._transformPoint(origin),
-		vector = u
+	  const origin = components[1]
+	  const highlight = components[3]
+	  let aspect = components[4]
+	  const along = components[2].subtract(origin)
+	  const across = along.rotate(90)
+	  const linear = matrix._shiftless()
+	  const u = linear._transformPoint(along)
+	  const start = matrix._transformPoint(origin)
+	  let vector = u
 	  if (!along.isZero()) {
 		if (components[0]._radial) {
-		  var w = linear._transformPoint(across.multiply(aspect)),
-			v = w.rotate(-90),
-			p = u.add(v),
-			q = u.subtract(v),
-			pLength = p.getLength(),
-			qLength = q.getLength(),
-			major = (pLength + qLength) / 2,
-			minor = Math.abs(pLength - qLength) / 2,
-			axis = u.normalize()
+		  const w = linear._transformPoint(across.multiply(aspect))
+		  const v = w.rotate(-90)
+		  const p = u.add(v)
+		  const q = u.subtract(v)
+		  const pLength = p.getLength()
+		  const qLength = q.getLength()
+		  let major = (pLength + qLength) / 2
+		  const minor = Math.abs(pLength - qLength) / 2
+		  let axis = u.normalize()
 		  aspect = 1
 		  if (Math.min(pLength, qLength) > 1e-12 * major) {
 			axis = new Point({
@@ -20054,8 +20280,8 @@ var Color = Base.extend(
 		  }
 		  vector = axis.multiply(major)
 		} else {
-		  var stripe = linear._transformPoint(across),
-			normal = stripe.rotate(90)
+		  const stripe = linear._transformPoint(across)
+		  const normal = stripe.rotate(90)
 		  if (!normal.isZero()) {
 			vector = normal.multiply(
 			  u.dot(normal) / normal.dot(normal)
@@ -20075,10 +20301,10 @@ var Color = Base.extend(
 	}
 
 	function getEllipseMatrix(components) {
-	  var aspect = components[4]
+	  const aspect = components[4]
 	  if (components[0]._radial && aspect !== 1) {
-		var origin = components[1],
-		  angle = components[2].subtract(origin).getAngle()
+		const origin = components[1]
+		const angle = components[2].subtract(origin).getAngle()
 		return new Matrix()
 		  .translate(origin)
 		  .rotate(angle)
@@ -20089,21 +20315,25 @@ var Color = Base.extend(
 	}
 
 	function fromCSS(string) {
-	  var match = (
-		  string.match(
-			/^#([\da-f]{2})([\da-f]{2})([\da-f]{2})([\da-f]{2})?$/i
-		  ) ||
-		  string.match(
-			/^#([\da-f])([\da-f])([\da-f])([\da-f])?$/i
-		  )
-		),
-		type = 'rgb',
-		components
+	  let i
+	  let value
+	  let l
+
+	  let match = (
+		string.match(
+		  /^#([\da-f]{2})([\da-f]{2})([\da-f]{2})([\da-f]{2})?$/i
+		) ||
+		string.match(
+		  /^#([\da-f])([\da-f])([\da-f])([\da-f])?$/i
+		)
+	  )
+	  let type = 'rgb'
+	  let components
 	  if (match) {
-		var amount = match[4] ? 4 : 3
+		const amount = match[4] ? 4 : 3
 		components = new Array(amount)
-		for (var i = 0; i < amount; i++) {
-		  var value = match[i + 1]
+		for (i = 0; i < amount; i++) {
+		  value = match[i + 1]
 		  components[i] = parseInt(
 			value.length == 1
 			  ? value + value
@@ -20114,13 +20344,13 @@ var Color = Base.extend(
 	  } else if ((match = string.match(/^(rgb|hsl)a?\((.*)\)$/))) {
 		type = match[1]
 		components = match[2].trim().split(/[,\s]+/g)
-		var isHSL = type === 'hsl'
-		for (var i = 0, l = Math.min(components.length, 4); i < l; i++) {
-		  var component = components[i]
-		  var value = parseFloat(component)
+		const isHSL = type === 'hsl'
+		for (i = 0, l = Math.min(components.length, 4); i < l; i++) {
+		  const component = components[i]
+		  value = parseFloat(component)
 		  if (isHSL) {
 			if (i === 0) {
-			  var unit = component.match(/([a-z]*)$/)[1]
+			  const unit = component.match(/([a-z]*)$/)[1]
 			  value *= {
 				turn: 360,
 				rad: 180 / Math.PI,
@@ -20135,7 +20365,7 @@ var Color = Base.extend(
 		  components[i] = value
 		}
 	  } else {
-		var color = namedColors[string]
+		let color = namedColors[string]
 		if (!color) {
 		  if (!colorCtx) {
 			colorCtx = CanvasProvider.getContext(1, 1, {
@@ -20147,7 +20377,7 @@ var Color = Base.extend(
 			colorCtx.fillStyle = 'rgba(0,0,0,0)'
 			colorCtx.fillStyle = string
 			colorCtx.fillRect(0, 0, 1, 1)
-			var data = colorCtx.getImageData(0, 0, 1, 1).data
+			const data = colorCtx.getImageData(0, 0, 1, 1).data
 			color = namedColors[string] = [
 			  data[0] / 255,
 			  data[1] / 255,
@@ -20162,7 +20392,7 @@ var Color = Base.extend(
 	  return [type, components]
 	}
 
-	var hsbIndices = [
+	const hsbIndices = [
 	  [0, 3, 1],
 	  [2, 0, 1],
 	  [1, 0, 3],
@@ -20171,45 +20401,13 @@ var Color = Base.extend(
 	  [0, 1, 2]
 	]
 
-	var converters = {
+	const converters = {
 	  'rgb-hsb': function (r, g, b) {
-		var max = Math.max(r, g, b),
-		  min = Math.min(r, g, b),
-		  delta = max - min,
-		  h =
-			delta === 0
-			  ? 0
-			  : (
-				  max == r
-					? (g - b) / delta + (g < b ? 6 : 0)
-					: max == g
-					  ? (b - r) / delta + 2
-					  : (r - g) / delta + 4
-				) *
-				60
-		return [h, max === 0 ? 0 : delta / max, max]
-	  },
-
-	  'hsb-rgb': function (h, s, b) {
-		h = (((h / 60) % 6) + 6) % 6
-		var i = Math.floor(h),
-		  f = h - i,
-		  i = hsbIndices[i],
-		  v = [
-			b,
-			b * (1 - s),
-			b * (1 - s * f),
-			b * (1 - s * (1 - f))
-		  ]
-		return [v[i[0]], v[i[1]], v[i[2]]]
-	  },
-
-	  'rgb-hsl': function (r, g, b) {
-		var max = Math.max(r, g, b),
-		  min = Math.min(r, g, b),
-		  delta = max - min,
-		  achromatic = delta === 0,
-		  h = achromatic
+		const max = Math.max(r, g, b)
+		const min = Math.min(r, g, b)
+		const delta = max - min
+		const h =
+		  delta === 0
 			? 0
 			: (
 				max == r
@@ -20218,25 +20416,59 @@ var Color = Base.extend(
 					? (b - r) / delta + 2
 					: (r - g) / delta + 4
 			  ) *
-			  60,
-		  l = (max + min) / 2,
-		  s = achromatic
-			? 0
-			: l < 0.5
-			  ? delta / (max + min)
-			  : delta / (2 - max - min)
+			  60
+		return [h, max === 0 ? 0 : delta / max, max]
+	  },
+
+	  'hsb-rgb': function (h, s, b) {
+		let i
+
+		h = (((h / 60) % 6) + 6) % 6
+		i = Math.floor(h)
+		const f = h - i
+		i = hsbIndices[i]
+		const v = [
+		  b,
+		  b * (1 - s),
+		  b * (1 - s * f),
+		  b * (1 - s * (1 - f))
+		]
+		return [v[i[0]], v[i[1]], v[i[2]]]
+	  },
+
+	  'rgb-hsl': function (r, g, b) {
+		const max = Math.max(r, g, b)
+		const min = Math.min(r, g, b)
+		const delta = max - min
+		const achromatic = delta === 0
+		const h = achromatic
+		  ? 0
+		  : (
+			  max == r
+				? (g - b) / delta + (g < b ? 6 : 0)
+				: max == g
+				  ? (b - r) / delta + 2
+				  : (r - g) / delta + 4
+			) *
+			60
+		const l = (max + min) / 2
+		const s = achromatic
+		  ? 0
+		  : l < 0.5
+			? delta / (max + min)
+			: delta / (2 - max - min)
 		return [h, s, l]
 	  },
 
 	  'hsl-rgb': function (h, s, l) {
 		h = (((h / 360) % 1) + 1) % 1
 		if (s === 0) return [l, l, l]
-		var t3s = [h + 1 / 3, h, h - 1 / 3],
-		  t2 = l < 0.5 ? l * (1 + s) : l + s - l * s,
-		  t1 = 2 * l - t2,
-		  c = []
-		for (var i = 0; i < 3; i++) {
-		  var t3 = t3s[i]
+		const t3s = [h + 1 / 3, h, h - 1 / 3]
+		const t2 = l < 0.5 ? l * (1 + s) : l + s - l * s
+		const t1 = 2 * l - t2
+		const c = []
+		for (let i = 0; i < 3; i++) {
+		  let t3 = t3s[i]
 		  if (t3 < 0) t3 += 1
 		  if (t3 > 1) t3 -= 1
 		  c[i] =
@@ -20291,54 +20523,54 @@ var Color = Base.extend(
 		Base.each(
 		  properties,
 		  function (name, index) {
-			var part = Base.capitalize(name),
-			  hasOverlap = /^(hue|saturation)$/.test(name),
-			  parser = (componentParsers[type][index] =
-				type === 'gradient'
-				  ? name === 'gradient'
+			const part = Base.capitalize(name)
+			const hasOverlap = /^(hue|saturation)$/.test(name)
+			const parser = (componentParsers[type][index] =
+			  type === 'gradient'
+				? name === 'gradient'
+				  ?
+					function (value) {
+					  const current = this._components[0]
+					  value = Gradient.read(
+						Array.isArray(value)
+						  ? value
+						  : arguments,
+						0,
+						{ readNull: true }
+					  )
+					  if (current !== value) {
+						if (current) current._removeOwner(this)
+						if (value) value._addOwner(this)
+					  }
+					  return value
+					}
+				  : name === 'aspect'
 					?
 					  function (value) {
-						var current = this._components[0]
-						value = Gradient.read(
-						  Array.isArray(value)
-							? value
-							: arguments,
-						  0,
-						  { readNull: true }
-						)
-						if (current !== value) {
-						  if (current) current._removeOwner(this)
-						  if (value) value._addOwner(this)
-						}
-						return value
+						return value == null ? 1 : +value
 					  }
-					: name === 'aspect'
-					  ?
-						function (value) {
-						  return value == null ? 1 : +value
-						}
-					  :
-						function () {
-						  return Point.read(arguments, 0, {
-							readNull: name === 'highlight',
-							clone: true
-						  })
-						}
-				  : type === 'pattern'
-					? name === 'pattern'
-					  ? function () {
-						  return PatternDefinition.read(arguments, 0, {
-							readNull: true
-						  })
-						}
-					  :
-						function (value) {
-						  return value ? new Matrix(value) : new Matrix()
-						}
+					:
+					  function () {
+						return Point.read(arguments, 0, {
+						  readNull: name === 'highlight',
+						  clone: true
+						})
+					  }
+				: type === 'pattern'
+				  ? name === 'pattern'
+					? function () {
+						return PatternDefinition.read(arguments, 0, {
+						  readNull: true
+						})
+					  }
 					:
 					  function (value) {
-						return value == null || isNaN(value) ? 0 : +value
-					  })
+						return value ? new Matrix(value) : new Matrix()
+					  }
+				  :
+					function (value) {
+					  return value == null || isNaN(value) ? 0 : +value
+					})
 			this['get' + part] = function () {
 			  return (
 				this._type === type ||
@@ -20369,18 +20601,23 @@ var Color = Base.extend(
 		_readIndex: true,
 
 		initialize: function Color(arg) {
-		  var args = arguments,
-			reading = this.__read,
-			read = 0,
-			type,
-			components,
-			alpha,
-			values
+		  let i
+		  let parsers
+		  let l
+		  let value
+
+		  let args = arguments
+		  const reading = this.__read
+		  let read = 0
+		  let type
+		  let components
+		  let alpha
+		  let values
 		  if (Array.isArray(arg)) {
 			args = arg
 			arg = args[0]
 		  }
-		  var argType = arg != null && typeof arg
+		  let argType = arg != null && typeof arg
 		  if (argType === 'string' && arg in types) {
 			type = arg
 			arg = args[1]
@@ -20407,7 +20644,7 @@ var Color = Base.extend(
 				  values.length >= 3
 					? 'rgb'
 					: 'gray'
-			  var length = types[type].length
+			  const length = types[type].length
 			  alpha = values[length]
 			  if (reading) {
 				read +=
@@ -20417,7 +20654,7 @@ var Color = Base.extend(
 			  }
 			  if (values.length > length) values = Base.slice(values, 0, length)
 			} else if (argType === 'string') {
-			  var converted = fromCSS(arg)
+			  const converted = fromCSS(arg)
 			  type = converted[0]
 			  components = converted[1]
 			  if (components.length === 4) {
@@ -20430,8 +20667,8 @@ var Color = Base.extend(
 				components = arg._components.slice()
 				alpha = arg._alpha
 				if (type === 'gradient') {
-				  for (var i = 1; i < 4; i++) {
-					var point = components[i]
+				  for (i = 1; i < 4; i++) {
+					const point = components[i]
 					if (point) components[i] = point.clone()
 				  }
 				} else if (type === 'pattern') {
@@ -20460,11 +20697,11 @@ var Color = Base.extend(
 						: 'gray' in arg
 						  ? 'gray'
 						  : 'rgb'
-				var properties = types[type],
-				  parsers = componentParsers[type]
+				const properties = types[type]
+				parsers = componentParsers[type]
 				this._components = components = []
-				for (var i = 0, l = properties.length; i < l; i++) {
-				  var value = arg[properties[i]]
+				for (i = 0, l = properties.length; i < l; i++) {
+				  value = arg[properties[i]]
 				  if (
 					value == null &&
 					!i &&
@@ -20487,9 +20724,9 @@ var Color = Base.extend(
 		  this._type = type || 'rgb'
 		  if (!components) {
 			this._components = components = []
-			var parsers = componentParsers[this._type]
-			for (var i = 0, l = parsers.length; i < l; i++) {
-			  var value = parsers[i].call(this, values && values[i])
+			parsers = componentParsers[this._type]
+			for (i = 0, l = parsers.length; i < l; i++) {
+			  value = parsers[i].call(this, values && values[i])
 			  if (value != null) components[i] = value
 			}
 		  }
@@ -20503,8 +20740,8 @@ var Color = Base.extend(
 		set: '#initialize',
 
 		_serialize: function (options, dictionary) {
-		  var components = this.getComponents(),
-			hasAlpha = this._alpha != null
+		  const components = this.getComponents()
+		  const hasAlpha = this._alpha != null
 		  if (this._type === 'gradient' && components[4] === 1 && !hasAlpha)
 			components.length = components[3] ? 4 : 3
 		  if (
@@ -20535,10 +20772,10 @@ var Color = Base.extend(
 		},
 
 		_convert: function (type) {
-		  var converter
+		  const converter = converters[this._type + '-' + type]
 		  return this._type === type
 			? this._components.slice()
-			: (converter = converters[this._type + '-' + type])
+			: converter
 			  ? converter.apply(this, this._components)
 			  :
 				converters['rgb-' + type].apply(
@@ -20562,7 +20799,7 @@ var Color = Base.extend(
 		},
 
 		getComponents: function () {
-		  var components = this._components.slice()
+		  const components = this._components.slice()
 		  if (this._alpha != null) components.push(this._alpha)
 		  return components
 		},
@@ -20581,7 +20818,7 @@ var Color = Base.extend(
 		},
 
 		equals: function (color) {
-		  var col = Base.isPlainValue(color, true)
+		  const col = Base.isPlainValue(color, true)
 			? Color.read(arguments)
 			: color
 		  return (
@@ -20597,12 +20834,12 @@ var Color = Base.extend(
 		},
 
 		toString: function () {
-		  var properties = this._properties,
-			parts = [],
-			isObject = /^(gradient|pattern)$/.test(this._type),
-			f = Formatter.instance
-		  for (var i = 0, l = properties.length; i < l; i++) {
-			var value = this._components[i]
+		  const properties = this._properties
+		  const parts = []
+		  const isObject = /^(gradient|pattern)$/.test(this._type)
+		  const f = Formatter.instance
+		  for (let i = 0, l = properties.length; i < l; i++) {
+			const value = this._components[i]
 			if (value != null)
 			  parts.push(
 				properties[i] +
@@ -20615,8 +20852,8 @@ var Color = Base.extend(
 		},
 
 		toCSS: function (hex) {
-		  var components = this._convert('rgb'),
-			alpha = hex || this._alpha == null ? 1 : this._alpha
+		  let components = this._convert('rgb')
+		  const alpha = hex || this._alpha == null ? 1 : this._alpha
 		  function convert(val) {
 			return Math.round((val < 0 ? 0 : val > 1 ? 1 : val) * 255)
 		  }
@@ -20642,8 +20879,8 @@ var Color = Base.extend(
 		},
 
 		_getCanvasComponents: function (matrix, strokeMatrix) {
-		  var components = this._components,
-			transform = getCanvasTransform(matrix, strokeMatrix)
+		  const components = this._components
+		  const transform = getCanvasTransform(matrix, strokeMatrix)
 		  return transform
 			? transformGradient(components, [components[0]], transform)
 			: components
@@ -20663,8 +20900,8 @@ var Color = Base.extend(
 
 		toCanvasStyle: function (ctx, matrix, strokeMatrix, isEllipse) {
 		  if (this._type === 'pattern') {
-			var transform = getCanvasTransform(matrix, strokeMatrix),
-			  placement = this._components[1]
+			const transform = getCanvasTransform(matrix, strokeMatrix)
+			const placement = this._components[1]
 			return this._components[0]._toCanvasStyle(
 			  ctx,
 			  transform
@@ -20672,20 +20909,20 @@ var Color = Base.extend(
 				: placement
 			)
 		  }
-		  var isCacheable = !(
+		  const isCacheable = !(
 			this._type === 'gradient' &&
 			(strokeMatrix || this._components[4] !== 1)
 		  )
 		  if (this._canvasStyle && isCacheable) return this._canvasStyle
 		  if (this._type !== 'gradient')
 			return (this._canvasStyle = this.toCSS())
-		  var components = this._getCanvasComponents(matrix, strokeMatrix),
-			gradient = components[0],
-			stops = gradient._stops,
-			origin = components[1],
-			destination = components[2],
-			highlight = components[3],
-			canvasGradient
+		  const components = this._getCanvasComponents(matrix, strokeMatrix)
+		  const gradient = components[0]
+		  const stops = gradient._stops
+		  const origin = components[1]
+		  const destination = components[2]
+		  let highlight = components[3]
+		  let canvasGradient
 		  if (isEllipse && highlight) {
 			highlight =
 			  getEllipseMatrix(components)._inverseTransform(
@@ -20693,13 +20930,13 @@ var Color = Base.extend(
 			  )
 		  }
 		  if (gradient._radial) {
-			var radius = destination.getDistance(origin)
+			const radius = destination.getDistance(origin)
 			if (highlight) {
-			  var vector = highlight.subtract(origin)
+			  const vector = highlight.subtract(origin)
 			  if (vector.getLength() > radius)
 				highlight = origin.add(vector.normalize(radius - 0.1))
 			}
-			var start = highlight || origin
+			const start = highlight || origin
 			canvasGradient = ctx.createRadialGradient(
 			  start.x,
 			  start.y,
@@ -20716,9 +20953,9 @@ var Color = Base.extend(
 			  destination.y
 			)
 		  }
-		  for (var i = 0, l = stops.length; i < l; i++) {
-			var stop = stops[i],
-			  offset = stop._offset
+		  for (let i = 0, l = stops.length; i < l; i++) {
+			const stop = stops[i]
+			const offset = stop._offset
 			canvasGradient.addColorStop(
 			  offset == null ? i / (l - 1) : offset,
 			  stop._color.toCanvasStyle()
@@ -20729,7 +20966,7 @@ var Color = Base.extend(
 		},
 
 		transform: function (matrix) {
-		  var components = this._components
+		  const components = this._components
 		  if (this._type === 'gradient') {
 			transformGradient(components, components, matrix)
 			this._changed()
@@ -20743,7 +20980,7 @@ var Color = Base.extend(
 		  _types: types,
 
 		  random: function () {
-			var random = Math.random
+			const random = Math.random
 			return new Color(random(), random(), random())
 		  },
 
@@ -20764,7 +21001,7 @@ var Color = Base.extend(
 	)
   })(),
   new (function () {
-	var operators = {
+	const operators = {
 	  add: function (a, b) {
 		return a + b
 	  },
@@ -20787,10 +21024,10 @@ var Color = Base.extend(
 	  function (operator, name) {
 		this[name] = function (color) {
 		  color = Color.read(arguments)
-		  var type = this._type,
-			components1 = this._components,
-			components2 = color._convert(type)
-		  for (var i = 0, l = components1.length; i < l; i++)
+		  const type = this._type
+		  const components1 = this._components
+		  const components2 = color._convert(type)
+		  for (let i = 0, l = components1.length; i < l; i++)
 			components2[i] = operator(components1[i], components2[i])
 		  return new Color(
 			type,
@@ -20807,7 +21044,7 @@ var Color = Base.extend(
   })()
 )
 
-var Gradient = Base.extend(
+const Gradient = Base.extend(
    {
 	_class: 'Gradient',
 
@@ -20841,7 +21078,7 @@ var Gradient = Base.extend(
 	},
 
 	_changed: function () {
-	  for (var i = 0, l = this._owners && this._owners.length; i < l; i++) {
+	  for (let i = 0, l = this._owners && this._owners.length; i < l; i++) {
 		this._owners[i]._changed()
 	  }
 	},
@@ -20852,7 +21089,7 @@ var Gradient = Base.extend(
 	},
 
 	_removeOwner: function (color) {
-	  var index = this._owners ? this._owners.indexOf(color) : -1
+	  const index = this._owners ? this._owners.indexOf(color) : -1
 	  if (index != -1) {
 		this._owners.splice(index, 1)
 		if (!this._owners.length) this._owners = undefined
@@ -20860,8 +21097,8 @@ var Gradient = Base.extend(
 	},
 
 	clone: function () {
-	  var stops = []
-	  for (var i = 0, l = this._stops.length; i < l; i++) {
+	  const stops = []
+	  for (let i = 0, l = this._stops.length; i < l; i++) {
 		stops[i] = this._stops[i].clone()
 	  }
 	  return new Gradient(stops, this._radial)
@@ -20872,18 +21109,20 @@ var Gradient = Base.extend(
 	},
 
 	setStops: function (stops) {
+	  let i
+	  let l
+
 	  if (stops.length < 2) {
 		throw new Error(
 		  'Gradient stop list needs to contain at least two stops.'
 		)
 	  }
-	  var _stops = this._stops
+	  let _stops = this._stops
 	  if (_stops) {
-		for (var i = 0, l = _stops.length; i < l; i++)
-		  _stops[i]._owner = undefined
+		for (i = 0, l = _stops.length; i < l; i++) _stops[i]._owner = undefined
 	  }
 	  _stops = this._stops = GradientStop.readList(stops, 0, { clone: true })
-	  for (var i = 0, l = _stops.length; i < l; i++) _stops[i]._owner = this
+	  for (i = 0, l = _stops.length; i < l; i++) _stops[i]._owner = this
 	  this._changed()
 	},
 
@@ -20899,11 +21138,11 @@ var Gradient = Base.extend(
 	equals: function (gradient) {
 	  if (gradient === this) return true
 	  if (gradient && this._class === gradient._class) {
-		var stops1 = this._stops,
-		  stops2 = gradient._stops,
-		  length = stops1.length
+		const stops1 = this._stops
+		const stops2 = gradient._stops
+		const length = stops1.length
 		if (length === stops2.length) {
-		  for (var i = 0; i < length; i++) {
+		  for (let i = 0; i < length; i++) {
 			if (!stops1[i].equals(stops2[i])) return false
 		  }
 		  return true
@@ -20914,13 +21153,13 @@ var Gradient = Base.extend(
   }
 )
 
-var GradientStop = Base.extend(
+const GradientStop = Base.extend(
    {
 	_class: 'GradientStop',
 
 	initialize: function GradientStop(arg0, arg1) {
-	  var color = arg0,
-		offset = arg1
+	  let color = arg0
+	  let offset = arg1
 	  if (typeof arg0 === 'object' && arg1 === undefined) {
 		if (Array.isArray(arg0) && typeof arg0[0] !== 'number') {
 		  color = arg0[0]
@@ -20939,8 +21178,8 @@ var GradientStop = Base.extend(
 	},
 
 	_serialize: function (options, dictionary) {
-	  var color = this._color,
-		offset = this._offset
+	  const color = this._color
+	  const offset = this._offset
 	  return Base.serialize(
 		offset == null ? [color] : [color, offset],
 		options,
@@ -20989,7 +21228,7 @@ var GradientStop = Base.extend(
   }
 )
 
-var PatternDefinition = ItemDefinition.extend(
+const PatternDefinition = ItemDefinition.extend(
    {
 	_class: 'PatternDefinition',
 
@@ -21002,8 +21241,8 @@ var PatternDefinition = ItemDefinition.extend(
 
 	_serialize: function (options, dictionary) {
 	  return dictionary.add(this, function () {
-		var json = [this._class, this._item],
-		  props = {}
+		const json = [this._class, this._item]
+		const props = {}
 		if (this._tile) props.tile = this._tile
 		if (!this._spacing.isZero()) props.spacing = this._spacing
 		if (this._name) props.name = this._name
@@ -21057,36 +21296,36 @@ var PatternDefinition = ItemDefinition.extend(
 	},
 
 	_toCanvasStyle: function (ctx, matrix) {
-	  var transform = ctx.getTransform(),
-		device = new Matrix(
-		  transform.a,
-		  transform.b,
-		  transform.c,
-		  transform.d,
-		  0,
-		  0
-		).append(matrix),
-		scale = Math.max(
-		  Math.sqrt(device._a * device._a + device._b * device._b),
-		  Math.sqrt(device._c * device._c + device._d * device._d)
-		),
-		level = Math.ceil(
-		  Math.log(scale) / Math.LN2 * 4 -
-		  1e-12
-		),
-		tile = this.getTile(),
-		cell = tile.getSize().add(this._spacing),
-		size = cell.multiply(Math.pow(2, level / 4)).ceil()
+	  const transform = ctx.getTransform()
+	  const device = new Matrix(
+		transform.a,
+		transform.b,
+		transform.c,
+		transform.d,
+		0,
+		0
+	  ).append(matrix)
+	  const scale = Math.max(
+		Math.sqrt(device._a * device._a + device._b * device._b),
+		Math.sqrt(device._c * device._c + device._d * device._d)
+	  )
+	  const level = Math.ceil(
+		Math.log(scale) / Math.LN2 * 4 -
+		1e-12
+	  )
+	  const tile = this.getTile()
+	  const cell = tile.getSize().add(this._spacing)
+	  const size = cell.multiply(Math.pow(2, level / 4)).ceil()
 	  if (!(size.width > 0 && size.height > 0)) return 'rgba(0,0,0,0)'
-	  var canvas = this._canvases[level]
+	  let canvas = this._canvases[level]
 	  if (!canvas) {
 		canvas = this._canvases[level] = self.OffscreenCanvas
 		  ? new self.OffscreenCanvas(size.width, size.height)
 		  : CanvasProvider.getCanvas(size)
-		var tileCtx = canvas.getContext('2d'),
-		  mx = new Matrix()
-			.scale(size.divide(cell))
-			.translate(tile.getPoint().negate())
+		const tileCtx = canvas.getContext('2d')
+		const mx = new Matrix()
+		  .scale(size.divide(cell))
+		  .translate(tile.getPoint().negate())
 		mx.applyToContext(tileCtx)
 		if (!this._spacing.isZero()) {
 		  tileCtx.beginPath()
@@ -21101,10 +21340,10 @@ var PatternDefinition = ItemDefinition.extend(
 		  })
 		)
 	  }
-	  var pattern = ctx.createPattern(canvas, 'repeat'),
-		placement = matrix.appended(
-		  new Matrix().translate(tile.getPoint()).scale(cell.divide(size))
-		)
+	  const pattern = ctx.createPattern(canvas, 'repeat')
+	  const placement = matrix.appended(
+		new Matrix().translate(tile.getPoint()).scale(cell.divide(size))
+	  )
 	  transform.a = placement._a
 	  transform.b = placement._b
 	  transform.c = placement._c
@@ -21117,118 +21356,118 @@ var PatternDefinition = ItemDefinition.extend(
   }
 )
 
-var Style = Base.extend(
+const Style = Base.extend(
   new (function () {
-	var itemDefaults = {
-		fillColor: null,
-		fillRule: 'nonzero',
-		strokeColor: null,
-		strokeWidth: 1,
-		strokeCap: 'butt',
-		strokeJoin: 'miter',
-		strokeScaling: true,
-		miterLimit: 10,
-		dashOffset: 0,
-		dashArray: [],
-		paintOrder: 'fill',
-		shadowColor: null,
-		shadowBlur: 0,
-		shadowOffset: new Point(),
-		selectedColor: null
-	  },
-	  groupDefaults = Base.set({}, itemDefaults, {
-		fontFamily: 'sans-serif',
-		fontWeight: 'normal',
-		fontStyle: 'normal',
-		fontSize: 12,
-		fontVariations: null,
-		lineHeight: 'auto',
-		letterTracking: 0,
-		letterKerning: null,
-		baselineShift: 0,
-		baselinePosition: 'normal',
-		letterScaling: 1,
-		letterRotation: 0,
-		capitals: 'normal',
-		underline: false,
-		strikethrough: false,
-		features: null,
-		justification: 'left',
-		justifyLast: 'left',
-		justifySpacing: null,
-		startIndent: 0,
-		endIndent: 0,
-		firstLineIndent: 0,
-		spaceBefore: 0,
-		spaceAfter: 0,
-		hyphenation: false,
-		composer: 'paragraph',
-		lineWrap: 'normal',
-		tabs: null,
-		direction: null
-	  }),
-	  textDefaults = Base.set({}, groupDefaults, {
-		fillColor: new Color()
-	  }),
-	  flags = {
-		strokeWidth: 193,
-		strokeCap: 193,
-		strokeJoin: 193,
-		dashArray: 193,
-		dashOffset: 193,
-		strokeScaling: 193 | Change.GEOMETRY,
-		miterLimit: 193
-	  },
-	  item = {
-		beans: true
-	  },
-	  fields =  {
-		_class: 'Style',
-		beans: true,
+	const itemDefaults = {
+	  fillColor: null,
+	  fillRule: 'nonzero',
+	  strokeColor: null,
+	  strokeWidth: 1,
+	  strokeCap: 'butt',
+	  strokeJoin: 'miter',
+	  strokeScaling: true,
+	  miterLimit: 10,
+	  dashOffset: 0,
+	  dashArray: [],
+	  paintOrder: 'fill',
+	  shadowColor: null,
+	  shadowBlur: 0,
+	  shadowOffset: new Point(),
+	  selectedColor: null
+	}
+	const groupDefaults = Base.set({}, itemDefaults, {
+	  fontFamily: 'sans-serif',
+	  fontWeight: 'normal',
+	  fontStyle: 'normal',
+	  fontSize: 12,
+	  fontVariations: null,
+	  lineHeight: 'auto',
+	  letterTracking: 0,
+	  letterKerning: null,
+	  baselineShift: 0,
+	  baselinePosition: 'normal',
+	  letterScaling: 1,
+	  letterRotation: 0,
+	  capitals: 'normal',
+	  underline: false,
+	  strikethrough: false,
+	  features: null,
+	  justification: 'left',
+	  justifyLast: 'left',
+	  justifySpacing: null,
+	  startIndent: 0,
+	  endIndent: 0,
+	  firstLineIndent: 0,
+	  spaceBefore: 0,
+	  spaceAfter: 0,
+	  hyphenation: false,
+	  composer: 'paragraph',
+	  lineWrap: 'normal',
+	  tabs: null,
+	  direction: null
+	})
+	const textDefaults = Base.set({}, groupDefaults, {
+	  fillColor: new Color()
+	})
+	const flags = {
+	  strokeWidth: 193,
+	  strokeCap: 193,
+	  strokeJoin: 193,
+	  dashArray: 193,
+	  dashOffset: 193,
+	  strokeScaling: 193 | Change.GEOMETRY,
+	  miterLimit: 193
+	}
+	const item = {
+	  beans: true
+	}
+	const fields =  {
+	  _class: 'Style',
+	  beans: true,
 
-		initialize: function Style(style, _owner, _project) {
-		  this._values = {}
-		  this._owner = _owner
-		  this._project = (
-			_owner && _owner._project ||
-			_project ||
-			paper.project
-		  )
-		  this._defaults =
-			!_owner || _owner instanceof Group
-			  ? groupDefaults
-			  : (
-					_owner instanceof TextItem ||
-					_owner instanceof TextStory ||
-					_owner instanceof TextRange
-				  )
-				? textDefaults
-				: itemDefaults
-		  if (style) this.set(style)
-		}
+	  initialize: function Style(style, _owner, _project) {
+		this._values = {}
+		this._owner = _owner
+		this._project = (
+		  _owner && _owner._project ||
+		  _project ||
+		  paper.project
+		)
+		this._defaults =
+		  !_owner || _owner instanceof Group
+			? groupDefaults
+			: (
+				  _owner instanceof TextItem ||
+				  _owner instanceof TextStory ||
+				  _owner instanceof TextRange
+				)
+			  ? textDefaults
+			  : itemDefaults
+		if (style) this.set(style)
 	  }
+	}
 
 	Base.each(groupDefaults, function (value, key) {
-	  var isColor = /Color$/.test(key),
-		isPoint = key === 'shadowOffset',
-		part = Base.capitalize(key),
-		flag =
-		  (
-			!(key in itemDefaults) &&
-			key !== 'underline' &&
-			key !== 'strikethrough'
-		  )
-			? 9
-			: flags[key],
-		set = 'set' + part,
-		get = 'get' + part
+	  const isColor = /Color$/.test(key)
+	  const isPoint = key === 'shadowOffset'
+	  const part = Base.capitalize(key)
+	  const flag =
+		(
+		  !(key in itemDefaults) &&
+		  key !== 'underline' &&
+		  key !== 'strikethrough'
+		)
+		  ? 9
+		  : flags[key]
+	  const set = 'set' + part
+	  const get = 'get' + part
 
 	  fields[set] = function (value) {
-		var owner = this._owner,
-		  styles = owner && owner._getStyles(this, key, true)
+		const owner = this._owner
+		const styles = owner && owner._getStyles(this, key, true)
 		if (styles) Style.apply(styles, key, value)
 		if ((key === 'selectedColor' || !styles) && key in this._defaults) {
-		  var old = this._values[key]
+		  const old = this._values[key]
 		  if (old !== value) {
 			if (isColor) {
 			  if (old && old.constructor === Color) {
@@ -21250,20 +21489,22 @@ var Style = Base.extend(
 	  }
 
 	  fields[get] = function (_dontMerge) {
-		var owner = this._owner,
-		  styles = owner && owner._getStyles(this, key),
-		  value
+		let value
+
+		const owner = this._owner
+		const styles = owner && owner._getStyles(this, key)
+
 		if (styles && !_dontMerge) {
 		  value = Style.merge(styles, key)
 		} else if (key in this._defaults) {
-		  var value = this._values[key]
+		  value = this._values[key]
 		  if (value === undefined) {
 			value = this._defaults[key]
 			if (value && value.clone) {
 			  value = value.clone()
 			}
 		  } else {
-			var ctor = isColor ? Color : isPoint ? Point : null
+			const ctor = isColor ? Color : isPoint ? Point : null
 			if (ctor && !(value && value.constructor === ctor)) {
 			  this._values[key] = value = ctor.read([value], 0, {
 				readNull: true,
@@ -21293,8 +21534,8 @@ var Style = Base.extend(
 		WindingRule: 'FillRule'
 	  },
 	  function (value, key) {
-		var get = 'get' + key,
-		  set = 'set' + key
+		const get = 'get' + key
+		const set = 'set' + key
 		fields[get] = item[get] = '#get' + value
 		fields[set] = item[set] = '#set' + value
 	  }
@@ -21316,10 +21557,10 @@ var Style = Base.extend(
    {
 	statics: {
 	  merge: function (styles, key) {
-		var get = 'get' + Base.capitalize(key),
-		  value
-		for (var i = 0, l = styles.length; i < l; i++) {
-		  var other = styles[i][get]()
+		const get = 'get' + Base.capitalize(key)
+		let value
+		for (let i = 0, l = styles.length; i < l; i++) {
+		  const other = styles[i][get]()
 		  if (!i) {
 			value = other
 		  } else if (!Base.equals(value, other)) {
@@ -21330,18 +21571,18 @@ var Style = Base.extend(
 	  },
 
 	  apply: function (styles, key, value) {
-		var set = 'set' + Base.capitalize(key)
-		for (var i = 0, l = styles.length; i < l; i++) styles[i][set](value)
+		const set = 'set' + Base.capitalize(key)
+		for (let i = 0, l = styles.length; i < l; i++) styles[i][set](value)
 	  }
 	},
 
 	set: function (style) {
-	  var isStyle = style instanceof Style,
-		values = isStyle ? style._values : style
+	  const isStyle = style instanceof Style
+	  const values = isStyle ? style._values : style
 	  if (values) {
-		for (var key in values) {
+		for (const key in values) {
 		  if (key in this._defaults || key in this._formerNames) {
-			var value = values[key]
+			const value = values[key]
 			this[key] =
 			  value && isStyle && value.clone
 				? value.clone()
@@ -21353,12 +21594,12 @@ var Style = Base.extend(
 
 	equals: function (style) {
 	  function compare(style1, style2, secondary) {
-		var values1 = style1._values,
-		  values2 = style2._values,
-		  defaults2 = style2._defaults
-		for (var key in values1) {
-		  var value1 = values1[key],
-			value2 = values2[key]
+		const values1 = style1._values
+		const values2 = style2._values
+		const defaults2 = style2._defaults
+		for (const key in values1) {
+		  const value1 = values1[key]
+		  const value2 = values2[key]
 		  if (
 			!(secondary && key in values2) &&
 			!Base.equals(value1, value2 === undefined ? defaults2[key] : value2)
@@ -21380,28 +21621,28 @@ var Style = Base.extend(
 	},
 
 	_dispose: function () {
-	  var colors = [
+	  const colors = [
 		this.getFillColor(),
 		this.getStrokeColor(),
 		this.getShadowColor()
 	  ]
-	  for (var i = 0; i < 3; i++) {
+	  for (let i = 0; i < 3; i++) {
 		if (colors[i]) colors[i]._canvasStyle = null
 	  }
 	},
 
 	hasFill: function () {
-	  var color = this.getFillColor()
+	  const color = this.getFillColor()
 	  return !!color && color.alpha > 0
 	},
 
 	hasStroke: function () {
-	  var color = this.getStrokeColor()
+	  const color = this.getStrokeColor()
 	  return !!color && color.alpha > 0 && this.getStrokeWidth() > 0
 	},
 
 	hasShadow: function () {
-	  var color = this.getShadowColor()
+	  const color = this.getShadowColor()
 	  return (
 		!!color &&
 		color.alpha > 0 &&
@@ -21414,16 +21655,16 @@ var Style = Base.extend(
 	},
 
 	_getCanvasFont: function () {
-	  var fontSize = this.getFontSize(),
-		fontStyle = this.getFontStyle(),
-		families = this.getFontFamily()
-		  .split(',')
-		  .map(function (family) {
-			family = family.trim()
-			return /^(["'].*|[a-z-]+)$/i.test(family)
-			  ? family
-			  : '"' + family.replace(/["\\]/g, '\\$&') + '"'
-		  })
+	  let fontSize = this.getFontSize()
+	  const fontStyle = this.getFontStyle()
+	  const families = this.getFontFamily()
+		.split(',')
+		.map(function (family) {
+		  family = family.trim()
+		  return /^(["'].*|[a-z-]+)$/i.test(family)
+			? family
+			: '"' + family.replace(/["\\]/g, '\\$&') + '"'
+		})
 	  // Superscripts and subscripts are set smaller:
 	  if (this.getBaselinePosition() !== 'normal' && !isNaN(fontSize))
 		fontSize *= this._scriptSize
@@ -21460,7 +21701,7 @@ var Style = Base.extend(
 
 	// The font size in pixels, which it can be given in other units:
 	_getFontSize: function () {
-	  var fontSize = this.getFontSize()
+	  const fontSize = this.getFontSize()
 	  return /pt|em|%|px/.test(fontSize)
 		? this.getView().getPixelSize(fontSize)
 		: fontSize
@@ -21469,7 +21710,7 @@ var Style = Base.extend(
 	// The line height in pixels: automatic ('auto', 1.2, or another factor)
 	// of the font size, or fixed, with units as the font size takes them:
 	_getLineHeight: function () {
-	  var lineHeight = this.getLineHeight()
+	  const lineHeight = this.getLineHeight()
 	  return lineHeight === 'auto'
 		? 1.2 * this._getFontSize()
 		: typeof lineHeight === 'string'
@@ -22099,14 +22340,14 @@ var Style = Base.extend(
  * @namespace
  * @private
  */
-var DomElement = new (function () {
+const DomElement = new (function () {
   // Handles both getting and setting of vendor prefix values
   function handlePrefix(el, name, set, value) {
-	var prefixes = ['', 'webkit', 'moz', 'Moz', 'ms', 'o'],
-	  suffix = name[0].toUpperCase() + name.substring(1)
-	for (var i = 0; i < 6; i++) {
-	  var prefix = prefixes[i],
-		key = prefix ? prefix + suffix : name
+	const prefixes = ['', 'webkit', 'moz', 'Moz', 'ms', 'o']
+	const suffix = name[0].toUpperCase() + name.substring(1)
+	for (let i = 0; i < 6; i++) {
+	  const prefix = prefixes[i]
+	  const key = prefix ? prefix + suffix : name
 	  if (key in el) {
 		if (set) {
 		  el[key] = value
@@ -22121,20 +22362,20 @@ var DomElement = new (function () {
   return /** @lends DomElement */ {
 	getStyles: function (el) {
 	  // If el is a document (nodeType == 9), use it directly
-	  var doc = el && el.nodeType !== 9 ? el.ownerDocument : el,
-		view = doc && doc.defaultView
+	  const doc = el && el.nodeType !== 9 ? el.ownerDocument : el
+	  const view = doc && doc.defaultView
 	  return view && view.getComputedStyle(el, '')
 	},
 
 	getBounds: function (el, viewport) {
-	  var doc = el.ownerDocument,
-		body = doc.body,
-		html = doc.documentElement,
-		rect = el.getBoundingClientRect(),
-		x = rect.left - (html.clientLeft || body.clientLeft || 0),
-		y = rect.top - (html.clientTop || body.clientTop || 0)
+	  const doc = el.ownerDocument
+	  const body = doc.body
+	  const html = doc.documentElement
+	  const rect = el.getBoundingClientRect()
+	  let x = rect.left - (html.clientLeft || body.clientLeft || 0)
+	  let y = rect.top - (html.clientTop || body.clientTop || 0)
 	  if (!viewport) {
-		var view = doc.defaultView
+		const view = doc.defaultView
 		x += view.pageXOffset || html.scrollLeft || body.scrollLeft
 		y += view.pageYOffset || html.scrollTop || body.scrollTop
 	  }
@@ -22142,9 +22383,9 @@ var DomElement = new (function () {
 	},
 
 	getViewportBounds: function (el) {
-	  var doc = el.ownerDocument,
-		view = doc.defaultView,
-		html = doc.documentElement
+	  const doc = el.ownerDocument
+	  const view = doc.defaultView
+	  const html = doc.documentElement
 	  return new Rectangle(
 		0,
 		0,
@@ -22166,7 +22407,7 @@ var DomElement = new (function () {
 	 * and border widths, or with `start`, only the left and top ones.
 	 */
 	getInsets: function (el, start) {
-	  var style = DomElement.getStyles(el)
+	  const style = DomElement.getStyles(el)
 	  function get(side) {
 		return (
 		  parseFloat(style['padding' + side]) +
@@ -22216,7 +22457,7 @@ var DomElement = new (function () {
 
 	setPrefixed: function (el, name, value) {
 	  if (typeof name === 'object') {
-		for (var key in name) handlePrefix(el, key, true, name[key])
+		for (const key in name) handlePrefix(el, key, true, name[key])
 	  } else {
 		handlePrefix(el, name, true, value)
 	  }
@@ -22241,23 +22482,23 @@ var DomElement = new (function () {
  * @namespace
  * @private
  */
-var DomEvent = /** @lends DomEvent */ {
+const DomEvent = /** @lends DomEvent */ {
   add: function (el, events) {
 	// Do not fail if el is not defined, that way we can keep the code that
 	// should not fail in web-workers to a minimum.
 	if (el) {
-	  for (var type in events) {
-		var func = events[type],
-		  parts = type.split(/[\s,]+/g)
-		for (var i = 0, l = parts.length; i < l; i++) {
-		  var name = parts[i]
+	  for (const type in events) {
+		const func = events[type]
+		const parts = type.split(/[\s,]+/g)
+		for (let i = 0, l = parts.length; i < l; i++) {
+		  const name = parts[i]
 		  // For touchstart/touchmove events on document, we need to
 		  // explicitly declare that the event is not passive (can be
 		  // prevented).  Otherwise chrome browser would ignore
 		  // `event.preventDefault()` calls and omit warnings.
 		  // See #1501 and:
 		  // https://www.chromestatus.com/features/5093566007214080
-		  var options =
+		  const options =
 			(
 			  el === document &&
 			  (name === 'touchstart' || name === 'touchmove')
@@ -22273,10 +22514,10 @@ var DomEvent = /** @lends DomEvent */ {
   remove: function (el, events) {
 	// See DomEvent.add() for an explanation of this check:
 	if (el) {
-	  for (var type in events) {
-		var func = events[type],
-		  parts = type.split(/[\s,]+/g)
-		for (var i = 0, l = parts.length; i < l; i++)
+	  for (const type in events) {
+		const func = events[type]
+		const parts = type.split(/[\s,]+/g)
+		for (let i = 0, l = parts.length; i < l; i++)
 		  el.removeEventListener(parts[i], func, false)
 	  }
 	}
@@ -22284,13 +22525,13 @@ var DomEvent = /** @lends DomEvent */ {
 
   getPoint: function (event, target) {
 	function find(touches) {
-	  for (var i = 0, l = touches.length; i < l; i++) {
+	  for (let i = 0, l = touches.length; i < l; i++) {
 		if (touches[i].target === target) return touches[i]
 	  }
 	}
 
-	var touches = event.targetTouches,
-	  pos = event
+	const touches = event.targetTouches
+	let pos = event
 	if (touches) {
 	  // Prefer the first touch on the target, also when it just ended, so
 	  // that touches elsewhere don't take over its drag (#1875):
@@ -22324,19 +22565,19 @@ var DomEvent = /** @lends DomEvent */ {
 }
 
 DomEvent.requestAnimationFrame = new (function () {
-  var nativeRequest = DomElement.getPrefixed(window, 'requestAnimationFrame'),
-	requested = false,
-	callbacks = [],
-	timer
+  const nativeRequest = DomElement.getPrefixed(window, 'requestAnimationFrame')
+  let requested = false
+  let callbacks = []
+  let timer
 
   function handleCallbacks() {
 	// Make a local references to the current callbacks array and set
 	// callbacks to a new empty array, so it can collect the functions for
 	// the new requests.
-	var functions = callbacks
+	const functions = callbacks
 	callbacks = []
 	// Call the collected callback functions.
-	for (var i = 0, l = functions.length; i < l; i++) functions[i]()
+	for (let i = 0, l = functions.length; i < l; i++) functions[i]()
 	// Now see if the above calls have collected new callbacks. Keep
 	// requesting new frames as long as we have callbacks.
 	requested = nativeRequest && callbacks.length
@@ -22401,7 +22642,7 @@ DomEvent.requestAnimationFrame = new (function () {
  * Without the attribute, the view sets the element's CSS width and height to
  * its own size, see {@link #viewSize}.
  */
-var View = Base.extend(
+const View = Base.extend(
   Emitter,
   /** @lends View# */ {
 	_class: 'View',
@@ -22416,7 +22657,7 @@ var View = Base.extend(
 		// scaled canvases (e.g. when dealing with pixel-ratio), without the
 		// padding and border (#1160, #2033), and without the transforms of
 		// ancestors, which only scale the canvas on screen:
-		var size = new Size(element.offsetWidth, element.offsetHeight)
+		const size = new Size(element.offsetWidth, element.offsetHeight)
 		return size.isNaN() || size.isZero()
 		  ? // If the element is invisible, we cannot directly access
 			// element.width / height, because they would appear 0.
@@ -22425,7 +22666,7 @@ var View = Base.extend(
 		  : size.subtract(DomElement.getInsets(element))
 	  }
 
-	  var size
+	  let size
 	  if (window && element) {
 		// Generate an id for this view / element if it does not have one
 		this._id = element.getAttribute('id')
@@ -22434,7 +22675,7 @@ var View = Base.extend(
 		// Install event handlers
 		DomEvent.add(element, this._viewEvents)
 		// Borrowed from Hammer.js:
-		var none = 'none'
+		const none = 'none'
 		DomElement.setPrefixed(element.style, {
 		  userDrag: none,
 		  userSelect: none,
@@ -22446,7 +22687,7 @@ var View = Base.extend(
 		// If the element has the resize attribute, listen to resize events
 		// and update its coordinate space accordingly
 		if (PaperScope.hasAttribute(element, 'resize')) {
-		  var that = this
+		  const that = this
 		  DomEvent.add(
 			window,
 			(this._windowEvents = {
@@ -22465,9 +22706,9 @@ var View = Base.extend(
 		) {
 		  this._stats = new Stats()
 		  // Align top-left to the element
-		  var stats = this._stats.domElement,
-			style = stats.style,
-			offset = DomElement.getOffset(element)
+		  const stats = this._stats.domElement
+		  const style = stats.style
+		  const offset = DomElement.getOffset(element)
 		  style.position = 'absolute'
 		  style.left = offset.x + 'px'
 		  style.top = offset.y + 'px'
@@ -22521,7 +22762,7 @@ var View = Base.extend(
 	  View._views.splice(View._views.indexOf(this), 1)
 	  delete View._viewsById[this._id]
 	  // Unlink from project
-	  var project = this._project
+	  const project = this._project
 	  if (project._view === this) project._view = null
 	  // Uninstall event handlers again for this view.
 	  DomEvent.remove(this._element, this._viewEvents)
@@ -22609,7 +22850,7 @@ var View = Base.extend(
 	 */
 	requestUpdate: function () {
 	  if (!this._requested) {
-		var that = this
+		const that = this
 		DomEvent.requestAnimationFrame(function () {
 		  that._requested = false
 		  // Only handle the frame and request the next one if we don't
@@ -22618,7 +22859,7 @@ var View = Base.extend(
 		  if (that._animate) {
 			// Request next update before handling the current frame
 			that.requestUpdate()
-			var element = that._element
+			const element = that._element
 			// Only keep animating if we're allowed to, based on whether
 			// the document is visible and the setting of keepalive. We
 			// keep requesting frame regardless though, so the animation
@@ -22670,8 +22911,8 @@ var View = Base.extend(
 	_handleFrame: function () {
 	  // Set the global paper object to the current scope
 	  paper = this._scope
-	  var now = Date.now() / 1000,
-		delta = this._last ? now - this._last : 0
+	  const now = Date.now() / 1000
+	  const delta = this._last ? now - this._last : 0
 	  this._last = now
 	  // Use new Base() to convert into a Base object, for #toString()
 	  this.emit(
@@ -22688,7 +22929,7 @@ var View = Base.extend(
 	},
 
 	_animateItem: function (item, animate) {
-	  var items = this._frameItems
+	  const items = this._frameItems
 	  if (animate) {
 		items[item._id] = {
 		  item: item,
@@ -22709,8 +22950,8 @@ var View = Base.extend(
 
 	// Handles _frameItems and fires the 'frame' event on them.
 	_handleFrameItems: function (event) {
-	  for (var i in this._frameItems) {
-		var entry = this._frameItems[i]
+	  for (const i in this._frameItems) {
+		const entry = this._frameItems[i]
 		entry.item.emit(
 		  'frame',
 		  new Base(event, {
@@ -22797,13 +23038,13 @@ var View = Base.extend(
 	 * @type Size
 	 */
 	getViewSize: function () {
-	  var size = this._viewSize
+	  const size = this._viewSize
 	  return new LinkedSize(size.width, size.height, this, 'setViewSize')
 	},
 
 	setViewSize: function (/* size */) {
-	  var size = Size.read(arguments),
-		delta = size.subtract(this._viewSize)
+	  const size = Size.read(arguments)
+	  const delta = size.subtract(this._viewSize)
 	  if (delta.isZero()) return
 	  this._setElementSize(size.width, size.height)
 	  this._viewSize.set(size)
@@ -22821,7 +23062,7 @@ var View = Base.extend(
 	 * Private method, overridden in CanvasView for HiDPI support.
 	 */
 	_setElementSize: function (width, height) {
-	  var element = this._element
+	  const element = this._element
 	  if (element) {
 		if (element.width !== width) element.width = width
 		if (element.height !== height) element.height = height
@@ -22883,21 +23124,21 @@ var View = Base.extend(
 	// CanvasProvider, which also works in workers with an OffscreenCanvas.
 	// Without either, sizes are read as pixels, and text has no width.
 	getPixelSize: function (size) {
-	  var agent = paper.agent,
-		element = this._element,
-		ctx,
-		pixels
+	  const agent = paper.agent
+	  const element = this._element
+	  let ctx
+	  let pixels
 	  if (element && agent && agent.firefox) {
 		// Firefox doesn't convert context.font sizes to pixels, so use the
 		// DOM there, which still doesn't work in workers:
-		var parent = element.parentNode,
-		  temp = document.createElement('div')
+		const parent = element.parentNode
+		const temp = document.createElement('div')
 		temp.style.fontSize = size
 		parent.appendChild(temp)
 		pixels = parseFloat(DomElement.getStyles(temp).fontSize)
 		parent.removeChild(temp)
 	  } else if ((ctx = this._context || CanvasProvider.getContext(1, 1))) {
-		var prevFont = ctx.font
+		const prevFont = ctx.font
 		ctx.font = size + ' serif'
 		pixels = parseFloat(ctx.font)
 		ctx.font = prevFont
@@ -22909,19 +23150,19 @@ var View = Base.extend(
 	},
 
 	getTextWidth: function (font, lines, letterSpacing, direction) {
-	  var ctx = this._context || CanvasProvider.getContext(1, 1),
-		width = 0
+	  const ctx = this._context || CanvasProvider.getContext(1, 1)
+	  let width = 0
 	  if (ctx) {
-		var prevFont = ctx.font,
-		  prevLetterSpacing = ctx.letterSpacing,
-		  prevDirection = ctx.direction,
-		  // Shaping can differ by direction, as with mirrored brackets:
-		  textDirection = direction || 'ltr'
+		const prevFont = ctx.font
+		const prevLetterSpacing = ctx.letterSpacing
+		const prevDirection = ctx.direction
+		// Shaping can differ by direction, as with mirrored brackets:
+		const textDirection = direction || 'ltr'
 		ctx.font = font
 		ctx.letterSpacing = letterSpacing
 		if (prevDirection !== textDirection) ctx.direction = textDirection
 		// Measure the real width of the text:
-		for (var i = 0, l = lines.length; i < l; i++)
+		for (let i = 0, l = lines.length; i < l; i++)
 		  width = Math.max(width, ctx.measureText(lines[i]).width)
 		ctx.font = prevFont
 		ctx.letterSpacing = prevLetterSpacing
@@ -22932,16 +23173,16 @@ var View = Base.extend(
 	},
 
 	getFontMetrics: function (font) {
-	  var ctx = this._context || CanvasProvider.getContext(1, 1),
-		metrics = null
+	  const ctx = this._context || CanvasProvider.getContext(1, 1)
+	  let metrics = null
 	  if (ctx) {
-		var prevFont = ctx.font
+		const prevFont = ctx.font
 		ctx.font = font
 		// Browsers tell the font's own ascent and descent, node-canvas
 		// those of its em box:
-		var measured = ctx.measureText('H'),
-		  ascent = measured.fontBoundingBoxAscent,
-		  descent = measured.fontBoundingBoxDescent
+		const measured = ctx.measureText('H')
+		let ascent = measured.fontBoundingBoxAscent
+		let descent = measured.fontBoundingBoxDescent
 		if (ascent === undefined) {
 		  ascent = measured.emHeightAscent
 		  descent = measured.emHeightDescent
@@ -22956,11 +23197,11 @@ var View = Base.extend(
   Base.each(
 	['rotate', 'scale', 'shear', 'skew'],
 	function (key) {
-	  var rotate = key === 'rotate'
+	  const rotate = key === 'rotate'
 	  this[key] = function (/* value, center */) {
-		var args = arguments,
-		  value = (rotate ? Base : Point).read(args),
-		  center = Point.read(args, 0, { readNull: true })
+		const args = arguments
+		const value = (rotate ? Base : Point).read(args)
+		const center = Point.read(args, 0, { readNull: true })
 		return this.transform(
 		  new Matrix()[key](value, center || this.getCenter(true))
 		)
@@ -22979,7 +23220,7 @@ var View = Base.extend(
 	   * @param {Point} delta the offset to translate the view by
 	   */
 	  translate: function (/* delta */) {
-		var mx = new Matrix()
+		const mx = new Matrix()
 		return this.transform(mx.translate.apply(mx, arguments))
 	  },
 
@@ -22994,7 +23235,7 @@ var View = Base.extend(
 	  },
 
 	  setCenter: function (/* center */) {
-		var center = Point.read(arguments)
+		const center = Point.read(arguments)
 		this.translate(this.getCenter().subtract(center))
 	  },
 
@@ -23007,7 +23248,7 @@ var View = Base.extend(
 	   * @see #scaling
 	   */
 	  getZoom: function () {
-		var scaling = this._decompose().scaling
+		const scaling = this._decompose().scaling
 		// Use average since it can be non-uniform, and ignore mirroring.
 		return (Math.abs(scaling.x) + Math.abs(scaling.y)) / 2
 	  },
@@ -23034,7 +23275,7 @@ var View = Base.extend(
 	  },
 
 	  setRotation: function (rotation) {
-		var current = this.getRotation()
+		const current = this.getRotation()
 		if (current != null && rotation != null) {
 		  // Rotate around the center in view coordinates, so the rotation
 		  // adds to the decomposed one, also on mirrored views (#1893):
@@ -23056,14 +23297,17 @@ var View = Base.extend(
 	   * @see #zoom
 	   */
 	  getScaling: function () {
-		var scaling = this._decompose().scaling
+		const scaling = this._decompose().scaling
 		return new LinkedPoint(scaling.x, scaling.y, this, 'setScaling')
 	  },
 
 	  setScaling: function (/* scaling */) {
-		var current = this.getScaling(),
-		  // Clone existing points since we're caching internally.
-		  scaling = Point.read(arguments, 0, { clone: true, readNull: true })
+		const current = this.getScaling()
+		// Clone existing points since we're caching internally.
+		const scaling = Point.read(arguments, 0, {
+		  clone: true,
+		  readNull: true
+		})
 		if (current && scaling) {
 		  this.scale(scaling.x / current.x, scaling.y / current.y)
 		}
@@ -23084,7 +23328,7 @@ var View = Base.extend(
 		// Use Matrix#initialize to easily copy over values.
 		// NOTE: calling initialize() also calls #_changed() for us, through its
 		// call to #set() / #reset(), and this also handles _applyMatrix for us.
-		var matrix = this._matrix
+		const matrix = this._matrix
 		matrix.set.apply(matrix, arguments)
 	  },
 
@@ -23204,22 +23448,22 @@ var View = Base.extend(
 		// rotated views show all of it as well, and scale both axes of the view
 		// to the same amount, so that the rectangle keeps its aspect ratio,
 		// also if the view was stretched before:
-		var matrix = this._matrix,
-		  size = this._viewSize,
-		  bounds = matrix._transformBounds(rectangle),
-		  scaleX = new Point(matrix._a, matrix._c).getLength(),
-		  scaleY = new Point(matrix._b, matrix._d).getLength(),
-		  // Empty sides of the rectangle give ratios of Infinity, which can't
-		  // scale the view, so only use the others:
-		  ratios = [
-			size.width / bounds.width * scaleX,
-			size.height / bounds.height * scaleY
-		  ].filter(function (ratio) {
-			return ratio > 0 && isFinite(ratio)
-		  })
+		const matrix = this._matrix
+		const size = this._viewSize
+		const bounds = matrix._transformBounds(rectangle)
+		const scaleX = new Point(matrix._a, matrix._c).getLength()
+		const scaleY = new Point(matrix._b, matrix._d).getLength()
+		// Empty sides of the rectangle give ratios of Infinity, which can't
+		// scale the view, so only use the others:
+		const ratios = [
+		  size.width / bounds.width * scaleX,
+		  size.height / bounds.height * scaleY
+		].filter(function (ratio) {
+		  return ratio > 0 && isFinite(ratio)
+		})
 		this.setCenter(rectangle.getCenter())
 		if (ratios.length) {
-		  var amount =
+		  const amount =
 			fit === 'cover'
 			  ? Math.max.apply(Math, ratios)
 			  : Math.min.apply(Math, ratios)
@@ -23285,14 +23529,14 @@ var View = Base.extend(
 	 * @return {Point} the event point in project coordinates.
 	 */
 	getEventPoint: function (event) {
-	  var element = this._element,
-		offset = DomEvent.getOffset(event, element),
-		size = DomElement.getSize(element)
+	  const element = this._element
+	  let offset = DomEvent.getOffset(event, element)
+	  const size = DomElement.getSize(element)
 	  // Map the offset on screen, with CSS sizes and transforms applied, to
 	  // the content box in view coordinates (#549, #1729). Elements that
 	  // aren't rendered have no size to map from:
 	  if (!size.isZero()) {
-		var cssSize = new Size(element.offsetWidth, element.offsetHeight)
+		const cssSize = new Size(element.offsetWidth, element.offsetHeight)
 		offset = offset
 		  .multiply(cssSize.divide(size))
 		  .subtract(DomElement.getInsets(element, true))
@@ -23653,7 +23897,7 @@ var View = Base.extend(
 		  element = document.getElementById(element)
 		// Factory to provide the right View subclass for a given element.
 		// Produces only CanvasView or View items (for workers) for now:
-		var ctor = window ? CanvasView : View
+		const ctor = window ? CanvasView : View
 		return new ctor(project, element)
 	  }
 	}
@@ -23666,23 +23910,23 @@ var View = Base.extend(
 	 * events in the browser, and #dispatchMouseEvent() and #dispatchKeyEvent()
 	 * for hosts without a DOM, such as workers.
 	 */
-	var prevFocus,
-	  tempFocus,
-	  dragging = false, // mousedown that started on a view.
-	  mouseDown = false // mousedown anywhere.
+	let prevFocus
+	let tempFocus
+	let dragging = false // mousedown that started on a view.
+	let mouseDown = false // mousedown anywhere.
 
 	function getView(event) {
 	  // Get the view from the current event target.
-	  var target = DomEvent.getTarget(event)
+	  const target = DomEvent.getTarget(event)
 	  // Some node do not have the getAttribute method, e.g. SVG nodes.
 	  return target.getAttribute && View._viewsById[target.getAttribute('id')]
 	}
 
 	function updateFocus() {
-	  var view = View._focused
+	  let view = View._focused
 	  if (!view || !view.isVisible()) {
 		// Find the first visible view
-		for (var i = 0, l = View._views.length; i < l; i++) {
+		for (let i = 0, l = View._views.length; i < l; i++) {
 		  if ((view = View._views[i]).isVisible()) {
 			View._focused = tempFocus = view
 			break
@@ -23697,13 +23941,13 @@ var View = Base.extend(
 
 	// The DOM events, which install themselves on the elements of views, see
 	// _viewEvents, and on the document:
-	var viewEvents = {}
+	const viewEvents = {}
 
 	if (window) {
 	  // Touch handling inspired by Hammer.js
-	  var mousedown = 'touchstart',
-		mousemove = 'touchmove',
-		mouseup = 'touchend touchcancel'
+	  let mousedown = 'touchstart'
+	  let mousemove = 'touchmove'
+	  let mouseup = 'touchend touchcancel'
 	  // Do not add mouse events on mobile and tablet devices
 	  if (!(
 		'ontouchstart' in window &&
@@ -23717,13 +23961,13 @@ var View = Base.extend(
 		mouseup += ' mouseup'
 	  }
 
-	  var docEvents = {
+	  const docEvents = {
 		// NOTE: mouseleave does not seem to work on document in IE:
 		mouseout: function (event) {
 		  // When the moues leaves the document, fire one last mousemove
 		  // event, to give items the change to receive a mouseleave, etc.
-		  var view = View._focused,
-			target = DomEvent.getRelatedTarget(event)
+		  const view = View._focused
+		  const target = DomEvent.getRelatedTarget(event)
 		  if (view && (!target || target.nodeName === 'HTML'))
 			handleMouseMove(view, event)
 		},
@@ -23738,7 +23982,7 @@ var View = Base.extend(
 	  viewEvents[mousedown] = function (event) {
 		// Get the view from the event, and store a reference to the view
 		// that should receive keyboard input.
-		var view = (View._focused = getView(event))
+		const view = (View._focused = getView(event))
 		if (!dragging) {
 		  dragging = true
 		  view._handleMouseEvent('mousedown', event)
@@ -23746,11 +23990,11 @@ var View = Base.extend(
 	  }
 
 	  docEvents[mousemove] = function (event) {
-		var view = View._focused
+		let view = View._focused
 		if (!mouseDown) {
 		  // See if we can get the view from the current event target, and
 		  // handle the mouse move over it.
-		  var target = getView(event)
+		  const target = getView(event)
 		  if (target) {
 			if (view !== target) {
 			  // Temporarily focus this view without making it sticky,
@@ -23782,7 +24026,7 @@ var View = Base.extend(
 	  }
 
 	  docEvents[mouseup] = function (event) {
-		var view = View._focused
+		const view = View._focused
 		if (view && dragging) view._handleMouseEvent('mouseup', event)
 		mouseDown = dragging = false
 	  }
@@ -23801,24 +24045,24 @@ var View = Base.extend(
 	 * with support for bubbling (event-propagation).
 	 */
 
-	var called = false,
-	  prevented = false,
-	  // Event fallbacks for "virutal" events, e.g. if an item doesn't respond
-	  // to doubleclick, fall back to click:
-	  fallbacks = {
-		doubleclick: 'click',
-		mousedrag: 'mousemove'
-	  },
-	  // Various variables required by #_handleMouseEvent()
-	  wasInView = false,
-	  downPoint,
-	  lastPoint,
-	  downItem,
-	  overItem,
-	  dragItem,
-	  clickItem,
-	  clickTime,
-	  dblClick
+	let called = false
+	let prevented = false
+	// Event fallbacks for "virutal" events, e.g. if an item doesn't respond
+	// to doubleclick, fall back to click:
+	const fallbacks = {
+	  doubleclick: 'click',
+	  mousedrag: 'mousemove'
+	}
+	// Various variables required by #_handleMouseEvent()
+	let wasInView = false
+	let downPoint
+	let lastPoint
+	let downItem
+	let overItem
+	let dragItem
+	let clickItem
+	let clickTime
+	let dblClick
 
 	// Returns true if event was prevented, false otherwise.
 	function emitMouseEvent(
@@ -23830,8 +24074,8 @@ var View = Base.extend(
 	  prevPoint,
 	  stopItem
 	) {
-	  var stopped = false,
-		mouseEvent
+	  let stopped = false
+	  let mouseEvent
 
 	  // Returns true if the event was stopped, false otherwise.
 	  function emit(obj, type) {
@@ -23855,7 +24099,7 @@ var View = Base.extend(
 			if (mouseEvent.stopped) return (stopped = true)
 		  }
 		} else {
-		  var fallback = fallbacks[type]
+		  const fallback = fallbacks[type]
 		  if (fallback) return emit(obj, fallback)
 		}
 	  }
@@ -23946,7 +24190,7 @@ var View = Base.extend(
 	 * Required by code that is counting the amount of required natives events.
 	 * The mapping is native -> virtual.
 	 */
-	var itemEventsMap = {
+	const itemEventsMap = {
 	  // mouseup too, as the press needs the item for needsUp():
 	  mousedown: {
 		mousedown: 1,
@@ -23998,7 +24242,7 @@ var View = Base.extend(
 	  dispatchMouseEvent: function (type, point, options) {
 		if (!/^mouse(down|move|up)$/.test(type))
 		  throw new Error("Unknown mouse event type: '" + type + "'.")
-		var event = createEvent(type, options || {})
+		const event = createEvent(type, options || {})
 		// Track presses and drags as the DOM events do:
 		if (type === 'mousedown') {
 		  View._focused = this
@@ -24048,14 +24292,14 @@ var View = Base.extend(
 	   * tools.
 	   */
 	  _handleMouseEvent: function (type, event, point, dispatched) {
-		var itemEvents = this._itemEvents,
-		  // Look up hitItems, which tells us whether a given native mouse
-		  // event requires an item hit-test or not, before changing type
-		  // to the virtual value (e.g. mousemove -> mousedrag):
-		  hitItems = itemEvents.native[type],
-		  nativeMove = type === 'mousemove',
-		  tool = this._scope.tool,
-		  view = this
+		const itemEvents = this._itemEvents
+		// Look up hitItems, which tells us whether a given native mouse
+		// event requires an item hit-test or not, before changing type
+		// to the virtual value (e.g. mousemove -> mousedrag):
+		const hitItems = itemEvents.native[type]
+		const nativeMove = type === 'mousemove'
+		const tool = this._scope.tool
+		const view = this
 
 		function responds(type) {
 		  return (
@@ -24072,8 +24316,8 @@ var View = Base.extend(
 		function needsUp(hitItem) {
 		  if (view.responds('mouseup') || tool && tool.responds('mouseup'))
 			return true
-		  for (var item = hitItem; item; item = item._parent) {
-			for (var key in itemEventsMap.mouseup) {
+		  for (let item = hitItem; item; item = item._parent) {
+			for (const key in itemEventsMap.mouseup) {
 			  if (item.responds(key)) return true
 			}
 		  }
@@ -24101,35 +24345,35 @@ var View = Base.extend(
 		// The moves come from the whole document, so outside of drags, the
 		// pointer is only over the view when no other element covers it,
 		// such as a menu (#992). Its own element and its ancestors don't:
-		var target = DomEvent.getTarget(event),
-		  isCovered = (
-			nativeMove &&
-			!dragging &&
-			target &&
-			target.nodeType === 1 &&
-			!target.contains(this._element)
-		  ),
-		  inView = (
-			dispatched ||
-			!isCovered && this.getBounds().contains(point)
-		  ),
-		  // Run the hit-test on items first, but only if we're required
-		  // to do so for this given mouse event, see hitItems and
-		  // #_countItemEvent():
-		  hit = (
-			hitItems &&
-			inView &&
-			view._project.hitTest(point, {
-			  tolerance: view._scope.settings.hitTolerance,
-			  fill: true,
-			  stroke: true
-			})
-		  ),
-		  hitItem = hit && hit.item || null,
-		  // Keep track if view event should be handled, so we can use it
-		  // to decide if tool._handleMouseEvent() shall be called after.
-		  handle = false,
-		  mouse = {}
+		const target = DomEvent.getTarget(event)
+		const isCovered = (
+		  nativeMove &&
+		  !dragging &&
+		  target &&
+		  target.nodeType === 1 &&
+		  !target.contains(this._element)
+		)
+		const inView = (
+		  dispatched ||
+		  !isCovered && this.getBounds().contains(point)
+		)
+		// Run the hit-test on items first, but only if we're required
+		// to do so for this given mouse event, see hitItems and
+		// #_countItemEvent():
+		const hit = (
+		  hitItems &&
+		  inView &&
+		  view._project.hitTest(point, {
+			tolerance: view._scope.settings.hitTolerance,
+			fill: true,
+			stroke: true
+		  })
+		)
+		const hitItem = hit && hit.item || null
+		// Keep track if view event should be handled, so we can use it
+		// to decide if tool._handleMouseEvent() shall be called after.
+		let handle = false
+		const mouse = {}
 		// Create a simple lookup object to quickly check for different
 		// mouse event types.
 		mouse[type.substr(5)] = true
@@ -24185,7 +24429,7 @@ var View = Base.extend(
 			// to mousedown like native dblclick events, but not for a
 			// third click. Firefox uses 300ms as the max time
 			// difference:
-			var time = Date.now()
+			const time = Date.now()
 			dblClick = (
 			  !dblClick &&
 			  hitItem === clickItem &&
@@ -24198,7 +24442,7 @@ var View = Base.extend(
 			// prevented the default, and if the hitItem or any of its
 			// parents actually respond to mousedrag events.
 			if (!prevented && hitItem) {
-			  var item = hitItem
+			  let item = hitItem
 			  while (item && !item.responds('mousedrag')) item = item._parent
 			  if (item) dragItem = hitItem
 			}
@@ -24257,9 +24501,9 @@ var View = Base.extend(
 	   * Private method to handle key events.
 	   */
 	  _handleKeyEvent: function (type, event, key, character) {
-		var scope = this._scope,
-		  tool = scope.tool,
-		  keyEvent
+		const scope = this._scope
+		const tool = scope.tool
+		let keyEvent
 
 		function emit(obj) {
 		  if (obj.responds(type)) {
@@ -24285,10 +24529,10 @@ var View = Base.extend(
 		// If the view requires counting of installed mouse events,
 		// change the event counters now according to itemEventsMap
 		// (defined in the code further above).
-		var itemEvents = this._itemEvents,
-		  native = itemEvents.native,
-		  virtual = itemEvents.virtual
-		for (var key in itemEventsMap) {
+		const itemEvents = this._itemEvents
+		const native = itemEvents.native
+		const virtual = itemEvents.virtual
+		for (const key in itemEventsMap) {
 		  native[key] = (
 			(native[key] || 0) +
 			(itemEventsMap[key][type] || 0) * sign
@@ -24347,7 +24591,7 @@ var View = Base.extend(
  * @class
  * @private
  */
-var CanvasView = View.extend(
+const CanvasView = View.extend(
   /** @lends CanvasView# */ {
 	_class: 'CanvasView',
 
@@ -24368,7 +24612,7 @@ var CanvasView = View.extend(
 	  // Handle canvas argument
 	  if (!(canvas instanceof window.HTMLCanvasElement)) {
 		// See if the arguments describe the view size:
-		var size = Size.read(arguments, 1)
+		const size = Size.read(arguments, 1)
 		if (size.isZero())
 		  throw new Error(
 			'Cannot create CanvasView with the provided argument: ' +
@@ -24376,7 +24620,7 @@ var CanvasView = View.extend(
 		  )
 		canvas = CanvasProvider.getCanvas(size)
 	  }
-	  var ctx = (this._context = canvas.getContext('2d'))
+	  const ctx = (this._context = canvas.getContext('2d'))
 	  // Save context right away, and restore in #remove(). Also restore() and
 	  // save() again in _setElementSize() to prevent accumulation of scaling.
 	  ctx.save()
@@ -24397,8 +24641,8 @@ var CanvasView = View.extend(
 	},
 
 	_setElementSize: function _setElementSize(width, height) {
-	  var pixelRatio = this._pixelRatio,
-		element = this._element
+	  const pixelRatio = this._pixelRatio
+	  const element = this._element
 	  // Upscale the canvas if the pixel ratio is more than 1.
 	  _setElementSize.base.call(this, width * pixelRatio, height * pixelRatio)
 	  // Set the size of non-resizable canvases through their style, as they
@@ -24406,21 +24650,21 @@ var CanvasView = View.extend(
 	  // ratio of 1, so they behave the same on every screen (#2088):
 	  if (!PaperScope.hasAttribute(element, 'resize')) {
 		// With border-box sizing, the style includes padding and border:
-		var style = element.style,
-		  insets =
-			(
-			  DomElement.getStyles(element).boxSizing ===
-			  'border-box'
-			)
-			  ? DomElement.getInsets(element)
-			  : new Size()
+		const style = element.style
+		const insets =
+		  (
+			DomElement.getStyles(element).boxSizing ===
+			'border-box'
+		  )
+			? DomElement.getInsets(element)
+			: new Size()
 		style.width = width + insets.width + 'px'
 		style.height = height + insets.height + 'px'
 	  }
 	  if (pixelRatio !== 1) {
 		// Scale the context to counter the fact that we've manually scaled
 		// our canvas element.
-		var ctx = this._context
+		const ctx = this._context
 		ctx.restore()
 		ctx.save()
 		ctx.scale(pixelRatio, pixelRatio)
@@ -24447,9 +24691,9 @@ var CanvasView = View.extend(
 	 */
 	update: function (force) {
 	  if (!this._needsUpdate && !force) return false
-	  var project = this._project,
-		ctx = this._context,
-		size = this._viewSize
+	  const project = this._project
+	  const ctx = this._context
+	  const size = this._viewSize
 	  ctx.clearRect(0, 0, size.width + 1, size.height + 1)
 	  if (project) {
 		// Forced updates follow changes that the buffers don't know of:
@@ -24480,8 +24724,7 @@ var CanvasView = View.extend(
  * @class The Event object is the base class for any of the other event types,
  * such as {@link MouseEvent}, {@link ToolEvent} and {@link KeyEvent}.
  */
-/* global Event: true */
-var Event = Base.extend(
+const Event = Base.extend(
   /** @lends Event# */ {
 	_class: 'Event',
 
@@ -24580,7 +24823,7 @@ var Event = Base.extend(
  * handlers {@link Item#onDraw} and {@link Item#onDrawSelection}, which
  * describe its fields.
  */
-var DrawEvent = Base.extend(
+const DrawEvent = Base.extend(
   /** @lends DrawEvent# */ {
 	_class: 'DrawEvent',
 
@@ -24625,7 +24868,7 @@ var DrawEvent = Base.extend(
  *
  * @extends Event
  */
-var KeyEvent = Event.extend(
+const KeyEvent = Event.extend(
   /** @lends KeyEvent# */ {
 	_class: 'KeyEvent',
 
@@ -24698,65 +24941,65 @@ var KeyEvent = Event.extend(
  * @name Key
  * @namespace
  */
-var Key = new (function () {
-  var keyLookup = {
-	  // Unify different key identifier naming schemes, e.g. on Gecko, IE:
-	  '\t': 'tab',
-	  ' ': 'space',
-	  '\xA0': 'space', // Option + Space on macOS = non-breaking space.
-	  '\b': 'backspace',
-	  '\x7f': 'delete',
-	  'Spacebar': 'space',
-	  'Del': 'delete',
-	  'Win': 'meta',
-	  'Esc': 'escape'
-	},
-	// To find corresponding characters for special keys in keydown events:
-	charLookup = {
-	  tab: '\t',
-	  space: ' ',
-	  enter: '\r'
-	},
-	// Only keypress reliable gets char-codes that are actually representing
-	// characters with all modifiers taken into account across all browsers.
-	// So we need to perform a little trickery here to use these codes with
-	// onKeyDown/Up:
-	// - keydown is used to handle modifiers and special keys such as
-	//   arrows, space, control, etc, for which events are fired right away.
-	// - keypress fires the actual onKeyDown event for all other keys.
-	// - keyup handles the onKeyUp events for both.
-	keyMap = {}, // Map for currently pressed keys
-	charMap = {}, // key -> char mappings for pressed keys
-	metaFixMap, // Keys that will not receive keyup events due to Mac bug
-	downKey, // The key from the keydown event, if it wasn't handled already
-	// Use new Base() to convert into a Base object, for #toString()
-	modifiers = new Base({
-	  shift: false,
-	  control: false,
-	  alt: false, // WAS: option
-	  meta: false, // WAS: command
-	  capsLock: false,
-	  space: false
-	}).inject({
-	  // Short-cut to modifiers.alt for backward compatibility
-	  option: {
-		get: function () {
-		  return this.alt
-		}
-	  },
-
-	  // Platform independent short-cut to modifiers.control / meta,
-	  // based on whichever key is used for commands.
-	  command: {
-		get: function () {
-		  var agent = paper && paper.agent
-		  return agent && agent.mac ? this.meta : this.control
-		}
+const Key = new (function () {
+  const keyLookup = {
+	// Unify different key identifier naming schemes, e.g. on Gecko, IE:
+	'\t': 'tab',
+	' ': 'space',
+	'\xA0': 'space', // Option + Space on macOS = non-breaking space.
+	'\b': 'backspace',
+	'\x7f': 'delete',
+	'Spacebar': 'space',
+	'Del': 'delete',
+	'Win': 'meta',
+	'Esc': 'escape'
+  }
+  // To find corresponding characters for special keys in keydown events:
+  const charLookup = {
+	tab: '\t',
+	space: ' ',
+	enter: '\r'
+  }
+  // Only keypress reliable gets char-codes that are actually representing
+  // characters with all modifiers taken into account across all browsers.
+  // So we need to perform a little trickery here to use these codes with
+  // onKeyDown/Up:
+  // - keydown is used to handle modifiers and special keys such as
+  //   arrows, space, control, etc, for which events are fired right away.
+  // - keypress fires the actual onKeyDown event for all other keys.
+  // - keyup handles the onKeyUp events for both.
+  const keyMap = {} // Map for currently pressed keys
+  const charMap = {} // key -> char mappings for pressed keys
+  let metaFixMap // Keys that will not receive keyup events due to Mac bug
+  let downKey // The key from the keydown event, if it wasn't handled already
+  // Use new Base() to convert into a Base object, for #toString()
+  const modifiers = new Base({
+	shift: false,
+	control: false,
+	alt: false, // WAS: option
+	meta: false, // WAS: command
+	capsLock: false,
+	space: false
+  }).inject({
+	// Short-cut to modifiers.alt for backward compatibility
+	option: {
+	  get: function () {
+		return this.alt
 	  }
-	})
+	},
+
+	// Platform independent short-cut to modifiers.control / meta,
+	// based on whichever key is used for commands.
+	command: {
+	  get: function () {
+		const agent = paper && paper.agent
+		return agent && agent.mac ? this.meta : this.control
+	  }
+	}
+  })
 
   function getKey(event) {
-	var key = event.key
+	let key = event.key
 	// Use short version for arrow keys: ArrowLeft -> Left
 	key = /^Arrow[A-Z]/.test(key)
 	  ? key.substr(5)
@@ -24787,7 +25030,7 @@ var Key = new (function () {
 		? charLookup[key] || (key.length > 1 ? '' : key)
 		: charMap[key] || ''
 	}
-	var name
+	let name
 	keyMap[key] = down
 	// Link the key from keydown with the character form keypress, so keyup
 	// can retrieve the character again.
@@ -24802,7 +25045,7 @@ var Key = new (function () {
 	// Detect modifiers and mark them as pressed / released
 	if (key.length > 1 && (name = Base.camelize(key)) in modifiers) {
 	  modifiers[name] = down
-	  var agent = paper && paper.agent
+	  const agent = paper && paper.agent
 	  if (name === 'meta' && agent && agent.mac) {
 		// Fix a strange behavior on Mac where no keyup events are
 		// received for any keys pressed while the meta key is down.
@@ -24811,7 +25054,7 @@ var Key = new (function () {
 		if (down) {
 		  metaFixMap = {}
 		} else {
-		  for (var k in metaFixMap) {
+		  for (const k in metaFixMap) {
 			// Make sure it wasn't released already in the meantime:
 			if (k in charMap) handleKey(false, k, metaFixMap[k], event, view)
 		  }
@@ -24829,7 +25072,7 @@ var Key = new (function () {
 
   DomEvent.add(document, {
 	keydown: function (event) {
-	  var key = getKey(event)
+	  const key = getKey(event)
 	  // Directly handle any special keys (key.length > 1) in keydown, as
 	  // not all of them will receive keypress events. Neither do keys
 	  // pressed with control, alt or meta in modern browsers.
@@ -24845,12 +25088,12 @@ var Key = new (function () {
 
 	keypress: function (event) {
 	  if (downKey) {
-		var key = getKey(event),
-		  code = event.charCode,
-		  // Try event.charCode if its above 32 and fall back onto the
-		  // key value if it's a single character, empty otherwise.
-		  character =
-			code >= 32 ? String.fromCharCode(code) : key.length > 1 ? '' : key
+		let key = getKey(event)
+		const code = event.charCode
+		// Try event.charCode if its above 32 and fall back onto the
+		// key value if it's a single character, empty otherwise.
+		const character =
+		  code >= 32 ? String.fromCharCode(code) : key.length > 1 ? '' : key
 		if (key !== downKey) {
 		  // This shouldn't happen, but it does in Chrome on Ubuntu.
 		  // In these cases, character is actually the key we want!
@@ -24863,7 +25106,7 @@ var Key = new (function () {
 	},
 
 	keyup: function (event) {
-	  var key = getKey(event)
+	  const key = getKey(event)
 	  if (key in charMap) handleKey(false, key, charMap[key], event)
 	}
   })
@@ -24871,7 +25114,7 @@ var Key = new (function () {
   DomEvent.add(window, {
 	blur: function (event) {
 	  // Emit key-up events for all currently pressed keys.
-	  for (var key in charMap) handleKey(false, key, charMap[key], event)
+	  for (const key in charMap) handleKey(false, key, charMap[key], event)
 	}
   })
 
@@ -24954,8 +25197,7 @@ var Key = new (function () {
  *
  * @extends Event
  */
-/* global MouseEvent: true */
-var MouseEvent = Event.extend(
+const MouseEvent = Event.extend(
   /** @lends MouseEvent# */ {
 	_class: 'MouseEvent',
 
@@ -25052,7 +25294,7 @@ var MouseEvent = Event.extend(
  *
  * @extends Event
  */
-var ToolEvent = Event.extend(
+const ToolEvent = Event.extend(
   /** @lends ToolEvent# */ {
 	_class: 'ToolEvent',
 	// Have ToolEvent#item fall back to returning null, not undefined.
@@ -25258,11 +25500,11 @@ var ToolEvent = Event.extend(
 	 */
 	getItem: function () {
 	  if (!this._item) {
-		var result = this.tool._scope.project.hitTest(this.getPoint())
+		const result = this.tool._scope.project.hitTest(this.getPoint())
 		if (result) {
-		  var item = result.item,
-			// Find group parent, but exclude layers
-			parent = item._parent
+		  let item = result.item
+		  // Find group parent, but exclude layers
+		  let parent = item._parent
 		  while (/^(Group|CompoundPath)$/.test(parent._class)) {
 			item = parent
 			parent = parent._parent
@@ -25340,7 +25582,7 @@ var ToolEvent = Event.extend(
  *     path.add(event.point);
  * }
  */
-var Tool = PaperScopeItem.extend(
+const Tool = PaperScopeItem.extend(
   /** @lends Tool# */ {
 	_class: 'Tool',
 	_list: 'tools',
@@ -25662,31 +25904,31 @@ var Tool = PaperScopeItem.extend(
 	  // If there is no mousedrag event installed, fall back to mousemove,
 	  // with which we share the actual event handling code anyhow.
 	  if (mouse.drag && !this.responds(type)) type = 'mousemove'
-	  var move = mouse.move || mouse.drag,
-		responds = this.responds(type),
-		called = false,
-		tool = this,
-		// The time and velocity since the last tool event, in seconds and
-		// points per second, measured between the mouse reports, so the
-		// steps that maxDistance interpolates along the way share them:
-		time = event.timeStamp / 1000,
-		elapsed = this._time != null ? time - this._time : 0,
-		velocity =
-		  !mouse.down && this._point && elapsed > 0
-			? point.subtract(this._point).divide(elapsed)
-			: new Point()
+	  const move = mouse.move || mouse.drag
+	  const responds = this.responds(type)
+	  let called = false
+	  const tool = this
+	  // The time and velocity since the last tool event, in seconds and
+	  // points per second, measured between the mouse reports, so the
+	  // steps that maxDistance interpolates along the way share them:
+	  const time = event.timeStamp / 1000
+	  const elapsed = this._time != null ? time - this._time : 0
+	  const velocity =
+		!mouse.down && this._point && elapsed > 0
+		  ? point.subtract(this._point).divide(elapsed)
+		  : new Point()
 	  // Updates the internal tool state, taking into account minDistance and
 	  // maxDistance and interpolating "fake" events along the moved distance
 	  // to respect their settings, if necessary.
 	  // Returns true as long as events should be fired, false when the target
 	  // is reached.
 	  function update(minDistance, maxDistance) {
-		var pt = point,
-		  // Set toolPoint to the  previous point for moves or downPoint
-		  // for clicks, so mouseup has a delta spanning over the full
-		  // drag. Use the current point if this is the first mousedown,
-		  // so there's always a delta.
-		  toolPoint = move ? tool._point : tool._downPoint || pt
+		let pt = point
+		// Set toolPoint to the  previous point for moves or downPoint
+		// for clicks, so mouseup has a delta spanning over the full
+		// drag. Use the current point if this is the first mousedown,
+		// so there's always a delta.
+		const toolPoint = move ? tool._point : tool._downPoint || pt
 		if (move) {
 		  // After first move event was emitted, tool._moveCount = 0, so
 		  // we need to include 0 in this check.
@@ -25694,8 +25936,8 @@ var Tool = PaperScopeItem.extend(
 			return false
 		  }
 		  if (toolPoint && (minDistance != null || maxDistance != null)) {
-			var vector = pt.subtract(toolPoint),
-			  distance = vector.getLength()
+			const vector = pt.subtract(toolPoint)
+			const distance = vector.getLength()
 			if (distance < (minDistance || 0)) return false
 			// Produce a new point on the way to point if point is
 			// further away than maxDistance
@@ -25859,7 +26101,7 @@ var Tool = PaperScopeItem.extend(
  * @see Item#tweenTo(to, options)
  * @see Item#tweenFrom(from, options)
  */
-var Tween = Base.extend(
+const Tween = Base.extend(
   Emitter,
   /** @lends Tween# */ {
 	_class: 'Tween',
@@ -25912,7 +26154,7 @@ var Tween = Base.extend(
 
 		// decelerating to zero velocity
 		easeOutQuart: function (t) {
-		  return 1 - --t * t * t * t // jshint ignore:line
+		  return 1 - --t * t * t * t
 		},
 
 		// acceleration until halfway, then deceleration
@@ -25980,7 +26222,7 @@ var Tween = Base.extend(
 
 		// decelerating to zero velocity
 		easeOutCirc: function (t) {
-		  return Math.sqrt(1 - --t * t) // jshint ignore:line
+		  return Math.sqrt(1 - --t * t)
 		},
 
 		// acceleration until halfway, then deceleration
@@ -26006,8 +26248,8 @@ var Tween = Base.extend(
 	 */
 	initialize: function Tween(object, from, to, duration, easing, start) {
 	  this.object = object
-	  var type = typeof easing
-	  var isFunction = type === 'function'
+	  const type = typeof easing
+	  const isFunction = type === 'function'
 	  this.type = isFunction
 		? type
 		: type === 'string'
@@ -26019,7 +26261,7 @@ var Tween = Base.extend(
 
 	  this._then = null
 	  this._startTime = null
-	  var state = from || to
+	  const state = from || to
 	  this._keys = state ? Object.keys(state) : []
 	  this._parsedKeys = this._parseKeys(this._keys)
 	  this._from = state && this._getState(from)
@@ -26114,23 +26356,23 @@ var Tween = Base.extend(
 		  this.running = false
 		}
 
-		var factor = this.easing(progress),
-		  keys = this._keys,
-		  getValue = function (value) {
-			return typeof value === 'function'
-			  ? value(factor, progress)
-			  : value
-		  }
-		for (var i = 0, l = keys && keys.length; i < l; i++) {
-		  var key = keys[i],
-			from = getValue(this._from[key]),
-			to = getValue(this._to[key]),
-			// Some paper objects have math functions (e.g.: Point,
-			// Color) which can directly be used to do the tweening.
-			value =
-			  from && to && from.multiply && to.multiply
-				? to.subtract(from).multiply(factor).add(from)
-				: ((to - from) * factor) + from
+		const factor = this.easing(progress)
+		const keys = this._keys
+		const getValue = function (value) {
+		  return typeof value === 'function'
+			? value(factor, progress)
+			: value
+		}
+		for (let i = 0, l = keys && keys.length; i < l; i++) {
+		  const key = keys[i]
+		  const from = getValue(this._from[key])
+		  const to = getValue(this._to[key])
+		  // Some paper objects have math functions (e.g.: Point,
+		  // Color) which can directly be used to do the tweening.
+		  const value =
+			from && to && from.multiply && to.multiply
+			  ? to.subtract(from).multiply(factor).add(from)
+			  : ((to - from) * factor) + from
 		  this._setProperty(this._parsedKeys[key], value)
 		}
 
@@ -26196,22 +26438,24 @@ var Tween = Base.extend(
 	},
 
 	_handleFrame: function (time) {
-	  var startTime = this._startTime
+	  let startTime = this._startTime
 	  // The first frame starts the tween, also when its time is 0:
 	  if (startTime == null) startTime = this._startTime = time
 	  this.update((time - startTime) / this.duration)
 	},
 
 	_getState: function (state) {
-	  var keys = this._keys,
-		result = {}
-	  for (var i = 0, l = keys.length; i < l; i++) {
-		var key = keys[i],
-		  path = this._parsedKeys[key],
-		  current = this._getProperty(path),
-		  value
+	  let value
+
+	  const keys = this._keys
+	  const result = {}
+	  for (let i = 0, l = keys.length; i < l; i++) {
+		const key = keys[i]
+		const path = this._parsedKeys[key]
+		const current = this._getProperty(path)
+
 		if (state) {
-		  var resolved = this._resolveValue(current, state[key])
+		  const resolved = this._resolveValue(current, state[key])
 		  // Temporarily set the resolved value, so we can retrieve the
 		  // coerced value from paper's internal magic.
 		  this._setProperty(path, resolved)
@@ -26232,20 +26476,18 @@ var Tween = Base.extend(
 	_resolveValue: function (current, value) {
 	  if (value) {
 		if (Array.isArray(value) && value.length === 2) {
-		  var operator = value[0]
+		  const operator = value[0]
 		  return (
 			operator &&
 			operator.match &&
-			// We're (unnecessarily) escaping '*/' here to not confuse
-			// the ol' JSDoc parser...
-			operator.match(/^[+\-\*\/]=/)
+			operator.match(/^[+\-*/]=/)
 		  )
 			? this._calculate(current, operator[0], value[1])
 			: value
 		} else if (typeof value === 'string') {
-		  var match = value.match(/^[+\-*/]=(.*)/)
+		  const match = value.match(/^[+\-*/]=(.*)/)
 		  if (match) {
-			var parsed = JSON.parse(
+			const parsed = JSON.parse(
 			  match[1].replace(
 				/(['"])?([a-zA-Z0-9_]+)(['"])?:/g,
 				'"$2": '
@@ -26261,7 +26503,7 @@ var Tween = Base.extend(
 	_calculate: function (left, operator, right) {
 	  // Use the math functions of objects that have them (e.g.: Point,
 	  // Color), and the operator itself for numbers.
-	  var name = {
+	  const name = {
 		'+': 'add',
 		'-': 'subtract',
 		'*': 'multiply',
@@ -26281,29 +26523,29 @@ var Tween = Base.extend(
 	},
 
 	_parseKeys: function (keys) {
-	  var parsed = {}
-	  for (var i = 0, l = keys.length; i < l; i++) {
-		var key = keys[i],
-		  path = key
-			// Convert from JS property access notation to JSON pointer:
-			.replace(/\.([^.]*)/g, '/$1')
-			// Expand array property access notation ([])
-			.replace(/\[['"]?([^'"\]]*)['"]?\]/g, '/$1')
+	  const parsed = {}
+	  for (let i = 0, l = keys.length; i < l; i++) {
+		const key = keys[i]
+		const path = key
+		  // Convert from JS property access notation to JSON pointer:
+		  .replace(/\.([^.]*)/g, '/$1')
+		  // Expand array property access notation ([])
+		  .replace(/\[['"]?([^'"\]]*)['"]?\]/g, '/$1')
 		parsed[key] = path.split('/')
 	  }
 	  return parsed
 	},
 
 	_getProperty: function (path, offset) {
-	  var obj = this.object
-	  for (var i = 0, l = path.length - (offset || 0); i < l && obj; i++) {
+	  let obj = this.object
+	  for (let i = 0, l = path.length - (offset || 0); i < l && obj; i++) {
 		obj = obj[path[i]]
 	  }
 	  return obj
 	},
 
 	_setProperty: function (path, value) {
-	  var dest = this._getProperty(path, 1)
+	  const dest = this._getProperty(path, 1)
 	  if (dest) {
 		dest[path[path.length - 1]] = value
 	  }
@@ -26323,10 +26565,10 @@ var Tween = Base.extend(
  * All rights reserved.
  */
 
-var Http = {
+const Http = {
   request: function (options) {
 	// Code borrowed from Coffee Script and extended:
-	var xhr = new self.XMLHttpRequest()
+	const xhr = new self.XMLHttpRequest()
 	xhr.open(
 	  (options.method || 'get').toUpperCase(),
 	  options.url,
@@ -26334,7 +26576,7 @@ var Http = {
 	)
 	if (options.mimeType) xhr.overrideMimeType(options.mimeType)
 	xhr.onload = function () {
-	  var status = xhr.status
+	  const status = xhr.status
 	  if (status === 0 || status === 200) {
 		if (options.onLoad) {
 		  options.onLoad.call(xhr, xhr.responseText)
@@ -26344,14 +26586,14 @@ var Http = {
 	  }
 	}
 	xhr.onerror = function () {
-	  var status = xhr.status,
-		message = (
-		  'Could not load "' +
-		  options.url +
-		  '" (Status: ' +
-		  status +
-		  ')'
-		)
+	  const status = xhr.status
+	  const message = (
+		'Could not load "' +
+		options.url +
+		'" (Status: ' +
+		status +
+		')'
+	  )
 	  if (options.onError) {
 		options.onError(message, status)
 	  } else {
@@ -26374,7 +26616,7 @@ var Http = {
  * All rights reserved.
  */
 
-var CanvasProvider = (Base.exports.CanvasProvider = {
+const CanvasProvider = (Base.exports.CanvasProvider = {
   canvases: [],
 
   getCanvas: function (width, height, options) {
@@ -26387,27 +26629,27 @@ var CanvasProvider = (Base.exports.CanvasProvider = {
 	}
 	// With options.minimum, a pooled canvas that is at least as large is
 	// reused without resizing it, since resizing reallocates its pixels:
-	var minimum = options && options.minimum,
-	  canvases = this.canvases,
-	  fits = function (canvas) {
-		return minimum
-		  ? canvas.width >= width && canvas.height >= height
-		  : canvas.width === width && canvas.height === height
-	  },
-	  index = canvases.length - 1
-	for (var i = index; i >= 0; i--) {
+	const minimum = options && options.minimum
+	const canvases = this.canvases
+	const fits = function (canvas) {
+	  return minimum
+		? canvas.width >= width && canvas.height >= height
+		: canvas.width === width && canvas.height === height
+	}
+	let index = canvases.length - 1
+	for (let i = index; i >= 0; i--) {
 	  if (fits(canvases[i])) {
 		index = i
 		break
 	  }
 	}
-	var canvas =
-		index >= 0
-		  ? canvases.splice(index, 1)[0]
-		  : window
-			? document.createElement('canvas')
-			: new self.OffscreenCanvas(width, height),
-	  ctx = canvas.getContext('2d', options || {})
+	const canvas =
+	  index >= 0
+		? canvases.splice(index, 1)[0]
+		: window
+		  ? document.createElement('canvas')
+		  : new self.OffscreenCanvas(width, height)
+	const ctx = canvas.getContext('2d', options || {})
 	if (!ctx) {
 	  throw new Error(
 		'Canvas ' +
@@ -26436,12 +26678,12 @@ var CanvasProvider = (Base.exports.CanvasProvider = {
   },
 
   getContext: function (width, height, options) {
-	var canvas = this.getCanvas(width, height, options)
+	const canvas = this.getCanvas(width, height, options)
 	return canvas ? canvas.getContext('2d') : null
   },
 
   release: function (obj) {
-	var canvas = obj && obj.canvas ? obj.canvas : obj
+	const canvas = obj && obj.canvas ? obj.canvas : obj
 	if (canvas && canvas.getContext) {
 	  if (canvas.width * canvas.height > 256 * 256)
 		canvas.width = canvas.height = 0
@@ -26450,23 +26692,23 @@ var CanvasProvider = (Base.exports.CanvasProvider = {
   }
 })
 
-var BlendMode = new (function () {
-  var min = Math.min,
-	max = Math.max,
-	abs = Math.abs,
-	sr,
-	sg,
-	sb,
-	sa,
-	br,
-	bg,
-	bb,
-	ba,
-	dr,
-	dg,
-	db
+const BlendMode = new (function () {
+  const min = Math.min
+  const max = Math.max
+  const abs = Math.abs
+  let sr
+  let sg
+  let sb
+  let sa
+  let br
+  let bg
+  let bb
+  let ba
+  let dr
+  let dg
+  let db
 
-  var modes = {
+  const modes = {
 	'add': function () {
 	  dr = min(br + sr, 255)
 	  dg = min(bg + sg, 255)
@@ -26520,10 +26762,10 @@ var BlendMode = new (function () {
   )
 
   this.process = function (mode, srcContext, dstContext, alpha, offset, size) {
-	var width = size.width,
-	  height = size.height,
-	  normal = mode === 'normal',
-	  process = modes[mode]
+	const width = size.width
+	const height = size.height
+	const normal = mode === 'normal'
+	const process = modes[mode]
 	if (!process) {
 	  dstContext.save()
 	  dstContext.setTransform(1, 0, 0, 1, 0, 0)
@@ -26542,10 +26784,15 @@ var BlendMode = new (function () {
 	  )
 	  dstContext.restore()
 	} else {
-	  var dstData = dstContext.getImageData(offset.x, offset.y, width, height),
-		dst = dstData.data,
-		src = srcContext.getImageData(0, 0, width, height).data
-	  for (var i = 0, l = dst.length; i < l; i += 4) {
+	  const dstData = dstContext.getImageData(
+		offset.x,
+		offset.y,
+		width,
+		height
+	  )
+	  const dst = dstData.data
+	  const src = srcContext.getImageData(0, 0, width, height).data
+	  for (let i = 0, l = dst.length; i < l; i += 4) {
 		sr = src[i]
 		br = dst[i]
 		sg = src[i + 1]
@@ -26555,8 +26802,8 @@ var BlendMode = new (function () {
 		sa = src[i + 3]
 		ba = dst[i + 3]
 		process()
-		var a1 = sa * alpha / 255,
-		  a2 = 1 - a1
+		const a1 = sa * alpha / 255
+		const a2 = 1 - a1
 		dst[i] = a1 * dr + a2 * br
 		dst[i + 1] = a1 * dg + a2 * bg
 		dst[i + 2] = a1 * db + a2 * bb
@@ -26567,34 +26814,34 @@ var BlendMode = new (function () {
   }
 })()
 
-var SvgElement = new (function () {
-  var svg = 'http://www.w3.org/2000/svg',
-	xmlns = 'http://www.w3.org/2000/xmlns',
-	xlink = 'http://www.w3.org/1999/xlink',
-	attributeNamespace = {
-	  'href': xlink,
-	  'xlink': xmlns,
-	  'xmlns': xmlns + '/',
-	  'xmlns:xlink': xmlns + '/'
-	}
+const SvgElement = new (function () {
+  const svg = 'http://www.w3.org/2000/svg'
+  const xmlns = 'http://www.w3.org/2000/xmlns'
+  const xlink = 'http://www.w3.org/1999/xlink'
+  const attributeNamespace = {
+	'href': xlink,
+	'xlink': xmlns,
+	'xmlns': xmlns + '/',
+	'xmlns:xlink': xmlns + '/'
+  }
 
   function create(tag, attributes, formatter) {
 	return set(document.createElementNS(svg, tag), attributes, formatter)
   }
 
   function get(node, name) {
-	var namespace = attributeNamespace[name],
-	  value = namespace
-		? node.getAttribute(name) ||
-		  node.getAttributeNS(namespace, name)
-		: node.getAttribute(name)
+	const namespace = attributeNamespace[name]
+	const value = namespace
+	  ? node.getAttribute(name) ||
+		node.getAttributeNS(namespace, name)
+	  : node.getAttribute(name)
 	return value === 'null' ? null : value
   }
 
   function set(node, attributes, formatter) {
-	for (var name in attributes) {
-	  var value = attributes[name],
-		namespace = attributeNamespace[name]
+	for (const name in attributes) {
+	  let value = attributes[name]
+	  const namespace = attributeNamespace[name]
 	  if (typeof value === 'number' && formatter)
 		value = formatter.number(value)
 	  if (namespace) {
@@ -26617,7 +26864,7 @@ var SvgElement = new (function () {
   }
 })()
 
-var SvgStyles = Base.each(
+const SvgStyles = Base.each(
   {
 	fillColor: ['fill', 'color'],
 	fillRule: ['fill-rule', 'string'],
@@ -26680,8 +26927,8 @@ var SvgStyles = Base.each(
 	]
   },
   function (entry, key) {
-	var part = Base.capitalize(key),
-	  lookup = entry[2]
+	const part = Base.capitalize(key)
+	const lookup = entry[2]
 	this[key] = {
 	  type: entry[1],
 	  property: key,
@@ -26706,15 +26953,17 @@ var SvgStyles = Base.each(
 )
 
 new (function () {
-  var formatter,
-	parentStyles,
-	elementMatrix
+  let definitions
+
+  let formatter
+  let parentStyles
+  let elementMatrix
 
   function getTransform(matrix, coordinates, center) {
-	var attrs = new Base(),
-	  trans = matrix.getTranslation()
+	const attrs = new Base()
+	let trans = matrix.getTranslation()
 	if (coordinates) {
-	  var point
+	  let point
 	  if (matrix.isInvertible()) {
 		matrix = matrix._shiftless()
 		point = matrix._inverseTransform(trans)
@@ -26726,12 +26975,12 @@ new (function () {
 	  attrs[center ? 'cy' : 'y'] = point.y
 	}
 	if (!matrix.isIdentity()) {
-	  var decomposed = matrix.decompose()
+	  const decomposed = matrix.decompose()
 	  if (decomposed) {
-		var parts = [],
-		  angle = decomposed.rotation,
-		  scale = decomposed.scaling,
-		  skew = decomposed.skewing
+		const parts = []
+		const angle = decomposed.rotation
+		const scale = decomposed.scaling
+		const skew = decomposed.skewing
 		if (trans && !trans.isZero())
 		  parts.push('translate(' + formatter.point(trans) + ')')
 		if (angle) parts.push('rotate(' + formatter.number(angle) + ')')
@@ -26749,19 +26998,19 @@ new (function () {
   }
 
   function exportGroup(item, options) {
-	var attrs = getTransform(item._matrix),
-	  children = item._children
-	var node = SvgElement.create('g', attrs, formatter)
-	for (var i = 0, l = children.length; i < l; i++) {
-	  var child = children[i]
+	const attrs = getTransform(item._matrix)
+	const children = item._children
+	const node = SvgElement.create('g', attrs, formatter)
+	for (let i = 0, l = children.length; i < l; i++) {
+	  const child = children[i]
 	  if (child.isClipMask()) {
-		var clip = exportClip(child, options)
+		const clip = exportClip(child, options)
 		setDefinition(child, clip, 'clip', options)
 		SvgElement.set(node, {
 		  'clip-path': 'url(#' + clip.id + ')'
 		})
 	  } else {
-		var childNode = exportSVG(child, options)
+		const childNode = exportSVG(child, options)
 		if (childNode) node.appendChild(childNode)
 	  }
 	}
@@ -26769,16 +27018,16 @@ new (function () {
   }
 
   function exportClip(item, options) {
-	var clip = SvgElement.create('clipPath')
+	const clip = SvgElement.create('clipPath')
 
 	function addItem(item) {
 	  if (item instanceof Group) {
-		var children = item._children
-		for (var i = 0, l = children.length; i < l; i++) {
+		const children = item._children
+		for (let i = 0, l = children.length; i < l; i++) {
 		  if (!children[i]._clipMask) addItem(children[i])
 		}
 	  } else {
-		var node = exportSVG(item, options)
+		const node = exportSVG(item, options)
 		if (node) clip.appendChild(node)
 	  }
 	}
@@ -26792,17 +27041,17 @@ new (function () {
   }
 
   function exportRaster(item, options) {
-	var attrs = getTransform(item._matrix, true),
-	  size = item.getSize(),
-	  image = item.getImage(),
-	  href = (
-		options.embedImages == false && image && image.src ||
-		item.toDataURL()
-	  )
+	const attrs = getTransform(item._matrix, true)
+	const size = item.getSize()
+	const image = item.getImage()
+	const href = (
+	  options.embedImages == false && image && image.src ||
+	  item.toDataURL()
+	)
 	attrs.x -= size.width / 2
 	attrs.y -= size.height / 2
 	if (options.reuseImages) {
-	  var node = getDefinition(href, 'image')
+	  let node = getDefinition(href, 'image')
 	  if (!node) {
 		node = SvgElement.create(
 		  'image',
@@ -26826,28 +27075,28 @@ new (function () {
   }
 
   function exportPath(item, options) {
-	var matchShapes = options.matchShapes,
-	  segmentsData = getSegmentsData(item)
+	const matchShapes = options.matchShapes
+	const segmentsData = getSegmentsData(item)
 	if (matchShapes && !segmentsData) {
-	  var shape = item.toShape(false)
+	  const shape = item.toShape(false)
 	  if (shape) return exportShape(shape, options)
 	}
-	var segments = item._segments,
-	  length = segments.length,
-	  type,
-	  attrs = getTransform(item._matrix)
+	const segments = item._segments
+	const length = segments.length
+	let type
+	const attrs = getTransform(item._matrix)
 	if (matchShapes && length >= 2 && !item.hasHandles()) {
 	  if (length > 2) {
 		type = item._closed ? 'polygon' : 'polyline'
-		var parts = []
-		for (var i = 0; i < length; i++) {
+		const parts = []
+		for (let i = 0; i < length; i++) {
 		  parts.push(formatter.point(segments[i]._point))
 		}
 		attrs.points = parts.join(' ')
 	  } else {
 		type = 'line'
-		var start = segments[0]._point,
-		  end = segments[1]._point
+		const start = segments[0]._point
+		const end = segments[1]._point
 		attrs.set({
 		  x1: start.x,
 		  y1: start.y,
@@ -26864,14 +27113,14 @@ new (function () {
   }
 
   function exportShape(item) {
-	var type = item._type,
-	  radius = item._radius,
-	  attrs = getTransform(item._matrix, true, type !== 'rectangle')
+	let type = item._type
+	let radius = item._radius
+	const attrs = getTransform(item._matrix, true, type !== 'rectangle')
 	if (type === 'rectangle') {
 	  type = 'rect'
-	  var size = item._size,
-		width = size.width,
-		height = size.height
+	  const size = item._size
+	  const width = size.width
+	  const height = size.height
 	  attrs.x -= width / 2
 	  attrs.y -= height / 2
 	  attrs.width = width
@@ -26890,27 +27139,27 @@ new (function () {
   }
 
   function exportCompoundPath(item, options) {
-	var attrs = getTransform(item._matrix)
-	var data = item.getPathData(null, options.precision),
-	  segmentsData = getSegmentsData(item)
+	const attrs = getTransform(item._matrix)
+	const data = item.getPathData(null, options.precision)
+	const segmentsData = getSegmentsData(item)
 	if (data) attrs.d = data
 	if (segmentsData) attrs['data-paper-segments'] = segmentsData
 	return SvgElement.create('path', attrs, formatter)
   }
 
   function getSegmentsData(item) {
-	var paths = item._children || [item],
-	  entries = null,
-	  index = 0
-	for (var i = 0, l = paths.length; i < l; i++) {
-	  var segments = paths[i]._segments
-	  for (var j = 0, m = segments.length; j < m; j++, index++) {
-		var segment = segments[j],
-		  name = segment._name,
-		  data = segment._data,
-		  hasData = data && !Base.equals(data, {})
+	const paths = item._children || [item]
+	let entries = null
+	let index = 0
+	for (let i = 0, l = paths.length; i < l; i++) {
+	  const segments = paths[i]._segments
+	  for (let j = 0, m = segments.length; j < m; j++, index++) {
+		const segment = segments[j]
+		const name = segment._name
+		const data = segment._data
+		const hasData = data && !Base.equals(data, {})
 		if (name || hasData) {
-		  var entry = ((entries = entries || {})[index] = {})
+		  const entry = ((entries = entries || {})[index] = {})
 		  if (name) entry.name = name
 		  if (hasData) entry.data = data
 		}
@@ -26920,11 +27169,11 @@ new (function () {
   }
 
   function exportSymbolItem(item, options) {
-	var attrs = getTransform(item._matrix, true),
-	  definition = item._definition,
-	  node = getDefinition(definition, 'symbol'),
-	  definitionItem = definition._item,
-	  bounds = definitionItem.getStrokeBounds()
+	const attrs = getTransform(item._matrix, true)
+	const definition = item._definition
+	let node = getDefinition(definition, 'symbol')
+	const definitionItem = definition._item
+	const bounds = definitionItem.getStrokeBounds()
 	if (!node) {
 	  node = SvgElement.create('symbol', {
 		viewBox: formatter.rectangle(bounds)
@@ -26946,24 +27195,24 @@ new (function () {
 	  color = color.clone()
 	  color.transform(elementMatrix.inverted())
 	}
-	var gradientNode = getDefinition(color, 'color')
+	let gradientNode = getDefinition(color, 'color')
 	if (!gradientNode) {
-	  var gradient = color.getGradient(),
-		radial = gradient._radial,
-		origin = color.getOrigin(),
-		destination = color.getDestination(),
-		attrs
+	  const gradient = color.getGradient()
+	  const radial = gradient._radial
+	  const origin = color.getOrigin()
+	  const destination = color.getDestination()
+	  let attrs
 	  if (radial) {
-		var aspect = color.getAspect(),
-		  highlight = color.getHighlight(),
-		  center = origin
+		const aspect = color.getAspect()
+		let highlight = color.getHighlight()
+		let center = origin
 		attrs = { r: origin.getDistance(destination) }
 		if (aspect !== 1) {
-		  var angle = destination.subtract(origin).getAngle(),
-			local = new Matrix()
-			  .translate(origin)
-			  .rotate(angle)
-			  .scale(1, aspect)
+		  const angle = destination.subtract(origin).getAngle()
+		  const local = new Matrix()
+			.translate(origin)
+			.rotate(angle)
+			.scale(1, aspect)
 		  center = new Point()
 		  if (highlight) highlight = local._inverseTransform(highlight)
 		  attrs.gradientTransform = (
@@ -26997,12 +27246,12 @@ new (function () {
 		attrs,
 		formatter
 	  )
-	  var stops = gradient._stops
-	  for (var i = 0, l = stops.length; i < l; i++) {
-		var stop = stops[i],
-		  stopColor = stop._color,
-		  alpha = stopColor.getAlpha(),
-		  offset = stop._offset
+	  const stops = gradient._stops
+	  for (let i = 0, l = stops.length; i < l; i++) {
+		const stop = stops[i]
+		const stopColor = stop._color
+		const alpha = stopColor.getAlpha()
+		const offset = stop._offset
 		attrs = {
 		  offset: offset == null ? i / (l - 1) : offset
 		}
@@ -27018,37 +27267,37 @@ new (function () {
   }
 
   function exportPattern(color, options) {
-	var matrix = elementMatrix
+	const matrix = elementMatrix
 	if (!matrix.isIdentity()) {
 	  color = color.clone()
 	  color.transform(matrix.inverted())
 	}
-	var patternNode = getDefinition(color, 'pattern')
+	let patternNode = getDefinition(color, 'pattern')
 	if (!patternNode) {
-	  var pattern = color.getPattern(),
-		item = pattern._item,
-		tile = pattern.getTile(),
-		spacing = pattern._spacing,
-		cell = new Rectangle(tile.getPoint(), tile.getSize().add(spacing)),
-		transform = getTransform(color.getMatrix()).transform,
-		attrs = {
-		  x: cell.x,
-		  y: cell.y,
-		  width: cell.width,
-		  height: cell.height,
-		  viewBox: formatter.rectangle(cell),
-		  patternUnits: 'userSpaceOnUse'
-		},
-		content = exportSVG(item, options)
+	  const pattern = color.getPattern()
+	  const item = pattern._item
+	  const tile = pattern.getTile()
+	  const spacing = pattern._spacing
+	  const cell = new Rectangle(tile.getPoint(), tile.getSize().add(spacing))
+	  const transform = getTransform(color.getMatrix()).transform
+	  const attrs = {
+		x: cell.x,
+		y: cell.y,
+		width: cell.width,
+		height: cell.height,
+		viewBox: formatter.rectangle(cell),
+		patternUnits: 'userSpaceOnUse'
+	  }
+	  let content = exportSVG(item, options)
 	  if (transform) attrs.patternTransform = transform
 	  patternNode = SvgElement.create('pattern', attrs, formatter)
 	  if (!spacing.isZero() && !tile.contains(item.getStrokeBounds())) {
-		var rect = new Shape.Rectangle({
-			rectangle: tile,
-			insert: false
-		  }),
-		  clip = exportClip(rect, options),
-		  group = SvgElement.create('g')
+		const rect = new Shape.Rectangle({
+		  rectangle: tile,
+		  insert: false
+		})
+		const clip = exportClip(rect, options)
+		const group = SvgElement.create('g')
 		setDefinition(rect, clip, 'clip', options)
 		group.setAttribute('clip-path', 'url(#' + clip.id + ')')
 		group.appendChild(content)
@@ -27062,21 +27311,21 @@ new (function () {
   }
 
   function exportShadow(item, options) {
-	var box = item.getInternalBounds()
+	const box = item.getInternalBounds()
 	if (!box.width || !box.height) return null
-	var style = item._style,
-	  color = style.getShadowColor(),
-	  offset = style.getShadowOffset(),
-	  deviation = style.getShadowBlur() / 2,
-	  bounds = item.getStrokeBounds(new Matrix()),
-	  rect = bounds
-		.unite(new Rectangle(bounds.getPoint().add(offset), bounds.getSize()))
-		.expand(6 * deviation),
-	  region = new Matrix()
-		.scale(100 / box.width, 100 / box.height)
-		.translate(box.getPoint().negate())
-		._transformBounds(rect),
-	  filter = SvgElement.create('filter')
+	const style = item._style
+	const color = style.getShadowColor()
+	const offset = style.getShadowOffset()
+	const deviation = style.getShadowBlur() / 2
+	const bounds = item.getStrokeBounds(new Matrix())
+	const rect = bounds
+	  .unite(new Rectangle(bounds.getPoint().add(offset), bounds.getSize()))
+	  .expand(6 * deviation)
+	const region = new Matrix()
+	  .scale(100 / box.width, 100 / box.height)
+	  .translate(box.getPoint().negate())
+	  ._transformBounds(rect)
+	const filter = SvgElement.create('filter')
 
 	function add(type, attrs) {
 	  filter.appendChild(SvgElement.create(type, attrs, formatter))
@@ -27120,11 +27369,16 @@ new (function () {
   }
 
   function exportText(item, options) {
-	var attrs = getTransform(item._matrix, true),
-	  node = SvgElement.create('text', attrs, formatter),
-	  story = item._story,
-	  lines = item._getLayout(),
-	  isPointText = item instanceof PointText
+	let i
+	let l
+	let line
+	let span
+
+	const attrs = getTransform(item._matrix, true)
+	const node = SvgElement.create('text', attrs, formatter)
+	const story = item._story
+	const lines = item._getLayout()
+	const isPointText = item instanceof PointText
 
 	function createSpan(content, style, spanAttrs, isParagraph) {
 	  spanAttrs = Base.set({}, spanAttrs)
@@ -27133,33 +27387,36 @@ new (function () {
 		  (entry.property in story._paragraphKeys) === isParagraph &&
 		  item[entry.get]() === undefined
 		) {
-		  var value = style[entry.get]()
+		  const value = style[entry.get]()
 		  if (value !== undefined)
 			setAttributes(spanAttrs, [], entry, value, options)
 		}
 	  })
-	  var span = SvgElement.create('tspan', spanAttrs, formatter)
+	  const span = SvgElement.create('tspan', spanAttrs, formatter)
 	  if (content != null) span.textContent = content
 	  return span
 	}
 
 	function addRuns(parent, line) {
-	  var pieces = line.pieces,
-		runs = []
-	  for (var i = 0, l = pieces.length; i < l; i++) {
-		var piece = pieces[i],
-		  last = runs[runs.length - 1]
+	  let i
+	  let l
+
+	  const pieces = line.pieces
+	  const runs = []
+	  for (i = 0, l = pieces.length; i < l; i++) {
+		const piece = pieces[i]
+		const last = runs[runs.length - 1]
 		if (last && last.style.equals(piece.style)) {
 		  last.content += piece.content
 		} else {
 		  runs.push({ content: piece.content, style: piece.style })
 		}
 	  }
-	  var isMixed = runs.some(function (run) {
+	  const isMixed = runs.some(function (run) {
 		return createSpan(null, run.style, null, false).attributes.length > 0
 	  })
 	  if (isMixed) {
-		for (var i = 0, l = runs.length; i < l; i++) {
+		for (i = 0, l = runs.length; i < l; i++) {
 		  parent.appendChild(
 			createSpan(runs[i].content, runs[i].style, null, false)
 		  )
@@ -27175,31 +27432,31 @@ new (function () {
 
 	if (isPointText) {
 	  if (lines.length > 1) {
-		for (var i = 0, l = lines.length; i < l; i++) {
-		  var line = lines[i],
-			paragraph = story._getParagraph(line.start).style,
-			side = item._getSide(
-			  paragraph.getJustification(),
-			  paragraph.getDirection()
-			),
-			span = createSpan(
-			  null,
-			  paragraph,
-			  {
-				x: (
-				  attrs.x +
-				  line.x + (
-					side === 'right'
-					  ? line.width
-					  : side === 'center'
-						? line.width / 2
-						: 0
-				  )
-				),
-				y: attrs.y + line.y
-			  },
-			  true
-			)
+		for (i = 0, l = lines.length; i < l; i++) {
+		  line = lines[i]
+		  const paragraph = story._getParagraph(line.start).style
+		  const side = item._getSide(
+			paragraph.getJustification(),
+			paragraph.getDirection()
+		  )
+		  span = createSpan(
+			null,
+			paragraph,
+			{
+			  x: (
+				attrs.x +
+				line.x + (
+				  side === 'right'
+					? line.width
+					: side === 'center'
+					  ? line.width / 2
+					  : 0
+				)
+			  ),
+			  y: attrs.y + line.y
+			},
+			true
+		  )
 		  addRuns(span, line)
 		  node.appendChild(span)
 		}
@@ -27207,36 +27464,36 @@ new (function () {
 		addRuns(node, lines[0])
 	  }
 	} else {
-	  var justification = item.getJustification(),
-		anchor = (
-		  justification &&
-		  justification !== 'left' &&
-		  { 'text-anchor': 'start' }
+	  const justification = item.getJustification()
+	  const anchor = (
+		justification &&
+		justification !== 'left' &&
+		{ 'text-anchor': 'start' }
+	  )
+	  for (i = 0, l = lines.length; i < l; i++) {
+		line = lines[i]
+		const pieces = line.pieces
+		span = SvgElement.create(
+		  'tspan',
+		  Base.set(
+			{
+			  x: attrs.x + line.x,
+			  y: attrs.y + line.y
+			},
+			anchor
+		  ),
+		  formatter
 		)
-	  for (var i = 0, l = lines.length; i < l; i++) {
-		var line = lines[i],
-		  pieces = line.pieces,
-		  span = SvgElement.create(
-			'tspan',
-			Base.set(
-			  {
-				x: attrs.x + line.x,
-				y: attrs.y + line.y
-			  },
-			  anchor
-			),
-			formatter
-		  )
-		for (var j = 0, m = pieces.length; j < m; j++) {
-		  var piece = pieces[j],
-			angle = piece.rotation,
-			origin = new Point(piece.dx || 0, 0)
-			  .rotate(angle)
-			  .add(piece.x, line.y + piece.y),
-			pieceAttrs = {
-			  x: attrs.x + origin.x,
-			  y: attrs.y + origin.y
-			}
+		for (let j = 0, m = pieces.length; j < m; j++) {
+		  const piece = pieces[j]
+		  const angle = piece.rotation
+		  const origin = new Point(piece.dx || 0, 0)
+			.rotate(angle)
+			.add(piece.x, line.y + piece.y)
+		  const pieceAttrs = {
+			x: attrs.x + origin.x,
+			y: attrs.y + origin.y
+		  }
 		  if (angle) pieceAttrs.rotate = angle
 		  span.appendChild(
 			createSpan(piece.content, piece.style, pieceAttrs, false)
@@ -27248,7 +27505,7 @@ new (function () {
 	return node
   }
 
-  var exporters = {
+  const exporters = {
 	Group: exportGroup,
 	Layer: exportGroup,
 	Raster: exportRaster,
@@ -27261,7 +27518,7 @@ new (function () {
 	AreaText: exportText
   }
 
-  var cssBlendModes = Base.each(
+  const cssBlendModes = Base.each(
 	[
 	  'normal', 'multiply', 'screen', 'overlay', 'darken', 'lighten',
 	  'color-dodge', 'color-burn', 'hard-light', 'soft-light', 'difference',
@@ -27274,9 +27531,9 @@ new (function () {
   )
 
   function setAttributes(attrs, style, entry, value, options) {
-	var type = entry.type
+	const type = entry.type
 	if (type === 'color' && value != null) {
-	  var alpha = value.getAlpha()
+	  const alpha = value.getAlpha()
 	  if (alpha < 1) attrs[entry.attribute + '-opacity'] = alpha
 	}
 	if (type === 'style') {
@@ -27286,7 +27543,7 @@ new (function () {
 		attrs['data-paper-blend-mode'] = value
 	  }
 	} else if (type === 'font') {
-	  var font = ('' + value).match(
+	  const font = ('' + value).match(
 		/^(.*?)\s*\b(italic|oblique)\b\s*(.*)$/i
 	  )
 	  attrs[entry.attribute] = font
@@ -27316,25 +27573,25 @@ new (function () {
   }
 
   function applyStyle(item, node, options, isRoot) {
-	var attrs = {},
-	  parent = !isRoot && item.getParent(),
-	  parentStyle = (
-		parent &&
-		(parentStyles[parent._id] = parentStyles[parent._id] || {})
-	  ),
-	  isGroup = item instanceof Group,
-	  style = []
+	const attrs = {}
+	const parent = !isRoot && item.getParent()
+	const parentStyle = (
+	  parent &&
+	  (parentStyles[parent._id] = parentStyles[parent._id] || {})
+	)
+	const isGroup = item instanceof Group
+	const style = []
 
 	if (item._name != null) attrs.id = item._name
 
 	Base.each(SvgStyles, function (entry) {
-	  var get = entry.get,
-		value = item[get](),
-		isPaintServer = (
-		  entry.type === 'color' &&
-		  value &&
-		  (value.gradient || value.pattern)
-		)
+	  const get = entry.get
+	  const value = item[get]()
+	  const isPaintServer = (
+		entry.type === 'color' &&
+		value &&
+		(value.gradient || value.pattern)
+	  )
 	  if (parent && !(get in parentStyle)) parentStyle[get] = parent[get]()
 	  if (
 		value !== undefined && (
@@ -27351,7 +27608,7 @@ new (function () {
 	  }
 	})
 
-	var filter = (
+	const filter = (
 	  item._style.getShadowColor(true) &&
 	  item.hasShadow() &&
 	  exportShadow(item, options)
@@ -27365,7 +27622,6 @@ new (function () {
 	return SvgElement.set(node, attrs, formatter)
   }
 
-  var definitions
   function getDefinition(item, type) {
 	if (!definitions) definitions = { ids: {}, svgs: {} }
 	return item && definitions.svgs[getDefinitionKey(item, type)]
@@ -27373,7 +27629,7 @@ new (function () {
 
   function setDefinition(item, node, type, options) {
 	if (!definitions) getDefinition()
-	var typeId = (definitions.ids[type] = (definitions.ids[type] || 0) + 1)
+	const typeId = (definitions.ids[type] = (definitions.ids[type] || 0) + 1)
 	node.id = (options.idPrefix || '') + type + '-' + typeId
 	definitions.svgs[getDefinitionKey(item, type)] = node
   }
@@ -27390,11 +27646,11 @@ new (function () {
   }
 
   function exportDefinitions(node, options) {
-	var svg = node,
-	  defs = null
+	let svg = node
+	let defs = null
 	if (definitions) {
 	  svg = node.nodeName.toLowerCase() === 'svg' && node
-	  for (var i in definitions.svgs) {
+	  for (const i in definitions.svgs) {
 		if (!defs) {
 		  if (!svg) {
 			svg = SvgElement.create('svg')
@@ -27415,26 +27671,26 @@ new (function () {
   }
 
   function exportSVG(item, options, isRoot) {
-	var output = item.getEffectOutput()
+	let output = item.getEffectOutput()
 	if (output) {
 	  output = output.clone({ insert: false })
 	  output.transform(item._matrix)
 	  return exportSVG(output, options, isRoot)
 	}
-	var exporter = exporters[item._class],
-	  node = exporter && exporter(item, options)
+	const exporter = exporters[item._class]
+	let node = exporter && exporter(item, options)
 	if (node) {
-	  var onExport = options.onExport,
-		processNode = (
-		  options.processNode || (
-			onExport &&
-			function (arg) {
-			  return onExport(arg.item, arg.node, options)
-			}
-		  )
+	  const onExport = options.onExport
+	  const processNode = (
+		options.processNode || (
+		  onExport &&
+		  function (arg) {
+			return onExport(arg.item, arg.node, options)
+		  }
 		)
+	  )
 	  if (processNode) node = processNode({ item: item, node: node }) || node
-	  var data = JSON.stringify(item._data)
+	  const data = JSON.stringify(item._data)
 	  if (data && data !== '{}' && data !== 'null')
 		node.setAttribute('data-paper-data', data)
 	  if (item instanceof Layer) node.setAttribute('data-paper-layer', '')
@@ -27450,33 +27706,33 @@ new (function () {
   }
 
   function exportRoot(items, view, bounds, options) {
-	var mx = options.matrix || bounds === 'view' && view._matrix,
-	  matrix = mx && Matrix.read([mx]),
-	  rect =
-		bounds === 'view'
-		  ? new Rectangle([0, 0], view.getViewSize())
-		  : bounds === 'content'
-			? Item._getBounds(items, matrix, { stroke: true }).rect
-			: Rectangle.read([bounds], 0, { readNull: true }),
-	  attrs = {
-		'version': '1.1',
-		'xmlns': SvgElement.svg,
-		'xmlns:xlink': SvgElement.xlink
-	  }
+	const mx = options.matrix || bounds === 'view' && view._matrix
+	const matrix = mx && Matrix.read([mx])
+	const rect =
+	  bounds === 'view'
+		? new Rectangle([0, 0], view.getViewSize())
+		: bounds === 'content'
+		  ? Item._getBounds(items, matrix, { stroke: true }).rect
+		  : Rectangle.read([bounds], 0, { readNull: true })
+	const attrs = {
+	  'version': '1.1',
+	  'xmlns': SvgElement.svg,
+	  'xmlns:xlink': SvgElement.xlink
+	}
 	if (rect) {
 	  attrs.width = rect.width
 	  attrs.height = rect.height
 	  if (rect.x || rect.x === 0 || rect.y || rect.y === 0)
 		attrs.viewBox = formatter.rectangle(rect)
 	}
-	var node = SvgElement.create('svg', attrs, formatter),
-	  parent = node
+	const node = SvgElement.create('svg', attrs, formatter)
+	let parent = node
 	if (matrix && !matrix.isIdentity()) {
 	  parent = node.appendChild(
 		SvgElement.create('g', getTransform(matrix), formatter)
 	  )
 	}
-	for (var i = 0, l = items.length; i < l; i++) {
+	for (let i = 0, l = items.length; i < l; i++) {
 	  parent.appendChild(exportSVG(items[i], options, true))
 	}
 	return exportDefinitions(node, options)
@@ -27485,7 +27741,7 @@ new (function () {
   Item.inject({
 	exportSVG: function (options) {
 	  options = setOptions(options)
-	  var bounds = options.bounds
+	  const bounds = options.bounds
 	  return bounds || options.matrix
 		? exportRoot([this], this.getView(), bounds, options)
 		: exportDefinitions(exportSVG(this, options, true), options)
@@ -27507,13 +27763,19 @@ new (function () {
 
 new (function () {
 
-  var definitions = {},
-	used = {},
-	rootSize,
-	units = { in: 96, pt: 96 / 72, pc: 96 / 6, cm: 96 / 2.54, mm: 96 / 25.4 }
+  let definitions = {}
+  const used = {}
+  let rootSize
+  const units = {
+	in: 96,
+	pt: 96 / 72,
+	pc: 96 / 6,
+	cm: 96 / 2.54,
+	mm: 96 / 25.4
+  }
 
   function parseLength(value) {
-	var unit = /(in|pt|pc|cm|mm)\s*$/.exec(value)
+	const unit = /(in|pt|pc|cm|mm)\s*$/.exec(value)
 	return parseFloat(value) * (unit ? units[unit[1]] : 1)
   }
 
@@ -27525,17 +27787,17 @@ new (function () {
 	allowPercent,
 	defaultValue
   ) {
-	var value = SvgElement.get(node, name) || defaultValue,
-	  res =
-		value == null
-		  ? allowNull
-			? null
-			: isString
-			  ? ''
-			  : 0
+	const value = SvgElement.get(node, name) || defaultValue
+	const res =
+	  value == null
+		? allowNull
+		  ? null
 		  : isString
-			? value
-			: parseLength(value)
+			? ''
+			: 0
+		: isString
+		  ? value
+		  : parseLength(value)
 	return /%\s*$/.test(value)
 	  ? res /
 		100 * (
@@ -27580,16 +27842,20 @@ new (function () {
   }
 
   function importGroup(node, type, options, isRoot) {
-	var nodes = node.childNodes,
-	  isClip = type === 'clippath' || type === 'mask',
-	  isDefs = type === 'defs',
-	  isPattern = type === 'pattern',
-	  ctor = node.hasAttribute('data-paper-layer') ? Layer : Group,
-	  item = new ctor(),
-	  project = item._project,
-	  currentStyle = project._currentStyle,
-	  parentSize = rootSize,
-	  children = []
+	let i
+	let l
+	let child
+
+	const nodes = node.childNodes
+	const isClip = type === 'clippath' || type === 'mask'
+	const isDefs = type === 'defs'
+	const isPattern = type === 'pattern'
+	const ctor = node.hasAttribute('data-paper-layer') ? Layer : Group
+	let item = new ctor()
+	const project = item._project
+	const currentStyle = project._currentStyle
+	const parentSize = rootSize
+	const children = []
 	if (!isClip && !isDefs && !isPattern) {
 	  item = applyAttributes(item, node, options, isRoot)
 	  project._currentStyle = item._style.clone()
@@ -27601,14 +27867,14 @@ new (function () {
 	  )
 	}
 	if (isRoot) {
-	  var defs = node.querySelectorAll('defs')
-	  for (var i = 0, l = defs.length; i < l; i++) {
+	  const defs = node.querySelectorAll('defs')
+	  for (i = 0, l = defs.length; i < l; i++) {
 		importNode(defs[i], options, false)
 	  }
 	}
-	for (var i = 0, l = nodes.length; i < l; i++) {
-	  var childNode = nodes[i],
-		child
+	for (i = 0, l = nodes.length; i < l; i++) {
+	  const childNode = nodes[i]
+
 	  if (
 		childNode.nodeType === 1 &&
 		!/^defs$/i.test(childNode.nodeName) &&
@@ -27646,7 +27912,7 @@ new (function () {
 		return isClipMask(child, isAlpha)
 	  })
 	}
-	var color = item.getFillColor()
+	const color = item.getFillColor()
 	return (
 	  (item instanceof PathItem || item instanceof Shape) &&
 	  !item.hasStroke() &&
@@ -27663,18 +27929,18 @@ new (function () {
   }
 
   function importPoly(node, type) {
-	var coords = node.getAttribute('points').match(
-		/[+-]?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?/g
-	  ),
-	  points = []
-	for (var i = 0, l = coords.length; i < l; i += 2)
+	const coords = node.getAttribute('points').match(
+	  /[+-]?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?/g
+	)
+	const points = []
+	for (let i = 0, l = coords.length; i < l; i += 2)
 	  points.push(
 		new Point(
 		  parseFloat(coords[i]),
 		  parseFloat(coords[i + 1])
 		)
 	  )
-	var path = new Path(points)
+	const path = new Path(points)
 	if (type === 'polygon') path.closePath()
 	return path
   }
@@ -27684,10 +27950,10 @@ new (function () {
   }
 
   function importGradient(node, type, options) {
-	var id = (getValue(node, 'href', true) || '').substring(1),
-	  definition = getDefinitionById(id, options),
-	  radial = type === 'radialgradient',
-	  gradient
+	const id = (getValue(node, 'href', true) || '').substring(1)
+	const definition = getDefinitionById(id, options)
+	const radial = type === 'radialgradient'
+	let gradient
 	if (definition) {
 	  gradient = definition.getGradient()
 	  if (gradient._radial ^ radial) {
@@ -27695,22 +27961,22 @@ new (function () {
 		gradient._radial = radial
 	  }
 	} else {
-	  var nodes = node.childNodes,
-		stops = []
-	  for (var i = 0, l = nodes.length; i < l; i++) {
-		var child = nodes[i]
+	  const nodes = node.childNodes
+	  const stops = []
+	  for (let i = 0, l = nodes.length; i < l; i++) {
+		const child = nodes[i]
 		if (child.nodeType === 1)
 		  stops.push(applyAttributes(new GradientStop(), child, options))
 	  }
 	  gradient = new Gradient(stops, radial)
 	}
-	var origin,
-	  destination,
-	  highlight,
-	  scaleToBounds = (
-		getValue(node, 'gradientUnits', true) !==
-		'userSpaceOnUse'
-	  )
+	let origin
+	let destination
+	let highlight
+	const scaleToBounds = (
+	  getValue(node, 'gradientUnits', true) !==
+	  'userSpaceOnUse'
+	)
 	if (radial) {
 	  origin = getPoint(node, 'cx', 'cy', false, scaleToBounds, '50%', '50%')
 	  destination = origin.add(
@@ -27729,7 +27995,7 @@ new (function () {
 		'0%'
 	  )
 	}
-	var color = applyAttributes(
+	const color = applyAttributes(
 	  new Color(gradient, origin, destination, highlight), node,
 	  options
 	)
@@ -27738,12 +28004,12 @@ new (function () {
   }
 
   function importPattern(node, type, options) {
-	var item = importGroup(node, type, options),
-	  tile = new Rectangle(getPoint(node), getSize(node)),
-	  viewBox = getValue(node, 'viewBox', true),
-	  matrix = new Matrix().translate(tile.getPoint())
+	const item = importGroup(node, type, options)
+	const tile = new Rectangle(getPoint(node), getSize(node))
+	const viewBox = getValue(node, 'viewBox', true)
+	const matrix = new Matrix().translate(tile.getPoint())
 	if (viewBox) {
-	  var rect = new Rectangle(convertValue(viewBox, 'array'))
+	  const rect = new Rectangle(convertValue(viewBox, 'array'))
 	  matrix
 		.scale(tile.getSize().divide(rect.getSize()))
 		.translate(rect.getPoint().negate())
@@ -27757,11 +28023,11 @@ new (function () {
 	return null
   }
 
-  var importers = {
+  const importers = {
 	'#document': function (node, type, options, isRoot) {
-	  var nodes = node.childNodes
-	  for (var i = 0, l = nodes.length; i < l; i++) {
-		var child = nodes[i]
+	  const nodes = node.childNodes
+	  for (let i = 0, l = nodes.length; i < l; i++) {
+		const child = nodes[i]
 		if (child.nodeType === 1) return importNode(child, options, isRoot)
 	  }
 	},
@@ -27777,28 +28043,28 @@ new (function () {
 	'pattern': importPattern,
 
 	'image': function (node, type, options) {
-	  var raster = new Raster({
-		  crossOrigin: options.crossOrigin,
-		  source: getValue(node, 'href', true)
-		}),
-		align = (
-		  /none|x(Min|Mid|Max)Y(Min|Mid|Max)/.exec(
-			getValue(node, 'preserveAspectRatio', true)
-		  ) ||
-		  [null, 'Mid', 'Mid']
-		)
+	  const raster = new Raster({
+		crossOrigin: options.crossOrigin,
+		source: getValue(node, 'href', true)
+	  })
+	  const align = (
+		/none|x(Min|Mid|Max)Y(Min|Mid|Max)/.exec(
+		  getValue(node, 'preserveAspectRatio', true)
+		) ||
+		[null, 'Mid', 'Mid']
+	  )
 	  raster.on('load', function () {
-		var imageSize = this.getSize(),
-		  size = getSize(node, null, null, true) || imageSize,
-		  point = getPoint(node)
+		const imageSize = this.getSize()
+		let size = getSize(node, null, null, true) || imageSize
+		let point = getPoint(node)
 		if (align[0] !== 'none') {
-		  var factors = { Min: 0, Mid: 0.5, Max: 1 },
-			fitted = imageSize.multiply(
-			  Math.min(
-				size.width / imageSize.width,
-				size.height / imageSize.height
-			  )
+		  const factors = { Min: 0, Mid: 0.5, Max: 1 }
+		  const fitted = imageSize.multiply(
+			Math.min(
+			  size.width / imageSize.width,
+			  size.height / imageSize.height
 			)
+		  )
 		  point = point.add(
 			size.subtract(fitted).multiply(
 			  [factors[align[1]], factors[align[2]]]
@@ -27806,7 +28072,7 @@ new (function () {
 		  )
 		  size = fitted
 		}
-		var center = point.add(size.divide(2))
+		const center = point.add(size.divide(2))
 		this._matrix.append(
 		  new Matrix().translate(center).scale(size.divide(imageSize))
 		)
@@ -27823,10 +28089,10 @@ new (function () {
 	'defs': importGroup,
 
 	'use': function (node, type, options) {
-	  var id = (getValue(node, 'href', true) || '').substring(1),
-		definition = getDefinitionById(id, options),
-		point = getPoint(node),
-		item = null
+	  const id = (getValue(node, 'href', true) || '').substring(1)
+	  const definition = getDefinitionById(id, options)
+	  const point = getPoint(node)
+	  let item = null
 	  if (definition instanceof SymbolDefinition) {
 		item = definition.place(point)
 	  } else if (definition && !used[id]) {
@@ -27856,8 +28122,8 @@ new (function () {
 	},
 
 	'rect': function (node) {
-	  var rx = getValue(node, 'rx', false, true),
-		ry = getValue(node, 'ry', false, true)
+	  const rx = getValue(node, 'rx', false, true)
+	  const ry = getValue(node, 'ry', false, true)
 	  return new Shape.Rectangle(
 		new Rectangle(
 		  getPoint(node),
@@ -27878,19 +28144,19 @@ new (function () {
 	},
 
 	'text': function (node) {
-	  var text = new PointText(
-		  getPoint(node).add(
-			getPoint(node, 'dx', 'dy')
-		  )
-		),
-		lines = Base.each(
-		  node.childNodes,
-		  function (child) {
-			if (/^tspan$/i.test(child.nodeName) && child.hasAttribute('y'))
-			  this.push(child.textContent.trim())
-		  },
-		  []
+	  const text = new PointText(
+		getPoint(node).add(
+		  getPoint(node, 'dx', 'dy')
 		)
+	  )
+	  const lines = Base.each(
+		node.childNodes,
+		function (child) {
+		  if (/^tspan$/i.test(child.nodeName) && child.hasAttribute('y'))
+			this.push(child.textContent.trim())
+		},
+		[]
+	  )
 	  text.setContent(
 		lines.length > 1 ? lines.join('\n') : node.textContent.trim()
 	  )
@@ -27902,15 +28168,15 @@ new (function () {
 
   function applyTransform(item, value, name, node) {
 	if (item.transform) {
-	  var transforms = (node.getAttribute(name) || '').split(/\)\s*/g),
-		matrix = new Matrix()
-	  for (var i = 0, l = transforms.length; i < l; i++) {
-		var transform = transforms[i]
+	  const transforms = (node.getAttribute(name) || '').split(/\)\s*/g)
+	  const matrix = new Matrix()
+	  for (let i = 0, l = transforms.length; i < l; i++) {
+		const transform = transforms[i]
 		if (!transform) break
-		var parts = transform.split(/\(\s*/),
-		  command = parts[0].trim(),
-		  v = parts[1].split(/[\s,]+/g)
-		for (var j = 0, m = v.length; j < m; j++) v[j] = parseFloat(v[j])
+		const parts = transform.split(/\(\s*/)
+		const command = parts[0].trim()
+		const v = parts[1].split(/[\s,]+/g)
+		for (let j = 0, m = v.length; j < m; j++) v[j] = parseFloat(v[j])
 		switch (command) {
 		  case 'matrix':
 			matrix.append(
@@ -27939,7 +28205,7 @@ new (function () {
   }
 
   function applyClipMask(item, value, name, node, styles, options) {
-	var clip = getDefinition(value, options)
+	let clip = getDefinition(value, options)
 	if (clip) {
 	  clip = clip.clone()
 	  clip.setClipMask(true)
@@ -27952,29 +28218,29 @@ new (function () {
   }
 
   function applyOpacity(item, value, name) {
-	var key = name === 'fill-opacity' ? 'getFillColor' : 'getStrokeColor',
-	  color = item[key] && item[key]()
+	const key = name === 'fill-opacity' ? 'getFillColor' : 'getStrokeColor'
+	const color = item[key] && item[key]()
 	if (color) color.setAlpha(parseFloat(value))
   }
 
-  var shadowPrimitives = 'feOffset,feFlood,feComposite,feComposite'
+  const shadowPrimitives = 'feOffset,feFlood,feComposite,feComposite'
 
   function getFilterShadow(filter) {
-	var nodes = Base.slice(filter && filter.children || []),
-	  names = nodes
-		.map(function (node) {
-		  return node.nodeName
-		})
-		.join(),
-	  blur = (
-		names === 'feGaussianBlur,' + shadowPrimitives &&
-		nodes.shift()
-	  )
+	const nodes = Base.slice(filter && filter.children || [])
+	const names = nodes
+	  .map(function (node) {
+		return node.nodeName
+	  })
+	  .join()
+	const blur = (
+	  names === 'feGaussianBlur,' + shadowPrimitives &&
+	  nodes.shift()
+	)
 	if (!blur && names !== shadowPrimitives) return null
-	var offset = nodes[0],
-	  flood = nodes[1],
-	  color = new Color(flood.getAttribute('flood-color') || 'black'),
-	  opacity = flood.getAttribute('flood-opacity')
+	const offset = nodes[0]
+	const flood = nodes[1]
+	const color = new Color(flood.getAttribute('flood-color') || 'black')
+	const opacity = flood.getAttribute('flood-opacity')
 	if (opacity) color.setAlpha(color.getAlpha() * parseFloat(opacity))
 	return {
 	  color: color,
@@ -27987,17 +28253,17 @@ new (function () {
   }
 
   function getCssShadow(value) {
-	var match = value.match(/^\s*drop-shadow\((.*)\)\s*$/),
-	  color = (
-		match &&
-		match[1].match(
-		  /(?:rgba?|hsla?)\([^)]*\)|#[0-9a-f]+|\b[a-z]+\b/i
-		)
-	  ),
-	  lengths = (
-		match &&
-		match[1].replace(color && color[0], '').match(/-?[\d.]+/g)
+	const match = value.match(/^\s*drop-shadow\((.*)\)\s*$/)
+	const color = (
+	  match &&
+	  match[1].match(
+		/(?:rgba?|hsla?)\([^)]*\)|#[0-9a-f]+|\b[a-z]+\b/i
 	  )
+	)
+	const lengths = (
+	  match &&
+	  match[1].replace(color && color[0], '').match(/-?[\d.]+/g)
+	)
 	return lengths && lengths.length >= 2
 	  ? {
 		  color: new Color(color ? color[0] : 'black'),
@@ -28007,7 +28273,7 @@ new (function () {
 	  : null
   }
 
-  var attributes = Base.set(
+  const attributes = Base.set(
 	Base.each(
 	  SvgStyles,
 	  function (entry) {
@@ -28024,10 +28290,10 @@ new (function () {
 			  convertValue(value, entry.type, entry.fromSVG, options)
 			)
 			if (entry.type === 'color') {
-			  var color = item[entry.get]()
+			  const color = item[entry.get]()
 			  if (color) {
 				if (color._scaleToBounds) {
-				  var bounds = item.getBounds()
+				  const bounds = item.getBounds()
 				  color.transform(
 					new Matrix()
 					  .translate(bounds.getPoint())
@@ -28066,7 +28332,7 @@ new (function () {
 	  },
 
 	  'filter': function (item, value) {
-		var shadow = (
+		const shadow = (
 		  value &&
 		  !(item instanceof Group) &&
 		  item.setShadowColor && (
@@ -28090,7 +28356,7 @@ new (function () {
 
 	  'font-style': function (item, value) {
 		if (item.setFontWeight && /^(italic|oblique)$/.test(value)) {
-		  var weight = ('' + item.getFontWeight())
+		  const weight = ('' + item.getFontWeight())
 			.replace(/\s*\b(italic|oblique)\b/gi, '')
 		  item.setFontWeight(
 			/^(normal|400)$/.test(weight) ? value : weight + ' ' + value
@@ -28100,7 +28366,7 @@ new (function () {
 
 	  'letter-spacing': function (item, value) {
 		if (item.setLetterTracking) {
-		  var amount = parseFloat(value) || 0
+		  const amount = parseFloat(value) || 0
 		  item.setLetterTracking(
 			1000 * (
 			  /em$/.test(value)
@@ -28121,21 +28387,23 @@ new (function () {
 
 	  'offset': function (item, value) {
 		if (item.setOffset) {
-		  var percent = value.match(/(.*)%$/)
+		  const percent = value.match(/(.*)%$/)
 		  item.setOffset(percent ? percent[1] / 100 : parseFloat(value))
 		}
 	  },
 
 	  'viewBox': function (item, value, name, node, styles) {
-		var rect = new Rectangle(convertValue(value, 'array')),
-		  size = getSize(node, null, null, true),
-		  group,
-		  matrix
+		let matrix
+
+		const rect = new Rectangle(convertValue(value, 'array'))
+		const size = getSize(node, null, null, true)
+		let group
+
 		if (item instanceof Group) {
-		  var scale = size ? size.divide(rect.getSize()) : 1,
-			matrix = new Matrix()
-			  .scale(scale)
-			  .translate(rect.getPoint().negate())
+		  const scale = size ? size.divide(rect.getSize()) : 1
+		  matrix = new Matrix()
+			.scale(scale)
+			.translate(rect.getPoint().negate())
 		  group = item
 		} else if (item instanceof SymbolDefinition) {
 		  if (size) rect.setSize(size)
@@ -28143,7 +28411,7 @@ new (function () {
 		}
 		if (group) {
 		  if (getAttribute(node, 'overflow', styles) !== 'visible') {
-			var clip = new Shape.Rectangle(rect)
+			const clip = new Shape.Rectangle(rect)
 			clip.setClipMask(true)
 			group.addChild(clip)
 		  }
@@ -28154,10 +28422,10 @@ new (function () {
   )
 
   function getAttribute(node, name, styles) {
-	var style = Base.camelize(name),
-	  value = node.style && node.style[style]
+	const style = Base.camelize(name)
+	let value = node.style && node.style[style]
 	if (!value) {
-	  var attr = node.attributes[name]
+	  const attr = node.attributes[name]
 	  value = attr && attr.value
 	  if (!value && node.style && styles.node[style] !== styles.parent[style])
 		value = styles.node[style]
@@ -28166,15 +28434,15 @@ new (function () {
   }
 
   function applyAttributes(item, node, options, isRoot) {
-	var parent = node.parentNode,
-	  styles = {
-		node: DomElement.getStyles(node) || {},
-		parent: !isRoot && DomElement.getStyles(parent) || {}
-	  }
+	const parent = node.parentNode
+	const styles = {
+	  node: DomElement.getStyles(node) || {},
+	  parent: !isRoot && DomElement.getStyles(parent) || {}
+	}
 	if (isRoot && !styles.node.fill && item.setFillColor)
 	  item.setFillColor('black')
 	Base.each(attributes, function (apply, name) {
-	  var value = getAttribute(node, name, styles)
+	  const value = getAttribute(node, name, styles)
 	  item = (
 		(
 		  value !== undefined &&
@@ -28188,15 +28456,15 @@ new (function () {
 
   function getDefinitionById(id, options) {
 	if (id && !definitions[id]) {
-	  var node = getElementById(id)
+	  const node = getElementById(id)
 	  if (node) importNode(node, options, false)
 	}
 	return definitions[id]
   }
 
   function getDefinitionId(value) {
-	var match = value && value.match(/\((?:["'#]*)([^"')]+)/),
-	  name = match && match[1]
+	const match = value && value.match(/\((?:["'#]*)([^"')]+)/)
+	const name = match && match[1]
 	return name && window
 	  ?
 		name.replace(window.location.href.split('#')[0] + '#', '')
@@ -28204,8 +28472,8 @@ new (function () {
   }
 
   function getDefinition(value, options) {
-	var id = getDefinitionId(value),
-	  res = id && getDefinitionById(id, options)
+	const id = getDefinitionId(value)
+	let res = id && getDefinitionById(id, options)
 	if (res && res._scaleToBounds) {
 	  res = res.clone()
 	  res._scaleToBounds = true
@@ -28214,11 +28482,11 @@ new (function () {
   }
 
   function getData(node) {
-	var data = null,
-	  attributes = node.attributes,
-	  json = node.getAttribute('data-paper-data')
-	for (var i = 0, l = attributes.length; i < l; i++) {
-	  var match = attributes[i].name.match(/^data-(?!paper-)(.+)$/)
+	let data = null
+	const attributes = node.attributes
+	const json = node.getAttribute('data-paper-data')
+	for (let i = 0, l = attributes.length; i < l; i++) {
+	  const match = attributes[i].name.match(/^data-(?!paper-)(.+)$/)
 	  if (match) {
 		data = data || {}
 		data[Base.camelize(match[1])] = attributes[i].value
@@ -28228,17 +28496,17 @@ new (function () {
   }
 
   function setSegmentsData(item, node) {
-	var json = node.getAttribute('data-paper-segments')
+	const json = node.getAttribute('data-paper-segments')
 	if (json) {
-	  var entries = JSON.parse(json),
-		paths = item._children || [item],
-		segments = []
-	  for (var i = 0, l = paths.length; i < l; i++)
+	  const entries = JSON.parse(json)
+	  const paths = item._children || [item]
+	  const segments = []
+	  for (let i = 0, l = paths.length; i < l; i++)
 		segments.push.apply(segments, paths[i]._segments)
 	  if (Math.max.apply(Math, Object.keys(entries)) < segments.length) {
-		for (var index in entries) {
-		  var entry = entries[index],
-			segment = segments[index]
+		for (const index in entries) {
+		  const entry = entries[index]
+		  const segment = segments[index]
 		  if (entry.name) segment.setName(entry.name)
 		  if (entry.data) segment._data = entry.data
 		}
@@ -28246,7 +28514,7 @@ new (function () {
 	}
   }
 
-  var sandbox
+  let sandbox
 
   function getSandbox() {
 	if (!(sandbox && sandbox.contentDocument)) {
@@ -28257,8 +28525,8 @@ new (function () {
 		' width: 0; height: 0; border: 0'
 	  )
 	  document.body.appendChild(sandbox)
-	  var doc = sandbox.contentDocument,
-		meta = doc.createElement('meta')
+	  const doc = sandbox.contentDocument
+	  const meta = doc.createElement('meta')
 	  meta.httpEquiv = 'Content-Security-Policy'
 	  meta.content = "default-src 'none'; style-src 'unsafe-inline'"
 	  doc.head.appendChild(meta)
@@ -28271,11 +28539,11 @@ new (function () {
   }
 
   function importNode(node, options, isRoot) {
-	var type = node.nodeName.toLowerCase(),
-	  isElement = type !== '#document',
-	  container,
-	  parent,
-	  next
+	const type = node.nodeName.toLowerCase()
+	const isElement = type !== '#document'
+	let container
+	let parent
+	let next
 	if (isRoot && isElement) {
 	  rootSize = paper.getView().getSize()
 	  rootSize = getSize(node, null, null, true) || rootSize
@@ -28287,11 +28555,11 @@ new (function () {
 	  container.appendChild(node)
 	  getSandbox().appendChild(container)
 	}
-	var settings = paper.settings,
-	  applyMatrix = settings.applyMatrix,
-	  insertItems = settings.insertItems,
-	  importer = importers[type],
-	  item
+	const settings = paper.settings
+	const applyMatrix = settings.applyMatrix
+	const insertItems = settings.insertItems
+	const importer = importers[type]
+	let item
 	try {
 	  settings.applyMatrix = false
 	  settings.insertItems = false
@@ -28308,19 +28576,19 @@ new (function () {
 		if (isElement && item instanceof PathItem) setSegmentsData(item, node)
 		if (isElement && importer !== importGroup)
 		  item = applyAttributes(item, node, options, isRoot)
-		var data = isElement && getData(node)
+		const data = isElement && getData(node)
 		if (data) item._data = data
-		var onImport = options.onImport,
-		  processItem = (
-			isElement && (
-			  options.processItem || (
-				onImport &&
-				function (arg) {
-				  return onImport(arg.node, arg.item, options)
-				}
-			  )
+		const onImport = options.onImport
+		const processItem = (
+		  isElement && (
+			options.processItem || (
+			  onImport &&
+			  function (arg) {
+				return onImport(arg.node, arg.item, options)
+			  }
 			)
 		  )
+		)
 		if (processItem) item = processItem({ item: item, node: node }) || item
 		if (options.expandShapes && item instanceof Shape) {
 		  item.remove()
@@ -28349,12 +28617,12 @@ new (function () {
 	if (!source) return null
 	options =
 	  typeof options === 'function' ? { onLoad: options } : options || {}
-	var scope = paper,
-	  item = null
+	const scope = paper
+	let item = null
 
 	function onLoad(svg) {
 	  try {
-		var node =
+		let node =
 		  typeof svg === 'object'
 			? svg
 			: new self.DOMParser().parseFromString(
@@ -28370,7 +28638,7 @@ new (function () {
 		if (!options || options.insert !== false) {
 		  owner._insertItem(undefined, item)
 		}
-		var onLoad = options.onLoad
+		const onLoad = options.onLoad
 		if (onLoad) onLoad(item, svg)
 	  } catch (e) {
 		onError(e)
@@ -28378,7 +28646,7 @@ new (function () {
 	}
 
 	function onError(message, status) {
-	  var onError = options.onError
+	  const onError = options.onError
 	  if (onError) {
 		onError(message, status)
 	  } else {
@@ -28387,7 +28655,7 @@ new (function () {
 	}
 
 	if (typeof source === 'string' && !/^[\s\S]*</.test(source)) {
-	  var node = document.getElementById(source)
+	  const node = document.getElementById(source)
 	  if (node) {
 		onLoad(node)
 	  } else {
@@ -28399,7 +28667,7 @@ new (function () {
 		})
 	  }
 	} else if (typeof File !== 'undefined' && source instanceof File) {
-	  var reader = new FileReader()
+	  const reader = new FileReader()
 	  reader.onload = function () {
 		onLoad(reader.result)
 	  }
@@ -28429,14 +28697,15 @@ new (function () {
 })()
 
 Base.exports.PaperScript = (function () {
-  var acorn = self.acorn
+  let acorn = self.acorn
   if (!acorn && typeof require !== 'undefined') {
 	try {
 	  acorn = require('acorn')
 	} catch (e) {}
   }
   if (!acorn) {
-	var exports, module
+	let exports
+	let module
 	acorn = exports = module = {}
 	{
 
@@ -29754,13 +30023,13 @@ Base.exports.PaperScript = (function () {
   }
 
   function parse(code, options) {
-	var parser = self.acorn || acorn
+	const parser = self.acorn || acorn
 	if (parseInt(parser.version, 10) >= 8)
 	  options = Base.set({ ecmaVersion: 'latest' }, options)
 	return parser.parse(code, options)
   }
 
-  var binaryOperators = {
+  const binaryOperators = {
 	'+': '__add',
 	'-': '__subtract',
 	'*': '__multiply',
@@ -29770,12 +30039,12 @@ Base.exports.PaperScript = (function () {
 	'!=': '__equals'
   }
 
-  var unaryOperators = {
+  const unaryOperators = {
 	'-': '__negate',
 	'+': '__self'
   }
 
-  var fields = Base.each(
+  const fields = Base.each(
 	['add', 'subtract', 'multiply', 'divide', 'modulo', 'equals', 'negate'],
 	function (name) {
 	  this['__' + name] = '#' + name
@@ -29791,9 +30060,9 @@ Base.exports.PaperScript = (function () {
   Color.inject(fields)
 
   function __$__(left, operator, right) {
-	var handler = binaryOperators[operator]
+	const handler = binaryOperators[operator]
 	if (left && left[handler]) {
-	  var res = left[handler](right)
+	  const res = left[handler](right)
 	  return operator === '!=' ? !res : res
 	}
 	switch (operator) {
@@ -29815,13 +30084,13 @@ Base.exports.PaperScript = (function () {
   }
 
   function __$assign__(object, key, operator, value, postfix) {
-	var old = object[key],
-	  res = (object[key] = __$__(old, operator, value))
+	const old = object[key]
+	const res = (object[key] = __$__(old, operator, value))
 	return postfix ? old : res
   }
 
   function $__(operator, value) {
-	var handler = unaryOperators[operator]
+	const handler = unaryOperators[operator]
 	if (value && value[handler]) return value[handler]()
 	switch (operator) {
 	  case '+':
@@ -29834,12 +30103,12 @@ Base.exports.PaperScript = (function () {
   function compile(code, options) {
 	options = options || {}
 
-	var insertions = []
+	let insertions = []
 
 	function getOffset(offset) {
-	  var current = offset
-	  for (var i = 0, l = insertions.length; i < l; i++) {
-		var insertion = insertions[i]
+	  let current = offset
+	  for (let i = 0, l = insertions.length; i < l; i++) {
+		const insertion = insertions[i]
 		if (insertion[1] <= offset) current += insertion[2]
 	  }
 	  return current
@@ -29854,9 +30123,9 @@ Base.exports.PaperScript = (function () {
 	}
 
 	function replaceCode(node, str) {
-	  var range = node.range,
-		start = getOffset(range[0]),
-		end = getOffset(range[1])
+	  const range = node.range
+	  const start = getOffset(range[0])
+	  const end = getOffset(range[1])
 	  insertions = insertions.filter(function (insertion) {
 		return insertion[0] < range[0] || insertion[1] > range[1]
 	  })
@@ -29868,13 +30137,18 @@ Base.exports.PaperScript = (function () {
 	}
 
 	function handleOverloading(node, parent) {
+	  let left
+	  let right
+	  let operator
+	  let parentType
+
 	  switch (node.type) {
 		case 'UnaryExpression':
 		  if (
 			node.operator in unaryOperators &&
 			node.argument.type !== 'Literal'
 		  ) {
-			var arg = getCode(node.argument)
+			const arg = getCode(node.argument)
 			replaceCode(
 			  node,
 			  '$__("' +
@@ -29890,10 +30164,10 @@ Base.exports.PaperScript = (function () {
 			node.operator in binaryOperators &&
 			node.left.type !== 'Literal'
 		  ) {
-			var left = getCode(node.left),
-			  right = getCode(node.right),
-			  between = getBetween(node.left, node.right),
-			  operator = node.operator
+			left = getCode(node.left)
+			right = getCode(node.right)
+			const between = getBetween(node.left, node.right)
+			operator = node.operator
 			replaceCode(
 			  node,
 			  '__$__(' +
@@ -29911,7 +30185,7 @@ Base.exports.PaperScript = (function () {
 		  break
 		case 'UpdateExpression':
 		case 'AssignmentExpression':
-		  var parentType = parent && parent.type
+		  parentType = parent && parent.type
 		  if (!(
 			parentType === 'ForStatement' || (
 			  parentType === 'BinaryExpression' &&
@@ -29919,58 +30193,58 @@ Base.exports.PaperScript = (function () {
 			) ||
 			parentType === 'MemberExpression' && parent.computed
 		  )) {
-			var isUpdate = node.type === 'UpdateExpression',
-			  target = isUpdate ? node.argument : node.left
+			const isUpdate = node.type === 'UpdateExpression'
+			const target = isUpdate ? node.argument : node.left
 			if (
 			  isUpdate || (
 				/^.=$/.test(node.operator) &&
 				target.type !== 'Literal'
 			  )
 			) {
-			  var left = getCode(target),
-				right = isUpdate ? '1' : getCode(node.right),
-				operator = node.operator[0],
-				isUsed = (
-				  isUpdate &&
-				  !(
-					parentType === 'ExpressionStatement' || (
-					  parentType === 'SequenceExpression' &&
-					  node !== parent.expressions[parent.expressions.length - 1]
-					)
+			  left = getCode(target)
+			  right = isUpdate ? '1' : getCode(node.right)
+			  operator = node.operator[0]
+			  const isUsed = (
+				isUpdate &&
+				!(
+				  parentType === 'ExpressionStatement' || (
+					parentType === 'SequenceExpression' &&
+					node !== parent.expressions[parent.expressions.length - 1]
 				  )
-				),
-				isPostfix = isUsed && !node.prefix,
-				member = (
-				  target.type === 'MemberExpression' &&
-				  target.object.type !== 'Super' && (
-					target.property.type !==
-					'PrivateIdentifier'
-				  )
-				),
-				exp = member
-				  ? '__$assign__(' +
-					getCode(target.object) +
-					', ' + (
-					  target.computed
-						? getCode(target.property)
-						: JSON.stringify(
-							target.property.name
-						  )
-					) +
-					', "' +
-					operator +
-					'", ' +
-					right +
-					(isPostfix ? ', true' : '') +
-					')'
-				  : left +
-					' = __$__(' +
-					left +
-					', "' +
-					operator +
-					'", ' +
-					right +
-					')'
+				)
+			  )
+			  const isPostfix = isUsed && !node.prefix
+			  const member = (
+				target.type === 'MemberExpression' &&
+				target.object.type !== 'Super' && (
+				  target.property.type !==
+				  'PrivateIdentifier'
+				)
+			  )
+			  let exp = member
+				? '__$assign__(' +
+				  getCode(target.object) +
+				  ', ' + (
+					target.computed
+					  ? getCode(target.property)
+					  : JSON.stringify(
+						  target.property.name
+						)
+				  ) +
+				  ', "' +
+				  operator +
+				  '", ' +
+				  right +
+				  (isPostfix ? ', true' : '') +
+				  ')'
+				: left +
+				  ' = __$__(' +
+				  left +
+				  ', "' +
+				  operator +
+				  '", ' +
+				  right +
+				  ')'
 			  if (isUsed && !member) {
 				exp = isPostfix
 				  ? '[' + left + ', ' + exp + '][0]'
@@ -30012,17 +30286,17 @@ Base.exports.PaperScript = (function () {
 	  }
 	}
 
-	var moduleCount = 0,
-	  isModule = false
+	let moduleCount = 0
+	let isModule = false
 
 	function getImport(node, as) {
-	  var attributes = node.attributes || [],
-		args = [JSON.stringify(node.source.value)]
+	  const attributes = node.attributes || []
+	  const args = [JSON.stringify(node.source.value)]
 	  if (as || attributes.length) args.push(as ? '"' + as + '"' : 'undefined')
 	  if (attributes.length) {
-		var values = {}
+		const values = {}
 		attributes.forEach(function (attribute) {
-		  var key = attribute.key
+		  const key = attribute.key
 		  values[key.name || key.value] = attribute.value.value
 		})
 		args.push(JSON.stringify(values))
@@ -30031,6 +30305,12 @@ Base.exports.PaperScript = (function () {
 	}
 
 	function handleModules(node) {
+	  let module
+	  let named
+	  let vars
+	  let declaration
+	  let specifiers
+
 	  switch (node.type) {
 		case 'ImportExpression':
 		  replaceCode(
@@ -30047,11 +30327,11 @@ Base.exports.PaperScript = (function () {
 		  )
 		  break
 		case 'ImportDeclaration':
-		  var module = getImport(node),
-			named = []
-		  var vars = node.specifiers
+		  module = getImport(node)
+		  named = []
+		  vars = node.specifiers
 			.map(function (specifier) {
-			  var local = specifier.local.name
+			  const local = specifier.local.name
 			  if (specifier.type === 'ImportSpecifier') {
 				named.push(
 				  local +
@@ -30114,10 +30394,10 @@ Base.exports.PaperScript = (function () {
 		  break
 		case 'ExportNamedDeclaration':
 		  isModule = true
-		  var declaration = node.declaration
-		  var specifiers = node.specifiers
+		  declaration = node.declaration
+		  specifiers = node.specifiers
 		  if (declaration) {
-			var names = []
+			const names = []
 			if (declaration.declarations) {
 			  declaration.declarations.forEach(function (dec) {
 				collectNames(dec.id, names)
@@ -30125,7 +30405,7 @@ Base.exports.PaperScript = (function () {
 			} else {
 			  names.push(declaration.id.name)
 			}
-			var code = getCode(declaration)
+			let code = getCode(declaration)
 			if (declaration.declarations && !/;\s*$/.test(code)) code += ';'
 			replaceCode(
 			  node,
@@ -30145,11 +30425,11 @@ Base.exports.PaperScript = (function () {
 				.join('')
 			)
 		  } else if (specifiers) {
-			var source = node.source && getImport(node) + '.'
-			var exports = specifiers
+			const source = node.source && getImport(node) + '.'
+			const exports = specifiers
 			  .map(function (specifier) {
-				var local = specifier.local.name,
-				  exported = specifier.exported.name
+				const local = specifier.local.name
+				const exported = specifier.exported.name
 				return (
 				  'module.exports.' +
 				  exported +
@@ -30168,18 +30448,18 @@ Base.exports.PaperScript = (function () {
 	  }
 	}
 
-	var functions = 0,
-	  isAsync = false
+	let functions = 0
+	let isAsync = false
 
 	function walkAST(node, parent, paperFeatures) {
 	  if (node) {
-		var isFunction = /Function/.test(node.type)
+		const isFunction = /Function/.test(node.type)
 		if (isFunction) functions++
-		for (var key in node) {
+		for (const key in node) {
 		  if (key !== 'range' && key !== 'loc') {
-			var value = node[key]
+			const value = node[key]
 			if (Array.isArray(value)) {
-			  for (var i = 0, l = value.length; i < l; i++) {
+			  for (let i = 0, l = value.length; i < l; i++) {
 				walkAST(value[i], node, paperFeatures)
 			  }
 			} else if (value && typeof value === 'object') {
@@ -30206,12 +30486,12 @@ Base.exports.PaperScript = (function () {
 	}
 
 	function encodeVLQ(value) {
-	  var res = '',
-		base64 =
-		  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+	  let res = ''
+	  const base64 =
+		'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 	  value = (Math.abs(value) << 1) + (value < 0 ? 1 : 0)
 	  while (value || !res) {
-		var next = value & (32 - 1)
+		let next = value & (32 - 1)
 		value >>= 5
 		if (value) next |= 32
 		res += base64[next]
@@ -30219,16 +30499,16 @@ Base.exports.PaperScript = (function () {
 	  return res
 	}
 
-	var url = options.url || '',
-	  sourceMaps = options.sourceMaps,
-	  paperFeatures = options.paperFeatures || {},
-	  source = options.source || code,
-	  offset = options.offset || 0,
-	  agent = paper.agent,
-	  version = agent.versionNumber,
-	  offsetCode = false,
-	  lineBreaks = /\r\n|\n|\r/gm,
-	  map
+	const url = options.url || ''
+	const sourceMaps = options.sourceMaps
+	const paperFeatures = options.paperFeatures || {}
+	const source = options.source || code
+	let offset = options.offset || 0
+	const agent = paper.agent
+	const version = agent.versionNumber
+	let offsetCode = false
+	const lineBreaks = /\r\n|\n|\r/gm
+	let map
 	if (
 	  sourceMaps && (
 		agent.chrome && version >= 30 ||
@@ -30238,8 +30518,8 @@ Base.exports.PaperScript = (function () {
 	  )
 	) {
 	  if (!agent.node && window && url && !window.location.href.indexOf(url)) {
-		var html = document.getElementsByTagName('html')[0].innerHTML,
-		  index = html.indexOf(code)
+		const html = document.getElementsByTagName('html')[0].innerHTML
+		const index = html.indexOf(code)
 		if (index >= 0) {
 		  offset = html.substr(0, index + 1).match(
 			lineBreaks
@@ -30255,7 +30535,7 @@ Base.exports.PaperScript = (function () {
 		  agent.node
 		)
 	  )
-	  var mappings = ['AA' + encodeVLQ(offsetCode ? 0 : offset) + 'A']
+	  const mappings = ['AA' + encodeVLQ(offsetCode ? 0 : offset) + 'A']
 	  mappings.length = (
 		(code.match(lineBreaks) || []).length +
 		1 +
@@ -30275,7 +30555,7 @@ Base.exports.PaperScript = (function () {
 	  paperFeatures.operatorOverloading !== false ||
 	  paperFeatures.moduleExports !== false
 	) {
-	  var ast
+	  let ast
 	  try {
 		ast = parse(code, {
 		  ranges: true,
@@ -30337,31 +30617,33 @@ Base.exports.PaperScript = (function () {
   }
 
   function execute(code, scope, options) {
+	let exports
+
 	paper = scope
-	var view = scope.getView(),
-	  tool =
-		(
-		  new RegExp(
-			'\\btool\\.\\w+|\\s+(?:' +
-			Tool.prototype._events.join('|') +
-			')\\b'
-		  ).test(code) &&
-		  !/\bnew\s+Tool\b/.test(code)
-		)
-		  ? new Tool()
-		  : null,
-	  toolHandlers = tool ? tool._events : [],
-	  handlers = ['onFrame', 'onResize'].concat(
-		toolHandlers,
-		options && options.handlers || []
-	  ),
-	  params = [],
-	  args = [],
-	  func,
-	  compiled = typeof code === 'object' ? code : compile(code, options)
+	const view = scope.getView()
+	const tool =
+	  (
+		new RegExp(
+		  '\\btool\\.\\w+|\\s+(?:' +
+		  Tool.prototype._events.join('|') +
+		  ')\\b'
+		).test(code) &&
+		!/\bnew\s+Tool\b/.test(code)
+	  )
+		? new Tool()
+		: null
+	const toolHandlers = tool ? tool._events : []
+	const handlers = ['onFrame', 'onResize'].concat(
+	  toolHandlers,
+	  options && options.handlers || []
+	)
+	const params = []
+	const args = []
+	let func
+	const compiled = typeof code === 'object' ? code : compile(code, options)
 	code = compiled.code
 	function expose(scope, hidden) {
-	  for (var key in scope) {
+	  for (const key in scope) {
 		if (
 		  (
 			hidden || (
@@ -30380,8 +30662,8 @@ Base.exports.PaperScript = (function () {
 		}
 	  }
 	}
-	var load = options && options.load,
-	  url = options && options.url
+	const load = options && options.load
+	const url = options && options.url
 	function __$import__(specifier, as, attributes) {
 	  if (!load) {
 		throw new Error(
@@ -30391,7 +30673,7 @@ Base.exports.PaperScript = (function () {
 		  'loader was passed to PaperScript.execute().'
 		)
 	  }
-	  var exports = load(specifier, url, attributes)
+	  const exports = load(specifier, url, attributes)
 	  return as === 'dynamic'
 		? Promise.resolve(exports).then(function (exports) {
 			return getImported(exports, 'namespace')
@@ -30400,7 +30682,7 @@ Base.exports.PaperScript = (function () {
 	}
 
 	function getImported(exports, as) {
-	  var isModule = exports && exports.__esModule
+	  const isModule = exports && exports.__esModule
 	  return as === 'default'
 		? isModule
 		  ? exports.default
@@ -30422,7 +30704,7 @@ Base.exports.PaperScript = (function () {
 	)
 	expose(scope)
 	code = 'var module = { exports: {} }; ' + code
-	var exports = Base.each(
+	exports = Base.each(
 	  handlers,
 	  function (key) {
 		if (new RegExp('\\s+' + key + '\\b').test(code)) {
@@ -30436,22 +30718,22 @@ Base.exports.PaperScript = (function () {
 	  code += '\n' + exports
 	}
 	code += '\nreturn module.exports;'
-	var signature = (
-		(compiled.async ? 'async ' : '') +
-		'function(' +
-		params +
-		') {'
-	  ),
-	  agent = paper.agent,
-	  evaluate = options && options.evaluate
+	const signature = (
+	  (compiled.async ? 'async ' : '') +
+	  'function(' +
+	  params +
+	  ') {'
+	)
+	const agent = paper.agent
+	const evaluate = options && options.evaluate
 	if (evaluate) {
 	  func = evaluate('(' + signature + code + '\n})', compiled.url)
 	} else if (
 	  document &&
 	  (agent.chrome || agent.firefox && agent.versionNumber < 40)
 	) {
-	  var script = document.createElement('script'),
-		head = document.head || document.getElementsByTagName('head')[0]
+	  const script = document.createElement('script')
+	  const head = document.head || document.getElementsByTagName('head')[0]
 	  if (agent.firefox) code = '\n' + code
 	  script.appendChild(
 		document.createTextNode(
@@ -30467,9 +30749,9 @@ Base.exports.PaperScript = (function () {
 	}
 
 	function install(exports) {
-	  var obj = exports || {}
+	  const obj = exports || {}
 	  Base.each(toolHandlers, function (key) {
-		var value = obj[key]
+		const value = obj[key]
 		if (value) tool[key] = value
 	  })
 	  if (view) {
@@ -30484,7 +30766,7 @@ Base.exports.PaperScript = (function () {
 	  return exports
 	}
 
-	var exports = func && func.apply(scope, args)
+	exports = func && func.apply(scope, args)
 	return compiled.async ? exports.then(install) : install(exports)
   }
 
@@ -30493,18 +30775,18 @@ Base.exports.PaperScript = (function () {
 	  /^text\/(?:x-|)paperscript$/.test(script.type) &&
 	  PaperScope.getAttribute(script, 'ignore') !== 'true'
 	) {
-	  var canvasId = PaperScope.getAttribute(script, 'canvas'),
-		canvas = document.getElementById(canvasId),
-		src = script.src || script.getAttribute('data-src'),
-		async = PaperScope.hasAttribute(script, 'async'),
-		scopeAttribute = 'data-paper-scope'
+	  const canvasId = PaperScope.getAttribute(script, 'canvas')
+	  const canvas = document.getElementById(canvasId)
+	  const src = script.src || script.getAttribute('data-src')
+	  const async = PaperScope.hasAttribute(script, 'async')
+	  const scopeAttribute = 'data-paper-scope'
 	  if (!canvas)
 		throw new Error(
 		  'Unable to find canvas with id "' +
 		  canvasId +
 		  '"'
 		)
-	  var scope = (
+	  const scope = (
 		PaperScope.get(canvas.getAttribute(scopeAttribute)) ||
 		new PaperScope().setup(canvas)
 	  )
