@@ -1,6 +1,7 @@
 node_modules/
 /dist/*/
 /dist/*.min.js
+/dist/*.map
 /dist/paperjs.zip
 .vitest/
 coverage/

@@ -174,6 +174,9 @@ importers:
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.13.0(supports-color@7.2.0))
+      '@jridgewell/remapping':
+        specifier: ^2.3.5
+        version: 2.3.5
       '@vitest/browser-playwright':
         specifier: ^5.0.5
         version: 5.0.5(playwright@1.64.1)(vite@8.3.4)(vitest@5.0.5)
@@ -225,9 +228,6 @@ importers:
       gulp-json-modifier:
         specifier: ^1.0.0
         version: 1.0.0
-      gulp-prepro:
-        specifier: ^2.4.0
-        version: 2.4.0
       gulp-rename:
         specifier: ^2.0.0
         version: 2.1.0
@@ -237,15 +237,6 @@ importers:
       gulp-symlink:
         specifier: ^2.1.4
         version: 2.1.4
-      gulp-uglify:
-        specifier: ^3.0.2
-        version: 3.0.2
-      gulp-uncomment:
-        specifier: ^0.3.0
-        version: 0.3.0
-      gulp-whitespace:
-        specifier: ^0.1.0
-        version: 0.1.0
       gulp-zip:
         specifier: ^5.1.0
         version: 5.1.0(gulp@3.9.1(supports-color@7.2.0))
@@ -270,6 +261,9 @@ importers:
       mustache:
         specifier: ^4.2.0
         version: 4.2.0
+      oxc-minify:
+        specifier: ^0.156.0
+        version: 0.156.0
       playwright:
         specifier: ^1.64.1
         version: 1.64.1
@@ -494,6 +488,12 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
+  '@jridgewell/gen-mapping@0.3.13':
+    resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
+
+  '@jridgewell/remapping@2.3.5':
+    resolution: {integrity: sha512-LI9u/+laYG4Ds1TDKSJW2YPrIlcVYOwi2fUC6xB43lueCjgxV4lffOCZCtYFiH6TNOX+tQKXx97T4IKHbhyHEQ==}
+
   '@jridgewell/resolve-uri@3.1.2':
     resolution: {integrity: sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==}
     engines: {node: '>=6.0.0'}
@@ -524,6 +524,128 @@ packages:
   '@nodelib/fs.walk@1.2.8':
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
+
+  '@oxc-minify/binding-android-arm-eabi@0.156.0':
+    resolution: {integrity: sha512-MDDSTvy23Dm2oSoKYpOXbMLRHkw0pXX/zMvWQQHX8AcUuovsyo9HE/79rdYgn47Rty8/w0K1SM9/PClgMIA+rw==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    cpu: [arm]
+    os: [android]
+
+  '@oxc-minify/binding-android-arm64@0.156.0':
+    resolution: {integrity: sha512-DefhtqGURlLXZhbeifbrE8W2XD3QZF/GjybSXTncI1iGckNEoohGKxcxciUPkJeTgK0qihDq00boBISOnUPbcw==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    cpu: [arm64]
+    os: [android]
+
+  '@oxc-minify/binding-darwin-arm64@0.156.0':
+    resolution: {integrity: sha512-il9njgJ3BWyn72NndKkdeC0/5EISHirhbeYwZ8+MfixoGpzKYptBFYL51Cu9LJxxSF1A1qb8ZMmeyFdsf7hkUQ==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@oxc-minify/binding-darwin-x64@0.156.0':
+    resolution: {integrity: sha512-+kZP6z80ugYSGpjt6cWdzOZYjrBfCFZJxE2FcXDvnVpg5VEiGbgipxpd2ezdKswhPy2AeaBvR0aI4dY+Ltus8A==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    cpu: [x64]
+    os: [darwin]
+
+  '@oxc-minify/binding-freebsd-x64@0.156.0':
+    resolution: {integrity: sha512-JOSfudugnxUW5tCU6Q4LL9/awm5RkzU+syo3Ucks+PA3Wl/UWpruL6zzw8Cx1l6zlm1xeIiUrlChw398axRKwA==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    cpu: [x64]
+    os: [freebsd]
+
+  '@oxc-minify/binding-linux-arm-gnueabihf@0.156.0':
+    resolution: {integrity: sha512-MxTpeJvPjQJrKC9rKA9flpkfL+JNeKEvCRm/+rBYOxD3JO8JmBLcwV/Xeh00Yn70GP9VAtDEh+0rXzv4MI3g5Q==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    cpu: [arm]
+    os: [linux]
+
+  '@oxc-minify/binding-linux-arm-musleabihf@0.156.0':
+    resolution: {integrity: sha512-nulOmzFKJ4NV/Y08eKEJ/fh5fGSKVdDCVkcTtMHY72HrYzwrNzaWISkvm6ceYDxmS7XupUh/kdT6VEDZGCwcDg==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    cpu: [arm]
+    os: [linux]
+
+  '@oxc-minify/binding-linux-arm64-gnu@0.156.0':
+    resolution: {integrity: sha512-C9OT9pCHWa0QsLxDxaRNzleDu0ysK1C3vKamrdxUou4+00LFo2Jl8YbF82JxewKyomVcHVPmN3ZuICZLSGC52w==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    cpu: [arm64]
+    os: [linux]
+    libc: [glibc]
+
+  '@oxc-minify/binding-linux-arm64-musl@0.156.0':
+    resolution: {integrity: sha512-PAynUOGN1uYGybAWR5wQTd1+v+lBjPlY9VNZXQoGxNERSaNM0LMtuLALToT1c7ARCNrhH8dZuih14DxFb8hX8Q==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    cpu: [arm64]
+    os: [linux]
+    libc: [musl]
+
+  '@oxc-minify/binding-linux-ppc64-gnu@0.156.0':
+    resolution: {integrity: sha512-BgNnLAkmg4KzpKCusd+keynyEzuRRmMClJos/bnmAK0ACaCLVb1YfMbW9U2paPGZGGtDXn9kgS9+oMFOZvgt4w==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    cpu: [ppc64]
+    os: [linux]
+    libc: [glibc]
+
+  '@oxc-minify/binding-linux-riscv64-gnu@0.156.0':
+    resolution: {integrity: sha512-0vAW2ervOeWYwkmiGy8DHvcaUArUuvveGQyNvIsnxibQjOZ95l1wX+nBr0RBNoNS8hg1vt0jKHm4jxfi3B7+XQ==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    cpu: [riscv64]
+    os: [linux]
+    libc: [glibc]
+
+  '@oxc-minify/binding-linux-riscv64-musl@0.156.0':
+    resolution: {integrity: sha512-S5MpRxLuflAHHdUbSj34saDiWSVTZXOdGj5aWvjfBDEQlnE1/zmJqRIyWE4H1bU3nECczK5GVX91uvILqlnGqQ==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    cpu: [riscv64]
+    os: [linux]
+    libc: [musl]
+
+  '@oxc-minify/binding-linux-s390x-gnu@0.156.0':
+    resolution: {integrity: sha512-3MsmRwyp0Xdu7sYZRZpfOSC7gb3SQa/RCUChKmpDafPcHIS1Ma5nMV3Vf9FlNonF3S97Xy1EJqBaE5Bl46ON7Q==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    cpu: [s390x]
+    os: [linux]
+    libc: [glibc]
+
+  '@oxc-minify/binding-linux-x64-gnu@0.156.0':
+    resolution: {integrity: sha512-KmIyqwFbFiWgRCYNzQf+8+sEePvsjV2RCj80JuH2KRnNbc0q3Fr9Gzpgv1wYU08cAmzFa4SMJf8pH7u3Dg4BvA==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    cpu: [x64]
+    os: [linux]
+    libc: [glibc]
+
+  '@oxc-minify/binding-linux-x64-musl@0.156.0':
+    resolution: {integrity: sha512-t7QZsUaRSf3tV6hvDTlxQpvacv/I+BwlF4gZ93CYX6IhDfyc016o5A1A6mqqi7gCOd8Qn7llBXWQlSyxE0TwPw==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    cpu: [x64]
+    os: [linux]
+    libc: [musl]
+
+  '@oxc-minify/binding-openharmony-arm64@0.156.0':
+    resolution: {integrity: sha512-ouqDufVt9oEMV/hx0NPasIjRwxn6SNqOT95xeBrQPag6dbnbBUg67GUT6PyE3F4rOXUzgV7z0yoF0Rpl4LLJpw==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    cpu: [arm64]
+    os: [openharmony]
+
+  '@oxc-minify/binding-win32-arm64-msvc@0.156.0':
+    resolution: {integrity: sha512-UoiPF6PCs8moZtFMH6Nruk5PEjIYyYO3UmZfqBgmW/nbf3t9RhU1c/5E1NMt7aI6ljvkCOLxJp66HYkUM9R18A==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    cpu: [arm64]
+    os: [win32]
+
+  '@oxc-minify/binding-win32-ia32-msvc@0.156.0':
+    resolution: {integrity: sha512-Khf5WVwq1EgpAWQ02Z0oZiKkB4vJnIbBMs7E5HlwVs/AzZ46vCDwpqlI7r46EHvNhyYX6LT4pa8qxYHARHuNfg==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    cpu: [ia32]
+    os: [win32]
+
+  '@oxc-minify/binding-win32-x64-msvc@0.156.0':
+    resolution: {integrity: sha512-pT2fu+diKLEslSwVvJxW1pOD2DXVTNTSjWdGwnYcLerEwJq3vYy3vMQ14fG5dj9MUoCHSWzr15KFgn6RQbsJVw==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    cpu: [x64]
+    os: [win32]
 
   '@oxc-project/types@0.154.0':
     resolution: {integrity: sha512-KYOUGQFlLWR+s4QMV2Q9ko38TZm7EdO87Qm7rvZLqk/webse/cDjtyxKhg/47l0byCbs/k46LT8qc4PKjAikzA==}
@@ -1466,9 +1588,6 @@ packages:
   gulp-json-modifier@1.0.0:
     resolution: {integrity: sha512-hUcGEgJRgQSi/RewSoVA7fgZekcLhpEyUdLet16VBCwxn9IyHoyyrywXJyfyh7c6KinWS8bGuSoMmQjo5SlB/g==}
 
-  gulp-prepro@2.4.0:
-    resolution: {integrity: sha512-05Jbm0fAQtk09pjfYBLomsl0HXO0W0HEOsy6ftMKOHTA36TbcVr7wa1BW93yYnkwkAxCT1elBgRIy9IZgO5rHA==}
-
   gulp-rename@2.1.0:
     resolution: {integrity: sha512-dGuzuH8jQGqCMqC544IEPhs5+O2l+IkdoSZsgd4kY97M1CxQeI3qrmweQBIrxLBbjbe/8uEWK8HHcNBc3OCy4g==}
     engines: {node: '>=4'}
@@ -1481,19 +1600,10 @@ packages:
     resolution: {integrity: sha512-e9p6SGVe+PyTc4OLxxexymrKTYvypuM3LXyKic15d6ch+Yc4ozjXb1oiz592oYnqwf2Y6fct8otGaqbkPFohew==}
     deprecated: Use vinyl-fs.symlink (or gulp.symlink with gulp 4) instead.
 
-  gulp-uglify@3.0.2:
-    resolution: {integrity: sha512-gk1dhB74AkV2kzqPMQBLA3jPoIAPd/nlNzP2XMDSG8XZrqnlCiDGAqC+rZOumzFvB5zOphlFh6yr3lgcAb/OOg==}
-
-  gulp-uncomment@0.3.0:
-    resolution: {integrity: sha512-SfPT+aQnnx9ZWdl1UChh8pF9WOY0PzEOZIi+5AUX7HQZ1FNi/DtDp1u9SFZnv7gkOwEPmNH3HmzHV3IUK4ly0Q==}
-
   gulp-util@3.0.8:
     resolution: {integrity: sha512-q5oWPc12lwSFS9h/4VIjG+1NuNDlJ48ywV2JKItY4Ycc/n1fXJeYPVQsfu5ZrhQi7FGSDBalwUCLar/GyHXKGw==}
     engines: {node: '>=0.10'}
     deprecated: gulp-util is deprecated - replace it, following the guidelines at https://medium.com/gulpjs/gulp-util-ca3b1f9f9ac5
-
-  gulp-whitespace@0.1.0:
-    resolution: {integrity: sha512-iCWZx07xl9bSZxUn0ZsUjPuVgdD9KEgRWqOVYtwkqBC74qfETveBjZFIbF9eNT0QveCVjmRMNEvayzO3FN+a1w==}
 
   gulp-zip@5.1.0:
     resolution: {integrity: sha512-XZr/y91IliK/SpR74g3TkZejGkGEmK7CSDjSghT1jXshgO+dFvpLIz9w9fpuwkew6i7k4F+G24TubNgq1ISzEw==}
@@ -1940,12 +2050,6 @@ packages:
   magicast@0.5.5:
     resolution: {integrity: sha512-UicdXN8zQ3JHlxVq+28afMXPr1z7WNY6+7EJnzTdQWkTAlMLF5fNCCKxJHBQwGaNGR11581EiQmQzx73+MvszA==}
 
-  make-error-cause@1.2.2:
-    resolution: {integrity: sha512-4TO2Y3HkBnis4c0dxhAgD/jprySYLACf7nwN6V0HAHDx59g12WlRpUmFy1bRHamjGUEEBrEvCq6SUpsEE2lhUg==}
-
-  make-error@1.3.6:
-    resolution: {integrity: sha512-s8UhlNe7vPKomQhC1qFelMokr/Sc3AgNbso3n74mVPA5LTZwkB9NlXf4XPamLxJE8h0gh73rM94xvwRT2CVInw==}
-
   make-iterator@1.0.1:
     resolution: {integrity: sha512-pxiuXh0iVEq7VM7KMIhs5gxsfxCux2URptUQaXo4iZZJxBAzTPOLE2BumO5dbfVYq/hBJFBR/a1mFDmOx5AGmw==}
     engines: {node: '>=0.10.0'}
@@ -2103,6 +2207,10 @@ packages:
     resolution: {integrity: sha512-B5JU3cabzk8c67mRRd3ECmROafjYMXbuzlwtqdM8IbS8ktlTix8aFGb2bAGKrSRIlnfKwovGUUr72JUPyOb6kQ==}
     engines: {node: '>=0.10.0'}
 
+  oxc-minify@0.156.0:
+    resolution: {integrity: sha512-RD/gmIMN2MnhE9Tlhs74GsXPdgcSbg2WCNQlqTeBVYvx5HdtAiTqq/SR13ViorYwYXr7ATB8kMZcmox4cZW8vA==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+
   p-limit@3.1.0:
     resolution: {integrity: sha512-TYOanM3wGwNGsZN2cVTYPArw454xnXj5qmWF1bEoAc4+cU/ol7GVh7odevjp1FNHduHc3KZMcFduxU5Xc6uJRQ==}
     engines: {node: '>=10'}
@@ -2214,10 +2322,6 @@ packages:
   prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
-
-  prepro@2.4.0:
-    resolution: {integrity: sha512-VWSrccZbzhvOkoY8uixlmLeuz+g5xRq8g709JO4WC4Wi2Cuz2vUyLnFxwmltUU6sHOeguKljSAwL+uzjo5EMDg==}
-    hasBin: true
 
   prepro@2.5.0:
     resolution: {integrity: sha512-B/P8CRZoL1zKMDQ3FzFA52ai8CHl/8rWR1PyTgRJRrSFLumVqA26j0jzVfF5itu+HWL5MpeBjnU+c0ASjUIPOw==}
@@ -2623,17 +2727,9 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  uglify-js@3.13.1:
-    resolution: {integrity: sha512-EWhx3fHy3M9JbaeTnO+rEqzCe1wtyQClv6q3YWq0voOj4E+bMZBErVS1GAHPDiRGONYq34M1/d8KuQMgvi6Gjw==}
-    engines: {node: '>=0.8.0'}
-    hasBin: true
-
   unc-path-regex@0.1.2:
     resolution: {integrity: sha512-eXL4nmJT7oCpkZsHZUOJo8hcX3GbsiDOa0Qu9F646fi8dT3XuSVopVqAcEiVzSKKH7UoDti23wNX3qGFxcW5Qg==}
     engines: {node: '>=0.10.0'}
-
-  uncomment@0.3.0:
-    resolution: {integrity: sha512-l++RE8/fIiUa+12gNPhu8KgE41WkhC9Y9v1n9pkzZRSgIyFPzTU61rooSheeLpImGX/D5DipK1ccDydgc4DOpw==}
 
   undici@7.30.1:
     resolution: {integrity: sha512-03KrMbjIFDWQR5RNPrSw3bd1r12JpyFQl9/yxjUbJtqkjmllqC5lFjZh6ujeuJCKr8EOQvRW872Oy/az+nLYxg==}
@@ -2676,9 +2772,6 @@ packages:
   vinyl-fs@0.3.14:
     resolution: {integrity: sha512-9CTKjt8378nhdydwFDTwywKio0n8aqq6xA70g0uypcnTNSCow/gQOwv0L9E2GaKd7EQ3kZl/diBxPSCgcBXESw==}
     engines: {node: '>= 0.10'}
-
-  vinyl-sourcemaps-apply@0.2.1:
-    resolution: {integrity: sha512-+oDh3KYZBoZC8hfocrbrxbLUeaYtQK7J5WU5Br9VqWqmCll3tFJqKp97GC9GmMsVIL0qnx2DgEDVxdo5EZ5sSw==}
 
   vinyl@0.4.6:
     resolution: {integrity: sha512-pmza4M5VA15HOImIQYWhoXGlGNafCm0QK5BpBUXkzzEwrRxKqBsbAhTfkT2zMcJhUX1G1Gkid0xaV8WjOl7DsA==}
@@ -2982,6 +3075,16 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
+  '@jridgewell/gen-mapping@0.3.13':
+    dependencies:
+      '@jridgewell/sourcemap-codec': 1.6.0
+      '@jridgewell/trace-mapping': 0.3.31
+
+  '@jridgewell/remapping@2.3.5':
+    dependencies:
+      '@jridgewell/gen-mapping': 0.3.13
+      '@jridgewell/trace-mapping': 0.3.31
+
   '@jridgewell/resolve-uri@3.1.2': {}
 
   '@jridgewell/sourcemap-codec@1.6.0': {}
@@ -3010,6 +3113,63 @@ snapshots:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.20.3
+
+  '@oxc-minify/binding-android-arm-eabi@0.156.0':
+    optional: true
+
+  '@oxc-minify/binding-android-arm64@0.156.0':
+    optional: true
+
+  '@oxc-minify/binding-darwin-arm64@0.156.0':
+    optional: true
+
+  '@oxc-minify/binding-darwin-x64@0.156.0':
+    optional: true
+
+  '@oxc-minify/binding-freebsd-x64@0.156.0':
+    optional: true
+
+  '@oxc-minify/binding-linux-arm-gnueabihf@0.156.0':
+    optional: true
+
+  '@oxc-minify/binding-linux-arm-musleabihf@0.156.0':
+    optional: true
+
+  '@oxc-minify/binding-linux-arm64-gnu@0.156.0':
+    optional: true
+
+  '@oxc-minify/binding-linux-arm64-musl@0.156.0':
+    optional: true
+
+  '@oxc-minify/binding-linux-ppc64-gnu@0.156.0':
+    optional: true
+
+  '@oxc-minify/binding-linux-riscv64-gnu@0.156.0':
+    optional: true
+
+  '@oxc-minify/binding-linux-riscv64-musl@0.156.0':
+    optional: true
+
+  '@oxc-minify/binding-linux-s390x-gnu@0.156.0':
+    optional: true
+
+  '@oxc-minify/binding-linux-x64-gnu@0.156.0':
+    optional: true
+
+  '@oxc-minify/binding-linux-x64-musl@0.156.0':
+    optional: true
+
+  '@oxc-minify/binding-openharmony-arm64@0.156.0':
+    optional: true
+
+  '@oxc-minify/binding-win32-arm64-msvc@0.156.0':
+    optional: true
+
+  '@oxc-minify/binding-win32-ia32-msvc@0.156.0':
+    optional: true
+
+  '@oxc-minify/binding-win32-x64-msvc@0.156.0':
+    optional: true
 
   '@oxc-project/types@0.154.0': {}
 
@@ -3956,11 +4116,6 @@ snapshots:
       plugin-error: 1.0.1
       through2: 3.0.2
 
-  gulp-prepro@2.4.0:
-    dependencies:
-      prepro: 2.4.0
-      through2: 2.0.5
-
   gulp-rename@2.1.0: {}
 
   gulp-shell@0.8.0:
@@ -3978,24 +4133,6 @@ snapshots:
       gulp-util: 3.0.8
       mkdirp: 0.5.6
       through2: 2.0.5
-
-  gulp-uglify@3.0.2:
-    dependencies:
-      array-each: 1.0.1
-      extend-shallow: 3.0.2
-      gulplog: 1.0.0
-      has-gulplog: 0.1.0
-      isobject: 3.0.1
-      make-error-cause: 1.2.2
-      safe-buffer: 5.2.1
-      through2: 2.0.5
-      uglify-js: 3.13.1
-      vinyl-sourcemaps-apply: 0.2.1
-
-  gulp-uncomment@0.3.0:
-    dependencies:
-      through2: 2.0.5
-      uncomment: 0.3.0
 
   gulp-util@3.0.8:
     dependencies:
@@ -4017,10 +4154,6 @@ snapshots:
       replace-ext: 0.0.1
       through2: 2.0.5
       vinyl: 0.5.3
-
-  gulp-whitespace@0.1.0:
-    dependencies:
-      through2: 2.0.5
 
   gulp-zip@5.1.0(gulp@3.9.1(supports-color@7.2.0)):
     dependencies:
@@ -4466,12 +4599,6 @@ snapshots:
       '@babel/types': 7.29.11
       source-map-js: 1.2.2
 
-  make-error-cause@1.2.2:
-    dependencies:
-      make-error: 1.3.6
-
-  make-error@1.3.6: {}
-
   make-iterator@1.0.1:
     dependencies:
       kind-of: 6.0.3
@@ -4646,6 +4773,28 @@ snapshots:
 
   os-homedir@1.0.2: {}
 
+  oxc-minify@0.156.0:
+    optionalDependencies:
+      '@oxc-minify/binding-android-arm-eabi': 0.156.0
+      '@oxc-minify/binding-android-arm64': 0.156.0
+      '@oxc-minify/binding-darwin-arm64': 0.156.0
+      '@oxc-minify/binding-darwin-x64': 0.156.0
+      '@oxc-minify/binding-freebsd-x64': 0.156.0
+      '@oxc-minify/binding-linux-arm-gnueabihf': 0.156.0
+      '@oxc-minify/binding-linux-arm-musleabihf': 0.156.0
+      '@oxc-minify/binding-linux-arm64-gnu': 0.156.0
+      '@oxc-minify/binding-linux-arm64-musl': 0.156.0
+      '@oxc-minify/binding-linux-ppc64-gnu': 0.156.0
+      '@oxc-minify/binding-linux-riscv64-gnu': 0.156.0
+      '@oxc-minify/binding-linux-riscv64-musl': 0.156.0
+      '@oxc-minify/binding-linux-s390x-gnu': 0.156.0
+      '@oxc-minify/binding-linux-x64-gnu': 0.156.0
+      '@oxc-minify/binding-linux-x64-musl': 0.156.0
+      '@oxc-minify/binding-openharmony-arm64': 0.156.0
+      '@oxc-minify/binding-win32-arm64-msvc': 0.156.0
+      '@oxc-minify/binding-win32-ia32-msvc': 0.156.0
+      '@oxc-minify/binding-win32-x64-msvc': 0.156.0
+
   p-limit@3.1.0:
     dependencies:
       yocto-queue: 0.1.0
@@ -4745,10 +4894,6 @@ snapshots:
       tunnel-agent: 0.6.0
 
   prelude-ls@1.2.1: {}
-
-  prepro@2.4.0:
-    dependencies:
-      object-assign: 4.1.1
 
   prepro@2.5.0:
     dependencies:
@@ -5165,11 +5310,7 @@ snapshots:
 
   typescript@5.9.3: {}
 
-  uglify-js@3.13.1: {}
-
   unc-path-regex@0.1.2: {}
-
-  uncomment@0.3.0: {}
 
   undici@7.30.1: {}
 
@@ -5213,10 +5354,6 @@ snapshots:
       strip-bom: 1.0.0
       through2: 0.6.5
       vinyl: 0.4.6
-
-  vinyl-sourcemaps-apply@0.2.1:
-    dependencies:
-      source-map: 0.5.7
 
   vinyl@0.4.6:
     dependencies:
