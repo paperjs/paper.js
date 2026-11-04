@@ -51,6 +51,7 @@ import {
   removeNamed
 } from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
+import type { Project } from '../item/Project.ts'
 import type { SizeLike } from '../basic/Size.ts'
 import type { Style } from '../style/Style.ts'
 import type { SegmentLike } from './Segment.ts'
@@ -144,11 +145,6 @@ export class Path extends PathItem {
   constructor(...segments: SegmentLike[])
   constructor(...args: any[]) {
     super()
-    this._closed = false
-    this._segments = []
-    this._version = 0
-    this._curves = undefined
-    this._segmentSelection = 0
     // arg can either be an object literal containing properties to be set
     // on the path, a list of segments to be set, or the first of multiple
     // arguments describing separate segments.
@@ -171,14 +167,23 @@ export class Path extends PathItem {
         ? args
         : null
     const isPathData = !segments && typeof arg === 'string'
+    // Only pass on arg as props if it isn't consumed for segments or path
+    // data, which go in after #_initializeContent() set up the segments:
+    this._initialize(!segments && !isPathData && arg)
     if (segments && segments.length > 0) {
       this.segments = segments
     } else if (isPathData) {
       this.pathData = arg
     }
-    // Only pass on arg as props if it wasn't consumed for segments or path
-    // data already.
-    this._initialize(!segments && !isPathData && arg)
+  }
+
+  _initializeContent(project: Project) {
+    super._initializeContent(project)
+    this._closed = false
+    this._segments = []
+    this._version = 0
+    this._curves = undefined
+    this._segmentSelection = 0
   }
 
   _equals(item: this): boolean {

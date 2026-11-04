@@ -25,6 +25,7 @@ import type { TextLine } from './TextItem.ts'
 import type { RectangleLike } from '../basic/Rectangle.ts'
 import type { Item } from '../item/Item.ts'
 import type { Style } from '../style/Style.ts'
+import type { Project } from '../item/Project.ts'
 
 // The fields that change the layout, with their defaults:
 const fields = {
@@ -80,7 +81,6 @@ export class AreaText extends TextItem {
   constructor(area: any, orientation?: string) {
     super()
     const hasProps = isPlainObject(area) && area.width === undefined
-    this._children = []
     this._initialize(hasProps && area)
     if (!hasProps) {
       this.textPath =
@@ -94,6 +94,12 @@ export class AreaText extends TextItem {
         this.orientation = orientation
       }
     }
+  }
+
+  _initializeContent(project: Project) {
+    super._initializeContent(project)
+    // The text path, see TextItem#textPath:
+    this._children = []
   }
 
   copyContent(source: this) {

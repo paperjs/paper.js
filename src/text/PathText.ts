@@ -22,6 +22,7 @@ import {
 import type { TextLine } from './TextItem.ts'
 import type { PathItem } from '../path/PathItem.ts'
 import type { Path } from '../path/Path.ts'
+import type { Project } from '../item/Project.ts'
 
 // The fields that change the layout, with their defaults:
 const fields = {
@@ -71,7 +72,6 @@ export class PathText extends TextItem {
   constructor(path: any, orientation?: string) {
     super()
     const hasProps = isPlainObject(path)
-    this._children = []
     this._initialize(hasProps && path)
     if (!hasProps) {
       this.textPath = path
@@ -79,6 +79,12 @@ export class PathText extends TextItem {
         this.orientation = orientation
       }
     }
+  }
+
+  _initializeContent(project: Project) {
+    super._initializeContent(project)
+    // The text path, see TextItem#textPath:
+    this._children = []
   }
 
   copyContent(source: this) {
