@@ -39,8 +39,8 @@ export const testFontFamily = 'Inter Test'
 if (isNodeContext) {
   // Resemble.js needs the Image constructor global:
   globalThis.Image = window.Image
-  const { registerFont } = await import('canvas')
-  registerFont('assets/fonts/Inter-Regular.ttf', { family: testFontFamily })
+  const { GlobalFonts } = await import('@napi-rs/canvas')
+  GlobalFonts.registerFromPath('assets/fonts/Inter-Regular.ttf', testFontFamily)
 } else {
   // Browsers load fonts as they're used, so load it before the tests, and run
   // them also if it fails, so that only the text tests fail:
