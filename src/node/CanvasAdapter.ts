@@ -142,6 +142,24 @@ export class CanvasAdapter implements ICanvasAdapter {
     return backing
   }
 
+  /**
+   * Decodes the image of an image element with @napi-rs/canvas, which draws
+   * nothing until it's done, asynchronously.
+   */
+  decodeImage(image: HTMLImageElement): Promise<void> {
+    return this.#getImage(image[happyDom.PropertySymbol.buffer]).decode()
+  }
+
+  #getImage(buffer: Buffer): Image {
+    let image = this.#images.get(buffer)
+    if (!image) {
+      image = new napiCanvas.Image()
+      image.src = buffer
+      this.#images.set(buffer, image)
+    }
+    return image
+  }
+
   #getSource(image: any): Canvas | Image | null {
     const {
       HTMLImageElement,
@@ -152,17 +170,9 @@ export class CanvasAdapter implements ICanvasAdapter {
       PropertySymbol
     } = happyDom
     if (image instanceof HTMLImageElement) {
-      // Images draw nothing until they've loaded, as in browsers, and until
-      // @napi-rs/canvas has decoded them, which starts with the first draw
-      // and finishes asynchronously:
+      // Images draw nothing until they've loaded, as in browsers:
       const buffer: Buffer = image[PropertySymbol.buffer]
-      let source = buffer && this.#images.get(buffer)
-      if (buffer && !source) {
-        source = new napiCanvas.Image()
-        source.src = buffer
-        this.#images.set(buffer, source)
-      }
-      return source || null
+      return buffer ? this.#getImage(buffer) : null
     } else if (
       image instanceof HTMLCanvasElement ||
       image instanceof OffscreenCanvas ||
