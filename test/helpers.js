@@ -153,7 +153,7 @@ export function equals(actual, expected, message, options) {
     (type === 'undefined' && 'Undefined') ||
     (Array.isArray(expected) && 'Array') ||
     (expected instanceof window.Element && 'Element') ||
-    (cls = expected && expected.className) || // check className 2nd last
+    (cls = expected instanceof Base && expected.className) || // check 2nd last
     (type === 'object' && 'Object')
   ) // Object as catch-all
   const comparator = type && comparators[type]
