@@ -19,6 +19,7 @@ import {
   Segment,
   Size,
   isPlainObject,
+  isRectangle,
   readEllipse,
   readRectangle
 } from '../internal.ts'
@@ -67,9 +68,9 @@ export function defineConstructors(ctor: typeof Path) {
           ? isPlainObject(arg0)
             ? arg0
             : { rectangle: arg0 }
-          : isPoint(arg0)
-            ? { rectangle: new Rectangle(arg0, arg1) }
-            : { rectangle: arg0, radius: arg1 }
+          : isRectangle(arg0)
+            ? { rectangle: arg0, radius: arg1 }
+            : { rectangle: new Rectangle(arg0, arg1) }
       const [rect, props] = readRectangle(object)
       const size = radius && Size.from(radius)
       const bl = rect._getBottomLeft(true)
@@ -541,21 +542,6 @@ function getNamedArguments(args: any[], names: string[]): PathProps {
     : Object.fromEntries(names.map((name, index) => [name, args[index]]))
 }
 
-// Checks whether the value is a point rather than a rectangle:
-function isPoint(value: any): boolean {
-  return (
-    value instanceof Point || (
-      Array.isArray(value)
-        ? value.length === 2
-        : value.x !== undefined && value.width === undefined
-    )
-  )
-}
-
-// Takes the properties that describe the rectangle out of the object of a
-// named form: `rectangle`, or the ones that Rectangle reads from an object,
-// its own and `from` / `to`. Returns the rectangle and the remaining
-// properties, which go to set():
 function createPath(
   segments: Segment[],
   closed: boolean,

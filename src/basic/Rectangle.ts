@@ -1192,6 +1192,19 @@ class RectangleBuilder extends Rectangle {
 }
 
 /**
+ * Tells whether the first of several arguments describes a rectangle, rather
+ * than the point of (point, size) or (from, to): an array of four values, or
+ * an object with both `x` and `width`.
+ *
+ * @private
+ */
+export function isRectangle(value: any): boolean {
+  return Array.isArray(value)
+    ? value.length === 4
+    : value.x !== undefined && value.width !== undefined
+}
+
+/**
  * Reads the rectangle that a named object describes, through its `rectangle`
  * or through any of the rectangle's properties, and returns it with the
  * object's other properties, for set(), as the Path and Shape factories use it.
