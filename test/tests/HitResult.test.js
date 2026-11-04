@@ -12,7 +12,6 @@
 
 import { describe } from 'vitest'
 import paper, {
-  Base,
   Color,
   CompoundPath,
   Group,
@@ -416,7 +415,7 @@ describe('HitResult', () => {
       radius: 50,
       fillColor: 'red'
     })
-    const raster = path.rasterize(72)
+    const raster = path.rasterize({ resolution: 72 })
     path.remove()
 
     testHitResult(
@@ -466,7 +465,7 @@ describe('HitResult', () => {
     // Create a path, rasterize it and then remove the path:
     const path = new Path.Rectangle(new Point(), new Size(320, 240))
     path.fillColor = 'red'
-    const raster = path.rasterize(72)
+    const raster = path.rasterize({ resolution: 72 })
 
     let hitResult = paper.project.hitTest(new Point(160, 120))
 
@@ -572,7 +571,7 @@ describe('HitResult', () => {
       'After translating group, hit-testing path1 for point1 should give us path1.'
     )
 
-    group.moveBelow(path1)
+    group.insertBelow(path1)
 
     hitResult = paper.project.hitTest(point1)
     equals(
@@ -1451,7 +1450,7 @@ describe('HitResult', () => {
     function compare(name, attributes, transform) {
       function create(applyMatrix) {
         const path = new Path(
-          Base.set(
+          Object.assign(
             {
               strokeColor: 'black',
               strokeWidth: 10,

@@ -125,8 +125,8 @@ describe('TextRange', () => {
     text.range(0, 5).style = { fontSize: 30, fillColor: 'red' }
     equals(text.range(0, 5).style.fontSize, 30)
     equals(text.range(0, 5).fillColor, new Color('red'))
-    text.words[1].style = { tracking: 100 }
-    equals(text.words[1].letterTracking, 100, 'by its former name')
+    text.words[1].style = { letterTracking: 100 }
+    equals(text.words[1].letterTracking, 100)
     equals(
       text.style.letterTracking,
       undefined,
@@ -439,20 +439,6 @@ describe('TextRange', () => {
       lineBox(view, 24)[1],
       'automatic: each line by its largest letters',
       { tolerance: 0.01 }
-    )
-  })
-
-  test('leading, as Paper.js had it before: a fixed line height', () => {
-    const text = createText('One\nTwo')
-    equals(text.leading, 14.4, 'the automatic line height, in pixels')
-    text.leading = 18
-    equals(text.lineHeight, '18px', 'a number is fixed')
-    equals(text.bounds.height, 2 * 18, 'two lines', { tolerance: 0.01 })
-    text.style = { leading: 20, tracking: 100 }
-    equals(
-      text.lineHeight + ' ' + text.letterTracking,
-      '20px 100',
-      'set by the former names in style objects'
     )
   })
 

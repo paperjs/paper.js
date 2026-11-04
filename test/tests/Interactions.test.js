@@ -12,7 +12,6 @@
 
 import { describe, expect } from 'vitest'
 import paper, {
-  Base,
   Group,
   Key,
   Layer,
@@ -20,8 +19,7 @@ import paper, {
   Point,
   Project,
   Size,
-  Tool,
-  document
+  Tool
 } from 'paper'
 import {
   equals,
@@ -31,6 +29,8 @@ import {
   triggerKeyEvent,
   triggerMouseEvent
 } from '../helpers.js'
+
+const { document } = paper
 
 /**
  * These tests are focused on user interactions.
@@ -756,8 +756,8 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     // Firefox fires no keypress events for these combinations, simulate it
     // in any browser:
     agent.chrome = false
-    Base.each(['control', 'alt', 'meta'], name => {
-      const modifierKey = Base.capitalize(name),
+    for (const name of ['control', 'alt', 'meta']) {
+      const modifierKey = name[0].toUpperCase() + name.slice(1),
         modifiers = {}
       modifiers[name === 'control' ? 'ctrlKey' : name + 'Key'] = true
       equals(
@@ -775,7 +775,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
         ].join(', '),
         name
       )
-    })
+    }
     agent.chrome = chrome
   })
 

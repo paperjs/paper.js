@@ -14,15 +14,14 @@ import { describe, onTestFinished } from 'vitest'
 import paper, {
   Color,
   PaperScope,
-  PaperScript,
   Path,
   Point,
-  Size,
-  document,
-  window
+  Size
 } from 'paper'
-import * as acornLatest from 'acorn-latest'
+import { PaperScript } from 'paper/paperscript'
 import { equals, isNodeContext, ok, test } from '../helpers.js'
+
+const { document, window } = paper
 
 describe('PaperScript', () => {
   function executeCode(code, expected) {
@@ -60,18 +59,9 @@ describe('PaperScript', () => {
     )
   })
 
-  // Each case: code that exports its results, and the expected exports. The
-  // compiled code has to parse, with both the bundled and a current Acorn:
+  // Each case: code that exports its results, and the expected exports:
   function executeUpdates(cases) {
-    cases.forEach(([code, expected]) => {
-      const compiled = PaperScript.compile(code)
-      try {
-        acornLatest.parse(compiled.code, { ecmaVersion: 'latest' })
-      } catch (err) {
-        ok(false, err + ': ' + compiled.code)
-      }
-      executeCode(code, expected)
-    })
+    cases.forEach(([code, expected]) => executeCode(code, expected))
   }
 
   const updateCases = [
@@ -132,16 +122,13 @@ describe('PaperScript', () => {
 
   test('PaperScript update expressions', () => {
     executeUpdates(updateCases)
-    withAcornLatest(() => {
-      executeUpdates(updateCases)
-      executeUpdates([
-        [
-          'var x = 1, f = () => x++, g = () => ++x;\n' +
-          'module.exports = [f(), g(), x]',
-          [1, 3, 3]
-        ]
-      ])
-    })
+    executeUpdates([
+      [
+        'var x = 1, f = () => x++, g = () => ++x;\n' +
+        'module.exports = [f(), g(), x]',
+        [1, 3, 3]
+      ]
+    ])
   })
 
   test('PaperScript update expressions in minified code', () => {
@@ -366,228 +353,205 @@ describe('PaperScript', () => {
     }
   })
 
-  // Hosts can provide a current Acorn as self.acorn, for the syntax that the
-  // bundled one doesn't parse, such as let, arrow functions and exports:
-  function withAcornLatest(callback) {
-    const global = isNodeContext ? paper.window : window,
-      previous = global.acorn
-    global.acorn = acornLatest
-    try {
-      callback()
-    } finally {
-      global.acorn = previous
-    }
-  }
-
-  test('PaperScript with a current Acorn', () => {
-    withAcornLatest(() => {
-      const exports = PaperScript.execute(
-        'const offset = (point) => point + [1, 1];\n' +
-        'let { x, y } = offset(new Point(1, 2));\n' +
-        'module.exports.result = `${x},${y}`;',
-        paper
-      )
-      equals(exports.result, '2,3')
-    })
+  test('PaperScript with ES2015+ syntax', () => {
+    const exports = PaperScript.execute(
+      'const offset = (point) => point + [1, 1];\n' +
+      'let { x, y } = offset(new Point(1, 2));\n' +
+      'module.exports.result = `${x},${y}`;',
+      paper
+    )
+    equals(exports.result, '2,3')
   })
 
   test('PaperScript exports', () => {
-    withAcornLatest(() => {
-      let exports = PaperScript.execute(
-        'export function multiply(a, b) { return a * b; }\n' +
-        'var a = 1, b = 2;\n' +
-        'export { a, b as c };\n' +
-        'export var point = new Point(1, 2) + 1;',
-        paper
-      )
-      equals(() => exports.multiply(2, 3), 6, 'export function')
-      equals(() => [exports.a, exports.c], [1, 2], 'export { a, b as c }')
-      equals(() => exports.point, new Point(2, 3), 'export var')
-      // Exported variables are local variables too, also several in a row
-      // and from destructuring:
-      exports = PaperScript.execute(
-        'export var a = 1, b = new Point(1, 2) + a;\n' +
-        'export const { x, y: [z] } = { x: -b, y: [a * 2] };',
-        paper
-      )
-      equals(
-        () => [exports.a, exports.b, exports.x, exports.z],
-        [1, new Point(2, 3), new Point(-2, -3), 2],
-        'export var a, b'
-      )
-      // Without semicolons:
-      exports = PaperScript.execute(
-        'export const big = new Point(1, 2) * 2\n' +
-        'export function twice(a) { return a * 2 }',
-        paper
-      )
-      equals(
-        () => [exports.big, exports.twice(2)],
-        [new Point(2, 4), 4],
-        'without semicolons'
-      )
-      // The default export sits next to the named ones:
-      exports = PaperScript.execute(
-        'export default function(a) { return a + 1; }\n' +
-        'export const name = "add";',
-        paper
-      )
-      equals(
-        () => [exports.default(1), exports.name, exports.__esModule],
-        [2, 'add', true],
-        'export default'
-      )
-    })
+    let exports = PaperScript.execute(
+      'export function multiply(a, b) { return a * b; }\n' +
+      'var a = 1, b = 2;\n' +
+      'export { a, b as c };\n' +
+      'export var point = new Point(1, 2) + 1;',
+      paper
+    )
+    equals(() => exports.multiply(2, 3), 6, 'export function')
+    equals(() => [exports.a, exports.c], [1, 2], 'export { a, b as c }')
+    equals(() => exports.point, new Point(2, 3), 'export var')
+    // Exported variables are local variables too, also several in a row
+    // and from destructuring:
+    exports = PaperScript.execute(
+      'export var a = 1, b = new Point(1, 2) + a;\n' +
+      'export const { x, y: [z] } = { x: -b, y: [a * 2] };',
+      paper
+    )
+    equals(
+      () => [exports.a, exports.b, exports.x, exports.z],
+      [1, new Point(2, 3), new Point(-2, -3), 2],
+      'export var a, b'
+    )
+    // Without semicolons:
+    exports = PaperScript.execute(
+      'export const big = new Point(1, 2) * 2\n' +
+      'export function twice(a) { return a * 2 }',
+      paper
+    )
+    equals(
+      () => [exports.big, exports.twice(2)],
+      [new Point(2, 4), 4],
+      'without semicolons'
+    )
+    // The default export sits next to the named ones:
+    exports = PaperScript.execute(
+      'export default function(a) { return a + 1; }\n' +
+      'export const name = "add";',
+      paper
+    )
+    equals(
+      () => [exports.default(1), exports.name, exports.__esModule],
+      [2, 'add', true],
+      'export default'
+    )
   })
 
   test('PaperScript imports', () => {
-    withAcornLatest(() => {
-      const modules = {
-          'default.js': 'export default new Point(1, 2) * 2;',
-          'named.js': (
-            'export const x = 1;\n' +
-            'export function f() { return 2; }'
-          ),
-          'all.js': (
-            'export * from "named.js";\n' +
-            'export * from "default.js";\n' +
-            'export { x as y } from "named.js";'
-          ),
-          // A CommonJS-style module:
-          'common.js': 'module.exports = { a: 1 };'
-        },
-        calls = [],
-        cache = {}
-      // Like a host's loader, run each module once:
-      function load(specifier, url) {
-        calls.push(specifier + ' from ' + url)
-        return (
-          cache[specifier] ||
-          (cache[specifier] = PaperScript.execute(
-            modules[specifier],
-            paper,
-            { url: specifier, load }
-          ))
-        )
-      }
-      const exports = PaperScript.execute(
-        'import point from "default.js";\n' +
-        'import { x, f as g } from "named.js";\n' +
-        'import * as all from "all.js";\n' +
-        'import common from "common.js";\n' +
-        'import * as commonAll from "common.js";\n' +
-        'export const result = [point, x, g(), all.x, all.y,\n' +
-        '    "default" in all, common.a, commonAll.a,\n' +
-        '    commonAll.default === common];',
-        paper,
-        { url: 'main.js', load }
+    const modules = {
+        'default.js': 'export default new Point(1, 2) * 2;',
+        'named.js': (
+          'export const x = 1;\n' +
+          'export function f() { return 2; }'
+        ),
+        'all.js': (
+          'export * from "named.js";\n' +
+          'export * from "default.js";\n' +
+          'export { x as y } from "named.js";'
+        ),
+        // A CommonJS-style module:
+        'common.js': 'module.exports = { a: 1 };'
+      },
+      calls = [],
+      cache = {}
+    // Like a host's loader, run each module once:
+    function load(specifier, url) {
+      calls.push(specifier + ' from ' + url)
+      return (
+        cache[specifier] ||
+        (cache[specifier] = PaperScript.execute(
+          modules[specifier],
+          paper,
+          { url: specifier, load }
+        ))
       )
-      equals(
-        () => exports.result,
-        [new Point(2, 4), 1, 2, 1, 1, false, 1, 1, true]
-      )
-      equals(
-        calls,
-        [
-          'default.js from main.js',
-          'named.js from main.js',
-          'all.js from main.js',
-          'named.js from all.js',
-          'default.js from all.js',
-          'named.js from all.js',
-          'common.js from main.js',
-          'common.js from main.js'
-        ],
-        'specifiers as written, with the importing url'
-      )
-      let message
-      try {
-        PaperScript.execute('import "named.js";', paper)
-      } catch (e) {
-        message = e.message
-      }
-      equals(
-        message,
-        `Unable to import 'named.js': no loader was passed ` +
-        'to PaperScript.execute().'
-      )
-    })
+    }
+    const exports = PaperScript.execute(
+      'import point from "default.js";\n' +
+      'import { x, f as g } from "named.js";\n' +
+      'import * as all from "all.js";\n' +
+      'import common from "common.js";\n' +
+      'import * as commonAll from "common.js";\n' +
+      'export const result = [point, x, g(), all.x, all.y,\n' +
+      '    "default" in all, common.a, commonAll.a,\n' +
+      '    commonAll.default === common];',
+      paper,
+      { url: 'main.js', load }
+    )
+    equals(
+      () => exports.result,
+      [new Point(2, 4), 1, 2, 1, 1, false, 1, 1, true]
+    )
+    equals(
+      calls,
+      [
+        'default.js from main.js',
+        'named.js from main.js',
+        'all.js from main.js',
+        'named.js from all.js',
+        'default.js from all.js',
+        'named.js from all.js',
+        'common.js from main.js',
+        'common.js from main.js'
+      ],
+      'specifiers as written, with the importing url'
+    )
+    let message
+    try {
+      PaperScript.execute('import "named.js";', paper)
+    } catch (e) {
+      message = e.message
+    }
+    equals(
+      message,
+      `Unable to import 'named.js': no loader was passed ` +
+      'to PaperScript.execute().'
+    )
   })
 
   test('PaperScript import attributes', () => {
-    withAcornLatest(() => {
-      const calls = []
-      function load(specifier, url, attributes) {
-        calls.push([specifier, attributes])
-        return { x: 1 }
-      }
-      PaperScript.execute(
-        'import { x } from "a.js" with { type: "paperscript" };\n' +
-        'import b from "b.js" with { "type": "javascript" };\n' +
-        'import "c.js";\n' +
-        'export { x as y } from "d.js" with { type: "paperscript" };\n' +
-        'export * from "e.js" with { type: "paperscript" };\n' +
-        'export * as f from "f.js" with { type: "paperscript" };',
-        paper,
-        { load }
-      )
-      equals(calls, [
-        ['a.js', { type: 'paperscript' }],
-        ['b.js', { type: 'javascript' }],
-        ['c.js', undefined],
-        ['d.js', { type: 'paperscript' }],
-        ['e.js', { type: 'paperscript' }],
-        ['f.js', { type: 'paperscript' }]
-      ])
-    })
+    const calls = []
+    function load(specifier, url, attributes) {
+      calls.push([specifier, attributes])
+      return { x: 1 }
+    }
+    PaperScript.execute(
+      'import { x } from "a.js" with { type: "paperscript" };\n' +
+      'import b from "b.js" with { "type": "javascript" };\n' +
+      'import "c.js";\n' +
+      'export { x as y } from "d.js" with { type: "paperscript" };\n' +
+      'export * from "e.js" with { type: "paperscript" };\n' +
+      'export * as f from "f.js" with { type: "paperscript" };',
+      paper,
+      { load }
+    )
+    equals(calls, [
+      ['a.js', { type: 'paperscript' }],
+      ['b.js', { type: 'javascript' }],
+      ['c.js', undefined],
+      ['d.js', { type: 'paperscript' }],
+      ['e.js', { type: 'paperscript' }],
+      ['f.js', { type: 'paperscript' }]
+    ])
   })
 
   test('PaperScript dynamic import attributes', assert => {
     const done = assert.async()
-    withAcornLatest(() => {
-      const calls = [],
-        order = []
-      function load(specifier, url, attributes) {
-        calls.push([specifier, attributes])
-        return { x: 1 }
-      }
-      // Log the order in which specifier and options are evaluated:
-      paper.log = value => {
-        order.push(value)
-        return value
-      }
-      let exports
-      try {
-        exports = PaperScript.execute(
-          'module.exports.results = [\n' +
-          '    import(log("a.js"), log({ with: { type: "paperscript" } })),\n' +
-          '    import("b.js", {}),\n' +
-          '    import("c.js")\n' +
-          '];',
-          paper,
-          { load }
+    const calls = [],
+      order = []
+    function load(specifier, url, attributes) {
+      calls.push([specifier, attributes])
+      return { x: 1 }
+    }
+    // Log the order in which specifier and options are evaluated:
+    paper.log = value => {
+      order.push(value)
+      return value
+    }
+    let exports
+    try {
+      exports = PaperScript.execute(
+        'module.exports.results = [\n' +
+        '    import(log("a.js"), log({ with: { type: "paperscript" } })),\n' +
+        '    import("b.js", {}),\n' +
+        '    import("c.js")\n' +
+        '];',
+        paper,
+        { load }
+      )
+    } finally {
+      delete paper.log
+    }
+    Promise.all(exports.results)
+      .then(() => {
+        equals(calls, [
+          ['a.js', { type: 'paperscript' }],
+          ['b.js', undefined],
+          ['c.js', undefined]
+        ])
+        equals(
+          order,
+          ['a.js', { with: { type: 'paperscript' } }],
+          'the options are evaluated once, after the specifier'
         )
-      } finally {
-        delete paper.log
-      }
-      Promise.all(exports.results)
-        .then(() => {
-          equals(calls, [
-            ['a.js', { type: 'paperscript' }],
-            ['b.js', undefined],
-            ['c.js', undefined]
-          ])
-          equals(
-            order,
-            ['a.js', { with: { type: 'paperscript' } }],
-            'the options are evaluated once, after the specifier'
-          )
-        })
-        .then(done, error => {
-          ok(false, error + '')
-          done()
-        })
-    })
+      })
+      .then(done, error => {
+        ok(false, error + '')
+        done()
+      })
   })
 
   test('PaperScript compound assignments evaluate their targets once', () => {
@@ -604,17 +568,15 @@ describe('PaperScript', () => {
   })
 
   test('PaperScript exports from destructuring with defaults and rests', () => {
-    withAcornLatest(() => {
-      const exports = PaperScript.execute(
-        'export const { a = 1, ...rest } = { b: 2 };\n' +
-        'export const [x = new Point(1, 2) * 2, ...ys] = [undefined, 4, 5];',
-        paper
-      )
-      equals(
-        () => [exports.a, exports.rest, exports.x, exports.ys],
-        [1, { b: 2 }, new Point(2, 4), [4, 5]]
-      )
-    })
+    const exports = PaperScript.execute(
+      'export const { a = 1, ...rest } = { b: 2 };\n' +
+      'export const [x = new Point(1, 2) * 2, ...ys] = [undefined, 4, 5];',
+      paper
+    )
+    equals(
+      () => [exports.a, exports.rest, exports.x, exports.ys],
+      [1, { b: 2 }, new Point(2, 4), [4, 5]]
+    )
   })
 
   test('PaperScript binary operators', () => {
@@ -902,26 +864,24 @@ describe('PaperScript', () => {
 
   test('PaperScript stack traces have the lines of code that awaits', assert => {
     const done = assert.async()
-    withAcornLatest(() => {
-      PaperScript.execute(
-        'await null;\n// Two\nthrow new Error("failed");',
-        paper,
-        { url: 'file:///scripts/awaits.js' }
-      ).then(
-        () => {
-          ok(false, 'the code should reject')
-          done()
-        },
-        error => {
-          equals(
-            () => /awaits\.js:3:\d+/.test(error.stack),
-            true,
-            error.stack
-          )
-          done()
-        }
-      )
-    })
+    PaperScript.execute(
+      'await null;\n// Two\nthrow new Error("failed");',
+      paper,
+      { url: 'file:///scripts/awaits.js' }
+    ).then(
+      () => {
+        ok(false, 'the code should reject')
+        done()
+      },
+      error => {
+        equals(
+          () => /awaits\.js:3:\d+/.test(error.stack),
+          true,
+          error.stack
+        )
+        done()
+      }
+    )
   })
 
   test('PaperScript.execute() with an evaluator', () => {
@@ -948,123 +908,117 @@ describe('PaperScript', () => {
 
   test('PaperScript dynamic imports', assert => {
     const done = assert.async()
-    withAcornLatest(() => {
-      // Run the modules now, while the current Acorn is lent, as the
-      // imports only call the loader later:
-      const modules = {
-        'shapes.js': PaperScript.execute(
-          'export default "shapes";\n' +
-          'export const size = new Size(2, 3) * 2;',
-          paper
-        ),
-        'common.js': PaperScript.execute(
-          'module.exports = { a: 1 };',
-          paper
+    const modules = {
+      'shapes.js': PaperScript.execute(
+        'export default "shapes";\n' +
+        'export const size = new Size(2, 3) * 2;',
+        paper
+      ),
+      'common.js': PaperScript.execute(
+        'module.exports = { a: 1 };',
+        paper
+      )
+    }
+    // The loader may also return a Promise for dynamic imports:
+    function load(specifier) {
+      return Promise.resolve(modules[specifier])
+    }
+    const exports = PaperScript.execute(
+        'var name = "shapes";\n' +
+        'module.exports.shapes = import(name + ".js");\n' +
+        'module.exports.common = import("common.js");',
+        paper,
+        { load }
+      ),
+      failed = PaperScript.execute(
+        'module.exports.result = import("shapes.js");',
+        paper
+      )
+    Promise.all([exports.shapes, exports.common])
+      .then(results => {
+        equals(
+          () => [results[0].default, results[0].size],
+          ['shapes', new Size(4, 6)],
+          'the namespace of an ES module'
         )
-      }
-      // The loader may also return a Promise for dynamic imports:
-      function load(specifier) {
-        return Promise.resolve(modules[specifier])
-      }
-      const exports = PaperScript.execute(
-          'var name = "shapes";\n' +
-          'module.exports.shapes = import(name + ".js");\n' +
-          'module.exports.common = import("common.js");',
-          paper,
-          { load }
-        ),
-        failed = PaperScript.execute(
-          'module.exports.result = import("shapes.js");',
-          paper
+        equals(
+          () => [results[1].a, results[1].default.a],
+          [1, 1],
+          'the namespace of CommonJS-style exports'
         )
-      Promise.all([exports.shapes, exports.common])
-        .then(results => {
+        return failed.result
+      })
+      .then(
+        () => {
+          ok(false, 'import() without a loader should reject')
+        },
+        error => {
           equals(
-            () => [results[0].default, results[0].size],
-            ['shapes', new Size(4, 6)],
-            'the namespace of an ES module'
+            error.message,
+            `Unable to import 'shapes.js': no loader ` +
+            'was passed to PaperScript.execute().',
+            'import() without a loader rejects'
           )
-          equals(
-            () => [results[1].a, results[1].default.a],
-            [1, 1],
-            'the namespace of CommonJS-style exports'
-          )
-          return failed.result
-        })
-        .then(
-          () => {
-            ok(false, 'import() without a loader should reject')
-          },
-          error => {
-            equals(
-              error.message,
-              `Unable to import 'shapes.js': no loader ` +
-              'was passed to PaperScript.execute().',
-              'import() without a loader rejects'
-            )
-          }
-        )
-        .then(done, error => {
-          ok(false, error + '')
-          done()
-        })
-    })
+        }
+      )
+      .then(done, error => {
+        ok(false, error + '')
+        done()
+      })
   })
 
   test('PaperScript with top-level await', assert => {
     const done = assert.async()
-    withAcornLatest(() => {
-      // The handlers are installed once the code has run:
-      const exports = PaperScript.execute(
-          'var size = await Promise.resolve(new Size(2, 3));\n' +
-          'for await (var factor of [Promise.resolve(2)])\n' +
-          '    size *= factor;\n' +
-          'function onMouseDown() {}\n' +
-          'module.exports.size = size;',
-          paper
-        ),
-        failed = PaperScript.execute(
-          'await Promise.reject(new Error("failed"));',
-          paper
-        ),
-        nested = PaperScript.execute(
-          'async function twice(value) { return await value * 2; }\n' +
-          'module.exports.twice = twice;',
-          paper
-        )
-      equals(
-        () => typeof nested.twice,
-        'function',
-        'await in functions keeps the exports synchronous'
+    // The handlers are installed once the code has run:
+    const exports = PaperScript.execute(
+        'var size = await Promise.resolve(new Size(2, 3));\n' +
+        'for await (var factor of [Promise.resolve(2)])\n' +
+        '    size *= factor;\n' +
+        'function onMouseDown() {}\n' +
+        'module.exports.size = size;',
+        paper
+      ),
+      failed = PaperScript.execute(
+        'await Promise.reject(new Error("failed"));',
+        paper
+      ),
+      nested = PaperScript.execute(
+        'async function twice(value) { return await value * 2; }\n' +
+        'module.exports.twice = twice;',
+        paper
       )
-      exports
-        .then(exports => {
-          equals(exports.size, new Size(4, 6), 'the exports')
-          equals(
-            () => paper.tool.onMouseDown === exports.onMouseDown,
-            true,
-            'the installed handlers'
-          )
-          paper.tool.remove()
-          return failed
-        })
-        .then(
-          () => {
-            ok(false, 'a rejected await should reject')
-          },
-          error => {
-            equals(
-              error.message,
-              'failed',
-              'a rejected await rejects'
-            )
-          }
+    equals(
+      () => typeof nested.twice,
+      'function',
+      'await in functions keeps the exports synchronous'
+    )
+    exports
+      .then(exports => {
+        equals(exports.size, new Size(4, 6), 'the exports')
+        equals(
+          () => paper.tool.onMouseDown === exports.onMouseDown,
+          true,
+          'the installed handlers'
         )
-        .then(done, error => {
-          ok(false, error + '')
-          done()
-        })
-    })
+        paper.tool.remove()
+        return failed
+      })
+      .then(
+        () => {
+          ok(false, 'a rejected await should reject')
+        },
+        error => {
+          equals(
+            error.message,
+            'failed',
+            'a rejected await rejects'
+          )
+        }
+      )
+      .then(done, error => {
+        ok(false, error + '')
+        done()
+      })
   })
 
   test('PaperScope#execute() runs PaperScript in the scope', () => {

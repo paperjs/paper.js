@@ -19,7 +19,8 @@ import paper, {
   Path,
   Point,
   Rectangle,
-  SymbolDefinition
+  SymbolDefinition,
+  registerClasses
 } from 'paper'
 import { equals, test } from '../helpers.js'
 
@@ -100,7 +101,7 @@ describe('Item Drawing', () => {
       const event = events[0]
       equals(event.item === path, true, 'event.item')
       equals(
-        event.context === raster.getContext(),
+        event.context === raster.context,
         true,
         'event.context'
       )
@@ -429,7 +430,8 @@ describe('Item Drawing', () => {
           }
         })
         // A class created after the handler:
-        const Later = Path.extend({ _class: 'LaterPath' })
+        class Later extends Path {}
+        registerClasses({ LaterPath: Later })
         new Later([
           [0, 0],
           [10, 10]

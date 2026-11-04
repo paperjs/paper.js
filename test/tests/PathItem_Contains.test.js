@@ -261,7 +261,7 @@ describe('PathItem Contains', () => {
 
     let size = new Size(100, 200)
     let half = size.divide(2)
-    shape = new Shape.Ellipse(half.negate(), size)
+    shape = new Shape.Ellipse(new Rectangle(half.negate(), size))
     testPoint(shape, new Point(0, 0), true)
     testPoint(shape, new Point(0, -1).multiply(half), true)
     testPoint(

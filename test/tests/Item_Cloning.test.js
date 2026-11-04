@@ -123,7 +123,7 @@ describe('Item Cloning', () => {
       fontSize: 20
     }
     pointText.justification = 'center'
-    pointText.tracking = 100
+    pointText.letterTracking = 100
     cloneAndCompare(pointText)
   })
 
@@ -183,7 +183,7 @@ describe('Item Cloning', () => {
       fillColor: new Color(0, 0, 1),
       strokeColor: new Color(0, 0, 1)
     }
-    const raster = path.rasterize(72)
+    const raster = path.rasterize({ resolution: 72 })
     raster.opacity = 0.5
     raster.locked = true
     raster.visible = false

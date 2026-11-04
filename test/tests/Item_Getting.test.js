@@ -12,7 +12,6 @@
 
 import { describe } from 'vitest'
 import paper, {
-  Base,
   CompoundPath,
   Group,
   Item,
@@ -29,14 +28,6 @@ import { equals, test } from '../helpers.js'
 describe('Getting and Matching Items', () => {
   test('Item#getItems()', () => {
     const group = new Group([new Path({ selected: true }), new Raster()])
-    equals(
-      () =>
-        group.getItems({
-          type: 'path'
-        }).length,
-      1
-    )
-
     equals(
       () =>
         group.getItems({
@@ -87,11 +78,6 @@ describe('Getting and Matching Items', () => {
     const group = new Group()
     matches = paper.project.getItems({
       className: 'Group'
-    })
-    equals(() => matches.length === 1 && matches[0] === group, true)
-
-    matches = paper.project.getItems({
-      type: 'group'
     })
     equals(() => matches.length === 1 && matches[0] === group, true)
 
@@ -177,7 +163,7 @@ describe('Getting and Matching Items', () => {
 
     const items = paper.project.getItems({
       opacity: 1,
-      type: 'path'
+      class: Path
     })
     equals(() => items.length === 1 && items[0] === path, true)
   })
@@ -193,7 +179,7 @@ describe('Getting and Matching Items', () => {
 
     const items = paper.project.getItems({
       fillColor: 'red',
-      type: 'path'
+      class: Path
     })
     equals(() => items.length === 1 && items[0] === path, true)
   })
@@ -411,7 +397,7 @@ describe('Getting and Matching Items', () => {
     }
 
     entries.forEach(entry => {
-      Base.each(transforms, (transform, name) => {
+      for (const [name, transform] of Object.entries(transforms)) {
         const item = entry.create(),
           rect = item.internalBounds,
           path = entry.createPath
@@ -461,7 +447,7 @@ describe('Getting and Matching Items', () => {
               false
             ]
           }
-        Base.each(cases, (values, key) => {
+        for (const [key, values] of Object.entries(cases)) {
           ;[item, path].forEach(target => {
             const message = (
               (item.type || item.className) +
@@ -481,9 +467,9 @@ describe('Getting and Matching Items', () => {
               message + ', inside'
             )
           })
-        })
+        }
         paper.project.activeLayer.removeChildren()
-      })
+      }
     })
   })
 })

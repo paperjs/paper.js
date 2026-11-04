@@ -16,16 +16,17 @@ import { equals, test } from '../helpers.js'
 
 describe('Emitter', () => {
   test('on()', () => {
-    const emitter = new Item()
     let installed
-    // fake event type registration
-    emitter._eventTypes = {
-      mousemove: {
-        install() {
-          installed = true
+    // Fake event type registration, in a class of its own:
+    const emitter = new (class extends Item {
+      static events = {
+        mousemove: {
+          install() {
+            installed = true
+          }
         }
       }
-    }
+    })()
     equals(() => !emitter.responds('mousemove'), true)
 
     emitter.on('mousemove', () => {})
@@ -42,7 +43,6 @@ describe('Emitter', () => {
   })
 
   test('off()', () => {
-    const emitter = new Item()
     let uninstalled
     let called = 0
 
@@ -52,13 +52,15 @@ describe('Emitter', () => {
 
     const handler2 = () => {}
 
-    emitter._eventTypes = {
-      mousemove: {
-        uninstall() {
-          uninstalled = true
+    const emitter = new (class extends Item {
+      static events = {
+        mousemove: {
+          uninstall() {
+            uninstalled = true
+          }
         }
       }
-    }
+    })()
 
     emitter.on('mousemove', handler)
     emitter.on('mousemove', handler2)
@@ -85,17 +87,16 @@ describe('Emitter', () => {
   })
 
   test('emit()', () => {
-    const emitter = new Item()
     let called
 
     const handler = e => {
       called = e
     }
 
-    // fake event type registration
-    emitter._eventTypes = {
-      mousemove: {}
-    }
+    // Fake event type registration, in a class of its own:
+    const emitter = new (class extends Item {
+      static events = { mousemove: {} }
+    })()
     emitter.on('mousemove', handler)
     emitter.on('custom', handler)
 

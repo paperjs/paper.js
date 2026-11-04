@@ -154,9 +154,6 @@ describe('JSON', () => {
     const json = definition.place([100, 100]).exportJSON({ asString: false }),
       props = json[1][1]
     equals('definition' in props && !('symbol' in props), true)
-    // JSON that writes it as symbol, as before, still imports:
-    props.symbol = props.definition
-    delete props.definition
     const item = new Project().importJSON(json)
     equals(item.className, 'SymbolItem')
     equals(item.definition.item.bounds, new Rectangle(-5, -5, 10, 10))
@@ -298,7 +295,7 @@ describe('JSON', () => {
     testExportImportJSON(paper.project)
   })
 
-  test('Color#importJSON()', () => {
+  test('Color#exportJSON()', () => {
     const topLeft = [100, 100]
     const bottomRight = [200, 200]
 
@@ -322,7 +319,6 @@ describe('JSON', () => {
 
     const json = path.fillColor.exportJSON(),
       id = path.fillColor.gradient._id,
-      color = new Color(),
       str = (
         '[["dictionary",{"#' +
         id +
@@ -332,10 +328,6 @@ describe('JSON', () => {
       )
 
     equals(json, str)
-
-    equals(() => color.importJSON(json) === color, true)
-
-    equals(() => color.equals(path.fillColor), true)
   })
 
   test('Path#importJSON()', () => {

@@ -12,25 +12,23 @@
 
 import { describe } from 'vitest'
 import paper, {
-  Base,
   Color,
   CompoundPath,
-  DomEvent,
   Group,
   Path,
   Point,
   Raster,
   Rectangle,
-  Size,
-  document
+  Size
 } from 'paper'
 import {
   comparePixels,
   equals,
-  isNodeContext,
   pushFailure,
   test
 } from '../helpers.js'
+
+const { document } = paper
 
 describe('Raster', () => {
   test('Create a raster without a source and check its size', () => {
@@ -46,7 +44,7 @@ describe('Raster', () => {
 
   test('raster.size keeps the content, scaled to the new size', () => {
     const raster = new Raster({ size: [400, 400], insert: false })
-    const ctx = raster.getContext(true)
+    const ctx = raster._getContext(true)
     ctx.fillStyle = '#ff0000'
     ctx.fillRect(0, 0, 400, 400)
     raster.size = [200, 100]
@@ -91,14 +89,14 @@ describe('Raster', () => {
     const img = document.createElement('img')
     img.src = 'assets/paper-js.gif'
     document.body.appendChild(img)
-    DomEvent.add(img, {
-      load() {
+    Object.assign(img, {
+      onload() {
         const raster = new Raster(img)
         equals(raster.size, new Size(146, 146), true)
         document.body.removeChild(img)
         done()
       },
-      error() {
+      onerror() {
         pushFailure(
           'Loading from a valid data URL should not give an error.'
         )
@@ -113,31 +111,20 @@ describe('Raster', () => {
     equals(raster.size, new Size(30, 20), true)
   })
 
-  if (isNodeContext) {
-    test('Create an SVG canvas', () => {
-      const canvas = paper.createCanvas(30, 20, 'svg')
-      equals(() => canvas.type, 'svg')
-      equals(
-        () => /viewBox="0 0 30 20"/.test(canvas.toBuffer().toString()),
-        true
-      )
-    })
-  }
-
   test('Create a raster from a dom id', assert => {
     const done = assert.async()
     const img = document.createElement('img')
     img.src = 'assets/paper-js.gif'
     img.id = 'testimage'
     document.body.appendChild(img)
-    DomEvent.add(img, {
-      load() {
+    Object.assign(img, {
+      onload() {
         const raster = new Raster('testimage')
         equals(raster.size, new Size(146, 146), true)
         document.body.removeChild(img)
         done()
       },
-      error() {
+      onerror() {
         pushFailure(
           'Loading from a valid data URL should not give an error.'
         )
@@ -186,14 +173,7 @@ describe('Raster', () => {
         // white pixel:
         255, 255, 255, 255
       ]
-      equals(
-        () =>
-          Base.equals(
-            Base.slice(ctx.getImageData(0, 0, 1, 2).data),
-            expected
-          ),
-        true
-      )
+      equals(() => Array.from(ctx.getImageData(0, 0, 1, 2).data), expected)
       done()
     }
   })
@@ -209,7 +189,7 @@ describe('Raster', () => {
       radius: 25,
       fillColor: new Color(1, 0, 0)
     })
-    const raster = paper.project.activeLayer.rasterize(72)
+    const raster = paper.project.activeLayer.rasterize({ resolution: 72 })
     circle.scale(0.8)
     equals(raster.getAverageColor(circle), circle.fillColor, null, {
       tolerance: 1e-3
@@ -232,7 +212,7 @@ describe('Raster', () => {
     })
     const compoundPath = new CompoundPath(path, path2)
     compoundPath.fillColor = new Color(1, 0, 0)
-    const raster = paper.project.activeLayer.rasterize(72)
+    const raster = paper.project.activeLayer.rasterize({ resolution: 72 })
     path.scale(0.8)
     path2.scale(1.2)
     equals(raster.getAverageColor(compoundPath), new Color(1, 0, 0), null, {
@@ -344,7 +324,7 @@ describe('Raster', () => {
 
     function createRaster() {
       const raster = new Raster({ size: [50, 50], position: [50, 50] }),
-        ctx = raster.getContext(true)
+        ctx = raster._getContext(true)
       ctx.fillStyle = 'green'
       ctx.fillRect(0, 0, 50, 50)
       return raster
@@ -408,7 +388,7 @@ describe('Raster', () => {
   // A raster of 10 × 10 pixels, red on its left half and blue on its right:
   function createHalves() {
     const raster = new Raster({ size: [10, 10], position: [5, 5] })
-    const ctx = raster.getContext(true)
+    const ctx = raster._getContext(true)
     ctx.fillStyle = 'red'
     ctx.fillRect(0, 0, 5, 10)
     ctx.fillStyle = 'blue'

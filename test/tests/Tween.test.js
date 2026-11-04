@@ -11,7 +11,7 @@
  */
 
 import { describe } from 'vitest'
-import { Base, Path, Point, Project, Tween } from 'paper'
+import { Path, Point, Project, Tween } from 'paper'
 import { equals, test } from '../helpers.js'
 
 describe('Tween', () => {
@@ -23,7 +23,7 @@ describe('Tween', () => {
     // them at time 0:
     const positions = []
     for (let i = 0; i <= 4; i++) {
-      view.emit('frame', new Base({ delta: i ? 0.25 : 0, time: i * 0.25 }))
+      view.emit('frame', { delta: i ? 0.25 : 0, time: i * 0.25 })
       positions.push(path.position.x)
     }
     equals(positions, [0, 25, 50, 75, 100])
@@ -74,7 +74,7 @@ describe('Tween', () => {
       easeOutCirc: [0, 0.6614378, 0.8660254, 0.9682458, 1],
       easeInOutCirc: [0, 0.0669873, 0.5, 0.9330127, 1]
     }
-    Base.each(expected, (values, type) => {
+    for (const [type, values] of Object.entries(expected)) {
       const easing = Tween.easings[type]
       for (let i = 0; i < values.length; i++) {
         const t = i / 4
@@ -82,7 +82,7 @@ describe('Tween', () => {
           tolerance: 1e-6
         })
       }
-    })
+    }
   })
 
   test('Tween with easing type easeInOutSine', () => {
@@ -115,7 +115,7 @@ describe('Tween', () => {
       easeOutQuint: [0, 0.7626953125, 0.96875, 0.9990234375, 1],
       easeInOutQuint: [0, 0.015625, 0.5, 0.984375, 1]
     }
-    Base.each(expected, (values, type) => {
+    for (const [type, values] of Object.entries(expected)) {
       const easing = Tween.easings[type]
       for (let i = 0; i < values.length; i++) {
         const t = i / 4
@@ -123,7 +123,7 @@ describe('Tween', () => {
           tolerance: 1e-9
         })
       }
-    })
+    }
   })
 
   test('Tween with an easing function', () => {
@@ -199,7 +199,7 @@ describe('Tween', () => {
     let time = 0
     for (let i = 0; i < 10 && tween.running; i++) {
       const delta = i ? 0.25 : 0
-      view.emit('frame', new Base({ delta, time: (time += delta), count: i }))
+      view.emit('frame', { delta, time: (time += delta), count: i })
     }
     equals(tween.running, false)
     equals(path.position, new Point(100, 0))

@@ -13,8 +13,6 @@
 import { describe } from 'vitest'
 import paper, {
   AreaText,
-  Base,
-  CanvasProvider,
   Color,
   CompoundPath,
   Group,
@@ -29,9 +27,10 @@ import paper, {
   Rectangle,
   Shape,
   Size,
-  SymbolDefinition,
-  window
+  SymbolDefinition
 } from 'paper'
+// The canvas pool is internal, so it's imported from its module:
+import * as CanvasProvider from '../../src/canvas/canvasProvider.ts'
 import {
   compareSVG,
   createSVG,
@@ -39,6 +38,8 @@ import {
   isNodeContext,
   test
 } from '../helpers.js'
+
+const { window } = paper
 
 describe('SvgExport', () => {
   test('Export SVG line', () => {
@@ -419,16 +420,11 @@ describe('SvgExport', () => {
     // and without the nested clip item, as on the canvas:
     equals(
       () =>
-        Base.each(
+        Array.from(
           nodes,
-          function (node) {
-            this.push(
-              node.nodeName.toLowerCase() +
-              ':' +
-              node.getAttribute('transform')
-            )
-          },
-          []
+          node => (
+            node.nodeName.toLowerCase() + ':' + node.getAttribute('transform')
+          )
         ),
       ['path:null', 'path:null']
     )
@@ -474,28 +470,16 @@ describe('SvgExport', () => {
       const svg = paper.project.exportSVG(options),
         uses = svg.querySelectorAll('use')
       return {
-        definitions: Base.each(
+        definitions: Array.from(
           svg.querySelector('defs').childNodes,
-          function (node) {
-            this.push(node.getAttribute('id'))
-          },
-          []
+          node => node.getAttribute('id')
         ),
         clipPath: svg
           .querySelector('g[clip-path]')
           .getAttribute('clip-path'),
         fill: svg.querySelector('#circle').getAttribute('fill'),
-        uses: Base.each(
-          uses,
-          function (node) {
-            this.push(
-              node.getAttributeNS(
-                'http://www.w3.org/1999/xlink',
-                'href'
-              )
-            )
-          },
-          []
+        uses: Array.from(uses, node =>
+          node.getAttributeNS('http://www.w3.org/1999/xlink', 'href')
         )
       }
     }
@@ -521,18 +505,12 @@ describe('SvgExport', () => {
 
   test('Export SVG multi-line text (#988)', () => {
     function getLines(text) {
-      return Base.each(
-        text.exportSVG().childNodes,
-        function (node) {
-          this.push([
-            node.nodeName.toLowerCase(),
-            node.getAttribute('x'),
-            node.getAttribute('y'),
-            node.textContent
-          ])
-        },
-        []
-      )
+      return Array.from(text.exportSVG().childNodes, node => [
+        node.nodeName.toLowerCase(),
+        node.getAttribute('x'),
+        node.getAttribute('y'),
+        node.textContent
+      ])
     }
 
     // Each line is placed at the leading's distance below the previous one,
@@ -547,7 +525,7 @@ describe('SvgExport', () => {
       ['tspan', '10', '32', ''],
       ['tspan', '10', '44', 'Three']
     ])
-    text.leading = 15
+    text.lineHeight = '15px'
     equals(getLines(text), [
       ['tspan', '10', '20', 'One'],
       ['tspan', '10', '35', ''],
@@ -596,7 +574,7 @@ describe('SvgExport', () => {
     })
     // Tracking is in thousandths of an em:
     equals(text.exportSVG().getAttribute('letter-spacing'), '0')
-    text.tracking = 100
+    text.letterTracking = 100
     equals(text.exportSVG().getAttribute('letter-spacing'), '0.1em')
   })
 
@@ -765,20 +743,6 @@ describe('SvgExport', () => {
     equals(shapes.getAttributeNS(ns, 'label'), 'Shapes', 'with its label')
     equals(other.getAttributeNS(ns, 'groupmode'), 'layer', 'second layer')
     equals(other.hasAttributeNS(ns, 'label'), false, 'without a label')
-  })
-
-  test('Export SVG with the deprecated onExport callback', () => {
-    const path = new Path.Circle({ center: [50, 50], radius: 10 })
-    path.data.className = 'dot'
-    const options = {
-      onExport(item, node, opts) {
-        node.setAttribute('class', item.data.className)
-        node.setAttribute('data-options', opts === options)
-      }
-    }
-    const node = path.exportSVG(options)
-    equals(node.getAttribute('class'), 'dot')
-    equals(node.getAttribute('data-options'), 'true', 'with the options')
   })
 
   if (!isNodeContext) {
@@ -1059,7 +1023,7 @@ describe('SvgExport', () => {
         content: 'Paper.js\n\nSVG text',
         fontFamily: 'sans-serif',
         fontSize: 20,
-        leading: 30,
+        lineHeight: '30px',
         fillColor: 'black'
       })
       text.rotate(30)
@@ -1087,13 +1051,7 @@ describe('SvgExport', () => {
     let node = paper.project.exportSVG()
     const filter = node.querySelector('filter')
 
-    const primitives = Base.each(
-      filter.childNodes,
-      function (child) {
-        this.push(child.nodeName)
-      },
-      []
-    )
+    const primitives = Array.from(filter.childNodes, child => child.nodeName)
 
     function get(selector, name) {
       return filter.querySelector(selector).getAttribute(name)
@@ -1399,17 +1357,11 @@ describe('SvgExport', () => {
 
   test('Export SVG text with mixed styles', () => {
     function getSpans(node) {
-      return Base.each(
-        node.childNodes,
-        function (child) {
-          this.push([
-            child.textContent,
-            child.getAttribute('font-size'),
-            child.getAttribute('text-anchor')
-          ])
-        },
-        []
-      )
+      return Array.from(node.childNodes, child => [
+        child.textContent,
+        child.getAttribute('font-size'),
+        child.getAttribute('text-anchor')
+      ])
     }
 
     const text = new PointText({
@@ -1444,26 +1396,20 @@ describe('SvgExport', () => {
       lines = text.lines
     equals(node.childNodes.length, lines.length, 'a <tspan> per line')
     equals(
-      Base.each(
-        node.childNodes,
-        function (child, i) {
-          const isClose = (value, expected) => (
-            Math.abs(+value - expected) < 0.001
+      Array.from(node.childNodes, (child, i) => {
+        const isClose = (value, expected) => Math.abs(+value - expected) < 0.001
+        return (
+          isClose(
+            child.getAttribute('y'),
+            lines[i].baseline.point.y
+          ) &&
+          child.getAttribute('text-anchor') === 'start' &&
+          isClose(
+            child.firstChild.getAttribute('x'),
+            lines[i].bounds.left
           )
-          this.push(
-            isClose(
-              child.getAttribute('y'),
-              lines[i].baseline.point.y
-            ) &&
-            child.getAttribute('text-anchor') === 'start' &&
-            isClose(
-              child.firstChild.getAttribute('x'),
-              lines[i].bounds.left
-            )
-          )
-        },
-        []
-      ).every(placed => placed),
+        )
+      }).every(placed => placed),
       true,
       'each at its baseline, its pieces where they start'
     )

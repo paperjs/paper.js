@@ -180,7 +180,7 @@ export function checkOutline(paper, path) {
   let error = 0
   let far = 0
   let near = 0
-  for (const curve of outline.getCurves()) {
+  for (const curve of outline.curves) {
     for (let i = 0; i <= 16; i++) {
       const point = curve.getPointAtTime(i / 16)
       const location = point && path.getNearestLocation(point)
@@ -468,7 +468,7 @@ export function checkProfileOutline(paper, path) {
     }
     return lo
   }
-  for (const curve of outline.getCurves()) {
+  for (const curve of outline.curves) {
     for (let i = 0; i <= 16; i++) {
       const point = curve.getPointAtTime(i / 16)
       // Start with the pen nearest to the previous point, as the outline

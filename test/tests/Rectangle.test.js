@@ -11,7 +11,7 @@
  */
 
 import { describe } from 'vitest'
-import { Base, Path, Point, Rectangle, Size } from 'paper'
+import { Path, Point, Rectangle, Size } from 'paper'
 import { equals, test } from '../helpers.js'
 
 describe('Rectangle', () => {
@@ -156,7 +156,7 @@ describe('Rectangle', () => {
       center: [[70, 20], [20, -30, 100, 100]],
       point: [[10, 20], [10, 20, 100, 100]]
     }
-    Base.each(expected, (entry, key) => {
+    for (const [key, entry] of Object.entries(expected)) {
       const rect = new Rectangle(0, 0, 100, 100)
       rect[key] = entry[0]
       equals(rect, new Rectangle(entry[1]), 'rect.' + key)
@@ -164,7 +164,7 @@ describe('Rectangle', () => {
       const path = new Path.Rectangle(new Rectangle(0, 0, 100, 100))
       path.bounds[key] = entry[0]
       equals(path.bounds, new Rectangle(entry[1]), 'path.bounds.' + key)
-    })
+    }
     // Repeated and mixed setters keep going from the current rectangle:
     const rect = new Rectangle(0, 0, 100, 100)
     rect.left = 10
