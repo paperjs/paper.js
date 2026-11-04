@@ -2266,11 +2266,8 @@ export class Item extends Emitter {
       // Path#_hitTestSelf() returns a list of all its hits when we're
       // collecting them, see hitTestAll():
       if (Array.isArray(hit)) {
-        let first = null
-        for (const entry of hit) {
-          first ||= filter(entry)
-        }
-        return first
+        // Filter every hit, and return the first one that passes:
+        return hit.map(filter).find(result => result) ?? null
       }
       let result = hit
       if (result && match && !match(result)) {
