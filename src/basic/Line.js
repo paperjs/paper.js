@@ -201,7 +201,7 @@ const Line = Base.extend(
           // on which side of the finite line the point lies. Calculate
           // the 'u' value of the point on the line, and use it for ccw:
           // u = v2.dot(v1) / v1.dot(v1)
-          ccw = (v2x * vx + v2x * vx) / (vx * vx + vy * vy)
+          ccw = (v2x * vx + v2y * vy) / (vx * vx + vy * vy)
           // If the 'u' value is within the line range, set ccw to 0,
           // otherwise its already correct sign is all we need.
           if (ccw >= 0 && ccw <= 1) ccw = 0
