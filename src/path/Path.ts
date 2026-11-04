@@ -1829,27 +1829,28 @@ export class Path extends PathItem {
       isCollinear(1, 3) &&
       isOrthogonal(1)
     ) {
+      // From the top left, as Path.Rectangle() creates it:
       type = Shape.Rectangle
-      size = new Size(getDistance(0, 3), getDistance(0, 1))
-      topCenter = segments[1]._point.add(segments[2]._point).divide(2)
+      size = new Size(getDistance(0, 1), getDistance(0, 3))
+      topCenter = segments[0]._point.add(segments[1]._point).divide(2)
     } else if (
       segments.length === 8 &&
-      isArc(0) &&
-      isArc(2) &&
-      isArc(4) &&
-      isArc(6) &&
-      isCollinear(1, 5) &&
-      isCollinear(3, 7)
+      isArc(1) &&
+      isArc(3) &&
+      isArc(5) &&
+      isArc(7) &&
+      isCollinear(0, 4) &&
+      isCollinear(2, 6)
     ) {
-      // It's a rounded rectangle.
+      // It's a rounded rectangle, from the start of its top side.
       type = Shape.Rectangle
-      size = new Size(getDistance(1, 6), getDistance(0, 3))
+      size = new Size(getDistance(7, 2), getDistance(0, 5))
       // Subtract side lengths from total width and divide by 2 to get the
       // corner radius size.
       radius = size
-        .subtract(new Size(getDistance(0, 7), getDistance(1, 2)))
+        .subtract(new Size(getDistance(0, 1), getDistance(2, 3)))
         .divide(2)
-      topCenter = segments[3]._point.add(segments[4]._point).divide(2)
+      topCenter = segments[0]._point.add(segments[1]._point).divide(2)
     } else if (
       segments.length === 4 &&
       isArc(0) &&
@@ -1866,7 +1867,8 @@ export class Path extends PathItem {
         type = Shape.Ellipse
         radius = new Size(getDistance(2, 0) / 2, getDistance(3, 1) / 2)
       }
-      topCenter = segments[1]._point
+      // From the right, as Path.Ellipse() creates it, so the top is the last:
+      topCenter = segments[3]._point
     }
 
     if (type) {

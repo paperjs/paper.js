@@ -416,7 +416,7 @@ describe('Effect', () => {
     const path = createSquare()
     path.addEffect({ type: 'offset', parameters: { distance: 10 } })
     const svg = path.exportSVG({ asString: true })
-    equals(svg.includes('d="M10,10h60v60h-60z"'), true)
+    equals(svg.includes('d="M70,10v60h-60v-60z"'), true)
   })
 
   test('Hosts can replace the effects of Paper.js', () => {

@@ -108,9 +108,10 @@ describe('PathItem Contains', () => {
 
   test('Path#contains() (open circle)', () => {
     const path = new Path.Circle([100, 100], 100)
+    // Open between its top and right, filled up to the chord between them:
     path.closed = false
     path.fillColor = '#ff0000'
-    testPoint(path, new Point(40, 160), false)
+    testPoint(path, new Point(160, 40), false)
   })
 
   test('CompoundPath#contains() (donut)', () => {

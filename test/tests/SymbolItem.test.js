@@ -412,7 +412,7 @@ describe('Symbol & Placed Symbol', () => {
     equals(embedded.bounds, bounds)
     // The matrix combines the symbol item's with the definition's:
     equals(embedded.matrix, group.matrix.prepended(placed.matrix))
-    equals(embedded.firstChild.segments[0].point, new Point(0, 10))
+    equals(embedded.firstChild.segments[3].point, new Point(0, 10))
   })
 
   test('SymbolItem#embed() keeps the attributes', () => {
