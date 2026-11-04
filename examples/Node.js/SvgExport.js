@@ -1,52 +1,49 @@
-// Please note: When loading paper as a normal module installed in node_modules,
-// you would use this instead:
-// var paper = require('paper-jsdom-canvas');
-var paper = require('../../dist/paper-core.js');
-var path = require('path');
-var fs = require('fs');
+// paper/node needs the optional peers happy-dom and @napi-rs/canvas installed.
+import { writeFile } from 'node:fs/promises'
+import path from 'node:path'
+import paper from 'paper/node'
 
-with (paper) {
-    paper.setup(new Size(300, 600));
-    var stops = [new Color(1, 1, 0, 0), 'red', 'black'];
+const { Color, Path, Point, Size } = paper
 
-    var radius = view.bounds.width * 0.4,
-        from = new Point(view.center.x),
-        to = from.add(radius, 0);
+paper.setup(new Size(300, 600))
+const { project, view } = paper
+const stops = [new Color(1, 1, 0, 0), 'red', 'black']
 
-    var circle = new Path.Circle({
-        center: from,
-        radius: radius,
-        fillColor: {
-            stops: stops,
-            radial: true,
-            origin: from,
-            destination: to
-        },
-        strokeColor: 'black'
-    });
+const radius = view.bounds.width * 0.4
+let from = new Point(view.center.x)
+let to = from.add(radius, 0)
 
-    var from = view.bounds.leftCenter,
-        to = view.bounds.bottomRight;
+const circle = new Path.Circle({
+  center: from,
+  radius,
+  fillColor: {
+    stops,
+    radial: true,
+    origin: from,
+    destination: to
+  },
+  strokeColor: 'black'
+})
 
-    var rect = new Path.Rectangle({
-        from: from,
-        to: to,
-        fillColor: {
-            stops: stops,
-            radial: false,
-            origin: from,
-            destination: to
-        },
-        strokeColor: 'black'
-    });
+from = view.bounds.leftCenter
+to = view.bounds.bottomRight
 
-    rect.rotate(45).scale(0.7);
+const rect = new Path.Rectangle({
+  from,
+  to,
+  fillColor: {
+    stops,
+    radial: false,
+    origin: from,
+    destination: to
+  },
+  strokeColor: 'black'
+})
 
-    var svg = project.exportSVG({ asString: true });
-    console.log(svg);
+rect.rotate(45).scale(0.7)
 
-    fs.writeFile(path.resolve('./out.svg'), svg, function (err) {
-        if (err) throw err;
-        console.log('Saved!');
-    });
-}
+const svg = project.exportSVG({ asString: true })
+console.log(svg)
+
+await writeFile(path.resolve('./out.svg'), svg)
+console.log('Saved!')

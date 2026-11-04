@@ -16,8 +16,8 @@ var headSymbol = new SymbolDefinition(head);
 
 var size = view.size;
 
-var Boid = Base.extend({
-	initialize: function(position, maxSpeed, maxForce) {
+class Boid {
+	constructor(position, maxSpeed, maxForce) {
 		var strength = Math.random() * 0.5;
 		this.acc = new Point(0, 0);
 		this.vel = Point.random() * 2 - 1;
@@ -38,9 +38,9 @@ var Boid = Base.extend({
 		this.firstSegment = this.path.segments[0];
 		this.count = 0;
 		this.lastRot = 0;
-	},
+	}
 
-	run: function(boids) {
+	run(boids) {
 		this.lastLoc = this.loc.clone();
 		if (!groupTogether) {
 			this.flock(boids);
@@ -75,17 +75,17 @@ var Boid = Base.extend({
 		var shortSegments = this.shortPath.segments;
 		for (var i = 0; i < 3; i++)
 			shortSegments[i] = segments[i].clone();
-	},
+	}
 
 	// We accumulate a new acceleration each time based on three rules
-	flock: function(boids) {
+	flock(boids) {
 		var sep = this.separate(boids) * 3;
 		var ali = this.align(boids);
 		var coh = this.cohesion(boids);
 		this.acc += sep + ali + coh;
-	},
+	}
 
-	update: function() {
+	update() {
 		// Update velocity
 		this.vel += this.acc;
 		// Limit speed (vector#limit?)
@@ -93,20 +93,20 @@ var Boid = Base.extend({
 		this.loc += this.vel;
 		// Reset acceleration to 0 each cycle
 		this.acc.length = 0;
-	},
+	}
 
-	seek: function(target) {
+	seek(target) {
 		this.acc += this.steer(target, false);
-	},
+	}
 
-	arrive: function(target) {
+	arrive(target) {
 		this.acc += this.steer(target, true);
-	},
+	}
 
 	// A method that calculates a steering vector towards a target
 	// Takes a second argument, if true, it slows down as it approaches
 	// the target
-	steer: function(target, slowdown) {
+	steer(target, slowdown) {
 		var steer,
 			desired = target - this.loc,
 			d = desired.length;
@@ -125,9 +125,9 @@ var Boid = Base.extend({
 			steer = new Point(0, 0);
 		}
 		return steer;
-	},
+	}
 
-	borders: function() {
+	borders() {
 		var loc = this.loc;
 		var r = this.r;
 		var oldLoc = this.loc.clone();
@@ -140,9 +140,9 @@ var Boid = Base.extend({
 		var vector = this.loc - oldLoc;
 		if (!vector.isZero())
 			this.path.position += vector;
-	},
+	}
 
-	separate: function(boids) {
+	separate(boids) {
 		var desiredSeperation = 60;
 		var steer = new Point(0, 0);
 		var count = 0;
@@ -167,11 +167,11 @@ var Boid = Base.extend({
 			steer.length = Math.min(steer.length, this.maxForce);
 		}
 		return steer;
-	},
+	}
 
 	// Alignment
 	// For every nearby boid in the system, calculate the average velocity
-	align: function(boids) {
+	align(boids) {
 		var neighborDist = 25;
 		var steer = new Point(0, 0);
 		var count = 0;
@@ -199,12 +199,12 @@ var Boid = Base.extend({
 			steer.length = Math.min(steer.length, this.maxForce);
 		}
 		return steer;
-	},
+	}
 
 	// Cohesion
 	// For the average location (i.e. center) of all nearby boids,
 	// calculate steering vector towards that location
-	cohesion: function(boids) {
+	cohesion(boids) {
 		var neighborDist = 100;
 		var sum = new Point(0, 0);
 		var count = 0;
@@ -223,7 +223,7 @@ var Boid = Base.extend({
 		}
 		return sum;
 	}
-});
+}
 
 var heartPath = new Path([
 	[[514.6962890625, 624.703125], [7.0966796875, -26.3369140625], [-7.10205078125, -27.0244140625]],
