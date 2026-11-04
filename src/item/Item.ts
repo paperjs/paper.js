@@ -5851,7 +5851,10 @@ export interface Item {
    * @return the newly created Paper.js item containing the converted
    *     SVG content
    */
-  importSVG(svg: SVGElement | string, options?: Record<string, any>): Item
+  importSVG(
+    svg: SVGElement | string,
+    options?: Record<string, any>
+  ): Item | null
   /**
    * Imports the provided external SVG file, converts it into Paper.js items
    * and adds them to the this item's children list. Note that the item is not
@@ -5868,7 +5871,7 @@ export interface Item {
   importSVG(
     svg: SVGElement | string,
     onLoad: (item: Item, svg: string) => void
-  ): Item
+  ): Item | null
 
   // Implemented by the subclasses that draw content and selections:
   _draw(

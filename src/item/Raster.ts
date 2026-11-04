@@ -460,7 +460,7 @@ export class Raster extends Item {
    */
   get source(): string {
     const image = this._image
-    return image && image.src || this.toDataURL()
+    return image && 'src' in image && image.src || this.toDataURL()
   }
 
   set source(source: string) {

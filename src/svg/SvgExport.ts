@@ -169,7 +169,7 @@ function exportRaster(item: Raster, options: Options): SVGElement {
   const attrs = getTransform(item._matrix, true)
   const { size, image } = item
   const href = (
-    options.embedImages == false && image && image.src ||
+    options.embedImages == false && image && 'src' in image && image.src ||
     item.toDataURL()
   )
   // Take into account that rasters are centered:
