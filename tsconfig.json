@@ -10,12 +10,16 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "skipLibCheck": true,
+    "resolveJsonModule": true,
     "strict": false
   },
   // The ported files, until all of src is:
   "files": [
     "src/constants.ts",
     "src/core/Base.ts",
+    "src/core/Emitter.ts",
+    "src/core/PaperScope.ts",
+    "src/core/PaperScopeItem.ts",
     "src/core/serialization.ts",
     "src/util/collisions.ts",
     "src/util/Formatter.ts",
