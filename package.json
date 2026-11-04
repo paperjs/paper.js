@@ -50,7 +50,6 @@
     "zip": "gulp zip",
     "docs": "gulp docs",
     "publish": "gulp publish",
-    "load": "gulp load",
     "eslint": "eslint src test '*.mjs'",
     "test": "vitest run --project node --project browser",
     "test:browser": "vitest run --project browser",
