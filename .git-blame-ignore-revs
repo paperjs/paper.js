@@ -3,3 +3,6 @@
 
 # Format the sources with Prettier and Penere
 036100be2fc479dbe2c0a473be0266405f382354
+
+# Use const and let instead of var in the sources
+d02a79544d9d8826f1dfb9507316060968c5fcc1
