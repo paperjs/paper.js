@@ -1,0 +1,12 @@
+{
+  // The declarations of the entries, see `exports` in package.json:
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "rewriteRelativeImportExtensions": true,
+    "rootDir": "src",
+    "outDir": "dist/types"
+  }
+}

@@ -22,13 +22,11 @@ export default defineConfig({
     ]
   },
   test: {
-    // Measured on Node, with the sources loaded through src/load.js, and in
-    // the browser, through the source map of the library built from them, see
+    // Measured on the sources, on Node and in the browser, see
     // `pnpm test:coverage`:
     coverage: {
       provider: 'v8',
       include: ['src/**'],
-      exclude: ['src/load.js', '**/node_modules/**'],
       reporter: ['text-summary', 'html']
     },
     projects: [
