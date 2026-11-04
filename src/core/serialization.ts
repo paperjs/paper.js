@@ -37,10 +37,7 @@ export function registerClasses(
  * `JSON.stringify()` for JSON serialization.
  */
 export function serialize(
-  obj: any,
-  options?: any,
-  compact?: boolean,
-  dictionary?: any
+  obj: any, options?: any, compact?: boolean, dictionary?: any
 ) {
   options = options || {}
   const isRoot = !dictionary

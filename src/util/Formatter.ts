@@ -29,39 +29,38 @@ export class Formatter {
    * Utility function for rendering numbers as strings at a precision of
    * up to the amount of fractional digits.
    *
-   * @param num the number to be converted to a string
+   * @param value the number to be converted to a string
    */
-  number(val) {
+  number(value: number): number {
     // It would be nice to use Number#toFixed() instead, but it pads with 0,
     // unnecessarily consuming space.
     // If precision is >= 16, don't do anything at all, since that appears
     // to be the limit of the precision (it actually varies).
     return this.precision < 16
-      ? Math.round(val * this.multiplier) / this.multiplier
-      : val
+      ? Math.round(value * this.multiplier) / this.multiplier
+      : value
   }
 
-  pair(val1, val2, separator) {
-    return this.number(val1) + (separator || ',') + this.number(val2)
+  pair(value1: number, value2: number, separator = ','): string {
+    return this.number(value1) + separator + this.number(value2)
   }
 
-  point(val, separator) {
-    return this.number(val.x) + (separator || ',') + this.number(val.y)
+  point(point: { x: number; y: number }, separator = ','): string {
+    return this.pair(point.x, point.y, separator)
   }
 
-  size(val, separator) {
+  size(size: { width: number; height: number }, separator = ','): string {
+    return this.pair(size.width, size.height, separator)
+  }
+
+  rectangle(
+    rectangle: { x: number; y: number; width: number; height: number },
+    separator = ','
+  ): string {
     return (
-      this.number(val.width) +
-      (separator || ',') +
-      this.number(val.height)
-    )
-  }
-
-  rectangle(val, separator) {
-    return (
-      this.point(val, separator) +
-      (separator || ',') +
-      this.size(val, separator)
+      this.point(rectangle, separator) +
+      separator +
+      this.size(rectangle, separator)
     )
   }
 
