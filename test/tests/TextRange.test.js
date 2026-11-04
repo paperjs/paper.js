@@ -89,6 +89,15 @@ describe('TextRange', () => {
     )
   })
 
+  test('TextRange#set()', () => {
+    const text = createText('One\nTwo')
+    const paragraph = text.paragraphs[1]
+    equals(paragraph.set({ justification: 'right', fontSize: 20 }), paragraph)
+    equals(paragraph.justification, 'right')
+    equals(paragraph.fontSize, 20)
+    equals(text.paragraphs[0].fontSize, 12, 'the other paragraph')
+  })
+
   test('Replacing content keeps styles', () => {
     const text = createText('Hello world')
     text.range(6, 11).fontSize = 24
