@@ -12,6 +12,7 @@
 
 import { Item, Path, PathItem, Point, inject, push } from '../internal.ts'
 import type { HitResult } from '../item/HitResult.ts'
+import type { Project } from '../item/Project.ts'
 import type { PointLike } from '../basic/Point.ts'
 import type { SizeLike } from '../basic/Size.ts'
 import type { Matrix } from '../basic/Matrix.ts'
@@ -98,9 +99,6 @@ export class CompoundPath extends PathItem {
   constructor(...paths: Path[])
   constructor(...args: any[]) {
     super()
-    // CompoundPath has children and supports named children.
-    this._children = []
-    this._namedChildren = {}
     const [arg] = args
     if (!this._initialize(arg)) {
       if (typeof arg === 'string') {
@@ -109,6 +107,14 @@ export class CompoundPath extends PathItem {
         this.addChildren(Array.isArray(arg) ? arg : args)
       }
     }
+  }
+
+  _initializeContent(project: Project) {
+    super._initializeContent(project)
+    // CompoundPath has children and supports named children. They're its
+    // content, which loading resets, unlike a group's:
+    this._children = []
+    this._namedChildren = {}
   }
 
   _transformContent(
