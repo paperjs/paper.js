@@ -14,6 +14,10 @@ export default defineConfig({
           import.meta.dirname,
           'src/paperscript/index.ts'
         )
+      },
+      {
+        find: /^paper\/hosted$/,
+        replacement: path.resolve(import.meta.dirname, 'src/hosted/index.ts')
       }
     ]
   },
