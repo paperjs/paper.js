@@ -16,7 +16,7 @@
 // as jsdom without the canvas module, can't draw either, so it counts as a
 // worker as well, with a document but no window (#1805).
 let isResolved = false
-let window: Window = null
+let window: Window & typeof globalThis = null
 let document: Document = null
 
 /**
@@ -24,7 +24,7 @@ let document: Document = null
  *
  * @private
  */
-export function setEnvironment(environment: Window) {
+export function setEnvironment(environment: Window & typeof globalThis) {
   document = environment?.document || null
   window = document?.createElement('canvas').getContext('2d')
     ? environment
@@ -37,7 +37,7 @@ export function setEnvironment(environment: Window) {
  *
  * @private
  */
-export function getWindow(): Window {
+export function getWindow(): Window & typeof globalThis {
   if (!isResolved) {
     setEnvironment(globalThis.window)
   }

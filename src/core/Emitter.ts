@@ -200,7 +200,8 @@ export class Emitter extends Base {
  * @private
  */
 export function defineEvents(
-  ctor: typeof Emitter,
+  // Any emitter class, whatever its constructor takes:
+  ctor: { prototype: Emitter; events?: Record<string, EventDeclaration> },
   declarations: Record<string, EventDeclaration>
 ) {
   // Inherit the events of the superclass:
