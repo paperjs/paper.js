@@ -15,7 +15,7 @@
  * @namespace
  * @private
  */
-const UID = {
+export const UID = {
   _id: 1,
   _pools: {},
 
@@ -25,7 +25,7 @@ const UID = {
    * @return {Number} the next unique id
    * @static
    **/
-  get: function (name) {
+  get(name) {
     if (name) {
       // Use one UID pool per given constructor
       let pool = this._pools[name]
