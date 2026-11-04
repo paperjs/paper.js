@@ -13,7 +13,6 @@
 import {
   ItemDefinition,
   SymbolItem,
-  isPlainObject,
   serialize
 } from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
@@ -31,9 +30,11 @@ export class SymbolDefinition extends ItemDefinition {
   /**
    * Creates a Symbol definition.
    *
+   * The item keeps its place: its coordinates are the symbol's own, and
+   * {@link #place(position)} puts their origin at the position.
+   *
    * @param item the source item which is removed from the scene graph and
    *     becomes the symbol's definition.
-   * @param dontCenter
    *
    * @example {@paperscript split=true height=240}
    * // Placing 100 instances of a symbol:
@@ -62,30 +63,20 @@ export class SymbolDefinition extends ItemDefinition {
    *     instance.scale(0.25 + Math.random() * 0.75);
    * }
    */
-  constructor(item: Item, dontCenter?: boolean)
+  constructor(item: Item)
   /**
-   * Creates a Symbol definition with the options that JSON passes.
+   * Creates a Symbol definition with the properties that JSON passes.
    *
    * @param item the source item which is removed from the scene graph and
    *     becomes the symbol's definition.
-   * @param options
-   * @option [options.dontCenter=false] {Boolean} whether to leave the item
-   *     where it is, instead of moving it to 0, 0
-   * @option [options.name] {String} the name of the symbol
+   * @param props
+   * @option [props.name] {String} the name of the symbol
    */
-  constructor(item: Item, options: { dontCenter?: boolean; name?: string })
-  constructor(
-    item?: Item,
-    options?: boolean | { dontCenter?: boolean; name?: string }
-  ) {
+  constructor(item: Item, props: { name?: string })
+  constructor(item?: Item, props?: { name?: string }) {
     super()
-    // JSON passes the options of the definition instead, which can include
-    // dontCenter:
-    const { dontCenter, ...props } = isPlainObject(options)
-      ? (options as { dontCenter?: boolean; name?: string })
-      : { dontCenter: options as boolean }
     if (item) {
-      this._setItem(item, dontCenter)
+      this._setItem(item)
     }
     this.set(props)
   }
@@ -93,16 +84,8 @@ export class SymbolDefinition extends ItemDefinition {
   _serialize(options: any, dictionary: any) {
     return dictionary.add(this, () => {
       const json: any[] = [this._item]
-      const props: { dontCenter?: boolean; name?: string } = {}
-      // Keep items that the definition didn't center in place:
-      if (!this._item.position.isZero()) {
-        props.dontCenter = true
-      }
       if (this._name) {
-        props.name = this._name
-      }
-      if (Object.keys(props).length) {
-        json.push(props)
+        json.push({ name: this._name })
       }
       return serialize(json, options, false, dictionary)
     })
@@ -121,9 +104,7 @@ export class SymbolDefinition extends ItemDefinition {
    * Returns a copy of the symbol, with a copy of its item and its name.
    */
   clone(): SymbolDefinition {
-    // The copied item is already where this definition placed it:
     return new SymbolDefinition(this._item.clone(false), {
-      dontCenter: true,
       name: this._name
     })
   }
@@ -136,11 +117,6 @@ export class SymbolDefinition extends ItemDefinition {
    */
   equals(symbol: SymbolDefinition): boolean {
     return !!(symbol === this || symbol && this._item.equals(symbol._item))
-  }
-
-  static {
-    // Move the item to 0, 0, so it's centered when placed:
-    this.prototype._centerItem = true
   }
 }
 
