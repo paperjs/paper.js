@@ -43,13 +43,13 @@ import type { SizeLike } from '../basic/Size.ts'
 import type { Matrix } from '../basic/Matrix.ts'
 import type { CurveLocation } from './CurveLocation.ts'
 import type { SegmentLike } from './Segment.ts'
-import type { BooleanOptions, Graph, Winding } from './PathItem.Boolean.ts'
+import type { BooleanOptions, Graph, Winding } from './boolean.ts'
 import type { Group } from '../item/Group.ts'
 import type {
   DashOptions,
   OffsetOptions,
   OutlineOptions
-} from './PathItem.Offset.ts'
+} from './offset.ts'
 
 /**
  * The PathItem class is the base for any items that describe paths and
