@@ -120,23 +120,26 @@ registerClasses(classes)
 
 // Make the classes and namespaces properties of every scope, enumerable for
 // PaperScope#install() and PaperScript, which enumerate them:
-inject(
-  PaperScope.prototype,
-  {
-    ...classes,
-    Base,
-    Numerical,
-    ChangeFlag,
-    Key,
-    get document() {
-      return getDocument()
-    },
-    get window() {
-      return getWindow()
-    }
+const members = {
+  ...classes,
+  Base,
+  Numerical,
+  ChangeFlag,
+  Key,
+  get document() {
+    return getDocument()
   },
-  { enumerable: true }
-)
+  get window() {
+    return getWindow()
+  }
+}
+inject(PaperScope.prototype, members, { enumerable: true })
+
+type Members = typeof members
+
+declare module './core/PaperScope.ts' {
+  interface PaperScope extends Members {}
+}
 
 /**
  * The first scope, which is also the active one until another is created or
