@@ -54,6 +54,7 @@
     "eslint": "eslint src test '*.mjs'",
     "test": "vitest run --project node --project browser",
     "test:browser": "vitest run --project browser",
+    "test:booleans": "node test/booleans/run.mjs",
     "test:coverage": "vitest run --project node --project browser --coverage --testTimeout=60000",
     "test:node": "vitest run --project node",
     "test:screenshots": "sh test/screenshots/docker.sh",
