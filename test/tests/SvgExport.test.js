@@ -717,33 +717,37 @@ describe('SvgExport', () => {
     }
   })
 
-  test('Export SVG layers as Inkscape layers through a callback', () => {
-    const ns = 'http://www.inkscape.org/namespaces/inkscape'
-    paper.project.activeLayer.name = 'Shapes'
-    new Path.Circle({ center: [50, 50], radius: 10, fillColor: 'red' })
-    new Layer()
-    const svg = paper.project.exportSVG({
-      asString: true,
-      processNode({ item, node }) {
-        if (item instanceof Layer) {
-          node.setAttributeNS(ns, 'inkscape:groupmode', 'layer')
-          if (item.name) {
-            node.setAttributeNS(ns, 'inkscape:label', item.name)
+  // happy-dom's XMLSerializer leaves out the declarations of attribute
+  // namespaces, so the parsed attributes lose theirs:
+  if (!isNodeContext) {
+    test('Export SVG layers as Inkscape layers through a callback', () => {
+      const ns = 'http://www.inkscape.org/namespaces/inkscape'
+      paper.project.activeLayer.name = 'Shapes'
+      new Path.Circle({ center: [50, 50], radius: 10, fillColor: 'red' })
+      new Layer()
+      const svg = paper.project.exportSVG({
+        asString: true,
+        processNode({ item, node }) {
+          if (item instanceof Layer) {
+            node.setAttributeNS(ns, 'inkscape:groupmode', 'layer')
+            if (item.name) {
+              node.setAttributeNS(ns, 'inkscape:label', item.name)
+            }
           }
         }
-      }
+      })
+      const root = new window.DOMParser().parseFromString(
+        svg,
+        'image/svg+xml'
+      ).documentElement
+      equals(root.nodeName, 'svg', 'valid SVG')
+      const [shapes, other] = root.childNodes
+      equals(shapes.getAttributeNS(ns, 'groupmode'), 'layer', 'layer')
+      equals(shapes.getAttributeNS(ns, 'label'), 'Shapes', 'with its label')
+      equals(other.getAttributeNS(ns, 'groupmode'), 'layer', 'second layer')
+      equals(other.hasAttributeNS(ns, 'label'), false, 'without a label')
     })
-    const root = new window.DOMParser().parseFromString(
-      svg,
-      'image/svg+xml'
-    ).documentElement
-    equals(root.nodeName, 'svg', 'valid SVG')
-    const [shapes, other] = root.childNodes
-    equals(shapes.getAttributeNS(ns, 'groupmode'), 'layer', 'layer')
-    equals(shapes.getAttributeNS(ns, 'label'), 'Shapes', 'with its label')
-    equals(other.getAttributeNS(ns, 'groupmode'), 'layer', 'second layer')
-    equals(other.hasAttributeNS(ns, 'label'), false, 'without a label')
-  })
+  }
 
   if (!isNodeContext) {
     // JSDom does not have SVG rendering, so we can't test there.
