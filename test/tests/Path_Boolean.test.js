@@ -867,8 +867,9 @@ describe('Path Boolean Operations', () => {
 
   test('#973', () => {
     const path = new Path.Ellipse({ point: [100, 100], size: [150, 110] })
-    path.segments[1].point.y += 60
-    path.segments[3].point.y -= 60
+    // Move the top down and the bottom up, past each other:
+    path.segments[3].point.y += 60
+    path.segments[1].point.y -= 60
 
     const resolved = path.resolveCrossings()
     const orientation = resolved.children.map(child => child.clockwise)

@@ -92,10 +92,11 @@ describe('Curve', () => {
   })
 
   test('Curve#getPointAtTime()', () => {
+    // The quarter from the left to the top:
     let curve = new Path.Circle({
       center: [100, 100],
       radius: 100
-    }).firstCurve
+    }).curves[2]
 
     const points = [
       [0, new Point(0, 100)],
@@ -138,10 +139,11 @@ describe('Curve', () => {
   })
 
   test('Curve#getTangentAtTime()', () => {
+    // The quarter from the left to the top:
     const curve = new Path.Circle({
       center: [100, 100],
       radius: 100
-    }).firstCurve
+    }).curves[2]
 
     const tangents = [
       [0, new Point(0, -165.68542)],
@@ -167,10 +169,11 @@ describe('Curve', () => {
   })
 
   test('Curve#getNormalAtTime()', () => {
+    // The quarter from the left to the top:
     const curve = new Path.Circle({
       center: [100, 100],
       radius: 100
-    }).firstCurve
+    }).curves[2]
 
     const normals = [
       [0, new Point(-165.68542, 0)],
@@ -196,10 +199,11 @@ describe('Curve', () => {
   })
 
   test('Curve#getCurvatureAtTime()', () => {
+    // The quarter from the left to the top:
     const curve = new Path.Circle({
       center: [100, 100],
       radius: 100
-    }).firstCurve
+    }).curves[2]
 
     const curvatures = [
       [0, 0.009785533905932729],
