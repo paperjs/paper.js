@@ -32,6 +32,8 @@
     "src/basic/Size.ts",
     "src/basic/Line.ts",
     "src/basic/Rectangle.ts",
-    "src/basic/Matrix.ts"
+    "src/basic/Matrix.ts",
+    "src/style/Gradient.ts",
+    "src/style/GradientStop.ts"
   ]
 }
