@@ -27,7 +27,7 @@ var gulp = require('gulp'),
 // within a multiple of the operation's epsilon of an outline with --exclusion,
 // e.g. `--exclusion=10`, and scale or move all operands with --scale and
 // --translation. See test/booleans/sweep.js
-gulp.task('test:booleans', ['minify:acorn'], function(callback) {
+gulp.task('test:booleans', function(callback) {
     var dir = path.join('test', 'booleans'),
         build = path.join('dist', 'paper-' + (argv.build || 'full') + '.js'),
         baselineFile = path.join(dir, 'baseline.json'),

@@ -15,7 +15,7 @@ var gulp = require('gulp'),
     merge = require('merge-stream'),
     zip = require('gulp-zip');
 
-gulp.task('dist', ['build', 'minify', 'docs']);
+gulp.task('dist', ['build', 'docs']);
 
 gulp.task('zip', ['clean:zip', 'dist'], function() {
     return merge(

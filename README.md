@@ -219,8 +219,9 @@ files, you can run the `build` task:
     pnpm build
 
 You will then find the built library files inside the `dist` folder, named
-`paper-full.js` and `paper-core.js`, along with their minified versions. Read
-more about this in [Which Version to Use?](#which-version-to-use).
+`paper-full.js` and `paper-core.js`, along with their minified versions and
+source maps. Read more about this in
+[Which Version to Use?](#which-version-to-use).
 
 ### Running Directly from Separate Source Files
 

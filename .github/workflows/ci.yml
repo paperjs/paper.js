@@ -24,7 +24,7 @@ jobs:
         run: pnpm eslint
       # Test the built library, as that's what gets published:
       - name: Build
-        run: pnpm minify
+        run: pnpm build
       - name: Test
         run: pnpm test:node
       - name: Test the hosted build
