@@ -11,6 +11,7 @@
  */
 
 import { Base } from '../core/Base.ts'
+import { inject } from '../util/object.ts'
 import { TRIGONOMETRIC_EPSILON, clamp, isZero } from '../util/numerical.ts'
 import { Formatter } from '../util/Formatter.ts'
 import { ItemSelection } from '../constants.ts'
@@ -998,12 +999,17 @@ export class Point extends Base {
 
   static {
     // Inject round, ceil, floor, abs:
-    for (const key of ['round', 'ceil', 'floor', 'abs']) {
-      const op = Math[key]
-      this.prototype[key] = function () {
-        return new Point(op(this.x), op(this.y))
-      }
-    }
+    inject(
+      this.prototype,
+      ...['round', 'ceil', 'floor', 'abs'].map(key => {
+        const op = Math[key]
+        return {
+          [key]() {
+            return new Point(op(this.x), op(this.y))
+          }
+        }
+      })
+    )
   }
 }
 

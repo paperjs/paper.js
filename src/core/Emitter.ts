@@ -11,6 +11,7 @@
  */
 
 import { Base } from './Base.ts'
+import { inject } from '../util/object.ts'
 
 type Handler = (this: any, ...args: any[]) => any
 
@@ -207,14 +208,14 @@ export function defineEvents(
   for (const [name, entry] of Object.entries(declarations)) {
     const type = name.slice(2).toLowerCase()
     events[type] = entry
-    const descriptor = {
-      get(this: Emitter) {
+    inject(ctor.prototype, {
+      get [name]() {
         // Only the object's own handler, not its prototype's:
         return (
           (Object.hasOwn(this, '_handlers') && this._handlers[type]) || null
         )
       },
-      set(this: Emitter, func: Handler) {
+      set [name](func: Handler) {
         // Detach the previous handler, if there was one.
         const previous = this[name]
         if (previous) {
@@ -228,20 +229,17 @@ export function defineEvents(
           this._handlers
         ) || {})
         handlers[type] = func
-      },
-      configurable: true
-    }
-    Object.defineProperty(ctor.prototype, name, descriptor)
+      }
+    })
     // And on the class, for the types that support it:
     if (entry.classLevel) {
-      Object.defineProperty(ctor, name, {
-        get() {
+      inject(ctor, {
+        get [name]() {
           return this.prototype[name]
         },
-        set(func: Handler) {
+        set [name](func: Handler) {
           this.prototype[name] = func
-        },
-        configurable: true
+        }
       })
     }
   }
