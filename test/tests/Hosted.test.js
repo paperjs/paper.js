@@ -17,6 +17,7 @@ import paper, {
   Color,
   CompoundPath,
   Group,
+  HostItem,
   Layer,
   Matrix,
   Path,
@@ -32,14 +33,10 @@ import paper, {
   SymbolItem,
   TextItem,
   registerClasses
-} from 'paper'
+} from 'paper/hosted'
 import { equals, test, testFontFamily } from '../helpers.js'
 
-// Hosted items aren't part of the core library, so these tests only run where
-// the scope has them:
-const { HostItem } = paper
-
-describe.skipIf(!HostItem)('Hosted', () => {
+describe('Hosted', () => {
   // The host document is played by another project, served through the host
   // interface by item id. The host logs its calls, so tests can check what
   // loading touched.
