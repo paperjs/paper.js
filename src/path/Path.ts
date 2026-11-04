@@ -208,16 +208,13 @@ export class Path extends PathItem {
     this._closed = source._closed
     // The same segments, so the same indices:
     if (profile || this._strokeProfile) {
-      this.strokeProfile = (
-        profile &&
-        profile.map(stop => ({
-          index: stop._index,
-          width: stop._width,
-          aspect: stop._aspect,
-          angle: stop._angle,
-          smooth: stop._smooth
-        }))
-      )
+      this.strokeProfile = profile?.map(stop => ({
+        index: stop._index,
+        width: stop._width,
+        aspect: stop._aspect,
+        angle: stop._angle,
+        smooth: stop._smooth
+      }))
     }
   }
 
@@ -322,9 +319,8 @@ export class Path extends PathItem {
     // its offsets along the path:
     const profile = this._strokeProfile
     let pathLength = profile && this.length
-    const fractions = (
-      profile &&
-      profile.map(stop => (pathLength ? stop.offset / pathLength : 0))
+    const fractions = profile?.map(stop =>
+      pathLength ? stop.offset / pathLength : 0
     )
     this._strokeProfile = null
     if (named) {

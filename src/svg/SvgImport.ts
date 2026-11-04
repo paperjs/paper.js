@@ -676,16 +676,10 @@ function getFilterShadow(filter: Element) {
 // after its lengths, of which its blur radius equals the shadow blur:
 function getCssShadow(value: string) {
   const match = value.match(/^\s*drop-shadow\((.*)\)\s*$/)
-  const color = (
-    match &&
-    match[1].match(
-      /(?:rgba?|hsla?)\([^)]*\)|#[0-9a-f]+|\b[a-z]+\b/i
-    )
+  const color = match?.[1].match(
+    /(?:rgba?|hsla?)\([^)]*\)|#[0-9a-f]+|\b[a-z]+\b/i
   )
-  const lengths = (
-    match &&
-    match[1].replace(color?.[0] ?? '', '').match(/-?[\d.]+/g)
-  )
+  const lengths = match?.[1].replace(color?.[0] ?? '', '').match(/-?[\d.]+/g)
   return lengths?.length >= 2
     ? {
         color: new Color(color?.[0] ?? 'black'),
