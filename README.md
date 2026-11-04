@@ -185,9 +185,15 @@ and so do the tests, so changes can be tried without building the library.
 
 ### Other Build Tasks
 
-Create a final zipped distribution file inside the `dist` folder:
+Create a zipped distribution file of the script files and the examples inside
+the `dist` folder, after building the library:
 
-    pnpm dist
+    pnpm zip
+
+Release the version in `package.json` from the `develop` branch, which commits,
+tags and pushes it for the release workflow to build and publish:
+
+    pnpm release
 
 ### Branch structure
 
@@ -197,22 +203,12 @@ Flow workflow. All development is taking place in the
 only merged into [`main`](https://github.com/paperjs/paper.js/tree/main)
 when a new release occurs.
 
-As of version `0.9.26`, the `dist` folder is excluded on all branches, and the
-building is now part of the `pnpm publish` process by way of the `prepublish`
-script.
+The `dist` folder is excluded on all branches, and the release workflow on
+GitHub Actions builds the library from the tag of each release.
 
 We also offer prebuilt versions of the latest state of the `develop` branch on
 [`prebuilt/module`](https://github.com/paperjs/paper.js/tree/prebuilt/module)
 and [`prebuilt/dist`](https://github.com/paperjs/paper.js/tree/prebuilt/dist).
-
-### Building the Documentation
-
-Similarly to building the library, you can run the `docs` task to build the
-documentation:
-
-    pnpm docs
-
-Your docs will then be located at `dist/docs`.
 
 ### Testing
 

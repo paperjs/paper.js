@@ -59,7 +59,6 @@ jobs:
       - name: Install Chromium
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install chromium
-      # Runs the library built from the sources, see test/vite-plugin-paper.mjs:
       - name: Test in Chromium
         run: pnpm test:browser
 
@@ -84,36 +83,14 @@ jobs:
           name: screenshots
           path: .vitest/attachments
 
-  # Generate paper.d.ts from the docs and compile the TypeScript definition
-  # test against it, so changes to the docs can't break the typings unnoticed:
-  typings:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-      # The JsDoc Toolkit that generates the typings runs on Java:
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 8
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      - name: Test the typings
-        run: pnpm exec gulp docs:typescript
-
   # Publish the latest develop build to the prebuilt/dist and prebuilt/module
   # branches, as Travis CI used to:
   prebuilt:
-    needs: [test, browser, typings]
+    needs: [test, browser]
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
-    # Pushes in quick succession, such as gulp publish's two, would otherwise
-    # push to the prebuilt branches at the same time:
+    # Pushes in quick succession would otherwise push to the prebuilt branches
+    # at the same time:
     concurrency:
       group: prebuilt
       cancel-in-progress: false
@@ -121,20 +98,13 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      # The JsDoc Toolkit that generates the docs runs on Java:
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 8
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Build library, docs and zip
-        run: pnpm zip
+      - name: Build library and zip
+        run: pnpm build && pnpm zip
       - name: Deploy
         run: .github/deploy-prebuilt.sh

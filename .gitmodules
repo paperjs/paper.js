@@ -1,3 +1,0 @@
-[submodule "jsdoc"]
-    path = gulp/jsdoc
-    url = https://github.com/paperjs/jsdoc.git
