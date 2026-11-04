@@ -314,4 +314,12 @@ export class PaperScope extends Base {
       element.hasAttribute('data-paper-' + name)
     )
   }
+
+  static {
+    // Enumerate the accessors, since #install() and PaperScript take what a
+    // scope holds through for…in:
+    for (const key of ['project', 'view', 'paper', 'support', 'agent']) {
+      Object.defineProperty(this.prototype, key, { enumerable: true })
+    }
+  }
 }
