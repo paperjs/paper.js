@@ -52,6 +52,7 @@ import type { Project } from './Project.ts'
 import type { SymbolDefinition } from './SymbolDefinition.ts'
 import type { View } from '../view/View.ts'
 import type { PathItem } from '../path/PathItem.ts'
+import type { ItemDefinition } from './ItemDefinition.ts'
 
 type Handler = (this: Item, ...args: any[]) => any
 
@@ -154,7 +155,7 @@ export class Item extends Emitter {
   // The version of the project's drawing in which the item was drawn last:
   _updateVersion: number
   // The definition that this item is the item of, see SymbolDefinition:
-  _symbol: SymbolDefinition
+  _symbol: ItemDefinition
   // The canvas that buffered groups draw into, see Group#buffered:
   declare _buffer: any
   // The cached output of the effects, see #getEffectOutput():
@@ -5881,13 +5882,6 @@ export interface Item {
     matrix: Matrix,
     selectionItems: Record<string, Item>
   ): void
-
-  // Added by Item.Effects, which documents them:
-  effects: any[]
-  readonly previewBounds: Rectangle
-  getPreviewBounds(matrix?: Matrix): Rectangle
-  getEffectOutput(): Item | null
-  _effects: any[] | null
 }
 
 /**

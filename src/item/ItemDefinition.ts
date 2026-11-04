@@ -1,0 +1,106 @@
+/*
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
+ * http://paperjs.org/
+ *
+ * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
+ * http://juerglehni.com/ & https://puckey.studio/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ */
+
+import { Base } from '../core/Base.ts'
+import { paper } from '../core/PaperScope.ts'
+import { Change, ChangeFlag } from '../constants.ts'
+import { getUID } from '../util/uid.ts'
+import { Point } from '../basic/Point.ts'
+import { Item } from './Item.ts'
+import type { Project } from './Project.ts'
+
+// The private base of SymbolDefinition and PatternDefinition, which hold an
+// item outside of the scene graph that other items draw. The item refers back
+// to its definition through Item#_symbol, which Item#_changed() notifies:
+export class ItemDefinition extends Base {
+  // Definitions that center their items move them to 0, 0, see #_setItem():
+  declare _centerItem: boolean
+  declare _name: string
+  // Read by the dictionary of JSON and by Project:
+  _id: number
+  _item: Item
+  project: Project
+
+  // The subclasses set the item once their own fields exist, as setting it
+  // calls #_changed():
+  constructor() {
+    super()
+    this._id = getUID()
+    this.project = paper.project
+  }
+
+  /**
+   * Sets the properties of the passed object on the definition.
+   *
+   * @param props the properties to set
+   */
+  set(props: object): this {
+    return Object.assign(this, props)
+  }
+
+  // Called whenever the definition's item changes:
+  _changed(flags: number) {
+    const { project } = this
+    if (flags & ChangeFlag.GEOMETRY) {
+      // Clear cached bounds of all items that this definition is linked to.
+      Item._clearBoundsCache(this)
+    }
+    if (flags & ChangeFlag.APPEARANCE) {
+      // Its items may be drawn in any buffered group:
+      project._bufferVersion++
+      project._changed(flags)
+    }
+    project._logChange('definition', this, flags)
+  }
+
+  get name(): string {
+    return this._name
+  }
+
+  set name(name: string) {
+    this._name = name || null
+    this._changed(Change.ATTRIBUTE)
+  }
+
+  get item(): Item {
+    return this._item
+  }
+
+  set item(item: Item) {
+    this._setItem(item)
+  }
+
+  _setItem(item: Item, _dontCenter?: boolean) {
+    // Make sure we're not stealing another definition's item
+    const ownItem = item._symbol ? item.clone() : item
+    // Remove previous item's reference to this definition
+    if (this._item) {
+      this._item._symbol = null
+    }
+    this._item = ownItem
+    // Remove item from DOM, as it's embedded in the definition now.
+    ownItem.remove()
+    ownItem.selected = false
+    if (this._centerItem && !_dontCenter) {
+      ownItem.position = new Point()
+    }
+    ownItem._symbol = this
+    this._changed(Change.GEOMETRY)
+  }
+
+  static {
+    Object.assign(this.prototype, {
+      _centerItem: false,
+      _name: null
+    })
+  }
+}

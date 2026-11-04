@@ -1185,3 +1185,58 @@ class RectangleBuilder extends Rectangle {
     this.#fixHeight = false
   }
 }
+
+/**
+ * Reads the rectangle that a named object describes, through its `rectangle`
+ * or through any of the rectangle's properties, and returns it with the
+ * object's other properties, for set(), as the Path and Shape factories use it.
+ *
+ * @private
+ */
+export function readRectangle(
+  object: Record<string, any>
+): [Rectangle, Record<string, any>] {
+  const { rectangle, ...rest } = object
+  if (rectangle) {
+    return [Rectangle.from(rectangle), rest]
+  }
+  // Tell the rectangle's properties by the ones a rectangle has, plus the
+  // `from` and `to` that its constructor takes:
+  const keys = new Rectangle()
+  const values = {}
+  const props = {}
+  for (const [key, value] of Object.entries(rest)) {
+    if (key in keys || key === 'from' || key === 'to') {
+      values[key] = value
+    } else {
+      props[key] = value
+    }
+  }
+  return [new Rectangle(values), props]
+}
+
+/**
+ * Reads the center and radius of an ellipse from a named object, either from
+ * its `center` and `radius`, or from the rectangle that it describes, see
+ * readRectangle(), and returns them with the object's other properties, for
+ * set(), as the Path and Shape factories use it.
+ *
+ * @private
+ */
+export function readEllipse(object: Record<string, any>): {
+  center: Point
+  radius: Size
+  props: Record<string, any>
+} {
+  if (object.radius != null) {
+    const { center, radius, ...props } = object
+    return { center: Point.from(center), radius: Size.from(radius), props }
+  } else {
+    const [rect, props] = readRectangle(object)
+    return {
+      center: rect._getCenter(true),
+      radius: rect._getSize(true).divide(2),
+      props
+    }
+  }
+}
