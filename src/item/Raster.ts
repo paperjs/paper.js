@@ -850,7 +850,7 @@ export class Raster extends Item {
   _getBounds(matrix: Matrix, _options?: BoundsOptions): Rectangle {
     const { width, height } = this._size
     const rect = new Rectangle(-width / 2, -height / 2, width, height)
-    return matrix ? matrix._transformBounds(rect) : rect
+    return matrix?._transformBounds(rect) ?? rect
   }
 
   _hitTestSelf(point: Point): HitResult | undefined {

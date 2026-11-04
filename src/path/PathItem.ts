@@ -376,7 +376,7 @@ export abstract class PathItem extends Item {
     const matrix1 = this._matrix._orNullIfIdentity()
     const matrix2 = self
       ? matrix1
-      : (_matrix || path._matrix)._orNullIfIdentity()
+      : (_matrix ?? path._matrix)._orNullIfIdentity()
     // First check the bounds of the two paths. If they don't intersect,
     // we don't need to iterate through their curves. Bounds that only
     // touch need a tolerance, also at large coordinates:

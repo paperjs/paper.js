@@ -926,7 +926,7 @@ function exportRoot(
   options: Options
 ): SVGElement | string {
   const values = options.matrix || bounds === 'view' && view._matrix
-  const matrix = values && new Matrix(values)
+  const matrix = values ? new Matrix(values) : null
   const rect =
     bounds === 'view'
       ? new Rectangle([0, 0], view.viewSize)
