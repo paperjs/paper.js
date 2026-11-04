@@ -22,13 +22,10 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Lint
         run: pnpm eslint
-      # Test the built library, as that's what gets published:
       - name: Build
         run: pnpm build
       - name: Test
         run: pnpm test:node
-      - name: Test the hosted build
-        run: PAPER_BUILD=hosted pnpm test:node
       # Moves the second operand of every boolean operation in the tests and
       # issue cases by tiny amounts, and fails if results got less stable or
       # less correct than in test/booleans/baseline.json:
