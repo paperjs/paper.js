@@ -61,7 +61,7 @@ export function getCanvas(
       : window
         ? getDocument().createElement('canvas')
         : new OffscreenCanvas(size.width, size.height)
-  const context = canvas.getContext('2d', options || {}) as any
+  const context = canvas.getContext('2d', options ?? {}) as any
   if (!context) {
     throw new Error(`Canvas ${canvas} is unable to provide a 2D context.`)
   }
@@ -106,7 +106,7 @@ export function getContext(
  * @private
  */
 export function releaseCanvas(canvasOrContext: any) {
-  const canvas = canvasOrContext?.canvas || canvasOrContext
+  const canvas = canvasOrContext?.canvas ?? canvasOrContext
   if (canvas?.getContext) {
     // Keep small canvases at their size, so getCanvas() can reuse them without
     // reallocating their pixels, but free the pixels of larger ones right

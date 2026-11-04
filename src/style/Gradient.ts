@@ -113,7 +113,7 @@ export class Gradient extends Base {
     const object = Array.isArray(stops)
       ? { stops, radial }
       : { radial, ...stops }
-    this.stops = object.stops || ['white', 'black']
+    this.stops = object.stops ?? ['white', 'black']
     this.radial = !!object.radial
   }
 

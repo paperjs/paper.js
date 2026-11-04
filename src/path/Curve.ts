@@ -156,8 +156,8 @@ export class Curve extends Base {
       handle2 = arg2
       point2 = arg3
     }
-    this._segment1 = segment1 || new Segment(point1, null, handle1)
-    this._segment2 = segment2 || new Segment(point2, handle2, null)
+    this._segment1 = segment1 ?? new Segment(point1, null, handle1)
+    this._segment2 = segment2 ?? new Segment(point2, handle2, null)
   }
 
   _serialize(options: any, dictionary: any) {
@@ -311,7 +311,7 @@ export class Curve extends Base {
    * belongs to.
    */
   get next(): Curve {
-    const curves = this._path && this._path._curves
+    const curves = this._path?._curves
     return (
       (
         curves && (
@@ -328,7 +328,7 @@ export class Curve extends Base {
    * belongs to.
    */
   get previous(): Curve {
-    const curves = this._path && this._path._curves
+    const curves = this._path?._curves
     return (
       (
         curves && (
@@ -547,7 +547,7 @@ export class Curve extends Base {
    */
   splitAt(location: number | CurveLocation): Path {
     const path = this._path
-    return path ? path.splitAt(location) : null
+    return path?.splitAt(location) ?? null
   }
 
   /**
@@ -600,7 +600,7 @@ export class Curve extends Base {
   }
 
   #getBounds(stroke: boolean): Rectangle {
-    this.#bounds ||= {}
+    this.#bounds ??= {}
     const key = stroke ? 'strokeBounds' : 'bounds'
     let bounds = this.#bounds[key]
     if (!bounds) {
@@ -841,7 +841,7 @@ export class Curve extends Base {
    */
   getOffsetOf(point: PointLike | number, y?: number): number | null {
     const location = this.getLocationOf(point, y)
-    return location ? location.offset : null
+    return location?.offset ?? null
   }
 
   /**
@@ -887,7 +887,7 @@ export class Curve extends Base {
    */
   getNearestPoint(point: PointLike | number, y?: number): Point {
     const location = this.getNearestLocation(point, y)
-    return location ? location.point : null
+    return location?.point ?? null
   }
 
   /**

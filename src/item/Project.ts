@@ -130,7 +130,7 @@ export class Project extends PaperScopeItem {
     // If no view is provided, we create a 1x1 px canvas view just so we
     // have something to do size calculations with.
     // (e.g. PointText#_getBounds)
-    this._view = View.create(this, element || getCanvas(1, 1))
+    this._view = View.create(this, element ?? getCanvas(1, 1))
     this._selectionItems = {}
     this._selectionCount = 0
     this._drawCount = 0
@@ -165,7 +165,7 @@ export class Project extends PaperScopeItem {
       }
     }
     // Log changes of inserted items, see #trackChanges:
-    if (item && item.isInserted()) {
+    if (item?.isInserted()) {
       this._logChange('item', item, flags)
     }
   }
@@ -229,7 +229,7 @@ export class Project extends PaperScopeItem {
       // Items that moved to another project since are logged there:
       changes = changes.filter(({ item }) => !item || item._project === this)
     }
-    return changes || null
+    return changes ?? null
   }
 
   /**
@@ -333,7 +333,7 @@ export class Project extends PaperScopeItem {
    * layer by default.
    */
   get activeLayer(): Layer {
-    return this._activeLayer || new Layer({ project: this, insert: true })
+    return this._activeLayer ?? new Layer({ project: this, insert: true })
   }
 
   /**
@@ -841,7 +841,7 @@ export class Project extends PaperScopeItem {
    * @return the first item in the project matching the given criteria
    */
   getItem(options: object | ((item: Item) => boolean)): Item | null {
-    return Item._getItems(this, options, null, null, true)[0] || null
+    return Item._getItems(this, options, null, null, true)[0] ?? null
   }
 
   /**

@@ -55,7 +55,7 @@ export class Emitter extends Base {
         Object.hasOwn(this, '_callbacks') &&
         this._callbacks
       ) || {})
-      const handlers = (callbacks[type] = callbacks[type] || [])
+      const handlers = (callbacks[type] ??= [])
       if (!handlers.includes(func)) {
         handlers.push(func)
         // Call install for the first handler of the type:

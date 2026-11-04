@@ -178,7 +178,7 @@ export class CanvasAdapter implements ICanvasAdapter {
       image instanceof OffscreenCanvas ||
       image instanceof ImageBitmap
     ) {
-      return this.#getCanvas(image[PropertySymbol.canvas] || image)
+      return this.#getCanvas(image[PropertySymbol.canvas] ?? image)
     } else if (image instanceof HTMLVideoElement) {
       // Videos aren't supported:
       return null

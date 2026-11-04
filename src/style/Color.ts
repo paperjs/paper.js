@@ -122,8 +122,8 @@ function transformGradient(components: any[], dest: any[], matrix: Matrix) {
       }
     }
   }
-  dest[1] = (dest[1] || new Point())._set(start.x, start.y, true)
-  dest[2] = (dest[2] || new Point())._set(
+  dest[1] = (dest[1] ?? new Point())._set(start.x, start.y, true)
+  dest[2] = (dest[2] ?? new Point())._set(
     start.x + vector.x,
     start.y + vector.y,
     true
@@ -740,7 +740,7 @@ export class Color extends Base {
       // The various branches below produce a values array if the values still
       // need parsing, and a components array if they are already parsed.
       if (values) {
-        type ||= values.length >= 3 ? 'rgb' : 'gray'
+        type ??= values.length >= 3 ? 'rgb' : 'gray'
         const { length } = types[type]
         alpha = values[length]
         if (values.length > length) {
@@ -1107,7 +1107,7 @@ export class Color extends Base {
           highlight = origin.add(vector.normalize(radius - 0.1))
         }
       }
-      const start = highlight || origin
+      const start = highlight ?? origin
       canvasGradient = context.createRadialGradient(
         start.x, start.y, 0,
         origin.x, origin.y, radius
@@ -1192,8 +1192,8 @@ export class Color extends Base {
         color = color.clone()
       }
       if (!color.#owner !== !owner) {
-        color.#owner = owner || null
-        color.#key = key || null
+        color.#owner = owner ?? null
+        color.#key = key ?? null
       }
     }
     return color

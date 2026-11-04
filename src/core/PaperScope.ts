@@ -159,7 +159,7 @@ export class PaperScope extends Base {
     if (!agent) {
       const user = (globalThis.navigator?.userAgent || '').toLowerCase()
       // Detect basic platforms, only mac internally required for now.
-      const os = (/(darwin|win|mac|linux|freebsd|sunos)/.exec(user) || [])[0]
+      const os = (/(darwin|win|mac|linux|freebsd|sunos)/.exec(user) ?? [])[0]
       const platform = os === 'darwin' ? 'mac' : os
       agent = { platform }
       if (platform) {
@@ -180,7 +180,7 @@ export class PaperScope extends Base {
                   : version1
             agent.version = version
             agent.versionNumber = parseFloat(version)
-            name = { trident: 'msie', jsdom: 'node' }[name] || name
+            name = { trident: 'msie', jsdom: 'node' }[name] ?? name
             agent.name = name
             agent[name] = true
           }
@@ -296,7 +296,7 @@ export class PaperScope extends Base {
    * @param id
    */
   static get(id: number): PaperScope {
-    return PaperScope.#scopes[id] || null
+    return PaperScope.#scopes[id] ?? null
   }
 
   // Check for both the attribute and its 'data-paper-' version, e.g.

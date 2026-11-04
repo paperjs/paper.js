@@ -294,7 +294,7 @@ export class Item extends Emitter {
    */
   _changed(flags: number) {
     const symbol = this._symbol
-    const cacheParent = this._parent || symbol
+    const cacheParent = this._parent ?? symbol
     const project = this._project
     if (flags & ChangeFlag.GEOMETRY) {
       // Clear cached bounds, position and decomposed matrix whenever
@@ -597,7 +597,7 @@ export class Item extends Emitter {
   _updateTextWrap(remove?: boolean) {
     const { layer } = this
     if (layer) {
-      const items = (layer._textWrapItems ||= {})
+      const items = (layer._textWrapItems ??= {})
       if (this._textWrap && !remove) {
         items[this._id] = this
       } else {
@@ -771,7 +771,7 @@ export class Item extends Emitter {
    * console.log(path.data.pets.length); // 1
    */
   get data(): Record<string, any> {
-    return (this._data ||= {})
+    return (this._data ??= {})
   }
 
   set data(data: Record<string, any>) {
@@ -830,7 +830,7 @@ export class Item extends Emitter {
     // would not be able to use them to calculate the difference in the
     // position setter, as when it is modified, it would hold new values
     // already and only then cause the calling of the setter.
-    const { x, y } = (this._position ||= this._getPositionFromBounds())
+    const { x, y } = (this._position ??= this._getPositionFromBounds())
     // Pass true for _dontLink to receive back a normal point:
     return _dontLink
       ? new Point(x, y)
@@ -851,7 +851,7 @@ export class Item extends Emitter {
     // based on the matrix. Otherwise use the center of the bounds.
     return this._pivot
       ? this._matrix._transformPoint(this._pivot)
-      : (bounds || this.getBounds())._getCenter(true)
+      : (bounds ?? this.getBounds())._getCenter(true)
   }
 
   /**
@@ -901,7 +901,7 @@ export class Item extends Emitter {
       // the bounds again. That way, we can prevent collapsing to 0-size.
       if (!_matrix.isInvertible()) {
         _matrix.set(
-          _matrix._backup || new Matrix().translate(_matrix.translation)
+          _matrix._backup ?? new Matrix().translate(_matrix.translation)
         )
         bounds = this.getBounds()
       }
@@ -1164,7 +1164,7 @@ export class Item extends Emitter {
     // If we can cache the result, update the _bounds cache structure
     // before returning
     if (cacheKey) {
-      bounds = this._bounds ||= {}
+      bounds = this._bounds ??= {}
       bounds[cacheKey] = {
         rect: rect.clone(),
         nonscaling,
@@ -1187,18 +1187,14 @@ export class Item extends Emitter {
       ? null
       : options?.internal
         ? this
-        : this._parent || this._symbol?._item
+        : this._parent ?? this._symbol?._item
     let mx = parent ? parent.viewMatrix.invert() : matrix
     const transform = !parent && options?.transform
     // When predicting the bounds after a transformation, see
     // #strokeBounds, it doesn't scale the strokes of items that apply it to
     // their content, all the way up to the transformed item:
     if (transform) {
-      for (
-        let item: Item = this;
-        item && item._applyMatrix;
-        item = item._parent
-      ) {
+      for (let item: Item = this; item?._applyMatrix; item = item._parent) {
         if (item === transform.item) {
           mx = transform.matrix.inverted().appended(mx)
           break
@@ -1225,7 +1221,7 @@ export class Item extends Emitter {
       // Set-up the parent's boundsCache structure if it does not
       // exist yet and add the item to it.
       const id = item._id
-      const ref = (parent._boundsCache ||= {
+      const ref = (parent._boundsCache ??= {
         // Use a hash-table for ids and an array for the list,
         // so we can keep track of items that were added already
         ids: {},
@@ -1304,7 +1300,7 @@ export class Item extends Emitter {
     let nonscaling = false
     // NOTE: As soon as one child-item has non-scaling strokes, the full
     // bounds need to be considered non-scaling for caching purposes.
-    const opts = options || {}
+    const opts = options ?? {}
     for (const item of items) {
       // Item is handled if it is visible and not recursively empty.
       // This avoid errors with nested empty groups (#1467).
@@ -1342,7 +1338,7 @@ export class Item extends Emitter {
     // its content.
     return this._applyMatrix
       ? null
-      : (this._decomposed ||= this._matrix.decompose())
+      : (this._decomposed ??= this._matrix.decompose())
   }
 
   /**
@@ -1355,7 +1351,7 @@ export class Item extends Emitter {
   get rotation(): number {
     const decomposed = this._decompose()
     // Return 0 if matrix wasn't decomposed, e.g. on items with #applyMatrix
-    return decomposed ? decomposed.rotation : 0
+    return decomposed?.rotation ?? 0
   }
 
   set rotation(rotation: number) {
@@ -1383,7 +1379,7 @@ export class Item extends Emitter {
     const decomposed = this._decompose()
     const s = decomposed?.scaling
     // Return [1, 1] if matrix wasn't decomposed, e.g. with #applyMatrix.
-    return new LinkedPoint(s ? s.x : 1, s ? s.y : 1, this, 'scaling')
+    return new LinkedPoint(s?.x ?? 1, s?.y ?? 1, this, 'scaling')
   }
 
   set scaling(scaling: PointLike | number) {
@@ -1702,7 +1698,7 @@ export class Item extends Emitter {
    * accessing `item.children[0]`.
    */
   get firstChild(): Item | null {
-    return this._children?.[0] || null
+    return this._children?.[0] ?? null
   }
 
   /**
@@ -1710,7 +1706,7 @@ export class Item extends Emitter {
    * accessing `item.children[item.children.length - 1]`.
    */
   get lastChild(): Item | null {
-    return this._children?.[this._children.length - 1] || null
+    return this._children?.[this._children.length - 1] ?? null
   }
 
   /**
@@ -1718,7 +1714,7 @@ export class Item extends Emitter {
    */
   get nextSibling(): Item | null {
     const owner = this._getOwner()
-    return owner?._children[this._index + 1] || null
+    return owner?._children[this._index + 1] ?? null
   }
 
   /**
@@ -1726,7 +1722,7 @@ export class Item extends Emitter {
    */
   get previousSibling(): Item | null {
     const owner = this._getOwner()
-    return owner?._children[this._index - 1] || null
+    return owner?._children[this._index - 1] ?? null
   }
 
   /**
@@ -1812,7 +1808,7 @@ export class Item extends Emitter {
     // `insert` follows settings.insertItems and `deep` is true by
     // default. Also support a boolean parameter for insert:
     const { insert = paper.settings.insertItems, deep = true } =
-      typeof options === 'boolean' ? { insert: options } : options || {}
+      typeof options === 'boolean' ? { insert: options } : options ?? {}
     // On items with children, for performance reasons due to the way that
     // styles are currently "flattened" into existing children, we need to
     // clone attributes first, then content.
@@ -1907,7 +1903,7 @@ export class Item extends Emitter {
     if (name) {
       this.name = name
     }
-    this.effects = effects && effects.map(instance => instance._getProps())
+    this.effects = effects?.map(instance => instance._getProps())
   }
 
   /**
@@ -1951,7 +1947,7 @@ export class Item extends Emitter {
     options: { resolution?: number; raster?: Raster; insert?: boolean } = {}
   ): Raster {
     const { resolution, insert = paper.settings.insertItems } = options
-    const raster = options.raster || new Raster(Item.NO_INSERT)
+    const raster = options.raster ?? new Raster(Item.NO_INSERT)
     // What the item draws, with its effects:
     const bounds = this.previewBounds
     const scale = (resolution || this.view.resolution) / 72
@@ -2516,7 +2512,7 @@ export class Item extends Emitter {
    * @see #getItems(options)
    */
   getItem(options: object | ((item: Item) => boolean)): Item | null {
-    return Item._getItems(this, options, this._matrix, null, true)[0] || null
+    return Item._getItems(this, options, this._matrix, null, true)[0] ?? null
   }
 
   // NOTE: We pass children instead of item as first argument so the
@@ -2534,7 +2530,7 @@ export class Item extends Emitter {
       // of _getItems below, mainly related to the handling of
       // inside / overlapping:
       const obj = typeof options === 'object' && options
-      const { recursive, inside, overlapping, ...rest } = obj || {}
+      const { recursive, inside, overlapping, ...rest } = obj ?? {}
       // If overlapping is set, we also perform the inside check:
       const bounds = overlapping || inside
       const rect = bounds && Rectangle.from(bounds)
@@ -2556,7 +2552,7 @@ export class Item extends Emitter {
     }
     const children = item._children
     const { items, rect } = param
-    const transform = rect && (matrix || new Matrix())
+    const transform = rect && (matrix ?? new Matrix())
     if (children) {
       for (const child of children) {
         const childMatrix = transform && transform.appended(child._matrix)
@@ -2612,7 +2608,7 @@ export class Item extends Emitter {
    */
   importJSON(json: string | any[]): Item {
     const data = typeof json === 'string' ? JSON.parse(json) : json
-    const props = data && data[0] === this.className && data[1]
+    const props = data?.[0] === this.className && data[1]
     if (isPlainObject(props)) {
       // Importing into this item: first reset the fields that the JSON
       // leaves out to the values of a new item, so it ends up the same
@@ -2662,7 +2658,7 @@ export class Item extends Emitter {
    */
   insertChild(index: number, item: Item): Item | null {
     const res = item ? this.insertChildren(index, [item]) : null
-    return res && res[0]
+    return res?.[0] ?? null
   }
 
   /**
@@ -2689,7 +2685,7 @@ export class Item extends Emitter {
    */
   insertChildren(index: number, items: Item[]): Item[] | null {
     const children = this._children
-    if (children && items && items.length > 0) {
+    if (children && items?.length > 0) {
       // We need to clone items because it may be an Item#children array.
       // Also, we're removing elements if they don't match _type.
       const list = Array.from(items)
@@ -2699,7 +2695,7 @@ export class Item extends Emitter {
       const inserted = {}
       for (let i = list.length - 1; i >= 0; i--) {
         const item = list[i]
-        const id = item && item._id
+        const id = item?._id
         // If an item was inserted already, it must be included multiple
         // times in the items array. Only insert once. Also leave out
         // this item and its ancestors, which would create a cycle:
@@ -2760,7 +2756,7 @@ export class Item extends Emitter {
    * @return the inserted item, or `null` if inserting was not possible
    */
   _insertAt(item: Item, offset: number): this | null {
-    const owner = item && item._getOwner()
+    const owner = item?._getOwner()
     // Only insert if the item is not the same as `this`, and if it
     // actually has an owner into which we can insert.
     const res = item !== this && owner ? this : null
@@ -2798,7 +2794,7 @@ export class Item extends Emitter {
    */
   sendToBack(): Item | null {
     const owner = this._getOwner()
-    return owner ? owner._insertItem(0, this) : null
+    return owner?._insertItem(0, this) ?? null
   }
 
   /**
@@ -2806,7 +2802,7 @@ export class Item extends Emitter {
    */
   bringToFront(): Item | null {
     const owner = this._getOwner()
-    return owner ? owner._insertItem(undefined, this) : null
+    return owner?._insertItem(undefined, this) ?? null
   }
 
   /**
@@ -2846,7 +2842,7 @@ export class Item extends Emitter {
    */
   reduce(options?: object): Item {
     const children = this._children
-    if (children && children.length === 1) {
+    if (children?.length === 1) {
       const child = children[0].reduce(options)
       // Make sure the reduced item has the same parent as the original.
       if (this._parent) {
@@ -2899,7 +2895,7 @@ export class Item extends Emitter {
       if (index != null) {
         // Only required for layers but not enough to merit an override.
         if (project._activeLayer === (this as Item)) {
-          const sibling = this.nextSibling || this.previousSibling
+          const sibling = this.nextSibling ?? this.previousSibling
           project._activeLayer = sibling as Layer
         }
         splice(owner._children, null, index, 1)
@@ -3022,7 +3018,7 @@ export class Item extends Emitter {
    */
   isEmpty(recursively?: boolean): boolean {
     const children = this._children
-    const numChildren = children ? children.length : 0
+    const numChildren = children?.length ?? 0
     if (recursively) {
       // In recursive check, item is empty if all its children are empty.
       for (let i = 0; i < numChildren; i++) {
@@ -3134,7 +3130,7 @@ export class Item extends Emitter {
    * @return {@true if the item is inserted into the scene graph}
    */
   isInserted(): boolean {
-    return this._parent ? this._parent.isInserted() : false
+    return !!this._parent?.isInserted()
   }
 
   /**
@@ -3205,7 +3201,7 @@ export class Item extends Emitter {
    * item}
    */
   isAncestor(item: Item): boolean {
-    return item ? item.isDescendant(this) : false
+    return !!item?.isDescendant(this)
   }
 
   /**
@@ -3377,7 +3373,7 @@ export class Item extends Emitter {
       this._bounds = bounds
       // If we have cached bounds, try to determine _position as its
       // center. Use _boundsOptions do get the cached default bounds.
-      const cached = bounds[this._getBoundsCacheKey(this._boundsOptions || {})]
+      const cached = bounds[this._getBoundsCacheKey(this._boundsOptions ?? {})]
       if (cached) {
         // use this method to handle pivot case (see #1503)
         this._position = this._getPositionFromBounds(cached.rect)
@@ -3589,7 +3585,7 @@ export class Item extends Emitter {
       if (miterLimit) {
         ctx.miterLimit = miterLimit
       }
-      if (dashArray && dashArray.length) {
+      if (dashArray?.length) {
         ctx.setLineDash(dashArray)
         ctx.lineDashOffset = style.dashOffset
       }
@@ -3766,7 +3762,7 @@ export class Item extends Emitter {
         this._buffered &&
         param.view &&
         !param.clipItem &&
-        (this._buffer ||= {})
+        (this._buffer ??= {})
       )
       const version = this._project._bufferVersion
       isFresh = (
@@ -3881,7 +3877,7 @@ export class Item extends Emitter {
         context: ctx,
         matrix: viewMatrix.clone(),
         pixelRatio,
-        view: param.view || null
+        view: param.view ?? null
       })
     )
     // If we're drawing with a strokeMatrix, the CTM is reset either way
@@ -3936,7 +3932,7 @@ export class Item extends Emitter {
         ctx.translate(-offset.x, -offset.y)
       }
     }
-    if (!isFresh && !(event && event.prevented)) {
+    if (!isFresh && !event?.prevented) {
       const drawParam =
         shadow && !direct
           ? Object.assign(Object.create(param), { dontShadow: true })
@@ -4059,7 +4055,7 @@ export class Item extends Emitter {
           context: ctx,
           matrix: mx.clone(),
           size,
-          color: color || new Color(ctx.strokeStyle as string),
+          color: color ?? new Color(ctx.strokeStyle as string),
           view: this.view
         })
         // Don't let the handler's state leak into the default drawing:
@@ -4081,7 +4077,7 @@ export class Item extends Emitter {
         // global one:
         const position = this._getPosition(true)
         const parent = this._parent
-        const { x, y } = parent ? parent.localToGlobal(position) : position
+        const { x, y } = parent?.localToGlobal(position) ?? position
         ctx.beginPath()
         ctx.arc(x, y, half, 0, Math.PI * 2, true)
         ctx.stroke()
@@ -4170,8 +4166,8 @@ export class Item extends Emitter {
       if (options[name]) {
         const key = 'mouse' + name
         const project = this._project
-        const sets = (project._removeSets ||= {})
-        sets[key] ||= {}
+        const sets = (project._removeSets ??= {})
+        sets[key] ??= {}
         sets[key][this._id] = this
       }
     }
@@ -5980,7 +5976,7 @@ export function importJSON(
     (ctor, args, isRoot) => {
       // If a target is provided and it's of the right type for the root
       // item, import right into it.
-      const useTarget = isRoot && reusable && reusable.constructor === ctor
+      const useTarget = isRoot && reusable?.constructor === ctor
       const isItem = ctor.prototype instanceof Item
       const isLayer = ctor === Layer || ctor.prototype instanceof Layer
       let values = args

@@ -34,7 +34,7 @@ inject(Item.prototype, {
   _effects: null,
 
   get effects(): EffectInstance[] {
-    return this._effects || []
+    return this._effects ?? []
   },
 
   set effects(effects: EffectProps[] | null) {
@@ -57,7 +57,7 @@ inject(Item.prototype, {
     index: number,
     effects: EffectProps[]
   ): EffectInstance[] {
-    const list = (this._effects ||= [])
+    const list = (this._effects ??= [])
     const inserted = effects.map(effect => {
       const instance = new EffectInstance(effect)
       instance._item = this
@@ -70,7 +70,7 @@ inject(Item.prototype, {
   },
 
   removeEffect(this: Item, index: number): EffectInstance | null {
-    return this.removeEffects(index, index + 1)[0] || null
+    return this.removeEffects(index, index + 1)[0] ?? null
   },
 
   removeEffects(this: Item, start = 0, end?: number): EffectInstance[] {
@@ -99,7 +99,7 @@ inject(Item.prototype, {
     let output = this._effectOutput
     if (output === undefined || this._effectVersion !== Effect._version) {
       const art = this._hasEffects() && this._getEffectArt()
-      output = art ? this._applyEffects(art) || art : null
+      output = art ? this._applyEffects(art) ?? art : null
       this._effectOutput = output
       this._effectVersion = Effect._version
     }
@@ -108,12 +108,12 @@ inject(Item.prototype, {
 
   _applyEffects(this: Item, art: Item): Item | null {
     let output = null
-    for (const instance of this._effects || []) {
+    for (const instance of this._effects ?? []) {
       const { effect } = instance
       const onApply = effect?.onApply
       // Unknown effects leave the art as it is:
       if (instance._visible && onApply) {
-        output ||= art
+        output ??= art
         output = onApply.call(instance, { art: output, item: this }) || output
       }
     }
@@ -161,7 +161,7 @@ inject(Item.prototype, {
         for (const child of children) {
           if (child._visible) {
             const rect = child.previewBounds
-            bounds = bounds ? bounds.unite(rect) : rect
+            bounds = bounds?.unite(rect) ?? rect
           }
         }
       }

@@ -193,7 +193,7 @@ export class Tween extends Emitter {
         : 'linear'
     this.easing = isFunction ? easing : Tween.easings[this.type]
     this.duration = duration
-    const state = from || to
+    const state = from ?? to
     this.#keys = state ? Object.keys(state) : []
     this.#parsedKeys = parseKeys(this.#keys)
     this.#from = state && this.#getState(from)

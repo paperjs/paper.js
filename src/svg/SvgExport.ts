@@ -285,7 +285,7 @@ function exportCompoundPath(item: CompoundPath, options: Options): SVGElement {
 // Path data has no place for the names and data of segments, so store them
 // as JSON, keyed by the index of the segment across all paths of the item:
 function getSegmentsData(item: Path | CompoundPath): string | null {
-  const paths = (item._children || [item]) as Path[]
+  const paths = (item._children ?? [item]) as Path[]
   let entries: Record<number, { name?: string; data?: object }> = null
   let index = 0
   for (const path of paths) {
@@ -300,7 +300,7 @@ function getSegmentsData(item: Path | CompoundPath): string | null {
         if (hasData) {
           entry.data = data
         }
-        entries ||= {}
+        entries ??= {}
         entries[index] = entry
       }
       index++
@@ -571,7 +571,7 @@ function exportText(item: TextItem, options: Options): SVGElement {
     const runs = []
     for (const piece of line.pieces) {
       const last = runs[runs.length - 1]
-      if (last && last.style.equals(piece.style)) {
+      if (last?.style.equals(piece.style)) {
         last.content += piece.content
       } else {
         runs.push({ content: piece.content, style: piece.style })
@@ -751,7 +751,7 @@ function applyStyle(
 ): SVGElement {
   const attrs: Attributes = {}
   const parent = !isRoot && item.parent
-  const parentStyle = parent && (parentStyles[parent._id] ||= {})
+  const parentStyle = parent && (parentStyles[parent._id] ??= {})
   const isGroup = item instanceof Group
   const style = []
 
@@ -812,7 +812,7 @@ function applyStyle(
 }
 
 function getDefinition(item: any, type?: string): SVGElement {
-  definitions ||= { ids: {}, svgs: {} }
+  definitions ??= { ids: {}, svgs: {} }
   return item && definitions.svgs[getDefinitionKey(item, type)]
 }
 
@@ -890,7 +890,7 @@ function exportSVG(item: Item, options: Options, isRoot?: boolean): SVGElement {
     return exportSVG(output, options, isRoot)
   }
   const exporter = exporters[item.className]
-  let node = exporter && exporter(item, options)
+  let node = exporter?.(item, options)
   if (node) {
     // Support processNode callback, to provide mechanism to handle
     // special attributes (e.g. inkscape:transform-center)
@@ -911,7 +911,7 @@ function exportSVG(item: Item, options: Options, isRoot?: boolean): SVGElement {
 }
 
 function setOptions(options: Options): Options {
-  options ||= {}
+  options ??= {}
   formatter = new Formatter(options.precision)
   parentStyles = {}
   return options
@@ -965,7 +965,7 @@ inject(Item.prototype, {
   exportSVG(this: Item, options?: Options): SVGElement | string {
     options = setOptions(options)
     const { bounds } = options
-    return bounds || options.matrix
+    return bounds ?? options.matrix
       ? exportRoot([this], this.view, bounds, options)
       : exportDefinitions(exportSVG(this, options, true), options)
   }

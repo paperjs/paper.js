@@ -234,7 +234,7 @@ export class Style extends Base {
   ) {
     super()
     this.#owner = _owner
-    this.#project = _owner?._project || _project || paper.project
+    this.#project = _owner?._project ?? _project ?? paper.project
     // Use different defaults based on the owner
     this._defaults =
       !_owner || _owner instanceof Group
@@ -387,12 +387,12 @@ export class Style extends Base {
 
   hasFill(): boolean {
     const color = this.fillColor
-    return !!color && color.alpha > 0
+    return color?.alpha > 0
   }
 
   hasStroke(): boolean {
     const color = this.strokeColor
-    return !!color && color.alpha > 0 && this.strokeWidth > 0
+    return color?.alpha > 0 && this.strokeWidth > 0
   }
 
   hasShadow(): boolean {
