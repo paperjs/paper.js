@@ -18,6 +18,7 @@
 import { Base } from '../core/Base.ts'
 import { serialize } from '../core/serialization.ts'
 import { Formatter } from '../util/Formatter.ts'
+import { inject } from '../util/object.ts'
 import { Change } from '../constants.ts'
 import { Point } from './Point.ts'
 import type { PointLike } from './Point.ts'
@@ -807,18 +808,21 @@ export class Matrix extends Base {
 
   static {
     // Inject accessors for the values, that notify the owner of changes:
-    for (const key of ['a', 'b', 'c', 'd', 'tx', 'ty']) {
-      const field = `_${key}`
-      Object.defineProperty(this.prototype, key, {
-        get(this: Matrix) {
-          return this[field]
-        },
-        set(this: Matrix, value: number) {
-          this[field] = value
-          this.#changed()
+    inject(
+      this.prototype,
+      ...['a', 'b', 'c', 'd', 'tx', 'ty'].map(key => {
+        const field = `_${key}`
+        return {
+          get [key]() {
+            return this[field]
+          },
+          set [key](value: number) {
+            this[field] = value
+            this.#changed()
+          }
         }
       })
-    }
+    )
   }
 }
 

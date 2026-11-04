@@ -12,7 +12,7 @@
 
 import { Base } from '../core/Base.ts'
 import { Formatter } from '../util/Formatter.ts'
-import { isPlainObject } from '../util/object.ts'
+import { inject, isPlainObject } from '../util/object.ts'
 import { capitalize } from '../util/string.ts'
 import { ItemSelection } from '../constants.ts'
 import { Point, LinkedPoint } from './Point.ts'
@@ -800,25 +800,27 @@ export class Rectangle extends Base {
       rightCenter: ['right', 'centerY'],
       bottomCenter: ['centerX', 'bottom']
     }
-    const { prototype } = this
-    for (const [key, [keyX, keyY]] of Object.entries(corners)) {
-      const getter = `_get${capitalize(key)}`
-      prototype[getter] = function (_dontLink?: boolean) {
-        return _dontLink
-          ? new Point(this[keyX], this[keyY])
-          : new LinkedPoint(this[keyX], this[keyY], this, key)
-      }
-      Object.defineProperty(prototype, key, {
-        get() {
-          return this[getter]()
-        },
-        set(point: PointLike) {
-          const { x, y } = Point.from(point)
-          this[keyX] = x
-          this[keyY] = y
+    inject(
+      this.prototype,
+      ...Object.entries(corners).map(([key, [keyX, keyY]]) => {
+        const getter = `_get${capitalize(key)}`
+        return {
+          [getter](_dontLink?: boolean) {
+            return _dontLink
+              ? new Point(this[keyX], this[keyY])
+              : new LinkedPoint(this[keyX], this[keyY], this, key)
+          },
+          get [key]() {
+            return this[getter]()
+          },
+          set [key](point: PointLike) {
+            const { x, y } = Point.from(point)
+            this[keyX] = x
+            this[keyY] = y
+          }
         }
       })
-    }
+    )
   }
 }
 
@@ -1033,17 +1035,25 @@ export class LinkedRectangle extends Rectangle {
       'bottomRight', 'leftCenter', 'topCenter', 'rightCenter',
       'bottomCenter'
     ]
-    for (const key of keys) {
-      const { get } = Object.getOwnPropertyDescriptor(Rectangle.prototype, key)
-      Object.defineProperty(this.prototype, key, {
-        get,
-        set(value) {
-          const rect = this.clone()
-          rect[key] = value
-          this._set(rect.x, rect.y, rect.width, rect.height)
+    inject(
+      this.prototype,
+      ...keys.map(key => {
+        const { get } = Object.getOwnPropertyDescriptor(
+          Rectangle.prototype,
+          key
+        )
+        return {
+          get [key]() {
+            return get.call(this)
+          },
+          set [key](value) {
+            const rect = this.clone()
+            rect[key] = value
+            this._set(rect.x, rect.y, rect.width, rect.height)
+          }
         }
       })
-    }
+    )
   }
 }
 

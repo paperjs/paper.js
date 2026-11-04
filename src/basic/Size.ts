@@ -11,6 +11,7 @@
  */
 
 import { Base } from '../core/Base.ts'
+import { inject } from '../util/object.ts'
 import { isZero } from '../util/numerical.ts'
 import { Formatter } from '../util/Formatter.ts'
 import type { Point } from './Point.ts'
@@ -532,12 +533,17 @@ export class Size extends Base {
 
   static {
     // Inject round, ceil, floor, abs:
-    for (const key of ['round', 'ceil', 'floor', 'abs']) {
-      const op = Math[key]
-      this.prototype[key] = function () {
-        return new Size(op(this.width), op(this.height))
-      }
-    }
+    inject(
+      this.prototype,
+      ...['round', 'ceil', 'floor', 'abs'].map(key => {
+        const op = Math[key]
+        return {
+          [key]() {
+            return new Size(op(this.width), op(this.height))
+          }
+        }
+      })
+    )
   }
 }
 
