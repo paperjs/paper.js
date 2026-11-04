@@ -29,8 +29,6 @@ export class Group extends Item {
   // undefined if it wasn't looked for yet. Not private, as hosted shells are
   // created without the constructor, see Item#_loadContent():
   _clipItem: Item | null
-  // The canvas that buffered groups draw into, see #buffered:
-  _buffer: any
 
   // DOCS: document new Group(item, item...);
   /**
@@ -303,7 +301,10 @@ export class Group extends Item {
     return json
   }
 
-  _getBounds(matrix: Matrix, options: any): Rectangle {
+  _getBounds(
+    matrix: Matrix,
+    options: any
+  ): Rectangle | { rect: Rectangle; nonscaling: boolean } {
     const clipItem = this._getClipItem()
     return clipItem
       ? clipItem._getCachedBounds(

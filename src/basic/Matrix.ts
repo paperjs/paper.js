@@ -46,6 +46,8 @@ import { Rectangle } from './Rectangle.ts'
  * matrix multiplication).
  */
 export class Matrix extends Base {
+  // The values that Item#transform() saves before it applies the matrix:
+  declare _backup: number[]
   declare _a: number
   declare _b: number
   declare _c: number

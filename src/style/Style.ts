@@ -22,7 +22,6 @@ import { Group } from '../item/Group.ts'
 import { TextItem } from '../text/TextItem.ts'
 import { TextStory } from '../text/TextStory.ts'
 import { TextRange } from '../text/TextRange.ts'
-import type { Item } from '../item/Item.ts'
 import type { Project } from '../item/Project.ts'
 import type { View } from '../view/View.ts'
 
@@ -117,6 +116,13 @@ for (const key in groupDefaults) {
 // The size of superscripts and subscripts, of the font size:
 const scriptSize = 0.583
 
+// What a style belongs to: an item, a text story or a text range.
+interface StyleOwner {
+  _project?: Project
+  _changed(flags: number): void
+  _getStyles(style: Style, key: string, setting?: boolean): Style[]
+}
+
 /**
  * Adds the accessors of the style properties to the class, forwarding to the
  * `_style` of its objects, as Item and TextRange have them.
@@ -208,7 +214,7 @@ export class Style extends Base {
   _values: Record<string, any> = {}
   // The defaults for the owner's kind of item:
   _defaults: Record<string, any>
-  #owner: Item
+  #owner: StyleOwner
   #project: Project
 
   /**
@@ -218,7 +224,11 @@ export class Style extends Base {
    *
    * @param style
    */
-  constructor(style?: object, _owner?: Item, _project?: Project) {
+  constructor(
+    style?: object,
+    _owner?: StyleOwner,
+    _project?: Project
+  ) {
     super()
     this.#owner = _owner
     this.#project = _owner?._project || _project || paper.project
@@ -491,8 +501,11 @@ export class Style extends Base {
   }
 }
 
-// The members defined at runtime rather than in the class body:
-export interface Style {
+/**
+ * The style properties, which Style, Item and TextRange have as accessors,
+ * see defineStyleAccessors().
+ */
+export interface StyleProperties {
   /**
    * {@grouptitle Stroke Style}
    *
@@ -776,8 +789,7 @@ export interface Style {
   /**
    * The letter tracking of text content: the space added after each letter,
    * along the line, in thousandths of an em, as in Adobe Illustrator and
-   * InDesign. A tracking of 100 adds a tenth of the font size. Also
-   * `tracking`, its former name.
+   * InDesign. A tracking of 100 adds a tenth of the font size.
    *
    * @default 0
    */
@@ -990,3 +1002,6 @@ export interface Style {
    */
   direction: string
 }
+
+// The members defined at runtime rather than in the class body:
+export interface Style extends StyleProperties {}

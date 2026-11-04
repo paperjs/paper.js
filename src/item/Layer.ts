@@ -26,6 +26,8 @@ export class Layer extends Group {
   // Counts the changes of the layer's text wraps, by which its area texts
   // know to lay out again, see Item#textWrap:
   declare _textWrapVersion: number
+  // The items that text wraps around, by id, see Item#textWrap:
+  _textWrapItems: Record<string, any>
 
   // DOCS: improve constructor code example.
   /**
