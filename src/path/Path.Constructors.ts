@@ -31,11 +31,12 @@ import type { RectangleLike } from '../basic/Rectangle.ts'
 type PathProps = { [key: string]: any }
 
 // The segments of the unit circle, as [point, handleIn, handleOut]:
+// From the right, as SVG converts ellipses, so dashes match (#601):
 const ellipseSegments = [
-  [[-1, 0], [0, KAPPA], [0, -KAPPA]],
-  [[0, -1], [-KAPPA, 0], [KAPPA, 0]],
   [[1, 0], [0, -KAPPA], [0, KAPPA]],
-  [[0, 1], [KAPPA, 0], [-KAPPA, 0]]
+  [[0, 1], [KAPPA, 0], [-KAPPA, 0]],
+  [[-1, 0], [0, KAPPA], [0, -KAPPA]],
+  [[0, -1], [-KAPPA, 0], [KAPPA, 0]]
 ]
 
 /**
@@ -73,10 +74,11 @@ export function defineConstructors(ctor: typeof Path) {
             : { rectangle: new Rectangle(arg0, arg1) }
       const [rect, props] = readRectangle(object)
       const size = radius && Size.from(radius)
-      const bl = rect._getBottomLeft(true)
+      // From the top left, as SVG converts rectangles, so dashes match (#601):
       const tl = rect._getTopLeft(true)
       const tr = rect._getTopRight(true)
       const br = rect._getBottomRight(true)
+      const bl = rect._getBottomLeft(true)
       let segments: Segment[]
       if (size && !size.isZero()) {
         const { width: rx, height: ry } = Size.min(
@@ -86,21 +88,21 @@ export function defineConstructors(ctor: typeof Path) {
         const hx = rx * KAPPA
         const hy = ry * KAPPA
         segments = [
-          new Segment(bl.add(rx, 0), null, [-hx, 0]),
-          new Segment(bl.subtract(0, ry), [0, hy]),
-          new Segment(tl.add(0, ry), null, [0, -hy]),
           new Segment(tl.add(rx, 0), [-hx, 0], null),
           new Segment(tr.subtract(rx, 0), null, [hx, 0]),
           new Segment(tr.add(0, ry), [0, -hy], null),
           new Segment(br.subtract(0, ry), null, [0, hy]),
-          new Segment(br.subtract(rx, 0), [hx, 0])
+          new Segment(br.subtract(rx, 0), [hx, 0]),
+          new Segment(bl.add(rx, 0), null, [-hx, 0]),
+          new Segment(bl.subtract(0, ry), [0, hy]),
+          new Segment(tl.add(0, ry), null, [0, -hy])
         ]
       } else {
         segments = [
-          new Segment(bl),
           new Segment(tl),
           new Segment(tr),
-          new Segment(br)
+          new Segment(br),
+          new Segment(bl)
         ]
       }
       return createPath(segments, true, props)

@@ -213,8 +213,8 @@ describe('Path Intersections', () => {
     const path1 = new Path.Circle(new Point(50, 50), 50)
     const path2 = new Path.Circle(new Point(100, 100), 50)
     testIntersections(path1.getIntersections(path2), [
-      { point: { x: 100, y: 50 }, index: 2, crossing: true },
-      { point: { x: 50, y: 100 }, index: 3, crossing: true }
+      { point: { x: 100, y: 50 }, index: 0, crossing: true },
+      { point: { x: 50, y: 100 }, index: 1, crossing: true }
     ])
   })
 
@@ -222,8 +222,8 @@ describe('Path Intersections', () => {
     const path1 = new Path.Circle(new Point(110, 110), 80)
     const path2 = new Path.Rectangle(new Point(110, 110), [100, 100])
     testIntersections(path1.getIntersections(path2), [
-      { point: { x: 190, y: 110 }, index: 2, time: 0, crossing: true },
-      { point: { x: 110, y: 190 }, index: 3, time: 0, crossing: true }
+      { point: { x: 190, y: 110 }, index: 0, time: 0, crossing: true },
+      { point: { x: 110, y: 190 }, index: 1, time: 0, crossing: true }
     ])
   })
 
@@ -254,14 +254,14 @@ describe('Path Intersections', () => {
       if (ctor === Path) {
         testIntersections(item1.getIntersections(item2), [
           {
-            point: new Point(0, 100).add(offset),
+            point: new Point(100, 0).add(offset),
             index: 0,
             time: 0.5,
             crossing: true
           },
           {
-            point: new Point(100, 0).add(offset),
-            index: 1,
+            point: new Point(0, 100).add(offset),
+            index: 3,
             time: 0.5,
             crossing: true
           }
@@ -761,15 +761,15 @@ describe('Path Intersections', () => {
     })
     testIntersections(circle1.getIntersections(circle2), [
       {
-        point: { x: 191.16238, y: 58.83762 },
+        point: { x: 58.83762, y: 191.16238 },
         index: 1,
-        time: 0.73431,
+        time: 0.26569,
         crossing: true
       },
       {
-        point: { x: 58.83762, y: 191.16238 },
+        point: { x: 191.16238, y: 58.83762 },
         index: 3,
-        time: 0.26569,
+        time: 0.73431,
         crossing: true
       }
     ])

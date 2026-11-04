@@ -262,7 +262,7 @@ describe('Item', () => {
     equals(path2.bounds, new Rectangle(35, -5, 20, 20))
     equals(nested.bounds, new Rectangle(-5, 35, 20, 20))
     equals(nested.matrix, new Matrix(2, 0, 0, 2, -5, -5))
-    equals(path3.segments[1].point, new Point(0, 20))
+    equals(path3.segments[0].point, new Point(0, 20))
     equals(path1.clipMask, false)
     equals(group.applyMatrix, false)
     equals(layer.ungroup(), null)
@@ -1352,9 +1352,9 @@ describe('Item', () => {
       'path.bounds before scaling'
     )
     equals(
-      path.segments[0].point,
+      path.segments[3].point,
       new Point(-50, 50),
-      'path.segments[0].point before scaling'
+      'path.segments[3].point before scaling'
     )
 
     path.scale(1, 2)
@@ -1370,9 +1370,9 @@ describe('Item', () => {
       'path.bounds after scaling'
     )
     equals(
-      path.segments[0].point,
+      path.segments[3].point,
       new Point(-50, 50),
-      'path.segments[0].point after scaling'
+      'path.segments[3].point after scaling'
     )
 
     path.applyMatrix = true
@@ -1388,9 +1388,9 @@ describe('Item', () => {
       'path.bounds after setting path.applyMatrix = true;'
     )
     equals(
-      path.segments[0].point,
+      path.segments[3].point,
       new Point(-50, 100),
-      'path.segments[0].point after setting path.applyMatrix = true;'
+      'path.segments[3].point after setting path.applyMatrix = true;'
     )
   })
 
@@ -1607,9 +1607,9 @@ describe('Item', () => {
   test('Children global matrices are cleared after parent transformation', () => {
     const item = Path.Rectangle(new Point(0, 0), new Size(100))
     const group = new Group({ children: [item], applyMatrix: false })
-    equals(item.localToGlobal(item.getPointAt(0)), new Point(0, 100))
+    equals(item.localToGlobal(item.getPointAt(0)), new Point(0, 0))
     group.translate(100, 0)
-    equals(item.localToGlobal(item.getPointAt(0)), new Point(100, 100))
+    equals(item.localToGlobal(item.getPointAt(0)), new Point(100, 0))
   })
 
   test('Sibling global matrices are cleared after parent transformation (#1750)', () => {
