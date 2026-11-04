@@ -18,8 +18,8 @@
 // cases.json.
 // Usage: node test/offsetting/fuzz.mjs [count=500] [seed=1] [--profiles]
 
-import { createRequire } from 'node:module'
 import { Worker, isMainThread, parentPort } from 'node:worker_threads'
+import paper from '../../src/node/index.ts'
 import {
   caps,
   checkOutline,
@@ -28,8 +28,6 @@ import {
   joins
 } from './check.mjs'
 
-const require = createRequire(import.meta.url)
-const paper = require('../../dist/paper-full.js')
 const args = process.argv.slice(2).filter(arg => !arg.startsWith('--'))
 const hasProfiles = process.argv.includes('--profiles')
 const count = +args[0] || 500
