@@ -15,7 +15,7 @@ import { Point } from '../basic/Point.ts'
 import type { PointLike } from '../basic/Point.ts'
 import { Size } from '../basic/Size.ts'
 import type { SizeLike } from '../basic/Size.ts'
-import { Rectangle } from '../basic/Rectangle.ts'
+import { Rectangle, readEllipse, readRectangle } from '../basic/Rectangle.ts'
 import type { RectangleLike } from '../basic/Rectangle.ts'
 import { KAPPA } from '../util/numerical.ts'
 import { isPlainObject } from '../util/object.ts'
@@ -66,7 +66,7 @@ export function defineConstructors(ctor: typeof Path) {
           : isPoint(arg0)
             ? { rectangle: new Rectangle(arg0, arg1) }
             : { rectangle: arg0, radius: arg1 }
-      const [rect, props] = takeRectangle(object)
+      const [rect, props] = readRectangle(object)
       const size = radius && Size.from(radius)
       const bl = rect._getBottomLeft(true)
       const tl = rect._getTopLeft(true)
@@ -104,17 +104,8 @@ export function defineConstructors(ctor: typeof Path) {
     Ellipse: function (rectangle: any) {
       const object = isPlainObject(rectangle) ? rectangle : { rectangle }
       // Placed by its center and radius, or by the rectangle around it:
-      if ('radius' in object) {
-        const { center, radius, ...props } = object
-        return createEllipse(Point.from(center), Size.from(radius), props)
-      } else {
-        const [rect, props] = takeRectangle(object)
-        return createEllipse(
-          rect._getCenter(true),
-          rect._getSize(true).divide(2),
-          props
-        )
-      }
+      const { center, radius, props } = readEllipse(object)
+      return createEllipse(center, radius, props)
     },
 
     Arc: function (...args: any[]) {
@@ -561,23 +552,6 @@ function isPoint(value: any): boolean {
 // named form: `rectangle`, or the ones that Rectangle reads from an object,
 // its own and `from` / `to`. Returns the rectangle and the remaining
 // properties, which go to set():
-function takeRectangle({
-  rectangle,
-  ...object
-}: PathProps): [Rectangle, PathProps] {
-  const empty = new Rectangle()
-  const values = {}
-  const props = {}
-  for (const [key, value] of Object.entries(object)) {
-    if (key in empty || key === 'from' || key === 'to') {
-      values[key] = value
-    } else {
-      props[key] = value
-    }
-  }
-  return [Rectangle.from(rectangle ?? values), props]
-}
-
 function createPath(
   segments: Segment[],
   closed: boolean,

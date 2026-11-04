@@ -181,8 +181,7 @@ export class Project extends PaperScopeItem {
       if (entry) {
         entry.flags |= flags
       } else {
-        entry = changesById[id] = { flags }
-        entry[name] = object
+        entry = changesById[id] = { flags, [name]: object }
         changes.push(entry)
       }
     }
