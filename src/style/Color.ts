@@ -19,7 +19,7 @@ import { Change } from '../constants.ts'
 import { Point } from '../basic/Point.ts'
 import type { PointLike } from '../basic/Point.ts'
 import { Matrix } from '../basic/Matrix.ts'
-import { CanvasProvider } from '../canvas/CanvasProvider.ts'
+import { getContext } from '../canvas/canvasProvider.ts'
 import { Gradient } from './Gradient.ts'
 import { PatternDefinition } from './PatternDefinition.ts'
 
@@ -201,7 +201,7 @@ function fromCSS(string: string): [string, number[]] {
       // Use a canvas to draw with the given name, then retrieve RGB values and
       // build a cache for all the used colors.
       if (!colorContext) {
-        colorContext = CanvasProvider.getContext(1, 1, {
+        colorContext = getContext(1, 1, {
           willReadFrequently: true
         })
         if (colorContext) {
