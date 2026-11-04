@@ -106,7 +106,7 @@ describe('AreaText', () => {
 
   test('Any shape: lines fit where they sit', () => {
     const text = createAreaText(
-      new Path.Circle({ center: [100, 100], radius: 100, insert: false }),
+      Path.circle({ center: [100, 100], radius: 100, insert: false }),
       words + ' ' + words
     )
     const lines = text.lines,
@@ -204,8 +204,8 @@ describe('AreaText', () => {
   test('Holes: lines fill both sides of them', () => {
     const area = new CompoundPath({
         children: [
-          new Path.Rectangle(new Rectangle(0, 0, 200, 200)),
-          new Path.Rectangle(new Rectangle(60, 0, 80, 200))
+          Path.rectangle(new Rectangle(0, 0, 200, 200)),
+          Path.rectangle(new Rectangle(60, 0, 80, 200))
         ],
         insert: false
       }),
@@ -276,7 +276,7 @@ describe('AreaText', () => {
 
   test('The object form, clone() and JSON', () => {
     const text = new AreaText({
-      textPath: new Path.Rectangle({
+      textPath: Path.rectangle({
         rectangle: [0, 0, 100, 400],
         insert: false
       }),
@@ -423,7 +423,7 @@ describe('AreaText', () => {
       ),
       text = createAreaText(new Rectangle(0, 0, 200, 300), content),
       rect = new Rectangle(60, 40, 80, 60),
-      wrap = new Path.Rectangle(rect)
+      wrap = Path.rectangle(rect)
     equals(
       text.lines[text.lines.length - 1].bounds.bottom > 260,
       true,
@@ -474,7 +474,7 @@ describe('AreaText', () => {
         words + ' ' + words
       ),
       rect = new Rectangle(60, 40, 80, 60),
-      wrap = new Path.Rectangle({ rectangle: rect, textWrap: true })
+      wrap = Path.rectangle({ rectangle: rect, textWrap: true })
     wrap.sendToBack()
     equals(crosses(text, rect, 6), true, 'not below it')
     wrap.bringToFront()
@@ -490,14 +490,14 @@ describe('AreaText', () => {
       ),
       rect = new Rectangle(60, 40, 80, 60),
       group = new Group({
-        children: [new Path.Rectangle(rect)],
+        children: [Path.rectangle(rect)],
         textWrap: { offset: 0 }
       })
     equals(crosses(text, rect, 0), false, `by the group's paths`)
     group.firstChild.translate(0, 150)
     equals(crosses(text, rect, 0), true, 'which it follows')
     group.textWrap = null
-    const circle = new Path.Circle({
+    const circle = Path.circle({
       center: [100, 100],
       radius: 80,
       textWrap: { offset: 5, invert: true }
@@ -519,7 +519,7 @@ describe('AreaText', () => {
 
   test('textWrap: right to left, the right side first', () => {
     const text = createAreaText(new Rectangle(0, 0, 200, 300), words)
-    new Path.Rectangle({ rectangle: [60, 0, 80, 300], textWrap: true })
+    Path.rectangle({ rectangle: [60, 0, 80, 300], textWrap: true })
     text.direction = 'rtl'
     const lines = text.lines
     equals(lines[0].bounds.left > 100, true, 'the first line on the right')
@@ -527,7 +527,7 @@ describe('AreaText', () => {
   })
 
   test('textWrap: clone() and JSON', () => {
-    const path = new Path.Circle({
+    const path = Path.circle({
       center: [50, 50],
       radius: 20,
       textWrap: { offset: 3, invert: true }
@@ -573,8 +573,8 @@ describe('AreaText', () => {
   test('Space before a paragraph is kept once, also where it moves down', () => {
     const area = new CompoundPath({
         children: [
-          new Path.Rectangle(new Rectangle(0, 0, 100, 300)),
-          new Path.Rectangle(new Rectangle(0, 20, 100, 40))
+          Path.rectangle(new Rectangle(0, 0, 100, 300)),
+          Path.rectangle(new Rectangle(0, 20, 100, 40))
         ],
         insert: false
       }),
@@ -598,7 +598,7 @@ describe('AreaText', () => {
   })
 
   test('Vertical alignment lays out again, to fit the shape', () => {
-    const circle = new Path.Circle({
+    const circle = Path.circle({
         center: [100, 100],
         radius: 100,
         insert: false

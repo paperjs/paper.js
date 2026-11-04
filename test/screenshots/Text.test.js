@@ -112,17 +112,17 @@ describe('Area text', () => {
   test('Lines break between words to fit the area', async () => {
     const style = createScene(300, 140)
     const area = new Rectangle(10, 10, 130, 120)
-    outline(new Path.Rectangle(area))
+    outline(Path.rectangle(area))
     new AreaText({
       ...style,
-      textPath: new Path.Rectangle(area),
+      textPath: Path.rectangle(area),
       content: words
     })
     const justified = new Rectangle(160, 10, 130, 120)
-    outline(new Path.Rectangle(justified))
+    outline(Path.rectangle(justified))
     new AreaText({
       ...style,
-      textPath: new Path.Rectangle(justified),
+      textPath: Path.rectangle(justified),
       content: words,
       justification: 'justify'
     })
@@ -132,10 +132,10 @@ describe('Area text', () => {
   test('Paragraphs, indents and space between them', async () => {
     const style = createScene(300, 200)
     const area = new Rectangle(10, 10, 280, 180)
-    outline(new Path.Rectangle(area))
+    outline(Path.rectangle(area))
     const text = new AreaText({
       ...style,
-      textPath: new Path.Rectangle(area),
+      textPath: Path.rectangle(area),
       content: `${words}\n${words}\n${words}`
     })
     text.paragraphs[0].firstLineIndent = 20
@@ -150,29 +150,29 @@ describe('Area text', () => {
   test('Columns, gutter, inset and vertical alignment', async () => {
     const style = createScene(300, 200)
     const area = new Rectangle(10, 10, 280, 85)
-    outline(new Path.Rectangle(area))
+    outline(Path.rectangle(area))
     new AreaText({
       ...style,
-      textPath: new Path.Rectangle(area),
+      textPath: Path.rectangle(area),
       content: words,
       columns: 3,
       gutter: 15,
       inset: 5
     })
     const centered = new Rectangle(10, 105, 135, 85)
-    outline(new Path.Rectangle(centered))
+    outline(Path.rectangle(centered))
     new AreaText({
       ...style,
-      textPath: new Path.Rectangle(centered),
+      textPath: Path.rectangle(centered),
       content: 'In the middle',
       verticalAlign: 'center',
       justification: 'center'
     })
     const bottom = new Rectangle(155, 105, 135, 85)
-    outline(new Path.Rectangle(bottom))
+    outline(Path.rectangle(bottom))
     new AreaText({
       ...style,
-      textPath: new Path.Rectangle(bottom),
+      textPath: Path.rectangle(bottom),
       content: 'At the bottom',
       verticalAlign: 'bottom',
       justification: 'right'
@@ -182,7 +182,7 @@ describe('Area text', () => {
 
   test('Any shape, and holes', async () => {
     const style = createScene(300, 200)
-    const circle = new Path.Circle({ center: [80, 100], radius: 75 })
+    const circle = Path.circle({ center: [80, 100], radius: 75 })
     outline(circle)
     new AreaText({
       ...style,
@@ -192,8 +192,8 @@ describe('Area text', () => {
     })
     const ring = new CompoundPath({
       children: [
-        new Path.Rectangle(new Rectangle(170, 25, 120, 150)),
-        new Path.Circle({ center: [230, 100], radius: 35 })
+        Path.rectangle(new Rectangle(170, 25, 120, 150)),
+        Path.circle({ center: [230, 100], radius: 35 })
       ]
     })
     outline(ring)
@@ -207,10 +207,10 @@ describe('Area text', () => {
       'The lines of this short paragraph wrap in different ways, or so.'
     ;['normal', 'balance', 'pretty'].forEach((lineWrap, i) => {
       const area = new Rectangle(10 + i * 95, 10, 90, 110)
-      outline(new Path.Rectangle(area))
+      outline(Path.rectangle(area))
       new AreaText({
         ...style,
-        textPath: new Path.Rectangle(area),
+        textPath: Path.rectangle(area),
         content,
         lineWrap
       })
@@ -221,10 +221,10 @@ describe('Area text', () => {
   test('Soft hyphens break words, with a hyphen where they do', async () => {
     const style = createScene(300, 80)
     const area = new Rectangle(10, 10, 110, 60)
-    outline(new Path.Rectangle(area))
+    outline(Path.rectangle(area))
     new AreaText({
       ...style,
-      textPath: new Path.Rectangle(area),
+      textPath: Path.rectangle(area),
       content: 'Extra­ordinarily long words hy­phen­ate.'
     })
     await expectScene()
@@ -233,19 +233,19 @@ describe('Area text', () => {
   test('Text wrap around items above the text', async () => {
     const style = createScene(300, 200)
     const area = new Rectangle(10, 10, 280, 180)
-    outline(new Path.Rectangle(area))
+    outline(Path.rectangle(area))
     new AreaText({
       ...style,
-      textPath: new Path.Rectangle(area),
+      textPath: Path.rectangle(area),
       content: `${words} ${words} ${words} ${words} ${words}`
     })
-    new Path.Circle({
+    Path.circle({
       center: [90, 80],
       radius: 35,
       fillColor: '#9cf',
       textWrap: { offset: 6 }
     })
-    new Path.Rectangle({
+    Path.rectangle({
       rectangle: new Rectangle(190, 110, 80, 60),
       fillColor: '#fc9',
       textWrap: true
@@ -258,17 +258,17 @@ describe('Right to left', () => {
   test('Lines, runs and paths run from the right', async () => {
     const style = createScene(300, 160)
     const area = new Rectangle(10, 10, 280, 60)
-    outline(new Path.Rectangle(area))
+    outline(Path.rectangle(area))
     const text = new AreaText({
       ...style,
-      textPath: new Path.Rectangle(area),
+      textPath: Path.rectangle(area),
       content: 'שלום עולם, שלום עולם, שלום עולם, שלום עולם, שלום עולם',
       direction: 'rtl',
       fontSize: 16
     })
     text.range(5, 9).fontWeight = 'bold'
     text.range(16, 20).fillColor = 'red'
-    const arc = new Path.Arc([20, 150], [150, 90], [280, 150])
+    const arc = Path.arc([20, 150], [150, 90], [280, 150])
     outline(arc)
     new PathText({
       ...style,
@@ -290,10 +290,10 @@ describe('Story flow', () => {
       new Rectangle(10, 105, 280, 85)
     ]
     const texts = areas.map((area, i) => {
-      outline(new Path.Rectangle(area))
+      outline(Path.rectangle(area))
       return new AreaText({
         ...style,
-        textPath: new Path.Rectangle(area),
+        textPath: Path.rectangle(area),
         content: i ? '' : `${words} ${words} ${words} ${words}`
       })
     })
@@ -304,8 +304,8 @@ describe('Story flow', () => {
 
   test('Linked path texts flow into each other', async () => {
     const style = createScene(300, 120)
-    const first = new Path.Line([10, 30], [140, 30])
-    const second = new Path.Arc([160, 90], [225, 20], [290, 90])
+    const first = Path.line([10, 30], [140, 30])
+    const second = Path.arc([160, 90], [225, 20], [290, 90])
     outline(first)
     outline(second)
     const text = new PathText({
@@ -338,7 +338,7 @@ describe('Type along a path', () => {
       content: 'Letters turn to the direction of the path where they sit.',
       fontSize: 14
     })
-    const circle = new Path.Circle({ center: [150, 125], radius: 25 })
+    const circle = Path.circle({ center: [150, 125], radius: 25 })
     outline(circle)
     new PathText({
       ...style,
@@ -353,7 +353,7 @@ describe('Type along a path', () => {
     const style = createScene(300, 200)
     const alignments = ['baseline', 'ascender', 'descender', 'center']
     alignments.forEach((alignment, i) => {
-      const path = new Path.Line([10, 30 + i * 30], [290, 30 + i * 30])
+      const path = Path.line([10, 30 + i * 30], [290, 30 + i * 30])
       outline(path)
       new PathText({
         ...style,
@@ -363,7 +363,7 @@ describe('Type along a path', () => {
         startOffset: 10 + i * 40
       })
     })
-    const arc = new Path.Arc([10, 190], [150, 150], [290, 190])
+    const arc = Path.arc([10, 190], [150, 150], [290, 190])
     outline(arc)
     new PathText({
       ...style,
@@ -378,7 +378,7 @@ describe('Type along a path', () => {
 
   test('A text path with a transformation of its own', async () => {
     const style = createScene(300, 120)
-    const path = new Path.Arc([20, 80], [140, 20], [260, 80])
+    const path = Path.arc([20, 80], [140, 20], [260, 80])
     path.applyMatrix = false
     path.scale(1, 1.5)
     path.rotate(10)

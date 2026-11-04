@@ -17,13 +17,13 @@ import { equals, test } from '../helpers.js'
 describe('Shape', () => {
   test('shape.toPath().toShape()', () => {
     const shapes = {
-      circle: new Shape.Circle({
+      circle: Shape.circle({
         center: [100, 100],
         radius: 50,
         fillColor: 'red'
       }),
 
-      ellipse: new Shape.Ellipse({
+      ellipse: Shape.ellipse({
         center: [100, 200],
         radius: [50, 25],
         fillColor: 'blue',
@@ -32,7 +32,7 @@ describe('Shape', () => {
         rotation: 20
       }),
 
-      rect: new Shape.Rectangle({
+      rect: Shape.rectangle({
         center: [100, 300],
         size: [100, 50],
         fillColor: 'green',
@@ -41,7 +41,7 @@ describe('Shape', () => {
         rotation: -20
       }),
 
-      roundRect: new Shape.Rectangle({
+      roundRect: Shape.rectangle({
         center: [100, 400],
         size: [50, 100],
         radius: [15, 20],
@@ -61,16 +61,16 @@ describe('Shape', () => {
     }
   })
 
-  test('new Shape.Rectangle() with position set before size', () => {
-    const shape1 = new Shape.Rectangle({
+  test('Shape.rectangle() with position set before size', () => {
+    const shape1 = Shape.rectangle({
       position: [0, 0],
       size: new Size(100, 100)
     })
     equals(shape1.bounds.width, 100)
   })
 
-  test('Shape.Rectangle radius works with negative size', () => {
-    const shape = new Shape.Rectangle({
+  test('Shape.rectangle() radius works with negative size', () => {
+    const shape = Shape.rectangle({
       center: [50, 50],
       size: 50,
       fillColor: 'black'
@@ -92,8 +92,8 @@ describe('Shape', () => {
     equals(shape.radius.height, 12.5)
   })
 
-  test('new Shape.Rectangle(rectangle, radius)', () => {
-    const shape = new Shape.Rectangle([0, 0, 10, 20], 2)
+  test('Shape.rectangle(rectangle, radius)', () => {
+    const shape = Shape.rectangle([0, 0, 10, 20], 2)
     equals(shape.size, new Size(10, 20))
     equals(shape.radius, new Size(2, 2))
   })
@@ -105,7 +105,7 @@ describe('Shape', () => {
   })
 
   test('Shape#equals() compares type, size and radius', () => {
-    const rectangle = new Shape.Rectangle({
+    const rectangle = Shape.rectangle({
       point: [0, 0],
       size: [40, 20],
       radius: 5
@@ -115,7 +115,7 @@ describe('Shape', () => {
     other.radius = 6
     equals(rectangle.equals(other), false, 'radius')
     equals(
-      rectangle.equals(new Shape.Ellipse({ point: [0, 0], size: [40, 20] })),
+      rectangle.equals(Shape.ellipse({ point: [0, 0], size: [40, 20] })),
       false,
       'type'
     )
@@ -123,15 +123,15 @@ describe('Shape', () => {
 
   test('Shape#size and #radius keep each other in shape', () => {
     // Circles take the average of width and height:
-    const circle = new Shape.Circle({ center: [0, 0], radius: 10 })
+    const circle = Shape.circle({ center: [0, 0], radius: 10 })
     circle.size = [20, 40]
     equals([circle.size, circle.radius], [new Size(30, 30), 15])
     // Ellipses take half of each:
-    const ellipse = new Shape.Ellipse({ point: [0, 0], size: [10, 10] })
+    const ellipse = Shape.ellipse({ point: [0, 0], size: [10, 10] })
     ellipse.size = [20, 40]
     equals(ellipse.radius, new Size(10, 20))
     // Rectangles grow to fit their radius:
-    const rectangle = new Shape.Rectangle({ point: [0, 0], size: [10, 10] })
+    const rectangle = Shape.rectangle({ point: [0, 0], size: [10, 10] })
     rectangle.radius = [10, 8]
     equals(
       [rectangle.size, rectangle.radius],
@@ -140,7 +140,7 @@ describe('Shape', () => {
   })
 
   test('Shape#contains() of rounded rectangles leaves out their corners', () => {
-    const rectangle = new Shape.Rectangle({
+    const rectangle = Shape.rectangle({
       point: [0, 0],
       size: [40, 40],
       radius: 10,
@@ -156,7 +156,7 @@ describe('Shape', () => {
       const raster = shape.rasterize({ resolution: 72, insert: false })
       return raster.getPixel(raster.width / 2, raster.height / 2).alpha
     }
-    const circle = new Shape.Circle({
+    const circle = Shape.circle({
       center: [20, 20],
       radius: 10,
       fillColor: 'black',
@@ -165,5 +165,12 @@ describe('Shape', () => {
     equals(getAlpha(circle), 0.5, null, { tolerance: 0.01 })
     circle.set({ strokeColor: 'black', strokeWidth: 4 })
     equals(getAlpha(circle), 0.5, null, { tolerance: 0.01 })
+  })
+
+  test('The deprecated constructors create the shapes of the factories', () => {
+    const shape = new Shape.Rectangle([10, 20], [30, 40])
+    equals(shape instanceof Shape, true)
+    equals(shape.type, 'rectangle')
+    equals(shape.bounds, Shape.rectangle([10, 20], [30, 40]).bounds)
   })
 })

@@ -241,10 +241,10 @@ describe('Item', () => {
 
   test('group.ungroup()', () => {
     const layer = paper.project.activeLayer
-    const path1 = new Path.Rectangle([0, 0], [10, 10])
-    const path2 = new Path.Rectangle([20, 0], [10, 10])
+    const path1 = Path.rectangle([0, 0], [10, 10])
+    const path2 = Path.rectangle([20, 0], [10, 10])
     // A nested group that keeps its own matrix:
-    const path3 = new Path.Rectangle([0, 20], [10, 10])
+    const path3 = Path.rectangle([0, 20], [10, 10])
     const nested = new Group({ children: [path3], applyMatrix: false })
     const group = new Group({
       children: [path1, path2, nested],
@@ -425,7 +425,7 @@ describe('Item', () => {
   })
 
   test('item.bounds.selected and item.strokeBounds.selected (#1030)', () => {
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [10, 10],
       size: [20, 20],
       strokeColor: 'black',
@@ -542,7 +542,7 @@ describe('Item', () => {
   })
 
   test('Changing item#position.x', () => {
-    const path = new Path.Circle(new Point(50, 50), 50)
+    const path = Path.circle(new Point(50, 50), 50)
     path.position.x += 5
     equals(
       path.position.toString(),
@@ -645,12 +645,12 @@ describe('Item', () => {
 
   test('Item#blendMode in a transformed Group', () => {
     const layer = new Layer()
-    new Path.Rectangle({
+    Path.rectangle({
       size: [100, 100],
       fillColor: new Color(1, 0, 0)
     })
 
-    const path2 = new Path.Circle({
+    const path2 = Path.circle({
       radius: 25,
       center: [50, 50],
       fillColor: new Color(0, 1, 0),
@@ -691,11 +691,11 @@ describe('Item', () => {
     // Multiply blends each channel as backdrop * source / 255, which canvas
     // draws natively, computed by hand below:
     const layer = new Layer()
-    new Path.Rectangle({
+    Path.rectangle({
       size: [100, 100],
       fillColor: '#ff8033' // 255, 128, 51
     })
-    new Path.Rectangle({
+    Path.rectangle({
       size: [100, 100],
       fillColor: '#3366ff', // 51, 102, 255
       blendMode: 'multiply'
@@ -714,17 +714,17 @@ describe('Item', () => {
     // sources below 50%, and with 2 * source - 255 where that is lighter for
     // sources above, computed by hand for each channel below:
     const layer = new Layer()
-    new Path.Rectangle({
+    Path.rectangle({
       size: [100, 100],
       fillColor: '#645032' // 100, 80, 50
     })
     new Group({
       children: [
-        new Path.Rectangle({
+        Path.rectangle({
           size: [50, 100],
           fillColor: '#1e64e6' // 30, 100, 230
         }),
-        new Path.Rectangle({
+        Path.rectangle({
           point: [50, 0],
           size: [50, 100],
           fillColor: '#c8148c' // 200, 20, 140
@@ -763,12 +763,12 @@ describe('Item', () => {
 
   test('Item#opacity', () => {
     const layer = new Layer()
-    new Path.Rectangle({
+    Path.rectangle({
       size: [100, 100],
       fillColor: 'white'
     })
 
-    const circle = new Path.Circle({
+    const circle = Path.circle({
       radius: 25,
       center: [50, 50],
       fillColor: 'red'
@@ -856,12 +856,12 @@ describe('Item', () => {
     // up to x = 50, and a circle that lies within the view on its right:
     let group = new Group({
       children: [
-        new Path.Rectangle({
+        Path.rectangle({
           from: [-huge, -huge],
           to: [50, huge],
           fillColor: 'red'
         }),
-        new Path.Circle({
+        Path.circle({
           center: [75, 50],
           radius: 20,
           fillColor: 'blue'
@@ -896,14 +896,14 @@ describe('Item', () => {
     // Red * blue = black, and blue over nothing stays blue.
     group = new Group({
       children: [
-        new Path.Rectangle({
+        Path.rectangle({
           from: [-huge, -huge],
           to: [60, huge],
           fillColor: 'red'
         }),
         new Group({
           children: [
-            new Path.Rectangle({
+            Path.rectangle({
               from: [40, -huge],
               to: [huge, 50],
               fillColor: 'blue'
@@ -929,14 +929,14 @@ describe('Item', () => {
 
     // An emulated blend mode with a huge green rectangle that covers the right
     // of the view from x = 50 on, over a red background: Red + green = yellow.
-    const background = new Path.Rectangle({
+    const background = Path.rectangle({
       from: [0, 0],
       to: [100, 100],
       fillColor: 'red'
     })
     group = new Group({
       children: [
-        new Path.Rectangle({
+        Path.rectangle({
           from: [50, -huge],
           to: [huge, huge],
           fillColor: new Color(0, 1, 0)
@@ -960,11 +960,11 @@ describe('Item', () => {
     // left of the view up to x = 50, over a huge red rectangle:
     group = new Group({
       children: [
-        new Path.Rectangle({
+        Path.rectangle({
           from: [-huge, -huge],
           to: [50, huge]
         }),
-        new Path.Rectangle({
+        Path.rectangle({
           from: [-huge, -huge],
           to: [huge, huge],
           fillColor: 'red'
@@ -988,12 +988,12 @@ describe('Item', () => {
     // the view, and the circle at 75 at its right edge:
     new Group({
       children: [
-        new Path.Rectangle({
+        Path.rectangle({
           from: [-huge, -huge],
           to: [50, huge],
           fillColor: 'red'
         }),
-        new Path.Circle({
+        Path.circle({
           center: [75, 50],
           radius: 20,
           fillColor: 'blue'
@@ -1043,7 +1043,7 @@ describe('Item', () => {
     // temporary canvas with blue pixels behind:
     const group = new Group({
       children: [
-        new Path.Rectangle({
+        Path.rectangle({
           from: [0, 0],
           to: [100, 100],
           fillColor: 'blue'
@@ -1056,12 +1056,12 @@ describe('Item', () => {
 
     // A circle with a fill, a stroke and opacity over a red background, which
     // is composited through a temporary canvas:
-    new Path.Rectangle({
+    Path.rectangle({
       from: [0, 0],
       to: [100, 100],
       fillColor: 'red'
     })
-    const circle = new Path.Circle({
+    const circle = Path.circle({
       center: [50, 50],
       radius: 20,
       fillColor: 'lime',
@@ -1081,7 +1081,7 @@ describe('Item', () => {
     // An emulated blend mode over the red background: Red + green = yellow.
     new Group({
       children: [
-        new Path.Circle({
+        Path.circle({
           center: [50, 50],
           radius: 20,
           fillColor: 'lime'
@@ -1142,7 +1142,7 @@ describe('Item', () => {
 
     // A square with a hard shadow, offset to the bottom right of it, without
     // any overlap: The item covers 9..31, the shadow 49..71.
-    let path = new Path.Rectangle({
+    let path = Path.rectangle({
       from: [10, 10],
       to: [30, 30],
       fillColor: 'red',
@@ -1167,7 +1167,7 @@ describe('Item', () => {
     // center, the square from 30 to 40 covers 9..31 in the view again, and
     // its shadow 49..71.
     path.remove()
-    path = new Path.Rectangle({
+    path = Path.rectangle({
       from: [30, 30],
       to: [40, 40],
       fillColor: 'red',
@@ -1193,7 +1193,7 @@ describe('Item', () => {
 
     // A blurred shadow without an offset: Compare it to the shadow that the
     // canvas draws directly without opacity, composited at half opacity.
-    path = new Path.Rectangle({
+    path = Path.rectangle({
       from: [40, 40],
       to: [60, 60],
       fillColor: 'red',
@@ -1221,14 +1221,14 @@ describe('Item', () => {
     // shadows don't stop them from drawing:
     const group = new Group({
       children: [
-        new Path.Rectangle({
+        Path.rectangle({
           from: [10, 10],
           to: [30, 30],
           fillColor: 'red',
           shadowColor: 'black',
           shadowOffset: [40, 40]
         }),
-        new Path.Rectangle({
+        Path.rectangle({
           from: [10, 40],
           to: [30, 50],
           fillColor: 'red',
@@ -1258,7 +1258,7 @@ describe('Item', () => {
       strokeWidth: 10,
       paintOrder: 'stroke'
     }
-    ;[new Path.Rectangle(props), new Shape.Rectangle(props)].forEach(item => {
+    ;[Path.rectangle(props), Shape.rectangle(props)].forEach(item => {
       const name = item.className,
         raster = item.rasterize({ resolution: 72, insert: false })
       equals(raster.getPixel(3, 3), new Color(0, 0, 1, 1), name + ' stroke')
@@ -1276,7 +1276,7 @@ describe('Item', () => {
     // The item casts the shadow of its fill and stroke together, as in the
     // default order, but with the fill painted over the stroke:
     function createPath(props) {
-      return new Path.Rectangle(
+      return Path.rectangle(
         Object.assign(
           {
             from: [10, 10],
@@ -1304,12 +1304,12 @@ describe('Item', () => {
     // Rasterizing draws into the raster's own canvas, away from the view:
     const group = new Group({
       children: [
-        new Path.Rectangle({
+        Path.rectangle({
           from: [200, 200],
           to: [300, 300],
           fillColor: 'red'
         }),
-        new Path.Rectangle({
+        Path.rectangle({
           from: [250, 200],
           to: [300, 250],
           fillColor: 'blue'
@@ -1338,7 +1338,7 @@ describe('Item', () => {
     equals(() => new Raster().applyMatrix, false)
     paper.settings.applyMatrix = applyMatrix
 
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       size: [100, 100],
       position: [0, 0]
     })
@@ -1421,14 +1421,14 @@ describe('Item', () => {
   })
 
   test('Item#pivot', () => {
-    const path1 = new Path.Rectangle({
+    const path1 = Path.rectangle({
       point: [50, 50],
       size: [100, 100],
       strokeColor: 'red',
       applyMatrix: false
     })
 
-    const path2 = new Path.Rectangle({
+    const path2 = Path.rectangle({
       point: [50, 50],
       size: [100, 100],
       strokeColor: 'green',
@@ -1486,7 +1486,7 @@ describe('Item', () => {
   test('Item#scaling, #rotation', () => {
     const expected = new Rectangle(100, 50, 100, 200)
 
-    const rect1 = new Path.Rectangle({
+    const rect1 = Path.rectangle({
       from: [100, 100],
       to: [200, 200],
       applyMatrix: false
@@ -1509,7 +1509,7 @@ describe('Item', () => {
       'rect2.bounds, setting rect2.scaling before rect2.rotation'
     )
 
-    const shape1 = new Shape.Rectangle({
+    const shape1 = Shape.rectangle({
       from: [100, 100],
       to: [200, 200]
     })
@@ -1533,7 +1533,7 @@ describe('Item', () => {
   })
 
   test('Item#scaling = 0 (#1816)', () => {
-    const circle = new Path.Circle({
+    const circle = Path.circle({
       radius: 100,
       center: [100, 100],
       fillColor: 'red',
@@ -1569,7 +1569,7 @@ describe('Item', () => {
       'circle.bounds, with scaling = 1'
     )
 
-    const rect = new Path.Rectangle({
+    const rect = Path.rectangle({
       center: [100, 100],
       size: [200, 100],
       fillColor: 'red',
@@ -1597,7 +1597,7 @@ describe('Item', () => {
   })
 
   test('Item#position pivot point and caching (#1503)', () => {
-    const item = Path.Rectangle(new Point(0, 0), new Size(20))
+    const item = Path.rectangle(new Point(0, 0), new Size(20))
     item.pivot = new Point(0, 0)
     item.bounds
     item.translate(5, 5)
@@ -1605,7 +1605,7 @@ describe('Item', () => {
   })
 
   test('Children global matrices are cleared after parent transformation', () => {
-    const item = Path.Rectangle(new Point(0, 0), new Size(100))
+    const item = Path.rectangle(new Point(0, 0), new Size(100))
     const group = new Group({ children: [item], applyMatrix: false })
     equals(item.localToGlobal(item.getPointAt(0)), new Point(0, 0))
     group.translate(100, 0)
@@ -1614,7 +1614,7 @@ describe('Item', () => {
 
   test('Sibling global matrices are cleared after parent transformation (#1750)', () => {
     function createItem() {
-      return new Path.Rectangle({
+      return Path.rectangle({
         point: [0, 0],
         size: [100, 100],
         applyMatrix: false
@@ -1702,7 +1702,7 @@ describe('Item', () => {
   })
 
   test('Item#rasterize() with empty bounds', () => {
-    new Path.Line([0, 0], [100, 0]).rasterize()
+    Path.line([0, 0], [100, 0]).rasterize()
     paper.view.update() // This should not throw
     expect.assertions(0)
   })
@@ -1710,7 +1710,7 @@ describe('Item', () => {
   test('Item#fitBounds(rectangle[, fit])', () => {
     // A 10 x 20 item in a 50 x 50 rectangle: To be contained, its height
     // becomes 50, to cover the rectangle its width, and to fill it, both.
-    const path = new Path.Rectangle([0, 0, 10, 20])
+    const path = Path.rectangle([0, 0, 10, 20])
     path.fitBounds([0, 0, 50, 50], 'cover')
     equals(path.bounds, new Rectangle(0, -25, 50, 100), 'cover')
     path.fitBounds([0, 0, 50, 50])
@@ -1729,7 +1729,7 @@ describe('Item', () => {
     ;['contain', 'cover', 'fill'].forEach(fit => {
       // An empty rectangle can't scale the item, so it's only centered in
       // it, keeping its size:
-      const path = new Path.Rectangle([0, 0, 10, 20])
+      const path = Path.rectangle([0, 0, 10, 20])
       path.fitBounds(new Rectangle(30, 40, 0, 0), fit)
       equals(
         path.bounds,
@@ -1737,7 +1737,7 @@ describe('Item', () => {
         'into an empty rectangle, ' + fit
       )
       // A line can only be scaled by its width:
-      const line = new Path.Line([0, 0], [10, 0])
+      const line = Path.line([0, 0], [10, 0])
       line.fitBounds(new Rectangle(0, 0, 50, 50), fit)
       equals(
         line.bounds,
@@ -1748,7 +1748,7 @@ describe('Item', () => {
   })
 
   test('Item#rasterize() bounds', () => {
-    const circle = new Path.Circle({
+    const circle = Path.circle({
       center: [50, 50],
       radius: 5,
       fillColor: 'red'
@@ -1795,13 +1795,13 @@ describe('Item', () => {
     function createdClippedGroup(invertedOrder) {
       const compound = new CompoundPath({
         children: [
-          new Path.Circle(new Point(50, 50), 50),
-          new Path.Circle(new Point(100, 50), 50)
+          Path.circle(new Point(50, 50), 50),
+          Path.circle(new Point(100, 50), 50)
         ],
         fillRule: 'evenodd'
       })
 
-      const rectangle = new Shape.Rectangle(
+      const rectangle = Shape.rectangle(
         new Point(0, 0),
         new Point(150, 50)
       )
@@ -1827,7 +1827,7 @@ describe('Item', () => {
         applyMatrix: false,
         matrix,
         children: [
-          new Path.Rectangle({
+          Path.rectangle({
             point: [0, 0],
             size: [100, 100],
             clipMask: true
@@ -1842,7 +1842,7 @@ describe('Item', () => {
         applyMatrix: false,
         matrix: new Matrix(0.5, 0, 0, 0.5, 0, 0),
         children: [
-          new Path.Rectangle({
+          Path.rectangle({
             point: [0, 0],
             size: [400, 400],
             fillColor: 'red'
@@ -1853,7 +1853,7 @@ describe('Item', () => {
     }
 
     function createDirect() {
-      return new Path.Rectangle({
+      return Path.rectangle({
         point: [0, 0],
         size: [200, 200],
         fillColor: 'red',
@@ -1876,9 +1876,9 @@ describe('Item', () => {
 
   test('settings.insertItems for items created from other items (#1721)', () => {
     const settings = paper.settings,
-      path = new Path.Rectangle([0, 0], [100, 100]),
-      circle = new Path.Circle([100, 100], 50),
-      shape = new Shape.Rectangle([0, 0], [100, 100])
+      path = Path.rectangle([0, 0], [100, 100]),
+      circle = Path.circle([100, 100], 50),
+      shape = Shape.rectangle([0, 0], [100, 100])
 
     function create(insert) {
       // Explicit insert arguments override the setting, so only pass them
@@ -1920,7 +1920,7 @@ describe('Item', () => {
   test('settings.scaleStrokes', () => {
     const settings = paper.settings
     function createPath(props) {
-      return new Path.Rectangle(
+      return Path.rectangle(
         Object.assign(
           {
             point: [0, 0],
@@ -2030,7 +2030,7 @@ describe('Item', () => {
     // CanvasProvider, so check that the canvases that it keeps after drawing
     // a large item with opacity at pixel ratio 2 retain at most 8 × 256 × 256
     // pixels:
-    new Path.Rectangle({
+    Path.rectangle({
       from: [0, 0],
       to: [1000, 1000],
       fillColor: 'red',

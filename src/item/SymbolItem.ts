@@ -38,7 +38,7 @@ export class SymbolItem extends Item {
    * @example {@paperscript split=true height=240}
    * // Placing 100 instances of a symbol:
    * // Create a star shaped path at {x: 0, y: 0}:
-   * var path = new Path.Star({
+   * var path = Path.star({
    *     center: new Point(0, 0),
    *     points: 6,
    *     radius1: 5,

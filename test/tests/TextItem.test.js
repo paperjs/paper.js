@@ -99,7 +99,7 @@ describe('TextItem', () => {
       })
       // Rasterize on a background large enough for the stroke:
       return new Group(
-        new Shape.Rectangle({
+        Shape.rectangle({
           rectangle: text.bounds.expand(200),
           fillColor: 'white'
         }),
@@ -129,7 +129,7 @@ describe('TextItem', () => {
       })
       text.scale(4, new Point(0, 0))
       return new Group(
-        new Shape.Rectangle({
+        Shape.rectangle({
           rectangle: text.bounds.expand(20),
           fillColor: 'white'
         }),
@@ -287,14 +287,14 @@ describe('TextItem', () => {
     function createClipped(clipItem) {
       clipItem.clipMask = true
       return new Group([
-        new Path.Circle({
+        Path.circle({
           center: [100, 100],
           radius: 50,
           fillColor: 'blue'
         }),
         new Group([
           clipItem,
-          new Path.Rectangle({
+          Path.rectangle({
             point: [0, 0],
             size: [200, 200],
             fillColor: 'red'
@@ -316,11 +316,11 @@ describe('TextItem', () => {
     function createRectangle() {
       const text = createText()
       text.remove()
-      return new Path.Rectangle(text.bounds)
+      return Path.rectangle(text.bounds)
     }
 
     function createCircle() {
-      return new Path.Circle({ center: [150, 150], radius: 20 })
+      return Path.circle({ center: [150, 150], radius: 20 })
     }
 
     comparePixels(

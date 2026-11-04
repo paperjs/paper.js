@@ -97,7 +97,7 @@ describe('HitResult', () => {
   }
 
   test('hitting a filled shape', () => {
-    const path = new Path.Circle([50, 50], 50)
+    const path = Path.circle([50, 50], 50)
 
     path.hitTest([75, 75])
     testHitResult(
@@ -114,7 +114,7 @@ describe('HitResult', () => {
   })
 
   test('the item on top should be returned', () => {
-    const path = new Path.Circle([50, 50], 50)
+    const path = Path.circle([50, 50], 50)
     path.fillColor = 'red'
 
     // The cloned path is lying above the path:
@@ -148,7 +148,7 @@ describe('HitResult', () => {
   })
 
   test('hitting a selected path', () => {
-    const path = new Path.Circle([50, 50], 50)
+    const path = Path.circle([50, 50], 50)
     path.fillColor = 'red'
 
     testHitResult(
@@ -244,7 +244,7 @@ describe('HitResult', () => {
   })
 
   test('hitting path handles (1)', () => {
-    const path = new Path.Circle(new Point(), 10)
+    const path = Path.circle(new Point(), 10)
     path.firstSegment.handleIn = [-50, 0]
     path.firstSegment.handleOut = [50, 0]
     const firstPoint = path.firstSegment.point
@@ -321,7 +321,7 @@ describe('HitResult', () => {
   })
 
   test('hit-testing a point that is extremely close to a curve', () => {
-    const path = new Path.Rectangle([0, 0], [100, 100])
+    const path = Path.rectangle([0, 0], [100, 100])
     // A point whose x value is extremely close to 0:
     const point = new Point(2.842 / Math.pow(10, 14), 0)
     let error
@@ -390,7 +390,7 @@ describe('HitResult', () => {
   })
 
   test('hitting path bounding box', () => {
-    const path = new Path.Circle({
+    const path = Path.circle({
       center: [100, 100],
       radius: 50,
       fillColor: 'red'
@@ -410,7 +410,7 @@ describe('HitResult', () => {
   })
 
   test('hitting raster bounding box', () => {
-    const path = new Path.Circle({
+    const path = Path.circle({
       center: [100, 100],
       radius: 50,
       fillColor: 'red'
@@ -432,7 +432,7 @@ describe('HitResult', () => {
   })
 
   test('hitting guides', () => {
-    const path = new Path.Circle({
+    const path = Path.circle({
       center: [100, 100],
       radius: 50,
       fillColor: 'red'
@@ -463,7 +463,7 @@ describe('HitResult', () => {
 
   test('hitting raster items', () => {
     // Create a path, rasterize it and then remove the path:
-    const path = new Path.Rectangle(new Point(), new Size(320, 240))
+    const path = Path.rectangle(new Point(), new Size(320, 240))
     path.fillColor = 'red'
     const raster = path.rasterize({ resolution: 72 })
 
@@ -488,7 +488,7 @@ describe('HitResult', () => {
   })
 
   test('hitting path with a text item in the project', () => {
-    const path = new Path.Rectangle(new Point(50, 50), new Point(100, 100))
+    const path = Path.rectangle(new Point(50, 50), new Point(100, 100))
     path.fillColor = 'blue'
 
     let hitResult = paper.project.hitTest(new Point(75, 75))
@@ -519,9 +519,9 @@ describe('HitResult', () => {
     const point2 = new Point(140, 100)
     const delta = new Point(250, 0)
 
-    const path1 = new Path.Circle(point1, 20)
+    const path1 = Path.circle(point1, 20)
     path1.name = 'path1'
-    const path2 = new Path.Circle(point2, 20)
+    const path2 = Path.circle(point2, 20)
     path2.name = 'path2'
 
     const group = new Group(path2)
@@ -598,7 +598,7 @@ describe('HitResult', () => {
   test('hit-testing of placed symbols.', () => {
     const point = new Point(100, 100)
 
-    const path = new Path.Circle([0, 0], 20)
+    const path = Path.circle([0, 0], 20)
     path.fillColor = 'black'
     const definition = new SymbolDefinition(path)
     const placedItem = definition.place(point)
@@ -611,7 +611,7 @@ describe('HitResult', () => {
   })
 
   test('hit-testing the corner of a rectangle with miter stroke.', () => {
-    const rect = new Path.Rectangle({
+    const rect = Path.rectangle({
       rectangle: [100, 100, 300, 200],
       fillColor: '#f00',
       strokeColor: 'blue',
@@ -623,12 +623,12 @@ describe('HitResult', () => {
 
   test('hit-testing invisible items.', () => {
     const point = new Point(0, 0)
-    const circle1 = new Path.Circle({
+    const circle1 = Path.circle({
       center: point.subtract([25, 0]),
       radius: 50,
       fillColor: 'red'
     })
-    const circle2 = new Path.Circle({
+    const circle2 = Path.circle({
       center: point.add([25, 0]),
       radius: 50,
       fillColor: 'blue'
@@ -643,12 +643,12 @@ describe('HitResult', () => {
 
   test('hit-testing guides.', () => {
     const point = new Point(0, 0)
-    const circle1 = new Path.Circle({
+    const circle1 = Path.circle({
       center: point.subtract([25, 0]),
       radius: 50,
       fillColor: 'red'
     })
-    const circle2 = new Path.Circle({
+    const circle2 = Path.circle({
       center: point.add([25, 0]),
       radius: 50,
       fillColor: 'blue'
@@ -672,7 +672,7 @@ describe('HitResult', () => {
   })
 
   test('hit-testing fills with tolerance', () => {
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       from: [50, 50],
       to: [200, 200],
       fillColor: 'red'
@@ -697,10 +697,10 @@ describe('HitResult', () => {
       tolerance: 20
     }
 
-    const shapeRect = new Shape.Rectangle(point, size)
+    const shapeRect = Shape.rectangle(point, size)
     shapeRect.fillColor = 'black'
 
-    const pathRect = new Path.Rectangle(point, size)
+    const pathRect = Path.rectangle(point, size)
     pathRect.fillColor = 'black'
 
     equals(() => {
@@ -767,11 +767,11 @@ describe('HitResult', () => {
 
   test('hit-testing compound-paths', () => {
     const center = new Point(100, 100)
-    const path1 = new Path.Circle({
+    const path1 = Path.circle({
       center,
       radius: 100
     })
-    const path2 = new Path.Circle({
+    const path2 = Path.circle({
       center,
       radius: 50
     })
@@ -806,12 +806,12 @@ describe('HitResult', () => {
   })
 
   test('hit-testing clipped items', () => {
-    const rect = new Path.Rectangle({
+    const rect = Path.rectangle({
       point: [50, 150],
       size: [100, 50],
       fillColor: 'red'
     })
-    const circle = new Path.Circle({
+    const circle = Path.circle({
       center: [100, 200],
       radius: 20,
       fillColor: 'green'
@@ -840,17 +840,17 @@ describe('HitResult', () => {
       red = new Color('red'),
       green = new Color('green'),
       blue = new Color('blue')
-    const c1 = new Path.Circle({
+    const c1 = Path.circle({
       center: point,
       radius: 50,
       fillColor: red
     })
-    const c2 = new Path.Circle({
+    const c2 = Path.circle({
       center: point,
       radius: 50,
       fillColor: green
     })
-    const c3 = new Path.Circle({
+    const c3 = Path.circle({
       center: point,
       radius: 50,
       fillColor: blue
@@ -886,17 +886,17 @@ describe('HitResult', () => {
   })
 
   test('hit-testing for all items', () => {
-    const c1 = new Path.Circle({
+    const c1 = Path.circle({
       center: [100, 100],
       radius: 40,
       fillColor: 'red'
     })
-    const c2 = new Path.Circle({
+    const c2 = Path.circle({
       center: [120, 120],
       radius: 40,
       fillColor: 'green'
     })
-    const c3 = new Path.Circle({
+    const c3 = Path.circle({
       center: [140, 140],
       radius: 40,
       fillColor: 'blue'
@@ -952,7 +952,7 @@ describe('HitResult', () => {
   })
 
   test('hit-testing shapes with strokes and rounded corners (#1207)', () => {
-    const rect = new Shape.Rectangle({
+    const rect = Shape.rectangle({
       size: [300, 180],
       strokeWidth: 30,
       strokeColor: 'black',
@@ -1121,7 +1121,7 @@ describe('HitResult', () => {
   })
 
   test('hit-testing items scaled to 0', () => {
-    const item = new Shape.Rectangle({
+    const item = Shape.rectangle({
       point: [0, 0],
       size: [100, 100],
       fillColor: 'red',
@@ -1144,12 +1144,12 @@ describe('HitResult', () => {
       return hits.map(hit => hit.item)
     }
 
-    const red = new Path.Rectangle({
+    const red = Path.rectangle({
         point: [0, 0],
         size: [50, 50],
         fillColor: 'red'
       }),
-      blue = new Path.Rectangle({
+      blue = Path.rectangle({
         point: [100, 0],
         size: [50, 50],
         strokeColor: 'blue'
@@ -1201,7 +1201,7 @@ describe('HitResult', () => {
   })
 
   test('Item#hitTest() on items in transformed groups (#1803)', () => {
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
         point: [0, 0],
         size: [50, 50],
         fillColor: 'red'
@@ -1312,7 +1312,7 @@ describe('HitResult', () => {
   })
 
   test('hitTestAll() points of items in transformed groups', () => {
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [0, 0],
       size: [10, 10],
       fillColor: 'red'
@@ -1332,7 +1332,7 @@ describe('HitResult', () => {
   })
 
   test('hitTestAll() reports all segments of a path in range (#1294)', () => {
-    const path = new Path.RegularPolygon({
+    const path = Path.regularPolygon({
       center: [100, 100],
       sides: 16,
       radius: 40,
@@ -1371,12 +1371,12 @@ describe('HitResult', () => {
 
   test('Transparent fills are hit, unlike no fill (#1157)', () => {
     const transparent = new Color(0, 0, 0, 0)
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [0, 0],
       size: [20, 20],
       fillColor: transparent
     })
-    const shape = new Shape.Circle({
+    const shape = Shape.circle({
       center: [60, 10],
       radius: 10,
       fillColor: transparent
@@ -1399,7 +1399,7 @@ describe('HitResult', () => {
     // Smooth segments are joined round, whatever the join. The stroke of the
     // circle reaches from radius 45 to 55 around [100, 100]:
     ;['miter', 'bevel', 'round'].forEach(join => {
-      const circle = new Path.Circle({
+      const circle = Path.circle({
         center: [100, 100],
         radius: 50,
         strokeColor: 'black',
@@ -1424,7 +1424,7 @@ describe('HitResult', () => {
       circle.remove()
     })
     // The miter of the corner at [400, 100] reaches to [410, 90]:
-    const rect = new Path.Rectangle({
+    const rect = Path.rectangle({
       rectangle: [100, 100, 300, 200],
       strokeColor: 'black',
       strokeWidth: 20,
@@ -1483,7 +1483,7 @@ describe('HitResult', () => {
       kept.remove()
       applied.remove()
     }
-    const star = new Path.Star({
+    const star = Path.star({
         center: [50, 50],
         points: 5,
         radius1: 20,
@@ -1515,7 +1515,7 @@ describe('HitResult', () => {
     // The rounded corners meet the straight sides in the same direction, with
     // a handle of zero length on the side of the line, so the join adds
     // nothing there. Points inside the stroke at these segments are hit:
-    const rect = new Path.Rectangle({
+    const rect = Path.rectangle({
       point: [0, 0],
       size: [300, 180],
       radius: 90,
@@ -1577,7 +1577,7 @@ describe('HitResult', () => {
     }
     compare(
       'ellipse',
-      new Shape.Ellipse({
+      Shape.ellipse({
         center: [100, 60],
         radius: [90, 30]
       }),
@@ -1585,7 +1585,7 @@ describe('HitResult', () => {
     )
     compare(
       'rounded rectangle',
-      new Shape.Rectangle({
+      Shape.rectangle({
         point: [20, 20],
         size: [160, 60],
         radius: [40, 20]
@@ -1594,7 +1594,7 @@ describe('HitResult', () => {
     )
     compare(
       'circle with a non-scaling stroke',
-      new Shape.Circle([50, 50], 30),
+      Shape.circle([50, 50], 30),
       scale
     )
   })

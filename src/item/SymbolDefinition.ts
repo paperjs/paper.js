@@ -38,7 +38,7 @@ export class SymbolDefinition extends ItemDefinition {
    *
    * @example {@paperscript split=true height=240}
    * // Placing 100 instances of a symbol:
-   * var path = new Path.Star(new Point(0, 0), 6, 5, 13);
+   * var path = Path.star(new Point(0, 0), 6, 5, 13);
    * path.style = {
    *     fillColor: 'white',
    *     strokeColor: 'black'

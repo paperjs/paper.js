@@ -69,8 +69,8 @@ export default function(paper, count, seed) {
                     + pick(offsets),
                 center = new Point(200, 200);
             return [
-                new Path.Circle(center, radius1),
-                new Path.Circle(center.add(new Point(Math.cos(angle),
+                Path.circle(center, radius1),
+                Path.circle(center.add(new Point(Math.cos(angle),
                         Math.sin(angle)).multiply(distance)), radius2)
             ];
         },
@@ -118,7 +118,7 @@ export default function(paper, count, seed) {
             }
             var path = create();
             return [path, random() < 0.5
-                    ? new Path.Rectangle(path.bounds.center.subtract(40, 30),
+                    ? Path.rectangle(path.bounds.center.subtract(40, 30),
                         new Size(range(30, 120), range(30, 120)))
                     : create()];
         }

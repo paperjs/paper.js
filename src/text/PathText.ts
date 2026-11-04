@@ -55,7 +55,7 @@ export class PathText extends TextItem {
    * @param orientation the orientation of the text
    *
    * @example {@paperscript}
-   * var path = new Path.Circle({ center: [80, 80], radius: 60 });
+   * var path = Path.circle({ center: [80, 80], radius: 60 });
    * var text = new PathText(path);
    * text.content = 'Around and around and around';
    * text.fontSize = 16;

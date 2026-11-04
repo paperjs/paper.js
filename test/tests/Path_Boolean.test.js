@@ -27,17 +27,17 @@ describe('Path Boolean Operations', () => {
   }
 
   test('Boolean operations without crossings', () => {
-    const path1 = new Path.Rectangle({
+    const path1 = Path.rectangle({
       point: [0, 0],
       size: [200, 200]
     })
 
-    const path2 = new Path.Rectangle({
+    const path2 = Path.rectangle({
       point: [50, 50],
       size: [100, 100]
     })
 
-    const path3 = new Path.Rectangle({
+    const path3 = Path.rectangle({
       point: [250, 50],
       size: [100, 100]
     })
@@ -61,9 +61,9 @@ describe('Path Boolean Operations', () => {
 
   test('frame.intersect(rect)', () => {
     const frame = new CompoundPath()
-    frame.addChild(new Path.Rectangle(new Point(140, 10), [100, 300]))
-    frame.addChild(new Path.Rectangle(new Point(150, 80), [50, 80]))
-    const rect = new Path.Rectangle(new Point(50, 50), [100, 150])
+    frame.addChild(Path.rectangle(new Point(140, 10), [100, 300]))
+    frame.addChild(Path.rectangle(new Point(150, 80), [50, 80]))
+    const rect = Path.rectangle(new Point(50, 50), [100, 150])
 
     compareBoolean(() => frame.intersect(rect), 'M140,50l10,0l0,150l-10,0z')
   })
@@ -96,7 +96,7 @@ describe('Path Boolean Operations', () => {
   })
 
   test('#541', () => {
-    const shape0 = new Path.Rectangle({
+    const shape0 = Path.rectangle({
       insert: false,
       point: [304, 226],
       size: [328, 328]
@@ -112,14 +112,14 @@ describe('Path Boolean Operations', () => {
       closed: true
     })
     const res1 = shape0.exclude(shape1)
-    const shape2 = new Path.Rectangle({
+    const shape2 = Path.rectangle({
       insert: false,
       point: [174, 128],
       size: [309, 251]
     })
     const res2 = res1.exclude(shape2)
     // shape3
-    const shape3 = new Path.Rectangle({
+    const shape3 = Path.rectangle({
       insert: false,
       point: [318, 148],
       size: [302, 302]
@@ -150,18 +150,18 @@ describe('Path Boolean Operations', () => {
   })
 
   test('#610', () => {
-    const square = new Path.Rectangle({
+    const square = Path.rectangle({
       position: [140, 0],
       size: 300
     })
 
     // Make a ring using subtraction of two circles:
-    const inner = new Path.Circle({
+    const inner = Path.circle({
       center: [0, 0],
       radius: 100
     })
 
-    const outer = new Path.Circle({
+    const outer = Path.circle({
       center: [0, 0],
       radius: 132
     })
@@ -176,8 +176,8 @@ describe('Path Boolean Operations', () => {
 
   test('#719', () => {
     const radius = 50
-    const circle = new Path.Circle([0, 0], radius)
-    const arc = new Path.Arc([0, -radius], [radius, 0], [0, radius])
+    const circle = Path.circle([0, 0], radius)
+    const arc = Path.arc([0, -radius], [radius, 0], [0, radius])
     arc.closed = true
     arc.pivot = arc.bounds.leftCenter
 
@@ -191,8 +191,8 @@ describe('Path Boolean Operations', () => {
   test('#1540, #1541: path.intersect(path, { trace: false }) with closed paths', () => {
     // Splitting a closed path at its first crossing opens it, and the parts
     // it starts with mustn't be decided before all splits are done:
-    const small = new Path.Rectangle({ point: [580, 50], size: [100, 100] })
-    const big = new Path.Rectangle({ point: [600, 50], size: [200, 100] })
+    const small = Path.rectangle({ point: [580, 50], size: [100, 100] })
+    const big = Path.rectangle({ point: [600, 50], size: [200, 100] })
     compareBoolean(
       () => small.intersect(big, { trace: false }),
       'M600,50h80M680,50v100M680,150h-80'
@@ -200,11 +200,11 @@ describe('Path Boolean Operations', () => {
     // Compound paths as the first operand:
     const compound = new CompoundPath({
       children: [
-        new Path.Circle({ center: [50, 50], radius: 30 }),
-        new Path.Circle({ center: [150, 50], radius: 30 })
+        Path.circle({ center: [50, 50], radius: 30 }),
+        Path.circle({ center: [150, 50], radius: 30 })
       ]
     })
-    const rect = new Path.Rectangle({ point: [40, 0], size: [100, 100] })
+    const rect = Path.rectangle({ point: [40, 0], size: [100, 100] })
     compareBoolean(
       () => compound.intersect(rect, { trace: false }),
       'M40,21.70706c3.12779,-1.10551 6.49365,-1.70706 10,-1.70706c16.56854,0 30,13.43146 30,30c0,16.56854 -13.43146,30 -30,30c-3.50635,0 -6.87221,-0.60154 -10,-1.70706M140,78.29294c-11.65192,-4.11836 -20,-15.23075 -20,-28.29294c0,-13.06219 8.34808,-24.17458 20,-28.29294'
@@ -212,7 +212,7 @@ describe('Path Boolean Operations', () => {
   })
 
   test('#757 (path1.intersect(pat2, { trace: false }))', () => {
-    const rect = new Path.Rectangle({
+    const rect = Path.rectangle({
       from: [100, 250],
       to: [350, 350]
     })
@@ -448,7 +448,7 @@ describe('Path Boolean Operations', () => {
       ],
       closed: true
     })
-    const p2 = new Path.Rectangle({ point: [250, 300], size: [100, 200] })
+    const p2 = Path.rectangle({ point: [250, 300], size: [100, 200] })
     compareBoolean(
       () => p1.subtract(p2),
       'M522,352l-22,48l-20,0l-32,48l-98,0l0,-96z M250,448l-150,0l0,-96l150,0z'
@@ -497,12 +497,12 @@ describe('Path Boolean Operations', () => {
   })
 
   test('#870', () => {
-    let path1 = new Path.Rectangle({
+    let path1 = Path.rectangle({
       point: [50, 50],
       size: [150, 50]
     })
 
-    let path2 = new Path.Rectangle({
+    let path2 = Path.rectangle({
       point: [70, 50],
       size: [150, 50]
     })
@@ -512,12 +512,12 @@ describe('Path Boolean Operations', () => {
       'M70,50l130,0l0,50l-130,0z'
     )
 
-    path1 = new Path.Rectangle({
+    path1 = Path.rectangle({
       point: [50, 150],
       size: [50, 100]
     })
 
-    path2 = new Path.Rectangle({
+    path2 = Path.rectangle({
       point: [50, 175],
       size: [50, 100]
     })
@@ -541,7 +541,7 @@ describe('Path Boolean Operations', () => {
       ],
       closed: true
     })
-    const p2 = new Path.Circle([260, 320], 100)
+    const p2 = Path.circle([260, 320], 100)
 
     compareBoolean(
       () => p1.subtract(p2),
@@ -552,8 +552,8 @@ describe('Path Boolean Operations', () => {
   test('#877', () => {
     const cp = new CompoundPath({
       children: [
-        new Path.Circle([100, 60], 50),
-        new Path.Circle([100, 60], 30),
+        Path.circle([100, 60], 50),
+        Path.circle([100, 60], 30),
         new Path({
           segments: [
             [120, 140],
@@ -611,7 +611,7 @@ describe('Path Boolean Operations', () => {
   })
 
   test('#885', () => {
-    const p1 = new Path.Rectangle({ point: [100, 100], size: [100, 100] })
+    const p1 = Path.rectangle({ point: [100, 100], size: [100, 100] })
     const p2 = p1.clone()
     const empty = new Path()
     compareBoolean(() => p1.unite(p2), p1)
@@ -818,10 +818,10 @@ describe('Path Boolean Operations', () => {
   })
 
   test('#923', () => {
-    const p1 = new Path.Circle({ center: [100, 100], radius: 20 })
-    const p2 = new Path.Circle({ center: [150, 100], radius: 20 })
+    const p1 = Path.circle({ center: [100, 100], radius: 20 })
+    const p2 = Path.circle({ center: [150, 100], radius: 20 })
     const cp = new CompoundPath([p1, p2])
-    const p3 = new Path.Circle({ center: [100, 100], radius: 20 })
+    const p3 = Path.circle({ center: [100, 100], radius: 20 })
     cp.strokeColor = 'red'
     p3.strokeColor = 'green'
     compareBoolean(
@@ -831,10 +831,10 @@ describe('Path Boolean Operations', () => {
   })
 
   test('#958', () => {
-    const p1 = new Path.Rectangle({ point: [100, 200], size: [200, 20] })
-    const p2 = new Path.Rectangle({ point: [140, 100], size: [20, 20] })
+    const p1 = Path.rectangle({ point: [100, 200], size: [200, 20] })
+    const p2 = Path.rectangle({ point: [140, 100], size: [20, 20] })
     const cp = new CompoundPath({ children: [p1, p2] })
-    const bounds = new Path.Rectangle(cp.bounds)
+    const bounds = Path.rectangle(cp.bounds)
     compareBoolean(
       () => bounds.intersect(cp),
       'M100,220l0,-20l200,0l0,20z M140,100l20,0l0,20l-20,0z'
@@ -866,7 +866,7 @@ describe('Path Boolean Operations', () => {
   })
 
   test('#973', () => {
-    const path = new Path.Ellipse({ point: [100, 100], size: [150, 110] })
+    const path = Path.ellipse({ point: [100, 100], size: [150, 110] })
     // Move the top down and the bottom up, past each other:
     path.segments[3].point.y += 60
     path.segments[1].point.y -= 60
@@ -1122,12 +1122,12 @@ describe('Path Boolean Operations', () => {
     ]
 
     const p1 = new CompoundPath([
-      new Path.Rectangle({ point: [200, 100], size: [200, 200] }),
+      Path.rectangle({ point: [200, 100], size: [200, 200] }),
       new Path({ segments, closed: true })
     ])
 
     const p2 = new paper.CompoundPath([
-      new Path.Rectangle({ point: [210, 110], size: [180, 180] }),
+      Path.rectangle({ point: [210, 110], size: [180, 180] }),
       new Path({ segments, closed: true })
     ])
 
@@ -1135,7 +1135,7 @@ describe('Path Boolean Operations', () => {
     segments.push(segments.shift())
 
     const p3 = new paper.CompoundPath([
-      new Path.Rectangle({ point: [210, 110], size: [180, 180] }),
+      Path.rectangle({ point: [210, 110], size: [180, 180] }),
       new Path({ segments, closed: true })
     ])
 
@@ -1148,7 +1148,7 @@ describe('Path Boolean Operations', () => {
       [260.5870762798793, 202]
     )
     const p4 = new paper.CompoundPath([
-      new Path.Rectangle({ point: [210, 110], size: [180, 180] }),
+      Path.rectangle({ point: [210, 110], size: [180, 180] }),
       new Path({ segments, closed: true })
     ])
 
@@ -1213,8 +1213,8 @@ describe('Path Boolean Operations', () => {
   })
 
   test('#1123', () => {
-    const p1 = new Path.Rectangle({ point: [100, 100], size: [100, 100] })
-    const p2 = new Path.Rectangle({ point: [120, 120], size: [60, 60] })
+    const p1 = Path.rectangle({ point: [100, 100], size: [100, 100] })
+    const p2 = Path.rectangle({ point: [120, 120], size: [60, 60] })
     compareBoolean(
       () => p1.subtract(p2).subtract(p2),
       'M100,200v-100h100v100zM180,180v-60h-60v60z'
@@ -1222,12 +1222,12 @@ describe('Path Boolean Operations', () => {
   })
 
   test('#1221', () => {
-    const rect1 = new Path.Rectangle({
+    const rect1 = Path.rectangle({
       point: [100, 100],
       size: [200, 200]
     })
 
-    const circle = new Path.Circle({
+    const circle = Path.circle({
       center: [100, 100],
       radius: 100
     })
@@ -1244,7 +1244,7 @@ describe('Path Boolean Operations', () => {
     const blob = PathItem.create(
       'M534,273C171.7,111,60.5,117.1,30,158c-40.5,54.3,31.5,210.2,111,222c60.8,9,88-71.9,159-66c81.6,6.8,99.6,118.3,179,128c33.8,4.1,83.1-9.7,150-90'
     )
-    const rect2 = new Path.Rectangle({
+    const rect2 = Path.rectangle({
       point: [150, 100],
       size: [300, 300]
     })
@@ -1258,7 +1258,7 @@ describe('Path Boolean Operations', () => {
       'M629,352c-66.9,80.3 -116.2,94.1 -150,90c-29.3237,-3.58237 -50.27279,-21.04968 -69.14384,-42h40.14384v-163.46967c26.38045,11.07937 54.34931,23.21157 84,36.46967zM141,380c-79.5,-11.8 -151.5,-167.7 -111,-222c14.74013,-19.76627 48.32873,-31.40457 120,-19.86844v242.56712c-2.92033,-0.01709 -5.91697,-0.24231 -9,-0.69867z'
     )
 
-    const rect3 = new Path.Rectangle({
+    const rect3 = Path.rectangle({
       point: [150, 100],
       size: [300, 150]
     })
@@ -1272,12 +1272,12 @@ describe('Path Boolean Operations', () => {
       'M629,352c-66.9,80.3 -116.2,94.1 -150,90c-79.4,-9.7 -97.4,-121.2 -179,-128c-71,-5.9 -98.2,75 -159,66c-79.5,-11.8 -151.5,-167.7 -111,-222c14.74013,-19.76627 48.32873,-31.40457 120,-19.86844v111.86844h300v-13.46967c26.38045,11.07937 54.34931,23.21157 84,36.46967z'
     )
 
-    const rect4 = new Path.Rectangle({
+    const rect4 = Path.rectangle({
       point: [200, 200],
       size: [400, 200]
     })
 
-    const line = new Path.Line({
+    const line = Path.line({
       from: [400, 300],
       to: [400, 600]
     })
@@ -1290,9 +1290,9 @@ describe('Path Boolean Operations', () => {
 
   test('Boolean operations with options.insert', () => {
     const layer = paper.project.activeLayer,
-      rect1 = new Path.Rectangle([0, 0], [200, 200]),
-      rect2 = new Path.Rectangle([100, 100], [200, 200]),
-      line = new Path.Line([50, 150], [250, 150])
+      rect1 = Path.rectangle([0, 0], [200, 200]),
+      rect2 = Path.rectangle([100, 100], [200, 200]),
+      line = Path.line([50, 150], [250, 150])
     const cases = [
       { path: rect1, options: {} },
       { path: line, options: { trace: false } },
@@ -2598,11 +2598,11 @@ describe('Path Boolean Operations', () => {
   })
 
   test('#1419', () => {
-    const circle1 = Path.Circle({
+    const circle1 = Path.circle({
       center: [0, 0],
       radius: 50
     })
-    const circle2 = Path.Circle({
+    const circle2 = Path.circle({
       center: circle1.position.subtract(25),
       radius: 50
     })
@@ -2633,7 +2633,7 @@ describe('Path Boolean Operations', () => {
   })
 
   test('#1619', () => {
-    const path1 = new Path.Rectangle({
+    const path1 = Path.rectangle({
       from: [200, 600],
       to: [400, 300]
     })
@@ -2743,11 +2743,11 @@ describe('Path Boolean Operations', () => {
   })
 
   test('#2064: orientation of the results of exclude and subtract', () => {
-    const path1 = new Path.Rectangle({
+    const path1 = Path.rectangle({
       point: [100, 100],
       size: [100, 100]
     })
-    const path2 = new Path.Rectangle({
+    const path2 = Path.rectangle({
       point: [190, 190],
       size: [100, 100]
     })
@@ -2758,8 +2758,8 @@ describe('Path Boolean Operations', () => {
       [9900, 9900]
     )
     // Without crossings, path2 is the largest path, but reversed:
-    const small = new Path.Rectangle({ point: [0, 0], size: [10, 10] })
-    const large = new Path.Rectangle({ point: [100, 0], size: [100, 100] })
+    const small = Path.rectangle({ point: [0, 0], size: [10, 10] })
+    const large = Path.rectangle({ point: [100, 0], size: [100, 100] })
     equals(small.subtract(large).area, 100)
   })
 
@@ -2849,7 +2849,7 @@ describe('Path Boolean Operations', () => {
       })
     }
     function createRectangle() {
-      return new Path.Rectangle({ point: [130, 120], size: [100, 40] })
+      return Path.rectangle({ point: [130, 120], size: [100, 40] })
     }
     const expected = [
       [createApart, 5914.43223, 1914.43223, 427.26535, 2341.69758],
@@ -3076,27 +3076,27 @@ describe('Path Boolean Operations', () => {
   test('Boolean operations on many paths at once', () => {
     // Overlaps:
     testManyOperations([
-      new Path.Circle([100, 100], 50),
-      new Path.Circle([150, 100], 50),
-      new Path.Circle([125, 150], 50),
-      new Path.Rectangle([60, 60], [130, 40])
+      Path.circle([100, 100], 50),
+      Path.circle([150, 100], 50),
+      Path.circle([125, 150], 50),
+      Path.rectangle([60, 60], [130, 40])
     ])
     // Coincident edges:
     testManyOperations([
-      new Path.Rectangle([0, 0], [100, 100]),
-      new Path.Rectangle([100, 0], [100, 100]),
-      new Path.Rectangle([0, 0], [100, 50]),
-      new Path.Rectangle([50, 50], [100, 100])
+      Path.rectangle([0, 0], [100, 100]),
+      Path.rectangle([100, 0], [100, 100]),
+      Path.rectangle([0, 0], [100, 50]),
+      Path.rectangle([50, 50], [100, 100])
     ])
     // Nested paths, and a compound path with a hole:
     testManyOperations([
-      new Path.Rectangle([0, 0], [200, 200]),
-      new Path.Rectangle([25, 25], [150, 150]),
-      new Path.Circle([100, 100], 50),
+      Path.rectangle([0, 0], [200, 200]),
+      Path.rectangle([25, 25], [150, 150]),
+      Path.circle([100, 100], 50),
       new CompoundPath({
         children: [
-          new Path.Circle([100, 100], 90),
-          new Path.Circle([100, 100], 30)
+          Path.circle([100, 100], 90),
+          Path.circle([100, 100], 30)
         ]
       })
     ])
@@ -3104,19 +3104,19 @@ describe('Path Boolean Operations', () => {
     testManyOperations([
       new CompoundPath({
         children: [
-          new Path.Rectangle([0, 0], [100, 100]),
-          new Path.Rectangle([50, 50], [100, 100])
+          Path.rectangle([0, 0], [100, 100]),
+          Path.rectangle([50, 50], [100, 100])
         ],
         fillRule: 'evenodd'
       }),
-      new Path.Star([75, 75], 5, 30, 80),
-      new Path.Circle([120, 40], 40)
+      Path.star([75, 75], 5, 30, 80),
+      Path.circle([120, 40], 40)
     ])
   })
 
   test('Boolean operations on many paths with one or none of them', () => {
-    const path1 = new Path.Rectangle([0, 0], [100, 100]),
-      path2 = new Path.Circle([100, 100], 50)
+    const path1 = Path.rectangle([0, 0], [100, 100]),
+      path2 = Path.circle([100, 100], 50)
     ;['unite', 'intersect', 'subtract', 'exclude'].forEach(operation => {
       equals(
         path1[operation]([path2]).pathData,
@@ -3135,12 +3135,12 @@ describe('Path Boolean Operations', () => {
     // The result is inserted above the topmost of the paths that are siblings
     // of the one that the operation is called on:
     const layer = paper.project.activeLayer,
-      path1 = new Path.Rectangle([0, 0], [200, 200]),
-      path2 = new Path.Rectangle([100, 100], [200, 200]),
-      path3 = new Path.Circle([200, 0], 100),
+      path1 = Path.rectangle([0, 0], [200, 200]),
+      path2 = Path.rectangle([100, 100], [200, 200]),
+      path3 = Path.circle([200, 0], 100),
       group = new Group()
     for (let i = 0; i < 5; i++) {
-      group.addChild(new Path.Circle([0, 200], 100 - i * 10))
+      group.addChild(Path.circle([0, 200], 100 - i * 10))
     }
     path3.insertBelow(path2)
     const result = path1.unite([path2, path3, group.lastChild])
@@ -3196,7 +3196,7 @@ describe('Path Boolean Operations', () => {
   test('Boolean operations with a curve that turns back along a straight edge', () => {
     // The curve's control points lie along the square's top edge, and it runs
     // back and forth along it, overlapping it and itself:
-    const square = new Path.Rectangle({ point: [0, 0], size: [100, 100] })
+    const square = Path.rectangle({ point: [0, 0], size: [100, 100] })
     const sliver = new Path('M50,0C30,0 80,0 60,0Z')
     equals(square.unite(sliver).area, 10000)
     equals(square.subtract(sliver).area, 10000)

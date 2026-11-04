@@ -291,15 +291,15 @@ export class Project extends PaperScopeItem {
    *
    * // The following paths will take over all style properties of
    * // the current style:
-   * var path = new Path.Circle(new Point(75, 50), 30);
-   * var path2 = new Path.Circle(new Point(175, 50), 20);
+   * var path = Path.circle(new Point(75, 50), 30);
+   * var path2 = Path.circle(new Point(175, 50), 20);
    *
    * @example {@paperscript}
    * project.currentStyle.fillColor = 'red';
    *
    * // The following path will take over the fill color we just set:
-   * var path = new Path.Circle(new Point(75, 50), 30);
-   * var path2 = new Path.Circle(new Point(175, 50), 20);
+   * var path = Path.circle(new Point(75, 50), 30);
+   * var path2 = Path.circle(new Point(175, 50), 20);
    */
   get currentStyle(): Style {
     return this._currentStyle
@@ -620,13 +620,13 @@ export class Project extends PaperScopeItem {
    *     own descendants
    *
    * @example {@paperscript} // Fetch all selected path items:
-   * var path1 = new Path.Circle({
+   * var path1 = Path.circle({
    *     center: [50, 50],
    *     radius: 25,
    *     fillColor: 'black'
    * });
    *
-   * var path2 = new Path.Circle({
+   * var path2 = Path.circle({
    *     center: [150, 50],
    *     radius: 25,
    *     fillColor: 'black'
@@ -645,13 +645,13 @@ export class Project extends PaperScopeItem {
    * items[0].fillColor = 'red';
    *
    * @example {@paperscript} // Fetch all items with a specific fill color:
-   * var path1 = new Path.Circle({
+   * var path1 = Path.circle({
    *     center: [50, 50],
    *     radius: 25,
    *     fillColor: 'black'
    * });
    *
-   * var path2 = new Path.Circle({
+   * var path2 = Path.circle({
    *     center: [150, 50],
    *     radius: 25,
    *     fillColor: 'purple'
@@ -666,13 +666,13 @@ export class Project extends PaperScopeItem {
    * items[0].selected = true;
    *
    * @example {@paperscript} // Fetch items at a specific position:
-   * var path1 = new Path.Circle({
+   * var path1 = Path.circle({
    *     center: [50, 50],
    *     radius: 25,
    *     fillColor: 'black'
    * });
    *
-   * var path2 = new Path.Circle({
+   * var path2 = Path.circle({
    *     center: [150, 50],
    *     radius: 25,
    *     fillColor: 'black'
@@ -689,14 +689,14 @@ export class Project extends PaperScopeItem {
    * @example {@paperscript} // Fetch items using a comparator function:
    *
    * // Create a circle shaped path:
-   * var path1 = new Path.Circle({
+   * var path1 = Path.circle({
    *     center: [50, 50],
    *     radius: 25,
    *     fillColor: 'black'
    * });
    *
    * // Create a circle shaped path with 50% opacity:
-   * var path2 = new Path.Circle({
+   * var path2 = Path.circle({
    *     center: [150, 50],
    *     radius: 25,
    *     fillColor: 'black',
@@ -716,7 +716,7 @@ export class Project extends PaperScopeItem {
    * @example {@paperscript} // Fetch items using a comparator function (2):
    *
    * // Create a rectangle shaped path (4 segments):
-   * var path1 = new Path.Rectangle({
+   * var path1 = Path.rectangle({
    *     from: [25, 25],
    *     to: [75, 75],
    *     strokeColor: 'black',
@@ -724,7 +724,7 @@ export class Project extends PaperScopeItem {
    * });
    *
    * // Create a line shaped path (2 segments):
-   * var path2 = new Path.Line({
+   * var path2 = Path.line({
    *     from: [125, 50],
    *     to: [175, 50],
    *     strokeColor: 'black',
@@ -745,7 +745,7 @@ export class Project extends PaperScopeItem {
    * @example {@paperscript} // Match (nested) properties of the data property:
    *
    * // Create a black circle shaped path:
-   * var path1 = new Path.Circle({
+   * var path1 = Path.circle({
    *     center: [50, 50],
    *     radius: 25,
    *     fillColor: 'black',
@@ -759,7 +759,7 @@ export class Project extends PaperScopeItem {
    * });
    *
    * // Create a red circle shaped path:
-   * var path2 = new Path.Circle({
+   * var path2 = Path.circle({
    *     center: [150, 50],
    *     radius: 25,
    *     fillColor: 'red',
@@ -789,7 +789,7 @@ export class Project extends PaperScopeItem {
    * @example {@paperscript} // Match strings using regular expressions:
    *
    * // Create a path named 'aardvark':
-   * var path1 = new Path.Circle({
+   * var path1 = Path.circle({
    *     center: [50, 50],
    *     radius: 25,
    *     fillColor: 'black',
@@ -797,7 +797,7 @@ export class Project extends PaperScopeItem {
    * });
    *
    * // Create a path named 'apple':
-   * var path2 = new Path.Circle({
+   * var path2 = Path.circle({
    *     center: [150, 50],
    *     radius: 25,
    *     fillColor: 'black',
@@ -805,7 +805,7 @@ export class Project extends PaperScopeItem {
    * });
    *
    * // Create a path named 'banana':
-   * var path2 = new Path.Circle({
+   * var path2 = Path.circle({
    *     center: [250, 50],
    *     radius: 25,
    *     fillColor: 'black',

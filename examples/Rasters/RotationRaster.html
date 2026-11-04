@@ -20,7 +20,7 @@
                 if (gray > 0.1) {
                     var pos = new Point(x, y) * colSize + colSize / 2;
                     var rectSize = gray * colSize.width;
-                    var path = new Path.Rectangle({
+                    var path = Path.rectangle({
                         size: [rectSize, rectSize],
                         position: pos,
                         fillColor: 'black'

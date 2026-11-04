@@ -93,7 +93,7 @@ describe('Curve', () => {
 
   test('Curve#getPointAtTime()', () => {
     // The quarter from the left to the top:
-    let curve = new Path.Circle({
+    let curve = Path.circle({
       center: [100, 100],
       radius: 100
     }).curves[2]
@@ -140,7 +140,7 @@ describe('Curve', () => {
 
   test('Curve#getTangentAtTime()', () => {
     // The quarter from the left to the top:
-    const curve = new Path.Circle({
+    const curve = Path.circle({
       center: [100, 100],
       radius: 100
     }).curves[2]
@@ -170,7 +170,7 @@ describe('Curve', () => {
 
   test('Curve#getNormalAtTime()', () => {
     // The quarter from the left to the top:
-    const curve = new Path.Circle({
+    const curve = Path.circle({
       center: [100, 100],
       radius: 100
     }).curves[2]
@@ -200,7 +200,7 @@ describe('Curve', () => {
 
   test('Curve#getCurvatureAtTime()', () => {
     // The quarter from the left to the top:
-    const curve = new Path.Circle({
+    const curve = Path.circle({
       center: [100, 100],
       radius: 100
     }).curves[2]
@@ -224,7 +224,7 @@ describe('Curve', () => {
   })
 
   test('Curve#getCurvatureAtTime()', () => {
-    const curve = new Path.Line({
+    const curve = Path.line({
       from: [100, 100],
       to: [200, 200]
     }).firstCurve
@@ -437,7 +437,7 @@ describe('Curve', () => {
 
   test('Curve#getTimeOf()', () => {
     // #708:
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       center: new Point(300, 100),
       size: new Point(100, 100),
       strokeColor: 'black'

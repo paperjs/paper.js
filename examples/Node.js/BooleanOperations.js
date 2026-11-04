@@ -14,7 +14,7 @@ http
       strokeWidth: 1.5
     }
 
-    const first = new Path.Rectangle([50, 50], [150, 150])
+    const first = Path.rectangle([50, 50], [150, 150])
     first.style = style
     const second = first.clone().translate(50, 50)
     second.style = style

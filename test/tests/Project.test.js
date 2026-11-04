@@ -130,10 +130,10 @@ describe('Project', () => {
 
   test('Removed selected items are released from the selection (#1856)', () => {
     const project = new Project()
-    const path = new Path.Circle({ center: [50, 50], radius: 20 })
-    const child = new Path.Rectangle({ point: [0, 0], size: [10, 10] })
+    const path = Path.circle({ center: [50, 50], radius: 20 })
+    const child = Path.rectangle({ point: [0, 0], size: [10, 10] })
     const group = new Group([child])
-    const layer = new Layer([new Path.Line([0, 0], [10, 10])])
+    const layer = new Layer([Path.line([0, 0], [10, 10])])
     path.selected = true
     child.segments[0].selected = true
     layer.firstChild.fullySelected = true
@@ -150,8 +150,8 @@ describe('Project', () => {
 
   test('Reinserted selected items are added to the selection again', () => {
     const project = new Project()
-    const path = new Path.Circle({ center: [50, 50], radius: 20 })
-    const child = new Path.Rectangle({ point: [0, 0], size: [10, 10] })
+    const path = Path.circle({ center: [50, 50], radius: 20 })
+    const child = Path.rectangle({ point: [0, 0], size: [10, 10] })
     const group = new Group([child])
     path.selected = true
     child.selected = true
@@ -171,7 +171,7 @@ describe('Project', () => {
 
   test('Selected items are only added to the selection once inserted', () => {
     const project = new Project()
-    const path = new Path.Circle({
+    const path = Path.circle({
       center: [50, 50],
       radius: 20,
       selected: true,
@@ -194,8 +194,8 @@ describe('Project', () => {
 
   test('trackChanges / takeChanges()', () => {
     const project = new Project()
-    const path = new Path.Circle([50, 50], 20)
-    const removed = new Path.Rectangle([0, 0], [10, 10])
+    const path = Path.circle([50, 50], 20)
+    const removed = Path.rectangle([0, 0], [10, 10])
     equals(project.takeChanges(), null)
     project.trackChanges = true
     path.fillColor = 'red'
@@ -223,7 +223,7 @@ describe('Project', () => {
 
   test('hasChanges()', () => {
     const project = new Project()
-    const path = new Path.Circle([50, 50], 20)
+    const path = Path.circle([50, 50], 20)
     equals(project.hasChanges(), false)
     project.trackChanges = true
     equals(project.hasChanges(), false)
@@ -251,7 +251,7 @@ describe('Project', () => {
 
   test('trackChanges leaves out items that moved to another project', () => {
     const project = new Project()
-    const path = new Path.Circle([50, 50], 20)
+    const path = Path.circle([50, 50], 20)
     const other = new Project()
     project.trackChanges = true
     path.fillColor = 'red'
@@ -263,8 +263,8 @@ describe('Project', () => {
 
   test('trackChanges ignores items that are not inserted', () => {
     const project = new Project()
-    const path1 = new Path.Rectangle([0, 0], [20, 20])
-    const path2 = new Path.Rectangle([10, 10], [20, 20])
+    const path1 = Path.rectangle([0, 0], [20, 20])
+    const path2 = Path.rectangle([10, 10], [20, 20])
     const detached = new Path({ insert: false })
     project.trackChanges = true
     detached.add([10, 10])
@@ -278,8 +278,8 @@ describe('Project', () => {
 
   test('trackChanges logs changes of definitions', () => {
     const project = new Project()
-    const symbol = new SymbolDefinition(new Path.Rectangle([0, 0], [10, 10]))
-    const pattern = new PatternDefinition(new Path.Rectangle([0, 0], [5, 5]))
+    const symbol = new SymbolDefinition(Path.rectangle([0, 0], [10, 10]))
+    const pattern = new PatternDefinition(Path.rectangle([0, 0], [5, 5]))
     project.trackChanges = true
     symbol.item.fillColor = 'red'
     pattern.spacing = 10
@@ -295,21 +295,21 @@ describe('Project', () => {
 
   test('project.patternDefinitions', () => {
     const project = new Project()
-    const pattern = new PatternDefinition(new Path.Rectangle([0, 0], [5, 5]))
-    const other = new PatternDefinition(new Path.Circle([0, 0], 5))
-    new Path.Rectangle({
+    const pattern = new PatternDefinition(Path.rectangle([0, 0], [5, 5]))
+    const other = new PatternDefinition(Path.circle([0, 0], 5))
+    Path.rectangle({
       point: [0, 0],
       size: [40, 40],
       fillColor: { pattern }
     })
-    new Path.Rectangle({
+    Path.rectangle({
       point: [50, 0],
       size: [40, 40],
       fillColor: { pattern },
       strokeColor: { pattern: other }
     })
     new Group(
-      new Path.Rectangle({
+      Path.rectangle({
         point: [100, 0],
         size: [40, 40],
         fillColor: { pattern: other }
@@ -339,7 +339,7 @@ describe('Project', () => {
   test('isEmpty()', () => {
     const project = new Project()
     equals(project.isEmpty(), true)
-    new Path.Circle([50, 50], 20)
+    Path.circle([50, 50], 20)
     equals(project.isEmpty(), false)
   })
 
@@ -356,8 +356,8 @@ describe('Project', () => {
 
   test('project.symbolDefinitions', () => {
     const project = new Project()
-    const definition = new SymbolDefinition(new Path.Circle([0, 0], 10))
-    const other = new SymbolDefinition(new Path.Rectangle([0, 0], [10, 10]))
+    const definition = new SymbolDefinition(Path.circle([0, 0], 10))
+    const other = new SymbolDefinition(Path.rectangle([0, 0], [10, 10]))
     new SymbolItem(definition)
     new Group(new SymbolItem(other), new SymbolItem(definition))
     const definitions = project.symbolDefinitions
@@ -368,9 +368,9 @@ describe('Project', () => {
 
   test('selectAll() / deselectAll()', () => {
     const project = new Project()
-    const path = new Path.Circle([50, 50], 20)
-    const group = new Group(new Path.Rectangle([0, 0], [10, 10]))
-    new Layer(new Path.Circle([100, 100], 10))
+    const path = Path.circle([50, 50], 20)
+    const group = new Group(Path.rectangle([0, 0], [10, 10]))
+    new Layer(Path.circle([100, 100], 10))
     project.selectAll()
     equals(path.fullySelected, true)
     equals(group.firstChild.fullySelected, true)

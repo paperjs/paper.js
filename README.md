@@ -44,7 +44,7 @@ import paper from 'paper'
 paper.setup(document.getElementById('canvas'))
 
 const { Path } = paper
-const circle = new Path.Circle({
+const circle = Path.circle({
   center: paper.view.center,
   radius: 30,
   fillColor: 'red'
@@ -118,7 +118,7 @@ in:
 import paper from 'paper/node'
 
 paper.setup(new paper.Size(300, 200))
-new paper.Path.Circle({ center: [150, 100], radius: 50, fillColor: 'red' })
+paper.Path.circle({ center: [150, 100], radius: 50, fillColor: 'red' })
 await paper.view.exportImage('circle.png')
 ```
 

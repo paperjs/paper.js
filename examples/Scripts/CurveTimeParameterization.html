@@ -30,7 +30,7 @@
                 clone.flatten(step);
                 for (var i = 0; i < clone.segments.length; i++) {
                     var point = clone.segments[i].point;
-                    var circle = new Path.Circle(point, step / 2);
+                    var circle = Path.circle(point, step / 2);
                     circle.strokeColor = 'red';
                     if (remove)
                         circle.removeOnMove();
@@ -42,7 +42,7 @@
                             ? curve.getTimeAt(step, prev)
                             : curve.getTimeAt(pos);
                     var point = curve.getPointAtTime(t);
-                    var circle = new Path.Circle(point, step / 2);
+                    var circle = Path.circle(point, step / 2);
                     circle.strokeColor = 'red';
                     if (remove)
                         circle.removeOnMove();

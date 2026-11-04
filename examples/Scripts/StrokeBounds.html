@@ -71,15 +71,15 @@
             var path = paths[i];
             path.fullySelected = true;
             path.scale(1.5, new Point(300, 0));
-            var rect = new Path.Rectangle(path.strokeBounds);
+            var rect = Path.rectangle(path.strokeBounds);
             rect.strokeWidth = 0.25;
             rect.strokeColor = 'black';
             rect.fillColor = null;
-            var rect = new Path.Rectangle(path.bounds);
+            var rect = Path.rectangle(path.bounds);
             rect.strokeWidth = 0.25;
             rect.strokeColor = 'red';
             rect.fillColor = null;
-            var rect = new Path.Rectangle(path.controlBounds);
+            var rect = Path.rectangle(path.controlBounds);
             rect.strokeWidth = 0.25;
             rect.strokeColor = 'green';
             rect.fillColor = null;

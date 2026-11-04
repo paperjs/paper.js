@@ -443,7 +443,7 @@ export class Rectangle extends Base {
    *
    * // Create a circle shaped path at {x: 80, y: 50}
    * // with a radius of 30.
-   * var circle = new Path.Circle(new Point(80, 50), 30);
+   * var circle = Path.circle(new Point(80, 50), 30);
    * circle.fillColor = 'red';
    *
    * function onMouseMove(event) {
@@ -479,11 +479,11 @@ export class Rectangle extends Base {
    *
    * // Create a circle shaped path at {x: 80, y: 50}
    * // with a radius of 45.
-   * var largeCircle = new Path.Circle(new Point(80, 50), 45);
+   * var largeCircle = Path.circle(new Point(80, 50), 45);
    *
    * // Create a smaller circle shaped path in the same position
    * // with a radius of 30.
-   * var circle = new Path.Circle(new Point(80, 50), 30);
+   * var circle = Path.circle(new Point(80, 50), 30);
    *
    * function onMouseMove(event) {
    *     // Move the circle to the position of the mouse:
@@ -570,11 +570,11 @@ export class Rectangle extends Base {
    *
    * // Create a circle shaped path at {x: 80, y: 50}
    * // with a radius of 45.
-   * var largeCircle = new Path.Circle(new Point(80, 50), 45);
+   * var largeCircle = Path.circle(new Point(80, 50), 45);
    *
    * // Create a smaller circle shaped path in the same position
    * // with a radius of 30.
-   * var circle = new Path.Circle(new Point(80, 50), 30);
+   * var circle = Path.circle(new Point(80, 50), 30);
    *
    * function onMouseMove(event) {
    *     // Move the circle to the position of the mouse:
@@ -628,7 +628,7 @@ export class Rectangle extends Base {
    * var intersected = rectangle1.intersect(rectangle2);
    *
    * // To visualize the intersecting of the rectangles, we will
-   * // create rectangle shaped paths using the Path.Rectangle
+   * // create rectangle shaped paths using Path.rectangle()
    * // constructor.
    *
    * // Have all newly created paths inherit a black stroke:
@@ -636,12 +636,12 @@ export class Rectangle extends Base {
    *
    * // Create two rectangle shaped paths using the abstract rectangles
    * // we created before:
-   * new Path.Rectangle(rectangle1);
-   * new Path.Rectangle(rectangle2);
+   * Path.rectangle(rectangle1);
+   * Path.rectangle(rectangle2);
    *
    * // Create a path that represents the intersected rectangle,
    * // and fill it with red:
-   * var intersectionPath = new Path.Rectangle(intersected);
+   * var intersectionPath = Path.rectangle(intersected);
    * intersectionPath.fillColor = 'red';
    */
   intersect(
@@ -1003,7 +1003,7 @@ export class LinkedRectangle extends Rectangle {
    * @default false
    *
    * @example {@paperscript}
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: [80, 50],
    *     radius: 40,
    *     selected: true

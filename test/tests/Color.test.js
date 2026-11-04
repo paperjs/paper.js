@@ -313,7 +313,7 @@ describe('Color', () => {
 
   test('Gradients notify the items that use them', () => {
     const gradient = new Gradient(['red', 'blue'])
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [0, 0],
       size: [50, 50],
       fillColor: { gradient, origin: [0, 0], destination: [50, 0] }
@@ -378,14 +378,14 @@ describe('Color', () => {
       destination: bottomRight
     }
 
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       topLeft,
       bottomRight,
       fillColor: gradientColor,
       applyMatrix: true
     })
 
-    const shape = new Shape.Rectangle({
+    const shape = Shape.rectangle({
       topLeft,
       bottomRight,
       fillColor: gradientColor,
@@ -413,13 +413,13 @@ describe('Color', () => {
         destination: [400, 300],
         highlight: radial ? [280, 240] : null
       }
-      const path = new Path.Rectangle({
+      const path = Path.rectangle({
         topLeft: [100, 100],
         bottomRight: [400, 400],
         fillColor: gradientColor,
         applyMatrix: true
       })
-      const shape = new Shape.Rectangle({
+      const shape = Shape.rectangle({
         topLeft: [100, 100],
         bottomRight: [400, 400],
         fillColor: gradientColor,
@@ -497,14 +497,14 @@ describe('Color', () => {
 
     // strokeScaling does not affect fills, so a non-scaling shape has to look
     // the same as a scaling one:
-    let expected = new Shape.Rectangle({
+    let expected = Shape.rectangle({
       topLeft,
       bottomRight,
       fillColor: gradientColor,
       strokeScaling: true
     })
 
-    const shape = new Shape.Rectangle({
+    const shape = Shape.rectangle({
       topLeft,
       bottomRight,
       fillColor: gradientColor,
@@ -538,7 +538,7 @@ describe('Color', () => {
     // A non-scaling stroke on a transformed path has to look the same as the
     // stroke of the same width on a path with the transformation applied to
     // its geometry and gradient:
-    expected = new Path.Rectangle({
+    expected = Path.rectangle({
       topLeft,
       bottomRight,
       fillColor: gradientColor,
@@ -546,7 +546,7 @@ describe('Color', () => {
       strokeWidth: 20
     })
 
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       topLeft,
       bottomRight,
       fillColor: gradientColor,

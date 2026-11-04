@@ -58,8 +58,8 @@ describe('Group', () => {
       strokeColor: 'black'
     }
 
-    const path = new Path.Circle([150, 150], 60)
-    const secondPath = new Path.Circle([175, 175], 85)
+    const path = Path.circle([150, 150], 60)
+    const secondPath = Path.circle([175, 175], 85)
     const group = new Group([path, secondPath])
     equals(group.bounds, new Rectangle(90, 90, 170, 170), 'group.bounds')
     equals(
@@ -161,12 +161,12 @@ describe('Group', () => {
     group1.bounds.selected = true
     group1.position.selected = true
     group1.selectedColor = 'black'
-    group1.addChild(new Path.Circle([50, 50], 40))
+    group1.addChild(Path.circle([50, 50], 40))
     // Failing: Add child first then set selected color.
     const group2 = new Group()
     group2.bounds.selected = true
     group2.position.selected = true
-    group2.addChild(new Path.Circle([50, 50], 40))
+    group2.addChild(Path.circle([50, 50], 40))
     group2.selectedColor = 'black'
     comparePixels(group1, group2)
   })
@@ -189,12 +189,12 @@ describe('Group', () => {
   test('group.internalBounds with clip item without clip.applyMatrix = false', () => {
     const point = new Point(100, 100)
     const translation = new Point(100, 100)
-    const item = new Path.Circle({
+    const item = Path.circle({
       center: point,
       radius: 50,
       fillColor: 'orange'
     })
-    const clip = new Path.Rectangle({
+    const clip = Path.rectangle({
       from: point.subtract(translation),
       to: point.add(translation)
     })
@@ -240,7 +240,7 @@ describe('Group', () => {
       clipItem.clipMask = true
       return new Group([
         clipItem,
-        new Path.Rectangle({
+        Path.rectangle({
           point: [0, 0],
           size: [200, 200],
           fillColor: 'red'
@@ -253,15 +253,15 @@ describe('Group', () => {
     comparePixels(
       createClipped(
         new Group([
-          new Path.Rectangle({
+          Path.rectangle({
             point: [0, 0],
             size: [50, 50],
             clipMask: true
           }),
-          new Path.Circle({ center: [25, 25], radius: 20 })
+          Path.circle({ center: [25, 25], radius: 20 })
         ])
       ),
-      createClipped(new Path.Circle({ center: [25, 25], radius: 20 })),
+      createClipped(Path.circle({ center: [25, 25], radius: 20 })),
       'clipping with a clipped group'
     )
     // SVG with a viewBox imports as a group clipped to the viewBox:
@@ -272,21 +272,21 @@ describe('Group', () => {
           ' viewBox="0 0 100 100"><circle cx="50" cy="50" r="20"/></svg>'
         )
       ),
-      createClipped(new Path.Circle({ center: [50, 50], radius: 20 })),
+      createClipped(Path.circle({ center: [50, 50], radius: 20 })),
       'clipping with imported SVG'
     )
   })
 
   test('group.isolated keeps compositing inside the group (#474)', () => {
     function createGroup(isolated) {
-      const rect = new Path.Rectangle({
+      const rect = Path.rectangle({
         point: [0, 0],
         size: [40, 40],
         fillColor: 'red'
       })
       const eraser = new Group({
         children: [
-          new Path.Circle({
+          Path.circle({
             center: [20, 20],
             radius: 10,
             fillColor: 'black',
@@ -337,13 +337,13 @@ describe('Group', () => {
     function createScene(options) {
       const below = paper.project.activeLayer
       below.addChild(
-        new Path.Rectangle({
+        Path.rectangle({
           point: [0, 0],
           size: [100, 50],
           fillColor: 'blue'
         })
       )
-      const path = new Path.Circle({
+      const path = Path.circle({
         center: [40, 40],
         radius: 30,
         fillColor: 'red',
@@ -356,7 +356,7 @@ describe('Group', () => {
             children: [
               new Group([
                 path,
-                new Path.Rectangle({
+                Path.rectangle({
                   point: [40, 40],
                   size: [50, 50],
                   fillColor: new Color(0, 1, 0, 0.5)
@@ -435,7 +435,7 @@ describe('Group', () => {
     test('is isolated', () => {
       const { layer } = createScene()
       layer.addChild(
-        new Path.Rectangle({
+        Path.rectangle({
           point: [0, 0],
           size: [100, 100],
           fillColor: 'black',
@@ -468,7 +468,7 @@ describe('Group', () => {
       path.fillColor = 'orange'
       paper.view.update()
       equals(counter.count, 2, 'after a change of a descendant')
-      layer.lastChild.addChild(new Path.Circle([10, 10], 5))
+      layer.lastChild.addChild(Path.circle([10, 10], 5))
       paper.view.update()
       equals(counter.count, 3, 'after adding a descendant')
       paper.view.zoom = 2
@@ -501,7 +501,7 @@ describe('Group', () => {
 
     test('is drawn again after changes of symbol definitions', () => {
       const definition = new SymbolDefinition(
-        new Path.Circle({ center: [0, 0], radius: 10, fillColor: 'red' })
+        Path.circle({ center: [0, 0], radius: 10, fillColor: 'red' })
       )
       const layer = new Layer({ buffered: true })
       definition.place([50, 50])
@@ -509,7 +509,7 @@ describe('Group', () => {
       paper.view.update()
       equals(counter.count, 1, 'first update')
       new Layer()
-      new Path.Circle([10, 10], 5)
+      Path.circle([10, 10], 5)
       paper.view.update()
       equals(counter.count, 1, 'after a change in another layer')
       definition.item.fillColor = 'blue'
@@ -519,7 +519,7 @@ describe('Group', () => {
     })
 
     test('is drawn again after changes inside symbol definitions', () => {
-      const circle = new Path.Circle({
+      const circle = Path.circle({
         center: [0, 0],
         radius: 10,
         fillColor: 'red'

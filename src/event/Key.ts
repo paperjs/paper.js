@@ -140,7 +140,7 @@ export const Key = {
    * // Whenever the user clicks, create a circle shaped path. If the
    * // 'a' key is pressed, fill it with red, otherwise fill it with blue:
    * function onMouseDown(event) {
-   *     var path = new Path.Circle(event.point, 10);
+   *     var path = Path.circle(event.point, 10);
    *     if (Key.isDown('a')) {
    *         path.fillColor = 'red';
    *     } else {

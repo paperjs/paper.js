@@ -111,7 +111,7 @@ export class GradientStop extends Base {
    * // Create a circle shaped path at the center of the view,
    * // using 40% of the height of the view as its radius
    * // and fill it with a radial gradient color:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: view.center,
    *     radius: view.bounds.height * 0.4
    * });
@@ -156,7 +156,7 @@ export class GradientStop extends Base {
    * // Create a circle shaped path at the center of the view,
    * // using 40% of the height of the view as its radius
    * // and fill it with a radial gradient color:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: view.center,
    *     radius: view.bounds.height * 0.4
    * });

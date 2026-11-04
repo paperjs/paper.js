@@ -280,7 +280,7 @@ export function comparePixels(actual, expected, message, options) {
     new Group({
       insert: false,
       children: [
-        new Shape.Rectangle({
+        Shape.rectangle({
           rectangle: bounds,
           fillColor: 'white'
         })

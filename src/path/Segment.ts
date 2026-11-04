@@ -422,7 +422,7 @@ export class Segment extends Base {
    * Specifies whether the segment is selected.
    *
    * @example {@paperscript}
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: [80, 50],
    *     radius: 40
    * });

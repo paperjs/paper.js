@@ -9,7 +9,7 @@
         for (var i = 0; i < 6; i++)
             stops.push({ hue: (i - 3) * 60, saturation: 1, brightness: 1 });
         var size = new Size(150, 150)
-        var background = new Path.Rectangle({
+        var background = Path.rectangle({
             rectangle: new Rectangle(size),
             fillColor: {
                 stops: stops,

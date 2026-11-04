@@ -39,7 +39,7 @@
         var end = text.content.length;
         text.range(end - 1, end).baselinePosition = 'superscript';
 
-        var bounds = new Path.Rectangle({
+        var bounds = Path.rectangle({
             rectangle: text.bounds,
             strokeColor: '#ddd'
         });

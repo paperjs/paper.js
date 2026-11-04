@@ -49,7 +49,7 @@ describe('SvgExport', () => {
       y1: 5,
       y2: 45
     }
-    const path = new Path.Line([attrs.x1, attrs.y1], [attrs.x2, attrs.y2])
+    const path = Path.line([attrs.x1, attrs.y1], [attrs.x2, attrs.y2])
     equals(path.exportSVG({ matchShapes: true }), createSVG('line', attrs))
   })
 
@@ -60,7 +60,7 @@ describe('SvgExport', () => {
       width: 100,
       height: 100
     }
-    const path = new Path.Rectangle(attrs)
+    const path = Path.rectangle(attrs)
     equals(path.exportSVG({ matchShapes: true }), createSVG('rect', attrs))
   })
 
@@ -73,7 +73,7 @@ describe('SvgExport', () => {
       width: 100,
       height: 100
     }
-    const path = new Path.Rectangle(
+    const path = Path.rectangle(
       new Rectangle(attrs),
       new Size(attrs.rx, attrs.ry)
     )
@@ -87,7 +87,7 @@ describe('SvgExport', () => {
       rx: 100,
       ry: 50
     }
-    const path = new Path.Ellipse({
+    const path = Path.ellipse({
       center: new Point(attrs.cx, attrs.cy),
       radius: new Point(attrs.rx, attrs.ry)
     })
@@ -103,7 +103,7 @@ describe('SvgExport', () => {
       cy: 80,
       r: 50
     }
-    const path = new Path.Circle({
+    const path = Path.circle({
       center: new Point(attrs.cx, attrs.cy),
       radius: attrs.r
     })
@@ -159,7 +159,7 @@ describe('SvgExport', () => {
   })
 
   test('Export SVG viewbox attribute with top left at origin', () => {
-    new Path.Rectangle(new Point(10, 10), new Size(80))
+    Path.rectangle(new Point(10, 10), new Size(80))
     const rectangle = new Rectangle(new Point(0, 0), new Size(100))
     equals(
       paper.project
@@ -170,7 +170,7 @@ describe('SvgExport', () => {
   })
 
   test('Item#exportSVG() with bounds', () => {
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [10, 20],
       size: [30, 40],
       strokeColor: 'black',
@@ -189,7 +189,7 @@ describe('SvgExport', () => {
   })
 
   test('Item#exportSVG() with matrix', () => {
-    const path = new Path.Rectangle([10, 20], [30, 40])
+    const path = Path.rectangle([10, 20], [30, 40])
     const node = path.exportSVG({ matrix: new Matrix().scale(2, [0, 0]) })
     equals(node.nodeName.toLowerCase(), 'svg')
     equals(node.firstChild.getAttribute('transform'), 'scale(2,2)')
@@ -198,13 +198,13 @@ describe('SvgExport', () => {
 
   test('Export SVG group with mixed children styles (#1732)', () => {
     const group = new Group([
-      new Path.Rectangle({
+      Path.rectangle({
         point: [0, 0],
         size: [10, 10],
         fillColor: 'red',
         fillRule: 'evenodd'
       }),
-      new Path.Rectangle({
+      Path.rectangle({
         point: [20, 0],
         size: [10, 10],
         strokeColor: 'blue'
@@ -232,12 +232,12 @@ describe('SvgExport', () => {
 
   test('Export SVG of nested groups with shared styles (#1353)', () => {
     const inner = new Group([
-        new Path.Circle({ center: [10, 10], radius: 5 }),
-        new Path.Circle({ center: [30, 10], radius: 5 })
+        Path.circle({ center: [10, 10], radius: 5 }),
+        Path.circle({ center: [30, 10], radius: 5 })
       ]),
       outer = new Group([
         inner,
-        new Path.Circle({ center: [50, 10], radius: 5 })
+        Path.circle({ center: [50, 10], radius: 5 })
       ])
     outer.fillColor = 'red'
     inner.strokeColor = 'blue'
@@ -261,7 +261,7 @@ describe('SvgExport', () => {
   })
 
   test('Export SVG as valid XML (#1922)', () => {
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [0, 0],
       size: [10, 10],
       name: 'a<b>c&d"e',
@@ -309,7 +309,7 @@ describe('SvgExport', () => {
   })
 
   test('Export SVG without segment names and data (#2398)', () => {
-    const path = new Path.Rectangle([0, 0], [10, 10])
+    const path = Path.rectangle([0, 0], [10, 10])
     path.firstSegment.data // Accessing creates empty data.
     equals(
       path.exportSVG().hasAttribute('data-paper-segments'),
@@ -331,8 +331,8 @@ describe('SvgExport', () => {
   test('Export SVG compound path with segment names and data (#2398)', () => {
     const compound = new CompoundPath({
       children: [
-        new Path.Rectangle([0, 0], [100, 100]),
-        new Path.Rectangle([25, 25], [50, 50])
+        Path.rectangle([0, 0], [100, 100]),
+        Path.rectangle([25, 25], [50, 50])
       ]
     })
     compound.children[0].segments[3].name = 'outer'
@@ -355,7 +355,7 @@ describe('SvgExport', () => {
   })
 
   test('Export SVG gradients in the coordinates of items that keep their matrix (#2410)', () => {
-    const item = new Path.Rectangle({
+    const item = Path.rectangle({
       rectangle: new Rectangle(50, 50, 100, 100),
       fillColor: {
         gradient: { stops: ['white', 'blue'] },
@@ -386,15 +386,15 @@ describe('SvgExport', () => {
     const clip = new Group({
       children: [
         new Group([
-          new Path.Rectangle({
+          Path.rectangle({
             point: [0, 0],
             size: [50, 50],
             clipMask: true
           }),
-          new Path.Circle({ center: [25, 25], radius: 20 })
+          Path.circle({ center: [25, 25], radius: 20 })
         ]),
         new Group([
-          new Path.Rectangle({ point: [60, 0], size: [10, 10] })
+          Path.rectangle({ point: [60, 0], size: [10, 10] })
         ])
       ],
       applyMatrix: false
@@ -403,7 +403,7 @@ describe('SvgExport', () => {
     clip.clipMask = true
     const group = new Group([
         clip,
-        new Path.Rectangle({
+        Path.rectangle({
           point: [0, 0],
           size: [200, 200],
           fillColor: 'red'
@@ -442,14 +442,14 @@ describe('SvgExport', () => {
   })
 
   test('Export SVG with idPrefix (#1709)', () => {
-    const clip = new Path.Rectangle({
+    const clip = Path.rectangle({
       point: [0, 0],
       size: [50, 50],
       clipMask: true
     })
     new Group([
       clip,
-      new Path.Circle({
+      Path.circle({
         center: [25, 25],
         radius: 30,
         fillColor: {
@@ -462,7 +462,7 @@ describe('SvgExport', () => {
     ])
     const canvas = CanvasProvider.getCanvas(10, 10),
       raster = new Raster(canvas),
-      symbol = new SymbolDefinition(new Path.Rectangle([0, 0], [10, 10]))
+      symbol = new SymbolDefinition(Path.rectangle([0, 0], [10, 10]))
     symbol.place([100, 100])
     raster.position = [80, 80]
 
@@ -723,7 +723,7 @@ describe('SvgExport', () => {
     test('Export SVG layers as Inkscape layers through a callback', () => {
       const ns = 'http://www.inkscape.org/namespaces/inkscape'
       paper.project.activeLayer.name = 'Shapes'
-      new Path.Circle({ center: [50, 50], radius: 10, fillColor: 'red' })
+      Path.circle({ center: [50, 50], radius: 10, fillColor: 'red' })
       new Layer()
       const svg = paper.project.exportSVG({
         asString: true,
@@ -752,14 +752,14 @@ describe('SvgExport', () => {
   if (!isNodeContext) {
     // JSDom does not have SVG rendering, so we can't test there.
     test('Export transformed shapes', assert => {
-      let rect = new Shape.Rectangle({
+      let rect = Shape.rectangle({
         point: [200, 100],
         size: [200, 300],
         fillColor: 'red'
       })
       rect.rotate(40)
 
-      const circle = new Shape.Circle({
+      const circle = Shape.circle({
         center: [200, 300],
         radius: 100,
         fillColor: 'green'
@@ -767,14 +767,14 @@ describe('SvgExport', () => {
       circle.scale(0.5, 1)
       circle.rotate(40)
 
-      const ellipse = new Shape.Ellipse({
+      const ellipse = Shape.ellipse({
         point: [300, 300],
         size: [100, 200],
         fillColor: 'blue'
       })
       ellipse.rotate(-40)
 
-      rect = new Shape.Rectangle({
+      rect = Shape.rectangle({
         point: [250, 20],
         size: [200, 300],
         radius: [40, 20],
@@ -789,7 +789,7 @@ describe('SvgExport', () => {
     })
 
     test('Export not invertible item.matrix', assert => {
-      new Shape.Rectangle({
+      Shape.rectangle({
         point: [100, 100],
         size: [100, 100],
         fillColor: 'red',
@@ -805,7 +805,7 @@ describe('SvgExport', () => {
     // Each with one item, as compareSVG() places the export by the bounds
     // without strokes:
     test('Export gradients of shapes, which keep their matrix (#2410)', assert => {
-      const rect = new Shape.Rectangle({
+      const rect = Shape.rectangle({
         point: [100, 100],
         size: [200, 100],
         fillColor: {
@@ -824,7 +824,7 @@ describe('SvgExport', () => {
     })
 
     test('Export gradients of paths that keep their matrix (#2410)', assert => {
-      const circle = new Path.Circle({
+      const circle = Path.circle({
         center: [250, 350],
         radius: 80,
         fillColor: {
@@ -858,7 +858,7 @@ describe('SvgExport', () => {
       let from = new Point(bounds.center.x)
       let to = from.add(radius, 0)
 
-      new Path.Circle({
+      Path.circle({
         center: from,
         radius,
         fillColor: {
@@ -872,7 +872,7 @@ describe('SvgExport', () => {
 
       ;((from = bounds.leftCenter), (to = bounds.bottomRight))
 
-      const rect = new Path.Rectangle({
+      const rect = Path.rectangle({
         from,
         to,
         fillColor: {
@@ -898,11 +898,11 @@ describe('SvgExport', () => {
     test('Export SVG with clipping defs', assert => {
       new Group({
         children: [
-          new Path.Circle({
+          Path.circle({
             center: [150, 150],
             radius: 50
           }),
-          new Path.Rectangle({
+          Path.rectangle({
             point: [100, 100],
             size: [100, 100],
             fillColor: 'green'
@@ -920,7 +920,7 @@ describe('SvgExport', () => {
     })
 
     test('Export symbol with stroke', assert => {
-      const item = new Path.Circle({
+      const item = Path.circle({
         center: [0, 0],
         radius: 50,
         strokeColor: 'blue',
@@ -940,15 +940,15 @@ describe('SvgExport', () => {
     test('Export SVG with a group as clip mask (#1445, #1590)', assert => {
       const clip = new Group({
         children: [
-          new Path.Rectangle(new Point(0, 0), new Size(100)),
-          new Path.Rectangle(new Point(150, 0), new Size(100))
+          Path.rectangle(new Point(0, 0), new Size(100)),
+          Path.rectangle(new Point(150, 0), new Size(100))
         ],
         applyMatrix: false
       })
       clip.rotate(30)
       new Group(
         clip,
-        new Path.Circle({
+        Path.circle({
           center: [125, 50],
           radius: 75,
           fillColor: 'blue'
@@ -972,7 +972,7 @@ describe('SvgExport', () => {
       )
       new Group(
         clip,
-        new Path.Rectangle({
+        Path.rectangle({
           point: [0, 0],
           size: [100, 100],
           fillColor: 'blue'
@@ -989,12 +989,12 @@ describe('SvgExport', () => {
 
     test('Export SVG shadows (#1003)', assert => {
       // A background, so the exported bounds include the shadows:
-      new Path.Rectangle({
+      Path.rectangle({
         point: [0, 0],
         size: [200, 100],
         fillColor: 'white'
       })
-      new Path.Rectangle({
+      Path.rectangle({
         point: [20, 20],
         size: [40, 40],
         fillColor: 'red',
@@ -1004,7 +1004,7 @@ describe('SvgExport', () => {
         shadowBlur: 8,
         shadowOffset: [10, 10]
       })
-      const shape = new Shape.Circle({
+      const shape = Shape.circle({
         center: [130, 40],
         radius: 20,
         fillColor: 'green',
@@ -1042,7 +1042,7 @@ describe('SvgExport', () => {
   }
 
   test('Export and import SVG shadows (#1003)', () => {
-    let path = new Path.Rectangle({
+    let path = Path.rectangle({
       point: [20, 20],
       size: [40, 40],
       fillColor: 'red',
@@ -1103,7 +1103,7 @@ describe('SvgExport', () => {
     paper.project.activeLayer.removeChildren()
 
     // Without a blur, as SVG 1.1 renders a blur of 0 as nothing:
-    path = new Path.Rectangle({
+    path = Path.rectangle({
       point: [20, 20],
       size: [40, 40],
       fillColor: 'red',
@@ -1125,7 +1125,7 @@ describe('SvgExport', () => {
 
     // Horizontal lines have no height, which neither a relative region nor
     // Illustrator handles, so their shadow is left out:
-    new Path.Line({
+    Path.line({
       from: [20, 20],
       to: [60, 20],
       strokeColor: 'black',
@@ -1146,7 +1146,7 @@ describe('SvgExport', () => {
 
     // Strings break the lines around the definitions, as Illustrator ignores
     // filters otherwise:
-    new Path.Rectangle({
+    Path.rectangle({
       point: [20, 20],
       size: [40, 40],
       fillColor: 'red',
@@ -1164,7 +1164,7 @@ describe('SvgExport', () => {
 
     // Groups don't draw shadows, only their children:
     new Group({
-      children: [new Path.Circle({ center: [50, 50], radius: 10 })],
+      children: [Path.circle({ center: [50, 50], radius: 10 })],
       fillColor: 'red',
       shadowColor: 'black',
       shadowOffset: [5, 5]
@@ -1219,7 +1219,7 @@ describe('SvgExport', () => {
   })
 
   test(`Export SVG opacity and blend modes, which aren't inherited`, () => {
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
         point: [10, 10],
         size: [20, 20],
         fillColor: 'red',
@@ -1229,7 +1229,7 @@ describe('SvgExport', () => {
       group = new Group({
         children: [
           path,
-          new Path.Circle({ center: [50, 50], radius: 10 })
+          Path.circle({ center: [50, 50], radius: 10 })
         ],
         opacity: 0.5,
         blendMode: 'multiply'
@@ -1255,7 +1255,7 @@ describe('SvgExport', () => {
 
   test(`Export and import SVG blend modes that CSS doesn't have (#1296)`, () => {
     function roundTrip(blendMode) {
-      const path = new Path.Rectangle({
+      const path = Path.rectangle({
         point: [10, 10],
         size: [20, 20],
         fillColor: 'red',
@@ -1292,7 +1292,7 @@ describe('SvgExport', () => {
   })
 
   test('Export and import SVG paint-order (#1731)', () => {
-    const path = new Path.Rectangle({
+    const path = Path.rectangle({
       point: [10, 10],
       size: [20, 20],
       fillColor: 'red',
@@ -1324,7 +1324,7 @@ describe('SvgExport', () => {
     new Group({ name: 'group' }).addChild(
       new Layer({
         name: 'inner',
-        children: [new Path.Rectangle([10, 10], [20, 20])]
+        children: [Path.rectangle([10, 10], [20, 20])]
       })
     )
     const node = layer.exportSVG()
@@ -1428,7 +1428,7 @@ describe('SvgExport', () => {
   })
 
   test('Export SVG text on a path', () => {
-    const text = new PathText(new Path.Line([0, 0], [0, 200]))
+    const text = new PathText(Path.line([0, 0], [0, 200]))
     text.content = 'Down'
     const node = text.exportSVG(),
       letters = node.firstChild.childNodes
@@ -1439,8 +1439,8 @@ describe('SvgExport', () => {
 
   test(`Strokes that don't scale export as vector-effect`, () => {
     const items = [
-      new Path.Line({ from: [0, 0], to: [10, 0] }),
-      new Shape.Circle({ center: [0, 0], radius: 5 }),
+      Path.line({ from: [0, 0], to: [10, 0] }),
+      Shape.circle({ center: [0, 0], radius: 5 }),
       new Group()
     ]
     equals(

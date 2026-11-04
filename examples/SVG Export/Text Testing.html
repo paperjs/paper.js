@@ -26,13 +26,13 @@
         text.shear(.85, .15);
         text.scale(.85, 2);
 
-        var path2 = new Path.Circle(new Point(100, 100), 50);
+        var path2 = Path.circle(new Point(100, 100), 50);
         path2.strokeColor = 'black';
         path2.shear(.5, .5);
         colors = ['red', 'blue', 'green', 'orange'];
         for (var i in path2.segments) {
             var p = path2.segments[i].point;
-            var c = new Path.Circle(p, 2);
+            var c = Path.circle(p, 2);
             c.fillColor = colors[i];
         }
 

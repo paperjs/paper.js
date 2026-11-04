@@ -400,7 +400,7 @@ const operators = {
  *
  * // Create a circle shaped path at {x: 80, y: 50}
  * // with a radius of 30.
- * var circle = new Path.Circle(new Point(80, 50), 30);
+ * var circle = Path.circle(new Point(80, 50), 30);
  *
  * // Pass a color name to the fillColor property, which is internally
  * // converted to a Color.
@@ -411,7 +411,7 @@ const operators = {
  *
  * // Create a circle shaped path at {x: 80, y: 50}
  * // with a radius of 30.
- * var circle = new Path.Circle(new Point(80, 50), 30);
+ * var circle = Path.circle(new Point(80, 50), 30);
  *
  * // Pass a hex string to the fillColor property, which is internally
  * // converted to a Color.
@@ -445,7 +445,7 @@ export class Color extends Base {
    *
    * // Create a circle shaped path at {x: 80, y: 50}
    * // with a radius of 30:
-   * var circle = new Path.Circle(new Point(80, 50), 30);
+   * var circle = Path.circle(new Point(80, 50), 30);
    *
    * // 100% red, 0% blue, 50% blue:
    * circle.fillColor = new Color(1, 0, 0.5);
@@ -464,7 +464,7 @@ export class Color extends Base {
    *
    * // Create a circle shaped path at {x: 80, y: 50}
    * // with a radius of 30:
-   * var circle = new Path.Circle(new Point(80, 50), 30);
+   * var circle = Path.circle(new Point(80, 50), 30);
    *
    * // Create a GrayColor with 50% gray:
    * circle.fillColor = new Color(0.5);
@@ -515,7 +515,7 @@ export class Color extends Base {
    *
    * // Create a circle shaped path at {x: 80, y: 50}
    * // with a radius of 30:
-   * var circle = new Path.Circle(new Point(80, 50), 30);
+   * var circle = Path.circle(new Point(80, 50), 30);
    *
    * // Create an HSB Color with a hue of 90 degrees, a saturation
    * // 100% and a brightness of 100%:
@@ -526,7 +526,7 @@ export class Color extends Base {
    *
    * // Create a circle shaped path at {x: 80, y: 50}
    * // with a radius of 30:
-   * var circle = new Path.Circle(new Point(80, 50), 30);
+   * var circle = Path.circle(new Point(80, 50), 30);
    *
    * // Create an HSL Color with a hue of 90 degrees, a saturation
    * // 100% and a lightness of 50%:
@@ -540,7 +540,7 @@ export class Color extends Base {
    * var topLeft = view.center - [80, 80];
    * var bottomRight = view.center + [80, 80];
    *
-   * var path = new Path.Rectangle({
+   * var path = Path.rectangle({
    *  topLeft: topLeft,
    *  bottomRight: bottomRight,
    *  // Fill the path with a gradient of three color stops
@@ -565,7 +565,7 @@ export class Color extends Base {
    * @param color the color's CSS string representation
    *
    * @example {@paperscript}
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: [80, 50],
    *     radius: 30,
    *     fillColor: new Color('rgba(255, 255, 0, 0.5)')
@@ -592,7 +592,7 @@ export class Color extends Base {
    *
    * // Create a rectangle shaped path between
    * // the topLeft and bottomRight points:
-   * var path = new Path.Rectangle(topLeft, bottomRight);
+   * var path = Path.rectangle(topLeft, bottomRight);
    *
    * // Create the gradient, passing it an array of colors to be converted
    * // to evenly distributed color stops:
@@ -611,7 +611,7 @@ export class Color extends Base {
    *
    * // Create a circle shaped path at the center of the view
    * // with a radius of 80:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *     center: view.center,
    *     radius: 80
    * });
@@ -660,7 +660,7 @@ export class Color extends Base {
    * @example {@paperscript height=200}
    * // Filling a rectangle with a dotted pattern, and stroking it with
    * // the same pattern, turned by 45 degrees:
-   * var dot = new Path.Circle({
+   * var dot = Path.circle({
    *     center: [4, 4],
    *     radius: 2,
    *     fillColor: 'black'
@@ -669,7 +669,7 @@ export class Color extends Base {
    *     tile: new Rectangle(0, 0, 8, 8)
    * });
    *
-   * var path = new Path.Rectangle({
+   * var path = Path.rectangle({
    *     point: [40, 40],
    *     size: [160, 120],
    *     strokeWidth: 16
@@ -931,7 +931,7 @@ export class Color extends Base {
    *
    * @example {@paperscript}
    * // A filled path with a half transparent stroke:
-   * var circle = new Path.Circle(new Point(80, 50), 30);
+   * var circle = Path.circle(new Point(80, 50), 30);
    *
    * // Fill the circle with red and give it a 20pt green stroke:
    * circle.style = {
@@ -1173,7 +1173,7 @@ export class Color extends Base {
    * @return the newly created color object
    *
    * @example {@paperscript}
-   * var circle = new Path.Circle(view.center, 50);
+   * var circle = Path.circle(view.center, 50);
    * // Set a random color as circle fill color.
    * circle.fillColor = Color.random();
    */
@@ -1301,7 +1301,7 @@ export interface Color {
    *
    * @example {@paperscript}
    * // Changing the amount of red in a color:
-   * var circle = new Path.Circle(new Point(80, 50), 30);
+   * var circle = Path.circle(new Point(80, 50), 30);
    * circle.fillColor = 'blue';
    *
    * // Blue + red = purple:
@@ -1315,7 +1315,7 @@ export interface Color {
    *
    * @example {@paperscript}
    * // Changing the amount of green in a color:
-   * var circle = new Path.Circle(new Point(80, 50), 30);
+   * var circle = Path.circle(new Point(80, 50), 30);
    *
    * // First we set the fill color to red:
    * circle.fillColor = 'red';
@@ -1331,7 +1331,7 @@ export interface Color {
    *
    * @example {@paperscript}
    * // Changing the amount of blue in a color:
-   * var circle = new Path.Circle(new Point(80, 50), 30);
+   * var circle = Path.circle(new Point(80, 50), 30);
    *
    * // First we set the fill color to red:
    * circle.fillColor = 'red';
@@ -1356,7 +1356,7 @@ export interface Color {
    *
    * @example {@paperscript}
    * // Changing the hue of a color:
-   * var circle = new Path.Circle(new Point(80, 50), 30);
+   * var circle = Path.circle(new Point(80, 50), 30);
    * circle.fillColor = 'red';
    * circle.fillColor.hue += 30;
    *
@@ -1365,7 +1365,7 @@ export interface Color {
    *
    * // Create a rectangle shaped path, using the dimensions
    * // of the view:
-   * var path = new Path.Rectangle(view.bounds);
+   * var path = Path.rectangle(view.bounds);
    * path.fillColor = 'red';
    *
    * function onFrame(event) {
@@ -1410,7 +1410,7 @@ export interface Color {
    *
    * // Create a rectangle shaped path with the same dimensions as
    * // that of the view and fill it with a gradient color:
-   * var path = new Path.Rectangle(view.bounds);
+   * var path = Path.rectangle(view.bounds);
    * var gradient = new Gradient(['yellow', 'red', 'blue']);
    *
    * // Have the gradient color run from the top left point of the view,
@@ -1440,7 +1440,7 @@ export interface Color {
    * // Create a circle shaped path at the center of the view,
    * // using 40% of the height of the view as its radius
    * // and fill it with a radial gradient color:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *  center: view.center,
    *  radius: view.bounds.height * 0.4
    * });
@@ -1468,7 +1468,7 @@ export interface Color {
    * // Create a circle shaped path at the center of the view,
    * // using 40% of the height of the view as its radius
    * // and fill it with a radial gradient color:
-   * var path = new Path.Circle({
+   * var path = Path.circle({
    *  center: view.center,
    *  radius: view.bounds.height * 0.4
    * });
@@ -1501,7 +1501,7 @@ export interface Color {
    *
    * @example {@paperscript height=200}
    * // An elliptical radial gradient, twice as wide as tall:
-   * var path = new Path.Ellipse({
+   * var path = Path.ellipse({
    *  center: view.center,
    *  radius: [80, 40],
    *  fillColor: {

@@ -71,7 +71,7 @@
     <script type="text/paperscript" canvas="canvas">
         var presets = {
             'Star': function() {
-                return new Path.Star({
+                return Path.star({
                     center: view.center,
                     points: 6,
                     radius1: 70,
@@ -104,7 +104,7 @@
                 return path;
             },
             'Blob': function() {
-                var path = new Path.Circle({
+                var path = Path.circle({
                     center: view.center,
                     radius: 120,
                     fillColor: '#5ca8ff'

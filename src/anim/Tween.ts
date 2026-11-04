@@ -210,7 +210,7 @@ export class Tween extends Emitter {
    *
    * @example {@paperscript}
    * // Tweens chaining:
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: view.center,
    *     radius: 40,
    *     fillColor: 'blue'
@@ -236,7 +236,7 @@ export class Tween extends Emitter {
    *
    * @example {@paperscript}
    * // Manually start tweening.
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: view.center,
    *     radius: 40,
    *     fillColor: 'blue'
@@ -258,7 +258,7 @@ export class Tween extends Emitter {
    *
    * @example {@paperscript}
    * // Stop a tween before it completes.
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: view.center,
    *     radius: 40,
    *     fillColor: 'blue'
@@ -377,7 +377,7 @@ export interface Tween {
    *
    * @example {@paperscript}
    * // Display tween progression values:
-   * var circle = new Path.Circle({
+   * var circle = Path.circle({
    *     center: view.center,
    *     radius: 40,
    *     fillColor: 'blue'

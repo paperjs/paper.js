@@ -7,9 +7,9 @@ project.currentStyle = {
 	strokeCap: 'round'
 };
 
-new Path.Rectangle(view.bounds).fillColor = 'black';
+Path.rectangle(view.bounds).fillColor = 'black';
 
-var head = new Path.Ellipse([0, 0], [13, 8]);
+var head = Path.ellipse([0, 0], [13, 8]);
 head.fillColor = 'white';
 head.strokeColor = null;
 var headSymbol = new SymbolDefinition(head);

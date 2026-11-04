@@ -9,7 +9,7 @@
         view.zoom = 1.5;
         settings.applyMatrix = false;
         var strokeScaling = false;
-        var path = new Path.Circle({
+        var path = Path.circle({
             center: view.center - [0, 140],
             radius: 50,
             fillColor: 'red',
@@ -21,7 +21,7 @@
         });
         path.scale(2, 1);
 
-        var shape = new Shape.Circle({
+        var shape = Shape.circle({
             center: view.center,
             radius: 50,
             fillColor: 'red',
@@ -36,11 +36,11 @@
         var hole;
         var compound = new CompoundPath({
             children: [
-                new Path.Rectangle({
+                Path.rectangle({
                     point: [0, 0],
                     size: [100, 100]
                 }),
-                hole = new Path.Circle({
+                hole = Path.circle({
                     center: [50, 50],
                     radius: 25
                 })
