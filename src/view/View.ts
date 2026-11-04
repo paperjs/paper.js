@@ -293,7 +293,9 @@ export class View extends Emitter {
    * updates are automatically invoked for you automatically at the end.
    */
   requestUpdate() {
-    if (!this._requested) {
+    // Node.js has no display for frames to update, and frame requests would
+    // keep its process running, see exportFrames() for animations there:
+    if (!this._requested && !paper.agent.node) {
       requestFrame(() => {
         this._requested = false
         // Only handle the frame and request the next one if we don't

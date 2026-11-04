@@ -40,7 +40,8 @@ export class SegmentPoint extends Point {
       y = point[1]
     } else if (point) {
       // Only convert what isn't point-like already, to avoid creating points:
-      const pt: any = 'x' in point ? point : Point.from(point)
+      const pt: any =
+        typeof point === 'object' && 'x' in point ? point : Point.from(point)
       x = pt.x
       y = pt.y
       selected = pt.selected

@@ -2,10 +2,25 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { defineConfig } from 'vitest/config'
 import { playwright } from '@vitest/browser-playwright'
-import { paperPlugin } from './test/vite-plugin-paper.mjs'
 
 export default defineConfig({
-  plugins: [paperPlugin(), assetsPlugin()],
+  plugins: [assetsPlugin()],
+  // The tests import the library as `paper`, from its sources:
+  resolve: {
+    alias: [
+      {
+        find: /^paper\/paperscript$/,
+        replacement: path.resolve(
+          import.meta.dirname,
+          'src/paperscript/index.ts'
+        )
+      },
+      {
+        find: /^paper$/,
+        replacement: path.resolve(import.meta.dirname, 'src/index.ts')
+      }
+    ]
+  },
   test: {
     // Don't cache transformed modules across runs: the library is one module
     // built from all the sources, or read from dist/, which the cache misses:

@@ -153,7 +153,7 @@ export function equals(actual, expected, message, options) {
     (type === 'undefined' && 'Undefined') ||
     (Array.isArray(expected) && 'Array') ||
     (expected instanceof window.Element && 'Element') ||
-    (cls = expected && expected._class) || // check _class 2nd last
+    (cls = expected && expected.className) || // check className 2nd last
     (type === 'object' && 'Object')
   ) // Object as catch-all
   const comparator = type && comparators[type]
@@ -407,7 +407,7 @@ const comparators = {
   Boolean: strictEqual,
 
   Object(actual, expected, message) {
-    push(Base.equals(actual, expected), actual, expected, message)
+    push(isEqual(actual, expected), actual, expected, message)
   },
 
   Element(actual, expected, message, options) {
@@ -440,7 +440,7 @@ const comparators = {
     // Compare with a default tolerance of 1e-5:
     const result = (
       Math.abs(actual - expected) <=
-      Base.pick(options && options.tolerance, 1e-5)
+      (options?.tolerance ?? 1e-5)
     )
     push(result, result ? expected : actual, expected, message)
   },
@@ -586,7 +586,7 @@ const comparators = {
       message,
       // Cloning SymbolItems does not result in cloned SymbolDefinitions:
       options && options.cloned
-        ? Base.set({}, options, { cloned: false })
+        ? Object.assign({}, options, { cloned: false })
         : options,
       ['symbol']
     )
@@ -659,7 +659,7 @@ export function compareBoolean(actual, expected, message, options) {
   if (expected) {
     expected.style = style
   }
-  equals(actual, expected, message, Base.set({ rasterize: true }, options))
+  equals(actual, expected, message, Object.assign({ rasterize: true }, options))
   if (parent) {
     // Insert it back:
     parent.insertChild(index, actual)
@@ -698,7 +698,7 @@ export function compareSVG(done, actual, expected, message, options) {
       actual,
       expected,
       message,
-      Base.set({ tolerance: 1e-3, resolution: 72 }, options)
+      Object.assign({ tolerance: 1e-3, resolution: 72 }, options)
     )
     done()
   }
@@ -724,7 +724,7 @@ export function triggerMouseEvent(type, point, target, flags) {
   target = target || (type === 'mousedown' ? paper.view.element : document)
   const event = new window.MouseEvent(
     type,
-    Base.set(
+    Object.assign(
       {
         bubbles: true,
         cancelable: true,
@@ -744,7 +744,7 @@ export function triggerMouseEvent(type, point, target, flags) {
 export function triggerKeyEvent(type, key, modifiers) {
   const event = new window.KeyboardEvent(
     type,
-    Base.set(
+    Object.assign(
       {
         bubbles: true,
         cancelable: true,
@@ -755,4 +755,34 @@ export function triggerKeyEvent(type, key, modifiers) {
     )
   )
   document.dispatchEvent(event)
+}
+
+// Compares values through their own equals() where they have one, and arrays
+// and plain objects by their entries:
+function isEqual(value1, value2) {
+  if (value1 === value2) {
+    return true
+  }
+  if (value1?.equals) {
+    return value1.equals(value2)
+  }
+  if (value2?.equals) {
+    return value2.equals(value1)
+  }
+  if (Array.isArray(value1) && Array.isArray(value2)) {
+    return (
+      value1.length === value2.length &&
+      value1.every((value, index) => isEqual(value, value2[index]))
+    )
+  }
+  if (value1 && value2 && typeof value1 === 'object') {
+    const keys = Object.keys(value1)
+    return (
+      keys.length === Object.keys(value2).length &&
+      keys.every(
+        key => Object.hasOwn(value2, key) && isEqual(value1[key], value2[key])
+      )
+    )
+  }
+  return false
 }
