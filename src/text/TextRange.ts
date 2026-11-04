@@ -10,10 +10,14 @@
  * All rights reserved.
  */
 
-import { Base } from '../core/Base.ts'
-import { serialize } from '../core/serialization.ts'
-import { equals, inject } from '../util/object.ts'
-import { Style, defineStyleAccessors } from '../style/Style.ts'
+import {
+  Base,
+  Style,
+  defineStyleAccessors,
+  equals,
+  inject,
+  serialize
+} from '../internal.ts'
 import type { Line } from '../basic/Line.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'
 import type { TextStory } from './TextStory.ts'

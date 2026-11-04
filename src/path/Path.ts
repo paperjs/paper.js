@@ -10,51 +10,51 @@
  * All rights reserved.
  */
 
-import { paper } from '../core/PaperScope.ts'
-import { Formatter } from '../util/Formatter.ts'
-import { equals, inject } from '../util/object.ts'
-import { push, removeNamed } from '../util/list.ts'
-import { capitalize } from '../util/string.ts'
 import {
   ANGULAR_EPSILON,
   CURVETIME_EPSILON,
-  EPSILON,
-  GEOMETRIC_EPSILON,
-  KAPPA,
-  isZero
-} from '../util/numerical.ts'
-import {
   Change,
   ChangeFlag,
+  CompoundPath,
+  Curve,
+  CurveLocation,
+  EPSILON,
+  Effect,
+  Formatter,
+  GEOMETRIC_EPSILON,
+  Group,
+  HitResult,
+  Item,
   ItemSelection,
+  KAPPA,
+  Line,
+  Matrix,
+  PathFitter,
+  PathFlattener,
+  PathItem,
+  Point,
+  Rectangle,
+  Segment,
   SegmentSelection,
-  curveEvaluations
-} from '../constants.ts'
-import { Point } from '../basic/Point.ts'
+  Shape,
+  Size,
+  capitalize,
+  curveEvaluations,
+  defineConstructors,
+  defineStrokeProfile,
+  equals,
+  getStrokeOutline,
+  inject,
+  isZero,
+  paper,
+  push,
+  removeNamed
+} from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
-import { Size } from '../basic/Size.ts'
 import type { SizeLike } from '../basic/Size.ts'
-import { Rectangle } from '../basic/Rectangle.ts'
-import { Matrix } from '../basic/Matrix.ts'
-import { Line } from '../basic/Line.ts'
-import { Item } from '../item/Item.ts'
-import { Group } from '../item/Group.ts'
-import { HitResult } from '../item/HitResult.ts'
-import { Shape } from '../item/Shape.ts'
-import { Effect } from '../item/Effect.ts'
 import type { Style } from '../style/Style.ts'
-import { PathItem } from './PathItem.ts'
-import { CompoundPath } from './CompoundPath.ts'
-import { Segment } from './Segment.ts'
 import type { SegmentLike } from './Segment.ts'
 import type { SegmentPoint } from './SegmentPoint.ts'
-import { Curve } from './Curve.ts'
-import { CurveLocation } from './CurveLocation.ts'
-import { PathFlattener } from './PathFlattener.ts'
-import { PathFitter } from './PathFitter.ts'
-import { defineConstructors } from './Path.Constructors.ts'
-import { defineStrokeProfile } from './Path.StrokeProfile.ts'
-import { getStrokeOutline } from './PathItem.Offset.ts'
 
 /**
  * The path item represents a path in a Paper.js project.

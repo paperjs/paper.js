@@ -1,3 +1,4 @@
+import { Event } from '../internal.ts'
 /*
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
@@ -9,8 +10,6 @@
  *
  * All rights reserved.
  */
-
-import { Event } from './Event.ts'
 
 /**
  * The KeyEvent object is received by the {@link Tool}'s keyboard

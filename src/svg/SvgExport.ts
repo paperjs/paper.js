@@ -12,27 +12,28 @@
 
 // The functionality needed to convert a Paper.js DOM to a SVG DOM.
 
-import { getDocument } from '../env.ts'
-import { Item } from '../item/Item.ts'
-import { Project } from '../item/Project.ts'
-import { Group } from '../item/Group.ts'
-import { Layer } from '../item/Layer.ts'
-import { Shape } from '../item/Shape.ts'
-import { PointText } from '../text/PointText.ts'
-import { Point } from '../basic/Point.ts'
-import { Rectangle } from '../basic/Rectangle.ts'
-import { Matrix } from '../basic/Matrix.ts'
-import { Formatter } from '../util/Formatter.ts'
-import { isZero } from '../util/numerical.ts'
-import { equals, inject } from '../util/object.ts'
-import { getUID } from '../util/uid.ts'
 import {
+  Formatter,
+  Group,
+  Item,
+  Layer,
+  Matrix,
+  Point,
+  PointText,
+  Project,
+  Rectangle,
+  Shape,
   createSvgElement,
+  equals,
+  getDocument,
+  getUID,
+  inject,
+  isZero,
   setSvgAttributes,
   svgNamespace,
+  svgStyles,
   xlinkNamespace
-} from './svgElement.ts'
-import { svgStyles } from './svgStyles.ts'
+} from '../internal.ts'
 import type { SvgStyle } from './svgStyles.ts'
 import type { Raster } from '../item/Raster.ts'
 import type { SymbolItem } from '../item/SymbolItem.ts'

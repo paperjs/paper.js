@@ -10,13 +10,16 @@
  * All rights reserved.
  */
 
-import { View } from './View.ts'
-import { PaperScope } from '../core/PaperScope.ts'
-import { Size } from '../basic/Size.ts'
+import {
+  PaperScope,
+  Size,
+  View,
+  getCanvas,
+  getInsets,
+  getStyles,
+  getWindow
+} from '../internal.ts'
 import type { SizeLike } from '../basic/Size.ts'
-import { getInsets, getStyles } from '../dom/domElement.ts'
-import { getCanvas } from '../canvas/canvasProvider.ts'
-import { getWindow } from '../env.ts'
 import type { Project } from '../item/Project.ts'
 
 /**

@@ -15,10 +15,8 @@
 // from "Graphics Gems", Academic Press, 1990
 // Modifications and optimizations of original algorithm by Jürg Lehni.
 
-import { Base } from '../core/Base.ts'
-import { EPSILON, isMachineZero } from '../util/numerical.ts'
+import { Base, EPSILON, Segment, isMachineZero } from '../internal.ts'
 import type { Point } from '../basic/Point.ts'
-import { Segment } from './Segment.ts'
 
 /**
  * @private

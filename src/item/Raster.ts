@@ -10,29 +10,30 @@
  * All rights reserved.
  */
 
-import { Change } from '../constants.ts'
-import { clamp } from '../util/numerical.ts'
-import { getDocument } from '../env.ts'
 import {
+  Change,
+  Color,
+  Event,
+  HitResult,
+  Item,
+  LinkedSize,
+  Matrix,
+  PathItem,
+  Point,
+  Rectangle,
+  Size,
+  addEvents,
+  clamp,
   getCanvas,
   getContext,
+  getDocument,
   releaseCanvas
-} from '../canvas/canvasProvider.ts'
-import { addEvents } from '../dom/domEvent.ts'
-import { Event } from '../event/Event.ts'
-import { Point } from '../basic/Point.ts'
+} from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
-import { Size, LinkedSize } from '../basic/Size.ts'
 import type { SizeLike } from '../basic/Size.ts'
-import { Rectangle } from '../basic/Rectangle.ts'
 import type { RectangleLike } from '../basic/Rectangle.ts'
-import { Matrix } from '../basic/Matrix.ts'
-import { Color } from '../style/Color.ts'
 import type { ColorLike } from '../style/Color.ts'
-import { PathItem } from '../path/PathItem.ts'
-import { Item } from './Item.ts'
 import type { BoundsOptions } from './Item.ts'
-import { HitResult } from './HitResult.ts'
 import type { Project } from './Project.ts'
 
 type Handler = (this: Raster, ...args: any[]) => any

@@ -1,3 +1,4 @@
+import { getDocument, getWindow } from '../internal.ts'
 /*
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
@@ -9,8 +10,6 @@
  *
  * All rights reserved.
  */
-
-import { getDocument, getWindow } from '../env.ts'
 
 type Canvas = HTMLCanvasElement | OffscreenCanvas
 

@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { Base } from '../core/Base.ts'
+import { Base } from '../internal.ts'
 import type { Item } from '../item/Item.ts'
 import type { Matrix } from '../basic/Matrix.ts'
 import type { Color } from '../style/Color.ts'

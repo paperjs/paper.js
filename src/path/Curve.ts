@@ -10,36 +10,36 @@
  * All rights reserved.
  */
 
-import { curveEvaluations } from '../constants.ts'
-import { Base } from '../core/Base.ts'
-import { serialize } from '../core/serialization.ts'
-import { inject } from '../util/object.ts'
-import { capitalize } from '../util/string.ts'
 import {
+  Base,
   CURVETIME_EPSILON,
+  CurveLocation,
   EPSILON,
   GEOMETRIC_EPSILON,
+  Line,
   MACHINE_EPSILON,
+  Path,
+  Point,
+  Rectangle,
+  Segment,
   TRIGONOMETRIC_EPSILON,
+  capitalize,
+  curveEvaluations,
+  findCurveBoundsCollisions,
   findRoot,
   gauss,
   getEpsilon,
+  inject,
   integrate,
   isZero,
+  serialize,
   solveBernstein,
   solveCubic,
   solveQuadratic
-} from '../util/numerical.ts'
-import { findCurveBoundsCollisions } from '../util/collisions.ts'
-import { Point } from '../basic/Point.ts'
+} from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
-import { Line } from '../basic/Line.ts'
-import { Rectangle } from '../basic/Rectangle.ts'
 import type { Matrix } from '../basic/Matrix.ts'
-import { Segment } from './Segment.ts'
 import type { SegmentPoint } from './SegmentPoint.ts'
-import { CurveLocation } from './CurveLocation.ts'
-import { Path } from './Path.ts'
 
 /**
  * The Curve object represents the parts of a path that are connected by

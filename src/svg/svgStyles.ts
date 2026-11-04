@@ -10,9 +10,7 @@
  * All rights reserved.
  */
 
-import { PathItem } from '../path/PathItem.ts'
-import { Shape } from '../item/Shape.ts'
-import { TextItem } from '../text/TextItem.ts'
+import { PathItem, Shape, TextItem } from '../internal.ts'
 import type { Item } from '../item/Item.ts'
 
 /**

@@ -10,10 +10,8 @@
  * All rights reserved.
  */
 
-import { Change } from '../constants.ts'
-import { CURVETIME_EPSILON } from '../util/numerical.ts'
-import { equals, inject } from '../util/object.ts'
-import { StrokeProfileStop } from './StrokeProfileStop.ts'
+import { StrokeProfileStop } from '../internal.ts'
+import { CURVETIME_EPSILON, Change, equals, inject } from '../internal.ts'
 import type { StrokeProfileStopProps } from './StrokeProfileStop.ts'
 import type { Path } from './Path.ts'
 

@@ -10,17 +10,21 @@
  * All rights reserved.
  */
 
-import { Item } from '../item/Item.ts'
-import { Change, ChangeFlag } from '../constants.ts'
-import { serialize } from '../core/serialization.ts'
-import { equals, inject } from '../util/object.ts'
-import { Point } from '../basic/Point.ts'
-import { Rectangle } from '../basic/Rectangle.ts'
-import { Line } from '../basic/Line.ts'
-import { Style } from '../style/Style.ts'
-import { HitResult } from '../item/HitResult.ts'
-import { TextStory } from './TextStory.ts'
-import { TextRange } from './TextRange.ts'
+import {
+  Change,
+  ChangeFlag,
+  HitResult,
+  Item,
+  Line,
+  Point,
+  Rectangle,
+  Style,
+  TextRange,
+  TextStory,
+  equals,
+  inject,
+  serialize
+} from '../internal.ts'
 import type { Matrix } from '../basic/Matrix.ts'
 import type { PathItem } from '../path/PathItem.ts'
 

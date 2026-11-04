@@ -10,40 +10,46 @@
  * All rights reserved.
  */
 
-import { Emitter, defineEvents } from '../core/Emitter.ts'
-import { PaperScope, paper } from '../core/PaperScope.ts'
-import { Change } from '../constants.ts'
-import { inject } from '../util/object.ts'
-import { Point, LinkedPoint } from '../basic/Point.ts'
-import type { PointLike } from '../basic/Point.ts'
-import { Size, LinkedSize } from '../basic/Size.ts'
-import type { SizeLike } from '../basic/Size.ts'
-import { Rectangle } from '../basic/Rectangle.ts'
-import type { RectangleLike } from '../basic/Rectangle.ts'
-import { Matrix } from '../basic/Matrix.ts'
-import { getDocument, getWindow } from '../env.ts'
 import {
+  CanvasView,
+  Change,
+  Emitter,
+  Item,
+  Key,
+  KeyEvent,
+  LinkedPoint,
+  LinkedSize,
+  Matrix,
+  MouseEvent,
+  PaperScope,
+  Point,
+  Rectangle,
+  Size,
   addEvents,
+  defineEvents,
+  getContext,
+  getDocument,
   getEventOffset,
-  removeEvents,
-  requestFrame
-} from '../dom/domEvent.ts'
-import {
   getInsets,
   getOffset,
   getSize,
   getStyles,
+  getWindow,
+  handleKey,
+  inject,
+  installKeyEvents,
   isInView,
   isInserted,
+  paper,
+  releaseCanvas,
+  removeEvents,
+  requestFrame,
   setPrefixed
-} from '../dom/domElement.ts'
-import { getContext, releaseCanvas } from '../canvas/canvasProvider.ts'
-import { Key, handleKey, installKeyEvents } from '../event/Key.ts'
-import { MouseEvent } from '../event/MouseEvent.ts'
-import { KeyEvent } from '../event/KeyEvent.ts'
-import { Item } from '../item/Item.ts'
+} from '../internal.ts'
+import type { PointLike } from '../basic/Point.ts'
+import type { SizeLike } from '../basic/Size.ts'
+import type { RectangleLike } from '../basic/Rectangle.ts'
 import type { Project } from '../item/Project.ts'
-import { CanvasView } from './CanvasView.ts'
 
 // The Stats.js library, if the page loads it, see the `stats` attribute:
 declare const Stats: any

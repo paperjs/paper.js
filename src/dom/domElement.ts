@@ -10,9 +10,7 @@
  * All rights reserved.
  */
 
-import { getDocument } from '../env.ts'
-import { Rectangle } from '../basic/Rectangle.ts'
-import { Size } from '../basic/Size.ts'
+import { Rectangle, Size, getDocument } from '../internal.ts'
 import type { Point } from '../basic/Point.ts'
 
 /**

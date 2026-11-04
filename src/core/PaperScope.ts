@@ -10,10 +10,7 @@
  * All rights reserved.
  */
 
-import { Base } from './Base.ts'
-import { nativeBlendModes } from '../canvas/blendModes.ts'
-import { getCanvas } from '../canvas/canvasProvider.ts'
-import { Project } from '../item/Project.ts'
+import { Base, Project, getCanvas, nativeBlendModes } from '../internal.ts'
 import type { Tool } from '../tool/Tool.ts'
 import type { View } from '../view/View.ts'
 import type { Size } from '../basic/Size.ts'

@@ -1,3 +1,34 @@
+import {
+  Color,
+  Gradient,
+  GradientStop,
+  Group,
+  Item,
+  Layer,
+  Matrix,
+  Path,
+  PathItem,
+  PatternDefinition,
+  Point,
+  PointText,
+  Project,
+  Raster,
+  Rectangle,
+  Shape,
+  Size,
+  Style,
+  SymbolDefinition,
+  camelize,
+  createSvgElement,
+  getDocument,
+  getStyles,
+  getSvgAttribute,
+  getWindow,
+  inject,
+  paper,
+  request,
+  svgStyles
+} from '../internal.ts'
 /*
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
@@ -11,34 +42,6 @@
  */
 
 // The functionality needed to convert a SVG DOM to a Paper.js DOM.
-
-import { getDocument, getWindow } from '../env.ts'
-import { paper } from '../core/PaperScope.ts'
-import { Item } from '../item/Item.ts'
-import { Project } from '../item/Project.ts'
-import { Group } from '../item/Group.ts'
-import { Layer } from '../item/Layer.ts'
-import { Shape } from '../item/Shape.ts'
-import { Raster } from '../item/Raster.ts'
-import { SymbolDefinition } from '../item/SymbolDefinition.ts'
-import { Path } from '../path/Path.ts'
-import { PathItem } from '../path/PathItem.ts'
-import { PointText } from '../text/PointText.ts'
-import { Point } from '../basic/Point.ts'
-import { Size } from '../basic/Size.ts'
-import { Rectangle } from '../basic/Rectangle.ts'
-import { Matrix } from '../basic/Matrix.ts'
-import { Color } from '../style/Color.ts'
-import { Style } from '../style/Style.ts'
-import { Gradient } from '../style/Gradient.ts'
-import { GradientStop } from '../style/GradientStop.ts'
-import { PatternDefinition } from '../style/PatternDefinition.ts'
-import { getStyles } from '../dom/domElement.ts'
-import { request } from '../net/http.ts'
-import { inject } from '../util/object.ts'
-import { camelize } from '../util/string.ts'
-import { createSvgElement, getSvgAttribute } from './svgElement.ts'
-import { svgStyles } from './svgStyles.ts'
 
 type Options = Record<string, any>
 type Styles = { node: any; parent: any }

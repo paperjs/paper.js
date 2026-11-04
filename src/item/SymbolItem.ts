@@ -10,14 +10,12 @@
  * All rights reserved.
  */
 
-import { Change } from '../constants.ts'
+import { Change, Item, SymbolDefinition } from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
 import type { Point } from '../basic/Point.ts'
 import type { Matrix } from '../basic/Matrix.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'
-import { Item } from './Item.ts'
 import type { BoundsOptions } from './Item.ts'
-import { SymbolDefinition } from './SymbolDefinition.ts'
 import type { HitResult } from './HitResult.ts'
 
 /**

@@ -10,10 +10,7 @@
  * All rights reserved.
  */
 
-import { Base } from '../core/Base.ts'
-import { Change } from '../constants.ts'
-import { Style } from '../style/Style.ts'
-import { TextRange } from './TextRange.ts'
+import { Base, Change, Style, TextRange } from '../internal.ts'
 import type { TextItem } from './TextItem.ts'
 
 /**

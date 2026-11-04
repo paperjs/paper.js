@@ -10,10 +10,7 @@
  * All rights reserved.
  */
 
-import { Base } from '../core/Base.ts'
-import { inject } from '../util/object.ts'
-import { isZero } from '../util/numerical.ts'
-import { Formatter } from '../util/Formatter.ts'
+import { Base, Formatter, inject, isZero } from '../internal.ts'
 import type { Point } from './Point.ts'
 
 /**

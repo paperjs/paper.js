@@ -10,17 +10,20 @@
  * All rights reserved.
  */
 
-import { serialize } from '../core/serialization.ts'
-import { Change, ChangeFlag } from '../constants.ts'
-import { equals } from '../util/object.ts'
-import { EPSILON } from '../util/numerical.ts'
-import { Matrix } from '../basic/Matrix.ts'
-import { Rectangle } from '../basic/Rectangle.ts'
+import {
+  Change,
+  ChangeFlag,
+  EPSILON,
+  ItemDefinition,
+  Matrix,
+  Rectangle,
+  Size,
+  equals,
+  getCanvas,
+  serialize
+} from '../internal.ts'
 import type { RectangleLike } from '../basic/Rectangle.ts'
-import { Size } from '../basic/Size.ts'
 import type { SizeLike } from '../basic/Size.ts'
-import { getCanvas } from '../canvas/canvasProvider.ts'
-import { ItemDefinition } from '../item/ItemDefinition.ts'
 import type { Item } from '../item/Item.ts'
 import type { Project } from '../item/Project.ts'
 

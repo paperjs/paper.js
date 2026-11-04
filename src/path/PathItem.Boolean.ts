@@ -27,22 +27,24 @@
  * @author Jürg Lehni <juerg@scratchdisk.com>
  */
 
-import { Point } from '../basic/Point.ts'
-import type { Rectangle } from '../basic/Rectangle.ts'
-import { paper } from '../core/PaperScope.ts'
-import { Item } from '../item/Item.ts'
-import { EPSILON, GEOMETRIC_EPSILON, getEpsilon } from '../util/numerical.ts'
 import {
+  CompoundPath,
+  Curve,
+  CurveLocation,
+  EPSILON,
+  GEOMETRIC_EPSILON,
+  Item,
+  Path,
+  Point,
+  Segment,
   findBoundsCollisions,
   findCurveBoundsCollisions,
-  findItemBoundsCollisions
-} from '../util/collisions.ts'
-import { push } from '../util/list.ts'
-import { Curve } from './Curve.ts'
-import { CurveLocation } from './CurveLocation.ts'
-import { Segment } from './Segment.ts'
-import { Path } from './Path.ts'
-import { CompoundPath } from './CompoundPath.ts'
+  findItemBoundsCollisions,
+  getEpsilon,
+  paper,
+  push
+} from '../internal.ts'
+import type { Rectangle } from '../basic/Rectangle.ts'
 import type { PathItem } from './PathItem.ts'
 
 export type BooleanOperation =

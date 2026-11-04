@@ -10,18 +10,22 @@
  * All rights reserved.
  */
 
-import { Base } from '../core/Base.ts'
-import { serialize } from '../core/serialization.ts'
-import { Formatter } from '../util/Formatter.ts'
-import { equals, inject, isPlainObject } from '../util/object.ts'
-import { EPSILON } from '../util/numerical.ts'
-import { Change } from '../constants.ts'
-import { Point } from '../basic/Point.ts'
+import {
+  Base,
+  Change,
+  EPSILON,
+  Formatter,
+  Gradient,
+  Matrix,
+  PatternDefinition,
+  Point,
+  equals,
+  getContext,
+  inject,
+  isPlainObject,
+  serialize
+} from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
-import { Matrix } from '../basic/Matrix.ts'
-import { getContext } from '../canvas/canvasProvider.ts'
-import { Gradient } from './Gradient.ts'
-import { PatternDefinition } from './PatternDefinition.ts'
 
 /**
  * What a color can be passed as, where a function takes one: a color, a CSS

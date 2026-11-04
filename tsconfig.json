@@ -13,27 +13,5 @@
     "resolveJsonModule": true,
     "strict": false
   },
-  // The ported files, until all of src is:
-  "files": [
-    "src/constants.ts",
-    "src/core/Base.ts",
-    "src/core/Emitter.ts",
-    "src/core/PaperScope.ts",
-    "src/core/PaperScopeItem.ts",
-    "src/core/serialization.ts",
-    "src/util/collisions.ts",
-    "src/util/Formatter.ts",
-    "src/util/numerical.ts",
-    "src/util/uid.ts",
-    "src/util/list.ts",
-    "src/util/object.ts",
-    "src/util/string.ts",
-    "src/basic/Point.ts",
-    "src/basic/Size.ts",
-    "src/basic/Line.ts",
-    "src/basic/Rectangle.ts",
-    "src/basic/Matrix.ts",
-    "src/style/Gradient.ts",
-    "src/style/GradientStop.ts"
-  ]
+  "include": ["src"]
 }

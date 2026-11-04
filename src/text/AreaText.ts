@@ -10,16 +10,19 @@
  * All rights reserved.
  */
 
-import { TextItem } from './TextItem.ts'
+import {
+  Change,
+  GEOMETRIC_EPSILON,
+  Group,
+  Path,
+  PathItem,
+  Rectangle,
+  TextItem,
+  inject,
+  isPlainObject
+} from '../internal.ts'
 import type { TextLine } from './TextItem.ts'
-import { Change } from '../constants.ts'
-import { inject, isPlainObject } from '../util/object.ts'
-import { GEOMETRIC_EPSILON } from '../util/numerical.ts'
-import { Rectangle } from '../basic/Rectangle.ts'
 import type { RectangleLike } from '../basic/Rectangle.ts'
-import { Group } from '../item/Group.ts'
-import { PathItem } from '../path/PathItem.ts'
-import { Path } from '../path/Path.ts'
 import type { Item } from '../item/Item.ts'
 import type { Style } from '../style/Style.ts'
 

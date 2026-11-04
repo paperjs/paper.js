@@ -1,3 +1,4 @@
+import { Formatter, isPlainObject } from '../internal.ts'
 /*
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
@@ -10,9 +11,6 @@
  * All rights reserved.
  */
 
-import { Formatter } from '../util/Formatter.ts'
-import { isPlainObject } from '../util/object.ts'
-
 // The registered classes by name, for deserialization:
 const classes = {}
 
@@ -24,7 +22,7 @@ const classes = {}
  * @param classesByName the classes to register, by name
  */
 export function registerClasses(
-  classesByName: Record<string, new (...args: any[]) => any>
+  classesByName: Record<string, abstract new (...args: any[]) => any>
 ) {
   for (const [name, ctor] of Object.entries(classesByName)) {
     Object.defineProperty(ctor.prototype, 'className', { value: name })

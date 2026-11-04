@@ -10,9 +10,7 @@
  * All rights reserved.
  */
 
-import { Base } from '../core/Base.ts'
-import { serialize } from '../core/serialization.ts'
-import { Change } from '../constants.ts'
+import { Base, Change, serialize } from '../internal.ts'
 import type { Path } from './Path.ts'
 
 /**

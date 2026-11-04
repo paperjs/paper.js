@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { Event } from '../event/Event.ts'
+import { Event } from '../internal.ts'
 import type { Point } from '../basic/Point.ts'
 import type { Item } from '../item/Item.ts'
 import type { Tool } from './Tool.ts'

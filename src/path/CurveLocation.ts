@@ -10,13 +10,16 @@
  * All rights reserved.
  */
 
-import { Base } from '../core/Base.ts'
-import { inject } from '../util/object.ts'
-import { capitalize } from '../util/string.ts'
-import { Formatter } from '../util/Formatter.ts'
-import { CURVETIME_EPSILON, GEOMETRIC_EPSILON } from '../util/numerical.ts'
+import {
+  Base,
+  CURVETIME_EPSILON,
+  Curve,
+  Formatter,
+  GEOMETRIC_EPSILON,
+  capitalize,
+  inject
+} from '../internal.ts'
 import type { Point } from '../basic/Point.ts'
-import { Curve } from './Curve.ts'
 import type { Path } from './Path.ts'
 import type { Segment } from './Segment.ts'
 
