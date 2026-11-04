@@ -7,6 +7,9 @@ import { paperPlugin } from './test/vite-plugin-paper.mjs'
 export default defineConfig({
   plugins: [paperPlugin(), assetsPlugin()],
   test: {
+    // Don't cache transformed modules across runs: the library is one module
+    // built from all the sources, or read from dist/, which the cache misses:
+    fsModuleCache: false,
     // Measured on Node, with the sources loaded through src/load.js, and in
     // the browser, through the source map of the library built from them, see
     // `pnpm test:coverage`:
