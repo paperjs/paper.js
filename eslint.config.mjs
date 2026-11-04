@@ -30,16 +30,9 @@ const braces = [
 
 export default [
   {
-    // The builds, Gulp tasks, examples and the boolean sweep keep the old style
-    // until the ES modules port:
-    ignores: [
-      'dist/**',
-      'gulp/**',
-      'gulpfile.js',
-      'examples/**',
-      'packages/**',
-      'test/booleans/**'
-    ]
+    // The builds, examples and the boolean sweep keep the old style until the
+    // ES modules port:
+    ignores: ['dist/**', 'examples/**', 'test/booleans/**']
   },
   pluginPrettierRecommended,
   {
