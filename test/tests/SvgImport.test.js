@@ -260,7 +260,9 @@ describe('SvgImport', () => {
       .map(point => point.split(',').map(parseFloat))
     const path = new Path()
     path.moveTo(points[0])
-    for (let i = 1; i < points.length; i++) path.lineTo(points[i])
+    for (let i = 1; i < points.length; i++) {
+      path.lineTo(points[i])
+    }
     return path
   }
 
@@ -1109,7 +1111,9 @@ describe('SvgImport', () => {
       {
         processItem({ item, node }) {
           const className = node.getAttribute('class')
-          if (className) item.data.className = className
+          if (className) {
+            item.data.className = className
+          }
         }
       }
     )
@@ -1124,7 +1128,9 @@ describe('SvgImport', () => {
     const node = item.exportSVG({
       processNode({ item, node }) {
         const className = item.data.className
-        if (className) node.setAttribute('class', className)
+        if (className) {
+          node.setAttribute('class', className)
+        }
       }
     }).firstChild
     equals(node.getAttribute('class'), 'shapes', 'exported group')
@@ -1309,10 +1315,11 @@ describe('SvgImport', () => {
         let loaded = 0
         rasters.forEach(raster => {
           raster.on('load', () => {
-            if (++loaded === rasters.length)
+            if (++loaded === rasters.length) {
               compareSVG(done, imported, svg, null, {
                 tolerance: 1e-2
               })
+            }
           })
         })
       }

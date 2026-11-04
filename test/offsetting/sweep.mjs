@@ -43,7 +43,9 @@ for (const entry of cases) {
         count++
         if (problems.length) {
           failures[key] = problems.join(', ')
-          if (verbose) console.log(`${key}: ${failures[key]}`)
+          if (verbose) {
+            console.log(`${key}: ${failures[key]}`)
+          }
         }
       }
     }
@@ -57,7 +59,9 @@ console.log(
   `${Object.keys(failures).length} fail, ` +
   `${fixed.length} fixed and ${broken.length} broken since known.json.`
 )
-for (const key of broken) console.log(`  broken: ${key}: ${failures[key]}`)
+for (const key of broken) {
+  console.log(`  broken: ${key}: ${failures[key]}`)
+}
 if (update) {
   fs.writeFileSync(dir + 'known.json', JSON.stringify(failures, null, 2) + '\n')
 }

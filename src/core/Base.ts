@@ -10,11 +10,9 @@
  * All rights reserved.
  */
 
-import { exportJSON, serialize } from './serialization.js'
+import { exportJSON, serialize } from './serialization.ts'
 
 /**
- * @name Base
- * @class
  * @private
  */
 export class Base {
@@ -26,10 +24,10 @@ export class Base {
    * @option [options.precision=5] {Number} the amount of fractional digits in
    *     numbers used in JSON data
    *
-   * @param {Object} [options] the serialization options
-   * @return {String} the exported JSON data
+   * @param options the serialization options
+   * @return the exported JSON data
    */
-  exportJSON(options) {
+  exportJSON(options?: { asString?: boolean; precision?: number }) {
     return exportJSON(this, options)
   }
 

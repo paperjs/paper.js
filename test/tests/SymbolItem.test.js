@@ -133,7 +133,9 @@ describe('Symbol & Placed Symbol', () => {
 
       let count = 0
       for (let i = 3, l = data.length; i < l; i += 4) {
-        if (data[i]) count++
+        if (data[i]) {
+          count++
+        }
       }
       return count
     }

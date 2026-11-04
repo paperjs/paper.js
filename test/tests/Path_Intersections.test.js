@@ -29,17 +29,22 @@ describe('Path Intersections', () => {
       const inter = intersections[i]
       const values = results[i]
       const name = 'intersections[' + i + ']'
-      if (values.point != null)
+      if (values.point != null) {
         equals(inter.point, new Point(values.point), name + '.point')
-      if (values.index != null)
+      }
+      if (values.index != null) {
         equals(inter.index, values.index, name + '.index')
-      if (values.time != null) equals(inter.time, values.time, name + '.time')
-      if (values.crossing != null)
+      }
+      if (values.time != null) {
+        equals(inter.time, values.time, name + '.time')
+      }
+      if (values.crossing != null) {
         equals(
           inter.isCrossing(),
           values.crossing,
           name + '.isCrossing()'
         )
+      }
     }
   }
 
@@ -242,7 +247,9 @@ describe('Path Intersections', () => {
         applyMatrix
       })
 
-      if (!applyMatrix) offset = new Point(0, 0)
+      if (!applyMatrix) {
+        offset = new Point(0, 0)
+      }
 
       if (ctor === Path) {
         testIntersections(item1.getIntersections(item2), [

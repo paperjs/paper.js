@@ -47,7 +47,9 @@ describe('Item Order', () => {
     function testType(ctor) {
       function testMove(command, indexes) {
         paper.project.clear()
-        if (ctor !== Layer) new Layer()
+        if (ctor !== Layer) {
+          new Layer()
+        }
         item0 = new ctor()
         item1 = new ctor()
         item2 = new ctor()

@@ -919,7 +919,9 @@ describe.skipIf(isNodeContext)('Interactions', () => {
       counts = []
     tool.onMouseDrag = event => {
       counts.push(event.count)
-      if (event.count === 1) event.count = 10
+      if (event.count === 1) {
+        event.count = 10
+      }
     }
     triggerMouseEvent('mousedown', new Point(0, 0))
     triggerMouseEvent('mousemove', new Point(5, 5))

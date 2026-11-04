@@ -168,8 +168,9 @@ describe('StrokeProfile', () => {
       { offset: 200, width: 0.5 }
     ]
     const widths = []
-    for (let offset = 0; offset <= 200; offset += 2)
+    for (let offset = 0; offset <= 200; offset += 2) {
       widths.push(path.getStrokeProfileAt(offset).width)
+    }
     equals(Math.max(...widths), 3, 'the peak at its stop')
     equals(Math.min(...widths), 0.5, 'no overshoot')
     equals(path.getStrokeProfileAt(30).width, 1, 'flat between equal stops')

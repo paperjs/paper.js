@@ -144,7 +144,9 @@ function encode(values) {
       do {
         let digit = vlq & 31
         vlq >>>= 5
-        if (vlq > 0) digit |= 32
+        if (vlq > 0) {
+          digit |= 32
+        }
         result += chars[digit]
       } while (vlq > 0)
       return result
@@ -152,4 +154,6 @@ function encode(values) {
     .join('')
 }
 
-if (import.meta.main) build()
+if (import.meta.main) {
+  build()
+}

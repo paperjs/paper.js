@@ -531,7 +531,9 @@ describe('TextRange', () => {
         const json = run.toJSON()
         delete json.start
         delete json.end
-        for (const key in keys) delete json[key]
+        for (const key in keys) {
+          delete json[key]
+        }
         return json
       })
     equals(

@@ -36,7 +36,9 @@ export function createPath(paper, entry, style) {
     insert: false
   })
   path.set(style)
-  if (entry.strokeProfile) path.strokeProfile = entry.strokeProfile
+  if (entry.strokeProfile) {
+    path.strokeProfile = entry.strokeProfile
+  }
   return path
 }
 
@@ -57,14 +59,17 @@ function getOutline(path, problems) {
     if (
       (!strokeProfile || strokeProfile.some(stop => stop.width)) &&
       (path.length || !path.closed && path.strokeCap !== 'butt')
-    )
+    ) {
       problems.push('empty')
+    }
     return null
   }
   const crossings = outline
     .getIntersections()
     .filter(location => location.isCrossing()).length
-  if (crossings) problems.push(`${crossings} crossings`)
+  if (crossings) {
+    problems.push(`${crossings} crossings`)
+  }
   return outline
 }
 
@@ -106,12 +111,15 @@ export function checkOutline(paper, path) {
             outline.getNearestPoint(point).getDistance(point) >
             getTolerance(offset)
           )
-        )
+        ) {
           outside++
+        }
       }
     }
   }
-  if (outside) problems.push(`${outside} points of the stroke outside`)
+  if (outside) {
+    problems.push(`${outside} points of the stroke outside`)
+  }
   // Each point of the outline lies at the radius from the path, except at the
   // joins and caps, where it may lie closer, or further at miters and squares,
   // up to their limits. With round joins and caps, measure how far off they
@@ -141,8 +149,11 @@ export function checkOutline(paper, path) {
           let t1 = i / count
           for (let j = 0; j < 40; j++) {
             const t = (t0 + t1) / 2
-            if (getDot(curve, t) * d0 > 0) t0 = t
-            else t1 = t
+            if (getDot(curve, t) * d0 > 0) {
+              t0 = t
+            } else {
+              t1 = t
+            }
           }
           // It ends there at the radius, or at the center of curvature, where
           // the normals fold over along the evolute:
@@ -187,20 +198,31 @@ export function checkOutline(paper, path) {
           point.getDistance(end) <= offset + tolerance
         )
       )
-      if (isRound) error = Math.max(error, Math.abs(distance - offset))
-      if (distance > limit) far++
+      if (isRound) {
+        error = Math.max(error, Math.abs(distance - offset))
+      }
+      if (distance > limit) {
+        far++
+      }
       if (
         distance < offset - tolerance &&
         !isAtSegment &&
         !isOnNormal &&
         !isOnSweep(point)
-      )
+      ) {
         near++
+      }
     }
   }
-  if (error > tolerance) problems.push(`off by ${error.toFixed(2)}`)
-  if (far) problems.push(`${far} points of the outline too far`)
-  if (near) problems.push(`${near} points of the outline within the stroke`)
+  if (error > tolerance) {
+    problems.push(`off by ${error.toFixed(2)}`)
+  }
+  if (far) {
+    problems.push(`${far} points of the outline too far`)
+  }
+  if (near) {
+    problems.push(`${near} points of the outline within the stroke`)
+  }
   return problems
 }
 
@@ -209,7 +231,9 @@ export function checkOutline(paper, path) {
 function getEllipseDistance(x, y, a, b) {
   x = Math.abs(x)
   y = Math.abs(y)
-  if (a < b) [x, y, a, b] = [y, x, b, a]
+  if (a < b) {
+    ;[x, y, a, b] = [y, x, b, a]
+  }
   if (!b) {
     // A flat pen is a line:
     return Math.hypot(Math.max(x - a, 0), y)
@@ -236,9 +260,11 @@ function getEllipseDistance(x, y, a, b) {
       s = (s0 + s1) / 2
       if (s === s0 || s === s1) break
       const g = (n0 / (s + r0)) ** 2 + (z1 / (s + 1)) ** 2 - 1
-      if (g > 0) s0 = s
-      else if (g < 0) s1 = s
-      else break
+      if (g > 0) {
+        s0 = s
+      } else if (g < 0) {
+        s1 = s
+      } else break
     }
     distance = Math.hypot(x - r0 * x / (s + r0), y - y / (s + 1))
   }
@@ -288,11 +314,15 @@ export function checkProfileOutline(paper, path) {
   let start = 0
   for (const curve of curves) {
     // Curves can end where they start:
-    for (let i = 0; i < 8; i++) offsets.push(start + curve.length * i / 8)
+    for (let i = 0; i < 8; i++) {
+      offsets.push(start + curve.length * i / 8)
+    }
     start += curve.length
   }
   for (const offset of stopOffsets) {
-    if (offset > 0) offsets.push(offset - length * 1e-9)
+    if (offset > 0) {
+      offsets.push(offset - length * 1e-9)
+    }
   }
   const pens = []
   // The points on the edges turn around the pens with them, and with the
@@ -332,7 +362,9 @@ export function checkProfileOutline(paper, path) {
   }
   const ends = [...new Set(offsets)].sort((a, b) => a - b).map(getPen)
   pens.push(ends[0])
-  for (let i = 1; i < ends.length; i++) addPens(ends[i - 1], ends[i])
+  for (let i = 1; i < ends.length; i++) {
+    addPens(ends[i - 1], ends[i])
+  }
   // Where the outline cuts the pens off: at butt caps and steps, and at the
   // joins that aren't round. Miter joins and square caps reach beyond them:
   const cuts = steps.map(offset => ({ point: path.getPointAt(offset) }))
@@ -403,12 +435,15 @@ export function checkProfileOutline(paper, path) {
         if (
           !outline.contains(point) &&
           outline.getNearestPoint(point).getDistance(point) > tolerance
-        )
+        ) {
           outside++
+        }
       }
     }
   }
-  if (outside) problems.push(`${outside} points of the pens outside`)
+  if (outside) {
+    problems.push(`${outside} points of the pens outside`)
+  }
   // The points of the outline lie on the edge of the union of the pens: in
   // none of them, and on one of them:
   let far = 0
@@ -425,8 +460,11 @@ export function checkProfileOutline(paper, path) {
     let hi = indicesByX.length
     while (lo < hi) {
       const mid = (lo + hi) >> 1
-      if (pens[indicesByX[mid]].center.x < x) lo = mid + 1
-      else hi = mid
+      if (pens[indicesByX[mid]].center.x < x) {
+        lo = mid + 1
+      } else {
+        hi = mid
+      }
     }
     return lo
   }
@@ -469,9 +507,11 @@ export function checkProfileOutline(paper, path) {
               if (
                 getDistance(point, getPen(m0)) <
                 getDistance(point, getPen(m1))
-              )
+              ) {
                 o1 = m1
-              else o0 = m0
+              } else {
+                o0 = m0
+              }
             }
             const between = getPen((o0 + o1) / 2)
             const betweenDistance = getDistance(point, between)
@@ -493,8 +533,14 @@ export function checkProfileOutline(paper, path) {
       }
     }
   }
-  if (far) problems.push(`${far} points of the outline outside the pens`)
-  if (near) problems.push(`${near} points of the outline within the pens`)
-  if (error) problems.push(`off by ${error.toFixed(2)}`)
+  if (far) {
+    problems.push(`${far} points of the outline outside the pens`)
+  }
+  if (near) {
+    problems.push(`${near} points of the outline within the pens`)
+  }
+  if (error) {
+    problems.push(`off by ${error.toFixed(2)}`)
+  }
   return problems
 }

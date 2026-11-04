@@ -93,6 +93,7 @@
     "stats.js": "^0.17.0",
     "straps": "^3.0.1",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.1",
     "vitest": "^5.0.5"
   },
   "keywords": [

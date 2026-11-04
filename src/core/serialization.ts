@@ -10,8 +10,8 @@
  * All rights reserved.
  */
 
-import { Formatter } from '../util/Formatter.js'
-import { isPlainObject } from '../util/object.js'
+import { Formatter } from '../util/Formatter.ts'
+import { isPlainObject } from '../util/object.ts'
 
 // The registered classes by name, for deserialization:
 const classes = {}
@@ -21,9 +21,11 @@ const classes = {}
  * the `className` of its class, and `importJSON()` creates the class from it.
  * Keys survive minification, while class names don't.
  *
- * @param {Object} classesByName the classes to register, by name
+ * @param classesByName the classes to register, by name
  */
-export function registerClasses(classesByName) {
+export function registerClasses(
+  classesByName: Record<string, new (...args: any[]) => any>
+) {
   for (const [name, ctor] of Object.entries(classesByName)) {
     Object.defineProperty(ctor.prototype, 'className', { value: name })
     classes[name] = ctor
@@ -34,7 +36,12 @@ export function registerClasses(classesByName) {
  * Serializes the passed object into a format that can be passed to
  * `JSON.stringify()` for JSON serialization.
  */
-export function serialize(obj, options, compact, dictionary) {
+export function serialize(
+  obj: any,
+  options?: any,
+  compact?: boolean,
+  dictionary?: any
+) {
   options = options || {}
   const isRoot = !dictionary
   let res
@@ -59,7 +66,9 @@ export function serialize(obj, options, compact, dictionary) {
           const res = create.call(item)
           const name = item.className
           // Also automatically insert class for dictionary entries.
-          if (name && res[0] !== name) res.unshift(name)
+          if (name && res[0] !== name) {
+            res.unshift(name)
+          }
           this.definitions[id] = res
           ref = this.references[id] = [id]
         }
@@ -110,12 +119,12 @@ export function serialize(obj, options, compact, dictionary) {
  * `resolve(key)`, for definitions that the importer provides.
  */
 export function deserialize(
-  json,
-  create,
-  resolve,
-  _data,
-  _setDictionary,
-  _isRoot
+  json: any,
+  create?: (ctor: any, args: any[], isRoot: boolean) => any,
+  resolve?: (key: string) => any,
+  _data?: any,
+  _setDictionary?: boolean,
+  _isRoot?: boolean
 ) {
   let res = json
   const isFirst = !_data
@@ -172,7 +181,9 @@ export function deserialize(
     // We need to set the dictionary object before further deserialization,
     // because serialized symbols may contain references to serialized
     // gradients
-    if (_setDictionary) _data.dictionary = res
+    if (_setDictionary) {
+      _data.dictionary = res
+    }
     for (const key in json) {
       res[key] = deserialize(json[key], create, resolve, _data)
     }
@@ -184,7 +195,10 @@ export function deserialize(
 /**
  * Exports (serializes) the object to a JSON data object or string.
  */
-export function exportJSON(obj, options) {
+export function exportJSON(
+  obj: any,
+  options?: { asString?: boolean; precision?: number }
+) {
   const json = serialize(obj, options)
   return options && options.asString == false ? json : JSON.stringify(json)
 }

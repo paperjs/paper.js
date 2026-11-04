@@ -3141,8 +3141,9 @@ describe('Path Boolean Operations', () => {
       path2 = new Path.Rectangle([100, 100], [200, 200]),
       path3 = new Path.Circle([200, 0], 100),
       group = new Group()
-    for (let i = 0; i < 5; i++)
+    for (let i = 0; i < 5; i++) {
       group.addChild(new Path.Circle([0, 200], 100 - i * 10))
+    }
     path3.insertBelow(path2)
     const result = path1.unite([path2, path3, group.lastChild])
     equals(result.parent, layer, 'result.parent')

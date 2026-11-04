@@ -63,7 +63,9 @@ describe.skipIf(!HostItem)('Hosted', () => {
         items.forEach((item, i) => {
           const type = item.className
           let index = typeNames.indexOf(type)
-          if (index === -1) index = typeNames.push(type) - 1
+          if (index === -1) {
+            index = typeNames.push(type) - 1
+          }
           columns.keys[i] = item.id
           columns.types[i] = index
           // A container's own selection, not its children's:
@@ -90,9 +92,12 @@ describe.skipIf(!HostItem)('Hosted', () => {
               i * 12 + j * 4
             )
           })
-          if (item.name) columns.names[i] = item.name
-          if (!item.matrix.isIdentity())
+          if (item.name) {
+            columns.names[i] = item.name
+          }
+          if (!item.matrix.isIdentity()) {
             columns.matrices[i] = item.matrix.values
+          }
         })
         return columns
       },
@@ -125,7 +130,9 @@ describe.skipIf(!HostItem)('Hosted', () => {
         // Selection comes through the flags, and the children of
         // containers through getChildren():
         delete json[1].selected
-        if (json[0] !== 'CompoundPath') delete json[1].children
+        if (json[0] !== 'CompoundPath') {
+          delete json[1].children
+        }
         // Rasters give their pixels through getImage():
         if (node instanceof Raster) {
           delete json[1].source
@@ -135,7 +142,9 @@ describe.skipIf(!HostItem)('Hosted', () => {
         if (node instanceof TextItem && node.isLinked()) {
           json[1].linked = node.story.textItems.map(item => item.id)
           for (const name in json[1]) {
-            if (host.isStoryKey(node, name)) delete json[1][name]
+            if (host.isStoryKey(node, name)) {
+              delete json[1][name]
+            }
           }
         }
         return json
@@ -153,7 +162,9 @@ describe.skipIf(!HostItem)('Hosted', () => {
           props = node.exportJSON({ asString: false })[1],
           story = {}
         for (const name in props) {
-          if (host.isStoryKey(node, name)) story[name] = props[name]
+          if (host.isStoryKey(node, name)) {
+            story[name] = props[name]
+          }
         }
         return JSON.stringify(story)
       },
@@ -203,7 +214,9 @@ describe.skipIf(!HostItem)('Hosted', () => {
         host.calls.push(['getAncestorKeys', key])
         const keys = []
         let node = host.getNode(key)
-        while ((node = node.parent || null)) keys.unshift(node.id)
+        while ((node = node.parent || null)) {
+          keys.unshift(node.id)
+        }
         return keys
       },
 
@@ -1418,7 +1431,9 @@ describe.skipIf(!HostItem)('Hosted', () => {
     items[0].content
     res.frames[0].content = 'A story that changed in the host.'
     const columns = res.host.getColumns(res.frames)
-    for (let i = 0; i < 3; i++) columns.flags[i] |= 16
+    for (let i = 0; i < 3; i++) {
+      columns.flags[i] |= 16
+    }
     res.host.takeCalls()
     project.invalidate(columns)
     const story = items[1].story

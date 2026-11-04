@@ -146,9 +146,15 @@ function createProfile(entry) {
           ? pick(offsets)
           : round(random() * length)
     const stop = { offset, width: round(pick([0.05, 0.3, 1, 2.5]) * random()) }
-    if (random() < 0.5) stop.aspect = round(0.05 + random() * 1.5)
-    if (random() < 0.5) stop.angle = round((random() - 0.5) * 720)
-    if (random() < 0.3) stop.smooth = false
+    if (random() < 0.5) {
+      stop.aspect = round(0.05 + random() * 1.5)
+    }
+    if (random() < 0.5) {
+      stop.angle = round((random() - 0.5) * 720)
+    }
+    if (random() < 0.3) {
+      stop.smooth = false
+    }
     stops.push(stop)
   }
   return stops
@@ -197,7 +203,9 @@ async function shrink(entry) {
         })
       }
     }
-    if (entry.closed) candidates.push({ ...entry, closed: false })
+    if (entry.closed) {
+      candidates.push({ ...entry, closed: false })
+    }
     const { strokeProfile } = entry
     if (strokeProfile?.length > 1) {
       for (let i = 0; i < strokeProfile.length; i++) {
@@ -231,7 +239,9 @@ if (isMainThread) {
   const found = []
   for (let i = 0; i < count; i++) {
     const entry = createEntry()
-    if (hasProfiles) entry.strokeProfile = createProfile(entry)
+    if (hasProfiles) {
+      entry.strokeProfile = createProfile(entry)
+    }
     if ((await check(entry)).length) {
       const small = await shrink(entry)
       found.push({ ...small, problems: await check(small) })

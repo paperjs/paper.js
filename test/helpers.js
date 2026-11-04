@@ -96,7 +96,9 @@ function strictEqual(actual, expected, message) {
 // Report errors that are only logged to the console as failures:
 const consoleError = console.error
 console.error = function (...args) {
-  if (expect.getState().currentTestName) pushFailure(args.join(' '))
+  if (expect.getState().currentTestName) {
+    pushFailure(args.join(' '))
+  }
   consoleError.apply(this, args)
 }
 
@@ -123,7 +125,9 @@ export function test(name, run) {
       // Remove the projects once done, also those that the test created, so
       // their views can't draw after it, and reset the state for the
       // interactions tests:
-      for (const project of [...paper.projects]) project.remove()
+      for (const project of [...paper.projects]) {
+        project.remove()
+      }
       View._resetState()
     }
   })
@@ -133,7 +137,9 @@ export function test(name, run) {
 // are called, with their source as the message.
 export function equals(actual, expected, message, options) {
   if (typeof actual === 'function') {
-    if (!message) message = getFunctionMessage(actual)
+    if (!message) {
+      message = getFunctionMessage(actual)
+    }
     actual = actual()
   }
   // Get the comparator based on the expected value's type only and ignore the
@@ -151,7 +157,9 @@ export function equals(actual, expected, message, options) {
     (type === 'object' && 'Object')
   ) // Object as catch-all
   const comparator = type && comparators[type]
-  if (!message) message = type ? type.toLowerCase() : 'value'
+  if (!message) {
+    message = type ? type.toLowerCase() : 'value'
+  }
   if (comparator) {
     comparator(actual, expected, message, options)
   } else if (expected && expected.equals) {
@@ -546,7 +554,9 @@ const comparators = {
   Raster(actual, expected, message, options) {
     const pixels = options && options.pixels
     const properties = ['size', 'width', 'height', 'resolution']
-    if (!pixels) properties.push('source', 'image')
+    if (!pixels) {
+      properties.push('source', 'image')
+    }
     compareItem(actual, expected, message, options, properties)
     if (pixels) {
       comparePixels(actual, expected, message, options)
@@ -612,7 +622,9 @@ export function getFunctionMessage(func) {
 export function compareBoolean(actual, expected, message, options) {
   expected = typeof expected === 'string' ? PathItem.create(expected) : expected
   if (typeof actual === 'function') {
-    if (!message) message = getFunctionMessage(actual)
+    if (!message) {
+      message = getFunctionMessage(actual)
+    }
     actual = actual()
   }
   let parent
@@ -657,7 +669,9 @@ export function compareBoolean(actual, expected, message, options) {
 export function createSVG(str, attrs) {
   // Similar to SvgElement.create():
   const node = document.createElementNS('http://www.w3.org/2000/svg', str)
-  for (const key in attrs) node.setAttribute(key, attrs[key])
+  for (const key in attrs) {
+    node.setAttribute(key, attrs[key])
+  }
   // Paper.js paths do not have a fill by default, SVG does:
   node.setAttribute('fill', 'none')
   return node
