@@ -105,7 +105,7 @@ export class Emitter extends Base {
 
   emit(type: string, event?: any, ...args: any[]): boolean {
     // Return true if any events were emitted, false otherwise.
-    const handlers = this._getHandlers(type)
+    const handlers = this.#getHandlers(type)
     if (!handlers.length) {
       return false
     }
@@ -152,7 +152,7 @@ export class Emitter extends Base {
 
   // Collect the object's own handlers and then the ones of its prototypes, in
   // a new list that changes caused by on / off won't affect:
-  _getHandlers(type: string): Handler[] {
+  #getHandlers(type: string): Handler[] {
     const handlers = []
     for (let obj = this; obj; obj = Object.getPrototypeOf(obj)) {
       const callbacks = Object.hasOwn(obj, '_callbacks') && obj._callbacks[type]
