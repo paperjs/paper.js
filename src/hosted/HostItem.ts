@@ -10,10 +10,9 @@
  * All rights reserved.
  */
 
-import { Item } from './Item.ts'
-import type { BoundsOptions } from './Item.ts'
-import { HitResult } from './HitResult.ts'
-import type { Project } from './Project.ts'
+import { HitResult, Item } from '../internal.ts'
+import type { BoundsOptions } from '../item/Item.ts'
+import type { Project } from '../item/Project.ts'
 import type { Point } from '../basic/Point.ts'
 import type { Matrix } from '../basic/Matrix.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'
