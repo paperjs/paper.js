@@ -10,36 +10,41 @@
  * All rights reserved.
  */
 
-import { getClass } from '../core/serialization.ts'
-import { paper } from '../core/PaperScope.ts'
-import { Change, ChangeFlag, ItemSelection } from '../constants.ts'
-import { inject } from '../util/object.ts'
-import { addNamed } from '../util/list.ts'
-import { getUID } from '../util/uid.ts'
-import { Matrix } from '../basic/Matrix.ts'
-import { Rectangle } from '../basic/Rectangle.ts'
-import { Size } from '../basic/Size.ts'
-import { Style } from '../style/Style.ts'
+import {
+  AreaText,
+  Change,
+  ChangeFlag,
+  CompoundPath,
+  DrawEvent,
+  Group,
+  Item,
+  ItemDefinition,
+  ItemSelection,
+  Layer,
+  Matrix,
+  Path,
+  PathText,
+  PatternDefinition,
+  PointText,
+  Project,
+  Raster,
+  Rectangle,
+  Size,
+  Style,
+  SymbolDefinition,
+  SymbolItem,
+  TextItem,
+  addNamed,
+  getClass,
+  getUID,
+  importJSON,
+  inject,
+  paper
+} from '../internal.ts'
 import type { Color } from '../style/Color.ts'
-import { PatternDefinition } from '../style/PatternDefinition.ts'
-import { DrawEvent } from '../event/DrawEvent.ts'
-import { Path } from '../path/Path.ts'
-import { CompoundPath } from '../path/CompoundPath.ts'
-import { TextItem } from '../text/TextItem.ts'
 import type { TextLine } from '../text/TextItem.ts'
-import { PointText } from '../text/PointText.ts'
-import { PathText } from '../text/PathText.ts'
-import { AreaText } from '../text/AreaText.ts'
-import { Item, importJSON } from './Item.ts'
-import type { BoundsOptions } from './Item.ts'
-import { Group } from './Group.ts'
-import { Layer } from './Layer.ts'
-import { Project } from './Project.ts'
-import { Raster } from './Raster.ts'
+import type { BoundsOptions } from '../item/Item.ts'
 import { HostItem } from './HostItem.ts'
-import { ItemDefinition } from './ItemDefinition.ts'
-import { SymbolDefinition } from './SymbolDefinition.ts'
-import { SymbolItem } from './SymbolItem.ts'
 
 // Items backed by a host document, see Project#host. Each item of such a
 // project is created as a shell from the host's record of it, and loads its
@@ -838,7 +843,7 @@ inject(Project.prototype, {
 
 // The members that Item, Project, the definitions and the other classes
 // don't declare themselves:
-declare module './Item.ts' {
+declare module '../item/Item.ts' {
   interface Item {
     _key: number
     /**
@@ -872,7 +877,7 @@ declare module './Item.ts' {
   }
 }
 
-declare module './Project.ts' {
+declare module '../item/Project.ts' {
   interface Project {
     _host: Host
     _itemsByKey: Record<number, Item>
@@ -1029,7 +1034,7 @@ declare module './Project.ts' {
   }
 }
 
-declare module './ItemDefinition.ts' {
+declare module '../item/ItemDefinition.ts' {
   interface ItemDefinition {
     _key: string
     get key(): string
@@ -1037,7 +1042,7 @@ declare module './ItemDefinition.ts' {
   }
 }
 
-declare module './Raster.ts' {
+declare module '../item/Raster.ts' {
   interface Raster {
     _loadPixels(): void
   }

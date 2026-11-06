@@ -76,6 +76,45 @@ export default [
     }
   },
   {
+    // The modules import each other through internal.ts, which loads them in
+    // order. Type imports load nothing:
+    files: ['src/**/*.ts'],
+    ignores: ['src/internal.ts', 'src/{node,hosted,paperscript}/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '^\\.\\.?/(?!internal\\.ts$).*\\.ts$',
+              allowTypeImports: true,
+              message: 'Import the modules of the library from internal.ts.'
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    // The optional entries import the library from internal.ts or index.ts,
+    // and their own modules directly:
+    files: ['src/{node,hosted,paperscript}/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '^\\.\\./(?!(internal|index)\\.ts$).*\\.ts$',
+              allowTypeImports: true,
+              message: 'Import the modules of the library from internal.ts.'
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
     ...pluginJs.configs.recommended,
     ignores: ['src/**']
   },

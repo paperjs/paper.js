@@ -60,13 +60,13 @@ import {
   Base,
   ChangeFlag,
   Key,
+  Numerical,
   PaperScope,
   getDocument,
   getWindow,
   inject,
   registerClasses
 } from './internal.ts'
-import * as Numerical from './util/numerical.ts'
 
 const classes = {
   Point,
