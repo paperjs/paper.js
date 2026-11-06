@@ -10,13 +10,16 @@
  * All rights reserved.
  */
 
+import {
+  PaperScope,
+  View,
+  addEvents,
+  getDocument,
+  getWindow,
+  inject
+} from '../internal.ts'
 import * as PaperScript from './PaperScript.ts'
 import type { ExecuteOptions } from './PaperScript.ts'
-import { PaperScope } from '../core/PaperScope.ts'
-import { View } from '../view/View.ts'
-import { getDocument, getWindow } from '../env.ts'
-import { addEvents } from '../dom/domEvent.ts'
-import { inject } from '../util/object.ts'
 
 declare module '../core/PaperScope.ts' {
   export interface PaperScope {

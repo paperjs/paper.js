@@ -11,12 +11,15 @@
  */
 
 import * as acorn from 'acorn'
-import { PaperScope } from '../core/PaperScope.ts'
-import { Point } from '../basic/Point.ts'
-import { Size } from '../basic/Size.ts'
-import { Color } from '../style/Color.ts'
-import { Tool } from '../tool/Tool.ts'
-import { getDocument, getWindow } from '../env.ts'
+import {
+  Color,
+  PaperScope,
+  Point,
+  Size,
+  Tool,
+  getDocument,
+  getWindow
+} from '../internal.ts'
 
 export interface CompileOptions {
   url?: string

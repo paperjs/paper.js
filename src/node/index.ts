@@ -15,9 +15,7 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { CanvasView } from '../index.ts'
-import { setEnvironment } from '../env.ts'
-import { inject } from '../util/object.ts'
+import { CanvasView, inject, setEnvironment } from '../internal.ts'
 import { happyDom, napiCanvas } from './peers.ts'
 import { CanvasAdapter } from './CanvasAdapter.ts'
 
