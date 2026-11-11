@@ -126,8 +126,6 @@ function $__(operator: string, value: any): any {
   }
 }
 
-export { __$__ as calculateBinary, $__ as calculateUnary }
-
 /**
  * Parses the code with Acorn as an ES module of the latest syntax, and returns
  * its AST.
