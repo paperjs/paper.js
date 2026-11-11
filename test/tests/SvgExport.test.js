@@ -282,8 +282,8 @@ describe('SvgExport', () => {
     equals(svg.indexOf('&lt;tag&gt;') !== -1, true, 'escaped data')
     equals(svg.indexOf('<linearGradient') !== -1, true, 'linearGradient')
     // The export can be parsed as XML again:
-    const imported = paper.project.importSVG(svg),
-      copy = imported.getItem({ name: path.name })
+    const [layer] = paper.project.importSVG(svg),
+      copy = layer.getItem({ name: path.name })
     equals(() => copy && copy.data.tag, '<tag>')
   })
 
@@ -676,7 +676,7 @@ describe('SvgExport', () => {
         })
 
         const copies = paper.project
-          .importSVG(string, { insert: false })
+          .importSVG(string, { insert: false })[0]
           .getItems({ class: Raster })
 
         let copied = 0
@@ -1096,11 +1096,11 @@ describe('SvgExport', () => {
     )
     path.remove()
 
-    let imported = paper.project.importSVG(node).getItem({ class: Path })
+    let imported = paper.project.importSVG(node)[0].getItem({ class: Path })
     equals(imported.shadowColor, new Color(0, 1, 0, 0.6), 'imported color')
     equals(imported.shadowBlur, 6, 'imported blur')
     equals(imported.shadowOffset, new Point(8, -4), 'imported offset')
-    paper.project.activeLayer.removeChildren()
+    paper.project.clear()
 
     // Without a blur, as SVG 1.1 renders a blur of 0 as nothing:
     path = Path.rectangle({
@@ -1118,10 +1118,10 @@ describe('SvgExport', () => {
       'offset of the alpha'
     )
     path.remove()
-    imported = paper.project.importSVG(node).getItem({ class: Path })
+    imported = paper.project.importSVG(node)[0].getItem({ class: Path })
     equals(imported.shadowBlur, 0, 'imported without a blur')
     equals(imported.shadowOffset, new Point(5, 5), 'imported offset')
-    paper.project.activeLayer.removeChildren()
+    paper.project.clear()
 
     // Horizontal lines have no height, which neither a relative region nor
     // Illustrator handles, so their shadow is left out:
@@ -1339,6 +1339,70 @@ describe('SvgExport', () => {
     equals(() => group.name, 'group')
     equals(() => group.firstChild.className, 'Layer')
     equals(() => group.firstChild.name, 'inner')
+  })
+
+  test('Export and import SVG of a project with layers', () => {
+    const { project } = paper
+    new Layer({ name: 'first' })
+    Path.rectangle([10, 10], [20, 20])
+    new Layer({ name: 'second' })
+    Path.circle([50, 50], 10)
+    const svg = project.exportSVG({ asString: true })
+    project.clear()
+    const layers = project.importSVG(svg)
+    equals(() => layers.every(layer => layer instanceof Layer), true)
+    equals(() => layers.map(layer => layer.name), ['first', 'second'])
+    equals(() => project.layers.length, 2)
+    equals(() => project.layers[0] === layers[0], true)
+    equals(() => project.layers[1] === layers[1], true)
+    // The clip of the root's viewBox isn't imported:
+    equals(() => layers[0].children.length, 1)
+    equals(() => layers[0].firstChild.bounds, new Rectangle(10, 10, 20, 20))
+    equals(() => layers[1].firstChild.bounds, new Rectangle(40, 40, 20, 20))
+  })
+
+  test('Import SVG of a project with content beside its layers', () => {
+    const { project } = paper
+    const layers = project.importSVG(
+      '<svg xmlns="http://www.w3.org/2000/svg">' +
+      '<g data-paper-layer="" id="first"><rect width="10" height="10"/></g>' +
+      '<circle cx="50" cy="50" r="10"/>' +
+      '<g data-paper-layer="" id="second"><rect width="20" height="20"/></g>' +
+      '<rect x="30" width="5" height="5"/>' +
+      '</svg>'
+    )
+    // The content beside the layers comes first, in a layer of its own:
+    equals(() => layers.every(layer => layer instanceof Layer), true)
+    equals(() => layers.map(layer => layer.name), [null, 'first', 'second'])
+    equals(() => layers[0].children.length, 2)
+    equals(() => layers[0].children.every(item => item instanceof Shape), true)
+    equals(() => project.layers.length, 3)
+    equals(() => project.layers[0] === layers[0], true)
+  })
+
+  test('Import SVG of a project with layers and a viewBox', () => {
+    const layers = paper.project.importSVG(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" ' +
+      'viewBox="50 50 100 100">' +
+      '<g data-paper-layer=""><rect x="50" y="50" width="10" height="10"/></g>' +
+      '</svg>'
+    )
+    equals(() => layers.length, 1)
+    equals(() => layers[0].bounds, new Rectangle(0, 0, 20, 20))
+  })
+
+  test('Import SVG of a project with layers without inserting', () => {
+    const { project } = paper
+    const count = project.layers.length
+    const layers = project.importSVG(
+      '<svg xmlns="http://www.w3.org/2000/svg">' +
+      '<g data-paper-layer="" id="first"><rect width="10" height="10"/></g>' +
+      '</svg>',
+      { insert: false }
+    )
+    equals(() => layers.map(layer => layer.name), ['first'])
+    equals(() => layers[0].isInserted(), false)
+    equals(() => project.layers.length, count)
   })
 
   test('Export SVG text with start, end and justify justifications', () => {

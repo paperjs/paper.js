@@ -1061,10 +1061,11 @@ export interface Project {
    * the `<use>` elements that place them as {@link SymbolItem} items. The
    * styles that `<use>` elements inherit don't reach the symbols' content.
    *
-   * The layers in SVG content that Paper.js exported come back as
-   * {@link Layer} items inside the imported group. To make the layers of a
-   * project's SVG the layers of a project again, add them to it with
-   * `item.children.slice().forEach(project.addLayer, project)`.
+   * The layers of SVG content that Paper.js exported become layers of this
+   * project again, and are returned as an array instead of a group. Content
+   * beside the layers goes into a layer of its own, below them. Layers
+   * inside a group come back as {@link Layer} items inside the imported
+   * group, also those that the export of a transformed view wraps in one.
    *
    * URLs are fetched as they are, so validate URLs that come from untrusted
    * sources first, especially on servers, where they could reach internal
@@ -1100,7 +1101,7 @@ export interface Project {
    *     file to fetch.
    * @param [options] the import options
    * @return the newly created Paper.js item containing the converted SVG
-   *     content
+   *     content, or its layers
    *
    * @example
    * // Keep the SVG `class` attribute of items in their data, and export it
@@ -1123,7 +1124,7 @@ export interface Project {
   importSVG(
     svg: SVGElement | string,
     options?: Record<string, any>
-  ): Item | null
+  ): Item | Layer[] | null
   /**
    * Imports the provided external SVG file, converts it into Paper.js items
    * and adds them to the active layer of this project.
@@ -1132,14 +1133,14 @@ export interface Project {
    *
    * @param svg the URL of the SVG file to fetch.
    * @param onLoad the callback function to call once the SVG content is loaded
-   *     from the given URL receiving two arguments: the converted `item` and
-   *     the original `svg` data as a string. Only required when loading from
-   *     external files.
+   *     from the given URL receiving two arguments: the converted `item` or
+   *     its layers, and the original `svg` data as a string. Only required
+   *     when loading from external files.
    * @return the newly created Paper.js item containing the converted SVG
-   *     content
+   *     content, or its layers
    */
   importSVG(
     svg: SVGElement | string,
-    onLoad: (item: Item, svg: string) => void
-  ): Item | null
+    onLoad: (item: Item | Layer[], svg: string) => void
+  ): Item | Layer[] | null
 }

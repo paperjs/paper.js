@@ -6058,9 +6058,9 @@ export interface Item {
    * styles that `<use>` elements inherit don't reach the symbols' content.
    *
    * The layers in SVG content that Paper.js exported come back as
-   * {@link Layer} items inside the imported group. To make the layers of a
-   * project's SVG the layers of a project again, add them to it with
-   * `item.children.slice().forEach(project.addLayer, project)`.
+   * {@link Layer} items inside the imported group. To make them the layers
+   * of a project again, import the content with
+   * {@link Project#importSVG(svg)}.
    *
    * URLs are fetched as they are, so validate URLs that come from untrusted
    * sources first, especially on servers, where they could reach internal
