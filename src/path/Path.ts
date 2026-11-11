@@ -78,7 +78,9 @@ import type { PathProps } from './shapes.ts'
 import type { StrokeProfileStopProps } from './StrokeProfileStop.ts'
 
 /**
- * The path item represents a path in a Paper.js project.
+ * The path item represents a path in a Paper.js project. Paths are created
+ * with `new Path()` or {@link PathItem.create(segments)}, and shapes with
+ * factories such as {@link Path.circle(center, radius)}.
  */
 // DOCS: Explain that path matrix is always applied with each transformation.
 export class Path extends PathItem {
