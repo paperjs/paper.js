@@ -27,7 +27,6 @@ import {
   equals,
   getDocument,
   getUID,
-  inject,
   isZero,
   setSvgAttributes,
   svgNamespace,
@@ -342,7 +341,7 @@ function exportGradient(color: Color, options: Options): string {
   // we need to create a separate gradient object for each gradient,
   // even when they share the same gradient definition.
   // http://www.svgopen.org/2011/papers/20-Separating_gradients_from_geometry/
-  // TODO: Implement gradient merging in SvgImport
+  // TODO: Implement gradient merging in svgImport
   let gradientNode = getDefinition(color, 'color')
   if (!gradientNode) {
     const { gradient, origin, destination } = color
@@ -902,7 +901,7 @@ function exportSVG(item: Item, options: Options, isRoot?: boolean): SVGElement {
     if (data && data !== '{}' && data !== 'null') {
       node.setAttribute('data-paper-data', data)
     }
-    // Mark layers, so SvgImport can tell them from groups (#483):
+    // Mark layers, so svgImport can tell them from groups (#483):
     if (item instanceof Layer) {
       node.setAttribute('data-paper-layer', '')
     }
@@ -960,26 +959,26 @@ function exportRoot(
   return exportDefinitions(node, options)
 }
 
-// NOTE: Documentation is in Item#exportSVG()
-inject(Item.prototype, {
-  exportSVG(this: Item, options?: Options): SVGElement | string {
-    options = setOptions(options)
-    const { bounds } = options
-    return bounds ?? options.matrix
-      ? exportRoot([this], this.view, bounds, options)
-      : exportDefinitions(exportSVG(this, options, true), options)
-  }
-})
+export function exportItemSVG(
+  item: Item,
+  options?: Options
+): SVGElement | string {
+  options = setOptions(options)
+  const { bounds } = options
+  return bounds ?? options.matrix
+    ? exportRoot([item], item.view, bounds, options)
+    : exportDefinitions(exportSVG(item, options, true), options)
+}
 
-// NOTE: Documentation is in Project#exportSVG()
-inject(Project.prototype, {
-  exportSVG(this: Project, options?: Options): SVGElement | string {
-    options = setOptions(options)
-    return exportRoot(
-      this._children,
-      this.view,
-      options.bounds !== undefined ? options.bounds : 'view',
-      options
-    )
-  }
-})
+export function exportProjectSVG(
+  project: Project,
+  options?: Options
+): SVGElement | string {
+  options = setOptions(options)
+  return exportRoot(
+    project._children,
+    project.view,
+    options.bounds !== undefined ? options.bounds : 'view',
+    options
+  )
+}
