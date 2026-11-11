@@ -24,7 +24,6 @@ import {
   getStyles,
   getSvgAttribute,
   getWindow,
-  inject,
   paper,
   request,
   svgStyles
@@ -201,7 +200,7 @@ function importGroup(
   // The attributes of patterns describe their tiles, see
   // importPattern():
   const isPattern = type === 'pattern'
-  // Paper.js marks the groups of its layers, see SvgExport:
+  // Paper.js marks the groups of its layers, see svgExport:
   const ctor = node.hasAttribute('data-paper-layer') ? Layer : Group
   let item = new ctor()
   const project = item._project
@@ -640,10 +639,10 @@ function applyOpacity(item: any, value: string, name: string) {
   }
 }
 
-// The primitives that SvgExport writes for a shadow after its blur:
+// The primitives that svgExport writes for a shadow after its blur:
 const shadowPrimitives = 'feOffset,feFlood,feComposite,feComposite'
 
-// Reads a shadow from a <filter> with the primitives that SvgExport writes
+// Reads a shadow from a <filter> with the primitives that svgExport writes
 // for it, and only these, or returns null for any other filter:
 function getFilterShadow(filter: Element) {
   const nodes = Array.from(filter?.children ?? [])
@@ -753,7 +752,7 @@ Object.assign(attributes, {
   },
 
   'filter'(item, value) {
-    // Read shadows, as SvgExport writes them, or as CSS drop-shadow().
+    // Read shadows, as svgExport writes them, or as CSS drop-shadow().
     // Groups don't draw shadows, so leave them out (#1003):
     const shadow = (
       value &&
@@ -771,7 +770,7 @@ Object.assign(attributes, {
     }
   },
 
-  // Paper.js's own blend modes, which CSS doesn't have, see SvgExport:
+  // Paper.js's own blend modes, which CSS doesn't have, see svgExport:
   'data-paper-blend-mode'(item, value) {
     if ('blendMode' in item) {
       item.blendMode = value
@@ -986,7 +985,7 @@ function getData(node: Element): Record<string, any> | null {
   return json ? Object.assign(data ?? {}, JSON.parse(json)) : data
 }
 
-// Restore the names and data of segments as SvgExport stores them, unless
+// Restore the names and data of segments as svgExport stores them, unless
 // another editor changed the path so that their indices don't fit anymore:
 function setSegmentsData(item: any, node: Element) {
   const json = node.getAttribute('data-paper-segments')
@@ -1169,7 +1168,7 @@ function takeLayers(root: Item): Layer[] | null {
   return layers
 }
 
-function importSVG(
+export function importSVG(
   source: any,
   options: Options | ((item: Item | Layer[], svg: any) => void),
   owner: Item | Project
@@ -1258,18 +1257,3 @@ function importSVG(
 
   return item
 }
-
-// NOTE: Documentation is in Item#importSVG()
-inject(Item.prototype, {
-  importSVG(this: Item, node: any, options?: any): Item | null {
-    return importSVG(node, options, this) as Item
-  }
-})
-
-// NOTE: Documentation is in Project#importSVG()
-inject(Project.prototype, {
-  importSVG(this: Project, node: any, options?: any): Item | Layer[] | null {
-    this.activate()
-    return importSVG(node, options, this)
-  }
-})

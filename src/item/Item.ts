@@ -43,10 +43,12 @@ import {
   defineStyleAccessors,
   deserialize,
   equals,
+  exportItemSVG,
   getCanvas,
   getContext,
   getUID,
   hyphenate,
+  importSVG,
   inject,
   isPlainObject,
   isZero,
@@ -2873,6 +2875,128 @@ export class Item extends Emitter {
     // null).
     const res = importJSON(data, this)
     return res !== this ? this.addChild(res) : res
+  }
+
+  /**
+   * Exports the item with its content and child items as an SVG DOM. With
+   * `options.bounds` or `options.matrix`, the item is wrapped in an `<svg>`
+   * element sized to the bounds, as {@link Project#exportSVG(options)} does.
+   *
+   * @option [options.bounds] {String|Rectangle} the bounds of the area to
+   *     export, either as a string ({@values 'view', content'}), or a
+   *     {@link Rectangle} object: `'view'` uses the view bounds,
+   *     `'content'` uses the stroke bounds of the item
+   * @option [options.matrix] {Matrix} the matrix with which to transform the
+   *     exported content: If `options.bounds` is set to `'view'`,
+   *     `paper.view.matrix` is used, for all other settings of
+   *     `options.bounds` the identity matrix is used.
+   * @option [options.asString=false] {Boolean} whether a SVG node or a
+   *     `String` is to be returned
+   * @option [options.precision=5] {Number} the amount of fractional digits in
+   *     numbers used in SVG data
+   * @option [options.matchShapes=false] {Boolean} whether path items should
+   *     tried to be converted to SVG shape items (rect, circle, ellipse,
+   *     line, polyline, polygon), if their geometries match
+   * @option [options.embedImages=true] {Boolean} whether raster images should
+   *     be embedded as base64 data inlined in the xlink:href attribute, or
+   *     kept as a link to their external URL.
+   * @option [options.reuseImages=false] {Boolean} whether raster images with
+   *     the same content should only be exported once into the `<defs>`
+   *     element, and placed through `<use>` elements referencing it
+   * @option [options.idPrefix=''] {String} a prefix for the ids generated
+   *     for definitions such as gradients, clip paths and symbols, to keep
+   *     them unique when several exported SVGs are placed in one document
+   * @option [options.reduceAttributes=true] {Boolean} wether to only include
+   *     style attributes in the SVG output that differ from their parents,
+   *     or to always include them (much faster but leading to redundancies).
+   * @option [options.processNode] {Function} the function to process the
+   *     SVG node made for each exported item, receiving an object with the
+   *     `item` and its `node`: It can change the node, e.g. to add attributes
+   *     that Paper.js doesn't export, or return a node to replace it with. It
+   *     is called before the item's name, style, visibility and data are set
+   *     on the node, which replace attributes of the same names.
+   *
+   * @param [options] the export options
+   * @return the item converted to an SVG node or a
+   * `String` depending on `option.asString` value
+   */
+  exportSVG(options?: Record<string, any>): SVGElement | string {
+    return exportItemSVG(this, options)
+  }
+
+  /**
+   * Converts the provided SVG content into Paper.js items and adds them to
+   * the this item's children list. Note that the item is not cleared first.
+   * You can call {@link Item#removeChildren()} to do so.
+   *
+   * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
+   * the `<use>` elements that place them as {@link SymbolItem} items. The
+   * styles that `<use>` elements inherit don't reach the symbols' content.
+   *
+   * The layers in SVG content that Paper.js exported come back as
+   * {@link Layer} items inside the imported group. To make them the layers
+   * of a project again, import the content with
+   * {@link Project#importSVG(svg)}.
+   *
+   * URLs are fetched as they are, so validate URLs that come from untrusted
+   * sources first, especially on servers, where they could reach internal
+   * addresses.
+   *
+   * @option [options.expandShapes=false] {Boolean} whether imported shape
+   *     items should be expanded to path items
+   * @option [options.crossOrigin] {String} the {@link Raster#crossOrigin}
+   *     value of the rasters created for `<image>` elements, to load their
+   *     images with CORS
+   * @option options.onLoad {Function} the callback function to call once the
+   *     SVG content is loaded from the given URL receiving two arguments: the
+   *     converted `item` and the original `svg` data as a string. Only
+   *     required when loading from external resources.
+   * @option options.onError {Function} the callback function to call if an
+   *     error occurs during loading. Only required when loading from external
+   *     resources.
+   * @option [options.insert=true] {Boolean} whether the imported items should
+   *     be added to the item that `importSVG()` is called on
+   * @option [options.applyMatrix={@link PaperScope#settings}.applyMatrix]
+   *     {Boolean} whether the imported items should have their transformation
+   *     matrices applied to their contents or not
+   * @option [options.processItem] {Function} the function to process the
+   *     item made for each imported SVG element, receiving an object with
+   *     the `item` and its `node`: It can read attributes that Paper.js
+   *     doesn't import, or return an item to replace it with. It is called
+   *     after the element's attributes and data are applied to the item, so
+   *     it can extend `item.data`. A replacement item doesn't receive them:
+   *     copy them over from `item` as needed.
+   *
+   * @param svg the SVG content to import, either as a SVG
+   *     DOM node, a string containing SVG content, or a string describing the
+   *     URL of the SVG file to fetch.
+   * @param [options] the import options
+   * @return the newly created Paper.js item containing the converted
+   *     SVG content
+   */
+  importSVG(
+    svg: SVGElement | string,
+    options?: Record<string, any>
+  ): Item | null
+  /**
+   * Imports the provided external SVG file, converts it into Paper.js items
+   * and adds them to the this item's children list. Note that the item is not
+   * cleared first. You can call {@link Item#removeChildren()} to do so.
+   *
+   * @param svg the URL of the SVG file to fetch.
+   * @param onLoad the callback function to call once the SVG
+   *     content is loaded from the given URL receiving two arguments: the
+   *     converted `item` and the original `svg` data as a string. Only
+   *     required when loading from external files.
+   * @return the newly created Paper.js item containing the converted
+   *     SVG content
+   */
+  importSVG(
+    svg: SVGElement | string,
+    onLoad: (item: Item, svg: string) => void
+  ): Item | null
+  importSVG(svg: any, options?: any): Item | null {
+    return importSVG(svg, options, this) as Item
   }
 
   /**
@@ -6002,123 +6126,6 @@ export interface Item {
    * @return the exported JSON data
    */
   exportJSON(options?: { asString?: boolean; precision?: number }): any
-
-  /**
-   * Exports the item with its content and child items as an SVG DOM. With
-   * `options.bounds` or `options.matrix`, the item is wrapped in an `<svg>`
-   * element sized to the bounds, as {@link Project#exportSVG(options)} does.
-   *
-   * @option [options.bounds] {String|Rectangle} the bounds of the area to
-   *     export, either as a string ({@values 'view', content'}), or a
-   *     {@link Rectangle} object: `'view'` uses the view bounds,
-   *     `'content'` uses the stroke bounds of the item
-   * @option [options.matrix] {Matrix} the matrix with which to transform the
-   *     exported content: If `options.bounds` is set to `'view'`,
-   *     `paper.view.matrix` is used, for all other settings of
-   *     `options.bounds` the identity matrix is used.
-   * @option [options.asString=false] {Boolean} whether a SVG node or a
-   *     `String` is to be returned
-   * @option [options.precision=5] {Number} the amount of fractional digits in
-   *     numbers used in SVG data
-   * @option [options.matchShapes=false] {Boolean} whether path items should
-   *     tried to be converted to SVG shape items (rect, circle, ellipse,
-   *     line, polyline, polygon), if their geometries match
-   * @option [options.embedImages=true] {Boolean} whether raster images should
-   *     be embedded as base64 data inlined in the xlink:href attribute, or
-   *     kept as a link to their external URL.
-   * @option [options.reuseImages=false] {Boolean} whether raster images with
-   *     the same content should only be exported once into the `<defs>`
-   *     element, and placed through `<use>` elements referencing it
-   * @option [options.idPrefix=''] {String} a prefix for the ids generated
-   *     for definitions such as gradients, clip paths and symbols, to keep
-   *     them unique when several exported SVGs are placed in one document
-   * @option [options.reduceAttributes=true] {Boolean} wether to only include
-   *     style attributes in the SVG output that differ from their parents,
-   *     or to always include them (much faster but leading to redundancies).
-   * @option [options.processNode] {Function} the function to process the
-   *     SVG node made for each exported item, receiving an object with the
-   *     `item` and its `node`: It can change the node, e.g. to add attributes
-   *     that Paper.js doesn't export, or return a node to replace it with. It
-   *     is called before the item's name, style, visibility and data are set
-   *     on the node, which replace attributes of the same names.
-   *
-   * @param [options] the export options
-   * @return the item converted to an SVG node or a
-   * `String` depending on `option.asString` value
-   */
-  exportSVG(options?: Record<string, any>): SVGElement | string
-
-  /**
-   * Converts the provided SVG content into Paper.js items and adds them to
-   * the this item's children list. Note that the item is not cleared first.
-   * You can call {@link Item#removeChildren()} to do so.
-   *
-   * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
-   * the `<use>` elements that place them as {@link SymbolItem} items. The
-   * styles that `<use>` elements inherit don't reach the symbols' content.
-   *
-   * The layers in SVG content that Paper.js exported come back as
-   * {@link Layer} items inside the imported group. To make them the layers
-   * of a project again, import the content with
-   * {@link Project#importSVG(svg)}.
-   *
-   * URLs are fetched as they are, so validate URLs that come from untrusted
-   * sources first, especially on servers, where they could reach internal
-   * addresses.
-   *
-   * @option [options.expandShapes=false] {Boolean} whether imported shape
-   *     items should be expanded to path items
-   * @option [options.crossOrigin] {String} the {@link Raster#crossOrigin}
-   *     value of the rasters created for `<image>` elements, to load their
-   *     images with CORS
-   * @option options.onLoad {Function} the callback function to call once the
-   *     SVG content is loaded from the given URL receiving two arguments: the
-   *     converted `item` and the original `svg` data as a string. Only
-   *     required when loading from external resources.
-   * @option options.onError {Function} the callback function to call if an
-   *     error occurs during loading. Only required when loading from external
-   *     resources.
-   * @option [options.insert=true] {Boolean} whether the imported items should
-   *     be added to the item that `importSVG()` is called on
-   * @option [options.applyMatrix={@link PaperScope#settings}.applyMatrix]
-   *     {Boolean} whether the imported items should have their transformation
-   *     matrices applied to their contents or not
-   * @option [options.processItem] {Function} the function to process the
-   *     item made for each imported SVG element, receiving an object with
-   *     the `item` and its `node`: It can read attributes that Paper.js
-   *     doesn't import, or return an item to replace it with. It is called
-   *     after the element's attributes and data are applied to the item, so
-   *     it can extend `item.data`. A replacement item doesn't receive them:
-   *     copy them over from `item` as needed.
-   *
-   * @param svg the SVG content to import, either as a SVG
-   *     DOM node, a string containing SVG content, or a string describing the
-   *     URL of the SVG file to fetch.
-   * @param [options] the import options
-   * @return the newly created Paper.js item containing the converted
-   *     SVG content
-   */
-  importSVG(
-    svg: SVGElement | string,
-    options?: Record<string, any>
-  ): Item | null
-  /**
-   * Imports the provided external SVG file, converts it into Paper.js items
-   * and adds them to the this item's children list. Note that the item is not
-   * cleared first. You can call {@link Item#removeChildren()} to do so.
-   *
-   * @param svg the URL of the SVG file to fetch.
-   * @param onLoad the callback function to call once the SVG
-   *     content is loaded from the given URL receiving two arguments: the
-   *     converted `item` and the original `svg` data as a string. Only
-   *     required when loading from external files.
-   * @return the newly created Paper.js item containing the converted
-   *     SVG content
-   */
-  importSVG(
-    svg: SVGElement | string,
-    onLoad: (item: Item, svg: string) => void
-  ): Item | null
 
   // Implemented by the subclasses that draw content and selections:
   _draw(
