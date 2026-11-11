@@ -29,7 +29,6 @@ export class Group extends Item {
   // created without the constructor, see Item#_loadContent():
   _clipItem: Item | null
 
-  // DOCS: document new Group(item, item...);
   /**
    * Creates a new Group item and places it at the top of the active layer.
    *
@@ -91,6 +90,20 @@ export class Group extends Item {
    * });
    */
   constructor(object: object)
+  /**
+   * Creates a new Group item from the passed items and places it at the top
+   * of the active layer.
+   *
+   * @param children the items that will be added to the newly created group
+   *
+   * @example {@paperscript}
+   * var path = new Path([100, 100], [100, 200]);
+   * var path2 = new Path([50, 150], [150, 150]);
+   *
+   * // Create a group from the two paths:
+   * var group = new Group(path, path2);
+   * group.strokeColor = 'black';
+   */
   constructor(...children: Item[])
   constructor(...args: any[]) {
     super()

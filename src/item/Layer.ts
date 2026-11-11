@@ -62,6 +62,13 @@ export class Layer extends Group {
    * });
    */
   constructor(object: object)
+  /**
+   * Creates a new Layer item from the passed items and places it at the end
+   * of the {@link Project#layers} array. The newly created layer will be
+   * activated, so all newly created items will be placed within it.
+   *
+   * @param children the items that will be added to the newly created layer
+   */
   constructor(...children: Item[])
   constructor(...args: any[]) {
     super(...args)
