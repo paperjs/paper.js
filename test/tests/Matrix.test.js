@@ -10,11 +10,18 @@
  * All rights reserved.
  */
 
-import { describe } from 'vitest'
+import { describe, expect } from 'vitest'
 import { Matrix, Point } from 'paper'
 import { equals, test } from '../helpers.js'
 
 describe('Matrix', () => {
+  test('new Matrix() with unsupported parameters', () => {
+    const message = 'Unsupported matrix parameters'
+    expect(() => new Matrix(1, 2)).toThrow(message)
+    expect(() => new Matrix(1, 2, 3, 4, 5)).toThrow(message)
+    equals(new Matrix([1, 2, 3, 4, 5, 6]), new Matrix(1, 2, 3, 4, 5, 6))
+  })
+
   test('Decomposition: rotate()', () => {
     function testAngle(a, ea) {
       const m = new Matrix().rotate(a),

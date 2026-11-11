@@ -160,7 +160,7 @@ function preparePath(path: PathItem, close?: boolean): PathItem {
   return close ? closePaths(res) : res
 }
 
-/**
+/*
  * Closes the open paths of the path item with straight lines, as filling
  * them does.
  */
@@ -185,10 +185,6 @@ export function closePaths<T extends PathItem>(item: T): T {
   return item
 }
 
-/**
- * Creates the item that a boolean operation returns from its paths, and
- * inserts it above the operands, unless `options.insert` is `false`.
- */
 export function createResult(
   paths: PathItem[],
   simplify: boolean,
@@ -200,9 +196,8 @@ export function createResult(
   result.addChildren(paths)
   // See if the item can be reduced to just a simple Path.
   result = result.reduce({ simplify }) as PathItem
-  // An explicit null leaves the result out, as undefined falls back:
-  const insert = options?.insert
-  if (insert !== undefined ? insert : paper.settings.insertItems) {
+  const { insert = paper.settings.insertItems } = options ?? {}
+  if (insert) {
     // Insert the resulting path above whichever of the paths that are
     // siblings of path1 appears furthest up in the stack:
     let above = path1
@@ -220,7 +215,7 @@ export function createResult(
   return result
 }
 
-function filterIntersection(location: CurveLocation): boolean {
+function filterIntersection(inter: CurveLocation): boolean {
   // TODO: Change isCrossing() to also handle overlaps (hasOverlap())
   // that are actually involved in a crossing! For this we need proper
   // overlap range detection / merging first... But as we call
@@ -228,14 +223,9 @@ function filterIntersection(location: CurveLocation): boolean {
   // self-touching areas in paths, this works for the known use cases.
   // The ideal implementation would deal with it in a way outlined in:
   // https://github.com/paperjs/paper.js/issues/874#issuecomment-168332391
-  return location.hasOverlap() || location.isCrossing()
+  return inter.hasOverlap() || inter.isCrossing()
 }
 
-/**
- * Performs the boolean operation on path1 with path2, which may be a list of
- * paths, by tracing the areas that it includes, or by splitting path1 for
- * stroke based operations.
- */
 export function traceBoolean(
   path1: PathItem,
   path2: PathItem | PathItem[] | null,
@@ -322,10 +312,6 @@ function combinePaths(
   return entries.length ? combine(entries) : null
 }
 
-/**
- * Performs the boolean operation by splitting the paths of path1 where they
- * cross path2, and keeping the pieces that the operation includes.
- */
 export function splitBoolean(
   path1: PathItem,
   path2: PathItem | PathItem[] | null,
@@ -843,7 +829,7 @@ export function createGraph(operands: PathItem[]): Graph {
     const operand = operands[i]
     const paths = getPaths(operand)
     nonZeros.push(operand.fillRule === 'nonzero')
-    bounds = bounds?.unite(operand.bounds) ?? operand.bounds
+    bounds = bounds ? bounds.unite(operand.bounds) : operand.bounds
     for (let j = 0, k = paths.length; j < k; j++) {
       const pathCurves = paths[j].curves
       offsets[paths[j]._id] = curves.length
@@ -1676,7 +1662,7 @@ export function tracePaths(operands: PathItem[], operator: Operator): Path[] {
   return paths
 }
 
-/**
+/*
  * Prepares the operands of a boolean operation. Without path2, the
  * operation resolves path1 on its own.
  */
@@ -1691,9 +1677,6 @@ export function getOperands(
   return operands
 }
 
-/**
- * Returns a point that is guaranteed to be inside the path item.
- */
 export function getInteriorPoint(item: PathItem): Point {
   const { bounds } = item
   const point = bounds._getCenter(true)

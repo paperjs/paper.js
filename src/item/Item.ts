@@ -39,6 +39,7 @@ import {
   blend,
   capitalize,
   clamp,
+  clone,
   defineEvents,
   defineStyleAccessors,
   deserialize,
@@ -148,10 +149,8 @@ export class Item extends Emitter {
   declare _serializeFields: Record<string, any>
   declare _attributes: string[]
   declare _prioritize: string[]
-  // The defaults of subclasses, read here:
   declare _boundsOptions: BoundsOptions
   declare _buffered: boolean
-  // Set by the subclasses that can have children:
   declare _children: Item[]
   declare _namedChildren: Record<string, Item[]>
 
@@ -162,33 +161,23 @@ export class Item extends Emitter {
   _matrix: Matrix
   _style: Style
   _data: Record<string, any>
-  // The caches of #bounds, #position, #rotation / #scaling and
-  // #globalMatrix, the latter with the parent's global matrix it was built
-  // from:
   _bounds: Record<string, any>
   _position: Point
   _decomposed: ReturnType<Matrix['decompose']>
   _globalMatrix: Matrix
   _parentGlobalMatrix: Matrix
-  // The items whose cached bounds this item's children contribute to, see
-  // Item._updateBoundsCache():
   _boundsCache: { ids: Record<number, Item>; list: Item[] }
-  // The version of the project's drawing in which the item was drawn last:
   _updateVersion: number
-  // The definition that this item is the item of, see SymbolDefinition:
   _symbol: ItemDefinition
-  // The canvas that buffered groups draw into, see Group#buffered:
   declare _buffer: any
-  // The live effects of the item, see #effects:
-  declare _effects: EffectInstance[] | null
-  // The cached output of the effects, see #getEffectOutput():
-  declare _effectOutput: Item
-  // The version of the registered effects that #_effectOutput is from:
-  declare _effectVersion: number
-  // Set on the shells of hosted items, see Project#host:
   declare _shell: boolean
-  // The definition of SymbolItem, read here:
   declare _definition: SymbolDefinition
+  // The live effects of items, see #effects. Their output is computed when
+  // it's first needed, and kept until the item, its content, its effects or
+  // the registered effects change, see #_changed().
+  declare _effects: EffectInstance[] | null
+  declare _effectOutput: Item
+  declare _effectVersion: number
 
   // Item has no constructor of its own: Its subclasses call super(), set up
   // what they need, and then call #_initialize().
@@ -236,8 +225,8 @@ export class Item extends Emitter {
     ) {
       this._setProject(project)
     } else {
-      // Pass true for _created:
-      ;(hasProps && props.parent || project)._insertItem(undefined, this, true)
+      ;(hasProps && props.parent || project)
+        ._insertItem(undefined, this, true) // _created = true
     }
     // Filter out Item.*INSERT before set(), for performance reasons.
     if (hasProps && props !== Item.NO_INSERT && props !== Item.INSERT) {
@@ -252,9 +241,8 @@ export class Item extends Emitter {
     return hasProps
   }
 
-  // Sets up the content of the item, leaving its identity, parent and matrix
-  // alone. #_initialize() calls it, and so does the loading of hosted items,
-  // see Project#host. Subclasses add their content:
+  // Set up the item's content, but leave its identity, parent and matrix
+  // alone, as hosted loading calls this too, see Project#host.
   // @overridable
   _initializeContent(project: Project) {
     // Inherit the applyMatrix setting from settings.applyMatrix
@@ -411,14 +399,21 @@ export class Item extends Emitter {
    */
   set(props: object, exclude?: Record<string, boolean>): this {
     if (props) {
-      // Set the prioritized keys first, in their order, then the others:
-      const keys = new Set([
-        ...this._prioritize.filter(key => key in props),
-        ...Object.keys(props)
-      ])
-      for (const key of keys) {
+      const prioritize = this._prioritize
+      // If there are prioritized keys, process them first.
+      for (const key of prioritize) {
         const value = props[key]
         if (value !== undefined && !(exclude && key in exclude)) {
+          this[key] = value
+        }
+      }
+      for (const key of Object.keys(props)) {
+        const value = props[key]
+        if (
+          value !== undefined &&
+          !(exclude && key in exclude) &&
+          !prioritize.includes(key)
+        ) {
           this[key] = value
         }
       }
@@ -735,10 +730,9 @@ export class Item extends Emitter {
 
   set clipMask(clipMask: boolean) {
     // On-the-fly conversion to boolean:
-    const isClipMask = !!clipMask
-    if (this._clipMask != isClipMask) {
-      this._clipMask = isClipMask
-      if (isClipMask) {
+    if (this._clipMask != (clipMask = !!clipMask)) {
+      this._clipMask = clipMask
+      if (clipMask) {
         this.fillColor = null
         this.strokeColor = null
       }
@@ -840,12 +834,13 @@ export class Item extends Emitter {
   }
 
   _getPosition(_dontLink?: boolean): Point {
-    // Cache position value. Do not cache LinkedPoints directly, since we
-    // would not be able to use them to calculate the difference in the
-    // position setter, as when it is modified, it would hold new values
-    // already and only then cause the calling of the setter.
+    // Cache position value.
+    // Do not cache LinkedPoints directly, since we would not be able to
+    // use them to calculate the difference in the position setter, as when
+    // it is modified, it would hold new values already and only then cause
+    // the calling of the setter.
     const { x, y } = (this._position ??= this._getPositionFromBounds())
-    // Pass true for _dontLink to receive back a normal point:
+    // Pass true for _dontLink in getCenter(), so receive back a normal point
     return _dontLink
       ? new Point(x, y)
       : new LinkedPoint(x, y, this, 'position')
@@ -904,9 +899,10 @@ export class Item extends Emitter {
     let bounds = this.getBounds()
     const _matrix = this._matrix
     const matrix = new Matrix()
+    let center = rect.center
     // Read this from bottom to top:
     // Translate to new center:
-    matrix.translate(rect.center)
+    matrix.translate(center)
     // Scale to new Size, if size changes. A zero dimension can't be
     // scaled, so keep its scaling at 1 to keep the matrix invertible:
     if (rect.width != bounds.width || rect.height != bounds.height) {
@@ -925,7 +921,7 @@ export class Item extends Emitter {
       )
     }
     // Translate to bounds center:
-    const center = bounds.center
+    center = bounds.center
     matrix.translate(-center.x, -center.y)
     // Now execute the transformation
     this.transform(matrix)
@@ -1065,10 +1061,10 @@ export class Item extends Emitter {
     // opts.stroke if a resolved item definition does not have a stroke,
     // allowing the code to share caches between #strokeBounds and #bounds.
     if (!opts.stroke || this.strokeScaling) {
-      // If we're caching bounds, pass on this item as cacheItem, so
-      // the children can setup _boundsCache structures for it.
       opts.cacheItem = this
     }
+    // If we're caching bounds, pass on this item as cacheItem, so
+    // the children can setup _boundsCache structures for it.
     return this._getCachedBounds(hasMatrix ? (matrix as Matrix) : null, opts)
       .rect
   }
@@ -1179,7 +1175,9 @@ export class Item extends Emitter {
     // If we can cache the result, update the _bounds cache structure
     // before returning
     if (cacheKey) {
-      bounds = this._bounds ??= {}
+      if (!bounds) {
+        this._bounds = bounds = {}
+      }
       bounds[cacheKey] = {
         rect: rect.clone(),
         nonscaling,
@@ -1216,7 +1214,7 @@ export class Item extends Emitter {
         }
       }
     }
-    return mx?._shiftless() ?? null
+    return mx?._shiftless()
   }
 
   /**
@@ -1683,17 +1681,16 @@ export class Item extends Emitter {
 
     function expand(source: Item, copy: Item) {
       const children = source._children
-      if (children) {
-        children.forEach((child, i) => {
-          const output = child.getEffectOutput()
-          if (output) {
-            const transformed = output.clone({ insert: false })
-            transformed.transform(child._matrix)
-            copy._children[i].replaceWith(transformed)
-          } else {
-            expand(child, copy._children[i])
-          }
-        })
+      for (let i = 0, l = children ? children.length : 0; i < l; i++) {
+        const child = children[i]
+        let output = child.getEffectOutput()
+        if (output) {
+          output = output.clone({ insert: false })
+          output.transform(child._matrix)
+          copy._children[i].replaceWith(output)
+        } else {
+          expand(child, copy._children[i])
+        }
       }
     }
 
@@ -1729,13 +1726,13 @@ export class Item extends Emitter {
         for (const child of children) {
           if (child._visible) {
             const rect = child.previewBounds
-            bounds = bounds?.unite(rect) ?? rect
+            bounds = bounds ? bounds.unite(rect) : rect
           }
         }
       }
       if (bounds) {
         return (
-          matrix?.appended(this._matrix) ?? this._matrix
+          matrix ? matrix.appended(this._matrix) : this._matrix
         )._transformBounds(bounds)
       }
     }
@@ -1780,8 +1777,8 @@ export class Item extends Emitter {
     return this._project._scope
   }
 
-  // Also call _installEvents on all children:
-  // @override
+  // Overrides Emitter#_installEvents to also call _installEvents on all
+  // children.
   _installEvents(install: boolean) {
     super._installEvents(install)
     // Keep the project's selection and the layer's text wraps in sync with
@@ -1989,7 +1986,7 @@ export class Item extends Emitter {
   equals(item: Item): boolean {
     // NOTE: We do not compare name and selected state.
     // TODO: Consider not comparing locked and visible also?
-    return !!(
+    return (
       item === this || (
         item &&
         this.className === item.className &&
@@ -2003,7 +2000,8 @@ export class Item extends Emitter {
         this._guide === item._guide &&
         equals(this._textWrap, item._textWrap) &&
         this._equals(item)
-      )
+      ) ||
+      false
     )
   }
 
@@ -2012,7 +2010,6 @@ export class Item extends Emitter {
    * is called, item is always defined, of the same class as `this` and has
    * equal general state attributes such as matrix, style, opacity, etc.
    */
-  // Subclasses narrow item to their own class, which equals() makes sure of:
   _equals(item: any): boolean {
     return equals(this._children, item._children)
   }
@@ -2145,7 +2142,7 @@ export class Item extends Emitter {
     const data = source._data
     const name = source._name
     const effects = source._effects
-    this._data = data ? { ...data } : null
+    this._data = data ? clone(data) : null
     if (name) {
       this.name = name
     }
@@ -2508,8 +2505,12 @@ export class Item extends Emitter {
       // Path#_hitTestSelf() returns a list of all its hits when we're
       // collecting them, see hitTestAll():
       if (Array.isArray(hit)) {
-        // Filter every hit, and return the first one that passes:
-        return hit.map(filter).find(result => result) ?? null
+        let first = null
+        for (const entry of hit) {
+          const res = filter(entry)
+          first = first || res
+        }
+        return first
       }
       let result = hit
       if (result && match && !match(result)) {
@@ -2770,28 +2771,36 @@ export class Item extends Emitter {
     param?: any,
     firstOnly?: boolean
   ): Item[] {
-    let match = options
     if (!param) {
       // Set up a couple of "side-car" values for the recursive calls
       // of _getItems below, mainly related to the handling of
       // inside / overlapping:
       const obj = typeof options === 'object' && options
-      const { recursive, inside, overlapping, ...rest } = obj ?? {}
+      const overlapping = obj && obj.overlapping
+      const inside = obj && obj.inside
       // If overlapping is set, we also perform the inside check:
       const bounds = overlapping || inside
       const rect = bounds && Rectangle.from(bounds)
       param = {
         items: [], // The list to contain the results.
-        recursive: recursive !== false,
+        recursive: !obj || obj.recursive !== false,
         inside: !!inside,
         overlapping: !!overlapping,
         rect,
         path: overlapping && Path.rectangle({ rectangle: rect, insert: false })
       }
       if (obj) {
-        // Use a copy of the options object that doesn't contain these
-        // special properties:
-        match = rest
+        // Create a copy of the options object that doesn't contain
+        // these special properties, or values that are undefined:
+        options = {}
+        for (const [key, value] of Object.entries(obj)) {
+          if (
+            value !== undefined &&
+            !/^(recursive|inside|overlapping)$/.test(key)
+          ) {
+            options[key] = value
+          }
+        }
       }
     }
     const children = item._children
@@ -2823,7 +2832,7 @@ export class Item extends Emitter {
             add = false
           }
         }
-        if (add && child.matches(match)) {
+        if (add && child.matches(options)) {
           items.push(child)
           if (firstOnly) {
             break
@@ -2831,7 +2840,7 @@ export class Item extends Emitter {
         }
         // Only into the children that the item shows:
         if (param.recursive !== false && child.children) {
-          Item._getItems(child, match, childMatrix, param, firstOnly)
+          Item._getItems(child, options, childMatrix, param, firstOnly)
         }
         if (firstOnly && items.length > 0) {
           break
@@ -3334,7 +3343,7 @@ export class Item extends Emitter {
       children,
       null,
       start,
-      (end !== undefined ? end : children.length) - start
+      (end ?? children.length) - start
     )
     for (let i = removed.length - 1; i >= 0; i--) {
       // Don't notify parent each time, notify it separately after.
@@ -3407,10 +3416,12 @@ export class Item extends Emitter {
   // TODO: Item#isEditable is currently ignored in the documentation, as
   // locking an item currently has no effect
   isEditable(): boolean {
-    for (let item: Item = this; item; item = item._parent) {
+    let item: Item = this
+    while (item) {
       if (!item._visible || item._locked) {
         return false
       }
+      item = item._parent
     }
     return true
   }
@@ -3587,7 +3598,8 @@ export class Item extends Emitter {
    * @return {@true if the items are grouped together}
    */
   isGroupedWith(item: Item): boolean {
-    for (let parent = this._parent; parent; parent = parent._parent) {
+    let parent = this._parent
+    while (parent) {
       // Find group parents. Check for parent._parent, since don't want
       // top level layers, because they also inherit from Group
       if (
@@ -3597,6 +3609,8 @@ export class Item extends Emitter {
       ) {
         return true
       }
+      // Keep walking up otherwise
+      parent = parent._parent
     }
     return false
   }
@@ -4223,7 +4237,7 @@ export class Item extends Emitter {
     // Get the transformation matrix for non-scaling strokes.
     const strokeMatrix = parentStrokeMatrix
       ? parentStrokeMatrix.appended(matrix)
-      : // Pass `true` for dontMerge
+      : // pass `true` for dontMerge
         this._canScaleStroke && !this._style._get('strokeScaling', true)
         ? viewMatrix
         : null
@@ -4265,10 +4279,12 @@ export class Item extends Emitter {
     if (clip) {
       // The clip item is a sibling of this item, so draw it with the
       // parent's matrices before applying this item's matrix (#1594):
-      const clipMatrix = param.viewMatrix
-        ? param.viewMatrix.appended(parentMatrix)
-        : parentMatrix
-      clipMatrix.applyToContext(ctx)
+      ;(
+        param.viewMatrix
+          ? param.viewMatrix.appended(parentMatrix)
+          : parentMatrix
+
+      ).applyToContext(ctx)
       param.clipItem.draw(
         ctx,
         Object.assign(Object.create(param), {
@@ -4391,16 +4407,16 @@ export class Item extends Emitter {
     handlersOnly?: boolean
   ) {
     const selection = this._selection
-    const itemSelected = (
-      !!(selection & ItemSelection.ITEM) &&
-      !!this._drawSelected
-    )
+    let itemSelected: number | boolean = selection & ItemSelection.ITEM
     const boundsSelected = (
       selection & ItemSelection.BOUNDS ||
-      selection & ItemSelection.ITEM && this._selectBounds
+      itemSelected && this._selectBounds
     )
     const strokeBoundsSelected = selection & ItemSelection.STROKE_BOUNDS
     const positionSelected = selection & ItemSelection.POSITION
+    if (!this._drawSelected) {
+      itemSelected = false
+    }
     // Items of symbol definitions are drawn too, but aren't inserted:
     if (selection && this._isUpdated(updateVersion) && this.isInserted()) {
       // Allow definition of selected color on a per item and per
@@ -4460,13 +4476,13 @@ export class Item extends Emitter {
         // Now draw a rectangle that connects the transformed
         // bounds corners, and draw the corners.
         ctx.beginPath()
-        for (let i = 0; i < 8; i += 2) {
-          ctx[i ? 'lineTo' : 'moveTo'](coords[i], coords[i + 1])
+        for (let i = 0; i < 8; i++) {
+          ctx[!i ? 'moveTo' : 'lineTo'](coords[i], coords[++i])
         }
         ctx.closePath()
         ctx.stroke()
-        for (let i = 0; i < 8; i += 2) {
-          ctx.fillRect(coords[i] - half, coords[i + 1] - half, size, size)
+        for (let i = 0; i < 8; i++) {
+          ctx.fillRect(coords[i] - half, coords[++i] - half, size, size)
         }
       }
       if (boundsSelected) {
@@ -4836,8 +4852,7 @@ export class Item extends Emitter {
       })
     }
 
-    // Produce the bounds that differ from #bounds only by their options, as
-    // accessors and as methods that take a matrix:
+    // Produce getters and methods for bounds properties:
     const boundsOptions = {
       handleBounds: { handle: true },
       internalBounds: { internal: true }
@@ -4871,7 +4886,6 @@ export class Item extends Emitter {
       })
     }
 
-    // Produce the shortcuts of #removeOn():
     for (const key of ['down', 'drag', 'up', 'move']) {
       inject(this.prototype, {
         [`removeOn${capitalize(key)}`]() {
@@ -6184,9 +6198,10 @@ export function hitTestChildren(
   point: Point,
   options: Record<string, any>,
   viewMatrix?: Matrix,
-  // Only used in Group#_hitTestChildren() to exclude #clipItem:
   _exclude?: Item
 ): HitResult | null {
+  // NOTE: _exclude is only used in Group#_hitTestChildren()
+  // to exclude #clipItem
   const children = owner._children
   if (children) {
     // Loop backwards, so items that get drawn last are tested first.
@@ -6218,40 +6233,38 @@ export function importJSON(
   target?: Item | null,
   resolve?: (key: string) => any
 ): any {
-  let reusable = target
   return deserialize(
     typeof json === 'string' ? JSON.parse(json) : json,
     // Provide our own create function to handle target and insertion:
     (ctor, args, isRoot) => {
       // If a target is provided and it's of the right type for the root
       // item, import right into it.
-      const useTarget = isRoot && reusable?.constructor === ctor
+      const useTarget = isRoot && target?.constructor === ctor
       const isItem = ctor.prototype instanceof Item
       const isLayer = ctor === Layer || ctor.prototype instanceof Layer
-      let values = args
       // NOTE: We don't set insert false for layers since we want these to be
       // created on the fly in the active project into which we're importing
       // (except for if it's a preexisting target layer).
       if (args.length === 1 && isItem && (useTarget || !isLayer)) {
-        const [arg] = args
+        const arg = args[0]
         if (isPlainObject(arg)) {
           arg.insert = false
           // When using target, make sure the `item.insert()` method is not
           // overridden with the `arg.insert` property that was just set.
           // Pass an exclude object to the call of `set()` below (#1392).
           if (useTarget) {
-            values = [arg, Item.INSERT]
+            args = args.concat([Item.INSERT])
           }
         }
       }
       if (useTarget) {
         // When reusing an object, initialize it through #set() instead of
         // the constructor. Clear target to only use it once:
-        const obj = reusable
-        reusable = null
-        return obj.set(values[0], values[1])
+        const obj = target
+        target = null
+        return obj.set(args[0], args[1])
       }
-      return new ctor(...values)
+      return new ctor(...args)
     },
     resolve
   )

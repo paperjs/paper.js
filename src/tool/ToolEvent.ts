@@ -52,6 +52,12 @@ export class ToolEvent extends Event {
     this.type = type
   }
 
+  // Convenience method to allow local overrides of point values.
+  // See application below.
+  #choosePoint(point: Point, toolPoint: Point): Point {
+    return point ? point : toolPoint ? toolPoint.clone() : null
+  }
+
   /**
    * The position of the mouse in project coordinates when the event was
    * fired.
@@ -68,7 +74,7 @@ export class ToolEvent extends Event {
    * }
    */
   get point(): Point {
-    return choosePoint(this.#point, this.tool._point)
+    return this.#choosePoint(this.#point, this.tool._point)
   }
 
   set point(point: Point) {
@@ -80,7 +86,7 @@ export class ToolEvent extends Event {
    * event was fired.
    */
   get lastPoint(): Point {
-    return choosePoint(this.#lastPoint, this.tool._lastPoint)
+    return this.#choosePoint(this.#lastPoint, this.tool._lastPoint)
   }
 
   set lastPoint(lastPoint: Point) {
@@ -92,7 +98,7 @@ export class ToolEvent extends Event {
    * was last clicked.
    */
   get downPoint(): Point {
-    return choosePoint(this.#downPoint, this.tool._downPoint)
+    return this.#choosePoint(this.#downPoint, this.tool._downPoint)
   }
 
   set downPoint(downPoint: Point) {
@@ -107,11 +113,11 @@ export class ToolEvent extends Event {
    */
   get middlePoint(): Point {
     // For explanations, see delta
-    const { tool } = this
-    return !this.#middlePoint && tool._lastPoint
-      ? // (point + lastPoint) / 2
-        tool._point.add(tool._lastPoint).divide(2)
-      : this.#middlePoint
+    if (!this.#middlePoint && this.tool._lastPoint) {
+      // (point + lastPoint) / 2
+      return this.tool._point.add(this.tool._lastPoint).divide(2)
+    }
+    return this.#middlePoint
   }
 
   set middlePoint(middlePoint: Point) {
@@ -129,9 +135,8 @@ export class ToolEvent extends Event {
     // Instead, keep calculating the delta each time, so the result can be
     // directly modified by the script without changing the internal values.
     // We could cache this and use clone, but this is almost as fast...
-    const { tool } = this
-    return !this.#delta && tool._lastPoint
-      ? tool._point.subtract(tool._lastPoint)
+    return !this.#delta && this.tool._lastPoint
+      ? this.tool._point.subtract(this.tool._lastPoint)
       : this.#delta
   }
 
@@ -225,9 +230,4 @@ export class ToolEvent extends Event {
       `count: ${this.count}, modifiers: ${this.modifiers} }`
     )
   }
-}
-
-// Convenience function to allow local overrides of point values, see point:
-function choosePoint(point: Point, toolPoint: Point): Point {
-  return point ?? toolPoint?.clone() ?? null
 }

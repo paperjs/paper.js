@@ -101,6 +101,7 @@ export class PaperScope extends Base {
   tools: Tool[] = []
 
   _project: Project = null
+  // Assign a unique id to each scope.
   _id = PaperScope.#nextId++
 
   /**
@@ -167,6 +168,9 @@ export class PaperScope extends Base {
       }
       // Use replace() to get all matches, and deal with Chrome/Webkit
       // overlap:
+      // TODO: Do we need Mozilla next to Firefox? Other than the different
+      // treatment of the Chrome/Webkit overlap here: { chrome: true, webkit:
+      // false }, Mozilla missing is the only difference to jQuery.browser
       user.replace(
         /(opera|chrome|safari|webkit|firefox|msie|trident|atom|node|jsdom)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv:v?([.\d]+))?/g,
         (match, name, version1, version2, revision) => {

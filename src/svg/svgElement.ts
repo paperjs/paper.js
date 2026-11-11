@@ -15,11 +15,11 @@ import type { Formatter } from '../util/Formatter.ts'
 
 // SVG related namespaces
 export const svgNamespace = 'http://www.w3.org/2000/svg'
-export const xlinkNamespace = 'http://www.w3.org/1999/xlink'
 const xmlnsNamespace = 'http://www.w3.org/2000/xmlns'
+export const xlinkNamespace = 'http://www.w3.org/1999/xlink'
 
 // Mapping of attribute names to required namespaces:
-const attributeNamespaces = {
+const attributeNamespace = {
   'href': xlinkNamespace,
   'xlink': xmlnsNamespace,
   // Only the xmlns attribute needs the trailing slash. See #984
@@ -54,7 +54,7 @@ export function createSvgElement(
  */
 export function getSvgAttribute(node: Element, name: string): string | null {
   // SVG 2 replaces xlink:href with plain href, which takes precedence:
-  const namespace = attributeNamespaces[name]
+  const namespace = attributeNamespace[name]
   const value = namespace
     ? node.getAttribute(name) || node.getAttributeNS(namespace, name)
     : node.getAttribute(name)
@@ -74,7 +74,7 @@ export function setSvgAttributes<T extends Element>(
 ): T {
   for (const name in attributes) {
     let value = attributes[name]
-    const namespace = attributeNamespaces[name]
+    const namespace = attributeNamespace[name]
     if (typeof value === 'number' && formatter) {
       value = formatter.number(value)
     }

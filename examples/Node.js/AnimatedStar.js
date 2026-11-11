@@ -22,16 +22,14 @@ paper.view.onFrame = function (event) {
   }
 }
 
-paper.view.exportFrames({
+await paper.view.exportFrames({
   amount: 100,
   directory: import.meta.dirname,
-  onComplete() {
-    console.log('Done exporting.')
-  },
   onProgress(event) {
     console.log(`${event.percentage}% complete, frame took: ${event.delta}`)
   }
 })
+console.log('Done exporting.')
 
 function initialize() {
   for (let i = 0; i < values.count; i++) {

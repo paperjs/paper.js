@@ -51,7 +51,7 @@ import type { SizeLike } from '../basic/Size.ts'
 import type { RectangleLike } from '../basic/Rectangle.ts'
 import type { Project } from '../item/Project.ts'
 
-// The Stats.js library, if the page loads it, see the `stats` attribute:
+// The Stats.js library, if the page loads it:
 declare const Stats: any
 
 type Handler = (this: View, ...args: any[]) => any
@@ -81,12 +81,12 @@ type FrameEvent = { delta: number; time: number; count: number }
  * its own size, see {@link #viewSize}.
  */
 export class View extends Emitter {
-  // The view that receives keyboard input, see Key:
+  // The view that receives keyboard input:
   static _focused: View = null
 
   _project: Project
   _element: HTMLCanvasElement
-  // The context of the element, which also measures text, see getTextWidth():
+  // The context of the element, which also measures text:
   _context: CanvasRenderingContext2D
   _pixelRatio: number
   _viewSize: Size
@@ -282,7 +282,7 @@ export class View extends Emitter {
    */
   // @overridable
   update(force?: boolean): boolean {
-    // To be overridden in sub-classes, see CanvasView#update():
+    // To be overridden in sub-classes.
     return false
   }
 
@@ -294,7 +294,7 @@ export class View extends Emitter {
    */
   requestUpdate() {
     // Node.js has no display for frames to update, and frame requests would
-    // keep its process running, see exportFrames() for animations there:
+    // keep its process running:
     if (!this._requested && !paper.agent.node) {
       requestFrame(() => {
         this._requested = false
@@ -466,17 +466,16 @@ export class View extends Emitter {
   set viewSize(size: SizeLike) {
     const viewSize = Size.from(size)
     const delta = viewSize.subtract(this._viewSize)
-    if (!delta.isZero()) {
-      this._setElementSize(viewSize.width, viewSize.height)
-      this._viewSize.set(viewSize)
-      this._changed()
-      // Emit resize event on any size changes.
-      this.emit('resize', { size: viewSize, delta })
-      if (this._autoUpdate) {
-        // Update right away, don't wait for the next animation frame as
-        // otherwise the view would flicker during resizes, see #1126
-        this.update()
-      }
+    if (delta.isZero()) return
+    this._setElementSize(viewSize.width, viewSize.height)
+    this._viewSize.set(viewSize)
+    this._changed()
+    // Emit resize event on any size changes.
+    this.emit('resize', { size: viewSize, delta })
+    if (this._autoUpdate) {
+      // Update right away, don't wait for the next animation frame as
+      // otherwise the view would flicker during resizes, see #1126
+      this.update()
     }
   }
 
@@ -539,11 +538,9 @@ export class View extends Emitter {
     return isInserted(this._element)
   }
 
-  // Converts the provide size in any of the units allowed in the browser to
-  // pixels. Text is measured with a canvas context: the view's own, or one
-  // from the canvas provider, which also works in workers with an
-  // OffscreenCanvas. Without either, sizes are read as pixels, and text has no
-  // width.
+  // Text is measured with a canvas context: the view's own, or one from the
+  // canvas provider, which also works in workers with an OffscreenCanvas.
+  // Without either, sizes are read as pixels, and text has no width.
   getPixelSize(size: string): number {
     const { agent } = paper
     const element = this._element
@@ -558,7 +555,7 @@ export class View extends Emitter {
       parent.appendChild(temp)
       pixels = parseFloat(getStyles(temp).fontSize)
       parent.removeChild(temp)
-    } else if ((ctx = this._context || getContext(1, 1))) {
+    } else if ((ctx = this._context ?? getContext(1, 1))) {
       const prevFont = ctx.font
       ctx.font = `${size} serif`
       pixels = parseFloat(ctx.font)
@@ -882,12 +879,12 @@ export class View extends Emitter {
   dispatchMouseEvent(
     type: string,
     point: PointLike,
-    options: DispatchOptions & { button?: number } = {}
+    options?: DispatchOptions & { button?: number }
   ): boolean {
     if (!/^mouse(down|move|up)$/.test(type)) {
       throw new Error(`Unknown mouse event type: '${type}'.`)
     }
-    const event = createEvent(type, options)
+    const event = createEvent(type, options || {})
     // Track presses and drags as the DOM events do:
     if (type === 'mousedown') {
       View._focused = this
@@ -924,11 +921,12 @@ export class View extends Emitter {
   dispatchKeyEvent(
     type: string,
     key: string,
-    options: DispatchOptions & { character?: string } = {}
+    options?: DispatchOptions & { character?: string }
   ) {
     if (!/^key(down|up)$/.test(type)) {
       throw new Error(`Unknown key event type: '${type}'.`)
     }
+    options ||= {}
     handleKey(
       type === 'keydown',
       key,
@@ -1213,16 +1211,7 @@ export class View extends Emitter {
    * Loops through all views and sets the focus on the first
    * active one.
    */
-  static updateFocus() {
-    const focused = View._focused
-    if (!focused || !focused.isVisible()) {
-      // Find the first visible view
-      const view = views.find(view => view.isVisible())
-      if (view) {
-        View._focused = tempFocus = view
-      }
-    }
-  }
+  static updateFocus = updateFocus
 
   /**
    * Clear all events handling state information. Made for testing
@@ -1259,19 +1248,23 @@ export class View extends Emitter {
     // Inject the transformations, around the view's center by default:
     for (const key of ['rotate', 'scale', 'shear', 'skew']) {
       inject(this.prototype, {
-        [key](this: View, ...args: any[]) {
-          // The center follows the angle, the scale, shear or skew point, or
-          // their hor and ver values:
-          const index = key !== 'rotate' && typeof args[1] === 'number' ? 2 : 1
-          args[index] ??= this.center
-          this.transform(new Matrix()[key](...args))
+        [key](this: View, value: any, ver?: any, center?: any) {
+          // scale(), shear() and skew() also take the two factors as numbers:
+          const hasVer = key !== 'rotate' && typeof ver === 'number'
+          const origin = (hasVer ? center : ver) ?? this.center
+          const matrix = new Matrix()
+          return this.transform(
+            hasVer
+              ? matrix[key](value, ver, origin)
+              : matrix[key](value, origin)
+          )
         }
       })
     }
   }
 }
 
-// The members defined at runtime rather than in the class body:
+// The transformations and event handlers:
 export interface View {
   /**
    * Rotates the view by a given angle around the given center point.
@@ -1779,9 +1772,7 @@ function installEvents() {
           }
         },
 
-        scroll() {
-          View.updateFocus()
-        },
+        scroll: updateFocus,
 
         [mousemove](event: Event) {
           let view = View._focused
@@ -1809,7 +1800,7 @@ function installEvents() {
               }
               view = View._focused = prevFocus
               prevFocus = null
-              View.updateFocus()
+              updateFocus()
             }
           }
           if (view) {
@@ -1835,9 +1826,7 @@ function installEvents() {
       })
 
       addEvents(window, {
-        load() {
-          View.updateFocus()
-        }
+        load: updateFocus
       })
     }
   }
@@ -1848,6 +1837,19 @@ function getView(event: Event): View {
   const target = event.target as Element
   // Some node do not have the getAttribute method, e.g. SVG nodes.
   return target.getAttribute && viewsById[target.getAttribute('id')]
+}
+
+function updateFocus() {
+  let view = View._focused
+  if (!view || !view.isVisible()) {
+    // Find the first visible view
+    for (view of views) {
+      if (view.isVisible()) {
+        View._focused = tempFocus = view
+        break
+      }
+    }
+  }
 }
 
 function handleMouseMove(view: View, event: Event, point?: Point) {

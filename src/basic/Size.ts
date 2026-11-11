@@ -171,16 +171,19 @@ export class Size extends Base {
    * console.log(size != new Size(1, 1)); // true
    */
   equals(size: any): boolean {
-    return !!(
-      this === size || (
-        size && (
-          this.width === size.width && this.height === size.height || (
-            Array.isArray(size) &&
-            this.width === size[0] &&
-            this.height === size[1]
-          )
+    return (
+      size === this ||
+      size && (
+        (
+          this.width === size.width &&
+          this.height === size.height
+        ) || (
+          Array.isArray(size) &&
+          this.width === size[0] &&
+          this.height === size[1]
         )
-      )
+      ) ||
+      false
     )
   }
 
@@ -368,22 +371,6 @@ export class Size extends Base {
 
   /**
    * The modulo operator returns the integer remainders of dividing the size
-   * by the supplied size as a new size.
-   *
-   * @operator
-   * @param size
-   * @return the integer remainders of dividing the sizes by each
-   * other as a new size
-   *
-   * @example
-   * var size = new Size(12, 6);
-   * var result = size % new Size(5, 2); // PaperScript
-   * var result = size.modulo(new Size(5, 2)); // JavaScript
-   * console.log(result); // {width: 2, height: 0}
-   */
-  modulo(number: number): Size
-  /**
-   * The modulo operator returns the integer remainders of dividing the size
    * by the supplied value as a new size.
    *
    * @operator
@@ -396,6 +383,22 @@ export class Size extends Base {
    * var result = size % 5; // PaperScript
    * var result = size.modulo(5); // JavaScript
    * console.log(result); // {width: 2, height: 1}
+   */
+  modulo(value: number): Size
+  /**
+   * The modulo operator returns the integer remainders of dividing the size
+   * by the supplied size as a new size.
+   *
+   * @operator
+   * @param size
+   * @return the integer remainders of dividing the sizes by each
+   * other as a new size
+   *
+   * @example
+   * var size = new Size(12, 6);
+   * var result = size % new Size(5, 2); // PaperScript
+   * var result = size.modulo(new Size(5, 2)); // JavaScript
+   * console.log(result); // {width: 2, height: 0}
    */
   modulo(size: SizeLike): Size
   modulo(width: number, height: number): Size
@@ -619,8 +622,7 @@ export class LinkedSize extends Size {
 
   // See Point#_set() for an explanation of _set():
   _set(width: number, height: number, _dontNotify?: boolean): this {
-    // Size's constructor calls this before the private fields exist, and the
-    // constructor below sets them:
+    // Size's constructor calls this before the private fields exist:
     if (#width in this) {
       this.#width = width
       this.#height = height

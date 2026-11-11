@@ -45,6 +45,16 @@ describe('Rectangle', () => {
     equals(rect, new Rectangle(10, 20, 20, 20))
   })
 
+  test('new Rectangle(Point, null);', () => {
+    const rect = new Rectangle(new Point(10, 20), null)
+    equals(rect, new Rectangle(10, 20, 0, 0))
+  })
+
+  test('new Rectangle({ from });', () => {
+    const rect = new Rectangle({ from: [10, 20] })
+    equals(rect, new Rectangle(10, 20, 0, 0))
+  })
+
   test('new Rectangle(x, y, width, height);', () => {
     const rect = new Rectangle(10, 20, 30, 40)
     equals(rect, new Rectangle(10, 20, 30, 40))

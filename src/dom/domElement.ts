@@ -13,11 +13,6 @@
 import { Rectangle, Size, getDocument } from '../internal.ts'
 import type { Point } from '../basic/Point.ts'
 
-/**
- * Returns the computed styles of the element, or of the document's root.
- *
- * @private
- */
 export function getStyles(element: Element | Document): CSSStyleDeclaration {
   // If element is a document (nodeType == 9), use it directly
   const document =
@@ -25,24 +20,13 @@ export function getStyles(element: Element | Document): CSSStyleDeclaration {
       ? element.ownerDocument
       : (element as Document)
   const view = document?.defaultView
-  return view?.getComputedStyle(element as Element, '') ?? null
+  return view?.getComputedStyle(element as Element, '')
 }
 
-/**
- * Returns the position of the element in the page, or with `viewport`, in
- * the viewport.
- *
- * @private
- */
 export function getOffset(element: Element, viewport?: boolean): Point {
   return getBounds(element, viewport).point
 }
 
-/**
- * Returns the size of the element.
- *
- * @private
- */
 export function getSize(element: Element): Size {
   return getBounds(element, true).size
 }

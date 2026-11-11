@@ -83,7 +83,6 @@ export class PathText extends TextItem {
 
   _initializeContent(project: Project) {
     super._initializeContent(project)
-    // The text path, see TextItem#textPath:
     this._children = []
   }
 

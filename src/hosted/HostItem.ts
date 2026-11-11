@@ -25,7 +25,7 @@ import type { Rectangle } from '../basic/Rectangle.ts'
  * `_hasChildren: true` on the prototype for kinds that contain other items.
  */
 export class HostItem extends Item {
-  // The properties of the host's node kind, see above:
+  // The properties of the host's node kind:
   _values: Record<string, any>
 
   /**
@@ -35,8 +35,7 @@ export class HostItem extends Item {
    */
   constructor(props?: object) {
     super()
-    // The children aren't content, so hosted loading keeps them, see
-    // Item#_loadContent():
+    // The children aren't content, so hosted loading keeps them:
     if (this._hasChildren) {
       this._children = []
       this._namedChildren = {}
@@ -53,7 +52,7 @@ export class HostItem extends Item {
   _getBounds(matrix: Matrix, options: BoundsOptions): Rectangle {
     // The host's bounds also cover what it paints beyond the children:
     const rect = this._getHostBounds(options)
-    return matrix?._transformBounds(rect) ?? rect
+    return matrix ? matrix._transformBounds(rect) : rect
   }
 
   _hitTestSelf(point: Point, options: Record<string, any>): HitResult {

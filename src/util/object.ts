@@ -10,6 +10,8 @@
  * All rights reserved.
  */
 
+import { capitalize } from '../internal.ts'
+
 export function isPlainObject(arg) {
   const ctor = arg?.constructor
   // We also need to check for ctor.name === 'Object', in case this is an object
@@ -22,43 +24,48 @@ export function isPlainObject(arg) {
  * equals() methods if available, and also comparing elements of arrays and
  * properties of objects.
  */
-export function equals(arg1, arg2) {
-  if (arg1 === arg2) {
+export function equals(obj1, obj2) {
+  if (obj1 === obj2) return true
+  // Call #equals() on both obj1 and obj2
+  if (obj1?.equals) return obj1.equals(obj2)
+  if (obj2?.equals) return obj2.equals(obj1)
+  // Deep compare objects or arrays
+  if (
+    obj1 &&
+    obj2 &&
+    typeof obj1 === 'object' &&
+    typeof obj2 === 'object'
+  ) {
+    // Compare arrays
+    if (Array.isArray(obj1) && Array.isArray(obj2)) {
+      let { length } = obj1
+      if (length !== obj2.length) return false
+      while (length--) {
+        if (!equals(obj1[length], obj2[length])) return false
+      }
+    } else {
+      // Deep compare objects.
+      const keys = Object.keys(obj1)
+      // Ensure that both objects contain the same number of properties before
+      // comparing deep equality.
+      if (keys.length !== Object.keys(obj2).length) return false
+      for (const key of keys) {
+        // Deep compare each member
+        if (!(Object.hasOwn(obj2, key) && equals(obj1[key], obj2[key]))) {
+          return false
+        }
+      }
+    }
     return true
   }
-  if (arg1?.equals) {
-    return arg1.equals(arg2)
-  }
-  if (arg2?.equals) {
-    return arg2.equals(arg1)
-  }
-  if (Array.isArray(arg1) && Array.isArray(arg2)) {
-    let { length } = arg1
-    if (length === arg2.length) {
-      while (length--) {
-        if (!equals(arg1[length], arg2[length])) {
-          return false
-        }
-      }
-      return true
-    }
-  } else if (
-    arg1 &&
-    arg2 &&
-    typeof arg1 === 'object' &&
-    typeof arg2 === 'object'
-  ) {
-    const keys = Object.keys(arg1)
-    if (keys.length === Object.keys(arg2).length) {
-      for (const key of keys) {
-        if (!(Object.hasOwn(arg2, key) && equals(arg1[key], arg2[key]))) {
-          return false
-        }
-      }
-      return true
-    }
-  }
   return false
+}
+
+/**
+ * Creates a shallow copy of an object, array or instance, keeping its class.
+ */
+export function clone<T extends object>(obj: T): T {
+  return Object.assign(new (obj.constructor as new () => T)(), obj)
 }
 
 /**
@@ -78,12 +85,11 @@ export function inject<T extends object>(
   return Object.defineProperties(target, descriptors)
 }
 
-// Defines the constructors of 0.17 that factories replace, deprecated, e.g.
-// `new Path.Circle()` for `Path.circle()`:
+// Keep `new Path.Circle()` working as a deprecated alias of `Path.circle()`:
 export function defineDeprecatedConstructors(ctor: any, names: string[]) {
   for (const name of names) {
     const factory = ctor[name]
-    ctor[name[0].toUpperCase() + name.slice(1)] = function (...args: any[]) {
+    ctor[capitalize(name)] = function (...args: any[]) {
       return factory.apply(ctor, args)
     }
   }

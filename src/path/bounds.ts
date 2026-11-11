@@ -10,8 +10,6 @@
  * All rights reserved.
  */
 
-// The bounds of segment lists, for paths and curves, with and without their
-// strokes and handles, see Path#_getBounds() and Curve#getBounds():
 import {
   Curve,
   Line,
@@ -22,6 +20,11 @@ import {
   Size
 } from '../internal.ts'
 import type { Path } from './Path.ts'
+
+// All bounds functions below have the same first four parameters: segments,
+// closed, path, matrix, so they can be called from Path#_getBounds() and also
+// be used in Curve. But not all of them use all these parameters, and some
+// define additional ones after.
 
 /**
  * Returns the bounding rectangle of the item excluding stroke width.
@@ -178,81 +181,6 @@ export function getSegmentStrokeBounds(
   return bounds
 }
 
-/**
- * Returns the bounding rectangle of the item including handles.
- *
- * @private
- */
-export function getSegmentHandleBounds(
-  segments: Segment[],
-  closed: boolean,
-  path: Path,
-  matrix?: Matrix,
-  options?: any
-): Rectangle {
-  // If there are no segments, return "empty" rectangle, as getBounds().
-  if (!segments.length) return new Rectangle()
-  const { style } = path
-  const stroke = options.stroke && style.hasStroke()
-  let strokePadding: number[]
-  let joinPadding: number[]
-  if (stroke) {
-    const strokeMatrix = path._getStrokeMatrix(matrix, options)
-    const strokeRadius = style.strokeWidth / 2
-    let joinRadius = strokeRadius
-    if (style.strokeJoin === 'miter') {
-      joinRadius = strokeRadius * style.miterLimit
-    }
-    if (style.strokeCap === 'square') {
-      joinRadius = Math.max(joinRadius, strokeRadius * Math.SQRT2)
-    }
-    strokePadding = Matrix._getCircleExtents(strokeRadius, strokeMatrix)
-    joinPadding = Matrix._getCircleExtents(joinRadius, strokeMatrix)
-  }
-  const coords = new Array(6)
-  let x1 = Infinity
-  let x2 = -x1
-  let y1 = x1
-  let y2 = x2
-  for (let i = 0, l = segments.length; i < l; i++) {
-    const segment = segments[i]
-    segment._transformCoordinates(matrix, coords)
-    for (let j = 0; j < 6; j += 2) {
-      // Use different padding for points or handles
-      const padding = !j ? joinPadding : strokePadding
-      const paddingX = padding?.[0] ?? 0
-      const paddingY = padding?.[1] ?? 0
-      const x = coords[j]
-      const y = coords[j + 1]
-      const xn = x - paddingX
-      const xx = x + paddingX
-      const yn = y - paddingY
-      const yx = y + paddingY
-      if (xn < x1) {
-        x1 = xn
-      }
-      if (xx > x2) {
-        x2 = xx
-      }
-      if (yn < y1) {
-        y1 = yn
-      }
-      if (yx > y2) {
-        y2 = yx
-      }
-    }
-  }
-  return new Rectangle(x1, y1, x2 - x1, y2 - y1)
-}
-
-/**
- * Returns the normal of the curve at the given time with the length of the
- * stroke's radius, in the space where the stroke is drawn with a round pen,
- * from the curve's tangent transformed into it, as the matrices don't
- * preserve angles (#2065). For strokes that scale with the matrix, this is
- * the curve's own space.
- */
-
 export function addBevelJoin(
   segment: Segment,
   join: string,
@@ -340,6 +268,80 @@ export function addSquareCap(
   addPoint(point.subtract(normal))
 }
 
+/**
+ * Returns the bounding rectangle of the item including handles.
+ *
+ * @private
+ */
+export function getSegmentHandleBounds(
+  segments: Segment[],
+  closed: boolean,
+  path: Path,
+  matrix?: Matrix,
+  options?: any
+): Rectangle {
+  // If there are no segments, return "empty" rectangle, as getBounds().
+  if (!segments.length) return new Rectangle()
+  const { style } = path
+  const stroke = options.stroke && style.hasStroke()
+  let strokePadding: number[]
+  let joinPadding: number[]
+  if (stroke) {
+    const strokeMatrix = path._getStrokeMatrix(matrix, options)
+    const strokeRadius = style.strokeWidth / 2
+    let joinRadius = strokeRadius
+    if (style.strokeJoin === 'miter') {
+      joinRadius = strokeRadius * style.miterLimit
+    }
+    if (style.strokeCap === 'square') {
+      joinRadius = Math.max(joinRadius, strokeRadius * Math.SQRT2)
+    }
+    strokePadding = Matrix._getCircleExtents(strokeRadius, strokeMatrix)
+    joinPadding = Matrix._getCircleExtents(joinRadius, strokeMatrix)
+  }
+  const coords = new Array(6)
+  let x1 = Infinity
+  let x2 = -x1
+  let y1 = x1
+  let y2 = x2
+  for (let i = 0, l = segments.length; i < l; i++) {
+    const segment = segments[i]
+    segment._transformCoordinates(matrix, coords)
+    for (let j = 0; j < 6; j += 2) {
+      // Use different padding for points or handles
+      const padding = !j ? joinPadding : strokePadding
+      const paddingX = padding?.[0] ?? 0
+      const paddingY = padding?.[1] ?? 0
+      const x = coords[j]
+      const y = coords[j + 1]
+      const xn = x - paddingX
+      const xx = x + paddingX
+      const yn = y - paddingY
+      const yx = y + paddingY
+      if (xn < x1) {
+        x1 = xn
+      }
+      if (xx > x2) {
+        x2 = xx
+      }
+      if (yn < y1) {
+        y1 = yn
+      }
+      if (yx > y2) {
+        y2 = yx
+      }
+    }
+  }
+  return new Rectangle(x1, y1, x2 - x1, y2 - y1)
+}
+
+/**
+ * Returns the normal of the curve at the given time with the length of the
+ * stroke's radius, in the space where the stroke is drawn with a round pen,
+ * from the curve's tangent transformed into it, as the matrices don't
+ * preserve angles (#2065). For strokes that scale with the matrix, this is
+ * the curve's own space.
+ */
 function getStrokeNormal(
   curve: Curve,
   time: number,

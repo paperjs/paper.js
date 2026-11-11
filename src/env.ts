@@ -10,11 +10,7 @@
  * All rights reserved.
  */
 
-// The window and document that Paper.js works with, resolved at first use: in
-// browsers the native ones, on Node.js the ones passed to setEnvironment() by
-// the Node layer, and in workers none. A DOM whose canvas has no 2D context,
-// as jsdom without the canvas module, can't draw either, so it counts as a
-// worker as well, with a document but no window (#1805).
+// The window and document that Paper.js works with, resolved at first use:
 let isResolved = false
 let window: Window & typeof globalThis = null
 let document: Document = null
@@ -26,6 +22,8 @@ let document: Document = null
  */
 export function setEnvironment(environment: Window & typeof globalThis) {
   document = environment?.document ?? null
+  // A DOM whose canvas has no 2D context, as jsdom without the canvas module in
+  // jest, can't draw either, so treat it like a worker as well (#1805):
   window = document?.createElement('canvas').getContext('2d')
     ? environment
     : null

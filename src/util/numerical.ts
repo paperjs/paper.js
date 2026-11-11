@@ -241,13 +241,9 @@ export function gauss(f: (x: number) => number, a: number, b: number): number {
  * Root finding using Newton-Raphson Method combined with Bisection.
  */
 export function findRoot(
-  f: (x: number) => number,
-  df: (x: number) => number,
-  x: number,
-  a: number,
-  b: number,
-  n: number,
-  tolerance: number
+  f: (x: number) => number, df: (x: number) => number,
+  x: number, a: number, b: number,
+  n: number, tolerance: number
 ): number {
   for (let i = 0; i < n; i++) {
     const fx = f(x)
@@ -544,8 +540,7 @@ export function solveCubic(
  * @return the number of roots found
  */
 export function solveBernstein(
-  coefficients: number[],
-  errors: number[],
+  coefficients: number[], errors: number[],
   roots: number[],
   width: number
 ): number {

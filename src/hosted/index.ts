@@ -10,8 +10,7 @@
  * All rights reserved.
  */
 
-// The entry of the hosted library: the core library, with projects whose items
-// a host stores and loads on demand, see Project#host, and HostItem.
+// The entry of the hosted library: the core library, Project#host and HostItem.
 import { PaperScope, inject, registerClasses } from '../internal.ts'
 import './Item.Hosted.ts'
 import { HostItem } from './HostItem.ts'

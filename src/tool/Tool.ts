@@ -309,7 +309,7 @@ export class Tool extends PaperScopeItem {
   }
 }
 
-// The members defined at runtime rather than in the class body:
+// Inherited members and event handlers:
 export interface Tool {
   /**
    * The scope that this tool belongs to.

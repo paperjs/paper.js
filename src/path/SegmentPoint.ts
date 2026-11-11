@@ -36,13 +36,18 @@ export class SegmentPoint extends Point {
     let y = 0
     let selected = false
     if (Array.isArray(point)) {
+      // Array-like
       x = point[0]
       y = point[1]
     } else if (point) {
-      // Only convert what isn't point-like already, to avoid creating points:
-      const pt: any =
-        typeof point === 'object' && 'x' in point ? point : Point.from(point)
-      x = pt.x
+      // So we don't have to modify the point argument which would cause
+      // deoptimization:
+      let pt: any = point
+      // If not Point-like already, read a Point from it
+      if ((x = pt.x) === undefined) {
+        pt = Point.from(point)
+        x = pt.x
+      }
       y = pt.y
       selected = pt.selected
     }
@@ -50,8 +55,8 @@ export class SegmentPoint extends Point {
     this._y = y
     this.#owner = owner
     owner[key] = this
-    // Select the point only once the owner references it, see
-    // #getSelection():
+    // We need to set #selected = true after setting property on the owner
+    // that references this point.
     if (selected) {
       this.selected = true
     }

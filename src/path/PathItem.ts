@@ -95,28 +95,32 @@ export abstract class PathItem extends Item {
    */
   static create(object: object): Path | CompoundPath
   static create(arg: any): Path | CompoundPath {
-    const { segments, pathData } = isPlainObject(arg)
-      ? arg
-      : Array.isArray(arg)
-        ? { segments: arg }
-        : { pathData: arg }
-    let isCompound = false
+    let data: string
+    let segments: any[]
+    let compound: boolean
+    if (isPlainObject(arg)) {
+      segments = arg.segments
+      data = arg.pathData
+    } else if (Array.isArray(arg)) {
+      segments = arg
+    } else if (typeof arg === 'string') {
+      data = arg
+    }
     if (segments) {
-      const [first] = segments
-      isCompound = !!first && Array.isArray(first[0])
-    } else if (pathData) {
+      const first = segments[0]
+      compound = first && Array.isArray(first[0])
+    } else if (data) {
       // If there are multiple moveTo commands or a closePath command
       // followed by other commands, we have a CompoundPath.
-      isCompound = (
-        (pathData.match(/m/gi) ?? []).length > 1 ||
-        /z\s*\S+/i.test(pathData)
+      compound = (
+        (data.match(/m/gi) ?? []).length > 1 ||
+        /z\s*\S+/i.test(data)
       )
     }
-    const ctor = isCompound ? CompoundPath : Path
+    const ctor = compound ? CompoundPath : Path
     return new ctor(arg)
   }
 
-  // @override
   _asPathItem(): PathItem {
     // See Item#_asPathItem()
     return this
@@ -201,13 +205,10 @@ export abstract class PathItem extends Item {
         case 'l': {
           let move = lower === 'm'
           for (let i = 0; i < length; i += 2) {
-            current = getPoint(i)
+            this[move ? 'moveTo' : 'lineTo']((current = getPoint(i)))
             if (move) {
-              this.moveTo(current)
               start = current
               move = false
-            } else {
-              this.lineTo(current)
             }
           }
           control = current
@@ -289,18 +290,15 @@ export abstract class PathItem extends Item {
     }
   }
 
-  // Returns the geometry as SVG path data, see #pathData. Internally, it
-  // can be transformed by a matrix and written with a precision:
+  // NOTE: #_getPathData() is defined in CompoundPath / Path
   abstract _getPathData(_matrix?: Matrix, _precision?: number): string
 
-  // @override
   _canComposite(): boolean {
     // A path with only a fill or a stroke can be directly blended, but if
     // it has both, it needs to be drawn into a separate canvas first.
     return !(this.hasFill() && this.hasStroke())
   }
 
-  // @override
   _contains(point: Point): boolean {
     // NOTE: point is reverse transformed by _matrix, so we don't need to
     // apply the matrix here.
@@ -1245,6 +1243,11 @@ export abstract class PathItem extends Item {
    */
   abstract quadraticCurveBy(handle: PointLike, to: PointLike): void
 
+  // The graph of a boolean operation, to check its planarity in the tests:
+  static _createGraph(path1: PathItem, path2?: PathItem): Graph {
+    return createGraph(getOperands(path1, path2))
+  }
+
   /**
    * {@grouptitle Boolean Path Operations}
    *
@@ -1424,9 +1427,9 @@ export abstract class PathItem extends Item {
     // Otherwise create a new compound-path and see if we can reduce it,
     // and attempt to replace this item with it.
     if (!item) {
-      const compound = new CompoundPath(Item.NO_INSERT)
-      compound.addChildren(paths)
-      item = compound.reduce() as PathItem
+      item = new CompoundPath(Item.NO_INSERT)
+      item.addChildren(paths)
+      item = item.reduce() as PathItem
       item.copyAttributes(this)
       this.replaceWith(item)
     }
@@ -1581,11 +1584,6 @@ export abstract class PathItem extends Item {
    */
   dash(options?: DashOptions): Group {
     return dashPathItem(this, options)
-  }
-
-  // The graph of a boolean operation, to check its planarity in the tests:
-  static _createGraph(path1: PathItem, path2?: PathItem): Graph {
-    return createGraph(getOperands(path1, path2))
   }
 
   // Documented in Path and CompoundPath, which both define them:

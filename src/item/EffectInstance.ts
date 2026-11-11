@@ -32,11 +32,9 @@ export class EffectInstance extends Base {
   #type: string
   #effect: Effect
   #linkedParameters: Record<string, any>
-  // Read by Item, which also sets _item and _index, see Item#effects:
   _visible: boolean
   _item: Item
   _index: number
-  // Read by the accessors of the parameters, see Effect:
   _parameters: Record<string, any>
 
   // Items create their instances from plain objects, see Item#addEffect():
@@ -197,13 +195,14 @@ export class EffectInstance extends Base {
    * @return {@true if they are equal}
    */
   equals(instance: EffectInstance): boolean {
-    return !!(
+    return (
       instance === this || (
         instance instanceof EffectInstance &&
         this.#type === instance.#type &&
         this._visible === instance._visible &&
         equals(this._parameters, instance._parameters)
-      )
+      ) ||
+      false
     )
   }
 

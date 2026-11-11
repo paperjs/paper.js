@@ -38,9 +38,7 @@ import type { Segment } from './Segment.ts'
  * etc.
  */
 export class CurveLocation extends Base {
-  // The linked intersection location, set by Curve:
   _intersection: CurveLocation | null
-  // Read by PathItem#getNearestLocation():
   _distance: number
   #curve: Curve | null
   #time: number | null
@@ -71,22 +69,21 @@ export class CurveLocation extends Base {
     _distance?: number
   ) {
     super()
-    let locationCurve = curve
-    let locationTime = time
     // Merge intersections very close to the end of a curve with the
     // beginning of the next curve.
     if (time >= 1 - CURVETIME_EPSILON) {
       const { next } = curve
       if (next) {
-        locationTime = 0
-        locationCurve = next
+        time = 0
+        curve = next
       }
     }
-    this.#setCurve(locationCurve)
-    this.#time = locationTime
-    this.#point = point ?? locationCurve.getPointAtTime(locationTime)
+    this.#setCurve(curve)
+    this.#time = time
+    this.#point = point ?? curve.getPointAtTime(time)
     this.#overlap = _overlap
     this._distance = _distance
+    // The linked intersection location:
     this._intersection = null
   }
 
@@ -347,7 +344,7 @@ export class CurveLocation extends Base {
   toString(): string {
     const parts = []
     const { point, index, time } = this
-    const { instance } = Formatter
+    const formatter = Formatter.instance
     if (point) {
       parts.push(`point: ${point}`)
     }
@@ -355,10 +352,10 @@ export class CurveLocation extends Base {
       parts.push(`index: ${index}`)
     }
     if (time != null) {
-      parts.push(`time: ${instance.number(time)}`)
+      parts.push(`time: ${formatter.number(time)}`)
     }
     if (this._distance != null) {
-      parts.push(`distance: ${instance.number(this._distance)}`)
+      parts.push(`distance: ${formatter.number(this._distance)}`)
     }
     return `{ ${parts.join(', ')} }`
   }
@@ -533,22 +530,25 @@ export class CurveLocation extends Base {
       // to address circularity. See PathItem#getIntersections()
       for (let i = index + dir; i >= -1 && i <= length; i += dir) {
         // Wrap the index around, to match the other ends:
-        const other = locations[((i % length) + length) % length]
+        const location2 = locations[((i % length) + length) % length]
         // Once we're outside the spot, we can stop searching.
-        if (!location.point.isClose(other.point, GEOMETRIC_EPSILON)) break
-        if (location.equals(other)) return other
+        if (!location.point.isClose(location2.point, GEOMETRIC_EPSILON)) break
+        if (location.equals(location2)) return location2
       }
       return null
     }
 
     while (l <= r) {
       const m = (l + r) >>> 1
-      const other = locations[m]
+      const location2 = locations[m]
       // See if the two locations are actually the same, and merge if
       // they are. If they aren't check the other neighbors with search()
       const found = (
-        merge &&
-        (location.equals(other) ? other : search(m, -1) ?? search(m, 1))
+        merge && (
+          location.equals(location2)
+            ? location2
+            : search(m, -1) ?? search(m, 1)
+        )
       )
       if (found) {
         // We're done, don't insert, merge with the found location
@@ -559,7 +559,7 @@ export class CurveLocation extends Base {
         return found
       }
       const path1 = location.path
-      const path2 = other.path
+      const path2 = location2.path
       // NOTE: equals() takes the intersection location into account,
       // while this calculation of diff doesn't!
       const diff =
@@ -570,7 +570,7 @@ export class CurveLocation extends Base {
             // added together provides a convenient sorting index.
             location.index +
             location.time -
-            (other.index + other.time)
+            (location2.index + location2.time)
       if (diff < 0) {
         r = m - 1
       } else {

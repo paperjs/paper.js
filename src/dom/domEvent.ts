@@ -1,4 +1,3 @@
-import { Point, getDocument, getOffset, getWindow } from '../internal.ts'
 /*
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
@@ -10,6 +9,8 @@ import { Point, getDocument, getOffset, getWindow } from '../internal.ts'
  *
  * All rights reserved.
  */
+
+import { Point, getDocument, getOffset, getWindow } from '../internal.ts'
 
 type Listener = (event: any) => void
 
@@ -78,9 +79,10 @@ export function removeEvents(
  */
 export function getEventOffset(
   event: MouseEvent | TouchEvent,
-  target = event.target as Element
+  target?: Element
 ): Point {
   // Remove target offsets from page coordinates
+  target ||= event.target as Element
   return getPagePoint(event, target).subtract(getOffset(target))
 }
 
@@ -132,18 +134,22 @@ function handleCallbacks() {
   }
 }
 
-function getPagePoint(event: MouseEvent | TouchEvent, target: Element): Point {
-  let position: MouseEvent | Touch = event as MouseEvent
-  if ('targetTouches' in event && event.targetTouches) {
-    const { targetTouches, touches, changedTouches } = event
-    const find = (list: TouchList) =>
-      Array.from(list).find(touch => touch.target === target)
+function getPagePoint(event: any, target: Element): Point {
+  function find(touches: TouchList) {
+    for (let i = 0, l = touches.length; i < l; i++) {
+      if (touches[i].target === target) return touches[i]
+    }
+  }
+
+  const touches: TouchList = event.targetTouches
+  let position: MouseEvent | Touch = event
+  if (touches) {
     // Prefer the first touch on the target, also when it just ended, so that
     // touches elsewhere don't take over its drag (#1875):
     position = (
-      find(touches) ||
-      find(changedTouches) ||
-      (targetTouches.length ? targetTouches[0] : changedTouches[0])
+      find(event.touches) ||
+      find(event.changedTouches) ||
+      (touches.length ? touches[0] : event.changedTouches[0])
     )
   }
   const { documentElement } = getDocument()

@@ -144,6 +144,7 @@ export class TextRange extends Base {
   }
 
   static {
+    // Text ranges have the same style accessors as items:
     defineStyleAccessors(this)
     for (const key of ['runs', 'paragraphs', 'words', 'letters']) {
       inject(this.prototype, {

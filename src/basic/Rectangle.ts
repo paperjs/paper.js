@@ -157,20 +157,25 @@ export class Rectangle extends Base {
     arg3?: number
   ): this {
     if (typeof arg0 === 'number') {
+      // new Rectangle(x, y, width, height)
       this._set(arg0, arg1 as number, arg2, arg3)
     } else if (arg0 === undefined || arg0 === null) {
+      // new Rectangle(), new Rectangle(null)
       this._set(0, 0, 0, 0)
     } else if (arg1 !== undefined) {
-      // A second point makes it (from, to), anything else (point, size):
+      // Look at the next value to see whether it's a size or a point.
       const next: any = arg1
-      if (next.x !== undefined) {
+      if (next && next.x !== undefined) {
+        // new Rectangle(from, to)
         this.#setFromTo(arg0 as PointLike, next)
       } else {
+        // new Rectangle(point, size)
         const { x, y } = Point.from(arg0 as PointLike)
         const { width, height } = Size.from(next)
         this._set(x, y, width, height)
       }
     } else {
+      // This can either be an array, or an object literal.
       const obj: any = arg0
       if (Array.isArray(obj)) {
         this._set(obj[0], obj[1], obj[2], obj[3])
@@ -179,7 +184,8 @@ export class Rectangle extends Base {
         // duck typing, and 0 as defaults.
         this._set(obj.x || 0, obj.y || 0, obj.width || 0, obj.height || 0)
       } else if (obj.from !== undefined || obj.to !== undefined) {
-        this.#setFromTo(obj.from, obj.to)
+        // new Rectangle({ from, to }), with a size of 0 without `to`
+        this.#setFromTo(obj.from, obj.to ?? obj.from)
       } else {
         // Any other combination of the rectangle's properties:
         const { x, y, width, height } = new RectangleBuilder(obj)
@@ -189,18 +195,18 @@ export class Rectangle extends Base {
     return this
   }
 
-  #setFromTo(from: PointLike, to: PointLike) {
-    let { x, y } = Point.from(from)
-    const point = Point.from(to)
-    let width = point.x - x
-    let height = point.y - y
+  #setFromTo(arg0: PointLike, arg1: PointLike) {
+    let { x, y } = Point.from(arg0)
+    const to = Point.from(arg1)
+    let width = to.x - x
+    let height = to.y - y
     // Check if horizontal or vertical order needs to be reversed.
     if (width < 0) {
-      x = point.x
+      x = to.x
       width = -width
     }
     if (height < 0) {
-      y = point.y
+      y = to.y
       height = -height
     }
     this._set(x, y, width, height)
@@ -231,15 +237,18 @@ export class Rectangle extends Base {
    */
   equals(rect: any): boolean {
     const other =
-      Array.isArray(rect) || isPlainObject(rect) ? Rectangle.from(rect) : rect
-    return !!(
+      isPlainObject(rect) || Array.isArray(rect)
+        ? Rectangle.from(rect)
+        : rect
+    return (
       other === this || (
         other &&
         this.x === other.x &&
         this.y === other.y &&
         this.width === other.width &&
         this.height === other.height
-      )
+      ) ||
+      false
     )
   }
 
@@ -756,18 +765,18 @@ export class Rectangle extends Base {
    */
   scale(hor: number, ver: number, center?: PointLike): Rectangle
   scale(
-    hor: PointLike | number,
-    ver?: PointLike | number,
-    center?: PointLike | number
+    arg0: PointLike | number,
+    arg1?: PointLike | number,
+    arg2?: PointLike
   ): Rectangle {
-    const hasVer = typeof ver === 'number'
-    const scale = Point.from(hor, hasVer ? ver : undefined)
-    const origin = Point.from((hasVer ? center : ver) ?? this._getCenter(true))
+    const hasVer = typeof arg1 === 'number'
+    const scale = Point.from(arg0, hasVer ? arg1 : undefined)
+    const center = Point.from((hasVer ? arg2 : arg1) ?? this._getCenter(true))
     // Scale the corners from the center, which also normalizes the
     // rectangle for negative amounts:
     return new Rectangle(
-      this._getTopLeft(true).subtract(origin).multiply(scale).add(origin),
-      this._getBottomRight(true).subtract(origin).multiply(scale).add(origin)
+      this._getTopLeft(true).subtract(center).multiply(scale).add(center),
+      this._getBottomRight(true).subtract(center).multiply(scale).add(center)
     )
   }
 
@@ -905,10 +914,12 @@ export interface Rectangle {
  * @private
  */
 export class LinkedRectangle extends Rectangle {
-  #x: number
-  #y: number
-  #width: number
-  #height: number
+  // Not private, as the accessors of x, y, width and height are injected by
+  // key:
+  _x: number
+  _y: number
+  _width: number
+  _height: number
   #owner: any
   #key: string
 
@@ -918,10 +929,10 @@ export class LinkedRectangle extends Rectangle {
     owner: any, key: string
   ) {
     super()
-    this.#x = x
-    this.#y = y
-    this.#width = width
-    this.#height = height
+    this._x = x
+    this._y = y
+    this._width = width
+    this._height = height
     this.#owner = owner
     this.#key = key
   }
@@ -932,58 +943,17 @@ export class LinkedRectangle extends Rectangle {
     width: number, height: number,
     _dontNotify?: boolean
   ): this {
-    // Rectangle's constructor calls this before the private fields exist, and
-    // the constructor above sets them:
-    if (#x in this) {
-      this.#x = x
-      this.#y = y
-      this.#width = width
-      this.#height = height
+    // Rectangle's constructor calls this before the private fields exist:
+    if (#owner in this) {
+      this._x = x
+      this._y = y
+      this._width = width
+      this._height = height
       if (!_dontNotify) {
         this.#owner[this.#key] = this
       }
     }
     return this
-  }
-
-  // @ts-expect-error: Rectangle declares x as a field, LinkedRectangle reads #x
-  get x(): number {
-    return this.#x
-  }
-
-  set x(x: number) {
-    this.#x = x
-    this.#owner[this.#key] = this
-  }
-
-  // @ts-expect-error: See x
-  get y(): number {
-    return this.#y
-  }
-
-  set y(y: number) {
-    this.#y = y
-    this.#owner[this.#key] = this
-  }
-
-  // @ts-expect-error: See x
-  get width(): number {
-    return this.#width
-  }
-
-  set width(width: number) {
-    this.#width = width
-    this.#owner[this.#key] = this
-  }
-
-  // @ts-expect-error: See x
-  get height(): number {
-    return this.#height
-  }
-
-  set height(height: number) {
-    this.#height = height
-    this.#owner[this.#key] = this
   }
 
   /**
@@ -1029,6 +999,18 @@ export class LinkedRectangle extends Rectangle {
   }
 
   static {
+    for (const key of ['x', 'y', 'width', 'height']) {
+      const internal = `_${key}`
+      inject(this.prototype, {
+        get [key]() {
+          return this[internal]
+        },
+        set [key](value: number) {
+          this[internal] = value
+          this.#owner[this.#key] = this
+        }
+      })
+    }
     // Have the properties derived from x, y, width and height change a plain
     // copy, so the owner is notified only once per change:
     const keys = [
@@ -1217,20 +1199,21 @@ export function readRectangle(
   const { rectangle, ...rest } = object
   if (rectangle) {
     return [Rectangle.from(rectangle), rest]
-  }
-  // Tell the rectangle's properties by the ones a rectangle has, plus the
-  // `from` and `to` that its constructor takes:
-  const keys = new Rectangle()
-  const values = {}
-  const props = {}
-  for (const [key, value] of Object.entries(rest)) {
-    if (key in keys || key === 'from' || key === 'to') {
-      values[key] = value
-    } else {
-      props[key] = value
+  } else {
+    // Tell the rectangle's properties by the ones a rectangle has, plus the
+    // `from` and `to` that its constructor takes:
+    const supported = new Rectangle()
+    const values = {}
+    const props = {}
+    for (const [key, value] of Object.entries(rest)) {
+      if (key in supported || key === 'from' || key === 'to') {
+        values[key] = value
+      } else {
+        props[key] = value
+      }
     }
+    return [new Rectangle(values), props]
   }
-  return [new Rectangle(values), props]
 }
 
 /**

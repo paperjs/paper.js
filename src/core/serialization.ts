@@ -1,4 +1,3 @@
-import { Formatter, isPlainObject } from '../internal.ts'
 /*
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
@@ -10,6 +9,8 @@ import { Formatter, isPlainObject } from '../internal.ts'
  *
  * All rights reserved.
  */
+
+import { Formatter, isPlainObject } from '../internal.ts'
 
 // The registered classes by name, for deserialization:
 const classes = {}
@@ -30,11 +31,6 @@ export function registerClasses(
   }
 }
 
-/**
- * Returns the class registered under the name, see registerClasses().
- *
- * @private
- */
 export function getClass(name: string): new (...args: any[]) => any {
   return classes[name]
 }
@@ -175,6 +171,7 @@ export function deserialize(
       )
     }
     if (ctor) {
+      // Create serialized type and pass collected arguments to constructor().
       // If a create method is provided, handle our own creation. This is used
       // in #importJSON() to pass on insert = false to all items except layers.
       res = create ? create(ctor, res, isFirst || _isRoot) : new ctor(...res)
@@ -195,9 +192,6 @@ export function deserialize(
   return hasDictionary ? res[1] : res
 }
 
-/**
- * Exports (serializes) the object to a JSON data object or string.
- */
 export function exportJSON(
   obj: any,
   options?: { asString?: boolean; precision?: number }

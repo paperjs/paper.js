@@ -168,6 +168,17 @@ describe('Getting and Matching Items', () => {
     equals(() => items.length === 1 && items[0] === path, true)
   })
 
+  test('Project#getItems() with undefined property value', () => {
+    const path = new Path()
+    Shape.circle({ center: [0, 0], radius: 50 })
+
+    const items = paper.project.getItems({
+      class: Path,
+      name: undefined
+    })
+    equals(() => items.length === 1 && items[0] === path, true)
+  })
+
   test('Project#getItems() with color', () => {
     const path = new Path({
       fillColor: 'red'

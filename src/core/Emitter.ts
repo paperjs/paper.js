@@ -1,4 +1,3 @@
-import { Base, inject } from '../internal.ts'
 /*
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
@@ -10,6 +9,8 @@ import { Base, inject } from '../internal.ts'
  *
  * All rights reserved.
  */
+
+import { Base, inject } from '../internal.ts'
 
 type Handler = (this: any, ...args: any[]) => any
 
@@ -57,8 +58,10 @@ export class Emitter extends Base {
       ) || {})
       const handlers = (callbacks[type] ??= [])
       if (!handlers.includes(func)) {
+        // Not added yet, add now.
         handlers.push(func)
-        // Call install for the first handler of the type:
+        // See if this is the first handler that we're attaching, and call
+        // install if defined.
         if (handlers.length === 1) {
           entry?.install?.call(this, type)
         }
@@ -80,13 +83,15 @@ export class Emitter extends Base {
       )
       if (handlers) {
         const index = func ? handlers.indexOf(func) : -1
-        // Call uninstall when detaching the last handler, or all of them:
+        // See if this is the last handler that we're detaching (or if we are
+        // detaching all handlers), and call uninstall if defined.
         if (!func || index !== -1 && handlers.length === 1) {
           const entry = (this.constructor as typeof Emitter).events?.[type]
           entry?.uninstall?.call(this, type)
           // Delete handlers entry again, so responds() returns false.
           delete this._callbacks[type]
         } else if (index !== -1) {
+          // Just remove this one handler
           handlers.splice(index, 1)
         }
       }
@@ -105,9 +110,7 @@ export class Emitter extends Base {
   emit(type: string, event?: any, ...args: any[]): boolean {
     // Return true if any events were emitted, false otherwise.
     const handlers = this._getHandlers(type)
-    if (!handlers.length) {
-      return false
-    }
+    if (!handlers.length) return false
     // Set the current target to `this` if the event object defines #target
     // but not #currentTarget.
     const setTarget = event?.target && !event.currentTarget
@@ -132,10 +135,9 @@ export class Emitter extends Base {
   responds(type: string): boolean {
     // Drawing asks every item, so check the object's own handlers first, and
     // only walk up its prototypes while there are handlers above:
-    if (this._callbacks) {
-      if (Object.hasOwn(this, '_callbacks') && this._callbacks[type]) {
-        return true
-      }
+    const callbacks = this._callbacks
+    if (callbacks) {
+      if (Object.hasOwn(this, '_callbacks') && callbacks[type]) return true
       for (
         let obj = this.constructor.prototype;
         obj?._callbacks;
@@ -167,11 +169,14 @@ export class Emitter extends Base {
     // Only the object's own handlers, not the ones of its prototypes:
     const { events } = this.constructor as typeof Emitter
     const callbacks = Object.hasOwn(this, '_callbacks') && this._callbacks
+    const key = install ? 'install' : 'uninstall'
     if (events && callbacks) {
       for (const [type, handlers] of Object.entries(callbacks)) {
         if (handlers.length > 0) {
-          const entry = events[type]
-          ;(install ? entry?.install : entry?.uninstall)?.call(this, type)
+          const func = events[type]?.[key]
+          if (func) {
+            func.call(this, type)
+          }
         }
       }
     }
@@ -211,9 +216,7 @@ export function defineEvents(
     inject(ctor.prototype, {
       get [name]() {
         // Only the object's own handler, not its prototype's:
-        return (
-          (Object.hasOwn(this, '_handlers') && this._handlers[type]) || null
-        )
+        return Object.hasOwn(this, '_handlers') && this._handlers[type] || null
       },
       set [name](func: Handler) {
         // Detach the previous handler, if there was one.

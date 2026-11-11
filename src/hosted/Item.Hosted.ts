@@ -324,19 +324,16 @@ inject(Item.prototype, {
 
   _getHostBounds(this: Item, options: BoundsOptions): Rectangle {
     let boxes = this._boxes
-    let index = this._boxIndex
+    let i = this._boxIndex
     // Hosts that don't send the boxes with the records give them when
     // asked, until they send the record again:
     if (boxes === undefined && this._key != null) {
       boxes = this._boxes = this._project._host.getBounds(this._key)
-      index = this._boxIndex = 0
+      i = this._boxIndex = 0
     }
-    index += options.handle ? 8 : options.stroke ? 4 : 0
+    i += options.handle ? 8 : options.stroke ? 4 : 0
     return boxes
-      ? new Rectangle(
-          boxes[index], boxes[index + 1],
-          boxes[index + 2], boxes[index + 3]
-        )
+      ? new Rectangle(boxes[i], boxes[i + 1], boxes[i + 2], boxes[i + 3])
       : new Rectangle()
   },
 
@@ -470,7 +467,7 @@ inject(Raster.prototype, {
   // we don't create a canvas for it:
   set(this: Raster, props: any, exclude?: Record<string, boolean>) {
     if (isLoading && this._shell && props?.size) {
-      this._size = Size.from(props.size)
+      this._size = new Size(props.size)
       exclude = { size: true, ...exclude }
     }
     return set.call(this, props, exclude)
@@ -521,7 +518,9 @@ inject(TextItem.prototype, {
     const items = keys.map(key =>
       key === this._key ? this : project.getItemByKey(key)
     ) as TextItem[]
-    const story = items.find(item => item !== this && !item._shell)?._story
+    const story = items.find(
+      item => item !== this && !item._shell && item._story
+    )?._story
     if (story) {
       this._story = story
     } else {
@@ -544,25 +543,26 @@ inject(TextItem.prototype, {
   _unload(this: TextItem) {
     const path = !this._shell && this.textPath
     Item.prototype._unload.call(this)
-    return path
-      ? () => {
-          if (this._shell) {
-            this._loadContent()
-          }
-          const loaded = this.textPath
-          if (
-            loaded &&
-            loaded !== path &&
-            loaded.constructor === path.constructor
-          ) {
-            path._parent = path._index = null
-            path.removeChildren()
-            path.copyContent(loaded)
-            path.copyAttributes(loaded)
-            this.textPath = path
-          }
+    return (
+      path &&
+      (() => {
+        if (this._shell) {
+          this._loadContent()
         }
-      : null
+        const loaded = this.textPath
+        if (
+          loaded &&
+          loaded !== path &&
+          loaded.constructor === path.constructor
+        ) {
+          path._parent = path._index = null
+          path.removeChildren()
+          path.copyContent(loaded)
+          path.copyAttributes(loaded)
+          this.textPath = path
+        }
+      })
+    )
   },
 
   // The host's layout of the text as the script holds it, also before
@@ -664,15 +664,16 @@ inject(Project.prototype, {
       }
     }
     return definitions && changes
-      ? [
-          ...definitions.map(definition => ({
+      ? definitions
+          .map(definition => ({
             definition,
             flags: Change.INSERTION
-          })),
-          ...changes.filter(
-            change => change.item || change.definition._key != null
+          }))
+          .concat(
+            changes.filter(
+              change => change.item || change.definition._key != null
+            )
           )
-        ]
       : changes
   },
 
@@ -723,13 +724,12 @@ inject(Project.prototype, {
   },
 
   hasDrawHandlers(this: Project): boolean {
-    return (
-      this._drawCount > 0 ||
-      Item._drawCount > 0 ||
-      Object.values(this._selectionItems).some(item =>
-        item.responds('drawselection')
-      )
-    )
+    if (this._drawCount || Item._drawCount) return true
+    const items = this._selectionItems
+    for (const id in items) {
+      if (items[id].responds('drawselection')) return true
+    }
+    return false
   },
 
   // The host draws the items, so drawing only calls the draw handlers,
@@ -801,7 +801,7 @@ inject(Project.prototype, {
     const definitionsByKey = this._definitionsByKey
     const keys = columns.keys ?? []
     const definitionKeys = columns.definitions ?? []
-    const names = columns.names || {}
+    const names = columns.names ?? {}
     const reloads = []
     whileLoading(this, () => {
       for (const key of definitionKeys) {
@@ -854,11 +854,8 @@ declare module '../item/Item.ts' {
      */
     get key(): number
     set key(key: number)
-    // Set on HostItem kinds that contain other items, see HostItem:
     _hasChildren: boolean
-    // The fields that the shell loads, see getShellPrototype():
     _contentFields: string[]
-    // The fields of the host's record, see setRecord():
     _boxes: ArrayLike<number> | null
     _boxIndex: number
     _hostBounds: boolean
@@ -1173,10 +1170,10 @@ function getShellPrototype(ctor: new (...args: any[]) => Item): Item {
   return shell
 }
 
-// Sets the fields that the host's columns describe for the item at index.
-function setRecord(item: Item, columns: HostColumns, index: number) {
-  const flags = columns.flags[index]
-  const [a, b, c, d, tx, ty] = columns.matrices?.[index] ?? [1, 0, 0, 1, 0, 0]
+// Sets the fields that the host's columns describe for item i.
+function setRecord(item: Item, columns: HostColumns, i: number) {
+  const flags = columns.flags[i]
+  const [a, b, c, d, tx, ty] = columns.matrices?.[i] ?? [1, 0, 0, 1, 0, 0]
   item._visible = !!(flags & recordFlags.visible)
   item._locked = !!(flags & recordFlags.locked)
   item._strokeScaling = !!(flags & recordFlags.strokeScaling)
@@ -1190,7 +1187,7 @@ function setRecord(item: Item, columns: HostColumns, index: number) {
   item._matrix._set(a, b, c, d, tx, ty, true)
   // Without boxes, the item asks for them, see #_getHostBounds():
   item._boxes = columns.boxes ?? undefined
-  item._boxIndex = index * boxSize
+  item._boxIndex = i * boxSize
   item._bounds = undefined
   item._hostBounds = true
 }
@@ -1203,7 +1200,7 @@ function setChildren(
   columns: HostColumns
 ) {
   const { keys, types, typeNames } = columns
-  const names = columns.names || {}
+  const names = columns.names ?? {}
   const itemsByKey = project._itemsByKey
   const parent = owner instanceof Item ? owner : null
   const children = []
@@ -1367,7 +1364,7 @@ function copyDefinitions(project: Project, item: Item) {
   }
 
   function copyItem(item: Item) {
-    if (item instanceof SymbolItem && item._definition._key != null) {
+    if (item instanceof SymbolItem && item._definition?._key != null) {
       item.definition = getCopy(item._definition)
     }
     for (const color of getPatternColors(item)) {
@@ -1442,10 +1439,11 @@ function getDefinitions<T extends Definition>(
   ctor: new (...args: any[]) => T
 ): T[] {
   const keys = project._host.getDefinitionKeys(ctor.prototype.className)
-  return [
-    ...keys.map(key => getDefinition(project, key) as T),
-    ...getNewDefinitions(project).filter(
-      (definition): definition is T => definition instanceof ctor
+  return keys
+    .map(key => getDefinition(project, key) as T)
+    .concat(
+      getNewDefinitions(project).filter(
+        (definition): definition is T => definition instanceof ctor
+      )
     )
-  ]
 }

@@ -24,9 +24,6 @@ import type { HitResult } from './HitResult.ts'
 export class Group extends Item {
   declare _isolated: boolean
   declare _buffered: boolean
-  // The child that has _clipMask set to true, null if there is none, and
-  // undefined if it wasn't looked for yet. Not private, as hosted shells are
-  // created without the constructor, see Item#_loadContent():
   _clipItem: Item | null
 
   /**
@@ -132,6 +129,7 @@ export class Group extends Item {
   }
 
   _getClipItem(): Item | null {
+    // NOTE: _clipItem is the child that has _clipMask set to true.
     let clipItem = this._clipItem
     // Distinguish null (no clipItem set) and undefined (clipItem was not
     // looked for yet).

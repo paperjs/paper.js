@@ -235,7 +235,7 @@ export class Point extends Base {
    *   basic types, to offer the same amount of flexibility when setting
    *   values.
    */
-  _set(x: number, y: number): this {
+  _set(x: number, y: number, _dontNotify?: boolean): this {
     this.x = x
     this.y = y
     return this
@@ -255,7 +255,7 @@ export class Point extends Base {
    * console.log(point != new Point(1, 1)); // true
    */
   equals(point: any): boolean {
-    return !!(
+    return (
       this === point || (
         point && (
           this.x === point.x && this.y === point.y || (
@@ -264,7 +264,8 @@ export class Point extends Base {
             this.y === point[1]
           )
         )
-      )
+      ) ||
+      false
     )
   }
 
@@ -349,8 +350,8 @@ export class Point extends Base {
    */
   get angle(): number {
     // Return the preserved angle in case the vector has no length, and
-    // update the internal #angle in case it has one, see
-    // #setAngleInRadians():
+    // update the internal #angle in case the vector has a length. See
+    // #setAngleInRadians() for more explanations.
     const angle = this.isZero()
       ? this.#angle || 0
       : (this.#angle = Math.atan2(this.y, this.x))
@@ -371,7 +372,10 @@ export class Point extends Base {
       const { length } = this
       // Use #_set() instead of direct assignment of x/y, so LinkedPoint
       // does not report changes twice.
-      this._set(Math.cos(angle) * length, Math.sin(angle) * length)
+      this._set(
+        Math.cos(angle) * length,
+        Math.sin(angle) * length
+      )
     }
   }
 
@@ -516,7 +520,7 @@ export class Point extends Base {
    * @return the transformed point
    */
   transform(matrix: Matrix): Point {
-    return matrix?._transformPoint(this) ?? this
+    return matrix ? matrix._transformPoint(this) : this
   }
 
   /**
@@ -681,22 +685,6 @@ export class Point extends Base {
    * by the supplied value as a new point.
    *
    * @operator
-   * @param point
-   * @return the integer remainders of dividing the points by each
-   * other as a new point
-   *
-   * @example
-   * var point = new Point(12, 6);
-   * var result = point % new Point(5, 2); // PaperScript
-   * var result = point.modulo(new Point(5, 2)); // JavaScript
-   * console.log(result); // {x: 2, y: 0}
-   */
-  modulo(number: number): Point
-  /**
-   * The modulo operator returns the integer remainders of dividing the point
-   * by the supplied value as a new point.
-   *
-   * @operator
    * @param value
    * @return the integer remainders of dividing the point by the value
    * as a new point
@@ -706,6 +694,22 @@ export class Point extends Base {
    * var result = point % 5; // PaperScript
    * var result = point.modulo(5); // JavaScript
    * console.log(result); // {x: 2, y: 1}
+   */
+  modulo(value: number): Point
+  /**
+   * The modulo operator returns the integer remainders of dividing the point
+   * by the supplied value as a new point.
+   *
+   * @operator
+   * @param point
+   * @return the integer remainders of dividing the points by each
+   * other as a new point
+   *
+   * @example
+   * var point = new Point(12, 6);
+   * var result = point % new Point(5, 2); // PaperScript
+   * var result = point.modulo(new Point(5, 2)); // JavaScript
+   * console.log(result); // {x: 2, y: 0}
    */
   modulo(point: PointLike): Point
   modulo(x: number, y: number): Point
@@ -1121,8 +1125,7 @@ export class LinkedPoint extends Point {
 
   // See Point#_set() for an explanation of _set():
   _set(x: number, y: number, _dontNotify?: boolean): this {
-    // Point's constructor calls this before the private fields exist, and the
-    // constructor below sets them:
+    // Point's constructor calls this before the private fields exist:
     if (#x in this) {
       this.#x = x
       this.#y = y

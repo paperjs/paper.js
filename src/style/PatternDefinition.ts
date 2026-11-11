@@ -64,10 +64,8 @@ import type { Project } from '../item/Project.ts'
  * });
  */
 export class PatternDefinition extends ItemDefinition {
-  // Read by the SVG export and the hosted items:
   _tile: Rectangle = null
   _spacing = new Size()
-  // The tiles at each resolution that they're needed in, see #_toCanvasStyle():
   #canvases: Record<number, HTMLCanvasElement | OffscreenCanvas> = {}
 
   /**
@@ -169,10 +167,9 @@ export class PatternDefinition extends ItemDefinition {
    * @return {@true if they are equal}
    */
   equals(pattern: PatternDefinition): boolean {
-    return !!(
+    return (
       pattern === this || (
-        pattern &&
-        this.className === pattern.className &&
+        pattern instanceof PatternDefinition &&
         this._item.equals(pattern._item) &&
         equals(this._tile, pattern._tile) &&
         this._spacing.equals(pattern._spacing)

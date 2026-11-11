@@ -21,7 +21,12 @@ const nextIdsByName: Record<string, number> = {}
  * @private
  */
 export function getUID(name?: string): number {
-  return name
-    ? (nextIdsByName[name] = (nextIdsByName[name] || 1) + 1) - 1
-    : nextId++
+  if (name) {
+    // Use one UID pool per given constructor
+    nextIdsByName[name] ??= 1
+    return nextIdsByName[name]++
+  } else {
+    // Use the global UID pool:
+    return nextId++
+  }
 }

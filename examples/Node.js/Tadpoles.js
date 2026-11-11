@@ -12,13 +12,11 @@ const code = await readFile(
 )
 PaperScript.execute(code, scope)
 
-scope.view.exportFrames({
+await scope.view.exportFrames({
   amount: 400,
   directory: import.meta.dirname,
-  onComplete() {
-    console.log('Done exporting.')
-  },
   onProgress(event) {
     console.log(`${event.percentage}% complete, frame took: ${event.delta}`)
   }
 })
+console.log('Done exporting.')

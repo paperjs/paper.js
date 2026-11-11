@@ -56,6 +56,7 @@ const charLookup = {
 //   arrows, space, control, etc, for which events are fired right away.
 // - keypress fires the actual onKeyDown event for all other keys.
 // - keyup handles the onKeyUp events for both.
+
 // Map for currently pressed keys:
 const keyMap: Record<string, boolean> = {}
 // key -> char mappings for pressed keys:

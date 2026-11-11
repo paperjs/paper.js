@@ -113,7 +113,7 @@ export class Matrix extends Base {
     tx?: number, ty?: number,
     _dontNotify?: boolean
   ): this {
-    if (typeof a === 'number') {
+    if (typeof a === 'number' && ty !== undefined) {
       this._set(a, b as number, c, d, tx, ty, _dontNotify)
     } else if (a === undefined) {
       this.reset()
@@ -249,10 +249,10 @@ export class Matrix extends Base {
    * @return this affine transform
    */
   translate(dx: number, dy: number): this
-  translate(point: PointLike | number, y?: number): this {
-    const delta = Point.from(point, y)
-    this._tx += delta.x * this._a + delta.y * this._c
-    this._ty += delta.x * this._b + delta.y * this._d
+  translate(arg0: PointLike | number, arg1?: number): this {
+    const { x, y } = Point.from(arg0, arg1)
+    this._tx += x * this._a + y * this._c
+    this._ty += x * this._b + y * this._d
     this.#changed()
     return this
   }
@@ -275,23 +275,23 @@ export class Matrix extends Base {
    */
   scale(hor: number, ver: number, center?: PointLike): this
   scale(
-    hor: PointLike | number,
-    ver?: PointLike | number,
-    center?: PointLike | number
+    arg0: PointLike | number,
+    arg1?: PointLike | number,
+    arg2?: PointLike
   ): this {
-    const hasVer = typeof ver === 'number'
-    const scale = Point.from(hor, hasVer ? ver : undefined)
-    const origin = hasVer ? center : ver
-    const point = origin ? Point.from(origin) : null
-    if (point) {
-      this.translate(point)
+    const hasVer = typeof arg1 === 'number'
+    const scale = Point.from(arg0, hasVer ? arg1 : undefined)
+    const origin = hasVer ? arg2 : arg1
+    const center = origin ? Point.from(origin) : null
+    if (center) {
+      this.translate(center)
     }
     this._a *= scale.x
     this._b *= scale.x
     this._c *= scale.y
     this._d *= scale.y
-    if (point) {
-      this.translate(point.negate())
+    if (center) {
+      this.translate(center.negate())
     }
     this.#changed()
     return this
@@ -306,11 +306,11 @@ export class Matrix extends Base {
    * @return this affine transform
    */
   rotate(angle: number, center?: PointLike): this {
-    const radians = angle * Math.PI / 180
+    angle *= Math.PI / 180
     // Concatenate rotation matrix into this one
     const { x, y } = Point.from(center)
-    const cos = Math.cos(radians)
-    const sin = Math.sin(radians)
+    const cos = Math.cos(angle)
+    const sin = Math.sin(angle)
     const tx = x - x * cos + y * sin
     const ty = y - x * sin - y * cos
     const a = this._a
@@ -345,16 +345,16 @@ export class Matrix extends Base {
    */
   shear(hor: number, ver: number, center?: PointLike): this
   shear(
-    hor: PointLike | number,
-    ver?: PointLike | number,
-    center?: PointLike | number
+    arg0: PointLike | number,
+    arg1?: PointLike | number,
+    arg2?: PointLike
   ): this {
-    const hasVer = typeof ver === 'number'
-    const shear = Point.from(hor, hasVer ? ver : undefined)
-    const origin = hasVer ? center : ver
-    const point = origin ? Point.from(origin) : null
-    if (point) {
-      this.translate(point)
+    const hasVer = typeof arg1 === 'number'
+    const shear = Point.from(arg0, hasVer ? arg1 : undefined)
+    const origin = hasVer ? arg2 : arg1
+    const center = origin ? Point.from(origin) : null
+    if (center) {
+      this.translate(center)
     }
     const a = this._a
     const b = this._b
@@ -362,8 +362,8 @@ export class Matrix extends Base {
     this._b += shear.y * this._d
     this._c += shear.x * a
     this._d += shear.x * b
-    if (point) {
-      this.translate(point.negate())
+    if (center) {
+      this.translate(center.negate())
     }
     this.#changed()
     return this
@@ -387,19 +387,19 @@ export class Matrix extends Base {
    */
   skew(hor: number, ver: number, center?: PointLike): this
   skew(
-    hor: PointLike | number,
-    ver?: PointLike | number,
-    center?: PointLike | number
+    arg0: PointLike | number,
+    arg1?: PointLike | number,
+    arg2?: PointLike
   ): this {
-    const hasVer = typeof ver === 'number'
-    const skew = Point.from(hor, hasVer ? ver : undefined)
-    const origin = hasVer ? center : ver
+    const hasVer = typeof arg1 === 'number'
+    const skew = Point.from(arg0, hasVer ? arg1 : undefined)
+    const center = hasVer ? arg2 : arg1
     const toRadians = Math.PI / 180
     const shear = new Point(
       Math.tan(skew.x * toRadians),
       Math.tan(skew.y * toRadians)
     )
-    return this.shear(shear, origin as PointLike)
+    return this.shear(shear, center as PointLike)
   }
 
   /**
@@ -625,7 +625,6 @@ export class Matrix extends Base {
     return (dest ?? new Point())._set(
       x * this._a + y * this._c + this._tx,
       x * this._b + y * this._d + this._ty,
-      // @ts-expect-error: Only LinkedPoint and SegmentPoint take _dontNotify
       _dontNotify
     )
   }

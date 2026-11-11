@@ -55,7 +55,7 @@ import {
   getSegmentHandleBounds,
   getSegmentStrokeBounds,
   getStrokeOutline,
-  getStrokeProfileStop,
+  getStrokeProfileAt,
   hitTestPath,
   inject,
   isPlainObject,
@@ -82,26 +82,18 @@ import type { StrokeProfileStopProps } from './StrokeProfileStop.ts'
  */
 // DOCS: Explain that path matrix is always applied with each transformation.
 export class Path extends PathItem {
-  // NOTE: Path keeps its state and internal methods in `_` members rather
-  // than `#private` ones, as hosted items are shells created from the
-  // prototype without the constructor (see Item.Hosted), which have no
-  // private brand. The hosted loading also copies these fields by name.
+  // Not private, as hosted shells are created without the constructor:
   _segments: Segment[]
   _closed: boolean
   // Increased on every change of segments, so CurveLocation knows when to
   // update its internally cached values:
   _version: number
   _curves: Curve[]
-  // The sum of the selection states of all segments, see SegmentSelection:
   _segmentSelection: number
-  // The segments by name, see Segment#name:
   _namedSegments: Record<string, Segment[]>
-  // The cached length and area, cleared by #_changed():
   _length: number
   _area: number
-  // The stops of the stroke profile, null without one, see #strokeProfile:
   declare _strokeProfile: StrokeProfile | null
-  // The cached outline of the stroke profile, see #_getStrokeOutline():
   _strokeOutline: PathItem
 
   /**
@@ -172,6 +164,8 @@ export class Path extends PathItem {
     // arguments describing separate segments.
     // If it is an array, it can also be a description of a point, so
     // check its first entry for object as well.
+    // But first see if segments are directly passed at all. If not, try
+    // set(arg).
     const [arg] = args
     // See if it behaves like a segment or a point, but filter out rectangles,
     // as accepted by some Path.Constructor constructors:
@@ -279,7 +273,7 @@ export class Path extends PathItem {
    *
    * @param rectangle the rectangle object describing the geometry of the
    *     rectangular path to be created
-   * @param radius the size of the rounded corners
+   * @param [radius=null] the size of the rounded corners
    * @return the newly created path
    *
    * @example {@paperscript}
@@ -563,7 +557,7 @@ export class Path extends PathItem {
     this._closed = false
     this._segments = []
     this._version = 0
-    this._curves = undefined
+    this._curves = undefined // For hidden class optimization
     this._segmentSelection = 0
   }
 
@@ -725,9 +719,10 @@ export class Path extends PathItem {
     if (profile) {
       this._strokeProfile = profile
       pathLength = this.length
-      profile._stops.forEach((stop, i) => {
-        stop._index = profile.getIndexAt(fractions[i] * pathLength)
-      })
+      const stops = profile._stops
+      for (let i = 0, l = stops.length; i < l; i++) {
+        stops[i]._index = profile.getIndexAt(fractions[i] * pathLength)
+      }
       profile.sort()
     }
   }
@@ -760,7 +755,7 @@ export class Path extends PathItem {
           this,
           segments[i],
           // Use first segment for segment2 of closing curve
-          segments[i + 1] || segments[0]
+          segments[i + 1] ?? segments[0]
         )
       }
     }
@@ -932,7 +927,7 @@ export class Path extends PathItem {
     const curves = this._curves
     const amount = segs.length
     const append = index == null
-    const start = append ? segments.length : index
+    index = append ? segments.length : index
     // Scan through segments to add first, convert if necessary and set
     // _path and _index references on them.
     for (i = 0; i < amount; i++) {
@@ -943,7 +938,7 @@ export class Path extends PathItem {
         segment = segs[i] = segment.clone()
       }
       segment._path = this
-      segment._index = start + i
+      segment._index = index + i
       // Set the name again to add it to the segments' name lookup.
       if (segment._name) {
         segment.name = segment._name
@@ -959,9 +954,9 @@ export class Path extends PathItem {
       push(segments, segs)
     } else {
       // Insert somewhere else
-      segments.splice(start, 0, ...segs)
+      segments.splice(index, 0, ...segs)
       // Adjust the indices of the segments above.
-      for (i = start + amount, l = segments.length; i < l; i++) {
+      for (i = index + amount, l = segments.length; i < l; i++) {
         segments[i]._index = i
       }
     }
@@ -971,13 +966,13 @@ export class Path extends PathItem {
       const total = this._countCurves()
       // If we're adding a new segment to the end of an open path,
       // we need to step one index down to get its curve.
-      const first =
-        start > 0 && start + amount - 1 === total ? start - 1 : start
-      let insert = first
-      const end = Math.min(first + amount, total)
+      const start =
+        index > 0 && index + amount - 1 === total ? index - 1 : index
+      let insert = start
+      const end = Math.min(start + amount, total)
       if (segs._curves) {
         // Reuse removed curves.
-        curves.splice(first, 0, ...segs._curves)
+        curves.splice(start, 0, ...segs._curves)
         insert += segs._curves.length
       }
       // Insert new curves, but do not initialize their segments yet,
@@ -986,9 +981,9 @@ export class Path extends PathItem {
         curves.splice(i, 0, new Curve(this, null, null))
       }
       // Adjust segments for the curves before and after the removed ones
-      this._adjustCurves(first, end)
+      this._adjustCurves(start, end)
     }
-    this._strokeProfile?.insert(start, amount)
+    this._strokeProfile?.insert(index, amount)
     // Use SEGMENTS notification instead of GEOMETRY since curves are kept
     // up-to-date by _adjustCurves() and don't need notification.
     this._changed(Change.SEGMENTS)
@@ -1107,8 +1102,10 @@ export class Path extends PathItem {
   add(...segments: SegmentLike[]): Segment[]
   add(...segments: SegmentLike[]): Segment | Segment[] {
     return segments.length > 1
-      ? this._add(readSegments(segments))
-      : this._add([Segment.from(segments[0])])[0]
+      ? // addSegments
+        this._add(readSegments(segments))
+      : // addSegment
+        this._add([Segment.from(segments[0])])[0]
   }
 
   /**
@@ -1151,8 +1148,10 @@ export class Path extends PathItem {
   insert(index: number, ...segments: SegmentLike[]): Segment[]
   insert(index: number, ...segments: SegmentLike[]): Segment | Segment[] {
     return segments.length > 1
-      ? this._add(readSegments(segments), index)
-      : this._add([Segment.from(segments[0])], index)[0]
+      ? // insertSegments
+        this._add(readSegments(segments), index)
+      : // insertSegment
+        this._add([Segment.from(segments[0])], index)[0]
   }
 
   addSegment(segment: SegmentLike): Segment {
@@ -1264,7 +1263,7 @@ export class Path extends PathItem {
    * from the beginning up to `to`, wrapping around the closing curve.
    *
    * @param from the beginning index, inclusive
-   * @param to the ending index, exclusive
+   * @param [to=segments.length] the ending index, exclusive
    * @return an array containing the removed segments, in the
    *     order in which they appeared along the path
    *
@@ -1669,7 +1668,7 @@ export class Path extends PathItem {
    *
    * @param path the path to join this path with; `null` or `this` to
    *     join the path with itself
-   * @param tolerance the tolerance with which to decide if two
+   * @param [tolerance=0] the tolerance with which to decide if two
    *     segments are to be considered the same location when joining
    *
    * @example {@paperscript}
@@ -2116,7 +2115,7 @@ export class Path extends PathItem {
    * Attempts to create a new shape item with same geometry as this path item,
    * and inherits all settings from it, similar to {@link Item#clone()}.
    *
-   * @param insert specifies whether the new shape should be
+   * @param [insert=true] specifies whether the new shape should be
    * inserted into the scene graph. When set to `true`, it is inserted above
    * the path item
    * @return the newly created shape item with the same geometry as
@@ -2510,6 +2509,7 @@ export class Path extends PathItem {
     )
   }
 
+  // PostScript-style drawing commands
   // NOTE: Documentation for these methods is found in PathItem, as they
   // are considered abstract methods of PathItem and need to be defined in
   // all implementing classes.
@@ -2806,18 +2806,12 @@ export class Path extends PathItem {
     const closed = this._closed
     return options.handle
       ? getSegmentHandleBounds(segments, closed, this, matrix, options)
-      : !options.stroke
-        ? getSegmentBounds(segments, closed, this, matrix, options)
-        : this._hasStrokeProfile()
+      : options.stroke
+        ? this._hasStrokeProfile()
           ? // Stroke profiles cover the outline of their stroke:
             this._getStrokeOutline().getBounds(matrix)
-          : getSegmentStrokeBounds(
-              segments,
-              closed,
-              this,
-              matrix,
-              options
-            )
+          : getSegmentStrokeBounds(segments, closed, this, matrix, options)
+        : getSegmentBounds(segments, closed, this, matrix, options)
   }
 
   // The outline of the path's stroke in its own coordinates, with its
@@ -2879,7 +2873,7 @@ export class Path extends PathItem {
     stops: (StrokeProfileStop | StrokeProfileStopProps)[] | null
   ) {
     const profile = stops?.length ? new StrokeProfile(this, stops) : null
-    this._strokeProfile?._release(profile?._stops ?? [])
+    this._strokeProfile?.release(profile?._stops ?? [])
     this._strokeProfile = profile
     this._changed(Change.STROKE)
   }
@@ -2910,7 +2904,7 @@ export class Path extends PathItem {
    * path.strokeProfile = path.strokeProfile.concat(stop);
    */
   getStrokeProfileAt(offset: number): StrokeProfileStop {
-    return getStrokeProfileStop(this, offset)
+    return getStrokeProfileAt(this, offset)
   }
 
   static {
@@ -2943,8 +2937,8 @@ export class Path extends PathItem {
     for (const key of curveEvaluations) {
       inject(this.prototype, {
         [`get${capitalize(key)}At`](offset: number | CurveLocation) {
-          const location = this.getLocationAt(offset)
-          return location?.[key] ?? null
+          const loc = this.getLocationAt(offset)
+          return loc?.[key] ?? null
         }
       })
     }
@@ -3215,9 +3209,6 @@ export interface Path {
   getCurvatureAt(offset: number | CurveLocation): number
 }
 
-// Converts a segment description to a segment, as the array forms of JSON and
-// the constructors describe them: `[x, y]` for a point, and `[point, handleIn,
-// handleOut, selection]` for a segment with handles.
 function readSegments(list: any[], start = 0, end = list.length): Segment[] {
   const segments = new Array(end - start)
   for (let i = start; i < end; i++) {

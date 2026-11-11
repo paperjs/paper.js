@@ -14,19 +14,17 @@ import type { Point } from '../basic/Point.ts'
 import type { Size } from '../basic/Size.ts'
 
 const { min, max, abs } = Math
-// The channels of the source, the backdrop and the destination, which the
-// modes read and write, see blend():
 let sr: number
 let sg: number
 let sb: number
-let sa: number
+let sa: number // source
 let br: number
 let bg: number
 let bb: number
-let ba: number
+let ba: number // backdrop
 let dr: number
 let dg: number
-let db: number
+let db: number // destination
 
 // Emulate Paper.js's own blend modes, which canvas doesn't have:
 const modes = {

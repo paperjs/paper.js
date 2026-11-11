@@ -1,4 +1,3 @@
-import { getDocument, getWindow } from '../internal.ts'
 /*
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
@@ -11,7 +10,11 @@ import { getDocument, getWindow } from '../internal.ts'
  * All rights reserved.
  */
 
+import { getDocument, getWindow } from '../internal.ts'
+
 type Canvas = HTMLCanvasElement | OffscreenCanvas
+type Size = { width: number; height: number }
+type Options = CanvasRenderingContext2DSettings & { minimum?: boolean }
 
 // The released canvases, for getCanvas() to reuse, exported for the tests:
 export const canvases: Canvas[] = []
@@ -25,29 +28,24 @@ export const canvases: Canvas[] = []
  *     least as large, without resizing it, since resizing reallocates its
  *     pixels
  */
+export function getCanvas(size: Size, options?: Options): Canvas
 export function getCanvas(
-  width: number | { width: number; height: number },
-  height?: number | object,
-  options?: CanvasRenderingContext2DSettings & { minimum?: boolean }
-): Canvas {
+  width: number, height: number, options?: Options
+): Canvas
+export function getCanvas(width: any, height?: any, options?: Options): Canvas {
   const window = getWindow()
   // Web-workers have no DOM, but may support OffscreenCanvas:
-  if (!window && !globalThis.OffscreenCanvas) {
-    return null
-  }
-  // Accept a size object as the first argument, followed by the options:
-  const size =
-    typeof width === 'object'
-      ? width
-      : { width, height: height as number }
+  if (!window && !globalThis.OffscreenCanvas) return null
   if (typeof width === 'object') {
-    options = height as typeof options
+    options = height
+    height = width.height
+    width = width.width
   }
   const minimum = options?.minimum
   const fits = (canvas: Canvas) =>
     minimum
-      ? canvas.width >= size.width && canvas.height >= size.height
-      : canvas.width === size.width && canvas.height === size.height
+      ? canvas.width >= width && canvas.height >= height
+      : canvas.width === width && canvas.height === height
   let index = canvases.length - 1
   for (let i = index; i >= 0; i--) {
     if (fits(canvases[i])) {
@@ -60,7 +58,7 @@ export function getCanvas(
       ? canvases.splice(index, 1)[0]
       : window
         ? getDocument().createElement('canvas')
-        : new OffscreenCanvas(size.width, size.height)
+        : new OffscreenCanvas(width, height)
   const context = canvas.getContext('2d', options ?? {}) as any
   if (!context) {
     throw new Error(`Canvas ${canvas} is unable to provide a 2D context.`)
@@ -80,8 +78,8 @@ export function getCanvas(
     }
   } else {
     // Resizing clears the pixels and resets the context's state.
-    canvas.width = size.width
-    canvas.height = size.height
+    canvas.width = width
+    canvas.height = height
   }
   return canvas
 }
@@ -92,9 +90,13 @@ export function getCanvas(
  * @private
  */
 export function getContext(
-  width: number | { width: number; height: number },
-  height?: number | object,
-  options?: CanvasRenderingContext2DSettings & { minimum?: boolean }
+  size: Size, options?: Options
+): CanvasRenderingContext2D
+export function getContext(
+  width: number, height: number, options?: Options
+): CanvasRenderingContext2D
+export function getContext(
+  width: any, height?: any, options?: Options
 ): CanvasRenderingContext2D {
   const canvas = getCanvas(width, height, options)
   return canvas ? (canvas.getContext('2d') as CanvasRenderingContext2D) : null

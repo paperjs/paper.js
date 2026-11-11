@@ -311,6 +311,17 @@ describe('Color', () => {
     equals(() => stop3.offset, 1)
   })
 
+  test('Gradient with a properties object', () => {
+    const stops = ['red', 'blue']
+    equals(new Gradient({ stops, radial: true }).radial, true)
+    equals(new Gradient({ stops, radial: 1 }).radial, true, 'as a boolean')
+    equals(
+      new Gradient({ stops }, true).radial,
+      false,
+      'the object replaces the other arguments'
+    )
+  })
+
   test('Gradients notify the items that use them', () => {
     const gradient = new Gradient(['red', 'blue'])
     const path = Path.rectangle({

@@ -1,4 +1,3 @@
-import { getWindow } from '../internal.ts'
 /*
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
@@ -10,6 +9,8 @@ import { getWindow } from '../internal.ts'
  *
  * All rights reserved.
  */
+
+import { getWindow } from '../internal.ts'
 
 export interface RequestOptions {
   url: string

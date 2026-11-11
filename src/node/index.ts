@@ -10,8 +10,7 @@
  * All rights reserved.
  */
 
-// The entry for Node.js, which renders through happy-dom and @napi-rs/canvas:
-// the core library, with a window to draw in and the image export of views.
+// The entry for Node.js, rendering through happy-dom and @napi-rs/canvas.
 import { readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -40,8 +39,6 @@ declare module '../view/CanvasView.ts' {
      *     an object describing the progress: `count`, `amount`, `percentage`,
      *     and the milliseconds `time` since the start and `delta` since the
      *     previous frame
-     * @option [options.onComplete] {Function} called once all frames are
-     *     written
      *
      * @param options the options of the export
      * @return a promise that resolves once all frames are written
@@ -60,7 +57,6 @@ declare module '../view/CanvasView.ts' {
         time: number
         delta: number
       }): void
-      onComplete?(): void
     }): Promise<void>
 
     /**
@@ -68,10 +64,9 @@ declare module '../view/CanvasView.ts' {
      * name ends in `.jpg` or `.jpeg`, and as PNG otherwise.
      *
      * @param path the path of the file to write
-     * @param callback called once the file is written
      * @return a promise that resolves once the file is written
      */
-    exportImage(path: string, callback?: () => void): Promise<void>
+    exportImage(path: string): Promise<void>
   }
 }
 
@@ -99,9 +94,8 @@ const window = new happyDom.Window({
   }
 })
 
-// happy-dom completes images and fires their load events before
-// @napi-rs/canvas has decoded them, so they would draw nothing. Hold both back
-// until the decoding is done, for the images of this window:
+// happy-dom fires the load events of images before @napi-rs/canvas has
+// decoded them, so they would draw nothing. Hold them back until then:
 // NOTE: Remove once @napi-rs/canvas fixes this:
 // https://github.com/Brooooooklyn/canvas/issues/1423
 {
@@ -149,8 +143,7 @@ inject(CanvasView.prototype, {
       prefix = 'frame-',
       padding = String(amount - 1).length,
       format = 'png',
-      onProgress,
-      onComplete
+      onProgress
     } = options
     if (!directory) {
       throw new Error('Missing options.directory.')
@@ -175,17 +168,15 @@ inject(CanvasView.prototype, {
       })
       lastTime = time
     }
-    onComplete?.()
   },
 
-  async exportImage(this: CanvasView, path: string, callback?: () => void) {
+  async exportImage(this: CanvasView, path: string) {
     this.update()
     const type = /\.jpe?g$/.test(path) ? 'image/jpeg' : 'image/png'
     const blob = await new Promise<Blob>(resolve =>
       this._element.toBlob(resolve, type)
     )
     await writeFile(path, new Uint8Array(await blob.arrayBuffer()))
-    callback?.()
   }
 })
 

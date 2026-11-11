@@ -10,12 +10,9 @@
  * All rights reserved.
  */
 
-// All modules of the library, in the order in which they can load, as
-// src/paper.js included them: every module imports the others from here, so
+// All modules in load order: every module imports the others from here, so
 // that superclasses, and whatever static blocks and module constants use while
-// loading, are always loaded first. Plain imports between the modules would
-// load a subclass before its superclass as soon as their imports form a cycle,
-// as Item's do with Group's.
+// loading, are loaded first.
 export * from './constants.ts'
 export * from './util/object.ts'
 export * from './util/list.ts'

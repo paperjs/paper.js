@@ -1636,6 +1636,15 @@ describe('Hosted', () => {
     equals(star.definition.item.isEmpty(), true, 'emptied')
     equals(getPixel(first, 2, 2).alpha, 0, 'drawing nothing')
   })
+  test('Symbol items without a definition move to another host', () => {
+    const from = createHostedProject()
+    const to = createHostedProject()
+    const item = new SymbolItem({ project: from.project, insert: false })
+    const layer = to.project.layers[0]
+    layer.addChild(item)
+    equals(item.parent === layer, true)
+  })
+
   test('takeChanges() lists the new definitions that items use first', () => {
     const res = createHostedDefinitions(),
       project = res.project

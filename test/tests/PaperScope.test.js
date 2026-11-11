@@ -19,4 +19,8 @@ describe('PaperScope', () => {
     // Scripts create scopes of their own through the current one:
     equals(paper.PaperScope === PaperScope, true)
   })
+
+  test('paper.className', () => {
+    equals(paper.className, 'PaperScope')
+  })
 })

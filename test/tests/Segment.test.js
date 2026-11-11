@@ -132,6 +132,13 @@ describe('Segment', () => {
     equals(() => plain._data, undefined)
   })
 
+  test('Copies of a segment keep the class of its data', () => {
+    const segment = new Segment({ point: [10, 10], data: [1, 2, 3] })
+    equals(() => Array.isArray(segment.clone().data), true)
+    equals(() => Array.isArray(new Segment(segment).data), true)
+    equals(segment.clone().data, [1, 2, 3])
+  })
+
   test('segment.name and segment.data in JSON', () => {
     const path = new Path(
       [10, 10],

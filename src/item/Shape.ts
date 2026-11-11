@@ -35,8 +35,6 @@ import type { RectangleLike } from '../basic/Rectangle.ts'
 import type { BoundsOptions } from './Item.ts'
 
 export class Shape extends Item {
-  // Not private, as hosted shells are created without the constructor, see
-  // Item#_loadContent(), and read by the SVG export:
   _type: string
   _size: Size
   _radius: number | Size
@@ -597,14 +595,19 @@ export class Shape extends Item {
 
 function createShape(
   type: string,
-  center: PointLike,
+  point: PointLike,
   size: Size,
   radius: number | Size,
   props: object
 ): Shape {
-  // The geometry overrides what the properties hold for it, e.g. the
-  // undefined size of Path#toShape(). #_prioritize sets the type first:
-  return new Shape({ ...props, type, size, radius }, center)
+  // Use `Object.create()` to avoid calling the constructor until after the
+  // internal fields are set here, then call `_initialize()` directly:
+  const item: Shape = Object.create(Shape.prototype)
+  item._type = type
+  item._size = size
+  item._radius = radius
+  item._initialize(props, point)
+  return item
 }
 
 // Returns the center of the quarter corner ellipse for rounded rectangle, if

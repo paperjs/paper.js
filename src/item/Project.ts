@@ -84,9 +84,7 @@ export class Project extends PaperScopeItem {
   // Counts the changes that make all buffers stale, as no item reports them,
   // see Group#buffered:
   _bufferVersion: number
-  // The log of changes and its lookup by id, see #trackChanges, and the items
-  // to remove on mouse events, by type, see Item#removeOn(). Only declared,
-  // as handlers of the activation in super() may already set them:
+  // Only declared, as activation handlers may set them during super():
   declare _changes: ProjectChange[] | null
   declare _changesById: Record<string, ProjectChange> | null
   declare _removeSets: Record<string, Record<string, Item> | null>
@@ -460,28 +458,29 @@ export class Project extends PaperScopeItem {
    * @return the added layer, or `null` if adding was not possible
    */
   insertLayer(index: number, layer: Layer): Layer | null {
-    if (!(layer instanceof Layer)) {
-      return null
-    }
-    // Notify parent of change. Don't notify item itself yet, as we're doing
-    // so when adding it to the new owner below.
-    layer._remove(false, true)
-    splice(this._children, [layer], index, 0)
-    layer._setProject(this, true)
-    // Set the name again to make sure all name lookup structures are kept in
-    // sync.
-    const name = layer._name
-    if (name) {
-      layer.name = name
-    }
-    // See Item#_remove() for an explanation of this:
-    if (this._changes) {
-      layer._changed(Change.INSERTION)
-    }
-    // TODO: this._changed(Change.LAYERS);
-    // Also activate this layer if there was none before
-    if (!this._activeLayer) {
-      this._activeLayer = layer
+    if (layer instanceof Layer) {
+      // Notify parent of change. Don't notify item itself yet, as we're doing
+      // so when adding it to the new owner below.
+      layer._remove(false, true)
+      splice(this._children, [layer], index, 0)
+      layer._setProject(this, true)
+      // Set the name again to make sure all name lookup structures are kept
+      // in sync.
+      const name = layer._name
+      if (name) {
+        layer.name = name
+      }
+      // See Item#_remove() for an explanation of this:
+      if (this._changes) {
+        layer._changed(Change.INSERTION)
+      }
+      // TODO: this._changed(Change.LAYERS);
+      // Also activate this layer if there was none before
+      if (!this._activeLayer) {
+        this._activeLayer = layer
+      }
+    } else {
+      layer = null
     }
     return layer
   }
@@ -490,7 +489,7 @@ export class Project extends PaperScopeItem {
   // in Item#copyTo(), and through _getOwner() in the various Item#insert*()
   // methods. They are called the same to facilitate so duck-typing.
   _insertItem(index: number, item: Item, _created?: boolean): Item {
-    const inserted = (
+    item = (
       this.insertLayer(index, item as Layer) ||
       // Anything else than layers needs to be added to a layer first.
       // If none exists yet, create one now, then add the item to it.
@@ -500,10 +499,10 @@ export class Project extends PaperScopeItem {
       ).insertChild(index, item)
     )
     // If a layer was newly created, also activate it.
-    if (_created && inserted instanceof Layer) {
-      inserted.activate()
+    if (_created && item instanceof Layer) {
+      item.activate()
     }
-    return inserted
+    return item
   }
 
   /**
@@ -1094,8 +1093,7 @@ export class Project extends PaperScopeItem {
     Object.assign(this.prototype, {
       _list: 'projects',
       _reference: 'project',
-      // Never include the class name for Project
-      _compactSerialize: true
+      _compactSerialize: true // Never include the class name for Project
     })
     // Also for all projects, see Project.onActivate:
     defineEvents(this, {
@@ -1105,7 +1103,7 @@ export class Project extends PaperScopeItem {
   }
 }
 
-// The members defined at runtime rather than in the class body:
+// Inherited and generated members:
 export interface Project {
   /**
    * Activates this project, so all newly created items will be placed
