@@ -181,6 +181,22 @@ describe('PathItem', () => {
     equals(path.segments.toString(), '{ point: { x: 10, y: 20 } }')
   })
 
+  test('Path.create() as the factory form of new Path()', () => {
+    equals(() => Path.create === PathItem.create, true)
+    equals(() => Path.create().className, 'Path')
+    equals(Path.create([[0, 0], [10, 10]]), new Path([[0, 0], [10, 10]]))
+    equals(
+      Path.create({ segments: [[0, 0], [10, 10]], strokeColor: 'red' }),
+      new Path({ segments: [[0, 0], [10, 10]], strokeColor: 'red' })
+    )
+    // Only data with several sub-paths makes a compound path:
+    equals(() => Path.create('M0,0L10,10').className, 'Path')
+    equals(
+      () => Path.create('M0,0L10,10M20,20L30,30').className,
+      'CompoundPath'
+    )
+  })
+
   test('PathItem#create() with SVG arc flags without separators (#1808, #1885)', () => {
     // A circle of radius 10 through (0, 0) and (10, 10) has its center at
     // either (10, 0) or (0, 10). The flags pick the 270° arc around the first

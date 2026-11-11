@@ -80,8 +80,16 @@ export abstract class PathItem extends Item {
    * array describes a plain path or a compound-path with multiple
    * sub-paths.
    *
+   * `Path.create()` and `CompoundPath.create()` are the same function: use
+   * `Path.create()` as the factory form of `new Path()`, next to the
+   * factories for shapes such as {@link Path.circle(center, radius)}.
+   *
    * @param segments the segments array to parse
    * @return the newly created path item
+   *
+   * @example
+   * var path = Path.create([[20, 20], [80, 80], [140, 20]]);
+   * path.strokeColor = 'black';
    */
   static create(segments: SegmentLike[] | SegmentLike[][]): Path | CompoundPath
   /**

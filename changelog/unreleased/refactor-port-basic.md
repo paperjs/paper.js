@@ -19,6 +19,8 @@
 - Support current JavaScript syntax in PaperScript, which is parsed by acorn 8
   as a module.
 - Document `new Group(item, item, …)` and `new Layer(item, item, …)`.
+- Document `Path.create()`, inherited from `PathItem.create()`, as the factory
+  form of `new Path()`.
 
 ### Changed
 
