@@ -1140,11 +1140,40 @@ function importNode(node: Element, options: Options, isRoot?: boolean): any {
   return item
 }
 
+// Take the layers out of the group imported for an svg root element, if it
+// holds any, with the group's transformation. Content beside the layers goes
+// into a layer of its own, below them, and the clip of the root's viewBox goes,
+// as the view of a project does the clipping:
+function takeLayers(root: Item): Layer[] | null {
+  let layers: Layer[] = null
+  if (
+    root instanceof Group &&
+    !(root instanceof Layer) &&
+    root.children.some(child => child instanceof Layer)
+  ) {
+    const matrix = root.matrix
+    const children = root.removeChildren()
+    const others = children.filter(
+      child => !(child instanceof Layer) && !child.clipMask
+    )
+    layers = children.filter(child => child instanceof Layer) as Layer[]
+    if (others.length) {
+      layers.unshift(new Layer({ children: others, insert: false }))
+    }
+    if (!matrix.isIdentity()) {
+      for (const layer of layers) {
+        layer.transform(matrix)
+      }
+    }
+  }
+  return layers
+}
+
 function importSVG(
   source: any,
-  options: Options | ((item: Item, svg: any) => void),
+  options: Options | ((item: Item | Layer[], svg: any) => void),
   owner: Item | Project
-): Item | null {
+): Item | Layer[] | null {
   if (!source) {
     return null
   }
@@ -1169,11 +1198,13 @@ function importSVG(
       }
       scope.activate()
       item = importNode(node, importOptions, true)
+      // The layers of an SVG become the layers of the project importing it:
+      const layers = owner instanceof Project && takeLayers(item)
+      item = layers || item
       if (importOptions.insert !== false) {
-        // TODO: Implement support for multiple Layers on Project.
-        // 1.0 removes the wrapping group for project imports, so
-        // the layers become the project's layers.
-        owner._insertItem(undefined, item)
+        for (const child of layers || [item]) {
+          owner._insertItem(undefined, child)
+        }
       }
       importOptions.onLoad?.(item, svg)
     } catch (e) {
@@ -1231,13 +1262,13 @@ function importSVG(
 // NOTE: Documentation is in Item#importSVG()
 inject(Item.prototype, {
   importSVG(this: Item, node: any, options?: any): Item | null {
-    return importSVG(node, options, this)
+    return importSVG(node, options, this) as Item
   }
 })
 
 // NOTE: Documentation is in Project#importSVG()
 inject(Project.prototype, {
-  importSVG(this: Project, node: any, options?: any): Item | null {
+  importSVG(this: Project, node: any, options?: any): Item | Layer[] | null {
     this.activate()
     return importSVG(node, options, this)
   }
