@@ -715,6 +715,19 @@ describe('PaperScript', () => {
     )
   })
 
+  test('PaperScript with null options', () => {
+    const code = 'module.exports = new Point(1, 2) + 1;'
+    equals(
+      PaperScript.compile(code, null).code,
+      PaperScript.compile(code).code
+    )
+    equals(
+      PaperScript.compile(code, { paperFeatures: null }).code,
+      PaperScript.compile(code).code
+    )
+    equals(PaperScript.execute(code, paper, null), new Point(2, 3))
+  })
+
   test('PaperScript.execute() globals', () => {
     const exports = PaperScript.execute(
       'module.exports = {\n' +

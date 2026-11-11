@@ -271,11 +271,14 @@ export class CompoundPath extends PathItem {
   }
 
   _getPathData(_matrix?: Matrix, _precision?: number): string {
+    // NOTE: The #pathData setter is defined in PathItem.
     return this._children
       .map(child => {
-        const matrix = child._matrix
+        const childMatrix = child._matrix
         return child._getPathData(
-          _matrix && !matrix.isIdentity() ? _matrix.appended(matrix) : _matrix,
+          _matrix && !childMatrix.isIdentity()
+            ? _matrix.appended(childMatrix)
+            : _matrix,
           _precision
         )
       })
@@ -436,8 +439,10 @@ export interface CompoundPath {
   smooth(options?: object): void
 }
 
-// Returns the current path and checks if a moveTo() command is required
-// first:
+/**
+ * Helper method that returns the current path and checks if a moveTo()
+ * command is required first.
+ */
 function getCurrentPath(compoundPath: CompoundPath, check?: boolean): Path {
   const children = compoundPath._children
   if (check && !children.length) {

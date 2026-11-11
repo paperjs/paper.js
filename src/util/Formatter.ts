@@ -41,25 +41,29 @@ export class Formatter {
       : value
   }
 
-  pair(value1: number, value2: number, separator = ','): string {
-    return this.number(value1) + separator + this.number(value2)
+  pair(value1: number, value2: number, separator?: string): string {
+    return this.number(value1) + (separator || ',') + this.number(value2)
   }
 
-  point(point: { x: number; y: number }, separator = ','): string {
-    return this.pair(point.x, point.y, separator)
+  point(point: { x: number; y: number }, separator?: string): string {
+    return this.number(point.x) + (separator || ',') + this.number(point.y)
   }
 
-  size(size: { width: number; height: number }, separator = ','): string {
-    return this.pair(size.width, size.height, separator)
+  size(size: { width: number; height: number }, separator?: string): string {
+    return (
+      this.number(size.width) +
+      (separator || ',') +
+      this.number(size.height)
+    )
   }
 
   rectangle(
     rectangle: { x: number; y: number; width: number; height: number },
-    separator = ','
+    separator?: string
   ): string {
     return (
       this.point(rectangle, separator) +
-      separator +
+      (separator || ',') +
       this.size(rectangle, separator)
     )
   }

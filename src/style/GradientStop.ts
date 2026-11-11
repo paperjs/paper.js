@@ -28,10 +28,8 @@ export type GradientStopLike =
  * The GradientStop object.
  */
 export class GradientStop extends Base {
-  // Read by Color and the SVG export:
   _color: Color
   _offset: number
-  // The gradient that the stop belongs to, set by Gradient:
   _owner: Gradient
 
   /**
@@ -95,7 +93,7 @@ export class GradientStop extends Base {
   /**
    * Called by various setters whenever a value changes
    */
-  #changed() {
+  _changed() {
     // Notify the gradient that uses this stop about the change, so it can
     // notify its gradient colors, which in turn will notify the items they
     // are used in:
@@ -144,7 +142,7 @@ export class GradientStop extends Base {
 
   set offset(offset: number) {
     this._offset = offset
-    this.#changed()
+    this._changed()
   }
 
   /**
@@ -190,7 +188,7 @@ export class GradientStop extends Base {
     // Clear old color owner before setting new one:
     Color._setOwner(this._color, null)
     this._color = Color._setOwner(Color.from(color), this, 'color')
-    this.#changed()
+    this._changed()
   }
 
   /**
@@ -200,7 +198,7 @@ export class GradientStop extends Base {
    * @return {@true if they are equal}
    */
   equals(stop: GradientStop): boolean {
-    return !!(
+    return (
       stop === this || (
         stop instanceof GradientStop &&
         this._color.equals(stop._color) &&

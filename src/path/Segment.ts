@@ -18,6 +18,7 @@ import {
   SegmentPoint,
   SegmentSelection,
   addNamed,
+  clone,
   equals,
   removeNamed,
   serialize
@@ -62,16 +63,12 @@ export type SegmentLike =
  * objects that are connected by this segment.
  */
 export class Segment extends Base {
-  // Read and written by SegmentPoint, Curve, Path and others:
   _point: SegmentPoint
   _handleIn: SegmentPoint
   _handleOut: SegmentPoint
-  // Set by Path when the segment is added to it:
   _path: Path
   _index: number
-  // The selection state, a combination of SegmentSelection, and the name and
-  // data, which Path and the SVG export read, are only stored when set, so
-  // other segments don't pay. The defaults are on the prototype:
+  // The selection state, a combination of SegmentSelection
   declare _selection: number
   declare _name: string
   declare _data: object
@@ -79,11 +76,11 @@ export class Segment extends Base {
   /**
    * Creates a new Segment object.
    *
-   * @param point the anchor point of the segment, `{ x: 0, y: 0 }` by default
-   * @param handleIn the handle point relative to the anchor point of the
-   *     segment that describes the in tangent of the segment
-   * @param handleOut the handle point relative to the anchor point of the
-   *     segment that describes the out tangent of the segment
+   * @param [point={x: 0, y: 0}] the anchor point of the segment
+   * @param [handleIn={x: 0, y: 0}] the handle point relative to the anchor
+   *     point of the segment that describes the in tangent of the segment
+   * @param [handleOut={x: 0, y: 0}] the handle point relative to the anchor
+   *     point of the segment that describes the out tangent of the segment
    *
    * @example {@paperscript}
    * var handleIn = new Point(-80, -100);
@@ -144,16 +141,16 @@ export class Segment extends Base {
     const { point, handleIn, handleOut, selection, name } = props
     // Copy the data of segments without creating it, as #clone() does:
     const data =
-      props instanceof Segment
-        ? props._data && { ...props._data }
-        : props.data
-    // SegmentPoint() creates points with (0, 0) for missing arguments:
+      props instanceof Segment ? props._data && clone(props._data) : props.data
+    // It doesn't matter if all of these arguments exist.
+    // SegmentPoint() creates points with (0, 0) otherwise.
     new SegmentPoint(point, this, '_point')
     new SegmentPoint(handleIn, this, '_handleIn')
     new SegmentPoint(handleOut, this, '_handleOut')
     if (selection) {
       this.selection = selection
     }
+    // Only store name and data when set, so other segments don't pay:
     if (name) {
       this.name = name
     }
@@ -397,13 +394,12 @@ export class Segment extends Base {
     // Set the selection state even if path is not defined yet, to allow
     // selected segments to be inserted into paths and make JSON
     // deserialization work.
-    const newSelection = selection || 0
-    this._selection = newSelection
+    this._selection = selection ||= 0
     // If the selection state of the segment has changed, we need to let
     // it's path know and possibly add or remove it from
     // project._selectionItems
-    if (path && newSelection !== oldSelection) {
-      path._updateSelection(this, oldSelection, newSelection)
+    if (path && selection !== oldSelection) {
+      path._updateSelection(this, oldSelection, selection)
       // Let the project know, so the view draws the selection again, see
       // Item#selection:
       const project = path._project
@@ -685,20 +681,21 @@ export class Segment extends Base {
       segment._name = name
     }
     if (data) {
-      segment._data = { ...data }
+      segment._data = clone(data)
     }
     return segment
   }
 
   equals(segment: Segment): boolean {
-    return !!(
+    return (
       segment === this || (
         segment &&
         this.className === segment.className &&
         this._point.equals(segment._point) &&
         this._handleIn.equals(segment._handleIn) &&
         this._handleOut.equals(segment._handleOut)
-      )
+      ) ||
+      false
     )
   }
 

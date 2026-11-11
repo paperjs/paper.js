@@ -63,11 +63,12 @@ inject(PaperScope.prototype, {
   }
 })
 
-// Load the PaperScripts of the document once it has loaded, also when Paper.js
-// itself is loaded after that:
 const window = getWindow()
 if (window) {
+  // Catch cases where paper.js is loaded after the browser event has
+  // already occurred.
   if (getDocument().readyState === 'complete') {
+    // Handle it asynchronously
     setTimeout(() => PaperScript.load())
   } else {
     addEvents(window, { load: () => PaperScript.load() })

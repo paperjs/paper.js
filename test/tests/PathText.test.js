@@ -194,6 +194,17 @@ describe('PathText', () => {
     equals(a.unlink('before'), false, 'nothing before the first')
   })
 
+  test('unlink(null) unlinks both sides, as unlink()', () => {
+    const a = createPathText([0, 0], [400, 0], 'One'),
+      b = createPathText([0, 50], [400, 50], 'Two'),
+      c = createPathText([0, 100], [400, 100], 'Three')
+    a.link(b)
+    b.link(c)
+    equals(b.unlink(null), true)
+    equals(b.isLinked(), false, 'the item is on its own')
+    equals(a.nextTextItem, c, 'and the story flows on through the others')
+  })
+
   test('JSON keeps the text path and offsets', () => {
     const text = createPathText([0, 0], [200, 0], 'Hello')
     text.startOffset = 20

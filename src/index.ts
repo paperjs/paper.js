@@ -116,7 +116,7 @@ const classes = {
 }
 
 // Name the classes for JSON, which keeps their keys through minification:
-registerClasses(classes)
+registerClasses({ ...classes, PaperScope })
 
 // Make the classes and namespaces properties of every scope, enumerable for
 // PaperScope#install() and PaperScript, which enumerate them:

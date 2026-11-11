@@ -93,7 +93,6 @@ const textDefaults = {
   fillColor: new Color() // black
 }
 
-// The changes that the properties cause, besides STYLE:
 const flags = {
   strokeWidth: Change.STROKE,
   strokeCap: Change.STROKE,
@@ -116,9 +115,6 @@ for (const key in groupDefaults) {
   }
 }
 
-// The size of superscripts and subscripts, of the font size:
-const scriptSize = 0.583
-
 // What a style belongs to: an item, a text story or a text range.
 interface StyleOwner {
   _project?: Project
@@ -126,12 +122,8 @@ interface StyleOwner {
   _getStyles(style: Style, key: string, setting?: boolean): Style[]
 }
 
-/**
- * Adds the accessors of the style properties to the class, forwarding to the
- * `_style` of its objects, as Item and TextRange have them.
- *
- * @private
- */
+// Inject style getters and setters into the Item class, which redirect calls
+// to the linked style object.
 export function defineStyleAccessors(ctor: { prototype: object }) {
   for (const key of Style.keys) {
     inject(ctor.prototype, {
@@ -210,16 +202,15 @@ export class Style extends Base {
    */
   static keys = Object.keys(groupDefaults)
 
-  // How far superscripts and subscripts move, of the font size:
+  declare _scriptSize: number
   declare _scriptShift: number
-  // The values that are set on the style. Only these are stored, the others
-  // fall back on the defaults:
+  // We keep values in a separate object that we can iterate over.
   _values: Record<string, any> = {}
-  // The defaults for the owner's kind of item:
   _defaults: Record<string, any>
   #owner: StyleOwner
   #project: Project
 
+  // DOCS: why isn't the example code showing up?
   /**
    * Style objects don't need to be created directly. Just pass an object to
    * {@link Item#style} or {@link Project#currentStyle}, it will be converted
@@ -248,6 +239,26 @@ export class Style extends Base {
           : itemDefaults
     if (style) {
       this.set(style)
+    }
+  }
+
+  // The value that all styles share for key, or undefined if they differ:
+  static merge(styles: Style[], key: string): any {
+    let value: any
+    for (let i = 0; i < styles.length; i++) {
+      const other = styles[i][key]
+      if (!i) {
+        value = other
+      } else if (!equals(value, other)) {
+        return undefined
+      }
+    }
+    return value
+  }
+
+  static apply(styles: Style[], key: string, value: any) {
+    for (const style of styles) {
+      style[key] = value
     }
   }
 
@@ -298,9 +309,14 @@ export class Style extends Base {
           }
           if (value instanceof Color) {
             // NOTE: If value is not a Color, it is only converted and cloned
-            // in _get() further down. Only provide a key for the owner to set
-            // the color again if the style is to be applied to the children:
-            value = Color._setOwner(value, owner, styles && key)
+            // in _get() further down.
+            value = Color._setOwner(
+              value,
+              owner,
+              // Only provide a key for the owner to set the color again if the
+              // style is to be applied to the children:
+              styles && key
+            )
           }
         }
         // NOTE: We do not convert the values to Colors here. This only happens
@@ -313,13 +329,12 @@ export class Style extends Base {
     }
   }
 
-  // Pass true for dontMerge to get the value of a group itself, without
-  // merging the ones of its children:
   _get(key: string, dontMerge?: boolean): any {
     let value: any
     const owner = this.#owner
     const styles = owner?._getStyles(this, key)
     const isColor = /Color$/.test(key)
+    // If true is passed for dontMerge, don't merge children styles.
     if (styles && !dontMerge) {
       value = Style.merge(styles, key)
     } else if (key in this._defaults) {
@@ -327,7 +342,9 @@ export class Style extends Base {
       if (value === undefined) {
         value = this._defaults[key]
         // Clone defaults if available:
-        value = value?.clone ? value.clone() : value
+        if (value && value.clone) {
+          value = value.clone()
+        }
       } else {
         const ctor = isColor ? Color : key === 'shadowOffset' ? Point : null
         if (ctor && value != null && value.constructor !== ctor) {
@@ -368,7 +385,7 @@ export class Style extends Base {
       return true
     }
 
-    return !!(
+    return (
       style === this || (
         style instanceof Style &&
         compare(this, style) &&
@@ -385,16 +402,19 @@ export class Style extends Base {
     }
   }
 
+  // DOCS: Style#hasFill()
   hasFill(): boolean {
     const color = this.fillColor
     return color?.alpha > 0
   }
 
+  // DOCS: Style#hasStroke()
   hasStroke(): boolean {
     const color = this.strokeColor
     return color?.alpha > 0 && this.strokeWidth > 0
   }
 
+  // DOCS: Style#hasShadow()
   hasShadow(): boolean {
     const color = this.shadowColor
     // In order to draw a shadow, we need either a shadow blur or an offset, or
@@ -414,7 +434,6 @@ export class Style extends Base {
 
   // The font as canvas takes it:
   _getCanvasFont(): string {
-    // A number in pixels, or a string with units:
     let fontSize: any = this.fontSize
     const { fontStyle } = this
     // CSS reads unquoted families only as identifiers, which can't start with
@@ -428,10 +447,14 @@ export class Style extends Base {
     })
     // Superscripts and subscripts are set smaller:
     if (this.baselinePosition !== 'normal' && !isNaN(fontSize)) {
-      fontSize *= scriptSize
+      fontSize *= this._scriptSize
     }
     // To prevent an obscure iOS 7 crash, we have to convert the size to a
     // string first before passing it to the regular expression.
+    // The following nonsensical statement would also prevent the bug,
+    // proving that the issue is not the regular expression itself, but
+    // something deeper down in the optimizer:
+    // `if (size === 0) size = 0;`
     return (
       (fontStyle !== 'normal' ? fontStyle + ' ' : '') +
       (this.capitals === 'small' ? 'small-caps ' : '') +
@@ -468,28 +491,15 @@ export class Style extends Base {
         : lineHeight * this._getFontSize()
   }
 
-  // The value that all styles share for key, or undefined if they differ:
-  static merge(styles: Style[], key: string): any {
-    let value: any
-    for (let i = 0; i < styles.length; i++) {
-      const other = styles[i][key]
-      if (!i) {
-        value = other
-      } else if (!equals(value, other)) {
-        return undefined
-      }
-    }
-    return value
-  }
-
-  static apply(styles: Style[], key: string, value: any) {
-    for (const style of styles) {
-      style[key] = value
-    }
-  }
-
   static {
-    this.prototype._scriptShift = 0.333
+    Object.assign(this.prototype, {
+      // The size of superscripts and subscripts, and how far they move, of
+      // the font size:
+      _scriptSize: 0.583,
+      _scriptShift: 0.333
+    })
+    // Iterate over groupDefaults to inject getters / setters, to cover all
+    // properties
     for (const key of Style.keys) {
       inject(this.prototype, {
         get [key]() {

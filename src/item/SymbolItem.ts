@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { Change, Item, SymbolDefinition } from '../internal.ts'
+import { Change, Item, SymbolDefinition, clone } from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
 import type { Point } from '../basic/Point.ts'
 import type { Matrix } from '../basic/Matrix.ts'
@@ -25,9 +25,6 @@ import type { HitResult } from './HitResult.ts'
  * definition, unlike `<use>` elements in SVG.
  */
 export class SymbolItem extends Item {
-  // Declared by Item, which reads it:
-  declare _definition: SymbolDefinition
-
   /**
    * Creates a new symbol item.
    *
@@ -189,7 +186,7 @@ export class SymbolItem extends Item {
     item.clipMask = this._clipMask
     item.selected = this.selected
     if (this._data) {
-      item._data = { ...this._data }
+      item._data = clone(this._data)
     }
     if (this._name) {
       item.name = this._name

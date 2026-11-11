@@ -154,7 +154,8 @@ export function parse(
  * @return an object holding the compiled PaperScript translated
  *     into JavaScript code along with source-maps and other information.
  */
-export function compile(code: string, options: CompileOptions = {}): Compiled {
+export function compile(code: string, options?: CompileOptions): Compiled {
+  options ||= {}
   // Use Acorn to translate the code into an AST structure which is then
   // walked and parsed for operators to overload. Instead of modifying the
   // AST and translating it back to code, we directly change the source code
@@ -293,19 +294,19 @@ export function compile(code: string, options: CompileOptions = {}): Compiled {
             // Assign properties through __$assign__(),
             // which evaluates their object and key once,
             // except for private ones and those of super:
-            const isMember = (
+            const member = (
               target.type === 'MemberExpression' &&
               target.object.type !== 'Super' &&
               target.property.type !== 'PrivateIdentifier'
             )
-            let exp = isMember
+            let exp = member
               ? `__$assign__(${getCode(target.object)}, ${
                   target.computed
                     ? getCode(target.property)
                     : JSON.stringify(target.property.name)
                 }, "${operator}", ${right}${isPostfix ? ', true' : ''})`
               : `${left} = __$__(${left}, "${operator}", ${right})`
-            if (isUsed && !isMember) {
+            if (isUsed && !member) {
               // Turn the assignment into an expression of the
               // new value, or of the old one before it, see
               // #1611:
@@ -318,6 +319,34 @@ export function compile(code: string, options: CompileOptions = {}): Compiled {
         }
         break
       }
+    }
+  }
+
+  // Collects the names that a declaration's identifier or destructuring
+  // pattern declares:
+  function collectNames(node: Node, names: string[]) {
+    switch (node.type) {
+      case 'Identifier':
+        names.push(node.name)
+        break
+      case 'ObjectPattern':
+        for (const property of node.properties) {
+          collectNames(property.value || property.argument, names)
+        }
+        break
+      case 'ArrayPattern':
+        for (const element of node.elements) {
+          if (element) {
+            collectNames(element, names)
+          }
+        }
+        break
+      case 'AssignmentPattern':
+        collectNames(node.left, names)
+        break
+      case 'RestElement':
+        collectNames(node.argument, names)
+        break
     }
   }
 
@@ -406,10 +435,7 @@ export function compile(code: string, options: CompileOptions = {}): Compiled {
           node,
           node.exported
             ? `module.exports.${node.exported.name} = ${
-                getImport(
-                  node,
-                  'namespace'
-                )
+                getImport(node, 'namespace')
               };`
             : '(function(m) { for (var k in m) if (k !== ' +
               `"default") module.exports[k] = m[k]; })(${getImport(node)});`
@@ -477,7 +503,11 @@ export function compile(code: string, options: CompileOptions = {}): Compiled {
   let isAsync = false
 
   // Recursively walks the AST and replaces the code of certain nodes
-  function walkAST(node: Node, parent: Node) {
+  function walkAST(
+    node: Node,
+    parent: Node,
+    paperFeatures: CompileOptions['paperFeatures']
+  ) {
     if (node) {
       const isFunction = /Function/.test(node.type)
       if (isFunction) {
@@ -491,12 +521,12 @@ export function compile(code: string, options: CompileOptions = {}): Compiled {
           const value = node[key]
           if (Array.isArray(value)) {
             for (const child of value) {
-              walkAST(child, node)
+              walkAST(child, node, paperFeatures)
             }
           } else if (value && typeof value === 'object') {
             // Don't use isPlainObject() for these since
             // Acorn.js uses its own internal prototypes now.
-            walkAST(value, node)
+            walkAST(value, node, paperFeatures)
           }
         }
       }
@@ -520,7 +550,28 @@ export function compile(code: string, options: CompileOptions = {}): Compiled {
     }
   }
 
-  const { url = '', sourceMaps, paperFeatures = {} } = options
+  // Source-map support:
+  // Encodes a Variable Length Quantity as a Base64 string.
+  // See: https://www.html5rocks.com/en/tutorials/developertools/sourcemaps/
+  function encodeVLQ(value: number): string {
+    let result = ''
+    const base64 =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+    value = (Math.abs(value) << 1) + (value < 0 ? 1 : 0)
+    while (value || !result) {
+      let next = value & (32 - 1)
+      value >>= 5
+      if (value) {
+        next |= 32
+      }
+      result += base64[next]
+    }
+    return result
+  }
+
+  const url = options.url || ''
+  const { sourceMaps } = options
+  const paperFeatures = options.paperFeatures || {}
   // Include the original code in the sourceMap if there is no linked
   // source file so the debugger can still display it correctly.
   const source = options.source || code
@@ -581,7 +632,7 @@ export function compile(code: string, options: CompileOptions = {}): Compiled {
       }
       throw error
     }
-    walkAST(ast, null)
+    walkAST(ast, null, paperFeatures)
     // Mark ES modules like Babel and TypeScript do, so importers can
     // tell their default export from CommonJS-style exports. Added on
     // a new line at the end, so the lines before keep their numbers:
@@ -654,17 +705,21 @@ export function compile(code: string, options: CompileOptions = {}): Compiled {
 export function execute(
   code: string | Compiled,
   scope: PaperScope,
-  options: ExecuteOptions = {}
+  options?: ExecuteOptions
 ): any {
+  options ||= {}
   // Set currently active scope.
   scope.activate()
   const { view } = scope
   const compiled = typeof code === 'object' ? code : compile(code, options)
   let body = compiled.code
+  // The tool's handlers are the accessors of its events:
+  const toolNames = Object.getOwnPropertyNames(Tool.prototype).filter(
+    name => /^on[A-Z]/.test(name) && name.slice(2).toLowerCase() in Tool.events
+  )
   // Only create a tool if the tool object is accessed or something
   // resembling a global tool handler is contained in the code, but
   // no tool objects are actually created.
-  const toolNames = getHandlerNames(Tool)
   const toolPattern = new RegExp(
     `\\btool\\.\\w+|\\s+(?:${toolNames.join('|')})\\b`
   )
@@ -676,10 +731,10 @@ export function execute(
   // undefined arguments, so that their name exists, rather than
   // injecting a code line that defines them as variables. They are
   // exported again at the end of the function.
-  const handlers = ['onFrame', 'onResize', ...toolHandlers]
-  if (options.handlers) {
-    handlers.push(...options.handlers)
-  }
+  const handlers = ['onFrame', 'onResize'].concat(
+    toolHandlers,
+    options.handlers || []
+  )
   // compile a list of parameter names for all variables that need to
   // appear as globals inside the script. At the same time, also
   // collect their values, so we can pass them on as arguments in the
@@ -733,6 +788,20 @@ export function execute(
         )
       : getImported(exports, as)
   }
+
+  // ES modules have their default export as `default`, and their exports
+  // as their namespace. CommonJS-style exports are the default export,
+  // and also appear in the namespace, as in Node:
+  function getImported(exports: any, as: string): any {
+    const isModule = exports?.__esModule
+    return as === 'default'
+      ? isModule
+        ? exports.default
+        : exports
+      : as === 'namespace' && !isModule
+        ? { default: exports, ...exports }
+        : exports
+  }
   expose({ __$__, $__, __$assign__, __$import__, paper: scope, tool }, true)
   expose(scope)
   // Add a fake `module.exports` object so PaperScripts can export things.
@@ -755,9 +824,9 @@ export function execute(
   const source = `(${compiled.async ? 'async ' : ''}function(${params}) {${
     body
   }\n})`
-  // Without an evaluator of the host, evaluate the code globally as a script
-  // through an indirect eval, which, unlike Function(), adds no header before
-  // the code, so that its lines keep their numbers in every engine:
+  // Evaluated globally as a script through an indirect eval, which, unlike
+  // Function(), adds no header before the code, so that its lines keep their
+  // numbers in every engine:
   const func = options.evaluate
     ? options.evaluate(source, compiled.url)
     : (0, eval)(source)
@@ -813,10 +882,11 @@ export function execute(
  *     `undefined` of multiple scripts area loaded
  */
 export function load(script?: HTMLScriptElement): PaperScope {
-  if (script) {
-    return loadScript(script)
-  }
-  const scripts = getDocument().getElementsByTagName('script')
+  return script ? loadScript(script) : loadAll()
+}
+
+function loadAll(): undefined {
+  const scripts = getDocument()?.getElementsByTagName('script') ?? []
   for (const script of Array.from(scripts)) {
     loadScript(script)
   }
@@ -900,79 +970,10 @@ function isOperand(value: any): value is Point | Size | Color {
   )
 }
 
-// Returns the handler names of the class's events, e.g. 'onMouseDown' for the
-// type 'mousedown', from the accessors that defineEvents() creates for them:
-function getHandlerNames(ctor: typeof Tool): string[] {
-  return Object.getOwnPropertyNames(ctor.prototype).filter(
-    name => /^on[A-Z]/.test(name) && name.slice(2).toLowerCase() in ctor.events
-  )
-}
-
-// Collects the names that a declaration's identifier or destructuring
-// pattern declares:
-function collectNames(node: Node, names: string[]) {
-  switch (node.type) {
-    case 'Identifier':
-      names.push(node.name)
-      break
-    case 'ObjectPattern':
-      for (const property of node.properties) {
-        collectNames(property.value || property.argument, names)
-      }
-      break
-    case 'ArrayPattern':
-      for (const element of node.elements) {
-        if (element) {
-          collectNames(element, names)
-        }
-      }
-      break
-    case 'AssignmentPattern':
-      collectNames(node.left, names)
-      break
-    case 'RestElement':
-      collectNames(node.argument, names)
-      break
-  }
-}
-
-// ES modules have their default export as `default`, and their exports
-// as their namespace. CommonJS-style exports are the default export,
-// and also appear in the namespace, as in Node:
-function getImported(exports: any, as: string): any {
-  const isModule = exports?.__esModule
-  return as === 'default'
-    ? isModule
-      ? exports.default
-      : exports
-    : as === 'namespace' && !isModule
-      ? { default: exports, ...exports }
-      : exports
-}
-
 async function fetchCode(url: string): Promise<string> {
   const response = await fetch(url)
   if (!response.ok) {
     throw new Error(`Unable to load '${url}' (status ${response.status}).`)
   }
   return response.text()
-}
-
-// Source-map support:
-// Encodes a Variable Length Quantity as a Base64 string.
-// See: https://www.html5rocks.com/en/tutorials/developertools/sourcemaps/
-function encodeVLQ(value: number): string {
-  let result = ''
-  const base64 =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-  value = (Math.abs(value) << 1) + (value < 0 ? 1 : 0)
-  while (value || !result) {
-    let next = value & (32 - 1)
-    value >>= 5
-    if (value) {
-      next |= 32
-    }
-    result += base64[next]
-  }
-  return result
 }

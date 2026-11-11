@@ -11,7 +11,7 @@
  */
 
 /**
- * Pushes a large amount of items to an array.
+ * Utility function for pushing a large amount of items to an array.
  */
 export function push(list, items) {
   const itemsLength = items.length
@@ -32,9 +32,9 @@ export function push(list, items) {
 }
 
 /**
- * Adds and removes items from a list of which each entry keeps a reference to
- * its index in the list in the private _index property. Used for
- * PaperScope#projects and Item#children.
+ * Utility function for adding and removing items from a list of which each
+ * entry keeps a reference to its index in the list in the private _index
+ * property. Used for PaperScope#projects and Item#children.
  */
 export function splice(list, items, index, remove) {
   const amount = items?.length ?? 0
@@ -72,9 +72,10 @@ export function splice(list, items, index, remove) {
 }
 
 /**
- * Looks up items of a list by name, as in `list[name]`. The first item with a
- * name wins, the others wait in the `named` lookup to take over when it is
- * removed. Used for Item#children and Path#segments.
+ * Utility function for looking up items of a list by name, as in
+ * `list[name]`. The first item with a name wins, the others wait in the
+ * `named` lookup to take over when it is removed. Used for Item#children and
+ * Path#segments.
  */
 export function addNamed(list, named, name, item) {
   ;(named[name] ??= []).push(item)

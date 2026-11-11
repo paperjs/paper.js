@@ -45,15 +45,12 @@ export class PaperScopeItem extends Emitter {
   }
 
   activate(): boolean {
-    const scope = this._scope
-    if (!scope) {
-      return false
-    }
-    const previous = scope[this._reference]
+    if (!this._scope) return false
+    const previous = this._scope[this._reference]
     if (previous && previous !== this) {
       previous.emit('deactivate')
     }
-    scope[this._reference] = this
+    this._scope[this._reference] = this
     this.emit('activate', previous)
     return true
   }
@@ -67,14 +64,11 @@ export class PaperScopeItem extends Emitter {
   }
 
   remove(): boolean {
-    if (this._index == null) {
-      return false
-    }
-    const scope = this._scope
-    splice(scope[this._list], null, this._index, 1)
+    if (this._index == null) return false
+    splice(this._scope[this._list], null, this._index, 1)
     // Clear the active reference if it was pointing to this:
-    if (scope[this._reference] == this) {
-      scope[this._reference] = null
+    if (this._scope[this._reference] == this) {
+      this._scope[this._reference] = null
       this.emit('deactivate')
     }
     this._scope = null

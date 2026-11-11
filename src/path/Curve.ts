@@ -102,7 +102,7 @@ export class Curve extends Base {
       | number[]
   )
   /**
-   * Creates a curve of a path, as Path#getCurves() does.
+   * Creates a curve of a path, as Path#curves does.
    *
    * @private
    */
@@ -120,7 +120,7 @@ export class Curve extends Base {
     // or point1, point2, handle1 & handle2. At the end, the internal
     // segments are created accordingly.
     if (count === 3) {
-      // Undocumented internal constructor, used by Path#getCurves()
+      // Undocumented internal constructor, used by Path#curves
       // new Segment(path, segment1, segment2);
       this._path = arg0
       segment1 = arg1
@@ -244,7 +244,7 @@ export class Curve extends Base {
   }
 
   set point1(point: PointLike) {
-    this._segment1._point.set(Point.from(point))
+    this._segment1._point.set(point)
   }
 
   /**
@@ -255,7 +255,7 @@ export class Curve extends Base {
   }
 
   set point2(point: PointLike) {
-    this._segment2._point.set(Point.from(point))
+    this._segment2._point.set(point)
   }
 
   /**
@@ -266,7 +266,7 @@ export class Curve extends Base {
   }
 
   set handle1(point: PointLike) {
-    this._segment1._handleOut.set(Point.from(point))
+    this._segment1._handleOut.set(point)
   }
 
   /**
@@ -277,7 +277,7 @@ export class Curve extends Base {
   }
 
   set handle2(point: PointLike) {
-    this._segment2._handleIn.set(Point.from(point))
+    this._segment2._handleIn.set(point)
   }
 
   /**
@@ -585,331 +585,6 @@ export class Curve extends Base {
     this._segment2._handleIn._set(0, 0)
   }
 
-  /**
-   * {@grouptitle Bounding Boxes}
-   *
-   * The bounding rectangle of the curve excluding stroke width.
-   */
-  get bounds(): Rectangle {
-    return this.#getBounds(false)
-  }
-
-  /**
-   * The bounding rectangle of the curve including stroke width.
-   */
-  get strokeBounds(): Rectangle {
-    return this.#getBounds(true)
-  }
-
-  #getBounds(stroke: boolean): Rectangle {
-    this.#bounds ??= {}
-    const key = stroke ? 'strokeBounds' : 'bounds'
-    let bounds = this.#bounds[key]
-    if (!bounds) {
-      // Calculate the curve bounds by passing a segment list for the
-      // curve to the getSegment*Bounds() functions. Without a
-      // path, there is no stroke, so the stroke bounds are the bounds.
-      const path = this._path
-      const getBounds =
-        path && stroke
-          ? getSegmentStrokeBounds
-          : getSegmentBounds
-      bounds = this.#bounds[key] = getBounds(
-        [this._segment1, this._segment2],
-        false,
-        path
-      )
-    }
-    return bounds.clone()
-  }
-
-  /**
-   * The bounding rectangle of the curve including handles.
-   */
-  get handleBounds(): Rectangle {
-    // Unlike getSegmentHandleBounds(), only include the curve's own handles,
-    // not the outer handles of its two segments.
-    const v = this.getValues()
-    const x1 = Math.min(v[0], v[2], v[4], v[6])
-    const y1 = Math.min(v[1], v[3], v[5], v[7])
-    const x2 = Math.max(v[0], v[2], v[4], v[6])
-    const y2 = Math.max(v[1], v[3], v[5], v[7])
-    return new Rectangle(x1, y1, x2 - x1, y2 - y1)
-  }
-
-  /**
-   * {@grouptitle Curve Tests}
-   *
-   * Checks if this curve has any curve handles set. Handles of which both
-   * coordinates are 0 within a tolerance of 1e-12 count as not set, see
-   * {@link Point#isZero()}.
-   *
-   * @return {@true if the curve has handles set}
-   * @see Curve#handle1
-   * @see Curve#handle2
-   * @see Segment#hasHandles()
-   * @see Path#hasHandles()
-   */
-  hasHandles(): boolean {
-    return (
-      !this._segment1._handleOut.isZero() ||
-      !this._segment2._handleIn.isZero()
-    )
-  }
-
-  /**
-   * Checks if this curve has any length.
-   *
-   * @param [epsilon=0] the epsilon against which to compare the
-   *     curve's length
-   * @return {@true if the curve is longer than the given epsilon}
-   */
-  hasLength(epsilon?: number): boolean {
-    return (
-      (!this.point1.equals(this.point2) || this.hasHandles()) &&
-      this.length > (epsilon || 0)
-    )
-  }
-
-  /**
-   * Checks if this curve appears as a straight line. This can mean that
-   * it has no handles defined, or that the handles run collinear with the
-   * line that connects the curve's start and end point, not falling
-   * outside of the line.
-   *
-   * @return {@true if the curve is straight}
-   */
-  isStraight(): boolean {
-    // Pass the coordinates without creating points, as this is called a lot:
-    const p1 = this._segment1._point
-    const h1 = this._segment1._handleOut
-    const h2 = this._segment2._handleIn
-    const p2 = this._segment2._point
-    return isStraightCurve(
-      p1._x, p1._y,
-      h1._x, h1._y,
-      h2._x, h2._y,
-      p2._x, p2._y
-    )
-  }
-
-  /**
-   * Checks if this curve is parametrically linear, meaning that it is
-   * straight and its handles are positioned at 1/3 and 2/3 of the total
-   * length of the curve.
-   *
-   * @return {@true if the curve is parametrically linear}
-   */
-  isLinear(): boolean {
-    const p1 = this._segment1._point
-    const h1 = this._segment1._handleOut
-    const h2 = this._segment2._handleIn
-    const p2 = this._segment2._point
-    return isLinearCurve(
-      p1._x, p1._y,
-      h1._x, h1._y,
-      h2._x, h2._y,
-      p2._x, p2._y
-    )
-  }
-
-  /**
-   * Checks if the the two curves describe straight lines that are
-   * collinear, meaning they run in parallel.
-   *
-   * @param curve the other curve to check against
-   * @return {@true if the two lines are collinear}
-   */
-  isCollinear(curve: Curve): boolean {
-    return (
-      curve &&
-      this.isStraight() &&
-      curve.isStraight() &&
-      this.line.isCollinear(curve.line)
-    )
-  }
-
-  /**
-   * Checks if the curve is a straight horizontal line.
-   *
-   * @return {@true if the line is horizontal}
-   */
-  isHorizontal(): boolean {
-    return (
-      this.isStraight() &&
-      Math.abs(this.getTangentAtTime(0.5).y) < TRIGONOMETRIC_EPSILON
-    )
-  }
-
-  /**
-   * Checks if the curve is a straight vertical line.
-   *
-   * @return {@true if the line is vertical}
-   */
-  isVertical(): boolean {
-    return (
-      this.isStraight() &&
-      Math.abs(this.getTangentAtTime(0.5).x) < TRIGONOMETRIC_EPSILON
-    )
-  }
-
-  /**
-   * {@grouptitle Positions on Curves}
-   *
-   * Calculates the curve location at the specified offset on the curve, or
-   * `null` if the offset exceeds the length of the curve.
-   *
-   * @param offset the offset on the curve
-   * @return the curve location at the specified the offset
-   */
-  getLocationAt(offset: number): CurveLocation {
-    return this.getLocationAtTime(this.getTimeAt(offset))
-  }
-
-  /**
-   * Calculates the curve location at the specified curve-time parameter on
-   * the curve, or `null` if the parameter lies outside of `0..1`.
-   *
-   * @param time the curve-time parameter on the curve
-   * @return the curve location at the specified the location
-   */
-  getLocationAtTime(time: number): CurveLocation {
-    return time != null && time >= 0 && time <= 1
-      ? new CurveLocation(this, time)
-      : null
-  }
-
-  /**
-   * Calculates the curve-time parameter of the specified offset on the path,
-   * relative to the provided start parameter. If offset is a negative value,
-   * the parameter is searched to the left of the start parameter. If no start
-   * parameter is provided, a default of `0` for positive values of `offset`
-   * and `1` for negative values of `offset`.
-   *
-   * @param offset the offset at which to find the curve-time, in
-   *     curve length units
-   * @param [start] the curve-time in relation to which the offset is
-   *     determined
-   * @return the curve-time parameter at the specified location, or
-   *     `null` if the offset exceeds the length of the curve
-   */
-  getTimeAt(offset: number, start?: number): number {
-    return Curve.getTimeAt(this.getValues(), offset, start)
-  }
-
-  /**
-   * Calculates the curve-time parameters where the curve is tangential to
-   * provided tangent. Note that tangents at the start or end are included.
-   *
-   * @param tangent the tangent to which the curve must be tangential
-   * @return at most two curve-time parameters, where the curve is
-   * tangential to the given tangent
-   */
-  getTimesWithTangent(tangent: PointLike | number, y?: number): number[] {
-    const vector = Point.from(tangent, y)
-    return vector.isZero()
-      ? []
-      : Curve.getTimesWithTangent(this.getValues(), vector)
-  }
-
-  /**
-   * Calculates the curve offset at the specified curve-time parameter on
-   * the curve.
-   *
-   * @param time the curve-time parameter on the curve
-   * @return the curve offset at the specified the location
-   */
-  getOffsetAtTime(time: number): number {
-    return this.getPartLength(0, time)
-  }
-
-  /**
-   * Returns the curve location of the specified point if it lies on the
-   * curve, `null` otherwise.
-   *
-   * @param point the point on the curve
-   * @return the curve location of the specified point
-   */
-  getLocationOf(point: PointLike | number, y?: number): CurveLocation | null {
-    return this.getLocationAtTime(this.getTimeOf(point, y))
-  }
-
-  /**
-   * Returns the length of the path from its beginning up to up to the
-   * specified point if it lies on the path, `null` otherwise.
-   *
-   * @param point the point on the path
-   * @return the length of the path up to the specified point
-   */
-  getOffsetOf(point: PointLike | number, y?: number): number | null {
-    const location = this.getLocationOf(point, y)
-    return location?.offset ?? null
-  }
-
-  /**
-   * Returns the curve-time parameter of the specified point if it lies on the
-   * curve, `null` otherwise.
-   * Note that if there is more than one possible solution in a
-   * self-intersecting curve, the first found result is returned.
-   *
-   * @param point the point on the curve
-   * @return the curve-time parameter of the specified point
-   */
-  getTimeOf(point: PointLike | number, y?: number): number | null {
-    return Curve.getTimeOf(this.getValues(), Point.from(point, y))
-  }
-
-  /**
-   * Returns the nearest location on the curve to the specified point.
-   *
-   * @param point the point for which we search the nearest location
-   * @return the location on the curve that's the closest to
-   * the specified point
-   */
-  getNearestLocation(point: PointLike | number, y?: number): CurveLocation {
-    const other = Point.from(point, y)
-    const values = this.getValues()
-    const time = Curve.getNearestTime(values, other)
-    const nearest = Curve.getPoint(values, time)
-    return new CurveLocation(
-      this,
-      time,
-      nearest,
-      null,
-      other.getDistance(nearest)
-    )
-  }
-
-  /**
-   * Returns the nearest point on the curve to the specified point.
-   *
-   * @param point the point for which we search the nearest point
-   * @return the point on the curve that's the closest to the
-   * specified point
-   */
-  getNearestPoint(point: PointLike | number, y?: number): Point {
-    const location = this.getNearestLocation(point, y)
-    return location?.point ?? null
-  }
-
-  /**
-   * Returns all intersections between two {@link Curve} objects as an
-   * array of {@link CurveLocation} objects.
-   *
-   * @param curve the other curve to find the intersections with
-   *     (if the curve itself or `null` is passed, the self intersection
-   *     of the curve is returned, if it exists)
-   * @return the locations of all intersections between
-   *     the curves
-   */
-  getIntersections(curve?: Curve): CurveLocation[] {
-    const v1 = this.getValues()
-    const v2 = curve && curve !== this && curve.getValues()
-    return v2
-      ? getCurveIntersections(v1, v2, this, curve, [])
-      : getSelfIntersection(v1, this, [])
-  }
-
   static getValues(
     segment1: Segment,
     segment2: Segment,
@@ -1213,32 +888,265 @@ export class Curve extends Base {
     }
   }
 
-  // NOTE: Curve#isStraight() is documented above.
-  static isStraight(v: number[]): boolean {
-    const x1 = v[0]
-    const y1 = v[1]
-    const x2 = v[6]
-    const y2 = v[7]
-    return isStraightCurve(
-      x1, y1,
-      v[2] - x1, v[3] - y1,
-      v[4] - x2, v[5] - y2,
-      x2, y2
+  /**
+   * {@grouptitle Bounding Boxes}
+   *
+   * The bounding rectangle of the curve excluding stroke width.
+   */
+  get bounds(): Rectangle {
+    return this.#getBounds(false)
+  }
+
+  /**
+   * The bounding rectangle of the curve including stroke width.
+   */
+  get strokeBounds(): Rectangle {
+    return this.#getBounds(true)
+  }
+
+  #getBounds(stroke: boolean): Rectangle {
+    this.#bounds ??= {}
+    const key = stroke ? 'strokeBounds' : 'bounds'
+    let bounds = this.#bounds[key]
+    if (!bounds) {
+      // Calculate the curve bounds by passing a segment list for the
+      // curve to the getSegment*Bounds() functions. Without a path,
+      // there is no stroke, so the stroke bounds are the bounds.
+      const path = this._path
+      const getBounds =
+        path && stroke ? getSegmentStrokeBounds : getSegmentBounds
+      bounds = this.#bounds[key] = getBounds(
+        [this._segment1, this._segment2],
+        false,
+        path
+      )
+    }
+    return bounds.clone()
+  }
+
+  /**
+   * The bounding rectangle of the curve including handles.
+   */
+  get handleBounds(): Rectangle {
+    // Unlike getSegmentHandleBounds(), only include the curve's own handles,
+    // not the outer handles of its two segments.
+    const v = this.getValues()
+    const x1 = Math.min(v[0], v[2], v[4], v[6])
+    const y1 = Math.min(v[1], v[3], v[5], v[7])
+    const x2 = Math.max(v[0], v[2], v[4], v[6])
+    const y2 = Math.max(v[1], v[3], v[5], v[7])
+    return new Rectangle(x1, y1, x2 - x1, y2 - y1)
+  }
+
+  // NOTE: Curve#isStraight() and #isLinear() are documented further down.
+  declare static isStraight: (v: number[]) => boolean
+  declare static isLinear: (v: number[]) => boolean
+
+  /**
+   * {@grouptitle Curve Tests}
+   *
+   * Checks if this curve has any curve handles set. Handles of which both
+   * coordinates are 0 within a tolerance of 1e-12 count as not set, see
+   * {@link Point#isZero()}.
+   *
+   * @return {@true if the curve has handles set}
+   * @see Curve#handle1
+   * @see Curve#handle2
+   * @see Segment#hasHandles()
+   * @see Path#hasHandles()
+   */
+  hasHandles(): boolean {
+    return (
+      !this._segment1._handleOut.isZero() ||
+      !this._segment2._handleIn.isZero()
     )
   }
 
-  // NOTE: Curve#isLinear() is documented above.
-  static isLinear(v: number[]): boolean {
-    const x1 = v[0]
-    const y1 = v[1]
-    const x2 = v[6]
-    const y2 = v[7]
-    return isLinearCurve(
-      x1, y1,
-      v[2] - x1, v[3] - y1,
-      v[4] - x2, v[5] - y2,
-      x2, y2
+  /**
+   * Checks if this curve has any length.
+   *
+   * @param [epsilon=0] the epsilon against which to compare the
+   *     curve's length
+   * @return {@true if the curve is longer than the given epsilon}
+   */
+  hasLength(epsilon?: number): boolean {
+    return (
+      (!this.point1.equals(this.point2) || this.hasHandles()) &&
+      this.length > (epsilon || 0)
     )
+  }
+
+  /**
+   * Checks if the the two curves describe straight lines that are
+   * collinear, meaning they run in parallel.
+   *
+   * @param curve the other curve to check against
+   * @return {@true if the two lines are collinear}
+   */
+  isCollinear(curve: Curve): boolean {
+    return (
+      curve &&
+      this.isStraight() &&
+      curve.isStraight() &&
+      this.line.isCollinear(curve.line)
+    )
+  }
+
+  /**
+   * Checks if the curve is a straight horizontal line.
+   *
+   * @return {@true if the line is horizontal}
+   */
+  isHorizontal(): boolean {
+    return (
+      this.isStraight() &&
+      Math.abs(this.getTangentAtTime(0.5).y) < TRIGONOMETRIC_EPSILON
+    )
+  }
+
+  /**
+   * Checks if the curve is a straight vertical line.
+   *
+   * @return {@true if the line is vertical}
+   */
+  isVertical(): boolean {
+    return (
+      this.isStraight() &&
+      Math.abs(this.getTangentAtTime(0.5).x) < TRIGONOMETRIC_EPSILON
+    )
+  }
+
+  /**
+   * {@grouptitle Positions on Curves}
+   *
+   * Calculates the curve location at the specified offset on the curve, or
+   * `null` if the offset exceeds the length of the curve.
+   *
+   * @param offset the offset on the curve
+   * @return the curve location at the specified the offset
+   */
+  getLocationAt(offset: number): CurveLocation {
+    return this.getLocationAtTime(this.getTimeAt(offset))
+  }
+
+  /**
+   * Calculates the curve location at the specified curve-time parameter on
+   * the curve, or `null` if the parameter lies outside of `0..1`.
+   *
+   * @param time the curve-time parameter on the curve
+   * @return the curve location at the specified the location
+   */
+  getLocationAtTime(time: number): CurveLocation {
+    return time != null && time >= 0 && time <= 1
+      ? new CurveLocation(this, time)
+      : null
+  }
+
+  /**
+   * Calculates the curve-time parameter of the specified offset on the path,
+   * relative to the provided start parameter. If offset is a negative value,
+   * the parameter is searched to the left of the start parameter. If no start
+   * parameter is provided, a default of `0` for positive values of `offset`
+   * and `1` for negative values of `offset`.
+   *
+   * @param offset the offset at which to find the curve-time, in
+   *     curve length units
+   * @param [start] the curve-time in relation to which the offset is
+   *     determined
+   * @return the curve-time parameter at the specified location, or
+   *     `null` if the offset exceeds the length of the curve
+   */
+  getTimeAt(offset: number, start?: number): number {
+    return Curve.getTimeAt(this.getValues(), offset, start)
+  }
+
+  /**
+   * Calculates the curve-time parameters where the curve is tangential to
+   * provided tangent. Note that tangents at the start or end are included.
+   *
+   * @param tangent the tangent to which the curve must be tangential
+   * @return at most two curve-time parameters, where the curve is
+   * tangential to the given tangent
+   */
+  getTimesWithTangent(tangent: PointLike | number, y?: number): number[] {
+    const vector = Point.from(tangent, y)
+    return vector.isZero()
+      ? []
+      : Curve.getTimesWithTangent(this.getValues(), vector)
+  }
+
+  /**
+   * Calculates the curve offset at the specified curve-time parameter on
+   * the curve.
+   *
+   * @param time the curve-time parameter on the curve
+   * @return the curve offset at the specified the location
+   */
+  getOffsetAtTime(time: number): number {
+    return this.getPartLength(0, time)
+  }
+
+  /**
+   * Returns the curve location of the specified point if it lies on the
+   * curve, `null` otherwise.
+   *
+   * @param point the point on the curve
+   * @return the curve location of the specified point
+   */
+  getLocationOf(point: PointLike | number, y?: number): CurveLocation | null {
+    return this.getLocationAtTime(this.getTimeOf(point, y))
+  }
+
+  /**
+   * Returns the length of the path from its beginning up to up to the
+   * specified point if it lies on the path, `null` otherwise.
+   *
+   * @param point the point on the path
+   * @return the length of the path up to the specified point
+   */
+  getOffsetOf(point: PointLike | number, y?: number): number | null {
+    const location = this.getLocationOf(point, y)
+    return location?.offset ?? null
+  }
+
+  /**
+   * Returns the curve-time parameter of the specified point if it lies on the
+   * curve, `null` otherwise.
+   * Note that if there is more than one possible solution in a
+   * self-intersecting curve, the first found result is returned.
+   *
+   * @param point the point on the curve
+   * @return the curve-time parameter of the specified point
+   */
+  getTimeOf(point: PointLike | number, y?: number): number | null {
+    return Curve.getTimeOf(this.getValues(), Point.from(point, y))
+  }
+
+  /**
+   * Returns the nearest location on the curve to the specified point.
+   *
+   * @param point the point for which we search the nearest location
+   * @return the location on the curve that's the closest to
+   * the specified point
+   */
+  getNearestLocation(point: PointLike | number, y?: number): CurveLocation {
+    const target = Point.from(point, y)
+    const values = this.getValues()
+    const t = Curve.getNearestTime(values, target)
+    const pt = Curve.getPoint(values, t)
+    return new CurveLocation(this, t, pt, null, target.getDistance(pt))
+  }
+
+  /**
+   * Returns the nearest point on the curve to the specified point.
+   *
+   * @param point the point for which we search the nearest point
+   * @return the point on the curve that's the closest to the
+   * specified point
+   */
+  getNearestPoint(point: PointLike | number, y?: number): Point {
+    const location = this.getNearestLocation(point, y)
+    return location?.point ?? null
   }
 
   static classify(v: number[]): { type: string; roots: number[] } {
@@ -1921,9 +1829,64 @@ export class Curve extends Base {
     return locations
   }
 
+  /**
+   * Returns all intersections between two {@link Curve} objects as an
+   * array of {@link CurveLocation} objects.
+   *
+   * @param curve the other curve to find the intersections with
+   *     (if the curve itself or `null` is passed, the self intersection
+   *     of the curve is returned, if it exists)
+   * @return the locations of all intersections between
+   *     the curves
+   */
+  getIntersections(curve?: Curve): CurveLocation[] {
+    const v1 = this.getValues()
+    const v2 = curve && curve !== this && curve.getValues()
+    return v2
+      ? getCurveIntersections(v1, v2, this, curve, [])
+      : getSelfIntersection(v1, this, [])
+  }
+
   static {
-    // Inject the evaluators that take an offset, getPointAt() …, and a
-    // curve-time, getPointAtTime() …:
+    for (const [name, test] of Object.entries({ isStraight, isLinear })) {
+      // Produce the instance version that is called on curve objects, and the
+      // static version that handles a curve values array, both passing the
+      // coordinates without creating points, as these are called a lot:
+      inject(this.prototype, {
+        [name]() {
+          const p1 = this._segment1._point
+          const h1 = this._segment1._handleOut
+          const h2 = this._segment2._handleIn
+          const p2 = this._segment2._point
+          return test(
+            p1._x, p1._y,
+            h1._x, h1._y,
+            h2._x, h2._y,
+            p2._x, p2._y
+          )
+        }
+      })
+      inject(this, {
+        [name](v: number[]) {
+          const x1 = v[0]
+          const y1 = v[1]
+          const x2 = v[6]
+          const y2 = v[7]
+          return test(
+            x1, y1,
+            v[2] - x1, v[3] - y1,
+            v[4] - x2, v[5] - y2,
+            x2, y2
+          )
+        }
+      })
+    }
+
+    // NOTE: (For easier searching): This loop produces:
+    // getPointAt, getTangentAt, getNormalAt, getWeightedTangentAt,
+    // getWeightedNormalAt, getCurvatureAt, getPointAtTime,
+    // getTangentAtTime, getNormalAtTime, getWeightedTangentAtTime,
+    // getWeightedNormalAtTime, getCurvatureAtTime
     for (const key of curveEvaluations) {
       const name = `get${capitalize(key)}`
       inject(this.prototype, {
@@ -1941,6 +1904,25 @@ export class Curve extends Base {
 
 // The members defined at runtime rather than in the class body:
 export interface Curve {
+  /**
+   * Checks if this curve appears as a straight line. This can mean that
+   * it has no handles defined, or that the handles run collinear with the
+   * line that connects the curve's start and end point, not falling
+   * outside of the line.
+   *
+   * @return {@true if the curve is straight}
+   */
+  isStraight(): boolean
+
+  /**
+   * Checks if this curve is parametrically linear, meaning that it is
+   * straight and its handles are positioned at 1/3 and 2/3 of the total
+   * length of the curve.
+   *
+   * @return {@true if the curve is parametrically linear}
+   */
+  isLinear(): boolean
+
   /**
    * Calculates the point on the curve at the given location.
    *
@@ -2056,10 +2038,9 @@ export interface Curve {
   getCurvatureAtTime(time: number): number
 }
 
-// The tests behind Curve#isStraight() and Curve#isLinear() and their
-// statics, which take the coordinates without creating points, as these are
-// called a lot:
-function isStraightCurve(
+// The tests for Curve#isStraight() and #isLinear(), both as instance and
+// static methods:
+function isStraight(
   x1: number, y1: number,
   h1x: number, h1y: number,
   h2x: number, h2y: number,
@@ -2104,7 +2085,7 @@ function isStraightCurve(
   return false
 }
 
-function isLinearCurve(
+function isLinear(
   x1: number, y1: number,
   h1x: number, h1y: number,
   h2x: number, h2y: number,

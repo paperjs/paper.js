@@ -195,7 +195,7 @@ export class Tween extends Emitter {
     this.duration = duration
     const state = from ?? to
     this.#keys = state ? Object.keys(state) : []
-    this.#parsedKeys = parseKeys(this.#keys)
+    this.#parsedKeys = this.#parseKeys(this.#keys)
     this.#from = state && this.#getState(from)
     this.#to = state && this.#getState(to)
     if (start !== false) {
@@ -326,7 +326,7 @@ export class Tween extends Emitter {
       const current = this.#getProperty(path)
       let value
       if (state) {
-        const resolved = resolveValue(current, state[key])
+        const resolved = this.#resolveValue(current, state[key])
         // Temporarily set the resolved value, so we can retrieve the
         // coerced value from paper's internal magic.
         this.#setProperty(path, resolved)
@@ -342,6 +342,63 @@ export class Tween extends Emitter {
       result[key] = value
     }
     return result
+  }
+
+  #resolveValue(current: any, value: any) {
+    if (value) {
+      if (Array.isArray(value) && value.length === 2) {
+        const operator = value[0]
+        return operator?.match?.(/^[+\-*/]=/)
+          ? this.#calculate(current, operator[0], value[1])
+          : value
+      } else if (typeof value === 'string') {
+        const match = value.match(/^[+\-*/]=(.*)/)
+        if (match) {
+          const parsed = JSON.parse(
+            match[1].replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2": ')
+          )
+          return this.#calculate(current, value[0], parsed)
+        }
+      }
+    }
+    return value
+  }
+
+  #calculate(left: any, operator: string, right: any) {
+    // Use the math functions of objects that have them (e.g.: Point,
+    // Color), and the operator itself for numbers.
+    const name = {
+      '+': 'add',
+      '-': 'subtract',
+      '*': 'multiply',
+      '/': 'divide'
+    }[operator]
+    if (left?.[name]) {
+      return left[name](right)
+    }
+    switch (operator) {
+      case '+':
+        return left + right
+      case '-':
+        return left - right
+      case '*':
+        return left * right
+      case '/':
+        return left / right
+    }
+  }
+
+  #parseKeys(keys: string[]): Record<string, string[]> {
+    const parsed = {}
+    for (const key of keys) {
+      const path = key
+        // Convert from JS property access notation to JSON pointer:
+        .replace(/\.([^.]*)/g, '/$1')
+        // Expand array property access notation ([])
+        .replace(/\[['"]?([^'"\]]*)['"]?\]/g, '/$1')
+      parsed[key] = path.split('/')
+    }
+    return parsed
   }
 
   #getProperty(path: string[], offset = 0) {
@@ -366,7 +423,7 @@ export class Tween extends Emitter {
   }
 }
 
-// The members defined at runtime rather than in the class body:
+// The event handlers:
 export interface Tween {
   /**
    * {@grouptitle Event Handlers}
@@ -403,61 +460,4 @@ export interface Tween {
    * });
    */
   onUpdate: ((event: { progress: number; factor: number }) => void) | null
-}
-
-function parseKeys(keys: string[]): Record<string, string[]> {
-  const parsed = {}
-  for (const key of keys) {
-    const path = key
-      // Convert from JS property access notation to JSON pointer:
-      .replace(/\.([^.]*)/g, '/$1')
-      // Expand array property access notation ([])
-      .replace(/\[['"]?([^'"\]]*)['"]?\]/g, '/$1')
-    parsed[key] = path.split('/')
-  }
-  return parsed
-}
-
-function resolveValue(current: any, value: any) {
-  if (value) {
-    if (Array.isArray(value) && value.length === 2) {
-      const operator = value[0]
-      return operator?.match?.(/^[+\-*/]=/)
-        ? calculate(current, operator[0], value[1])
-        : value
-    } else if (typeof value === 'string') {
-      const match = value.match(/^[+\-*/]=(.*)/)
-      if (match) {
-        const parsed = JSON.parse(
-          match[1].replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2": ')
-        )
-        return calculate(current, value[0], parsed)
-      }
-    }
-  }
-  return value
-}
-
-function calculate(left: any, operator: string, right: any) {
-  // Use the math functions of objects that have them (e.g.: Point,
-  // Color), and the operator itself for numbers.
-  const name = {
-    '+': 'add',
-    '-': 'subtract',
-    '*': 'multiply',
-    '/': 'divide'
-  }[operator]
-  if (left?.[name]) {
-    return left[name](right)
-  }
-  switch (operator) {
-    case '+':
-      return left + right
-    case '-':
-      return left - right
-    case '*':
-      return left * right
-    case '/':
-      return left / right
-  }
 }

@@ -38,13 +38,14 @@ export function findItemBoundsCollisions(
   items2?: { bounds: Rectangle }[],
   tolerance?: number
 ): number[][] {
-  const getBounds = (items: { bounds: Rectangle }[]): Bounds[] =>
-    items.map(({ bounds }) => [
-      bounds.left,
-      bounds.top,
-      bounds.right,
-      bounds.bottom
-    ])
+  function getBounds(items: { bounds: Rectangle }[]): Bounds[] {
+    const bounds = new Array(items.length)
+    for (let i = 0; i < items.length; i++) {
+      const rect = items[i].bounds
+      bounds[i] = [rect.left, rect.top, rect.right, rect.bottom]
+    }
+    return bounds
+  }
 
   const bounds1 = getBounds(items1)
   const bounds2 =
@@ -78,14 +79,20 @@ export function findCurveBoundsCollisions(
   curves2?: number[][],
   tolerance?: number
 ): number[][] {
-  const { min, max } = Math
-  const getBounds = (curves: number[][]): Bounds[] =>
-    curves.map(v => [
-      min(v[0], v[2], v[4], v[6]),
-      min(v[1], v[3], v[5], v[7]),
-      max(v[0], v[2], v[4], v[6]),
-      max(v[1], v[3], v[5], v[7])
-    ])
+  function getBounds(curves: number[][]): Bounds[] {
+    const { min, max } = Math
+    const bounds = new Array(curves.length)
+    for (let i = 0; i < curves.length; i++) {
+      const v = curves[i]
+      bounds[i] = [
+        min(v[0], v[2], v[4], v[6]),
+        min(v[1], v[3], v[5], v[7]),
+        max(v[0], v[2], v[4], v[6]),
+        max(v[1], v[3], v[5], v[7])
+      ]
+    }
+    return bounds
+  }
 
   const bounds1 = getBounds(curves1)
   const bounds2 =
@@ -164,7 +171,10 @@ export function findBoundsCollisions(
   const sec1 = sec0 + 2
   // Create array with all indices sorted by lower boundary on primary
   // axis.
-  const allIndicesByPri0 = Array.from({ length: lengthAll }, (_, i) => i)
+  const allIndicesByPri0 = new Array(lengthAll)
+  for (let i = 0; i < lengthAll; i++) {
+    allIndicesByPri0[i] = i
+  }
   allIndicesByPri0.sort((i1, i2) => allBounds[i1][pri0] - allBounds[i2][pri0])
   // Sweep along primary axis. Indices of active bounds are kept in an
   // array sorted by higher boundary on primary axis.

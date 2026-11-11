@@ -40,6 +40,7 @@ export class CanvasView extends View {
    */
   constructor(project: Project, size: SizeLike)
   constructor(project: Project, canvas: HTMLCanvasElement | SizeLike) {
+    // Handle canvas argument
     let element: HTMLCanvasElement
     if (canvas instanceof getWindow().HTMLCanvasElement) {
       element = canvas
@@ -55,8 +56,6 @@ export class CanvasView extends View {
     }
     // Save context right away, and restore in #remove(). Also restore() and
     // save() again in _setElementSize() to prevent accumulation of scaling.
-    // View's constructor takes the context and the pixel ratio from the
-    // element, as it sets its size through _setElementSize():
     element.getContext('2d').save()
     super(project, element)
     // We can't be sure the canvas is clear

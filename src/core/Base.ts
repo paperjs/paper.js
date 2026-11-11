@@ -1,4 +1,3 @@
-import { exportJSON, serialize } from '../internal.ts'
 /*
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
@@ -10,6 +9,8 @@ import { exportJSON, serialize } from '../internal.ts'
  *
  * All rights reserved.
  */
+
+import { exportJSON, serialize } from '../internal.ts'
 
 /**
  * @private

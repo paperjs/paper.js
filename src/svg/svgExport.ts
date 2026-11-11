@@ -243,12 +243,12 @@ function exportPath(item: Path, options: Options): SVGElement {
 }
 
 function exportShape(item: Shape): SVGElement {
-  let { type } = item
-  let radius = item.radius as any
+  let type = item._type
+  let radius: any = item._radius
   const attrs = getTransform(item._matrix, true, type !== 'rectangle')
   if (type === 'rectangle') {
     type = 'rect' // SVG
-    const { width, height } = item.size
+    const { width, height } = item._size
     attrs.x -= width / 2
     attrs.y -= height / 2
     attrs.width = width
@@ -391,22 +391,21 @@ function exportGradient(color: Color, options: Options): string {
       formatter
     )
     const stops = gradient._stops
-    const count = stops.length
-    for (const [index, stop] of stops.entries()) {
-      const { _color: stopColor, _offset: offset } = stop
+    for (let i = 0, l = stops.length; i < l; i++) {
+      const { _color: stopColor, _offset: offset } = stops[i]
       const { alpha } = stopColor
-      const stopAttrs: Attributes = {
-        offset: offset == null ? index / (count - 1) : offset
+      attrs = {
+        offset: offset == null ? i / (l - 1) : offset
       }
       if (stopColor) {
-        stopAttrs['stop-color'] = stopColor.toCSS(true)
+        attrs['stop-color'] = stopColor.toCSS(true)
       }
       // See applyStyle for an explanation of why there are separated
       // opacity / color attributes.
       if (alpha < 1) {
-        stopAttrs['stop-opacity'] = alpha
+        attrs['stop-opacity'] = alpha
       }
-      gradientNode.appendChild(createSvgElement('stop', stopAttrs, formatter))
+      gradientNode.appendChild(createSvgElement('stop', attrs, formatter))
     }
     setDefinition(color, gradientNode, 'color', options)
   }
@@ -924,8 +923,8 @@ function exportRoot(
   bounds: any,
   options: Options
 ): SVGElement | string {
-  const values = options.matrix || bounds === 'view' && view._matrix
-  const matrix = values ? new Matrix(values) : null
+  const mx = options.matrix || bounds === 'view' && view._matrix
+  const matrix = mx ? new Matrix(mx) : null
   const rect =
     bounds === 'view'
       ? new Rectangle([0, 0], view.viewSize)
@@ -965,7 +964,7 @@ export function exportItemSVG(
 ): SVGElement | string {
   options = setOptions(options)
   const { bounds } = options
-  return bounds ?? options.matrix
+  return bounds || options.matrix
     ? exportRoot([item], item.view, bounds, options)
     : exportDefinitions(exportSVG(item, options, true), options)
 }

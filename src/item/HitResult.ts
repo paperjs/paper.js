@@ -96,7 +96,7 @@ export class HitResult extends Base {
     // Only read the pixel when asked for it:
     return this.type === 'pixel'
       ? (this.item as Raster).getPixel(this.offset)
-      : undefined
+      : null
   }
 
   /**

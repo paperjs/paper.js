@@ -48,8 +48,6 @@ export class AreaText extends TextItem {
   declare _gutter: number
   declare _inset: number
   declare _verticalAlign: string
-  // The version of the layer's text wraps that the layout follows, see
-  // #_getLayout():
   _textWrapVersion: number
 
   /**
@@ -98,7 +96,6 @@ export class AreaText extends TextItem {
 
   _initializeContent(project: Project) {
     super._initializeContent(project)
-    // The text path, see TextItem#textPath:
     this._children = []
   }
 
@@ -608,7 +605,7 @@ export class AreaText extends TextItem {
     const { style } = paragraph
     const { direction } = style
     const indented = this._indent(style, isFirst, room[0], room[1])
-    const words = /[^\s­]*­|\S+\s*|\s+/g
+    const words = /[^\s\u00ad]*\u00ad|\S+\s*|\s+/g
     const text = content.slice(start, paragraph.end)
     const ends = []
     let match
@@ -621,7 +618,7 @@ export class AreaText extends TextItem {
         start + content.slice(start, end).replace(/\s+$/, '').length,
         direction
       )
-      if (content[end - 1] === '­') {
+      if (content[end - 1] === '\u00ad') {
         const last = line.pieces[line.pieces.length - 1]
         const width = (
           this.view.getTextWidth(last.font, ['-'], last.tracking, direction) *

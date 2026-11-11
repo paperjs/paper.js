@@ -196,6 +196,17 @@ describe('SvgExport', () => {
     equals(node.firstChild.firstChild.nodeName.toLowerCase(), 'path')
   })
 
+  test('Item#exportSVG() with matrix and bounds set to false', () => {
+    const path = Path.rectangle([10, 20], [30, 40])
+    const node = path.exportSVG({
+      bounds: false,
+      matrix: new Matrix().scale(2, [0, 0])
+    })
+    equals(node.nodeName.toLowerCase(), 'svg')
+    equals(node.hasAttribute('viewBox'), false)
+    equals(node.firstChild.getAttribute('transform'), 'scale(2,2)')
+  })
+
   test('Export SVG group with mixed children styles (#1732)', () => {
     const group = new Group([
       Path.rectangle({

@@ -33,14 +33,11 @@ import type { PointLike } from '../basic/Point.ts'
 import type { SizeLike } from '../basic/Size.ts'
 import type { RectangleLike } from '../basic/Rectangle.ts'
 import type { ColorLike } from '../style/Color.ts'
-import type { BoundsOptions } from './Item.ts'
 import type { Project } from './Project.ts'
 
 type Handler = (this: Raster, ...args: any[]) => any
 type Image = HTMLImageElement | HTMLCanvasElement
 
-// The context that #getAverageColor() samples in, reused for speed. Memory
-// consumption is low since it's only 32 x 32 pixels:
 let sampleContext: CanvasRenderingContext2D = null
 
 /**
@@ -48,8 +45,6 @@ let sampleContext: CanvasRenderingContext2D = null
  */
 export class Raster extends Item {
   declare _smoothing: string
-  // Not private, as hosted shells are created without the constructor and
-  // load these fields, see Item#_loadContent():
   _size: Size
   _loaded: boolean
   _image: HTMLImageElement
@@ -185,7 +180,8 @@ export class Raster extends Item {
   }
 
   copyContent(source: this) {
-    const { _image: image, _canvas: canvas } = source
+    const image = source._image
+    const canvas = source._canvas
     if (image) {
       this._setImage(image)
     } else if (canvas) {
@@ -336,7 +332,7 @@ export class Raster extends Item {
     // don't create a canvas for it:
     if (props?.source && props.size) {
       this._size = new Size(props.size)
-      return super.set(props, { size: true, ...exclude })
+      exclude = { size: true, ...exclude }
     }
     return super.set(props, exclude)
   }
@@ -346,22 +342,21 @@ export class Raster extends Item {
    * used by #image, but also in other places where underlying canvases are
    * replaced, resized, etc.
    */
-  _setImage(image: Image) {
+  _setImage(image: any) {
     if (this._canvas) {
       releaseCanvas(this._canvas)
     }
-    const img = image as HTMLImageElement
     // Due to similarities, we can handle both canvas and image types here.
-    if (image && (image as HTMLCanvasElement).getContext) {
+    if (image && image.getContext) {
       // A Canvas object
       this._image = null
-      this._canvas = image as HTMLCanvasElement
+      this._canvas = image
       this._loaded = true
     } else {
       // A Image object
-      this._image = img
+      this._image = image
       this._canvas = null
-      this._loaded = !!(img?.src && img.complete)
+      this._loaded = !!(image && image.src && image.complete)
     }
     // Both canvas and image have width / height attributes. Due to IE,
     // naturalWidth / Height needs to be checked for a swell, because it
@@ -374,8 +369,8 @@ export class Raster extends Item {
       image && !this._loaded
         ? this._size ?? new Size()
         : new Size(
-            image ? img.naturalWidth || image.width : 0,
-            image ? img.naturalHeight || image.height : 0
+            image ? image.naturalWidth || image.width : 0,
+            image ? image.naturalHeight || image.height : 0
           )
     this._context = null
     this._changed(Change.GEOMETRY | Change.PIXELS)
@@ -461,7 +456,7 @@ export class Raster extends Item {
    */
   get source(): string {
     const image = this._image
-    return image && 'src' in image && image.src || this.toDataURL()
+    return image && image.src || this.toDataURL()
   }
 
   set source(source: string) {
@@ -554,13 +549,8 @@ export class Raster extends Item {
    *
    * @return the sub image as a Canvas object
    */
-  getSubCanvas(
-    rect: RectangleLike | PointLike | number,
-    y?: PointLike | SizeLike | number,
-    width?: number,
-    height?: number
-  ): HTMLCanvasElement {
-    const area = Rectangle.from(rect, y, width, height)
+  getSubCanvas(rect: RectangleLike): HTMLCanvasElement {
+    const area = Rectangle.from(rect)
     const ctx = getContext(area.size)
     ctx.drawImage(
       this.canvas,
@@ -584,13 +574,8 @@ export class Raster extends Item {
    *
    * @return the sub raster as a newly created raster item
    */
-  getSubRaster(
-    rect: RectangleLike | PointLike | number,
-    y?: PointLike | SizeLike | number,
-    width?: number,
-    height?: number
-  ): Raster {
-    const area = Rectangle.from(rect, y, width, height)
+  getSubRaster(rect: RectangleLike): Raster {
+    const area = Rectangle.from(rect)
     const raster = new Raster(Item.NO_INSERT)
     raster._setImage(this.getSubCanvas(area))
     raster.translate(area.center.subtract(this.size.divide(2)))
@@ -671,6 +656,8 @@ export class Raster extends Item {
     const sampleSize = 32
     const width = Math.min(bounds.width, sampleSize)
     const height = Math.min(bounds.height, sampleSize)
+    // Reuse the same sample context for speed. Memory consumption is low
+    // since it's only 32 x 32 pixels.
     let ctx = sampleContext
     if (!ctx) {
       ctx = sampleContext = getContext(new Size(sampleSize))
@@ -786,7 +773,7 @@ export class Raster extends Item {
   /**
    * Clears the image, if it is backed by a canvas.
    */
-  // @override, clearing the pixels instead of the children
+  // @override
   clear(): undefined {
     const size = this._size
     this._getContext(true).clearRect(0, 0, size.width + 1, size.height + 1)
@@ -797,9 +784,9 @@ export class Raster extends Item {
    * {@grouptitle Image Data}
    * @param size
    */
-  createImageData(size: SizeLike | number, height?: number): ImageData {
-    const { width, height: imageHeight } = Size.from(size, height)
-    return this.context.createImageData(width, imageHeight)
+  createImageData(size: SizeLike): ImageData {
+    const { width, height } = Size.from(size)
+    return this.context.createImageData(width, height)
   }
 
   /**
@@ -810,13 +797,8 @@ export class Raster extends Item {
    *     coordinates
    * @return the image data of the specified area
    */
-  getImageData(
-    rect?: RectangleLike | PointLike | number,
-    y?: PointLike | SizeLike | number,
-    width?: number,
-    height?: number
-  ): ImageData {
-    let area = Rectangle.from(rect, y, width, height)
+  getImageData(rect?: RectangleLike): ImageData {
+    let area = Rectangle.from(rect)
     if (area.isEmpty()) {
       area = new Rectangle(this._size)
     }
@@ -847,10 +829,10 @@ export class Raster extends Item {
     this._getContext(true).putImageData(data, 0, 0)
   }
 
-  _getBounds(matrix: Matrix, _options?: BoundsOptions): Rectangle {
+  _getBounds(matrix: Matrix /* , options */): Rectangle {
     const { width, height } = this._size
     const rect = new Rectangle(-width / 2, -height / 2, width, height)
-    return matrix?._transformBounds(rect) ?? rect
+    return matrix ? matrix._transformBounds(rect) : rect
   }
 
   _hitTestSelf(point: Point): HitResult | undefined {

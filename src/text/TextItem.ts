@@ -76,13 +76,9 @@ export class TextItem extends Item {
   // The internals of text items aren't private, as hosted shells are created
   // without the constructor, see Item#_loadContent().
   declare _orientation: string
-  // The story that the text item shows, alone or linked with others:
   _story: TextStory
-  // The layout of the text, see #_getLayout(), and the metrics of its fonts,
-  // see #_getPiece(), kept until the text changes:
   _layout: TextLine[]
   _fontMetrics: Record<string, { ascent: number; descent: number }>
-  // Where the visible part of the story ends, see #_layOut():
   _visibleEnd: number
 
   _initializeContent(project: Project) {
@@ -302,10 +298,11 @@ export class TextItem extends Item {
    * @param which `'both'`, `'before'` or `'after'`
    * @return {@true if the text item was unlinked}
    */
-  unlink(which: 'both' | 'before' | 'after' = 'both'): boolean {
+  unlink(which?: 'both' | 'before' | 'after'): boolean {
     const story = this._story
     const items = story._items
     const index = items.indexOf(this)
+    which ||= 'both'
     if (
       items.length > 1 &&
       !(

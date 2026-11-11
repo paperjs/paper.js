@@ -10,7 +10,6 @@
  * All rights reserved.
  */
 
-// The paths of the factories of shaped paths, see Path.circle() and the others:
 import {
   Item,
   KAPPA,
@@ -37,21 +36,11 @@ const ellipseSegments = [
   [[0, -1], [-KAPPA, 0], [KAPPA, 0]]
 ]
 
-/**
- * Creates the path of {@link Path.line()}.
- *
- * @private
- */
 export function createLine(...args: any[]): Path {
   const { from, to, ...props } = getNamedArguments(args, ['from', 'to'])
   return createPath([new Segment(from), new Segment(to)], false, props)
 }
 
-/**
- * Creates the path of {@link Path.circle()}.
- *
- * @private
- */
 export function createCircle(...args: any[]): Path {
   const { center, radius, ...props } = getNamedArguments(args, [
     'center',
@@ -60,15 +49,10 @@ export function createCircle(...args: any[]): Path {
   return createEllipsePath(Point.from(center), Size.from(radius), props)
 }
 
-/**
- * Creates the path of {@link Path.rectangle()}.
- *
- * @private
- */
 export function createRectangle(arg0: any, arg1?: any): Path {
   // The named form, or a rectangle followed by the corner radius, or the
   // point and the size, or the two points that describe it:
-  const { radius, ...object } =
+  const { radius: corner, ...object } =
     arg1 === undefined
       ? isPlainObject(arg0)
         ? arg0
@@ -77,16 +61,23 @@ export function createRectangle(arg0: any, arg1?: any): Path {
         ? { rectangle: arg0, radius: arg1 }
         : { rectangle: new Rectangle(arg0, arg1) }
   const [rect, props] = readRectangle(object)
-  const size = radius && Size.from(radius)
+  const radius = corner && Size.from(corner)
   // From the top left, as SVG converts rectangles, so dashes match (#601):
   const tl = rect._getTopLeft(true)
   const tr = rect._getTopRight(true)
   const br = rect._getBottomRight(true)
   const bl = rect._getBottomLeft(true)
   let segments: Segment[]
-  if (size && !size.isZero()) {
+  if (!radius || radius.isZero()) {
+    segments = [
+      new Segment(tl),
+      new Segment(tr),
+      new Segment(br),
+      new Segment(bl)
+    ]
+  } else {
     const { width: rx, height: ry } = Size.min(
-      size,
+      radius,
       rect._getSize(true).divide(2)
     )
     const hx = rx * KAPPA
@@ -101,22 +92,10 @@ export function createRectangle(arg0: any, arg1?: any): Path {
       new Segment(bl.subtract(0, ry), [0, hy]),
       new Segment(tl.add(0, ry), null, [0, -hy])
     ]
-  } else {
-    segments = [
-      new Segment(tl),
-      new Segment(tr),
-      new Segment(br),
-      new Segment(bl)
-    ]
   }
   return createPath(segments, true, props)
 }
 
-/**
- * Creates the path of {@link Path.ellipse()}.
- *
- * @private
- */
 export function createEllipse(rectangle: any): Path {
   const object = isPlainObject(rectangle) ? rectangle : { rectangle }
   // Placed by its center and radius, or by the rectangle around it:
@@ -124,11 +103,6 @@ export function createEllipse(rectangle: any): Path {
   return createEllipsePath(center, radius, props)
 }
 
-/**
- * Creates the path of {@link Path.arc()}.
- *
- * @private
- */
 export function createArc(...args: any[]): Path {
   const { from, through, to, ...props } = getNamedArguments(args, [
     'from',
@@ -143,11 +117,6 @@ export function createArc(...args: any[]): Path {
   return createPath(arc._segments, false, props)
 }
 
-/**
- * Creates the path of {@link Path.regularPolygon()}.
- *
- * @private
- */
 export function createRegularPolygon(...args: any[]): Path {
   const { center, sides, radius, ...props } = getNamedArguments(args, [
     'center',
@@ -160,20 +129,15 @@ export function createRegularPolygon(...args: any[]): Path {
   // end of the top edge with an even number of sides, counterclockwise:
   const offset = sides % 2 ? 0 : -0.5
   const vector = new Point(0, -radius)
-  const segments = []
+  const segments = new Array(sides)
   for (let i = 0; i < sides; i++) {
-    segments.push(
-      new Segment(centerPoint.add(vector.rotate((i + offset) * step)))
+    segments[i] = new Segment(
+      centerPoint.add(vector.rotate((i + offset) * step))
     )
   }
   return createPath(segments, true, props)
 }
 
-/**
- * Creates the path of {@link Path.star()}.
- *
- * @private
- */
 export function createStar(...args: any[]): Path {
   const { center, points, radius1, radius2, ...props } = getNamedArguments(
     args,
@@ -183,21 +147,19 @@ export function createStar(...args: any[]): Path {
   const count = points * 2
   const step = 360 / count
   const vector = new Point(0, -1)
-  const segments = []
+  const segments = new Array(count)
   for (let i = 0; i < count; i++) {
-    segments.push(
-      new Segment(
-        centerPoint.add(
-          vector.rotate(step * i).multiply(i % 2 ? radius2 : radius1)
-        )
+    segments[i] = new Segment(
+      centerPoint.add(
+        vector.rotate(step * i).multiply(i % 2 ? radius2 : radius1)
       )
     )
   }
   return createPath(segments, true, props)
 }
 
-// Returns the arguments as an object by their names: the single plain object
-// of the named form, or the positional arguments:
+// Read the arguments by their names, from the single plain object of the
+// named form or by their positions:
 function getNamedArguments(args: any[], names: string[]): PathProps {
   return args.length === 1 && isPlainObject(args[0])
     ? args[0]

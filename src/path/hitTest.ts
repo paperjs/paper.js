@@ -104,14 +104,16 @@ export function hitTestPath(
     return strokePoint.subtract(pt).divide(padding).length <= 1
   }
 
-  const checkSegmentPoint = (seg: Segment, pt: Point, name: string) => {
+  function checkSegmentPoint(seg: Segment, pt: Point, name: string) {
     if (!options.selected || pt.selected) {
       const anchor = seg._point
-      const position = pt !== anchor ? pt.add(anchor) : pt
-      if (isCloseEnough(position.transform(strokeSpace), strokePadding)) {
+      if (pt !== anchor) {
+        pt = pt.add(anchor)
+      }
+      if (isCloseEnough(pt.transform(strokeSpace), strokePadding)) {
         const hit = new HitResult(name, path, {
           segment: seg,
-          point: position
+          point: pt
         })
         if (!hits) return hit
         hits.push(hit)
@@ -121,7 +123,7 @@ export function hitTestPath(
 
   function checkSegmentPoints(seg: Segment, ends?: boolean) {
     // Note, when checking for ends, we don't also check for handles,
-    // since path will happen afterwards in a separate loop, see below.
+    // since this will happen afterwards in a separate loop, see below.
     return (
       (
         (ends || options.segments) &&
@@ -171,8 +173,8 @@ export function hitTestPath(
       segment._index > 0 && segment._index < numSegments - 1
     )
     // Smooth segments are always joined round, as in addJoin() in
-    // getStrokeBounds(), and so are segments where the curves meet in
-    // the same direction, such as a line running into a curve, as the
+    // getSegmentStrokeBounds(), and so are segments where the curves meet
+    // in the same direction, such as a line running into a curve, as the
     // join adds nothing there:
     if (
       isJoin && (segment.isSmooth() || isFlatJoin(segment)) ||

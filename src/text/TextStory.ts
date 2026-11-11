@@ -29,8 +29,6 @@ export class TextStory extends Base {
   _runs: { length: number; style: Style }[]
   _paragraphs: Style[]
   _items: TextItem[]
-  // The letters for laying out, and the content they were found in, see
-  // #_getLetters():
   #letters: TextRange[]
   #lettersOf: string
 

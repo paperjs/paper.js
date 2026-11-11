@@ -204,8 +204,7 @@ export class Effect extends Base {
   }
 }
 
-// The registered effects by their types, with the effects of Paper.js, which
-// are registered at first use, see registerEffects():
+// The registered effects by their types:
 let effectsByType: Record<string, Effect> = null
 
 function getEffects(): Record<string, Effect> {
@@ -216,7 +215,7 @@ function getEffects(): Record<string, Effect> {
   return effectsByType
 }
 
-// Registers the effects of Paper.js, see Item#effects:
+// The effects of Paper.js, see Item#effects:
 function registerEffects() {
   // Offsets the paths, see PathItem#offset():
   new Effect({

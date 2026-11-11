@@ -10,7 +10,13 @@
  * All rights reserved.
  */
 
-import { Base, GradientStop, getUID, serialize } from '../internal.ts'
+import {
+  Base,
+  GradientStop,
+  getUID,
+  isPlainObject,
+  serialize
+} from '../internal.ts'
 import type { GradientStopLike } from './GradientStop.ts'
 import type { Color } from './Color.ts'
 
@@ -72,10 +78,7 @@ export type GradientLike =
  * };
  */
 export class Gradient extends Base {
-  // Read by the dictionary of serialize(), as gradients are exported through
-  // dictionary.add():
   _id: number
-  // Read by Color and the SVG import and export:
   _stops: GradientStop[]
   _radial: boolean
   // The gradient colors that use this gradient:
@@ -101,20 +104,25 @@ export class Gradient extends Base {
    * gradient accepts, as {@link Gradient.from()} does.
    *
    * @param gradient
-   * @param radial
    */
-  constructor(gradient: Exclude<GradientLike, Gradient>, radial?: boolean)
-  constructor(
-    stops?: Exclude<GradientLike, Gradient>,
-    radial?: boolean
-  ) {
+  constructor(gradient: Exclude<GradientLike, Gradient>)
+  constructor(stops?: any, radial?: boolean) {
     super()
+    // Use UID here since Gradients are exported through dictionary.add().
     this._id = getUID()
-    const object = Array.isArray(stops)
-      ? { stops, radial }
-      : { radial, ...stops }
-    this.stops = object.stops ?? ['white', 'black']
-    this.radial = !!object.radial
+    if (stops && isPlainObject(stops)) {
+      this.set(stops)
+      // Erase arguments since we used the passed object instead.
+      stops = radial = null
+    }
+    // As these values might already have been set in the set() call above,
+    // only initialize them if that hasn't happened yet.
+    if (this._stops == null) {
+      this.stops = stops || ['white', 'black']
+    }
+    if (this._radial == null) {
+      this.radial = radial
+    }
   }
 
   /**
@@ -211,7 +219,7 @@ export class Gradient extends Base {
   }
 
   set radial(radial: boolean) {
-    this._radial = radial
+    this._radial = !!radial
     this._changed()
   }
 
@@ -222,7 +230,7 @@ export class Gradient extends Base {
    * @return {@true if they are equal}
    */
   equals(gradient: Gradient): boolean {
-    return !!(
+    return (
       gradient === this || (
         gradient instanceof Gradient &&
         this._stops.length === gradient._stops.length &&

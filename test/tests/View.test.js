@@ -455,6 +455,20 @@ describe('View', () => {
     tool.remove()
   })
 
+  test('view.dispatchMouseEvent() and dispatchKeyEvent() with null options', () => {
+    const tool = new Tool()
+    const log = []
+    tool.onMouseDown = tool.onKeyDown = event => {
+      log.push(event.type)
+    }
+    paper.view.dispatchMouseEvent('mousedown', [10, 10], null)
+    paper.view.dispatchMouseEvent('mouseup', [10, 10], null)
+    paper.view.dispatchKeyEvent('keydown', 'a', null)
+    paper.view.dispatchKeyEvent('keyup', 'a', null)
+    equals(log, ['mousedown', 'keydown'])
+    tool.remove()
+  })
+
   test('view.dispatchKeyEvent() with the characters of special keys (#2346)', () => {
     const tool = new Tool()
     const log = []

@@ -25,7 +25,6 @@ import type { Project } from './Project.ts'
 // to its definition through Item#_symbol, which Item#_changed() notifies:
 export class ItemDefinition extends Base {
   declare _name: string
-  // Read by the dictionary of JSON and by Project:
   _id: number
   _item: Item
   project: Project
@@ -81,16 +80,18 @@ export class ItemDefinition extends Base {
 
   _setItem(item: Item) {
     // Make sure we're not stealing another definition's item
-    const ownItem = item._symbol ? item.clone() : item
+    if (item._symbol) {
+      item = item.clone()
+    }
     // Remove previous item's reference to this definition
     if (this._item) {
       this._item._symbol = null
     }
-    this._item = ownItem
+    this._item = item
     // Remove item from DOM, as it's embedded in the definition now.
-    ownItem.remove()
-    ownItem.selected = false
-    ownItem._symbol = this
+    item.remove()
+    item.selected = false
+    item._symbol = this
     this._changed(Change.GEOMETRY)
   }
 

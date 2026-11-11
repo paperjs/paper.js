@@ -225,4 +225,13 @@ describe('Item Cloning', () => {
 
     equals(() => group.clone().matrix.translation, new Point(300, 300))
   })
+
+  test('Clones of items keep the class of their data', () => {
+    const path = new Path({ data: [1, 2, 3] })
+    equals(() => Array.isArray(path.clone().data), true)
+    equals(path.clone().data, [1, 2, 3])
+    const item = new SymbolItem(new SymbolDefinition(Path.circle([0, 0], 5)))
+    item.data = ['a']
+    equals(() => Array.isArray(item.clone().data), true)
+  })
 })

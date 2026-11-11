@@ -44,8 +44,7 @@ const types = {
   pattern: ['pattern', 'matrix']
 }
 
-// Parsers of values for setters, by type and component, see the static block
-// of Color:
+// Parsers of values for setters, by type and property
 const componentParsers: Record<string, ((value: any) => any)[]> = {}
 
 // Cache and canvas context for color name lookup
@@ -54,7 +53,7 @@ const namedColors = {
   // having it pre-cached here:
   transparent: [0, 0, 0, 0]
 }
-let colorContext: CanvasRenderingContext2D
+let colorCtx: CanvasRenderingContext2D
 
 // The gradient points are in the coordinates of the item's parent. If the
 // item's content is transformed by a matrix, get them into its own
@@ -204,24 +203,24 @@ function fromCSS(string: string): [string, number[]] {
     if (!color) {
       // Use a canvas to draw with the given name, then retrieve RGB values and
       // build a cache for all the used colors.
-      if (!colorContext) {
-        colorContext = getContext(1, 1, {
+      if (!colorCtx) {
+        colorCtx = getContext(1, 1, {
           willReadFrequently: true
         })
-        if (colorContext) {
-          colorContext.globalCompositeOperation = 'copy'
+        if (colorCtx) {
+          colorCtx.globalCompositeOperation = 'copy'
         }
       }
-      if (colorContext) {
+      if (colorCtx) {
         // Set the current fillStyle to transparent, so that it will be
         // transparent instead of the previously set color in case the new
         // color can not be interpreted.
-        colorContext.fillStyle = 'rgba(0,0,0,0)'
+        colorCtx.fillStyle = 'rgba(0,0,0,0)'
         // Set the fillStyle of the context to the passed name and fill the
         // canvas with it, then retrieve the data for the drawn pixel:
-        colorContext.fillStyle = string
-        colorContext.fillRect(0, 0, 1, 1)
-        const { data } = colorContext.getImageData(0, 0, 1, 1)
+        colorCtx.fillStyle = string
+        colorCtx.fillRect(0, 0, 1, 1)
+        const { data } = colorCtx.getImageData(0, 0, 1, 1)
         color = namedColors[string] = [
           data[0] / 255,
           data[1] / 255,
@@ -248,9 +247,9 @@ const hsbIndices = [
   [0, 1, 2] // 5
 ]
 
-// Calling convention for converters: The components are passed as arguments,
-// and returned as an array. alpha is left out, because the conversion does
-// not change it.
+// Calling convention for converters: The components are passed as an
+// arguments list, and returned as an array. alpha is left out, because the
+// conversion does not change it.
 const converters: Record<string, (...components: any[]) => any[]> = {
   'rgb-hsb'(r, g, b) {
     const max = Math.max(r, g, b)
@@ -421,8 +420,6 @@ export class Color extends Base {
   #type: string
   #components: any[]
   #alpha: number
-  // The owner that the color notifies of changes, and the property of the
-  // owner that holds it, if it's to be set again on changes, see _changed():
   #owner: any
   #key: string
   // The cached style for drawing, which Style clears when disposing:
@@ -702,6 +699,7 @@ export class Color extends Base {
    * @return
    */
   set(...args: any[]): this {
+    // We are storing color internally as an array of components
     let [arg] = args
     // If first argument is an array, replace arguments with it.
     if (Array.isArray(arg)) {
@@ -724,7 +722,7 @@ export class Color extends Base {
         components = arg
         alpha = args[2]
       } else {
-        // For deserialization, shift out and process normally.
+        // Shift type out of the arguments, and process normally.
         args = args.slice(1)
         argType = typeof arg
       }
@@ -734,13 +732,20 @@ export class Color extends Base {
       values =
         argType === 'number'
           ? args
-          : argType === 'object' && arg.length != null
+          : // Do not use Array.isArray() to also support arguments
+            argType === 'object' && arg.length != null
             ? arg
             : null
       // The various branches below produce a values array if the values still
       // need parsing, and a components array if they are already parsed.
       if (values) {
-        type ??= values.length >= 3 ? 'rgb' : 'gray'
+        // type = values.length >= 4
+        //      ? 'cmyk'
+        //      : values.length >= 3
+        type ??=
+          values.length >= 3
+            ? 'rgb'
+            : 'gray'
         const { length } = types[type]
         alpha = values[length]
         if (values.length > length) {
@@ -788,25 +793,26 @@ export class Color extends Base {
                     : 'rgb'
           // Convert to array and parse in one loop, for efficiency. The
           // gradient parser reads the components, so set them first:
+          const properties = types[type]
           const parsers = componentParsers[type]
           this.#components = components = []
-          types[type].forEach((name: string, index: number) => {
-            let value = arg[name]
+          for (let i = 0, l = properties.length; i < l; i++) {
+            let value = arg[properties[i]]
             // Allow implicit definition of gradients through stops / radial
             // properties. Conversion happens here on the fly:
             if (
               value == null &&
-              index === 0 &&
+              !i &&
               type === 'gradient' &&
               'stops' in arg
             ) {
               value = { stops: arg.stops, radial: arg.radial }
             }
-            value = parsers[index].call(this, value)
+            value = parsers[i].call(this, value)
             if (value != null) {
-              components[index] = value
+              components[i] = value
             }
-          })
+          }
           alpha = arg.alpha
         }
       }
@@ -817,12 +823,13 @@ export class Color extends Base {
       // Produce a components array now, and parse values. Even if no values
       // are defined, parsers are still called to produce defaults.
       this.#components = components = []
-      componentParsers[this.#type].forEach((parser, index) => {
-        const value = parser.call(this, values?.[index])
+      const parsers = componentParsers[this.#type]
+      for (let i = 0, l = parsers.length; i < l; i++) {
+        const value = parsers[i].call(this, values?.[i])
         if (value != null) {
-          components[index] = value
+          components[i] = value
         }
-      })
+      }
     }
     this.#components = components
     this.#alpha = alpha
@@ -973,7 +980,7 @@ export class Color extends Base {
       isPlainObject(color) || Array.isArray(color) || typeof color === 'string'
         ? Color.from(color)
         : color
-    return !!(
+    return (
       other === this || (
         other instanceof Color &&
         this.#type === other.#type &&
@@ -997,16 +1004,19 @@ export class Color extends Base {
    * @return a string representation of the color
    */
   toString(): string {
-    const { instance } = Formatter
+    const properties = types[this.#type]
+    const parts = []
     // Gradients and patterns have objects among their components:
     const isObject = /^(gradient|pattern)$/.test(this.#type)
-    const parts = []
-    types[this.#type].forEach((name: string, index: number) => {
-      const value = this.#components[index]
+    const { instance } = Formatter
+    for (let i = 0, l = properties.length; i < l; i++) {
+      const value = this.#components[i]
       if (value != null) {
-        parts.push(`${name}: ${isObject ? value : instance.number(value)}`)
+        parts.push(
+          `${properties[i]}: ${isObject ? value : instance.number(value)}`
+        )
       }
-    })
+    }
     if (this.#alpha != null) {
       parts.push(`alpha: ${instance.number(this.#alpha)}`)
     }
@@ -1061,7 +1071,7 @@ export class Color extends Base {
   // drawn through a matrix without distorting them, so they draw such
   // gradients as circles.
   toCanvasStyle(
-    context: CanvasRenderingContext2D,
+    ctx: CanvasRenderingContext2D,
     matrix?: Matrix,
     strokeMatrix?: Matrix,
     isEllipse?: boolean
@@ -1073,7 +1083,7 @@ export class Color extends Base {
       const transform = getCanvasTransform(matrix, strokeMatrix)
       const placement = this.#components[1]
       return this.#components[0]._toCanvasStyle(
-        context,
+        ctx,
         transform?.appended(placement) ?? placement
       )
     }
@@ -1108,28 +1118,29 @@ export class Color extends Base {
         }
       }
       const start = highlight ?? origin
-      canvasGradient = context.createRadialGradient(
+      canvasGradient = ctx.createRadialGradient(
         start.x, start.y, 0,
         origin.x, origin.y, radius
       )
     } else {
-      canvasGradient = context.createLinearGradient(
+      canvasGradient = ctx.createLinearGradient(
         origin.x, origin.y,
         destination.x, destination.y
       )
     }
     const stops = gradient._stops
-    stops.forEach((stop, index) => {
+    for (let i = 0, l = stops.length; i < l; i++) {
+      const stop = stops[i]
       const offset = stop._offset
       // Use the defined offset, and fall back to automatic linear
       // calculation.
       // NOTE: that if _offset is 0 for the first entry, the fall-back will be
       // so too.
       canvasGradient.addColorStop(
-        offset == null ? index / (stops.length - 1) : offset,
+        offset == null ? i / (l - 1) : offset,
         stop._color.toCanvasStyle()
       )
-    })
+    }
     if (isCacheable) {
       this._canvasStyle = canvasGradient
     }
@@ -1182,9 +1193,6 @@ export class Color extends Base {
     return new Color(random(), random(), random())
   }
 
-  // Sets the owner of the color, which it notifies of changes, and the key of
-  // the property that holds it, cloning the color if it belongs to another
-  // owner already:
   static _setOwner(color: Color, owner: any, key?: string): Color {
     if (color) {
       // Clone color if owner changes:
@@ -1205,6 +1213,7 @@ export class Color extends Base {
     // color internally converts the color to the required type and then
     // returns its component.
     for (const [type, names] of Object.entries(types)) {
+      // Keep track of parser functions per type.
       componentParsers[type] = []
       names.forEach((name: string, index: number) => {
         // Both hue and saturation have overlapping properties between hsb and
@@ -1215,7 +1224,7 @@ export class Color extends Base {
         const parser = (componentParsers[type][index] =
           type === 'gradient'
             ? name === 'gradient'
-              ? // The gradient property of gradient colors:
+              ? // gradient property of gradient color:
                 function (this: Color, value: any) {
                   const current = this.#components[0]
                   const gradient = value == null ? null : Gradient.from(value)
@@ -1228,7 +1237,7 @@ export class Color extends Base {
               : name === 'aspect'
                 ? // The aspect of radial gradients, 1 for circles:
                   (value: any) => (value == null ? 1 : +value)
-                : // The point properties of gradient colors, as copies:
+                : // The point properties of gradient colors:
                   (value: any) =>
                     value == null && name === 'highlight'
                       ? null
@@ -1270,19 +1279,19 @@ export class Color extends Base {
       })
     }
 
-    // Produce the operators add, subtract, multiply and divide:
     for (const [name, operator] of Object.entries(operators)) {
       inject(this.prototype, {
         [name](color: ColorLike) {
           const other = Color.from(color)
           const type = this.#type
-          const components = other._convert(type)
-          this.#components.forEach((value: number, index: number) => {
-            components[index] = operator(value, components[index])
-          })
+          const components1 = this.#components
+          const components2 = other._convert(type)
+          for (let i = 0, l = components1.length; i < l; i++) {
+            components2[i] = operator(components1[i], components2[i])
+          }
           return new Color(
             type,
-            components,
+            components2,
             this.#alpha != null ? operator(this.#alpha, other.alpha) : null
           )
         }

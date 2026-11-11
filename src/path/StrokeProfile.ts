@@ -19,6 +19,8 @@ import {
 import type { Path } from './Path.ts'
 import type { StrokeProfileStopProps } from './StrokeProfileStop.ts'
 
+const tMin = CURVETIME_EPSILON
+const tMax = 1 - tMin
 // The values of the pen, with their defaults where no stop sets them:
 const defaults = { width: 1, aspect: 1, angle: 0 }
 
@@ -71,150 +73,6 @@ export class StrokeProfile {
       }
       return stop
     })
-    this.sort()
-  }
-
-  // Returns the index of the stop at the offset: the index of the segment
-  // before it plus the fraction of the arc length to the next segment.
-  // Offsets wrap around closed paths, and stay within open ones:
-  getIndexAt(offset: number): number {
-    const path = this._path
-    const { length } = path
-    const position = path._closed
-      ? length
-        ? (offset % length + length) % length
-        : 0
-      : Math.min(Math.max(offset, 0), length)
-    const location = path.getLocationAt(position)
-    if (location) {
-      const { time } = location
-      const curveLength = location.curve.length
-      return (
-        location.index + (
-          time < CURVETIME_EPSILON || !curveLength
-            ? 0
-            : time > 1 - CURVETIME_EPSILON
-              ? 1
-              : location.curveOffset / curveLength
-        )
-      )
-    }
-    return path.curves.length
-  }
-
-  getOffsetAt(index: number): number {
-    const { curves } = this._path
-    const i = Math.floor(index)
-    let offset = 0
-    for (let j = 0, l = Math.min(i, curves.length); j < l; j++) {
-      offset += curves[j].length
-    }
-    return i < curves.length
-      ? offset + (index - i) * curves[i].length
-      : offset
-  }
-
-  sort() {
-    this._stops.sort((a, b) => a._index - b._index)
-  }
-
-  // Keeps the stops that the callback returns true for, and lets go of the
-  // others, as setting Path#strokeProfile does:
-  filter(callback: (stop: StrokeProfileStop) => boolean) {
-    const path = this._path
-    const stops = this._stops.filter(callback)
-    this._release(stops)
-    this._stops = stops
-    if (!stops.length) {
-      path._strokeProfile = null
-    }
-    path._changed(Change.STROKE)
-  }
-
-  // Moves the stops after segments were inserted at the index, keeping the
-  // ones on the curve that the segments divide at the same fraction of its
-  // length, see Path#_add():
-  insert(index: number, amount: number) {
-    const path = this._path
-    const count = path._segments.length - amount
-    // The curve that the segments divide, if any:
-    const divided = path._closed
-      ? (index + count - 1) % count
-      : index > 0 && index < count
-        ? index - 1
-        : -1
-    // Its first segment's index after the insertion:
-    const start = divided < index ? divided : divided + amount
-    if (count) {
-      for (const stop of this._stops) {
-        const x = stop._index
-        if (divided >= 0 && x > divided && x < divided + 1) {
-          stop._index = getSpanIndex(path, start, amount + 1, x - divided)
-        } else if (x >= index) {
-          stop._index = x + amount
-        }
-      }
-      this.sort()
-    }
-  }
-
-  // Moves the stops before the segments from start to end are removed,
-  // keeping the ones between the segments that remain around them at the
-  // same fraction of the length there, which becomes one curve. The ones
-  // beyond the new ends of open paths go. See Path#removeSegments():
-  remove(start: number, end: number) {
-    const path = this._path
-    const count = path._segments.length
-    const closed = path._closed
-    const amount = end - start
-    const { curves } = path
-    // The segment before the removed ones, and its index after:
-    const before = closed ? (start + count - 1) % count : start - 1
-    const index = before < start ? before : before - amount
-    const span = amount + 1
-
-    this.filter(stop =>
-      closed
-        ? amount < count
-        : start
-          ? end < count || stop._index <= before
-          : stop._index >= end
-    )
-    for (const stop of this._stops) {
-      const x = stop._index
-      // How far the stop lies from the segment before:
-      const d = closed ? (x - before + count) % count : x - before
-      if (before >= 0 && d > 0 && d < span) {
-        let position = 0
-        let total = 0
-        for (let j = 0; j < span; j++) {
-          const { length } = curves[(before + j) % curves.length]
-          if (j < Math.floor(d)) {
-            position += length
-          } else if (j === Math.floor(d)) {
-            position += (d - j) * length
-          }
-          total += length
-        }
-        stop._index = index + (total ? position / total : d / span)
-      } else if (x >= end) {
-        stop._index = x - amount
-      }
-    }
-    this.sort()
-  }
-
-  // Moves the stops after the segments were reversed, see Path#reverse():
-  reverse() {
-    const path = this._path
-    const count = path._segments.length
-    for (const stop of this._stops) {
-      stop._index = path._closed
-        ? (2 * count - 1 - stop._index) % count
-        : count - 1 - stop._index
-    }
-    // Keep the order of steps reversed too:
-    this._stops.reverse()
     this.sort()
   }
 
@@ -274,15 +132,162 @@ export class StrokeProfile {
     }
   }
 
+  // Returns the index of the stop at the offset: the index of the segment
+  // before it plus the fraction of the arc length to the next segment.
+  // Offsets wrap around closed paths, and stay within open ones:
+  getIndexAt(offset: number): number {
+    const path = this._path
+    const { length } = path
+    offset = path._closed
+      ? length
+        ? (offset % length + length) % length
+        : 0
+      : Math.min(Math.max(offset, 0), length)
+    const loc = path.getLocationAt(offset)
+    if (loc) {
+      const { time } = loc
+      const curveLength = loc.curve.length
+      return (
+        loc.index + (
+          time < tMin || !curveLength
+            ? 0
+            : time > tMax
+              ? 1
+              : loc.curveOffset / curveLength
+        )
+      )
+    }
+    return path.curves.length
+  }
+
+  getOffsetAt(index: number): number {
+    const { curves } = this._path
+    const i = Math.floor(index)
+    let offset = 0
+    for (let j = 0, l = Math.min(i, curves.length); j < l; j++) {
+      offset += curves[j].length
+    }
+    return i < curves.length
+      ? offset + (index - i) * curves[i].length
+      : offset
+  }
+
+  sort() {
+    this._stops.sort((a, b) => a._index - b._index)
+  }
+
+  // Keeps the stops that the callback returns true for, and lets go of the
+  // others:
+  filter(callback: (stop: StrokeProfileStop) => boolean) {
+    const path = this._path
+    const stops = this._stops.filter(callback)
+    this.release(stops)
+    this._stops = stops
+    if (!stops.length) {
+      path._strokeProfile = null
+    }
+    path._changed(Change.STROKE)
+  }
+
   // Lets go of the stops that aren't among the given ones, which keep their
   // offsets:
-  _release(stops: StrokeProfileStop[]) {
+  release(stops: StrokeProfileStop[]) {
     for (const stop of this._stops) {
       if (!stops.includes(stop)) {
         stop._offset = stop.offset
         stop._index = stop._path = null
       }
     }
+  }
+
+  // Moves the stops after segments were inserted at the index, keeping the
+  // ones on the curve that the segments divide at the same fraction of its
+  // length, see Path#_add():
+  insert(index: number, amount: number) {
+    const path = this._path
+    const count = path._segments.length - amount
+    // The curve that the segments divide, if any:
+    const divided = path._closed
+      ? (index + count - 1) % count
+      : index > 0 && index < count
+        ? index - 1
+        : -1
+    // Its first segment's index after the insertion:
+    const start = divided < index ? divided : divided + amount
+    if (count) {
+      for (const stop of this._stops) {
+        const x = stop._index
+        if (divided >= 0 && x > divided && x < divided + 1) {
+          stop._index = getSpanIndex(path, start, amount + 1, x - divided)
+        } else if (x >= index) {
+          stop._index = x + amount
+        }
+      }
+      this.sort()
+    }
+  }
+
+  // Moves the stops before the segments from start to end are removed,
+  // keeping the ones between the segments that remain around them at the
+  // same fraction of the length there, which becomes one curve. The ones
+  // beyond the new ends of open paths go. See Path#removeSegments():
+  remove(start: number, end: number) {
+    const path = this._path
+    const count = path._segments.length
+    const closed = path._closed
+    const amount = end - start
+    const { curves } = path
+    // The segment before the removed ones, and its index after:
+    const before = closed ? (start + count - 1) % count : start - 1
+    const index = before < start ? before : before - amount
+    const span = amount + 1
+
+    function isKept(stop: StrokeProfileStop) {
+      const x = stop._index
+      return closed
+        ? amount < count
+        : start
+          ? end < count || x <= before
+          : x >= end
+    }
+
+    this.filter(isKept)
+    for (const stop of this._stops) {
+      const x = stop._index
+      // How far the stop lies from the segment before:
+      const d = closed ? (x - before + count) % count : x - before
+      if (before >= 0 && d > 0 && d < span) {
+        let position = 0
+        let total = 0
+        for (let j = 0; j < span; j++) {
+          const { length } = curves[(before + j) % curves.length]
+          if (j < Math.floor(d)) {
+            position += length
+          } else if (j === Math.floor(d)) {
+            position += (d - j) * length
+          }
+          total += length
+        }
+        stop._index = index + (total ? position / total : d / span)
+      } else if (x >= end) {
+        stop._index = x - amount
+      }
+    }
+    this.sort()
+  }
+
+  // Moves the stops after the segments were reversed, see Path#reverse():
+  reverse() {
+    const path = this._path
+    const count = path._segments.length
+    for (const stop of this._stops) {
+      stop._index = path._closed
+        ? (2 * count - 1 - stop._index) % count
+        : count - 1 - stop._index
+    }
+    // Keep the order of steps reversed too:
+    this._stops.reverse()
+    this.sort()
   }
 }
 
@@ -292,7 +297,7 @@ export class StrokeProfile {
  *
  * @private
  */
-export function getStrokeProfileStop(
+export function getStrokeProfileAt(
   path: Path,
   offset: number
 ): StrokeProfileStop {

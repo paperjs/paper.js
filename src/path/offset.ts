@@ -44,14 +44,12 @@ import {
 import type { Item } from '../item/Item.ts'
 import type { PathItem } from './PathItem.ts'
 
-// The options of PathItem#offset():
 export type OffsetOptions = {
   join?: string
   miterLimit?: number
   insert?: boolean
 }
 
-// The options of PathItem#outline():
 export type OutlineOptions = {
   width?: number
   join?: string
@@ -60,14 +58,13 @@ export type OutlineOptions = {
   insert?: boolean
 }
 
-// The options of PathItem#dash():
 export type DashOptions = {
   dashArray?: number[]
   dashOffset?: number
   insert?: boolean
 }
 
-// The pen of a stroke profile, see getPen() in outlineStroke():
+// The pen of a stroke profile:
 type Pen = {
   a: number
   b: number
@@ -80,8 +77,7 @@ type Pen = {
   ddAngle: number
 }
 
-// A point where the pen touches the edge of the area that it sweeps, see
-// getContacts() in outlineStroke():
+// A point where the pen touches the edge of the area that it sweeps:
 type Contact = {
   phi: number
   point: Point
@@ -115,7 +111,7 @@ type PartEnd = {
   end: Point
 }
 
-// A point on the evolute of a curve, see getEvoluteAt():
+// A point on the evolute of a curve:
 type EvolutePoint = {
   point: Point
   derivative: Point
@@ -145,15 +141,10 @@ for (let i = 0; i <= 32; i++) {
   penSamples.push({ phi, cos: Math.cos(phi), sin: Math.sin(phi) })
 }
 
-/**
- * Offsets the path item, see {@link PathItem#offset()}.
- *
- * @private
- */
 export function offsetPathItem(
   item: PathItem,
   distance: number,
-  options?: OffsetOptions
+  options?: OffsetOptions | null
 ): PathItem {
   const join = options?.join || 'miter'
   const miterLimit = options?.miterLimit || 10
@@ -184,11 +175,6 @@ export function offsetPathItem(
   return createResult(item, result, options)
 }
 
-/**
- * Outlines the stroke of the path item, see {@link PathItem#outline()}.
- *
- * @private
- */
 export function outlinePathItem(
   item: PathItem,
   options?: OutlineOptions | null
@@ -198,7 +184,7 @@ export function outlinePathItem(
   if (
     !item._children &&
     item._matrix.isIdentity() &&
-    width === undefined &&
+    width == null &&
     !join &&
     !cap &&
     !miterLimit
@@ -226,12 +212,6 @@ export function outlinePathItem(
   return result
 }
 
-/**
- * Cuts the stroke of the path item into its dashes, see
- * {@link PathItem#dash()}.
- *
- * @private
- */
 export function dashPathItem(
   item: PathItem,
   options?: DashOptions | null
@@ -250,12 +230,6 @@ export function dashPathItem(
   return result
 }
 
-/**
- * Returns the outline of the path's stroke in its own coordinates, with its
- * dashes, which Path#_getStrokeOutline() keeps.
- *
- * @private
- */
 export function getStrokeOutline(path: Path): PathItem {
   return outlineStroke(
     getDashes(
@@ -671,10 +645,9 @@ function outlineStroke(
         const angles: number[] = []
         const ellipse = new Path({ insert: false })
         for (const { from, to } of strips ?? []) {
-          angles.push(
-            (from.phi % full + full) % full,
-            (to.phi % full + full) % full
-          )
+          for (const phi of [from.phi, to.phi]) {
+            angles.push((phi % full + full) % full)
+          }
         }
         angles.sort((a, b) => a - b)
         if (!angles.length) {
@@ -685,7 +658,7 @@ function outlineStroke(
         for (let i = 1, l = angles.length; i < l; i++) {
           const phi0 = angles[i - 1]
           const sweep = angles[i] - phi0
-          // Arcs of up to 90°, as Path.ellipse() makes:
+          // Arcs of up to 90°, as Path.ellipse() has:
           const count = Math.ceil(sweep / (Math.PI / 2) - 1e-9)
           const step = sweep / count
           if (sweep > GEOMETRIC_EPSILON) {
@@ -2545,9 +2518,9 @@ function getDashes(
 function createResult<T extends Item>(
   item: PathItem,
   result: T,
-  options: { insert?: boolean } = {}
+  options?: { insert?: boolean } | null
 ): T {
-  const { insert = paper.settings.insertItems } = options
+  const { insert = paper.settings.insertItems } = options ?? {}
   if (insert) {
     result.insertAbove(item)
   }

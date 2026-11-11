@@ -5,18 +5,16 @@ const data = "data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABF
 paper.setup(new paper.Size(600, 600))
 
 const raster = new paper.Raster(data)
-raster.onLoad = function () {
+raster.onLoad = async function () {
   raster.position = paper.view.center
-  paper.view.exportFrames({
+  await paper.view.exportFrames({
     amount: 1,
     directory: import.meta.dirname,
-    onComplete() {
-      console.log('Done exporting.')
-    },
     onProgress(event) {
       console.log(`${event.percentage}% complete, frame took: ${event.delta}`)
     }
   })
+  console.log('Done exporting.')
   /*
   const svg = paper.project.exportSVG({ asString: true })
   writeFile(path.resolve('./out.svg'), svg).then(() => console.log('Saved!'))

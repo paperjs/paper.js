@@ -1,3 +1,17 @@
+/*
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
+ * http://paperjs.org/
+ *
+ * Copyright (c) 2011 - 2026, Jürg Lehni & Jonathan Puckey
+ * http://juerglehni.com/ & https://puckey.studio/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ */
+
+// The functionality needed to convert a SVG DOM to a Paper.js DOM.
+
 import {
   Color,
   Gradient,
@@ -28,19 +42,6 @@ import {
   request,
   svgStyles
 } from '../internal.ts'
-/*
- * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
- * http://paperjs.org/
- *
- * Copyright (c) 2011 - 2026, Jürg Lehni & Jonathan Puckey
- * http://juerglehni.com/ & https://puckey.studio/
- *
- * Distributed under the MIT license. See LICENSE file for details.
- *
- * All rights reserved.
- */
-
-// The functionality needed to convert a SVG DOM to a Paper.js DOM.
 
 type Options = Record<string, any>
 type Styles = { node: any; parent: any }
@@ -1139,18 +1140,16 @@ function importNode(node: Element, options: Options, isRoot?: boolean): any {
   return item
 }
 
-// Take the layers out of the group imported for an svg root element, if it
-// holds any, with the group's transformation. Content beside the layers goes
-// into a layer of its own, below them, and the clip of the root's viewBox goes,
-// as the view of a project does the clipping:
+// Take the layers out of the group imported for an svg root, with its
+// transformation. Other content goes into a layer of its own, below them:
 function takeLayers(root: Item): Layer[] | null {
   let layers: Layer[] = null
   if (
     root instanceof Group &&
     !(root instanceof Layer) &&
-    root.children.some(child => child instanceof Layer)
+    root._children.some(child => child instanceof Layer)
   ) {
-    const matrix = root.matrix
+    const matrix = root._matrix
     const children = root.removeChildren()
     const others = children.filter(
       child => !(child instanceof Layer) && !child.clipMask

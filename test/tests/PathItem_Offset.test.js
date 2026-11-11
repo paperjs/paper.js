@@ -206,6 +206,25 @@ describe('PathItem#offset() and #outline()', () => {
     )
   })
 
+  test('PathItem#offset(), #outline() and #dash() with null options', () => {
+    const line = new Path({
+      segments: [[0, 0], [100, 0]],
+      strokeColor: 'red',
+      strokeWidth: 20,
+      dashArray: [10, 10]
+    })
+    // The results are inserted above the path, as without options:
+    const offset = line.offset(10, null)
+    equals(offset.pathData, 'M0,-10h100')
+    equals(offset.index, line.index + 1)
+    const dashes = line.dash(null)
+    equals(dashes.children.length, 5)
+    equals(dashes.index, line.index + 1)
+    const outline = line.outline(null)
+    equals(outline.bounds, new Rectangle(0, -10, 90, 20))
+    equals(outline.index, line.index + 1)
+  })
+
   test('PathItem#outline() of dashed strokes', () => {
     // As the canvas draws them: each dash with the caps of the stroke, the
     // pattern shifted by the dash offset:

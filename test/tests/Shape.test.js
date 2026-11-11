@@ -11,7 +11,7 @@
  */
 
 import { describe } from 'vitest'
-import { Shape, Size } from 'paper'
+import { Rectangle, Shape, Size } from 'paper'
 import { equals, test } from '../helpers.js'
 
 describe('Shape', () => {
@@ -67,6 +67,15 @@ describe('Shape', () => {
       size: new Size(100, 100)
     })
     equals(shape1.bounds.width, 100)
+  })
+
+  test('Shape.circle() sets its geometry before the other properties', () => {
+    const shape = Shape.circle({
+      center: [50, 50],
+      radius: 10,
+      bounds: [0, 0, 100, 50]
+    })
+    equals(shape.bounds, new Rectangle(0, 0, 100, 50))
   })
 
   test('Shape.rectangle() radius works with negative size', () => {

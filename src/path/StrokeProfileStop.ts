@@ -35,7 +35,7 @@ export type StrokeProfileStopProps = {
  * others to the stops around it.
  */
 export class StrokeProfileStop extends Base {
-  // All read and written by Path:
+  // All read and written by Path and StrokeProfile:
   _path: Path | null
   // The index of the segment before the stop plus the fraction of the arc
   // length to the next segment, once the stop is on a path. JSON stores it
@@ -47,7 +47,6 @@ export class StrokeProfileStop extends Base {
   _aspect: number | null
   _angle: number | null
   _smooth: boolean
-  // JSON writes the stops of paths as plain objects, see the prototype:
   declare _compactSerialize: boolean
 
   /**
@@ -208,7 +207,7 @@ export class StrokeProfileStop extends Base {
    * @return {@true if they are equal}
    */
   equals(stop: StrokeProfileStop): boolean {
-    return !!(
+    return (
       stop === this || (
         stop instanceof StrokeProfileStop &&
         this._width === stop._width &&
@@ -219,11 +218,13 @@ export class StrokeProfileStop extends Base {
             ? this._index === stop._index
             : this._offset === stop._offset
         )
-      )
+      ) ||
+      false
     )
   }
 
   static {
+    // JSON writes the stops of paths as plain objects:
     this.prototype._compactSerialize = true
   }
 }

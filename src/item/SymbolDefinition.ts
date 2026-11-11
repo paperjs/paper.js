@@ -83,7 +83,7 @@ export class SymbolDefinition extends ItemDefinition {
 
   _serialize(options: any, dictionary: any) {
     return dictionary.add(this, () => {
-      const json: any[] = [this._item]
+      const json: any[] = [this.className, this._item]
       if (this._name) {
         json.push({ name: this._name })
       }
@@ -116,7 +116,11 @@ export class SymbolDefinition extends ItemDefinition {
    * @return {@true if they are equal}
    */
   equals(symbol: SymbolDefinition): boolean {
-    return !!(symbol === this || symbol && this._item.equals(symbol._item))
+    return (
+      symbol === this ||
+      symbol && this._item.equals(symbol._item) ||
+      false
+    )
   }
 }
 
