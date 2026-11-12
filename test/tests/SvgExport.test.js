@@ -1402,6 +1402,30 @@ describe('SvgExport', () => {
     equals(() => layers[0].bounds, new Rectangle(0, 0, 20, 20))
   })
 
+  test('Export and import SVG of a project with layers in a transformed view', () => {
+    const { project, view } = paper
+    new Layer({ name: 'first' })
+    Path.rectangle([10, 10], [20, 20])
+    new Layer({ name: 'second' })
+    Path.circle([50, 50], 10)
+    view.zoom = 2
+    view.center = [40, 40]
+    // The export wraps the layers in a group with the view's transformation:
+    const svg = project.exportSVG({ asString: true })
+    const matrix = view.matrix.clone()
+    view.zoom = 1
+    project.clear()
+    const layers = project.importSVG(svg)
+    equals(() => layers.every(layer => layer instanceof Layer), true)
+    equals(() => layers.map(layer => layer.name), ['first', 'second'])
+    equals(() => project.layers.length, 2)
+    // The layers take on the view's transformation, as the SVG draws them:
+    equals(
+      () => layers[0].bounds,
+      matrix._transformBounds(new Rectangle(10, 10, 20, 20))
+    )
+  })
+
   test('Import SVG of a project with layers without inserting', () => {
     const { project } = paper
     const count = project.layers.length

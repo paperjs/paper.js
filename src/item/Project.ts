@@ -935,10 +935,11 @@ export class Project extends PaperScopeItem {
    * styles that `<use>` elements inherit don't reach the symbols' content.
    *
    * The layers of SVG content that Paper.js exported become layers of this
-   * project again, and are returned as an array instead of a group. Content
-   * beside the layers goes into a layer of its own, below them. Layers
-   * inside a group come back as {@link Layer} items inside the imported
-   * group, also those that the export of a transformed view wraps in one.
+   * project again, and are returned as an array instead of a group, with
+   * the transformation of a zoomed or scrolled view that they were exported
+   * from. Content beside the layers goes into a layer of its own, below
+   * them. Layers inside other groups come back as {@link Layer} items inside
+   * the imported group.
    *
    * URLs are fetched as they are, so validate URLs that come from untrusted
    * sources first, especially on servers, where they could reach internal
