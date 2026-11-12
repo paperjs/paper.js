@@ -1144,27 +1144,41 @@ function importNode(node: Element, options: Options, isRoot?: boolean): any {
 // transformation. Other content goes into a layer of its own, below them:
 function takeLayers(root: Item): Layer[] | null {
   let layers: Layer[] = null
-  if (
-    root instanceof Group &&
-    !(root instanceof Layer) &&
-    root._children.some(child => child instanceof Layer)
-  ) {
-    const matrix = root._matrix
-    const children = root.removeChildren()
-    const others = children.filter(
-      child => !(child instanceof Layer) && !child.clipMask
-    )
-    layers = children.filter(child => child instanceof Layer) as Layer[]
-    if (others.length) {
-      layers.unshift(new Layer({ children: others, insert: false }))
+  if (isPlainGroup(root)) {
+    // The export of a transformed view wraps the layers in a group of its own,
+    // whose transformation they take on too:
+    let group = root as Group
+    const matrix = root._matrix.clone()
+    let content = getContent(group)
+    while (content.length === 1 && isPlainGroup(content[0])) {
+      group = content[0] as Group
+      matrix.append(group._matrix)
+      content = getContent(group)
     }
-    if (!matrix.isIdentity()) {
-      for (const layer of layers) {
-        layer.transform(matrix)
+    if (content.some(child => child instanceof Layer)) {
+      group.removeChildren()
+      const others = content.filter(child => !(child instanceof Layer))
+      layers = content.filter(child => child instanceof Layer) as Layer[]
+      if (others.length) {
+        layers.unshift(new Layer({ children: others, insert: false }))
+      }
+      if (!matrix.isIdentity()) {
+        for (const layer of layers) {
+          layer.transform(matrix)
+        }
       }
     }
   }
   return layers
+}
+
+// The children of a group, without the clip of an svg root's viewBox:
+function getContent(group: Group): Item[] {
+  return group._children.filter(child => !child.clipMask)
+}
+
+function isPlainGroup(item: Item): boolean {
+  return item instanceof Group && !(item instanceof Layer)
 }
 
 export function importSVG(
