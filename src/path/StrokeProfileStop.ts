@@ -77,6 +77,8 @@ export class StrokeProfileStop extends Base {
   }
 
   /**
+   * Returns a copy of the stop, without a path.
+   *
    * @return a copy of the stop, without a path
    */
   clone(): StrokeProfileStop {
@@ -182,12 +184,12 @@ export class StrokeProfileStop extends Base {
   }
 
   /**
-   * Whether the values ease into and out of the stop: they arrive at it and
-   * leave it flat, and between two smooth stops, a value follows a cubic
-   * from one to the other, without overshooting them. As the slopes don't
-   * depend on other stops, changing a stop only changes the values up to the
-   * stops on either side of it. Without smoothing, the values change in
-   * straight lines to the stops on either side.
+   * Specifies whether the values ease into and out of the stop: they arrive
+   * at it and leave it flat, and between two smooth stops, a value follows a
+   * cubic from one to the other, without overshooting them. As the slopes
+   * don't depend on other stops, changing a stop only changes the values up
+   * to the stops on either side of it. Without smoothing, the values change
+   * in straight lines to the stops on either side.
    *
    * @default true
    */
@@ -203,7 +205,7 @@ export class StrokeProfileStop extends Base {
   /**
    * Checks whether the stop is equal to the supplied one.
    *
-   * @param stop
+   * @param stop the stop to compare with
    * @return {@true if they are equal}
    */
   equals(stop: StrokeProfileStop): boolean {

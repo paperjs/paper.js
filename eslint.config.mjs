@@ -31,8 +31,8 @@ const braces = [
 export default [
   {
     // The builds, examples and the boolean sweep keep the old style until the
-    // ES modules port:
-    ignores: ['dist/**', 'examples/**', 'test/booleans/**']
+    // ES modules port, and the docs' runtime is vendored:
+    ignores: ['dist/**', 'examples/**', 'test/booleans/**', 'docs/static/**']
   },
   pluginPrettierRecommended,
   {

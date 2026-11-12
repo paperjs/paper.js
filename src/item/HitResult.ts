@@ -29,7 +29,7 @@ export class HitResult extends Base {
    * point, the type would be `'segment'`.
    *
    * @values 'segment', 'handle-in', 'handle-out', 'curve', 'stroke', 'fill',
-   *     'bounds', 'center', 'pixel'
+   *     'bounds', 'center', 'position', 'pixel'
    */
   type: string
 

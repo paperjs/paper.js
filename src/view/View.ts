@@ -66,7 +66,7 @@ type FrameEvent = { delta: number; time: number; count: number }
 
 /**
  * The View object wraps an HTML element and handles drawing and user
- * interaction through mouse and keyboard for it. It offer means to scroll the
+ * interaction through mouse and keyboard for it. It offers means to scroll the
  * view, find the currently visible bounds in project coordinates, or the
  * center, both useful for constructing artwork that should appear centered on
  * screen.
@@ -290,7 +290,7 @@ export class View extends Emitter {
    * Requests an update of the view if there are changes through the browser's
    * requestAnimationFrame() mechanism for smooth animation. Note that when
    * using built-in event handlers for interaction, animation and load events,
-   * updates are automatically invoked for you automatically at the end.
+   * updates are invoked for you automatically at the end.
    */
   requestUpdate() {
     // Node.js has no display for frames to update, and frame requests would
@@ -455,7 +455,7 @@ export class View extends Emitter {
   }
 
   /**
-   * The size of the view. Changing the view's size will resize it's
+   * The size of the view. Changing the view's size will resize its
    * underlying element.
    */
   get viewSize(): Size {
@@ -865,7 +865,7 @@ export class View extends Emitter {
    * drawing surface.
    *
    * @option [options.modifiers] {Object} the state of the modifier keys,
-   *     see {@link Key#modifiers}
+   *     see {@link Key.modifiers}
    * @option [options.button=0] {Number} the mouse button
    * @option [options.time=Date.now() / 1000] {Number} the time of the
    *     event in seconds, see {@link Event#time}
@@ -900,7 +900,7 @@ export class View extends Emitter {
   /**
    * Handles a key event that the host provides, for hosts without a DOM,
    * such as workers, or with their own event source. It updates
-   * {@link Key#modifiers} and {@link Key#isDown(key)}, and calls the
+   * {@link Key.modifiers} and {@link Key.isDown(key)}, and calls the
    * view's and the active tool's handlers, as the DOM's key events do.
    *
    * @option [options.character] {String} the character that the key
@@ -909,7 +909,7 @@ export class View extends Emitter {
    *     for 'space', 'enter' and 'tab', and keyup the character of its
    *     keydown
    * @option [options.modifiers] {Object} the state of the modifier keys,
-   *     see {@link Key#modifiers}
+   *     see {@link Key.modifiers}
    * @option [options.time=Date.now() / 1000] {Number} the time of the
    *     event in seconds, see {@link Event#time}
    *
@@ -1321,7 +1321,7 @@ export interface View {
    *
    * @param skew the horizontal and vertical skew angles in degrees
    * @param [center={@link View#center}]
-   * @see Matrix#shear(skew[, center])
+   * @see Matrix#skew(skew[, center])
    */
   skew(skew: PointLike | number, center?: PointLike): void
   /**
@@ -1329,9 +1329,9 @@ export interface View {
    * by a supplied point.
    *
    * @param hor the horizontal skew angle in degrees
-   * @param ver the vertical sskew angle in degrees
+   * @param ver the vertical skew angle in degrees
    * @param [center={@link View#center}]
-   * @see Matrix#shear(hor, ver[, center])
+   * @see Matrix#skew(hor, ver[, center])
    */
   skew(hor: number, ver: number, center?: PointLike): void
 
@@ -1407,7 +1407,7 @@ export interface View {
   onMouseDrag: MouseHandler
 
   /**
-   * The function to be called when the mouse button is released over the item.
+   * The function to be called when the mouse button is released over the view.
    * The function receives a {@link MouseEvent} object which contains
    * information about the mouse event.
    *
@@ -1472,7 +1472,7 @@ export interface View {
    * the view at the end, unless they are stopped before with {@link
    * Event#stopPropagation()} or by returning `false` from a handler.
    *
-   * @see View#onMouseLeave
+   * @see Item#onMouseLeave
    */
   onMouseLeave: MouseHandler
 
@@ -1533,7 +1533,7 @@ export interface View {
    * @param type the type of event: {@values 'frame', 'resize',
    *     'mousedown', 'mouseup', 'mousedrag', 'click', 'doubleclick',
    *     'mousemove', 'mouseenter', 'mouseleave'}
-   * @param function the function to be called when the event
+   * @param func the function to be called when the event
    *     occurs, receiving a {@link MouseEvent} or {@link Event} object as its
    *     sole argument
    * @return this view itself, so calls can be chained
@@ -1582,7 +1582,7 @@ export interface View {
    * @param type the event type: {@values 'frame', 'resize',
    *     'mousedown', 'mouseup', 'mousedrag', 'click', 'doubleclick',
    *     'mousemove', 'mouseenter', 'mouseleave'}
-   * @param function the function to be detached
+   * @param func the function to be detached
    * @return this view itself, so calls can be chained
    *
    * @example {@paperscript}

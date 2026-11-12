@@ -1,0 +1,981 @@
+@charset "UTF-8";
+form,
+img,
+ul,
+ol,
+table,
+td,
+article,
+figure,
+figcaption {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+a {
+  outline: none;
+  border: 0;
+}
+
+ul,
+ol {
+  list-style: none outside none;
+}
+
+table {
+  border-spacing: 0;
+}
+
+td {
+  vertical-align: top;
+}
+
+html {
+  -webkit-text-size-adjust: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: #fff;
+  margin: 0;
+  width: 996px;
+}
+
+select,
+input,
+textarea {
+  font-size: 12px;
+  margin: 0;
+  color: #000;
+}
+
+a {
+  text-decoration: none;
+}
+
+/* Fonts */
+@font-face {
+  font-family: "Superstudio";
+  font-weight: normal;
+  font-style: normal;
+  src: url("https://assets.paperjs.org/fonts/superstudio.eot");
+  src: url("https://assets.paperjs.org/fonts/superstudio.eot?#iefix") format("embedded-opentype"), url("https://assets.paperjs.org/fonts/superstudio.woff") format("woff"), url("https://assets.paperjs.org/fonts/superstudio.ttf") format("truetype"), url("https://assets.paperjs.org/fonts/superstudio.svg#Superstudio") format("svg");
+}
+@font-face {
+  font-family: "Akkurat-Mono";
+  font-weight: normal;
+  font-style: normal;
+  src: url("https://assets.paperjs.org/fonts/akkurat-mono.eot");
+  src: url("https://assets.paperjs.org/fonts/akkurat-mono.eot?#iefix") format("embedded-opentype"), url("https://assets.paperjs.org/fonts/akkurat-mono.woff") format("woff"), url("https://assets.paperjs.org/fonts/akkurat-mono.ttf") format("truetype"), url("https://assets.paperjs.org/fonts/akkurat-mono.svg#Akkurat-Mono") format("svg");
+}
+@font-face {
+  font-family: "Executive";
+  font-weight: normal;
+  font-style: normal;
+  src: url("https://assets.paperjs.org/fonts/executive-regular.eot");
+  src: url("https://assets.paperjs.org/fonts/executive-regular.eot?#iefix") format("embedded-opentype"), url("https://assets.paperjs.org/fonts/executive-regular.woff") format("woff"), url("https://assets.paperjs.org/fonts/executive-regular.ttf") format("truetype"), url("https://assets.paperjs.org/fonts/executive-regular.svg#Executive") format("svg");
+}
+@font-face {
+  font-family: "Executive";
+  font-weight: normal;
+  font-style: italic;
+  src: url("https://assets.paperjs.org/fonts/executive-italic.eot");
+  src: url("https://assets.paperjs.org/fonts/executive-italic.eot?#iefix") format("embedded-opentype"), url("https://assets.paperjs.org/fonts/executive-italic.woff") format("woff"), url("https://assets.paperjs.org/fonts/executive-italic.ttf") format("truetype"), url("https://assets.paperjs.org/fonts/executive-italic.svg#Executive") format("svg");
+}
+@font-face {
+  font-family: "Executive";
+  font-weight: bold;
+  font-style: normal;
+  src: url("https://assets.paperjs.org/fonts/executive-medium.eot");
+  src: url("https://assets.paperjs.org/fonts/executive-medium.eot?#iefix") format("embedded-opentype"), url("https://assets.paperjs.org/fonts/executive-medium.woff") format("woff"), url("https://assets.paperjs.org/fonts/executive-medium.ttf") format("truetype"), url("https://assets.paperjs.org/fonts/executive-medium.svg#Executive") format("svg");
+}
+body,
+select,
+input,
+textarea,
+.tutorial h2,
+.reference h2,
+.text {
+  font-family: "Executive", "Lucida Grande", Geneva, Verdana, Arial, sans-serif;
+}
+
+body,
+.text {
+  font-size: 15px;
+  line-height: 21px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  font-smoothing: antialiased;
+}
+
+tt,
+pre,
+.CodeMirror {
+  font-family: "Akkurat-Mono", Menlo, Consolas, "Vera Mono", monospace;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+h1,
+h2 {
+  font-family: "Superstudio";
+  font-weight: normal;
+  font-size: 30px;
+  line-height: 36px;
+  padding-top: 32px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid;
+  margin: 0 0 20px 0;
+}
+
+h3,
+h4,
+h5 {
+  font-weight: bold;
+  font-size: 1em;
+}
+
+h4 {
+  display: inline;
+}
+h4 + p {
+  margin-top: 20px;
+}
+
+h5 {
+  display: inline-block;
+  vertical-align: baseline;
+  zoom: 1;
+  *display: inline;
+  *vertical-align: auto;
+}
+
+h1 .version {
+  vertical-align: top;
+  float: right;
+}
+
+.tutorial h2,
+.reference h2 {
+  font-size: 15px;
+  line-height: 21px;
+  padding: 0;
+}
+
+.tutorial h2 {
+  font-size: 20px;
+  line-height: 28px;
+  border: 0;
+  padding-top: 30px;
+  margin-top: -30px;
+}
+.tutorial section {
+  margin-bottom: 30px;
+}
+
+/* Column Layout */
+nav,
+article,
+aside {
+  float: left;
+  margin-left: 32px;
+}
+
+nav {
+  width: 160px;
+  position: fixed;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 0 21px 32px 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+article {
+  position: relative;
+  margin: 0 0 32px 224px;
+  z-index: 0;
+  width: 540px;
+}
+article.examples {
+  width: 772px;
+}
+
+aside,
+aside h1,
+aside .fixed {
+  width: 200px;
+}
+
+/* Fullscreen */
+body.fullscreen {
+  overflow: hidden;
+}
+body.fullscreen article {
+  position: absolute;
+  overflow: hidden;
+  width: auto;
+  padding: 0;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  margin-bottom: 0;
+}
+body.fullscreen article .paperscript {
+  height: 100%;
+  margin-bottom: 0;
+}
+body.fullscreen article .canvas,
+body.fullscreen article canvas[resize] {
+  width: 100%;
+  height: 100%;
+}
+
+/* Menu */
+nav ul,
+aside ul {
+  padding: 0;
+  list-style: none;
+  margin: 0;
+}
+nav ul li,
+aside ul li {
+  padding: 0;
+  margin: 0 0 0 1em;
+  text-indent: -1em;
+}
+nav ul li.spacer,
+aside ul li.spacer {
+  margin-top: 10px;
+}
+
+/* Colours and Links */
+nav,
+nav a {
+  color: #009dec;
+  border-bottom-color: #009dec;
+}
+nav ul a:hover,
+nav ul .active > a {
+  background: #e3f4fc;
+}
+
+aside,
+aside a {
+  color: #e4141b;
+  border-bottom-color: #e4141b;
+}
+aside a:hover,
+aside .active > * {
+  background: #fce6e6;
+}
+
+/* Narrow Screens */
+nav .toggle {
+  display: none;
+}
+
+@media screen and (max-width: 995px) {
+  body,
+  article.examples {
+    width: auto;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+  nav,
+  article,
+  aside {
+    float: none;
+    width: auto;
+    margin: 0 20px;
+  }
+  nav {
+    position: relative;
+    overflow: visible;
+    padding: 0;
+  }
+  nav h1 {
+    padding-top: 20px;
+  }
+  nav ul {
+    display: none;
+  }
+  nav .toggle {
+    display: block;
+    position: absolute;
+    top: 20px;
+    right: -8px;
+    width: 36px;
+    height: 36px;
+    padding: 6px;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+  }
+  nav .toggle svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  article {
+    order: 2;
+    margin-bottom: 32px;
+  }
+  article h1,
+  article h2 {
+    padding-top: 20px;
+  }
+  article > h1:first-child,
+  article > section:first-child > .anchor:first-child > h1 {
+    padding-top: 0;
+  }
+  aside {
+    order: 1;
+    display: none;
+  }
+  aside h1,
+  aside .fixed {
+    width: auto;
+  }
+  aside .fixed {
+    position: static;
+  }
+  .menu-open nav {
+    padding-bottom: 20px;
+    background: #fff;
+  }
+  .menu-open nav ul {
+    display: block;
+  }
+  .menu-open aside {
+    display: block;
+  }
+  body.fullscreen article {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    margin: 0;
+  }
+  body.fullscreen article .paperscript .buttons {
+    right: 20px;
+  }
+  body.fullscreen article .paperscript .button {
+    margin: 20px 0 0 !important;
+  }
+  body.fullscreen nav {
+    margin: 0;
+  }
+  body.fullscreen nav h1,
+  body.fullscreen nav ul {
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+  body.fullscreen nav h1 {
+    margin-bottom: 0;
+  }
+  body.fullscreen nav .toggle {
+    right: 12px;
+  }
+  body.fullscreen.menu-open nav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    max-height: 100%;
+    overflow-y: auto;
+  }
+  body.fullscreen.menu-open nav h1 {
+    margin-bottom: 20px;
+  }
+  body.fullscreen:has(.source:not(.hidden)) nav h1 {
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  pre,
+  .paperscript {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+}
+/* Content Styles */
+article,
+article a {
+  color: #333;
+}
+article a {
+  border-bottom: 1px solid;
+}
+article a:hover,
+article a:hover em {
+  background: #e5e5e5;
+}
+article {
+  /* Text Content */
+}
+article em {
+  font-style: normal;
+  background: #efefef;
+}
+article p,
+article ul,
+article ol {
+  margin: 0 10px 20px 0;
+}
+article p.small,
+article ul.small,
+article ol.small {
+  margin-bottom: 10px;
+}
+article figure,
+article .CodeMirror,
+article .paperscript {
+  margin-bottom: 20px;
+}
+article ul,
+article ol {
+  padding: 0;
+  list-style: none outside none;
+}
+article ul ul,
+article ul ol,
+article ol ul,
+article ol ol {
+  margin-bottom: 0;
+}
+article ul > li {
+  margin-left: 1em;
+  position: relative;
+}
+article ul > li:before {
+  content: "–";
+  position: absolute;
+  left: -1em;
+}
+article ol {
+  counter-reset: item;
+}
+article ol > li {
+  margin-left: 1.5em;
+  position: relative;
+}
+article ol > li:before {
+  position: absolute;
+  left: -1.5em;
+  content: counter(item, upper-latin) ") ";
+  counter-increment: item;
+}
+
+section {
+  clear: both;
+  margin: 0 0 20px;
+  padding: 0;
+}
+
+.column {
+  width: 260px;
+  float: left;
+}
+.column + .column {
+  margin-left: 20px;
+}
+
+.row {
+  clear: both;
+}
+
+.donation {
+  padding-bottom: 20px;
+}
+.donation input,
+.donation select {
+  margin-right: 0.35em;
+}
+
+.note {
+  padding: 8px;
+  margin: 0 10px 19px;
+  background: #f4f4f4;
+  clear: both;
+}
+.note .resource {
+  margin: 0;
+}
+.note > :last-child {
+  margin-bottom: -21px;
+}
+
+/* Blocks */
+.block {
+  display: table;
+  margin-bottom: 20px;
+  *zoom: 1;
+}
+.block:before, .block:after {
+  content: " ";
+  display: table;
+}
+.block:after {
+  clear: both;
+}
+.block .note {
+  margin: 0 10px 0 0;
+}
+.block .CodeMirror {
+  height: auto;
+  margin-bottom: 20px;
+}
+.block .paperscript:last-child {
+  margin-bottom: 0;
+}
+.block svg {
+  display: block;
+}
+.block .left,
+.block .right {
+  float: none;
+  display: table-cell;
+  vertical-align: middle;
+}
+.block .left {
+  padding-right: 20px;
+}
+.block + .block {
+  border-top: 1px dotted #000;
+  padding-top: 20px;
+}
+
+@media screen and (max-width: 995px) {
+  .block,
+  .block .left,
+  .block .right {
+    display: block;
+  }
+  .block .left {
+    padding: 0 0 20px;
+  }
+}
+/* Thumbnails */
+.thumbnails {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 242px);
+  gap: 0 23px;
+}
+
+.thumbnail {
+  margin-bottom: 23px;
+}
+
+@media screen and (max-width: 995px) {
+  .thumbnails {
+    grid-template-columns: repeat(auto-fill, minmax(max(242px, (100% - 40px) / 3), 1fr));
+    gap: 0 20px;
+  }
+  .thumbnail {
+    margin-bottom: 20px;
+  }
+  .thumbnail img {
+    width: 100%;
+    height: auto;
+  }
+}
+.download {
+  margin-bottom: 20px;
+}
+.download .image {
+  float: left;
+  margin-right: 8px;
+}
+
+.thumbnail .resource a,
+.download .image a {
+  border: 0 !important;
+  background: none !important;
+}
+
+.reference h1,
+.reference h2,
+.reference h3,
+.reference h4 {
+  font-size: 15px;
+  font-weight: normal;
+  margin: 0;
+}
+.reference h1,
+.reference h2,
+.reference h3 {
+  height: 19px;
+  border-bottom: 1px solid;
+  margin-bottom: 20px;
+}
+.reference h2 a {
+  font-weight: bold;
+}
+.reference h3 {
+  margin-top: 20px;
+  border-bottom-style: dotted;
+}
+.reference h4 {
+  font-weight: bold;
+}
+.reference h4 .description {
+  font-weight: normal;
+}
+.reference h4 .description:before {
+  content: " — ";
+}
+.reference h4 + ul, .reference h4 + pre, .reference h4 + .paperscript {
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+.reference a tt {
+  line-height: 18px;
+}
+.reference ul,
+.reference p {
+  margin-bottom: 20px;
+}
+.reference hr {
+  border: none;
+  border-bottom: 1px dotted;
+}
+.reference .reference-list ul,
+.reference .reference-inherited ul {
+  margin-left: 20px;
+}
+.reference .reference-inherited ul li {
+  text-indent: -30px;
+  padding-left: 30px;
+}
+.reference ul.reference-classes {
+  padding-bottom: 4px;
+}
+.reference ul.reference-classes li {
+  margin: 0;
+  text-indent: 0;
+}
+.reference ul.reference-classes ul {
+  margin: 0 0 10px 10px;
+}
+.reference ul.reference-classes h2,
+.reference ul.reference-classes h3,
+.reference ul.reference-classes hr {
+  margin: 10px 0 10px 0;
+}
+.reference ul.reference-classes .first h2 {
+  margin-top: 0;
+}
+* html .reference ul.reference-classes img {
+  margin-top: 5px;
+}
+.reference ul.member-list li {
+  margin-left: 2em;
+  margin-bottom: 16px;
+  text-indent: -2em;
+}
+.reference ul.member-list li:before {
+  display: none;
+}
+.reference .reference-members {
+  margin-bottom: 20px;
+}
+.reference .member-group-text {
+  margin-bottom: 20px;
+}
+.reference .member-description {
+  border: 1px solid #999;
+  border-top: 0;
+  margin: 20px 0 20px 0;
+}
+.reference .member-header {
+  border-top: 1px solid #999;
+  padding: 10px;
+}
+.reference .member-header .member-link {
+  float: left;
+}
+.reference .member-header .member-close {
+  float: right;
+}
+.reference .member-header {
+  *zoom: 1;
+}
+.reference .member-header:before, .reference .member-header:after {
+  content: " ";
+  display: table;
+}
+.reference .member-header:after {
+  clear: both;
+}
+.reference .member-text {
+  border-top: 1px dashed #999;
+  padding: 10px 10px 0 10px;
+  margin-bottom: -6px;
+}
+.reference .member-text ul ul,
+.reference .member-text ul ol,
+.reference .member-text ol ul,
+.reference .member-text ol ol,
+.reference .member-text ul p,
+.reference .member-text ol p {
+  margin-bottom: 10px;
+}
+.reference .member-link {
+  text-indent: -30px;
+  padding-left: 30px;
+}
+
+.CodeMirror pre {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+}
+.paperscript .CodeMirror {
+  height: 100%;
+}
+
+.CodeMirror-scroll {
+  min-height: 100%;
+  overflow: auto;
+}
+
+.CodeMirror-gutter {
+  position: absolute;
+  left: 0;
+  top: 0;
+  min-width: 30px;
+  height: 100%;
+  background-color: #f4f4f4;
+  border-right: 1px solid #999;
+}
+
+.CodeMirror-gutter-text {
+  color: #aaa;
+  text-align: right;
+  padding: 2px 8px 2px 8px;
+}
+.CodeMirror-gutter-text pre {
+  font-size: 10px;
+}
+
+.CodeMirror-lines {
+  background: #ffffff;
+  padding: 2px 0 2px 8px;
+}
+.CodeMirror-lines pre.highlight {
+  background-color: #edf5fc;
+}
+
+.CodeMirror-cursor {
+  z-index: 10;
+  position: absolute;
+  visibility: hidden;
+  border-left: 1px solid #7c7c7c !important;
+  height: 18px;
+}
+
+.CodeMirror-selected {
+  background: #ccc !important;
+  color: HighlightText !important;
+  padding: 2px 0 2px 0;
+}
+
+.CodeMirror-focused .CodeMirror-cursor {
+  visibility: visible;
+}
+.CodeMirror-focused .CodeMirror-selected {
+  background: Highlight !important;
+}
+
+.CodeMirror-matchingbracket {
+  background: #e3fc8d !important;
+}
+
+.CodeMirror-nonmatchingbracket {
+  color: #d62a28 !important;
+}
+
+/* JavaScript & HTML Modes */
+span.cm-keyword {
+  color: #ff7800;
+}
+span.cm-atom, span.cm-number {
+  color: #3b5bb5;
+}
+span.cm-def, span.cm-variable-2, span.cm-variable-3 {
+  color: #3a4a64;
+}
+span.cm-variable {
+  color: #000;
+}
+span.cm-property {
+  color: #000;
+}
+span.cm-operator {
+  color: #000;
+}
+span.cm-comment {
+  color: #8c868f;
+}
+span.cm-string {
+  color: #409b1c;
+}
+span.cm-meta {
+  color: #555;
+}
+span.cm-error {
+  color: #f30;
+}
+span.cm-qualifier {
+  color: #555;
+}
+span.cm-builtin {
+  color: #30a;
+}
+span.cm-bracket {
+  color: #cc7;
+}
+span.cm-tag {
+  font-weight: bold;
+  color: #3b5bb5;
+}
+span.cm-attribute {
+  font-style: italic;
+  color: #3b5bb5;
+}
+
+.paperscript {
+  position: relative;
+}
+.paperscript .buttons {
+  position: absolute;
+  right: 0;
+  z-index: 1;
+}
+.paperscript .button,
+.paperscript .explain {
+  float: right;
+  display: none;
+  font-size: 12px;
+  line-height: 16px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  margin: 8px 8px 0 0;
+}
+.paperscript .button {
+  background: #eee;
+}
+.paperscript .explain {
+  background: #e3f4fc;
+}
+.paperscript .explain, .paperscript:hover .button {
+  display: inline-block;
+}
+@media (hover: none) {
+  .paperscript .button {
+    display: inline-block;
+  }
+}
+.paperscript .button:hover {
+  background: #ddd;
+  cursor: pointer;
+}
+.paperscript .tools {
+  display: inline;
+}
+.paperscript .source {
+  overflow: auto;
+  border: 1px solid #999;
+}
+.paperscript .CodeMirror {
+  margin: 0 !important;
+}
+.paperscript .CodeMirror-gutter-text,
+.paperscript .CodeMirror-lines {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.paperscript .canvas {
+  line-height: 0;
+}
+.paperscript .canvas.border canvas {
+  border: 1px solid #999;
+}
+.paperscript.split .canvas {
+  border: 1px solid #999;
+  border-top: 0;
+}
+
+/* Documentation */
+li.expandable-list ul {
+  display: none;
+}
+li.expandable-list.expanded a.arrow {
+  background: url(assets/arrow-open.gif) no-repeat;
+}
+li.expandable-list.expanded ul {
+  display: block;
+}
+li.expandable-list a.arrow {
+  width: 8px;
+  height: 8px;
+  display: inline-block;
+  background: url(assets/arrow-close.gif) no-repeat;
+  border-bottom: 0;
+  padding-right: 4px;
+}
+
+/* Tutorials */
+ul.tutorial-index {
+  margin: 0;
+  padding-left: 0;
+}
+ul.tutorial-index > li:before {
+  display: none;
+}
+article ul.tutorial-index {
+  margin-bottom: 29px;
+}
+
+/* Helpers */
+.clear {
+  clear: both;
+}
+
+.float-left {
+  float: left;
+}
+
+.float-right {
+  float: right;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.fixed {
+  position: fixed;
+  overflow: hidden;
+  top: 0;
+  bottom: 0;
+}
+
+.small {
+  font-size: 0.9em;
+}

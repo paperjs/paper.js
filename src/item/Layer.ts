@@ -35,7 +35,7 @@ export class Layer extends Group {
    * {@link Project#layers} array. The newly created layer will be activated,
    * so all newly created items will be placed within it.
    *
-   * @param children An array of items that will be added to the newly created
+   * @param children an array of items that will be added to the newly created
    *     layer
    *
    * @example

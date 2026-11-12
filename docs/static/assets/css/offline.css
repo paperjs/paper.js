@@ -1,0 +1,69 @@
+/*
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
+ * http://paperjs.org/
+ *
+ * Copyright (c) 2011 - 2026, Jürg Lehni & Jonathan Puckey
+ * http://juerglehni.com/ & https://puckey.studio/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ */
+
+/* The offline docs use the website's style.css, in frames instead of the
+   website's columns: */
+body {
+  width: auto;
+}
+
+article.reference {
+  float: none;
+  margin: 0 32px 32px;
+  width: 540px;
+}
+
+/* The website's sizes, but in system fonts, so the docs load nothing from the
+   network. The website's own fonts are licensed for the website only: */
+body,
+select,
+input,
+textarea,
+h1,
+h2,
+.tutorial h2,
+.reference h2,
+.text {
+  font-family: "Lucida Grande", Geneva, Verdana, Arial, sans-serif;
+}
+
+tt,
+pre,
+.CodeMirror {
+  font-family: Menlo, Consolas, "Vera Mono", monospace;
+}
+
+/* The headings of the pages, as the website's: */
+.reference-class h1,
+.reference-index h1 {
+  font-size: 30px;
+  line-height: 36px;
+  height: auto;
+  padding: 32px 0 8px;
+  margin: 0 0 20px;
+}
+
+/* The index, in the blue of the website's menu: */
+.reference-index {
+  margin: 0 0 32px 24px;
+  width: 200px;
+}
+
+.reference-index,
+.reference-index a {
+  color: #009dec;
+  border-bottom-color: #009dec;
+}
+
+.reference-index a:hover {
+  background: #e3f4fc;
+}

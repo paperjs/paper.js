@@ -182,7 +182,7 @@ export class CompoundPath extends PathItem {
 
   /**
    * Specifies whether the compound-path is fully closed, meaning all its
-   * contained sub-paths are closed path.
+   * contained sub-paths are closed.
    *
    * @see Path#closed
    */
@@ -246,7 +246,7 @@ export class CompoundPath extends PathItem {
 
   /**
    * The area that the compound-path's geometry is covering, calculated by
-   * getting the {@link Path#area} of each sub-path and it adding up.
+   * getting the {@link Path#area} of each sub-path and adding them up.
    * Note that self-intersecting paths and sub-paths of different orientation
    * can result in areas that cancel each other out.
    */
@@ -260,7 +260,7 @@ export class CompoundPath extends PathItem {
 
   /**
    * The total length of all sub-paths in this compound-path, calculated by
-   * getting the {@link Path#length} of each sub-path and it adding up.
+   * getting the {@link Path#length} of each sub-path and adding them up.
    */
   get length(): number {
     let length = 0

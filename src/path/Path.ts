@@ -420,7 +420,7 @@ export class Path extends PathItem {
    */
   static arc(from: PointLike, through: PointLike, to: PointLike): Path
   /**
-   * Creates an circular arc path item from the properties described by an
+   * Creates a circular arc path item from the properties described by an
    * object literal.
    *
    * @param object an object containing properties describing the path's
@@ -1168,7 +1168,7 @@ export class Path extends PathItem {
    * Adds an array of segments (or types that can be converted to segments)
    * to the end of the {@link #segments} array.
    *
-   * @param segments
+   * @param segments the segments to be added
    * @return an array of the added segments. These segments are
    * not necessarily the same objects, e.g. if the segment to be added already
    * belongs to another path
@@ -1662,8 +1662,8 @@ export class Path extends PathItem {
   /**
    * Joins the path with the other specified path, which will be removed in
    * the process. They can be joined if the first or last segments of either
-   * path lie in the same location. Locations are optionally compare with a
-   * provide `tolerance` value.
+   * path lie in the same location. Locations are optionally compared with a
+   * provided `tolerance` value.
    *
    * If `null` or `this` is passed as the other path, the path will be joined
    * with itself if the first and last segment are in the same location.
@@ -2392,7 +2392,7 @@ export class Path extends PathItem {
   }
 
   /**
-   * Returns the length of the path from its beginning up to up to the
+   * Returns the length of the path from its beginning up to the
    * specified point if it lies on the path, `null` otherwise.
    *
    * @param point the point on the path
@@ -2950,7 +2950,7 @@ export class Path extends PathItem {
 // The members defined at runtime rather than in the class body:
 export interface Path {
   /**
-   * Specifies whether an path is selected and will also return `true` if the
+   * Specifies whether a path is selected and will also return `true` if the
    * path is partially selected, i.e. one or more of its segments is selected.
    *
    * Paper.js draws the visual outlines of selected items on top of your
@@ -3206,7 +3206,7 @@ export interface Path {
    *
    * @param offset the offset on the path, where `0` is at
    * the beginning of the path and {@link Path#length} at the end
-   * @return the normal vector at the given offset
+   * @return the curvature at the given offset
    */
   getCurvatureAt(offset: number | CurveLocation): number
 }

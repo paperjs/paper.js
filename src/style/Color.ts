@@ -485,7 +485,7 @@ export class Color extends Base {
    * @option hsl.saturation {Number} the saturation of the color as a
    *     value between `0` and `1`
    * @option hsl.lightness {Number} the lightness of the color as a value
-   *     between `0` and `1`<br>
+   *     between `0` and `1`
    * @option hsl.alpha {Number} the alpha of the color as a value between
    *     `0` and `1`
    *
@@ -505,7 +505,7 @@ export class Color extends Base {
    *     the item's coordinates
    *
    * @param object an object describing the components and
-   * properties of the color
+   *     properties of the color
    *
    * @example {@paperscript}
    * // Creating a HSB Color:
@@ -572,11 +572,12 @@ export class Color extends Base {
   /**
    * Creates a gradient Color object.
    *
-   * @param gradient
-   * @param origin
-   * @param destination
-   * @param highlight
-   * @param aspect
+   * @param gradient the gradient that describes the color stops and the
+   *     type of gradient
+   * @param origin the origin point of the gradient
+   * @param destination the destination point of the gradient
+   * @param highlight the highlight point of a radial gradient
+   * @param [aspect=1] the aspect of a radial gradient, see {@link #aspect}
    *
    * @example {@paperscript height=200}
    * // Applying a linear gradient color containing evenly distributed
@@ -651,8 +652,9 @@ export class Color extends Base {
    * pattern, placed by the matrix in the item's coordinates. As with
    * gradient colors, the matrix is transformed along with the item.
    *
-   * @param pattern
-   * @param matrix
+   * @param pattern the pattern whose tiles the color repeats
+   * @param matrix the matrix that places the tiles in the item's
+   *     coordinates
    *
    * @example {@paperscript height=200}
    * // Filling a rectangle with a dotted pattern, and stroking it with
@@ -675,6 +677,7 @@ export class Color extends Base {
    * path.strokeColor = new Color(pattern, new Matrix().rotate(45));
    */
   constructor(pattern: PatternDefinition, matrix?: Matrix)
+  // Any of the forms above, as Color.from() reads them, for the types only:
   constructor(color?: ColorLike)
   /**
    * Creates a color of the given type from its components, followed by the
@@ -682,7 +685,7 @@ export class Color extends Base {
    *
    * @param type the type of the color: `'gray'`, `'rgb'`, `'hsb'`, `'hsl'`,
    *     `'gradient'` or `'pattern'`
-   * @param components
+   * @param components the components of the color, followed by its alpha
    */
   constructor(type: string, ...components: any[])
   constructor(...args: any[]) {
@@ -695,9 +698,10 @@ export class Color extends Base {
    * parameters that is supported by the various {@link Color()}
    * constructors also work for calls of `set()`.
    *
-   * @param values
+   * @param values the values, in any of the forms of the constructors
    * @return
    */
+  set(...values: any[]): this
   set(...args: any[]): this {
     // We are storing color internally as an array of components
     let [arg] = args
@@ -903,7 +907,7 @@ export class Color extends Base {
   /**
    * The type of the color as a string.
    *
-   * @values 'rgb', 'gray', 'hsb', 'hsl'
+   * @values 'rgb', 'gray', 'hsb', 'hsl', 'gradient', 'pattern'
    *
    * @example
    * var color = new Color(1, 0, 0);
@@ -1027,7 +1031,7 @@ export class Color extends Base {
    * Returns the color as a CSS string.
    *
    * @param hex whether to return the color in hexadecimal
-   * representation or as a CSS RGB / RGBA string.
+   *     representation or as a CSS RGB / RGBA string
    * @return a CSS string representation of the color
    */
   toCSS(hex?: boolean): string {
@@ -1171,7 +1175,7 @@ export class Color extends Base {
    * Returns the passed color if it is one already, or else a new color
    * created from the passed value, as {@link Color()} reads it.
    *
-   * @param color
+   * @param color the color, or a value describing one
    */
   static from(color: ColorLike): Color {
     return color instanceof Color ? color : new Color(color)
@@ -1461,7 +1465,7 @@ export interface Color {
    * path.fillColor = gradientColor;
    *
    * function onMouseMove(event) {
-   *  // Set the origin point of the path's gradient color
+   *  // Set the destination point of the path's gradient color
    *  // to the position of the mouse:
    *  path.fillColor.destination = event.point;
    * }

@@ -29,7 +29,7 @@ import type { Matrix } from '../basic/Matrix.ts'
  */
 export class PointText extends TextItem {
   /**
-   * Creates a point text item
+   * Creates a point text item.
    *
    * @param point the position where the text will start
    *
@@ -44,8 +44,8 @@ export class PointText extends TextItem {
    * Creates a point text item from the properties described by an object
    * literal.
    *
-   * @param object an object containing properties describing the path's
-   *     attributes
+   * @param object an object containing properties describing the text
+   *     item's attributes
    *
    * @example {@paperscript}
    * var text = new PointText({
@@ -73,7 +73,7 @@ export class PointText extends TextItem {
   }
 
   /**
-   * The PointText's anchor point
+   * The PointText's anchor point.
    */
   get point(): Point {
     // Se Item#position for an explanation why we create new LinkedPoint

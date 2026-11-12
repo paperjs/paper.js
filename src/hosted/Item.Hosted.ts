@@ -884,7 +884,7 @@ declare module '../item/Project.ts' {
     /**
      * The style new text items take in a hosted project, in place of
      * {@link #currentStyle}, when the host sets one: for hosts whose new
-     * text has defaults of its own, such as a black fill without a stroke
+     * text has defaults of its own, such as a black fill without a stroke,
      * whatever new paths take. Paths keep taking the current style.
      */
     get currentTextStyle(): Style
@@ -1017,13 +1017,13 @@ declare module '../item/Project.ts' {
      * node's own content changed, so the item loads it again on next
      * access, and 32 when its list of children changed, so it loads them
      * again right away if it had loaded them, keeping the items of nodes
-     * that remain. Nodes without items are skipped. `definitions` lists
-     * the keys of changed definitions of the host's `getDefinition()`,
-     * which load again right away into the same objects, so the colors
-     * and symbol items that use them change along. A definition that the
-     * host no longer has, for which `getDefinition()` may return `null`
-     * here, is emptied and draws nothing. The columns may hold only
-     * definitions.
+     * that remain. Nodes without items are skipped. `columns.definitions`
+     * lists the keys of changed definitions of the host's
+     * `getDefinition()`, which load again right away into the same objects,
+     * so the colors and symbol items that use them change along. A
+     * definition that the host no longer has, for which `getDefinition()`
+     * may return `null` here, is emptied and draws nothing. The columns may
+     * hold only definitions.
      *
      * @param columns the records of the changed nodes
      */

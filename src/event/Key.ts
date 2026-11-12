@@ -105,6 +105,10 @@ const modifiers = Object.defineProperties(
   }
 )
 
+/**
+ * The Key object gives access to the state of the keyboard: the modifier keys
+ * that are held, and whether a key is pressed.
+ */
 export const Key = {
   /**
    * The current state of the keyboard modifiers.

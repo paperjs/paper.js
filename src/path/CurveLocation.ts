@@ -57,9 +57,9 @@ export class CurveLocation extends Base {
   /**
    * Creates a new CurveLocation object.
    *
-   * @param curve
-   * @param time
-   * @param point
+   * @param curve the curve that the location lies on
+   * @param time the curve-time parameter of the location on the curve
+   * @param point the point of the location, if it is known already
    */
   constructor(
     curve: Curve,
@@ -181,7 +181,7 @@ export class CurveLocation extends Base {
   }
 
   /**
-   * The path that this locations is situated on.
+   * The path that this location is situated on.
    */
   get path(): Path {
     const { curve } = this
@@ -199,7 +199,7 @@ export class CurveLocation extends Base {
 
   /**
    * The curve-time parameter, as used by various bezier curve calculations.
-   * It is value between `0` (beginning of the curve) and `1` (end of the
+   * It is a value between `0` (beginning of the curve) and `1` (end of the
    * curve).
    */
   get time(): number {
@@ -299,11 +299,11 @@ export class CurveLocation extends Base {
   }
 
   /**
-   * Checks whether tow CurveLocation objects are describing the same location
+   * Checks whether two CurveLocation objects are describing the same location
    * on a path, by applying the same tolerances as elsewhere when dealing with
    * curve-time parameters.
    *
-   * @param location
+   * @param location the location to compare with
    * @return {@true if the locations are equal}
    */
   equals(location: CurveLocation, _ignoreOther?: boolean): boolean {
@@ -339,6 +339,8 @@ export class CurveLocation extends Base {
   }
 
   /**
+   * Returns a string representation of the curve location.
+   *
    * @return a string representation of the curve location
    */
   toString(): string {

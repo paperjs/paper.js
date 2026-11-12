@@ -23,10 +23,7 @@ import type { ExecuteOptions } from './PaperScript.ts'
 
 declare module '../core/PaperScope.ts' {
   export interface PaperScope {
-    /**
-     * The PaperScript functions, to compile, execute and load PaperScript
-     * code.
-     */
+    // The PaperScript functions, listed on their own page:
     PaperScript: typeof PaperScript
 
     /**

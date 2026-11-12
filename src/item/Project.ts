@@ -262,6 +262,8 @@ export class Project extends PaperScopeItem {
   /**
    * Removes this project from the {@link PaperScope#projects} list, and also
    * removes its view, if one was defined.
+   *
+   * @return {@true if the project was removed}
    */
   remove(): boolean {
     if (!super.remove()) {
@@ -337,7 +339,7 @@ export class Project extends PaperScopeItem {
   }
 
   /**
-   * The symbol definitions shared by all symbol items contained place ind
+   * The symbol definitions shared by all symbol items contained in the
    * project.
    */
   get symbolDefinitions(): SymbolDefinition[] {
@@ -439,7 +441,7 @@ export class Project extends PaperScopeItem {
   /**
    * {@grouptitle Hierarchy Operations}
    *
-   * Adds the specified layer at the end of the this project's {@link #layers}
+   * Adds the specified layer at the end of this project's {@link #layers}
    * list.
    *
    * @param layer the layer to be added to the project
@@ -455,7 +457,7 @@ export class Project extends PaperScopeItem {
    *
    * @param index the index at which to insert the layer
    * @param layer the layer to be inserted in the project
-   * @return the added layer, or `null` if adding was not possible
+   * @return the inserted layer, or `null` if inserting was not possible
    */
   insertLayer(index: number, layer: Layer): Layer | null {
     if (layer instanceof Layer) {
@@ -558,9 +560,8 @@ export class Project extends PaperScopeItem {
   }
 
   /**
-   * Performs a hit-test on the item and its children (if it is a {@link
-   * Group} or {@link Layer}) at the location of the specified point,
-   * returning all found hits.
+   * Performs a hit-test on the items contained within the project at the
+   * location of the specified point, returning all found hits.
    *
    * The options object allows you to control the specifics of the hit-
    * test. See {@link #hitTest(point[, options])} for a list of all options.
@@ -568,9 +569,9 @@ export class Project extends PaperScopeItem {
    * @param point the point where the hit-test should be performed
    * @param [options={ fill: true, stroke: true, segments: true,
    *     tolerance: settings.hitTolerance }]
-   * @return hit result objects for all hits, describing what exactly was hit
-   *     or `null` if nothing was hit
-   * @see #hitTest(point[, options]);
+   * @return hit result objects for all hits, describing what exactly was
+   *     hit, or an empty array if nothing was hit
+   * @see #hitTest(point[, options])
    */
   hitTestAll(point: PointLike, options?: Record<string, any>): HitResult[] {
     return hitTestAll(this, point, options)
@@ -592,7 +593,7 @@ export class Project extends PaperScopeItem {
    * Extended matching of properties is possible by providing a comparator
    * function or regular expression. Matching points, colors only work as a
    * comparison of the full object, not partial matching (e.g. only providing
-   * the x- coordinate to match all points with that x-value). Partial
+   * the x-coordinate to match all points with that x-value). Partial
    * matching does work for {@link Item#data}.
    *
    * Matching items against a rectangular area is also possible, by setting
@@ -832,8 +833,8 @@ export class Project extends PaperScopeItem {
    * match the criteria in the specified object.
    * Extended matching is possible by providing a compare function or
    * regular expression. Matching points, colors only work as a comparison
-   * of the full object, not partial matching (e.g. only providing the x-
-   * coordinate to match all points with that x-value). Partial matching
+   * of the full object, not partial matching (e.g. only providing the
+   * x-coordinate to match all points with that x-value). Partial matching
    * does work for {@link Item#data}.
    *
    * See {@link #getItems(options)} for a selection of illustrated examples.
@@ -866,7 +867,7 @@ export class Project extends PaperScopeItem {
    * all contained in one top level SVG group node.
    *
    * @option [options.bounds='view'] {String|Rectangle} the bounds of the area
-   *     to export, either as a string ({@values 'view', content'}), or a
+   *     to export, either as a string ({@values 'view', 'content'}), or a
    *     {@link Rectangle} object: `'view'` uses the view bounds,
    *     `'content'` uses the stroke bounds of all content
    * @option [options.matrix=paper.view.matrix] {Matrix} the matrix with which
@@ -878,7 +879,7 @@ export class Project extends PaperScopeItem {
    * @option [options.precision=5] {Number} the amount of fractional digits in
    *     numbers used in SVG data
    * @option [options.matchShapes=false] {Boolean} whether path items should
-   *     tried to be converted to SVG shape items (rect, circle, ellipse,
+   *     be converted to SVG shape items (rect, circle, ellipse,
    *     line, polyline, polygon), if their geometries match
    * @option [options.embedImages=true] {Boolean} whether raster images should
    *     be embedded as base64 data inlined in the xlink:href attribute, or
@@ -889,7 +890,7 @@ export class Project extends PaperScopeItem {
    * @option [options.idPrefix=''] {String} a prefix for the ids generated
    *     for definitions such as gradients, clip paths and symbols, to keep
    *     them unique when several exported SVGs are placed in one document
-   * @option [options.reduceAttributes=true] {Boolean} wether to only include
+   * @option [options.reduceAttributes=true] {Boolean} whether to only include
    *     style attributes in the SVG output that differ from their parents,
    *     or to always include them (much faster but leading to redundancies).
    * @option [options.processNode] {Function} the function to process the
@@ -900,8 +901,8 @@ export class Project extends PaperScopeItem {
    *     on the node, which replace attributes of the same names.
    *
    * @param [options] the export options
-   * @return the project converted to an SVG node or a `String` depending on
-   *     `option.asString` value
+   * @return the project converted to an SVG node or a `String`, depending
+   *     on `options.asString`
    *
    * @example
    * // Export layers as Inkscape layers. Setting the attributes with their
@@ -1108,6 +1109,8 @@ export interface Project {
   /**
    * Activates this project, so all newly created items will be placed
    * in it.
+   *
+   * @return {@true if the project was activated}
    */
   activate(): boolean
 
@@ -1141,7 +1144,7 @@ export interface Project {
    * JSON data object or string.
    *
    * @option [options.asString=true] {Boolean} whether the JSON is returned as
-   *     a `Object` or a `String`
+   *     an `Object` or a `String`
    * @option [options.precision=5] {Number} the amount of fractional digits in
    *     numbers used in JSON data
    *

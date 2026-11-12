@@ -67,7 +67,7 @@ export class Point extends Base {
    * Creates a Point object with the given x and y coordinates.
    *
    * @param x the x coordinate
-   * @param y the y coordinate
+   * @param [y=x] the y coordinate
    *
    * @example
    * // Create a point at x: 10, y: 5
@@ -178,13 +178,7 @@ export class Point extends Base {
    * @param point
    */
   constructor(point?: Point)
-  /**
-   * Creates a Point object from any of the values that a function taking a
-   * point accepts, as {@link Point.from()} does.
-   *
-   * @param point
-   * @param y
-   */
+  // Any of the forms above, as Point.from() reads them, for the types only:
   constructor(point: PointLike | number, y?: number)
   constructor(x?: PointLike | number | string, y?: number) {
     super()
@@ -198,6 +192,7 @@ export class Point extends Base {
    *
    * @param values
    */
+  set(...values: any[]): this
   set(arg0?: PointLike | number | string, arg1?: number): this {
     if (typeof arg0 === 'number') {
       this._set(arg0, typeof arg1 === 'number' ? arg1 : arg0)
@@ -456,8 +451,8 @@ export class Point extends Base {
    * Returns the distance between the point and another point.
    *
    * @param point
-   * @param squared Controls whether the distance should
-   * remain squared, or its square root should be calculated
+   * @param [squared=false] controls whether the distance should remain
+   *     squared, or its square root should be calculated
    */
   getDistance(point: PointLike, squared?: boolean): number {
     const other = Point.from(point)
@@ -764,7 +759,7 @@ export class Point extends Base {
    * between them.
    *
    * @param point the vector to check against
-   * @return {@true it is collinear}
+   * @return {@true if it is collinear}
    */
   isCollinear(point: PointLike | number, y?: number): boolean {
     const other = Point.from(point, y)
@@ -777,7 +772,7 @@ export class Point extends Base {
    * cosine of the angle between them.
    *
    * @param point the vector to check against
-   * @return {@true it is orthogonal}
+   * @return {@true if it is orthogonal}
    */
   isOrthogonal(point: PointLike | number, y?: number): boolean {
     const other = Point.from(point, y)
@@ -811,7 +806,7 @@ export class Point extends Base {
    * returned for both quadrants.
    *
    * @param quadrant the quadrant to check against
-   * @return {@true if either x or y are not a number}
+   * @return {@true if the vector is within the quadrant}
    * @see #quadrant
    */
   isInQuadrant(quadrant: number): boolean {

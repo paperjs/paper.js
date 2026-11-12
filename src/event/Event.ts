@@ -48,8 +48,8 @@ export class Event extends Base {
   }
 
   /**
-   * Cancels the event if it is cancelable, and stops stopping further
-   * propagation of the event. This is has the same effect as calling both
+   * Cancels the event if it is cancelable, and stops further propagation of
+   * the event. This has the same effect as calling both
    * {@link #stopPropagation()} and {@link #preventDefault()}.
    *
    * Any handler can also return `false` to indicate that `stop()` should be

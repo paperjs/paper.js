@@ -374,10 +374,10 @@ export class Item extends Emitter {
 
   /**
    * Sets the properties of the passed object literal on this item to the
-   * values defined in the object literal, if the item has property of the
+   * values defined in the object literal, if the item has a property of the
    * given name (or a setter defined for it).
    *
-   * @param props
+   * @param props the properties to set on the item
    * @param exclude an object that can define any properties as `true` that
    *     should be excluded
    * @return the item itself
@@ -561,7 +561,7 @@ export class Item extends Emitter {
   }
 
   // The styles that the item's style stands for, merged when read and set on
-  // all when written, see Style.merge() and Style.apply().
+  // all when written, see Style.merge() and Style._apply().
   // @overridable
   _getStyles(style?: Style, key?: string, setting?: boolean): Style[] | null {
     // None for plain items: their style is their own.
@@ -1513,7 +1513,7 @@ export class Item extends Emitter {
    * {@grouptitle Effects}
    *
    * The live effects of the item, in the order in which they apply, as the
-   * instances of the {@link Effect effects} that they use. They derive what is
+   * instances of the {@link Effect} effects that they use. They derive what is
    * drawn from the item without changing it: drawing draws their output, and
    * {@link #previewBounds} measures it, while hit testing, {@link #bounds} and
    * {@link #strokeBounds} stay with the item itself. It is set to plain
@@ -1945,7 +1945,7 @@ export class Item extends Emitter {
   }
 
   /**
-   * The last item contained within this item.This is a shortcut for
+   * The last item contained within this item. This is a shortcut for
    * accessing `item.children[item.children.length - 1]`.
    */
   get lastChild(): Item | null {
@@ -2018,11 +2018,11 @@ export class Item extends Emitter {
    * Clones the item within the same project and places the copy above the
    * item.
    *
-   * @option [insert=true] specifies whether the copy should be
-   *     inserted into the scene graph. When set to `true`, it is inserted
-   *     above the original
-   * @option [deep=true] specifies whether the item's children should also be
-   *     cloned
+   * @option [options.insert=true] {Boolean} specifies whether the copy
+   *     should be inserted into the scene graph. When set to `true`, it is
+   *     inserted above the original
+   * @option [options.deep=true] {Boolean} specifies whether the item's
+   *     children should also be cloned
    *
    * @param [options={ insert: true, deep: true }]
    *
@@ -2230,7 +2230,9 @@ export class Item extends Emitter {
    *
    * Checks whether the item's geometry contains the given point.
    *
-   * @example {@paperscript} // Click within and outside the star below
+   * @example {@paperscript}
+   * // Click within and outside the star below:
+   *
    * // Create a star shaped path:
    * var path = Path.star({
    *     center: [50, 50],
@@ -2278,10 +2280,12 @@ export class Item extends Emitter {
     return point.isInside(this.internalBounds)
   }
 
-  // DOCS:
   // TEST:
   /**
+   * Checks whether the item's bounds lie fully inside the given rectangle.
+   *
    * @param rect the rectangle to check against
+   * @return {@true if the item lies inside the rectangle}
    */
   isInside(rect: RectangleLike): boolean {
     return Rectangle.from(rect).contains(this.getBounds())
@@ -2383,7 +2387,7 @@ export class Item extends Emitter {
    * @option options.ends {Boolean} only hit-test for the first or last
    *     segment points of open path items
    * @option options.position {Boolean} hit-test the {@link Item#position} of
-   *     of items, which depends on the setting of {@link Item#pivot}
+   *     items, which depends on the setting of {@link Item#pivot}
    * @option options.center {Boolean} hit-test the {@link Rectangle#center} of
    *     the bounding rectangle of items ({@link Item#bounds})
    * @option options.bounds {Boolean} hit-test the corners and side-centers of
@@ -2416,8 +2420,8 @@ export class Item extends Emitter {
    * @param [options={ fill: true, stroke: true, segments: true,
    *     tolerance: settings.hitTolerance }]
    * @return hit result objects for all hits, describing what
-   *     exactly was hit or `null` if nothing was hit
-   * @see #hitTest(point[, options]);
+   *     exactly was hit, or an empty array if nothing was hit
+   * @see #hitTest(point[, options])
    */
   hitTestAll(point: PointLike, options?: Record<string, any>): HitResult[] {
     return hitTestAll(this, point, options)
@@ -2709,7 +2713,7 @@ export class Item extends Emitter {
    * that match the properties in the specified object. Extended matching is
    * possible by providing a compare function or regular expression. Matching
    * points, colors only work as a comparison of the full object, not partial
-   * matching (e.g. only providing the x- coordinate to match all points with
+   * matching (e.g. only providing the x-coordinate to match all points with
    * that x-value). Partial matching does work for {@link Item#data}.
    *
    * Matching items against a rectangular area is also possible, by setting
@@ -2748,10 +2752,10 @@ export class Item extends Emitter {
    * that matches the properties in the specified object.
    * Extended matching is possible by providing a compare function or
    * regular expression. Matching points, colors only work as a comparison
-   * of the full object, not partial matching (e.g. only providing the x-
-   * coordinate to match all points with that x-value). Partial matching
+   * of the full object, not partial matching (e.g. only providing the
+   * x-coordinate to match all points with that x-value). Partial matching
    * does work for {@link Item#data}.
-   * See {@link Project#getItems(match)} for a selection of illustrated
+   * See {@link Project#getItems(options)} for a selection of illustrated
    * examples.
    *
    * @param options the criteria to match against
@@ -2892,7 +2896,7 @@ export class Item extends Emitter {
    * element sized to the bounds, as {@link Project#exportSVG(options)} does.
    *
    * @option [options.bounds] {String|Rectangle} the bounds of the area to
-   *     export, either as a string ({@values 'view', content'}), or a
+   *     export, either as a string ({@values 'view', 'content'}), or a
    *     {@link Rectangle} object: `'view'` uses the view bounds,
    *     `'content'` uses the stroke bounds of the item
    * @option [options.matrix] {Matrix} the matrix with which to transform the
@@ -2904,7 +2908,7 @@ export class Item extends Emitter {
    * @option [options.precision=5] {Number} the amount of fractional digits in
    *     numbers used in SVG data
    * @option [options.matchShapes=false] {Boolean} whether path items should
-   *     tried to be converted to SVG shape items (rect, circle, ellipse,
+   *     be converted to SVG shape items (rect, circle, ellipse,
    *     line, polyline, polygon), if their geometries match
    * @option [options.embedImages=true] {Boolean} whether raster images should
    *     be embedded as base64 data inlined in the xlink:href attribute, or
@@ -2915,7 +2919,7 @@ export class Item extends Emitter {
    * @option [options.idPrefix=''] {String} a prefix for the ids generated
    *     for definitions such as gradients, clip paths and symbols, to keep
    *     them unique when several exported SVGs are placed in one document
-   * @option [options.reduceAttributes=true] {Boolean} wether to only include
+   * @option [options.reduceAttributes=true] {Boolean} whether to only include
    *     style attributes in the SVG output that differ from their parents,
    *     or to always include them (much faster but leading to redundancies).
    * @option [options.processNode] {Function} the function to process the
@@ -2926,8 +2930,8 @@ export class Item extends Emitter {
    *     on the node, which replace attributes of the same names.
    *
    * @param [options] the export options
-   * @return the item converted to an SVG node or a
-   * `String` depending on `option.asString` value
+   * @return the item converted to an SVG node or a `String`, depending on
+   *     `options.asString`
    */
   exportSVG(options?: Record<string, any>): SVGElement | string {
     return exportItemSVG(this, options)
@@ -2935,7 +2939,7 @@ export class Item extends Emitter {
 
   /**
    * Converts the provided SVG content into Paper.js items and adds them to
-   * the this item's children list. Note that the item is not cleared first.
+   * this item's children list. Note that the item is not cleared first.
    * You can call {@link Item#removeChildren()} to do so.
    *
    * `<symbol>` elements are imported as {@link SymbolDefinition} items, and
@@ -2989,7 +2993,7 @@ export class Item extends Emitter {
   ): Item | null
   /**
    * Imports the provided external SVG file, converts it into Paper.js items
-   * and adds them to the this item's children list. Note that the item is not
+   * and adds them to this item's children list. Note that the item is not
    * cleared first. You can call {@link Item#removeChildren()} to do so.
    *
    * @param svg the URL of the SVG file to fetch.
@@ -3011,7 +3015,7 @@ export class Item extends Emitter {
   /**
    * {@grouptitle Hierarchy Operations}
    *
-   * Adds the specified item as a child of this item at the end of the its
+   * Adds the specified item as a child of this item at the end of its
    * {@link #children}  list. You can use this function for groups, compound
    * paths and layers.
    *
@@ -3037,7 +3041,7 @@ export class Item extends Emitter {
   }
 
   /**
-   * Adds the specified items as children of this item at the end of the its
+   * Adds the specified items as children of this item at the end of its
    * children list. You can use this function for groups, compound paths and
    * layers.
    *
@@ -3053,9 +3057,9 @@ export class Item extends Emitter {
    * index in its {@link #children} list. You can use this function for
    * groups, compound paths and layers.
    *
-   * @param index
-   * @param items the items to be appended as children
-   * @return the inserted items, or `null` if inserted was not
+   * @param index the index at which to insert the items
+   * @param items the items to be inserted as children
+   * @return the inserted items, or `null` if inserting was not
    *     possible
    */
   insertChildren(index: number, items: Item[]): Item[] | null {
@@ -3181,7 +3185,7 @@ export class Item extends Emitter {
   }
 
   /**
-   * Adds it to the specified owner, which can be either a {@link Item} or a
+   * Adds it to the specified owner, which can be either an {@link Item} or a
    * {@link Project}.
    *
    * @param owner the item or project to
@@ -3195,7 +3199,7 @@ export class Item extends Emitter {
 
   /**
    * Clones the item and adds it to the specified owner, which can be either
-   * a {@link Item} or a {@link Project}.
+   * an {@link Item} or a {@link Project}.
    *
    * @param owner the item or project to
    * copy the item to
@@ -3367,7 +3371,7 @@ export class Item extends Emitter {
   }
 
   /**
-   * Reverses the order of the item's children
+   * Reverses the order of the item's children.
    */
   reverseChildren() {
     const children = this._children
@@ -3494,7 +3498,7 @@ export class Item extends Emitter {
    *
    * Checks if the item contains any children items.
    *
-   * @return {@true it has one or more children}
+   * @return {@true if it has one or more children}
    */
   hasChildren(): boolean {
     return this._children?.length > 0
@@ -3548,7 +3552,7 @@ export class Item extends Emitter {
    * Checks whether the specified item is a child of the item.
    *
    * @param item the item to check against
-   * @return {@true it is a child of the item}
+   * @return {@true if it is a child of the item}
    */
   isChild(item: Item): boolean {
     return item?._parent === this
@@ -3582,10 +3586,10 @@ export class Item extends Emitter {
   }
 
   /**
-   * Checks if the item is an a sibling of the specified item.
+   * Checks if the item is a sibling of the specified item.
    *
    * @param item the item to check against
-   * @return {@true if the item is aa sibling of the specified item}
+   * @return {@true if the item is a sibling of the specified item}
    */
   isSibling(item: Item): boolean {
     return this._parent === item._parent
@@ -3594,7 +3598,7 @@ export class Item extends Emitter {
   /**
    * Checks whether the item is grouped with the specified item.
    *
-   * @param item
+   * @param item the item to check against
    * @return {@true if the items are grouped together}
    */
   isGroupedWith(item: Item): boolean {
@@ -3618,7 +3622,7 @@ export class Item extends Emitter {
   /**
    * {@grouptitle Transform Functions}
    *
-   * Translates (moves) the item by the given offset views.
+   * Translates (moves) the item by the given offset.
    *
    * @param delta the offset to translate the item by
    */
@@ -3831,11 +3835,11 @@ export class Item extends Emitter {
    * Transform the item so that its {@link #bounds} are centered in the
    * specified rectangle and fitted to it as described by `fit`.
    *
-   * @param rectangle
+   * @param rectangle the rectangle to fit the item into
    * @param [fit='contain'] how to fit the item, as in CSS's
-   * `object-fit`: `'contain'` fits all of it within the rectangle, `'cover'`
-   * makes it cover the whole rectangle, and `'fill'` stretches it to the
-   * rectangle, changing its aspect ratio.
+   *     `object-fit`: `'contain'` fits all of it within the rectangle,
+   *     `'cover'` makes it cover the whole rectangle, and `'fill'` stretches
+   *     it to the rectangle, changing its aspect ratio
    *
    * @example {@paperscript height=100}
    * // Fitting an item to the bounding rectangle of another item's bounding
@@ -4516,7 +4520,7 @@ export class Item extends Emitter {
    * @option options.up {Boolean} remove the item when the next {@link
    *     Tool#onMouseUp} event is fired.
    *
-   * @param options
+   * @param options the events to remove the item on
    *
    * @example {@paperscript height=200}
    * // Click and drag below:
@@ -4561,14 +4565,15 @@ export class Item extends Emitter {
    * Tween item between two states.
    *
    * @option options.duration {Number} the duration of the tweening
-   * @option [options.easing='linear'] {Function|String} an easing function or the type
-   * of the easing: {@values 'linear' 'easeInQuad' 'easeOutQuad'
-   * 'easeInOutQuad' 'easeInCubic' 'easeOutCubic' 'easeInOutCubic'
-   * 'easeInQuart' 'easeOutQuart' 'easeInOutQuart' 'easeInQuint'
-   * 'easeOutQuint' 'easeInOutQuint' 'easeInSine' 'easeOutSine'
-   * 'easeInOutSine' 'easeInExpo' 'easeOutExpo' 'easeInOutExpo'
-   * 'easeInCirc' 'easeOutCirc' 'easeInOutCirc'}
-   * @option [options.start=true] {Boolean} whether to start tweening automatically
+   * @option [options.easing='linear'] {Function|String} an easing function
+   *     or the type of the easing: {@values 'linear', 'easeInQuad',
+   *     'easeOutQuad', 'easeInOutQuad', 'easeInCubic', 'easeOutCubic',
+   *     'easeInOutCubic', 'easeInQuart', 'easeOutQuart', 'easeInOutQuart',
+   *     'easeInQuint', 'easeOutQuint', 'easeInOutQuint', 'easeInSine',
+   *     'easeOutSine', 'easeInOutSine', 'easeInExpo', 'easeOutExpo',
+   *     'easeInOutExpo', 'easeInCirc', 'easeOutCirc', 'easeInOutCirc'}
+   * @option [options.start=true] {Boolean} whether to start tweening
+   *     automatically
    *
    * @param from the state at the start of the tweening
    * @param to the state at the end of the tweening
@@ -5196,7 +5201,7 @@ export interface Item {
    *
    * @param skew the horizontal and vertical skew angles in degrees
    * @param [center={@link Item#position}]
-   * @see Matrix#shear(skew[, center])
+   * @see Matrix#skew(skew[, center])
    */
   skew(skew: PointLike | number, center?: PointLike): this
   /**
@@ -5204,9 +5209,9 @@ export interface Item {
    * by a supplied point.
    *
    * @param hor the horizontal skew angle in degrees
-   * @param ver the vertical sskew angle in degrees
+   * @param ver the vertical skew angle in degrees
    * @param [center={@link Item#position}]
-   * @see Matrix#shear(hor, ver[, center])
+   * @see Matrix#skew(hor, ver[, center])
    */
   skew(hor: number, ver: number, center?: PointLike): this
 
@@ -5890,8 +5895,13 @@ export interface Item {
    * {@link #rasterize()}, and once for each placement of a symbol whose
    * definition contains it. It is called right before the item's default
    * drawing, and draws with the canvas API beneath it, or replaces it by
-   * returning `false` or calling `event.preventDefault()`. The function
-   * receives a {@link DrawEvent} object with these fields:
+   * returning `false` or calling `event.preventDefault()`.
+   *
+   * What the handler draws isn't part of the item's hit testing, its bounds
+   * or its SVG export. In buffered groups, it is only called when the group
+   * draws its buffer again, see {@link Group#buffered}.
+   *
+   * The function receives a {@link DrawEvent} object with these fields:
    *
    * @option event.item {Item} the item that is drawn
    * @option event.context {CanvasRenderingContext2D} the canvas context,
@@ -5904,10 +5914,6 @@ export interface Item {
    *     {@link #rasterize()}
    * @option event.view {View} the view drawn into, or `null` in
    *     {@link #rasterize()}
-   *
-   * What the handler draws isn't part of the item's hit testing, its bounds
-   * or its SVG export. In buffered groups, it is only called when the group
-   * draws its buffer again, see {@link Group#buffered}.
    *
    * @example {@paperscript}
    * // Draw a hairline cross through the center of a circle, beneath it:
@@ -5937,8 +5943,12 @@ export interface Item {
    * The function to be called when the selection of the selected item is
    * drawn, over all the content. It is called right before the item's
    * default selection drawing, and draws with the canvas API beneath it, or
-   * replaces it by returning `false` or calling `event.preventDefault()`. The
-   * function receives a {@link DrawEvent} object with these fields:
+   * replaces it by returning `false` or calling `event.preventDefault()`.
+   *
+   * What the handler draws isn't part of the item's hit testing, its bounds
+   * or its SVG export.
+   *
+   * The function receives a {@link DrawEvent} object with these fields:
    *
    * @option event.item {Item} the selected item
    * @option event.context {CanvasRenderingContext2D} the canvas context, in
@@ -5951,9 +5961,6 @@ export interface Item {
    * @option event.color {Color} the selection color, see
    *     {@link #selectedColor}
    * @option event.view {View} the view drawn into
-   *
-   * What the handler draws isn't part of the item's hit testing, its bounds
-   * or its SVG export.
    *
    * @example {@paperscript}
    * // Draw the selection of a path as a dot at each segment:
@@ -5991,10 +5998,10 @@ export interface Item {
    *
    * Attaches an event handler to the item.
    *
-   * @param type the type of event: {@values 'frame', mousedown',
+   * @param type the type of event: {@values 'frame', 'mousedown',
    *     'mouseup', 'mousedrag', 'click', 'doubleclick', 'mousemove',
    *     'mouseenter', 'mouseleave', 'draw', 'drawselection'}
-   * @param function the function to be called when the event
+   * @param func the function to be called when the event
    *     occurs, receiving a {@link MouseEvent} or {@link Event} object as its
    *     sole argument
    * @return this item itself, so calls can be chained
@@ -6074,7 +6081,7 @@ export interface Item {
    *         fillColor: 'black'
    *     });
    *
-   *     // Attach the handers inside the object literal to the path:
+   *     // Attach the handlers inside the object literal to the path:
    *     path.on(pathHandlers);
    * }
    */
@@ -6083,16 +6090,16 @@ export interface Item {
   /**
    * Detach an event handler from the item.
    *
-   * @param type the type of event: {@values 'frame', mousedown',
+   * @param type the type of event: {@values 'frame', 'mousedown',
    *     'mouseup', 'mousedrag', 'click', 'doubleclick', 'mousemove',
    *     'mouseenter', 'mouseleave', 'draw', 'drawselection'}
-   * @param function the function to be detached
+   * @param func the function to be detached
    * @return this item itself, so calls can be chained
    * @chainable
    */
   off(type: string, func?: Handler): this
   /**
-   * Detach one or more event handlers to the item.
+   * Detach one or more event handlers from the item.
    *
    * @param object an object containing one or more of the following
    *     properties: {@values frame, mousedown, mouseup, mousedrag, click,
@@ -6105,7 +6112,7 @@ export interface Item {
   /**
    * Emit an event on the item.
    *
-   * @param type the type of event: {@values 'frame', mousedown',
+   * @param type the type of event: {@values 'frame', 'mousedown',
    *     'mouseup', 'mousedrag', 'click', 'doubleclick', 'mousemove',
    *     'mouseenter', 'mouseleave', 'draw', 'drawselection'}
    * @param event an object literal containing properties describing
@@ -6117,7 +6124,7 @@ export interface Item {
   /**
    * Check if the item has one or more event handlers of the specified type.
    *
-   * @param type the type of event: {@values 'frame', mousedown',
+   * @param type the type of event: {@values 'frame', 'mousedown',
    *     'mouseup', 'mousedrag', 'click', 'doubleclick', 'mousemove',
    *     'mouseenter', 'mouseleave', 'draw', 'drawselection'}
    * @return {@true if the item has one or more event handlers of
@@ -6132,7 +6139,7 @@ export interface Item {
    * data string.
    *
    * @option [options.asString=true] {Boolean} whether the JSON is returned as
-   *     a `Object` or a `String`
+   *     an `Object` or a `String`
    * @option [options.precision=5] {Number} the amount of fractional digits in
    *     numbers used in JSON data
    *

@@ -291,7 +291,7 @@ export class Raster extends Item {
   /**
    * The HTMLImageElement or Canvas element of the raster, if one is
    * associated.
-   * Note that for consistency, a {@link #onLoad} event will be triggered on
+   * Note that for consistency, an {@link #onLoad} event will be triggered on
    * the raster even if the image has already finished loading before, or if
    * we are setting the raster to a canvas.
    */
@@ -440,7 +440,7 @@ export class Raster extends Item {
    * To set the raster to a DOM Image or a Canvas, use {@link #image} or
    * {@link #canvas} instead. The ID of a DOM Image or Canvas element is only
    * accepted by the constructor.
-   * Note that for consistency, a {@link #onLoad} event will be triggered on
+   * Note that for consistency, an {@link #onLoad} event will be triggered on
    * the raster even if the image has already finished loading before.
    *
    * @example {@paperscript}
@@ -509,12 +509,12 @@ export class Raster extends Item {
    * `imageSmoothingQuality` properties of the `CanvasRenderingContext2D`
    * interface.
    *
-   * By default, smoothing is enabled at `'low'` quality. It can be set to of
+   * By default, smoothing is enabled at `'low'` quality. It can be set to
    * `'off'` to scale the raster's pixels by repeating the nearest neighboring
    * pixels, or to `'low'`, `'medium'` or `'high'` to control the various
    * degrees of available image smoothing quality.
    *
-   * For backward compatibility, it can can also be set to `false` (= `'off'`)
+   * For backward compatibility, it can also be set to `false` (= `'off'`)
    * or `true` (= `'low'`).
    *
    * @default 'low'
@@ -613,7 +613,7 @@ export class Raster extends Item {
   /**
    * Draws an image on the raster.
    *
-   * @param image
+   * @param image the image to draw
    * @param point the offset of the image as a point in pixel coordinates
    */
   drawImage(image: CanvasImageSource, point: PointLike) {
@@ -625,7 +625,8 @@ export class Raster extends Item {
    * Calculates the average color of the image within the given path,
    * rectangle or point. This can be used for creating raster image effects.
    *
-   * @param object
+   * @param [object] the path, rectangle or point to get the average color
+   *     of, or none for the whole raster
    * @return the average color contained in the area covered by the specified
    *     path, rectangle or point
    */
@@ -743,7 +744,8 @@ export class Raster extends Item {
    */
   setPixel(x: number, y: number, color: ColorLike): void
   /**
-   * Sets the color of the specified pixel to the specified color.
+   * Sets the color of the pixel at the specified point to the specified
+   * color.
    *
    * @param point the offset of the pixel as a point in pixel coordinates
    * @param color the color that the pixel will be set to
@@ -779,10 +781,15 @@ export class Raster extends Item {
     this._getContext(true).clearRect(0, 0, size.width + 1, size.height + 1)
   }
 
-  // DOCS: document Raster#createImageData
   /**
    * {@grouptitle Image Data}
-   * @param size
+   *
+   * Creates a new, blank image data object of the given size, to fill and
+   * pass to {@link #putImageData(data, point)} or
+   * {@link #setImageData(data)}.
+   *
+   * @param size the size of the image data in pixels
+   * @return the new image data
    */
   createImageData(size: SizeLike): ImageData {
     const { width, height } = Size.from(size)
@@ -810,19 +817,23 @@ export class Raster extends Item {
     )
   }
 
-  // DOCS: document Raster#putImageData
   /**
-   * @param data
-   * @param point
+   * Draws the image data into the raster at the given offset.
+   *
+   * @param data the image data to draw
+   * @param point the offset of the image data as a point in pixel
+   *     coordinates
    */
   putImageData(data: ImageData, point: PointLike) {
     const { x, y } = Point.from(point)
     this._getContext(true).putImageData(data, x, y)
   }
 
-  // DOCS: document Raster#setImageData
   /**
-   * @param data
+   * Replaces the raster's pixels with the image data, and resizes the raster
+   * to the size of the data.
+   *
+   * @param data the image data to set
    */
   setImageData(data: ImageData) {
     this._setSize(data)

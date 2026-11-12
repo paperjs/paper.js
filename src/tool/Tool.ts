@@ -371,9 +371,9 @@ export interface Tool {
   onMouseDrag: ToolHandler
 
   /**
-   * The function to be called the mouse moves within the project view. The
-   * function receives a {@link ToolEvent} object which contains information
-   * about the tool event.
+   * The function to be called when the mouse moves within the project view.
+   * The function receives a {@link ToolEvent} object which contains
+   * information about the tool event.
    *
    * While the mouse button is held down, the tool calls {@link #onMouseDrag}
    * instead, if it defines one, and `onMouseMove` only otherwise.
@@ -430,11 +430,11 @@ export interface Tool {
    * // Scaling a path whenever the user presses the space bar:
    *
    * // Create a circle shaped path:
-   *     var path = Path.circle({
-   *         center: new Point(50, 50),
-   *         radius: 30,
-   *         fillColor: 'red'
-   *     });
+   * var path = Path.circle({
+   *     center: new Point(50, 50),
+   *     radius: 30,
+   *     fillColor: 'red'
+   * });
    *
    * tool.onKeyDown = function(event) {
    *     if (event.key == 'space') {
@@ -498,7 +498,7 @@ export interface Tool {
    *
    * @param type the event type: {@values 'mousedown', 'mouseup',
    *     'mousedrag', 'mousemove', 'keydown', 'keyup'}
-   * @param function the function to be called when the event
+   * @param func the function to be called when the event
    *     occurs, receiving a {@link ToolEvent} object as its sole argument
    * @return this tool itself, so calls can be chained
    */
@@ -518,7 +518,7 @@ export interface Tool {
    *
    * @param type the event type: {@values 'mousedown', 'mouseup',
    *     'mousedrag', 'mousemove', 'keydown', 'keyup'}
-   * @param function the function to be detached
+   * @param func the function to be detached
    * @return this tool itself, so calls can be chained
    */
   off(type: string, func?: Handler): this

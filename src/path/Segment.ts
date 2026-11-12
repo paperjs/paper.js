@@ -483,7 +483,7 @@ export class Segment extends Base {
    * {@grouptitle Sibling Segments}
    *
    * The next segment in the {@link Path#segments} array that the segment
-   * belongs to. If the segments belongs to a closed path, the first segment
+   * belongs to. If the segment belongs to a closed path, the first segment
    * is returned for the last segment of the path.
    */
   get next(): Segment | null {
@@ -605,7 +605,7 @@ export class Segment extends Base {
 
   /**
    * The previous segment in the {@link Path#segments} array that the
-   * segment belongs to. If the segments belongs to a closed path, the last
+   * segment belongs to. If the segment belongs to a closed path, the last
    * segment is returned for the first segment of the path.
    */
   get previous(): Segment | null {
@@ -620,7 +620,7 @@ export class Segment extends Base {
   }
 
   /**
-   * Checks if the this is the first segment in the {@link Path#segments}
+   * Checks if this is the first segment in the {@link Path#segments}
    * array.
    *
    * @return {@true if this is the first segment}
@@ -630,7 +630,7 @@ export class Segment extends Base {
   }
 
   /**
-   * Checks if the this is the last segment in the {@link Path#segments}
+   * Checks if this is the last segment in the {@link Path#segments}
    * array.
    *
    * @return {@true if this is the last segment}
@@ -655,7 +655,9 @@ export class Segment extends Base {
   }
 
   /**
-   * Returns the reversed the segment, without modifying the segment itself.
+   * Returns a reversed copy of the segment, without modifying the segment
+   * itself.
+   *
    * @return the reversed segment
    */
   reversed(): Segment {
@@ -671,6 +673,8 @@ export class Segment extends Base {
   }
 
   /**
+   * Returns a copy of the segment, with its name and data.
+   *
    * @return a copy of the segment
    */
   clone(): Segment {
@@ -700,6 +704,8 @@ export class Segment extends Base {
   }
 
   /**
+   * Returns a string representation of the segment.
+   *
    * @return a string representation of the segment
    */
   toString(): string {
@@ -714,7 +720,7 @@ export class Segment extends Base {
   }
 
   /**
-   * Transform the segment by the specified matrix.
+   * Transforms the segment by the specified matrix.
    *
    * @param matrix the matrix to transform the segment by
    */
@@ -840,7 +846,8 @@ export class Segment extends Base {
    * flat array of their coordinates, `[x, y, inX, inY, outX, outY]`, or
    * anything that {@link Segment()} reads.
    *
-   * @param segment
+   * @param segment the segment, or the value to create one from
+   * @return the passed or the newly created segment
    */
   static from(segment: SegmentLike): Segment {
     if (segment instanceof Segment) {

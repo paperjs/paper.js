@@ -256,7 +256,7 @@ export class Style extends Base {
     return value
   }
 
-  static apply(styles: Style[], key: string, value: any) {
+  static _apply(styles: Style[], key: string, value: any) {
     for (const style of styles) {
       style[key] = value
     }
@@ -292,7 +292,7 @@ export class Style extends Base {
     // The styles the owner stands for, as a Group its children's:
     const styles = owner?._getStyles(this, key, true)
     if (styles) {
-      Style.apply(styles, key, value)
+      Style._apply(styles, key, value)
     }
     // Always store selectedColor in item _values to make sure that group
     // selected bounds and position color is coherent whether it has children
@@ -783,7 +783,7 @@ export interface StyleProperties {
    * The font size of text content, as a number in pixels, or as a string with
    * optional units `'px'`, `'pt'` and `'em'`.
    *
-   * @default 10
+   * @default 12
    */
   fontSize: number | string
 
@@ -814,7 +814,7 @@ export interface StyleProperties {
    *
    * @default null
    */
-  letterKerning: any
+  letterKerning: number | null
 
   /**
    * The font style of text content, as in CSS: upright or slanted. Together
@@ -923,7 +923,11 @@ export interface StyleProperties {
    *
    * @default null
    */
-  justifySpacing: number[][]
+  justifySpacing: {
+    word?: number[]
+    letter?: number[]
+    glyph?: number[]
+  } | null
 
   /**
    * The indent where the paragraph's lines start: left in left-to-right text,
@@ -969,7 +973,16 @@ export interface StyleProperties {
    *
    * @default false
    */
-  hyphenation: any
+  hyphenation:
+    | boolean
+    | {
+        wordsLongerThan?: number
+        afterFirst?: number
+        beforeLast?: number
+        limit?: number
+        zone?: number
+        capitalized?: boolean
+      }
 
   /**
    * How lines are broken: one line at a time, or all of the paragraph's lines

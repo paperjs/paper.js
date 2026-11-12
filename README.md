@@ -183,10 +183,20 @@ Read more about this in [Script Files](#script-files).
 The sources are ES modules in TypeScript that Node.js runs without a build,
 and so do the tests, so changes can be tried without building the library.
 
+### Building the Documentation
+
+The reference is built from the doc comments in the sources, after building the
+library, whose script file runs the examples in it:
+
+    pnpm build:docs
+
+You will then find the offline docs in `dist/docs`, and the fragments of the
+website's reference in `dist/serverdocs`.
+
 ### Other Build Tasks
 
-Create a zipped distribution file of the script files and the examples inside
-the `dist` folder, after building the library:
+Create a zipped distribution file of the script files, the examples and the
+offline docs inside the `dist` folder, after building them:
 
     pnpm zip
 

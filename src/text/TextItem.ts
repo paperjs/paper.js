@@ -284,7 +284,9 @@ export class TextItem extends Item {
   }
 
   /**
-   * {@true if the text item is linked with others}
+   * Checks whether the text item is linked with others.
+   *
+   * @return {@true if the text item is linked with others}
    */
   isLinked(): boolean {
     return this._story._items.length > 1
@@ -295,7 +297,7 @@ export class TextItem extends Item {
    * on through the others, `'before'` and `'after'` break the story into
    * two there.
    *
-   * @param which `'both'`, `'before'` or `'after'`
+   * @param [which='both'] `'both'`, `'before'` or `'after'`
    * @return {@true if the text item was unlinked}
    */
   unlink(which?: 'both' | 'before' | 'after'): boolean {
@@ -912,7 +914,7 @@ export interface TextItem {
    * The font size of text content, as a number in pixels, or as a string with
    * optional units `'px'`, `'pt'` and `'em'`.
    *
-   * @default 10
+   * @default 12
    */
   fontSize: number | string
 
@@ -943,7 +945,7 @@ export interface TextItem {
    *
    * @default null
    */
-  letterKerning: any
+  letterKerning: number | null
 
   /**
    * The font style of text content, as in CSS: upright or slanted. Together
@@ -1052,7 +1054,11 @@ export interface TextItem {
    *
    * @default null
    */
-  justifySpacing: number[][]
+  justifySpacing: {
+    word?: number[]
+    letter?: number[]
+    glyph?: number[]
+  } | null
 
   /**
    * The indent where the paragraph's lines start: left in left-to-right text,
@@ -1098,7 +1104,16 @@ export interface TextItem {
    *
    * @default false
    */
-  hyphenation: any
+  hyphenation:
+    | boolean
+    | {
+        wordsLongerThan?: number
+        afterFirst?: number
+        beforeLast?: number
+        limit?: number
+        zone?: number
+        capitalized?: boolean
+      }
 
   /**
    * How lines are broken: one line at a time, or all of the paragraph's lines
@@ -1161,10 +1176,11 @@ export interface TextItem {
   replace(content: string, start: number, end: number): void
 
   /**
-   * The range of the item's story from `start` to `end`.
+   * Returns the range of the item's story from `start` to `end`.
    *
    * @param start the index of its first character
    * @param end the index after its last character
+   * @return the range of the item's story
    */
   range(start: number, end: number): TextRange
 

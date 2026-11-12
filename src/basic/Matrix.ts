@@ -80,13 +80,15 @@ export class Matrix extends Base {
     tx: number, ty: number
   )
   /**
-   * Creates a 2D affine transformation matrix.
+   * Creates a 2D affine transformation matrix from the values in the given
+   * array.
    *
    * @param values the matrix values to initialize this matrix with
    */
   constructor(values: number[])
   /**
-   * Creates a 2D affine transformation matrix.
+   * Creates a 2D affine transformation matrix with the values of the given
+   * matrix.
    *
    * @param matrix the matrix to copy the values from
    */
@@ -107,6 +109,7 @@ export class Matrix extends Base {
    *
    * @param values
    */
+  set(...values: any[]): this
   set(
     a?: Matrix | number[] | number, b?: number | boolean,
     c?: number, d?: number,
@@ -242,7 +245,8 @@ export class Matrix extends Base {
    */
   translate(point: PointLike): this
   /**
-   * Concatenates this matrix with a translate transformation.
+   * Concatenates this matrix with a translate transformation by the given
+   * horizontal and vertical distances.
    *
    * @param dx the distance to translate in the x direction
    * @param dy the distance to translate in the y direction
@@ -266,7 +270,8 @@ export class Matrix extends Base {
    */
   scale(scale: PointLike | number, center?: PointLike): this
   /**
-   * Concatenates this matrix with a scaling transformation.
+   * Concatenates this matrix with a scaling transformation by separate
+   * horizontal and vertical factors.
    *
    * @param hor the horizontal scaling factor
    * @param ver the vertical scaling factor
@@ -336,7 +341,8 @@ export class Matrix extends Base {
    */
   shear(shear: PointLike | number, center?: PointLike): this
   /**
-   * Concatenates this matrix with a shear transformation.
+   * Concatenates this matrix with a shear transformation by separate
+   * horizontal and vertical factors.
    *
    * @param hor the horizontal shear factor
    * @param ver the vertical shear factor
@@ -378,7 +384,8 @@ export class Matrix extends Base {
    */
   skew(skew: PointLike | number, center?: PointLike): this
   /**
-   * Concatenates this matrix with a skew transformation.
+   * Concatenates this matrix with a skew transformation by separate
+   * horizontal and vertical angles.
    *
    * @param hor the horizontal skew angle in degrees
    * @param ver the vertical skew angle in degrees
@@ -525,7 +532,7 @@ export class Matrix extends Base {
    * perform the opposite transformation. If the matrix is not invertible (in
    * which case {@link #isSingular()} returns true), `null` is returned.
    *
-   * @return this matrix, or `null`, if the matrix is singular.
+   * @return the inverted matrix, or `null`, if the matrix is singular
    */
   inverted(): Matrix | null {
     return this.clone().invert()

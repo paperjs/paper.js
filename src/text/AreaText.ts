@@ -54,14 +54,16 @@ export class AreaText extends TextItem {
    * Creates a text item that flows inside an area.
    *
    * @param area the path that the text flows inside
-   * @param orientation the orientation of the text
+   * @param [orientation='horizontal'] the orientation of the text, see
+   *     {@link #orientation}
    */
   constructor(area: PathItem, orientation?: string)
   /**
    * Creates a text item that flows inside a rectangle.
    *
    * @param rectangle the rectangle that the text flows inside
-   * @param orientation the orientation of the text
+   * @param [orientation='horizontal'] the orientation of the text, see
+   *     {@link #orientation}
    *
    * @example {@paperscript}
    * var text = new AreaText(new Rectangle(20, 20, 160, 100));
