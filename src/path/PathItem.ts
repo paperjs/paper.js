@@ -679,7 +679,7 @@ export abstract class PathItem extends Item {
 
   /**
    * Fits a sequence of as few curves as possible through the path's anchor
-   * points, ignoring the path items's curve-handles, with an allowed maximum
+   * points, ignoring the path item's curve-handles, with an allowed maximum
    * error. When called on {@link CompoundPath} items, each of the nested
    * paths is simplified. On {@link Path} items, the {@link Path#segments}
    * array is processed and replaced by the resulting sequence of fitted
@@ -710,8 +710,8 @@ export abstract class PathItem extends Item {
    *     through the path's segment points}
    *
    * @example {@paperscript height=300}
-   * // Click and drag below to draw to draw a line, when you release the
-   * // mouse, the is made smooth using path.simplify():
+   * // Click and drag below to draw a line. When you release the mouse,
+   * // the path is made smooth using path.simplify():
    *
    * var path;
    * function onMouseDown(event) {
@@ -759,7 +759,7 @@ export abstract class PathItem extends Item {
    *
    * @param from the path item defining the geometry when `factor`
    *     is `0`
-   * @param to the path item defining the geometry  when `factor`
+   * @param to the path item defining the geometry when `factor`
    *     is `1`
    * @param factor the interpolation coefficient, typically between
    *     `0` and `1`, but extrapolation is possible too
@@ -852,7 +852,7 @@ export abstract class PathItem extends Item {
   abstract moveTo(point: PointLike | number, y?: number): void
 
   /**
-   * Adds a straight curve to the path, from the the last segment in the path
+   * Adds a straight curve to the path, from the last segment in the path
    * to the specified point.
    *
    * @param point the destination point of the newly added straight
@@ -901,7 +901,7 @@ export abstract class PathItem extends Item {
    *     // Create a new path and add a segment point to it
    *     // at {x: 150, y: 150):
    *     myPath = new Path();
-   *     myPath.add(150, 150);
+   *     myPath.add(new Point(150, 150));
    *
    *     // Draw an arc through the position of the mouse to 'toPoint'
    *     var toPoint = new Point(350, 150);
@@ -965,7 +965,29 @@ export abstract class PathItem extends Item {
    * }
    */
   abstract arcTo(to: PointLike, clockwise?: boolean): void
-  // DOCS: PathItem#arcTo(to, radius, rotation, clockwise, large)
+  /**
+   * Adds an elliptical arc from the position of the last segment in the
+   * path to the specified point, as the arc command of SVG path data
+   * describes it, by adding one or more segments to the path. If one of
+   * the radii is `0`, a straight curve is added instead.
+   *
+   * @param to the point where the arc should end
+   * @param radius the horizontal and vertical radii of the ellipse, or
+   *     one radius for both
+   * @param rotation the rotation of the ellipse in degrees
+   * @param clockwise specifies whether the arc should be drawn in
+   *     clockwise direction
+   * @param large specifies whether the larger of the two possible arcs
+   *     should be drawn
+   *
+   * @example {@paperscript}
+   * var path = new Path();
+   * path.strokeColor = 'black';
+   * path.add(new Point(30, 75));
+   *
+   * // Draw an elliptical arc, rotated by 30 degrees:
+   * path.arcTo(new Point(130, 75), new Size(60, 30), 30, true, false);
+   */
   abstract arcTo(
     to: PointLike,
     radius: SizeLike | number,
@@ -1066,7 +1088,7 @@ export abstract class PathItem extends Item {
    *     // Create a new path and add a segment point to it
    *     // at {x: 150, y: 150):
    *     myPath = new Path();
-   *     myPath.add(150, 150);
+   *     myPath.add(new Point(150, 150));
    *
    *     // Draw a curve through the position of the mouse to 'toPoint'
    *     var toPoint = new Point(350, 150);
@@ -1120,6 +1142,8 @@ export abstract class PathItem extends Item {
    * {@link Path#closed} to `true` is that this will also merge the first
    * segment with the last if they lie in the same location.
    *
+   * @param [tolerance=0] the tolerance with which to decide if the first
+   *     and last segments are to be considered the same location
    * @see Path#closed
    */
   abstract closePath(tolerance?: number): void
@@ -1131,13 +1155,14 @@ export abstract class PathItem extends Item {
    * child and a point is added as its first segment relative to the position
    * of the last segment of the current path.
    *
-   * @param to
+   * @param to the vector describing the position of the new path's first
+   *     segment, relative to the last segment of the current path
    */
   abstract moveBy(to: PointLike | number, y?: number): void
 
   /**
-   * Adds a straight curve to the path, from the the last segment in the path
-   * to the `to` vector specified relatively to it.
+   * Adds a straight curve to the path, from the last segment in the path
+   * to the `point` vector specified relatively to it.
    *
    * @param point the vector describing the destination of the newly
    *     added straight curve
@@ -1146,8 +1171,8 @@ export abstract class PathItem extends Item {
    * var path = new Path();
    * path.strokeColor = 'black';
    *
-   * // Add a segment at {x: 50, y: 50}
-   * path.add(25, 25);
+   * // Add a segment at {x: 25, y: 25}
+   * path.add(new Point(25, 25));
    *
    * // Add a segment relative to the last segment of the path.
    * // 50 in x direction and 0 in y direction, becomes {x: 75, y: 25}
@@ -1220,7 +1245,7 @@ export abstract class PathItem extends Item {
 
   /**
    * Adds a cubic bezier curve to the path, from the last segment to the
-   * to the specified `to` vector, with the curve itself defined by two
+   * specified `to` vector, with the curve itself defined by two
    * specified handles.
    *
    * @param handle1 the location of the first handle of the newly
@@ -1373,7 +1398,7 @@ export abstract class PathItem extends Item {
 
   /**
    * Splits the geometry of this path along the geometry of the specified
-   * path returns the result as a new group item. This is equivalent to
+   * path and returns the result as a new group item. This is equivalent to
    * calling {@link #subtract(path)} and {@link #intersect(path)} and
    * putting the results into a new group.
    *
@@ -1446,10 +1471,10 @@ export abstract class PathItem extends Item {
 
   /**
    * Fixes the orientation of the sub-paths of a compound-path, assuming
-   * that non of its sub-paths intersect, by reorienting them so that they
+   * that none of its sub-paths intersect, by reorienting them so that they
    * are of different winding direction than their containing paths,
    * except for disjoint sub-paths, i.e. islands, which are oriented so
-   * that they have the same winding direction as the the biggest path.
+   * that they have the same winding direction as the biggest path.
    *
    * @param [nonZero=false] controls if the non-zero fill-rule
    *     is to be applied, by counting the winding of each nested path and

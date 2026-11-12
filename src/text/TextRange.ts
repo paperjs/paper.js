@@ -31,7 +31,7 @@ import type { TextStory } from './TextStory.ts'
  * changing the content leaves ranges taken before out of date, as indices
  * into any string.
  *
- * @example {@paperscript}
+ * @classexample {@paperscript}
  * var text = new PointText({
  *     point: [20, 50],
  *     content: 'Every word its size',
@@ -111,7 +111,7 @@ export class TextRange extends Base {
   }
 
   // The range's style stands for those of the text's runs and paragraphs
-  // that it covers, see Style.merge() and Style.apply():
+  // that it covers, see Style.merge() and Style._apply():
   _getStyles(style: Style, key: string, setting?: boolean): Style[] {
     return this._story._getRangeStyles(key, this._start, this._end, setting)
   }
@@ -139,6 +139,11 @@ export class TextRange extends Base {
     return json
   }
 
+  /**
+   * Returns the content of the range, as {@link #content}.
+   *
+   * @return the content of the range
+   */
   toString(): string {
     return this.content
   }

@@ -53,7 +53,7 @@ export class Size extends Base {
    * Creates a Size object with the given width and height values.
    *
    * @param width the width
-   * @param height the height
+   * @param [height=width] the height
    *
    * @example
    * // Create a size that is 10pt wide and 5pt high
@@ -111,13 +111,7 @@ export class Size extends Base {
    * console.log(size.height); // 50
    */
   constructor(point: Point)
-  /**
-   * Creates a Size object from any of the values that a function taking a
-   * size accepts, as {@link Size.from()} does.
-   *
-   * @param size
-   * @param height
-   */
+  // Any of the forms above, as Size.from() reads them, for the types only:
   constructor(size: SizeLike | number, height?: number)
   constructor(width?: SizeLike | number | string, height?: number) {
     super()
@@ -131,6 +125,7 @@ export class Size extends Base {
    *
    * @param values
    */
+  set(...values: any[]): this
   set(arg0?: SizeLike | number | string, arg1?: number): this {
     if (typeof arg0 === 'number') {
       this._set(arg0, typeof arg1 === 'number' ? arg1 : arg0)
@@ -260,7 +255,6 @@ export class Size extends Base {
   /**
    * Returns the subtraction of the supplied value from the width and height
    * of the size as a new size. The object itself is not modified!
-   * The object itself is not modified!
    *
    * @operator
    * @param number the number to subtract

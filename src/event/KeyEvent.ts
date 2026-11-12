@@ -19,7 +19,7 @@ import { Event } from '../internal.ts'
  */
 export class KeyEvent extends Event {
   /**
-   * The type of mouse event.
+   * The type of key event.
    *
    * @values 'keydown', 'keyup'
    */

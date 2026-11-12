@@ -29,7 +29,7 @@ export class Group extends Item {
   /**
    * Creates a new Group item and places it at the top of the active layer.
    *
-   * @param children An array of children that will be added to the newly
+   * @param children an array of children that will be added to the newly
    *     created group
    *
    * @example {@paperscript}
@@ -164,7 +164,7 @@ export class Group extends Item {
    * var group = new Group(circle, star);
    * group.clipped = true;
    *
-   * // Lets animate the circle:
+   * // Let's animate the circle:
    * function onFrame(event) {
    *     var offset = Math.sin(event.count / 30) * 30;
    *     circle.position.x = view.center.x + offset;

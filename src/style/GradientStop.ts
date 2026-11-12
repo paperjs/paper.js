@@ -45,7 +45,7 @@ export class GradientStop extends Base {
    * {@link Gradient#stops} accepts: a color, an array of a color and an
    * offset, or an object with these properties.
    *
-   * @param stop
+   * @param stop the value describing the gradient stop
    */
   constructor(stop: GradientStopLike)
   constructor(arg0?: GradientStopLike, arg1?: number) {
@@ -194,7 +194,7 @@ export class GradientStop extends Base {
   /**
    * Checks whether the gradient stop is equal to the supplied one.
    *
-   * @param stop
+   * @param stop the gradient stop to compare with
    * @return {@true if they are equal}
    */
   equals(stop: GradientStop): boolean {

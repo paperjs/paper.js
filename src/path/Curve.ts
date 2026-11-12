@@ -41,7 +41,6 @@ import {
 } from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
 import type { Matrix } from '../basic/Matrix.ts'
-import type { SegmentPoint } from './SegmentPoint.ts'
 
 /**
  * The Curve object represents the parts of a path that are connected by
@@ -63,19 +62,19 @@ export class Curve extends Base {
   #bounds: Record<string, Rectangle>
 
   /**
-   * Creates a new curve object.
+   * Creates a new curve object between two segments, which are copied.
    *
-   * @param segment1
-   * @param segment2
+   * @param segment1 the first segment of the curve
+   * @param segment2 the second segment of the curve
    */
   constructor(segment1: Segment, segment2: Segment)
   /**
-   * Creates a new curve object.
+   * Creates a new curve object from its anchor points and handles.
    *
-   * @param point1
-   * @param handle1
-   * @param handle2
-   * @param point2
+   * @param point1 the first anchor point of the curve
+   * @param handle1 the handle of the first anchor point, relative to it
+   * @param handle2 the handle of the second anchor point, relative to it
+   * @param point2 the second anchor point of the curve
    */
   constructor(
     point1: PointLike,
@@ -88,7 +87,8 @@ export class Curve extends Base {
    * points and handles as {@link #toString()} prints them, or from the
    * values that {@link #getValues()} returns.
    *
-   * @param object
+   * @param object the curve, the object with its points and handles, or
+   *     the curve values
    */
   constructor(
     object?:
@@ -101,11 +101,7 @@ export class Curve extends Base {
         }
       | number[]
   )
-  /**
-   * Creates a curve of a path, as Path#curves does.
-   *
-   * @private
-   */
+  // Creates a curve of a path, as Path#curves does, for internal use:
   constructor(path: Path, segment1: Segment, segment2: Segment)
   constructor(arg0?: any, arg1?: any, arg2?: any, arg3?: any) {
     super()
@@ -187,6 +183,8 @@ export class Curve extends Base {
   }
 
   /**
+   * Returns a string representation of the curve.
+   *
    * @return a string representation of the curve
    */
   toString(): string {
@@ -239,7 +237,7 @@ export class Curve extends Base {
   /**
    * The first anchor point of the curve.
    */
-  get point1(): SegmentPoint {
+  get point1(): Point {
     return this._segment1._point
   }
 
@@ -250,7 +248,7 @@ export class Curve extends Base {
   /**
    * The second anchor point of the curve.
    */
-  get point2(): SegmentPoint {
+  get point2(): Point {
     return this._segment2._point
   }
 
@@ -261,7 +259,7 @@ export class Curve extends Base {
   /**
    * The handle point that describes the tangent in the first anchor point.
    */
-  get handle1(): SegmentPoint {
+  get handle1(): Point {
     return this._segment1._handleOut
   }
 
@@ -272,7 +270,7 @@ export class Curve extends Base {
   /**
    * The handle point that describes the tangent in the second anchor point.
    */
-  get handle2(): SegmentPoint {
+  get handle2(): Point {
     return this._segment2._handleIn
   }
 
@@ -343,7 +341,7 @@ export class Curve extends Base {
   }
 
   /**
-   * Checks if the this is the first curve in the {@link Path#curves} array.
+   * Checks if this is the first curve in the {@link Path#curves} array.
    *
    * @return {@true if this is the first curve}
    */
@@ -352,7 +350,7 @@ export class Curve extends Base {
   }
 
   /**
-   * Checks if the this is the last curve in the {@link Path#curves} array.
+   * Checks if this is the last curve in the {@link Path#curves} array.
    *
    * @return {@true if this is the last curve}
    */
@@ -445,7 +443,7 @@ export class Curve extends Base {
    * starts
    * @param to the curve-time parameter at which the sub-curve
    * ends
-   * @return the newly create sub-curve
+   * @return the newly created sub-curve
    */
   getPart(from: number, to: number): Curve {
     return new Curve(Curve.getPart(this.getValues(), from, to))
@@ -468,7 +466,7 @@ export class Curve extends Base {
    * @param location the offset or location on the
    *     curve at which to divide
    * @return the second part of the divided curve if the location is
-   *     valid, {code null} otherwise
+   *     valid, `null` otherwise
    * @see #divideAtTime(time)
    */
   divideAt(location: number | CurveLocation): Curve {
@@ -490,8 +488,8 @@ export class Curve extends Base {
    * @param time the curve-time parameter on the curve at which to
    *     divide
    * @return the second part of the divided curve, if the offset is
-   *     within the valid range, {code null} otherwise.
-   * @see #divideAt(offset)
+   *     within the valid range, `null` otherwise.
+   * @see #divideAt(location)
    */
   divideAtTime(time: number): Curve {
     // Only divide if not at the beginning or end.
@@ -545,7 +543,7 @@ export class Curve extends Base {
    * @param location the offset or location on the
    *     curve at which to split
    * @return the newly created path after splitting, if any
-   * @see Path#splitAt(offset)
+   * @see Path#splitAt(location)
    */
   splitAt(location: number | CurveLocation): Path {
     const path = this._path
@@ -553,14 +551,14 @@ export class Curve extends Base {
   }
 
   /**
-   * Splits the path this curve belongs to at the given offset. After
-   * splitting, the path will be open. If the path was open already, splitting
-   * will result in two paths.
+   * Splits the path this curve belongs to at the given curve-time parameter.
+   * After splitting, the path will be open. If the path was open already,
+   * splitting will result in two paths.
    *
    * @param time the curve-time parameter on the curve at which to
    *     split
    * @return the newly created path after splitting, if any
-   * @see Path#splitAt(offset)
+   * @see Path#splitAt(location)
    */
   splitAtTime(time: number): Path {
     return this.splitAt(this.getLocationAtTime(time))
@@ -977,7 +975,7 @@ export class Curve extends Base {
   }
 
   /**
-   * Checks if the the two curves describe straight lines that are
+   * Checks if the two curves describe straight lines that are
    * collinear, meaning they run in parallel.
    *
    * @param curve the other curve to check against
@@ -1023,7 +1021,7 @@ export class Curve extends Base {
    * `null` if the offset exceeds the length of the curve.
    *
    * @param offset the offset on the curve
-   * @return the curve location at the specified the offset
+   * @return the curve location at the specified offset
    */
   getLocationAt(offset: number): CurveLocation {
     return this.getLocationAtTime(this.getTimeAt(offset))
@@ -1034,7 +1032,7 @@ export class Curve extends Base {
    * the curve, or `null` if the parameter lies outside of `0..1`.
    *
    * @param time the curve-time parameter on the curve
-   * @return the curve location at the specified the location
+   * @return the curve location at the specified curve-time parameter
    */
   getLocationAtTime(time: number): CurveLocation {
     return time != null && time >= 0 && time <= 1
@@ -1080,7 +1078,7 @@ export class Curve extends Base {
    * the curve.
    *
    * @param time the curve-time parameter on the curve
-   * @return the curve offset at the specified the location
+   * @return the curve offset at the specified curve-time parameter
    */
   getOffsetAtTime(time: number): number {
     return this.getPartLength(0, time)
@@ -1098,7 +1096,7 @@ export class Curve extends Base {
   }
 
   /**
-   * Returns the length of the path from its beginning up to up to the
+   * Returns the length of the path from its beginning up to the
    * specified point if it lies on the path, `null` otherwise.
    *
    * @param point the point on the path
@@ -1511,6 +1509,8 @@ export class Curve extends Base {
    *
    * @param v the curve values array
    * @return the roots of all found peaks
+   *
+   * @private
    */
   static getPeaks(v: number[]): number[] {
     const c = getCoefficients(v)
@@ -1545,6 +1545,8 @@ export class Curve extends Base {
    * @param tolerance the distance of the control points to the
    *     line
    * @return the sorted times of the reversals
+   *
+   * @private
    */
   static getReversals(v: number[], tolerance: number): number[] {
     // The line's direction, along the longest of the chord and handles:
@@ -1590,6 +1592,8 @@ export class Curve extends Base {
    * tangential
    * @return at most two curve-time parameters, where the curve
    * is tangential to the given tangent
+   *
+   * @private
    */
   static getTimesWithTangent(v: number[], tangent: Point): number[] {
     // Algorithm adapted from:
@@ -1640,7 +1644,9 @@ export class Curve extends Base {
 
   /**
    * Code to detect overlaps of intersecting based on work by
-   * @iconexperience in #648
+   * iconexperience in #648
+   *
+   * @private
    */
   static getOverlaps(
     v1: number[],
@@ -1984,56 +1990,61 @@ export interface Curve {
   getCurvatureAt(location: number): number
 
   /**
-   * Calculates the point on the curve at the given location.
+   * Calculates the point on the curve at the given curve-time parameter.
    *
    * @param time the curve-time parameter on the curve
-   * @return the point on the curve at the given location
+   * @return the point on the curve at the given curve-time parameter
    */
   getPointAtTime(time: number): Point
 
   /**
    * Calculates the normalized tangent vector of the curve at the given
-   * location.
+   * curve-time parameter.
    *
    * @param time the curve-time parameter on the curve
-   * @return the normalized tangent of the curve at the given location
+   * @return the normalized tangent of the curve at the given curve-time
+   *     parameter
    */
   getTangentAtTime(time: number): Point
 
   /**
-   * Calculates the normal vector of the curve at the given location.
+   * Calculates the normal vector of the curve at the given curve-time
+   * parameter.
    *
    * @param time the curve-time parameter on the curve
-   * @return the normal of the curve at the given location
+   * @return the normal of the curve at the given curve-time parameter
    */
   getNormalAtTime(time: number): Point
 
   /**
    * Calculates the weighted tangent vector of the curve at the given
-   * location, its length reflecting the curve velocity at that location.
+   * curve-time parameter, its length reflecting the curve velocity there.
    *
    * @param time the curve-time parameter on the curve
-   * @return the weighted tangent of the curve at the given location
+   * @return the weighted tangent of the curve at the given curve-time
+   *     parameter
    */
   getWeightedTangentAtTime(time: number): Point
 
   /**
-   * Calculates the weighted normal vector of the curve at the given location,
-   * its length reflecting the curve velocity at that location.
+   * Calculates the weighted normal vector of the curve at the given
+   * curve-time parameter, its length reflecting the curve velocity there.
    *
    * @param time the curve-time parameter on the curve
-   * @return the weighted normal of the curve at the given location
+   * @return the weighted normal of the curve at the given curve-time
+   *     parameter
    */
   getWeightedNormalAtTime(time: number): Point
 
   /**
-   * Calculates the curvature of the curve at the given location. Curvatures
-   * indicate how sharply a curve changes direction. A straight line has zero
-   * curvature, where as a circle has a constant curvature. The curve's radius
-   * at the given location is the reciprocal value of its curvature.
+   * Calculates the curvature of the curve at the given curve-time
+   * parameter. Curvatures indicate how sharply a curve changes direction. A
+   * straight line has zero curvature, where as a circle has a constant
+   * curvature. The curve's radius at the given curve-time parameter is the
+   * reciprocal value of its curvature.
    *
    * @param time the curve-time parameter on the curve
-   * @return the curvature of the curve at the given location
+   * @return the curvature of the curve at the given curve-time parameter
    */
   getCurvatureAtTime(time: number): number
 }

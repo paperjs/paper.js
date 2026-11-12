@@ -69,7 +69,7 @@ export class SymbolDefinition extends ItemDefinition {
    *
    * @param item the source item which is removed from the scene graph and
    *     becomes the symbol's definition.
-   * @param props
+   * @param props the properties to set on the definition
    * @option [props.name] {String} the name of the symbol
    */
   constructor(item: Item, props: { name?: string })
@@ -92,7 +92,7 @@ export class SymbolDefinition extends ItemDefinition {
   }
 
   /**
-   * Places in instance of the symbol in the project.
+   * Places an instance of the symbol in the project.
    *
    * @param position the position of the placed symbol
    */
@@ -112,7 +112,7 @@ export class SymbolDefinition extends ItemDefinition {
   /**
    * Checks whether the symbol's definition is equal to the supplied symbol.
    *
-   * @param symbol
+   * @param symbol the symbol definition to compare with
    * @return {@true if they are equal}
    */
   equals(symbol: SymbolDefinition): boolean {

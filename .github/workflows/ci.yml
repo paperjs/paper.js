@@ -104,7 +104,7 @@ jobs:
           node-version: 24
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Build library and zip
-        run: pnpm build && pnpm zip
+      - name: Build library, docs and zip
+        run: pnpm build:docs && pnpm zip
       - name: Deploy
         run: .github/deploy-prebuilt.sh

@@ -39,7 +39,7 @@ export type RectangleLike =
   | { [key: string]: number | PointLike | SizeLike }
 
 /**
- * A Rectangle specifies an area that is enclosed by it's top-left point (x,
+ * A Rectangle specifies an area that is enclosed by its top-left point (x,
  * y), its width, and its height. It should not be confused with a rectangular
  * path, it is not an item.
  *
@@ -118,15 +118,8 @@ export class Rectangle extends Base {
    * @param rectangle
    */
   constructor(rectangle?: Rectangle)
-  /**
-   * Creates a Rectangle object from any of the values that a function taking
-   * a rectangle accepts, as {@link Rectangle.from()} does.
-   *
-   * @param rect
-   * @param y
-   * @param width
-   * @param height
-   */
+  // Any of the forms above, as Rectangle.from() reads them, for the types
+  // only:
   constructor(
     rect: RectangleLike | PointLike | number,
     y?: PointLike | SizeLike | number,
@@ -150,6 +143,7 @@ export class Rectangle extends Base {
    *
    * @param values
    */
+  set(...values: any[]): this
   set(
     arg0?: RectangleLike | PointLike | number,
     arg1?: PointLike | SizeLike | number,
@@ -897,6 +891,33 @@ export interface Rectangle {
   get bottomCenter(): Point
   set bottomCenter(point: PointLike)
 
+  /**
+   * {@grouptitle Item Bounds}
+   *
+   * Specifies whether an item's bounds are to appear as selected.
+   *
+   * Paper.js draws the bounds of items with selected bounds on top of
+   * your project. This is very useful when debugging.
+   *
+   * This property is only available on the rectangles returned by
+   * {@link Item#bounds} and {@link Item#strokeBounds}, which are
+   * selected independently of each other, each showing its own
+   * bounds. Rectangles returned by other getters such as {@link
+   * Item#handleBounds} don't have it.
+   *
+   * @default false
+   *
+   * @example {@paperscript}
+   * var path = Path.circle({
+   *     center: [80, 50],
+   *     radius: 40,
+   *     selected: true
+   * });
+   *
+   * path.bounds.selected = true;
+   */
+  selected: boolean
+
   _getTopLeft(_dontLink?: boolean): Point
   _getTopRight(_dontLink?: boolean): Point
   _getBottomLeft(_dontLink?: boolean): Point
@@ -956,31 +977,6 @@ export class LinkedRectangle extends Rectangle {
     return this
   }
 
-  /**
-   * {@grouptitle Item Bounds}
-   *
-   * Specifies whether an item's bounds are to appear as selected.
-   *
-   * Paper.js draws the bounds of items with selected bounds on top of
-   * your project. This is very useful when debugging.
-   *
-   * This property is only available on the rectangles returned by
-   * {@link Item#bounds} and {@link Item#strokeBounds}, which are
-   * selected independently of each other, each showing its own
-   * bounds. Rectangles returned by other getters such as {@link
-   * Item#handleBounds} don't have it.
-   *
-   * @default false
-   *
-   * @example {@paperscript}
-   * var path = Path.circle({
-   *     center: [80, 50],
-   *     radius: 40,
-   *     selected: true
-   * });
-   *
-   * path.bounds.selected = true;
-   */
   get selected(): boolean {
     return !!(this.#owner._selection & this.#getSelection())
   }

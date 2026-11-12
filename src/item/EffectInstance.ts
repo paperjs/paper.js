@@ -191,7 +191,7 @@ export class EffectInstance extends Base {
   /**
    * Checks whether the instance is equal to the supplied one.
    *
-   * @param instance
+   * @param instance the instance to compare with
    * @return {@true if they are equal}
    */
   equals(instance: EffectInstance): boolean {

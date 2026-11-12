@@ -52,7 +52,8 @@ export class PathText extends TextItem {
    * Creates a text item that runs along a path.
    *
    * @param path the path that the text runs along
-   * @param orientation the orientation of the text
+   * @param [orientation='horizontal'] the orientation of the text, see
+   *     {@link #orientation}
    *
    * @example {@paperscript}
    * var path = Path.circle({ center: [80, 80], radius: 60 });
@@ -258,7 +259,8 @@ export interface PathText {
   alignment: string
 
   /**
-   * Space added between the letters, where the path bends tightly.
+   * The space added between the letters, which keeps them apart where the
+   * path bends tightly.
    *
    * @default 0
    */

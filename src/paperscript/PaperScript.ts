@@ -10,6 +10,11 @@
  * All rights reserved.
  */
 
+/**
+ * The PaperScript functions, to compile, execute and load PaperScript code.
+ *
+ * @module PaperScript
+ */
 import * as acorn from 'acorn'
 import {
   Color,
@@ -666,6 +671,10 @@ export function compile(code: string, options?: CompileOptions): Compiled {
  * performance. It also installs global view and tool handlers automatically
  * on the respective objects.
  *
+ * Code with top-level `await` runs as an async function. `execute()` then
+ * returns a Promise of the exports, and installs the global handlers once
+ * it resolves.
+ *
  * @option options.url {String} the url of the source, for source-map
  *     generation
  * @option options.source {String} the source to be used for the source-
@@ -691,10 +700,6 @@ export function compile(code: string, options?: CompileOptions): Compiled {
  *     namespace as a Promise, and its loader may return a Promise as well.
  *     `import(specifier, options)` passes on `options.with` as the
  *     attributes. The loader runs each module once and handles cycles.
- *
- * Code with top-level `await` runs as an async function. `execute()` then
- * returns a Promise of the exports, and installs the global handlers once
- * it resolves.
  *
  * @param code the PaperScript code
  * @param scope the scope for which the code is executed
@@ -879,7 +884,7 @@ export function execute(
  *     provided, all scripts of the HTML document are iterated over and
  *     loaded
  * @return the scope produced for the passed `script`, or
- *     `undefined` of multiple scripts area loaded
+ *     `undefined` if multiple scripts are loaded
  */
 export function load(script?: HTMLScriptElement): PaperScope {
   return script ? loadScript(script) : loadAll()

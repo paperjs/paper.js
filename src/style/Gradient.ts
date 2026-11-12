@@ -99,12 +99,8 @@ export class Gradient extends Base {
    * @param object the object describing the gradient's properties
    */
   constructor(object: Exclude<GradientLike, Gradient | GradientStopLike[]>)
-  /**
-   * Creates a Gradient object from any of the values that a function taking a
-   * gradient accepts, as {@link Gradient.from()} does.
-   *
-   * @param gradient
-   */
+  // Any of the forms above, as Gradient.from() reads them, for the types
+  // only:
   constructor(gradient: Exclude<GradientLike, Gradient>)
   constructor(stops?: any, radial?: boolean) {
     super()
@@ -226,7 +222,7 @@ export class Gradient extends Base {
   /**
    * Checks whether the gradient is equal to the supplied gradient.
    *
-   * @param gradient
+   * @param gradient the gradient to compare with
    * @return {@true if they are equal}
    */
   equals(gradient: Gradient): boolean {
@@ -243,7 +239,7 @@ export class Gradient extends Base {
    * Returns the passed gradient if it is one already, or else a new gradient
    * created from the passed values, as {@link Gradient()} reads them.
    *
-   * @param gradient
+   * @param gradient the gradient, or the values describing one
    */
   static from(gradient: GradientLike): Gradient {
     return gradient instanceof Gradient ? gradient : new Gradient(gradient)

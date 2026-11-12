@@ -8,5 +8,7 @@
     "rewriteRelativeImportExtensions": true,
     "rootDir": "src",
     "outDir": "dist/types"
-  }
+  },
+  // The globals of PaperScript are declared for the docs only:
+  "exclude": ["src/docs"]
 }

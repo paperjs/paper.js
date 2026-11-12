@@ -205,7 +205,7 @@ export class Tween extends Emitter {
 
   /**
    * Set a function that will be executed when the tween completes.
-   * @param then the function to execute when the tween
+   * @param callback the function to execute when the tween
    *     completes
    *
    * @example {@paperscript}
@@ -223,11 +223,11 @@ export class Tween extends Emitter {
    *     circle.tweenTo({ fillColor: 'blue' }, 2000);
    * });
    */
-  then(then: (object: object) => void): this {
+  then(callback: (object: object) => void): this {
     // TODO: This only supports one callback for `then()`. Figure out how
     // to handle multiple calls to then in an decent way, without relying
     // on Promises (or should we?).
-    this.#then = then
+    this.#then = callback
     return this
   }
 

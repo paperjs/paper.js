@@ -142,7 +142,8 @@ export class TextStory extends Base {
    * character before it when it's inserted.
    *
    * @param content the new content
-   * @param start the index of the first character to replace
+   * @param start the index of the first character to replace, or the range
+   *     to replace
    * @param end the index after the last character to replace
    */
   replace(
@@ -266,10 +267,11 @@ export class TextStory extends Base {
   }
 
   /**
-   * The range of the text from `start` to `end`.
+   * Returns the range of the text from `start` to `end`.
    *
    * @param start the index of its first character
    * @param end the index after its last character
+   * @return the range of the text
    */
   range(start: number, end: number): TextRange {
     return new TextRange(this, start, end)

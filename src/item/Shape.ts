@@ -34,6 +34,12 @@ import type { SizeLike } from '../basic/Size.ts'
 import type { RectangleLike } from '../basic/Rectangle.ts'
 import type { BoundsOptions } from './Item.ts'
 
+/**
+ * The Shape item represents a rectangle, with optionally rounded corners, a
+ * circle or an ellipse, described by its {@link #type}, {@link #size} and
+ * {@link #radius} instead of by segments as a {@link Path} is. Use
+ * {@link #toPath(insert)} to convert it to a path.
+ */
 export class Shape extends Item {
   _type: string
   _size: Size

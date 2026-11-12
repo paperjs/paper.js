@@ -64,7 +64,8 @@ export class Effect extends Base {
   /**
    * The function that applies the effect, called with the instance as
    * `this`, and returning what the effect makes of the art that it gets,
-   * which it doesn't change.
+   * which it doesn't change. The function receives an event object with
+   * these fields:
    *
    * @option event.art {Item} the item to apply the effect to, or what the
    *     effect before it returned
@@ -157,7 +158,7 @@ export class Effect extends Base {
    * Registers the effect under its type, replacing any effect registered
    * there before. Effects register themselves when they are created.
    *
-   * @param effect
+   * @param effect the effect to register
    * @return the effect
    */
   static add(effect: Effect): Effect {
@@ -169,7 +170,7 @@ export class Effect extends Base {
   /**
    * Returns the effect registered under the type.
    *
-   * @param type
+   * @param type the type of the effect
    * @return the effect, or `null`
    */
   static get(type: string): Effect | null {
@@ -189,7 +190,7 @@ export class Effect extends Base {
   /**
    * Removes the effect from the registered effects.
    *
-   * @param effect
+   * @param effect the effect to remove
    * @return {@true if the effect was registered}
    */
   static remove(effect: Effect): boolean {

@@ -19,8 +19,8 @@ jobs:
         run: test "$(node -p 'require("./package.json").version')" = "${GITHUB_REF_NAME#v}"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Build library and zip
-        run: pnpm build && pnpm zip
+      - name: Build library, docs and zip
+        run: pnpm build:docs && pnpm zip
       - uses: actions/upload-artifact@v4
         with:
           name: dist
@@ -69,6 +69,8 @@ jobs:
         run: |
           VERSION=${GITHUB_REF_NAME#v}
           npm pkg set version="$VERSION"
+          rm -rf content/08-Reference/*
+          cp -R "$DIST/serverdocs/." content/08-Reference/
           cp "$DIST/paperjs.zip" "content/11-Download/paperjs-v$VERSION.zip"
           cp "$DIST/paper-full.js" assets/js/paper.js
           git config user.name "Paper.js Bot"

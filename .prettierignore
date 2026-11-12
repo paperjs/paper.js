@@ -1,5 +1,6 @@
 # The builds, examples and the boolean sweep keep the old style until the ES
-# modules port:
+# modules port, and the docs' runtime is vendored:
 dist/
 examples/
 test/booleans/
+docs/static/

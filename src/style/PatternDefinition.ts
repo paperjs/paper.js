@@ -73,7 +73,7 @@ export class PatternDefinition extends ItemDefinition {
    *
    * @param item the item to repeat, which is removed from the scene graph and
    *     becomes the pattern's tile content
-   * @param options
+   * @param options the tile, spacing and name of the pattern
    * @option [options.tile] {Rectangle} the rectangle that is repeated, the
    *     bounds of the item by default
    * @option [options.spacing=0] {Size} the gap between the tiles
@@ -163,7 +163,7 @@ export class PatternDefinition extends ItemDefinition {
   /**
    * Checks whether the pattern is equal to the supplied pattern.
    *
-   * @param pattern
+   * @param pattern the pattern to compare with
    * @return {@true if they are equal}
    */
   equals(pattern: PatternDefinition): boolean {
@@ -248,7 +248,7 @@ export class PatternDefinition extends ItemDefinition {
    * Returns the passed pattern if it is one already, or else a new pattern
    * that repeats the passed item.
    *
-   * @param pattern
+   * @param pattern the pattern, or the item to repeat
    */
   static from(pattern: PatternDefinition | Item): PatternDefinition {
     return pattern instanceof PatternDefinition
