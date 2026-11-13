@@ -10,7 +10,16 @@
  * All rights reserved.
  */
 
-import { Item, Path, PathItem, Point, inject, push } from '../internal.ts'
+import {
+  ChangeFlag,
+  Item,
+  Path,
+  PathItem,
+  Point,
+  getStrokeOutline,
+  inject,
+  push
+} from '../internal.ts'
 import type { HitResult } from '../item/HitResult.ts'
 import type { Project } from '../item/Project.ts'
 import type { PointLike } from '../basic/Point.ts'
@@ -110,11 +119,12 @@ export class CompoundPath extends PathItem {
   }
 
   _initializeContent(project: Project) {
-    super._initializeContent(project)
     // CompoundPath has children and supports named children. They're its
-    // content, which loading resets, unlike a group's:
+    // content, which loading resets, unlike a group's, and which the style
+    // that it takes from the project changes already, see #_changed():
     this._children = []
     this._namedChildren = {}
+    super._initializeContent(project)
   }
 
   _transformContent(
@@ -283,6 +293,30 @@ export class CompoundPath extends PathItem {
         )
       })
       .join('')
+  }
+
+  _changed(flags: number) {
+    super._changed(flags)
+    // The children have their strokes in the compound path's style, so
+    // their bounds and outlines change with it:
+    if (flags & ChangeFlag.STROKE) {
+      for (const child of this._children) {
+        child._bounds = child._strokeOutline = undefined
+      }
+    }
+  }
+
+  // @override
+  _hasStrokeProfile(): boolean {
+    return (
+      this.hasStroke() &&
+      this._children.some(child => child._strokeProfile)
+    )
+  }
+
+  // @override
+  _getStrokeOutline(): PathItem {
+    return getStrokeOutline(this)
   }
 
   _hitTestChildren(

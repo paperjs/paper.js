@@ -230,17 +230,20 @@ export function dashPathItem(
   return result
 }
 
-export function getStrokeOutline(path: Path): PathItem {
+export function getStrokeOutline(item: PathItem): PathItem {
+  const copy = item.clone({ insert: false }).reduce()
+  // The style of the compound path, for its children:
+  const { style } = item
   return outlineStroke(
     getDashes(
-      [path.clone({ insert: false }).reduce()],
-      path.dashArray,
-      path.dashOffset
+      (copy._children ?? [copy]) as Path[],
+      style.dashArray,
+      style.dashOffset
     ),
-    path.strokeWidth / 2,
-    path.strokeJoin,
-    path.strokeCap,
-    path.miterLimit
+    style.strokeWidth / 2,
+    style.strokeJoin,
+    style.strokeCap,
+    style.miterLimit
   ).reduce() as PathItem
 }
 
