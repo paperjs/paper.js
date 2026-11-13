@@ -43,7 +43,8 @@ import type { SizeLike } from '../basic/Size.ts'
 import type { Matrix } from '../basic/Matrix.ts'
 import type { CurveLocation } from './CurveLocation.ts'
 import type { SegmentLike } from './Segment.ts'
-import type { BooleanOptions, Graph, Winding } from './boolean.ts'
+import type { BooleanOptions, Winding } from './boolean.ts'
+import type { Graph } from './graph.ts'
 import type { Group } from '../item/Group.ts'
 import type {
   DashOptions,
