@@ -11,7 +11,7 @@
  */
 
 import { describe } from 'vitest'
-import {
+import paper, {
   CompoundPath,
   Path,
   Project,
@@ -487,13 +487,43 @@ describe('StrokeProfile', () => {
     equals([isHit([10, 0]), isHit([30, 0])], [true, false])
     path.dashOffset = 20
     equals([isHit([10, 0]), isHit([30, 0])], [false, true])
-    // Compound paths draw the strokes of their children as one:
+  })
+
+  test('Compound paths draw the profiles of their children as one', () => {
+    // The taper, and a plain line from 0 to 200, 50 below it:
     const compound = new CompoundPath({
-      children: [createTaper()],
       strokeColor: 'black',
-      strokeWidth: 10
+      strokeWidth: 10,
+      children: [createTaper(), new Path([[0, 50], [200, 50]])]
     })
-    equals(compound.strokeBounds.height, 10)
+    const getSides = rectangle => [rectangle.top, rectangle.bottom]
+    const isHit = point => !!compound.hitTest(point, { stroke: true })
+    const options = { tolerance: 0.1 }
+    equals(getSides(compound.strokeBounds), [-10, 55], null, options)
+    equals(
+      [isHit([190, 8]), isHit([10, 4]), isHit([100, 54])],
+      [true, false, true]
+    )
+    // As the outline of all their strokes:
+    const output = compound.getEffectOutput()
+    equals(getSides(output.bounds), [-10, 55], null, options)
+    equals(output.fillColor, compound.strokeColor)
+    equals(output.hasStroke(), false)
+    equals(compound.children[0].getEffectOutput(), null, 'not the children')
+    equals(getSides(compound.clone().strokeBounds), [-10, 55], null, options)
+    // In the compound path's style, and without profiles as before:
+    compound.strokeWidth = 20
+    equals(getSides(compound.strokeBounds), [-20, 60], null, options)
+    compound.children[0].strokeProfile = null
+    equals(compound.getEffectOutput(), null)
+    equals(getSides(compound.strokeBounds), [-10, 60])
+    compound.strokeWidth = 10
+    equals(getSides(compound.strokeBounds), [-5, 55])
+    // New compound paths take the stroke of the project's style:
+    const { currentStyle } = paper.project
+    currentStyle.strokeWidth = 20
+    equals(new CompoundPath().strokeWidth, 20)
+    currentStyle.strokeWidth = 1
   })
 
   test('StrokeProfileStop#equals() compares its values and place', () => {

@@ -19,10 +19,8 @@ import {
   Curve,
   CurveLocation,
   EPSILON,
-  Effect,
   Formatter,
   GEOMETRIC_EPSILON,
-  Group,
   HitResult,
   Item,
   ItemSelection,
@@ -606,48 +604,9 @@ export class Path extends PathItem {
     }
   }
 
-  // Whether the path draws its stroke as the outline of its stroke profile.
-  // Compound paths draw the strokes of their children as one:
+  // @override
   _hasStrokeProfile(): boolean {
-    return (
-      !!this._strokeProfile &&
-      this.hasStroke() &&
-      !(this._parent instanceof CompoundPath)
-    )
-  }
-
-  // Paths with a stroke profile draw their stroke as its outline, filled with
-  // the stroke color, after their effects:
-  _hasEffects(): boolean {
-    return super._hasEffects() || this._hasStrokeProfile()
-  }
-
-  _applyEffects(art: Item): Item {
-    let output = super._applyEffects(art)
-    if (this._hasStrokeProfile()) {
-      if (output) {
-        const effect = Effect.get('outline')
-        output = effect?.onApply({ art: output, item: this }) || output
-      } else {
-        // Without effects, it's the path's own outline:
-        const outline = this._getStrokeOutline().clone({ insert: false })
-        outline.set({
-          fillColor: this.strokeColor,
-          strokeColor: null
-        })
-        if (art.hasFill()) {
-          art.strokeColor = null
-          output = new Group({
-            children:
-              this.paintOrder === 'stroke' ? [outline, art] : [art, outline],
-            insert: false
-          })
-        } else {
-          output = outline
-        }
-      }
-    }
-    return output
+    return !!this._strokeProfile && this.hasStroke()
   }
 
   // @override
@@ -2816,10 +2775,8 @@ export class Path extends PathItem {
         : getSegmentBounds(segments, closed, this, matrix, options)
   }
 
-  // The outline of the path's stroke in its own coordinates, with its
-  // dashes, kept until its geometry or its stroke changes, see
-  // #_changed(). Paths with a stroke profile draw, bound and hit-test
-  // their stroke with it:
+  // @override
+  // Kept until the path's geometry or its stroke changes, see #_changed():
   _getStrokeOutline(): PathItem {
     return (this._strokeOutline ??= getStrokeOutline(this))
   }

@@ -15,7 +15,9 @@ import {
   CompoundPath,
   Curve,
   EPSILON,
+  Effect,
   GEOMETRIC_EPSILON,
+  Group,
   Item,
   Path,
   Point,
@@ -45,7 +47,6 @@ import type { CurveLocation } from './CurveLocation.ts'
 import type { SegmentLike } from './Segment.ts'
 import type { BooleanOptions, Winding } from './boolean.ts'
 import type { Graph } from './graph.ts'
-import type { Group } from '../item/Group.ts'
 import type {
   DashOptions,
   OffsetOptions,
@@ -301,6 +302,53 @@ export abstract class PathItem extends Item {
 
   // NOTE: #_getPathData() is defined in CompoundPath / Path
   abstract _getPathData(_matrix?: Matrix, _precision?: number): string
+
+  // Whether the path item draws its stroke as the outline of the stroke
+  // profiles of its paths:
+  abstract _hasStrokeProfile(): boolean
+
+  // The outline of the path item's stroke in its own coordinates, with its
+  // dashes. With a stroke profile, the stroke is drawn, bound and hit-tested
+  // with it:
+  abstract _getStrokeOutline(): PathItem
+
+  // Path items with a stroke profile draw their stroke as its outline, filled
+  // with the stroke color, after their effects. Compound paths draw the
+  // strokes of their children as one:
+  _hasEffects(): boolean {
+    return (
+      super._hasEffects() ||
+      this._hasStrokeProfile() && !(this._parent instanceof CompoundPath)
+    )
+  }
+
+  _applyEffects(art: Item): Item {
+    let output = super._applyEffects(art)
+    if (this._hasStrokeProfile()) {
+      if (output) {
+        const effect = Effect.get('outline')
+        output = effect?.onApply({ art: output, item: this }) || output
+      } else {
+        // Without effects, it's the path item's own outline:
+        const outline = this._getStrokeOutline().clone({ insert: false })
+        outline.set({
+          fillColor: this.strokeColor,
+          strokeColor: null
+        })
+        if (art.hasFill()) {
+          art.strokeColor = null
+          output = new Group({
+            children:
+              this.paintOrder === 'stroke' ? [outline, art] : [art, outline],
+            insert: false
+          })
+        } else {
+          output = outline
+        }
+      }
+    }
+    return output
+  }
 
   _canComposite(): boolean {
     // A path with only a fill or a stroke can be directly blended, but if
