@@ -11,6 +11,7 @@
  */
 
 import {
+  Bezier,
   Curve,
   CurveLocation,
   EPSILON,
@@ -254,8 +255,8 @@ export function hitTestPath(
     let nearest: Point
     for (i = 0, l = curves.length; i < l; i++) {
       const values = curves[i].getValues(strokeSpace)
-      const t = Curve.getNearestTime(values, strokePoint)
-      const pt = Curve.getPoint(values, t)
+      const t = Bezier.getNearestTime(values, strokePoint)
+      const pt = Bezier.getPoint(values, t)
       const distance = pt.getDistance(strokePoint)
       if (distance < minDistance) {
         minDistance = distance

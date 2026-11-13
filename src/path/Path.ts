@@ -12,6 +12,7 @@
 
 import {
   ANGULAR_EPSILON,
+  Bezier,
   CURVETIME_EPSILON,
   Change,
   ChangeFlag,
@@ -1380,7 +1381,7 @@ export class Path extends PathItem {
       area = 0
       for (let i = 0, l = segments.length; i < l; i++) {
         const last = i + 1 === l
-        area += Curve.getArea(
+        area += Bezier.getArea(
           Curve.getValues(
             segments[i], segments[last ? 0 : i + 1],
             // If this is the last curve and the last is not closed,
@@ -1825,7 +1826,7 @@ export class Path extends PathItem {
   // NOTE: Documentation is in PathItem#flatten()
   flatten(flatness?: number) {
     // Use PathFlattener to subdivide the curves into parts that are flat
-    // enough, as specified by `flatness` / Curve.isFlatEnough():
+    // enough, as specified by `flatness` / Bezier.isFlatEnough():
     const flattener = new PathFlattener(this, flatness || 0.25, 256, true)
     const { parts } = flattener
     const { length } = parts

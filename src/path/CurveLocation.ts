@@ -12,6 +12,7 @@
 
 import {
   Base,
+  Bezier,
   CURVETIME_EPSILON,
   Curve,
   Formatter,
@@ -444,9 +445,9 @@ export class CurveLocation extends Base {
       // Find the largest offset of unambiguous direction on the curve,
       // taking their loops, cusps, inflections, and "peaks" into account.
       const v = curve.getValues()
-      const roots = Curve.classify(v).roots ?? Curve.getPeaks(v)
+      const roots = Bezier.classify(v).roots ?? Bezier.getPeaks(v)
       const count = roots.length
-      const offset = Curve.getLength(
+      const offset = Bezier.getLength(
         v,
         end && count ? roots[count - 1] : 0,
         !end && count ? roots[0] : 1

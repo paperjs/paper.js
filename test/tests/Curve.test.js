@@ -12,6 +12,7 @@
 
 import { describe } from 'vitest'
 import { Curve, Numerical, Path, Point, Rectangle } from 'paper'
+import * as Bezier from '../../src/curve/bezier.ts'
 import { equals, test } from '../helpers.js'
 
 describe('Curve', () => {
@@ -314,7 +315,7 @@ describe('Curve', () => {
       -7500, 0, -7500, 4142.135623730952, -4142.135623730952, 7500, 0,
       7500
     ]
-    equals(Curve.getTimeAt(curve, 11782.625235553916), 1)
+    equals(Bezier.getTimeAt(curve, 11782.625235553916), 1)
   })
 
   test('Curve#getLocationAt()', () => {
@@ -625,7 +626,7 @@ describe('Curve', () => {
     )
   })
 
-  test('Curve#getTimesWithTangent(), #length and Curve.getPeaks() far from the origin', () => {
+  test('Curve#getTimesWithTangent(), #length and Bezier.getPeaks() far from the origin', () => {
     // The coordinates are multiples of 1 / 4096, which stay exact at 2^40, so
     // the curve moved there has the same shape and the same results:
     function getCurve(offset) {
@@ -648,8 +649,8 @@ describe('Curve', () => {
     )
     equals(moved.length, curve.length, 'length', options)
     equals(
-      Curve.getPeaks(moved.getValues()),
-      Curve.getPeaks(curve.getValues()),
+      Bezier.getPeaks(moved.getValues()),
+      Bezier.getPeaks(curve.getValues()),
       'peaks',
       options
     )

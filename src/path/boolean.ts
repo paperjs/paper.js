@@ -28,6 +28,7 @@
  */
 
 import {
+  Bezier,
   CompoundPath,
   Curve,
   CurveLocation,
@@ -314,7 +315,7 @@ export function getRayWinding(point: Point, v: number[]): number {
     y <= max(v[1], v[3], v[5], v[7]) &&
     x < max(v[0], v[2], v[4], v[6])
   ) {
-    const monoCurves = Curve.getMonoCurves(v)
+    const monoCurves = Bezier.getMonoCurves(v)
     const roots = []
     for (let i = 0, l = monoCurves.length; i < l; i++) {
       const mv = monoCurves[i]
@@ -325,8 +326,8 @@ export function getRayWinding(point: Point, v: number[]): number {
         // The monotone curve crosses the ray once. solveCubic()
         // can miss it close to the ends, where it is at the end:
         const px =
-          Curve.solveCubic(mv, 1, y, roots, 0, 1) > 0
-            ? Curve.getPoint(mv, roots[0]).x
+          Bezier.solve(mv, 1, y, roots, 0, 1) > 0
+            ? Bezier.getPoint(mv, roots[0]).x
             : abs(y - y0) < abs(y - y3)
               ? mv[0]
               : mv[6]
@@ -536,11 +537,11 @@ export function getWinding(
             // does not require additional calculations for the point.
             paL > max(a0, a1, a2, a3) || paR < min(a0, a1, a2, a3)
             ? 1
-            : Curve.solveCubic(v, io, po, roots, 0, 1) > 0
+            : Bezier.solve(v, io, po, roots, 0, 1) > 0
               ? roots[0]
               : 1
     const a =
-      t === 0 ? a0 : t === 1 ? a3 : Curve.getPoint(v, t)[dir ? 'y' : 'x']
+      t === 0 ? a0 : t === 1 ? a3 : Bezier.getPoint(v, t)[dir ? 'y' : 'x']
     const winding = o0 > o3 ? 1 : -1
     const windingPrev = vPrev[io] > vPrev[io + 6] ? 1 : -1
     const a3Prev = vPrev[ia + 6]
@@ -586,7 +587,7 @@ export function getWinding(
       !dontFlip &&
       a > paL &&
       a < paR &&
-      Curve.getTangent(v, t)[dir ? 'x' : 'y'] === 0 &&
+      Bezier.getTangent(v, t)[dir ? 'x' : 'y'] === 0 &&
       getWinding(point, curves, !dir, true)
     )
   }
@@ -609,7 +610,7 @@ export function getWinding(
       const monoCurves =
         paL > max(a0, a1, a2, a3) || paR < min(a0, a1, a2, a3)
           ? [v]
-          : Curve.getMonoCurves(v, dir)
+          : Bezier.getMonoCurves(v, dir)
       let res: Winding | false
       for (let i = 0, l = monoCurves.length; i < l; i++) {
         // Calling addWinding() my lead to direction flipping, in
@@ -738,7 +739,7 @@ export function getInteriorPoint(item: PathItem): Point {
     const intercepts = []
     const roots = []
     for (let i = 0, l = curves.length; i < l; i++) {
-      push(monoCurves, Curve.getMonoCurves(curves[i].getValues()))
+      push(monoCurves, Bezier.getMonoCurves(curves[i].getValues()))
     }
     for (let i = 0, l = monoCurves.length; i < l; i++) {
       ys.push(monoCurves[i][1], monoCurves[i][7])
@@ -763,8 +764,8 @@ export function getInteriorPoint(item: PathItem): Point {
       const mo3 = mv[7]
       if (y > min(mo0, mo3) && y < max(mo0, mo3)) {
         intercepts.push(
-          Curve.solveCubic(mv, 1, y, roots, 0, 1) === 1
-            ? Curve.getPoint(mv, roots[0]).x
+          Bezier.solve(mv, 1, y, roots, 0, 1) === 1
+            ? Bezier.getPoint(mv, roots[0]).x
             : (mv[0] + mv[6]) / 2
         )
       }

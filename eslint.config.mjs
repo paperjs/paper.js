@@ -33,6 +33,9 @@ const braces = [
 // import each other directly and nothing above them, so that the modules
 // built on them work without the rest of the library:
 const basic = ['src/constants.ts', 'src/{util,core,basic}/**']
+// The curve layer on top of it: the functions on curve values, which only
+// import the basic layer and each other:
+const curve = ['src/curve/**']
 
 export default [
   {
@@ -85,7 +88,12 @@ export default [
     // The modules import each other through internal.ts, which loads them in
     // order. Type imports load nothing:
     files: ['src/**/*.ts'],
-    ignores: ['src/internal.ts', 'src/{node,hosted,paperscript}/**', ...basic],
+    ignores: [
+      'src/internal.ts',
+      'src/{node,hosted,paperscript}/**',
+      ...basic,
+      ...curve
+    ],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -102,7 +110,8 @@ export default [
     }
   },
   {
-    files: basic,
+    // Both take modules of the basic layer and the ones next to them:
+    files: [...basic, ...curve],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -112,7 +121,7 @@ export default [
               regex:
                 '^(?!(\\.\\./(constants|(util|core|basic)/[^/]+)|\\./[^/]+)\\.ts$)\\.\\.?/.*\\.ts$',
               allowTypeImports: true,
-              message: 'Import only modules of the basic layer here.'
+              message: 'Import only modules of the layers below here.'
             }
           ]
         }
