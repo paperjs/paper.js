@@ -447,7 +447,10 @@ export function setStrokeProfileRuns(path: Path, runs: ProfileRun[]) {
   if (closed && !isCyclic && entries.length) {
     entries.unshift({ ...entries.pop(), offset: 0 })
   }
-  path.strokeProfile = entries
+  // Runs of paths without profiles only leave the path without one:
+  path.strokeProfile = runs.some(run => run.part?.entries.length)
+    ? entries
+    : null
 }
 
 // Returns the defaults of the values that any of the runs' profiles sets.
