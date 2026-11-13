@@ -13,6 +13,7 @@
 // The planar graph that the boolean operations trace their results from, see
 // createGraph() and tracePaths().
 import {
+  Bezier,
   Curve,
   CurveLocation,
   GEOMETRIC_EPSILON,
@@ -384,9 +385,9 @@ function cutCurves(
   // hot pixels of mergeVertices() cut the curves they overlap at the same
   // vertices:
   for (let i = 0, l = curves.length; i < l; i++) {
-    const times = Curve.getReversals(values[i], epsilon)
+    const times = Bezier.getReversals(values[i], epsilon)
     for (let j = 0, k = times.length; j < k; j++) {
-      addCut(points, i, times[j], Curve.getPoint(values[i], times[j]), false)
+      addCut(points, i, times[j], Bezier.getPoint(values[i], times[j]), false)
     }
   }
   return collisions
@@ -501,17 +502,17 @@ function mergeVertices(graph: Graph, points: Points, collisions: number[][]) {
           const vertex = graph.vertices[index]
           if (isNearPiece(piece, index, vertex)) {
             const point = new Point(vertex.x, vertex.y)
-            const t = Curve.getNearestTime(piece.values, point)
+            const t = Bezier.getNearestTime(piece.values, point)
             if (
               t > 0 &&
               t < 1 &&
-              point.isClose(Curve.getPoint(piece.values, t), epsilon)
+              point.isClose(Bezier.getPoint(piece.values, t), epsilon)
             ) {
               const { cut1, cut2 } = piece
               const cut = {
                 time: curves[i].hasHandles()
                   ? cut1.time + (cut2.time - cut1.time) * t
-                  : Curve.getNearestTime(values[i], point),
+                  : Bezier.getNearestTime(values[i], point),
                 point: vertex.point
               }
               cuts[i].push(cut)
@@ -546,7 +547,7 @@ function mergeVertices(graph: Graph, points: Points, collisions: number[][]) {
           const dy = v[7] - v[1]
           if (
             dx * dx + dy * dy < 16 * epsilon * epsilon &&
-            Curve.getLength(v) < 4 * epsilon
+            Bezier.getLength(v) < 4 * epsilon
           ) {
             pieces.push([cut1.point, cut2.point])
           }
@@ -592,9 +593,9 @@ function createEdges(graph: Graph, points: Points, curveOperands: number[]) {
     const v2 = edge2.values
     const times = []
     for (let i = 1; i <= 3; i++) {
-      const point = Curve.getPoint(v2, i / 4)
-      const time = Curve.getNearestTime(v1, point)
-      if (!point.isClose(Curve.getPoint(v1, time), epsilon)) return 0
+      const point = Bezier.getPoint(v2, i / 4)
+      const time = Bezier.getNearestTime(v1, point)
+      if (!point.isClose(Bezier.getPoint(v1, time), epsilon)) return 0
       times.push(time)
     }
     return times[0] < times[2] ? 1 : -1
@@ -634,7 +635,7 @@ function createEdges(graph: Graph, points: Points, curveOperands: number[]) {
       // Drop pieces that start and end in the same vertex, unless
       // they form a loop that is longer than the pieces that vertices
       // merge, see mergeVertices():
-      if (from !== to || Curve.getLength(part) >= 4 * epsilon) {
+      if (from !== to || Bezier.getLength(part) >= 4 * epsilon) {
         const windings = [0, 0]
         windings[curveOperands[i]] = 1
         addEdge({
@@ -668,7 +669,7 @@ function sortHalfEdges(graph: Graph) {
     const t = distance / edge.length
     return edge.isStraight
       ? new Point(v[0] + (v[6] - v[0]) * t, v[1] + (v[7] - v[1]) * t)
-      : Curve.getPoint(v, Curve.getTimeAt(v, distance))
+      : Bezier.getPoint(v, Bezier.getTimeAt(v, distance))
   }
 
   function getSide(halfEdge1: HalfEdge, halfEdge2: HalfEdge): number {
@@ -682,11 +683,11 @@ function sortHalfEdges(graph: Graph) {
       halfEdge2,
       min(halfEdge1.edge.length, halfEdge2.edge.length) / 2
     )
-    const time = Curve.getNearestTime(v1, point)
+    const time = Bezier.getNearestTime(v1, point)
     return time > 0 && time < 1
       ? (
-          Curve.getTangent(v1, time).cross(
-            point.subtract(Curve.getPoint(v1, time))
+          Bezier.getTangent(v1, time).cross(
+            point.subtract(Bezier.getPoint(v1, time))
           ) > 0
         )
         ? -1
@@ -799,7 +800,7 @@ function sortHalfEdges(graph: Graph) {
       let distance = Infinity
       for (let j = 0, k = outgoing.length; j < k; j++) {
         const { edge } = halfEdges[outgoing[j]]
-        edge.length = edge.length || Curve.getLength(edge.values)
+        edge.length = edge.length || Bezier.getLength(edge.values)
         distance = min(distance, edge.length / 2)
       }
       for (let j = 0, k = outgoing.length; j < k; j++) {
@@ -874,7 +875,7 @@ function collectFaces(graph: Graph) {
         const halfEdge = halfEdges[index]
         halfEdge.face = face
         face.halfEdges.push(index)
-        face.area += Curve.getArea(halfEdge.values)
+        face.area += Bezier.getArea(halfEdge.values)
         index = halfEdge.next
       } while (index !== i)
       faces.push(face)
@@ -1068,7 +1069,7 @@ function getPart(
 ): number[] {
   let part: number[]
   if (hasHandles) {
-    part = Curve.getPart(v, time1, time2).slice()
+    part = Bezier.getPart(v, time1, time2).slice()
     const dx1 = point1.x - part[0]
     const dy1 = point1.y - part[1]
     const dx2 = point2.x - part[6]

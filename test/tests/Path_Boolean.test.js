@@ -2900,7 +2900,7 @@ describe('Path Boolean Operations', () => {
 
   test('#2094: unite with cubic curves that are quadratics', () => {
     // The implicit form of a cubic that is a quadratic is rounding noise
-    // without roots on it, and Curve.classify() sees an arch at these
+    // without roots on it, and Bezier.classify() sees an arch at these
     // coordinates. Without telling the quadratic by its distance to the cubic,
     // the intersections get lost:
     const path1 = new Path(
@@ -2922,7 +2922,7 @@ describe('Path Boolean Operations', () => {
   test('#2094: unite with a hole that a ray from it passes at a vertex', () => {
     // The ray that gives the hole the windings of its outside passes 6e-14 from
     // the vertex where path2 crosses a horizontal line of path1 at the same
-    // height. Without taking the curve's end where Curve.solveCubic() misses
+    // height. Without taking the curve's end where Bezier.solve() misses
     // it, the hole gets filled:
     const path1 = new CompoundPath(
         'M187.16895,246.43876h-2.78286v-7.14266l-2.87223,0c0.97703,1.71097 1.46554,3.67842 1.46554,5.90233c0,0.47078 -0.0215,0.92993 -0.06449,1.37743c1.14127,0.07752 2.37504,0.46182 3.70127,1.15289l-1.25194,2.87784c0.33326,0.43879 0.63267,0.91033 0.89825,1.41461c0.37545,0.71514 0.6776,1.5145 0.90645,2.39806z M195.80045,246.88729h0.9712c1.07624,-0.21742 2.23836,-0.32613 3.48634,-0.32613c1.42079,0 2.708,0.09549 3.86163,0.28648c0.63653,-0.20521 1.33094,-0.3415 2.08325,-0.40888l-7.1877,0v-6.1291c-0.81068,0.14841 -1.46273,0.59039 -1.95614,1.32594c-0.69657,1.03349 -1.1161,2.78405 -1.25858,5.25168z'
@@ -3022,7 +3022,7 @@ describe('Path Boolean Operations', () => {
 
   test('#890: subtract at a scale of 1e6', () => {
     // At coordinates around 4e8, the line-line intersections need an epsilon
-    // in Curve.getTimeOf() that isn't below their resolution:
+    // in Bezier.getTimeOf() that isn't below their resolution:
     const cp = new CompoundPath([
       new Path({
         segments: [
@@ -3300,7 +3300,7 @@ describe('Path Boolean Operations', () => {
   test('Unite paths that cross at a shallow angle near a short curve', () => {
     // The crossing of path1 with the short first curve of path2 lies within
     // epsilon of both, but further from the solutions of each coordinate on
-    // the slanted curve, which made Curve.getTimeOf() miss it:
+    // the slanted curve, which made Bezier.getTimeOf() miss it:
     const path1 = new Path({
       segments: [
         [

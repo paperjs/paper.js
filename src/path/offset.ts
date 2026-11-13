@@ -21,6 +21,7 @@
  */
 
 import {
+  Bezier,
   CURVETIME_EPSILON,
   CompoundPath,
   Curve,
@@ -318,7 +319,7 @@ function outlineStroke(
   // turns more tightly than the radius, the inner side sweeps backwards
   // beyond the evolute, so we split it there into two areas (Nehab):
   function addPart(v: number[]) {
-    const curvature = Curve.getCurvature(v, 0.5)
+    const curvature = Bezier.getCurvature(v, 0.5)
     if (abs(curvature) * radius > 1) {
       // The centers of curvature lie against the normals:
       const inner = curvature > 0 ? -radius : radius
@@ -420,8 +421,8 @@ function outlineStroke(
   function isSliver(v: number[], t1: number, t2: number): boolean {
     return (
       getTurn(v, t1, t2) * radius < tolerance && (
-        abs(Curve.getCurvature(v, (t1 + t2) / 2)) * radius > 1 ||
-        Curve.getLength(v, t1, t2) < tolerance
+        abs(Bezier.getCurvature(v, (t1 + t2) / 2)) * radius > 1 ||
+        Bezier.getLength(v, t1, t2) < tolerance
       )
     )
   }
@@ -480,9 +481,9 @@ function outlineStroke(
         const curve = curves[i]
         if (curve.hasLength(GEOMETRIC_EPSILON)) {
           const v = regularize(curve.getValues(), tolerance / 4)
-          const reversals = Curve.getReversals(v, tolerance)
-          let start = Curve.getTangent(v, 0)
-          let end = Curve.getTangent(v, 1)
+          const reversals = Bezier.getReversals(v, tolerance)
+          let start = Bezier.getTangent(v, 0)
+          let end = Bezier.getTangent(v, 1)
           if (reversals.length) {
             // A curve along a line that reverses along it:
             // straight parts between the reversals, joined
@@ -490,7 +491,7 @@ function outlineStroke(
             // do_linear()):
             const points = [new Point(v[0], v[1])]
             for (let j = 0, m = reversals.length; j < m; j++) {
-              points.push(Curve.getPoint(v, reversals[j]))
+              points.push(Bezier.getPoint(v, reversals[j]))
             }
             points.push(new Point(v[6], v[7]))
             start = points[1].subtract(points[0]).normalize()
@@ -523,7 +524,7 @@ function outlineStroke(
                   !isSliver(v, t, times[j + 1])
                 )
               ) {
-                addPart(Curve.getPart(v, t0, t))
+                addPart(Bezier.getPart(v, t0, t))
                 t0 = t
               }
             }
@@ -608,7 +609,7 @@ function outlineStroke(
       return (
         part.offset +
         part.length *
-        Curve.getLength(part.v, 0, t) /
+        Bezier.getLength(part.v, 0, t) /
         part.curveLength
       )
     }
@@ -621,7 +622,7 @@ function outlineStroke(
         ? 0
         : offset >= start + part.length
           ? 1
-          : Curve.getTimeAt(
+          : Bezier.getTimeAt(
               part.v,
               (offset - start) *
               part.curveLength /
@@ -719,10 +720,10 @@ function outlineStroke(
       const { a, b, da, db, dAngle } = pen
       const contacts: Contacts = { sides: null, strips: [] }
       if (a > 0) {
-        const point = Curve.getPoint(v, t)
-        const tangent = Curve.getTangent(v, t)
+        const point = Bezier.getPoint(v, t)
+        const tangent = Bezier.getTangent(v, t)
         const normal = new Point(-tangent.y, tangent.x)
-        const curvature = Curve.getCurvature(v, t)
+        const curvature = Bezier.getCurvature(v, t)
         const axes = getAxes(pen)
         // The tangent in the pen's axes, and its changes:
         const t1 = tangent.dot(axes[0])
@@ -929,7 +930,7 @@ function outlineStroke(
       // which lies within the pen too:
       function getEnd(t: number, j: number, end: 'from' | 'to'): Point {
         const strip = getStrips(t)[j]
-        return strip ? strip[end].point : Curve.getPoint(v, t)
+        return strip ? strip[end].point : Bezier.getPoint(v, t)
       }
 
       // The motions of the strip's ends across the line between them:
@@ -1050,7 +1051,7 @@ function outlineStroke(
           }
           splits.push([t, u])
           addPen(
-            Curve.getPoint(v, t),
+            Bezier.getPoint(v, t),
             getSpanPen(span, getOffset(part, t)),
             getStrips(t).concat(getStrips(u))
           )
@@ -1099,7 +1100,7 @@ function outlineStroke(
             const still = fitSide(
               t => {
                 const strip = getStrips(t)[j]
-                if (!strip) return Curve.getPoint(v, t)
+                if (!strip) return Bezier.getPoint(v, t)
                 const motions = getMotions(strip)
                 const point = strip.from.point
                 // Within the strip, also where its motions
@@ -1131,7 +1132,7 @@ function outlineStroke(
       const start = part.offset
       const end = start + part.length
       // Measured once, for getOffset() and getTime():
-      part.curveLength = Curve.getLength(part.v)
+      part.curveLength = Bezier.getLength(part.v)
       for (let i = 0, l = spans.length; i < l; i++) {
         const span = spans[i]
         const from = Math.max(span.entry.offset, start)
@@ -1253,10 +1254,10 @@ function outlineStroke(
           ]
           error = 0
           for (let i = 0; i < count; i++) {
-            const time = Curve.getNearestTime(c, points[i])
+            const time = Bezier.getNearestTime(c, points[i])
             error = Math.max(
               error,
-              points[i].getDistance(Curve.getPoint(c, time))
+              points[i].getDistance(Bezier.getPoint(c, time))
             )
             times[i] = time
           }
@@ -1275,7 +1276,7 @@ function outlineStroke(
           error = Math.max(
             error,
             point.getDistance(
-              Curve.getPoint(c, Curve.getNearestTime(c, point))
+              Bezier.getPoint(c, Bezier.getNearestTime(c, point))
             )
           )
         }
@@ -1285,7 +1286,7 @@ function outlineStroke(
         if (gap > Math.max(total / 2, tolerance)) {
           const from = index ? points[index - 1] : p0
           const to = index < count ? points[index] : p3
-          const point = Curve.getPoint(
+          const point = Bezier.getPoint(
             c,
             (
               (index ? times[index - 1] : 0) +
@@ -1421,7 +1422,7 @@ function outlineStroke(
       const pen = getSpanPen(span, offset)
       if (cap === 'round') {
         addPen(
-          Curve.getPoint(part.v, t),
+          Bezier.getPoint(part.v, t),
           pen,
           getContacts(part, t, span).strips
         )
@@ -1473,7 +1474,7 @@ function outlineStroke(
         const curveLength = curve.length
         if (curve.hasLength(GEOMETRIC_EPSILON)) {
           const v = regularize(curve.getValues(), tolerance / 4)
-          const reversals = Curve.getReversals(v, tolerance)
+          const reversals = Bezier.getReversals(v, tolerance)
           const parts: Part[] = []
           if (reversals.length) {
             // A curve along a line that reverses along it:
@@ -1481,7 +1482,7 @@ function outlineStroke(
             // addPath(), where the pen turns as it is:
             const points = [new Point(v[0], v[1])]
             for (let j = 0, m = reversals.length; j < m; j++) {
-              points.push(Curve.getPoint(v, reversals[j]))
+              points.push(Bezier.getPoint(v, reversals[j]))
             }
             points.push(new Point(v[6], v[7]))
             for (let j = 1, start = offset, m = points.length; j < m; j++) {
@@ -1534,8 +1535,8 @@ function outlineStroke(
             point: curve._segment1._point,
             first,
             last,
-            start: Curve.getTangent(first.v, 0),
-            end: Curve.getTangent(last.v, 1)
+            start: Bezier.getTangent(first.v, 0),
+            end: Bezier.getTangent(last.v, 1)
           })
         }
         offset += curveLength
@@ -1581,7 +1582,7 @@ function outlineStroke(
               ? part
               : allParts[j - 1] ?? allParts[allParts.length - 1]
             addPen(
-              Curve.getPoint(part.v, t),
+              Bezier.getPoint(part.v, t),
               pen,
               getContacts(
                 previous,
@@ -1740,8 +1741,8 @@ function getTurn(v: number[], t1: number, t2: number): number {
   let turn = 0
   for (let i = 1, l = times.length; i < l; i++) {
     turn += abs(
-      Curve.getTangent(v, times[i - 1]).getDirectedAngle(
-        Curve.getTangent(v, times[i])
+      Bezier.getTangent(v, times[i - 1]).getDirectedAngle(
+        Bezier.getTangent(v, times[i])
       )
     )
   }
@@ -1759,7 +1760,7 @@ function getCuspTimes(v: number[], radius: number): number[] {
   const cusps: number[] = []
 
   function f(t: number): number {
-    const curvature = Curve.getCurvature(v, t) * radius
+    const curvature = Bezier.getCurvature(v, t) * radius
     return 1 - curvature * curvature
   }
 
@@ -1801,7 +1802,7 @@ function getEvoluteAt(v: number[], t: number): EvolutePoint {
   )
   const perp = new Point(-dy, dx)
   return {
-    point: Curve.getPoint(v, t).add(perp.multiply(length2 / cross)),
+    point: Bezier.getPoint(v, t).add(perp.multiply(length2 / cross)),
     derivative: perp.multiply(speed / (cross * cross)),
     speed,
     // The signed radius of curvature, along perp(d1):
@@ -1850,13 +1851,13 @@ function getEvolute(v: number[], inner: number, tolerance: number): Segment[] {
     // where it lies within the tolerance of the inner offset, so that
     // both meet exactly at the ends of the tight parts:
     if (!(distance >= 0 && distance < abs(inner) - tolerance)) {
-      const derivative = Curve.getWeightedTangent(c, t)
+      const derivative = Bezier.getWeightedTangent(c, t)
       e = {
-        point: Curve.getPoint(c, t).add(
-          Curve.getNormal(c, t).multiply(inner)
+        point: Bezier.getPoint(c, t).add(
+          Bezier.getNormal(c, t).multiply(inner)
         ),
         derivative: derivative.multiply(
-          1 + inner * Curve.getCurvature(c, t)
+          1 + inner * Bezier.getCurvature(c, t)
         )
       }
     }
@@ -1900,14 +1901,14 @@ function getOffsetSegments(
   offset: number,
   tolerance: number
 ): Segment[] {
-  if (Curve.isStraight(v)) {
+  if (Bezier.isStraight(v)) {
     // Along the normals at the ends, as the joins and caps use them:
     return [
       new Segment(
-        new Point(v[0], v[1]).add(Curve.getNormal(v, 0).multiply(offset))
+        new Point(v[0], v[1]).add(Bezier.getNormal(v, 0).multiply(offset))
       ),
       new Segment(
-        new Point(v[6], v[7]).add(Curve.getNormal(v, 1).multiply(offset))
+        new Point(v[6], v[7]).add(Bezier.getNormal(v, 1).multiply(offset))
       )
     ]
   } else {
@@ -1940,8 +1941,8 @@ function offsetCubic(v: number[], d: number, tolerance: number): Segment[] {
   const c0 = 2 * d * q1xq0
   const c1 = 2 * d * (q2xq0 - 2 * q1xq0)
   const c2 = 2 * d * (q2xq1 - q2xq0 + q1xq0)
-  const utan0 = Curve.getTangent(c, 0)
-  const utan1 = Curve.getTangent(c, 1)
+  const utan0 = Bezier.getTangent(c, 0)
+  const utan1 = Bezier.getTangent(c, 1)
   const segments = [new Segment(p0.add(getUnitNormal(utan0, d)))]
   // The Bézier weights of the points of the least squares fit:
   const count = 8
@@ -1956,7 +1957,7 @@ function offsetCubic(v: number[], d: number, tolerance: number): Segment[] {
   }
 
   function evaluate(t: number): Point {
-    return Curve.getPoint(c, t)
+    return Bezier.getPoint(c, t)
   }
 
   function derive(t: number): Point {
@@ -2368,7 +2369,7 @@ function regularizeCusp(v: number[], dimension: number): number[] {
     const q0 = d01.multiply(3)
     const q1 = d12.multiply(3)
     const q2 = d23.multiply(3)
-    const t = Curve.getNearestTime(
+    const t = Bezier.getNearestTime(
       [
         q0.x,
         q0.y,
@@ -2505,7 +2506,7 @@ function getDashes(
       }
       return {
         index,
-        time: Curve.getTimeAt(
+        time: Bezier.getTimeAt(
           curve.getValues(),
           Math.min(offset - start, curve.length)
         ) || 0
@@ -2517,7 +2518,7 @@ function getDashes(
       const b = getLocation(to)
       const segments: Segment[] = []
       for (let i = a.index; i <= b.index; i++) {
-        const v = Curve.getPart(
+        const v = Bezier.getPart(
           curves[i].getValues(),
           i === a.index ? a.time : 0,
           i === b.index ? b.time : 1
