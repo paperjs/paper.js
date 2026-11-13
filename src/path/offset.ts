@@ -42,6 +42,7 @@ import {
   takeStrokeProfile
 } from '../internal.ts'
 import type { Item } from '../item/Item.ts'
+import type { StrokeProfileStop } from './StrokeProfileStop.ts'
 import type { PathItem } from './PathItem.ts'
 
 export type OffsetOptions = {
@@ -120,6 +121,9 @@ type EvolutePoint = {
 }
 
 // A part of a curve that offsetCubic() offsets, from t0 to t1:
+// A stop of a stroke profile taken off its path, see takeProfileStops():
+type ProfileStop = { stop: StrokeProfileStop; point: Point; normal: Point }
+
 type CubicPart = {
   t0: number
   t1: number
@@ -150,6 +154,9 @@ export function offsetPathItem(
   const miterLimit = options?.miterLimit || 10
   const path = prepare(item)
   const paths = (path._children ?? [path]) as Path[]
+  // The offset lies at the distance all along, whatever the stroke profiles
+  // of the paths, and takes over their stops:
+  const stops = distance ? takeProfileStops(paths) : []
   let result: PathItem
   if (!distance) {
     result = path
@@ -171,6 +178,9 @@ export function offsetPathItem(
         : offsetSide(path as Path, distance, join, miterLimit),
       insert: false
     }).reduce() as PathItem
+  }
+  if (stops.length) {
+    setOffsetProfiles(result, stops, abs(distance))
   }
   return createResult(item, result, options)
 }
@@ -2408,6 +2418,46 @@ function regularizeCusp(v: number[], dimension: number): number[] {
     }
   }
   return [p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y]
+}
+
+// Takes the stroke profiles off the paths, as their stops with the points
+// and normals of the paths there:
+function takeProfileStops(paths: Path[]): ProfileStop[] {
+  const stops: ProfileStop[] = []
+  for (const path of paths) {
+    for (const stop of path.strokeProfile ?? []) {
+      const { point, normal } = path.getLocationAt(stop.offset)
+      stops.push({ stop: stop.clone(), point, normal })
+    }
+    path.strokeProfile = null
+  }
+  return stops
+}
+
+// Sets the stroke profiles of the paths of an offset at the distance, from
+// the stops of the paths that were offset: each along its normal, on either
+// side, as closed paths are offset to the side that they are oriented to,
+// at the nearest point of the offset. That is also where the stops of
+// stretches end up that the offset leaves out, and those at corners:
+function setOffsetProfiles(
+  result: PathItem,
+  stops: ProfileStop[],
+  distance: number
+) {
+  const profiles: Record<number, StrokeProfileStop[]> = {}
+  for (const { stop, point, normal } of stops) {
+    const vector = normal.multiply(distance)
+    const loc1 = result.getNearestLocation(point.add(vector))
+    const loc2 = result.getNearestLocation(point.subtract(vector))
+    const loc = loc1?.distance < loc2?.distance ? loc1 : loc2 ?? loc1
+    if (loc) {
+      stop.offset = loc.offset
+      ;(profiles[loc.path._id] ??= []).push(stop)
+    }
+  }
+  for (const path of (result._children ?? [result]) as Path[]) {
+    path.strokeProfile = profiles[path._id] ?? null
+  }
 }
 
 // Returns a copy of the path item with its matrix applied, and without

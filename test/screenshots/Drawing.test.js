@@ -514,7 +514,7 @@ describe('Stroke profiles', () => {
       ]
     })
     // A gradient as the stroke color, and an effect before the profile, whose
-    // offset path doesn't carry it on yet (#2505):
+    // offset path carries it on:
     const gradient = new Path({
       segments: [
         [20, 215],

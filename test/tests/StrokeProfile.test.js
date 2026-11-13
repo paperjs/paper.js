@@ -14,6 +14,7 @@ import { describe } from 'vitest'
 import paper, {
   CompoundPath,
   Path,
+  Point,
   Project,
   Rectangle,
   StrokeProfileStop
@@ -463,6 +464,15 @@ describe('StrokeProfile', () => {
     equals(getWidthsAt(apart, [[0, 50], [100, 50]]), [1.5, 2.5])
     equals(apart.children[1].strokeProfile, null)
     equals(right.unite(right.clone()).strokeProfile, null, 'no profiles')
+    // Also where the result only follows paths without profiles:
+    const around = new CompoundPath({
+      children: [
+        new Path.Rectangle({ point: [-10, -10], size: [120, 120] }),
+        new Path.Rectangle({ point: [50, 50], size: [100, 100] })
+      ],
+      fillRule: 'nonzero'
+    })
+    equals(square.unite(around).strokeProfile, null, 'not along the square')
   })
 
   test('Boolean operations keep the first profile where paths coincide', () => {
@@ -489,6 +499,61 @@ describe('StrokeProfile', () => {
       getWidthsAt(resolved, [[25, 75], [75, 25], [50, 0], [25, 25], [50, 100]]),
       [1.5, 2.5, 2, 1, 1]
     )
+  })
+
+  test('PathItem#offset() carries the stops over along the normals', () => {
+    const square = createSquare()
+    square.strokeProfile = [
+      { offset: 0, width: 0.5 },
+      { offset: 150, width: 2, aspect: 0.5, angle: 30 },
+      { offset: 250, width: 3, smooth: false }
+    ]
+    // The stops in the order of their widths, as the offset starts elsewhere:
+    const getStops = path =>
+      [...path.strokeProfile].sort((stop1, stop2) => stop1.width - stop2.width)
+    const getPoints = path =>
+      getStops(path).map(stop => path.getPointAt(stop.offset))
+    const getValues = path =>
+      getStops(path).map(({ width, aspect, angle, smooth }) => [
+        width,
+        aspect,
+        angle,
+        smooth
+      ])
+    const options = { tolerance: 1e-6 }
+    // At the distance all along, whatever the profile, with the stop at the
+    // corner along the normal of the first curve:
+    const grown = square.offset(10)
+    equals(grown.bounds, new Rectangle(-10, -10, 120, 120), null, options)
+    equals(
+      getPoints(grown),
+      [new Point(0, -10), new Point(110, 50), new Point(50, 110)],
+      null,
+      options
+    )
+    equals(getValues(grown), getValues(square))
+    // Inwards, the corner is the nearest point to it:
+    const shrunk = square.offset(-10)
+    equals(shrunk.bounds, new Rectangle(10, 10, 80, 80), null, options)
+    equals(
+      getPoints(shrunk),
+      [new Point(10, 10), new Point(90, 50), new Point(50, 90)],
+      null,
+      options
+    )
+    equals(getValues(shrunk), getValues(square))
+    equals(getOffsets(square), [0, 150, 250], 'the path keeps its profile')
+    // Open paths, to both sides:
+    const line = createTaper()
+    for (const distance of [10, -10]) {
+      const side = line.offset(distance)
+      const y = side.firstSegment.point.y
+      equals(Math.abs(y), 10)
+      equals(getPoints(side), [new Point(0, y), new Point(200, y)])
+      equals(getValues(side), getValues(line))
+    }
+    // Without a distance, the profile stays:
+    equals(getOffsets(line.offset(0)), [0, 200])
   })
 
   test('Path#closed = false lets go of the stops on the closing curve', () => {
