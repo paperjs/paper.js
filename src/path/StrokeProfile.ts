@@ -13,6 +13,7 @@
 import {
   CURVETIME_EPSILON,
   Change,
+  GEOMETRIC_EPSILON,
   StrokeProfileStop,
   equals
 } from '../internal.ts'
@@ -35,6 +36,17 @@ type Entry = {
 
 // A stroke profile taken off a path, see takeStrokeProfile():
 export type ProfilePart = { entries: Entry[]; length: number; closed: boolean }
+
+// A stretch of a stroke profile from an offset on, also beyond the end of
+// closed paths and around them, and backwards if reversed, or a gap of the
+// length between two of them, without a profile, see
+// setStrokeProfileRuns():
+export type ProfileRun = {
+  part: ProfilePart | null
+  start: number
+  length: number
+  reversed?: boolean
+}
 
 // The values of the pen with their first and second derivatives along the
 // path, see StrokeProfile#getValues():
@@ -316,16 +328,12 @@ export function getStrokeProfileAt(
 
 /**
  * Takes the stroke profile off the path, as entries by offset, for the
- * methods that move it by offsets, see {@link setStrokeProfileParts()}.
+ * methods that move it by offsets, see {@link setStrokeProfileRuns()}.
  *
  * @private
  */
 export function takeStrokeProfile(path: Path): ProfilePart {
-  const part = {
-    entries: getEntries(path),
-    length: path.length,
-    closed: path._closed
-  }
+  const part = getStrokeProfilePart(path)
   if (path._strokeProfile) {
     path.strokeProfile = null
   }
@@ -333,21 +341,122 @@ export function takeStrokeProfile(path: Path): ProfilePart {
 }
 
 /**
- * Sets the stroke profile of the path from parts taken off paths, see
- * {@link takeStrokeProfile()}, which now follow each other along the path, the
- * first at its start and the last at its end. Where they meet, each keeps its
- * values there as a stop.
+ * Returns the stroke profile of the path as entries by offset, for the
+ * methods that build other paths from parts of it, see
+ * {@link setStrokeProfileRuns()}.
  *
  * @private
  */
-export function setStrokeProfileParts(path: Path, parts: ProfilePart[]) {
-  const { length, _closed: closed } = path
+export function getStrokeProfilePart(path: Path): ProfilePart {
+  return {
+    entries: getEntries(path),
+    length: path.length,
+    closed: path._closed
+  }
+}
+
+/**
+ * Sets the stroke profile of the path from runs of the profiles of paths,
+ * which follow each other all along the path, as it follows these paths.
+ * Where a run meets another one that doesn't continue it, or ends within
+ * its profile, it keeps its values there as a stop.
+ *
+ * @private
+ */
+export function setStrokeProfileRuns(path: Path, runs: ProfileRun[]) {
+  const closed = path._closed
+  const fallbacks = getFallbacks(runs)
+
+  // Whether the second run goes on where the first one ends:
+  const isContinued = (run1: ProfileRun, run2: ProfileRun) => {
+    const { part, reversed } = run1
+    const gap = reversed
+      ? run2.start + run2.length - run1.start
+      : run1.start + run1.length - run2.start
+    const epsilon = GEOMETRIC_EPSILON * part?.length
+    return (
+      part &&
+      run2.part === part &&
+      !run2.reversed === !reversed && (
+        Math.abs(gap) < epsilon ||
+        part.closed && Math.abs(gap - part.length) < epsilon
+      )
+    )
+  }
+
+  // Join the runs that continue each other:
+  const joined: ProfileRun[] = []
+  for (const run of runs) {
+    const last = joined[joined.length - 1]
+    if (last && isContinued(last, run)) {
+      last.length += run.length
+      if (run.reversed) {
+        last.start = run.start
+      }
+    } else {
+      joined.push({ ...run })
+    }
+  }
+  const count = joined.length
+  // Around closed paths, the last run can continue into the first, also
+  // as the only one, all around a path:
+  const isCyclic = (
+    closed &&
+    count > 0 &&
+    !!isContinued(joined[count - 1], joined[0])
+  )
   const entries = []
-  // Where the parts meet, the values that only some of them set are the
-  // defaults in the others:
+  let offset = 0
+  for (let i = 0; i < count; i++) {
+    const { part, start, length, reversed } = joined[i]
+    const end = start + length
+    // Whether another run meets this one before and after it, if the
+    // path goes on there:
+    const before = closed || i > 0 ? !(isCyclic && i === 0) : null
+    const after =
+      closed || i < count - 1 ? !(isCyclic && i === count - 1) : null
+    const list = part
+      ? getPart(
+          part.entries, start, end, part.length, part.closed,
+          (reversed ? after : before) ?? (part.closed || start > 0),
+          (reversed ? before : after) ?? (part.closed || end < part.length),
+          fallbacks
+        )
+      : []
+    if (reversed) {
+      list.reverse()
+    }
+    for (const entry of list) {
+      entry.offset = offset + (reversed ? length - entry.offset : entry.offset)
+      entries.push(entry)
+    }
+    offset += length
+  }
+  // Stops where the last run continues into the first are in both:
+  if (isCyclic && count > 1) {
+    while (entries[entries.length - 1]?.offset >= offset) {
+      entries.pop()
+    }
+  }
+  // The path is as long as its runs, except where points were merged:
+  const factor = offset ? path.length / offset : 1
+  for (const entry of entries) {
+    entry.offset *= factor
+  }
+  // On closed paths, the values at the end come first, at the start:
+  if (closed && !isCyclic && entries.length) {
+    entries.unshift({ ...entries.pop(), offset: 0 })
+  }
+  path.strokeProfile = entries
+}
+
+// Returns the defaults of the values that any of the runs' profiles sets.
+// Where runs meet, they stand for these values in the ones that don't set
+// them:
+function getFallbacks(runs: ProfileRun[]): Record<string, number> {
   const fallbacks = {}
-  for (const part of parts) {
-    for (const entry of part.entries) {
+  for (const { part } of runs) {
+    for (const entry of part?.entries ?? []) {
       for (const [key, value] of Object.entries(defaults)) {
         if (entry[key] != null) {
           fallbacks[key] = value
@@ -355,46 +464,7 @@ export function setStrokeProfileParts(path: Path, parts: ProfilePart[]) {
       }
     }
   }
-  for (let i = 0, l = parts.length; i < l; i++) {
-    const part = parts[i]
-    const start = i ? length - part.length : 0
-    const hasStart = closed || i > 0
-    const hasEnd = closed || i < l - 1
-    if (part.entries.length || l > 1 || closed) {
-      const shifted = getPart(
-        part.entries, 0, part.length, part.length, part.closed,
-        hasStart, hasEnd, fallbacks
-      )
-      for (const entry of shifted) {
-        entry.offset += start
-        entries.push(entry)
-      }
-    }
-  }
-  // On closed paths, the values before the end come first:
-  if (closed && entries.length) {
-    entries.unshift(entries.pop())
-  }
-  path.strokeProfile = entries
-}
-
-/**
- * Sets the stroke profile of the path from a part of a profile taken off it,
- * see {@link takeStrokeProfile()}, between two offsets on it.
- *
- * @private
- */
-export function setStrokeProfilePart(
-  path: Path,
-  part: ProfilePart,
-  from: number,
-  to: number
-) {
-  const { length, closed } = part
-  path.strokeProfile = getPart(
-    part.entries, from, to, length, closed,
-    closed || from > 0, closed || to < length
-  )
+  return fallbacks
 }
 
 // Returns the stops of the path as { offset, width, aspect, angle, smooth }

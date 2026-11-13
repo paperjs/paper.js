@@ -63,8 +63,7 @@ import {
   paper,
   push,
   removeNamed,
-  setStrokeProfilePart,
-  setStrokeProfileParts,
+  setStrokeProfileRuns,
   takeStrokeProfile
 } from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
@@ -1647,11 +1646,16 @@ export class Path extends PathItem {
       // beginning segment again at the end, since we opened it.
       this.addSegment(segs[0])
       if (profile) {
+        const { length } = profile
         if (path === this) {
-          setStrokeProfilePart(this, profile, cut, cut + profile.length)
+          setStrokeProfileRuns(this, [{ part: profile, start: cut, length }])
         } else {
-          setStrokeProfilePart(this, profile, 0, cut)
-          setStrokeProfilePart(path, profile, cut, profile.length)
+          setStrokeProfileRuns(this, [
+            { part: profile, start: 0, length: cut }
+          ])
+          setStrokeProfileRuns(path, [
+            { part: profile, start: cut, length: length - cut }
+          ])
         }
       }
       return path
@@ -1794,7 +1798,13 @@ export class Path extends PathItem {
       this.closed = true
     }
     if (parts) {
-      setStrokeProfileParts(this, parts)
+      const runs = parts.map(part => ({ part, start: 0, length: part.length }))
+      if (runs.length > 1) {
+        // The line between paths that didn't touch has no profile:
+        const gap = this.length - runs[0].length - runs[1].length
+        runs.splice(1, 0, { part: null, start: 0, length: Math.max(gap, 0) })
+      }
+      setStrokeProfileRuns(this, runs)
     }
     return this
   }

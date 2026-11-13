@@ -401,6 +401,96 @@ describe('StrokeProfile', () => {
     equals(getWidths(path, [0]), [10], 'the width after the step')
   })
 
+  // A square from 0 to 100, which starts at [0, 0] and runs along x first,
+  // with a stroke that widens from once its width there to three times at
+  // the opposite corner, and back, in straight lines:
+  function createSquare() {
+    return new Path.Rectangle({
+      point: [0, 0],
+      size: [100, 100],
+      strokeWidth: 10,
+      strokeProfile: [
+        { offset: 0, width: 1, smooth: false },
+        { offset: 200, width: 3, smooth: false }
+      ]
+    })
+  }
+
+  // The relative widths of the pen at the points on the item:
+  function getWidthsAt(item, points) {
+    return points.map(point => {
+      const { path, offset } = item.getNearestLocation(point)
+      return path.getStrokeProfileAt(offset).width
+    })
+  }
+
+  test('Boolean operations keep the profiles along their paths', () => {
+    const square = createSquare()
+    const right = new Path.Rectangle({ point: [50, -50], size: [100, 200] })
+    // Along the square as on it, and the default pen along the other path:
+    const united = square.unite(right)
+    equals(
+      getWidthsAt(united, [[0, 50], [0, 0], [25, 0], [25, 100], [150, 50]]),
+      [1.5, 1, 1.25, 2.25, 1]
+    )
+    equals(
+      getWidthsAt(square.subtract(right), [[0, 50], [25, 0], [50, 50]]),
+      [1.5, 1.25, 1]
+    )
+    equals(
+      getWidthsAt(square.intersect(right), [[100, 50], [75, 0], [50, 50]]),
+      [2.5, 1.75, 1]
+    )
+    // With steps where the paths meet:
+    const offset = united.getOffsetOf([50, 0])
+    equals(
+      united.strokeProfile
+        .filter(stop => Math.abs(stop.offset - offset) < 1e-6)
+        .map(stop => stop.width)
+        .sort(),
+      [1, 1.5]
+    )
+    // The profile of the other path, along it:
+    equals(
+      getWidthsAt(right.unite(square), [[0, 50], [25, 0], [150, 50]]),
+      [1.5, 1.25, 1]
+    )
+    // Paths that stay whole keep their stops as they are:
+    const apart = square.unite(
+      new Path.Rectangle({ point: [200, 0], size: [10, 10] })
+    )
+    equals(getOffsets(apart.children[0]), [0, 200])
+    equals(getWidthsAt(apart, [[0, 50], [100, 50]]), [1.5, 2.5])
+    equals(apart.children[1].strokeProfile, null)
+    equals(right.unite(right.clone()).strokeProfile, null, 'no profiles')
+  })
+
+  test('Boolean operations keep the first profile where paths coincide', () => {
+    const square = createSquare()
+    const other = createSquare()
+    other.strokeProfile = [{ offset: 0, width: 5 }]
+    equals(getWidthsAt(square.unite(other), [[0, 50], [100, 50]]), [1.5, 2.5])
+    equals(getWidthsAt(other.unite(square), [[0, 50], [100, 50]]), [5, 5])
+  })
+
+  test('PathItem#resolveCrossings() keeps the profile on both sides', () => {
+    // The square with its top corners swapped, which crosses at its center:
+    const path = createSquare()
+    path.segments = [[0, 100], [100, 0], [0, 0], [100, 100]]
+    const length = Math.SQRT2 * 100
+    path.strokeProfile = [
+      { offset: 0, width: 1, smooth: false },
+      { offset: length, width: 3, smooth: false },
+      { offset: length + 100, width: 1, smooth: false }
+    ]
+    const resolved = path.resolveCrossings()
+    equals(resolved.children.length, 2)
+    equals(
+      getWidthsAt(resolved, [[25, 75], [75, 25], [50, 0], [25, 25], [50, 100]]),
+      [1.5, 2.5, 2, 1, 1]
+    )
+  })
+
   test('Path#closed = false lets go of the stops on the closing curve', () => {
     const path = Path.rectangle({
       point: [0, 0],
