@@ -260,19 +260,19 @@ function outlineStroke(
   const areas: PathItem[] = []
 
   // Adds the area between two sides of a part, leaving the segments of
-  // the second one as they are, as the evolute is shared. Strips of
-  // stroke profiles leave out slivers thinner than the tolerance, which
-  // only add points so close to the others' that the union can't tell
-  // them apart:
+  // the second one as they are, as the evolute is shared. The union at the
+  // end resolves each area by its own winding. Strips of stroke profiles
+  // are resolved here, to leave out slivers thinner than the tolerance,
+  // which only add points so close to the others' that the union can't
+  // tell them apart:
   function addSides(side1: Segment[], side2: Segment[], isStrip?: boolean) {
     const path = new Path({ segments: side1, insert: false })
     for (let i = side2.length - 1; i >= 0; i--) {
       path.add(side2[i].reversed())
     }
     path.closed = true
-    const part = path.unite()
-    // Parts that fold onto themselves can leave nothing:
-    if (isStrip ? !isThin(part) : !part.isEmpty()) {
+    const part = isStrip ? path.unite() : path
+    if (!isStrip || !isThin(part)) {
       areas.push(part)
     }
   }
@@ -1593,9 +1593,7 @@ function outlineStroke(
     }
   }
   return areas.length
-    ? areas.length > 1
-      ? areas[0].unite(areas.slice(1))
-      : areas[0]
+    ? areas[0].unite(areas.slice(1))
     : new Path({ insert: false })
 }
 
