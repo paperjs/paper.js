@@ -138,7 +138,7 @@ inject(PaperScope.prototype, members, { enumerable: true })
 
 type Members = typeof members
 
-declare module './core/PaperScope.ts' {
+declare module './scope/PaperScope.ts' {
   interface PaperScope extends Members {}
 }
 

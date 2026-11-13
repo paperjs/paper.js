@@ -21,7 +21,7 @@ import {
 import * as PaperScript from './PaperScript.ts'
 import type { ExecuteOptions } from './PaperScript.ts'
 
-declare module '../core/PaperScope.ts' {
+declare module '../scope/PaperScope.ts' {
   export interface PaperScope {
     // The PaperScript functions, listed on their own page:
     PaperScript: typeof PaperScript

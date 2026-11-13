@@ -23,7 +23,7 @@
  */
 // The globals that PaperScript code sees, declared for the reference's Global
 // Scope page only: nothing imports this module.
-import type { PaperScope } from '../core/PaperScope.ts'
+import type { PaperScope } from '../scope/PaperScope.ts'
 import type { Project } from '../item/Project.ts'
 import type { View } from '../view/View.ts'
 import type { Tool } from '../tool/Tool.ts'

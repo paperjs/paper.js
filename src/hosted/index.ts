@@ -18,7 +18,7 @@ import { HostItem } from './HostItem.ts'
 registerClasses({ HostItem })
 inject(PaperScope.prototype, { HostItem }, { enumerable: true })
 
-declare module '../core/PaperScope.ts' {
+declare module '../scope/PaperScope.ts' {
   interface PaperScope {
     HostItem: typeof HostItem
   }

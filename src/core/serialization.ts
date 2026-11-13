@@ -10,7 +10,8 @@
  * All rights reserved.
  */
 
-import { Formatter, isPlainObject } from '../internal.ts'
+import { isPlainObject } from '../util/object.ts'
+import { Formatter } from '../util/Formatter.ts'
 
 // The registered classes by name, for deserialization:
 const classes = {}

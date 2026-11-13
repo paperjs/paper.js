@@ -36,7 +36,7 @@ import {
 import type { PointLike } from '../basic/Point.ts'
 import type { PatternDefinition } from '../style/PatternDefinition.ts'
 import type { Size } from '../basic/Size.ts'
-import type { PaperScope } from '../core/PaperScope.ts'
+import type { PaperScope } from '../scope/PaperScope.ts'
 import type { SymbolDefinition } from './SymbolDefinition.ts'
 import type { HitResult } from './HitResult.ts'
 

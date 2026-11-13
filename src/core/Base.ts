@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { exportJSON, serialize } from '../internal.ts'
+import { exportJSON, serialize } from './serialization.ts'
 
 /**
  * @private

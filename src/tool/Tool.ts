@@ -11,7 +11,7 @@
  */
 
 import { PaperScopeItem, Point, ToolEvent, defineEvents } from '../internal.ts'
-import type { PaperScope } from '../core/PaperScope.ts'
+import type { PaperScope } from '../scope/PaperScope.ts'
 import type { KeyEvent } from '../event/KeyEvent.ts'
 
 type Handler = (this: Tool, ...args: any[]) => any
