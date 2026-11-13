@@ -128,6 +128,27 @@ with the exported `GlobalFonts`, e.g.
 `GlobalFonts.registerFromPath('fonts/Inter.ttf', 'Inter')`. Paper.js needs
 Node.js 22.22 or newer.
 
+#### Running PaperScript on Node.js
+
+PaperScript files run in a scope of their own: set one up, and execute the
+file's code in it:
+
+```js
+import { readFile } from 'node:fs/promises'
+import paper, { PaperScope } from 'paper/node'
+import { PaperScript } from 'paper/paperscript'
+
+const scope = new PaperScope()
+scope.setup(new paper.Size(300, 200))
+PaperScript.execute(await readFile('drawing.pjs', 'utf8'), scope, {
+  url: 'drawing.pjs'
+})
+await scope.view.exportImage('drawing.png')
+```
+
+Version 0.17 also ran `.pjs` files through `require()`, which ES modules don't
+support.
+
 ## Development
 
 The main Paper.js source tree is hosted on
