@@ -2303,10 +2303,10 @@ function getInflections(v: number[]): number[] {
   return count > 0 ? roots.slice(0, count) : []
 }
 
-// Gives handles that are shorter than the dimension that length, along
-// their own direction, as it is their curve's tangent, or towards the next
-// control point if they have none, so that the curve's derivative doesn't
-// vanish at its ends (after kurbo's CubicBez::regularize()):
+// Gives handles that are shorter than the dimension that length, towards
+// the next control point, so that the curve's derivative doesn't vanish at
+// its ends, and hooks too short to see don't turn its joins and caps (after
+// kurbo's CubicBez::regularize()):
 function regularize(v: number[], dimension: number): number[] {
   const p0 = new Point(v[0], v[1])
   let p1 = new Point(v[2], v[3])
@@ -2315,9 +2315,7 @@ function regularize(v: number[], dimension: number): number[] {
   const handle1 = p1.subtract(p0)
   const handle2 = p2.subtract(p3)
   if (handle1.length < dimension) {
-    if (!handle1.isZero()) {
-      p1 = p0.add(handle1.normalize(dimension))
-    } else if (p0.getDistance(p2) >= dimension) {
+    if (p0.getDistance(p2) >= dimension) {
       p1 = p0.add(p2.subtract(p0).normalize(dimension))
     } else {
       p1 = p0.add(p3.subtract(p0).divide(3))
@@ -2325,9 +2323,7 @@ function regularize(v: number[], dimension: number): number[] {
     }
   }
   if (handle2.length < dimension) {
-    if (!handle2.isZero()) {
-      p2 = p3.add(handle2.normalize(dimension))
-    } else if (p3.getDistance(p1) >= dimension) {
+    if (p3.getDistance(p1) >= dimension) {
       p2 = p3.add(p1.subtract(p3).normalize(dimension))
     } else {
       p1 = p0.add(p3.subtract(p0).divide(3))
