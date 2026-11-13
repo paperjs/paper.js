@@ -2262,7 +2262,7 @@ function offsetCubic(v: number[], d: number, tolerance: number): Segment[] {
       points[2].getDistance(points[0]) < tolerance &&
       points[3].getDistance(points[0]) < tolerance
     )
-    if (part.depth < 8 && error.squared > tolerance2 && !isShort) {
+    if (part.depth < 16 && error.squared > tolerance2 && !isShort) {
       const split = getSubdivision(part)
       const cusp = getCusp(split.t)
       subdivide(part, split.t, split.utan, cusp, cusp)
