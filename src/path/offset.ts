@@ -37,7 +37,7 @@ import {
   findSignChange,
   isZero,
   paper,
-  setStrokeProfilePart,
+  setStrokeProfileRuns,
   solveQuadratic,
   takeStrokeProfile
 } from '../internal.ts'
@@ -2495,7 +2495,9 @@ function getDashes(
       }
       const dash = new Path({ segments, insert: false })
       if (profile) {
-        setStrokeProfilePart(dash, profile, from, to)
+        setStrokeProfileRuns(dash, [
+          { part: profile, start: from, length: to - from }
+        ])
       }
       dashes.push(dash)
     }

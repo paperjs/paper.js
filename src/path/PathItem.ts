@@ -37,6 +37,7 @@ import {
   outlinePathItem,
   reorientPaths,
   splitBoolean,
+  takeStrokeProfile,
   traceBoolean,
   tracePaths
 } from '../internal.ts'
@@ -1502,7 +1503,10 @@ export abstract class PathItem extends Item {
     } else if (length === 1 && !children) {
       const path = this as PathItem as Path
       if (paths[0] !== path) {
+        // With the stroke profile as traced, by its offsets:
+        const { entries } = takeStrokeProfile(paths[0])
         path.segments = paths[0].removeSegments()
+        path.strokeProfile = entries
       }
       item = this
     }

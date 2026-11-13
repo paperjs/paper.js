@@ -23,10 +23,13 @@ import {
   findBoundsCollisions,
   findCurveBoundsCollisions,
   getEpsilon,
-  getRayWinding
+  getRayWinding,
+  getStrokeProfilePart,
+  setStrokeProfileRuns
 } from '../internal.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'
 import type { PathItem } from './PathItem.ts'
+import type { ProfilePart, ProfileRun } from './StrokeProfile.ts'
 
 export type Operator = (inside1: boolean, inside2: boolean) => boolean
 
@@ -215,6 +218,7 @@ export function tracePaths(operands: PathItem[], operator: Operator): Path[] {
     )
   }
 
+  const profiles = getProfiles(graph.curves)
   const paths: Path[] = []
   const isVisited: boolean[] = []
   for (let i = 0, l = halfEdges.length; i < l; i++) {
@@ -242,6 +246,7 @@ export function tracePaths(operands: PathItem[], operator: Operator): Path[] {
       // Join the pieces of the same curve that follow each other
       // back into one part of it:
       const segments: Segment[] = []
+      const runs: ProfileRun[] = []
       let handleIn: Point = null
       for (let j = 0; j < length;) {
         const first = contour[(start + j) % length]
@@ -273,6 +278,21 @@ export function tracePaths(operands: PathItem[], operator: Operator): Path[] {
           )
         )
         handleIn = isStraight ? null : new Point(v[4] - v[6], v[5] - v[7])
+        if (profiles) {
+          // The part of the curve's stroke profile along the pieces:
+          const time1 = getTimes(first)[0]
+          const time2 = getTimes(last)[1]
+          const reversed = time1 > time2
+          const from = reversed ? time2 : time1
+          const curve = graph.curves[edge.curve]
+          const { part, offset } = profiles[edge.curve]
+          runs.push({
+            part,
+            start: offset + curve.getPartLength(0, from),
+            length: curve.getPartLength(from, reversed ? time1 : time2),
+            reversed
+          })
+        }
       }
       if (handleIn) {
         segments[0].handleIn = handleIn
@@ -280,6 +300,9 @@ export function tracePaths(operands: PathItem[], operator: Operator): Path[] {
       const path = new Path(Item.NO_INSERT)
       path.segments = segments
       path.closed = true
+      if (profiles) {
+        setStrokeProfileRuns(path, runs)
+      }
       // Only add paths that cover an area to the result.
       if (path.area !== 0) {
         paths.push(path)
@@ -287,6 +310,30 @@ export function tracePaths(operands: PathItem[], operator: Operator): Path[] {
     }
   }
   return paths
+}
+
+// Returns the stroke profile of each curve's path with the curve's offset on
+// it, if any of the paths has one, for the paths that are traced along them:
+function getProfiles(
+  curves: Curve[]
+): { part: ProfilePart; offset: number }[] | null {
+  let profiles = null
+  if (curves.some(curve => curve._path._strokeProfile)) {
+    let path: Path = null
+    let part: ProfilePart = null
+    let offset = 0
+    profiles = curves.map(curve => {
+      if (curve._path !== path) {
+        path = curve._path
+        part = getStrokeProfilePart(path)
+        offset = 0
+      }
+      const profile = { part, offset }
+      offset += curve.length
+      return profile
+    })
+  }
+  return profiles
 }
 
 // Cut the curves at their ends and at all intersections, including
