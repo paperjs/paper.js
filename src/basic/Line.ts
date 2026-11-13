@@ -10,7 +10,9 @@
  * All rights reserved.
  */
 
-import { Base, EPSILON, Point, isMachineZero } from '../internal.ts'
+import { EPSILON, isMachineZero } from '../util/numerical.ts'
+import { Base } from '../core/Base.ts'
+import { Point } from './Point.ts'
 import type { PointLike } from './Point.ts'
 
 /**

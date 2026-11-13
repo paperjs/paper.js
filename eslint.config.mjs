@@ -28,6 +28,12 @@ const braces = [
   }
 ]
 
+// The basic layer: the constants, the helpers, the foundation of the classes
+// (the base class, serialization, events) and the basic types. Its modules
+// import each other directly and nothing above them, so that the modules
+// built on them work without the rest of the library:
+const basic = ['src/constants.ts', 'src/{util,core,basic}/**']
+
 export default [
   {
     // The builds, examples and the boolean sweep keep the old style until the
@@ -79,7 +85,7 @@ export default [
     // The modules import each other through internal.ts, which loads them in
     // order. Type imports load nothing:
     files: ['src/**/*.ts'],
-    ignores: ['src/internal.ts', 'src/{node,hosted,paperscript}/**'],
+    ignores: ['src/internal.ts', 'src/{node,hosted,paperscript}/**', ...basic],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -89,6 +95,24 @@ export default [
               regex: '^\\.\\.?/(?!internal\\.ts$).*\\.ts$',
               allowTypeImports: true,
               message: 'Import the modules of the library from internal.ts.'
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    files: basic,
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex:
+                '^(?!(\\.\\./(constants|(util|core|basic)/[^/]+)|\\./[^/]+)\\.ts$)\\.\\.?/.*\\.ts$',
+              allowTypeImports: true,
+              message: 'Import only modules of the basic layer here.'
             }
           ]
         }

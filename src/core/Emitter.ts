@@ -10,7 +10,8 @@
  * All rights reserved.
  */
 
-import { Base, inject } from '../internal.ts'
+import { inject } from '../util/object.ts'
+import { Base } from './Base.ts'
 
 type Handler = (this: any, ...args: any[]) => any
 

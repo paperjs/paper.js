@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { capitalize } from '../internal.ts'
+import { capitalize } from './string.ts'
 
 export function isPlainObject(arg) {
   const ctor = arg?.constructor

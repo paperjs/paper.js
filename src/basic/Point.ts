@@ -10,16 +10,12 @@
  * All rights reserved.
  */
 
-import {
-  Base,
-  Formatter,
-  ItemSelection,
-  Rectangle,
-  TRIGONOMETRIC_EPSILON,
-  clamp,
-  inject,
-  isZero
-} from '../internal.ts'
+import { ItemSelection } from '../constants.ts'
+import { inject } from '../util/object.ts'
+import { TRIGONOMETRIC_EPSILON, clamp, isZero } from '../util/numerical.ts'
+import { Formatter } from '../util/Formatter.ts'
+import { Base } from '../core/Base.ts'
+import { Rectangle } from './Rectangle.ts'
 import type { RectangleLike } from './Rectangle.ts'
 import type { Size } from './Size.ts'
 import type { Matrix } from './Matrix.ts'

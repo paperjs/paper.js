@@ -15,15 +15,13 @@
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 
-import {
-  Base,
-  Change,
-  Formatter,
-  Point,
-  Rectangle,
-  inject,
-  serialize
-} from '../internal.ts'
+import { Change } from '../constants.ts'
+import { inject } from '../util/object.ts'
+import { Formatter } from '../util/Formatter.ts'
+import { serialize } from '../core/serialization.ts'
+import { Base } from '../core/Base.ts'
+import { Point } from './Point.ts'
+import { Rectangle } from './Rectangle.ts'
 import type { PointLike } from './Point.ts'
 
 /**
