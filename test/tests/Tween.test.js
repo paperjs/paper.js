@@ -16,7 +16,7 @@ import { equals, test } from '../helpers.js'
 
 describe('Tween', () => {
   test('Item#tween() counts its duration from the first frame', () => {
-    const view = new Project().view
+    const { view } = new Project()
     const path = Path.circle({ center: [0, 0], radius: 10 })
     path.tween({ position: [0, 0] }, { position: [100, 0] }, 1000)
     // Play the frames that the view emits while animating, the first of
@@ -191,7 +191,7 @@ describe('Tween', () => {
   })
 
   test('Item#tween() runs on the frames of the view', () => {
-    const view = new Project().view
+    const { view } = new Project()
     const path = Path.circle({ center: [0, 0], radius: 10 })
     const tween = path.tween({ position: [0, 0] }, { position: [100, 0] }, 1000)
     equals(tween.running, true)

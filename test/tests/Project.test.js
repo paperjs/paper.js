@@ -345,7 +345,7 @@ describe('Project', () => {
 
   test('remove()', () => {
     const project = new Project()
-    const view = project.view
+    const { view } = project
     equals(project.index, paper.projects.indexOf(project))
     equals(project.remove(), true)
     equals(project.view, null)

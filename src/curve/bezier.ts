@@ -81,10 +81,7 @@ export function subdivide(
 // Splits the curve into curves that are monotone in x-direction, or in
 // y-direction if dir is true. A curve that is monotone already is returned as
 // the only one:
-export function getMonoCurves(
-  v: BezierValues,
-  dir?: boolean
-): BezierValues[] {
+export function getMonoCurves(v: BezierValues, dir?: boolean): BezierValues[] {
   const curves = []
   // Determine the ordinate index in the curve values array.
   const io = dir ? 0 : 1
@@ -350,7 +347,7 @@ export function getTimeAt(
   if (offset === 0) return start
   // See if we're going forward or backward, and handle cases
   // differently
-  const abs = Math.abs
+  const { abs } = Math
   const epsilon = EPSILON
   const forward = offset > 0
   const a = forward ? start : 0
@@ -399,7 +396,7 @@ export function getTimeOf(
   // from it, as the distance grows with the square of the time
   // there. At large coordinates, the epsilon can't be below their
   // resolution:
-  const abs = Math.abs
+  const { abs } = Math
   const x0 = v[0]
   const y0 = v[1]
   const x3 = v[6]
@@ -716,7 +713,7 @@ export function hasStraightHandles(
     // No handles.
     return true
   } else {
-    const isCollinear = Point.isCollinear
+    const { isCollinear } = Point
     const vx = x2 - x1
     const vy = y2 - y1
     if (isZero(vx) && isZero(vy)) {
@@ -729,7 +726,7 @@ export function hasStraightHandles(
       // Collinear handles: In addition to v.isCollinear(h) checks, we
       // need to measure the distance to the line, in order to be able
       // to use the same epsilon as in Curve#getTimeOf(), see #1066.
-      const getDistance = Line.getDistance
+      const { getDistance } = Line
       const epsilon = GEOMETRIC_EPSILON
       if (
         (

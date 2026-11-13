@@ -696,7 +696,7 @@ describe('SvgExport', () => {
           copy.on('load', () => {
             if (++copied === copies.length) {
               for (let i = 0; i < copies.length; i++) {
-                const bounds = rasters[i].bounds
+                const { bounds } = rasters[i]
                 equals(
                   copies[i].bounds,
                   new Rectangle(
@@ -1496,7 +1496,7 @@ describe('SvgExport', () => {
     text.content = 'Text in an area breaks into lines that fit it.'
     text.justification = 'right'
     const node = text.exportSVG(),
-      lines = text.lines
+      { lines } = text
     equals(node.childNodes.length, lines.length, 'a <tspan> per line')
     equals(
       Array.from(node.childNodes, (child, i) => {

@@ -75,7 +75,7 @@ describe('Point', () => {
   })
 
   test('get angle', () => {
-    const angle = new Point(0, 10).angle
+    const { angle } = new Point(0, 10)
     equals(angle, 90)
   })
 

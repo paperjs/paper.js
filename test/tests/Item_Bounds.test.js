@@ -1763,7 +1763,7 @@ describe('Item Bounds', () => {
       strokeWidth: 2,
       insert: false
     })
-    const bounds = text.bounds
+    const { bounds } = text
     equals(text.strokeBounds, bounds.expand(2), 'text.strokeBounds')
     text.strokeWidth = 10
     equals(

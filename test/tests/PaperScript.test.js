@@ -165,10 +165,10 @@ describe('PaperScript', () => {
 
   test('PaperScript with inline source maps', () => {
     const source = 'var a = 1;\nvar b = 2;',
-      code = PaperScript.compile(source, {
+      { code } = PaperScript.compile(source, {
         url: 'test.js',
         sourceMaps: 'inline'
-      }).code,
+      }),
       match = code.match(
         /\n\/\/# sourceMappingURL=data:application\/json;base64,(\S+)\n/
       ),
@@ -774,7 +774,7 @@ describe('PaperScript', () => {
   }
 
   test('PaperScript.execute() handlers', () => {
-    const view = paper.view,
+    const { view } = paper,
       exports = PaperScript.execute(
         'var calls = [];\n' +
         'function onFrame(event) { calls.push("frame"); }\n' +

@@ -34,7 +34,7 @@ import { comparePixels, equals, test } from '../helpers.js'
 
 describe('Item', () => {
   test('copyTo(project)', () => {
-    const project = paper.project
+    const { project } = paper
     const path = new Path()
     const secondDoc = new Project()
     const copy = path.copyTo(secondDoc)
@@ -44,7 +44,7 @@ describe('Item', () => {
   })
 
   test('copyTo(layer)', () => {
-    const project = paper.project
+    const { project } = paper
     const path = new Path()
     const layer = new Layer()
     const copy = path.copyTo(layer)
@@ -53,7 +53,7 @@ describe('Item', () => {
   })
 
   test('clone()', () => {
-    const project = paper.project
+    const { project } = paper
     const path = new Path()
     const copy = path.clone()
     equals(() => project.activeLayer.children.length, 2)
@@ -61,7 +61,7 @@ describe('Item', () => {
   })
 
   test('addChild(item)', () => {
-    const project = paper.project
+    const { project } = paper
     const path = new Path()
     project.activeLayer.addChild(path)
     equals(() => project.activeLayer.children.length, 1)
@@ -116,7 +116,7 @@ describe('Item', () => {
   })
 
   test('item.parent / item.isChild / item.isParent / item.layer', () => {
-    const project = paper.project
+    const { project } = paper
     const secondDoc = new Project()
     const path = new Path()
     project.activeLayer.addChild(path)
@@ -133,7 +133,7 @@ describe('Item', () => {
   })
 
   test('item.remove()', () => {
-    const project = paper.project
+    const { project } = paper
     const path = new Path()
     equals(() => project.activeLayer.children.length, 1)
     path.remove()
@@ -159,7 +159,7 @@ describe('Item', () => {
   })
 
   test('item.addChildren() / item.removeChildren()', () => {
-    const project = paper.project,
+    const { project } = paper,
       layer = project.activeLayer,
       path1 = new Path({ insert: false }),
       path2 = new Path({ insert: false, name: 'path2' })
@@ -192,7 +192,7 @@ describe('Item', () => {
   })
 
   test('item.lastChild / item.firstChild', () => {
-    const project = paper.project
+    const { project } = paper
     const path1 = new Path()
     const path2 = new Path()
     equals(() => project.activeLayer.firstChild === path1, true)
@@ -209,7 +209,7 @@ describe('Item', () => {
   })
 
   test('item.replaceWith(other)', () => {
-    const project = paper.project
+    const { project } = paper
     const path1 = new Path()
     const path2 = new Path()
     const path3 = new Path()
@@ -222,7 +222,7 @@ describe('Item', () => {
   })
 
   test('item.replaceWith(...items)', () => {
-    const project = paper.project
+    const { project } = paper
     const path1 = new Path()
     const path2 = new Path()
     const group = new Group([new Path(), new Path()])
@@ -275,7 +275,7 @@ describe('Item', () => {
   })
 
   test('item.insertChild(0, child)', () => {
-    const project = paper.project
+    const { project } = paper
     const path1 = new Path()
     const path2 = new Path()
     project.activeLayer.insertChild(0, path2)
@@ -321,7 +321,7 @@ describe('Item', () => {
   })
 
   test('item.isDescendant(other) / item.isAncestor(other)', () => {
-    const project = paper.project
+    const { project } = paper
     const path = new Path()
     equals(() => path.isDescendant(project.activeLayer), true)
     equals(() => project.activeLayer.isDescendant(path), false)
@@ -379,7 +379,7 @@ describe('Item', () => {
   })
 
   test('reverseChildren()', () => {
-    const project = paper.project
+    const { project } = paper
     const path = new Path()
     new Path()
     const path3 = new Path()
@@ -817,7 +817,7 @@ describe('Item', () => {
 
     function testPixels(pixels, name) {
       paper.view.update()
-      const pixelRatio = paper.view.pixelRatio,
+      const { pixelRatio } = paper.view,
         ctx = paper.view.element.getContext('2d')
       for (let i = 0; i < pixels.length; i++) {
         const point = pixels[i][0],
@@ -1019,7 +1019,7 @@ describe('Item', () => {
     // to be cleared:
     function testPixels(pixels, name) {
       paper.view.update()
-      const pixelRatio = paper.view.pixelRatio,
+      const { pixelRatio } = paper.view,
         ctx = paper.view.element.getContext('2d')
       for (const [point, expected] of pixels) {
         const actual = Array.from(
@@ -1103,7 +1103,7 @@ describe('Item', () => {
     // Items with both a fill and a stroke and an opacity are composited
     // through a temporary canvas, and cast their shadow when compositing it.
     function getPixel(point) {
-      const pixelRatio = paper.view.pixelRatio,
+      const { pixelRatio } = paper.view,
         ctx = paper.view.element.getContext('2d')
       return Array.from(
         ctx.getImageData(
@@ -1329,7 +1329,7 @@ describe('Item', () => {
     equals(() => new Raster({ applyMatrix: false }).applyMatrix, false)
     equals(() => new Raster({ applyMatrix: true }).applyMatrix, false)
 
-    const applyMatrix = paper.settings.applyMatrix
+    const { applyMatrix } = paper.settings
     paper.settings.applyMatrix = true
     equals(() => new Path().applyMatrix, true)
     equals(() => new Raster().applyMatrix, false)
@@ -1395,7 +1395,7 @@ describe('Item', () => {
   })
 
   test('PaperScope#settings.insertItems', () => {
-    const insertItems = paper.settings.insertItems
+    const { insertItems } = paper.settings
     paper.settings.insertItems = true
 
     let path1, path2
@@ -1875,7 +1875,7 @@ describe('Item', () => {
   })
 
   test('settings.insertItems for items created from other items (#1721)', () => {
-    const settings = paper.settings,
+    const { settings } = paper,
       path = Path.rectangle([0, 0], [100, 100]),
       circle = Path.circle([100, 100], 50),
       shape = Shape.rectangle([0, 0], [100, 100])
@@ -1918,7 +1918,7 @@ describe('Item', () => {
   })
 
   test('settings.scaleStrokes', () => {
-    const settings = paper.settings
+    const { settings } = paper
     function createPath(props) {
       return Path.rectangle(
         Object.assign(
@@ -2007,7 +2007,7 @@ describe('Item', () => {
     ctx.fillRect(0, 0, 20, 10)
     ctx.translate(5, 5)
     CanvasProvider.releaseCanvas(ctx)
-    const canvases = CanvasProvider.canvases
+    const { canvases } = CanvasProvider
     equals(canvases[canvases.length - 1], ctx.canvas, 'kept')
     ctx = CanvasProvider.getContext(10, 5, { minimum: true })
     equals(canvases.includes(ctx.canvas), false, 'reused')
@@ -2037,7 +2037,7 @@ describe('Item', () => {
       opacity: 0.5
     })
     paper.project.activeLayer.rasterize({ resolution: 144, insert: false })
-    const canvases = CanvasProvider.canvases,
+    const { canvases } = CanvasProvider,
       pixels = canvases.reduce(
         (sum, canvas) => sum + canvas.width * canvas.height,
         0

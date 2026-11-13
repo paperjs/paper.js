@@ -1245,11 +1245,7 @@ export class Path extends PathItem {
    * // Select the path, so we can see its segments:
    * path.selected = true;
    */
-  removeSegments(
-    from: number,
-    to?: number,
-    _includeCurves?: boolean
-  ): Segment[]
+  removeSegments(from: number, to?: number, _includeCurves?: boolean): Segment[]
   removeSegments(
     from?: number,
     to?: number,
@@ -1914,7 +1910,7 @@ export class Path extends PathItem {
       // that use this algorithm: continuous and asymmetric. asymmetric
       // was the only approach available in v0.9.25 & below.
       const asymmetric = type === 'asymmetric'
-      const min = Math.min
+      const { min } = Math
       const amount = to - from + 1
       let n = amount - 1
       // Overlap by up to 4 points on closed paths since a current
@@ -2281,7 +2277,7 @@ export class Path extends PathItem {
     }
     // Now loop through both curve arrays, find their overlaps, verify that
     // they keep joining, and see if we end back at the start on both paths.
-    const abs = Math.abs
+    const { abs } = Math
     const epsilon = CURVETIME_EPSILON
     v2 = values2[pos2]
     let start2: number[]
@@ -2568,8 +2564,7 @@ export class Path extends PathItem {
     let matrix: Matrix
 
     // Get the start point:
-    const abs = Math.abs
-    const sqrt = Math.sqrt
+    const { abs, sqrt } = Math
     const from = getCurrentSegment(this)._point
     let end = Point.from(to)
     // See if the second argument is clockwise, with true as the default:

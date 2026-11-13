@@ -897,9 +897,9 @@ export class Item extends Emitter {
   set bounds(rectangle: RectangleLike) {
     const rect = Rectangle.from(rectangle)
     let bounds = this.getBounds()
-    const _matrix = this._matrix
+    const { _matrix } = this
     const matrix = new Matrix()
-    let center = rect.center
+    let { center } = rect
     // Read this from bottom to top:
     // Translate to new center:
     matrix.translate(center)
@@ -944,7 +944,7 @@ export class Item extends Emitter {
   set strokeBounds(rectangle: RectangleLike) {
     const rect = Rectangle.from(rectangle)
     const bounds = this.getBounds()
-    const center = bounds.center
+    const { center } = bounds
     // Negative sizes mirror the item, as in the bounds setter:
     const signX = rect.width < 0 ? -1 : 1
     const signY = rect.height < 0 ? -1 : 1
@@ -978,7 +978,7 @@ export class Item extends Emitter {
     // angles of miters, bevels and square caps, so solve for the scales
     // with Newton's method, estimating the derivatives from small changes:
     for (let i = 0; i < 16; i++) {
-      const size = getStrokeBounds(sx, sy).size
+      const { size } = getStrokeBounds(sx, sy)
       const fx = canScaleX ? size.width - width : 0
       const fy = canScaleY ? size.height - height : 0
       if (Math.abs(fx) < epsilon && Math.abs(fy) < epsilon) {
@@ -3644,7 +3644,7 @@ export class Item extends Emitter {
     _applyRecursively?: boolean,
     _setApplyMatrix?: boolean
   ): this {
-    const _matrix = this._matrix
+    const { _matrix } = this
     const transformMatrix = matrix && !matrix.isIdentity()
     // If no matrix is provided, or the matrix is the identity, we might
     // still have some work to do: _setApplyMatrix or _applyRecursively.
@@ -4045,11 +4045,7 @@ export class Item extends Emitter {
     ctx.shadowOffsetY = offset.y
   }
 
-  draw(
-    ctx: CanvasRenderingContext2D,
-    param: any,
-    parentStrokeMatrix?: Matrix
-  ) {
+  draw(ctx: CanvasRenderingContext2D, param: any, parentStrokeMatrix?: Matrix) {
     // Each time the project gets drawn, it's _updateVersion is increased.
     // Keep the _updateVersion of drawn items in sync, so we have an easy
     // way to know for which selected items we need to draw selection info.

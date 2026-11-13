@@ -225,7 +225,7 @@ describe('Hosted', () => {
 
       // Returns the calls made since the last call, and clears the log.
       takeCalls() {
-        const calls = host.calls
+        const { calls } = host
         host.calls = []
         return calls
       }
@@ -306,7 +306,7 @@ describe('Hosted', () => {
   test('Items load their content on first access', () => {
     const res = createHostedProject()
     const original = res.host.document.getItem({ name: 'circle' })
-    const circle = res.project.layers[0].children.circle
+    const { circle } = res.project.layers[0].children
     res.host.takeCalls()
     equals(circle.segments.length, 4)
     equals(res.host.takeCalls(), [['getItem', circle.key]])
@@ -322,9 +322,9 @@ describe('Hosted', () => {
 
   test('Bounds come from the host without loading', () => {
     const res = createHostedProject()
-    const document = res.host.document
+    const { document } = res.host
     const layer = res.project.layers[0]
-    const group = layer.children.group
+    const { group } = layer.children
     const path = group.children[0]
     res.host.takeCalls()
     equals(path.bounds, document.getItem({ id: path.key }).bounds)
@@ -340,7 +340,7 @@ describe('Hosted', () => {
   // A host that gives the boxes of its nodes only when asked:
   function createHostedProjectWithoutBoxes() {
     const host = createHost(createDocument()),
-      getColumns = host.getColumns
+      { getColumns } = host
     host.getColumns = items => ({ ...getColumns(items), boxes: null })
     host.getBounds = key => {
       host.calls.push(['getBounds', key])
@@ -353,9 +353,9 @@ describe('Hosted', () => {
 
   test('Bounds come from the host when asked, once', () => {
     const res = createHostedProjectWithoutBoxes()
-    const document = res.host.document
+    const { document } = res.host
     const layer = res.project.layers[0]
-    const group = layer.children.group
+    const { group } = layer.children
     const path = group.children[0]
     res.host.takeCalls()
     equals(path.bounds, document.getItem({ id: path.key }).bounds)
@@ -375,7 +375,7 @@ describe('Hosted', () => {
   test('Bounds are asked for again when the host sends a record again', () => {
     const res = createHostedProjectWithoutBoxes()
     const original = res.host.document.getItem({ name: 'circle' })
-    const circle = res.project.layers[0].children.circle
+    const { circle } = res.project.layers[0].children
     equals(circle.bounds, original.bounds)
     original.position.x += 10
     res.host.takeCalls()
@@ -387,8 +387,7 @@ describe('Hosted', () => {
   test('Hit tests load only the items that are hit', () => {
     const res = createHostedProject()
     const layer = res.project.layers[0]
-    const group = layer.children.group
-    const circle = layer.children.circle
+    const { group, circle } = layer.children
     res.host.takeCalls()
     const result = res.project.hitTest([50, 50])
     equals(result && result.item === circle, true)
@@ -430,7 +429,7 @@ describe('Hosted', () => {
     }
 
     function getPixel(ctx, x, y) {
-      const data = ctx.getImageData(x, y, 1, 1).data
+      const { data } = ctx.getImageData(x, y, 1, 1)
       return new Color(...[...data].map(value => value / 255))
     }
 
@@ -439,7 +438,7 @@ describe('Hosted', () => {
 
     test('draw() only calls the handlers, with the documented fields', () => {
       const res = createHostedProject()
-      const circle = res.project.layers[0].children.circle
+      const { circle } = res.project.layers[0].children
       const events = []
       circle.onDraw = function (event) {
         events.push(event)
@@ -515,7 +514,7 @@ describe('Hosted', () => {
 
     test('draw() skips invisible items', () => {
       const res = createHostedProject()
-      const circle = res.project.layers[0].children.circle
+      const { circle } = res.project.layers[0].children
       const events = []
       circle.onDraw = event => events.push(event)
       circle.visible = false
@@ -525,8 +524,8 @@ describe('Hosted', () => {
 
     test('hasDrawHandlers() tells whether drawing calls any', () => {
       const res = createHostedProject()
-      const project = res.project
-      const circle = project.layers[0].children.circle
+      const { project } = res
+      const { circle } = project.layers[0].children
       equals(project.hasDrawHandlers(), false, 'none')
       const handler = () => {}
       circle.onDraw = handler
@@ -548,7 +547,7 @@ describe('Hosted', () => {
 
     test('hasDrawHandlers() is true for the handlers of classes', () => {
       const res = createHostedProject()
-      const project = res.project
+      const { project } = res
       Path.onDraw = () => {}
       try {
         equals(project.hasDrawHandlers(), true, 'with them')
@@ -566,7 +565,7 @@ describe('Hosted', () => {
     res.host.document.getItem({ name: 'circle' }).strokeProfile = [
       { offset: 0, width: 2 }
     ]
-    const circle = res.project.layers[0].children.circle
+    const { circle } = res.project.layers[0].children
     equals(circle.strokeProfile.length, 1)
     equals(circle.strokeProfile[0].width, 2)
   })
@@ -580,7 +579,7 @@ describe('Hosted', () => {
         parameters: { type: 'fineDots', visible: 1 }
       }
     ]
-    const circle = res.project.layers[0].children.circle
+    const { circle } = res.project.layers[0].children
     equals(circle.effects.length, 2)
     equals(circle.effects[0].distance, 5)
     equals(circle.effects[1].parameters, { type: 'fineDots', visible: 1 })
@@ -593,9 +592,9 @@ describe('Hosted', () => {
 
   test('Loading and invalidating are not logged as changes', () => {
     const res = createHostedProject()
-    const project = res.project
+    const { project } = res
     project.trackChanges = true
-    const circle = project.layers[0].children.circle
+    const { circle } = project.layers[0].children
     circle.segments
     res.host.document.getItem({ name: 'circle' }).position.x += 10
     project.invalidate(
@@ -613,7 +612,7 @@ describe('Hosted', () => {
   test('invalidate() reloads changed content into the same item', () => {
     const res = createHostedProject()
     const original = res.host.document.getItem({ name: 'circle' })
-    const circle = res.project.layers[0].children.circle
+    const { circle } = res.project.layers[0].children
     equals(circle.position, new Point(50, 50))
     original.position = [100, 100]
     const columns = res.host.getColumns([original])
@@ -626,9 +625,9 @@ describe('Hosted', () => {
 
   test('invalidate() reloads changed children, keeping their items', () => {
     const res = createHostedProject()
-    const document = res.host.document
+    const { document } = res.host
     const layer = res.project.layers[0]
-    const circle = layer.children.circle
+    const { circle } = layer.children
     document.layers[0].insertChild(
       0,
       Path.star({
@@ -651,10 +650,10 @@ describe('Hosted', () => {
 
   test('invalidate() keeps the remaining children inserted', () => {
     const res = createHostedProject()
-    const project = res.project
-    const document = res.host.document
+    const { project } = res
+    const { document } = res.host
     const layer = project.layers[0]
-    const circle = layer.children.circle
+    const { circle } = layer.children
     project.trackChanges = true
     document.getItem({ name: 'group' }).remove()
     const columns = res.host.getColumns([document.layers[0]])
@@ -672,7 +671,7 @@ describe('Hosted', () => {
 
   test('invalidate() reloads items that a script created and keyed', () => {
     const res = createHostedProject()
-    const project = res.project
+    const { project } = res
     const layer = project.layers[0]
     // A script creates a circle, which the host writes back and keys:
     const circle = Path.circle({
@@ -698,8 +697,8 @@ describe('Hosted', () => {
 
   test('A failing host leaves the item a shell, to retry', () => {
     const res = createHostedProject()
-    const circle = res.project.layers[0].children.circle
-    const getItem = res.host.getItem
+    const { circle } = res.project.layers[0].children
+    const { getItem } = res.host
     res.host.getItem = () => {
       throw new Error('Unavailable')
     }
@@ -728,7 +727,7 @@ describe('Hosted', () => {
 
   test('Rasters load their pixels from the host on first access', () => {
     const res = createHostedRaster()
-    const raster = res.raster
+    const { raster } = res
     res.host.takeCalls()
     equals(raster.size, new Size(4, 2))
     equals(raster.bounds, new Rectangle(48, 49, 4, 2))
@@ -741,8 +740,7 @@ describe('Hosted', () => {
 
   test('Loading pixels is not logged as a change, drawing on them is', () => {
     const res = createHostedRaster()
-    const project = res.project
-    const raster = res.raster
+    const { project, raster } = res
     project.trackChanges = true
     raster.getPixel(0, 0)
     equals(project.takeChanges().length, 0)
@@ -756,7 +754,7 @@ describe('Hosted', () => {
 
   test('Rasters export without their source until their pixels load', () => {
     const res = createHostedRaster()
-    const raster = res.raster
+    const { raster } = res
     res.host.takeCalls()
     const json = raster.exportJSON({ asString: false })
     equals(json[1].source, undefined)
@@ -771,8 +769,8 @@ describe('Hosted', () => {
 
   test('Pixels that the host fails to give throw, and draw nothing', () => {
     const res = createHostedRaster()
-    const raster = res.raster
-    const getImage = res.host.getImage
+    const { raster } = res
+    const { getImage } = res.host
     res.host.getImage = () => {
       throw new Error('Unavailable')
     }
@@ -791,7 +789,7 @@ describe('Hosted', () => {
 
   test('invalidate() reloads the pixels of rasters', () => {
     const res = createHostedRaster()
-    const raster = res.raster
+    const { raster } = res
     const original = res.host.document.getItem({ id: raster.key })
     equals(raster.getPixel(0, 0), new Color(1, 0, 0, 1))
     original.setPixel(0, 0, 'blue')
@@ -809,7 +807,7 @@ describe('Hosted', () => {
   test('Rasters that move to another host bring their pixels along', () => {
     const from = createHostedRaster(),
       to = createHostedProject()
-    const raster = from.raster
+    const { raster } = from
     to.project.layers[0].addChild(raster)
     equals(raster.key, null)
     equals(raster.getPixel(0, 0), new Color(1, 0, 0, 1))
@@ -842,8 +840,8 @@ describe('Hosted', () => {
     const from = createHostedProject()
     const to = createHostedProject()
     const original = from.host.document.getItem({ name: 'group' })
-    const group = from.project.layers[0].children.group
-    const key = group.key
+    const { group } = from.project.layers[0].children
+    const { key } = group
     // Load the children that the group joins before taking the calls:
     const layer = to.project.layers[0]
     layer.children
@@ -882,7 +880,7 @@ describe('Hosted', () => {
 
   test('Changes mark the children reordered other than by inserts', () => {
     const res = createHostedProject()
-    const project = res.project
+    const { project } = res
     const layer = project.layers[0]
     const [first, second] = layer.children
     project.trackChanges = true
@@ -908,7 +906,7 @@ describe('Hosted', () => {
     const from = createHostedProject()
     const to = createHostedProject()
     const layer = from.project.layers[0]
-    const group = layer.children.group
+    const { group } = layer.children
     from.project.trackChanges = true
     to.project.layers[0].addChild(group)
     equals(
@@ -935,9 +933,9 @@ describe('Hosted', () => {
 
   test('Containers reordered outside the document are not marked', () => {
     const res = createHostedProject()
-    const project = res.project
+    const { project } = res
     const layer = project.layers[0]
-    const group = layer.children.group
+    const { group } = layer.children
     project.trackChanges = true
     group.remove()
     project.takeChanges()
@@ -956,8 +954,8 @@ describe('Hosted', () => {
     const from = createHostedProject()
     const to = new Project()
     to.host = from.host
-    const group = from.project.layers[0].children.group
-    const key = group.key
+    const { group } = from.project.layers[0].children
+    const { key } = group
     to.layers[0].addChild(group)
     equals(group.key, key)
   })
@@ -1081,10 +1079,10 @@ describe('Hosted', () => {
 
   test('Text loads its story, path and settings on first access', () => {
     const res = createHostedText(),
-      children = res.project.layers[0].children,
+      { children } = res.project.layers[0],
       original = res.document.layers[0].children
     res.host.takeCalls()
-    const point = children.point
+    const { point } = children
     equals(point.hasOwnProperty('_story'), false, 'a shell')
     equals(point.content, 'Hello world', 'its content')
     equals(res.host.takeCalls(), [['getItem', point.key]], 'loaded once')
@@ -1104,7 +1102,7 @@ describe('Hosted', () => {
 
   test('The host lays out hosted text', () => {
     const res = createHostedText(),
-      children = res.project.layers[0].children,
+      { children } = res.project.layers[0],
       original = res.document.layers[0].children
     ;['point', 'path', 'area'].forEach(name => {
       const text = children[name]
@@ -1128,7 +1126,7 @@ describe('Hosted', () => {
       equals(text.bounds, original[name].bounds, name + ': its bounds')
     })
     // Lines are in the text's coordinates, hit tests in the project's:
-    const point = children.point,
+    const { point } = children,
       center = point.localToGlobal(point.lines[0].bounds.center),
       hit = point.hitTest(center, { fill: true })
     equals(hit && hit.item === point, true, 'hit on its letters')
@@ -1137,7 +1135,7 @@ describe('Hosted', () => {
 
   test('Hosted text is laid out as the script holds it', () => {
     const res = createHostedText(),
-      area = res.project.layers[0].children.area,
+      { area } = res.project.layers[0].children,
       original = res.document.layers[0].children.area
     area.content = 'Changed by the script'
     equals(
@@ -1154,7 +1152,7 @@ describe('Hosted', () => {
 
   test('Without layOut(), Paper.js lays out hosted text', () => {
     const res = createHostedText(),
-      area = res.project.layers[0].children.area,
+      { area } = res.project.layers[0].children,
       original = res.document.layers[0].children.area
     res.host.layOut = null
     equals(getLines(area), getLines(original))
@@ -1162,7 +1160,7 @@ describe('Hosted', () => {
 
   test('invalidate() reloads the story of hosted text', () => {
     const res = createHostedText(),
-      point = res.project.layers[0].children.point,
+      { point } = res.project.layers[0].children,
       original = res.document.layers[0].children.point
     equals(point.content, 'Hello world')
     original.content = 'Changed in the host'
@@ -1175,7 +1173,7 @@ describe('Hosted', () => {
 
   test(`invalidate() reloads a text's path into the path it has`, () => {
     const res = createHostedText(),
-      children = res.project.layers[0].children,
+      { children } = res.project.layers[0],
       original = res.document.layers[0].children
     ;['path', 'area'].forEach(name => {
       const text = children[name],
@@ -1200,7 +1198,7 @@ describe('Hosted', () => {
         original[name].fillColor,
         name + `: and the host's content`
       )
-      const left = text.bounds.left
+      const { left } = text.bounds
       path.translate(5, 0)
       equals(
         text.bounds.left,
@@ -1211,7 +1209,7 @@ describe('Hosted', () => {
   })
 
   test('New text takes the current text style, new paths the current style', () => {
-    const project = createHostedText().project
+    const { project } = createHostedText()
     project.currentStyle = { fillColor: 'white', strokeColor: 'black' }
     const before = new PointText({ point: [10, 10], content: 'Before' })
     equals(
@@ -1236,19 +1234,19 @@ describe('Hosted', () => {
 
   test(`Hosted text draws its host's layout`, () => {
     const res = createHostedText(),
-      point = res.project.layers[0].children.point,
+      { point } = res.project.layers[0].children,
       raster = point.rasterize({ insert: false })
     equals(raster.width > 0, true, 'without errors')
   })
 
   test('Writes before loading stay', () => {
     const res = createHostedProject(),
-      circle = res.project.layers[0].children.circle
+      { circle } = res.project.layers[0].children
     circle.pivot = [0, 0]
     equals(circle.fillColor, new Color('red'), 'loaded')
     equals(circle.pivot, new Point(0, 0), 'with what was written')
     const res2 = createHostedText(),
-      area = res2.project.layers[0].children.area
+      { area } = res2.project.layers[0].children
     area.columns = 3
     equals(area.content.length > 0, true, 'loaded')
     equals(area.columns, 3, `an area text's setting`)
@@ -1256,7 +1254,7 @@ describe('Hosted', () => {
 
   test('Text that the script changed is laid out from its JSON', () => {
     const res = createHostedText(),
-      area = res.project.layers[0].children.area,
+      { area } = res.project.layers[0].children,
       original = res.document.layers[0].children.area
     area.lines
     res.host.takeCalls()
@@ -1329,10 +1327,10 @@ describe('Hosted', () => {
   test('Linked text loads into one story, from any of its items', () => {
     ;[0, 1, 2].forEach(index => {
       const res = createLinkedText(),
-        project = res.project,
+        { project } = res,
         items = res.frames.map(frame => project.getItemByKey(frame.id))
       items[index].content
-      const story = items[index].story
+      const { story } = items[index]
       equals(
         story.textItems.length === 3 &&
         story.textItems.every(
@@ -1369,8 +1367,8 @@ describe('Hosted', () => {
 
   test('The host lays out linked text from where each item starts', () => {
     const res = createLinkedText(),
-      project = res.project,
-      layOut = res.host.layOut,
+      { project } = res,
+      { layOut } = res.host,
       starts = []
     res.host.layOut = function (json, start) {
       starts.push(start)
@@ -1405,9 +1403,9 @@ describe('Hosted', () => {
 
   test('invalidate() reloads an item of linked text into its story', () => {
     const res = createLinkedText(),
-      project = res.project,
+      { project } = res,
       items = res.frames.map(frame => project.getItemByKey(frame.id)),
-      story = items[0].story,
+      { story } = items[0],
       original = res.frames[1]
     items[1].content
     original.textPath.bounds.width = 40
@@ -1432,7 +1430,7 @@ describe('Hosted', () => {
 
   test('invalidate() of all items of linked text reloads its story', () => {
     const res = createLinkedText(),
-      project = res.project,
+      { project } = res,
       items = res.frames.map(frame => project.getItemByKey(frame.id))
     items[0].content
     res.frames[0].content = 'A story that changed in the host.'
@@ -1442,7 +1440,7 @@ describe('Hosted', () => {
     }
     res.host.takeCalls()
     project.invalidate(columns)
-    const story = items[1].story
+    const { story } = items[1]
     equals(
       story.content,
       'A story that changed in the host.',
@@ -1509,7 +1507,7 @@ describe('Hosted', () => {
     const res = createHostedDefinitions(),
       { first, second } = res.project.layers[0].children
     res.host.takeCalls()
-    const pattern = first.fillColor.pattern
+    const { pattern } = first.fillColor
     equals(pattern instanceof PatternDefinition, true)
     equals(second.fillColor.pattern === pattern, true, 'one definition')
     equals(pattern.tile, new Rectangle(0, 0, 10, 10))
@@ -1534,7 +1532,7 @@ describe('Hosted', () => {
         definition: ['@symbol/Star']
       }
     ])
-    const definition = star.definition
+    const { definition } = star
     equals(definition instanceof SymbolDefinition, true)
     equals(other.definition === definition, true, 'one definition')
     equals(star.matrix, res.host.getNode(star.key).matrix)
@@ -1558,7 +1556,7 @@ describe('Hosted', () => {
       }
     ])
     // The host stores the symbol item as exported, and gives it back:
-    const definition = star.definition,
+    const { definition } = star,
       json = star.exportJSON()
     res.host.getItem = () => json
     res.host.takeCalls()
@@ -1580,8 +1578,8 @@ describe('Hosted', () => {
   test('invalidate() reloads definitions into the same objects', () => {
     const res = createHostedDefinitions(),
       { first, star } = res.project.layers[0].children
-    const pattern = first.fillColor.pattern,
-      definition = star.definition
+    const { pattern } = first.fillColor,
+      { definition } = star
     equals(getPixel(first, 2, 2), red)
     equals(getPixel(star, 5, 5), red)
     res.pattern.item.fillColor = 'blue'
@@ -1626,7 +1624,7 @@ describe('Hosted', () => {
   test('invalidate() empties definitions that the host no longer has', () => {
     const res = createHostedDefinitions(),
       { first, star } = res.project.layers[0].children
-    const pattern = first.fillColor.pattern
+    const { pattern } = first.fillColor
     equals(getPixel(star, 5, 5), red)
     res.host.definitions.clear()
     res.host.getDefinition = () => null
@@ -1647,7 +1645,7 @@ describe('Hosted', () => {
 
   test('takeChanges() lists the new definitions that items use first', () => {
     const res = createHostedDefinitions(),
-      project = res.project
+      { project } = res
     project.trackChanges = true
     const inner = new PatternDefinition(
       Path.rectangle({ point: [0, 0], size: [5, 5], fillColor: 'blue' })
@@ -1683,9 +1681,9 @@ describe('Hosted', () => {
 
   test(`takeChanges() lists the changes of the host's definitions`, () => {
     const res = createHostedDefinitions(),
-      project = res.project,
+      { project } = res,
       { first, star } = project.layers[0].children
-    const pattern = first.fillColor.pattern,
+    const { pattern } = first.fillColor,
       symbol = star.definition
     project.trackChanges = true
     pattern.spacing = 10
@@ -1710,7 +1708,7 @@ describe('Hosted', () => {
 
   test('Keys register new definitions, which export as references', () => {
     const res = createHostedDefinitions(),
-      project = res.project
+      { project } = res
     const symbol = new SymbolDefinition(
       Path.rectangle({ point: [0, 0], size: [10, 10], fillColor: 'blue' })
     )
@@ -1753,7 +1751,7 @@ describe('Hosted', () => {
   test('Definitions have the names of the host', () => {
     const res = createHostedDefinitions(),
       { star } = res.project.layers[0].children
-    const definition = star.definition
+    const { definition } = star
     equals(definition.name, 'Star')
     let message = null
     try {
@@ -1769,7 +1767,7 @@ describe('Hosted', () => {
 
   test(`symbolDefinitions and patternDefinitions list the host's`, () => {
     const res = createHostedDefinitions(),
-      project = res.project
+      { project } = res
     res.host.definitions.set(
       'symbol/Unused',
       new SymbolDefinition(Path.rectangle([0, 0], [10, 10]))
@@ -1806,7 +1804,7 @@ describe('Hosted', () => {
       { star } = res.project.layers[0].children
     other.activate()
     other.trackChanges = true
-    const definition = star.definition
+    const { definition } = star
     equals(definition.project === res.project, true, 'the definition')
     equals(definition.item.project === res.project, true, 'its item')
     equals(res.project.patternDefinitions[0].project === res.project, true)
@@ -1818,7 +1816,7 @@ describe('Hosted', () => {
     const from = createHostedDefinitions(),
       to = createHostedProject(),
       { first, second, star, other } = from.project.layers[0].children,
-      pattern = first.fillColor.pattern,
+      { pattern } = first.fillColor,
       symbol = other.definition,
       layer = to.project.layers[0]
     from.project.trackChanges = true
@@ -1855,7 +1853,7 @@ describe('Hosted', () => {
   test('Copied definitions use copies of the definitions they use', () => {
     const from = createHostedDefinitions(),
       to = createHostedProject(),
-      getDefinition = from.host.getDefinition
+      { getDefinition } = from.host
     // The host's symbol fills its square with the host's pattern, by key:
     const square = Path.rectangle({
       point: [0, 0],
@@ -1870,7 +1868,7 @@ describe('Hosted', () => {
         ? ['SymbolDefinition', json, { name: 'Star' }]
         : getDefinition(key)
     const { first, star } = from.project.layers[0].children,
-      pattern = first.fillColor.pattern
+      { pattern } = first.fillColor
     equals(star.definition.item.fillColor.pattern === pattern, true)
     to.project.trackChanges = true
     to.project.layers[0].addChild(star)
@@ -1890,7 +1888,7 @@ describe('Hosted', () => {
     const from = createHostedDefinitions(),
       to = createHostedProject(),
       { first, star } = from.project.layers[0].children,
-      pattern = first.fillColor.pattern,
+      { pattern } = first.fillColor,
       layer = to.project.layers[0]
     // Copied into the active project, and copied in the old one and added:
     to.project.activate()
@@ -1934,11 +1932,11 @@ describe('Hosted', () => {
   test('Items that move to another host measure their own bounds', () => {
     const from = createHostedProject(),
       to = createHostedProject(),
-      getChildren = from.host.getChildren
+      { getChildren } = from.host
     let columns
     from.host.getChildren = key => (columns = getChildren(key))
-    const circle = from.project.layers[0].children.circle,
-      bounds = from.host.document.getItem({ name: 'circle' }).bounds
+    const { circle } = from.project.layers[0].children,
+      { bounds } = from.host.document.getItem({ name: 'circle' })
     to.project.layers[0].addChild(circle)
     // The host may reuse its boxes for other records:
     columns.boxes.fill(0)
@@ -1948,7 +1946,7 @@ describe('Hosted', () => {
   test('Items that move to another host take the patterns of their text', () => {
     const from = createHostedDefinitions(),
       to = createHostedProject(),
-      pattern = from.project.layers[0].children.first.fillColor.pattern,
+      { pattern } = from.project.layers[0].children.first.fillColor,
       text = new PointText({
         content: 'Patterned',
         fillColor: { pattern },
@@ -2019,9 +2017,9 @@ describe('Hosted', () => {
   test('Linked text that moves to another host brings its story along', () => {
     const res = createLinkedText(),
       to = createHostedProject(),
-      project = res.project,
+      { project } = res,
       items = res.frames.map(frame => project.getItemByKey(frame.id)),
-      content = items[0].story.content
+      { content } = items[0].story
     project.trackChanges = true
     to.project.layers[0].addChild(items[1])
     equals(items[1].isLinked(), false, 'unlinked')

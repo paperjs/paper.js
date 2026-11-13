@@ -16,7 +16,7 @@ import { equals, test } from '../helpers.js'
 
 describe('Layer', () => {
   test('#previousSibling / #nextSibling', () => {
-    const project = paper.project
+    const { project } = paper
     const firstLayer = project.activeLayer
     const secondLayer = new Layer()
     equals(() => secondLayer.previousSibling === firstLayer, true)
@@ -39,7 +39,7 @@ describe('Layer', () => {
   })
 
   test('#insertAbove() / #insertBelow()', () => {
-    const project = paper.project
+    const { project } = paper
     const firstLayer = project.activeLayer
     firstLayer.name = 'first'
     const secondLayer = new Layer()
@@ -68,7 +68,7 @@ describe('Layer', () => {
   })
 
   test('#addChild() / #insertBelow() with nesting', () => {
-    const project = paper.project
+    const { project } = paper
     const firstLayer = project.activeLayer
     const secondLayer = new Layer()
     // There should be two layers now in project.layers

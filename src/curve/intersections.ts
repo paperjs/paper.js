@@ -60,9 +60,7 @@ export function getIntersections(
   report: Report,
   tolerance?: number
 ) {
-  const min = Math.min
-  const max = Math.max
-  const abs = Math.abs
+  const { min, max, abs } = Math
   const minX1 = min(v1[0], v1[2], v1[4], v1[6])
   const maxX1 = max(v1[0], v1[2], v1[4], v1[6])
   const minY1 = min(v1[1], v1[3], v1[5], v1[7])
@@ -94,14 +92,7 @@ export function getIntersections(
     if (overlaps) {
       for (let i = 0; i < 2; i++) {
         const overlap = overlaps[i]
-        addLocation(
-          report,
-          c1,
-          overlap[0],
-          c2,
-          overlap[1],
-          true
-        )
+        addLocation(report, c1, overlap[0], c2, overlap[1], true)
       }
     } else {
       const straight1 = isStraight(v1)
@@ -115,14 +106,7 @@ export function getIntersections(
       // Determine the correct intersection method based on whether
       // one or curves are straight lines:
       if (straight) {
-        isFound = addLineIntersection(
-          v1,
-          v2,
-          c1,
-          c2,
-          report,
-          lineTolerance
-        )
+        isFound = addLineIntersection(v1, v2, c1, c2, report, lineTolerance)
       } else if (straight1 || straight2) {
         addCurveLineIntersections(
           straight1 ? v2 : v1,
@@ -136,19 +120,7 @@ export function getIntersections(
       } else {
         // recursion, calls, tMin, tMax, uMin, uMax:
         addCurveIntersections(
-          v1,
-          v2,
-          c1,
-          c2,
-          report,
-          false,
-          0,
-          0,
-          0,
-          1,
-          0,
-          1,
-          tolerance
+          v1, v2, c1, c2, report, false, 0, 0, 0, 1, 0, 1, tolerance
         )
       }
       // Handle the special case where the start- / end-points of one
@@ -229,8 +201,8 @@ export function getOverlaps(
     return x * x + y * y
   }
 
-  const abs = Math.abs
-  const getDistance = Line.getDistance
+  const { abs } = Math
+  const { getDistance } = Line
   const timeEpsilon = CURVETIME_EPSILON
   const geometricEpsilon = tolerance || GEOMETRIC_EPSILON
   let straight1 = isStraight(v1)
@@ -389,7 +361,7 @@ function addCurveIntersections(
   const q0y = v2[1]
   const q3x = v2[6]
   const q3y = v2[7]
-  const getSignedDistance = Line.getSignedDistance
+  const { getSignedDistance } = Line
   // Calculate the fat-line L for Q is the baseline l and two
   // offsets which completely encloses the curve P.
   const d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3])
@@ -687,12 +659,7 @@ function getLocalPoints(
 }
 
 // The error of the product a * b, from the errors of its factors:
-function getProductError(
-  a: number,
-  ea: number,
-  b: number,
-  eb: number
-): number {
+function getProductError(a: number, ea: number, b: number, eb: number): number {
   return (
     Math.abs(a) * eb +
     Math.abs(b) * ea +

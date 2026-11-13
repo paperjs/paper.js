@@ -236,7 +236,7 @@ export function tracePaths(operands: PathItem[], operator: Operator): Path[] {
       } while (index !== i)
       // Start where a piece doesn't continue the one before it, as
       // the pieces of a closed curve don't continue across its end:
-      const length = contour.length
+      const { length } = contour
       let start = 0
       while (
         start < length &&
@@ -358,14 +358,7 @@ function cutCurves(
   const collisions = findCurveBoundsCollisions(values, values, 2 * epsilon)
   const locations = CurveLocation.expand(
     Curve.getIntersections(
-      curves,
-      null,
-      null,
-      null,
-      null,
-      false,
-      epsilon,
-      collisions
+      curves, null, null, null, null, false, epsilon, collisions
     )
   )
   for (let i = 0, l = locations.length; i < l; i++) {
@@ -816,7 +809,7 @@ function sortHalfEdges(graph: Graph) {
       let start = -Math.PI
       let gap = 0
       for (let j = 0, k = outgoing.length; j < k; j++) {
-        const angle = halfEdges[outgoing[j]].angle
+        const { angle } = halfEdges[outgoing[j]]
         const previous = halfEdges[outgoing[(j || k) - 1]].angle
         const difference = (
           (angle - previous + 2 * Math.PI) % (2 * Math.PI) ||

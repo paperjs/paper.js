@@ -915,7 +915,7 @@ describe('Path', () => {
 
   test('Path#getOffsetsWithTangent()', () => {
     const path = Path.circle(new Point(0, 0), 50)
-    const length = path.length
+    const { length } = path
     equals(
       path.getOffsetsWithTangent(),
       [],

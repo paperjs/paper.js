@@ -27,7 +27,7 @@ describe('TextRange', () => {
   test('Styling a range splits the runs', () => {
     const text = createText('Hello world')
     text.range(6, 11).fontSize = 24
-    const runs = text.runs
+    const { runs } = text
     equals(runs.length, 2, 'two runs')
     equals(runs[0].content, 'Hello ')
     equals(runs[1].content, 'world')
@@ -48,7 +48,7 @@ describe('TextRange', () => {
 
   test('Walking the words and restyling them', () => {
     const text = createText('Every word its size')
-    const words = text.words
+    const { words } = text
     equals(words.map(word => word.content).join(), 'Every,word,its,size')
     words.forEach(word => {
       word.fontSize = word.content.length * 4
@@ -212,7 +212,7 @@ describe('TextRange', () => {
     const imported = new PointText().importJSON(text.exportJSON())
 
     function equalsGradient(color, expected, message) {
-      const gradient = color.gradient
+      const { gradient } = color
       equals(color.type, 'gradient', message)
       equals(
         gradient.stops[0].color,
@@ -275,8 +275,8 @@ describe('TextRange', () => {
 
   test('Mixed styles lay out run by run', () => {
     const text = createText('Hello\nworld'),
-      view = text.view,
-      bounds = text.bounds
+      { view } = text,
+      { bounds } = text
     text.range(6, 11).fontSize = 24
     const width = view.getTextWidth(
       'normal 24px ' + testFontFamily,
@@ -300,7 +300,7 @@ describe('TextRange', () => {
 
   test('Runs of one font are measured together', () => {
     const text = createText('AVAV'),
-      view = text.view
+      { view } = text
     text.range(2, 4).fillColor = 'red'
     equals(
       text.bounds.width,
@@ -312,7 +312,7 @@ describe('TextRange', () => {
 
   test('Justification by paragraph', () => {
     const text = createText('One\nTwo'),
-      view = text.view,
+      { view } = text,
       width = view.getTextWidth(
         'normal 12px ' + testFontFamily,
         ['Two'],
@@ -329,7 +329,7 @@ describe('TextRange', () => {
 
   test('Font style and weight, small capitals, superscripts', () => {
     const text = createText('Wide'),
-      view = text.view
+      { view } = text
     function width(font) {
       return view.getTextWidth(font, ['Wide'], '0em')
     }
@@ -359,7 +359,7 @@ describe('TextRange', () => {
 
   test('Letter scaling widens the letters', () => {
     const text = createText('Wide'),
-      width = text.bounds.width
+      { width } = text.bounds
     text.letterScaling = [2, 1]
     equals(text.bounds.width, width * 2, 'twice as wide', {
       tolerance: 0.01
@@ -372,7 +372,7 @@ describe('TextRange', () => {
 
   test('Letter kerning adds space after each letter', () => {
     const text = createText('AV'),
-      view = text.view,
+      { view } = text,
       font = 'normal 12px ' + testFontFamily,
       width = (
         view.getTextWidth(font, ['A'], '0em') +
@@ -389,7 +389,7 @@ describe('TextRange', () => {
 
   test('Indents and space between paragraphs', () => {
     const text = createText('One\nTwo'),
-      height = text.bounds.height
+      { height } = text.bounds
     text.paragraphs[1].spaceBefore = 10
     equals(text.bounds.height, height + 10, 'space before')
     text.paragraphs[0].spaceAfter = 20
@@ -398,15 +398,15 @@ describe('TextRange', () => {
       height + 20,
       'the larger of the space after and before'
     )
-    const left = text.bounds.left
+    const { left } = text.bounds
     text.startIndent = 5
     equals(text.bounds.left, left + 5, 'start indent')
   })
 
   test('Start and end justification follow the direction', () => {
     const text = createText('One'),
-      width = text.bounds.width,
-      x = text.point.x
+      { width } = text.bounds,
+      { x } = text.point
     text.justification = 'end'
     equals(text.bounds.left, x - width, 'end: right in LTR', {
       tolerance: 0.01
@@ -421,7 +421,7 @@ describe('TextRange', () => {
 
   test('Line height: automatic, or fixed', () => {
     const text = createText('One\nTwo'),
-      view = text.view
+      { view } = text
     // Two lines are twice their line height tall: one between their
     // baselines, and the leading split around the font's ascent and descent:
     equals(text.lineHeight, 'auto', 'automatic by default')
@@ -453,7 +453,7 @@ describe('TextRange', () => {
 
   test('Ranges have their runs, paragraphs, words and letters', () => {
     const text = createText('One two\nthree four\n\nfive')
-    const paragraphs = text.paragraphs
+    const { paragraphs } = text
     equals(
       paragraphs[1].words.map(word => word.content).join(),
       'three,four',

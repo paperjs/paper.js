@@ -295,7 +295,7 @@ describe('PathItem Contains', () => {
 
   test('Path#contains() (rectangle contours)', () => {
     const path = Path.rectangle(new Point(100, 100), [200, 200]),
-      curves = path.curves
+      { curves } = path
 
     for (let i = 0; i < curves.length; i++) {
       testPoint(path, curves[i].getPointAtTime(0), true)
@@ -305,7 +305,7 @@ describe('PathItem Contains', () => {
 
   test('Path#contains() (rotated rectangle contours)', () => {
     const path = Path.rectangle(new Point(100, 100), [200, 200]),
-      curves = path.curves
+      { curves } = path
 
     path.rotate(45)
 

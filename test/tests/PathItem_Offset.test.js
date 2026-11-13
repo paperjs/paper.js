@@ -170,7 +170,7 @@ describe('PathItem#offset() and #outline()', () => {
       true
     )
     // Twelve whole dashes, and the part of the last one before the end:
-    const length = circle.length
+    const { length } = circle
     equals(
       dashes.children.reduce((sum, dash) => sum + dash.length, 0),
       Math.floor(length / 18) * 12 + Math.min(12, length % 18),
@@ -369,7 +369,7 @@ describe('PathItem#offset() and #outline()', () => {
       insert: false
     })
     pressure.smooth({ type: 'catmull-rom' })
-    const length = pressure.length
+    const { length } = pressure
     pressure.strokeProfile = [
       { offset: 0, width: 0.2, aspect: 0.15, angle: -35 },
       { offset: length * 0.3, width: 1.4 },

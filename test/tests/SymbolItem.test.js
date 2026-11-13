@@ -128,9 +128,9 @@ describe('Symbol & Placed Symbol', () => {
       paper.view.update()
       const size = paper.view.viewSize.multiply(paper.view.pixelRatio)
 
-      const data = paper.view.element
+      const { data } = paper.view.element
         .getContext('2d')
-        .getImageData(0, 0, size.width, size.height).data
+        .getImageData(0, 0, size.width, size.height)
 
       let count = 0
       for (let i = 3, l = data.length; i < l; i += 4) {
@@ -384,7 +384,7 @@ describe('Symbol & Placed Symbol', () => {
     const after = new Path()
     placed.rotate(90)
     placed.scale(2)
-    const bounds = placed.bounds
+    const { bounds } = placed
     const embedded = placed.embed()
     equals(() => embedded !== path, true)
     equals(() => embedded.className, 'Path')
@@ -407,7 +407,7 @@ describe('Symbol & Placed Symbol', () => {
     const definition = new SymbolDefinition(group)
     const placed = definition.place([100, 100])
     placed.rotate(90)
-    const bounds = placed.bounds
+    const { bounds } = placed
     const embedded = placed.embed()
     equals(embedded.bounds, bounds)
     // The matrix combines the symbol item's with the definition's:

@@ -64,7 +64,7 @@ function getTransform(
   center?: boolean
 ): Attributes {
   const attrs: Attributes = {}
-  let translation = matrix.translation
+  let { translation } = matrix
   if (coordinates) {
     // If the item supports x- and y- coordinates, we're taking out the
     // translation part of the matrix and move it to x, y attributes, to

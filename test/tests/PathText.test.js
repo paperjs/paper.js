@@ -155,7 +155,7 @@ describe('PathText', () => {
       `styles are the story's`
     )
     equals(first.link(second), false, 'already linked')
-    const bounds = second.bounds
+    const { bounds } = second
     first.textPath.lastSegment.point = [80, 0]
     equals(
       second.visibleRange.start > visible.end,
