@@ -620,6 +620,27 @@ describe('PathItem#offset() and #outline()', () => {
       { offset: 768.91, width: 0.16, angle: -82.67 }
     ]
     equals(checkProfileOutline(paper, tapering), [], 'tapering strips')
+    // Narrow strips can vanish and appear again between two samples
+    // without their ends moving far on the pen:
+    const turning = new Path({
+      segments: [
+        [[35.99971, 456.68203], [0, 0], [-3.27969, -8.24484]],
+        [[21.77263, 434.18329], [5.84564, 6.67549], [0, 0]],
+        [[17.73618, 431.77267], [-1.38228, -0.75882], [21.14371, 11.60704]],
+        [[54.97071, 471.02868], [-16.93929, -19.07439], [0.39668, 0.44668]],
+        [[74.54154, 446.81103], [-7.66513, 6.18365], [19.09956, -15.40809]],
+        [[106.33251, 420.46671], [0.23412, 7.86757], [0, 0]]
+      ],
+      strokeWidth: 42.32,
+      strokeJoin: 'round',
+      strokeCap: 'square',
+      insert: false
+    })
+    turning.strokeProfile = [
+      { offset: 108.71, width: 0.04, aspect: 0.52, angle: -109.18 },
+      { offset: 132.77, width: 0.25, aspect: 0.15, angle: 352.02 }
+    ]
+    equals(checkProfileOutline(paper, turning), [], 'narrow strips')
   })
 })
 

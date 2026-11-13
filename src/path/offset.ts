@@ -973,15 +973,26 @@ function outlineStroke(
 
       // Whether the ends of the same strips moved less than 20° on
       // the pen, as they jump where pairs of them appear and vanish
-      // again between the samples:
+      // again between the samples, and less than half the width of
+      // narrow strips, which can do so without moving that far:
       function isClose(strips: Strip[], before: Strip[]): boolean {
         return strips.every((strip, i) => {
           const other = before[i]
+          const limit = Math.min(
+            0.35,
+            Math.max(getWidth(strip), getWidth(other)) / 2
+          )
           return (
-            getAngle(strip.from.phi, other.from.phi) < 0.35 &&
-            getAngle(strip.to.phi, other.to.phi) < 0.35
+            getAngle(strip.from.phi, other.from.phi) < limit &&
+            getAngle(strip.to.phi, other.to.phi) < limit
           )
         })
+      }
+
+      // The angle on the pen that the strip covers:
+      function getWidth(strip: Strip): number {
+        const full = 2 * Math.PI
+        return ((strip.to.phi - strip.from.phi) % full + full) % full || full
       }
 
       // Sample the strips evenly, and where the curve's curvature
