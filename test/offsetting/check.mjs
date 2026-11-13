@@ -79,6 +79,17 @@ export function checkOutline(paper, path) {
   const offset = path.strokeWidth / 2
   const outline = getOutline(path, problems)
   if (!outline) return problems
+  // Handles shorter than a quarter of the offsets' tolerance give their curves
+  // no directions:
+  path = path.clone({ insert: false })
+  const dimension = Math.min(0.1, offset / 100) / 4
+  for (const { handleIn, handleOut } of path.segments) {
+    for (const handle of [handleIn, handleOut]) {
+      if (handle.length < dimension) {
+        handle.set(0, 0)
+      }
+    }
+  }
   // Points along the normals within the stroke are inside, sampled by length
   // and along each curve, as short curves can turn a lot. The ends of open
   // paths with butt caps lie on their edge:
