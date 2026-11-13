@@ -98,7 +98,8 @@
   undocumented range of `Path#clear(start, end)` (use `removeSegments()`).
 - Remove the support of node-canvas and jsdom with their PDF and SVG canvases
   and stream methods, the `paper-jsdom` and `paper-jsdom-canvas` packages,
-  and the CommonJS and AMD exports.
+  the CommonJS and AMD exports, and the `require()` hook for `.pjs` files: the
+  README shows how to run PaperScript on Node.js instead.
 
 ### Fixed
 
