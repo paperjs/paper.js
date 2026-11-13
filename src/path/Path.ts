@@ -2267,7 +2267,7 @@ export class Path extends PathItem {
     for (let i = 0; i < length2; i++) {
       v2 = curves2[i].getValues()
       values2.push(v2)
-      overlaps = Curve.getOverlaps(v1, v2)
+      overlaps = Bezier.getOverlaps(v1, v2)
       if (overlaps) {
         // If the overlap doesn't start at the beginning of v2, then it
         // can only be a partial overlap with curves2[0], and the start
@@ -2286,7 +2286,7 @@ export class Path extends PathItem {
     v2 = values2[pos2]
     let start2: number[]
     while (v1 && v2) {
-      overlaps = Curve.getOverlaps(v1, v2)
+      overlaps = Bezier.getOverlaps(v1, v2)
       if (overlaps) {
         // Check that the overlaps are joining on curves1.
         const t1 = overlaps[0][0]
