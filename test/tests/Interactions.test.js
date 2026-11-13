@@ -546,7 +546,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   })
 
   test('View#onMouseDrag() with a second touch outside of the view (#1875)', () => {
-    const element = paper.view.element,
+    const { element } = paper.view,
       outside = document.createElement('div'),
       events = []
 
@@ -727,7 +727,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   //
   const getKeyEvents = triggerKeyEvents => {
     // Key events are only emitted on views that are visible in the DOM.
-    const element = paper.view.element,
+    const { element } = paper.view,
       tool = new Tool(),
       events = []
     element.style.position = 'fixed'
@@ -751,8 +751,8 @@ describe.skipIf(isNodeContext)('Interactions', () => {
   }
 
   test('Key events with control, alt and meta without keypress (#1997, #1871)', () => {
-    const agent = paper.agent,
-      chrome = agent.chrome
+    const { agent } = paper,
+      { chrome } = agent
     // Firefox fires no keypress events for these combinations, simulate it
     // in any browser:
     agent.chrome = false
@@ -872,7 +872,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
       events = []
     currentProject.activate()
     ;[view1, view2].forEach((view, index) => {
-      const element = view.element,
+      const { element } = view,
         name = 'view' + (index + 1)
       element.style.position = 'fixed'
       element.style.top = element.style.left = 0

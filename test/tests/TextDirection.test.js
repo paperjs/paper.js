@@ -170,8 +170,8 @@ describe('TextDirection', () => {
 
   test('Letters are hit where they are placed', () => {
     let text = createDirectionText(shalom + ' ' + olam, 'rtl')
-    let bounds = text.bounds
-    const y = bounds.center.y
+    let { bounds } = text
+    const { y } = bounds.center
     text.range(5, 9).fillColor = null
     equals(
       text.hitTest([bounds.right - 2, y]) != null,

@@ -177,8 +177,8 @@ describe('HitResult', () => {
   test('hitting the center and position of a path', () => {
     const path = new Path([0, 0], [100, 100], [200, 0])
     path.closed = true
-    const center = path.bounds.center,
-      position = path.position,
+    const { center } = path.bounds,
+      { position } = path,
       positionResult = {
         type: 'position',
         item: path,
@@ -1340,7 +1340,7 @@ describe('HitResult', () => {
     })
     // The neighbouring segments are 2 * 40 * sin(PI / 16), about 15.6 away,
     // the next ones about 30.6:
-    const point = path.firstSegment.point,
+    const { point } = path.firstSegment,
       options = { segments: true, fill: true, tolerance: 20 }
     const hits = paper.project.hitTestAll(point, options)
     const segments = hits.filter(hit => hit.type === 'segment')

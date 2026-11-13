@@ -350,15 +350,7 @@ function importGradient(node: Element, type: string, options: Options): null {
     highlight = getPoint(node, 'fx', 'fy', true, scaleToBounds)
   } else {
     origin = getPoint(node, 'x1', 'y1', false, scaleToBounds, '0%', '0%')
-    destination = getPoint(
-      node,
-      'x2',
-      'y2',
-      false,
-      scaleToBounds,
-      '100%',
-      '0%'
-    )
+    destination = getPoint(node, 'x2', 'y2', false, scaleToBounds, '100%', '0%')
   }
   const color = applyAttributes(
     new Color(gradient, origin, destination, highlight), node,

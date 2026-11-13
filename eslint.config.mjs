@@ -62,6 +62,10 @@ export default [
       'no-useless-assignment': 'off',
       'no-var': 'error',
       'one-var': ['error', 'never'],
+      'prefer-destructuring': [
+        'error',
+        { VariableDeclarator: { object: true, array: false } }
+      ],
       'prefer-const': ['error', { destructuring: 'all' }],
       'no-empty': ['error', { allowEmptyCatch: true }],
       // The constants of Numerical are written as published:
@@ -188,6 +192,10 @@ export default [
       ],
       'no-var': 'error',
       'object-shorthand': 'error',
+      'prefer-destructuring': [
+        'error',
+        { VariableDeclarator: { object: true, array: false } }
+      ],
       'prefer-const': ['error', { destructuring: 'all' }],
       'no-restricted-syntax': [
         'error',

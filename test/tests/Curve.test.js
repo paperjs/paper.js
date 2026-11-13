@@ -291,7 +291,7 @@ describe('Curve', () => {
     path.moveTo(100, 100)
     path.lineTo(500, 500)
     const curve = path.firstCurve
-    const length = curve.length
+    const { length } = curve
     const t = curve.getTimeAt(length / 3)
     equals(t, 0.3869631475722452)
   })

@@ -103,11 +103,7 @@ export class PathFitter extends Base {
     // Try 4 iterations
     for (let i = 0; i <= 4; i++) {
       const curve = this.#generateBezier(
-        first,
-        last,
-        uPrime,
-        tangent1,
-        tangent2
+        first, last, uPrime, tangent1, tangent2
       )
       //  Find max deviation of points to fitted curve
       const max = this.#findMaxError(first, last, curve, uPrime)
@@ -146,7 +142,7 @@ export class PathFitter extends Base {
     uPrime: number[],
     tangent1: Point, tangent2: Point
   ): Point[] {
-    const abs = Math.abs
+    const { abs } = Math
     const points = this.#points
     const point1 = points[first]
     const point2 = points[last]

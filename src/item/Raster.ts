@@ -809,12 +809,7 @@ export class Raster extends Item {
     if (area.isEmpty()) {
       area = new Rectangle(this._size)
     }
-    return this.context.getImageData(
-      area.x,
-      area.y,
-      area.width,
-      area.height
-    )
+    return this.context.getImageData(area.x, area.y, area.width, area.height)
   }
 
   /**

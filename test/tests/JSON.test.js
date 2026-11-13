@@ -371,8 +371,8 @@ describe('JSON', () => {
     })
     path.rotate(30)
     path.onMouseDown = () => {}
-    const parent = path.parent,
-      index = path.index
+    const { parent } = path,
+      { index } = path
     const res = path.importJSON(
       '["Path",{"segments":[[0,0],[10,0],[10,10]],"closed":true}]'
     )

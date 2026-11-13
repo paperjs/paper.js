@@ -103,12 +103,7 @@ export function getSegmentStrokeBounds(
   // Start with normal path bounds with added stroke padding. Then we
   // only need to look at each segment and handle join / cap / miter.
   let bounds = getSegmentBounds(
-    segments,
-    closed,
-    path,
-    matrix,
-    options,
-    strokePadding
+    segments, closed, path, matrix, options, strokePadding
   )
   if (!stroke) return bounds
   const join = style.strokeJoin
@@ -137,13 +132,7 @@ export function getSegmentStrokeBounds(
     } else {
       // addBevelJoin() handles both 'bevel' and 'miter' joins.
       addBevelJoin(
-        segment,
-        join,
-        strokeRadius,
-        miterLimit,
-        matrix,
-        strokeMatrix,
-        addPoint
+        segment, join, strokeRadius, miterLimit, matrix, strokeMatrix, addPoint
       )
     }
   }
@@ -153,14 +142,7 @@ export function getSegmentStrokeBounds(
       addRound(segment)
     } else {
       // addSquareCap() handles both 'square' and 'butt' caps.
-      addSquareCap(
-        segment,
-        cap,
-        strokeRadius,
-        matrix,
-        strokeMatrix,
-        addPoint
-      )
+      addSquareCap(segment, cap, strokeRadius, matrix, strokeMatrix, addPoint)
     }
   }
 

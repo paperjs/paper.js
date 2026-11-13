@@ -402,7 +402,7 @@ export class Tween extends Emitter {
   }
 
   #getProperty(path: string[], offset = 0) {
-    let object = this.object
+    let { object } = this
     for (let i = 0, l = path.length - offset; i < l && object; i++) {
       object = object[path[i]]
     }

@@ -289,7 +289,7 @@ describe('Path Constructors', () => {
   })
 
   test('new Path.*({ project: project, parent: parent, insert: insert }) (#2012)', () => {
-    const project = paper.project,
+    const { project } = paper,
       project2 = new Project(),
       group = new Group()
     project.activate()

@@ -294,7 +294,7 @@ describe('PatternDefinition', () => {
       strokeColor: new Color(pattern, new Matrix().rotate(45)),
       strokeWidth: 10
     }).scale(2)
-    const project = paper.project
+    const { project } = paper
     const json = project.exportJSON()
     equals(
       json.match(/"PatternDefinition"/g).length,

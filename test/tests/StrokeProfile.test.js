@@ -141,7 +141,7 @@ describe('StrokeProfile', () => {
     ]
     // The slopes before and after an offset:
     const getSlopes = offset => {
-      const width = path.getStrokeProfileAt(offset).width
+      const { width } = path.getStrokeProfileAt(offset)
       return [
         (width - path.getStrokeProfileAt(offset - 0.001).width) / 0.001,
         (path.getStrokeProfileAt(offset + 0.001).width - width) / 0.001
@@ -267,7 +267,7 @@ describe('StrokeProfile', () => {
     // The stop on the curve that the segment divides stays at its fraction
     // of the curves between the segments around it:
     path.insert(2, [50, 100])
-    const curves = path.curves,
+    const { curves } = path,
       length = curves[1].length + curves[2].length
     equals(
       path.strokeProfile[0].offset,
@@ -547,7 +547,7 @@ describe('StrokeProfile', () => {
     const line = createTaper()
     for (const distance of [10, -10]) {
       const side = line.offset(distance)
-      const y = side.firstSegment.point.y
+      const { y } = side.firstSegment.point
       equals(Math.abs(y), 10)
       equals(getPoints(side), [new Point(0, y), new Point(200, y)])
       equals(getValues(side), getValues(line))

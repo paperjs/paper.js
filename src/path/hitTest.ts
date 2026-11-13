@@ -206,13 +206,7 @@ export function hitTestPath(
       } else {
         // addSquareCap() handles both 'square' and 'butt' caps.
         addSquareCap(
-          segment,
-          cap,
-          strokeRadius,
-          strokeSpace,
-          null,
-          addToArea,
-          true
+          segment, cap, strokeRadius, strokeSpace, null, addToArea, true
         )
       }
       // See if the above produced an area to check for

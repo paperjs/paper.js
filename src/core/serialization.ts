@@ -162,12 +162,7 @@ export function deserialize(
     for (let i = ctor ? 1 : 0, l = json.length; i < l; i++) {
       res.push(
         deserialize(
-          json[i],
-          create,
-          resolve,
-          _data,
-          isDictionary,
-          hasDictionary
+          json[i], create, resolve, _data, isDictionary, hasDictionary
         )
       )
     }

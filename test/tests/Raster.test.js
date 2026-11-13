@@ -244,7 +244,7 @@ describe('Raster', () => {
     const raster = new Raster(
       'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABlJREFUeNpi+s/AwPCfgYmR4f9/hv8AAQYAHiAFAS8Lwy8AAAAASUVORK5CYII='
     )
-    const view = raster.view
+    const { view } = raster
     const context = view._context
     raster.onLoad = () => {
       const originalValue = context.imageSmoothingEnabled
@@ -371,7 +371,7 @@ describe('Raster', () => {
 
   test('Raster#importJSON() without a size, as in older saves (#1598)', assert => {
     const done = assert.async()
-    const source = new Raster({ size: [20, 10], insert: false }).source
+    const { source } = new Raster({ size: [20, 10], insert: false })
     const imported = paper.project.activeLayer.importJSON(
       JSON.stringify(['Raster', { source }])
     )

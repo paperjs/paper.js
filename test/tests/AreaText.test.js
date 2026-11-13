@@ -46,7 +46,7 @@ describe('AreaText', () => {
 
   test('Lines break between words to fit the area', () => {
     const text = createAreaText(new Rectangle(0, 0, 100, 400), words),
-      lines = text.lines
+      { lines } = text
     equals(lines.length > 3, true, 'several lines')
     equals(
       lines.every(
@@ -79,7 +79,7 @@ describe('AreaText', () => {
   test(`Justified lines fill the area's width`, () => {
     const text = createAreaText(new Rectangle(0, 0, 100, 400), words)
     text.justification = 'justify'
-    const lines = text.lines,
+    const { lines } = text,
       last = lines[lines.length - 1]
     equals(
       lines
@@ -109,7 +109,7 @@ describe('AreaText', () => {
       Path.circle({ center: [100, 100], radius: 100, insert: false }),
       words + ' ' + words
     )
-    const lines = text.lines,
+    const { lines } = text,
       middle = lines[Math.floor(lines.length / 2)],
       first = lines[0]
     equals(
@@ -126,7 +126,7 @@ describe('AreaText', () => {
       'One\nTwo\n\nFour'
     )
     equals(lineContents(text).join('|'), 'One|Two||Four', 'one per line')
-    const y = text.lines[1].baseline.point.y
+    const { y } = text.lines[1].baseline.point
     text.paragraphs[1].spaceBefore = 10
     equals(text.lines[1].baseline.point.y, y + 10, 'space before')
     text.verticalAlign = 'bottom'
@@ -210,7 +210,7 @@ describe('AreaText', () => {
         insert: false
       }),
       text = createAreaText(area, words),
-      lines = text.lines
+      { lines } = text
     equals(
       lines.every(
         line => line.bounds.right <= 60.01 || line.bounds.left >= 139.99
@@ -258,9 +258,9 @@ describe('AreaText', () => {
   test('Vertical alignment in the middle', () => {
     const text = createAreaText(new Rectangle(0, 0, 200, 200), 'One\nTwo')
     text.verticalAlign = 'center'
-    const lines = text.lines,
-      top = lines[0].bounds.top,
-      bottom = lines[1].bounds.bottom
+    const { lines } = text,
+      { top } = lines[0].bounds,
+      { bottom } = lines[1].bounds
     equals(top, 200 - bottom, 'as much space above as below', {
       tolerance: 0.01
     })
@@ -305,7 +305,7 @@ describe('AreaText', () => {
     const first = createAreaText(new Rectangle(0, 0, 100, 30), words),
       second = createAreaText(new Rectangle(0, 50, 100, 400), '')
     first.link(second)
-    const start = second.visibleRange.start
+    const { start } = second.visibleRange
     first.content = 'Short. ' + words
     equals(
       second.visibleRange.start !== start,
@@ -378,7 +378,7 @@ describe('AreaText', () => {
     const text = createAreaText(new Rectangle(0, 0, 100, 30), words)
     equals(text.visibleRange.end < words.length, true, 'it overflows')
     text.fitHeight()
-    const lines = text.lines,
+    const { lines } = text,
       last = lines[lines.length - 1]
     equals(text.visibleRange.end, words.length, 'all of it fits')
     equals(
@@ -504,7 +504,7 @@ describe('AreaText', () => {
     })
     equals(
       text.lines.every(line => {
-        const bounds = line.bounds
+        const { bounds } = line
         return (
           !line.content.trim() || (
             circle.contains(bounds.leftCenter) &&
@@ -521,7 +521,7 @@ describe('AreaText', () => {
     const text = createAreaText(new Rectangle(0, 0, 200, 300), words)
     Path.rectangle({ rectangle: [60, 0, 80, 300], textWrap: true })
     text.direction = 'rtl'
-    const lines = text.lines
+    const { lines } = text
     equals(lines[0].bounds.left > 100, true, 'the first line on the right')
     equals(lines[1].bounds.right < 100, true, 'then the left')
   })
@@ -548,7 +548,7 @@ describe('AreaText', () => {
         new Rectangle(0, 0, width + 0.5, 200),
         'and hy\u00adphen\u00adation'
       ),
-      lines = text.lines
+      { lines } = text
     equals(lines[0].content, 'and hy\u00ad', 'at the soft hyphen that fits')
     equals(
       lines
@@ -579,9 +579,9 @@ describe('AreaText', () => {
         insert: false
       }),
       text = createAreaText(area, 'One\nTwo'),
-      ascent = getMetrics(text).ascent
+      { ascent } = getMetrics(text)
     text.paragraphs[1].spaceBefore = 10
-    const lines = text.lines,
+    const { lines } = text,
       first = lines[0].baseline.point.y,
       second = lines[1].baseline.point.y,
       steps = (second - first - 14.4 - 10) / 14.4
@@ -606,13 +606,13 @@ describe('AreaText', () => {
       text = createAreaText(circle, words),
       top = text.lines[0].baseline.point.y
     text.verticalAlign = 'center'
-    const lines = text.lines,
+    const { lines } = text,
       metrics = getMetrics(text)
     equals(lines[0].baseline.point.y > top, true, 'lower down')
     equals(
       lines.every(line => {
         // The band of the line's letters, from their ascent to their descent:
-        const y = line.baseline.point.y,
+        const { y } = line.baseline.point,
           band = new Rectangle(
             new Point(line.bounds.left, y - metrics.ascent),
             new Point(line.bounds.right, y + metrics.descent)

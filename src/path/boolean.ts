@@ -219,7 +219,7 @@ function combinePaths(
       if (isUnite) {
         // Split the paths along the longer side of their bounds,
         // so each step unites paths that lie close to each other:
-        let bounds = entries[0].bounds
+        let { bounds } = entries[0]
         for (let i = 1, l = entries.length; i < l; i++) {
           bounds = bounds.unite(entries[i].bounds)
         }
@@ -388,11 +388,7 @@ export function reorientPaths(
     // already.
     const first = sorted[0]
     // create lookup containing potentially overlapping path bounds
-    const collisions = findItemBoundsCollisions(
-      sorted,
-      null,
-      GEOMETRIC_EPSILON
-    )
+    const collisions = findItemBoundsCollisions(sorted, null, GEOMETRIC_EPSILON)
     if (clockwise == null) {
       clockwise = first.clockwise
     }
@@ -633,10 +629,7 @@ export function getWinding(
       // with a straight curve, just like how filling open paths works:
       if (!path._closed) {
         vClose = Curve.getValues(
-          path.lastCurve.segment2,
-          curve.segment1,
-          null,
-          true
+          path.lastCurve.segment2, curve.segment1, null, true
         )
         // This closing curve is a potential candidate for the last
         // non-horizontal curve.
@@ -747,7 +740,7 @@ export function getInteriorPoint(item: PathItem): Point {
     ys.sort((a, b) => a - b)
     // The center lies between the top and the bottom of the
     // bounds, which are among the ys, unless the path is flat:
-    let y = point.y
+    let { y } = point
     let below = y
     let above = y
     for (let i = 0, l = ys.length; i < l && above === y; i++) {

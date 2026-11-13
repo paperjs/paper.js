@@ -194,7 +194,7 @@ describe('TextItem', () => {
         point: [50, 100],
         content: 'Hello World!'
       })
-      const bounds = text.bounds
+      const { bounds } = text
       // Tracking is in thousandths of an em, and canvas adds the spacing
       // after each of the 12 characters, including the last one:
       text.letterTracking = 500
@@ -249,7 +249,7 @@ describe('TextItem', () => {
         point: [10, 60],
         content: 'Hello'
       })
-      const pixelRatio = paper.view.pixelRatio,
+      const { pixelRatio } = paper.view,
         size = paper.view.viewSize.multiply(pixelRatio),
         canvas = CanvasProvider.getCanvas(size),
         ctx = canvas.getContext('2d')
@@ -340,14 +340,14 @@ describe('TextItem', () => {
     const offset = new Point(0, 45)
 
     function countPixels(rect, color) {
-      const pixelRatio = paper.view.pixelRatio
+      const { pixelRatio } = paper.view
 
-      const data = paper.view.context.getImageData(
+      const { data } = paper.view.context.getImageData(
         rect.x * pixelRatio,
         rect.y * pixelRatio,
         rect.width * pixelRatio,
         rect.height * pixelRatio
-      ).data
+      )
 
       let count = 0
       for (let i = 0, l = data.length; i < l; i += 4) {
@@ -411,7 +411,7 @@ describe('TextItem', () => {
   })
 
   test(`The tests' own font is loaded`, () => {
-    const view = paper.view,
+    const { view } = paper,
       width = family =>
         view.getTextWidth('normal 20px ' + family, ['Wide iii'], '0em')
     equals(

@@ -218,11 +218,7 @@ export class Style extends Base {
    *
    * @param style
    */
-  constructor(
-    style?: object,
-    _owner?: StyleOwner,
-    _project?: Project
-  ) {
+  constructor(style?: object, _owner?: StyleOwner, _project?: Project) {
     super()
     this.#owner = _owner
     this.#project = _owner?._project ?? _project ?? paper.project
@@ -434,7 +430,7 @@ export class Style extends Base {
 
   // The font as canvas takes it:
   _getCanvasFont(): string {
-    let fontSize: any = this.fontSize
+    let fontSize = this.fontSize as any
     const { fontStyle } = this
     // CSS reads unquoted families only as identifiers, which can't start with
     // digits, so quote all but single words and the ones that are quoted
@@ -474,7 +470,7 @@ export class Style extends Base {
 
   // The font size in pixels, which it can be given in other units:
   _getFontSize(): number {
-    const fontSize: any = this.fontSize
+    const fontSize = this.fontSize as any
     return /pt|em|%|px/.test(fontSize)
       ? this.view.getPixelSize(fontSize)
       : fontSize

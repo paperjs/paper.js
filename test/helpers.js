@@ -237,8 +237,7 @@ export function comparePixels(actual, expected, message, options) {
   function rasterize(item, group, resolution) {
     let raster = null
     if (group) {
-      const parent = item.parent
-      const index = item.index
+      const { parent, index } = item
       group.addChild(item)
       raster = group.rasterize(resolution, false)
       if (parent) {

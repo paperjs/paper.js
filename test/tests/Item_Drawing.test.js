@@ -28,9 +28,9 @@ describe('Item Drawing', () => {
   // Read the color of the view's pixel at x, y in view coordinates:
   function getViewPixel(x, y) {
     const { pixelRatio, element } = paper.view
-    const data = element
+    const { data } = element
       .getContext('2d')
-      .getImageData(x * pixelRatio, y * pixelRatio, 1, 1).data
+      .getImageData(x * pixelRatio, y * pixelRatio, 1, 1)
     return new Color(data[0] / 255, data[1] / 255, data[2] / 255, data[3] / 255)
   }
 

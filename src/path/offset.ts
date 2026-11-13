@@ -135,7 +135,7 @@ type CubicPart = {
   depth: number
 }
 
-const abs = Math.abs
+const { abs } = Math
 const errorThreshold = 0.1
 // The angles where the edges of stroke profiles' pens are sampled, with their
 // cosines and sines, the same for all pens:
@@ -966,7 +966,7 @@ function outlineStroke(
       function isSame(strips: Strip[], before: Strip[]): boolean {
         if (strips.length !== before.length) return false
         for (let i = 0, l = strips.length; i < l; i++) {
-          const phi = strips[i].from.phi
+          const { phi } = strips[i].from
           for (let j = 0; j < l; j++) {
             if (
               j !== i && (
@@ -1102,7 +1102,7 @@ function outlineStroke(
                 const strip = getStrips(t)[j]
                 if (!strip) return Bezier.getPoint(v, t)
                 const motions = getMotions(strip)
-                const point = strip.from.point
+                const { point } = strip.from
                 // Within the strip, also where its motions
                 // vary more than the samples tell:
                 const factor = clamp(
@@ -1202,7 +1202,7 @@ function outlineStroke(
         for (let i = 0; i < count; i++) {
           times[i] = total ? times[i] / total : 0
         }
-        const length = chord.length
+        const { length } = chord
         let handle1: Point
         let handle2: Point
         let c: number[]
@@ -1321,7 +1321,7 @@ function outlineStroke(
       const { point } = end2
       const part1 = end1.last
       const part2 = end2.first
-      const offset = part2.offset
+      const { offset } = part2
       const tangent1 = end1.end
       const tangent2 = end2.start
       const cross = tangent1.cross(tangent2)
@@ -1546,7 +1546,7 @@ function outlineStroke(
       // straight across, as butt caps do. Where the pen changes
       // smoothly, the parts meet in the same points:
       for (let i = 0, l = pens.length; i < l; i++) {
-        const offset = pens[i].offset
+        const { offset } = pens[i]
         const isStep = (
           i > 0 && pens[i - 1].offset === offset ||
           i < l - 1 && pens[i + 1].offset === offset
@@ -2224,12 +2224,7 @@ function offsetCubic(v: number[], d: number, tolerance: number): Segment[] {
     // Subdivide at a cusp of the offset first:
     if (part.cusp0 * part.cusp1 < 0) {
       const t = findSignChange(
-        getCusp,
-        part.t0,
-        part.t1,
-        part.cusp0,
-        part.cusp1,
-        EPSILON
+        getCusp, part.t0, part.t1, part.cusp0, part.cusp1, EPSILON
       )
       subdivide(
         part,

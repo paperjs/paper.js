@@ -91,8 +91,8 @@ describe('Item Cloning', () => {
   })
 
   test('Layer#clone() - check activeLayer', () => {
-    const project = paper.project,
-      activeLayer = project.activeLayer
+    const { project } = paper,
+      { activeLayer } = project
     activeLayer.clone()
     // The active layer should not change when cloning layers.
     equals(() => activeLayer === project.activeLayer, true)

@@ -152,7 +152,7 @@ describe('View', () => {
     const ctx = paper.view.element.getContext('2d')
 
     function getPixel() {
-      const pixelRatio = paper.view.pixelRatio
+      const { pixelRatio } = paper.view
       return Array.from(
         ctx.getImageData(50 * pixelRatio, 50 * pixelRatio, 1, 1).data
       )
@@ -285,8 +285,8 @@ describe('View', () => {
   test('view.project (#1634)', () => {
     const current = paper,
       scope = new PaperScope().setup(new Size(10, 10)),
-      project = scope.project,
-      view = scope.view
+      { project } = scope,
+      { view } = scope
     current.activate()
     equals(() => view.project === project && project.view === view, true)
     // The view of the default scope displays its own project:
@@ -376,7 +376,7 @@ describe('View', () => {
         strokeColor: 'black'
       }),
       log = [],
-      hitTolerance = paper.settings.hitTolerance
+      { hitTolerance } = paper.settings
     path.onMouseEnter = path.onMouseLeave = event => {
       log.push(event.type + ' ' + event.point)
     }
@@ -655,7 +655,7 @@ describe('View', () => {
         container.appendChild(canvas)
         document.body.appendChild(container)
         const project = new Project(canvas)
-        const view = project.view
+        const { view } = project
         const item = Path.rectangle(new Point(45, 35), new Size(10))
         let point = null
         let hit = false
@@ -694,7 +694,7 @@ describe('View', () => {
       canvas.style.top = '30px'
       document.body.appendChild(canvas)
       const project = new Project(canvas)
-      const view = project.view
+      const { view } = project
       let point = null
       canvas.style.width = '400px'
       canvas.style.height = '150px'
@@ -719,7 +719,7 @@ describe('View', () => {
     const ctx = paper.view.element.getContext('2d')
 
     function getAlpha(x, y) {
-      const pixelRatio = paper.view.pixelRatio
+      const { pixelRatio } = paper.view
       return ctx.getImageData(x * pixelRatio, y * pixelRatio, 1, 1).data[3]
     }
 
@@ -749,7 +749,7 @@ describe('View', () => {
       ctx = paper.view.element.getContext('2d')
 
     function getBlue(x, y) {
-      const pixelRatio = paper.view.pixelRatio
+      const { pixelRatio } = paper.view
       return ctx.getImageData(x * pixelRatio, y * pixelRatio, 1, 1).data[2]
     }
 
@@ -774,13 +774,13 @@ describe('View', () => {
         segments: [[[20, 50], null, [0, -30]], [80, 50]],
         fullySelected: true
       }),
-      settings = paper.settings,
-      handleSize = settings.handleSize,
-      segmentSize = settings.segmentSize,
+      { settings } = paper,
+      { handleSize } = settings,
+      { segmentSize } = settings,
       ctx = paper.view.element.getContext('2d')
 
     function getAlpha(x, y) {
-      const pixelRatio = paper.view.pixelRatio
+      const { pixelRatio } = paper.view
       return ctx.getImageData(x * pixelRatio, y * pixelRatio, 1, 1).data[3]
     }
 
@@ -814,13 +814,13 @@ describe('View', () => {
       ctx = paper.view.element.getContext('2d')
 
     function getPixel(x, y) {
-      const pixelRatio = paper.view.pixelRatio,
-        data = ctx.getImageData(
+      const { pixelRatio } = paper.view,
+        { data } = ctx.getImageData(
           x * pixelRatio,
           y * pixelRatio,
           1,
           1
-        ).data
+        )
       return [data[0], data[1], data[2], data[3]]
     }
 

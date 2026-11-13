@@ -31,10 +31,7 @@ const gaussWeights = [
 ]
 
 // Math short-cuts for often used methods and values
-const abs = Math.abs
-const sqrt = Math.sqrt
-const pow = Math.pow
-const log2 = Math.log2
+const { abs, sqrt, pow, log2 } = Math
 // The 15-point Gauss-Kronrod estimate of the integral of f from a to b,
 // and of its error, by the difference to the Gauss rule within:
 function getKronrod(f: (x: number) => number, a: number, b: number): number[] {

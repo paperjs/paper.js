@@ -988,7 +988,7 @@ describe('SvgImport', () => {
     function getWarnings(mask, reference) {
       // Collect the warnings about approximated masks, which only reach the
       // console:
-      const warn = console.warn,
+      const { warn } = console,
         warnings = []
       console.warn = message => {
         warnings.push(message)
@@ -1125,7 +1125,7 @@ describe('SvgImport', () => {
     equals(group.lastChild.data.className, undefined, 'rect without class')
     const node = item.exportSVG({
       processNode({ item, node }) {
-        const className = item.data.className
+        const { className } = item.data
         if (className) {
           node.setAttribute('class', className)
         }
@@ -1139,7 +1139,7 @@ describe('SvgImport', () => {
   test('Import SVG cleans up after errors', () => {
     const svg =
       '<svg xmlns="http://www.w3.org/2000/svg" data-paper-data="invalid JSON"><rect width="100" height="100"/></svg>'
-    const settings = paper.settings,
+    const { settings } = paper,
       count = document.getElementsByTagName('svg').length
     equals(() => {
       try {

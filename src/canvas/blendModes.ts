@@ -105,15 +105,7 @@ export function blend(
       dstContext.globalCompositeOperation = mode as GlobalCompositeOperation
     }
     dstContext.drawImage(
-      srcContext.canvas,
-      0,
-      0,
-      width,
-      height,
-      offset.x,
-      offset.y,
-      width,
-      height
+      srcContext.canvas, 0, 0, width, height, offset.x, offset.y, width, height
     )
     dstContext.restore()
   } else {

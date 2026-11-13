@@ -125,10 +125,7 @@ export class PathText extends TextItem {
     const spacing = this._spacing
     const paragraph = story._getParagraph(start).style
     const measured = this._measure(
-      start,
-      story._content.length,
-      paragraph.direction,
-      true
+      start, story._content.length, paragraph.direction, true
     )
     const letters = measured.pieces
     const pieces = []

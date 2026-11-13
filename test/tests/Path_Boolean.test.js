@@ -1299,8 +1299,8 @@ describe('Path Boolean Operations', () => {
       { path: line, options: { stroke: true } }
     ]
     for (let i = 0; i < cases.length; i++) {
-      const path = cases[i].path,
-        options = cases[i].options
+      const { path } = cases[i],
+        { options } = cases[i]
       ;['subtract', 'intersect', 'divide'].forEach(operation => {
         const name = (
           'path.' +
@@ -3049,7 +3049,7 @@ describe('Path Boolean Operations', () => {
       ],
       closed: true
     })
-    const area = cp.subtract(p).area
+    const { area } = cp.subtract(p)
     cp.scale(1e6, new Point(0, 0))
     p.scale(1e6, new Point(0, 0))
     equals(cp.subtract(p).area / 1e12, area)
