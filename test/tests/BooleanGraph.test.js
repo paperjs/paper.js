@@ -12,6 +12,7 @@
 
 import { describe } from 'vitest'
 import { createGraph, traceGraph } from '../../src/boolean/graph.ts'
+import { reduceShape, uniteShapes } from '../../src/boolean/shape.ts'
 import { equals, test } from '../helpers.js'
 
 // The graph of the boolean operations on plain descriptions of paths, without
@@ -192,5 +193,83 @@ describe('Boolean graph', () => {
       true,
       'without paths'
     )
+  })
+
+  test('reduceShape() removes curves without length and along a line', () => {
+    const reduce = segments =>
+      reduceShape({
+        fillRule: 'nonzero',
+        paths: [{ closed: true, segments }]
+      }).paths.map(getPoints)
+    // A square with a point in the middle of a side, and one twice:
+    equals(
+      reduce([
+        [0, 0],
+        [50, 0],
+        [100, 0],
+        [100, 100],
+        [100, 100],
+        [0, 100]
+      ]),
+      [
+        [
+          [0, 0],
+          [100, 0],
+          [100, 100],
+          [0, 100]
+        ]
+      ]
+    )
+    // Curves stay, and paths without any segments left go:
+    const k = 20
+    const curved = [
+      [[0, 0], [0, 0], [k, 0]],
+      [[50, 0], [-k, 0], [k, 0]],
+      [[100, 0], [-k, 0], [0, 0]],
+      [50, 80]
+    ]
+    equals(reduce(curved)[0].length, 4)
+    equals(reduce([[10, 10]]), [])
+  })
+
+  test('uniteShapes() unites many shapes and resolves one', () => {
+    // Three squares in a row that overlap by half, and one apart:
+    const united = uniteShapes([
+      createSquare(0, 0, 100),
+      createSquare(50, 0, 100),
+      createSquare(100, 0, 100),
+      createSquare(300, 0, 100)
+    ])
+    equals(united.fillRule, 'nonzero')
+    equals(united.paths.map(getPoints), [
+      [
+        [0, 0],
+        [200, 0],
+        [200, 100],
+        [0, 100]
+      ],
+      [
+        [300, 0],
+        [400, 0],
+        [400, 100],
+        [300, 100]
+      ]
+    ])
+    // A square that runs around twice is resolved to once:
+    const [square] = createSquare(0, 0, 100).paths
+    const twice = {
+      fillRule: 'nonzero',
+      paths: [
+        { closed: true, segments: [...square.segments, ...square.segments] }
+      ]
+    }
+    equals(uniteShapes([twice]).paths.map(getPoints), [
+      [
+        [0, 0],
+        [100, 0],
+        [100, 100],
+        [0, 100]
+      ]
+    ])
   })
 })
