@@ -11,9 +11,9 @@
  */
 
 // The intersections of cubic Bézier curves by their values, using fat-line
-// clipping. The curves themselves only say which ones are their neighbours,
-// and the intersections are reported to a function, so this works for any
-// kind of curve and location.
+// clipping. The curves are only values here, with the ends that they share
+// on their path, and the intersections the times on them, so this works for
+// any kind of curve and location.
 import {
   CURVETIME_EPSILON,
   GEOMETRIC_EPSILON,
@@ -36,30 +36,38 @@ import {
 } from './bezier.ts'
 import type { BezierValues } from './bezier.ts'
 
-// What the code needs to know of a curve: its neighbours on the path, as the
-// end that it shares with one of them is no intersection:
-export type CurveLink = { next: CurveLink; previous: CurveLink }
+// An intersection of two curves by the times on them, or one end of an
+// overlap of them:
+export type Intersection = [time1: number, time2: number, overlap?: boolean]
 
-// Takes an intersection of the two curves at their times, or one end of an
-// overlap of them, and returns whether it is a new one:
-export type Report = (
-  c1: CurveLink,
-  t1: number,
-  c2: CurveLink,
-  t2: number,
-  overlap?: boolean
-) => boolean
+// How the two curves that are intersected connect on their path, as the end
+// that neighbors share is no intersection, and the distance under which the
+// boolean operations take curves as touching or overlapping:
+export type IntersectionOptions = {
+  // Whether the first curve starts where the second one ends:
+  sharesStart?: boolean
+  // Whether the first curve ends where the second one starts:
+  sharesEnd?: boolean
+  tolerance?: number
+}
 
-// Finds the intersections of the two curves, and the ends of their overlaps,
-// within the tolerance, and reports them:
+// The two curves on their way through the functions: their intersections as
+// they are found, and the ends that they share:
+type Pair = {
+  intersections: Intersection[]
+  sharesStart: boolean
+  sharesEnd: boolean
+}
+
+// Returns the intersections of the two curves, and the ends of their
+// overlaps:
 export function getIntersections(
   v1: BezierValues,
   v2: BezierValues,
-  c1: CurveLink,
-  c2: CurveLink,
-  report: Report,
-  tolerance?: number
-) {
+  options?: IntersectionOptions
+): Intersection[] {
+  const { sharesStart, sharesEnd, tolerance } = options ?? {}
+  const pair: Pair = { intersections: [], sharesStart, sharesEnd }
   const { min, max, abs } = Math
   const minX1 = min(v1[0], v1[2], v1[4], v1[6])
   const maxX1 = max(v1[0], v1[2], v1[4], v1[6])
@@ -92,7 +100,7 @@ export function getIntersections(
     if (overlaps) {
       for (let i = 0; i < 2; i++) {
         const overlap = overlaps[i]
-        addLocation(report, c1, overlap[0], c2, overlap[1], true)
+        addLocation(pair, overlap[0], overlap[1], false, true)
       }
     } else {
       const straight1 = isStraight(v1)
@@ -106,22 +114,18 @@ export function getIntersections(
       // Determine the correct intersection method based on whether
       // one or curves are straight lines:
       if (straight) {
-        isFound = addLineIntersection(v1, v2, c1, c2, report, lineTolerance)
+        isFound = addLineIntersection(v1, v2, pair, lineTolerance)
       } else if (straight1 || straight2) {
         addCurveLineIntersections(
           straight1 ? v2 : v1,
           straight1 ? v1 : v2,
-          straight1 ? c2 : c1,
-          straight1 ? c1 : c2,
-          report,
+          pair,
           straight1,
           lineTolerance
         )
       } else {
         // recursion, calls, tMin, tMax, uMin, uMax:
-        addCurveIntersections(
-          v1, v2, c1, c2, report, false, 0, 0, 0, 1, 0, 1, tolerance
-        )
+        addCurveIntersections(v1, v2, pair, false, 0, 0, 0, 1, 0, 1, tolerance)
       }
       // Handle the special case where the start- / end-points of one
       // curve lie on the other curve, within the tolerance if one is
@@ -153,32 +157,33 @@ export function getIntersections(
               endEpsilon
             )
             if (u !== null) {
-              addLocation(
-                report,
-                c1,
-                isSecond ? u : t,
-                c2,
-                isSecond ? t : u
-              )
+              addLocation(pair, t, u, !!isSecond)
             }
           }
         }
       }
     }
   }
+  return pair.intersections
 }
 
-// Reports the intersection of the curve with itself, if it has a loop:
+// Returns the intersection of the curve with itself, if it has a loop. A
+// curve that is closed, as the only one of its path, starts where it ends:
 export function getSelfIntersection(
   v: BezierValues,
-  c: CurveLink,
-  report: Report
-) {
+  isClosed?: boolean
+): Intersection[] {
+  const pair: Pair = {
+    intersections: [],
+    sharesStart: isClosed,
+    sharesEnd: false
+  }
   const info = classify(v)
   if (info.type === 'loop') {
     const { roots } = info
-    addLocation(report, c, roots[0], c, roots[1])
+    addLocation(pair, roots[0], roots[1])
   }
+  return pair.intersections
 }
 
 // Returns the two pairs of times where the curves start and end to overlap,
@@ -297,48 +302,48 @@ export function getOverlaps(
   return pairs
 }
 
-// Reports the intersection of the two curves at their times, unless it is
-// the end that neighbouring curves share:
+// Adds the intersection of the two curves at their times, unless it is the
+// end that neighboring curves share, and returns whether it did. With
+// `flip`, the times are those of the second curve and the first:
 function addLocation(
-  report: Report,
-  c1: CurveLink,
+  pair: Pair,
   t1: number,
-  c2: CurveLink,
   t2: number,
+  flip?: boolean,
   overlap?: boolean
 ): boolean {
-  // Determine if locations at the beginning / end of the curves should be
-  // excluded, in case the two curves are neighbors, but do not exclude
-  // connecting points between two curves if they were part of overlap
-  // checks, as they could be self-overlapping.
-  const excludeStart = !overlap && c1.previous === c2
-  const excludeEnd = !overlap && c1 !== c2 && c1.next === c2
+  if (flip) {
+    const t = t1
+    t1 = t2
+    t2 = t
+  }
+  // The ends of neighbors are part of overlaps, as the curves could overlap
+  // themselves there:
+  const excludeStart = !overlap && pair.sharesStart
+  const excludeEnd = !overlap && pair.sharesEnd
   const tMin = CURVETIME_EPSILON
   const tMax = 1 - tMin
-  // Check t1 and t2 against correct bounds, based on excludeStart/End:
-  // - excludeStart means the start of c1 connects to the end of c2
-  // - excludeEnd means the end of c1 connects to the start of c2
-  // - If either c1 or c2 are at the end of the path, exclude their end,
-  //   which connects back to the beginning, but only if it's not part of
-  //   a found overlap. The normal intersection will already be found at
-  //   the beginning, and would be added twice otherwise.
-  return (
+  // Where the start of the first curve connects to the end of the second,
+  // the start is excluded on the first and the end on the second, and the
+  // other way around where its end connects to the start of the second:
+  const isValid = (
     t1 !== null &&
     t1 >= (excludeStart ? tMin : 0) &&
     t1 <= (excludeEnd ? tMax : 1) &&
     t2 !== null &&
     t2 >= (excludeEnd ? tMin : 0) &&
-    t2 <= (excludeStart ? tMax : 1) &&
-    report(c1, t1, c2, t2, overlap)
+    t2 <= (excludeStart ? tMax : 1)
   )
+  if (isValid) {
+    pair.intersections.push(overlap ? [t1, t2, true] : [t1, t2])
+  }
+  return isValid
 }
 
 function addCurveIntersections(
   v1: BezierValues,
   v2: BezierValues,
-  c1: CurveLink,
-  c2: CurveLink,
-  report: Report,
+  pair: Pair,
   flip: boolean,
   recursion: number,
   calls: number,
@@ -411,13 +416,7 @@ function addCurveIntersections(
     // We have isolated the intersection with sufficient precision
     const t = (tMinNew + tMaxNew) / 2
     const u = (uMin + uMax) / 2
-    addLocation(
-      report,
-      flip ? c2 : c1,
-      flip ? u : t,
-      flip ? c1 : c2,
-      flip ? t : u
-    )
+    addLocation(pair, t, u, flip)
   } else {
     // Apply the result of the clipping to curve 1:
     v1 = getPart(v1, tMinClip, tMaxClip)
@@ -429,28 +428,29 @@ function addCurveIntersections(
       // Otherwise, find the intersections of the pieces where
       // clipping stalls through the implicit form of v2, unless they
       // both lie on the same implicit curve, as parts of one curve:
-      const isNext = (
+      // At the end of the first piece, or at its start:
+      const atEnd = (
         tolerance &&
         tMaxNew === 1 &&
         uMin === 0 &&
-        c1.next === c2
+        (flip ? pair.sharesStart : pair.sharesEnd)
       )
-      const isPrevious = (
+      const atStart = (
         tolerance &&
-        !isNext &&
+        !atEnd &&
         tMinNew === 0 &&
         uMax === 1 &&
-        c1.previous === c2
+        (flip ? pair.sharesEnd : pair.sharesStart)
       )
-      if (isNext || isPrevious) {
-        const offset = isNext ? tolerance : -tolerance
+      if (atEnd || atStart) {
+        const offset = atEnd ? tolerance : -tolerance
         const s1 = getTimeAt(v1, -offset)
         const s2 = getTimeAt(v2, offset)
         // Pieces shorter than the tolerance have nothing left:
         if (s1 !== null && s2 !== null) {
           const t = tMinNew + (tMaxNew - tMinNew) * s1
           const u = uMin + (uMax - uMin) * s2
-          if (isNext) {
+          if (atEnd) {
             v1 = getPart(v1, 0, s1)
             v2 = getPart(v2, s2, 1)
             tMaxNew = t
@@ -462,7 +462,7 @@ function addCurveIntersections(
             uMax = u
           }
           calls = addCurveIntersections(
-            v1, v2, c1, c2, report, flip,
+            v1, v2, pair, flip,
             recursion, calls, tMinNew, tMaxNew, uMin, uMax,
             tolerance
           )
@@ -470,7 +470,7 @@ function addCurveIntersections(
       } else if (!(
         tolerance &&
         addImplicitIntersections(
-          v1, v2, c1, c2, report, flip,
+          v1, v2, pair, flip,
           tMinNew, tMaxNew, uMin, uMax, tolerance
         )
       )) {
@@ -479,12 +479,12 @@ function addCurveIntersections(
           const parts = subdivide(v1, 0.5)
           const t = (tMinNew + tMaxNew) / 2
           calls = addCurveIntersections(
-            v2, parts[0], c2, c1, report, !flip,
+            v2, parts[0], pair, !flip,
             recursion, calls, uMin, uMax, tMinNew, t,
             tolerance
           )
           calls = addCurveIntersections(
-            v2, parts[1], c2, c1, report, !flip,
+            v2, parts[1], pair, !flip,
             recursion, calls, uMin, uMax, t, tMaxNew,
             tolerance
           )
@@ -492,12 +492,12 @@ function addCurveIntersections(
           const parts = subdivide(v2, 0.5)
           const u = (uMin + uMax) / 2
           calls = addCurveIntersections(
-            parts[0], v1, c2, c1, report, !flip,
+            parts[0], v1, pair, !flip,
             recursion, calls, uMin, u, tMinNew, tMaxNew,
             tolerance
           )
           calls = addCurveIntersections(
-            parts[1], v1, c2, c1, report, !flip,
+            parts[1], v1, pair, !flip,
             recursion, calls, u, uMax, tMinNew, tMaxNew,
             tolerance
           )
@@ -510,7 +510,7 @@ function addCurveIntersections(
       // Maybe @iconexperience could shed some light on this.
       if (uDiff === 0 || uDiff >= fatLineEpsilon) {
         calls = addCurveIntersections(
-          v2, v1, c2, c1, report, !flip,
+          v2, v1, pair, !flip,
           recursion, calls, uMin, uMax, tMinNew, tMaxNew,
           tolerance
         )
@@ -518,7 +518,7 @@ function addCurveIntersections(
         // The interval on the other curve is already tight enough,
         // therefore we keep iterating on the same curve.
         calls = addCurveIntersections(
-          v1, v2, c1, c2, report, flip,
+          v1, v2, pair, flip,
           recursion, calls, tMinNew, tMaxNew, uMin, uMax,
           tolerance
         )
@@ -541,9 +541,7 @@ function addCurveIntersections(
 function addImplicitIntersections(
   v1: BezierValues,
   v2: BezierValues,
-  c1: CurveLink,
-  c2: CurveLink,
-  report: Report,
+  pair: Pair,
   flip: boolean,
   tMin: number,
   tMax: number,
@@ -615,13 +613,7 @@ function addImplicitIntersections(
       if (u !== null) {
         t = tMin + (tMax - tMin) * t
         u = uMin + (uMax - uMin) * u
-        addLocation(
-          report,
-          flip ? c2 : c1,
-          flip ? u : t,
-          flip ? c1 : c2,
-          flip ? t : u
-        )
+        addLocation(pair, t, u, flip)
       }
     }
     return true
@@ -965,9 +957,7 @@ function getCurveLineIntersections(
 function addCurveLineIntersections(
   v1: BezierValues,
   v2: BezierValues,
-  c1: CurveLink,
-  c2: CurveLink,
-  report: Report,
+  pair: Pair,
   flip: boolean,
   tolerance: number
 ) {
@@ -990,13 +980,7 @@ function addCurveLineIntersections(
     if (t2 !== null) {
       // Only use the time values if there was no recursion, and let
       // addLocation() figure out the actual time values otherwise.
-      addLocation(
-        report,
-        flip ? c2 : c1,
-        flip ? t2 : t1,
-        flip ? c1 : c2,
-        flip ? t1 : t2
-      )
+      addLocation(pair, t1, t2, flip)
     }
   }
 }
@@ -1004,9 +988,7 @@ function addCurveLineIntersections(
 function addLineIntersection(
   v1: BezierValues,
   v2: BezierValues,
-  c1: CurveLink,
-  c2: CurveLink,
-  report: Report,
+  pair: Pair,
   tolerance: number
 ): boolean {
   const point = Line.intersect(
@@ -1016,10 +998,8 @@ function addLineIntersection(
   return (
     !!point &&
     addLocation(
-      report,
-      c1,
+      pair,
       getTimeOf(v1, point, tolerance),
-      c2,
       getTimeOf(v2, point, tolerance)
     )
   )

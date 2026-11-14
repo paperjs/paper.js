@@ -25,7 +25,7 @@ import {
 } from '../util/collisions.ts'
 import { Point } from '../basic/Point.ts'
 import * as Bezier from '../curve/index.ts'
-import type { BezierValues, CurveLink } from '../curve/index.ts'
+import type { BezierValues, Intersection } from '../curve/index.ts'
 
 // A segment as arrays, in the forms that Paper.js reads them: its point, or
 // its point with its handles relative to it, as [point, handleIn, handleOut],
@@ -113,7 +113,7 @@ type Component = {
 
 // A curve of the operands, with its neighbors on its path, where it comes
 // from, and its index among all curves:
-type GraphCurve = CurveLink & {
+type GraphCurve = {
   next: GraphCurve
   previous: GraphCurve
   index: number
@@ -391,39 +391,51 @@ function cutCurves(graph: Graph, points: Points): number[][] {
   const hits: Hit[] = []
   const pairs: Record<number, Hit[][]> = {}
   const count = curves.length
-  const report = (
-    c1: GraphCurve,
-    t1: number,
-    c2: GraphCurve,
-    t2: number
+  const addHits = (
+    curve1: GraphCurve,
+    curve2: GraphCurve,
+    intersections: Intersection[]
   ) => {
-    const hit1 = getHit(graph, c1, t1)
-    const hit2 = getHit(graph, c2, t2)
-    const others = (pairs[
-      min(hit1.index, hit2.index) * count + max(hit1.index, hit2.index)
-    ] ??= [])
-    const isSame = (hit: Hit, other: Hit) => (
-      hit.index === other.index &&
-      hit.point.isClose(other.point, GEOMETRIC_EPSILON)
-    )
-    const isNew = !others.some(
-      ([other1, other2]) => (
-        isSame(hit1, other1) && isSame(hit2, other2) ||
-        isSame(hit1, other2) && isSame(hit2, other1)
+    for (const [time1, time2] of intersections) {
+      const hit1 = getHit(graph, curve1, time1)
+      const hit2 = getHit(graph, curve2, time2)
+      const others = (pairs[
+        min(hit1.index, hit2.index) * count + max(hit1.index, hit2.index)
+      ] ??= [])
+      const isSame = (hit: Hit, other: Hit) => (
+        hit.index === other.index &&
+        hit.point.isClose(other.point, GEOMETRIC_EPSILON)
       )
-    )
-    if (isNew) {
-      others.push([hit1, hit2])
-      hits.push(hit1, hit2)
+      const isNew = !others.some(
+        ([other1, other2]) => (
+          isSame(hit1, other1) && isSame(hit2, other2) ||
+          isSame(hit1, other2) && isSame(hit2, other1)
+        )
+      )
+      if (isNew) {
+        others.push([hit1, hit2])
+        hits.push(hit1, hit2)
+      }
     }
-    return isNew
   }
   for (let i = 0; i < count; i++) {
-    Bezier.getSelfIntersection(values[i], curves[i], report)
+    const curve1 = curves[i]
+    addHits(
+      curve1,
+      curve1,
+      Bezier.getSelfIntersection(values[i], curve1.previous === curve1)
+    )
     for (const j of collisions[i] ?? []) {
       if (j > i) {
-        Bezier.getIntersections(
-          values[i], values[j], curves[i], curves[j], report, epsilon
+        const curve2 = curves[j]
+        addHits(
+          curve1,
+          curve2,
+          Bezier.getIntersections(values[i], values[j], {
+            sharesStart: curve1.previous === curve2,
+            sharesEnd: curve1.next === curve2,
+            tolerance: epsilon
+          })
         )
       }
     }
