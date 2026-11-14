@@ -685,6 +685,124 @@ export function getTimesWithTangent(v: BezierValues, tangent: Point): number[] {
   return times
 }
 
+// Extends the bounds in min and max by the curve's values in one coordinate:
+// by its ends, and by its extrema between them, padded by half the stroke
+// width, which it finds as the roots of its derivative:
+export function addBounds(
+  v0: number, v1: number, v2: number, v3: number,
+  coord: number,
+  padding: number,
+  min: number[],
+  max: number[],
+  roots: number[]
+) {
+  // Code ported and further optimised from:
+  // http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
+  function add(value: number, padding: number) {
+    const left = value - padding
+    const right = value + padding
+    if (left < min[coord]) {
+      min[coord] = left
+    }
+    if (right > max[coord]) {
+      max[coord] = right
+    }
+  }
+
+  const minPad = min[coord] + padding
+  const maxPad = max[coord] - padding
+  // Perform a rough bounds checking first: The curve can only extend the
+  // current bounds if at least one value is outside the min-max range.
+  if (
+    v0 < minPad ||
+    v1 < minPad ||
+    v2 < minPad ||
+    v3 < minPad ||
+    v0 > maxPad ||
+    v1 > maxPad ||
+    v2 > maxPad ||
+    v3 > maxPad
+  ) {
+    if (v1 < v0 != v1 < v3 && v2 < v0 != v2 < v3) {
+      // If the values of a curve are sorted, the extrema are simply
+      // the start and end point.
+      // Only add strokeWidth to bounds for points which lie within 0
+      // < t < 1. The corner cases for cap and join are handled in
+      // getStrokeBounds()
+      add(v0, 0)
+      add(v3, 0)
+    } else {
+      // Calculate derivative of our bezier polynomial, divided by 3.
+      // Doing so allows for simpler calculations of a, b, c and leads
+      // to the same quadratic roots.
+      const a = 3 * (v1 - v2) - v0 + v3
+      const b = 2 * (v0 + v2) - 4 * v1
+      const c = v1 - v0
+      const count = solveQuadratic(a, b, c, roots)
+      // Add some tolerance for good roots, as t = 0, 1 are added
+      // separately anyhow, and we don't want joins to be added
+      // with radii in getStrokeBounds()
+      const tMin = CURVETIME_EPSILON
+      const tMax = 1 - tMin
+      // See above for an explanation of padding = 0 here:
+      add(v3, 0)
+      for (let i = 0; i < count; i++) {
+        const t = roots[i]
+        const u = 1 - t
+        // Test for good roots and only add to bounds if good.
+        if (tMin <= t && t <= tMax) {
+          // Calculate bezier polynomial at t.
+          add(
+            u * u * u * v0 +
+            3 * u * u * t * v1 +
+            3 * u * t * t * v2 +
+            t * t * t * v3,
+            padding
+          )
+        }
+      }
+    }
+  }
+}
+
+// Returns the winding of the point against the curve, as the sum of its
+// parts that cross a ray from the point in x-direction, upwards as +1 and
+// downwards as -1. It tells which path lies inside which:
+export function getRayWinding(v: BezierValues, point: Point): number {
+  const { min, max, abs } = Math
+  let winding = 0
+  const { x, y } = point
+  // Only curves that reach the ray at all:
+  if (
+    y >= min(v[1], v[3], v[5], v[7]) &&
+    y <= max(v[1], v[3], v[5], v[7]) &&
+    x < max(v[0], v[2], v[4], v[6])
+  ) {
+    const monoCurves = getMonoCurves(v)
+    const roots = []
+    for (let i = 0, l = monoCurves.length; i < l; i++) {
+      const mv = monoCurves[i]
+      const y0 = mv[1]
+      const y3 = mv[7]
+      const dir = y0 < y3 ? 1 : y0 > y3 ? -1 : 0
+      if (dir && y >= min(y0, y3) && y < max(y0, y3)) {
+        // The monotone curve crosses the ray once. solveCubic()
+        // can miss it close to the ends, where it is at the end:
+        const px =
+          solve(mv, 1, y, roots, 0, 1) > 0
+            ? getPoint(mv, roots[0]).x
+            : abs(y - y0) < abs(y - y3)
+              ? mv[0]
+              : mv[6]
+        if (px > x) {
+          winding += dir
+        }
+      }
+    }
+  }
+  return winding
+}
+
 // Calls a test of the handles with the coordinates of the curve's points
 // and their handles:
 function testHandles(test: typeof hasStraightHandles, v: BezierValues) {

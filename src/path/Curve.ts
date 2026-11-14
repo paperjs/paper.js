@@ -28,8 +28,7 @@ import {
   getSegmentBounds,
   getSegmentStrokeBounds,
   inject,
-  serialize,
-  solveQuadratic
+  serialize
 } from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
 import type { Matrix } from '../basic/Matrix.ts'
@@ -607,88 +606,6 @@ export class Curve extends Base {
       matrix._transformCoordinates(values, values, 4)
     }
     return values
-  }
-
-  /**
-   * Private helper for Path.getBounds(), which finds the 0-crossings of the
-   * derivative of a bezier curve polynomial, to determine potential extremas
-   * when finding the bounds of a curve.
-   */
-  static _addBounds(
-    v0: number, v1: number, v2: number, v3: number,
-    coord: number,
-    padding: number,
-    min: number[],
-    max: number[],
-    roots: number[]
-  ) {
-    // Code ported and further optimised from:
-    // http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
-    function add(value: number, padding: number) {
-      const left = value - padding
-      const right = value + padding
-      if (left < min[coord]) {
-        min[coord] = left
-      }
-      if (right > max[coord]) {
-        max[coord] = right
-      }
-    }
-
-    const minPad = min[coord] + padding
-    const maxPad = max[coord] - padding
-    // Perform a rough bounds checking first: The curve can only extend the
-    // current bounds if at least one value is outside the min-max range.
-    if (
-      v0 < minPad ||
-      v1 < minPad ||
-      v2 < minPad ||
-      v3 < minPad ||
-      v0 > maxPad ||
-      v1 > maxPad ||
-      v2 > maxPad ||
-      v3 > maxPad
-    ) {
-      if (v1 < v0 != v1 < v3 && v2 < v0 != v2 < v3) {
-        // If the values of a curve are sorted, the extrema are simply
-        // the start and end point.
-        // Only add strokeWidth to bounds for points which lie within 0
-        // < t < 1. The corner cases for cap and join are handled in
-        // getStrokeBounds()
-        add(v0, 0)
-        add(v3, 0)
-      } else {
-        // Calculate derivative of our bezier polynomial, divided by 3.
-        // Doing so allows for simpler calculations of a, b, c and leads
-        // to the same quadratic roots.
-        const a = 3 * (v1 - v2) - v0 + v3
-        const b = 2 * (v0 + v2) - 4 * v1
-        const c = v1 - v0
-        const count = solveQuadratic(a, b, c, roots)
-        // Add some tolerance for good roots, as t = 0, 1 are added
-        // separately anyhow, and we don't want joins to be added
-        // with radii in getStrokeBounds()
-        const tMin = CURVETIME_EPSILON
-        const tMax = 1 - tMin
-        // See above for an explanation of padding = 0 here:
-        add(v3, 0)
-        for (let i = 0; i < count; i++) {
-          const t = roots[i]
-          const u = 1 - t
-          // Test for good roots and only add to bounds if good.
-          if (tMin <= t && t <= tMax) {
-            // Calculate bezier polynomial at t.
-            add(
-              u * u * u * v0 +
-              3 * u * u * t * v1 +
-              3 * u * t * t * v2 +
-              t * t * t * v3,
-              padding
-            )
-          }
-        }
-      }
-    }
   }
 
   /**

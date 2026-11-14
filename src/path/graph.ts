@@ -24,7 +24,6 @@ import {
   findBoundsCollisions,
   findCurveBoundsCollisions,
   getEpsilon,
-  getRayWinding,
   getStrokeProfilePart,
   setStrokeProfileRuns
 } from '../internal.ts'
@@ -962,7 +961,7 @@ function propagateWindings(graph: Graph) {
         const list = components[indices[j]].edges
         for (let m = 0, n = list.length; m < n; m++) {
           const edge = list[m]
-          const winding = getRayWinding(point, edge.values)
+          const winding = Bezier.getRayWinding(edge.values, point)
           windings[0] += winding * edge.windings[0]
           windings[1] += winding * edge.windings[1]
         }
