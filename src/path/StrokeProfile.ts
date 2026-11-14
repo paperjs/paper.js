@@ -17,7 +17,7 @@ import {
   StrokeProfileStop,
   equals
 } from '../internal.ts'
-import type { PenValues } from '../offset/outline.ts'
+import type { PenValues } from '../offset/pen.ts'
 import type { Path } from './Path.ts'
 import type { StrokeProfileStopProps } from './StrokeProfileStop.ts'
 
