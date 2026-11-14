@@ -16,7 +16,6 @@ import {
   Curve,
   Point,
   capitalize,
-  curveEvaluations,
   inject
 } from '../internal.ts'
 import type { Matrix } from '../basic/Matrix.ts'
@@ -195,12 +194,11 @@ export class PathFlattener extends Base {
 
   static {
     // Inject the evaluators at path offsets, getPointAt() …:
-    for (const key of curveEvaluations) {
-      const name = `get${capitalize(key)}`
+    for (const [key, evaluate] of Object.entries(Bezier.evaluations)) {
       inject(this.prototype, {
-        [`${name}At`](this: PathFlattener, offset: number) {
+        [`get${capitalize(key)}At`](this: PathFlattener, offset: number) {
           const { index, time } = this.#get(offset)
-          return Bezier[name](this.#curves[index], time)
+          return evaluate(this.#curves[index], time)
         }
       })
     }

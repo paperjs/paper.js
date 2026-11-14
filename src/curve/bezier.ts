@@ -572,6 +572,18 @@ export function getCurvature(v: BezierValues, t: number): number {
   return evaluate(v, t, 3, false).x
 }
 
+// The functions that evaluate a curve at a time, by what they return. Curve,
+// Path and PathFlattener generate their methods `getPointAt()`,
+// `getTangentAt()` … from them:
+export const evaluations = {
+  point: getPoint,
+  tangent: getTangent,
+  normal: getNormal,
+  weightedTangent: getWeightedTangent,
+  weightedNormal: getWeightedNormal,
+  curvature: getCurvature
+}
+
 // Returns the times of the peaks of the curve, the roots of the dot product
 // of its first and second derivative. Peaks share some qualities of
 // curvature extrema, but are cheaper to compute, see:
