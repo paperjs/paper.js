@@ -300,46 +300,6 @@ export function splitBoolean(
   return createResult(paths, false, path1, path2, options)
 }
 
-/*
- * Returns the winding of the point against the curve values, as the sum of
- * the curve's parts that cross a ray from it in x-direction, upwards as +1
- * and downwards as -1. Both reorientPaths() and the graph's components
- * tell with it which path lies inside which.
- */
-export function getRayWinding(point: Point, v: number[]): number {
-  let winding = 0
-  const { x, y } = point
-  // Only curves that reach the ray at all:
-  if (
-    y >= min(v[1], v[3], v[5], v[7]) &&
-    y <= max(v[1], v[3], v[5], v[7]) &&
-    x < max(v[0], v[2], v[4], v[6])
-  ) {
-    const monoCurves = Bezier.getMonoCurves(v)
-    const roots = []
-    for (let i = 0, l = monoCurves.length; i < l; i++) {
-      const mv = monoCurves[i]
-      const y0 = mv[1]
-      const y3 = mv[7]
-      const dir = y0 < y3 ? 1 : y0 > y3 ? -1 : 0
-      if (dir && y >= min(y0, y3) && y < max(y0, y3)) {
-        // The monotone curve crosses the ray once. solveCubic()
-        // can miss it close to the ends, where it is at the end:
-        const px =
-          Bezier.solve(mv, 1, y, roots, 0, 1) > 0
-            ? Bezier.getPoint(mv, roots[0]).x
-            : abs(y - y0) < abs(y - y3)
-              ? mv[0]
-              : mv[6]
-        if (px > x) {
-          winding += dir
-        }
-      }
-    }
-  }
-  return winding
-}
-
 /**
  * Reorients the specified paths.
  *
@@ -414,7 +374,7 @@ export function reorientPaths(
             const { curves } = path2
             let winding = 0
             for (let k = 0, n = curves.length; k < n; k++) {
-              winding += getRayWinding(point, curves[k].getValues())
+              winding += Bezier.getRayWinding(curves[k].getValues(), point)
             }
             if (winding) {
               const entry2 = lookup[path2._id]

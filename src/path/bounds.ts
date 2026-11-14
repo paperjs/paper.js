@@ -11,6 +11,7 @@
  */
 
 import {
+  Bezier,
   Curve,
   Line,
   Matrix,
@@ -53,7 +54,7 @@ export function getSegmentBounds(
   function processSegment(segment: Segment) {
     segment._transformCoordinates(matrix, coords)
     for (let i = 0; i < 2; i++) {
-      Curve._addBounds(
+      Bezier.addBounds(
         prevCoords[i], // prev.point
         prevCoords[i + 4], // prev.handleOut
         coords[i + 2], // segment.handleIn
