@@ -2686,10 +2686,13 @@ export class Path extends PathItem {
    * with the stroke color, as {@link PathItem#outline()} returns it,
    * and {@link Item#strokeBounds} and hit-testing measure that area.
    * The children of compound paths are drawn with the stroke of their
-   * parent, without their profiles. With {@link Style#strokeScaling}
-   * off, the profile scales with the view. {@link PathItem#offset()},
-   * the boolean operations, {@link PathItem#interpolate()} and SVG
-   * export return paths without the profile.
+   * parent, each with its own profile. With {@link Style#strokeScaling}
+   * off, the profile scales with the view. The boolean operations and
+   * {@link PathItem#resolveCrossings()} return paths with the profile
+   * of each path that they run along, with a step where two of them
+   * meet, and {@link PathItem#offset()} carries each stop over along
+   * its normal. {@link PathItem#interpolate()} and SVG export return
+   * paths without the profile.
    *
    * @example
    * var path = Path.line([20, 50], [180, 50]);
