@@ -11,7 +11,6 @@
  */
 
 import {
-  ANGULAR_EPSILON,
   Bezier,
   CURVETIME_EPSILON,
   Change,
@@ -19,7 +18,6 @@ import {
   CompoundPath,
   Curve,
   CurveLocation,
-  EPSILON,
   Formatter,
   GEOMETRIC_EPSILON,
   HitResult,
@@ -70,6 +68,7 @@ import type { SizeLike } from '../basic/Size.ts'
 import type { RectangleLike } from '../basic/Rectangle.ts'
 import type { Style } from '../style/Style.ts'
 import type { SegmentLike } from './Segment.ts'
+import type { SegmentValues } from '../curve/bezier.ts'
 import type { SegmentPoint } from './SegmentPoint.ts'
 import type { PathProps } from './shapes.ts'
 import type { StrokeProfileStopProps } from './StrokeProfileStop.ts'
@@ -2555,174 +2554,48 @@ export class Path extends PathItem {
     clockwise?: boolean | number,
     large?: boolean | number
   ) {
-    let through: Point
-    let middle: Point
-    let center: Point
-    let extent: number
-    let vector: Point
-    let matrix: Matrix
-
-    // Get the start point:
-    const { abs, sqrt } = Math
     const from = getCurrentSegment(this)._point
-    let end = Point.from(to)
+    const end = Point.from(to)
     // See if the second argument is clockwise, with true as the default:
     const direction = arg !== undefined ? arg : true
-    // We're handling three different approaches to drawing arcs in one
-    // large function:
     if (typeof direction === 'boolean') {
-      // #1: arcTo(to, clockwise)
-      middle = from.add(end).divide(2)
-      through = middle.add(
+      // arcTo(to, clockwise), through the point of a half circle:
+      const middle = from.add(end).divide(2)
+      const through = middle.add(
         middle.subtract(from).rotate(direction ? -90 : 90)
       )
+      addArc(this, Bezier.getArcThrough(from, through, end))
     } else if (rotation === undefined) {
-      // #2: arcTo(through, to)
-      through = end
-      end = Point.from(arg as PointLike)
-    } else if (!from.equals(end)) {
-      // #3: arcTo(to, radius, rotation, clockwise, large)
-      // Draw arc in SVG style, but only if `from` and `to` are not
-      // equal (#1613).
-      const radius = Size.from(arg as SizeLike | number)
-      // If rx = 0 or ry = 0 then this arc is treated as a
-      // straight line joining the endpoints.
-      // NOTE: radius.isZero() would require both values to be 0.
-      if (isZero(radius.width) || isZero(radius.height)) {
-        return this.lineTo(end)
-      }
-      // See for an explanation of the following calculations:
-      // https://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
-      const isClockwise = !!clockwise
-      const isLarge = !!large
-      middle = from.add(end).divide(2)
-      const { x, y } = from.subtract(middle).rotate(-rotation)
-      let rx = abs(radius.width)
-      let ry = abs(radius.height)
-      let rxSq = rx * rx
-      let rySq = ry * ry
-      const xSq = x * x
-      const ySq = y * y
-      // "...ensure radii are large enough"
-      let factor = sqrt(xSq / rxSq + ySq / rySq)
-      if (factor > 1) {
-        rx *= factor
-        ry *= factor
-        rxSq = rx * rx
-        rySq = ry * ry
-      }
-      factor = (
-        (rxSq * rySq - rxSq * ySq - rySq * xSq) /
-        (rxSq * ySq + rySq * xSq)
+      // arcTo(through, to)
+      addArc(
+        this,
+        Bezier.getArcThrough(from, end, Point.from(direction as PointLike))
       )
-      if (abs(factor) < EPSILON) {
-        factor = 0
-      }
-      if (factor < 0) {
-        throw new Error('Cannot create an arc with the given arguments')
-      }
-      center = new Point(rx * y / ry, -ry * x / rx)
-        // "...where the + sign is chosen if fA != fS,
-        // and the - sign is chosen if fA = fS."
-        .multiply((isLarge === isClockwise ? -1 : 1) * sqrt(factor))
-        .rotate(rotation)
-        .add(middle)
-      // Now create a matrix that maps the unit circle to the ellipse,
-      // for easier construction below.
-      matrix = new Matrix().translate(center).rotate(rotation).scale(rx, ry)
-      // Transform from and to to the unit circle coordinate space
-      // and calculate start vector and extend from there.
-      vector = matrix._inverseTransform(from)
-      extent = vector.getDirectedAngle(matrix._inverseTransform(end))
-      // "...if fS = 0 and extent is > 0, then subtract 360, whereas
-      // if fS = 1 and extend is < 0, then add 360."
-      if (!isClockwise && extent > 0) {
-        extent -= 360
-      } else if (isClockwise && extent < 0) {
-        extent += 360
-      }
+    } else {
+      // arcTo(to, radius, rotation, clockwise, large), in SVG style
+      const radius = Size.from(direction as SizeLike | number)
+      addArc(
+        this,
+        Bezier.getEllipticArc(from, end, radius, rotation, !!clockwise, !!large)
+      )
     }
-    if (through) {
-      // Calculate center, vector and extend for non SVG versions:
-      // Construct the two perpendicular middle lines to
-      // (from, through) and (through, to), and intersect them to get
-      // the center.
-      const l1 = new Line(
-        from.add(through).divide(2),
-        through.subtract(from).rotate(90),
-        true
-      )
-      const l2 = new Line(
-        through.add(end).divide(2),
-        end.subtract(through).rotate(90),
-        true
-      )
-      const line = new Line(from, end)
-      const throughSide = line.getSide(through)
-      center = l1.intersect(l2, true)
-      // If the two lines are collinear, there cannot be an arc as the
-      // circle is infinitely big and has no center point. If side is
-      // 0, the connecting arc line of this huge circle is a line
-      // between the two points, so we can use #lineTo instead.
-      // Otherwise we bail out:
-      if (!center) {
-        if (!throughSide) return this.lineTo(end)
-        throw new Error('Cannot create an arc with the given arguments')
-      }
-      vector = from.subtract(center)
-      extent = vector.getDirectedAngle(end.subtract(center))
-      const centerSide = line.getSide(center, true)
-      if (centerSide === 0) {
-        // If the center is lying on the line, we might have gotten
-        // the wrong sign for extent above. Use the sign of the side
-        // of the through point.
-        extent = throughSide * abs(extent)
-      } else if (throughSide === centerSide) {
-        // If the center is on the same side of the line (from, to)
-        // as the through point, we're extending bellow 180 degrees
-        // and need to adapt extent.
-        extent += extent < 0 ? 360 : -360
-      }
-    }
-    addArc(this, center, vector, extent, end, matrix)
   }
 
   arcAround(center: PointLike, angle: number) {
-    const origin = Point.from(center)
-    const vector = getCurrentSegment(this)._point.subtract(origin)
-    addArc(this, origin, vector, angle, origin.add(vector.rotate(angle)))
+    const from = getCurrentSegment(this)._point
+    addArc(this, Bezier.getArcAround(from, Point.from(center), angle))
   }
 
   arcTowards(point: PointLike | number, y?: number) {
-    const to = Point.from(point, y)
     const current = getCurrentSegment(this)
     const { previous } = current
-    const from = current._point
     const tangent = previous
       ? new Curve(previous, current).getTangentAtTime(1)
       : new Point()
-    const normal = tangent.rotate(90)
-    const vector = to.subtract(from)
-    // The distance of `to` from the tangent, signed by its side:
-    const distance = vector.dot(normal)
-    if (!isZero(distance)) {
-      // The center lies on the normal, as far from `from` as from
-      // `to`, and the arc continues in the direction of the tangent:
-      const center = from.add(
-        normal.multiply(vector.dot(vector) / (2 * distance))
-      )
-      const start = from.subtract(center)
-      let extent = start.getDirectedAngle(to.subtract(center))
-      if (extent * distance < 0) {
-        extent += distance > 0 ? 360 : -360
-      }
-      addArc(this, center, start, extent, to)
-    } else if (vector.dot(tangent) > 0) {
-      this.lineTo(to)
-    } else {
-      // `to` lies behind, or there is no tangent to continue:
-      throw new Error('Cannot create an arc with the given arguments')
-    }
+    addArc(
+      this,
+      Bezier.getArcTowards(current._point, tangent, Point.from(point, y))
+    )
   }
 
   lineBy(point: PointLike | number, y?: number) {
@@ -3330,65 +3203,11 @@ function getCurrentSegment(path: Path): Segment {
   return segments[segments.length - 1]
 }
 
-/**
- * Helper method that adds an arc of `extent` degrees around `center`, from
- * the current segment at `vector` from `center` to `to`. The optional
- * `matrix` maps `center` and `vector` from the unit circle to an ellipse.
- */
-function addArc(
-  path: Path,
-  center: Point,
-  vector: Point,
-  extent: number,
-  to: Point,
-  matrix?: Matrix
-) {
-  const current = getCurrentSegment(path)
-  const epsilon = ANGULAR_EPSILON
-  // Calculate amount of segments required to approximate over
-  // `extend` degrees (extend / 90), but prevent ceil() from
-  // rounding up small imprecisions by subtracting epsilon.
-  const count = Math.ceil((Math.abs(extent) - epsilon) / 90)
-  if (count) {
-    const inc = extent / count
-    const half = inc * Math.PI / 360
-    const z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half))
-    const segments = []
-    for (let i = 0; i <= count; i++) {
-      // Explicitly use to point for last segment, since depending
-      // on values the calculation adds imprecision:
-      let point = to
-      let handleOut = null
-      if (i < count) {
-        handleOut = vector.rotate(90).multiply(z)
-        if (matrix) {
-          point = matrix._transformPoint(vector)
-          handleOut = matrix
-            ._transformPoint(vector.add(handleOut))
-            .subtract(point)
-        } else {
-          point = center.add(vector)
-        }
-      }
-      if (!i) {
-        // Modify startSegment
-        current.handleOut = handleOut
-      } else {
-        // Add new Segment
-        let handleIn = vector.rotate(-90).multiply(z)
-        if (matrix) {
-          handleIn = matrix
-            ._transformPoint(vector.add(handleIn))
-            .subtract(point)
-        }
-        segments.push(new Segment(point, handleIn, handleOut))
-      }
-      vector = vector.rotate(inc)
-    }
-    // Add all segments at once at the end for higher performance
-    path._add(segments)
-  } else if (extent && !to.equals(current._point)) {
-    // Arcs too small to approximate are straight:
-    path.lineTo(to)
+// Adds the segments of an arc that starts at the current segment, which
+// receives the handle of the first of them.
+function addArc(path: Path, [first, ...segments]: SegmentValues[]) {
+  if (first) {
+    getCurrentSegment(path).handleOut = first[2]
+    path.addSegments(segments)
   }
 }

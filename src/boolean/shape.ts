@@ -16,7 +16,7 @@ import { GEOMETRIC_EPSILON, isZero } from '../util/numerical.ts'
 import { Point } from '../basic/Point.ts'
 import { Rectangle } from '../basic/Rectangle.ts'
 import * as Bezier from '../curve/index.ts'
-import type { BezierValues } from '../curve/index.ts'
+import type { BezierValues, SegmentValues } from '../curve/index.ts'
 
 // A segment as arrays, in the forms that Paper.js reads them: its point, or
 // its point with its handles relative to it, as [point, handleIn, handleOut],
@@ -30,14 +30,11 @@ export type PathData = { segments: SegmentData[]; closed: boolean }
 // The paths that are filled as one, by their fill rule:
 export type ShapeData = { paths: PathData[]; fillRule: string }
 
-// A segment as its point with both of its handles:
-export type Segment = [point: number[], handleIn: number[], handleOut: number[]]
-
 const zero = [0, 0]
 
 // Returns the segments of the path as their points with both handles, from
 // any of the forms of SegmentData:
-export function getSegments({ segments }: PathData): Segment[] {
+export function getSegments({ segments }: PathData): SegmentValues[] {
   return segments.map(segment => {
     const [point, handleIn, handleOut] = segment as number[][]
     if (typeof point === 'number') {
@@ -54,8 +51,8 @@ export function getSegments({ segments }: PathData): Segment[] {
 // Returns the values of the curve between the two segments, or of the
 // straight line between their points:
 export function getValues(
-  [[x1, y1], , [h1x, h1y]]: Segment,
-  [[x2, y2], [h2x, h2y]]: Segment,
+  [[x1, y1], , [h1x, h1y]]: SegmentValues,
+  [[x2, y2], [h2x, h2y]]: SegmentValues,
   straight?: boolean
 ): BezierValues {
   return straight
@@ -64,7 +61,10 @@ export function getValues(
 }
 
 // Whether the curve between the two segments has handles:
-export function hasHandles([, , handle1]: Segment, [, handle2]: Segment) {
+export function hasHandles(
+  [, , handle1]: SegmentValues,
+  [, handle2]: SegmentValues
+) {
   return !(
     isZero(handle1[0]) &&
     isZero(handle1[1]) &&
@@ -167,7 +167,7 @@ function reducePath(path: PathData): PathData {
 
 // Whether the curve at the index is a straight line along the vector:
 function isCollinear(
-  list: Segment[],
+  list: SegmentValues[],
   x: number,
   y: number,
   index: number

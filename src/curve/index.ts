@@ -12,5 +12,6 @@
 
 // The functions on the values of cubic Bézier curves, which the library uses
 // as Bezier:
+export * from './arcs.ts'
 export * from './bezier.ts'
 export * from './intersections.ts'
