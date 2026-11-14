@@ -11,6 +11,7 @@
  */
 
 import {
+  Bezier,
   Item,
   KAPPA,
   Path,
@@ -26,15 +27,6 @@ import {
 
 // The properties of the named forms besides their geometry, set on the path:
 export type PathProps = { [key: string]: any }
-
-// The segments of the unit circle, as [point, handleIn, handleOut]:
-// From the right, as SVG converts ellipses, so dashes match (#601):
-const ellipseSegments = [
-  [[1, 0], [0, -KAPPA], [0, KAPPA]],
-  [[0, 1], [KAPPA, 0], [-KAPPA, 0]],
-  [[-1, 0], [0, KAPPA], [0, -KAPPA]],
-  [[0, -1], [-KAPPA, 0], [KAPPA, 0]]
-]
 
 export function createLine(...args: any[]): Path {
   const { from, to, ...props } = getNamedArguments(args, ['from', 'to'])
@@ -186,14 +178,8 @@ function createEllipsePath(
   radius: Size,
   props: PathProps
 ): Path {
-  const { width, height } = radius
-  const segments = ellipseSegments.map(
-    ([[x, y], [inX, inY], [outX, outY]]) =>
-      new Segment(
-        center.add(x * width, y * height),
-        [inX * width, inY * height],
-        [outX * width, outY * height]
-      )
+  const segments = Bezier.getEllipse(center, radius).map(
+    segment => new Segment(...segment)
   )
   return createPath(segments, true, props)
 }

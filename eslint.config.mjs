@@ -41,7 +41,9 @@ const layers = [
   // The functions on curve values:
   { files: ['src/curve/**'], below: 'util|core|basic' },
   // The planar graph of the boolean operations, on plain paths:
-  { files: ['src/boolean/**'], below: 'util|core|basic|curve' }
+  { files: ['src/boolean/**'], below: 'util|core|basic|curve' },
+  // The outlines of strokes, on plain paths:
+  { files: ['src/offset/**'], below: 'util|core|basic|curve|boolean' }
 ]
 
 export default [

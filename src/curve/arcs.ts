@@ -14,7 +14,7 @@
 // where they start, in the ways that the drawing commands of paths and SVG
 // path data describe them. An arc that is too flat to be one is the line to
 // its end, and one that goes nowhere has no segments.
-import { ANGULAR_EPSILON, EPSILON, isZero } from '../util/numerical.ts'
+import { ANGULAR_EPSILON, EPSILON, KAPPA, isZero } from '../util/numerical.ts'
 import { Line } from '../basic/Line.ts'
 import { Matrix } from '../basic/Matrix.ts'
 import { Point } from '../basic/Point.ts'
@@ -155,6 +155,27 @@ export function getEllipticArc(
     }
     return getArc(from, to, center, extent, matrix)
   }
+}
+
+// The segments of the unit circle, from the right, as SVG converts ellipses,
+// so dashes match (#601):
+const circle = [
+  [[1, 0], [0, -KAPPA], [0, KAPPA]],
+  [[0, 1], [KAPPA, 0], [-KAPPA, 0]],
+  [[-1, 0], [0, KAPPA], [0, -KAPPA]],
+  [[0, -1], [-KAPPA, 0], [KAPPA, 0]]
+]
+
+// Returns the whole ellipse around `center`.
+export function getEllipse(
+  { x, y }: Point,
+  { width, height }: Size
+): SegmentValues[] {
+  return circle.map(([[px, py], [inX, inY], [outX, outY]]) => [
+    [x + px * width, y + py * height],
+    [inX * width, inY * height],
+    [outX * width, outY * height]
+  ])
 }
 
 // Returns the arc of `extent` degrees around `center`, or on the ellipse that

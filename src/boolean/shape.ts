@@ -103,20 +103,25 @@ export function getBounds({ paths }: ShapeData): Rectangle {
   return bounds ?? new Rectangle()
 }
 
+// Returns the values of the curves of the path, and of the straight line
+// that closes an open one, as filling it does:
+export function getCurves(path: PathData): BezierValues[] {
+  const segments = getSegments(path)
+  return segments.map((segment, i) => {
+    const isLast = i + 1 === segments.length
+    return getValues(
+      segment,
+      segments[isLast ? 0 : i + 1],
+      isLast && !path.closed
+    )
+  })
+}
+
 // Returns the area of the path, as Path#area does:
 export function getArea(path: PathData): number {
-  const segments = getSegments(path)
   let area = 0
-  for (let i = 0, l = segments.length; i < l; i++) {
-    const isLast = i + 1 === l
-    area += Bezier.getArea(
-      getValues(
-        segments[i],
-        segments[isLast ? 0 : i + 1],
-        // The line that closes an open path has no handles:
-        isLast && !path.closed
-      )
-    )
+  for (const v of getCurves(path)) {
+    area += Bezier.getArea(v)
   }
   return area
 }
