@@ -34,13 +34,16 @@ import {
   Point,
   Segment,
   clamp,
+  createPathItem,
   findRoot,
   findSignChange,
+  getShape,
   isZero,
   paper,
   setStrokeProfileRuns,
   solveQuadratic,
-  takeStrokeProfile
+  takeStrokeProfile,
+  uniteShapes
 } from '../internal.ts'
 import type { Item } from '../item/Item.ts'
 import type { StrokeProfileStop } from './StrokeProfileStop.ts'
@@ -1617,8 +1620,9 @@ function outlineStroke(
       addPath(path)
     }
   }
+  // Unite the areas as plain shapes, without path items between the steps:
   return areas.length
-    ? areas[0].unite(areas.slice(1))
+    ? createPathItem(uniteShapes(areas.map(getShape)))
     : new Path({ insert: false })
 }
 

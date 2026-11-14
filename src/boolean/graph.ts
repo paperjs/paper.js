@@ -1044,7 +1044,7 @@ function getHit(graph: Graph, curve: GraphCurve, time: number): Hit {
 
 // Returns the segment as its point with both of its handles, from any of
 // the forms of SegmentData:
-function getSegment(segment: SegmentData): number[][] {
+export function getSegment(segment: SegmentData): number[][] {
   const [point, handleIn, handleOut] = segment as number[][]
   if (typeof point === 'number') {
     const [x, y, inX, inY, outX, outY] = segment as number[]

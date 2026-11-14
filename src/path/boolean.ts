@@ -142,6 +142,20 @@ export function getShape(item: PathItem): ShapeData {
 }
 
 /*
+ * Returns the shape as a path item: a path, or a compound path of several.
+ */
+export function createPathItem({ paths, fillRule }: ShapeData): PathItem {
+  const create = ({ segments, closed }: ShapeData['paths'][number]) =>
+    new Path({ segments, closed, insert: false })
+  const item =
+    paths.length === 1
+      ? create(paths[0])
+      : new CompoundPath({ children: paths.map(create), insert: false })
+  item.fillRule = fillRule
+  return item
+}
+
+/*
  * Traces the outlines of the areas that the operator includes, see
  * traceGraph(), and returns them as paths. Where any of the operands' paths
  * has a stroke profile, each traced path takes the parts of the profiles of
