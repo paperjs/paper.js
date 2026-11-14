@@ -23,7 +23,6 @@ import {
   Segment,
   TRIGONOMETRIC_EPSILON,
   capitalize,
-  curveEvaluations,
   findCurveBoundsCollisions,
   getSegmentBounds,
   getSegmentStrokeBounds,
@@ -981,15 +980,15 @@ export class Curve extends Base {
     // getWeightedNormalAt, getCurvatureAt, getPointAtTime,
     // getTangentAtTime, getNormalAtTime, getWeightedTangentAtTime,
     // getWeightedNormalAtTime, getCurvatureAtTime
-    for (const key of curveEvaluations) {
+    for (const [key, evaluate] of Object.entries(Bezier.evaluations)) {
       const name = `get${capitalize(key)}`
       inject(this.prototype, {
         [`${name}At`](offset: number) {
           const values = this.getValues()
-          return Bezier[name](values, Bezier.getTimeAt(values, offset))
+          return evaluate(values, Bezier.getTimeAt(values, offset))
         },
         [`${name}AtTime`](time: number) {
-          return Bezier[name](this.getValues(), time)
+          return evaluate(this.getValues(), time)
         }
       })
     }

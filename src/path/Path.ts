@@ -47,7 +47,6 @@ import {
   createRectangle,
   createRegularPolygon,
   createStar,
-  curveEvaluations,
   defineDeprecatedConstructors,
   equals,
   getSegmentBounds,
@@ -2899,7 +2898,7 @@ export class Path extends PathItem {
     // NOTE: (For easier searching): This loop produces:
     // getPointAt, getTangentAt, getNormalAt, getWeightedTangentAt,
     // getWeightedNormalAt, getCurvatureAt
-    for (const key of curveEvaluations) {
+    for (const key of Object.keys(Bezier.evaluations)) {
       inject(this.prototype, {
         [`get${capitalize(key)}At`](offset: number | CurveLocation) {
           const loc = this.getLocationAt(offset)
