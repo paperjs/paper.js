@@ -33,7 +33,6 @@ import {
 import type { PointLike } from '../basic/Point.ts'
 import type { Matrix } from '../basic/Matrix.ts'
 import type { BezierValues } from '../curve/bezier.ts'
-import type { Report } from '../curve/intersections.ts'
 
 /**
  * The Curve object represents the parts of a path that are connected by
@@ -894,7 +893,6 @@ export class Curve extends Base {
     const values1 = new Array(length1)
     const values2 = self ? values1 : new Array(length2)
     const locations: CurveLocation[] = []
-    const report = createReport(locations, include)
 
     for (let i = 0; i < length1; i++) {
       values1[i] = curves1[i].getValues(matrix1)
@@ -912,7 +910,7 @@ export class Curve extends Base {
       const v1 = values1[index1]
       if (self) {
         // First check for self-intersections within the same curve.
-        Bezier.getSelfIntersection(v1, curve1, report)
+        addIntersections(locations, include, curve1, v1)
       }
       // Check for intersections with potentially intersecting curves.
       const collisions1 = boundsCollisions[index1]
@@ -923,9 +921,9 @@ export class Curve extends Base {
           if (_returnFirst && locations.length) return locations
           const index2 = collisions1[j]
           if (!self || index2 > index1) {
-            const curve2 = curves2[index2]
-            const v2 = values2[index2]
-            Bezier.getIntersections(v1, v2, curve1, curve2, report)
+            addIntersections(
+              locations, include, curve1, v1, curves2[index2], values2[index2]
+            )
           }
         }
       }
@@ -944,14 +942,13 @@ export class Curve extends Base {
    *     the curves
    */
   getIntersections(curve?: Curve): CurveLocation[] {
-    const v1 = this.getValues()
-    const v2 = curve && curve !== this && curve.getValues()
     const locations: CurveLocation[] = []
-    const report = createReport(locations)
-    if (v2) {
-      Bezier.getIntersections(v1, v2, this, curve, report)
+    if (curve && curve !== this) {
+      addIntersections(
+        locations, null, this, this.getValues(), curve, curve.getValues()
+      )
     } else {
-      Bezier.getSelfIntersection(v1, this, report)
+      addIntersections(locations, null, this, this.getValues())
     }
     return locations
   }
@@ -1140,26 +1137,34 @@ export interface Curve {
   getCurvatureAtTime(time: number): number
 }
 
-// Returns the function that takes the intersections of curves as they are
-// found, see Bezier.getIntersections(), and adds them to the locations: as two
-// locations that are linked to each other, merged with the one that is there
-// already at the same place. The filter leaves out the ones it rejects.
-function createReport(
+// Adds the intersections of the two curves with their values to the
+// locations, or those of the first curve with itself: as two locations that
+// are linked to each other, merged with the one that is there already at the
+// same place. The filter leaves out the ones it rejects.
+function addIntersections(
   locations: CurveLocation[],
-  include?: (location: CurveLocation) => boolean
-): Report {
-  return (c1, t1, c2, t2, overlap) => {
+  include: (location: CurveLocation) => boolean,
+  curve1: Curve,
+  v1: BezierValues,
+  curve2?: Curve,
+  v2?: BezierValues
+) {
+  const intersections = curve2
+    ? Bezier.getIntersections(v1, v2, {
+        sharesStart: curve1.previous === curve2,
+        sharesEnd: curve1.next === curve2
+      })
+    : Bezier.getSelfIntersection(v1, curve1.previous === curve1)
+  for (const [time1, time2, overlap] of intersections) {
     // NOTE: We don't pass points, because the values may be transformed by
     // the matrices of their paths, while the curves are not. CurveLocation
     // gets the points from the curves then.
-    const location1 = new CurveLocation(c1 as Curve, t1, null, overlap)
-    const location2 = new CurveLocation(c2 as Curve, t2, null, overlap)
+    const location1 = new CurveLocation(curve1, time1, null, overlap)
+    const location2 = new CurveLocation(curve2 ?? curve1, time2, null, overlap)
     location1._intersection = location2
     location2._intersection = location1
-    // Inserting returns the location that it merged it with, if any:
-    return (
-      (!include || include(location1)) &&
-      CurveLocation.insert(locations, location1, true) === location1
-    )
+    if (!include || include(location1)) {
+      CurveLocation.insert(locations, location1, true)
+    }
   }
 }
