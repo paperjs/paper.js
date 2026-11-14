@@ -12,7 +12,8 @@
 
 import { describe } from 'vitest'
 import { createGraph, traceGraph } from '../../src/boolean/graph.ts'
-import { reduceShape, uniteShapes } from '../../src/boolean/shape.ts'
+import { uniteShapes } from '../../src/boolean/operations.ts'
+import { reduceShape } from '../../src/boolean/shape.ts'
 import { equals, test } from '../helpers.js'
 
 // The graph of the boolean operations on plain descriptions of paths, without
