@@ -16,8 +16,7 @@
 import {
   CURVETIME_EPSILON,
   GEOMETRIC_EPSILON,
-  getEpsilon,
-  isZero
+  getEpsilon
 } from '../util/numerical.ts'
 import {
   findBoundsCollisions,
@@ -25,19 +24,10 @@ import {
 } from '../util/collisions.ts'
 import { Point } from '../basic/Point.ts'
 import * as Bezier from '../curve/index.ts'
+import { getBounds, getSegments, getValues, hasHandles } from './shape.ts'
+import type { Rectangle } from '../basic/Rectangle.ts'
 import type { BezierValues, Intersection } from '../curve/index.ts'
-
-// A segment as arrays, in the forms that Paper.js reads them: its point, or
-// its point with its handles relative to it, as [point, handleIn, handleOut],
-// or with their coordinates in a row:
-export type SegmentData =
-  | number[]
-  | [number[], (number[] | null)?, (number[] | null)?]
-
-export type PathData = { segments: SegmentData[]; closed: boolean }
-
-// The paths that are filled as one, by their fill rule:
-export type ShapeData = { paths: PathData[]; fillRule: string }
+import type { ShapeData } from './shape.ts'
 
 // A path of the result, with the part of an operand's curve that each of its
 // segments starts: the curve by the indices of its operand, its path there
@@ -146,8 +136,7 @@ type Points = {
   vertexIndices: Record<number, number>
 }
 
-const { min, max, abs, hypot } = Math
-const zero = [0, 0]
+const { min, max, abs } = Math
 
 /**
  * Creates a planar graph of the operands' curves: All intersections become
@@ -307,35 +296,21 @@ function readCurves(
   const curves: GraphCurve[] = []
   const values: BezierValues[] = []
   const nonZeros: boolean[] = []
-  // The bounds of all curves, from their top left to their bottom right:
-  const from = [Infinity, Infinity]
-  const to = [-Infinity, -Infinity]
-  const roots = new Array(2)
+  let bounds: Rectangle = null
   for (let i = 0, l = operands.length; i < l; i++) {
-    const { paths, fillRule } = operands[i]
-    nonZeros.push(fillRule === 'nonzero')
+    const operand = operands[i]
+    const { paths } = operand
+    nonZeros.push(operand.fillRule === 'nonzero')
+    bounds = bounds ? bounds.unite(getBounds(operand)) : getBounds(operand)
     for (let j = 0, k = paths.length; j < k; j++) {
-      const { segments, closed } = paths[j]
+      const { closed } = paths[j]
+      const segments = getSegments(paths[j])
       const count = segments.length
       const first = curves.length
-      // The start of the path, as addBounds() only adds the ends of curves:
-      if (count) {
-        const [point] = getSegment(segments[0])
-        for (let c = 0; c < 2; c++) {
-          from[c] = min(from[c], point[c])
-          to[c] = max(to[c], point[c])
-        }
-      }
       for (let m = 0, n = closed ? count : count - 1; m < n; m++) {
-        const [[x1, y1], , [h1x, h1y]] = getSegment(segments[m])
-        const [[x2, y2], [h2x, h2y]] = getSegment(segments[(m + 1) % count])
-        const v = [x1, y1, x1 + h1x, y1 + h1y, x2 + h2x, y2 + h2y, x2, y2]
-        for (let c = 0; c < 2; c++) {
-          Bezier.addBounds(
-            v[c], v[c + 2], v[c + 4], v[c + 6], c, 0, from, to, roots
-          )
-        }
-        values.push(v)
+        const segment1 = segments[m]
+        const segment2 = segments[(m + 1) % count]
+        values.push(getValues(segment1, segment2))
         curves.push({
           next: null,
           previous: null,
@@ -343,12 +318,7 @@ function readCurves(
           operand: i,
           path: j,
           curve: m,
-          hasHandles: !(
-            isZero(h1x) &&
-            isZero(h1y) &&
-            isZero(h2x) &&
-            isZero(h2y)
-          )
+          hasHandles: hasHandles(segment1, segment2)
         })
       }
       // The curves of closed paths follow each other around their ends:
@@ -362,12 +332,13 @@ function readCurves(
   }
   // Points closer than epsilon are one vertex. It is relative to the size
   // of the operands, but not below the resolution of their coordinates:
-  const epsilon = curves.length
-    ? getEpsilon(
-        max(abs(from[0]), abs(to[0]), abs(from[1]), abs(to[1])),
-        hypot(to[0] - from[0], to[1] - from[1]) * GEOMETRIC_EPSILON
-      )
-    : getEpsilon(0)
+  const epsilon = getEpsilon(
+    max(
+      abs(bounds.left), abs(bounds.right),
+      abs(bounds.top), abs(bounds.bottom)
+    ),
+    bounds.topLeft.getDistance(bounds.bottomRight) * GEOMETRIC_EPSILON
+  )
   return { curves, values, nonZeros, epsilon }
 }
 
@@ -1052,20 +1023,6 @@ function getHit(graph: Graph, curve: GraphCurve, time: number): Hit {
   }
   const { index } = curve
   return { index, time, point: Bezier.getPoint(graph.values[index], time) }
-}
-
-// Returns the segment as its point with both of its handles, from any of
-// the forms of SegmentData:
-export function getSegment(segment: SegmentData): number[][] {
-  const [point, handleIn, handleOut] = segment as number[][]
-  if (typeof point === 'number') {
-    const [x, y, inX, inY, outX, outY] = segment as number[]
-    return segment.length > 2
-      ? [[x, y], [inX ?? 0, inY ?? 0], [outX ?? 0, outY ?? 0]]
-      : [segment as number[], zero, zero]
-  } else {
-    return [point, handleIn ?? zero, handleOut ?? zero]
-  }
 }
 
 function addCut(

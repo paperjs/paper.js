@@ -45,7 +45,8 @@ import {
   traceGraph
 } from '../internal.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'
-import type { Operator, ShapeData } from '../boolean/graph.ts'
+import type { Operator } from '../boolean/graph.ts'
+import type { ShapeData } from '../boolean/shape.ts'
 import type { PathItem } from './PathItem.ts'
 import type { ProfilePart } from './StrokeProfile.ts'
 
