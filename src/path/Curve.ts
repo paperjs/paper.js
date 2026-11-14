@@ -980,7 +980,7 @@ export class Curve extends Base {
     // getWeightedNormalAt, getCurvatureAt, getPointAtTime,
     // getTangentAtTime, getNormalAtTime, getWeightedTangentAtTime,
     // getWeightedNormalAtTime, getCurvatureAtTime
-    for (const [key, evaluate] of Object.entries(Bezier.evaluations)) {
+    for (const [key, evaluate] of Object.entries(Bezier.evaluators)) {
       const name = `get${capitalize(key)}`
       inject(this.prototype, {
         [`${name}At`](offset: number) {

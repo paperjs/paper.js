@@ -575,7 +575,7 @@ export function getCurvature(v: BezierValues, t: number): number {
 // The functions that evaluate a curve at a time, by what they return. Curve,
 // Path and PathFlattener generate their methods `getPointAt()`,
 // `getTangentAt()` … from them:
-export const evaluations = {
+export const evaluators = {
   point: getPoint,
   tangent: getTangent,
   normal: getNormal,

@@ -194,7 +194,7 @@ export class PathFlattener extends Base {
 
   static {
     // Inject the evaluators at path offsets, getPointAt() …:
-    for (const [key, evaluate] of Object.entries(Bezier.evaluations)) {
+    for (const [key, evaluate] of Object.entries(Bezier.evaluators)) {
       inject(this.prototype, {
         [`get${capitalize(key)}At`](this: PathFlattener, offset: number) {
           const { index, time } = this.#get(offset)
