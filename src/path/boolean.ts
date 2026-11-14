@@ -38,13 +38,16 @@ import {
   Path,
   Point,
   findItemBoundsCollisions,
+  getStrokeProfilePart,
   paper,
   push,
-  tracePaths
+  setStrokeProfileRuns,
+  traceGraph
 } from '../internal.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'
+import type { Operator, ShapeData } from '../boolean/graph.ts'
 import type { PathItem } from './PathItem.ts'
-import type { Operator } from './graph.ts'
+import type { ProfilePart } from './StrokeProfile.ts'
 
 export type BooleanOperation =
   | 'unite'
@@ -117,6 +120,81 @@ export function closePaths<T extends PathItem>(item: T): T {
     }
   }
   return item
+}
+
+/*
+ * Returns the path item as the plain description that the graph takes.
+ */
+export function getShape(item: PathItem): ShapeData {
+  return {
+    fillRule: item.fillRule,
+    paths: getPaths(item).map(path => ({
+      closed: path._closed,
+      segments: path._segments.map(
+        ({ _point: point, _handleIn: handleIn, _handleOut: handleOut }) => [
+          [point._x, point._y],
+          [handleIn._x, handleIn._y],
+          [handleOut._x, handleOut._y]
+        ]
+      )
+    }))
+  }
+}
+
+/*
+ * Traces the outlines of the areas that the operator includes, see
+ * traceGraph(), and returns them as paths. Where any of the operands' paths
+ * has a stroke profile, each traced path takes the parts of the profiles of
+ * the paths that it runs along.
+ */
+export function tracePaths(operands: PathItem[], operator: Operator): Path[] {
+  const sources = operands.map(getPaths)
+  const hasProfiles = sources.some(paths =>
+    paths.some(path => path._strokeProfile)
+  )
+  // The profile of each path and the offsets of its curves, once needed:
+  const profiles: Record<number, { part: ProfilePart; offsets: number[] }> = {}
+  const getProfile = (path: Path) => {
+    let offset = 0
+    return (profiles[path._id] ??= {
+      part: getStrokeProfilePart(path),
+      offsets: path.curves.map(curve => {
+        const start = offset
+        offset += curve.length
+        return start
+      })
+    })
+  }
+
+  const paths: Path[] = []
+  for (const traced of traceGraph(operands.map(getShape), operator)) {
+    const path = new Path(Item.NO_INSERT)
+    path.segments = traced.segments
+    path.closed = true
+    if (hasProfiles) {
+      setStrokeProfileRuns(
+        path,
+        traced.sources.map(({ operand, path, curve, time1, time2 }) => {
+          const source = sources[operand][path]
+          const { part, offsets } = getProfile(source)
+          const reversed = time1 > time2
+          const from = reversed ? time2 : time1
+          const { curves } = source
+          return {
+            part,
+            start: offsets[curve] + curves[curve].getPartLength(0, from),
+            length: curves[curve].getPartLength(from, reversed ? time1 : time2),
+            reversed
+          }
+        })
+      )
+    }
+    // Only add paths that cover an area to the result.
+    if (path.area !== 0) {
+      paths.push(path)
+    }
+  }
+  return paths
 }
 
 export function createResult(

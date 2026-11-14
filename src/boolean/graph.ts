@@ -11,25 +11,49 @@
  */
 
 // The planar graph that the boolean operations trace their results from, see
-// createGraph() and tracePaths().
+// createGraph() and traceGraph(). It works on plain descriptions of paths,
+// and only uses the basic types and the functions on curve values.
 import {
-  Bezier,
   CURVETIME_EPSILON,
-  Curve,
   GEOMETRIC_EPSILON,
-  Item,
-  Path,
-  Point,
-  Segment,
-  findBoundsCollisions,
-  findCurveBoundsCollisions,
   getEpsilon,
-  getStrokeProfilePart,
-  setStrokeProfileRuns
-} from '../internal.ts'
-import type { Rectangle } from '../basic/Rectangle.ts'
-import type { PathItem } from './PathItem.ts'
-import type { ProfilePart, ProfileRun } from './StrokeProfile.ts'
+  isZero
+} from '../util/numerical.ts'
+import {
+  findBoundsCollisions,
+  findCurveBoundsCollisions
+} from '../util/collisions.ts'
+import { Point } from '../basic/Point.ts'
+import * as Bezier from '../curve/index.ts'
+import type { BezierValues, CurveLink } from '../curve/index.ts'
+
+// A segment as arrays, in the forms that Paper.js reads them: its point, or
+// its point with its handles relative to it, as [point, handleIn, handleOut],
+// or with their coordinates in a row:
+export type SegmentData =
+  | number[]
+  | [number[], (number[] | null)?, (number[] | null)?]
+
+export type PathData = { segments: SegmentData[]; closed: boolean }
+
+// The paths that are filled as one, by their fill rule:
+export type ShapeData = { paths: PathData[]; fillRule: string }
+
+// A path of the result, with the part of an operand's curve that each of its
+// segments starts: the curve by the indices of its operand, its path there
+// and itself, and the times, the first one the later if it runs backwards:
+export type TracedPath = {
+  segments: [number[], number[], number[]][]
+  sources: Source[]
+}
+
+export type Source = {
+  operand: number
+  path: number
+  curve: number
+  time1: number
+  time2: number
+}
 
 export type Operator = (inside1: boolean, inside2: boolean) => boolean
 
@@ -87,9 +111,21 @@ type Component = {
   outside: Face
 }
 
+// A curve of the operands, with its neighbors on its path, where it comes
+// from, and its index among all curves:
+type GraphCurve = CurveLink & {
+  next: GraphCurve
+  previous: GraphCurve
+  index: number
+  operand: number
+  path: number
+  curve: number
+  hasHandles: boolean
+}
+
 export type Graph = {
-  curves: Curve[]
-  values: number[][]
+  curves: GraphCurve[]
+  values: BezierValues[]
   vertices: Vertex[]
   edges: Edge[]
   halfEdges: HalfEdge[]
@@ -110,54 +146,24 @@ type Points = {
   vertexIndices: Record<number, number>
 }
 
-const { min, max, abs } = Math
+const { min, max, abs, hypot } = Math
+const zero = [0, 0]
 
 /**
  * Creates a planar graph of the operands' curves: All intersections become
  * vertices, the pieces of curves between them edges, and the edges bound
  * faces with a known winding for each operand.
  *
- * @param operands the operands, with closed paths only
+ * @param operands one or two operands, with closed paths only
  * @return the graph's vertices, edges, half-edges and faces
  */
-export function createGraph(operands: PathItem[]): Graph {
-  const curves: Curve[] = []
-  const curveOperands: number[] = []
-  const offsets: Record<number, number> = {}
-  const nonZeros: boolean[] = []
-  let bounds: Rectangle = null
-  for (let i = 0, l = operands.length; i < l; i++) {
-    const operand = operands[i]
-    const paths = (operand._children ?? [operand]) as Path[]
-    nonZeros.push(operand.fillRule === 'nonzero')
-    bounds = bounds ? bounds.unite(operand.bounds) : operand.bounds
-    for (let j = 0, k = paths.length; j < k; j++) {
-      const pathCurves = paths[j].curves
-      offsets[paths[j]._id] = curves.length
-      for (let m = 0, n = pathCurves.length; m < n; m++) {
-        curves.push(pathCurves[m])
-        curveOperands.push(i)
-      }
-    }
-  }
-  // Points closer than epsilon are one vertex. It is relative to the size
-  // of the operands, but not below the resolution of their coordinates:
-  const epsilon = getEpsilon(
-    max(
-      abs(bounds.left), abs(bounds.right),
-      abs(bounds.top), abs(bounds.bottom)
-    ),
-    bounds.topLeft.getDistance(bounds.bottomRight) * GEOMETRIC_EPSILON
-  )
+export function createGraph(operands: ShapeData[]): Graph {
   const graph: Graph = {
-    curves,
-    values: [],
+    ...readCurves(operands),
     vertices: [],
     edges: [],
     halfEdges: [],
-    faces: [],
-    nonZeros,
-    epsilon
+    faces: []
   }
   const points: Points = {
     cuts: [],
@@ -167,9 +173,9 @@ export function createGraph(operands: PathItem[]): Graph {
     parents: null,
     vertexIndices: null
   }
-  const collisions = cutCurves(graph, points, offsets)
+  const collisions = cutCurves(graph, points)
   mergeVertices(graph, points, collisions)
-  createEdges(graph, points, curveOperands)
+  createEdges(graph, points)
   sortHalfEdges(graph)
   collectFaces(graph)
   propagateWindings(graph)
@@ -182,12 +188,15 @@ export function createGraph(operands: PathItem[]): Graph {
  * on their right. At each vertex, we turn through the result until the
  * next of them, which keeps contours apart that only touch.
  *
- * @param operands the operands, with closed paths only
+ * @param operands one or two operands, with closed paths only
  * @param operator decides if a face is part of the result, from
  *     whether it is inside each of the operands
  * @return the traced paths
  */
-export function tracePaths(operands: PathItem[], operator: Operator): Path[] {
+export function traceGraph(
+  operands: ShapeData[],
+  operator: Operator
+): TracedPath[] {
   const graph = createGraph(operands)
   const { halfEdges, faces, nonZeros } = graph
   for (let i = 0, l = faces.length; i < l; i++) {
@@ -220,8 +229,7 @@ export function tracePaths(operands: PathItem[], operator: Operator): Path[] {
     )
   }
 
-  const profiles = getProfiles(graph.curves)
-  const paths: Path[] = []
+  const paths: TracedPath[] = []
   const isVisited: boolean[] = []
   for (let i = 0, l = halfEdges.length; i < l; i++) {
     if (!isVisited[i] && isBoundary(i)) {
@@ -247,9 +255,9 @@ export function tracePaths(operands: PathItem[], operator: Operator): Path[] {
       }
       // Join the pieces of the same curve that follow each other
       // back into one part of it:
-      const segments: Segment[] = []
-      const runs: ProfileRun[] = []
-      let handleIn: Point = null
+      const segments: TracedPath['segments'] = []
+      const sources: Source[] = []
+      let handleIn = [0, 0]
       for (let j = 0; j < length;) {
         const first = contour[(start + j) % length]
         let last = first
@@ -261,98 +269,118 @@ export function tracePaths(operands: PathItem[], operator: Operator): Path[] {
         }
         const { edge } = halfEdges[first]
         const { isStraight } = edge
+        const time1 = getTimes(first)[0]
+        const time2 = getTimes(last)[1]
         const v =
           first === last
             ? halfEdges[first].values
             : getPart(
                 graph.values[edge.curve],
                 !isStraight,
-                getTimes(first)[0],
-                getTimes(last)[1],
+                time1,
+                time2,
                 graph.vertices[halfEdges[first].from],
                 graph.vertices[halfEdges[last].to]
               )
-        segments.push(
-          new Segment(
-            new Point(v[0], v[1]),
-            handleIn,
-            isStraight ? null : new Point(v[2] - v[0], v[3] - v[1])
-          )
-        )
-        handleIn = isStraight ? null : new Point(v[4] - v[6], v[5] - v[7])
-        if (profiles) {
-          // The part of the curve's stroke profile along the pieces:
-          const time1 = getTimes(first)[0]
-          const time2 = getTimes(last)[1]
-          const reversed = time1 > time2
-          const from = reversed ? time2 : time1
-          const curve = graph.curves[edge.curve]
-          const { part, offset } = profiles[edge.curve]
-          runs.push({
-            part,
-            start: offset + curve.getPartLength(0, from),
-            length: curve.getPartLength(from, reversed ? time1 : time2),
-            reversed
-          })
-        }
+        segments.push([
+          [v[0], v[1]],
+          handleIn,
+          isStraight ? [0, 0] : [v[2] - v[0], v[3] - v[1]]
+        ])
+        handleIn = isStraight ? [0, 0] : [v[4] - v[6], v[5] - v[7]]
+        const { operand, path, curve } = graph.curves[edge.curve]
+        sources.push({ operand, path, curve, time1, time2 })
       }
-      if (handleIn) {
-        segments[0].handleIn = handleIn
-      }
-      const path = new Path(Item.NO_INSERT)
-      path.segments = segments
-      path.closed = true
-      if (profiles) {
-        setStrokeProfileRuns(path, runs)
-      }
-      // Only add paths that cover an area to the result.
-      if (path.area !== 0) {
-        paths.push(path)
-      }
+      segments[0][1] = handleIn
+      paths.push({ segments, sources })
     }
   }
   return paths
 }
 
-// Returns the stroke profile of each curve's path with the curve's offset on
-// it, if any of the paths has one, for the paths that are traced along them:
-function getProfiles(
-  curves: Curve[]
-): { part: ProfilePart; offset: number }[] | null {
-  let profiles = null
-  if (curves.some(curve => curve._path._strokeProfile)) {
-    let path: Path = null
-    let part: ProfilePart = null
-    let offset = 0
-    profiles = curves.map(curve => {
-      if (curve._path !== path) {
-        path = curve._path
-        part = getStrokeProfilePart(path)
-        offset = 0
+// Read the curves of the operands' paths as their values, each with its
+// neighbors and where it comes from, along with the fill rules, and the
+// distance under which points count as the same:
+function readCurves(
+  operands: ShapeData[]
+): Pick<Graph, 'curves' | 'values' | 'nonZeros' | 'epsilon'> {
+  const curves: GraphCurve[] = []
+  const values: BezierValues[] = []
+  const nonZeros: boolean[] = []
+  // The bounds of all curves, from their top left to their bottom right:
+  const from = [Infinity, Infinity]
+  const to = [-Infinity, -Infinity]
+  const roots = new Array(2)
+  for (let i = 0, l = operands.length; i < l; i++) {
+    const { paths, fillRule } = operands[i]
+    nonZeros.push(fillRule === 'nonzero')
+    for (let j = 0, k = paths.length; j < k; j++) {
+      const { segments, closed } = paths[j]
+      const count = segments.length
+      const first = curves.length
+      // The start of the path, as addBounds() only adds the ends of curves:
+      if (count) {
+        const [point] = getSegment(segments[0])
+        for (let c = 0; c < 2; c++) {
+          from[c] = min(from[c], point[c])
+          to[c] = max(to[c], point[c])
+        }
       }
-      const profile = { part, offset }
-      offset += curve.length
-      return profile
-    })
+      for (let m = 0, n = closed ? count : count - 1; m < n; m++) {
+        const [[x1, y1], , [h1x, h1y]] = getSegment(segments[m])
+        const [[x2, y2], [h2x, h2y]] = getSegment(segments[(m + 1) % count])
+        const v = [x1, y1, x1 + h1x, y1 + h1y, x2 + h2x, y2 + h2y, x2, y2]
+        for (let c = 0; c < 2; c++) {
+          Bezier.addBounds(
+            v[c], v[c + 2], v[c + 4], v[c + 6], c, 0, from, to, roots
+          )
+        }
+        values.push(v)
+        curves.push({
+          next: null,
+          previous: null,
+          index: curves.length,
+          operand: i,
+          path: j,
+          curve: m,
+          hasHandles: !(
+            isZero(h1x) &&
+            isZero(h1y) &&
+            isZero(h2x) &&
+            isZero(h2y)
+          )
+        })
+      }
+      // The curves of closed paths follow each other around their ends:
+      for (let m = first, n = curves.length; m < n; m++) {
+        const curve = curves[m]
+        curve.next = m + 1 < n ? curves[m + 1] : closed ? curves[first] : null
+        curve.previous =
+          m > first ? curves[m - 1] : closed ? curves[n - 1] : null
+      }
+    }
   }
-  return profiles
+  // Points closer than epsilon are one vertex. It is relative to the size
+  // of the operands, but not below the resolution of their coordinates:
+  const epsilon = curves.length
+    ? getEpsilon(
+        max(abs(from[0]), abs(to[0]), abs(from[1]), abs(to[1])),
+        hypot(to[0] - from[0], to[1] - from[1]) * GEOMETRIC_EPSILON
+      )
+    : getEpsilon(0)
+  return { curves, values, nonZeros, epsilon }
 }
 
 // Cut the curves at their ends and at all intersections, including
 // those within the same operand and the ends of overlaps:
-function cutCurves(
-  graph: Graph,
-  points: Points,
-  offsets: Record<number, number>
-): number[][] {
+function cutCurves(graph: Graph, points: Points): number[][] {
   const { curves, values, epsilon } = graph
   const { cuts } = points
   for (let i = 0, l = curves.length; i < l; i++) {
-    const curve = curves[i]
-    values.push(curve.getValues())
+    const v = values[i]
     cuts.push([])
-    addCut(points, i, 0, curve._segment1._point, true)
-    addCut(points, i, 1, curve._segment2._point, true)
+    addCut(points, i, 0, new Point(v[0], v[1]), true)
+    addCut(points, i, 1, new Point(v[6], v[7]), true)
   }
   // The curves whose bounds come within 2 epsilon of each other, for the
   // intersections and the hot pixels of mergeVertices():
@@ -363,14 +391,25 @@ function cutCurves(
   const hits: Hit[] = []
   const pairs: Record<number, Hit[][]> = {}
   const count = curves.length
-  const report = (c1: Curve, t1: number, c2: Curve, t2: number) => {
-    const hit1 = getHit(graph, offsets, c1, t1)
-    const hit2 = getHit(graph, offsets, c2, t2)
-    const others = (pairs[hit1.index * count + hit2.index] ??= [])
+  const report = (
+    c1: GraphCurve,
+    t1: number,
+    c2: GraphCurve,
+    t2: number
+  ) => {
+    const hit1 = getHit(graph, c1, t1)
+    const hit2 = getHit(graph, c2, t2)
+    const others = (pairs[
+      min(hit1.index, hit2.index) * count + max(hit1.index, hit2.index)
+    ] ??= [])
+    const isSame = (hit: Hit, other: Hit) => (
+      hit.index === other.index &&
+      hit.point.isClose(other.point, GEOMETRIC_EPSILON)
+    )
     const isNew = !others.some(
       ([other1, other2]) => (
-        hit1.point.isClose(other1.point, GEOMETRIC_EPSILON) &&
-        hit2.point.isClose(other2.point, GEOMETRIC_EPSILON)
+        isSame(hit1, other1) && isSame(hit2, other2) ||
+        isSame(hit1, other2) && isSame(hit2, other1)
       )
     )
     if (isNew) {
@@ -526,7 +565,7 @@ function mergeVertices(graph: Graph, points: Points, collisions: number[][]) {
             ) {
               const { cut1, cut2 } = piece
               const cut = {
-                time: curves[i].hasHandles()
+                time: curves[i].hasHandles
                   ? cut1.time + (cut2.time - cut1.time) * t
                   : Bezier.getNearestTime(values[i], point),
                 point: vertex.point
@@ -597,7 +636,7 @@ function mergeVertices(graph: Graph, points: Points, collisions: number[][]) {
 // Create the edges between the vertices along each curve, with the
 // change in winding of each operand when crossing them from right to
 // left. Coincident pieces become one edge that adds up their changes:
-function createEdges(graph: Graph, points: Points, curveOperands: number[]) {
+function createEdges(graph: Graph, points: Points) {
   const { curves, edges, epsilon } = graph
   const { cuts } = points
   const edgesByVertex: Edge[][] = []
@@ -641,7 +680,7 @@ function createEdges(graph: Graph, points: Points, curveOperands: number[]) {
 
   for (let i = 0, l = curves.length; i < l; i++) {
     const list = cuts[i] // Sorted in mergeVertices().
-    const isStraight = !curves[i].hasHandles()
+    const isStraight = !curves[i].hasHandles
     let prev = list[0]
     for (let j = 1, k = list.length; j < k; j++) {
       const cut = list[j]
@@ -653,7 +692,7 @@ function createEdges(graph: Graph, points: Points, curveOperands: number[]) {
       // merge, see mergeVertices():
       if (from !== to || Bezier.getLength(part) >= 4 * epsilon) {
         const windings = [0, 0]
-        windings[curveOperands[i]] = 1
+        windings[curves[i].operand] = 1
         addEdge({
           values: part,
           from,
@@ -994,18 +1033,27 @@ function propagateWindings(graph: Graph) {
 // The place where a curve is hit by another one, as the index of the curve
 // with the time and the point on it. At the end of a curve, that is the
 // start of the next one, where its segment lies:
-function getHit(
-  graph: Graph,
-  offsets: Record<number, number>,
-  curve: Curve,
-  time: number
-): Hit {
+function getHit(graph: Graph, curve: GraphCurve, time: number): Hit {
   if (time >= 1 - CURVETIME_EPSILON && curve.next) {
     curve = curve.next
     time = 0
   }
-  const index = offsets[curve._path._id] + curve.index
+  const { index } = curve
   return { index, time, point: Bezier.getPoint(graph.values[index], time) }
+}
+
+// Returns the segment as its point with both of its handles, from any of
+// the forms of SegmentData:
+function getSegment(segment: SegmentData): number[][] {
+  const [point, handleIn, handleOut] = segment as number[][]
+  if (typeof point === 'number') {
+    const [x, y, inX, inY, outX, outY] = segment as number[]
+    return segment.length > 2
+      ? [[x, y], [inX ?? 0, inY ?? 0], [outX ?? 0, outY ?? 0]]
+      : [segment as number[], zero, zero]
+  } else {
+    return [point, handleIn ?? zero, handleOut ?? zero]
+  }
 }
 
 function addCut(
@@ -1079,7 +1127,7 @@ function getPiece(
 ): number[] {
   return getPart(
     graph.values[i],
-    graph.curves[i].hasHandles(),
+    graph.curves[i].hasHandles,
     cut1.time,
     cut2.time,
     graph.vertices[getVertex(points, cut1.point)],

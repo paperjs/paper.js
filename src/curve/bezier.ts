@@ -686,8 +686,9 @@ export function getTimesWithTangent(v: BezierValues, tangent: Point): number[] {
 }
 
 // Extends the bounds in min and max by the curve's values in one coordinate:
-// by its ends, and by its extrema between them, padded by half the stroke
-// width, which it finds as the roots of its derivative:
+// by its end, and by its extrema between its ends, padded by half the stroke
+// width, which it finds as the roots of its derivative. The start is only
+// added where it is the least or the most, as the curve before ends there:
 export function addBounds(
   v0: number, v1: number, v2: number, v3: number,
   coord: number,
