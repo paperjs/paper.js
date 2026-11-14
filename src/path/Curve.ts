@@ -954,12 +954,8 @@ export class Curve extends Base {
     include?: (location: CurveLocation) => boolean,
     matrix1?: Matrix,
     matrix2?: Matrix,
-    _returnFirst?: boolean,
-    _tolerance?: number,
-    _collisions?: number[][]
+    _returnFirst?: boolean
   ): CurveLocation[] {
-    // Boolean operations pass their own tolerance, the distance under
-    // which curves count as overlapping or touching:
     const self = !curves2
     if (self) {
       curves2 = curves1
@@ -979,14 +975,8 @@ export class Curve extends Base {
         values2[i] = curves2[i].getValues(matrix2)
       }
     }
-    // Boolean operations may pass the collisions of the curves' bounds,
-    // found within at least their tolerance:
-    const boundsCollisions = (
-      _collisions ||
-      findCurveBoundsCollisions(
-        values1, values2,
-        _tolerance || GEOMETRIC_EPSILON
-      )
+    const boundsCollisions = findCurveBoundsCollisions(
+      values1, values2, GEOMETRIC_EPSILON
     )
     for (let index1 = 0; index1 < length1; index1++) {
       const curve1 = curves1[index1]
@@ -1006,7 +996,7 @@ export class Curve extends Base {
           if (!self || index2 > index1) {
             const curve2 = curves2[index2]
             const v2 = values2[index2]
-            Bezier.getIntersections(v1, v2, curve1, curve2, report, _tolerance)
+            Bezier.getIntersections(v1, v2, curve1, curve2, report)
           }
         }
       }
