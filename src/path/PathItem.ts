@@ -31,6 +31,7 @@ import {
   getEpsilon,
   getInteriorPoint,
   getOperands,
+  getShape,
   getWinding,
   isPlainObject,
   offsetPathItem,
@@ -47,7 +48,7 @@ import type { Matrix } from '../basic/Matrix.ts'
 import type { CurveLocation } from './CurveLocation.ts'
 import type { SegmentLike } from './Segment.ts'
 import type { BooleanOptions, Winding } from './boolean.ts'
-import type { Graph } from './graph.ts'
+import type { Graph } from '../boolean/graph.ts'
 import type {
   DashOptions,
   OffsetOptions,
@@ -1328,7 +1329,7 @@ export abstract class PathItem extends Item {
 
   // The graph of a boolean operation, to check its planarity in the tests:
   static _createGraph(path1: PathItem, path2?: PathItem): Graph {
-    return createGraph(getOperands(path1, path2))
+    return createGraph(getOperands(path1, path2).map(getShape))
   }
 
   /**

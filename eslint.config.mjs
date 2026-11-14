@@ -28,14 +28,21 @@ const braces = [
   }
 ]
 
-// The basic layer: the constants, the helpers, the foundation of the classes
-// (the base class, serialization, events) and the basic types. Its modules
-// import each other directly and nothing above them, so that the modules
-// built on them work without the rest of the library:
-const basic = ['src/constants.ts', 'src/{util,core,basic}/**']
-// The curve layer on top of it: the functions on curve values, which only
-// import the basic layer and each other:
-const curve = ['src/curve/**']
+// The layers below the scene graph. Their modules import each other
+// directly, those next to them and those of the layers below, and nothing
+// above, so that each layer works without the rest of the library:
+const layers = [
+  // The constants, the helpers, the foundation of the classes (the base
+  // class, serialization, events) and the basic types:
+  {
+    files: ['src/constants.ts', 'src/{util,core,basic}/**'],
+    below: 'util|core|basic'
+  },
+  // The functions on curve values:
+  { files: ['src/curve/**'], below: 'util|core|basic' },
+  // The planar graph of the boolean operations, on plain paths:
+  { files: ['src/boolean/**'], below: 'util|core|basic|curve' }
+]
 
 export default [
   {
@@ -95,8 +102,7 @@ export default [
     ignores: [
       'src/internal.ts',
       'src/{node,hosted,paperscript}/**',
-      ...basic,
-      ...curve
+      ...layers.flatMap(({ files }) => files)
     ],
     rules: {
       'no-restricted-imports': [
@@ -113,17 +119,17 @@ export default [
       ]
     }
   },
-  {
-    // Both take modules of the basic layer and the ones next to them:
-    files: [...basic, ...curve],
+  ...layers.map(({ files, below }) => ({
+    files,
     rules: {
       'no-restricted-imports': [
         'error',
         {
           patterns: [
             {
-              regex:
-                '^(?!(\\.\\./(constants|(util|core|basic)/[^/]+)|\\./[^/]+)\\.ts$)\\.\\.?/.*\\.ts$',
+              regex: `^(?!(\\.\\./(constants|(${
+                below
+              })/[^/]+)|\\./[^/]+)\\.ts$)\\.\\.?/.*\\.ts$`,
               allowTypeImports: true,
               message: 'Import only modules of the layers below here.'
             }
@@ -131,7 +137,7 @@ export default [
         }
       ]
     }
-  },
+  })),
   {
     // The optional entries import the library from internal.ts or index.ts,
     // and their own modules directly:
