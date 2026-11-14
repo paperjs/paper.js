@@ -792,6 +792,18 @@ export class Curve extends Base {
   }
 
   /**
+   * Returns the curve-time parameters of the peaks of the curve: where its
+   * first derivative is perpendicular to its second, so that its speed is
+   * the least or the most. They are similar to the extrema of its curvature,
+   * and cheaper to find.
+   *
+   * @return the curve-time parameters of the peaks
+   */
+  getPeaks(): number[] {
+    return Bezier.getPeaks(this.getValues())
+  }
+
+  /**
    * Calculates the curve offset at the specified curve-time parameter on
    * the curve.
    *
