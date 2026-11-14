@@ -626,7 +626,23 @@ describe('Curve', () => {
     )
   })
 
-  test('Curve#getTimesWithTangent(), #length and Bezier.getPeaks() far from the origin', () => {
+  test('Curve#getPeaks()', () => {
+    // A symmetric arch has its peak in the middle:
+    const arch = new Curve([0, 0], [0, -100], [0, -100], [100, 0])
+    equals(arch.getPeaks(), [0.5])
+    // At each peak, the speed along the curve is the least or the most:
+    const leaning = new Curve([0, 0], [0, -100], [0, -20], [100, 0])
+    const getSpeed = time => leaning.getWeightedTangentAtTime(time).length
+    const peaks = leaning.getPeaks()
+    equals(peaks.length, 2)
+    for (const time of peaks) {
+      const before = getSpeed(time - 1e-3) - getSpeed(time)
+      const after = getSpeed(time + 1e-3) - getSpeed(time)
+      equals(before * after > 0, true, `a turn of the speed at ${time}`)
+    }
+  })
+
+  test('Curve#getTimesWithTangent(), #length and #getPeaks() far from the origin', () => {
     // The coordinates are multiples of 1 / 4096, which stay exact at 2^40, so
     // the curve moved there has the same shape and the same results:
     function getCurve(offset) {
@@ -649,8 +665,8 @@ describe('Curve', () => {
     )
     equals(moved.length, curve.length, 'length', options)
     equals(
-      Bezier.getPeaks(moved.getValues()),
-      Bezier.getPeaks(curve.getValues()),
+      moved.getPeaks(),
+      curve.getPeaks(),
       'peaks',
       options
     )
