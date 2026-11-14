@@ -14,8 +14,8 @@
 // createGraph() and tracePaths().
 import {
   Bezier,
+  CURVETIME_EPSILON,
   Curve,
-  CurveLocation,
   GEOMETRIC_EPSILON,
   Item,
   Path,
@@ -37,6 +37,8 @@ export type Operator = (inside1: boolean, inside2: boolean) => boolean
 // The planar graph of createGraph(), with points stored by their index in its
 // list of cut points, and vertices, edges and half-edges by their index:
 type Cut = { time: number; point: number }
+
+type Hit = { index: number; time: number; point: Point }
 
 type Vertex = {
   x: number
@@ -356,21 +358,43 @@ function cutCurves(
   // The curves whose bounds come within 2 epsilon of each other, for the
   // intersections and the hot pixels of mergeVertices():
   const collisions = findCurveBoundsCollisions(values, values, 2 * epsilon)
-  const locations = CurveLocation.expand(
-    Curve.getIntersections(
-      curves, null, null, null, null, false, epsilon, collisions
+  // Cut both curves wherever two of them intersect, and those with a loop
+  // where they cross themselves. An intersection that is found again, at
+  // the same points of the same two curves, only cuts them once:
+  const hits: Hit[] = []
+  const pairs: Record<number, Hit[][]> = {}
+  const count = curves.length
+  const report = (c1: Curve, t1: number, c2: Curve, t2: number) => {
+    const hit1 = getHit(graph, offsets, c1, t1)
+    const hit2 = getHit(graph, offsets, c2, t2)
+    const others = (pairs[hit1.index * count + hit2.index] ??= [])
+    const isNew = !others.some(
+      ([other1, other2]) => (
+        hit1.point.isClose(other1.point, GEOMETRIC_EPSILON) &&
+        hit2.point.isClose(other2.point, GEOMETRIC_EPSILON)
+      )
     )
-  )
-  for (let i = 0, l = locations.length; i < l; i++) {
-    const location = locations[i]
-    const { curve } = location
-    addCut(
-      points,
-      offsets[curve._path._id] + curve.index,
-      location.time,
-      location.point,
-      false
-    )
+    if (isNew) {
+      others.push([hit1, hit2])
+      hits.push(hit1, hit2)
+    }
+    return isNew
+  }
+  for (let i = 0; i < count; i++) {
+    Bezier.getSelfIntersection(values[i], curves[i], report)
+    for (const j of collisions[i] ?? []) {
+      if (j > i) {
+        Bezier.getIntersections(
+          values[i], values[j], curves[i], curves[j], report, epsilon
+        )
+      }
+    }
+  }
+  // In their order along the curves, as the first of the points that merge
+  // into a vertex gives it its position:
+  hits.sort((hit1, hit2) => hit1.index - hit2.index || hit1.time - hit2.time)
+  for (const { index, time, point } of hits) {
+    addCut(points, index, time, point, false)
   }
   // Curves whose control points lie along a line can reverse along it,
   // and overlap themselves and the other curves along it. Cut them where
@@ -966,6 +990,23 @@ function propagateWindings(graph: Graph) {
       }
     }
   }
+}
+
+// The place where a curve is hit by another one, as the index of the curve
+// with the time and the point on it. At the end of a curve, that is the
+// start of the next one, where its segment lies:
+function getHit(
+  graph: Graph,
+  offsets: Record<number, number>,
+  curve: Curve,
+  time: number
+): Hit {
+  if (time >= 1 - CURVETIME_EPSILON && curve.next) {
+    curve = curve.next
+    time = 0
+  }
+  const index = offsets[curve._path._id] + curve.index
+  return { index, time, point: Bezier.getPoint(graph.values[index], time) }
 }
 
 function addCut(

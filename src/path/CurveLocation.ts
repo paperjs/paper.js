@@ -585,16 +585,6 @@ export class CurveLocation extends Base {
     return location
   }
 
-  static expand(locations: CurveLocation[]): CurveLocation[] {
-    // Create a copy since insert() keeps modifying the array and
-    // inserting at sorted indices.
-    const expanded = locations.slice()
-    for (let i = locations.length - 1; i >= 0; i--) {
-      CurveLocation.insert(expanded, locations[i]._intersection, false)
-    }
-    return expanded
-  }
-
   static {
     // Inject the evaluators at the location's curve-time, next to #point.
     // NOTE: (For easier searching): This loop produces:
