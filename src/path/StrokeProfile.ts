@@ -17,6 +17,7 @@ import {
   StrokeProfileStop,
   equals
 } from '../internal.ts'
+import type { PenValues } from '../offset/outline.ts'
 import type { Path } from './Path.ts'
 import type { StrokeProfileStopProps } from './StrokeProfileStop.ts'
 
@@ -47,10 +48,6 @@ export type ProfileRun = {
   length: number
   reversed?: boolean
 }
-
-// The values of the pen with their first and second derivatives along the
-// path, see StrokeProfile#getValues():
-export type PenValues = { width: number[]; aspect: number[]; angle: number[] }
 
 /**
  * The stroke profile of a path, see {@link Path#strokeProfile}. Each stop
