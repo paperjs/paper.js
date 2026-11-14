@@ -32,6 +32,11 @@ export type ShapeData = { paths: PathData[]; fillRule: string }
 
 const zero = [0, 0]
 
+// Returns the shape of one closed path with the segments:
+export function createShape(segments: SegmentData[]): ShapeData {
+  return { paths: [{ segments, closed: true }], fillRule: 'nonzero' }
+}
+
 // Returns the segments of the path as their points with both handles, from
 // any of the forms of SegmentData:
 export function getSegments({ segments }: PathData): SegmentValues[] {
@@ -115,6 +120,18 @@ export function getCurves(path: PathData): BezierValues[] {
       isLast && !path.closed
     )
   })
+}
+
+// Returns the values of the curves of the path as its stroke follows them,
+// without closing open paths:
+export function getStrokeCurves(path: PathData): BezierValues[] {
+  const segments = getSegments(path)
+  const { length } = segments
+  const curves: BezierValues[] = []
+  for (let i = 0, l = length - (path.closed ? 0 : 1); i < l; i++) {
+    curves.push(getValues(segments[i], segments[(i + 1) % length]))
+  }
+  return curves
 }
 
 // Returns the area of the path, as Path#area does:
