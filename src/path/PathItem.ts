@@ -32,7 +32,7 @@ import {
   getInteriorPoint,
   getOperands,
   getRegion,
-  getWinding,
+  getItemWinding,
   isPlainObject,
   offsetPathItem,
   outlinePathItem,
@@ -47,7 +47,8 @@ import type { SizeLike } from '../basic/Size.ts'
 import type { Matrix } from '../basic/Matrix.ts'
 import type { CurveLocation } from './CurveLocation.ts'
 import type { SegmentLike } from './Segment.ts'
-import type { BooleanOptions, Winding } from './boolean.ts'
+import type { BooleanOptions } from './boolean.ts'
+import type { Winding } from '../boolean/winding.ts'
 import type { Graph } from '../boolean/graph.ts'
 import type {
   DashOptions,
@@ -367,7 +368,7 @@ export abstract class PathItem extends Item {
     const winding: Partial<Winding> = point.isInside(
       this.getBounds(null, { internal: true, handle: true })
     )
-      ? getWinding(point, this.curves)
+      ? getItemWinding(point, this)
       : {}
     // See #1116#issuecomment-243794824 for an explanation of the
     // winding.onPath check here.
