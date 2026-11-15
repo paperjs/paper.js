@@ -16,7 +16,6 @@
 import {
   Bezier,
   CompoundPath,
-  Curve,
   GEOMETRIC_EPSILON,
   Group,
   Path,
@@ -24,6 +23,8 @@ import {
   Segment,
   createPathItem,
   getShape,
+  offsetPath,
+  offsetShape,
   outlineStroke,
   paper,
   setStrokeProfileRuns,
@@ -53,7 +54,6 @@ export type DashOptions = {
   insert?: boolean
 }
 
-// A part of a curve that offsetCubic() offsets, from t0 to t1:
 // A stop of a stroke profile taken off its path, see takeProfileStops():
 type ProfileStop = { stop: StrokeProfileStop; point: Point; normal: Point }
 
@@ -75,21 +75,19 @@ export function offsetPathItem(
   if (!distance) {
     result = path
   } else if (item._children || (item as Path)._closed) {
-    const outline = outlinePaths(
-      paths,
-      abs(distance),
-      join,
-      'butt',
-      miterLimit
-    )
-    result = path[distance > 0 ? 'unite' : 'subtract'](outline, {
-      insert: false
-    })
+    // Shapes grow or shrink by the distance:
+    result = createPathItem(
+      offsetShape(getShape(path), distance, join, miterLimit)
+    ).reduce() as PathItem
   } else {
+    // Open paths move to the side of their normals:
     result = new CompoundPath({
       children: path.isEmpty()
         ? []
-        : offsetSide(path as Path, distance, join, miterLimit),
+        : offsetPath(getShape(path).paths[0], distance, join, miterLimit).map(
+            ({ segments, closed }) =>
+              new Path({ segments, closed, insert: false })
+          ),
       insert: false
     }).reduce() as PathItem
   }
@@ -198,115 +196,6 @@ function outlinePaths(
   return shape.paths.length
     ? createPathItem(shape)
     : new Path({ insert: false })
-}
-
-// The offset of an open path, as the curves of the outline of its stroke
-// with butt caps on the side of the offset, without the caps:
-function offsetSide(
-  path: Path,
-  offset: number,
-  join: string,
-  miterLimit: number
-): Path[] {
-  const radius = abs(offset)
-  const outline = outlinePaths([path], radius, join, 'butt', miterLimit)
-  const first = path.firstSegment
-  const last = path.lastSegment
-  const caps: [Point, Point][] = [
-    [first._point, path.firstCurve.getNormalAtTime(0)],
-    [last._point, path.lastCurve.getNormalAtTime(1)]
-  ]
-  const tolerance = radius / 1e4
-  const paths: Path[] = []
-
-  // The caps are the straight curves along the normals at the ends:
-  function isCap(curve: Curve): boolean {
-    if (!curve.hasHandles()) {
-      for (let i = 0; i < 2; i++) {
-        const [point, normal] = caps[i]
-        const vector1 = curve._segment1._point.subtract(point)
-        const vector2 = curve._segment2._point.subtract(point)
-        if (
-          abs(vector1.cross(normal)) < tolerance &&
-          abs(vector2.cross(normal)) < tolerance
-        )
-          return true
-      }
-    }
-    return false
-  }
-
-  function isOnSide(curve: Curve): boolean {
-    const point = curve.getPointAtTime(0.5)
-    const location = path.getNearestLocation(point)
-    return (
-      !isCap(curve) && (
-        point.subtract(location.point).dot(location.normal) * offset >
-        0
-      )
-    )
-  }
-
-  function addRun(curves: Curve[]) {
-    const segments = [
-      new Segment(
-        curves[0]._segment1._point,
-        null,
-        curves[0]._segment1._handleOut
-      )
-    ]
-    for (let i = 0, l = curves.length; i < l; i++) {
-      const segment = curves[i]._segment2
-      segments.push(
-        new Segment(
-          segment._point,
-          segment._handleIn,
-          i < l - 1 ? segment._handleOut : null
-        )
-      )
-    }
-    const run = new Path({ segments, insert: false })
-    // Run along the path:
-    if (
-      path.getNearestLocation(run.firstSegment._point).offset >
-      path.getNearestLocation(run.lastSegment._point).offset
-    ) {
-      run.reverse()
-    }
-    paths.push(run)
-  }
-
-  const contours = (outline._children ?? [outline]) as Path[]
-  for (let i = 0, l = contours.length; i < l; i++) {
-    const { curves } = contours[i]
-    const count = curves.length
-    const keeps: boolean[] = []
-    let start = -1
-    for (let j = 0; j < count; j++) {
-      keeps.push(isOnSide(curves[j]))
-      if (!keeps[j]) {
-        start = j
-      }
-    }
-    if (count && start === -1) {
-      // The whole contour lies on the side:
-      paths.push(contours[i].clone({ insert: false }))
-    } else {
-      // Collect the runs of curves on the side, starting after one
-      // that isn't, so that none wraps around the contour's end:
-      let run: Curve[] = []
-      for (let j = 1; j <= count; j++) {
-        const index = (start + j) % count
-        if (keeps[index]) {
-          run.push(curves[index])
-        } else if (run.length) {
-          addRun(run)
-          run = []
-        }
-      }
-    }
-  }
-  return paths
 }
 
 // Takes the stroke profiles off the paths, as their stops with the points
