@@ -62,9 +62,11 @@ export function offsetPath(
   join: string,
   miterLimit: number
 ): PathData[] {
+  const curves = getStrokeCurves(path)
+  // A point, or points on each other, have no sides to move:
+  if (!curves.length) return []
   const radius = abs(distance)
   const outline = outlineStroke([path], radius, join, 'butt', miterLimit)
-  const curves = getStrokeCurves(path)
   const lengths = curves.map(v => Bezier.getLength(v, 0, 1))
   const first = curves[0]
   const last = curves[curves.length - 1]

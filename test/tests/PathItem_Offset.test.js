@@ -124,6 +124,12 @@ describe('PathItem#offset() and #outline()', () => {
     equals(offset.segments[1].point, new Point(50, 50 - 10 * Math.SQRT2))
   })
 
+  test('PathItem#offset() of open paths without length', () => {
+    // A point, and points that lie on each other, have no sides to move:
+    equals(new Path([50, 50]).offset(10).isEmpty(), true)
+    equals(new Path([50, 50], [50, 50]).offset(10).isEmpty(), true)
+  })
+
   test('PathItem#outline()', () => {
     const line = new Path({
       segments: [[0, 0], [100, 0]],
