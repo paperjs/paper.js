@@ -31,7 +31,7 @@ import {
   getEpsilon,
   getInteriorPoint,
   getOperands,
-  getShape,
+  getRegion,
   getWinding,
   isPlainObject,
   offsetPathItem,
@@ -1329,7 +1329,7 @@ export abstract class PathItem extends Item {
 
   // The graph of a boolean operation, to check its planarity in the tests:
   static _createGraph(path1: PathItem, path2?: PathItem): Graph {
-    return createGraph(getOperands(path1, path2).map(getShape))
+    return createGraph(getOperands(path1, path2).map(getRegion))
   }
 
   /**

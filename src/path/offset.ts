@@ -22,9 +22,9 @@ import {
   Point,
   Segment,
   createPathItem,
-  getShape,
+  getRegion,
   offsetPath,
-  offsetShape,
+  offsetRegion,
   outlineStroke,
   paper,
   setStrokeProfileRuns,
@@ -75,13 +75,13 @@ export function offsetPathItem(
   if (!distance) {
     result = path
   } else if (item._children || (item as Path)._closed) {
-    // Shapes grow or shrink by the distance:
+    // Closed and compound paths grow or shrink by the distance:
     result = createPathItem(
-      offsetShape(getShape(path), distance, join, miterLimit)
+      offsetRegion(getRegion(path), distance, join, miterLimit)
     ).reduce() as PathItem
   } else {
     // Open paths move to the side of their normals:
-    const [open] = getShape(path).paths
+    const [open] = getRegion(path).paths
     result = new CompoundPath({
       children: offsetPath(open, distance, join, miterLimit).map(
         ({ segments, closed }) => new Path({ segments, closed, insert: false })
@@ -175,11 +175,11 @@ function outlinePaths(
   cap: string,
   miterLimit: number
 ): PathItem {
-  const shape = outlineStroke(
+  const region = outlineStroke(
     paths.map(path => {
       const profile = path._strokeProfile
       return {
-        ...getShape(path).paths[0],
+        ...getRegion(path).paths[0],
         pens: profile && {
           offsets: profile.getPens().map(pen => pen.offset),
           getValues: profile.getValues()
@@ -191,8 +191,8 @@ function outlinePaths(
     cap,
     miterLimit
   )
-  return shape.paths.length
-    ? createPathItem(shape)
+  return region.paths.length
+    ? createPathItem(region)
     : new Path({ insert: false })
 }
 

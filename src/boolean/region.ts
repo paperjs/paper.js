@@ -28,12 +28,12 @@ export type SegmentData =
 export type PathData = { segments: SegmentData[]; closed: boolean }
 
 // The paths that are filled as one, by their fill rule:
-export type ShapeData = { paths: PathData[]; fillRule: string }
+export type RegionData = { paths: PathData[]; fillRule: string }
 
 const zero = [0, 0]
 
-// Returns the shape of one closed path with the segments:
-export function createShape(segments: SegmentData[]): ShapeData {
+// Returns the region of one closed path with the segments:
+export function createRegion(segments: SegmentData[]): RegionData {
   return { paths: [{ segments, closed: true }], fillRule: 'nonzero' }
 }
 
@@ -78,8 +78,8 @@ export function hasHandles(
   )
 }
 
-// Returns the bounds of the shape, as those of a path item with its paths:
-export function getBounds({ paths }: ShapeData): Rectangle {
+// Returns the bounds of the region, as those of a path item with its paths:
+export function getBounds({ paths }: RegionData): Rectangle {
   const roots = new Array(2)
   let bounds: Rectangle = null
   for (const path of paths) {
@@ -143,11 +143,11 @@ export function getArea(path: PathData): number {
   return area
 }
 
-// Returns the shape with its paths reduced as Path#reduce() does it with the
+// Returns the region with its paths reduced as Path#reduce() does it with the
 // simplify option: without the straight curves that have no length, or
 // that continue along the line of the next one, and without the paths that
 // are empty then:
-export function reduceShape({ paths, fillRule }: ShapeData): ShapeData {
+export function reduceRegion({ paths, fillRule }: RegionData): RegionData {
   return {
     fillRule,
     paths: paths.map(reducePath).filter(({ segments }) => segments.length)

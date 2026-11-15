@@ -10,40 +10,40 @@
  * All rights reserved.
  */
 
-// The operations on shapes through the planar graph, for the steps between
+// The operations on regions through the planar graph, for the steps between
 // which no path items are needed.
 import { Point } from '../basic/Point.ts'
 import { Rectangle } from '../basic/Rectangle.ts'
 import { traceGraph } from './graph.ts'
 import type { Operator } from './graph.ts'
-import { getArea, getBounds, reduceShape } from './shape.ts'
-import type { ShapeData } from './shape.ts'
+import { getArea, getBounds, reduceRegion } from './region.ts'
+import type { RegionData } from './region.ts'
 
-// Unites the shapes, pairwise in a balanced tree, so that each step only
+// Unites the regions, pairwise in a balanced tree, so that each step only
 // meets results of similar size, see combinePaths(). The first one is united
 // with the union of the others, and resolved on its own if it is the only
 // one. Between the steps, the results are reduced as path items are:
-export function uniteShapes(shapes: ShapeData[]): ShapeData {
-  const [first, ...others] = shapes
+export function uniteRegions(regions: RegionData[]): RegionData {
+  const [first, ...others] = regions
   return unite(
     first,
     others.length
       ? combine(
-          others.map(shape => {
-            const bounds = getBounds(shape)
-            return { shape, bounds, center: bounds.center }
+          others.map(region => {
+            const bounds = getBounds(region)
+            return { region, bounds, center: bounds.center }
           })
         )
       : null
   )
 }
 
-type Entry = { shape: ShapeData; bounds: Rectangle; center: Point }
+type Entry = { region: RegionData; bounds: Rectangle; center: Point }
 
-function combine(entries: Entry[]): ShapeData {
+function combine(entries: Entry[]): RegionData {
   if (entries.length > 1) {
-    // Split the shapes along the longer side of their bounds, so each step
-    // unites shapes that lie close to each other:
+    // Split the regions along the longer side of their bounds, so each step
+    // unites regions that lie close to each other:
     let { bounds } = entries[0]
     for (let i = 1, l = entries.length; i < l; i++) {
       bounds = bounds.unite(entries[i].bounds)
@@ -56,34 +56,34 @@ function combine(entries: Entry[]): ShapeData {
       combine(entries.slice(middle))
     )
   } else {
-    return entries[0].shape
+    return entries[0].region
   }
 }
 
-// Subtracts the second shape from the first one:
-export function subtractShapes(
-  shape1: ShapeData,
-  shape2: ShapeData
-): ShapeData {
-  return trace(shape1, shape2, (inside1, inside2) => inside1 && !inside2)
+// Subtracts the second region from the first one:
+export function subtractRegions(
+  region1: RegionData,
+  region2: RegionData
+): RegionData {
+  return trace(region1, region2, (inside1, inside2) => inside1 && !inside2)
 }
 
-// Unites the two shapes, or resolves the first one on its own:
-function unite(shape1: ShapeData, shape2: ShapeData | null): ShapeData {
-  return trace(shape1, shape2, (inside1, inside2) => inside1 || inside2)
+// Unites the two regions, or resolves the first one on its own:
+function unite(region1: RegionData, region2: RegionData | null): RegionData {
+  return trace(region1, region2, (inside1, inside2) => inside1 || inside2)
 }
 
-// Traces the areas of the shapes that the operator includes, reducing them
+// Traces the areas of the regions that the operator includes, reducing them
 // before and the result after, as path items are, and leaving out paths
 // without an area:
 function trace(
-  shape1: ShapeData,
-  shape2: ShapeData | null,
+  region1: RegionData,
+  region2: RegionData | null,
   operator: Operator
-): ShapeData {
-  const operands = [reduceShape(shape1)]
-  if (shape2) {
-    operands.push(reduceShape(shape2))
+): RegionData {
+  const operands = [reduceRegion(region1)]
+  if (region2) {
+    operands.push(reduceRegion(region2))
   }
   const paths = []
   for (const { segments } of traceGraph(operands, operator)) {
@@ -92,5 +92,5 @@ function trace(
       paths.push(path)
     }
   }
-  return reduceShape({ paths, fillRule: shape1.fillRule })
+  return reduceRegion({ paths, fillRule: region1.fillRule })
 }

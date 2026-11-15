@@ -12,8 +12,8 @@
 
 import { describe } from 'vitest'
 import { createGraph, traceGraph } from '../../src/boolean/graph.ts'
-import { uniteShapes } from '../../src/boolean/operations.ts'
-import { reduceShape } from '../../src/boolean/shape.ts'
+import { uniteRegions } from '../../src/boolean/operations.ts'
+import { reduceRegion } from '../../src/boolean/region.ts'
 import { equals, test } from '../helpers.js'
 
 // The graph of the boolean operations on plain descriptions of paths, without
@@ -196,9 +196,9 @@ describe('Boolean graph', () => {
     )
   })
 
-  test('reduceShape() removes curves without length and along a line', () => {
+  test('reduceRegion() removes curves without length and along a line', () => {
     const reduce = segments =>
-      reduceShape({
+      reduceRegion({
         fillRule: 'nonzero',
         paths: [{ closed: true, segments }]
       }).paths.map(getPoints)
@@ -233,9 +233,9 @@ describe('Boolean graph', () => {
     equals(reduce([[10, 10]]), [])
   })
 
-  test('uniteShapes() unites many shapes and resolves one', () => {
+  test('uniteRegions() unites many regions and resolves one', () => {
     // Three squares in a row that overlap by half, and one apart:
-    const united = uniteShapes([
+    const united = uniteRegions([
       createSquare(0, 0, 100),
       createSquare(50, 0, 100),
       createSquare(100, 0, 100),
@@ -264,7 +264,7 @@ describe('Boolean graph', () => {
         { closed: true, segments: [...square.segments, ...square.segments] }
       ]
     }
-    equals(uniteShapes([twice]).paths.map(getPoints), [
+    equals(uniteRegions([twice]).paths.map(getPoints), [
       [
         [0, 0],
         [100, 0],

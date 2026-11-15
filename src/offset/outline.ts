@@ -20,8 +20,8 @@
  * @author Jürg Lehni <juerg@scratchdisk.com>
  */
 
-import { uniteShapes } from '../boolean/operations.ts'
-import type { PathData, ShapeData } from '../boolean/shape.ts'
+import { uniteRegions } from '../boolean/operations.ts'
+import type { PathData, RegionData } from '../boolean/region.ts'
 import { ProfileSweep } from './profile.ts'
 import type { StrokePens } from './profile.ts'
 import { RoundSweep } from './round.ts'
@@ -40,16 +40,16 @@ export function outlineStroke(
   join: string,
   cap: string,
   miterLimit: number
-): ShapeData {
+): RegionData {
   // The offsets' error, relative to small radii:
   const tolerance = Math.min(errorThreshold, radius / 100)
   const stroke = { radius, tolerance, join, cap, miterLimit }
-  const areas: ShapeData[] = []
+  const areas: RegionData[] = []
   for (const path of paths) {
     const sweep = path.pens
       ? new ProfileSweep(path, path.pens, stroke)
       : new RoundSweep(path, stroke)
     areas.push(...sweep.sweep())
   }
-  return areas.length ? uniteShapes(areas) : { paths: [], fillRule: 'nonzero' }
+  return areas.length ? uniteRegions(areas) : { paths: [], fillRule: 'nonzero' }
 }
