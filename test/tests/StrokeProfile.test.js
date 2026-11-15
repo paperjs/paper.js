@@ -515,6 +515,29 @@ describe('StrokeProfile', () => {
     equals(getWidthsAt(other.unite(square), [[0, 50], [100, 50]]), [5, 5])
   })
 
+  test('Splitting paths keeps the profiles along their pieces', () => {
+    // A line along the square's profile, split where it crosses the right
+    // rectangle, without tracing:
+    const line = new Path([[0, 50], [200, 50]])
+    line.strokeProfile = [
+      { offset: 0, width: 1 },
+      { offset: 200, width: 3 }
+    ]
+    const right = new Path.Rectangle({ point: [100, 0], size: [200, 100] })
+    // The same widths at the ends of the pieces as on the line. Between
+    // them, the pieces ease anew from the stop at the cut:
+    const inner = [[100, 50], [200, 50]]
+    const outer = [[0, 50], [100, 50]]
+    equals(
+      getWidthsAt(line.intersect(right, { trace: false }), inner),
+      getWidthsAt(line, inner)
+    )
+    equals(
+      getWidthsAt(line.subtract(right, { trace: false }), outer),
+      getWidthsAt(line, outer)
+    )
+  })
+
   test('PathItem#resolveCrossings() keeps the profile on both sides', () => {
     // The square with its top corners swapped, which crosses at its center:
     const path = createSquare()

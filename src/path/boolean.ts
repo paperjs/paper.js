@@ -30,8 +30,8 @@
 import {
   Bezier,
   getWinding,
+  splitGraph,
   CompoundPath,
-  CurveLocation,
   EPSILON,
   GEOMETRIC_EPSILON,
   Item,
@@ -236,17 +236,6 @@ export function createResult(
   return result
 }
 
-function filterIntersection(inter: CurveLocation): boolean {
-  // TODO: Change isCrossing() to also handle overlaps (hasOverlap())
-  // that are actually involved in a crossing! For this we need proper
-  // overlap range detection / merging first... But as we call
-  // #resolveCrossings() first in boolean operations, removing all
-  // self-touching areas in paths, this works for the known use cases.
-  // The ideal implementation would deal with it in a way outlined in:
-  // https://github.com/paperjs/paper.js/issues/874#issuecomment-168332391
-  return inter.hasOverlap() || inter.isCrossing()
-}
-
 export function traceBoolean(
   path1: PathItem,
   path2: PathItem | PathItem[] | null,
@@ -341,47 +330,31 @@ export function splitBoolean(
 ): PathItem {
   const _path1 = preparePath(path1)
   const _path2 = preparePath(combinePaths(path2, operation))
-  const crossings = _path1.getIntersections(_path2, filterIntersection)
-  const subtract = operation === 'subtract'
-  const divide = operation === 'divide'
-  const pieces: Path[] = []
+  const sources = getPaths(_path1)
+  const parts: Record<number, ProfilePart> = {}
   const paths: Path[] = []
-
-  // Split the paths of path1 at all crossings, backwards so the earlier
-  // locations stay valid. A split returns the part after it, or for a
-  // closed path, the path itself, opened at the split, so pieces are
-  // only tested once all splitting is done (#1540):
-  for (let i = crossings.length - 1; i >= 0; i--) {
-    const crossing = crossings[i]
-    const split = crossing.path
-    const path = crossing.split()
-    if (path) {
-      // Clear the handles on both sides of the split, as they might
-      // have belonged to curves:
-      path.firstSegment.handleIn = [0, 0]
-      split.lastSegment.handleOut = [0, 0]
-      if (pieces.indexOf(path) === -1) {
-        pieces.push(path)
-      }
-    }
-  }
-  // Add what's left of the paths of path1, split or not, which for a
-  // compound path are its children (#1541):
-  const children = getPaths(_path1)
-  for (let i = 0, l = children.length; i < l; i++) {
-    if (pieces.indexOf(children[i]) === -1) {
-      pieces.push(children[i])
-    }
-  }
-  // Simply see if the point halfway across each piece is inside path2,
-  // and include or exclude it based on the operation.
-  for (let i = 0, l = pieces.length; i < l; i++) {
-    const piece = pieces[i]
+  for (const piece of splitGraph(getRegion(_path1).paths, getRegion(_path2))) {
     if (
-      divide ||
-      _path2.contains(piece.getPointAt(piece.length / 2)) !== subtract
+      operation === 'divide' ||
+      piece.isInside !== (operation === 'subtract')
     ) {
-      paths.unshift(piece)
+      const source = sources[piece.source]
+      if (piece.isWhole) {
+        paths.push(source)
+      } else {
+        const path = new Path({ segments: piece.segments, insert: false })
+        // The pieces keep the parts of the profiles of their paths:
+        if (source._strokeProfile) {
+          setStrokeProfileRuns(path, [
+            {
+              part: (parts[piece.source] ??= getStrokeProfilePart(source)),
+              start: piece.offset,
+              length: path.length
+            }
+          ])
+        }
+        paths.push(path)
+      }
     }
   }
   return createResult(paths, false, path1, path2, options)

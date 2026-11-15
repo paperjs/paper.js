@@ -11,9 +11,13 @@
  */
 
 import { describe } from 'vitest'
-import { createGraph, traceGraph } from '../../src/boolean/graph.ts'
+import {
+  createGraph,
+  splitGraph,
+  traceGraph
+} from '../../src/boolean/graph.ts'
 import { uniteRegions } from '../../src/boolean/operations.ts'
-import { reduceRegion } from '../../src/boolean/region.ts'
+import { getSegments, reduceRegion } from '../../src/boolean/region.ts'
 import { equals, test } from '../helpers.js'
 
 // The graph of the boolean operations on plain descriptions of paths, without
@@ -272,5 +276,49 @@ describe('Boolean graph', () => {
         [0, 100]
       ]
     ])
+  })
+
+  test('splitGraph() of lines crossing, touching and along a square', () => {
+    const square = createSquare(0, 0, 100)
+    const getPieces = (paths, region = square) =>
+      splitGraph(paths, region).map(piece => [
+        getSegments(piece).map(([point]) => point),
+        piece.isInside,
+        piece.isWhole
+      ])
+    // A line that crosses the square, in its order along the line:
+    equals(
+      getPieces([{ segments: [[-50, 50], [150, 50]], closed: false }]),
+      [
+        [[[-50, 50], [0, 50]], false, false],
+        [[[0, 50], [100, 50]], true, false],
+        [[[100, 50], [150, 50]], false, false]
+      ]
+    )
+    // A line that only touches it is not split:
+    equals(
+      getPieces([{ segments: [[-50, 0], [0, 0], [-50, -50]], closed: false }]),
+      [[[[-50, 0], [0, 0], [-50, -50]], false, true]]
+    )
+    // A line along its edge lies inside, but is split from the rest:
+    equals(
+      getPieces([{ segments: [[-50, 0], [50, 0]], closed: false }]),
+      [
+        [[[-50, 0], [0, 0]], false, false],
+        [[[0, 0], [50, 0]], true, false]
+      ]
+    )
+    // An open path of the region is filled as if closed by a straight line:
+    const triangle = {
+      fillRule: 'nonzero',
+      paths: [{ segments: [[0, 0], [100, 0], [100, 100]], closed: false }]
+    }
+    equals(
+      getPieces([{ segments: [[60, 20], [60, 80]], closed: false }], triangle),
+      [
+        [[[60, 20], [60, 60]], true, false],
+        [[[60, 60], [60, 80]], false, false]
+      ]
+    )
   })
 })
