@@ -65,18 +65,26 @@ export function subtractRegions(
   region1: RegionData,
   region2: RegionData
 ): RegionData {
-  return trace(region1, region2, (inside1, inside2) => inside1 && !inside2)
+  return traceRegions(
+    region1,
+    region2,
+    (inside1, inside2) => inside1 && !inside2
+  )
 }
 
 // Unites the two regions, or resolves the first one on its own:
 function unite(region1: RegionData, region2: RegionData | null): RegionData {
-  return trace(region1, region2, (inside1, inside2) => inside1 || inside2)
+  return traceRegions(
+    region1,
+    region2,
+    (inside1, inside2) => inside1 || inside2
+  )
 }
 
 // Traces the areas of the regions that the operator includes, reducing them
 // before and the result after, as path items are, and leaving out paths
 // without an area:
-function trace(
+export function traceRegions(
   region1: RegionData,
   region2: RegionData | null,
   operator: Operator
