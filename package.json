@@ -37,6 +37,14 @@
       "types": "./dist/types/hosted/index.d.ts",
       "default": "./dist/esm/hosted.js"
     },
+    "./boolean": {
+      "types": "./dist/types/boolean/index.d.ts",
+      "default": "./dist/esm/boolean.js"
+    },
+    "./offset": {
+      "types": "./dist/types/offset/index.d.ts",
+      "default": "./dist/esm/offset.js"
+    },
     "./dist/paper-core": {
       "types": "./dist/types/index.d.ts",
       "default": "./dist/esm/paper.js"

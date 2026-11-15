@@ -33,6 +33,13 @@ const entries = {
   hosted: 'src/hosted/index.ts'
 }
 
+// The geometry modules, which work on plain paths without the rest of the
+// library, each bundled on its own, see `exports` in package.json:
+const modules = {
+  boolean: 'src/boolean/index.ts',
+  offset: 'src/offset/index.ts'
+}
+
 // The script files, whose global `paper` is the first scope, the default
 // export of the core, with PaperScript in the full one:
 const scripts = {
@@ -57,6 +64,17 @@ export async function buildAll() {
       sourcemap: true
     }
   })
+  for (const [name, file] of Object.entries(modules)) {
+    await build({
+      input: resolve(file),
+      output: {
+        file: path.join(dist, 'esm', `${name}.js`),
+        format: 'es',
+        banner: getBanner(false),
+        sourcemap: true
+      }
+    })
+  }
   for (const [name, files] of Object.entries(scripts)) {
     for (const minify of [false, true]) {
       const file = `${name}${minify ? '.min' : ''}.js`
