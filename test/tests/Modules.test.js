@@ -21,7 +21,7 @@ import {
 } from '../../src/boolean/index.ts'
 import { offset, offsetPath, outline } from '../../src/offset/index.ts'
 import { getArea, getBounds } from '../../src/boolean/region.ts'
-import { equals, test } from '../helpers.js'
+import { equals, isNodeContext, test } from '../helpers.js'
 
 // The entries paper/boolean and paper/offset, on plain descriptions of paths
 // only:
@@ -88,4 +88,27 @@ describe('paper/boolean and paper/offset', () => {
       [-10, -10, 120, 20]
     )
   })
+
+  // Bundling needs Node's file system:
+  if (isNodeContext) {
+    test('The bundles of the entries leave out the scene graph', async () => {
+      const { build } = await import('rolldown')
+      for (const name of ['boolean', 'offset']) {
+        const { output } = await build({
+          input: new URL(`../../src/${name}/index.ts`, import.meta.url)
+            .pathname,
+          write: false,
+          output: { format: 'es' }
+        })
+        const classes = output[0].code.match(/\bclass [A-Z]\w*/g) ?? []
+        equals(
+          classes.filter(name =>
+            /\b(Item|Path|Project|PaperScope|View|Style)$/.test(name)
+          ),
+          [],
+          name
+        )
+      }
+    })
+  }
 })
