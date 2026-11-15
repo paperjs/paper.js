@@ -24,10 +24,10 @@ import {
 } from '../util/collisions.ts'
 import { Point } from '../basic/Point.ts'
 import * as Bezier from '../curve/index.ts'
-import { getBounds, getSegments, getValues, hasHandles } from './shape.ts'
+import { getBounds, getSegments, getValues, hasHandles } from './region.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'
 import type { BezierValues, Intersection } from '../curve/index.ts'
-import type { ShapeData } from './shape.ts'
+import type { RegionData } from './region.ts'
 
 // A path of the result, with the part of an operand's curve that each of its
 // segments starts: the curve by the indices of its operand, its path there
@@ -146,7 +146,7 @@ const { min, max, abs } = Math
  * @param operands one or two operands, with closed paths only
  * @return the graph's vertices, edges, half-edges and faces
  */
-export function createGraph(operands: ShapeData[]): Graph {
+export function createGraph(operands: RegionData[]): Graph {
   const graph: Graph = {
     ...readCurves(operands),
     vertices: [],
@@ -183,7 +183,7 @@ export function createGraph(operands: ShapeData[]): Graph {
  * @return the traced paths
  */
 export function traceGraph(
-  operands: ShapeData[],
+  operands: RegionData[],
   operator: Operator
 ): TracedPath[] {
   const graph = createGraph(operands)
@@ -291,7 +291,7 @@ export function traceGraph(
 // neighbors and where it comes from, along with the fill rules, and the
 // distance under which points count as the same:
 function readCurves(
-  operands: ShapeData[]
+  operands: RegionData[]
 ): Pick<Graph, 'curves' | 'values' | 'nonZeros' | 'epsilon'> {
   const curves: GraphCurve[] = []
   const values: BezierValues[] = []

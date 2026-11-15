@@ -10,45 +10,45 @@
  * All rights reserved.
  */
 
-// The offsets of shapes and open paths at a distance, through the outlines
+// The offsets of regions and open paths at a distance, through the outlines
 // of their strokes, see outlineStroke().
 import { CURVETIME_EPSILON } from '../util/numerical.ts'
 import { Point } from '../basic/Point.ts'
 import * as Bezier from '../curve/index.ts'
 import type { SegmentValues } from '../curve/index.ts'
-import { subtractShapes, uniteShapes } from '../boolean/operations.ts'
+import { subtractRegions, uniteRegions } from '../boolean/operations.ts'
 import {
   getSegments,
   getStrokeCurves,
   getValues,
   hasHandles
-} from '../boolean/shape.ts'
-import type { PathData, ShapeData } from '../boolean/shape.ts'
+} from '../boolean/region.ts'
+import type { PathData, RegionData } from '../boolean/region.ts'
 import { outlineStroke } from './outline.ts'
 
 const { abs } = Math
 
-// Returns the shape grown by the distance, or shrunk where it is negative,
+// Returns the region grown by the distance, or shrunk where it is negative,
 // united with the outline of its paths' strokes, or without it:
-export function offsetShape(
-  shape: ShapeData,
+export function offsetRegion(
+  region: RegionData,
   distance: number,
   join: string,
   miterLimit: number
-): ShapeData {
+): RegionData {
   if (distance) {
     const outline = outlineStroke(
-      shape.paths,
+      region.paths,
       abs(distance),
       join,
       'butt',
       miterLimit
     )
     return distance > 0
-      ? uniteShapes([shape, outline])
-      : subtractShapes(shape, outline)
+      ? uniteRegions([region, outline])
+      : subtractRegions(region, outline)
   } else {
-    return shape
+    return region
   }
 }
 

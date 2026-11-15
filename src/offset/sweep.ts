@@ -19,11 +19,11 @@ import { Point } from '../basic/Point.ts'
 import * as Bezier from '../curve/index.ts'
 import type { BezierValues, SegmentValues } from '../curve/index.ts'
 import {
-  createShape,
+  createRegion,
   getSegments,
   getStrokeCurves
-} from '../boolean/shape.ts'
-import type { PathData, SegmentData, ShapeData } from '../boolean/shape.ts'
+} from '../boolean/region.ts'
+import type { PathData, SegmentData, RegionData } from '../boolean/region.ts'
 import { regularize } from './curves.ts'
 
 // The stroke to outline, with the tolerance of its outline:
@@ -51,7 +51,7 @@ export type CurveParts<P extends Part> = {
 export abstract class Sweep<P extends Part = Part> {
   path: PathData
   stroke: Stroke
-  areas: ShapeData[] = []
+  areas: RegionData[] = []
   curves: CurveParts<P>[] = []
   parts: P[] = []
   length = 0
@@ -62,7 +62,7 @@ export abstract class Sweep<P extends Part = Part> {
   }
 
   // Returns the areas that the stroke sweeps along the path:
-  sweep(): ShapeData[] {
+  sweep(): RegionData[] {
     const { closed } = this.path
     const { tolerance, cap } = this.stroke
     const segments = this.readSegments()
@@ -151,7 +151,7 @@ export abstract class Sweep<P extends Part = Part> {
   abstract addDot(center: Point): void
 
   addArea(segments: SegmentData[]) {
-    this.areas.push(createShape(segments))
+    this.areas.push(createRegion(segments))
   }
 
   addPolygon(points: Point[]) {

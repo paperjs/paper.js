@@ -27,9 +27,9 @@ import { Line } from '../basic/Line.ts'
 import { Point } from '../basic/Point.ts'
 import * as Bezier from '../curve/index.ts'
 import type { BezierValues } from '../curve/index.ts'
-import { uniteShapes } from '../boolean/operations.ts'
-import { createShape, getCurves } from '../boolean/shape.ts'
-import type { PathData, ShapeData } from '../boolean/shape.ts'
+import { uniteRegions } from '../boolean/operations.ts'
+import { createRegion, getCurves } from '../boolean/region.ts'
+import type { PathData, RegionData } from '../boolean/region.ts'
 import {
   fitSide,
   getCurvatureExtrema,
@@ -609,7 +609,7 @@ export class ProfileSweep extends Sweep<ProfilePart> {
   // thinner than the tolerance, which only adds points so close to the
   // others' that the union can't tell them apart:
   addStrip(side1: Side, side2: Side) {
-    const strip = uniteShapes([createShape(joinSides(side1, side2))])
+    const strip = uniteRegions([createRegion(joinSides(side1, side2))])
     if (!isThin(strip, this.stroke.tolerance)) {
       this.areas.push(strip)
     }
@@ -699,7 +699,7 @@ function getWidth(strip: Strip): number {
 // looking half the tolerance inside the middle of each curve, on the
 // side that unite() leaves inside. Points that lie that far from the
 // outline, within rounding, are thick:
-function isThin({ paths }: ShapeData, tolerance: number): boolean {
+function isThin({ paths }: RegionData, tolerance: number): boolean {
   const half = tolerance / 2
   const curves = paths.flatMap(getCurves)
   let area = 0

@@ -12,16 +12,16 @@
 
 import { describe } from 'vitest'
 import { outlineStroke } from '../../src/offset/outline.ts'
-import { offsetPath, offsetShape } from '../../src/offset/offset.ts'
-import { getArea, getBounds } from '../../src/boolean/shape.ts'
+import { offsetPath, offsetRegion } from '../../src/offset/offset.ts'
+import { getArea, getBounds } from '../../src/boolean/region.ts'
 import { equals, test } from '../helpers.js'
 
 // The outlines of strokes on plain descriptions of paths, without any path
 // items:
 describe('Stroke outline', () => {
   const line = { segments: [[0, 0], [100, 0]], closed: false }
-  const getRect = shape => {
-    const { x, y, width, height } = getBounds(shape)
+  const getRect = region => {
+    const { x, y, width, height } = getBounds(region)
     return [x, y, width, height]
   }
 
@@ -68,13 +68,13 @@ describe('Stroke outline', () => {
         }
       }
     }
-    const shape = outlineStroke([{ ...line, pens }], 10, 'miter', 'butt', 10)
-    equals(shape.paths.length, 1)
+    const region = outlineStroke([{ ...line, pens }], 10, 'miter', 'butt', 10)
+    equals(region.paths.length, 1)
     // The pen shrinks by 0.1 per length, so its circle touches the sides
     // of the stroke that far behind its center, at the sine of their slope:
     const x = 10 * 0.1
     const y = 10 * Math.sqrt(1 - 0.1 * 0.1)
-    equals(getRect(shape), [x, -y, 100 - 2 * x, 2 * y], null, {
+    equals(getRect(region), [x, -y, 100 - 2 * x, 2 * y], null, {
       tolerance: 1e-6
     })
   })
@@ -83,7 +83,7 @@ describe('Stroke outline', () => {
     equals(outlineStroke([], 10, 'miter', 'butt', 10).paths, [])
   })
 
-  test('offsetShape() of a square', () => {
+  test('offsetRegion() of a square', () => {
     const square = {
       paths: [
         {
@@ -93,13 +93,13 @@ describe('Stroke outline', () => {
       ],
       fillRule: 'nonzero'
     }
-    const grown = offsetShape(square, 10, 'miter', 10)
+    const grown = offsetRegion(square, 10, 'miter', 10)
     equals(getRect(grown), [-10, -10, 120, 120])
     equals(Math.abs(getArea(grown.paths[0])), 120 * 120)
-    const shrunk = offsetShape(square, -10, 'miter', 10)
+    const shrunk = offsetRegion(square, -10, 'miter', 10)
     equals(getRect(shrunk), [10, 10, 80, 80])
     equals(Math.abs(getArea(shrunk.paths[0])), 80 * 80)
-    equals(offsetShape(square, 0, 'miter', 10), square, 'without a distance')
+    equals(offsetRegion(square, 0, 'miter', 10), square, 'without a distance')
   })
 
   test('offsetPath() of a line', () => {

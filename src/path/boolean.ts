@@ -46,7 +46,7 @@ import {
 } from '../internal.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'
 import type { Operator } from '../boolean/graph.ts'
-import type { ShapeData } from '../boolean/shape.ts'
+import type { RegionData } from '../boolean/region.ts'
 import type { PathItem } from './PathItem.ts'
 import type { ProfilePart } from './StrokeProfile.ts'
 
@@ -126,7 +126,7 @@ export function closePaths<T extends PathItem>(item: T): T {
 /*
  * Returns the path item as the plain description that the graph takes.
  */
-export function getShape(item: PathItem): ShapeData {
+export function getRegion(item: PathItem): RegionData {
   return {
     fillRule: item.fillRule,
     paths: getPaths(item).map(path => ({
@@ -143,10 +143,10 @@ export function getShape(item: PathItem): ShapeData {
 }
 
 /*
- * Returns the shape as a path item: a path, or a compound path of several.
+ * Returns the region as a path item: a path, or a compound path of several.
  */
-export function createPathItem({ paths, fillRule }: ShapeData): PathItem {
-  const create = ({ segments, closed }: ShapeData['paths'][number]) =>
+export function createPathItem({ paths, fillRule }: RegionData): PathItem {
+  const create = ({ segments, closed }: RegionData['paths'][number]) =>
     new Path({ segments, closed, insert: false })
   const item =
     paths.length === 1
@@ -182,7 +182,7 @@ export function tracePaths(operands: PathItem[], operator: Operator): Path[] {
   }
 
   const paths: Path[] = []
-  for (const traced of traceGraph(operands.map(getShape), operator)) {
+  for (const traced of traceGraph(operands.map(getRegion), operator)) {
     const path = new Path(Item.NO_INSERT)
     path.segments = traced.segments
     path.closed = true
