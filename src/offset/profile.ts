@@ -68,6 +68,10 @@ const { abs } = Math
 export class ProfileSweep extends Sweep<ProfilePart> {
   pens: StrokePens
   spans: Span[] = []
+  // The ends of the sides of the slivers left out last, with where they
+  // start, as the strips right after them start there instead, to meet the
+  // ones before them:
+  moves: [Point, Point][] = []
 
   constructor(path: PathData, pens: StrokePens, stroke: Stroke) {
     super(path, stroke)
@@ -357,14 +361,29 @@ export class ProfileSweep extends Sweep<ProfilePart> {
       s0 = s1
     }
     splits.sort((a, b) => a[0] - b[0])
+    // Moves the start of the side where a sliver left out ends to where it
+    // starts, so that it meets the strip before the sliver:
+    const moveStart = (side: Side) => {
+      const move = this.moves.find(([end]) =>
+        end.isClose(side[0][0], GEOMETRIC_EPSILON)
+      )
+      if (move) {
+        const { x, y } = move[1]
+        side[0][0] = [x, y]
+      }
+    }
+
     for (let i = 1, l = splits.length; i < l; i++) {
       const t0 = splits[i - 1][1]
       const t1 = splits[i][0]
       const strips = t1 - t0 > GEOMETRIC_EPSILON ? getStrips((t0 + t1) / 2) : []
+      const moves: [Point, Point][] = []
       for (let j = 0, m = strips.length; j < m; j++) {
         const motions = getMotions(strips[j])
         const from = fitSide(t => getEnd(t, j, 'from'), t0, t1, tolerance)
         const to = fitSide(t => getEnd(t, j, 'to'), t0, t1, tolerance)
+        moveStart(from)
+        moveStart(to)
         // Strips whose ends stand still sweep nothing, and the
         // points that stand still across them are only noise:
         if (
@@ -393,12 +412,23 @@ export class ProfileSweep extends Sweep<ProfilePart> {
             t1,
             tolerance
           )
+          moveStart(still)
           this.addStrip(from, still)
           this.addStrip(to, still)
-        } else {
-          this.addStrip(from, to)
+        } else if (!this.addStrip(from, to)) {
+          // The strips around a short sliver miss each other by its width,
+          // so the next one starts where it does. A longer one is a thin
+          // strip, whose gap is no wider than the outline may be off:
+          const ends = [from, to].map((side): [Point, Point] => [
+            new Point(side[side.length - 1][0]),
+            new Point(side[0][0])
+          ])
+          if (ends.every(([end, start]) => end.isClose(start, 2 * tolerance))) {
+            moves.push(...ends)
+          }
         }
       }
+      this.moves = moves
     }
   }
 
@@ -606,12 +636,15 @@ export class ProfileSweep extends Sweep<ProfilePart> {
 
   // Adds the strip between the two sides, resolved, unless it is a sliver
   // thinner than the tolerance, which only adds points so close to the
-  // others' that the union can't tell them apart:
-  addStrip(side1: Side, side2: Side) {
+  // others' that the union can't tell them apart, and returns whether it
+  // did:
+  addStrip(side1: Side, side2: Side): boolean {
     const strip = uniteRegions([createRegion(joinSides(side1, side2))])
-    if (!isThin(strip, this.stroke.tolerance)) {
+    const isStrip = !isThin(strip, this.stroke.tolerance)
+    if (isStrip) {
       this.areas.push(strip)
     }
+    return isStrip
   }
 }
 

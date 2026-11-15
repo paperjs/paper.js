@@ -673,6 +673,23 @@ describe('PathItem#offset() and #outline()', () => {
       { offset: 344.7, width: 1.27, aspect: 0.52, angle: 142 }
     ]
     equals(checkProfileOutline(paper, loop), [], 'continued loop')
+    // Where a sliver is left out in a tight turn, the strips around it still
+    // meet, and the union leaves no slit between them:
+    const sliverHook = new Path({
+      segments: [
+        [[1.96, 0.15], [0, 0], [0, 0]],
+        [[3.91, 0.19], [0.18, 0.08], [-0.18, -0.08]],
+        [[3.75, 4.35], [0, 0], [0, 0]]
+      ],
+      strokeWidth: 0.07,
+      strokeJoin: 'bevel',
+      strokeCap: 'butt',
+      insert: false
+    })
+    sliverHook.strokeProfile = [
+      { offset: 10.62, width: 0.37, aspect: 0.47, smooth: false }
+    ]
+    equals(checkProfileOutline(paper, sliverHook), [], 'sliver in a hook')
   })
 })
 
