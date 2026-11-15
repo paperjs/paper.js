@@ -478,17 +478,13 @@ export class ProfileSweep extends Sweep<ProfilePart> {
     const span1 = this.getSpan(offset, false)
     const span = this.getSpan(offset, true)
     const pen = this.getSpanPen(span, offset)
-    // Where the curves continue each other, their parts meet in
-    // the same points, and need no join:
+    const strips1 = this.getContacts(part1, 1, span1).strips
+    const strips2 = this.getContacts(part2, 0, span).strips
+    // Where the curves continue each other, their parts meet in the same
+    // points, and need no join:
     if (!isZero(cross) || tangent1.dot(tangent2) < 0) {
       if (join === 'round') {
-        this.addPen(
-          point,
-          pen,
-          this.getContacts(part1, 1, span1).strips.concat(
-            this.getContacts(part2, 0, span).strips
-          )
-        )
+        this.addPen(point, pen, strips1.concat(strips2))
       } else {
         // The side against the turn, see getContacts():
         const k = cross > 0 ? 1 : 0
@@ -560,6 +556,9 @@ export class ProfileSweep extends Sweep<ProfilePart> {
           )
         }
       }
+    } else if (!isMeeting(strips1, strips2)) {
+      // Where their parts don't meet, the pen covers the seam between them:
+      this.addPen(point, pen, strips1.concat(strips2))
     }
   }
 
@@ -622,6 +621,19 @@ function createPart(
   length: number
 ): ProfilePart {
   return { v, offset, length, curveLength: Bezier.getLength(v) }
+}
+
+// Whether the ends of the strips meet those of the strips after them:
+function isMeeting(strips1: Strip[], strips2: Strip[]): boolean {
+  return (
+    strips1.length === strips2.length &&
+    strips1.every(
+      ({ from, to }, i) => (
+        from.point.isClose(strips2[i].from.point, GEOMETRIC_EPSILON) &&
+        to.point.isClose(strips2[i].to.point, GEOMETRIC_EPSILON)
+      )
+    )
+  )
 }
 
 // The motions of the strip's ends across the line between them:
