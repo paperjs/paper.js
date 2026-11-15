@@ -10,8 +10,28 @@
  * All rights reserved.
  */
 
-// The boolean operations on plain descriptions of paths, without Paper.js's
-// items, as `paper/boolean`.
+/**
+ * The boolean operations on plain descriptions of paths, without the items of
+ * the library, imported as `paper/boolean`. A path is `{ segments, closed }`,
+ * with each segment as its point `[x, y]`, or as `[point, handleIn,
+ * handleOut]` with the handles relative to the point. A region is `{ paths,
+ * fillRule }`: the paths that are filled as one by the fill rule, `'nonzero'`
+ * or `'evenodd'`, with open paths closed by straight lines. The results have
+ * their segments as `[point, handleIn, handleOut]`.
+ *
+ * @example
+ * import { unite } from 'paper/boolean'
+ * const square = x => ({
+ *   paths: [{
+ *     segments: [[x, 0], [x + 100, 0], [x + 100, 100], [x, 100]],
+ *     closed: true
+ *   }],
+ *   fillRule: 'nonzero'
+ * })
+ * const union = unite([square(0), square(50)])
+ *
+ * @module paper/boolean
+ */
 import { Point } from '../basic/Point.ts'
 import { splitGraph } from './split.ts'
 import { traceRegions, uniteRegions } from './operations.ts'

@@ -10,8 +10,18 @@
  * All rights reserved.
  */
 
-// The offsets and stroke outlines of plain descriptions of paths, without
-// Paper.js's items, as `paper/offset`.
+/**
+ * The offsets and stroke outlines of plain descriptions of paths, without the
+ * items of the library, imported as `paper/offset`, with paths and regions
+ * as in {@link paper/boolean}.
+ *
+ * @example
+ * import { outline } from 'paper/offset'
+ * const line = { segments: [[0, 0], [100, 0]], closed: false }
+ * const stroke = outline([line], { width: 20, cap: 'round' })
+ *
+ * @module paper/offset
+ */
 import type { PathData, RegionData } from '../boolean/region.ts'
 import { offsetPath as offsetPathData, offsetRegion } from './offset.ts'
 import { outlineStroke } from './outline.ts'

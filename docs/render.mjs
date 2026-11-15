@@ -71,6 +71,7 @@ const sidebar = {
     'Key',
     'KeyEvent'
   ],
+  'Geometry': ['paper/boolean', 'paper/offset'],
   'JavaScript': ['PaperScope', 'PaperScript']
 }
 
@@ -132,6 +133,16 @@ class Reference {
           comment: module.comment,
           children: module.children
         }
+      } else if (module.name.startsWith('paper/')) {
+        // The entries of the geometry modules, as pages of their functions:
+        this.classes[module.name] = {
+          name: module.name,
+          kind: kinds.namespace,
+          comment: module.comment,
+          children: module.children?.filter(
+            child => child.kind === kinds.function
+          )
+        }
       } else {
         for (const child of module.children ?? []) {
           // Objects that serve as namespaces, such as Key and ChangeFlag:
@@ -184,7 +195,7 @@ class Reference {
   }
 
   getFileName(name) {
-    const fileName = name === '_global_' ? 'global' : name
+    const fileName = name === '_global_' ? 'global' : name.replace('/', '-')
     return this.isServer ? fileName.toLowerCase() : fileName
   }
 
@@ -741,10 +752,11 @@ class Reference {
       case 'reference': {
         const name = type.name.replace(/Like$/, '')
         // Describe type aliases by what they stand for, but `PointLike` and
-        // the like by their class:
+        // the like by their class. TypeDoc gives aliases of object literals,
+        // such as `RegionData`, children instead of a type:
         const alias = this.byId[type.target]
         if (alias?.kind === kinds.typeAlias && !this.classes[name]) {
-          return this.getTypeNames(alias.type)
+          return alias.type ? this.getTypeNames(alias.type) : ['Object']
         }
         // The types that the sources don't export, such as `Handler` or
         // `BoundsOptions`, by what their names say:
@@ -795,7 +807,7 @@ class Reference {
       text = 'any value'
     }
     return alias.replace(
-      /(^|[^a-z$0-9_#.:^-])([*|a-z$0-9_#.:^-]+)(\([^)]*\))*($|[^a-z$0-9_#.:^-])/i,
+      /(^|[^a-z$0-9_#.:^/-])([*|a-z$0-9_#.:^/-]+)(\([^)]*\))*($|[^a-z$0-9_#.:^/-])/i,
       (match, before, names, parameters, after) => {
         const links = names
           .split('|')

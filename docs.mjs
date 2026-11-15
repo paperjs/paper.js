@@ -29,6 +29,8 @@ const app = await Application.bootstrap({
     'src/index.ts',
     'src/paperscript/index.ts',
     'src/hosted/index.ts',
+    'src/boolean/index.ts',
+    'src/offset/index.ts',
     'src/docs/global.ts'
   ].map(file => path.join(root, file)),
   tsconfig: path.join(root, 'tsconfig.json'),
