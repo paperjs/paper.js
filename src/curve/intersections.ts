@@ -52,11 +52,14 @@ export type IntersectionOptions = {
 }
 
 // The two curves on their way through the functions: their intersections as
-// they are found, and the ends that they share:
+// they are found, the ends that they share, the tolerance, and the calls of
+// addCurveIntersections() so far:
 type Pair = {
   intersections: Intersection[]
   sharesStart: boolean
   sharesEnd: boolean
+  tolerance?: number
+  calls: number
 }
 
 // Returns the intersections of the two curves, and the ends of their
@@ -67,7 +70,13 @@ export function getIntersections(
   options?: IntersectionOptions
 ): Intersection[] {
   const { sharesStart, sharesEnd, tolerance } = options ?? {}
-  const pair: Pair = { intersections: [], sharesStart, sharesEnd }
+  const pair: Pair = {
+    intersections: [],
+    sharesStart,
+    sharesEnd,
+    tolerance,
+    calls: 0
+  }
   const { min, max, abs } = Math
   const minX1 = min(v1[0], v1[2], v1[4], v1[6])
   const maxX1 = max(v1[0], v1[2], v1[4], v1[6])
@@ -124,8 +133,8 @@ export function getIntersections(
           lineTolerance
         )
       } else {
-        // recursion, calls, tMin, tMax, uMin, uMax:
-        addCurveIntersections(v1, v2, pair, false, 0, 0, 0, 1, 0, 1, tolerance)
+        // recursion, tMin, tMax, uMin, uMax:
+        addCurveIntersections(v1, v2, pair, false, 0, 0, 1, 0, 1)
       }
       // Handle the special case where the start- / end-points of one
       // curve lie on the other curve, within the tolerance if one is
@@ -176,7 +185,8 @@ export function getSelfIntersection(
   const pair: Pair = {
     intersections: [],
     sharesStart: isClosed,
-    sharesEnd: false
+    sharesEnd: false,
+    calls: 0
   }
   const info = classify(v)
   if (info.type === 'loop') {
@@ -346,18 +356,17 @@ function addCurveIntersections(
   pair: Pair,
   flip: boolean,
   recursion: number,
-  calls: number,
   tMin: number,
   tMax: number,
   uMin: number,
-  uMax: number,
-  tolerance: number
-): number {
+  uMax: number
+) {
   // Avoid deeper recursion, by counting the total amount of recursions,
   // as well as the total amount of calls, to avoid massive call-trees as
   // suggested by @iconexperience in #904#issuecomment-225283430.
   // See also: #565 #899 #1074
-  if (++calls >= 4096 || ++recursion >= 40) return calls
+  if (++pair.calls >= 4096 || ++recursion >= 40) return
+  const { tolerance } = pair
   // Use an epsilon smaller than CURVETIME_EPSILON to compare curve-time
   // parameters in fat-line clipping code.
   const fatLineEpsilon = 1e-9
@@ -407,7 +416,7 @@ function addCurveIntersections(
       null
     )
   )
-    return calls
+    return
   // tMin and tMax are within the range (0, 1). Project it back to the
   // original parameter range for v2.
   let tMinNew = tMin + (tMax - tMin) * tMinClip
@@ -461,45 +470,40 @@ function addCurveIntersections(
             tMinNew = t
             uMax = u
           }
-          calls = addCurveIntersections(
+          addCurveIntersections(
             v1, v2, pair, flip,
-            recursion, calls, tMinNew, tMaxNew, uMin, uMax,
-            tolerance
+            recursion, tMinNew, tMaxNew, uMin, uMax
           )
         }
       } else if (!(
         tolerance &&
         addImplicitIntersections(
           v1, v2, pair, flip,
-          tMinNew, tMaxNew, uMin, uMax, tolerance
+          tMinNew, tMaxNew, uMin, uMax
         )
       )) {
         // Subdivide the curve which has converged the least.
         if (tMaxNew - tMinNew > uDiff) {
           const parts = subdivide(v1, 0.5)
           const t = (tMinNew + tMaxNew) / 2
-          calls = addCurveIntersections(
+          addCurveIntersections(
             v2, parts[0], pair, !flip,
-            recursion, calls, uMin, uMax, tMinNew, t,
-            tolerance
+            recursion, uMin, uMax, tMinNew, t
           )
-          calls = addCurveIntersections(
+          addCurveIntersections(
             v2, parts[1], pair, !flip,
-            recursion, calls, uMin, uMax, t, tMaxNew,
-            tolerance
+            recursion, uMin, uMax, t, tMaxNew
           )
         } else {
           const parts = subdivide(v2, 0.5)
           const u = (uMin + uMax) / 2
-          calls = addCurveIntersections(
+          addCurveIntersections(
             parts[0], v1, pair, !flip,
-            recursion, calls, uMin, u, tMinNew, tMaxNew,
-            tolerance
+            recursion, uMin, u, tMinNew, tMaxNew
           )
-          calls = addCurveIntersections(
+          addCurveIntersections(
             parts[1], v1, pair, !flip,
-            recursion, calls, u, uMax, tMinNew, tMaxNew,
-            tolerance
+            recursion, u, uMax, tMinNew, tMaxNew
           )
         }
       }
@@ -509,23 +513,20 @@ function addCurveIntersections(
       // here, to prevent a regression from happening, see #1638.
       // Maybe @iconexperience could shed some light on this.
       if (uDiff === 0 || uDiff >= fatLineEpsilon) {
-        calls = addCurveIntersections(
+        addCurveIntersections(
           v2, v1, pair, !flip,
-          recursion, calls, uMin, uMax, tMinNew, tMaxNew,
-          tolerance
+          recursion, uMin, uMax, tMinNew, tMaxNew
         )
       } else {
         // The interval on the other curve is already tight enough,
         // therefore we keep iterating on the same curve.
-        calls = addCurveIntersections(
+        addCurveIntersections(
           v1, v2, pair, flip,
-          recursion, calls, tMinNew, tMaxNew, uMin, uMax,
-          tolerance
+          recursion, tMinNew, tMaxNew, uMin, uMax
         )
       }
     }
   }
-  return calls
 }
 
 // Adds the intersections of the piece v1 with the piece v2 as the roots of
@@ -546,9 +547,9 @@ function addImplicitIntersections(
   tMin: number,
   tMax: number,
   uMin: number,
-  uMax: number,
-  tolerance: number
+  uMax: number
 ): boolean {
+  const { tolerance } = pair
   const x0 = v2[0]
   const y0 = v2[1]
   let size = 0
