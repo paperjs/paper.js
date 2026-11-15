@@ -81,13 +81,11 @@ export function offsetPathItem(
     ).reduce() as PathItem
   } else {
     // Open paths move to the side of their normals:
+    const [open] = getShape(path).paths
     result = new CompoundPath({
-      children: path.isEmpty()
-        ? []
-        : offsetPath(getShape(path).paths[0], distance, join, miterLimit).map(
-            ({ segments, closed }) =>
-              new Path({ segments, closed, insert: false })
-          ),
+      children: offsetPath(open, distance, join, miterLimit).map(
+        ({ segments, closed }) => new Path({ segments, closed, insert: false })
+      ),
       insert: false
     }).reduce() as PathItem
   }
