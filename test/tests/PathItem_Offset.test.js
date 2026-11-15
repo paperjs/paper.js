@@ -647,6 +647,32 @@ describe('PathItem#offset() and #outline()', () => {
       { offset: 132.77, width: 0.25, aspect: 0.15, angle: 352.02 }
     ]
     equals(checkProfileOutline(paper, turning), [], 'narrow strips')
+    // Where a curve continues a loop, the parts on both sides of the joint
+    // can miss each other, and the union leaves no slit between them:
+    const loop = new Path({
+      segments: [
+        [[286.58, 148.84], [0, 0], [9.46, -99.55]],
+        [[286.58, 148.84], [0, 0], [538.87, 263.85]],
+        [[188.61, 460.4], [186.08, -570.42], [0, 0]],
+        [[188.61, 460.4], [-85.69, 51.55], [85.69, -51.55]]
+      ],
+      closed: true,
+      strokeWidth: 136.13,
+      strokeJoin: 'round',
+      strokeCap: 'round',
+      insert: false
+    })
+    loop.strokeProfile = [
+      {
+        offset: 875.18,
+        width: 0.06,
+        aspect: 0.32,
+        angle: -171.69,
+        smooth: false
+      },
+      { offset: 344.7, width: 1.27, aspect: 0.52, angle: 142 }
+    ]
+    equals(checkProfileOutline(paper, loop), [], 'continued loop')
   })
 })
 
