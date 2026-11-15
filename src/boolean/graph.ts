@@ -26,8 +26,12 @@ import { Point } from '../basic/Point.ts'
 import * as Bezier from '../curve/index.ts'
 import { getBounds, getSegments, getValues, hasHandles } from './region.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'
-import type { BezierValues, Intersection } from '../curve/index.ts'
-import type { RegionData } from './region.ts'
+import type {
+  BezierValues,
+  Intersection,
+  SegmentValues
+} from '../curve/index.ts'
+import type { PathData, RegionData } from './region.ts'
 
 // A path of the result, with the part of an operand's curve that each of its
 // segments starts: the curve by the indices of its operand, its path there
@@ -47,6 +51,16 @@ export type Source = {
 
 export type Operator = (inside1: boolean, inside2: boolean) => boolean
 
+// A piece of a path that splitGraph() returns, with whether it lies inside
+// the region, the index of the path that it comes from, and where it starts
+// along it. A path that isn't split comes back whole:
+export type SplitPiece = PathData & {
+  isInside: boolean
+  source: number
+  offset: number
+  isWhole: boolean
+}
+
 // The planar graph of createGraph(), with points stored by their index in its
 // list of cut points, and vertices, edges and half-edges by their index:
 type Cut = { time: number; point: number }
@@ -59,6 +73,17 @@ type Vertex = {
   isEnd: boolean
   point: number
   outgoing: number[]
+}
+
+// A piece of a curve between two of its cuts, by the index of the curve, as
+// the edge that it became, with its times on the curve, and its values with
+// the ends at the edge's vertices:
+type Piece = {
+  curve: number
+  edge: number
+  time1: number
+  time2: number
+  values: number[]
 }
 
 type Edge = {
@@ -116,6 +141,7 @@ type GraphCurve = {
 export type Graph = {
   curves: GraphCurve[]
   values: BezierValues[]
+  pieces: Piece[][]
   vertices: Vertex[]
   edges: Edge[]
   halfEdges: HalfEdge[]
@@ -143,12 +169,16 @@ const { min, max, abs } = Math
  * vertices, the pieces of curves between them edges, and the edges bound
  * faces with a known winding for each operand.
  *
- * @param operands one or two operands, with closed paths only
+ * @param operands one or two operands, whose open paths are filled as if
+ *     closed by straight lines
+ * @param isOpen whether the paths of the first operand stay open, as
+ *     splitGraph() splits them
  * @return the graph's vertices, edges, half-edges and faces
  */
-export function createGraph(operands: RegionData[]): Graph {
+export function createGraph(operands: RegionData[], isOpen?: boolean): Graph {
   const graph: Graph = {
-    ...readCurves(operands),
+    ...readCurves(operands, isOpen),
+    pieces: [],
     vertices: [],
     edges: [],
     halfEdges: [],
@@ -242,56 +272,166 @@ export function traceGraph(
       ) {
         start++
       }
-      // Join the pieces of the same curve that follow each other
-      // back into one part of it:
-      const segments: TracedPath['segments'] = []
-      const sources: Source[] = []
-      let handleIn = [0, 0]
-      for (let j = 0; j < length;) {
-        const first = contour[(start + j) % length]
-        let last = first
-        while (
-          ++j < length &&
-          isContinued(last, contour[(start + j) % length])
-        ) {
-          last = contour[(start + j) % length]
-        }
-        const { edge } = halfEdges[first]
-        const { isStraight } = edge
-        const time1 = getTimes(first)[0]
-        const time2 = getTimes(last)[1]
-        const v =
-          first === last
-            ? halfEdges[first].values
-            : getPart(
-                graph.values[edge.curve],
-                !isStraight,
-                time1,
-                time2,
-                graph.vertices[halfEdges[first].from],
-                graph.vertices[halfEdges[last].to]
-              )
-        segments.push([
-          [v[0], v[1]],
-          handleIn,
-          isStraight ? [0, 0] : [v[2] - v[0], v[3] - v[1]]
-        ])
-        handleIn = isStraight ? [0, 0] : [v[4] - v[6], v[5] - v[7]]
-        const { operand, path, curve } = graph.curves[edge.curve]
-        sources.push({ operand, path, curve, time1, time2 })
-      }
-      segments[0][1] = handleIn
-      paths.push({ segments, sources })
+      const { segments, parts } = joinPieces(
+        graph,
+        Array.from({ length }, (_, j) => {
+          const index = contour[(start + j) % length]
+          const [time1, time2] = getTimes(index)
+          const { edge, values } = halfEdges[index]
+          return { curve: edge.curve, edge: index >> 1, time1, time2, values }
+        })
+      )
+      // The contour ends where it starts:
+      segments[0][1] = segments.pop()[1]
+      paths.push({
+        segments,
+        sources: parts.map(({ curve, time1, time2 }) => {
+          const { operand, path, curve: index } = graph.curves[curve]
+          return { operand, path, curve: index, time1, time2 }
+        })
+      })
     }
   }
   return paths
+}
+
+/**
+ * Splits the paths where they cross the outline of the region, into pieces
+ * inside of it and outside, in their order along the paths. The graph cuts
+ * the paths as it does for the boolean operations, so it decides as they do
+ * where paths touch the outline or run along it. The pieces along it count
+ * as inside, but are split from the pieces next to them.
+ *
+ * @param paths the paths to split, open or closed
+ * @param region the region to split them by
+ * @return the pieces of the paths
+ */
+export function splitGraph(
+  paths: PathData[],
+  region: RegionData
+): SplitPiece[] {
+  const graph = createGraph([{ paths, fillRule: 'nonzero' }, region], true)
+  const { curves, values, pieces, halfEdges, nonZeros } = graph
+  const isInside = (index: number) => {
+    const winding = halfEdges[index].face.windings[1]
+    return nonZeros[1] ? !!winding : !!(winding & 1)
+  }
+  // The side of the outline that a piece lies on, by how many of its sides
+  // are inside the region: 2 inside, 0 outside, or 1 along it:
+  const getSide = ({ edge }: Piece) => (
+    Number(isInside(2 * edge)) + Number(isInside(2 * edge + 1))
+  )
+  const result: SplitPiece[] = []
+  let index = 0
+  paths.forEach((path, source) => {
+    // The pieces of the path's curves in their order, joined into stretches
+    // on the same side, also around the end of closed paths:
+    const first = index
+    while (curves[index]?.operand === 0 && curves[index].path === source) {
+      index++
+    }
+    const offsets: number[] = []
+    let length = 0
+    for (let i = first; i < index; i++) {
+      offsets[i] = length
+      length += Bezier.getLength(values[i])
+    }
+    const stretches: { side: number; pieces: Piece[] }[] = []
+    for (let i = first; i < index; i++) {
+      for (const piece of pieces[i]) {
+        const side = getSide(piece)
+        const last = stretches[stretches.length - 1]
+        if (last?.side === side) {
+          last.pieces.push(piece)
+        } else {
+          stretches.push({ side, pieces: [piece] })
+        }
+      }
+    }
+    const last = stretches[stretches.length - 1]
+    if (
+      path.closed &&
+      stretches.length > 1 &&
+      stretches[0].side === last.side
+    ) {
+      stretches[0].pieces.unshift(...last.pieces)
+      stretches.pop()
+    }
+    for (const { side, pieces } of stretches) {
+      const isWhole = stretches.length === 1
+      const [{ curve, time1 }] = pieces
+      result.push({
+        ...(
+          isWhole
+            ? path
+            : {
+                segments: joinPieces(graph, pieces).segments,
+                closed: false
+              }
+        ),
+        isInside: side > 0,
+        source,
+        offset: isWhole
+          ? 0
+          : offsets[curve] + Bezier.getLength(values[curve], 0, time1),
+        isWhole
+      })
+    }
+  })
+  return result
+}
+
+// Returns the segments along the pieces, from the start of the first one to the
+// end of the last one, with the pieces of the same curve that follow each
+// other joined back into one part of it, and these parts:
+function joinPieces(graph: Graph, pieces: Piece[]) {
+  const segments: SegmentValues[] = []
+  const parts: { curve: number; time1: number; time2: number }[] = []
+  let handleIn = [0, 0]
+  for (let i = 0, l = pieces.length; i < l;) {
+    const first = pieces[i]
+    let last = first
+    while (
+      ++i < l &&
+      pieces[i].curve === first.curve &&
+      pieces[i].time1 === last.time2
+    ) {
+      last = pieces[i]
+    }
+    const { curve, time1 } = first
+    const { time2 } = last
+    const { hasHandles } = graph.curves[curve]
+    const v =
+      first === last
+        ? first.values
+        : getPart(
+            graph.values[curve],
+            hasHandles,
+            time1,
+            time2,
+            { x: first.values[0], y: first.values[1] },
+            { x: last.values[6], y: last.values[7] }
+          )
+    segments.push([
+      [v[0], v[1]],
+      handleIn,
+      hasHandles ? [v[2] - v[0], v[3] - v[1]] : [0, 0]
+    ])
+    handleIn = hasHandles ? [v[4] - v[6], v[5] - v[7]] : [0, 0]
+    parts.push({ curve, time1, time2 })
+    if (i === l) {
+      segments.push([[v[6], v[7]], handleIn, [0, 0]])
+    }
+  }
+  return { segments, parts }
 }
 
 // Read the curves of the operands' paths as their values, each with its
 // neighbors and where it comes from, along with the fill rules, and the
 // distance under which points count as the same:
 function readCurves(
-  operands: RegionData[]
+  operands: RegionData[],
+  isOpen?: boolean
 ): Pick<Graph, 'curves' | 'values' | 'nonZeros' | 'epsilon'> {
   const curves: GraphCurve[] = []
   const values: BezierValues[] = []
@@ -303,14 +443,18 @@ function readCurves(
     nonZeros.push(operand.fillRule === 'nonzero')
     bounds = bounds ? bounds.unite(getBounds(operand)) : getBounds(operand)
     for (let j = 0, k = paths.length; j < k; j++) {
-      const { closed } = paths[j]
+      // Open paths are filled as if closed by a straight line, unless the
+      // first operand's stay open:
+      const isClosing = !paths[j].closed && !(isOpen && !i)
+      const closed = paths[j].closed || isClosing
       const segments = getSegments(paths[j])
       const count = segments.length
       const first = curves.length
       for (let m = 0, n = closed ? count : count - 1; m < n; m++) {
         const segment1 = segments[m]
         const segment2 = segments[(m + 1) % count]
-        values.push(getValues(segment1, segment2))
+        const straight = isClosing && m === count - 1
+        values.push(getValues(segment1, segment2, straight))
         curves.push({
           next: null,
           previous: null,
@@ -318,7 +462,7 @@ function readCurves(
           operand: i,
           path: j,
           curve: m,
-          hasHandles: hasHandles(segment1, segment2)
+          hasHandles: !straight && hasHandles(segment1, segment2)
         })
       }
       // The curves of closed paths follow each other around their ends:
@@ -620,9 +764,9 @@ function mergeVertices(graph: Graph, points: Points, collisions: number[][]) {
 // change in winding of each operand when crossing them from right to
 // left. Coincident pieces become one edge that adds up their changes:
 function createEdges(graph: Graph, points: Points) {
-  const { curves, edges, epsilon } = graph
+  const { curves, edges, pieces, epsilon } = graph
   const { cuts } = points
-  const edgesByVertex: Edge[][] = []
+  const edgesByVertex: number[][] = []
 
   function getCoincidence(edge1: Edge, edge2: Edge): number {
     // Compare points along edge2 to edge1, and return the direction
@@ -639,13 +783,15 @@ function createEdges(graph: Graph, points: Points) {
     return times[0] < times[2] ? 1 : -1
   }
 
-  function addEdge(edge: Edge) {
+  // Adds the edge, or merges it into one that it coincides with, and returns
+  // the index of the edge that it became:
+  function addEdge(edge: Edge): number {
     // Look up the edges between the same vertices by the first one:
     const first = min(edge.from, edge.to)
     const last = max(edge.from, edge.to)
     const list = (edgesByVertex[first] ??= [])
     for (let i = 0, l = list.length; i < l; i++) {
-      const other = list[i]
+      const other = edges[list[i]]
       const direction = (
         max(other.from, other.to) === last &&
         getCoincidence(other, edge)
@@ -654,16 +800,18 @@ function createEdges(graph: Graph, points: Points) {
         for (let j = 0; j < 2; j++) {
           other.windings[j] += direction * edge.windings[j]
         }
-        return
+        return list[i]
       }
     }
-    list.push(edge)
+    list.push(edges.length)
     edges.push(edge)
+    return edges.length - 1
   }
 
   for (let i = 0, l = curves.length; i < l; i++) {
     const list = cuts[i] // Sorted in mergeVertices().
     const isStraight = !curves[i].hasHandles
+    pieces[i] = []
     let prev = list[0]
     for (let j = 1, k = list.length; j < k; j++) {
       const cut = list[j]
@@ -676,7 +824,7 @@ function createEdges(graph: Graph, points: Points) {
       if (from !== to || Bezier.getLength(part) >= 4 * epsilon) {
         const windings = [0, 0]
         windings[curves[i].operand] = 1
-        addEdge({
+        const edge = addEdge({
           values: part,
           from,
           to,
@@ -685,6 +833,13 @@ function createEdges(graph: Graph, points: Points) {
           curve: i,
           time1: prev.time,
           time2: cut.time
+        })
+        pieces[i].push({
+          curve: i,
+          edge,
+          time1: prev.time,
+          time2: cut.time,
+          values: part
         })
       }
       prev = cut
