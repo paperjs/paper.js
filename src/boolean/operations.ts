@@ -15,6 +15,7 @@
 import { Point } from '../basic/Point.ts'
 import { Rectangle } from '../basic/Rectangle.ts'
 import { traceGraph } from './graph.ts'
+import type { Operator } from './graph.ts'
 import { getArea, getBounds, reduceShape } from './shape.ts'
 import type { ShapeData } from './shape.ts'
 
@@ -59,15 +60,33 @@ function combine(entries: Entry[]): ShapeData {
   }
 }
 
-// Unites the two shapes, or resolves the first one on its own, reducing them
-// before and the result after, and leaving out paths without an area:
+// Subtracts the second shape from the first one:
+export function subtractShapes(
+  shape1: ShapeData,
+  shape2: ShapeData
+): ShapeData {
+  return trace(shape1, shape2, (inside1, inside2) => inside1 && !inside2)
+}
+
+// Unites the two shapes, or resolves the first one on its own:
 function unite(shape1: ShapeData, shape2: ShapeData | null): ShapeData {
+  return trace(shape1, shape2, (inside1, inside2) => inside1 || inside2)
+}
+
+// Traces the areas of the shapes that the operator includes, reducing them
+// before and the result after, as path items are, and leaving out paths
+// without an area:
+function trace(
+  shape1: ShapeData,
+  shape2: ShapeData | null,
+  operator: Operator
+): ShapeData {
   const operands = [reduceShape(shape1)]
   if (shape2) {
     operands.push(reduceShape(shape2))
   }
   const paths = []
-  for (const { segments } of traceGraph(operands, (a, b) => a || b)) {
+  for (const { segments } of traceGraph(operands, operator)) {
     const path = { segments, closed: true }
     if (getArea(path) !== 0) {
       paths.push(path)

@@ -12,6 +12,7 @@
 
 import { describe } from 'vitest'
 import { outlineStroke } from '../../src/offset/outline.ts'
+import { offsetPath, offsetShape } from '../../src/offset/offset.ts'
 import { getArea, getBounds } from '../../src/boolean/shape.ts'
 import { equals, test } from '../helpers.js'
 
@@ -80,5 +81,40 @@ describe('Stroke outline', () => {
 
   test('outlineStroke() without paths', () => {
     equals(outlineStroke([], 10, 'miter', 'butt', 10).paths, [])
+  })
+
+  test('offsetShape() of a square', () => {
+    const square = {
+      paths: [
+        {
+          segments: [[0, 0], [100, 0], [100, 100], [0, 100]],
+          closed: true
+        }
+      ],
+      fillRule: 'nonzero'
+    }
+    const grown = offsetShape(square, 10, 'miter', 10)
+    equals(getRect(grown), [-10, -10, 120, 120])
+    equals(Math.abs(getArea(grown.paths[0])), 120 * 120)
+    const shrunk = offsetShape(square, -10, 'miter', 10)
+    equals(getRect(shrunk), [10, 10, 80, 80])
+    equals(Math.abs(getArea(shrunk.paths[0])), 80 * 80)
+    equals(offsetShape(square, 0, 'miter', 10), square, 'without a distance')
+  })
+
+  test('offsetPath() of a line', () => {
+    // The normals of a line to the right point up, to negative y, and a
+    // positive distance moves it to their side:
+    const getLines = paths =>
+      paths.map(({ segments, closed }) => [
+        segments.map(([point]) => point),
+        closed
+      ])
+    equals(getLines(offsetPath(line, 10, 'miter', 10)), [
+      [[[0, -10], [100, -10]], false]
+    ])
+    equals(getLines(offsetPath(line, -10, 'miter', 10)), [
+      [[[0, 10], [100, 10]], false]
+    ])
   })
 })
