@@ -586,19 +586,19 @@ export class CurveLocation extends Base {
   }
 
   static {
-    // Inject the evaluators at the location's curve-time, next to #point.
-    // NOTE: (For easier searching): This loop produces:
+    // Inject the evaluators at the location's curve-time, next to #point:
     // tangent, normal, weightedTangent, weightedNormal, curvature
-    for (const key of [
-      'tangent', 'normal', 'weightedTangent', 'weightedNormal', 'curvature'
-    ]) {
-      const evaluate = `get${capitalize(key)}AtTime`
-      inject(this.prototype, {
-        get [key]() {
-          const { curve, time } = this
-          return time != null && curve ? curve[evaluate](time) : null
-        }
-      })
+    for (const key of Object.keys(Bezier.evaluators)) {
+      // The point is known already:
+      if (key !== 'point') {
+        const evaluate = `get${capitalize(key)}AtTime`
+        inject(this.prototype, {
+          get [key]() {
+            const { curve, time } = this
+            return time != null && curve ? curve[evaluate](time) : null
+          }
+        })
+      }
     }
   }
 }
