@@ -2691,8 +2691,9 @@ export class Path extends PathItem {
    * {@link PathItem#resolveCrossings()} return paths with the profile
    * of each path that they run along, with a step where two of them
    * meet, and {@link PathItem#offset()} carries each stop over along
-   * its normal. {@link PathItem#interpolate()} and SVG export return
-   * paths without the profile.
+   * its normal. {@link PathItem#interpolate()} blends the profiles of
+   * both paths at the stops of each. SVG export returns paths without the
+   * profile.
    *
    * @example
    * var path = Path.line([20, 50], [180, 50]);

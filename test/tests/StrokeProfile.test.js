@@ -390,6 +390,38 @@ describe('StrokeProfile', () => {
     equals([second.aspect, second.angle], [1, 0])
   })
 
+  test('Path#interpolate() blends the profiles at the stops of both', () => {
+    const from = createTaper()
+    const to = new Path({
+      segments: [[0, 0], [400, 0]],
+      strokeProfile: [{ offset: 200, width: 3, smooth: false }]
+    })
+    const path = new Path()
+    path.interpolate(from, to, 0.5)
+    equals(getOffsets(path), [0, 150, 300])
+    equals(
+      path.strokeProfile.map(stop => [stop.width, stop.smooth]),
+      [[1.75, false], [2.125, false], [2.5, false]]
+    )
+  })
+
+  test('Path#interpolate() blends steps with paths without profiles', () => {
+    const from = new Path({
+      segments: [[0, 0], [200, 0]],
+      strokeProfile: [
+        { offset: 100, width: 1 },
+        { offset: 100, width: 2 }
+      ]
+    })
+    const path = new Path()
+    path.interpolate(from, new Path([[0, 0], [200, 0]]), 0.5)
+    equals(getOffsets(path), [100, 100])
+    equals(
+      path.strokeProfile.map(stop => [stop.width, stop.aspect]),
+      [[1, null], [1.5, null]]
+    )
+  })
+
   test('Path#join() of the ends closes the profile around them', () => {
     const path = createTaper([[0, 0], [100, 0], [100, 100], [0, 0]])
     path.strokeProfile = [

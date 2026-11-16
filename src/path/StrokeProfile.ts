@@ -324,6 +324,56 @@ export function getStrokeProfileAt(
 }
 
 /**
+ * Returns the stops of the profiles of two paths with the same segments,
+ * blended by the factor, see {@link PathItem#interpolate()}: at the indices
+ * of the stops of both, with the values of both profiles there blended, a
+ * step where either has one, and smooth where all stops there are. Paths
+ * without a profile count as drawn with the defaults.
+ *
+ * @private
+ */
+export function interpolateStrokeProfiles(
+  from: Path,
+  to: Path,
+  factor: number
+): StrokeProfileStopProps[] {
+  const paths = [from, to]
+  const entries = paths.map(path => getEntries(path))
+  const stops = paths
+    .flatMap(path => path._strokeProfile?._stops ?? [])
+    .sort((a, b) => a._index - b._index)
+  const result = []
+  for (let i = 0, l = stops.length; i < l;) {
+    const index = stops[i]._index
+    const group = []
+    while (i < l && stops[i]._index === index) {
+      group.push(stops[i++])
+    }
+    const isStep = paths.some(
+      path => group.filter(stop => stop._path === path).length > 1
+    )
+    const smooth = group.every(stop => stop._smooth)
+    for (const after of isStep ? [false, true] : [true]) {
+      const [values1, values2] = paths.map((path, j) => {
+        const offset = path._strokeProfile?.getOffsetAt(index) ?? 0
+        return getValues(entries[j], offset, path.length, path._closed, after)
+      })
+      const stop = { index, smooth }
+      for (const [key, value] of Object.entries(defaults)) {
+        const value1 = values1[key]
+        const value2 = values2[key]
+        stop[key] =
+          value1 == null && value2 == null
+            ? null
+            : (1 - factor) * (value1 ?? value) + factor * (value2 ?? value)
+      }
+      result.push(stop)
+    }
+  }
+  return result
+}
+
+/**
  * Takes the stroke profile off the path, as entries by offset, for the
  * methods that move it by offsets, see {@link setStrokeProfileRuns()}.
  *
