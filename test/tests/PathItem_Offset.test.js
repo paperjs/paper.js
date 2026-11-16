@@ -882,6 +882,27 @@ describe('PathItem#offset() and #outline()', () => {
       { offset: 54.72, width: 0.04, aspect: 1.21, angle: 95.79, smooth: false }
     ]
     equals(checkProfileOutline(paper, foldBack), [], 'still point folding back')
+    // Where one end of the pen changes its motion twice between two samples,
+    // around a change of the other end, both changes are found:
+    const doubleChange = new Path({
+      segments: [
+        [[459.42667, 248.47858], [0, 0], [0, 0]],
+        [[432.27138, 279.60607], [0, 0], [0, 0]],
+        [[424.22235, 311.17], [0, 0], [0, 0]],
+        [[426.09466, 326.13559], [0, 0], [0.01516, 0.82854]],
+        [[424.48318, 325.42584], [-0.44616, -0.38138], [0, 0]]
+      ],
+      strokeWidth: 7.87,
+      strokeJoin: 'round',
+      strokeCap: 'round',
+      insert: false
+    })
+    doubleChange.strokeProfile = [
+      { offset: 92.11249013439037, width: 2.48, angle: -92.54, smooth: false },
+      { offset: 89.90947251479375, width: 1.21, aspect: 0.07 },
+      { offset: 54.72, width: 0.04, aspect: 1.21, angle: 95.79, smooth: false }
+    ]
+    equals(checkProfileOutline(paper, doubleChange), [], 'double change')
   })
 })
 
