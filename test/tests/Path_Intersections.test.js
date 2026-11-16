@@ -913,4 +913,24 @@ describe('Path Intersections', () => {
       [true, true]
     )
   })
+
+  test('Crossings at a shallow angle at large coordinates', () => {
+    // Clipping converges on a piece of a few ulps here, too short to give
+    // the fat line a direction, which must still find the crossing in both
+    // orders of the curves:
+    const curve1 = new Curve(
+      [52110.447379973215, 20357.04195930231],
+      [17.564034853232442, 67.0922279211627],
+      [-27.212472897939733, -63.8618192916183],
+      [52175.84813594728, 20554.570391549118]
+    )
+    const curve2 = new Curve(
+      [52175.458494306666, 20553.67660507384],
+      [2.0354461388706113, 4.464849594933185],
+      [-2.3942434014752507, -4.277177632735402],
+      [52182.322812749786, 20566.72692031201]
+    )
+    equals(curve1.getIntersections(curve2).length, 1, 'curve1 with curve2')
+    equals(curve2.getIntersections(curve1).length, 1, 'curve2 with curve1')
+  })
 })
