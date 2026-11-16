@@ -12,6 +12,7 @@
 
 import { describe } from 'vitest'
 import paper, { CompoundPath, Curve, Path, Point, Shape, Size } from 'paper'
+import { getIntersections } from '../../src/curve/intersections.ts'
 import { compareBoolean, equals, test } from '../helpers.js'
 
 describe('Path Intersections', () => {
@@ -932,5 +933,23 @@ describe('Path Intersections', () => {
     )
     equals(curve1.getIntersections(curve2).length, 1, 'curve1 with curve2')
     equals(curve2.getIntersections(curve1).length, 1, 'curve2 with curve1')
+  })
+
+  test('Crossings at a shallow angle where clipping converges on both curves', () => {
+    // Both pieces converge on the crossing from one side, so the end of one
+    // lies on the other's fat line, which it misses by rounding only. The
+    // exact values of the curves matter here:
+    const v1 = [
+      158.95574048259405, 293.32883540087334, 202.6636544217361,
+      256.3447267820424, 246.54009376524968, 219.47613061237016,
+      292.32437711683207, 185.06627940004896
+    ]
+    const v2 = [
+      71.1784469456977, 369.00371230860617, 99.41152421437033,
+      342.62770405322385, 129.0150455663966, 317.7211460688479,
+      158.96133407685147, 293.3241913228961
+    ]
+    equals(getIntersections(v1, v2).length, 1, 'v1 with v2')
+    equals(getIntersections(v2, v1).length, 1, 'v2 with v1')
   })
 })

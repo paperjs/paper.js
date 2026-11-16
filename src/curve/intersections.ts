@@ -407,6 +407,14 @@ function addCurveIntersections(
   const dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7])
   // Get the top and bottom parts of the convex-hull
   const [top, bottom] = getConvexHull(dp0, dp1, dp2, dp3)
+  // Where both pieces converge on a crossing from one side, the first one
+  // ends on the fat line, and misses it by the rounding of its distances.
+  // So only a piece further away than their resolution has no intersection:
+  const resolution = 4 * MACHINE_EPSILON * magnitude
+  const clip = (top: number[][], bottom: number[][]) => (
+    clipConvexHull(top, bottom, dMin, dMax) ??
+    clipConvexHull(top, bottom, dMin - resolution, dMax + resolution)
+  )
   let tMinClip: number
   let tMaxClip: number
   // Stop iteration if all points and control points are collinear.
@@ -421,15 +429,8 @@ function addCurveIntersections(
     ) ||
     // Clip convex-hull with dMin and dMax, taking into account that
     // there will be no intersections if one of the results is null.
-    (tMinClip = clipConvexHull(top, bottom, dMin, dMax)) == null || (
-      (tMaxClip = clipConvexHull(
-        top.reverse(),
-        bottom.reverse(),
-        dMin,
-        dMax
-      )) ==
-      null
-    )
+    (tMinClip = clip(top, bottom)) == null ||
+    (tMaxClip = clip(top.reverse(), bottom.reverse())) == null
   )
     return
   // tMin and tMax are within the range (0, 1). Project it back to the
