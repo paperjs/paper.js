@@ -725,6 +725,32 @@ describe('PathItem#offset() and #outline()', () => {
       { offset: 611.18, width: 0.01 }
     ]
     equals(checkProfileOutline(paper, reversal), [], 'reversing curve')
+    // Where the strips change more than once between two samples, the
+    // sides split at the first of the changes:
+    const changes = new Path({
+      segments: [
+        [[6257.086, 14706.016], [0, 0], [0, 0]],
+        [[6061.157, 14764.972], [47.374, 94.429], [-116.166, -231.548]],
+        [[-592.36, 10011.299], [696.249, 237.759], [-897.572, -306.509]],
+        [[-3401.212, 9556.77], [936.284, 151.51], [0, 0]]
+      ],
+      strokeWidth: 4004.72,
+      strokeJoin: 'round',
+      strokeCap: 'butt',
+      insert: false
+    })
+    changes.strokeProfile = [
+      {
+        offset: 11419.52,
+        width: 0.01,
+        aspect: 0.84,
+        angle: -261.02,
+        smooth: false
+      },
+      { offset: 10993.11, width: 1.4 },
+      { offset: 9197.46, width: 0.04, aspect: 1.37, smooth: false }
+    ]
+    equals(checkProfileOutline(paper, changes), [], 'strip changes')
   })
 })
 

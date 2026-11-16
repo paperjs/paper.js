@@ -325,22 +325,30 @@ export class ProfileSweep extends Sweep<ProfilePart> {
       while (!isSame(s1, s0)) {
         let t = t0
         let u = t1
+        let last = s0
         for (let j = 0; j < 40; j++) {
           const middle = (t + u) / 2
-          if (isSame(getStrips(middle), s0)) {
+          const strips = getStrips(middle)
+          // Close to the last ones too, to find the first of the changes:
+          if (isSame(strips, s0) && isClose(strips, last)) {
             t = middle
+            last = strips
           } else {
             u = middle
           }
         }
-        splits.push([t, u])
-        this.addPen(
-          Bezier.getPoint(v, t),
-          this.getSpanPen(span, this.getOffset(part, t)),
-          getStrips(t).concat(getStrips(u))
-        )
+        const next = getStrips(u)
+        // Where they only moved too fast for the samples, nothing changes:
+        if (!isSame(next, last) || !isClose(next, last)) {
+          splits.push([t, u])
+          this.addPen(
+            Bezier.getPoint(v, t),
+            this.getSpanPen(span, this.getOffset(part, t)),
+            last.concat(next)
+          )
+        }
         t0 = u
-        s0 = getStrips(u)
+        s0 = next
       }
       for (let j = 0, l = s0.length; j < l; j++) {
         const m0 = getMotions(s0[j])
