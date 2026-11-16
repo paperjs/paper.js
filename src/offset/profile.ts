@@ -97,11 +97,16 @@ export class ProfileSweep extends Sweep<ProfilePart> {
   ) {
     const parts: ProfilePart[] = []
     if (points.length > 2) {
+      // The runs share the curve's length along the path, see getOffset():
+      let total = 0
+      for (let i = 1, l = points.length; i < l; i++) {
+        total += points[i - 1].getDistance(points[i])
+      }
       for (let i = 1, start = offset, l = points.length; i < l; i++) {
         const p1 = points[i - 1]
         const p2 = points[i]
         const third = p2.subtract(p1).divide(3)
-        const distance = p1.getDistance(p2)
+        const distance = p1.getDistance(p2) * length / total
         parts.push(
           createPart(
             [
