@@ -624,6 +624,11 @@ describe('PathItem#offset() and #outline()', () => {
       true,
       'bevel join'
     )
+  })
+
+  // Outlines of stroke profiles that went wrong once, checked against the
+  // pens that they stroke with, see test/offsetting/check.mjs:
+  test('PathItem#outline() of stroke profiles against their pens', () => {
     // Strips that are thinner than the tolerance on average can still be
     // thick where they taper, so they aren't slivers to leave out:
     const tapering = new Path({
@@ -852,6 +857,31 @@ describe('PathItem#offset() and #outline()', () => {
       path.strokeProfile = strokeProfile
       equals(checkProfileOutline(paper, path), [], name)
     }
+    // Where a fold's still point runs out and back along a chord, the fitted
+    // side doesn't fold back past the points it passes:
+    const foldBack = new Path({
+      segments: [
+        [[459.42667, 248.47858], [0, 0], [-6.92004, 6.54606]],
+        [[438.65066, 268.10086], [6.25816, -7.18145], [-2.88095, 3.30599]],
+        [[432.27138, 279.60607], [1.3824, -4.16154], [-2.15847, 6.49778]],
+        [[428.75397, 299.8434], [2.20508, -6.48211], [-0.10302, 0.30283]],
+        [[424.22235, 311.17], [0.17107, -5.87233], [-0.14639, 5.02529]],
+        [[426.09466, 326.13559], [-0.09197, -5.02658], [0.01516, 0.82854]],
+        [[424.48318, 325.42584], [-0.44616, -0.38138], [0.25446, 0.21751]],
+        [[436.54813, 335.07129], [-4.02165, -3.21515], [0, 0]]
+      ],
+      strokeWidth: 7.87,
+      strokeJoin: 'round',
+      strokeCap: 'round',
+      insert: false
+    })
+    foldBack.strokeProfile = [
+      { offset: 92.11249013439037, width: 2.48, angle: -92.54, smooth: false },
+      { offset: 77.58, width: 0.01, angle: -114.68 },
+      { offset: 89.90947251479375, width: 1.21, aspect: 0.07 },
+      { offset: 54.72, width: 0.04, aspect: 1.21, angle: 95.79, smooth: false }
+    ]
+    equals(checkProfileOutline(paper, foldBack), [], 'still point folding back')
   })
 })
 

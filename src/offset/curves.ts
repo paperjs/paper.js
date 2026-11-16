@@ -297,6 +297,13 @@ export function fitSide(
       }
       if (error <= tolerance) break
     }
+    // Where the cubic passes the points in another order, it folds back
+    // between them, and misses the side by up to their distance:
+    for (let i = 1; i < count; i++) {
+      if (times[i] < times[i - 1]) {
+        error = Math.max(error, points[i].getDistance(points[i - 1]))
+      }
+    }
     // Measure the error halfway between the points too, where
     // the cubic may bulge away from the side:
     for (let i = 0; i <= count; i++) {
