@@ -336,6 +336,23 @@ describe('PathItem#offset() and #outline()', () => {
       null,
       { tolerance: 0.01 }
     )
+    // Also where they lie on a smooth joint between curves:
+    const stepJoint = new Path({
+      segments: [[0, 0], [40, 0], [100, 0]],
+      strokeWidth: 20,
+      insert: false
+    })
+    stepJoint.strokeProfile = [
+      { offset: 0, width: 0.5 },
+      { offset: 40, width: 0.5 },
+      { offset: 40, width: 2 }
+    ]
+    equals(
+      stepJoint.outline({ insert: false }).area,
+      40 * 10 + 60 * 40,
+      null,
+      { tolerance: 0.01 }
+    )
     // Where the pen grows faster than it moves, it covers its own motion:
     const burst = createLine([
       { offset: 0, width: 0.1 },

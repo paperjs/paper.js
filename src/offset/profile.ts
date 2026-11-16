@@ -443,12 +443,8 @@ export class ProfileSweep extends Sweep<ProfilePart> {
     const { offsets } = this.pens
     for (let i = 0, l = offsets.length; i < l; i++) {
       const offset = offsets[i]
-      const isStep = (
-        i > 0 && offsets[i - 1] === offset ||
-        i < l - 1 && offsets[i + 1] === offset
-      )
       if (
-        !isStep &&
+        !isStep(offsets, offset) &&
         (closed ? offset < length : offset > 0 && offset < length)
       ) {
         const pen = this.getPen(offset, true)
@@ -586,8 +582,12 @@ export class ProfileSweep extends Sweep<ProfilePart> {
           )
         }
       }
-    } else if (!isMeeting(strips1, strips2)) {
-      // Where their parts don't meet, the pen covers the seam between them:
+    } else if (
+      !isMeeting(strips1, strips2) &&
+      !isStep(this.pens.offsets, offset)
+    ) {
+      // Where their parts don't meet, the pen covers the seam between them,
+      // except at steps, which end the parts straight across:
       this.addPen(point, pen, strips1.concat(strips2))
     }
   }
@@ -654,6 +654,11 @@ function createPart(
   length: number
 ): ProfilePart {
   return { v, offset, length, curveLength: Bezier.getLength(v) }
+}
+
+// Whether two of the pens' offsets lie at the offset, as a step:
+function isStep(offsets: number[], offset: number): boolean {
+  return offsets.indexOf(offset) !== offsets.lastIndexOf(offset)
 }
 
 // Whether the ends of the strips meet those of the strips after them:
