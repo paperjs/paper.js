@@ -353,20 +353,39 @@ export class ProfileSweep extends Sweep<ProfilePart> {
       for (let j = 0, l = s0.length; j < l; j++) {
         const m0 = getMotions(s0[j])
         const m1 = getMotions(s1[j])
+        const getMotion = (t: number, k: number) => {
+          const strip = getStrips(t)[j]
+          return strip ? getMotions(strip)[k] : 0
+        }
+        const addChange = (
+          k: number,
+          from: number,
+          to: number,
+          motion1: number,
+          motion2: number
+        ) => {
+          const t = findSignChange(
+            t => getMotion(t, k),
+            from,
+            to,
+            motion1,
+            motion2,
+            1e-9
+          )
+          splits.push([t, t])
+          return t
+        }
         for (let k = 0; k < 2; k++) {
           if (m0[k] * m1[k] < 0) {
-            const t = findSignChange(
-              t => {
-                const strip = getStrips(t)[j]
-                return strip ? getMotions(strip)[k] : 0
-              },
-              t0,
-              t1,
-              m0[k],
-              m1[k],
-              1e-9
-            )
-            splits.push([t, t])
+            const t = addChange(k, t0, t1, m0[k], m1[k])
+            // The other end may change twice between the samples, around
+            // this change, where its motion has the other sign:
+            const other = 1 - k
+            const m = getMotion(t, other)
+            if (m0[other] * m1[other] > 0 && m0[other] * m < 0) {
+              addChange(other, t0, t, m0[other], m)
+              addChange(other, t, t1, m, m1[other])
+            }
           }
         }
       }
