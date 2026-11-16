@@ -102,7 +102,7 @@ export function getBounds({ paths }: Pick<RegionData, 'paths'>): Rectangle {
         max[0] - min[0],
         max[1] - min[1]
       )
-      bounds = paths.length > 1 && bounds ? bounds.unite(rect) : rect
+      bounds = bounds ? bounds.unite(rect) : rect
     }
   }
   return bounds ?? new Rectangle()
@@ -167,10 +167,7 @@ function reducePath(path: PathData): PathData {
       const [point2] = list[next]
       const x = point2[0] - point1[0]
       const y = point2[1] - point1[1]
-      const hasLength = (
-        (x !== 0 || y !== 0) &&
-        Math.sqrt(x * x + y * y) > GEOMETRIC_EPSILON
-      )
+      const hasLength = Math.hypot(x, y) > GEOMETRIC_EPSILON
       // The curve after it, which closed paths have all around:
       const after = i + 1 < count ? i + 1 : closed ? 0 : -1
       if (!hasLength || after >= 0 && isCollinear(list, x, y, after)) {
