@@ -138,6 +138,7 @@ class Reference {
         this.classes[module.name] = {
           name: module.name,
           kind: kinds.namespace,
+          isModule: true,
           comment: module.comment,
           children: module.children?.filter(
             child => child.kind === kinds.function
@@ -212,10 +213,12 @@ class Reference {
       operators: {},
       inherited: {}
     }
-    // The members of namespaces are static, except for the globals:
+    // The members of namespaces are static, except for the globals and the
+    // functions of modules, which are imported by their names:
     const isNamespace = (
       symbol.kind === kinds.namespace &&
-      symbol.name !== '_global_'
+      symbol.name !== '_global_' &&
+      !symbol.isModule
     )
     // In the order of the sources, by their lines: TypeDoc's source order goes
     // by symbols, which places some members elsewhere:
@@ -384,7 +387,7 @@ class Reference {
         staticProperties.map(member => this.renderProperty(member))
       ),
       methods.length
-        ? this.renderSection('Methods', [
+        ? this.renderSection(symbol.isModule ? 'Functions' : 'Methods', [
             ...methods.map(member => this.renderMember(member)),
             ...(
               operatorLists.length
