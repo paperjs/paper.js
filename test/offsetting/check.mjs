@@ -53,12 +53,23 @@ function getOutline(path, problems) {
     return null
   }
   // Dots of closed paths or with butt caps have no outline, nor do profiles
-  // without width:
+  // without width on either side of their stops. Steps at the start of open
+  // paths and on dots only have the side after them:
   if (outline.isEmpty()) {
-    const { strokeProfile } = path
+    const { strokeProfile, length, closed } = path
+    const hasWidth = offset => (
+      path.getStrokeProfileAt(
+        offset < 0 ? (closed ? offset + length : 0) : offset
+      ).width > 0
+    )
     if (
-      (!strokeProfile || strokeProfile.some(stop => stop.width)) &&
-      (path.length || !path.closed && path.strokeCap !== 'butt')
+      (
+        !strokeProfile ||
+        strokeProfile.some(
+          ({ offset }) => hasWidth(offset) || hasWidth(offset - length * 1e-9)
+        )
+      ) &&
+      (length || !closed && path.strokeCap !== 'butt')
     ) {
       problems.push('empty')
     }
@@ -294,10 +305,15 @@ export function checkProfileOutline(paper, path) {
   const getPen = offset => {
     const { width, aspect, angle } = path.getStrokeProfileAt(offset)
     const a = radius * width
+    // Where a curve starts, the pens before it turn with the curve that ends
+    // there:
+    const { curve, time } = path.getLocationAt(offset) ?? {}
+    const tangent = path.getTangentAt(offset)
     return {
       offset,
       center: path.getPointAt(offset),
-      tangent: path.getTangentAt(offset),
+      tangent,
+      tangentBefore: (!time && curve?.previous?.getTangentAtTime(1)) || tangent,
       a,
       b: a * aspect,
       angle,
@@ -340,7 +356,7 @@ export function checkProfileOutline(paper, path) {
   // path, where they touch the sides. Offsets on curves without length have
   // no tangent:
   const getMove = (pen1, pen2) => {
-    const turn = pen1.tangent.getAngle(pen2.tangent) || 0
+    const turn = pen1.tangent.getAngle(pen2.tangentBefore) || 0
     return (
       pen1.center.getDistance(pen2.center) +
       Math.abs(pen1.a - pen2.a) +
@@ -397,9 +413,14 @@ export function checkProfileOutline(paper, path) {
         Math.abs(tangent1.cross(tangent2)) > 1e-8 ||
         tangent1.dot(tangent2) < 0
       ) {
+        // Bevels at steps connect the sides of two pens, beyond both:
+        const { offset } = joined[i].segment2.location
         cuts.push({
           point: joined[i].point2,
-          isBeyond: path.strokeJoin === 'miter'
+          isBeyond: (
+            path.strokeJoin === 'miter' ||
+            steps.some(step => Math.abs(step - offset) < length * 1e-9)
+          )
         })
       }
     }
@@ -423,14 +444,21 @@ export function checkProfileOutline(paper, path) {
         )
       )
     )
+  // How far the pen reaches across the path:
+  const getReach = ({ a, b, angle, tangent }) => {
+    const { x, y } = tangent.rotate(-angle)
+    return Math.hypot(a * y, b * x)
+  }
   // The points within the pens are inside the outline, checked where the pens
-  // moved by a quarter of their size:
+  // moved by a quarter of their size. Flat pens that move along their length
+  // sweep strips thinner than the tolerance, which the outline leaves out:
   let outside = 0
   let checked = null
   for (const pen of pens) {
     const tolerance = getPenTolerance(pen.size)
     if (
       pen.size > tolerance &&
+      2 * getReach(pen) > tolerance &&
       !isNearCut(pen.center) &&
       !(checked && getMove(checked, pen) < pen.size / 4)
     ) {
@@ -507,9 +535,18 @@ export function checkProfileOutline(paper, path) {
       let pen = pens[index]
       // Outside the sampled pens, it may still lie on the pens between them:
       if (min > getPenTolerance(pen.size)) {
+        // Around the pens within reach of the nearest one, and each one that
+        // is nearer than the ones next to it:
         const limit = min + margin
         for (const [j, distance] of distances) {
-          if (distance <= limit) {
+          if (
+            distance <= limit || (
+              distance <= getDistance(point, pens[Math.max(j - 1, 0)]) && (
+                distance <=
+                getDistance(point, pens[Math.min(j + 1, pens.length - 1)])
+              )
+            )
+          ) {
             let o0 = pens[Math.max(j - 1, 0)].offset
             let o1 = pens[Math.min(j + 1, pens.length - 1)].offset
             for (let k = 0; k < 40; k++) {
