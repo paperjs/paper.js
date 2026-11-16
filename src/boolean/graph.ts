@@ -512,9 +512,9 @@ function mergeVertices(graph: Graph, points: Points, collisions: number[][]) {
 
   // Cut the curves where they pass within epsilon of a vertex, the
   // hot pixels of snap rounding. Moving the pieces to their vertices
-  // can bring them within epsilon of further ones, so the pieces of each
-  // cut are tested again, until none passes a vertex. As cuts only use
-  // existing vertices, this ends:
+  // can bring them within epsilon of further ones, or carry them across
+  // them, so the pieces of each cut are tested again, until none passes
+  // a vertex. As cuts only use existing vertices, this ends:
   // The vertices that may cut curve i, as the ones within 2 epsilon of
   // its bounds, since its pieces stay within epsilon of it. Each vertex
   // lies on a curve that it cuts, so we find it among the cuts of the
@@ -548,26 +548,59 @@ function mergeVertices(graph: Graph, points: Points, collisions: number[][]) {
     return hotPixels.sort((a, b) => a - b)
   }
 
-  type Piece = { values: number[]; cut1: Cut; cut2: Cut }
+  // A piece of a curve between two cuts, moved to their vertices, with
+  // its bounds grown by epsilon, and the part of the curve that it was
+  // before, where one of its ends moved by more than epsilon, which its
+  // bounds then include:
+  type Piece = {
+    values: number[]
+    part: number[] | null
+    bounds: number[]
+    cut1: Cut
+    cut2: Cut
+  }
 
   // The pieces of a curve that a vertex may cut, as the ones that don't
-  // end in it, and whose bounds come within epsilon of it:
+  // end in it, and whose bounds contain it:
   function isNearPiece(piece: Piece, index: number, vertex: Vertex): boolean {
-    const v = piece.values
+    const [left, top, right, bottom] = piece.bounds
     const { x, y } = vertex
     return (
       getVertex(points, piece.cut1.point) !== index &&
       getVertex(points, piece.cut2.point) !== index &&
-      x >= min(v[0], v[2], v[4], v[6]) - epsilon &&
-      x <= max(v[0], v[2], v[4], v[6]) + epsilon &&
-      y >= min(v[1], v[3], v[5], v[7]) - epsilon &&
-      y <= max(v[1], v[3], v[5], v[7]) + epsilon
+      x >= left &&
+      x <= right &&
+      y >= top &&
+      y <= bottom
     )
   }
 
+  // Whether the cut's point moved to its vertex by more than epsilon in a
+  // merge. A piece whose ends moved less passes within epsilon of all the
+  // vertices that it moved over:
+  function isMoved({ point }: Cut): boolean {
+    const vertex = graph.vertices[getVertex(points, point)]
+    const dx = vertex.x - xs[point]
+    const dy = vertex.y - ys[point]
+    return dx * dx + dy * dy > epsilon * epsilon
+  }
+
   function addPiece(pieces: Piece[], i: number, cut1: Cut, cut2: Cut) {
+    const v = getPiece(graph, points, i, cut1, cut2)
+    const part =
+      isMoved(cut1) || isMoved(cut2)
+        ? Bezier.getPart(values[i], cut1.time, cut2.time)
+        : null
+    const p = part ?? v
     pieces.push({
-      values: getPiece(graph, points, i, cut1, cut2),
+      values: v,
+      part,
+      bounds: [
+        min(v[0], v[2], v[4], v[6], p[0], p[2], p[4], p[6]) - epsilon,
+        min(v[1], v[3], v[5], v[7], p[1], p[3], p[5], p[7]) - epsilon,
+        max(v[0], v[2], v[4], v[6], p[0], p[2], p[4], p[6]) + epsilon,
+        max(v[1], v[3], v[5], v[7], p[1], p[3], p[5], p[7]) + epsilon
+      ],
       cut1,
       cut2
     })
@@ -589,10 +622,16 @@ function mergeVertices(graph: Graph, points: Points, collisions: number[][]) {
           if (isNearPiece(piece, index, vertex)) {
             const point = new Point(vertex.x, vertex.y)
             const t = Bezier.getNearestTime(piece.values, point)
+            // Cut where the piece passes within epsilon of the vertex, or
+            // where it passed over it, as it moved to its vertices:
             if (
               t > 0 &&
-              t < 1 &&
-              point.isClose(Bezier.getPoint(piece.values, t), epsilon)
+              t < 1 && (
+                point.isClose(Bezier.getPoint(piece.values, t), epsilon) || (
+                  !!piece.part &&
+                  getSide(piece.values, point) * getSide(piece.part, point) < 0
+                )
+              )
             ) {
               const { cut1, cut2 } = piece
               const cut = {
@@ -1204,4 +1243,15 @@ function getPart(
     ]
   }
   return part
+}
+
+// The side of the curve that the point lies on, as the sign of its distance,
+// or 0 beyond the curve's ends:
+function getSide(v: number[], point: Point): number {
+  const t = Bezier.getNearestTime(v, point)
+  return t > 0 && t < 1
+    ? Math.sign(
+        Bezier.getTangent(v, t).cross(point.subtract(Bezier.getPoint(v, t)))
+      )
+    : 0
 }
