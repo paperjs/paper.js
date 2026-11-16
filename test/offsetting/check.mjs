@@ -507,6 +507,15 @@ export function checkProfileOutline(paper, path) {
     }
     return lo
   }
+  // How much nearer than each sampled pen the pens between it and the ones
+  // next to it may be:
+  const moves = pens.map((pen, j) =>
+    Math.max(
+      getMove(pens[Math.max(j - 1, 0)], pen),
+      getMove(pen, pens[Math.min(j + 1, pens.length - 1)])
+    )
+  )
+  const maxMove = Math.max(...moves)
   for (const curve of outline.curves) {
     for (let i = 0; i <= 16; i++) {
       const point = curve.getPointAtTime(i / 16)
@@ -518,12 +527,15 @@ export function checkProfileOutline(paper, path) {
       const margin = getPenTolerance(maxSize)
       const distances = []
       // Only the pens with centers this close in x can be nearer:
-      const reach = min + maxSize + margin
+      const reach = min + maxSize + margin + maxMove
       const end = findIndex(point.x + reach)
       for (let k = findIndex(point.x - reach); k < end; k++) {
         const j = indicesByX[k]
         const pen = pens[j]
-        if (point.getDistance(pen.center) - pen.size < min + margin) {
+        if (
+          point.getDistance(pen.center) - pen.size - moves[j] <
+          min + margin
+        ) {
           const distance = getDistance(point, pen)
           distances.push([j, distance])
           if (distance < min) {
