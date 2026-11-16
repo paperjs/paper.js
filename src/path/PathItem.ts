@@ -33,6 +33,7 @@ import {
   getOperands,
   getRegion,
   getItemWinding,
+  interpolateStrokeProfiles,
   isPlainObject,
   offsetPathItem,
   outlinePathItem,
@@ -808,6 +809,8 @@ export abstract class PathItem extends Item {
    * Interpolates between the two specified path items and uses the result
    * as the geometry for this path item. The number of children and
    * segments in the two paths involved in the operation should be the same.
+   * The stroke profiles of the paths are blended too, see
+   * {@link Path#strokeProfile}.
    *
    * @param from the path item defining the geometry when `factor`
    *     is `0`
@@ -825,6 +828,12 @@ export abstract class PathItem extends Item {
     if (!itemsFrom || !itemsTo || itemsFrom.length !== itemsTo.length) {
       throw new Error(`Invalid operands in interpolate() call: ${from}, ${to}`)
     }
+    // Blend the profiles before the segments, in case one of the paths is
+    // this one:
+    const profile = (
+      isPath &&
+      interpolateStrokeProfiles(from as Path, to as Path, factor)
+    )
     const current = items.length
     const { length } = itemsTo
     if (current < length) {
@@ -841,6 +850,7 @@ export abstract class PathItem extends Item {
     }
     if (isPath) {
       this.closed = from.closed
+      ;(this as PathItem as Path).strokeProfile = profile
       this._changed(Change.GEOMETRY)
     }
   }
