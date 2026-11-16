@@ -585,6 +585,14 @@ function mergeVertices(graph: Graph, points: Points, collisions: number[][]) {
     return dx * dx + dy * dy > epsilon * epsilon
   }
 
+  // Whether the piece passed over the point as it moved to its vertices:
+  function isPassed({ values: v, part }: Piece, point: Point): boolean {
+    return (
+      !!part &&
+      getSide(v, point, epsilon) * getSide(part, point, epsilon) < 0
+    )
+  }
+
   function addPiece(pieces: Piece[], i: number, cut1: Cut, cut2: Cut) {
     const v = getPiece(graph, points, i, cut1, cut2)
     const part =
@@ -621,23 +629,21 @@ function mergeVertices(graph: Graph, points: Points, collisions: number[][]) {
           const vertex = graph.vertices[index]
           if (isNearPiece(piece, index, vertex)) {
             const point = new Point(vertex.x, vertex.y)
-            const t = Bezier.getNearestTime(piece.values, point)
+            const t = Bezier.getNearestTime(piece.values, point, epsilon)
             // Cut where the piece passes within epsilon of the vertex, or
             // where it passed over it, as it moved to its vertices:
             if (
               t > 0 &&
               t < 1 && (
-                point.isClose(Bezier.getPoint(piece.values, t), epsilon) || (
-                  !!piece.part &&
-                  getSide(piece.values, point) * getSide(piece.part, point) < 0
-                )
+                point.isClose(Bezier.getPoint(piece.values, t), epsilon) ||
+                isPassed(piece, point)
               )
             ) {
               const { cut1, cut2 } = piece
               const cut = {
                 time: curves[i].hasHandles
                   ? cut1.time + (cut2.time - cut1.time) * t
-                  : Bezier.getNearestTime(values[i], point),
+                  : Bezier.getNearestTime(values[i], point, epsilon),
                 point: vertex.point
               }
               cuts[i].push(cut)
@@ -719,7 +725,7 @@ function createEdges(graph: Graph, points: Points) {
     const times = []
     for (let i = 1; i <= 3; i++) {
       const point = Bezier.getPoint(v2, i / 4)
-      const time = Bezier.getNearestTime(v1, point)
+      const time = Bezier.getNearestTime(v1, point, epsilon)
       if (!point.isClose(Bezier.getPoint(v1, time), epsilon)) return 0
       times.push(time)
     }
@@ -819,7 +825,7 @@ function sortHalfEdges(graph: Graph) {
       halfEdge2,
       min(halfEdge1.edge.length, halfEdge2.edge.length) / 2
     )
-    const time = Bezier.getNearestTime(v1, point)
+    const time = Bezier.getNearestTime(v1, point, epsilon)
     return time > 0 && time < 1
       ? (
           Bezier.getTangent(v1, time).cross(
@@ -1247,8 +1253,8 @@ function getPart(
 
 // The side of the curve that the point lies on, as the sign of its distance,
 // or 0 beyond the curve's ends:
-function getSide(v: number[], point: Point): number {
-  const t = Bezier.getNearestTime(v, point)
+function getSide(v: number[], point: Point, epsilon: number): number {
+  const t = Bezier.getNearestTime(v, point, epsilon)
   return t > 0 && t < 1
     ? Math.sign(
         Bezier.getTangent(v, t).cross(point.subtract(Bezier.getPoint(v, t)))

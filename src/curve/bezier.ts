@@ -472,7 +472,14 @@ export function getTimeOf(
   return null
 }
 
-export function getNearestTime(v: BezierValues, point: Point): number {
+// Returns the time of the point on the curve nearest to the given one. Points
+// on straight curves near their ends snap to them within the tolerance, see
+// getTimeOf():
+export function getNearestTime(
+  v: BezierValues,
+  point: Point,
+  tolerance?: number
+): number {
   const x0 = v[0]
   const y0 = v[1]
   const x3 = v[6]
@@ -493,7 +500,7 @@ export function getNearestTime(v: BezierValues, point: Point): number {
       ? 0
       : u > 1 - EPSILON
         ? 1
-        : getTimeOf(v, new Point(x0 + u * vx, y0 + u * vy))
+        : getTimeOf(v, new Point(x0 + u * vx, y0 + u * vy), tolerance)
   }
 
   // Calculate curve points as in evaluate(), but without creating

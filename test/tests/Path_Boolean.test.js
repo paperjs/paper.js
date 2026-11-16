@@ -3385,4 +3385,45 @@ describe('Path Boolean Operations', () => {
     equals(path1.unite(path2).area, path2.area, null, { tolerance: 1 })
     equals(path1.intersect(path2).area, path1.area, null, { tolerance: 1 })
   })
+
+  test('Unite and intersect tiny paths with coincident lines near a corner', () => {
+    // At this scale, the graph's epsilon lies below the distance within
+    // which nearest times snap to the ends of lines by default, which used
+    // to keep the coincident lines apart:
+    const path1 = new Path({
+      segments: [
+        [1.6642461578446772, 0.9443827538207065],
+        [1.6790470227872956, 0.96414788578331],
+        [1.6002691248320349, 0.9990292158583001]
+      ],
+      closed: true
+    })
+    const path2 = new Path({
+      segments: [
+        [
+          [1.6616916958309267, 0.947060424272141],
+          [0.0027433848251068316, 0.0018511374836599481],
+          [0.0008755452149997733, -0.0009177742379350429]
+        ],
+        [
+          [1.664246166487765, 0.9443827471856321],
+          [-0.0010587316200800778, 0.0008127753494296952],
+          [0, 0]
+        ],
+        [
+          [1.6716036601466597, 0.9542079905833512],
+          [0, 0],
+          [-0.0004373229516714261, -0.0005839983168567375]
+        ],
+        [
+          [1.6698372273430302, 0.9527479047315086],
+          [0.0005710424778073708, 0.000428016628204686],
+          [-0.0026490526812752435, -0.001985555595635957]
+        ]
+      ],
+      closed: true
+    })
+    equals(path1.unite(path2).area, path1.area, null, { tolerance: 1e-8 })
+    equals(path1.intersect(path2).area, path2.area, null, { tolerance: 1e-8 })
+  })
 })
