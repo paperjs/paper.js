@@ -395,6 +395,8 @@ export class ProfileSweep extends Sweep<ProfilePart> {
         const motions = getMotions(strips[j])
         const from = fitSide(t => getEnd(t, j, 'from'), t0, t1, tolerance)
         const to = fitSide(t => getEnd(t, j, 'to'), t0, t1, tolerance)
+        const start1 = new Point(from[0][0])
+        const start2 = new Point(to[0][0])
         moveStart(from)
         moveStart(to)
         // Strips whose ends stand still sweep nothing, and the
@@ -425,9 +427,28 @@ export class ProfileSweep extends Sweep<ProfilePart> {
             t1,
             tolerance
           )
-          moveStart(still)
-          this.addStrip(from, still)
-          this.addStrip(to, still)
+          // It starts between the sides as before, also where they moved:
+          const distance = start1.getDistance(start2)
+          const { x, y } = new Point(from[0][0]).add(
+            new Point(to[0][0])
+              .subtract(from[0][0])
+              .multiply(
+                distance
+                  ? start1.getDistance(new Point(still[0][0])) / distance
+                  : 0
+              )
+          )
+          still[0][0] = [x, y]
+          // Both halves of the fold connect the strips before and after it,
+          // also where they are thin. Where only one of them is, the strip
+          // between the sides covers both:
+          const strip1 = createStrip(from, still)
+          const strip2 = createStrip(to, still)
+          if (isThin(strip1, tolerance) === isThin(strip2, tolerance)) {
+            this.areas.push(strip1, strip2)
+          } else {
+            this.addStrip(from, to)
+          }
         } else if (!this.addStrip(from, to)) {
           // The strips around a short sliver miss each other by its width,
           // so the next one starts where it does. A longer one is a thin
@@ -652,13 +673,18 @@ export class ProfileSweep extends Sweep<ProfilePart> {
   // others' that the union can't tell them apart, and returns whether it
   // did:
   addStrip(side1: Side, side2: Side): boolean {
-    const strip = uniteRegions([createRegion(joinSides(side1, side2))])
+    const strip = createStrip(side1, side2)
     const isStrip = !isThin(strip, this.stroke.tolerance)
     if (isStrip) {
       this.areas.push(strip)
     }
     return isStrip
   }
+}
+
+// The strip between the two sides, resolved:
+function createStrip(side1: Side, side2: Side): RegionData {
+  return uniteRegions([createRegion(joinSides(side1, side2))])
 }
 
 function createPart(

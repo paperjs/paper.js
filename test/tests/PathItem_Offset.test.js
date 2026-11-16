@@ -767,6 +767,91 @@ describe('PathItem#offset() and #outline()', () => {
       { offset: 28431.94, width: 0.82 }
     ]
     equals(checkProfileOutline(paper, fastTaper), [], 'fast taper')
+    // Where a piece folds over, its halves connect the strips around it, also
+    // where they are thin, or where slivers moved the sides:
+    const folds = {
+      'fold of two slivers in a loop': {
+        segments: [
+          [[286.58, 148.84], [0, 0], [9.46, -99.55]],
+          [[286.58, 148.84], [-8.09, 18.29], [538.87, 263.85]],
+          [[188.61, 460.4], [186.08, -570.42], [-186.08, 570.42]],
+          [[188.61, 460.4], [-85.69, 51.55], [85.69, -51.55]]
+        ],
+        closed: true,
+        strokeWidth: 136.13,
+        strokeJoin: 'round',
+        strokeCap: 'round',
+        strokeProfile: [
+          {
+            offset: 875.1773676354364,
+            width: 0.06,
+            aspect: 0.32,
+            angle: -171.69,
+            smooth: false
+          },
+          { offset: 344.7, width: 1.27, aspect: 0.52, angle: 142 }
+        ]
+      },
+      'fold of two slivers in a tight turn': {
+        segments: [
+          [[2.9, 3.5], [0, 0], [0, 0]],
+          [[4.98, 0.17], [-0.12, 0.16], [0.12, -0.16]],
+          [[0.79, 3.92], [0, 0], [0, 0]]
+        ],
+        strokeWidth: 1.36,
+        strokeJoin: 'round',
+        strokeCap: 'butt',
+        strokeProfile: [{ offset: 2.14, width: 0.35, aspect: 1.44 }]
+      },
+      'fold with one sliver in a tight turn': {
+        segments: [
+          [[1.71, 3.61], [2.94, 0.58], [0, 0]],
+          [[2.56, 3.99], [0.04, 0.2], [-0.04, -0.2]],
+          [[4.96, 1.63], [-1, -0.04], [1.84, -2.37]],
+          [[1.63, 2.93], [0.52, -0.85], [0, 0]],
+          [[4.22, 0.49], [-5.75, 1.73], [0.8, 2.89]]
+        ],
+        closed: true,
+        strokeWidth: 1.13,
+        strokeJoin: 'bevel',
+        strokeCap: 'round',
+        strokeProfile: [
+          { offset: 18.97, width: 0.01, angle: -147.52 },
+          {
+            offset: 9.24,
+            width: 0.63,
+            aspect: 0.62,
+            angle: 218.42,
+            smooth: false
+          }
+        ]
+      },
+      'fold that starts where a sliver moved the sides': {
+        segments: [
+          [[1.81, 4.24], [0, 0], [2.93, 5.24]],
+          [[0.25, 4.52], [0, 0], [0, 0]],
+          [[0.86, 2.89], [-2.23, 5.57], [-2.28, -1.94]]
+        ],
+        closed: true,
+        strokeWidth: 1.47,
+        strokeJoin: 'round',
+        strokeCap: 'round',
+        strokeProfile: [
+          {
+            offset: 16.31968273421951,
+            width: 0.3,
+            angle: -204.46,
+            smooth: false
+          },
+          { offset: 17.67, width: 2.38, aspect: 0.05, angle: -354.92 }
+        ]
+      }
+    }
+    for (const [name, { strokeProfile, ...props }] of Object.entries(folds)) {
+      const path = new Path({ ...props, insert: false })
+      path.strokeProfile = strokeProfile
+      equals(checkProfileOutline(paper, path), [], name)
+    }
   })
 })
 
