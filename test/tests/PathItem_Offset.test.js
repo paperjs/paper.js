@@ -751,6 +751,22 @@ describe('PathItem#offset() and #outline()', () => {
       { offset: 9197.46, width: 0.04, aspect: 1.37, smooth: false }
     ]
     equals(checkProfileOutline(paper, changes), [], 'strip changes')
+    // The check finds the nearest pens also where they change faster than
+    // it samples them:
+    const fastTaper = new Path({
+      segments: [
+        [1633, 9054],
+        [31507, 35788]
+      ],
+      strokeWidth: 9544.47,
+      strokeCap: 'butt',
+      insert: false
+    })
+    fastTaper.strokeProfile = [
+      { offset: 27214.55, width: 1.37 },
+      { offset: 28431.94, width: 0.82 }
+    ]
+    equals(checkProfileOutline(paper, fastTaper), [], 'fast taper')
   })
 })
 
