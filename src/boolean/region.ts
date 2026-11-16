@@ -79,7 +79,7 @@ export function hasHandles(
 }
 
 // Returns the bounds of the region, as those of a path item with its paths:
-export function getBounds({ paths }: RegionData): Rectangle {
+export function getBounds({ paths }: Pick<RegionData, 'paths'>): Rectangle {
   const roots = new Array(2)
   let bounds: Rectangle = null
   for (const path of paths) {
