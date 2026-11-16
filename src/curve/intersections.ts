@@ -367,6 +367,21 @@ function addCurveIntersections(
   // See also: #565 #899 #1074
   if (++pair.calls >= 4096 || ++recursion >= 40) return
   const { tolerance } = pair
+  // A piece of the second curve only a few units in the last place of its
+  // coordinates long has no direction left to clip the first one with, as
+  // the rounding of its ends turns it. Locate it on the first one as a point:
+  const dx = v2[6] - v2[0]
+  const dy = v2[7] - v2[1]
+  const magnitude = Math.max(
+    Math.abs(v2[0]), Math.abs(v2[1]), Math.abs(v2[6]), Math.abs(v2[7])
+  )
+  if (Math.hypot(dx, dy) < 64 * MACHINE_EPSILON * magnitude) {
+    const t = getTimeOf(v1, getPoint(v2, 0.5))
+    if (t !== null) {
+      addLocation(pair, tMin + (tMax - tMin) * t, (uMin + uMax) / 2, flip)
+    }
+    return
+  }
   // Use an epsilon smaller than CURVETIME_EPSILON to compare curve-time
   // parameters in fat-line clipping code.
   const fatLineEpsilon = 1e-9
