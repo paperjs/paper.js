@@ -707,6 +707,24 @@ describe('PathItem#offset() and #outline()', () => {
       { offset: 10.62, width: 0.37, aspect: 0.47, smooth: false }
     ]
     equals(checkProfileOutline(paper, sliverHook), [], 'sliver in a hook')
+    // A curve that reverses along its line is swept in straight runs, which
+    // share its length, so the profile reaches the end of the path:
+    const reversal = new Path({
+      segments: [
+        [[149.72, 451.36], [-98.58, 16.82], [98.58, -16.82]],
+        [[149.72, 451.36], [0, 0], [0, 0]]
+      ],
+      closed: true,
+      strokeWidth: 68.78,
+      strokeJoin: 'round',
+      strokeCap: 'round',
+      insert: false
+    })
+    reversal.strokeProfile = [
+      { offset: 0, width: 0.13, angle: -151.84 },
+      { offset: 611.18, width: 0.01 }
+    ]
+    equals(checkProfileOutline(paper, reversal), [], 'reversing curve')
   })
 })
 
