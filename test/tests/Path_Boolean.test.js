@@ -3360,4 +3360,29 @@ describe('Path Boolean Operations', () => {
       { tolerance: 0.05 }
     )
   })
+
+  test('Unite and intersect paths where merging vertices moves a line across a corner', () => {
+    // The corner of path1 lies on a side of path2, within 4 epsilon of its
+    // corner, so the two merge. That swings the next side of path2 across
+    // the next corner of path1, which still has to cut it there:
+    const path1 = new Path({
+      segments: [
+        [6593.653100243544, 9694.472244181023],
+        [6792.677597972294, 9655.626255418769],
+        [6660.617601915094, 9807.760712260286]
+      ],
+      closed: true
+    })
+    const path2 = new Path({
+      segments: [
+        [6593.652551720515, 9694.471082361462],
+        [7245.086925663939, 9567.325389440006],
+        [8243.12403820448, 12393.495750061711],
+        [6852.814540026935, 10243.400405544786]
+      ],
+      closed: true
+    })
+    equals(path1.unite(path2).area, path2.area, null, { tolerance: 1 })
+    equals(path1.intersect(path2).area, path1.area, null, { tolerance: 1 })
+  })
 })
