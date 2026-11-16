@@ -11,7 +11,7 @@
  */
 
 import * as Bezier from '../curve/index.ts'
-import { createGraph, joinPieces } from './graph.ts'
+import { createGraph, isFilled, joinPieces } from './graph.ts'
 import type { Piece } from './graph.ts'
 import type { PathData, RegionData } from './region.ts'
 
@@ -41,16 +41,13 @@ export function splitGraph(
   region: RegionData
 ): SplitPiece[] {
   const graph = createGraph([{ paths }, region])
-  const { curves, values, pieces, halfEdges, nonZeros } = graph
-  const isInside = (index: number) => {
-    const winding = halfEdges[index].face.windings[1]
-    return nonZeros[1] ? !!winding : !!(winding & 1)
-  }
+  const { curves, values, pieces, halfEdges } = graph
   // The side of the outline that a piece lies on, by how many of its sides
   // are inside the region: 2 inside, 0 outside, or 1 along it:
-  const getSide = ({ edge }: Piece) => (
-    Number(isInside(2 * edge)) + Number(isInside(2 * edge + 1))
-  )
+  const getSide = ({ edge }: Piece) =>
+    [2 * edge, 2 * edge + 1].filter(index =>
+      isFilled(graph, halfEdges[index].face.windings, 1)
+    ).length
   const result: SplitPiece[] = []
   let index = 0
   paths.forEach((path, source) => {

@@ -209,13 +209,11 @@ export function traceGraph(
   operator: Operator
 ): TracedPath[] {
   const graph = createGraph(operands)
-  const { halfEdges, faces, nonZeros } = graph
-  for (let i = 0, l = faces.length; i < l; i++) {
-    const face = faces[i]
-    const { windings } = face
+  const { halfEdges, faces } = graph
+  for (const face of faces) {
     face.isInside = !!operator(
-      nonZeros[0] ? !!windings[0] : !!(windings[0] & 1),
-      nonZeros[1] ? !!windings[1] : !!(windings[1] & 1)
+      isFilled(graph, face.windings, 0),
+      isFilled(graph, face.windings, 1)
     )
   }
 
@@ -285,6 +283,16 @@ export function traceGraph(
     }
   }
   return paths
+}
+
+// Whether the windings fill the operand by its fill rule:
+export function isFilled(
+  graph: Graph,
+  windings: number[],
+  operand: number
+): boolean {
+  const winding = windings[operand]
+  return graph.nonZeros[operand] ? !!winding : !!(winding & 1)
 }
 
 // Returns the segments along the pieces, from the start of the first one to the
@@ -552,7 +560,7 @@ function mergeVertices(graph: Graph, points: Points, collisions: number[][]) {
   // its bounds grown by epsilon, and the part of the curve that it was
   // before, where one of its ends moved by more than epsilon, which its
   // bounds then include:
-  type Piece = {
+  type MovedPiece = {
     values: number[]
     part: number[] | null
     bounds: number[]
@@ -562,7 +570,11 @@ function mergeVertices(graph: Graph, points: Points, collisions: number[][]) {
 
   // The pieces of a curve that a vertex may cut, as the ones that don't
   // end in it, and whose bounds contain it:
-  function isNearPiece(piece: Piece, index: number, vertex: Vertex): boolean {
+  function isNearPiece(
+    piece: MovedPiece,
+    index: number,
+    vertex: Vertex
+  ): boolean {
     const [left, top, right, bottom] = piece.bounds
     const { x, y } = vertex
     return (
@@ -586,14 +598,14 @@ function mergeVertices(graph: Graph, points: Points, collisions: number[][]) {
   }
 
   // Whether the piece passed over the point as it moved to its vertices:
-  function isPassed({ values: v, part }: Piece, point: Point): boolean {
+  function isPassed({ values: v, part }: MovedPiece, point: Point): boolean {
     return (
       !!part &&
       getSide(v, point, epsilon) * getSide(part, point, epsilon) < 0
     )
   }
 
-  function addPiece(pieces: Piece[], i: number, cut1: Cut, cut2: Cut) {
+  function addPiece(pieces: MovedPiece[], i: number, cut1: Cut, cut2: Cut) {
     const v = getPiece(graph, points, i, cut1, cut2)
     const part =
       isMoved(cut1) || isMoved(cut2)
@@ -618,7 +630,7 @@ function mergeVertices(graph: Graph, points: Points, collisions: number[][]) {
     const candidates = getHotPixels(i)
     if (candidates.length) {
       const list = sortCuts(cuts[i])
-      const pieces: Piece[] = []
+      const pieces: MovedPiece[] = []
       for (let j = 1, k = list.length; j < k; j++) {
         addPiece(pieces, i, list[j - 1], list[j])
       }
@@ -814,27 +826,17 @@ function sortHalfEdges(graph: Graph) {
       : Bezier.getPoint(v, Bezier.getTimeAt(v, distance))
   }
 
-  function getSide(halfEdge1: HalfEdge, halfEdge2: HalfEdge): number {
-    // Half-edges that leave a vertex tangentially and can't be told
-    // apart where their angles are measured: Tell on which side of the
-    // first one the second one runs, half way along the shorter one,
-    // as they don't cross before they end, or return 0 if it doesn't
-    // run alongside the first one there:
-    const v1 = halfEdge1.values
+  // Half-edges that leave a vertex tangentially and can't be told apart
+  // where their angles are measured: Tell on which side of the first one
+  // the second one runs, half way along the shorter one, as they don't
+  // cross before they end, or return 0 if it doesn't run alongside the
+  // first one there:
+  function getOrder(halfEdge1: HalfEdge, halfEdge2: HalfEdge): number {
     const point = getPointAt(
       halfEdge2,
       min(halfEdge1.edge.length, halfEdge2.edge.length) / 2
     )
-    const time = Bezier.getNearestTime(v1, point, epsilon)
-    return time > 0 && time < 1
-      ? (
-          Bezier.getTangent(v1, time).cross(
-            point.subtract(Bezier.getPoint(v1, time))
-          ) > 0
-        )
-        ? -1
-        : 1
-      : 0
+    return -getSide(halfEdge1.values, point, epsilon)
   }
 
   // The range of angles of a half-edge's control polygon, which contains
@@ -979,7 +981,7 @@ function sortHalfEdges(graph: Graph) {
         return (
           (
             halfEdge1.point.isClose(halfEdge2.point, epsilon) &&
-            getSide(halfEdge1, halfEdge2)
+            getOrder(halfEdge1, halfEdge2)
           ) ||
           halfEdge1.angle - halfEdge2.angle
         )
@@ -1166,20 +1168,11 @@ function createVertices(graph: Graph, points: Points) {
   for (let i = 0, l = xs.length; i < l; i++) {
     const root = getRoot(parents, i)
     const index = vertexIndices[root]
-    if (index === undefined) {
-      vertexIndices[root] = vertices.length
-      vertices.push({
+    if (index === undefined || isEnds[i] && !vertices[index].isEnd) {
+      vertices[(vertexIndices[root] ??= vertices.length)] = {
         x: xs[i],
         y: ys[i],
         isEnd: isEnds[i],
-        point: i,
-        outgoing: []
-      })
-    } else if (isEnds[i] && !vertices[index].isEnd) {
-      vertices[index] = {
-        x: xs[i],
-        y: ys[i],
-        isEnd: true,
         point: i,
         outgoing: []
       }
