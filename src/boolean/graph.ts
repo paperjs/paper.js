@@ -51,15 +51,10 @@ export type Source = {
 
 export type Operator = (inside1: boolean, inside2: boolean) => boolean
 
-// A piece of a path that splitGraph() returns, with whether it lies inside
-// the region, the index of the path that it comes from, and where it starts
-// along it. A path that isn't split comes back whole:
-export type SplitPiece = PathData & {
-  isInside: boolean
-  source: number
-  offset: number
-  isWhole: boolean
-}
+// The paths of an operand: a region with its fill rule, whose open paths are
+// filled as if closed by straight lines, or lines without one, which stay
+// open, as splitGraph() splits them:
+export type Operand = { paths: PathData[]; fillRule?: string }
 
 // The planar graph of createGraph(), with points stored by their index in its
 // list of cut points, and vertices, edges and half-edges by their index:
@@ -78,7 +73,7 @@ type Vertex = {
 // A piece of a curve between two of its cuts, by the index of the curve, as
 // the edge that it became, with its times on the curve, and its values with
 // the ends at the edge's vertices:
-type Piece = {
+export type Piece = {
   curve: number
   edge: number
   time1: number
@@ -169,15 +164,12 @@ const { min, max, abs } = Math
  * vertices, the pieces of curves between them edges, and the edges bound
  * faces with a known winding for each operand.
  *
- * @param operands one or two operands, whose open paths are filled as if
- *     closed by straight lines
- * @param isOpen whether the paths of the first operand stay open, as
- *     splitGraph() splits them
+ * @param operands one or two operands
  * @return the graph's vertices, edges, half-edges and faces
  */
-export function createGraph(operands: RegionData[], isOpen?: boolean): Graph {
+export function createGraph(operands: Operand[]): Graph {
   const graph: Graph = {
-    ...readCurves(operands, isOpen),
+    ...readCurves(operands),
     pieces: [],
     vertices: [],
     edges: [],
@@ -295,96 +287,10 @@ export function traceGraph(
   return paths
 }
 
-/**
- * Splits the paths where they cross the outline of the region, into pieces
- * inside of it and outside, in their order along the paths. The graph cuts
- * the paths as it does for the boolean operations, so it decides as they do
- * where paths touch the outline or run along it. The pieces along it count
- * as inside, but are split from the pieces next to them.
- *
- * @param paths the paths to split, open or closed
- * @param region the region to split them by
- * @return the pieces of the paths
- */
-export function splitGraph(
-  paths: PathData[],
-  region: RegionData
-): SplitPiece[] {
-  const graph = createGraph([{ paths, fillRule: 'nonzero' }, region], true)
-  const { curves, values, pieces, halfEdges, nonZeros } = graph
-  const isInside = (index: number) => {
-    const winding = halfEdges[index].face.windings[1]
-    return nonZeros[1] ? !!winding : !!(winding & 1)
-  }
-  // The side of the outline that a piece lies on, by how many of its sides
-  // are inside the region: 2 inside, 0 outside, or 1 along it:
-  const getSide = ({ edge }: Piece) => (
-    Number(isInside(2 * edge)) + Number(isInside(2 * edge + 1))
-  )
-  const result: SplitPiece[] = []
-  let index = 0
-  paths.forEach((path, source) => {
-    // The pieces of the path's curves in their order, joined into stretches
-    // on the same side, also around the end of closed paths:
-    const first = index
-    while (curves[index]?.operand === 0 && curves[index].path === source) {
-      index++
-    }
-    const offsets: number[] = []
-    let length = 0
-    for (let i = first; i < index; i++) {
-      offsets[i] = length
-      length += Bezier.getLength(values[i])
-    }
-    const stretches: { side: number; pieces: Piece[] }[] = []
-    for (let i = first; i < index; i++) {
-      for (const piece of pieces[i]) {
-        const side = getSide(piece)
-        const last = stretches[stretches.length - 1]
-        if (last?.side === side) {
-          last.pieces.push(piece)
-        } else {
-          stretches.push({ side, pieces: [piece] })
-        }
-      }
-    }
-    const last = stretches[stretches.length - 1]
-    if (
-      path.closed &&
-      stretches.length > 1 &&
-      stretches[0].side === last.side
-    ) {
-      stretches[0].pieces.unshift(...last.pieces)
-      stretches.pop()
-    }
-    for (const { side, pieces } of stretches) {
-      const isWhole = stretches.length === 1
-      const [{ curve, time1 }] = pieces
-      result.push({
-        ...(
-          isWhole
-            ? path
-            : {
-                segments: joinPieces(graph, pieces).segments,
-                closed: false
-              }
-        ),
-        isInside: side > 0,
-        source,
-        offset: isWhole
-          ? 0
-          : offsets[curve] + Bezier.getLength(values[curve], 0, time1),
-        isWhole
-      })
-    }
-  })
-  return result
-}
-
 // Returns the segments along the pieces, from the start of the first one to the
 // end of the last one, with the pieces of the same curve that follow each
 // other joined back into one part of it, and these parts:
-function joinPieces(graph: Graph, pieces: Piece[]) {
+export function joinPieces(graph: Graph, pieces: Piece[]) {
   const segments: SegmentValues[] = []
   const parts: { curve: number; time1: number; time2: number }[] = []
   let handleIn = [0, 0]
@@ -430,8 +336,7 @@ function joinPieces(graph: Graph, pieces: Piece[]) {
 // neighbors and where it comes from, along with the fill rules, and the
 // distance under which points count as the same:
 function readCurves(
-  operands: RegionData[],
-  isOpen?: boolean
+  operands: Operand[]
 ): Pick<Graph, 'curves' | 'values' | 'nonZeros' | 'epsilon'> {
   const curves: GraphCurve[] = []
   const values: BezierValues[] = []
@@ -443,9 +348,8 @@ function readCurves(
     nonZeros.push(operand.fillRule === 'nonzero')
     bounds = bounds ? bounds.unite(getBounds(operand)) : getBounds(operand)
     for (let j = 0, k = paths.length; j < k; j++) {
-      // Open paths are filled as if closed by a straight line, unless the
-      // first operand's stay open:
-      const isClosing = !paths[j].closed && !(isOpen && !i)
+      // Open paths of regions are filled as if closed by a straight line:
+      const isClosing = !paths[j].closed && !!operand.fillRule
       const closed = paths[j].closed || isClosing
       const segments = getSegments(paths[j])
       const count = segments.length
