@@ -16,8 +16,8 @@ import { Point } from '../basic/Point.ts'
 import { Rectangle } from '../basic/Rectangle.ts'
 import { traceGraph } from './graph.ts'
 import type { Operator } from './graph.ts'
-import { getArea, getBounds, reduceRegion } from './region.ts'
-import type { RegionData } from './region.ts'
+import { getArea, getBounds, reduceRegion } from '../data/region.ts'
+import type { RegionData } from '../data/region.ts'
 
 // Unites the regions, pairwise in a balanced tree, so that each step only
 // meets results of similar size, see combinePaths(). The first one is united

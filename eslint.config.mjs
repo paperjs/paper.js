@@ -40,10 +40,12 @@ const layers = [
   },
   // The functions on curve values:
   { files: ['src/curve/**'], below: 'util|core|basic' },
+  // The plain descriptions of paths and regions:
+  { files: ['src/data/**'], below: 'util|core|basic|curve' },
   // The planar graph of the boolean operations, on plain paths:
-  { files: ['src/boolean/**'], below: 'util|core|basic|curve' },
+  { files: ['src/boolean/**'], below: 'util|core|basic|curve|data' },
   // The outlines of strokes, on plain paths:
-  { files: ['src/offset/**'], below: 'util|core|basic|curve|boolean' }
+  { files: ['src/offset/**'], below: 'util|core|basic|curve|data|boolean' }
 ]
 
 export default [

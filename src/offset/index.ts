@@ -22,11 +22,11 @@
  *
  * @module paper/offset
  */
-import type { PathData, RegionData } from '../boolean/region.ts'
+import type { PathData, RegionData } from '../data/region.ts'
 import { offsetPath as offsetPathData, offsetRegion } from './offset.ts'
 import { outlineStroke } from './outline.ts'
 
-export type { PathData, RegionData, SegmentData } from '../boolean/region.ts'
+export type { PathData, RegionData, SegmentData } from '../data/region.ts'
 
 export type OffsetOptions = { join?: string; miterLimit?: number }
 
