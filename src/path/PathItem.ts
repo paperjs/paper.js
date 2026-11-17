@@ -14,15 +14,14 @@ import {
   Change,
   CompoundPath,
   Curve,
-  EPSILON,
   Effect,
+  Formatter,
   GEOMETRIC_EPSILON,
   Group,
   Item,
   Path,
   Point,
   Segment,
-  Size,
   closePaths,
   createGraph,
   createResult,
@@ -37,11 +36,13 @@ import {
   isPlainObject,
   offsetPathItem,
   outlinePathItem,
+  readSVGPath,
   reorientPaths,
   splitBoolean,
   takeStrokeProfile,
   traceBoolean,
-  tracePaths
+  tracePaths,
+  writeSVGPath
 } from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
 import type { SizeLike } from '../basic/Size.ts'
@@ -165,147 +166,15 @@ export abstract class PathItem extends Item {
    * The path's geometry, formatted as SVG style path data.
    */
   get pathData(): string {
-    return this._getPathData()
+    return getPathData(this)
   }
 
   set pathData(data: string) {
-    // This is a very compact SVG Path Data parser that works both for Path
-    // and CompoundPath.
-
-    // First split the path data into parts of command-coordinates pairs
-    // Commands are any of these characters: mzlhvcsqta
-    const parts = data?.match(/[mlhvcsqtaz][^mlhvcsqtaz]*/gi)
-    let coords: string[]
-    let relative = false
-    let previous: string
-    let control: Point
-    let current = new Point()
-    let start = new Point()
-    const number = '([+-]?(?:\\d*\\.\\d+|\\d+\\.?)(?:[eE][+-]?\\d+)?)'
-    const numbers = new RegExp(number, 'g')
-    // The arc flags are single characters that don't need to be
-    // separated from what follows, e.g. 'a1 1 0 011 1', see #1808:
-    const flag = '([01])'
-    const arcs = new RegExp(
-      [number, number, number, flag, flag, number, number].join('[\\s,]*'),
-      'g'
-    )
-
-    const getCoord = (index: number, coord: 'x' | 'y') => {
-      const value = +coords[index]
-      return relative ? value + current[coord] : value
-    }
-
-    const getPoint = (index: number) =>
-      new Point(getCoord(index, 'x'), getCoord(index + 1, 'y'))
-
-    // First clear the previous content
+    // First clear the previous content, then read the path data into the
+    // drawing commands of the path item, see readSVGPath():
     this.clear()
-
-    for (const part of parts ?? []) {
-      const command = part[0]
-      const lower = command.toLowerCase()
-      // Match all coordinate values
-      coords = part.match(numbers)
-      const length = coords?.length
-      relative = command === lower
-      // Fix issues with z in the middle of SVG path data, not followed by
-      // a m command, see #413:
-      if (previous === 'z' && !/[mz]/.test(lower)) {
-        this.moveTo(current)
-      }
-      switch (lower) {
-        case 'm':
-        case 'l': {
-          let move = lower === 'm'
-          for (let i = 0; i < length; i += 2) {
-            this[move ? 'moveTo' : 'lineTo']((current = getPoint(i)))
-            if (move) {
-              start = current
-              move = false
-            }
-          }
-          control = current
-          break
-        }
-        case 'h':
-        case 'v': {
-          const coord = lower === 'h' ? 'x' : 'y'
-          current = current.clone() // Clone as we're going to modify it.
-          for (let i = 0; i < length; i++) {
-            current[coord] = getCoord(i, coord)
-            this.lineTo(current)
-          }
-          control = current
-          break
-        }
-        case 'c':
-          for (let i = 0; i < length; i += 6) {
-            this.cubicCurveTo(
-              getPoint(i),
-              (control = getPoint(i + 2)),
-              (current = getPoint(i + 4))
-            )
-          }
-          break
-        case 's':
-          // Smooth cubicCurveTo
-          for (let i = 0; i < length; i += 4) {
-            this.cubicCurveTo(
-              /[cs]/.test(previous)
-                ? current.multiply(2).subtract(control)
-                : current,
-              (control = getPoint(i)),
-              (current = getPoint(i + 2))
-            )
-            previous = lower
-          }
-          break
-        case 'q':
-          for (let i = 0; i < length; i += 4) {
-            this.quadraticCurveTo(
-              (control = getPoint(i)),
-              (current = getPoint(i + 2))
-            )
-          }
-          break
-        case 't':
-          // Smooth quadraticCurveTo
-          for (let i = 0; i < length; i += 2) {
-            this.quadraticCurveTo(
-              (control = /[qt]/.test(previous)
-                ? current.multiply(2).subtract(control)
-                : current),
-              (current = getPoint(i))
-            )
-            previous = lower
-          }
-          break
-        case 'a':
-          while ((coords = arcs.exec(part))) {
-            this.arcTo(
-              (current = getPoint(6)),
-              new Size(+coords[1], +coords[2]),
-              +coords[3],
-              coords[5] === '1',
-              coords[4] === '1'
-            )
-          }
-          break
-        case 'z':
-          // Merge first and last segment with EPSILON tolerance to address
-          // imprecisions in relative SVG data.
-          this.closePath(EPSILON)
-          // Correctly handle relative m commands, see #1101:
-          current = start
-          break
-      }
-      previous = lower
-    }
+    readSVGPath(data, this)
   }
-
-  // NOTE: #_getPathData() is defined in CompoundPath / Path
-  abstract _getPathData(_matrix?: Matrix, _precision?: number): string
 
   // Whether the path item draws its stroke as the outline of the stroke
   // profiles of its paths:
@@ -1697,4 +1566,21 @@ export abstract class PathItem extends Item {
       _canScaleStroke: true
     })
   }
+}
+
+// Returns the path data of the item's paths, at the precision that SVG export
+// writes it with:
+export function getPathData(item: PathItem, precision?: number): string {
+  const formatter = new Formatter(precision)
+  const paths = (item._children ?? [item]) as Path[]
+  return paths
+    .map(({ _segments: segments, _closed: closed }) =>
+      writeSVGPath(
+        segments.length,
+        closed,
+        (index, coords) => segments[index]._transformCoordinates(null, coords),
+        formatter
+      )
+    )
+    .join('')
 }

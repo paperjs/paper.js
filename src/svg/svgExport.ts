@@ -26,6 +26,7 @@ import {
   createSvgElement,
   equals,
   getDocument,
+  getPathData,
   getUID,
   isZero,
   setSvgAttributes,
@@ -234,7 +235,7 @@ function exportPath(item: Path, options: Options): SVGElement {
     }
   } else {
     type = 'path'
-    attrs.d = item._getPathData(null, options.precision)
+    attrs.d = getPathData(item, options.precision)
   }
   if (segmentsData) {
     attrs['data-paper-segments'] = segmentsData
@@ -270,7 +271,7 @@ function exportShape(item: Shape): SVGElement {
 
 function exportCompoundPath(item: CompoundPath, options: Options): SVGElement {
   const attrs = getTransform(item._matrix)
-  const data = item._getPathData(null, options.precision)
+  const data = getPathData(item, options.precision)
   const segmentsData = getSegmentsData(item)
   if (data) {
     attrs.d = data
