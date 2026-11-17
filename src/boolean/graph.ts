@@ -24,14 +24,19 @@ import {
 } from '../util/collisions.ts'
 import { Point } from '../basic/Point.ts'
 import * as Bezier from '../curve/index.ts'
-import { getBounds, getSegments, getValues, hasHandles } from './region.ts'
+import {
+  getBounds,
+  getSegments,
+  getValues,
+  hasHandles
+} from '../data/region.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'
 import type {
   BezierValues,
   Intersection,
   SegmentValues
 } from '../curve/index.ts'
-import type { PathData, RegionData } from './region.ts'
+import type { PathData, RegionData } from '../data/region.ts'
 
 // A path of the result, with the part of an operand's curve that each of its
 // segments starts: the curve by the indices of its operand, its path there

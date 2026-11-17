@@ -22,8 +22,8 @@ import {
   getStrokeCurves,
   getValues,
   hasHandles
-} from '../boolean/region.ts'
-import type { PathData, RegionData } from '../boolean/region.ts'
+} from '../data/region.ts'
+import type { PathData, RegionData } from '../data/region.ts'
 import { outlineStroke } from './outline.ts'
 
 const { abs } = Math

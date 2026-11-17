@@ -47,7 +47,7 @@ import {
 import type { Winding } from '../boolean/winding.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'
 import type { Operator } from '../boolean/graph.ts'
-import type { RegionData } from '../boolean/region.ts'
+import type { RegionData } from '../data/region.ts'
 import type { PathItem } from './PathItem.ts'
 import type { ProfilePart } from './StrokeProfile.ts'
 

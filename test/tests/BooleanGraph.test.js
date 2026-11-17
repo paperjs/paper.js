@@ -14,7 +14,7 @@ import { describe } from 'vitest'
 import { createGraph, traceGraph } from '../../src/boolean/graph.ts'
 import { splitGraph } from '../../src/boolean/split.ts'
 import { uniteRegions } from '../../src/boolean/operations.ts'
-import { getSegments, reduceRegion } from '../../src/boolean/region.ts'
+import { getSegments, reduceRegion } from '../../src/data/region.ts'
 import { equals, test } from '../helpers.js'
 
 // The graph of the boolean operations on plain descriptions of paths, without

@@ -22,8 +22,8 @@ import {
   createRegion,
   getSegments,
   getStrokeCurves
-} from '../boolean/region.ts'
-import type { PathData, SegmentData, RegionData } from '../boolean/region.ts'
+} from '../data/region.ts'
+import type { PathData, SegmentData, RegionData } from '../data/region.ts'
 import { regularize } from './curves.ts'
 
 // The stroke to outline, with the tolerance of its outline:

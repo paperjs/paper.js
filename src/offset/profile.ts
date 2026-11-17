@@ -28,8 +28,8 @@ import { Point } from '../basic/Point.ts'
 import * as Bezier from '../curve/index.ts'
 import type { BezierValues } from '../curve/index.ts'
 import { uniteRegions } from '../boolean/operations.ts'
-import { createRegion, getCurves } from '../boolean/region.ts'
-import type { PathData, RegionData } from '../boolean/region.ts'
+import { createRegion, getCurves } from '../data/region.ts'
+import type { PathData, RegionData } from '../data/region.ts'
 import {
   fitSide,
   getCurvatureExtrema,
