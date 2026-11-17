@@ -280,21 +280,6 @@ export class CompoundPath extends PathItem {
     return length
   }
 
-  _getPathData(_matrix?: Matrix, _precision?: number): string {
-    // NOTE: The #pathData setter is defined in PathItem.
-    return this._children
-      .map(child => {
-        const childMatrix = child._matrix
-        return child._getPathData(
-          _matrix && !childMatrix.isIdentity()
-            ? _matrix.appended(childMatrix)
-            : _matrix,
-          _precision
-        )
-      })
-      .join('')
-  }
-
   _changed(flags: number) {
     super._changed(flags)
     // The children have their strokes in the compound path's style, so

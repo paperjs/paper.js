@@ -18,7 +18,6 @@ import {
   CompoundPath,
   Curve,
   CurveLocation,
-  Formatter,
   GEOMETRIC_EPSILON,
   HitResult,
   Item,
@@ -781,77 +780,6 @@ export class Path extends PathItem {
       // up-to-date and don't need notification.
       this._changed(Change.SEGMENTS)
     }
-  }
-
-  _getPathData(_matrix?: Matrix, _precision?: number): string {
-    // NOTE: The pathData accessors are defined in PathItem.
-    const segments = this._segments
-    const { length } = segments
-    const formatter = new Formatter(_precision)
-    const coords = new Array(6)
-    let first = true
-    let curX: number
-    let curY: number
-    let prevX: number
-    let prevY: number
-    let inX: number
-    let inY: number
-    let outX: number
-    let outY: number
-    const parts = []
-
-    function addSegment(segment: Segment, skipLine?: boolean) {
-      segment._transformCoordinates(_matrix, coords)
-      curX = coords[0]
-      curY = coords[1]
-      if (first) {
-        parts.push('M' + formatter.pair(curX, curY))
-        first = false
-      } else {
-        inX = coords[2]
-        inY = coords[3]
-        if (inX === curX && inY === curY && outX === prevX && outY === prevY) {
-          // l = relative lineto:
-          if (!skipLine) {
-            const dx = curX - prevX
-            const dy = curY - prevY
-            parts.push(
-              dx === 0
-                ? 'v' + formatter.number(dy)
-                : dy === 0
-                  ? 'h' + formatter.number(dx)
-                  : 'l' + formatter.pair(dx, dy)
-            )
-          }
-        } else {
-          // c = relative curveto:
-          parts.push(
-            'c' +
-            formatter.pair(outX - prevX, outY - prevY) +
-            ' ' +
-            formatter.pair(inX - prevX, inY - prevY) +
-            ' ' +
-            formatter.pair(curX - prevX, curY - prevY)
-          )
-        }
-      }
-      prevX = curX
-      prevY = curY
-      outX = coords[4]
-      outY = coords[5]
-    }
-
-    if (!length) return ''
-
-    for (let i = 0; i < length; i++) {
-      addSegment(segments[i])
-    }
-    // Close path by drawing first segment again
-    if (this._closed && length > 0) {
-      addSegment(segments[0], true)
-      parts.push('z')
-    }
-    return parts.join('')
   }
 
   // TODO: Consider adding getSubPath(a, b), returning a part of the current
