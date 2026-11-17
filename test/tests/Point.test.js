@@ -102,6 +102,18 @@ describe('Point', () => {
     )
   })
 
+  test('get and set angleInRadians', () => {
+    const point = new Point(0, 10)
+    equals(point.angleInRadians, Math.PI / 2)
+    point.angleInRadians = Math.PI
+    equals(point, new Point(-10, 0))
+    equals(point.angle, 180)
+    // A point of zero length keeps the angle that it is given:
+    const zero = new Point(0, 0)
+    zero.angleInRadians = 1
+    equals(zero.angleInRadians, 1)
+  })
+
   test('set angle & length', () => {
     const point1 = new Point()
     point1.length = Math.SQRT2
