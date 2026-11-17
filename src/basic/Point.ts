@@ -207,7 +207,7 @@ export class Point extends Base {
         this.angle = obj.angle || 0
       } else if ('angleInRadians' in obj) {
         this._set(obj.length || 0, 0)
-        this.#setAngleInRadians(obj.angleInRadians || 0)
+        this.angleInRadians = obj.angleInRadians || 0
       } else {
         this._set(0, 0)
       }
@@ -340,20 +340,26 @@ export class Point extends Base {
    * The vector's angle in degrees, measured from the x-axis to the vector.
    */
   get angle(): number {
-    // Return the preserved angle in case the vector has no length, and
-    // update the internal #angle in case the vector has a length. See
-    // #setAngleInRadians() for more explanations.
-    const angle = this.isZero()
-      ? this.#angle || 0
-      : (this.#angle = Math.atan2(this.y, this.x))
-    return angle * 180 / Math.PI
+    return this.angleInRadians * 180 / Math.PI
   }
 
   set angle(angle: number) {
-    this.#setAngleInRadians(angle * Math.PI / 180)
+    this.angleInRadians = angle * Math.PI / 180
   }
 
-  #setAngleInRadians(angle: number) {
+  /**
+   * The vector's angle in radians, measured from the x-axis to the vector.
+   */
+  get angleInRadians(): number {
+    // Return the preserved angle in case the vector has no length, and
+    // update the internal #angle in case the vector has a length, see the
+    // setter:
+    return this.isZero()
+      ? this.#angle || 0
+      : (this.#angle = Math.atan2(this.y, this.x))
+  }
+
+  set angleInRadians(angle: number) {
     // We store a reference to #angle internally so we still preserve it
     // when the vector's length is set to zero, and then anything else.
     // Note that we cannot rely on it if x and y are something else than 0,
