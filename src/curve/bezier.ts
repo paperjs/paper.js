@@ -12,7 +12,7 @@
 
 // The functions on the values of a cubic Bézier curve: the coordinates of its
 // two points and of the two control points between them, as
-// Curve#getValues() returns them. A straight line is one without handles.
+// Curve#values holds them. A straight line is one without handles.
 import {
   CURVETIME_EPSILON,
   EPSILON,

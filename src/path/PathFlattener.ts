@@ -13,9 +13,9 @@
 import {
   Base,
   Bezier,
-  Curve,
   Point,
   capitalize,
+  getCurveValues,
   inject
 } from '../internal.ts'
 import type { Matrix } from '../basic/Matrix.ts'
@@ -70,7 +70,7 @@ export class PathFlattener extends Base {
     super()
     // Instead of relying on path.curves, we only use segments here and
     // get the curve values from them.
-    const curves: number[][] = [] // The curve values as returned by getValues()
+    const curves: number[][] = [] // The curve values as Curve#values holds them
     const parts: Part[] = [] // The calculated, subdivided parts of the path
     let length = 0 // The total length of the path
     // By default, we're not subdividing more than 32 times.
@@ -82,7 +82,7 @@ export class PathFlattener extends Base {
     // Iterate through all curves and compute the parts for each of them,
     // by recursively calling computeParts().
     function addCurve(segment1: Segment, segment2: Segment) {
-      const curve = Curve.getValues(segment1, segment2, matrix)
+      const curve = getCurveValues(segment1, segment2, matrix)
       curves.push(curve)
       computeParts(curve, segment1._index, 0, 1)
     }

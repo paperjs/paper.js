@@ -76,7 +76,7 @@ export class Curve extends Base {
   /**
    * Creates a new curve object from another curve, from an object with its
    * points and handles as {@link #toString()} prints them, or from the
-   * values that {@link #getValues()} returns.
+   * values that {@link #values} holds.
    *
    * @param object the curve, the object with its points and handles, or
    *     the curve values
@@ -128,7 +128,7 @@ export class Curve extends Base {
         handle2 = arg0.handle2
         point2 = arg0.point2
       } else if (Array.isArray(arg0)) {
-        // Convert getValues() array back to points and handles so we
+        // Convert the #values array back to points and handles so we
         // can create segments for those.
         point1 = [arg0[0], arg0[1]]
         point2 = [arg0[6], arg0[7]]
@@ -204,7 +204,7 @@ export class Curve extends Base {
          etc
    */
   classify(): { type: string; roots: number[] } {
-    return Bezier.classify(this.getValues())
+    return Bezier.classify(this.values)
   }
 
   /**
@@ -373,18 +373,15 @@ export class Curve extends Base {
   }
 
   /**
-   * Returns an array of 8 float values, describing this curve's geometry in
-   * four absolute x/y pairs (point1, handle1, handle2, point2). This format
-   * is used internally for efficient processing of curve geometries, e.g.
-   * when calculating intersections or bounds.
+   * An array of 8 float values, describing this curve's geometry in four
+   * absolute x/y pairs (point1, handle1, handle2, point2), as a new array on
+   * each read. This format is used internally for efficient processing of
+   * curve geometries, e.g. when calculating intersections or bounds.
    *
    * Note that the handles are converted to absolute coordinates.
-   *
-   * @param matrix the matrix to transform the values with, if any
-   * @return the curve values
    */
-  getValues(matrix?: Matrix): BezierValues {
-    return Curve.getValues(this._segment1, this._segment2, matrix)
+  get values(): BezierValues {
+    return getCurveValues(this._segment1, this._segment2)
   }
 
   /**
@@ -395,7 +392,7 @@ export class Curve extends Base {
    */
   get points(): Point[] {
     // Convert to array of absolute points
-    const coords = this.getValues()
+    const coords = this.values
     const points = []
     for (let i = 0; i < 8; i += 2) {
       points.push(new Point(coords[i], coords[i + 1]))
@@ -407,7 +404,7 @@ export class Curve extends Base {
    * The approximated length of the curve.
    */
   get length(): number {
-    this.#length ??= Bezier.getLength(this.getValues(), 0, 1)
+    this.#length ??= Bezier.getLength(this.values, 0, 1)
     return this.#length
   }
 
@@ -415,7 +412,7 @@ export class Curve extends Base {
    * The area that the curve's geometry is covering.
    */
   get area(): number {
-    return Bezier.getArea(this.getValues())
+    return Bezier.getArea(this.values)
   }
 
   /**
@@ -437,12 +434,12 @@ export class Curve extends Base {
    * @return the newly created sub-curve
    */
   getPart(from: number, to: number): Curve {
-    return new Curve(Bezier.getPart(this.getValues(), from, to))
+    return new Curve(Bezier.getPart(this.values, from, to))
   }
 
   // DOCS: Curve#getPartLength(from, to)
   getPartLength(from: number, to: number): number {
-    return Bezier.getLength(this.getValues(), from, to)
+    return Bezier.getLength(this.values, from, to)
   }
 
   // TODO: adjustThroughPoint
@@ -488,7 +485,7 @@ export class Curve extends Base {
     const tMax = 1 - tMin
     let res = null
     if (time >= tMin && time <= tMax) {
-      const [left, right] = Bezier.subdivide(this.getValues(), time)
+      const [left, right] = Bezier.subdivide(this.values, time)
       const setHandles = this.hasHandles()
       const segment1 = this._segment1
       const segment2 = this._segment2
@@ -574,38 +571,6 @@ export class Curve extends Base {
     this._segment2._handleIn._set(0, 0)
   }
 
-  static getValues(
-    segment1: Segment,
-    segment2: Segment,
-    matrix?: Matrix,
-    straight?: boolean
-  ): BezierValues {
-    const p1 = segment1._point
-    const h1 = segment1._handleOut
-    const h2 = segment2._handleIn
-    const p2 = segment2._point
-    const x1 = p1.x
-    const y1 = p1.y
-    const x2 = p2.x
-    const y2 = p2.y
-    const values = straight
-      ? [x1, y1, x1, y1, x2, y2, x2, y2]
-      : [
-          x1,
-          y1,
-          x1 + h1._x,
-          y1 + h1._y,
-          x2 + h2._x,
-          y2 + h2._y,
-          x2,
-          y2
-        ]
-    if (matrix) {
-      matrix._transformCoordinates(values, values, 4)
-    }
-    return values
-  }
-
   /**
    * {@grouptitle Bounding Boxes}
    *
@@ -648,7 +613,7 @@ export class Curve extends Base {
   get handleBounds(): Rectangle {
     // Unlike getSegmentHandleBounds(), only include the curve's own handles,
     // not the outer handles of its two segments.
-    const v = this.getValues()
+    const v = this.values
     const x1 = Math.min(v[0], v[2], v[4], v[6])
     const y1 = Math.min(v[1], v[3], v[5], v[7])
     const x2 = Math.max(v[0], v[2], v[4], v[6])
@@ -771,7 +736,7 @@ export class Curve extends Base {
    *     `null` if the offset exceeds the length of the curve
    */
   getTimeAt(offset: number, start?: number): number {
-    return Bezier.getTimeAt(this.getValues(), offset, start)
+    return Bezier.getTimeAt(this.values, offset, start)
   }
 
   /**
@@ -786,7 +751,7 @@ export class Curve extends Base {
     const vector = Point.from(tangent, y)
     return vector.isZero()
       ? []
-      : Bezier.getTimesWithTangent(this.getValues(), vector)
+      : Bezier.getTimesWithTangent(this.values, vector)
   }
 
   /**
@@ -798,7 +763,7 @@ export class Curve extends Base {
    * @return the curve-time parameters of the peaks
    */
   getPeaks(): number[] {
-    return Bezier.getPeaks(this.getValues())
+    return Bezier.getPeaks(this.values)
   }
 
   /**
@@ -845,7 +810,7 @@ export class Curve extends Base {
    * @return the curve-time parameter of the specified point
    */
   getTimeOf(point: PointLike | number, y?: number): number | null {
-    return Bezier.getTimeOf(this.getValues(), Point.from(point, y))
+    return Bezier.getTimeOf(this.values, Point.from(point, y))
   }
 
   /**
@@ -857,7 +822,7 @@ export class Curve extends Base {
    */
   getNearestLocation(point: PointLike | number, y?: number): CurveLocation {
     const target = Point.from(point, y)
-    const values = this.getValues()
+    const { values } = this
     const t = Bezier.getNearestTime(values, target)
     const pt = Bezier.getPoint(values, t)
     return new CurveLocation(this, t, pt, null, target.getDistance(pt))
@@ -894,11 +859,15 @@ export class Curve extends Base {
     const locations: CurveLocation[] = []
 
     for (let i = 0; i < length1; i++) {
-      values1[i] = curves1[i].getValues(matrix1)
+      values1[i] = getCurveValues(
+        curves1[i]._segment1, curves1[i]._segment2, matrix1
+      )
     }
     if (!self) {
       for (let i = 0; i < length2; i++) {
-        values2[i] = curves2[i].getValues(matrix2)
+        values2[i] = getCurveValues(
+          curves2[i]._segment1, curves2[i]._segment2, matrix2
+        )
       }
     }
     const boundsCollisions = findCurveBoundsCollisions(
@@ -944,10 +913,10 @@ export class Curve extends Base {
     const locations: CurveLocation[] = []
     if (curve && curve !== this) {
       addIntersections(
-        locations, null, this, this.getValues(), curve, curve.getValues()
+        locations, null, this, this.values, curve, curve.values
       )
     } else {
-      addIntersections(locations, null, this, this.getValues())
+      addIntersections(locations, null, this, this.values)
     }
     return locations
   }
@@ -984,11 +953,11 @@ export class Curve extends Base {
       const name = `get${capitalize(key)}`
       inject(this.prototype, {
         [`${name}At`](offset: number) {
-          const values = this.getValues()
+          const { values } = this
           return evaluate(values, Bezier.getTimeAt(values, offset))
         },
         [`${name}AtTime`](time: number) {
-          return evaluate(this.getValues(), time)
+          return evaluate(this.values, time)
         }
       })
     }
@@ -1166,4 +1135,38 @@ function addIntersections(
       CurveLocation.insert(locations, location1, true)
     }
   }
+}
+
+// The values of the curve between two segments, transformed by the matrix
+// if one is given, and without the handles if it is to be straight.
+export function getCurveValues(
+  segment1: Segment,
+  segment2: Segment,
+  matrix?: Matrix,
+  straight?: boolean
+): BezierValues {
+  const p1 = segment1._point
+  const h1 = segment1._handleOut
+  const h2 = segment2._handleIn
+  const p2 = segment2._point
+  const x1 = p1.x
+  const y1 = p1.y
+  const x2 = p2.x
+  const y2 = p2.y
+  const values = straight
+    ? [x1, y1, x1, y1, x2, y2, x2, y2]
+    : [
+        x1,
+        y1,
+        x1 + h1._x,
+        y1 + h1._y,
+        x2 + h2._x,
+        y2 + h2._y,
+        x2,
+        y2
+      ]
+  if (matrix) {
+    matrix._transformCoordinates(values, values, 4)
+  }
+  return values
 }
