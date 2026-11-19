@@ -91,11 +91,11 @@
   `onImport` aliases of the SVG options, and `PaperScope#browser`.
 - Remove `Item.extend()` and `HostItem.extend()`: subclasses use
   `class extends`, and register for JSON with `registerClasses()`.
-- Remove `paper.DomEvent`, `paper.DomElement` and `paper.Http`,
-  `Curve#values` (use `getValues()`), the properties `nearestLocation`,
-  `nearestPoint`, `intersections` and `crossings` of `Path` (their methods
-  stay), the arguments of `PathItem#getPathData()` (use `pathData`), and the
-  undocumented range of `Path#clear(start, end)` (use `removeSegments()`).
+- Remove `paper.DomEvent`, `paper.DomElement` and `paper.Http`, the
+  properties `nearestLocation`, `nearestPoint`, `intersections` and
+  `crossings` of `Path` (their methods stay), the arguments of
+  `PathItem#getPathData()` (use `pathData`), and the undocumented range of
+  `Path#clear(start, end)` (use `removeSegments()`).
 - Remove the support of node-canvas and jsdom with their PDF and SVG canvases
   and stream methods, the `paper-jsdom` and `paper-jsdom-canvas` packages,
   the CommonJS and AMD exports, and the `require()` hook for `.pjs` files: the

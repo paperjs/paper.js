@@ -22,7 +22,8 @@ import {
   Segment,
   Size,
   addBevelJoin,
-  addSquareCap
+  addSquareCap,
+  getCurveValues
 } from '../internal.ts'
 
 /**
@@ -248,7 +249,8 @@ export function hitTestPath(
     let minDistance = Infinity
     let nearest: Point
     for (i = 0, l = curves.length; i < l; i++) {
-      const values = curves[i].getValues(strokeSpace)
+      const { _segment1, _segment2 } = curves[i]
+      const values = getCurveValues(_segment1, _segment2, strokeSpace)
       const t = Bezier.getNearestTime(values, strokePoint)
       const pt = Bezier.getPoint(values, t)
       const distance = pt.getDistance(strokePoint)
