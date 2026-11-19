@@ -35,6 +35,17 @@ describe('Curve', () => {
     }
   }
 
+  test('Curve#values', () => {
+    const curve = new Curve([0, 0], [10, 20], [-30, 40], [100, 50])
+    const { values } = curve
+    equals(values, [0, 0, 10, 20, 70, 90, 100, 50])
+    equals(new Curve(values).values, values)
+    // The values are a copy, which changes nothing on the curve:
+    values[0] = 5
+    equals(curve.point1, new Point(0, 0))
+    equals(curve.values[0], 0)
+  })
+
   test('Curve#classify()', () => {
     const point = new Curve([100, 100], null, null, [100, 100])
     const line = new Curve([100, 100], null, null, [200, 200])

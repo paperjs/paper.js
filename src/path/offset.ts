@@ -282,7 +282,7 @@ function getDashes(
       return {
         index,
         time: Bezier.getTimeAt(
-          curve.getValues(),
+          curve.values,
           Math.min(offset - start, curve.length)
         ) || 0
       }
@@ -294,7 +294,7 @@ function getDashes(
       const segments: Segment[] = []
       for (let i = a.index; i <= b.index; i++) {
         const v = Bezier.getPart(
-          curves[i].getValues(),
+          curves[i].values,
           i === a.index ? a.time : 0,
           i === b.index ? b.time : 1
         )

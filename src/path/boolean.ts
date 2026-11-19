@@ -434,7 +434,7 @@ export function reorientPaths(
             const { curves } = path2
             let winding = 0
             for (let k = 0, n = curves.length; k < n; k++) {
-              winding += Bezier.getRayWinding(curves[k].getValues(), point)
+              winding += Bezier.getRayWinding(curves[k].values, point)
             }
             if (winding) {
               const entry2 = lookup[path2._id]
@@ -471,7 +471,7 @@ export function getItemWinding(point: Point, item: PathItem): Winding {
   return getWinding(
     point,
     getPaths(item).map(path => ({
-      curves: path.curves.map(curve => curve.getValues()),
+      curves: path.curves.map(curve => curve.values),
       closed: path._closed,
       get clockwise() {
         return path.clockwise
@@ -517,7 +517,7 @@ export function getInteriorPoint(item: PathItem): Point {
     const intercepts = []
     const roots = []
     for (let i = 0, l = curves.length; i < l; i++) {
-      push(monoCurves, Bezier.getMonoCurves(curves[i].getValues()))
+      push(monoCurves, Bezier.getMonoCurves(curves[i].values))
     }
     for (let i = 0, l = monoCurves.length; i < l; i++) {
       ys.push(monoCurves[i][1], monoCurves[i][7])

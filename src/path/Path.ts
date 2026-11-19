@@ -47,6 +47,7 @@ import {
   createStar,
   defineDeprecatedConstructors,
   equals,
+  getCurveValues,
   getSegmentBounds,
   getSegmentHandleBounds,
   getSegmentStrokeBounds,
@@ -1376,7 +1377,7 @@ export class Path extends PathItem {
       for (let i = 0, l = segments.length; i < l; i++) {
         const last = i + 1 === l
         area += Bezier.getArea(
-          Curve.getValues(
+          getCurveValues(
             segments[i], segments[last ? 0 : i + 1],
             // If this is the last curve and the last is not closed,
             // connect with a straight curve and ignore the handles.
@@ -2250,7 +2251,7 @@ export class Path extends PathItem {
       // matching geometries.
       return length1 == length2
     }
-    let v1 = curves1[0].getValues()
+    let v1 = curves1[0].values
     const values2 = []
     let pos1 = 0
     let pos2: number
@@ -2259,7 +2260,7 @@ export class Path extends PathItem {
     // First, loop through curves2, looking for the start of the overlapping
     // sequence with curves1[0]. Also cache curve values for later reuse.
     for (let i = 0; i < length2; i++) {
-      v2 = curves2[i].getValues()
+      v2 = curves2[i].values
       values2.push(v2)
       overlaps = Bezier.getOverlaps(v1, v2)
       if (overlaps) {
@@ -2289,7 +2290,7 @@ export class Path extends PathItem {
           if (end1 === 1) {
             // Skip to the next curve if we're at the end of the
             // current, and set v1 to null if at the end of curves1.
-            v1 = ++pos1 < length1 ? curves1[pos1].getValues() : null
+            v1 = ++pos1 < length1 ? curves1[pos1].values : null
             end1 = 0
           }
           // Check that the overlaps are joining on curves2.
@@ -2305,7 +2306,7 @@ export class Path extends PathItem {
                 pos2 = 0
               }
               // Reuse cached values from initial search.
-              v2 = values2[pos2] ?? curves2[pos2].getValues()
+              v2 = values2[pos2] ?? curves2[pos2].values
               end2 = 0
             }
             if (!v1) {

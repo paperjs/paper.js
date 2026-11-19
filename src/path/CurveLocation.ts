@@ -444,7 +444,7 @@ export class CurveLocation extends Base {
     function addOffsets(curve: Curve, end: boolean) {
       // Find the largest offset of unambiguous direction on the curve,
       // taking their loops, cusps, inflections, and "peaks" into account.
-      const v = curve.getValues()
+      const v = curve.values
       const roots = Bezier.classify(v).roots ?? Bezier.getPeaks(v)
       const count = roots.length
       const offset = Bezier.getLength(
