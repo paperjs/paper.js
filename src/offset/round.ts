@@ -23,8 +23,8 @@ import {
   getCurvePart,
   getCurveTangent,
   getEllipse
-} from '../curve/index.ts'
-import type { CurveValues, SegmentValues } from '../curve/index.ts'
+} from '../values/index.ts'
+import type { CurveValues, SegmentValues } from '../values/index.ts'
 import {
   getCuspTimes,
   getEvolute,

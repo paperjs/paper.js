@@ -38,14 +38,12 @@ const layers = [
     files: ['src/constants.ts', 'src/{util,core,basic}/**'],
     below: 'util|core|basic'
   },
-  // The functions on curve values:
-  { files: ['src/curve/**'], below: 'util|core|basic' },
-  // The plain descriptions of paths and regions:
-  { files: ['src/data/**'], below: 'util|core|basic|curve' },
+  // The functions on the values of curves, segments, paths and regions:
+  { files: ['src/values/**'], below: 'util|core|basic' },
   // The planar graph of the boolean operations, on plain paths:
-  { files: ['src/boolean/**'], below: 'util|core|basic|curve|data' },
+  { files: ['src/boolean/**'], below: 'util|core|basic|values' },
   // The outlines of strokes, on plain paths:
-  { files: ['src/offset/**'], below: 'util|core|basic|curve|data|boolean' }
+  { files: ['src/offset/**'], below: 'util|core|basic|values|boolean' }
 ]
 
 export default [

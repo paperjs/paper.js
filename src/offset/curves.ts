@@ -33,8 +33,8 @@ import {
   getNearestCurveTime,
   getWeightedCurveTangent,
   isStraightCurve
-} from '../curve/index.ts'
-import type { SegmentValues } from '../curve/index.ts'
+} from '../values/index.ts'
+import type { SegmentValues } from '../values/index.ts'
 
 const { abs } = Math
 

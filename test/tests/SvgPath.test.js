@@ -12,7 +12,7 @@
 
 import { describe } from 'vitest'
 import { CompoundPath } from 'paper'
-import { formatSVGPath, parseSVGPath } from '../../src/data/svg.ts'
+import { formatSVGPath, parseSVGPath } from '../../src/values/svg.ts'
 import { equals, test } from '../helpers.js'
 
 // SVG path data on plain descriptions of paths, which must read and write as

@@ -15,20 +15,21 @@
 import { CURVETIME_EPSILON } from '../util/numerical.ts'
 import { Point } from '../basic/Point.ts'
 import {
+  getCurve,
   getCurveLength,
   getCurveNormal,
   getCurvePoint,
-  getNearestCurveTime
-} from '../curve/index.ts'
-import type { SegmentValues } from '../curve/index.ts'
-import { subtractRegions, uniteRegions } from '../boolean/operations.ts'
-import {
-  getCurve,
+  getNearestCurveTime,
   getPathSegments,
   getStrokeCurves,
   hasHandles
-} from '../data/region.ts'
-import type { PathValues, RegionValues } from '../data/region.ts'
+} from '../values/index.ts'
+import type {
+  PathValues,
+  RegionValues,
+  SegmentValues
+} from '../values/index.ts'
+import { subtractRegions, uniteRegions } from '../boolean/operations.ts'
 import { outlineStroke } from './outline.ts'
 
 const { abs } = Math

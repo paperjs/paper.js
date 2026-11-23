@@ -17,17 +17,19 @@
 import { GEOMETRIC_EPSILON } from '../util/numerical.ts'
 import { Point } from '../basic/Point.ts'
 import {
+  createRegion,
   getCurveLength,
   getCurvePoint,
-  getCurveReversals
-} from '../curve/index.ts'
-import type { CurveValues, SegmentValues } from '../curve/index.ts'
-import {
-  createRegion,
+  getCurveReversals,
   getPathSegments,
   getStrokeCurves
-} from '../data/region.ts'
-import type { PathValues, RegionValues } from '../data/region.ts'
+} from '../values/index.ts'
+import type {
+  CurveValues,
+  PathValues,
+  RegionValues,
+  SegmentValues
+} from '../values/index.ts'
 import { regularize } from './curves.ts'
 
 // The stroke to outline, with the tolerance of its outline:

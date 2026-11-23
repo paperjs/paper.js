@@ -16,7 +16,7 @@ import {
   getArcThrough,
   getArcTowards,
   getEllipticArc
-} from '../../src/curve/arcs.ts'
+} from '../../src/values/arcs.ts'
 import { KAPPA } from '../../src/util/numerical.ts'
 import { Path, Point, Size } from '../../src/internal.ts'
 import { equals, test } from '../helpers.js'

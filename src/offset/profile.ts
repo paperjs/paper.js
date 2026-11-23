@@ -26,6 +26,7 @@ import {
 import { Line } from '../basic/Line.ts'
 import { Point } from '../basic/Point.ts'
 import {
+  createRegion,
   getCurveArea,
   getCurveLength,
   getCurveNormal,
@@ -33,12 +34,11 @@ import {
   getCurveRayWinding,
   getCurveTangent,
   getCurveTimeAt,
-  getNearestCurveTime
-} from '../curve/index.ts'
-import type { CurveValues } from '../curve/index.ts'
+  getNearestCurveTime,
+  getPathCurves
+} from '../values/index.ts'
+import type { CurveValues, PathValues, RegionValues } from '../values/index.ts'
 import { uniteRegions } from '../boolean/operations.ts'
-import { createRegion, getPathCurves } from '../data/region.ts'
-import type { PathValues, RegionValues } from '../data/region.ts'
 import {
   fitSide,
   getCurvatureExtrema,

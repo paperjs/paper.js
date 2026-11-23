@@ -21,8 +21,8 @@ import {
   getCurvature,
   getCurvePoint,
   getCurveTangent
-} from '../curve/index.ts'
-import type { CurveValues, SegmentValues } from '../curve/index.ts'
+} from '../values/index.ts'
+import type { CurveValues, SegmentValues } from '../values/index.ts'
 
 // The values of the pen of a stroke profile with their first and second
 // derivatives along the path:

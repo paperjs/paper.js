@@ -19,7 +19,7 @@ import { Line } from '../basic/Line.ts'
 import { Matrix } from '../basic/Matrix.ts'
 import { Point } from '../basic/Point.ts'
 import type { Size } from '../basic/Size.ts'
-import type { SegmentValues } from './bezier.ts'
+import type { SegmentValues } from './path.ts'
 
 // Returns the arc from `from` through `through` to `to`.
 export function getArcThrough(from: Point, through: Point, to: Point) {
