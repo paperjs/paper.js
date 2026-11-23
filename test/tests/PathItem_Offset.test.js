@@ -415,7 +415,7 @@ describe('PathItem#offset() and #outline()', () => {
     equals(getSeams(pressureOutline), 0, 'seams')
     // The sides take as few cubics as stay within the tolerance, with the
     // times of the points on them refined:
-    equals(pressureOutline.segments.length, 44)
+    equals(pressureOutline.segments.length, 25)
     equals(getDeviation(pressure, pressureOutline) < 0.1, true, 'tolerance')
     // Also at a smooth stop between curves:
     const joint = pressure.clone({ insert: false })
