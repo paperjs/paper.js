@@ -47,8 +47,13 @@
  */
 import { Point } from '../basic/Point.ts'
 import { splitGraph } from './split.ts'
-import { traceRegions, uniteRegions } from './operations.ts'
-import { getPathArea, getStrokeCurves } from '../values/index.ts'
+import {
+  booleanOperators,
+  subtractRegions,
+  traceRegions,
+  uniteRegions
+} from './operations.ts'
+import { getStrokeCurves } from '../values/index.ts'
 import type { PathValues, RegionValues } from '../values/index.ts'
 import { getWinding } from './winding.ts'
 
@@ -77,11 +82,7 @@ export function subtract(
   others: RegionValues | RegionValues[]
 ): RegionValues {
   // The union of the others, as path items subtract it:
-  return traceRegions(
-    region,
-    uniteRegions(toList(others)),
-    (inside1, inside2) => inside1 && !inside2
-  )
+  return subtractRegions(region, uniteRegions(toList(others)))
 }
 
 /**
@@ -96,8 +97,7 @@ export function intersect(
   others: RegionValues | RegionValues[]
 ): RegionValues {
   return toList(others).reduce(
-    (result, other) =>
-      traceRegions(result, other, (inside1, inside2) => inside1 && inside2),
+    (result, other) => traceRegions(result, other, booleanOperators.intersect),
     region
   )
 }
@@ -114,8 +114,7 @@ export function exclude(
   others: RegionValues | RegionValues[]
 ): RegionValues {
   return toList(others).reduce(
-    (result, other) =>
-      traceRegions(result, other, (inside1, inside2) => inside1 !== inside2),
+    (result, other) => traceRegions(result, other, booleanOperators.exclude),
     region
   )
 }
@@ -133,10 +132,7 @@ export function contains(region: RegionValues, [x, y]: number[]): boolean {
     new Point(x, y),
     region.paths.map(path => ({
       curves: getStrokeCurves(path),
-      closed: path.closed,
-      get clockwise() {
-        return getPathArea(path) >= 0
-      }
+      closed: path.closed
     }))
   )
   return (
