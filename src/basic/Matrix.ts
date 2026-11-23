@@ -22,7 +22,16 @@ import { serialize } from '../core/serialization.ts'
 import { Base } from '../core/Base.ts'
 import { Point } from './Point.ts'
 import { Rectangle } from './Rectangle.ts'
+import {
+  createMatrix,
+  inverseTransformPoint,
+  rotateMatrix,
+  scaleMatrix,
+  transformPoint,
+  translateMatrix
+} from '../values/matrix.ts'
 import type { PointLike } from './Point.ts'
+import type { MatrixValues } from '../values/matrix.ts'
 
 /**
  * An affine transformation matrix performs a linear mapping from 2D
@@ -48,12 +57,8 @@ import type { PointLike } from './Point.ts'
 export class Matrix extends Base {
   // The values that Item#transform() saves before it applies the matrix:
   declare _backup: number[]
-  declare _a: number
-  declare _b: number
-  declare _c: number
-  declare _d: number
-  declare _tx: number
-  declare _ty: number
+  // The values a, b, c, d, tx and ty:
+  declare _values: MatrixValues
   // The item or view that the matrix belongs to, if any:
   declare _owner: any
 
@@ -97,7 +102,16 @@ export class Matrix extends Base {
     tx?: number, ty?: number
   ) {
     super()
-    this.set(a, b, c, d, tx, ty)
+    // Most matrices are created without values, or with all six: Create
+    // their array as it is, where set() would write it a second time:
+    if (typeof a === 'number' && ty !== undefined) {
+      this._values = [a, b, c, d, tx, ty]
+    } else {
+      this._values = createMatrix()
+      if (a !== undefined) {
+        this.set(a, b, c, d, tx, ty)
+      }
+    }
   }
 
   /**
@@ -109,20 +123,19 @@ export class Matrix extends Base {
    */
   set(...values: any[]): this
   set(
-    a?: Matrix | number[] | number, b?: number | boolean,
+    a?: Matrix | number[] | number, b?: number,
     c?: number, d?: number,
-    tx?: number, ty?: number,
-    _dontNotify?: boolean
+    tx?: number, ty?: number
   ): this {
     if (typeof a === 'number' && ty !== undefined) {
-      this._set(a, b as number, c, d, tx, ty, _dontNotify)
+      this._set(a, b, c, d, tx, ty)
     } else if (a === undefined) {
       this.reset()
     } else if (a instanceof Matrix) {
-      // Pass on the optional _dontNotify argument:
-      this._set(a._a, a._b, a._c, a._d, a._tx, a._ty, b as boolean)
+      const v = a._values
+      this._set(v[0], v[1], v[2], v[3], v[4], v[5])
     } else if (Array.isArray(a)) {
-      this._set(a[0], a[1], a[2], a[3], a[4], a[5], b as boolean)
+      this._set(a[0], a[1], a[2], a[3], a[4], a[5])
     } else {
       throw new Error('Unsupported matrix parameters')
     }
@@ -136,12 +149,13 @@ export class Matrix extends Base {
     tx: number, ty: number,
     _dontNotify?: boolean
   ): this {
-    this._a = a
-    this._b = b
-    this._c = c
-    this._d = d
-    this._tx = tx
-    this._ty = ty
+    const v = this._values
+    v[0] = a
+    v[1] = b
+    v[2] = c
+    v[3] = d
+    v[4] = tx
+    v[5] = ty
     if (!_dontNotify) {
       this.#changed()
     }
@@ -168,7 +182,8 @@ export class Matrix extends Base {
    * @return a copy of this transform
    */
   clone(): Matrix {
-    return new Matrix(this._a, this._b, this._c, this._d, this._tx, this._ty)
+    const v = this._values
+    return new Matrix(v[0], v[1], v[2], v[3], v[4], v[5])
   }
 
   /**
@@ -178,15 +193,17 @@ export class Matrix extends Base {
    * @return {@true if the matrices are equal}
    */
   equals(matrix: Matrix): boolean {
+    const v = this._values
+    const m = matrix?._values
     return !!(
       matrix === this || (
-        matrix &&
-        this._a === matrix._a &&
-        this._b === matrix._b &&
-        this._c === matrix._c &&
-        this._d === matrix._d &&
-        this._tx === matrix._tx &&
-        this._ty === matrix._ty
+        m &&
+        v[0] === m[0] &&
+        v[1] === m[1] &&
+        v[2] === m[2] &&
+        v[3] === m[3] &&
+        v[4] === m[4] &&
+        v[5] === m[5]
       )
     )
   }
@@ -198,10 +215,8 @@ export class Matrix extends Base {
     const { instance } = Formatter
     const format = (...values: number[]) =>
       values.map(value => instance.number(value)).join(', ')
-    return (
-      `[[${format(this._a, this._c, this._tx)}], ` +
-      `[${format(this._b, this._d, this._ty)}]]`
-    )
+    const v = this._values
+    return `[[${format(v[0], v[2], v[4])}], [${format(v[1], v[3], v[5])}]]`
   }
 
   /**
@@ -209,8 +224,9 @@ export class Matrix extends Base {
    * matrix that results in no transformation.
    */
   reset(_dontNotify?: boolean): this {
-    this._a = this._d = 1
-    this._b = this._c = this._tx = this._ty = 0
+    const v = this._values
+    v[0] = v[3] = 1
+    v[1] = v[2] = v[4] = v[5] = 0
     if (!_dontNotify) {
       this.#changed()
     }
@@ -253,8 +269,7 @@ export class Matrix extends Base {
   translate(dx: number, dy: number): this
   translate(arg0: PointLike | number, arg1?: number): this {
     const { x, y } = Point.from(arg0, arg1)
-    this._tx += x * this._a + y * this._c
-    this._ty += x * this._b + y * this._d
+    translateMatrix(this._values, x, y)
     this.#changed()
     return this
   }
@@ -289,10 +304,7 @@ export class Matrix extends Base {
     if (center) {
       this.translate(center)
     }
-    this._a *= scale.x
-    this._b *= scale.x
-    this._c *= scale.y
-    this._d *= scale.y
+    scaleMatrix(this._values, scale.x, scale.y)
     if (center) {
       this.translate(center.negate())
     }
@@ -309,23 +321,8 @@ export class Matrix extends Base {
    * @return this affine transform
    */
   rotate(angle: number, center?: PointLike): this {
-    angle *= Math.PI / 180
-    // Concatenate rotation matrix into this one
     const { x, y } = Point.from(center)
-    const cos = Math.cos(angle)
-    const sin = Math.sin(angle)
-    const tx = x - x * cos + y * sin
-    const ty = y - x * sin - y * cos
-    const a = this._a
-    const b = this._b
-    const c = this._c
-    const d = this._d
-    this._a = cos * a + sin * c
-    this._b = cos * b + sin * d
-    this._c = -sin * a + cos * c
-    this._d = -sin * b + cos * d
-    this._tx += tx * a + ty * c
-    this._ty += tx * b + ty * d
+    rotateMatrix(this._values, angle, x, y)
     this.#changed()
     return this
   }
@@ -360,12 +357,13 @@ export class Matrix extends Base {
     if (center) {
       this.translate(center)
     }
-    const a = this._a
-    const b = this._b
-    this._a += shear.y * this._c
-    this._b += shear.y * this._d
-    this._c += shear.x * a
-    this._d += shear.x * b
+    const v = this._values
+    const a = v[0]
+    const b = v[1]
+    v[0] += shear.y * v[2]
+    v[1] += shear.y * v[3]
+    v[2] += shear.x * a
+    v[3] += shear.x * b
     if (center) {
       this.translate(center.negate())
     }
@@ -416,22 +414,24 @@ export class Matrix extends Base {
    */
   append(matrix: Matrix, _dontNotify?: boolean): this {
     if (matrix) {
-      const a1 = this._a
-      const b1 = this._b
-      const c1 = this._c
-      const d1 = this._d
-      const a2 = matrix._a
-      const b2 = matrix._c
-      const c2 = matrix._b
-      const d2 = matrix._d
-      const tx2 = matrix._tx
-      const ty2 = matrix._ty
-      this._a = a2 * a1 + c2 * c1
-      this._c = b2 * a1 + d2 * c1
-      this._b = a2 * b1 + c2 * d1
-      this._d = b2 * b1 + d2 * d1
-      this._tx += tx2 * a1 + ty2 * c1
-      this._ty += tx2 * b1 + ty2 * d1
+      const v = this._values
+      const m = matrix._values
+      const a1 = v[0]
+      const b1 = v[1]
+      const c1 = v[2]
+      const d1 = v[3]
+      const a2 = m[0]
+      const b2 = m[2]
+      const c2 = m[1]
+      const d2 = m[3]
+      const tx2 = m[4]
+      const ty2 = m[5]
+      v[0] = a2 * a1 + c2 * c1
+      v[2] = b2 * a1 + d2 * c1
+      v[1] = a2 * b1 + c2 * d1
+      v[3] = b2 * b1 + d2 * d1
+      v[4] += tx2 * a1 + ty2 * c1
+      v[5] += tx2 * b1 + ty2 * d1
       if (!_dontNotify) {
         this.#changed()
       }
@@ -448,24 +448,26 @@ export class Matrix extends Base {
    */
   prepend(matrix: Matrix, _dontNotify?: boolean): this {
     if (matrix) {
-      const a1 = this._a
-      const b1 = this._b
-      const c1 = this._c
-      const d1 = this._d
-      const tx1 = this._tx
-      const ty1 = this._ty
-      const a2 = matrix._a
-      const b2 = matrix._c
-      const c2 = matrix._b
-      const d2 = matrix._d
-      const tx2 = matrix._tx
-      const ty2 = matrix._ty
-      this._a = a2 * a1 + b2 * b1
-      this._c = a2 * c1 + b2 * d1
-      this._b = c2 * a1 + d2 * b1
-      this._d = c2 * c1 + d2 * d1
-      this._tx = a2 * tx1 + b2 * ty1 + tx2
-      this._ty = c2 * tx1 + d2 * ty1 + ty2
+      const v = this._values
+      const m = matrix._values
+      const a1 = v[0]
+      const b1 = v[1]
+      const c1 = v[2]
+      const d1 = v[3]
+      const tx1 = v[4]
+      const ty1 = v[5]
+      const a2 = m[0]
+      const b2 = m[2]
+      const c2 = m[1]
+      const d2 = m[3]
+      const tx2 = m[4]
+      const ty2 = m[5]
+      v[0] = a2 * a1 + b2 * b1
+      v[2] = a2 * c1 + b2 * d1
+      v[1] = c2 * a1 + d2 * b1
+      v[3] = c2 * c1 + d2 * d1
+      v[4] = a2 * tx1 + b2 * ty1 + tx2
+      v[5] = c2 * tx1 + d2 * ty1 + ty2
       if (!_dontNotify) {
         this.#changed()
       }
@@ -507,19 +509,20 @@ export class Matrix extends Base {
   invert(): this | null {
     let res = null
     if (this.isInvertible()) {
-      const a = this._a
-      const b = this._b
-      const c = this._c
-      const d = this._d
-      const tx = this._tx
-      const ty = this._ty
+      const v = this._values
+      const a = v[0]
+      const b = v[1]
+      const c = v[2]
+      const d = v[3]
+      const tx = v[4]
+      const ty = v[5]
       const det = a * d - b * c
-      this._a = d / det
-      this._b = -b / det
-      this._c = -c / det
-      this._d = a / det
-      this._tx = (c * ty - d * tx) / det
-      this._ty = (b * tx - a * ty) / det
+      v[0] = d / det
+      v[1] = -b / det
+      v[2] = -c / det
+      v[3] = a / det
+      v[4] = (c * ty - d * tx) / det
+      v[5] = (b * tx - a * ty) / det
       res = this
     }
     return res
@@ -544,7 +547,8 @@ export class Matrix extends Base {
    * set to `0`.
    */
   _shiftless(): Matrix {
-    return new Matrix(this._a, this._b, this._c, this._d, 0, 0)
+    const v = this._values
+    return new Matrix(v[0], v[1], v[2], v[3], 0, 0)
   }
 
   _orNullIfIdentity(): this | null {
@@ -555,13 +559,14 @@ export class Matrix extends Base {
    * @return whether this matrix is the identity matrix
    */
   isIdentity(): boolean {
+    const v = this._values
     return (
-      this._a === 1 &&
-      this._b === 0 &&
-      this._c === 0 &&
-      this._d === 1 &&
-      this._tx === 0 &&
-      this._ty === 0
+      v[0] === 1 &&
+      v[1] === 0 &&
+      v[2] === 0 &&
+      v[3] === 1 &&
+      v[4] === 0 &&
+      v[5] === 0
     )
   }
 
@@ -572,13 +577,15 @@ export class Matrix extends Base {
    * @return whether the matrix is invertible
    */
   isInvertible(): boolean {
-    const det = this._a * this._d - this._c * this._b
-    return !!det && !isNaN(det) && isFinite(this._tx) && isFinite(this._ty)
+    const v = this._values
+    const det = v[0] * v[3] - v[2] * v[1]
+    return !!det && !isNaN(det) && isFinite(v[4]) && isFinite(v[5])
   }
 
   // The geometric mean of the scale factors, as used for strokes:
   _getMeanScale(): number {
-    return Math.sqrt(Math.abs(this._a * this._d - this._b * this._c))
+    const v = this._values
+    return Math.sqrt(Math.abs(v[0] * v[3] - v[1] * v[2]))
   }
 
   /**
@@ -626,20 +633,16 @@ export class Matrix extends Base {
    * attempt to convert it.
    */
   _transformPoint(point: Point, dest?: Point, _dontNotify?: boolean): Point {
-    const { x, y } = point
-    return (dest ?? new Point())._set(
-      x * this._a + y * this._c + this._tx,
-      x * this._b + y * this._d + this._ty,
-      _dontNotify
-    )
+    return transformPoint(this._values, point, dest, _dontNotify)
   }
 
   _transformCoordinates(src: number[], dst: number[], count: number) {
+    const v = this._values
     for (let i = 0, max = 2 * count; i < max; i += 2) {
       const x = src[i]
       const y = src[i + 1]
-      dst[i] = x * this._a + y * this._c + this._tx
-      dst[i + 1] = x * this._b + y * this._d + this._ty
+      dst[i] = x * v[0] + y * v[2] + v[4]
+      dst[i + 1] = x * v[1] + y * v[3] + v[5]
     }
     return dst
   }
@@ -687,18 +690,9 @@ export class Matrix extends Base {
   }
 
   _inverseTransform(point: Point): Point | null {
-    let res = null
-    if (this.isInvertible()) {
-      const a = this._a
-      const b = this._b
-      const c = this._c
-      const d = this._d
-      const det = a * d - b * c
-      const x = point.x - this._tx
-      const y = point.y - this._ty
-      res = new Point((x * d - y * c) / det, (y * a - x * b) / det)
-    }
-    return res
+    return this.isInvertible()
+      ? inverseTransformPoint(this._values, point)
+      : null
   }
 
   /**
@@ -717,10 +711,11 @@ export class Matrix extends Base {
     // http://dev.w3.org/csswg/css3-2d-transforms/#matrix-decomposition
     // http://www.maths-informatique-jeux.com/blog/frederic/?post/2013/12/01/Decomposition-of-2D-transform-matrices
     // https://github.com/wisec/DOMinator/blob/master/layout/style/nsStyleAnimation.cpp#L946
-    const a = this._a
-    const b = this._b
-    const c = this._c
-    const d = this._d
+    const v = this._values
+    const a = v[0]
+    const b = v[1]
+    const c = v[2]
+    const d = v[3]
     const det = a * d - b * c
     const { sqrt, atan2 } = Math
     const degrees = 180 / Math.PI
@@ -755,8 +750,8 @@ export class Matrix extends Base {
    * The matrix values as an array, in the same sequence as they are passed
    * to {@link Matrix()}.
    */
-  get values(): number[] {
-    return [this._a, this._b, this._c, this._d, this._tx, this._ty]
+  get values(): MatrixValues {
+    return [...this._values]
   }
 
   /**
@@ -764,7 +759,8 @@ export class Matrix extends Base {
    */
   get translation(): Point {
     // No decomposition is required to extract translation.
-    return new Point(this._tx, this._ty)
+    const v = this._values
+    return new Point(v[4], v[5])
   }
 
   /**
@@ -792,7 +788,8 @@ export class Matrix extends Base {
    */
   applyToContext(ctx: CanvasRenderingContext2D) {
     if (!this.isIdentity()) {
-      ctx.transform(this._a, this._b, this._c, this._d, this._tx, this._ty)
+      const v = this._values
+      ctx.transform(v[0], v[1], v[2], v[3], v[4], v[5])
     }
   }
 
@@ -804,10 +801,11 @@ export class Matrix extends Base {
     if (!matrix) return [radius, radius]
     // x = radius * (a * cos(t) + c * sin(t)) is at most
     // radius * sqrt(a² + c²), and y the same with b and d:
-    const a = matrix._a
-    const b = matrix._b
-    const c = matrix._c
-    const d = matrix._d
+    const v = matrix._values
+    const a = v[0]
+    const b = v[1]
+    const c = v[2]
+    const d = v[3]
     return [
       radius * Math.sqrt(a * a + c * c),
       radius * Math.sqrt(b * b + d * d)
@@ -816,14 +814,13 @@ export class Matrix extends Base {
 
   static {
     // Inject accessors for the values, that notify the owner of changes:
-    for (const key of ['a', 'b', 'c', 'd', 'tx', 'ty']) {
-      const field = `_${key}`
+    for (const [index, key] of ['a', 'b', 'c', 'd', 'tx', 'ty'].entries()) {
       inject(this.prototype, {
         get [key]() {
-          return this[field]
+          return this._values[index]
         },
         set [key](value: number) {
-          this[field] = value
+          this._values[index] = value
           this.#changed()
         }
       })

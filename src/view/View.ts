@@ -777,8 +777,8 @@ export class View extends Emitter {
     const matrix = this._matrix
     const size = this._viewSize
     const bounds = matrix._transformBounds(rect)
-    const scaleX = new Point(matrix._a, matrix._c).length
-    const scaleY = new Point(matrix._b, matrix._d).length
+    const scaleX = new Point(matrix.a, matrix.c).length
+    const scaleY = new Point(matrix.b, matrix.d).length
     // Empty sides of the rectangle give ratios of Infinity, which can't
     // scale the view, so only use the others:
     const ratios = [
