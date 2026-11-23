@@ -50,7 +50,6 @@ export type SidePoint = { point: Point; derivative: Point }
 type EvolutePoint = {
   point: Point
   derivative: Point
-  speed?: number
   radius?: number
 }
 
@@ -109,12 +108,11 @@ export function getCuspTimes(v: number[], radius: number): number[] {
   return cusps
 }
 
-// Returns the center of curvature of the curve with the values v at t, its
-// derivative, and the numerator of its speed, which is zero where the
-// curvature has its extrema. With the derivatives d1, d2, d3 of the curve,
-// the center lies at p + perp(d1) * |d1|² / (d1 × d2), and moves along
-// perp(d1):
-function getEvoluteAt(v: number[], t: number): EvolutePoint {
+// Returns the first and second derivative of the curve with the values v at
+// t, their cross product, the squared speed, and the numerator of the change
+// of its curvature, which is zero where the curvature has its extrema. They
+// are numbers, as finding these extrema evaluates them a lot:
+function getCurvatureChange(v: number[], t: number) {
   const x0 = v[0]
   const y0 = v[1]
   const cx = 3 * (v[2] - x0)
@@ -129,15 +127,28 @@ function getEvoluteAt(v: number[], t: number): EvolutePoint {
   const ddy = 6 * ay * t + 2 * by
   const cross = dx * ddy - dy * ddx
   const length2 = dx * dx + dy * dy
-  const speed = (
-    3 * (dx * ddx + dy * ddy) * cross -
-    length2 * (dx * 6 * ay - dy * 6 * ax)
-  )
+  return {
+    dx,
+    dy,
+    cross,
+    length2,
+    change: (
+      3 * (dx * ddx + dy * ddy) * cross -
+      length2 * (dx * 6 * ay - dy * 6 * ax)
+    )
+  }
+}
+
+// Returns the center of curvature of the curve with the values v at t, its
+// derivative, and its radius. With the derivatives d1, d2, d3 of the curve,
+// the center lies at p + perp(d1) * |d1|² / (d1 × d2), and moves along
+// perp(d1):
+function getEvoluteAt(v: number[], t: number): EvolutePoint {
+  const { dx, dy, cross, length2, change } = getCurvatureChange(v, t)
   const perp = new Point(-dy, dx)
   return {
     point: getCurvePoint(v, t).add(perp.multiply(length2 / cross)),
-    derivative: perp.multiply(speed / (cross * cross)),
-    speed,
+    derivative: perp.multiply(change / (cross * cross)),
     // The signed radius of curvature, along perp(d1):
     radius: length2 * Math.sqrt(length2) / cross
   }
@@ -149,7 +160,7 @@ export function getCurvatureExtrema(v: number[]): number[] {
   const times: number[] = []
 
   function f(t: number): number {
-    return getEvoluteAt(v, t).speed
+    return getCurvatureChange(v, t).change
   }
 
   for (let i = 1, f0 = f(0); i <= count; i++) {
