@@ -75,13 +75,26 @@ function getOutline(path, problems) {
     }
     return null
   }
-  const crossings = outline
-    .getIntersections()
-    .filter(location => location.isCrossing()).length
-  if (crossings) {
+  // The outline crosses itself where resolving its crossings cuts it at new
+  // points. Crossings between curves that stay within the epsilon of the
+  // boolean operations are below their resolution: The sides of a thin
+  // stroke that tapers to a point cross within 1e-7 of each other just
+  // before it.
+  const resolved = outline.clone({ insert: false }).resolveCrossings()
+  if (countSegments(resolved) !== countSegments(outline)) {
+    const crossings = outline
+      .getIntersections()
+      .filter(location => location.isCrossing()).length
     problems.push(`${crossings} crossings`)
   }
   return outline
+}
+
+function countSegments(item) {
+  return (item.children ?? [item]).reduce(
+    (count, path) => count + path.segments.length,
+    0
+  )
 }
 
 // Returns the problems of the outline of the path's stroke, as strings:
