@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import * as Bezier from '../curve/index.ts'
+import { getCurveLength } from '../curve/index.ts'
 import { createGraph, isFilled, joinPieces } from './graph.ts'
 import type { Piece } from './graph.ts'
 import type { PathValues, RegionValues } from '../data/region.ts'
@@ -61,7 +61,7 @@ export function splitGraph(
     let length = 0
     for (let i = first; i < index; i++) {
       offsets[i] = length
-      length += Bezier.getLength(values[i])
+      length += getCurveLength(values[i])
     }
     const stretches: { side: number; pieces: Piece[] }[] = []
     for (let i = first; i < index; i++) {
@@ -100,7 +100,7 @@ export function splitGraph(
         source,
         offset: isWhole
           ? 0
-          : offsets[curve] + Bezier.getLength(values[curve], 0, time1),
+          : offsets[curve] + getCurveLength(values[curve], 0, time1),
         isWhole
       })
     }

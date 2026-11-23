@@ -40,16 +40,16 @@ export type SegmentValues = [
 ]
 
 // Whether the curve appears as a straight line, see Curve#isStraight():
-export function isStraight(v: CurveValues): boolean {
+export function isStraightCurve(v: CurveValues): boolean {
   return testHandles(hasStraightHandles, v)
 }
 
 // Whether the curve is parametrically linear, see Curve#isLinear():
-export function isLinear(v: CurveValues): boolean {
+export function isLinearCurve(v: CurveValues): boolean {
   return testHandles(hasLinearHandles, v)
 }
 
-export function subdivide(
+export function subdivideCurve(
   v: CurveValues,
   t = 0.5
 ): [CurveValues, CurveValues] {
@@ -98,7 +98,7 @@ export function getMonoCurves(v: CurveValues, dir?: boolean): CurveValues[] {
   const o3 = v[io + 6]
   if (
     (o0 >= o1) === (o1 >= o2) && (o1 >= o2) === (o2 >= o3) ||
-    isStraight(v)
+    isStraightCurve(v)
   ) {
     // Straight curves and curves with all involved points ordered
     // in coordinate direction are guaranteed to be monotone.
@@ -116,11 +116,11 @@ export function getMonoCurves(v: CurveValues, dir?: boolean): CurveValues[] {
     } else {
       roots.sort()
       let t = roots[0]
-      let parts = subdivide(v, t)
+      let parts = subdivideCurve(v, t)
       curves.push(parts[0])
       if (n > 1) {
         t = (roots[1] - t) / (1 - t)
-        parts = subdivide(parts[1], t)
+        parts = subdivideCurve(parts[1], t)
         curves.push(parts[0])
       }
       curves.push(parts[1])
@@ -131,7 +131,7 @@ export function getMonoCurves(v: CurveValues, dir?: boolean): CurveValues[] {
 
 // Converts from the point coordinates (p0, p1, p2, p3) for one axis to
 // the polynomial coefficients and solves the polynomial for val
-export function solve(
+export function solveCurve(
   v: CurveValues,
   coord: number,
   val: number,
@@ -159,7 +159,7 @@ export function solve(
 
 // Returns the part of the curve between the two times, reversed if the first
 // one is the later:
-export function getPart(
+export function getCurvePart(
   v: CurveValues,
   from: number,
   to: number
@@ -171,11 +171,11 @@ export function getPart(
     to = tmp
   }
   if (from > 0) {
-    v = subdivide(v, from)[1] // [1] right
+    v = subdivideCurve(v, from)[1] // [1] right
   }
   // Interpolate the parameter at 'to' in the new curve and cut there.
   if (to < 1) {
-    v = subdivide(v, (to - from) / (1 - from))[0] // [0] left
+    v = subdivideCurve(v, (to - from) / (1 - from))[0] // [0] left
   }
   // Return reversed curve if from / to were flipped:
   return flip
@@ -185,7 +185,7 @@ export function getPart(
 
 // Whether the curve is flat enough: it appears as a straight line, and its
 // curve-time is linear enough, within the flatness as the largest error:
-export function isFlatEnough(v: CurveValues, flatness: number): boolean {
+export function isFlatCurve(v: CurveValues, flatness: number): boolean {
   // Thanks to Kaspar Fischer and Roger Willcocks for the following:
   // http://hcklbrrfnn.files.wordpress.com/2012/08/bez.pdf
   const x0 = v[0]
@@ -206,7 +206,7 @@ export function isFlatEnough(v: CurveValues, flatness: number): boolean {
   )
 }
 
-export function getArea(v: CurveValues): number {
+export function getCurveArea(v: CurveValues): number {
   // http://objectmix.com/graphics/133553-area-closed-bezier-curve.html
   const x0 = v[0]
   const y0 = v[1]
@@ -229,7 +229,10 @@ export function getArea(v: CurveValues): number {
   )
 }
 
-export function classify(v: CurveValues): { type: string; roots: number[] } {
+export function classifyCurve(v: CurveValues): {
+  type: string
+  roots: number[]
+} {
   // See: Loop and Blinn, 2005, Resolution Independent Curve Rendering
   // using Programmable Graphics Hardware, GPU Gems 3 chapter 25
   //
@@ -277,7 +280,7 @@ export function classify(v: CurveValues): { type: string; roots: number[] } {
 
   function type(type: string, t1?: number, t2?: number) {
     // Roots at the ends, within the curve-time epsilon as in
-    // getPeaks(), are the ends themselves, not points inside the
+    // getCurvePeaks(), are the ends themselves, not points inside the
     // curve, and would make isCrossing() sample at a zero
     // distance (#1879, #1387):
     const tMin = CURVETIME_EPSILON
@@ -325,17 +328,17 @@ export function classify(v: CurveValues): { type: string; roots: number[] } {
   )
 }
 
-export function getLength(v: CurveValues, a = 0, b = 1): number {
-  if (isStraight(v)) {
+export function getCurveLength(v: CurveValues, a = 0, b = 1): number {
+  if (isStraightCurve(v)) {
     // Sub-divide the linear curve at a and b, so we can simply
     // calculate the Pythagorean Theorem to get the range's length.
     let c = v
     if (b < 1) {
-      c = subdivide(c, b)[0] // left
+      c = subdivideCurve(c, b)[0] // left
       a /= b // Scale parameter to new sub-curve.
     }
     if (a > 0) {
-      c = subdivide(c, a)[1] // right
+      c = subdivideCurve(c, a)[1] // right
     }
     // The length of straight curves can be calculated more easily.
     const dx = c[6] - c[0] // x3 - x0
@@ -346,7 +349,7 @@ export function getLength(v: CurveValues, a = 0, b = 1): number {
   return getPartLength(c, getLengthIntegrand(c), a, b)
 }
 
-export function getTimeAt(
+export function getCurveTimeAt(
   v: CurveValues,
   offset: number,
   start = offset < 0 ? 1 : 0
@@ -392,7 +395,7 @@ export function getTimeAt(
   return findRoot(f, ds, start + guess, a, b, 32, CURVETIME_EPSILON)
 }
 
-export function getTimeOf(
+export function getCurveTimeOf(
   v: CurveValues,
   point: Point,
   tolerance?: number
@@ -441,7 +444,7 @@ export function getTimeOf(
   const cy = c[5]
   const roots = []
   for (let i = 0; i < 2; i++) {
-    const count = solve(v, i, i ? py : px, roots, 0, 1)
+    const count = solveCurve(v, i, i ? py : px, roots, 0, 1)
     for (let j = 0; j < count; j++) {
       let t = roots[j]
       const x = getCoordinate(x0, x3, ax, bx, cx, t)
@@ -474,8 +477,8 @@ export function getTimeOf(
 
 // Returns the time of the point on the curve nearest to the given one. Points
 // on straight curves near their ends snap to them within the tolerance, see
-// getTimeOf():
-export function getNearestTime(
+// getCurveTimeOf():
+export function getNearestCurveTime(
   v: CurveValues,
   point: Point,
   tolerance?: number
@@ -486,7 +489,7 @@ export function getNearestTime(
   const y3 = v[7]
   const px = point.x
   const py = point.y
-  if (isStraight(v)) {
+  if (isStraightCurve(v)) {
     const vx = x3 - x0
     const vy = y3 - y0
     const det = vx * vx + vy * vy
@@ -500,7 +503,7 @@ export function getNearestTime(
       ? 0
       : u > 1 - EPSILON
         ? 1
-        : getTimeOf(v, new Point(x0 + u * vx, y0 + u * vy), tolerance)
+        : getCurveTimeOf(v, new Point(x0 + u * vx, y0 + u * vy), tolerance)
   }
 
   // Calculate curve points as in evaluate(), but without creating
@@ -562,23 +565,23 @@ export function getNearestTime(
   return minT
 }
 
-export function getPoint(v: CurveValues, t: number): Point {
+export function getCurvePoint(v: CurveValues, t: number): Point {
   return evaluate(v, t, 0, false)
 }
 
-export function getTangent(v: CurveValues, t: number): Point {
+export function getCurveTangent(v: CurveValues, t: number): Point {
   return evaluate(v, t, 1, true)
 }
 
-export function getWeightedTangent(v: CurveValues, t: number): Point {
+export function getWeightedCurveTangent(v: CurveValues, t: number): Point {
   return evaluate(v, t, 1, false)
 }
 
-export function getNormal(v: CurveValues, t: number): Point {
+export function getCurveNormal(v: CurveValues, t: number): Point {
   return evaluate(v, t, 2, true)
 }
 
-export function getWeightedNormal(v: CurveValues, t: number): Point {
+export function getWeightedCurveNormal(v: CurveValues, t: number): Point {
   return evaluate(v, t, 2, false)
 }
 
@@ -589,12 +592,12 @@ export function getCurvature(v: CurveValues, t: number): number {
 // The functions that evaluate a curve at a time, by what they return. Curve,
 // Path and PathFlattener generate their methods `getPointAt()`,
 // `getTangentAt()` … from them:
-export const evaluators = {
-  point: getPoint,
-  tangent: getTangent,
-  normal: getNormal,
-  weightedTangent: getWeightedTangent,
-  weightedNormal: getWeightedNormal,
+export const curveEvaluators = {
+  point: getCurvePoint,
+  tangent: getCurveTangent,
+  normal: getCurveNormal,
+  weightedTangent: getWeightedCurveTangent,
+  weightedNormal: getWeightedCurveNormal,
   curvature: getCurvature
 }
 
@@ -602,7 +605,7 @@ export const evaluators = {
 // of its first and second derivative. Peaks share some qualities of
 // curvature extrema, but are cheaper to compute, see:
 // https://math.stackexchange.com/questions/1954845/bezier-curvature-extrema
-export function getPeaks(v: CurveValues): number[] {
+export function getCurvePeaks(v: CurveValues): number[] {
   const c = getCoefficients(v)
   const ax = c[0]
   const bx = c[1]
@@ -628,7 +631,7 @@ export function getPeaks(v: CurveValues): number[] {
 
 // Returns the sorted times where the curve reverses its direction along the
 // line that all of its control points lie along within the tolerance, if any:
-export function getReversals(v: CurveValues, tolerance: number): number[] {
+export function getCurveReversals(v: CurveValues, tolerance: number): number[] {
   // The line's direction, along the longest of the chord and handles:
   let dx = v[6] - v[0]
   let dy = v[7] - v[1]
@@ -664,7 +667,10 @@ export function getReversals(v: CurveValues, tolerance: number): number[] {
 
 // Returns the times where the curve is tangential to the tangent, at most
 // two, including those at its start and end:
-export function getTimesWithTangent(v: CurveValues, tangent: Point): number[] {
+export function getCurveTimesWithTangent(
+  v: CurveValues,
+  tangent: Point
+): number[] {
   // Algorithm adapted from:
   // https://stackoverflow.com/a/34837312/7615922
   // The coefficients of the derivative of the curve's polynomial:
@@ -715,7 +721,7 @@ export function getTimesWithTangent(v: CurveValues, tangent: Point): number[] {
 // by its end, and by its extrema between its ends, padded by half the stroke
 // width, which it finds as the roots of its derivative. The start is only
 // added where it is the least or the most, as the curve before ends there:
-export function addBounds(
+export function addCurveBounds(
   v0: number, v1: number, v2: number, v3: number,
   coord: number,
   padding: number,
@@ -795,7 +801,7 @@ export function addBounds(
 // Returns the winding of the point against the curve, as the sum of its
 // parts that cross a ray from the point in x-direction, upwards as +1 and
 // downwards as -1. It tells which path lies inside which:
-export function getRayWinding(v: CurveValues, point: Point): number {
+export function getCurveRayWinding(v: CurveValues, point: Point): number {
   const { min, max, abs } = Math
   let winding = 0
   const { x, y } = point
@@ -816,8 +822,8 @@ export function getRayWinding(v: CurveValues, point: Point): number {
         // The monotone curve crosses the ray once. solveCubic()
         // can miss it close to the ends, where it is at the end:
         const px =
-          solve(mv, 1, y, roots, 0, 1) > 0
-            ? getPoint(mv, roots[0]).x
+          solveCurve(mv, 1, y, roots, 0, 1) > 0
+            ? getCurvePoint(mv, roots[0]).x
             : abs(y - y0) < abs(y - y3)
               ? mv[0]
               : mv[6]
@@ -1081,12 +1087,12 @@ function evaluate(
   let x: number
   let y: number
   if (type === 0) {
-    // type === 0: getPoint()
+    // type === 0: getCurvePoint()
     x = getCoordinate(x0, x3, ax, bx, cx, t)
     y = getCoordinate(y0, y3, ay, by, cy, t)
   } else {
-    // type === 1: getTangent()
-    // type === 2: getNormal()
+    // type === 1: getCurveTangent()
+    // type === 2: getCurveNormal()
     // type === 3: getCurvature()
     const tMin = CURVETIME_EPSILON
     const tMax = 1 - tMin

@@ -16,7 +16,7 @@ import { Point } from '../basic/Point.ts'
 import { Rectangle } from '../basic/Rectangle.ts'
 import { traceGraph } from './graph.ts'
 import type { Operator } from './graph.ts'
-import { getArea, getBounds, reduceRegion } from '../data/region.ts'
+import { getPathArea, getRegionBounds, reduceRegion } from '../data/region.ts'
 import type { RegionValues } from '../data/region.ts'
 
 // Unites the regions, pairwise in a balanced tree, so that each step only
@@ -30,7 +30,7 @@ export function uniteRegions(regions: RegionValues[]): RegionValues {
     others.length
       ? combine(
           others.map(region => {
-            const bounds = getBounds(region)
+            const bounds = getRegionBounds(region)
             return { region, bounds, center: bounds.center }
           })
         )
@@ -99,7 +99,7 @@ export function traceRegions(
   const paths = []
   for (const { segments } of traceGraph(operands, operator)) {
     const path = { segments, closed: true }
-    if (getArea(path) !== 0) {
+    if (getPathArea(path) !== 0) {
       paths.push(path)
     }
   }

@@ -12,12 +12,15 @@
 
 import {
   Base,
-  Bezier,
   CURVETIME_EPSILON,
   Curve,
   Formatter,
   GEOMETRIC_EPSILON,
   capitalize,
+  classifyCurve,
+  curveEvaluators,
+  getCurveLength,
+  getCurvePeaks,
   inject
 } from '../internal.ts'
 import type { Point } from '../basic/Point.ts'
@@ -445,9 +448,9 @@ export class CurveLocation extends Base {
       // Find the largest offset of unambiguous direction on the curve,
       // taking their loops, cusps, inflections, and "peaks" into account.
       const v = curve.values
-      const roots = Bezier.classify(v).roots ?? Bezier.getPeaks(v)
+      const roots = classifyCurve(v).roots ?? getCurvePeaks(v)
       const count = roots.length
-      const offset = Bezier.getLength(
+      const offset = getCurveLength(
         v,
         end && count ? roots[count - 1] : 0,
         !end && count ? roots[0] : 1
@@ -588,7 +591,7 @@ export class CurveLocation extends Base {
   static {
     // Inject the evaluators at the location's curve-time, next to #point:
     // tangent, normal, weightedTangent, weightedNormal, curvature
-    for (const key of Object.keys(Bezier.evaluators)) {
+    for (const key of Object.keys(curveEvaluators)) {
       // The point is known already:
       if (key !== 'point') {
         const evaluate = `get${capitalize(key)}AtTime`

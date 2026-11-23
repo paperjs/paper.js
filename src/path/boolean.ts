@@ -28,9 +28,6 @@
  */
 
 import {
-  Bezier,
-  getWinding,
-  splitGraph,
   CompoundPath,
   EPSILON,
   GEOMETRIC_EPSILON,
@@ -38,10 +35,16 @@ import {
   Path,
   Point,
   findItemBoundsCollisions,
+  getCurvePoint,
+  getCurveRayWinding,
+  getMonoCurves,
   getStrokeProfilePart,
+  getWinding,
   paper,
   push,
   setStrokeProfileRuns,
+  solveCurve,
+  splitGraph,
   traceGraph
 } from '../internal.ts'
 import type { Winding } from '../boolean/winding.ts'
@@ -434,7 +437,7 @@ export function reorientPaths(
             const { curves } = path2
             let winding = 0
             for (let k = 0, n = curves.length; k < n; k++) {
-              winding += Bezier.getRayWinding(curves[k].values, point)
+              winding += getCurveRayWinding(curves[k].values, point)
             }
             if (winding) {
               const entry2 = lookup[path2._id]
@@ -517,7 +520,7 @@ export function getInteriorPoint(item: PathItem): Point {
     const intercepts = []
     const roots = []
     for (let i = 0, l = curves.length; i < l; i++) {
-      push(monoCurves, Bezier.getMonoCurves(curves[i].values))
+      push(monoCurves, getMonoCurves(curves[i].values))
     }
     for (let i = 0, l = monoCurves.length; i < l; i++) {
       ys.push(monoCurves[i][1], monoCurves[i][7])
@@ -542,8 +545,8 @@ export function getInteriorPoint(item: PathItem): Point {
       const mo3 = mv[7]
       if (y > min(mo0, mo3) && y < max(mo0, mo3)) {
         intercepts.push(
-          Bezier.solve(mv, 1, y, roots, 0, 1) === 1
-            ? Bezier.getPoint(mv, roots[0]).x
+          solveCurve(mv, 1, y, roots, 0, 1) === 1
+            ? getCurvePoint(mv, roots[0]).x
             : (mv[0] + mv[6]) / 2
         )
       }

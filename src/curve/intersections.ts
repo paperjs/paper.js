@@ -25,14 +25,14 @@ import {
 import { Point } from '../basic/Point.ts'
 import { Line } from '../basic/Line.ts'
 import {
-  classify,
-  getPart,
-  getPoint,
-  getTimeAt,
-  getTimeOf,
-  isStraight,
-  solve,
-  subdivide
+  classifyCurve,
+  getCurvePart,
+  getCurvePoint,
+  getCurveTimeAt,
+  getCurveTimeOf,
+  isStraightCurve,
+  solveCurve,
+  subdivideCurve
 } from './bezier.ts'
 import type { CurveValues } from './bezier.ts'
 
@@ -64,7 +64,7 @@ type Pair = {
 
 // Returns the intersections of the two curves, and the ends of their
 // overlaps:
-export function getIntersections(
+export function getCurveIntersections(
   v1: CurveValues,
   v2: CurveValues,
   options?: IntersectionOptions
@@ -96,7 +96,7 @@ export function getIntersections(
   )
 
   // Avoid checking curves if completely out of control bounds, but not
-  // curves that getOverlaps() may still find to overlap:
+  // curves that getCurveOverlaps() may still find to overlap:
   const boundsEpsilon = max(epsilon, tolerance || GEOMETRIC_EPSILON)
   if (
     maxX1 + boundsEpsilon > minX2 &&
@@ -105,15 +105,15 @@ export function getIntersections(
     minY1 - boundsEpsilon < maxY2
   ) {
     // Now detect and handle overlaps:
-    const overlaps = getOverlaps(v1, v2, tolerance)
+    const overlaps = getCurveOverlaps(v1, v2, tolerance)
     if (overlaps) {
       for (let i = 0; i < 2; i++) {
         const overlap = overlaps[i]
         addLocation(pair, overlap[0], overlap[1], false, true)
       }
     } else {
-      const straight1 = isStraight(v1)
-      const straight2 = isStraight(v2)
+      const straight1 = isStraightCurve(v1)
+      const straight2 = isStraightCurve(v2)
       const straight = straight1 && straight2
       let isFound = false
       // Intersections with lines snap to their ends within the
@@ -160,7 +160,7 @@ export function getIntersections(
                 y >= minY2 - endEpsilon &&
                 y <= maxY2 + endEpsilon
           ) {
-            const u = getTimeOf(
+            const u = getCurveTimeOf(
               isSecond ? v1 : v2,
               new Point(x, y),
               endEpsilon
@@ -178,7 +178,7 @@ export function getIntersections(
 
 // Returns the intersection of the curve with itself, if it has a loop. A
 // curve that is closed, as the only one of its path, starts where it ends:
-export function getSelfIntersection(
+export function getCurveSelfIntersection(
   v: CurveValues,
   isClosed?: boolean
 ): Intersection[] {
@@ -188,7 +188,7 @@ export function getSelfIntersection(
     sharesEnd: false,
     calls: 0
   }
-  const info = classify(v)
+  const info = classifyCurve(v)
   if (info.type === 'loop') {
     const { roots } = info
     addLocation(pair, roots[0], roots[1])
@@ -198,7 +198,7 @@ export function getSelfIntersection(
 
 // Returns the two pairs of times where the curves start and end to overlap,
 // if they do, based on work by iconexperience in #648:
-export function getOverlaps(
+export function getCurveOverlaps(
   v1: CurveValues,
   v2: CurveValues,
   tolerance?: number
@@ -220,8 +220,8 @@ export function getOverlaps(
   const { getDistance } = Line
   const timeEpsilon = CURVETIME_EPSILON
   const geometricEpsilon = tolerance || GEOMETRIC_EPSILON
-  let straight1 = isStraight(v1)
-  let straight2 = isStraight(v2)
+  let straight1 = isStraightCurve(v1)
+  let straight2 = isStraightCurve(v2)
   let straightBoth = straight1 && straight2
   const flip = getSquaredLineLength(v1) < getSquaredLineLength(v2)
   const l1 = flip ? v2 : v1
@@ -268,7 +268,7 @@ export function getOverlaps(
     const i1 = i & 1 // 0, 1, 0, 1
     const i2 = i1 ^ 1 // 1, 0, 1, 0
     const t1 = i >> 1 // 0, 0, 1, 1
-    const t2 = getTimeOf(
+    const t2 = getCurveTimeOf(
       v[i1],
       new Point(
         v[i2][t1 ? 6 : 0],
@@ -297,8 +297,8 @@ export function getOverlaps(
   } else if (!straightBoth) {
     // Straight pairs don't need further checks. If we found 2 pairs,
     // the end points on v1 & v2 should be the same.
-    const o1 = getPart(v1, pairs[0][0], pairs[1][0])
-    const o2 = getPart(v2, pairs[0][1], pairs[1][1])
+    const o1 = getCurvePart(v1, pairs[0][0], pairs[1][0])
+    const o2 = getCurvePart(v2, pairs[0][1], pairs[1][1])
     // Check if handles of the overlapping curves are the same too.
     if (
       abs(o2[2] - o1[2]) > geometricEpsilon ||
@@ -376,7 +376,7 @@ function addCurveIntersections(
     Math.abs(v2[0]), Math.abs(v2[1]), Math.abs(v2[6]), Math.abs(v2[7])
   )
   if (Math.hypot(dx, dy) < 64 * MACHINE_EPSILON * magnitude) {
-    const t = getTimeOf(v1, getPoint(v2, 0.5))
+    const t = getCurveTimeOf(v1, getCurvePoint(v2, 0.5))
     if (t !== null) {
       addLocation(pair, tMin + (tMax - tMin) * t, (uMin + uMax) / 2, flip)
     }
@@ -444,7 +444,7 @@ function addCurveIntersections(
     addLocation(pair, t, u, flip)
   } else {
     // Apply the result of the clipping to curve 1:
-    v1 = getPart(v1, tMinClip, tMaxClip)
+    v1 = getCurvePart(v1, tMinClip, tMaxClip)
     const uDiff = uMax - uMin
     if (tMaxClip - tMinClip > 0.8) {
       // With a tolerance, crossings within it of the shared end of
@@ -469,20 +469,20 @@ function addCurveIntersections(
       )
       if (atEnd || atStart) {
         const offset = atEnd ? tolerance : -tolerance
-        const s1 = getTimeAt(v1, -offset)
-        const s2 = getTimeAt(v2, offset)
+        const s1 = getCurveTimeAt(v1, -offset)
+        const s2 = getCurveTimeAt(v2, offset)
         // Pieces shorter than the tolerance have nothing left:
         if (s1 !== null && s2 !== null) {
           const t = tMinNew + (tMaxNew - tMinNew) * s1
           const u = uMin + (uMax - uMin) * s2
           if (atEnd) {
-            v1 = getPart(v1, 0, s1)
-            v2 = getPart(v2, s2, 1)
+            v1 = getCurvePart(v1, 0, s1)
+            v2 = getCurvePart(v2, s2, 1)
             tMaxNew = t
             uMin = u
           } else {
-            v1 = getPart(v1, s1, 1)
-            v2 = getPart(v2, 0, s2)
+            v1 = getCurvePart(v1, s1, 1)
+            v2 = getCurvePart(v2, 0, s2)
             tMinNew = t
             uMax = u
           }
@@ -500,7 +500,7 @@ function addCurveIntersections(
       )) {
         // Subdivide the curve which has converged the least.
         if (tMaxNew - tMinNew > uDiff) {
-          const parts = subdivide(v1, 0.5)
+          const parts = subdivideCurve(v1, 0.5)
           const t = (tMinNew + tMaxNew) / 2
           addCurveIntersections(
             v2, parts[0], pair, !flip,
@@ -511,7 +511,7 @@ function addCurveIntersections(
             recursion, uMin, uMax, t, tMaxNew
           )
         } else {
-          const parts = subdivide(v2, 0.5)
+          const parts = subdivideCurve(v2, 0.5)
           const u = (uMin + uMax) / 2
           addCurveIntersections(
             parts[0], v1, pair, !flip,
@@ -626,7 +626,7 @@ function addImplicitIntersections(
     if (count >= polynomial.coefficients.length) return false
     for (let i = 0; i < count; i++) {
       let t = roots[i]
-      let u = getTimeOf(v2, getPoint(v1, t), tolerance)
+      let u = getCurveTimeOf(v2, getCurvePoint(v1, t), tolerance)
       if (u !== null) {
         t = tMin + (tMax - tMin) * t
         u = uMin + (uMax - uMin) * u
@@ -936,7 +936,7 @@ function getCurveLineIntersections(
   if (isZero(vx) && isZero(vy)) {
     // Handle special case of a line with no direction as a point,
     // and check if it is on the curve.
-    const t = getTimeOf(v, new Point(px, py))
+    const t = getCurveTimeOf(v, new Point(px, py))
     return t === null ? [] : [t]
   }
   // Calculate angle to the x-axis (1, 0).
@@ -957,7 +957,7 @@ function getCurveLineIntersections(
   }
   // Solve it for y = 0. We need to include t = 0, 1 and let addLocation()
   // do the filtering, to catch important edge cases.
-  solve(rv, 1, 0, roots, 0, 1)
+  solveCurve(rv, 1, 0, roots, 0, 1)
   // The ends of the curve are on the line if their rotated y is about 0,
   // even when the rounding of the rotation keeps solveCubic() from
   // finding them, e.g. as double roots at a zero-length handle (#1848):
@@ -992,8 +992,8 @@ function addCurveLineIntersections(
     // For each found solution on the rotated curve, get the point on
     // the real curve and with that the location on the line.
     const t1 = roots[i]
-    const p1 = getPoint(v1, t1)
-    const t2 = getTimeOf(v2, p1, tolerance)
+    const p1 = getCurvePoint(v1, t1)
+    const t2 = getCurveTimeOf(v2, p1, tolerance)
     if (t2 !== null) {
       // Only use the time values if there was no recursion, and let
       // addLocation() figure out the actual time values otherwise.
@@ -1016,8 +1016,8 @@ function addLineIntersection(
     !!point &&
     addLocation(
       pair,
-      getTimeOf(v1, point, tolerance),
-      getTimeOf(v2, point, tolerance)
+      getCurveTimeOf(v1, point, tolerance),
+      getCurveTimeOf(v2, point, tolerance)
     )
   )
 }

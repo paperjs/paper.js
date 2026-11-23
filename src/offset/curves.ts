@@ -25,7 +25,15 @@ import {
 } from '../util/numerical.ts'
 import { Line } from '../basic/Line.ts'
 import { Point } from '../basic/Point.ts'
-import * as Bezier from '../curve/index.ts'
+import {
+  getCurvature,
+  getCurveNormal,
+  getCurvePoint,
+  getCurveTangent,
+  getNearestCurveTime,
+  getWeightedCurveTangent,
+  isStraightCurve
+} from '../curve/index.ts'
 import type { SegmentValues } from '../curve/index.ts'
 
 const { abs } = Math
@@ -61,8 +69,8 @@ export function getTurn(v: number[], t1: number, t2: number): number {
   let turn = 0
   for (let i = 1, l = times.length; i < l; i++) {
     turn += abs(
-      Bezier.getTangent(v, times[i - 1]).getDirectedAngle(
-        Bezier.getTangent(v, times[i])
+      getCurveTangent(v, times[i - 1]).getDirectedAngle(
+        getCurveTangent(v, times[i])
       )
     )
   }
@@ -80,7 +88,7 @@ export function getCuspTimes(v: number[], radius: number): number[] {
   const cusps: number[] = []
 
   function f(t: number): number {
-    const curvature = Bezier.getCurvature(v, t) * radius
+    const curvature = getCurvature(v, t) * radius
     return 1 - curvature * curvature
   }
 
@@ -122,7 +130,7 @@ function getEvoluteAt(v: number[], t: number): EvolutePoint {
   )
   const perp = new Point(-dy, dx)
   return {
-    point: Bezier.getPoint(v, t).add(perp.multiply(length2 / cross)),
+    point: getCurvePoint(v, t).add(perp.multiply(length2 / cross)),
     derivative: perp.multiply(speed / (cross * cross)),
     speed,
     // The signed radius of curvature, along perp(d1):
@@ -288,10 +296,10 @@ export function fitSide(
       ]
       error = 0
       for (let i = 0; i < count; i++) {
-        const time = Bezier.getNearestTime(c, points[i])
+        const time = getNearestCurveTime(c, points[i])
         error = Math.max(
           error,
-          points[i].getDistance(Bezier.getPoint(c, time))
+          points[i].getDistance(getCurvePoint(c, time))
         )
         times[i] = time
       }
@@ -317,7 +325,7 @@ export function fitSide(
       error = Math.max(
         error,
         point.getDistance(
-          Bezier.getPoint(c, Bezier.getNearestTime(c, point))
+          getCurvePoint(c, getNearestCurveTime(c, point))
         )
       )
     }
@@ -327,7 +335,7 @@ export function fitSide(
     if (gap > Math.max(total / 2, tolerance)) {
       const from = index ? points[index - 1] : p0
       const to = index < count ? points[index] : p3
-      const point = Bezier.getPoint(
+      const point = getCurvePoint(
         c,
         (
           (index ? times[index - 1] : 0) +
@@ -378,13 +386,13 @@ export function getEvolute(
     // where it lies within the tolerance of the inner offset, so that
     // both meet exactly at the ends of the tight parts:
     if (!(distance >= 0 && distance < abs(inner) - tolerance)) {
-      const derivative = Bezier.getWeightedTangent(c, t)
+      const derivative = getWeightedCurveTangent(c, t)
       e = {
-        point: Bezier.getPoint(c, t).add(
-          Bezier.getNormal(c, t).multiply(inner)
+        point: getCurvePoint(c, t).add(
+          getCurveNormal(c, t).multiply(inner)
         ),
         derivative: derivative.multiply(
-          1 + inner * Bezier.getCurvature(c, t)
+          1 + inner * getCurvature(c, t)
         )
       }
     }
@@ -427,16 +435,16 @@ export function getOffsetSegments(
   offset: number,
   tolerance: number
 ): Side {
-  if (Bezier.isStraight(v)) {
+  if (isStraightCurve(v)) {
     // Along the normals at the ends, as the joins and caps use them:
     const zero = new Point()
     const side = createSide(
-      new Point(v[0], v[1]).add(Bezier.getNormal(v, 0).multiply(offset))
+      new Point(v[0], v[1]).add(getCurveNormal(v, 0).multiply(offset))
     )
     addCurve(
       side,
       zero,
-      new Point(v[6], v[7]).add(Bezier.getNormal(v, 1).multiply(offset)),
+      new Point(v[6], v[7]).add(getCurveNormal(v, 1).multiply(offset)),
       zero
     )
     return side
@@ -470,8 +478,8 @@ function offsetCubic(v: number[], d: number, tolerance: number): Side {
   const c0 = 2 * d * q1xq0
   const c1 = 2 * d * (q2xq0 - 2 * q1xq0)
   const c2 = 2 * d * (q2xq1 - q2xq0 + q1xq0)
-  const utan0 = Bezier.getTangent(c, 0)
-  const utan1 = Bezier.getTangent(c, 1)
+  const utan0 = getCurveTangent(c, 0)
+  const utan1 = getCurveTangent(c, 1)
   const side = createSide(p0.add(getUnitNormal(utan0, d)))
   // The Bézier weights of the points of the least squares fit:
   const count = 8
@@ -486,7 +494,7 @@ function offsetCubic(v: number[], d: number, tolerance: number): Side {
   }
 
   function evaluate(t: number): Point {
-    return Bezier.getPoint(c, t)
+    return getCurvePoint(c, t)
   }
 
   function derive(t: number): Point {
@@ -896,7 +904,7 @@ export function regularizeCusp(v: number[], dimension: number): number[] {
     const q0 = d01.multiply(3)
     const q1 = d12.multiply(3)
     const q2 = d23.multiply(3)
-    const t = Bezier.getNearestTime(
+    const t = getNearestCurveTime(
       [
         q0.x,
         q0.y,

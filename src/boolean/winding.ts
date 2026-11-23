@@ -12,7 +12,12 @@
 
 // The winding of points against paths, by the curves that cross a ray from
 // them, which tells whether a region contains them.
-import * as Bezier from '../curve/index.ts'
+import {
+  getCurvePoint,
+  getCurveTangent,
+  getMonoCurves,
+  solveCurve
+} from '../curve/index.ts'
 import type { CurveValues } from '../curve/index.ts'
 import type { Point } from '../basic/Point.ts'
 
@@ -121,11 +126,10 @@ export function getWinding(
             // does not require additional calculations for the point.
             paL > max(a0, a1, a2, a3) || paR < min(a0, a1, a2, a3)
             ? 1
-            : Bezier.solve(v, io, po, roots, 0, 1) > 0
+            : solveCurve(v, io, po, roots, 0, 1) > 0
               ? roots[0]
               : 1
-    const a =
-      t === 0 ? a0 : t === 1 ? a3 : Bezier.getPoint(v, t)[dir ? 'y' : 'x']
+    const a = t === 0 ? a0 : t === 1 ? a3 : getCurvePoint(v, t)[dir ? 'y' : 'x']
     const winding = o0 > o3 ? 1 : -1
     const windingPrev = vPrev[io] > vPrev[io + 6] ? 1 : -1
     const a3Prev = vPrev[ia + 6]
@@ -171,7 +175,7 @@ export function getWinding(
       !dontFlip &&
       a > paL &&
       a < paR &&
-      Bezier.getTangent(v, t)[dir ? 'x' : 'y'] === 0 &&
+      getCurveTangent(v, t)[dir ? 'x' : 'y'] === 0 &&
       getWinding(point, paths, !dir, true)
     )
   }
@@ -194,7 +198,7 @@ export function getWinding(
       const monoCurves =
         paL > max(a0, a1, a2, a3) || paR < min(a0, a1, a2, a3)
           ? [v]
-          : Bezier.getMonoCurves(v, dir)
+          : getMonoCurves(v, dir)
       let res: Winding | false
       for (let i = 0, l = monoCurves.length; i < l; i++) {
         // Calling addWinding() my lead to direction flipping, in

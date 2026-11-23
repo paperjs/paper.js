@@ -10,8 +10,8 @@
  * All rights reserved.
  */
 
-// The functions on the values of cubic Bézier curves, which the library uses
-// as Bezier:
+// The functions on the values of cubic Bézier curves, and on the arcs that
+// they approximate:
 export * from './arcs.ts'
 export * from './bezier.ts'
 export * from './intersections.ts'
