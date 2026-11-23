@@ -13,7 +13,7 @@
 // The winding of points against paths, by the curves that cross a ray from
 // them, which tells whether a region contains them.
 import * as Bezier from '../curve/index.ts'
-import type { BezierValues } from '../curve/index.ts'
+import type { CurveValues } from '../curve/index.ts'
 import type { Point } from '../basic/Point.ts'
 
 const { abs, max, min } = Math
@@ -21,7 +21,7 @@ const { abs, max, min } = Math
 // A path to wind around: the values of its curves, whether it is closed, and
 // whether it is clockwise, which is only read for points on the path:
 export type WindingPath = {
-  curves: BezierValues[]
+  curves: CurveValues[]
   closed: boolean
   readonly clockwise: boolean
 }

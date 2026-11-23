@@ -19,7 +19,7 @@ import { Size } from '../basic/Size.ts'
 import { getEllipticArc } from '../curve/index.ts'
 import type { SegmentValues } from '../curve/index.ts'
 import { getSegments } from './region.ts'
-import type { PathData } from './region.ts'
+import type { PathValues } from './region.ts'
 
 // The commands that path data is read into, as the path items have them:
 export type PathBuilder = {
@@ -180,7 +180,7 @@ export function readSVGPath(data: string, builder: PathBuilder) {
  * @param data the path data
  * @return the paths, with their segments as [point, handleIn, handleOut]
  */
-export function parseSVGPath(data: string): PathData[] {
+export function parseSVGPath(data: string): PathValues[] {
   const paths: { segments: SegmentValues[]; closed: boolean }[] = []
 
   // The last segment, which the commands continue from:
@@ -265,7 +265,7 @@ export function parseSVGPath(data: string): PathData[] {
  * @param precision the amount of fractional digits
  * @return the path data
  */
-export function formatSVGPath(paths: PathData[], precision?: number): string {
+export function formatSVGPath(paths: PathValues[], precision?: number): string {
   const formatter = new Formatter(precision)
   return paths
     .map(path => {

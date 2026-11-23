@@ -17,13 +17,13 @@ import { Rectangle } from '../basic/Rectangle.ts'
 import { traceGraph } from './graph.ts'
 import type { Operator } from './graph.ts'
 import { getArea, getBounds, reduceRegion } from '../data/region.ts'
-import type { RegionData } from '../data/region.ts'
+import type { RegionValues } from '../data/region.ts'
 
 // Unites the regions, pairwise in a balanced tree, so that each step only
 // meets results of similar size, see combinePaths(). The first one is united
 // with the union of the others, and resolved on its own if it is the only
 // one. Between the steps, the results are reduced as path items are:
-export function uniteRegions(regions: RegionData[]): RegionData {
+export function uniteRegions(regions: RegionValues[]): RegionValues {
   const [first, ...others] = regions
   return unite(
     first,
@@ -38,9 +38,9 @@ export function uniteRegions(regions: RegionData[]): RegionData {
   )
 }
 
-type Entry = { region: RegionData; bounds: Rectangle; center: Point }
+type Entry = { region: RegionValues; bounds: Rectangle; center: Point }
 
-function combine(entries: Entry[]): RegionData {
+function combine(entries: Entry[]): RegionValues {
   if (entries.length > 1) {
     // Split the regions along the longer side of their bounds, so each step
     // unites regions that lie close to each other:
@@ -62,9 +62,9 @@ function combine(entries: Entry[]): RegionData {
 
 // Subtracts the second region from the first one:
 export function subtractRegions(
-  region1: RegionData,
-  region2: RegionData
-): RegionData {
+  region1: RegionValues,
+  region2: RegionValues
+): RegionValues {
   return traceRegions(
     region1,
     region2,
@@ -73,7 +73,10 @@ export function subtractRegions(
 }
 
 // Unites the two regions, or resolves the first one on its own:
-function unite(region1: RegionData, region2: RegionData | null): RegionData {
+function unite(
+  region1: RegionValues,
+  region2: RegionValues | null
+): RegionValues {
   return traceRegions(
     region1,
     region2,
@@ -85,10 +88,10 @@ function unite(region1: RegionData, region2: RegionData | null): RegionData {
 // before and the result after, as path items are, and leaving out paths
 // without an area:
 export function traceRegions(
-  region1: RegionData,
-  region2: RegionData | null,
+  region1: RegionValues,
+  region2: RegionValues | null,
   operator: Operator
-): RegionData {
+): RegionValues {
   const operands = [reduceRegion(region1)]
   if (region2) {
     operands.push(reduceRegion(region2))

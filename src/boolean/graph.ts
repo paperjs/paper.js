@@ -32,11 +32,11 @@ import {
 } from '../data/region.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'
 import type {
-  BezierValues,
+  CurveValues,
   Intersection,
   SegmentValues
 } from '../curve/index.ts'
-import type { PathData, RegionData } from '../data/region.ts'
+import type { PathValues, RegionValues } from '../data/region.ts'
 
 // A path of the result, with the part of an operand's curve that each of its
 // segments starts: the curve by the indices of its operand, its path there
@@ -59,7 +59,7 @@ export type Operator = (inside1: boolean, inside2: boolean) => boolean
 // The paths of an operand: a region with its fill rule, whose open paths are
 // filled as if closed by straight lines, or lines without one, which stay
 // open, as splitGraph() splits them:
-export type Operand = { paths: PathData[]; fillRule?: string }
+export type Operand = { paths: PathValues[]; fillRule?: string }
 
 // The planar graph of createGraph(), with points stored by their index in its
 // list of cut points, and vertices, edges and half-edges by their index:
@@ -140,7 +140,7 @@ type GraphCurve = {
 
 export type Graph = {
   curves: GraphCurve[]
-  values: BezierValues[]
+  values: CurveValues[]
   pieces: Piece[][]
   vertices: Vertex[]
   edges: Edge[]
@@ -210,7 +210,7 @@ export function createGraph(operands: Operand[]): Graph {
  * @return the traced paths
  */
 export function traceGraph(
-  operands: RegionData[],
+  operands: RegionValues[],
   operator: Operator
 ): TracedPath[] {
   const graph = createGraph(operands)
@@ -352,7 +352,7 @@ function readCurves(
   operands: Operand[]
 ): Pick<Graph, 'curves' | 'values' | 'nonZeros' | 'epsilon'> {
   const curves: GraphCurve[] = []
-  const values: BezierValues[] = []
+  const values: CurveValues[] = []
   const nonZeros: boolean[] = []
   let bounds: Rectangle = null
   for (let i = 0, l = operands.length; i < l; i++) {

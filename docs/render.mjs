@@ -756,7 +756,7 @@ class Reference {
         const name = type.name.replace(/Like$/, '')
         // Describe type aliases by what they stand for, but `PointLike` and
         // the like by their class. TypeDoc gives aliases of object literals,
-        // such as `RegionData`, children instead of a type:
+        // such as `RegionValues`, children instead of a type:
         const alias = this.byId[type.target]
         if (alias?.kind === kinds.typeAlias && !this.classes[name]) {
           return alias.type ? this.getTypeNames(alias.type) : ['Object']

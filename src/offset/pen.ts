@@ -17,7 +17,7 @@ import { EPSILON, GEOMETRIC_EPSILON, findRoot } from '../util/numerical.ts'
 import { Matrix } from '../basic/Matrix.ts'
 import { Point } from '../basic/Point.ts'
 import * as Bezier from '../curve/index.ts'
-import type { BezierValues, SegmentValues } from '../curve/index.ts'
+import type { CurveValues, SegmentValues } from '../curve/index.ts'
 
 // The values of the pen of a stroke profile with their first and second
 // derivatives along the path:
@@ -106,7 +106,7 @@ export function getAxes(pen: Pen): [Point, Point] {
 // one of them, between the sides of the stroke, and two where the
 // pen turns faster than it moves. They are sorted along the
 // curve's normal, as are the sides:
-export function getContacts(v: BezierValues, t: number, pen: Pen): Contacts {
+export function getContacts(v: CurveValues, t: number, pen: Pen): Contacts {
   const { a, b, da, db, dAngle } = pen
   const contacts: Contacts = { sides: null, strips: [] }
   if (a > 0) {

@@ -31,7 +31,7 @@ import {
 } from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
 import type { Matrix } from '../basic/Matrix.ts'
-import type { BezierValues } from '../curve/bezier.ts'
+import type { CurveValues } from '../curve/bezier.ts'
 
 /**
  * The Curve object represents the parts of a path that are connected by
@@ -380,7 +380,7 @@ export class Curve extends Base {
    *
    * Note that the handles are converted to absolute coordinates.
    */
-  get values(): BezierValues {
+  get values(): CurveValues {
     return getCurveValues(this._segment1, this._segment2)
   }
 
@@ -1113,9 +1113,9 @@ function addIntersections(
   locations: CurveLocation[],
   include: (location: CurveLocation) => boolean,
   curve1: Curve,
-  v1: BezierValues,
+  v1: CurveValues,
   curve2?: Curve,
-  v2?: BezierValues
+  v2?: CurveValues
 ) {
   const intersections = curve2
     ? Bezier.getIntersections(v1, v2, {
@@ -1144,7 +1144,7 @@ export function getCurveValues(
   segment2: Segment,
   matrix?: Matrix,
   straight?: boolean
-): BezierValues {
+): CurveValues {
   const p1 = segment1._point
   const h1 = segment1._handleOut
   const h2 = segment2._handleIn

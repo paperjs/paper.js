@@ -22,11 +22,11 @@
  *
  * @module paper/offset
  */
-import type { PathData, RegionData } from '../data/region.ts'
+import type { PathValues, RegionValues } from '../data/region.ts'
 import { offsetPath as offsetPathData, offsetRegion } from './offset.ts'
 import { outlineStroke } from './outline.ts'
 
-export type { PathData, RegionData, SegmentData } from '../data/region.ts'
+export type { PathValues, RegionValues } from '../data/region.ts'
 
 export type OffsetOptions = { join?: string; miterLimit?: number }
 
@@ -42,10 +42,10 @@ export type OutlineOptions = OffsetOptions & { width?: number; cap?: string }
  * @return the offset region
  */
 export function offset(
-  region: RegionData,
+  region: RegionValues,
   distance: number,
   { join = 'miter', miterLimit = 10 }: OffsetOptions = {}
-): RegionData {
+): RegionValues {
   return offsetRegion(region, distance, join, miterLimit)
 }
 
@@ -60,10 +60,10 @@ export function offset(
  * @return the paths of the offset
  */
 export function offsetPath(
-  path: PathData,
+  path: PathValues,
   distance: number,
   { join = 'miter', miterLimit = 10 }: OffsetOptions = {}
-): PathData[] {
+): PathValues[] {
   return offsetPathData(path, distance, join, miterLimit)
 }
 
@@ -77,13 +77,13 @@ export function offsetPath(
  * @return the region of the outline
  */
 export function outline(
-  paths: PathData[],
+  paths: PathValues[],
   {
     width = 1,
     join = 'miter',
     cap = 'butt',
     miterLimit = 10
   }: OutlineOptions = {}
-): RegionData {
+): RegionValues {
   return outlineStroke(paths, width / 2, join, cap, miterLimit)
 }

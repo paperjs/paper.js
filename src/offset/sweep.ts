@@ -17,13 +17,13 @@
 import { GEOMETRIC_EPSILON } from '../util/numerical.ts'
 import { Point } from '../basic/Point.ts'
 import * as Bezier from '../curve/index.ts'
-import type { BezierValues, SegmentValues } from '../curve/index.ts'
+import type { CurveValues, SegmentValues } from '../curve/index.ts'
 import {
   createRegion,
   getSegments,
   getStrokeCurves
 } from '../data/region.ts'
-import type { PathData, SegmentData, RegionData } from '../data/region.ts'
+import type { PathValues, RegionValues } from '../data/region.ts'
 import { regularize } from './curves.ts'
 
 // The stroke to outline, with the tolerance of its outline:
@@ -36,12 +36,12 @@ export type Stroke = {
 }
 
 // A part of a curve, as its values:
-export type Part = { v: BezierValues }
+export type Part = { v: CurveValues }
 
 // A curve of the path as its parts, with its directions at its ends, and
 // whether it reverses along its line between them:
 export type CurveParts<P extends Part> = {
-  curve: BezierValues
+  curve: CurveValues
   parts: P[]
   reverses: boolean
   start: Point
@@ -49,20 +49,20 @@ export type CurveParts<P extends Part> = {
 }
 
 export abstract class Sweep<P extends Part = Part> {
-  path: PathData
+  path: PathValues
   stroke: Stroke
-  areas: RegionData[] = []
+  areas: RegionValues[] = []
   curves: CurveParts<P>[] = []
   parts: P[] = []
   length = 0
 
-  constructor(path: PathData, stroke: Stroke) {
+  constructor(path: PathValues, stroke: Stroke) {
     this.path = path
     this.stroke = stroke
   }
 
   // Returns the areas that the stroke sweeps along the path:
-  sweep(): RegionData[] {
+  sweep(): RegionValues[] {
     const { closed } = this.path
     const { tolerance, cap } = this.stroke
     const segments = this.readSegments()
@@ -125,7 +125,7 @@ export abstract class Sweep<P extends Part = Part> {
   // the path, and its directions at its ends. `points` holds the ends of the
   // curve, and the points where it reverses between straight runs:
   abstract splitCurve(
-    v: BezierValues,
+    v: CurveValues,
     points: Point[],
     offset: number,
     length: number
@@ -150,7 +150,7 @@ export abstract class Sweep<P extends Part = Part> {
 
   abstract addDot(center: Point): void
 
-  addArea(segments: SegmentData[]) {
+  addArea(segments: PathValues['segments']) {
     this.areas.push(createRegion(segments))
   }
 
