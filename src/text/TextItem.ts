@@ -653,7 +653,7 @@ export class TextItem extends Item {
       content
         .slice(
           pieces.length ? pieces[0].start : 0,
-          pieces.length ? pieces[pieces.length - 1].end : 0
+          pieces.length ? pieces.at(-1).end : 0
         )
         .match(/\s+/g) ?? []
     ).length

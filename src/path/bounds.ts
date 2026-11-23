@@ -158,7 +158,7 @@ export function getSegmentStrokeBounds(
     } else {
       // Handle caps on open paths
       addCap(segments[0], cap)
-      addCap(segments[segments.length - 1], cap)
+      addCap(segments.at(-1), cap)
     }
   }
   return bounds

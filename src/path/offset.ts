@@ -300,7 +300,7 @@ function getDashes(
           i === b.index ? b.time : 1
         )
         if (segments.length) {
-          segments[segments.length - 1].handleOut = new Point(
+          segments.at(-1).handleOut = new Point(
             v[2] - v[0],
             v[3] - v[1]
           )

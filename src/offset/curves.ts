@@ -171,7 +171,7 @@ export function addCurve(
   point: Point,
   handle2: Point
 ) {
-  side[side.length - 1][2] = [handle1.x, handle1.y]
+  side.at(-1)[2] = [handle1.x, handle1.y]
   side.push([[point.x, point.y], [handle2.x, handle2.y], [0, 0]])
 }
 

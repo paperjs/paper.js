@@ -13,6 +13,7 @@
 import {
   Base,
   Style,
+  clamp,
   defineStyleAccessors,
   equals,
   inject,
@@ -54,8 +55,8 @@ export class TextRange extends Base {
     super()
     const { length } = story._content
     this._story = story
-    this._start = Math.max(0, Math.min(start, length))
-    this._end = Math.max(this._start, Math.min(end, length))
+    this._start = clamp(start, 0, length)
+    this._end = clamp(end, this._start, length)
     this._style = new Style(null, this)
   }
 

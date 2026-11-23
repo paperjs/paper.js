@@ -52,6 +52,15 @@ export type Contact = {
 // An arc of the pen's edge between two contacts, that sweeps the area:
 export type Strip = { from: Contact; to: Contact; distance: number }
 
+// The angle on the pen that the strip covers:
+export function getStripWidth({
+  from,
+  to
+}: Pick<Strip, 'from' | 'to'>): number {
+  const full = 2 * Math.PI
+  return ((to.phi - from.phi) % full + full) % full || full
+}
+
 export type Contacts = { sides: Contact[] | null; strips: Strip[] }
 
 // The angles where the edges of stroke profiles' pens are sampled, with their
@@ -254,17 +263,7 @@ export function getContacts(v: CurveValues, t: number, pen: Pen): Contacts {
     for (let i = 0; i < count; i++) {
       const from = roots[i]
       const to = roots[(i + 1) % count]
-      const phi = (
-        from.phi +
-        (
-          (
-            (to.phi - from.phi + 2 * Math.PI) %
-            (2 * Math.PI)
-          ) ||
-          2 * Math.PI
-        ) /
-        2
-      )
+      const phi = from.phi + getStripWidth({ from, to }) / 2
       if (f(phi) > 0) {
         contacts.strips.push({
           from,
@@ -323,7 +322,7 @@ export function getPenSegments(
       const step = sweep / count
       if (sweep > GEOMETRIC_EPSILON) {
         for (let j = 1; j <= count; j++) {
-          const last = segments[segments.length - 1]
+          const last = segments.at(-1)
           const [first, ...arc] = getArcThrough(
             new Point(last[0]),
             getPoint(phi0 + (j - 0.5) * step),

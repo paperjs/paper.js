@@ -75,7 +75,7 @@ export function offsetPath(
   const outline = outlineStroke([path], radius, join, 'butt', miterLimit)
   const lengths = curves.map(v => getCurveLength(v, 0, 1))
   const first = curves[0]
-  const last = curves[curves.length - 1]
+  const last = curves.at(-1)
   const caps: [Point, Point][] = [
     [new Point(first[0], first[1]), getCurveNormal(first, 0)],
     [new Point(last[6], last[7]), getCurveNormal(last, 1)]
@@ -149,7 +149,7 @@ export function offsetPath(
   // Adds the run of curves between the segments, along the path:
   const addRun = (run: SegmentValues[]) => {
     const [start] = run
-    const end = run[run.length - 1]
+    const end = run.at(-1)
     const segments: SegmentValues[] = [
       [start[0], [0, 0], start[2]],
       ...run.slice(1, -1),

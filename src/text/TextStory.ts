@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { Base, Change, Style, TextRange } from '../internal.ts'
+import { Base, Change, Style, TextRange, clamp } from '../internal.ts'
 import type { TextItem } from './TextItem.ts'
 
 /**
@@ -157,8 +157,8 @@ export class TextStory extends Base {
     const runs = this._runs
     const paragraphs = this._paragraphs
     const text = '' + content
-    const from = Math.max(0, Math.min(range.start, length))
-    const to = Math.max(from, Math.min(range.end, length))
+    const from = clamp(range.start, 0, length)
+    const to = clamp(range.end, from, length)
     // 1. The runs: the new content becomes one, between the split runs.
     const i = this.#split(from)
     const j = this.#split(to)
