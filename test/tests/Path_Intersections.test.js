@@ -978,4 +978,22 @@ describe('Path Intersections', () => {
     })
     equals(path.getIntersections().length, 0)
   })
+
+  test('The end that neighbors share, at a cusp with one tangent', () => {
+    // Both curves leave the cusp in the same direction, and stay within
+    // rounding of each other over a stretch that clipping finds many
+    // intersections on. The exact values matter here:
+    const v1 = [
+      377.55982915745625, 283.71727320467227, 392.99752375817116,
+      283.03932453900336, 416.7173560119303, 288.4579896012822,
+      436.54050228629006, 291.9435576213252
+    ]
+    const v2 = [
+      436.54050228629006, 291.9435576213252, 418.6024852948636,
+      288.78945798937093, 386.9086271492005, 285.53793739364096,
+      372.87274549452394, 286.1543252342745
+    ]
+    equals(getCurveIntersections(v1, v2, { sharesEnd: true }).length, 0)
+    equals(getCurveIntersections(v2, v1, { sharesStart: true }).length, 0)
+  })
 })

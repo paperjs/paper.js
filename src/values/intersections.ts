@@ -358,10 +358,13 @@ function addLocation(
   return isValid
 }
 
-// Whether the points at the times on both curves lie at the end that they
-// share, the start or the end of the first one by its index. The times alone
-// don't tell: Without a handle there, a curve stays close to its end over a
-// long stretch of them, as getCurveTimeOf() explains.
+// Whether the curves meet at the times as part of the end that they share,
+// the start or the end of the first one by its index. The times alone don't
+// tell: Without a handle there, a curve stays close to its end over a long
+// stretch of them, as getCurveTimeOf() explains. And curves that leave a
+// cusp in the same direction stay together within rounding all the way from
+// it, so that the point halfway there on the first one lies on the second
+// one too, before its time:
 function isSharedEnd(
   { v1, v2 }: Pair,
   t1: number,
@@ -369,14 +372,21 @@ function isSharedEnd(
   index: number
 ): boolean {
   const end = new Point(v1[index], v1[index + 1])
-  const epsilon = getEpsilon(
-    Math.max(Math.abs(end.x), Math.abs(end.y)),
-    GEOMETRIC_EPSILON
-  )
-  return (
+  const magnitude = Math.max(Math.abs(end.x), Math.abs(end.y))
+  const epsilon = getEpsilon(magnitude, GEOMETRIC_EPSILON)
+  if (
     getCurvePoint(v1, t1).isClose(end, epsilon) &&
     getCurvePoint(v2, t2).isClose(end, epsilon)
-  )
+  ) {
+    return true
+  } else {
+    const t = getCurveTimeOf(
+      v2,
+      getCurvePoint(v1, (t1 + (index ? 1 : 0)) / 2),
+      getEpsilon(magnitude)
+    )
+    return t !== null && (index ? t <= t2 : t >= t2)
+  }
 }
 
 function addCurveIntersections(
