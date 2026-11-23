@@ -952,4 +952,30 @@ describe('Path Intersections', () => {
     equals(getCurveIntersections(v1, v2).length, 1, 'v1 with v2')
     equals(getCurveIntersections(v2, v1).length, 1, 'v2 with v1')
   })
+
+  test('The end that neighbors share, on a curve without a handle there', () => {
+    // Without a handle at its end, the first curve stays within the
+    // geometric epsilon of it from the time 0.99998 on, where clipping
+    // locates the start of the second one. The exact values matter here:
+    const path = new Path({
+      segments: [
+        [
+          [170.62205316290044, 6.7051172521965015],
+          [30.652568317073417, -11.130694366432012],
+          [-73.21453754655518, 26.58598236143407]
+        ],
+        [
+          [39.06128702036429, 90.11524474454043],
+          [0, 0],
+          [-5.789789980781279e-8, -5.9435734556245734e-8]
+        ],
+        [
+          [39.05442527679383, 90.10820068388286],
+          [0.004373204095152516, 0.004489357615668155],
+          [0, 0]
+        ]
+      ]
+    })
+    equals(path.getIntersections().length, 0)
+  })
 })
