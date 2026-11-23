@@ -23,12 +23,10 @@ import type { Point } from '../basic/Point.ts'
 
 const { abs, max, min } = Math
 
-// A path to wind around: the values of its curves, whether it is closed, and
-// whether it is clockwise, which is only read for points on the path:
+// A path to wind around: the values of its curves, and whether it is closed:
 export type WindingPath = {
   curves: CurveValues[]
   closed: boolean
-  readonly clockwise: boolean
 }
 
 export type Winding = {
@@ -49,8 +47,7 @@ export type Winding = {
  * @param point the location for which to determine the winding
  *     contribution
  * @param paths the paths that describe the shape against which to check,
- *     as the values of their curves, whether they are closed, and whether
- *     they are clockwise
+ *     as the values of their curves, and whether they are closed
  * @param [dir=false] the direction in which to determine the
  *     winding contribution, `false`: in x-direction, `true`: in y-direction
  * @param [dontFlip=false] controls whether the algorithm is
@@ -208,7 +205,7 @@ export function getWinding(
     }
   }
 
-  for (const { curves, closed, clockwise } of paths) {
+  for (const { curves, closed } of paths) {
     const l = curves.length
     for (let i = 0; i < l; i++) {
       const v = curves[i]
@@ -261,15 +258,6 @@ export function getWinding(
         // closing curve was calculated at the beginning of it, handle
         // it now to treat the path as closed:
         if (vClose && (res = handleCurve(vClose))) return res
-        if (onPath && !pathWindingL && !pathWindingR) {
-          // If the point is on the path and the windings canceled
-          // each other, we treat the point as if it was inside the
-          // path. A point inside a path has a winding of [+1,-1]
-          // for clockwise and [-1,+1] for counter-clockwise paths.
-          // If the ray is cast in y direction (dir == true), the
-          // windings always have opposite sign.
-          pathWindingL = pathWindingR = clockwise !== !!dir ? 1 : -1
-        }
         windingL += pathWindingL
         windingR += pathWindingR
         pathWindingL = pathWindingR = 0

@@ -19,6 +19,15 @@ import type { Operator } from './graph.ts'
 import { getPathArea, getRegionBounds, reduceRegion } from '../values/index.ts'
 import type { RegionValues } from '../values/index.ts'
 
+// The boolean operators decide if an area is part of the result, from
+// whether it is inside each of the two operands:
+export const booleanOperators: Record<string, Operator> = {
+  unite: (inside1, inside2) => inside1 || inside2,
+  intersect: (inside1, inside2) => inside1 && inside2,
+  subtract: (inside1, inside2) => inside1 && !inside2,
+  exclude: (inside1, inside2) => inside1 !== inside2
+}
+
 // Unites the regions, pairwise in a balanced tree, so that each step only
 // meets results of similar size, see combinePaths(). The first one is united
 // with the union of the others, and resolved on its own if it is the only
@@ -65,11 +74,7 @@ export function subtractRegions(
   region1: RegionValues,
   region2: RegionValues
 ): RegionValues {
-  return traceRegions(
-    region1,
-    region2,
-    (inside1, inside2) => inside1 && !inside2
-  )
+  return traceRegions(region1, region2, booleanOperators.subtract)
 }
 
 // Unites the two regions, or resolves the first one on its own:
@@ -77,11 +82,7 @@ function unite(
   region1: RegionValues,
   region2: RegionValues | null
 ): RegionValues {
-  return traceRegions(
-    region1,
-    region2,
-    (inside1, inside2) => inside1 || inside2
-  )
+  return traceRegions(region1, region2, booleanOperators.unite)
 }
 
 // Traces the areas of the regions that the operator includes, reducing them

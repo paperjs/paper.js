@@ -34,6 +34,7 @@ import {
   Item,
   Path,
   Point,
+  booleanOperators,
   findItemBoundsCollisions,
   getCurvePoint,
   getCurveRayWinding,
@@ -68,15 +69,6 @@ export type BooleanOptions = {
 }
 
 const { min, max, abs } = Math
-
-// The boolean operators decide if an area is part of the result, from
-// whether it is inside each of the two operands.
-const operators: Record<string, Operator> = {
-  unite: (inside1, inside2) => inside1 || inside2,
-  intersect: (inside1, inside2) => inside1 && inside2,
-  subtract: (inside1, inside2) => inside1 && !inside2,
-  exclude: (inside1, inside2) => inside1 !== inside2
-}
 
 function getPaths(path: PathItem): Path[] {
   return (path._children ?? [path]) as Path[]
@@ -267,14 +259,14 @@ export function traceBoolean(
     compound.fillRule = 'evenodd'
     for (let i = 0, l = items.length; i < l; i++) {
       compound.addChildren(
-        tracePaths([preparePath(items[i], true)], operators.unite)
+        tracePaths([preparePath(items[i], true)], booleanOperators.unite)
       )
     }
-    paths = tracePaths([compound], operators.unite)
+    paths = tracePaths([compound], booleanOperators.unite)
   } else {
     paths = tracePaths(
       getOperands(path1, combinePaths(path2, operation)),
-      operators[operation]
+      booleanOperators[operation]
     )
   }
   return createResult(paths, true, path1, path2, options)
@@ -475,10 +467,7 @@ export function getItemWinding(point: Point, item: PathItem): Winding {
     point,
     getPaths(item).map(path => ({
       curves: path.curves.map(curve => curve.values),
-      closed: path._closed,
-      get clockwise() {
-        return path.clockwise
-      }
+      closed: path._closed
     }))
   )
 }
