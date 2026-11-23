@@ -53,9 +53,8 @@ import {
   traceRegions,
   uniteRegions
 } from './operations.ts'
-import { getStrokeCurves } from '../values/index.ts'
+import { containsPoint, getPathCurves } from '../values/index.ts'
 import type { PathValues, RegionValues } from '../values/index.ts'
-import { getWinding } from './winding.ts'
 
 export { formatSVGPath, parseSVGPath } from '../values/index.ts'
 export type { PathValues, RegionValues } from '../values/index.ts'
@@ -128,16 +127,10 @@ export function exclude(
  * @return true if the region contains the point
  */
 export function contains(region: RegionValues, [x, y]: number[]): boolean {
-  const { winding, windingL, windingR, onPath } = getWinding(
-    new Point(x, y),
-    region.paths.map(path => ({
-      curves: getStrokeCurves(path),
-      closed: path.closed
-    }))
-  )
-  return (
-    onPath ||
-    !!(region.fillRule === 'evenodd' ? windingL & 1 || windingR & 1 : winding)
+  return containsPoint(
+    region.paths.flatMap(getPathCurves),
+    region.fillRule,
+    new Point(x, y)
   )
 }
 

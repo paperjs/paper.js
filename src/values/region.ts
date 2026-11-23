@@ -12,8 +12,10 @@
 
 // Regions as the paths that are filled as one, as the boolean operations and
 // offsetting take and return them.
+import type { Point } from '../basic/Point.ts'
 import { Rectangle } from '../basic/Rectangle.ts'
-import { addCurveBounds } from './curve.ts'
+import { addCurveBounds, getCurveRayWinding } from './curve.ts'
+import type { CurveValues } from './curve.ts'
 import { getCurve, getPathSegments, reducePath } from './path.ts'
 import type { PathValues } from './path.ts'
 
@@ -23,6 +25,23 @@ export type RegionValues = { paths: PathValues[]; fillRule: string }
 // Returns the region of one closed path with the segments:
 export function createRegion(segments: PathValues['segments']): RegionValues {
   return { paths: [{ segments, closed: true }], fillRule: 'nonzero' }
+}
+
+// Whether the area that the curves enclose by the fill rule contains the
+// point, which it also does on the curves. Open paths count with the lines
+// that close them among their curves, as getPathCurves() returns them:
+export function containsPoint(
+  curves: CurveValues[],
+  fillRule: string,
+  point: Point
+): boolean {
+  let total = 0
+  for (const v of curves) {
+    const winding = getCurveRayWinding(v, point, 1e-9)
+    if (winding === null) return true
+    total += winding
+  }
+  return !!(fillRule === 'evenodd' ? total & 1 : total)
 }
 
 // Returns the bounds of the region, as those of a path item with its paths:

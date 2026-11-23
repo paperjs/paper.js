@@ -793,34 +793,61 @@ export function addCurveBounds(
 
 // Returns the winding of the point against the curve, as the sum of its
 // parts that cross a ray from the point in x-direction, upwards as +1 and
-// downwards as -1. It tells which path lies inside which:
-export function getCurveRayWinding(v: CurveValues, point: Point): number {
+// downwards as -1. It tells which path lies inside which. A part counts from
+// its lower end up to, but without its upper one, so that the parts that
+// meet on the ray count once where they cross it, and cancel where they only
+// touch it. With a tolerance, a point on the curve within it has no winding,
+// and null is returned:
+export function getCurveRayWinding(
+  v: CurveValues,
+  point: Point,
+  tolerance?: number
+): number | null {
   const { min, max, abs } = Math
   let winding = 0
   const { x, y } = point
+  const hasTolerance = tolerance != null
   // Only curves that reach the ray at all:
   if (
     y >= min(v[1], v[3], v[5], v[7]) &&
     y <= max(v[1], v[3], v[5], v[7]) &&
-    x < max(v[0], v[2], v[4], v[6])
+    x <= max(v[0], v[2], v[4], v[6]) + (tolerance || 0)
   ) {
     const monoCurves = getMonoCurves(v)
     const roots = []
     for (let i = 0, l = monoCurves.length; i < l; i++) {
       const mv = monoCurves[i]
+      const x0 = mv[0]
       const y0 = mv[1]
+      const x3 = mv[6]
       const y3 = mv[7]
       const dir = y0 < y3 ? 1 : y0 > y3 ? -1 : 0
-      if (dir && y >= min(y0, y3) && y < max(y0, y3)) {
-        // The monotone curve crosses the ray once. solveCubic()
-        // can miss it close to the ends, where it is at the end:
+      if (!dir) {
+        // A part along the ray has no winding, but may hold the point:
+        if (
+          hasTolerance &&
+          y === y0 &&
+          x >= min(x0, x3) - tolerance &&
+          x <= max(x0, x3) + tolerance
+        ) {
+          return null
+        }
+      } else if (y >= min(y0, y3) && y <= max(y0, y3)) {
+        // The monotone curve meets the ray once. solveCubic() can miss
+        // it close to the ends, where it is at the end:
         const px =
-          solveCurve(mv, 1, y, roots, 0, 1) > 0
-            ? getCurvePoint(mv, roots[0]).x
-            : abs(y - y0) < abs(y - y3)
-              ? mv[0]
-              : mv[6]
-        if (px > x) {
+          y === y0
+            ? x0
+            : y === y3
+              ? x3
+              : solveCurve(mv, 1, y, roots, 0, 1) > 0
+                ? getCurvePoint(mv, roots[0]).x
+                : abs(y - y0) < abs(y - y3)
+                  ? x0
+                  : x3
+        if (hasTolerance && abs(px - x) <= tolerance) {
+          return null
+        } else if (px > x && y < max(y0, y3)) {
           winding += dir
         }
       }

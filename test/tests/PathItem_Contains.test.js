@@ -529,4 +529,23 @@ describe('PathItem Contains', () => {
       'A path with a non-invertible matrix cannot contain its position'
     )
   })
+
+  test('Path#contains() of points at the height of a segment', () => {
+    // The first curve starts at the height of the last one's end, where the
+    // path turns back up. Points far outside at that height were taken as
+    // lying on the path:
+    const path = new Path({
+      segments: [
+        [[351, 46], [84.19, -99.74], [0, 0]],
+        [343, 76],
+        [31, 105]
+      ],
+      closed: true
+    })
+    testPoint(path, new Point(31.8, 46), false)
+    testPoint(path, new Point(100, 46), false)
+    testPoint(path, new Point(300, 46), true)
+    testPoint(path, new Point(400, 46), false)
+    testPoint(path, new Point(351, 46), true, 'The segment is on the path.')
+  })
 })

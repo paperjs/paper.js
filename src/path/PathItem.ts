@@ -25,13 +25,14 @@ import {
   closePaths,
   createGraph,
   createResult,
+  containsPoint,
   dashPathItem,
   findItemBoundsCollisions,
+  getCurveValues,
   getEpsilon,
   getInteriorPoint,
   getOperands,
   getRegion,
-  getItemWinding,
   interpolateStrokeProfiles,
   isPlainObject,
   offsetPathItem,
@@ -50,8 +51,8 @@ import type { Matrix } from '../basic/Matrix.ts'
 import type { CurveLocation } from './CurveLocation.ts'
 import type { SegmentLike } from './Segment.ts'
 import type { BooleanOptions } from './boolean.ts'
-import type { Winding } from '../boolean/winding.ts'
 import type { Graph } from '../boolean/graph.ts'
+import type { CurveValues } from '../values/curve.ts'
 import type {
   DashOptions,
   OffsetOptions,
@@ -235,21 +236,24 @@ export abstract class PathItem extends Item {
     // Check the transformed point against the untransformed (internal)
     // handle bounds, which is the fastest rough bounding box to calculate
     // for a quick check before calculating the actual winding.
-    const winding: Partial<Winding> = point.isInside(
-      this.getBounds(null, { internal: true, handle: true })
-    )
-      ? getItemWinding(point, this)
-      : {}
-    // See #1116#issuecomment-243794824 for an explanation of the
-    // winding.onPath check here.
-    return (
-      winding.onPath ||
-      !!(
-        this.fillRule === 'evenodd'
-          ? winding.windingL & 1 || winding.windingR & 1
-          : winding.winding
-      )
-    )
+    if (
+      point.isInside(this.getBounds(null, { internal: true, handle: true }))
+    ) {
+      // With the lines that close open paths, as filling them does:
+      const curves: CurveValues[] = []
+      for (const path of (this._children ?? [this]) as Path[]) {
+        const segments = path._segments
+        for (const curve of path.curves) {
+          curves.push(curve.values)
+        }
+        if (!path._closed && segments.length > 1) {
+          curves.push(getCurveValues(segments.at(-1), segments[0], null, true))
+        }
+      }
+      return containsPoint(curves, this.fillRule, point)
+    } else {
+      return false
+    }
   }
 
   /**

@@ -40,7 +40,6 @@ import {
   getCurveRayWinding,
   getMonoCurves,
   getStrokeProfilePart,
-  getWinding,
   paper,
   push,
   setStrokeProfileRuns,
@@ -48,7 +47,6 @@ import {
   splitGraph,
   traceGraph
 } from '../internal.ts'
-import type { Winding } from '../boolean/winding.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'
 import type { Operator } from '../boolean/graph.ts'
 import type { RegionValues } from '../values/region.ts'
@@ -458,18 +456,6 @@ export function reorientPaths(
     }
   }
   return paths
-}
-
-// Returns the winding of the point against the paths of the path item, see
-// getWinding() in the boolean module:
-export function getItemWinding(point: Point, item: PathItem): Winding {
-  return getWinding(
-    point,
-    getPaths(item).map(path => ({
-      curves: path.curves.map(curve => curve.values),
-      closed: path._closed
-    }))
-  )
 }
 
 /*
