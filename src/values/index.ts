@@ -11,10 +11,11 @@
  */
 
 // The geometry that needs no items: the functions on the values of curves,
-// segments, paths and regions.
+// segments, paths, regions and matrices.
 export * from './arcs.ts'
 export * from './curve.ts'
 export * from './intersections.ts'
+export * from './matrix.ts'
 export * from './path.ts'
 export * from './region.ts'
 export * from './svg.ts'

@@ -529,7 +529,7 @@ export class Shape extends Item {
           1,
           matrix.clone().scale(width / 2, height / 2)
         )
-        rect = new Rectangle(matrix._tx - x, matrix._ty - y, x * 2, y * 2)
+        rect = new Rectangle(matrix.tx - x, matrix.ty - y, x * 2, y * 2)
       }
     }
     return strokeRadius

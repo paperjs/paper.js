@@ -20,13 +20,17 @@ import {
   isZero,
   solveQuartic
 } from '../util/numerical.ts'
-import { Matrix } from '../basic/Matrix.ts'
 import { Point } from '../basic/Point.ts'
 import {
+  createMatrix,
   getArcThrough,
   getCurvature,
   getCurvePoint,
-  getCurveTangent
+  getCurveTangent,
+  rotateMatrix,
+  scaleMatrix,
+  transformPoint,
+  translateMatrix
 } from '../values/index.ts'
 import type { CurveValues, SegmentValues } from '../values/index.ts'
 
@@ -387,17 +391,17 @@ export function getPenSegments(
     } else {
       segments.push(last)
     }
-    const matrix = new Matrix()
-      .translate(point)
-      .rotate(pen.angle * 180 / Math.PI)
-      .scale(pen.a, pen.b)
+    const matrix = createMatrix()
+    translateMatrix(matrix, point.x, point.y)
+    rotateMatrix(matrix, pen.angle * 180 / Math.PI)
+    scaleMatrix(matrix, pen.a, pen.b)
     return segments.map(([point, handleIn, handleOut]) => {
       const center = new Point(point)
-      const { x, y } = matrix._transformPoint(center)
+      const { x, y } = transformPoint(matrix, center)
       // Handles are transformed as points, where there are any:
       const transform = (handle: number[]) => {
         if (handle[0] || handle[1]) {
-          const to = matrix._transformPoint(center.add(handle))
+          const to = transformPoint(matrix, center.add(handle))
           return [to.x - x, to.y - y]
         } else {
           return handle

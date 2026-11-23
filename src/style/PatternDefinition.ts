@@ -192,8 +192,8 @@ export class PatternDefinition extends ItemDefinition {
       0, 0
     ).append(matrix)
     const scale = Math.max(
-      Math.sqrt(device._a * device._a + device._b * device._b),
-      Math.sqrt(device._c * device._c + device._d * device._d)
+      Math.sqrt(device.a * device.a + device.b * device.b),
+      Math.sqrt(device.c * device.c + device.d * device.d)
     )
     const level = Math.ceil(Math.log(scale) / Math.LN2 * 4 - EPSILON)
     const { tile } = this
@@ -234,12 +234,12 @@ export class PatternDefinition extends ItemDefinition {
       new Matrix().translate(tile.point).scale(cell.divide(size))
     )
     // Reuse the context's DOMMatrix, as node-canvas only takes its own:
-    transform.a = placement._a
-    transform.b = placement._b
-    transform.c = placement._c
-    transform.d = placement._d
-    transform.e = placement._tx
-    transform.f = placement._ty
+    transform.a = placement.a
+    transform.b = placement.b
+    transform.c = placement.c
+    transform.d = placement.d
+    transform.e = placement.tx
+    transform.f = placement.ty
     pattern.setTransform(transform)
     return pattern
   }

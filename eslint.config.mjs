@@ -33,13 +33,13 @@ const braces = [
 // above, so that each layer works without the rest of the library:
 const layers = [
   // The constants, the helpers, the foundation of the classes (the base
-  // class, serialization, events) and the basic types:
+  // class, serialization, events), the basic types, and the functions on
+  // the values of curves, segments, paths, regions and matrices. These work
+  // with the basic types, and Matrix is built on those for its values:
   {
-    files: ['src/constants.ts', 'src/{util,core,basic}/**'],
-    below: 'util|core|basic'
+    files: ['src/constants.ts', 'src/{util,core,basic,values}/**'],
+    below: 'util|core|basic|values'
   },
-  // The functions on the values of curves, segments, paths and regions:
-  { files: ['src/values/**'], below: 'util|core|basic' },
   // The planar graph of the boolean operations, on plain paths:
   { files: ['src/boolean/**'], below: 'util|core|basic|values' },
   // The outlines of strokes, on plain paths:

@@ -2124,9 +2124,9 @@ export class Item extends Emitter {
         this[key] = source[key]
       }
     }
-    // Use Matrix#set() to easily copy over values.
+    // Copy the values of the matrix, without notifying this item:
     if (!excludeMatrix) {
-      this._matrix.set(source._matrix, true)
+      this._matrix._set(...source._matrix.values, true)
     }
     // We can't just set _applyMatrix as many item types won't allow it,
     // e.g. creating a Shape in Path#toShape().

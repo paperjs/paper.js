@@ -16,9 +16,17 @@
 // its end, and one that goes nowhere has no segments.
 import { ANGULAR_EPSILON, EPSILON, KAPPA, isZero } from '../util/numerical.ts'
 import { Line } from '../basic/Line.ts'
-import { Matrix } from '../basic/Matrix.ts'
 import { Point } from '../basic/Point.ts'
 import type { Size } from '../basic/Size.ts'
+import {
+  createMatrix,
+  inverseTransformPoint,
+  rotateMatrix,
+  scaleMatrix,
+  transformPoint,
+  translateMatrix
+} from './matrix.ts'
+import type { MatrixValues } from './matrix.ts'
 import type { SegmentValues } from './path.ts'
 
 // Returns the arc from `from` through `through` to `to`.
@@ -142,10 +150,13 @@ export function getEllipticArc(
       .rotate(rotation)
       .add(middle)
     // Map the unit circle to the ellipse, and get the extent there:
-    const matrix = new Matrix().translate(center).rotate(rotation).scale(rx, ry)
-    let extent = matrix
-      ._inverseTransform(from)
-      .getDirectedAngle(matrix._inverseTransform(to))
+    const matrix = createMatrix()
+    translateMatrix(matrix, center.x, center.y)
+    rotateMatrix(matrix, rotation)
+    scaleMatrix(matrix, rx, ry)
+    let extent = inverseTransformPoint(matrix, from).getDirectedAngle(
+      inverseTransformPoint(matrix, to)
+    )
     // "...if fS = 0 and extent is > 0, then subtract 360, whereas
     // if fS = 1 and extent is < 0, then add 360."
     if (!clockwise && extent > 0) {
@@ -179,13 +190,13 @@ export function getEllipse(
 }
 
 // Returns the arc of `extent` degrees around `center`, or on the ellipse that
-// `matrix` maps the unit circle to.
+// the values of `matrix` map the unit circle to.
 function getArc(
   from: Point,
   to: Point,
   center: Point,
   extent: number,
-  matrix?: Matrix
+  matrix?: MatrixValues
 ): SegmentValues[] {
   const { abs, ceil, cos, sin, PI } = Math
   // One curve per 90 degrees, without letting small imprecisions add one:
@@ -195,19 +206,21 @@ function getArc(
     const half = step * PI / 360
     const z = 4 / 3 * sin(half) / (1 + cos(half))
     const segments: SegmentValues[] = []
-    let vector = matrix ? matrix._inverseTransform(from) : from.subtract(center)
+    let vector = matrix
+      ? inverseTransformPoint(matrix, from)
+      : from.subtract(center)
     for (let i = 0; i <= count; i++) {
       // Use the given point at the end, as calculating it adds imprecision:
       const point =
         i === count
           ? to
           : matrix
-            ? matrix._transformPoint(vector)
+            ? transformPoint(matrix, vector)
             : center.add(vector)
       const getHandle = (angle: number) => {
         const handle = vector.rotate(angle).multiply(z)
         return matrix
-          ? matrix._transformPoint(vector.add(handle)).subtract(point)
+          ? transformPoint(matrix, vector.add(handle)).subtract(point)
           : handle
       }
       segments.push([
