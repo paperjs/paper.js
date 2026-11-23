@@ -386,12 +386,20 @@ export function fitSide(
       const middle = count / 2
       fit(t0, t, getSamples(t0, t, samples.slice(0, middle + 1)), depth + 1)
       fit(t, t1, getSamples(t, t1, samples.slice(middle)), depth + 1)
-    } else if (error > tolerance) {
-      // The side jumps, in directions that the samples can't tell, and a
-      // line stays between its ends:
-      addCurve(side, new Point(), p3, new Point())
     } else {
-      addCurve(side, handle1, p3, handle2)
+      // Where the fit still fails, the side jumps, in directions that the
+      // samples can't tell, and a line stays between its ends. A cubic
+      // along the line between its ends is that line too:
+      const chord = p3.subtract(p0)
+      const isLine = (
+        error > tolerance || (
+          !chord.isZero() &&
+          handle1.isCollinear(chord) &&
+          handle2.isCollinear(chord)
+        )
+      )
+      const zero = new Point()
+      addCurve(side, isLine ? zero : handle1, p3, isLine ? zero : handle2)
     }
   }
 

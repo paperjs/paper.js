@@ -416,6 +416,18 @@ describe('PathItem#offset() and #outline()', () => {
     // The sides take as few cubics as stay within the tolerance, with the
     // times of the points on them refined:
     equals(pressureOutline.segments.length, 25)
+    // Sides that are straight are lines, without handles:
+    const straight = new Path({
+      segments: [[100, 100], [400, 100]],
+      strokeWidth: 40,
+      insert: false
+    })
+    straight.strokeProfile = [{ offset: 0, width: 1, aspect: 0.3, angle: 30 }]
+    equals(
+      straight.outline({ insert: false }).pathData,
+      'M86.01379,88.73057h300l27.97243,22.53886h-300z',
+      'straight sides'
+    )
     equals(getDeviation(pressure, pressureOutline) < 0.1, true, 'tolerance')
     // Also at a smooth stop between curves:
     const joint = pressure.clone({ insert: false })
