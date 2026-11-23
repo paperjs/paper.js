@@ -520,6 +520,112 @@ export function solveCubic(
 }
 
 /**
+ * Solves a quartic equation of the form ax⁴ + bx³ + cx² + dx + e = 0, by
+ * Ferrari's method: A root of the resolvent cubic splits the depressed
+ * quartic into two quadratics. The roots are refined by Newton's method on
+ * the quartic, as the method loses digits where they lie close together.
+ *
+ * @param a the quartic term (x⁴ term)
+ * @param b the cubic term (x³ term)
+ * @param c the quadratic term (x² term)
+ * @param d the linear term (x term)
+ * @param e the constant term
+ * @param roots the array to store the roots in
+ * @param min the lower bound of the allowed roots
+ * @param max the upper bound of the allowed roots
+ * @return the number of real roots found, or -1 if there are
+ * infinite solutions
+ */
+export function solveQuartic(
+  a: number, b: number, c: number, d: number, e: number,
+  roots: number[],
+  min?: number, max?: number
+): number {
+  if (abs(a) < EPSILON * Math.max(abs(b), abs(c), abs(d), abs(e))) {
+    return solveCubic(b, c, d, e, roots, min, max)
+  }
+  b /= a
+  c /= a
+  d /= a
+  e /= a
+  // Scale x by the magnitude of the roots, so that the coefficients compare
+  // with the same tolerances whatever their units:
+  const scale = Math.max(
+    abs(b),
+    sqrt(abs(c)),
+    Math.cbrt(abs(d)),
+    sqrt(sqrt(abs(e)))
+  )
+  const xs: number[] = []
+  if (scale) {
+    b /= scale
+    c /= scale * scale
+    d /= scale * scale * scale
+    e /= scale * scale * scale * scale
+    // The depressed quartic y⁴ + py² + qy + r, with x = y - b / 4:
+    const b2 = b * b
+    const p = c - 3 * b2 / 8
+    const q = d - b * c / 2 + b2 * b / 8
+    const r = e - b * d / 4 + b2 * c / 16 - 3 * b2 * b2 / 256
+    const found: number[] = []
+    // With a root m of the resolvent cubic, (y² + p / 2 + m)² is the square
+    // of a line in y, which splits the quartic into two quadratics. It has
+    // a positive root, as it is -q² / 8 at 0:
+    let m = 0
+    for (
+      let i = 0, l = solveCubic(1, p, p * p / 4 - r, -q * q / 8, found);
+      i < l;
+      i++
+    ) {
+      m = Math.max(m, found[i])
+    }
+    if (m > 0) {
+      const s = sqrt(2 * m)
+      for (const sign of [1, -1]) {
+        for (
+          let i = 0,
+            l = solveQuadratic(
+              1,
+              -sign * s,
+              p / 2 + m + sign * q / (2 * s),
+              found
+            );
+          i < l;
+          i++
+        ) {
+          xs.push(found[i] - b / 4)
+        }
+      }
+    } else {
+      // Without q, it is a quadratic in y²:
+      for (let i = 0, l = solveQuadratic(1, p, r, found); i < l; i++) {
+        if (found[i] > -EPSILON) {
+          const y = sqrt(Math.max(found[i], 0))
+          xs.push(y - b / 4, -y - b / 4)
+        }
+      }
+    }
+  } else {
+    xs.push(0)
+  }
+  let count = 0
+  const boundless = min == null
+  for (let x of xs) {
+    for (let i = 0; i < 3; i++) {
+      const slope = ((4 * x + 3 * b) * x + 2 * c) * x + d
+      if (slope) {
+        x -= ((((x + b) * x + c) * x + d) * x + e) / slope
+      }
+    }
+    x *= scale
+    if (boundless || x > min - EPSILON && x < max + EPSILON) {
+      roots[count++] = boundless ? x : clamp(x, min, max)
+    }
+  }
+  return count
+}
+
+/**
  * Finds the roots in [0, 1] of a polynomial in Bernstein form, by
  * subdividing it until each part has at most one sign change among its
  * coefficients: A part without sign changes has no root, and a part

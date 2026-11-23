@@ -13,7 +13,13 @@
 // The pens of stroke profiles: ellipses that move along curves while they
 // turn and change their size, and where they touch the edge of the area that
 // they sweep.
-import { EPSILON, GEOMETRIC_EPSILON, findRoot } from '../util/numerical.ts'
+import {
+  EPSILON,
+  GEOMETRIC_EPSILON,
+  findRoot,
+  isZero,
+  solveQuartic
+} from '../util/numerical.ts'
 import { Matrix } from '../basic/Matrix.ts'
 import { Point } from '../basic/Point.ts'
 import {
@@ -63,13 +69,23 @@ export function getStripWidth({
 
 export type Contacts = { sides: Contact[] | null; strips: Strip[] }
 
-// The angles where the edges of stroke profiles' pens are sampled, with their
-// cosines and sines, the same for all pens:
-const penSamples: { phi: number; cos: number; sin: number }[] = []
+// Eight angles around the pen with their cosines and sines, and those of
+// their doubles, to find one where f(φ) of getContacts() is far from zero:
+const penAngles: {
+  cos: number
+  sin: number
+  cos2: number
+  sin2: number
+}[] = []
 
-for (let i = 0; i <= 32; i++) {
-  const phi = (i + 0.5) * Math.PI / 16
-  penSamples.push({ phi, cos: Math.cos(phi), sin: Math.sin(phi) })
+for (let i = 0; i < 8; i++) {
+  const phi = i * Math.PI / 4
+  penAngles.push({
+    cos: Math.cos(phi),
+    sin: Math.sin(phi),
+    cos2: Math.cos(2 * phi),
+    sin2: Math.sin(2 * phi)
+  })
 }
 
 // Returns the pen with the values at the radius of the stroke, as the half
@@ -153,51 +169,11 @@ export function getContacts(v: CurveValues, t: number, pen: Pen): Contacts {
     )
     const f = (phi: number) => fcs(Math.cos(phi), Math.sin(phi))
     const df = (phi: number) => dfcs(Math.cos(phi), Math.sin(phi))
-    const ddf = (phi: number) => {
-      const c = Math.cos(phi)
-      const s = Math.sin(phi)
-      return (
-        -t1 * b * c -
-        t2 * a * s +
-        2 * (a * db - da * b) * (c * c - s * s) -
-        4 * dAngle * (a * a - b * b) * s * c
-      )
-    }
-    // The root of f between the angles where it changes its
-    // sign, by Newton's method from the secant's root:
-    const solve = (
-      f: (phi: number) => number,
-      df: (phi: number) => number,
-      phi0: number,
-      phi1: number,
-      f0: number,
-      f1: number
-    ) => {
-      const sign = f0 < 0 ? 1 : -1
-      return findRoot(
-        phi => sign * f(phi),
-        phi => sign * df(phi),
-        (f1 * phi0 - f0 * phi1) / (f1 - f0),
-        phi0,
-        phi1,
-        32,
-        EPSILON
-      )
-    }
-    let sample = penSamples[0]
-    let phi0 = sample.phi
-    let f0 = fcs(sample.cos, sample.sin)
-    let d0 = dfcs(sample.cos, sample.sin)
     const roots: Contact[] = []
 
-    // Adds the side at the root of f(φ) between the angles,
-    // with the change of φ along the length that keeps it
-    // there, for the derivative of its point:
-    const addRoot = (
-      phi0: number, phi1: number,
-      f0: number, f1: number
-    ) => {
-      const phi = solve(f, df, phi0, phi1, f0, f1)
+    // Adds the side at the root φ of f(φ), with the change of φ along the
+    // length that keeps it there, for the derivative of its point:
+    const addRoot = (phi: number) => {
       const c = Math.cos(phi)
       const s = Math.sin(phi)
       const dfs = (
@@ -238,26 +214,97 @@ export function getContacts(v: CurveValues, t: number, pen: Pen): Contacts {
       roots.push(side)
     }
 
-    for (let i = 1, l = penSamples.length; i < l; i++) {
-      sample = penSamples[i]
-      const phi1 = sample.phi
-      const f1 = fcs(sample.cos, sample.sin)
-      const d1 = dfcs(sample.cos, sample.sin)
-      if (f0 * f1 <= 0 && f0 !== f1) {
-        addRoot(phi0, phi1, f0, f1)
-      } else if (d0 * d1 < 0) {
-        // Two roots close together hide between the
-        // samples if the extremum between them crosses:
-        const phi = solve(df, ddf, phi0, phi1, d0, d1)
-        const f2 = f(phi)
-        if (f2 * f0 < 0) {
-          addRoot(phi0, phi, f0, f2)
-          addRoot(phi, phi1, f2, f1)
+    // In cosines and sines of φ and 2φ, f(φ) is
+    // k1 cos(φ) + k2 sin(φ) + k3 cos(2φ) + k4 sin(2φ) + k5:
+    const k1 = t1 * b
+    const k2 = t2 * a
+    const k3 = (da * b - a * db) / 2
+    const k4 = dAngle * (a * a - b * b) / 2
+    const k5 = (da * b + a * db) / 2
+    if (isZero(k3) && isZero(k4)) {
+      // A pen that keeps its shape, as round ones do, has two roots at equal
+      // angles around the one where k1 cos(φ) + k2 sin(φ) peaks, or none
+      // where it changes its size faster than it moves:
+      const cos = -k5 / Math.hypot(k1, k2)
+      if (Math.abs(cos) < 1) {
+        const peak = Math.atan2(k2, k1)
+        const angle = Math.acos(cos)
+        addRoot(peak - angle)
+        addRoot(peak + angle)
+      }
+    } else {
+      // With u = tan(ψ / 2), it is a quartic in u over (1 + u²)², which has no
+      // root at ψ = π. So we measure ψ from the angle opposite the one where
+      // f(φ) is furthest from zero, the quartic's leading coefficient:
+      let pole = penAngles[0]
+      let value = 0
+      for (const angle of penAngles) {
+        const v = (
+          k1 * angle.cos +
+          k2 * angle.sin +
+          k3 * angle.cos2 +
+          k4 * angle.sin2 +
+          k5
+        )
+        if (Math.abs(v) > Math.abs(value)) {
+          pole = angle
+          value = v
         }
       }
-      phi0 = phi1
-      f0 = f1
-      d0 = d1
+      const k1r = -k1 * pole.cos - k2 * pole.sin
+      const k2r = k1 * pole.sin - k2 * pole.cos
+      const k3r = k3 * pole.cos2 + k4 * pole.sin2
+      const k4r = -k3 * pole.sin2 + k4 * pole.cos2
+      const phis: number[] = []
+      const start = Math.atan2(-pole.sin, -pole.cos)
+      for (
+        let i = 0,
+          l = solveQuartic(
+            k5 + k3r - k1r,
+            2 * k2r - 4 * k4r,
+            2 * k5 - 6 * k3r,
+            2 * k2r + 4 * k4r,
+            k1r + k3r + k5,
+            phis
+          );
+        i < l;
+        i++
+      ) {
+        phis[i] = start + 2 * Math.atan(phis[i])
+      }
+      phis.sort((phi1, phi2) => phi1 - phi2)
+      // Between its roots, f(φ) keeps its sign, so the angles halfway between
+      // them bracket each root to refine it, and tell those apart where it
+      // only touches zero:
+      const middles: number[] = []
+      const values: number[] = []
+      for (let i = 0, l = phis.length; i < l; i++) {
+        const phi = (
+          (phis[i] + (i < l - 1 ? phis[i + 1] : phis[0] + 2 * Math.PI)) /
+          2
+        )
+        middles.push(phi)
+        values.push(f(phi))
+      }
+      for (let i = 0, l = phis.length; i < l; i++) {
+        const j = i ? i - 1 : l - 1
+        const phi0 = i ? middles[j] : middles[j] - 2 * Math.PI
+        const f0 = values[j]
+        if (f0 * values[i] < 0) {
+          const sign = f0 < 0 ? 1 : -1
+          addRoot(
+            findRoot(
+              phi => sign * f(phi),
+              phi => sign * df(phi),
+              phis[i],
+              phi0,
+              middles[i],
+              32,
+              EPSILON
+            )
+          )
+        }
+      }
     }
     const count = roots.length
     for (let i = 0; i < count; i++) {

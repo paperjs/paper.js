@@ -294,11 +294,17 @@ export class ProfileSweep extends Sweep<ProfilePart> {
     const count = Math.max(16, Math.ceil(turn * 18 / Math.PI))
     // The times where the parts end and the next ones start:
     const splits = [[ta, ta], [tb, tb]]
-    const cache: Record<number, Strip[]> = {}
+    const cache = new Map<number, Strip[]>()
 
     // Fitting asks for the same times for each end of a strip:
-    const getStrips = (t: number): Strip[] =>
-      (cache[t] ??= this.getContacts(part, t, span).strips)
+    const getStrips = (t: number): Strip[] => {
+      let strips = cache.get(t)
+      if (!strips) {
+        strips = this.getContacts(part, t, span).strips
+        cache.set(t, strips)
+      }
+      return strips
+    }
 
     // The curve's point, for the sides where a change between the samples
     // took their strip away, as it lies within the pen too. The sides
