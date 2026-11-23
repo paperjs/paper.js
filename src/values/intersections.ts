@@ -51,10 +51,12 @@ export type IntersectionOptions = {
   tolerance?: number
 }
 
-// The two curves on their way through the functions: their intersections as
-// they are found, the ends that they share, the tolerance, and the calls of
-// addCurveIntersections() so far:
+// The two curves on their way through the functions: their values, their
+// intersections as they are found, the ends that they share, the tolerance,
+// and the calls of addCurveIntersections() so far:
 type Pair = {
+  v1: CurveValues
+  v2: CurveValues
   intersections: Intersection[]
   sharesStart: boolean
   sharesEnd: boolean
@@ -71,6 +73,8 @@ export function getCurveIntersections(
 ): Intersection[] {
   const { sharesStart, sharesEnd, tolerance } = options ?? {}
   const pair: Pair = {
+    v1,
+    v2,
     intersections: [],
     sharesStart,
     sharesEnd,
@@ -183,6 +187,8 @@ export function getCurveSelfIntersection(
   isClosed?: boolean
 ): Intersection[] {
   const pair: Pair = {
+    v1: v,
+    v2: v,
     intersections: [],
     sharesStart: isClosed,
     sharesEnd: false,
@@ -342,12 +348,36 @@ function addLocation(
     t1 <= (excludeEnd ? tMax : 1) &&
     t2 !== null &&
     t2 >= (excludeEnd ? tMin : 0) &&
-    t2 <= (excludeStart ? tMax : 1)
+    t2 <= (excludeStart ? tMax : 1) &&
+    !(excludeStart && isSharedEnd(pair, t1, t2, 0)) &&
+    !(excludeEnd && isSharedEnd(pair, t1, t2, 6))
   )
   if (isValid) {
     pair.intersections.push(overlap ? [t1, t2, true] : [t1, t2])
   }
   return isValid
+}
+
+// Whether the points at the times on both curves lie at the end that they
+// share, the start or the end of the first one by its index. The times alone
+// don't tell: Without a handle there, a curve stays close to its end over a
+// long stretch of them, as getCurveTimeOf() explains.
+function isSharedEnd(
+  { v1, v2 }: Pair,
+  t1: number,
+  t2: number,
+  index: number
+): boolean {
+  const x = v1[index]
+  const y = v1[index + 1]
+  const epsilon = getEpsilon(
+    Math.max(Math.abs(x), Math.abs(y)),
+    GEOMETRIC_EPSILON
+  )
+  const isClose = ({ x: px, y: py }: Point) => (
+    Math.hypot(px - x, py - y) <= epsilon
+  )
+  return isClose(getCurvePoint(v1, t1)) && isClose(getCurvePoint(v2, t2))
 }
 
 function addCurveIntersections(
