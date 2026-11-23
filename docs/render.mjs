@@ -140,9 +140,10 @@ class Reference {
           kind: kinds.namespace,
           isModule: true,
           comment: module.comment,
-          children: module.children?.filter(
-            child => child.kind === kinds.function
-          )
+          // With the functions that an entry exports from another one:
+          children: module.children
+            ?.map(child => this.byId[child.target] ?? child)
+            .filter(child => child.kind === kinds.function)
         }
       } else {
         for (const child of module.children ?? []) {

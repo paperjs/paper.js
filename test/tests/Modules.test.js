@@ -14,11 +14,14 @@ import { describe } from 'vitest'
 import {
   contains,
   exclude,
+  formatSVGPath,
   intersect,
+  parseSVGPath,
   split,
   subtract,
   unite
 } from '../../src/boolean/index.ts'
+import * as offsetModule from '../../src/offset/index.ts'
 import { offset, offsetPath, outline } from '../../src/offset/index.ts'
 import { getPathArea } from '../../src/values/path.ts'
 import { getRegionBounds } from '../../src/values/region.ts'
@@ -87,6 +90,24 @@ describe('paper/boolean and paper/offset', () => {
     equals(
       getRect(outline([line], { width: 20, cap: 'square' })),
       [-10, -10, 120, 20]
+    )
+  })
+
+  test('parseSVGPath() and formatSVGPath()', () => {
+    const getRegion = data => ({
+      paths: parseSVGPath(data),
+      fillRule: 'nonzero'
+    })
+    const { paths } = subtract(
+      getRegion('M0,0h100v100h-100z'),
+      getRegion('M50,50h100v100h-100z')
+    )
+    equals(formatSVGPath(paths), 'M0,0h100v50h-50v50h-50z')
+    equals(
+      offsetModule.parseSVGPath === parseSVGPath &&
+      offsetModule.formatSVGPath === formatSVGPath,
+      true,
+      'the same functions in paper/offset'
     )
   })
 
