@@ -35,11 +35,15 @@ import {
   getCurveTangent,
   getCurveTimeAt,
   getNearestCurveTime,
-  getPathCurves
+  getPathArea,
+  getPathCurves,
+  isStraightCurve
 } from '../values/index.ts'
 import type { CurveValues, PathValues, RegionValues } from '../values/index.ts'
 import { uniteRegions } from '../boolean/operations.ts'
 import {
+  addCurve,
+  createSide,
   fitSide,
   getCurvatureExtrema,
   getInflections,
@@ -281,17 +285,17 @@ export class ProfileSweep extends Sweep<ProfilePart> {
   // the evolute (Nehab):
   addPiece(part: ProfilePart, span: Span, ta: number, tb: number) {
     const { tolerance } = this.stroke
-    // As the points that touch the edge move around the pen
-    // as it and the curve turn, sample them at least every 10°:
     const { v } = part
-    const turn = (
-      abs(
-        this.getSpanPen(span, this.getOffset(part, tb)).angle -
-        this.getSpanPen(span, this.getOffset(part, ta)).angle
-      ) +
-      getTurn(v, ta, tb)
-    )
-    const count = Math.max(16, Math.ceil(turn * 18 / Math.PI))
+    const pen1 = this.getSpanPen(span, this.getOffset(part, ta))
+    const pen2 = this.getSpanPen(span, this.getOffset(part, tb))
+    // Along a straight part, a pen that doesn't change touches the edge in
+    // the same points all the way, so its strips are straight too, and
+    // their ends tell them:
+    const isStraight = isStraightCurve(v) && isConstant(pen1, pen2)
+    // Otherwise, as the points that touch the edge move around the pen as
+    // it and the curve turn, sample them at least every 10°:
+    const turn = abs(pen2.angle - pen1.angle) + getTurn(v, ta, tb)
+    const count = isStraight ? 1 : Math.max(16, Math.ceil(turn * 18 / Math.PI))
     // The times where the parts end and the next ones start:
     const splits = [[ta, ta], [tb, tb]]
     const cache = new Map<number, Strip[]>()
@@ -318,6 +322,22 @@ export class ProfileSweep extends Sweep<ProfilePart> {
       getStrips(t)[j]?.[end] ?? getCenter(t)
     )
 
+    // The side along the points that the function returns from t0 to t1:
+    const getSide = (
+      evaluate: (t: number) => SidePoint,
+      t0: number,
+      t1: number
+    ): Side => {
+      if (isStraight) {
+        const zero = new Point()
+        const side = createSide(evaluate(t0).point)
+        addCurve(side, zero, evaluate(t1).point, zero)
+        return side
+      } else {
+        return fitSide(evaluate, t0, t1, tolerance)
+      }
+    }
+
     // Sample the strips evenly, and where the curve's curvature
     // peaks or changes sign, as the strips fold over around there:
     const samples: number[] = []
@@ -326,9 +346,11 @@ export class ProfileSweep extends Sweep<ProfilePart> {
     }
     // Exactly at the end, as rounding could take it beyond:
     samples.push(tb)
-    for (const t of getCurvatureExtrema(v).concat(getInflections(v))) {
-      if (t > ta && t < tb) {
-        samples.push(t)
+    if (!isStraight) {
+      for (const t of getCurvatureExtrema(v).concat(getInflections(v))) {
+        if (t > ta && t < tb) {
+          samples.push(t)
+        }
       }
     }
     samples.sort((a, b) => a - b)
@@ -437,8 +459,8 @@ export class ProfileSweep extends Sweep<ProfilePart> {
       const moves: [Point, Point][] = []
       for (let j = 0, m = strips.length; j < m; j++) {
         const motions = getMotions(strips[j])
-        const from = fitSide(t => getEnd(t, j, 'from'), t0, t1, tolerance)
-        const to = fitSide(t => getEnd(t, j, 'to'), t0, t1, tolerance)
+        const from = getSide(t => getEnd(t, j, 'from'), t0, t1)
+        const to = getSide(t => getEnd(t, j, 'to'), t0, t1)
         const start1 = new Point(from[0][0])
         const start2 = new Point(to[0][0])
         moveStart(from)
@@ -733,9 +755,42 @@ export class ProfileSweep extends Sweep<ProfilePart> {
   }
 }
 
-// The strip between the two sides, resolved:
+// The strip between the two sides, resolved. Between two lines, it is a
+// quadrilateral, which only needs its orientation if neither its sides nor
+// its ends cross:
 function createStrip(side1: Side, side2: Side): RegionValues {
-  return uniteRegions([createRegion(joinSides(side1, side2))])
+  const region = createRegion(joinSides(side1, side2))
+  if (isLine(side1) && isLine(side2)) {
+    const [from1, to1] = side1.map(([point]) => new Point(point))
+    const [from2, to2] = side2.map(([point]) => new Point(point))
+    const isCrossing = (p1: Point, p2: Point, p3: Point, p4: Point) =>
+      !!Line.intersect(
+        p1.x, p1.y, p2.x - p1.x, p2.y - p1.y,
+        p3.x, p3.y, p4.x - p3.x, p4.y - p3.y,
+        true
+      )
+    if (
+      !isCrossing(from1, to1, from2, to2) &&
+      !isCrossing(from1, from2, to1, to2)
+    ) {
+      return getPathArea(region.paths[0]) < 0
+        ? createRegion(joinSides(side2, side1))
+        : region
+    }
+  }
+  return uniteRegions([region])
+}
+
+// Whether the side is one line, without handles:
+function isLine(side: Side): boolean {
+  return (
+    side.length === 2 &&
+    side.every(
+      ([, handleIn, handleOut]) => (
+        !handleIn[0] && !handleIn[1] && !handleOut[0] && !handleOut[1]
+      )
+    )
+  )
 }
 
 function createPart(
@@ -761,6 +816,26 @@ function isMeeting(strips1: Strip[], strips2: Strip[]): boolean {
         to.point.isClose(strips2[i].to.point, GEOMETRIC_EPSILON)
       )
     )
+  )
+}
+
+// Whether the pen is the same at two offsets and doesn't change at either,
+// and so not between them:
+function isConstant(pen1: Pen, pen2: Pen): boolean {
+  const isSteady = (pen: Pen) => (
+    !pen.da &&
+    !pen.db &&
+    !pen.dAngle &&
+    !pen.dda &&
+    !pen.ddb &&
+    !pen.ddAngle
+  )
+  return (
+    pen1.a === pen2.a &&
+    pen1.b === pen2.b &&
+    pen1.angle === pen2.angle &&
+    isSteady(pen1) &&
+    isSteady(pen2)
   )
 }
 
