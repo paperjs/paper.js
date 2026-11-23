@@ -84,6 +84,36 @@ describe('Compound Path', () => {
     equals(() => path1.clockwise, false)
     equals(() => path2.clockwise, false)
     equals(() => path3.clockwise, true)
+    // The outer paths take the given orientation, and the others follow:
+    compound.reorient(false, false)
+    equals(() => path1.clockwise, true)
+    equals(() => path3.clockwise, false)
+    // With the non-zero rule, paths within others of the same orientation
+    // fill nothing more, and are left out:
+    const nested = new CompoundPath({
+      children: [
+        Path.rectangle([0, 0], [500, 500]),
+        Path.rectangle([50, 50], [200, 200])
+      ]
+    }).reorient(true)
+    equals(() => nested.children.length, 1)
+    // Paths that touch are replaced by the outline of the area that they
+    // fill, here a square with a notch at its corner:
+    const touching = new CompoundPath({
+      children: [
+        new Path({
+          segments: [[100, 100], [300, 100], [300, 300], [100, 300]],
+          closed: true
+        }),
+        new Path({
+          segments: [[100, 100], [200, 150], [150, 200]],
+          closed: true
+        })
+      ]
+    }).reorient()
+    equals(() => touching.children.length, 1)
+    equals(() => touching.firstChild.segments.length, 7)
+    equals(() => touching.area, 200 * 200 - 3750)
   })
 
   test('new CompoundPath(segments)', () => {

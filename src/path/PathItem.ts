@@ -30,7 +30,6 @@ import {
   findItemBoundsCollisions,
   getCurveValues,
   getEpsilon,
-  getInteriorPoint,
   getOperands,
   getRegion,
   interpolateStrokeProfiles,
@@ -1408,11 +1407,12 @@ export abstract class PathItem extends Item {
   }
 
   /**
-   * Fixes the orientation of the sub-paths of a compound-path, assuming
-   * that none of its sub-paths intersect, by reorienting them so that they
-   * are of different winding direction than their containing paths,
-   * except for disjoint sub-paths, i.e. islands, which are oriented so
-   * that they have the same winding direction as the biggest path.
+   * Fixes the orientation of the sub-paths of a compound-path, by
+   * reorienting them so that they are of different winding direction than
+   * their containing paths, except for disjoint sub-paths, i.e. islands,
+   * which are oriented so that they have the same winding direction as the
+   * biggest path. Sub-paths that touch or cross each other are replaced by
+   * the outlines of the area that they fill.
    *
    * @param [nonZero=false] controls if the non-zero fill-rule
    *     is to be applied, by counting the winding of each nested path and
@@ -1426,22 +1426,14 @@ export abstract class PathItem extends Item {
     const children = this._children
     if (children?.length) {
       this.children = reorientPaths(
-        this.removeChildren() as PathItem[],
-        // Handle both even-odd and non-zero rule.
-        winding => !!(nonZero ? winding : winding & 1),
+        this.removeChildren() as Path[],
+        nonZero ? 'nonzero' : 'evenodd',
         clockwise
       )
     } else if (clockwise !== undefined) {
       this.clockwise = clockwise
     }
     return this
-  }
-
-  /**
-   * Returns a point that is guaranteed to be inside the path.
-   */
-  get interiorPoint(): Point {
-    return getInteriorPoint(this)
   }
 
   /**

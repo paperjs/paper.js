@@ -15,7 +15,6 @@ import {
   CompoundPath,
   Matrix,
   Path,
-  PathItem,
   Point,
   Rectangle,
   Segment,
@@ -495,28 +494,6 @@ describe('PathItem Contains', () => {
       fillRule: 'evenodd'
     })
     testPoint(cp, new Point(300, 200), true)
-  })
-
-  test('Path#contains() with Path#interiorPoint: #854, #1064', () => {
-    const paths = [
-      'M100,100l50,0l0,80l50,0l0,-80l50,0l0,100l-150,0z',
-      'M214.48881,363.27884c-0.0001,-0.00017 -0.0001,-0.00017 0,0z',
-      'M289.92236,384.04631c0.00002,0.00023 0.00002,0.00023 0,0z',
-      'M195.51448,280.25264c-0.00011,0.00013 -0.00011,0.00013 0,0z',
-      'M514.7818,183.0217c-0.00011,-0.00026 -0.00011,-0.00026 0,0z',
-      'M471.91288,478.44229c-0.00018,0.00022 -0.00018,0.00022 0,0z'
-    ]
-    for (let i = 0; i < paths.length; i++) {
-      const path = PathItem.create(paths[i])
-      testPoint(
-        path,
-        path.interiorPoint,
-        true,
-        'The path[' +
-        i +
-        `]'s interior point should actually be inside the path`
-      )
-    }
   })
 
   test('IPathtem#contains() with non-invertible matrices (#1651)', () => {
