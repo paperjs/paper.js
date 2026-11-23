@@ -894,6 +894,40 @@ describe('PathItem#offset() and #outline()', () => {
       { offset: 54.72, width: 0.04, aspect: 1.21, angle: 95.79, smooth: false }
     ]
     equals(checkProfileOutline(paper, foldBack), [], 'still point folding back')
+    // Where the path runs along a flat pen, a sliver of a strip is too thin
+    // to add, but one of its sides too long for the next strip to start in
+    // its place. It stays, as the strips around it would miss each other.
+    // The exact values matter here:
+    const flatNib = new Path({
+      segments: [
+        [[82.88648830726743, 322.55005619488657], [0, 0], [0, 0]],
+        [
+          [271.4905671682209, 175.03099276684225],
+          [-52.472294012712695, -11.39504572095288],
+          [58.3263092650256, 12.666321785900578]
+        ],
+        [
+          [407.93539399281144, 437.5390107370913],
+          [-52.70093718466802, -3.7619945641484946],
+          [55.293062420594424, 3.9470303826383315]
+        ],
+        [
+          [597.6554817240685, 172.83731224946678],
+          [-58.41661112008137, 1.6209399711760568],
+          [46.83705537873868, -1.2996312819229558]
+        ],
+        [[728.8645133655518, 335.974610960111], [0, 0], [0, 0]]
+      ],
+      strokeWidth: 60,
+      strokeJoin: 'round',
+      strokeCap: 'round',
+      insert: false
+    })
+    flatNib.strokeProfile = [
+      { offset: 0, width: 1, aspect: 0.2, angle: 30 },
+      { offset: flatNib.length, width: 0, aspect: 0.2, angle: 30 }
+    ]
+    equals(checkProfileOutline(paper, flatNib), [], 'sliver along a flat pen')
     // Where one end of the pen changes its motion twice between two samples,
     // around a change of the other end, both changes are found:
     const doubleChange = new Path({

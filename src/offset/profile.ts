@@ -495,19 +495,10 @@ export class ProfileSweep extends Sweep<ProfilePart> {
           if (isThin(strip1, tolerance) === isThin(strip2, tolerance)) {
             this.areas.push(strip1, strip2)
           } else {
-            this.addStrip(from, to)
+            this.addStrip(from, to, moves)
           }
-        } else if (!this.addStrip(from, to)) {
-          // The strips around a short sliver miss each other by its width,
-          // so the next one starts where it does. A longer one is a thin
-          // strip, whose gap is no wider than the outline may be off:
-          const ends = [from, to].map((side): [Point, Point] => [
-            new Point(side.at(-1)[0]),
-            new Point(side[0][0])
-          ])
-          if (ends.every(([end, start]) => end.isClose(start, 2 * tolerance))) {
-            moves.push(...ends)
-          }
+        } else {
+          this.addStrip(from, to, moves)
         }
       }
       this.moves = moves
@@ -718,17 +709,27 @@ export class ProfileSweep extends Sweep<ProfilePart> {
     }
   }
 
-  // Adds the strip between the two sides, resolved, unless it is a sliver
-  // thinner than the tolerance, which only adds points so close to the
-  // others' that the union can't tell them apart, and returns whether it
-  // did:
-  addStrip(side1: Side, side2: Side): boolean {
+  // Adds the strip between the two sides, resolved. A sliver thinner than
+  // the tolerance only adds points so close to the others' that the union
+  // can't tell them apart, but without it, the strips around it miss each
+  // other by its width. So we only leave it out where it is short enough
+  // for the next strip to start where it does, and add the ends of its
+  // sides with where they start to the moves:
+  addStrip(side1: Side, side2: Side, moves: [Point, Point][]) {
+    const { tolerance } = this.stroke
     const strip = createStrip(side1, side2)
-    const isStrip = !isThin(strip, this.stroke.tolerance)
-    if (isStrip) {
+    const ends = [side1, side2].map((side): [Point, Point] => [
+      new Point(side.at(-1)[0]),
+      new Point(side[0][0])
+    ])
+    if (
+      isThin(strip, tolerance) &&
+      ends.every(([end, start]) => end.isClose(start, 2 * tolerance))
+    ) {
+      moves.push(...ends)
+    } else {
       this.areas.push(strip)
     }
-    return isStrip
   }
 }
 
