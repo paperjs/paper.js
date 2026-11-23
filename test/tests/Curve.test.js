@@ -12,7 +12,7 @@
 
 import { describe } from 'vitest'
 import { Curve, Numerical, Path, Point, Rectangle } from 'paper'
-import * as Bezier from '../../src/curve/bezier.ts'
+import { getCurveTimeAt } from '../../src/curve/bezier.ts'
 import { equals, test } from '../helpers.js'
 
 describe('Curve', () => {
@@ -326,7 +326,7 @@ describe('Curve', () => {
       -7500, 0, -7500, 4142.135623730952, -4142.135623730952, 7500, 0,
       7500
     ]
-    equals(Bezier.getTimeAt(curve, 11782.625235553916), 1)
+    equals(getCurveTimeAt(curve, 11782.625235553916), 1)
   })
 
   test('Curve#getLocationAt()', () => {

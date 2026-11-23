@@ -16,11 +16,15 @@
 // sweep them with their kind of pen.
 import { GEOMETRIC_EPSILON } from '../util/numerical.ts'
 import { Point } from '../basic/Point.ts'
-import * as Bezier from '../curve/index.ts'
+import {
+  getCurveLength,
+  getCurvePoint,
+  getCurveReversals
+} from '../curve/index.ts'
 import type { CurveValues, SegmentValues } from '../curve/index.ts'
 import {
   createRegion,
-  getSegments,
+  getPathSegments,
   getStrokeCurves
 } from '../data/region.ts'
 import type { PathValues, RegionValues } from '../data/region.ts'
@@ -67,14 +71,14 @@ export abstract class Sweep<P extends Part = Part> {
     const { tolerance, cap } = this.stroke
     const segments = this.readSegments()
     for (const curve of getStrokeCurves({ segments, closed })) {
-      const length = Bezier.getLength(curve)
+      const length = getCurveLength(curve)
       if (length > GEOMETRIC_EPSILON) {
         const v = regularize(curve, tolerance / 4)
         // The ends of the curve, and the points where a curve along a line
         // reverses along it, between straight runs:
         const points = [new Point(v[0], v[1])]
-        for (const t of Bezier.getReversals(v, tolerance)) {
-          points.push(Bezier.getPoint(v, t))
+        for (const t of getCurveReversals(v, tolerance)) {
+          points.push(getCurvePoint(v, t))
         }
         points.push(new Point(v[6], v[7]))
         const ends = this.splitCurve(v, points, this.length, length)
@@ -118,7 +122,7 @@ export abstract class Sweep<P extends Part = Part> {
 
   // @overridable
   readSegments(): SegmentValues[] {
-    return getSegments(this.path)
+    return getPathSegments(this.path)
   }
 
   // Returns the parts of the curve with the values v, from the offset along

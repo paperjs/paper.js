@@ -16,7 +16,12 @@
 import { EPSILON, GEOMETRIC_EPSILON, findRoot } from '../util/numerical.ts'
 import { Matrix } from '../basic/Matrix.ts'
 import { Point } from '../basic/Point.ts'
-import * as Bezier from '../curve/index.ts'
+import {
+  getArcThrough,
+  getCurvature,
+  getCurvePoint,
+  getCurveTangent
+} from '../curve/index.ts'
 import type { CurveValues, SegmentValues } from '../curve/index.ts'
 
 // The values of the pen of a stroke profile with their first and second
@@ -110,10 +115,10 @@ export function getContacts(v: CurveValues, t: number, pen: Pen): Contacts {
   const { a, b, da, db, dAngle } = pen
   const contacts: Contacts = { sides: null, strips: [] }
   if (a > 0) {
-    const point = Bezier.getPoint(v, t)
-    const tangent = Bezier.getTangent(v, t)
+    const point = getCurvePoint(v, t)
+    const tangent = getCurveTangent(v, t)
     const normal = new Point(-tangent.y, tangent.x)
-    const curvature = Bezier.getCurvature(v, t)
+    const curvature = getCurvature(v, t)
     const axes = getAxes(pen)
     // The tangent in the pen's axes, and its changes:
     const t1 = tangent.dot(axes[0])
@@ -319,7 +324,7 @@ export function getPenSegments(
       if (sweep > GEOMETRIC_EPSILON) {
         for (let j = 1; j <= count; j++) {
           const last = segments[segments.length - 1]
-          const [first, ...arc] = Bezier.getArcThrough(
+          const [first, ...arc] = getArcThrough(
             new Point(last[0]),
             getPoint(phi0 + (j - 0.5) * step),
             getPoint(phi0 + j * step)

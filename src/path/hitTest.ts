@@ -11,7 +11,6 @@
  */
 
 import {
-  Bezier,
   Curve,
   CurveLocation,
   EPSILON,
@@ -23,7 +22,9 @@ import {
   Size,
   addBevelJoin,
   addSquareCap,
-  getCurveValues
+  getCurvePoint,
+  getCurveValues,
+  getNearestCurveTime
 } from '../internal.ts'
 
 /**
@@ -251,8 +252,8 @@ export function hitTestPath(
     for (i = 0, l = curves.length; i < l; i++) {
       const { _segment1, _segment2 } = curves[i]
       const values = getCurveValues(_segment1, _segment2, strokeSpace)
-      const t = Bezier.getNearestTime(values, strokePoint)
-      const pt = Bezier.getPoint(values, t)
+      const t = getNearestCurveTime(values, strokePoint)
+      const pt = getCurvePoint(values, t)
       const distance = pt.getDistance(strokePoint)
       if (distance < minDistance) {
         minDistance = distance

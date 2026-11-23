@@ -11,7 +11,6 @@
  */
 
 import {
-  Bezier,
   CURVETIME_EPSILON,
   Change,
   ChangeFlag,
@@ -44,9 +43,16 @@ import {
   createRectangle,
   createRegularPolygon,
   createStar,
+  curveEvaluators,
   defineDeprecatedConstructors,
   equals,
+  getArcAround,
+  getArcThrough,
+  getArcTowards,
+  getCurveArea,
+  getCurveOverlaps,
   getCurveValues,
+  getEllipticArc,
   getSegmentBounds,
   getSegmentHandleBounds,
   getSegmentStrokeBounds,
@@ -1304,7 +1310,7 @@ export class Path extends PathItem {
       area = 0
       for (let i = 0, l = segments.length; i < l; i++) {
         const last = i + 1 === l
-        area += Bezier.getArea(
+        area += getCurveArea(
           getCurveValues(
             segments[i], segments[last ? 0 : i + 1],
             // If this is the last curve and the last is not closed,
@@ -1749,7 +1755,7 @@ export class Path extends PathItem {
   // NOTE: Documentation is in PathItem#flatten()
   flatten(flatness?: number) {
     // Use PathFlattener to subdivide the curves into parts that are flat
-    // enough, as specified by `flatness` / Bezier.isFlatEnough():
+    // enough, as specified by `flatness` / isFlatCurve():
     const flattener = new PathFlattener(this, flatness || 0.25, 256, true)
     const { parts } = flattener
     const { length } = parts
@@ -2190,7 +2196,7 @@ export class Path extends PathItem {
     for (let i = 0; i < length2; i++) {
       v2 = curves2[i].values
       values2.push(v2)
-      overlaps = Bezier.getOverlaps(v1, v2)
+      overlaps = getCurveOverlaps(v1, v2)
       if (overlaps) {
         // If the overlap doesn't start at the beginning of v2, then it
         // can only be a partial overlap with curves2[0], and the start
@@ -2209,7 +2215,7 @@ export class Path extends PathItem {
     v2 = values2[pos2]
     let start2: number[]
     while (v1 && v2) {
-      overlaps = Bezier.getOverlaps(v1, v2)
+      overlaps = getCurveOverlaps(v1, v2)
       if (overlaps) {
         // Check that the overlaps are joining on curves1.
         const t1 = overlaps[0][0]
@@ -2493,26 +2499,26 @@ export class Path extends PathItem {
       const through = middle.add(
         middle.subtract(from).rotate(direction ? -90 : 90)
       )
-      addArc(this, Bezier.getArcThrough(from, through, end))
+      addArc(this, getArcThrough(from, through, end))
     } else if (rotation === undefined) {
       // arcTo(through, to)
       addArc(
         this,
-        Bezier.getArcThrough(from, end, Point.from(direction as PointLike))
+        getArcThrough(from, end, Point.from(direction as PointLike))
       )
     } else {
       // arcTo(to, radius, rotation, clockwise, large), in SVG style
       const radius = Size.from(direction as SizeLike | number)
       addArc(
         this,
-        Bezier.getEllipticArc(from, end, radius, rotation, !!clockwise, !!large)
+        getEllipticArc(from, end, radius, rotation, !!clockwise, !!large)
       )
     }
   }
 
   arcAround(center: PointLike, angle: number) {
     const from = getCurrentSegment(this)._point
-    addArc(this, Bezier.getArcAround(from, Point.from(center), angle))
+    addArc(this, getArcAround(from, Point.from(center), angle))
   }
 
   arcTowards(point: PointLike | number, y?: number) {
@@ -2523,7 +2529,7 @@ export class Path extends PathItem {
       : new Point()
     addArc(
       this,
-      Bezier.getArcTowards(current._point, tangent, Point.from(point, y))
+      getArcTowards(current._point, tangent, Point.from(point, y))
     )
   }
 
@@ -2704,7 +2710,7 @@ export class Path extends PathItem {
     // NOTE: (For easier searching): This loop produces:
     // getPointAt, getTangentAt, getNormalAt, getWeightedTangentAt,
     // getWeightedNormalAt, getCurvatureAt
-    for (const key of Object.keys(Bezier.evaluators)) {
+    for (const key of Object.keys(curveEvaluators)) {
       inject(this.prototype, {
         [`get${capitalize(key)}At`](offset: number | CurveLocation) {
           const loc = this.getLocationAt(offset)

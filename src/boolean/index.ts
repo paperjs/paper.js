@@ -35,7 +35,7 @@
 import { Point } from '../basic/Point.ts'
 import { splitGraph } from './split.ts'
 import { traceRegions, uniteRegions } from './operations.ts'
-import { getArea, getStrokeCurves } from '../data/region.ts'
+import { getPathArea, getStrokeCurves } from '../data/region.ts'
 import type { PathValues, RegionValues } from '../data/region.ts'
 import { getWinding } from './winding.ts'
 
@@ -121,7 +121,7 @@ export function contains(region: RegionValues, [x, y]: number[]): boolean {
       curves: getStrokeCurves(path),
       closed: path.closed,
       get clockwise() {
-        return getArea(path) >= 0
+        return getPathArea(path) >= 0
       }
     }))
   )

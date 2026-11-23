@@ -14,13 +14,18 @@
 // of their strokes, see outlineStroke().
 import { CURVETIME_EPSILON } from '../util/numerical.ts'
 import { Point } from '../basic/Point.ts'
-import * as Bezier from '../curve/index.ts'
+import {
+  getCurveLength,
+  getCurveNormal,
+  getCurvePoint,
+  getNearestCurveTime
+} from '../curve/index.ts'
 import type { SegmentValues } from '../curve/index.ts'
 import { subtractRegions, uniteRegions } from '../boolean/operations.ts'
 import {
-  getSegments,
+  getCurve,
+  getPathSegments,
   getStrokeCurves,
-  getValues,
   hasHandles
 } from '../data/region.ts'
 import type { PathValues, RegionValues } from '../data/region.ts'
@@ -67,12 +72,12 @@ export function offsetPath(
   if (!curves.length) return []
   const radius = abs(distance)
   const outline = outlineStroke([path], radius, join, 'butt', miterLimit)
-  const lengths = curves.map(v => Bezier.getLength(v, 0, 1))
+  const lengths = curves.map(v => getCurveLength(v, 0, 1))
   const first = curves[0]
   const last = curves[curves.length - 1]
   const caps: [Point, Point][] = [
-    [new Point(first[0], first[1]), Bezier.getNormal(first, 0)],
-    [new Point(last[6], last[7]), Bezier.getNormal(last, 1)]
+    [new Point(first[0], first[1]), getCurveNormal(first, 0)],
+    [new Point(last[6], last[7]), getCurveNormal(last, 1)]
   ]
   const tolerance = radius / 1e4
   const paths: PathValues[] = []
@@ -86,8 +91,8 @@ export function offsetPath(
     let nearest: Point = null
     let minDistance = Infinity
     for (let i = 0, l = curves.length; i < l; i++) {
-      const t = Bezier.getNearestTime(curves[i], point)
-      const pt = Bezier.getPoint(curves[i], t)
+      const t = getNearestCurveTime(curves[i], point)
+      const pt = getCurvePoint(curves[i], t)
       const distance = point.getDistance(pt)
       if (distance < minDistance) {
         minDistance = distance
@@ -109,8 +114,8 @@ export function offsetPath(
     }
     return {
       point: nearest,
-      normal: Bezier.getNormal(v, time),
-      offset: offset + Bezier.getLength(v, 0, time)
+      normal: getCurveNormal(v, time),
+      offset: offset + getCurveLength(v, 0, time)
     }
   }
 
@@ -134,7 +139,7 @@ export function offsetPath(
     if (isCap(segment1, segment2)) {
       return false
     } else {
-      const point = Bezier.getPoint(getValues(segment1, segment2), 0.5)
+      const point = getCurvePoint(getCurve(segment1, segment2), 0.5)
       const location = getNearestLocation(point)
       return point.subtract(location.point).dot(location.normal) * distance > 0
     }
@@ -163,7 +168,7 @@ export function offsetPath(
   }
 
   for (const contour of outline.paths) {
-    const segments = getSegments(contour)
+    const segments = getPathSegments(contour)
     const count = segments.length
     const keeps: boolean[] = []
     let start = -1

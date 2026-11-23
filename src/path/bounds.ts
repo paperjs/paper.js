@@ -11,14 +11,14 @@
  */
 
 import {
-  Bezier,
   Curve,
   Line,
   Matrix,
   Point,
   Rectangle,
   Segment,
-  Size
+  Size,
+  addCurveBounds
 } from '../internal.ts'
 import type { Path } from './Path.ts'
 
@@ -54,7 +54,7 @@ export function getSegmentBounds(
   function processSegment(segment: Segment) {
     segment._transformCoordinates(matrix, coords)
     for (let i = 0; i < 2; i++) {
-      Bezier.addBounds(
+      addCurveBounds(
         prevCoords[i], // prev.point
         prevCoords[i + 4], // prev.handleOut
         coords[i + 2], // segment.handleIn

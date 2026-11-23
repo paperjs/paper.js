@@ -18,7 +18,7 @@ import { Point } from '../basic/Point.ts'
 import { Size } from '../basic/Size.ts'
 import { getEllipticArc } from '../curve/index.ts'
 import type { SegmentValues } from '../curve/index.ts'
-import { getSegments } from './region.ts'
+import { getPathSegments } from './region.ts'
 import type { PathValues } from './region.ts'
 
 // The commands that path data is read into, as the path items have them:
@@ -269,7 +269,7 @@ export function formatSVGPath(paths: PathValues[], precision?: number): string {
   const formatter = new Formatter(precision)
   return paths
     .map(path => {
-      const segments = getSegments(path)
+      const segments = getPathSegments(path)
       return writeSVGPath(
         segments.length,
         path.closed,

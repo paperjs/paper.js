@@ -20,7 +20,7 @@ import {
   unite
 } from '../../src/boolean/index.ts'
 import { offset, offsetPath, outline } from '../../src/offset/index.ts'
-import { getArea, getBounds } from '../../src/data/region.ts'
+import { getPathArea, getRegionBounds } from '../../src/data/region.ts'
 import { equals, isNodeContext, test } from '../helpers.js'
 
 // The entries paper/boolean and paper/offset, on plain descriptions of paths
@@ -36,9 +36,9 @@ describe('paper/boolean and paper/offset', () => {
     fillRule: 'nonzero'
   })
   const getTotalArea = region =>
-    Math.abs(region.paths.reduce((sum, path) => sum + getArea(path), 0))
+    Math.abs(region.paths.reduce((sum, path) => sum + getPathArea(path), 0))
   const getRect = region => {
-    const { x, y, width, height } = getBounds(region)
+    const { x, y, width, height } = getRegionBounds(region)
     return [x, y, width, height]
   }
   const a = square(0, 0, 100)

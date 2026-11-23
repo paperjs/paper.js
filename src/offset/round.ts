@@ -16,7 +16,14 @@
 import { GEOMETRIC_EPSILON, isZero } from '../util/numerical.ts'
 import { Point } from '../basic/Point.ts'
 import { Size } from '../basic/Size.ts'
-import * as Bezier from '../curve/index.ts'
+import {
+  getArcThrough,
+  getCurvature,
+  getCurveLength,
+  getCurvePart,
+  getCurveTangent,
+  getEllipse
+} from '../curve/index.ts'
 import type { CurveValues, SegmentValues } from '../curve/index.ts'
 import {
   getCuspTimes,
@@ -95,14 +102,14 @@ export class RoundSweep extends Sweep {
             !this.isSliver(v, t, times[i + 1])
           )
         ) {
-          parts.push({ v: Bezier.getPart(v, t0, t) })
+          parts.push({ v: getCurvePart(v, t0, t) })
           t0 = t
         }
       }
       return {
         parts,
-        start: Bezier.getTangent(v, 0),
-        end: Bezier.getTangent(v, 1)
+        start: getCurveTangent(v, 0),
+        end: getCurveTangent(v, 1)
       }
     }
   }
@@ -115,8 +122,8 @@ export class RoundSweep extends Sweep {
     const { radius, tolerance } = this.stroke
     return (
       getTurn(v, t1, t2) * radius < tolerance && (
-        abs(Bezier.getCurvature(v, (t1 + t2) / 2)) * radius > 1 ||
-        Bezier.getLength(v, t1, t2) < tolerance
+        abs(getCurvature(v, (t1 + t2) / 2)) * radius > 1 ||
+        getCurveLength(v, t1, t2) < tolerance
       )
     )
   }
@@ -127,7 +134,7 @@ export class RoundSweep extends Sweep {
   // @override
   addPart({ v }: Part) {
     const { radius, tolerance } = this.stroke
-    const curvature = Bezier.getCurvature(v, 0.5)
+    const curvature = getCurvature(v, 0.5)
     if (abs(curvature) * radius > 1) {
       // The centers of curvature lie against the normals:
       const inner = curvature > 0 ? -radius : radius
@@ -227,7 +234,7 @@ export class RoundSweep extends Sweep {
   addDot(center: Point) {
     const { radius, cap } = this.stroke
     if (cap === 'round') {
-      this.addArea(Bezier.getEllipse(center, new Size(radius, radius)))
+      this.addArea(getEllipse(center, new Size(radius, radius)))
     } else {
       const { x: left, y: top } = center.subtract(radius)
       const right = left + 2 * radius
@@ -242,7 +249,7 @@ export class RoundSweep extends Sweep {
   addSector(point: Point, normal1: Point, normal2: Point, direction: Point) {
     this.addArea([
       [point.x, point.y],
-      ...Bezier.getArcThrough(
+      ...getArcThrough(
         point.add(normal1),
         point.add(direction.normalize(this.stroke.radius)),
         point.add(normal2)

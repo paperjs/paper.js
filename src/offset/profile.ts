@@ -25,10 +25,19 @@ import {
 } from '../util/numerical.ts'
 import { Line } from '../basic/Line.ts'
 import { Point } from '../basic/Point.ts'
-import * as Bezier from '../curve/index.ts'
+import {
+  getCurveArea,
+  getCurveLength,
+  getCurveNormal,
+  getCurvePoint,
+  getCurveRayWinding,
+  getCurveTangent,
+  getCurveTimeAt,
+  getNearestCurveTime
+} from '../curve/index.ts'
 import type { CurveValues } from '../curve/index.ts'
 import { uniteRegions } from '../boolean/operations.ts'
-import { createRegion, getCurves } from '../data/region.ts'
+import { createRegion, getPathCurves } from '../data/region.ts'
 import type { PathValues, RegionValues } from '../data/region.ts'
 import {
   fitSide,
@@ -132,8 +141,8 @@ export class ProfileSweep extends Sweep<ProfilePart> {
     }
     return {
       parts,
-      start: Bezier.getTangent(parts[0].v, 0),
-      end: Bezier.getTangent(parts[parts.length - 1].v, 1)
+      start: getCurveTangent(parts[0].v, 0),
+      end: getCurveTangent(parts[parts.length - 1].v, 1)
     }
   }
 
@@ -209,7 +218,7 @@ export class ProfileSweep extends Sweep<ProfilePart> {
     return (
       part.offset +
       part.length *
-      Bezier.getLength(part.v, 0, t) /
+      getCurveLength(part.v, 0, t) /
       part.curveLength
     )
   }
@@ -222,7 +231,7 @@ export class ProfileSweep extends Sweep<ProfilePart> {
       ? 0
       : offset >= start + part.length
         ? 1
-        : Bezier.getTimeAt(
+        : getCurveTimeAt(
             part.v,
             (offset - start) *
             part.curveLength /
@@ -290,7 +299,7 @@ export class ProfileSweep extends Sweep<ProfilePart> {
     // which lies within the pen too:
     const getEnd = (t: number, j: number, end: 'from' | 'to'): Point => {
       const strip = getStrips(t)[j]
-      return strip ? strip[end].point : Bezier.getPoint(v, t)
+      return strip ? strip[end].point : getCurvePoint(v, t)
     }
 
     // Sample the strips evenly, and where the curve's curvature
@@ -342,7 +351,7 @@ export class ProfileSweep extends Sweep<ProfilePart> {
         if (!isSame(next, last) || !isClose(next, last)) {
           splits.push([t, u])
           this.addPen(
-            Bezier.getPoint(v, t),
+            getCurvePoint(v, t),
             this.getSpanPen(span, this.getOffset(part, t)),
             last.concat(next)
           )
@@ -427,7 +436,7 @@ export class ProfileSweep extends Sweep<ProfilePart> {
           const still = fitSide(
             t => {
               const strip = getStrips(t)[j]
-              if (!strip) return Bezier.getPoint(v, t)
+              if (!strip) return getCurvePoint(v, t)
               const motions = getMotions(strip)
               const { point } = strip.from
               // Within the strip, also where its motions
@@ -527,7 +536,7 @@ export class ProfileSweep extends Sweep<ProfilePart> {
             ? part
             : parts[j - 1] ?? parts[parts.length - 1]
           this.addPen(
-            Bezier.getPoint(part.v, t),
+            getCurvePoint(part.v, t),
             pen,
             this.getContacts(
               previous,
@@ -658,7 +667,7 @@ export class ProfileSweep extends Sweep<ProfilePart> {
     const pen = this.getSpanPen(span, offset)
     if (cap === 'round') {
       this.addPen(
-        Bezier.getPoint(part.v, t),
+        getCurvePoint(part.v, t),
         pen,
         this.getContacts(part, t, span).strips
       )
@@ -711,7 +720,7 @@ function createPart(
   offset: number,
   length: number
 ): ProfilePart {
-  return { v, offset, length, curveLength: Bezier.getLength(v) }
+  return { v, offset, length, curveLength: getCurveLength(v) }
 }
 
 // Whether two of the pens' offsets lie at the offset, as a step:
@@ -809,27 +818,27 @@ function getWidth(strip: Strip): number {
 // outline, within rounding, are thick:
 function isThin({ paths }: RegionValues, tolerance: number): boolean {
   const half = tolerance / 2
-  const curves = paths.flatMap(getCurves)
+  const curves = paths.flatMap(getPathCurves)
   let area = 0
   let length = 0
   for (const v of curves) {
-    area += Bezier.getArea(v)
-    length += Bezier.getLength(v)
+    area += getCurveArea(v)
+    length += getCurveLength(v)
   }
   return (
     abs(area) <= half * length &&
     !curves.some(v => {
-      const inside = Bezier.getPoint(v, 0.5).subtract(
-        Bezier.getNormal(v, 0.5).multiply(half)
+      const inside = getCurvePoint(v, 0.5).subtract(
+        getCurveNormal(v, 0.5).multiply(half)
       )
       let winding = 0
       let distance = Infinity
       for (const other of curves) {
-        winding += Bezier.getRayWinding(other, inside)
+        winding += getCurveRayWinding(other, inside)
         distance = Math.min(
           distance,
           inside.getDistance(
-            Bezier.getPoint(other, Bezier.getNearestTime(other, inside))
+            getCurvePoint(other, getNearestCurveTime(other, inside))
           )
         )
       }

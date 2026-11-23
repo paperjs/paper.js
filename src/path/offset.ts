@@ -14,7 +14,6 @@
 // of strokes on plain paths, see outlineStroke().
 
 import {
-  Bezier,
   CompoundPath,
   GEOMETRIC_EPSILON,
   Group,
@@ -22,6 +21,8 @@ import {
   Point,
   Segment,
   createPathItem,
+  getCurvePart,
+  getCurveTimeAt,
   getRegion,
   offsetPath,
   offsetRegion,
@@ -281,7 +282,7 @@ function getDashes(
       }
       return {
         index,
-        time: Bezier.getTimeAt(
+        time: getCurveTimeAt(
           curve.values,
           Math.min(offset - start, curve.length)
         ) || 0
@@ -293,7 +294,7 @@ function getDashes(
       const b = getLocation(to)
       const segments: Segment[] = []
       for (let i = a.index; i <= b.index; i++) {
-        const v = Bezier.getPart(
+        const v = getCurvePart(
           curves[i].values,
           i === a.index ? a.time : 0,
           i === b.index ? b.time : 1

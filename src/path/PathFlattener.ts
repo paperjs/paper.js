@@ -12,11 +12,15 @@
 
 import {
   Base,
-  Bezier,
   Point,
   capitalize,
+  curveEvaluators,
+  getCurveTimeOf,
   getCurveValues,
-  inject
+  inject,
+  isFlatCurve,
+  isStraightCurve,
+  subdivideCurve
 } from '../internal.ts'
 import type { Matrix } from '../basic/Matrix.ts'
 import type { Path } from './Path.ts'
@@ -94,13 +98,13 @@ export class PathFlattener extends Base {
       // Check if the t-span is big enough for subdivision.
       if (
         (t2 - t1) > minSpan &&
-        !(ignoreStraight && Bezier.isStraight(curve)) &&
+        !(ignoreStraight && isStraightCurve(curve)) &&
         // After quite a bit of testing, a default flatness of 0.25
         // appears to offer a good trade-off between speed and
         // precision for display purposes.
-        !Bezier.isFlatEnough(curve, flatness || 0.25)
+        !isFlatCurve(curve, flatness || 0.25)
       ) {
-        const halves = Bezier.subdivide(curve, 0.5)
+        const halves = subdivideCurve(curve, 0.5)
         const tMid = (t1 + t2) / 2
         // Recursively subdivide and compute parts again.
         computeParts(halves[0], index, t1, tMid)
@@ -119,7 +123,7 @@ export class PathFlattener extends Base {
             time: t2,
             // On straight parts, curve-time doesn't follow their
             // length, see #get():
-            isStraight: Bezier.isStraight(curve)
+            isStraight: isStraightCurve(curve)
           })
         }
       }
@@ -170,7 +174,7 @@ export class PathFlattener extends Base {
         if (part.isStraight) {
           // The part's time at the point on its line:
           const v = part.curve
-          factor = Bezier.getTimeOf(
+          factor = getCurveTimeOf(
             v,
             new Point(
               v[0] + (v[6] - v[0]) * factor,
@@ -194,7 +198,7 @@ export class PathFlattener extends Base {
 
   static {
     // Inject the evaluators at path offsets, getPointAt() …:
-    for (const [key, evaluate] of Object.entries(Bezier.evaluators)) {
+    for (const [key, evaluate] of Object.entries(curveEvaluators)) {
       inject(this.prototype, {
         [`get${capitalize(key)}At`](this: PathFlattener, offset: number) {
           const { index, time } = this.#get(offset)

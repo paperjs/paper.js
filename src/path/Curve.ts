@@ -12,7 +12,6 @@
 
 import {
   Base,
-  Bezier,
   CURVETIME_EPSILON,
   CurveLocation,
   GEOMETRIC_EPSILON,
@@ -23,11 +22,27 @@ import {
   Segment,
   TRIGONOMETRIC_EPSILON,
   capitalize,
+  classifyCurve,
+  curveEvaluators,
   findCurveBoundsCollisions,
+  getCurveArea,
+  getCurveIntersections,
+  getCurveLength,
+  getCurvePart,
+  getCurvePeaks,
+  getCurvePoint,
+  getCurveSelfIntersection,
+  getCurveTimeAt,
+  getCurveTimeOf,
+  getCurveTimesWithTangent,
+  getNearestCurveTime,
   getSegmentBounds,
   getSegmentStrokeBounds,
+  hasLinearHandles,
+  hasStraightHandles,
   inject,
-  serialize
+  serialize,
+  subdivideCurve
 } from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
 import type { Matrix } from '../basic/Matrix.ts'
@@ -204,7 +219,7 @@ export class Curve extends Base {
          etc
    */
   classify(): { type: string; roots: number[] } {
-    return Bezier.classify(this.values)
+    return classifyCurve(this.values)
   }
 
   /**
@@ -404,7 +419,7 @@ export class Curve extends Base {
    * The approximated length of the curve.
    */
   get length(): number {
-    this.#length ??= Bezier.getLength(this.values, 0, 1)
+    this.#length ??= getCurveLength(this.values, 0, 1)
     return this.#length
   }
 
@@ -412,7 +427,7 @@ export class Curve extends Base {
    * The area that the curve's geometry is covering.
    */
   get area(): number {
-    return Bezier.getArea(this.values)
+    return getCurveArea(this.values)
   }
 
   /**
@@ -434,12 +449,12 @@ export class Curve extends Base {
    * @return the newly created sub-curve
    */
   getPart(from: number, to: number): Curve {
-    return new Curve(Bezier.getPart(this.values, from, to))
+    return new Curve(getCurvePart(this.values, from, to))
   }
 
   // DOCS: Curve#getPartLength(from, to)
   getPartLength(from: number, to: number): number {
-    return Bezier.getLength(this.values, from, to)
+    return getCurveLength(this.values, from, to)
   }
 
   // TODO: adjustThroughPoint
@@ -485,7 +500,7 @@ export class Curve extends Base {
     const tMax = 1 - tMin
     let res = null
     if (time >= tMin && time <= tMax) {
-      const [left, right] = Bezier.subdivide(this.values, time)
+      const [left, right] = subdivideCurve(this.values, time)
       const setHandles = this.hasHandles()
       const segment1 = this._segment1
       const segment2 = this._segment2
@@ -736,7 +751,7 @@ export class Curve extends Base {
    *     `null` if the offset exceeds the length of the curve
    */
   getTimeAt(offset: number, start?: number): number {
-    return Bezier.getTimeAt(this.values, offset, start)
+    return getCurveTimeAt(this.values, offset, start)
   }
 
   /**
@@ -751,7 +766,7 @@ export class Curve extends Base {
     const vector = Point.from(tangent, y)
     return vector.isZero()
       ? []
-      : Bezier.getTimesWithTangent(this.values, vector)
+      : getCurveTimesWithTangent(this.values, vector)
   }
 
   /**
@@ -763,7 +778,7 @@ export class Curve extends Base {
    * @return the curve-time parameters of the peaks
    */
   getPeaks(): number[] {
-    return Bezier.getPeaks(this.values)
+    return getCurvePeaks(this.values)
   }
 
   /**
@@ -810,7 +825,7 @@ export class Curve extends Base {
    * @return the curve-time parameter of the specified point
    */
   getTimeOf(point: PointLike | number, y?: number): number | null {
-    return Bezier.getTimeOf(this.values, Point.from(point, y))
+    return getCurveTimeOf(this.values, Point.from(point, y))
   }
 
   /**
@@ -823,8 +838,8 @@ export class Curve extends Base {
   getNearestLocation(point: PointLike | number, y?: number): CurveLocation {
     const target = Point.from(point, y)
     const { values } = this
-    const t = Bezier.getNearestTime(values, target)
-    const pt = Bezier.getPoint(values, t)
+    const t = getNearestCurveTime(values, target)
+    const pt = getCurvePoint(values, t)
     return new CurveLocation(this, t, pt, null, target.getDistance(pt))
   }
 
@@ -923,8 +938,8 @@ export class Curve extends Base {
 
   static {
     for (const [name, test] of Object.entries({
-      isStraight: Bezier.hasStraightHandles,
-      isLinear: Bezier.hasLinearHandles
+      isStraight: hasStraightHandles,
+      isLinear: hasLinearHandles
     })) {
       // The versions that are called on curve objects pass the coordinates
       // without creating points or arrays, as these are called a lot:
@@ -949,12 +964,12 @@ export class Curve extends Base {
     // getWeightedNormalAt, getCurvatureAt, getPointAtTime,
     // getTangentAtTime, getNormalAtTime, getWeightedTangentAtTime,
     // getWeightedNormalAtTime, getCurvatureAtTime
-    for (const [key, evaluate] of Object.entries(Bezier.evaluators)) {
+    for (const [key, evaluate] of Object.entries(curveEvaluators)) {
       const name = `get${capitalize(key)}`
       inject(this.prototype, {
         [`${name}At`](offset: number) {
           const { values } = this
-          return evaluate(values, Bezier.getTimeAt(values, offset))
+          return evaluate(values, getCurveTimeAt(values, offset))
         },
         [`${name}AtTime`](time: number) {
           return evaluate(this.values, time)
@@ -1118,11 +1133,11 @@ function addIntersections(
   v2?: CurveValues
 ) {
   const intersections = curve2
-    ? Bezier.getIntersections(v1, v2, {
+    ? getCurveIntersections(v1, v2, {
         sharesStart: curve1.previous === curve2,
         sharesEnd: curve1.next === curve2
       })
-    : Bezier.getSelfIntersection(v1, curve1.previous === curve1)
+    : getCurveSelfIntersection(v1, curve1.previous === curve1)
   for (const [time1, time2, overlap] of intersections) {
     // NOTE: We don't pass points, because the values may be transformed by
     // the matrices of their paths, while the curves are not. CurveLocation

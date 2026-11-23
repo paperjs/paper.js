@@ -12,7 +12,7 @@
 
 import { describe } from 'vitest'
 import paper, { CompoundPath, Curve, Path, Point, Shape, Size } from 'paper'
-import { getIntersections } from '../../src/curve/intersections.ts'
+import { getCurveIntersections } from '../../src/curve/intersections.ts'
 import { compareBoolean, equals, test } from '../helpers.js'
 
 describe('Path Intersections', () => {
@@ -949,7 +949,7 @@ describe('Path Intersections', () => {
       342.62770405322385, 129.0150455663966, 317.7211460688479,
       158.96133407685147, 293.3241913228961
     ]
-    equals(getIntersections(v1, v2).length, 1, 'v1 with v2')
-    equals(getIntersections(v2, v1).length, 1, 'v2 with v1')
+    equals(getCurveIntersections(v1, v2).length, 1, 'v1 with v2')
+    equals(getCurveIntersections(v2, v1).length, 1, 'v2 with v1')
   })
 })

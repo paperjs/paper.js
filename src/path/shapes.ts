@@ -11,7 +11,6 @@
  */
 
 import {
-  Bezier,
   Item,
   KAPPA,
   Path,
@@ -19,6 +18,7 @@ import {
   Rectangle,
   Segment,
   Size,
+  getEllipse,
   isPlainObject,
   isRectangle,
   readEllipse,
@@ -178,7 +178,7 @@ function createEllipsePath(
   radius: Size,
   props: PathProps
 ): Path {
-  const segments = Bezier.getEllipse(center, radius).map(
+  const segments = getEllipse(center, radius).map(
     segment => new Segment(...segment)
   )
   return createPath(segments, true, props)
