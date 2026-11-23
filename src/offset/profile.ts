@@ -74,6 +74,9 @@ export type StrokePens = {
 // The stretch of a stroke profile between two of its stops, by their offsets:
 type Span = { start: number; end: number }
 
+// Two times on a part between which no strips are swept, see getSplits():
+type Split = [start: number, end: number, strips?: Strip[]]
+
 // A part of a curve, with its offset and length along the path, and the
 // length of its curve:
 type ProfilePart = Part & {
@@ -277,12 +280,10 @@ export class ProfileSweep extends Sweep<ProfilePart> {
   // within the span, as strips between the paths of the points where
   // it touches the edge of the area, see getContacts(). We split them
   // where these points appear or vanish, where two strips trade
-  // places, and where a strip folds over as one of its ends turns
-  // back across it. The pens at the first two lie within the area and
-  // cover the ends of the strips there. Strips that fold over sweep
-  // beyond their inner edge, so we split them into two areas at the
-  // points that stand still across them, as RoundSweep#addPart() does at
-  // the evolute (Nehab):
+  // places, and where a strip folds over, see getSplits(). Strips that
+  // fold over sweep beyond their inner edge, so we split them into two
+  // areas at the points that stand still across them, as
+  // RoundSweep#addPart() does at the evolute (Nehab):
   addPiece(part: ProfilePart, span: Span, ta: number, tb: number) {
     const { tolerance } = this.stroke
     const { v } = part
@@ -296,8 +297,6 @@ export class ProfileSweep extends Sweep<ProfilePart> {
     // it and the curve turn, sample them at least every 10°:
     const turn = abs(pen2.angle - pen1.angle) + getTurn(v, ta, tb)
     const count = isStraight ? 1 : Math.max(16, Math.ceil(turn * 18 / Math.PI))
-    // The times where the parts end and the next ones start:
-    const splits = [[ta, ta], [tb, tb]]
     const cache = new Map<number, Strip[]>()
 
     // Fitting asks for the same times for each end of a strip:
@@ -354,92 +353,18 @@ export class ProfileSweep extends Sweep<ProfilePart> {
       }
     }
     samples.sort((a, b) => a - b)
-    let t0 = ta
-    let s0 = getStrips(ta)
-    for (let i = 1; i < samples.length; i++) {
-      const t1 = samples[i]
-      const s1 = getStrips(t1)
-      if (
-        isSame(s1, s0) &&
-        !isClose(s1, s0) &&
-        t1 - t0 > CURVETIME_EPSILON
-      ) {
-        // Sample halfway before going on:
-        samples.splice(i--, 0, (t0 + t1) / 2)
-        continue
+    const splits = getSplits(getStrips, samples)
+    // The pens where the strips change lie within the area, and cover the
+    // ends of the strips there:
+    for (const [t, , strips] of splits) {
+      if (strips) {
+        this.addPen(
+          getCurvePoint(v, t),
+          this.getSpanPen(span, this.getOffset(part, t)),
+          strips
+        )
       }
-      // There may be more than one change between the samples:
-      while (!isSame(s1, s0)) {
-        let t = t0
-        let u = t1
-        let last = s0
-        for (let j = 0; j < 40; j++) {
-          const middle = (t + u) / 2
-          const strips = getStrips(middle)
-          // Close to the last ones too, to find the first of the changes:
-          if (isSame(strips, s0) && isClose(strips, last)) {
-            t = middle
-            last = strips
-          } else {
-            u = middle
-          }
-        }
-        const next = getStrips(u)
-        // Where they only moved too fast for the samples, nothing changes:
-        if (!isSame(next, last) || !isClose(next, last)) {
-          splits.push([t, u])
-          this.addPen(
-            getCurvePoint(v, t),
-            this.getSpanPen(span, this.getOffset(part, t)),
-            last.concat(next)
-          )
-        }
-        t0 = u
-        s0 = next
-      }
-      for (let j = 0, l = s0.length; j < l; j++) {
-        const m0 = getMotions(s0[j])
-        const m1 = getMotions(s1[j])
-        const getMotion = (t: number, k: number) => {
-          const strip = getStrips(t)[j]
-          return strip ? getMotions(strip)[k] : 0
-        }
-        const addChange = (
-          k: number,
-          from: number,
-          to: number,
-          motion1: number,
-          motion2: number
-        ) => {
-          const t = findSignChange(
-            t => getMotion(t, k),
-            from,
-            to,
-            motion1,
-            motion2,
-            1e-9
-          )
-          splits.push([t, t])
-          return t
-        }
-        for (let k = 0; k < 2; k++) {
-          if (m0[k] * m1[k] < 0) {
-            const t = addChange(k, t0, t1, m0[k], m1[k])
-            // The other end may change twice between the samples, around
-            // this change, where its motion has the other sign:
-            const other = 1 - k
-            const m = getMotion(t, other)
-            if (m0[other] * m1[other] > 0 && m0[other] * m < 0) {
-              addChange(other, t0, t, m0[other], m)
-              addChange(other, t, t1, m, m1[other])
-            }
-          }
-        }
-      }
-      t0 = t1
-      s0 = s1
     }
-    splits.sort((a, b) => a[0] - b[0])
     // Moves the start of the side where a sliver left out ends to where it
     // starts, so that it meets the strip before the sliver:
     const moveStart = (side: Side) => {
@@ -753,6 +678,103 @@ export class ProfileSweep extends Sweep<ProfilePart> {
       this.areas.push(strip)
     }
   }
+}
+
+// Returns the times between the first and the last sample where the strips
+// that getStrips() returns end and the next ones start, in their order:
+// twice the same time where a strip folds over, as one of its ends turns back
+// across it, and the times right before and after where the strips change,
+// as their ends appear or vanish or two of them trade places, with the
+// strips on both sides. The samples only need to be close enough to tell the
+// strips at one from those at the next:
+function getSplits(
+  getStrips: (t: number) => Strip[],
+  samples: number[]
+): Split[] {
+  const ta = samples[0]
+  const tb = samples.at(-1)
+  const splits: Split[] = [[ta, ta], [tb, tb]]
+  let t0 = ta
+  let s0 = getStrips(ta)
+  for (let i = 1; i < samples.length; i++) {
+    const t1 = samples[i]
+    const s1 = getStrips(t1)
+    if (
+      isSame(s1, s0) &&
+      !isClose(s1, s0) &&
+      t1 - t0 > CURVETIME_EPSILON
+    ) {
+      // Sample halfway before going on:
+      samples.splice(i--, 0, (t0 + t1) / 2)
+      continue
+    }
+    // There may be more than one change between the samples:
+    while (!isSame(s1, s0)) {
+      let t = t0
+      let u = t1
+      let last = s0
+      for (let j = 0; j < 40; j++) {
+        const middle = (t + u) / 2
+        const strips = getStrips(middle)
+        // Close to the last ones too, to find the first of the changes:
+        if (isSame(strips, s0) && isClose(strips, last)) {
+          t = middle
+          last = strips
+        } else {
+          u = middle
+        }
+      }
+      const next = getStrips(u)
+      // Where they only moved too fast for the samples, nothing changes:
+      if (!isSame(next, last) || !isClose(next, last)) {
+        splits.push([t, u, last.concat(next)])
+      }
+      t0 = u
+      s0 = next
+    }
+    for (let j = 0, l = s0.length; j < l; j++) {
+      const m0 = getMotions(s0[j])
+      const m1 = getMotions(s1[j])
+      const getMotion = (t: number, k: number) => {
+        const strip = getStrips(t)[j]
+        return strip ? getMotions(strip)[k] : 0
+      }
+      const addChange = (
+        k: number,
+        from: number,
+        to: number,
+        motion1: number,
+        motion2: number
+      ) => {
+        const t = findSignChange(
+          t => getMotion(t, k),
+          from,
+          to,
+          motion1,
+          motion2,
+          1e-9
+        )
+        splits.push([t, t])
+        return t
+      }
+      for (let k = 0; k < 2; k++) {
+        if (m0[k] * m1[k] < 0) {
+          const t = addChange(k, t0, t1, m0[k], m1[k])
+          // The other end may change twice between the samples, around
+          // this change, where its motion has the other sign:
+          const other = 1 - k
+          const m = getMotion(t, other)
+          if (m0[other] * m1[other] > 0 && m0[other] * m < 0) {
+            addChange(other, t0, t, m0[other], m)
+            addChange(other, t, t1, m, m1[other])
+          }
+        }
+      }
+    }
+    t0 = t1
+    s0 = s1
+  }
+  return splits.sort((a, b) => a[0] - b[0])
 }
 
 // The strip between the two sides, resolved. Between two lines, it is a
