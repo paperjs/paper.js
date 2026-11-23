@@ -558,6 +558,40 @@ export function getNearestCurveTime(
   return minT
 }
 
+// Returns the time near the given one where the curve passes the point most
+// closely, by two steps of Newton's method on the distance's derivative.
+// Fitting calls it a lot, from times that are close already:
+export function refineNearestCurveTime(
+  v: CurveValues,
+  point: Point,
+  t: number
+): number {
+  const [ax, bx, cx, ay, by, cy] = getCoefficients(v)
+  const x0 = v[0] - point.x
+  const y0 = v[1] - point.y
+  return findRoot(
+    t => (
+      (((ax * t + bx) * t + cx) * t + x0) * ((3 * ax * t + 2 * bx) * t + cx) +
+      (((ay * t + by) * t + cy) * t + y0) * ((3 * ay * t + 2 * by) * t + cy)
+    ),
+    t => {
+      const dx = (3 * ax * t + 2 * bx) * t + cx
+      const dy = (3 * ay * t + 2 * by) * t + cy
+      return (
+        dx * dx +
+        dy * dy +
+        (((ax * t + bx) * t + cx) * t + x0) * (6 * ax * t + 2 * bx) +
+        (((ay * t + by) * t + cy) * t + y0) * (6 * ay * t + 2 * by)
+      )
+    },
+    t,
+    0,
+    1,
+    2,
+    EPSILON
+  )
+}
+
 export function getCurvePoint(v: CurveValues, t: number): Point {
   return evaluate(v, t, 0, false)
 }

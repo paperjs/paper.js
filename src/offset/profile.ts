@@ -47,7 +47,7 @@ import {
   joinSides,
   regularizeCusp
 } from './curves.ts'
-import type { Side } from './curves.ts'
+import type { Side, SidePoint } from './curves.ts'
 import {
   createPen,
   getAxes,
@@ -300,13 +300,17 @@ export class ProfileSweep extends Sweep<ProfilePart> {
     const getStrips = (t: number): Strip[] =>
       (cache[t] ??= this.getContacts(part, t, span).strips)
 
-    // The point at the end of the strip at the time, or the curve's
-    // point where a change between the samples took the strip away,
-    // which lies within the pen too:
-    const getEnd = (t: number, j: number, end: 'from' | 'to'): Point => {
-      const strip = getStrips(t)[j]
-      return strip ? strip[end].point : getCurvePoint(v, t)
-    }
+    // The curve's point, for the sides where a change between the samples
+    // took their strip away, as it lies within the pen too. The sides
+    // reach it in directions of their own:
+    const getCenter = (t: number): SidePoint => ({
+      point: getCurvePoint(v, t),
+      derivative: new Point()
+    })
+
+    const getEnd = (t: number, j: number, end: 'from' | 'to'): SidePoint => (
+      getStrips(t)[j]?.[end] ?? getCenter(t)
+    )
 
     // Sample the strips evenly, and where the curve's curvature
     // peaks or changes sign, as the strips fold over around there:
@@ -442,9 +446,10 @@ export class ProfileSweep extends Sweep<ProfilePart> {
           const still = fitSide(
             t => {
               const strip = getStrips(t)[j]
-              if (!strip) return getCurvePoint(v, t)
+              if (!strip) return getCenter(t)
               const motions = getMotions(strip)
               const { point } = strip.from
+              const vector = strip.to.point.subtract(point)
               // Within the strip, also where its motions
               // vary more than the samples tell:
               const factor = clamp(
@@ -453,9 +458,12 @@ export class ProfileSweep extends Sweep<ProfilePart> {
                 0,
                 1
               )
-              return point.add(
-                strip.to.point.subtract(point).multiply(factor)
-              )
+              // As it stands still across the strip, it moves along it,
+              // except at the ends, which it leaves in a turn:
+              return {
+                point: point.add(vector.multiply(factor)),
+                derivative: factor > 0 && factor < 1 ? vector : new Point()
+              }
             },
             t0,
             t1,

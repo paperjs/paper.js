@@ -19,6 +19,7 @@
 
 import {
   EPSILON,
+  GEOMETRIC_EPSILON,
   clamp,
   findSignChange,
   solveQuadratic
@@ -32,7 +33,8 @@ import {
   getCurveTangent,
   getNearestCurveTime,
   getWeightedCurveTangent,
-  isStraightCurve
+  isStraightCurve,
+  refineNearestCurveTime
 } from '../values/index.ts'
 import type { SegmentValues } from '../values/index.ts'
 
@@ -40,6 +42,9 @@ const { abs } = Math
 
 // A side of the area that a part of a stroke sweeps, as its segments:
 export type Side = SegmentValues[]
+
+// A point on a side, with the direction in which it moves along it:
+export type SidePoint = { point: Point; derivative: Point }
 
 // A point on the evolute of a curve:
 type EvolutePoint = {
@@ -186,90 +191,122 @@ export function joinSides(side1: Side, side2: Side): SegmentValues[] {
 }
 
 // Returns the side fitted with cubics to the points that the function
-// returns from t0 to t1, with the directions at their ends, by least squares,
-// and subdivided while they are off by more than the tolerance:
+// returns from t0 to t1, in the directions of their derivatives at the ends,
+// by least squares, and subdivided while they are off by more than the
+// tolerance:
 export function fitSide(
-  evaluate: (t: number) => Point,
+  evaluate: (t: number) => SidePoint,
   t0: number,
   t1: number,
   tolerance: number
 ): Side {
-  const count = 8
-  const start = evaluate(t0)
-  const side = createSide(start)
+  // Each cubic is fitted to every second one of its samples, and measured
+  // at the ones between them too, where it may bulge away from the side.
+  // Its halves fit all of them, and only sample the ones between them:
+  const count = 16
+  const first = getSamples(t0, t1)
+  const side = createSide(first[0].point)
 
-  function fit(
-    t0: number, t1: number,
-    p0: Point, p3: Point,
-    depth: number
-  ) {
+  function getSamples(t0: number, t1: number, known?: SidePoint[]) {
+    const samples: SidePoint[] = []
+    for (let i = 0; i <= count; i++) {
+      samples.push(
+        known && i % 2 === 0
+          ? known[i / 2]
+          : // Exactly at the end, as rounding could take it beyond:
+            evaluate(i < count ? t0 + (t1 - t0) * i / count : t1)
+      )
+    }
+    return samples
+  }
+
+  // The direction in which the side moves at the sample, along its
+  // derivative, which may point either way, as the next sample tells.
+  // Where the derivative holds no direction, as at the cusps of the side,
+  // we find it right beside the sample, within the fit:
+  function getTangent(
+    sample: SidePoint,
+    next: SidePoint,
+    t: number,
+    delta: number
+  ): Point {
+    const { point, derivative } = sample
+    const sign = delta < 0 ? -1 : 1
+    const toward = next.point.subtract(point).multiply(sign)
+    if (hasDirection(sample)) {
+      return derivative.normalize(derivative.dot(toward) < 0 ? -1 : 1)
+    } else {
+      const vector = evaluate(t + delta)
+        .point.subtract(point)
+        .multiply(sign)
+      return (vector.isZero() ? toward : vector).normalize()
+    }
+  }
+
+  function fit(t0: number, t1: number, samples: SidePoint[], depth: number) {
     const delta = (t1 - t0) * 1e-5
-    const chord = p3.subtract(p0)
-    let tangent0 = evaluate(t0 + delta).subtract(p0)
-    let tangent3 = p3.subtract(evaluate(t1 - delta))
-    const points: Point[] = []
-    const times: number[] = []
+    const p0 = samples[0].point
+    const p3 = samples[count].point
+    const tangent0 = getTangent(samples[0], samples[1], t0, delta)
+    const tangent3 = getTangent(samples[count], samples[count - 1], t1, -delta)
+    const tangents = samples.map(sample =>
+      hasDirection(sample) ? sample.derivative.normalize() : null
+    )
+    // The samples lie at the times on the cubic by their distances along
+    // the chords at first, refined towards their nearest times on it:
+    const times = [0]
     let total = 0
     let gap = 0
     let index: number
-    tangent0 = (tangent0.isZero() ? chord : tangent0).normalize()
-    tangent3 = (tangent3.isZero() ? chord : tangent3).normalize()
-    let prev = p0
-    for (let i = 0; i <= count; i++) {
-      const point =
-        i < count
-          ? evaluate(
-              t0 + (
-                (t1 - t0) *
-                (i + 1) /
-                (count + 1)
-              )
-            )
-          : p3
-      const distance = point.getDistance(prev)
+    for (let i = 1; i <= count; i++) {
+      const distance = samples[i].point.getDistance(samples[i - 1].point)
       total += distance
       if (distance > gap) {
         gap = distance
         index = i
       }
-      if (i < count) {
-        points.push(point)
-        times.push(total)
-      }
-      prev = point
+      times.push(total)
     }
-    // The points lie at the times on the cubic by their
-    // distances along the chords at first, refined to their
-    // nearest times on it while it is off (Schneider):
-    for (let i = 0; i < count; i++) {
+    for (let i = 1; i <= count; i++) {
       times[i] = total ? times[i] / total : 0
     }
-    const { length } = chord
+    const length = p0.getDistance(p3)
     let handle1: Point
     let handle2: Point
     let c: number[]
     let error: number
     for (let iteration = 0; iteration < 4; iteration++) {
-      // The handles' lengths with the least squares error
-      // at the points:
+      // The handles' lengths with the least squares error at the samples,
+      // across the side, with a little of the error along it blended in,
+      // as the times only tell roughly where along the cubic they lie
+      // (after kurbo's offset_cubic()):
       let c11 = 0
       let c12 = 0
       let c22 = 0
       let x1 = 0
       let x2 = 0
-      for (let i = 0; i < count; i++) {
+      for (let i = 2; i < count; i += 2) {
         const u = times[i]
         const w = 1 - u
         const a1 = tangent0.multiply(3 * w * w * u)
         const a2 = tangent3.multiply(-3 * w * u * u)
-        const rest = points[i]
+        const rest = samples[i].point
           .subtract(p0.multiply(w * w * (w + 3 * u)))
           .subtract(p3.multiply(u * u * (u + 3 * w)))
-        c11 += a1.dot(a1)
-        c12 += a1.dot(a2)
-        c22 += a2.dot(a2)
-        x1 += a1.dot(rest)
-        x2 += a2.dot(rest)
+        // Without a direction, all of the error counts:
+        const tangent = tangents[i] ?? tangent0
+        const blend = tangents[i] ? 1e-4 : 1
+        const n1 = a1.cross(tangent)
+        const n2 = a2.cross(tangent)
+        const n = rest.cross(tangent)
+        const s1 = a1.dot(tangent)
+        const s2 = a2.dot(tangent)
+        const s = rest.dot(tangent)
+        c11 += n1 * n1 + blend * s1 * s1
+        c12 += n1 * n2 + blend * s1 * s2
+        c22 += n2 * n2 + blend * s2 * s2
+        x1 += n1 * n + blend * s1 * s
+        x2 += n2 * n + blend * s2 * s
       }
       const det = c11 * c22 - c12 * c12
       let alpha = det ? (x1 * c22 - x2 * c12) / det : 0
@@ -295,54 +332,50 @@ export function fitSide(
         p3.y
       ]
       error = 0
-      for (let i = 0; i < count; i++) {
-        const time = getNearestCurveTime(c, points[i])
-        error = Math.max(
-          error,
-          points[i].getDistance(getCurvePoint(c, time))
-        )
+      for (let i = 2; i < count; i += 2) {
+        const { point } = samples[i]
+        const time = refineNearestCurveTime(c, point, times[i])
+        error = Math.max(error, point.getDistance(getCurvePoint(c, time)))
         times[i] = time
       }
       if (error <= tolerance) break
     }
-    // Where the cubic passes the points in another order, it folds back
-    // between them, and misses the side by up to their distance:
     for (let i = 1; i < count; i++) {
+      const { point } = samples[i]
+      if (i % 2) {
+        const time = refineNearestCurveTime(
+          c,
+          point,
+          (times[i - 1] + times[i + 1]) / 2
+        )
+        error = Math.max(error, point.getDistance(getCurvePoint(c, time)))
+        times[i] = time
+      }
+      // Where the cubic passes the samples in another order, it folds back
+      // between them, and misses the side by up to their distance:
       if (times[i] < times[i - 1]) {
-        error = Math.max(error, points[i].getDistance(points[i - 1]))
+        error = Math.max(error, point.getDistance(samples[i - 1].point))
       }
     }
-    // Measure the error halfway between the points too, where
-    // the cubic may bulge away from the side:
-    for (let i = 0; i <= count; i++) {
-      const point = evaluate(
-        t0 + (
-          (t1 - t0) *
-          (i + 0.5) /
-          (count + 1)
+    // Where the side turns by more than 30° between two samples, they don't
+    // tell how it runs between them either:
+    for (let i = 1; i <= count; i++) {
+      const tangent1 = tangents[i - 1]
+      const tangent2 = tangents[i]
+      if (tangent1 && tangent2 && abs(tangent1.dot(tangent2)) < 0.866) {
+        error = Math.max(
+          error,
+          samples[i].point.getDistance(samples[i - 1].point)
         )
-      )
-      error = Math.max(
-        error,
-        point.getDistance(
-          getCurvePoint(c, getNearestCurveTime(c, point))
-        )
-      )
+      }
     }
-    // Where the points pass most of the way between two of
-    // them, the side moves faster than they tell, and the
-    // cubic may swing away from the line between them:
+    // Where the samples pass most of the way between two of them, the side
+    // moves faster than they tell, and the cubic may swing away from the
+    // line between them:
     if (gap > Math.max(total / 2, tolerance)) {
-      const from = index ? points[index - 1] : p0
-      const to = index < count ? points[index] : p3
-      const point = getCurvePoint(
-        c,
-        (
-          (index ? times[index - 1] : 0) +
-          (index < count ? times[index] : 1)
-        ) /
-        2
-      )
+      const from = samples[index - 1].point
+      const to = samples[index].point
+      const point = getCurvePoint(c, (times[index - 1] + times[index]) / 2)
       error = Math.max(
         error,
         Line.getDistance(from.x, from.y, to.x, to.y, point.x, point.y)
@@ -350,15 +383,19 @@ export function fitSide(
     }
     if (error > tolerance && depth < 12) {
       const t = (t0 + t1) / 2
-      const point = evaluate(t)
-      fit(t0, t, p0, point, depth + 1)
-      fit(t, t1, point, p3, depth + 1)
+      const middle = count / 2
+      fit(t0, t, getSamples(t0, t, samples.slice(0, middle + 1)), depth + 1)
+      fit(t, t1, getSamples(t, t1, samples.slice(middle)), depth + 1)
+    } else if (error > tolerance) {
+      // The side jumps, in directions that the samples can't tell, and a
+      // line stays between its ends:
+      addCurve(side, new Point(), p3, new Point())
     } else {
       addCurve(side, handle1, p3, handle2)
     }
   }
 
-  fit(t0, t1, start, evaluate(t1), 0)
+  fit(t0, t1, first, 0)
   return side
 }
 
@@ -954,4 +991,10 @@ export function regularizeCusp(v: number[], dimension: number): number[] {
     }
   }
   return [p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y]
+}
+
+// Whether the side moves at the sample, so that its derivative holds its
+// direction there, and not only rounding:
+function hasDirection({ derivative }: SidePoint): boolean {
+  return derivative.length > GEOMETRIC_EPSILON
 }
