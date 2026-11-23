@@ -12,7 +12,7 @@
 
 import { describe } from 'vitest'
 import { Curve, Numerical, Path, Point, Rectangle } from 'paper'
-import { getCurveTimeAt } from '../../src/curve/bezier.ts'
+import { getCurveTimeAt } from '../../src/values/curve.ts'
 import { equals, test } from '../helpers.js'
 
 describe('Curve', () => {

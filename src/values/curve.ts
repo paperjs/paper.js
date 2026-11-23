@@ -32,13 +32,6 @@ import { Line } from '../basic/Line.ts'
 // points in absolute coordinates:
 export type CurveValues = number[]
 
-// A segment as its point with both of its handles, relative to it:
-export type SegmentValues = [
-  point: number[],
-  handleIn: number[],
-  handleOut: number[]
-]
-
 // Whether the curve appears as a straight line, see Curve#isStraight():
 export function isStraightCurve(v: CurveValues): boolean {
   return testHandles(hasStraightHandles, v)

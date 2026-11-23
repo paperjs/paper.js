@@ -10,17 +10,19 @@
  * All rights reserved.
  */
 
-// Plain descriptions of paths, as the boolean operations and offsetting take
-// and return them, and the functions that read, measure and reduce them.
+// Paths as their segments, and the functions that read, measure and reduce
+// them.
 import { GEOMETRIC_EPSILON, isZero } from '../util/numerical.ts'
 import { Point } from '../basic/Point.ts'
-import { Rectangle } from '../basic/Rectangle.ts'
-import {
-  addCurveBounds,
-  getCurveArea,
-  hasStraightHandles
-} from '../curve/index.ts'
-import type { CurveValues, SegmentValues } from '../curve/index.ts'
+import { getCurveArea, hasStraightHandles } from './curve.ts'
+import type { CurveValues } from './curve.ts'
+
+// A segment as its point with both of its handles, relative to it:
+export type SegmentValues = [
+  point: number[],
+  handleIn: number[],
+  handleOut: number[]
+]
 
 // A path as its segments, each as arrays in the forms that Paper.js reads
 // them: its point, or its point with its handles relative to it, as
@@ -30,15 +32,7 @@ export type PathValues = {
   closed: boolean
 }
 
-// The paths that are filled as one, by their fill rule:
-export type RegionValues = { paths: PathValues[]; fillRule: string }
-
 const zero = [0, 0]
-
-// Returns the region of one closed path with the segments:
-export function createRegion(segments: PathValues['segments']): RegionValues {
-  return { paths: [{ segments, closed: true }], fillRule: 'nonzero' }
-}
 
 // Returns the segments of the path as their points with both handles, from
 // any of their forms:
@@ -81,38 +75,6 @@ export function hasHandles(
   )
 }
 
-// Returns the bounds of the region, as those of a path item with its paths:
-export function getRegionBounds({
-  paths
-}: Pick<RegionValues, 'paths'>): Rectangle {
-  const roots = new Array(2)
-  let bounds: Rectangle = null
-  for (const path of paths) {
-    const segments = getPathSegments(path)
-    const count = segments.length
-    if (count) {
-      const min = segments[0][0].slice()
-      const max = min.slice()
-      for (let i = 0, l = path.closed ? count : count - 1; i < l; i++) {
-        const v = getCurve(segments[i], segments[(i + 1) % count])
-        for (let c = 0; c < 2; c++) {
-          addCurveBounds(
-            v[c], v[c + 2], v[c + 4], v[c + 6], c, 0, min, max, roots
-          )
-        }
-      }
-      const rect = new Rectangle(
-        min[0],
-        min[1],
-        max[0] - min[0],
-        max[1] - min[1]
-      )
-      bounds = bounds ? bounds.unite(rect) : rect
-    }
-  }
-  return bounds ?? new Rectangle()
-}
-
 // Returns the values of the curves of the path, and of the straight line
 // that closes an open one, as filling it does:
 export function getPathCurves(path: PathValues): CurveValues[] {
@@ -148,18 +110,10 @@ export function getPathArea(path: PathValues): number {
   return area
 }
 
-// Returns the region with its paths reduced as Path#reduce() does it with the
-// simplify option: without the straight curves that have no length, or
-// that continue along the line of the next one, and without the paths that
-// are empty then:
-export function reduceRegion({ paths, fillRule }: RegionValues): RegionValues {
-  return {
-    fillRule,
-    paths: paths.map(reducePath).filter(({ segments }) => segments.length)
-  }
-}
-
-function reducePath(path: PathValues): PathValues {
+// Returns the path reduced as Path#reduce() does it with the simplify option:
+// without the straight curves that have no length, or that continue along
+// the line of the next one:
+export function reducePath(path: PathValues): PathValues {
   const { closed } = path
   // With the handles that removing curves changes as copies:
   const list = getPathSegments(path)

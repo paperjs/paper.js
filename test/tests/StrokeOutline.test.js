@@ -13,7 +13,8 @@
 import { describe } from 'vitest'
 import { outlineStroke } from '../../src/offset/outline.ts'
 import { offsetPath, offsetRegion } from '../../src/offset/offset.ts'
-import { getPathArea, getRegionBounds } from '../../src/data/region.ts'
+import { getPathArea } from '../../src/values/path.ts'
+import { getRegionBounds } from '../../src/values/region.ts'
 import { equals, test } from '../helpers.js'
 
 // The outlines of strokes on plain descriptions of paths, without any path

@@ -20,7 +20,8 @@ import {
   unite
 } from '../../src/boolean/index.ts'
 import { offset, offsetPath, outline } from '../../src/offset/index.ts'
-import { getPathArea, getRegionBounds } from '../../src/data/region.ts'
+import { getPathArea } from '../../src/values/path.ts'
+import { getRegionBounds } from '../../src/values/region.ts'
 import { equals, isNodeContext, test } from '../helpers.js'
 
 // The entries paper/boolean and paper/offset, on plain descriptions of paths

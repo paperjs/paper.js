@@ -35,11 +35,11 @@
 import { Point } from '../basic/Point.ts'
 import { splitGraph } from './split.ts'
 import { traceRegions, uniteRegions } from './operations.ts'
-import { getPathArea, getStrokeCurves } from '../data/region.ts'
-import type { PathValues, RegionValues } from '../data/region.ts'
+import { getPathArea, getStrokeCurves } from '../values/index.ts'
+import type { PathValues, RegionValues } from '../values/index.ts'
 import { getWinding } from './winding.ts'
 
-export type { PathValues, RegionValues } from '../data/region.ts'
+export type { PathValues, RegionValues } from '../values/index.ts'
 
 /**
  * Unites the regions.

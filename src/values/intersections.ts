@@ -33,8 +33,8 @@ import {
   isStraightCurve,
   solveCurve,
   subdivideCurve
-} from './bezier.ts'
-import type { CurveValues } from './bezier.ts'
+} from './curve.ts'
+import type { CurveValues } from './curve.ts'
 
 // An intersection of two curves by the times on them, or one end of an
 // overlap of them:

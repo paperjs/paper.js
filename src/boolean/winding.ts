@@ -17,8 +17,8 @@ import {
   getCurveTangent,
   getMonoCurves,
   solveCurve
-} from '../curve/index.ts'
-import type { CurveValues } from '../curve/index.ts'
+} from '../values/index.ts'
+import type { CurveValues } from '../values/index.ts'
 import type { Point } from '../basic/Point.ts'
 
 const { abs, max, min } = Math

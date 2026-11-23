@@ -16,10 +16,9 @@ import { EPSILON } from '../util/numerical.ts'
 import { Formatter } from '../util/Formatter.ts'
 import { Point } from '../basic/Point.ts'
 import { Size } from '../basic/Size.ts'
-import { getEllipticArc } from '../curve/index.ts'
-import type { SegmentValues } from '../curve/index.ts'
-import { getPathSegments } from './region.ts'
-import type { PathValues } from './region.ts'
+import { getEllipticArc } from './arcs.ts'
+import { getPathSegments } from './path.ts'
+import type { PathValues, SegmentValues } from './path.ts'
 
 // The commands that path data is read into, as the path items have them:
 export type PathBuilder = {

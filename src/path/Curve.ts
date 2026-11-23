@@ -46,7 +46,7 @@ import {
 } from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
 import type { Matrix } from '../basic/Matrix.ts'
-import type { CurveValues } from '../curve/bezier.ts'
+import type { CurveValues } from '../values/curve.ts'
 
 /**
  * The Curve object represents the parts of a path that are connected by

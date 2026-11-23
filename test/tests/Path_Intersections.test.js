@@ -12,7 +12,7 @@
 
 import { describe } from 'vitest'
 import paper, { CompoundPath, Curve, Path, Point, Shape, Size } from 'paper'
-import { getCurveIntersections } from '../../src/curve/intersections.ts'
+import { getCurveIntersections } from '../../src/values/intersections.ts'
 import { compareBoolean, equals, test } from '../helpers.js'
 
 describe('Path Intersections', () => {

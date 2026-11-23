@@ -10,8 +10,11 @@
  * All rights reserved.
  */
 
-// The functions on the values of cubic Bézier curves, and on the arcs that
-// they approximate:
+// The geometry that needs no items: the functions on the values of curves,
+// segments, paths and regions.
 export * from './arcs.ts'
-export * from './bezier.ts'
+export * from './curve.ts'
 export * from './intersections.ts'
+export * from './path.ts'
+export * from './region.ts'
+export * from './svg.ts'

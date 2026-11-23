@@ -10,10 +10,10 @@
  * All rights reserved.
  */
 
-import { getCurveLength } from '../curve/index.ts'
+import { getCurveLength } from '../values/index.ts'
+import type { PathValues, RegionValues } from '../values/index.ts'
 import { createGraph, isFilled, joinPieces } from './graph.ts'
 import type { Piece } from './graph.ts'
-import type { PathValues, RegionValues } from '../data/region.ts'
 
 // A piece of a path that splitGraph() returns, with whether it lies inside
 // the region, the index of the path that it comes from, and where it starts

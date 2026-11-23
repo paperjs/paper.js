@@ -24,6 +24,7 @@ import {
 } from '../util/collisions.ts'
 import { Point } from '../basic/Point.ts'
 import {
+  getCurve,
   getCurveArea,
   getCurveIntersections,
   getCurveLength,
@@ -34,21 +35,19 @@ import {
   getCurveSelfIntersection,
   getCurveTangent,
   getCurveTimeAt,
-  getNearestCurveTime
-} from '../curve/index.ts'
-import {
-  getCurve,
+  getNearestCurveTime,
   getPathSegments,
   getRegionBounds,
   hasHandles
-} from '../data/region.ts'
-import type { Rectangle } from '../basic/Rectangle.ts'
+} from '../values/index.ts'
 import type {
   CurveValues,
   Intersection,
+  PathValues,
+  RegionValues,
   SegmentValues
-} from '../curve/index.ts'
-import type { PathValues, RegionValues } from '../data/region.ts'
+} from '../values/index.ts'
+import type { Rectangle } from '../basic/Rectangle.ts'
 
 // A path of the result, with the part of an operand's curve that each of its
 // segments starts: the curve by the indices of its operand, its path there

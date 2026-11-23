@@ -21,7 +21,7 @@
  */
 
 import { uniteRegions } from '../boolean/operations.ts'
-import type { PathValues, RegionValues } from '../data/region.ts'
+import type { PathValues, RegionValues } from '../values/index.ts'
 import { ProfileSweep } from './profile.ts'
 import type { StrokePens } from './profile.ts'
 import { RoundSweep } from './round.ts'
