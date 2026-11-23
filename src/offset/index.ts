@@ -13,7 +13,8 @@
 /**
  * The offsets and stroke outlines of plain descriptions of paths, without the
  * items of the library, imported as `paper/offset`, with paths and regions
- * as in {@link paper/boolean}.
+ * as in {@link paper/boolean}, and with its `parseSVGPath()` and
+ * `formatSVGPath()` for SVG path data.
  *
  * @example
  * import { outline } from 'paper/offset'
@@ -26,6 +27,7 @@ import type { PathValues, RegionValues } from '../values/index.ts'
 import { offsetPath as offsetPathData, offsetRegion } from './offset.ts'
 import { outlineStroke } from './outline.ts'
 
+export { formatSVGPath, parseSVGPath } from '../values/index.ts'
 export type { PathValues, RegionValues } from '../values/index.ts'
 
 export type OffsetOptions = { join?: string; miterLimit?: number }

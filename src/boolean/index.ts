@@ -17,7 +17,8 @@
  * handleOut]` with the handles relative to the point. A region is `{ paths,
  * fillRule }`: the paths that are filled as one by the fill rule, `'nonzero'`
  * or `'evenodd'`, with open paths closed by straight lines. The results have
- * their segments as `[point, handleIn, handleOut]`.
+ * their segments as `[point, handleIn, handleOut]`. `parseSVGPath()` reads
+ * paths from SVG path data, and `formatSVGPath()` writes them as such.
  *
  * @example
  * import { unite } from 'paper/boolean'
@@ -30,6 +31,18 @@
  * })
  * const union = unite([square(0), square(50)])
  *
+ * @example
+ * import { formatSVGPath, parseSVGPath, subtract } from 'paper/boolean'
+ * const getRegion = data => ({
+ *   paths: parseSVGPath(data),
+ *   fillRule: 'nonzero'
+ * })
+ * const { paths } = subtract(
+ *   getRegion('M0,0h100v100h-100z'),
+ *   getRegion('M50,50h100v100h-100z')
+ * )
+ * const data = formatSVGPath(paths)
+ *
  * @module paper/boolean
  */
 import { Point } from '../basic/Point.ts'
@@ -39,6 +52,7 @@ import { getPathArea, getStrokeCurves } from '../values/index.ts'
 import type { PathValues, RegionValues } from '../values/index.ts'
 import { getWinding } from './winding.ts'
 
+export { formatSVGPath, parseSVGPath } from '../values/index.ts'
 export type { PathValues, RegionValues } from '../values/index.ts'
 
 /**
