@@ -541,23 +541,20 @@ export class ProfileSweep extends Sweep<ProfilePart> {
         if (sides1 && sides2) {
           // Widen the join into the parts on both sides, as
           // RoundSweep#addJoin() does, by turning the sides' points
-          // around their pens, back along the first side and
-          // ahead along the second:
+          // around their pens, back along the first curve and
+          // ahead along the second. The sides themselves run
+          // against their curves where these bend more tightly
+          // than the pen:
           const widening = Math.sqrt(tolerance / radius)
-          const widen = (side: Contact, pen: Pen, direction: number) => {
+          const widen = (side: Contact, pen: Pen, ahead: Point) => {
             const axes = getAxes(pen)
             const c = Math.cos(side.phi)
             const s = Math.sin(side.phi)
             const along = axes[0]
               .multiply(-pen.a * s)
               .add(axes[1].multiply(pen.b * c))
-              .dot(side.derivative)
-            const phi = (
-              side.phi + (
-                widening *
-                (along > 0 ? direction : -direction)
-              )
-            )
+              .dot(ahead)
+            const phi = side.phi + (along > 0 ? widening : -widening)
             return side.point
               .add(axes[0].multiply(pen.a * (Math.cos(phi) - c)))
               .add(axes[1].multiply(pen.b * (Math.sin(phi) - s)))
@@ -574,7 +571,7 @@ export class ProfileSweep extends Sweep<ProfilePart> {
             widen(
               sides1[k],
               this.getSpanPen(span1, part1.offset + part1.length),
-              -1
+              tangent1.negate()
             ),
             side1
           ]
@@ -598,7 +595,7 @@ export class ProfileSweep extends Sweep<ProfilePart> {
           this.addPolygon(
             points.concat(
               side2,
-              widen(sides2[k], pen, 1),
+              widen(sides2[k], pen, tangent2),
               sides2[1 - k].point
             )
           )

@@ -636,6 +636,28 @@ describe('PathItem#offset() and #outline()', () => {
       true,
       'bevel join'
     )
+    // Joins reach into the parts along the curves, also where a side runs
+    // against its curve, as it does where the curve bends more tightly than
+    // the pen. The outline then is that of the plain stroke:
+    const hooked = new Path({
+      segments: [
+        [[77.17437, 161.71408], [0, 0], [0.10346, 0.51652]],
+        [97.87706, 213.84809],
+        [80.638, 210.00028]
+      ],
+      closed: true,
+      strokeWidth: 75.03,
+      strokeJoin: 'miter',
+      insert: false
+    })
+    const plain = hooked.outline({ insert: false })
+    hooked.strokeProfile = [{ offset: 0, width: 1 }]
+    equals(
+      hooked.outline({ insert: false }).exclude(plain, { insert: false }).area,
+      0,
+      'join at a hook',
+      { tolerance: 1 }
+    )
   })
 
   // Outlines of stroke profiles that went wrong once, checked against the
