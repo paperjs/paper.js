@@ -13,12 +13,12 @@
 import * as Bezier from '../curve/index.ts'
 import { createGraph, isFilled, joinPieces } from './graph.ts'
 import type { Piece } from './graph.ts'
-import type { PathData, RegionData } from '../data/region.ts'
+import type { PathValues, RegionValues } from '../data/region.ts'
 
 // A piece of a path that splitGraph() returns, with whether it lies inside
 // the region, the index of the path that it comes from, and where it starts
 // along it. A path that isn't split comes back whole:
-export type SplitPiece = PathData & {
+export type SplitPiece = PathValues & {
   isInside: boolean
   source: number
   offset: number
@@ -37,8 +37,8 @@ export type SplitPiece = PathData & {
  * @return the pieces of the paths
  */
 export function splitGraph(
-  paths: PathData[],
-  region: RegionData
+  paths: PathValues[],
+  region: RegionValues
 ): SplitPiece[] {
   const graph = createGraph([{ paths }, region])
   const { curves, values, pieces, halfEdges } = graph

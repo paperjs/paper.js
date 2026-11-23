@@ -34,7 +34,7 @@ import {
   solve,
   subdivide
 } from './bezier.ts'
-import type { BezierValues } from './bezier.ts'
+import type { CurveValues } from './bezier.ts'
 
 // An intersection of two curves by the times on them, or one end of an
 // overlap of them:
@@ -65,8 +65,8 @@ type Pair = {
 // Returns the intersections of the two curves, and the ends of their
 // overlaps:
 export function getIntersections(
-  v1: BezierValues,
-  v2: BezierValues,
+  v1: CurveValues,
+  v2: CurveValues,
   options?: IntersectionOptions
 ): Intersection[] {
   const { sharesStart, sharesEnd, tolerance } = options ?? {}
@@ -179,7 +179,7 @@ export function getIntersections(
 // Returns the intersection of the curve with itself, if it has a loop. A
 // curve that is closed, as the only one of its path, starts where it ends:
 export function getSelfIntersection(
-  v: BezierValues,
+  v: CurveValues,
   isClosed?: boolean
 ): Intersection[] {
   const pair: Pair = {
@@ -199,8 +199,8 @@ export function getSelfIntersection(
 // Returns the two pairs of times where the curves start and end to overlap,
 // if they do, based on work by iconexperience in #648:
 export function getOverlaps(
-  v1: BezierValues,
-  v2: BezierValues,
+  v1: CurveValues,
+  v2: CurveValues,
   tolerance?: number
 ): number[][] | null {
   // Linear curves can only overlap if they are collinear. Instead of
@@ -210,7 +210,7 @@ export function getOverlaps(
   // if the curves are not straight, they might just have tiny handles
   // within geometric epsilon distance, so we have to check for that too.
 
-  function getSquaredLineLength(v: BezierValues) {
+  function getSquaredLineLength(v: CurveValues) {
     const x = v[6] - v[0]
     const y = v[7] - v[1]
     return x * x + y * y
@@ -351,8 +351,8 @@ function addLocation(
 }
 
 function addCurveIntersections(
-  v1: BezierValues,
-  v2: BezierValues,
+  v1: CurveValues,
+  v2: CurveValues,
   pair: Pair,
   flip: boolean,
   recursion: number,
@@ -556,8 +556,8 @@ function addCurveIntersections(
 // roots than its degree allows. See: Sederberg T. - "Computer
 // Aided Geometric Design", chapter 17 on implicitization.
 function addImplicitIntersections(
-  v1: BezierValues,
-  v2: BezierValues,
+  v1: CurveValues,
+  v2: CurveValues,
   pair: Pair,
   flip: boolean,
   tMin: number,
@@ -646,7 +646,7 @@ type LocalPoint = { x: number; y: number; ex: number; ey: number }
 type Polynomial = { coefficients: number[]; errors: number[] }
 
 function getLocalPoints(
-  v: BezierValues,
+  v: CurveValues,
   x0: number,
   y0: number,
   size: number
@@ -927,7 +927,7 @@ function clipConvexHullPart(
 // line is on the X axis, and solve the implicit equations for the X axis
 // and the curve.
 function getCurveLineIntersections(
-  v: BezierValues,
+  v: CurveValues,
   px: number,
   py: number,
   vx: number,
@@ -972,8 +972,8 @@ function getCurveLineIntersections(
 }
 
 function addCurveLineIntersections(
-  v1: BezierValues,
-  v2: BezierValues,
+  v1: CurveValues,
+  v2: CurveValues,
   pair: Pair,
   flip: boolean,
   tolerance: number
@@ -1003,8 +1003,8 @@ function addCurveLineIntersections(
 }
 
 function addLineIntersection(
-  v1: BezierValues,
-  v2: BezierValues,
+  v1: CurveValues,
+  v2: CurveValues,
   pair: Pair,
   tolerance: number
 ): boolean {

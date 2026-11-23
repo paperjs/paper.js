@@ -26,10 +26,10 @@ import {
 import { Line } from '../basic/Line.ts'
 import { Point } from '../basic/Point.ts'
 import * as Bezier from '../curve/index.ts'
-import type { BezierValues } from '../curve/index.ts'
+import type { CurveValues } from '../curve/index.ts'
 import { uniteRegions } from '../boolean/operations.ts'
 import { createRegion, getCurves } from '../data/region.ts'
-import type { PathData, RegionData } from '../data/region.ts'
+import type { PathValues, RegionValues } from '../data/region.ts'
 import {
   fitSide,
   getCurvatureExtrema,
@@ -73,7 +73,7 @@ export class ProfileSweep extends Sweep<ProfilePart> {
   // ones before them:
   moves: [Point, Point][] = []
 
-  constructor(path: PathData, pens: StrokePens, stroke: Stroke) {
+  constructor(path: PathValues, pens: StrokePens, stroke: Stroke) {
     super(path, stroke)
     const { offsets } = pens
     this.pens = pens
@@ -90,7 +90,7 @@ export class ProfileSweep extends Sweep<ProfilePart> {
   // getTime(). Straight parts get handles, as the contacts need a derivative:
   // @override
   splitCurve(
-    v: BezierValues,
+    v: CurveValues,
     points: Point[],
     offset: number,
     length: number
@@ -702,12 +702,12 @@ export class ProfileSweep extends Sweep<ProfilePart> {
 }
 
 // The strip between the two sides, resolved:
-function createStrip(side1: Side, side2: Side): RegionData {
+function createStrip(side1: Side, side2: Side): RegionValues {
   return uniteRegions([createRegion(joinSides(side1, side2))])
 }
 
 function createPart(
-  v: BezierValues,
+  v: CurveValues,
   offset: number,
   length: number
 ): ProfilePart {
@@ -807,7 +807,7 @@ function getWidth(strip: Strip): number {
 // looking half the tolerance inside the middle of each curve, on the
 // side that unite() leaves inside. Points that lie that far from the
 // outline, within rounding, are thick:
-function isThin({ paths }: RegionData, tolerance: number): boolean {
+function isThin({ paths }: RegionValues, tolerance: number): boolean {
   const half = tolerance / 2
   const curves = paths.flatMap(getCurves)
   let area = 0

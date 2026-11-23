@@ -16,30 +16,29 @@ import { GEOMETRIC_EPSILON, isZero } from '../util/numerical.ts'
 import { Point } from '../basic/Point.ts'
 import { Rectangle } from '../basic/Rectangle.ts'
 import * as Bezier from '../curve/index.ts'
-import type { BezierValues, SegmentValues } from '../curve/index.ts'
+import type { CurveValues, SegmentValues } from '../curve/index.ts'
 
-// A segment as arrays, in the forms that Paper.js reads them: its point, or
-// its point with its handles relative to it, as [point, handleIn, handleOut],
-// or with their coordinates in a row:
-export type SegmentData =
-  | number[]
-  | [number[], (number[] | null)?, (number[] | null)?]
-
-export type PathData = { segments: SegmentData[]; closed: boolean }
+// A path as its segments, each as arrays in the forms that Paper.js reads
+// them: its point, or its point with its handles relative to it, as
+// [point, handleIn, handleOut], or with their coordinates in a row:
+export type PathValues = {
+  segments: (number[] | [number[], (number[] | null)?, (number[] | null)?])[]
+  closed: boolean
+}
 
 // The paths that are filled as one, by their fill rule:
-export type RegionData = { paths: PathData[]; fillRule: string }
+export type RegionValues = { paths: PathValues[]; fillRule: string }
 
 const zero = [0, 0]
 
 // Returns the region of one closed path with the segments:
-export function createRegion(segments: SegmentData[]): RegionData {
+export function createRegion(segments: PathValues['segments']): RegionValues {
   return { paths: [{ segments, closed: true }], fillRule: 'nonzero' }
 }
 
 // Returns the segments of the path as their points with both handles, from
-// any of the forms of SegmentData:
-export function getSegments({ segments }: PathData): SegmentValues[] {
+// any of their forms:
+export function getSegments({ segments }: PathValues): SegmentValues[] {
   return segments.map(segment => {
     const [point, handleIn, handleOut] = segment as number[][]
     if (typeof point === 'number') {
@@ -59,7 +58,7 @@ export function getValues(
   [[x1, y1], , [h1x, h1y]]: SegmentValues,
   [[x2, y2], [h2x, h2y]]: SegmentValues,
   straight?: boolean
-): BezierValues {
+): CurveValues {
   return straight
     ? [x1, y1, x1, y1, x2, y2, x2, y2]
     : [x1, y1, x1 + h1x, y1 + h1y, x2 + h2x, y2 + h2y, x2, y2]
@@ -79,7 +78,7 @@ export function hasHandles(
 }
 
 // Returns the bounds of the region, as those of a path item with its paths:
-export function getBounds({ paths }: Pick<RegionData, 'paths'>): Rectangle {
+export function getBounds({ paths }: Pick<RegionValues, 'paths'>): Rectangle {
   const roots = new Array(2)
   let bounds: Rectangle = null
   for (const path of paths) {
@@ -110,7 +109,7 @@ export function getBounds({ paths }: Pick<RegionData, 'paths'>): Rectangle {
 
 // Returns the values of the curves of the path, and of the straight line
 // that closes an open one, as filling it does:
-export function getCurves(path: PathData): BezierValues[] {
+export function getCurves(path: PathValues): CurveValues[] {
   const segments = getSegments(path)
   return segments.map((segment, i) => {
     const isLast = i + 1 === segments.length
@@ -124,10 +123,10 @@ export function getCurves(path: PathData): BezierValues[] {
 
 // Returns the values of the curves of the path as its stroke follows them,
 // without closing open paths:
-export function getStrokeCurves(path: PathData): BezierValues[] {
+export function getStrokeCurves(path: PathValues): CurveValues[] {
   const segments = getSegments(path)
   const { length } = segments
-  const curves: BezierValues[] = []
+  const curves: CurveValues[] = []
   for (let i = 0, l = length - (path.closed ? 0 : 1); i < l; i++) {
     curves.push(getValues(segments[i], segments[(i + 1) % length]))
   }
@@ -135,7 +134,7 @@ export function getStrokeCurves(path: PathData): BezierValues[] {
 }
 
 // Returns the area of the path, as Path#area does:
-export function getArea(path: PathData): number {
+export function getArea(path: PathValues): number {
   let area = 0
   for (const v of getCurves(path)) {
     area += Bezier.getArea(v)
@@ -147,14 +146,14 @@ export function getArea(path: PathData): number {
 // simplify option: without the straight curves that have no length, or
 // that continue along the line of the next one, and without the paths that
 // are empty then:
-export function reduceRegion({ paths, fillRule }: RegionData): RegionData {
+export function reduceRegion({ paths, fillRule }: RegionValues): RegionValues {
   return {
     fillRule,
     paths: paths.map(reducePath).filter(({ segments }) => segments.length)
   }
 }
 
-function reducePath(path: PathData): PathData {
+function reducePath(path: PathValues): PathValues {
   const { closed } = path
   // With the handles that removing curves changes as copies:
   const list = getSegments(path)

@@ -47,7 +47,7 @@ import {
 import type { Winding } from '../boolean/winding.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'
 import type { Operator } from '../boolean/graph.ts'
-import type { RegionData } from '../data/region.ts'
+import type { RegionValues } from '../data/region.ts'
 import type { PathItem } from './PathItem.ts'
 import type { ProfilePart } from './StrokeProfile.ts'
 
@@ -120,7 +120,7 @@ export function closePaths<T extends PathItem>(item: T): T {
 /*
  * Returns the path item as the plain description that the graph takes.
  */
-export function getRegion(item: PathItem): RegionData {
+export function getRegion(item: PathItem): RegionValues {
   return {
     fillRule: item.fillRule,
     paths: getPaths(item).map(path => ({
@@ -139,8 +139,8 @@ export function getRegion(item: PathItem): RegionData {
 /*
  * Returns the region as a path item: a path, or a compound path of several.
  */
-export function createPathItem({ paths, fillRule }: RegionData): PathItem {
-  const create = ({ segments, closed }: RegionData['paths'][number]) =>
+export function createPathItem({ paths, fillRule }: RegionValues): PathItem {
+  const create = ({ segments, closed }: RegionValues['paths'][number]) =>
     new Path({ segments, closed, insert: false })
   const item =
     paths.length === 1

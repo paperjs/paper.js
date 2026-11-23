@@ -17,7 +17,7 @@ import { GEOMETRIC_EPSILON, isZero } from '../util/numerical.ts'
 import { Point } from '../basic/Point.ts'
 import { Size } from '../basic/Size.ts'
 import * as Bezier from '../curve/index.ts'
-import type { BezierValues, SegmentValues } from '../curve/index.ts'
+import type { CurveValues, SegmentValues } from '../curve/index.ts'
 import {
   getCuspTimes,
   getEvolute,
@@ -70,7 +70,7 @@ export class RoundSweep extends Sweep {
   // reversals, joined round, as the limit of a tight turn (kurbo's
   // do_linear()). The others are split where their offsets have cusps:
   // @override
-  splitCurve(v: BezierValues, points: Point[]) {
+  splitCurve(v: CurveValues, points: Point[]) {
     const parts: Part[] = []
     if (points.length > 2) {
       for (let i = 1, l = points.length; i < l; i++) {
@@ -111,7 +111,7 @@ export class RoundSweep extends Sweep {
   // would only add slivers, so they stay with their neighbors, as do parts
   // shorter than it that turn as little. Other parts don't, as they would
   // lose their own sweeps to their neighbors' kind:
-  isSliver(v: BezierValues, t1: number, t2: number): boolean {
+  isSliver(v: CurveValues, t1: number, t2: number): boolean {
     const { radius, tolerance } = this.stroke
     return (
       getTurn(v, t1, t2) * radius < tolerance && (

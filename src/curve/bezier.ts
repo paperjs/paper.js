@@ -30,7 +30,7 @@ import { Line } from '../basic/Line.ts'
 
 // [x1, y1, handle1x, handle1y, handle2x, handle2y, x2, y2], with the control
 // points in absolute coordinates:
-export type BezierValues = number[]
+export type CurveValues = number[]
 
 // A segment as its point with both of its handles, relative to it:
 export type SegmentValues = [
@@ -40,19 +40,19 @@ export type SegmentValues = [
 ]
 
 // Whether the curve appears as a straight line, see Curve#isStraight():
-export function isStraight(v: BezierValues): boolean {
+export function isStraight(v: CurveValues): boolean {
   return testHandles(hasStraightHandles, v)
 }
 
 // Whether the curve is parametrically linear, see Curve#isLinear():
-export function isLinear(v: BezierValues): boolean {
+export function isLinear(v: CurveValues): boolean {
   return testHandles(hasLinearHandles, v)
 }
 
 export function subdivide(
-  v: BezierValues,
+  v: CurveValues,
   t = 0.5
-): [BezierValues, BezierValues] {
+): [CurveValues, CurveValues] {
   const x0 = v[0]
   const y0 = v[1]
   const x1 = v[2]
@@ -88,7 +88,7 @@ export function subdivide(
 // Splits the curve into curves that are monotone in x-direction, or in
 // y-direction if dir is true. A curve that is monotone already is returned as
 // the only one:
-export function getMonoCurves(v: BezierValues, dir?: boolean): BezierValues[] {
+export function getMonoCurves(v: CurveValues, dir?: boolean): CurveValues[] {
   const curves = []
   // Determine the ordinate index in the curve values array.
   const io = dir ? 0 : 1
@@ -132,7 +132,7 @@ export function getMonoCurves(v: BezierValues, dir?: boolean): BezierValues[] {
 // Converts from the point coordinates (p0, p1, p2, p3) for one axis to
 // the polynomial coefficients and solves the polynomial for val
 export function solve(
-  v: BezierValues,
+  v: CurveValues,
   coord: number,
   val: number,
   roots: number[],
@@ -160,10 +160,10 @@ export function solve(
 // Returns the part of the curve between the two times, reversed if the first
 // one is the later:
 export function getPart(
-  v: BezierValues,
+  v: CurveValues,
   from: number,
   to: number
-): BezierValues {
+): CurveValues {
   const flip = from > to
   if (flip) {
     const tmp = from
@@ -185,7 +185,7 @@ export function getPart(
 
 // Whether the curve is flat enough: it appears as a straight line, and its
 // curve-time is linear enough, within the flatness as the largest error:
-export function isFlatEnough(v: BezierValues, flatness: number): boolean {
+export function isFlatEnough(v: CurveValues, flatness: number): boolean {
   // Thanks to Kaspar Fischer and Roger Willcocks for the following:
   // http://hcklbrrfnn.files.wordpress.com/2012/08/bez.pdf
   const x0 = v[0]
@@ -206,7 +206,7 @@ export function isFlatEnough(v: BezierValues, flatness: number): boolean {
   )
 }
 
-export function getArea(v: BezierValues): number {
+export function getArea(v: CurveValues): number {
   // http://objectmix.com/graphics/133553-area-closed-bezier-curve.html
   const x0 = v[0]
   const y0 = v[1]
@@ -229,7 +229,7 @@ export function getArea(v: BezierValues): number {
   )
 }
 
-export function classify(v: BezierValues): { type: string; roots: number[] } {
+export function classify(v: CurveValues): { type: string; roots: number[] } {
   // See: Loop and Blinn, 2005, Resolution Independent Curve Rendering
   // using Programmable Graphics Hardware, GPU Gems 3 chapter 25
   //
@@ -325,7 +325,7 @@ export function classify(v: BezierValues): { type: string; roots: number[] } {
   )
 }
 
-export function getLength(v: BezierValues, a = 0, b = 1): number {
+export function getLength(v: CurveValues, a = 0, b = 1): number {
   if (isStraight(v)) {
     // Sub-divide the linear curve at a and b, so we can simply
     // calculate the Pythagorean Theorem to get the range's length.
@@ -347,7 +347,7 @@ export function getLength(v: BezierValues, a = 0, b = 1): number {
 }
 
 export function getTimeAt(
-  v: BezierValues,
+  v: CurveValues,
   offset: number,
   start = offset < 0 ? 1 : 0
 ): number {
@@ -393,7 +393,7 @@ export function getTimeAt(
 }
 
 export function getTimeOf(
-  v: BezierValues,
+  v: CurveValues,
   point: Point,
   tolerance?: number
 ): number | null {
@@ -476,7 +476,7 @@ export function getTimeOf(
 // on straight curves near their ends snap to them within the tolerance, see
 // getTimeOf():
 export function getNearestTime(
-  v: BezierValues,
+  v: CurveValues,
   point: Point,
   tolerance?: number
 ): number {
@@ -562,27 +562,27 @@ export function getNearestTime(
   return minT
 }
 
-export function getPoint(v: BezierValues, t: number): Point {
+export function getPoint(v: CurveValues, t: number): Point {
   return evaluate(v, t, 0, false)
 }
 
-export function getTangent(v: BezierValues, t: number): Point {
+export function getTangent(v: CurveValues, t: number): Point {
   return evaluate(v, t, 1, true)
 }
 
-export function getWeightedTangent(v: BezierValues, t: number): Point {
+export function getWeightedTangent(v: CurveValues, t: number): Point {
   return evaluate(v, t, 1, false)
 }
 
-export function getNormal(v: BezierValues, t: number): Point {
+export function getNormal(v: CurveValues, t: number): Point {
   return evaluate(v, t, 2, true)
 }
 
-export function getWeightedNormal(v: BezierValues, t: number): Point {
+export function getWeightedNormal(v: CurveValues, t: number): Point {
   return evaluate(v, t, 2, false)
 }
 
-export function getCurvature(v: BezierValues, t: number): number {
+export function getCurvature(v: CurveValues, t: number): number {
   return evaluate(v, t, 3, false).x
 }
 
@@ -602,7 +602,7 @@ export const evaluators = {
 // of its first and second derivative. Peaks share some qualities of
 // curvature extrema, but are cheaper to compute, see:
 // https://math.stackexchange.com/questions/1954845/bezier-curvature-extrema
-export function getPeaks(v: BezierValues): number[] {
+export function getPeaks(v: CurveValues): number[] {
   const c = getCoefficients(v)
   const ax = c[0]
   const bx = c[1]
@@ -628,7 +628,7 @@ export function getPeaks(v: BezierValues): number[] {
 
 // Returns the sorted times where the curve reverses its direction along the
 // line that all of its control points lie along within the tolerance, if any:
-export function getReversals(v: BezierValues, tolerance: number): number[] {
+export function getReversals(v: CurveValues, tolerance: number): number[] {
   // The line's direction, along the longest of the chord and handles:
   let dx = v[6] - v[0]
   let dy = v[7] - v[1]
@@ -664,7 +664,7 @@ export function getReversals(v: BezierValues, tolerance: number): number[] {
 
 // Returns the times where the curve is tangential to the tangent, at most
 // two, including those at its start and end:
-export function getTimesWithTangent(v: BezierValues, tangent: Point): number[] {
+export function getTimesWithTangent(v: CurveValues, tangent: Point): number[] {
   // Algorithm adapted from:
   // https://stackoverflow.com/a/34837312/7615922
   // The coefficients of the derivative of the curve's polynomial:
@@ -795,7 +795,7 @@ export function addBounds(
 // Returns the winding of the point against the curve, as the sum of its
 // parts that cross a ray from the point in x-direction, upwards as +1 and
 // downwards as -1. It tells which path lies inside which:
-export function getRayWinding(v: BezierValues, point: Point): number {
+export function getRayWinding(v: CurveValues, point: Point): number {
   const { min, max, abs } = Math
   let winding = 0
   const { x, y } = point
@@ -832,7 +832,7 @@ export function getRayWinding(v: BezierValues, point: Point): number {
 
 // Calls a test of the handles with the coordinates of the curve's points
 // and their handles:
-function testHandles(test: typeof hasStraightHandles, v: BezierValues) {
+function testHandles(test: typeof hasStraightHandles, v: CurveValues) {
   const x1 = v[0]
   const y1 = v[1]
   const x2 = v[6]
@@ -1011,7 +1011,7 @@ function getPartLength(
   return length
 }
 
-function getCoefficients(v: BezierValues): number[] {
+function getCoefficients(v: CurveValues): number[] {
   const x0 = v[0]
   const y0 = v[1]
   let x1 = v[2]
@@ -1056,7 +1056,7 @@ function getCoordinate(
 }
 
 function evaluate(
-  v: BezierValues,
+  v: CurveValues,
   t: number,
   type: number,
   normalized: boolean

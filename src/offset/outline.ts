@@ -21,13 +21,13 @@
  */
 
 import { uniteRegions } from '../boolean/operations.ts'
-import type { PathData, RegionData } from '../data/region.ts'
+import type { PathValues, RegionValues } from '../data/region.ts'
 import { ProfileSweep } from './profile.ts'
 import type { StrokePens } from './profile.ts'
 import { RoundSweep } from './round.ts'
 
 // A path to outline the stroke of, with the pens of its stroke profile:
-export type StrokePath = PathData & { pens?: StrokePens }
+export type StrokePath = PathValues & { pens?: StrokePens }
 
 const errorThreshold = 0.1
 
@@ -40,11 +40,11 @@ export function outlineStroke(
   join: string,
   cap: string,
   miterLimit: number
-): RegionData {
+): RegionValues {
   // The offsets' error, relative to small radii:
   const tolerance = Math.min(errorThreshold, radius / 100)
   const stroke = { radius, tolerance, join, cap, miterLimit }
-  const areas: RegionData[] = []
+  const areas: RegionValues[] = []
   for (const path of paths) {
     const sweep = path.pens
       ? new ProfileSweep(path, path.pens, stroke)

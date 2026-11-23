@@ -23,7 +23,7 @@ import {
   getValues,
   hasHandles
 } from '../data/region.ts'
-import type { PathData, RegionData } from '../data/region.ts'
+import type { PathValues, RegionValues } from '../data/region.ts'
 import { outlineStroke } from './outline.ts'
 
 const { abs } = Math
@@ -31,11 +31,11 @@ const { abs } = Math
 // Returns the region grown by the distance, or shrunk where it is negative,
 // united with the outline of its paths' strokes, or without it:
 export function offsetRegion(
-  region: RegionData,
+  region: RegionValues,
   distance: number,
   join: string,
   miterLimit: number
-): RegionData {
+): RegionValues {
   if (distance) {
     const outline = outlineStroke(
       region.paths,
@@ -57,11 +57,11 @@ export function offsetRegion(
 // with butt caps on that side, without the caps, each running along the
 // path:
 export function offsetPath(
-  path: PathData,
+  path: PathValues,
   distance: number,
   join: string,
   miterLimit: number
-): PathData[] {
+): PathValues[] {
   const curves = getStrokeCurves(path)
   // A point, or points on each other, have no sides to move:
   if (!curves.length) return []
@@ -75,7 +75,7 @@ export function offsetPath(
     [new Point(last[6], last[7]), Bezier.getNormal(last, 1)]
   ]
   const tolerance = radius / 1e4
-  const paths: PathData[] = []
+  const paths: PathValues[] = []
 
   // The location on the path nearest to the point, with its point, its
   // normal and its offset along the path, as PathItem#getNearestLocation()

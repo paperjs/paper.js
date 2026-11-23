@@ -36,10 +36,10 @@ import { Point } from '../basic/Point.ts'
 import { splitGraph } from './split.ts'
 import { traceRegions, uniteRegions } from './operations.ts'
 import { getArea, getStrokeCurves } from '../data/region.ts'
-import type { PathData, RegionData } from '../data/region.ts'
+import type { PathValues, RegionValues } from '../data/region.ts'
 import { getWinding } from './winding.ts'
 
-export type { PathData, RegionData, SegmentData } from '../data/region.ts'
+export type { PathValues, RegionValues } from '../data/region.ts'
 
 /**
  * Unites the regions.
@@ -47,7 +47,7 @@ export type { PathData, RegionData, SegmentData } from '../data/region.ts'
  * @param regions the regions to unite
  * @return the region that they cover together
  */
-export function unite(regions: RegionData[]): RegionData {
+export function unite(regions: RegionValues[]): RegionValues {
   return uniteRegions(regions)
 }
 
@@ -59,9 +59,9 @@ export function unite(regions: RegionData[]): RegionData {
  * @return the part of the region that the others don't cover
  */
 export function subtract(
-  region: RegionData,
-  others: RegionData | RegionData[]
-): RegionData {
+  region: RegionValues,
+  others: RegionValues | RegionValues[]
+): RegionValues {
   // The union of the others, as path items subtract it:
   return traceRegions(
     region,
@@ -78,9 +78,9 @@ export function subtract(
  * @return the part of the region that all others cover
  */
 export function intersect(
-  region: RegionData,
-  others: RegionData | RegionData[]
-): RegionData {
+  region: RegionValues,
+  others: RegionValues | RegionValues[]
+): RegionValues {
   return toList(others).reduce(
     (result, other) =>
       traceRegions(result, other, (inside1, inside2) => inside1 && inside2),
@@ -96,9 +96,9 @@ export function intersect(
  * @return the parts that either the region or the others cover, not both
  */
 export function exclude(
-  region: RegionData,
-  others: RegionData | RegionData[]
-): RegionData {
+  region: RegionValues,
+  others: RegionValues | RegionValues[]
+): RegionValues {
   return toList(others).reduce(
     (result, other) =>
       traceRegions(result, other, (inside1, inside2) => inside1 !== inside2),
@@ -114,7 +114,7 @@ export function exclude(
  * @param point the point, as `[x, y]`
  * @return true if the region contains the point
  */
-export function contains(region: RegionData, [x, y]: number[]): boolean {
+export function contains(region: RegionValues, [x, y]: number[]): boolean {
   const { winding, windingL, windingR, onPath } = getWinding(
     new Point(x, y),
     region.paths.map(path => ({
@@ -141,17 +141,17 @@ export function contains(region: RegionData, [x, y]: number[]): boolean {
  *     along the paths
  */
 export function split(
-  paths: PathData[],
-  region: RegionData
-): { inside: PathData[]; outside: PathData[] } {
-  const inside: PathData[] = []
-  const outside: PathData[] = []
+  paths: PathValues[],
+  region: RegionValues
+): { inside: PathValues[]; outside: PathValues[] } {
+  const inside: PathValues[] = []
+  const outside: PathValues[] = []
   for (const { segments, closed, isInside } of splitGraph(paths, region)) {
     ;(isInside ? inside : outside).push({ segments, closed })
   }
   return { inside, outside }
 }
 
-function toList(others: RegionData | RegionData[]): RegionData[] {
+function toList(others: RegionValues | RegionValues[]): RegionValues[] {
   return Array.isArray(others) ? others : [others]
 }
