@@ -448,7 +448,7 @@ export class AreaText extends TextItem {
       const all = stretches1.concat(stretches2).sort((a, b) => a[0] - b[0])
       const result = []
       for (let i = 0, l = all.length; i < l; i++) {
-        const last = result[result.length - 1]
+        const last = result.at(-1)
         const stretch = all[i]
         if (last && stretch[0] <= last[1]) {
           last[1] = Math.max(last[1], stretch[1])
@@ -621,7 +621,7 @@ export class AreaText extends TextItem {
         direction
       )
       if (content[end - 1] === '\u00ad') {
-        const last = line.pieces[line.pieces.length - 1]
+        const last = line.pieces.at(-1)
         const width = (
           this.view.getTextWidth(last.font, ['-'], last.tracking, direction) *
           last.scale.x

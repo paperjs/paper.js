@@ -16,6 +16,7 @@ import {
   PathFlattener,
   Rectangle,
   TextItem,
+  clamp,
   inject,
   isPlainObject
 } from '../internal.ts'
@@ -117,11 +118,11 @@ export class PathText extends TextItem {
     )
     const lengths = flatteners.map(flattener => flattener.length)
     const length = lengths.reduce((sum, length) => sum + length, 0)
-    const from = Math.max(0, Math.min(this._startOffset, length))
+    const from = clamp(this._startOffset, 0, length)
     const to =
       this._endOffset == null
         ? length
-        : Math.max(from, Math.min(this._endOffset, length))
+        : clamp(this._endOffset, from, length)
     const spacing = this._spacing
     const paragraph = story._getParagraph(start).style
     const measured = this._measure(
@@ -179,7 +180,7 @@ export class PathText extends TextItem {
       piece.dx = -piece.width / 2
       piece.rotation += tangent.angle
     }
-    const last = pieces[pieces.length - 1]
+    const last = pieces.at(-1)
     this._visibleEnd = last?.end ?? start
     return [
       Object.assign(measured, {

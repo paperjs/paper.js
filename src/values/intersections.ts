@@ -368,16 +368,15 @@ function isSharedEnd(
   t2: number,
   index: number
 ): boolean {
-  const x = v1[index]
-  const y = v1[index + 1]
+  const end = new Point(v1[index], v1[index + 1])
   const epsilon = getEpsilon(
-    Math.max(Math.abs(x), Math.abs(y)),
+    Math.max(Math.abs(end.x), Math.abs(end.y)),
     GEOMETRIC_EPSILON
   )
-  const isClose = ({ x: px, y: py }: Point) => (
-    Math.hypot(px - x, py - y) <= epsilon
+  return (
+    getCurvePoint(v1, t1).isClose(end, epsilon) &&
+    getCurvePoint(v2, t2).isClose(end, epsilon)
   )
-  return isClose(getCurvePoint(v1, t1)) && isClose(getCurvePoint(v2, t2))
 }
 
 function addCurveIntersections(

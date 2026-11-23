@@ -67,7 +67,7 @@ export function splitGraph(
     for (let i = first; i < index; i++) {
       for (const piece of pieces[i]) {
         const side = getSide(piece)
-        const last = stretches[stretches.length - 1]
+        const last = stretches.at(-1)
         if (last?.side === side) {
           last.pieces.push(piece)
         } else {
@@ -75,7 +75,7 @@ export function splitGraph(
         }
       }
     }
-    const last = stretches[stretches.length - 1]
+    const last = stretches.at(-1)
     if (
       path.closed &&
       stretches.length > 1 &&

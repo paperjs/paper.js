@@ -88,7 +88,8 @@ export class RoundSweep extends Sweep {
       return {
         parts,
         start: points[1].subtract(points[0]).normalize(),
-        end: points[points.length - 1]
+        end: points
+          .at(-1)
           .subtract(points[points.length - 2])
           .normalize()
       }

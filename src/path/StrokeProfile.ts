@@ -112,7 +112,7 @@ export class StrokeProfile {
         }
         if (offset < length) {
           const pen = getPen(offset, true)
-          if (!offset || !equals(pen, pens[pens.length - 1])) {
+          if (!offset || !equals(pen, pens.at(-1))) {
             pens.push(pen)
           }
         }
@@ -434,7 +434,7 @@ export function setStrokeProfileRuns(path: Path, runs: ProfileRun[]) {
   // Join the runs that continue each other:
   const joined: ProfileRun[] = []
   for (const run of runs) {
-    const last = joined[joined.length - 1]
+    const last = joined.at(-1)
     if (last && isContinued(last, run)) {
       last.length += run.length
       if (run.reversed) {
@@ -481,7 +481,7 @@ export function setStrokeProfileRuns(path: Path, runs: ProfileRun[]) {
   }
   // Stops where the last run continues into the first are in both:
   if (isCyclic && count > 1) {
-    while (entries[entries.length - 1]?.offset >= offset) {
+    while (entries.at(-1)?.offset >= offset) {
       entries.pop()
     }
   }

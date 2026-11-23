@@ -114,7 +114,7 @@ export abstract class Sweep<P extends Part = Part> {
       }
       if (!closed && curves.length) {
         const first = curves[0]
-        const last = curves[curves.length - 1]
+        const last = curves.at(-1)
         this.addCap(first, false, first.start.negate())
         this.addCap(last, true, last.end)
       }

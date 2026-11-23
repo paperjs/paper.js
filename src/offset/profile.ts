@@ -48,7 +48,13 @@ import {
   regularizeCusp
 } from './curves.ts'
 import type { Side } from './curves.ts'
-import { createPen, getAxes, getContacts, getPenSegments } from './pen.ts'
+import {
+  createPen,
+  getAxes,
+  getContacts,
+  getPenSegments,
+  getStripWidth
+} from './pen.ts'
 import type { Contact, Contacts, Pen, PenValues, Strip } from './pen.ts'
 import { Sweep } from './sweep.ts'
 import type { CurveParts, Part, Stroke } from './sweep.ts'
@@ -142,7 +148,7 @@ export class ProfileSweep extends Sweep<ProfilePart> {
     return {
       parts,
       start: getCurveTangent(parts[0].v, 0),
-      end: getCurveTangent(parts[parts.length - 1].v, 1)
+      end: getCurveTangent(parts.at(-1).v, 1)
     }
   }
 
@@ -250,7 +256,7 @@ export class ProfileSweep extends Sweep<ProfilePart> {
       const span = spans[i]
       if (after ? offset < span.end : offset <= span.end) return span
     }
-    return spans[spans.length - 1]
+    return spans.at(-1)
   }
 
   // Where the pen at the time on the part touches the edge of the area that
@@ -482,7 +488,7 @@ export class ProfileSweep extends Sweep<ProfilePart> {
           // so the next one starts where it does. A longer one is a thin
           // strip, whose gap is no wider than the outline may be off:
           const ends = [from, to].map((side): [Point, Point] => [
-            new Point(side[side.length - 1][0]),
+            new Point(side.at(-1)[0]),
             new Point(side[0][0])
           ])
           if (ends.every(([end, start]) => end.isClose(start, 2 * tolerance))) {
@@ -534,7 +540,7 @@ export class ProfileSweep extends Sweep<ProfilePart> {
           const t = this.getTime(part, offset)
           const previous = t
             ? part
-            : parts[j - 1] ?? parts[parts.length - 1]
+            : parts[j - 1] ?? parts.at(-1)
           this.addPen(
             getCurvePoint(part.v, t),
             pen,
@@ -566,8 +572,10 @@ export class ProfileSweep extends Sweep<ProfilePart> {
     const span1 = this.getSpan(offset, false)
     const span = this.getSpan(offset, true)
     const pen = this.getSpanPen(span, offset)
-    const strips1 = this.getContacts(part1, 1, span1).strips
-    const strips2 = this.getContacts(part2, 0, span).strips
+    const contacts1 = this.getContacts(part1, 1, span1)
+    const contacts2 = this.getContacts(part2, 0, span)
+    const strips1 = contacts1.strips
+    const strips2 = contacts2.strips
     // Where the curves continue each other, their parts meet in the same
     // points, and need no join:
     if (!isZero(cross) || tangent1.dot(tangent2) < 0) {
@@ -576,8 +584,8 @@ export class ProfileSweep extends Sweep<ProfilePart> {
       } else {
         // The side against the turn, see getContacts():
         const k = cross > 0 ? 1 : 0
-        const sides1 = this.getContacts(part1, 1, span1).sides
-        const sides2 = this.getContacts(part2, 0, span).sides
+        const sides1 = contacts1.sides
+        const sides2 = contacts2.sides
         if (sides1 && sides2) {
           // Widen the join into the parts on both sides, as
           // RoundSweep#addJoin() does, by turning the sides' points
@@ -660,7 +668,7 @@ export class ProfileSweep extends Sweep<ProfilePart> {
   addCap(curve: CurveParts<ProfilePart>, atEnd: boolean, tangent: Point) {
     const { cap } = this.stroke
     const { parts } = curve
-    const part = atEnd ? parts[parts.length - 1] : parts[0]
+    const part = atEnd ? parts.at(-1) : parts[0]
     const t = atEnd ? 1 : 0
     const offset = part.offset + (t ? part.length : 0)
     const span = this.getSpan(offset, !t)
@@ -797,19 +805,13 @@ function isClose(strips: Strip[], before: Strip[]): boolean {
     const other = before[i]
     const limit = Math.min(
       0.35,
-      Math.max(getWidth(strip), getWidth(other)) / 2
+      Math.max(getStripWidth(strip), getStripWidth(other)) / 2
     )
     return (
       getAngle(strip.from.phi, other.from.phi) < limit &&
       getAngle(strip.to.phi, other.to.phi) < limit
     )
   })
-}
-
-// The angle on the pen that the strip covers:
-function getWidth(strip: Strip): number {
-  const full = 2 * Math.PI
-  return ((strip.to.phi - strip.from.phi) % full + full) % full || full
 }
 
 // Checks that the part is thin on average, and also where it may taper,
