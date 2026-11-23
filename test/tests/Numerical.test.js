@@ -50,4 +50,33 @@ describe('Numerical', () => {
       'coefficients at different scale.'
     )
   })
+
+  test('Numerical.solveQuartic()', () => {
+    function solve(a, b, c, d, e) {
+      const roots = []
+      const count = Numerical.solveQuartic(a, b, c, d, e, roots)
+      return roots.slice(0, count).sort((x1, x2) => x1 - x2)
+    }
+
+    // (x - 1)(x - 2)(x - 3)(x - 4):
+    equals(solve(1, -10, 35, -50, 24), [1, 2, 3, 4], 'four roots')
+    const s = Numerical.EPSILON
+    equals(
+      solve(s, -10 * s, 35 * s, -50 * s, 24 * s),
+      [1, 2, 3, 4],
+      'an identical set of coefficients at different scale'
+    )
+    // The same roots at a thousandth of their size:
+    equals(
+      solve(1, -1e-2, 35e-6, -50e-9, 24e-12),
+      [1e-3, 2e-3, 3e-3, 4e-3],
+      'small roots'
+    )
+    // (x² + 1)(x - 2)(x + 3):
+    equals(solve(1, 1, -5, 1, -6), [-3, 2], 'two roots')
+    equals(solve(1, 0, -5, 0, 4), [-2, -1, 1, 2], 'a quadratic in x²')
+    equals(solve(1, 0, 0, 0, 1), [], 'no roots')
+    // Without the x⁴ term, it is solveCubic():
+    equals(solve(0, 1, -6, 11, -6), [1, 2, 3], 'a cubic')
+  })
 })
