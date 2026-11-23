@@ -30,20 +30,13 @@
 import {
   CompoundPath,
   EPSILON,
-  GEOMETRIC_EPSILON,
   Item,
   Path,
   Point,
   booleanOperators,
-  findItemBoundsCollisions,
-  getCurvePoint,
-  getCurveRayWinding,
-  getMonoCurves,
   getStrokeProfilePart,
   paper,
-  push,
   setStrokeProfileRuns,
-  solveCurve,
   splitGraph,
   traceGraph
 } from '../internal.ts'
@@ -66,7 +59,7 @@ export type BooleanOptions = {
   stroke?: boolean
 }
 
-const { min, max, abs } = Math
+const { abs } = Math
 
 function getPaths(path: PathItem): Path[] {
   return (path._children ?? [path]) as Path[]
@@ -353,109 +346,67 @@ export function splitBoolean(
   return createResult(paths, false, path1, path2, options)
 }
 
-/**
- * Reorients the specified paths.
- *
- * @param paths the paths of which the orientation needs to be
- *     reoriented
- * @param isInside determines if the inside of a path is filled.
- *     For non-zero fill rule this function would be implemented as follows:
- *
- *     function isInside(w) {
- *       return w != 0;
- *     }
- * @param clockwise if provided, the orientation of the root
- *     paths will be set to the orientation specified by `clockwise`,
- *     otherwise the orientation of the largest root child is used.
- * @return the reoriented paths
+/*
+ * Reorients the paths so that they fill the same area by any fill rule as
+ * they do by the given one: The graph traces the outlines of that area, and
+ * each path that an outline runs along takes its orientation, or is left out
+ * if none does. Outlines that run along several paths, which touch or cross
+ * there, or along parts of one, replace them. The outer paths get the given
+ * orientation, by default that of the largest path.
  */
 export function reorientPaths(
-  paths: PathItem[],
-  isInside: (winding: number) => boolean,
+  paths: Path[],
+  fillRule: string,
   clockwise?: boolean
-): PathItem[] {
-  const length = paths?.length
-  if (length) {
-    // Build a lookup table with information for each path's
-    // original index and winding contribution.
-    const lookup: Record<
-      number,
-      {
-        container: PathItem | null
-        winding: number
-        index: number
-        exclude?: boolean
-      }
-    > = {}
-    for (let i = 0; i < length; i++) {
-      const path = paths[i]
-      lookup[path._id] = {
-        container: null,
-        winding: path.clockwise ? 1 : -1,
-        index: i
-      }
-    }
-    // Now sort the paths by their areas, from large to small.
-    const sorted = paths.slice().sort((a, b) => abs(b.area) - abs(a.area))
-    // Get reference to the first, largest path and insert it
-    // already.
-    const first = sorted[0]
-    // create lookup containing potentially overlapping path bounds
-    const collisions = findItemBoundsCollisions(sorted, null, GEOMETRIC_EPSILON)
-    if (clockwise == null) {
-      clockwise = first.clockwise
-    }
-    // Now determine the winding for each path, from large to small.
-    for (let i = 0; i < length; i++) {
-      const path1 = sorted[i]
-      const entry1 = lookup[path1._id]
-      let containerWinding = 0
-      const indices = collisions[i]
-      if (indices) {
-        let point = null // interior point, only get it if required.
-        for (let j = indices.length - 1; j >= 0; j--) {
-          if (indices[j] < i) {
-            point ??= path1.interiorPoint
-            const path2 = sorted[indices[j]]
-            // As we run through the paths from largest to
-            // smallest, for any current path, all potentially
-            // containing paths have already been processed and
-            // their orientation fixed. To achieve correct
-            // orientation of contained paths based on winding,
-            // find one containing path with different
-            // "insideness" and set opposite orientation.
-            const { curves } = path2
-            let winding = 0
-            for (let k = 0, n = curves.length; k < n; k++) {
-              winding += getCurveRayWinding(curves[k].values, point)
-            }
-            if (winding) {
-              const entry2 = lookup[path2._id]
-              containerWinding = entry2.winding
-              entry1.winding += containerWinding
-              entry1.container = entry2.exclude ? entry2.container : path2
-              break
-            }
-          }
+): Path[] {
+  if (paths.length) {
+    clockwise ??= paths.reduce((largest, path) =>
+      abs(path.area) > abs(largest.area) ? path : largest
+    ).clockwise
+    const outlines = traceGraph(
+      [
+        {
+          fillRule,
+          paths: paths.map(path => ({
+            ...getRegion(path).paths[0],
+            closed: true
+          }))
         }
-      }
-      // Only keep paths if the "insideness" changes when crossing the
-      // path, e.g. the inside of the path is filled and the outside
-      // is not, or vice versa.
-      if (isInside(entry1.winding) === isInside(containerWinding)) {
-        entry1.exclude = true
-        // No need to delete excluded entries. Setting to null is
-        // enough, as #setChildren() can handle arrays with gaps.
-        paths[entry1.index] = null
-      } else {
-        // If the containing path is not excluded, we're done
-        // searching for the orientation defining path.
-        const { container } = entry1
-        path1.clockwise = container ? !container.clockwise : clockwise
+      ],
+      inside => inside
+    )
+    // How many outlines run along each path:
+    const counts = paths.map(() => 0)
+    for (const { sources } of outlines) {
+      for (const index of new Set(sources.map(source => source.path))) {
+        counts[index]++
       }
     }
+    // The paths of the result at the index of the first path that their
+    // outline runs along, to keep their order:
+    const results: Path[][] = paths.map(() => [])
+    for (const { segments, sources } of outlines) {
+      const indices = [...new Set(sources.map(source => source.path))]
+      const index = Math.min(...indices)
+      let path = paths[index]
+      if (indices.length === 1 && counts[index] === 1) {
+        // The graph traces outer paths clockwise:
+        const { time1, time2 } = sources[0]
+        if (time1 > time2 === clockwise) {
+          path.reverse()
+        }
+      } else {
+        path = new Path(Item.NO_INSERT)
+        path.segments = segments
+        path.closed = true
+        path.clockwise = path.clockwise === clockwise
+      }
+      results[index].push(path)
+    }
+    return results.flat()
+  } else {
+    return paths
   }
-  return paths
 }
 
 /*
@@ -471,65 +422,4 @@ export function getOperands(
     operands.push(preparePath(path2, true))
   }
   return operands
-}
-
-export function getInteriorPoint(item: PathItem): Point {
-  const { bounds } = item
-  const point = bounds._getCenter(true)
-  // contains() includes the boundary, but a point on the path isn't
-  // interior, e.g. a vertex shared with another path (#1837):
-  if (
-    !item.contains(point) ||
-    item.getNearestPoint(point).isClose(point, GEOMETRIC_EPSILON)
-  ) {
-    // Since there is no guarantee that a poly-bezier path contains
-    // the center of its bounding rectangle, we shoot a ray in x
-    // direction and select a point between the first consecutive
-    // intersections of the ray on the left. The ray runs through
-    // the middle of the band around the center where no
-    // y-monotone curve starts or ends, so that it crosses the path
-    // instead of touching it or running along it (#1837):
-    const { curves } = item
-    const monoCurves = []
-    const ys = []
-    const intercepts = []
-    const roots = []
-    for (let i = 0, l = curves.length; i < l; i++) {
-      push(monoCurves, getMonoCurves(curves[i].values))
-    }
-    for (let i = 0, l = monoCurves.length; i < l; i++) {
-      ys.push(monoCurves[i][1], monoCurves[i][7])
-    }
-    ys.sort((a, b) => a - b)
-    // The center lies between the top and the bottom of the
-    // bounds, which are among the ys, unless the path is flat:
-    let { y } = point
-    let below = y
-    let above = y
-    for (let i = 0, l = ys.length; i < l && above === y; i++) {
-      if (ys[i] <= y) {
-        below = ys[i]
-      } else {
-        above = ys[i]
-      }
-    }
-    y = point.y = (below + above) / 2
-    for (let i = 0, l = monoCurves.length; i < l; i++) {
-      const mv = monoCurves[i]
-      const mo0 = mv[1]
-      const mo3 = mv[7]
-      if (y > min(mo0, mo3) && y < max(mo0, mo3)) {
-        intercepts.push(
-          solveCurve(mv, 1, y, roots, 0, 1) === 1
-            ? getCurvePoint(mv, roots[0]).x
-            : (mv[0] + mv[6]) / 2
-        )
-      }
-    }
-    if (intercepts.length > 1) {
-      intercepts.sort((a, b) => a - b)
-      point.x = (intercepts[0] + intercepts[1]) / 2
-    }
-  }
-  return point
 }
