@@ -42,6 +42,37 @@ import {
 const { window } = paper
 
 describe('SvgExport', () => {
+  test('exportSVG() inside the processNode() of another export', () => {
+    // An export from processNode() runs inside the other one, which keeps
+    // its own state, such as the definitions of its gradients:
+    const path = Path.rectangle({
+      point: [10, 10],
+      size: [20, 20],
+      fillColor: {
+        gradient: { stops: ['red', 'blue'] },
+        origin: [10, 10],
+        destination: [30, 30]
+      }
+    })
+    const other = Path.circle({
+      center: [50, 50],
+      radius: 10,
+      fillColor: 'green',
+      insert: false
+    })
+    const svg = path.project.exportSVG({
+      asString: true,
+      processNode({ item, node }) {
+        if (item === path) {
+          other.exportSVG()
+        }
+        return node
+      }
+    })
+    equals(/<linearGradient/.test(svg), true)
+    equals(/fill="url\(#color-1\)"/.test(svg), true)
+  })
+
   test('Export symbols that leave their style to each <use> (#1329)', () => {
     const path = Path.rectangle({ point: [0, 0], size: [10, 10] })
     const definition = new SymbolDefinition(path)
