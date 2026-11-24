@@ -593,7 +593,9 @@ export function compile(code: string, options?: CompileOptions): Compiled {
       // Count the amount of line breaks in the html before this code
       // to determine the offset, unless the script isn't in the html.
       if (index >= 0) {
-        offset = html.substring(0, index + 1).match(lineBreaks).length + 1
+        offset = (
+          (html.substring(0, index + 1).match(lineBreaks)?.length ?? 0) + 1
+        )
       }
     }
     const mappings = ['AA' + encodeVLQ(offset) + 'A']
