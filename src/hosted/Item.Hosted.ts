@@ -635,7 +635,8 @@ for (const ctor of [PointText, PathText, AreaText]) {
   })
 }
 
-const { _changed, insertLayer, takeChanges, draw } = Project.prototype
+const { _changed, insertLayer, takeChanges, hasChanges, draw } =
+  Project.prototype
 const { get: getSymbolDefinitions } = Object.getOwnPropertyDescriptor(
   Project.prototype,
   'symbolDefinitions'
@@ -678,6 +679,18 @@ inject(Project.prototype, {
   // The new definitions that the changed items use come first, nested
   // ones first, so the host can create them before the items that refer
   // to them. Other definitions without a key aren't the host's:
+  // Also the data that scripts changed in place, which takeChanges() logs:
+  hasChanges(this: Project) {
+    return (
+      hasChanges.call(this) || (
+        !!this._changes &&
+        [...(this._dataItems ?? [])].some(
+          item => item._project === this && getDataJSON(item) !== item._dataJSON
+        )
+      )
+    )
+  },
+
   takeChanges(this: Project) {
     // The data that scripts changed in place, see Item#data:
     if (this._changes && this._dataItems) {

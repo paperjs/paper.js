@@ -616,12 +616,15 @@ describe('Hosted', () => {
     // Reading the data is no change:
     const { data } = circle
     equals(project.takeChanges().length, 0)
+    equals(project.hasChanges(), false)
     // Changing it in place is, once:
     data.profile = [1, 2]
+    equals(project.hasChanges(), true)
     let changes = project.takeChanges()
     equals(changes.length, 1)
     equals(changes[0].item === circle, true)
     equals(changes[0].flags, ChangeFlag.ATTRIBUTE)
+    equals(project.hasChanges(), false)
     equals(project.takeChanges().length, 0)
     // Also through an object that the script kept, and by replacing it:
     data.profile.push(3)
