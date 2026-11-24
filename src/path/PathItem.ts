@@ -14,7 +14,6 @@ import {
   Change,
   CompoundPath,
   Curve,
-  Effect,
   Formatter,
   GEOMETRIC_EPSILON,
   Group,
@@ -200,7 +199,7 @@ export abstract class PathItem extends Item {
     let output = super._applyEffects(art)
     if (this._hasStrokeProfile()) {
       if (output) {
-        const effect = Effect.get('outline')
+        const effect = getFeature('effects').Effect.get('outline')
         output = effect?.onApply({ art: output, item: this }) || output
       } else {
         // Without effects, it's the path item's own outline:

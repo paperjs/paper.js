@@ -19,11 +19,11 @@ import { offset } from './offset/index.ts'
 import { svg } from './svg/index.ts'
 
 // The full library has all the features that paper/core leaves to use():
-core.use(boolean, offset, svg)
+core.use(boolean, offset, svg, core.effects, core.raster, core.tween)
 
 // Make the classes and namespaces properties of every scope, enumerable for
 // PaperScope#install() and PaperScript, which enumerate them:
-const { registerClasses, use, ...classes } = core
+const { registerClasses, use, effects, raster, tween, ...classes } = core
 const members = {
   ...classes,
   get document() {

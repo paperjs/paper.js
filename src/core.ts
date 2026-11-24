@@ -64,5 +64,8 @@ export {
   Numerical,
   PaperScope,
   registerClasses,
-  use
+  use,
+  effects,
+  raster,
+  tween
 } from './internal.ts'

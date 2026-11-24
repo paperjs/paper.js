@@ -24,8 +24,6 @@ import {
   clamp,
   getCanvas,
   getContext,
-  getEffectOutput,
-  getPreviewBounds,
   nativeBlendModes,
   releaseCanvas
 } from '../internal.ts'
@@ -257,7 +255,7 @@ export function drawItem(
     // Apply the parent's global matrix to the calculation of correct
     // bounds, with what effects draw, and include the item's shadow
     // (#1628).
-    let bounds = isFresh ? buffer.bounds : getPreviewBounds(item, viewMatrix)
+    let bounds = isFresh ? buffer.bounds : item.getPreviewBounds(viewMatrix)
     // Pass true for dontMerge, as groups don't draw the shadows of
     // their children.
     if (!isFresh && style._get('shadowColor', true)) {
@@ -424,7 +422,7 @@ export function drawItem(
       shadow && !direct
         ? Object.assign(Object.create(param), { dontShadow: true })
         : param
-    const output = getEffectOutput(item)
+    const output = item.getEffectOutput()
     if (output) {
       // The output of the effects is drawn in the item's place, in
       // its coordinates, see Item#effects:
