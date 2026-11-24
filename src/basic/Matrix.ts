@@ -302,11 +302,11 @@ export class Matrix extends Base {
     const origin = hasVer ? arg2 : arg1
     const center = origin ? Point.from(origin) : null
     if (center) {
-      this.translate(center)
+      translateMatrix(this._values, center.x, center.y)
     }
     scaleMatrix(this._values, scale.x, scale.y)
     if (center) {
-      this.translate(center.negate())
+      translateMatrix(this._values, -center.x, -center.y)
     }
     this.#changed()
     return this
@@ -354,10 +354,10 @@ export class Matrix extends Base {
     const shear = Point.from(arg0, hasVer ? arg1 : undefined)
     const origin = hasVer ? arg2 : arg1
     const center = origin ? Point.from(origin) : null
-    if (center) {
-      this.translate(center)
-    }
     const v = this._values
+    if (center) {
+      translateMatrix(v, center.x, center.y)
+    }
     const a = v[0]
     const b = v[1]
     v[0] += shear.y * v[2]
@@ -365,7 +365,7 @@ export class Matrix extends Base {
     v[2] += shear.x * a
     v[3] += shear.x * b
     if (center) {
-      this.translate(center.negate())
+      translateMatrix(v, -center.x, -center.y)
     }
     this.#changed()
     return this

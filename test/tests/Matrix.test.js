@@ -11,7 +11,7 @@
  */
 
 import { describe, expect } from 'vitest'
-import { Matrix, Point } from 'paper'
+import { Matrix, Path, Point } from 'paper'
 import { equals, test } from '../helpers.js'
 
 describe('Matrix', () => {
@@ -92,5 +92,24 @@ describe('Matrix', () => {
     testAngleAndScale(2, -4, 45)
     testAngleAndScale(-2, 4, 45, 2, -4, -135)
     testAngleAndScale(-2, -4, 45, 2, 4, -135)
+  })
+
+  test('scale() and shear() around a center, on an item that applies them', () => {
+    // The path applies each change to its matrix at once, so the matrix must
+    // only change once, not for each step around the center:
+    const center = new Point(15, 15)
+    function getBounds(transform) {
+      const path = new Path.Rectangle({ point: [10, 10], size: [10, 10] })
+      transform(path)
+      return path.bounds
+    }
+    equals(
+      getBounds(path => path.matrix.scale(2, center)),
+      getBounds(path => path.scale(2, center))
+    )
+    equals(
+      getBounds(path => path.matrix.shear(0.5, center)),
+      getBounds(path => path.shear(0.5, center))
+    )
   })
 })
