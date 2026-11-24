@@ -460,7 +460,11 @@ export class Raster extends Item {
   }
 
   set source(source: string) {
-    const image = getDocument().createElement('img')
+    // Hosts without a document may provide the Image class, as 0.17 used:
+    const document = getDocument()
+    const image = document
+      ? document.createElement('img')
+      : new globalThis.Image()
     const crossOrigin = this._crossOrigin
     if (crossOrigin) {
       image.crossOrigin = crossOrigin

@@ -27,10 +27,35 @@ import {
   pushFailure,
   test
 } from '../helpers.js'
+// The environment is internal, so it's imported from its module:
+import { setEnvironment } from '../../src/env.ts'
 
 const { document } = paper
 
 describe('Raster', () => {
+  test(`Raster#source without a document, with the host's Image class`, () => {
+    // Hosts without a DOM, such as script engines embedded in applications,
+    // provide the Image class themselves. The tests run with a DOM, so stand
+    // in for such a host:
+    class HostImage {
+      src = ''
+      complete = false
+      addEventListener() {}
+      removeEventListener() {}
+    }
+    const { window } = paper
+    globalThis.Image = HostImage
+    setEnvironment(null)
+    try {
+      const raster = new Raster({ source: 'image.png', insert: false })
+      equals(raster.image instanceof HostImage, true)
+      equals(raster.image.src, 'image.png')
+    } finally {
+      setEnvironment(window)
+      delete globalThis.Image
+    }
+  })
+
   test('Create a raster without a source and check its size', () => {
     const raster = new Raster()
     equals(raster.size, new Size(0, 0), true)
