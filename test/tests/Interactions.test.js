@@ -611,6 +611,29 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     tool.remove()
   })
 
+  test('Tool#onMouseEnter() and #onMouseLeave() (#1462)', () => {
+    const tool = new Tool()
+    const log = []
+    tool.onMouseEnter =
+      tool.onMouseMove =
+      tool.onMouseLeave =
+        event => {
+          log.push(event.type + ' ' + event.point + ' ' + event.lastPoint)
+        }
+    triggerPointerEvent('pointermove', new Point(10, 10))
+    triggerPointerEvent('pointermove', new Point(20, 20))
+    triggerPointerEvent('pointerleave', new Point(-5, 20))
+    // The tool enters before its first move, and leaves after its last one:
+    equals(log, [
+      'mouseenter { x: 10, y: 10 } null',
+      'mousemove { x: 10, y: 10 } { x: 10, y: 10 }',
+      'mousemove { x: 20, y: 20 } { x: 10, y: 10 }',
+      'mousemove { x: -5, y: 20 } { x: 20, y: 20 }',
+      'mouseleave { x: -5, y: 20 } { x: 20, y: 20 }'
+    ])
+    tool.remove()
+  })
+
   test('View#onMouseEnter() is only triggered as the pointer enters', () => {
     const types = []
     paper.view.onMouseEnter = paper.view.onMouseLeave = event => {

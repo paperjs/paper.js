@@ -28,7 +28,8 @@ export class ToolEvent extends Event {
   /**
    * The type of tool event.
    *
-   * @values 'mousedown', 'mouseup', 'mousemove', 'mousedrag'
+   * @values 'mousedown', 'mouseup', 'mousemove', 'mousedrag', 'mouseenter',
+   *     'mouseleave'
    */
   declare type: string
 

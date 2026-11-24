@@ -32,6 +32,8 @@ type ToolProps = Partial<
     | 'onMouseUp'
     | 'onMouseDrag'
     | 'onMouseMove'
+    | 'onMouseEnter'
+    | 'onMouseLeave'
     | 'onKeyDown'
     | 'onKeyUp'
     | 'onActivate'
@@ -47,8 +49,8 @@ type ToolProps = Partial<
  *
  * The global `tool` variable only exists in scripts that contain mouse handler
  * functions ({@link #onMouseMove}, {@link #onMouseDown}, {@link #onMouseDrag},
- * {@link #onMouseUp}) or a keyboard handler function ({@link #onKeyDown},
- * {@link #onKeyUp}).
+ * {@link #onMouseUp}, {@link #onMouseEnter}, {@link #onMouseLeave}) or a
+ * keyboard handler function ({@link #onKeyDown}, {@link #onKeyUp}).
  *
  * @classexample {@paperscript height=300}
  * var path;
@@ -254,7 +256,15 @@ export class Tool extends PaperScopeItem {
       }
     }
 
-    if (mouse.down) {
+    if (mouse.enter || mouse.leave) {
+      // Entering and leaving the view are no moves of their own: they are
+      // reported at their point, and leave the tool's state as it is.
+      if (responds) {
+        const toolEvent = new ToolEvent(this, type, event)
+        toolEvent.point = point
+        called = this.emit(type, toolEvent)
+      }
+    } else if (mouse.down) {
       update()
       emit()
       if (this.#eventInterval > 0) {
@@ -300,6 +310,8 @@ export class Tool extends PaperScopeItem {
       onMouseUp: {},
       onMouseDrag: {},
       onMouseMove: {},
+      onMouseEnter: {},
+      onMouseLeave: {},
       onActivate: {},
       onDeactivate: {},
       onEditOptions: {},
@@ -414,6 +426,20 @@ export interface Tool {
    * }
    */
   onMouseUp: ToolHandler
+
+  /**
+   * The function to be called when the mouse moves into the project view.
+   * The function receives a {@link ToolEvent} object which contains
+   * information about the tool event.
+   */
+  onMouseEnter: ToolHandler
+
+  /**
+   * The function to be called when the mouse moves out of the project view.
+   * The function receives a {@link ToolEvent} object which contains
+   * information about the tool event.
+   */
+  onMouseLeave: ToolHandler
 
   /**
    * {@grouptitle Keyboard Event Handlers}
