@@ -11,10 +11,40 @@
  */
 
 import { describe } from 'vitest'
-import { Path, PathItem, Point, Rectangle } from 'paper'
+import { CompoundPath, Path, PathItem, Point, Rectangle } from 'paper'
 import { equals, test } from '../helpers.js'
 
 describe('PathItem', () => {
+  test('Drawing commands return the path, to be chained (#605)', () => {
+    const path = new Path()
+    equals(
+      path
+        .moveTo(0, 0)
+        .lineTo(10, 0)
+        .lineTo(10, 10)
+        .lineBy(-10, 0)
+        .closePath(),
+      path
+    )
+    equals(path.segments.length, 4)
+    equals(path.closed, true)
+    equals(path.reverse().smooth().flatten(1) === path, true)
+    const compound = new CompoundPath()
+    equals(
+      compound
+        .moveTo(0, 0)
+        .lineTo(10, 0)
+        .lineTo(10, 10)
+        .closePath()
+        .moveTo(20, 0)
+        .lineTo(30, 0)
+        .reverse() ===
+      compound,
+      true
+    )
+    equals(compound.children.length, 2)
+  })
+
   test('PathItem#create() with SVG path-data (#1101)', () => {
     const data = [
       'M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z',

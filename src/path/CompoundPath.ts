@@ -369,7 +369,7 @@ export class CompoundPath extends PathItem {
   // NOTE: Documentation for these methods is found in PathItem, as they are
   // considered abstract methods of PathItem and need to be defined in all
   // implementing classes.
-  moveTo(point: PointLike | number, y?: number) {
+  moveTo(point: PointLike | number, y?: number): this {
     const current = getCurrentPath(this)
     // Reuse current path if nothing was added yet
     const path = current?.isEmpty() ? current : new Path(Item.NO_INSERT)
@@ -377,16 +377,18 @@ export class CompoundPath extends PathItem {
       this.addChild(path)
     }
     path.moveTo(point, y)
+    return this
   }
 
-  moveBy(point: PointLike | number, y?: number) {
+  moveBy(point: PointLike | number, y?: number): this {
     const last = getCurrentPath(this, true).lastSegment
     const vector = Point.from(point, y)
-    this.moveTo(last ? vector.add(last._point) : vector)
+    return this.moveTo(last ? vector.add(last._point) : vector)
   }
 
-  closePath(tolerance?: number) {
+  closePath(tolerance?: number): this {
     getCurrentPath(this, true).closePath(tolerance)
+    return this
   }
 
   // NOTE: Documentation is in PathItem
@@ -416,6 +418,7 @@ export class CompoundPath extends PathItem {
       inject(this.prototype, {
         [key](...args: any[]) {
           getCurrentPath(this, true)[key](...args)
+          return this
         }
       })
     }
@@ -427,6 +430,7 @@ export class CompoundPath extends PathItem {
           for (const child of this._children) {
             child[key](param)
           }
+          return this
         }
       })
     }
@@ -436,30 +440,30 @@ export class CompoundPath extends PathItem {
 // The drawing commands that are redirected to the current path, and the
 // methods forwarded to the child paths. NOTE: Documentation is in PathItem.
 export interface CompoundPath {
-  lineTo(point: PointLike | number, y?: number): void
-  cubicCurveTo(handle1: PointLike, handle2: PointLike, to: PointLike): void
-  quadraticCurveTo(handle: PointLike, to: PointLike): void
-  curveTo(through: PointLike, to: PointLike, time?: number): void
-  arcTo(through: PointLike, to: PointLike): void
-  arcTo(to: PointLike, clockwise?: boolean): void
+  lineTo(point: PointLike | number, y?: number): this
+  cubicCurveTo(handle1: PointLike, handle2: PointLike, to: PointLike): this
+  quadraticCurveTo(handle: PointLike, to: PointLike): this
+  curveTo(through: PointLike, to: PointLike, time?: number): this
+  arcTo(through: PointLike, to: PointLike): this
+  arcTo(to: PointLike, clockwise?: boolean): this
   arcTo(
     to: PointLike,
     radius: SizeLike | number,
     rotation: number,
     clockwise: boolean,
     large: boolean
-  ): void
-  arcAround(center: PointLike, angle: number): void
-  arcTowards(to: PointLike | number, y?: number): void
-  lineBy(point: PointLike | number, y?: number): void
-  cubicCurveBy(handle1: PointLike, handle2: PointLike, to: PointLike): void
-  quadraticCurveBy(handle: PointLike, to: PointLike): void
-  curveBy(through: PointLike, to: PointLike, time?: number): void
-  arcBy(through: PointLike, to: PointLike): void
-  arcBy(to: PointLike, clockwise?: boolean): void
-  reverse(): void
-  flatten(flatness?: number): void
-  smooth(options?: object): void
+  ): this
+  arcAround(center: PointLike, angle: number): this
+  arcTowards(to: PointLike | number, y?: number): this
+  lineBy(point: PointLike | number, y?: number): this
+  cubicCurveBy(handle1: PointLike, handle2: PointLike, to: PointLike): this
+  quadraticCurveBy(handle: PointLike, to: PointLike): this
+  curveBy(through: PointLike, to: PointLike, time?: number): this
+  arcBy(through: PointLike, to: PointLike): this
+  arcBy(to: PointLike, clockwise?: boolean): this
+  reverse(): this
+  flatten(flatness?: number): this
+  smooth(options?: object): this
 }
 
 /**

@@ -418,8 +418,11 @@ export abstract class PathItem extends Item {
    * Reverses the orientation of the path item. When called on
    * {@link CompoundPath} items, each of the nested paths is reversed. On
    * {@link Path} items, the sequence of {@link Path#segments} is reversed.
+   *
+   * @return this path itself, so calls can be chained
+   * @chainable
    */
-  abstract reverse(): void
+  abstract reverse(): this
 
   /**
    * Flattens the curves in path items to a sequence of straight lines, by
@@ -427,6 +430,8 @@ export abstract class PathItem extends Item {
    *
    * @param flatness the maximum error between the flattened
    *     lines and the original curves
+   * @return this path itself, so calls can be chained
+   * @chainable
    *
    * @example {@paperscript}
    * // Flattening a circle shaped path:
@@ -448,7 +453,7 @@ export abstract class PathItem extends Item {
    * // Flatten the copied path, with a maximum error of 4 points:
    * copy.flatten(4);
    */
-  abstract flatten(flatness?: number): void
+  abstract flatten(flatness?: number): this
 
   // TODO: Write about negative indices, and add an example for ranges.
   /**
@@ -517,6 +522,8 @@ export abstract class PathItem extends Item {
    *
    * @param options the smoothing options
    * @see Segment#smooth([options])
+   * @return this path itself, so calls can be chained
+   * @chainable
    *
    * @example {@paperscript}
    * // Smoothing a closed shape:
@@ -601,7 +608,7 @@ export abstract class PathItem extends Item {
     factor?: number
     from?: number | Segment | Curve
     to?: number | Segment | Curve
-  }): void
+  }): this
 
   /**
    * Fits a sequence of as few curves as possible through the path's anchor
@@ -783,8 +790,10 @@ export abstract class PathItem extends Item {
    * created as a child and the point is added as its first segment.
    *
    * @param point the point in which to start the path
+   * @return this path itself, so calls can be chained
+   * @chainable
    */
-  abstract moveTo(point: PointLike | number, y?: number): void
+  abstract moveTo(point: PointLike | number, y?: number): this
 
   /**
    * Adds a straight curve to the path, from the last segment in the path
@@ -792,8 +801,10 @@ export abstract class PathItem extends Item {
    *
    * @param point the destination point of the newly added straight
    *     curve
+   * @return this path itself, so calls can be chained
+   * @chainable
    */
-  abstract lineTo(point: PointLike | number, y?: number): void
+  abstract lineTo(point: PointLike | number, y?: number): this
 
   /**
    * Adds an arc from the position of the last segment in the path, passing
@@ -802,6 +813,8 @@ export abstract class PathItem extends Item {
    *
    * @param through the point where the arc should pass through
    * @param to the point where the arc should end
+   * @return this path itself, so calls can be chained
+   * @chainable
    *
    * @example {@paperscript}
    * var path = new Path();
@@ -853,7 +866,7 @@ export abstract class PathItem extends Item {
    *     myPath.fillColor = 'black';
    * }
    */
-  abstract arcTo(through: PointLike, to: PointLike): void
+  abstract arcTo(through: PointLike, to: PointLike): this
   /**
    * Adds an arc from the position of the last segment in the path to
    * the specified point, by adding one or more segments to the path.
@@ -861,6 +874,8 @@ export abstract class PathItem extends Item {
    * @param to the point where the arc should end
    * @param clockwise specifies whether the arc should be
    *     drawn in clockwise direction
+   * @return this path itself, so calls can be chained
+   * @chainable
    *
    * @example {@paperscript}
    * var path = new Path();
@@ -899,7 +914,7 @@ export abstract class PathItem extends Item {
    *     myPath.arcTo(event.point);
    * }
    */
-  abstract arcTo(to: PointLike, clockwise?: boolean): void
+  abstract arcTo(to: PointLike, clockwise?: boolean): this
   /**
    * Adds an elliptical arc from the position of the last segment in the
    * path to the specified point, as the arc command of SVG path data
@@ -914,6 +929,8 @@ export abstract class PathItem extends Item {
    *     clockwise direction
    * @param large specifies whether the larger of the two possible arcs
    *     should be drawn
+   * @return this path itself, so calls can be chained
+   * @chainable
    *
    * @example {@paperscript}
    * var path = new Path();
@@ -929,7 +946,7 @@ export abstract class PathItem extends Item {
     rotation: number,
     clockwise: boolean,
     large: boolean
-  ): void
+  ): this
 
   /**
    * Adds an arc that sweeps the specified angle around the specified
@@ -939,6 +956,8 @@ export abstract class PathItem extends Item {
    *
    * @param center the center of the arc
    * @param angle the angle in degrees that the arc sweeps over
+   * @return this path itself, so calls can be chained
+   * @chainable
    *
    * @example {@paperscript}
    * var path = new Path();
@@ -956,7 +975,7 @@ export abstract class PathItem extends Item {
    * circle.add(new Point(250, 75));
    * circle.arcAround(new Point(230, 75), 360);
    */
-  abstract arcAround(center: PointLike, angle: number): void
+  abstract arcAround(center: PointLike, angle: number): this
 
   /**
    * Adds an arc from the position of the last segment in the path to the
@@ -964,6 +983,8 @@ export abstract class PathItem extends Item {
    * continues in the direction in which the path ends, without a corner.
    *
    * @param to the point where the arc should end
+   * @return this path itself, so calls can be chained
+   * @chainable
    *
    * @example {@paperscript}
    * var path = new Path();
@@ -998,7 +1019,7 @@ export abstract class PathItem extends Item {
    *     myPath.arcTowards(event.point);
    * }
    */
-  abstract arcTowards(to: PointLike | number, y?: number): void
+  abstract arcTowards(to: PointLike | number, y?: number): this
 
   /**
    * Adds a curve from the last segment in the path through the specified
@@ -1009,6 +1030,8 @@ export abstract class PathItem extends Item {
    * @param to the destination point of the newly added curve
    * @param time the curve-time parameter at which the
    *     `through` point is to be located
+   * @return this path itself, so calls can be chained
+   * @chainable
    *
    * @example {@paperscript height=300}
    * // Interactive example. Move your mouse around the view below:
@@ -1033,7 +1056,7 @@ export abstract class PathItem extends Item {
    *     myPath.selected = true;
    * }
    */
-  abstract curveTo(through: PointLike, to: PointLike, time?: number): void
+  abstract curveTo(through: PointLike, to: PointLike, time?: number): this
 
   /**
    * Adds a cubic bezier curve to the path, from the last segment to the
@@ -1047,12 +1070,14 @@ export abstract class PathItem extends Item {
    *     added curve in absolute coordinates, out of which the relative values
    *     for {@link Segment#handleIn} of its second segment are calculated
    * @param to the destination point of the newly added curve
+   * @return this path itself, so calls can be chained
+   * @chainable
    */
   abstract cubicCurveTo(
     handle1: PointLike,
     handle2: PointLike,
     to: PointLike
-  ): void
+  ): this
 
   /**
    * Adds a quadratic bezier curve to the path, from the last segment to the
@@ -1068,8 +1093,10 @@ export abstract class PathItem extends Item {
    *     first segment and {@link Segment#handleIn} of its second segment are
    *     calculated
    * @param to the destination point of the newly added curve
+   * @return this path itself, so calls can be chained
+   * @chainable
    */
-  abstract quadraticCurveTo(handle: PointLike, to: PointLike): void
+  abstract quadraticCurveTo(handle: PointLike, to: PointLike): this
 
   /**
    * Closes the path. When closed, Paper.js connects the first and last
@@ -1080,8 +1107,10 @@ export abstract class PathItem extends Item {
    * @param [tolerance=0] the tolerance with which to decide if the first
    *     and last segments are to be considered the same location
    * @see Path#closed
+   * @return this path itself, so calls can be chained
+   * @chainable
    */
-  abstract closePath(tolerance?: number): void
+  abstract closePath(tolerance?: number): this
 
   /**
    * {@grouptitle Relative Drawing Commands}
@@ -1092,8 +1121,10 @@ export abstract class PathItem extends Item {
    *
    * @param to the vector describing the position of the new path's first
    *     segment, relative to the last segment of the current path
+   * @return this path itself, so calls can be chained
+   * @chainable
    */
-  abstract moveBy(to: PointLike | number, y?: number): void
+  abstract moveBy(to: PointLike | number, y?: number): this
 
   /**
    * Adds a straight curve to the path, from the last segment in the path
@@ -1101,6 +1132,8 @@ export abstract class PathItem extends Item {
    *
    * @param point the vector describing the destination of the newly
    *     added straight curve
+   * @return this path itself, so calls can be chained
+   * @chainable
    *
    * @example {@paperscript}
    * var path = new Path();
@@ -1143,7 +1176,7 @@ export abstract class PathItem extends Item {
    * // the construction of the path:
    * // path.selected = true;
    */
-  abstract lineBy(point: PointLike | number, y?: number): void
+  abstract lineBy(point: PointLike | number, y?: number): this
 
   /**
    * Adds an arc from the position of the last segment in the path, passing
@@ -1153,8 +1186,10 @@ export abstract class PathItem extends Item {
    *
    * @param through the vector where the arc should pass through
    * @param to the vector where the arc should end
+   * @return this path itself, so calls can be chained
+   * @chainable
    */
-  abstract arcBy(through: PointLike, to: PointLike): void
+  abstract arcBy(through: PointLike, to: PointLike): this
   /**
    * Adds an arc from the position of the last segment in the path to the `to`
    * vector specified relatively to it, by adding one or more segments to the
@@ -1163,8 +1198,10 @@ export abstract class PathItem extends Item {
    * @param to the vector where the arc should end
    * @param clockwise specifies whether the arc should be
    *     drawn in clockwise direction
+   * @return this path itself, so calls can be chained
+   * @chainable
    */
-  abstract arcBy(to: PointLike, clockwise?: boolean): void
+  abstract arcBy(to: PointLike, clockwise?: boolean): this
 
   /**
    * Adds a curve from the last segment in the path through the specified
@@ -1175,8 +1212,10 @@ export abstract class PathItem extends Item {
    * @param to the destination vector of the newly added curve
    * @param time the curve-time parameter at which the
    *     `through` point is to be located
+   * @return this path itself, so calls can be chained
+   * @chainable
    */
-  abstract curveBy(through: PointLike, to: PointLike, time?: number): void
+  abstract curveBy(through: PointLike, to: PointLike, time?: number): this
 
   /**
    * Adds a cubic bezier curve to the path, from the last segment to the
@@ -1188,12 +1227,14 @@ export abstract class PathItem extends Item {
    * @param handle2 the location of the second handle of the newly
    *     added curve
    * @param to the destination point of the newly added curve
+   * @return this path itself, so calls can be chained
+   * @chainable
    */
   abstract cubicCurveBy(
     handle1: PointLike,
     handle2: PointLike,
     to: PointLike
-  ): void
+  ): this
 
   /**
    * Adds a quadratic bezier curve to the path, from the last segment to the
@@ -1208,8 +1249,10 @@ export abstract class PathItem extends Item {
    *     cubic curve's first segment and {@link Segment#handleIn} of its
    *     second segment are calculated
    * @param to the destination point of the newly added curve
+   * @return this path itself, so calls can be chained
+   * @chainable
    */
-  abstract quadraticCurveBy(handle: PointLike, to: PointLike): void
+  abstract quadraticCurveBy(handle: PointLike, to: PointLike): this
 
   // The graph of a boolean operation, to check its planarity in the tests:
   static _createGraph(path1: PathItem, path2?: PathItem): Graph {
