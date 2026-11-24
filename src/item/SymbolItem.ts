@@ -16,6 +16,7 @@ import {
   Item,
   SymbolDefinition,
   clone,
+  drawItem,
   withInheritedStyle
 } from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
@@ -166,7 +167,8 @@ export class SymbolItem extends Item {
     // them set its global matrix (#1684). Its content takes the values that
     // it leaves unset from this item's style, see Style#_get():
     withInheritedStyle(this._style, () =>
-      this._definition._item.draw(
+      drawItem(
+        this._definition._item,
         ctx,
         Object.assign(Object.create(param), { updateMatrix: false })
       )

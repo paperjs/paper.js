@@ -62,6 +62,7 @@ import {
   inject,
   isPlainObject,
   isZero,
+  paintItem,
   paper,
   push,
   removeNamed,
@@ -2392,7 +2393,7 @@ export class Path extends PathItem {
       }
     }
     if (!dontPaint) {
-      this._paint(ctx, param, viewMatrix, strokeMatrix)
+      paintItem(this, ctx, param, viewMatrix, strokeMatrix)
     }
   }
 

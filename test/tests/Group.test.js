@@ -389,13 +389,13 @@ describe('Group', () => {
     }
 
     // The buffer only shows in how often the items in it are drawn, so count
-    // the calls of the item's draw():
+    // the calls of the item's _draw() hook:
     function countDraws(item) {
       const counter = { count: 0 }
-      const { draw } = item
-      item.draw = function (...args) {
+      const { _draw } = item
+      item._draw = function (...args) {
         counter.count++
-        return draw.apply(this, args)
+        return _draw.apply(this, args)
       }
       return counter
     }

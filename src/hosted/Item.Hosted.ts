@@ -35,6 +35,7 @@ import {
   SymbolItem,
   TextItem,
   addNamed,
+  drawSelection,
   getClass,
   getUID,
   importJSON,
@@ -811,7 +812,7 @@ inject(Project.prototype, {
           // Mark the item as drawn, for its selection:
           item._updateVersion = updateVersion
           const globalMatrix = parentMatrix.appended(item._matrix)
-          // Clip items only clip, see Item#draw():
+          // Clip items only clip, see drawItem():
           if (!item._clipMask && item.responds('draw')) {
             const viewMatrix = matrix.appended(globalMatrix)
             ctx.save()
@@ -847,7 +848,7 @@ inject(Project.prototype, {
       for (const item of Object.values(items)) {
         // Others would load their content just to draw nothing:
         if (item.responds('drawselection')) {
-          item._drawSelection(ctx, matrix, size, items, updateVersion, true)
+          drawSelection(item, ctx, matrix, size, items, updateVersion, true)
         }
       }
       ctx.restore()
