@@ -14,6 +14,9 @@ from [http://paperjs.org/download/](http://paperjs.org/download/)
   and [`prebuilt/dist`](https://github.com/paperjs/paper.js/tree/prebuilt/dist)
   branches.
 
+Upgrading from Paper.js 0.17? [MIGRATION.md](MIGRATION.md) lists the changes in
+1.0 that can break existing code, and what to write instead.
+
 ## Installing Paper.js
 
 The recommended way to install and maintain Paper.js as a dependency in your
@@ -73,13 +76,15 @@ The package has these entries:
 
 ### Script Files
 
-For `<script>` tags, the package also comes with two script files, in minified
-and normal variants, which set the global `paper`:
+For `<script>` tags, the package also comes with three script files, in
+minified and normal variants, which set the global `paper`:
 
 - `dist/paper-full.js` – The full version, including PaperScript and Acorn.js
 - `dist/paper-core.js` – The core version, without PaperScript and Acorn.js.
   You can use this to shave off some bytes and compilation time when working
   with JavaScript directly.
+- `dist/paper-hosted.js` – The full version with hosted projects, for hosts
+  that keep their own document, see `Project#host`.
 
 ### Installing Node.js and NPM
 

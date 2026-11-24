@@ -45,8 +45,7 @@
   `bounds` and `strokeBounds` properties return linked ones, as before.
 - `Item#replaceWith()` returns a boolean instead of the item, and
   `Matrix#isInvertible()` a boolean instead of the determinant.
-- `PathItem#getInteriorPoint()` becomes the `interiorPoint` property, and
-  `Raster#getElement()` the `element` property.
+- `Raster#getElement()` becomes the `element` property.
 - PaperScript code is parsed as a module, so strict-mode errors apply at parse
   time, e.g. for `with` and legacy octals. Scripts with `src` load through
   `fetch`, asynchronously, and `PaperScope#execute()` moves to the
