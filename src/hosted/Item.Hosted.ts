@@ -35,7 +35,9 @@ import {
   SymbolItem,
   TextItem,
   addNamed,
+  clearBoundsCache,
   drawSelection,
+  getBoundsCacheKey,
   getClass,
   getUID,
   importJSON,
@@ -380,13 +382,13 @@ inject(Item.prototype, {
     ]) {
       const options = { stroke, handle }
       const rect = this._getHostBounds(options)
-      bounds[this._getBoundsCacheKey(options, true)] = {
+      bounds[getBoundsCacheKey(options, true)] = {
         rect,
         nonscaling,
         internal: true
       }
       if (isIdentity) {
-        bounds[this._getBoundsCacheKey(options, false)] = {
+        bounds[getBoundsCacheKey(options, false)] = {
           rect: rect.clone(),
           nonscaling,
           internal: false
@@ -884,9 +886,9 @@ inject(Project.prototype, {
             item.name = names[i] || null
           }
           if (item._parent) {
-            Item._clearBoundsCache(item._parent)
+            clearBoundsCache(item._parent)
           }
-          Item._clearBoundsCache(item)
+          clearBoundsCache(item)
           setRecord(item, columns, i)
           item._globalMatrix = item._position = undefined
           this._updateSelection(item)
