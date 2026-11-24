@@ -55,10 +55,11 @@ export function createRectangle(arg0: any, arg1?: any): Path {
   const [rect, props] = readRectangle(object)
   const radius = corner && Size.from(corner)
   // From the top left, as SVG converts rectangles, so dashes match (#601):
-  const tl = rect._getTopLeft(true)
-  const tr = rect._getTopRight(true)
-  const br = rect._getBottomRight(true)
-  const bl = rect._getBottomLeft(true)
+  const { left, top, right, bottom, width, height } = rect
+  const tl = new Point(left, top)
+  const tr = new Point(right, top)
+  const br = new Point(right, bottom)
+  const bl = new Point(left, bottom)
   let segments: Segment[]
   if (!radius || radius.isZero()) {
     segments = [
@@ -70,7 +71,7 @@ export function createRectangle(arg0: any, arg1?: any): Path {
   } else {
     const { width: rx, height: ry } = Size.min(
       radius,
-      rect._getSize(true).divide(2)
+      new Size(width / 2, height / 2)
     )
     const hx = rx * KAPPA
     const hy = ry * KAPPA

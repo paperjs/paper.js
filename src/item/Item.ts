@@ -831,27 +831,16 @@ export class Item extends Emitter {
    * circle.position.x += 100;
    */
   get position(): Point {
-    return this._getPosition()
+    // Cache the position, but return linked copies of it, as one that changes
+    // holds its new values already when it calls the setter, which measures
+    // the distance to the cached one:
+    const { x, y } = (this._position ??= this._getPositionFromBounds())
+    return new LinkedPoint(x, y, this, 'position')
   }
 
   set position(point: PointLike) {
-    // Calculate the distance to the current position, by which to
-    // translate the item. Pass true for _dontLink, as we do not need a
-    // LinkedPoint to simply calculate this distance.
-    this.translate(Point.from(point).subtract(this._getPosition(true)))
-  }
-
-  _getPosition(_dontLink?: boolean): Point {
-    // Cache position value.
-    // Do not cache LinkedPoints directly, since we would not be able to
-    // use them to calculate the difference in the position setter, as when
-    // it is modified, it would hold new values already and only then cause
-    // the calling of the setter.
-    const { x, y } = (this._position ??= this._getPositionFromBounds())
-    // Pass true for _dontLink in getCenter(), so receive back a normal point
-    return _dontLink
-      ? new Point(x, y)
-      : new LinkedPoint(x, y, this, 'position')
+    // Translate the item by the distance to the current position:
+    this.translate(Point.from(point).subtract(this.position))
   }
 
   /**
@@ -864,11 +853,14 @@ export class Item extends Emitter {
    * @private
    */
   _getPositionFromBounds(bounds?: Rectangle): Point {
-    // If an pivot point is provided, use it to determine position
-    // based on the matrix. Otherwise use the center of the bounds.
-    return this._pivot
-      ? this._matrix._transformPoint(this._pivot)
-      : (bounds ?? this.getBounds())._getCenter(true)
+    // Use the pivot point to determine the position based on the matrix, or
+    // else the center of the bounds:
+    if (this._pivot) {
+      return this._matrix._transformPoint(this._pivot)
+    } else {
+      const { centerX, centerY } = bounds ?? this.getBounds()
+      return new Point(centerX, centerY)
+    }
   }
 
   /**
@@ -1203,7 +1195,7 @@ export class Item extends Emitter {
         matrix.scale(value.x, value.y)
         this._matrix.set(matrix)
       } else {
-        const center = this._getPosition(true)
+        const center = this.position
         matrix.translate(center)
         if (rotation) {
           matrix.rotate(rotation)
@@ -3664,7 +3656,7 @@ export class Item extends Emitter {
         [key](value: any, ver?: any, center?: any) {
           // scale(), shear() and skew() also take the two factors as numbers:
           const hasVer = key !== 'rotate' && typeof ver === 'number'
-          const origin = (hasVer ? center : ver) ?? this._getPosition(true)
+          const origin = (hasVer ? center : ver) ?? this.position
           const matrix = new Matrix()
           return this.transform(
             hasVer

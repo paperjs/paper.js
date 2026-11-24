@@ -296,8 +296,13 @@ export function drawItem(
     prevOffset = param.offset
     // Floor the offset and ceil the size, so we don't cut off any
     // antialiased pixels when drawing onto the temporary canvas.
-    itemOffset = param.offset = bounds._getTopLeft(true).floor()
-    itemSize = bounds.size.ceil().add(1).multiply(pixelRatio).floor()
+    const { left, top, width, height } = bounds
+    itemOffset = param.offset = new Point(left, top).floor()
+    itemSize = new Size(width, height)
+      .ceil()
+      .add(1)
+      .multiply(pixelRatio)
+      .floor()
     // Set ctx to the context of the temporary canvas, so we draw onto
     // it, instead of the mainCtx. It may be larger than itemSize,
     // since only that part of it is composited:
@@ -559,7 +564,7 @@ export function drawSelection(
     if (positionSelected) {
       // Convert position from the parent's coordinates system to the
       // global one:
-      const position = item._getPosition(true)
+      const { position } = item
       const parent = item._parent
       const { x, y } = parent?.localToGlobal(position) ?? position
       ctx.beginPath()

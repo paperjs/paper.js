@@ -12,7 +12,6 @@
 
 import { ItemSelection } from '../constants.ts'
 import { inject, isPlainObject } from '../util/object.ts'
-import { capitalize } from '../util/string.ts'
 import { Formatter } from '../util/Formatter.ts'
 import { Base } from '../core/Base.ts'
 import { registerClasses } from '../core/serialization.ts'
@@ -279,7 +278,7 @@ export class Rectangle extends Base {
    * rectangle, unlike {@link #topLeft}.
    */
   get point(): Point {
-    return this._getPoint()
+    return new LinkedPoint(this.x, this.y, this, 'point')
   }
 
   set point(point: PointLike) {
@@ -288,29 +287,17 @@ export class Rectangle extends Base {
     this.y = y
   }
 
-  _getPoint(_dontLink?: boolean): Point {
-    return _dontLink
-      ? new Point(this.x, this.y)
-      : new LinkedPoint(this.x, this.y, this, 'point')
-  }
-
   /**
    * The size of the rectangle
    */
   get size(): Size {
-    return this._getSize()
+    return new LinkedSize(this.width, this.height, this, 'size')
   }
 
   set size(size: SizeLike) {
     const { width, height } = Size.from(size)
     this.width = width
     this.height = height
-  }
-
-  _getSize(_dontLink?: boolean): Size {
-    return _dontLink
-      ? new Size(this.width, this.height)
-      : new LinkedSize(this.width, this.height, this, 'size')
   }
 
   /**
@@ -399,19 +386,13 @@ export class Rectangle extends Base {
    * The center point of the rectangle. Setting it moves the whole rectangle.
    */
   get center(): Point {
-    return this._getCenter()
+    return new LinkedPoint(this.centerX, this.centerY, this, 'center')
   }
 
   set center(point: PointLike) {
     const { x, y } = Point.from(point)
     this.centerX = x
     this.centerY = y
-  }
-
-  _getCenter(_dontLink?: boolean): Point {
-    return _dontLink
-      ? new Point(this.centerX, this.centerY)
-      : new LinkedPoint(this.centerX, this.centerY, this, 'center')
   }
 
   /**
@@ -760,13 +741,15 @@ export class Rectangle extends Base {
     arg2?: PointLike
   ): Rectangle {
     const hasVer = typeof arg1 === 'number'
-    const scale = Point.from(arg0, hasVer ? arg1 : undefined)
-    const center = Point.from((hasVer ? arg2 : arg1) ?? this._getCenter(true))
+    const { x: sx, y: sy } = Point.from(arg0, hasVer ? arg1 : undefined)
+    const center = (hasVer ? arg2 : arg1) ?? [this.centerX, this.centerY]
+    const { x: cx, y: cy } = Point.from(center)
+    const { left, top, right, bottom } = this
     // Scale the corners from the center, which also normalizes the
     // rectangle for negative amounts:
     return new Rectangle(
-      this._getTopLeft(true).subtract(center).multiply(scale).add(center),
-      this._getBottomRight(true).subtract(center).multiply(scale).add(center)
+      new Point((left - cx) * sx + cx, (top - cy) * sy + cy),
+      new Point((right - cx) * sx + cx, (bottom - cy) * sy + cy)
     )
   }
 
@@ -794,7 +777,7 @@ export class Rectangle extends Base {
   static {
     registerClasses({ Rectangle: this })
     // Inject the corners and the centers of the sides from their x and y
-    // parts, as accessors and as _get…(_dontLink) methods:
+    // parts, as accessors:
     const corners = {
       topLeft: ['left', 'top'],
       topRight: ['right', 'top'],
@@ -806,15 +789,9 @@ export class Rectangle extends Base {
       bottomCenter: ['centerX', 'bottom']
     }
     for (const [key, [keyX, keyY]] of Object.entries(corners)) {
-      const getter = `_get${capitalize(key)}`
       inject(this.prototype, {
-        [getter](_dontLink?: boolean) {
-          return _dontLink
-            ? new Point(this[keyX], this[keyY])
-            : new LinkedPoint(this[keyX], this[keyY], this, key)
-        },
         get [key]() {
-          return this[getter]()
+          return new LinkedPoint(this[keyX], this[keyY], this, key)
         },
         set [key](point: PointLike) {
           const { x, y } = Point.from(point)
@@ -914,15 +891,6 @@ export interface Rectangle {
    * path.bounds.selected = true;
    */
   selected: boolean
-
-  _getTopLeft(_dontLink?: boolean): Point
-  _getTopRight(_dontLink?: boolean): Point
-  _getBottomLeft(_dontLink?: boolean): Point
-  _getBottomRight(_dontLink?: boolean): Point
-  _getLeftCenter(_dontLink?: boolean): Point
-  _getTopCenter(_dontLink?: boolean): Point
-  _getRightCenter(_dontLink?: boolean): Point
-  _getBottomCenter(_dontLink?: boolean): Point
 }
 
 /**
@@ -1221,9 +1189,10 @@ export function readEllipse(object: Record<string, any>): {
     return { center: Point.from(center), radius: Size.from(radius), props }
   } else {
     const [rect, props] = readRectangle(object)
+    const { centerX, centerY, width, height } = rect
     return {
-      center: rect._getCenter(true),
-      radius: rect._getSize(true).divide(2),
+      center: new Point(centerX, centerY),
+      radius: new Size(width / 2, height / 2),
       props
     }
   }
