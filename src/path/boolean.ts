@@ -33,12 +33,10 @@ import {
   Item,
   Path,
   Point,
-  booleanOperators,
+  getFeature,
   getScope,
   getStrokeProfilePart,
-  setStrokeProfileRuns,
-  splitGraph,
-  traceGraph
+  setStrokeProfileRuns
 } from '../internal.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'
 import type { Operator } from '../boolean/graph.ts'
@@ -161,6 +159,7 @@ export function tracePaths(operands: PathItem[], operator: Operator): Path[] {
     })
   }
 
+  const { traceGraph } = getFeature('boolean')
   const paths: Path[] = []
   for (const traced of traceGraph(operands.map(getRegion), operator)) {
     const path = new Path(Item.NO_INSERT)
@@ -237,6 +236,7 @@ export function traceBoolean(
   ) {
     return splitBoolean(path1, path2, operation, options)
   }
+  const { booleanOperators } = getFeature('boolean')
   // We do not modify the operands themselves, but trace copies of them.
   // NOTE: The result paths might not belong to the same type i.e.
   // subtract(A:Path, B:Path):CompoundPath etc.
@@ -319,6 +319,7 @@ export function splitBoolean(
   const sources = getPaths(_path1)
   const parts: Record<number, ProfilePart> = {}
   const paths: Path[] = []
+  const { splitGraph } = getFeature('boolean')
   for (const piece of splitGraph(getRegion(_path1).paths, getRegion(_path2))) {
     if (
       operation === 'divide' ||
@@ -363,7 +364,7 @@ export function reorientPaths(
     clockwise ??= paths.reduce((largest, path) =>
       abs(path.area) > abs(largest.area) ? path : largest
     ).clockwise
-    const outlines = traceGraph(
+    const outlines = getFeature('boolean').traceGraph(
       [
         {
           fillRule,

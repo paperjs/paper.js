@@ -14,10 +14,15 @@
 // classes are installed on, as `paper`.
 import * as core from './core.ts'
 import { PaperScope, getDocument, getWindow, inject } from './internal.ts'
+import { boolean } from './boolean/index.ts'
+import { offset } from './offset/index.ts'
+
+// The full library has all the features that paper/core leaves to use():
+core.use(boolean, offset)
 
 // Make the classes and namespaces properties of every scope, enumerable for
 // PaperScope#install() and PaperScript, which enumerate them:
-const { registerClasses, ...classes } = core
+const { registerClasses, use, ...classes } = core
 const members = {
   ...classes,
   get document() {

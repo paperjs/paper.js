@@ -144,6 +144,33 @@ describe('paper/boolean and paper/offset', () => {
       equals(output, [null, false, true, true])
     })
 
+    test('paper/core adds booleans and offsetting through use()', async () => {
+      const output = await runProcess(`
+        const { Path, Project, use } = await import('${getURL('core.ts')}')
+        const { boolean } = await import('${getURL('boolean/index.ts')}')
+        const { offset } = await import('${getURL('offset/index.ts')}')
+        new Project()
+        const a = Path.rectangle({ point: [0, 0], size: [10, 10] })
+        const b = Path.rectangle({ point: [5, 0], size: [10, 10] })
+        const getError = callback => {
+          try {
+            callback()
+          } catch (error) {
+            return error.message
+          }
+        }
+        const errors = [getError(() => a.unite(b)), getError(() => a.offset(1))]
+        use(boolean, offset)
+        console.log(JSON.stringify([...errors, a.unite(b).area, a.offset(1).area]))
+      `)
+      equals(output, [
+        `Unable to use boolean without use(boolean) from 'paper/boolean'.`,
+        `Unable to use offset without use(offset) from 'paper/offset'.`,
+        150,
+        144
+      ])
+    })
+
     test('Only the script files run the PaperScripts of the page', async () => {
       const output = await runProcess(`
         const { default: paper } = await import('${getURL('node/index.ts')}')
