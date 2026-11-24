@@ -24,6 +24,7 @@ import paper, {
   Shape,
   Size,
   Tool,
+  ToolEvent,
   View
 } from 'paper'
 import {
@@ -371,6 +372,54 @@ describe('View', () => {
       message = e.message
     }
     equals(message, `Unknown mouse event type: 'mousedrag'.`)
+    tool.remove()
+  })
+
+  test('view.dispatchMouseEvent() with the details of the pointer', () => {
+    const tool = new Tool()
+    const log = []
+    paper.view.onMouseDown =
+      paper.view.onMouseMove =
+      paper.view.onMouseDrag =
+      paper.view.onMouseUp =
+      tool.onMouseDrag =
+        event => {
+          log.push(
+            [
+              event instanceof ToolEvent ? 'tool' : 'view',
+              event.type,
+              event.button,
+              event.buttons,
+              event.pointerType,
+              event.pressure
+            ].join(' ')
+          )
+        }
+    // The main button of a mouse by default, down from press to release:
+    paper.view.dispatchMouseEvent('mousemove', [10, 10])
+    paper.view.dispatchMouseEvent('mousedown', [10, 10])
+    paper.view.dispatchMouseEvent('mousemove', [20, 20])
+    paper.view.dispatchMouseEvent('mouseup', [20, 20])
+    // Or as the host says:
+    paper.view.dispatchMouseEvent('mousedown', [20, 20], {
+      button: 2,
+      buttons: 2,
+      pointerType: 'pen',
+      pressure: 0.8
+    })
+    paper.view.dispatchMouseEvent('mouseup', [20, 20], {
+      button: 2,
+      pointerType: 'pen'
+    })
+    equals(log, [
+      'view mousemove 0 0 mouse 0',
+      'view mousedown 0 1 mouse 0.5',
+      'view mousedrag 0 1 mouse 0.5',
+      'tool mousedrag 0 1 mouse 0.5',
+      'view mouseup 0 0 mouse 0',
+      'view mousedown 2 2 pen 0.8',
+      'view mouseup 2 0 pen 0'
+    ])
     tool.remove()
   })
 

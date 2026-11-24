@@ -23,6 +23,8 @@ import type { Item } from '../item/Item.ts'
  * to these functions and contains information about the mouse event.
  */
 export class MouseEvent extends Event {
+  declare event: PointerEvent
+
   /**
    * The type of mouse event.
    *
@@ -57,7 +59,7 @@ export class MouseEvent extends Event {
 
   constructor(
     type: string,
-    event: globalThis.Event,
+    event: PointerEvent,
     point: Point,
     target: Item,
     delta?: Point
@@ -67,6 +69,42 @@ export class MouseEvent extends Event {
     this.point = point
     this.target = target
     this.delta = delta
+  }
+
+  /**
+   * The button that the event is about: `0` for the main button, usually
+   * the left one, `1` for the middle and `2` for the secondary one, and
+   * `-1` for moves, during which no button changes.
+   */
+  get button(): number {
+    return this.event.button
+  }
+
+  /**
+   * The buttons that are down during the event, as the sum of `1` for the
+   * main button, `2` for the secondary and `4` for the middle one.
+   * Touches and pens in contact count as the main button.
+   */
+  get buttons(): number {
+    return this.event.buttons
+  }
+
+  /**
+   * The kind of pointer that caused the event.
+   *
+   * @values 'mouse', 'touch', 'pen'
+   */
+  get pointerType(): string {
+    return this.event.pointerType
+  }
+
+  /**
+   * The pressure of the pointer, between `0` and `1`. Pointers that
+   * don't measure it report `0.5` while a button is down or they are in
+   * contact, and `0` otherwise.
+   */
+  get pressure(): number {
+    return this.event.pressure
   }
 
   /**

@@ -866,7 +866,15 @@ export class View extends Emitter {
    *
    * @option [options.modifiers] {Object} the state of the modifier keys,
    *     see {@link Key.modifiers}
-   * @option [options.button=0] {Number} the mouse button
+   * @option [options.button=0] {Number} the mouse button, see
+   *     {@link MouseEvent#button}
+   * @option [options.buttons] {Number} the buttons that are down, see
+   *     {@link MouseEvent#buttons}. By default, the main button from
+   *     mousedown to mouseup
+   * @option [options.pointerType='mouse'] {String} the kind of pointer:
+   *     {@values 'mouse', 'touch', 'pen'}
+   * @option [options.pressure] {Number} the pressure of the pointer, see
+   *     {@link MouseEvent#pressure}
    * @option [options.time=Date.now() / 1000] {Number} the time of the
    *     event in seconds, see {@link Event#time}
    *
@@ -879,7 +887,7 @@ export class View extends Emitter {
   dispatchMouseEvent(
     type: string,
     point: PointLike,
-    options?: DispatchOptions & { button?: number }
+    options?: DispatchOptions & PointerOptions
   ): boolean {
     if (!/^mouse(down|move|up)$/.test(type)) {
       throw new Error(`Unknown mouse event type: '${type}'.`)
@@ -1635,6 +1643,13 @@ type DispatchOptions = {
   time?: number
 }
 
+type PointerOptions = {
+  button?: number
+  buttons?: number
+  pointerType?: string
+  pressure?: number
+}
+
 // Native event handling, coordinate conversion, focus handling and
 // delegation to view and tool objects. The handling is shared by the DOM
 // events in the browser, and #dispatchMouseEvent() and #dispatchKeyEvent()
@@ -1838,7 +1853,7 @@ function emitMouseEvent(
   obj: View | Item,
   target: View | Item,
   type: string,
-  event: Event,
+  event: PointerEvent,
   point: Point,
   prevPoint?: Point,
   stopItem?: Item
@@ -1892,7 +1907,7 @@ function emitMouseEvents(
   view: View,
   hitItem: Item,
   type: string,
-  event: Event,
+  event: PointerEvent,
   point: Point,
   prevPoint: Point
 ): boolean {
@@ -1944,22 +1959,28 @@ function emitMouseEvents(
 // Stands in for the DOM event in #dispatchMouseEvent() and
 // #dispatchKeyEvent(), with what the handling reads from it. Hosts can
 // pass the state of the modifier keys, see Key.modifiers:
-function createEvent(
-  type: string,
-  options: DispatchOptions & { button?: number }
-) {
+function createEvent(type: string, options: DispatchOptions & PointerOptions) {
   if (options.modifiers) {
     Object.assign(Key.modifiers, options.modifiers)
   }
+  // The main button is down from the press to the release, as the DOM's
+  // pointer events report it:
+  const buttons = (
+    options.buttons ??
+    (type === 'mousedown' || type === 'mousemove' && dragging ? 1 : 0)
+  )
   return {
     type,
     timeStamp: options.time != null ? options.time * 1000 : Date.now(),
     button: options.button || 0,
+    buttons,
+    pointerType: options.pointerType || 'mouse',
+    pressure: options.pressure ?? (buttons ? 0.5 : 0),
     cancelable: true,
     defaultPrevented: false,
     preventDefault() {
       this.defaultPrevented = true
     },
     stopPropagation() {}
-  } as unknown as Event
+  } as unknown as PointerEvent
 }
