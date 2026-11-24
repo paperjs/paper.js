@@ -1738,7 +1738,7 @@ export class Path extends PathItem {
   }
 
   // NOTE: Documentation is in PathItem#reverse()
-  reverse() {
+  reverse(): this {
     this._segments.reverse()
     // Reverse the handles:
     for (let i = 0, l = this._segments.length; i < l; i++) {
@@ -1752,10 +1752,11 @@ export class Path extends PathItem {
     this._curves = null
     this._strokeProfile?.reverse()
     this._changed(Change.GEOMETRY)
+    return this
   }
 
   // NOTE: Documentation is in PathItem#flatten()
-  flatten(flatness?: number) {
+  flatten(flatness?: number): this {
     // Use PathFlattener to subdivide the curves into parts that are flat
     // enough, as specified by `flatness` / isFlatCurve():
     const flattener = new PathFlattener(this, flatness || 0.25, 256, true)
@@ -1770,6 +1771,7 @@ export class Path extends PathItem {
       segments.push(new Segment(parts[length - 1].curve.slice(6)))
     }
     this.segments = segments
+    return this
   }
 
   // NOTE: Documentation is in PathItem#simplify()
@@ -1821,7 +1823,7 @@ export class Path extends PathItem {
   }
 
   // NOTE: Documentation is in PathItem#smooth()
-  smooth(options?: any) {
+  smooth(options?: any): this {
     let i: number
     let j: number
     let max: number
@@ -1862,7 +1864,7 @@ export class Path extends PathItem {
       }
       // Set up the knots array now, taking the paddings into account.
       n += paddingLeft + paddingRight
-      if (n <= 1) return
+      if (n <= 1) return this
       for (i = 0, j = from - paddingLeft; i <= n; i++, j++) {
         knots[i] = segments[(j < 0 ? j + length : j) % length]._point
       }
@@ -1948,6 +1950,7 @@ export class Path extends PathItem {
         )
       }
     }
+    return this
   }
 
   // Resolve the `from` and `to` options of #smooth() and #simplify() to
@@ -2419,7 +2422,7 @@ export class Path extends PathItem {
   // are considered abstract methods of PathItem and need to be defined in
   // all implementing classes.
 
-  moveTo(point: PointLike | number, y?: number) {
+  moveTo(point: PointLike | number, y?: number): this {
     // moveTo should only be called at the beginning of paths. But it
     // can ce called again if there is nothing drawn yet, in which case
     // the first segment gets readjusted.
@@ -2432,18 +2435,20 @@ export class Path extends PathItem {
     if (!segments.length) {
       this._add([new Segment(Point.from(point, y))])
     }
+    return this
   }
 
   moveBy(/* point, y */): never {
     throw new Error('moveBy() is unsupported on Path items.')
   }
 
-  lineTo(point: PointLike | number, y?: number) {
+  lineTo(point: PointLike | number, y?: number): this {
     // Let's not be picky about calling moveTo() first:
     this._add([new Segment(Point.from(point, y))])
+    return this
   }
 
-  cubicCurveTo(handle1: PointLike, handle2: PointLike, to: PointLike) {
+  cubicCurveTo(handle1: PointLike, handle2: PointLike, to: PointLike): this {
     const end = Point.from(to)
     // First modify the current segment:
     const current = getCurrentSegment(this)
@@ -2451,9 +2456,10 @@ export class Path extends PathItem {
     current.handleOut = Point.from(handle1).subtract(current._point)
     // And add the new segment, with handleIn set to c2
     this._add([new Segment(end, Point.from(handle2).subtract(end))])
+    return this
   }
 
-  quadraticCurveTo(handle: PointLike, to: PointLike) {
+  quadraticCurveTo(handle: PointLike, to: PointLike): this {
     const control = Point.from(handle)
     const end = Point.from(to)
     const current = getCurrentSegment(this)._point
@@ -2467,9 +2473,10 @@ export class Path extends PathItem {
       control.add(end.subtract(control).multiply(1 / 3)),
       end
     )
+    return this
   }
 
-  curveTo(through: PointLike, to: PointLike, time = 0.5) {
+  curveTo(through: PointLike, to: PointLike, time = 0.5): this {
     const end = Point.from(to)
     const t = time
     const t1 = 1 - t
@@ -2484,6 +2491,7 @@ export class Path extends PathItem {
       throw new Error(`Cannot put a curve through points with parameter = ${t}`)
     }
     this.quadraticCurveTo(handle, end)
+    return this
   }
 
   arcTo(
@@ -2492,7 +2500,7 @@ export class Path extends PathItem {
     rotation?: number,
     clockwise?: boolean | number,
     large?: boolean | number
-  ) {
+  ): this {
     const from = getCurrentSegment(this)._point
     const end = Point.from(to)
     // See if the second argument is clockwise, with true as the default:
@@ -2518,14 +2526,16 @@ export class Path extends PathItem {
         getEllipticArc(from, end, radius, rotation, !!clockwise, !!large)
       )
     }
+    return this
   }
 
-  arcAround(center: PointLike, angle: number) {
+  arcAround(center: PointLike, angle: number): this {
     const from = getCurrentSegment(this)._point
     addArc(this, getArcAround(from, Point.from(center), angle))
+    return this
   }
 
-  arcTowards(point: PointLike | number, y?: number) {
+  arcTowards(point: PointLike | number, y?: number): this {
     const current = getCurrentSegment(this)
     const { previous } = current
     const tangent = previous
@@ -2535,34 +2545,39 @@ export class Path extends PathItem {
       this,
       getArcTowards(current._point, tangent, Point.from(point, y))
     )
+    return this
   }
 
-  lineBy(point: PointLike | number, y?: number) {
+  lineBy(point: PointLike | number, y?: number): this {
     const current = getCurrentSegment(this)._point
     this.lineTo(current.add(Point.from(point, y)))
+    return this
   }
 
-  curveBy(through: PointLike, to: PointLike, time?: number) {
+  curveBy(through: PointLike, to: PointLike, time?: number): this {
     const current = getCurrentSegment(this)._point
     this.curveTo(current.add(through), current.add(to), time)
+    return this
   }
 
-  cubicCurveBy(handle1: PointLike, handle2: PointLike, to: PointLike) {
+  cubicCurveBy(handle1: PointLike, handle2: PointLike, to: PointLike): this {
     const current = getCurrentSegment(this)._point
     this.cubicCurveTo(
       current.add(handle1),
       current.add(handle2),
       current.add(to)
     )
+    return this
   }
 
-  quadraticCurveBy(handle: PointLike, to: PointLike) {
+  quadraticCurveBy(handle: PointLike, to: PointLike): this {
     const current = getCurrentSegment(this)._point
     this.quadraticCurveTo(current.add(handle), current.add(to))
+    return this
   }
 
   // TODO: Implement version for: (to, radius, rotation, clockwise, large)
-  arcBy(point: PointLike, arg?: boolean | PointLike) {
+  arcBy(point: PointLike, arg?: boolean | PointLike): this {
     const current = getCurrentSegment(this)._point
     const to = current.add(point)
     // See if the second argument is clockwise, with true as the default:
@@ -2572,11 +2587,13 @@ export class Path extends PathItem {
     } else {
       this.arcTo(to, current.add(direction))
     }
+    return this
   }
 
-  closePath(tolerance?: number) {
+  closePath(tolerance?: number): this {
     this.closed = true
     this.join(this, tolerance)
+    return this
   }
 
   _getBounds(matrix: Matrix, options: any): Rectangle {
