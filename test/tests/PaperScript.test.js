@@ -163,6 +163,26 @@ describe('PaperScript', () => {
     )
   })
 
+  if (isNodeContext) {
+    test('PaperScript in the first line of the page', () => {
+      // Inline code that no line break precedes in the page, as in minified
+      // pages. The browser's test page has line breaks before its body:
+      const source = 'var a = 1;'
+      document.body.innerHTML = `<script type="text/paperscript">${
+        source
+      }</script>`
+      try {
+        const { code } = PaperScript.compile(source, {
+          url: window.location.href,
+          sourceMaps: 'inline'
+        })
+        equals(/sourceMappingURL=/.test(code), true)
+      } finally {
+        document.body.innerHTML = ''
+      }
+    })
+  }
+
   test('PaperScript with inline source maps', () => {
     const source = 'var a = 1;\nvar b = 2;',
       { code } = PaperScript.compile(source, {
