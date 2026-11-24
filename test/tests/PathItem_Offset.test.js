@@ -698,6 +698,28 @@ describe('PathItem#offset() and #outline()', () => {
       'Path',
       'sliver before a square cap'
     )
+    // Round joins are the pen's arc on the outer side of the turn, so that
+    // they don't reach beyond butt caps closer than the pen is wide:
+    const short = new Path({
+      segments: [
+        [5.2913339, 1.0973412],
+        [
+          [5.3404572, 1.0811627],
+          [-0.0161921, 0.0059179],
+          [0.0610638, -0.0223178]
+        ],
+        [5.7842314, 1.0352302]
+      ],
+      strokeWidth: 120,
+      strokeJoin: 'round',
+      strokeCap: 'butt',
+      insert: false
+    })
+    const { area } = short.outline({ insert: false })
+    short.strokeProfile = [{ offset: 0, width: 1 }]
+    equals(short.outline({ insert: false }).area, area, 'round join', {
+      tolerance: 100
+    })
   })
 
   // Outlines of stroke profiles that went wrong once, checked against the
