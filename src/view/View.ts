@@ -836,7 +836,7 @@ export class View extends Emitter {
    *     location.
    * @return the event point in project coordinates.
    */
-  getEventPoint(event: globalThis.MouseEvent | TouchEvent): Point {
+  getEventPoint(event: globalThis.MouseEvent): Point {
     const element = this._element
     let offset = getEventOffset(event, element)
     const size = getSize(element)
@@ -888,11 +888,11 @@ export class View extends Emitter {
     // Track presses and drags as the DOM events do:
     if (type === 'mousedown') {
       View._focused = this
-      mouseDown = dragging = true
+      dragging = true
     }
     this._handleMouseEvent(type, event, new Point(point), true)
     if (type === 'mouseup') {
-      mouseDown = dragging = false
+      dragging = false
     }
     return event.defaultPrevented
   }
@@ -996,19 +996,13 @@ export class View extends Emitter {
     }
     point ??= this.getEventPoint(event)
 
-    // The moves come from the whole document, so outside of drags, the
-    // pointer is only over the view when no other element covers it,
-    // such as a menu (#992). Its own element and its ancestors don't:
-    const { target } = event
-    const isCovered = (
-      nativeMove &&
-      !dragging &&
-      target?.nodeType === 1 &&
-      !target.contains(this._element)
-    )
+    // The view only receives the moves of pointers over it and of those
+    // that it captured, which are still dragging outside of it. The last
+    // one as the pointer leaves it is outside too, also where another
+    // element covers the view there, such as a menu (#992):
     const inView = (
       dispatched ||
-      !isCovered && this.bounds.contains(point)
+      event.type !== 'pointerleave' && this.bounds.contains(point)
     )
     // Run the hit-test on items first, but only if we're required
     // to do so for this given mouse event, see hitItems and
@@ -1118,10 +1112,6 @@ export class View extends Emitter {
         }
         downItem = dragItem = null
       }
-      // Clear wasInView so we're not accidentally handling mousedrag
-      // events that started outside the view as mousemove events on
-      // the view (needed to handle touch scrolling correctly).
-      wasInView = false
       handle = true
     }
     lastPoint = point
@@ -1221,7 +1211,7 @@ export class View extends Emitter {
    * @private
    */
   static _resetState() {
-    dragging = mouseDown = called = wasInView = false
+    dragging = isPrevented = called = wasInView = false
     prevFocus = tempFocus = null
     downPoint = lastPoint = null
     downItem = overItem = dragItem = clickItem = null
@@ -1662,8 +1652,9 @@ let isInstalled = false
 let viewEvents: Record<string, Listener> = {}
 let prevFocus: View
 let tempFocus: View
-let dragging = false // mousedown that started on a view.
-let mouseDown = false // mousedown anywhere.
+let dragging = false // A press that started on a view.
+// Whether that press had its default prevented, see viewEvents.touchstart():
+let isPrevented = false
 
 // Higher level event handling, hit-testing, and emitting of normal mouse
 // events along with "virtual" events such as mouseenter, mouseleave,
@@ -1727,102 +1718,92 @@ function installEvents() {
     installKeyEvents()
     const window = getWindow()
     if (window) {
-      // Touch handling inspired by Hammer.js
-      let mousedown = 'touchstart'
-      let mousemove = 'touchmove'
-      let mouseup = 'touchend touchcancel'
-      // Do not add mouse events on mobile and tablet devices
-      if (!(
-        'ontouchstart' in window &&
-        window.navigator.userAgent.match(
-          /mobile|tablet|ip(ad|hone|od)|android|silk/i
-        )
-      )) {
-        // For mixed browsers, like chrome on Windows8 touch laptop.
-        mousedown += ' mousedown'
-        mousemove += ' mousemove'
-        mouseup += ' mouseup'
-      }
-
-      // mousemove and mouseup events need to be installed on document, not
-      // the view element, since we want to catch the end of drag events even
-      // outside our view. Only the mousedown events are installed on the
-      // view, as defined by viewEvents.
+      // Pointer events cover mice, touches and pens alike. They are installed
+      // on the elements of the views, as defined by viewEvents, and only the
+      // primary pointer is handled: the mouse, a pen, or the first touch.
       viewEvents = {
-        [mousedown](event: Event) {
-          // Get the view from the event, and store a reference to the view
-          // that should receive keyboard input.
-          const view = (View._focused = getView(event))
-          if (!dragging) {
+        'pointerdown'(event: PointerEvent) {
+          if (event.isPrimary && !dragging) {
+            // Get the view from the event, and store a reference to the view
+            // that should receive keyboard input.
+            const view = (View._focused = getView(event))
             dragging = true
+            // Capture the pointer, to receive its moves and the end of the
+            // drag outside of the view too. Events that scripts dispatch
+            // have no pointer to capture:
+            if (event.isTrusted) {
+              view._element.setPointerCapture(event.pointerId)
+            }
             view._handleMouseEvent('mousedown', event)
+            isPrevented = event.defaultPrevented
+          }
+        },
+
+        'pointermove'(event: PointerEvent) {
+          if (event.isPrimary) {
+            const view = getView(event)
+            if (dragging) {
+              View._focused._handleMouseEvent('mousemove', event)
+            } else if (!event.buttons || view === View._focused) {
+              // Presses that started elsewhere don't switch views as they
+              // move over this one.
+              if (view !== View._focused) {
+                // Temporarily focus this view without making it sticky,
+                // so Key events are handled too during the mouse over.
+                prevFocus ??= View._focused
+                View._focused = tempFocus = view
+              }
+              view._handleMouseEvent('mousemove', event)
+            }
+          }
+        },
+
+        'pointerleave'(event: PointerEvent) {
+          if (event.isPrimary && !dragging) {
+            // When the pointer leaves the view, handle one last move, to
+            // give items the chance to receive a mouseleave, etc. Touches
+            // leave by ending, where they were last:
+            const view = getView(event)
+            view._handleMouseEvent(
+              'mousemove',
+              event,
+              event.pointerType === 'touch' ? lastPoint : undefined
+            )
+            if (tempFocus === view) {
+              // Clear temporary focus again and switch back to previous
+              // focus but only if it is still valid (still in the DOM).
+              View._focused = prevFocus?.isInserted() ? prevFocus : null
+              prevFocus = null
+              updateFocus()
+            }
+          }
+        },
+
+        'pointerup pointercancel'(event: PointerEvent) {
+          if (event.isPrimary && dragging) {
+            // Pointers that are cancelled, such as touches that browsers
+            // take over to scroll the page, report no position:
+            View._focused._handleMouseEvent(
+              'mouseup',
+              event,
+              event.type === 'pointercancel' ? lastPoint : undefined
+            )
+            dragging = false
+          }
+        },
+
+        // Browsers decide whether a touch scrolls the page before they send
+        // its pointer events, unless its touchstart is prevented, which
+        // comes after the pointerdown. Do so where the press was (#1930):
+        'touchstart'(event: TouchEvent) {
+          if (isPrevented && event.cancelable) {
+            event.preventDefault()
           }
         }
       }
 
       addEvents(getDocument(), {
-        // NOTE: mouseleave does not seem to work on document in IE:
-        mouseout(event: globalThis.MouseEvent) {
-          // When the moues leaves the document, fire one last mousemove
-          // event, to give items the change to receive a mouseleave, etc.
-          const view = View._focused
-          const target = event.relatedTarget as Element
-          if (view && (!target || target.nodeName === 'HTML')) {
-            handleMouseMove(view, event)
-          }
-        },
-
-        scroll: updateFocus,
-
-        [mousemove](event: Event) {
-          let view = View._focused
-          if (!mouseDown) {
-            // See if we can get the view from the current event target, and
-            // handle the mouse move over it.
-            const target = getView(event)
-            if (target) {
-              if (view !== target) {
-                // Temporarily focus this view without making it sticky,
-                // so Key events are handled too during the mouse over.
-                // As we switch view, fire one last mousemove in the old
-                // view, to let items receive receive a mouseleave, etc.
-                if (view) {
-                  handleMouseMove(view, event)
-                }
-                prevFocus ??= view
-                view = View._focused = tempFocus = target
-              }
-            } else if (tempFocus && tempFocus === view) {
-              // Clear temporary focus again and switch back to previous
-              // focus but only if it is still valid (still in the DOM).
-              if (prevFocus && !prevFocus.isInserted()) {
-                prevFocus = null
-              }
-              view = View._focused = prevFocus
-              prevFocus = null
-              updateFocus()
-            }
-          }
-          if (view) {
-            handleMouseMove(view, event)
-          }
-        },
-
-        [mousedown]() {
-          // In order to not switch views during scroll dragging on touch
-          // devices, we need to know if the mouse was clicked anywhere on the
-          // document (see the mousemove listener) The rest happens in
-          // viewEvents[mousedown].
-          mouseDown = true
-        },
-
-        [mouseup](event: Event) {
-          const view = View._focused
-          if (view && dragging) {
-            view._handleMouseEvent('mouseup', event)
-          }
-          mouseDown = dragging = false
-        }
+        scroll: updateFocus
       })
 
       addEvents(window, {
@@ -1850,10 +1831,6 @@ function updateFocus() {
       }
     }
   }
-}
-
-function handleMouseMove(view: View, event: Event, point?: Point) {
-  view._handleMouseEvent('mousemove', event, point)
 }
 
 // Returns true if event was prevented, false otherwise.

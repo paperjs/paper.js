@@ -26,7 +26,12 @@ import paper, {
   Tool,
   View
 } from 'paper'
-import { equals, isNodeContext, test, triggerMouseEvent } from '../helpers.js'
+import {
+  equals,
+  isNodeContext,
+  test,
+  triggerPointerEvent
+} from '../helpers.js'
 
 const { document, window } = paper
 
@@ -669,8 +674,8 @@ describe('View', () => {
         // Transform the container after the setup, so the view keeps its
         // size:
         container.style.transform = 'scale(' + entry[2] + ')'
-        triggerMouseEvent('mousedown', entry[3], canvas)
-        triggerMouseEvent('mouseup', entry[3])
+        triggerPointerEvent('pointerdown', entry[3], canvas)
+        triggerPointerEvent('pointerup', entry[3])
         equals(
           view.viewSize,
           new Size(200, 100),
@@ -701,8 +706,8 @@ describe('View', () => {
       view.onMouseDown = event => {
         point = event.point
       }
-      triggerMouseEvent('mousedown', new Point(120, 90), canvas)
-      triggerMouseEvent('mouseup', new Point(120, 90))
+      triggerPointerEvent('pointerdown', new Point(120, 90), canvas)
+      triggerPointerEvent('pointerup', new Point(120, 90))
       equals(view.viewSize, new Size(200, 100), 'view.viewSize')
       equals(point, new Point(50, 40), 'event.point')
       project.remove()
