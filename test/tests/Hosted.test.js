@@ -658,6 +658,42 @@ describe('Hosted', () => {
     equals(circle.strokeColor, null, 'loaded: no stroke, as the host has it')
   })
 
+  test(`invalidate() resets a stroke profile that the host doesn't keep`, () => {
+    const res = createHostedProject()
+    const { project } = res
+    const layer = project.layers[0]
+    // One path that the host loaded, and one that a script created and the
+    // host keyed:
+    const { circle } = layer.children
+    const created = Path.circle({ center: [20, 20], radius: 10, parent: layer })
+    const createdNode = created.clone({ insert: false })
+    res.host.document.layers[0].addChild(createdNode)
+    created.key = createdNode.id
+    const nodes = [res.host.document.getItem({ name: 'circle' }), createdNode]
+    for (const path of [circle, created]) {
+      path.strokeProfile = [
+        { offset: 10, width: 1 },
+        { offset: 30, width: 2 }
+      ]
+      equals(
+        path.strokeProfile.map(stop => stop.offset),
+        [10, 30]
+      )
+    }
+    // The host changes them, and its JSON has no stroke profiles:
+    for (const node of nodes) {
+      node.opacity = 0.5
+    }
+    const columns = res.host.getColumns(nodes)
+    columns.flags[0] |= 16
+    columns.flags[1] |= 16
+    project.invalidate(columns)
+    for (const path of [circle, created]) {
+      equals(path.opacity, 0.5, 'reloaded')
+      equals(path.strokeProfile, null, 'without the stroke profile')
+    }
+  })
+
   test('invalidate() reloads changed content into the same item', () => {
     const res = createHostedProject()
     const original = res.host.document.getItem({ name: 'circle' })

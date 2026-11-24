@@ -565,6 +565,7 @@ export class Path extends PathItem {
     this._version = 0
     this._curves = undefined // For hidden class optimization
     this._segmentSelection = 0
+    this._strokeProfile = null
   }
 
   _equals(item: this): boolean {
