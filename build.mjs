@@ -31,7 +31,8 @@ const entries = {
   core: 'src/core.ts',
   paperscript: 'src/paperscript/index.ts',
   node: 'src/node/index.ts',
-  hosted: 'src/hosted/index.ts'
+  hosted: 'src/hosted/index.ts',
+  svg: 'src/svg/index.ts'
 }
 
 // The geometry modules, which work on plain paths without the rest of the

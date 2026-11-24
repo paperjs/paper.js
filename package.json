@@ -37,6 +37,10 @@
       "types": "./dist/types/hosted/index.d.ts",
       "default": "./dist/esm/hosted.js"
     },
+    "./svg": {
+      "types": "./dist/types/svg/index.d.ts",
+      "default": "./dist/esm/svg.js"
+    },
     "./boolean": {
       "types": "./dist/types/boolean/index.d.ts",
       "default": "./dist/esm/boolean.js"

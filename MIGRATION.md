@@ -19,6 +19,7 @@ or later. Its entries:
 | `paper/paperscript`             | PaperScript, on top of the core                               |
 | `paper/node`                    | the core on Node.js, see below                                |
 | `paper/hosted`                  | hosted projects, for hosts that keep their own document       |
+| `paper/svg`                     | SVG import and export, for `use(svg)` with `paper/core`       |
 | `paper/boolean`, `paper/offset` | the boolean operations and offsetting on plain path data      |
 
 ```js
