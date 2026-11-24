@@ -837,8 +837,13 @@ export class View extends Emitter {
    * @return the event point in project coordinates.
    */
   getEventPoint(event: globalThis.MouseEvent): Point {
+    return this.#getOffsetPoint(getEventOffset(event, this._element))
+  }
+
+  // Returns the point in project coordinates at the offset from the top left
+  // of the view's element on screen:
+  #getOffsetPoint(offset: Point): Point {
     const element = this._element
-    let offset = getEventOffset(event, element)
     const size = getSize(element)
     // Map the offset on screen, with CSS sizes and transforms applied, to
     // the content box in view coordinates (#549, #1729). Elements that
@@ -1002,7 +1007,21 @@ export class View extends Emitter {
     if (nativeMove && dragging && responds('mousedrag')) {
       type = 'mousedrag'
     }
-    point ??= this.getEventPoint(event)
+    // A pointer that is locked to the view's element stands still, and
+    // reports how far it would have moved instead. Move its last point by
+    // that, wherever this takes it, as it can't leave the view (#1802):
+    const isLocked = (
+      !dispatched &&
+      !!lastPoint &&
+      getDocument().pointerLockElement === this._element
+    )
+    point ??= isLocked
+      ? lastPoint.add(
+          this.#getOffsetPoint(
+            new Point(event.movementX, event.movementY)
+          ).subtract(this.#getOffsetPoint(new Point()))
+        )
+      : this.getEventPoint(event)
 
     // The view only receives the moves of pointers over it and of those
     // that it captured, which are still dragging outside of it. The last
@@ -1010,6 +1029,7 @@ export class View extends Emitter {
     // element covers the view there, such as a menu (#992):
     const inView = (
       dispatched ||
+      isLocked ||
       event.type !== 'pointerleave' && this.bounds.contains(point)
     )
     // Run the hit-test on items first, but only if we're required

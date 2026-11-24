@@ -634,6 +634,35 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     tool.remove()
   })
 
+  test('View#onMouseMove() of a locked pointer (#1802)', () => {
+    const { element } = paper.view
+    const events = []
+    paper.view.onMouseMove = event => {
+      events.push(event.point + ' ' + event.delta)
+    }
+    triggerPointerEvent('pointermove', new Point(10, 10))
+    // Locking the pointer needs the user's consent, so stand in for the
+    // document's report of it:
+    Object.defineProperty(document, 'pointerLockElement', {
+      configurable: true,
+      get: () => element
+    })
+    // The locked pointer stays where it is, and reports its movement, which
+    // may take it out of the view:
+    const move = movement => {
+      triggerPointerEvent('pointermove', new Point(10, 10), null, movement)
+    }
+    move({ movementX: 5, movementY: 0 })
+    move({ movementX: 0, movementY: 0 })
+    move({ movementX: -40, movementY: 20 })
+    delete document.pointerLockElement
+    equals(events, [
+      '{ x: 10, y: 10 } null',
+      '{ x: 15, y: 10 } { x: 5, y: 0 }',
+      '{ x: -25, y: 30 } { x: -40, y: 20 }'
+    ])
+  })
+
   test('View#onMouseEnter() is only triggered as the pointer enters', () => {
     const types = []
     paper.view.onMouseEnter = paper.view.onMouseLeave = event => {
