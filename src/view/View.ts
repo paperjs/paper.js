@@ -1043,7 +1043,8 @@ export class View extends Emitter {
       overItem = hitItem
     }
     // Handle mouseenter / leave on the view.
-    if (wasInView !== inView) {
+    const hasCrossed = wasInView !== inView
+    if (hasCrossed) {
       emitMouseEvent(
         this,
         null,
@@ -1128,7 +1129,15 @@ export class View extends Emitter {
     // Prevent default if at least one handler was called, and none of
     // them enforces default, to prevent scrolling on touch devices.
     if (handle && tool) {
+      // The tool enters the view before its move there, and leaves it after
+      // the move that left:
+      if (hasCrossed && inView) {
+        tool._handleMouseEvent('mouseenter', event, point, { enter: true })
+      }
       called = tool._handleMouseEvent(type, event, point, mouse) || called
+      if (hasCrossed && !inView) {
+        tool._handleMouseEvent('mouseleave', event, point, { leave: true })
+      }
     }
 
     // Now call `preventDefault()`, if any of these conditions are met:
