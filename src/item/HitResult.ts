@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { Base, paper, registerClasses } from '../internal.ts'
+import { Base, getScope, registerClasses } from '../internal.ts'
 import type { Point } from '../basic/Point.ts'
 import type { Color } from '../style/Color.ts'
 import type { CurveLocation } from '../path/CurveLocation.ts'
@@ -114,7 +114,7 @@ export class HitResult extends Base {
       // Shape, Raster, SymbolItem, ...
       type: null,
       // Tolerance
-      tolerance: paper.settings.hitTolerance,
+      tolerance: getScope().settings.hitTolerance,
       // Hit the fill of items
       fill: !options,
       // Hit the curves of path items, taking into account the stroke width.

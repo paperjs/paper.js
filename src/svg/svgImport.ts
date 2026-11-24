@@ -36,10 +36,10 @@ import {
   camelize,
   createSvgElement,
   getDocument,
+  getScope,
   getStyles,
   getSvgAttribute,
   getWindow,
-  paper,
   request,
   svgStyles
 } from '../internal.ts'
@@ -471,7 +471,7 @@ const importers: Record<string, Importer> = {
     // The content of a symbol takes the style of each <use> element that
     // places it, not of where it is defined, see Style#_get(), so it starts
     // from no style at all:
-    const { project } = paper
+    const { project } = getScope()
     const style = project._currentStyle
     project._currentStyle = new Style(null, null, project)
     try {
@@ -505,7 +505,7 @@ const importers: Record<string, Importer> = {
       // a <g>, see importGroup(), and keep their own. Rasters are only
       // positioned once their image has loaded, which clones would miss:
       used[id] = true
-      const { project } = paper
+      const { project } = getScope()
       const currentStyle = project._currentStyle
       project._currentStyle = new Style(
         applyAttributes(new Group(), node, options)._style
@@ -1070,7 +1070,7 @@ function importNode(node: Element, options: Options, isRoot?: boolean): any {
   let next: Node
   if (isRoot && isElement) {
     // Set rootSize to view size, as getSize() may refer to it (#1242).
-    rootSize = paper.view.size
+    rootSize = getScope().view.size
     // Now set rootSize to the root element size, and fall-back to view.
     rootSize = getSize(node, null, null, true) ?? rootSize
     // We need to move the SVG node to a live document, so default
@@ -1093,7 +1093,7 @@ function importNode(node: Element, options: Options, isRoot?: boolean): any {
   // content and children, as this is how SVG works too, but preserve the
   // current setting so we can restore it after. Also don't insert them
   // into the scene graph automatically, as we do so by hand.
-  const { settings } = paper
+  const { settings } = getScope()
   const { applyMatrix, insertItems } = settings
   const importer = importers[type]
   let item = null
@@ -1219,7 +1219,7 @@ export function importSVG(
   const importOptions: Options =
     typeof options === 'function' ? { onLoad: options } : options ?? {}
   // Remember current scope so we can restore it in onLoad.
-  const scope = paper
+  const scope = getScope()
   let item = null
 
   function onLoad(svg: any) {

@@ -53,6 +53,7 @@ import {
   getCurveOverlaps,
   getCurveValues,
   getEllipticArc,
+  getScope,
   getSegmentBounds,
   getSegmentHandleBounds,
   getSegmentStrokeBounds,
@@ -63,7 +64,6 @@ import {
   isPlainObject,
   isZero,
   paintItem,
-  paper,
   push,
   registerClasses,
   removeNamed,
@@ -2161,7 +2161,7 @@ export class Path extends PathItem {
       // Pass `true` to exclude the matrix, which the shape has already. Its
       // pivot then lands where the path's is:
       shape.copyAttributes(this, true)
-      if (insert !== undefined ? insert : paper.settings.insertItems) {
+      if (insert !== undefined ? insert : getScope().settings.insertItems) {
         shape.insertAbove(this)
       }
       return shape
@@ -2403,7 +2403,7 @@ export class Path extends PathItem {
     drawSegments(ctx, this, matrix)
     // Now stroke it and draw its handles:
     ctx.stroke()
-    const { handleSize, segmentSize } = paper.settings
+    const { handleSize, segmentSize } = getScope().settings
     // segmentSize is null by default, which falls back on handleSize:
     drawHandles(
       ctx,

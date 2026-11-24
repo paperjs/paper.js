@@ -20,8 +20,8 @@ import {
   TextRange,
   TextStory,
   equals,
+  getScope,
   inject,
-  paper,
   registerClasses
 } from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
@@ -252,7 +252,7 @@ export class Style extends Base {
   constructor(style?: object, _owner?: StyleOwner, _project?: Project) {
     super()
     this.#owner = _owner
-    this.#project = _owner?._project ?? _project ?? paper.project
+    this.#project = _owner?._project ?? _project ?? getScope().project
     // Use different defaults based on the owner
     this._defaults =
       !_owner || _owner instanceof Group

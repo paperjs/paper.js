@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { Emitter, paper, splice } from '../internal.ts'
+import { Emitter, getScope, splice } from '../internal.ts'
 import type { PaperScope } from './PaperScope.ts'
 import type { View } from '../view/View.ts'
 
@@ -35,7 +35,7 @@ export class PaperScopeItem extends Emitter {
   constructor(activate?: boolean) {
     super()
     // Store reference to the currently active global paper scope:
-    this._scope = paper
+    this._scope = getScope()
     // Push it onto this._scope[this._list] and set _index:
     this._index = this._scope[this._list].push(this) - 1
     // If the project has no active reference, activate this one

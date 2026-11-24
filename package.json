@@ -22,8 +22,8 @@
       "default": "./dist/esm/paper.js"
     },
     "./core": {
-      "types": "./dist/types/index.d.ts",
-      "default": "./dist/esm/paper.js"
+      "types": "./dist/types/core.d.ts",
+      "default": "./dist/esm/core.js"
     },
     "./paperscript": {
       "types": "./dist/types/paperscript/index.d.ts",

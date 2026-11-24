@@ -3,9 +3,9 @@ import {
   addEvents,
   camelize,
   getDocument,
+  getAgent,
   getWindow,
-  hyphenate,
-  paper
+  hyphenate
 } from '../internal.ts'
 /*
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
@@ -89,7 +89,7 @@ const modifiers = Object.defineProperties(
     // based on whichever key is used for commands.
     command: {
       get() {
-        return paper?.agent.mac ? this.meta : this.control
+        return getAgent().mac ? this.meta : this.control
       }
     },
 
@@ -266,7 +266,7 @@ export function handleKey(
   const name = key.length > 1 && camelize(key)
   if (name && name in modifiers) {
     modifiers[name] = down
-    if (name === 'meta' && paper?.agent.mac) {
+    if (name === 'meta' && getAgent().mac) {
       // Fix a strange behavior on Mac where no keyup events are
       // received for any keys pressed while the meta key is down.
       // Keep track of the normal keys being pressed and trigger keyup

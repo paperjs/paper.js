@@ -24,10 +24,10 @@ import {
   getCurvePart,
   getCurveTimeAt,
   getRegion,
+  getScope,
   offsetPath,
   offsetRegion,
   outlineStroke,
-  paper,
   setStrokeProfileRuns,
   takeStrokeProfile
 } from '../internal.ts'
@@ -357,7 +357,7 @@ function createResult<T extends Item>(
   result: T,
   options?: { insert?: boolean } | null
 ): T {
-  const { insert = paper.settings.insertItems } = options ?? {}
+  const { insert = getScope().settings.insertItems } = options ?? {}
   if (insert) {
     result.insertAbove(item)
   }

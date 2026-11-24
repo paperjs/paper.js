@@ -16,8 +16,8 @@ import {
   ChangeFlag,
   Item,
   clearBoundsCache,
-  getUID,
-  paper
+  getScope,
+  getUID
 } from '../internal.ts'
 import type { Project } from './Project.ts'
 
@@ -35,7 +35,7 @@ export class ItemDefinition extends Base {
   constructor() {
     super()
     this._id = getUID()
-    this.project = paper.project
+    this.project = getScope().project
   }
 
   /**

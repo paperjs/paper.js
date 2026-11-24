@@ -39,10 +39,10 @@ import {
   drawSelection,
   getBoundsCacheKey,
   getClass,
+  getScope,
   getUID,
   importJSON,
   inject,
-  paper,
   serialize
 } from '../internal.ts'
 import type { Color } from '../style/Color.ts'
@@ -1331,16 +1331,16 @@ function getDataJSON(item: Item): string {
 function whileLoading(project: Project, callback: () => void) {
   const changes = project._changes
   const loading = isLoading
-  const active = paper.project
+  const active = getScope().project
   project._changes = null
   isLoading = true
-  paper.project = project
+  getScope().project = project
   try {
     callback()
   } finally {
     project._changes = changes
     isLoading = loading
-    paper.project = active
+    getScope().project = active
   }
 }
 

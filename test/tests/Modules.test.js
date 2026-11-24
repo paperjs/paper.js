@@ -113,6 +113,29 @@ describe('paper/boolean and paper/offset', () => {
 
   // Bundling needs Node's file system:
   if (isNodeContext) {
+    test('paper/core creates no scope until the first project', async () => {
+      // In a process of its own, as the tests load the paper entry:
+      const { execFileSync } = await import('node:child_process')
+      const url = new URL('../../src/core.ts', import.meta.url).href
+      const code = `
+        const { PaperScope, Path, Project } = await import('${url}')
+        const before = PaperScope.get(0)
+        const project = new Project()
+        console.log(JSON.stringify([
+          before,
+          'Path' in PaperScope.prototype,
+          PaperScope.get(0) === project._scope,
+          Path.circle({ center: [5, 5], radius: 3 }).project === project
+        ]))
+      `
+      const output = execFileSync(
+        process.execPath,
+        ['--input-type=module', '--eval', code],
+        { encoding: 'utf8' }
+      )
+      equals(JSON.parse(output), [null, false, true, true])
+    })
+
     test('The bundles of the entries leave out the scene graph', async () => {
       const { build } = await import('rolldown')
       for (const name of ['boolean', 'offset']) {

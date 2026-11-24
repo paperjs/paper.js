@@ -27,6 +27,7 @@ import {
   Size,
   addEvents,
   defineEvents,
+  getAgent,
   getContext,
   getDocument,
   getEventOffset,
@@ -40,7 +41,6 @@ import {
   installKeyEvents,
   isInView,
   isInserted,
-  paper,
   registerClasses,
   releaseCanvas,
   removeEvents,
@@ -248,7 +248,7 @@ export class View extends Emitter {
       View._focused ??= this
     }
     // Do not set _autoUpdate on Node.js by default:
-    this._autoUpdate = !paper.agent.node
+    this._autoUpdate = !getAgent().node
   }
 
   /**
@@ -327,7 +327,7 @@ export class View extends Emitter {
   requestUpdate() {
     // Node.js has no display for frames to update, and frame requests would
     // keep its process running:
-    if (!this._requested && !paper.agent.node) {
+    if (!this._requested && !getAgent().node) {
       requestFrame(() => {
         this._requested = false
         // Only handle the frame and request the next one if we don't
@@ -574,7 +574,7 @@ export class View extends Emitter {
   // canvas provider, which also works in workers with an OffscreenCanvas.
   // Without either, sizes are read as pixels, and text has no width.
   getPixelSize(size: string): number {
-    const { agent } = paper
+    const agent = getAgent()
     const element = this._element
     let ctx: CanvasRenderingContext2D
     let pixels: number

@@ -27,7 +27,17 @@ import packageJson from '../../package.json' with { type: 'json' }
  */
 export let paper: PaperScope = null
 
-// The agent, as detected once on first use, see PaperScope#agent:
+/**
+ * Returns the active scope, and creates one on first use if there is none
+ * yet, as importing `paper/core` creates none.
+ *
+ * @private
+ */
+export function getScope(): PaperScope {
+  return paper ?? new PaperScope()
+}
+
+// The agent, as detected once on first use, see getAgent():
 let agent: Record<string, any>
 
 /**
@@ -163,48 +173,7 @@ export class PaperScope extends Base {
    * version: '130.0', versionNumber: 130 }`.
    */
   get agent(): Record<string, any> {
-    if (!agent) {
-      const user = (globalThis.navigator?.userAgent || '').toLowerCase()
-      // Detect basic platforms, only mac internally required for now.
-      const os = (/(darwin|win|mac|linux|freebsd|sunos)/.exec(user) ?? [])[0]
-      const platform = os === 'darwin' ? 'mac' : os
-      agent = { platform }
-      if (platform) {
-        agent[platform] = true
-      }
-      // Use replace() to get all matches, and deal with Chrome/Webkit
-      // overlap:
-      // TODO: Do we need Mozilla next to Firefox? Other than the different
-      // treatment of the Chrome/Webkit overlap here: { chrome: true, webkit:
-      // false }, Mozilla missing is the only difference to jQuery.browser
-      user.replace(
-        /(opera|chrome|safari|webkit|firefox|msie|trident|atom|node|jsdom)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv:v?([.\d]+))?/g,
-        (match, name, version1, version2, revision) => {
-          // Do not set additional browsers once chrome is detected.
-          if (!agent.chrome) {
-            const version =
-              name === 'opera'
-                ? version2
-                : /^(node|trident)$/.test(name)
-                  ? revision
-                  : version1
-            agent.version = version
-            agent.versionNumber = parseFloat(version)
-            name = { trident: 'msie', jsdom: 'node' }[name] ?? name
-            agent.name = name
-            agent[name] = true
-          }
-          return match
-        }
-      )
-      if (agent.chrome) {
-        delete agent.webkit
-      }
-      if (agent.atom) {
-        delete agent.chrome
-      }
-    }
-    return agent
+    return getAgent()
   }
 
   /**
@@ -333,4 +302,55 @@ export class PaperScope extends Base {
       Object.defineProperty(this.prototype, key, { enumerable: true })
     }
   }
+}
+
+/**
+ * Returns the platform and browser that Paper.js runs in, see
+ * {@link PaperScope#agent}, detected once on first use.
+ *
+ * @private
+ */
+export function getAgent(): Record<string, any> {
+  if (!agent) {
+    const user = (globalThis.navigator?.userAgent || '').toLowerCase()
+    // Detect basic platforms, only mac internally required for now.
+    const os = (/(darwin|win|mac|linux|freebsd|sunos)/.exec(user) ?? [])[0]
+    const platform = os === 'darwin' ? 'mac' : os
+    agent = { platform }
+    if (platform) {
+      agent[platform] = true
+    }
+    // Use replace() to get all matches, and deal with Chrome/Webkit
+    // overlap:
+    // TODO: Do we need Mozilla next to Firefox? Other than the different
+    // treatment of the Chrome/Webkit overlap here: { chrome: true, webkit:
+    // false }, Mozilla missing is the only difference to jQuery.browser
+    user.replace(
+      /(opera|chrome|safari|webkit|firefox|msie|trident|atom|node|jsdom)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv:v?([.\d]+))?/g,
+      (match, name, version1, version2, revision) => {
+        // Do not set additional browsers once chrome is detected.
+        if (!agent.chrome) {
+          const version =
+            name === 'opera'
+              ? version2
+              : /^(node|trident)$/.test(name)
+                ? revision
+                : version1
+          agent.version = version
+          agent.versionNumber = parseFloat(version)
+          name = { trident: 'msie', jsdom: 'node' }[name] ?? name
+          agent.name = name
+          agent[name] = true
+        }
+        return match
+      }
+    )
+    if (agent.chrome) {
+      delete agent.webkit
+    }
+    if (agent.atom) {
+      delete agent.chrome
+    }
+  }
+  return agent
 }
