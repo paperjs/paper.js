@@ -48,6 +48,7 @@ import {
   exportItemSVG,
   getCanvas,
   getContext,
+  getItems,
   getUID,
   hyphenate,
   importSVG,
@@ -55,6 +56,7 @@ import {
   isInheritingStyle,
   isPlainObject,
   isZero,
+  matchItem,
   nativeBlendModes,
   paper,
   releaseCanvas,
@@ -2662,63 +2664,7 @@ export class Item extends Emitter {
    */
   matches(name: string, compare: any): boolean
   matches(name: any, compare?: any): boolean {
-    // matchObject() is used to match against objects in a nested manner.
-    // This is useful for matching against Item#data.
-    function matchObject(obj1: object, obj2: object): boolean {
-      for (const key in obj1) {
-        if (Object.hasOwn(obj1, key)) {
-          const value1 = obj1[key]
-          const value2 = obj2[key]
-          if (isPlainObject(value1) && isPlainObject(value2)) {
-            if (!matchObject(value1, value2)) {
-              return false
-            }
-          } else if (!equals(value1, value2)) {
-            return false
-          }
-        }
-      }
-      return true
-    }
-
-    const type = typeof name
-    if (type === 'object') {
-      // `name` is the match object, not a string
-      for (const key in name) {
-        if (Object.hasOwn(name, key) && !this.matches(key, name[key])) {
-          return false
-        }
-      }
-      return true
-    } else if (type === 'function') {
-      return name(this)
-    } else if (name === 'match') {
-      return compare(this)
-    } else {
-      let value = /^(empty|editable)$/.test(name)
-        ? // Handle boolean test functions separately, by calling them
-          // to get the value.
-          this['is' + capitalize(name)]()
-        : this[name]
-      if (name === 'class') {
-        if (typeof compare === 'function') {
-          return this instanceof compare
-        }
-        // Compare further with the className property value instead.
-        value = this.className
-      }
-      if (typeof compare === 'function') {
-        return !!compare(value)
-      } else if (compare) {
-        if (compare.test) {
-          // RegExp-ish
-          return compare.test(value)
-        } else if (isPlainObject(compare)) {
-          return matchObject(compare, value)
-        }
-      }
-      return equals(value, compare)
-    }
+    return matchItem(this, name, compare)
   }
 
   /**
@@ -2757,7 +2703,7 @@ export class Item extends Emitter {
    * @see #matches(options)
    */
   getItems(options: object | ((item: Item) => boolean)): Item[] {
-    return Item._getItems(this, options, this._matrix)
+    return getItems(this, options, this._matrix)
   }
 
   /**
@@ -2776,95 +2722,7 @@ export class Item extends Emitter {
    * @see #getItems(options)
    */
   getItem(options: object | ((item: Item) => boolean)): Item | null {
-    return Item._getItems(this, options, this._matrix, null, true)[0] ?? null
-  }
-
-  // NOTE: We pass children instead of item as first argument so the
-  // method can be used for Project#layers as well in Project.
-  static _getItems(
-    item: Item | Project,
-    options: any,
-    matrix?: Matrix | null,
-    param?: any,
-    firstOnly?: boolean
-  ): Item[] {
-    if (!param) {
-      // Set up a couple of "side-car" values for the recursive calls
-      // of _getItems below, mainly related to the handling of
-      // inside / overlapping:
-      const obj = typeof options === 'object' && options
-      const overlapping = obj && obj.overlapping
-      const inside = obj && obj.inside
-      // If overlapping is set, we also perform the inside check:
-      const bounds = overlapping || inside
-      const rect = bounds && Rectangle.from(bounds)
-      param = {
-        items: [], // The list to contain the results.
-        recursive: !obj || obj.recursive !== false,
-        inside: !!inside,
-        overlapping: !!overlapping,
-        rect,
-        path: overlapping && Path.rectangle({ rectangle: rect, insert: false })
-      }
-      if (obj) {
-        // Create a copy of the options object that doesn't contain
-        // these special properties, or values that are undefined:
-        options = {}
-        for (const [key, value] of Object.entries(obj)) {
-          if (
-            value !== undefined &&
-            !/^(recursive|inside|overlapping)$/.test(key)
-          ) {
-            options[key] = value
-          }
-        }
-      }
-    }
-    const children = item._children
-    const { items, rect } = param
-    const transform = rect ? (matrix ?? new Matrix()) : null
-    if (children) {
-      for (const child of children) {
-        const childMatrix = transform?.appended(child._matrix)
-        let add = true
-        if (rect) {
-          const bounds = child.getBounds(childMatrix)
-          // Regardless of the setting of inside / overlapping, if the
-          // bounds don't even intersect, we can skip this child.
-          if (!rect.intersects(bounds)) {
-            continue
-          }
-          if (
-            !(
-              rect.contains(bounds) || (
-                // First check the bounds, if the rect is fully
-                // contained, we are always overlapping, and don't
-                // need to perform further checks, otherwise perform
-                // a proper #intersects() check:
-                param.overlapping &&
-                param.path.intersects(child, childMatrix)
-              )
-            )
-          ) {
-            add = false
-          }
-        }
-        if (add && child.matches(options)) {
-          items.push(child)
-          if (firstOnly) {
-            break
-          }
-        }
-        // Only into the children that the item shows:
-        if (param.recursive !== false && child.children) {
-          Item._getItems(child, options, childMatrix, param, firstOnly)
-        }
-        if (firstOnly && items.length > 0) {
-          break
-        }
-      }
-    }
-    return items
+    return getItems(this, options, this._matrix, true)[0] ?? null
   }
 
   /**

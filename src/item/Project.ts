@@ -25,6 +25,7 @@ import {
   defineEvents,
   exportProjectSVG,
   getCanvas,
+  getItems,
   hitTest,
   hitTestAll,
   hitTestChildren,
@@ -825,7 +826,7 @@ export class Project extends PaperScopeItem {
    * }
    */
   getItems(options: object | ((item: Item) => boolean)): Item[] {
-    return Item._getItems(this, options)
+    return getItems(this, options)
   }
 
   /**
@@ -843,7 +844,7 @@ export class Project extends PaperScopeItem {
    * @return the first item in the project matching the given criteria
    */
   getItem(options: object | ((item: Item) => boolean)): Item | null {
-    return Item._getItems(this, options, null, null, true)[0] ?? null
+    return getItems(this, options, null, true)[0] ?? null
   }
 
   /**
