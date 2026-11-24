@@ -12,6 +12,7 @@
 
 import { describe } from 'vitest'
 import paper, {
+  Base,
   Color,
   CompoundPath,
   Gradient,
@@ -36,6 +37,35 @@ describe('JSON', () => {
     project2.importJSON(json)
     equals(project, project2, null, { dontShareProject: true })
   }
+
+  test('Base.exportJSON() and Base.importJSON() of plain values', () => {
+    const value = {
+      point: new Point(1, 2),
+      color: new Color('red'),
+      list: [new Size(3, 4)],
+      count: 5
+    }
+    const json = Base.exportJSON(value)
+    // The same as what JSON.stringify() gives:
+    equals(json, JSON.stringify(value))
+    const imported = Base.importJSON(json)
+    equals(imported.point, value.point)
+    equals(imported.color, value.color)
+    equals(imported.list[0], value.list[0])
+    equals(imported.count, 5)
+  })
+
+  test('Base.importJSON() of an item creates it without inserting it', () => {
+    const layer = paper.project.activeLayer
+    const path = Path.circle({ center: [50, 50], radius: 10 })
+    const json = Base.exportJSON(path)
+    const count = layer.children.length
+    const imported = Base.importJSON(json)
+    equals(imported.className, 'Path')
+    equals(imported.parent, null)
+    equals(layer.children.length, count)
+    equals(imported.bounds, path.bounds)
+  })
 
   test('Circles', () => {
     let topLeft = new Point(200, 200)

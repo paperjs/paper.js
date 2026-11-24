@@ -38,4 +38,36 @@ export class Base {
   toJSON() {
     return serialize(this)
   }
+
+  /**
+   * Exports (serializes) a value to a JSON data object or string, also one
+   * that holds Paper.js objects without being one, such as a plain object or
+   * an array, see {@link #exportJSON(options)}.
+   *
+   * @option [options.asString=true] {Boolean} whether the JSON is returned as
+   *     a `Object` or a `String`
+   * @option [options.precision=5] {Number} the amount of fractional digits in
+   *     numbers used in JSON data
+   *
+   * @param value the value to export
+   * @param options the serialization options
+   * @return the exported JSON data
+   */
+  static exportJSON(
+    value: any,
+    options?: { asString?: boolean; precision?: number }
+  ) {
+    return exportJSON(value, options)
+  }
+
+  /**
+   * Imports (deserializes) the JSON data of a value that
+   * {@link Base.exportJSON(value, options)} or {@link #exportJSON(options)}
+   * exported. Items are created without being inserted, except for layers,
+   * which go into the active project.
+   *
+   * @param json the JSON data to import
+   * @return the imported value
+   */
+  declare static importJSON: (json: string | any[]) => any
 }
