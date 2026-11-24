@@ -720,6 +720,20 @@ describe('PathItem#offset() and #outline()', () => {
     equals(short.outline({ insert: false }).area, area, 'round join', {
       tolerance: 100
     })
+    // A curve that starts without a handle folds its strip at once, which
+    // left a hairline behind the butt cap:
+    const sudden = new Path({
+      pathData: 'M695,173c0,0 10,11 0,211',
+      strokeWidth: 62,
+      strokeCap: 'butt',
+      strokeProfile: [{ offset: 0, width: 1 }],
+      insert: false
+    })
+    equals(
+      sudden.outline({ insert: false }).className,
+      'Path',
+      'fold at a start without a handle'
+    )
   })
 
   // Outlines of stroke profiles that went wrong once, checked against the
