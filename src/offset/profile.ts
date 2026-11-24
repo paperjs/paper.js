@@ -399,8 +399,22 @@ export class ProfileSweep extends Sweep<ProfilePart> {
           motions[0] * motions[1] < 0 &&
           (isMoving(from, tolerance) || isMoving(to, tolerance))
         ) {
+          // While the sides still stand at their starts, the point only
+          // moves along the strip, and sweeps nothing. Start it once they
+          // have moved, as it would run back along the strip's start,
+          // at the first halving of the time where they haven't yet:
+          const isMoved = (t: number) => (
+            getEnd(t, j, 'from').point.getDistance(start1) > tolerance / 10 ||
+            getEnd(t, j, 'to').point.getDistance(start2) > tolerance / 10
+          )
+          let ts = isMoved(t1) ? t1 : t0
+          while (ts - t0 > CURVETIME_EPSILON && isMoved(ts)) {
+            ts = (t0 + ts) / 2
+          }
           const still = fitSide(
-            t => {
+            time => {
+              // At the times of the sides' samples, which the cache holds:
+              const t = Math.max(time, ts)
               const strip = getStrips(t)[j]
               if (!strip) return getCenter(t)
               const motions = getMotions(strip)
@@ -418,7 +432,8 @@ export class ProfileSweep extends Sweep<ProfilePart> {
               // except at the ends, which it leaves in a turn:
               return {
                 point: point.add(vector.multiply(factor)),
-                derivative: factor > 0 && factor < 1 ? vector : new Point()
+                derivative:
+                  factor > 0 && factor < 1 && time >= ts ? vector : new Point()
               }
             },
             t0,
