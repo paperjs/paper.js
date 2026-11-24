@@ -635,7 +635,7 @@ export class ProfileSweep extends Sweep<ProfilePart> {
               direction1.x, direction1.y,
               side2.x, side2.y,
               direction2.x, direction2.y,
-              true, true
+              true, true, true
             )
             if (miter && miter.getDistance(point) <= miterLimit * pen.a) {
               points.push(miter)

@@ -2082,8 +2082,10 @@ export class Path extends PathItem {
         const pt2 = seg2._point
         // Find the corner point by intersecting the lines described
         // by both handles:
-        const corner = new Line(pt1, handle1, true).intersect(
-          new Line(pt2, handle2, true), true
+        const corner = Line.intersect(
+          pt1.x, pt1.y, handle1.x, handle1.y,
+          pt2.x, pt2.y, handle2.x, handle2.y,
+          true, true, true
         )
         return (
           corner &&
