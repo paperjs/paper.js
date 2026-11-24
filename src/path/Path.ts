@@ -65,6 +65,7 @@ import {
   paintItem,
   paper,
   push,
+  registerClasses,
   removeNamed,
   setStrokeProfileRuns,
   takeStrokeProfile
@@ -2687,6 +2688,7 @@ export class Path extends PathItem {
   }
 
   static {
+    registerClasses({ Path: this })
     defineDeprecatedConstructors(this, [
       'line',
       'circle',

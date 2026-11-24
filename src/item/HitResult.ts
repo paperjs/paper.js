@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { Base, paper } from '../internal.ts'
+import { Base, paper, registerClasses } from '../internal.ts'
 import type { Point } from '../basic/Point.ts'
 import type { Color } from '../style/Color.ts'
 import type { CurveLocation } from '../path/CurveLocation.ts'
@@ -24,6 +24,10 @@ import type { Raster } from './Raster.ts'
  * {@link Project#hitTest(point)}.
  */
 export class HitResult extends Base {
+  static {
+    registerClasses({ HitResult: this })
+  }
+
   /**
    * Describes the type of the hit result. For example, if you hit a segment
    * point, the type would be `'segment'`.

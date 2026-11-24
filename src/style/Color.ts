@@ -23,6 +23,7 @@ import {
   getContext,
   inject,
   isPlainObject,
+  registerClasses,
   serialize
 } from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
@@ -1212,6 +1213,7 @@ export class Color extends Base {
   }
 
   static {
+    registerClasses({ Color: this })
     // Produce getters and setters for the various color components known by
     // the different color types. Requesting any of these components on any
     // color internally converts the color to the required type and then

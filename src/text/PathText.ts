@@ -18,7 +18,8 @@ import {
   TextItem,
   clamp,
   inject,
-  isPlainObject
+  isPlainObject,
+  registerClasses
 } from '../internal.ts'
 import type { TextLine } from './TextItem.ts'
 import type { PathItem } from '../path/PathItem.ts'
@@ -211,6 +212,7 @@ export class PathText extends TextItem {
   }
 
   static {
+    registerClasses({ PathText: this })
     for (const [name, value] of Object.entries(fields)) {
       const key = `_${name}`
       this.prototype[key] = value

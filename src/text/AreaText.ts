@@ -19,7 +19,8 @@ import {
   Rectangle,
   TextItem,
   inject,
-  isPlainObject
+  isPlainObject,
+  registerClasses
 } from '../internal.ts'
 import type { TextLine } from './TextItem.ts'
 import type { RectangleLike } from '../basic/Rectangle.ts'
@@ -674,6 +675,7 @@ export class AreaText extends TextItem {
   }
 
   static {
+    registerClasses({ AreaText: this })
     for (const [name, value] of Object.entries(fields)) {
       const key = `_${name}`
       this.prototype[key] = value

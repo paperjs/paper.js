@@ -33,6 +33,7 @@ import {
   hitTestChildren,
   importJSON,
   importSVG,
+  registerClasses,
   serialize,
   splice
 } from '../internal.ts'
@@ -1095,6 +1096,7 @@ export class Project extends PaperScopeItem {
   }
 
   static {
+    registerClasses({ Project: this })
     Object.assign(this.prototype, {
       _list: 'projects',
       _reference: 'project',

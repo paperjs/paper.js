@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { Base, Color, serialize } from '../internal.ts'
+import { Base, Color, registerClasses, serialize } from '../internal.ts'
 import type { ColorLike } from './Color.ts'
 import type { Gradient } from './Gradient.ts'
 
@@ -28,6 +28,10 @@ export type GradientStopLike =
  * The GradientStop object.
  */
 export class GradientStop extends Base {
+  static {
+    registerClasses({ GradientStop: this })
+  }
+
   _color: Color
   _offset: number
   _owner: Gradient

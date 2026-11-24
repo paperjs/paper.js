@@ -20,7 +20,8 @@ import {
   getStrokeOutline,
   inject,
   paintItem,
-  push
+  push,
+  registerClasses
 } from '../internal.ts'
 import type { HitResult } from '../item/HitResult.ts'
 import type { Project } from '../item/Project.ts'
@@ -398,6 +399,7 @@ export class CompoundPath extends PathItem {
   }
 
   static {
+    registerClasses({ CompoundPath: this })
     Object.assign(this.prototype, {
       _serializeFields: {
         ...PathItem.prototype._serializeFields,

@@ -20,6 +20,7 @@ import {
   addNamed,
   clone,
   equals,
+  registerClasses,
   removeNamed,
   serialize
 } from '../internal.ts'
@@ -867,6 +868,7 @@ export class Segment extends Base {
   }
 
   static {
+    registerClasses({ Segment: this })
     this.prototype._selection = 0
     this.prototype._name = null
   }

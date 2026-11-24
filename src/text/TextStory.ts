@@ -10,7 +10,14 @@
  * All rights reserved.
  */
 
-import { Base, Change, Style, TextRange, clamp } from '../internal.ts'
+import {
+  Base,
+  Change,
+  Style,
+  TextRange,
+  clamp,
+  registerClasses
+} from '../internal.ts'
 import type { TextItem } from './TextItem.ts'
 
 /**
@@ -417,6 +424,7 @@ export class TextStory extends Base {
   }
 
   static {
+    registerClasses({ TextStory: this })
     Object.assign(this.prototype, {
       _paragraphKeys: {
         justification: true,

@@ -21,7 +21,8 @@ import {
   curveEvaluators,
   getCurveLength,
   getCurvePeaks,
-  inject
+  inject,
+  registerClasses
 } from '../internal.ts'
 import type { Point } from '../basic/Point.ts'
 import type { Path } from './Path.ts'
@@ -589,6 +590,7 @@ export class CurveLocation extends Base {
   }
 
   static {
+    registerClasses({ CurveLocation: this })
     // Inject the evaluators at the location's curve-time, next to #point:
     // tangent, normal, weightedTangent, weightedNormal, curvature
     for (const key of Object.keys(curveEvaluators)) {

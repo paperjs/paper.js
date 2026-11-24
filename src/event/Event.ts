@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { Base, Key } from '../internal.ts'
+import { Base, Key, registerClasses } from '../internal.ts'
 import type { KeyModifiers } from './Key.ts'
 
 /**
@@ -18,6 +18,10 @@ import type { KeyModifiers } from './Key.ts'
  * such as {@link MouseEvent}, {@link ToolEvent} and {@link KeyEvent}.
  */
 export class Event extends Base {
+  static {
+    registerClasses({ Event: this })
+  }
+
   // The native event that this one wraps:
   event: globalThis.Event
   type: string

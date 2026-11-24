@@ -20,6 +20,7 @@ import {
   inject,
   isFlatCurve,
   isStraightCurve,
+  registerClasses,
   subdivideCurve
 } from '../internal.ts'
 import type { Matrix } from '../basic/Matrix.ts'
@@ -197,6 +198,7 @@ export class PathFlattener extends Base {
   }
 
   static {
+    registerClasses({ PathFlattener: this })
     // Inject the evaluators at path offsets, getPointAt() …:
     for (const [key, evaluate] of Object.entries(curveEvaluators)) {
       inject(this.prototype, {

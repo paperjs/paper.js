@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { HitResult, Item } from '../internal.ts'
+import { HitResult, Item, registerClasses } from '../internal.ts'
 import type { BoundsOptions } from '../item/Item.ts'
 import type { Project } from '../item/Project.ts'
 import type { Point } from '../basic/Point.ts'
@@ -67,6 +67,7 @@ export class HostItem extends Item {
   }
 
   static {
+    registerClasses({ HostItem: this })
     Object.assign(this.prototype, {
       _applyMatrix: false,
       _canApplyMatrix: false,

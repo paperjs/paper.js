@@ -10,7 +10,14 @@
  * All rights reserved.
  */
 
-import { Base, Change, Effect, equals, serialize } from '../internal.ts'
+import {
+  Base,
+  Change,
+  Effect,
+  equals,
+  registerClasses,
+  serialize
+} from '../internal.ts'
 import type { Item } from './Item.ts'
 
 type EffectInstanceProps = {
@@ -207,6 +214,7 @@ export class EffectInstance extends Base {
   }
 
   static {
+    registerClasses({ EffectInstance: this })
     // JSON writes the effects of items as plain objects:
     this.prototype._compactSerialize = true
   }

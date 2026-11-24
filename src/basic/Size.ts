@@ -14,6 +14,7 @@ import { inject } from '../util/object.ts'
 import { isZero } from '../util/numerical.ts'
 import { Formatter } from '../util/Formatter.ts'
 import { Base } from '../core/Base.ts'
+import { registerClasses } from '../core/serialization.ts'
 import type { Point } from './Point.ts'
 
 /**
@@ -529,6 +530,7 @@ export class Size extends Base {
   }
 
   static {
+    registerClasses({ Size: this })
     // Inject round, ceil, floor, abs:
     for (const key of ['round', 'ceil', 'floor', 'abs']) {
       const op = Math[key]

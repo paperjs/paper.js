@@ -1,4 +1,4 @@
-import { Event } from '../internal.ts'
+import { Event, registerClasses } from '../internal.ts'
 /*
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
@@ -18,6 +18,10 @@ import { Event } from '../internal.ts'
  * the keyboard event.
  */
 export class KeyEvent extends Event {
+  static {
+    registerClasses({ KeyEvent: this })
+  }
+
   /**
    * The type of key event.
    *

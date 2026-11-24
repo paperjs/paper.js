@@ -21,7 +21,8 @@ import {
   TextStory,
   equals,
   inject,
-  paper
+  paper,
+  registerClasses
 } from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
 import type { ColorLike } from './Color.ts'
@@ -526,6 +527,7 @@ export class Style extends Base {
   }
 
   static {
+    registerClasses({ Style: this })
     Object.assign(this.prototype, {
       // The size of superscripts and subscripts, and how far they move, of
       // the font size:

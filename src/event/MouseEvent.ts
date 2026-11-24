@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { Event } from '../internal.ts'
+import { Event, registerClasses } from '../internal.ts'
 import type { Point } from '../basic/Point.ts'
 import type { Item } from '../item/Item.ts'
 
@@ -23,6 +23,10 @@ import type { Item } from '../item/Item.ts'
  * to these functions and contains information about the mouse event.
  */
 export class MouseEvent extends Event {
+  static {
+    registerClasses({ MouseEvent: this })
+  }
+
   declare event: PointerEvent
 
   /**

@@ -21,6 +21,7 @@ import {
   drawItem,
   equals,
   getCanvas,
+  registerClasses,
   serialize
 } from '../internal.ts'
 import type { RectangleLike } from '../basic/Rectangle.ts'
@@ -65,6 +66,10 @@ import type { Project } from '../item/Project.ts'
  * });
  */
 export class PatternDefinition extends ItemDefinition {
+  static {
+    registerClasses({ PatternDefinition: this })
+  }
+
   _tile: Rectangle = null
   _spacing = new Size()
   #canvases: Record<number, HTMLCanvasElement | OffscreenCanvas> = {}

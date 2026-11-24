@@ -15,6 +15,7 @@ import { inject, isPlainObject } from '../util/object.ts'
 import { capitalize } from '../util/string.ts'
 import { Formatter } from '../util/Formatter.ts'
 import { Base } from '../core/Base.ts'
+import { registerClasses } from '../core/serialization.ts'
 import { LinkedPoint, Point } from './Point.ts'
 import { LinkedSize, Size } from './Size.ts'
 import type { PointLike } from './Point.ts'
@@ -791,6 +792,7 @@ export class Rectangle extends Base {
   }
 
   static {
+    registerClasses({ Rectangle: this })
     // Inject the corners and the centers of the sides from their x and y
     // parts, as accessors and as _get…(_dontLink) methods:
     const corners = {

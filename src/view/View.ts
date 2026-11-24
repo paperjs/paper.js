@@ -41,6 +41,7 @@ import {
   isInView,
   isInserted,
   paper,
+  registerClasses,
   releaseCanvas,
   removeEvents,
   requestFrame,
@@ -1400,6 +1401,7 @@ export class View extends Emitter {
   }
 
   static {
+    registerClasses({ View: this })
     defineEvents(this, {
       onFrame: {
         install(this: View) {

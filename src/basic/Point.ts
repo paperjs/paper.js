@@ -15,6 +15,7 @@ import { inject } from '../util/object.ts'
 import { TRIGONOMETRIC_EPSILON, clamp, isZero } from '../util/numerical.ts'
 import { Formatter } from '../util/Formatter.ts'
 import { Base } from '../core/Base.ts'
+import { registerClasses } from '../core/serialization.ts'
 import { Rectangle } from './Rectangle.ts'
 import type { RectangleLike } from './Rectangle.ts'
 import type { Size } from './Size.ts'
@@ -1003,6 +1004,7 @@ export class Point extends Base {
   }
 
   static {
+    registerClasses({ Point: this })
     // Inject round, ceil, floor, abs:
     for (const key of ['round', 'ceil', 'floor', 'abs']) {
       const op = Math[key]

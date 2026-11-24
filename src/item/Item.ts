@@ -63,6 +63,7 @@ import {
   isZero,
   matchItem,
   paper,
+  registerClasses,
   removeEffects,
   removeNamed,
   serialize,
@@ -3551,6 +3552,7 @@ export class Item extends Emitter {
   declare static onDrawSelection: Handler | null
 
   static {
+    registerClasses({ Item: this })
     Object.assign(this.prototype, {
       _name: null,
       _effects: null,

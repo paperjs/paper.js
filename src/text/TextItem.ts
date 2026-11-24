@@ -23,6 +23,7 @@ import {
   TextStory,
   equals,
   inject,
+  registerClasses,
   serialize,
   setStyles
 } from '../internal.ts'
@@ -849,6 +850,7 @@ export class TextItem extends Item {
   }
 
   static {
+    registerClasses({ TextItem: this })
     Object.assign(this.prototype, {
       _applyMatrix: false,
       _canApplyMatrix: false,
