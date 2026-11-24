@@ -153,7 +153,9 @@ describe('paper/boolean and paper/offset', () => {
       const output = await runProcess(`
         const { Window } = await import('happy-dom')
         const { setEnvironment } = await import('${getURL('env.ts')}')
-        const { Path, Project, use } = await import('${getURL('core.ts')}')
+        const { Path, Project, use, effects, raster, tween } = await import(
+          '${getURL('core.ts')}'
+        )
         const { boolean } = await import('${getURL('boolean/index.ts')}')
         const { offset } = await import('${getURL('offset/index.ts')}')
         const { svg } = await import('${getURL('svg/index.ts')}')
@@ -171,23 +173,33 @@ describe('paper/boolean and paper/offset', () => {
         const errors = [
           getError(() => a.unite(b)),
           getError(() => a.offset(1)),
-          getError(() => a.exportSVG())
+          getError(() => a.exportSVG()),
+          getError(() => a.addEffect({ type: 'offset' })),
+          getError(() => a.tween({ opacity: 0 }, 0)),
+          getError(() => a.rasterize())
         ]
-        use(boolean, offset, svg)
+        use(boolean, offset, svg, effects, raster, tween)
         console.log(JSON.stringify([
           ...errors,
           a.unite(b).area,
           a.offset(1).area,
-          /^<path [^>]*d="M0,0h10v10h-10z"/.test(a.exportSVG({ asString: true }))
+          /^<path [^>]*d="M0,0h10v10h-10z"/.test(a.exportSVG({ asString: true })),
+          a.addEffect({ type: 'offset' }) === a.effects[0],
+          a.tween({ opacity: 0 }, 0).constructor.name
         ]))
       `)
       equals(output, [
         `Unable to use boolean without use(boolean) from 'paper/boolean'.`,
         `Unable to use offset without use(offset) from 'paper/offset'.`,
         `Unable to use svg without use(svg) from 'paper/svg'.`,
+        `Unable to use effects without use(effects) from 'paper/core'.`,
+        `Unable to use tween without use(tween) from 'paper/core'.`,
+        `Unable to use raster without use(raster) from 'paper/core'.`,
         150,
         144,
-        true
+        true,
+        true,
+        'Tween'
       ])
     })
 

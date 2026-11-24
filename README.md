@@ -71,7 +71,9 @@ The package has these entries:
   scope created at import. The first project or item creates the scope it needs.
   Features come through `use()`, e.g. the boolean operations and offsetting of
   path items through `use(boolean, offset)`, with `boolean` from
-  `paper/boolean` and `offset` from `paper/offset`.
+  `paper/boolean` and `offset` from `paper/offset`. `paper/core` exports
+  `effects`, `tween` and `raster` itself, for live effects, tweens and
+  `rasterize()`.
 - `paper/paperscript` – PaperScript, which adds the operators, and exports
   `PaperScript` to compile, execute and load code. `PaperScript.load()` runs
   the `<script type="text/paperscript">` tags of the page, which the script

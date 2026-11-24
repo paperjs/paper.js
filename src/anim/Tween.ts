@@ -425,6 +425,17 @@ export class Tween extends Emitter {
 }
 
 // The event handlers:
+/**
+ * The tweens of items, for `use(tween)` with `paper/core`, see the `use()`
+ * function there.
+ */
+export const tween = {
+  feature: {
+    name: 'tween' as const,
+    Tween
+  }
+}
+
 export interface Tween {
   /**
    * {@grouptitle Event Handlers}

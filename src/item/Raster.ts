@@ -28,6 +28,7 @@ import {
   getCanvas,
   getContext,
   getDocument,
+  getScope,
   registerClasses,
   releaseCanvas,
   setStyles
@@ -915,6 +916,58 @@ export class Raster extends Item {
 }
 
 // The members defined at runtime rather than in the class body:
+// NOTE: Documentation is in Item#rasterize()
+export function rasterizeItem(
+  item: Item,
+  options: { resolution?: number; raster?: Raster; insert?: boolean } = {}
+): Raster {
+  const { resolution, insert = getScope().settings.insertItems } = options
+  const raster = options.raster ?? new Raster(Item.NO_INSERT)
+  // What the item draws, with its effects:
+  const bounds = item.previewBounds
+  const scale = (resolution || item.view.resolution) / 72
+  // Floor top-left corner and ceil bottom-right corner, to never
+  // blur or cut pixels.
+  const topLeft = bounds._getTopLeft(true).floor()
+  const bottomRight = bounds._getBottomRight(true).ceil()
+  const boundsSize = new Size(bottomRight.subtract(topLeft))
+  const rasterSize = boundsSize.multiply(scale)
+  // Pass `true` for clear, so reused rasters don't draw over old pixels.
+  raster._setSize(rasterSize, true)
+
+  if (!rasterSize.isZero()) {
+    const ctx = raster._getContext(true)
+    const matrix = new Matrix().translate(topLeft.negate())
+    ctx.save()
+    // Draw with the resolution as the pixel ratio, as views do:
+    ctx.scale(scale, scale)
+    matrix.applyToContext(ctx)
+    drawItem(item, ctx, { matrices: [matrix], pixelRatio: scale })
+    ctx.restore()
+  }
+  raster._matrix.set(
+    new Matrix()
+      .translate(topLeft.add(boundsSize.divide(2)))
+      // Take resolution into account and scale back to original size.
+      .scale(1 / scale)
+  )
+  if (insert) {
+    raster.insertAbove(item)
+  }
+  return raster
+}
+
+/**
+ * The rasterizing of items, for `use(raster)` with `paper/core`, see the
+ * `use()` function there.
+ */
+export const raster = {
+  feature: {
+    name: 'raster' as const,
+    rasterizeItem
+  }
+}
+
 export interface Raster {
   /**
    * {@grouptitle Event Handlers}

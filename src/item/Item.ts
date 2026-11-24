@@ -16,7 +16,6 @@ import {
   ChangeFlag,
   Color,
   EPSILON,
-  EffectInstance,
   Emitter,
   GEOMETRIC_EPSILON,
   Group,
@@ -28,11 +27,9 @@ import {
   Matrix,
   Path,
   Point,
-  Raster,
   Rectangle,
   Size,
   Style,
-  Tween,
   addNamed,
   capitalize,
   clearBoundsCache,
@@ -40,16 +37,14 @@ import {
   defineEvents,
   defineStyleAccessors,
   deserialize,
-  drawItem,
   equals,
+  findFeature,
   getBoundsCacheKey,
   getCachedBounds,
   getCombinedBounds,
-  getEffectOutput,
   getFeature,
   getItemBounds,
   getItems,
-  getPreviewBounds,
   getScope,
   getUID,
   hitTest,
@@ -57,19 +52,20 @@ import {
   hitTestChildren,
   hitTestItem,
   inject,
-  insertEffects,
   intersectsItem,
   isPlainObject,
   isZero,
   matchItem,
   registerClasses,
-  removeEffects,
   removeNamed,
   serialize,
   splice,
   updateBoundsCache
 } from '../internal.ts'
 import type { PaperScope } from '../scope/PaperScope.ts'
+import type { EffectInstance } from './EffectInstance.ts'
+import type { Raster } from './Raster.ts'
+import type { Tween } from '../anim/Tween.ts'
 import type { PointLike } from '../basic/Point.ts'
 import type { RectangleLike } from '../basic/Rectangle.ts'
 import type { ColorLike } from '../style/Color.ts'
@@ -1369,7 +1365,7 @@ export class Item extends Emitter {
    * @return the inserted instances
    */
   insertEffects(index: number, effects: EffectProps[]): EffectInstance[] {
-    return insertEffects(this, index, effects)
+    return getFeature('effects').insertEffects(this, index, effects)
   }
 
   /**
@@ -1391,7 +1387,7 @@ export class Item extends Emitter {
    * @return the removed instances
    */
   removeEffects(start = 0, end?: number): EffectInstance[] {
-    return removeEffects(this, start, end)
+    return findFeature('effects')?.removeEffects(this, start, end) ?? []
   }
 
   // Returns whether any of the item's effects are visible:
@@ -1408,7 +1404,9 @@ export class Item extends Emitter {
    * @return the output of the effects
    */
   getEffectOutput(): Item | null {
-    return getEffectOutput(this)
+    return this._hasEffects()
+      ? getFeature('effects').getEffectOutput(this)
+      : null
   }
 
   // Applies the visible effects to the art in turn, and returns what they make
@@ -1444,7 +1442,10 @@ export class Item extends Emitter {
    * @param matrix the matrix to transform the bounds with
    */
   getPreviewBounds(matrix?: Matrix): Rectangle {
-    return getPreviewBounds(this, matrix)
+    return (
+      findFeature('effects')?.getPreviewBounds(this, matrix) ??
+      this.getStrokeBounds(matrix)
+    )
   }
 
   /**
@@ -1899,40 +1900,7 @@ export class Item extends Emitter {
   rasterize(
     options: { resolution?: number; raster?: Raster; insert?: boolean } = {}
   ): Raster {
-    const { resolution, insert = getScope().settings.insertItems } = options
-    const raster = options.raster ?? new Raster(Item.NO_INSERT)
-    // What the item draws, with its effects:
-    const bounds = this.previewBounds
-    const scale = (resolution || this.view.resolution) / 72
-    // Floor top-left corner and ceil bottom-right corner, to never
-    // blur or cut pixels.
-    const topLeft = bounds._getTopLeft(true).floor()
-    const bottomRight = bounds._getBottomRight(true).ceil()
-    const boundsSize = new Size(bottomRight.subtract(topLeft))
-    const rasterSize = boundsSize.multiply(scale)
-    // Pass `true` for clear, so reused rasters don't draw over old pixels.
-    raster._setSize(rasterSize, true)
-
-    if (!rasterSize.isZero()) {
-      const ctx = raster._getContext(true)
-      const matrix = new Matrix().translate(topLeft.negate())
-      ctx.save()
-      // Draw with the resolution as the pixel ratio, as views do:
-      ctx.scale(scale, scale)
-      matrix.applyToContext(ctx)
-      drawItem(this, ctx, { matrices: [matrix], pixelRatio: scale })
-      ctx.restore()
-    }
-    raster._matrix.set(
-      new Matrix()
-        .translate(topLeft.add(boundsSize.divide(2)))
-        // Take resolution into account and scale back to original size.
-        .scale(1 / scale)
-    )
-    if (insert) {
-      raster.insertAbove(this)
-    }
-    return raster
+    return getFeature('raster').rasterizeItem(this, options)
   }
 
   /**
@@ -3481,6 +3449,7 @@ export class Item extends Emitter {
       options != null &&
       (typeof options === 'number' ? options : options.duration)
     )
+    const { Tween } = getFeature('tween')
     const tween = new Tween(this, from, to, duration, easing, start)
     function onFrame(this: Item, event: { time: number }) {
       tween._handleFrame(event.time * 1000)

@@ -20,6 +20,21 @@ import {
 import type { Rectangle } from '../basic/Rectangle.ts'
 import type { EffectProps, Item } from './Item.ts'
 
+/**
+ * The live effects of items, for `use(effects)` with `paper/core`, see the
+ * `use()` function there.
+ */
+export const effects = {
+  feature: {
+    name: 'effects' as const,
+    Effect,
+    insertEffects,
+    removeEffects,
+    getEffectOutput,
+    getPreviewBounds
+  }
+}
+
 // NOTE: Documentation is in Item#insertEffects()
 export function insertEffects(
   item: Item,
