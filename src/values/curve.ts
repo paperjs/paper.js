@@ -107,7 +107,7 @@ export function getMonoCurves(v: CurveValues, dir?: boolean): CurveValues[] {
     if (!n) {
       curves.push(v)
     } else {
-      roots.sort()
+      roots.sort((a, b) => a - b)
       let t = roots[0]
       let parts = subdivideCurve(v, t)
       curves.push(parts[0])
@@ -653,7 +653,7 @@ export function getCurvePeaks(v: CurveValues): number[] {
     tMin,
     tMax
   )
-  return roots.sort()
+  return roots.sort((a, b) => a - b)
 }
 
 // Returns the sorted times where the curve reverses its direction along the

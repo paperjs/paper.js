@@ -651,6 +651,12 @@ describe('Curve', () => {
       const after = getSpeed(time + 1e-3) - getSpeed(time)
       equals(before * after > 0, true, `a turn of the speed at ${time}`)
     }
+    // A peak right after the start, at a time below 1e-6, comes first too:
+    const early = new Curve([0, 0], [0.000017, 0.000095], [25, -45], [-21, -50])
+    const times = early.getPeaks()
+    equals(times.length, 3)
+    equals(times[0] < 1e-6, true)
+    equals(times[1] < times[2], true)
   })
 
   test('Curve#getTimesWithTangent(), #length and #getPeaks() far from the origin', () => {
