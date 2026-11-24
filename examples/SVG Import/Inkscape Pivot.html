@@ -8,12 +8,15 @@
     <script type="text/paperscript" canvas="canvas">
         // Import Inkscape-style SVG, preserving pivots
         var svg = project.importSVG(document.getElementById('svg'), {
-            onImport: function(node, item) {
+            processItem: function(arg) {
+                var node = arg.node, item = arg.item;
                 var prefix = 'inkscape:transform-center-';
                 var x = node.getAttribute(prefix + 'x');
                 var y = node.getAttribute(prefix + 'y');
+                // Inkscape stores the center of rotation as an offset from
+                // the center of the item's bounds:
                 if (x != null && y != null) {
-                    item.pivot = new Point(+x, +y);
+                    item.pivot = item.bounds.center + [+x, +y];
                 }
             }
         });
@@ -22,7 +25,7 @@
         var rect = svg.children.rectangle;
         // Show the pivot
         Path.circle({
-            center: rect.localToGlobal(rect.pivot),
+            center: rect.pivot,
             radius: 4,
             strokeColor: 'black'
         });
@@ -33,11 +36,13 @@
 
         // And export again, preserving Inkscape pivots
         console.log(rect.exportSVG({
-            onExport: function(item, node) {
+            processNode: function(arg) {
+                var item = arg.item, node = arg.node;
                 var prefix = 'inkscape:transform-center-';
                 if (item.pivot) {
-                    node.setAttribute(prefix + 'x', item.pivot.x);
-                    node.setAttribute(prefix + 'y', item.pivot.y);
+                    var offset = item.pivot - item.bounds.center;
+                    node.setAttribute(prefix + 'x', offset.x);
+                    node.setAttribute(prefix + 'y', offset.y);
                 }
             }
         }))

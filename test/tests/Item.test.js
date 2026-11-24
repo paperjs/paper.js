@@ -1435,24 +1435,46 @@ describe('Item', () => {
       applyMatrix: true
     })
 
+    // The pivot is in the parent's coordinates, and moves along with the
+    // item, whether it applies its matrix or not:
     const pivot = new Point(100, 100)
-
-    path1.pivot = pivot
-    path1.position = [200, 200]
-    equals(
-      path1.pivot,
-      pivot,
-      'Changing position of an item with applyMatrix = false should not change pivot'
-    )
-
     const difference = new Point(100, 100)
-    path2.pivot = pivot
-    path2.position = path2.position.add(difference)
-    equals(
-      path2.pivot,
-      pivot.add(difference),
-      'Changing position of an item with applyMatrix = true should change pivot'
-    )
+    for (const path of [path1, path2]) {
+      path.pivot = pivot
+      equals(path.pivot, pivot, 'applyMatrix: ' + path.applyMatrix + ', set')
+      path.position = path.position.add(difference)
+      equals(
+        path.pivot,
+        pivot.add(difference),
+        'applyMatrix: ' + path.applyMatrix + ', moved'
+      )
+    }
+  })
+
+  test('Item#pivot of items that keep their matrix (#1272)', () => {
+    const shape = Shape.rectangle({ point: [0, 0], size: [100, 50] })
+    shape.position = shape.position.add(100, 100)
+    // A point in the parent's coordinates, where the shape is now:
+    shape.pivot = shape.bounds.topLeft
+    equals(shape.pivot, new Point(100, 100), 'pivot')
+    equals(shape.position, new Point(100, 100), 'position')
+    shape.rotate(90)
+    equals(shape.pivot, new Point(100, 100), 'pivot after rotating')
+    equals(shape.bounds, new Rectangle(50, 100, 50, 100), 'bounds')
+    // Copies and JSON keep it where it is:
+    equals(shape.clone().pivot, shape.pivot, 'clone()')
+    const imported = shape.project.importJSON(shape.exportJSON())
+    equals(imported.pivot, shape.pivot, 'importJSON()')
+    imported.remove()
+  })
+
+  test('Path#toShape() of a path with a pivot', () => {
+    const path = Path.rectangle({ point: [0, 0], size: [100, 50] })
+    path.rotate(30)
+    path.pivot = path.bounds.topLeft
+    const shape = path.toShape(false)
+    equals(shape.bounds, path.bounds, 'bounds')
+    equals(shape.pivot, path.pivot, 'pivot')
   })
 
   test('Item#position with irregular shape, #pivot and rotation', () => {
