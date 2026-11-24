@@ -74,9 +74,9 @@ export type StrokePens = {
 // The stretch of a stroke profile between two of its stops, by their offsets:
 type Span = { start: number; end: number }
 
-// The end of a side of a sliver that was left out, with where the side
-// starts, the sliver's strip, and whether a strip took its place there:
-type Move = { end: Point; start: Point; strip: RegionValues; isMet: boolean }
+// A strip that was left out as too thin, with the points where its two sides
+// end and start:
+type Sliver = { strip: RegionValues; sides: [end: Point, start: Point][] }
 
 // Two times on a part between which no strips are swept, see getSplits():
 type Split = [start: number, end: number, strips?: Strip[]]
@@ -87,6 +87,8 @@ type ProfilePart = Part & {
   offset: number
   length: number
   curveLength: number
+  // The slivers left out at its end, see ProfileSweep#slivers:
+  slivers?: Sliver[]
 }
 
 const { abs } = Math
@@ -94,10 +96,10 @@ const { abs } = Math
 export class ProfileSweep extends Sweep<ProfilePart> {
   pens: StrokePens
   spans: Span[] = []
-  // The ends of the sides of the slivers left out, with where they start,
-  // as the strips, joins and caps after them start there instead, to meet
-  // the strips before them, see getStart():
-  moves: Move[] = []
+  // The slivers left out last. What comes right after them starts where
+  // they do instead of where they end, to meet the strips before them: the
+  // next strips, or the join or cap at the end of a part:
+  slivers: Sliver[] = []
 
   constructor(path: PathValues, pens: StrokePens, stroke: Stroke) {
     super(path, stroke)
@@ -163,22 +165,6 @@ export class ProfileSweep extends Sweep<ProfilePart> {
     }
   }
 
-  // Adds the slivers left out that nothing started at on both sides, as a
-  // notch of their width would reach into the stroke there: before a part
-  // that starts in other points, or a butt cap:
-  // @override
-  sweep(): RegionValues[] {
-    const areas = super.sweep()
-    const slivers = new Set<RegionValues>()
-    for (const { strip, isMet } of this.moves) {
-      if (!isMet) {
-        slivers.add(strip)
-      }
-    }
-    areas.push(...slivers)
-    return areas
-  }
-
   // Adds the areas that the pen sweeps along the part, split at the spans
   // that it crosses:
   // @override
@@ -194,6 +180,7 @@ export class ProfileSweep extends Sweep<ProfilePart> {
         this.addPiece(part, span, ta, tb)
       }
     }
+    part.slivers = this.slivers
   }
 
   // @override
@@ -388,7 +375,7 @@ export class ProfileSweep extends Sweep<ProfilePart> {
     // Moves the start of the side where a sliver left out ends to where it
     // starts, so that it meets the strip before the sliver:
     const moveStart = (side: Side) => {
-      const { x, y } = this.getStart(new Point(side[0][0]))
+      const [{ x, y }] = getSliverSide(this.slivers, new Point(side[0][0]))
       side[0][0] = [x, y]
     }
 
@@ -396,7 +383,7 @@ export class ProfileSweep extends Sweep<ProfilePart> {
       const t0 = splits[i - 1][1]
       const t1 = splits[i][0]
       const strips = t1 - t0 > GEOMETRIC_EPSILON ? getStrips((t0 + t1) / 2) : []
-      const moves: Move[] = []
+      const slivers: Sliver[] = []
       for (let j = 0, m = strips.length; j < m; j++) {
         const motions = getMotions(strips[j])
         const from = getSide(t => getEnd(t, j, 'from'), t0, t1)
@@ -457,13 +444,13 @@ export class ProfileSweep extends Sweep<ProfilePart> {
           if (isThin(strip1, tolerance) === isThin(strip2, tolerance)) {
             this.areas.push(strip1, strip2)
           } else {
-            this.addStrip(from, to, moves)
+            this.addStrip(from, to, slivers)
           }
         } else {
-          this.addStrip(from, to, moves)
+          this.addStrip(from, to, slivers)
         }
       }
-      this.moves.push(...moves)
+      this.slivers = slivers
     }
   }
 
@@ -580,20 +567,18 @@ export class ProfileSweep extends Sweep<ProfilePart> {
           const direction2 = sides2[k].derivative.normalize()
           // From the inner sides, as the ends of the parts only run
           // through the point where the pen doesn't change, and from
-          // where the strips before slivers left out there ended:
-          const start1 = this.getStart(side1)
+          // where the slivers left out at the end of the first part
+          // start, which the join covers that way:
+          const { slivers } = part1
           const points = [
-            this.getStart(sides1[1 - k].point),
+            getSliverSide(slivers, sides1[1 - k].point)[0],
             widen(
               sides1[k],
               this.getSpanPen(span1, part1.offset + part1.length),
               tangent1.negate()
-            )
+            ),
+            ...getSliverSide(slivers, side1)
           ]
-          if (start1 !== side1) {
-            points.push(start1)
-          }
-          points.push(side1)
           if (join === 'miter') {
             const miter = Line.intersect(
               side1.x, side1.y,
@@ -649,6 +634,8 @@ export class ProfileSweep extends Sweep<ProfilePart> {
       )
     } else if (cap === 'square') {
       const { sides } = this.getContacts(part, t, span)
+      // From where the slivers left out at the end of the part start:
+      const slivers = atEnd ? part.slivers : []
       if (sides) {
         const axes = getAxes(pen)
         const reach = new Point(
@@ -659,12 +646,15 @@ export class ProfileSweep extends Sweep<ProfilePart> {
         const side0 = sides[0].point
         const side1 = sides[1].point
         this.addPolygon([
-          this.getStart(side0),
+          getSliverSide(slivers, side0)[0],
           side0.add(ahead),
           side1.add(ahead),
-          this.getStart(side1)
+          getSliverSide(slivers, side1)[0]
         ])
       }
+    } else if (atEnd) {
+      // Nothing covers the slivers left out before a butt cap:
+      this.areas.push(...part.slivers.map(({ strip }) => strip))
     }
   }
 
@@ -681,41 +671,34 @@ export class ProfileSweep extends Sweep<ProfilePart> {
   // the tolerance only adds points so close to the others' that the union
   // can't tell them apart, but without it, the strips around it miss each
   // other by its width. So we only leave it out where it is short enough
-  // for the next strip to start where it does, and add the ends of its
-  // sides with where they start to the moves:
-  addStrip(side1: Side, side2: Side, moves: Move[]) {
+  // for what follows to start where it does, and add it to the slivers:
+  addStrip(side1: Side, side2: Side, slivers: Sliver[]) {
     const { tolerance } = this.stroke
     const strip = createStrip(side1, side2)
-    const ends = [side1, side2].map((side): Move => ({
-      end: new Point(side.at(-1)[0]),
-      start: new Point(side[0][0]),
-      strip,
-      isMet: false
-    }))
+    const sides = [side1, side2].map((side): [Point, Point] => [
+      new Point(side.at(-1)[0]),
+      new Point(side[0][0])
+    ])
     if (
       isThin(strip, tolerance) &&
-      ends.every(({ end, start }) => end.isClose(start, 2 * tolerance))
+      sides.every(([end, start]) => end.isClose(start, 2 * tolerance))
     ) {
-      moves.push(...ends)
+      slivers.push({ strip, sides })
     } else {
       this.areas.push(strip)
     }
   }
+}
 
-  // Returns where the side of a sliver that was left out and ends at the
-  // point starts, for what follows there to start at instead, or the point
-  // itself:
-  getStart(point: Point): Point {
-    const move = this.moves.find(({ end }) =>
-      end.isClose(point, GEOMETRIC_EPSILON)
-    )
-    if (move) {
-      move.isMet = true
-      return move.start
-    } else {
-      return point
+// Returns the side of one of the slivers that ends at the point, from its
+// start, or only the point:
+function getSliverSide(slivers: Sliver[], point: Point): Point[] {
+  for (const { sides } of slivers) {
+    for (const [end, start] of sides) {
+      if (end.isClose(point, GEOMETRIC_EPSILON)) return [start, point]
     }
   }
+  return [point]
 }
 
 // Returns the times between the first and the last sample where the strips
