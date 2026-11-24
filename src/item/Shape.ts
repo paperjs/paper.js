@@ -23,6 +23,7 @@ import {
   Size,
   defineDeprecatedConstructors,
   equals,
+  getStrokeMatrix,
   isPlainObject,
   isRectangle,
   paintItem,
@@ -538,7 +539,7 @@ export class Shape extends Item {
           new Size(
             Matrix._getCircleExtents(
               strokeRadius,
-              this._getStrokeMatrix(matrix, options)
+              getStrokeMatrix(this, matrix, options)
             )
           ).multiply(2)
         )

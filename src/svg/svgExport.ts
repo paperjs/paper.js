@@ -25,6 +25,7 @@ import {
   Shape,
   createSvgElement,
   equals,
+  getCombinedBounds,
   getDocument,
   getPathData,
   getUID,
@@ -940,7 +941,7 @@ function exportRoot(
     bounds === 'view'
       ? new Rectangle([0, 0], view.viewSize)
       : bounds === 'content'
-        ? Item._getBounds(items, matrix, { stroke: true }).rect
+        ? getCombinedBounds(items, matrix, { stroke: true }).rect
         : bounds && Rectangle.from(bounds)
   const attrs: Attributes = {
     'version': '1.1',

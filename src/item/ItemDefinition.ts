@@ -15,6 +15,7 @@ import {
   Change,
   ChangeFlag,
   Item,
+  clearBoundsCache,
   getUID,
   paper
 } from '../internal.ts'
@@ -51,7 +52,7 @@ export class ItemDefinition extends Base {
     const { project } = this
     if (flags & ChangeFlag.GEOMETRY) {
       // Clear cached bounds of all items that this definition is linked to.
-      Item._clearBoundsCache(this)
+      clearBoundsCache(this)
     }
     if (flags & ChangeFlag.APPEARANCE) {
       // Its items may be drawn in any buffered group:

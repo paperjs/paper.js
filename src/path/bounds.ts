@@ -18,7 +18,8 @@ import {
   Rectangle,
   Segment,
   Size,
-  addCurveBounds
+  addCurveBounds,
+  getStrokeMatrix
 } from '../internal.ts'
 import type { Path } from './Path.ts'
 
@@ -96,7 +97,7 @@ export function getSegmentStrokeBounds(
   const { style } = path
   const stroke = style.hasStroke()
   const strokeRadius = style.strokeWidth / 2
-  const strokeMatrix = stroke ? path._getStrokeMatrix(matrix, options) : null
+  const strokeMatrix = stroke ? getStrokeMatrix(path, matrix, options) : null
   const strokePadding = (
     stroke &&
     Matrix._getCircleExtents(strokeRadius, strokeMatrix)
@@ -270,7 +271,7 @@ export function getSegmentHandleBounds(
   let strokePadding: number[]
   let joinPadding: number[]
   if (stroke) {
-    const strokeMatrix = path._getStrokeMatrix(matrix, options)
+    const strokeMatrix = getStrokeMatrix(path, matrix, options)
     const strokeRadius = style.strokeWidth / 2
     let joinRadius = strokeRadius
     if (style.strokeJoin === 'miter') {
