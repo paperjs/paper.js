@@ -663,6 +663,32 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     ])
   })
 
+  test('Canvas with input="off" (#1491)', () => {
+    const canvas = document.createElement('canvas')
+    canvas.setAttribute('input', 'off')
+    document.body.appendChild(canvas)
+    const project = new Project(canvas)
+    const { view } = project
+    const item = Path.rectangle({
+      point: [0, 0],
+      size: [10, 10],
+      fillColor: 'red'
+    })
+    const types = []
+    item.onMouseDown = view.onMouseDown = event => {
+      types.push(event.type)
+    }
+    // The pointer reaches no handler, but the host's events do:
+    triggerPointerEvent('pointerdown', new Point(5, 5), canvas)
+    triggerPointerEvent('pointerup', new Point(5, 5), canvas)
+    equals(types.join(), '', 'pointer events')
+    view.dispatchMouseEvent('mousedown', [5, 5])
+    view.dispatchMouseEvent('mouseup', [5, 5])
+    equals(types.join(), 'mousedown,mousedown', 'dispatched events')
+    project.remove()
+    document.body.removeChild(canvas)
+  })
+
   test('View#onMouseEnter() is only triggered as the pointer enters', () => {
     const types = []
     paper.view.onMouseEnter = paper.view.onMouseLeave = event => {
