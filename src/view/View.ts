@@ -79,6 +79,12 @@ type FrameEvent = { delta: number; time: number; count: number }
  * not follow the window, and on HiDPI screens it grows with each resize.
  * Without the attribute, the view sets the element's CSS width and height to
  * its own size, see {@link #viewSize}.
+ *
+ * If the canvas element has an `input="off"` or `data-paper-input="off"`
+ * attribute, the view doesn't handle the user's input: it installs no
+ * listeners for the pointer and the keyboard, and never takes the keyboard's
+ * focus. Its drawing, {@link #onFrame}, {@link #onResize}, hit-tests and
+ * {@link #dispatchMouseEvent()} work as before.
  */
 export class View extends Emitter {
   // The view that receives keyboard input:
@@ -97,6 +103,8 @@ export class View extends Emitter {
   // Count the installed native and virtual item events,
   // see #_countItemEvent():
   _itemEvents = { native: {}, virtual: {} }
+  // Whether the view handles the user's input, see installEvents():
+  _hasInput = false
   #scope: PaperScope
   #id: string
   #windowEvents: Record<string, Listener>
@@ -113,8 +121,6 @@ export class View extends Emitter {
 
   constructor(project: Project, element: HTMLCanvasElement | SizeLike) {
     super()
-    // Install the DOM's listeners and the item events with the first view:
-    installEvents()
     const window = getWindow()
     let size: Size
     if (window && element) {
@@ -138,22 +144,30 @@ export class View extends Emitter {
           : size.subtract(getInsets(canvas))
       }
 
+      // Options that the canvas's attributes switch off, such as hidpi="off":
+      const isOff = (name: string) =>
+        /^(off|false)$/.test(PaperScope.getAttribute(canvas, name))
+
       // Generate an id for this view / element if it does not have one
       this.#id = canvas.getAttribute('id')
       if (this.#id == null) {
         this.#id = `paper-view-${nextId++}`
         canvas.setAttribute('id', this.#id)
       }
-      // Install event handlers
-      addEvents(canvas, viewEvents)
-      // Borrowed from Hammer.js:
-      const none = 'none'
-      setPrefixed(canvas.style, {
-        userDrag: none,
-        userSelect: none,
-        touchCallout: none,
-        tapHighlightColor: 'rgba(0,0,0,0)'
-      })
+      // Handle the user's input, unless the canvas says input="off":
+      this._hasInput = !isOff('input')
+      installEvents(this._hasInput)
+      if (this._hasInput) {
+        addEvents(canvas, viewEvents)
+        // Borrowed from Hammer.js:
+        const none = 'none'
+        setPrefixed(canvas.style, {
+          userDrag: none,
+          userSelect: none,
+          touchCallout: none,
+          tapHighlightColor: 'rgba(0,0,0,0)'
+        })
+      }
 
       // If the element has the resize attribute, listen to resize events
       // and update its coordinate space accordingly
@@ -186,11 +200,9 @@ export class View extends Emitter {
       this._context = canvas.getContext('2d')
       // Hi-DPI Canvas support based on:
       // https://www.html5rocks.com/en/tutorials/canvas/hidpi/
-      const hidpi = PaperScope.getAttribute(canvas, 'hidpi')
-      this._pixelRatio = /^off|false$/.test(hidpi)
-        ? 1
-        : window.devicePixelRatio || 1
+      this._pixelRatio = isOff('hidpi') ? 1 : window.devicePixelRatio || 1
     } else {
+      installEvents(false)
       // For web-workers: Allow calling of `paper.setup(new Size(x, y));`
       size = new Size(element as SizeLike)
       this._element = null
@@ -214,7 +226,9 @@ export class View extends Emitter {
     this._matrix = new Matrix()
     this._matrix._owner = this
     // Make sure the first view is focused for keyboard input straight away
-    View._focused ??= this
+    if (this._hasInput) {
+      View._focused ??= this
+    }
     // Do not set _autoUpdate on Node.js by default:
     this._autoUpdate = !paper.agent.node
   }
@@ -1689,8 +1703,10 @@ type PointerOptions = {
 const views: View[] = []
 const viewsById: Record<string, View> = {}
 let nextId = 0
-// Whether installEvents() has added the DOM's listeners:
+// Whether installEvents() has defined the events, and added the DOM's
+// listeners for input, which the views that handle it share:
 let isInstalled = false
+let hasInputEvents = false
 // The DOM's events, which installEvents() sets up, and which install
 // themselves on the elements of views:
 let viewEvents: Record<string, Listener> = {}
@@ -1750,110 +1766,109 @@ const itemEventsMap: Record<string, Record<string, number>> = {
   }
 }
 
-// Declare the item events of views, which come from Item, and install the
-// listeners for the DOM's events, once, with the first view:
-function installEvents() {
+// Declare the item events of views, which come from Item, and the listeners
+// for the DOM's events, once, with the first view. Install the ones that all
+// views share with the first one that handles input:
+function installEvents(hasInput: boolean) {
   if (!isInstalled) {
     isInstalled = true
     defineEvents(
       View,
       Object.fromEntries(Item._itemHandlers.map(name => [name, {}]))
     )
-    installKeyEvents()
-    const window = getWindow()
-    if (window) {
-      // Pointer events cover mice, touches and pens alike. They are installed
-      // on the elements of the views, as defined by viewEvents, and only the
-      // primary pointer is handled: the mouse, a pen, or the first touch.
-      viewEvents = {
-        'pointerdown'(event: PointerEvent) {
-          if (event.isPrimary && !dragging) {
-            // Get the view from the event, and store a reference to the view
-            // that should receive keyboard input.
-            const view = (View._focused = getView(event))
-            dragging = true
-            // Capture the pointer, to receive its moves and the end of the
-            // drag outside of the view too. Events that scripts dispatch
-            // have no pointer to capture:
-            if (event.isTrusted) {
-              view._element.setPointerCapture(event.pointerId)
+    // Pointer events cover mice, touches and pens alike. They are installed
+    // on the elements of the views, as defined by viewEvents, and only the
+    // primary pointer is handled: the mouse, a pen, or the first touch.
+    viewEvents = {
+      'pointerdown'(event: PointerEvent) {
+        if (event.isPrimary && !dragging) {
+          // Get the view from the event, and store a reference to the view
+          // that should receive keyboard input.
+          const view = (View._focused = getView(event))
+          dragging = true
+          // Capture the pointer, to receive its moves and the end of the
+          // drag outside of the view too. Events that scripts dispatch
+          // have no pointer to capture:
+          if (event.isTrusted) {
+            view._element.setPointerCapture(event.pointerId)
+          }
+          view._handleMouseEvent('mousedown', event)
+          isPrevented = event.defaultPrevented
+        }
+      },
+
+      'pointermove'(event: PointerEvent) {
+        if (event.isPrimary) {
+          const view = getView(event)
+          if (dragging) {
+            View._focused._handleMouseEvent('mousemove', event)
+          } else if (!event.buttons || view === View._focused) {
+            // Presses that started elsewhere don't switch views as they
+            // move over this one.
+            if (view !== View._focused) {
+              // Temporarily focus this view without making it sticky,
+              // so Key events are handled too during the mouse over.
+              prevFocus ??= View._focused
+              View._focused = tempFocus = view
             }
-            view._handleMouseEvent('mousedown', event)
-            isPrevented = event.defaultPrevented
-          }
-        },
-
-        'pointermove'(event: PointerEvent) {
-          if (event.isPrimary) {
-            const view = getView(event)
-            if (dragging) {
-              View._focused._handleMouseEvent('mousemove', event)
-            } else if (!event.buttons || view === View._focused) {
-              // Presses that started elsewhere don't switch views as they
-              // move over this one.
-              if (view !== View._focused) {
-                // Temporarily focus this view without making it sticky,
-                // so Key events are handled too during the mouse over.
-                prevFocus ??= View._focused
-                View._focused = tempFocus = view
-              }
-              view._handleMouseEvent('mousemove', event)
-            }
-          }
-        },
-
-        'pointerleave'(event: PointerEvent) {
-          if (event.isPrimary && !dragging) {
-            // When the pointer leaves the view, handle one last move, to
-            // give items the chance to receive a mouseleave, etc. Touches
-            // leave by ending, where they were last:
-            const view = getView(event)
-            view._handleMouseEvent(
-              'mousemove',
-              event,
-              event.pointerType === 'touch' ? lastPoint : undefined
-            )
-            if (tempFocus === view) {
-              // Clear temporary focus again and switch back to previous
-              // focus but only if it is still valid (still in the DOM).
-              View._focused = prevFocus?.isInserted() ? prevFocus : null
-              prevFocus = null
-              updateFocus()
-            }
-          }
-        },
-
-        'pointerup pointercancel'(event: PointerEvent) {
-          if (event.isPrimary && dragging) {
-            // Pointers that are cancelled, such as touches that browsers
-            // take over to scroll the page, report no position:
-            View._focused._handleMouseEvent(
-              'mouseup',
-              event,
-              event.type === 'pointercancel' ? lastPoint : undefined
-            )
-            dragging = false
-          }
-        },
-
-        // Browsers decide whether a touch scrolls the page before they send
-        // its pointer events, unless its touchstart is prevented, which
-        // comes after the pointerdown. Do so where the press was (#1930):
-        'touchstart'(event: TouchEvent) {
-          if (isPrevented && event.cancelable) {
-            event.preventDefault()
+            view._handleMouseEvent('mousemove', event)
           }
         }
+      },
+
+      'pointerleave'(event: PointerEvent) {
+        if (event.isPrimary && !dragging) {
+          // When the pointer leaves the view, handle one last move, to
+          // give items the chance to receive a mouseleave, etc. Touches
+          // leave by ending, where they were last:
+          const view = getView(event)
+          view._handleMouseEvent(
+            'mousemove',
+            event,
+            event.pointerType === 'touch' ? lastPoint : undefined
+          )
+          if (tempFocus === view) {
+            // Clear temporary focus again and switch back to previous
+            // focus but only if it is still valid (still in the DOM).
+            View._focused = prevFocus?.isInserted() ? prevFocus : null
+            prevFocus = null
+            updateFocus()
+          }
+        }
+      },
+
+      'pointerup pointercancel'(event: PointerEvent) {
+        if (event.isPrimary && dragging) {
+          // Pointers that are cancelled, such as touches that browsers
+          // take over to scroll the page, report no position:
+          View._focused._handleMouseEvent(
+            'mouseup',
+            event,
+            event.type === 'pointercancel' ? lastPoint : undefined
+          )
+          dragging = false
+        }
+      },
+
+      // Browsers decide whether a touch scrolls the page before they send
+      // its pointer events, unless its touchstart is prevented, which
+      // comes after the pointerdown. Do so where the press was (#1930):
+      'touchstart'(event: TouchEvent) {
+        if (isPrevented && event.cancelable) {
+          event.preventDefault()
+        }
       }
-
-      addEvents(getDocument(), {
-        scroll: updateFocus
-      })
-
-      addEvents(window, {
-        load: updateFocus
-      })
     }
+  }
+  if (hasInput && !hasInputEvents) {
+    hasInputEvents = true
+    installKeyEvents()
+    addEvents(getDocument(), {
+      scroll: updateFocus
+    })
+    addEvents(getWindow(), {
+      load: updateFocus
+    })
   }
 }
 
@@ -1867,9 +1882,9 @@ function getView(event: Event): View {
 function updateFocus() {
   let view = View._focused
   if (!view || !view.isVisible()) {
-    // Find the first visible view
+    // Find the first visible view that handles input
     for (view of views) {
-      if (view.isVisible()) {
+      if (view._hasInput && view.isVisible()) {
         View._focused = tempFocus = view
         break
       }
