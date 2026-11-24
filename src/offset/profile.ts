@@ -56,6 +56,7 @@ import {
   createPen,
   getAxes,
   getContacts,
+  getPenArc,
   getPenSegments,
   getStripWidth
 } from './pen.ts'
@@ -533,53 +534,87 @@ export class ProfileSweep extends Sweep<ProfilePart> {
     // Where the curves continue each other, their parts meet in the same
     // points, and need no join:
     if (!isZero(cross) || tangent1.dot(tangent2) < 0) {
-      if (join === 'round') {
-        this.addPen(point, pen, strips1.concat(strips2))
-      } else {
-        // The side against the turn, see getContacts():
-        const k = cross > 0 ? 1 : 0
-        const sides1 = contacts1.sides
-        const sides2 = contacts2.sides
-        if (sides1 && sides2) {
-          // Widen the join into the parts on both sides, as
-          // RoundSweep#addJoin() does, by turning the sides' points
-          // around their pens, back along the first curve and
-          // ahead along the second. The sides themselves run
-          // against their curves where these bend more tightly
-          // than the pen:
-          const widening = Math.sqrt(tolerance / radius)
-          const widen = (side: Contact, pen: Pen, ahead: Point) => {
-            const axes = getAxes(pen)
-            const c = Math.cos(side.phi)
-            const s = Math.sin(side.phi)
-            const along = axes[0]
-              .multiply(-pen.a * s)
-              .add(axes[1].multiply(pen.b * c))
-              .dot(ahead)
-            const phi = side.phi + (along > 0 ? widening : -widening)
-            return side.point
-              .add(axes[0].multiply(pen.a * (Math.cos(phi) - c)))
-              .add(axes[1].multiply(pen.b * (Math.sin(phi) - s)))
-          }
-          const side1 = sides1[k].point
-          const side2 = sides2[k].point
-          const direction1 = sides1[k].derivative.normalize()
-          const direction2 = sides2[k].derivative.normalize()
-          // From the inner sides, as the ends of the parts only run
-          // through the point where the pen doesn't change, and from
-          // where the slivers left out at the end of the first part
-          // start, which the join covers that way:
-          const { slivers } = part1
-          const points = [
-            getSliverSide(slivers, sides1[1 - k].point)[0],
-            widen(
-              sides1[k],
-              this.getSpanPen(span1, part1.offset + part1.length),
-              tangent1.negate()
-            ),
-            ...getSliverSide(slivers, side1)
-          ]
+      // The side against the turn, see getContacts():
+      const k = cross > 0 ? 1 : 0
+      const sides1 = contacts1.sides
+      const sides2 = contacts2.sides
+      const pen1 = this.getSpanPen(span1, part1.offset + part1.length)
+      // Round joins are the pen's arc there, where the pen doesn't change:
+      // The parts then end straight across it, and leave nothing else of
+      // it uncovered. A pen that changes stays whole:
+      const hasArc = join === 'round' && isConstant(pen1, pen)
+      if (sides1 && sides2 && (hasArc || join !== 'round')) {
+        // Widen the join into the parts on both sides, as
+        // RoundSweep#addJoin() does, by turning the sides' points
+        // around their pens, back along the first curve and
+        // ahead along the second. The sides themselves run
+        // against their curves where these bend more tightly
+        // than the pen:
+        const widening = Math.sqrt(tolerance / radius)
+        const widen = (side: Contact, pen: Pen, ahead: Point): number => {
+          const axes = getAxes(pen)
+          const along = axes[0]
+            .multiply(-pen.a * Math.sin(side.phi))
+            .add(axes[1].multiply(pen.b * Math.cos(side.phi)))
+            .dot(ahead)
+          return side.phi + (along > 0 ? widening : -widening)
+        }
+        // The point at the angle on the pen that touches the side:
+        const getPoint = (side: Contact, pen: Pen, phi: number): Point => {
+          const axes = getAxes(pen)
+          return side.point
+            .add(
+              axes[0].multiply(pen.a * (Math.cos(phi) - Math.cos(side.phi)))
+            )
+            .add(
+              axes[1].multiply(pen.b * (Math.sin(phi) - Math.sin(side.phi)))
+            )
+        }
+        const side1 = sides1[k].point
+        const side2 = sides2[k].point
+        const phi1 = widen(sides1[k], pen1, tangent1.negate())
+        const phi2 = widen(sides2[k], pen, tangent2)
+        // From the inner sides, as the ends of the parts only run
+        // through the point where the pen doesn't change, and from
+        // where the slivers left out at the end of the first part
+        // start, which the join covers that way:
+        const { slivers } = part1
+        const inner1 = getSliverSide(slivers, sides1[1 - k].point)[0]
+        const inner2 = sides2[1 - k].point
+        const ends1 = getSliverSide(slivers, side1)
+        if (hasArc) {
+          // Around the pen from the first side to the second, away from
+          // where the first one is widened to. Turns of up to 180° come
+          // out a little beyond that by rounding, or below 0°:
+          const full = 2 * Math.PI
+          const direction = phi1 > sides1[k].phi ? -1 : 1
+          const turn = (
+            (
+              (direction * (sides2[k].phi - sides1[k].phi) + Math.PI / 2) %
+              full +
+              full
+            ) %
+            full -
+            Math.PI / 2
+          )
+          const end = sides1[k].phi + direction * turn
+          const arc = getPenArc(point, pen, [
+            phi1,
+            sides1[k].phi,
+            end,
+            end + direction * widening
+          ])
+          this.addArea([
+            [inner1.x, inner1.y],
+            ...ends1.slice(0, -1).map(({ x, y }) => [x, y]),
+            ...arc,
+            [inner2.x, inner2.y]
+          ])
+        } else {
+          const points = [inner1, getPoint(sides1[k], pen1, phi1), ...ends1]
           if (join === 'miter') {
+            const direction1 = sides1[k].derivative.normalize()
+            const direction2 = sides2[k].derivative.normalize()
             const miter = Line.intersect(
               side1.x, side1.y,
               direction1.x, direction1.y,
@@ -587,23 +622,16 @@ export class ProfileSweep extends Sweep<ProfilePart> {
               direction2.x, direction2.y,
               true, true
             )
-            if (
-              miter && (
-                miter.getDistance(point) <=
-                miterLimit * pen.a
-              )
-            ) {
+            if (miter && miter.getDistance(point) <= miterLimit * pen.a) {
               points.push(miter)
             }
           }
           this.addPolygon(
-            points.concat(
-              side2,
-              widen(sides2[k], pen, tangent2),
-              sides2[1 - k].point
-            )
+            points.concat(side2, getPoint(sides2[k], pen, phi2), inner2)
           )
         }
+      } else if (join === 'round') {
+        this.addPen(point, pen, strips1.concat(strips2))
       }
     } else if (
       !isMeeting(strips1, strips2) &&

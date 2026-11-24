@@ -345,11 +345,6 @@ export function getPenSegments(
   pen: Pen,
   strips?: Strip[]
 ): SegmentValues[] {
-  // The point on the unit circle, which the pen's matrix maps:
-  function getPoint(phi: number): Point {
-    return new Point(Math.cos(phi), Math.sin(phi))
-  }
-
   if (pen.a > 0 && pen.b > 0) {
     const full = 2 * Math.PI
     const angles: number[] = []
@@ -363,53 +358,69 @@ export function getPenSegments(
       angles.push(0)
     }
     angles.push(angles[0] + full)
-    const start = getPoint(angles[0])
-    const segments: SegmentValues[] = [[[start.x, start.y], [0, 0], [0, 0]]]
-    for (let i = 1, l = angles.length; i < l; i++) {
-      const phi0 = angles[i - 1]
-      const sweep = angles[i] - phi0
-      // Arcs of up to 90°, as Path.ellipse() has:
-      const count = Math.ceil(sweep / (Math.PI / 2) - 1e-9)
-      const step = sweep / count
-      if (sweep > GEOMETRIC_EPSILON) {
-        for (let j = 1; j <= count; j++) {
-          const last = segments.at(-1)
-          const [first, ...arc] = getArcThrough(
-            new Point(last[0]),
-            getPoint(phi0 + (j - 0.5) * step),
-            getPoint(phi0 + j * step)
-          )
-          last[2] = first[2]
-          segments.push(...arc)
-        }
-      }
-    }
+    const segments = getPenArc(point, pen, angles)
     // The last segment lies on the first one, which takes its handle:
     const last = segments.pop()
-    if (start.isClose(last[0], GEOMETRIC_EPSILON)) {
+    if (new Point(segments[0][0]).isClose(last[0], GEOMETRIC_EPSILON)) {
       segments[0][1] = last[1]
     } else {
       segments.push(last)
     }
-    const matrix = createMatrix()
-    translateMatrix(matrix, point.x, point.y)
-    rotateMatrix(matrix, pen.angle * 180 / Math.PI)
-    scaleMatrix(matrix, pen.a, pen.b)
-    return segments.map(([point, handleIn, handleOut]) => {
-      const center = new Point(point)
-      const { x, y } = transformPoint(matrix, center)
-      // Handles are transformed as points, where there are any:
-      const transform = (handle: number[]) => {
-        if (handle[0] || handle[1]) {
-          const to = transformPoint(matrix, center.add(handle))
-          return [to.x - x, to.y - y]
-        } else {
-          return handle
-        }
-      }
-      return [[x, y], transform(handleIn), transform(handleOut)]
-    })
+    return segments
   } else {
     return []
   }
+}
+
+// Returns the segments of the arc of the pen at the point that runs through
+// the angles, which follow each other in one direction around it:
+export function getPenArc(
+  point: Point,
+  pen: Pen,
+  angles: number[]
+): SegmentValues[] {
+  // The point on the unit circle, which the pen's matrix maps:
+  function getPoint(phi: number): Point {
+    return new Point(Math.cos(phi), Math.sin(phi))
+  }
+
+  const start = getPoint(angles[0])
+  const segments: SegmentValues[] = [[[start.x, start.y], [0, 0], [0, 0]]]
+  for (let i = 1, l = angles.length; i < l; i++) {
+    const phi0 = angles[i - 1]
+    const sweep = angles[i] - phi0
+    // Arcs of up to 90°, as Path.ellipse() has:
+    const count = Math.ceil(Math.abs(sweep) / (Math.PI / 2) - 1e-9)
+    const step = sweep / count
+    if (Math.abs(sweep) > GEOMETRIC_EPSILON) {
+      for (let j = 1; j <= count; j++) {
+        const last = segments.at(-1)
+        const [first, ...arc] = getArcThrough(
+          new Point(last[0]),
+          getPoint(phi0 + (j - 0.5) * step),
+          getPoint(phi0 + j * step)
+        )
+        last[2] = first[2]
+        segments.push(...arc)
+      }
+    }
+  }
+  const matrix = createMatrix()
+  translateMatrix(matrix, point.x, point.y)
+  rotateMatrix(matrix, pen.angle * 180 / Math.PI)
+  scaleMatrix(matrix, pen.a, pen.b)
+  return segments.map(([point, handleIn, handleOut]) => {
+    const center = new Point(point)
+    const { x, y } = transformPoint(matrix, center)
+    // Handles are transformed as points, where there are any:
+    const transform = (handle: number[]) => {
+      if (handle[0] || handle[1]) {
+        const to = transformPoint(matrix, center.add(handle))
+        return [to.x - x, to.y - y]
+      } else {
+        return handle
+      }
+    }
+    return [[x, y], transform(handleIn), transform(handleOut)]
+  })
 }
