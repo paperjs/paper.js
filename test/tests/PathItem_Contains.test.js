@@ -525,4 +525,18 @@ describe('PathItem Contains', () => {
     testPoint(path, new Point(400, 46), false)
     testPoint(path, new Point(351, 46), true, 'The segment is on the path.')
   })
+
+  test('Path#contains() of curves that turn right after their start', () => {
+    // The handle out is almost flat, so the curve turns in y right after its
+    // start, at a time below 1e-6, which sorted after the later turn as text:
+    const path = new Path({
+      segments: [
+        [[0, 0], [0, 0], [28, -0.00001]],
+        [[67, -85], [8, 174], [0, 0]]
+      ],
+      closed: true
+    })
+    testPoint(path, new Point(15, 5), true)
+    testPoint(path, new Point(25, 5), true)
+  })
 })
