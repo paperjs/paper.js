@@ -832,10 +832,14 @@ export class TextItem extends Item {
           const local = point
             .subtract(piece.x, line.y + piece.y)
             .rotate(-piece.rotation)
-          const rect = this._getBox(piece, piece.dx || 0, 0)
+          const { left, top, right, bottom } = this._getBox(
+            piece,
+            piece.dx || 0,
+            0
+          )
           const closest = local.clamp(
-            rect._getTopLeft(true),
-            rect._getBottomRight(true)
+            new Point(left, top),
+            new Point(right, bottom)
           )
           // Transparent fills are hit too, see Path#_hitTestSelf():
           if (piece.style.fillColor) {

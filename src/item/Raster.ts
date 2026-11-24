@@ -928,8 +928,9 @@ export function rasterizeItem(
   const scale = (resolution || item.view.resolution) / 72
   // Floor top-left corner and ceil bottom-right corner, to never
   // blur or cut pixels.
-  const topLeft = bounds._getTopLeft(true).floor()
-  const bottomRight = bounds._getBottomRight(true).ceil()
+  const { left, top, right, bottom } = bounds
+  const topLeft = new Point(Math.floor(left), Math.floor(top))
+  const bottomRight = new Point(Math.ceil(right), Math.ceil(bottom))
   const boundsSize = new Size(bottomRight.subtract(topLeft))
   const rasterSize = boundsSize.multiply(scale)
   // Pass `true` for clear, so reused rasters don't draw over old pixels.
