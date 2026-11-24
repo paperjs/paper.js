@@ -32,22 +32,9 @@ export function addEvents(
   // Do not fail if element is not defined, that way we can keep the code that
   // should not fail in web-workers to a minimum.
   if (element) {
-    const document = getDocument()
     for (const [types, listener] of Object.entries(events)) {
       for (const type of types.split(/[\s,]+/g)) {
-        // For touchstart/touchmove events on document, we need to explicitly
-        // declare that the event is not passive (can be prevented). Otherwise
-        // chrome browser would ignore `event.preventDefault()` calls and omit
-        // warnings. See #1501 and:
-        // https://www.chromestatus.com/features/5093566007214080
-        const options =
-          (
-            element === document &&
-            (type === 'touchstart' || type === 'touchmove')
-          )
-            ? { passive: false }
-            : false
-        element.addEventListener(type, listener, options)
+        element.addEventListener(type, listener, false)
       }
     }
   }
@@ -77,13 +64,13 @@ export function removeEvents(
  *
  * @private
  */
-export function getEventOffset(
-  event: MouseEvent | TouchEvent,
-  target?: Element
-): Point {
+export function getEventOffset(event: MouseEvent, target?: Element): Point {
+  const { documentElement } = getDocument()
   // Remove target offsets from page coordinates
-  target ||= event.target as Element
-  return getPagePoint(event, target).subtract(getOffset(target))
+  return new Point(
+    event.pageX || event.clientX + documentElement.scrollLeft,
+    event.pageY || event.clientY + documentElement.scrollTop
+  ).subtract(getOffset(target || (event.target as Element)))
 }
 
 /**
@@ -132,29 +119,4 @@ function handleCallbacks() {
     clearInterval(timer)
     timer = null
   }
-}
-
-function getPagePoint(event: any, target: Element): Point {
-  function find(touches: TouchList) {
-    for (let i = 0, l = touches.length; i < l; i++) {
-      if (touches[i].target === target) return touches[i]
-    }
-  }
-
-  const touches: TouchList = event.targetTouches
-  let position: MouseEvent | Touch = event
-  if (touches) {
-    // Prefer the first touch on the target, also when it just ended, so that
-    // touches elsewhere don't take over its drag (#1875):
-    position = (
-      find(event.touches) ||
-      find(event.changedTouches) ||
-      (touches.length ? touches[0] : event.changedTouches[0])
-    )
-  }
-  const { documentElement } = getDocument()
-  return new Point(
-    position.pageX || position.clientX + documentElement.scrollLeft,
-    position.pageY || position.clientY + documentElement.scrollTop
-  )
 }

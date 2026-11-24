@@ -27,7 +27,7 @@ import {
   isNodeContext,
   test,
   triggerKeyEvent,
-  triggerMouseEvent
+  triggerPointerEvent
 } from '../helpers.js'
 
 const { document } = paper
@@ -56,7 +56,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
       equals(event.delta, null)
       done()
     }
-    triggerMouseEvent('mousedown', point)
+    triggerPointerEvent('pointerdown', point)
   })
 
   test('Item#onMouseDown() with stroked item', assert => {
@@ -72,7 +72,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
       equals(event.delta, null)
       done()
     }
-    triggerMouseEvent('mousedown', point)
+    triggerPointerEvent('pointerdown', point)
   })
 
   test('Item#onMouseDown() is not triggered when item is not filled', () => {
@@ -80,7 +80,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     item.onMouseDown = () => {
       throw new Error('this should not be called')
     }
-    triggerMouseEvent('mousedown', new Point(5, 5))
+    triggerPointerEvent('pointerdown', new Point(5, 5))
     expect.assertions(0)
   })
 
@@ -91,7 +91,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     item.onMouseDown = () => {
       throw new Error('this should not be called')
     }
-    triggerMouseEvent('mousedown', new Point(5, 5))
+    triggerPointerEvent('pointerdown', new Point(5, 5))
     expect.assertions(0)
   })
 
@@ -102,7 +102,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     item.onMouseDown = () => {
       throw new Error('this should not be called')
     }
-    triggerMouseEvent('mousedown', new Point(5, 5))
+    triggerPointerEvent('pointerdown', new Point(5, 5))
     expect.assertions(0)
   })
 
@@ -113,7 +113,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     item.onMouseDown = () => {
       throw new Error('this should not be called')
     }
-    triggerMouseEvent('mousedown', new Point(5, 5))
+    triggerPointerEvent('pointerdown', new Point(5, 5))
     expect.assertions(0)
   })
 
@@ -123,7 +123,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     item.onMouseDown = () => {
       throw new Error('this should not be called')
     }
-    triggerMouseEvent('mousedown', new Point(5, 5), document)
+    triggerPointerEvent('pointerdown', new Point(5, 5), document)
     expect.assertions(0)
   })
 
@@ -140,7 +140,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
       equals(event.delta, null)
       done()
     }
-    triggerMouseEvent('mousemove', point)
+    triggerPointerEvent('pointermove', point)
   })
 
   test('Item#onMouseMove() is not re-triggered if point is the same', () => {
@@ -151,8 +151,8 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     item.onMouseMove = () => {
       equals(true, true)
     }
-    triggerMouseEvent('mousemove', point)
-    triggerMouseEvent('mousemove', point)
+    triggerPointerEvent('pointermove', point)
+    triggerPointerEvent('pointermove', point)
     expect.assertions(1)
   })
 
@@ -169,8 +169,8 @@ describe.skipIf(isNodeContext)('Interactions', () => {
       equals(event.delta, new Point(0, 0))
       done()
     }
-    triggerMouseEvent('mousedown', point)
-    triggerMouseEvent('mouseup', point)
+    triggerPointerEvent('pointerdown', point)
+    triggerPointerEvent('pointerup', point)
   })
 
   test('Item#onMouseUp() is only triggered after mouse down', () => {
@@ -179,7 +179,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     item.onMouseUp = () => {
       throw new Error('this should not be called')
     }
-    triggerMouseEvent('mouseup', new Point(5, 5))
+    triggerPointerEvent('pointerup', new Point(5, 5))
     expect.assertions(0)
   })
 
@@ -190,21 +190,21 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     const drag = Path.rectangle(new Point(20, 0), new Size(10))
     up.removeOnUp()
     drag.removeOnDrag()
-    triggerMouseEvent('mousedown', new Point(5, 5))
-    triggerMouseEvent('mousemove', new Point(6, 6))
+    triggerPointerEvent('pointerdown', new Point(5, 5))
+    triggerPointerEvent('pointermove', new Point(6, 6))
     equals(drag.isInserted(), false)
     equals(up.isInserted(), true)
-    triggerMouseEvent('mouseup', new Point(6, 6))
+    triggerPointerEvent('pointerup', new Point(6, 6))
     equals(up.isInserted(), false)
     // Releasing the mouse without dragging forgets the items to remove on
     // drag:
     const stale = Path.rectangle(new Point(40, 0), new Size(10))
     stale.removeOnDrag()
-    triggerMouseEvent('mousedown', new Point(5, 5))
-    triggerMouseEvent('mouseup', new Point(5, 5))
-    triggerMouseEvent('mousedown', new Point(5, 5))
-    triggerMouseEvent('mousemove', new Point(6, 6))
-    triggerMouseEvent('mouseup', new Point(6, 6))
+    triggerPointerEvent('pointerdown', new Point(5, 5))
+    triggerPointerEvent('pointerup', new Point(5, 5))
+    triggerPointerEvent('pointerdown', new Point(5, 5))
+    triggerPointerEvent('pointermove', new Point(6, 6))
+    triggerPointerEvent('pointerup', new Point(6, 6))
     equals(stale.isInserted(), true)
     tool.remove()
   })
@@ -222,8 +222,8 @@ describe.skipIf(isNodeContext)('Interactions', () => {
       equals(event.delta, new Point(0, 0))
       done()
     }
-    triggerMouseEvent('mousedown', point)
-    triggerMouseEvent('mouseup', point)
+    triggerPointerEvent('pointerdown', point)
+    triggerPointerEvent('pointerup', point)
   })
 
   test('Item#onClick() is not triggered if up point is not on item', () => {
@@ -232,8 +232,8 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     item.onClick = () => {
       throw new Error('this should not be called')
     }
-    triggerMouseEvent('mousedown', new Point(5, 5))
-    triggerMouseEvent('mouseup', new Point(15, 15))
+    triggerPointerEvent('pointerdown', new Point(5, 5))
+    triggerPointerEvent('pointerup', new Point(15, 15))
     expect.assertions(0)
   })
 
@@ -243,8 +243,8 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     item.onClick = () => {
       throw new Error('this should not be called')
     }
-    triggerMouseEvent('mousedown', new Point(15, 15))
-    triggerMouseEvent('mouseup', new Point(5, 5))
+    triggerPointerEvent('pointerdown', new Point(15, 15))
+    triggerPointerEvent('pointerup', new Point(5, 5))
     expect.assertions(0)
   })
 
@@ -261,10 +261,10 @@ describe.skipIf(isNodeContext)('Interactions', () => {
       equals(event.delta, new Point(0, 0))
       done()
     }
-    triggerMouseEvent('mousedown', point)
-    triggerMouseEvent('mouseup', point)
-    triggerMouseEvent('mousedown', point)
-    triggerMouseEvent('mouseup', point)
+    triggerPointerEvent('pointerdown', point)
+    triggerPointerEvent('pointerup', point)
+    triggerPointerEvent('pointerdown', point)
+    triggerPointerEvent('pointerup', point)
   })
 
   test('Item#onDoubleClick() is not triggered if both clicks are not on same item', () => {
@@ -274,10 +274,10 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     item.onDoubleClick = () => {
       throw new Error('this should not be called')
     }
-    triggerMouseEvent('mousedown', new Point(5, 5))
-    triggerMouseEvent('mouseup', new Point(5, 5))
-    triggerMouseEvent('mousedown', new Point(6, 6))
-    triggerMouseEvent('mouseup', new Point(6, 6))
+    triggerPointerEvent('pointerdown', new Point(5, 5))
+    triggerPointerEvent('pointerup', new Point(5, 5))
+    triggerPointerEvent('pointerdown', new Point(6, 6))
+    triggerPointerEvent('pointerup', new Point(6, 6))
     expect.assertions(0)
   })
 
@@ -289,11 +289,11 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     item.onDoubleClick = () => {
       throw new Error('this should not be called')
     }
-    triggerMouseEvent('mousedown', point)
-    triggerMouseEvent('mouseup', point)
+    triggerPointerEvent('pointerdown', point)
+    triggerPointerEvent('pointerup', point)
     setTimeout(() => {
-      triggerMouseEvent('mousedown', point)
-      triggerMouseEvent('mouseup', point)
+      triggerPointerEvent('pointerdown', point)
+      triggerPointerEvent('pointerup', point)
       done()
     }, 301)
     expect.assertions(0)
@@ -307,11 +307,11 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     item.onDoubleClick = () => {
       throw new Error('this should not be called')
     }
-    triggerMouseEvent('mousedown', point)
+    triggerPointerEvent('pointerdown', point)
     setTimeout(() => {
-      triggerMouseEvent('mouseup', point)
-      triggerMouseEvent('mousedown', point)
-      triggerMouseEvent('mouseup', point)
+      triggerPointerEvent('pointerup', point)
+      triggerPointerEvent('pointerdown', point)
+      triggerPointerEvent('pointerup', point)
       done()
     }, 301)
     expect.assertions(0)
@@ -326,11 +326,11 @@ describe.skipIf(isNodeContext)('Interactions', () => {
       equals(event.type, 'doubleclick')
       done()
     }
-    triggerMouseEvent('mousedown', point)
-    triggerMouseEvent('mouseup', point)
-    triggerMouseEvent('mousedown', point)
+    triggerPointerEvent('pointerdown', point)
+    triggerPointerEvent('pointerup', point)
+    triggerPointerEvent('pointerdown', point)
     setTimeout(() => {
-      triggerMouseEvent('mouseup', point)
+      triggerPointerEvent('pointerup', point)
     }, 301)
   })
 
@@ -342,8 +342,8 @@ describe.skipIf(isNodeContext)('Interactions', () => {
       types.push(event.type)
     }
     function click(x, y) {
-      triggerMouseEvent('mousedown', new Point(x, y))
-      triggerMouseEvent('mouseup', new Point(x, y))
+      triggerPointerEvent('pointerdown', new Point(x, y))
+      triggerPointerEvent('pointerup', new Point(x, y))
     }
     click(5, 5)
     click(8, 5) // 3 pixels away
@@ -360,8 +360,8 @@ describe.skipIf(isNodeContext)('Interactions', () => {
       types.push(event.type)
     }
     for (let i = 0; i < 4; i++) {
-      triggerMouseEvent('mousedown', new Point(5, 5))
-      triggerMouseEvent('mouseup', new Point(5, 5))
+      triggerPointerEvent('pointerdown', new Point(5, 5))
+      triggerPointerEvent('pointerup', new Point(5, 5))
     }
     equals(types.join(), 'click,doubleclick,click,doubleclick')
   })
@@ -379,7 +379,7 @@ describe.skipIf(isNodeContext)('Interactions', () => {
       equals(event.delta, null)
       done()
     }
-    triggerMouseEvent('mousemove', point)
+    triggerPointerEvent('pointermove', point)
   })
 
   test('Item#onMouseEnter() is not triggered through covering elements (#992)', () => {
@@ -395,13 +395,14 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     // An element such as a menu lies over the canvas, and gets the moves:
     const cover = document.createElement('div')
     document.body.appendChild(cover)
-    triggerMouseEvent('mousemove', new Point(5, 5), cover)
+    triggerPointerEvent('pointermove', new Point(5, 5), cover)
     equals(types.join(), '', 'over the covering element')
     // Moving off it onto the canvas enters the item:
-    triggerMouseEvent('mousemove', new Point(6, 6))
+    triggerPointerEvent('pointermove', new Point(6, 6))
     equals(types.join(), 'mouseenter,mousemove', 'over the canvas')
-    // Moving back onto the covering element leaves it again:
-    triggerMouseEvent('mousemove', new Point(5, 5), cover)
+    // Moving back onto the covering element leaves the canvas, and the item
+    // with it, also at a point within the view:
+    triggerPointerEvent('pointerleave', new Point(5, 5))
     equals(
       types.join(),
       'mouseenter,mousemove,mouseleave',
@@ -419,14 +420,14 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     }
     // Shift was pressed while the page didn't have the focus, so no key event
     // told Paper.js about it, only the mouse events' flags:
-    triggerMouseEvent('mousedown', new Point(5, 5), null, {
+    triggerPointerEvent('pointerdown', new Point(5, 5), null, {
       shiftKey: true
     })
-    triggerMouseEvent('mouseup', new Point(5, 5), null, { shiftKey: true })
+    triggerPointerEvent('pointerup', new Point(5, 5), null, { shiftKey: true })
     equals(Key.modifiers.shift, true, 'pressed')
     // And released elsewhere:
-    triggerMouseEvent('mousedown', new Point(5, 5))
-    triggerMouseEvent('mouseup', new Point(5, 5))
+    triggerPointerEvent('pointerdown', new Point(5, 5))
+    triggerPointerEvent('pointerup', new Point(5, 5))
     equals(Key.modifiers.shift, false, 'released')
     equals(shift.join(), 'true,true,false,false')
   })
@@ -435,19 +436,26 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
     item.onMouseUp = () => {}
-    // An item that responds to mouseup needs the mousedown on it prevented,
-    // but not one elsewhere, so the browser can scroll the page:
-    let down = triggerMouseEvent('mousedown', new Point(5, 5))
-    triggerMouseEvent('mouseup', new Point(5, 5))
-    equals(down.defaultPrevented, true, 'on the item')
-    down = triggerMouseEvent('mousedown', new Point(50, 50))
-    triggerMouseEvent('mouseup', new Point(50, 50))
-    equals(down.defaultPrevented, false, 'on empty canvas')
+    // Browsers scroll the page with a touch unless its touchstart is
+    // prevented, which follows its pointerdown:
+    function touch(point) {
+      const down = triggerPointerEvent('pointerdown', point)
+      const start = new TouchEvent('touchstart', {
+        bubbles: true,
+        cancelable: true
+      })
+      paper.view.element.dispatchEvent(start)
+      triggerPointerEvent('pointerup', point)
+      return down.defaultPrevented + ' ' + start.defaultPrevented
+    }
+
+    // An item that responds to mouseup needs the press on it prevented, but
+    // not one elsewhere, so the browser can scroll the page:
+    equals(touch(new Point(5, 5)), 'true true', 'on the item')
+    equals(touch(new Point(50, 50)), 'false false', 'on empty canvas')
     // A view that responds to mouseup needs it everywhere:
     paper.view.onMouseUp = () => {}
-    down = triggerMouseEvent('mousedown', new Point(50, 50))
-    triggerMouseEvent('mouseup', new Point(50, 50))
-    equals(down.defaultPrevented, true, 'with a view handler')
+    equals(touch(new Point(50, 50)), 'true true', 'with a view handler')
   })
 
   test('Item#onMouseEnter() is only re-triggered after mouse leave', () => {
@@ -457,13 +465,13 @@ describe.skipIf(isNodeContext)('Interactions', () => {
       equals(true, true)
     }
     // enter
-    triggerMouseEvent('mousemove', new Point(5, 5))
-    triggerMouseEvent('mousemove', new Point(6, 6))
-    triggerMouseEvent('mousemove', new Point(7, 7))
+    triggerPointerEvent('pointermove', new Point(5, 5))
+    triggerPointerEvent('pointermove', new Point(6, 6))
+    triggerPointerEvent('pointermove', new Point(7, 7))
     // leave
-    triggerMouseEvent('mousemove', new Point(11, 11))
+    triggerPointerEvent('pointermove', new Point(11, 11))
     // re-enter
-    triggerMouseEvent('mousemove', new Point(10, 10))
+    triggerPointerEvent('pointermove', new Point(10, 10))
     expect.assertions(2)
   })
 
@@ -481,11 +489,11 @@ describe.skipIf(isNodeContext)('Interactions', () => {
       equals(event.delta, null)
       done()
     }
-    triggerMouseEvent('mousemove', point1)
-    triggerMouseEvent('mousemove', point2)
+    triggerPointerEvent('pointermove', point1)
+    triggerPointerEvent('pointermove', point2)
   })
 
-  test('Item#onMouseLeave() when the mouse leaves the document', assert => {
+  test('Item#onMouseLeave() when the pointer leaves the view', assert => {
     const done = assert.async()
     const item = Path.rectangle(new Point(0, 0), new Size(10))
     item.fillColor = 'red'
@@ -497,9 +505,8 @@ describe.skipIf(isNodeContext)('Interactions', () => {
       equals(event.target, item)
       done()
     }
-    triggerMouseEvent('mousemove', point1)
-    // A mouseout without relatedTarget means the mouse left the document:
-    triggerMouseEvent('mouseout', point2)
+    triggerPointerEvent('pointermove', point1)
+    triggerPointerEvent('pointerleave', point2)
   })
 
   test('Item#onMouseDrag()', assert => {
@@ -516,8 +523,8 @@ describe.skipIf(isNodeContext)('Interactions', () => {
       equals(event.delta, new Point(10, 10))
       done()
     }
-    triggerMouseEvent('mousedown', point1)
-    triggerMouseEvent('mousemove', point2)
+    triggerPointerEvent('pointerdown', point1)
+    triggerPointerEvent('pointermove', point2)
   })
 
   test('Item#onMouseDrag() is not triggered after mouse up', () => {
@@ -526,10 +533,10 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     item.onMouseDrag = () => {
       equals(true, true)
     }
-    triggerMouseEvent('mousedown', new Point(5, 5))
-    triggerMouseEvent('mousemove', new Point(6, 6))
-    triggerMouseEvent('mouseup', new Point(7, 7))
-    triggerMouseEvent('mousemove', new Point(8, 8))
+    triggerPointerEvent('pointerdown', new Point(5, 5))
+    triggerPointerEvent('pointermove', new Point(6, 6))
+    triggerPointerEvent('pointerup', new Point(7, 7))
+    triggerPointerEvent('pointermove', new Point(8, 8))
     expect.assertions(1)
   })
 
@@ -540,86 +547,62 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     item2.onMouseDrag = () => {
       throw new Error('this should not be called')
     }
-    triggerMouseEvent('mousedown', new Point(5, 5))
-    triggerMouseEvent('mousemove', new Point(11, 11))
+    triggerPointerEvent('pointerdown', new Point(5, 5))
+    triggerPointerEvent('pointermove', new Point(11, 11))
     expect.assertions(0)
   })
 
-  test('View#onMouseDrag() with a second touch outside of the view (#1875)', () => {
-    const { element } = paper.view,
-      outside = document.createElement('div'),
-      events = []
-
-    function createTouch(id, target, point) {
-      return new Touch({
-        identifier: id,
-        target,
-        clientX: point.x,
-        clientY: point.y,
-        pageX: point.x,
-        pageY: point.y
-      })
-    }
-
-    // Like the browser, list all touches on the screen, the ones on the
-    // element of the event, and the ones that changed:
-    function triggerTouchEvent(
-      type,
-      target,
-      touches,
-      targetTouches,
-      changedTouches
-    ) {
-      target.dispatchEvent(
-        new TouchEvent(type, {
-          bubbles: true,
-          cancelable: true,
-          touches,
-          targetTouches,
-          changedTouches
-        })
-      )
-    }
-
+  test('View#onMouseDrag() with a second touch (#1875)', () => {
+    const events = []
     paper.view.onMouseDrag = paper.view.onMouseUp = event => {
       events.push(event.type + ' ' + event.point + ' ' + event.delta)
     }
-    let touch1 = createTouch(1, element, new Point(10, 10)),
-      touch2 = createTouch(2, outside, new Point(80, 80))
-    triggerTouchEvent('touchstart', element, [touch1], [touch1], [touch1])
-    // The view's touch events on the document only see the document, as the
-    // elements aren't inserted:
-    triggerTouchEvent(
-      'touchstart',
-      document,
-      [touch1, touch2],
-      [touch2],
-      [touch2]
-    )
+    // Only the first touch is the primary pointer:
+    const second = { pointerId: 2, isPrimary: false }
+    triggerPointerEvent('pointerdown', new Point(10, 10))
+    triggerPointerEvent('pointerdown', new Point(80, 80), null, second)
     // Moving the second touch doesn't drag:
-    touch2 = createTouch(2, outside, new Point(90, 90))
-    triggerTouchEvent(
-      'touchmove',
-      document,
-      [touch1, touch2],
-      [touch2],
-      [touch2]
-    )
+    triggerPointerEvent('pointermove', new Point(90, 90), null, second)
     // Moving the first touch does:
-    touch1 = createTouch(1, element, new Point(20, 20))
-    triggerTouchEvent(
-      'touchmove',
-      document,
-      [touch1, touch2],
-      [touch1],
-      [touch1]
-    )
-    // Ending the first touch ends the drag where it ended:
-    triggerTouchEvent('touchend', document, [touch2], [], [touch1])
+    triggerPointerEvent('pointermove', new Point(20, 20))
+    // Ending the second touch doesn't end the drag, ending the first does,
+    // where it ended:
+    triggerPointerEvent('pointerup', new Point(90, 90), null, second)
+    triggerPointerEvent('pointerup', new Point(20, 20))
     equals(events, [
       'mousedrag { x: 20, y: 20 } { x: 10, y: 10 }',
       'mouseup { x: 20, y: 20 } { x: 10, y: 10 }'
     ])
+  })
+
+  test('View#onMouseUp() of a cancelled touch', () => {
+    const events = []
+    paper.view.onMouseUp = paper.view.onMouseLeave = event => {
+      events.push(event.type + ' ' + event.point)
+    }
+    const touch = { pointerType: 'touch' }
+    triggerPointerEvent('pointerdown', new Point(10, 10), null, touch)
+    triggerPointerEvent('pointermove', new Point(20, 20), null, touch)
+    // Browsers report no position for the pointer that they cancel, nor as
+    // it leaves then:
+    triggerPointerEvent('pointercancel', new Point(0, 0), null, touch)
+    triggerPointerEvent('pointerleave', new Point(0, 0), null, touch)
+    equals(events, ['mouseup { x: 20, y: 20 }', 'mouseleave { x: 20, y: 20 }'])
+  })
+
+  test('View#onMouseEnter() is only triggered as the pointer enters', () => {
+    const types = []
+    paper.view.onMouseEnter = paper.view.onMouseLeave = event => {
+      types.push(event.type)
+    }
+    // Not again after presses and releases:
+    triggerPointerEvent('pointermove', new Point(10, 10))
+    triggerPointerEvent('pointerdown', new Point(10, 10))
+    triggerPointerEvent('pointermove', new Point(20, 20))
+    triggerPointerEvent('pointerup', new Point(20, 20))
+    triggerPointerEvent('pointermove', new Point(30, 30))
+    triggerPointerEvent('pointerleave', new Point(-5, 30))
+    equals(types.join(), 'mouseenter,mouseleave')
   })
 
   test('Item#onMouseDown() after moving it from a removed group to a new group (#1791)', () => {
@@ -632,8 +615,8 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     const group = new Group(item)
     group.remove()
     new Group(item)
-    triggerMouseEvent('mousedown', new Point(5, 5))
-    triggerMouseEvent('mouseup', new Point(5, 5))
+    triggerPointerEvent('pointerdown', new Point(5, 5))
+    triggerPointerEvent('pointerup', new Point(5, 5))
     equals(count, 1)
   })
 
@@ -648,8 +631,8 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     group.remove()
     item.remove()
     paper.project.activeLayer.addChild(item)
-    triggerMouseEvent('mousedown', new Point(5, 5))
-    triggerMouseEvent('mouseup', new Point(5, 5))
+    triggerPointerEvent('pointerdown', new Point(5, 5))
+    triggerPointerEvent('pointerup', new Point(5, 5))
     equals(count, 1)
   })
 
@@ -668,8 +651,8 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     item2.onMouseDown = () => {
       count++
     }
-    triggerMouseEvent('mousedown', new Point(5, 5))
-    triggerMouseEvent('mouseup', new Point(5, 5))
+    triggerPointerEvent('pointerdown', new Point(5, 5))
+    triggerPointerEvent('pointerup', new Point(5, 5))
     equals(count, 1)
   })
 
@@ -689,10 +672,10 @@ describe.skipIf(isNodeContext)('Interactions', () => {
       project2 = new Project(new Size(100, 100))
     project2.activeLayer.addChild(item2)
     project1.activate()
-    triggerMouseEvent('mousedown', new Point(5, 5))
-    triggerMouseEvent('mouseup', new Point(5, 5))
-    triggerMouseEvent('mousedown', new Point(25, 25), project2.view.element)
-    triggerMouseEvent('mouseup', new Point(25, 25))
+    triggerPointerEvent('pointerdown', new Point(5, 5))
+    triggerPointerEvent('pointerup', new Point(5, 5))
+    triggerPointerEvent('pointerdown', new Point(25, 25), project2.view.element)
+    triggerPointerEvent('pointerup', new Point(25, 25))
     project2.remove()
     equals(count1, 1, 'item1 in project1')
     equals(count2, 1, 'item2 in project2')
@@ -923,11 +906,11 @@ describe.skipIf(isNodeContext)('Interactions', () => {
         event.count = 10
       }
     }
-    triggerMouseEvent('mousedown', new Point(0, 0))
-    triggerMouseEvent('mousemove', new Point(5, 5))
-    triggerMouseEvent('mousemove', new Point(6, 6))
-    triggerMouseEvent('mousemove', new Point(7, 7))
-    triggerMouseEvent('mouseup', new Point(7, 7))
+    triggerPointerEvent('pointerdown', new Point(0, 0))
+    triggerPointerEvent('pointermove', new Point(5, 5))
+    triggerPointerEvent('pointermove', new Point(6, 6))
+    triggerPointerEvent('pointermove', new Point(7, 7))
+    triggerPointerEvent('pointerup', new Point(7, 7))
     tool.remove()
     equals(counts.join(), '0,1,11')
   })

@@ -714,28 +714,22 @@ export function compareSVG(done, actual, expected, message, options) {
 // Interactions helpers
 //
 
-export function triggerMouseEvent(type, point, target, flags) {
-  // Depending on event type, events have to be triggered on different elements
-  // due to the event handling implementation (see `viewEvents` and `docEvents`
-  // in View.js). And we cannot rely on the fact that event will bubble from
-  // canvas to document, since the canvas used in tests is not inserted in DOM.
-  target = target || (type === 'mousedown' ? paper.view.element : document)
-  const event = new window.MouseEvent(
-    type,
-    Object.assign(
-      {
-        bubbles: true,
-        cancelable: true,
-        composed: true,
-        clientX: point.x,
-        clientY: point.y,
-        screenX: point.x,
-        screenY: point.y
-      },
-      flags
-    )
-  )
-  target.dispatchEvent(event)
+// Dispatches the event of the primary pointer on the element of the view,
+// where the view handles pointer events, or on the target:
+export function triggerPointerEvent(type, point, target, flags) {
+  const event = new window.PointerEvent(type, {
+    bubbles: true,
+    cancelable: true,
+    composed: true,
+    clientX: point.x,
+    clientY: point.y,
+    screenX: point.x,
+    screenY: point.y,
+    pointerId: 1,
+    isPrimary: true,
+    ...flags
+  })
+  ;(target || paper.view.element).dispatchEvent(event)
   return event
 }
 
