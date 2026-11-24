@@ -14,12 +14,12 @@
     "Jonathan Puckey <jonathan@puckey.studio> (http://studiomoniker.com)"
   ],
   "type": "module",
-  "main": "./dist/esm/paper.js",
+  "main": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",
-      "default": "./dist/esm/paper.js"
+      "default": "./dist/esm/index.js"
     },
     "./core": {
       "types": "./dist/types/core.d.ts",
@@ -27,35 +27,43 @@
     },
     "./paperscript": {
       "types": "./dist/types/paperscript/index.d.ts",
-      "default": "./dist/esm/paperscript.js"
+      "default": "./dist/esm/paperscript/index.js"
     },
     "./node": {
       "types": "./dist/types/node/index.d.ts",
-      "default": "./dist/esm/node.js"
+      "default": "./dist/esm/node/index.js"
     },
     "./hosted": {
       "types": "./dist/types/hosted/index.d.ts",
-      "default": "./dist/esm/hosted.js"
+      "default": "./dist/esm/hosted/index.js"
     },
     "./svg": {
       "types": "./dist/types/svg/index.d.ts",
-      "default": "./dist/esm/svg.js"
+      "default": "./dist/esm/svg/index.js"
     },
     "./boolean": {
       "types": "./dist/types/boolean/index.d.ts",
-      "default": "./dist/esm/boolean.js"
+      "default": "./dist/esm/boolean/index.js"
     },
     "./offset": {
       "types": "./dist/types/offset/index.d.ts",
-      "default": "./dist/esm/offset.js"
+      "default": "./dist/esm/offset/index.js"
     },
     "./dist/paper-core": {
       "types": "./dist/types/index.d.ts",
-      "default": "./dist/esm/paper.js"
+      "default": "./dist/esm/index.js"
     },
     "./dist/*.js": "./dist/*.js",
     "./package.json": "./package.json"
   },
+  "sideEffects": [
+    "./dist/esm/index.js",
+    "./dist/esm/internal.js",
+    "./dist/esm/paperscript/index.js",
+    "./dist/esm/node/*.js",
+    "./dist/esm/hosted/*.js",
+    "./dist/paper-*.js"
+  ],
   "scripts": {
     "build": "node build.mjs && tsc -p tsconfig.build.json",
     "build:docs": "pnpm build && node docs.mjs",

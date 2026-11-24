@@ -10,13 +10,14 @@
  * All rights reserved.
  */
 
-// Build the library from the sources into dist/: the ES modules of the entries,
-// and the script files that set the global `paper`, with source maps:
-// `node build.mjs`, or `pnpm build`.
+// Build the library from the sources into dist/: the ES modules, and the script
+// files that set the global `paper`, with source maps: `node build.mjs`, or
+// `pnpm build`.
 import fs from 'node:fs'
 import path from 'node:path'
 import { execSync } from 'node:child_process'
 import { build } from 'rolldown'
+import ts from 'typescript'
 
 const root = import.meta.dirname
 const dist = path.join(root, 'dist')
@@ -24,23 +25,6 @@ const { version } = JSON.parse(
   fs.readFileSync(path.join(root, 'package.json'), 'utf8')
 )
 const date = execSync('git log -1 --pretty=format:%ad').toString().trim()
-
-// The entries of the package, see `exports` in package.json:
-const entries = {
-  paper: 'src/index.ts',
-  core: 'src/core.ts',
-  paperscript: 'src/paperscript/index.ts',
-  node: 'src/node/index.ts',
-  hosted: 'src/hosted/index.ts',
-  svg: 'src/svg/index.ts'
-}
-
-// The geometry modules, which work on plain paths without the rest of the
-// library, each bundled on its own, see `exports` in package.json:
-const modules = {
-  boolean: 'src/boolean/index.ts',
-  offset: 'src/offset/index.ts'
-}
 
 // The script files, whose global `paper` is the first scope, the default
 // export of the core, with PaperScript in the full one, and also the hosted
@@ -56,30 +40,7 @@ export async function buildAll() {
   // tsc writes the declarations to dist/types after this, see `pnpm build`:
   remove('esm')
   remove('types')
-  await build({
-    input: Object.fromEntries(
-      Object.entries(entries).map(([name, file]) => [name, resolve(file)])
-    ),
-    // The dependencies and peers stay imports:
-    external: [/^node:/, 'acorn', 'happy-dom', '@napi-rs/canvas'],
-    output: {
-      dir: path.join(dist, 'esm'),
-      format: 'es',
-      banner: getBanner(false),
-      sourcemap: true
-    }
-  })
-  for (const [name, file] of Object.entries(modules)) {
-    await build({
-      input: resolve(file),
-      output: {
-        file: path.join(dist, 'esm', `${name}.js`),
-        format: 'es',
-        banner: getBanner(false),
-        sourcemap: true
-      }
-    })
-  }
+  buildModules(path.join(dist, 'esm'))
   for (const [name, files] of Object.entries(scripts)) {
     for (const minify of [false, true]) {
       const file = `${name}${minify ? '.min' : ''}.js`
@@ -98,6 +59,40 @@ export async function buildAll() {
           minify
         }
       })
+    }
+  }
+}
+
+// Transpile each module of the sources on its own, as they are laid out, so
+// bundlers leave out the modules that an app doesn't use, see `sideEffects` in
+// package.json. It lists internal.js too, as bundlers that skip it lose the
+// order in which it loads the modules, see there. The import of the version
+// from package.json becomes the version itself, as the path differs in dist/:
+export function buildModules(dir) {
+  const src = resolve('src')
+  for (const file of fs.readdirSync(src, { recursive: true })) {
+    if (file.endsWith('.ts') && !file.startsWith('docs')) {
+      const source = fs
+        .readFileSync(path.join(src, file), 'utf8')
+        .replace(
+          /^import (\w+) from '[./]+package\.json' with \{ type: 'json' \}$/m,
+          (match, name) => `const ${name} = { version: '${version}' }`
+        )
+      const { outputText, sourceMapText } = ts.transpileModule(source, {
+        fileName: path.basename(file),
+        compilerOptions: {
+          target: ts.ScriptTarget.ES2022,
+          module: ts.ModuleKind.ESNext,
+          verbatimModuleSyntax: true,
+          rewriteRelativeImportExtensions: true,
+          sourceMap: true,
+          inlineSources: true
+        }
+      })
+      const target = path.join(dir, file.replace(/\.ts$/, '.js'))
+      fs.mkdirSync(path.dirname(target), { recursive: true })
+      fs.writeFileSync(target, outputText)
+      fs.writeFileSync(`${target}.map`, sourceMapText)
     }
   }
 }
