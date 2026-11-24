@@ -467,7 +467,17 @@ const importers: Record<string, Importer> = {
 
   // https://www.w3.org/TR/SVG/struct.html#SymbolElement
   'symbol'(node, type, options, isRoot) {
-    return new SymbolDefinition(importGroup(node, type, options, isRoot))
+    // The content of a symbol takes the style of each <use> element that
+    // places it, not of where it is defined, see Style#_get(), so it starts
+    // from no style at all:
+    const { project } = paper
+    const style = project._currentStyle
+    project._currentStyle = new Style(null, null, project)
+    try {
+      return new SymbolDefinition(importGroup(node, type, options, isRoot))
+    } finally {
+      project._currentStyle = style
+    }
   },
 
   // https://www.w3.org/TR/SVG/struct.html#DefsElement

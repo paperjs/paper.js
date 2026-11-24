@@ -42,6 +42,17 @@ import {
 const { window } = paper
 
 describe('SvgExport', () => {
+  test('Export symbols that leave their style to each <use> (#1329)', () => {
+    const path = Path.rectangle({ point: [0, 0], size: [10, 10] })
+    const definition = new SymbolDefinition(path)
+    definition.place([10, 10]).fillColor = 'blue'
+    definition.place([30, 10]).fillColor = 'green'
+    const svg = paper.project.exportSVG({ asString: true })
+    // The content sets no fill, and each <use> its own:
+    equals(/<symbol[^]*fill=[^]*<\/symbol>/.test(svg), false, 'symbol')
+    equals(svg.match(/<use [^>]*fill="#[0-9a-f]+"/g).length, 2, 'use')
+  })
+
   test('Export SVG line', () => {
     const attrs = {
       x1: 5,

@@ -19,7 +19,8 @@ import paper, {
   Point,
   Rectangle,
   SymbolDefinition,
-  SymbolItem
+  SymbolItem,
+  Color
 } from 'paper'
 import { equals, test } from '../helpers.js'
 
@@ -371,6 +372,45 @@ describe('Symbol & Placed Symbol', () => {
       'path.globalMatrix when inserted'
     )
   })
+  test('SymbolItem style for what the definition leaves unset (#1329)', () => {
+    // A definition whose path sets a stroke width, but no fill or stroke:
+    const path = Path.rectangle({
+      point: [0, 0],
+      size: [20, 20],
+      strokeWidth: 4
+    })
+    const definition = new SymbolDefinition(path)
+    const red = definition.place([20, 20])
+    red.fillColor = 'red'
+    red.strokeColor = 'blue'
+    const plain = definition.place([60, 20])
+    plain.strokeColor = null
+    // Each takes what it sets, and the path keeps its own width:
+    equals(
+      red.rasterize({ resolution: 72, insert: false }).getPixel(10, 10),
+      new Color(1, 0, 0, 1)
+    )
+    equals(red.strokeBounds, new Rectangle(18, 18, 24, 24), 'red.strokeBounds')
+    equals(
+      plain.strokeBounds,
+      new Rectangle(60, 20, 20, 20),
+      'plain.strokeBounds'
+    )
+    equals(path.fillColor, null, 'the definition is unchanged')
+    // Only the symbol item with a fill hits it:
+    equals(paper.project.hitTest([30, 30], { fill: true })?.item === red, true)
+    equals(paper.project.hitTest([70, 30], { fill: true }), null)
+    // Changing the definition changes both:
+    path.scale(2, path.bounds.topLeft)
+    equals(red.strokeBounds, new Rectangle(18, 18, 44, 44), 'red, changed')
+    equals(plain.strokeBounds, new Rectangle(60, 20, 40, 40), 'plain, changed')
+    path.scale(0.5, path.bounds.topLeft)
+    // Embedding keeps what the copy took:
+    const embedded = red.embed()
+    equals(embedded.fillColor, new Color(1, 0, 0), 'embedded.fillColor')
+    equals(embedded.strokeWidth, 4, 'embedded.strokeWidth')
+  })
+
   test('SymbolItem#embed()', () => {
     const layer = paper.project.activeLayer
     const path = Path.rectangle({
