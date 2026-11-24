@@ -27,6 +27,7 @@ import {
   equals,
   getCombinedBounds,
   getDocument,
+  getEffectOutput,
   getPathData,
   getUID,
   isZero,
@@ -892,7 +893,7 @@ function exportDefinitions(
 }
 
 function exportSVG(item: Item, options: Options, isRoot?: boolean): SVGElement {
-  let output = item.getEffectOutput()
+  let output = getEffectOutput(item)
   if (output) {
     // Write the output of the item's effects in its place, expanded:
     output = output.clone({ insert: false })
