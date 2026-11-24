@@ -45,24 +45,21 @@ import type { TextItem } from '../text/TextItem.ts'
 import type { Color } from '../style/Color.ts'
 import type { View } from '../view/View.ts'
 
-type Options = Record<string, any>
-type Attributes = Record<string, any>
-
-let definitions: {
-  ids: Record<string, number>
-  svgs: Record<string, SVGElement>
+// The options of an export, with its state, see setOptions():
+type Options = Record<string, any> & {
+  formatter?: Formatter
+  definitions?: {
+    ids: Record<string, number>
+    svgs: Record<string, SVGElement>
+  }
+  parentStyles?: Record<number, Record<string, any>>
+  elementMatrix?: Matrix
 }
-
-// TODO: Consider moving formatter into options object, and pass it along.
-let formatter: Formatter
-// Getting the style values of groups walks all their children, so
-// cache the values of parents during each export:
-let parentStyles: Record<number, Record<string, any>>
-// The matrix of the transform of the element being exported:
-let elementMatrix: Matrix
+type Attributes = Record<string, any>
 
 function getTransform(
   matrix: Matrix,
+  options: Options,
   coordinates?: boolean,
   center?: boolean
 ): Attributes {
@@ -94,19 +91,19 @@ function getTransform(
       const parts = []
       const { rotation: angle, scaling: scale, skewing: skew } = decomposed
       if (translation && !translation.isZero()) {
-        parts.push(`translate(${formatter.point(translation)})`)
+        parts.push(`translate(${options.formatter.point(translation)})`)
       }
       if (angle) {
-        parts.push(`rotate(${formatter.number(angle)})`)
+        parts.push(`rotate(${options.formatter.number(angle)})`)
       }
       if (!isZero(scale.x - 1) || !isZero(scale.y - 1)) {
-        parts.push(`scale(${formatter.point(scale)})`)
+        parts.push(`scale(${options.formatter.point(scale)})`)
       }
       if (skew.x) {
-        parts.push(`skewX(${formatter.number(skew.x)})`)
+        parts.push(`skewX(${options.formatter.number(skew.x)})`)
       }
       if (skew.y) {
-        parts.push(`skewY(${formatter.number(skew.y)})`)
+        parts.push(`skewY(${options.formatter.number(skew.y)})`)
       }
       attrs.transform = parts.join(' ')
     } else {
@@ -114,13 +111,13 @@ function getTransform(
     }
   }
   // The matrix of the element's transform, see exportGradient():
-  elementMatrix = matrix
+  options.elementMatrix = matrix
   return attrs
 }
 
 function exportGroup(item: Group, options: Options): SVGElement {
-  const attrs = getTransform(item._matrix)
-  const node = createSvgElement('g', attrs, formatter)
+  const attrs = getTransform(item._matrix, options)
+  const node = createSvgElement('g', attrs, options.formatter)
   for (const child of item._children) {
     if (child.clipMask) {
       const clip = exportClip(child, options)
@@ -169,7 +166,7 @@ function exportClip(item: Item, options: Options): SVGElement {
 }
 
 function exportRaster(item: Raster, options: Options): SVGElement {
-  const attrs = getTransform(item._matrix, true)
+  const attrs = getTransform(item._matrix, options, true)
   const { size, image } = item
   const href = (
     options.embedImages == false && image && 'src' in image && image.src ||
@@ -181,7 +178,7 @@ function exportRaster(item: Raster, options: Options): SVGElement {
   if (options.reuseImages) {
     // Export each image only once into the definitions, along with
     // its size, as <use> can't size images:
-    let node = getDefinition(href, 'image')
+    let node = getDefinition(href, 'image', options)
     if (!node) {
       node = createSvgElement(
         'image',
@@ -190,17 +187,17 @@ function exportRaster(item: Raster, options: Options): SVGElement {
           height: size.height,
           href
         },
-        formatter
+        options.formatter
       )
       setDefinition(href, node, 'image', options)
     }
     attrs.href = `#${node.id}`
-    return createSvgElement('use', attrs, formatter)
+    return createSvgElement('use', attrs, options.formatter)
   } else {
     attrs.width = size.width
     attrs.height = size.height
     attrs.href = href
-    return createSvgElement('image', attrs, formatter)
+    return createSvgElement('image', attrs, options.formatter)
   }
 }
 
@@ -211,18 +208,18 @@ function exportPath(item: Path, options: Options): SVGElement {
   if (matchShapes && !segmentsData) {
     const shape = item.toShape(false)
     if (shape) {
-      return exportShape(shape)
+      return exportShape(shape, options)
     }
   }
   const segments = item._segments
   const { length } = segments
   let type: string
-  const attrs = getTransform(item._matrix)
+  const attrs = getTransform(item._matrix, options)
   if (matchShapes && length >= 2 && !item.hasHandles()) {
     if (length > 2) {
       type = item._closed ? 'polygon' : 'polyline'
       attrs.points = segments
-        .map(segment => formatter.point(segment._point))
+        .map(segment => options.formatter.point(segment._point))
         .join(' ')
     } else {
       type = 'line'
@@ -242,13 +239,13 @@ function exportPath(item: Path, options: Options): SVGElement {
   if (segmentsData) {
     attrs['data-paper-segments'] = segmentsData
   }
-  return createSvgElement(type, attrs, formatter)
+  return createSvgElement(type, attrs, options.formatter)
 }
 
-function exportShape(item: Shape): SVGElement {
+function exportShape(item: Shape, options: Options): SVGElement {
   let type = item._type
   let radius: any = item._radius
-  const attrs = getTransform(item._matrix, true, type !== 'rectangle')
+  const attrs = getTransform(item._matrix, options, true, type !== 'rectangle')
   if (type === 'rectangle') {
     type = 'rect' // SVG
     const { width, height } = item._size
@@ -268,11 +265,11 @@ function exportShape(item: Shape): SVGElement {
       attrs.ry = radius.height
     }
   }
-  return createSvgElement(type, attrs, formatter)
+  return createSvgElement(type, attrs, options.formatter)
 }
 
 function exportCompoundPath(item: CompoundPath, options: Options): SVGElement {
-  const attrs = getTransform(item._matrix)
+  const attrs = getTransform(item._matrix, options)
   const data = getPathData(item, options.precision)
   const segmentsData = getSegmentsData(item)
   if (data) {
@@ -281,7 +278,7 @@ function exportCompoundPath(item: CompoundPath, options: Options): SVGElement {
   if (segmentsData) {
     attrs['data-paper-segments'] = segmentsData
   }
-  return createSvgElement('path', attrs, formatter)
+  return createSvgElement('path', attrs, options.formatter)
 }
 
 // Path data has no place for the names and data of segments, so store them
@@ -312,14 +309,14 @@ function getSegmentsData(item: Path | CompoundPath): string | null {
 }
 
 function exportSymbolItem(item: SymbolItem, options: Options): SVGElement {
-  const attrs = getTransform(item._matrix, true)
+  const attrs = getTransform(item._matrix, options, true)
   const definition = item._definition
-  let node = getDefinition(definition, 'symbol')
+  let node = getDefinition(definition, 'symbol', options)
   const definitionItem = definition._item
   const bounds = definitionItem.strokeBounds
   if (!node) {
     node = createSvgElement('symbol', {
-      viewBox: formatter.rectangle(bounds)
+      viewBox: options.formatter.rectangle(bounds)
     })
     // The content leaves the styles that it doesn't set to each <use>
     // element, see SymbolItem:
@@ -334,22 +331,22 @@ function exportSymbolItem(item: SymbolItem, options: Options): SVGElement {
   attrs.width = bounds.width
   attrs.height = bounds.height
   attrs.overflow = 'visible'
-  return createSvgElement('use', attrs, formatter)
+  return createSvgElement('use', attrs, options.formatter)
 }
 
 function exportGradient(color: Color, options: Options): string {
   // Gradients are in the coordinates of the item's parent, but SVG reads
   // them in those of the element, after its transform (#2410):
-  if (!elementMatrix.isIdentity()) {
+  if (!options.elementMatrix.isIdentity()) {
     color = color.clone()
-    color.transform(elementMatrix.inverted())
+    color.transform(options.elementMatrix.inverted())
   }
   // NOTE: As long as the fillTransform attribute is not implemented,
   // we need to create a separate gradient object for each gradient,
   // even when they share the same gradient definition.
   // http://www.svgopen.org/2011/papers/20-Separating_gradients_from_geometry/
   // TODO: Implement gradient merging in svgImport
-  let gradientNode = getDefinition(color, 'color')
+  let gradientNode = getDefinition(color, 'color', options)
   if (!gradientNode) {
     const { gradient, origin, destination } = color
     const radial = gradient._radial
@@ -372,9 +369,9 @@ function exportGradient(color: Color, options: Options): string {
           highlight = local._inverseTransform(highlight)
         }
         attrs.gradientTransform = (
-          `translate(${formatter.point(origin)}) ` +
-          `rotate(${formatter.number(angle)}) ` +
-          `scale(1,${formatter.number(aspect)})`
+          `translate(${options.formatter.point(origin)}) ` +
+          `rotate(${options.formatter.number(angle)}) ` +
+          `scale(1,${options.formatter.number(aspect)})`
         )
       }
       attrs.cx = center.x
@@ -395,7 +392,7 @@ function exportGradient(color: Color, options: Options): string {
     gradientNode = createSvgElement(
       `${radial ? 'radial' : 'linear'}Gradient`,
       attrs,
-      formatter
+      options.formatter
     )
     const stops = gradient._stops
     for (let i = 0, l = stops.length; i < l; i++) {
@@ -412,7 +409,9 @@ function exportGradient(color: Color, options: Options): string {
       if (alpha < 1) {
         attrs['stop-opacity'] = alpha
       }
-      gradientNode.appendChild(createSvgElement('stop', attrs, formatter))
+      gradientNode.appendChild(
+        createSvgElement('stop', attrs, options.formatter)
+      )
     }
     setDefinition(color, gradientNode, 'color', options)
   }
@@ -423,17 +422,17 @@ function exportPattern(color: Color, options: Options): string {
   // Patterns are placed in the coordinates of the item's parent too, see
   // exportGradient(). Exporting them changes elementMatrix, so restore
   // it after, for the other color of the element:
-  const matrix = elementMatrix
+  const matrix = options.elementMatrix
   if (!matrix.isIdentity()) {
     color = color.clone()
     color.transform(matrix.inverted())
   }
-  let patternNode = getDefinition(color, 'pattern')
+  let patternNode = getDefinition(color, 'pattern', options)
   if (!patternNode) {
     const { pattern } = color
     const { _item: item, tile, spacing } = pattern
     const cell = new Rectangle(tile.point, tile.size.add(spacing))
-    const { transform } = getTransform(color.matrix)
+    const { transform } = getTransform(color.matrix, options)
     // SVG draws the content of tiles relative to their top left
     // corner, so map the cell onto itself through viewBox:
     const attrs: Attributes = {
@@ -441,14 +440,14 @@ function exportPattern(color: Color, options: Options): string {
       y: cell.y,
       width: cell.width,
       height: cell.height,
-      viewBox: formatter.rectangle(cell),
+      viewBox: options.formatter.rectangle(cell),
       patternUnits: 'userSpaceOnUse'
     }
     let content = exportSVG(item, options)
     if (transform) {
       attrs.patternTransform = transform
     }
-    patternNode = createSvgElement('pattern', attrs, formatter)
+    patternNode = createSvgElement('pattern', attrs, options.formatter)
     // Leave the spacing between the tiles empty, as on the canvas:
     if (!spacing.isZero() && !tile.contains(item.strokeBounds)) {
       const rect = Shape.rectangle({
@@ -465,7 +464,7 @@ function exportPattern(color: Color, options: Options): string {
     patternNode.appendChild(content)
     setDefinition(color, patternNode, 'pattern', options)
   }
-  elementMatrix = matrix
+  options.elementMatrix = matrix
   return `url(#${patternNode.id})`
 }
 
@@ -494,11 +493,11 @@ function exportShadow(item: Item, options: Options): string | null {
   const filter = createSvgElement('filter')
 
   function add(type: string, attrs: Attributes) {
-    filter.appendChild(createSvgElement(type, attrs, formatter))
+    filter.appendChild(createSvgElement(type, attrs, options.formatter))
   }
 
   for (const key of ['x', 'y', 'width', 'height']) {
-    filter.setAttribute(key, `${formatter.number(region[key])}%`)
+    filter.setAttribute(key, `${options.formatter.number(region[key])}%`)
   }
 
   // SVG 1.1 renders a blur of 0 as nothing, so leave it out then:
@@ -536,8 +535,8 @@ function exportShadow(item: Item, options: Options): string | null {
 }
 
 function exportText(item: TextItem, options: Options): SVGElement {
-  const attrs = getTransform(item._matrix, true)
-  const node = createSvgElement('text', attrs, formatter)
+  const attrs = getTransform(item._matrix, options, true)
+  const node = createSvgElement('text', attrs, options.formatter)
   const story = item._story
   const lines = item._getLayout()
   const isPointText = item instanceof PointText
@@ -563,7 +562,7 @@ function exportText(item: TextItem, options: Options): SVGElement {
         }
       }
     }
-    const span = createSvgElement('tspan', spanAttrs, formatter)
+    const span = createSvgElement('tspan', spanAttrs, options.formatter)
     if (content != null) {
       span.textContent = content
     }
@@ -647,7 +646,7 @@ function exportText(item: TextItem, options: Options): SVGElement {
           },
           anchor
         ),
-        formatter
+        options.formatter
       )
       for (const piece of line.pieces) {
         const angle = piece.rotation
@@ -756,7 +755,7 @@ function applyStyle(
 ): SVGElement {
   const attrs: Attributes = {}
   const parent = !isRoot && item.parent
-  const parentStyle = parent && (parentStyles[parent._id] ??= {})
+  const parentStyle = parent && (options.parentStyles[parent._id] ??= {})
   const isGroup = item instanceof Group
   const style = []
 
@@ -819,12 +818,11 @@ function applyStyle(
     attrs.visibility = 'hidden'
   }
 
-  return setSvgAttributes(node, attrs, formatter)
+  return setSvgAttributes(node, attrs, options.formatter)
 }
 
-function getDefinition(item: any, type?: string): SVGElement {
-  definitions ??= { ids: {}, svgs: {} }
-  return item && definitions.svgs[getDefinitionKey(item, type)]
+function getDefinition(item: any, type: string, options: Options): SVGElement {
+  return options.definitions.svgs[getDefinitionKey(item, type)]
 }
 
 function setDefinition(
@@ -833,16 +831,12 @@ function setDefinition(
   type: string,
   options: Options
 ) {
-  // Make sure the definitions lookup is created before we use it.
-  // This is required by 'clip', where getDefinition() is not called.
-  if (!definitions) {
-    getDefinition(null)
-  }
+  const { ids, svgs } = options.definitions
   // Have different id ranges per type
-  const typeId = (definitions.ids[type] = (definitions.ids[type] || 0) + 1)
+  const typeId = (ids[type] = (ids[type] || 0) + 1)
   // Give the svg node an id, and link to it from the item's key.
   node.id = `${options.idPrefix || ''}${type}-${typeId}`
-  definitions.svgs[getDefinitionKey(item, type)] = node
+  svgs[getDefinitionKey(item, type)] = node
 }
 
 function getDefinitionKey(item: any, type: string): string {
@@ -861,29 +855,20 @@ function exportDefinitions(
   options: Options
 ): SVGElement | string {
   let svg = node
-  let defs = null
-  if (definitions) {
-    // We can only use svg nodes as definition containers. Have the loop
-    // produce one if it's a single item of another type (when calling
-    // #exportSVG() on an item rather than a whole project)
+  const definitions = Object.values(options.definitions.svgs)
+  if (definitions.length) {
+    // We can only use svg nodes as definition containers. Wrap the node in
+    // one if it's a single item of another type, from Item#exportSVG().
     // jsdom in Node.js uses uppercase values for nodeName...
-    svg = node.nodeName.toLowerCase() === 'svg' && node
-    for (const definition of Object.values(definitions.svgs)) {
-      // This code is inside the loop so we only create a container if
-      // we actually have svgs.
-      if (!defs) {
-        if (!svg) {
-          svg = createSvgElement('svg')
-          svg.appendChild(node)
-        }
-        defs = svg.insertBefore(createSvgElement('defs'), svg.firstChild)
-      }
+    if (node.nodeName.toLowerCase() !== 'svg') {
+      svg = createSvgElement('svg')
+      svg.appendChild(node)
+    }
+    const defs = svg.insertBefore(createSvgElement('defs'), svg.firstChild)
+    for (const definition of definitions) {
       defs.appendChild(definition)
     }
-    // Clear definitions at the end of export
-    definitions = null
   }
-  parentStyles = null
   // Illustrator ignores filters without line breaks around them:
   return options.asString
     ? new (getDocument().defaultView.XMLSerializer)()
@@ -921,11 +906,21 @@ function exportSVG(item: Item, options: Options, isRoot?: boolean): SVGElement {
   return node && applyStyle(item, node, options, isRoot)
 }
 
+// Each export keeps its state in its own copy of the options, so that exports
+// can run inside others, e.g. from processNode():
 function setOptions(options: Options): Options {
-  options ??= {}
-  formatter = new Formatter(options.precision)
-  parentStyles = {}
-  return options
+  return {
+    ...options,
+    formatter: new Formatter(options?.precision),
+    // The definitions to export, see setDefinition():
+    definitions: { ids: {}, svgs: {} },
+    // Getting the style values of groups walks all their children, so
+    // cache the values of parents during each export:
+    parentStyles: {},
+    // The matrix of the transform of the element being exported, see
+    // getTransform():
+    elementMatrix: null
+  }
 }
 
 // Export the items in an svg root element, sized to the bounds and
@@ -953,16 +948,16 @@ function exportRoot(
     attrs.width = rect.width
     attrs.height = rect.height
     if (rect.x || rect.x === 0 || rect.y || rect.y === 0) {
-      attrs.viewBox = formatter.rectangle(rect)
+      attrs.viewBox = options.formatter.rectangle(rect)
     }
   }
-  const node = createSvgElement('svg', attrs, formatter)
+  const node = createSvgElement('svg', attrs, options.formatter)
   let parent = node
   // If the view has a transformation, wrap all items in a group with
   // that transformation applied to.
   if (matrix && !matrix.isIdentity()) {
     parent = node.appendChild(
-      createSvgElement('g', getTransform(matrix), formatter)
+      createSvgElement('g', getTransform(matrix, options), options.formatter)
     )
   }
   for (const item of items) {
