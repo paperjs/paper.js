@@ -63,15 +63,13 @@ export class SegmentPoint extends Point {
   }
 
   // See Point#_set() for an explanation of _set():
-  _set(x: number, y: number, _dontNotify?: boolean): this {
+  _set(x: number, y: number): this {
     // Point's constructor calls this before the private fields exist, and our
     // constructor sets the coordinates itself:
     if (#owner in this) {
       this._x = x
       this._y = y
-      if (!_dontNotify) {
-        this.#owner._changed(this)
-      }
+      this.#owner._changed(this)
     }
     return this
   }

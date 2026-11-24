@@ -31,6 +31,69 @@ export function createMatrix(): MatrixValues {
   return [1, 0, 0, 1, 0, 0]
 }
 
+export function setMatrix(
+  v: MatrixValues,
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+  tx: number,
+  ty: number
+) {
+  v[0] = a
+  v[1] = b
+  v[2] = c
+  v[3] = d
+  v[4] = tx
+  v[5] = ty
+}
+
+export function resetMatrix(v: MatrixValues) {
+  setMatrix(v, 1, 0, 0, 1, 0, 0)
+}
+
+// Multiplies the values by those of m, as (v) * (m):
+export function appendMatrix(v: MatrixValues, m: MatrixValues) {
+  const a1 = v[0]
+  const b1 = v[1]
+  const c1 = v[2]
+  const d1 = v[3]
+  const a2 = m[0]
+  const b2 = m[2]
+  const c2 = m[1]
+  const d2 = m[3]
+  const tx2 = m[4]
+  const ty2 = m[5]
+  v[0] = a2 * a1 + c2 * c1
+  v[2] = b2 * a1 + d2 * c1
+  v[1] = a2 * b1 + c2 * d1
+  v[3] = b2 * b1 + d2 * d1
+  v[4] += tx2 * a1 + ty2 * c1
+  v[5] += tx2 * b1 + ty2 * d1
+}
+
+// Multiplies the values by those of m from the other side, as (m) * (v):
+export function prependMatrix(v: MatrixValues, m: MatrixValues) {
+  const a1 = v[0]
+  const b1 = v[1]
+  const c1 = v[2]
+  const d1 = v[3]
+  const tx1 = v[4]
+  const ty1 = v[5]
+  const a2 = m[0]
+  const b2 = m[2]
+  const c2 = m[1]
+  const d2 = m[3]
+  const tx2 = m[4]
+  const ty2 = m[5]
+  v[0] = a2 * a1 + b2 * b1
+  v[2] = a2 * c1 + b2 * d1
+  v[1] = c2 * a1 + d2 * b1
+  v[3] = c2 * c1 + d2 * d1
+  v[4] = a2 * tx1 + b2 * ty1 + tx2
+  v[5] = c2 * tx1 + d2 * ty1 + ty2
+}
+
 export function translateMatrix(v: MatrixValues, x: number, y: number) {
   v[4] += x * v[0] + y * v[2]
   v[5] += x * v[1] + y * v[3]
@@ -66,13 +129,11 @@ export function rotateMatrix(v: MatrixValues, angle: number, x = 0, y = 0) {
 export function transformPoint(
   v: MatrixValues,
   { x, y }: Point,
-  dest?: Point,
-  _dontNotify?: boolean
+  dest?: Point
 ): Point {
   return (dest ?? new Point())._set(
     x * v[0] + y * v[2] + v[4],
-    x * v[1] + y * v[3] + v[5],
-    _dontNotify
+    x * v[1] + y * v[3] + v[5]
   )
 }
 

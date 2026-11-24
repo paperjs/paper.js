@@ -18,16 +18,19 @@
 import { Change } from '../constants.ts'
 import { inject } from '../util/object.ts'
 import { Formatter } from '../util/Formatter.ts'
-import { serialize } from '../core/serialization.ts'
+import { registerClasses, serialize } from '../core/serialization.ts'
 import { Base } from '../core/Base.ts'
-import { registerClasses } from '../core/serialization.ts'
 import { Point } from './Point.ts'
 import { Rectangle } from './Rectangle.ts'
 import {
+  appendMatrix,
   createMatrix,
   inverseTransformPoint,
+  prependMatrix,
+  resetMatrix,
   rotateMatrix,
   scaleMatrix,
+  setMatrix,
   transformPoint,
   translateMatrix
 } from '../values/matrix.ts'
@@ -147,19 +150,10 @@ export class Matrix extends Base {
   _set(
     a: number, b: number,
     c: number, d: number,
-    tx: number, ty: number,
-    _dontNotify?: boolean
+    tx: number, ty: number
   ): this {
-    const v = this._values
-    v[0] = a
-    v[1] = b
-    v[2] = c
-    v[3] = d
-    v[4] = tx
-    v[5] = ty
-    if (!_dontNotify) {
-      this.#changed()
-    }
+    setMatrix(this._values, a, b, c, d, tx, ty)
+    this.#changed()
     return this
   }
 
@@ -224,13 +218,9 @@ export class Matrix extends Base {
    * Resets the matrix by setting its values to the ones of the identity
    * matrix that results in no transformation.
    */
-  reset(_dontNotify?: boolean): this {
-    const v = this._values
-    v[0] = v[3] = 1
-    v[1] = v[2] = v[4] = v[5] = 0
-    if (!_dontNotify) {
-      this.#changed()
-    }
+  reset(): this {
+    resetMatrix(this._values)
+    this.#changed()
     return this
   }
 
@@ -413,29 +403,10 @@ export class Matrix extends Base {
    * @param matrix the matrix to append
    * @return this matrix, modified
    */
-  append(matrix: Matrix, _dontNotify?: boolean): this {
+  append(matrix: Matrix): this {
     if (matrix) {
-      const v = this._values
-      const m = matrix._values
-      const a1 = v[0]
-      const b1 = v[1]
-      const c1 = v[2]
-      const d1 = v[3]
-      const a2 = m[0]
-      const b2 = m[2]
-      const c2 = m[1]
-      const d2 = m[3]
-      const tx2 = m[4]
-      const ty2 = m[5]
-      v[0] = a2 * a1 + c2 * c1
-      v[2] = b2 * a1 + d2 * c1
-      v[1] = a2 * b1 + c2 * d1
-      v[3] = b2 * b1 + d2 * d1
-      v[4] += tx2 * a1 + ty2 * c1
-      v[5] += tx2 * b1 + ty2 * d1
-      if (!_dontNotify) {
-        this.#changed()
-      }
+      appendMatrix(this._values, matrix._values)
+      this.#changed()
     }
     return this
   }
@@ -447,31 +418,10 @@ export class Matrix extends Base {
    * @param matrix the matrix to prepend
    * @return this matrix, modified
    */
-  prepend(matrix: Matrix, _dontNotify?: boolean): this {
+  prepend(matrix: Matrix): this {
     if (matrix) {
-      const v = this._values
-      const m = matrix._values
-      const a1 = v[0]
-      const b1 = v[1]
-      const c1 = v[2]
-      const d1 = v[3]
-      const tx1 = v[4]
-      const ty1 = v[5]
-      const a2 = m[0]
-      const b2 = m[2]
-      const c2 = m[1]
-      const d2 = m[3]
-      const tx2 = m[4]
-      const ty2 = m[5]
-      v[0] = a2 * a1 + b2 * b1
-      v[2] = a2 * c1 + b2 * d1
-      v[1] = c2 * a1 + d2 * b1
-      v[3] = c2 * c1 + d2 * d1
-      v[4] = a2 * tx1 + b2 * ty1 + tx2
-      v[5] = c2 * tx1 + d2 * ty1 + ty2
-      if (!_dontNotify) {
-        this.#changed()
-      }
+      prependMatrix(this._values, matrix._values)
+      this.#changed()
     }
     return this
   }
@@ -633,8 +583,8 @@ export class Matrix extends Base {
    * A faster version of transform that only takes one point and does not
    * attempt to convert it.
    */
-  _transformPoint(point: Point, dest?: Point, _dontNotify?: boolean): Point {
-    return transformPoint(this._values, point, dest, _dontNotify)
+  _transformPoint(point: Point, dest?: Point): Point {
+    return transformPoint(this._values, point, dest)
   }
 
   _transformCoordinates(src: number[], dst: number[], count: number) {

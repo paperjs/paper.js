@@ -744,27 +744,18 @@ export class Segment extends Base {
   interpolate(from: Segment, to: Segment, factor: number) {
     const u = 1 - factor
     const v = factor
-    const point1 = from._point
-    const point2 = to._point
-    const handleIn1 = from._handleIn
-    const handleIn2 = to._handleIn
-    const handleOut2 = to._handleOut
-    const handleOut1 = from._handleOut
-    this._point._set(
-      u * point1._x + v * point2._x,
-      u * point1._y + v * point2._y,
-      true
-    )
-    this._handleIn._set(
-      u * handleIn1._x + v * handleIn2._x,
-      u * handleIn1._y + v * handleIn2._y,
-      true
-    )
-    this._handleOut._set(
-      u * handleOut1._x + v * handleOut2._x,
-      u * handleOut1._y + v * handleOut2._y,
-      true
-    )
+    // Set the coordinates without notifying, as we do so once after:
+    const interpolate = (
+      point: SegmentPoint,
+      point1: SegmentPoint,
+      point2: SegmentPoint
+    ) => {
+      point._x = u * point1._x + v * point2._x
+      point._y = u * point1._y + v * point2._y
+    }
+    interpolate(this._point, from._point, to._point)
+    interpolate(this._handleIn, from._handleIn, to._handleIn)
+    interpolate(this._handleOut, from._handleOut, to._handleOut)
     this._changed()
   }
 

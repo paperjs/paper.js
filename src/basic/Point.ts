@@ -227,7 +227,7 @@ export class Point extends Base {
    *   basic types, to offer the same amount of flexibility when setting
    *   values.
    */
-  _set(x: number, y: number, _dontNotify?: boolean): this {
+  _set(x: number, y: number): this {
     this.x = x
     this.y = y
     return this
@@ -1123,14 +1123,12 @@ export class LinkedPoint extends Point {
   }
 
   // See Point#_set() for an explanation of _set():
-  _set(x: number, y: number, _dontNotify?: boolean): this {
+  _set(x: number, y: number): this {
     // Point's constructor calls this before the private fields exist:
     if (#x in this) {
       this.#x = x
       this.#y = y
-      if (!_dontNotify) {
-        this.#owner[this.#key] = this
-      }
+      this.#owner[this.#key] = this
     }
     return this
   }

@@ -56,9 +56,12 @@ import {
   isPlainObject,
   isZero,
   matchItem,
+  prependMatrix,
   registerClasses,
   removeNamed,
+  resetMatrix,
   serialize,
+  setMatrix,
   splice,
   updateBoundsCache
 } from '../internal.ts'
@@ -1835,7 +1838,7 @@ export class Item extends Emitter {
     }
     // Copy the values of the matrix, without notifying this item:
     if (!excludeMatrix) {
-      this._matrix._set(...source._matrix.values, true)
+      setMatrix(this._matrix._values, ...source._matrix._values)
     }
     // We can't just set _applyMatrix as many item types won't allow it,
     // e.g. creating a Shape in Path#toShape().
@@ -3016,8 +3019,8 @@ export class Item extends Emitter {
       if (!matrix.isInvertible() && _matrix.isInvertible()) {
         _matrix._backup = _matrix.values
       }
-      // Pass `true` for _dontNotify, as we're handling this after.
-      _matrix.prepend(matrix, true)
+      // Change the values without notifying, as we're handling this after:
+      prependMatrix(_matrix._values, matrix._values)
       // When a new matrix was applied, we also need to transform gradient
       // color points. These always need transforming, regardless of
       // #applyMatrix, as they are defined in the parent's coordinate
@@ -3046,11 +3049,11 @@ export class Item extends Emitter {
       // it along too.
       const pivot = this._pivot
       if (pivot) {
-        _matrix._transformPoint(pivot, pivot, true)
+        _matrix._transformPoint(pivot, pivot)
       }
       // Reset the internal matrix to the identity transformation if
       // it was possible to apply it, but do not notify owner of change.
-      _matrix.reset(true)
+      resetMatrix(_matrix._values)
       // Set the internal _applyMatrix flag to true if we're told to
       // do so
       if (_setApplyMatrix && this._canApplyMatrix) {
