@@ -23,13 +23,13 @@ import {
   Point,
   Segment,
   closePaths,
-  createGraph,
-  createResult,
   containsPoint,
+  createResult,
   dashPathItem,
   findItemBoundsCollisions,
   getCurveValues,
   getEpsilon,
+  getFeature,
   getOperands,
   getRegion,
   interpolateStrokeProfiles,
@@ -1256,6 +1256,7 @@ export abstract class PathItem extends Item {
 
   // The graph of a boolean operation, to check its planarity in the tests:
   static _createGraph(path1: PathItem, path2?: PathItem): Graph {
+    const { createGraph } = getFeature('boolean')
     return createGraph(getOperands(path1, path2).map(getRegion))
   }
 

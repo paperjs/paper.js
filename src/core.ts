@@ -63,5 +63,6 @@ export {
   Key,
   Numerical,
   PaperScope,
-  registerClasses
+  registerClasses,
+  use
 } from './internal.ts'

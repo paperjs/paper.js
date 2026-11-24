@@ -46,6 +46,7 @@
  * @module paper/boolean
  */
 import { Point } from '../basic/Point.ts'
+import { createGraph, traceGraph } from './graph.ts'
 import { splitGraph } from './split.ts'
 import {
   booleanOperators,
@@ -157,4 +158,18 @@ export function split(
 
 function toList(others: RegionValues | RegionValues[]): RegionValues[] {
   return Array.isArray(others) ? others : [others]
+}
+
+/**
+ * The boolean operations of path items, for `use(boolean)` with
+ * `paper/core`, see the `use()` function there.
+ */
+export const boolean = {
+  feature: {
+    name: 'boolean' as const,
+    booleanOperators,
+    createGraph,
+    splitGraph,
+    traceGraph
+  }
 }

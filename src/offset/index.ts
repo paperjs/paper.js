@@ -51,6 +51,15 @@ export function offset(
   return offsetRegion(region, distance, join, miterLimit)
 }
 
+// The function also stands for offsetting in `use(offset)` with
+// `paper/core`, with what the path items use of it:
+offset.feature = {
+  name: 'offset' as const,
+  offsetRegion,
+  offsetPath: offsetPathData,
+  outlineStroke
+}
+
 /**
  * Returns the offset of the open path at the distance, on the side of its
  * normals where it is positive, as one or more open paths.

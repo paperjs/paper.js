@@ -23,11 +23,9 @@ import {
   createPathItem,
   getCurvePart,
   getCurveTimeAt,
+  getFeature,
   getRegion,
   getScope,
-  offsetPath,
-  offsetRegion,
-  outlineStroke,
   setStrokeProfileRuns,
   takeStrokeProfile
 } from '../internal.ts'
@@ -65,6 +63,7 @@ export function offsetPathItem(
   distance: number,
   options?: OffsetOptions | null
 ): PathItem {
+  const { offsetRegion, offsetPath } = getFeature('offset')
   const join = options?.join || 'miter'
   const miterLimit = options?.miterLimit || 10
   const path = prepare(item)
@@ -176,7 +175,7 @@ function outlinePaths(
   cap: string,
   miterLimit: number
 ): PathItem {
-  const region = outlineStroke(
+  const region = getFeature('offset').outlineStroke(
     paths.map(path => {
       const profile = path._strokeProfile
       return {
