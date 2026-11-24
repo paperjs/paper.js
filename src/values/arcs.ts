@@ -33,24 +33,23 @@ import type { SegmentValues } from './path.ts'
 export function getArcThrough(from: Point, through: Point, to: Point) {
   // Intersect the perpendicular bisectors of (from, through) and
   // (through, to) to get the center:
-  const center = new Line(
-    from.add(through).divide(2),
-    through.subtract(from).rotate(90),
-    true
-  ).intersect(
-    new Line(
-      through.add(to).divide(2),
-      to.subtract(through).rotate(90),
-      true
-    ),
-    true
+  const center = new Line({
+    point: from.add(through).divide(2),
+    vector: through.subtract(from).rotate(90),
+    infinite: true
+  }).intersect(
+    new Line({
+      point: through.add(to).divide(2),
+      vector: to.subtract(through).rotate(90),
+      infinite: true
+    })
   )
   const line = new Line(from, to)
   const throughSide = line.getSide(through)
   if (center) {
     const vector = from.subtract(center)
     let extent = vector.getDirectedAngle(to.subtract(center))
-    const centerSide = line.getSide(center, true)
+    const centerSide = new Line({ from, to, infinite: true }).getSide(center)
     if (centerSide === 0) {
       // With the center on the line, the sign of the extent may be wrong,
       // so we take it from the side of the through point:

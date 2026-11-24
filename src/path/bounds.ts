@@ -196,11 +196,11 @@ export function addBevelJoin(
   addPoint(point.add(normal1.transform(strokeMatrix)))
   if (join === 'miter') {
     // Intersect the two lines
-    const corner = new Line(
-      normal1,
-      new Point(-normal1.y, normal1.x),
-      true
-    ).intersect(new Line(normal2, new Point(-normal2.y, normal2.x), true), true)
+    const corner = Line.intersect(
+      normal1.x, normal1.y, -normal1.y, normal1.x,
+      normal2.x, normal2.y, -normal2.y, normal2.x,
+      true, true, true
+    )
     // See if we actually get a bevel point and if its distance is below
     // the miterLimit. If not, make a normal bevel.
     if (corner?.length <= miterLimit * radius) {

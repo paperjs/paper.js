@@ -10,16 +10,34 @@
  * All rights reserved.
  */
 
-import { EPSILON, isMachineZero } from '../util/numerical.ts'
+import { EPSILON, clamp, isMachineZero } from '../util/numerical.ts'
 import { Base } from '../core/Base.ts'
 import { registerClasses } from '../core/serialization.ts'
 import { Point } from './Point.ts'
 import type { PointLike } from './Point.ts'
 
+export type LineOptions = {
+  from?: PointLike
+  to?: PointLike
+  point?: PointLike
+  vector?: PointLike
+  infinite?: boolean
+}
+
 /**
- * The Line object represents..
+ * The Line object represents a straight line from a point to a second point,
+ * or from a point in the direction of a vector. It ends at its two points,
+ * unless it's {@link #infinite}, and then runs on through them in both
+ * directions. {@link TextRange#baseline} returns a line.
  *
- * @private
+ * @example
+ * var line = new Line([0, 0], [100, 0]);
+ * console.log(line.getDistance([50, 20])); // 20
+ * console.log(line.getDistance([130, 40])); // 50
+ * console.log(line.intersect(new Line([50, -10], [50, 10]))); // { x: 50, y: 0 }
+ *
+ * var axis = new Line({ point: [0, 0], vector: [1, 0], infinite: true });
+ * console.log(axis.getDistance([130, 40])); // 40
  */
 export class Line extends Base {
   static {
@@ -30,142 +48,196 @@ export class Line extends Base {
   #py: number
   #vx: number
   #vy: number
+  #infinite: boolean
 
-  // DOCS: document Line class and constructor
   /**
-   * Creates a Line object.
+   * Creates a line from a point to a second point.
    *
-   * @param point1
-   * @param point2
-   * @param asVector
+   * @param from the line's point
+   * @param to the line's second point
    */
-  constructor(point1: PointLike, point2: PointLike, asVector?: boolean)
+  constructor(from: PointLike, to: PointLike)
   /**
-   * Creates a Line object from the coordinates of its point and its second
-   * point, or its vector if `asVector` is set.
+   * Creates a line from an object literal, with either `from` and `to`, or
+   * `point` and `vector`.
    *
-   * @param px
-   * @param py
-   * @param vx
-   * @param vy
-   * @param asVector
+   * @param object an object containing the line's properties
+   * @option object.from {Point} the line's point
+   * @option object.to {Point} the line's second point
+   * @option object.point {Point} the line's point, with `vector`
+   * @option object.vector {Point} the line's direction and length, from its
+   *     point
+   * @option [object.infinite=false] {Boolean} whether the line runs on
+   *     through its points in both directions
+   *
+   * @example
+   * var line = new Line({ from: [0, 0], to: [100, 50] });
+   *
+   * @example
+   * var ray = new Line({ point: [0, 0], vector: [10, 5], infinite: true });
    */
-  constructor(
-    px: number, py: number,
-    vx: number, vy: number,
-    asVector?: boolean
-  )
-  constructor(
-    arg0: PointLike | number,
-    arg1: PointLike | number,
-    arg2?: boolean | number,
-    arg3?: number,
-    arg4?: boolean
-  ) {
+  constructor(object: LineOptions)
+  constructor(arg0: PointLike | LineOptions, arg1?: PointLike) {
     super()
-    let asVector: boolean
-    if (typeof arg0 === 'number') {
-      this.#px = arg0
-      this.#py = arg1 as number
-      this.#vx = arg2 as number
-      this.#vy = arg3
-      asVector = arg4
-    } else {
-      const point1 = Point.from(arg0)
-      const point2 = Point.from(arg1)
-      this.#px = point1.x
-      this.#py = point1.y
-      this.#vx = point2.x
-      this.#vy = point2.y
-      asVector = arg2 as boolean
-    }
-    if (!asVector) {
-      this.#vx -= this.#px
-      this.#vy -= this.#py
-    }
+    const {
+      from,
+      to,
+      point = from,
+      vector,
+      infinite = false
+    } = (arg1 === undefined ? arg0 : { from: arg0, to: arg1 }) as LineOptions
+    const { x, y } = Point.from(point)
+    const { x: vx, y: vy } = vector
+      ? Point.from(vector)
+      : Point.from(to).subtract(x, y)
+    this.#px = x
+    this.#py = y
+    this.#vx = vx
+    this.#vy = vy
+    this.#infinite = infinite
   }
 
   /**
-   * The starting point of the line.
+   * The line's point, where it starts.
    */
   get point(): Point {
     return new Point(this.#px, this.#py)
   }
 
   /**
-   * The direction of the line as a vector.
+   * The line's vector, from its point to its second point.
    */
   get vector(): Point {
     return new Point(this.#vx, this.#vy)
   }
 
   /**
-   * The length of the line.
+   * The length of the line, from its point to its second point.
    */
   get length(): number {
     return this.vector.length
   }
 
   /**
-   * @param line
-   * @param isInfinite
-   * @return the intersection point of the lines, `undefined` if the
-   *     two lines are collinear, or `null` if they don't intersect.
+   * Specifies whether the line runs on through its points in both
+   * directions, instead of ending at them.
    */
-  intersect(line: Line, isInfinite?: boolean): Point {
+  get infinite(): boolean {
+    return this.#infinite
+  }
+
+  /**
+   * Returns the point where the line intersects the other line, within the
+   * ends of each line that isn't infinite.
+   *
+   * @param line the other line
+   * @return the point of intersection, or `undefined` if the lines don't
+   *     intersect or are collinear
+   */
+  intersect(line: Line): Point | undefined {
     return Line.intersect(
       this.#px, this.#py, this.#vx, this.#vy,
       line.#px, line.#py, line.#vx, line.#vy,
-      true, isInfinite
+      true, this.#infinite, line.#infinite
     )
   }
 
-  // DOCS: document Line#getSide(point)
   /**
-   * @param point
-   * @param isInfinite
+   * Returns on which side of the line the point lies, seen along its vector:
+   * `1` to the left, `-1` to the right, and `0` on the line. A point beyond
+   * the ends of a line that isn't infinite lies on the side of the end it's
+   * beyond, `-1` before its point and `1` after its second point.
+   *
+   * @param point the point to check
+   * @return `-1`, `0` or `1`
    */
-  getSide(point: PointLike, isInfinite?: boolean): number {
+  getSide(point: PointLike): number {
     const { x, y } = Point.from(point)
     return Line.getSide(
       this.#px, this.#py, this.#vx, this.#vy,
-      x, y, true, isInfinite
+      x, y, true, this.#infinite
     )
   }
 
-  // DOCS: document Line#getDistance(point)
   /**
-   * @param point
+   * Returns the distance of the point from the line, which is the distance
+   * from its nearest end for points beyond the ends of a line that isn't
+   * infinite.
+   *
+   * @param point the point to measure the distance of
+   * @return the distance of the point from the line
    */
   getDistance(point: PointLike | number, y?: number): number {
-    return Math.abs(this.getSignedDistance(point, y))
+    const other = Point.from(point, y)
+    const px = this.#px
+    const py = this.#py
+    const vx = this.#vx
+    const vy = this.#vy
+    if (this.#infinite) {
+      return Line.getDistance(px, py, vx, vy, other.x, other.y, true)
+    } else {
+      const dx = other.x - px
+      const dy = other.y - py
+      // The position of the nearest point along the line, held within it:
+      const u = clamp((dx * vx + dy * vy) / (vx * vx + vy * vy) || 0, 0, 1)
+      return Math.hypot(dx - u * vx, dy - u * vy)
+    }
   }
 
-  // DOCS: document Line#getSignedDistance(point)
   /**
-   * @param point
+   * Returns the distance of the point from the line as
+   * {@link #getDistance(point)} measures it, positive on the side where
+   * {@link #getSide(point)} returns `1` and negative where it returns `-1`.
+   *
+   * @param point the point to measure the distance of
+   * @return the signed distance of the point from the line
    */
   getSignedDistance(point: PointLike | number, y?: number): number {
     const other = Point.from(point, y)
-    return Line.getSignedDistance(
-      this.#px, this.#py, this.#vx, this.#vy,
-      other.x, other.y, true
-    )
+    return this.#infinite
+      ? Line.getSignedDistance(
+          this.#px, this.#py, this.#vx, this.#vy,
+          other.x, other.y, true
+        )
+      : this.getSide(other) * this.getDistance(other)
   }
 
+  /**
+   * Checks whether the line runs in the same or the opposite direction as
+   * the other line, which it then lies on or runs parallel to.
+   *
+   * @param line the other line
+   * @return {@true if the lines are collinear}
+   */
   isCollinear(line: Line): boolean {
     return Point.isCollinear(this.#vx, this.#vy, line.#vx, line.#vy)
   }
 
+  /**
+   * Checks whether the line is perpendicular to the other line.
+   *
+   * @param line the other line
+   * @return {@true if the lines are orthogonal}
+   */
   isOrthogonal(line: Line): boolean {
     return Point.isOrthogonal(this.#vx, this.#vy, line.#vx, line.#vy)
   }
 
+  /**
+   * @return a string representation of the line
+   */
+  toString(): string {
+    return `{ point: ${this.point}, vector: ${this.vector}${
+      this.#infinite ? ', infinite: true' : ''
+    } }`
+  }
+
+  /** @private */
   static intersect(
     p1x: number, p1y: number, v1x: number, v1y: number,
     p2x: number, p2y: number, v2x: number, v2y: number,
-    asVector?: boolean, isInfinite?: boolean
-  ): Point {
+    asVector?: boolean, isInfinite1?: boolean, isInfinite2?: boolean
+  ): Point | undefined {
     // Convert 2nd points to vectors if they are not specified as such.
     if (!asVector) {
       v1x -= p1x
@@ -180,14 +252,16 @@ export class Line extends Base {
       const dy = p1y - p2y
       let u1 = (v2x * dy - v2y * dx) / cross
       const u2 = (v1x * dy - v1y * dx) / cross
-      // Check the ranges of the u parameters if the line is not
-      // allowed to extend beyond the definition points, but
-      // compare with EPSILON tolerance over the [0, 1] bounds.
-      const epsilon = EPSILON
-      const uMin = -epsilon
-      const uMax = 1 + epsilon
-      if (isInfinite || uMin < u1 && u1 < uMax && uMin < u2 && u2 < uMax) {
-        if (!isInfinite) {
+      // Check the ranges of the u parameters of the lines that don't extend
+      // beyond their definition points, but compare with EPSILON tolerance
+      // over the [0, 1] bounds.
+      const uMin = -EPSILON
+      const uMax = 1 + EPSILON
+      if (
+        (isInfinite1 || uMin < u1 && u1 < uMax) &&
+        (isInfinite2 || uMin < u2 && u2 < uMax)
+      ) {
+        if (!isInfinite1) {
           // Address the tolerance at the bounds by clipping to
           // the actual range.
           u1 = u1 <= 0 ? 0 : u1 >= 1 ? 1 : u1
@@ -200,6 +274,7 @@ export class Line extends Base {
     }
   }
 
+  /** @private */
   static getSide(
     px: number, py: number, vx: number, vy: number,
     x: number, y: number,
@@ -229,6 +304,7 @@ export class Line extends Base {
     return ccw < 0 ? -1 : ccw > 0 ? 1 : 0
   }
 
+  /** @private */
   static getSignedDistance(
     px: number, py: number, vx: number, vy: number,
     x: number, y: number,
@@ -260,6 +336,7 @@ export class Line extends Base {
           )
   }
 
+  /** @private */
   static getDistance(
     px: number, py: number, vx: number, vy: number,
     x: number, y: number,
