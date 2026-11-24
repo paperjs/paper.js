@@ -609,6 +609,29 @@ describe('Hosted', () => {
     equals(changes[0].item === circle, true)
   })
 
+  test('takeChanges() lists items whose data a script changed', () => {
+    const { project } = createHostedProject()
+    project.trackChanges = true
+    const { circle } = project.layers[0].children
+    // Reading the data is no change:
+    const { data } = circle
+    equals(project.takeChanges().length, 0)
+    // Changing it in place is, once:
+    data.profile = [1, 2]
+    let changes = project.takeChanges()
+    equals(changes.length, 1)
+    equals(changes[0].item === circle, true)
+    equals(changes[0].flags, ChangeFlag.ATTRIBUTE)
+    equals(project.takeChanges().length, 0)
+    // Also through an object that the script kept, and by replacing it:
+    data.profile.push(3)
+    equals(project.takeChanges().length, 1)
+    circle.data = { profile: [1] }
+    changes = project.takeChanges()
+    equals(changes.length, 1)
+    equals(circle.exportJSON({ asString: false })[1].data, { profile: [1] })
+  })
+
   test('invalidate() reloads changed content into the same item', () => {
     const res = createHostedProject()
     const original = res.host.document.getItem({ name: 'circle' })
