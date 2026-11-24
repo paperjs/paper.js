@@ -23,7 +23,8 @@ import {
   TextStory,
   equals,
   inject,
-  serialize
+  serialize,
+  setStyles
 } from '../internal.ts'
 import type { Matrix } from '../basic/Matrix.ts'
 import type { Project } from '../item/Project.ts'
@@ -774,7 +775,7 @@ export class TextItem extends Item {
           const hasStroke = style.hasStroke()
           const isStrokeFirst = hasStroke && style.paintOrder === 'stroke'
           let x = piece.dx || 0
-          this._setStyles(ctx, param, viewMatrix, null, style)
+          setStyles(this, ctx, param, viewMatrix, null, style)
           if (hasStroke && scale) {
             ctx.lineWidth /= scale
             ctx.setLineDash(ctx.getLineDash().map(dash => dash / scale))
@@ -799,7 +800,7 @@ export class TextItem extends Item {
           x /= piece.scale.x
           ctx.font = piece.font
           ctx.letterSpacing = piece.tracking
-          // Cast the shadow of the first paint only, see Item#_paint():
+          // Cast the shadow of the first paint only, see paintItem():
           if (isStrokeFirst) {
             ctx.strokeText(piece.content, x, 0)
             ctx.shadowColor = 'rgba(0,0,0,0)'

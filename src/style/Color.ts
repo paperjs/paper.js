@@ -1059,7 +1059,7 @@ export class Color extends Base {
   }
 
   // Returns the matrix that elliptical radial gradients are drawn through, as
-  // canvas only draws circles, or null for other colors. See Item#_paint():
+  // canvas only draws circles, or null for other colors. See paintItem():
   _getEllipseMatrix(matrix: Matrix, strokeMatrix: Matrix): Matrix {
     return (
       (

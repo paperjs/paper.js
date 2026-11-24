@@ -23,6 +23,8 @@ import {
   SymbolItem,
   View,
   defineEvents,
+  drawItem,
+  drawSelection,
   exportProjectSVG,
   getCanvas,
   getItems,
@@ -1074,7 +1076,7 @@ export class Project extends PaperScopeItem {
       updateMatrix: true
     }
     for (const child of this._children) {
-      child.draw(ctx, param)
+      drawItem(child, ctx, param)
     }
     ctx.restore()
 
@@ -1086,7 +1088,7 @@ export class Project extends PaperScopeItem {
       const size = this._scope.settings.handleSize
       const version = this._updateVersion
       for (const item of Object.values(items)) {
-        item._drawSelection(ctx, matrix, size, items, version)
+        drawSelection(item, ctx, matrix, size, items, version)
       }
       ctx.restore()
     }

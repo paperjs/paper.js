@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { Change, ChangeFlag, Item } from '../internal.ts'
+import { Change, ChangeFlag, Item, drawItem } from '../internal.ts'
 import type { Point } from '../basic/Point.ts'
 import type { Matrix } from '../basic/Matrix.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'
@@ -377,11 +377,15 @@ export class Group extends Item {
       ctx.beginPath()
       param.dontStart = param.dontFinish = true
     } else if (clipItem) {
-      clipItem.draw(ctx, Object.assign(Object.create(param), { clip: true }))
+      drawItem(
+        clipItem,
+        ctx,
+        Object.assign(Object.create(param), { clip: true })
+      )
     }
     for (const child of this._children) {
       if (child !== clipItem) {
-        child.draw(ctx, param)
+        drawItem(child, ctx, param)
       }
     }
   }

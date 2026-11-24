@@ -25,6 +25,7 @@ import {
   equals,
   isPlainObject,
   isRectangle,
+  paintItem,
   paper,
   readEllipse,
   readRectangle
@@ -497,7 +498,7 @@ export class Shape extends Item {
       ctx.closePath()
     }
     if (!dontPaint) {
-      this._paint(ctx, param, viewMatrix, strokeMatrix)
+      paintItem(this, ctx, param, viewMatrix, strokeMatrix)
     }
   }
 

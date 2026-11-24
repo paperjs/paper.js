@@ -24,10 +24,12 @@ import {
   Size,
   addEvents,
   clamp,
+  drawItem,
   getCanvas,
   getContext,
   getDocument,
-  releaseCanvas
+  releaseCanvas,
+  setStyles
 } from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
 import type { SizeLike } from '../basic/Size.ts'
@@ -678,7 +680,7 @@ export class Raster extends Item {
     matrix.applyToContext(ctx)
     // If a path was passed, draw it as a clipping mask:
     if (path) {
-      path.draw(ctx, { clip: true, matrices: [matrix] })
+      drawItem(path, ctx, { clip: true, matrices: [matrix] })
     }
     // Now draw the image clipped into it.
     this._matrix.applyToContext(ctx)
@@ -868,8 +870,8 @@ export class Raster extends Item {
       // never draw a stroke. See Item#draw().
       ctx.globalAlpha = clamp(this._opacity, 0, 1)
 
-      // Call _setStyles() to make sure shadow is drawn (#1437).
-      this._setStyles(ctx, param, viewMatrix)
+      // Call setStyles() to make sure shadow is drawn (#1437).
+      setStyles(this, ctx, param, viewMatrix)
 
       // `Raster#smoothing` controlls both the `imageSmoothingQuality` and
       // `imageSmoothingEnabled` canvas context properties:

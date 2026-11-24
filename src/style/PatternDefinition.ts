@@ -18,6 +18,7 @@ import {
   Matrix,
   Rectangle,
   Size,
+  drawItem,
   equals,
   getCanvas,
   serialize
@@ -224,7 +225,7 @@ export class PatternDefinition extends ItemDefinition {
       }
       // The item is shared by all colors of the pattern, so don't let them
       // set its global matrix, as in SymbolItem#_draw():
-      this._item.draw(tileCtx, {
+      drawItem(this._item, tileCtx, {
         matrices: [tileMatrix],
         updateMatrix: false
       })

@@ -16,8 +16,10 @@ import {
   Path,
   PathItem,
   Point,
+  drawItem,
   getStrokeOutline,
   inject,
+  paintItem,
   push
 } from '../internal.ts'
 import type { HitResult } from '../item/HitResult.ts'
@@ -338,10 +340,10 @@ export class CompoundPath extends PathItem {
     })
     ctx.beginPath()
     for (const child of children) {
-      child.draw(ctx, param, strokeMatrix)
+      drawItem(child, ctx, param, strokeMatrix)
     }
     if (!param.clip) {
-      this._paint(ctx, param, viewMatrix, strokeMatrix)
+      paintItem(this, ctx, param, viewMatrix, strokeMatrix)
     }
   }
 
