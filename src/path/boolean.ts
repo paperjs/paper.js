@@ -34,8 +34,8 @@ import {
   Path,
   Point,
   booleanOperators,
+  getScope,
   getStrokeProfilePart,
-  paper,
   setStrokeProfileRuns,
   splitGraph,
   traceGraph
@@ -203,7 +203,7 @@ export function createResult(
   result.addChildren(paths)
   // See if the item can be reduced to just a simple Path.
   result = result.reduce({ simplify }) as PathItem
-  const { insert = paper.settings.insertItems } = options ?? {}
+  const { insert = getScope().settings.insertItems } = options ?? {}
   if (insert) {
     // Insert the resulting path above whichever of the paths that are
     // siblings of path1 appears furthest up in the stack:

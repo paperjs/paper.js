@@ -46,10 +46,11 @@ import {
   getBoundsCacheKey,
   getCachedBounds,
   getCombinedBounds,
-  getItemBounds,
   getEffectOutput,
+  getItemBounds,
   getItems,
   getPreviewBounds,
+  getScope,
   getUID,
   hitTest,
   hitTestAll,
@@ -62,7 +63,6 @@ import {
   isPlainObject,
   isZero,
   matchItem,
-  paper,
   registerClasses,
   removeEffects,
   removeNamed,
@@ -209,8 +209,8 @@ export class Item extends Emitter {
     const internal = hasProps && props.internal === true
     const matrix = (this._matrix = new Matrix())
     // Allow setting another project than the currently active one.
-    const project = hasProps && props.project || paper.project
-    const { settings } = paper
+    const project = hasProps && props.project || getScope().project
+    const { settings } = getScope()
     if (!project) {
       throw new Error(
         'Unable to create an item without a project. ' +
@@ -256,7 +256,7 @@ export class Item extends Emitter {
   // @overridable
   _initializeContent(project: Project) {
     // Inherit the applyMatrix setting from settings.applyMatrix
-    this._applyMatrix = this._canApplyMatrix && paper.settings.applyMatrix
+    this._applyMatrix = this._canApplyMatrix && getScope().settings.applyMatrix
     this._style = new Style(this._getCurrentStyle(project), this, project)
   }
 
@@ -1759,7 +1759,7 @@ export class Item extends Emitter {
     const children = this._children
     // `insert` follows settings.insertItems and `deep` is true by
     // default. Also support a boolean parameter for insert:
-    const { insert = paper.settings.insertItems, deep = true } =
+    const { insert = getScope().settings.insertItems, deep = true } =
       typeof options === 'boolean' ? { insert: options } : options ?? {}
     // On items with children, for performance reasons due to the way that
     // styles are currently "flattened" into existing children, we need to
@@ -1900,7 +1900,7 @@ export class Item extends Emitter {
   rasterize(
     options: { resolution?: number; raster?: Raster; insert?: boolean } = {}
   ): Raster {
-    const { resolution, insert = paper.settings.insertItems } = options
+    const { resolution, insert = getScope().settings.insertItems } = options
     const raster = options.raster ?? new Raster(Item.NO_INSERT)
     // What the item draws, with its effects:
     const bounds = this.previewBounds

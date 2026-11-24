@@ -23,11 +23,11 @@ import {
   Size,
   defineDeprecatedConstructors,
   equals,
+  getScope,
   getStrokeMatrix,
   isPlainObject,
   isRectangle,
   paintItem,
-  paper,
   readEllipse,
   readRectangle,
   registerClasses
@@ -395,10 +395,10 @@ export class Shape extends Item {
   toPath(insert?: boolean): Path {
     const path = this._asPathItem()
     // Respect the setting of paper.settings.applyMatrix for new paths:
-    if (paper.settings.applyMatrix) {
+    if (getScope().settings.applyMatrix) {
       path.applyMatrix = true
     }
-    if (insert !== undefined ? insert : paper.settings.insertItems) {
+    if (insert !== undefined ? insert : getScope().settings.insertItems) {
       path.insertAbove(this)
     }
     return path

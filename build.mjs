@@ -28,6 +28,7 @@ const date = execSync('git log -1 --pretty=format:%ad').toString().trim()
 // The entries of the package, see `exports` in package.json:
 const entries = {
   paper: 'src/index.ts',
+  core: 'src/core.ts',
   paperscript: 'src/paperscript/index.ts',
   node: 'src/node/index.ts',
   hosted: 'src/hosted/index.ts'

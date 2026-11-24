@@ -93,7 +93,12 @@ export default [
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
-        { vars: 'local', args: 'none', caughtErrors: 'none' }
+        {
+          vars: 'local',
+          args: 'none',
+          caughtErrors: 'none',
+          ignoreRestSiblings: true
+        }
       ]
     }
   },
@@ -103,6 +108,7 @@ export default [
     files: ['src/**/*.ts'],
     ignores: [
       'src/internal.ts',
+      'src/index.ts',
       'src/{node,hosted,paperscript}/**',
       ...layers.flatMap(({ files }) => files)
     ],
