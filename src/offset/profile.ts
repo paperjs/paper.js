@@ -74,6 +74,10 @@ export type StrokePens = {
 // The stretch of a stroke profile between two of its stops, by their offsets:
 type Span = { start: number; end: number }
 
+// The end of a side of a sliver that was left out, with where the side
+// starts, the sliver's strip, and whether a strip took its place there:
+type Move = { end: Point; start: Point; strip: RegionValues; isMet: boolean }
+
 // Two times on a part between which no strips are swept, see getSplits():
 type Split = [start: number, end: number, strips?: Strip[]]
 
@@ -90,10 +94,10 @@ const { abs } = Math
 export class ProfileSweep extends Sweep<ProfilePart> {
   pens: StrokePens
   spans: Span[] = []
-  // The ends of the sides of the slivers left out last, with where they
-  // start, as the strips right after them start there instead, to meet the
-  // ones before them:
-  moves: [Point, Point][] = []
+  // The ends of the sides of the slivers left out, with where they start,
+  // as the strips, joins and caps after them start there instead, to meet
+  // the strips before them, see getStart():
+  moves: Move[] = []
 
   constructor(path: PathValues, pens: StrokePens, stroke: Stroke) {
     super(path, stroke)
@@ -157,6 +161,22 @@ export class ProfileSweep extends Sweep<ProfilePart> {
       start: getCurveTangent(parts[0].v, 0),
       end: getCurveTangent(parts.at(-1).v, 1)
     }
+  }
+
+  // Adds the slivers left out that nothing started at on both sides, as a
+  // notch of their width would reach into the stroke there: before a part
+  // that starts in other points, or a butt cap:
+  // @override
+  sweep(): RegionValues[] {
+    const areas = super.sweep()
+    const slivers = new Set<RegionValues>()
+    for (const { strip, isMet } of this.moves) {
+      if (!isMet) {
+        slivers.add(strip)
+      }
+    }
+    areas.push(...slivers)
+    return areas
   }
 
   // Adds the areas that the pen sweeps along the part, split at the spans
@@ -368,20 +388,15 @@ export class ProfileSweep extends Sweep<ProfilePart> {
     // Moves the start of the side where a sliver left out ends to where it
     // starts, so that it meets the strip before the sliver:
     const moveStart = (side: Side) => {
-      const move = this.moves.find(([end]) =>
-        end.isClose(side[0][0], GEOMETRIC_EPSILON)
-      )
-      if (move) {
-        const { x, y } = move[1]
-        side[0][0] = [x, y]
-      }
+      const { x, y } = this.getStart(new Point(side[0][0]))
+      side[0][0] = [x, y]
     }
 
     for (let i = 1, l = splits.length; i < l; i++) {
       const t0 = splits[i - 1][1]
       const t1 = splits[i][0]
       const strips = t1 - t0 > GEOMETRIC_EPSILON ? getStrips((t0 + t1) / 2) : []
-      const moves: [Point, Point][] = []
+      const moves: Move[] = []
       for (let j = 0, m = strips.length; j < m; j++) {
         const motions = getMotions(strips[j])
         const from = getSide(t => getEnd(t, j, 'from'), t0, t1)
@@ -448,7 +463,7 @@ export class ProfileSweep extends Sweep<ProfilePart> {
           this.addStrip(from, to, moves)
         }
       }
-      this.moves = moves
+      this.moves.push(...moves)
     }
   }
 
@@ -563,18 +578,22 @@ export class ProfileSweep extends Sweep<ProfilePart> {
           const side2 = sides2[k].point
           const direction1 = sides1[k].derivative.normalize()
           const direction2 = sides2[k].derivative.normalize()
-          // From the inner sides, as the ends of the
-          // parts only run through the point where the
-          // pen doesn't change. All lie on the pen:
+          // From the inner sides, as the ends of the parts only run
+          // through the point where the pen doesn't change, and from
+          // where the strips before slivers left out there ended:
+          const start1 = this.getStart(side1)
           const points = [
-            sides1[1 - k].point,
+            this.getStart(sides1[1 - k].point),
             widen(
               sides1[k],
               this.getSpanPen(span1, part1.offset + part1.length),
               tangent1.negate()
-            ),
-            side1
+            )
           ]
+          if (start1 !== side1) {
+            points.push(start1)
+          }
+          points.push(side1)
           if (join === 'miter') {
             const miter = Line.intersect(
               side1.x, side1.y,
@@ -639,7 +658,12 @@ export class ProfileSweep extends Sweep<ProfilePart> {
         const ahead = tangent.multiply(reach)
         const side0 = sides[0].point
         const side1 = sides[1].point
-        this.addPolygon([side0, side0.add(ahead), side1.add(ahead), side1])
+        this.addPolygon([
+          this.getStart(side0),
+          side0.add(ahead),
+          side1.add(ahead),
+          this.getStart(side1)
+        ])
       }
     }
   }
@@ -659,20 +683,37 @@ export class ProfileSweep extends Sweep<ProfilePart> {
   // other by its width. So we only leave it out where it is short enough
   // for the next strip to start where it does, and add the ends of its
   // sides with where they start to the moves:
-  addStrip(side1: Side, side2: Side, moves: [Point, Point][]) {
+  addStrip(side1: Side, side2: Side, moves: Move[]) {
     const { tolerance } = this.stroke
     const strip = createStrip(side1, side2)
-    const ends = [side1, side2].map((side): [Point, Point] => [
-      new Point(side.at(-1)[0]),
-      new Point(side[0][0])
-    ])
+    const ends = [side1, side2].map((side): Move => ({
+      end: new Point(side.at(-1)[0]),
+      start: new Point(side[0][0]),
+      strip,
+      isMet: false
+    }))
     if (
       isThin(strip, tolerance) &&
-      ends.every(([end, start]) => end.isClose(start, 2 * tolerance))
+      ends.every(({ end, start }) => end.isClose(start, 2 * tolerance))
     ) {
       moves.push(...ends)
     } else {
       this.areas.push(strip)
+    }
+  }
+
+  // Returns where the side of a sliver that was left out and ends at the
+  // point starts, for what follows there to start at instead, or the point
+  // itself:
+  getStart(point: Point): Point {
+    const move = this.moves.find(({ end }) =>
+      end.isClose(point, GEOMETRIC_EPSILON)
+    )
+    if (move) {
+      move.isMet = true
+      return move.start
+    } else {
+      return point
     }
   }
 }
