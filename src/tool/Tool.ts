@@ -177,7 +177,7 @@ export class Tool extends PaperScopeItem {
    */
   _handleMouseEvent(
     type: string,
-    event: globalThis.Event,
+    event: PointerEvent,
     point: Point,
     mouse: Record<string, boolean>
   ): boolean {

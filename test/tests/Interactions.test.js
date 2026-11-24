@@ -590,6 +590,27 @@ describe.skipIf(isNodeContext)('Interactions', () => {
     equals(events, ['mouseup { x: 20, y: 20 }', 'mouseleave { x: 20, y: 20 }'])
   })
 
+  test('MouseEvent and ToolEvent with the details of the pointer (#1354)', () => {
+    const tool = new Tool()
+    const log = []
+    paper.view.onMouseDown = tool.onMouseDown = event => {
+      log.push(
+        [event.button, event.buttons, event.pointerType, event.pressure].join(
+          ' '
+        )
+      )
+    }
+    triggerPointerEvent('pointerdown', new Point(10, 10), null, {
+      button: 0,
+      buttons: 1,
+      pointerType: 'pen',
+      pressure: 0.25
+    })
+    triggerPointerEvent('pointerup', new Point(10, 10))
+    equals(log, ['0 1 pen 0.25', '0 1 pen 0.25'])
+    tool.remove()
+  })
+
   test('View#onMouseEnter() is only triggered as the pointer enters', () => {
     const types = []
     paper.view.onMouseEnter = paper.view.onMouseLeave = event => {
