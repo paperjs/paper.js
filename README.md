@@ -65,7 +65,9 @@ importing them, as they only exist from then on.
 
 The package has these entries:
 
-- `paper` – The core library, also as `paper/core`.
+- `paper` – The core library, with the first scope as its default export.
+- `paper/core` – The core library without side effects: the classes, without a
+  scope created at import. The first project or item creates the scope it needs.
 - `paper/paperscript` – PaperScript, which adds the operators, and exports
   `PaperScript` to compile, execute and load code. `PaperScript.load()` runs
   the `<script type="text/paperscript">` tags of the page, which the script
