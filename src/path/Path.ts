@@ -2145,18 +2145,20 @@ export class Path extends PathItem {
     }
 
     if (create) {
-      const center = this._getPosition(true)
+      // In the path's own coordinates, which the shape takes on through the
+      // path's matrix, and not at its pivot:
+      const { center } = this.getBounds({ internal: true })
       const shape = create({
         center,
         size,
         radius,
         insert: false
       })
-      // Pass `true` to exclude the matrix, so we can prepend after
-      shape.copyAttributes(this, true)
+      shape.rotate(topCenter.subtract(center).angle + 90, center)
       shape._matrix.prepend(this._matrix)
-      // Determine and apply the shape's angle of rotation.
-      shape.rotate(topCenter.subtract(center).angle + 90)
+      // Pass `true` to exclude the matrix, which the shape has already. Its
+      // pivot then lands where the path's is:
+      shape.copyAttributes(this, true)
       if (insert !== undefined ? insert : paper.settings.insertItems) {
         shape.insertAbove(this)
       }

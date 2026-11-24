@@ -864,22 +864,28 @@ export class Item extends Emitter {
   }
 
   /**
-   * The item's pivot point specified in the item coordinate system, defining
-   * the point around which all transformations are hinging. This is also the
-   * reference point for {@link #position}. By default, it is set to `null`,
-   * meaning the {@link Rectangle#center} of the item's {@link #bounds}
-   * rectangle is used as pivot.
+   * The item's pivot point, defining the point around which all
+   * transformations are hinging. This is also the reference point for
+   * {@link #position}. It is specified in the coordinate system of the item's
+   * parent, as {@link #position} and {@link #bounds} are, and moves along with
+   * the item as it is transformed. By default, it is set to `null`, meaning
+   * the {@link Rectangle#center} of the item's {@link #bounds} rectangle is
+   * used as pivot.
    *
    * @default null
    */
   get pivot(): Point | null {
-    const pivot = this._pivot
+    const pivot = this._pivot && this._matrix._transformPoint(this._pivot)
     return pivot ? new LinkedPoint(pivot.x, pivot.y, this, 'pivot') : null
   }
 
   set pivot(point: PointLike | null) {
-    // Clone existing points since we're caching internally.
-    this._pivot = point != null ? new Point(point) : null
+    // Keep it in the item's own coordinates, so that it moves along with the
+    // item's transformations:
+    this._pivot =
+      point != null
+        ? this._matrix._inverseTransform(Point.from(point))
+        : null
     // No need for _changed() since the only thing this affects is _position
     this._position = undefined
   }
@@ -2134,7 +2140,9 @@ export class Item extends Emitter {
     // NOTE: This will also bake in the matrix that we just initialized,
     // in case #applyMatrix is true.
     this.applyMatrix = source._applyMatrix
-    this.pivot = source._pivot
+    // Where the pivot appears, as the content may be in another coordinate
+    // system now:
+    this.pivot = source.pivot
     // Copy over the selection state, use the setter so the item
     // is also added to Project#_selectionItems if it is selected.
     this.selection = source._selection
