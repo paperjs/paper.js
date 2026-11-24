@@ -66,9 +66,10 @@ importing them, as they only exist from then on.
 The package has these entries:
 
 - `paper` – The core library, also as `paper/core`.
-- `paper/paperscript` – PaperScript, which adds the operators and the loading
-  of `<script type="text/paperscript">` tags when imported, and exports
-  `PaperScript` to compile and execute code. It brings Acorn.js along.
+- `paper/paperscript` – PaperScript, which adds the operators, and exports
+  `PaperScript` to compile, execute and load code. `PaperScript.load()` runs
+  the `<script type="text/paperscript">` tags of the page, which the script
+  files do on their own. It brings Acorn.js along.
 - `paper/node` – The core library on Node.js, see
   [Using Paper.js on Node.js](#using-paperjs-on-nodejs).
 - `paper/hosted` – The core library with hosted projects, whose items a host

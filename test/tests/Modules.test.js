@@ -111,14 +111,27 @@ describe('paper/boolean and paper/offset', () => {
     )
   })
 
-  // Bundling needs Node's file system:
+  // Bundling and processes of their own need Node.js:
   if (isNodeContext) {
-    test('paper/core creates no scope until the first project', async () => {
-      // In a process of its own, as the tests load the paper entry:
+    // Run the code in a process of its own, as the tests load the paper entry,
+    // and return what it logs:
+    async function runProcess(code) {
       const { execFileSync } = await import('node:child_process')
-      const url = new URL('../../src/core.ts', import.meta.url).href
-      const code = `
-        const { PaperScope, Path, Project } = await import('${url}')
+      const output = execFileSync(
+        process.execPath,
+        ['--input-type=module', '--eval', code],
+        { encoding: 'utf8' }
+      )
+      return JSON.parse(output)
+    }
+
+    const getURL = file => new URL(`../../src/${file}`, import.meta.url).href
+
+    test('paper/core creates no scope until the first project', async () => {
+      const output = await runProcess(`
+        const { PaperScope, Path, Project } = await import('${
+          getURL('core.ts')
+        }')
         const before = PaperScope.get(0)
         const project = new Project()
         console.log(JSON.stringify([
@@ -127,13 +140,27 @@ describe('paper/boolean and paper/offset', () => {
           PaperScope.get(0) === project._scope,
           Path.circle({ center: [5, 5], radius: 3 }).project === project
         ]))
-      `
-      const output = execFileSync(
-        process.execPath,
-        ['--input-type=module', '--eval', code],
-        { encoding: 'utf8' }
-      )
-      equals(JSON.parse(output), [null, false, true, true])
+      `)
+      equals(output, [null, false, true, true])
+    })
+
+    test('Only the script files run the PaperScripts of the page', async () => {
+      const output = await runProcess(`
+        const { default: paper } = await import('${getURL('node/index.ts')}')
+        paper.document.body.innerHTML = \`
+          <canvas id="canvas"></canvas>
+          <script type="text/paperscript" canvas="canvas">
+            globalThis.ran = true
+          </script>\`
+        const wait = () => new Promise(resolve => setTimeout(resolve, 10))
+        await import('${getURL('paperscript/index.ts')}')
+        await wait()
+        const ranByModule = !!globalThis.ran
+        await import('${getURL('paperscript/autoload.ts')}')
+        await wait()
+        console.log(JSON.stringify([ranByModule, !!globalThis.ran]))
+      `)
+      equals(output, [false, true])
     })
 
     test('The bundles of the entries leave out the scene graph', async () => {

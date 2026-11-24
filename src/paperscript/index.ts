@@ -13,8 +13,6 @@
 import {
   PaperScope,
   View,
-  addEvents,
-  getDocument,
   getWindow,
   inject
 } from '../internal.ts'
@@ -59,17 +57,5 @@ inject(PaperScope.prototype, {
     return exports
   }
 })
-
-const window = getWindow()
-if (window) {
-  // Catch cases where paper.js is loaded after the browser event has
-  // already occurred.
-  if (getDocument().readyState === 'complete') {
-    // Handle it asynchronously
-    setTimeout(() => PaperScript.load())
-  } else {
-    addEvents(window, { load: () => PaperScript.load() })
-  }
-}
 
 export { PaperScript }

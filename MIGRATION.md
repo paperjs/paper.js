@@ -53,6 +53,9 @@ import 'paper/paperscript'
 paper.execute(code)
 ```
 
+- Importing `paper/paperscript` no longer runs the page's
+  `<script type="text/paperscript">` tags. Call `PaperScript.load()` once the
+  page has loaded. `dist/paper-full.js` still runs them on its own.
 - Code is parsed by acorn 8 as a module, so current JavaScript syntax works, and
   strict-mode errors apply at parse time, e.g. for `with` and legacy octals.
 - Scripts with `src` load through `fetch`, asynchronously.
