@@ -306,6 +306,31 @@ describe('View', () => {
     scope.remove()
   })
 
+  test('view.dispatchMouseEvent() in two views', () => {
+    // Pressing in one view doesn't make the moves of another view reach the
+    // pressed item:
+    const path = Path.rectangle({
+      point: [10, 10],
+      size: [20, 20],
+      fillColor: 'red'
+    })
+    const { view } = paper
+    const other = new Project(new Size(100, 100)).view
+    const log = []
+    for (const type of ['mousemove', 'mousedrag', 'mouseup']) {
+      path.on(type, event => log.push(type + ' ' + event.point))
+    }
+    view.dispatchMouseEvent('mousedown', [15, 15])
+    other.dispatchMouseEvent('mousemove', [50, 50])
+    view.dispatchMouseEvent('mousemove', [20, 15])
+    view.dispatchMouseEvent('mouseup', [20, 15])
+    equals(log, [
+      'mousemove { x: 15, y: 15 }',
+      'mousedrag { x: 20, y: 15 }',
+      'mouseup { x: 20, y: 15 }'
+    ])
+  })
+
   test('view.dispatchMouseEvent()', () => {
     const path = Path.rectangle({
       point: [10, 10],

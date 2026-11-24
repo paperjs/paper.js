@@ -105,6 +105,23 @@ export class View extends Emitter {
   _itemEvents = { native: {}, virtual: {} }
   // Whether the view handles the user's input, see installEvents():
   _hasInput = false
+  // The state of the pointer, as #_handleMouseEvent() and the DOM's events
+  // in installEvents() track it: whether a press started on the view, whether
+  // it had its default prevented, see viewEvents.touchstart(), and the last
+  // point:
+  _dragging = false
+  _isPrevented = false
+  _lastPoint: Point = null
+  #called = false
+  #prevented = false
+  #wasInView = false
+  #downPoint: Point = null
+  #downItem: Item = null
+  #overItem: Item = null
+  #dragItem: Item = null
+  #clickItem: Item = null
+  #clickTime: number = null
+  #dblClick = false
   #scope: PaperScope
   #id: string
   #windowEvents: Record<string, Listener>
@@ -911,15 +928,15 @@ export class View extends Emitter {
     if (!/^mouse(down|move|up)$/.test(type)) {
       throw new Error(`Unknown mouse event type: '${type}'.`)
     }
-    const event = createEvent(type, options || {})
+    const event = createEvent(type, options || {}, this)
     // Track presses and drags as the DOM events do:
     if (type === 'mousedown') {
       View._focused = this
-      dragging = true
+      this._dragging = true
     }
     this._handleMouseEvent(type, event, new Point(point), true)
     if (type === 'mouseup') {
-      dragging = false
+      this._dragging = false
     }
     return event.defaultPrevented
   }
@@ -958,7 +975,7 @@ export class View extends Emitter {
       type === 'keydown',
       key,
       options.character,
-      createEvent(type, options),
+      createEvent(type, options, this),
       this
     )
   }
@@ -1016,9 +1033,9 @@ export class View extends Emitter {
     }
     // If it's a native mousemove event but the mouse is down, and at
     // least one of the events responds to mousedrag, convert to it.
-    // NOTE: emitMouseEvent(), as well as Tool#_handleMouseEvent() fall
+    // NOTE: #emitMouseEvent(), as well as Tool#_handleMouseEvent() fall
     // back to mousemove if the objects don't respond to mousedrag.
-    if (nativeMove && dragging && responds('mousedrag')) {
+    if (nativeMove && this._dragging && responds('mousedrag')) {
       type = 'mousedrag'
     }
     // A pointer that is locked to the view's element stands still, and
@@ -1026,11 +1043,11 @@ export class View extends Emitter {
     // that, wherever this takes it, as it can't leave the view (#1802):
     const isLocked = (
       !dispatched &&
-      !!lastPoint &&
+      !!this._lastPoint &&
       getDocument().pointerLockElement === this._element
     )
     point ??= isLocked
-      ? lastPoint.add(
+      ? this._lastPoint.add(
           this.#getOffsetPoint(
             new Point(event.movementX, event.movementY)
           ).subtract(this.#getOffsetPoint(new Point()))
@@ -1067,19 +1084,19 @@ export class View extends Emitter {
     const mouse: Record<string, boolean> = { [type.slice(5)]: true }
 
     // Handle mouseenter / leave between items and views first.
-    if (hitItems && hitItem !== overItem) {
-      if (overItem) {
-        emitMouseEvent(overItem, null, 'mouseleave', event, point)
+    if (hitItems && hitItem !== this.#overItem) {
+      if (this.#overItem) {
+        this.#emitMouseEvent(this.#overItem, null, 'mouseleave', event, point)
       }
       if (hitItem) {
-        emitMouseEvent(hitItem, null, 'mouseenter', event, point)
+        this.#emitMouseEvent(hitItem, null, 'mouseenter', event, point)
       }
-      overItem = hitItem
+      this.#overItem = hitItem
     }
     // Handle mouseenter / leave on the view.
-    const hasCrossed = wasInView !== inView
+    const hasCrossed = this.#wasInView !== inView
     if (hasCrossed) {
-      emitMouseEvent(
+      this.#emitMouseEvent(
         this,
         null,
         inView ? 'mouseenter' : 'mouseleave',
@@ -1093,25 +1110,24 @@ export class View extends Emitter {
     // CanvasView, and then handle the active tool after, if any.
     // mousedrag is allowed to leave the view and still triggers events,
     // but do not trigger two subsequent even with the same location.
-    if ((inView || mouse.drag) && !point.equals(lastPoint)) {
+    if ((inView || mouse.drag) && !point.equals(this._lastPoint)) {
       // Handle mousemove even if this is not actually a mousemove
       // event but the mouse has moved since the last event.
-      emitMouseEvents(
-        this,
+      this.#emitMouseEvents(
         hitItem,
         nativeMove ? type : 'mousemove',
         event,
         point,
-        lastPoint
+        this._lastPoint
       )
       handle = true
     }
-    wasInView = inView
+    this.#wasInView = inView
     // Now handle mousedown / mouseup
     // We emit mousedown only when in the view, and mouseup regardless,
     // as long as the mousedown event was inside.
-    if (mouse.down && inView || mouse.up && downPoint) {
-      emitMouseEvents(this, hitItem, type, event, point, downPoint)
+    if (mouse.down && inView || mouse.up && this.#downPoint) {
+      this.#emitMouseEvents(hitItem, type, event, point, this.#downPoint)
       if (mouse.down) {
         // See if we're clicking again on the same item, within the
         // double-click time and distance, measured from mousedown
@@ -1119,45 +1135,44 @@ export class View extends Emitter {
         // third click. Firefox uses 300ms as the max time
         // difference:
         const time = Date.now()
-        dblClick = (
-          !dblClick &&
-          hitItem === clickItem &&
-          time - clickTime < 300 &&
-          point.getDistance(downPoint) < 3
+        this.#dblClick = (
+          !this.#dblClick &&
+          hitItem === this.#clickItem &&
+          time - this.#clickTime < 300 &&
+          point.getDistance(this.#downPoint) < 3
         )
-        downItem = clickItem = hitItem
-        clickTime = time
+        this.#downItem = this.#clickItem = hitItem
+        this.#clickTime = time
         // Only start dragging if the mousedown event has not
         // prevented the default, and if the hitItem or any of its
         // parents actually respond to mousedrag events.
-        if (!prevented && hitItem) {
+        if (!this.#prevented && hitItem) {
           let item = hitItem
           while (item && !item.responds('mousedrag')) {
             item = item._parent
           }
           if (item) {
-            dragItem = hitItem
+            this.#dragItem = hitItem
           }
         }
-        downPoint = point
+        this.#downPoint = point
       } else if (mouse.up) {
         // Emulate click / doubleclick, but only on the hit-item,
         // not the view.
-        if (!prevented && hitItem === downItem) {
-          emitMouseEvents(
-            this,
+        if (!this.#prevented && hitItem === this.#downItem) {
+          this.#emitMouseEvents(
             hitItem,
-            dblClick ? 'doubleclick' : 'click',
+            this.#dblClick ? 'doubleclick' : 'click',
             event,
             point,
-            downPoint
+            this.#downPoint
           )
         }
-        downItem = dragItem = null
+        this.#downItem = this.#dragItem = null
       }
       handle = true
     }
-    lastPoint = point
+    this._lastPoint = point
     // Now finally call the tool events, but filter mouse move events
     // to only be fired if we're inside the view or if we just left it.
     // Prevent default if at least one handler was called, and none of
@@ -1168,7 +1183,10 @@ export class View extends Emitter {
       if (hasCrossed && inView) {
         tool._handleMouseEvent('mouseenter', event, point, { enter: true })
       }
-      called = tool._handleMouseEvent(type, event, point, mouse) || called
+      this.#called = (
+        tool._handleMouseEvent(type, event, point, mouse) ||
+        this.#called
+      )
       if (hasCrossed && !inView) {
         tool._handleMouseEvent('mouseleave', event, point, { leave: true })
       }
@@ -1185,10 +1203,126 @@ export class View extends Emitter {
     // would result in no effect and an error.
     if (
       event.cancelable !== false &&
-      (called && !mouse.move || mouse.down && needsUp(hitItem))
+      (this.#called && !mouse.move || mouse.down && needsUp(hitItem))
     ) {
       event.preventDefault()
     }
+  }
+
+  // Emit the event on the object and its parents, and return whether it was
+  // stopped:
+  #emitMouseEvent(
+    obj: View | Item,
+    target: View | Item,
+    type: string,
+    event: PointerEvent,
+    point: Point,
+    prevPoint?: Point,
+    stopItem?: Item
+  ): boolean {
+    let stopped = false
+    let mouseEvent: MouseEvent
+
+    // Returns true if the event was stopped, false otherwise.
+    const emit = (obj: View | Item, type: string): boolean => {
+      if (obj.responds(type)) {
+        // Only produce the event object if we really need it, and then
+        // reuse it if we're bubbling.
+        mouseEvent ??= new MouseEvent(
+          type,
+          event,
+          point,
+          (target || obj) as Item,
+          // Calculate delta if prevPoint was passed
+          prevPoint ? point.subtract(prevPoint) : null
+        )
+        if (obj.emit(type, mouseEvent)) {
+          this.#called = true
+          if (mouseEvent.prevented) {
+            this.#prevented = true
+          }
+          // Bail out if propagation is stopped
+          if (mouseEvent.stopped) {
+            return (stopped = true)
+          }
+        }
+      } else {
+        const fallback = fallbacks[type]
+        if (fallback) {
+          return emit(obj, fallback)
+        }
+      }
+    }
+
+    // Bubble up the parents and emit this event until we're told to stop.
+    while (obj && obj !== stopItem) {
+      if (emit(obj, type)) {
+        break
+      }
+      obj = (obj as Item)._parent
+    }
+    return stopped
+  }
+
+  // Emit the event on the drag item, the hit item and the view, and return
+  // whether it was stopped:
+  #emitMouseEvents(
+    hitItem: Item,
+    type: string,
+    event: PointerEvent,
+    point: Point,
+    prevPoint: Point
+  ): boolean {
+    // Before handling events, process removeOn() calls for cleanup.
+    // NOTE: As soon as there is one event handler receiving mousedrag
+    // events, non of the removeOnMove() items will be removed while the
+    // user is dragging.
+    this._project.removeOn(type)
+    // Set called and prevented to false, so they will reflect if the
+    // following calls to #emitMouseEvent() have called a handler, and if
+    // and of the handlers called event.preventDefault()
+    this.#prevented = this.#called = false
+    // First handle the drag-item and its parents, through bubbling.
+    return (
+      (
+        this.#dragItem &&
+        this.#emitMouseEvent(
+          this.#dragItem,
+          null,
+          type,
+          event,
+          point,
+          prevPoint
+        )
+      ) ||
+      // Next handle the hit-item, if it's different from the drag-item
+      // and not a descendant of it (in which case it would already have
+      // received an event in the call above). Translate mousedrag to
+      // mousemove, since drag is handled above.
+      (
+        hitItem &&
+        hitItem !== this.#dragItem &&
+        !hitItem.isDescendant(this.#dragItem) &&
+        this.#emitMouseEvent(
+          hitItem,
+          null,
+          type === 'mousedrag' ? 'mousemove' : type,
+          event,
+          point,
+          prevPoint,
+          this.#dragItem
+        )
+      ) ||
+      // Lastly handle the mouse events on the view, if we're still here.
+      this.#emitMouseEvent(
+        this,
+        this.#dragItem || hitItem || this,
+        type,
+        event,
+        point,
+        prevPoint
+      )
+    )
   }
 
   /**
@@ -1255,19 +1389,14 @@ export class View extends Emitter {
   static updateFocus = updateFocus
 
   /**
-   * Clear all events handling state information. Made for testing
-   * purpose, to have a way to start with a fresh state before each
-   * test.
+   * Clear the focus that the views share, as the views keep the rest of the
+   * state of the events. Made for testing purpose, to have a way to start
+   * with a fresh state before each test.
    *
    * @private
    */
   static _resetState() {
-    dragging = isPrevented = called = wasInView = false
-    prevFocus = tempFocus = null
-    downPoint = lastPoint = null
-    downItem = overItem = dragItem = clickItem = null
-    clickTime = null
-    dblClick = null
+    View._focused = prevFocus = tempFocus = null
   }
 
   static {
@@ -1696,7 +1825,8 @@ type PointerOptions = {
 // Native event handling, coordinate conversion, focus handling and
 // delegation to view and tool objects. The handling is shared by the DOM
 // events in the browser, and #dispatchMouseEvent() and #dispatchKeyEvent()
-// for hosts without a DOM, such as workers. Its state is shared by all views.
+// for hosts without a DOM, such as workers. The views share the focus, and
+// each one keeps the state of the pointer on it.
 
 // Keep track of views internally, and of their ids, to find them from the
 // targets of the DOM's events:
@@ -1712,34 +1842,18 @@ let hasInputEvents = false
 let viewEvents: Record<string, Listener> = {}
 let prevFocus: View
 let tempFocus: View
-let dragging = false // A press that started on a view.
-// Whether that press had its default prevented, see viewEvents.touchstart():
-let isPrevented = false
 
 // Higher level event handling, hit-testing, and emitting of normal mouse
 // events along with "virtual" events such as mouseenter, mouseleave,
 // mousedrag, click, doubleclick, on both the hit-test item and the view,
 // with support for bubbling (event-propagation).
 
-let called = false
-let prevented = false
 // Event fallbacks for "virutal" events, e.g. if an item doesn't respond
 // to doubleclick, fall back to click:
 const fallbacks = {
   doubleclick: 'click',
   mousedrag: 'mousemove'
 }
-// Various variables required by #_handleMouseEvent()
-let wasInView = false
-let downPoint: Point
-let lastPoint: Point
-let downItem: Item
-let overItem: Item
-let dragItem: Item
-let clickItem: Item
-let clickTime: number
-let dblClick: boolean
-
 // Lookup defining which native events are required by which item events.
 // Required by code that is counting the amount of required natives events.
 // The mapping is native -> virtual.
@@ -1781,11 +1895,11 @@ function installEvents(hasInput: boolean) {
     // primary pointer is handled: the mouse, a pen, or the first touch.
     viewEvents = {
       'pointerdown'(event: PointerEvent) {
-        if (event.isPrimary && !dragging) {
+        if (event.isPrimary && !View._focused?._dragging) {
           // Get the view from the event, and store a reference to the view
           // that should receive keyboard input.
           const view = (View._focused = getView(event))
-          dragging = true
+          view._dragging = true
           // Capture the pointer, to receive its moves and the end of the
           // drag outside of the view too. Events that scripts dispatch
           // have no pointer to capture:
@@ -1793,14 +1907,14 @@ function installEvents(hasInput: boolean) {
             view._element.setPointerCapture(event.pointerId)
           }
           view._handleMouseEvent('mousedown', event)
-          isPrevented = event.defaultPrevented
+          view._isPrevented = event.defaultPrevented
         }
       },
 
       'pointermove'(event: PointerEvent) {
         if (event.isPrimary) {
           const view = getView(event)
-          if (dragging) {
+          if (View._focused?._dragging) {
             View._focused._handleMouseEvent('mousemove', event)
           } else if (!event.buttons || view === View._focused) {
             // Presses that started elsewhere don't switch views as they
@@ -1817,7 +1931,7 @@ function installEvents(hasInput: boolean) {
       },
 
       'pointerleave'(event: PointerEvent) {
-        if (event.isPrimary && !dragging) {
+        if (event.isPrimary && !View._focused?._dragging) {
           // When the pointer leaves the view, handle one last move, to
           // give items the chance to receive a mouseleave, etc. Touches
           // leave by ending, where they were last:
@@ -1825,7 +1939,7 @@ function installEvents(hasInput: boolean) {
           view._handleMouseEvent(
             'mousemove',
             event,
-            event.pointerType === 'touch' ? lastPoint : undefined
+            event.pointerType === 'touch' ? view._lastPoint : undefined
           )
           if (tempFocus === view) {
             // Clear temporary focus again and switch back to previous
@@ -1838,15 +1952,16 @@ function installEvents(hasInput: boolean) {
       },
 
       'pointerup pointercancel'(event: PointerEvent) {
-        if (event.isPrimary && dragging) {
+        const view = View._focused
+        if (event.isPrimary && view?._dragging) {
           // Pointers that are cancelled, such as touches that browsers
           // take over to scroll the page, report no position:
-          View._focused._handleMouseEvent(
+          view._handleMouseEvent(
             'mouseup',
             event,
-            event.type === 'pointercancel' ? lastPoint : undefined
+            event.type === 'pointercancel' ? view._lastPoint : undefined
           )
-          dragging = false
+          view._dragging = false
         }
       },
 
@@ -1854,7 +1969,7 @@ function installEvents(hasInput: boolean) {
       // its pointer events, unless its touchstart is prevented, which
       // comes after the pointerdown. Do so where the press was (#1930):
       'touchstart'(event: TouchEvent) {
-        if (isPrevented && event.cancelable) {
+        if (View._focused?._isPrevented && event.cancelable) {
           event.preventDefault()
         }
       }
@@ -1892,118 +2007,14 @@ function updateFocus() {
   }
 }
 
-// Returns true if event was prevented, false otherwise.
-function emitMouseEvent(
-  obj: View | Item,
-  target: View | Item,
-  type: string,
-  event: PointerEvent,
-  point: Point,
-  prevPoint?: Point,
-  stopItem?: Item
-): boolean {
-  let stopped = false
-  let mouseEvent: MouseEvent
-
-  // Returns true if the event was stopped, false otherwise.
-  function emit(obj: View | Item, type: string): boolean {
-    if (obj.responds(type)) {
-      // Only produce the event object if we really need it, and then
-      // reuse it if we're bubbling.
-      mouseEvent ??= new MouseEvent(
-        type,
-        event,
-        point,
-        (target || obj) as Item,
-        // Calculate delta if prevPoint was passed
-        prevPoint ? point.subtract(prevPoint) : null
-      )
-      if (obj.emit(type, mouseEvent)) {
-        called = true
-        if (mouseEvent.prevented) {
-          prevented = true
-        }
-        // Bail out if propagation is stopped
-        if (mouseEvent.stopped) {
-          return (stopped = true)
-        }
-      }
-    } else {
-      const fallback = fallbacks[type]
-      if (fallback) {
-        return emit(obj, fallback)
-      }
-    }
-  }
-
-  // Bubble up the parents and emit this event until we're told to stop.
-  while (obj && obj !== stopItem) {
-    if (emit(obj, type)) {
-      break
-    }
-    obj = (obj as Item)._parent
-  }
-  return stopped
-}
-
-// Returns true if event was stopped, false otherwise.
-function emitMouseEvents(
-  view: View,
-  hitItem: Item,
-  type: string,
-  event: PointerEvent,
-  point: Point,
-  prevPoint: Point
-): boolean {
-  // Before handling events, process removeOn() calls for cleanup.
-  // NOTE: As soon as there is one event handler receiving mousedrag
-  // events, non of the removeOnMove() items will be removed while the
-  // user is dragging.
-  view._project.removeOn(type)
-  // Set called and prevented to false, so they will reflect if the
-  // following calls to emitMouseEvent() have called a handler, and if
-  // and of the handlers called event.preventDefault()
-  prevented = called = false
-  // First handle the drag-item and its parents, through bubbling.
-  return (
-    (
-      dragItem &&
-      emitMouseEvent(dragItem, null, type, event, point, prevPoint)
-    ) ||
-    // Next handle the hit-item, if it's different from the drag-item
-    // and not a descendant of it (in which case it would already have
-    // received an event in the call above). Translate mousedrag to
-    // mousemove, since drag is handled above.
-    (
-      hitItem &&
-      hitItem !== dragItem &&
-      !hitItem.isDescendant(dragItem) &&
-      emitMouseEvent(
-        hitItem,
-        null,
-        type === 'mousedrag' ? 'mousemove' : type,
-        event,
-        point,
-        prevPoint,
-        dragItem
-      )
-    ) ||
-    // Lastly handle the mouse events on the view, if we're still here.
-    emitMouseEvent(
-      view,
-      dragItem || hitItem || view,
-      type,
-      event,
-      point,
-      prevPoint
-    )
-  )
-}
-
 // Stands in for the DOM event in #dispatchMouseEvent() and
 // #dispatchKeyEvent(), with what the handling reads from it. Hosts can
 // pass the state of the modifier keys, see Key.modifiers:
-function createEvent(type: string, options: DispatchOptions & PointerOptions) {
+function createEvent(
+  type: string,
+  options: DispatchOptions & PointerOptions,
+  view: View
+) {
   if (options.modifiers) {
     Object.assign(Key.modifiers, options.modifiers)
   }
@@ -2011,7 +2022,7 @@ function createEvent(type: string, options: DispatchOptions & PointerOptions) {
   // pointer events report it:
   const buttons = (
     options.buttons ??
-    (type === 'mousedown' || type === 'mousemove' && dragging ? 1 : 0)
+    (type === 'mousedown' || type === 'mousemove' && view._dragging ? 1 : 0)
   )
   return {
     type,
