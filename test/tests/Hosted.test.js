@@ -635,6 +635,29 @@ describe('Hosted', () => {
     equals(circle.exportJSON({ asString: false })[1].data, { profile: [1] })
   })
 
+  test(`Loaded items take the host's style, not the current style`, () => {
+    const { project } = createHostedProject()
+    project.currentStyle = { fillColor: 'white', strokeColor: 'black' }
+    const layer = project.layers[0]
+    // A script inserts a new path into the layer before its content loads:
+    const path = new Path.Rectangle({
+      point: [0, 0],
+      size: [10, 10],
+      fillColor: 'red',
+      parent: layer
+    })
+    equals(layer._shell, true, 'the layer is still a shell')
+    // Loading the layer's own content leaves its children alone:
+    equals(layer.opacity, 1)
+    equals(layer._shell, false, 'the layer loaded')
+    equals(path.fillColor, new Color('red'), 'after the layer loads')
+    equals(path.strokeColor, new Color('black'))
+    // And loaded items have what the host gave them:
+    const { circle } = layer.children
+    equals(circle.fillColor, new Color('red'), `loaded: the host's fill`)
+    equals(circle.strokeColor, null, 'loaded: no stroke, as the host has it')
+  })
+
   test('invalidate() reloads changed content into the same item', () => {
     const res = createHostedProject()
     const original = res.host.document.getItem({ name: 'circle' })

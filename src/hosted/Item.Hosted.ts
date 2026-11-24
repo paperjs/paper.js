@@ -211,6 +211,7 @@ for (const ctor of [SymbolDefinition, PatternDefinition]) {
 
 const {
   _setProject,
+  _getCurrentStyle,
   copyAttributes,
   insertChildren,
   clone,
@@ -219,6 +220,13 @@ const {
 
 inject(Item.prototype, {
   _key: null,
+
+  // Content that loads from the host has the style that the host gives it,
+  // not the current style, which is for new items, and which a container
+  // that loads would also set on the children it may have by then:
+  _getCurrentStyle(this: Item, project: Project): Style | null {
+    return isLoading ? null : _getCurrentStyle.call(this, project)
+  },
 
   // Scripts change data in place, which no item notices. Keep the data of
   // the host's items as it was when a script first reached it, so that
@@ -528,7 +536,7 @@ inject(TextItem.prototype, {
   // one, see Project#currentTextStyle:
   _getCurrentStyle(this: TextItem, project: Project): Style {
     return (
-      project._currentTextStyle ||
+      !isLoading && project._currentTextStyle ||
       Item.prototype._getCurrentStyle.call(this, project)
     )
   },
