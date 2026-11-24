@@ -11,6 +11,7 @@
  */
 
 import {
+  Base,
   Change,
   ChangeFlag,
   Color,
@@ -6284,6 +6285,10 @@ export function importJSON(
     resolve
   )
 }
+
+// Values of any kind import through Base, which can't do it on its own, as the
+// items among them are created without being inserted:
+Base.importJSON = (json: string | any[]) => importJSON(json)
 
 // Count the classes and the inserted items with draw handlers, for hosts
 // that draw the items themselves, see Project#hasDrawHandlers():
