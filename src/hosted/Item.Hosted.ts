@@ -39,7 +39,8 @@ import {
   getUID,
   importJSON,
   inject,
-  paper
+  paper,
+  serialize
 } from '../internal.ts'
 import type { Color } from '../style/Color.ts'
 import type { TextLine } from '../text/TextItem.ts'
@@ -157,6 +158,11 @@ const { get: getName, set: setName } = Object.getOwnPropertyDescriptor(
   'name'
 )
 
+const { get: getData, set: setData } = Object.getOwnPropertyDescriptor(
+  Item.prototype,
+  'data'
+)
+
 // Definitions that the host shares export as references to its keys:
 inject(ItemDefinition.prototype, {
   _key: null,
@@ -214,6 +220,19 @@ const {
 inject(Item.prototype, {
   _key: null,
 
+  // Scripts change data in place, which no item notices. Keep the data of
+  // the host's items as it was when a script first reached it, so that
+  // Project#takeChanges() can tell whether it changed:
+  get data(): Record<string, any> {
+    watchData(this)
+    return getData.call(this)
+  },
+
+  set data(data: Record<string, any>) {
+    watchData(this)
+    setData.call(this, data)
+  },
+
   get key(): number {
     return this._key
   },
@@ -249,6 +268,8 @@ inject(Item.prototype, {
         this._loadChildren()
       }
       delete from._itemsByKey[this._key]
+      from._dataItems?.delete(this)
+      this._dataJSON = undefined
       // Its bounds no longer come from the host's boxes:
       this._key = this._boxes = null
       this._hostBounds = false
@@ -409,6 +430,8 @@ inject(Item.prototype, {
   // right away. Only called by Project#invalidate(), while loading:
   _unload(this: Item) {
     this._edited = false
+    this._project._dataItems?.delete(this)
+    this._dataJSON = undefined
     if (!this._contentFields) {
       this._loadContent()
     } else if (!this._shell) {
@@ -656,6 +679,20 @@ inject(Project.prototype, {
   // ones first, so the host can create them before the items that refer
   // to them. Other definitions without a key aren't the host's:
   takeChanges(this: Project) {
+    // The data that scripts changed in place, see Item#data:
+    if (this._changes && this._dataItems) {
+      for (const item of this._dataItems) {
+        if (item._project !== this) {
+          this._dataItems.delete(item)
+        } else {
+          const json = getDataJSON(item)
+          if (json !== item._dataJSON) {
+            item._dataJSON = json
+            this._changed(ChangeFlag.ATTRIBUTE, item)
+          }
+        }
+      }
+    }
     const definitions = this._host && getNewDefinitions(this)
     const changes = takeChanges.call(this)
     for (const { item } of changes ?? []) {
@@ -854,6 +891,8 @@ declare module '../item/Item.ts' {
      */
     get key(): number
     set key(key: number)
+    // The JSON of the data when a script first reached it, see Item#data:
+    _dataJSON: string
     _hasChildren: boolean
     _contentFields: string[]
     _boxes: ArrayLike<number> | null
@@ -878,6 +917,8 @@ declare module '../item/Project.ts' {
   interface Project {
     _host: Host
     _itemsByKey: Record<number, Item>
+    // The items whose data scripts reached, see Item#data:
+    _dataItems: Set<Item>
     _definitionsByKey: Record<string, Definition>
     _currentTextStyle: Style
 
@@ -1235,6 +1276,27 @@ function setChildren(
       project._updateSelection(child)
     }
   }
+}
+
+// Starts watching the data of the host's items that scripts reach, as it is
+// before they change it, see Item#data:
+function watchData(item: Item) {
+  const project = item._project
+  if (
+    item._key != null &&
+    item._dataJSON === undefined &&
+    !isLoading &&
+    project?._host
+  ) {
+    item._dataJSON = getDataJSON(item)
+    ;(project._dataItems ??= new Set()).add(item)
+  }
+}
+
+// The data as it exports, see Item#_serialize(), where none is the same as
+// an empty object:
+function getDataJSON(item: Item): string {
+  return JSON.stringify(serialize(item._data ?? {}, null, false))
 }
 
 // Loading and invalidating items isn't a change of the document, so we
