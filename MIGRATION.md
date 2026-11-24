@@ -15,6 +15,7 @@ or later. Its entries:
 | Entry                           | Contains                                                      |
 | ------------------------------- | ------------------------------------------------------------- |
 | `paper`                         | the core, with `paper` as its default export, the first scope |
+| `paper/core`                    | the core's classes, without a scope created at import         |
 | `paper/paperscript`             | PaperScript, on top of the core                               |
 | `paper/node`                    | the core on Node.js, see below                                |
 | `paper/hosted`                  | hosted projects, for hosts that keep their own document       |
