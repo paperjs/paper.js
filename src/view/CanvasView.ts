@@ -17,7 +17,8 @@ import {
   getCanvas,
   getInsets,
   getStyles,
-  getWindow
+  getWindow,
+  registerClasses
 } from '../internal.ts'
 import type { SizeLike } from '../basic/Size.ts'
 import type { Project } from '../item/Project.ts'
@@ -26,6 +27,10 @@ import type { Project } from '../item/Project.ts'
  * @private
  */
 export class CanvasView extends View {
+  static {
+    registerClasses({ CanvasView: this })
+  }
+
   /**
    * Creates a view object that wraps a canvas element.
    *

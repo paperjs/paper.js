@@ -12,6 +12,7 @@
 
 import { EPSILON, isMachineZero } from '../util/numerical.ts'
 import { Base } from '../core/Base.ts'
+import { registerClasses } from '../core/serialization.ts'
 import { Point } from './Point.ts'
 import type { PointLike } from './Point.ts'
 
@@ -21,6 +22,10 @@ import type { PointLike } from './Point.ts'
  * @private
  */
 export class Line extends Base {
+  static {
+    registerClasses({ Line: this })
+  }
+
   #px: number
   #py: number
   #vx: number

@@ -15,6 +15,7 @@ import {
   GradientStop,
   getUID,
   isPlainObject,
+  registerClasses,
   serialize
 } from '../internal.ts'
 import type { GradientStopLike } from './GradientStop.ts'
@@ -78,6 +79,10 @@ export type GradientLike =
  * };
  */
 export class Gradient extends Base {
+  static {
+    registerClasses({ Gradient: this })
+  }
+
   _id: number
   _stops: GradientStop[]
   _radial: boolean

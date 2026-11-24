@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { Base, Change, serialize } from '../internal.ts'
+import { Base, Change, registerClasses, serialize } from '../internal.ts'
 import type { Path } from './Path.ts'
 
 /**
@@ -226,6 +226,7 @@ export class StrokeProfileStop extends Base {
   }
 
   static {
+    registerClasses({ StrokeProfileStop: this })
     // JSON writes the stops of paths as plain objects:
     this.prototype._compactSerialize = true
   }

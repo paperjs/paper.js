@@ -13,6 +13,7 @@
 import {
   ItemDefinition,
   SymbolItem,
+  registerClasses,
   serialize
 } from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
@@ -27,6 +28,10 @@ import type { Project } from './Project.ts'
  * to be updated with every transformation.
  */
 export class SymbolDefinition extends ItemDefinition {
+  static {
+    registerClasses({ SymbolDefinition: this })
+  }
+
   /**
    * Creates a Symbol definition.
    *

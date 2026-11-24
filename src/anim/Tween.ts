@@ -1,4 +1,4 @@
-import { Emitter, defineEvents } from '../internal.ts'
+import { Emitter, defineEvents, registerClasses } from '../internal.ts'
 /*
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
@@ -417,6 +417,7 @@ export class Tween extends Emitter {
   }
 
   static {
+    registerClasses({ Tween: this })
     defineEvents(this, {
       onUpdate: {}
     })

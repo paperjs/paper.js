@@ -41,6 +41,7 @@ import {
   hasLinearHandles,
   hasStraightHandles,
   inject,
+  registerClasses,
   serialize,
   subdivideCurve
 } from '../internal.ts'
@@ -937,6 +938,7 @@ export class Curve extends Base {
   }
 
   static {
+    registerClasses({ Curve: this })
     for (const [name, test] of Object.entries({
       isStraight: hasStraightHandles,
       isLinear: hasLinearHandles

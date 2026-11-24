@@ -17,6 +17,7 @@ import {
   defineStyleAccessors,
   equals,
   inject,
+  registerClasses,
   serialize
 } from '../internal.ts'
 import type { Line } from '../basic/Line.ts'
@@ -150,6 +151,7 @@ export class TextRange extends Base {
   }
 
   static {
+    registerClasses({ TextRange: this })
     // Text ranges have the same style accessors as items:
     defineStyleAccessors(this)
     for (const key of ['runs', 'paragraphs', 'words', 'letters']) {

@@ -37,6 +37,7 @@ import {
   offsetPathItem,
   outlinePathItem,
   readSVGPath,
+  registerClasses,
   reorientPaths,
   splitBoolean,
   takeStrokeProfile,
@@ -1557,6 +1558,7 @@ export abstract class PathItem extends Item {
   abstract get curves(): Curve[]
 
   static {
+    registerClasses({ PathItem: this })
     Object.assign(this.prototype, {
       _selectBounds: false,
       _canScaleStroke: true

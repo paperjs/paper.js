@@ -20,6 +20,7 @@ import { inject } from '../util/object.ts'
 import { Formatter } from '../util/Formatter.ts'
 import { serialize } from '../core/serialization.ts'
 import { Base } from '../core/Base.ts'
+import { registerClasses } from '../core/serialization.ts'
 import { Point } from './Point.ts'
 import { Rectangle } from './Rectangle.ts'
 import {
@@ -813,6 +814,7 @@ export class Matrix extends Base {
   }
 
   static {
+    registerClasses({ Matrix: this })
     // Inject accessors for the values, that notify the owner of changes:
     for (const [index, key] of ['a', 'b', 'c', 'd', 'tx', 'ty'].entries()) {
       inject(this.prototype, {

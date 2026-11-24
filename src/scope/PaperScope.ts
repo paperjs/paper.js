@@ -10,7 +10,13 @@
  * All rights reserved.
  */
 
-import { Base, Project, getCanvas, nativeBlendModes } from '../internal.ts'
+import {
+  Base,
+  Project,
+  getCanvas,
+  nativeBlendModes,
+  registerClasses
+} from '../internal.ts'
 import type { Tool } from '../tool/Tool.ts'
 import type { View } from '../view/View.ts'
 import type { Size } from '../basic/Size.ts'
@@ -320,6 +326,7 @@ export class PaperScope extends Base {
   }
 
   static {
+    registerClasses({ PaperScope: this })
     // Enumerate the accessors, since #install() and PaperScript take what a
     // scope holds through for…in:
     for (const key of ['project', 'view', 'paper', 'support', 'agent']) {

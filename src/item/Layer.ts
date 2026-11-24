@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { Group } from '../internal.ts'
+import { Group, registerClasses } from '../internal.ts'
 import type { Item } from './Item.ts'
 import type { Project } from './Project.ts'
 
@@ -103,6 +103,7 @@ export class Layer extends Group {
   _hitTestSelf(): undefined {}
 
   static {
+    registerClasses({ Layer: this })
     this.prototype._textWrapVersion = 0
     // Turn on again for now, since examples depend on it.
     // TODO: Discus with @puckey and come to a conclusion

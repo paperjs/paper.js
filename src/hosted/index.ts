@@ -11,11 +11,10 @@
  */
 
 // The entry of the hosted library: the core library, Project#host and HostItem.
-import { PaperScope, inject, registerClasses } from '../internal.ts'
+import { PaperScope, inject } from '../internal.ts'
 import './Item.Hosted.ts'
 import { HostItem } from './HostItem.ts'
 
-registerClasses({ HostItem })
 inject(PaperScope.prototype, { HostItem }, { enumerable: true })
 
 declare module '../scope/PaperScope.ts' {

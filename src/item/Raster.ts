@@ -28,6 +28,7 @@ import {
   getCanvas,
   getContext,
   getDocument,
+  registerClasses,
   releaseCanvas,
   setStyles
 } from '../internal.ts'
@@ -891,6 +892,7 @@ export class Raster extends Item {
   }
 
   static {
+    registerClasses({ Raster: this })
     Object.assign(this.prototype, {
       _applyMatrix: false,
       _canApplyMatrix: false,

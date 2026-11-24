@@ -10,7 +10,13 @@
  * All rights reserved.
  */
 
-import { Change, ChangeFlag, Item, drawItem } from '../internal.ts'
+import {
+  Change,
+  ChangeFlag,
+  Item,
+  drawItem,
+  registerClasses
+} from '../internal.ts'
 import type { Point } from '../basic/Point.ts'
 import type { Matrix } from '../basic/Matrix.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'
@@ -391,6 +397,7 @@ export class Group extends Item {
   }
 
   static {
+    registerClasses({ Group: this })
     Object.assign(this.prototype, {
       _selectBounds: false,
       _selectChildren: true,

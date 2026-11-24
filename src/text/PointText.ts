@@ -16,7 +16,8 @@ import {
   Rectangle,
   TextItem,
   TextRange,
-  isPlainObject
+  isPlainObject,
+  registerClasses
 } from '../internal.ts'
 import type { TextLine } from './TextItem.ts'
 import type { PointLike } from '../basic/Point.ts'
@@ -28,6 +29,10 @@ import type { Matrix } from '../basic/Matrix.ts'
  * contained in it.
  */
 export class PointText extends TextItem {
+  static {
+    registerClasses({ PointText: this })
+  }
+
   /**
    * Creates a point text item.
    *

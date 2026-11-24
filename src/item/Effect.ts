@@ -10,7 +10,13 @@
  * All rights reserved.
  */
 
-import { Base, EffectInstance, Group, PathItem } from '../internal.ts'
+import {
+  Base,
+  EffectInstance,
+  Group,
+  PathItem,
+  registerClasses
+} from '../internal.ts'
 import type { Item } from './Item.ts'
 
 // The description of a parameter, e.g. `{ label, type, range, value }`:
@@ -49,6 +55,10 @@ type EffectProps = {
  * path.addEffect({ type: 'shrink', parameters: { amount: 0.8 } });
  */
 export class Effect extends Base {
+  static {
+    registerClasses({ Effect: this })
+  }
+
   // Changes with the registered effects, for items to apply theirs again,
   // see Item#getEffectOutput():
   static _version = 0

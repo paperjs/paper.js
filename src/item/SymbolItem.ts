@@ -17,6 +17,7 @@ import {
   SymbolDefinition,
   clone,
   drawItem,
+  registerClasses,
   withInheritedStyle
 } from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
@@ -224,6 +225,7 @@ export class SymbolItem extends Item {
   }
 
   static {
+    registerClasses({ SymbolItem: this })
     Object.assign(this.prototype, {
       _applyMatrix: false,
       _canApplyMatrix: false,

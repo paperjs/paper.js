@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { Base } from '../internal.ts'
+import { Base, registerClasses } from '../internal.ts'
 import type { Item } from '../item/Item.ts'
 import type { Matrix } from '../basic/Matrix.ts'
 import type { Color } from '../style/Color.ts'
@@ -22,6 +22,10 @@ import type { View } from '../view/View.ts'
  * describe its fields.
  */
 export class DrawEvent extends Base {
+  static {
+    registerClasses({ DrawEvent: this })
+  }
+
   // The fields that the handlers describe, set from the constructor's props:
   declare item: Item
   declare context: CanvasRenderingContext2D

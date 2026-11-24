@@ -10,7 +10,13 @@
  * All rights reserved.
  */
 
-import { PaperScopeItem, Point, ToolEvent, defineEvents } from '../internal.ts'
+import {
+  PaperScopeItem,
+  Point,
+  ToolEvent,
+  defineEvents,
+  registerClasses
+} from '../internal.ts'
 import type { PaperScope } from '../scope/PaperScope.ts'
 import type { KeyEvent } from '../event/KeyEvent.ts'
 
@@ -300,6 +306,7 @@ export class Tool extends PaperScopeItem {
   }
 
   static {
+    registerClasses({ Tool: this })
     Object.assign(this.prototype, {
       _list: 'tools',
       // TODO: This should be `activeTool` instead?

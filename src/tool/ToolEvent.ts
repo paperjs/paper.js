@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-import { Event } from '../internal.ts'
+import { Event, registerClasses } from '../internal.ts'
 import type { Point } from '../basic/Point.ts'
 import type { Item } from '../item/Item.ts'
 import type { Tool } from './Tool.ts'
@@ -23,6 +23,10 @@ import type { Tool } from './Tool.ts'
  * information about the mouse event.
  */
 export class ToolEvent extends Event {
+  static {
+    registerClasses({ ToolEvent: this })
+  }
+
   declare event: PointerEvent
 
   /**

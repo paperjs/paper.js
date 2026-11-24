@@ -29,7 +29,8 @@ import {
   paintItem,
   paper,
   readEllipse,
-  readRectangle
+  readRectangle,
+  registerClasses
 } from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
 import type { SizeLike } from '../basic/Size.ts'
@@ -584,6 +585,7 @@ export class Shape extends Item {
   }
 
   static {
+    registerClasses({ Shape: this })
     defineDeprecatedConstructors(this, ['circle', 'rectangle', 'ellipse'])
     Object.assign(this.prototype, {
       _applyMatrix: false,
