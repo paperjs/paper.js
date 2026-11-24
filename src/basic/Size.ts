@@ -620,14 +620,12 @@ export class LinkedSize extends Size {
   }
 
   // See Point#_set() for an explanation of _set():
-  _set(width: number, height: number, _dontNotify?: boolean): this {
+  _set(width: number, height: number): this {
     // Size's constructor calls this before the private fields exist:
     if (#width in this) {
       this.#width = width
       this.#height = height
-      if (!_dontNotify) {
-        this.#owner[this.#key] = this
-      }
+      this.#owner[this.#key] = this
     }
     return this
   }

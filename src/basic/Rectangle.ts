@@ -956,20 +956,14 @@ export class LinkedRectangle extends Rectangle {
   }
 
   // See Point#_set() for an explanation of _set():
-  _set(
-    x: number, y: number,
-    width: number, height: number,
-    _dontNotify?: boolean
-  ): this {
+  _set(x: number, y: number, width: number, height: number): this {
     // Rectangle's constructor calls this before the private fields exist:
     if (#owner in this) {
       this._x = x
       this._y = y
       this._width = width
       this._height = height
-      if (!_dontNotify) {
-        this.#owner[this.#key] = this
-      }
+      this.#owner[this.#key] = this
     }
     return this
   }

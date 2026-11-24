@@ -43,7 +43,8 @@ import {
   getUID,
   importJSON,
   inject,
-  serialize
+  serialize,
+  setMatrix
 } from '../internal.ts'
 import type { Color } from '../style/Color.ts'
 import type { TextLine } from '../text/TextItem.ts'
@@ -1249,7 +1250,7 @@ function setRecord(item: Item, columns: HostColumns, i: number) {
     (item._selection & ~ItemSelection.ITEM) |
     (flags & recordFlags.selected ? ItemSelection.ITEM : 0)
   )
-  item._matrix._set(a, b, c, d, tx, ty, true)
+  setMatrix(item._matrix._values, a, b, c, d, tx, ty)
   // Without boxes, the item asks for them, see #_getHostBounds():
   item._boxes = columns.boxes ?? undefined
   item._boxIndex = i * boxSize

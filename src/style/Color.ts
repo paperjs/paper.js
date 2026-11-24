@@ -122,14 +122,13 @@ function transformGradient(components: any[], dest: any[], matrix: Matrix) {
       }
     }
   }
-  dest[1] = (dest[1] ?? new Point())._set(start.x, start.y, true)
+  dest[1] = (dest[1] ?? new Point())._set(start.x, start.y)
   dest[2] = (dest[2] ?? new Point())._set(
     start.x + vector.x,
-    start.y + vector.y,
-    true
+    start.y + vector.y
   )
   if (highlight) {
-    dest[3] = matrix._transformPoint(highlight, dest[3], true)
+    dest[3] = matrix._transformPoint(highlight, dest[3])
   }
   dest[4] = aspect
   return dest
