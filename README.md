@@ -80,6 +80,7 @@ The package has these entries:
   [Using Paper.js on Node.js](#using-paperjs-on-nodejs).
 - `paper/hosted` – The core library with hosted projects, whose items a host
   stores and loads on demand.
+- `paper/svg` – SVG import and export, for `use(svg)` with `paper/core`.
 
 ### Script Files
 

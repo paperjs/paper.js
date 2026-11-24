@@ -144,11 +144,15 @@ describe('paper/boolean and paper/offset', () => {
       equals(output, [null, false, true, true])
     })
 
-    test('paper/core adds booleans and offsetting through use()', async () => {
+    test('paper/core adds features through use()', async () => {
       const output = await runProcess(`
+        const { Window } = await import('happy-dom')
+        const { setEnvironment } = await import('${getURL('env.ts')}')
         const { Path, Project, use } = await import('${getURL('core.ts')}')
         const { boolean } = await import('${getURL('boolean/index.ts')}')
         const { offset } = await import('${getURL('offset/index.ts')}')
+        const { svg } = await import('${getURL('svg/index.ts')}')
+        setEnvironment(new Window())
         new Project()
         const a = Path.rectangle({ point: [0, 0], size: [10, 10] })
         const b = Path.rectangle({ point: [5, 0], size: [10, 10] })
@@ -159,15 +163,26 @@ describe('paper/boolean and paper/offset', () => {
             return error.message
           }
         }
-        const errors = [getError(() => a.unite(b)), getError(() => a.offset(1))]
-        use(boolean, offset)
-        console.log(JSON.stringify([...errors, a.unite(b).area, a.offset(1).area]))
+        const errors = [
+          getError(() => a.unite(b)),
+          getError(() => a.offset(1)),
+          getError(() => a.exportSVG())
+        ]
+        use(boolean, offset, svg)
+        console.log(JSON.stringify([
+          ...errors,
+          a.unite(b).area,
+          a.offset(1).area,
+          /^<path [^>]*d="M0,0h10v10h-10z"/.test(a.exportSVG({ asString: true }))
+        ]))
       `)
       equals(output, [
         `Unable to use boolean without use(boolean) from 'paper/boolean'.`,
         `Unable to use offset without use(offset) from 'paper/offset'.`,
+        `Unable to use svg without use(svg) from 'paper/svg'.`,
         150,
-        144
+        144,
+        true
       ])
     })
 

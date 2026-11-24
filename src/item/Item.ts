@@ -42,11 +42,11 @@ import {
   deserialize,
   drawItem,
   equals,
-  exportItemSVG,
   getBoundsCacheKey,
   getCachedBounds,
   getCombinedBounds,
   getEffectOutput,
+  getFeature,
   getItemBounds,
   getItems,
   getPreviewBounds,
@@ -56,7 +56,6 @@ import {
   hitTestAll,
   hitTestChildren,
   hitTestItem,
-  importSVG,
   inject,
   insertEffects,
   intersectsItem,
@@ -2309,7 +2308,7 @@ export class Item extends Emitter {
    *     `options.asString`
    */
   exportSVG(options?: Record<string, any>): SVGElement | string {
-    return exportItemSVG(this, options)
+    return getFeature('svg').exportItemSVG(this, options)
   }
 
   /**
@@ -2384,7 +2383,7 @@ export class Item extends Emitter {
     onLoad: (item: Item, svg: string) => void
   ): Item | null
   importSVG(svg: any, options?: any): Item | null {
-    return importSVG(svg, options, this) as Item
+    return getFeature('svg').importSVG(svg, options, this) as Item
   }
 
   /**

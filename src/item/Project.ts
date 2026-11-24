@@ -25,14 +25,13 @@ import {
   defineEvents,
   drawItem,
   drawSelection,
-  exportProjectSVG,
   getCanvas,
+  getFeature,
   getItems,
   hitTest,
   hitTestAll,
   hitTestChildren,
   importJSON,
-  importSVG,
   registerClasses,
   serialize,
   splice
@@ -925,7 +924,7 @@ export class Project extends PaperScopeItem {
    * });
    */
   exportSVG(options?: Record<string, any>): SVGElement | string {
-    return exportProjectSVG(this, options)
+    return getFeature('svg').exportProjectSVG(this, options)
   }
 
   /**
@@ -1023,7 +1022,7 @@ export class Project extends PaperScopeItem {
   ): Item | Layer[] | null
   importSVG(svg: any, options?: any): Item | Layer[] | null {
     this.activate()
-    return importSVG(svg, options, this)
+    return getFeature('svg').importSVG(svg, options, this)
   }
 
   removeOn(type: string) {

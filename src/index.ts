@@ -16,9 +16,10 @@ import * as core from './core.ts'
 import { PaperScope, getDocument, getWindow, inject } from './internal.ts'
 import { boolean } from './boolean/index.ts'
 import { offset } from './offset/index.ts'
+import { svg } from './svg/index.ts'
 
 // The full library has all the features that paper/core leaves to use():
-core.use(boolean, offset)
+core.use(boolean, offset, svg)
 
 // Make the classes and namespaces properties of every scope, enumerable for
 // PaperScope#install() and PaperScript, which enumerate them:

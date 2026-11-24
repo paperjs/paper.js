@@ -12,12 +12,14 @@
 
 import type { boolean } from '../boolean/index.ts'
 import type { offset } from '../offset/index.ts'
+import type { svg } from '../svg/index.ts'
 
 // The optional features of the library, which use() adds, see
 // PORT-DECISIONS 133. The `paper` entry adds them all, `paper/core` none:
 type Features = {
   boolean: typeof boolean.feature
   offset: typeof offset.feature
+  svg: typeof svg.feature
 }
 
 type Feature = Features[keyof Features]
