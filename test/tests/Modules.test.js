@@ -125,6 +125,11 @@ describe('paper/boolean and paper/offset', () => {
       return JSON.parse(output)
     }
 
+    async function runFile(file) {
+      const { execFileSync } = await import('node:child_process')
+      return execFileSync(process.execPath, [file], { encoding: 'utf8' })
+    }
+
     const getURL = file => new URL(`../../src/${file}`, import.meta.url).href
 
     test('paper/core creates no scope until the first project', async () => {
@@ -203,6 +208,61 @@ describe('paper/boolean and paper/offset', () => {
         console.log(JSON.stringify([ranByModule, !!globalThis.ran]))
       `)
       equals(output, [false, true])
+    })
+
+    test('Apps bundle only what they use of the modules', async () => {
+      const fs = await import('node:fs')
+      const os = await import('node:os')
+      const path = await import('node:path')
+      const { build } = await import('rolldown')
+      const { buildModules } = await import('../../build.mjs')
+      // A package as an app installs it, with the modules of the build:
+      const root = fs.mkdtempSync(path.join(os.tmpdir(), 'paper-'))
+      const dir = path.join(root, 'node_modules', 'paper')
+      buildModules(path.join(dir, 'dist', 'esm'))
+      fs.copyFileSync(
+        new URL('../../package.json', import.meta.url),
+        path.join(dir, 'package.json')
+      )
+      const apps = {
+        point: `
+          import { Point } from 'paper/core'
+          console.log(new Point(3, 4).length)
+        `,
+        path: `
+          import { Path, Project } from 'paper/core'
+          new Project()
+          console.log(Path.circle({ center: [5, 5], radius: 3 }).className)
+        `,
+        full: `
+          import paper from 'paper'
+          new paper.Project()
+          const a = paper.Path.rectangle({ point: [0, 0], size: [10, 10] })
+          const b = paper.Path.rectangle({ point: [5, 0], size: [10, 10] })
+          console.log(a.unite(b).area)
+        `
+      }
+      const outputs = {}
+      const sizes = {}
+      for (const [name, code] of Object.entries(apps)) {
+        const input = path.join(root, `${name}.js`)
+        fs.writeFileSync(input, code)
+        const { output } = await build({
+          input,
+          write: false,
+          logLevel: 'silent',
+          external: [/^node:/, 'acorn'],
+          output: { format: 'es', minify: true }
+        })
+        const file = path.join(root, `${name}.mjs`)
+        fs.writeFileSync(file, output[0].code)
+        sizes[name] = output[0].code.length
+        outputs[name] = (await runFile(file)).trim()
+      }
+      fs.rmSync(root, { recursive: true })
+      equals(outputs, { point: '5', path: 'Path', full: '150' })
+      equals(sizes.point < 30000, true, `Point alone: ${sizes.point}`)
+      equals(sizes.path < sizes.full, true, `Path: ${sizes.path}`)
     })
 
     test('The bundles of the entries leave out the scene graph', async () => {
