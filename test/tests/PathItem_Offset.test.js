@@ -658,6 +658,46 @@ describe('PathItem#offset() and #outline()', () => {
       'join at a hook',
       { tolerance: 1 }
     )
+    // A sliver that is left out at the end of a curve is added where the
+    // next curve doesn't start in its points, as it does at a join that is
+    // nearly smooth. Without it, a notch reaches into the stroke there:
+    const notched = new Path({
+      segments: [
+        [[328.59799, 30.36696], [0, 0], [-4.2192, 1.55346]],
+        [[317.03595, 37.31342], [0.33622, -0.29221], [-0.29045, 0.25243]],
+        [[315.52567, 39.8936], [-0.76252, 0.64164], [0.62766, -0.52815]],
+        [[344.25587, 11.76885], [-0.26297, 0.2066], [0, 0]]
+      ],
+      strokeWidth: 17.59,
+      strokeJoin: 'bevel',
+      strokeCap: 'round',
+      insert: false
+    })
+    notched.strokeProfile = [{ offset: 0, width: 0.18 }]
+    const notchedOutline = notched.outline({ insert: false })
+    equals(
+      notchedOutline.contains(new Point(316.33, 36.44)),
+      true,
+      'sliver before a join'
+    )
+    // Before a square cap, the cap starts where the sliver does, so that it
+    // shares its edge with the strip before it, and they become one path:
+    const capped = new Path({
+      segments: [
+        [384.49771, 164.75992],
+        [[408.92442, 153.37565], [-8.54776, 2.77105], [9.6947, -3.14286]],
+        [463.88381, 137.10238]
+      ],
+      strokeWidth: 120,
+      strokeCap: 'square',
+      insert: false
+    })
+    capped.strokeProfile = [{ offset: 0, width: 1 }]
+    equals(
+      capped.outline({ insert: false }).className,
+      'Path',
+      'sliver before a square cap'
+    )
   })
 
   // Outlines of stroke profiles that went wrong once, checked against the
