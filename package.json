@@ -74,6 +74,7 @@
     "dist/paper-*.js.map",
     "dist/types/",
     "LICENSE.txt",
+    "MIGRATION.md",
     "README.md"
   ],
   "engines": {
