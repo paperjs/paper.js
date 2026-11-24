@@ -32,6 +32,7 @@ import {
   Size,
   Style,
   SymbolDefinition,
+  SymbolItem,
   camelize,
   createSvgElement,
   getDocument,
@@ -500,13 +501,19 @@ const importers: Record<string, Importer> = {
       item = definition.place(point)
     } else if (definition && !used[id]) {
       // Import other items again in place, as they inherit the styles
-      // of the <use> element instead of where they are defined, and
-      // as rasters are only positioned once their image has loaded,
-      // which clones would miss:
+      // of the <use> element instead of where they are defined, as from
+      // a <g>, see importGroup(), and keep their own. Rasters are only
+      // positioned once their image has loaded, which clones would miss:
       used[id] = true
+      const { project } = paper
+      const currentStyle = project._currentStyle
+      project._currentStyle = new Style(
+        applyAttributes(new Group(), node, options)._style
+      )
       try {
         item = importNode(getElementById(id), options, false).translate(point)
       } finally {
+        project._currentStyle = currentStyle
         delete used[id]
       }
     }
@@ -699,9 +706,15 @@ function getCssShadow(value: string) {
 // in svgStyles (e.g. 'stroke') before the additional attributes below (e.g.
 // 'stroke-opacity'). See issue #694.
 const attributes: Record<string, Applier> = {}
+// The attributes of styles that the content of groups inherits, and that of
+// <use> elements too, see importers.use:
+const inheritedAttributes = new Set<string>()
 
 for (const entry of Object.values(svgStyles)) {
   const { attribute, property, type, fromSVG } = entry
+  if (property in Style.prototype) {
+    inheritedAttributes.add(attribute)
+  }
   attributes[attribute] = function (item, value, name, node, styles, options) {
     if (property in item) {
       item[property] = convertValue(value, type, fromSVG, options)
@@ -904,7 +917,9 @@ function applyAttributes(
   item: any,
   node: Element,
   options: Options,
-  isRoot?: boolean
+  isRoot?: boolean,
+  // Whether the item inherited the styles, which aren't set then:
+  isInherited?: boolean
 ): any {
   // SVG attributes can be set both as styles and direct node
   // attributes, so we need to handle both.
@@ -921,7 +936,10 @@ function applyAttributes(
     item.fillColor = 'black'
   }
   for (const [name, apply] of Object.entries(attributes)) {
-    const value = getAttribute(node, name, styles)
+    const value =
+      isInherited && inheritedAttributes.has(name)
+        ? undefined
+        : getAttribute(node, name, styles)
     // 'clip-path' attribute returns a new item, support it here:
     item = (
       (
@@ -1098,8 +1116,15 @@ function importNode(node: Element, options: Options, isRoot?: boolean): any {
       }
       // Do not apply attributes if this is a #document node.
       // importGroup() applies them itself, see there for why:
+      // A <use> of an element passed its styles on to it instead:
       if (isElement && importer !== importGroup) {
-        item = applyAttributes(item, node, options, isRoot)
+        item = applyAttributes(
+          item,
+          node,
+          options,
+          isRoot,
+          type === 'use' && !(item instanceof SymbolItem)
+        )
       }
       const data = isElement && getData(node)
       if (data) {

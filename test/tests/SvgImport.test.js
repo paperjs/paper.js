@@ -765,6 +765,11 @@ describe('SvgImport', () => {
       'own styles'
     )
     equals(
+      getStyles(defs + '<use xlink:href="#blue" fill="green" stroke="red"/>'),
+      [['#0000ff', '#ff0000']],
+      'own styles over those of the <use> element'
+    )
+    equals(
       getStyles(
         defs +
         '<g fill="red"><use xlink:href="#path"/></g>' +
