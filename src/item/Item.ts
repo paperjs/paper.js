@@ -51,6 +51,7 @@ import {
   hyphenate,
   importSVG,
   inject,
+  isInheritingStyle,
   isPlainObject,
   isZero,
   nativeBlendModes,
@@ -1139,9 +1140,12 @@ export class Item extends Emitter {
     const _matrix = internal ? null : this._matrix._orNullIfIdentity()
     // A passed identity matrix still replaces the internal matrix:
     const transform = matrix ? matrix._orNullIfIdentity() : _matrix
-    // Create a key for caching, reflecting all bounds options.
+    // Create a key for caching, reflecting all bounds options. Bounds measured
+    // through a symbol item can depend on its style, so they aren't cached,
+    // see Style#_get():
     const cacheKey = (
       cacheItem &&
+      !isInheritingStyle() &&
       (transform ? transform.equals(_matrix) : !_matrix) &&
       this._getBoundsCacheKey(options, internal)
     )

@@ -10,7 +10,14 @@
  * All rights reserved.
  */
 
-import { Change, Item, SymbolDefinition, clone } from '../internal.ts'
+import {
+  Change,
+  Group,
+  Item,
+  SymbolDefinition,
+  clone,
+  withInheritedStyle
+} from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
 import type { Point } from '../basic/Point.ts'
 import type { Matrix } from '../basic/Matrix.ts'
@@ -118,8 +125,11 @@ export class SymbolItem extends Item {
     options: BoundsOptions
   ): { rect: Rectangle; nonscaling: boolean } {
     const item = this._definition._item
-    // Redirect the call to the definition item to calculate the bounds.
-    return item._getCachedBounds(item._matrix.prepended(matrix), options)
+    // Redirect the call to the definition item to calculate the bounds, with
+    // this item's style for what its content leaves unset:
+    return withInheritedStyle(this._style, () =>
+      item._getCachedBounds(item._matrix.prepended(matrix), options)
+    )
   }
 
   _hitTestSelf(
@@ -131,15 +141,17 @@ export class SymbolItem extends Item {
     // as otherwise it would populate the array with its own matches.
     // Instead we want only returning one match per symbol-item, see #1680
     // The filters apply to the symbol-item, not to the definition's items:
-    const res = this._definition._item._hitTest(
-      point,
-      Object.assign(Object.create(options), {
-        all: false,
-        match: null,
-        class: null,
-        type: null
-      }),
-      viewMatrix
+    const res = withInheritedStyle(this._style, () =>
+      this._definition._item._hitTest(
+        point,
+        Object.assign(Object.create(options), {
+          all: false,
+          match: null,
+          class: null,
+          type: null
+        }),
+        viewMatrix
+      )
     )
     // TODO: When the symbol's definition is a path, should hitResult
     // contain information like HitResult#curve?
@@ -151,10 +163,13 @@ export class SymbolItem extends Item {
 
   _draw(ctx: CanvasRenderingContext2D, param: any) {
     // The definition's item is shared by all its symbol items, so don't let
-    // them set its global matrix (#1684):
-    this._definition._item.draw(
-      ctx,
-      Object.assign(Object.create(param), { updateMatrix: false })
+    // them set its global matrix (#1684). Its content takes the values that
+    // it leaves unset from this item's style, see Style#_get():
+    withInheritedStyle(this._style, () =>
+      this._definition._item.draw(
+        ctx,
+        Object.assign(Object.create(param), { updateMatrix: false })
+      )
     )
   }
 
@@ -172,6 +187,17 @@ export class SymbolItem extends Item {
       return null
     }
     const item = this._definition._item.clone(false)
+    // The copy takes the values that its content took from the symbol item:
+    const values = this._style._values
+    for (const child of [item, ...item.getItems({ match: () => true })]) {
+      if (!(child instanceof Group)) {
+        for (const [key, value] of Object.entries(values)) {
+          if (child._style._values[key] === undefined) {
+            child._style.set({ [key]: value?.clone ? value.clone() : value })
+          }
+        }
+      }
+    }
     // The copy applies the matrix to its content or its own matrix,
     // depending on its applyMatrix, as in Group#ungroup():
     item.transform(this._matrix)

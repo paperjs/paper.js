@@ -137,6 +137,36 @@ export function defineStyleAccessors(ctor: { prototype: object }) {
   }
 }
 
+// The styles of the symbol items that are being drawn, measured or hit-tested,
+// the innermost last. They provide the values that the content of their
+// definitions leaves unset, as the <use> elements of SVG do, see SymbolItem:
+const inheritedStyles: Style[] = []
+
+/**
+ * Calls the callback with the style providing the values that the styles read
+ * meanwhile leave unset, and returns its result.
+ *
+ * @private
+ */
+export function withInheritedStyle<T>(style: Style, callback: () => T): T {
+  inheritedStyles.push(style)
+  try {
+    return callback()
+  } finally {
+    inheritedStyles.pop()
+  }
+}
+
+/**
+ * Returns whether styles read now take unset values from a symbol item, see
+ * {@link withInheritedStyle()}.
+ *
+ * @private
+ */
+export function isInheritingStyle(): boolean {
+  return inheritedStyles.length > 0
+}
+
 /**
  * Style is used for changing the visual styles of items
  * contained within a Paper.js project and is returned by
@@ -336,6 +366,14 @@ export class Style extends Base {
     } else if (key in this._defaults) {
       value = this._values[key]
       if (value === undefined) {
+        // An unset value comes from the symbol items around the style, if
+        // one of them sets it, as their own:
+        for (let i = inheritedStyles.length - 1; i >= 0; i--) {
+          const style = inheritedStyles[i]
+          if (style._values[key] !== undefined) {
+            return style._get(key)
+          }
+        }
         value = this._defaults[key]
         // Clone defaults if available:
         if (value && value.clone) {

@@ -319,7 +319,11 @@ function exportSymbolItem(item: SymbolItem, options: Options): SVGElement {
     node = createSvgElement('symbol', {
       viewBox: formatter.rectangle(bounds)
     })
-    node.appendChild(exportSVG(definitionItem, options))
+    // The content leaves the styles that it doesn't set to each <use>
+    // element, see SymbolItem:
+    node.appendChild(
+      exportSVG(definitionItem, { ...options, isInSymbol: true })
+    )
     setDefinition(definition, node, 'symbol', options)
   }
   attrs.href = `#${node.id}`
@@ -773,9 +777,15 @@ function applyStyle(
     if (parent && !(property in parentStyle)) {
       parentStyle[property] = parent[property]
     }
-    // Skip undefined values, as found on groups with mixed children:
+    // Skip undefined values, as found on groups with mixed children, and in
+    // symbols, the values that items leave unset and the merged ones of
+    // groups, as the <use> elements provide them:
     if (
-      value !== undefined && (
+      value !== undefined &&
+      !(
+        options.isInSymbol &&
+        (isGroup || item._style._values[property] === undefined)
+      ) && (
         isPaintServer
           ? !isGroup
           : entry.exportFilter

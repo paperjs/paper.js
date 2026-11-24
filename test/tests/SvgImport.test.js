@@ -21,7 +21,8 @@ import paper, {
   Raster,
   Rectangle,
   Shape,
-  Size
+  Size,
+  SymbolItem
 } from 'paper'
 // The canvas pool is internal, so it's imported from its module:
 import * as CanvasProvider from '../../src/canvas/canvasProvider.ts'
@@ -37,6 +38,28 @@ import {
 const { document, window } = paper
 
 describe('SvgImport', () => {
+  test('Import <use> of a <symbol> with the style of each use (#1329)', () => {
+    const svg = (
+      '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+      '<defs><symbol id="s"><path style="stroke:none;" d="M0 0L10 0L10 10Z"/></symbol></defs>' +
+      '<use xlink:href="#s" fill="blue"/><use xlink:href="#s" x="20" fill="green"/><use xlink:href="#s" x="40"/></svg>'
+    )
+    const items = paper.project.importSVG(svg).getItems({ class: SymbolItem })
+    equals(items.length, 3)
+    // One definition, which leaves the fill to each use:
+    equals(items[1].definition === items[0].definition, true)
+    equals(
+      items[0].definition.item.getItems({ class: Path })[0].fillColor,
+      null
+    )
+    const getColor = item =>
+      item.rasterize({ resolution: 72, insert: false }).getPixel(7, 3)
+    equals(getColor(items[0]), new Color(0, 0, 1, 1), 'blue')
+    equals(getColor(items[1]), new Color(0, 0.50196, 0, 1), 'green')
+    // SVG's initial fill, black, where the use sets none:
+    equals(getColor(items[2]), new Color(0, 0, 0, 1), 'black')
+  })
+
   test('Import SVG line', () => {
     const attrs = {
       x1: 5,
