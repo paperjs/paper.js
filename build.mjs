@@ -41,10 +41,12 @@ const modules = {
 }
 
 // The script files, whose global `paper` is the first scope, the default
-// export of the core, with PaperScript in the full one:
+// export of the core, with PaperScript in the full one, and also the hosted
+// mode in the hosted one, for hosts that load Paper.js as a script:
 const scripts = {
   'paper-core': ['src/index.ts'],
-  'paper-full': ['src/index.ts', 'src/paperscript/index.ts']
+  'paper-full': ['src/index.ts', 'src/paperscript/index.ts'],
+  'paper-hosted': ['src/hosted/index.ts', 'src/paperscript/index.ts']
 }
 
 export async function buildAll() {
