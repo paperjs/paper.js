@@ -16,7 +16,6 @@ import {
   ChangeFlag,
   Color,
   EPSILON,
-  Effect,
   EffectInstance,
   Emitter,
   GEOMETRIC_EPSILON,
@@ -48,7 +47,9 @@ import {
   getCachedBounds,
   getCombinedBounds,
   getItemBounds,
+  getEffectOutput,
   getItems,
+  getPreviewBounds,
   getUID,
   hitTest,
   hitTestAll,
@@ -56,11 +57,13 @@ import {
   hitTestItem,
   importSVG,
   inject,
+  insertEffects,
   intersectsItem,
   isPlainObject,
   isZero,
   matchItem,
   paper,
+  removeEffects,
   removeNamed,
   serialize,
   splice,
@@ -78,7 +81,7 @@ import type { ItemDefinition } from './ItemDefinition.ts'
 
 type Handler = (this: Item, ...args: any[]) => any
 
-type EffectProps = {
+export type EffectProps = {
   type: string
   parameters?: Record<string, any>
   visible?: boolean
@@ -1366,16 +1369,7 @@ export class Item extends Emitter {
    * @return the inserted instances
    */
   insertEffects(index: number, effects: EffectProps[]): EffectInstance[] {
-    const list = (this._effects ??= [])
-    const inserted = effects.map(effect => {
-      const instance = new EffectInstance(effect)
-      instance._item = this
-      return instance
-    })
-    // Keeps the indices of the effects up to date:
-    splice(list, inserted, index, 0)
-    this._changed(Change.ATTRIBUTE)
-    return inserted
+    return insertEffects(this, index, effects)
   }
 
   /**
@@ -1397,21 +1391,7 @@ export class Item extends Emitter {
    * @return the removed instances
    */
   removeEffects(start = 0, end?: number): EffectInstance[] {
-    const list = this._effects
-    let removed = []
-    if (list) {
-      removed = splice(list, null, start, (end ?? list.length) - start)
-      for (const instance of removed) {
-        instance._item = instance._index = null
-      }
-      if (removed.length) {
-        this._changed(Change.ATTRIBUTE)
-      }
-      if (!list.length) {
-        this._effects = null
-      }
-    }
-    return removed
+    return removeEffects(this, start, end)
   }
 
   // Returns whether any of the item's effects are visible:
@@ -1428,14 +1408,7 @@ export class Item extends Emitter {
    * @return the output of the effects
    */
   getEffectOutput(): Item | null {
-    let output = this._effectOutput
-    if (output === undefined || this._effectVersion !== Effect._version) {
-      const art = this._hasEffects() && this._getEffectArt()
-      output = art ? this._applyEffects(art) ?? art : null
-      this._effectOutput = output
-      this._effectVersion = Effect._version
-    }
-    return output
+    return getEffectOutput(this)
   }
 
   // Applies the visible effects to the art in turn, and returns what they make
@@ -1452,32 +1425,6 @@ export class Item extends Emitter {
       }
     }
     return output
-  }
-
-  // Returns a copy of the item for its effects to apply to, in its own
-  // coordinates, with the effects of its content expanded and without its own:
-  _getEffectArt(): Item {
-    const art = this.clone({ insert: false })
-    art.effects = null
-    art.matrix = new Matrix()
-
-    function expand(source: Item, copy: Item) {
-      const children = source._children
-      for (let i = 0, l = children ? children.length : 0; i < l; i++) {
-        const child = children[i]
-        let output = child.getEffectOutput()
-        if (output) {
-          output = output.clone({ insert: false })
-          output.transform(child._matrix)
-          copy._children[i].replaceWith(output)
-        } else {
-          expand(child, copy._children[i])
-        }
-      }
-    }
-
-    expand(this, art)
-    return art
   }
 
   /**
@@ -1497,28 +1444,7 @@ export class Item extends Emitter {
    * @param matrix the matrix to transform the bounds with
    */
   getPreviewBounds(matrix?: Matrix): Rectangle {
-    const output = this.getEffectOutput()
-    const children = this._children
-    // Without effects in it, it's the item's own:
-    if (output || children && hasEffects(this)) {
-      let bounds = null
-      if (output) {
-        bounds = output.strokeBounds
-      } else {
-        for (const child of children) {
-          if (child._visible) {
-            const rect = child.previewBounds
-            bounds = bounds ? bounds.unite(rect) : rect
-          }
-        }
-      }
-      if (bounds) {
-        return (
-          matrix ? matrix.appended(this._matrix) : this._matrix
-        )._transformBounds(bounds)
-      }
-    }
-    return this.getStrokeBounds(matrix)
+    return getPreviewBounds(this, matrix)
   }
 
   /**
@@ -5108,12 +5034,4 @@ function countDrawHandlers(item: Item, sign: number) {
   } else if (item.isInserted()) {
     item._project._drawCount += sign
   }
-}
-
-// Returns whether the item or its content have visible effects:
-function hasEffects(item: Item): boolean {
-  return (
-    item._hasEffects() ||
-    !!item._children?.some(child => hasEffects(child))
-  )
 }
