@@ -249,6 +249,11 @@ describe('Effect', () => {
     equals(group.getEffectOutput().blendMode, 'normal')
   })
 
+  test('Effects tell hosts whether to draw them during interactions', () => {
+    equals(defineEffect({ type: 'wobble' }).interactive, false)
+    equals(defineEffect({ type: 'tint', interactive: true }).interactive, true)
+  })
+
   test('EffectInstance#equals() compares type, visibility and parameters', () => {
     const instance = new EffectInstance({
       type: 'offset',
