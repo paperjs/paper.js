@@ -97,7 +97,9 @@ export class TextStory extends Base {
   }
 
   // The styles of the runs and paragraphs are their own:
-  _getStyles(): undefined {}
+  _getStyles(): null {
+    return null
+  }
 
   // Changes to the story change the text items it flows through:
   _changed(flags: number) {
@@ -158,7 +160,8 @@ export class TextStory extends Base {
     start: number | { start: number; end: number },
     end?: number
   ) {
-    const range = typeof start === 'number' ? { start, end } : start
+    const range =
+      typeof start === 'number' ? { start, end: end ?? start } : start
     const old = this._content
     const { length } = old
     const runs = this._runs
@@ -184,7 +187,7 @@ export class TextStory extends Base {
     const removed = this.#countBreaks(old.slice(from, to))
     const added = this.#countBreaks(text)
     const style = paragraphs[first]
-    const inserted = []
+    const inserted: Style[] = []
     for (let k = 0; k < added; k++) {
       inserted.push(new Style(style, this))
     }
@@ -259,7 +262,7 @@ export class TextStory extends Base {
       // content typed there would:
       const from = start < end ? start : Math.max(0, start - 1)
       const to = start < end ? end : from + 1
-      const styles = []
+      const styles: Style[] = []
       for (let i = 0, l = runs.length, pos = 0; i < l; i++) {
         const run = runs[i]
         const next = pos + run.length
@@ -315,7 +318,7 @@ export class TextStory extends Base {
   // The runs, with the neighbors that share a style joined:
   _getRuns(): { start: number; end: number; style: Style }[] {
     const runs = this._runs
-    const joined = []
+    const joined: { start: number; end: number; style: Style }[] = []
     for (let i = 0, l = runs.length, start = 0, end = 0; i < l; i++) {
       const run = runs[i]
       const next = runs[i + 1]
@@ -333,7 +336,7 @@ export class TextStory extends Base {
    * objects with paragraph style properties, one per paragraph.
    */
   get paragraphs(): TextRange[] {
-    const ranges = []
+    const ranges: TextRange[] = []
     const breaks = /\r\n|\n|\r/g
     const content = this._content
     let start = 0
@@ -392,7 +395,7 @@ export class TextStory extends Base {
 
   #segment(granularity: 'word' | 'grapheme', pattern: RegExp): TextRange[] {
     const content = this._content
-    const ranges = []
+    const ranges: TextRange[] = []
     const Segmenter = typeof Intl !== 'undefined' && Intl.Segmenter
     if (Segmenter) {
       const segments = new Segmenter(undefined, { granularity }).segment(

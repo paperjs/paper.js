@@ -53,6 +53,12 @@ describe('TextItem', () => {
     equals(() => text.hitTest(text.bounds.center) != null, true)
   })
 
+  test('TextStory#replace() without an end inserts', () => {
+    const text = new PointText({ content: 'ac' })
+    text.story.replace('b', 1)
+    equals(text.content, 'abc')
+  })
+
   test('PointText#strokeBounds (#1322)', () => {
     const text = new PointText({
       fontFamily: 'Arial, Helvetica',

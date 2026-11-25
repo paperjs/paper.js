@@ -74,7 +74,7 @@ export class PointText extends TextItem {
       arg.x === undefined &&
       arg.y === undefined
     )
-    this._initialize(hasProps && arg, !hasProps && Point.from(arg, y))
+    this._initialize(hasProps && arg, hasProps ? undefined : Point.from(arg, y))
   }
 
   /**
@@ -100,7 +100,7 @@ export class PointText extends TextItem {
     const story = this._story
     const { length } = story._content
     const { paragraphs } = new TextRange(story, this._getStart(), length)
-    const lines = []
+    const lines: TextLine[] = []
     let y = 0
     let spaceAfter = 0
     for (let i = 0, l = paragraphs.length; i < l; i++) {
