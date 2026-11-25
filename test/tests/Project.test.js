@@ -50,6 +50,10 @@ describe('Project', () => {
     events.length = 0
     second.remove()
     equals(events, [], 'removing an inactive project')
+    // Removed projects keep their scope, but can't be activated again:
+    equals(first.scope, paper)
+    equals(first.activate(), false)
+    equals(first.isActive(), false)
   })
 
   test('Project.onActivate and Project.onDeactivate', () => {

@@ -52,7 +52,7 @@ export function getRegionBounds({
   paths
 }: Pick<RegionValues, 'paths'>): Rectangle {
   const roots = new Array(2)
-  let bounds: Rectangle = null
+  let bounds: Rectangle | null = null
   for (const path of paths) {
     const segments = getPathSegments(path)
     const count = segments.length

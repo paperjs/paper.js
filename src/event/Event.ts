@@ -28,10 +28,10 @@ export class Event extends Base {
   prevented = false
   stopped = false
 
-  constructor(event?: globalThis.Event) {
+  constructor(event: globalThis.Event) {
     super()
     this.event = event
-    this.type = event?.type
+    this.type = event.type
   }
 
   /**

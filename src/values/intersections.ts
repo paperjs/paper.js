@@ -58,8 +58,8 @@ type Pair = {
   v1: CurveValues
   v2: CurveValues
   intersections: Intersection[]
-  sharesStart: boolean
-  sharesEnd: boolean
+  sharesStart?: boolean
+  sharesEnd?: boolean
   tolerance?: number
   calls: number
 }
@@ -123,7 +123,10 @@ export function getCurveIntersections(
       // Intersections with lines snap to their ends within the
       // geometric epsilon, but not further than a smaller
       // tolerance, as the points of one may lie no further apart:
-      const lineTolerance = tolerance < GEOMETRIC_EPSILON ? tolerance : null
+      const lineTolerance =
+        tolerance != null && tolerance < GEOMETRIC_EPSILON
+          ? tolerance
+          : undefined
       // Determine the correct intersection method based on whether
       // one or curves are straight lines:
       if (straight) {
@@ -196,8 +199,9 @@ export function getCurveSelfIntersection(
   }
   const info = classifyCurve(v)
   if (info.type === 'loop') {
-    const { roots } = info
-    addLocation(pair, roots[0], roots[1])
+    // Loops always have both roots:
+    const [t1, t2] = info.roots!
+    addLocation(pair, t1, t2)
   }
   return pair.intersections
 }
@@ -267,7 +271,7 @@ export function getCurveOverlaps(
   }
 
   const v = [v1, v2]
-  let pairs = []
+  let pairs: number[][] | null = []
   // Iterate through all end points:
   // First p1 of curve 1 & 2, then p2 of curve 1 & 2.
   for (let i = 0; i < 4 && pairs.length < 2; i++) {
@@ -323,16 +327,13 @@ export function getCurveOverlaps(
 // `flip`, the times are those of the second curve and the first:
 function addLocation(
   pair: Pair,
-  t1: number,
-  t2: number,
+  time1: number | null,
+  time2: number | null,
   flip?: boolean,
   overlap?: boolean
 ): boolean {
-  if (flip) {
-    const t = t1
-    t1 = t2
-    t2 = t
-  }
+  const t1 = flip ? time2 : time1
+  const t2 = flip ? time1 : time2
   // The ends of neighbors are part of overlaps, as the curves could overlap
   // themselves there:
   const excludeStart = !overlap && pair.sharesStart
@@ -454,8 +455,8 @@ function addCurveIntersections(
     clipConvexHull(top, bottom, dMin, dMax) ??
     clipConvexHull(top, bottom, dMin - resolution, dMax + resolution)
   )
-  let tMinClip: number
-  let tMaxClip: number
+  let tMinClip: number | null
+  let tMaxClip: number | null
   // Stop iteration if all points and control points are collinear.
   if (
     (
@@ -604,7 +605,8 @@ function addImplicitIntersections(
   uMin: number,
   uMax: number
 ): boolean {
-  const { tolerance } = pair
+  // Only called with a tolerance, see addCurveIntersections():
+  const tolerance = pair.tolerance!
   const x0 = v2[0]
   const y0 = v2[1]
   let size = 0
@@ -634,7 +636,7 @@ function addImplicitIntersections(
     const polynomial = isQuadratic
       ? getQuadraticImplicit(p, [q[0], getQuadraticHandle(q), q[3]])
       : getCubicImplicit(p, q)
-    const roots = []
+    const roots: number[] = []
     let speed = 0
     // The width in curve time along which v1 moves less than the
     // tolerance, from a bound of its speed:
@@ -691,7 +693,7 @@ function getLocalPoints(
   size: number
 ): LocalPoint[] {
   const u = MACHINE_EPSILON
-  const points = []
+  const points: LocalPoint[] = []
   for (let i = 0; i < 8; i += 2) {
     const x = (v[i] - x0) / size
     const y = (v[i + 1] - y0) / size
@@ -727,8 +729,8 @@ function getLinearFactor(
   factor: number
 ): Polynomial {
   const u = MACHINE_EPSILON
-  const coefficients = []
-  const errors = []
+  const coefficients: number[] = []
+  const errors: number[] = []
   for (let k = 0; k < 4; k++) {
     const r = p[k]
     const dx1 = q[i].x - r.x
@@ -774,8 +776,8 @@ function multiply(a: Polynomial, b: Polynomial): Polynomial {
   const u = MACHINE_EPSILON
   const m = a.coefficients.length - 1
   const n = b.coefficients.length - 1
-  const coefficients = []
-  const errors = []
+  const coefficients: number[] = []
+  const errors: number[] = []
   for (let k = 0; k <= m + n; k++) {
     let sum = 0
     let error = 0
@@ -802,8 +804,8 @@ function multiply(a: Polynomial, b: Polynomial): Polynomial {
 }
 
 function add(a: Polynomial, b: Polynomial, sign: number): Polynomial {
-  const coefficients = []
-  const errors = []
+  const coefficients: number[] = []
+  const errors: number[] = []
   for (let i = 0, l = a.coefficients.length; i < l; i++) {
     const sum = a.coefficients[i] + sign * b.coefficients[i]
     coefficients.push(sum)
@@ -984,8 +986,8 @@ function getCurveLineIntersections(
   const cos = Math.cos(angle)
   // (rlx1, rly1) = (0, 0)
   // Calculate the curve values of the rotated curve.
-  const rv = []
-  const roots = []
+  const rv: number[] = []
+  const roots: number[] = []
   for (let i = 0; i < 8; i += 2) {
     const x = v[i] - px
     const y = v[i + 1] - py
@@ -1015,7 +1017,7 @@ function addCurveLineIntersections(
   v2: CurveValues,
   pair: Pair,
   flip: boolean,
-  tolerance: number
+  tolerance?: number
 ) {
   // addCurveLineIntersections() is called so that v1 is always the curve
   // and v2 the line. flip indicates whether the curves need to be flipped
@@ -1045,7 +1047,7 @@ function addLineIntersection(
   v1: CurveValues,
   v2: CurveValues,
   pair: Pair,
-  tolerance: number
+  tolerance?: number
 ): boolean {
   const point = Line.intersect(
     v1[0], v1[1], v1[6], v1[7],

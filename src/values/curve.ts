@@ -82,7 +82,7 @@ export function subdivideCurve(
 // y-direction if dir is true. A curve that is monotone already is returned as
 // the only one:
 export function getMonoCurves(v: CurveValues, dir?: boolean): CurveValues[] {
-  const curves = []
+  const curves: CurveValues[] = []
   // Determine the ordinate index in the curve values array.
   const io = dir ? 0 : 1
   const o0 = v[io + 0]
@@ -102,7 +102,7 @@ export function getMonoCurves(v: CurveValues, dir?: boolean): CurveValues[] {
     const c = o1 - o0
     const tMin = CURVETIME_EPSILON
     const tMax = 1 - tMin
-    const roots = []
+    const roots: number[] = []
     const n = solveQuadratic(a, b, c, roots, tMin, tMax)
     if (!n) {
       curves.push(v)
@@ -224,7 +224,7 @@ export function getCurveArea(v: CurveValues): number {
 
 export function classifyCurve(v: CurveValues): {
   type: string
-  roots: number[]
+  roots: number[] | null
 } {
   // See: Loop and Blinn, 2005, Resolution Independent Curve Rendering
   // using Programmable Graphics Hardware, GPU Gems 3 chapter 25
@@ -279,27 +279,28 @@ export function classifyCurve(v: CurveValues): {
     const tMin = CURVETIME_EPSILON
     const tMax = 1 - tMin
     const hasRoots = t1 !== undefined
-    let t1Ok = hasRoots && t1 > tMin && t1 < tMax
-    let t2Ok = hasRoots && t2 > tMin && t2 < tMax
+    const t1Ok = hasRoots && t1 > tMin && t1 < tMax
+    const t2Ok = t2 !== undefined && t2 > tMin && t2 < tMax
     // Degrade to arch for serpentine, cusp or loop if no solutions
     // within 0..1 are found. loop requires 2 solutions to be valid.
     if (
       hasRoots &&
       (!(t1Ok || t2Ok) || type === 'loop' && !(t1Ok && t2Ok))
     ) {
-      type = 'arch'
-      t1Ok = t2Ok = false
+      return { type: 'arch', roots: null }
     }
     return {
       type,
       roots:
-        t1Ok || t2Ok
-          ? t1Ok && t2Ok
-            ? t1 < t2
-              ? [t1, t2]
-              : [t2, t1] // 2 solutions
-            : [t1Ok ? t1 : t2] // 1 solution
-          : null
+        t1Ok && t2Ok
+          ? t1 < t2
+            ? [t1, t2]
+            : [t2, t1] // 2 solutions
+          : t1Ok
+            ? [t1] // 1 solution
+            : t2Ok
+              ? [t2]
+              : null
     }
   }
 
@@ -346,7 +347,7 @@ export function getCurveTimeAt(
   v: CurveValues,
   offset: number,
   start = offset < 0 ? 1 : 0
-): number {
+): number | null {
   if (offset === 0) return start
   // See if we're going forward or backward, and handle cases
   // differently
@@ -435,7 +436,7 @@ export function getCurveTimeOf(
   const ay = c[3]
   const by = c[4]
   const cy = c[5]
-  const roots = []
+  const roots: number[] = []
   for (let i = 0; i < 2; i++) {
     const count = solveCurve(v, i, i ? py : px, roots, 0, 1)
     for (let j = 0; j < count; j++) {
@@ -496,7 +497,7 @@ export function getNearestCurveTime(
       ? 0
       : u > 1 - EPSILON
         ? 1
-        : getCurveTimeOf(v, new Point(x0 + u * vx, y0 + u * vy), tolerance)
+        : getCurveTimeOf(v, new Point(x0 + u * vx, y0 + u * vy), tolerance)!
   }
 
   // Calculate curve points as in evaluate(), but without creating
@@ -509,7 +510,7 @@ export function getNearestCurveTime(
   const by = c[4]
   const cy = c[5]
   const count = 100
-  const distances = []
+  const distances: number[] = []
   let minDistance = Infinity
   let minT = 0
 
@@ -642,7 +643,7 @@ export function getCurvePeaks(v: CurveValues): number[] {
   const cy = c[5]
   const tMin = CURVETIME_EPSILON
   const tMax = 1 - tMin
-  const roots = []
+  const roots: number[] = []
   solveCubic(
     9 * (ax * ax + ay * ay),
     9 * (ax * bx + by * ay),
@@ -671,7 +672,7 @@ export function getCurveReversals(v: CurveValues, tolerance: number): number[] {
     }
   }
   const length = Math.sqrt(dx * dx + dy * dy)
-  const o = []
+  const o: number[] = []
   if (!length) return []
   for (let i = 0; i < 8; i += 2) {
     const x = v[i] - v[0]
@@ -680,7 +681,7 @@ export function getCurveReversals(v: CurveValues, tolerance: number): number[] {
     // The control point's position along the line:
     o.push((x * dx + y * dy) / length)
   }
-  const roots = []
+  const roots: number[] = []
   const count = solveQuadratic(
     3 * (o[1] - o[2]) - o[0] + o[3],
     2 * (o[0] + o[2]) - 4 * o[1],
@@ -712,7 +713,7 @@ export function getCurveTimesWithTangent(
   const tx = normalized.x
   const ty = normalized.y
   let den = 2 * ax * ty - 2 * ay * tx
-  const times = []
+  const times: number[] = []
   if (Math.abs(den) < CURVETIME_EPSILON) {
     const num = cx * ty - cy * tx
     den = bx * ty - by * tx
@@ -848,7 +849,7 @@ export function getCurveRayWinding(
     x <= max(v[0], v[2], v[4], v[6]) + (tolerance || 0)
   ) {
     const monoCurves = getMonoCurves(v)
-    const roots = []
+    const roots: number[] = []
     for (let i = 0, l = monoCurves.length; i < l; i++) {
       const mv = monoCurves[i]
       const x0 = mv[0]
@@ -1044,7 +1045,7 @@ function getPartLength(
   }
   // The speed turns where the derivative is normal to its own
   // derivative:
-  const times = []
+  const times: number[] = []
   const count = Math.max(
     0,
     solveCubic(
@@ -1121,8 +1122,6 @@ function evaluate(
   type: number,
   normalized: boolean
 ): Point {
-  // Do not produce results if parameter is out of range or invalid.
-  if (t == null || t < 0 || t > 1) return null
   const x0 = v[0]
   const y0 = v[1]
   const x3 = v[6]

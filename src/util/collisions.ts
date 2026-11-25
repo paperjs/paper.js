@@ -52,7 +52,7 @@ export function findItemBoundsCollisions(
     !items2 || items2 === items1
       ? bounds1
       : getBounds(items2)
-  return findBoundsCollisions(bounds1, bounds2, tolerance || 0)
+  return findBoundsCollisions(bounds1, bounds2, tolerance)
 }
 
 /**
@@ -99,7 +99,7 @@ export function findCurveBoundsCollisions(
     !curves2 || curves2 === curves1
       ? bounds1
       : getBounds(curves2)
-  return findBoundsCollisions(bounds1, bounds2, tolerance || 0)
+  return findBoundsCollisions(bounds1, bounds2, tolerance)
 }
 
 /**
@@ -137,7 +137,7 @@ export function findCurveBoundsCollisions(
 export function findBoundsCollisions(
   boundsA: Bounds[],
   boundsB?: Bounds[],
-  tolerance?: number,
+  tolerance = 0,
   sweepVertical?: boolean
 ): number[][] {
   const self = !boundsB || boundsA === boundsB
@@ -178,7 +178,7 @@ export function findBoundsCollisions(
   allIndicesByPri0.sort((i1, i2) => allBounds[i1][pri0] - allBounds[i2][pri0])
   // Sweep along primary axis. Indices of active bounds are kept in an
   // array sorted by higher boundary on primary axis.
-  const activeIndicesByPri1 = []
+  const activeIndicesByPri1: number[] = []
   const allCollisions = new Array(lengthA)
   for (let i = 0; i < lengthAll; i++) {
     const currentIndex = allIndicesByPri0[i]
@@ -187,7 +187,7 @@ export function findBoundsCollisions(
     const originalIndex = self ? currentIndex : currentIndex - lengthA
     const isCurrentA = currentIndex < lengthA
     const isCurrentB = self || !isCurrentA
-    const currentCollisions = isCurrentA ? [] : null
+    const currentCollisions: number[] | null = isCurrentA ? [] : null
     if (activeIndicesByPri1.length) {
       // remove (prune) indices that are no longer active.
       const pruneCount = binarySearch(
@@ -216,7 +216,7 @@ export function findBoundsCollisions(
         ) {
           // Add current index to collisions of active
           // indices and vice versa.
-          if (isCurrentA && isActiveB) {
+          if (currentCollisions && isActiveB) {
             currentCollisions.push(
               self ? activeIndex : activeIndex - lengthA
             )
@@ -227,7 +227,7 @@ export function findBoundsCollisions(
         }
       }
     }
-    if (isCurrentA) {
+    if (currentCollisions) {
       if (boundsA === boundsB) {
         // If both arrays are the same, add self collision.
         currentCollisions.push(currentIndex)

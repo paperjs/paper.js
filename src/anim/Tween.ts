@@ -157,8 +157,8 @@ export class Tween extends Emitter {
   easing: Easing
   duration: number
   running = false
-  #then: (object: object) => void = null
-  #startTime: number = null
+  #then: ((object: object) => void) | null = null
+  #startTime: number | null = null
   #keys: string[]
   #parsedKeys: Record<string, string[]>
   #from: Record<string, any>
@@ -373,7 +373,7 @@ export class Tween extends Emitter {
       '*': 'multiply',
       '/': 'divide'
     }[operator]
-    if (left?.[name]) {
+    if (name && left?.[name]) {
       return left[name](right)
     }
     switch (operator) {

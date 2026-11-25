@@ -12,8 +12,8 @@
 
 // The window and document that Paper.js works with, resolved at first use:
 let isResolved = false
-let window: Window & typeof globalThis = null
-let document: Document = null
+let window: (Window & typeof globalThis) | null = null
+let document: Document | null = null
 
 /**
  * Sets the window, and with it the document, that Paper.js works with.
@@ -35,7 +35,7 @@ export function setEnvironment(environment: Window & typeof globalThis) {
  *
  * @private
  */
-export function getWindow(): Window & typeof globalThis {
+export function getWindow(): (Window & typeof globalThis) | null {
   if (!isResolved) {
     setEnvironment(globalThis.window)
   }
@@ -47,7 +47,7 @@ export function getWindow(): Window & typeof globalThis {
  *
  * @private
  */
-export function getDocument(): Document {
+export function getDocument(): Document | null {
   if (!isResolved) {
     setEnvironment(globalThis.window)
   }

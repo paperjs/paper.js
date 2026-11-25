@@ -313,7 +313,8 @@ export class Raster extends Item {
       const type = event?.type || 'load'
       if (view && this.responds(type)) {
         view.scope.activate()
-        this.emit(type, new Event(event))
+        // Images that loaded before have no event of their own:
+        this.emit(type, new Event(event ?? new globalThis.Event(type)))
       }
     }
 

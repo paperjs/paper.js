@@ -58,9 +58,10 @@ export class Emitter extends Base {
         this._callbacks
       ) || {})
       const handlers = (callbacks[type] ??= [])
-      if (!handlers.includes(func)) {
+      // The signatures of Item#on() require a handler with a type:
+      if (!handlers.includes(func!)) {
         // Not added yet, add now.
-        handlers.push(func)
+        handlers.push(func!)
         // See if this is the first handler that we're attaching, and call
         // install if defined.
         if (handlers.length === 1) {
@@ -156,7 +157,7 @@ export class Emitter extends Base {
   // a new list that changes caused by on / off won't affect. Not private, as
   // hosted shells of items are created without the constructor:
   _getHandlers(type: string): Handler[] {
-    const handlers = []
+    const handlers: Handler[] = []
     for (let obj = this; obj; obj = Object.getPrototypeOf(obj)) {
       const callbacks = Object.hasOwn(obj, '_callbacks') && obj._callbacks[type]
       if (callbacks) {

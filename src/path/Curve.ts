@@ -971,10 +971,12 @@ export class Curve extends Base {
       inject(this.prototype, {
         [`${name}At`](offset: number) {
           const { values } = this
-          return evaluate(values, getCurveTimeAt(values, offset))
+          const time = getCurveTimeAt(values, offset)
+          return time == null ? null : evaluate(values, time)
         },
+        // Times outside the curve have nothing to evaluate:
         [`${name}AtTime`](time: number) {
-          return evaluate(this.values, time)
+          return time >= 0 && time <= 1 ? evaluate(this.values, time) : null
         }
       })
     }

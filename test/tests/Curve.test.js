@@ -150,6 +150,14 @@ describe('Curve', () => {
     )
   })
 
+  test('Curve#get…AtTime() outside the curve', () => {
+    const curve = new Path.Line([0, 0], [100, 0]).firstCurve
+    for (const time of [-0.5, 1.5]) {
+      equals(curve.getPointAtTime(time), null)
+      equals(curve.getCurvatureAtTime(time), null)
+    }
+  })
+
   test('Curve#getTangentAtTime()', () => {
     // The quarter from the left to the top:
     const curve = Path.circle({

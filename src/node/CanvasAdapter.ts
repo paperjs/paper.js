@@ -134,7 +134,7 @@ export class CanvasAdapter implements ICanvasAdapter {
           setAttribute.call(canvas, attribute, replacedAttribute)
           const { name } = attribute
           if (name === 'width' || name === 'height') {
-            backing[name] = canvas[name]
+            backing![name] = canvas[name]
           }
         }
       }
@@ -171,7 +171,7 @@ export class CanvasAdapter implements ICanvasAdapter {
     } = happyDom
     if (image instanceof HTMLImageElement) {
       // Images draw nothing until they've loaded, as in browsers:
-      const buffer: Buffer = image[PropertySymbol.buffer]
+      const buffer: Buffer | null = image[PropertySymbol.buffer]
       return buffer ? this.#getImage(buffer) : null
     } else if (
       image instanceof HTMLCanvasElement ||
@@ -190,7 +190,7 @@ export class CanvasAdapter implements ICanvasAdapter {
 
 // Fall back on PNG for the types that the encoder doesn't support, as browsers
 // do:
-function getFormat(type: string): 'png' | 'jpeg' | 'webp' {
+function getFormat(type = ''): 'png' | 'jpeg' | 'webp' {
   const format = /^image\/(jpeg|webp)$/.exec(type)?.[1] as 'jpeg' | 'webp'
   return format || 'png'
 }

@@ -177,6 +177,15 @@ describe('Raster', () => {
     }
   })
 
+  test('Raster#onLoad gets a load event for canvases too', assert => {
+    const done = assert.async()
+    const raster = new Raster(new Size(2, 2))
+    raster.onLoad = event => {
+      equals(event.type, 'load')
+      done()
+    }
+  })
+
   test('Raster#getSubCanvas', assert => {
     const done = assert.async()
     const raster = new Raster(

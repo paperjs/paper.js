@@ -43,7 +43,7 @@ const keyLookup = {
   'Esc': 'escape'
 }
 // To find corresponding characters for special keys in keydown events:
-const charLookup = {
+const charLookup: Record<string, string> = {
   tab: '\t',
   space: ' ',
   enter: '\r'
@@ -62,9 +62,9 @@ const keyMap: Record<string, boolean> = {}
 // key -> char mappings for pressed keys:
 const charMap: Record<string, string> = {}
 // Keys that will not receive keyup events due to Mac bug:
-let metaFixMap: Record<string, string>
+let metaFixMap: Record<string, string> | null
 // The key from the keydown event, if it wasn't handled already:
-let downKey: string
+let downKey: string | null
 // Whether installKeyEvents() has added the DOM's listeners:
 let isInstalled = false
 
@@ -167,7 +167,7 @@ export const Key = {
 export function installKeyEvents() {
   if (!isInstalled) {
     isInstalled = true
-    addEvents(getDocument(), {
+    addEvents(getDocument()!, {
       keydown(event: KeyboardEvent) {
         const key = getKey(event)
         // Directly handle any special keys (key.length > 1) in keydown, as
@@ -210,7 +210,7 @@ export function installKeyEvents() {
       }
     })
 
-    addEvents(getWindow(), {
+    addEvents(getWindow()!, {
       blur(event: FocusEvent) {
         // Emit key-up events for all currently pressed keys.
         for (const key in charMap) {
@@ -230,9 +230,9 @@ export function installKeyEvents() {
 export function handleKey(
   down: boolean,
   key: string,
-  character: string,
+  character: string | null,
   event: Event,
-  view?: View
+  view?: View | null
 ) {
   // View#dispatchKeyEvent() passes its view. For the DOM's key events, the
   // focused view may have been hidden since the last mouse event, while

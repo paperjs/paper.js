@@ -87,11 +87,12 @@ export class Tool extends PaperScopeItem {
   // -1 so first event is 0:
   _moveCount = -1
   _downCount = -1
-  #minDistance: number
-  #maxDistance: number
-  #eventInterval: number
-  #time: number
-  #timer: ReturnType<typeof setInterval>
+  #minDistance: number | null = null
+  #maxDistance: number | null = null
+  #eventInterval: number | null = null
+  #time: number | undefined
+  // Not set until the first repeat, which clearInterval() accepts too:
+  #timer!: ReturnType<typeof setInterval>
 
   // DOCS: rewrite Tool constructor explanation
   constructor(props?: ToolProps) {
@@ -104,7 +105,7 @@ export class Tool extends PaperScopeItem {
    *
    * @param props an object describing the properties to set
    */
-  set(props: ToolProps): this {
+  set(props?: ToolProps): this {
     Object.assign(this, props)
     return this
   }
@@ -113,11 +114,11 @@ export class Tool extends PaperScopeItem {
    * The minimum distance the mouse has to drag before firing the onMouseDrag
    * event, since the last onMouseDrag event.
    */
-  get minDistance(): number {
+  get minDistance(): number | null {
     return this.#minDistance
   }
 
-  set minDistance(minDistance: number) {
+  set minDistance(minDistance: number | null) {
     this.#minDistance = minDistance
     if (
       minDistance != null &&
@@ -132,11 +133,11 @@ export class Tool extends PaperScopeItem {
    * The maximum distance the mouse has to drag before firing the onMouseDrag
    * event, since the last onMouseDrag event.
    */
-  get maxDistance(): number {
+  get maxDistance(): number | null {
     return this.#maxDistance
   }
 
-  set maxDistance(maxDistance: number) {
+  set maxDistance(maxDistance: number | null) {
     this.#maxDistance = maxDistance
     if (
       this.#minDistance != null &&
@@ -161,20 +162,20 @@ export class Tool extends PaperScopeItem {
    * // is held:
    * tool.eventInterval = 100;
    */
-  get eventInterval(): number {
+  get eventInterval(): number | null {
     return this.#eventInterval
   }
 
-  set eventInterval(interval: number) {
+  set eventInterval(interval: number | null) {
     this.#eventInterval = interval
   }
 
   // DOCS: document Tool#fixedDistance
-  get fixedDistance(): number {
+  get fixedDistance(): number | null {
     return this.#minDistance == this.#maxDistance ? this.#minDistance : null
   }
 
-  set fixedDistance(distance: number) {
+  set fixedDistance(distance: number | null) {
     this.#minDistance = this.#maxDistance = distance
   }
 
@@ -214,7 +215,10 @@ export class Tool extends PaperScopeItem {
     // to respect their settings, if necessary.
     // Returns true as long as events should be fired, false when the target
     // is reached.
-    const update = (minDistance?: number, maxDistance?: number) => {
+    const update = (
+      minDistance?: number | null,
+      maxDistance?: number | null
+    ) => {
       let current = point
       // Set toolPoint to the  previous point for moves or downPoint
       // for clicks, so mouseup has a delta spanning over the full
@@ -273,7 +277,8 @@ export class Tool extends PaperScopeItem {
     } else if (mouse.down) {
       update()
       emit()
-      if (this.#eventInterval > 0) {
+      const interval = this.#eventInterval
+      if (interval && interval > 0) {
         // Repeat mousedrag at the last point while the mouse is held,
         // until the mouse is released or another tool takes over:
         clearInterval(this.#timer)
@@ -283,7 +288,7 @@ export class Tool extends PaperScopeItem {
             this._lastPoint = this._point
             // Not moving, but keep the time of the last report:
             this._velocity = new Point()
-            this._elapsed = this.#eventInterval / 1000
+            this._elapsed = interval / 1000
             this._moveCount++
             if (this.responds('mousedrag')) {
               this.emit('mousedrag', new ToolEvent(this, 'mousedrag', event))
@@ -291,7 +296,7 @@ export class Tool extends PaperScopeItem {
           } else {
             clearInterval(this.#timer)
           }
-        }, this.#eventInterval)
+        }, interval)
       }
     } else if (mouse.up) {
       clearInterval(this.#timer)
