@@ -6,6 +6,9 @@
     "declaration": true,
     "emitDeclarationOnly": true,
     "rewriteRelativeImportExtensions": true,
+    // Leave out what's marked @internal, such as the linked points, which the
+    // public types only name as Point and Size:
+    "stripInternal": true,
     "rootDir": "src",
     "outDir": "dist/types"
   },

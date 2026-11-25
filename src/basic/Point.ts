@@ -1107,6 +1107,7 @@ export interface Point {
  * through setting itself again on the property that produced it.
  *
  * @private
+ * @internal
  */
 export class LinkedPoint extends Point {
   #x: number

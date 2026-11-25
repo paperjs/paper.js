@@ -84,7 +84,10 @@ import type { FillRule } from '../values/region.ts'
 import type { StrokeCap, StrokeJoin } from '../values/path.ts'
 import type { BlendMode } from '../canvas/blendModes.ts'
 
-type Handler = (this: Item, ...args: any[]) => any
+// A handler of events, called on the item, with the item's own type. Typed
+// through a method, whose parameters TypeScript compares both ways, so items
+// with handlers for their own type stay assignable to their base classes:
+type Handler<T = Item> = { handle(this: T, ...args: any[]): any }['handle']
 
 export type EffectProps = {
   type: string
@@ -2772,8 +2775,9 @@ export class Item extends Emitter {
    *
    * @return an array containing the removed items
    */
-  // Typed loosely, as Path#clear() returns its removed segments:
-  clear(): any[] | null {
+  // Typed loosely, as Path#clear() returns its removed segments, and
+  // Raster#clear() nothing:
+  clear(): any[] | null | undefined {
     return this.removeChildren()
   }
 
@@ -4409,8 +4413,8 @@ export interface Item {
    *     this.rotate(3);
    * }
    */
-  get onFrame(): Handler | null
-  set onFrame(func: Handler | null)
+  get onFrame(): Handler<this> | null
+  set onFrame(func: Handler<this> | null)
 
   /**
    * The function to be called when the mouse button is pushed down on the
@@ -4458,8 +4462,8 @@ export interface Item {
    *     }
    * }
    */
-  get onMouseDown(): Handler | null
-  set onMouseDown(func: Handler | null)
+  get onMouseDown(): Handler<this> | null
+  set onMouseDown(func: Handler<this> | null)
 
   /**
    * The function to be called when the mouse position changes while the mouse
@@ -4486,8 +4490,8 @@ export interface Item {
    *     path.position += event.delta;
    * }
    */
-  get onMouseDrag(): Handler | null
-  set onMouseDrag(func: Handler | null)
+  get onMouseDrag(): Handler<this> | null
+  set onMouseDrag(func: Handler<this> | null)
 
   /**
    * The function to be called when the mouse button is released over the item.
@@ -4515,8 +4519,8 @@ export interface Item {
    *     this.fillColor = 'red';
    * }
    */
-  get onMouseUp(): Handler | null
-  set onMouseUp(func: Handler | null)
+  get onMouseUp(): Handler<this> | null
+  set onMouseUp(func: Handler<this> | null)
 
   /**
    * The function to be called when the mouse clicks on the item. The function
@@ -4564,8 +4568,8 @@ export interface Item {
    *     }
    * }
    */
-  get onClick(): Handler | null
-  set onClick(func: Handler | null)
+  get onClick(): Handler<this> | null
+  set onClick(func: Handler<this> | null)
 
   /**
    * The function to be called when the mouse double clicks on the item. The
@@ -4613,8 +4617,8 @@ export interface Item {
    *     }
    * }
    */
-  get onDoubleClick(): Handler | null
-  set onDoubleClick(func: Handler | null)
+  get onDoubleClick(): Handler<this> | null
+  set onDoubleClick(func: Handler<this> | null)
 
   /**
    * The function to be called repeatedly while the mouse moves over the item.
@@ -4642,8 +4646,8 @@ export interface Item {
    *     this.opacity = Math.random();
    * }
    */
-  get onMouseMove(): Handler | null
-  set onMouseMove(func: Handler | null)
+  get onMouseMove(): Handler<this> | null
+  set onMouseMove(func: Handler<this> | null)
 
   /**
    * The function to be called when the mouse moves over the item. This
@@ -4704,8 +4708,8 @@ export interface Item {
    *     path.onMouseLeave = leave;
    * }
    */
-  get onMouseEnter(): Handler | null
-  set onMouseEnter(func: Handler | null)
+  get onMouseEnter(): Handler<this> | null
+  set onMouseEnter(func: Handler<this> | null)
 
   /**
    * The function to be called when the mouse moves out of the item.
@@ -4733,8 +4737,8 @@ export interface Item {
    *     this.fillColor = 'red';
    * }
    */
-  get onMouseLeave(): Handler | null
-  set onMouseLeave(func: Handler | null)
+  get onMouseLeave(): Handler<this> | null
+  set onMouseLeave(func: Handler<this> | null)
 
   /**
    * The function to be called whenever the item is drawn: in views, in
@@ -4782,8 +4786,8 @@ export interface Item {
    *     ctx.stroke();
    * }
    */
-  get onDraw(): Handler | null
-  set onDraw(func: Handler | null)
+  get onDraw(): Handler<this> | null
+  set onDraw(func: Handler<this> | null)
 
   /**
    * The function to be called when the selection of the selected item is
@@ -4830,14 +4834,14 @@ export interface Item {
    *     return false;
    * }
    */
-  get onDrawSelection(): Handler | null
-  set onDrawSelection(func: Handler | null)
+  get onDrawSelection(): Handler<this> | null
+  set onDrawSelection(func: Handler<this> | null)
 
   // Only for external sources, e.g. Raster:
-  get onLoad(): Handler | null
-  set onLoad(func: Handler | null)
-  get onError(): Handler | null
-  set onError(func: Handler | null)
+  get onLoad(): Handler<this> | null
+  set onLoad(func: Handler<this> | null)
+  get onError(): Handler<this> | null
+  set onError(func: Handler<this> | null)
 
   /**
    * {@grouptitle Event Handling}

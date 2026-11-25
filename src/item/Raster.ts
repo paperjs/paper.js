@@ -42,7 +42,10 @@ import type { Project } from './Project.ts'
 // The quality of the image smoothing of rasters:
 export type RasterSmoothing = 'low' | 'medium' | 'high' | 'off'
 
-type Handler = (this: Raster, ...args: any[]) => any
+// A handler of events, called on the item, with the item's own type. Typed
+// through a method, whose parameters TypeScript compares both ways, so items
+// with handlers for their own type stay assignable to their base classes:
+type Handler<T = Raster> = { handle(this: T, ...args: any[]): any }['handle']
 type Image = HTMLImageElement | HTMLCanvasElement
 
 let sampleContext: CanvasRenderingContext2D = null
@@ -852,12 +855,12 @@ export class Raster extends Item {
     return matrix ? matrix._transformBounds(rect) : rect
   }
 
-  _hitTestSelf(point: Point): HitResult | undefined {
-    if (this._contains(point)) {
-      return new HitResult('pixel', this, {
-        offset: point.add(this._size.divide(2)).round()
-      })
-    }
+  _hitTestSelf(point: Point): HitResult | null {
+    return this._contains(point)
+      ? new HitResult('pixel', this, {
+          offset: point.add(this._size.divide(2)).round()
+        })
+      : null
   }
 
   _draw(ctx: CanvasRenderingContext2D, param: any, viewMatrix: Matrix) {
@@ -997,14 +1000,14 @@ export interface Raster {
    *     console.log('Now the image is definitely ready.');
    * });
    */
-  get onLoad(): Handler | null
-  set onLoad(func: Handler | null)
+  get onLoad(): Handler<this> | null
+  set onLoad(func: Handler<this> | null)
 
   /**
    *
    * The event handler function to be called when there is an error loading
    * the underlying image.
    */
-  get onError(): Handler | null
-  set onError(func: Handler | null)
+  get onError(): Handler<this> | null
+  set onError(func: Handler<this> | null)
 }

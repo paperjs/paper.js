@@ -346,7 +346,7 @@ export class Group extends Item {
     point: Point,
     options: any,
     viewMatrix?: Matrix
-  ): HitResult | undefined {
+  ): HitResult | null {
     // A group is hit wherever one of its children is hit, as in Illustrator.
     // Without filters or the collecting of all hits, the children were
     // already tested without result:
@@ -366,6 +366,7 @@ export class Group extends Item {
       }
       return res
     }
+    return null
   }
 
   _draw(ctx: CanvasRenderingContext2D, param: any) {

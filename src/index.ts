@@ -23,8 +23,15 @@ core.use(boolean, offset, svg, core.effects, core.raster, core.tween)
 
 // Make the classes and namespaces properties of every scope, enumerable for
 // PaperScope#install() and PaperScript, which enumerate them:
+type Members = Omit<
+  typeof core,
+  'registerClasses' | 'use' | 'effects' | 'raster' | 'tween'
+> & {
+  readonly document: Document
+  readonly window: Window
+}
 const { registerClasses, use, effects, raster, tween, ...classes } = core
-const members = {
+const members: Members = {
   ...classes,
   get document() {
     return getDocument()
@@ -34,8 +41,6 @@ const members = {
   }
 }
 inject(PaperScope.prototype, members, { enumerable: true })
-
-type Members = typeof members
 
 declare module './scope/PaperScope.ts' {
   interface PaperScope extends Members {}

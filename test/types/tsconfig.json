@@ -1,0 +1,14 @@
+{
+  // Checks the published declarations as an app with strict settings uses
+  // them, see `pnpm test:types`, after `pnpm build`:
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": false
+  },
+  "include": ["*.ts"]
+}

@@ -832,7 +832,7 @@ export class TextItem extends Item {
     }
   }
 
-  _hitTestSelf(point: Point, options: any): HitResult | undefined {
+  _hitTestSelf(point: Point, options: any): HitResult | null {
     if (options.fill) {
       // The glyph outlines aren't known, so hit the letters' boxes, also
       // within the tolerance around them (#632):
@@ -864,6 +864,7 @@ export class TextItem extends Item {
         }
       }
     }
+    return null
   }
 
   static {
