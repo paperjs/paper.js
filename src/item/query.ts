@@ -71,7 +71,7 @@ export function getItems(
   matrix?: Matrix | null,
   firstOnly?: boolean
 ): Item[] {
-  const items = []
+  const items: Item[] = []
   const obj = typeof options === 'object' && options
   const overlapping = obj && obj.overlapping
   const inside = obj && obj.inside

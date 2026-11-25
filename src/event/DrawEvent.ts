@@ -30,7 +30,7 @@ export class DrawEvent extends Base {
   declare item: Item
   declare context: CanvasRenderingContext2D
   declare matrix: Matrix
-  declare view: View
+  declare view: View | null
   declare pixelRatio: number // Only for onDraw.
   declare size: number // Only for onDrawSelection.
   declare color: Color // Only for onDrawSelection.

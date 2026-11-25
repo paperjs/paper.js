@@ -55,7 +55,7 @@ export function setStyles(
   ctx: CanvasRenderingContext2D,
   param: DrawParam,
   viewMatrix: Matrix,
-  strokeMatrix?: Matrix,
+  strokeMatrix?: Matrix | null,
   style: Style = item._style
 ) {
   // We can access internal properties since we're only using this on
@@ -100,7 +100,7 @@ export function paintItem(
   ctx: CanvasRenderingContext2D,
   param: DrawParam,
   viewMatrix: Matrix,
-  strokeMatrix?: Matrix
+  strokeMatrix?: Matrix | null
 ) {
   const style = item._style
   const hasFill = style.hasFill()
@@ -164,7 +164,7 @@ export function drawItem(
   item: Item,
   ctx: CanvasRenderingContext2D,
   param: DrawParam,
-  parentStrokeMatrix?: Matrix
+  parentStrokeMatrix?: Matrix | null
 ) {
   // Each time the project gets drawn, it's _updateVersion is increased.
   // Keep the _updateVersion of drawn items in sync, so we have an easy
@@ -247,12 +247,13 @@ export function drawItem(
     param.clip
   )
   const pixelRatio = param.pixelRatio || 1
-  let mainCtx: CanvasRenderingContext2D
-  let itemOffset: Point
-  let prevOffset: Point
-  let itemSize: Size
+  // Set when drawing into a temporary canvas, not directly:
+  let mainCtx!: CanvasRenderingContext2D
+  let itemOffset!: Point
+  let prevOffset: Point | undefined
+  let itemSize!: Size
   let buffer: any
-  let isFresh: boolean
+  let isFresh = false
   if (!direct) {
     // Buffered groups drawn by a view keep their temporary canvas, and
     // only draw into it again when it's stale, see Group#buffered.
@@ -352,7 +353,8 @@ export function drawItem(
         ctx.clearRect(0, 0, bufferCanvas.width, bufferCanvas.height)
       }
     } else {
-      ctx = getContext(itemSize, { minimum: true })
+      // Drawing has canvases:
+      ctx = getContext(itemSize, { minimum: true })!
     }
     if (pixelRatio !== 1) {
       ctx.scale(pixelRatio, pixelRatio)
@@ -372,19 +374,16 @@ export function drawItem(
   const clip = !direct && param.clipItem
   // Clip items only clip, and the children of compound paths only add
   // to the path of their parent, so neither emits:
-  const event = (
-    item.responds('draw') &&
-    !isFresh &&
-    !param.clip &&
-    !param.dontStart &&
-    new DrawEvent({
-      item: item,
-      context: ctx,
-      matrix: viewMatrix.clone(),
-      pixelRatio,
-      view: param.view ?? null
-    })
-  )
+  const event =
+    item.responds('draw') && !isFresh && !param.clip && !param.dontStart
+      ? new DrawEvent({
+          item: item,
+          context: ctx,
+          matrix: viewMatrix.clone(),
+          pixelRatio,
+          view: param.view ?? null
+        })
+      : null
   // If we're drawing with a strokeMatrix, the CTM is reset either way
   // so we don't need to set it, except when we also have to draw a
   // clipItem, or emit the draw event in the item's coordinates.
@@ -411,7 +410,7 @@ export function drawItem(
 
     ).applyToContext(ctx)
     drawItem(
-      param.clipItem,
+      clip,
       ctx,
       Object.assign(Object.create(param), {
         clip: true,
@@ -479,7 +478,9 @@ export function drawItem(
       opacity,
       // Calculate the pixel offset of the temporary canvas to the
       // main canvas. We also need to factor in the pixel-ratio.
-      itemOffset.subtract(prevOffset).multiply(pixelRatio),
+      (prevOffset ? itemOffset.subtract(prevOffset) : itemOffset).multiply(
+        pixelRatio
+      ),
       itemSize
     )
     if (shadow) {
@@ -577,7 +578,7 @@ export function drawSelection(
       return
     }
     if (itemSelected) {
-      item._drawSelected(ctx, mx, selectionItems)
+      item._drawSelected?.(ctx, mx, selectionItems)
     }
     if (positionSelected) {
       // Convert position from the parent's coordinates system to the

@@ -60,7 +60,7 @@ export function removeEffects(
   end?: number
 ): EffectInstance[] {
   const list = item._effects
-  let removed = []
+  let removed: EffectInstance[] = []
   if (list) {
     removed = splice(list, null, start, (end ?? list.length) - start)
     for (const instance of removed) {
@@ -118,12 +118,15 @@ export function getEffectArt(item: Item): Item {
 }
 
 // NOTE: Documentation is in Item#getPreviewBounds()
-export function getPreviewBounds(item: Item, matrix?: Matrix): Rectangle {
+export function getPreviewBounds(
+  item: Item,
+  matrix?: Matrix | null
+): Rectangle {
   const output = getEffectOutput(item)
   const children = item._children
   // Without effects in it, it's the item's own:
   if (output || children && hasEffects(item)) {
-    let bounds = null
+    let bounds: Rectangle | null = null
     if (output) {
       bounds = output.strokeBounds
     } else {

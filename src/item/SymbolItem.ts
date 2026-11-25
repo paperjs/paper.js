@@ -124,7 +124,7 @@ export class SymbolItem extends Item {
   }
 
   _getBounds(
-    matrix: Matrix,
+    matrix: Matrix | null,
     options: BoundsOptions
   ): { rect: Rectangle; nonscaling: boolean } {
     const item = this._definition._item
@@ -138,7 +138,7 @@ export class SymbolItem extends Item {
   _hitTestSelf(
     point: Point,
     options: HitTestOptions,
-    viewMatrix?: Matrix
+    viewMatrix?: Matrix | null
   ): HitResult | null {
     // We need to call definition item hit test with `options.all = false`,
     // as otherwise it would populate the array with its own matches.

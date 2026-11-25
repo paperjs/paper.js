@@ -404,7 +404,7 @@ export class View extends Emitter {
   _animateItem(item: Item, animate: boolean) {
     const items = this.#frameItems
     if (animate) {
-      items[item._id] = {
+      items[item.id] = {
         item,
         // Additional information for the event callback
         time: 0,
@@ -414,7 +414,7 @@ export class View extends Emitter {
         this.on('frame', this.#handleFrameItems)
       }
     } else {
-      delete items[item._id]
+      delete items[item.id]
       if (--this.#frameItemCount === 0) {
         // If this is the last one, just stop animating straight away.
         this.off('frame', this.#handleFrameItems)
@@ -1370,7 +1370,7 @@ export class View extends Emitter {
 
   static create(
     project: Project,
-    element: HTMLCanvasElement | string | SizeLike
+    element: HTMLCanvasElement | OffscreenCanvas | string | SizeLike | null
   ): View {
     const document = getDocument()
     const canvas =

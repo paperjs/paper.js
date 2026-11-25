@@ -77,8 +77,8 @@ export class SymbolDefinition extends ItemDefinition {
    * @param props the properties to set on the definition
    * @option [props.name] {String} the name of the symbol
    */
-  constructor(item: Item, props: { name?: string })
-  constructor(item?: Item, props?: { name?: string }) {
+  constructor(item: Item, props: { name?: string | null })
+  constructor(item?: Item, props?: { name?: string | null }) {
     super()
     if (item) {
       this._setItem(item)

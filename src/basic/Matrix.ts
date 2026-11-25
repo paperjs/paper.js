@@ -187,7 +187,7 @@ export class Matrix extends Base {
    * @param matrix the matrix to compare this matrix to
    * @return {@true if the matrices are equal}
    */
-  equals(matrix: Matrix): boolean {
+  equals(matrix?: Matrix | null): boolean {
     const v = this._values
     const m = matrix?._values
     return !!(
@@ -403,7 +403,7 @@ export class Matrix extends Base {
    * @param matrix the matrix to append
    * @return this matrix, modified
    */
-  append(matrix: Matrix): this {
+  append(matrix?: Matrix | null): this {
     if (matrix) {
       appendMatrix(this._values, matrix._values)
       this.#changed()
@@ -418,7 +418,7 @@ export class Matrix extends Base {
    * @param matrix the matrix to prepend
    * @return this matrix, modified
    */
-  prepend(matrix: Matrix): this {
+  prepend(matrix?: Matrix | null): this {
     if (matrix) {
       prependMatrix(this._values, matrix._values)
       this.#changed()
@@ -434,7 +434,7 @@ export class Matrix extends Base {
    * @param matrix the matrix to append
    * @return the newly created matrix
    */
-  appended(matrix: Matrix): Matrix {
+  appended(matrix?: Matrix | null): Matrix {
     return this.clone().append(matrix)
   }
 
@@ -446,7 +446,7 @@ export class Matrix extends Base {
    * @param matrix the matrix to prepend
    * @return the newly created matrix
    */
-  prepended(matrix: Matrix): Matrix {
+  prepended(matrix?: Matrix | null): Matrix {
     return this.clone().prepend(matrix)
   }
 

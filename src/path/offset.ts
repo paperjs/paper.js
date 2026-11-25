@@ -249,11 +249,11 @@ function setOffsetProfiles(
         : loc2 ?? loc1
     if (loc) {
       stop.offset = loc.offset
-      ;(profiles[loc.path!._id] ??= []).push(stop)
+      ;(profiles[loc.path!.id] ??= []).push(stop)
     }
   }
   for (const path of (result._children ?? [result]) as Path[]) {
-    path.strokeProfile = profiles[path._id] ?? null
+    path.strokeProfile = profiles[path.id] ?? null
   }
 }
 

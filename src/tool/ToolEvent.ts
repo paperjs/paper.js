@@ -215,7 +215,7 @@ export class ToolEvent extends Event {
         let { item } = result
         // Find group parent, but exclude layers
         let parent = item._parent
-        while (/^(Group|CompoundPath)$/.test(parent.className)) {
+        while (parent && /^(Group|CompoundPath)$/.test(parent.className)) {
           item = parent
           parent = parent._parent
         }

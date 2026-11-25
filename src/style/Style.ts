@@ -139,7 +139,7 @@ for (const key in groupDefaults) {
 interface StyleOwner {
   _project?: Project
   _changed(flags: number): void
-  _getStyles(style: Style, key: string, setting?: boolean): Style[]
+  _getStyles(style: Style, key: string, setting?: boolean): Style[] | null
 }
 
 // Inject style getters and setters into the Item class, which redirect calls
@@ -257,7 +257,7 @@ export class Style extends Base {
   // We keep values in a separate object that we can iterate over.
   _values: Record<string, any> = {}
   _defaults: Record<string, any>
-  #owner: StyleOwner
+  #owner: StyleOwner | null | undefined
   #project: Project
 
   // DOCS: why isn't the example code showing up?
@@ -268,7 +268,11 @@ export class Style extends Base {
    *
    * @param style
    */
-  constructor(style?: object, _owner?: StyleOwner, _project?: Project) {
+  constructor(
+    style?: object | null,
+    _owner?: StyleOwner | null,
+    _project?: Project
+  ) {
     super()
     this.#owner = _owner
     this.#project = _owner?._project ?? _project ?? getScope().project

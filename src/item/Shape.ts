@@ -432,7 +432,7 @@ export class Shape extends Item {
     ctx: CanvasRenderingContext2D,
     param: DrawParam,
     viewMatrix: Matrix,
-    strokeMatrix?: Matrix
+    strokeMatrix?: Matrix | null
   ) {
     const style = this._style
     const hasFill = style.hasFill()
@@ -517,7 +517,7 @@ export class Shape extends Item {
     return !(this.hasFill() && this.hasStroke())
   }
 
-  _getBounds(matrix: Matrix, options: BoundsOptions): Rectangle {
+  _getBounds(matrix: Matrix | null, options: BoundsOptions): Rectangle {
     // set() may transform the shape before it sets its size:
     const { width, height } = this._size ?? new Size()
     let rect = new Rectangle(-width / 2, -height / 2, width, height)
@@ -570,8 +570,8 @@ export class Shape extends Item {
   _hitTestSelf(
     point: Point,
     options: HitTestOptions,
-    viewMatrix?: Matrix,
-    strokeMatrix?: Matrix
+    viewMatrix?: Matrix | null,
+    strokeMatrix?: Matrix | null
   ): HitResult | null {
     // Hit-test the shape as its path, see #toPath(), which measures strokes
     // and tolerance where they're drawn (#2334), but without its segments,

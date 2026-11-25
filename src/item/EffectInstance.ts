@@ -37,11 +37,11 @@ export class EffectInstance extends Base {
   [key: string]: any
 
   #type: string
-  #effect: Effect
-  #linkedParameters: Record<string, any>
+  #effect: Effect | null
+  #linkedParameters: Record<string, any> | null
   _visible: boolean
-  _item: Item
-  _index: number
+  _item: Item | null
+  _index: number | null
   _parameters: Record<string, any>
 
   // Items create their instances from plain objects, see Item#addEffect():
@@ -55,7 +55,7 @@ export class EffectInstance extends Base {
 
   // Takes the parameters as they are, with the defaults of the effect for
   // the ones that they don't set:
-  #setParameters(parameters: Record<string, any>) {
+  #setParameters(parameters?: Record<string, any>) {
     this._parameters = { ...parameters }
     this.#setEffect(Effect.get(this.#type))
   }
@@ -192,7 +192,8 @@ export class EffectInstance extends Base {
    * @return {@true if the instance was removed}
    */
   remove(): boolean {
-    return !!this._item?.removeEffect(this._index)
+    // Instances on items have indices:
+    return !!this._item?.removeEffect(this._index!)
   }
 
   /**

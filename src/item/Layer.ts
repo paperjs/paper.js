@@ -78,8 +78,8 @@ export class Layer extends Group {
    * Private helper to return the owner, either the parent, or the project
    * for top-level layers, if they are inserted in it.
    */
-  _getOwner(): Item | Project {
-    return this._parent || this._index != null && this._project
+  _getOwner(): Item | Project | null {
+    return this._parent || (this._index != null ? this._project : null)
   }
 
   isInserted(): boolean {

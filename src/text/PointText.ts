@@ -119,7 +119,7 @@ export class PointText extends TextItem {
     return lines
   }
 
-  _getBounds(matrix: Matrix, options: any): Rectangle {
+  _getBounds(matrix: Matrix | null, options: any): Rectangle {
     const lines = this._getLayout()
     let rect = new Rectangle()
     let strokeWidth = 0

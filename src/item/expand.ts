@@ -34,7 +34,8 @@ export function expandItem(item: Item, options: ExpandOptions): Item {
   let result = item
   // Layers can't be replaced, so they keep their own effects:
   if (item._hasEffects() && !(item instanceof Layer)) {
-    result = getEffectReplacement(item)
+    // Items with effects have their output:
+    result = getEffectReplacement(item)!
   } else if (item instanceof SymbolItem) {
     result = item._createEmbedded()
   } else if (item instanceof Shape) {
@@ -84,7 +85,8 @@ export function getEffectReplacement(item: Item): Item | null {
 // Returns the pattern fill of the path as the pattern's tiles, clipped by the
 // path, below the path for its stroke:
 function expandFill(path: PathItem): Item {
-  const { pattern, matrix } = path.fillColor
+  // Only called for pattern fills:
+  const { pattern, matrix } = path.fillColor!
   const mask = path.clone({ insert: false })
   const tiles = pattern._getTiles(path.internalBounds, matrix)
   tiles.transform(path._matrix)
