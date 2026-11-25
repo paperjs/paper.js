@@ -24,6 +24,9 @@ jobs:
         run: pnpm eslint
       - name: Build
         run: pnpm build
+      # Compiles apps against the built declarations, with strict settings:
+      - name: Check the types
+        run: pnpm test:types
       - name: Test
         run: pnpm test:node
       # Moves the second operand of every boolean operation in the tests and

@@ -601,6 +601,7 @@ export class Size extends Base {
  * through setting itself again on the property that produced it.
  *
  * @private
+ * @internal
  */
 export class LinkedSize extends Size {
   #width: number

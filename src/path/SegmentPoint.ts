@@ -18,6 +18,7 @@ import type { Segment } from './Segment.ts'
  * An internal version of Point that notifies its segment of each change
  *
  * @private
+ * @internal
  */
 export class SegmentPoint extends Point {
   // Not private, as Segment, Curve and Path read and write the coordinates
