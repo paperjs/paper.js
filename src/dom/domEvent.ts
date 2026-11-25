@@ -64,7 +64,10 @@ export function removeEvents(
  *
  * @private
  */
-export function getEventOffset(event: MouseEvent, target?: Element): Point {
+export function getEventOffset(
+  event: MouseEvent,
+  target?: Element | null
+): Point {
   const { documentElement } = getDocument()!
   // Remove target offsets from page coordinates
   return new Point(
