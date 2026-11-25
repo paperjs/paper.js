@@ -41,26 +41,39 @@ export async function buildAll() {
   remove('esm')
   remove('types')
   buildModules(path.join(dist, 'esm'))
-  for (const [name, files] of Object.entries(scripts)) {
+  for (const name of Object.keys(scripts)) {
     for (const minify of [false, true]) {
       const file = `${name}${minify ? '.min' : ''}.js`
       remove(file)
       remove(`${file}.map`)
-      await build({
-        input: `\0${name}`,
-        plugins: [getScriptPlugin(name, files)],
-        output: {
-          file: path.join(dist, file),
-          format: 'iife',
-          name: 'paper',
-          exports: 'default',
-          banner: getBanner(files.length > 1),
-          sourcemap: true,
-          minify
-        }
-      })
+      await buildScript(name, { file: path.join(dist, file), minify })
     }
   }
+}
+
+// Build the script file, or return its code without a file. The script files
+// bundle the sources, which `sideEffects` in package.json doesn't describe,
+// as it lists the modules in dist/esm. Rolldown applies it to them anyway,
+// also with `moduleSideEffects: true`, and drops imports for their effects,
+// such as the hosted mode's, so the sources are named here:
+export async function buildScript(name, { file, minify = false } = {}) {
+  const files = scripts[name]
+  const { output } = await build({
+    input: `\0${name}`,
+    plugins: [getScriptPlugin(name, files)],
+    treeshake: { moduleSideEffects: id => id.startsWith(resolve('src')) },
+    write: !!file,
+    output: {
+      file,
+      format: 'iife',
+      name: 'paper',
+      exports: 'default',
+      banner: getBanner(files.length > 1),
+      sourcemap: !!file,
+      minify
+    }
+  })
+  return output[0].code
 }
 
 // Transpile each module of the sources on its own, as they are laid out, so

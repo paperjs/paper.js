@@ -222,6 +222,35 @@ describe('paper/boolean and paper/offset', () => {
       equals(output, [false, true])
     })
 
+    test('The script files have the features of their entries', async () => {
+      const fs = await import('node:fs')
+      const os = await import('node:os')
+      const path = await import('node:path')
+      const { buildScript } = await import('../../build.mjs')
+      const root = fs.mkdtempSync(path.join(os.tmpdir(), 'paper-'))
+      const features = {}
+      for (const name of ['paper-core', 'paper-full', 'paper-hosted']) {
+        // The scripts set the global `paper`, so run them as scripts:
+        const file = path.join(root, `${name}.cjs`)
+        fs.writeFileSync(
+          file,
+          `${await buildScript(name)}
+          console.log(JSON.stringify([
+            !!paper.PaperScript,
+            !!paper.HostItem,
+            'host' in paper.Project.prototype
+          ]))`
+        )
+        features[name] = JSON.parse(await runFile(file))
+      }
+      fs.rmSync(root, { recursive: true })
+      equals(features, {
+        'paper-core': [false, false, false],
+        'paper-full': [true, false, false],
+        'paper-hosted': [true, true, true]
+      })
+    })
+
     test('Apps bundle only what they use of the modules', async () => {
       const fs = await import('node:fs')
       const os = await import('node:os')
