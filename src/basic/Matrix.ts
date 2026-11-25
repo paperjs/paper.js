@@ -748,7 +748,10 @@ export class Matrix extends Base {
    * Returns the horizontal and vertical half-extents of a circle of the
    * given radius, transformed by the matrix, if any.
    */
-  static _getCircleExtents(radius: number, matrix?: Matrix): number[] {
+  static _getCircleExtents(
+    radius: number,
+    matrix?: Matrix | null
+  ): number[] {
     if (!matrix) return [radius, radius]
     // x = radius * (a * cos(t) + c * sin(t)) is at most
     // radius * sqrt(a² + c²), and y the same with b and d:

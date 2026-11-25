@@ -65,8 +65,8 @@ export class Curve extends Base {
   _path: Path | null
   _segment1: Segment
   _segment2: Segment
-  #length: number
-  #bounds: Record<string, Rectangle>
+  #length: number | undefined
+  #bounds: Record<string, Rectangle> | undefined
 
   /**
    * Creates a new curve object between two segments, which are copied.
@@ -113,12 +113,12 @@ export class Curve extends Base {
   constructor(arg0?: any, arg1?: any, arg2?: any, arg3?: any) {
     super()
     const count = arguments.length
-    let segment1: Segment
-    let segment2: Segment
-    let point1: PointLike
-    let point2: PointLike
-    let handle1: PointLike
-    let handle2: PointLike
+    let segment1: Segment | undefined
+    let segment2: Segment | undefined
+    let point1: PointLike | undefined
+    let point2: PointLike | undefined
+    let handle1: PointLike | undefined
+    let handle2: PointLike | undefined
     // The following code has to either set segment1 & segment2,
     // or point1, point2, handle1 & handle2. At the end, the internal
     // segments are created accordingly.
@@ -219,7 +219,7 @@ export class Curve extends Base {
    *     associated points of inflection for serpentine curves, loops, cusps,
          etc
    */
-  classify(): { type: string; roots: number[] } {
+  classify(): { type: string; roots: number[] | null } {
     return classifyCurve(this.values)
   }
 
@@ -302,14 +302,14 @@ export class Curve extends Base {
   /**
    * The path that the curve belongs to.
    */
-  get path(): Path {
+  get path(): Path | null {
     return this._path
   }
 
   /**
    * The index of the curve in the {@link Path#curves} array.
    */
-  get index(): number {
+  get index(): number | null {
     return this._segment1._index
   }
 
@@ -317,14 +317,13 @@ export class Curve extends Base {
    * The next curve in the {@link Path#curves} array that the curve
    * belongs to.
    */
-  get next(): Curve {
-    const curves = this._path?._curves
+  get next(): Curve | null {
+    const path = this._path
+    const curves = path?._curves
     return (
-      (
-        curves && (
-          curves[this._segment1._index + 1] ||
-          this._path._closed && curves[0]
-        )
+      curves && (
+        curves[this._segment1._index! + 1] ||
+        path!._closed && curves[0]
       ) ||
       null
     )
@@ -334,14 +333,13 @@ export class Curve extends Base {
    * The previous curve in the {@link Path#curves} array that the curve
    * belongs to.
    */
-  get previous(): Curve {
-    const curves = this._path?._curves
+  get previous(): Curve | null {
+    const path = this._path
+    const curves = path?._curves
     return (
-      (
-        curves && (
-          curves[this._segment1._index - 1] ||
-          this._path._closed && curves[curves.length - 1]
-        )
+      curves && (
+        curves[this._segment1._index! - 1] ||
+        path!._closed && curves.at(-1)
       ) ||
       null
     )
@@ -364,7 +362,7 @@ export class Curve extends Base {
   isLast(): boolean {
     const path = this._path
     return (
-      path && this._segment1._index === path._curves.length - 1 ||
+      path && this._segment1._index === path._curves!.length - 1 ||
       false
     )
   }
@@ -409,7 +407,7 @@ export class Curve extends Base {
   get points(): Point[] {
     // Convert to array of absolute points
     const coords = this.values
-    const points = []
+    const points: Point[] = []
     for (let i = 0; i < 8; i += 2) {
       points.push(new Point(coords[i], coords[i + 1]))
     }
@@ -473,8 +471,9 @@ export class Curve extends Base {
    *     valid, `null` otherwise
    * @see #divideAtTime(time)
    */
-  divideAt(location: number | CurveLocation): Curve {
-    return this.divideAtTime(getLocationTime(this, location))
+  divideAt(location: number | CurveLocation): Curve | null {
+    const time = getLocationTime(this, location)
+    return time == null ? null : this.divideAtTime(time)
   }
 
   /**
@@ -489,11 +488,11 @@ export class Curve extends Base {
    *     within the valid range, `null` otherwise.
    * @see #divideAt(location)
    */
-  divideAtTime(time: number): Curve {
+  divideAtTime(time: number): Curve | null {
     // Only divide if not at the beginning or end.
     const tMin = CURVETIME_EPSILON
     const tMax = 1 - tMin
-    let res = null
+    let res: Curve | null = null
     if (time >= tMin && time <= tMax) {
       const [left, right] = subdivideCurve(this.values, time)
       const setHandles = this.hasHandles()
@@ -512,15 +511,15 @@ export class Curve extends Base {
       const y = left[7]
       const segment = new Segment(
         new Point(x, y),
-        setHandles && new Point(left[4] - x, left[5] - y),
-        setHandles && new Point(right[2] - x, right[3] - y)
+        setHandles ? new Point(left[4] - x, left[5] - y) : null,
+        setHandles ? new Point(right[2] - x, right[3] - y) : null
       )
       // Insert it in the segments list, if needed:
       if (path) {
         // By inserting at segment1.index + 1, we make sure to insert at
         // the end if this curve is a closing curve of a closed path,
         // as with segment2.index it would be inserted at 0.
-        path.insert(segment1._index + 1, segment)
+        path.insert(segment1._index! + 1, segment)
         // The newly inserted segment is the start of the next curve:
         res = this.next
       } else {
@@ -543,7 +542,7 @@ export class Curve extends Base {
    * @return the newly created path after splitting, if any
    * @see Path#splitAt(location)
    */
-  splitAt(location: number | CurveLocation): Path {
+  splitAt(location: number | CurveLocation): Path | null {
     const path = this._path
     return path?.splitAt(location) ?? null
   }
@@ -558,8 +557,9 @@ export class Curve extends Base {
    * @return the newly created path after splitting, if any
    * @see Path#splitAt(location)
    */
-  splitAtTime(time: number): Path {
-    return this.splitAt(this.getLocationAtTime(time))
+  splitAtTime(time: number): Path | null {
+    const location = this.getLocationAtTime(time)
+    return location && this.splitAt(location)
   }
 
   /**
@@ -606,13 +606,11 @@ export class Curve extends Base {
       // curve to the getSegment*Bounds() functions. Without a path,
       // there is no stroke, so the stroke bounds are the bounds.
       const path = this._path
-      const getBounds =
-        path && stroke ? getSegmentStrokeBounds : getSegmentBounds
-      bounds = this.#bounds[key] = getBounds(
-        [this._segment1, this._segment2],
-        false,
-        path
-      )
+      const segments = [this._segment1, this._segment2]
+      bounds = this.#bounds[key] =
+        path && stroke
+          ? getSegmentStrokeBounds(segments, false, path)
+          : getSegmentBounds(segments, false, path)
     }
     return bounds.clone()
   }
@@ -672,9 +670,9 @@ export class Curve extends Base {
    * @param curve the other curve to check against
    * @return {@true if the two lines are collinear}
    */
-  isCollinear(curve: Curve): boolean {
+  isCollinear(curve: Curve | null): boolean {
     return (
-      curve &&
+      !!curve &&
       this.isStraight() &&
       curve.isStraight() &&
       this.line.isCollinear(curve.line)
@@ -714,7 +712,7 @@ export class Curve extends Base {
    * @param offset the offset on the curve
    * @return the curve location at the specified offset
    */
-  getLocationAt(offset: number): CurveLocation {
+  getLocationAt(offset: number): CurveLocation | null {
     return this.getLocationAtTime(this.getTimeAt(offset))
   }
 
@@ -725,7 +723,7 @@ export class Curve extends Base {
    * @param time the curve-time parameter on the curve
    * @return the curve location at the specified curve-time parameter
    */
-  getLocationAtTime(time: number): CurveLocation {
+  getLocationAtTime(time: number | null): CurveLocation | null {
     return time != null && time >= 0 && time <= 1
       ? new CurveLocation(this, time)
       : null
@@ -745,7 +743,7 @@ export class Curve extends Base {
    * @return the curve-time parameter at the specified location, or
    *     `null` if the offset exceeds the length of the curve
    */
-  getTimeAt(offset: number, start?: number): number {
+  getTimeAt(offset: number, start?: number): number | null {
     return getCurveTimeAt(this.values, offset, start)
   }
 
@@ -835,7 +833,7 @@ export class Curve extends Base {
     const { values } = this
     const t = getNearestCurveTime(values, target)
     const pt = getCurvePoint(values, t)
-    return new CurveLocation(this, t, pt, null, target.getDistance(pt))
+    return new CurveLocation(this, t, pt, undefined, target.getDistance(pt))
   }
 
   /**
@@ -859,11 +857,9 @@ export class Curve extends Base {
     _returnFirst?: boolean
   ): CurveLocation[] {
     const self = !curves2
-    if (self) {
-      curves2 = curves1
-    }
+    const others = curves2 ?? curves1
     const length1 = curves1.length
-    const length2 = curves2.length
+    const length2 = others.length
     const values1 = new Array(length1)
     const values2 = self ? values1 : new Array(length2)
     const locations: CurveLocation[] = []
@@ -876,7 +872,7 @@ export class Curve extends Base {
     if (!self) {
       for (let i = 0; i < length2; i++) {
         values2[i] = getCurveValues(
-          curves2[i]._segment1, curves2[i]._segment2, matrix2
+          others[i]._segment1, others[i]._segment2, matrix2
         )
       }
     }
@@ -900,7 +896,7 @@ export class Curve extends Base {
           const index2 = collisions1[j]
           if (!self || index2 > index1) {
             addIntersections(
-              locations, include, curve1, v1, curves2[index2], values2[index2]
+              locations, include, curve1, v1, others[index2], values2[index2]
             )
           }
         }
@@ -1123,18 +1119,19 @@ export interface Curve {
 // same place. The filter leaves out the ones it rejects.
 function addIntersections(
   locations: CurveLocation[],
-  include: (location: CurveLocation) => boolean,
+  include: ((location: CurveLocation) => boolean) | null | undefined,
   curve1: Curve,
   v1: CurveValues,
   curve2?: Curve,
   v2?: CurveValues
 ) {
-  const intersections = curve2
-    ? getCurveIntersections(v1, v2, {
-        sharesStart: curve1.previous === curve2,
-        sharesEnd: curve1.next === curve2
-      })
-    : getCurveSelfIntersection(v1, curve1.previous === curve1)
+  const intersections =
+    curve2 && v2
+      ? getCurveIntersections(v1, v2, {
+          sharesStart: curve1.previous === curve2,
+          sharesEnd: curve1.next === curve2
+        })
+      : getCurveSelfIntersection(v1, curve1.previous === curve1)
   for (const [time1, time2, overlap] of intersections) {
     // NOTE: We don't pass points, because the values may be transformed by
     // the matrices of their paths, while the curves are not. CurveLocation

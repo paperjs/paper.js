@@ -145,9 +145,9 @@ export function getBoundsCacheKey(
  */
 export function getStrokeMatrix(
   item: Item,
-  matrix: Matrix,
+  matrix: Matrix | null | undefined,
   options?: BoundsOptions
-): Matrix {
+): Matrix | null {
   const parent = item.strokeScaling
     ? null
     : options?.internal
@@ -166,7 +166,7 @@ export function getStrokeMatrix(
       }
     }
   }
-  return mx?._shiftless()
+  return mx?._shiftless() ?? null
 }
 
 /**

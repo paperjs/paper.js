@@ -82,14 +82,14 @@ export class PathFlattener extends Base {
     const minSpan = 1 / (maxRecursion || 32)
     const segments = path._segments
     let segment1 = segments[0]
-    let segment2: Segment
+    let segment2: Segment | undefined
 
     // Iterate through all curves and compute the parts for each of them,
     // by recursively calling computeParts().
     function addCurve(segment1: Segment, segment2: Segment) {
       const curve = getCurveValues(segment1, segment2, matrix)
       curves.push(curve)
-      computeParts(curve, segment1._index, 0, 1)
+      computeParts(curve, segment1._index!, 0, 1)
     }
 
     function computeParts(
@@ -181,7 +181,7 @@ export class PathFlattener extends Base {
               v[0] + (v[6] - v[0]) * factor,
               v[1] + (v[7] - v[1]) * factor
             )
-          )
+          )!
         }
         return {
           index: part.index,

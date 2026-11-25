@@ -124,15 +124,16 @@ export class StrokeProfileStop extends Base {
    * before it.
    */
   get offset(): number {
-    const path = this._path
-    return path?._strokeProfile.getOffsetAt(this._index) ?? this._offset
+    // Stops on paths are in their profiles, with an index:
+    const profile = this._path?._strokeProfile
+    return profile ? profile.getOffsetAt(this._index!) : this._offset
   }
 
   set offset(offset: number) {
-    const path = this._path
-    if (path) {
-      this._index = path._strokeProfile.getIndexAt(offset)
-      path._strokeProfile.sort()
+    const profile = this._path?._strokeProfile
+    if (profile) {
+      this._index = profile.getIndexAt(offset)
+      profile.sort()
       this.#changed()
     } else {
       this._offset = offset

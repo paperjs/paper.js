@@ -362,8 +362,10 @@ export abstract class PathItem extends Item {
     let minLocation: CurveLocation | null = null
     for (const curve of this.curves) {
       const location = curve.getNearestLocation(target)
-      if (location._distance < minDistance) {
-        minDistance = location._distance
+      // Nearest locations have distances:
+      const distance = location._distance!
+      if (distance < minDistance) {
+        minDistance = distance
         minLocation = location
       }
     }

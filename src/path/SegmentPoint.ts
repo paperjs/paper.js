@@ -28,7 +28,7 @@ export class SegmentPoint extends Point {
   #owner: Segment
 
   constructor(
-    point: PointLike | null,
+    point: PointLike | null | undefined,
     owner: Segment,
     key: '_point' | '_handleIn' | '_handleOut'
   ) {

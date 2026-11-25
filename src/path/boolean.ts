@@ -196,7 +196,7 @@ export function createResult(
   paths: PathItem[],
   simplify: boolean,
   path1: PathItem,
-  path2: PathItem | PathItem[] | null,
+  path2: PathItem | PathItem[] | null | undefined,
   options?: BooleanOptions
 ): PathItem {
   let result = new CompoundPath(Item.NO_INSERT) as PathItem
@@ -208,7 +208,7 @@ export function createResult(
     // Insert the resulting path above whichever of the paths that are
     // siblings of path1 appears furthest up in the stack:
     let above = path1
-    const others = [].concat(path2 ?? [])
+    const others = ([] as PathItem[]).concat(path2 ?? [])
     for (let i = 0, l = others.length; i < l; i++) {
       const other = others[i]
       if (path1.isSibling(other) && other.index > above.index) {
@@ -270,7 +270,7 @@ export function traceBoolean(
  * of similar size. To subtract them, we subtract their union.
  */
 function combinePaths(
-  paths: PathItem | PathItem[] | null,
+  paths: PathItem | PathItem[] | null | undefined,
   operation: BooleanOperation
 ): PathItem | null {
   const isUnite = operation === 'unite' || operation === 'subtract'
@@ -302,7 +302,7 @@ function combinePaths(
     return entries[0].path
   }
 
-  const entries = [].concat(paths ?? []).map((path: PathItem) => {
+  const entries = ([] as PathItem[]).concat(paths ?? []).map(path => {
     const { bounds } = path
     return { path, bounds, center: bounds.center }
   })
@@ -316,7 +316,8 @@ export function splitBoolean(
   options?: BooleanOptions
 ): PathItem {
   const _path1 = preparePath(path1)
-  const _path2 = preparePath(combinePaths(path2, operation))
+  // Splitting needs a second path:
+  const _path2 = preparePath(combinePaths(path2, operation)!)
   const sources = getPaths(_path1)
   const parts: Record<number, ProfilePart> = {}
   const paths: Path[] = []

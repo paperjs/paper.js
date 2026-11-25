@@ -60,9 +60,12 @@ export type ProfileRun = {
  *
  * @private
  */
+// The stops on a path, which have their index there:
+type PathStop = StrokeProfileStop & { _index: number }
+
 export class StrokeProfile {
   _path: Path
-  _stops: StrokeProfileStop[]
+  _stops: PathStop[]
 
   constructor(
     path: Path,
@@ -80,7 +83,7 @@ export class StrokeProfile {
         stop._index ??= this.getIndexAt(stop._offset)
         stop._path = path
       }
-      return stop
+      return stop as PathStop
     })
     this.sort()
   }
@@ -93,7 +96,7 @@ export class StrokeProfile {
     const path = this._path
     const entries = getEntries(path)
     const { length, _closed: closed } = path
-    const pens = []
+    const pens: Entry[] = []
 
     const getPen = (offset: number, after: boolean) => {
       const values = getValues(entries, offset, length, closed, after)
@@ -156,8 +159,9 @@ export class StrokeProfile {
     if (loc) {
       const { time } = loc
       const curveLength = loc.curve.length
+      // Locations on paths have indices:
       return (
-        loc.index + (
+        loc.index! + (
           time < tMin || !curveLength
             ? 0
             : time > tMax
@@ -201,7 +205,8 @@ export class StrokeProfile {
   // Lets go of the stops that aren't among the given ones, which keep their
   // offsets:
   release(stops: StrokeProfileStop[]) {
-    for (const stop of this._stops) {
+    // Released stops have no index:
+    for (const stop of this._stops as StrokeProfileStop[]) {
       if (!stops.includes(stop)) {
         stop._offset = stop.offset
         stop._index = stop._path = null
@@ -251,7 +256,7 @@ export class StrokeProfile {
     const index = before < start ? before : before - amount
     const span = amount + 1
 
-    function isKept(stop: StrokeProfileStop) {
+    function isKept(stop: PathStop) {
       const x = stop._index
       return closed
         ? amount < count
@@ -342,10 +347,10 @@ export function interpolateStrokeProfiles(
   const stops = paths
     .flatMap(path => path._strokeProfile?._stops ?? [])
     .sort((a, b) => a._index - b._index)
-  const result = []
+  const result: StrokeProfileStopProps[] = []
   for (let i = 0, l = stops.length; i < l;) {
     const index = stops[i]._index
-    const group = []
+    const group: PathStop[] = []
     while (i < l && stops[i]._index === index) {
       group.push(stops[i++])
     }
@@ -420,7 +425,7 @@ export function setStrokeProfileRuns(path: Path, runs: ProfileRun[]) {
     const gap = reversed
       ? run2.start + run2.length - run1.start
       : run1.start + run1.length - run2.start
-    const epsilon = GEOMETRIC_EPSILON * part?.length
+    const epsilon = part ? GEOMETRIC_EPSILON * part.length : 0
     return (
       part &&
       run2.part === part &&
@@ -452,7 +457,7 @@ export function setStrokeProfileRuns(path: Path, runs: ProfileRun[]) {
     count > 0 &&
     !!isContinued(joined[count - 1], joined[0])
   )
-  const entries = []
+  const entries: Entry[] = []
   let offset = 0
   for (let i = 0; i < count; i++) {
     const { part, start, length, reversed } = joined[i]
@@ -481,7 +486,7 @@ export function setStrokeProfileRuns(path: Path, runs: ProfileRun[]) {
   }
   // Stops where the last run continues into the first are in both:
   if (isCyclic && count > 1) {
-    while (entries.at(-1)?.offset >= offset) {
+    while (entries.length && entries.at(-1)!.offset >= offset) {
       entries.pop()
     }
   }
@@ -492,7 +497,7 @@ export function setStrokeProfileRuns(path: Path, runs: ProfileRun[]) {
   }
   // On closed paths, the values at the end come first, at the start:
   if (closed && !isCyclic && entries.length) {
-    entries.unshift({ ...entries.pop(), offset: 0 })
+    entries.unshift({ ...entries.pop()!, offset: 0 })
   }
   // Runs of paths without profiles only leave the path without one:
   path.strokeProfile = runs.some(run => run.part?.entries.length)
@@ -626,12 +631,12 @@ function getPart(
   closed: boolean, hasStart: boolean, hasEnd: boolean,
   fallbacks: Record<string, number> = {}
 ): Entry[] {
-  const getEnd = (offset: number, after?: boolean) => {
+  const getEnd = (offset: number, after = false) => {
     const values = getValues(entries, offset, length, closed, after)
     for (const [key, value] of Object.entries(fallbacks)) {
       values[key] ??= value
     }
-    let stop = null
+    let stop: Entry | null = null
     for (const entry of entries) {
       if (entry.offset === offset && (after || !stop)) {
         stop = entry
@@ -641,7 +646,7 @@ function getPart(
     return values
   }
 
-  const part = []
+  const part: Entry[] = []
   for (const entry of entries) {
     let { offset } = entry
     if (closed && offset < from) {
@@ -670,7 +675,7 @@ function getSpanIndex(
   path: Path, start: number, count: number, fraction: number
 ): number {
   const { curves } = path
-  const lengths = []
+  const lengths: number[] = []
   let total = 0
   for (let i = 0; i < count; i++) {
     const { length } = curves[(start + i) % curves.length]

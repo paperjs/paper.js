@@ -37,8 +37,8 @@ import type { StrokeCap, StrokeJoin } from '../values/path.ts'
 export function getSegmentBounds(
   segments: Segment[],
   closed: boolean,
-  path?: Path,
-  matrix?: Matrix,
+  path?: Path | null,
+  matrix?: Matrix | null,
   options?: any,
   strokePadding?: number[]
 ): Rectangle {
@@ -92,23 +92,20 @@ export function getSegmentStrokeBounds(
   segments: Segment[],
   closed: boolean,
   path: Path,
-  matrix?: Matrix,
+  matrix?: Matrix | null,
   options?: any
 ): Rectangle {
   const { style } = path
   const stroke = style.hasStroke()
   const strokeRadius = style.strokeWidth / 2
-  const strokeMatrix = stroke ? getStrokeMatrix(path, matrix, options) : null
-  const strokePadding = (
-    stroke &&
-    Matrix._getCircleExtents(strokeRadius, strokeMatrix)
-  )
+  if (!stroke) return getSegmentBounds(segments, closed, path, matrix, options)
+  const strokeMatrix = getStrokeMatrix(path, matrix, options)
+  const strokePadding = Matrix._getCircleExtents(strokeRadius, strokeMatrix)
   // Start with normal path bounds with added stroke padding. Then we
   // only need to look at each segment and handle join / cap / miter.
   let bounds = getSegmentBounds(
     segments, closed, path, matrix, options, strokePadding
   )
-  if (!stroke) return bounds
   const join = style.strokeJoin
   const cap = style.strokeCap
   const { miterLimit } = style
@@ -160,7 +157,7 @@ export function getSegmentStrokeBounds(
     } else {
       // Handle caps on open paths
       addCap(segments[0], cap)
-      addCap(segments.at(-1), cap)
+      addCap(segments.at(-1)!, cap)
     }
   }
   return bounds
@@ -171,8 +168,8 @@ export function addBevelJoin(
   join: StrokeJoin,
   radius: number,
   miterLimit: number,
-  matrix: Matrix,
-  strokeMatrix: Matrix,
+  matrix: Matrix | null | undefined,
+  strokeMatrix: Matrix | null | undefined,
   addPoint: (point: Point) => void,
   isArea?: boolean
 ) {
@@ -181,8 +178,9 @@ export function addBevelJoin(
   // vectors to support Style#strokeScaling. The join is constructed
   // where the stroke is drawn, see getStrokeNormal(), and its vectors
   // transformed from there.
-  const curve2 = segment.curve
-  const curve1 = curve2.previous
+  // Joins lie between two curves:
+  const curve2 = segment.curve!
+  const curve1 = curve2.previous!
   const point = curve2.point1.transform(matrix)
   let normal1 = getStrokeNormal(curve1, 1, radius, matrix, strokeMatrix)
   let normal2 = getStrokeNormal(curve2, 0, radius, matrix, strokeMatrix)
@@ -204,7 +202,7 @@ export function addBevelJoin(
     )
     // See if we actually get a bevel point and if its distance is below
     // the miterLimit. If not, make a normal bevel.
-    if (corner?.length <= miterLimit * radius) {
+    if (corner && corner.length <= miterLimit * radius) {
       addPoint(point.add(corner.transform(strokeMatrix)))
     }
   }
@@ -216,8 +214,8 @@ export function addSquareCap(
   segment: Segment,
   cap: StrokeCap,
   radius: number,
-  matrix: Matrix,
-  strokeMatrix: Matrix,
+  matrix: Matrix | null | undefined,
+  strokeMatrix: Matrix | null | undefined,
   addPoint: (point: Point) => void,
   isArea?: boolean
 ) {
@@ -226,7 +224,8 @@ export function addSquareCap(
   // matrices to transform segment points and stroke vectors to support
   // Style#strokeScaling.
   let point = segment._point.transform(matrix)
-  const loc = segment.location
+  // Caps lie at the ends of curves:
+  const loc = segment.location!
   const { time } = loc
   // Checking the time for 0 is to see whether this is the first or
   // the last segment of the open path, in order to determine in which
@@ -262,15 +261,15 @@ export function getSegmentHandleBounds(
   segments: Segment[],
   closed: boolean,
   path: Path,
-  matrix?: Matrix,
+  matrix?: Matrix | null,
   options?: any
 ): Rectangle {
   // If there are no segments, return "empty" rectangle, as getBounds().
   if (!segments.length) return new Rectangle()
   const { style } = path
   const stroke = options.stroke && style.hasStroke()
-  let strokePadding: number[]
-  let joinPadding: number[]
+  let strokePadding: number[] | undefined
+  let joinPadding: number[] | undefined
   if (stroke) {
     const strokeMatrix = getStrokeMatrix(path, matrix, options)
     const strokeRadius = style.strokeWidth / 2
@@ -331,8 +330,8 @@ function getStrokeNormal(
   curve: Curve,
   time: number,
   radius: number,
-  matrix: Matrix,
-  strokeMatrix: Matrix
+  matrix: Matrix | null | undefined,
+  strokeMatrix: Matrix | null | undefined
 ): Point {
   const shiftless = matrix?._shiftless() ?? new Matrix()
   const inverse = strokeMatrix?.inverted()
