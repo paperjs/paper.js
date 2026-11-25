@@ -33,8 +33,9 @@ export class GradientStop extends Base {
   }
 
   _color: Color
-  _offset: number
-  _owner: Gradient
+  // undefined until the gradient spreads the stops without one:
+  _offset: number | null | undefined
+  _owner: Gradient | undefined
 
   /**
    * Creates a GradientStop object.
@@ -43,7 +44,7 @@ export class GradientStop extends Base {
    * @param offset the position of the stop on the gradient ramp as a value
    *     between `0` and `1`; `null` or `undefined` for automatic assignment.
    */
-  constructor(color?: ColorLike, offset?: number)
+  constructor(color?: ColorLike, offset?: number | null)
   /**
    * Creates a GradientStop object from any of the values that
    * {@link Gradient#stops} accepts: a color, an array of a color and an
@@ -52,9 +53,9 @@ export class GradientStop extends Base {
    * @param stop the value describing the gradient stop
    */
   constructor(stop: GradientStopLike)
-  constructor(arg0?: GradientStopLike, arg1?: number) {
+  constructor(arg0?: GradientStopLike, arg1?: number | null) {
     super()
-    let color = arg0 as ColorLike
+    let color = arg0 as ColorLike | undefined
     let offset = arg1
     if (typeof arg0 === 'object' && arg1 === undefined) {
       // Make sure the first entry in the array is not a number, in which
@@ -71,7 +72,7 @@ export class GradientStop extends Base {
         offset = stop.offset
       }
     }
-    this.color = color
+    this.color = color ?? 'black'
     this.offset = offset
   }
 
@@ -141,10 +142,11 @@ export class GradientStop extends Base {
    * }
    */
   get offset(): number {
-    return this._offset
+    // Typed as set, as it is for the stops of gradients:
+    return this._offset!
   }
 
-  set offset(offset: number) {
+  set offset(offset: number | null | undefined) {
     this._offset = offset
     this._changed()
   }

@@ -107,7 +107,7 @@ export class Gradient extends Base {
   // Any of the forms above, as Gradient.from() reads them, for the types
   // only:
   constructor(gradient: Exclude<GradientLike, Gradient>)
-  constructor(stops?: any, radial?: boolean) {
+  constructor(stops?: any, radial?: boolean | null) {
     super()
     // Use UID here since Gradients are exported through dictionary.add().
     this._id = getUID()
@@ -122,7 +122,7 @@ export class Gradient extends Base {
       this.stops = stops || ['white', 'black']
     }
     if (this._radial == null) {
-      this.radial = radial
+      this.radial = !!radial
     }
   }
 
