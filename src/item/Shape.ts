@@ -198,11 +198,10 @@ export class Shape extends Item {
           ? { rectangle, radius }
           : { rectangle: new Rectangle(rectangle, radius) }
     const [rect, props] = readRectangle(object)
-    const { centerX, centerY, width, height } = rect
-    const size = new Size(width, height)
+    const size = new Size(rect.width, rect.height)
     return createShape(
       'rectangle',
-      new Point(centerX, centerY),
+      rect.center.clone(),
       size,
       Size.min(new Size(cornerRadius ?? 0), size.divide(2)),
       props

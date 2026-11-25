@@ -896,8 +896,7 @@ export class Item extends Emitter {
     if (this._pivot) {
       return this._matrix._transformPoint(this._pivot)
     } else {
-      const { centerX, centerY } = bounds ?? this.getBounds()
-      return new Point(centerX, centerY)
+      return (bounds ?? this.getBounds()).center.clone()
     }
   }
 

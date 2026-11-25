@@ -68,7 +68,7 @@ export class GradientStop extends Base {
         // (stop)
         const stop = arg0 as { color?: ColorLike; offset?: number }
         color = stop.color
-        offset = stop.offset || 0
+        offset = stop.offset
       }
     }
     this.color = color

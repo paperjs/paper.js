@@ -583,4 +583,17 @@ describe('Color', () => {
     item.strokeColor.hue = 50
     equals(() => item.strokeColor !== undefined, true)
   })
+
+  test('Gradient stops without offsets spread evenly', () => {
+    const gradient = new Gradient([{ color: 'red' }, { color: 'blue' }])
+    equals(gradient.equals(new Gradient(['red', 'blue'])), true)
+    equals(gradient.stops[1].offset, undefined)
+  })
+
+  test('gradient.equals() compares radial', () => {
+    equals(
+      new Gradient(['red', 'blue']).equals(new Gradient(['red', 'blue'], true)),
+      false
+    )
+  })
 })
