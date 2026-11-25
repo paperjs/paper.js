@@ -77,6 +77,8 @@ import type { RectangleLike } from '../basic/Rectangle.ts'
 import type { Style } from '../style/Style.ts'
 import type { SegmentLike } from './Segment.ts'
 import type { SegmentValues } from '../values/path.ts'
+import type { CurveValues } from '../values/curve.ts'
+import type { ProfilePart, ProfileRun } from './StrokeProfile.ts'
 import type { SegmentPoint } from './SegmentPoint.ts'
 import type { PathProps } from './shapes.ts'
 import type { StrokeProfileStopProps } from './StrokeProfileStop.ts'
@@ -96,13 +98,13 @@ export class Path extends PathItem {
   // Increased on every change of segments, so CurveLocation knows when to
   // update its internally cached values:
   _version: number
-  _curves: Curve[]
+  _curves: Curve[] | undefined
   _segmentSelection: number
-  _namedSegments: Record<string, Segment[]>
-  _length: number
-  _area: number
+  _namedSegments: Record<string, Segment[]> | null
+  _length: number | undefined
+  _area: number | undefined
   declare _strokeProfile: StrokeProfile | null
-  _strokeOutline: PathItem
+  _strokeOutline: PathItem | undefined
 
   /**
    * Creates a new path item and places it at the top of the active layer.
@@ -201,7 +203,7 @@ export class Path extends PathItem {
     // Only pass on arg as props if it isn't consumed for segments or path
     // data, which go in after #_initializeContent() set up the segments:
     this._initialize(isSegmentObject ? props : !segments && !isPathData && arg)
-    if (segments?.length > 0) {
+    if (segments?.length) {
       this.segments = segments
     } else if (isPathData) {
       this.pathData = arg
@@ -590,7 +592,7 @@ export class Path extends PathItem {
         aspect: stop._aspect,
         angle: stop._angle,
         smooth: stop._smooth
-      }))
+      })) ?? null
     }
   }
 
@@ -686,7 +688,7 @@ export class Path extends PathItem {
     if (fullySelected) {
       this.fullySelected = true
     }
-    if (profile) {
+    if (profile && fractions) {
       this._strokeProfile = profile
       pathLength = this.length
       const stops = profile._stops
@@ -772,7 +774,7 @@ export class Path extends PathItem {
       // Opening the path lets go of the stops on its closing curve:
       if (!isClosed && this._strokeProfile) {
         const last = this._segments.length - 1
-        this._strokeProfile.filter(stop => stop._index <= last)
+        this._strokeProfile.filter(stop => stop._index! <= last)
       }
       this._closed = isClosed
       // Update _curves length
@@ -826,7 +828,7 @@ export class Path extends PathItem {
     const curves = this._curves
     const amount = segs.length
     const append = index == null
-    index = append ? segments.length : index
+    index ??= segments.length
     // Scan through segments to add first, convert if necessary and set
     // _path and _index references on them.
     for (i = 0; i < amount; i++) {
@@ -894,7 +896,8 @@ export class Path extends PathItem {
    */
   _adjustCurves(start: number, end: number) {
     const segments = this._segments
-    const curves = this._curves
+    // Only called once the curves exist:
+    const curves = this._curves!
     let curve: Curve
     for (let i = start; i < end; i++) {
       curve = curves[i]
@@ -1495,8 +1498,8 @@ export class Path extends PathItem {
   splitAt(location: number | CurveLocation): Path | null {
     // NOTE: getLocationAt() handles both offset and location:
     const loc = this.getLocationAt(location)
-    let index = loc?.index
-    let time = loc?.time
+    if (!loc) return null
+    let { index, time } = loc
     const tMin = CURVETIME_EPSILON
     const tMax = 1 - tMin
     if (time > tMax) {
@@ -1505,7 +1508,7 @@ export class Path extends PathItem {
       time = 0
     }
     const { curves } = this
-    if (loc && index < curves.length) {
+    if (index < curves.length) {
       // Both parts keep their shapes, so the stroke profile moves along
       // by offsets:
       const cut = loc.offset
@@ -1634,7 +1637,7 @@ export class Path extends PathItem {
     const epsilon = tolerance || 0
     // The joined paths keep their shapes, so their stroke profiles
     // move along by offsets, as parts in their order along the path:
-    let parts = null
+    let parts: ProfilePart[] | null = null
     if (path && path !== this) {
       const segments = path._segments
       const last1 = this.lastSegment
@@ -1692,7 +1695,11 @@ export class Path extends PathItem {
       this.closed = true
     }
     if (parts) {
-      const runs = parts.map(part => ({ part, start: 0, length: part.length }))
+      const runs: ProfileRun[] = parts.map(part => ({
+        part,
+        start: 0,
+        length: part.length
+      }))
       if (runs.length > 1) {
         // The line between paths that didn't touch has no profile:
         const gap = this.length - runs[0].length - runs[1].length
@@ -1752,7 +1759,7 @@ export class Path extends PathItem {
       segment._index = i
     }
     // Clear curves since it all has changed.
-    this._curves = null
+    this._curves = undefined
     this._strokeProfile?.reverse()
     this._changed(Change.GEOMETRY)
     return this
@@ -1765,7 +1772,7 @@ export class Path extends PathItem {
     const flattener = new PathFlattener(this, flatness || 0.25, 256, true)
     const { parts } = flattener
     const { length } = parts
-    const segments = []
+    const segments: Segment[] = []
     for (let i = 0; i < length; i++) {
       segments.push(new Segment(parts[i].curve.slice(0, 2)))
     }
@@ -1783,16 +1790,16 @@ export class Path extends PathItem {
       typeof options === 'number' ? { tolerance: options } : options ?? {}
     const segments = this._segments
     const { length } = segments
-    let fitted = null
+    let fitted: Segment[] | null = null
     if (length > 0) {
       const { from, to, loop } = this._getRange(opts.from, opts.to)
       const first = segments[from < 0 ? from + length : from]
       const last = segments[to]
       // Join the curves outside of the range tangentially, where
       // they have handles:
-      const getTangent = (handle: Point, neighbor: Segment) => (
-        !loop && neighbor && !handle.isZero() && handle.negate()
-      )
+      const getTangent = (handle: Point, neighbor: Segment | null) =>
+        !loop && neighbor && !handle.isZero() ? handle.negate() : undefined
+      // Fitting at least one segment always gives segments:
       fitted = new PathFitter(
         from < 0
           ? segments.slice(from).concat(segments.slice(0, to + 1))
@@ -1802,7 +1809,7 @@ export class Path extends PathItem {
         opts.tolerance || 2.5,
         getTangent(first._handleIn, first.previous),
         getTangent(last._handleOut, last.next)
-      )
+      )!
       if (loop || !first.previous && !last.next) {
         this.segments = fitted
       } else {
@@ -1858,7 +1865,7 @@ export class Path extends PathItem {
       const padding = loop ? min(amount, 4) : 1
       let paddingLeft = padding
       let paddingRight = padding
-      const knots = []
+      const knots: SegmentPoint[] = []
       if (!closed) {
         // If the path is open and a range is defined, try using a
         // padding of 1 on either side.
@@ -1901,8 +1908,8 @@ export class Path extends PathItem {
       const rx = [x]
       const ry = [y]
       const rf = [f]
-      const px = []
-      const py = []
+      const px: number[] = []
+      const py: number[] = []
       // Solve with the Thomas algorithm
       for (i = 1; i < n; i++) {
         const internal = i < n_1
@@ -2035,16 +2042,18 @@ export class Path extends PathItem {
     if (!this._closed) return null
 
     const segments = this._segments
-    let create: (props: object) => Shape
-    let size: Size
-    let radius: Size | number
-    let topCenter: Point
+    let create: ((props: object) => Shape) | undefined
+    let size: Size | undefined
+    let radius: Size | number | undefined
+    // Set along with create:
+    let topCenter!: Point
 
+    // The path is closed, so each segment has a previous and next one:
     function isCollinear(i: number, j: number) {
       const seg1 = segments[i]
-      const seg2 = seg1.next
+      const seg2 = seg1.next!
       const seg3 = segments[j]
-      const seg4 = seg3.next
+      const seg4 = seg3.next!
       return (
         seg1._handleOut.isZero() &&
         seg2._handleIn.isZero() &&
@@ -2058,8 +2067,8 @@ export class Path extends PathItem {
 
     function isOrthogonal(i: number) {
       const seg2 = segments[i]
-      const seg1 = seg2.previous
-      const seg3 = seg2.next
+      const seg1 = seg2.previous!
+      const seg3 = seg2.next!
       return (
         seg1._handleOut.isZero() &&
         seg2._handleIn.isZero() &&
@@ -2073,7 +2082,7 @@ export class Path extends PathItem {
 
     function isArc(i: number) {
       const seg1 = segments[i]
-      const seg2 = seg1.next
+      const seg2 = seg1.next!
       const handle1 = seg1._handleOut
       const handle2 = seg2._handleIn
       const kappa = KAPPA
@@ -2183,8 +2192,8 @@ export class Path extends PathItem {
 
   // NOTE: Documentation is in PathItem#compare()
   compare(path: PathItem): boolean {
-    let v2: number[]
-    let overlaps: number[][]
+    let v2: CurveValues | undefined
+    let overlaps: number[][] | null
 
     // If a compound-path is involved, redirect to PathItem#compare()
     if (!path || path instanceof CompoundPath) return super.compare(path)
@@ -2197,12 +2206,13 @@ export class Path extends PathItem {
       // matching geometries.
       return length1 == length2
     }
-    let v1 = curves1[0].values
-    const values2 = []
+    let v1: CurveValues | null = curves1[0].values
+    const values2: CurveValues[] = []
     let pos1 = 0
-    let pos2: number
+    // Until the first overlap on curves2 is found:
+    let pos2 = -1
     let end1 = 0
-    let end2: number
+    let end2 = 0
     // First, loop through curves2, looking for the start of the overlapping
     // sequence with curves1[0]. Also cache curve values for later reuse.
     for (let i = 0; i < length2; i++) {
@@ -2225,7 +2235,7 @@ export class Path extends PathItem {
     const { abs } = Math
     const epsilon = CURVETIME_EPSILON
     v2 = values2[pos2]
-    let start2: number[]
+    let start2: number[] | null = null
     while (v1 && v2) {
       overlaps = getCurveOverlaps(v1, v2)
       if (overlaps) {
@@ -2363,7 +2373,7 @@ export class Path extends PathItem {
       return []
     }
 
-    const offsets = []
+    const offsets: number[] = []
     let curveStart = 0
     const { curves } = this
     for (let i = 0, l = curves.length; i < l; i++) {

@@ -70,8 +70,8 @@ export class Segment extends Base {
   _handleIn: SegmentPoint
   /** @internal */
   _handleOut: SegmentPoint
-  _path: Path
-  _index: number
+  _path: Path | null
+  _index: number | null
   // The selection state, a combination of SegmentSelection
   declare _selection: number
   declare _name: string

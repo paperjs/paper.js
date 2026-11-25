@@ -62,7 +62,7 @@ import type { CurveValues } from '../values/curve.ts'
  * tangents at given offsets.
  */
 export class Curve extends Base {
-  _path: Path
+  _path: Path | null
   _segment1: Segment
   _segment2: Segment
   #length: number
@@ -109,7 +109,7 @@ export class Curve extends Base {
       | number[]
   )
   // Creates a curve of a path, as Path#curves does, for internal use:
-  constructor(path: Path, segment1: Segment, segment2: Segment)
+  constructor(path: Path, segment1: Segment | null, segment2: Segment | null)
   constructor(arg0?: any, arg1?: any, arg2?: any, arg3?: any) {
     super()
     const count = arguments.length
@@ -854,8 +854,8 @@ export class Curve extends Base {
     curves1: Curve[],
     curves2: Curve[] | null,
     include?: (location: CurveLocation) => boolean,
-    matrix1?: Matrix,
-    matrix2?: Matrix,
+    matrix1?: Matrix | null,
+    matrix2?: Matrix | null,
     _returnFirst?: boolean
   ): CurveLocation[] {
     const self = !curves2
@@ -1154,7 +1154,7 @@ function addIntersections(
 export function getCurveValues(
   segment1: Segment,
   segment2: Segment,
-  matrix?: Matrix,
+  matrix?: Matrix | null,
   straight?: boolean
 ): CurveValues {
   const p1 = segment1._point

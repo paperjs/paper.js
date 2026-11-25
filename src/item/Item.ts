@@ -207,7 +207,7 @@ export class Item extends Emitter {
   _matrix: Matrix
   _style: Style
   _data: Record<string, any>
-  _bounds: Record<string, any>
+  _bounds: Record<string, any> | undefined
   _position: Point
   _decomposed: ReturnType<Matrix['decompose']>
   _globalMatrix: Matrix
@@ -1083,7 +1083,7 @@ export class Item extends Emitter {
    * @param [options] the kind of bounds
    * @return the bounds
    */
-  getBounds(matrix: Matrix, options?: BoundsOptions): Rectangle
+  getBounds(matrix: Matrix | null, options?: BoundsOptions): Rectangle
   getBounds(
     matrix?: Matrix | BoundsOptions | null,
     options?: BoundsOptions

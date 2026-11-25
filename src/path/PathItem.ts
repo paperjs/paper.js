@@ -110,9 +110,9 @@ export abstract class PathItem extends Item {
    */
   static create(object: object): Path | CompoundPath
   static create(arg: any): Path | CompoundPath {
-    let data: string
-    let segments: any[]
-    let compound: boolean
+    let data: string | undefined
+    let segments: any[] | undefined
+    let compound = false
     if (isPlainObject(arg)) {
       segments = arg.segments
       data = arg.pathData
@@ -195,12 +195,12 @@ export abstract class PathItem extends Item {
     )
   }
 
-  _applyEffects(art: Item): Item {
+  _applyEffects(art: Item): Item | null {
     let output = super._applyEffects(art)
     if (this._hasStrokeProfile()) {
       if (output) {
         const effect = getFeature('effects').Effect.get('outline')
-        output = effect?.onApply({ art: output, item: this }) || output
+        output = effect?.onApply?.({ art: output, item: this }) || output
       } else {
         // Without effects, it's the path item's own outline:
         const outline = this._getStrokeOutline().clone({ insert: false })
@@ -236,7 +236,7 @@ export abstract class PathItem extends Item {
     // handle bounds, which is the fastest rough bounding box to calculate
     // for a quick check before calculating the actual winding.
     if (
-      point.isInside(this.getBounds(null, { internal: true, handle: true }))
+      point.isInside(this.getBounds({ internal: true, handle: true }))
     ) {
       // With the lines that close open paths, as filling them does:
       const curves: CurveValues[] = []
@@ -246,7 +246,7 @@ export abstract class PathItem extends Item {
           curves.push(curve.values)
         }
         if (!path._closed && segments.length > 1) {
-          curves.push(getCurveValues(segments.at(-1), segments[0], null, true))
+          curves.push(getCurveValues(segments.at(-1)!, segments[0], null, true))
         }
       }
       return containsPoint(curves, this.fillRule, point)
@@ -303,40 +303,32 @@ export abstract class PathItem extends Item {
     // intersections.
     // NOTE: The hidden argument _matrix is used internally to override the
     // passed path's transformation matrix.
-    const self = this === path || !path // self-intersections?
+    const self = !path || this === path // self-intersections?
     const matrix1 = this._matrix._orNullIfIdentity()
     const matrix2 = self
       ? matrix1
       : (_matrix ?? path._matrix)._orNullIfIdentity()
-    // First check the bounds of the two paths. If they don't intersect,
-    // we don't need to iterate through their curves. Bounds that only
-    // touch need a tolerance, also at large coordinates:
-    const bounds1 = !self && this.getBounds(matrix1)
-    const bounds2 = !self && path.getBounds(matrix2)
-    const { abs } = Math
-    return (
-      self ||
-      bounds1.intersects(
-        bounds2,
-        getEpsilon(
-          Math.max(
-            abs(bounds1.left),
-            abs(bounds1.right),
-            abs(bounds1.top),
-            abs(bounds1.bottom),
-            abs(bounds2.left),
-            abs(bounds2.right),
-            abs(bounds2.top),
-            abs(bounds2.bottom)
-          )
+    if (!self) {
+      // First check the bounds of the two paths. If they don't intersect,
+      // we don't need to iterate through their curves. Bounds that only
+      // touch need a tolerance, also at large coordinates:
+      const bounds1 = this.getBounds(matrix1)
+      const bounds2 = path.getBounds(matrix2)
+      const { abs, max } = Math
+      const epsilon = getEpsilon(
+        max(
+          abs(bounds1.left), abs(bounds1.right),
+          abs(bounds1.top), abs(bounds1.bottom),
+          abs(bounds2.left), abs(bounds2.right),
+          abs(bounds2.top), abs(bounds2.bottom)
         )
       )
+      if (!bounds1.intersects(bounds2, epsilon)) return []
+    }
+    return Curve.getIntersections(
+      this.curves, self ? null : path.curves, include,
+      matrix1, matrix2, _returnFirst
     )
-      ? Curve.getIntersections(
-          this.curves, self ? null : path.curves, include,
-          matrix1, matrix2, _returnFirst
-        )
-      : []
   }
 
   /**
@@ -361,10 +353,13 @@ export abstract class PathItem extends Item {
    * @return the location on the path that's the closest to
    * the specified point
    */
-  getNearestLocation(point: PointLike | number, y?: number): CurveLocation {
+  getNearestLocation(
+    point: PointLike | number,
+    y?: number
+  ): CurveLocation | null {
     const target = Point.from(point, y)
     let minDistance = Infinity
-    let minLocation = null
+    let minLocation: CurveLocation | null = null
     for (const curve of this.curves) {
       const location = curve.getNearestLocation(target)
       if (location._distance < minDistance) {
@@ -406,7 +401,7 @@ export abstract class PathItem extends Item {
    *     circle.position = nearestPoint;
    * }
    */
-  getNearestPoint(point: PointLike | number, y?: number): Point {
+  getNearestPoint(point: PointLike | number, y?: number): Point | null {
     const location = this.getNearestLocation(point, y)
     return location?.point ?? null
   }
@@ -709,10 +704,9 @@ export abstract class PathItem extends Item {
     }
     // Blend the profiles before the segments, in case one of the paths is
     // this one:
-    const profile = (
-      isPath &&
-      interpolateStrokeProfiles(from as Path, to as Path, factor)
-    )
+    const profile = isPath
+      ? interpolateStrokeProfiles(from as Path, to as Path, factor)
+      : null
     const current = items.length
     const { length } = itemsTo
     if (current < length) {
@@ -751,7 +745,7 @@ export abstract class PathItem extends Item {
       const paths2 = (path._children?.slice() ?? [path]) as PathItem[]
       const length1 = paths1.length
       const length2 = paths2.length
-      const matched = []
+      const matched: boolean[] = []
       let count = 0
       ok = true
       const boundsOverlaps = findItemBoundsCollisions(
@@ -1422,7 +1416,7 @@ export abstract class PathItem extends Item {
     // current path / compound-path, if the amount of paths does not
     // require a conversion.
     const { length } = paths
-    let item: PathItem
+    let item: PathItem | undefined
     if (length > 1 && children) {
       if (paths !== children) {
         this.children = paths
