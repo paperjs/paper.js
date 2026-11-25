@@ -376,7 +376,7 @@ export function checkProfileOutline(paper, path) {
       Math.abs(pen1.b - pen2.b) +
       Math.max(pen1.size, pen2.size) *
       (Math.abs(pen1.angle - pen2.angle) + turn) *
-      Math.PI / 180
+      (Math.PI / 180)
     )
   }
   const addPens = (pen1, pen2) => {
