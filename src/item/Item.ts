@@ -38,6 +38,7 @@ import {
   defineStyleAccessors,
   deserialize,
   equals,
+  expandItem,
   findFeature,
   getBoundsCacheKey,
   getCachedBounds,
@@ -66,6 +67,7 @@ import {
   updateBoundsCache
 } from '../internal.ts'
 import type { PaperScope } from '../scope/PaperScope.ts'
+import type { ExpandOptions } from './expand.ts'
 import type { EffectInstance } from './EffectInstance.ts'
 import type { Raster } from './Raster.ts'
 import type { Tween } from '../anim/Tween.ts'
@@ -1853,6 +1855,70 @@ export class Item extends Emitter {
       this.name = name
     }
     this.effects = effects?.map(instance => instance._getProps())
+  }
+
+  // Takes on the appearance of the item that this one replaces, combined with
+  // its own, see SymbolItem#embed() and #expand(). Both items' opacities and
+  // visibilities apply when drawn, but only one blend mode can, the replaced
+  // item's if it has one:
+  _combineAppearance(item: Item) {
+    this.opacity = this._opacity * item._opacity
+    this.visible = this._visible && item._visible
+    this.locked = this._locked || item._locked
+    this.guide = this._guide || item._guide
+    if (item._blendMode !== 'normal') {
+      this.blendMode = item._blendMode
+    }
+    this.clipMask = item._clipMask
+    this.selected = item.selected
+    if (item._data) {
+      this._data = clone(item._data)
+    }
+    if (item._name) {
+      this.name = item._name
+    }
+  }
+
+  /**
+   * Expands the item into plain items that draw the same, and replaces it
+   * with them, as Illustrator's Expand and Expand Appearance do: effects are
+   * applied, symbol items embedded, see {@link SymbolItem#embed()}, and
+   * shapes turned into paths, through all the item's descendants. Text and
+   * rasters stay as they are, as do gradients. Layers can't be replaced, so
+   * they keep their own effects, and expand their children.
+   *
+   * @option [options.strokes=false] {Boolean} whether to outline the strokes
+   *     of paths as filled areas next to their fills, dashed strokes as their
+   *     dashes, see {@link PathItem#outline()}
+   * @option [options.fills=false] {Boolean} whether to expand pattern fills
+   *     into the pattern's tiles, clipped by their paths
+   *
+   * @param options the expand options
+   * @return the item that replaces the item, or the item itself if nothing
+   *     replaces it. An item that has no parent isn't replaced, and the
+   *     result isn't inserted
+   *
+   * @example {@paperscript}
+   * var path = Path.star({
+   *     center: view.center,
+   *     points: 5,
+   *     radius1: 20,
+   *     radius2: 40,
+   *     fillColor: 'yellow',
+   *     strokeColor: 'black',
+   *     strokeWidth: 8,
+   *     dashArray: [10, 4]
+   * });
+   * // Replace the path with its fill and the outlines of its dashes:
+   * var result = path.expand({ strokes: true });
+   * result.lastChild.selected = true;
+   */
+  expand(options?: ExpandOptions): Item {
+    const result = expandItem(this, options ?? {})
+    if (result !== this) {
+      this.replaceWith(result)
+    }
+    return result
   }
 
   /**

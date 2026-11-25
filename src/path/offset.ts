@@ -132,6 +132,20 @@ export function outlinePathItem(
   return result
 }
 
+// Returns the path with its stroke outlined next to its fill, as filled areas
+// following its stroke profile, see the outline effect and Item#expand():
+export function expandStroke(path: PathItem): Item {
+  if (!path.hasStroke()) {
+    return path
+  }
+  const outline = path.outline({ insert: false })
+  if (!path.hasFill()) {
+    return outline
+  }
+  path.strokeColor = null
+  return new Group({ children: [path, outline], insert: false })
+}
+
 export function dashPathItem(
   item: PathItem,
   options?: DashOptions | null

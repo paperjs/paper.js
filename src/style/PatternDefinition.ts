@@ -14,8 +14,10 @@ import {
   Change,
   ChangeFlag,
   EPSILON,
+  Group,
   ItemDefinition,
   Matrix,
+  Path,
   Rectangle,
   Size,
   drawItem,
@@ -248,6 +250,43 @@ export class PatternDefinition extends ItemDefinition {
     transform.f = placement.ty
     pattern.setTransform(transform)
     return pattern
+  }
+
+  // Returns copies of the item as the tiles that cover the bounds, placed
+  // through the matrix as a pattern color places them, see Item#expand():
+  _getTiles(bounds: Rectangle, matrix: Matrix): Group {
+    const { tile } = this
+    const cell = tile.size.add(this._spacing)
+    const inverse = matrix.inverted()
+    const tiles = new Group({ insert: false })
+    // Patterns that are drawn as nothing expand to nothing:
+    if (inverse && cell.width > 0 && cell.height > 0) {
+      // The tile shows the part of the item within it, as #_toCanvasStyle()
+      // draws it:
+      const item = this._item.clone(false)
+      const copy = tile.contains(item.strokeBounds)
+        ? item
+        : new Group({
+            children: [Path.rectangle(tile), item],
+            clipped: true,
+            insert: false
+          })
+      const area = inverse._transformBounds(bounds)
+      const { floor, ceil } = Math
+      const x0 = floor((area.left - tile.x) / cell.width)
+      const x1 = ceil((area.right - tile.x) / cell.width)
+      const y0 = floor((area.top - tile.y) / cell.height)
+      const y1 = ceil((area.bottom - tile.y) / cell.height)
+      for (let y = y0; y < y1; y++) {
+        for (let x = x0; x < x1; x++) {
+          tiles.addChild(
+            copy.clone(false).translate(x * cell.width, y * cell.height)
+          )
+        }
+      }
+      tiles.transform(matrix)
+    }
+    return tiles
   }
 
   /**

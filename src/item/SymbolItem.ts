@@ -15,7 +15,6 @@ import {
   Group,
   Item,
   SymbolDefinition,
-  clone,
   drawItem,
   registerClasses,
   withInheritedStyle
@@ -186,9 +185,13 @@ export class SymbolItem extends Item {
    *     has no parent
    */
   embed(): Item | null {
-    if (!this._parent) {
-      return null
-    }
+    const item = this._parent ? this._createEmbedded() : null
+    return item && this.replaceWith(item) ? item : null
+  }
+
+  // Returns the copy of the definition's item that replaces the symbol item,
+  // see #embed() and Item#expand():
+  _createEmbedded(): Item {
     const item = this._definition._item.clone(false)
     // The copy takes the values that its content took from the symbol item:
     const values = this._style._values
@@ -204,24 +207,8 @@ export class SymbolItem extends Item {
     // The copy applies the matrix to its content or its own matrix,
     // depending on its applyMatrix, as in Group#ungroup():
     item.transform(this._matrix)
-    // Both items' opacities and visibilities apply when drawn, but only
-    // one blend mode can, the symbol item's if it has one:
-    item.opacity = item._opacity * this._opacity
-    item.visible = item._visible && this._visible
-    item.locked = item._locked || this._locked
-    item.guide = item._guide || this._guide
-    if (this._blendMode !== 'normal') {
-      item.blendMode = this._blendMode
-    }
-    item.clipMask = this._clipMask
-    item.selected = this.selected
-    if (this._data) {
-      item._data = clone(this._data)
-    }
-    if (this._name) {
-      item.name = this._name
-    }
-    return this.replaceWith(item) ? item : null
+    item._combineAppearance(this)
+    return item
   }
 
   static {

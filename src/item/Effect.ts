@@ -13,8 +13,8 @@
 import {
   Base,
   EffectInstance,
-  Group,
   PathItem,
+  expandStroke,
   registerClasses
 } from '../internal.ts'
 import type { Item } from './Item.ts'
@@ -266,20 +266,7 @@ function registerEffects() {
     label: 'Outline Stroke',
 
     onApply(event) {
-      return applyToPaths(event.art, path => {
-        if (!path.hasStroke()) {
-          return path
-        }
-        const outline = path.outline({ insert: false })
-        if (!path.hasFill()) {
-          return outline
-        }
-        path.strokeColor = null
-        return new Group({
-          children: [path, outline],
-          insert: false
-        })
-      })
+      return applyToPaths(event.art, expandStroke)
     }
   })
 }
