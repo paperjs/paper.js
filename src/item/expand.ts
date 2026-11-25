@@ -34,9 +34,7 @@ export function expandItem(item: Item, options: ExpandOptions): Item {
   let result = item
   // Layers can't be replaced, so they keep their own effects:
   if (item._hasEffects() && !(item instanceof Layer)) {
-    result = item.getEffectOutput().clone({ insert: false })
-    result.transform(item._matrix)
-    result._combineAppearance(item)
+    result = getEffectReplacement(item)
   } else if (item instanceof SymbolItem) {
     result = item._createEmbedded()
   } else if (item instanceof Shape) {
@@ -69,6 +67,18 @@ export function expandItem(item: Item, options: ExpandOptions): Item {
     }
   }
   return item
+}
+
+// Returns a copy of the output of the item's effects, in the item's place and
+// with its appearance, to replace it, or null if it has none. SVG export writes
+// it, too:
+export function getEffectReplacement(item: Item): Item | null {
+  const output = item.getEffectOutput()?.clone({ insert: false })
+  if (output) {
+    output.transform(item._matrix)
+    output._combineAppearance(item)
+  }
+  return output ?? null
 }
 
 // Returns the pattern fill of the path as the pattern's tiles, clipped by the
