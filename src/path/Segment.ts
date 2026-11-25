@@ -64,8 +64,11 @@ export type SegmentLike =
  * objects that are connected by this segment.
  */
 export class Segment extends Base {
+  /** @internal */
   _point: SegmentPoint
+  /** @internal */
   _handleIn: SegmentPoint
+  /** @internal */
   _handleOut: SegmentPoint
   _path: Path
   _index: number
@@ -202,6 +205,7 @@ export class Segment extends Base {
     }
   }
 
+  /** @internal */
   _changed(point?: SegmentPoint) {
     const path = this._path
     if (path) {

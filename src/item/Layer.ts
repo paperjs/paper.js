@@ -100,7 +100,9 @@ export class Layer extends Group {
     this._project._activeLayer = this
   }
 
-  _hitTestSelf(): undefined {}
+  _hitTestSelf(): null {
+    return null
+  }
 
   static {
     registerClasses({ Layer: this })
