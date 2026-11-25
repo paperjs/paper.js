@@ -527,6 +527,11 @@ export interface Tool {
    */
   onDeactivate: ((this: Tool) => any) | null
 
+  /**
+   * The function that hosts call when the user edits the options of the
+   * tool, to show them. Paper.js itself doesn't call it, as with
+   * {@link Effect#onEditParameters}.
+   */
   onEditOptions: Handler | null
 
   /**
