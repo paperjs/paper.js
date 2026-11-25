@@ -17,6 +17,32 @@ import type { CurveLocation } from '../path/CurveLocation.ts'
 import type { Segment } from '../path/Segment.ts'
 import type { Item } from './Item.ts'
 import type { Raster } from './Raster.ts'
+import type { Size } from '../basic/Size.ts'
+
+/**
+ * The options of hit-tests, see {@link Item#hitTest(point[, options])}.
+ */
+export type HitTestOptions = {
+  tolerance?: number
+  class?: abstract new (...args: any[]) => any
+  type?: string | null
+  match?: (hit: HitResult) => boolean
+  fill?: boolean
+  stroke?: boolean
+  segments?: boolean
+  curves?: boolean
+  handles?: boolean
+  ends?: boolean
+  position?: boolean
+  center?: boolean
+  bounds?: boolean
+  guides?: boolean
+  selected?: boolean
+  // Internal: the hits that hitTestAll() collects, and the tolerance in the
+  // coordinates of the item, see hitTestItem():
+  all?: HitResult[]
+  _tolerancePadding?: Size
+}
 
 /**
  * A HitResult object contains information about the results of a hit test. It
@@ -108,7 +134,7 @@ export class HitResult extends Base {
    *
    * @private
    */
-  static getOptions(options?: Record<string, any>): Record<string, any> {
+  static getOptions(options?: HitTestOptions): HitTestOptions {
     return {
       // Type of item, for instanceof check: Group, Layer, Path, CompoundPath,
       // Shape, Raster, SymbolItem, ...

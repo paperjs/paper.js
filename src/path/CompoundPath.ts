@@ -30,6 +30,8 @@ import type { SizeLike } from '../basic/Size.ts'
 import type { Matrix } from '../basic/Matrix.ts'
 import type { Segment } from './Segment.ts'
 import type { Curve } from './Curve.ts'
+import type { DrawParam } from '../item/draw.ts'
+import type { HitTestOptions } from '../item/HitResult.ts'
 
 /**
  * A compound path is a complex path that is made up of one or more
@@ -309,7 +311,7 @@ export class CompoundPath extends PathItem {
 
   _hitTestChildren(
     point: Point,
-    options: any,
+    options: HitTestOptions,
     viewMatrix?: Matrix
   ): HitResult | null {
     return super._hitTestChildren(
@@ -327,7 +329,7 @@ export class CompoundPath extends PathItem {
 
   _draw(
     ctx: CanvasRenderingContext2D,
-    param: any,
+    param: DrawParam,
     viewMatrix: Matrix,
     strokeMatrix: Matrix
   ) {

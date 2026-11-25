@@ -25,6 +25,8 @@ import type { Matrix } from '../basic/Matrix.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'
 import type { BoundsOptions } from './Item.ts'
 import type { HitResult } from './HitResult.ts'
+import type { DrawParam } from './draw.ts'
+import type { HitTestOptions } from './HitResult.ts'
 
 /**
  * A symbol item represents an instance of a symbol which has been placed in a
@@ -135,7 +137,7 @@ export class SymbolItem extends Item {
 
   _hitTestSelf(
     point: Point,
-    options: Record<string, any>,
+    options: HitTestOptions,
     viewMatrix?: Matrix
   ): HitResult | null {
     // We need to call definition item hit test with `options.all = false`,
@@ -162,7 +164,7 @@ export class SymbolItem extends Item {
     return res
   }
 
-  _draw(ctx: CanvasRenderingContext2D, param: any) {
+  _draw(ctx: CanvasRenderingContext2D, param: DrawParam) {
     // The definition's item is shared by all its symbol items, so don't let
     // them set its global matrix (#1684). Its content takes the values that
     // it leaves unset from this item's style, see Style#_get():

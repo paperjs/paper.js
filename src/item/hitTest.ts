@@ -23,12 +23,13 @@ import type { Rectangle } from '../basic/Rectangle.ts'
 import type { Path } from '../path/Path.ts'
 import type { Item } from './Item.ts'
 import type { Project } from './Project.ts'
+import type { HitTestOptions } from './HitResult.ts'
 
 // NOTE: Documentation is in Item#hitTest(), which Project shares
 export function hitTest(
   owner: Item | Project,
   point: PointLike,
-  options?: Record<string, any>
+  options?: HitTestOptions
 ): HitResult | null {
   return owner._hitTest(Point.from(point), HitResult.getOptions(options))
 }
@@ -37,7 +38,7 @@ export function hitTest(
 export function hitTestAll(
   owner: Item | Project,
   point: PointLike,
-  options?: Record<string, any>
+  options?: HitTestOptions
 ): HitResult[] {
   const all = []
   owner._hitTest(
@@ -51,7 +52,7 @@ export function hitTestAll(
 export function hitTestChildren(
   owner: Item | Project,
   point: Point,
-  options: Record<string, any>,
+  options: HitTestOptions,
   viewMatrix?: Matrix,
   _exclude?: Item
 ): HitResult | null {
@@ -80,7 +81,7 @@ export function hitTestChildren(
 export function hitTestItem(
   item: Item,
   point: Point,
-  options: Record<string, any>,
+  options: HitTestOptions,
   parentViewMatrix?: Matrix
 ): HitResult | null {
   // Shells of hosted items are rejected by their bounds below, as

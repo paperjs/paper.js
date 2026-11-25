@@ -27,6 +27,7 @@ import {
   getNearestCurveTime
 } from '../internal.ts'
 import type { StrokeCap, StrokeJoin } from '../values/path.ts'
+import type { HitTestOptions } from '../item/HitResult.ts'
 
 /**
  * Hit-tests the path, see Item#hitTest().
@@ -36,7 +37,7 @@ import type { StrokeCap, StrokeJoin } from '../values/path.ts'
 export function hitTestPath(
   path: Path,
   point: Point,
-  options: any,
+  options: HitTestOptions,
   viewMatrix: Matrix,
   strokeMatrix: Matrix
 ): HitResult | HitResult[] | null {

@@ -38,6 +38,7 @@ import type { SizeLike } from '../basic/Size.ts'
 import type { RectangleLike } from '../basic/Rectangle.ts'
 import type { ColorLike } from '../style/Color.ts'
 import type { Project } from './Project.ts'
+import type { DrawParam } from './draw.ts'
 
 // The quality of the image smoothing of rasters:
 export type RasterSmoothing = 'low' | 'medium' | 'high' | 'off'
@@ -860,7 +861,7 @@ export class Raster extends Item {
     }
   }
 
-  _draw(ctx: CanvasRenderingContext2D, param: any, viewMatrix: Matrix) {
+  _draw(ctx: CanvasRenderingContext2D, param: DrawParam, viewMatrix: Matrix) {
     const { element } = this
     if (param.dontFinish || param.clip) {
       // Clip with the raster's rectangle (#1845):

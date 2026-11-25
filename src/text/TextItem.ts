@@ -40,6 +40,8 @@ import type {
   JustifyLast,
   LineWrap
 } from '../style/Style.ts'
+import type { DrawParam } from '../item/draw.ts'
+import type { HitTestOptions } from '../item/HitResult.ts'
 
 // The directions that the lines of text run in:
 export type TextOrientation = 'horizontal' | 'vertical'
@@ -753,7 +755,7 @@ export class TextItem extends Item {
 
   // Draw the pieces of the text's layout, see #_getLayout(), each in its
   // style, at its place and angle:
-  _draw(ctx: CanvasRenderingContext2D, param: any, viewMatrix: Matrix) {
+  _draw(ctx: CanvasRenderingContext2D, param: DrawParam, viewMatrix: Matrix) {
     if (param.dontFinish || param.clip) {
       // The glyph outlines aren't known, so clip with the bounds (#1845):
       const rect = this.internalBounds
@@ -832,7 +834,7 @@ export class TextItem extends Item {
     }
   }
 
-  _hitTestSelf(point: Point, options: any): HitResult | undefined {
+  _hitTestSelf(point: Point, options: HitTestOptions): HitResult | undefined {
     if (options.fill) {
       // The glyph outlines aren't known, so hit the letters' boxes, also
       // within the tolerance around them (#632):
