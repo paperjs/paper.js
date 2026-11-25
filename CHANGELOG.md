@@ -1,5 +1,323 @@
 # Change Log
 
+## Unreleased
+
+### News
+
+- Paper.js 1.0 is written in TypeScript as ES modules, and ships its own type
+  declarations. `paper` is the library with its first scope, `paper/core` the
+  classes without side effects at import, `paper/paperscript` adds PaperScript,
+  `paper/node` runs it on Node.js and `paper/hosted` adds hosted projects. The
+  script files `dist/paper-core.js`, `dist/paper-full.js` and the new
+  `dist/paper-hosted.js` remain for use without a bundler. `MIGRATION.md` lists
+  the changes that can break existing code, with the old and the new form side
+  by side.
+
+### Added
+
+- Add the entry `paper/core`, which exports the classes without creating a scope
+  at import: the first project or item creates the scope that it needs. `use()`
+  adds the features that it leaves out: the boolean operations and offsetting of
+  path items from `paper/boolean` and `paper/offset`, SVG import and export from
+  `paper/svg`, and its own `effects`, `tween` and `raster`. The `paper` entry
+  has all of them. The ES modules ship as one file per module, so bundlers leave
+  out what an app doesn't use, e.g. 15 KB for `Point` alone (#1844).
+- Add the entries `paper/boolean` and `paper/offset`, with `unite()`,
+  `subtract()`, `intersect()`, `exclude()`, `contains()`, `split()`, `offset()`,
+  `offsetPath()` and `outline()` on plain descriptions of paths and regions,
+  without the items of the library, and `parseSVGPath()` and `formatSVGPath()`
+  to read and write such descriptions as SVG path data.
+- Add the entry `paper/node`, which renders through happy-dom and
+  `@napi-rs/canvas`, both optional peer dependencies, and exports `GlobalFonts`
+  to register fonts (#2035).
+- Add `dist/paper-hosted.js` and `dist/paper-hosted.min.js`, script files with
+  the core, PaperScript and the hosted mode that set the global `paper`, as
+  `dist/paper-full.js` does, for hosts that load Paper.js as a classic script.
+- Ship source maps with the built files in `dist/`.
+- Add `Item#expand(options)`, which replaces an item with plain items that draw
+  the same, as Illustrator's Expand does: effects applied, symbol items embedded
+  and shapes turned into paths, with `strokes: true` strokes outlined next to
+  their fills, dashed ones as their dashes, and with `fills: true` pattern fills
+  expanded into their tiles (#953).
+- Carry stroke profiles through the boolean operations and `resolveCrossings()`,
+  with a step where the profiles of two paths meet, through `offset()`, along
+  each stop's normal, and through `interpolate()`, blended at the stops of both
+  paths. Compound paths draw, bound and hit-test the profiles of their children,
+  in the compound path's style (#2505, #2506).
+- Store items with stroke profiles or effects, which SVG export writes as what
+  they draw, as JSON in a `data-paper-item` attribute, and restore them from it
+  on import, unless another editor changed the drawing since (#2505).
+- Pass the style of symbol items on to what their definition's content leaves
+  unset, when drawing, measuring and hit-testing it, as SVG's `<use>` elements
+  do, so one definition can be placed in several colors. `SymbolItem#embed()`
+  keeps these values in the copy (#1329).
+- Document how apps define items of their own by extending the item classes:
+  copies keep the class, `registerClasses()` names it in JSON, SVG exports it as
+  the class that it extends, and the class's drawing handlers, such as
+  `Badge.onDraw`, draw all its items (#1050).
+- Make `Line` public, created with `new Line(from, to)`,
+  `new Line({ from, to })` or `new Line({ point, vector })`, with an `infinite`
+  property that `intersect()`, `getSide()` and the distances follow, and
+  `toString()` (#1589).
+- Add `Effect#interactive`, set through `new Effect({ interactive: true })`,
+  which tells hosts that the effect is quick enough to draw during interactions,
+  not only once they end.
+- Add the factory methods `Path.line()`, `Path.circle()`, `Path.rectangle()`,
+  `Path.ellipse()`, `Path.arc()`, `Path.regularPolygon()` and `Path.star()`, and
+  `Shape.circle()`, `Shape.rectangle()` and `Shape.ellipse()`, and document
+  `Path.create()` as the factory form of `new Path()`.
+- Add a `new Color(type, ...components)` form, e.g. `new Color('hsb', 0, 1, 1)`.
+- Add `Curve#getPeaks()`, for the peaks of a curve's curvature, in place of the
+  static `Curve.getPeaks()`, and `Numerical.solveQuartic()`.
+- Document `new Group(item, item, …)` and `new Layer(item, item, …)`.
+- Add `button`, `buttons`, `pointerType` and `pressure` to `MouseEvent` and
+  `ToolEvent`, and as options of `View#dispatchMouseEvent()` (#1354).
+- Add `Tool#onMouseEnter` and `Tool#onMouseLeave`, called as the mouse enters
+  and leaves the view, also as global `onMouseEnter()` and `onMouseLeave()`
+  functions in PaperScript (#1462).
+- Add the canvas attribute `input="off"`, also as `data-paper-input="off"`, for
+  views that don't handle the user's input: they install no listeners for the
+  pointer and the keyboard, never take the keyboard's focus, and leave the
+  browser's selection and touch callouts on the canvas as they are (#1491).
+- Support current JavaScript syntax in PaperScript, which is parsed by acorn 8
+  as a module.
+
+### Changed
+
+- Make the package ES modules only, with an `exports` map, for Node.js 22.22 or
+  later. The examples and the docs no longer ship in it.
+- Type the properties that take one of a set of strings, e.g. `strokeCap`,
+  `blendMode` and `Color#type`, as unions of their values, which the package
+  exports as types, e.g. `StrokeCap` and `BlendMode`.
+- Minify the built files with oxc instead of UglifyJS, which also uses ES2015
+  syntax in them.
+- Return the path from its drawing commands, such as `moveTo()`, `lineTo()`,
+  `arcTo()` and `closePath()`, and from `reverse()`, `flatten()` and `smooth()`,
+  so calls can be chained: `path.moveTo(0, 0).lineTo(10, 0).closePath()` (#605).
+- Read and write `Item#pivot` in the coordinates of the item's parent, as
+  `position` and `bounds` are, so it keeps moving along with the item as it is
+  transformed. Nothing changes for items that apply their matrix, such as paths
+  and groups by default. Scripts that set the pivot of a `Shape`, `Raster`,
+  `SymbolItem`, text or an item with `applyMatrix: false` in the item's own
+  coordinates need to convert it with `localToGlobal()` (#1272).
+- Return a plain `Rectangle` from `Item#getBounds()` without arguments. The
+  `bounds` and `strokeBounds` properties return linked ones, as before.
+- Return a boolean from `Item#replaceWith()` instead of the item, and from
+  `Matrix#isInvertible()` instead of the determinant.
+- Make `Raster#getElement()` the `element` property.
+- Have `Item#removeChildren(start, null)` remove the children up to the end, as
+  without the second argument.
+- Have `Path#add()` and `Path#insert()` read every argument as a segment, so
+  `path.add(0, 0)` adds two segments at the origin.
+- Have `Path#arcTo(to, radius, rotation, clockwise, large)` read a number radius
+  as both radii, and draw the SVG form whenever a rotation is given.
+- Have `new Path({ x, y, strokeColor })` make its segment of `x` and `y` and set
+  the other properties, which were dropped before.
+- Start rectangles and ellipses at the segment SVG starts them with, the top
+  left for rectangles and the right for ellipses, so dashes match exported
+  `<rect>` and `<ellipse>` elements (#601).
+- Keep the items of symbol definitions in place instead of centering them, and
+  remove the `dontCenter` argument (#2435).
+- Find the orientations of the sub-paths in `PathItem#reorient()` with the graph
+  of the boolean operations. Sub-paths that touch or cross each other are
+  replaced by the outlines of the area that they fill.
+- Have a `null` `width` or `dashArray` in the options of `offset()`, `outline()`
+  and `dash()` fall back to the item's.
+- Return `null` from `Curve#getCurvatureAtTime()` and `Curve#getCurvatureAt()`
+  outside the curve, as the other `get…AtTime()` and `get…At()` methods do,
+  instead of throwing.
+- Have `Project#importSVG()` make the layers of SVG content that Paper.js
+  exported the layers of the project again, and return them as an array instead
+  of a group. Content beside the layers goes into a layer of its own, below them
+  (#483).
+- Handle the DOM's pointer events in views, instead of touch and mouse events
+  picked by the browser's user agent, so a mouse or pen works on touch devices
+  too. The events' names stay `mousedown`, `mousedrag` and so on (#1959).
+- Make the native event of mouse and tool events, `event.event`, a
+  `PointerEvent`, with `pointerType`, `pressure`, `button` and `buttons`.
+  Scripts that read its `touches` need to change (#1354).
+- Have views listen on their own element and capture the pointer while it is
+  pressed, instead of listening on the document, and send `mouseleave` to items
+  and views when a touch on them ends.
+- Make `Tool#minDistance`, `#maxDistance` and `#eventInterval` `null` when not
+  set, as documented, rather than `undefined`.
+- Let removed projects and tools keep their `scope`, though they still can't be
+  activated again.
+- Give the load events of rasters whose image or canvas was loaded already the
+  type `'load'`, as the others have.
+- Parse PaperScript code as a module, so strict-mode errors apply at parse time,
+  e.g. for `with` and legacy octals. Scripts with `src` load through `fetch`,
+  asynchronously, and `PaperScope#execute()` moves to the `paper/paperscript`
+  entry.
+- Evaluate PaperScript code through `eval` in all browsers, so a content
+  security policy has to allow `unsafe-eval`, where Chrome needed
+  `unsafe-inline` before.
+- Have only the script files run the PaperScripts of the page: importing
+  `paper/paperscript` no longer does, and `PaperScript.load()` runs them.
+- Return promises from `CanvasView#exportFrames()` and
+  `CanvasView#exportImage()` on Node.js, in place of the `onComplete` option and
+  the `callback` argument, and no longer keep the process running for a view
+  with `onFrame`.
+- List the items whose `data` a script changed in `Project#takeChanges()` of
+  hosted projects, as attribute changes, also where it changed the object in
+  place, so that hosts can write the data back. Only items whose data scripts
+  reached are compared.
+- Speed up offsetting and outlining by about 10%, as the boolean operations take
+  the intersections of their curves directly, and as the extrema of curvature
+  are found without creating points. Some results differ in the last digits.
+- Build the outlines of stroke profiles about three times as fast, with about a
+  third fewer segments: their sides are fitted across their direction, the
+  points where the pens touch the outline are solved for directly, and straight
+  parts where the pen doesn't change take a shortcut.
+- Leave `Matrix` out of the `paper/boolean` and `paper/offset` modules, which
+  are 8% and 6% smaller.
+
+### Deprecated
+
+- Deprecate the constructors `new Path.Line()`, `new Path.Circle()`,
+  `new Path.Rectangle()`, `new Path.Ellipse()`, `new Path.Arc()`,
+  `new Path.RegularPolygon()` and `new Path.Star()`, and `new Shape.Circle()`,
+  `new Shape.Rectangle()` and `new Shape.Ellipse()`, in favor of the factory
+  methods.
+
+### Removed
+
+- Remove the getter and setter methods without arguments, such as
+  `item.getPosition()` and `item.setPosition()`: use the properties, such as
+  `item.position`. Getters with arguments, such as `item.getBounds(options)`,
+  and predicates, such as `point.isZero()`, stay methods.
+- Remove the argument forms that spread the numbers of points, sizes and
+  rectangles, e.g. `new Segment(x, y)`, `path.cubicCurveTo(x1, y1, …)`,
+  `item.hitTest(x, y, options)`, `item.rotate(angle, x, y)`,
+  `new Path.Circle(x, y, radius)` and `color.add(r, g, b)`: pass one point, size
+  or rectangle per argument, as an object or an array.
+- Remove `paper.Symbol` and `paper.PlacedSymbol`, deprecated since 0.10: use
+  `SymbolDefinition` and `SymbolItem`.
+- Remove the deprecated `Emitter#attach()`, `detach()` and `fire()`,
+  `Item#transformContent`, `appendTop()`, `appendBottom()`, `moveAbove()`,
+  `moveBelow()` and `rasterize(resolution, insert)`, the boolean `fit` of
+  `Item#fitBounds()`, the `type` option of `matches()` and `hitTest()`, the
+  style properties `leading`, `tracking`, `font` and `windingRule`,
+  `Project#options` and `symbols`, `Shape#shape`, `SymbolDefinition#definition`,
+  `SymbolItem#symbol`, `Raster#ppi`, `Gradient#rampPoint`,
+  `CurveLocation#parameter`, the `isTime` arguments and `getParameterAt()` /
+  `getParameterOf()` of `Curve`, `Path#split(index, time)`,
+  `Path.RoundRectangle`, `Path.Oval`, `Event#timeStamp`, `View#draw()` and
+  `scrollBy()`, the `onExport` and `onImport` aliases of the SVG options, and
+  `PaperScope#browser`.
+- Remove `Item.extend()` and `HostItem.extend()`: subclasses use
+  `class extends`, and register for JSON with `registerClasses()`.
+- Remove `paper.DomEvent`, `paper.DomElement` and `paper.Http`, the properties
+  `nearestLocation`, `nearestPoint`, `intersections` and `crossings` of `Path`
+  (their methods stay), the arguments of `PathItem#getPathData()` (use
+  `pathData`), and the undocumented range of `Path#clear(start, end)` (use
+  `removeSegments()`).
+- Remove the undocumented static methods of `Curve` that work on curve values.
+  Most have a method of curves that does the same: `curve.getPointAtTime(t)` and
+  its siblings for `Curve.getPoint(v, t)`, `curve.getPart(from, to)` for
+  `Curve.getPart()` and `Curve.subdivide()`, `curve.getNearestLocation(point)`
+  for `Curve.getNearestTime()`, and `curve.getIntersections(other)`, whose
+  locations tell with `hasOverlap()`, for `Curve.getOverlaps()`.
+  `Curve.getMonoCurves()`, `Curve.isFlatEnough()`, `Curve.getReversals()` and
+  `Curve.solveCubic()` go without one.
+- Remove the undocumented `Curve#getValues(matrix)`,
+  `Curve.getValues(segment1, segment2)` and `CurveLocation.expand()`:
+  `curve.values` holds the values of a curve.
+- Remove `PathItem#interiorPoint`, which only `reorient()` used.
+- Remove the support of node-canvas and jsdom with their PDF and SVG canvases
+  and stream methods, the `paper-jsdom` and `paper-jsdom-canvas` packages, the
+  CommonJS and AMD exports, and the `require()` hook for `.pjs` files: the
+  README shows how to run PaperScript on Node.js instead.
+
+### Fixed
+
+- Fix many defects in the outlines of stroke profiles: slits, notches, wedges,
+  spikes and hairline contours at folds of the pen, in tight turns, along flat
+  pens, where curves continue a loop, where a curve starts without a handle and
+  where the pen turns about as fast as it moves. Outlines now reach the end of
+  paths that reverse along their line, round joins stay within nearby butt and
+  square caps, miter and bevel joins reach into tight curves, steps end straight
+  across on smooth joints, and straight sides are lines.
+- Fix `offset()` of paths with stroke profiles, which followed the outline of
+  the profile instead of lying at the distance all along, and boolean operations
+  leaving stops without values on results that only follow paths without
+  profiles.
+- Fix outlines and offsets bulging beyond the stroke at near-cusps, and turned
+  joins, caps and wedges at curves with handles too short to see, and `offset()`
+  throwing on open paths without length, such as a single point, which now
+  return an empty path.
+- Fix boolean operations and stroke outlines losing areas: on tiny paths where
+  lines coincide, where merging nearby vertices moved a curve across a corner of
+  the other path, and at crossings of curves at a shallow angle at large
+  coordinates or where fat-line clipping converges on both curves from one side.
+- Fix `getIntersections()` returning points beside a cusp, or the end that
+  neighboring curves share where one of them has no handle there, as
+  intersections.
+- Fix `contains()` and hit-tests of fills at the height of a segment where the
+  path turns back, which took points far outside as lying on the path, and
+  `contains()` and `Curve#getPeaks()` for curves that turn right after their
+  start, whose roots were sorted as text.
+- Fix splitting paths with `{ trace: false }` and `divide()` where paths run
+  along the outline of the other path, cross its closing line when it is open,
+  or only touch it, through the same planar graph as the boolean operations.
+- Fix `arcTo()`, `arcBy()` and `arcTowards()` drawing a curve where the arc is a
+  straight line and the segment it starts at has an outgoing handle, and
+  `arcTo(through, to)` for collinear points beyond the ends.
+- Fix object literals such as `new Rectangle({ right: 100, width: 50 })`, which
+  ignored sides, corners or the center given with a width or height. They are
+  now read in any order.
+- Fix `Path.Rectangle([x, y, width, height], radius)`, which created a rectangle
+  of 2 by 2, and the named forms of the path and shape factories, which left
+  `x`, `width` or `center` behind as properties of the item.
+- Fix gradient stops given as objects without an `offset`, which all lay at 0
+  instead of spreading evenly as the other forms do, and `Gradient#equals()`,
+  which ignored `radial`.
+- Fix `Segment#reverse()`, which returned nothing instead of the segment, and
+  `Curve#getPointAt()` and the other evaluators of curves, which didn't take
+  locations as documented.
+- Fix the stroke bounds of compound paths, which stayed as they were when the
+  stroke of the compound path changed, the hit-test options of `CompoundPath`,
+  which lost inherited keys, and `CompoundPath#interpolate()` between compound
+  paths with fewer children, which threw.
+- Fix `Segment#interpolate()` reporting four changes to its path instead of one.
+- Fix `Path#toShape()` of paths with a pivot, which created the shape around the
+  pivot instead of the path's center, and copies, results of boolean operations
+  and other items built from one with a pivot, which kept it in the wrong
+  coordinates where the item had a matrix.
+- Fix `Matrix#scale()` and `#shear()` with a center on the matrix of an item
+  that applies its matrix, which transformed the item around the wrong point.
+- Fix `raster.width = …`, which lost the raster's content, and `Raster#source`
+  in hosts without a document that provide their own `Image` class, as 0.17
+  supported.
+- Fix items with effects applying their opacity and blend mode again to what
+  their effects draw, which made groups draw with their opacity squared.
+- Fix importing SVG `<use>` elements of a `<symbol>`, whose style didn't reach
+  the symbol's content, or of an element with styles of its own, which the
+  `<use>`'s styles replaced: as in SVG, the content now inherits them only where
+  it sets none. Export the content of symbols without the styles it leaves to
+  its `<use>` elements (#1329).
+- Fix `exportSVG()` called during another export, e.g. from `processNode()`,
+  which cleared the state of the other export and made it fail.
+- Fix views receiving `mouseenter` again after every press and release, and
+  views sharing the state of presses and hovers, so that the events of one view,
+  e.g. through `View#dispatchMouseEvent()`, reached the items pressed or hovered
+  in another.
+- Fix drags ending when a second mouse button is released while the first one is
+  still down (#1355).
+- Fix mouse moves not being reported while the pointer is locked to a view's
+  canvas with `requestPointerLock()`: the point now moves by the pointer's
+  movement, also beyond the view (#1802).
+- Fix source maps of PaperScript inlined in a page whose markup has no line
+  break before it, e.g. when minified, which made compiling fail.
+- Fix hosted items taking the project's current style when their content loads
+  from the host, `Project#hasChanges()` for items whose data a script changed in
+  place, and paths that a script created and the host keyed keeping a stroke
+  profile that the host's JSON doesn't have when they reload.
+- Fix the declarations for apps that check them with strict settings and without
+  `skipLibCheck`: they leave out the internal linked points, type the hit-tests
+  of all items alike, and give the event handlers of items their own type, e.g.
+  `this` in `raster.onLoad` is the Raster.
+
 ## `0.17.0`
 
 ### Added
