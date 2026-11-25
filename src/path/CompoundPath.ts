@@ -141,7 +141,7 @@ export class CompoundPath extends PathItem {
     return super._transformContent(matrix, applyRecursively, setApplyMatrix)
   }
 
-  insertChildren(index: number, items: any[]): Item[] {
+  insertChildren(index: number, items: any[]): Item[] | null {
     // If we're passed a segment array describing a simple path instead of a
     // compound-path, wrap it in another array to turn it into the array
     // notation for compound-paths.
@@ -163,7 +163,8 @@ export class CompoundPath extends PathItem {
       if (Array.isArray(item)) {
         list[i] = new Path({ segments: item, insert: false })
       } else if (item instanceof CompoundPath) {
-        list.splice(i, 1, ...item.removeChildren())
+        // Compound paths always have children:
+        list.splice(i, 1, ...item.removeChildren()!)
         item.remove()
       }
     }

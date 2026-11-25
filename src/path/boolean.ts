@@ -224,7 +224,7 @@ export function createResult(
 
 export function traceBoolean(
   path1: PathItem,
-  path2: PathItem | PathItem[] | null,
+  path2: PathItem | PathItem[] | null | undefined,
   operation: BooleanOperation,
   options?: BooleanOptions
 ): PathItem {
@@ -311,7 +311,7 @@ function combinePaths(
 
 export function splitBoolean(
   path1: PathItem,
-  path2: PathItem | PathItem[] | null,
+  path2: PathItem | PathItem[] | null | undefined,
   operation: BooleanOperation,
   options?: BooleanOptions
 ): PathItem {
