@@ -27,6 +27,10 @@ import type { RectangleLike } from '../basic/Rectangle.ts'
 import type { Item } from '../item/Item.ts'
 import type { Style } from '../style/Style.ts'
 import type { Project } from '../item/Project.ts'
+import type { TextOrientation } from './TextItem.ts'
+
+// Where the lines of area text sit in each column:
+export type VerticalAlign = 'top' | 'center' | 'bottom'
 
 // The fields that change the layout, with their defaults:
 const fields = {
@@ -58,7 +62,7 @@ export class AreaText extends TextItem {
    * @param [orientation='horizontal'] the orientation of the text, see
    *     {@link #orientation}
    */
-  constructor(area: PathItem, orientation?: string)
+  constructor(area: PathItem, orientation?: TextOrientation)
   /**
    * Creates a text item that flows inside a rectangle.
    *
@@ -70,7 +74,7 @@ export class AreaText extends TextItem {
    * var text = new AreaText(new Rectangle(20, 20, 160, 100));
    * text.content = 'Text in an area breaks into lines that fit it.';
    */
-  constructor(rectangle: RectangleLike, orientation?: string)
+  constructor(rectangle: RectangleLike, orientation?: TextOrientation)
   /**
    * Creates a text item that flows inside an area, from the properties
    * described by an object literal.
@@ -79,7 +83,7 @@ export class AreaText extends TextItem {
    *     attributes
    */
   constructor(object: object)
-  constructor(area: any, orientation?: string) {
+  constructor(area: any, orientation?: TextOrientation) {
     super()
     const hasProps = isPlainObject(area) && area.width === undefined
     this._initialize(hasProps && area)
@@ -735,5 +739,5 @@ export interface AreaText {
    * @values 'top', 'center', 'bottom'
    * @default 'top'
    */
-  verticalAlign: string
+  verticalAlign: VerticalAlign
 }

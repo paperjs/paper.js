@@ -28,6 +28,10 @@ import {
 } from '../internal.ts'
 import type { PointLike } from '../basic/Point.ts'
 
+// The types of colors, of which the first four are color spaces:
+export type ColorSpace = 'rgb' | 'gray' | 'hsb' | 'hsl'
+export type ColorType = ColorSpace | 'gradient' | 'pattern'
+
 /**
  * What a color can be passed as, where a function takes one: a color, a CSS
  * string, a gray value, an array of components, or an object describing the
@@ -150,12 +154,12 @@ function getEllipseMatrix(components: any[]): Matrix {
   }
 }
 
-function fromCSS(string: string): [string, number[]] {
+function fromCSS(string: string): [ColorSpace, number[]] {
   let match = (
     string.match(/^#([\da-f]{2})([\da-f]{2})([\da-f]{2})([\da-f]{2})?$/i) ||
     string.match(/^#([\da-f])([\da-f])([\da-f])([\da-f])?$/i)
   )
-  let type = 'rgb'
+  let type: ColorSpace = 'rgb'
   let components: number[]
   if (match) {
     // Hex with optional alpha channel:
@@ -169,7 +173,7 @@ function fromCSS(string: string): [string, number[]] {
     }
   } else if ((match = string.match(/^(rgb|hsl)a?\((.*)\)$/))) {
     // RGB / RGBA or HSL / HSLA
-    type = match[1]
+    type = match[1] as ColorSpace
     const parts = match[2].trim().split(/[,\s]+/g)
     const isHSL = type === 'hsl'
     components = []
@@ -417,7 +421,7 @@ const operators = {
  * circle.fillColor = '#ff0000';
  */
 export class Color extends Base {
-  #type: string
+  #type: ColorType
   #components: any[]
   #alpha: number
   #owner: any
@@ -710,7 +714,7 @@ export class Color extends Base {
       args = arg
       arg = args[0]
     }
-    let type: string
+    let type: ColorType
     let components: any[]
     let alpha: number
     let values: any[]
@@ -900,7 +904,7 @@ export class Color extends Base {
    * {@values 'rgb', 'gray', 'hsb', 'hsl'}
    * @return the converted color as a new instance
    */
-  convert(type: string): Color {
+  convert(type: ColorSpace): Color {
     return new Color(type, this._convert(type), this.#alpha)
   }
 
@@ -913,11 +917,11 @@ export class Color extends Base {
    * var color = new Color(1, 0, 0);
    * console.log(color.type); // 'rgb'
    */
-  get type(): string {
+  get type(): ColorType {
     return this.#type
   }
 
-  set type(type: string) {
+  set type(type: ColorType) {
     this.#components = this._convert(type)
     this.#type = type
   }

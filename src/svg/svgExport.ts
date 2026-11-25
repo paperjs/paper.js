@@ -242,7 +242,7 @@ function exportPath(item: Path, options: Options): SVGElement {
 }
 
 function exportShape(item: Shape, options: Options): SVGElement {
-  let type = item._type
+  let type: string = item._type
   let radius: any = item._radius
   const attrs = getTransform(item._matrix, options, true, type !== 'rectangle')
   if (type === 'rectangle') {

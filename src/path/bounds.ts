@@ -22,6 +22,7 @@ import {
   getStrokeMatrix
 } from '../internal.ts'
 import type { Path } from './Path.ts'
+import type { StrokeCap, StrokeJoin } from '../values/path.ts'
 
 // All bounds functions below have the same first four parameters: segments,
 // closed, path, matrix, so they can be called from Path#_getBounds() and also
@@ -126,7 +127,7 @@ export function getSegmentStrokeBounds(
     bounds = bounds.unite(joinBounds)
   }
 
-  function addJoin(segment: Segment, join: string) {
+  function addJoin(segment: Segment, join: StrokeJoin) {
     // When both handles are set in a segment and they are collinear,
     // the join setting is ignored and round is always used.
     if (join === 'round' || segment.isSmooth()) {
@@ -139,7 +140,7 @@ export function getSegmentStrokeBounds(
     }
   }
 
-  function addCap(segment: Segment, cap: string) {
+  function addCap(segment: Segment, cap: StrokeCap) {
     if (cap === 'round') {
       addRound(segment)
     } else {
@@ -167,7 +168,7 @@ export function getSegmentStrokeBounds(
 
 export function addBevelJoin(
   segment: Segment,
-  join: string,
+  join: StrokeJoin,
   radius: number,
   miterLimit: number,
   matrix: Matrix,
@@ -213,7 +214,7 @@ export function addBevelJoin(
 
 export function addSquareCap(
   segment: Segment,
-  cap: string,
+  cap: StrokeCap,
   radius: number,
   matrix: Matrix,
   strokeMatrix: Matrix,

@@ -26,13 +26,14 @@
 import type { PathValues, RegionValues } from '../values/index.ts'
 import { offsetPath as offsetPathData, offsetRegion } from './offset.ts'
 import { outlineStroke } from './outline.ts'
+import type { StrokeCap, StrokeJoin } from '../values/index.ts'
 
 export { formatSVGPath, parseSVGPath } from '../values/index.ts'
 export type { PathValues, RegionValues } from '../values/index.ts'
 
-export type OffsetOptions = { join?: string; miterLimit?: number }
+export type OffsetOptions = { join?: StrokeJoin; miterLimit?: number }
 
-export type OutlineOptions = OffsetOptions & { width?: number; cap?: string }
+export type OutlineOptions = OffsetOptions & { width?: number; cap?: StrokeCap }
 
 /**
  * Returns the region grown by the distance, or shrunk where it is negative.

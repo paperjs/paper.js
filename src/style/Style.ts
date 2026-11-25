@@ -28,6 +28,25 @@ import type { PointLike } from '../basic/Point.ts'
 import type { ColorLike } from './Color.ts'
 import type { Project } from '../item/Project.ts'
 import type { View } from '../view/View.ts'
+import type { FillRule } from '../values/region.ts'
+import type { StrokeCap, StrokeJoin } from '../values/path.ts'
+
+// The values of the style properties that take one of a set of strings:
+export type PaintOrder = 'fill' | 'stroke'
+export type FontStyle = 'normal' | 'italic' | 'oblique'
+export type BaselinePosition = 'normal' | 'superscript' | 'subscript'
+export type Capitals = 'normal' | 'all' | 'small'
+export type Justification =
+  | 'left'
+  | 'right'
+  | 'center'
+  | 'start'
+  | 'end'
+  | 'justify'
+export type JustifyLast = 'left' | 'right' | 'center' | 'start' | 'end' | 'all'
+export type Composer = 'line' | 'paragraph'
+export type LineWrap = 'normal' | 'balance' | 'pretty'
+export type Direction = 'ltr' | 'rtl'
 
 // Defaults for items without text-styles (PathItem, Shape, Raster, ...):
 const itemDefaults = {
@@ -623,7 +642,7 @@ export interface StyleProperties {
    * line2.position.y += 100;
    * line2.strokeCap = 'butt';
    */
-  strokeCap: string
+  strokeCap: StrokeCap
 
   /**
    * The shape to be used at the segments and corners of {@link Path} items
@@ -652,7 +671,7 @@ export interface StyleProperties {
    * path3.position.x += path3.bounds.width * 1.5;
    * path3.strokeJoin = 'bevel';
    */
-  strokeJoin: string
+  strokeJoin: StrokeJoin
 
   /**
    * Specifies whether the stroke is to be drawn taking the current affine
@@ -721,7 +740,7 @@ export interface StyleProperties {
    * // Paint the stroke behind the fill:
    * text.paintOrder = 'stroke';
    */
-  paintOrder: string
+  paintOrder: PaintOrder
 
   /**
    * {@grouptitle Fill Style}
@@ -749,7 +768,7 @@ export interface StyleProperties {
    * @values 'nonzero', 'evenodd'
    * @default 'nonzero'
    */
-  fillRule: string
+  fillRule: FillRule
 
   /**
    * {@grouptitle Shadow Style}
@@ -860,7 +879,7 @@ export interface StyleProperties {
    * @values 'normal', 'italic', 'oblique'
    * @default 'normal'
    */
-  fontStyle: string
+  fontStyle: FontStyle
 
   /**
    * The settings of a variable font's axes, by their tags: `{ wght: 600,
@@ -885,7 +904,7 @@ export interface StyleProperties {
    * @values 'normal', 'superscript', 'subscript'
    * @default 'normal'
    */
-  baselinePosition: string
+  baselinePosition: BaselinePosition
 
   /**
    * How much the letters are scaled, as {@link Item#scaling}: one factor for
@@ -908,7 +927,7 @@ export interface StyleProperties {
    * @values 'normal', 'all', 'small'
    * @default 'normal'
    */
-  capitals: string
+  capitals: Capitals
 
   /**
    * Whether the letters are underlined.
@@ -940,7 +959,7 @@ export interface StyleProperties {
    * @values 'left', 'right', 'center', 'start', 'end', 'justify'
    * @default 'left'
    */
-  justification: string
+  justification: Justification
 
   /**
    * How the last line of a justified paragraph is aligned; `'all'` justifies
@@ -949,7 +968,7 @@ export interface StyleProperties {
    * @values 'left', 'right', 'center', 'start', 'end', 'all'
    * @default 'left'
    */
-  justifyLast: string
+  justifyLast: JustifyLast
 
   /**
    * How far justification may change the spacing, each as `[minimum, desired,
@@ -1028,7 +1047,7 @@ export interface StyleProperties {
    * @values 'line', 'paragraph'
    * @default 'paragraph'
    */
-  composer: string
+  composer: Composer
 
   /**
    * How the lines of a paragraph in an area are evened out: `'normal'`
@@ -1040,7 +1059,7 @@ export interface StyleProperties {
    * @values 'normal', 'balance', 'pretty'
    * @default 'normal'
    */
-  lineWrap: string
+  lineWrap: LineWrap
 
   /**
    * The paragraph's tab stops: `[{ position, align, leader }]`, with `align`
@@ -1061,7 +1080,7 @@ export interface StyleProperties {
    * @values 'ltr', 'rtl'
    * @default null
    */
-  direction: string
+  direction: Direction
 }
 
 // The members defined at runtime rather than in the class body:

@@ -37,6 +37,9 @@ import type { SizeLike } from '../basic/Size.ts'
 import type { RectangleLike } from '../basic/Rectangle.ts'
 import type { BoundsOptions } from './Item.ts'
 
+// The types of shapes:
+export type ShapeType = 'rectangle' | 'circle' | 'ellipse'
+
 /**
  * The Shape item represents a rectangle, with optionally rounded corners, a
  * circle or an ellipse, described by its {@link #type}, {@link #size} and
@@ -44,7 +47,7 @@ import type { BoundsOptions } from './Item.ts'
  * {@link #toPath(insert)} to convert it to a path.
  */
 export class Shape extends Item {
-  _type: string
+  _type: ShapeType
   _size: Size
   _radius: number | Size
 
@@ -281,11 +284,11 @@ export class Shape extends Item {
    *
    * @values 'rectangle', 'circle', 'ellipse'
    */
-  get type(): string {
+  get type(): ShapeType {
     return this._type
   }
 
-  set type(type: string) {
+  set type(type: ShapeType) {
     this._type = type
   }
 
@@ -410,7 +413,9 @@ export class Shape extends Item {
   }
 
   _asPathItem(): Path {
-    const path = Path[this._type]({
+    // The factories of Path take the same properties as the shape:
+    const create: (props: object) => Path = Path[this._type]
+    const path = create({
       center: new Point(),
       size: this._size,
       radius: this._radius,
@@ -605,7 +610,7 @@ export class Shape extends Item {
 }
 
 function createShape(
-  type: string,
+  type: ShapeType,
   point: PointLike,
   size: Size,
   radius: number | Size,

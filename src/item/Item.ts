@@ -77,6 +77,10 @@ import type { SymbolDefinition } from './SymbolDefinition.ts'
 import type { View } from '../view/View.ts'
 import type { PathItem } from '../path/PathItem.ts'
 import type { ItemDefinition } from './ItemDefinition.ts'
+import type { PaintOrder } from '../style/Style.ts'
+import type { FillRule } from '../values/region.ts'
+import type { StrokeCap, StrokeJoin } from '../values/path.ts'
+import type { BlendMode } from '../canvas/blendModes.ts'
 
 type Handler = (this: Item, ...args: any[]) => any
 
@@ -145,7 +149,7 @@ export class Item extends Emitter {
   declare _canScaleStroke: boolean
   declare _pivot: Point
   declare _visible: boolean
-  declare _blendMode: string
+  declare _blendMode: BlendMode
   declare _opacity: number
   declare _locked: boolean
   declare _guide: boolean
@@ -3773,7 +3777,7 @@ export interface Item {
    * // Set the blend mode of circle2:
    * circle2.blendMode = 'multiply';
    */
-  blendMode: string
+  blendMode: BlendMode
 
   /**
    * The opacity of the item as a value between `0` and `1`.
@@ -4143,7 +4147,7 @@ export interface Item {
    * line2.position.y += 100;
    * line2.strokeCap = 'butt';
    */
-  strokeCap: string
+  strokeCap: StrokeCap
 
   /**
    * The shape to be used at the segments and corners of {@link Path} items
@@ -4170,7 +4174,7 @@ export interface Item {
    * path3.position.x += path3.bounds.width * 1.5;
    * path3.strokeJoin = 'bevel';
    */
-  strokeJoin: string
+  strokeJoin: StrokeJoin
 
   /**
    * The dash offset of the stroke.
@@ -4229,7 +4233,7 @@ export interface Item {
    * @values 'fill', 'stroke'
    * @default 'fill'
    */
-  paintOrder: string
+  paintOrder: PaintOrder
 
   /**
    * {@grouptitle Fill Style}
@@ -4259,7 +4263,7 @@ export interface Item {
    * @values 'nonzero', 'evenodd'
    * @default 'nonzero'
    */
-  fillRule: string
+  fillRule: FillRule
 
   /**
    * {@grouptitle Shadow Style}

@@ -32,17 +32,18 @@ import {
 import type { Item } from '../item/Item.ts'
 import type { StrokeProfileStop } from './StrokeProfileStop.ts'
 import type { PathItem } from './PathItem.ts'
+import type { StrokeCap, StrokeJoin } from '../values/path.ts'
 
 export type OffsetOptions = {
-  join?: string
+  join?: StrokeJoin
   miterLimit?: number
   insert?: boolean
 }
 
 export type OutlineOptions = {
   width?: number
-  join?: string
-  cap?: string
+  join?: StrokeJoin
+  cap?: StrokeCap
   miterLimit?: number
   insert?: boolean
 }
@@ -171,8 +172,8 @@ export function getStrokeOutline(item: PathItem): PathItem {
 function outlinePaths(
   paths: Path[],
   radius: number,
-  join: string,
-  cap: string,
+  join: StrokeJoin,
+  cap: StrokeCap,
   miterLimit: number
 ): PathItem {
   const region = getFeature('offset').outlineStroke(

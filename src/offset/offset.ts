@@ -31,6 +31,7 @@ import type {
 } from '../values/index.ts'
 import { subtractRegions, uniteRegions } from '../boolean/operations.ts'
 import { outlineStroke } from './outline.ts'
+import type { StrokeJoin } from '../values/path.ts'
 
 const { abs } = Math
 
@@ -39,7 +40,7 @@ const { abs } = Math
 export function offsetRegion(
   region: RegionValues,
   distance: number,
-  join: string,
+  join: StrokeJoin,
   miterLimit: number
 ): RegionValues {
   if (distance) {
@@ -65,7 +66,7 @@ export function offsetRegion(
 export function offsetPath(
   path: PathValues,
   distance: number,
-  join: string,
+  join: StrokeJoin,
   miterLimit: number
 ): PathValues[] {
   const curves = getStrokeCurves(path)

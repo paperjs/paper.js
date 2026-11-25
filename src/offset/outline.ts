@@ -25,6 +25,7 @@ import type { PathValues, RegionValues } from '../values/index.ts'
 import { ProfileSweep } from './profile.ts'
 import type { StrokePens } from './profile.ts'
 import { RoundSweep } from './round.ts'
+import type { StrokeCap, StrokeJoin } from '../values/path.ts'
 
 // A path to outline the stroke of, with the pens of its stroke profile:
 export type StrokePath = PathValues & { pens?: StrokePens }
@@ -37,8 +38,8 @@ const errorThreshold = 0.1
 export function outlineStroke(
   paths: StrokePath[],
   radius: number,
-  join: string,
-  cap: string,
+  join: StrokeJoin,
+  cap: StrokeCap,
   miterLimit: number
 ): RegionValues {
   // The offsets' error, relative to small radii:

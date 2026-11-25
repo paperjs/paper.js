@@ -69,3 +69,25 @@ export {
   raster,
   tween
 } from './internal.ts'
+
+// The values of the properties that take one of a set of strings:
+export type { BlendMode } from './canvas/blendModes.ts'
+export type { ColorSpace, ColorType } from './style/Color.ts'
+export type {
+  BaselinePosition,
+  Capitals,
+  Composer,
+  Direction,
+  FontStyle,
+  Justification,
+  JustifyLast,
+  LineWrap,
+  PaintOrder
+} from './style/Style.ts'
+export type { FillRule } from './values/region.ts'
+export type { StrokeCap, StrokeJoin } from './values/path.ts'
+export type { RasterSmoothing } from './item/Raster.ts'
+export type { ShapeType } from './item/Shape.ts'
+export type { TextOrientation } from './text/TextItem.ts'
+export type { PathTextAlignment } from './text/PathText.ts'
+export type { VerticalAlign } from './text/AreaText.ts'

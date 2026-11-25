@@ -17,6 +17,10 @@ import { Point } from '../basic/Point.ts'
 import { getCurveArea, hasStraightHandles } from './curve.ts'
 import type { CurveValues } from './curve.ts'
 
+// The joins and caps of strokes, as in canvas and SVG:
+export type StrokeJoin = 'miter' | 'round' | 'bevel'
+export type StrokeCap = 'round' | 'square' | 'butt'
+
 // A segment as its point with both of its handles, relative to it:
 export type SegmentValues = [
   point: number[],
