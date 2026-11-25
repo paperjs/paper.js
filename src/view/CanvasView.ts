@@ -27,6 +27,10 @@ import type { Project } from '../item/Project.ts'
  * @private
  */
 export class CanvasView extends View {
+  // Canvas views always have their element and its context:
+  declare _element: HTMLCanvasElement
+  declare _context: CanvasRenderingContext2D
+
   static {
     registerClasses({ CanvasView: this })
   }
@@ -47,7 +51,8 @@ export class CanvasView extends View {
   constructor(project: Project, canvas: HTMLCanvasElement | SizeLike) {
     // Handle canvas argument
     let element: HTMLCanvasElement
-    if (canvas instanceof getWindow().HTMLCanvasElement) {
+    // Canvas views are only created with a window, see View.create():
+    if (canvas instanceof getWindow()!.HTMLCanvasElement) {
       element = canvas
     } else {
       // See if the arguments describe the view size:
@@ -61,7 +66,7 @@ export class CanvasView extends View {
     }
     // Save context right away, and restore in #remove(). Also restore() and
     // save() again in _setElementSize() to prevent accumulation of scaling.
-    element.getContext('2d').save()
+    element.getContext('2d')!.save()
     super(project, element)
     // We can't be sure the canvas is clear
     this._needsUpdate = true
@@ -86,7 +91,7 @@ export class CanvasView extends View {
       // With border-box sizing, the style includes padding and border:
       const { style } = element
       const insets =
-        getStyles(element).boxSizing === 'border-box'
+        getStyles(element)!.boxSizing === 'border-box'
           ? getInsets(element)
           : new Size()
       style.width = `${width + insets.width}px`

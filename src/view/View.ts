@@ -89,12 +89,14 @@ type FrameEvent = { delta: number; time: number; count: number }
  */
 export class View extends Emitter {
   // The view that receives keyboard input:
-  static _focused: View = null
+  static _focused: View | null = null
 
-  _project: Project
-  _element: HTMLCanvasElement
+  // Removed views have no project:
+  _project: Project | null
+  // Views in workers have no element:
+  _element: HTMLCanvasElement | null
   // The context of the element, which also measures text:
-  _context: CanvasRenderingContext2D
+  _context: CanvasRenderingContext2D | null
   _pixelRatio: number
   _viewSize: Size
   _matrix: Matrix
@@ -112,23 +114,23 @@ export class View extends Emitter {
   // point:
   _dragging = false
   _isPrevented = false
-  _lastPoint: Point = null
+  _lastPoint: Point | null = null
   #called = false
   #prevented = false
   #wasInView = false
-  #downPoint: Point = null
-  #downItem: Item = null
-  #overItem: Item = null
-  #dragItem: Item = null
-  #clickItem: Item = null
-  #clickTime: number = null
+  #downPoint: Point | null = null
+  #downItem: Item | null = null
+  #overItem: Item | null = null
+  #dragItem: Item | null = null
+  #clickItem: Item | null = null
+  #clickTime: number | null = null
   #dblClick = false
   #scope: PaperScope
   #id: string
-  #windowEvents: Record<string, Listener>
+  #windowEvents: Record<string, Listener> | undefined
   #stats: any
-  #bounds: Rectangle
-  #decomposed: ReturnType<Matrix['decompose']>
+  #bounds: Rectangle | undefined
+  #decomposed: ReturnType<Matrix['decompose']> | undefined
   // Items that need the onFrame handler called on them
   #frameItems: Record<string, { item: Item; time: number; count: number }> = {}
   #frameItemCount = 0
@@ -145,7 +147,7 @@ export class View extends Emitter {
       const canvas = element as HTMLCanvasElement
 
       const getSizeAttribute = (name: 'width' | 'height') => (
-        canvas[name] || parseInt(canvas.getAttribute(name), 10)
+        canvas[name] || parseInt(canvas.getAttribute(name) ?? '', 10)
       )
 
       const getCanvasSize = () => {
@@ -164,12 +166,12 @@ export class View extends Emitter {
 
       // Options that the canvas's attributes switch off, such as hidpi="off":
       const isOff = (name: string) =>
-        /^(off|false)$/.test(PaperScope.getAttribute(canvas, name))
+        /^(off|false)$/.test(PaperScope.getAttribute(canvas, name) ?? '')
 
       // Generate an id for this view / element if it does not have one
-      this.#id = canvas.getAttribute('id')
-      if (this.#id == null) {
-        this.#id = `paper-view-${nextId++}`
+      const id = canvas.getAttribute('id')
+      this.#id = id ?? `paper-view-${nextId++}`
+      if (id == null) {
         canvas.setAttribute('id', this.#id)
       }
       // Handle the user's input, unless the canvas says input="off":
@@ -212,7 +214,7 @@ export class View extends Emitter {
         style.position = 'absolute'
         style.left = `${offset.x}px`
         style.top = `${offset.y}px`
-        getDocument().body.appendChild(stats)
+        getDocument()!.body.appendChild(stats)
       }
       this._element = canvas
       this._context = canvas.getContext('2d')
@@ -223,6 +225,7 @@ export class View extends Emitter {
       installEvents(false)
       // For web-workers: Allow calling of `paper.setup(new Size(x, y));`
       size = new Size(element as SizeLike)
+      this.#id = `paper-view-${nextId++}`
       this._element = null
       this._context = null
       this._pixelRatio = 1
@@ -271,9 +274,11 @@ export class View extends Emitter {
       project._view = null
     }
     // Uninstall event handlers again for this view.
-    removeEvents(this._element, viewEvents)
+    if (this._element) {
+      removeEvents(this._element, viewEvents)
+    }
     if (this.#windowEvents) {
-      removeEvents(getWindow(), this.#windowEvents)
+      removeEvents(getWindow()!, this.#windowEvents)
     }
     this._element = this._project = null
     // Remove all onFrame handlers.
@@ -345,7 +350,7 @@ export class View extends Emitter {
           if (
             !element || (
               (
-                !getDocument().hidden ||
+                !getDocument()!.hidden ||
                 PaperScope.getAttribute(element, 'keepalive') === 'true'
               ) &&
               isInView(element)
@@ -441,7 +446,7 @@ export class View extends Emitter {
   _changed() {
     // The only one calling View._changed() is Matrix, so it can only mean
     // one thing:
-    this._project._changed(Change.VIEW)
+    this._project?._changed(Change.VIEW)
     // Force recalculation of these values next time they are requested.
     this.#bounds = this.#decomposed = undefined
   }
@@ -449,14 +454,14 @@ export class View extends Emitter {
   /**
    * The underlying native element.
    */
-  get element(): HTMLCanvasElement {
+  get element(): HTMLCanvasElement | null {
     return this._element
   }
 
   /**
    * The project that this view displays.
    */
-  get project(): Project {
+  get project(): Project | null {
     return this._project
   }
 
@@ -534,8 +539,9 @@ export class View extends Emitter {
    * direction.
    */
   get bounds(): Rectangle {
+    // Views only scale by positive zooms, so their matrices invert:
     this.#bounds ??= this._matrix
-      .inverted()
+      .inverted()!
       ._transformBounds(new Rectangle(new Point(), this._viewSize))
     return this.#bounds
   }
@@ -558,7 +564,7 @@ export class View extends Emitter {
    * @return {@true if the view is visible}
    */
   isVisible(): boolean {
-    return isInView(this._element)
+    return !!this._element && isInView(this._element)
   }
 
   /**
@@ -567,7 +573,7 @@ export class View extends Emitter {
    * @return  {@true if the view is inserted}
    */
   isInserted(): boolean {
-    return isInserted(this._element)
+    return !!this._element && isInserted(this._element)
   }
 
   // Text is measured with a canvas context: the view's own, or one from the
@@ -576,16 +582,16 @@ export class View extends Emitter {
   getPixelSize(size: string): number {
     const agent = getAgent()
     const element = this._element
-    let ctx: CanvasRenderingContext2D
+    let ctx: CanvasRenderingContext2D | null
     let pixels: number
     if (element && agent?.firefox) {
       // Firefox doesn't convert context.font sizes to pixels, so use the
       // DOM there, which still doesn't work in workers:
-      const parent = element.parentNode
-      const temp = getDocument().createElement('div')
+      const parent = element.parentNode!
+      const temp = getDocument()!.createElement('div')
       temp.style.fontSize = size
       parent.appendChild(temp)
-      pixels = parseFloat(getStyles(temp).fontSize)
+      pixels = parseFloat(getStyles(temp)!.fontSize)
       parent.removeChild(temp)
     } else if ((ctx = this._context ?? getContext(1, 1))) {
       const prevFont = ctx.font
@@ -638,7 +644,7 @@ export class View extends Emitter {
 
   getFontMetrics(font: string): { ascent: number; descent: number } | null {
     const ctx = this._context ?? getContext(1, 1)
-    let metrics = null
+    let metrics: { ascent: number; descent: number } | null = null
     if (ctx) {
       const prevFont = ctx.font
       ctx.font = font
@@ -858,7 +864,7 @@ export class View extends Emitter {
    * @return the point converted into project coordinates
    */
   viewToProject(point: PointLike | number, y?: number): Point {
-    return this._matrix._inverseTransform(Point.from(point, y))
+    return this._matrix._inverseTransform(Point.from(point, y))!
   }
 
   /**
@@ -875,7 +881,8 @@ export class View extends Emitter {
   // Returns the point in project coordinates at the offset from the top left
   // of the view's element on screen:
   #getOffsetPoint(offset: Point): Point {
-    const element = this._element
+    // Only views with elements receive the events of pointers:
+    const element = this._element!
     const size = getSize(element)
     // Map the offset on screen, with CSS sizes and transforms applied, to
     // the content box in view coordinates (#549, #1729). Elements that
@@ -975,7 +982,7 @@ export class View extends Emitter {
     handleKey(
       type === 'keydown',
       key,
-      options.character,
+      options.character ?? null,
       createEvent(type, options, this),
       this
     )
@@ -988,7 +995,7 @@ export class View extends Emitter {
   _handleMouseEvent(
     type: string,
     event: any,
-    point?: Point,
+    point?: Point | null,
     dispatched?: boolean
   ) {
     const itemEvents = this._itemEvents
@@ -1011,7 +1018,7 @@ export class View extends Emitter {
       if (this.responds('mouseup') || tool?.responds('mouseup')) {
         return true
       }
-      for (let item = hitItem; item; item = item._parent) {
+      for (let item: Item | null = hitItem; item; item = item._parent) {
         for (const key in itemEventsMap.mouseup) {
           if (item.responds(key)) {
             return true
@@ -1045,10 +1052,10 @@ export class View extends Emitter {
     const isLocked = (
       !dispatched &&
       !!this._lastPoint &&
-      getDocument().pointerLockElement === this._element
+      getDocument()!.pointerLockElement === this._element
     )
     point ??= isLocked
-      ? this._lastPoint.add(
+      ? this._lastPoint!.add(
           this.#getOffsetPoint(
             new Point(event.movementX, event.movementY)
           ).subtract(this.#getOffsetPoint(new Point()))
@@ -1070,7 +1077,8 @@ export class View extends Emitter {
     const hit = (
       hitItems &&
       inView &&
-      this._project.hitTest(point, {
+      // Removed views receive no events:
+      this._project!.hitTest(point, {
         tolerance: this.#scope.settings.hitTolerance,
         fill: true,
         stroke: true
@@ -1139,8 +1147,8 @@ export class View extends Emitter {
         this.#dblClick = (
           !this.#dblClick &&
           hitItem === this.#clickItem &&
-          time - this.#clickTime < 300 &&
-          point.getDistance(this.#downPoint) < 3
+          time - this.#clickTime! < 300 &&
+          point.getDistance(this.#downPoint!) < 3
         )
         this.#downItem = this.#clickItem = hitItem
         this.#clickTime = time
@@ -1148,7 +1156,7 @@ export class View extends Emitter {
         // prevented the default, and if the hitItem or any of its
         // parents actually respond to mousedrag events.
         if (!this.#prevented && hitItem) {
-          let item = hitItem
+          let item: Item | null = hitItem
           while (item && !item.responds('mousedrag')) {
             item = item._parent
           }
@@ -1213,13 +1221,13 @@ export class View extends Emitter {
   // Emit the event on the object and its parents, and return whether it was
   // stopped:
   #emitMouseEvent(
-    obj: View | Item,
-    target: View | Item,
+    obj: View | Item | null,
+    target: View | Item | null,
     type: string,
     event: PointerEvent,
     point: Point,
-    prevPoint?: Point,
-    stopItem?: Item
+    prevPoint?: Point | null,
+    stopItem?: Item | null
   ): boolean {
     let stopped = false
     let mouseEvent: MouseEvent
@@ -1253,6 +1261,7 @@ export class View extends Emitter {
           return emit(obj, fallback)
         }
       }
+      return false
     }
 
     // Bubble up the parents and emit this event until we're told to stop.
@@ -1268,17 +1277,17 @@ export class View extends Emitter {
   // Emit the event on the drag item, the hit item and the view, and return
   // whether it was stopped:
   #emitMouseEvents(
-    hitItem: Item,
+    hitItem: Item | null,
     type: string,
     event: PointerEvent,
     point: Point,
-    prevPoint: Point
+    prevPoint: Point | null
   ): boolean {
     // Before handling events, process removeOn() calls for cleanup.
     // NOTE: As soon as there is one event handler receiving mousedrag
     // events, non of the removeOnMove() items will be removed while the
     // user is dragging.
-    this._project.removeOn(type)
+    this._project!.removeOn(type)
     // Set called and prevented to false, so they will reflect if the
     // following calls to #emitMouseEvent() have called a handler, and if
     // and of the handlers called event.preventDefault()
@@ -1842,8 +1851,8 @@ let hasInputEvents = false
 // The DOM's events, which installEvents() sets up, and which install
 // themselves on the elements of views:
 let viewEvents: Record<string, Listener> = {}
-let prevFocus: View
-let tempFocus: View
+let prevFocus: View | null
+let tempFocus: View | null
 
 // Higher level event handling, hit-testing, and emitting of normal mouse
 // events along with "virtual" events such as mouseenter, mouseleave,
@@ -1906,7 +1915,7 @@ function installEvents(hasInput: boolean) {
           // drag outside of the view too. Events that scripts dispatch
           // have no pointer to capture:
           if (event.isTrusted) {
-            view._element.setPointerCapture(event.pointerId)
+            view._element!.setPointerCapture(event.pointerId)
           }
           view._handleMouseEvent('mousedown', event)
           view._isPrevented = event.defaultPrevented
@@ -1980,10 +1989,10 @@ function installEvents(hasInput: boolean) {
   if (hasInput && !hasInputEvents) {
     hasInputEvents = true
     installKeyEvents()
-    addEvents(getDocument(), {
+    addEvents(getDocument()!, {
       scroll: updateFocus
     })
-    addEvents(getWindow(), {
+    addEvents(getWindow()!, {
       load: updateFocus
     })
   }
@@ -1992,8 +2001,9 @@ function installEvents(hasInput: boolean) {
 function getView(event: Event): View {
   // Get the view from the current event target.
   const target = event.target as Element
-  // Some node do not have the getAttribute method, e.g. SVG nodes.
-  return target.getAttribute && viewsById[target.getAttribute('id')]
+  // Some node do not have the getAttribute method, e.g. SVG nodes. The
+  // elements of views, where the events are installed, have ids:
+  return target.getAttribute && viewsById[target.getAttribute('id')!]
 }
 
 function updateFocus() {

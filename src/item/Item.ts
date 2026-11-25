@@ -1516,7 +1516,7 @@ export class Item extends Emitter {
    * The view that this item belongs to.
    */
   get view(): View {
-    return this._project._view
+    return this._project.view
   }
 
   /**
@@ -3014,7 +3014,7 @@ export class Item extends Emitter {
    * @param item the item to check against
    * @return {@true if it is inside the specified item}
    */
-  isDescendant(item: Item): boolean {
+  isDescendant(item: Item | null): boolean {
     let parent: Item | null = this
     while ((parent = parent._parent)) {
       if (parent === item) {

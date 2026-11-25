@@ -78,7 +78,7 @@ export class Project extends PaperScopeItem {
   _namedChildren: Record<string, Layer[]>
   _activeLayer: Layer | null
   _currentStyle: Style
-  _view: View
+  _view: View | null
   _selectionItems: Record<string, Item>
   _selectionCount: number
   // See Project#hasDrawHandlers():
@@ -283,7 +283,8 @@ export class Project extends PaperScopeItem {
    * The reference to the project's view.
    */
   get view(): View {
-    return this._view
+    // Typed as set, see PaperScope#tool:
+    return this._view!
   }
 
   /**

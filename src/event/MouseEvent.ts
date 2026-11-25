@@ -59,20 +59,20 @@ export class MouseEvent extends Event {
   declare currentTarget: Item // Set by Emitter#emit() during the handlers.
 
   // DOCS: document MouseEvent#delta
-  delta?: Point
+  delta: Point | null
 
   constructor(
     type: string,
     event: PointerEvent,
     point: Point,
     target: Item,
-    delta?: Point
+    delta?: Point | null
   ) {
     super(event)
     this.type = type
     this.point = point
     this.target = target
-    this.delta = delta
+    this.delta = delta ?? null
   }
 
   /**
