@@ -102,11 +102,11 @@ describe('PaperScript', () => {
     [
       'var calls = 0, o = { v: 1 }, a = [1];\n' +
       'function obj() { calls++; return o; }\n' +
-        'function key() { calls++; return 0; }\n' +
-        'var r = [obj().v++, ++obj().v, a[key()]++, ++a[key()],\n' +
-        '  obj()["v"]--];\n' +
-        'obj().v++;\n' +
-        'module.exports = [r, o.v, a[0], calls]',
+      'function key() { calls++; return 0; }\n' +
+      'var r = [obj().v++, ++obj().v, a[key()]++, ++a[key()],\n' +
+      '  obj()["v"]--];\n' +
+      'obj().v++;\n' +
+      'module.exports = [r, o.v, a[0], calls]',
       [[1, 3, 1, 3, 3], 3, 3, 6]
     ],
     // Points are updated through operator overloading:
@@ -142,10 +142,10 @@ describe('PaperScript', () => {
       [
         'var S = { requestsCount: 0 };\n' +
         'function F() {\n' +
-          '  "undefined" != typeof S &&\n' +
-          '    (this.B = S.requestsCount++, this.C = 1)\n' +
-          '}\n' +
-          'var f = new F(); module.exports = [f.B, f.C, S.requestsCount]',
+        '  "undefined" != typeof S &&\n' +
+        '    (this.B = S.requestsCount++, this.C = 1)\n' +
+        '}\n' +
+        'var f = new F(); module.exports = [f.B, f.C, S.requestsCount]',
         [0, 1, 1]
       ]
     ])
