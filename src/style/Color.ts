@@ -58,19 +58,19 @@ const namedColors = {
   // having it pre-cached here:
   transparent: [0, 0, 0, 0]
 }
-let colorCtx: CanvasRenderingContext2D
+let colorCtx: CanvasRenderingContext2D | null
 
 // The gradient points are in the coordinates of the item's parent. If the
 // item's content is transformed by a matrix, get them into its own
 // coordinates by the inverse, and then through the strokeMatrix:
 function getCanvasTransform(
-  matrix: Matrix,
+  matrix: Matrix | null | undefined,
   strokeMatrix: Matrix | null | undefined
-): Matrix {
+): Matrix | null {
   const inverse = matrix?.inverted()
   return strokeMatrix && inverse
     ? strokeMatrix.appended(inverse)
-    : strokeMatrix ?? inverse
+    : strokeMatrix ?? inverse ?? null
 }
 
 // Transforms the origin, destination, highlight and aspect of the gradient
@@ -143,7 +143,7 @@ function transformGradient(components: any[], dest: any[], matrix: Matrix) {
 
 // The matrix that stretches the circle of an elliptical radial gradient into
 // its ellipse, around its origin and along its axis:
-function getEllipseMatrix(components: any[]): Matrix {
+function getEllipseMatrix(components: any[]): Matrix | null {
   const aspect = components[4]
   if (components[0]._radial && aspect !== 1) {
     const origin = components[1]
@@ -155,6 +155,7 @@ function getEllipseMatrix(components: any[]): Matrix {
       .rotate(-angle)
       .translate(origin.negate())
   }
+  return null
 }
 
 function fromCSS(string: string): [ColorSpace, number[]] {
@@ -188,7 +189,7 @@ function fromCSS(string: string): [ColorSpace, number[]] {
       if (isHSL) {
         if (i === 0) {
           // handle 'deg', 'turn', 'rad' 'grad':
-          const unit = part.match(/([a-z]*)$/)[1]
+          const unit = part.match(/([a-z]*)$/)![1]
           value *= {
             turn: 360,
             rad: 180 / Math.PI,
@@ -326,7 +327,7 @@ const converters: Record<string, (...components: any[]) => any[]> = {
     const t3s = [h + 1 / 3, h, h - 1 / 3]
     const t2 = l < 0.5 ? l * (1 + s) : l + s - l * s
     const t1 = 2 * l - t2
-    const c = []
+    const c: number[] = []
     for (let i = 0; i < 3; i++) {
       let t3 = t3s[i]
       if (t3 < 0) {
@@ -426,11 +427,11 @@ const operators = {
 export class Color extends Base {
   #type: ColorType
   #components: any[]
-  #alpha: number
+  #alpha: number | null | undefined
   #owner: any
-  #key: string
+  #key: string | null
   // The cached style for drawing, which Style clears when disposing:
-  _canvasStyle: string | CanvasGradient | CanvasPattern
+  _canvasStyle: string | CanvasGradient | CanvasPattern | null
 
   /**
    * Creates a RGB Color object.
@@ -717,10 +718,10 @@ export class Color extends Base {
       args = arg
       arg = args[0]
     }
-    let type: ColorType
-    let components: any[]
-    let alpha: number
-    let values: any[]
+    let type: ColorType | undefined
+    let components: any[] | undefined
+    let alpha: number | null | undefined
+    let values: any[] | null | undefined
     // First see if it's a type string argument, and if so, set it and shift
     // it out of the arguments list.
     let argType = arg != null && typeof arg
@@ -1016,7 +1017,7 @@ export class Color extends Base {
    */
   toString(): string {
     const properties = types[this.#type]
-    const parts = []
+    const parts: string[] = []
     // Gradients and patterns have objects among their components:
     const isObject = /^(gradient|pattern)$/.test(this.#type)
     const { instance } = Formatter
@@ -1058,7 +1059,7 @@ export class Color extends Base {
   // Returns the components of a gradient color in the coordinates it's drawn
   // in, see getCanvasTransform():
   #getCanvasComponents(
-    matrix: Matrix,
+    matrix: Matrix | null | undefined,
     strokeMatrix: Matrix | null | undefined
   ): any[] {
     const components = this.#components
@@ -1071,9 +1072,9 @@ export class Color extends Base {
   // Returns the matrix that elliptical radial gradients are drawn through, as
   // canvas only draws circles, or null for other colors. See paintItem():
   _getEllipseMatrix(
-    matrix: Matrix,
+    matrix: Matrix | null | undefined,
     strokeMatrix: Matrix | null | undefined
-  ): Matrix {
+  ): Matrix | null {
     return (
       (
         this.#type === 'gradient' &&
@@ -1124,7 +1125,8 @@ export class Color extends Base {
     let highlight = components[3]
     let canvasGradient: CanvasGradient
     if (isEllipse && highlight) {
-      highlight = getEllipseMatrix(components)._inverseTransform(highlight)
+      // Elliptical gradients have their matrix:
+      highlight = getEllipseMatrix(components)!._inverseTransform(highlight)
     }
     if (gradient._radial) {
       const radius = destination.getDistance(origin)
@@ -1210,7 +1212,7 @@ export class Color extends Base {
     return new Color(random(), random(), random())
   }
 
-  static _setOwner(color: Color, owner: any, key?: string): Color {
+  static _setOwner(color: Color, owner: any, key?: string | null): Color {
     if (color) {
       // Clone color if owner changes:
       if (color.#owner && owner && color.#owner !== owner) {

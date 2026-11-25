@@ -72,7 +72,7 @@ export class PatternDefinition extends ItemDefinition {
     registerClasses({ PatternDefinition: this })
   }
 
-  _tile: Rectangle = null
+  _tile: Rectangle | null = null
   _spacing = new Size()
   #canvases: Record<number, HTMLCanvasElement | OffscreenCanvas> = {}
 
@@ -89,7 +89,11 @@ export class PatternDefinition extends ItemDefinition {
    */
   constructor(
     item?: Item,
-    options?: { tile?: RectangleLike; spacing?: SizeLike; name?: string }
+    options?: {
+      tile?: RectangleLike | null
+      spacing?: SizeLike
+      name?: string | null
+    }
   ) {
     super()
     if (item) {
@@ -218,7 +222,7 @@ export class PatternDefinition extends ItemDefinition {
       const { OffscreenCanvas } = globalThis
       canvas = this.#canvases[level] = OffscreenCanvas
         ? new OffscreenCanvas(size.width, size.height)
-        : getCanvas(size)
+        : getCanvas(size)!
       const tileCtx = canvas.getContext('2d') as CanvasRenderingContext2D
       const tileMatrix = new Matrix()
         .scale(size.divide(cell))
@@ -237,7 +241,8 @@ export class PatternDefinition extends ItemDefinition {
         updateMatrix: false
       })
     }
-    const pattern = ctx.createPattern(canvas, 'repeat')
+    // The canvas isn't empty, see above:
+    const pattern = ctx.createPattern(canvas, 'repeat')!
     const placement = matrix.appended(
       new Matrix().translate(tile.point).scale(cell.divide(size))
     )
