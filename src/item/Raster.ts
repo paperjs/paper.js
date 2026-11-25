@@ -49,7 +49,7 @@ export type RasterSmoothing = 'low' | 'medium' | 'high' | 'off'
 type Handler<T = Raster> = { handle(this: T, ...args: any[]): any }['handle']
 type Image = HTMLImageElement | HTMLCanvasElement
 
-let sampleContext: CanvasRenderingContext2D = null
+let sampleContext: CanvasRenderingContext2D | null = null
 
 /**
  * The Raster item represents an image in a Paper.js project.
@@ -58,9 +58,9 @@ export class Raster extends Item {
   declare _smoothing: RasterSmoothing
   _size: Size
   _loaded: boolean
-  _image: HTMLImageElement
-  _canvas: HTMLCanvasElement
-  _context: CanvasRenderingContext2D
+  _image: HTMLImageElement | null
+  _canvas: HTMLCanvasElement | null
+  _context: CanvasRenderingContext2D | null
   _crossOrigin: string
 
   // TODO: Implement type, width, height.
@@ -153,7 +153,7 @@ export class Raster extends Item {
     // If _initialize can set properties through object literal, we're done.
     // Otherwise we need to check the type of object:
     if (!this._initialize(source, position)) {
-      let image: Image
+      let image: Image | undefined
       const object: any =
         typeof source === 'string'
           ? getDocument()?.getElementById(source)
@@ -199,7 +199,7 @@ export class Raster extends Item {
       // If the Raster contains a Canvas object, we need to create a new one
       // and draw this raster's canvas on it.
       const copyCanvas = getCanvas(source._size) as HTMLCanvasElement
-      copyCanvas.getContext('2d').drawImage(canvas, 0, 0)
+      copyCanvas.getContext('2d')!.drawImage(canvas, 0, 0)
       this._setImage(copyCanvas)
     }
     // TODO: Shouldn't this be copied with attributes instead of content?
@@ -234,7 +234,7 @@ export class Raster extends Item {
         // the old one, which frees its pixels:
         if (element) {
           canvas
-            .getContext('2d')
+            .getContext('2d')!
             .drawImage(element, 0, 0, size.width, size.height)
         }
         // NOTE: Setting canvas internally sets _size.
@@ -306,7 +306,7 @@ export class Raster extends Item {
    * the raster even if the image has already finished loading before, or if
    * we are setting the raster to a canvas.
    */
-  get image(): Image {
+  get image(): Image | null {
     return this._image
   }
 
@@ -394,16 +394,17 @@ export class Raster extends Item {
    * image into it. Depending on security policies, this might fail, in which
    * case `null` is returned instead.
    */
-  get canvas(): HTMLCanvasElement {
+  get canvas(): HTMLCanvasElement | null {
     if (!this._canvas) {
-      const ctx = getContext(this._size)
+      // Rasters draw on canvases, which getCanvas() provides:
+      const ctx = getContext(this._size)!
       // Since drawImage into canvas might fail based on security policies
       // wrap the call in try-catch and only set _canvas if we succeeded.
       try {
         if (this._image) {
           ctx.drawImage(this._image, 0, 0)
         }
-        this._canvas = ctx.canvas
+        this._canvas = ctx.canvas as HTMLCanvasElement
       } catch (e) {
         releaseCanvas(ctx)
       }
@@ -428,9 +429,8 @@ export class Raster extends Item {
   }
 
   _getContext(_change?: boolean): CanvasRenderingContext2D {
-    if (!this._context) {
-      this._context = this.canvas.getContext('2d')
-    }
+    // The pixels of images that taint canvases can't be reached:
+    this._context ??= this.canvas!.getContext('2d')!
     // Support a hidden parameter that indicates if the context will be used
     // to change the Raster object. We can notify such changes ahead since
     // they are only used afterwards for redrawing.
@@ -466,7 +466,7 @@ export class Raster extends Item {
    *     position: view.center
    * });
    */
-  get source(): string {
+  get source(): string | null {
     const image = this._image
     return image && image.src || this.toDataURL()
   }
@@ -552,9 +552,9 @@ export class Raster extends Item {
   }
 
   // DOCS: document Raster#element
-  get element(): Image {
+  get element(): Image | null {
     // Only return the internal element if the content is actually ready.
-    return this._canvas || this._loaded && this._image
+    return this._canvas || (this._loaded ? this._image : null)
   }
 
   /**
@@ -567,9 +567,9 @@ export class Raster extends Item {
    */
   getSubCanvas(rect: RectangleLike): HTMLCanvasElement {
     const area = Rectangle.from(rect)
-    const ctx = getContext(area.size)
+    const ctx = getContext(area.size)!
     ctx.drawImage(
-      this.canvas,
+      this.canvas!,
       area.x,
       area.y,
       area.width,
@@ -579,7 +579,7 @@ export class Raster extends Item {
       area.width,
       area.height
     )
-    return ctx.canvas
+    return ctx.canvas as HTMLCanvasElement
   }
 
   /**
@@ -615,11 +615,11 @@ export class Raster extends Item {
    *     use lossy compression, such as `'image/jpeg'`
    * @return the `data:` URL of the raster
    */
-  toDataURL(type?: string, quality?: number): string {
+  toDataURL(type?: string, quality?: number): string | null {
     // See if the linked image is base64 encoded already, if so reuse it,
     // otherwise try using canvas.toDataURL()
     const src = this._image?.src
-    if (/^data:/.test(src)) {
+    if (src && /^data:/.test(src)) {
       return src
     }
     const { canvas } = this
@@ -647,8 +647,8 @@ export class Raster extends Item {
    *     path, rectangle or point
    */
   getAverageColor(object?: PathItem | RectangleLike | PointLike): Color | null {
-    let bounds: Rectangle
-    let path: PathItem
+    let bounds: Rectangle | undefined
+    let path: PathItem | undefined
     if (!object) {
       bounds = this.bounds
     } else if (object instanceof PathItem) {
@@ -677,7 +677,7 @@ export class Raster extends Item {
     // since it's only 32 x 32 pixels.
     let ctx = sampleContext
     if (!ctx) {
-      ctx = sampleContext = getContext(new Size(sampleSize))
+      ctx = sampleContext = getContext(new Size(sampleSize))!
     } else {
       // Clear the sample canvas:
       ctx.clearRect(0, 0, sampleSize + 1, sampleSize + 1)
@@ -776,7 +776,7 @@ export class Raster extends Item {
     const offset = hasCoordinates
       ? new Point(point, y as number)
       : Point.from(point)
-    const pixelColor = Color.from(hasCoordinates ? color : y)
+    const pixelColor = Color.from((hasCoordinates ? color : y) as ColorLike)
     const components = pixelColor._convert('rgb')
     const ctx = this._getContext(true)
     const imageData = ctx.createImageData(1, 1)
@@ -821,7 +821,7 @@ export class Raster extends Item {
    * @return the image data of the specified area
    */
   getImageData(rect?: RectangleLike): ImageData {
-    let area = Rectangle.from(rect)
+    let area = rect ? Rectangle.from(rect) : new Rectangle()
     if (area.isEmpty()) {
       area = new Rectangle(this._size)
     }
@@ -851,7 +851,7 @@ export class Raster extends Item {
     this._getContext(true).putImageData(data, 0, 0)
   }
 
-  _getBounds(matrix: Matrix /* , options */): Rectangle {
+  _getBounds(matrix: Matrix | null /* , options */): Rectangle {
     const { width, height } = this._size
     const rect = new Rectangle(-width / 2, -height / 2, width, height)
     return matrix ? matrix._transformBounds(rect) : rect
@@ -874,7 +874,7 @@ export class Raster extends Item {
         ctx.beginPath()
       }
       ctx.rect(rect.x, rect.y, rect.width, rect.height)
-    } else if (element?.width > 0 && element.height > 0) {
+    } else if (element && element.width > 0 && element.height > 0) {
       // Only draw if image is not empty (#1320).
       // Handle opacity for Rasters separately from the rest, since Rasters
       // never draw a stroke. See Item#draw().

@@ -25,7 +25,7 @@ import type { Project } from './Project.ts'
 // item outside of the scene graph that other items draw. The item refers back
 // to its definition through Item#_symbol, which Item#_changed() notifies:
 export class ItemDefinition extends Base {
-  declare _name: string
+  declare _name: string | null
   _id: number
   _item: Item
   project: Project
@@ -43,7 +43,7 @@ export class ItemDefinition extends Base {
    *
    * @param props the properties to set
    */
-  set(props: object): this {
+  set(props?: object): this {
     return Object.assign(this, props)
   }
 
@@ -62,11 +62,11 @@ export class ItemDefinition extends Base {
     project._logChange('definition', this, flags)
   }
 
-  get name(): string {
+  get name(): string | null {
     return this._name
   }
 
-  set name(name: string) {
+  set name(name: string | null) {
     this._name = name || null
     this._changed(Change.ATTRIBUTE)
   }

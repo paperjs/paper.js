@@ -27,8 +27,8 @@ type Members = Omit<
   typeof core,
   'registerClasses' | 'use' | 'effects' | 'raster' | 'tween'
 > & {
-  readonly document: Document
-  readonly window: Window
+  readonly document: Document | null
+  readonly window: Window | null
 }
 const { registerClasses, use, effects, raster, tween, ...classes } = core
 const members: Members = {

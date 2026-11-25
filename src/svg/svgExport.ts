@@ -54,7 +54,7 @@ type Options = Record<string, any> & {
     svgs: Record<string, SVGElement>
   }
   parentStyles?: Record<number, Record<string, any>>
-  elementMatrix?: Matrix
+  elementMatrix?: Matrix | null
 }
 type Attributes = Record<string, any>
 
@@ -756,7 +756,7 @@ function applyStyle(
 ): SVGElement {
   const attrs: Attributes = {}
   const parent = !isRoot && item.parent
-  const parentStyle = parent && (options.parentStyles[parent._id] ??= {})
+  const parentStyle = parent && (options.parentStyles[parent.id] ??= {})
   const isGroup = item instanceof Group
   const style = []
 

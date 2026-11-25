@@ -51,7 +51,7 @@ export function getItemBounds(
  */
 export function getCachedBounds(
   item: Item,
-  matrix: Matrix | null,
+  matrix: Matrix | null | undefined,
   options: BoundsOptions,
   noInternal?: boolean
 ): { rect: Rectangle; nonscaling: boolean } {
@@ -159,9 +159,13 @@ export function getStrokeMatrix(
   // Item#strokeBounds, it doesn't scale the strokes of items that apply it
   // to their content, all the way up to the transformed item:
   if (transform) {
-    for (let owner = item; owner?._applyMatrix; owner = owner._parent) {
+    for (
+      let owner: Item | null = item;
+      owner?._applyMatrix;
+      owner = owner._parent
+    ) {
       if (owner === transform.item) {
-        mx = transform.matrix.inverted().appended(mx)
+        mx = transform.matrix.inverted()?.appended(mx) ?? null
         break
       }
     }
@@ -181,11 +185,11 @@ export function getStrokeMatrix(
  *
  * @private
  */
-export function updateBoundsCache(parent: any, item: Item) {
+export function updateBoundsCache(parent: any, item?: Item) {
   if (parent && item) {
     // Set-up the parent's boundsCache structure if it does not
     // exist yet and add the item to it.
-    const id = item._id
+    const { id } = item
     const ref = (parent._boundsCache ??= {
       // Use a hash-table for ids and an array for the list,
       // so we can keep track of items that were added already
@@ -256,7 +260,7 @@ export function getCombinedBounds(
       const bounds = item._getCachedBounds(
         global
           ? item._getGlobalMatrix(true)
-          : matrix?.appended(item._matrix),
+          : (matrix?.appended(item._matrix) ?? null),
         opts,
         true
       )

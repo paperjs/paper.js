@@ -572,7 +572,7 @@ export class CurveLocation extends Base {
       const diff =
         path1 !== path2
           ? // Sort by path id to group all locs on same path.
-            path1._id - path2._id
+            path1.id - path2.id
           : // Sort by both index and time on the same path. The two values
             // added together provides a convenient sorting index.
             location.index! +

@@ -231,7 +231,7 @@ export class Effect extends Base {
 }
 
 // The registered effects by their types:
-let effectsByType: Record<string, Effect> = null
+let effectsByType: Record<string, Effect> | null = null
 
 function getEffects(): Record<string, Effect> {
   if (!effectsByType) {

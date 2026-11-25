@@ -53,8 +53,8 @@ export function hitTestChildren(
   owner: Item | Project,
   point: Point,
   options: HitTestOptions,
-  viewMatrix?: Matrix,
-  _exclude?: Item
+  viewMatrix?: Matrix | null,
+  _exclude?: Item | null
 ): HitResult | null {
   // NOTE: _exclude is only used in Group#_hitTestChildren()
   // to exclude #clipItem
@@ -82,7 +82,7 @@ export function hitTestItem(
   item: Item,
   point: Point,
   options: HitTestOptions,
-  parentViewMatrix?: Matrix
+  parentViewMatrix?: Matrix | null
 ): HitResult | null {
   // Shells of hosted items are rejected by their bounds below, as
   // checking for emptiness would load them:
@@ -113,7 +113,8 @@ export function hitTestItem(
   // Calculate the transformed padding as 2D size that describes the
   // transformed tolerance circle / ellipse. Make sure it's never 0
   // since we're using it for division (see checkBounds()).
-  const tolerance = Math.max(options.tolerance, EPSILON)
+  // HitResult.getOptions() sets the tolerance:
+  const tolerance = Math.max(options.tolerance!, EPSILON)
   // Hit-tests are performed in the item's local coordinate space,
   // while the tolerance is in project coordinates. To calculate the
   // correct 2D padding for tolerance, we therefore need to apply the
@@ -146,14 +147,15 @@ export function hitTestItem(
     options.class && !(item instanceof options.class)
   )
   const { match } = options
-  let bounds: Rectangle
-  let res: HitResult
+  // Set before checkPoint() reads a part of it:
+  let bounds!: Rectangle
+  let res: HitResult | null = null
 
-  const filter = (hit: HitResult | HitResult[]): HitResult => {
+  const filter = (hit: HitResult | HitResult[] | null): HitResult | null => {
     // Path#_hitTestSelf() returns a list of all its hits when we're
     // collecting them, see hitTestAll():
     if (Array.isArray(hit)) {
-      let first = null
+      let first: HitResult | null = null
       for (const entry of hit) {
         const res = filter(entry)
         first = first || res
@@ -186,6 +188,7 @@ export function hitTestItem(
         point: pt
       })
     }
+    return null
   }
 
   const checkPosition = options.position
@@ -204,7 +207,8 @@ export function hitTestItem(
     }
     res = (
       checkPosition && checkPoint('position') ||
-      checkCenter && checkPoint('center', 'center')
+      checkCenter && checkPoint('center', 'center') ||
+      null
     )
     if (!res && checkBounds) {
       // TODO: Move these into a static property on Rectangle?
@@ -251,7 +255,7 @@ export function hitTestItem(
 export function intersectsItem(
   item1: Item,
   item2: Item,
-  matrix?: Matrix
+  matrix?: Matrix | null
 ): boolean {
   const path1 = item1._asPathItem()
   const path2 = item2._asPathItem()

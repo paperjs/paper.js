@@ -851,7 +851,7 @@ export class Curve extends Base {
   static getIntersections(
     curves1: Curve[],
     curves2: Curve[] | null,
-    include?: (location: CurveLocation) => boolean,
+    include?: ((location: CurveLocation) => boolean) | null,
     matrix1?: Matrix | null,
     matrix2?: Matrix | null,
     _returnFirst?: boolean

@@ -70,7 +70,7 @@ export class PathFlattener extends Base {
     flatness?: number,
     maxRecursion?: number,
     ignoreStraight?: boolean,
-    matrix?: Matrix
+    matrix?: Matrix | null
   ) {
     super()
     // Instead of relying on path.curves, we only use segments here and

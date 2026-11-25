@@ -50,17 +50,17 @@ export class HostItem extends Item {
     this._values = {}
   }
 
-  _getBounds(matrix: Matrix, options: BoundsOptions): Rectangle {
+  _getBounds(matrix: Matrix | null, options: BoundsOptions): Rectangle {
     // The host's bounds also cover what it paints beyond the children:
     const rect = this._getHostBounds(options)
     return matrix ? matrix._transformBounds(rect) : rect
   }
 
-  _hitTestSelf(point: Point, options: HitTestOptions): HitResult {
+  _hitTestSelf(point: Point, options: HitTestOptions): HitResult | null {
     const bounds = this._getHostBounds({ stroke: true, handle: true })
-    if (options.fill && bounds._containsPoint(point)) {
-      return new HitResult('fill', this)
-    }
+    return options.fill && bounds._containsPoint(point)
+      ? new HitResult('fill', this)
+      : null
   }
 
   _draw() {

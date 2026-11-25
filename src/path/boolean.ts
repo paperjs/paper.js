@@ -150,7 +150,7 @@ export function tracePaths(operands: PathItem[], operator: Operator): Path[] {
   const profiles: Record<number, { part: ProfilePart; offsets: number[] }> = {}
   const getProfile = (path: Path) => {
     let offset = 0
-    return (profiles[path._id] ??= {
+    return (profiles[path.id] ??= {
       part: getStrokeProfilePart(path),
       offsets: path.curves.map(curve => {
         const start = offset
@@ -211,7 +211,8 @@ export function createResult(
     const others = ([] as PathItem[]).concat(path2 ?? [])
     for (let i = 0, l = others.length; i < l; i++) {
       const other = others[i]
-      if (path1.isSibling(other) && other.index > above.index) {
+      // Siblings have indices:
+      if (path1.isSibling(other) && other.index! > above.index!) {
         above = other
       }
     }

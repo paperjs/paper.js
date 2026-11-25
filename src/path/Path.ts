@@ -2286,8 +2286,8 @@ export class Path extends PathItem {
   _hitTestSelf(
     point: Point,
     options: HitTestOptions,
-    viewMatrix: Matrix,
-    strokeMatrix: Matrix
+    viewMatrix: Matrix | null | undefined,
+    strokeMatrix: Matrix | null | undefined
   ): HitResult | HitResult[] | null {
     return hitTestPath(this, point, options, viewMatrix, strokeMatrix)
   }
@@ -2399,7 +2399,7 @@ export class Path extends PathItem {
     ctx: CanvasRenderingContext2D,
     param: DrawParam,
     viewMatrix: Matrix,
-    strokeMatrix: Matrix
+    strokeMatrix: Matrix | null | undefined
   ) {
     const dontPaint = param.dontFinish || param.clip
     if (!param.dontStart) {
@@ -2613,7 +2613,7 @@ export class Path extends PathItem {
     return this
   }
 
-  _getBounds(matrix: Matrix, options: any): Rectangle {
+  _getBounds(matrix: Matrix | null, options: any): Rectangle {
     const segments = this._segments
     const closed = this._closed
     return options.handle
@@ -3101,7 +3101,7 @@ function drawHandles(
 function drawSegments(
   ctx: CanvasRenderingContext2D,
   path: Path,
-  matrix: Matrix
+  matrix: Matrix | null | undefined
 ) {
   const segments = path._segments
   const { length } = segments

@@ -38,8 +38,8 @@ export function hitTestPath(
   path: Path,
   point: Point,
   options: HitTestOptions,
-  viewMatrix: Matrix,
-  strokeMatrix: Matrix
+  viewMatrix: Matrix | null | undefined,
+  strokeMatrix: Matrix | null | undefined
 ): HitResult | HitResult[] | null {
   let i: number
   let l: number

@@ -63,7 +63,10 @@ let colorCtx: CanvasRenderingContext2D
 // The gradient points are in the coordinates of the item's parent. If the
 // item's content is transformed by a matrix, get them into its own
 // coordinates by the inverse, and then through the strokeMatrix:
-function getCanvasTransform(matrix: Matrix, strokeMatrix: Matrix): Matrix {
+function getCanvasTransform(
+  matrix: Matrix,
+  strokeMatrix: Matrix | null | undefined
+): Matrix {
   const inverse = matrix?.inverted()
   return strokeMatrix && inverse
     ? strokeMatrix.appended(inverse)
@@ -680,7 +683,7 @@ export class Color extends Base {
    * path.fillColor = new Color(pattern);
    * path.strokeColor = new Color(pattern, new Matrix().rotate(45));
    */
-  constructor(pattern: PatternDefinition, matrix?: Matrix)
+  constructor(pattern: PatternDefinition, matrix?: Matrix | null)
   // Any of the forms above, as Color.from() reads them, for the types only:
   constructor(color?: ColorLike)
   /**
@@ -1054,7 +1057,10 @@ export class Color extends Base {
 
   // Returns the components of a gradient color in the coordinates it's drawn
   // in, see getCanvasTransform():
-  #getCanvasComponents(matrix: Matrix, strokeMatrix: Matrix): any[] {
+  #getCanvasComponents(
+    matrix: Matrix,
+    strokeMatrix: Matrix | null | undefined
+  ): any[] {
     const components = this.#components
     const transform = getCanvasTransform(matrix, strokeMatrix)
     return transform
@@ -1064,7 +1070,10 @@ export class Color extends Base {
 
   // Returns the matrix that elliptical radial gradients are drawn through, as
   // canvas only draws circles, or null for other colors. See paintItem():
-  _getEllipseMatrix(matrix: Matrix, strokeMatrix: Matrix): Matrix {
+  _getEllipseMatrix(
+    matrix: Matrix,
+    strokeMatrix: Matrix | null | undefined
+  ): Matrix {
     return (
       (
         this.#type === 'gradient' &&
@@ -1080,8 +1089,8 @@ export class Color extends Base {
   // gradients as circles.
   toCanvasStyle(
     ctx: CanvasRenderingContext2D,
-    matrix?: Matrix,
-    strokeMatrix?: Matrix,
+    matrix?: Matrix | null,
+    strokeMatrix?: Matrix | null,
     isEllipse?: boolean
   ): string | CanvasGradient | CanvasPattern {
     // Patterns are drawn at the resolution of the context, which changes

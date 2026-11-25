@@ -294,8 +294,8 @@ export abstract class PathItem extends Item {
    */
   getIntersections(
     path?: PathItem,
-    include?: (location: CurveLocation) => boolean,
-    _matrix?: Matrix,
+    include?: ((location: CurveLocation) => boolean) | null,
+    _matrix?: Matrix | null,
     _returnFirst?: boolean
   ): CurveLocation[] {
     // NOTE: For self-intersection, path is null. This means you can also

@@ -197,7 +197,7 @@ export class PathText extends TextItem {
   }
 
   // The letters' boxes, turned with them:
-  _getBounds(matrix: Matrix /* , options */): Rectangle {
+  _getBounds(matrix: Matrix | null /* , options */): Rectangle {
     const { pieces } = this._getLayout()[0]
     let bounds = null
     for (let i = 0, l = pieces.length; i < l; i++) {

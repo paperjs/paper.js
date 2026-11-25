@@ -32,7 +32,8 @@ import type { HitTestOptions } from './HitResult.ts'
 export class Group extends Item {
   declare _isolated: boolean
   declare _buffered: boolean
-  _clipItem: Item | null
+  // undefined until #_getClipItem() looks for it:
+  _clipItem: Item | null | undefined
 
   /**
    * Creates a new Group item and places it at the top of the active layer.
@@ -320,7 +321,7 @@ export class Group extends Item {
   }
 
   _getBounds(
-    matrix: Matrix,
+    matrix: Matrix | null,
     options: any
   ): Rectangle | { rect: Rectangle; nonscaling: boolean } {
     const clipItem = this._getClipItem()
@@ -335,7 +336,7 @@ export class Group extends Item {
   _hitTestChildren(
     point: Point,
     options: HitTestOptions,
-    viewMatrix?: Matrix
+    viewMatrix?: Matrix | null
   ): HitResult | null {
     const clipItem = this._getClipItem()
     return !clipItem || clipItem.contains(point)
@@ -347,7 +348,7 @@ export class Group extends Item {
   _hitTestSelf(
     point: Point,
     options: HitTestOptions,
-    viewMatrix?: Matrix
+    viewMatrix?: Matrix | null
   ): HitResult | null {
     // A group is hit wherever one of its children is hit, as in Illustrator.
     // Without filters or the collecting of all hits, the children were

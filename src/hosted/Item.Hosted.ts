@@ -1376,7 +1376,7 @@ function getDefinition(project: Project, key: string): Definition {
 // change, as containers outside the document aren't logged:
 function setReordered(item: Item) {
   const project = item?._project
-  const change = project?._changes && project._changesById[item._id]
+  const change = project?._changes && project._changesById[item.id]
   if (change) {
     change.reordered = true
   }

@@ -178,13 +178,15 @@ export class Project extends PaperScopeItem {
   // combined, as `{ item, flags }` or `{ definition, flags }`:
   _logChange(
     name: 'item' | 'definition',
-    object: { _id: number | string },
+    object: { _id: number | string | null },
     flags: number
   ) {
     const changes = this._changes
     if (changes) {
-      const changesById = this._changesById
-      const id = object._id
+      // Set along with the changes, see #trackChanges:
+      const changesById = this._changesById!
+      // Only inserted items and definitions are logged, which have ids:
+      const id = object._id!
       let entry = changesById[id]
       if (entry) {
         entry.flags |= flags
@@ -347,7 +349,7 @@ export class Project extends PaperScopeItem {
    * project.
    */
   get symbolDefinitions(): SymbolDefinition[] {
-    const definitions = []
+    const definitions: SymbolDefinition[] = []
     const ids = {}
     this.getItems({
       class: SymbolItem,
@@ -369,7 +371,7 @@ export class Project extends PaperScopeItem {
    * the project use.
    */
   get patternDefinitions(): PatternDefinition[] {
-    const definitions = []
+    const definitions: PatternDefinition[] = []
     const ids = {}
     this.getItems({
       match(item: Item) {
@@ -395,7 +397,7 @@ export class Project extends PaperScopeItem {
     // TODO: Return groups if their children are all selected, and filter
     // out their children from the list.
     // TODO: The order of these items should be that of their drawing order.
-    const items = []
+    const items: Item[] = []
     for (const item of Object.values(this._selectionItems)) {
       const selection = item._selection
       if (selection & ItemSelection.ITEM && item.isInserted()) {
@@ -410,7 +412,7 @@ export class Project extends PaperScopeItem {
   // TODO: Implement setSelectedItems?
 
   _updateSelection(item: Item, remove?: boolean) {
-    const id = item._id
+    const { id } = item
     const selectionItems = this._selectionItems
     // Only keep track of inserted items, so removed ones can be collected:
     if (item._selection && !remove && item.isInserted()) {
@@ -463,7 +465,7 @@ export class Project extends PaperScopeItem {
    * @param layer the layer to be inserted in the project
    * @return the inserted layer, or `null` if inserting was not possible
    */
-  insertLayer(index: number, layer: Layer): Layer | null {
+  insertLayer(index: number | undefined, layer: Layer): Layer | null {
     if (layer instanceof Layer) {
       // Notify parent of change. Don't notify item itself yet, as we're doing
       // so when adding it to the new owner below.
@@ -485,30 +487,34 @@ export class Project extends PaperScopeItem {
       if (!this._activeLayer) {
         this._activeLayer = layer
       }
+      return layer
     } else {
-      layer = null
+      return null
     }
-    return layer
   }
 
   // Project#_insertItem() and Item#_insertItem() are helper functions called
   // in Item#copyTo(), and through _getOwner() in the various Item#insert*()
   // methods. They are called the same to facilitate so duck-typing.
-  _insertItem(index: number, item: Item, _created?: boolean): Item {
-    item = (
+  _insertItem(
+    index: number | undefined,
+    item: Item,
+    _created?: boolean
+  ): Item | null {
+    const res = (
       this.insertLayer(index, item as Layer) ||
       // Anything else than layers needs to be added to a layer first.
       // If none exists yet, create one now, then add the item to it.
       (
         this._activeLayer || // _created = true
-        this._insertItem(undefined, new Layer(Item.NO_INSERT), true)
+        (this._insertItem(undefined, new Layer(Item.NO_INSERT), true) as Layer)
       ).insertChild(index, item)
     )
     // If a layer was newly created, also activate it.
-    if (_created && item instanceof Layer) {
-      item.activate()
+    if (_created && res instanceof Layer) {
+      res.activate()
     }
-    return item
+    return res
   }
 
   /**
@@ -584,7 +590,7 @@ export class Project extends PaperScopeItem {
   _hitTest(
     point: Point,
     options: HitTestOptions,
-    viewMatrix?: Matrix
+    viewMatrix?: Matrix | null
   ): HitResult | null {
     return hitTestChildren(this, point, options, viewMatrix)
   }
@@ -863,7 +869,7 @@ export class Project extends PaperScopeItem {
     // Provide the activeLayer as a possible target for layers, but only if
     // it's empty.
     const layer = this._activeLayer
-    return importJSON(json, layer?.isEmpty() && layer)
+    return importJSON(json, layer?.isEmpty() ? layer : null)
   }
 
   /**
@@ -1040,7 +1046,7 @@ export class Project extends PaperScopeItem {
           // sets.
           for (const other of Object.values(sets)) {
             if (other && other != set) {
-              delete other[item._id]
+              delete other[item.id]
             }
           }
           item.remove()

@@ -67,6 +67,23 @@ describe('Item', () => {
     equals(() => project.activeLayer.children.length, 1)
   })
 
+  test('item.name is null without a name, also once cleared', () => {
+    const path = new Path({ name: 'circle' })
+    equals(new Path().name, null)
+    path.name = ''
+    equals(path.name, null)
+  })
+
+  test('addChildren() inserts internal items, which have no ids', () => {
+    const group = new Group()
+    const paths = [
+      new Path({ internal: true, insert: false }),
+      new Path({ internal: true, insert: false })
+    ]
+    group.addChildren(paths)
+    equals(group.children.length, 2)
+  })
+
   test('setting item.parent', () => {
     const layer1 = paper.project.activeLayer
     const layer2 = new Layer()

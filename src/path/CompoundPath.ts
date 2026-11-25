@@ -141,7 +141,7 @@ export class CompoundPath extends PathItem {
     return super._transformContent(matrix, applyRecursively, setApplyMatrix)
   }
 
-  insertChildren(index: number, items: any[]): Item[] | null {
+  insertChildren(index: number | undefined, items: any[]): Item[] | null {
     // If we're passed a segment array describing a simple path instead of a
     // compound-path, wrap it in another array to turn it into the array
     // notation for compound-paths.
@@ -313,7 +313,7 @@ export class CompoundPath extends PathItem {
   _hitTestChildren(
     point: Point,
     options: HitTestOptions,
-    viewMatrix?: Matrix
+    viewMatrix?: Matrix | null
   ): HitResult | null {
     return super._hitTestChildren(
       point,
@@ -332,7 +332,7 @@ export class CompoundPath extends PathItem {
     ctx: CanvasRenderingContext2D,
     param: DrawParam,
     viewMatrix: Matrix,
-    strokeMatrix: Matrix
+    strokeMatrix: Matrix | null | undefined
   ) {
     const children = this._children
     // Return early if the compound path doesn't have any children:
@@ -360,7 +360,7 @@ export class CompoundPath extends PathItem {
       const childMatrix = child._matrix
       // Do not draw this child now if it's separately marked as selected,
       // as it would be drawn twice otherwise.
-      if (!selectionItems[child._id]) {
+      if (!selectionItems[child.id]) {
         child._drawSelected(
           ctx,
           childMatrix.isIdentity() ? matrix : matrix.appended(childMatrix)
