@@ -11,7 +11,6 @@
  */
 
 import { ItemSelection } from '../constants.ts'
-import { inject } from '../util/object.ts'
 import { TRIGONOMETRIC_EPSILON, clamp, isZero } from '../util/numerical.ts'
 import { Formatter } from '../util/Formatter.ts'
 import { Base } from '../core/Base.ts'
@@ -1003,17 +1002,68 @@ export class Point extends Base {
     )
   }
 
+  /**
+   * {@grouptitle Math Functions}
+   *
+   * Returns a new point with rounded {@link #x} and {@link #y} values. The
+   * object itself is not modified!
+   *
+   *
+   * @example
+   * var point = new Point(10.2, 10.9);
+   * var roundPoint = point.round();
+   * console.log(roundPoint); // {x: 10, y: 11}
+   */
+  round(): Point {
+    return new Point(Math.round(this.x), Math.round(this.y))
+  }
+
+  /**
+   * Returns a new point with the nearest greater non-fractional values to the
+   * specified {@link #x} and {@link #y} values. The object itself is not
+   * modified!
+   *
+   *
+   * @example
+   * var point = new Point(10.2, 10.9);
+   * var ceilPoint = point.ceil();
+   * console.log(ceilPoint); // {x: 11, y: 11}
+   */
+  ceil(): Point {
+    return new Point(Math.ceil(this.x), Math.ceil(this.y))
+  }
+
+  /**
+   * Returns a new point with the nearest smaller non-fractional values to the
+   * specified {@link #x} and {@link #y} values. The object itself is not
+   * modified!
+   *
+   *
+   * @example
+   * var point = new Point(10.2, 10.9);
+   * var floorPoint = point.floor();
+   * console.log(floorPoint); // {x: 10, y: 10}
+   */
+  floor(): Point {
+    return new Point(Math.floor(this.x), Math.floor(this.y))
+  }
+
+  /**
+   * Returns a new point with the absolute values of the specified {@link #x}
+   * and {@link #y} values. The object itself is not modified!
+   *
+   *
+   * @example
+   * var point = new Point(-5, 10);
+   * var absPoint = point.abs();
+   * console.log(absPoint); // {x: 5, y: 10}
+   */
+  abs(): Point {
+    return new Point(Math.abs(this.x), Math.abs(this.y))
+  }
+
   static {
     registerClasses({ Point: this })
-    // Inject round, ceil, floor, abs:
-    for (const key of ['round', 'ceil', 'floor', 'abs']) {
-      const op = Math[key]
-      inject(this.prototype, {
-        [key]() {
-          return new Point(op(this.x), op(this.y))
-        }
-      })
-    }
   }
 }
 
@@ -1048,58 +1098,6 @@ export interface Point {
    * path.position.selected = true;
    */
   selected: boolean
-
-  /**
-   * {@grouptitle Math Functions}
-   *
-   * Returns a new point with rounded {@link #x} and {@link #y} values. The
-   * object itself is not modified!
-   *
-   *
-   * @example
-   * var point = new Point(10.2, 10.9);
-   * var roundPoint = point.round();
-   * console.log(roundPoint); // {x: 10, y: 11}
-   */
-  round(): Point
-
-  /**
-   * Returns a new point with the nearest greater non-fractional values to the
-   * specified {@link #x} and {@link #y} values. The object itself is not
-   * modified!
-   *
-   *
-   * @example
-   * var point = new Point(10.2, 10.9);
-   * var ceilPoint = point.ceil();
-   * console.log(ceilPoint); // {x: 11, y: 11}
-   */
-  ceil(): Point
-
-  /**
-   * Returns a new point with the nearest smaller non-fractional values to the
-   * specified {@link #x} and {@link #y} values. The object itself is not
-   * modified!
-   *
-   *
-   * @example
-   * var point = new Point(10.2, 10.9);
-   * var floorPoint = point.floor();
-   * console.log(floorPoint); // {x: 10, y: 10}
-   */
-  floor(): Point
-
-  /**
-   * Returns a new point with the absolute values of the specified {@link #x}
-   * and {@link #y} values. The object itself is not modified!
-   *
-   *
-   * @example
-   * var point = new Point(-5, 10);
-   * var absPoint = point.abs();
-   * console.log(absPoint); // {x: 5, y: 10}
-   */
-  abs(): Point
 }
 
 /**

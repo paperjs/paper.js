@@ -10,7 +10,6 @@
  * All rights reserved.
  */
 
-import { inject } from '../util/object.ts'
 import { isZero } from '../util/numerical.ts'
 import { Formatter } from '../util/Formatter.ts'
 import { Base } from '../core/Base.ts'
@@ -529,22 +528,6 @@ export class Size extends Base {
     return new Size(Math.random(), Math.random())
   }
 
-  static {
-    registerClasses({ Size: this })
-    // Inject round, ceil, floor, abs:
-    for (const key of ['round', 'ceil', 'floor', 'abs']) {
-      const op = Math[key]
-      inject(this.prototype, {
-        [key]() {
-          return new Size(op(this.width), op(this.height))
-        }
-      })
-    }
-  }
-}
-
-// The members defined at runtime rather than in the class body:
-export interface Size {
   /**
    * {@grouptitle Math Functions}
    *
@@ -557,7 +540,9 @@ export interface Size {
    * var roundSize = size.round();
    * console.log(roundSize); // {x: 10, y: 11}
    */
-  round(): Size
+  round(): Size {
+    return new Size(Math.round(this.width), Math.round(this.height))
+  }
 
   /**
    * Returns a new size with the nearest greater non-fractional values to the
@@ -570,7 +555,9 @@ export interface Size {
    * var ceilSize = size.ceil();
    * console.log(ceilSize); // {x: 11, y: 11}
    */
-  ceil(): Size
+  ceil(): Size {
+    return new Size(Math.ceil(this.width), Math.ceil(this.height))
+  }
 
   /**
    * Returns a new size with the nearest smaller non-fractional values to the
@@ -583,7 +570,9 @@ export interface Size {
    * var floorSize = size.floor();
    * console.log(floorSize); // {x: 10, y: 10}
    */
-  floor(): Size
+  floor(): Size {
+    return new Size(Math.floor(this.width), Math.floor(this.height))
+  }
 
   /**
    * Returns a new size with the absolute values of the specified
@@ -596,8 +585,16 @@ export interface Size {
    * var absSize = size.abs();
    * console.log(absSize); // {x: 5, y: 10}
    */
-  abs(): Size
+  abs(): Size {
+    return new Size(Math.abs(this.width), Math.abs(this.height))
+  }
+
+  static {
+    registerClasses({ Size: this })
+  }
 }
+
+// The members defined at runtime rather than in the class body:
 
 /**
  * An internal version of Size that notifies its owner of each change
