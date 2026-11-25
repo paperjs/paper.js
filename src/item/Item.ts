@@ -123,6 +123,33 @@ export type BoundsOptions = {
  * {@link Raster}. They each add a layer of functionality that is unique to
  * their type, but share the underlying properties and functions that they
  * inherit from Item.
+ *
+ * Apps can define items of their own by extending these classes. A subclass
+ * passes the arguments of its constructor on to `super()`, as
+ * {@link #clone()} creates copies through it. Its state is best kept in
+ * {@link #data}, which copies, JSON and SVG carry along. Registering it with
+ * `registerClasses()` from `paper` gives it a name in JSON, so that
+ * importing creates it again, and SVG export writes it as the class it
+ * extends. Drawing handlers of the class, such as `Badge.onDraw`, draw all
+ * its items, see {@link Item.onDraw}.
+ *
+ * @example
+ * import { Path, registerClasses } from 'paper'
+ *
+ * class Badge extends Path {
+ *     get label() {
+ *         return this.data.label
+ *     }
+ *
+ *     set label(label) {
+ *         this.data.label = label
+ *     }
+ * }
+ * registerClasses({ Badge })
+ *
+ * var badge = new Badge({ segments: [[0, 0], [20, 0], [10, 15]] })
+ * badge.label = 'New'
+ * console.log(badge.clone().label) // 'New'
  */
 export class Item extends Emitter {
   /**

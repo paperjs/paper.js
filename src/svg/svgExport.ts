@@ -894,8 +894,12 @@ function exportSVG(item: Item, options: Options, isRoot?: boolean): SVGElement {
     )
     return node
   }
-  const exporter = exporters[item.className]
-  let node = exporter?.(item, options)
+  // Subclasses of items that apps define export as the class they extend:
+  let proto = Object.getPrototypeOf(item)
+  while (proto && !Object.hasOwn(exporters, proto.className)) {
+    proto = Object.getPrototypeOf(proto)
+  }
+  let node = proto && exporters[proto.className](item, options)
   if (node) {
     // Support processNode callback, to provide mechanism to handle
     // special attributes (e.g. inkscape:transform-center)
