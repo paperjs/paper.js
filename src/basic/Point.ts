@@ -176,7 +176,7 @@ export class Point extends Base {
    */
   constructor(point?: Point)
   // Any of the forms above, as Point.from() reads them, for the types only:
-  constructor(point: PointLike | number, y?: number)
+  constructor(point?: PointLike | number, y?: number)
   constructor(x?: PointLike | number | string, y?: number) {
     super()
     this.set(x, y)
@@ -901,7 +901,7 @@ export class Point extends Base {
    * @param point
    * @param y
    */
-  static from(point: PointLike | number, y?: number): Point {
+  static from(point?: PointLike | number, y?: number): Point {
     return point instanceof Point ? point : new Point(point, y)
   }
 

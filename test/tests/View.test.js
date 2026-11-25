@@ -1197,6 +1197,15 @@ describe('View', () => {
     )
   })
 
+  test('Tool#minDistance, #maxDistance and #eventInterval default to null', () => {
+    const tool = new Tool()
+    equals(
+      [tool.minDistance, tool.maxDistance, tool.eventInterval],
+      [null, null, null]
+    )
+    tool.remove()
+  })
+
   test('Tool#minDistance, #maxDistance and #fixedDistance', () => {
     const tool = new Tool({ minDistance: 10, maxDistance: 20 })
     equals(

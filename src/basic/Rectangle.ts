@@ -147,7 +147,7 @@ export class Rectangle extends Base {
   ): this {
     if (typeof arg0 === 'number') {
       // new Rectangle(x, y, width, height)
-      this._set(arg0, arg1 as number, arg2, arg3)
+      this._set(arg0, arg1 as number, arg2!, arg3!)
     } else if (arg0 === undefined || arg0 === null) {
       // new Rectangle(), new Rectangle(null)
       this._set(0, 0, 0, 0)
@@ -975,7 +975,11 @@ export class LinkedRectangle extends Rectangle {
       'bottomCenter'
     ]
     for (const key of keys) {
-      const { get } = Object.getOwnPropertyDescriptor(Rectangle.prototype, key)
+      // The keys above are all accessors:
+      const get = Object.getOwnPropertyDescriptor(
+        Rectangle.prototype,
+        key
+      )!.get!
       inject(this.prototype, {
         get [key]() {
           return get.call(this)

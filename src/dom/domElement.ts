@@ -13,7 +13,9 @@
 import { Rectangle, Size, getDocument } from '../internal.ts'
 import type { Point } from '../basic/Point.ts'
 
-export function getStyles(element: Element | Document): CSSStyleDeclaration {
+export function getStyles(
+  element: Element | Document
+): CSSStyleDeclaration | undefined {
   // If element is a document (nodeType == 9), use it directly
   const document =
     element && element.nodeType !== 9
@@ -38,7 +40,8 @@ export function getSize(element: Element): Size {
  * @private
  */
 export function getInsets(element: Element, start?: boolean): Size {
-  const style = getStyles(element)
+  // Elements in a document always have styles:
+  const style = getStyles(element)!
   function get(side: string) {
     return (
       parseFloat(style[`padding${side}`]) +
@@ -70,7 +73,7 @@ export function isInView(element: Element): boolean {
  * @private
  */
 export function isInserted(element: Element): boolean {
-  return getDocument().body.contains(element)
+  return getDocument()!.body.contains(element)
 }
 
 /**
@@ -102,7 +105,7 @@ function getBounds(element: Element, viewport?: boolean): Rectangle {
   let x = rect.left
   let y = rect.top
   if (!viewport) {
-    const view = element.ownerDocument.defaultView
+    const view = element.ownerDocument.defaultView!
     x += view.scrollX
     y += view.scrollY
   }
@@ -110,7 +113,7 @@ function getBounds(element: Element, viewport?: boolean): Rectangle {
 }
 
 function getViewportBounds(element: Element): Rectangle {
-  const view = element.ownerDocument.defaultView
+  const view = element.ownerDocument.defaultView!
   return new Rectangle(0, 0, view.innerWidth, view.innerHeight)
 }
 

@@ -46,12 +46,12 @@ export function readSVGPath(data: string, builder: PathBuilder) {
   // First split the path data into parts of command-coordinates pairs
   // Commands are any of these characters: mzlhvcsqta
   const parts = data?.match(/[mlhvcsqtaz][^mlhvcsqtaz]*/gi)
-  let coords: string[]
+  let coords: string[] | null
   let relative = false
-  let previous: string
-  let control: Point
+  let previous = ''
   let current = new Point()
   let start = new Point()
+  let control = current
   const number = '([+-]?(?:\\d*\\.\\d+|\\d+\\.?)(?:[eE][+-]?\\d+)?)'
   const numbers = new RegExp(number, 'g')
   // The arc flags are single characters that don't need to be
@@ -63,7 +63,7 @@ export function readSVGPath(data: string, builder: PathBuilder) {
   )
 
   const getCoord = (index: number, coord: 'x' | 'y') => {
-    const value = +coords[index]
+    const value = +coords![index]
     return relative ? value + current[coord] : value
   }
 
@@ -75,7 +75,7 @@ export function readSVGPath(data: string, builder: PathBuilder) {
     const lower = command.toLowerCase()
     // Match all coordinate values
     coords = part.match(numbers)
-    const length = coords?.length
+    const length = coords?.length ?? 0
     relative = command === lower
     // Fix issues with z in the middle of SVG path data, not followed by
     // a m command, see #413:
@@ -186,11 +186,11 @@ export function parseSVGPath(data: string): PathValues[] {
   const getCurrent = () => {
     const path = paths.at(-1)
     if (!path) throw new Error('Use a moveTo() command first')
-    return path.segments.at(-1)
+    return path.segments.at(-1)!
   }
 
   const add = (segments: SegmentValues[]) => {
-    paths.at(-1).segments.push(...segments)
+    paths.at(-1)!.segments.push(...segments)
   }
 
   const builder: PathBuilder = {
@@ -242,7 +242,7 @@ export function parseSVGPath(data: string): PathValues[] {
       if (!path) throw new Error('Use a moveTo() command first')
       const { segments } = path
       const first = segments[0]
-      const last = segments.at(-1)
+      const last = segments.at(-1)!
       path.closed = true
       if (
         first !== last &&
@@ -314,7 +314,7 @@ export function writeSVGPath(
   let inY: number
   let outX: number
   let outY: number
-  const parts = []
+  const parts: string[] = []
 
   function addSegment(index: number, skipLine?: boolean) {
     getCoords(index, coords)

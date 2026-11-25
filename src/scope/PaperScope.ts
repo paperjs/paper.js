@@ -25,7 +25,7 @@ import packageJson from '../../package.json' with { type: 'json' }
 /**
  * The currently active scope, which PaperScope#activate() sets.
  */
-export let paper: PaperScope = null
+export let paper: PaperScope | null = null
 
 /**
  * Returns the active scope, and creates one on first use if there is none
@@ -106,17 +106,19 @@ export class PaperScope extends Base {
    */
   projects: Project[] = []
 
+  // Typed as set, as the scope's current project, view and tool are in the
+  // apps that use them, sparing them a check on each use:
   /**
    * The reference to the active tool.
    */
-  tool: Tool = null
+  tool: Tool = null!
 
   /**
    * The list of available tools.
    */
   tools: Tool[] = []
 
-  _project: Project = null
+  _project: Project | null = null
   // Assign a unique id to each scope.
   _id = PaperScope.#nextId++
 
@@ -134,7 +136,8 @@ export class PaperScope extends Base {
    * The currently active project.
    */
   get project(): Project {
-    return this._project
+    // Typed as set, as the tool above:
+    return this._project!
   }
 
   set project(project: Project) {
@@ -145,7 +148,8 @@ export class PaperScope extends Base {
    * The reference to the active project's view.
    */
   get view(): View {
-    return this._project?._view
+    // Typed as set, as the tool above:
+    return this._project?._view as View
   }
 
   /**
@@ -280,7 +284,7 @@ export class PaperScope extends Base {
 
   // Check for both the attribute and its 'data-paper-' version, e.g.
   // 'canvas' and 'data-paper-canvas':
-  static getAttribute(element: Element, name: string): string {
+  static getAttribute(element: Element, name: string): string | null {
     return (
       element.getAttribute(name) ||
       element.getAttribute('data-paper-' + name)

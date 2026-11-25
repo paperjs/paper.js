@@ -45,7 +45,7 @@ export class PaperScopeItem extends Emitter {
   }
 
   activate(): boolean {
-    if (!this._scope) return false
+    if (this._index == null) return false
     const previous = this._scope[this._reference]
     if (previous && previous !== this) {
       previous.emit('deactivate')
@@ -71,7 +71,6 @@ export class PaperScopeItem extends Emitter {
       this._scope[this._reference] = null
       this.emit('deactivate')
     }
-    this._scope = null
     return true
   }
 

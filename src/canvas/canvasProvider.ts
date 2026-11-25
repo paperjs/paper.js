@@ -28,11 +28,15 @@ export const canvases: Canvas[] = []
  *     least as large, without resizing it, since resizing reallocates its
  *     pixels
  */
-export function getCanvas(size: Size, options?: Options): Canvas
+export function getCanvas(size: Size, options?: Options): Canvas | null
 export function getCanvas(
   width: number, height: number, options?: Options
-): Canvas
-export function getCanvas(width: any, height?: any, options?: Options): Canvas {
+): Canvas | null
+export function getCanvas(
+  width: any,
+  height?: any,
+  options?: Options
+): Canvas | null {
   const window = getWindow()
   // Web-workers have no DOM, but may support OffscreenCanvas:
   if (!window && !globalThis.OffscreenCanvas) return null
@@ -57,7 +61,7 @@ export function getCanvas(width: any, height?: any, options?: Options): Canvas {
     index >= 0
       ? canvases.splice(index, 1)[0]
       : window
-        ? getDocument().createElement('canvas')
+        ? getDocument()!.createElement('canvas')
         : new OffscreenCanvas(width, height)
   const context = canvas.getContext('2d', options ?? {}) as any
   if (!context) {
@@ -91,13 +95,13 @@ export function getCanvas(width: any, height?: any, options?: Options): Canvas {
  */
 export function getContext(
   size: Size, options?: Options
-): CanvasRenderingContext2D
+): CanvasRenderingContext2D | null
 export function getContext(
   width: number, height: number, options?: Options
-): CanvasRenderingContext2D
+): CanvasRenderingContext2D | null
 export function getContext(
   width: any, height?: any, options?: Options
-): CanvasRenderingContext2D {
+): CanvasRenderingContext2D | null {
   const canvas = getCanvas(width, height, options)
   return canvas ? (canvas.getContext('2d') as CanvasRenderingContext2D) : null
 }

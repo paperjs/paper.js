@@ -173,9 +173,10 @@ inject(CanvasView.prototype, {
   async exportImage(this: CanvasView, path: string) {
     this.update()
     const type = /\.jpe?g$/.test(path) ? 'image/jpeg' : 'image/png'
-    const blob = await new Promise<Blob>(resolve =>
+    const blob = await new Promise<Blob | null>(resolve =>
       this._element.toBlob(resolve, type)
     )
+    if (!blob) throw new Error(`Unable to export the view to '${path}'.`)
     await writeFile(path, new Uint8Array(await blob.arrayBuffer()))
   }
 })

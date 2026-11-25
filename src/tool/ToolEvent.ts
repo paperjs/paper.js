@@ -51,7 +51,7 @@ export class ToolEvent extends Event {
   #velocity: Point
   #elapsed: number
   // Have ToolEvent#item fall back to returning null, not undefined.
-  #item: Item = null
+  #item: Item | null = null
 
   constructor(tool: Tool, type: string, event: PointerEvent) {
     super(event)
@@ -60,8 +60,9 @@ export class ToolEvent extends Event {
   }
 
   // Convenience method to allow local overrides of point values.
-  // See application below.
-  #choosePoint(point: Point, toolPoint: Point): Point {
+  // See application below. The tool sets its points before it emits events,
+  // all but the down point, which is null before the first click.
+  #choosePoint(point?: Point, toolPoint?: Point): Point | null {
     return point ? point : toolPoint ? toolPoint.clone() : null
   }
 
@@ -81,7 +82,7 @@ export class ToolEvent extends Event {
    * }
    */
   get point(): Point {
-    return this.#choosePoint(this.#point, this.tool._point)
+    return this.#choosePoint(this.#point, this.tool._point)!
   }
 
   set point(point: Point) {
@@ -93,7 +94,7 @@ export class ToolEvent extends Event {
    * event was fired.
    */
   get lastPoint(): Point {
-    return this.#choosePoint(this.#lastPoint, this.tool._lastPoint)
+    return this.#choosePoint(this.#lastPoint, this.tool._lastPoint)!
   }
 
   set lastPoint(lastPoint: Point) {
@@ -104,7 +105,7 @@ export class ToolEvent extends Event {
    * The position of the mouse in project coordinates when the mouse button
    * was last clicked.
    */
-  get downPoint(): Point {
+  get downPoint(): Point | null {
     return this.#choosePoint(this.#downPoint, this.tool._downPoint)
   }
 
@@ -207,7 +208,7 @@ export class ToolEvent extends Event {
    * {@link CompoundPath} items, the most top level group or compound path
    * that it is contained within is returned.
    */
-  get item(): Item {
+  get item(): Item | null {
     if (!this.#item) {
       const result = this.tool.scope.project.hitTest(this.point)
       if (result) {

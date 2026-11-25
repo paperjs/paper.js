@@ -17,7 +17,7 @@ type Listener = (event: any) => void
 // The callbacks for the next frame, see requestFrame():
 let callbacks: (() => void)[] = []
 let isRequested = false
-let timer: ReturnType<typeof setInterval> = null
+let timer: ReturnType<typeof setInterval> | null = null
 
 /**
  * Adds the listeners to the element, keyed by their event types, several of
@@ -65,7 +65,7 @@ export function removeEvents(
  * @private
  */
 export function getEventOffset(event: MouseEvent, target?: Element): Point {
-  const { documentElement } = getDocument()
+  const { documentElement } = getDocument()!
   // Remove target offsets from page coordinates
   return new Point(
     event.pageX || event.clientX + documentElement.scrollLeft,
@@ -112,7 +112,7 @@ function handleCallbacks() {
   const window = getWindow()
   isRequested = !!window?.requestAnimationFrame && callbacks.length > 0
   if (isRequested) {
-    window.requestAnimationFrame(handleCallbacks)
+    window!.requestAnimationFrame(handleCallbacks)
   } else if (timer && !callbacks.length) {
     // Stop the interval timer of the fallback when there's nothing left to
     // do, so it doesn't keep hosts running. The next request starts it again:

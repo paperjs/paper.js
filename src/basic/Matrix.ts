@@ -109,7 +109,7 @@ export class Matrix extends Base {
     // Most matrices are created without values, or with all six: Create
     // their array as it is, where set() would write it a second time:
     if (typeof a === 'number' && ty !== undefined) {
-      this._values = [a, b, c, d, tx, ty]
+      this._values = [a, b, c, d, tx, ty] as MatrixValues
     } else {
       this._values = createMatrix()
       if (a !== undefined) {
@@ -132,7 +132,7 @@ export class Matrix extends Base {
     tx?: number, ty?: number
   ): this {
     if (typeof a === 'number' && ty !== undefined) {
-      this._set(a, b, c, d, tx, ty)
+      this._set(a, b!, c!, d!, tx!, ty)
     } else if (a === undefined) {
       this.reset()
     } else if (a instanceof Matrix) {
@@ -458,7 +458,7 @@ export class Matrix extends Base {
    * @return this matrix, or `null`, if the matrix is singular.
    */
   invert(): this | null {
-    let res = null
+    let res: this | null = null
     if (this.isInvertible()) {
       const v = this._values
       const a = v[0]

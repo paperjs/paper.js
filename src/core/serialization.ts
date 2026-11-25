@@ -125,7 +125,7 @@ export function deserialize(
   resolve?: (key: string) => any,
   _data?: any,
   _setDictionary?: boolean,
-  _isRoot?: boolean
+  _isRoot = false
 ) {
   let res = json
   const isFirst = !_data

@@ -395,15 +395,20 @@ export function solveQuadratic(
     }
   }
   let count = 0
-  const boundless = min == null
-  const minB = min - EPSILON
-  const maxB = max + EPSILON
+  const boundless = min == null || max == null
   // We need to include EPSILON in the comparisons with min / max,
   // as some solutions are ever so lightly out of bounds.
-  if (isFinite(x1) && (boundless || x1 > minB && x1 < maxB)) {
+  if (
+    isFinite(x1) &&
+    (boundless || x1 > min - EPSILON && x1 < max + EPSILON)
+  ) {
     roots[count++] = boundless ? x1 : clamp(x1, min, max)
   }
-  if (x2 !== x1 && isFinite(x2) && (boundless || x2 > minB && x2 < maxB)) {
+  if (
+    x2 !== x1 &&
+    isFinite(x2) &&
+    (boundless || x2 > min - EPSILON && x2 < max + EPSILON)
+  ) {
     roots[count++] = boundless ? x2 : clamp(x2, min, max)
   }
   return count
@@ -508,7 +513,7 @@ export function solveCubic(
   }
   // The cubic has been deflated to a quadratic.
   let count = solveQuadratic(a, b1, c2, roots, min, max)
-  const boundless = min == null
+  const boundless = min == null || max == null
   if (
     isFinite(x) &&
     (count === 0 || count > 0 && x !== roots[0] && x !== roots[1]) &&
@@ -609,7 +614,7 @@ export function solveQuartic(
     xs.push(0)
   }
   let count = 0
-  const boundless = min == null
+  const boundless = min == null || max == null
   for (let x of xs) {
     for (let i = 0; i < 3; i++) {
       const slope = ((4 * x + 3 * b) * x + 2 * c) * x + d
@@ -652,11 +657,11 @@ export function solveBernstein(
   // Splits the coefficients at the middle through the algorithm of
   // de Casteljau, and their errors with them, plus the rounding of
   // each step:
-  function subdivide(values, bounds) {
-    const left = []
-    const right = []
-    const leftBounds = []
-    const rightBounds = []
+  function subdivide(values: number[], bounds: number[]) {
+    const left: number[] = []
+    const right: number[] = []
+    const leftBounds: number[] = []
+    const rightBounds: number[] = []
     const v = values.slice()
     const e = bounds.slice()
     for (let n = v.length; n > 0; n--) {
