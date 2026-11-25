@@ -28,6 +28,7 @@ type EffectProps = {
   type: string
   label?: string
   parameters?: Record<string, EffectParameter>
+  interactive?: boolean
   // Called on the instance, or on the effect itself where Path applies the
   // outline effect to its stroke profile without one:
   onApply?: (this: EffectInstance | Effect, event: EffectEvent) => Item | void
@@ -39,7 +40,8 @@ type EffectProps = {
  * the item itself, as the effects in Illustrator do. Creating one registers it
  * under its type, replacing any effect registered there before, and items use
  * it by that type, see {@link Item#effects}, each through an
- * {@link EffectInstance} with its own parameters.
+ * {@link EffectInstance} with its own parameters. Hosts read from
+ * {@link #interactive} whether to draw it during interactions too.
  *
  * @example
  * new Effect({
@@ -66,6 +68,7 @@ export class Effect extends Base {
   #type: string
   #label: string
   #parameters: Record<string, EffectParameter>
+  #interactive: boolean
   // The defaults of the declared parameters, and their accessors on the
   // instances, see EffectInstance:
   _defaults: Record<string, any>
@@ -93,9 +96,9 @@ export class Effect extends Base {
   /**
    * Creates an effect and registers it under its type.
    *
-   * @param props the {@link #type} of the effect, its {@link #label} and
-   *     {@link #parameters}, and {@link #onApply} and
-   *     {@link #onEditParameters}
+   * @param props the {@link #type} of the effect, its {@link #label},
+   *     {@link #parameters} and {@link #interactive}, and {@link #onApply}
+   *     and {@link #onEditParameters}
    */
   constructor(props: EffectProps) {
     super()
@@ -104,6 +107,7 @@ export class Effect extends Base {
     this.#type = props.type
     this.#label = props.label || props.type
     this.#parameters = props.parameters ?? {}
+    this.#interactive = !!props.interactive
     this.onApply = props.onApply ?? null
     this.onEditParameters = props.onEditParameters ?? null
     // The declared parameters become properties of the instances:
@@ -153,6 +157,17 @@ export class Effect extends Base {
    */
   get parameters(): Record<string, EffectParameter> {
     return this.#parameters
+  }
+
+  /**
+   * Specifies whether the effect is quick enough for hosts to draw it during
+   * interactions, while the user drags or edits an item with the host's own
+   * tools, and not only once they end. Paper.js itself doesn't read it.
+   *
+   * @default false
+   */
+  get interactive(): boolean {
+    return this.#interactive
   }
 
   /**
