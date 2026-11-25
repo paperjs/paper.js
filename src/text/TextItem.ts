@@ -46,9 +46,8 @@ import type { HitTestOptions } from '../item/HitResult.ts'
 // The directions that the lines of text run in:
 export type TextOrientation = 'horizontal' | 'vertical'
 
-// How a style sets its letters, see TextItem#_getPiece(), and, placed on a
-// line, its content, where it is in the story, and its place and extent:
-export type TextPiece = {
+// How a style sets its letters, see TextItem#_getPiece():
+export type TextSetting = {
   style: Style
   font: string
   tracking: string
@@ -60,12 +59,17 @@ export type TextPiece = {
   scale: Point
   rotation: number
   capitals: boolean
-  content?: string
-  start?: number
-  end?: number
-  x?: number
+}
+
+// A setting placed on a line: its content, where it is in the story, and its
+// place and extent:
+export type TextPiece = TextSetting & {
+  content: string
+  start: number
+  end: number
+  x: number
   dx?: number
-  width?: number
+  width: number
 }
 
 // A line of the text's layout, see TextItem#_measure():
@@ -94,8 +98,8 @@ export class TextItem extends Item {
   // without the constructor, see Item#_loadContent().
   declare _orientation: TextOrientation
   _story: TextStory
-  _layout: TextLine[]
-  _fontMetrics: Record<string, { ascent: number; descent: number }>
+  _layout: TextLine[] | null
+  _fontMetrics: Record<string, { ascent: number; descent: number }> | null
   _visibleEnd: number
 
   _initializeContent(project: Project) {
@@ -244,7 +248,7 @@ export class TextItem extends Item {
   // being one of its parts, so text items show no children, and they're
   // never hit:
   // @override
-  get children(): Item[] {
+  get children(): Item[] | null {
     return null
   }
 
@@ -253,12 +257,12 @@ export class TextItem extends Item {
   }
 
   // @override
-  get firstChild(): Item {
+  get firstChild(): Item | null {
     return null
   }
 
   // @override
-  get lastChild(): Item {
+  get lastChild(): Item | null {
     return null
   }
 
@@ -430,19 +434,19 @@ export class TextItem extends Item {
     const story = this._story
     const content = story._content
     const runs = story._runs
-    let letters = null
+    let letters: TextRange[] | null = null
     let index = 0
-    const pieces = []
+    const pieces: TextPiece[] = []
     let total = 0
     let lineHeight = 0
     let ascent = 0
     let descent = 0
     let group = ''
     let groupWidth = 0
-    let previous = null
+    let previous: TextPiece | null = null
 
     // The advance of `text` after the group measured so far:
-    function advance(piece: TextPiece, text: string): number {
+    function advance(piece: TextSetting, text: string): number {
       if (
         !(
           previous?.font === piece.font &&
@@ -466,7 +470,7 @@ export class TextItem extends Item {
     // Adds the piece of `text`, from `from` to `to` in the story, with
     // `extra` space after it:
     function add(
-      piece: TextPiece,
+      piece: TextSetting,
       text: string,
       from: number,
       to: number,
@@ -560,7 +564,7 @@ export class TextItem extends Item {
   // How a style sets its letters: its canvas font and tracking, its size,
   // the font's ascent and descent and the line height, how far it moves them
   // from the baseline, its scaling and rotation:
-  _getPiece(style: Style): TextPiece {
+  _getPiece(style: Style): TextSetting {
     const size = style._getFontSize()
     const font = style._getCanvasFont()
     const position = style.baselinePosition
@@ -670,14 +674,14 @@ export class TextItem extends Item {
       content
         .slice(
           pieces.length ? pieces[0].start : 0,
-          pieces.length ? pieces.at(-1).end : 0
+          pieces.length ? pieces.at(-1)!.end : 0
         )
         .match(/\s+/g) ?? []
     ).length
     if (spaces && width > line.width) {
       const extra = (width - line.width) / spaces
       let moved = 0
-      const result = []
+      const result: TextPiece[] = []
       for (let i = 0, l = pieces.length; i < l; i++) {
         // Split pieces at their spaces, so each word can move. Pieces
         // without any, as a soft hyphen's, move whole:
@@ -766,7 +770,7 @@ export class TextItem extends Item {
     } else if (this._story._content) {
       const story = this._story
       const lines = this._getLayout()
-      let paragraph = null
+      let paragraph: ReturnType<TextStory['_getParagraph']> | null = null
       // Glyphs can only be stroked through the transformation, unlike paths,
       // so approximate non-scaling strokes by dividing the width and the
       // dashes by the scale (#1703):
@@ -860,7 +864,7 @@ export class TextItem extends Item {
           if (piece.style.fillColor) {
             const offset = local
               .subtract(closest)
-              .divide(options._tolerancePadding)
+              .divide(options._tolerancePadding!)
             if (offset.length <= 1) return new HitResult('fill', this)
           }
         }

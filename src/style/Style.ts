@@ -487,7 +487,7 @@ export class Style extends Base {
    * The view that this style belongs to.
    */
   get view(): View {
-    return this.#project._view
+    return this.#project.view
   }
 
   // The font as canvas takes it:

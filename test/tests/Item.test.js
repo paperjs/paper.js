@@ -74,6 +74,11 @@ describe('Item', () => {
     equals(path.name, null)
   })
 
+  test('item.children is null for items without children', () => {
+    equals(new Path().children, null)
+    equals(new Group().children, [])
+  })
+
   test('addChildren() inserts internal items, which have no ids', () => {
     const group = new Group()
     const paths = [

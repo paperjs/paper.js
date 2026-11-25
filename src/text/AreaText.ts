@@ -23,6 +23,9 @@ import {
   registerClasses
 } from '../internal.ts'
 import type { TextLine } from './TextItem.ts'
+
+// An item that pushes the text aside, with its outline, see #_getTextWraps():
+type TextWrap = { paths: PathItem[]; offset: number; invert: boolean }
 import type { RectangleLike } from '../basic/Rectangle.ts'
 import type { Item } from '../item/Item.ts'
 import type { Style } from '../style/Style.ts'
@@ -53,7 +56,7 @@ export class AreaText extends TextItem {
   declare _gutter: number
   declare _inset: number
   declare _verticalAlign: string
-  _textWrapVersion: number
+  _textWrapVersion: number | undefined
 
   /**
    * Creates a text item that flows inside an area.
@@ -133,14 +136,16 @@ export class AreaText extends TextItem {
    * text.fitHeight();
    */
   fitHeight(): this {
-    let path = this.textPath
-    if (path) {
-      const { bounds } = path
-      if (!bounds.height) {
-        path = Path.rectangle({
-          rectangle: new Rectangle(bounds.x, bounds.y, bounds.width, 1),
-          insert: false
-        })
+    const { textPath } = this
+    if (textPath) {
+      const { bounds } = textPath
+      const path = bounds.height
+        ? textPath
+        : Path.rectangle({
+            rectangle: new Rectangle(bounds.x, bounds.y, bounds.width, 1),
+            insert: false
+          })
+      if (path !== textPath) {
         this.textPath = path
       }
       const top = bounds.topCenter
@@ -214,7 +219,7 @@ export class AreaText extends TextItem {
         pos === paragraph.start && y !== null
           ? Math.max(state.spaceAfter, style.spaceBefore)
           : 0
-      const result = []
+      const result: TextLine[] = []
       let isComplete = false
       while (regions[region]) {
         const bounds = regions[region]
@@ -320,7 +325,7 @@ export class AreaText extends TextItem {
     // Lays out all the paragraphs, one after the other, from where the text
     // starts:
     const layAll = () => {
-      const layout = []
+      const layout: TextLine[] = []
       let match
       state = {
         pos: this._getStart(),
@@ -380,7 +385,7 @@ export class AreaText extends TextItem {
       // much room above them as below:
       for (let r = 0, l = regions.length; r < l; r++) {
         const last = getLast(layout, r)
-        if (last?.free > 0) {
+        if (last && last.free > 0) {
           const { end } = last.line
           // The room below the lines laid out from `offset` down, beyond
           // what's wanted, or null if the region then shows less:
@@ -413,7 +418,7 @@ export class AreaText extends TextItem {
   // columns, in the order the text fills them:
   _getRegions(): Rectangle[] {
     const path = this.textPath
-    const regions = []
+    const regions: Rectangle[] = []
     if (path) {
       const bounds = path.bounds.expand(-2 * this._inset)
       const gutter = this._gutter
@@ -451,7 +456,7 @@ export class AreaText extends TextItem {
     const middle = (top + bottom) / 2
     const unite = (stretches1: number[][], stretches2: number[][]) => {
       const all = stretches1.concat(stretches2).sort((a, b) => a[0] - b[0])
-      const result = []
+      const result: number[][] = []
       for (let i = 0, l = all.length; i < l; i++) {
         const last = result.at(-1)
         const stretch = all[i]
@@ -464,7 +469,7 @@ export class AreaText extends TextItem {
       return result
     }
     const intersect = (stretches1: number[][], stretches2: number[][]) => {
-      const result = []
+      const result: number[][] = []
       for (let i = 0, l = stretches1.length; i < l; i++) {
         for (let j = 0, m = stretches2.length; j < m; j++) {
           const left = Math.max(stretches1[i][0], stretches2[j][0])
@@ -482,7 +487,7 @@ export class AreaText extends TextItem {
         stretches2.reduce(
           // What's outside the stretches, from left to right:
           (outside, stretch) => {
-            const last = outside.pop()
+            const last = outside.pop()!
             return outside.concat([
               [last[0], stretch[0]],
               [stretch[1], last[1]]
@@ -494,7 +499,7 @@ export class AreaText extends TextItem {
     // The stretches inside the paths along the horizontal at `y`, pairing the
     // crossings of each:
     const inside = (paths: PathItem[], y: number) => {
-      const stretches = []
+      const stretches: number[][] = []
       for (let i = 0, l = paths.length; i < l; i++) {
         const path = paths[i]
         const { bounds } = path
@@ -516,7 +521,8 @@ export class AreaText extends TextItem {
     }
     // The area must hold all of the band:
     let spans = [top, middle, bottom].reduce(
-      (spans, y) => intersect(spans, inside([this.textPath], y)),
+      // Only area texts with paths lay out:
+      (spans, y) => intersect(spans, inside([this.textPath!], y)),
       [[region.left, region.right]]
     )
     for (let i = 0, l = wraps.length; i < l; i++) {
@@ -549,21 +555,23 @@ export class AreaText extends TextItem {
   // Item#textWrap, each with its options and its outline as paths in the
   // text's coordinates: a path's own, a group's children's, or a clip
   // group's clip path, and the bounds of anything else:
-  _getTextWraps(): any[] {
+  _getTextWraps(): TextWrap[] {
     const { layer } = this
     const items = layer?._textWrapItems
-    const toText = this._getGlobalMatrix(true).inverted()
-    const wraps = []
+    // Texts scaled to nothing show nothing to wrap:
+    const toText = this._getGlobalMatrix(true).inverted()!
+    const wraps: TextWrap[] = []
 
-    const isShown = (item: Item) => {
-      for (; item !== layer; item = item._parent) {
+    const isShown = (item: Item | null) => {
+      for (; item && item !== layer; item = item._parent) {
         if (!item._visible) return false
       }
       return true
     }
 
     const getOutline = (item: Item, paths: PathItem[]) => {
-      const matrix = toText.appended(item._parent._getGlobalMatrix(true))
+      // The wraps are in the text's layer, below it:
+      const matrix = toText.appended(item._parent!._getGlobalMatrix(true))
       if (item instanceof PathItem) {
         const path = item.clone({ insert: false, deep: true })
         path.transform(matrix)
@@ -614,7 +622,7 @@ export class AreaText extends TextItem {
     const indented = this._indent(style, isFirst, room[0], room[1])
     const words = /[^\s\u00ad]*\u00ad|\S+\s*|\s+/g
     const text = content.slice(start, paragraph.end)
-    const ends = []
+    const ends: number[] = []
     let match
 
     // The line up to `end` without its trailing spaces, with a hyphen where
@@ -626,7 +634,8 @@ export class AreaText extends TextItem {
         direction
       )
       if (content[end - 1] === '\u00ad') {
-        const last = line.pieces.at(-1)
+        // The line holds the letter before the soft hyphen:
+        const last = line.pieces.at(-1)!
         const width = (
           this.view.getTextWidth(last.font, ['-'], last.tracking, direction) *
           last.scale.x

@@ -21,7 +21,7 @@ import {
   isPlainObject,
   registerClasses
 } from '../internal.ts'
-import type { TextLine } from './TextItem.ts'
+import type { TextLine, TextPiece } from './TextItem.ts'
 import type { PathItem } from '../path/PathItem.ts'
 import type { Path } from '../path/Path.ts'
 import type { Project } from '../item/Project.ts'
@@ -118,7 +118,7 @@ export class PathText extends TextItem {
           0.25,
           32,
           false,
-          child === path ? path._matrix : path._matrix.appended(child._matrix)
+          child === path ? path._matrix : path!._matrix.appended(child._matrix)
         )
     )
     const lengths = flatteners.map(flattener => flattener.length)
@@ -134,7 +134,7 @@ export class PathText extends TextItem {
       start, story._content.length, paragraph.direction, true
     )
     const letters = measured.pieces
-    const pieces = []
+    const pieces: TextPiece[] = []
     let width = 0
     // 1. The letters that fit, each spaced on from the one before, from the
     // right in a right-to-left first paragraph:
@@ -199,10 +199,10 @@ export class PathText extends TextItem {
   // The letters' boxes, turned with them:
   _getBounds(matrix: Matrix | null /* , options */): Rectangle {
     const { pieces } = this._getLayout()[0]
-    let bounds = null
+    let bounds: Rectangle | null = null
     for (let i = 0, l = pieces.length; i < l; i++) {
       const piece = pieces[i]
-      let rect = this._getBox(piece, piece.dx, 0)
+      let rect = this._getBox(piece, piece.dx ?? 0, 0)
       const local = new Matrix()
         .translate(piece.x, piece.y)
         .rotate(piece.rotation)
@@ -210,7 +210,7 @@ export class PathText extends TextItem {
         local.prepend(matrix)
       }
       rect = local._transformBounds(rect, rect)
-      bounds = bounds?.unite(rect) ?? rect
+      bounds = bounds ? bounds.unite(rect) : rect
     }
     return bounds ?? new Rectangle()
   }

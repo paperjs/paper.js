@@ -1676,8 +1676,8 @@ export class Item extends Emitter {
    * // The path is the first child of the group:
    * group.firstChild.fillColor = 'green';
    */
-  get children(): Item[] {
-    return this._children
+  get children(): Item[] | null {
+    return this._children ?? null
   }
 
   set children(items: Item[]) {
