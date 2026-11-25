@@ -236,6 +236,19 @@ describe('Effect', () => {
     )
   })
 
+  test('Items with effects apply their opacity and blend mode once', () => {
+    // A group is drawn through a temporary canvas, so the art that its
+    // effects start from would apply its opacity a second time:
+    const group = new Group({ children: [createSquare()], opacity: 0.5 })
+    group.addEffect({ type: 'outline' })
+    paper.view.update(true)
+    equals(getViewPixel(40, 40).alpha, 0.5, null, { tolerance: 0.01 })
+    equals(group.getEffectOutput().opacity, 1)
+    group.opacity = 1
+    group.blendMode = 'screen'
+    equals(group.getEffectOutput().blendMode, 'normal')
+  })
+
   test('EffectInstance#equals() compares type, visibility and parameters', () => {
     const instance = new EffectInstance({
       type: 'offset',

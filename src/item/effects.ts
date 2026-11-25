@@ -89,11 +89,14 @@ export function getEffectOutput(item: Item): Item | null {
 }
 
 // Returns a copy of the item for its effects to apply to, in its own
-// coordinates, with the effects of its content expanded and without its own:
+// coordinates, with the effects of its content expanded and without its own.
+// Drawing the item applies its opacity and blend mode, so the copy has none:
 export function getEffectArt(item: Item): Item {
   const art = item.clone({ insert: false })
   art.effects = null
   art.matrix = new Matrix()
+  art.opacity = 1
+  art.blendMode = 'normal'
 
   function expand(source: Item, copy: Item) {
     const children = source._children
