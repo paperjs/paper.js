@@ -361,6 +361,58 @@ describe('SvgExport', () => {
     equals(copy.data, {}, 'not in item data')
   })
 
+  test('Items with stroke profiles and effects round-trip (#2505)', () => {
+    const path = Path.star({
+      center: [50, 50],
+      points: 5,
+      radius1: 20,
+      radius2: 40,
+      strokeColor: 'black',
+      strokeWidth: 6,
+      name: 'star'
+    })
+    path.strokeProfile = [
+      { offset: 0, width: 1 },
+      { offset: 100, width: 2 }
+    ]
+    const offset = Path.circle({
+      center: [150, 50],
+      radius: 20,
+      fillColor: 'red',
+      effects: [{ type: 'offset', parameters: { distance: 5 } }]
+    })
+    const group = new Group({
+      children: [
+        Path.rectangle([200, 30], [40, 40]).set({ fillColor: 'blue' })
+      ],
+      effects: [{ type: 'offset', parameters: { distance: 3, join: 'round' } }],
+      opacity: 0.5
+    })
+    for (const item of [path, offset, group]) {
+      const node = item.exportSVG()
+      equals(node.hasAttribute('data-paper-item'), true, 'stored')
+      equals(node.getAttribute('opacity'), item.opacity === 1 ? null : '0.5')
+      // Other viewers see what the item draws:
+      equals(node.getAttribute('d') !== item.pathData, true, 'drawn')
+      const copy = paper.project.importSVG(item.exportSVG({ asString: true }))
+      equals(copy.exportJSON(), item.exportJSON(), item.className)
+    }
+  })
+
+  test('Items stored in SVG import as drawn after other edits (#2505)', () => {
+    const path = Path.circle({
+      center: [50, 50],
+      radius: 20,
+      fillColor: 'red',
+      effects: [{ type: 'offset', parameters: { distance: 5 } }]
+    })
+    const node = path.exportSVG()
+    node.setAttribute('d', 'M0,0h10v10h-10z')
+    const copy = paper.project.importSVG(node)
+    equals(copy.effects.length, 0, 'without effects')
+    equals(copy.bounds, new Rectangle(0, 0, 10, 10), 'as drawn')
+  })
+
   test('Export SVG without segment names and data (#2398)', () => {
     const path = Path.rectangle([0, 0], [10, 10])
     path.firstSegment.data // Accessing creates empty data.

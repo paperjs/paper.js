@@ -13,6 +13,7 @@
 // The functionality needed to convert a SVG DOM to a Paper.js DOM.
 
 import {
+  Base,
   Color,
   Gradient,
   GradientStop,
@@ -36,6 +37,7 @@ import {
   camelize,
   createSvgElement,
   getDocument,
+  getGeometryHash,
   getScope,
   getStyles,
   getSvgAttribute,
@@ -1028,6 +1030,19 @@ function setSegmentsData(item: any, node: Element) {
   }
 }
 
+// Restore the item that svgExport wrote as what its effects and stroke profile
+// draw, from its JSON, unless another editor changed what it wrote since:
+function restoreItem(node: Element): Item | null {
+  const json = node.getAttribute('data-paper-item')
+  if (json) {
+    const { check, item } = JSON.parse(json)
+    if (check === getGeometryHash(node)) {
+      return Base.importJSON(item)
+    }
+  }
+  return null
+}
+
 let sandbox: HTMLIFrameElement
 
 function getSandbox(): HTMLElement {
@@ -1102,13 +1117,16 @@ function importNode(node: Element, options: Options, isRoot?: boolean): any {
   try {
     settings.applyMatrix = false
     settings.insertItems = false
+    let restored: Item | null = null
     try {
-      item = importer?.(node, type, options, isRoot) ?? null
+      restored = isElement ? restoreItem(node) : null
+      item = restored ?? importer?.(node, type, options, isRoot) ?? null
     } finally {
       settings.insertItems = insertItems
       settings.applyMatrix = applyMatrix
     }
-    if (item) {
+    // Restored items have their names, data and attributes already:
+    if (item && !restored) {
       // Restore segment names and data before attributes can wrap
       // the path in a clip group:
       if (isElement && item instanceof PathItem) {
@@ -1130,6 +1148,8 @@ function importNode(node: Element, options: Options, isRoot?: boolean): any {
       if (data) {
         item._data = data
       }
+    }
+    if (item) {
       // Support processItem callback, to provide mechanism to handle
       // special attributes (e.g. inkscape:transform-center). Skip
       // #document nodes, as their item is their root element's:

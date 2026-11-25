@@ -86,3 +86,32 @@ export function setSvgAttributes<T extends Element>(
   }
   return node
 }
+
+// The attributes that hold the geometry of the elements that svgExport writes:
+const geometryAttributes = [
+  'd', 'points', 'transform', 'x', 'y', 'width', 'height', 'cx', 'cy', 'r',
+  'rx', 'ry', 'x1', 'y1', 'x2', 'y2'
+]
+
+/**
+ * Returns a hash of the geometry of the element and its descendants, which
+ * tells svgImport whether another editor changed what svgExport wrote for an
+ * item that it restores, see `data-paper-item`.
+ *
+ * @private
+ */
+export function getGeometryHash(node: Element): string {
+  // FNV-1a, over the geometry attributes of the elements in document order:
+  let hash = 0x811c9dc5
+  for (const element of [node, ...node.querySelectorAll('*')]) {
+    for (const name of geometryAttributes) {
+      const value = element.getAttribute(name)
+      if (value != null) {
+        for (const char of `${name}=${value};`) {
+          hash = Math.imul(hash ^ char.charCodeAt(0), 0x01000193)
+        }
+      }
+    }
+  }
+  return (hash >>> 0).toString(16).padStart(8, '0')
+}

@@ -24,6 +24,8 @@ import {
   Rectangle,
   Shape,
   createSvgElement,
+  getEffectReplacement,
+  getGeometryHash,
   equals,
   getCombinedBounds,
   getDocument,
@@ -877,12 +879,20 @@ function exportDefinitions(
 }
 
 function exportSVG(item: Item, options: Options, isRoot?: boolean): SVGElement {
-  let output = item.getEffectOutput()
+  const output = getEffectReplacement(item)
   if (output) {
-    // Write the output of the item's effects in its place, expanded:
-    output = output.clone({ insert: false })
-    output.transform(item._matrix)
-    return exportSVG(output, options, isRoot)
+    // Write the output of the item's effects in its place, expanded, and the
+    // item itself as JSON, for svgImport to restore it from, as long as the
+    // geometry written for it stays the same:
+    const node = exportSVG(output, options, isRoot)
+    node?.setAttribute(
+      'data-paper-item',
+      JSON.stringify({
+        check: getGeometryHash(node),
+        item: item.exportJSON({ asString: false, precision: options.precision })
+      })
+    )
+    return node
   }
   const exporter = exporters[item.className]
   let node = exporter?.(item, options)
