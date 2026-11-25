@@ -104,6 +104,13 @@ describe('Segment', () => {
     equals(() => segment.toString(), clone.toString())
   })
 
+  test('segment.name is null without a name, also once cleared', () => {
+    const segment = new Segment({ point: [0, 0], name: 'corner' })
+    equals(new Segment().name, null)
+    segment.name = ''
+    equals(segment.name, null)
+  })
+
   test('segment.clone() with name and data', () => {
     const segment = new Segment({
       point: [10, 10],

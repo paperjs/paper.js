@@ -28,7 +28,7 @@ export class PathFitter extends Base {
   constructor(segments: Segment[], closed?: boolean) {
     super()
     const points: Point[] = []
-    let previous: Point
+    let previous: Point | undefined
     // Copy over points from path and filter out adjacent duplicates.
     for (let i = 0, l = segments.length; i < l; i++) {
       const { point } = segments[i]
@@ -43,13 +43,13 @@ export class PathFitter extends Base {
       points.push(points[1]) // The point previously at index 0 is now 1.
     }
     this.#points = points
-    this.#closed = closed
+    this.#closed = !!closed
   }
 
   fit(error: number, tangent1?: Point, tangent2?: Point): Segment[] | null {
     const points = this.#points
     const { length } = points
-    let segments = null
+    let segments: Segment[] | null = null
     if (length > 0) {
       // To support reducing paths with multiple points in the same place
       // to one segment:
@@ -98,7 +98,8 @@ export class PathFitter extends Base {
     // Parameterize points, and attempt to fit curve
     const uPrime = this.#chordLengthParameterize(first, last)
     let maxError = Math.max(error, error * error)
-    let split: number
+    // Set in the first iteration at least:
+    let split!: number
     let parametersInOrder = true
     // Try 4 iterations
     for (let i = 0; i <= 4; i++) {
@@ -196,8 +197,8 @@ export class PathFitter extends Base {
     // divide by zero in any subsequent NewtonRaphsonRootFind() call.
     const segmentLength = point2.getDistance(point1)
     const eps = EPSILON * segmentLength
-    let handle1: Point
-    let handle2: Point
+    let handle1: Point | null = null
+    let handle2: Point | null = null
     if (alpha1 < eps || alpha2 < eps) {
       // fall back on standard (probably inaccurate) formula,
       // and subdivide further if needed.

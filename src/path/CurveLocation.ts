@@ -44,11 +44,11 @@ import type { Segment } from './Segment.ts'
  */
 export class CurveLocation extends Base {
   _intersection: CurveLocation | null
-  _distance: number
+  _distance: number | undefined
   #curve: Curve | null
   #time: number | null
   #point: Point
-  #overlap: boolean
+  #overlap: boolean | undefined
   #path: Path | null
   #version: number
   #segment: Segment | null
@@ -138,7 +138,7 @@ export class CurveLocation extends Base {
         segment = curve._segment1
       } else if (time === 1) {
         segment = curve._segment2
-      } else if (time != null) {
+      } else {
         // Determine the closest segment by comparing curve lengths
         segment =
           (
@@ -177,18 +177,19 @@ export class CurveLocation extends Base {
       }
     }
 
+    // A location stays on a curve, also after splitting and dividing:
     return (
       this.#curve ||
       trySegment(this.#segment) ||
       trySegment(this.#segment1) ||
-      trySegment(this.#segment2.previous)
+      trySegment(this.#segment2?.previous ?? null)!
     )
   }
 
   /**
    * The path that this location is situated on.
    */
-  get path(): Path {
+  get path(): Path | null {
     const { curve } = this
     return curve?._path ?? null
   }
@@ -197,7 +198,7 @@ export class CurveLocation extends Base {
    * The index of the {@link #curve} within the {@link Path#curves} list, if
    * it is part of a {@link Path} item.
    */
-  get index(): number {
+  get index(): number | null {
     const { curve } = this
     return curve?.index ?? null
   }
@@ -210,9 +211,10 @@ export class CurveLocation extends Base {
   get time(): number {
     const { curve } = this
     const time = this.#time
-    return curve && time == null
-      ? (this.#time = curve.getTimeOf(this.#point))
-      : time
+    // The point lies on the curve, so it has a time there:
+    return (
+      curve && time == null ? (this.#time = curve.getTimeOf(this.#point)) : time
+    )!
   }
 
   /**
@@ -252,11 +254,7 @@ export class CurveLocation extends Base {
     let offset = this.#curveOffset
     if (offset == null) {
       const { curve, time } = this
-      this.#curveOffset = offset = (
-        time != null &&
-        curve &&
-        curve.getPartLength(0, time)
-      )
+      this.#curveOffset = offset = curve.getPartLength(0, time)
     }
     return offset
   }
@@ -276,7 +274,7 @@ export class CurveLocation extends Base {
    * @see Curve#getNearestLocation(point)
    * @see PathItem#getNearestLocation(point)
    */
-  get distance(): number {
+  get distance(): number | undefined {
     return this._distance
   }
 
@@ -297,8 +295,9 @@ export class CurveLocation extends Base {
     const path = curve._path
     const res = curve?.splitAtTime(this.time) ?? null
     if (res) {
-      // Set the segment to the end-segment of the path after splitting.
-      this.#setSegment(path.lastSegment)
+      // Set the segment to the end-segment of the path after splitting,
+      // which only happens to curves on paths:
+      this.#setSegment(path!.lastSegment)
     }
     return res
   }
@@ -333,10 +332,10 @@ export class CurveLocation extends Base {
           ? abs(this.offset - location.offset)
           : Infinity
         res = (
-          (diff < epsilon || p1 && abs(p1.length - diff) < epsilon) &&
+          (diff < epsilon || !!p1 && abs(p1.length - diff) < epsilon) &&
           // Compare the the other location, but prevent endless
           // recursion by passing `true` for _ignoreOther.
-          (!i1 && !i2 || i1 && i2 && i1.equals(i2, true))
+          (!i1 && !i2 || !!i1 && !!i2 && i1.equals(i2, true))
         )
       }
     }
@@ -349,7 +348,7 @@ export class CurveLocation extends Base {
    * @return a string representation of the curve location
    */
   toString(): string {
-    const parts = []
+    const parts: string[] = []
     const { point, index, time } = this
     const formatter = Formatter.instance
     if (point) {
@@ -423,9 +422,9 @@ export class CurveLocation extends Base {
     // - If the intersection is in the middle of the curve (t*Inside), then
     //   both values point to the same curve, and the curve-time is to be
     //   handled accordingly further down.
-    let c2 = this.curve
+    let c2: Curve | null = this.curve
     const c1 = c2 && t1 < tMin ? c2.previous : c2
-    let c4 = inter.curve
+    let c4: Curve | null = inter.curve
     const c3 = c4 && t2 < tMin ? c4.previous : c4
     // If t1 / t2 are at the end, then step to the next curve.
     if (t1 > tMax) {
@@ -443,7 +442,7 @@ export class CurveLocation extends Base {
     //   each curve, to calculate unambiguous angles. The vector from the
     //   intersection to this new location is used to determine the angle.
 
-    const offsets = []
+    const offsets: number[] = []
 
     function addOffsets(curve: Curve, end: boolean) {
       // Find the largest offset of unambiguous direction on the curve,
@@ -561,12 +560,13 @@ export class CurveLocation extends Base {
         // We're done, don't insert, merge with the found location
         // instead, and carry over overlap:
         if (location.#overlap) {
-          found.#overlap = found._intersection.#overlap = true
+          found.#overlap = found._intersection!.#overlap = true
         }
         return found
       }
-      const path1 = location.path
-      const path2 = location2.path
+      // The locations of intersections lie on paths:
+      const path1 = location.path!
+      const path2 = location2.path!
       // NOTE: equals() takes the intersection location into account,
       // while this calculation of diff doesn't!
       const diff =
@@ -575,9 +575,9 @@ export class CurveLocation extends Base {
             path1._id - path2._id
           : // Sort by both index and time on the same path. The two values
             // added together provides a convenient sorting index.
-            location.index +
+            location.index! +
             location.time -
-            (location2.index + location2.time)
+            (location2.index! + location2.time)
       if (diff < 0) {
         r = m - 1
       } else {

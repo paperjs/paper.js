@@ -1433,7 +1433,7 @@ export class Path extends PathItem {
    */
   divideAt(location: number | CurveLocation): Segment | null {
     const loc = this.getLocationAt(location)
-    let curve: Curve
+    let curve: Curve | null
     return loc && (curve = loc.curve.divideAt(loc.curveOffset))
       ? curve._segment1
       : null
@@ -1499,7 +1499,9 @@ export class Path extends PathItem {
     // NOTE: getLocationAt() handles both offset and location:
     const loc = this.getLocationAt(location)
     if (!loc) return null
-    let { index, time } = loc
+    // Locations on paths have indices:
+    let index = loc.index!
+    let { time } = loc
     const tMin = CURVETIME_EPSILON
     const tMax = 1 - tMin
     if (time > tMax) {

@@ -34,8 +34,8 @@ import type { Path } from './Path.ts'
  */
 export type SegmentProps = {
   point?: PointLike
-  handleIn?: PointLike
-  handleOut?: PointLike
+  handleIn?: PointLike | null
+  handleOut?: PointLike | null
   selection?: number
   name?: string
   data?: object
@@ -70,11 +70,12 @@ export class Segment extends Base {
   _handleIn: SegmentPoint
   /** @internal */
   _handleOut: SegmentPoint
+  // Set together while the segment is on a path:
   _path: Path | null
   _index: number | null
   // The selection state, a combination of SegmentSelection
   declare _selection: number
-  declare _name: string
+  declare _name: string | null | undefined
   declare _data: object
 
   /**
@@ -99,7 +100,11 @@ export class Segment extends Base {
    * var path = new Path(firstSegment, secondSegment);
    * path.strokeColor = 'black';
    */
-  constructor(point?: PointLike, handleIn?: PointLike, handleOut?: PointLike)
+  constructor(
+    point?: PointLike,
+    handleIn?: PointLike | null,
+    handleOut?: PointLike | null
+  )
   /**
    * Creates a new Segment object.
    *
@@ -126,14 +131,14 @@ export class Segment extends Base {
   constructor(object: SegmentProps | Segment)
   constructor(
     arg0?: PointLike | SegmentProps | Segment,
-    arg1?: PointLike,
-    arg2?: PointLike,
+    arg1?: PointLike | null,
+    arg2?: PointLike | null,
     // The selection of the array form in JSON, see #_serialize():
     arg3?: number
   ) {
     super()
     // NOTE: This copies from segments through accessors.
-    const props: SegmentProps =
+    const props: SegmentProps | Segment =
       arg0 && typeof arg0 === 'object' && 'point' in arg0
         ? arg0
         : {
@@ -211,8 +216,8 @@ export class Segment extends Base {
     if (path) {
       // Delegate changes to affected curves if they exist.
       const curves = path._curves
-      const index = this._index
-      let curve: Curve
+      const index = this._index!
+      let curve: Curve | null | undefined
       if (curves) {
         // Updated the neighboring affected curves, depending on which point
         // is changing.
@@ -256,7 +261,7 @@ export class Segment extends Base {
    * console.log(path.segments['corner'].point); // { x: 50, y: 10 }
    */
   get name(): string | null {
-    return this._name
+    return this._name ?? null
   }
 
   set name(name: string | null) {
@@ -268,7 +273,7 @@ export class Segment extends Base {
     if (this._name && named) {
       removeNamed(path._segments, named, this._name, this)
     }
-    if (name === +name + '') {
+    if (name === +name! + '') {
       throw new Error('Names consisting only of numbers are not supported.')
     }
     if (name && path) {
@@ -462,7 +467,7 @@ export class Segment extends Base {
    */
   get curve(): Curve | null {
     const path = this._path
-    let index = this._index
+    let index = this._index!
     if (path) {
       // The last segment of an open path belongs to the last curve.
       if (index > 0 && !path._closed && index === path._segments.length - 1) {
@@ -492,11 +497,12 @@ export class Segment extends Base {
    * is returned for the last segment of the path.
    */
   get next(): Segment | null {
-    const segments = this._path?._segments
+    const path = this._path
+    const segments = path?._segments
     return (
       (
         segments &&
-        (segments[this._index + 1] || this._path._closed && segments[0])
+        (segments[this._index! + 1] || path!._closed && segments[0])
       ) ||
       null
     )
@@ -614,11 +620,12 @@ export class Segment extends Base {
    * segment is returned for the first segment of the path.
    */
   get previous(): Segment | null {
-    const segments = this._path?._segments
+    const path = this._path
+    const segments = path?._segments
     return (
       segments && (
-        segments[this._index - 1] ||
-        this._path._closed && segments[segments.length - 1]
+        segments[this._index! - 1] ||
+        path!._closed && segments.at(-1)
       ) ||
       null
     )
@@ -676,7 +683,7 @@ export class Segment extends Base {
    * @return {@true if the segment was removed}
    */
   remove(): boolean {
-    return this._path ? !!this._path.removeSegment(this._index) : false
+    return this._path ? !!this._path.removeSegment(this._index!) : false
   }
 
   /**
@@ -766,7 +773,7 @@ export class Segment extends Base {
   }
 
   _transformCoordinates(
-    matrix: Matrix | null,
+    matrix: Matrix | null | undefined,
     coords: number[],
     change?: boolean
   ) {

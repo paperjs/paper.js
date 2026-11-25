@@ -45,6 +45,8 @@ export function hitTestPath(
   let l: number
 
   const { style } = path
+  // HitResult.getOptions() and Item#_hitTest() set these:
+  const tolerance = options.tolerance!
   const segments = path._segments
   const numSegments = segments.length
   const closed = path._closed
@@ -60,21 +62,21 @@ export function hitTestPath(
   const tolerancePadding = strokeSpace
     ? new Size(
         Matrix._getCircleExtents(
-          Math.max(options.tolerance, EPSILON),
+          Math.max(tolerance, EPSILON),
           path.view._matrix._shiftless()
         )
       )
-    : options._tolerancePadding
+    : options._tolerancePadding!
   let strokePadding = tolerancePadding
-  let join: StrokeJoin
-  let cap: StrokeCap
-  let miterLimit: number
-  let area: Path
-  let loc: CurveLocation
+  // Round, unless the stroke has its own:
+  let join: StrokeJoin = 'round'
+  let cap: StrokeCap = 'round'
+  let miterLimit = 0
+  let loc: CurveLocation | null = null
   let res: any
   // When collecting all hits for hitTestAll(), we report every
   // segment and handle in range, not just the first one:
-  const hits: HitResult[] = options.all && []
+  const hits: HitResult[] | null = options.all ? [] : null
   const hitStroke = options.stroke && style.hasStroke()
   // Transparent fills are hit too, only no fill isn't, as in SVG
   // (#1157):
@@ -85,7 +87,7 @@ export function hitTestPath(
     : // Set radius to 0 when we're hit-testing fills with
       // tolerance, to handle tolerance through stroke hit-test
       // functionality. Also use 0 when hit-testing curves.
-      hitFill && options.tolerance > 0 || hitCurves
+      hitFill && tolerance > 0 || hitCurves
       ? 0
       : null
   if (strokeRadius !== null) {
@@ -96,8 +98,6 @@ export function hitTestPath(
       // Add the stroke radius to tolerance padding, which is round
       // where the stroke is measured:
       strokePadding = strokePadding.add(strokeRadius)
-    } else {
-      join = cap = 'round'
     }
     // Using tolerance padding for fill tests will also work if there is
     // no stroke, in which case radius = 0 and we will test for stroke
@@ -145,13 +145,9 @@ export function hitTestPath(
 
   // Code to check stroke join / cap areas
 
-  function addToArea(point: Point) {
-    area.add(point)
-  }
-
   // Returns the tangent where the curve meets the segment, looking past
   // curves without length, which have no direction:
-  function getJoinTangent(curve: Curve, forward: boolean) {
+  function getJoinTangent(curve: Curve | null, forward: boolean) {
     for (let i = 0; curve && i < numSegments; i++) {
       if (curve.hasLength()) return curve.getTangentAtTime(forward ? 0 : 1)
       curve = forward ? curve.next : curve.previous
@@ -159,7 +155,8 @@ export function hitTestPath(
   }
 
   function isFlatJoin(segment: Segment) {
-    const { curve } = segment
+    // Joins lie between two curves:
+    const curve = segment.curve!
     const tangent1 = getJoinTangent(curve.previous, false)
     const tangent2 = getJoinTangent(curve, true)
     return (
@@ -170,12 +167,12 @@ export function hitTestPath(
     )
   }
 
-  function checkSegmentStroke(segment: Segment) {
+  function checkSegmentStroke(segment: Segment, radius: number) {
     // Handle joins / caps that are not round specifically, by
     // hit-testing their polygon areas.
     const isJoin = (
       closed ||
-      segment._index > 0 && segment._index < numSegments - 1
+      segment._index! > 0 && segment._index! < numSegments - 1
     )
     // Smooth segments are always joined round, as in addJoin() in
     // getSegmentStrokeBounds(), and so are segments where the curves meet
@@ -194,13 +191,14 @@ export function hitTestPath(
       // Create an 'internal' path without id and outside the scene
       // graph to run the hit-test on it, where the stroke is
       // measured.
-      area = new Path({ internal: true, closed: true })
+      const area = new Path({ internal: true, closed: true })
+      const addToArea = (point: Point) => area.add(point)
       if (isJoin) {
         // addBevelJoin() handles both 'bevel' and 'miter'.
         addBevelJoin(
           segment,
           join,
-          strokeRadius,
+          radius,
           miterLimit,
           strokeSpace,
           null,
@@ -210,7 +208,7 @@ export function hitTestPath(
       } else {
         // addSquareCap() handles both 'square' and 'butt' caps.
         addSquareCap(
-          segment, cap, strokeRadius, strokeSpace, null, addToArea, true
+          segment, cap, radius, strokeSpace, null, addToArea, true
         )
       }
       // See if the above produced an area to check for
@@ -218,7 +216,7 @@ export function hitTestPath(
         // Also use stroke check with tolerancePadding if the point
         // is not inside the area itself, to use test caps and joins
         // with same tolerance.
-        let loc: CurveLocation
+        let loc: CurveLocation | null
         return (
           area.contains(strokePoint) || (
             (loc = area.getNearestLocation(strokePoint)) &&
@@ -250,7 +248,8 @@ export function hitTestPath(
     // PathItem#getNearestLocation() does in the item's coordinates:
     const { curves } = path
     let minDistance = Infinity
-    let nearest: Point
+    // Set along with loc:
+    let nearest!: Point
     for (i = 0, l = curves.length; i < l; i++) {
       const { _segment1, _segment2 } = curves[i]
       const values = getCurveValues(_segment1, _segment2, strokeSpace)
@@ -275,7 +274,8 @@ export function hitTestPath(
     if (loc && outline) {
       if (
         !outline.contains(strokePoint) &&
-        !isCloseEnough(outline.getNearestPoint(strokePoint), tolerancePadding)
+        // The outline of a path with curves has curves too:
+        !isCloseEnough(outline.getNearestPoint(strokePoint)!, tolerancePadding)
       ) {
         loc = null
       }
@@ -285,7 +285,7 @@ export function hitTestPath(
       // for round strokes.
       const { time } = loc
       if (time === 0 || time === 1 && numSegments > 1) {
-        if (!checkSegmentStroke(loc.segment)) {
+        if (!checkSegmentStroke(loc.segment, strokeRadius)) {
           loc = null
         }
       } else if (!isCloseEnough(nearest, strokePadding)) {
@@ -302,7 +302,7 @@ export function hitTestPath(
             strokePoint.getDistance(segment._point.transform(strokeSpace)) <=
             miterLimit * strokeRadius
           ) &&
-          checkSegmentStroke(segment)
+          checkSegmentStroke(segment, strokeRadius)
         ) {
           loc = segment.location
           break

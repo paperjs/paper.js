@@ -195,10 +195,12 @@ function outlinePaths(
       const profile = path._strokeProfile
       return {
         ...getRegion(path).paths[0],
-        pens: profile && {
-          offsets: profile.getPens().map(pen => pen.offset),
-          getValues: profile.getValues()
-        }
+        pens: profile
+          ? {
+              offsets: profile.getPens().map(pen => pen.offset),
+              getValues: profile.getValues()
+            }
+          : undefined
       }
     }),
     radius,
@@ -217,7 +219,8 @@ function takeProfileStops(paths: Path[]): ProfileStop[] {
   const stops: ProfileStop[] = []
   for (const path of paths) {
     for (const stop of path.strokeProfile ?? []) {
-      const { point, normal } = path.getLocationAt(stop.offset)
+      // The stops lie on the path:
+      const { point, normal } = path.getLocationAt(stop.offset)!
       stops.push({ stop: stop.clone(), point, normal })
     }
     path.strokeProfile = null
@@ -240,10 +243,13 @@ function setOffsetProfiles(
     const vector = normal.multiply(distance)
     const loc1 = result.getNearestLocation(point.add(vector))
     const loc2 = result.getNearestLocation(point.subtract(vector))
-    const loc = loc1?.distance < loc2?.distance ? loc1 : loc2 ?? loc1
+    const loc =
+      (loc1?.distance ?? Infinity) < (loc2?.distance ?? Infinity)
+        ? loc1
+        : loc2 ?? loc1
     if (loc) {
       stop.offset = loc.offset
-      ;(profiles[loc.path._id] ??= []).push(stop)
+      ;(profiles[loc.path!._id] ??= []).push(stop)
     }
   }
   for (const path of (result._children ?? [result]) as Path[]) {
@@ -314,7 +320,7 @@ function getDashes(
           i === b.index ? b.time : 1
         )
         if (segments.length) {
-          segments.at(-1).handleOut = new Point(
+          segments.at(-1)!.handleOut = new Point(
             v[2] - v[0],
             v[3] - v[1]
           )
