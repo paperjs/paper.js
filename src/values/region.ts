@@ -20,7 +20,10 @@ import { getCurve, getPathSegments, reducePath } from './path.ts'
 import type { PathValues } from './path.ts'
 
 // The paths that are filled as one, by their fill rule:
-export type RegionValues = { paths: PathValues[]; fillRule: string }
+// The rule by which paths fill, as in canvas and SVG:
+export type FillRule = 'nonzero' | 'evenodd'
+
+export type RegionValues = { paths: PathValues[]; fillRule: FillRule }
 
 // Returns the region of one closed path with the segments:
 export function createRegion(segments: PathValues['segments']): RegionValues {
@@ -32,7 +35,7 @@ export function createRegion(segments: PathValues['segments']): RegionValues {
 // that close them among their curves, as getPathCurves() returns them:
 export function containsPoint(
   curves: CurveValues[],
-  fillRule: string,
+  fillRule: FillRule,
   point: Point
 ): boolean {
   let total = 0

@@ -31,13 +31,14 @@ import type {
   SegmentValues
 } from '../values/index.ts'
 import { regularize } from './curves.ts'
+import type { StrokeCap, StrokeJoin } from '../values/path.ts'
 
 // The stroke to outline, with the tolerance of its outline:
 export type Stroke = {
   radius: number
   tolerance: number
-  join: string
-  cap: string
+  join: StrokeJoin
+  cap: StrokeCap
   miterLimit: number
 }
 

@@ -26,6 +26,7 @@ import {
   getCurveValues,
   getNearestCurveTime
 } from '../internal.ts'
+import type { StrokeCap, StrokeJoin } from '../values/path.ts'
 
 /**
  * Hit-tests the path, see Item#hitTest().
@@ -64,8 +65,8 @@ export function hitTestPath(
       )
     : options._tolerancePadding
   let strokePadding = tolerancePadding
-  let join: string
-  let cap: string
+  let join: StrokeJoin
+  let cap: StrokeCap
   let miterLimit: number
   let area: Path
   let loc: CurveLocation

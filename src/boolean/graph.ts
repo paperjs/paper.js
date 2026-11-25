@@ -48,6 +48,7 @@ import type {
   SegmentValues
 } from '../values/index.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'
+import type { FillRule } from '../values/region.ts'
 
 // A path of the result, with the part of an operand's curve that each of its
 // segments starts: the curve by the indices of its operand, its path there
@@ -70,7 +71,7 @@ export type Operator = (inside1: boolean, inside2: boolean) => boolean
 // The paths of an operand: a region with its fill rule, whose open paths are
 // filled as if closed by straight lines, or lines without one, which stay
 // open, as splitGraph() splits them:
-export type Operand = { paths: PathValues[]; fillRule?: string }
+export type Operand = { paths: PathValues[]; fillRule?: FillRule }
 
 // The planar graph of createGraph(), with points stored by their index in its
 // list of cut points, and vertices, edges and half-edges by their index:

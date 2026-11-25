@@ -54,10 +54,10 @@ export function setStyles(
     ctx.lineWidth = style.strokeWidth
     const { strokeJoin, strokeCap, miterLimit, dashArray } = style
     if (strokeJoin) {
-      ctx.lineJoin = strokeJoin as CanvasLineJoin
+      ctx.lineJoin = strokeJoin
     }
     if (strokeCap) {
-      ctx.lineCap = strokeCap as CanvasLineCap
+      ctx.lineCap = strokeCap
     }
     if (miterLimit) {
       ctx.miterLimit = miterLimit
@@ -106,7 +106,7 @@ export function paintItem(
         ellipse.applyToContext(ctx)
         ctx.fillStyle = fillColor.toCanvasStyle(ctx, null, null, true)
       }
-      ctx.fill(style.fillRule as CanvasFillRule)
+      ctx.fill(style.fillRule)
       if (ellipse) {
         ctx.restore()
       }
@@ -445,7 +445,7 @@ export function drawItem(
   matrices.pop()
   if (param.clip && !param.dontFinish) {
     // Pass fill-rule to handle clipping with compound-paths (#1361).
-    ctx.clip(item.fillRule as CanvasFillRule)
+    ctx.clip(item.fillRule)
   }
   // If a temporary canvas was created, composite it onto the main canvas:
   if (!direct) {

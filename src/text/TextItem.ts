@@ -30,6 +30,19 @@ import {
 import type { Matrix } from '../basic/Matrix.ts'
 import type { Project } from '../item/Project.ts'
 import type { PathItem } from '../path/PathItem.ts'
+import type {
+  BaselinePosition,
+  Capitals,
+  Composer,
+  Direction,
+  FontStyle,
+  Justification,
+  JustifyLast,
+  LineWrap
+} from '../style/Style.ts'
+
+// The directions that the lines of text run in:
+export type TextOrientation = 'horizontal' | 'vertical'
 
 // How a style sets its letters, see TextItem#_getPiece(), and, placed on a
 // line, its content, where it is in the story, and its place and extent:
@@ -77,7 +90,7 @@ export type TextLine = {
 export class TextItem extends Item {
   // The internals of text items aren't private, as hosted shells are created
   // without the constructor, see Item#_loadContent().
-  declare _orientation: string
+  declare _orientation: TextOrientation
   _story: TextStory
   _layout: TextLine[]
   _fontMetrics: Record<string, { ascent: number; descent: number }>
@@ -198,11 +211,11 @@ export class TextItem extends Item {
    * @values 'horizontal', 'vertical'
    * @default 'horizontal'
    */
-  get orientation(): string {
+  get orientation(): TextOrientation {
     return this._orientation
   }
 
-  set orientation(orientation: string) {
+  set orientation(orientation: TextOrientation) {
     if (orientation !== this._orientation) {
       this._orientation = orientation
       this._changed(Change.GEOMETRY)
@@ -962,7 +975,7 @@ export interface TextItem {
    * @values 'normal', 'italic', 'oblique'
    * @default 'normal'
    */
-  fontStyle: string
+  fontStyle: FontStyle
 
   /**
    * The settings of a variable font's axes, by their tags: `{ wght: 600,
@@ -987,7 +1000,7 @@ export interface TextItem {
    * @values 'normal', 'superscript', 'subscript'
    * @default 'normal'
    */
-  baselinePosition: string
+  baselinePosition: BaselinePosition
 
   /**
    * How much the letters are scaled, as {@link Item#scaling}: one factor for
@@ -1010,7 +1023,7 @@ export interface TextItem {
    * @values 'normal', 'all', 'small'
    * @default 'normal'
    */
-  capitals: string
+  capitals: Capitals
 
   /**
    * Whether the letters are underlined.
@@ -1042,7 +1055,7 @@ export interface TextItem {
    * @values 'left', 'right', 'center', 'start', 'end', 'justify'
    * @default 'left'
    */
-  justification: string
+  justification: Justification
 
   /**
    * How the last line of a justified paragraph is aligned; `'all'` justifies
@@ -1051,7 +1064,7 @@ export interface TextItem {
    * @values 'left', 'right', 'center', 'start', 'end', 'all'
    * @default 'left'
    */
-  justifyLast: string
+  justifyLast: JustifyLast
 
   /**
    * How far justification may change the spacing, each as `[minimum, desired,
@@ -1130,7 +1143,7 @@ export interface TextItem {
    * @values 'line', 'paragraph'
    * @default 'paragraph'
    */
-  composer: string
+  composer: Composer
 
   /**
    * How the lines of a paragraph in an area are evened out: `'normal'`
@@ -1142,7 +1155,7 @@ export interface TextItem {
    * @values 'normal', 'balance', 'pretty'
    * @default 'normal'
    */
-  lineWrap: string
+  lineWrap: LineWrap
 
   /**
    * The paragraph's tab stops: `[{ position, align, leader }]`, with `align`
@@ -1163,7 +1176,7 @@ export interface TextItem {
    * @values 'ltr', 'rtl'
    * @default null
    */
-  direction: string
+  direction: Direction
 
   /**
    * {@grouptitle Content}

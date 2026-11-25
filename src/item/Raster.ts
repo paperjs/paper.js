@@ -39,6 +39,9 @@ import type { RectangleLike } from '../basic/Rectangle.ts'
 import type { ColorLike } from '../style/Color.ts'
 import type { Project } from './Project.ts'
 
+// The quality of the image smoothing of rasters:
+export type RasterSmoothing = 'low' | 'medium' | 'high' | 'off'
+
 type Handler = (this: Raster, ...args: any[]) => any
 type Image = HTMLImageElement | HTMLCanvasElement
 
@@ -48,7 +51,7 @@ let sampleContext: CanvasRenderingContext2D = null
  * The Raster item represents an image in a Paper.js project.
  */
 export class Raster extends Item {
-  declare _smoothing: string
+  declare _smoothing: RasterSmoothing
   _size: Size
   _loaded: boolean
   _image: HTMLImageElement
@@ -533,11 +536,11 @@ export class Raster extends Item {
    * });
    * raster.scale(5);
    */
-  get smoothing(): string {
+  get smoothing(): RasterSmoothing {
     return this._smoothing
   }
 
-  set smoothing(smoothing: string | boolean) {
+  set smoothing(smoothing: RasterSmoothing | boolean) {
     this._smoothing =
       typeof smoothing === 'string' ? smoothing : smoothing ? 'low' : 'off'
     this._changed(Change.ATTRIBUTE)

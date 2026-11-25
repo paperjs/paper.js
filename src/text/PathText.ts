@@ -25,6 +25,10 @@ import type { TextLine } from './TextItem.ts'
 import type { PathItem } from '../path/PathItem.ts'
 import type { Path } from '../path/Path.ts'
 import type { Project } from '../item/Project.ts'
+import type { TextOrientation } from './TextItem.ts'
+
+// The parts of the letters that can sit on the path:
+export type PathTextAlignment = 'baseline' | 'ascender' | 'descender' | 'center'
 
 // The fields that change the layout, with their defaults:
 const fields = {
@@ -63,7 +67,7 @@ export class PathText extends TextItem {
    * text.content = 'Around and around and around';
    * text.fontSize = 16;
    */
-  constructor(path: PathItem, orientation?: string)
+  constructor(path: PathItem, orientation?: TextOrientation)
   /**
    * Creates a text item that runs along a path, from the properties
    * described by an object literal.
@@ -72,7 +76,7 @@ export class PathText extends TextItem {
    *     attributes
    */
   constructor(object: object)
-  constructor(path: any, orientation?: string) {
+  constructor(path: any, orientation?: TextOrientation) {
     super()
     const hasProps = isPlainObject(path)
     this._initialize(hasProps && path)
@@ -256,7 +260,7 @@ export interface PathText {
    * @values 'baseline', 'ascender', 'descender', 'center'
    * @default 'baseline'
    */
-  alignment: string
+  alignment: PathTextAlignment
 
   /**
    * The space added between the letters, which keeps them apart where the
