@@ -36,6 +36,8 @@ import type { PointLike } from '../basic/Point.ts'
 import type { SizeLike } from '../basic/Size.ts'
 import type { RectangleLike } from '../basic/Rectangle.ts'
 import type { BoundsOptions } from './Item.ts'
+import type { DrawParam } from './draw.ts'
+import type { HitTestOptions } from './HitResult.ts'
 
 // The types of shapes:
 export type ShapeType = 'rectangle' | 'circle' | 'ellipse'
@@ -429,7 +431,7 @@ export class Shape extends Item {
 
   _draw(
     ctx: CanvasRenderingContext2D,
-    param: any,
+    param: DrawParam,
     viewMatrix: Matrix,
     strokeMatrix?: Matrix
   ) {
@@ -568,7 +570,7 @@ export class Shape extends Item {
 
   _hitTestSelf(
     point: Point,
-    options: Record<string, any>,
+    options: HitTestOptions,
     viewMatrix?: Matrix,
     strokeMatrix?: Matrix
   ): HitResult | null {

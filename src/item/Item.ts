@@ -83,6 +83,8 @@ import type { PaintOrder } from '../style/Style.ts'
 import type { FillRule } from '../values/region.ts'
 import type { StrokeCap, StrokeJoin } from '../values/path.ts'
 import type { BlendMode } from '../canvas/blendModes.ts'
+import type { DrawParam } from './draw.ts'
+import type { HitTestOptions } from './HitResult.ts'
 
 type Handler = (this: Item, ...args: any[]) => any
 
@@ -2113,7 +2115,7 @@ export class Item extends Emitter {
    * @return a hit result object describing what exactly was hit
    *     or `null` if nothing was hit
    */
-  hitTest(point: PointLike, options?: Record<string, any>): HitResult | null {
+  hitTest(point: PointLike, options?: HitTestOptions): HitResult | null {
     return hitTest(this, point, options)
   }
 
@@ -2133,13 +2135,13 @@ export class Item extends Emitter {
    *     exactly was hit, or an empty array if nothing was hit
    * @see #hitTest(point[, options])
    */
-  hitTestAll(point: PointLike, options?: Record<string, any>): HitResult[] {
+  hitTestAll(point: PointLike, options?: HitTestOptions): HitResult[] {
     return hitTestAll(this, point, options)
   }
 
   _hitTestChildren(
     point: Point,
-    options: Record<string, any>,
+    options: HitTestOptions,
     viewMatrix?: Matrix,
     _exclude?: Item
   ): HitResult | null {
@@ -2148,7 +2150,7 @@ export class Item extends Emitter {
 
   _hitTest(
     point: Point,
-    options: Record<string, any>,
+    options: HitTestOptions,
     parentViewMatrix?: Matrix
   ): HitResult | null {
     return hitTestItem(this, point, options, parentViewMatrix)
@@ -2156,7 +2158,7 @@ export class Item extends Emitter {
 
   _hitTestSelf(
     point: Point,
-    options: Record<string, any>,
+    options: HitTestOptions,
     // Used by the overrides:
     _viewMatrix?: Matrix,
     _strokeMatrix?: Matrix
@@ -4997,7 +4999,7 @@ export interface Item {
   // Implemented by the subclasses that draw content and selections:
   _draw(
     ctx: CanvasRenderingContext2D,
-    param: any,
+    param: DrawParam,
     viewMatrix: Matrix,
     strokeMatrix?: Matrix
   ): void

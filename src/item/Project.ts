@@ -42,6 +42,7 @@ import type { Size } from '../basic/Size.ts'
 import type { PaperScope } from '../scope/PaperScope.ts'
 import type { SymbolDefinition } from './SymbolDefinition.ts'
 import type { HitResult } from './HitResult.ts'
+import type { HitTestOptions } from './HitResult.ts'
 
 type Handler = (this: Project, ...args: any[]) => any
 
@@ -558,7 +559,7 @@ export class Project extends PaperScopeItem {
    * @return a hit result object that contains more information about what
    *     exactly was hit or `null` if nothing was hit
    */
-  hitTest(point: PointLike, options?: Record<string, any>): HitResult | null {
+  hitTest(point: PointLike, options?: HitTestOptions): HitResult | null {
     return hitTest(this, point, options)
   }
 
@@ -576,13 +577,13 @@ export class Project extends PaperScopeItem {
    *     hit, or an empty array if nothing was hit
    * @see #hitTest(point[, options])
    */
-  hitTestAll(point: PointLike, options?: Record<string, any>): HitResult[] {
+  hitTestAll(point: PointLike, options?: HitTestOptions): HitResult[] {
     return hitTestAll(this, point, options)
   }
 
   _hitTest(
     point: Point,
-    options: Record<string, any>,
+    options: HitTestOptions,
     viewMatrix?: Matrix
   ): HitResult | null {
     return hitTestChildren(this, point, options, viewMatrix)

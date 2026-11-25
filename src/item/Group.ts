@@ -22,6 +22,8 @@ import type { Matrix } from '../basic/Matrix.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'
 import type { Style } from '../style/Style.ts'
 import type { HitResult } from './HitResult.ts'
+import type { DrawParam } from './draw.ts'
+import type { HitTestOptions } from './HitResult.ts'
 
 /**
  * A Group is a collection of items. When you transform a Group, its children
@@ -332,7 +334,7 @@ export class Group extends Item {
 
   _hitTestChildren(
     point: Point,
-    options: any,
+    options: HitTestOptions,
     viewMatrix?: Matrix
   ): HitResult | null {
     const clipItem = this._getClipItem()
@@ -344,7 +346,7 @@ export class Group extends Item {
 
   _hitTestSelf(
     point: Point,
-    options: any,
+    options: HitTestOptions,
     viewMatrix?: Matrix
   ): HitResult | undefined {
     // A group is hit wherever one of its children is hit, as in Illustrator.
@@ -368,7 +370,7 @@ export class Group extends Item {
     }
   }
 
-  _draw(ctx: CanvasRenderingContext2D, param: any) {
+  _draw(ctx: CanvasRenderingContext2D, param: DrawParam) {
     const { clip } = param
     const clipItem = this._getClipItem()
     param = Object.assign(Object.create(param), {

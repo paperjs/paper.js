@@ -16,6 +16,7 @@ import type { Project } from '../item/Project.ts'
 import type { Point } from '../basic/Point.ts'
 import type { Matrix } from '../basic/Matrix.ts'
 import type { Rectangle } from '../basic/Rectangle.ts'
+import type { HitTestOptions } from '../item/HitResult.ts'
 
 /**
  * A HostItem represents a node of a host document that has no counterpart in
@@ -55,7 +56,7 @@ export class HostItem extends Item {
     return matrix ? matrix._transformBounds(rect) : rect
   }
 
-  _hitTestSelf(point: Point, options: Record<string, any>): HitResult {
+  _hitTestSelf(point: Point, options: HitTestOptions): HitResult {
     const bounds = this._getHostBounds({ stroke: true, handle: true })
     if (options.fill && bounds._containsPoint(point)) {
       return new HitResult('fill', this)

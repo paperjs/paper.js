@@ -80,6 +80,8 @@ import type { SegmentValues } from '../values/path.ts'
 import type { SegmentPoint } from './SegmentPoint.ts'
 import type { PathProps } from './shapes.ts'
 import type { StrokeProfileStopProps } from './StrokeProfileStop.ts'
+import type { DrawParam } from '../item/draw.ts'
+import type { HitTestOptions } from '../item/HitResult.ts'
 
 /**
  * The path item represents a path in a Paper.js project. Paths are created
@@ -2271,7 +2273,7 @@ export class Path extends PathItem {
 
   _hitTestSelf(
     point: Point,
-    options: any,
+    options: HitTestOptions,
     viewMatrix: Matrix,
     strokeMatrix: Matrix
   ): HitResult | HitResult[] | null {
@@ -2383,7 +2385,7 @@ export class Path extends PathItem {
 
   _draw(
     ctx: CanvasRenderingContext2D,
-    param: any,
+    param: DrawParam,
     viewMatrix: Matrix,
     strokeMatrix: Matrix
   ) {

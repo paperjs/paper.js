@@ -50,6 +50,7 @@ import type { Color } from '../style/Color.ts'
 import type { TextLine } from '../text/TextItem.ts'
 import type { BoundsOptions } from '../item/Item.ts'
 import { HostItem } from './HostItem.ts'
+import type { DrawParam } from '../item/draw.ts'
 
 // Items backed by a host document, see Project#host. Each item of such a
 // project is created as a shell from the host's record of it, and loads its
@@ -523,7 +524,7 @@ inject(Raster.prototype, {
   _draw(
     this: Raster,
     ctx: CanvasRenderingContext2D,
-    param: any,
+    param: DrawParam,
     viewMatrix: Matrix
   ) {
     try {

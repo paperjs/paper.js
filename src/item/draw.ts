@@ -29,13 +29,31 @@ import {
 } from '../internal.ts'
 import type { Style } from '../style/Style.ts'
 import type { Item } from './Item.ts'
+import type { View } from '../view/View.ts'
+
+// The state of drawing that items pass on to their content, overriding parts
+// of it in objects that inherit the rest through Object.create(), see
+// Project#draw():
+export type DrawParam = {
+  matrices: Matrix[]
+  offset?: Point
+  pixelRatio?: number
+  view?: View
+  viewMatrix?: Matrix | null
+  updateMatrix?: boolean
+  clip?: boolean
+  clipItem?: Item
+  dontStart?: boolean
+  dontFinish?: boolean
+  dontShadow?: boolean
+}
 
 // Set the styles of path-like items on the canvas context, also for text,
 // which passes the style of each of its runs:
 export function setStyles(
   item: Item,
   ctx: CanvasRenderingContext2D,
-  param: any,
+  param: DrawParam,
   viewMatrix: Matrix,
   strokeMatrix?: Matrix,
   style: Style = item._style
@@ -80,7 +98,7 @@ export function setStyles(
 export function paintItem(
   item: Item,
   ctx: CanvasRenderingContext2D,
-  param: any,
+  param: DrawParam,
   viewMatrix: Matrix,
   strokeMatrix?: Matrix
 ) {
@@ -121,7 +139,7 @@ export function paintItem(
 export function setShadow(
   item: Item,
   ctx: CanvasRenderingContext2D,
-  param: any,
+  param: DrawParam,
   viewMatrix: Matrix
 ) {
   // In Canvas, shadows unfortunately ignore all transformations
@@ -145,7 +163,7 @@ export function setShadow(
 export function drawItem(
   item: Item,
   ctx: CanvasRenderingContext2D,
-  param: any,
+  param: DrawParam,
   parentStrokeMatrix?: Matrix
 ) {
   // Each time the project gets drawn, it's _updateVersion is increased.
