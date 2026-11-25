@@ -161,8 +161,6 @@ describe('Rectangle', () => {
       bottomCenter: [[70, 60], [20, 0, 100, 60]],
       leftCenter: [[10, 70], [10, 20, 90, 100]],
       rightCenter: [[50, 70], [0, 20, 50, 100]],
-      centerX: [70, [20, 0, 100, 100]],
-      centerY: [70, [0, 20, 100, 100]],
       center: [[70, 20], [20, -30, 100, 100]],
       point: [[10, 20], [10, 20, 100, 100]]
     }
@@ -369,5 +367,30 @@ describe('Rectangle', () => {
     // Rectangles linked to their items read through them:
     const path = Path.rectangle([50, 60], [70, 80])
     equals(path.bounds.values, [50, 60, 70, 80], 'item bounds')
+  })
+
+  test('new Rectangle({ right, width }) keeps the right side', () => {
+    equals(
+      new Rectangle({ right: 100, width: 50, top: 0, height: 10 }),
+      new Rectangle(50, 0, 50, 10)
+    )
+    equals(
+      new Rectangle({ bottom: 40, topCenter: [20, 30], width: 10 }),
+      new Rectangle(15, 30, 10, 10)
+    )
+    // In any order:
+    equals(
+      new Rectangle({ width: 50, right: 100 }),
+      new Rectangle({ right: 100, width: 50 })
+    )
+    equals(
+      new Rectangle({ x: 1, y: 2, width: 3, height: 4 }),
+      new Rectangle(1, 2, 3, 4)
+    )
+    // Sizes describe rectangles too, also linked ones with accessors:
+    equals(
+      new Rectangle(Path.rectangle([5, 5], [4, 2]).bounds.size),
+      new Rectangle(0, 0, 4, 2)
+    )
   })
 })

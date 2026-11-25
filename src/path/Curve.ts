@@ -474,13 +474,7 @@ export class Curve extends Base {
    * @see #divideAtTime(time)
    */
   divideAt(location: number | CurveLocation): Curve {
-    // Accept offsets and CurveLocation objects, as well as objects that act
-    // like them.
-    return this.divideAtTime(
-      location && (location as CurveLocation).curve === this
-        ? (location as CurveLocation).time
-        : this.getTimeAt(location as number)
-    )
+    return this.divideAtTime(getLocationTime(this, location))
   }
 
   /**
@@ -969,10 +963,9 @@ export class Curve extends Base {
     for (const [key, evaluate] of Object.entries(curveEvaluators)) {
       const name = `get${capitalize(key)}`
       inject(this.prototype, {
-        [`${name}At`](offset: number) {
-          const { values } = this
-          const time = getCurveTimeAt(values, offset)
-          return time == null ? null : evaluate(values, time)
+        [`${name}At`](location: number | CurveLocation) {
+          const time = getLocationTime(this, location)
+          return time == null ? null : evaluate(this.values, time)
         },
         // Times outside the curve have nothing to evaluate:
         [`${name}AtTime`](time: number) {
@@ -1011,7 +1004,7 @@ export interface Curve {
    *     curve
    * @return the point on the curve at the given location
    */
-  getPointAt(location: number): Point
+  getPointAt(location: number | CurveLocation): Point
 
   /**
    * Calculates the normalized tangent vector of the curve at the given
@@ -1021,7 +1014,7 @@ export interface Curve {
    *     curve
    * @return the normalized tangent of the curve at the given location
    */
-  getTangentAt(location: number): Point
+  getTangentAt(location: number | CurveLocation): Point
 
   /**
    * Calculates the normal vector of the curve at the given location.
@@ -1030,7 +1023,7 @@ export interface Curve {
    *     curve
    * @return the normal of the curve at the given location
    */
-  getNormalAt(location: number): Point
+  getNormalAt(location: number | CurveLocation): Point
 
   /**
    * Calculates the weighted tangent vector of the curve at the given
@@ -1040,7 +1033,7 @@ export interface Curve {
    *     curve
    * @return the weighted tangent of the curve at the given location
    */
-  getWeightedTangentAt(location: number): Point
+  getWeightedTangentAt(location: number | CurveLocation): Point
 
   /**
    * Calculates the weighted normal vector of the curve at the given location,
@@ -1050,7 +1043,7 @@ export interface Curve {
    *     curve
    * @return the weighted normal of the curve at the given location
    */
-  getWeightedNormalAt(location: number): Point
+  getWeightedNormalAt(location: number | CurveLocation): Point
 
   /**
    * Calculates the curvature of the curve at the given location. Curvatures
@@ -1062,7 +1055,7 @@ export interface Curve {
    *     curve
    * @return the curvature of the curve at the given location
    */
-  getCurvatureAt(location: number): number
+  getCurvatureAt(location: number | CurveLocation): number
 
   /**
    * Calculates the point on the curve at the given curve-time parameter.
@@ -1188,4 +1181,12 @@ export function getCurveValues(
     matrix._transformCoordinates(values, values, 4)
   }
   return values
+}
+
+// Returns the curve-time of an offset on the curve, or of a location on it, as
+// well as of objects that act like locations:
+function getLocationTime(curve: Curve, location: number | CurveLocation) {
+  return (location as CurveLocation)?.curve === curve
+    ? (location as CurveLocation).time
+    : curve.getTimeAt(location as number)
 }

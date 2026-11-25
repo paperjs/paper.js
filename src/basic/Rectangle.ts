@@ -33,6 +33,19 @@ export type RectangleLike =
   // `{ center, size }`:
   | { [key: string]: number | PointLike | SizeLike }
 
+// Where the corners and the centers of the sides lie between the left and the
+// right side and the top and the bottom, as fractions of the width and height:
+const corners = {
+  topLeft: [0, 0],
+  topRight: [1, 0],
+  bottomLeft: [0, 1],
+  bottomRight: [1, 1],
+  leftCenter: [0, 0.5],
+  topCenter: [0.5, 0],
+  rightCenter: [1, 0.5],
+  bottomCenter: [0.5, 1]
+}
+
 /**
  * A Rectangle specifies an area that is enclosed by its top-left point (x,
  * y), its width, and its height. It should not be confused with a rectangular
@@ -168,17 +181,24 @@ export class Rectangle extends Base {
       const obj: any = arg0
       if (Array.isArray(obj)) {
         this._set(obj[0], obj[1], obj[2], obj[3])
-      } else if (obj.x !== undefined || obj.width !== undefined) {
-        // Another rectangle or a simple object literal describing one. Use
-        // duck typing, and 0 as defaults.
-        this._set(obj.x || 0, obj.y || 0, obj.width || 0, obj.height || 0)
+      } else if (
+        obj instanceof Rectangle || (
+          obj.x !== undefined &&
+          obj.y !== undefined &&
+          obj.width !== undefined &&
+          obj.height !== undefined
+        )
+      ) {
+        // Another rectangle, or an object with all of its fields:
+        this._set(obj.x, obj.y, obj.width, obj.height)
       } else if (obj.from !== undefined || obj.to !== undefined) {
         // new Rectangle({ from, to }), with a size of 0 without `to`
         this.#setFromTo(obj.from, obj.to ?? obj.from)
       } else {
-        // Any other combination of the rectangle's properties:
-        const { x, y, width, height } = new RectangleBuilder(obj)
-        this._set(x, y, width, height)
+        // An object that describes the rectangle through any of its
+        // properties, such as `{ x, y, width, height }`, a size, or
+        // `{ right: 100, width: 50 }`:
+        this._set(...readObject(obj))
       }
     }
     return this
@@ -311,8 +331,7 @@ export class Rectangle extends Base {
   }
 
   set left(left: number) {
-    this.width -= left - this.x
-    this.x = left
+    setSide(this, 'x', 'width', 0, left)
   }
 
   /**
@@ -324,8 +343,7 @@ export class Rectangle extends Base {
   }
 
   set top(top: number) {
-    this.height -= top - this.y
-    this.y = top
+    setSide(this, 'y', 'height', 0, top)
   }
 
   /**
@@ -337,7 +355,7 @@ export class Rectangle extends Base {
   }
 
   set right(right: number) {
-    this.width = right - this.x
+    setSide(this, 'x', 'width', 1, right)
   }
 
   /**
@@ -349,35 +367,7 @@ export class Rectangle extends Base {
   }
 
   set bottom(bottom: number) {
-    this.height = bottom - this.y
-  }
-
-  /**
-   * The center-x coordinate of the rectangle. Setting it moves the whole
-   * rectangle horizontally.
-   *
-   * @ignore
-   */
-  get centerX(): number {
-    return this.x + this.width / 2
-  }
-
-  set centerX(x: number) {
-    this.x = x - this.width / 2
-  }
-
-  /**
-   * The center-y coordinate of the rectangle. Setting it moves the whole
-   * rectangle vertically.
-   *
-   * @ignore
-   */
-  get centerY(): number {
-    return this.y + this.height / 2
-  }
-
-  set centerY(y: number) {
-    this.y = y - this.height / 2
+    setSide(this, 'y', 'height', 1, bottom)
   }
 
   /**
@@ -386,13 +376,18 @@ export class Rectangle extends Base {
    * The center point of the rectangle. Setting it moves the whole rectangle.
    */
   get center(): Point {
-    return new LinkedPoint(this.centerX, this.centerY, this, 'center')
+    return new LinkedPoint(
+      this.x + this.width / 2,
+      this.y + this.height / 2,
+      this,
+      'center'
+    )
   }
 
   set center(point: PointLike) {
     const { x, y } = Point.from(point)
-    this.centerX = x
-    this.centerY = y
+    setSide(this, 'x', 'width', 0.5, x)
+    setSide(this, 'y', 'height', 0.5, y)
   }
 
   /**
@@ -742,7 +737,7 @@ export class Rectangle extends Base {
   ): Rectangle {
     const hasVer = typeof arg1 === 'number'
     const { x: sx, y: sy } = Point.from(arg0, hasVer ? arg1 : undefined)
-    const center = (hasVer ? arg2 : arg1) ?? [this.centerX, this.centerY]
+    const center = (hasVer ? arg2 : arg1) ?? this.center
     const { x: cx, y: cy } = Point.from(center)
     const { left, top, right, bottom } = this
     // Scale the corners from the center, which also normalizes the
@@ -776,27 +771,22 @@ export class Rectangle extends Base {
 
   static {
     registerClasses({ Rectangle: this })
-    // Inject the corners and the centers of the sides from their x and y
-    // parts, as accessors:
-    const corners = {
-      topLeft: ['left', 'top'],
-      topRight: ['right', 'top'],
-      bottomLeft: ['left', 'bottom'],
-      bottomRight: ['right', 'bottom'],
-      leftCenter: ['left', 'centerY'],
-      topCenter: ['centerX', 'top'],
-      rightCenter: ['right', 'centerY'],
-      bottomCenter: ['centerX', 'bottom']
-    }
-    for (const [key, [keyX, keyY]] of Object.entries(corners)) {
+    // Inject the corners and the centers of the sides as accessors, from
+    // where they lie between the sides:
+    for (const [key, [fx, fy]] of Object.entries(corners)) {
       inject(this.prototype, {
         get [key]() {
-          return new LinkedPoint(this[keyX], this[keyY], this, key)
+          return new LinkedPoint(
+            this.x + this.width * fx,
+            this.y + this.height * fy,
+            this,
+            key
+          )
         },
         set [key](point: PointLike) {
           const { x, y } = Point.from(point)
-          this[keyX] = x
-          this[keyY] = y
+          setSide(this, 'x', 'width', fx, x)
+          setSide(this, 'y', 'height', fy, y)
         }
       })
     }
@@ -969,10 +959,14 @@ export class LinkedRectangle extends Rectangle {
     // Have the properties derived from x, y, width and height change a plain
     // copy, so the owner is notified only once per change:
     const keys = [
-      'point', 'size', 'center', 'left', 'top', 'right', 'bottom',
-      'centerX', 'centerY', 'topLeft', 'topRight', 'bottomLeft',
-      'bottomRight', 'leftCenter', 'topCenter', 'rightCenter',
-      'bottomCenter'
+      'point',
+      'size',
+      'center',
+      'left',
+      'top',
+      'right',
+      'bottom',
+      ...Object.keys(corners)
     ]
     for (const key of keys) {
       // The keys above are all accessors:
@@ -994,142 +988,74 @@ export class LinkedRectangle extends Rectangle {
   }
 }
 
-// Reads object literals such as `{ right: 100, width: 50 }` in any order: The
-// first side or center set per axis moves the rectangle and keeps its size,
-// further ones change the size.
-class RectangleBuilder extends Rectangle {
-  // #fixWidth / #fixHeight protect the width / height against changes. They
-  // are on by default, and switched off once properties are used that change
-  // the outside of the rectangle, so combinations of: left / top / right /
-  // bottom.
-  // #anchorX / #anchorY can either be 0 (left), 0.5 (center) or 1 (right),
-  // and are used as direct factors to calculate the x / y adjustments from
-  // the size differences.
-  #fixWidth = true
-  #fixHeight = true
-  #anchorX = 0
-  #anchorY = 0
+// Moves the side of the rectangle that lies at the fraction of its width or
+// height, keeping the opposite side, or the whole rectangle at its center:
+function setSide(
+  rect: Rectangle,
+  key: 'x' | 'y',
+  size: 'width' | 'height',
+  fraction: number,
+  value: number
+) {
+  if (fraction === 0.5) {
+    rect[key] = value - rect[size] / 2
+  } else if (fraction === 1) {
+    rect[size] = value - rect[key]
+  } else {
+    rect[size] -= value - rect[key]
+    rect[key] = value
+  }
+}
 
-  constructor(object: object) {
-    super()
-    // Set the supported properties in the order of the object:
-    for (const [key, value] of Object.entries(object)) {
-      if (key in this && value !== undefined) {
-        this[key] = value
-      }
+// The points that objects can describe rectangles with, and where they lie:
+const pointKeys = Object.entries({
+  point: [0, 0],
+  center: [0.5, 0.5],
+  ...corners
+}).map(([key, [fx, fy]]) => [key, fx, fy] as const)
+
+// Reads an object that describes a rectangle through any of its properties,
+// in any order: per axis, two of its start, center, end and length do.
+function readObject(obj: any): [number, number, number, number] {
+  // The values at the start, center and end of each axis:
+  const xs = [obj.x ?? obj.left, undefined, obj.right]
+  const ys = [obj.y ?? obj.top, undefined, obj.bottom]
+  for (const [key, fx, fy] of pointKeys) {
+    if (obj[key] !== undefined) {
+      const { x, y } = Point.from(obj[key])
+      xs[fx * 2] ??= x
+      ys[fy * 2] ??= y
     }
   }
+  const size = obj.size !== undefined ? Size.from(obj.size) : null
+  const [x, width] = readAxis(xs, obj.width ?? size?.width)
+  const [y, height] = readAxis(ys, obj.height ?? size?.height)
+  return [x, y, width, height]
+}
 
-  get size(): Size {
-    return super.size
-  }
-
-  set size(size: SizeLike) {
-    const { width, height } = Size.from(size)
-    if (this.#anchorX) {
-      this.x += (this.width - width) * this.#anchorX
-    }
-    if (this.#anchorY) {
-      this.y += (this.height - height) * this.#anchorY
-    }
-    this.width = width
-    this.height = height
-    this.#fixWidth = this.#fixHeight = true
-  }
-
-  get left(): number {
-    return super.left
-  }
-
-  set left(left: number) {
-    if (!this.#fixWidth) {
-      const amount = left - this.x
-      this.width -= this.#anchorX === 0.5 ? amount * 2 : amount
-    }
-    this.x = left
-    this.#anchorX = 0
-    this.#fixWidth = false
-  }
-
-  get top(): number {
-    return super.top
-  }
-
-  set top(top: number) {
-    if (!this.#fixHeight) {
-      const amount = top - this.y
-      this.height -= this.#anchorY === 0.5 ? amount * 2 : amount
-    }
-    this.y = top
-    this.#anchorY = 0
-    this.#fixHeight = false
-  }
-
-  get right(): number {
-    return super.right
-  }
-
-  set right(right: number) {
-    if (!this.#fixWidth) {
-      const amount = right - this.x
-      this.width = this.#anchorX === 0.5 ? amount * 2 : amount
-    }
-    this.x = right - this.width
-    this.#anchorX = 1
-    this.#fixWidth = false
-  }
-
-  get bottom(): number {
-    return super.bottom
-  }
-
-  set bottom(bottom: number) {
-    if (!this.#fixHeight) {
-      const amount = bottom - this.y
-      this.height = this.#anchorY === 0.5 ? amount * 2 : amount
-    }
-    this.y = bottom - this.height
-    this.#anchorY = 1
-    this.#fixHeight = false
-  }
-
-  get centerX(): number {
-    return super.centerX
-  }
-
-  set centerX(x: number) {
-    // If we're asked to fix the width or if #anchorX is already in center
-    // mode, just keep moving the center.
-    if (this.#fixWidth || this.#anchorX === 0.5) {
-      this.x = x - this.width / 2
-    } else {
-      if (this.#anchorX) {
-        this.x += (x - this.x) * 2 * this.#anchorX
-      }
-      this.width = (x - this.x) * 2
-    }
-    this.#anchorX = 0.5
-    this.#fixWidth = false
-  }
-
-  get centerY(): number {
-    return super.centerY
-  }
-
-  set centerY(y: number) {
-    // If we're asked to fix the height or if #anchorY is already in center
-    // mode, just keep moving the center.
-    if (this.#fixHeight || this.#anchorY === 0.5) {
-      this.y = y - this.height / 2
-    } else {
-      if (this.#anchorY) {
-        this.y += (y - this.y) * 2 * this.#anchorY
-      }
-      this.height = (y - this.y) * 2
-    }
-    this.#anchorY = 0.5
-    this.#fixHeight = false
-  }
+// Returns the start and length of an axis from two of its start, center, end
+// and length:
+function readAxis(
+  [start, center, end]: number[],
+  length?: number
+): [number, number] {
+  length ??=
+    end !== undefined
+      ? start !== undefined
+        ? end - start
+        : center !== undefined
+          ? (end - center) * 2
+          : 0
+      : center !== undefined && start !== undefined
+        ? (center - start) * 2
+        : 0
+  start ??=
+    end !== undefined
+      ? end - length
+      : center !== undefined
+        ? center - length / 2
+        : 0
+  return [start, length]
 }
 
 /**
@@ -1193,10 +1119,9 @@ export function readEllipse(object: Record<string, any>): {
     return { center: Point.from(center), radius: Size.from(radius), props }
   } else {
     const [rect, props] = readRectangle(object)
-    const { centerX, centerY, width, height } = rect
     return {
-      center: new Point(centerX, centerY),
-      radius: new Size(width / 2, height / 2),
+      center: rect.center.clone(),
+      radius: rect.size.divide(2),
       props
     }
   }

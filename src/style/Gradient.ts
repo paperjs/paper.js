@@ -234,6 +234,7 @@ export class Gradient extends Base {
     return (
       gradient === this || (
         gradient instanceof Gradient &&
+        this._radial === gradient._radial &&
         this._stops.length === gradient._stops.length &&
         this._stops.every((stop, index) => stop.equals(gradient._stops[index]))
       )

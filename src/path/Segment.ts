@@ -649,14 +649,16 @@ export class Segment extends Base {
    * Reverses the {@link #handleIn} and {@link #handleOut} vectors of this
    * segment, modifying the actual segment without creating a copy.
    *
-   * @return the reversed segment
+   * @return this segment itself, so calls can be chained
+   * @chainable
    */
-  reverse() {
+  reverse(): this {
     const handleIn = this._handleIn
     const handleOut = this._handleOut
     const tmp = handleIn.clone()
     handleIn.set(handleOut)
     handleOut.set(tmp)
+    return this
   }
 
   /**

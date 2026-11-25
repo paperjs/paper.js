@@ -235,4 +235,10 @@ describe('Segment', () => {
       [false, true]
     )
   })
+
+  test('segment.reverse() returns the segment', () => {
+    const segment = new Segment([0, 0], [1, 2], [3, 4])
+    equals(segment.reverse() === segment, true)
+    equals(segment.handleIn, new Point(3, 4))
+  })
 })

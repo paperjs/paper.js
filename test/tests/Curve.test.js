@@ -758,4 +758,11 @@ describe('Curve', () => {
       tolerance: 1e-5
     })
   })
+
+  test('curve.getPointAt() takes locations too', () => {
+    const curve = new Path.Line([0, 0], [100, 0]).firstCurve
+    const location = curve.getLocationAt(30)
+    equals(curve.getPointAt(location), new Point(30, 0))
+    equals(curve.getTangentAt(location), new Point(1, 0))
+  })
 })
