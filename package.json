@@ -95,7 +95,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@napi-rs/canvas": "^1.1.0",
+    "@napi-rs/canvas": "^1.2.1",
     "@vitest/browser-playwright": "^5.0.5",
     "@vitest/coverage-v8": "^5.0.5",
     "eslint": "^10.13.0",
@@ -138,7 +138,7 @@
     "acorn": "~8.15.0"
   },
   "peerDependencies": {
-    "@napi-rs/canvas": "^1.1.0",
+    "@napi-rs/canvas": "^1.2.1",
     "happy-dom": "^21.0.4"
   },
   "peerDependenciesMeta": {
