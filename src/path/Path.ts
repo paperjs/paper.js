@@ -190,8 +190,10 @@ export class Path extends PathItem {
     const { x, y, point, handleIn, handleOut, ...props } = isSegmentObject
       ? arg
       : {}
+    // An array of numbers is a point, any other array a list of segments,
+    // also an empty one:
     const segments = Array.isArray(arg)
-      ? typeof arg[0] === 'object'
+      ? typeof arg[0] !== 'number'
         ? arg
         : args
       : isSegmentObject
