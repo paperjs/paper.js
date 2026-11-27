@@ -24,6 +24,15 @@ import paper, {
 import { equals, test } from '../helpers.js'
 
 describe('Path', () => {
+  test('new Path([]) creates an empty path', () => {
+    equals(new Path([]).segments.length, 0)
+    equals(
+      new Path([10, 20]).segments.length,
+      1,
+      'an array of numbers is a point'
+    )
+  })
+
   test('new Path({ x, y, strokeColor })', () => {
     // The segment's keys make the segment, and the rest goes to set():
     const path = new Path({ x: 10, y: 20, strokeColor: 'red', insert: false })
