@@ -888,6 +888,160 @@ new (function () {
     return item
   }
 
+  // Apply tspan styles after the text element's attributes, so that the
+  // latter provide defaults without overwriting the runs. Use the same line
+  // and whitespace boundaries as the text importer above.
+  function applyTextSpans(text, node, options) {
+    const lines = Array.from(node.childNodes).filter(function (child) {
+      return /^tspan$/i.test(child.nodeName) && child.hasAttribute('y')
+    })
+    let offset = 0
+
+    function spanAttribute(element, name, styles) {
+      const value = getAttribute(element, name, styles)
+      return value === 'inherit' || value === 'unset' ? undefined : value
+    }
+
+    // Resolve the independently inherited paint and paint opacity for text.
+    function inheritedAttribute(element, name) {
+      while (element && element.nodeType === 1) {
+        const styles = {
+          node: DomElement.getStyles(element) || {},
+          parent:
+            element.parentNode && element.parentNode.nodeType === 1
+              ? DomElement.getStyles(element.parentNode) || {}
+              : {}
+        }
+        const value = spanAttribute(element, name, styles)
+        if (value !== undefined) return value
+        element = element.parentNode
+      }
+    }
+
+    function opacityValue(value) {
+      if (
+        typeof value !== 'string' ||
+        !/^\s*[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?%?\s*$/i.test(value)
+      )
+        return undefined
+      const number = parseFloat(value) / (/%\s*$/.test(value) ? 100 : 1)
+      return Math.max(0, Math.min(1, number))
+    }
+
+    function applyTextPaint(range, element, name) {
+      const paint = inheritedAttribute(element, name)
+      const opacity = opacityValue(
+        inheritedAttribute(element, name + '-opacity')
+      )
+      // Paint servers need item bounds, which a range does not have.
+      if (paint && /^url\(/.test(paint)) return
+      const get = name === 'fill' ? 'getFillColor' : 'getStrokeColor'
+      const set = name === 'fill' ? 'setFillColor' : 'setStrokeColor'
+      if (paint !== undefined)
+        attributes[name](range, paint, name, element, {}, options)
+      const color = range[get]()
+      if (color && opacity !== undefined) {
+        const copy = color.clone()
+        // The default SVG paint has full intrinsic alpha. Any alpha already
+        // on the range came from the opacity applied higher up the tree.
+        const alpha = paint === undefined ? 1 : copy.getAlpha()
+        copy.setAlpha(alpha * opacity)
+        range[set](copy)
+      }
+    }
+
+    // The shared importer has already applied the text element's attributes.
+    // Re-read the paint only for text so intrinsic color alpha and inherited
+    // opacity are kept independently before styling its individual spans.
+    const full = text.range(0, text.getContent().length)
+    for (const name of ['fill', 'stroke']) {
+      if (inheritedAttribute(node, name + '-opacity') !== undefined)
+        applyTextPaint(full, node, name)
+    }
+
+    function applyChildren(parent, trimStart, length) {
+      let position = 0
+      function visit(element, start, end) {
+        const from = Math.max(start, trimStart)
+        const to = Math.min(end, trimStart + length)
+        if (from < to) {
+          const range = text.range(
+            offset + from - trimStart, offset + to - trimStart
+          )
+          const styles = {
+            node: DomElement.getStyles(element) || {},
+            parent: DomElement.getStyles(element.parentNode) || {}
+          }
+          const inheritedFont = /\b(italic|oblique)\b/i.exec(
+            range.getFontWeight() || ''
+          )
+          Base.each(SvgStyles, function (entry) {
+            if (
+              entry.type !== 'color' &&
+              !(entry.property in text._story._paragraphKeys) &&
+              !(entry.property in text._story._itemKeys)
+            ) {
+              const value = spanAttribute(element, entry.attribute, styles)
+              if (value !== undefined) {
+                attributes[entry.attribute](
+                  range, value, entry.attribute, element, styles, options
+                )
+              }
+            }
+          })
+          for (const name of ['fill', 'stroke']) {
+            const paint = getAttribute(element, name, styles)
+            const opacity = getAttribute(element, name + '-opacity', styles)
+            if (paint !== undefined || opacity !== undefined)
+              applyTextPaint(range, element, name)
+          }
+          const fontStyle = spanAttribute(element, 'font-style', styles)
+          if (fontStyle === 'normal') {
+            const weight = String(range.getFontWeight() || 'normal')
+              .replace(/\s*\b(italic|oblique)\b/gi, '')
+              .trim()
+            range.setFontWeight(weight || 'normal')
+          } else if (/^(italic|oblique)$/.test(fontStyle || '')) {
+            attributes['font-style'](range, fontStyle)
+          } else if (inheritedFont) {
+            attributes['font-style'](range, inheritedFont[1])
+          }
+        }
+      }
+      function walk(element) {
+        for (const child of element.childNodes) {
+          if (child.nodeType === 3 || child.nodeType === 4) {
+            position += child.textContent.length
+          } else if (child.nodeType === 1) {
+            if (/^tspan$/i.test(child.nodeName)) {
+              const childStart = position
+              position += child.textContent.length
+              visit(child, childStart, position)
+              position = childStart
+            }
+            walk(child)
+          }
+        }
+      }
+      walk(parent)
+    }
+
+    const roots = lines.length > 1 ? lines : [node]
+    for (const root of roots) {
+      const content = root.textContent
+      const trimmed = content.trim()
+      const trimStart = content.length - content.trimStart().length
+      if (root !== node) {
+        // A line span can itself carry the style shared by the line.
+        // Process it through the same walker as all other spans.
+        applyChildren({ childNodes: [root] }, trimStart, trimmed.length)
+      } else {
+        applyChildren(root, trimStart, trimmed.length)
+      }
+      offset += trimmed.length + 1
+    }
+  }
+
   function getDefinitionById(id, options) {
     // Definitions can be referenced before they appear in the document,
     // so import them on demand, see #1146:
@@ -1052,6 +1206,8 @@ new (function () {
         // importGroup() applies them itself, see there for why:
         if (isElement && importer !== importGroup)
           item = applyAttributes(item, node, options, isRoot)
+        if (type === 'text' && item instanceof PointText)
+          applyTextSpans(item, node, options)
         const data = isElement && getData(node)
         if (data) item._data = data
         // Support processItem callback, to provide mechanism to handle

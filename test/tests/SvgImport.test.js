@@ -328,6 +328,178 @@ describe('SvgImport', () => {
     )
   })
 
+  test('Export and import SVG text with mixed runs (#2665)', () => {
+    const text = new PointText({
+      point: [10, 20],
+      content: 'Hello world\nNext line',
+      fontFamily: 'serif',
+      fontSize: 12,
+      fillColor: 'black'
+    })
+    text.range(6, 11).style = {
+      fontFamily: 'monospace',
+      fontSize: 20,
+      fillColor: [1, 0, 0, 0.5]
+    }
+    text.range(12, 16).fillColor = 'blue'
+    const imported = paper.project.importSVG(text.exportSVG())
+    equals(imported.content, text.content)
+    equals(imported.range(0, 6).fontFamily, 'serif')
+    equals(imported.range(6, 11).fontFamily, 'monospace')
+    equals(imported.range(6, 11).fontSize, 20)
+    equals(imported.range(6, 11).fillColor, new Color(1, 0, 0, 0.5))
+    equals(imported.range(12, 16).fillColor.toCSS(true), '#0000ff')
+    equals(imported.range(12, 16).fillColor.alpha, 1)
+  })
+
+  test('Import SVG nested text styles', () => {
+    const text = paper.project.importSVG(
+      '<svg xmlns="http://www.w3.org/2000/svg">' +
+      '<text x="10" y="20" fill="black"> A <tspan fill="red">' +
+      'B <tspan font-size="22">C</tspan></tspan> D </text></svg>'
+    ).firstChild
+    equals(text.content, 'A B C D')
+    equals(text.range(2, 5).fillColor.toCSS(true), '#ff0000')
+    equals(text.range(2, 5).fillColor.alpha, 1)
+    equals(text.range(4, 5).fontSize, 22)
+    equals(text.range(6, 7).fillColor.toCSS(true), '#000000')
+    equals(text.range(6, 7).fillColor.alpha, 1)
+  })
+
+  test('Import SVG text spans with inherited paint opacity', () => {
+    function importText(content) {
+      return paper.project.importSVG(
+        '<svg xmlns="http://www.w3.org/2000/svg">' + content + '</svg>'
+      ).firstChild
+    }
+
+    const fill = importText(
+      '<text fill="blue" fill-opacity=".25">A<tspan fill="red">B</tspan></text>'
+    )
+    equals(fill.range(0, 1).fillColor, new Color(0, 0, 1, 0.25))
+    equals(fill.range(1, 2).fillColor, new Color(1, 0, 0, 0.25))
+    const stroke = importText(
+      '<text stroke="blue" stroke-opacity=".25">A<tspan stroke="red">B</tspan></text>'
+    )
+    equals(stroke.range(1, 2).strokeColor, new Color(1, 0, 0, 0.25))
+    const percent = importText(
+      '<text>A<tspan fill="red" fill-opacity="40%">B</tspan></text>'
+    )
+    equals(percent.range(1, 2).fillColor, new Color(1, 0, 0, 0.4))
+    const combined = importText(
+      '<text>A<tspan fill="rgba(255,0,0,.4)" fill-opacity=".5">B</tspan></text>'
+    )
+    equals(combined.range(1, 2).fillColor, new Color(1, 0, 0, 0.2))
+    const override = importText(
+      '<text fill="rgba(0,0,255,.4)" fill-opacity=".5">' +
+      'A<tspan fill-opacity=".25">B</tspan></text>'
+    )
+    equals(override.range(0, 1).fillColor, new Color(0, 0, 1, 0.2))
+    equals(override.range(1, 2).fillColor, new Color(0, 0, 1, 0.1))
+    const defaultPaint = importText(
+      '<text fill-opacity="0">A<tspan fill-opacity=".25">B</tspan></text>'
+    )
+    equals(defaultPaint.range(1, 2).fillColor, new Color(0, 0, 0, 0.25))
+    const noSpan = importText('<text fill-opacity=".5">AB</text>')
+    equals(noSpan.range(0, 2).fillColor, new Color(0, 0, 0, 0.5))
+    const defaultOverride = importText(
+      '<text fill-opacity=".5">A<tspan fill-opacity=".25">B</tspan></text>'
+    )
+    equals(defaultOverride.range(0, 1).fillColor, new Color(0, 0, 0, 0.5))
+    equals(defaultOverride.range(1, 2).fillColor, new Color(0, 0, 0, 0.25))
+    const group = importText(
+      '<g fill-opacity=".25"><text fill-opacity=".5">AB</text></g>'
+    )
+    equals(group.firstChild.range(0, 2).fillColor, new Color(0, 0, 0, 0.5))
+    const clamped = importText(
+      '<text><tspan fill="rgba(255,0,0,.4)" fill-opacity="150%">A</tspan>' +
+      '<tspan fill="rgba(255,0,0,.4)" fill-opacity="2">B</tspan></text>'
+    )
+    equals(clamped.range(0, 1).fillColor, new Color(1, 0, 0, 0.4))
+    equals(clamped.range(1, 2).fillColor, new Color(1, 0, 0, 0.4))
+    const inherited = importText(
+      '<text fill="red" fill-opacity=".4">A' +
+      '<tspan fill-opacity="inherit">B</tspan>' +
+      '<tspan fill="unset" fill-opacity="unset">C</tspan></text>'
+    )
+    equals(inherited.range(1, 2).fillColor, new Color(1, 0, 0, 0.4))
+    equals(inherited.range(2, 3).fillColor, new Color(1, 0, 0, 0.4))
+  })
+
+  test('Import SVG text spans with inherited font style', () => {
+    const text = paper.project.importSVG(
+      '<svg xmlns="http://www.w3.org/2000/svg">' +
+      '<text font-style="italic">A<tspan font-weight="bold">B</tspan>' +
+      '<tspan font-style="normal">C</tspan></text></svg>'
+    ).firstChild
+    equals(text.range(0, 1).fontWeight, 'italic')
+    equals(text.range(1, 2).fontWeight, 'bold italic')
+    equals(text.range(2, 3).fontWeight, 'normal')
+  })
+
+  test('Import an SVG text span with a numeric default font weight', () => {
+    paper.project.currentStyle.fontWeight = 700
+    const text = paper.project.importSVG(
+      '<svg xmlns="http://www.w3.org/2000/svg">' +
+      '<text>A<tspan font-style="normal">B</tspan></text></svg>'
+    ).firstChild
+    equals(text.content, 'AB')
+  })
+
+  test('Import SVG text spans with explicit font inheritance', () => {
+    const text = paper.project.importSVG(
+      '<svg xmlns="http://www.w3.org/2000/svg">' +
+      '<text font-family="monospace" font-weight="bold" font-size="23">A' +
+      '<tspan font-family="inherit" font-weight="inherit" font-size="unset">' +
+      'B</tspan></text></svg>'
+    ).firstChild
+    const range = text.range(1, 2)
+    equals(range.fontFamily, 'monospace')
+    equals(range.fontWeight, 'bold')
+    equals(range.fontSize, 23)
+  })
+
+  test('Import non-text paint opacity in an inherited group', () => {
+    const group = paper.project.importSVG(
+      '<svg xmlns="http://www.w3.org/2000/svg">' +
+      '<g fill="red" fill-opacity=".5" stroke="blue" stroke-opacity=".5">' +
+      '<rect width="10" height="10" fill-opacity=".5" stroke-opacity=".5"/>' +
+      '</g></svg>'
+    ).firstChild
+    equals(group.firstChild.fillColor, new Color(1, 0, 0, 0.5))
+    equals(group.firstChild.strokeColor, new Color(0, 0, 1, 0.5))
+  })
+
+  test('Ignore an invalid font style on a text span', () => {
+    const text = paper.project.importSVG(
+      '<svg xmlns="http://www.w3.org/2000/svg">' +
+      '<text>A<tspan font-style="none">B</tspan></text></svg>'
+    ).firstChild
+    equals(text.content, 'AB')
+  })
+
+  test('Import SVG text keeps offsets across other elements', () => {
+    const text = paper.project.importSVG(
+      '<svg xmlns="http://www.w3.org/2000/svg">' +
+      '<text>A<a>😀B</a><tspan fill="red">C</tspan></text></svg>'
+    ).firstChild
+    equals(text.content, 'A😀BC')
+    equals(text.range(4, 5).fillColor.toCSS(true), '#ff0000')
+    equals(text.range(4, 5).fillColor.alpha, 1)
+    equals(text.range(1, 4).fillColor.toCSS(true), '#000000')
+    equals(text.range(1, 4).fillColor.alpha, 1)
+  })
+
+  test('Import text with a gradient span without throwing', () => {
+    const imported = paper.project.importSVG(
+      '<svg xmlns="http://www.w3.org/2000/svg">' +
+      '<defs><linearGradient id="g"><stop offset="0" stop-color="red"/>' +
+      '<stop offset="1" stop-color="blue"/></linearGradient></defs>' +
+      '<text><tspan fill="url(#g)">A</tspan></text></svg>'
+    )
+    equals(imported.lastChild.content, 'A')
+  })
+
   test('Import SVG text with letter-spacing', () => {
     function importText(attributes) {
       return paper.project.importSVG(
